@@ -1,7 +1,8 @@
 # Kingdom War (Guozhan) Rules Engine — Design Spec
 
 Status: Approved for implementation planning
-Date: 2026-09-03 (revised: explicit domain model)
+Date: 2026-09-03 (revised: explicit domain model; named pipeline stages
+and registry-based extensibility)
 
 ## Purpose
 
@@ -58,11 +59,16 @@ projects/engine/    — pure TypeScript library, zero Angular/browser deps
   src/lib/pipeline/ — Action, Effect, Event types + resolve()
   src/lib/skills/   — Skill/Trigger registration API, skill resolution
   src/lib/rules/    — targeting/legality queries, phase sequencing,
-                       Kingdom War setup/reveal/win-condition rule modules
+                       generic (mode-agnostic) win-condition evaluation
+  src/lib/registry/ — ContentRegistry, GameModeDefinition, ModeRegistry
+                       interfaces — the engine's only extension points
   src/lib/rng/      — seeded RNG carried inside GameState
 
 projects/content/   — pure TypeScript library, depends only on `engine`
-  src/lib/          — general/card/skill *definitions* (data + effect fns)
+  src/lib/          — general/card/skill *definitions* (data + effect fns),
+                       exported as a populated ContentRegistry instance;
+                       Kingdom War's GameModeDefinition also lives here
+                       since it is mode content, not generic engine code
 
 projects/sim/       — headless Node CLI, depends on `engine` + `content`
   src/              — simulation runner: random-legal-move bots, batch runs
@@ -219,15 +225,36 @@ Three tiers, each with a distinct responsibility:
 resolve(state: GameState, action: Action): { state: GameState, events: GameEvent[] }
 ```
 
-Steps: (1) validate legality via the rules/targeting module; (2) expand the
-action into one or more Effects; (3) for each Effect, gather skills
-subscribed to `before:<EffectType>`, letting them modify/redirect/cancel it;
-(4) apply the (possibly modified) Effect, producing a matching Event
-appended to the log; (5) gather skills subscribed to `after:<EventType>`,
-letting them queue follow-up Actions/Effects. `resolve` is pure, and all
-randomness is drawn from the seeded `RngState` carried inside `GameState`,
-so replaying the same action sequence from the same seed reproduces
-identical results.
+`resolve` internally passes the submitted Action through eight named
+stages. The exact pipeline may evolve as specific mechanics turn out to
+need finer-grained hooks, but this is the current shape:
+
+1. **Player Action** — the submitted `Action` (e.g. `PlayCardAction`),
+   already carrying whatever Targets the player chose when submitting it.
+2. **Validation** — is the action structurally legal (right card, right
+   phase, right zone, actor has priority)?
+3. **Target Selection** — are the declared `Target`s legal per the
+   targeting/legality module? A structurally legal action can still name an
+   illegal target, so this is checked as its own stage.
+4. **Response Window** — does resolving this action open a
+   `PendingResponse` for another seat (Shan to a Sha, Wuxie to a trick)? If
+   so, `resolve()` sets `GameState.pendingResponse` and returns; the
+   pipeline only continues once a matching `RespondAction`/`PassAction` is
+   submitted (see Response, below).
+5. **Effect Resolution** — the action expands into one or more Effects;
+   skills subscribed to `before:<EffectType>` may modify, redirect, or
+   cancel each one before it applies.
+6. **State Update** — the (possibly modified) Effect applies, producing a
+   matching Event appended to `GameState.log`.
+7. **Triggered Effects** — skills subscribed to `after:<EventType>` fire,
+   possibly queuing further Actions/Effects, which re-enter this same
+   pipeline from stage 2.
+8. **Next Game State** — the settled `GameState` once no `pendingResponse`
+   remains and no further triggered Effects are queued.
+
+`resolve` is pure, and all randomness is drawn from the seeded `RngState`
+carried inside `GameState`, so replaying the same action sequence from the
+same seed reproduces identical results.
 
 ### Skills
 
@@ -309,9 +336,38 @@ GameResult {
 }
 ```
 
+## Extensibility
+
+New cards, generals, skills, effects, and game modes must be addable by
+adding a definition, never by editing a shared conditional. This is
+enforced structurally, not just as a convention:
+
+- **No engine-core branching on content ids.** The engine never contains
+  logic like `if (card.id === 'sha')`. It only ever calls
+  `CardDefinition.play(...)` or a `SkillDefinition` trigger's `effect(...)`,
+  looked up by id through a `ContentRegistry` — an interface the engine
+  defines but never implements; `content` provides the populated instance
+  (`{ cards: Map<string, CardDefinition>, generals: Map<string, GeneralDefinition> }`).
+  Adding a card or general or skill means adding an entry to this registry
+  in `content`, never touching `engine`.
+- **Game modes are pluggable.** A `GameModeDefinition` interface (setup,
+  win-condition check, mode-specific triggers/actions) is the engine's only
+  notion of "a mode." Kingdom War is one `GameModeDefinition` instance,
+  defined in `content` (it's mode content, not generic engine behavior) and
+  selected via a `ModeRegistry` at game setup. The generic `resolve()`
+  pipeline, phase sequencing, and targeting/legality modules stay entirely
+  mode-agnostic — adding standard Identity mode later means adding another
+  `GameModeDefinition`, not modifying the pipeline.
+- **Card variants** (e.g. a fire/thunder-nature reprint of a base card) are
+  built by composing or parameterizing shared behavior factories (e.g. a
+  `makeShaLikeCard(nature)` helper used by multiple `CardDefinition`
+  entries), not by special-casing in engine code.
+
 ## Kingdom War mode rules
 
-Modeled as engine-level rule modules (mode rules, not content data):
+Implemented as a single `GameModeDefinition` instance in `content`,
+consumed by the engine's generic setup/win-check machinery — the engine
+itself has no Kingdom-War-specific knowledge:
 
 - **Setup**: each Seat is assigned a kingdom and two hidden `GeneralInstance`s
   (main + deputy), both starting with `revealed: false`.
@@ -359,11 +415,13 @@ Modeled as engine-level rule modules (mode rules, not content data):
 
 ## Testing strategy
 
-- Jest unit tests in `projects/engine` covering the `resolve()` pipeline
-  (including response-window pause/resume), targeting/legality queries, and
-  Kingdom War rule modules (setup, reveal, win condition) in isolation.
+- Jest unit tests in `projects/engine` covering the generic `resolve()`
+  pipeline (including response-window pause/resume) and targeting/legality
+  queries, using minimal fixture registries — no Kingdom-War-specific
+  behavior under test here, since the engine has none.
 - Jest unit tests in `projects/content` covering individual general/card
-  skill definitions.
+  skill definitions and the Kingdom War `GameModeDefinition` (setup,
+  reveal, win condition) in isolation.
 - Property-style tests that run the `sim` harness across many seeds and
   assert invariants such as: combined HP never goes negative, every game
   terminates within a bounded number of actions, a `pendingResponse` is
