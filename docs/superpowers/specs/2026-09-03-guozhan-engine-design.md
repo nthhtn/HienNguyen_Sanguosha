@@ -1,7 +1,7 @@
 # Kingdom War (Guozhan) Rules Engine — Design Spec
 
 Status: Approved for implementation planning
-Date: 2026-09-03
+Date: 2026-09-03 (revised: explicit domain model)
 
 ## Purpose
 
@@ -14,8 +14,10 @@ those are later sub-projects built on top of this engine.
 
 This engine is the foundation for the project-wide requirement that the core
 game engine (rules, state transitions, actions, effects, targeting,
-resolution) be fully decoupled from Angular, browser APIs, and UI state, and
-be independently executable and testable via automated simulation.
+resolution) be fully decoupled from Angular, browser APIs, and UI state, be
+independently executable and testable via automated simulation, and be
+modeled around explicit domain concepts with clear responsibilities rather
+than loosely structured objects.
 
 ## Scope of this milestone
 
@@ -37,7 +39,9 @@ Explicitly out of scope (deferred to later sub-projects):
 - Networking / multiplayer synchronization.
 - Persistence of game/session state.
 - The application/orchestration layer (sessions, matchmaking, players).
-- The Angular presentation layer.
+- The Angular presentation layer (see [[sanguosha-frontend-constraints]]
+  project memory for its constraints, captured separately since it applies
+  to a later sub-project).
 - The full general/card roster beyond the hand-picked test set.
 - Any AI beyond uniformly-random legal-move selection.
 
@@ -49,11 +53,12 @@ separate headless Node CLI project for simulation:
 
 ```
 projects/engine/    — pure TypeScript library, zero Angular/browser deps
-  src/lib/state/    — GameState, Player, GeneralSlot, CardInstance types
-  src/lib/events/   — GameEvent definitions, EventPipeline / resolve()
+  src/lib/domain/   — Game, Seat, Player, Target, Turn, Phase, GameResult
+  src/lib/cards/    — CardDefinition, CardInstance, Deck, CardZone
+  src/lib/pipeline/ — Action, Effect, Event types + resolve()
   src/lib/skills/   — Skill/Trigger registration API, skill resolution
-  src/lib/rules/    — targeting/legality queries, phase/turn structure,
-                       Kingdom War setup/reveal/win-condition rules
+  src/lib/rules/    — targeting/legality queries, phase sequencing,
+                       Kingdom War setup/reveal/win-condition rule modules
   src/lib/rng/      — seeded RNG carried inside GameState
 
 projects/content/   — pure TypeScript library, depends only on `engine`
@@ -75,153 +80,293 @@ Test runner: Jest, used within `projects/engine` and `projects/content`.
 No Karma/browser test runner is needed for this milestone since nothing
 here touches Angular.
 
-## Core engine design
+## Domain model
 
-### GameState
+The engine is modeled around explicit domain concepts, each with a single
+clear responsibility, rather than loosely structured generic objects.
 
-A single immutable, serializable tree:
+### Game
+
+The aggregate concept the whole domain rolls up into. Realized concretely
+as `GameState` (data) together with the `resolve()` pipeline and the rule
+modules that operate on it (setup, phase sequencing, win condition) — there
+is no separate mutable `Game` class; "Game" names the aggregate as a whole,
+not a single type.
 
 ```
 GameState {
+  seats: Seat[]
   players: Player[]
-  turn: { activePlayerId: string, phase: Phase }
-  cardPiles: { drawPile: CardInstance[], discardPile: CardInstance[] }
+  turn: Turn
+  deck: Deck
+  zones: CardZone[]           // draw pile, discard pile, judgment zone, etc.
+  pendingResponse: PendingResponse | null
   log: GameEvent[]
   rng: RngState
+  result: GameResult | null
 }
+```
 
-Player {
+### Player and Seat
+
+**Seat** is the fixed structural position at the table: index, references
+to left/right neighboring seats (used for distance/range calculations),
+and the in-game character state for whoever occupies it.
+
+```
+Seat {
   id: string
-  kingdom: Kingdom            // Wei | Shu | Wu | Qun
-  generals: { main: GeneralSlot, deputy: GeneralSlot }
+  index: number
+  kingdom: Kingdom                          // Wei | Shu | Wu | Qun
+  generals: { main: GeneralInstance, deputy: GeneralInstance }
   combinedHp: number
   maxCombinedHp: number
-  hand: CardInstance[]
-  equipped: CardInstance[]
+  hand: CardZoneRef                         // reference to a CardZone
+  equipped: CardZoneRef
   eliminated: boolean
 }
 
-GeneralSlot {
-  generalId: string
-  revealed: boolean
+GeneralInstance {
+  generalDefinitionId: string
+  revealed: boolean                         // false = hidden from other seats
 }
 ```
 
-While a `GeneralSlot.revealed` is `false`, the real `generalId` is only
-exposed in the owning player's redacted view of state; other players'
+**Player** is the controller occupying a Seat — decoupled from Seat so a
+later application/multiplayer layer can reconnect a Player to a Seat
+without any engine change.
+
+```
+Player {
+  id: string
+  seatId: string
+  kind: 'human' | 'bot'
+}
+```
+
+While `GeneralInstance.revealed` is `false`, the real `generalDefinitionId`
+is only exposed in the owning seat's redacted view of state; other seats'
 views substitute a placeholder. This hidden-information rule is modeled
-explicitly in the engine (as a state-redaction function), not left as a
-UI-layer concern, since it is core game rule behavior — even though no
-consumer of it (a real multiplayer view) exists yet in this milestone.
+explicitly in the engine (a state-redaction function), not left as a
+UI-layer concern.
 
-### Event pipeline
+### Target
 
-An `EngineAction` (e.g. `PlayCard`, `DeclareTarget`, `RevealGeneral`,
-`EndPhase`) is submitted to a pure function:
+A resolved reference to something an Action or Effect points at, used
+throughout instead of raw string ids — necessary because some Kingdom War
+skills target a specific general slot rather than the seat as a whole.
 
 ```
-resolve(state: GameState, action: EngineAction): { state: GameState, events: GameEvent[] }
+Target = { kind: 'seat', seatId: string }
+       | { kind: 'general', seatId: string, generalSlot: 'main' | 'deputy' }
 ```
 
-Steps:
-1. Validate legality via the rules/targeting module; reject illegal actions
-   without mutating state.
-2. Expand the action into one or more base `GameEvent`s.
-3. For each event, gather skills subscribed to `before:<eventType>` and
-   `after:<eventType>` trigger points — including built-in forced triggers
-   such as reveal-on-damage-threshold.
-4. Let subscribed skills contribute replacement or follow-up events/actions.
-5. Fold everything into a new immutable `GameState` plus an ordered `events`
-   log appended to `state.log`.
+### Card model: CardDefinition, CardInstance, Deck, CardZone
 
-`resolve` is pure, and all randomness is drawn from the seeded `RngState`
-carried inside `GameState`. Replaying the same action sequence from the
-same initial state/seed reproduces identical results, which the simulation
-harness and tests rely on for determinism.
+Four distinct concepts replace what would otherwise be loosely-typed arrays:
+
+- **CardDefinition** — static rule data for a card type, lives in
+  `content`: `{ id, name, category: 'basic' | 'trick' | 'equipment', play: (state, ctx) => Effect[] }`.
+- **CardInstance** — one physical card: `{ instanceId, definitionId, suit, rank }`.
+  Suit and rank live on the instance (not the definition) because the
+  physical deck has a fixed suit/rank per card and some skills key off them.
+- **Deck** — the full shuffled collection of `CardInstance`s built at setup
+  from the content pack's per-definition card counts.
+- **CardZone** — a generic container: `{ id, kind: 'hand' | 'equip' | 'drawPile' | 'discardPile' | 'judgment', ownerSeatId?: string, cards: CardInstance[] }`.
+  Hand, equipment, draw pile, discard pile, and judgment zone are all
+  `CardZone`s distinguished only by `kind` and optional `ownerSeatId`, so
+  "move cards between zones" is implemented once generically instead of
+  being duplicated per zone type.
+
+### Turn and Phase
+
+```
+Turn {
+  turnNumber: number
+  ownerSeatId: string
+  extraTurnStack: string[]     // supports Sanguosha's "extra turn" mechanic
+}
+
+Phase = 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End'
+```
+
+A `PhaseSequence` rule module defines the fixed phase order and the
+conditions under which each phase transitions to the next, and a turn-
+advancement rule module defines whose turn is next (ordinarily the next
+seat clockwise, unless the extra-turn stack says otherwise). Together these
+make state transitions explicit and predictable as a structural property of
+the rule modules, not merely a convention the rest of the code has to honor.
+
+### Action → Effect → Event pipeline
+
+Three tiers, each with a distinct responsibility:
+
+- **Action** — a request submitted by a player or the engine itself:
+  `PlayCardAction`, `RevealGeneralAction`, `RespondAction`, `PassAction`,
+  `EndPhaseAction`.
+- **Effect** — an atomic *proposed* change produced by resolving an Action
+  or a skill trigger: `DamageEffect`, `HealEffect`, `DrawCardsEffect`,
+  `MoveCardEffect`, `RevealGeneralEffect`. Effects are still malleable —
+  skills subscribed to `before:<EffectType>` can modify, redirect, or
+  cancel them before they apply. This is where "prevent/redirect this
+  damage" interactions hook in.
+- **Event** — the immutable fact appended to `GameState.log` once an Effect
+  has actually applied: `DamageDealtEvent`, `CardPlayedEvent`,
+  `GeneralRevealedEvent`. Skills subscribed to `after:<EventType>` react to
+  facts that already happened.
+
+```
+resolve(state: GameState, action: Action): { state: GameState, events: GameEvent[] }
+```
+
+Steps: (1) validate legality via the rules/targeting module; (2) expand the
+action into one or more Effects; (3) for each Effect, gather skills
+subscribed to `before:<EffectType>`, letting them modify/redirect/cancel it;
+(4) apply the (possibly modified) Effect, producing a matching Event
+appended to the log; (5) gather skills subscribed to `after:<EventType>`,
+letting them queue follow-up Actions/Effects. `resolve` is pure, and all
+randomness is drawn from the seeded `RngState` carried inside `GameState`,
+so replaying the same action sequence from the same seed reproduces
+identical results.
 
 ### Skills
 
-Skills are plain declarative data, not imperative engine calls:
+Unchanged in shape from the prior draft — plain declarative data, not
+imperative engine calls:
 
 ```
 SkillDefinition {
   id: string
   triggers: Array<{
-    point: TriggerPoint            // e.g. 'after:DealDamage'
-    condition: (state: GameState, event: GameEvent) => boolean
-    effect: (state: GameState, event: GameEvent) => EngineAction[] | GameEvent[]
+    point: TriggerPoint            // e.g. 'before:DamageEffect', 'after:DamageDealtEvent'
+    condition: (state: GameState, subject: Effect | GameEvent) => boolean
+    effect: (state: GameState, subject: Effect | GameEvent) => Action[] | Effect[]
   }>
   activation: 'auto' | 'player-choice'
 }
 ```
 
-A skill author (in `content`) never calls engine internals directly — a
-skill's `effect` returns data describing what should happen next, and the
-engine pipeline is responsible for applying it.
+### Damage
+
+An explicit value object rather than a loose parameter bag, carried by both
+`DamageEffect` and `DamageDealtEvent`:
+
+```
+Damage {
+  source: Target | null
+  target: Target
+  amount: number
+  nature: 'normal' | 'fire' | 'thunder'
+  cause?: { cardInstanceId?: string, skillId?: string }
+}
+```
+
+### Response
+
+Sanguosha requires pausing resolution mid-way to ask a specific seat
+whether it wants to respond (e.g. Shan to a Sha, Wuxie to cancel a trick).
+Modeled as explicit, inspectable state rather than a hidden call-stack
+pause or synchronous callback:
+
+```
+PendingResponse {
+  id: string
+  respondingSeatId: string
+  allowedActionKinds: ActionKind[]   // e.g. ['RespondAction:shan', 'PassAction']
+  context: { effect: Effect }        // what triggered the response window
+}
+```
+
+When an Effect opens a response window, `resolve()` sets
+`GameState.pendingResponse` and returns without continuing further
+resolution. The game only advances again when a `RespondAction` or
+`PassAction` targeting that specific `pendingResponse.id` is submitted —
+through the same `resolve(state, action)` entry point as any other action.
+This keeps the engine's only public entry point as "one action in, one new
+state out," with "awaiting a response" as an explicit, serializable state
+value rather than something implicit — and generalizes cleanly to a later
+networked layer where a real human, not a bot, must answer.
 
 ### Targeting / legality
 
-A pure query module, given `GameState` + a proposed action/context, returns
-legal targets and legal actions. It has no notion of "which UI/player asked
-for this" — it is equally usable by a human-driven interface (later), an AI
-bot, or the simulation harness enumerating legal moves.
+A pure query module, given `GameState` + a proposed Action, returns legal
+Targets and legal Actions (including, when `pendingResponse` is set,
+constraining legal actions to only what that response window allows). It
+has no notion of "which UI/player asked" — equally usable by a human-driven
+interface (later), an AI bot, or the simulation harness.
+
+### GameResult
+
+Produced by the win-condition rule module and attached to
+`GameState.result` once the game reaches a terminal state:
+
+```
+GameResult {
+  endedAt: number                  // turn number
+  winningKingdom?: Kingdom
+  winningSeatIds: string[]
+  losingSeatIds: string[]
+}
+```
 
 ## Kingdom War mode rules
 
-Modeled as engine-level rules (mode rules, not content data):
+Modeled as engine-level rule modules (mode rules, not content data):
 
-- **Setup**: each player is assigned a kingdom and two hidden generals (main
-  + deputy), both starting with `revealed: false`.
+- **Setup**: each Seat is assigned a kingdom and two hidden `GeneralInstance`s
+  (main + deputy), both starting with `revealed: false`.
 - **HP**: `maxCombinedHp = main.maxHp + deputy.maxHp`; all damage and
-  healing applies to the single `combinedHp` pool.
-- **Reveal**: `RevealGeneral` is a first-class `EngineAction`.
-  - Voluntary: the owning player may reveal a general at defined action
-    windows (e.g. before activating a skill that requires that general be
-    revealed).
-  - Forced: automatically triggered via a built-in forced trigger on the
-    `after:DealDamage` / `after:Heal` points once `combinedHp` crosses a
+  healing applies to the single `combinedHp` pool on the Seat.
+- **Reveal**: `RevealGeneralAction` is a first-class Action.
+  - Voluntary: the owning seat's player may reveal a general at defined
+    action windows (e.g. before activating a skill that requires that
+    general be revealed).
+  - Forced: automatically triggered via a built-in forced trigger on
+    `after:DamageDealtEvent` / `after:HealEvent` once `combinedHp` crosses a
     general-specific threshold — using the same trigger mechanism as any
     other skill, with no special-casing in the pipeline itself.
 - **Win condition**: evaluated as a rule-module query after every state
-  change. The game ends when all non-eliminated players belong to a single
-  kingdom. Exact Qun/Neutral win semantics (individual win vs. grouped with
-  survivors) have more than one common convention in existing Guozhan
-  implementations and will be pinned down precisely during implementation
-  of that rule module, defaulting to individual-win-for-Qun unless
-  implementation reveals a stronger reason to do otherwise.
+  change; produces a `GameResult` once satisfied. The game ends when all
+  non-eliminated seats belong to a single kingdom. Exact Qun/Neutral win
+  semantics (individual win vs. grouped with survivors) have more than one
+  common convention in existing Guozhan implementations and will be pinned
+  down precisely during implementation of that rule module, defaulting to
+  individual-win-for-Qun unless implementation reveals a stronger reason to
+  do otherwise.
 
 ## Content model (minimal set)
 
 `projects/content` defines:
-- ~4-6 generals, one or two per kingdom, `{ id, kingdom, maxHp, skills }`,
+- ~4-6 `GeneralDefinition`s, one or two per kingdom, `{ id, kingdom, maxHp, skills: SkillDefinition[] }`,
   chosen to cover distinct trigger shapes: an on-play damage modifier, a
   heal/lifesteal trigger, a card-draw trigger, a forced/negative trigger,
   and a distance/range modifier.
-- The basic card set: Sha (杀), Shan (闪), Peach (桃), Duel (决斗), Wuxie
-  Kongjie / Nullify (无懈可击), plus a couple of equipment cards. Each card
-  is `{ id, type, play: (state, ctx) => EngineAction[] }`.
+- The basic `CardDefinition` set: Sha (杀), Shan (闪), Peach (桃), Duel
+  (决斗), Wuxie Kongjie / Nullify (无懈可击), plus a couple of equipment
+  cards.
 
 ## Simulation harness
 
 `projects/sim` is a headless Node CLI that:
-- Seeds an RNG and sets up a Kingdom War game for N players (2-8),
+- Seeds an RNG and sets up a Kingdom War game for N seats (2-8),
   auto-assigning kingdoms/generals from the content pack.
 - Drives the game to completion using a random-legal-move bot: at each
-  decision point, queries the engine's legality module for valid actions
-  and picks uniformly at random.
+  decision point (including responding to a `PendingResponse`), queries the
+  engine's legality module for valid actions and picks uniformly at random.
 - Supports two modes: a single game with full event-log output (for
   debugging a specific interaction), and a batch mode running many seeded
   games for crash/invariant checking.
 
 ## Testing strategy
 
-- Jest unit tests in `projects/engine` covering the `resolve()` pipeline,
-  targeting/legality queries, and Kingdom War rule modules (setup, reveal,
-  win condition) in isolation.
+- Jest unit tests in `projects/engine` covering the `resolve()` pipeline
+  (including response-window pause/resume), targeting/legality queries, and
+  Kingdom War rule modules (setup, reveal, win condition) in isolation.
 - Jest unit tests in `projects/content` covering individual general/card
   skill definitions.
 - Property-style tests that run the `sim` harness across many seeds and
   assert invariants such as: combined HP never goes negative, every game
-  terminates within a bounded number of actions, and the win condition is
-  always eventually satisfied.
+  terminates within a bounded number of actions, a `pendingResponse` is
+  always eventually resolved (never left dangling), and the win condition
+  is always eventually satisfied.
 - No Karma/browser-based testing is used anywhere in this milestone.
