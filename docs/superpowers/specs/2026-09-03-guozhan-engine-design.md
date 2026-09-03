@@ -363,6 +363,29 @@ enforced structurally, not just as a convention:
   `makeShaLikeCard(nature)` helper used by multiple `CardDefinition`
   entries), not by special-casing in engine code.
 
+## Serializability
+
+`GameState`, and every type nested inside it (`Seat`, `Deck`, `CardZone`,
+`CardInstance`, `PendingResponse`, `GameEvent`, `GameResult`, `RngState`,
+etc.), is plain, JSON-serializable data — no functions and no class
+instances are ever embedded in state. Functions live only in
+`CardDefinition`, `SkillDefinition`, and `GameModeDefinition` entries,
+looked up by id through the `ContentRegistry`/`ModeRegistry` at resolve
+time; `GameState` itself only ever stores ids (`cardInstanceId`, `skillId`,
+`generalDefinitionId`) that resolve back to those definitions, never the
+functions themselves. In particular, `RngState` must be represented as
+plain data (e.g. a numeric seed plus a draw counter), not a stateful
+generator object instance — that's the one place a naive implementation
+could accidentally break serializability.
+
+This is what makes saving, reconnection, debugging, replay, and eventual
+server synchronization possible later without redesigning the state shape.
+It's also why "the engine should eventually run authoritatively on a
+server" is a natural extension rather than a rewrite: the engine is already
+a pure, framework-free TypeScript package executable under plain Node — the
+headless `sim` CLI in this same milestone is existing proof of that, not a
+new claim to satisfy later.
+
 ## Kingdom War mode rules
 
 Implemented as a single `GameModeDefinition` instance in `content`,
