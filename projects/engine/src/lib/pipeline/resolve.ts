@@ -131,7 +131,28 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         turn.turnNumber !== state.turn.turnNumber
           ? { kind: 'TurnAdvancedEvent' as const, seatId: turn.ownerSeatId, turnNumber: turn.turnNumber }
           : { kind: 'PhaseChangedEvent' as const, seatId: action.seatId, phase };
-      return { state: { ...state, phase, turn, log: [...state.log, event] }, events: [event] };
+      const stateWithPhaseChange = { ...state, phase, turn, log: [...state.log, event] };
+
+      let currentState = stateWithPhaseChange;
+      let allEvents: GameEvent[] = [event];
+
+      const afterTriggers = gatherTriggeredSkills(currentState, ctx.registry, ctx.mode, `after:${event.kind}`, event);
+      for (const trigger of afterTriggers) {
+        const followUps = trigger.effect(currentState, event) as Array<Action | Effect>;
+        for (const followUp of followUps) {
+          if (isAction(followUp)) {
+            const result = resolveAction(currentState, followUp, ctx);
+            currentState = result.state;
+            allEvents = [...allEvents, ...result.events];
+          } else {
+            const result = resolveEffectWithTriggers(currentState, followUp, ctx);
+            currentState = result.state;
+            allEvents = [...allEvents, ...result.events];
+          }
+        }
+      }
+
+      return { state: currentState, events: allEvents };
     }
 
     case 'RevealGeneralAction': {
