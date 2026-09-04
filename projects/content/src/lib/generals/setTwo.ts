@@ -1,5 +1,8 @@
 import type { GeneralDefinition, Effect } from 'engine';
-import { findSeatIdForGeneral, getSeatDistance } from '../shared/queries';
+import { getSeatDistance } from '../shared/queries';
+
+// See the note in setOne.ts: "which seat am I" comes from the `owner` context
+// the engine passes in, never from searching GameState for this general's id.
 
 export const dongZhuoGeneral: GeneralDefinition = {
   id: 'dong-zhuo',
@@ -12,10 +15,9 @@ export const dongZhuoGeneral: GeneralDefinition = {
       triggers: [
         {
           point: 'before:HealEffect',
-          condition: (state, subject) => {
+          condition: (_state, subject, owner) => {
             const effect = subject as Extract<Effect, { kind: 'HealEffect' }>;
-            const seatId = findSeatIdForGeneral(state, 'dong-zhuo');
-            return !!seatId && effect.target.kind === 'seat' && effect.target.seatId === seatId;
+            return !!owner && effect.target.kind === 'seat' && effect.target.seatId === owner.seatId;
           },
           effect: (_state, subject) => {
             const effect = subject as Extract<Effect, { kind: 'HealEffect' }>;
@@ -39,12 +41,12 @@ export const zhaoYunGeneral: GeneralDefinition = {
       triggers: [
         {
           point: 'before:DamageEffect',
-          condition: (state, subject) => {
+          condition: (state, subject, owner) => {
             const effect = subject as Extract<Effect, { kind: 'DamageEffect' }>;
-            const seatId = findSeatIdForGeneral(state, 'zhao-yun');
-            if (!seatId || effect.damage.target.kind !== 'seat' || effect.damage.target.seatId !== seatId) return false;
+            if (!owner) return false;
+            if (effect.damage.target.kind !== 'seat' || effect.damage.target.seatId !== owner.seatId) return false;
             if (effect.damage.source?.kind !== 'seat') return false;
-            return getSeatDistance(state, effect.damage.source.seatId, seatId) >= 2;
+            return getSeatDistance(state, effect.damage.source.seatId, owner.seatId) >= 2;
           },
           effect: (_state, subject) => {
             const effect = subject as Extract<Effect, { kind: 'DamageEffect' }>;

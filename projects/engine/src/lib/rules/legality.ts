@@ -10,6 +10,11 @@ export function getLegalTargets(state: GameState, seatId: string): Target[] {
 export function getLegalActions(state: GameState, seatId: string): Action[] {
   if (state.result) return [];
 
+  // An unknown or eliminated seat can never act, whether or not it happens to
+  // be named as the turn owner or as a pending response's responder.
+  const actingSeat = state.seats.find((s) => s.id === seatId);
+  if (!actingSeat || actingSeat.eliminated) return [];
+
   if (state.pendingResponse) {
     const pending = state.pendingResponse;
     if (pending.respondingSeatId !== seatId) return [];
@@ -18,8 +23,7 @@ export function getLegalActions(state: GameState, seatId: string): Action[] {
       actions.push({ kind: 'PassAction', seatId, pendingResponseId: pending.id });
     }
     if (pending.allowedActionKinds.includes('RespondAction')) {
-      const seat = state.seats.find((s) => s.id === seatId);
-      const handZone = seat && state.zones.find((z) => z.id === seat.hand.zoneId);
+      const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
       for (const card of handZone?.cards ?? []) {
         if (!pending.allowedCardIds || pending.allowedCardIds.includes(card.definitionId)) {
           actions.push({
@@ -36,9 +40,7 @@ export function getLegalActions(state: GameState, seatId: string): Action[] {
 
   if (state.turn.ownerSeatId !== seatId) return [];
 
-  const seat = state.seats.find((s) => s.id === seatId);
-  if (!seat) return [];
-  const handZone = state.zones.find((z) => z.id === seat.hand.zoneId);
+  const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
   const targets = getLegalTargets(state, seatId);
   const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }];
   for (const card of handZone?.cards ?? []) {

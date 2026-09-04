@@ -1,6 +1,12 @@
 import type { GeneralDefinition, Effect } from 'engine';
 import type { DamageDealtEvent, PhaseChangedEvent } from 'engine';
-import { findSeatIdForGeneral } from '../shared/queries';
+
+// Every skill below answers "is this about my own seat?" from the `owner`
+// context the engine passes in, which names the exact seat/slot the trigger was
+// gathered for. It must NOT be derived by searching GameState for the general's
+// own id: the same general can be held by more than one seat at once, and such
+// a search would resolve to whichever holder comes first — double-firing for
+// that seat and never firing for the others.
 
 export const xiahouDunGeneral: GeneralDefinition = {
   id: 'xiahou-dun',
@@ -13,13 +19,12 @@ export const xiahouDunGeneral: GeneralDefinition = {
       triggers: [
         {
           point: 'before:DamageEffect',
-          condition: (state, subject) => {
+          condition: (_state, subject, owner) => {
             const effect = subject as Extract<Effect, { kind: 'DamageEffect' }>;
-            const seatId = findSeatIdForGeneral(state, 'xiahou-dun');
             return (
-              !!seatId &&
+              !!owner &&
               effect.damage.source?.kind === 'seat' &&
-              effect.damage.source.seatId === seatId &&
+              effect.damage.source.seatId === owner.seatId &&
               !!effect.damage.cause?.cardInstanceId
             );
           },
@@ -44,14 +49,13 @@ export const sunShangxiangGeneral: GeneralDefinition = {
       triggers: [
         {
           point: 'after:DamageDealtEvent',
-          condition: (state, subject) => {
+          condition: (_state, subject, owner) => {
             const event = subject as DamageDealtEvent;
-            const seatId = findSeatIdForGeneral(state, 'sun-shangxiang');
-            return !!seatId && event.damage.source?.kind === 'seat' && event.damage.source.seatId === seatId;
+            return !!owner && event.damage.source?.kind === 'seat' && event.damage.source.seatId === owner.seatId;
           },
-          effect: (state) => {
-            const seatId = findSeatIdForGeneral(state, 'sun-shangxiang')!;
-            return [{ kind: 'HealEffect', target: { kind: 'seat', seatId }, amount: 1 }];
+          effect: (_state, _subject, owner) => {
+            if (!owner) return [];
+            return [{ kind: 'HealEffect', target: { kind: 'seat', seatId: owner.seatId }, amount: 1 }];
           },
         },
       ],
@@ -70,10 +74,9 @@ export const zhugeLiangGeneral: GeneralDefinition = {
       triggers: [
         {
           point: 'after:PhaseChangedEvent',
-          condition: (state, subject) => {
+          condition: (_state, subject, owner) => {
             const event = subject as PhaseChangedEvent;
-            const seatId = findSeatIdForGeneral(state, 'zhuge-liang');
-            return event.phase === 'Draw' && event.seatId === seatId;
+            return !!owner && event.phase === 'Draw' && event.seatId === owner.seatId;
           },
           effect: (_state, subject) => {
             const event = subject as PhaseChangedEvent;

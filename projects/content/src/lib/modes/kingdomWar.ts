@@ -87,8 +87,13 @@ export const kingdomWarMode: GameModeDefinition = {
 
   checkWinCondition: (state) => {
     const alive = state.seats.filter((s) => !s.eliminated);
-    if (alive.length === 0) return null;
     const losingSeatIds = state.seats.filter((s) => s.eliminated).map((s) => s.id);
+    // Every seat eliminated at once (e.g. a mutual-damage effect): a draw. This
+    // must produce a real GameResult — returning null here would mean "the game
+    // continues", which for a table with no living seats never terminates.
+    if (alive.length === 0) {
+      return { endedAt: state.turn.turnNumber, winningSeatIds: [], losingSeatIds };
+    }
     if (alive.length === 1) {
       return { endedAt: state.turn.turnNumber, winningSeatIds: [alive[0].id], losingSeatIds };
     }

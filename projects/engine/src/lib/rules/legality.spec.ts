@@ -60,7 +60,7 @@ describe('getLegalActions', () => {
         id: 'resp-1', respondingSeatId: 'seat-b',
         allowedActionKinds: ['RespondAction', 'PassAction'],
         allowedCardIds: ['shan'],
-        context: { effect: null },
+        context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-b' }, amount: 1 } },
       },
     });
     expect(getLegalActions(withPending, 'seat-a')).toEqual([]);
@@ -80,5 +80,28 @@ describe('getLegalActions', () => {
       kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'c1', targets: [{ kind: 'seat', seatId: 'seat-b' }],
     });
     expect(getLegalActions(state(), 'seat-b')).toEqual([]);
+  });
+
+  it('returns no actions for an eliminated seat, even when it is the named turn owner', () => {
+    const withEliminatedOwner = state({
+      turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] }, // seat-c is eliminated
+    });
+    expect(getLegalActions(withEliminatedOwner, 'seat-c')).toEqual([]);
+  });
+
+  it('returns no actions for an eliminated seat, even when it is the named pending responder', () => {
+    const withEliminatedResponder = state({
+      pendingResponse: {
+        id: 'resp-1',
+        respondingSeatId: 'seat-c', // seat-c is eliminated
+        allowedActionKinds: ['RespondAction', 'PassAction'],
+        context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-c' }, amount: 1 } },
+      },
+    });
+    expect(getLegalActions(withEliminatedResponder, 'seat-c')).toEqual([]);
+  });
+
+  it('returns no actions for an unknown seat id', () => {
+    expect(getLegalActions(state(), 'ghost-seat')).toEqual([]);
   });
 });

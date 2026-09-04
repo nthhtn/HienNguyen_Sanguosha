@@ -17,10 +17,23 @@ export interface CardDefinition {
 
 export type TriggerPoint = `before:${string}` | `after:${string}`;
 
+// Identifies the general-instance a trigger was gathered for. A general skill's
+// `condition`/`effect` must know which of its holders it is currently acting
+// for: the same GeneralDefinition can legitimately be held by more than one
+// Seat at once, so a skill may NOT derive "which seat am I" by searching
+// GameState for a general id (that would resolve to whichever holder happens to
+// come first, mis-attributing and double-firing the trigger). `owner` is
+// `undefined` only for triggers that have no owning general at all — currently
+// the mode-level triggers declared by a GameModeDefinition.
+export interface TriggerOwner {
+  seatId: string;
+  slot: 'main' | 'deputy';
+}
+
 export interface SkillTrigger {
   point: TriggerPoint;
-  condition(state: GameState, subject: unknown): boolean;
-  effect(state: GameState, subject: unknown): unknown[];
+  condition(state: GameState, subject: unknown, owner?: TriggerOwner): boolean;
+  effect(state: GameState, subject: unknown, owner?: TriggerOwner): unknown[];
 }
 
 export interface SkillDefinition {

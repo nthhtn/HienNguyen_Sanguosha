@@ -67,6 +67,30 @@ describe('Kingdom War forced reveal and elimination', () => {
   });
 });
 
+describe('Kingdom War win condition', () => {
+  it('returns a real draw result — not null — when every seat is eliminated at once', () => {
+    const registry = buildContentRegistry();
+    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3);
+    const allEliminated: GameState = {
+      ...created,
+      seats: created.seats.map((s) => ({ ...s, eliminated: true, combinedHp: 0 })),
+    };
+    // null would mean "the game continues", which for a table with no living
+    // seats would never terminate.
+    expect(kingdomWarMode.checkWinCondition(allEliminated)).toEqual({
+      endedAt: allEliminated.turn.turnNumber,
+      winningSeatIds: [],
+      losingSeatIds: ['seat-a', 'seat-b'],
+    });
+  });
+
+  it('still returns null while more than one kingdom is alive', () => {
+    const registry = buildContentRegistry();
+    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3);
+    expect(kingdomWarMode.checkWinCondition(created)).toBeNull();
+  });
+});
+
 describe('Kingdom War per-turn draw', () => {
   it('draws 2 cards for whichever seat enters the Draw phase', () => {
     const registry = buildContentRegistry();

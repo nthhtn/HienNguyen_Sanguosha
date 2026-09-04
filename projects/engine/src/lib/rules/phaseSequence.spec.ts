@@ -44,4 +44,39 @@ describe('advancePhaseOrTurn', () => {
     const result = advancePhaseOrTurn(state('End', turn, seats));
     expect(result.turn).toEqual({ turnNumber: 4, ownerSeatId: 'seat-c', extraTurnStack: [] });
   });
+
+  it('continues clockwise from the current owner even when the current owner is itself eliminated', () => {
+    // seat-b just died on its own turn: the next turn must be seat-c (the next
+    // living seat clockwise from seat-b), not seat-a (the first living seat).
+    const turn = { turnNumber: 3, ownerSeatId: 'seat-b', extraTurnStack: [] };
+    const seats = [seat('seat-a', 0), seat('seat-b', 1, true), seat('seat-c', 2)];
+    const result = advancePhaseOrTurn(state('End', turn, seats));
+    expect(result.turn).toEqual({ turnNumber: 4, ownerSeatId: 'seat-c', extraTurnStack: [] });
+  });
+
+  it('wraps back to the sole surviving seat when it is the current owner', () => {
+    const turn = { turnNumber: 3, ownerSeatId: 'seat-a', extraTurnStack: [] };
+    const seats = [seat('seat-a', 0), seat('seat-b', 1, true), seat('seat-c', 2, true)];
+    const result = advancePhaseOrTurn(state('End', turn, seats));
+    expect(result.turn).toEqual({ turnNumber: 4, ownerSeatId: 'seat-a', extraTurnStack: [] });
+  });
+
+  it('throws rather than falling back to an arbitrary seat when every seat is eliminated', () => {
+    const turn = { turnNumber: 3, ownerSeatId: 'seat-a', extraTurnStack: [] };
+    const seats = [seat('seat-a', 0, true), seat('seat-b', 1, true)];
+    expect(() => advancePhaseOrTurn(state('End', turn, seats))).toThrow(/every seat is eliminated/);
+  });
+
+  it('throws for an unknown current turn owner', () => {
+    const turn = { turnNumber: 3, ownerSeatId: 'ghost-seat', extraTurnStack: [] };
+    const seats = [seat('seat-a', 0), seat('seat-b', 1)];
+    expect(() => advancePhaseOrTurn(state('End', turn, seats))).toThrow(/unknown current turn owner ghost-seat/);
+  });
+
+  it('throws for an unrecognized phase rather than silently restarting at Judgment', () => {
+    const turn = { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] };
+    const seats = [seat('seat-a', 0), seat('seat-b', 1)];
+    const bogus = { ...state('Play', turn, seats), phase: 'NotAPhase' as unknown as GameState['phase'] };
+    expect(() => advancePhaseOrTurn(bogus)).toThrow(/Unrecognized phase: NotAPhase/);
+  });
 });

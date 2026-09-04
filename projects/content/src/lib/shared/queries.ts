@@ -1,20 +1,16 @@
 import type { GameState } from 'engine';
 
-export function findSeatIdForGeneral(state: GameState, generalDefinitionId: string): string | undefined {
-  const seat = state.seats.find(
-    (s) =>
-      s.generals.main.generalDefinitionId === generalDefinitionId ||
-      s.generals.deputy.generalDefinitionId === generalDefinitionId
-  );
-  return seat?.id;
-}
-
+// Seat-to-seat distance measured around the table over living seats only.
+// Returns Infinity when either seat is missing from the living set (an
+// already-eliminated or unknown seat): such a seat is unreachable rather than
+// "at some distance", and a range check should treat it as out of range instead
+// of crashing mid-resolution.
 export function getSeatDistance(state: GameState, fromSeatId: string, toSeatId: string): number {
   const living = state.seats.filter((s) => !s.eliminated).sort((a, b) => a.index - b.index);
   const fromIdx = living.findIndex((s) => s.id === fromSeatId);
   const toIdx = living.findIndex((s) => s.id === toSeatId);
   if (fromIdx === -1 || toIdx === -1) {
-    throw new Error('Seat not found among living seats');
+    return Number.POSITIVE_INFINITY;
   }
   const n = living.length;
   const diff = Math.abs(fromIdx - toIdx);

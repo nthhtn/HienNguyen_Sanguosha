@@ -56,6 +56,7 @@ function stateWithMainGeneral(generalId: string, seatACombinedHp = 5): GameState
     phase: 'Judgment',
     zones: [
       { id: 'drawPile', kind: 'drawPile', cards: [{ instanceId: 'draw-1', definitionId: 'sha', suit: 'spade', rank: 1 }] },
+      { id: 'discardPile', kind: 'discardPile', cards: [] },
       { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [{ instanceId: 'card-1', definitionId: 'test-damage-card', suit: 'heart', rank: 1 }] },
       { id: 'seat-a:equip', kind: 'equip', ownerSeatId: 'seat-a', cards: [] },
       { id: 'seat-b:hand', kind: 'hand', ownerSeatId: 'seat-b', cards: [] },
@@ -89,5 +90,54 @@ describe('Zhuge Liang — Insight', () => {
     expect(next.phase).toBe('Draw');
     const hand = next.zones.find((z) => z.id === 'seat-a:hand')!;
     expect(hand.cards.map((c) => c.instanceId)).toContain('draw-1');
+  });
+
+  it('only the seat entering the Draw phase draws, when two seats both hold Zhuge Liang', () => {
+    // Regression guard for owner mis-attribution: the trigger is gathered once
+    // per holder, and each copy must only react to its own seat's phase change.
+    let state = stateWithMainGeneral('zhuge-liang');
+    state = {
+      ...state,
+      seats: state.seats.map((s) =>
+        s.id === 'seat-b'
+          ? { ...s, generals: { ...s.generals, main: { generalDefinitionId: 'zhuge-liang', revealed: false } } }
+          : s
+      ),
+    };
+    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry: registry(), mode: stubMode() });
+    expect(next.phase).toBe('Draw');
+    // Exactly one card left the draw pile, and it went to seat-a — not one per holder.
+    expect(next.zones.find((z) => z.id === 'drawPile')!.cards).toHaveLength(0);
+    expect(next.zones.find((z) => z.id === 'seat-a:hand')!.cards.map((c) => c.instanceId)).toContain('draw-1');
+    expect(next.zones.find((z) => z.id === 'seat-b:hand')!.cards).toHaveLength(0);
+  });
+});
+
+describe('owner scoping across two holders of the same general', () => {
+  // Regression guard for the same bug on a skill that uses owner context in its
+  // `effect` (not just its `condition`): only the seat that actually dealt the
+  // damage may be healed, and only once.
+  it('Sun Shangxiang heals only the holder that dealt the damage', () => {
+    let state = stateWithMainGeneral('sun-shangxiang', 5);
+    state = {
+      ...state,
+      seats: state.seats.map((s) =>
+        s.id === 'seat-b'
+          ? {
+              ...s,
+              combinedHp: 4,
+              maxCombinedHp: 6,
+              generals: { ...s.generals, main: { generalDefinitionId: 'sun-shangxiang', revealed: false } },
+            }
+          : s
+      ),
+    };
+    const { state: next } = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+      { registry: registry(), mode: stubMode() }
+    );
+    expect(next.seats.find((s) => s.id === 'seat-a')!.combinedHp).toBe(6); // 5 + 1, healed once
+    expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(2); // 4 - 2, its own copy did not heal it
   });
 });

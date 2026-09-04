@@ -1,6 +1,8 @@
 import { seatToAct, pickRandomAction } from './bot';
 import { createRng } from 'engine';
-import type { GameState } from 'engine';
+import type { GameState, Effect } from 'engine';
+
+const deferredEffect: Effect = { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-b' }, amount: 1 };
 
 function state(pendingResponse: GameState['pendingResponse'] = null): GameState {
   return {
@@ -35,8 +37,36 @@ describe('seatToAct', () => {
   });
 
   it('is the responding seat when a response is pending', () => {
-    const withPending = state({ id: 'resp-1', respondingSeatId: 'seat-b', allowedActionKinds: ['PassAction'], context: { effect: null } });
+    const withPending = state({
+      id: 'resp-1',
+      respondingSeatId: 'seat-b',
+      allowedActionKinds: ['PassAction'],
+      context: { effect: deferredEffect },
+    });
     expect(seatToAct(withPending)).toBe('seat-b');
+  });
+
+  it('is null when the turn owner has been eliminated', () => {
+    const base = state();
+    const withEliminatedOwner: GameState = {
+      ...base,
+      seats: base.seats.map((s) => (s.id === 'seat-a' ? { ...s, eliminated: true } : s)),
+    };
+    expect(seatToAct(withEliminatedOwner)).toBeNull();
+  });
+
+  it('is null when the pending responder has been eliminated', () => {
+    const base = state({
+      id: 'resp-1',
+      respondingSeatId: 'seat-b',
+      allowedActionKinds: ['PassAction'],
+      context: { effect: deferredEffect },
+    });
+    const withEliminatedResponder: GameState = {
+      ...base,
+      seats: base.seats.map((s) => (s.id === 'seat-b' ? { ...s, eliminated: true } : s)),
+    };
+    expect(seatToAct(withEliminatedResponder)).toBeNull();
   });
 });
 
@@ -50,5 +80,14 @@ describe('pickRandomAction', () => {
     const first = pickRandomAction(state(), createRng(5));
     const second = pickRandomAction(state(), createRng(5));
     expect(first.action).toEqual(second.action);
+  });
+
+  it('throws a descriptive error rather than acting for an eliminated turn owner', () => {
+    const base = state();
+    const withEliminatedOwner: GameState = {
+      ...base,
+      seats: base.seats.map((s) => (s.id === 'seat-a' ? { ...s, eliminated: true } : s)),
+    };
+    expect(() => pickRandomAction(withEliminatedOwner, createRng(5))).toThrow(/No seat is able to act/);
   });
 });
