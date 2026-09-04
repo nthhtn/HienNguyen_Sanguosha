@@ -2245,7 +2245,13 @@ The spec's `Phase` type was defined but not yet wired into `GameState`; this tas
 
 - [ ] **Step 1: Add `phase` to `GameState`**
 
-In `projects/engine/src/lib/domain/types.ts`, add `phase: Phase;` to the `GameState` interface (alongside `turn`). Every test fixture built in earlier tasks (`baseState()`, `state()`, etc.) must now include e.g. `phase: 'Play',` — add that field to each of those fixture functions now (in `resolve.spec.ts` and `legality.spec.ts`); this is a one-line addition to each, since none of the earlier tests asserted on the absence of `phase`.
+In `projects/engine/src/lib/domain/types.ts`, add `phase: Phase;` to the `GameState` interface (alongside `turn`). This makes `phase` a required field, so every earlier task's `GameState`-typed test fixture must be updated now or it will fail to compile — add `phase: 'Play',` (or `'Judgment'`, matching whatever phase the test's scenario implies) as a one-line addition to each of these functions:
+- `domain/redact.spec.ts`'s `makeState()` (Task 4)
+- `pipeline/resolve.spec.ts`'s `baseState()` (Tasks 8-9)
+- `skills/triggers.spec.ts`'s `stateWithGenerals()` (Task 10)
+- `rules/legality.spec.ts`'s `state()` (Task 12)
+
+None of these earlier tests asserted on the absence of `phase`, so adding the field doesn't change any existing assertion — only run `npx jest --selectProjects engine` afterward to confirm every previously-passing suite (`redact.spec.ts`, `resolve.spec.ts`, `triggers.spec.ts`, `legality.spec.ts`, plus everything else in the project) still compiles and passes before continuing to Step 2.
 
 - [ ] **Step 2: Write the failing test**
 
