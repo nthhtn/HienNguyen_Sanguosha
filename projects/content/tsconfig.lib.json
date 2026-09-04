@@ -3,15 +3,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../out-tsc/lib-content",
-    "rootDir": "src",
-    "composite": true,
-    "tsBuildInfoFile": "../../out-tsc/lib-content/tsconfig.lib.tsbuildinfo",
     "declaration": true,
     "declarationMap": true,
     "types": []
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["**/*.spec.ts"],
-  "references": [{ "path": "../engine/tsconfig.lib.json" }]
+  "exclude": ["**/*.spec.ts"]
 }
