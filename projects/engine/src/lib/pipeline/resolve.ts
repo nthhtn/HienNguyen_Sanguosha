@@ -16,6 +16,9 @@ export interface ResolveResult {
 }
 
 export function resolve(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
+  if (state.pendingResponse && !state.pendingResponse.allowedActionKinds.includes(action.kind)) {
+    throw new Error(`Action ${action.kind} is not legal while a response is pending`);
+  }
   switch (action.kind) {
     case 'DrawCardsAction': {
       const seat = state.seats.find((s) => s.id === action.seatId);
@@ -50,6 +53,46 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
       }) as Effect[];
 
       let currentState = state;
+      let allEvents: GameEvent[] = [];
+      for (const effect of effects) {
+        const result = resolveEffectWithTriggers(currentState, effect, ctx);
+        currentState = result.state;
+        allEvents = [...allEvents, ...result.events];
+      }
+      return { state: currentState, events: allEvents };
+    }
+    case 'PassAction': {
+      const pending = state.pendingResponse;
+      if (!pending || pending.id !== action.pendingResponseId) {
+        throw new Error(`No matching pending response: ${action.pendingResponseId}`);
+      }
+      const clearedState: GameState = { ...state, pendingResponse: null };
+      return resolveEffectWithTriggers(clearedState, pending.context.effect as Effect, ctx);
+    }
+    case 'RespondAction': {
+      const pending = state.pendingResponse;
+      if (!pending || pending.id !== action.pendingResponseId) {
+        throw new Error(`No matching pending response: ${action.pendingResponseId}`);
+      }
+      if (action.seatId !== pending.respondingSeatId) {
+        throw new Error(`Seat ${action.seatId} is not the responder for ${action.pendingResponseId}`);
+      }
+      const seat = state.seats.find((s) => s.id === action.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
+      const handZone = state.zones.find((z) => z.id === seat.hand.zoneId);
+      const cardInHand = handZone?.cards.find((c) => c.instanceId === action.cardInstanceId);
+      if (!cardInHand) {
+        throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
+      }
+      const clearedState: GameState = { ...state, pendingResponse: null };
+      const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
+      const effects = cardDefinition.play(clearedState, {
+        seatId: action.seatId,
+        cardInstanceId: action.cardInstanceId,
+        targets: [],
+        respondingTo: action.pendingResponseId,
+      }) as Effect[];
+      let currentState = clearedState;
       let allEvents: GameEvent[] = [];
       for (const effect of effects) {
         const result = resolveEffectWithTriggers(currentState, effect, ctx);

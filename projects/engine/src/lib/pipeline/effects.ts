@@ -1,10 +1,11 @@
-import { GameState, Damage } from '../domain/types';
+import { GameState, Damage, PendingResponse } from '../domain/types';
 import { drawTop } from '../cards/zones';
 import { EngineEvent } from './events';
 
 export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
-  | { kind: 'DamageEffect'; damage: Damage };
+  | { kind: 'DamageEffect'; damage: Damage }
+  | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse };
 
 export interface ApplyResult {
   state: GameState;
@@ -37,6 +38,8 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const event: EngineEvent = { kind: 'DamageDealtEvent', damage: effect.damage };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
+    case 'OpenResponseEffect':
+      return { state: { ...state, pendingResponse: effect.pendingResponse }, events: [] };
     default:
       throw new Error(`Unhandled effect kind: ${(effect as Effect).kind}`);
   }

@@ -301,3 +301,123 @@ describe('resolve: skill triggers modify effects and queue follow-ups', () => {
     expect(seatBHand.cards).toHaveLength(1);
   });
 });
+
+describe('resolve: Response Window pause and resume', () => {
+  function registryWithShaAndShield(): ContentRegistry {
+    const testShaLikeCard: CardDefinition = {
+      id: 'test-sha-like-card',
+      name: 'Test Sha-like Card',
+      category: 'basic',
+      play: (_state, ctx) => [
+        {
+          kind: 'OpenResponseEffect',
+          pendingResponse: {
+            id: 'resp-1',
+            respondingSeatId: (ctx.targets[0] as { kind: 'seat'; seatId: string }).seatId,
+            allowedActionKinds: ['RespondAction', 'PassAction'],
+            context: {
+              effect: {
+                kind: 'DamageEffect',
+                damage: {
+                  source: { kind: 'seat', seatId: ctx.seatId },
+                  target: ctx.targets[0],
+                  amount: 3,
+                  nature: 'normal',
+                  cause: { cardInstanceId: ctx.cardInstanceId },
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
+    const testShieldCard: CardDefinition = {
+      id: 'test-shield-card',
+      name: 'Test Shield Card',
+      category: 'basic',
+      play: () => [],
+    };
+    return {
+      cards: new Map([
+        ['test-sha-like-card', testShaLikeCard],
+        ['test-shield-card', testShieldCard],
+      ]),
+      generals: new Map(),
+    };
+  }
+
+  function stateWithShaInHandAndShieldForB(): GameState {
+    let state = withTestCardInSeatAHand(baseState());
+    state = {
+      ...state,
+      zones: state.zones.map((zone) =>
+        zone.id === 'seat-a:hand'
+          ? { ...zone, cards: [{ instanceId: 'sha-1', definitionId: 'test-sha-like-card', suit: 'spade' as const, rank: 7 }] }
+          : zone.id === 'seat-b:hand'
+          ? { ...zone, cards: [{ instanceId: 'shield-1', definitionId: 'test-shield-card', suit: 'club' as const, rank: 2 }] }
+          : zone
+      ),
+    };
+    return state;
+  }
+
+  it('opens a pending response and defers damage instead of applying it immediately', () => {
+    const state = stateWithShaInHandAndShieldForB();
+    const { state: next } = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+      { registry: registryWithShaAndShield(), mode: stubMode() }
+    );
+    expect(next.pendingResponse).toEqual({
+      id: 'resp-1',
+      respondingSeatId: 'seat-b',
+      allowedActionKinds: ['RespondAction', 'PassAction'],
+      context: { effect: expect.objectContaining({ kind: 'DamageEffect' }) },
+    });
+    expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(6);
+  });
+
+  it('PassAction resumes resolution and applies the deferred damage', () => {
+    const state = stateWithShaInHandAndShieldForB();
+    const opened = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+      { registry: registryWithShaAndShield(), mode: stubMode() }
+    );
+    const { state: next } = resolve(
+      opened.state,
+      { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: 'resp-1' },
+      { registry: registryWithShaAndShield(), mode: stubMode() }
+    );
+    expect(next.pendingResponse).toBeNull();
+    expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(3);
+  });
+
+  it('RespondAction resumes resolution and the shield card prevents the damage', () => {
+    const state = stateWithShaInHandAndShieldForB();
+    const opened = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+      { registry: registryWithShaAndShield(), mode: stubMode() }
+    );
+    const { state: next } = resolve(
+      opened.state,
+      { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'resp-1', cardInstanceId: 'shield-1' },
+      { registry: registryWithShaAndShield(), mode: stubMode() }
+    );
+    expect(next.pendingResponse).toBeNull();
+    expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(6);
+  });
+
+  it('rejects an unrelated action while a response is pending', () => {
+    const state = stateWithShaInHandAndShieldForB();
+    const opened = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+      { registry: registryWithShaAndShield(), mode: stubMode() }
+    );
+    expect(() =>
+      resolve(opened.state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry: registryWithShaAndShield(), mode: stubMode() })
+    ).toThrow(/not legal while a response is pending/);
+  });
+});
