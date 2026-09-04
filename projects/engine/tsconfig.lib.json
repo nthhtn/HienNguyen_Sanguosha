@@ -3,7 +3,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../out-tsc/lib",
+    "outDir": "../../out-tsc/lib-engine",
+    "rootDir": "src",
+    "composite": true,
+    "tsBuildInfoFile": "../../out-tsc/lib-engine/tsconfig.lib.tsbuildinfo",
     "declaration": true,
     "declarationMap": true,
     "types": []

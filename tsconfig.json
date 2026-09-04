@@ -4,8 +4,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "content": ["./dist/content"],
-      "engine": ["./dist/engine"]
+      "content": ["./projects/content/src/public-api.ts"],
+      "engine": ["./projects/engine/src/public-api.ts"]
     },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,

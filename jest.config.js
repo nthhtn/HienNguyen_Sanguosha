@@ -13,6 +13,9 @@ module.exports = {
       testEnvironment: 'node',
       rootDir: 'projects/content/src',
       testMatch: ['**/*.spec.ts'],
+      moduleNameMapper: {
+        '^engine$': '<rootDir>/../../engine/src/public-api.ts',
+      },
     },
   ],
 };
