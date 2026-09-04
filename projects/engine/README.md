@@ -43,11 +43,20 @@ Once the project is built, you can publish your library by following these steps
 
 ## Running unit tests
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+To execute unit tests with the [Jest](https://jestjs.io/) test runner, run the
+following from the workspace root:
 
 ```bash
-ng test
+npm test
 ```
+
+To run only this library's suite:
+
+```bash
+npx jest --selectProjects engine
+```
+
+There is no `ng test` architect target in this workspace.
 
 ## Running end-to-end tests
 

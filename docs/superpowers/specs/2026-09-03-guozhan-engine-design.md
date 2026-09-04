@@ -107,7 +107,7 @@ GameState {
   deck: Deck
   zones: CardZone[]           // draw pile, discard pile, judgment zone, etc.
   pendingResponse: PendingResponse | null
-  log: GameEvent[]
+  log: EngineEvent[]          // the concrete event union, not the weak { kind: string }
   rng: RngState
   result: GameResult | null
 }
@@ -266,12 +266,31 @@ SkillDefinition {
   id: string
   triggers: Array<{
     point: TriggerPoint            // e.g. 'before:DamageEffect', 'after:DamageDealtEvent'
-    condition: (state: GameState, subject: Effect | GameEvent) => boolean
-    effect: (state: GameState, subject: Effect | GameEvent) => Action[] | Effect[]
+    condition: (state: GameState, subject: Effect | GameEvent, owner?: TriggerOwner) => boolean
+    effect: (state: GameState, subject: Effect | GameEvent, owner?: TriggerOwner) => Action[] | Effect[]
   }>
   activation: 'auto' | 'player-choice'
 }
+
+TriggerOwner {
+  seatId: string
+  slot: 'main' | 'deputy'
+}
 ```
+
+`condition`/`effect` receive **owner context**: the seat and general slot the
+trigger was gathered for. The engine gathers a general's triggers once per
+holder (seat × slot), so a skill must take "which seat am I acting for" from
+`owner` and must never re-derive it by searching `GameState` for its own
+general id — the same `GeneralDefinition` can legitimately be held by more than
+one Seat at once (Kingdom War assigns generals round-robin), and such a search
+would always resolve to whichever holder comes first, double-firing the skill
+for that seat and never firing it for the others.
+
+`owner` is `undefined` only for triggers that have no owning general at all —
+currently the mode-level triggers declared by a `GameModeDefinition`, which are
+not general-specific. Triggers belonging to a general held by an *eliminated*
+seat are not gathered at all.
 
 ### Damage
 
@@ -404,6 +423,24 @@ itself has no Kingdom-War-specific knowledge:
     `after:DamageDealtEvent` / `after:HealEvent` once `combinedHp` crosses a
     general-specific threshold — using the same trigger mechanism as any
     other skill, with no special-casing in the pipeline itself.
+- **Card flow**: three mechanics keep the deck circulating so a game
+  terminates.
+  - *Per-turn draw*: a mode-level `after:PhaseChangedEvent` trigger draws 2
+    cards for whichever seat enters its Draw phase. General skills (e.g. Zhuge
+    Liang's Insight) stack additional draws on top via their own triggers.
+  - *Discard after play*: any non-equipment card still in the acting seat's
+    hand once its `play()` effects have finished resolving is moved to the
+    discard pile by the engine, generically, for both `PlayCardAction` and
+    `RespondAction`. Equipment is exempt — its own `play()` has already
+    relocated it to the seat's equip zone, where it must stay.
+  - *Reshuffle on exhaustion*: when the draw pile cannot satisfy a draw, the
+    discard pile is shuffled (from the same seeded `RngState`, so replays stay
+    deterministic) back into the draw pile and drawing continues. This happens
+    at most once per draw; if the combined total still falls short, as many
+    cards as are available are drawn rather than erroring.
+
+  Engine code locates these well-known zones by `CardZone.kind`, never by a
+  hardcoded zone id, so a mode is free to name its zones as it likes.
 - **Win condition**: evaluated as a rule-module query after every state
   change; produces a `GameResult` once satisfied. The game ends when all
   non-eliminated seats belong to a single kingdom. Exact Qun/Neutral win

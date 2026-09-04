@@ -38,11 +38,14 @@ This will compile your project and store the build artifacts in the `dist/` dire
 
 ## Running unit tests
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+To execute unit tests with the [Jest](https://jestjs.io/) test runner, use the following command:
 
 ```bash
-ng test
+npm test
 ```
+
+This runs every project's suite (`engine`, `content`, `sim`) via the root
+`jest.config.js`. There is no `ng test` architect target in this workspace.
 
 ## Running end-to-end tests
 

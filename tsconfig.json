@@ -7,6 +7,7 @@
       "content": ["./projects/content/src/public-api.ts"],
       "engine": ["./projects/engine/src/public-api.ts"]
     },
+    "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
@@ -24,19 +25,5 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true
   },
-  "files": [],
-  "references": [
-    {
-      "path": "./projects/engine/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/engine/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/content/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/content/tsconfig.spec.json"
-    }
-  ]
+  "files": []
 }
