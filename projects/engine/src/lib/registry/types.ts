@@ -1,4 +1,5 @@
-import { GameState, Target, Kingdom, GameResult, RngState } from '../domain/types';
+import { GameState, Target, Kingdom, GameResult } from '../domain/types';
+import { RngState } from '../rng/rng';
 
 export interface PlayContext {
   seatId: string;

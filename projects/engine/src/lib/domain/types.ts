@@ -71,7 +71,6 @@ export interface CardInstance {
 
 export interface GameEvent {
   kind: string;
-  [key: string]: unknown;
 }
 
 export interface GameState {
