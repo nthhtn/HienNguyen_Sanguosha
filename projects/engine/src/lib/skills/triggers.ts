@@ -8,7 +8,7 @@ export function gatherTriggeredSkills(
   point: TriggerPoint,
   subject: unknown
 ): SkillTrigger[] {
-  const candidates: SkillTrigger[] = [...mode.triggers];
+  const candidates: SkillTrigger[] = mode.triggers.filter((trigger) => trigger.point === point);
   for (const seat of state.seats) {
     for (const slot of [seat.generals.main, seat.generals.deputy]) {
       const general = registry.generals.get(slot.generalDefinitionId);
