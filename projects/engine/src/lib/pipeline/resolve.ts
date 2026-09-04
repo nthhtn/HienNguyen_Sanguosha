@@ -84,6 +84,9 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
       if (!cardInHand) {
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
+      if (pending.allowedCardIds && !pending.allowedCardIds.includes(cardInHand.definitionId)) {
+        throw new Error(`Card ${cardInHand.definitionId} is not a legal response here`);
+      }
       const clearedState: GameState = { ...state, pendingResponse: null };
       const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
       const effects = cardDefinition.play(clearedState, {

@@ -52,6 +52,7 @@ export interface PendingResponse {
   id: string;
   respondingSeatId: string;
   allowedActionKinds: string[];
+  allowedCardIds?: string[];
   context: { effect: unknown };
 }
 
