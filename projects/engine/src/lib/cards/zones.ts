@@ -1,7 +1,26 @@
 import { CardZone, CardInstance } from '../domain/types';
 import { RngState, shuffle } from '../rng/rng';
 
+// Locates a "well-known" zone (the draw pile, the discard pile, ...) by its
+// `kind` rather than by a hardcoded id string. A GameModeDefinition is free to
+// name its zones whatever it likes, so `kind` is the only reliable way for
+// generic engine code to find them.
+export function findZoneByKind(zones: CardZone[], kind: CardZone['kind']): CardZone | undefined {
+  return zones.find((zone) => zone.kind === kind);
+}
+
+export function requireZoneOfKind(zones: CardZone[], kind: CardZone['kind']): CardZone {
+  const zone = findZoneByKind(zones, kind);
+  if (!zone) throw new Error(`No zone of kind '${kind}' exists in this game state`);
+  return zone;
+}
+
 export function moveCard(zones: CardZone[], cardInstanceId: string, toZoneId: string): CardZone[] {
+  // Validate the destination BEFORE detaching the card: an unknown destination
+  // used to silently delete the card instance from the game.
+  if (!zones.some((zone) => zone.id === toZoneId)) {
+    throw new Error(`Destination zone ${toZoneId} not found (cannot move card ${cardInstanceId})`);
+  }
   let moving: CardInstance | undefined;
   const withoutCard = zones.map((zone) => {
     const found = zone.cards.find((c) => c.instanceId === cardInstanceId);
@@ -31,12 +50,17 @@ export function drawTop(
 ): { zones: CardZone[]; drawn: CardInstance[]; rng: RngState } {
   const source = zones.find((z) => z.id === fromZoneId);
   if (!source) throw new Error(`Zone ${fromZoneId} not found`);
+  // Same asymmetry as moveCard had: an unknown destination would remove the
+  // drawn cards from the source and never re-insert them anywhere.
+  if (!zones.some((z) => z.id === toZoneId)) {
+    throw new Error(`Destination zone ${toZoneId} not found (cannot draw into it)`);
+  }
 
   let currentZones = zones;
   let currentRng = rng;
 
   if (source.cards.length < count) {
-    const discardZone = currentZones.find((z) => z.kind === 'discardPile');
+    const discardZone = findZoneByKind(currentZones, 'discardPile');
     if (discardZone && discardZone.cards.length > 0) {
       const shuffled = shuffle(discardZone.cards, currentRng);
       currentRng = shuffled.rng;

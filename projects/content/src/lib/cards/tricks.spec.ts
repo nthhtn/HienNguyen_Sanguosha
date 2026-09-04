@@ -43,6 +43,7 @@ function twoSeatState(seatAHandCardId: string): GameState {
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
     phase: 'Play',
     zones: [
+      { id: 'discardPile', kind: 'discardPile', cards: [] },
       { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [{ instanceId: 'card-1', definitionId: seatAHandCardId, suit: 'spade', rank: 1 }] },
       { id: 'seat-a:equip', kind: 'equip', ownerSeatId: 'seat-a', cards: [] },
       { id: 'seat-b:hand', kind: 'hand', ownerSeatId: 'seat-b', cards: [] },
@@ -60,19 +61,22 @@ function withSeatBHand(state: GameState, cardId: string, instanceId: string): Ga
 }
 
 describe('Duel and Wuxie Kongjie', () => {
-  it('deals 2 damage to the target if they Pass', () => {
+  it('deals 2 damage to the target if they Pass, and the Duel card ends up in the discard pile', () => {
     const state = twoSeatState('duel');
     const opened = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
     const { state: next } = resolve(opened.state, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: 'duel-response-card-1' }, { registry: registry(), mode: stubMode() });
     expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(4);
+    expect(next.zones.find((z) => z.id === 'seat-a:hand')!.cards).toHaveLength(0);
+    expect(next.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId)).toEqual(['card-1']);
   });
 
-  it('is cancelled if the target responds with Sha', () => {
+  it('is cancelled if the target responds with Sha, and both cards end up in the discard pile', () => {
     let state = twoSeatState('duel');
     state = withSeatBHand(state, 'sha', 'sha-1');
     const opened = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
     const { state: next } = resolve(opened.state, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'duel-response-card-1', cardInstanceId: 'sha-1' }, { registry: registry(), mode: stubMode() });
     expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(6);
+    expect(next.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId).sort()).toEqual(['card-1', 'sha-1']);
   });
 
   it('is cancelled if the target responds with Wuxie Kongjie', () => {
@@ -97,6 +101,8 @@ describe('Equipment', () => {
     const { state: next } = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [] }, { registry: registry(), mode: stubMode() });
     expect(next.zones.find((z) => z.id === 'seat-a:hand')!.cards).toHaveLength(0);
     expect(next.zones.find((z) => z.id === 'seat-a:equip')!.cards.map((c) => c.instanceId)).toEqual(['card-1']);
+    // equipment is exempt from discard-after-play
+    expect(next.zones.find((z) => z.id === 'discardPile')!.cards).toHaveLength(0);
   });
 
   it('Green Dragon Blade moves from hand to the equip zone when played', () => {

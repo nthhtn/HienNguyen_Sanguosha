@@ -1,4 +1,4 @@
-import { moveCard, drawTop } from './zones';
+import { moveCard, drawTop, findZoneByKind, requireZoneOfKind } from './zones';
 import { CardZone } from '../domain/types';
 import { createRng } from '../rng/rng';
 
@@ -30,6 +30,53 @@ describe('zones', () => {
     expect(hand.cards.map((c) => c.instanceId)).toEqual(['c1', 'c2']);
     // No reshuffle needed here (draw pile had enough cards), so rng passes through unchanged.
     expect(rng).toEqual(createRng(1));
+  });
+
+  describe('missing-destination handling (never silently drop a card)', () => {
+    it('moveCard throws, and does not remove the card, when toZoneId matches no zone', () => {
+      const zones: CardZone[] = [
+        { id: 'draw', kind: 'drawPile', cards: [card('c1')] },
+        { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] },
+      ];
+      expect(() => moveCard(zones, 'c1', 'discardPile')).toThrow(/Destination zone discardPile not found/);
+      // the input is untouched — the card is still in the draw pile
+      expect(zones.find((z) => z.id === 'draw')!.cards.map((c) => c.instanceId)).toEqual(['c1']);
+    });
+
+    it('moveCard still throws for a card that is in no zone', () => {
+      const zones: CardZone[] = [{ id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] }];
+      expect(() => moveCard(zones, 'ghost', 'seat-a:hand')).toThrow(/not found in any zone/);
+    });
+
+    it('drawTop throws, and does not consume the source, when toZoneId matches no zone', () => {
+      const zones: CardZone[] = [{ id: 'draw', kind: 'drawPile', cards: [card('c1'), card('c2')] }];
+      expect(() => drawTop(zones, 'draw', 'seat-a:hand', 2, createRng(1))).toThrow(
+        /Destination zone seat-a:hand not found/
+      );
+      expect(zones.find((z) => z.id === 'draw')!.cards.map((c) => c.instanceId)).toEqual(['c1', 'c2']);
+    });
+
+    it('drawTop still throws for a missing fromZoneId', () => {
+      const zones: CardZone[] = [{ id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] }];
+      expect(() => drawTop(zones, 'draw', 'seat-a:hand', 1, createRng(1))).toThrow(/Zone draw not found/);
+    });
+  });
+
+  describe('findZoneByKind / requireZoneOfKind', () => {
+    const zones: CardZone[] = [
+      { id: 'the-deck', kind: 'drawPile', cards: [] },
+      { id: 'the-bin', kind: 'discardPile', cards: [] },
+    ];
+
+    it('finds a well-known zone by kind regardless of the id the mode gave it', () => {
+      expect(findZoneByKind(zones, 'discardPile')!.id).toBe('the-bin');
+      expect(requireZoneOfKind(zones, 'drawPile').id).toBe('the-deck');
+    });
+
+    it('findZoneByKind returns undefined and requireZoneOfKind throws when no such zone exists', () => {
+      expect(findZoneByKind(zones, 'judgment')).toBeUndefined();
+      expect(() => requireZoneOfKind(zones, 'judgment')).toThrow(/No zone of kind 'judgment'/);
+    });
   });
 
   describe('drawTop: reshuffle-on-exhaustion', () => {

@@ -1,5 +1,9 @@
 import { checkInvariants } from './invariants';
-import type { GameState } from 'engine';
+import type { CardInstance, GameState } from 'engine';
+
+function card(instanceId: string): CardInstance {
+  return { instanceId, definitionId: 'sha', suit: 'spade', rank: 1 };
+}
 
 function baseState(overrides: Partial<GameState> = {}): GameState {
   return {
@@ -31,12 +35,54 @@ describe('checkInvariants', () => {
   it('flags a pendingResponse pointing at an eliminated seat', () => {
     const state = baseState();
     state.seats[0].eliminated = true;
-    state.pendingResponse = { id: 'r1', respondingSeatId: 'seat-a', allowedActionKinds: ['PassAction'], context: { effect: null } };
+    state.pendingResponse = {
+      id: 'r1',
+      respondingSeatId: 'seat-a',
+      allowedActionKinds: ['PassAction'],
+      context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: 1 } },
+    };
     expect(checkInvariants(state)).toEqual([expect.stringContaining('eliminated seat')]);
   });
 
   it('flags a GameResult that references an unknown seat', () => {
     const state = baseState({ result: { endedAt: 1, winningSeatIds: ['ghost-seat'], losingSeatIds: [] } });
     expect(checkInvariants(state)).toEqual([expect.stringContaining('unknown seat')]);
+  });
+});
+
+describe('checkInvariants: card conservation', () => {
+  it('reports no violations when every card instance appears exactly once', () => {
+    const state = baseState({
+      zones: [
+        { id: 'drawPile', kind: 'drawPile', cards: [card('c1'), card('c2')] },
+        { id: 'discardPile', kind: 'discardPile', cards: [card('c3')] },
+        { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [card('c4')] },
+      ],
+    });
+    expect(checkInvariants(state)).toEqual([]);
+  });
+
+  it('flags a card instance present in two zones at once, naming the duplicate', () => {
+    const state = baseState({
+      zones: [
+        { id: 'drawPile', kind: 'drawPile', cards: [card('c1')] },
+        { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [card('c1')] },
+      ],
+    });
+    const violations = checkInvariants(state);
+    expect(violations).toEqual([expect.stringContaining('c1')]);
+    expect(violations[0]).toContain('more than one zone');
+    expect(violations[0]).toContain('drawPile');
+    expect(violations[0]).toContain('seat-a:hand');
+  });
+
+  it('flags a card instance duplicated inside a single zone, naming the duplicate', () => {
+    const state = baseState({
+      zones: [{ id: 'discardPile', kind: 'discardPile', cards: [card('c7'), card('c7')] }],
+    });
+    const violations = checkInvariants(state);
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toContain('c7');
+    expect(violations[0]).toContain('discardPile');
   });
 });

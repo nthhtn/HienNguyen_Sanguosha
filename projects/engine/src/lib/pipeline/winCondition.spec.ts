@@ -20,7 +20,7 @@ function lastSeatStandingMode(): GameModeDefinition {
   };
 }
 
-function twoSeatState(): GameState {
+function twoSeatState(): { state: GameState; registry: ContentRegistry } {
   const testDamageCard: CardDefinition = {
     id: 'test-lethal-card', name: 'Test Lethal Card', category: 'basic',
     play: (_state, ctx) => [{
@@ -48,6 +48,7 @@ function twoSeatState(): GameState {
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
     phase: 'Play',
     zones: [
+      { id: 'discardPile', kind: 'discardPile', cards: [] },
       { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [{ instanceId: 'c1', definitionId: 'test-lethal-card', suit: 'spade', rank: 1 }] },
       { id: 'seat-a:equip', kind: 'equip', ownerSeatId: 'seat-a', cards: [] },
       { id: 'seat-b:hand', kind: 'hand', ownerSeatId: 'seat-b', cards: [] },
