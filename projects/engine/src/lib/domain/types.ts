@@ -73,6 +73,14 @@ export interface GameEvent {
   kind: string;
 }
 
+export interface Damage {
+  source: Target | null;
+  target: Target;
+  amount: number;
+  nature: 'normal' | 'fire' | 'thunder';
+  cause?: { cardInstanceId?: string; skillId?: string };
+}
+
 export interface GameState {
   seats: Seat[];
   players: Player[];
