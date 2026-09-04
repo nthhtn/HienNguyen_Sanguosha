@@ -1,8 +1,9 @@
 import { GameState, GameEvent } from '../domain/types';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
-import { Action } from './actions';
-import { applyEffect, Effect } from './effects';
+import { Action, isAction } from './actions';
+import { Effect, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
+import { gatherTriggeredSkills } from '../skills/triggers';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -19,7 +20,11 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
     case 'DrawCardsAction': {
       const seat = state.seats.find((s) => s.id === action.seatId);
       if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
-      return applyEffect(state, { kind: 'DrawCardsEffect', seatId: action.seatId, count: action.count });
+      return resolveEffectWithTriggers(
+        state,
+        { kind: 'DrawCardsEffect', seatId: action.seatId, count: action.count },
+        ctx
+      );
     }
     case 'PlayCardAction': {
       const seat = state.seats.find((s) => s.id === action.seatId);
@@ -29,7 +34,6 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
       if (!cardInHand) {
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
-
       for (const target of action.targets) {
         if (target.kind === 'seat') {
           const targetSeat = state.seats.find((s) => s.id === target.seatId);
@@ -38,7 +42,6 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
           }
         }
       }
-
       const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
       const effects = cardDefinition.play(state, {
         seatId: action.seatId,
@@ -49,7 +52,7 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
       let currentState = state;
       let allEvents: GameEvent[] = [];
       for (const effect of effects) {
-        const result = applyEffect(currentState, effect);
+        const result = resolveEffectWithTriggers(currentState, effect, ctx);
         currentState = result.state;
         allEvents = [...allEvents, ...result.events];
       }
@@ -58,4 +61,41 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
     default:
       throw new Error(`Action kind not yet handled by resolve(): ${action.kind}`);
   }
+}
+
+function resolveEffectWithTriggers(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {
+  const beforeTriggers = gatherTriggeredSkills(state, ctx.registry, ctx.mode, `before:${effect.kind}`, effect);
+  let currentEffect: Effect | null = effect;
+  for (const trigger of beforeTriggers) {
+    if (currentEffect === null) break;
+    const outputs = trigger.effect(state, currentEffect) as Effect[];
+    currentEffect = outputs.length > 0 ? outputs[0] : null;
+  }
+  if (currentEffect === null) {
+    return { state, events: [] };
+  }
+
+  const applied = applyEffect(state, currentEffect);
+  let currentState = applied.state;
+  let allEvents: GameEvent[] = [...applied.events];
+
+  for (const event of applied.events) {
+    const afterTriggers = gatherTriggeredSkills(currentState, ctx.registry, ctx.mode, `after:${event.kind}`, event);
+    for (const trigger of afterTriggers) {
+      const followUps = trigger.effect(currentState, event) as Array<Action | Effect>;
+      for (const followUp of followUps) {
+        if (isAction(followUp)) {
+          const result = resolve(currentState, followUp, ctx);
+          currentState = result.state;
+          allEvents = [...allEvents, ...result.events];
+        } else {
+          const result = resolveEffectWithTriggers(currentState, followUp, ctx);
+          currentState = result.state;
+          allEvents = [...allEvents, ...result.events];
+        }
+      }
+    }
+  }
+
+  return { state: currentState, events: allEvents };
 }

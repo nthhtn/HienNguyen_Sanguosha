@@ -7,3 +7,16 @@ export type Action =
   | { kind: 'RespondAction'; seatId: string; pendingResponseId: string; cardInstanceId: string }
   | { kind: 'PassAction'; seatId: string; pendingResponseId: string }
   | { kind: 'EndPhaseAction'; seatId: string };
+
+export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
+  'DrawCardsAction',
+  'PlayCardAction',
+  'RevealGeneralAction',
+  'RespondAction',
+  'PassAction',
+  'EndPhaseAction',
+]);
+
+export function isAction(value: { kind: string }): value is Action {
+  return ACTION_KINDS.has(value.kind as Action['kind']);
+}
