@@ -5,7 +5,8 @@ import { EngineEvent } from './events';
 export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
   | { kind: 'DamageEffect'; damage: Damage }
-  | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse };
+  | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse }
+  | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy' };
 
 export interface ApplyResult {
   state: GameState;
@@ -40,6 +41,20 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     }
     case 'OpenResponseEffect':
       return { state: { ...state, pendingResponse: effect.pendingResponse }, events: [] };
+    case 'RevealGeneralEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      if (seat.generals[effect.slot].revealed) {
+        return { state, events: [] };
+      }
+      const seats = state.seats.map((s) =>
+        s.id === effect.seatId
+          ? { ...s, generals: { ...s.generals, [effect.slot]: { ...s.generals[effect.slot], revealed: true } } }
+          : s
+      );
+      const event: EngineEvent = { kind: 'GeneralRevealedEvent', seatId: effect.seatId, slot: effect.slot };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
     default:
       throw new Error(`Unhandled effect kind: ${(effect as Effect).kind}`);
   }

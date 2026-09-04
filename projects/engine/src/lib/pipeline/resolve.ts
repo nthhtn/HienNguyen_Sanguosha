@@ -17,9 +17,20 @@ export interface ResolveResult {
 }
 
 export function resolve(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
+  if (state.result) {
+    throw new Error('Cannot submit an action after the game has ended');
+  }
+  const result = resolveAction(state, action, ctx);
+  const gameResult = ctx.mode.checkWinCondition(result.state);
+  const finalState = gameResult ? { ...result.state, result: gameResult } : result.state;
+  return { state: finalState, events: result.events };
+}
+
+function resolveAction(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
   if (state.pendingResponse && !state.pendingResponse.allowedActionKinds.includes(action.kind)) {
     throw new Error(`Action ${action.kind} is not legal while a response is pending`);
   }
+
   switch (action.kind) {
     case 'DrawCardsAction': {
       const seat = state.seats.find((s) => s.id === action.seatId);
@@ -30,6 +41,7 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
         ctx
       );
     }
+
     case 'PlayCardAction': {
       const seat = state.seats.find((s) => s.id === action.seatId);
       if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
@@ -62,6 +74,7 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
       }
       return { state: currentState, events: allEvents };
     }
+
     case 'PassAction': {
       const pending = state.pendingResponse;
       if (!pending || pending.id !== action.pendingResponseId) {
@@ -70,6 +83,7 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
       const clearedState: GameState = { ...state, pendingResponse: null };
       return resolveEffectWithTriggers(clearedState, pending.context.effect as Effect, ctx);
     }
+
     case 'RespondAction': {
       const pending = state.pendingResponse;
       if (!pending || pending.id !== action.pendingResponseId) {
@@ -105,6 +119,7 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
       }
       return { state: currentState, events: allEvents };
     }
+
     case 'EndPhaseAction': {
       const seat = state.seats.find((s) => s.id === action.seatId);
       if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
@@ -118,8 +133,19 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
           : { kind: 'PhaseChangedEvent' as const, seatId: action.seatId, phase };
       return { state: { ...state, phase, turn, log: [...state.log, event] }, events: [event] };
     }
+
+    case 'RevealGeneralAction': {
+      const seat = state.seats.find((s) => s.id === action.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
+      return resolveEffectWithTriggers(
+        state,
+        { kind: 'RevealGeneralEffect', seatId: action.seatId, slot: action.slot },
+        ctx
+      );
+    }
+
     default:
-      throw new Error(`Action kind not yet handled by resolve(): ${action.kind}`);
+      throw new Error(`Action kind not yet handled by resolve(): ${(action as Action).kind}`);
   }
 }
 
@@ -145,7 +171,7 @@ function resolveEffectWithTriggers(state: GameState, effect: Effect, ctx: Engine
       const followUps = trigger.effect(currentState, event) as Array<Action | Effect>;
       for (const followUp of followUps) {
         if (isAction(followUp)) {
-          const result = resolve(currentState, followUp, ctx);
+          const result = resolveAction(currentState, followUp, ctx);
           currentState = result.state;
           allEvents = [...allEvents, ...result.events];
         } else {

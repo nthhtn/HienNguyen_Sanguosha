@@ -23,4 +23,10 @@ export interface TurnAdvancedEvent {
   turnNumber: number;
 }
 
-export type EngineEvent = CardsDrawnEvent | DamageDealtEvent | PhaseChangedEvent | TurnAdvancedEvent;
+export interface GeneralRevealedEvent {
+  kind: 'GeneralRevealedEvent';
+  seatId: string;
+  slot: 'main' | 'deputy';
+}
+
+export type EngineEvent = CardsDrawnEvent | DamageDealtEvent | PhaseChangedEvent | TurnAdvancedEvent | GeneralRevealedEvent;
