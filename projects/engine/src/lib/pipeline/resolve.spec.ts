@@ -1,4 +1,4 @@
-import { resolve } from './resolve';
+import { resolve, MAX_TRIGGER_DEPTH } from './resolve';
 import { createRng } from '../rng/rng';
 import { GameState } from '../domain/types';
 import { ContentRegistry, GameModeDefinition, CardDefinition, GeneralDefinition } from '../registry/types';
@@ -440,6 +440,174 @@ describe('resolve: Response Window pause and resume', () => {
     expect(() =>
       resolve(opened.state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry: registryWithShaAndShield(), mode: stubMode() })
     ).toThrow(/not legal while a response is pending/);
+  });
+
+  it('rejects a PassAction whose pendingResponseId does not match the open response', () => {
+    const state = stateWithShaInHandAndShieldForB();
+    const opened = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+      { registry: registryWithShaAndShield(), mode: stubMode() }
+    );
+    expect(opened.state.pendingResponse!.id).toBe('resp-1');
+    expect(() =>
+      resolve(
+        opened.state,
+        { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: 'stale-resp' },
+        { registry: registryWithShaAndShield(), mode: stubMode() }
+      )
+    ).toThrow(/No matching pending response: stale-resp/);
+  });
+
+  it('rejects a RespondAction whose pendingResponseId does not match the open response', () => {
+    const state = stateWithShaInHandAndShieldForB();
+    const opened = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+      { registry: registryWithShaAndShield(), mode: stubMode() }
+    );
+    expect(() =>
+      resolve(
+        opened.state,
+        { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'stale-resp', cardInstanceId: 'shield-1' },
+        { registry: registryWithShaAndShield(), mode: stubMode() }
+      )
+    ).toThrow(/No matching pending response: stale-resp/);
+  });
+
+  it('rejects a RespondAction from a seat that is not the responder', () => {
+    const state = stateWithShaInHandAndShieldForB();
+    const opened = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+      { registry: registryWithShaAndShield(), mode: stubMode() }
+    );
+    expect(() =>
+      resolve(
+        opened.state,
+        { kind: 'RespondAction', seatId: 'seat-a', pendingResponseId: 'resp-1', cardInstanceId: 'shield-1' },
+        { registry: registryWithShaAndShield(), mode: stubMode() }
+      )
+    ).toThrow(/is not the responder for resp-1/);
+  });
+});
+
+describe('resolve: trigger recursion depth guard', () => {
+  // Two fixture triggers that each produce an effect the other reacts to:
+  // HealEvent -> DamageEffect -> DamageDealtEvent -> HealEffect -> ...
+  function registryWithCyclicTriggers(): ContentRegistry {
+    const healCard: CardDefinition = {
+      id: 'test-heal-card',
+      name: 'Test Heal Card',
+      category: 'basic',
+      play: (_state, ctx) => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: ctx.seatId }, amount: 1 }],
+    };
+    const healToDamageGeneral: GeneralDefinition = {
+      id: 'heal-to-damage-general',
+      kingdom: 'Wei',
+      maxHp: 4,
+      skills: [
+        {
+          id: 'heal-to-damage',
+          activation: 'auto',
+          triggers: [
+            {
+              point: 'after:HealEvent',
+              condition: () => true,
+              effect: () => [
+                {
+                  kind: 'DamageEffect',
+                  damage: {
+                    source: null,
+                    target: { kind: 'seat', seatId: 'seat-a' },
+                    amount: 0,
+                    nature: 'normal',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const damageToHealGeneral: GeneralDefinition = {
+      id: 'damage-to-heal-general',
+      kingdom: 'Shu',
+      maxHp: 3,
+      skills: [
+        {
+          id: 'damage-to-heal',
+          activation: 'auto',
+          triggers: [
+            {
+              point: 'after:DamageDealtEvent',
+              condition: () => true,
+              effect: () => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: 0 }],
+            },
+          ],
+        },
+      ],
+    };
+    return {
+      cards: new Map([['test-heal-card', healCard]]),
+      generals: new Map([
+        ['heal-to-damage-general', healToDamageGeneral],
+        ['damage-to-heal-general', damageToHealGeneral],
+      ]),
+    };
+  }
+
+  it('throws a descriptive error instead of exhausting the call stack on a trigger cycle', () => {
+    let state = baseState();
+    state = {
+      ...state,
+      seats: state.seats.map((seat) =>
+        seat.id === 'seat-a'
+          ? {
+              ...seat,
+              generals: {
+                main: { generalDefinitionId: 'heal-to-damage-general', revealed: false },
+                deputy: { generalDefinitionId: 'damage-to-heal-general', revealed: false },
+              },
+            }
+          : seat
+      ),
+      zones: state.zones.map((z) =>
+        z.id === 'seat-a:hand'
+          ? { ...z, cards: [{ instanceId: 'heal-1', definitionId: 'test-heal-card', suit: 'heart' as const, rank: 4 }] }
+          : z
+      ),
+    };
+
+    let thrown: unknown;
+    try {
+      resolve(
+        state,
+        { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'heal-1', targets: [] },
+        { registry: registryWithCyclicTriggers(), mode: stubMode() }
+      );
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(Error);
+    const message = (thrown as Error).message;
+    expect(message).toMatch(/Trigger recursion limit exceeded/);
+    expect(message).toMatch(new RegExp(String(MAX_TRIGGER_DEPTH)));
+    expect(message).toMatch(/DamageEffect|HealEffect/);
+    expect(message).toMatch(/trigger cycle/);
+  });
+
+  it('does not fire for a legitimate multi-level chain', () => {
+    // damage -> after:DamageDealtEvent -> DrawCardsEffect is only two levels
+    // deep, comfortably under the limit.
+    const state = withTestCardInSeatAHand(baseState());
+    expect(() =>
+      resolve(
+        state,
+        { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'test-card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+        { registry: registryWithTestDamageCard(), mode: stubMode() }
+      )
+    ).not.toThrow();
   });
 });
 
