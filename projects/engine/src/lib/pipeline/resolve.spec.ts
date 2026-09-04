@@ -55,6 +55,7 @@ function baseState(): GameState {
       { id: 'p2', seatId: 'seat-b', kind: 'bot' },
     ],
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
+    phase: 'Play',
     zones: [
       {
         id: 'drawPile',
@@ -419,5 +420,25 @@ describe('resolve: Response Window pause and resume', () => {
     expect(() =>
       resolve(opened.state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry: registryWithShaAndShield(), mode: stubMode() })
     ).toThrow(/not legal while a response is pending/);
+  });
+});
+
+describe('resolve: EndPhaseAction', () => {
+  it('advances the phase and logs a PhaseChangedEvent', () => {
+    const state = { ...baseState(), phase: 'Play' as const };
+    const { state: next, events } = resolve(
+      state,
+      { kind: 'EndPhaseAction', seatId: 'seat-a' },
+      { registry: emptyRegistry(), mode: stubMode() }
+    );
+    expect(next.phase).toBe('Discard');
+    expect(events).toEqual([{ kind: 'PhaseChangedEvent', seatId: 'seat-a', phase: 'Discard' }]);
+  });
+
+  it('rejects EndPhaseAction from a seat that is not the current turn owner', () => {
+    const state = { ...baseState(), phase: 'Play' as const };
+    expect(() =>
+      resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-b' }, { registry: emptyRegistry(), mode: stubMode() })
+    ).toThrow(/not seat seat-b's turn/);
   });
 });

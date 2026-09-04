@@ -86,6 +86,7 @@ export interface GameState {
   seats: Seat[];
   players: Player[];
   turn: Turn;
+  phase: Phase;
   zones: CardZone[];
   pendingResponse: PendingResponse | null;
   log: GameEvent[];

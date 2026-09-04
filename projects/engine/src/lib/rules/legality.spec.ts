@@ -26,6 +26,7 @@ function state(overrides: Partial<GameState> = {}): GameState {
     ],
     players: [],
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
+    phase: 'Play',
     zones: [
       { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [{ instanceId: 'c1', definitionId: 'sha', suit: 'spade', rank: 1 }] },
       { id: 'seat-a:equip', kind: 'equip', ownerSeatId: 'seat-a', cards: [] },

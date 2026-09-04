@@ -23,6 +23,7 @@ function stateWithGenerals(mainId: string, deputyId: string): GameState {
     ],
     players: [{ id: 'p1', seatId: 'seat-a', kind: 'bot' }],
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
+    phase: 'Play',
     zones: [],
     pendingResponse: null,
     log: [],

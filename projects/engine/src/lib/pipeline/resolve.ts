@@ -4,6 +4,7 @@ import { Action, isAction } from './actions';
 import { Effect, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
+import { advancePhaseOrTurn } from '../rules/phaseSequence';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -103,6 +104,19 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
         allEvents = [...allEvents, ...result.events];
       }
       return { state: currentState, events: allEvents };
+    }
+    case 'EndPhaseAction': {
+      const seat = state.seats.find((s) => s.id === action.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
+      if (state.turn.ownerSeatId !== action.seatId) {
+        throw new Error(`It is not seat ${action.seatId}'s turn`);
+      }
+      const { phase, turn } = advancePhaseOrTurn(state);
+      const event =
+        turn.turnNumber !== state.turn.turnNumber
+          ? { kind: 'TurnAdvancedEvent' as const, seatId: turn.ownerSeatId, turnNumber: turn.turnNumber }
+          : { kind: 'PhaseChangedEvent' as const, seatId: action.seatId, phase };
+      return { state: { ...state, phase, turn, log: [...state.log, event] }, events: [event] };
     }
     default:
       throw new Error(`Action kind not yet handled by resolve(): ${action.kind}`);

@@ -10,6 +10,7 @@ function makeState(): GameState {
     seats: [seatA, seatB],
     players: [createPlayer('p1', 'seat-a', 'human'), createPlayer('p2', 'seat-b', 'bot')],
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
+    phase: 'Play',
     zones: [],
     pendingResponse: null,
     log: [],
