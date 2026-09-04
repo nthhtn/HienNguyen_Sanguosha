@@ -21,13 +21,13 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     case 'DrawCardsEffect': {
       const seat = state.seats.find((s) => s.id === effect.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
-      const { zones, drawn } = drawTop(state.zones, 'drawPile', seat.hand.zoneId, effect.count);
+      const { zones, drawn, rng } = drawTop(state.zones, 'drawPile', seat.hand.zoneId, effect.count, state.rng);
       const event: EngineEvent = {
         kind: 'CardsDrawnEvent',
         seatId: seat.id,
         cardInstanceIds: drawn.map((c) => c.instanceId),
       };
-      return { state: { ...state, zones, log: [...state.log, event] }, events: [event] };
+      return { state: { ...state, zones, rng, log: [...state.log, event] }, events: [event] };
     }
     case 'DamageEffect': {
       if (effect.damage.target.kind !== 'seat') {

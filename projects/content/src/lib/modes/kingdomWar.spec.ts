@@ -66,3 +66,57 @@ describe('Kingdom War forced reveal and elimination', () => {
     expect(next.result).toEqual({ endedAt: 1, winningSeatIds: ['seat-a'], losingSeatIds: ['seat-b'] });
   });
 });
+
+describe('Kingdom War per-turn draw', () => {
+  it('draws 2 cards for whichever seat enters the Draw phase', () => {
+    const registry = buildContentRegistry();
+    // seat-a (index 0) is assigned dong-zhuo/huang-yueying here — neither is
+    // zhuge-liang — so this isolates the mode-level draw from the general-skill
+    // bonus draw (see the Zhuge Liang case below).
+    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42);
+    const handBefore = state.zones.find((z) => z.id === state.seats[0].hand.zoneId)!;
+    expect(handBefore.cards).toHaveLength(4);
+    const originalCardIds = new Set(handBefore.cards.map((c) => c.instanceId));
+
+    const { state: next } = resolve(
+      state,
+      { kind: 'EndPhaseAction', seatId: 'seat-a' },
+      { registry, mode: kingdomWarMode }
+    );
+
+    expect(next.phase).toBe('Draw');
+    const handAfter = next.zones.find((z) => z.id === state.seats[0].hand.zoneId)!;
+    expect(handAfter.cards).toHaveLength(6);
+    const newCardIds = handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id));
+    expect(newCardIds).toHaveLength(2);
+  });
+
+  it('draws 3 cards (2 base + 1 Zhuge Liang bonus) when a Zhuge Liang-holding seat enters Draw', () => {
+    const registry = buildContentRegistry();
+    // With 3 seats, seat index 2 ("seat-c") is assigned zhuge-liang as deputy
+    // (and, uniquely among this content registry's 6 defined generals, no
+    // other seat also gets zhuge-liang at this seat count — see kingdomWar's
+    // round-robin general assignment: with 6 generals total, seat counts of
+    // 6+ start assigning the same general to more than one seat, which would
+    // double-fire this general's own trigger and make the assertion below
+    // about "the" Zhuge Liang bonus ambiguous).
+    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42);
+    const seatC = created.seats.find((s) => s.id === 'seat-c')!;
+    expect(seatC.generals.deputy.generalDefinitionId).toBe('zhuge-liang');
+    const state: GameState = { ...created, phase: 'Judgment', turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] } };
+    const handBefore = state.zones.find((z) => z.id === seatC.hand.zoneId)!;
+    expect(handBefore.cards).toHaveLength(4);
+    const originalCardIds = new Set(handBefore.cards.map((c) => c.instanceId));
+
+    const { state: next } = resolve(
+      state,
+      { kind: 'EndPhaseAction', seatId: 'seat-c' },
+      { registry, mode: kingdomWarMode }
+    );
+
+    expect(next.phase).toBe('Draw');
+    const handAfter = next.zones.find((z) => z.id === seatC.hand.zoneId)!;
+    const newCardIds = handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id));
+    expect(newCardIds).toHaveLength(3);
+  });
+});

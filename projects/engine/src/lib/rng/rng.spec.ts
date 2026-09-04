@@ -1,4 +1,4 @@
-import { createRng, nextFloat, nextInt } from './rng';
+import { createRng, nextFloat, nextInt, shuffle } from './rng';
 
 describe('rng', () => {
   it('is deterministic for a given seed', () => {
@@ -26,5 +26,32 @@ describe('rng', () => {
       expect(step.value).toBeLessThan(6);
       rng = step.rng;
     }
+  });
+});
+
+describe('shuffle', () => {
+  it('returns every input item exactly once', () => {
+    const { items } = shuffle(['a', 'b', 'c', 'd', 'e'], createRng(1));
+    expect(items.slice().sort()).toEqual(['a', 'b', 'c', 'd', 'e']);
+  });
+
+  it('is deterministic for a given seed and differs for a different seed', () => {
+    const a = shuffle(['a', 'b', 'c', 'd', 'e', 'f'], createRng(1)).items;
+    const b = shuffle(['a', 'b', 'c', 'd', 'e', 'f'], createRng(1)).items;
+    const c = shuffle(['a', 'b', 'c', 'd', 'e', 'f'], createRng(2)).items;
+    expect(a).toEqual(b);
+    expect(a).not.toEqual(c);
+  });
+
+  it('returns an updated rng distinct from the input when more than one item is shuffled', () => {
+    const rng = createRng(1);
+    const { rng: after } = shuffle(['a', 'b'], rng);
+    expect(after).not.toEqual(rng);
+  });
+
+  it('leaves a 0- or 1-item array unshuffled and returns the rng unchanged', () => {
+    const rng = createRng(1);
+    expect(shuffle([], rng)).toEqual({ items: [], rng });
+    expect(shuffle(['solo'], rng)).toEqual({ items: ['solo'], rng });
   });
 });

@@ -20,3 +20,19 @@ export function nextInt(rng: RngState, maxExclusive: number): { value: number; r
   const step = nextFloat(rng);
   return { value: Math.floor(step.value * maxExclusive), rng: step.rng };
 }
+
+// Deterministic in-place-equivalent Fisher-Yates shuffle. This is the single
+// seeded-shuffle mechanism shared by every part of the engine that needs to
+// randomize an ordered list of items (initial deck build, discard-pile
+// reshuffle, etc.) — do not reimplement this algorithm elsewhere.
+export function shuffle<T>(items: readonly T[], rng: RngState): { items: T[]; rng: RngState } {
+  const result = items.slice();
+  let currentRng = rng;
+  for (let i = result.length - 1; i > 0; i--) {
+    const step = nextInt(currentRng, i + 1);
+    currentRng = step.rng;
+    const j = step.value;
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return { items: result, rng: currentRng };
+}

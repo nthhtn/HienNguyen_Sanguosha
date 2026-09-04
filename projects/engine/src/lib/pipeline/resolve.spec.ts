@@ -65,6 +65,7 @@ function baseState(): GameState {
           { instanceId: 'c2', definitionId: 'sha', suit: 'heart', rank: 2 },
         ],
       },
+      { id: 'discardPile', kind: 'discardPile', cards: [] },
       { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] },
       { id: 'seat-a:equip', kind: 'equip', ownerSeatId: 'seat-a', cards: [] },
       { id: 'seat-b:hand', kind: 'hand', ownerSeatId: 'seat-b', cards: [] },
@@ -160,6 +161,8 @@ describe('resolve: PlayCardAction with Target Selection and Damage', () => {
           cause: { cardInstanceId: 'test-card-1' },
         },
       },
+      // non-equipment cards are discarded after play() resolves (Task 21b)
+      { kind: 'CardMovedEvent', cardInstanceId: 'test-card-1', toZoneId: 'discardPile' },
     ]);
   });
 
@@ -485,6 +488,101 @@ describe('resolve: Heal and MoveCard effects', () => {
     );
     const equip = next.zones.find((z) => z.id === 'seat-a:equip')!;
     expect(equip.cards.map((c) => c.instanceId)).toEqual(['move-1']);
+  });
+});
+
+describe('resolve: discard-after-play', () => {
+  const trivialCard: CardDefinition = {
+    id: 'test-trivial-card',
+    name: 'Test Trivial Card',
+    category: 'basic',
+    play: () => [],
+  };
+  const equipmentCard: CardDefinition = {
+    id: 'test-equipment-card',
+    name: 'Test Equipment Card',
+    category: 'equipment',
+    play: (_state, ctx) => [
+      { kind: 'MoveCardEffect', cardInstanceId: ctx.cardInstanceId, toZoneId: `${ctx.seatId}:equip` },
+    ],
+  };
+  function registry(): ContentRegistry {
+    return {
+      cards: new Map([
+        ['test-trivial-card', trivialCard],
+        ['test-equipment-card', equipmentCard],
+      ]),
+      generals: new Map(),
+    };
+  }
+
+  it('moves a non-equipment card to discardPile after PlayCardAction resolves', () => {
+    let state = baseState();
+    state = {
+      ...state,
+      zones: state.zones.map((z) =>
+        z.id === 'seat-a:hand'
+          ? { ...z, cards: [{ instanceId: 'trivial-1', definitionId: 'test-trivial-card', suit: 'spade' as const, rank: 3 }] }
+          : z
+      ),
+    };
+    const { state: next } = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'trivial-1', targets: [] },
+      { registry: registry(), mode: stubMode() }
+    );
+    const hand = next.zones.find((z) => z.id === 'seat-a:hand')!;
+    const discard = next.zones.find((z) => z.id === 'discardPile')!;
+    expect(hand.cards.map((c) => c.instanceId)).not.toContain('trivial-1');
+    expect(discard.cards.map((c) => c.instanceId)).toContain('trivial-1');
+  });
+
+  it('does NOT discard an equipment card after PlayCardAction — it stays in the equip zone', () => {
+    let state = baseState();
+    state = {
+      ...state,
+      zones: state.zones.map((z) =>
+        z.id === 'seat-a:hand'
+          ? { ...z, cards: [{ instanceId: 'equip-1', definitionId: 'test-equipment-card', suit: 'club' as const, rank: 4 }] }
+          : z
+      ),
+    };
+    const { state: next } = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'equip-1', targets: [] },
+      { registry: registry(), mode: stubMode() }
+    );
+    const equip = next.zones.find((z) => z.id === 'seat-a:equip')!;
+    const discard = next.zones.find((z) => z.id === 'discardPile')!;
+    expect(equip.cards.map((c) => c.instanceId)).toContain('equip-1');
+    expect(discard.cards.map((c) => c.instanceId)).not.toContain('equip-1');
+  });
+
+  it('moves a non-equipment card to discardPile after RespondAction resolves', () => {
+    let state = baseState();
+    state = {
+      ...state,
+      pendingResponse: {
+        id: 'resp-discard-1',
+        respondingSeatId: 'seat-b',
+        allowedActionKinds: ['RespondAction', 'PassAction'],
+        context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-b' }, amount: 0 } },
+      },
+      zones: state.zones.map((z) =>
+        z.id === 'seat-b:hand'
+          ? { ...z, cards: [{ instanceId: 'trivial-2', definitionId: 'test-trivial-card', suit: 'heart' as const, rank: 5 }] }
+          : z
+      ),
+    };
+    const { state: next } = resolve(
+      state,
+      { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'resp-discard-1', cardInstanceId: 'trivial-2' },
+      { registry: registry(), mode: stubMode() }
+    );
+    const hand = next.zones.find((z) => z.id === 'seat-b:hand')!;
+    const discard = next.zones.find((z) => z.id === 'discardPile')!;
+    expect(hand.cards.map((c) => c.instanceId)).not.toContain('trivial-2');
+    expect(discard.cards.map((c) => c.instanceId)).toContain('trivial-2');
   });
 });
 

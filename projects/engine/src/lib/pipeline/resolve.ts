@@ -1,5 +1,5 @@
-import { GameState, GameEvent } from '../domain/types';
-import { ContentRegistry, GameModeDefinition } from '../registry/types';
+import { GameState, GameEvent, Seat } from '../domain/types';
+import { ContentRegistry, GameModeDefinition, CardDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
 import { Effect, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
@@ -72,6 +72,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         currentState = result.state;
         allEvents = [...allEvents, ...result.events];
       }
+      const discarded = discardAfterPlay(currentState, seat, cardDefinition, action.cardInstanceId, ctx);
+      currentState = discarded.state;
+      allEvents = [...allEvents, ...discarded.events];
       return { state: currentState, events: allEvents };
     }
 
@@ -117,6 +120,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         currentState = result.state;
         allEvents = [...allEvents, ...result.events];
       }
+      const discarded = discardAfterPlay(currentState, seat, cardDefinition, action.cardInstanceId, ctx);
+      currentState = discarded.state;
+      allEvents = [...allEvents, ...discarded.events];
       return { state: currentState, events: allEvents };
     }
 
@@ -168,6 +174,28 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
     default:
       throw new Error(`Action kind not yet handled by resolve(): ${(action as Action).kind}`);
   }
+}
+
+// Generic post-play discard: any non-equipment card still sitting in the acting
+// seat's hand once its play() effects have finished resolving is moved to the
+// discard pile. Equipment cards are exempt — their own play() already relocates
+// them to the seat's equip zone, where they must stay.
+function discardAfterPlay(
+  state: GameState,
+  seat: Seat,
+  cardDefinition: CardDefinition,
+  cardInstanceId: string,
+  ctx: EngineContext
+): ResolveResult {
+  if (cardDefinition.category === 'equipment') {
+    return { state, events: [] };
+  }
+  const handZone = state.zones.find((z) => z.id === seat.hand.zoneId);
+  const stillInHand = !!handZone?.cards.some((c) => c.instanceId === cardInstanceId);
+  if (!stillInHand) {
+    return { state, events: [] };
+  }
+  return resolveEffectWithTriggers(state, { kind: 'MoveCardEffect', cardInstanceId, toZoneId: 'discardPile' }, ctx);
 }
 
 function resolveEffectWithTriggers(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {

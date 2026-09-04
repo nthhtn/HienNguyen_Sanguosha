@@ -1,4 +1,13 @@
-import type { GameModeDefinition, GameState, ContentRegistry, Kingdom, DamageDealtEvent, Target, CardZone } from 'engine';
+import type {
+  GameModeDefinition,
+  GameState,
+  ContentRegistry,
+  Kingdom,
+  DamageDealtEvent,
+  PhaseChangedEvent,
+  Target,
+  CardZone,
+} from 'engine';
 import { buildDeck, drawTop } from 'engine';
 
 const KINGDOM_ORDER: Kingdom[] = ['Wei', 'Shu', 'Wu', 'Qun'];
@@ -55,9 +64,11 @@ export const kingdomWarMode: GameModeDefinition = {
         { id: s.equipped.zoneId, kind: 'equip' as const, ownerSeatId: s.id, cards: [] },
       ]),
     ];
+    let currentRng = afterShuffle;
     for (const s of seats) {
-      const drawResult = drawTop(zones, 'drawPile', s.hand.zoneId, 4);
+      const drawResult = drawTop(zones, 'drawPile', s.hand.zoneId, 4, currentRng);
       zones = drawResult.zones;
+      currentRng = drawResult.rng;
     }
 
     const state: GameState = {
@@ -68,10 +79,10 @@ export const kingdomWarMode: GameModeDefinition = {
       zones,
       pendingResponse: null,
       log: [],
-      rng: afterShuffle,
+      rng: currentRng,
       result: null,
     };
-    return { state, rng: afterShuffle };
+    return { state, rng: currentRng };
   },
 
   checkWinCondition: (state) => {
@@ -94,6 +105,17 @@ export const kingdomWarMode: GameModeDefinition = {
   },
 
   triggers: [
+    {
+      point: 'after:PhaseChangedEvent',
+      condition: (_state, subject) => {
+        const event = subject as PhaseChangedEvent;
+        return event.phase === 'Draw';
+      },
+      effect: (_state, subject) => {
+        const event = subject as PhaseChangedEvent;
+        return [{ kind: 'DrawCardsEffect', seatId: event.seatId, count: 2 }];
+      },
+    },
     {
       point: 'after:DamageDealtEvent',
       condition: (state, subject) => {
