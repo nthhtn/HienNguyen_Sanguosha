@@ -37,7 +37,7 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const seat = state.seats.find((s) => s.id === seatId);
       if (!seat) throw new Error(`Unknown seat: ${seatId}`);
       const seats = state.seats.map((s) =>
-        s.id === seatId ? { ...s, combinedHp: s.combinedHp - effect.damage.amount } : s
+        s.id === seatId ? { ...s, combinedHp: Math.max(0, s.combinedHp - effect.damage.amount) } : s
       );
       const event: EngineEvent = { kind: 'DamageDealtEvent', damage: effect.damage };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };

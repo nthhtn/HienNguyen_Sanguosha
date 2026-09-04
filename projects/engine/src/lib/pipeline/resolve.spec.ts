@@ -163,6 +163,23 @@ describe('resolve: PlayCardAction with Target Selection and Damage', () => {
     ]);
   });
 
+  it('clamps combinedHp at 0 rather than going negative on overkill damage', () => {
+    const state = withTestCardInSeatAHand(baseState());
+    state.seats[1].combinedHp = 1; // less than the 2 damage the test card deals
+    const { state: next } = resolve(
+      state,
+      {
+        kind: 'PlayCardAction',
+        seatId: 'seat-a',
+        cardInstanceId: 'test-card-1',
+        targets: [{ kind: 'seat', seatId: 'seat-b' }],
+      },
+      { registry: registryWithTestDamageCard(), mode: stubMode() }
+    );
+    const seatB = next.seats.find((s) => s.id === 'seat-b')!;
+    expect(seatB.combinedHp).toBe(0);
+  });
+
   it('rejects an illegal target (eliminated seat) without mutating state', () => {
     const state = withTestCardInSeatAHand(baseState());
     state.seats[1].eliminated = true;
