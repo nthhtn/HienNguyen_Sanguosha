@@ -1,4 +1,4 @@
-import { Damage, Phase } from '../domain/types';
+import { Damage, Phase, Target } from '../domain/types';
 
 export interface CardsDrawnEvent {
   kind: 'CardsDrawnEvent';
@@ -29,4 +29,23 @@ export interface GeneralRevealedEvent {
   slot: 'main' | 'deputy';
 }
 
-export type EngineEvent = CardsDrawnEvent | DamageDealtEvent | PhaseChangedEvent | TurnAdvancedEvent | GeneralRevealedEvent;
+export interface HealEvent {
+  kind: 'HealEvent';
+  target: Target;
+  amount: number;
+}
+
+export interface CardMovedEvent {
+  kind: 'CardMovedEvent';
+  cardInstanceId: string;
+  toZoneId: string;
+}
+
+export type EngineEvent =
+  | CardsDrawnEvent
+  | DamageDealtEvent
+  | PhaseChangedEvent
+  | TurnAdvancedEvent
+  | GeneralRevealedEvent
+  | HealEvent
+  | CardMovedEvent;

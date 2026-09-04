@@ -423,6 +423,54 @@ describe('resolve: Response Window pause and resume', () => {
   });
 });
 
+describe('resolve: Heal and MoveCard effects', () => {
+  const healPlayCard: CardDefinition = {
+    id: 'test-heal-card', name: 'Test Heal Card', category: 'basic',
+    play: (_state, ctx) => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: ctx.seatId }, amount: 3 }],
+  };
+  const moveCard: CardDefinition = {
+    id: 'test-move-card', name: 'Test Move Card', category: 'equipment',
+    play: (_state, ctx) => [{ kind: 'MoveCardEffect', cardInstanceId: ctx.cardInstanceId, toZoneId: `${ctx.seatId}:equip` }],
+  };
+  function registry(): ContentRegistry {
+    return { cards: new Map([['test-heal-card', healPlayCard], ['test-move-card', moveCard]]), generals: new Map() };
+  }
+
+  it('HealEffect increases combinedHp but never above maxCombinedHp', () => {
+    let state = withTestCardInSeatAHand(baseState());
+    state = {
+      ...state,
+      seats: state.seats.map((s) => (s.id === 'seat-a' ? { ...s, combinedHp: 5 } : s)), // maxCombinedHp is 7
+      zones: state.zones.map((z) =>
+        z.id === 'seat-a:hand' ? { ...z, cards: [{ instanceId: 'heal-1', definitionId: 'test-heal-card', suit: 'spade' as const, rank: 1 }] } : z
+      ),
+    };
+    const { state: next } = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'heal-1', targets: [] },
+      { registry: registry(), mode: stubMode() }
+    );
+    expect(next.seats.find((s) => s.id === 'seat-a')!.combinedHp).toBe(7); // capped at max, not 8
+  });
+
+  it('MoveCardEffect relocates the played card into the given zone', () => {
+    let state = withTestCardInSeatAHand(baseState());
+    state = {
+      ...state,
+      zones: state.zones.map((z) =>
+        z.id === 'seat-a:hand' ? { ...z, cards: [{ instanceId: 'move-1', definitionId: 'test-move-card', suit: 'club' as const, rank: 1 }] } : z
+      ),
+    };
+    const { state: next } = resolve(
+      state,
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'move-1', targets: [] },
+      { registry: registry(), mode: stubMode() }
+    );
+    const equip = next.zones.find((z) => z.id === 'seat-a:equip')!;
+    expect(equip.cards.map((c) => c.instanceId)).toEqual(['move-1']);
+  });
+});
+
 describe('resolve: EndPhaseAction', () => {
   it('advances the phase and logs a PhaseChangedEvent', () => {
     const state = { ...baseState(), phase: 'Play' as const };
