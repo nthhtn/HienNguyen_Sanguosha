@@ -1,10 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc/sim",
-    "rootDir": ".",
-    "types": ["node", "jest"],
-    "skipLibCheck": true
+    "types": ["node", "jest"]
   },
   "include": ["src/**/*.ts"]
 }
