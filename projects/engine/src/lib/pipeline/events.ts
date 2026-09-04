@@ -41,6 +41,11 @@ export interface CardMovedEvent {
   toZoneId: string;
 }
 
+export interface SeatEliminatedEvent {
+  kind: 'SeatEliminatedEvent';
+  seatId: string;
+}
+
 export type EngineEvent =
   | CardsDrawnEvent
   | DamageDealtEvent
@@ -48,4 +53,5 @@ export type EngineEvent =
   | TurnAdvancedEvent
   | GeneralRevealedEvent
   | HealEvent
-  | CardMovedEvent;
+  | CardMovedEvent
+  | SeatEliminatedEvent;

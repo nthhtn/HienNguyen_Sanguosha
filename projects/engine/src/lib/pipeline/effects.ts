@@ -8,7 +8,8 @@ export type Effect =
   | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse }
   | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy' }
   | { kind: 'HealEffect'; target: Target; amount: number }
-  | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string };
+  | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string }
+  | { kind: 'EliminateSeatEffect'; seatId: string };
 
 export interface ApplyResult {
   state: GameState;
@@ -70,6 +71,14 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const zones = moveCard(state.zones, effect.cardInstanceId, effect.toZoneId);
       const event: EngineEvent = { kind: 'CardMovedEvent', cardInstanceId: effect.cardInstanceId, toZoneId: effect.toZoneId };
       return { state: { ...state, zones, log: [...state.log, event] }, events: [event] };
+    }
+    case 'EliminateSeatEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      if (seat.eliminated) return { state, events: [] };
+      const seats = state.seats.map((s) => (s.id === effect.seatId ? { ...s, eliminated: true } : s));
+      const event: EngineEvent = { kind: 'SeatEliminatedEvent', seatId: effect.seatId };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     default:
       throw new Error(`Unhandled effect kind: ${(effect as Effect).kind}`);
