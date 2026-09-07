@@ -37,4 +37,20 @@ describe('GameOver', () => {
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Draw');
   });
+
+  it('renders the winning seat(s) when there is a lone survivor with no shared kingdom', () => {
+    // This is the case that actually occurs in real play: checkWinCondition's
+    // alive.length === 1 branch sets winningSeatIds but never winningKingdom.
+    const fixture = TestBed.createComponent(GameOver);
+    fixture.componentRef.setInput('result', {
+      endedAt: 30,
+      winningSeatIds: ['seat-0'],
+      losingSeatIds: ['seat-1', 'seat-2', 'seat-3'],
+    } satisfies GameResult);
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent!;
+    expect(text).toContain('seat-0 wins!');
+    expect(text).not.toContain('Draw');
+  });
 });

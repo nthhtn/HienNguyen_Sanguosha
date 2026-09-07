@@ -9,6 +9,8 @@ import { kingdomDisplayName } from '../labels';
       <h2>Game over</h2>
       @if (result().winningKingdom) {
         <p>{{ kingdomDisplayName(result().winningKingdom!) }} wins!</p>
+      } @else if (result().winningSeatIds.length > 0) {
+        <p>{{ result().winningSeatIds.join(', ') }} wins!</p>
       } @else {
         <p>Draw — no survivors.</p>
       }
