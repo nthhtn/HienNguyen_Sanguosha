@@ -62,12 +62,21 @@ Explicitly out of scope (deferred to later sub-projects):
 
 **Current gap:** `projects/engine/src/lib/domain/redact.ts`'s
 `redactStateForSeat(state, viewerSeatId)` only masks other seats'
-unrevealed `GeneralInstance`s. Every `CardZone`'s `cards` — including
-other seats' `hand` zones and the shared `drawPile` — passes through
-untouched, so a card's real `definitionId`/`suit`/`rank` is visible
-regardless of viewer. This was previously identified and deferred (final
-engine review, finding I4) as out of scope until an application layer
-needed it — it does now.
+unrevealed `GeneralInstance`s. Two further things pass through
+untouched:
+
+- Every `CardZone`'s `cards` — including other seats' `hand` zones and
+  the shared `drawPile` — so a card's real `definitionId`/`suit`/`rank`
+  is visible regardless of viewer. This was previously identified and
+  deferred (final engine review, finding I4) as out of scope until an
+  application layer needed it — it does now.
+- `Seat.kingdom` — Kingdom War assigns each seat's kingdom independently
+  of which general it holds (`kingdomWar.ts`'s setup round-robins
+  `KINGDOM_ORDER` by seat index, unrelated to the general's own
+  `GeneralDefinition.kingdom`), and it is exactly as secret as the
+  generals per the spec's own scope ("each secretly assigned a
+  kingdom... and two hidden generals"). This was not caught during
+  brainstorming; found while writing the implementation plan.
 
 **Rule text** (function signature `(state, viewerSeatId) => GameState`
 is unchanged — this only changes what it returns):
@@ -89,12 +98,22 @@ is unchanged — this only changes what it returns):
   (played, equipped, and judgment-zone cards are visible to everyone).
 - A seat's own `hand` zone (`ownerSeatId === viewerSeatId`) is never
   masked, regardless of the zone-kind rules above.
+- `Kingdom` widens from `'Wei' | 'Shu' | 'Wu' | 'Qun'` to also include
+  `'hidden'` (same sentinel convention as `generalDefinitionId`). Every
+  seat other than the viewer has its `kingdom` replaced with `'hidden'`
+  unless already revealed — Kingdom War has no separate "kingdom reveal"
+  action distinct from general reveal, so treat a seat's kingdom as
+  revealed exactly when either of its generals is revealed (consistent
+  with the real game: revealing a general reveals which kingdom you're
+  playing). The viewer's own `kingdom` is never masked.
 
 **Verification:** extend `projects/engine/src/lib/domain/redact.spec.ts`
 with cases covering: an opponent's hand is masked but its length is
 unchanged; the draw pile is masked for every seat including the state's
 "first" seat; discard/equip/judgment zones are untouched; the viewer's
-own hand is untouched.
+own hand is untouched; an opponent's kingdom is masked while both
+generals are hidden; an opponent's kingdom becomes visible once either
+general is revealed; the viewer's own kingdom is always visible.
 
 ## Architecture: state management
 
