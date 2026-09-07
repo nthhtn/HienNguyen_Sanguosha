@@ -1,6 +1,43 @@
 import { redactStateForSeat } from './redact';
 import { createSeat, createPlayer } from './factories';
-import { GameState } from './types';
+import { GameState, CardZone } from './types';
+
+function makeZones(): CardZone[] {
+  return [
+    {
+      id: 'hand-a',
+      kind: 'hand',
+      ownerSeatId: 'seat-a',
+      cards: [{ instanceId: 'card-1', definitionId: 'sha', suit: 'spade', rank: 7 }],
+    },
+    {
+      id: 'hand-b',
+      kind: 'hand',
+      ownerSeatId: 'seat-b',
+      cards: [
+        { instanceId: 'card-2', definitionId: 'shan', suit: 'heart', rank: 3 },
+        { instanceId: 'card-3', definitionId: 'peach', suit: 'club', rank: 9 },
+      ],
+    },
+    {
+      id: 'draw-pile',
+      kind: 'drawPile',
+      cards: [{ instanceId: 'card-4', definitionId: 'duel', suit: 'diamond', rank: 5 }],
+    },
+    {
+      id: 'discard-pile',
+      kind: 'discardPile',
+      cards: [{ instanceId: 'card-5', definitionId: 'wuxie', suit: 'spade', rank: 2 }],
+    },
+    {
+      id: 'equip-a',
+      kind: 'equip',
+      ownerSeatId: 'seat-a',
+      cards: [{ instanceId: 'card-6', definitionId: 'silver-lion', suit: 'club', rank: 11 }],
+    },
+    { id: 'judgment-b', kind: 'judgment', ownerSeatId: 'seat-b', cards: [] },
+  ];
+}
 
 function makeState(): GameState {
   const maxHp = () => 4;
@@ -11,7 +48,7 @@ function makeState(): GameState {
     players: [createPlayer('p1', 'seat-a', 'human'), createPlayer('p2', 'seat-b', 'bot')],
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
     phase: 'Play',
-    zones: [],
+    zones: makeZones(),
     pendingResponse: null,
     log: [],
     rng: { seed: 1, counter: 0 },
@@ -40,5 +77,64 @@ describe('redactStateForSeat', () => {
     const otherSeat = viewFromA.seats.find((s) => s.id === 'seat-b')!;
     expect(otherSeat.generals.main.generalDefinitionId).toBe('general-z');
     expect(otherSeat.generals.deputy.generalDefinitionId).toBe('hidden');
+  });
+
+  it("masks another seat's hand contents but preserves card count and instance ids", () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    const handB = viewFromA.zones.find((z) => z.id === 'hand-b')!;
+    expect(handB.cards).toHaveLength(2);
+    expect(handB.cards.map((c) => c.instanceId)).toEqual(['card-2', 'card-3']);
+    expect(handB.cards.every((c) => c.definitionId === 'hidden')).toBe(true);
+    expect(handB.cards.every((c) => c.suit === 'spade' && c.rank === 0)).toBe(true);
+  });
+
+  it('never masks the viewer\'s own hand', () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    const handA = viewFromA.zones.find((z) => z.id === 'hand-a')!;
+    expect(handA.cards[0].definitionId).toBe('sha');
+  });
+
+  it('masks the draw pile for every viewer, including seat-a', () => {
+    const state = makeState();
+
+    for (const viewerSeatId of ['seat-a', 'seat-b']) {
+      const view = redactStateForSeat(state, viewerSeatId);
+      const drawPile = view.zones.find((z) => z.id === 'draw-pile')!;
+      expect(drawPile.cards[0].definitionId).toBe('hidden');
+    }
+  });
+
+  it('leaves discard pile, equip zones, and judgment zones untouched', () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    expect(viewFromA.zones.find((z) => z.id === 'discard-pile')!.cards[0].definitionId).toBe('wuxie');
+    expect(viewFromA.zones.find((z) => z.id === 'equip-a')!.cards[0].definitionId).toBe('silver-lion');
+  });
+
+  it("masks another seat's kingdom while both generals are hidden", () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    expect(viewFromA.seats.find((s) => s.id === 'seat-b')!.kingdom).toBe('hidden');
+  });
+
+  it('reveals a kingdom once either of that seat\'s generals is revealed', () => {
+    const state = makeState();
+    state.seats[1].generals.deputy.revealed = true;
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    expect(viewFromA.seats.find((s) => s.id === 'seat-b')!.kingdom).toBe('Shu');
+  });
+
+  it("never masks the viewer's own kingdom", () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    expect(viewFromA.seats.find((s) => s.id === 'seat-a')!.kingdom).toBe('Wei');
   });
 });

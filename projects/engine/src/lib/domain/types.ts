@@ -6,7 +6,7 @@ import { RngState } from '../rng/rng';
 import type { Effect } from '../pipeline/effects';
 import type { EngineEvent } from '../pipeline/events';
 
-export type Kingdom = 'Wei' | 'Shu' | 'Wu' | 'Qun';
+export type Kingdom = 'Wei' | 'Shu' | 'Wu' | 'Qun' | 'hidden';
 
 export type Target =
   | { kind: 'seat'; seatId: string }
