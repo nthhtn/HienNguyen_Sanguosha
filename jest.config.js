@@ -28,5 +28,17 @@ module.exports = {
         '^content$': '<rootDir>/../../content/src/public-api.ts',
       },
     },
+    {
+      displayName: 'app',
+      preset: 'jest-preset-angular',
+      testEnvironment: 'jsdom',
+      rootDir: 'projects/app',
+      testMatch: ['<rootDir>/src/**/*.spec.ts'],
+      setupFilesAfterEnv: ['<rootDir>/../../jest.setup.app.ts'],
+      moduleNameMapper: {
+        '^engine$': '<rootDir>/../engine/src/public-api.ts',
+        '^content$': '<rootDir>/../content/src/public-api.ts',
+      },
+    },
   ],
 };
