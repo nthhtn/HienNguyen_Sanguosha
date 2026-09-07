@@ -4,5 +4,8 @@
   "dependencies": {
     "tslib": "^2.3.0"
   },
+  "peerDependencies": {
+    "engine": "0.0.1"
+  },
   "sideEffects": false
 }
