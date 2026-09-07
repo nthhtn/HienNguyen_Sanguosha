@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Action } from 'engine';
 import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
@@ -15,7 +15,7 @@ interface SeatViewModel {
 
 @Component({
   selector: 'app-game-board',
-  imports: [RevealGateOverlay, ActionList, EventLog, SeatSummary, GameOver],
+  imports: [RevealGateOverlay, ActionList, EventLog, SeatSummary, GameOver, RouterLink],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner">
@@ -45,6 +45,9 @@ interface SeatViewModel {
           <app-event-log [events]="visible.log" />
         }
       }
+    } @else {
+      <p>No game in progress.</p>
+      <a routerLink="/setup">Start a new game</a>
     }
   `,
 })

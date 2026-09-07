@@ -14,6 +14,19 @@ describe('GameBoard', () => {
     gameService = TestBed.inject(GameService);
   });
 
+  it('shows a fallback message and a link back to /setup when no game is in progress', () => {
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('No game in progress.');
+    const link = el.querySelector('a[href="/setup"]');
+    expect(link).not.toBeNull();
+    expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
+    expect(el.querySelector('app-action-list')).toBeNull();
+    expect(el.querySelector('app-game-over')).toBeNull();
+  });
+
   it('shows the reveal gate for the active seat when no seat is revealed yet', () => {
     gameService.startGame(2, 1);
     const fixture = TestBed.createComponent(GameBoard);
