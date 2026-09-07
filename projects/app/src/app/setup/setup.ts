@@ -31,7 +31,8 @@ export class Setup {
   readonly seed = signal<number | undefined>(undefined);
 
   startGame(): void {
-    this.gameService.startGame(this.seatCount(), this.seed());
+    const clamped = Math.min(8, Math.max(2, this.seatCount() || 2));
+    this.gameService.startGame(clamped, this.seed());
     this.router.navigateByUrl('/game');
   }
 }

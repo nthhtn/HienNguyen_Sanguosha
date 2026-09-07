@@ -24,6 +24,25 @@ describe('Setup', () => {
     expect(navigateSpy).toHaveBeenCalledWith(expect.stringContaining('/game'));
   });
 
+  it('clamps a zeroed/cleared seat count into [2, 8] instead of sending 0', async () => {
+    await TestBed.configureTestingModule({
+      imports: [Setup],
+      providers: [provideRouter([{ path: 'game', children: [] }])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(Setup);
+    const component = fixture.componentInstance;
+    const gameService = TestBed.inject(GameService);
+
+    // Simulates clearing the seat-count input: `+'' === 0`.
+    component.seatCount.set(0);
+    component.startGame();
+
+    const seatCount = gameService.state()!.seats.length;
+    expect(seatCount).toBeGreaterThanOrEqual(2);
+    expect(seatCount).toBeLessThanOrEqual(8);
+  });
+
   it('passes an explicit seed through to GameService when provided', async () => {
     await TestBed.configureTestingModule({
       imports: [Setup],
