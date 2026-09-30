@@ -85,6 +85,23 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-action-list')).not.toBeNull();
   });
 
+  it('seats everyone at a round table from the viewer’s chair, with the viewer’s own hand below', () => {
+    gameService.startGame(3, 1);
+    finishSelection(gameService);
+    const viewer = gameService.activeSeatId()!;
+    gameService.reveal(viewer);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-round-table')).not.toBeNull();
+    expect(el.querySelectorAll('app-round-table app-seat-tile')).toHaveLength(3);
+    expect(el.querySelector(`app-round-table [data-seat-id="${viewer}"]`)!.textContent).toContain('(you)');
+    const state = gameService.visibleState()!;
+    const ownHand = state.zones.find((z) => z.id === state.seats.find((s) => s.id === viewer)!.hand.zoneId)!;
+    expect(el.querySelectorAll('.your-hand app-card-art')).toHaveLength(ownHand.cards.length);
+  });
+
   it('re-shows the reveal gate for the next seat after an action is submitted', () => {
     gameService.startGame(2, 1);
     const firstSeat = gameService.activeSeatId()!;

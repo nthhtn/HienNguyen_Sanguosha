@@ -1,0 +1,97 @@
+import { Component, computed, input } from '@angular/core';
+import { GameState } from 'engine';
+import { eventLabel } from '../labels';
+import { SeatTile } from './seat-tile';
+import { seatPlacements } from './table-layout';
+
+const RECENT_LOG_LINES = 3;
+
+// The seats arranged around an oval table, seen from the viewer's chair.
+// Presentational: everything shown is read straight off the (redacted) state.
+@Component({
+  selector: 'app-round-table',
+  imports: [SeatTile],
+  template: `
+    <div class="table">
+      <div class="felt"></div>
+      <div class="centre">
+        <div class="turn">Turn {{ state().turn.turnNumber }} · {{ state().phase }}</div>
+        <div>{{ state().turn.ownerSeatId }}'s turn</div>
+        @if (state().pendingResponse; as pending) {
+          <div class="waiting">Waiting on {{ pending.respondingSeatId }}</div>
+        }
+        <div class="piles">Draw pile {{ pileCount('drawPile') }} · Discard {{ pileCount('discardPile') }}</div>
+        <ul class="recent">
+          @for (line of recentLog(); track $index) {
+            <li>{{ line }}</li>
+          }
+        </ul>
+      </div>
+      @for (p of placements(); track p.seat.id) {
+        <div class="seat" [attr.data-seat-id]="p.seat.id" [style.left.%]="p.x" [style.top.%]="p.y">
+          <app-seat-tile
+            [seat]="p.seat"
+            [handCount]="handCount(p.seat.hand.zoneId)"
+            [isViewer]="p.isViewer"
+            [isTurnOwner]="p.seat.id === state().turn.ownerSeatId"
+            [isResponding]="p.seat.id === state().pendingResponse?.respondingSeatId"
+          />
+        </div>
+      }
+    </div>
+  `,
+  styles: `
+    .table {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      aspect-ratio: 16 / 10;
+    }
+    .felt {
+      position: absolute;
+      inset: 14% 12%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, #3f7d4e 0%, #2b5c38 70%, #234a2e 100%);
+      border: 10px solid #7a5230;
+      box-shadow: inset 0 0 30px rgb(0 0 0 / 45%), 0 6px 18px rgb(0 0 0 / 30%);
+    }
+    .centre {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 42%;
+      color: #f4f1e8;
+      text-align: center;
+      font-size: 0.85em;
+    }
+    .turn { font-size: 1.25em; font-weight: bold; }
+    .waiting { color: #ffcc80; font-weight: bold; }
+    .recent { list-style: none; padding: 0; margin: 6px 0 0; opacity: 0.85; font-size: 0.9em; }
+    .seat { position: absolute; transform: translate(-50%, -50%); }
+    @media (max-width: 600px) {
+      /* Narrower than the viewport so rim seats (at 8% / 92%) stay on screen. */
+      .table { aspect-ratio: 1; width: 80%; }
+      .felt { inset: 16% 10%; }
+      .centre { width: 56%; font-size: 0.75em; }
+      .seat { transform: translate(-50%, -50%) scale(0.8); }
+    }
+  `,
+})
+export class RoundTable {
+  readonly state = input.required<GameState>();
+  readonly viewerSeatId = input.required<string>();
+
+  protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId()));
+
+  protected readonly recentLog = computed(() => this.state().log.slice(-RECENT_LOG_LINES).map(eventLabel));
+
+  protected handCount(zoneId: string): number {
+    return this.state().zones.find((z) => z.id === zoneId)?.cards.length ?? 0;
+  }
+
+  protected pileCount(kind: 'drawPile' | 'discardPile'): number {
+    return this.state().zones.find((z) => z.kind === kind)?.cards.length ?? 0;
+  }
+}

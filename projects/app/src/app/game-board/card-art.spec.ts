@@ -24,4 +24,15 @@ describe('CardArt', () => {
     expect(el.querySelector('img')).toBeNull();
     expect(el.textContent).toContain('a hidden general');
   });
+
+  it('renders at a smaller size when size is "small"', () => {
+    const fixture = TestBed.createComponent(CardArt);
+    fixture.componentRef.setInput('id', 'hidden');
+    fixture.componentRef.setInput('label', 'a hidden general');
+    fixture.componentRef.setInput('size', 'small');
+    fixture.detectChanges();
+
+    const art = (fixture.nativeElement as HTMLElement).querySelector('.card-art')!;
+    expect(art.classList).toContain('small');
+  });
 });

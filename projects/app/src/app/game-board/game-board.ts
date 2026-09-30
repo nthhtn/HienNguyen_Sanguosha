@@ -2,21 +2,18 @@ import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Action, CardInstance, ChooseGeneralsAction } from 'engine';
 import { GameService } from '../game.service';
+import { cardIdDisplayName } from '../labels';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { EventLog } from './event-log';
-import { SeatSummary } from './seat-summary';
+import { RoundTable } from './round-table';
+import { CardArt } from './card-art';
 import { GameOver } from './game-over';
 import { GeneralSelection } from './general-selection';
 
-interface SeatViewModel {
-  seat: import('engine').Seat;
-  hand: CardInstance[];
-}
-
 @Component({
   selector: 'app-game-board',
-  imports: [RevealGateOverlay, ActionList, EventLog, SeatSummary, GameOver, GeneralSelection, RouterLink],
+  imports: [RevealGateOverlay, ActionList, EventLog, RoundTable, CardArt, GameOver, GeneralSelection, RouterLink],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner">
@@ -40,11 +37,17 @@ interface SeatViewModel {
               (chosen)="submit($event)"
             />
           } @else {
-            <div class="seats">
-              @for (vm of seatViewModels(); track vm.seat.id) {
-                <app-seat-summary [seat]="vm.seat" [hand]="vm.hand" />
-              }
-            </div>
+            <app-round-table [state]="visible" [viewerSeatId]="activeSeatId" />
+            <section class="your-hand">
+              <h3>Your hand</h3>
+              <div class="cards">
+                @for (card of ownHand(); track card.instanceId) {
+                  <app-card-art [id]="card.definitionId" [label]="cardIdDisplayName(card.definitionId)" />
+                } @empty {
+                  <span>No cards</span>
+                }
+              </div>
+            </section>
             <app-action-list
               [actions]="gameService.legalActions()"
               [state]="visible"
@@ -60,6 +63,11 @@ interface SeatViewModel {
       <a routerLink="/setup">Start a new game</a>
     }
   `,
+  styles: `
+    .your-hand { margin: 8px 0; }
+    .your-hand h3 { margin: 0 0 4px; }
+    .your-hand .cards { display: flex; gap: 6px; flex-wrap: wrap; }
+  `,
 })
 export class GameBoard {
   protected readonly gameService = inject(GameService);
@@ -69,14 +77,16 @@ export class GameBoard {
   protected readonly visibleState = this.gameService.visibleState;
   protected readonly lastError = this.gameService.lastError;
 
-  protected readonly seatViewModels = computed<SeatViewModel[]>(() => {
-    const state = this.visibleState();
-    if (!state) return [];
-    return state.seats.map((seat) => ({
-      seat,
-      hand: state.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [],
-    }));
+  // The revealed seat's own hand, shown full-size below the table.
+  protected readonly ownHand = computed<CardInstance[]>(() => {
+    const visible = this.visibleState();
+    const seatId = this.activeSeatId();
+    const seat = visible?.seats.find((s) => s.id === seatId);
+    if (!visible || !seat) return [];
+    return visible.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [];
   });
+
+  protected readonly cardIdDisplayName = cardIdDisplayName;
 
   // The revealed seat's own dealt candidates (other seats' are redacted anyway).
   protected readonly selectionCandidates = computed<string[]>(() => {
