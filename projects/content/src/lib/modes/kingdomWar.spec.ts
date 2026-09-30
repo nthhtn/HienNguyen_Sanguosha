@@ -1,25 +1,118 @@
-import { kingdomWarMode } from './kingdomWar';
+import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
-import { createGame, resolve } from 'engine';
-import type { GameState, GameModeDefinition, CardDefinition, ContentRegistry } from 'engine';
+import { createGame, resolve, getActiveSeatId, getLegalActions } from 'engine';
+import type { GameState, CardDefinition, ContentRegistry } from 'engine';
 
-describe('Kingdom War setup', () => {
-  it('assigns kingdoms round-robin, sets combined HP from both generals, and deals 4 cards to each seat', () => {
-    const registry = buildContentRegistry();
+// Skips general selection by seating fixed pairs directly, for tests about
+// in-game rules that must not depend on which candidates a seed deals.
+function seated(state: GameState, registry: ContentRegistry, picks: Record<string, [string, string]>): GameState {
+  return {
+    ...state,
+    phase: 'Judgment',
+    generalSelection: null,
+    seats: state.seats.map((seat) => {
+      const [mainId, deputyId] = picks[seat.id];
+      const main = registry.generals.get(mainId)!;
+      const deputy = registry.generals.get(deputyId)!;
+      const maxCombinedHp = main.maxHp + deputy.maxHp;
+      return {
+        ...seat,
+        kingdom: main.kingdom,
+        generals: {
+          main: { generalDefinitionId: mainId, revealed: false },
+          deputy: { generalDefinitionId: deputyId, revealed: false },
+        },
+        combinedHp: maxCombinedHp,
+        maxCombinedHp,
+      };
+    }),
+  };
+}
+
+describe('Kingdom War setup and deal', () => {
+  const registry = buildContentRegistry();
+
+  it('starts in GeneralSelection with unchosen seats, 4-card hands, and seat-a first', () => {
     const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 42);
-    expect(state.seats.map((s) => s.kingdom)).toEqual(['Wei', 'Shu', 'Wu', 'Qun']);
+    expect(state.phase).toBe('GeneralSelection');
+    expect(state.turn).toEqual({ turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] });
+    expect(getActiveSeatId(state)).toBe('seat-a');
+    for (const seat of state.seats) {
+      expect(seat.generals).toBeNull();
+      expect(seat.kingdom).toBe('hidden');
+      expect(seat.combinedHp).toBe(0);
+      expect(seat.maxCombinedHp).toBe(0);
+      expect(state.zones.find((z) => z.id === seat.hand.zoneId)!.cards).toHaveLength(4);
+    }
+  });
+
+  it('deals 5 unique registry generals to every seat, each containing a same-kingdom pair', () => {
+    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'], 42);
+    const candidates = state.generalSelection!.candidates;
+    const all = Object.values(candidates).flat();
+    expect(Object.keys(candidates).sort()).toEqual(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e']);
+    expect(all).toHaveLength(5 * GENERALS_PER_SEAT);
+    expect(new Set(all).size).toBe(all.length);
+    for (const ids of Object.values(candidates)) {
+      expect(ids).toHaveLength(GENERALS_PER_SEAT);
+      const kingdoms = ids.map((id) => registry.generals.get(id)!.kingdom);
+      expect(new Set(kingdoms).size).toBeLessThan(kingdoms.length);
+    }
+  });
+
+  it('is deterministic for a seed and varies across seeds', () => {
+    const a = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
+    const b = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
+    const c = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 8);
+    expect(JSON.stringify(b)).toEqual(JSON.stringify(a));
+    expect(c.generalSelection).not.toEqual(a.generalSelection);
+  });
+
+  it('caps the table at floor(generals / 5) seats and rejects fewer than 2', () => {
+    expect(kingdomWarMaxSeats(registry)).toBe(5);
+    expect(kingdomWarMode.maxSeats!(registry)).toBe(5);
+    const six = ['a', 'b', 'c', 'd', 'e', 'f'];
+    expect(() => createGame(kingdomWarMode, registry, six, 1)).toThrow(/between 2 and 5 seats/);
+    expect(() => createGame(kingdomWarMode, registry, ['a'], 1)).toThrow(/between 2 and 5 seats/);
+  });
+
+  it('a full selection through resolve seats every seat with a same-kingdom pair and starts Judgment', () => {
+    let state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42);
+    const ctx = { registry, mode: kingdomWarMode };
+    while (state.phase === 'GeneralSelection') {
+      const seatId = getActiveSeatId(state)!;
+      state = resolve(state, getLegalActions(state, seatId, registry)[0], ctx).state;
+    }
+    expect(state.phase).toBe('Judgment');
+    expect(state.generalSelection).toBeNull();
     for (const seat of state.seats) {
       const main = registry.generals.get(seat.generals!.main.generalDefinitionId)!;
       const deputy = registry.generals.get(seat.generals!.deputy.generalDefinitionId)!;
+      expect(seat.kingdom).toBe(main.kingdom);
+      expect(deputy.kingdom).toBe(main.kingdom);
       expect(seat.maxCombinedHp).toBe(main.maxHp + deputy.maxHp);
       expect(seat.combinedHp).toBe(seat.maxCombinedHp);
-      expect(seat.generals!.main.revealed).toBe(false);
-      expect(seat.generals!.deputy.revealed).toBe(false);
-      const hand = state.zones.find((z) => z.id === seat.hand.zoneId)!;
-      expect(hand.cards).toHaveLength(4);
     }
-    expect(state.turn).toEqual({ turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] });
-    expect(state.phase).toBe('Judgment');
+  });
+
+  it('ends the game right after selection if every seat picked the same non-Qun kingdom (Review Focus 1)', () => {
+    // Pins current behavior: the existing win rule (one living non-Qun
+    // kingdom) is evaluated as soon as the last seat chooses.
+    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 1);
+    const allWei: GameState = {
+      ...state,
+      generalSelection: {
+        candidates: {
+          'seat-a': ['cao-cao', 'xu-chu', 'guan-yu', 'lu-xun', 'lu-bu'],
+          'seat-b': ['sima-yi', 'guo-jia', 'zhang-fei', 'gan-ning', 'hua-tuo'],
+        },
+      },
+    };
+    const ctx = { registry, mode: kingdomWarMode };
+    const afterA = resolve(allWei, { kind: 'ChooseGeneralsAction', seatId: 'seat-a', mainId: 'cao-cao', deputyId: 'xu-chu' }, ctx).state;
+    expect(afterA.result).toBeNull();
+    const afterB = resolve(afterA, { kind: 'ChooseGeneralsAction', seatId: 'seat-b', mainId: 'sima-yi', deputyId: 'guo-jia' }, ctx).state;
+    expect(afterB.result).toEqual({ endedAt: 1, winningKingdom: 'Wei', winningSeatIds: ['seat-a', 'seat-b'], losingSeatIds: [] });
   });
 });
 
@@ -32,28 +125,19 @@ describe('Kingdom War forced reveal and elimination', () => {
     }],
   };
 
-  function registryWithLethalCard(): ContentRegistry {
-    const base = buildContentRegistry();
-    base.cards.set('test-damage-card', testDamageCard);
-    return base;
-  }
-
-  function twoSeatState(): GameState {
-    const registry = registryWithLethalCard();
-    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
-    return {
-      ...state,
-      zones: state.zones.map((z) =>
-        z.id === state.seats[0].hand.zoneId
+  it('force-reveals both generals and eliminates the seat on lethal damage, ending the game', () => {
+    const registry = buildContentRegistry();
+    registry.cards.set('test-damage-card', testDamageCard);
+    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
+    const base = seated(created, registry, { 'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
+    const state: GameState = {
+      ...base,
+      zones: base.zones.map((z) =>
+        z.id === base.seats[0].hand.zoneId
           ? { ...z, cards: [{ instanceId: 'lethal-1', definitionId: 'test-damage-card', suit: 'spade', rank: 1 }] }
           : z
       ),
     };
-  }
-
-  it('force-reveals both generals and eliminates the seat on lethal damage, ending the game', () => {
-    const registry = registryWithLethalCard();
-    const state = twoSeatState();
     const { state: next } = resolve(
       state,
       { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'lethal-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
@@ -68,15 +152,16 @@ describe('Kingdom War forced reveal and elimination', () => {
 });
 
 describe('Kingdom War win condition', () => {
+  const registry = buildContentRegistry();
+
   it('returns a real draw result — not null — when every seat is eliminated at once', () => {
-    const registry = buildContentRegistry();
-    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3);
+    const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3), registry, {
+      'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'],
+    });
     const allEliminated: GameState = {
       ...created,
       seats: created.seats.map((s) => ({ ...s, eliminated: true, combinedHp: 0 })),
     };
-    // null would mean "the game continues", which for a table with no living
-    // seats would never terminate.
     expect(kingdomWarMode.checkWinCondition(allEliminated)).toEqual({
       endedAt: allEliminated.turn.turnNumber,
       winningSeatIds: [],
@@ -85,62 +170,45 @@ describe('Kingdom War win condition', () => {
   });
 
   it('still returns null while more than one kingdom is alive', () => {
-    const registry = buildContentRegistry();
-    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3);
+    const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3), registry, {
+      'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'],
+    });
     expect(kingdomWarMode.checkWinCondition(created)).toBeNull();
   });
 });
 
 describe('Kingdom War per-turn draw', () => {
+  const registry = buildContentRegistry();
+
   it('draws 2 cards for whichever seat enters the Draw phase', () => {
-    const registry = buildContentRegistry();
-    // seat-a (index 0) is assigned dong-zhuo/huang-yueying here — neither is
-    // zhuge-liang — so this isolates the mode-level draw from the general-skill
-    // bonus draw (see the Zhuge Liang case below).
-    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42);
+    // cao-cao and xu-chu have no hand-coded skills, isolating the mode-level draw.
+    const state = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, {
+      'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'],
+    });
     const handBefore = state.zones.find((z) => z.id === state.seats[0].hand.zoneId)!;
     expect(handBefore.cards).toHaveLength(4);
     const originalCardIds = new Set(handBefore.cards.map((c) => c.instanceId));
 
-    const { state: next } = resolve(
-      state,
-      { kind: 'EndPhaseAction', seatId: 'seat-a' },
-      { registry, mode: kingdomWarMode }
-    );
+    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry, mode: kingdomWarMode });
 
     expect(next.phase).toBe('Draw');
     const handAfter = next.zones.find((z) => z.id === state.seats[0].hand.zoneId)!;
     expect(handAfter.cards).toHaveLength(6);
-    const newCardIds = handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id));
-    expect(newCardIds).toHaveLength(2);
+    expect(handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id))).toHaveLength(2);
   });
 
   it('draws 3 cards (2 base + 1 Zhuge Liang bonus) when a Zhuge Liang-holding seat enters Draw', () => {
-    const registry = buildContentRegistry();
-    // With 3 seats, seat index 2 ("seat-c") is assigned zhuge-liang as deputy
-    // (and, uniquely among this content registry's 6 defined generals, no
-    // other seat also gets zhuge-liang at this seat count — see kingdomWar's
-    // round-robin general assignment: with 6 generals total, seat counts of
-    // 6+ start assigning the same general to more than one seat, which would
-    // double-fire this general's own trigger and make the assertion below
-    // about "the" Zhuge Liang bonus ambiguous).
-    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42);
+    const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42), registry, {
+      'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['sun-quan', 'zhou-yu'], 'seat-c': ['zhao-yun', 'zhuge-liang'],
+    });
     const seatC = created.seats.find((s) => s.id === 'seat-c')!;
-    expect(seatC.generals!.deputy.generalDefinitionId).toBe('zhuge-liang');
-    const state: GameState = { ...created, phase: 'Judgment', turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] } };
-    const handBefore = state.zones.find((z) => z.id === seatC.hand.zoneId)!;
-    expect(handBefore.cards).toHaveLength(4);
-    const originalCardIds = new Set(handBefore.cards.map((c) => c.instanceId));
+    const state: GameState = { ...created, turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] } };
+    const originalCardIds = new Set(state.zones.find((z) => z.id === seatC.hand.zoneId)!.cards.map((c) => c.instanceId));
 
-    const { state: next } = resolve(
-      state,
-      { kind: 'EndPhaseAction', seatId: 'seat-c' },
-      { registry, mode: kingdomWarMode }
-    );
+    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-c' }, { registry, mode: kingdomWarMode });
 
     expect(next.phase).toBe('Draw');
     const handAfter = next.zones.find((z) => z.id === seatC.hand.zoneId)!;
-    const newCardIds = handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id));
-    expect(newCardIds).toHaveLength(3);
+    expect(handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id))).toHaveLength(3);
   });
 });

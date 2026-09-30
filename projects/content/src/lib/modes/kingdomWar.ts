@@ -2,16 +2,44 @@ import type {
   GameModeDefinition,
   GameState,
   ContentRegistry,
-  Kingdom,
   DamageDealtEvent,
   PhaseChangedEvent,
   Target,
   CardZone,
+  Seat,
+  RngState,
 } from 'engine';
-import { buildDeck, drawTop } from 'engine';
+import { buildDeck, drawTop, shuffle } from 'engine';
 
-const KINGDOM_ORDER: Kingdom[] = ['Wei', 'Shu', 'Wu', 'Qun'];
 const SUITS = ['spade', 'heart', 'club', 'diamond'] as const;
+
+export const GENERALS_PER_SEAT = 5;
+
+export function kingdomWarMaxSeats(registry: ContentRegistry): number {
+  return Math.floor(registry.generals.size / GENERALS_PER_SEAT);
+}
+
+function hasSameKingdomPair(generalIds: string[], registry: ContentRegistry): boolean {
+  const kingdoms = generalIds.map((id) => registry.generals.get(id)!.kingdom);
+  return new Set(kingdoms).size < kingdoms.length;
+}
+
+// Deals GENERALS_PER_SEAT unique generals to each seat from a seeded shuffle of
+// the whole registry. With four kingdoms, five candidates always contain a
+// same-kingdom pair (pigeonhole); the check guards a future fifth kingdom or a
+// smaller deal rather than silently seating an unplayable hand.
+function dealCandidates(seatIds: string[], registry: ContentRegistry, rng: RngState) {
+  const { items: pool, rng: afterShuffle } = shuffle([...registry.generals.keys()].sort(), rng);
+  const candidates: Record<string, string[]> = {};
+  seatIds.forEach((seatId, index) => {
+    const dealt = pool.slice(index * GENERALS_PER_SEAT, (index + 1) * GENERALS_PER_SEAT);
+    if (!hasSameKingdomPair(dealt, registry)) {
+      throw new Error(`Seat ${seatId} was dealt no same-kingdom pair: ${dealt.join(', ')}`);
+    }
+    candidates[seatId] = dealt;
+  });
+  return { candidates, rng: afterShuffle };
+}
 
 function buildDeckSpec(registry: ContentRegistry) {
   const entries: { definitionId: string; suit: (typeof SUITS)[number]; rank: number }[] = [];
@@ -32,30 +60,32 @@ function seatIdOfTarget(target: Target): string {
 
 export const kingdomWarMode: GameModeDefinition = {
   id: 'kingdom-war',
-  setup: (seatIds, registry, rng) => {
-    const generalIds = [...registry.generals.keys()].sort();
-    const seats = seatIds.map((id, index) => {
-      const kingdom = KINGDOM_ORDER[index % KINGDOM_ORDER.length];
-      const mainGeneralId = generalIds[(index * 2) % generalIds.length];
-      const deputyGeneralId = generalIds[(index * 2 + 1) % generalIds.length];
-      const maxCombinedHp = registry.generals.get(mainGeneralId)!.maxHp + registry.generals.get(deputyGeneralId)!.maxHp;
-      return {
-        id,
-        index,
-        kingdom,
-        generals: {
-          main: { generalDefinitionId: mainGeneralId, revealed: false },
-          deputy: { generalDefinitionId: deputyGeneralId, revealed: false },
-        },
-        combinedHp: maxCombinedHp,
-        maxCombinedHp,
-        hand: { zoneId: `${id}:hand` },
-        equipped: { zoneId: `${id}:equip` },
-        eliminated: false,
-      };
-    });
+  maxSeats: kingdomWarMaxSeats,
 
-    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry), rng);
+  setup: (seatIds, registry, rng) => {
+    const limit = kingdomWarMaxSeats(registry);
+    if (seatIds.length < 2 || seatIds.length > limit) {
+      throw new Error(
+        `Kingdom War needs between 2 and ${limit} seats with ${registry.generals.size} generals; got ${seatIds.length}`
+      );
+    }
+    const { candidates, rng: afterDeal } = dealCandidates(seatIds, registry, rng);
+
+    // Generals, kingdom and HP are set when each seat resolves its
+    // ChooseGeneralsAction during the GeneralSelection phase.
+    const seats: Seat[] = seatIds.map((id, index) => ({
+      id,
+      index,
+      kingdom: 'hidden',
+      generals: null,
+      combinedHp: 0,
+      maxCombinedHp: 0,
+      hand: { zoneId: `${id}:hand` },
+      equipped: { zoneId: `${id}:equip` },
+      eliminated: false,
+    }));
+
+    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry), afterDeal);
     let zones: CardZone[] = [
       { id: 'drawPile', kind: 'drawPile' as const, cards },
       { id: 'discardPile', kind: 'discardPile' as const, cards: [] },
@@ -75,13 +105,13 @@ export const kingdomWarMode: GameModeDefinition = {
       seats,
       players: seatIds.map((id) => ({ id: `player-${id}`, seatId: id, kind: 'bot' as const })),
       turn: { turnNumber: 1, ownerSeatId: seatIds[0], extraTurnStack: [] },
-      phase: 'Judgment',
+      phase: 'GeneralSelection',
       zones,
       pendingResponse: null,
       log: [],
       rng: currentRng,
       result: null,
-      generalSelection: null,
+      generalSelection: { candidates },
     };
     return { state, rng: currentRng };
   },

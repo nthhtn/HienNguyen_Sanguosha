@@ -59,6 +59,8 @@ export interface GameModeDefinition {
   setup(seatIds: string[], registry: ContentRegistry, rng: RngState): { state: GameState; rng: RngState };
   checkWinCondition(state: GameState): GameResult | null;
   triggers: SkillTrigger[];
+  // Largest table this mode can seat with the given content, if it is limited.
+  maxSeats?(registry: ContentRegistry): number;
 }
 
 export type ModeRegistry = Map<string, GameModeDefinition>;
