@@ -100,6 +100,24 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-action-list')).toBeNull();
   });
 
+  it('re-shows the reveal gate for the next seat after an in-game action, post-selection', () => {
+    gameService.startGame(2, 1);
+    finishSelection(gameService);
+    const seatId = gameService.activeSeatId()!;
+    gameService.reveal(seatId);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+
+    const endPhase = gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!;
+    expect(endPhase).toBeDefined();
+    gameService.submit(endPhase);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-reveal-gate-overlay')).not.toBeNull();
+    expect(el.querySelector('app-action-list')).toBeNull();
+  });
+
   it('shows a dismissible error banner when GameService reports an error', () => {
     gameService.startGame(2, 1);
     gameService.reveal(gameService.activeSeatId()!);

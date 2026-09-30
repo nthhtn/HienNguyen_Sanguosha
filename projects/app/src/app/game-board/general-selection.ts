@@ -17,6 +17,7 @@ interface CandidateViewModel {
   maxHp: number;
   role: 'Main' | 'Deputy' | null;
   enabled: boolean;
+  disabledReason: string;
 }
 
 // Presentational: which pairs are legal comes entirely from `actions` (the
@@ -42,7 +43,7 @@ interface CandidateViewModel {
           [matBadge]="vm.role ?? ''"
           [matBadgeHidden]="vm.role === null"
           matBadgePosition="above after"
-          matTooltip="Must share a kingdom with your first pick"
+          [matTooltip]="vm.disabledReason"
           [matTooltipDisabled]="vm.enabled"
           (click)="toggle(vm)"
           (keydown.enter)="toggle(vm)"
@@ -112,6 +113,11 @@ export class GeneralSelection {
   protected readonly candidateViewModels = computed<CandidateViewModel[]>(() => {
     const selected = this.selected();
     const actions = this.actions();
+    // Nothing picked yet: a disabled card has no same-kingdom partner in the
+    // whole pool. Once a first pick exists: it doesn't pair with that pick.
+    // Either way, legality itself still comes only from `actions` above.
+    const disabledReason =
+      selected.length === 0 ? 'No other candidate shares this kingdom' : 'Must share a kingdom with your first pick';
     return this.candidates().map((id) => {
       const definition = this.registry().generals.get(id);
       const display = generalDisplayData(id);
@@ -124,6 +130,7 @@ export class GeneralSelection {
         maxHp: definition?.maxHp ?? 0,
         role: index === 0 ? 'Main' : index === 1 ? 'Deputy' : null,
         enabled: this.isSelectable(id, selected, actions),
+        disabledReason,
       };
     });
   });

@@ -1,4 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { MatTooltip } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, GeneralDefinition, Kingdom } from 'engine';
 import { GeneralSelection } from './general-selection';
 
@@ -24,6 +26,8 @@ describe('GeneralSelection', () => {
   const click = (id: string) => { card(id).click(); fixture.detectChanges(); };
   const badge = (id: string) => card(id).querySelector('.mat-badge-content')?.textContent?.trim() ?? '';
   const button = (cls: string) => el.querySelector(`button.${cls}`) as HTMLButtonElement;
+  const tooltip = (id: string) =>
+    fixture.debugElement.query(By.css(`[data-general-id="${id}"]`)).injector.get(MatTooltip).message;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({ imports: [GeneralSelection] }).compileComponents();
@@ -94,6 +98,12 @@ describe('GeneralSelection', () => {
     button('confirm').click();
     expect(emitted).toEqual([actions[2]]);
     expect(emitted[0]).toBe(actions[2]);
+  });
+
+  it('tooltips a lone-kingdom candidate differently before and after a first pick (Review Focus 5)', () => {
+    expect(tooltip('s1')).toBe('No other candidate shares this kingdom');
+    click('w1');
+    expect(tooltip('s1')).toBe('Must share a kingdom with your first pick');
   });
 
   it('summarises the resulting kingdom and combined HP', () => {
