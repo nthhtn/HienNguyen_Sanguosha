@@ -1,5 +1,8 @@
 import { GameState, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
+import { ContentRegistry } from '../registry/types';
+import { getActiveSeatId } from './activeSeat';
+import { getLegalGeneralChoices } from './generalSelection';
 
 export function getLegalTargets(state: GameState, seatId: string): Target[] {
   return state.seats
@@ -7,13 +10,20 @@ export function getLegalTargets(state: GameState, seatId: string): Target[] {
     .map((s) => ({ kind: 'seat', seatId: s.id }));
 }
 
-export function getLegalActions(state: GameState, seatId: string): Action[] {
+export function getLegalActions(state: GameState, seatId: string, registry?: ContentRegistry): Action[] {
   if (state.result) return [];
 
   // An unknown or eliminated seat can never act, whether or not it happens to
   // be named as the turn owner or as a pending response's responder.
   const actingSeat = state.seats.find((s) => s.id === seatId);
   if (!actingSeat || actingSeat.eliminated) return [];
+
+  if (state.phase === 'GeneralSelection') {
+    if (getActiveSeatId(state) !== seatId) return [];
+    // Pairing candidates needs each general's kingdom, which lives in content.
+    if (!registry) throw new Error('getLegalActions needs the content registry during GeneralSelection');
+    return getLegalGeneralChoices(state, seatId, registry);
+  }
 
   if (state.pendingResponse) {
     const pending = state.pendingResponse;

@@ -6,6 +6,7 @@ import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
 import { advancePhaseOrTurn } from '../rules/phaseSequence';
+import { applyGeneralChoice } from '../rules/generalSelection';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -41,7 +42,10 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
     throw new Error('Cannot submit an action after the game has ended');
   }
   const result = resolveAction(state, action, ctx, 0);
-  const gameResult = ctx.mode.checkWinCondition(result.state);
+  // Seats still choosing have kingdom 'hidden'; reading that as a one-kingdom
+  // table would end the game before it starts.
+  const gameResult =
+    result.state.phase === 'GeneralSelection' ? null : ctx.mode.checkWinCondition(result.state);
   const finalState = gameResult ? { ...result.state, result: gameResult } : result.state;
   return { state: finalState, events: result.events };
 }
@@ -50,6 +54,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
   guardDepth(depth, `action ${action.kind}`);
   if (state.pendingResponse && !state.pendingResponse.allowedActionKinds.includes(action.kind)) {
     throw new Error(`Action ${action.kind} is not legal while a response is pending`);
+  }
+  if (state.phase === 'GeneralSelection' && action.kind !== 'ChooseGeneralsAction') {
+    throw new Error(`Action ${action.kind} is not legal during general selection`);
   }
 
   switch (action.kind) {
@@ -174,6 +181,12 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
         ctx,
         depth
       );
+    }
+
+    case 'ChooseGeneralsAction': {
+      const { state: chosen, event } = applyGeneralChoice(state, action, ctx.registry);
+      const followUp = runAfterTriggers(chosen, event, ctx, depth);
+      return { state: followUp.state, events: [event, ...followUp.events] };
     }
 
     default:
