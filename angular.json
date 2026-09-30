@@ -65,7 +65,7 @@
                 "input": "projects/app/public"
               }
             ],
-            "styles": ["projects/app/src/styles.css"]
+            "styles": ["@angular/material/prebuilt-themes/azure-blue.css", "projects/app/src/styles.css"]
           },
           "configurations": {
             "production": {
