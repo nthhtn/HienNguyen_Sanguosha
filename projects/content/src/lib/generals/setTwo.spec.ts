@@ -65,7 +65,7 @@ function stateOf(seats: Seat[], zones: CardZone[], ownerSeatId: string): GameSta
     turn: { turnNumber: 1, ownerSeatId, extraTurnStack: [] },
     phase: 'Play',
     zones,
-    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null,
+    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
   };
 }
 

@@ -12,7 +12,7 @@ function emptyState(): GameState {
     pendingResponse: null,
     log: [],
     rng: { seed: 1, counter: 0 },
-    result: null,
+    result: null, generalSelection: null,
   };
 }
 

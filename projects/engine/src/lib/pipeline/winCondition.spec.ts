@@ -54,7 +54,7 @@ function twoSeatState(): { state: GameState; registry: ContentRegistry } {
       { id: 'seat-b:hand', kind: 'hand', ownerSeatId: 'seat-b', cards: [] },
       { id: 'seat-b:equip', kind: 'equip', ownerSeatId: 'seat-b', cards: [] },
     ],
-    pendingResponse: null, log: [], rng: createRng(1), result: null,
+    pendingResponse: null, log: [], rng: createRng(1), result: null, generalSelection: null,
   };
   return { state, registry };
 }

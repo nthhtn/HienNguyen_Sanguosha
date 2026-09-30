@@ -74,7 +74,7 @@ function baseState(): GameState {
     pendingResponse: null,
     log: [],
     rng: createRng(1),
-    result: null,
+    result: null, generalSelection: null,
   };
 }
 
@@ -771,5 +771,19 @@ describe('resolve: EndPhaseAction', () => {
     expect(() =>
       resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-b' }, { registry: emptyRegistry(), mode: stubMode() })
     ).toThrow(/not seat seat-b's turn/);
+  });
+});
+
+describe('RevealGeneralAction on a seat with no generals yet', () => {
+  it('throws a clear error', () => {
+    const state = baseState();
+    const unchosen = { ...state, seats: state.seats.map((s, i) => (i === 0 ? { ...s, generals: null } : s)) };
+    expect(() =>
+      resolve(
+        unchosen,
+        { kind: 'RevealGeneralAction', seatId: unchosen.seats[0].id, slot: 'main' },
+        { registry: emptyRegistry(), mode: stubMode() }
+      )
+    ).toThrow(/has not chosen its generals/);
   });
 });

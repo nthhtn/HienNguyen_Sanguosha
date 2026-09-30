@@ -30,7 +30,7 @@ function stateWithSeats(seats: Seat[]): GameState {
     pendingResponse: null,
     log: [],
     rng: createRng(1),
-    result: null,
+    result: null, generalSelection: null,
   };
 }
 
@@ -169,5 +169,18 @@ describe('gatherTriggeredSkills', () => {
 
     expect(found).toHaveLength(1);
     expect(found[0].owner).toEqual({ seatId: 'seat-b', slot: 'main' });
+  });
+});
+
+describe('gatherTriggeredSkills with a seat that has not chosen generals', () => {
+  it('skips the seat instead of throwing', () => {
+    const skill: GeneralDefinition = {
+      id: 'g1', kingdom: 'Wei', maxHp: 4,
+      skills: [{ id: 's', activation: 'auto', triggers: [{ point: 'after:X', condition: () => true, effect: () => [] }] }],
+    };
+    const registry: ContentRegistry = { cards: new Map(), generals: new Map([['g1', skill]]) };
+    const mode: GameModeDefinition = { id: 'm', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
+    const state = stateWithSeats([{ ...seat('seat-a', 0, 'g1', 'g1'), generals: null }]);
+    expect(gatherTriggeredSkills(state, registry, mode, 'after:X', {})).toEqual([]);
   });
 });

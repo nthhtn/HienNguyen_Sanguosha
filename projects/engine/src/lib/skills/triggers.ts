@@ -30,8 +30,8 @@ export function gatherTriggeredSkills(
 
   for (const seat of state.seats) {
     // An eliminated seat's generals are out of the game — their skills must not
-    // keep firing.
-    if (seat.eliminated) continue;
+    // keep firing. A seat still choosing its generals has none to fire.
+    if (seat.eliminated || !seat.generals) continue;
     for (const slot of GENERAL_SLOTS) {
       const general = registry.generals.get(seat.generals[slot].generalDefinitionId);
       if (!general) continue;

@@ -16,7 +16,7 @@ function baseState(overrides: Partial<GameState> = {}): GameState {
       },
     ],
     players: [], turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] }, phase: 'Play',
-    zones: [], pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null,
+    zones: [], pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
     ...overrides,
   };
 }

@@ -7,8 +7,8 @@ describe('domain factories', () => {
 
     expect(seat.maxCombinedHp).toBe(7);
     expect(seat.combinedHp).toBe(7);
-    expect(seat.generals.main).toEqual({ generalDefinitionId: 'main-general', revealed: false });
-    expect(seat.generals.deputy).toEqual({ generalDefinitionId: 'deputy-general', revealed: false });
+    expect(seat.generals!.main).toEqual({ generalDefinitionId: 'main-general', revealed: false });
+    expect(seat.generals!.deputy).toEqual({ generalDefinitionId: 'deputy-general', revealed: false });
     expect(seat.eliminated).toBe(false);
   });
 

@@ -81,6 +81,7 @@ export const kingdomWarMode: GameModeDefinition = {
       log: [],
       rng: currentRng,
       result: null,
+      generalSelection: null,
     };
     return { state, rng: currentRng };
   },
@@ -127,7 +128,7 @@ export const kingdomWarMode: GameModeDefinition = {
         const event = subject as DamageDealtEvent;
         if (event.damage.target.kind !== 'seat') return false;
         const seat = state.seats.find((s) => s.id === event.damage.target.seatId);
-        return !!seat && !seat.generals.main.revealed && seat.combinedHp <= Math.floor(seat.maxCombinedHp / 2);
+        return !!seat && !!seat.generals && !seat.generals.main.revealed && seat.combinedHp <= Math.floor(seat.maxCombinedHp / 2);
       },
       effect: (_state, subject) => {
         const event = subject as DamageDealtEvent;
@@ -140,7 +141,7 @@ export const kingdomWarMode: GameModeDefinition = {
         const event = subject as DamageDealtEvent;
         if (event.damage.target.kind !== 'seat') return false;
         const seat = state.seats.find((s) => s.id === event.damage.target.seatId);
-        return !!seat && !seat.generals.deputy.revealed && seat.combinedHp <= 0;
+        return !!seat && !!seat.generals && !seat.generals.deputy.revealed && seat.combinedHp <= 0;
       },
       effect: (_state, subject) => {
         const event = subject as DamageDealtEvent;

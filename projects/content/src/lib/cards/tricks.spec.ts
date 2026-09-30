@@ -49,7 +49,7 @@ function twoSeatState(seatAHandCardId: string): GameState {
       { id: 'seat-b:hand', kind: 'hand', ownerSeatId: 'seat-b', cards: [] },
       { id: 'seat-b:equip', kind: 'equip', ownerSeatId: 'seat-b', cards: [] },
     ],
-    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null,
+    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
   };
 }
 

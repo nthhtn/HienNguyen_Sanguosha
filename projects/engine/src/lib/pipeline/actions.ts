@@ -4,6 +4,7 @@ export type Action =
   | { kind: 'DrawCardsAction'; seatId: string; count: number }
   | { kind: 'PlayCardAction'; seatId: string; cardInstanceId: string; targets: Target[] }
   | { kind: 'RevealGeneralAction'; seatId: string; slot: 'main' | 'deputy' }
+  | { kind: 'ChooseGeneralsAction'; seatId: string; mainId: string; deputyId: string }
   | { kind: 'RespondAction'; seatId: string; pendingResponseId: string; cardInstanceId: string }
   | { kind: 'PassAction'; seatId: string; pendingResponseId: string }
   | { kind: 'EndPhaseAction'; seatId: string };
@@ -12,6 +13,7 @@ export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'DrawCardsAction',
   'PlayCardAction',
   'RevealGeneralAction',
+  'ChooseGeneralsAction',
   'RespondAction',
   'PassAction',
   'EndPhaseAction',

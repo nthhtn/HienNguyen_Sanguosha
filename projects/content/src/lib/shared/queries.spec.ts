@@ -15,7 +15,7 @@ function stateWith(seats: Seat[]): GameState {
     seats, players: [],
     turn: { turnNumber: 1, ownerSeatId: seats[0].id, extraTurnStack: [] },
     phase: 'Play', zones: [], pendingResponse: null, log: [],
-    rng: { seed: 1, counter: 0 }, result: null,
+    rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
   };
 }
 

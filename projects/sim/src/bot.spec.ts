@@ -27,7 +27,7 @@ function state(pendingResponse: GameState['pendingResponse'] = null): GameState 
       { id: 'seat-b:hand', kind: 'hand', ownerSeatId: 'seat-b', cards: [] },
       { id: 'seat-b:equip', kind: 'equip', ownerSeatId: 'seat-b', cards: [] },
     ],
-    pendingResponse, log: [], rng: createRng(1), result: null,
+    pendingResponse, log: [], rng: createRng(1), result: null, generalSelection: null,
   };
 }
 

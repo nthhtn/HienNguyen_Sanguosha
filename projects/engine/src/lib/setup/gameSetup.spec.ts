@@ -20,7 +20,7 @@ function stubSetupMode(): GameModeDefinition {
         pendingResponse: null,
         log: [],
         rng,
-        result: null,
+        result: null, generalSelection: null,
       };
       return { state, rng };
     },

@@ -13,7 +13,7 @@ function seat(id: string, index: number, eliminated = false): Seat {
 
 function state(phase: GameState['phase'], turn: GameState['turn'], seats: Seat[]): GameState {
   return {
-    seats, players: [], turn, phase, zones: [], pendingResponse: null, log: [], rng: createRng(1), result: null,
+    seats, players: [], turn, phase, zones: [], pendingResponse: null, log: [], rng: createRng(1), result: null, generalSelection: null,
   };
 }
 

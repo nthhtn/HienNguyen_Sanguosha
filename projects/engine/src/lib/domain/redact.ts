@@ -1,4 +1,4 @@
-import { CardInstance, CardZone, GameState, Seat } from './types';
+import { CardInstance, CardZone, GameState, Seat, SeatGenerals } from './types';
 
 const HIDDEN_GENERAL_ID = 'hidden';
 const HIDDEN_CARD_DEFINITION_ID = 'hidden';
@@ -14,22 +14,20 @@ function redactZone(zone: CardZone, viewerSeatId: string): CardZone {
   return { ...zone, cards: zone.cards.map(maskCard) };
 }
 
-function isKingdomRevealed(seat: Seat): boolean {
-  return seat.generals.main.revealed || seat.generals.deputy.revealed;
+function isKingdomRevealed(generals: SeatGenerals): boolean {
+  return generals.main.revealed || generals.deputy.revealed;
 }
 
 function redactSeat(seat: Seat, viewerSeatId: string): Seat {
-  if (seat.id === viewerSeatId) return seat;
+  // A seat with no generals yet has nothing to mask (its kingdom is 'hidden').
+  if (seat.id === viewerSeatId || !seat.generals) return seat;
+  const { main, deputy } = seat.generals;
   return {
     ...seat,
-    kingdom: isKingdomRevealed(seat) ? seat.kingdom : 'hidden',
+    kingdom: isKingdomRevealed(seat.generals) ? seat.kingdom : 'hidden',
     generals: {
-      main: seat.generals.main.revealed
-        ? seat.generals.main
-        : { ...seat.generals.main, generalDefinitionId: HIDDEN_GENERAL_ID },
-      deputy: seat.generals.deputy.revealed
-        ? seat.generals.deputy
-        : { ...seat.generals.deputy, generalDefinitionId: HIDDEN_GENERAL_ID },
+      main: main.revealed ? main : { ...main, generalDefinitionId: HIDDEN_GENERAL_ID },
+      deputy: deputy.revealed ? deputy : { ...deputy, generalDefinitionId: HIDDEN_GENERAL_ID },
     },
   };
 }

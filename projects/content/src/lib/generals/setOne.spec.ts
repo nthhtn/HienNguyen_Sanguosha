@@ -66,7 +66,7 @@ function stateWithMainGeneral(generalId: string, seatACombinedHp = 5): GameState
       { id: 'seat-b:hand', kind: 'hand', ownerSeatId: 'seat-b', cards: [] },
       { id: 'seat-b:equip', kind: 'equip', ownerSeatId: 'seat-b', cards: [] },
     ],
-    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null,
+    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
   };
 }
 
@@ -104,7 +104,7 @@ describe('Zhuge Liang — Insight', () => {
       ...state,
       seats: state.seats.map((s) =>
         s.id === 'seat-b'
-          ? { ...s, generals: { ...s.generals, main: { generalDefinitionId: 'zhuge-liang', revealed: false } } }
+          ? { ...s, generals: { ...s.generals!, main: { generalDefinitionId: 'zhuge-liang', revealed: false } } }
           : s
       ),
     };
@@ -131,7 +131,7 @@ describe('owner scoping across two holders of the same general', () => {
               ...s,
               combinedHp: 4,
               maxCombinedHp: 6,
-              generals: { ...s.generals, main: { generalDefinitionId: 'sun-shangxiang', revealed: false } },
+              generals: { ...s.generals!, main: { generalDefinitionId: 'sun-shangxiang', revealed: false } },
             }
           : s
       ),

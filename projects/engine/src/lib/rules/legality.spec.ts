@@ -38,7 +38,7 @@ function state(overrides: Partial<GameState> = {}): GameState {
     pendingResponse: null,
     log: [],
     rng: createRng(1),
-    result: null,
+    result: null, generalSelection: null,
     ...overrides,
   };
 }

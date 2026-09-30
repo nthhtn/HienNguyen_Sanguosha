@@ -9,12 +9,12 @@ describe('Kingdom War setup', () => {
     const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 42);
     expect(state.seats.map((s) => s.kingdom)).toEqual(['Wei', 'Shu', 'Wu', 'Qun']);
     for (const seat of state.seats) {
-      const main = registry.generals.get(seat.generals.main.generalDefinitionId)!;
-      const deputy = registry.generals.get(seat.generals.deputy.generalDefinitionId)!;
+      const main = registry.generals.get(seat.generals!.main.generalDefinitionId)!;
+      const deputy = registry.generals.get(seat.generals!.deputy.generalDefinitionId)!;
       expect(seat.maxCombinedHp).toBe(main.maxHp + deputy.maxHp);
       expect(seat.combinedHp).toBe(seat.maxCombinedHp);
-      expect(seat.generals.main.revealed).toBe(false);
-      expect(seat.generals.deputy.revealed).toBe(false);
+      expect(seat.generals!.main.revealed).toBe(false);
+      expect(seat.generals!.deputy.revealed).toBe(false);
       const hand = state.zones.find((z) => z.id === seat.hand.zoneId)!;
       expect(hand.cards).toHaveLength(4);
     }
@@ -60,8 +60,8 @@ describe('Kingdom War forced reveal and elimination', () => {
       { registry, mode: kingdomWarMode }
     );
     const seatB = next.seats.find((s) => s.id === 'seat-b')!;
-    expect(seatB.generals.main.revealed).toBe(true);
-    expect(seatB.generals.deputy.revealed).toBe(true);
+    expect(seatB.generals!.main.revealed).toBe(true);
+    expect(seatB.generals!.deputy.revealed).toBe(true);
     expect(seatB.eliminated).toBe(true);
     expect(next.result).toEqual({ endedAt: 1, winningSeatIds: ['seat-a'], losingSeatIds: ['seat-b'] });
   });
@@ -126,7 +126,7 @@ describe('Kingdom War per-turn draw', () => {
     // about "the" Zhuge Liang bonus ambiguous).
     const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42);
     const seatC = created.seats.find((s) => s.id === 'seat-c')!;
-    expect(seatC.generals.deputy.generalDefinitionId).toBe('zhuge-liang');
+    expect(seatC.generals!.deputy.generalDefinitionId).toBe('zhuge-liang');
     const state: GameState = { ...created, phase: 'Judgment', turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] } };
     const handBefore = state.zones.find((z) => z.id === seatC.hand.zoneId)!;
     expect(handBefore.cards).toHaveLength(4);

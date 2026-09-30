@@ -52,7 +52,7 @@ function makeState(): GameState {
     pendingResponse: null,
     log: [],
     rng: { seed: 1, counter: 0 },
-    result: null,
+    result: null, generalSelection: null,
   };
 }
 
@@ -62,21 +62,21 @@ describe('redactStateForSeat', () => {
     const viewFromA = redactStateForSeat(state, 'seat-a');
 
     const ownSeat = viewFromA.seats.find((s) => s.id === 'seat-a')!;
-    expect(ownSeat.generals.main.generalDefinitionId).toBe('general-x');
+    expect(ownSeat.generals!.main.generalDefinitionId).toBe('general-x');
 
     const otherSeat = viewFromA.seats.find((s) => s.id === 'seat-b')!;
-    expect(otherSeat.generals.main.generalDefinitionId).toBe('hidden');
-    expect(otherSeat.generals.deputy.generalDefinitionId).toBe('hidden');
+    expect(otherSeat.generals!.main.generalDefinitionId).toBe('hidden');
+    expect(otherSeat.generals!.deputy.generalDefinitionId).toBe('hidden');
   });
 
   it('reveals a general to everyone once revealed is true', () => {
     const state = makeState();
-    state.seats[1].generals.main.revealed = true;
+    state.seats[1].generals!.main.revealed = true;
     const viewFromA = redactStateForSeat(state, 'seat-a');
 
     const otherSeat = viewFromA.seats.find((s) => s.id === 'seat-b')!;
-    expect(otherSeat.generals.main.generalDefinitionId).toBe('general-z');
-    expect(otherSeat.generals.deputy.generalDefinitionId).toBe('hidden');
+    expect(otherSeat.generals!.main.generalDefinitionId).toBe('general-z');
+    expect(otherSeat.generals!.deputy.generalDefinitionId).toBe('hidden');
   });
 
   it("masks another seat's hand contents but preserves card count and instance ids", () => {
@@ -125,7 +125,7 @@ describe('redactStateForSeat', () => {
 
   it('reveals a kingdom once either of that seat\'s generals is revealed', () => {
     const state = makeState();
-    state.seats[1].generals.deputy.revealed = true;
+    state.seats[1].generals!.deputy.revealed = true;
     const viewFromA = redactStateForSeat(state, 'seat-a');
 
     expect(viewFromA.seats.find((s) => s.id === 'seat-b')!.kingdom).toBe('Shu');
@@ -136,5 +136,15 @@ describe('redactStateForSeat', () => {
     const viewFromA = redactStateForSeat(state, 'seat-a');
 
     expect(viewFromA.seats.find((s) => s.id === 'seat-a')!.kingdom).toBe('Wei');
+  });
+});
+
+describe('redactStateForSeat with seats that have not chosen generals', () => {
+  it('passes an unchosen seat through without masking', () => {
+    const state = makeState();
+    state.seats[1] = { ...state.seats[1], generals: null, kingdom: 'hidden' };
+    const redacted = redactStateForSeat(state, 'seat-a');
+    expect(redacted.seats[1].generals).toBeNull();
+    expect(redacted.seats[1].kingdom).toBe('hidden');
   });
 });

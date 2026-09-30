@@ -48,12 +48,14 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     case 'RevealGeneralEffect': {
       const seat = state.seats.find((s) => s.id === effect.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
-      if (seat.generals[effect.slot].revealed) {
+      const generals = seat.generals;
+      if (!generals) throw new Error(`Seat ${effect.seatId} has not chosen its generals yet`);
+      if (generals[effect.slot].revealed) {
         return { state, events: [] };
       }
       const seats = state.seats.map((s) =>
         s.id === effect.seatId
-          ? { ...s, generals: { ...s.generals, [effect.slot]: { ...s.generals[effect.slot], revealed: true } } }
+          ? { ...s, generals: { ...generals, [effect.slot]: { ...generals[effect.slot], revealed: true } } }
           : s
       );
       const event: EngineEvent = { kind: 'GeneralRevealedEvent', seatId: effect.seatId, slot: effect.slot };

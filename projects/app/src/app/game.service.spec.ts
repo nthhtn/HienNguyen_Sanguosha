@@ -57,7 +57,7 @@ describe('GameService', () => {
     expect(visible.seats.find((s) => s.id === seatId)).toBeDefined();
     // A different seat's generals should be masked in the visible view.
     const otherSeat = visible.seats.find((s) => s.id !== seatId)!;
-    expect(otherSeat.generals.main.generalDefinitionId).toBe('hidden');
+    expect(otherSeat.generals!.main.generalDefinitionId).toBe('hidden');
   });
 
   it('submit advances state on a legal action and resets revealedSeatId', () => {

@@ -46,6 +46,12 @@ export interface SeatEliminatedEvent {
   seatId: string;
 }
 
+// Deliberately carries no general ids: the log is visible to every seat.
+export interface GeneralsChosenEvent {
+  kind: 'GeneralsChosenEvent';
+  seatId: string;
+}
+
 export type EngineEvent =
   | CardsDrawnEvent
   | DamageDealtEvent
@@ -54,4 +60,5 @@ export type EngineEvent =
   | GeneralRevealedEvent
   | HealEvent
   | CardMovedEvent
-  | SeatEliminatedEvent;
+  | SeatEliminatedEvent
+  | GeneralsChosenEvent;

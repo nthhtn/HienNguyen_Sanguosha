@@ -18,7 +18,7 @@ export interface Turn {
   extraTurnStack: string[];
 }
 
-export type Phase = 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End';
+export type Phase = 'GeneralSelection' | 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End';
 
 export interface GameResult {
   endedAt: number;
@@ -32,6 +32,17 @@ export interface GeneralInstance {
   revealed: boolean;
 }
 
+export interface SeatGenerals {
+  main: GeneralInstance;
+  deputy: GeneralInstance;
+}
+
+// Pre-game general selection. `candidates` holds the general ids dealt to each
+// seat that has not chosen yet; a seat's entry is removed once it chooses.
+export interface GeneralSelectionState {
+  candidates: Record<string, string[]>;
+}
+
 export interface CardZoneRef {
   zoneId: string;
 }
@@ -40,7 +51,8 @@ export interface Seat {
   id: string;
   index: number;
   kingdom: Kingdom;
-  generals: { main: GeneralInstance; deputy: GeneralInstance };
+  // null only during the GeneralSelection phase, before this seat has chosen.
+  generals: SeatGenerals | null;
   combinedHp: number;
   maxCombinedHp: number;
   hand: CardZoneRef;
@@ -101,4 +113,5 @@ export interface GameState {
   log: EngineEvent[];
   rng: RngState;
   result: GameResult | null;
+  generalSelection: GeneralSelectionState | null;
 }
