@@ -1,12 +1,13 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { Action } from 'engine';
+import { Action, ChooseGeneralsAction } from 'engine';
 import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { EventLog } from './event-log';
 import { SeatSummary } from './seat-summary';
 import { GameOver } from './game-over';
+import { GeneralSelection } from './general-selection';
 
 interface SeatViewModel {
   seat: import('engine').Seat;
@@ -15,7 +16,7 @@ interface SeatViewModel {
 
 @Component({
   selector: 'app-game-board',
-  imports: [RevealGateOverlay, ActionList, EventLog, SeatSummary, GameOver, RouterLink],
+  imports: [RevealGateOverlay, ActionList, EventLog, SeatSummary, GameOver, GeneralSelection, RouterLink],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner">
@@ -31,18 +32,27 @@ interface SeatViewModel {
         @if (gameService.revealedSeatId() !== activeSeatId) {
           <app-reveal-gate-overlay [seatId]="activeSeatId" (revealed)="gameService.reveal(activeSeatId)" />
         } @else if (visibleState(); as visible) {
-          <div class="seats">
-            @for (vm of seatViewModels(); track vm.seat.id) {
-              <app-seat-summary [seat]="vm.seat" [handCount]="vm.handCount" />
-            }
-          </div>
-          <app-action-list
-            [actions]="gameService.legalActions()"
-            [state]="visible"
-            [registry]="gameService.registry"
-            (actionChosen)="submit($event)"
-          />
-          <app-event-log [events]="visible.log" />
+          @if (visible.phase === 'GeneralSelection') {
+            <app-general-selection
+              [candidates]="selectionCandidates()"
+              [actions]="generalChoices()"
+              [registry]="gameService.registry"
+              (chosen)="submit($event)"
+            />
+          } @else {
+            <div class="seats">
+              @for (vm of seatViewModels(); track vm.seat.id) {
+                <app-seat-summary [seat]="vm.seat" [handCount]="vm.handCount" />
+              }
+            </div>
+            <app-action-list
+              [actions]="gameService.legalActions()"
+              [state]="visible"
+              [registry]="gameService.registry"
+              (actionChosen)="submit($event)"
+            />
+            <app-event-log [events]="visible.log" />
+          }
         }
       }
     } @else {
@@ -67,6 +77,18 @@ export class GameBoard {
       handCount: state.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0,
     }));
   });
+
+  // The revealed seat's own dealt candidates (other seats' are redacted anyway).
+  protected readonly selectionCandidates = computed<string[]>(() => {
+    const visible = this.visibleState();
+    const seatId = this.activeSeatId();
+    if (!visible || !seatId) return [];
+    return visible.generalSelection?.candidates[seatId] ?? [];
+  });
+
+  protected readonly generalChoices = computed<ChooseGeneralsAction[]>(() =>
+    this.gameService.legalActions().filter((a): a is ChooseGeneralsAction => a.kind === 'ChooseGeneralsAction')
+  );
 
   submit(action: Action): void {
     this.gameService.submit(action);

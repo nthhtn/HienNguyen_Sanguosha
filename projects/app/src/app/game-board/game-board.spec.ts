@@ -1,7 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { GameBoard } from './game-board';
 import { GameService } from '../game.service';
+import { GeneralSelection } from './general-selection';
+
+function finishSelection(gameService: GameService): void {
+  while (gameService.state()!.phase === 'GeneralSelection') {
+    gameService.submit(gameService.legalActions()[0]);
+  }
+}
 
 describe('GameBoard', () => {
   let gameService: GameService;
@@ -37,7 +45,7 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-action-list')).toBeNull();
   });
 
-  it('shows the action list once the active seat is revealed, and hides the gate', () => {
+  it('shows the general selection view, not the action list, after reveal during GeneralSelection', () => {
     gameService.startGame(2, 1);
     gameService.reveal(gameService.activeSeatId()!);
     const fixture = TestBed.createComponent(GameBoard);
@@ -45,6 +53,35 @@ describe('GameBoard', () => {
 
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
+    expect(el.querySelector('app-general-selection')).not.toBeNull();
+    expect(el.querySelector('app-action-list')).toBeNull();
+    expect(el.querySelectorAll('app-general-selection [data-general-id]')).toHaveLength(5);
+  });
+
+  it('submits the chosen generals and gates the next seat', () => {
+    gameService.startGame(2, 1);
+    gameService.reveal('seat-0');
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+
+    const selection = fixture.debugElement.query(By.directive(GeneralSelection)).componentInstance as GeneralSelection;
+    selection.chosen.emit(gameService.legalActions()[0] as import('engine').ChooseGeneralsAction);
+    fixture.detectChanges();
+
+    expect(gameService.state()!.seats[0].generals).not.toBeNull();
+    expect(gameService.activeSeatId()).toBe('seat-1');
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-reveal-gate-overlay')).not.toBeNull();
+  });
+
+  it('shows the action list once every seat has chosen and the active seat is revealed', () => {
+    gameService.startGame(2, 1);
+    finishSelection(gameService);
+    gameService.reveal(gameService.activeSeatId()!);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-general-selection')).toBeNull();
     expect(el.querySelector('app-action-list')).not.toBeNull();
   });
 
