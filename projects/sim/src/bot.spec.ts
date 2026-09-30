@@ -3,6 +3,7 @@ import { createRng } from 'engine';
 import type { GameState, Effect } from 'engine';
 
 const deferredEffect: Effect = { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-b' }, amount: 1 };
+const emptyRegistry = { cards: new Map(), generals: new Map() };
 
 function state(pendingResponse: GameState['pendingResponse'] = null): GameState {
   return {
@@ -72,13 +73,13 @@ describe('seatToAct', () => {
 
 describe('pickRandomAction', () => {
   it('picks a legal action for the acting seat (EndPhaseAction is always legal on its turn)', () => {
-    const { action } = pickRandomAction(state(), createRng(5));
+    const { action } = pickRandomAction(state(), createRng(5), emptyRegistry);
     expect(action.seatId).toBe('seat-a');
   });
 
   it('is deterministic for a given seed', () => {
-    const first = pickRandomAction(state(), createRng(5));
-    const second = pickRandomAction(state(), createRng(5));
+    const first = pickRandomAction(state(), createRng(5), emptyRegistry);
+    const second = pickRandomAction(state(), createRng(5), emptyRegistry);
     expect(first.action).toEqual(second.action);
   });
 
@@ -88,6 +89,6 @@ describe('pickRandomAction', () => {
       ...base,
       seats: base.seats.map((s) => (s.id === 'seat-a' ? { ...s, eliminated: true } : s)),
     };
-    expect(() => pickRandomAction(withEliminatedOwner, createRng(5))).toThrow(/No seat is able to act/);
+    expect(() => pickRandomAction(withEliminatedOwner, createRng(5), emptyRegistry)).toThrow(/No seat is able to act/);
   });
 });

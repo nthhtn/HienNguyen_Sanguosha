@@ -1,17 +1,16 @@
-import { nextInt } from 'engine';
-import { getLegalActions } from 'engine';
-import type { GameState, RngState, Action } from 'engine';
+import { nextInt, getActiveSeatId, getLegalActions } from 'engine';
+import type { GameState, RngState, Action, ContentRegistry } from 'engine';
 
-// Returns the seat whose turn it is to submit an action, or null when no seat
-// can act — an unknown or eliminated seat is never able to act, even if it is
-// still named as the turn owner or as a pending response's responder.
+// Kept as the bot's named entry point; the engine owns the rule.
 export function seatToAct(state: GameState): string | null {
-  const candidateId = state.pendingResponse ? state.pendingResponse.respondingSeatId : state.turn.ownerSeatId;
-  const seat = state.seats.find((s) => s.id === candidateId);
-  return seat && !seat.eliminated ? candidateId : null;
+  return getActiveSeatId(state);
 }
 
-export function pickRandomAction(state: GameState, rng: RngState): { action: Action; rng: RngState } {
+export function pickRandomAction(
+  state: GameState,
+  rng: RngState,
+  registry: ContentRegistry
+): { action: Action; rng: RngState } {
   const seatId = seatToAct(state);
   if (seatId === null) {
     throw new Error(
@@ -19,7 +18,7 @@ export function pickRandomAction(state: GameState, rng: RngState): { action: Act
         `(turn owner ${state.turn.ownerSeatId}, responder ${state.pendingResponse?.respondingSeatId ?? 'none'})`
     );
   }
-  const legal = getLegalActions(state, seatId);
+  const legal = getLegalActions(state, seatId, registry);
   if (legal.length === 0) {
     throw new Error(`No legal actions for seat ${seatId} to act with`);
   }

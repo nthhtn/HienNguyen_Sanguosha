@@ -5,8 +5,9 @@ import { buildContentRegistry, kingdomWarMode } from 'content';
 import { runGame } from './runGame';
 import { checkInvariants } from './invariants';
 
+const registry = buildContentRegistry();
+
 function playOneGame(seed: number, numSeats: number) {
-  const registry = buildContentRegistry();
   const seatIds = Array.from({ length: numSeats }, (_, i) => `seat-${i}`);
   const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
   return runGame(initialState, { registry, mode: kingdomWarMode }, seed);
@@ -20,7 +21,7 @@ function runSingle(seed: number, numSeats: number): void {
   for (const event of finalState.log) {
     console.log(JSON.stringify(event));
   }
-  const violations = checkInvariants(finalState);
+  const violations = checkInvariants(finalState, registry);
   if (violations.length > 0) {
     console.error('Invariant violations:', violations);
     process.exitCode = 1;
@@ -31,7 +32,7 @@ function runBatch(numGames: number, numSeats: number): void {
   let failures = 0;
   for (let seed = 0; seed < numGames; seed++) {
     const { finalState, actionsSubmitted } = playOneGame(seed, numSeats);
-    const violations = checkInvariants(finalState);
+    const violations = checkInvariants(finalState, registry);
     if (violations.length > 0 || !finalState.result) {
       failures++;
       console.error(

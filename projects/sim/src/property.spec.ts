@@ -1,18 +1,20 @@
 // projects/sim/src/property.spec.ts
 import { createGame } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, kingdomWarMode, kingdomWarMaxSeats } from 'content';
 import { runGame } from './runGame';
 import { checkInvariants } from './invariants';
 
-describe('property: simulated Kingdom War games across many seeds and seat counts', () => {
+describe('property: simulated Kingdom War games across many seeds and every legal seat count', () => {
   it('every game terminates with a valid, non-dangling GameResult and no invariant violations', () => {
     const registry = buildContentRegistry();
-    const seatCounts = [2, 3, 4, 5, 6, 7, 8];
+    // Kingdom War deals 5 unique generals per seat, so the table is capped by the pool.
+    const maxSeats = kingdomWarMaxSeats(registry);
+    const seatCounts = Array.from({ length: maxSeats - 1 }, (_, i) => i + 2);
     const failures: string[] = [];
     let seed = 0;
 
     for (const numSeats of seatCounts) {
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 15; i++) {
         seed++;
         const seatIds = Array.from({ length: numSeats }, (_, idx) => `seat-${idx}`);
         const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
@@ -24,7 +26,7 @@ describe('property: simulated Kingdom War games across many seeds and seat count
         );
 
         const label = `seed ${seed} (${numSeats} seats)`;
-        const violations = checkInvariants(finalState);
+        const violations = checkInvariants(finalState, registry);
         if (violations.length > 0) failures.push(`${label}: ${violations.join('; ')}`);
         if (!finalState.result) failures.push(`${label}: did not terminate within ${actionsSubmitted} actions`);
         if (finalState.result && finalState.pendingResponse) {

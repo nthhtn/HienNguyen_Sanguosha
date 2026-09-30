@@ -1,6 +1,6 @@
-import type { GameState } from 'engine';
+import type { ContentRegistry, GameState } from 'engine';
 
-export function checkInvariants(state: GameState): string[] {
+export function checkInvariants(state: GameState, registry?: ContentRegistry): string[] {
   const violations: string[] = [];
 
   for (const seat of state.seats) {
@@ -42,6 +42,30 @@ export function checkInvariants(state: GameState): string[] {
     const distinctZoneIds = [...new Set(zoneIds)];
     if (distinctZoneIds.length > 1) {
       violations.push(`Card instance ${instanceId} is in more than one zone at once: ${distinctZoneIds.join(', ')}`);
+    }
+  }
+
+  if (state.phase !== 'GeneralSelection') {
+    if (state.generalSelection !== null) {
+      violations.push('generalSelection is still set after the GeneralSelection phase ended');
+    }
+    for (const seat of state.seats) {
+      if (!seat.generals) violations.push(`Seat ${seat.id} has no generals after general selection`);
+    }
+  }
+
+  const holderByGeneralId = new Map<string, string>();
+  for (const seat of state.seats) {
+    if (!seat.generals) continue;
+    for (const slot of ['main', 'deputy'] as const) {
+      const generalId = seat.generals[slot].generalDefinitionId;
+      const other = holderByGeneralId.get(generalId);
+      if (other) violations.push(`General ${generalId} is held by both ${other} and ${seat.id}`);
+      holderByGeneralId.set(generalId, seat.id);
+      const kingdom = registry?.generals.get(generalId)?.kingdom;
+      if (registry && kingdom !== seat.kingdom) {
+        violations.push(`Seat ${seat.id} (${seat.kingdom}) holds ${generalId} of kingdom ${kingdom ?? 'unknown'}`);
+      }
     }
   }
 

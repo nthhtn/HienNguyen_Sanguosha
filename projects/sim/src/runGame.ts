@@ -17,7 +17,7 @@ export function runGame(
   let botRng = createRng(botRngSeed);
   let actionsSubmitted = 0;
   while (!state.result && actionsSubmitted < maxActions) {
-    const picked = pickRandomAction(state, botRng);
+    const picked = pickRandomAction(state, botRng, ctx.registry);
     botRng = picked.rng;
     const result = resolve(state, picked.action, ctx);
     state = result.state;
