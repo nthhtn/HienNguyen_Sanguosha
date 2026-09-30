@@ -1,4 +1,4 @@
-import { actionLabel, eventLabel, generalDisplayName, kingdomDisplayName } from './labels';
+import { actionLabel, cardDefinitionId, cardIdDisplayName, eventLabel, generalDisplayName, kingdomDisplayName } from './labels';
 import { Action, ContentRegistry, EngineEvent, GameState } from 'engine';
 
 function stateWithZones(): GameState {
@@ -36,6 +36,26 @@ describe('generalDisplayName', () => {
 
   it('renders the hidden sentinel as a human phrase', () => {
     expect(generalDisplayName('hidden')).toBe('a hidden general');
+  });
+});
+
+describe('cardIdDisplayName', () => {
+  it('title-cases a kebab-case id', () => {
+    expect(cardIdDisplayName('green-dragon-blade')).toBe('Green Dragon Blade');
+  });
+
+  it('renders the hidden sentinel as a human phrase', () => {
+    expect(cardIdDisplayName('hidden')).toBe('a hidden card');
+  });
+});
+
+describe('cardDefinitionId', () => {
+  it("returns a card instance's definitionId when it exists in a zone", () => {
+    expect(cardDefinitionId(stateWithZones(), 'card-1')).toBe('sha');
+  });
+
+  it('returns undefined when no zone contains the instance', () => {
+    expect(cardDefinitionId(stateWithZones(), 'missing')).toBeUndefined();
   });
 });
 

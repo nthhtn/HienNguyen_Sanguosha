@@ -20,6 +20,20 @@ function emptyRegistry(): ContentRegistry {
   return { cards: new Map(), generals: new Map() };
 }
 
+function stateWithShaInHand(): GameState {
+  return {
+    ...emptyState(),
+    zones: [
+      {
+        id: 'hand-0',
+        kind: 'hand',
+        ownerSeatId: 'seat-0',
+        cards: [{ instanceId: 'card-1', definitionId: 'sha', suit: 'spade', rank: 7 }],
+      },
+    ],
+  };
+}
+
 describe('ActionList', () => {
   it('renders one button per action and emits the chosen action on click', () => {
     const fixture = TestBed.createComponent(ActionList);
@@ -43,5 +57,24 @@ describe('ActionList', () => {
     buttons[1].dispatchEvent(new Event('click'));
 
     expect(chosenSpy).toHaveBeenCalledWith(actions[1]);
+
+    expect(el.querySelectorAll('app-card-art')).toHaveLength(0);
+  });
+
+  it('renders a card thumbnail next to a PlayCardAction for the card being played', () => {
+    const fixture = TestBed.createComponent(ActionList);
+    const actions: Action[] = [
+      { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [] },
+      { kind: 'EndPhaseAction', seatId: 'seat-0' },
+    ];
+    fixture.componentRef.setInput('actions', actions);
+    fixture.componentRef.setInput('state', stateWithShaInHand());
+    fixture.componentRef.setInput('registry', emptyRegistry());
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    const thumbnails = el.querySelectorAll('app-card-art');
+    expect(thumbnails).toHaveLength(1);
+    expect(thumbnails[0].querySelector('img')?.getAttribute('src')).toBe('/card-art/cards/basic/sha.jpg');
   });
 });

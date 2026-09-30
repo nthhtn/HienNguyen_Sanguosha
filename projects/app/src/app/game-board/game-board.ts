@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { Action, ChooseGeneralsAction } from 'engine';
+import { Action, CardInstance, ChooseGeneralsAction } from 'engine';
 import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
@@ -11,7 +11,7 @@ import { GeneralSelection } from './general-selection';
 
 interface SeatViewModel {
   seat: import('engine').Seat;
-  handCount: number;
+  hand: CardInstance[];
 }
 
 @Component({
@@ -42,7 +42,7 @@ interface SeatViewModel {
           } @else {
             <div class="seats">
               @for (vm of seatViewModels(); track vm.seat.id) {
-                <app-seat-summary [seat]="vm.seat" [handCount]="vm.handCount" />
+                <app-seat-summary [seat]="vm.seat" [hand]="vm.hand" />
               }
             </div>
             <app-action-list
@@ -74,7 +74,7 @@ export class GameBoard {
     if (!state) return [];
     return state.seats.map((seat) => ({
       seat,
-      handCount: state.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0,
+      hand: state.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [],
     }));
   });
 

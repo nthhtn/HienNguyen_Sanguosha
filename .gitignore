@@ -42,3 +42,10 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Crawled content assets (copyrighted card scans, local-only -- see
+# projects/content/assets/README.md). manifest.json stays tracked.
+projects/content/assets/**/*.jpg
+projects/content/assets/**/*.jpeg
+projects/content/assets/**/*.png
+projects/content/assets/**/*.webp

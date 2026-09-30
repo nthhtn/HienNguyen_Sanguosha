@@ -19,6 +19,18 @@ function targetLabel(target: Target): string {
   return `${target.seatId}'s ${target.generalSlot} general`;
 }
 
+export function cardIdDisplayName(cardDefinitionId: string): string {
+  if (cardDefinitionId === 'hidden') return 'a hidden card';
+  return cardDefinitionId
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+export function cardDefinitionId(state: GameState, cardInstanceId: string): string | undefined {
+  return findCardInstance(state, cardInstanceId)?.definitionId;
+}
+
 export function generalDisplayName(generalDefinitionId: string): string {
   if (generalDefinitionId === 'hidden') return 'a hidden general';
   return generalDefinitionId
