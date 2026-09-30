@@ -1,0 +1,16 @@
+{
+  "maxHp": 4,
+  "name": "Dong Zhuo",
+  "skills": [
+    {
+      "name": "Tyranny",
+      "nameZh": "",
+      "text": "Whenever Dong Zhuo would recover health, he recovers 1 less."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-30",
+    "site": "Hand-coded content migrated from projects/content/src/lib/generals/setTwo.ts (not a base-set general; maxHp carried forward as-is, see the content data pipeline spec's Open Items)",
+    "url": ""
+  }
+}

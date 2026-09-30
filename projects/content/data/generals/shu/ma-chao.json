@@ -1,0 +1,24 @@
+{
+  "maxHp": 4,
+  "name": "Ma Chao",
+  "nameZh": "马超",
+  "skills": [
+    {
+      "name": "Horsemanship",
+      "nameZh": "马术",
+      "text": "Ma Chao always has a -1 bonus."
+    },
+    {
+      "name": "Iron Calvary",
+      "nameZh": "铁骑",
+      "text": "When Ma Chao attacks a player, he can flip a judgment card. If it is red, the attack cannot be escaped."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-ma-chao"
+  },
+  "title": "One Rider Matches One Thousand",
+  "titleZh": "一骑当千"
+}

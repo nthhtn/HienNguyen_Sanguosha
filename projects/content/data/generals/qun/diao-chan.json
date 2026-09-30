@@ -1,0 +1,24 @@
+{
+  "maxHp": 3,
+  "name": "Diao Chan",
+  "nameZh": "貂蝉",
+  "skills": [
+    {
+      "name": "Sow Discord",
+      "nameZh": "离间",
+      "text": "Once during her turn, Diao Chan can discard any card and choose two male characters to undergo a duel."
+    },
+    {
+      "name": "Eclipse the Moon",
+      "nameZh": "闭月",
+      "text": "After her discard phase, Diao Chan draws one card."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-diao-chan"
+  },
+  "title": "Masterpiece of Dance and Beauty",
+  "titleZh": "绝世的舞姬"
+}

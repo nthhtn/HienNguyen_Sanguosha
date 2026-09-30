@@ -7,6 +7,6 @@
     "declarationMap": true,
     "types": []
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../data/**/*.ts", "../data/**/*.json"],
   "exclude": ["**/*.spec.ts"]
 }

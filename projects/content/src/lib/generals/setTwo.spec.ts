@@ -1,6 +1,18 @@
 import { dongZhuoGeneral, zhaoYunGeneral, huangYueyingGeneral } from './setTwo';
 import { resolve } from 'engine';
-import type { GameState, ContentRegistry, GameModeDefinition, CardDefinition, CardZone, Seat } from 'engine';
+import type {
+  GameState,
+  ContentRegistry,
+  GameModeDefinition,
+  CardDefinition,
+  CardZone,
+  Seat,
+  GeneralDefinition,
+} from 'engine';
+import type { GeneralSkillSet } from './types';
+
+// Skill tests don't depend on kingdom or maxHp (seat HP is set explicitly below).
+const asDefinition = (g: GeneralSkillSet): GeneralDefinition => ({ ...g, kingdom: 'Wei', maxHp: 4 });
 
 const testHealSelfCard: CardDefinition = {
   id: 'test-heal-self-card', name: 'Test Heal Self', category: 'basic',
@@ -17,7 +29,7 @@ const testDamageCard: CardDefinition = {
 function registry(): ContentRegistry {
   return {
     cards: new Map([['test-heal-self-card', testHealSelfCard], ['test-damage-card', testDamageCard]]),
-    generals: new Map([['dong-zhuo', dongZhuoGeneral], ['zhao-yun', zhaoYunGeneral]]),
+    generals: new Map([['dong-zhuo', asDefinition(dongZhuoGeneral)], ['zhao-yun', asDefinition(zhaoYunGeneral)]]),
   };
 }
 

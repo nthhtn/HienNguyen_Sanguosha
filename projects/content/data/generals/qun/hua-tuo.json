@@ -1,0 +1,24 @@
+{
+  "maxHp": 3,
+  "name": "Hua Tuo",
+  "nameZh": "华佗",
+  "skills": [
+    {
+      "name": "First Aid",
+      "nameZh": "急救",
+      "text": "Outside of his turn, Hua Tuo can use any red card as a peach."
+    },
+    {
+      "name": "Green Vesicle",
+      "nameZh": "青囊",
+      "text": "Once per turn, Hua Tuo can discard any hand card to heal any character one unit of health."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-hua-tuo"
+  },
+  "title": "God Doctor",
+  "titleZh": "神医"
+}

@@ -1,0 +1,24 @@
+{
+  "maxHp": 3,
+  "name": "Lu Xun",
+  "nameZh": "陆逊",
+  "skills": [
+    {
+      "name": "Humility",
+      "nameZh": "谦逊",
+      "text": "Lu Xun cannot be the target of Steal or Capture."
+    },
+    {
+      "name": "Linked Camps",
+      "nameZh": "连营",
+      "text": "Whenever Lu Xun uses or loses his last hand card, he immediately draws a card."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-lu-xun"
+  },
+  "title": "Young and Learned Hero",
+  "titleZh": "儒生雄才"
+}

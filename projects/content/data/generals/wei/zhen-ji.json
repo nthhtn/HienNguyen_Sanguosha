@@ -1,0 +1,24 @@
+{
+  "maxHp": 3,
+  "name": "Zhen Ji",
+  "nameZh": "甄姬",
+  "skills": [
+    {
+      "name": "Overturned Country",
+      "nameZh": "倾国",
+      "text": "Zhen Ji can use any black hand card as escape."
+    },
+    {
+      "name": "River Goddess",
+      "nameZh": "洛神",
+      "text": "Before her judgment phase, Zhen Ji can choose to flip a judgment card. If the card is black, she can continue flipping additional cards. This process repeats until a red card is flipped. The red card is discarded, while all black cards are added to her hand."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhen-ji"
+  },
+  "title": "Unfortunate Beauty",
+  "titleZh": "薄幸的美人"
+}

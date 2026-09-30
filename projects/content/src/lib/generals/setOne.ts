@@ -1,5 +1,6 @@
-import type { GeneralDefinition, Effect } from 'engine';
+import type { Effect } from 'engine';
 import type { DamageDealtEvent, PhaseChangedEvent } from 'engine';
+import type { GeneralSkillSet } from './types';
 
 // Every skill below answers "is this about my own seat?" from the `owner`
 // context the engine passes in, which names the exact seat/slot the trigger was
@@ -8,10 +9,8 @@ import type { DamageDealtEvent, PhaseChangedEvent } from 'engine';
 // a search would resolve to whichever holder comes first — double-firing for
 // that seat and never firing for the others.
 
-export const xiahouDunGeneral: GeneralDefinition = {
+export const xiahouDunGeneral: GeneralSkillSet = {
   id: 'xiahou-dun',
-  kingdom: 'Wei',
-  maxHp: 4,
   skills: [
     {
       id: 'ferocity',
@@ -38,10 +37,8 @@ export const xiahouDunGeneral: GeneralDefinition = {
   ],
 };
 
-export const sunShangxiangGeneral: GeneralDefinition = {
+export const sunShangxiangGeneral: GeneralSkillSet = {
   id: 'sun-shangxiang',
-  kingdom: 'Wu',
-  maxHp: 3,
   skills: [
     {
       id: 'valor',
@@ -63,10 +60,8 @@ export const sunShangxiangGeneral: GeneralDefinition = {
   ],
 };
 
-export const zhugeLiangGeneral: GeneralDefinition = {
+export const zhugeLiangGeneral: GeneralSkillSet = {
   id: 'zhuge-liang',
-  kingdom: 'Shu',
-  maxHp: 3,
   skills: [
     {
       id: 'insight',

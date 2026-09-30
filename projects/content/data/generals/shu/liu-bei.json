@@ -1,0 +1,24 @@
+{
+  "maxHp": 4,
+  "name": "Liu Bei",
+  "nameZh": "刘备",
+  "skills": [
+    {
+      "name": "Kindness",
+      "nameZh": "仁德",
+      "text": "Liu Bei's can give any number of his hand cards to any players. If he gives away more than one card, he recovers one unit of health."
+    },
+    {
+      "name": "Fierce General",
+      "nameZh": "激将",
+      "text": "King Ability: If Liu Bei needs to use an attack, he can ask any member of Shu to provide him one."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-liu-bei"
+  },
+  "title": "Hero Through Troubled Times",
+  "titleZh": "乱世的枭雄"
+}

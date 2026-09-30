@@ -1,0 +1,19 @@
+{
+  "maxHp": 4,
+  "name": "Huang Gai",
+  "nameZh": "黄盖",
+  "skills": [
+    {
+      "name": "Battered Body",
+      "nameZh": "苦肉",
+      "text": "As many times as he would like during his turn, Huang Gai can choose to lose one unit of health to draw two cards."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-huang-gai"
+  },
+  "title": "Losing Flesh for the Country",
+  "titleZh": "轻身为国"
+}

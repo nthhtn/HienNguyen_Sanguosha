@@ -1,6 +1,10 @@
 import { xiahouDunGeneral, sunShangxiangGeneral, zhugeLiangGeneral } from './setOne';
 import { resolve } from 'engine';
-import type { GameState, ContentRegistry, GameModeDefinition, CardDefinition } from 'engine';
+import type { GameState, ContentRegistry, GameModeDefinition, CardDefinition, GeneralDefinition } from 'engine';
+import type { GeneralSkillSet } from './types';
+
+// Skill tests don't depend on kingdom or maxHp (seat HP is set explicitly below).
+const asDefinition = (g: GeneralSkillSet): GeneralDefinition => ({ ...g, kingdom: 'Wei', maxHp: 4 });
 
 const testDamageCard: CardDefinition = {
   id: 'test-damage-card',
@@ -24,9 +28,9 @@ function registry(): ContentRegistry {
   return {
     cards: new Map([['test-damage-card', testDamageCard]]),
     generals: new Map([
-      ['xiahou-dun', xiahouDunGeneral],
-      ['sun-shangxiang', sunShangxiangGeneral],
-      ['zhuge-liang', zhugeLiangGeneral],
+      ['xiahou-dun', asDefinition(xiahouDunGeneral)],
+      ['sun-shangxiang', asDefinition(sunShangxiangGeneral)],
+      ['zhuge-liang', asDefinition(zhugeLiangGeneral)],
     ]),
   };
 }

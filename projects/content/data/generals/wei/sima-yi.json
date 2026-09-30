@@ -1,0 +1,24 @@
+{
+  "maxHp": 3,
+  "name": "Sima Yi",
+  "nameZh": "司马懿",
+  "skills": [
+    {
+      "name": "Feedback",
+      "nameZh": "反馈",
+      "text": "When a player damages Sima Yi, he can choose to take one of their cards and place it in his hand."
+    },
+    {
+      "name": "Devil",
+      "nameZh": "鬼才",
+      "text": "After a judgment card is flipped, Sima Yi can discard one of his hand cards. The hand card that Sima Yi discard then becomes the new judgment card."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-sima-yi"
+  },
+  "title": "Ever Watchful Wolf",
+  "titleZh": "狼顾之鬼"
+}

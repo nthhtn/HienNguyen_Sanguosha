@@ -1,13 +1,12 @@
-import type { GeneralDefinition, Effect } from 'engine';
+import type { Effect } from 'engine';
 import { getSeatDistance } from '../shared/queries';
+import type { GeneralSkillSet } from './types';
 
 // See the note in setOne.ts: "which seat am I" comes from the `owner` context
 // the engine passes in, never from searching GameState for this general's id.
 
-export const dongZhuoGeneral: GeneralDefinition = {
+export const dongZhuoGeneral: GeneralSkillSet = {
   id: 'dong-zhuo',
-  kingdom: 'Qun',
-  maxHp: 4,
   skills: [
     {
       id: 'tyranny',
@@ -30,10 +29,8 @@ export const dongZhuoGeneral: GeneralDefinition = {
   ],
 };
 
-export const zhaoYunGeneral: GeneralDefinition = {
+export const zhaoYunGeneral: GeneralSkillSet = {
   id: 'zhao-yun',
-  kingdom: 'Wei',
-  maxHp: 4,
   skills: [
     {
       id: 'vanguard',
@@ -58,9 +55,7 @@ export const zhaoYunGeneral: GeneralDefinition = {
   ],
 };
 
-export const huangYueyingGeneral: GeneralDefinition = {
+export const huangYueyingGeneral: GeneralSkillSet = {
   id: 'huang-yueying',
-  kingdom: 'Shu',
-  maxHp: 3,
   skills: [],
 };

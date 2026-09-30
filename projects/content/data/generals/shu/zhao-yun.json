@@ -1,0 +1,19 @@
+{
+  "maxHp": 4,
+  "name": "Zhao Yun",
+  "nameZh": "赵云",
+  "skills": [
+    {
+      "name": "Dragon Courage",
+      "nameZh": "龙胆",
+      "text": "Zhao Yun can use attacks and escapes interchangeably."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhao-yun"
+  },
+  "title": "Young General",
+  "titleZh": "少年将军"
+}

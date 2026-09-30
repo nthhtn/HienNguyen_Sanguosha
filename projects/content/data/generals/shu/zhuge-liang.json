@@ -1,0 +1,24 @@
+{
+  "maxHp": 3,
+  "name": "Zhuge Liang",
+  "nameZh": "诸葛亮",
+  "skills": [
+    {
+      "name": "Astrology",
+      "nameZh": "观星",
+      "text": "Before his judgment phase, Zhuge Liang can look at the top X cards of the deck, X either the number of characters in play or 5, whichever number is smaller. He can then rearrange the order of these cards and put as many on the bottom of the deck as he chooses."
+    },
+    {
+      "name": "Empty City",
+      "nameZh": "空城",
+      "text": "When Zhuge Liang has no hand cards, he cannot be the target of an attack or duel."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhuge-liang"
+  },
+  "title": "Old Prime Minister",
+  "titleZh": "迟暮的丞相"
+}

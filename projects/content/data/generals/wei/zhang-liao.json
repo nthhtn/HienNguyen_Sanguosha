@@ -1,0 +1,19 @@
+{
+  "maxHp": 4,
+  "name": "Zhang Liao",
+  "nameZh": "张辽",
+  "skills": [
+    {
+      "name": "Raid",
+      "nameZh": "突袭",
+      "text": "During Zhang Liao's drawing phase, he can choose to forego drawing two cards from the deck and instead select up to two characters with hand cards. Zhang Liao takes one hand card from each character and places them in his hand."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhang-liao"
+  },
+  "title": "General of the Vanguard",
+  "titleZh": "前将军"
+}

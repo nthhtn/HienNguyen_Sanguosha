@@ -1,0 +1,24 @@
+{
+  "maxHp": 4,
+  "name": "Cao Cao",
+  "nameZh": "曹操",
+  "skills": [
+    {
+      "name": "Evil Hero",
+      "nameZh": "奸雄",
+      "text": "When Cao Cao is damaged by a card, he can immediately put it into his hand."
+    },
+    {
+      "name": "Escort",
+      "nameZh": "护驾",
+      "text": "King Ability: If Cao Cao needs to use an Escape, a member of Wei can use an Escape on his behalf."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-cao-cao"
+  },
+  "title": "Martial Emperor of Wei",
+  "titleZh": "魏武帝"
+}

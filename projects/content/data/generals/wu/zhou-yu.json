@@ -1,0 +1,24 @@
+{
+  "maxHp": 3,
+  "name": "Zhou Yu",
+  "nameZh": "周瑜",
+  "skills": [
+    {
+      "name": "Brave Gesture",
+      "nameZh": "英姿",
+      "text": "During his drawing phase, Zhou Yu can draw an additional card."
+    },
+    {
+      "name": "Sow Revolt",
+      "nameZh": "反间",
+      "text": "Once per turn, Zhou Yu can select a player and force them to choose a suit. Then, the target chooses one of Zhou Yu's hand cards. The card is then revealed and placed in the target's hand. If the target guessed the suit incorrectly, they receive one unit of damage."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhou-yu"
+  },
+  "title": "Viceroy",
+  "titleZh": "大都督"
+}

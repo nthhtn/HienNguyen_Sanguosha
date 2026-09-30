@@ -1,0 +1,19 @@
+{
+  "maxHp": 4,
+  "name": "Lu Bu",
+  "nameZh": "吕布",
+  "skills": [
+    {
+      "name": "Matchless",
+      "nameZh": "无双",
+      "text": "When Lu Bu attacks a player, they must use an additional Escape to stop the attack. When Lu Bu duels another player, they must use an additional Attack every round of the duel."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-lu-bu"
+  },
+  "title": "Embodiment of Force",
+  "titleZh": "武的化身"
+}
