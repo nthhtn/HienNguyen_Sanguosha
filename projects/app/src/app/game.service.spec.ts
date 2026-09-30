@@ -1,5 +1,11 @@
 import { GameService } from './game.service';
 
+function finishSelection(service: GameService): void {
+  while (service.state()!.phase === 'GeneralSelection') {
+    service.submit(service.legalActions()[0]);
+  }
+}
+
 describe('GameService', () => {
   let service: GameService;
 
@@ -32,57 +38,62 @@ describe('GameService', () => {
     expect(JSON.stringify(second)).toEqual(JSON.stringify(first));
   });
 
-  it('activeSeatId reflects the turn owner when there is no pending response', () => {
+  it('activeSeatId is the first seat still choosing during general selection', () => {
     service.startGame(2, 1);
-    expect(service.activeSeatId()).toBe(service.state()!.turn.ownerSeatId);
+    expect(service.state()!.phase).toBe('GeneralSelection');
+    expect(service.activeSeatId()).toBe('seat-0');
   });
 
-  it('legalActions matches getLegalActions for the active seat', () => {
+  it('legalActions are the active seat’s ChooseGeneralsActions during selection', () => {
     service.startGame(2, 1);
-    const state = service.state()!;
-    const seatId = service.activeSeatId()!;
-
-    expect(service.legalActions().length).toBeGreaterThan(0);
-    expect(service.legalActions().every((a) => a.seatId === seatId)).toBe(true);
+    const actions = service.legalActions();
+    expect(actions.length).toBeGreaterThan(0);
+    expect(actions.every((a) => a.kind === 'ChooseGeneralsAction' && a.seatId === 'seat-0')).toBe(true);
   });
 
-  it('visibleState is null until reveal is called, then matches the redacted view', () => {
+  it('visibleState is null until reveal is called, then hides other seats’ candidates', () => {
     service.startGame(2, 1);
     expect(service.visibleState()).toBeNull();
-
-    const seatId = service.activeSeatId()!;
-    service.reveal(seatId);
-
+    service.reveal('seat-0');
     const visible = service.visibleState()!;
-    expect(visible.seats.find((s) => s.id === seatId)).toBeDefined();
-    // A different seat's generals should be masked in the visible view.
-    const otherSeat = visible.seats.find((s) => s.id !== seatId)!;
-    expect(otherSeat.generals!.main.generalDefinitionId).toBe('hidden');
+    expect(visible.generalSelection!.candidates['seat-0']).not.toContain('hidden');
+    expect(visible.generalSelection!.candidates['seat-1']).toEqual(['hidden', 'hidden', 'hidden', 'hidden', 'hidden']);
   });
 
   it('submit advances state on a legal action and resets revealedSeatId', () => {
     service.startGame(2, 1);
-    const seatId = service.activeSeatId()!;
-    service.reveal(seatId);
-    expect(service.revealedSeatId()).toBe(seatId);
-
-    const endPhase = service.legalActions().find((a) => a.kind === 'EndPhaseAction')!;
-    expect(endPhase).toBeDefined();
-    service.submit(endPhase);
-
+    service.reveal('seat-0');
+    service.submit(service.legalActions()[0]);
     expect(service.revealedSeatId()).toBeNull();
     expect(service.lastError()).toBeNull();
+    expect(service.activeSeatId()).toBe('seat-1');
   });
 
   it('submit sets lastError and leaves state unchanged when resolve() throws', () => {
     service.startGame(2, 1);
     const stateBefore = service.state();
-    const seatId = service.activeSeatId()!;
-
-    service.submit({ kind: 'PassAction', seatId, pendingResponseId: 'does-not-exist' });
-
-    expect(service.lastError()).toContain('No matching pending response');
+    service.submit({ kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'does-not-exist' });
+    expect(service.lastError()).toContain('not legal during general selection');
     expect(service.state()).toBe(stateBefore);
+  });
+
+  it('completes general selection for every seat, then starts turn 1 at Judgment', () => {
+    service.startGame(3, 5);
+    finishSelection(service);
+    const state = service.state()!;
+    expect(state.phase).toBe('Judgment');
+    expect(state.seats.every((s) => s.generals !== null)).toBe(true);
+    expect(service.activeSeatId()).toBe('seat-0');
+  });
+
+  it('exposes the mode’s seat cap', () => {
+    expect(service.maxSeats).toBe(5);
+  });
+
+  it('startGame reports an over-cap table through lastError instead of throwing', () => {
+    expect(() => service.startGame(8, 1)).not.toThrow();
+    expect(service.state()).toBeNull();
+    expect(service.lastError()).toContain('between 2 and 5 seats');
   });
 
   it('clearError resets lastError without touching state', () => {

@@ -11,8 +11,12 @@ import { generalDisplayName, kingdomDisplayName } from '../labels';
         <span> (eliminated)</span>
       }
       <div>Kingdom: {{ kingdomDisplayName(seat().kingdom) }}</div>
-      <div>Main general: {{ generalDisplayName(seat().generals.main.generalDefinitionId) }}</div>
-      <div>Deputy general: {{ generalDisplayName(seat().generals.deputy.generalDefinitionId) }}</div>
+      @if (seat().generals; as generals) {
+        <div>Main general: {{ generalDisplayName(generals.main.generalDefinitionId) }}</div>
+        <div>Deputy general: {{ generalDisplayName(generals.deputy.generalDefinitionId) }}</div>
+      } @else {
+        <span>Choosing generals…</span>
+      }
       <div>HP: {{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</div>
       <div>Hand: {{ handCount() }} card(s)</div>
     </div>

@@ -75,6 +75,11 @@ describe('actionLabel', () => {
     expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Play Sha targeting seat-1');
   });
 
+  it('labels ChooseGeneralsAction with both generals and their roles', () => {
+    const action: Action = { kind: 'ChooseGeneralsAction', seatId: 'seat-0', mainId: 'cao-cao', deputyId: 'xu-chu' };
+    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Choose Cao Cao (main) and Xu Chu (deputy)');
+  });
+
   it('labels PassAction and EndPhaseAction', () => {
     expect(
       actionLabel({ kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' }, stateWithZones(), registryWithSha())
@@ -96,5 +101,9 @@ describe('eventLabel', () => {
 
   it('labels SeatEliminatedEvent', () => {
     expect(eventLabel({ kind: 'SeatEliminatedEvent', seatId: 'seat-2' })).toBe('seat-2 was eliminated');
+  });
+
+  it('labels GeneralsChosenEvent without naming any general', () => {
+    expect(eventLabel({ kind: 'GeneralsChosenEvent', seatId: 'seat-1' })).toBe('seat-1 chose their generals');
   });
 });

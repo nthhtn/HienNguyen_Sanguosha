@@ -40,6 +40,8 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
       if (action.targets.length === 0) return `Play ${name}`;
       return `Play ${name} targeting ${action.targets.map(targetLabel).join(', ')}`;
     }
+    case 'ChooseGeneralsAction':
+      return `Choose ${generalDisplayName(action.mainId)} (main) and ${generalDisplayName(action.deputyId)} (deputy)`;
     case 'RevealGeneralAction':
       return `Reveal ${action.slot} general`;
     case 'RespondAction':
@@ -69,5 +71,7 @@ export function eventLabel(event: EngineEvent): string {
       return `A card moved to ${event.toZoneId}`;
     case 'SeatEliminatedEvent':
       return `${event.seatId} was eliminated`;
+    case 'GeneralsChosenEvent':
+      return `${event.seatId} chose their generals`;
   }
 }

@@ -55,8 +55,7 @@ describe('GameBoard', () => {
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();
 
-    const endPhase = gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!;
-    gameService.submit(endPhase);
+    gameService.submit(gameService.legalActions()[0]);
     fixture.detectChanges();
 
     const el = fixture.nativeElement as HTMLElement;
@@ -71,7 +70,7 @@ describe('GameBoard', () => {
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('No matching pending response');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('not legal during general selection');
   });
 
   it('shows GameOver instead of the action list once the game has a result', () => {

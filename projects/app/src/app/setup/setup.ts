@@ -7,11 +7,11 @@ import { GameService } from '../game.service';
   template: `
     <h1>New Kingdom War game</h1>
     <label>
-      Seat count (2-8):
+      Seat count (2-{{ maxSeats }}):
       <input
         type="number"
         min="2"
-        max="8"
+        [max]="maxSeats"
         [value]="seatCount()"
         (input)="seatCount.set(+$any($event.target).value)"
       />
@@ -26,12 +26,13 @@ import { GameService } from '../game.service';
 export class Setup {
   private readonly gameService = inject(GameService);
   private readonly router = inject(Router);
+  protected readonly maxSeats = this.gameService.maxSeats;
 
   readonly seatCount = signal(4);
   readonly seed = signal<number | undefined>(undefined);
 
   startGame(): void {
-    const clamped = Math.min(8, Math.max(2, this.seatCount() || 2));
+    const clamped = Math.min(this.maxSeats, Math.max(2, this.seatCount() || 2));
     this.gameService.startGame(clamped, this.seed());
     this.router.navigateByUrl('/game');
   }

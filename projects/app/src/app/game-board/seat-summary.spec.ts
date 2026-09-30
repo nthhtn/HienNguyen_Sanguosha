@@ -49,6 +49,17 @@ describe('SeatSummary', () => {
     expect(text).toContain('Zhao Yun');
   });
 
+  it('shows a placeholder instead of general names for a seat still choosing generals', () => {
+    const fixture = TestBed.createComponent(SeatSummary);
+    fixture.componentRef.setInput('seat', makeSeat({ generals: null }));
+    fixture.componentRef.setInput('handCount', 4);
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent!;
+    expect(text).toContain('Choosing generals');
+    expect(text).not.toContain('Main general');
+  });
+
   it('marks an eliminated seat', () => {
     const fixture = TestBed.createComponent(SeatSummary);
     fixture.componentRef.setInput('seat', makeSeat({ eliminated: true }));

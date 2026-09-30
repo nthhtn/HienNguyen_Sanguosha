@@ -5,16 +5,19 @@ import {
   EngineContext,
   GameState,
   createGame,
+  getActiveSeatId,
   getLegalActions,
   redactStateForSeat,
   resolve,
 } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, kingdomWarMaxSeats, kingdomWarMode } from 'content';
 
 @Injectable({ providedIn: 'root' })
 export class GameService {
   readonly registry: ContentRegistry = buildContentRegistry();
   private readonly ctx: EngineContext = { registry: this.registry, mode: kingdomWarMode };
+
+  readonly maxSeats: number = kingdomWarMaxSeats(this.registry);
 
   private readonly _state: WritableSignal<GameState | null> = signal(null);
   private readonly _revealedSeatId: WritableSignal<string | null> = signal(null);
@@ -26,15 +29,14 @@ export class GameService {
 
   readonly activeSeatId: Signal<string | null> = computed(() => {
     const state = this._state();
-    if (!state) return null;
-    return state.pendingResponse?.respondingSeatId ?? state.turn.ownerSeatId;
+    return state ? getActiveSeatId(state) : null;
   });
 
   readonly legalActions: Signal<Action[]> = computed(() => {
     const state = this._state();
     const seatId = this.activeSeatId();
     if (!state || !seatId) return [];
-    return getLegalActions(state, seatId);
+    return getLegalActions(state, seatId, this.registry);
   });
 
   readonly visibleState: Signal<GameState | null> = computed(() => {
@@ -47,10 +49,14 @@ export class GameService {
   startGame(seatCount: number, seed?: number): void {
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
-    const state = createGame(kingdomWarMode, this.registry, seatIds, rngSeed);
-    this._state.set(state);
     this._revealedSeatId.set(null);
-    this._lastError.set(null);
+    try {
+      this._state.set(createGame(kingdomWarMode, this.registry, seatIds, rngSeed));
+      this._lastError.set(null);
+    } catch (err) {
+      this._state.set(null);
+      this._lastError.set(err instanceof Error ? err.message : String(err));
+    }
   }
 
   reveal(seatId: string): void {

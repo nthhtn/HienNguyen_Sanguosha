@@ -24,7 +24,7 @@ describe('Setup', () => {
     expect(navigateSpy).toHaveBeenCalledWith(expect.stringContaining('/game'));
   });
 
-  it('clamps a zeroed/cleared seat count into [2, 8] instead of sending 0', async () => {
+  it('clamps a zeroed/cleared seat count into [2, maxSeats] instead of sending 0', async () => {
     await TestBed.configureTestingModule({
       imports: [Setup],
       providers: [provideRouter([{ path: 'game', children: [] }])],
@@ -40,7 +40,22 @@ describe('Setup', () => {
 
     const seatCount = gameService.state()!.seats.length;
     expect(seatCount).toBeGreaterThanOrEqual(2);
-    expect(seatCount).toBeLessThanOrEqual(8);
+    expect(seatCount).toBeLessThanOrEqual(gameService.maxSeats);
+  });
+
+  it('clamps a seat count above the mode’s cap down to maxSeats', async () => {
+    await TestBed.configureTestingModule({
+      imports: [Setup],
+      providers: [provideRouter([{ path: 'game', children: [] }])],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(Setup);
+    const gameService = TestBed.inject(GameService);
+    fixture.componentInstance.seatCount.set(8);
+    fixture.componentInstance.startGame();
+    expect(gameService.state()!.seats).toHaveLength(gameService.maxSeats);
+    fixture.detectChanges();
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input[type="number"]') as HTMLInputElement;
+    expect(input.max).toBe(String(gameService.maxSeats));
   });
 
   it('passes an explicit seed through to GameService when provided', async () => {
