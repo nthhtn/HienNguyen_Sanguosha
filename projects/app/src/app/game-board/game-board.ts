@@ -9,7 +9,7 @@ import { EventLog } from './event-log';
 import { RoundTable } from './round-table';
 import { CardArt } from './card-art';
 import { GameOver } from './game-over';
-import { GeneralSelection } from './general-selection';
+import { GeneralSelection, SelectionProgress } from './general-selection';
 
 @Component({
   selector: 'app-game-board',
@@ -34,6 +34,8 @@ import { GeneralSelection } from './general-selection';
               [candidates]="selectionCandidates()"
               [actions]="generalChoices()"
               [registry]="gameService.registry"
+              [seatId]="activeSeatId"
+              [progress]="selectionProgress()"
               (chosen)="submit($event)"
             />
           } @else {
@@ -94,6 +96,13 @@ export class GameBoard {
     const seatId = this.activeSeatId();
     if (!visible || !seatId) return [];
     return visible.generalSelection?.candidates[seatId] ?? [];
+  });
+
+  // A seat has chosen once its candidate entry is gone from the selection state.
+  protected readonly selectionProgress = computed<SelectionProgress[]>(() => {
+    const visible = this.visibleState();
+    const pending = visible?.generalSelection?.candidates ?? {};
+    return (visible?.seats ?? []).map((s) => ({ seatId: s.id, done: !Object.prototype.hasOwnProperty.call(pending, s.id) }));
   });
 
   protected readonly generalChoices = computed<ChooseGeneralsAction[]>(() =>

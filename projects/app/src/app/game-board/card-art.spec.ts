@@ -35,4 +35,14 @@ describe('CardArt', () => {
     const art = (fixture.nativeElement as HTMLElement).querySelector('.card-art')!;
     expect(art.classList).toContain('small');
   });
+
+  it('renders full-card size when size is "large"', () => {
+    const fixture = TestBed.createComponent(CardArt);
+    fixture.componentRef.setInput('id', 'cao-cao');
+    fixture.componentRef.setInput('label', 'Cao Cao');
+    fixture.componentRef.setInput('size', 'large');
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('img')!.classList).toContain('large');
+  });
 });

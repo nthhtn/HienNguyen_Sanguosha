@@ -24,7 +24,7 @@ describe('GeneralSelection', () => {
 
   const card = (id: string) => el.querySelector(`[data-general-id="${id}"]`) as HTMLElement;
   const click = (id: string) => { card(id).click(); fixture.detectChanges(); };
-  const badge = (id: string) => card(id).querySelector('.mat-badge-content')?.textContent?.trim() ?? '';
+  const badge = (id: string) => card(id).querySelector('.role-chip')?.textContent?.trim() ?? '';
   const button = (cls: string) => el.querySelector(`button.${cls}`) as HTMLButtonElement;
   const tooltip = (id: string) =>
     fixture.debugElement.query(By.css(`[data-general-id="${id}"]`)).injector.get(MatTooltip).message;
@@ -111,5 +111,46 @@ describe('GeneralSelection', () => {
     click('w2');
     expect(el.querySelector('.summary')!.textContent).toContain('Kingdom: Wei');
     expect(el.querySelector('.summary')!.textContent).toContain('Combined HP: 7');
+  });
+
+  it('fills the Main and Deputy slots in the bottom bar as cards are picked', () => {
+    const slot = (role: string) => el.querySelector(`.slot.${role}`)!.textContent!;
+    expect(slot('main')).toContain('Pick a general');
+    click('w1');
+    click('w2');
+    expect(slot('main')).toContain('W1');
+    expect(slot('deputy')).toContain('W2');
+  });
+
+  it('draws one heart per point of max HP', () => {
+    expect(card('q1').querySelectorAll('.hearts mat-icon')).toHaveLength(5);
+  });
+});
+
+describe('GeneralSelection header', () => {
+  it('names the choosing seat and ticks off seats that have already chosen', async () => {
+    await TestBed.configureTestingModule({ imports: [GeneralSelection] }).compileComponents();
+    const fixture = TestBed.createComponent(GeneralSelection);
+    fixture.componentRef.setInput('candidates', candidates);
+    fixture.componentRef.setInput('actions', actions);
+    fixture.componentRef.setInput('registry', registry);
+    fixture.componentRef.setInput('seatId', 'seat-1');
+    fixture.componentRef.setInput('progress', [
+      { seatId: 'seat-0', done: true },
+      { seatId: 'seat-1', done: false },
+      { seatId: 'seat-2', done: false },
+    ]);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('h2')!.textContent).toContain('seat-1, choose your generals');
+    const chips = [...el.querySelectorAll('.progress mat-chip')];
+    expect(chips.map((c) => c.textContent!.trim())).toEqual([
+      expect.stringContaining('seat-0'),
+      expect.stringContaining('seat-1'),
+      expect.stringContaining('seat-2'),
+    ]);
+    expect(chips[0].classList).toContain('done');
+    expect(chips[1].classList).toContain('current');
+    expect(el.querySelector('.progress')!.textContent).toContain('Seat 2 of 3');
   });
 });

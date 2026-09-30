@@ -1,1 +1,8 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles. The Material theme itself comes from the prebuilt stylesheet in angular.json. */
+html,
+body {
+  margin: 0;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font-family: Roboto, 'Helvetica Neue', Arial, sans-serif;
+}

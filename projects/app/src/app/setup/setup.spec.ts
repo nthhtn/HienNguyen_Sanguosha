@@ -53,9 +53,6 @@ describe('Setup', () => {
     fixture.componentInstance.seatCount.set(8);
     fixture.componentInstance.startGame();
     expect(gameService.state()!.seats).toHaveLength(gameService.maxSeats);
-    fixture.detectChanges();
-    const input = (fixture.nativeElement as HTMLElement).querySelector('input[type="number"]') as HTMLInputElement;
-    expect(input.max).toBe(String(gameService.maxSeats));
   });
 
   it('passes an explicit seed through to GameService when provided', async () => {
@@ -77,5 +74,43 @@ describe('Setup', () => {
     const second = gameService.state();
 
     expect(JSON.stringify(second)).toEqual(JSON.stringify(first));
+  });
+
+  describe('home screen controls', () => {
+    async function create() {
+      await TestBed.configureTestingModule({
+        imports: [Setup],
+        providers: [provideRouter([{ path: 'game', children: [] }])],
+      }).compileComponents();
+      const fixture = TestBed.createComponent(Setup);
+      fixture.detectChanges();
+      return { fixture, el: fixture.nativeElement as HTMLElement, gameService: TestBed.inject(GameService) };
+    }
+
+    it('offers one seat toggle per legal table size, from 2 up to maxSeats', async () => {
+      const { el, gameService } = await create();
+      const labels = [...el.querySelectorAll('mat-button-toggle')].map((t) => t.textContent!.trim());
+      expect(labels).toEqual(Array.from({ length: gameService.maxSeats - 1 }, (_, i) => String(i + 2)));
+    });
+
+    it('starts a game with the seat count picked on the toggles', async () => {
+      const { fixture, el, gameService } = await create();
+      const three = [...el.querySelectorAll('mat-button-toggle button')].find((b) => b.textContent!.trim() === '3') as HTMLButtonElement;
+      three.click();
+      fixture.detectChanges();
+      (el.querySelector('button.start') as HTMLButtonElement).click();
+      expect(gameService.state()!.seats).toHaveLength(3);
+    });
+
+    it('reads an optional seed from the seed field', async () => {
+      const { fixture, el } = await create();
+      const input = el.querySelector('input.seed') as HTMLInputElement;
+      input.value = '42';
+      input.dispatchEvent(new Event('input'));
+      expect(fixture.componentInstance.seed()).toBe(42);
+      input.value = '';
+      input.dispatchEvent(new Event('input'));
+      expect(fixture.componentInstance.seed()).toBeUndefined();
+    });
   });
 });

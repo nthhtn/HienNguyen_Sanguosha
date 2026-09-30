@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
-import { Setup } from './setup/setup';
-import { GameBoard } from './game-board/game-board';
 
+// Lazy-loaded so the initial bundle carries only the shell; each screen pulls
+// in its own Material modules and game code when first visited.
 export const routes: Routes = [
-  { path: 'setup', component: Setup },
-  { path: 'game', component: GameBoard },
+  { path: 'setup', loadComponent: () => import('./setup/setup').then((m) => m.Setup) },
+  { path: 'game', loadComponent: () => import('./game-board/game-board').then((m) => m.GameBoard) },
   { path: '', redirectTo: 'setup', pathMatch: 'full' },
 ];

@@ -1,0 +1,15 @@
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 12px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+}
+.app-bar h1 {
+  margin: 0;
+  font: var(--mat-sys-title-large);
+}
+.content {
+  padding: 0 16px 16px;
+}

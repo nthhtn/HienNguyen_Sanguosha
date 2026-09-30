@@ -5,9 +5,9 @@ import { cardArtUrl } from 'content';
   selector: 'app-card-art',
   template: `
     @if (url(); as url) {
-      <img [src]="url" [alt]="label()" class="card-art" [class.small]="size() === 'small'" />
+      <img [src]="url" [alt]="label()" class="card-art" [class.small]="size() === 'small'" [class.large]="size() === 'large'" />
     } @else {
-      <div class="card-art card-art-placeholder" [class.small]="size() === 'small'">{{ label() }}</div>
+      <div class="card-art card-art-placeholder" [class.small]="size() === 'small'" [class.large]="size() === 'large'">{{ label() }}</div>
     }
   `,
   styles: `
@@ -17,6 +17,13 @@ import { cardArtUrl } from 'content';
       object-fit: cover;
       border-radius: 4px;
       border: 1px solid #888;
+    }
+
+    .card-art.large {
+      height: 220px;
+      width: 160px;
+      border: none;
+      border-radius: 0;
     }
 
     .card-art.small {
@@ -40,7 +47,7 @@ import { cardArtUrl } from 'content';
 export class CardArt {
   readonly id = input.required<string>();
   readonly label = input.required<string>();
-  readonly size = input<'normal' | 'small'>('normal');
+  readonly size = input<'normal' | 'small' | 'large'>('normal');
 
   protected readonly url = computed(() => cardArtUrl(this.id()));
 }

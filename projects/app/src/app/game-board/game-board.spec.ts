@@ -58,6 +58,19 @@ describe('GameBoard', () => {
     expect(el.querySelectorAll('app-general-selection [data-general-id]')).toHaveLength(5);
   });
 
+  it('tells the selection view which seat is choosing and who has already chosen', () => {
+    gameService.startGame(3, 1);
+    gameService.submit(gameService.legalActions()[0]);
+    gameService.reveal('seat-1');
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-general-selection h2')!.textContent).toContain('seat-1, choose your generals');
+    const chips = [...el.querySelectorAll('app-general-selection .progress mat-chip')];
+    expect(chips.map((c) => c.classList.contains('done'))).toEqual([true, false, false]);
+  });
+
   it('submits the chosen generals and gates the next seat', () => {
     gameService.startGame(2, 1);
     gameService.reveal('seat-0');
