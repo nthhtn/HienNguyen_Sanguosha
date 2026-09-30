@@ -1,0 +1,29 @@
+{
+  "count": 4,
+  "name": "Draw Two",
+  "nameZh": "无中生有",
+  "printings": [
+    {
+      "rank": 7,
+      "suit": "heart"
+    },
+    {
+      "rank": 8,
+      "suit": "heart"
+    },
+    {
+      "rank": 9,
+      "suit": "heart"
+    },
+    {
+      "rank": 11,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/draw-two"
+  },
+  "text": "The player that plays this draws two cards from the deck."
+}

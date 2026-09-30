@@ -1,4 +1,4 @@
-import { generalDisplayData } from './display';
+import { cardDisplayData, generalDisplayData } from './display';
 
 describe('generalDisplayData', () => {
   it('returns name, title and skill name/text for a known general', () => {
@@ -17,5 +17,25 @@ describe('generalDisplayData', () => {
 
   it('returns null for an unknown id', () => {
     expect(generalDisplayData('no-such-general')).toBeNull();
+  });
+});
+
+describe('cardDisplayData', () => {
+  it('returns name, category, subtype, range and rules text for a known card', () => {
+    expect(cardDisplayData('crossbow')).toEqual({
+      name: 'Crossbow',
+      category: 'equipment',
+      subtype: 'weapon',
+      range: 1,
+      text: 'Range: 1. With this equipped, a player may attack as much as desired during their turn.',
+    });
+  });
+
+  it('returns null text and range when the data has none', () => {
+    expect(cardDisplayData('sha')).toEqual({ name: 'Sha', category: 'basic', subtype: null, range: null, text: null });
+  });
+
+  it('returns null for an unknown id', () => {
+    expect(cardDisplayData('silver-lion')).toBeNull();
   });
 });

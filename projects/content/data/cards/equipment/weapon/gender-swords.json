@@ -1,0 +1,11 @@
+{
+  "name": "Gender Swords",
+  "nameZh": "雌雄双股剑",
+  "range": 2,
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/gender-swords"
+  },
+  "text": "When a player attacks a target of the opposite gender, the player can force the target to make a choice. The target must either discard a hand card or the player to draw one."
+}

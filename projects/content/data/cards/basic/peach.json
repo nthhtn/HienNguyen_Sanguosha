@@ -1,0 +1,43 @@
+{
+  "count": 8,
+  "name": "Peach",
+  "printings": [
+    {
+      "rank": 12,
+      "suit": "diamond"
+    },
+    {
+      "rank": 3,
+      "suit": "heart"
+    },
+    {
+      "rank": 4,
+      "suit": "heart"
+    },
+    {
+      "rank": 6,
+      "suit": "heart"
+    },
+    {
+      "rank": 7,
+      "suit": "heart"
+    },
+    {
+      "rank": 8,
+      "suit": "heart"
+    },
+    {
+      "rank": 9,
+      "suit": "heart"
+    },
+    {
+      "rank": 12,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach"
+  }
+}

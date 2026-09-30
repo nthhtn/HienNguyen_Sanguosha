@@ -1,0 +1,25 @@
+{
+  "count": 3,
+  "name": "Duel",
+  "nameZh": "决斗",
+  "printings": [
+    {
+      "rank": 1,
+      "suit": "spade"
+    },
+    {
+      "rank": 1,
+      "suit": "club"
+    },
+    {
+      "rank": 1,
+      "suit": "diamond"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/duel"
+  },
+  "text": "The player challenges another player to a duel. The two players alternate playing Attack cards, starting with the target. The first player unable to play one takes damage equal to the number of Attacks played by the other."
+}

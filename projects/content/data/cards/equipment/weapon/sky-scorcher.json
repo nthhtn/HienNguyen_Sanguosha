@@ -1,0 +1,11 @@
+{
+  "name": "Sky Scorcher",
+  "nameZh": "方天画戟",
+  "range": 4,
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/sky-scorcher"
+  },
+  "text": "When the player with this equipped is using their last hand card to attack, they can target up to two additional players."
+}

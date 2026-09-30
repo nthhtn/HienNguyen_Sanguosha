@@ -1,0 +1,71 @@
+{
+  "count": 15,
+  "name": "Shan",
+  "printings": [
+    {
+      "rank": 2,
+      "suit": "diamond"
+    },
+    {
+      "rank": 2,
+      "suit": "diamond"
+    },
+    {
+      "rank": 3,
+      "suit": "diamond"
+    },
+    {
+      "rank": 4,
+      "suit": "diamond"
+    },
+    {
+      "rank": 5,
+      "suit": "diamond"
+    },
+    {
+      "rank": 6,
+      "suit": "diamond"
+    },
+    {
+      "rank": 7,
+      "suit": "diamond"
+    },
+    {
+      "rank": 8,
+      "suit": "diamond"
+    },
+    {
+      "rank": 9,
+      "suit": "diamond"
+    },
+    {
+      "rank": 10,
+      "suit": "diamond"
+    },
+    {
+      "rank": 11,
+      "suit": "diamond"
+    },
+    {
+      "rank": 11,
+      "suit": "diamond"
+    },
+    {
+      "rank": 2,
+      "suit": "heart"
+    },
+    {
+      "rank": 2,
+      "suit": "heart"
+    },
+    {
+      "rank": 13,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/escape"
+  }
+}

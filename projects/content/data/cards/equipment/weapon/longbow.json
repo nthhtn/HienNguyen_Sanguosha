@@ -1,0 +1,11 @@
+{
+  "name": "Longbow",
+  "nameZh": "麒麟弓",
+  "range": 5,
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/longbow"
+  },
+  "text": "When the player with this weapon damages another player with an attack, they can discard an equipped horse of the target."
+}
