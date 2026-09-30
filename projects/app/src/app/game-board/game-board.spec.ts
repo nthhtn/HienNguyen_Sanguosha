@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { GameBoard } from './game-board';
 import { GameService } from '../game.service';
 import { GeneralSelection } from './general-selection';
+import { HandView } from './hand-view';
 
 function finishSelection(gameService: GameService): void {
   while (gameService.state()!.phase === 'GeneralSelection') {
@@ -112,7 +113,23 @@ describe('GameBoard', () => {
     expect(el.querySelector(`app-round-table [data-seat-id="${viewer}"]`)!.textContent).toContain('(you)');
     const state = gameService.visibleState()!;
     const ownHand = state.zones.find((z) => z.id === state.seats.find((s) => s.id === viewer)!.hand.zoneId)!;
-    expect(el.querySelectorAll('.your-hand app-card-art')).toHaveLength(ownHand.cards.length);
+    expect(el.querySelectorAll('.your-hand app-hand-view .hand-card')).toHaveLength(ownHand.cards.length);
+  });
+
+  it('submits a card played from the hand and gates the next view', () => {
+    gameService.startGame(2, 1);
+    finishSelection(gameService);
+    gameService.reveal(gameService.activeSeatId()!);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+
+    const cardPlay = gameService.legalActions().find((a) => a.kind === 'PlayCardAction')!;
+    const hand = fixture.debugElement.query(By.directive(HandView)).componentInstance as HandView;
+    hand.play.emit(cardPlay);
+    fixture.detectChanges();
+
+    expect(gameService.lastError()).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-reveal-gate-overlay')).not.toBeNull();
   });
 
   it('re-shows the reveal gate for the next seat after an action is submitted', () => {
@@ -155,7 +172,13 @@ describe('GameBoard', () => {
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('not legal during general selection');
+    const banner = (fixture.nativeElement as HTMLElement).querySelector('.error-banner')!;
+    expect(banner.textContent).toContain('not legal during general selection');
+    const dismiss = banner.querySelector('button')!;
+    expect(dismiss.classList).toContain('mat-mdc-button-base');
+    dismiss.click();
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.error-banner')).toBeNull();
   });
 
   it('shows GameOver instead of the action list once the game has a result', () => {

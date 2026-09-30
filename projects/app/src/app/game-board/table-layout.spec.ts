@@ -29,12 +29,24 @@ describe('seatPlacements', () => {
     expect(opponent.y).toBeCloseTo(50 - TABLE_RADIUS_Y);
   });
 
-  it('spaces every seat evenly around the ellipse', () => {
+  it('spaces every seat evenly by direction from the table centre', () => {
     const placements = seatPlacements(seats(5), 'seat-0');
-    const angles = placements.map((p) => Math.atan2((p.y - 50) / TABLE_RADIUS_Y, (p.x - 50) / TABLE_RADIUS_X));
+    const angles = placements.map((p) => Math.atan2(p.y - 50, p.x - 50));
     for (let i = 1; i < angles.length; i++) {
       const step = (angles[i - 1] - angles[i] + 2 * Math.PI) % (2 * Math.PI);
       expect(step).toBeCloseTo((2 * Math.PI) / 5);
+    }
+  });
+
+  it('places every seat on the rim of the rectangular table', () => {
+    for (const n of [2, 3, 4, 5]) {
+      for (const p of seatPlacements(seats(n), 'seat-0')) {
+        const onSide = Math.abs(Math.abs(p.x - 50) - TABLE_RADIUS_X) < 1e-9;
+        const onEnd = Math.abs(Math.abs(p.y - 50) - TABLE_RADIUS_Y) < 1e-9;
+        expect(onSide || onEnd).toBe(true);
+        expect(Math.abs(p.x - 50)).toBeLessThanOrEqual(TABLE_RADIUS_X + 1e-9);
+        expect(Math.abs(p.y - 50)).toBeLessThanOrEqual(TABLE_RADIUS_Y + 1e-9);
+      }
     }
   });
 

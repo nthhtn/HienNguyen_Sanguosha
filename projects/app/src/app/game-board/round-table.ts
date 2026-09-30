@@ -6,7 +6,7 @@ import { seatPlacements } from './table-layout';
 
 const RECENT_LOG_LINES = 3;
 
-// The seats arranged around an oval table, seen from the viewer's chair.
+// The seats arranged around a rounded rectangular table, seen from the viewer's chair.
 // Presentational: everything shown is read straight off the (redacted) state.
 @Component({
   selector: 'app-round-table',
@@ -50,8 +50,9 @@ const RECENT_LOG_LINES = 3;
     }
     .felt {
       position: absolute;
-      inset: 14% 12%;
-      border-radius: 50%;
+      /* Rounded rectangle whose edges run through the seat rim (table-layout.ts). */
+      inset: 12% 8%;
+      border-radius: 36px;
       background: radial-gradient(ellipse at center, #3f7d4e 0%, #2b5c38 70%, #234a2e 100%);
       border: 10px solid #7a5230;
       box-shadow: inset 0 0 30px rgb(0 0 0 / 45%), 0 6px 18px rgb(0 0 0 / 30%);
@@ -72,8 +73,8 @@ const RECENT_LOG_LINES = 3;
     .seat { position: absolute; transform: translate(-50%, -50%); }
     @media (max-width: 600px) {
       /* Narrower than the viewport so rim seats (at 8% / 92%) stay on screen. */
-      .table { aspect-ratio: 1; width: 80%; }
-      .felt { inset: 16% 10%; }
+      .table { aspect-ratio: 1; width: 80%; margin-top: 48px; }
+      .felt { inset: 12% 8%; border-radius: 24px; }
       .centre { width: 56%; font-size: 0.75em; }
       .seat { transform: translate(-50%, -50%) scale(0.8); }
     }

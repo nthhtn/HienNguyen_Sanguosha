@@ -16,4 +16,13 @@ describe('RevealGateOverlay', () => {
 
     expect(revealedSpy).toHaveBeenCalled();
   });
+
+  it('uses a Material button inside a Material card', () => {
+    const fixture = TestBed.createComponent(RevealGateOverlay);
+    fixture.componentRef.setInput('seatId', 'seat-2');
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('mat-card')).not.toBeNull();
+    expect(el.querySelector('button')!.classList).toContain('mat-mdc-button-base');
+  });
 });

@@ -61,10 +61,11 @@ describe('ActionList', () => {
     expect(el.querySelectorAll('app-card-art')).toHaveLength(0);
   });
 
-  it('renders a card thumbnail next to a PlayCardAction for the card being played', () => {
+  it('leaves card plays and responses to the hand, rendering only the other actions', () => {
     const fixture = TestBed.createComponent(ActionList);
     const actions: Action[] = [
       { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [] },
+      { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'card-1' },
       { kind: 'EndPhaseAction', seatId: 'seat-0' },
     ];
     fixture.componentRef.setInput('actions', actions);
@@ -72,9 +73,18 @@ describe('ActionList', () => {
     fixture.componentRef.setInput('registry', emptyRegistry());
     fixture.detectChanges();
 
-    const el = fixture.nativeElement as HTMLElement;
-    const thumbnails = el.querySelectorAll('app-card-art');
-    expect(thumbnails).toHaveLength(1);
-    expect(thumbnails[0].querySelector('img')?.getAttribute('src')).toBe('/card-art/cards/basic/sha.jpg');
+    const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll('button');
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0].textContent).toContain('End phase');
+  });
+
+  it('renders Material buttons', () => {
+    const fixture = TestBed.createComponent(ActionList);
+    fixture.componentRef.setInput('actions', [{ kind: 'EndPhaseAction', seatId: 'seat-0' }]);
+    fixture.componentRef.setInput('state', emptyState());
+    fixture.componentRef.setInput('registry', emptyRegistry());
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('button')!.classList).toContain('mat-mdc-button-base');
   });
 });

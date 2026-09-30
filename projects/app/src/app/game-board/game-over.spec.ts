@@ -53,4 +53,13 @@ describe('GameOver', () => {
     expect(text).toContain('seat-0 wins!');
     expect(text).not.toContain('Draw');
   });
+
+  it('uses a Material New game button inside a Material card', () => {
+    const fixture = TestBed.createComponent(GameOver);
+    fixture.componentRef.setInput('result', { endedAt: 1, winningSeatIds: ['seat-0'], losingSeatIds: ['seat-1'] } satisfies GameResult);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('mat-card')).not.toBeNull();
+    expect(el.querySelector('button')!.classList).toContain('mat-mdc-button-base');
+  });
 });

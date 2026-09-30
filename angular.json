@@ -70,7 +70,7 @@
                 "output": "card-art"
               }
             ],
-            "styles": ["@angular/material/prebuilt-themes/rose-red.css", "projects/app/src/styles.css"]
+            "styles": ["projects/app/src/styles.scss"]
           },
           "configurations": {
             "production": {

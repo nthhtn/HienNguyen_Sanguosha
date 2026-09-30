@@ -87,3 +87,11 @@ export function eventLabel(event: EngineEvent): string {
       return `${event.seatId} chose their generals`;
   }
 }
+
+const SUIT_SYMBOLS: Record<CardInstance['suit'], string> = { spade: '♠', heart: '♥', club: '♣', diamond: '♦' };
+const FACE_RANKS: Record<number, string> = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
+
+// "A ♦", "7 ♠", "Q ♥" — a card's printed corner.
+export function cardFaceLabel(card: Pick<CardInstance, 'suit' | 'rank'>): string {
+  return `${FACE_RANKS[card.rank] ?? card.rank} ${SUIT_SYMBOLS[card.suit]}`;
+}

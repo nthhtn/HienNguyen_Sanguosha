@@ -1,24 +1,26 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { Action, CardInstance, ChooseGeneralsAction } from 'engine';
 import { GameService } from '../game.service';
-import { cardIdDisplayName } from '../labels';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { EventLog } from './event-log';
 import { RoundTable } from './round-table';
-import { CardArt } from './card-art';
+import { HandView } from './hand-view';
 import { GameOver } from './game-over';
 import { GeneralSelection, SelectionProgress } from './general-selection';
 
 @Component({
   selector: 'app-game-board',
-  imports: [RevealGateOverlay, ActionList, EventLog, RoundTable, CardArt, GameOver, GeneralSelection, RouterLink],
+  imports: [RevealGateOverlay, ActionList, EventLog, RoundTable, HandView, GameOver, GeneralSelection, RouterLink, MatButtonModule, MatIconModule],
   template: `
     @if (lastError(); as error) {
-      <div class="error-banner">
-        {{ error }}
-        <button (click)="dismissError()">Dismiss</button>
+      <div class="error-banner" role="alert">
+        <mat-icon>error</mat-icon>
+        <span class="message">{{ error }}</span>
+        <button mat-button type="button" (click)="dismissError()">Dismiss</button>
       </div>
     }
 
@@ -42,13 +44,13 @@ import { GeneralSelection, SelectionProgress } from './general-selection';
             <app-round-table [state]="visible" [viewerSeatId]="activeSeatId" />
             <section class="your-hand">
               <h3>Your hand</h3>
-              <div class="cards">
-                @for (card of ownHand(); track card.instanceId) {
-                  <app-card-art [id]="card.definitionId" [label]="cardIdDisplayName(card.definitionId)" />
-                } @empty {
-                  <span>No cards</span>
-                }
-              </div>
+              <app-hand-view
+                [cards]="ownHand()"
+                [actions]="gameService.legalActions()"
+                [state]="visible"
+                [registry]="gameService.registry"
+                (play)="submit($event)"
+              />
             </section>
             <app-action-list
               [actions]="gameService.legalActions()"
@@ -62,13 +64,17 @@ import { GeneralSelection, SelectionProgress } from './general-selection';
       }
     } @else {
       <p>No game in progress.</p>
-      <a routerLink="/setup">Start a new game</a>
+      <a mat-flat-button routerLink="/setup">Start a new game</a>
     }
   `,
   styles: `
+    .error-banner {
+      display: flex; align-items: center; gap: 12px; margin: 8px 0; padding: 8px 12px; border-radius: 12px;
+      background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container);
+    }
+    .error-banner .message { flex: 1; }
     .your-hand { margin: 8px 0; }
     .your-hand h3 { margin: 0 0 4px; }
-    .your-hand .cards { display: flex; gap: 6px; flex-wrap: wrap; }
   `,
 })
 export class GameBoard {
@@ -88,7 +94,6 @@ export class GameBoard {
     return visible.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [];
   });
 
-  protected readonly cardIdDisplayName = cardIdDisplayName;
 
   // The revealed seat's own dealt candidates (other seats' are redacted anyway).
   protected readonly selectionCandidates = computed<string[]>(() => {
