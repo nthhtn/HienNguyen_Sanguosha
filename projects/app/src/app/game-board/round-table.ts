@@ -64,7 +64,8 @@ const RECENT_LOG_LINES = 3;
       position: relative;
       width: 100%;
       max-width: 1280px;
-      margin: 0 auto;
+      /* Room for half a seat tile above the top rim and below the bottom rim. */
+      margin: 130px auto 120px;
       aspect-ratio: 16 / 10;
     }
     .felt {
@@ -96,10 +97,10 @@ const RECENT_LOG_LINES = 3;
     .seat { position: absolute; transform: translate(-50%, -50%); }
     @media (max-width: 600px) {
       /* Narrower than the viewport so rim seats (at 8% / 92%) stay on screen. */
-      .table { aspect-ratio: 1; width: 80%; margin-top: 48px; }
+      .table { aspect-ratio: 1; width: 80%; margin: 64px auto 56px; }
       .felt { inset: 12% 8%; border-radius: 24px; }
-      .centre { width: 56%; font-size: 0.75em; }
-      .seat { transform: translate(-50%, -50%) scale(0.55); }
+      .centre { width: 44%; font-size: 0.7em; }
+      .seat { transform: translate(-50%, -50%) scale(0.48); }
     }
   `,
 })
