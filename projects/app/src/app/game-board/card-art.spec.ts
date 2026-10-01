@@ -45,4 +45,13 @@ describe('CardArt', () => {
 
     expect((fixture.nativeElement as HTMLElement).querySelector('img')!.classList).toContain('large');
   });
+
+  it('renders at slot size when size is "tiny"', () => {
+    const fixture = TestBed.createComponent(CardArt);
+    fixture.componentRef.setInput('id', 'cao-cao');
+    fixture.componentRef.setInput('label', 'Cao Cao');
+    fixture.componentRef.setInput('size', 'tiny');
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('img')!.classList).toContain('tiny');
+  });
 });

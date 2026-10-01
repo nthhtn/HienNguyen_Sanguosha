@@ -87,7 +87,7 @@ describe('SeatTile', () => {
     const el = render(makeSeat(), { equipment: [eq('e1', 'silver-lion'), eq('e2', 'green-dragon-blade')] });
     const slots = [...el.querySelectorAll('.equip .slot')] as HTMLElement[];
     expect(slots.map((s) => s.dataset['slot'])).toEqual(['weapon', 'armor', 'plusMount', 'minusMount']);
-    expect(slots[0].querySelector('app-card-art')).not.toBeNull();
+    expect(slots[0].querySelector('app-card-art img')!.classList).toContain('tiny');
     expect(slots[1].querySelector('app-card-art')).not.toBeNull();
     expect(slots[2].classList).toContain('empty');
     expect(slots[3].getAttribute('title')).toBe('−1 Horse (empty)');

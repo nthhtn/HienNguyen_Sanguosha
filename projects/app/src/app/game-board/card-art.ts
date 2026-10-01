@@ -5,9 +5,9 @@ import { cardArtUrl } from 'content';
   selector: 'app-card-art',
   template: `
     @if (url(); as url) {
-      <img [src]="url" [alt]="label()" class="card-art" [class.small]="size() === 'small'" [class.large]="size() === 'large'" />
+      <img [src]="url" [alt]="label()" class="card-art" [class.small]="size() === 'small'" [class.large]="size() === 'large'" [class.tiny]="size() === 'tiny'" />
     } @else {
-      <div class="card-art card-art-placeholder" [class.small]="size() === 'small'" [class.large]="size() === 'large'">{{ label() }}</div>
+      <div class="card-art card-art-placeholder" [class.small]="size() === 'small'" [class.large]="size() === 'large'" [class.tiny]="size() === 'tiny'">{{ label() }}</div>
     }
   `,
   styles: `
@@ -24,6 +24,13 @@ import { cardArtUrl } from 'content';
       width: 160px;
       border: none;
       border-radius: 0;
+    }
+
+    .card-art.tiny {
+      height: 36px;
+      width: 26px;
+      border-radius: 2px;
+      font-size: 0.45em;
     }
 
     .card-art.small {
@@ -47,7 +54,7 @@ import { cardArtUrl } from 'content';
 export class CardArt {
   readonly id = input.required<string>();
   readonly label = input.required<string>();
-  readonly size = input<'normal' | 'small' | 'large'>('normal');
+  readonly size = input<'normal' | 'small' | 'large' | 'tiny'>('normal');
 
   protected readonly url = computed(() => cardArtUrl(this.id()));
 }

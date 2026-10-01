@@ -63,7 +63,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
             [attr.title]="s.card ? s.label + ': ' + cardIdDisplayName(s.card.definitionId) : s.label + ' (empty)'"
           >
             @if (s.card; as card) {
-              <app-card-art size="small" [id]="card.definitionId" [label]="cardIdDisplayName(card.definitionId)" />
+              <app-card-art size="tiny" [id]="card.definitionId" [label]="cardIdDisplayName(card.definitionId)" />
             } @else {
               <mat-icon>{{ s.icon }}</mat-icon>
             }
@@ -104,7 +104,6 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .equip { display: grid; grid-template-columns: repeat(4, 26px); gap: 3px; justify-content: center; margin-top: 4px; }
     .slot { width: 26px; height: 36px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
     .slot.empty mat-icon { font-size: 14px; width: 14px; height: 14px; color: #b9a37a; }
-    .slot app-card-art { transform: scale(0.6); transform-origin: center; }
   `,
 })
 export class SeatTile {
