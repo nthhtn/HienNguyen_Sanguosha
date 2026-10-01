@@ -63,7 +63,7 @@ const RECENT_LOG_LINES = 3;
     .table {
       position: relative;
       width: 100%;
-      max-width: 960px;
+      max-width: 1280px;
       margin: 0 auto;
       aspect-ratio: 16 / 10;
     }
@@ -84,7 +84,7 @@ const RECENT_LOG_LINES = 3;
       width: 42%;
       color: #f4f1e8;
       text-align: center;
-      font-size: 0.85em;
+      font-size: 1.05em;
     }
     .turn { font-size: 1.25em; font-weight: bold; }
     .waiting { color: #ffcc80; font-weight: bold; }
@@ -99,7 +99,7 @@ const RECENT_LOG_LINES = 3;
       .table { aspect-ratio: 1; width: 80%; margin-top: 48px; }
       .felt { inset: 12% 8%; border-radius: 24px; }
       .centre { width: 56%; font-size: 0.75em; }
-      .seat { transform: translate(-50%, -50%) scale(0.8); }
+      .seat { transform: translate(-50%, -50%) scale(0.55); }
     }
   `,
 })

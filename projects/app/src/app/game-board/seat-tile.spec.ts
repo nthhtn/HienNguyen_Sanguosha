@@ -44,14 +44,14 @@ describe('SeatTile', () => {
     expect(el.querySelector('.hand-count')!.textContent).toContain('3');
   });
 
-  it('renders small portraits for revealed generals', () => {
+  it('renders portraits for revealed generals', () => {
     const el = render(
       makeSeat({ kingdom: 'Shu', generals: { main: { generalDefinitionId: 'zhao-yun', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } } })
     );
     expect(el.textContent).toContain('Shu');
     const portrait = el.querySelector('.generals app-card-art img') as HTMLImageElement;
     expect(portrait.getAttribute('src')).toBe('/card-art/generals/shu/zhao-yun.jpg');
-    expect(portrait.classList).toContain('small');
+    expect(portrait.classList).not.toContain('small');
   });
 
   it('shows a placeholder for a seat still choosing generals', () => {
@@ -87,7 +87,7 @@ describe('SeatTile', () => {
     const el = render(makeSeat(), { equipment: [eq('e1', 'silver-lion'), eq('e2', 'green-dragon-blade')] });
     const slots = [...el.querySelectorAll('.equip .slot')] as HTMLElement[];
     expect(slots.map((s) => s.dataset['slot'])).toEqual(['weapon', 'armor', 'plusMount', 'minusMount']);
-    expect(slots[0].querySelector('app-card-art img')!.classList).toContain('tiny');
+    expect(slots[0].querySelector('app-card-art img')!.classList).toContain('small');
     expect(slots[1].querySelector('app-card-art')).not.toBeNull();
     expect(slots[2].classList).toContain('empty');
     expect(slots[3].getAttribute('title')).toBe('−1 Horse (empty)');
@@ -101,5 +101,13 @@ describe('SeatTile', () => {
   it('still renders slots for an eliminated seat (Review Focus 2)', () => {
     const el = render(makeSeat({ eliminated: true }), { equipment: [eq('e1', 'green-dragon-blade')] });
     expect(el.querySelectorAll('.equip .slot')).toHaveLength(4);
+  });
+  it('draws general portraits at normal size and equipment slots at small size', () => {
+    const el = render(
+      makeSeat({ generals: { main: { generalDefinitionId: 'cao-cao', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } } }),
+      { equipment: [eq('e1', 'green-dragon-blade')] }
+    );
+    expect(el.querySelector('.generals app-card-art img')!.classList).not.toContain('small');
+    expect(el.querySelector('.equip .slot app-card-art img')!.classList).toContain('small');
   });
 });

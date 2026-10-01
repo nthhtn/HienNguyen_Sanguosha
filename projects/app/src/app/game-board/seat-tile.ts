@@ -36,12 +36,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       <div class="generals">
         @if (seat().generals; as generals) {
           <app-card-art
-            size="small"
             [id]="generals.main.generalDefinitionId"
             [label]="generalDisplayName(generals.main.generalDefinitionId)"
           />
           <app-card-art
-            size="small"
             [id]="generals.deputy.generalDefinitionId"
             [label]="generalDisplayName(generals.deputy.generalDefinitionId)"
           />
@@ -63,7 +61,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
             [attr.title]="s.card ? s.label + ': ' + cardIdDisplayName(s.card.definitionId) : s.label + ' (empty)'"
           >
             @if (s.card; as card) {
-              <app-card-art size="tiny" [id]="card.definitionId" [label]="cardIdDisplayName(card.definitionId)" />
+              <app-card-art size="small" [id]="card.definitionId" [label]="cardIdDisplayName(card.definitionId)" />
             } @else {
               <mat-icon>{{ s.icon }}</mat-icon>
             }
@@ -81,19 +79,19 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .tile {
       background: #fffdf7;
       border: 2px solid #b9a37a;
-      border-radius: 10px;
-      padding: 4px 6px;
+      border-radius: 14px;
+      padding: 8px 10px;
       box-shadow: 0 2px 6px rgb(0 0 0 / 25%);
-      font-size: 0.8em;
-      min-width: 108px;
+      font-size: 1.1em;
+      min-width: 200px;
       text-align: center;
     }
     .tile.turn-owner { border-color: #1565c0; box-shadow: 0 0 0 3px rgb(21 101 192 / 35%); }
     .tile.responding { border-color: #e65100; box-shadow: 0 0 0 3px rgb(230 81 0 / 35%); }
     .tile.eliminated { opacity: 0.45; filter: grayscale(1); }
-    .bot-icon { font-size: 14px; width: 14px; height: 14px; vertical-align: middle; margin-left: 3px; color: #666; }
+    .bot-icon { font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-left: 3px; color: #666; }
     .you { margin-left: 4px; color: #1565c0; }
-    .generals { display: flex; gap: 3px; justify-content: center; margin: 3px 0; min-height: 60px; align-items: center; }
+    .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; min-height: 96px; align-items: center; }
     .choosing { font-style: italic; color: #666; }
     .stats { display: flex; gap: 6px; justify-content: center; white-space: nowrap; }
     .kingdom { padding: 0 5px; border-radius: 6px; background: #e6e1e5; }
@@ -101,9 +99,9 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .kingdom-Shu { background: #ffd9d6; }
     .kingdom-Wu { background: #d6f5dc; }
     .status { font-weight: bold; margin-top: 2px; }
-    .equip { display: grid; grid-template-columns: repeat(4, 26px); gap: 3px; justify-content: center; margin-top: 4px; }
-    .slot { width: 26px; height: 36px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
-    .slot.empty mat-icon { font-size: 14px; width: 14px; height: 14px; color: #b9a37a; }
+    .equip { display: grid; grid-template-columns: repeat(4, 44px); gap: 5px; justify-content: center; margin-top: 4px; }
+    .slot { width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
+    .slot.empty mat-icon { font-size: 22px; width: 22px; height: 22px; color: #b9a37a; }
   `,
 })
 export class SeatTile {
