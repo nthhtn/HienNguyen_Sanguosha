@@ -100,4 +100,43 @@ describe('RoundTable', () => {
   it('shows no thinking line when nobody is thinking', () => {
     expect(render(state(), 'seat-0').querySelector('.centre .thinking')).toBeNull();
   });
+  it('shows the most recently discarded card face-up with its name and the pile count', () => {
+    const s = state();
+    const withDiscards = {
+      ...s,
+      zones: s.zones.map((z) =>
+        z.kind === 'discardPile'
+          ? { ...z, cards: [
+              { instanceId: 'd1', definitionId: 'shan', suit: 'heart' as const, rank: 2 },
+              { instanceId: 'd2', definitionId: 'sha', suit: 'spade' as const, rank: 7 },
+            ] }
+          : z
+      ),
+    };
+    const el = render(withDiscards);
+    const discard = el.querySelector('.centre .discard')!;
+    expect(discard.querySelector('app-card-art img')!.getAttribute('src')).toBe('/card-art/cards/basic/sha.jpg');
+    expect(discard.textContent).toContain('Last discarded: Sha');
+    expect(discard.textContent).toContain('Discard 2');
+  });
+
+  it('shows an empty discard placeholder when the pile is empty (Review Focus 3)', () => {
+    const s = state();
+    const empty = { ...s, zones: s.zones.map((z) => (z.kind === 'discardPile' ? { ...z, cards: [] } : z)) };
+    const discard = render(empty).querySelector('.centre .discard')!;
+    expect(discard.querySelector('.discard-empty')).not.toBeNull();
+    expect(discard.textContent).toContain('Discard 0');
+  });
+
+  it('passes each seat’s equipment to its tile', () => {
+    const s = state();
+    const equipped = {
+      ...s,
+      zones: [...s.zones, { id: 'seat-0:equip', kind: 'equip' as const, ownerSeatId: 'seat-0', cards: [
+        { instanceId: 'e1', definitionId: 'green-dragon-blade', suit: 'spade' as const, rank: 5 },
+      ] }],
+    };
+    const el = render(equipped, 'seat-0');
+    expect(tile(el, 'seat-0').querySelector('.equip .slot[data-slot="weapon"] app-card-art')).not.toBeNull();
+  });
 });

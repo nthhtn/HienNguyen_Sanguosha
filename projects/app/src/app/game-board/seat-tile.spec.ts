@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Seat } from 'engine';
+import { CardInstance, Seat } from 'engine';
 import { SeatTile } from './seat-tile';
 
 function makeSeat(overrides: Partial<Seat> = {}): Seat {
@@ -20,7 +20,7 @@ function makeSeat(overrides: Partial<Seat> = {}): Seat {
   };
 }
 
-function render(seat: Seat, opts: { handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean } = {}) {
+function render(seat: Seat, opts: { handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[] } = {}) {
   const fixture = TestBed.createComponent(SeatTile);
   fixture.componentRef.setInput('seat', seat);
   fixture.componentRef.setInput('handCount', opts.handCount ?? 4);
@@ -28,6 +28,7 @@ function render(seat: Seat, opts: { handCount?: number; isTurnOwner?: boolean; i
   fixture.componentRef.setInput('isResponding', opts.isResponding ?? false);
   fixture.componentRef.setInput('isViewer', opts.isViewer ?? false);
   fixture.componentRef.setInput('isBot', opts.isBot ?? false);
+  fixture.componentRef.setInput('equipment', opts.equipment ?? []);
   fixture.detectChanges();
   return fixture.nativeElement as HTMLElement;
 }
@@ -79,5 +80,26 @@ describe('SeatTile', () => {
   it('marks a bot seat with a robot icon', () => {
     expect(render(makeSeat(), { isBot: true }).querySelector('.bot-icon')).not.toBeNull();
     expect(render(makeSeat()).querySelector('.bot-icon')).toBeNull();
+  });
+  const eq = (instanceId: string, definitionId: string): CardInstance => ({ instanceId, definitionId, suit: 'spade', rank: 1 });
+
+  it('renders four equipment slots in order, filled or empty', () => {
+    const el = render(makeSeat(), { equipment: [eq('e1', 'silver-lion'), eq('e2', 'green-dragon-blade')] });
+    const slots = [...el.querySelectorAll('.equip .slot')] as HTMLElement[];
+    expect(slots.map((s) => s.dataset['slot'])).toEqual(['weapon', 'armor', 'plusMount', 'minusMount']);
+    expect(slots[0].querySelector('app-card-art')).not.toBeNull();
+    expect(slots[1].querySelector('app-card-art')).not.toBeNull();
+    expect(slots[2].classList).toContain('empty');
+    expect(slots[3].getAttribute('title')).toBe('−1 Horse (empty)');
+  });
+
+  it('ignores an equipped card with no known slot (Review Focus 5)', () => {
+    const el = render(makeSeat(), { equipment: [eq('e1', 'mystery-thing')] });
+    expect(el.querySelectorAll('.equip .slot.empty')).toHaveLength(4);
+  });
+
+  it('still renders slots for an eliminated seat (Review Focus 2)', () => {
+    const el = render(makeSeat({ eliminated: true }), { equipment: [eq('e1', 'green-dragon-blade')] });
+    expect(el.querySelectorAll('.equip .slot')).toHaveLength(4);
   });
 });

@@ -1,8 +1,16 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { Seat } from 'engine';
-import { generalDisplayName, kingdomDisplayName } from '../labels';
+import { CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
+import { equipSlotOf } from 'content';
+import { cardIdDisplayName, generalDisplayName, kingdomDisplayName } from '../labels';
 import { CardArt } from './card-art';
+
+const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
+  weapon: { label: 'Weapon', icon: 'gavel' },
+  armor: { label: 'Armor', icon: 'shield' },
+  plusMount: { label: '+1 Horse', icon: 'add' },
+  minusMount: { label: '−1 Horse', icon: 'remove' },
+};
 
 // One seat at the round table, compact enough to sit on the table's rim.
 @Component({
@@ -46,6 +54,22 @@ import { CardArt } from './card-art';
         <span>HP {{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
         <span class="hand-count" title="Cards in hand">🂠 {{ handCount() }}</span>
       </div>
+      <div class="equip">
+        @for (s of slots(); track s.slot) {
+          <div
+            class="slot"
+            [class.empty]="!s.card"
+            [attr.data-slot]="s.slot"
+            [attr.title]="s.card ? s.label + ': ' + cardIdDisplayName(s.card.definitionId) : s.label + ' (empty)'"
+          >
+            @if (s.card; as card) {
+              <app-card-art size="small" [id]="card.definitionId" [label]="cardIdDisplayName(card.definitionId)" />
+            } @else {
+              <mat-icon>{{ s.icon }}</mat-icon>
+            }
+          </div>
+        }
+      </div>
       @if (seat().eliminated) {
         <div class="status">Eliminated</div>
       } @else if (isResponding()) {
@@ -77,6 +101,10 @@ import { CardArt } from './card-art';
     .kingdom-Shu { background: #ffd9d6; }
     .kingdom-Wu { background: #d6f5dc; }
     .status { font-weight: bold; margin-top: 2px; }
+    .equip { display: grid; grid-template-columns: repeat(4, 26px); gap: 3px; justify-content: center; margin-top: 4px; }
+    .slot { width: 26px; height: 36px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
+    .slot.empty mat-icon { font-size: 14px; width: 14px; height: 14px; color: #b9a37a; }
+    .slot app-card-art { transform: scale(0.6); transform-origin: center; }
   `,
 })
 export class SeatTile {
@@ -86,6 +114,16 @@ export class SeatTile {
   readonly isResponding = input(false);
   readonly isViewer = input(false);
   readonly isBot = input(false);
+  readonly equipment = input<CardInstance[]>([]);
+
+  protected readonly slots = computed(() =>
+    EQUIP_SLOTS.map((slot) => ({
+      slot,
+      ...SLOT_LABELS[slot],
+      card: this.equipment().find((c) => equipSlotOf(c.definitionId) === slot) ?? null,
+    }))
+  );
+  protected readonly cardIdDisplayName = cardIdDisplayName;
 
   protected readonly generalDisplayName = generalDisplayName;
   protected readonly kingdomDisplayName = kingdomDisplayName;
