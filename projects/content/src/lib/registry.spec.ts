@@ -42,4 +42,11 @@ describe('buildContentRegistry', () => {
       expect(counts.get(kingdom)).toBeGreaterThanOrEqual(2);
     }
   });
+  it('gives every equipment card a slot and no other card one', () => {
+    const registry = buildContentRegistry();
+    for (const card of registry.cards.values()) {
+      if (card.category === 'equipment') expect(card.equipSlot).toBeDefined();
+      else expect(card.equipSlot).toBeUndefined();
+    }
+  });
 });

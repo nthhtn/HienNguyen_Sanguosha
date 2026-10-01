@@ -8,10 +8,16 @@ export interface PlayContext {
   respondingTo?: string;
 }
 
+// The four equipment slots a seat has. One card per slot.
+export type EquipSlot = 'weapon' | 'armor' | 'plusMount' | 'minusMount';
+export const EQUIP_SLOTS: readonly EquipSlot[] = ['weapon', 'armor', 'plusMount', 'minusMount'];
+
 export interface CardDefinition {
   id: string;
   name: string;
   category: 'basic' | 'trick' | 'equipment';
+  // Which equipment slot the card occupies; set exactly when category is 'equipment'.
+  equipSlot?: EquipSlot;
   play(state: GameState, ctx: PlayContext): unknown[];
 }
 
