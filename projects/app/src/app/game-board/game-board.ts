@@ -2,6 +2,8 @@ import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Action, CardInstance, ChooseGeneralsAction } from 'engine';
 import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
@@ -14,7 +16,7 @@ import { GeneralSelection, SelectionProgress } from './general-selection';
 
 @Component({
   selector: 'app-game-board',
-  imports: [RevealGateOverlay, ActionList, EventLog, RoundTable, HandView, GameOver, GeneralSelection, RouterLink, MatButtonModule, MatIconModule],
+  imports: [RevealGateOverlay, ActionList, EventLog, RoundTable, HandView, GameOver, GeneralSelection, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -28,10 +30,15 @@ import { GeneralSelection, SelectionProgress } from './general-selection';
       @if (state.result; as result) {
         <app-game-over [result]="result" (newGame)="goToSetup()" />
       } @else if (activeSeatId(); as activeSeatId) {
-        @if (gameService.revealedSeatId() !== activeSeatId) {
+        @if (gameService.humanSeatId() === null && gameService.revealedSeatId() !== activeSeatId) {
           <app-reveal-gate-overlay [seatId]="activeSeatId" (revealed)="gameService.reveal(activeSeatId)" />
         } @else if (visibleState(); as visible) {
-          @if (visible.phase === 'GeneralSelection') {
+          @if (visible.phase === 'GeneralSelection' && activeSeatId !== viewerSeatId()) {
+            <mat-card appearance="outlined" class="bots-choosing">
+              <mat-progress-spinner mode="indeterminate" diameter="28" />
+              <span>Bots are choosing their generals…</span>
+            </mat-card>
+          } @else if (visible.phase === 'GeneralSelection') {
             <app-general-selection
               [candidates]="selectionCandidates()"
               [actions]="generalChoices()"
@@ -41,7 +48,7 @@ import { GeneralSelection, SelectionProgress } from './general-selection';
               (chosen)="submit($event)"
             />
           } @else {
-            <app-round-table [state]="visible" [viewerSeatId]="activeSeatId" />
+            <app-round-table [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="gameService.botThinkingSeatId()" [botSeatIds]="gameService.botSeatIds()" />
             <section class="your-hand">
               <h3>Your hand</h3>
               <app-hand-view
@@ -73,6 +80,7 @@ import { GeneralSelection, SelectionProgress } from './general-selection';
       background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container);
     }
     .error-banner .message { flex: 1; }
+    .bots-choosing { display: flex; align-items: center; gap: 16px; padding: 24px; margin: 24px auto; max-width: 420px; }
     .your-hand { margin: 8px 0; }
     .your-hand h3 { margin: 0 0 4px; }
   `,
@@ -85,10 +93,13 @@ export class GameBoard {
   protected readonly visibleState = this.gameService.visibleState;
   protected readonly lastError = this.gameService.lastError;
 
+  // Whose chair the table is seen from: the human in vs-bots, else the revealed active seat.
+  protected readonly viewerSeatId = computed(() => this.gameService.humanSeatId() ?? this.activeSeatId());
+
   // The revealed seat's own hand, shown full-size below the table.
   protected readonly ownHand = computed<CardInstance[]>(() => {
     const visible = this.visibleState();
-    const seatId = this.activeSeatId();
+    const seatId = this.viewerSeatId();
     const seat = visible?.seats.find((s) => s.id === seatId);
     if (!visible || !seat) return [];
     return visible.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [];

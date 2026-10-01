@@ -1,4 +1,5 @@
 import { Component, input } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { Seat } from 'engine';
 import { generalDisplayName, kingdomDisplayName } from '../labels';
 import { CardArt } from './card-art';
@@ -6,7 +7,7 @@ import { CardArt } from './card-art';
 // One seat at the round table, compact enough to sit on the table's rim.
 @Component({
   selector: 'app-seat-tile',
-  imports: [CardArt],
+  imports: [CardArt, MatIconModule],
   template: `
     <div
       class="tile"
@@ -17,6 +18,9 @@ import { CardArt } from './card-art';
     >
       <div class="header">
         <strong>{{ seat().id }}</strong>
+        @if (isBot()) {
+          <mat-icon class="bot-icon" aria-label="Computer player">smart_toy</mat-icon>
+        }
         @if (isViewer()) {
           <span class="you">(you)</span>
         }
@@ -63,6 +67,7 @@ import { CardArt } from './card-art';
     .tile.turn-owner { border-color: #1565c0; box-shadow: 0 0 0 3px rgb(21 101 192 / 35%); }
     .tile.responding { border-color: #e65100; box-shadow: 0 0 0 3px rgb(230 81 0 / 35%); }
     .tile.eliminated { opacity: 0.45; filter: grayscale(1); }
+    .bot-icon { font-size: 14px; width: 14px; height: 14px; vertical-align: middle; margin-left: 3px; color: #666; }
     .you { margin-left: 4px; color: #1565c0; }
     .generals { display: flex; gap: 3px; justify-content: center; margin: 3px 0; min-height: 60px; align-items: center; }
     .choosing { font-style: italic; color: #666; }
@@ -80,6 +85,7 @@ export class SeatTile {
   readonly isTurnOwner = input(false);
   readonly isResponding = input(false);
   readonly isViewer = input(false);
+  readonly isBot = input(false);
 
   protected readonly generalDisplayName = generalDisplayName;
   protected readonly kingdomDisplayName = kingdomDisplayName;

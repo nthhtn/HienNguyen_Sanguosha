@@ -5,6 +5,11 @@ import { Setup } from './setup';
 import { GameService } from '../game.service';
 
 describe('Setup', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
   it('starts a game with the chosen seat count and navigates to /game', async () => {
     await TestBed.configureTestingModule({
       imports: [Setup],
@@ -89,7 +94,7 @@ describe('Setup', () => {
 
     it('offers one seat toggle per legal table size, from 2 up to maxSeats', async () => {
       const { el, gameService } = await create();
-      const labels = [...el.querySelectorAll('mat-button-toggle')].map((t) => t.textContent!.trim());
+      const labels = [...el.querySelectorAll('.seats mat-button-toggle')].map((t) => t.textContent!.trim());
       expect(labels).toEqual(Array.from({ length: gameService.maxSeats - 1 }, (_, i) => String(i + 2)));
     });
 
@@ -111,6 +116,26 @@ describe('Setup', () => {
       input.value = '';
       input.dispatchEvent(new Event('input'));
       expect(fixture.componentInstance.seed()).toBeUndefined();
+    });
+    it('defaults to playing against bots', async () => {
+      const { el, gameService } = await create();
+      (el.querySelector('button.start') as HTMLButtonElement).click();
+      expect(gameService.mode()).toBe('vs-bots');
+      expect(gameService.state()!.players[0].kind).toBe('human');
+      expect(gameService.state()!.players.slice(1).every((p) => p.kind === 'bot')).toBe(true);
+    });
+
+    it('starts a pass-and-play game when that mode is picked (Review Focus 5)', async () => {
+      const { fixture, el, gameService } = await create();
+      const passAndPlay = [...el.querySelectorAll('.mode mat-button-toggle button')].find((b) =>
+        b.textContent!.includes('Pass-and-play')
+      ) as HTMLButtonElement;
+      passAndPlay.click();
+      fixture.detectChanges();
+      expect(el.querySelector('.mode-hint')!.textContent).toContain('passing it between turns');
+      (el.querySelector('button.start') as HTMLButtonElement).click();
+      expect(gameService.mode()).toBe('pass-and-play');
+      expect(gameService.state()!.players.every((p) => p.kind === 'human')).toBe(true);
     });
   });
 });

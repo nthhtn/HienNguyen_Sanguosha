@@ -38,10 +38,12 @@ function state(overrides: Partial<GameState> = {}): GameState {
   };
 }
 
-function render(s: GameState, viewerSeatId = 'seat-1') {
+function render(s: GameState, viewerSeatId = 'seat-1', thinkingSeatId: string | null = null, botSeatIds: string[] = []) {
   const fixture = TestBed.createComponent(RoundTable);
   fixture.componentRef.setInput('state', s);
   fixture.componentRef.setInput('viewerSeatId', viewerSeatId);
+  fixture.componentRef.setInput('thinkingSeatId', thinkingSeatId);
+  fixture.componentRef.setInput('botSeatIds', botSeatIds);
   fixture.detectChanges();
   return fixture.nativeElement as HTMLElement;
 }
@@ -87,5 +89,15 @@ describe('RoundTable', () => {
     const el = render(state({ pendingResponse: pending }));
     expect(tile(el, 'seat-0').querySelector('.tile')!.classList).toContain('responding');
     expect(el.querySelector('.centre')!.textContent).toContain('Waiting on seat-0');
+  });
+  it('shows which seat is thinking, and marks bot seats', () => {
+    const el = render(state(), 'seat-0', 'seat-1', ['seat-1', 'seat-2']);
+    expect(el.querySelector('.centre .thinking')!.textContent).toContain('seat-1 is thinking');
+    expect(tile(el, 'seat-1').querySelector('.bot-icon')).not.toBeNull();
+    expect(tile(el, 'seat-0').querySelector('.bot-icon')).toBeNull();
+  });
+
+  it('shows no thinking line when nobody is thinking', () => {
+    expect(render(state(), 'seat-0').querySelector('.centre .thinking')).toBeNull();
   });
 });

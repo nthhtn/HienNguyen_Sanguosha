@@ -20,13 +20,14 @@ function makeSeat(overrides: Partial<Seat> = {}): Seat {
   };
 }
 
-function render(seat: Seat, opts: { handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean } = {}) {
+function render(seat: Seat, opts: { handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean } = {}) {
   const fixture = TestBed.createComponent(SeatTile);
   fixture.componentRef.setInput('seat', seat);
   fixture.componentRef.setInput('handCount', opts.handCount ?? 4);
   fixture.componentRef.setInput('isTurnOwner', opts.isTurnOwner ?? false);
   fixture.componentRef.setInput('isResponding', opts.isResponding ?? false);
   fixture.componentRef.setInput('isViewer', opts.isViewer ?? false);
+  fixture.componentRef.setInput('isBot', opts.isBot ?? false);
   fixture.detectChanges();
   return fixture.nativeElement as HTMLElement;
 }
@@ -74,5 +75,9 @@ describe('SeatTile', () => {
     const el = render(makeSeat({ eliminated: true }));
     expect(el.querySelector('.tile')!.classList).toContain('eliminated');
     expect(el.textContent).toContain('Eliminated');
+  });
+  it('marks a bot seat with a robot icon', () => {
+    expect(render(makeSeat(), { isBot: true }).querySelector('.bot-icon')).not.toBeNull();
+    expect(render(makeSeat()).querySelector('.bot-icon')).toBeNull();
   });
 });

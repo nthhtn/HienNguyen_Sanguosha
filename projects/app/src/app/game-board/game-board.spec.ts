@@ -210,3 +210,68 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-action-list')).toBeNull();
   });
 });
+
+describe('GameBoard in vs-bots mode', () => {
+  let gameService: GameService;
+
+  beforeEach(async () => {
+    jest.useFakeTimers();
+    await TestBed.configureTestingModule({
+      imports: [GameBoard],
+      providers: [provideRouter([{ path: 'setup', children: [] }])],
+    }).compileComponents();
+    gameService = TestBed.inject(GameService);
+    gameService.botDelayMs = 0;
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  function flushBots(): void {
+    for (let guard = 0; gameService.botThinkingSeatId() && guard < 50000; guard++) jest.runOnlyPendingTimers();
+  }
+
+  it('shows the human’s general selection straight away, with no reveal gate', () => {
+    gameService.startGame(3, 1, 'vs-bots');
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
+    expect(el.querySelector('app-general-selection')).not.toBeNull();
+  });
+
+  it('shows a waiting card while the bots choose their generals', () => {
+    gameService.startGame(3, 1, 'vs-bots');
+    gameService.submit(gameService.legalActions()[0]);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-general-selection')).toBeNull();
+    expect(el.querySelector('.bots-choosing')!.textContent).toContain('Bots are choosing their generals');
+  });
+
+  it('keeps the table on seat-0 and shows the thinking bot during a bot turn', () => {
+    gameService.startGame(3, 1, 'vs-bots');
+    gameService.submit(gameService.legalActions()[0]);
+    flushBots(); // through selection and any bot turns, to the human's first move
+    const humanMove = gameService.legalActions().find((a) => a.kind === 'EndPhaseAction');
+    expect(humanMove).toBeDefined();
+    // Advance the human to the end of their turn, so a bot is next.
+    for (let i = 0; i < 10 && !gameService.botThinkingSeatId() && !gameService.state()!.result; i++) {
+      const legal = gameService.legalActions();
+      gameService.submit(legal.find((a) => a.kind === 'EndPhaseAction' || a.kind === 'PassAction') ?? legal[0]);
+    }
+    expect(gameService.botThinkingSeatId()).not.toBeNull();
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
+    expect(el.querySelector('app-round-table [data-seat-id="seat-0"]')!.textContent).toContain('(you)');
+    expect(el.querySelector('app-round-table .thinking')!.textContent).toContain('is thinking');
+    // Nothing is playable while a bot acts (Review Focus 4).
+    const playButtons = [...el.querySelectorAll('app-hand-view button.play')] as HTMLButtonElement[];
+    expect(playButtons.every((b) => b.disabled)).toBe(true);
+  });
+});

@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { GameService } from '../game.service';
+import { GameMode, GameService } from '../game.service';
 
 @Component({
   selector: 'app-setup',
@@ -29,8 +29,27 @@ import { GameService } from '../game.service';
           </ul>
 
           <div class="field">
+            <span class="label" id="mode-label">Mode</span>
+            <mat-button-toggle-group
+              class="mode"
+              aria-labelledby="mode-label"
+              [hideSingleSelectionIndicator]="true"
+              [value]="mode()"
+              (change)="mode.set($event.value)"
+            >
+              <mat-button-toggle value="vs-bots"><mat-icon>smart_toy</mat-icon> Play vs bots</mat-button-toggle>
+              <mat-button-toggle value="pass-and-play"><mat-icon>groups</mat-icon> Pass-and-play</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+          <p class="mode-hint">
+            {{ mode() === 'vs-bots'
+              ? 'You play seat-0; every other seat is a computer opponent.'
+              : 'Everyone plays on this device, passing it between turns.' }}
+          </p>
+          <div class="field">
             <span class="label" id="seat-label">Seats</span>
             <mat-button-toggle-group
+              class="seats"
               aria-labelledby="seat-label"
               [hideSingleSelectionIndicator]="true"
               [value]="seatCount()"
@@ -90,6 +109,8 @@ import { GameService } from '../game.service';
     .field { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
     .label { font: var(--mat-sys-title-small); min-width: 48px; }
     .seed-field { width: 100%; }
+    .mode-hint { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
+    .mode mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; vertical-align: middle; }
     .start { padding: 0 24px; }
   `,
 })
@@ -99,12 +120,13 @@ export class Setup {
   protected readonly maxSeats = this.gameService.maxSeats;
   protected readonly seatOptions = Array.from({ length: this.maxSeats - 1 }, (_, i) => i + 2);
 
+  readonly mode = signal<GameMode>('vs-bots');
   readonly seatCount = signal(4);
   readonly seed = signal<number | undefined>(undefined);
 
   startGame(): void {
     const clamped = Math.min(this.maxSeats, Math.max(2, this.seatCount() || 2));
-    this.gameService.startGame(clamped, this.seed());
+    this.gameService.startGame(clamped, this.seed(), this.mode());
     this.router.navigateByUrl('/game');
   }
 }

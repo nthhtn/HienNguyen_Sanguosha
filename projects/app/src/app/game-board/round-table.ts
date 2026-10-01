@@ -1,4 +1,5 @@
 import { Component, computed, input } from '@angular/core';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GameState } from 'engine';
 import { eventLabel } from '../labels';
 import { SeatTile } from './seat-tile';
@@ -10,7 +11,7 @@ const RECENT_LOG_LINES = 3;
 // Presentational: everything shown is read straight off the (redacted) state.
 @Component({
   selector: 'app-round-table',
-  imports: [SeatTile],
+  imports: [SeatTile, MatProgressSpinnerModule],
   template: `
     <div class="table">
       <div class="felt"></div>
@@ -19,6 +20,9 @@ const RECENT_LOG_LINES = 3;
         <div>{{ state().turn.ownerSeatId }}'s turn</div>
         @if (state().pendingResponse; as pending) {
           <div class="waiting">Waiting on {{ pending.respondingSeatId }}</div>
+        }
+        @if (thinkingSeatId(); as thinking) {
+          <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ thinking }} is thinking…</div>
         }
         <div class="piles">Draw pile {{ pileCount('drawPile') }} · Discard {{ pileCount('discardPile') }}</div>
         <ul class="recent">
@@ -35,6 +39,7 @@ const RECENT_LOG_LINES = 3;
             [isViewer]="p.isViewer"
             [isTurnOwner]="p.seat.id === state().turn.ownerSeatId"
             [isResponding]="p.seat.id === state().pendingResponse?.respondingSeatId"
+            [isBot]="botSeatIds().includes(p.seat.id)"
           />
         </div>
       }
@@ -69,6 +74,7 @@ const RECENT_LOG_LINES = 3;
     }
     .turn { font-size: 1.25em; font-weight: bold; }
     .waiting { color: #ffcc80; font-weight: bold; }
+    .thinking { display: flex; align-items: center; justify-content: center; gap: 6px; color: #b1c5ff; --mdc-circular-progress-active-indicator-color: #b1c5ff; --mat-progress-spinner-active-indicator-color: #b1c5ff; }
     .recent { list-style: none; padding: 0; margin: 6px 0 0; opacity: 0.85; font-size: 0.9em; }
     .seat { position: absolute; transform: translate(-50%, -50%); }
     @media (max-width: 600px) {
@@ -83,6 +89,8 @@ const RECENT_LOG_LINES = 3;
 export class RoundTable {
   readonly state = input.required<GameState>();
   readonly viewerSeatId = input.required<string>();
+  readonly thinkingSeatId = input<string | null>(null);
+  readonly botSeatIds = input<string[]>([]);
 
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId()));
 
