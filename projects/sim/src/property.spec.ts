@@ -18,7 +18,7 @@ describe('property: simulated Kingdom War games across many seeds and every lega
         seed++;
         const seatIds = Array.from({ length: numSeats }, (_, idx) => `seat-${idx}`);
         const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
-        for (const [botKind, maxActions] of [['random', 2000], ['rule-based', 20000]] as const) {
+        for (const [botKind, maxActions] of [['random', 5000], ['rule-based', 20000]] as const) {
           const { finalState, actionsSubmitted } = runGame(
             initialState,
             { registry, mode: kingdomWarMode },

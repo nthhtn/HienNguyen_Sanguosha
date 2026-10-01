@@ -87,11 +87,12 @@ describe('Duel and Wuxie Kongjie', () => {
     expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(6);
   });
 
-  it('played with no target is a no-op rather than throwing', () => {
+  it('an untargeted Duel is not a legal play, and its play() stays a defensive no-op', () => {
     const state = twoSeatState('duel');
-    const { state: next } = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [] }, { registry: registry(), mode: stubMode() });
-    expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(6);
-    expect(next.pendingResponse).toBeNull();
+    expect(() =>
+      resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [] }, { registry: registry(), mode: stubMode() })
+    ).toThrow('Card duel cannot be played with those targets');
+    expect(duelCard.play(state, { seatId: 'seat-a', cardInstanceId: 'card-1', targets: [] })).toEqual([]);
   });
 });
 

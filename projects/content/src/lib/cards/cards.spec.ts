@@ -72,10 +72,11 @@ describe('Sha/Shan/Peach', () => {
     expect(next.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId)).toEqual(['peach-1']);
   });
 
-  it('Sha played with no target is a no-op rather than throwing (guards the legality module\'s untargeted variant)', () => {
+  it('an untargeted Sha is not a legal play, and its play() stays a defensive no-op', () => {
     const state = twoSeatState();
-    const { state: next } = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [] }, { registry: registry(), mode: stubMode() });
-    expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(6);
-    expect(next.pendingResponse).toBeNull();
+    expect(() =>
+      resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [] }, { registry: registry(), mode: stubMode() })
+    ).toThrow('Card sha cannot be played with those targets');
+    expect(shaCard.play(state, { seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [] })).toEqual([]);
   });
 });

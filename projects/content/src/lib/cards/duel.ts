@@ -1,9 +1,11 @@
 import type { CardDefinition } from 'engine';
+import { otherLivingSeatTargets } from '../shared/queries';
 
 export const duelCard: CardDefinition = {
   id: 'duel',
   name: 'Duel',
   category: 'trick',
+  legalPlayTargets: (state, ctx) => otherLivingSeatTargets(state, ctx.seatId),
   play: (_state, ctx) => {
     if (ctx.respondingTo) return [];
     if (ctx.targets.length === 0) return []; // no target chosen — a no-op rather than a crash
