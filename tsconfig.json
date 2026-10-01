@@ -4,6 +4,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
+      "bots": ["./projects/bots/src/public-api.ts"],
       "content": ["./projects/content/src/public-api.ts"],
       "engine": ["./projects/engine/src/public-api.ts"]
     },

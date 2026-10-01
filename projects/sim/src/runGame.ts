@@ -1,6 +1,6 @@
 import { resolve, createRng } from 'engine';
 import type { GameState, EngineContext } from 'engine';
-import { pickRandomAction } from './bot';
+import { pickRandomAction } from 'bots';
 
 export interface RunGameResult {
   finalState: GameState;

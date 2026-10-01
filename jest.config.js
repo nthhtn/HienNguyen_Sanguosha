@@ -26,6 +26,18 @@ module.exports = {
       moduleNameMapper: {
         '^engine$': '<rootDir>/../../engine/src/public-api.ts',
         '^content$': '<rootDir>/../../content/src/public-api.ts',
+        '^bots$': '<rootDir>/../../bots/src/public-api.ts',
+      },
+    },
+    {
+      displayName: 'bots',
+      preset: 'ts-jest',
+      testEnvironment: 'node',
+      rootDir: 'projects/bots/src',
+      testMatch: ['**/*.spec.ts'],
+      moduleNameMapper: {
+        '^engine$': '<rootDir>/../../engine/src/public-api.ts',
+        '^content$': '<rootDir>/../../content/src/public-api.ts',
       },
     },
     {
@@ -38,6 +50,7 @@ module.exports = {
       moduleNameMapper: {
         '^engine$': '<rootDir>/../engine/src/public-api.ts',
         '^content$': '<rootDir>/../content/src/public-api.ts',
+        '^bots$': '<rootDir>/../bots/src/public-api.ts',
       },
     },
   ],

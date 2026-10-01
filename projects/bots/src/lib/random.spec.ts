@@ -1,4 +1,4 @@
-import { seatToAct, pickRandomAction } from './bot';
+import { seatToAct, pickRandomAction } from './random';
 import { createRng } from 'engine';
 import type { GameState, Effect } from 'engine';
 
