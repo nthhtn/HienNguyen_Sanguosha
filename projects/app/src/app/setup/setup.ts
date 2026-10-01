@@ -19,12 +19,16 @@ import { GameMode, GameService } from '../game.service';
         </div>
         <mat-card-header>
           <mat-card-title>Kingdom War</mat-card-title>
-          <mat-card-subtitle>Guozhan · pass-and-play on one device</mat-card-subtitle>
+          <mat-card-subtitle>Guozhan · {{ mode() === 'vs-bots' ? 'you against computer opponents' : 'pass-and-play on one device' }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <ul class="how">
             <li><mat-icon>groups</mat-icon>Each seat picks two hidden generals of one kingdom.</li>
-            <li><mat-icon>swap_horiz</mat-icon>Pass the device — every seat sees only its own cards.</li>
+            @if (mode() === 'vs-bots') {
+              <li><mat-icon>smart_toy</mat-icon>Bots play their own turns — you only ever see your own cards.</li>
+            } @else {
+              <li><mat-icon>swap_horiz</mat-icon>Pass the device — every seat sees only its own cards.</li>
+            }
             <li><mat-icon>emoji_events</mat-icon>The last kingdom standing wins.</li>
           </ul>
 

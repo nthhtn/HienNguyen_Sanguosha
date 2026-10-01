@@ -101,6 +101,9 @@ export class GameService {
   }
 
   submit(action: Action): void {
+    // A bot seat's moves come only from its own timer, never from the UI.
+    const activeSeatId = this.activeSeatId();
+    if (activeSeatId && this.botSeatIds().includes(activeSeatId)) return;
     if (this.apply(action)) this.scheduleBotIfDue();
   }
 

@@ -1,5 +1,6 @@
 import { GameService } from './game.service';
 import { ruleBasedPolicy } from 'bots';
+import { getLegalActions } from 'engine';
 
 function finishSelection(service: GameService): void {
   while (service.state()!.phase === 'GeneralSelection') {
@@ -192,6 +193,17 @@ describe('GameService in vs-bots mode', () => {
     expect(service.state()!.result).not.toBeNull();
     expect(service.botThinkingSeatId()).toBeNull();
     expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it('ignores a move submitted for a bot seat while that bot is due to act', () => {
+    service.startGame(3, 1, 'vs-bots');
+    service.submit(service.legalActions()[0]);
+    const before = service.state();
+    const botMove = getLegalActions(before!, 'seat-1', service.registry)[0];
+    service.submit(botMove);
+    expect(service.state()).toBe(before);
+    expect(service.botThinkingSeatId()).toBe('seat-1');
+    expect(jest.getTimerCount()).toBe(1);
   });
 
   it('cancels a pending bot move when a new game starts (Review Focus 2)', () => {

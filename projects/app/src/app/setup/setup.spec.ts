@@ -137,5 +137,17 @@ describe('Setup', () => {
       expect(gameService.mode()).toBe('pass-and-play');
       expect(gameService.state()!.players.every((p) => p.kind === 'human')).toBe(true);
     });
+    it('describes the chosen mode in the card header and how-it-works lines', async () => {
+      const { fixture, el } = await create();
+      expect(el.querySelector('mat-card-subtitle')!.textContent).toContain('you against computer opponents');
+      expect(el.querySelector('.how')!.textContent).not.toContain('Pass the device');
+      const passAndPlay = [...el.querySelectorAll('.mode mat-button-toggle button')].find((b) =>
+        b.textContent!.includes('Pass-and-play')
+      ) as HTMLButtonElement;
+      passAndPlay.click();
+      fixture.detectChanges();
+      expect(el.querySelector('mat-card-subtitle')!.textContent).toContain('pass-and-play on one device');
+      expect(el.querySelector('.how')!.textContent).toContain('Pass the device');
+    });
   });
 });

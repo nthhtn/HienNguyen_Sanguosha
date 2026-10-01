@@ -1,3 +1,5 @@
+import { ruleBasedPolicy } from 'bots';
+import { Router } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
@@ -273,5 +275,24 @@ describe('GameBoard in vs-bots mode', () => {
     // Nothing is playable while a bot acts (Review Focus 4).
     const playButtons = [...el.querySelectorAll('app-hand-view button.play')] as HTMLButtonElement[];
     expect(playButtons.every((b) => b.disabled)).toBe(true);
+  });
+
+  it('offers a way out to a new game when a bot move fails', () => {
+    jest.spyOn(ruleBasedPolicy, 'decide').mockImplementation(() => {
+      throw new Error('bot exploded');
+    });
+    gameService.startGame(3, 1, 'vs-bots');
+    gameService.submit(gameService.legalActions()[0]);
+    jest.runOnlyPendingTimers();
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    const banner = (fixture.nativeElement as HTMLElement).querySelector('.error-banner')!;
+    expect(banner.textContent).toContain('bot exploded');
+    const router = TestBed.inject(Router);
+    const navigate = jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const newGame = [...banner.querySelectorAll('button')].find((b) => b.textContent!.includes('New game')) as HTMLButtonElement;
+    newGame.click();
+    expect(navigate).toHaveBeenCalledWith('/setup');
+    jest.restoreAllMocks();
   });
 });

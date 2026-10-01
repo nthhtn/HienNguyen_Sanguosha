@@ -22,6 +22,10 @@ import { GeneralSelection, SelectionProgress } from './general-selection';
       <div class="error-banner" role="alert">
         <mat-icon>error</mat-icon>
         <span class="message">{{ error }}</span>
+        @if (gameService.mode() === 'vs-bots' && gameService.state() && !gameService.state()!.result) {
+          <!-- A failed bot move stops the bots, so give the player a way out. -->
+          <button mat-button type="button" (click)="goToSetup()">New game</button>
+        }
         <button mat-button type="button" (click)="dismissError()">Dismiss</button>
       </div>
     }
