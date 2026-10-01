@@ -69,6 +69,18 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
     }
   }
 
+  if (registry) {
+    for (const zone of state.zones.filter((z) => z.kind === 'equip')) {
+      const seen = new Set<string>();
+      for (const card of zone.cards) {
+        const slot = registry.cards.get(card.definitionId)?.equipSlot;
+        if (!slot) continue;
+        if (seen.has(slot)) violations.push(`Equip zone ${zone.id} holds two ${slot} cards`);
+        seen.add(slot);
+      }
+    }
+  }
+
   if (state.result) {
     const allIds = new Set(state.seats.map((s) => s.id));
     const seen = new Set<string>();

@@ -70,14 +70,20 @@ function decide(
   if (view.phase === 'Play' && self) {
     const plays = legal.filter((a): a is PlayCard => a.kind === 'PlayCardAction');
     const untargeted = (p: PlayCard) => p.targets.length === 0;
-    const equipped = view.zones.find((z) => z.id === self.equipped.zoneId)?.cards.map((c) => c.definitionId) ?? [];
+    const equippedSlots = new Set(
+      (view.zones.find((z) => z.id === self.equipped.zoneId)?.cards ?? []).map(
+        (c) => registry.cards.get(c.definitionId)?.equipSlot
+      )
+    );
 
     const peach = plays.find((p) => untargeted(p) && definitionIdOf(view, p.cardInstanceId) === 'peach');
     if (peach && self.combinedHp < self.maxCombinedHp) return take(peach);
 
+    // Equip only into an empty slot; never swap one weapon for another.
     const equipment = plays.find((p) => {
       const definitionId = definitionIdOf(view, p.cardInstanceId);
-      return untargeted(p) && !!definitionId && registry.cards.get(definitionId)?.category === 'equipment' && !equipped.includes(definitionId);
+      const slot = definitionId ? registry.cards.get(definitionId)?.equipSlot : undefined;
+      return untargeted(p) && !!slot && !equippedSlots.has(slot);
     });
     if (equipment) return take(equipment);
 

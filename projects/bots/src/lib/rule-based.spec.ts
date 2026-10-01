@@ -1,19 +1,19 @@
-import type { Action, CardDefinition, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
+import type { Action, CardDefinition, EquipSlot, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
 import { ruleBasedPolicy } from './rule-based';
 import { MAX_BOT_ACTIONS_PER_TURN } from './policy';
 
 function general(id: string, kingdom: Kingdom, maxHp: number): [string, GeneralDefinition] {
   return [id, { id, kingdom, maxHp, skills: [] }];
 }
-function card(id: string, category: CardDefinition['category']): [string, CardDefinition] {
-  return [id, { id, name: id, category, play: () => [] }];
+function card(id: string, category: CardDefinition['category'], equipSlot?: EquipSlot): [string, CardDefinition] {
+  return [id, { id, name: id, category, equipSlot, play: () => [] }];
 }
 
 const registry: ContentRegistry = {
   generals: new Map([general('w1', 'Wei', 4), general('w2', 'Wei', 3), general('s1', 'Shu', 4), general('s2', 'Shu', 5)]),
   cards: new Map([
     card('sha', 'basic'), card('shan', 'basic'), card('peach', 'basic'),
-    card('duel', 'trick'), card('wuxie', 'trick'), card('blade', 'equipment'),
+    card('duel', 'trick'), card('wuxie', 'trick'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
   ]),
 };
 
@@ -156,5 +156,16 @@ describe('ruleBasedPolicy', () => {
   it('falls back to the first legal action for an action shape it does not know', () => {
     const reveal: Action = { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' };
     expect(decide(view(), [reveal]).action).toBe(reveal);
+  });
+  it('does not equip a second weapon over the one it holds', () => {
+    const hand = [{ instanceId: 'c-blade2', definitionId: 'blade-2' }];
+    const legal = [play('c-blade2'), end];
+    expect(decide(view({ hand, equip: ['blade'] }), legal).action).toBe(end);
+  });
+
+  it('equips armor while already holding a weapon (Review Focus 4)', () => {
+    const hand = [{ instanceId: 'c-lion', definitionId: 'lion' }];
+    const legal = [play('c-lion'), end];
+    expect(decide(view({ hand, equip: ['blade'] }), legal).action).toBe(legal[0]);
   });
 });

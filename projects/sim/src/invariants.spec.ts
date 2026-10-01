@@ -129,3 +129,30 @@ describe('checkInvariants: card conservation', () => {
     expect(violations[0]).toContain('discardPile');
   });
 });
+
+describe('equipment slot invariant', () => {
+  const registry = {
+    generals: new Map([
+      ['g1', { id: 'g1', kingdom: 'Wei' as const, maxHp: 4, skills: [] }],
+      ['g2', { id: 'g2', kingdom: 'Wei' as const, maxHp: 4, skills: [] }],
+    ]),
+    cards: new Map([
+      ['blade', { id: 'blade', name: 'Blade', category: 'equipment' as const, equipSlot: 'weapon' as const, play: () => [] }],
+      ['lion', { id: 'lion', name: 'Lion', category: 'equipment' as const, equipSlot: 'armor' as const, play: () => [] }],
+    ]),
+  };
+  const equipZone = (ids: string[]) => ({
+    id: 'seat-a:equip', kind: 'equip' as const, ownerSeatId: 'seat-a',
+    cards: ids.map((d, i) => ({ instanceId: `${d}-${i}`, definitionId: d, suit: 'spade' as const, rank: 1 })),
+  });
+
+  it('flags two cards in the same slot', () => {
+    expect(checkInvariants(baseState({ zones: [equipZone(['blade', 'blade'])] }), registry)).toEqual([
+      expect.stringContaining('two weapon cards'),
+    ]);
+  });
+
+  it('accepts one card in each of two slots', () => {
+    expect(checkInvariants(baseState({ zones: [equipZone(['blade', 'lion'])] }), registry)).toEqual([]);
+  });
+});
