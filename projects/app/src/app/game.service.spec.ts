@@ -1,4 +1,5 @@
 import { GameService } from './game.service';
+import { ruleBasedPolicy } from 'bots';
 
 function finishSelection(service: GameService): void {
   while (service.state()!.phase === 'GeneralSelection') {
@@ -107,5 +108,125 @@ describe('GameService', () => {
 
     expect(service.lastError()).toBeNull();
     expect(service.state()).toBe(stateBefore);
+  });
+});
+
+describe('GameService in vs-bots mode', () => {
+  let service: GameService;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    service = new GameService();
+    service.botDelayMs = 0;
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  // Run pending bot moves until a human is to act (or the game ends).
+  function flushBots(): void {
+    for (let guard = 0; service.botThinkingSeatId() && guard < 50000; guard++) jest.runOnlyPendingTimers();
+  }
+
+  it('marks seat-0 human and every other seat a bot, and shows seat-0’s view without a gate', () => {
+    service.startGame(3, 1, 'vs-bots');
+    expect(service.mode()).toBe('vs-bots');
+    expect(service.state()!.players.map((p) => p.kind)).toEqual(['human', 'bot', 'bot']);
+    expect(service.humanSeatId()).toBe('seat-0');
+    expect(service.botSeatIds()).toEqual(['seat-1', 'seat-2']);
+    expect(service.revealedSeatId()).toBe('seat-0');
+    expect(service.visibleState()).not.toBeNull();
+  });
+
+  it('lets the human choose first, then the bots choose and play until the human must act', () => {
+    service.startGame(3, 1, 'vs-bots');
+    expect(service.activeSeatId()).toBe('seat-0');
+    expect(service.botThinkingSeatId()).toBeNull();
+    service.submit(service.legalActions()[0]);
+    expect(service.botThinkingSeatId()).toBe('seat-1');
+    expect(service.legalActions()).toEqual([]); // Review Focus 4
+    flushBots();
+    const state = service.state()!;
+    expect(state.phase).not.toBe('GeneralSelection');
+    expect(state.seats.every((s) => s.generals !== null)).toBe(true);
+    expect(state.result !== null || service.activeSeatId() === 'seat-0').toBe(true);
+  });
+
+  it('waits botDelayMs before each bot move', () => {
+    service.botDelayMs = 700;
+    service.startGame(3, 1, 'vs-bots');
+    service.submit(service.legalActions()[0]);
+    jest.advanceTimersByTime(699);
+    expect(service.state()!.seats[1].generals).toBeNull();
+    jest.advanceTimersByTime(1);
+    expect(service.state()!.seats[1].generals).not.toBeNull();
+  });
+
+  it('hands a bot’s Sha to the human to answer', () => {
+    service.startGame(2, 1, 'vs-bots');
+    let answered = false;
+    for (let step = 0; step < 5000 && !service.state()!.result && !answered; step++) {
+      if (service.botThinkingSeatId()) { jest.runOnlyPendingTimers(); continue; }
+      const pending = service.state()!.pendingResponse;
+      if (pending?.respondingSeatId === 'seat-0') {
+        expect(service.legalActions().some((a) => a.kind === 'PassAction')).toBe(true);
+        answered = true;
+        break;
+      }
+      const legal = service.legalActions();
+      service.submit(legal.find((a) => a.kind === 'EndPhaseAction') ?? legal[0]);
+    }
+    expect(answered).toBe(true);
+  });
+
+  it('plays on to a result even if the human only ends phases and passes, then stops (Review Focus 1)', () => {
+    service.startGame(3, 2, 'vs-bots');
+    for (let step = 0; step < 200000 && !service.state()!.result; step++) {
+      if (service.botThinkingSeatId()) { jest.runOnlyPendingTimers(); continue; }
+      const legal = service.legalActions();
+      service.submit(legal.find((a) => a.kind === 'EndPhaseAction' || a.kind === 'PassAction') ?? legal[0]);
+    }
+    expect(service.state()!.result).not.toBeNull();
+    expect(service.botThinkingSeatId()).toBeNull();
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it('cancels a pending bot move when a new game starts (Review Focus 2)', () => {
+    service.startGame(3, 1, 'vs-bots');
+    service.submit(service.legalActions()[0]);
+    expect(jest.getTimerCount()).toBe(1);
+    service.startGame(2, 5, 'pass-and-play');
+    expect(jest.getTimerCount()).toBe(0);
+    expect(service.botThinkingSeatId()).toBeNull();
+  });
+
+  it('stops the bots and reports the error when a bot move throws (Review Focus 3)', () => {
+    service.startGame(3, 1, 'vs-bots');
+    jest.spyOn(ruleBasedPolicy, 'decide').mockImplementation(() => {
+      throw new Error('bot exploded');
+    });
+    service.submit(service.legalActions()[0]);
+    jest.runOnlyPendingTimers();
+    expect(service.lastError()).toContain('bot exploded');
+    expect(service.botThinkingSeatId()).toBeNull();
+    expect(jest.getTimerCount()).toBe(0);
+  });
+});
+
+describe('GameService in pass-and-play mode', () => {
+  it('is the default: every player is human and no bot timer runs', () => {
+    jest.useFakeTimers();
+    const service = new GameService();
+    service.startGame(2, 1);
+    expect(service.mode()).toBe('pass-and-play');
+    expect(service.state()!.players.every((p) => p.kind === 'human')).toBe(true);
+    expect(service.humanSeatId()).toBeNull();
+    expect(service.revealedSeatId()).toBeNull();
+    service.submit(service.legalActions()[0]);
+    expect(jest.getTimerCount()).toBe(0);
+    jest.useRealTimers();
   });
 });
