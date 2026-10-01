@@ -95,12 +95,19 @@ const RECENT_LOG_LINES = 3;
     .discard-text { text-align: left; }
     .discard-empty { width: 44px; height: 60px; border: 1px dashed rgb(255 255 255 / 50%); border-radius: 4px; }
     .seat { position: absolute; transform: translate(-50%, -50%); }
+    /* Seat tiles are sized for a full-width table; scale them down in steps as
+       the viewport narrows, so rim seats stay on screen and clear of the centre. */
+    @media (max-width: 1279px) { .seat { transform: translate(-50%, -50%) scale(0.8); } }
+    @media (max-width: 1023px) { .seat { transform: translate(-50%, -50%) scale(0.66); } .table { margin: 100px auto 90px; } }
+    @media (max-width: 899px) { .seat { transform: translate(-50%, -50%) scale(0.58); } .centre { width: 38%; } }
+    @media (max-width: 799px) { .seat { transform: translate(-50%, -50%) scale(0.5); } .table { margin: 80px auto 70px; } }
+    @media (max-width: 699px) { .seat { transform: translate(-50%, -50%) scale(0.44); } .centre { width: 32%; } }
     @media (max-width: 600px) {
       /* Narrower than the viewport so rim seats (at 8% / 92%) stay on screen. */
       .table { aspect-ratio: 1; width: 80%; margin: 64px auto 56px; }
       .felt { inset: 12% 8%; border-radius: 24px; }
-      .centre { width: 44%; font-size: 0.7em; }
-      .seat { transform: translate(-50%, -50%) scale(0.48); }
+      .centre { width: 34%; font-size: 0.62em; }
+      .seat { transform: translate(-50%, -50%) scale(0.4); }
     }
   `,
 })
