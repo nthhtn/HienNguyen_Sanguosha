@@ -69,21 +69,25 @@ export interface BotDecision {
 }
 
 export interface BotPolicy {
-  readonly id: 'rule-based' | 'random';
+  readonly id: string;
   // `view` is redactStateForSeat(state, seatId): a bot never sees hidden info.
   // `legal` is getLegalActions(state, seatId, registry) on the full state.
   // Must return one of `legal` (by identity), and must throw if `legal` is empty.
   decide(view: GameState, seatId: string, legal: Action[], registry: ContentRegistry, memory: BotTurnMemory | null): BotDecision;
 }
 
-export const ruleBasedPolicy: BotPolicy;
-export function randomPolicy(rng: RngState): { policy: BotPolicy; rngAfter: () => RngState }; // seeded
+export const ruleBasedPolicy: BotPolicy; // id 'rule-based'
 export const MAX_BOT_ACTIONS_PER_TURN = 30;
+
+// projects/bots/src/lib/random.ts: moved from projects/sim/src/bot.ts with
+// unchanged behaviour and signatures (seeded, deterministic).
+export function seatToAct(state: GameState): string | null;
+export function pickRandomAction(state: GameState, rng: RngState, registry: ContentRegistry): { action: Action; rng: RngState };
 ```
 
-The random policy is the sim's current `pickRandomAction` logic, moved here
-unchanged in behaviour (seeded `nextInt` over `legal`). The exact factory shape
-can be adjusted in the plan, as long as it stays seeded and deterministic.
+The random picker keeps its RNG-threading signature rather than implementing
+`BotPolicy`, because its state is an RNG, not turn memory. The sim imports both
+the random picker and `ruleBasedPolicy` from `bots`.
 
 ## Rule-based policy: rule text
 
