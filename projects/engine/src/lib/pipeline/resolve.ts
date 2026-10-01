@@ -6,6 +6,7 @@ import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
 import { advancePhaseOrTurn } from '../rules/phaseSequence';
+import { legalTargetListsFor } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
 
 export interface EngineContext {
@@ -87,6 +88,13 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
           }
         }
       }
+      if (state.phase !== 'Play' || state.turn.ownerSeatId !== action.seatId) {
+        throw new Error('Cards can only be played during your Play phase');
+      }
+      const allowed = legalTargetListsFor(state, action.seatId, action.cardInstanceId, cardInHand.definitionId, ctx.registry);
+      if (!allowed.some((targets) => JSON.stringify(targets) === JSON.stringify(action.targets))) {
+        throw new Error(`Card ${cardInHand.definitionId} cannot be played with those targets`);
+      }
       const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
       const effects = cardDefinition.play(state, {
         seatId: action.seatId,
@@ -104,6 +112,14 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
       const discarded = discardAfterPlay(currentState, seat, cardDefinition, action.cardInstanceId, ctx, depth);
       currentState = discarded.state;
       allEvents = [...allEvents, ...discarded.events];
+      // Count this proactive play for per-turn limits (only if still the same turn).
+      if (currentState.turn.turnNumber === state.turn.turnNumber) {
+        const plays = currentState.turn.cardPlays ?? {};
+        currentState = {
+          ...currentState,
+          turn: { ...currentState.turn, cardPlays: { ...plays, [cardInHand.definitionId]: (plays[cardInHand.definitionId] ?? 0) + 1 } },
+        };
+      }
       return { state: currentState, events: allEvents };
     }
 

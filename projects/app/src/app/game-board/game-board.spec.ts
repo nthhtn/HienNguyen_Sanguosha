@@ -125,7 +125,12 @@ describe('GameBoard', () => {
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();
 
+    // Cards are played in the Play phase only: step the active seat from Judgment to Play.
+    for (let i = 0; i < 2; i++) gameService.submit(gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
+    gameService.reveal(gameService.activeSeatId()!);
+    fixture.detectChanges();
     const cardPlay = gameService.legalActions().find((a) => a.kind === 'PlayCardAction')!;
+    expect(cardPlay).toBeDefined();
     const hand = fixture.debugElement.query(By.directive(HandView)).componentInstance as HandView;
     hand.play.emit(cardPlay);
     fixture.detectChanges();

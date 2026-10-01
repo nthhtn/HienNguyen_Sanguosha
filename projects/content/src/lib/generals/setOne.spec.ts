@@ -73,7 +73,8 @@ function stateWithMainGeneral(generalId: string, seatACombinedHp = 5): GameState
 describe('Xiahou Dun — Ferocity', () => {
   it('adds 1 to damage this seat deals with a card', () => {
     const state = stateWithMainGeneral('xiahou-dun');
-    const { state: next } = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
+    const { state: next } = resolve(
+      { ...state, phase: 'Play' }, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
     expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(3); // 6 - (2+1)
   });
 });
@@ -81,7 +82,8 @@ describe('Xiahou Dun — Ferocity', () => {
 describe('Sun Shangxiang — Valor', () => {
   it('heals this seat 1 after it deals damage', () => {
     const state = stateWithMainGeneral('sun-shangxiang', 5);
-    const { state: next } = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
+    const { state: next } = resolve(
+      { ...state, phase: 'Play' }, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
     expect(next.seats.find((s) => s.id === 'seat-a')!.combinedHp).toBe(6); // 5 + 1
     expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(4); // 6 - 2
   });
@@ -137,7 +139,7 @@ describe('owner scoping across two holders of the same general', () => {
       ),
     };
     const { state: next } = resolve(
-      state,
+      { ...state, phase: 'Play' },
       { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
       { registry: registry(), mode: stubMode() }
     );

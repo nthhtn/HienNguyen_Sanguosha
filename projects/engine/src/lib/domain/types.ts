@@ -16,6 +16,8 @@ export interface Turn {
   turnNumber: number;
   ownerSeatId: string;
   extraTurnStack: string[];
+  // Proactive card plays this turn, by card definition id (responses excluded).
+  cardPlays?: Record<string, number>;
 }
 
 export type Phase = 'GeneralSelection' | 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End';

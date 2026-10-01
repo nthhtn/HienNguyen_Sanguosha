@@ -12,12 +12,23 @@ export interface PlayContext {
 export type EquipSlot = 'weapon' | 'armor' | 'plusMount' | 'minusMount';
 export const EQUIP_SLOTS: readonly EquipSlot[] = ['weapon', 'armor', 'plusMount', 'minusMount'];
 
+export interface PlayOptionsContext {
+  seatId: string;
+  cardInstanceId: string;
+}
+
 export interface CardDefinition {
   id: string;
   name: string;
   category: 'basic' | 'trick' | 'equipment';
   // Which equipment slot the card occupies; set exactly when category is 'equipment'.
   equipSlot?: EquipSlot;
+  // Reach of a weapon (attack range while equipped); set only for weapons.
+  weaponRange?: number;
+  // Every legal target list for proactively playing this card in the owner's
+  // Play phase: [] = not playable now, [[]] = no target, [[t1], [t2]] = one of
+  // these targets. Absent = legacy offers (untargeted + each living other seat).
+  legalPlayTargets?(state: GameState, ctx: PlayOptionsContext, registry: ContentRegistry): Target[][];
   play(state: GameState, ctx: PlayContext): unknown[];
 }
 

@@ -50,14 +50,29 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
 
   if (state.turn.ownerSeatId !== seatId) return [];
 
-  const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
-  const targets = getLegalTargets(state, seatId);
   const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }];
+  // Cards are played only in the owner's Play phase.
+  if (state.phase !== 'Play') return actions;
+  const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
   for (const card of handZone?.cards ?? []) {
-    actions.push({ kind: 'PlayCardAction', seatId, cardInstanceId: card.instanceId, targets: [] });
-    for (const target of targets) {
-      actions.push({ kind: 'PlayCardAction', seatId, cardInstanceId: card.instanceId, targets: [target] });
+    for (const targets of legalTargetListsFor(state, seatId, card.instanceId, card.definitionId, registry)) {
+      actions.push({ kind: 'PlayCardAction', seatId, cardInstanceId: card.instanceId, targets });
     }
   }
   return actions;
+}
+
+// The card's own rule when it has one; legacy offers otherwise.
+export function legalTargetListsFor(
+  state: GameState,
+  seatId: string,
+  cardInstanceId: string,
+  definitionId: string,
+  registry?: ContentRegistry
+): Target[][] {
+  const definition = registry?.cards.get(definitionId);
+  if (registry && definition?.legalPlayTargets) {
+    return definition.legalPlayTargets(state, { seatId, cardInstanceId }, registry);
+  }
+  return [[], ...getLegalTargets(state, seatId).map((t) => [t])];
 }

@@ -132,6 +132,7 @@ describe('Kingdom War forced reveal and elimination', () => {
     const base = seated(created, registry, { 'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
     const state: GameState = {
       ...base,
+      phase: 'Play',
       zones: base.zones.map((z) =>
         z.id === base.seats[0].hand.zoneId
           ? { ...z, cards: [{ instanceId: 'lethal-1', definitionId: 'test-damage-card', suit: 'spade', rank: 1 }] }
