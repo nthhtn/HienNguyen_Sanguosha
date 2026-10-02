@@ -127,6 +127,19 @@ spreadsheet first, then stripped page text, and never guess.
   further when there are more than 6 seats, using a seat-count class on the
   table. That fix belongs to this work.
 
+- **The deck grows with the table** (added during implementation). Kingdom
+  War deals 4 cards to every seat from a deck of 4 copies of each playable
+  card, which is 28 cards today. A 10-seat table needs 40 at setup, so three
+  seats were dealt nothing and the draw pile started empty. The deck now has
+  `4 × ceil(seats ÷ 5)` copies of each card: 28 cards for 2–5 seats (exactly
+  as before, suits and ranks included) and 56 for 6–10 seats.
+  - Open item: replace this stopgap with the real per-card counts the card
+    data already records (`count` / `printings`), once deck composition is
+    designed.
+- **Crowded tables** (more than 6 seats) shrink every seat tile further: by
+  0.75, or 0.7 at phone width. The factor multiplies into each width step's
+  own scale, so tiles stay centred on their rim points.
+
 ## Wiki changes
 
 - **Generals tabs:** the keys and labels become `wei` Wei · `shu` Shu · `wu`
