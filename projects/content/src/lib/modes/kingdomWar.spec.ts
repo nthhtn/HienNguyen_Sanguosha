@@ -77,6 +77,26 @@ describe('Kingdom War setup and deal', () => {
     expect(kingdomWarMaxSeats(pool(200))).toBe(10);
   });
 
+  it('deals every seat a full starting hand at the largest table, keeping cards in the draw pile', () => {
+    const ten = Array.from({ length: 10 }, (_, i) => `seat-${i}`);
+    const state = createGame(kingdomWarMode, registry, ten, 1);
+    for (const seat of state.seats) {
+      expect(state.zones.find((z) => z.id === seat.hand.zoneId)!.cards).toHaveLength(4);
+    }
+    expect(state.zones.find((z) => z.kind === 'drawPile')!.cards.length).toBeGreaterThan(0);
+  });
+
+  it('keeps the 4-copies-per-card deck for tables of up to five seats', () => {
+    const total = (n: number) => {
+      const state = createGame(kingdomWarMode, registry, Array.from({ length: n }, (_, i) => `seat-${i}`), 1);
+      return state.zones.reduce((sum, z) => sum + z.cards.length, 0);
+    };
+    expect(total(2)).toBe(registry.cards.size * 4);
+    expect(total(5)).toBe(registry.cards.size * 4);
+    expect(total(6)).toBe(registry.cards.size * 8);
+    expect(total(10)).toBe(registry.cards.size * 8);
+  });
+
   it('caps the table at its seat cap and rejects fewer than 2', () => {
     expect(kingdomWarMaxSeats(registry)).toBe(10);
     expect(kingdomWarMode.maxSeats!(registry)).toBe(10);

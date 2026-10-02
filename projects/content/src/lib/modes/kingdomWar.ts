@@ -43,11 +43,19 @@ function dealCandidates(seatIds: string[], registry: ContentRegistry, rng: RngSt
   return { candidates, rng: afterShuffle };
 }
 
-function buildDeckSpec(registry: ContentRegistry) {
+// Four copies of each card for every five seats, so big tables still deal full
+// starting hands with cards left to draw; tables of up to five keep 4 copies.
+const COPIES_PER_DECK = 4;
+const SEATS_PER_DECK = 5;
+function copiesPerCard(seatCount: number): number {
+  return COPIES_PER_DECK * Math.ceil(seatCount / SEATS_PER_DECK);
+}
+
+function buildDeckSpec(registry: ContentRegistry, seatCount: number) {
   const entries: { definitionId: string; suit: (typeof SUITS)[number]; rank: number }[] = [];
   let i = 0;
   for (const cardId of registry.cards.keys()) {
-    for (let copy = 0; copy < 4; copy++) {
+    for (let copy = 0; copy < copiesPerCard(seatCount); copy++) {
       entries.push({ definitionId: cardId, suit: SUITS[i % SUITS.length], rank: (i % 13) + 1 });
       i++;
     }
@@ -87,7 +95,7 @@ export const kingdomWarMode: GameModeDefinition = {
       eliminated: false,
     }));
 
-    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry), afterDeal);
+    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry, seats.length), afterDeal);
     let zones: CardZone[] = [
       { id: 'drawPile', kind: 'drawPile' as const, cards },
       { id: 'discardPile', kind: 'discardPile' as const, cards: [] },

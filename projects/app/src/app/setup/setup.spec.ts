@@ -55,7 +55,7 @@ describe('Setup', () => {
     }).compileComponents();
     const fixture = TestBed.createComponent(Setup);
     const gameService = TestBed.inject(GameService);
-    fixture.componentInstance.seatCount.set(8);
+    fixture.componentInstance.seatCount.set(gameService.maxSeats + 1);
     fixture.componentInstance.startGame();
     expect(gameService.state()!.seats).toHaveLength(gameService.maxSeats);
   });

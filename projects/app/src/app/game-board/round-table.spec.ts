@@ -51,6 +51,12 @@ function render(s: GameState, viewerSeatId = 'seat-1', thinkingSeatId: string | 
 const tile = (el: HTMLElement, seatId: string) => el.querySelector(`[data-seat-id="${seatId}"]`) as HTMLElement;
 
 describe('RoundTable', () => {
+  it('shrinks the tiles of a crowded table (more than six seats)', () => {
+    const seats = (n: number) => Array.from({ length: n }, (_, i) => seat(`seat-${i}`, i));
+    expect(render(state({ seats: seats(7) })).querySelector('.table')!.classList).toContain('crowded');
+    expect(render(state({ seats: seats(6) })).querySelector('.table')!.classList).not.toContain('crowded');
+  });
+
   it('renders one tile per seat, the viewer at the bottom', () => {
     const el = render(state(), 'seat-1');
     expect(el.querySelectorAll('app-seat-tile')).toHaveLength(3);

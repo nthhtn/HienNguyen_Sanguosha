@@ -80,7 +80,8 @@ describe('GameService', () => {
   });
 
   it('completes general selection for every seat, then settles in turn 1\'s Play phase', () => {
-    service.startGame(3, 5);
+    // Seed 4 deals a mixed-kingdom table, so the game is still running after selection.
+    service.startGame(3, 4);
     finishSelection(service);
     const state = service.state()!;
     expect(state.phase).toBe('Play');
@@ -89,13 +90,13 @@ describe('GameService', () => {
   });
 
   it('exposes the mode’s seat cap', () => {
-    expect(service.maxSeats).toBe(5);
+    expect(service.maxSeats).toBe(10);
   });
 
   it('startGame reports an over-cap table through lastError instead of throwing', () => {
-    expect(() => service.startGame(8, 1)).not.toThrow();
+    expect(() => service.startGame(service.maxSeats + 1, 1)).not.toThrow();
     expect(service.state()).toBeNull();
-    expect(service.lastError()).toContain('between 2 and 5 seats');
+    expect(service.lastError()).toContain(`between 2 and ${service.maxSeats} seats`);
   });
 
   it('clearError resets lastError without touching state', () => {

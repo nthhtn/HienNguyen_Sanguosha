@@ -14,7 +14,7 @@ const RECENT_LOG_LINES = 3;
   selector: 'app-round-table',
   imports: [SeatTile, MatProgressSpinnerModule, CardArt],
   template: `
-    <div class="table">
+    <div class="table" [class.crowded]="state().seats.length > 6">
       <div class="felt"></div>
       <div class="centre">
         <div class="turn">Turn {{ state().turn.turnNumber }}</div>
@@ -107,12 +107,15 @@ const RECENT_LOG_LINES = 3;
     @container (max-width: 867px) { .seat { transform: translate(-50%, -50%) scale(0.58); } .centre { width: 38%; } }
     @container (max-width: 767px) { .seat { transform: translate(-50%, -50%) scale(0.5); } .table { margin: 80px auto 70px; } }
     @container (max-width: 667px) { .seat { transform: translate(-50%, -50%) scale(0.44); } .centre { width: 32%; } }
+    /* More than six seats crowd the rim: shrink every tile further. */
+    .table.crowded .seat { scale: 0.75; }
     @container (max-width: 568px) {
       /* Narrower than its container so rim seats (at 8% / 92%) stay on screen. */
       .table { aspect-ratio: 1; width: 80%; margin: 64px auto 56px; }
       .felt { inset: 12% 8%; border-radius: 24px; }
       .centre { width: 34%; font-size: 0.62em; }
       .seat { transform: translate(-50%, -50%) scale(0.4); }
+      .table.crowded .seat { scale: 0.7; }
     }
   `,
 })
