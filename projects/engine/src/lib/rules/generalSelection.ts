@@ -4,6 +4,7 @@ import { lookupGeneral } from '../registry/lookup';
 import { Action } from '../pipeline/actions';
 import { GeneralsChosenEvent } from '../pipeline/events';
 import { getActiveSeatId } from './activeSeat';
+import { combinedMaxHp } from '../domain/factories';
 
 export type ChooseGeneralsAction = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
 
@@ -52,7 +53,7 @@ export function applyGeneralChoice(
     throw new Error(`${main.id} (${main.kingdom}) and ${deputy.id} (${deputy.kingdom}) do not share a kingdom`);
   }
 
-  const maxCombinedHp = main.maxHp + deputy.maxHp;
+  const maxCombinedHp = combinedMaxHp(main.maxHp, deputy.maxHp);
   const seats = state.seats.map((s) =>
     s.id === action.seatId
       ? {

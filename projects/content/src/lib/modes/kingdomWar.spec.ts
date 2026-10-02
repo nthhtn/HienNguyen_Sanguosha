@@ -1,6 +1,6 @@
 import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
-import { createGame, resolve, getActiveSeatId, getLegalActions } from 'engine';
+import { createGame, resolve, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
 import type { GameState, CardDefinition, ContentRegistry } from 'engine';
 
 // Skips general selection by seating fixed pairs directly, for tests about
@@ -14,7 +14,7 @@ function seated(state: GameState, registry: ContentRegistry, picks: Record<strin
       const [mainId, deputyId] = picks[seat.id];
       const main = registry.generals.get(mainId)!;
       const deputy = registry.generals.get(deputyId)!;
-      const maxCombinedHp = main.maxHp + deputy.maxHp;
+      const maxCombinedHp = combinedMaxHp(main.maxHp, deputy.maxHp);
       return {
         ...seat,
         kingdom: main.kingdom,
@@ -90,7 +90,7 @@ describe('Kingdom War setup and deal', () => {
       const deputy = registry.generals.get(seat.generals!.deputy.generalDefinitionId)!;
       expect(seat.kingdom).toBe(main.kingdom);
       expect(deputy.kingdom).toBe(main.kingdom);
-      expect(seat.maxCombinedHp).toBe(main.maxHp + deputy.maxHp);
+      expect(seat.maxCombinedHp).toBe(Math.floor((main.maxHp + deputy.maxHp) / 2));
       expect(seat.combinedHp).toBe(seat.maxCombinedHp);
     }
   });

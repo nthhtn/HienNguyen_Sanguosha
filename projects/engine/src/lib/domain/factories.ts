@@ -1,5 +1,10 @@
 import { Seat, Player, Kingdom, CardZoneRef } from './types';
 
+// A seat's max HP: half its two generals' printed HP, rounded down.
+export function combinedMaxHp(mainMaxHp: number, deputyMaxHp: number): number {
+  return Math.floor((mainMaxHp + deputyMaxHp) / 2);
+}
+
 export function createSeat(
   id: string,
   index: number,
@@ -8,7 +13,7 @@ export function createSeat(
   deputyGeneralId: string,
   maxHpLookup: (generalDefinitionId: string) => number
 ): Seat {
-  const maxCombinedHp = maxHpLookup(mainGeneralId) + maxHpLookup(deputyGeneralId);
+  const maxCombinedHp = combinedMaxHp(maxHpLookup(mainGeneralId), maxHpLookup(deputyGeneralId));
   const hand: CardZoneRef = { zoneId: `${id}:hand` };
   const equipped: CardZoneRef = { zoneId: `${id}:equip` };
   return {

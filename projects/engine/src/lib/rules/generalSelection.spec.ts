@@ -78,8 +78,8 @@ describe('resolving ChooseGeneralsAction', () => {
       deputy: { generalDefinitionId: 'w1', revealed: false },
     });
     expect(seatA.kingdom).toBe('Wei');
-    expect(seatA.combinedHp).toBe(7);
-    expect(seatA.maxCombinedHp).toBe(7);
+    expect(seatA.combinedHp).toBe(3);
+    expect(seatA.maxCombinedHp).toBe(3);
     expect(state.generalSelection).toEqual({ candidates: { 'seat-b': ['w3', 'u1', 'u2', 's3', 'q2'] } });
     expect(state.phase).toBe('GeneralSelection');
   });
