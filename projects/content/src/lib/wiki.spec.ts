@@ -1,4 +1,4 @@
-import { wikiCards, wikiGenerals } from './wiki';
+import { equipmentTabs, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, WikiCard } from './wiki';
 
 describe('wikiGenerals', () => {
   const generals = wikiGenerals();
@@ -89,5 +89,50 @@ describe('wikiCards', () => {
     for (const category of ['basic', 'equipment', 'trick'] as const) {
       expect(wikiCards(category).some((c) => c.id === 'silver-lion')).toBe(false);
     }
+  });
+});
+
+describe('wiki tabs', () => {
+  const summary = (tabs: { key: string; label: string; entries: unknown[] }[]) => tabs.map((t) => [t.key, t.label, t.entries.length]);
+
+  it('splits generals into Wei, Shu, Wu and Heroes', () => {
+    const tabs = wikiGeneralTabs();
+    expect(summary(tabs)).toEqual([['wei', 'Wei', 7], ['shu', 'Shu', 7], ['wu', 'Wu', 8], ['heroes', 'Heroes', 4]]);
+    expect(tabs[3].entries.every((g) => g.kingdom === 'Qun')).toBe(true);
+    expect(tabs[0].entries[0].name).toBe('Cao Cao');
+  });
+
+  it('gives each basic card its own tab, in the order Sha, Shan, Wine, Peach', () => {
+    const tabs = wikiCardTabs('basic');
+    expect(summary(tabs)).toEqual([['sha', 'Sha', 1], ['shan', 'Shan', 1], ['wine', 'Wine', 1], ['peach', 'Peach', 1]]);
+    expect(tabs.map((t) => t.entries[0].id)).toEqual(['sha', 'shan', 'wine', 'peach']);
+  });
+
+  it('splits equipment into Weapons, Armors and the two kinds of mount', () => {
+    const tabs = wikiCardTabs('equipment');
+    expect(summary(tabs)).toEqual([
+      ['weapons', 'Weapons', 8], ['armors', 'Armors', 1], ['plus-mount', 'Plus Mount', 3], ['minus-mount', 'Minus Mount', 3],
+    ]);
+    expect(tabs[2].entries.map((c) => c.id)).toEqual(['di-lu', 'shadow-runner', 'storm-runner']);
+    expect(tabs[3].entries.map((c) => c.id)).toEqual(['da-yuan', 'red-hare', 'zi-xing']);
+  });
+
+  it('splits Tools into Instant and Delayed', () => {
+    const tabs = wikiCardTabs('trick');
+    expect(summary(tabs)).toEqual([['instant', 'Instant', 10], ['delayed', 'Delayed', 2]]);
+    expect(tabs[1].entries.map((c) => c.id)).toEqual(['capture', 'lightning']);
+  });
+
+  it('puts unclaimed entries in a trailing tab (Review Focus 4)', () => {
+    const base = wikiCards('equipment').find((c) => c.id === 'red-hare')!;
+    const card = (patch: Partial<WikiCard>): WikiCard => ({ ...base, ...patch });
+    const tabs = equipmentTabs([
+      card({ id: 'mystery-horse', name: 'Mystery Horse', mount: null }),
+      card({ id: 'jade-seal', name: 'Jade Seal', subtype: 'treasure', mount: null }),
+    ]);
+    expect(summary(tabs)).toEqual([
+      ['weapons', 'Weapons', 0], ['armors', 'Armors', 0], ['plus-mount', 'Plus Mount', 0], ['minus-mount', 'Minus Mount', 0],
+      ['other-mounts', 'Other mounts', 1], ['treasures', 'Treasures', 1],
+    ]);
   });
 });

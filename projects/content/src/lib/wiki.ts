@@ -82,3 +82,78 @@ export function wikiCards(category: WikiCard['category']): WikiCard[] {
     }))
     .sort((a, b) => subtypeRank(a) - subtypeRank(b) || byName(a, b));
 }
+
+export interface WikiTab<T> {
+  key: string;
+  label: string;
+  entries: T[];
+}
+
+interface TabRule<T> {
+  key: string;
+  label: string;
+  holds: (entry: T) => boolean;
+  optional?: boolean; // dropped when it holds nothing
+}
+
+// Splits entries into the given tabs, in order. Anything no tab claims goes in a
+// trailing "Other" tab, so new data is never silently dropped.
+function splitIntoTabs<T>(entries: T[], rules: TabRule<T>[]): WikiTab<T>[] {
+  const tabs = rules
+    .map((rule) => ({ key: rule.key, label: rule.label, entries: entries.filter(rule.holds), optional: rule.optional }))
+    .filter((tab) => !tab.optional || tab.entries.length > 0)
+    .map(({ key, label, entries: held }) => ({ key, label, entries: held }));
+  const unclaimed = entries.filter((entry) => !rules.some((rule) => rule.holds(entry)));
+  return unclaimed.length > 0 ? [...tabs, { key: 'other', label: 'Other', entries: unclaimed }] : tabs;
+}
+
+export function generalTabs(generals: WikiGeneral[]): WikiTab<WikiGeneral>[] {
+  return splitIntoTabs(generals, [
+    { key: 'wei', label: 'Wei', holds: (g) => g.kingdom === 'Wei' },
+    { key: 'shu', label: 'Shu', holds: (g) => g.kingdom === 'Shu' },
+    { key: 'wu', label: 'Wu', holds: (g) => g.kingdom === 'Wu' },
+    // The source site calls the fourth faction "Hero"; the engine's kingdom is 'Qun'.
+    { key: 'heroes', label: 'Heroes', holds: (g) => g.kingdom === 'Qun' },
+  ]);
+}
+
+export function basicTabs(cards: WikiCard[]): WikiTab<WikiCard>[] {
+  return splitIntoTabs(cards, [
+    { key: 'sha', label: 'Sha', holds: (c) => c.id === 'sha' },
+    { key: 'shan', label: 'Shan', holds: (c) => c.id === 'shan' },
+    { key: 'wine', label: 'Wine', holds: (c) => c.id === 'wine' },
+    { key: 'peach', label: 'Peach', holds: (c) => c.id === 'peach' },
+  ]);
+}
+
+export function equipmentTabs(cards: WikiCard[]): WikiTab<WikiCard>[] {
+  return splitIntoTabs(cards, [
+    { key: 'weapons', label: 'Weapons', holds: (c) => c.subtype === 'weapon' },
+    { key: 'armors', label: 'Armors', holds: (c) => c.subtype === 'armor' },
+    { key: 'plus-mount', label: 'Plus Mount', holds: (c) => c.subtype === 'horse' && c.mount === 'plus' },
+    { key: 'minus-mount', label: 'Minus Mount', holds: (c) => c.subtype === 'horse' && c.mount === 'minus' },
+    { key: 'other-mounts', label: 'Other mounts', holds: (c) => c.subtype === 'horse' && c.mount === null, optional: true },
+    { key: 'treasures', label: 'Treasures', holds: (c) => c.subtype === 'treasure', optional: true },
+  ]);
+}
+
+export function toolTabs(cards: WikiCard[]): WikiTab<WikiCard>[] {
+  return splitIntoTabs(cards, [
+    { key: 'instant', label: 'Instant', holds: (c) => !c.delayed },
+    { key: 'delayed', label: 'Delayed', holds: (c) => c.delayed },
+  ]);
+}
+
+export function wikiGeneralTabs(): WikiTab<WikiGeneral>[] {
+  return generalTabs(wikiGenerals());
+}
+
+const CARD_TABS: Record<WikiCard['category'], (cards: WikiCard[]) => WikiTab<WikiCard>[]> = {
+  basic: basicTabs,
+  equipment: equipmentTabs,
+  trick: toolTabs,
+};
+
+export function wikiCardTabs(category: WikiCard['category']): WikiTab<WikiCard>[] {
+  return CARD_TABS[category](wikiCards(category));
+}
