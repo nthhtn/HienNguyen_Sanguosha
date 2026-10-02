@@ -110,7 +110,7 @@ describe('GeneralSelection', () => {
     click('w1');
     click('w2');
     expect(el.querySelector('.summary')!.textContent).toContain('Kingdom: Wei');
-    expect(el.querySelector('.summary')!.textContent).toContain('Combined HP: 7');
+    expect(el.querySelector('.summary')!.textContent).toContain('Combined HP: 3'); // half of 4 + 3, rounded down, as the engine seats it
   });
 
   it('fills the Main and Deputy slots in the bottom bar as cards are picked', () => {

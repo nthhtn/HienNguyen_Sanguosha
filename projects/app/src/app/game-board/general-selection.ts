@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ChooseGeneralsAction, ContentRegistry, Kingdom } from 'engine';
+import { ChooseGeneralsAction, ContentRegistry, Kingdom, combinedMaxHp } from 'engine';
 import { GeneralDisplayData, generalDisplayData } from 'content';
 import { CardArt } from './card-art';
 import { generalDisplayName } from '../labels';
@@ -243,7 +243,8 @@ export class GeneralSelection {
     const main = this.registry().generals.get(action.mainId);
     const deputy = this.registry().generals.get(action.deputyId);
     if (!main || !deputy) return null;
-    return { kingdom: main.kingdom, hp: main.maxHp + deputy.maxHp };
+    // The engine decides the seat's max HP; the screen only shows it.
+    return { kingdom: main.kingdom, hp: combinedMaxHp(main.maxHp, deputy.maxHp) };
   });
 
   // Selectable iff already picked, or the engine offers a pair containing it:
