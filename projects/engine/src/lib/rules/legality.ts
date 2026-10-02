@@ -57,9 +57,9 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     return (handZone?.cards ?? []).map((card) => ({ kind: 'DiscardCardAction' as const, seatId, cardInstanceId: card.instanceId }));
   }
 
+  // Only the Play phase waits for the turn owner; every other phase passes on its own.
+  if (state.phase !== 'Play') return [];
   const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }];
-  // Cards are played only in the owner's Play phase.
-  if (state.phase !== 'Play') return actions;
   const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
   for (const card of handZone?.cards ?? []) {
     for (const targets of legalTargetListsFor(state, seatId, card.instanceId, card.definitionId, registry)) {

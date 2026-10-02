@@ -5,10 +5,11 @@ import { Effect, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
-import { advancePhaseOrTurn } from '../rules/phaseSequence';
+import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence';
 import { legalTargetListsFor } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
+import { PhaseChangedEvent, TurnAdvancedEvent } from './events';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -39,17 +40,71 @@ function guardDepth(depth: number, what: string): void {
   }
 }
 
+// Every phase entered by advanceToDecision is one step. One full turn is at
+// most six steps, and every turn rests in Play unless its owner is eliminated,
+// so a legitimate run stays far below this bound.
+export const MAX_AUTO_PHASE_STEPS_PER_SEAT = 6;
+
 export function resolve(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
   if (state.result) {
     throw new Error('Cannot submit an action after the game has ended');
   }
-  const result = resolveAction(state, action, ctx, 0);
-  // Seats still choosing have kingdom 'hidden'; reading that as a one-kingdom
-  // table would end the game before it starts.
-  const gameResult =
-    result.state.phase === 'GeneralSelection' ? null : ctx.mode.checkWinCondition(result.state);
-  const finalState = gameResult ? { ...result.state, result: gameResult } : result.state;
-  return { state: finalState, events: result.events };
+  const acted = resolveAction(state, action, ctx, 0);
+  const settled = advanceToDecision(acted.state, ctx);
+  return { state: settled.state, events: [...acted.events, ...settled.events] };
+}
+
+// Moves the game on through every phase that needs no decision, until a
+// player must act (Play, or Discard over the hand limit), a response is
+// pending, or the game has ended. An eliminated turn owner forfeits the rest
+// of their turn.
+export function advanceToDecision(state: GameState, ctx: EngineContext): ResolveResult {
+  let current = withWinCheck(state, ctx);
+  let events: GameEvent[] = [];
+  const maxSteps = MAX_AUTO_PHASE_STEPS_PER_SEAT * current.seats.length + MAX_AUTO_PHASE_STEPS_PER_SEAT;
+  for (let steps = 0; ; steps++) {
+    if (current.result || current.phase === 'GeneralSelection' || current.pendingResponse) break;
+    const ownerEliminated = !!current.seats.find((s) => s.id === current.turn.ownerSeatId)?.eliminated;
+    if (!ownerEliminated && phaseWaitsForPlayer(current)) break;
+    if (steps >= maxSteps) {
+      throw new Error(`Phases advanced ${steps} times without reaching a player decision`);
+    }
+    const from: GameState = ownerEliminated ? { ...current, phase: 'End' } : current;
+    const step = enterNextPhase(from, ctx, 0);
+    current = withWinCheck(step.state, ctx);
+    events = [...events, ...step.events];
+  }
+  return { state: current, events };
+}
+
+// Seats still choosing have kingdom 'hidden'; reading that as a one-kingdom
+// table would end the game before it starts.
+function withWinCheck(state: GameState, ctx: EngineContext): GameState {
+  if (state.result || state.phase === 'GeneralSelection') return state;
+  const result = ctx.mode.checkWinCondition(state);
+  return result ? { ...state, result } : state;
+}
+
+// Logs entering the phase the state is already in, then runs its "after" triggers.
+function enterPhase(state: GameState, ctx: EngineContext, depth: number): ResolveResult {
+  const event: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: state.turn.ownerSeatId, phase: state.phase };
+  const followUp = runAfterTriggers({ ...state, log: [...state.log, event] }, event, ctx, depth);
+  return { state: followUp.state, events: [event, ...followUp.events] };
+}
+
+// Moves to the next phase (or the next turn's Start) and enters it.
+function enterNextPhase(state: GameState, ctx: EngineContext, depth: number): ResolveResult {
+  const { phase, turn } = advancePhaseOrTurn(state);
+  let current: GameState = { ...state, phase, turn };
+  let events: GameEvent[] = [];
+  if (turn.turnNumber !== state.turn.turnNumber) {
+    const turnEvent: TurnAdvancedEvent = { kind: 'TurnAdvancedEvent', seatId: turn.ownerSeatId, turnNumber: turn.turnNumber };
+    const followUp = runAfterTriggers({ ...current, log: [...current.log, turnEvent] }, turnEvent, ctx, depth);
+    current = followUp.state;
+    events = [turnEvent, ...followUp.events];
+  }
+  const entered = enterPhase(current, ctx, depth);
+  return { state: entered.state, events: [...events, ...entered.events] };
 }
 
 function resolveAction(state: GameState, action: Action, ctx: EngineContext, depth: number): ResolveResult {
@@ -178,15 +233,10 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
       if (state.turn.ownerSeatId !== action.seatId) {
         throw new Error(`It is not seat ${action.seatId}'s turn`);
       }
-      const { phase, turn } = advancePhaseOrTurn(state);
-      const event =
-        turn.turnNumber !== state.turn.turnNumber
-          ? { kind: 'TurnAdvancedEvent' as const, seatId: turn.ownerSeatId, turnNumber: turn.turnNumber }
-          : { kind: 'PhaseChangedEvent' as const, seatId: action.seatId, phase };
-      const stateWithPhaseChange = { ...state, phase, turn, log: [...state.log, event] };
-
-      const followUp = runAfterTriggers(stateWithPhaseChange, event, ctx, depth);
-      return { state: followUp.state, events: [event, ...followUp.events] };
+      if (state.phase !== 'Play') {
+        throw new Error('EndPhaseAction is only legal in the Play phase');
+      }
+      return enterNextPhase(state, ctx, depth);
     }
 
     case 'DiscardCardAction': {
@@ -225,7 +275,10 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
     case 'ChooseGeneralsAction': {
       const { state: chosen, event } = applyGeneralChoice(state, action, ctx.registry);
       const followUp = runAfterTriggers(chosen, event, ctx, depth);
-      return { state: followUp.state, events: [event, ...followUp.events] };
+      if (followUp.state.phase !== 'Start') return { state: followUp.state, events: [event, ...followUp.events] };
+      // The last seat has chosen: turn 1 begins at Start.
+      const started = enterPhase(followUp.state, ctx, depth);
+      return { state: started.state, events: [event, ...followUp.events, ...started.events] };
     }
 
     default:
@@ -267,7 +320,7 @@ function discardAfterPlay(
 
 // Gathers and dispatches every `after:<event kind>` trigger for one event,
 // resolving each follow-up action/effect in turn. Shared by the effect
-// resolution path and by EndPhaseAction's phase/turn events.
+// resolution path and by phase and turn changes.
 function runAfterTriggers(
   state: GameState,
   event: GameEvent,

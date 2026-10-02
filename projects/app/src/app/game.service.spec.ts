@@ -79,11 +79,11 @@ describe('GameService', () => {
     expect(service.state()).toBe(stateBefore);
   });
 
-  it('completes general selection for every seat, then starts turn 1 at Judgment', () => {
+  it('completes general selection for every seat, then settles in turn 1\'s Play phase', () => {
     service.startGame(3, 5);
     finishSelection(service);
     const state = service.state()!;
-    expect(state.phase).toBe('Judgment');
+    expect(state.phase).toBe('Play');
     expect(state.seats.every((s) => s.generals !== null)).toBe(true);
     expect(service.activeSeatId()).toBe('seat-0');
   });

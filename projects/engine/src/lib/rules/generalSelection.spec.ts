@@ -90,13 +90,19 @@ describe('resolving ChooseGeneralsAction', () => {
     expect(event).toEqual({ kind: 'GeneralsChosenEvent', seatId: 'seat-a' });
   });
 
-  it('starts turn 1 at Judgment once the last seat has chosen', () => {
+  it('starts turn 1 at Start once the last seat has chosen, and settles in its Play phase', () => {
     const afterA = resolve(selectingState(), choose('seat-a', 'w1', 'w2'), ctx).state;
-    const { state } = resolve(afterA, choose('seat-b', 'u1', 'u2'), ctx);
-    expect(state.phase).toBe('Judgment');
+    const { state, events } = resolve(afterA, choose('seat-b', 'u1', 'u2'), ctx);
+    expect(state.phase).toBe('Play');
     expect(state.generalSelection).toBeNull();
     expect(state.turn).toEqual({ turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] });
     expect(state.seats.map((s) => s.kingdom)).toEqual(['Wei', 'Wu']);
+    expect(events.filter((e) => e.kind === 'PhaseChangedEvent')).toEqual([
+      { kind: 'PhaseChangedEvent', seatId: 'seat-a', phase: 'Start' },
+      { kind: 'PhaseChangedEvent', seatId: 'seat-a', phase: 'Judgment' },
+      { kind: 'PhaseChangedEvent', seatId: 'seat-a', phase: 'Draw' },
+      { kind: 'PhaseChangedEvent', seatId: 'seat-a', phase: 'Play' },
+    ]);
   });
 
   it('does not evaluate the win condition until selection has finished', () => {

@@ -1,6 +1,6 @@
 import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
-import { createGame, resolve, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
+import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
 import type { GameState, CardDefinition, ContentRegistry } from 'engine';
 
 // Skips general selection by seating fixed pairs directly, for tests about
@@ -8,7 +8,7 @@ import type { GameState, CardDefinition, ContentRegistry } from 'engine';
 function seated(state: GameState, registry: ContentRegistry, picks: Record<string, [string, string]>): GameState {
   return {
     ...state,
-    phase: 'Judgment',
+    phase: 'Start',
     generalSelection: null,
     seats: state.seats.map((seat) => {
       const [mainId, deputyId] = picks[seat.id];
@@ -76,14 +76,15 @@ describe('Kingdom War setup and deal', () => {
     expect(() => createGame(kingdomWarMode, registry, ['a'], 1)).toThrow(/between 2 and 5 seats/);
   });
 
-  it('a full selection through resolve seats every seat with a same-kingdom pair and starts Judgment', () => {
+  it('a full selection through resolve seats every seat with a same-kingdom pair and starts turn 1', () => {
     let state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42);
     const ctx = { registry, mode: kingdomWarMode };
     while (state.phase === 'GeneralSelection') {
       const seatId = getActiveSeatId(state)!;
       state = resolve(state, getLegalActions(state, seatId, registry)[0], ctx).state;
     }
-    expect(state.phase).toBe('Judgment');
+    // Rests in turn 1's Play phase, unless the dealt table is already one kingdom and the game ended at Start.
+    expect(state.phase).toBe(state.result ? 'Start' : 'Play');
     expect(state.generalSelection).toBeNull();
     for (const seat of state.seats) {
       const main = registry.generals.get(seat.generals!.main.generalDefinitionId)!;
@@ -190,9 +191,9 @@ describe('Kingdom War per-turn draw', () => {
     expect(handBefore.cards).toHaveLength(4);
     const originalCardIds = new Set(handBefore.cards.map((c) => c.instanceId));
 
-    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry, mode: kingdomWarMode });
+    const { state: next } = advanceToDecision(state, { registry, mode: kingdomWarMode });
 
-    expect(next.phase).toBe('Draw');
+    expect(next.phase).toBe('Play');
     const handAfter = next.zones.find((z) => z.id === state.seats[0].hand.zoneId)!;
     expect(handAfter.cards).toHaveLength(6);
     expect(handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id))).toHaveLength(2);
@@ -206,9 +207,9 @@ describe('Kingdom War per-turn draw', () => {
     const state: GameState = { ...created, turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] } };
     const originalCardIds = new Set(state.zones.find((z) => z.id === seatC.hand.zoneId)!.cards.map((c) => c.instanceId));
 
-    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-c' }, { registry, mode: kingdomWarMode });
+    const { state: next } = advanceToDecision(state, { registry, mode: kingdomWarMode });
 
-    expect(next.phase).toBe('Draw');
+    expect(next.phase).toBe('Play');
     const handAfter = next.zones.find((z) => z.id === seatC.hand.zoneId)!;
     expect(handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id))).toHaveLength(3);
   });

@@ -49,10 +49,9 @@ describe('card playability', () => {
     expect(getLegalActions(state('Play', ['aim']), 'seat-a').filter((a) => a.kind === 'PlayCardAction')).toHaveLength(3);
   });
 
-  it('offers no card plays outside the Play phase, but still End phase (Review Focus 4)', () => {
-    for (const phase of ['Judgment', 'Draw', 'Discard', 'End'] as const) {
-      const legal = getLegalActions(state(phase, ['self', 'aim']), 'seat-a', registry);
-      expect(legal).toEqual([{ kind: 'EndPhaseAction', seatId: 'seat-a' }]);
+  it('offers nothing outside the Play phase: those phases pass on their own (Review Focus 4)', () => {
+    for (const phase of ['Start', 'Judgment', 'Draw', 'Discard', 'End'] as const) {
+      expect(getLegalActions(state(phase, ['self', 'aim']), 'seat-a', registry)).toEqual([]);
     }
   });
 
@@ -74,7 +73,7 @@ describe('card playability', () => {
   });
 
   it('starts a new turn with no play counts', () => {
-    const s = { ...state('End', []), turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [], cardPlays: { self: 2 } } };
+    const s = { ...state('Play', []), turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [], cardPlays: { self: 2 } } };
     const next = resolve(s, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry, mode }).state;
     expect(next.turn.turnNumber).toBe(2);
     expect(next.turn.cardPlays).toBeUndefined();

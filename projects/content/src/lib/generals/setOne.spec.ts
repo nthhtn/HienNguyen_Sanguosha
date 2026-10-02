@@ -1,5 +1,5 @@
 import { xiahouDunGeneral, sunShangxiangGeneral, zhugeLiangGeneral } from './setOne';
-import { resolve } from 'engine';
+import { resolve, advanceToDecision } from 'engine';
 import type { GameState, ContentRegistry, GameModeDefinition, CardDefinition, GeneralDefinition } from 'engine';
 import type { GeneralSkillSet } from './types';
 
@@ -92,8 +92,8 @@ describe('Sun Shangxiang — Valor', () => {
 describe('Zhuge Liang — Insight', () => {
   it('draws 1 extra card when this seat enters the Draw phase', () => {
     const state = stateWithMainGeneral('zhuge-liang');
-    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry: registry(), mode: stubMode() });
-    expect(next.phase).toBe('Draw');
+    const { state: next } = advanceToDecision({ ...state, phase: 'Start' }, { registry: registry(), mode: stubMode() });
+    expect(next.phase).toBe('Play');
     const hand = next.zones.find((z) => z.id === 'seat-a:hand')!;
     expect(hand.cards.map((c) => c.instanceId)).toContain('draw-1');
   });
@@ -110,8 +110,8 @@ describe('Zhuge Liang — Insight', () => {
           : s
       ),
     };
-    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry: registry(), mode: stubMode() });
-    expect(next.phase).toBe('Draw');
+    const { state: next } = advanceToDecision({ ...state, phase: 'Start' }, { registry: registry(), mode: stubMode() });
+    expect(next.phase).toBe('Play');
     // Exactly one card left the draw pile, and it went to seat-a — not one per holder.
     expect(next.zones.find((z) => z.id === 'drawPile')!.cards).toHaveLength(0);
     expect(next.zones.find((z) => z.id === 'seat-a:hand')!.cards.map((c) => c.instanceId)).toContain('draw-1');

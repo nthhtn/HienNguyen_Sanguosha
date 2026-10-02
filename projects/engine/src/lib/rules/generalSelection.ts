@@ -77,7 +77,7 @@ export function applyGeneralChoice(
     state: {
       ...state,
       seats,
-      phase: finished ? 'Judgment' : 'GeneralSelection',
+      phase: finished ? 'Start' : 'GeneralSelection',
       generalSelection: finished ? null : { candidates: remaining },
       log: [...state.log, event],
     },

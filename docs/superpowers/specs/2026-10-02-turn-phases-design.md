@@ -291,8 +291,10 @@ Engine (Jest, `projects/engine`):
   turn, and the next living seat rests in Play.
 - **Win during auto-advance:** a win reached inside a phase trigger stops the
   loop, and the state carries the result.
-- **Loop bound:** a content stub whose Start trigger keeps the phase from
-  ever waiting hits the step limit with a descriptive error.
+- **No winner with every seat eliminated:** the loop fails loudly (the
+  existing "every seat is eliminated" error) instead of spinning. The step
+  bound stays as a defensive guard but has no test: Play always waits, so no
+  content can construct a run that reaches it.
 - Existing Insight and Kingdom War Draw-phase specs keep passing unchanged.
 
 Bots: the rule-based discard order, and that a bot in Discard returns a

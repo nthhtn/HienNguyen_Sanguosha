@@ -755,15 +755,24 @@ describe('resolve: discard-after-play', () => {
 });
 
 describe('resolve: EndPhaseAction', () => {
-  it('advances the phase and logs a PhaseChangedEvent', () => {
+  it("ends the Play phase and rests in the next seat's Play phase", () => {
     const state = { ...baseState(), phase: 'Play' as const };
     const { state: next, events } = resolve(
       state,
       { kind: 'EndPhaseAction', seatId: 'seat-a' },
       { registry: emptyRegistry(), mode: stubMode() }
     );
-    expect(next.phase).toBe('Discard');
-    expect(events).toEqual([{ kind: 'PhaseChangedEvent', seatId: 'seat-a', phase: 'Discard' }]);
+    expect(next.phase).toBe('Play');
+    expect(next.turn.ownerSeatId).toBe('seat-b');
+    expect(events).toEqual([
+      { kind: 'PhaseChangedEvent', seatId: 'seat-a', phase: 'Discard' },
+      { kind: 'PhaseChangedEvent', seatId: 'seat-a', phase: 'End' },
+      { kind: 'TurnAdvancedEvent', seatId: 'seat-b', turnNumber: 2 },
+      { kind: 'PhaseChangedEvent', seatId: 'seat-b', phase: 'Start' },
+      { kind: 'PhaseChangedEvent', seatId: 'seat-b', phase: 'Judgment' },
+      { kind: 'PhaseChangedEvent', seatId: 'seat-b', phase: 'Draw' },
+      { kind: 'PhaseChangedEvent', seatId: 'seat-b', phase: 'Play' },
+    ]);
   });
 
   it('rejects EndPhaseAction from a seat that is not the current turn owner', () => {
