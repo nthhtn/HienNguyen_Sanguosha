@@ -21,6 +21,7 @@ export interface WikiGeneral {
   maxHp: number | null;
   skills: WikiSkill[];
   skillsInGame: boolean;
+  expansion: 'Base' | 'Wind' | 'Fire' | 'Forest' | 'Mountain';
 }
 
 // One card as the Wiki shows it, plus whether its rules are implemented
@@ -57,6 +58,7 @@ export function wikiGenerals(): WikiGeneral[] {
       maxHp: data.maxHp,
       skills: data.skills.map((s) => ({ name: s.name, nameZh: s.nameZh || null, text: s.text })),
       skillsInGame: GENERAL_SKILLS.has(id),
+      expansion: (data.source.expansion ?? 'Base') as WikiGeneral['expansion'],
     }))
     .sort((a, b) => KINGDOM_ORDER.indexOf(a.kingdom) - KINGDOM_ORDER.indexOf(b.kingdom) || byName(a, b));
 }
@@ -112,8 +114,7 @@ export function generalTabs(generals: WikiGeneral[]): WikiTab<WikiGeneral>[] {
     { key: 'wei', label: 'Wei', holds: (g) => g.kingdom === 'Wei' },
     { key: 'shu', label: 'Shu', holds: (g) => g.kingdom === 'Shu' },
     { key: 'wu', label: 'Wu', holds: (g) => g.kingdom === 'Wu' },
-    // The source site calls the fourth faction "Hero"; the engine's kingdom is 'Qun'.
-    { key: 'heroes', label: 'Heroes', holds: (g) => g.kingdom === 'Qun' },
+    { key: 'qun', label: 'Qun', holds: (g) => g.kingdom === 'Qun' },
   ]);
 }
 

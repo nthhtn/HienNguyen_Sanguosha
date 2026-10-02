@@ -5,7 +5,7 @@ import { WikiGeneralEntry } from './wiki-general-entry';
 
 const caoCao: WikiGeneral = {
   id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'Martial Emperor of Wei', titleZh: '魏武帝',
-  kingdom: 'Wei', maxHp: 4, skillsInGame: false,
+  kingdom: 'Wei', maxHp: 4, skillsInGame: false, expansion: 'Base',
   skills: [{ name: 'Evil Hero', nameZh: '奸雄', text: 'When Cao Cao is damaged by a card, he can put it into his hand.' }],
 };
 const duel: WikiCard = {
@@ -42,6 +42,11 @@ describe('WikiGeneralEntry', () => {
     }
     expect(el.querySelectorAll('.hearts mat-icon')).toHaveLength(4);
     expect(el.querySelector('app-card-art')).not.toBeNull();
+    expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');
+  });
+
+  it('shows an expansion general’s expansion', () => {
+    expect(renderGeneral({ ...caoCao, id: 'cao-pi', expansion: 'Forest' }).querySelector('.expansion-tag')!.textContent!.trim()).toBe('Forest');
   });
 
   it('badges whether the general’s skills are in the game', () => {

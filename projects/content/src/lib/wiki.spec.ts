@@ -65,6 +65,13 @@ describe('wikiGenerals', () => {
       text: 'During his turn, Xiahou Yuan can exercise either or both of the following options to attack any character regardless of their distance from him: Skip his judgment and drawing phases. Skip his action phase and discard any equipment card.',
     }]);
   });
+
+  it('tags every general with its expansion', () => {
+    const count = (e: string) => generals.filter((g) => g.expansion === e).length;
+    expect([count('Base'), count('Wind'), count('Fire'), count('Forest'), count('Mountain')]).toEqual([25, 8, 8, 8, 8]);
+    expect(generals.find((g) => g.id === 'cao-cao')!.expansion).toBe('Base');
+    expect(generals.find((g) => g.id === 'dong-zhuo')!.expansion).toBe('Forest');
+  });
 });
 
 describe('wikiCards', () => {
@@ -132,9 +139,9 @@ describe('wikiCards', () => {
 describe('wiki tabs', () => {
   const summary = (tabs: { key: string; label: string; entries: unknown[] }[]) => tabs.map((t) => [t.key, t.label, t.entries.length]);
 
-  it('splits generals into Wei, Shu, Wu and Heroes', () => {
+  it('splits generals into Wei, Shu, Wu and Qun', () => {
     const tabs = wikiGeneralTabs();
-    expect(summary(tabs)).toEqual([['wei', 'Wei', 7], ['shu', 'Shu', 7], ['wu', 'Wu', 8], ['heroes', 'Heroes', 4]]);
+    expect(summary(tabs)).toEqual([['wei', 'Wei', 15], ['shu', 'Shu', 15], ['wu', 'Wu', 15], ['qun', 'Qun', 12]]);
     expect(tabs[3].entries.every((g) => g.kingdom === 'Qun')).toBe(true);
     expect(tabs[0].entries[0].name).toBe('Cao Cao');
   });

@@ -22,13 +22,13 @@ describe('Wiki pages', () => {
     expect(router.url).toBe('/wiki/generals');
   });
 
-  it('shows Generals in Wei, Shu, Wu and Heroes tabs, opening on Wei', async () => {
+  it('shows Generals in Wei, Shu, Wu and Qun tabs, opening on Wei', async () => {
     const { el } = await open('/wiki/generals');
     expect(el().querySelector('h2')!.textContent).toBe('Generals');
-    expect(el().querySelector('.summary')!.textContent).toContain('26 generals · 6 with skills in the game');
-    expect(tabLabels(el())).toEqual(['Wei (7)', 'Shu (7)', 'Wu (8)', 'Heroes (4)']);
-    expect(selectedTab(el())).toBe('Wei (7)');
-    expect(el().querySelectorAll('app-wiki-general-entry')).toHaveLength(7);
+    expect(el().querySelector('.summary')!.textContent).toContain('57 generals · 5 with skills in the game');
+    expect(tabLabels(el())).toEqual(['Wei (15)', 'Shu (15)', 'Wu (15)', 'Qun (12)']);
+    expect(selectedTab(el())).toBe('Wei (15)');
+    expect(el().querySelectorAll('app-wiki-general-entry')).toHaveLength(15);
   });
 
   it('shows one tab per basic card', async () => {

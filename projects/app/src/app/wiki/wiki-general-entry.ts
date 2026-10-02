@@ -32,6 +32,7 @@ import { CardArt } from '../game-board/card-art';
         }
         <p class="meta">
           <span class="kingdom-tag">{{ general().kingdom }}</span>
+          <span class="expansion-tag">{{ general().expansion }}</span>
           @if (general().maxHp !== null) {
             <span class="hearts" [attr.aria-label]="'HP ' + general().maxHp">
               @for (h of hearts(); track $index) {
@@ -73,6 +74,7 @@ import { CardArt } from '../game-board/card-art';
     .kingdom-Wu { --kingdom: #2f9e58; }
     .kingdom-Qun { --kingdom: #8a7f8c; }
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
+    .expansion-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
     .hearts { display: inline-flex; color: #d84a3f; }
     .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .skills { margin: 0; padding-left: 18px; }
