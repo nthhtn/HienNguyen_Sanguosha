@@ -18,10 +18,14 @@ function state(phase: GameState['phase'], turn: GameState['turn'], seats: Seat[]
 }
 
 describe('advancePhaseOrTurn', () => {
+  it('has six phases, starting at Start', () => {
+    expect(PHASE_ORDER).toEqual(['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End']);
+  });
+
   it('cycles through phases in order without advancing the turn', () => {
     const turn = { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] };
     const seats = [seat('seat-a', 0), seat('seat-b', 1)];
-    let current = state('Judgment', turn, seats);
+    let current = state('Start', turn, seats);
     for (let i = 1; i < PHASE_ORDER.length; i++) {
       const next = advancePhaseOrTurn(current);
       expect(next.phase).toBe(PHASE_ORDER[i]);
@@ -30,11 +34,11 @@ describe('advancePhaseOrTurn', () => {
     }
   });
 
-  it('wraps to Judgment and advances to the next living seat clockwise after End', () => {
+  it('wraps to Start and advances to the next living seat clockwise after End', () => {
     const turn = { turnNumber: 3, ownerSeatId: 'seat-a', extraTurnStack: [] };
     const seats = [seat('seat-a', 0), seat('seat-b', 1, true), seat('seat-c', 2)];
     const result = advancePhaseOrTurn(state('End', turn, seats));
-    expect(result.phase).toBe('Judgment');
+    expect(result.phase).toBe('Start');
     expect(result.turn).toEqual({ turnNumber: 4, ownerSeatId: 'seat-c', extraTurnStack: [] });
   });
 

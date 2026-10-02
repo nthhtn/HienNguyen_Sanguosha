@@ -1,6 +1,16 @@
 import { GameState, Phase, Seat, Turn } from '../domain/types';
+import { cardsOverHandLimit } from './handLimit';
 
-export const PHASE_ORDER: readonly Phase[] = ['Judgment', 'Draw', 'Play', 'Discard', 'End'];
+export const PHASE_ORDER: readonly Phase[] = ['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End'];
+
+// Whether the current phase must wait for the turn owner to act: always in
+// Play, and in Discard while they are over their hand limit. Every other phase
+// passes on its own once its entry triggers have resolved.
+export function phaseWaitsForPlayer(state: GameState): boolean {
+  if (state.phase === 'Play') return true;
+  if (state.phase === 'Discard') return cardsOverHandLimit(state, state.turn.ownerSeatId) > 0;
+  return false;
+}
 
 export function advancePhaseOrTurn(state: GameState): { phase: Phase; turn: Turn } {
   const currentIndex = PHASE_ORDER.indexOf(state.phase);

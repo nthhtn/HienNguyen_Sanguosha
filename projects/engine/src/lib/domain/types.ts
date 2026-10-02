@@ -20,7 +20,7 @@ export interface Turn {
   cardPlays?: Record<string, number>;
 }
 
-export type Phase = 'GeneralSelection' | 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End';
+export type Phase = 'GeneralSelection' | 'Start' | 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End';
 
 export interface GameResult {
   endedAt: number;
