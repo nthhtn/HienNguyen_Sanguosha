@@ -1,138 +1,95 @@
-import { BreakpointObserver } from '@angular/cdk/layout';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { of } from 'rxjs';
 import { App } from './app';
 
-function setup(wide: boolean) {
-  TestBed.configureTestingModule({
-    imports: [App],
-    providers: [
-      provideRouter([
-        { path: 'setup', children: [] },
-        { path: 'game', children: [] },
-        { path: 'play', children: [] },
-        { path: 'wiki/:page', children: [] },
-      ]),
-      {
-        provide: BreakpointObserver,
-        useValue: { observe: () => of({ matches: wide, breakpoints: {} }), isMatched: () => wide },
-      },
-    ],
+describe('App', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [
+        provideRouter([
+          { path: 'setup', children: [] },
+          { path: 'game', children: [] },
+          { path: 'play', children: [] },
+          { path: 'wiki/:page', children: [] },
+        ]),
+      ],
+    }).compileComponents();
   });
-}
 
-async function render(url = '/setup') {
-  const fixture = TestBed.createComponent(App);
-  await TestBed.inject(Router).navigateByUrl(url);
-  fixture.detectChanges();
-  await fixture.whenStable();
-  const el = fixture.nativeElement as HTMLElement;
-  const refresh = async () => {
+  afterEach(() => (document.querySelector('.cdk-overlay-container') as HTMLElement | null)?.replaceChildren());
+
+  async function render(url = '/setup') {
+    const fixture = TestBed.createComponent(App);
+    await TestBed.inject(Router).navigateByUrl(url);
     fixture.detectChanges();
     await fixture.whenStable();
-  };
-  return { fixture, el, refresh };
-}
+    return { fixture, el: fixture.nativeElement as HTMLElement };
+  }
 
-const nav = (el: HTMLElement) => el.querySelector('aside.side-nav') as HTMLElement;
-const subLinks = (el: HTMLElement) => [...el.querySelectorAll('a.nav-sub')] as HTMLAnchorElement[];
-
-describe('App shell', () => {
-  describe('on a wide screen', () => {
-    beforeEach(() => setup(true));
-
-    it('shows the title and an always-open side panel with no menu button', async () => {
-      const { el } = await render();
-      expect(el.querySelector('mat-toolbar h1')!.textContent).toContain('Kingdom War');
-      expect(nav(el).classList).toContain('open');
-      expect(el.querySelector('button.nav-toggle')).toBeNull();
-      expect(nav(el).hasAttribute('inert')).toBe(false);
-    });
-
-    it('links Play Game to /play and the Wiki group to its four pages', async () => {
-      const { el } = await render();
-      expect(el.querySelector('a.nav-play')!.getAttribute('href')).toBe('/play');
-      expect(subLinks(el).map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
-        ['Generals', '/wiki/generals'],
-        ['Basic Cards', '/wiki/basic'],
-        ['Equipments', '/wiki/equipment'],
-        ['Tools', '/wiki/tools'],
-      ]);
-    });
-
-    it('marks the current page', async () => {
-      const { el } = await render('/setup');
-      expect(el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBe('page');
-      const wiki = await render('/wiki/basic');
-      expect(wiki.el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBeNull();
-      expect(subLinks(wiki.el).find((a) => a.textContent!.trim() === 'Basic Cards')!.getAttribute('aria-current')).toBe('page');
-    });
-
-    it('collapses and expands the Wiki group', async () => {
-      const { el, refresh } = await render();
-      const wiki = el.querySelector('button.nav-wiki') as HTMLButtonElement;
-      expect(wiki.getAttribute('aria-expanded')).toBe('true');
-      wiki.click();
-      await refresh();
-      expect(wiki.getAttribute('aria-expanded')).toBe('false');
-      expect(subLinks(el)).toHaveLength(0);
-    });
+  it('should render title', async () => {
+    const { el } = await render();
+    expect(el.querySelector('mat-toolbar h1')?.textContent).toContain('Kingdom War');
   });
 
-  describe('on a narrow screen (Review Focus 3)', () => {
-    beforeEach(() => setup(false));
+  it('links Play Game to /play, highlighted on the play screens', async () => {
+    const { el, fixture } = await render('/setup');
+    const play = el.querySelector('a.nav-play') as HTMLAnchorElement;
+    expect(play.getAttribute('href')).toBe('/play');
+    expect(play.classList).toContain('active');
+    await TestBed.inject(Router).navigateByUrl('/wiki/generals');
+    fixture.detectChanges();
+    expect(play.classList).not.toContain('active');
+    expect(el.querySelector('button.nav-wiki')!.classList).toContain('active');
+  });
 
-    it('hides the panel behind a menu button', async () => {
-      const { el } = await render();
-      const toggle = el.querySelector('button.nav-toggle')!;
-      expect(toggle.getAttribute('aria-label')).toBe('Open navigation');
-      expect(nav(el).classList).not.toContain('open');
-      expect(nav(el).hasAttribute('inert')).toBe(true);
-    });
+  it('opens the Wiki menu with links to the four pages', async () => {
+    const { el, fixture } = await render();
+    (el.querySelector('button.nav-wiki') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...document.querySelectorAll('.cdk-overlay-container a[mat-menu-item]')] as HTMLAnchorElement[];
+    expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
+      ['Generals', '/wiki/generals'],
+      ['Basic Cards', '/wiki/basic'],
+      ['Equipments', '/wiki/equipment'],
+      ['Tools', '/wiki/tools'],
+    ]);
+  });
 
-    it('opens the drawer, and a link closes it', async () => {
-      const { el, refresh } = await render();
-      (el.querySelector('button.nav-toggle') as HTMLButtonElement).click();
-      await refresh();
-      expect(nav(el).classList).toContain('open');
-      expect(nav(el).hasAttribute('inert')).toBe(false);
-      expect(el.querySelector('.nav-backdrop')).not.toBeNull();
-      subLinks(el)[3].click();
-      await refresh();
-      expect(nav(el).classList).not.toContain('open');
-      expect(el.querySelector('.nav-backdrop')).toBeNull();
-    });
+  it('puts the Wiki dropdown arrow after its label', async () => {
+    const { el } = await render();
+    const wiki = el.querySelector('button.nav-wiki')!;
+    const arrow = wiki.querySelector('mat-icon.drop')!;
+    const label = wiki.querySelector('.label')!;
+    expect(arrow.hasAttribute('iconpositionend')).toBe(true);
+    expect(label.compareDocumentPosition(arrow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 
-    it('moves focus into the drawer when it opens, and back to the menu button when dismissed', async () => {
-      const { el, refresh } = await render();
-      (el.querySelector('button.nav-toggle') as HTMLButtonElement).click();
-      await refresh();
-      expect(document.activeElement).toBe(el.querySelector('a.nav-play'));
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      await refresh();
-      expect(document.activeElement).toBe(el.querySelector('button.nav-toggle'));
+  it('sits on the left, straight after the title, with no side panel', async () => {
+    const { el } = await render();
+    const title = el.querySelector('mat-toolbar h1')!;
+    expect(title.nextElementSibling!.matches('nav.nav')).toBe(true);
+    expect(el.querySelector('aside.side-nav')).toBeNull();
+    expect(el.querySelector('button.nav-toggle')).toBeNull();
+  });
 
-      (el.querySelector('button.nav-toggle') as HTMLButtonElement).click();
-      await refresh();
-      (el.querySelector('.nav-backdrop') as HTMLElement).click();
-      await refresh();
-      expect(document.activeElement).toBe(el.querySelector('button.nav-toggle'));
-    });
+  it('marks the current page for screen readers', async () => {
+    const { el, fixture } = await render('/setup');
+    expect(el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBe('page');
+    await TestBed.inject(Router).navigateByUrl('/wiki/basic');
+    fixture.detectChanges();
+    expect(el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBeNull();
+    (el.querySelector('button.nav-wiki') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const current = [...document.querySelectorAll('.cdk-overlay-container a[mat-menu-item][aria-current="page"]')];
+    expect(current.map((a) => a.textContent!.trim())).toEqual(['Basic Cards']);
+  });
 
-    it('closes the drawer from the backdrop and from Escape', async () => {
-      const { el, refresh } = await render();
-      (el.querySelector('button.nav-toggle') as HTMLButtonElement).click();
-      await refresh();
-      (el.querySelector('.nav-backdrop') as HTMLElement).click();
-      await refresh();
-      expect(nav(el).classList).not.toContain('open');
-
-      (el.querySelector('button.nav-toggle') as HTMLButtonElement).click();
-      await refresh();
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      await refresh();
-      expect(nav(el).classList).not.toContain('open');
-    });
+  it('icon buttons have accessible names (Review Focus 4)', async () => {
+    const { el } = await render();
+    expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play Game');
+    expect(el.querySelector('button.nav-wiki')!.getAttribute('aria-label')).toBe('Wiki');
   });
 });
