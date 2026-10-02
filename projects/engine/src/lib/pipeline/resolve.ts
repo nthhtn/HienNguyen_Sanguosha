@@ -275,7 +275,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
     case 'ChooseGeneralsAction': {
       const { state: chosen, event } = applyGeneralChoice(state, action, ctx.registry);
       const followUp = runAfterTriggers(chosen, event, ctx, depth);
-      if (followUp.state.phase !== 'Start') return { state: followUp.state, events: [event, ...followUp.events] };
+      if (chosen.generalSelection !== null) return { state: followUp.state, events: [event, ...followUp.events] };
       // The last seat has chosen: turn 1 begins at Start.
       const started = enterPhase(followUp.state, ctx, depth);
       return { state: started.state, events: [event, ...followUp.events, ...started.events] };
