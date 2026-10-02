@@ -13,15 +13,18 @@ interface HandCardViewModel {
   card: CardInstance;
   name: string;
   actions: { action: Action; label: string }[];
+  discarding: boolean;
+  disabledReason: string;
 }
 
 function cardInstanceIdOf(action: Action): string | undefined {
-  return action.kind === 'PlayCardAction' || action.kind === 'RespondAction' ? action.cardInstanceId : undefined;
+  return action.kind === 'PlayCardAction' || action.kind === 'RespondAction' || action.kind === 'DiscardCardAction'
+    ? action.cardInstanceId : undefined;
 }
 
 // The viewer's own hand as one row of cards. Hovering (or focusing, for touch)
-// a card reveals Play — the engine's legal plays/responses for that card only —
-// and Info.
+// a card reveals its main button — Play, or Discard in the Discard phase, from
+// the engine's legal actions for that card only — and Info.
 @Component({
   selector: 'app-hand-view',
   imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, CardArt],
@@ -41,15 +44,22 @@ function cardInstanceIdOf(action: Action): string | undefined {
                 }
               </mat-menu>
             } @else {
-              <button
-                mat-flat-button
-                type="button"
-                class="play"
-                [disabled]="vm.actions.length === 0"
-                (click)="play.emit(vm.actions[0].action)"
-              >
-                <mat-icon>play_arrow</mat-icon> Play
-              </button>
+              <span class="play-wrap" [matTooltip]="vm.disabledReason" [matTooltipDisabled]="!vm.disabledReason">
+                <button
+                  mat-flat-button
+                  type="button"
+                  class="play"
+                  [class.discard]="vm.discarding"
+                  [disabled]="vm.actions.length === 0"
+                  (click)="play.emit(vm.actions[0].action)"
+                >
+                  @if (vm.discarding) {
+                    <mat-icon>delete</mat-icon> Discard
+                  } @else {
+                    <mat-icon>play_arrow</mat-icon> Play
+                  }
+                </button>
+              </span>
             }
             <button mat-stroked-button type="button" class="info" (click)="openInfo(vm)">
               <mat-icon>info</mat-icon> Info
@@ -101,6 +111,9 @@ function cardInstanceIdOf(action: Action): string | undefined {
       font-size: 12px;
       --mat-button-outlined-label-text-color: #fff;
     }
+    .play-wrap { display: flex; }
+    .play-wrap button { flex: 1; }
+    .overlay button.discard { --mat-button-filled-container-color: var(--mat-sys-error); }
     .overlay mat-icon { margin-right: 2px; font-size: 18px; width: 18px; height: 18px; }
     .empty { color: var(--mat-sys-on-surface-variant); }
   `,
@@ -115,13 +128,18 @@ export class HandView {
   private readonly dialog = inject(MatDialog);
 
   protected readonly cardViewModels = computed<HandCardViewModel[]>(() =>
-    this.cards().map((card) => ({
-      card,
-      name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name),
-      actions: this.actions()
+    this.cards().map((card) => {
+      const actions = this.actions()
         .filter((action) => cardInstanceIdOf(action) === card.instanceId)
-        .map((action) => ({ action, label: actionLabel(action, this.state(), this.registry()) })),
-    }))
+        .map((action) => ({ action, label: actionLabel(action, this.state(), this.registry()) }));
+      return {
+        card,
+        name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name),
+        actions,
+        discarding: actions.some((a) => a.action.kind === 'DiscardCardAction'),
+        disabledReason: actions.length > 0 ? '' : this.state().phase !== 'Play' ? 'Only in your Play phase' : "Can't be played now",
+      };
+    })
   );
 
   protected openInfo(vm: HandCardViewModel): void {

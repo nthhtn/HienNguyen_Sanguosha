@@ -1,4 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { MatTooltip } from '@angular/material/tooltip';
 import { Action, CardInstance, ContentRegistry, GameState } from 'engine';
 import { HandView } from './hand-view';
 
@@ -56,6 +58,9 @@ describe('HandView', () => {
 
   afterEach(() => overlay()?.replaceChildren());
 
+  const tooltipFor = (instanceId: string) =>
+    fixture.debugElement.query(By.css(`[data-card-id="${instanceId}"] .play-wrap`)).injector.get(MatTooltip);
+
   it('renders every hand card in one row, each with Play and Info buttons', () => {
     const row = el.querySelector('.hand-row')!;
     expect(row.querySelectorAll('.hand-card')).toHaveLength(3);
@@ -105,5 +110,28 @@ describe('HandView', () => {
     expect(dialog.textContent).toContain('Peach');
     expect(dialog.textContent).toContain('Q ♥');
     expect(dialog.textContent).toContain('No rules text available yet');
+  });
+
+  it('shows Discard, and emits the discard, for cards the engine says to discard', () => {
+    const discardSha: Action = { kind: 'DiscardCardAction', seatId: 'seat-0', cardInstanceId: 'c-sha' };
+    fixture.componentRef.setInput('actions', [discardSha]);
+    fixture.componentRef.setInput('state', { ...state(), phase: 'Discard' });
+    fixture.detectChanges();
+    expect(playButton('c-sha').textContent).toContain('Discard');
+    expect(playButton('c-sha').classList).toContain('discard');
+    playButton('c-sha').click();
+    expect(played).toEqual([discardSha]);
+  });
+
+  it('explains a disabled Play button', () => {
+    expect(playButton('c-peach').disabled).toBe(true);
+    expect(tooltipFor('c-peach').message).toBe("Can't be played now");
+    expect(tooltipFor('c-peach').disabled).toBe(false);
+    expect(tooltipFor('c-bow').disabled).toBe(true);
+
+    fixture.componentRef.setInput('actions', []);
+    fixture.componentRef.setInput('state', { ...state(), phase: 'Discard' });
+    fixture.detectChanges();
+    expect(tooltipFor('c-sha').message).toBe('Only in your Play phase');
   });
 });

@@ -169,6 +169,27 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-action-list')).toBeNull();
   });
 
+  it('keeps the same seat’s view through a discard in pass-and-play (Review Focus 3)', () => {
+    gameService.startGame(2, 1);
+    finishSelection(gameService);
+    const seatId = gameService.activeSeatId()!;
+    gameService.reveal(seatId);
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
+    // 4 dealt + 2 drawn = 6 cards against at most 4 HP: at least 2 over the limit.
+    expect(gameService.state()!.phase).toBe('Discard');
+    expect(gameService.activeSeatId()).toBe(seatId);
+
+    gameService.reveal(seatId);
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'DiscardCardAction')!);
+    expect(gameService.lastError()).toBeNull();
+    // Still at least 1 over: the same seat discards again, behind the usual gate.
+    expect(gameService.state()!.phase).toBe('Discard');
+    expect(gameService.activeSeatId()).toBe(seatId);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-reveal-gate-overlay')).not.toBeNull();
+  });
+
   it('shows a dismissible error banner when GameService reports an error', () => {
     gameService.startGame(2, 1);
     gameService.reveal(gameService.activeSeatId()!);
