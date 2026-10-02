@@ -1,20 +1,46 @@
-<mat-toolbar color="primary" class="app-bar">
+<mat-toolbar class="app-bar">
+  @if (!wide()) {
+    <button mat-icon-button type="button" class="nav-toggle" aria-label="Open navigation" [attr.aria-expanded]="navOpen()" (click)="navOpen.set(true)">
+      <mat-icon>menu</mat-icon>
+    </button>
+  }
   <mat-icon aria-hidden="true">castle</mat-icon>
   <h1>{{ title() }}</h1>
-  <nav class="nav">
-    <a mat-button class="nav-play" routerLink="/play" [class.active]="playActive()" aria-label="Play Game">
-      <mat-icon>play_arrow</mat-icon><span class="label">Play Game</span>
-    </a>
-    <button mat-button type="button" class="nav-wiki" [matMenuTriggerFor]="wikiMenu" [class.active]="wikiActive()" aria-label="Wiki">
-      <mat-icon>menu_book</mat-icon><span class="label">Wiki</span><mat-icon iconPositionEnd class="drop">arrow_drop_down</mat-icon>
-    </button>
-    <mat-menu #wikiMenu="matMenu">
-      @for (page of wikiPages; track page.path) {
-        <a mat-menu-item [routerLink]="page.path" routerLinkActive="current">{{ page.label }}</a>
-      }
-    </mat-menu>
-  </nav>
 </mat-toolbar>
-<main class="content">
-  <router-outlet />
-</main>
+<div class="shell" [class.wide]="wide()">
+  @if (!wide() && navOpen()) {
+    <div class="nav-backdrop" (click)="navOpen.set(false)"></div>
+  }
+  <aside class="side-nav" [class.open]="wide() || navOpen()" [attr.inert]="wide() || navOpen() ? null : ''">
+    <nav aria-label="Main">
+      <mat-nav-list>
+        <a mat-list-item class="nav-play" routerLink="/play" [activated]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" (click)="closeDrawer()">
+          <mat-icon matListItemIcon>play_arrow</mat-icon>
+          <span matListItemTitle>Play Game</span>
+        </a>
+        <button mat-list-item type="button" class="nav-wiki" [attr.aria-expanded]="wikiOpen()" (click)="wikiOpen.set(!wikiOpen())">
+          <mat-icon matListItemIcon>menu_book</mat-icon>
+          <span matListItemTitle>Wiki</span>
+          <mat-icon matListItemMeta>{{ wikiOpen() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        @if (wikiOpen()) {
+          @for (page of wikiPages; track page.path) {
+            <a
+              mat-list-item
+              class="nav-sub"
+              [routerLink]="page.path"
+              routerLinkActive
+              #link="routerLinkActive"
+              [activated]="link.isActive"
+              ariaCurrentWhenActive="page"
+              (click)="closeDrawer()"
+            >{{ page.label }}</a>
+          }
+        }
+      </mat-nav-list>
+    </nav>
+  </aside>
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

@@ -10,29 +10,55 @@
   margin: 0;
   font: var(--mat-sys-title-large);
 }
+.nav-toggle {
+  color: var(--mat-sys-on-primary);
+  margin-left: -8px;
+}
 .content {
   padding: 0 16px 16px;
+  min-width: 0;
 }
-.nav {
-  margin-left: auto;
-  display: flex;
-  gap: 4px;
+
+/* Wide: the panel sits beside the page, sticky under the header. */
+.shell.wide {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  align-items: start;
 }
-.nav a,
-.nav button {
-  --mat-button-text-label-text-color: var(--mat-sys-on-primary);
-  color: var(--mat-sys-on-primary);
+.side-nav {
+  background: var(--mat-sys-surface-container-low);
 }
-.nav .active {
-  background: color-mix(in srgb, var(--mat-sys-on-primary) 18%, transparent);
+.shell.wide .side-nav {
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  border-right: 1px solid var(--mat-sys-outline-variant);
 }
-@media (max-width: 599px) {
-  .nav .label {
-    display: none;
-  }
-  .nav a,
-  .nav button {
-    min-width: 0;
-    padding: 0 8px;
-  }
+
+/* Narrow: the panel is a drawer that slides in over the page. */
+.shell:not(.wide) .side-nav {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  width: 280px;
+  max-width: 85vw;
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform 200ms ease;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 24%);
+}
+.shell:not(.wide) .side-nav.open {
+  transform: none;
+}
+.nav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  background: rgb(0 0 0 / 32%);
+}
+.nav-sub {
+  padding-left: 56px;
 }

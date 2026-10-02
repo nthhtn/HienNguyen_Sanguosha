@@ -28,8 +28,12 @@ Decisions settled with the user:
 
 ## Navigation: left side panel
 
-The app shell (`app.html`) becomes a Material `mat-sidenav-container`, with
-the header toolbar above it:
+The app shell (`app.html`) puts a `<div class="shell">` under the header
+toolbar, holding an `<aside class="side-nav">` and the page. It is not a
+Material `mat-sidenav-container`: that container sets `overflow: hidden`,
+which would stop the sticky phase indicator from sticking and move scrolling
+off the window (breaking the router's scroll reset). Material's `mat-nav-list`
+items still style the links.
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -44,10 +48,10 @@ the header toolbar above it:
 └──────────────┴───────────────────────────────┘
 ```
 
-- **Wide screens (≥ 1024px):** the panel is `mode="side"`, always open, and
-  240px wide. The page content sits to its right. There is no ☰ button.
-- **Narrow screens (< 1024px):** the panel is `mode="over"` and closed by
-  default. A ☰ button (`aria-label="Open navigation"`) at the left of the
+- **Wide screens (≥ 1024px):** the panel is always shown, 240px wide, and
+  sticky under the header. The page content sits to its right. There is no ☰ button.
+- **Narrow screens (< 1024px):** the panel is a drawer, closed by default, that
+  slides in over the page with a backdrop; when closed it is `inert`. A ☰ button (`aria-label="Open navigation"`) at the left of the
   header opens it over the page. Choosing any link, or pressing Escape or
   the backdrop, closes it.
 - **Breakpoint detection:** use the CDK `BreakpointObserver` with
