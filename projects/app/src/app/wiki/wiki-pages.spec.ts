@@ -3,14 +3,18 @@ import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../app.routes';
 
-async function open(url: string): Promise<{ harness: RouterTestingHarness; el: () => HTMLElement; router: Router }> {
+async function open(url: string) {
   TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl(url);
-  return { harness, el: () => harness.routeNativeElement as HTMLElement, router: TestBed.inject(Router) };
+  await harness.fixture.whenStable();
+  const el = () => harness.routeNativeElement as HTMLElement;
+  return { harness, el, router: TestBed.inject(Router) };
 }
 
-const groupTitles = (el: HTMLElement) => [...el.querySelectorAll('.group-title')].map((h) => h.textContent!.trim());
+const tabLabels = (el: HTMLElement) => [...el.querySelectorAll('[role="tab"]')].map((t) => t.textContent!.trim());
+const selectedTab = (el: HTMLElement) => el.querySelector('[role="tab"][aria-selected="true"]')!.textContent!.trim();
+const entryIds = (el: HTMLElement) => [...el.querySelectorAll('article.entry')].map((a) => a.getAttribute('data-id'));
 
 describe('Wiki pages', () => {
   it('redirects /wiki to the Generals page', async () => {
@@ -18,32 +22,50 @@ describe('Wiki pages', () => {
     expect(router.url).toBe('/wiki/generals');
   });
 
-  it('lists the 26 generals in four kingdom sections', async () => {
-    const page = (await open('/wiki/generals')).el();
-    expect(page.querySelector('h2')!.textContent).toBe('Generals');
-    expect(page.querySelector('.summary')!.textContent).toContain('26 generals · 6 with skills in the game');
-    expect(groupTitles(page)).toEqual(['Wei', 'Shu', 'Wu', 'Qun']);
-    expect(page.querySelectorAll('app-wiki-general-entry')).toHaveLength(26);
+  it('shows Generals in Wei, Shu, Wu and Heroes tabs, opening on Wei', async () => {
+    const { el } = await open('/wiki/generals');
+    expect(el().querySelector('h2')!.textContent).toBe('Generals');
+    expect(el().querySelector('.summary')!.textContent).toContain('26 generals · 6 with skills in the game');
+    expect(tabLabels(el())).toEqual(['Wei (7)', 'Shu (7)', 'Wu (8)', 'Heroes (4)']);
+    expect(selectedTab(el())).toBe('Wei (7)');
+    expect(el().querySelectorAll('app-wiki-general-entry')).toHaveLength(7);
   });
 
-  it('splits Equipments into Weapons, Armor and Horses', async () => {
-    const page = (await open('/wiki/equipment')).el();
-    expect(page.querySelector('h2')!.textContent).toBe('Equipments');
-    expect(page.querySelector('.summary')!.textContent).toContain('15 cards · 1 in the game');
-    expect(groupTitles(page)).toEqual(['Weapons', 'Armor', 'Horses']);
-    expect(page.querySelectorAll('app-wiki-card-entry')).toHaveLength(15);
+  it('shows one tab per basic card', async () => {
+    const { el } = await open('/wiki/basic');
+    expect(tabLabels(el())).toEqual(['Sha (1)', 'Shan (1)', 'Wine (1)', 'Peach (1)']);
+    expect(entryIds(el())).toEqual(['sha']);
   });
 
-  it('each card route renders its own category (Review Focus 3)', async () => {
+  it('opens the tab named in the URL (Review Focus 1)', async () => {
+    const { el } = await open('/wiki/equipment?tab=minus-mount');
+    expect(tabLabels(el())).toEqual(['Weapons (8)', 'Armors (1)', 'Plus Mount (3)', 'Minus Mount (3)']);
+    expect(selectedTab(el())).toBe('Minus Mount (3)');
+    expect(entryIds(el())).toEqual(['da-yuan', 'red-hare', 'zi-xing']);
+  });
+
+  it('falls back to the first tab for an unknown tab (Review Focus 2)', async () => {
+    const { el } = await open('/wiki/equipment?tab=nope');
+    expect(selectedTab(el())).toBe('Weapons (8)');
+    expect(el().querySelectorAll('app-wiki-card-entry')).toHaveLength(8);
+  });
+
+  it('records the chosen tab in the URL', async () => {
+    const { harness, el, router } = await open('/wiki/tools');
+    expect(tabLabels(el())).toEqual(['Instant (10)', 'Delayed (2)']);
+    (el().querySelectorAll('[role="tab"]')[1] as HTMLElement).click();
+    await harness.fixture.whenStable();
+    harness.fixture.detectChanges();
+    expect(router.url).toBe('/wiki/tools?tab=delayed');
+    expect(entryIds(el())).toEqual(['capture', 'lightning']);
+  });
+
+  it('each card route renders its own category', async () => {
     const { harness, el } = await open('/wiki/basic');
     expect(el().querySelector('h2')!.textContent).toBe('Basic Cards');
-    expect(el().querySelectorAll('app-wiki-card-entry')).toHaveLength(4);
-    expect(groupTitles(el())).toEqual([]);
-
-    // Same harness: moving Basic -> Tools must not reuse the Basic page.
     await harness.navigateByUrl('/wiki/tools');
+    await harness.fixture.whenStable();
     expect(el().querySelector('h2')!.textContent).toBe('Tools');
     expect(el().querySelector('.summary')!.textContent).toContain('12 cards · 2 in the game');
-    expect(el().querySelectorAll('app-wiki-card-entry')).toHaveLength(12);
   });
 });
