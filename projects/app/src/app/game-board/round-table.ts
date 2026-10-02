@@ -17,7 +17,7 @@ const RECENT_LOG_LINES = 3;
     <div class="table">
       <div class="felt"></div>
       <div class="centre">
-        <div class="turn">Turn {{ state().turn.turnNumber }} · {{ state().phase }}</div>
+        <div class="turn">Turn {{ state().turn.turnNumber }}</div>
         <div>{{ state().turn.ownerSeatId }}'s turn</div>
         @if (state().pendingResponse; as pending) {
           <div class="waiting">Waiting on {{ pending.respondingSeatId }}</div>

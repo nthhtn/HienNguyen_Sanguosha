@@ -68,9 +68,10 @@ describe('RoundTable', () => {
     expect(tile(el, 'seat-2').querySelector('.tile')!.classList).toContain('eliminated');
   });
 
-  it('shows turn, phase, turn owner and pile counts in the centre', () => {
+  it('shows the turn number, turn owner and pile counts in the centre', () => {
     const centre = render(state()).querySelector('.centre')!.textContent!;
-    expect(centre).toContain('Turn 3 · Play');
+    expect(centre).toContain('Turn 3');
+    expect(centre).not.toContain('· Play');
     expect(centre).toContain("seat-1's turn");
     expect(centre).toContain('Draw pile 9');
     expect(centre).toContain('Discard 2');

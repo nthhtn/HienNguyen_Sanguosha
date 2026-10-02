@@ -279,6 +279,16 @@ describe('GameBoard in vs-bots mode', () => {
     expect(playButtons.every((b) => b.disabled)).toBe(true);
   });
 
+  it('shows whose turn and which phase above the table', () => {
+    gameService.startGame(3, 1, 'vs-bots');
+    gameService.submit(gameService.legalActions()[0]);
+    flushBots();
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    const indicator = (fixture.nativeElement as HTMLElement).querySelector('app-phase-indicator')!;
+    expect(indicator.textContent!.replace(/\s+/g, ' ').trim()).toBe('seat-0 (you) – Play Phase');
+  });
+
   it('offers a way out to a new game when a bot move fails', () => {
     jest.spyOn(ruleBasedPolicy, 'decide').mockImplementation(() => {
       throw new Error('bot exploded');

@@ -13,10 +13,11 @@ import { RoundTable } from './round-table';
 import { HandView } from './hand-view';
 import { GameOver } from './game-over';
 import { GeneralSelection, SelectionProgress } from './general-selection';
+import { PhaseIndicator } from './phase-indicator';
 
 @Component({
   selector: 'app-game-board',
-  imports: [RevealGateOverlay, ActionList, EventLog, RoundTable, HandView, GameOver, GeneralSelection, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [RevealGateOverlay, ActionList, EventLog, PhaseIndicator, RoundTable, HandView, GameOver, GeneralSelection, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -52,6 +53,7 @@ import { GeneralSelection, SelectionProgress } from './general-selection';
               (chosen)="submit($event)"
             />
           } @else {
+            <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
             <app-round-table [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="gameService.botThinkingSeatId()" [botSeatIds]="gameService.botSeatIds()" />
             <section class="your-hand">
               <h3>Your hand</h3>
