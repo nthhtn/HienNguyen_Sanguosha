@@ -1,0 +1,21 @@
+{
+  "count": 2,
+  "name": "Harvest",
+  "nameZh": "五谷丰登",
+  "printings": [
+    {
+      "rank": 3,
+      "suit": "heart"
+    },
+    {
+      "rank": 4,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/harvest"
+  },
+  "text": "When a player uses this, one card is put face up for each living player. Then starting with the user of the card, each player chooses a card and puts it in their hand."
+}

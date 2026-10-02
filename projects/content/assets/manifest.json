@@ -6,6 +6,13 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/axe",
     "width": 665
   },
+  "barbarians": {
+    "crawledAt": "2026-10-02",
+    "height": 976,
+    "localPath": "cards/trick/barbarians.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/barbarians",
+    "width": 667
+  },
   "black-pommel": {
     "crawledAt": "2026-09-24",
     "height": 977,
@@ -13,12 +20,33 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/black-pommel",
     "width": 667
   },
+  "break": {
+    "crawledAt": "2026-10-02",
+    "height": 966,
+    "localPath": "cards/trick/break.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/break",
+    "width": 660
+  },
   "cao-cao": {
     "crawledAt": "2026-09-24",
     "height": 967,
     "localPath": "generals/wei/cao-cao.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-cao-cao",
     "width": 660
+  },
+  "capture": {
+    "crawledAt": "2026-10-02",
+    "height": 654,
+    "localPath": "cards/trick/capture.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/capture",
+    "width": 974
+  },
+  "coerce": {
+    "crawledAt": "2026-10-02",
+    "height": 961,
+    "localPath": "cards/trick/coerce.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/coerce",
+    "width": 656
   },
   "crossbow": {
     "crawledAt": "2026-09-24",
@@ -111,6 +139,20 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-guo-jia",
     "width": 658
   },
+  "hail-of-arrows": {
+    "crawledAt": "2026-10-02",
+    "height": 973,
+    "localPath": "cards/trick/hail-of-arrows.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/hail-of-arrows",
+    "width": 665
+  },
+  "harvest": {
+    "crawledAt": "2026-10-02",
+    "height": 982,
+    "localPath": "cards/trick/harvest.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/harvest",
+    "width": 671
+  },
   "hua-tuo": {
     "crawledAt": "2026-09-24",
     "height": 965,
@@ -131,6 +173,13 @@
     "localPath": "generals/shu/huang-yueying.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-huang-yueying",
     "width": 659
+  },
+  "lightning": {
+    "crawledAt": "2026-10-02",
+    "height": 655,
+    "localPath": "cards/trick/lightning.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/lightning",
+    "width": 975
   },
   "liu-bei": {
     "crawledAt": "2026-09-24",
@@ -181,6 +230,13 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach",
     "width": 660
   },
+  "peach-garden": {
+    "crawledAt": "2026-10-02",
+    "height": 981,
+    "localPath": "cards/trick/peach-garden.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach-garden",
+    "width": 670
+  },
   "red-hare": {
     "crawledAt": "2026-09-24",
     "height": 977,
@@ -229,6 +285,13 @@
     "localPath": "cards/equipment/weapon/sky-scorcher.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/sky-scorcher",
     "width": 447
+  },
+  "steal": {
+    "crawledAt": "2026-10-02",
+    "height": 971,
+    "localPath": "cards/trick/steal.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/steal",
+    "width": 663
   },
   "storm-runner": {
     "crawledAt": "2026-09-24",

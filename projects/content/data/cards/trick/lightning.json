@@ -1,0 +1,17 @@
+{
+  "count": 1,
+  "name": "Lightning",
+  "nameZh": "闪电",
+  "printings": [
+    {
+      "rank": 1,
+      "suit": "spade"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/lightning"
+  },
+  "text": "A player plays this delay tool on themselves. In their next turn, they perform a judgment for this card. If it is a two to nine of spades, the player receives three units of lightning damage. If it is not a two to nine of spades, then it moves to the player to the right."
+}

@@ -1,0 +1,17 @@
+{
+  "count": 1,
+  "name": "Peach Garden",
+  "nameZh": "桃园结义",
+  "printings": [
+    {
+      "rank": 1,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach-garden"
+  },
+  "text": "All damaged players recover one blood."
+}

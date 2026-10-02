@@ -1,0 +1,21 @@
+{
+  "count": 2,
+  "name": "Coerce",
+  "nameZh": "借刀杀人",
+  "printings": [
+    {
+      "rank": 12,
+      "suit": "club"
+    },
+    {
+      "rank": 13,
+      "suit": "club"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/coerce"
+  },
+  "text": "A player targets any other player that possesses a weapon. Then, the player chooses any player within the targets attacking range. The target then can attack the victim. If the target does not, the player takes the targets weapon and puts it in his hand."
+}
