@@ -413,7 +413,8 @@ itself has no Kingdom-War-specific knowledge:
 
 - **Setup**: each Seat is assigned a kingdom and two hidden `GeneralInstance`s
   (main + deputy), both starting with `revealed: false`.
-- **HP**: `maxCombinedHp = main.maxHp + deputy.maxHp`; all damage and
+- **HP**: `maxCombinedHp = floor((main.maxHp + deputy.maxHp) / 2)` (revised
+  2026-10-02, see `2026-10-02-turn-phases-design.md`); all damage and
   healing applies to the single `combinedHp` pool on the Seat.
 - **Reveal**: `RevealGeneralAction` is a first-class Action.
   - Voluntary: the owning seat's player may reveal a general at defined

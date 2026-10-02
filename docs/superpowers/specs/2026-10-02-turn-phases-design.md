@@ -1,4 +1,4 @@
-# Turn Phases, Auto-Advance, Hand Limit and a Phase Indicator — Design Spec
+# Turn Phases, Auto-Advance, Hand Limit, Max HP and a Phase Indicator — Design Spec
 
 Status: Draft for review
 Date: 2026-10-02
@@ -15,7 +15,11 @@ Date: 2026-10-02
    This was reported as "I don't see the Play button".
 3. **Hand limit.** The Discard phase never makes a player discard. It should
    enforce the hand limit.
-4. **A clear phase indicator.** The board must show whose turn it is and
+4. **Max HP.** A seat's max HP is the sum of its two generals' HP, halved and
+   rounded down. Today it is the plain sum (`generalSelection.ts`), so seats
+   start at 6–8 HP instead of 3–4. This changes here because the hand limit
+   is based on HP.
+5. **A clear phase indicator.** The board must show whose turn it is and
    which phase, as "seat-X – Y Phase".
 
 Found while investigating, fixed here because the new phase loop covers them:
@@ -29,6 +33,7 @@ Decisions settled with the user:
 - Approach A: the engine advances phases itself. The app, bots and sim never
   submit "End phase" on a player's behalf.
 - The hand limit is enforced now, and equals the seat's current HP.
+- Max HP = floor((main general's HP + deputy general's HP) / 2).
 - End phase can be chosen only in the Play phase. A player cannot skip Draw
   or Discard by choice; only future skills may skip phases.
 - The board shows a "seat-X – Y Phase" indicator.
@@ -64,6 +69,14 @@ ended.
 **Ending the Play phase.** In the Play phase the turn owner may choose End
 phase at any point the game is not waiting on a response. End phase is not
 legal in any other phase.
+
+**Max HP.** When a seat's two generals are chosen, its max HP is the sum of
+both generals' printed HP, divided by 2 and rounded down. The seat starts at
+full HP. Examples: 4 + 4 → 4, 3 + 4 → 3, 3 + 3 → 3. This replaces the engine
+design spec's `maxCombinedHp = main.maxHp + deputy.maxHp`. Every other rule
+that reads max HP is unchanged and simply sees the new value: Peach's "not at
+full HP" check, healing's cap, and the forced reveal at
+`combinedHp <= floor(maxCombinedHp / 2)`.
 
 **Hand limit.** A seat's hand limit is its current combined HP
 (`Seat.combinedHp`), never below 0. On entering the Discard phase, a seat
@@ -153,6 +166,17 @@ while (
   of `'Judgment'`. The `ChooseGeneralsAction` case in `resolveAction` then
   calls `enterPhase` (below) to raise turn 1's Start `PhaseChangedEvent`.
   After that, the loop continues as for every other turn.
+
+### Max HP
+
+```ts
+// rules/generalSelection.ts, in applyGeneralChoice
+const maxCombinedHp = Math.floor((main.maxHp + deputy.maxHp) / 2);
+```
+
+The only change to the engine code. `combinedHp` still starts equal to
+`maxCombinedHp`. The engine design spec's HP line
+(`2026-09-03-guozhan-engine-design.md`, "HP") is updated to match.
 
 ### Actions
 
@@ -257,6 +281,10 @@ Engine (Jest, `projects/engine`):
   Discard. Only `DiscardCardAction`s are legal, one per hand card. After the
   required number of discards, the state rests in the next seat's Play phase.
 - **Hand limit:** equals current combined HP, 0 when HP is 0.
+- **Max HP:** 4 + 4 → 4, 3 + 4 → 3, 3 + 3 → 3, and `combinedHp` starts equal
+  to it. Existing specs that assert the old sum (for example a 7- or 8-HP
+  seat) are updated to the new values. Specs that set HP directly on a test
+  state are left alone.
 - **End phase rejected outside Play:** `resolve()` throws for Draw, Discard,
   and so on.
 - **Eliminated turn owner:** a Duel that eliminates the turn owner ends their
