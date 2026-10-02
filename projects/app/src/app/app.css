@@ -13,3 +13,29 @@
 .content {
   padding: 0 16px 16px;
 }
+.nav {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.nav a,
+.nav button {
+  --mat-button-text-label-text-color: var(--mat-sys-on-primary);
+  color: var(--mat-sys-on-primary);
+}
+.nav .active {
+  background: color-mix(in srgb, var(--mat-sys-on-primary) 18%, transparent);
+}
+.nav .drop {
+  margin: 0 -4px 0 0;
+}
+@media (max-width: 599px) {
+  .nav .label {
+    display: none;
+  }
+  .nav a,
+  .nav button {
+    min-width: 0;
+    padding: 0 8px;
+  }
+}

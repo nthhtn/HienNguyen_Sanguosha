@@ -1,6 +1,19 @@
 <mat-toolbar color="primary" class="app-bar">
   <mat-icon aria-hidden="true">castle</mat-icon>
   <h1>{{ title() }}</h1>
+  <nav class="nav">
+    <a mat-button class="nav-play" routerLink="/play" [class.active]="playActive()" aria-label="Play Game">
+      <mat-icon>play_arrow</mat-icon><span class="label">Play Game</span>
+    </a>
+    <button mat-button type="button" class="nav-wiki" [matMenuTriggerFor]="wikiMenu" [class.active]="wikiActive()" aria-label="Wiki">
+      <mat-icon>menu_book</mat-icon><span class="label">Wiki</span><mat-icon class="drop">arrow_drop_down</mat-icon>
+    </button>
+    <mat-menu #wikiMenu="matMenu">
+      @for (page of wikiPages; track page.path) {
+        <a mat-menu-item [routerLink]="page.path" routerLinkActive="current">{{ page.label }}</a>
+      }
+    </mat-menu>
+  </nav>
 </mat-toolbar>
 <main class="content">
   <router-outlet />
