@@ -7,14 +7,13 @@ import { GameState, cardsOverHandLimit } from 'engine';
   selector: 'app-phase-indicator',
   template: `
     <div class="phase-indicator" role="status" aria-live="polite">
-      {{ state().turn.ownerSeatId }}
+      <span class="seat">{{ state().turn.ownerSeatId }}</span>
       @if (isViewersTurn()) {
-        (you)
+        {{ ' ' }}<span class="you">(you)</span>
       }
-      –
-      {{ state().phase }} Phase
+      {{ ' ' }}<span class="sep">–</span>{{ ' ' }}<span class="phase">{{ state().phase }} Phase</span>
       @if (discardsLeft() > 0) {
-        – discard {{ discardsLeft() }} more
+        {{ ' ' }}<span class="discard">– discard {{ discardsLeft() }} more</span>
       }
     </div>
   `,
