@@ -62,3 +62,24 @@
 .nav-sub {
   padding-left: 56px;
 }
+
+/* mat-nav-list only resets <button> items inside mat-action-list, so the Wiki
+   group header would keep the browser's button border and centred text. */
+.nav-wiki {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  width: 100%;
+  cursor: pointer;
+}
+/* The trailing-meta slot sets a label font that beats the icon font, which
+   turned the expand icon's ligature into clipped text. */
+.nav-wiki .mat-mdc-list-item-meta {
+  font-family: 'Material Icons';
+  font-size: 24px;
+  line-height: 1;
+  align-self: center;
+  margin-top: 0;
+}
