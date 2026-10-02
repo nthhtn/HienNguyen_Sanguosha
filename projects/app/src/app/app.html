@@ -6,7 +6,7 @@
       <mat-icon>play_arrow</mat-icon><span class="label">Play Game</span>
     </a>
     <button mat-button type="button" class="nav-wiki" [matMenuTriggerFor]="wikiMenu" [class.active]="wikiActive()" aria-label="Wiki">
-      <mat-icon>menu_book</mat-icon><span class="label">Wiki</span><mat-icon class="drop">arrow_drop_down</mat-icon>
+      <mat-icon>menu_book</mat-icon><span class="label">Wiki</span><mat-icon iconPositionEnd class="drop">arrow_drop_down</mat-icon>
     </button>
     <mat-menu #wikiMenu="matMenu">
       @for (page of wikiPages; track page.path) {

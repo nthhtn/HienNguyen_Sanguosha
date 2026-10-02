@@ -57,6 +57,15 @@ describe('App', () => {
     ]);
   });
 
+  it('puts the Wiki dropdown arrow after its label', async () => {
+    const { el } = await render();
+    const wiki = el.querySelector('button.nav-wiki')!;
+    const arrow = wiki.querySelector('mat-icon.drop')!;
+    const label = wiki.querySelector('.label')!;
+    expect(arrow.hasAttribute('iconpositionend')).toBe(true);
+    expect(label.compareDocumentPosition(arrow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('icon buttons have accessible names (Review Focus 4)', async () => {
     const { el } = await render();
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play Game');
