@@ -108,6 +108,12 @@ describe('actionLabel', () => {
       'End phase'
     );
   });
+
+  it('labels DiscardCardAction with the card name', () => {
+    expect(
+      actionLabel({ kind: 'DiscardCardAction', seatId: 'seat-0', cardInstanceId: 'card-1' }, stateWithZones(), registryWithSha())
+    ).toBe('Discard Sha');
+  });
 });
 
 describe('eventLabel', () => {

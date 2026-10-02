@@ -3,6 +3,7 @@ import { Action } from '../pipeline/actions';
 import { ContentRegistry } from '../registry/types';
 import { getActiveSeatId } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
+import { cardsOverHandLimit } from './handLimit';
 
 export function getLegalTargets(state: GameState, seatId: string): Target[] {
   return state.seats
@@ -49,6 +50,12 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
   }
 
   if (state.turn.ownerSeatId !== seatId) return [];
+
+  // Over the hand limit in the Discard phase: discarding is the only move.
+  if (state.phase === 'Discard' && cardsOverHandLimit(state, seatId) > 0) {
+    const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
+    return (handZone?.cards ?? []).map((card) => ({ kind: 'DiscardCardAction' as const, seatId, cardInstanceId: card.instanceId }));
+  }
 
   const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }];
   // Cards are played only in the owner's Play phase.

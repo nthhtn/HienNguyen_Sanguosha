@@ -8,6 +8,7 @@ import { requireZoneOfKind } from '../cards/zones';
 import { advancePhaseOrTurn } from '../rules/phaseSequence';
 import { legalTargetListsFor } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
+import { cardsOverHandLimit } from '../rules/handLimit';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -186,6 +187,28 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
 
       const followUp = runAfterTriggers(stateWithPhaseChange, event, ctx, depth);
       return { state: followUp.state, events: [event, ...followUp.events] };
+    }
+
+    case 'DiscardCardAction': {
+      const seat = state.seats.find((s) => s.id === action.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
+      if (state.phase !== 'Discard' || state.turn.ownerSeatId !== action.seatId) {
+        throw new Error('Cards can only be discarded during your Discard phase');
+      }
+      if (cardsOverHandLimit(state, action.seatId) === 0) {
+        throw new Error(`Seat ${action.seatId} is within its hand limit and has nothing to discard`);
+      }
+      const handZone = state.zones.find((z) => z.id === seat.hand.zoneId);
+      if (!handZone?.cards.some((c) => c.instanceId === action.cardInstanceId)) {
+        throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
+      }
+      const discardPile = requireZoneOfKind(state.zones, 'discardPile');
+      return resolveEffectWithTriggers(
+        state,
+        { kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: discardPile.id },
+        ctx,
+        depth
+      );
     }
 
     case 'RevealGeneralAction': {
