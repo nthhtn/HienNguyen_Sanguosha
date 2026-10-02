@@ -137,4 +137,14 @@ describe('resolve with auto-advance', () => {
     expect(phasesOf(events)).not.toContain('seat-a:Discard');
     expect(phasesOf(events)).not.toContain('seat-a:End');
   });
+
+  it('fails loudly when the step bound is exceeded by a long stack of eliminated extra-turn seats', () => {
+    const base = state('Play');
+    const stuck: GameState = {
+      ...base,
+      seats: base.seats.map((s) => (s.id === 'seat-b' ? { ...s, eliminated: true } : s.id === 'seat-a' ? { ...s, eliminated: true } : s)),
+      turn: { ...base.turn, extraTurnStack: Array.from({ length: 40 }, () => 'seat-b') },
+    };
+    expect(() => advanceToDecision(stuck, ctx)).toThrow(/Phases advanced \d+ times without reaching a player decision/);
+  });
 });
