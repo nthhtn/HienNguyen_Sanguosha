@@ -25,10 +25,14 @@ Decisions settled with the user:
 The header (`projects/app/src/app/app.html`) keeps its castle icon and title
 on the left. On the right it gains:
 
-- **▶ Play Game** (`play_arrow` icon) goes to `/game` when a game is in
-  progress (`GameService.state()` is non-null and has no result), otherwise
-  to `/setup`. It is highlighted while the current route is `/setup` or
-  `/game`.
+- **▶ Play Game** (`play_arrow` icon) links to `/play`. That route's guard
+  sends you to `/game` when a game is in progress (`GameService.state()` is
+  non-null and has no result), and to `/setup` otherwise. The guard imports
+  `GameService` lazily, so the engine and content code stay out of the
+  initial bundle. Using it in the shell would add about 250 kB and break the
+  500 kB initial budget. The button is highlighted while the current URL is
+  under `/setup` or `/game`, which the shell reads from the router, not from
+  `GameService`.
 - **📖 Wiki ▾** (`menu_book` icon, `arrow_drop_down`) opens a Material menu
   with four items: Generals, Basic Cards, Equipments, Tools. Each links to
   its page. The button is highlighted while the route starts with `/wiki`,
@@ -43,22 +47,23 @@ for the Wiki. Returning through Play Game resumes it. Bot moves that were
 due keep running in the background, which is acceptable: the game state is
 the same either way.
 
-The menu is presentational. The only state it reads is whether a game is in
-progress, from `GameService`.
+The menu is presentational: it reads only the current URL. Whether a game is
+in progress is decided in the `/play` guard.
 
 ## Routes
 
 ```ts
+{ path: 'play', canActivate: [playRedirect], children: [] }, // always redirects to /game or /setup
 { path: 'wiki', loadChildren: () => import('./wiki/wiki.routes').then((m) => m.WIKI_ROUTES) },
 ```
 
 ```ts
 // projects/app/src/app/wiki/wiki.routes.ts
 export const WIKI_ROUTES: Routes = [
-  { path: 'generals', loadComponent: () => import('./wiki-generals').then((m) => m.WikiGenerals), title: 'Generals' },
-  { path: 'basic', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'basic' }, title: 'Basic Cards' },
-  { path: 'equipment', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'equipment' }, title: 'Equipments' },
-  { path: 'tools', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'trick' }, title: 'Tools' },
+  { path: 'generals', loadComponent: () => import('./wiki-generals').then((m) => m.WikiGenerals) },
+  { path: 'basic', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'basic' } },
+  { path: 'equipment', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'equipment' } },
+  { path: 'tools', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'trick' } },
   { path: '', redirectTo: 'generals', pathMatch: 'full' },
 ];
 ```
@@ -158,8 +163,8 @@ Equipments
 ```
 
 - **Art:** reuse the existing `CardArt` component (`game-board/card-art.ts`)
-  at `large` size on wide screens, and smaller under 600px. It already falls
-  back to a labelled placeholder when there is no art.
+  at `large` size (160 × 220px), which fits a 360px screen when stacked. It
+  already falls back to a labelled placeholder when there is no art.
 - **Badges:**
   - Cards: "In the game" (filled) / "Not in the game yet" (outlined).
   - Generals: "Skills in game" / "Skills not in game yet".
