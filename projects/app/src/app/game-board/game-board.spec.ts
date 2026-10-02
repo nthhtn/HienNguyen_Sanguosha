@@ -233,6 +233,7 @@ describe('GameBoard', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-game-over')).not.toBeNull();
     expect(el.querySelector('app-action-list')).toBeNull();
+    expect(el.querySelector('app-phase-indicator')).toBeNull();
   });
 });
 
@@ -265,6 +266,7 @@ describe('GameBoard in vs-bots mode', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
     expect(el.querySelector('app-general-selection')).not.toBeNull();
+    expect(el.querySelector('app-phase-indicator')).toBeNull();
   });
 
   it('shows a waiting card while the bots choose their generals', () => {
