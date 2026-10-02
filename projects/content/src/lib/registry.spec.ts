@@ -28,7 +28,7 @@ describe('buildContentRegistry', () => {
     expect(skillIds('xiahou-dun')).toEqual(['ferocity']);
     expect(skillIds('sun-shangxiang')).toEqual(['valor']);
     expect(skillIds('zhuge-liang')).toEqual(['insight']);
-    expect(skillIds('dong-zhuo')).toEqual(['tyranny']);
+    expect(skillIds('dong-zhuo')).toEqual([]);
     expect(skillIds('zhao-yun')).toEqual(['vanguard']);
     expect(skillIds('huang-yueying')).toEqual([]);
     expect(skillIds('cao-cao')).toEqual([]);

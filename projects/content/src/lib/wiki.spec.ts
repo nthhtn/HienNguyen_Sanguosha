@@ -14,7 +14,7 @@ describe('wikiGenerals', () => {
 
   it('marks exactly the generals whose skills are coded', () => {
     expect(generals.filter((g) => g.skillsInGame).map((g) => g.id).sort()).toEqual(
-      ['dong-zhuo', 'huang-yueying', 'sun-shangxiang', 'xiahou-dun', 'zhao-yun', 'zhuge-liang']
+      ['huang-yueying', 'sun-shangxiang', 'xiahou-dun', 'zhao-yun', 'zhuge-liang']
     );
   });
 

@@ -1,13 +1,12 @@
 import type { SkillDefinition } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { xiahouDunGeneral, sunShangxiangGeneral, zhugeLiangGeneral } from './setOne';
-import { dongZhuoGeneral, zhaoYunGeneral, huangYueyingGeneral } from './setTwo';
+import { zhaoYunGeneral, huangYueyingGeneral } from './setTwo';
 
 const HAND_CODED: GeneralSkillSet[] = [
   xiahouDunGeneral,
   sunShangxiangGeneral,
   zhugeLiangGeneral,
-  dongZhuoGeneral,
   zhaoYunGeneral,
   huangYueyingGeneral,
 ];

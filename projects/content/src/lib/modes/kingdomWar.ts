@@ -14,9 +14,11 @@ import { buildDeck, drawTop, shuffle } from 'engine';
 const SUITS = ['spade', 'heart', 'club', 'diamond'] as const;
 
 export const GENERALS_PER_SEAT = 5;
+// A real Kingdom War table seats at most 10.
+export const MAX_KINGDOM_WAR_SEATS = 10;
 
 export function kingdomWarMaxSeats(registry: ContentRegistry): number {
-  return Math.floor(registry.generals.size / GENERALS_PER_SEAT);
+  return Math.min(MAX_KINGDOM_WAR_SEATS, Math.floor(registry.generals.size / GENERALS_PER_SEAT));
 }
 
 function hasSameKingdomPair(generalIds: string[], registry: ContentRegistry): boolean {

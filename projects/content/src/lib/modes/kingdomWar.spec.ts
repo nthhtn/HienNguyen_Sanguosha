@@ -1,4 +1,4 @@
-import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT } from './kingdomWar';
+import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT, MAX_KINGDOM_WAR_SEATS } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
 import type { GameState, CardDefinition, ContentRegistry } from 'engine';
@@ -68,12 +68,21 @@ describe('Kingdom War setup and deal', () => {
     expect(c.generalSelection).not.toEqual(a.generalSelection);
   });
 
-  it('caps the table at floor(generals / 5) seats and rejects fewer than 2', () => {
-    expect(kingdomWarMaxSeats(registry)).toBe(5);
-    expect(kingdomWarMode.maxSeats!(registry)).toBe(5);
-    const six = ['a', 'b', 'c', 'd', 'e', 'f'];
-    expect(() => createGame(kingdomWarMode, registry, six, 1)).toThrow(/between 2 and 5 seats/);
-    expect(() => createGame(kingdomWarMode, registry, ['a'], 1)).toThrow(/between 2 and 5 seats/);
+  it('caps the table at 10 seats however large the pool grows', () => {
+    const pool = (n: number) => ({ cards: new Map(), generals: new Map(Array.from({ length: n }, (_, i) => [`g${i}`, {} as never])) });
+    expect(MAX_KINGDOM_WAR_SEATS).toBe(10);
+    expect(kingdomWarMaxSeats(pool(14))).toBe(2);
+    expect(kingdomWarMaxSeats(pool(50))).toBe(10);
+    expect(kingdomWarMaxSeats(pool(57))).toBe(10);
+    expect(kingdomWarMaxSeats(pool(200))).toBe(10);
+  });
+
+  it('caps the table at its seat cap and rejects fewer than 2', () => {
+    expect(kingdomWarMaxSeats(registry)).toBe(10);
+    expect(kingdomWarMode.maxSeats!(registry)).toBe(10);
+    const eleven = Array.from({ length: 11 }, (_, i) => `s${i}`);
+    expect(() => createGame(kingdomWarMode, registry, eleven, 1)).toThrow(/between 2 and 10 seats/);
+    expect(() => createGame(kingdomWarMode, registry, ['a'], 1)).toThrow(/between 2 and 10 seats/);
   });
 
   it('a full selection through resolve seats every seat with a same-kingdom pair and starts turn 1', () => {

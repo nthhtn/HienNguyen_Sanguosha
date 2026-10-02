@@ -1,4 +1,4 @@
-import { dongZhuoGeneral, zhaoYunGeneral, huangYueyingGeneral } from './setTwo';
+import { zhaoYunGeneral, huangYueyingGeneral } from './setTwo';
 import { resolve } from 'engine';
 import type {
   GameState,
@@ -29,7 +29,7 @@ const testDamageCard: CardDefinition = {
 function registry(): ContentRegistry {
   return {
     cards: new Map([['test-heal-self-card', testHealSelfCard], ['test-damage-card', testDamageCard]]),
-    generals: new Map([['dong-zhuo', asDefinition(dongZhuoGeneral)], ['zhao-yun', asDefinition(zhaoYunGeneral)]]),
+    generals: new Map([['zhao-yun', asDefinition(zhaoYunGeneral)]]),
   };
 }
 
@@ -68,64 +68,6 @@ function stateOf(seats: Seat[], zones: CardZone[], ownerSeatId: string): GameSta
     pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
   };
 }
-
-describe('Dong Zhuo — Tyranny', () => {
-  it('reduces healing to this seat by 1', () => {
-    const seats = [seat('seat-a', 0, 'dong-zhuo', 3, 6)];
-    const zones = zonesFor(seats, {
-      'seat-a': [{ instanceId: 'heal-1', definitionId: 'test-heal-self-card', suit: 'spade', rank: 1 }],
-    });
-    const state = stateOf(seats, zones, 'seat-a');
-    const { state: next } = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'heal-1', targets: [] }, { registry: registry(), mode: stubMode() });
-    expect(next.seats.find((s) => s.id === 'seat-a')!.combinedHp).toBe(4); // 3 + (2-1)
-  });
-
-  // Regression guard for the owner mis-attribution bug: `condition`/`effect`
-  // used to re-derive "which seat am I" by searching GameState for the general
-  // id, which always resolved to the first holder — so with two holders the
-  // skill fired twice for one of them (fully cancelling a 2-point heal) and
-  // never for the other. Each holder's copy must now fire exactly once, scoped
-  // to its own seat.
-  it('fires exactly once per holder when two different seats both hold Dong Zhuo', () => {
-    const seats = [
-      seat('seat-a', 0, 'dong-zhuo', 3, 6),
-      seat('seat-b', 1, 'filler2', 3, 6),
-      seat('seat-c', 2, 'dong-zhuo', 3, 6),
-      seat('seat-d', 3, 'filler3', 3, 6),
-    ];
-    const zones = zonesFor(seats, {
-      'seat-a': [{ instanceId: 'heal-a', definitionId: 'test-heal-self-card', suit: 'spade', rank: 1 }],
-      'seat-b': [{ instanceId: 'heal-b', definitionId: 'test-heal-self-card', suit: 'heart', rank: 2 }],
-      'seat-c': [{ instanceId: 'heal-c', definitionId: 'test-heal-self-card', suit: 'club', rank: 3 }],
-    });
-
-    // seat-a's own copy of Tyranny: 2 healing becomes 1.
-    const afterA = resolve(
-      stateOf(seats, zones, 'seat-a'),
-      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'heal-a', targets: [] },
-      { registry: registry(), mode: stubMode() }
-    ).state;
-    expect(afterA.seats.find((s) => s.id === 'seat-a')!.combinedHp).toBe(4); // 3 + (2-1), reduced once — not twice
-    expect(afterA.seats.find((s) => s.id === 'seat-c')!.combinedHp).toBe(3); // untouched
-
-    // seat-c's own copy of Tyranny: independently reduces its own heal by 1.
-    const afterC = resolve(
-      stateOf(seats, zones, 'seat-c'),
-      { kind: 'PlayCardAction', seatId: 'seat-c', cardInstanceId: 'heal-c', targets: [] },
-      { registry: registry(), mode: stubMode() }
-    ).state;
-    expect(afterC.seats.find((s) => s.id === 'seat-c')!.combinedHp).toBe(4); // 3 + (2-1), fired for THIS holder
-    expect(afterC.seats.find((s) => s.id === 'seat-a')!.combinedHp).toBe(3); // untouched
-
-    // A seat holding neither copy heals the full amount.
-    const afterB = resolve(
-      stateOf(seats, zones, 'seat-b'),
-      { kind: 'PlayCardAction', seatId: 'seat-b', cardInstanceId: 'heal-b', targets: [] },
-      { registry: registry(), mode: stubMode() }
-    ).state;
-    expect(afterB.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(5); // 3 + 2, no reduction
-  });
-});
 
 describe('Zhao Yun — Vanguard', () => {
   it('reduces damage by 1 when the source is 2+ seats away', () => {

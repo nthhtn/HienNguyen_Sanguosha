@@ -5,30 +5,6 @@ import type { GeneralSkillSet } from './types';
 // See the note in setOne.ts: "which seat am I" comes from the `owner` context
 // the engine passes in, never from searching GameState for this general's id.
 
-export const dongZhuoGeneral: GeneralSkillSet = {
-  id: 'dong-zhuo',
-  skills: [
-    {
-      id: 'tyranny',
-      activation: 'auto',
-      triggers: [
-        {
-          point: 'before:HealEffect',
-          condition: (_state, subject, owner) => {
-            const effect = subject as Extract<Effect, { kind: 'HealEffect' }>;
-            return !!owner && effect.target.kind === 'seat' && effect.target.seatId === owner.seatId;
-          },
-          effect: (_state, subject) => {
-            const effect = subject as Extract<Effect, { kind: 'HealEffect' }>;
-            const reduced = Math.max(0, effect.amount - 1);
-            return reduced === 0 ? [] : [{ ...effect, amount: reduced }];
-          },
-        },
-      ],
-    },
-  ],
-};
-
 export const zhaoYunGeneral: GeneralSkillSet = {
   id: 'zhao-yun',
   skills: [
