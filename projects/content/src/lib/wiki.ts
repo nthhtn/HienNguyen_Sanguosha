@@ -35,6 +35,8 @@ export interface WikiCard {
   range: number | null;
   count: number | null;
   printings: NonNullable<CardData['printings']>;
+  mount: NonNullable<CardData['mount']> | null;
+  delayed: boolean;
   inGame: boolean;
 }
 
@@ -74,6 +76,8 @@ export function wikiCards(category: WikiCard['category']): WikiCard[] {
       range: data.range ?? null,
       count: data.count ?? null,
       printings: data.printings ?? [],
+      mount: data.mount ?? null,
+      delayed: data.delayed === true,
       inGame: registry.cards.has(id),
     }))
     .sort((a, b) => subtypeRank(a) - subtypeRank(b) || byName(a, b));

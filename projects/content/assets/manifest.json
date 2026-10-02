@@ -314,6 +314,13 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-sun-shangxiang",
     "width": 658
   },
+  "wine": {
+    "crawledAt": "2026-10-02",
+    "height": 975,
+    "localPath": "cards/basic/wine.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wine",
+    "width": 666
+  },
   "wuxie": {
     "crawledAt": "2026-09-24",
     "height": 963,

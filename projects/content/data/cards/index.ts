@@ -26,6 +26,7 @@ import shanBasic from './basic/shan.json';
 import skyScorcherEquipmentWeapon from './equipment/weapon/sky-scorcher.json';
 import stealTrick from './trick/steal.json';
 import stormRunnerEquipmentHorse from './equipment/horse/storm-runner.json';
+import wineBasic from './basic/wine.json';
 import wuxieTrick from './trick/wuxie.json';
 import ziXingEquipmentHorse from './equipment/horse/zi-xing.json';
 
@@ -41,7 +42,9 @@ export interface CardFileData {
   range?: number;
   printings?: CardPrinting[];
   count?: number;
-  source: { url: string; site: string; crawledAt: string };
+  mount?: 'plus' | 'minus'; // horses only: the printed +1 / -1 on the card art
+  delayed?: true; // tools only: a delayed ("Delay Tool") card
+  source: { url: string; site: string; crawledAt: string; expansion?: string; mountFrom?: string };
 }
 
 export interface CardData extends CardFileData {
@@ -78,6 +81,7 @@ export const cardsData: Record<string, CardData> = {
   'sky-scorcher': { ...(skyScorcherEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
   'steal': { ...(stealTrick as CardFileData), category: 'trick' },
   'storm-runner': { ...(stormRunnerEquipmentHorse as CardFileData), category: 'equipment', subtype: 'horse' },
+  'wine': { ...(wineBasic as CardFileData), category: 'basic' },
   'wuxie': { ...(wuxieTrick as CardFileData), category: 'trick' },
   'zi-xing': { ...(ziXingEquipmentHorse as CardFileData), category: 'equipment', subtype: 'horse' },
 };

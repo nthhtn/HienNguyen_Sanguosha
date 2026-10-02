@@ -37,7 +37,7 @@ describe('Wiki pages', () => {
   it('each card route renders its own category (Review Focus 3)', async () => {
     const { harness, el } = await open('/wiki/basic');
     expect(el().querySelector('h2')!.textContent).toBe('Basic Cards');
-    expect(el().querySelectorAll('app-wiki-card-entry')).toHaveLength(3);
+    expect(el().querySelectorAll('app-wiki-card-entry')).toHaveLength(4);
     expect(groupTitles(el())).toEqual([]);
 
     // Same harness: moving Basic -> Tools must not reuse the Basic page.

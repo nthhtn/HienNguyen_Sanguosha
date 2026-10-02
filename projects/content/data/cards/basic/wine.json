@@ -1,0 +1,34 @@
+{
+  "count": 5,
+  "name": "Wine",
+  "nameZh": "酒",
+  "printings": [
+    {
+      "rank": 3,
+      "suit": "spade"
+    },
+    {
+      "rank": 9,
+      "suit": "spade"
+    },
+    {
+      "rank": 3,
+      "suit": "club"
+    },
+    {
+      "rank": 9,
+      "suit": "club"
+    },
+    {
+      "rank": 9,
+      "suit": "diamond"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Army",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wine"
+  },
+  "text": "When a player is on the brink of death, that player can use play wine to restore one health. Also any player can play this card once during their turn. If they do, the damage of the next attack is increased by one."
+}

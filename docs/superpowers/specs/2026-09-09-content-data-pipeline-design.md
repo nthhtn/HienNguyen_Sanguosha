@@ -408,6 +408,12 @@ before this data is treated as fully authoritative:
    include a `trick/delay/` sub-folder that derives a `subtype: 'delay'`,
    which would extend the folder-derived-field rule beyond equipment. Their
    card art is also landscape (974×654), unlike every other card.
+   **Resolved 2026-10-02** (see `2026-10-02-side-nav-and-wiki-tabs-design.md`)
+   with a field, not a folder: `capture.json` and `lightning.json` carry
+   `"delayed": true` (from the spreadsheet's "Delay Tool" type). Horses
+   likewise carry `"mount": "plus" | "minus"`, read from the printed +1/-1
+   on each card's art. Wine (Army expansion) is the first non-Base card, with
+   `source.expansion: "Army"`.
 
 ## Testing strategy
 

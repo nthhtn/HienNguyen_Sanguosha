@@ -31,10 +31,35 @@ describe('wikiGenerals', () => {
 });
 
 describe('wikiCards', () => {
-  it('lists the basic cards by name, all in the game', () => {
+  it('lists the basic cards by name; Wine is not in the game', () => {
     const basic = wikiCards('basic');
-    expect(basic.map((c) => c.name)).toEqual(['Peach', 'Sha', 'Shan']);
-    expect(basic.every((c) => c.inGame && c.category === 'basic')).toBe(true);
+    expect(basic.map((c) => c.name)).toEqual(['Peach', 'Sha', 'Shan', 'Wine']);
+    expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual(['wine']);
+  });
+
+  it('carries Wine from the Army expansion', () => {
+    const wine = wikiCards('basic').find((c) => c.id === 'wine')!;
+    expect(wine).toMatchObject({ name: 'Wine', nameZh: '酒', category: 'basic', count: 5, mount: null, delayed: false });
+    expect(wine.text).toBe(
+      'When a player is on the brink of death, that player can use play wine to restore one health. Also any player can play this card once during their turn. If they do, the damage of the next attack is increased by one.'
+    );
+    expect(wine.printings).toEqual([
+      { suit: 'spade', rank: 3 }, { suit: 'spade', rank: 9 }, { suit: 'club', rank: 3 }, { suit: 'club', rank: 9 }, { suit: 'diamond', rank: 9 },
+    ]);
+  });
+
+  it('records each horse’s mount direction, and nothing else has one', () => {
+    const equipment = wikiCards('equipment');
+    const mountOf = Object.fromEntries(equipment.filter((c) => c.subtype === 'horse').map((c) => [c.id, c.mount]));
+    expect(mountOf).toEqual({
+      'da-yuan': 'minus', 'di-lu': 'plus', 'red-hare': 'minus', 'shadow-runner': 'plus', 'storm-runner': 'plus', 'zi-xing': 'minus',
+    });
+    expect(equipment.filter((c) => c.subtype !== 'horse').every((c) => c.mount === null)).toBe(true);
+  });
+
+  it('marks exactly Capture and Lightning as delayed', () => {
+    expect(wikiCards('trick').filter((c) => c.delayed).map((c) => c.id)).toEqual(['capture', 'lightning']);
+    expect([...wikiCards('basic'), ...wikiCards('equipment')].some((c) => c.delayed)).toBe(false);
   });
 
   it('lists equipment by subtype then name, with only Green Dragon Blade in the game', () => {
