@@ -53,10 +53,11 @@ function cardInstanceIdOf(action: Action): string | undefined {
                   [disabled]="vm.actions.length === 0"
                   (click)="play.emit(vm.actions[0].action)"
                 >
+                  <mat-icon>{{ vm.discarding ? 'delete' : 'play_arrow' }}</mat-icon>
                   @if (vm.discarding) {
-                    <mat-icon>delete</mat-icon> Discard
+                    Discard
                   } @else {
-                    <mat-icon>play_arrow</mat-icon> Play
+                    Play
                   }
                 </button>
               </span>
