@@ -97,25 +97,27 @@ const RECENT_LOG_LINES = 3;
     .discard { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 4px 0; }
     .discard-text { text-align: left; }
     .discard-empty { width: 44px; height: 60px; border: 1px dashed rgb(255 255 255 / 50%); border-radius: 4px; }
-    .seat { position: absolute; transform: translate(-50%, -50%); }
+    .seat { position: absolute; transform: translate(-50%, -50%) scale(var(--crowd, 1)); }
     /* Seat tiles are sized for a full-width table; scale them down in steps as
        the table's container narrows, so rim seats stay on screen and clear of
        the centre. Each step is the old viewport step minus the page's 32px of
        side padding, so the layout without the side panel is unchanged. */
-    @container (max-width: 1247px) { .seat { transform: translate(-50%, -50%) scale(0.8); } }
-    @container (max-width: 991px) { .seat { transform: translate(-50%, -50%) scale(0.66); } .table { margin: 100px auto 90px; } }
-    @container (max-width: 867px) { .seat { transform: translate(-50%, -50%) scale(0.58); } .centre { width: 38%; } }
-    @container (max-width: 767px) { .seat { transform: translate(-50%, -50%) scale(0.5); } .table { margin: 80px auto 70px; } }
-    @container (max-width: 667px) { .seat { transform: translate(-50%, -50%) scale(0.44); } .centre { width: 32%; } }
-    /* More than six seats crowd the rim: shrink every tile further. */
-    .table.crowded .seat { scale: 0.75; }
+    @container (max-width: 1247px) { .seat { transform: translate(-50%, -50%) scale(calc(0.8 * var(--crowd, 1))); } }
+    @container (max-width: 991px) { .seat { transform: translate(-50%, -50%) scale(calc(0.66 * var(--crowd, 1))); } .table { margin: 100px auto 90px; } }
+    @container (max-width: 867px) { .seat { transform: translate(-50%, -50%) scale(calc(0.58 * var(--crowd, 1))); } .centre { width: 38%; } }
+    @container (max-width: 767px) { .seat { transform: translate(-50%, -50%) scale(calc(0.5 * var(--crowd, 1))); } .table { margin: 80px auto 70px; } }
+    @container (max-width: 667px) { .seat { transform: translate(-50%, -50%) scale(calc(0.44 * var(--crowd, 1))); } .centre { width: 32%; } }
+    /* More than six seats crowd the rim: shrink every tile further. The factor
+       multiplies into each step's own scale, after the centring translate, so
+       tiles stay centred on their rim points. */
+    .table.crowded { --crowd: 0.75; }
     @container (max-width: 568px) {
       /* Narrower than its container so rim seats (at 8% / 92%) stay on screen. */
       .table { aspect-ratio: 1; width: 80%; margin: 64px auto 56px; }
       .felt { inset: 12% 8%; border-radius: 24px; }
       .centre { width: 34%; font-size: 0.62em; }
-      .seat { transform: translate(-50%, -50%) scale(0.4); }
-      .table.crowded .seat { scale: 0.7; }
+      .seat { transform: translate(-50%, -50%) scale(calc(0.4 * var(--crowd, 1))); }
+      .table.crowded { --crowd: 0.7; }
     }
   `,
 })
