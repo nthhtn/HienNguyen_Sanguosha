@@ -60,6 +60,7 @@ const end: Action = { kind: 'EndPhaseAction', seatId: 'seat-0' };
 const play = (instanceId: string, target?: string): Action => ({
   kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: instanceId, targets: target ? [{ kind: 'seat', seatId: target }] : [],
 });
+const discard = (instanceId: string): Action => ({ kind: 'DiscardCardAction', seatId: 'seat-0', cardInstanceId: instanceId });
 const decide = (v: GameState, legal: Action[], memory = null as Parameters<typeof ruleBasedPolicy.decide>[4]) =>
   ruleBasedPolicy.decide(v, 'seat-0', legal, registry, memory);
 
@@ -85,9 +86,33 @@ describe('ruleBasedPolicy', () => {
     expect(decide(view({ pendingFor: 'seat-0' }), [pass]).action).toBe(pass);
   });
 
-  it('ends the phase outside the Play phase', () => {
-    const legal = [play('c-sha', 'seat-1'), end];
-    expect(decide(view({ phase: 'Draw', hand: [{ instanceId: 'c-sha', definitionId: 'sha' }] }), legal).action).toBe(end);
+  describe('in the Discard phase', () => {
+    const hand = (...ids: [string, string][]) => ids.map(([instanceId, definitionId]) => ({ instanceId, definitionId }));
+
+    it('discards a trick before equipment, Sha, Shan or Peach', () => {
+      const h = hand(['p', 'peach'], ['s', 'sha'], ['d', 'duel'], ['e', 'shan'], ['b', 'blade']);
+      const legal = h.map((c) => discard(c.instanceId));
+      expect(decide(view({ phase: 'Discard', hand: h }), legal).action).toEqual(discard('d'));
+    });
+
+    it('keeps Peach longest, then Shan, then Sha, then equipment', () => {
+      const pick = (h: { instanceId: string; definitionId: string }[]) =>
+        decide(view({ phase: 'Discard', hand: h }), h.map((c) => discard(c.instanceId))).action;
+      expect(pick(hand(['p', 'peach'], ['e', 'shan']))).toEqual(discard('e'));
+      expect(pick(hand(['e', 'shan'], ['s', 'sha']))).toEqual(discard('s'));
+      expect(pick(hand(['s', 'sha'], ['b', 'blade']))).toEqual(discard('b'));
+    });
+
+    it('breaks ties by hand order', () => {
+      const h = hand(['d1', 'duel'], ['d2', 'duel']);
+      expect(decide(view({ phase: 'Discard', hand: h }), h.map((c) => discard(c.instanceId))).action).toEqual(discard('d1'));
+    });
+
+    it('still discards when the per-turn safety cap is reached (Review Focus 5)', () => {
+      const h = hand(['d1', 'duel'], ['p', 'peach']);
+      const memory = { turnNumber: 1, shaPlayed: 0, actionsThisTurn: MAX_BOT_ACTIONS_PER_TURN };
+      expect(decide(view({ phase: 'Discard', hand: h }), h.map((c) => discard(c.instanceId)), memory).action).toEqual(discard('d1'));
+    });
   });
 
   it('ends the phase once the per-turn safety cap is reached', () => {

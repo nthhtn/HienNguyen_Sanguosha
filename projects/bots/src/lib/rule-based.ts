@@ -3,6 +3,7 @@ import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from 
 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
 type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
+type DiscardCard = Extract<Action, { kind: 'DiscardCardAction' }>;
 
 function definitionIdOf(view: GameState, cardInstanceId: string): string | undefined {
   for (const zone of view.zones) {
@@ -26,6 +27,16 @@ function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitio
     .filter((t): t is { play: PlayCard; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
     .sort((a, b) => a.target.combinedHp - b.target.combinedHp || a.target.index - b.target.index)
     .map((t) => t.play);
+}
+
+// Higher = keep longer. Peach saves a life, Shan blocks a Sha, Sha attacks.
+function keepRank(view: GameState, registry: ContentRegistry, cardInstanceId: string): number {
+  const definitionId = definitionIdOf(view, cardInstanceId);
+  if (definitionId === 'peach') return 4;
+  if (definitionId === 'shan') return 3;
+  if (definitionId === 'sha') return 2;
+  if (definitionId && registry.cards.get(definitionId)?.category === 'equipment') return 1;
+  return 0;
 }
 
 function decide(
@@ -59,11 +70,19 @@ function decide(
     if (answer) return take(answer);
   }
 
+  // 3. Discard phase: lose the least useful card first, first in hand on ties.
+  const discards = legal.filter((a): a is DiscardCard => a.kind === 'DiscardCardAction');
+  if (discards.length > 0) {
+    return take(
+      discards.reduce((best, a) =>
+        keepRank(view, registry, a.cardInstanceId) < keepRank(view, registry, best.cardInstanceId) ? a : best
+      )
+    );
+  }
+
   const endPhase = legal.find((a) => a.kind === 'EndPhaseAction');
-  // 3. Safety cap.
+  // 4. Safety cap.
   if (endPhase && mem.actionsThisTurn >= MAX_BOT_ACTIONS_PER_TURN) return take(endPhase);
-  // 4. Nothing to do outside the Play phase.
-  if (view.phase !== 'Play' && endPhase) return take(endPhase);
 
   // 5. Play phase.
   const self = view.seats.find((s) => s.id === seatId);
