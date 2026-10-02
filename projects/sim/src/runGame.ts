@@ -15,7 +15,8 @@ export function runGame(
   ctx: EngineContext,
   botRngSeed: number,
   maxActions = 2000,
-  botKind: BotKind = 'random'
+  botKind: BotKind = 'random',
+  onStep?: (state: GameState) => void
 ): RunGameResult {
   let state = initialState;
   let botRng = createRng(botRngSeed);
@@ -36,6 +37,7 @@ export function runGame(
       action = decision.action;
     }
     state = resolve(state, action, ctx).state;
+    onStep?.(state);
     actionsSubmitted++;
   }
   return { finalState: state, actionsSubmitted };

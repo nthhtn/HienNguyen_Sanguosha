@@ -1,4 +1,4 @@
-import { checkInvariants } from './invariants';
+import { checkInvariants, checkRestingState } from './invariants';
 import type { CardInstance, GameState } from 'engine';
 
 function card(instanceId: string): CardInstance {
@@ -154,5 +154,38 @@ describe('equipment slot invariant', () => {
 
   it('accepts one card in each of two slots', () => {
     expect(checkInvariants(baseState({ zones: [equipZone(['blade', 'lion'])] }), registry)).toEqual([]);
+  });
+});
+
+describe('checkRestingState', () => {
+  function restingState(phase: GameState['phase'], handSize = 0, combinedHp = 4): GameState {
+    const base = baseState();
+    return {
+      ...base,
+      seats: [{ ...base.seats[0], combinedHp, maxCombinedHp: 4 }],
+      turn: { turnNumber: 3, ownerSeatId: 'seat-a', extraTurnStack: [] },
+      phase,
+      zones: [{
+        id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a',
+        cards: Array.from({ length: handSize }, (_, i) => card(`c${i}`)),
+      }],
+    };
+  }
+
+  it('accepts Play, an over-limit Discard, and general selection', () => {
+    expect(checkRestingState(restingState('Play'))).toEqual([]);
+    expect(checkRestingState(restingState('Discard', 6, 4))).toEqual([]);
+    expect(checkRestingState(restingState('GeneralSelection'))).toEqual([]);
+  });
+
+  it('flags a game resting in a phase with no decision to make', () => {
+    expect(checkRestingState(restingState('Draw'))).toEqual([
+      "Game is resting in seat-a's Draw phase (turn 3) with no decision to make",
+    ]);
+    expect(checkRestingState(restingState('Discard', 2, 4))).toHaveLength(1);
+  });
+
+  it('accepts any phase once the game has ended', () => {
+    expect(checkRestingState({ ...restingState('Draw'), result: { endedAt: 3, winningSeatIds: [], losingSeatIds: [] } })).toEqual([]);
   });
 });

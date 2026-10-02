@@ -1,3 +1,4 @@
+import { phaseWaitsForPlayer } from 'engine';
 import type { ContentRegistry, GameState } from 'engine';
 
 export function checkInvariants(state: GameState, registry?: ContentRegistry): string[] {
@@ -92,4 +93,14 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
   }
 
   return violations;
+}
+
+// Between actions the engine must only ever rest where someone has to decide.
+export function checkRestingState(state: GameState): string[] {
+  if (state.result || state.pendingResponse || state.phase === 'GeneralSelection' || phaseWaitsForPlayer(state)) {
+    return [];
+  }
+  return [
+    `Game is resting in ${state.turn.ownerSeatId}'s ${state.phase} phase (turn ${state.turn.turnNumber}) with no decision to make`,
+  ];
 }
