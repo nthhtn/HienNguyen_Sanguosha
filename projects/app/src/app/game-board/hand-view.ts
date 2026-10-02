@@ -124,6 +124,7 @@ export class HandView {
   readonly actions = input.required<Action[]>();
   readonly state = input.required<GameState>();
   readonly registry = input.required<ContentRegistry>();
+  readonly viewerSeatId = input<string | null>(null);
   readonly play = output<Action>();
 
   private readonly dialog = inject(MatDialog);
@@ -138,7 +139,7 @@ export class HandView {
         name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name),
         actions,
         discarding: actions.some((a) => a.action.kind === 'DiscardCardAction'),
-        disabledReason: actions.length > 0 ? '' : this.state().phase !== 'Play' ? 'Only in your Play phase' : "Can't be played now",
+        disabledReason: actions.length > 0 ? '' : this.state().turn.ownerSeatId !== this.viewerSeatId() || this.state().phase !== 'Play' ? 'Only in your Play phase' : "Can't be played now",
       };
     })
   );

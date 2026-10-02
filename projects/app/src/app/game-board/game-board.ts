@@ -62,6 +62,7 @@ import { PhaseIndicator } from './phase-indicator';
                 [actions]="gameService.legalActions()"
                 [state]="visible"
                 [registry]="gameService.registry"
+                [viewerSeatId]="viewerSeatId()"
                 (play)="submit($event)"
               />
             </section>

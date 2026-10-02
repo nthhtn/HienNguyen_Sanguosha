@@ -50,6 +50,7 @@ describe('HandView', () => {
     fixture.componentRef.setInput('actions', [shaAtSeat1, shaAtSeat2, equipBow, endPhase]);
     fixture.componentRef.setInput('state', state());
     fixture.componentRef.setInput('registry', registry);
+    fixture.componentRef.setInput('viewerSeatId', 'seat-0');
     played = [];
     fixture.componentInstance.play.subscribe((a) => played.push(a));
     fixture.detectChanges();
@@ -131,6 +132,13 @@ describe('HandView', () => {
 
     fixture.componentRef.setInput('actions', []);
     fixture.componentRef.setInput('state', { ...state(), phase: 'Discard' });
+    fixture.detectChanges();
+    expect(tooltipFor('c-sha').message).toBe('Only in your Play phase');
+  });
+
+  it('says "Only in your Play phase" during another seat\'s Play phase', () => {
+    fixture.componentRef.setInput('actions', []);
+    fixture.componentRef.setInput('state', { ...state(), turn: { turnNumber: 1, ownerSeatId: 'seat-1', extraTurnStack: [] } });
     fixture.detectChanges();
     expect(tooltipFor('c-sha').message).toBe('Only in your Play phase');
   });
