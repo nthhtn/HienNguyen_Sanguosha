@@ -1,0 +1,30 @@
+{
+  "maxHp": 3,
+  "name": "Zhuge Liang",
+  "nameZh": "诸葛亮",
+  "skills": [
+    {
+      "name": "Eight Arrays",
+      "nameZh": "八阵",
+      "text": "If Zhuge Liang has no armor equipped, he has the protection of the Eight Trigrams."
+    },
+    {
+      "name": "Fire Strategy",
+      "nameZh": "火计",
+      "text": "Zhuge Liang can use any of his red hand cards as a Blaze."
+    },
+    {
+      "name": "See Through",
+      "nameZh": "看破",
+      "text": "Zhuge Liang can use any of his black hand cards as a Negate."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Fire",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-zhuge-liang"
+  },
+  "title": "Sleeping Dragon",
+  "titleZh": "卧龙"
+}

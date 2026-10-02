@@ -1,0 +1,25 @@
+{
+  "maxHp": 3,
+  "name": "Xiao Qiao",
+  "nameZh": "小乔",
+  "skills": [
+    {
+      "name": "Fantasy",
+      "nameZh": "天香",
+      "text": "When Xiao Qiao receives damage, she may discard a heart card and pass the damage to any other character. That character then draws X cards, where X is the number of health points they are missing after the damage is passed."
+    },
+    {
+      "name": "Beauty",
+      "nameZh": "红颜",
+      "text": "All of Xiao Qiao's spades are treated as hearts."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Wind",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-xiao-qiao"
+  },
+  "title": "Unconventional Flower",
+  "titleZh": "矫情之花"
+}

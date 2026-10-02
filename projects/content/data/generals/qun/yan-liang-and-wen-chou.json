@@ -1,0 +1,20 @@
+{
+  "maxHp": 4,
+  "name": "Yan Liang and Wen Chou",
+  "nameZh": "颜良 & 文丑",
+  "skills": [
+    {
+      "name": "Dueling Heroes",
+      "nameZh": "双雄",
+      "text": "During Yan Liang and Wen Chou's drawing phase, they can choose to not draw. Instead, they perform a judgment. The card is then put into their hand. For the rest of their turn, all of the opposite-colored hand cards can be used as Duel."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Fire",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-yan-liang-and-wen-chou"
+  },
+  "title": "Tiger and Wolf Brothers",
+  "titleZh": "虎狼兄弟"
+}

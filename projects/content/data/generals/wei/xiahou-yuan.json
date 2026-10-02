@@ -1,0 +1,20 @@
+{
+  "maxHp": 4,
+  "name": "Xiahou Yuan",
+  "nameZh": "夏侯渊",
+  "skills": [
+    {
+      "name": "Godspeed",
+      "nameZh": "神速",
+      "text": "During his turn, Xiahou Yuan can exercise either or both of the following options to attack any character regardless of their distance from him: Skip his judgment and drawing phases. Skip his action phase and discard any equipment card."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Wind",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-xiahou-yuan"
+  },
+  "title": "Running Cheetah",
+  "titleZh": "急行的猎豹"
+}

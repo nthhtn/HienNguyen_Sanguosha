@@ -1,0 +1,25 @@
+{
+  "maxHp": 4,
+  "name": "Zhu Rong",
+  "nameZh": "祝融",
+  "skills": [
+    {
+      "name": "Giant Elephant",
+      "nameZh": "巨象",
+      "text": "Whenever another character plays Barbarians, Zhu Rong is not affected. After all other effects have concluded, Zhu Rong places the card in her hand."
+    },
+    {
+      "name": "Intense Edge",
+      "nameZh": "烈刃",
+      "text": "Whenever Zhu Rong damages another character with an attack, she can compete with the character. If she wins, she can take one of their cards and place it in her hand."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Forest",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-zhu-rong"
+  },
+  "title": "Queen of the Wilds",
+  "titleZh": "野性的女王"
+}

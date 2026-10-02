@@ -1,0 +1,25 @@
+{
+  "maxHp": 3,
+  "name": "Pang Tong",
+  "nameZh": "庞统",
+  "skills": [
+    {
+      "name": "Shackle",
+      "nameZh": "连环",
+      "text": "Pang Tong can use any club hand card to Chain two people together or activate the redraw function."
+    },
+    {
+      "name": "Nirvana",
+      "nameZh": "涅槃",
+      "text": "Once per game, when Pang Tong is on the brink of death, he may discard all of his cards, draw three new ones, and return with three units of health."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Fire",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-pang-tong"
+  },
+  "title": "Young Phoenix",
+  "titleZh": "凤雏"
+}

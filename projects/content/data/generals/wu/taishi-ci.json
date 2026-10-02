@@ -1,0 +1,20 @@
+{
+  "maxHp": 4,
+  "name": "Taishi Ci",
+  "nameZh": "太史慈",
+  "skills": [
+    {
+      "name": "Heaven's Justice",
+      "nameZh": "天义",
+      "text": "Once per turn, Taishi Ci can compete with any character. If he wins, he can use an additional Attack, with each attack having unlimited range and the ability to target an additional player. If Taishi Ci loses, he cannot attack that turn."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Fire",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-taishi-ci"
+  },
+  "title": "Strong and Faithful Warrior",
+  "titleZh": "万烈之士"
+}

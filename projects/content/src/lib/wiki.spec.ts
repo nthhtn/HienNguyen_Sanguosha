@@ -4,10 +4,11 @@ describe('wikiGenerals', () => {
   const generals = wikiGenerals();
 
   it('lists every general with data, grouped by kingdom then sorted by name', () => {
-    expect(generals).toHaveLength(26);
+    expect(generals).toHaveLength(57);
     expect([...new Set(generals.map((g) => g.kingdom))]).toEqual(['Wei', 'Shu', 'Wu', 'Qun']);
     expect(generals.filter((g) => g.kingdom === 'Wei').map((g) => g.name)).toEqual([
-      'Cao Cao', 'Guo Jia', 'Sima Yi', 'Xiahou Dun', 'Xu Chu', 'Zhang Liao', 'Zhen Ji',
+      'Cao Cao', 'Cao Pi', 'Cao Ren', 'Deng Ai', 'Dian Wei', 'Guo Jia', 'Sima Yi', 'Xiahou Dun',
+      'Xiahou Yuan', 'Xu Chu', 'Xu Huang', 'Xun Yu', 'Zhang He', 'Zhang Liao', 'Zhen Ji',
     ]);
   });
 
@@ -27,6 +28,42 @@ describe('wikiGenerals', () => {
 
   it('Lu Meng has no Chinese name (Review Focus 2)', () => {
     expect(generals.find((g) => g.id === 'lu-meng')!.nameZh).toBeNull();
+  });
+
+  it('includes every Wind, Fire, Forest and Mountain general of the four kingdoms', () => {
+    const ids = new Set(generals.map((g) => g.id));
+    for (const id of [
+      'xiahou-yuan', 'cao-ren', 'dian-wei', 'xun-yu', 'xu-huang', 'cao-pi', 'zhang-he', 'deng-ai',
+      'huang-zhong', 'wei-yan', 'pang-tong', 'fire-zhuge-liang', 'meng-huo', 'zhu-rong', 'jiang-wei', 'liu-shan',
+      'xiao-qiao', 'zhou-tai', 'taishi-ci', 'sun-jian', 'lu-su', 'sun-ce', 'zhang-zhao-and-zhang-hong',
+      'zhang-jiao', 'yu-ji', 'yuan-shao', 'yan-liang-and-wen-chou', 'pang-de', 'dong-zhuo', 'jia-xu', 'zuo-ci', 'cai-wenji',
+    ]) {
+      expect(ids.has(id)).toBe(true);
+    }
+    expect(generals.every((g) => g.maxHp !== null)).toBe(true);
+  });
+
+  it('keeps both Zhuge Liangs apart (Review Focus 3)', () => {
+    const base = generals.find((g) => g.id === 'zhuge-liang')!;
+    const fire = generals.find((g) => g.id === 'fire-zhuge-liang')!;
+    expect([base.name, fire.name]).toEqual(['Zhuge Liang', 'Zhuge Liang']);
+    expect(fire).toMatchObject({ kingdom: 'Shu', title: 'Sleeping Dragon', titleZh: '卧龙', maxHp: 3 });
+    expect(base.title).not.toBe(fire.title);
+  });
+
+  it('replaces the placeholder Dong Zhuo with the Forest one', () => {
+    const dongZhuo = generals.find((g) => g.id === 'dong-zhuo')!;
+    expect(dongZhuo).toMatchObject({ kingdom: 'Qun', maxHp: 8 });
+    expect(dongZhuo.skills.map((s) => s.name)).not.toContain('Tyranny');
+  });
+
+  it('copies skills verbatim from the page', () => {
+    const xiahouYuan = generals.find((g) => g.id === 'xiahou-yuan')!;
+    expect(xiahouYuan).toMatchObject({ name: 'Xiahou Yuan', nameZh: '夏侯渊', title: 'Running Cheetah', titleZh: '急行的猎豹', maxHp: 4 });
+    expect(xiahouYuan.skills).toEqual([{
+      name: 'Godspeed', nameZh: '神速',
+      text: 'During his turn, Xiahou Yuan can exercise either or both of the following options to attack any character regardless of their distance from him: Skip his judgment and drawing phases. Skip his action phase and discard any equipment card.',
+    }]);
   });
 });
 

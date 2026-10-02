@@ -388,6 +388,10 @@ before this data is treated as fully authoritative:
      high-HP Ruler variant there). The current value appears to have been an
      arbitrary simplification made during original implementation, not
      sourced from any real printing.
+     **Resolved 2026-10-02** (see `2026-10-02-expansion-generals-design.md`):
+     `qun/dong-zhuo.json` now holds the crawled Forest Dong Zhuo (HP 8 from the
+     AllGenerals spreadsheet, real skills, `source.expansion: "Forest"`), and the
+     invented Tyranny skill code is removed.
    - `projects/content/src/lib/cards/equipment.ts`'s "Silver Lion" is not a
      real Base-set (or apparently any-expansion) card name found anywhere on
      the source site or its spreadsheets.

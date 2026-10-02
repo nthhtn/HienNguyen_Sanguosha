@@ -11,8 +11,8 @@ describe('generalDisplayData', () => {
     });
   });
 
-  it('returns a null title when the data has none', () => {
-    expect(generalDisplayData('dong-zhuo')!.title).toBeNull();
+  it("returns the data file's title for an expansion general", () => {
+    expect(generalDisplayData('fire-zhuge-liang')!.title).toBe('Sleeping Dragon');
   });
 
   it('returns null for an unknown id', () => {

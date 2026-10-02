@@ -1,0 +1,25 @@
+{
+  "maxHp": 4,
+  "name": "Pang De",
+  "nameZh": "庞德",
+  "skills": [
+    {
+      "name": "Horsemanship",
+      "nameZh": "马术",
+      "text": "Pang De always has a bonus -1 horse."
+    },
+    {
+      "name": "Sudden Attack",
+      "nameZh": "猛进",
+      "text": "Whenever Pang De attacks and the target uses an Escape, Pang De can choose a card from the target and discard it."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Fire",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-pang-de"
+  },
+  "title": "Man and Horse as One",
+  "titleZh": "人马一体"
+}

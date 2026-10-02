@@ -1,0 +1,20 @@
+{
+  "maxHp": 4,
+  "name": "Xu Huang",
+  "nameZh": "徐晃",
+  "skills": [
+    {
+      "name": "Blockade",
+      "nameZh": "断粮",
+      "text": "Xu Huang can use any black-suited basic or equipment card as Starvation. Additionally, his range with respect to the use of Starvation is increased by one."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Forest",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-xu-huang"
+  },
+  "title": "Zhou Yafu of Old",
+  "titleZh": "周亚夫之风"
+}

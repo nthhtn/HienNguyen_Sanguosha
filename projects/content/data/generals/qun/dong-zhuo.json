@@ -1,16 +1,35 @@
 {
-  "maxHp": 4,
+  "maxHp": 8,
   "name": "Dong Zhuo",
+  "nameZh": "董卓",
   "skills": [
     {
-      "name": "Tyranny",
-      "nameZh": "",
-      "text": "Whenever Dong Zhuo would recover health, he recovers 1 less."
+      "name": "Wine",
+      "nameZh": "酒池",
+      "text": "Dong Zhuo can use any spade card in his hand as Wine."
+    },
+    {
+      "name": "Garden of Lust",
+      "nameZh": "肉林",
+      "text": "Whenever Dong Zhuo attacks or is attacked by a female, the target must use an additional Escape to avoid damage."
+    },
+    {
+      "name": "Collapse",
+      "nameZh": "崩坏",
+      "text": "At the end of Dong Zhuo's turn, if he has more health than any other character, he must either lose one health or reduce his maximum health limit by one."
+    },
+    {
+      "name": "Violent Tyrant",
+      "nameZh": "暴虐",
+      "text": "King Ability: When another character deals damage to a player, they may allow Dong Zhuo to flip a judgment card. If it is a spade, Dong Zhuo heals one health."
     }
   ],
   "source": {
-    "crawledAt": "2026-09-30",
-    "site": "Hand-coded content migrated from projects/content/src/lib/generals/setTwo.ts (not a base-set general; maxHp carried forward as-is, see the content data pipeline spec's Open Items)",
-    "url": ""
-  }
+    "crawledAt": "2026-10-02",
+    "expansion": "Forest",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-dong-zhuo"
+  },
+  "title": "Daemon King",
+  "titleZh": "魔王"
 }

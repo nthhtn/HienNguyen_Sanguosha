@@ -1,0 +1,30 @@
+{
+  "maxHp": 3,
+  "name": "Jia Xu",
+  "nameZh": "贾诩",
+  "skills": [
+    {
+      "name": "Complete Kill",
+      "nameZh": "完杀",
+      "text": "During Jia Xu's turn, only Jia Xu and players on the brink of death can use Peach."
+    },
+    {
+      "name": "Upheaval",
+      "nameZh": "乱武",
+      "text": "Once per game, Jia Xu can force all other players to attack a player within their range. If a player does not, they lose one health."
+    },
+    {
+      "name": "Curtain",
+      "nameZh": "帷幕",
+      "text": "Jia Xu cannot be targeted by black tool cards."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Forest",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-jia-xu"
+  },
+  "title": "Cold and Hardened Intellectual",
+  "titleZh": "冷酷的毒士"
+}

@@ -1,0 +1,20 @@
+{
+  "maxHp": 4,
+  "name": "Huang Zhong",
+  "nameZh": "黄忠",
+  "skills": [
+    {
+      "name": "Strong Bow",
+      "nameZh": "烈弓",
+      "text": "When Huang Zhong attacks another character during his turn, he can make the attack unblockable if either of the following two conditions are true: Huang Zhong's attack range is greater than or equal to the number of cards in the target's hand. The amount of health that Huang Zhong has is less than or equal to the number of cards in the target's hand."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Wind",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-huang-zhong"
+  },
+  "title": "Old but Strong",
+  "titleZh": "老当益壮"
+}

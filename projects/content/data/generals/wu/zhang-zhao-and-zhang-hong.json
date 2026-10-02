@@ -1,0 +1,25 @@
+{
+  "maxHp": 3,
+  "name": "Zhang Zhao and Zhang Hong",
+  "nameZh": "张昭 & 张紘",
+  "skills": [
+    {
+      "name": "Direct Instruction",
+      "nameZh": "直谏",
+      "text": "As many times as they would like during their turn, Zhang Zhao and Zhang Hong can place a piece of equipment from their hand in the equipment area of another character. They cannot replace a piece of equipment. For each piece of equipment that they place in another character's equipment area, Zhang Zhao and Zhang Hong draw one card."
+    },
+    {
+      "name": "Stubborn",
+      "nameZh": "固执",
+      "text": "At the end of another character's discard phase, Zhang Zhao and Zhang Hong can return one of the cards that they discarded into their hand. Zhang Zhao and Zhang Hong can then place all other discarded cards in their hand."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Mountain",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-zhang-zhao-and-zhang-hong"
+  },
+  "title": "Managers of Heaven and Earth",
+  "titleZh": "经天纬地"
+}

@@ -1,0 +1,20 @@
+{
+  "maxHp": 4,
+  "name": "Zhang He",
+  "nameZh": "张郃",
+  "skills": [
+    {
+      "name": "Clever Change",
+      "nameZh": "巧变",
+      "text": "At the beginning of his judgement, drawing, action, or discard phases, Zhang He can discard a hand card to skip the phase. If Zhang He skips his drawing phase with this ability, he can select up to two characters and draw one hand card from each. If Zhang He skips his action phase in this manner, he can select one piece of equipment or pending delay tool card on one character and place it in an identical location on another character. If he moves equipment in this manner, he cannot use it to replace another similar piece of equipment on another character."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Mountain",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-zhang-he"
+  },
+  "title": "Anticipating Military General",
+  "titleZh": "料敌机先"
+}

@@ -8,9 +8,9 @@ describe('buildContentRegistry', () => {
     );
   });
 
-  it('builds every data-driven general: 25 base-set plus the migrated Dong Zhuo', () => {
+  it('builds every data-driven general: 25 Base, 32 from the expansions (Forest Dong Zhuo replaces the placeholder)', () => {
     const registry = buildContentRegistry();
-    expect(registry.generals.size).toBe(26);
+    expect(registry.generals.size).toBe(57);
     expect(registry.generals.has('cao-cao')).toBe(true);
     expect(registry.generals.has('dong-zhuo')).toBe(true);
   });
@@ -19,7 +19,7 @@ describe('buildContentRegistry', () => {
     const registry = buildContentRegistry();
     expect(registry.generals.get('zhao-yun')!.kingdom).toBe('Shu');
     expect(registry.generals.get('cao-cao')).toMatchObject({ kingdom: 'Wei', maxHp: 4 });
-    expect(registry.generals.get('dong-zhuo')).toMatchObject({ kingdom: 'Qun', maxHp: 4 });
+    expect(registry.generals.get('dong-zhuo')).toMatchObject({ kingdom: 'Qun', maxHp: 8 });
   });
 
   it('attaches hand-coded skills by id and gives data-only generals no skills', () => {
