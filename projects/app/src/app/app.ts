@@ -1,5 +1,5 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { Component, computed, inject, signal } from '@angular/core';
+import { afterNextRender, Component, computed, ElementRef, inject, Injector, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -15,7 +15,7 @@ const WIDE = '(min-width: 1024px)';
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
-  host: { '(document:keydown.escape)': 'navOpen.set(false)' },
+  host: { '(document:keydown.escape)': 'dismissDrawer()' },
 })
 export class App {
   protected readonly title = signal('Kingdom War');
@@ -44,6 +44,25 @@ export class App {
   );
   protected readonly playActive = computed(() => /^\/(setup|game)(\/|$|\?)/.test(this.url()));
 
+  private readonly injector = inject(Injector);
+  private readonly toggle = viewChild('toggle', { read: ElementRef });
+  private readonly firstLink = viewChild('firstLink', { read: ElementRef });
+
+  // Opening moves focus into the drawer, once it is no longer inert.
+  protected openDrawer(): void {
+    this.navOpen.set(true);
+    afterNextRender(() => (this.firstLink()?.nativeElement as HTMLElement | undefined)?.focus(), { injector: this.injector });
+  }
+
+  // Escape or the backdrop: close and hand focus back to the menu button, so
+  // keyboard and screen-reader users don't lose their place.
+  protected dismissDrawer(): void {
+    if (!this.navOpen()) return;
+    this.navOpen.set(false);
+    afterNextRender(() => (this.toggle()?.nativeElement as HTMLElement | undefined)?.focus(), { injector: this.injector });
+  }
+
+  // Choosing a link navigates away, so focus follows the new page instead.
   protected closeDrawer(): void {
     this.navOpen.set(false);
   }

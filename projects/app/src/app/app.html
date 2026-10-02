@@ -1,6 +1,6 @@
 <mat-toolbar class="app-bar">
   @if (!wide()) {
-    <button mat-icon-button type="button" class="nav-toggle" aria-label="Open navigation" [attr.aria-expanded]="navOpen()" (click)="navOpen.set(true)">
+    <button #toggle mat-icon-button type="button" class="nav-toggle" aria-label="Open navigation" aria-controls="side-nav" [attr.aria-expanded]="navOpen()" (click)="openDrawer()">
       <mat-icon>menu</mat-icon>
     </button>
   }
@@ -9,12 +9,12 @@
 </mat-toolbar>
 <div class="shell" [class.wide]="wide()">
   @if (!wide() && navOpen()) {
-    <div class="nav-backdrop" (click)="navOpen.set(false)"></div>
+    <div class="nav-backdrop" (click)="dismissDrawer()"></div>
   }
-  <aside class="side-nav" [class.open]="wide() || navOpen()" [attr.inert]="wide() || navOpen() ? null : ''">
+  <aside id="side-nav" class="side-nav" [class.open]="wide() || navOpen()" [attr.inert]="wide() || navOpen() ? null : ''">
     <nav aria-label="Main">
       <mat-nav-list>
-        <a mat-list-item class="nav-play" routerLink="/play" [activated]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" (click)="closeDrawer()">
+        <a #firstLink mat-list-item class="nav-play" routerLink="/play" [activated]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" (click)="closeDrawer()">
           <mat-icon matListItemIcon>play_arrow</mat-icon>
           <span matListItemTitle>Play Game</span>
         </a>

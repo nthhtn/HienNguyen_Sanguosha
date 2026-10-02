@@ -104,6 +104,22 @@ describe('App shell', () => {
       expect(el.querySelector('.nav-backdrop')).toBeNull();
     });
 
+    it('moves focus into the drawer when it opens, and back to the menu button when dismissed', async () => {
+      const { el, refresh } = await render();
+      (el.querySelector('button.nav-toggle') as HTMLButtonElement).click();
+      await refresh();
+      expect(document.activeElement).toBe(el.querySelector('a.nav-play'));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      await refresh();
+      expect(document.activeElement).toBe(el.querySelector('button.nav-toggle'));
+
+      (el.querySelector('button.nav-toggle') as HTMLButtonElement).click();
+      await refresh();
+      (el.querySelector('.nav-backdrop') as HTMLElement).click();
+      await refresh();
+      expect(document.activeElement).toBe(el.querySelector('button.nav-toggle'));
+    });
+
     it('closes the drawer from the backdrop and from Escape', async () => {
       const { el, refresh } = await render();
       (el.querySelector('button.nav-toggle') as HTMLButtonElement).click();
