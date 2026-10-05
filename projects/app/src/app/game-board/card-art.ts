@@ -36,6 +36,8 @@ import { cardArtUrl } from 'content';
     .card-art.small {
       height: 60px;
       width: 44px;
+      /* Exactly fills a 44×60 equipment slot, border included. */
+      box-sizing: border-box;
     }
 
     .card-art-placeholder {

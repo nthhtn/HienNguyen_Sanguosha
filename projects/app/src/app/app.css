@@ -13,6 +13,12 @@
 .content {
   padding: 0 16px 16px;
 }
+.spacer {
+  flex: 1;
+}
+.music-toggle {
+  color: var(--mat-sys-on-primary);
+}
 /* Straight after the title, on the left. */
 .nav {
   margin-left: 12px;

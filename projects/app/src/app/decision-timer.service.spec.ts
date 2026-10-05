@@ -1,0 +1,205 @@
+import { DestroyRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { Action, cardsOverHandLimit } from 'engine';
+import { DECISION_SECONDS, DecisionTimer } from './decision-timer.service';
+import { GameService } from './game.service';
+
+// A stand-in for the board's DestroyRef, to attach and later detach.
+function boardLifetime() {
+  const callbacks: (() => void)[] = [];
+  const ref = { onDestroy: (fn: () => void) => (callbacks.push(fn), () => undefined) } as unknown as DestroyRef;
+  return { ref, destroy: () => callbacks.forEach((fn) => fn()) };
+}
+
+describe('DecisionTimer', () => {
+  let game: GameService;
+  let timer: DecisionTimer;
+  // Advance the clock and let signals/effects settle.
+  const advance = (seconds: number) => {
+    jest.advanceTimersByTime(seconds * 1000);
+    TestBed.tick();
+  };
+  // Pass-and-play, seat-0 revealed, in its first Play phase.
+  const toPlayPhase = () => {
+    game.startGame(2, 1);
+    game.reveal(game.activeSeatId()!);
+    while (game.state()!.phase === 'GeneralSelection') {
+      game.submit(game.legalActions()[0]);
+      game.reveal(game.activeSeatId()!);
+    }
+    TestBed.tick();
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    game = TestBed.inject(GameService);
+    game.botDelayMs = 0;
+    timer = TestBed.inject(DecisionTimer);
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it('stays off while no game board is on screen', () => {
+    toPlayPhase();
+    expect(timer.secondsLeft()).toBeNull();
+  });
+
+  describe('with a board on screen', () => {
+    let board: ReturnType<typeof boardLifetime>;
+    beforeEach(() => {
+      board = boardLifetime();
+      timer.attach(board.ref);
+    });
+
+    it('gives the Play phase 300 seconds', () => {
+      toPlayPhase();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
+      expect(timer.totalSeconds()).toBe(300);
+      advance(10);
+      expect(timer.secondsLeft()).toBe(290);
+    });
+
+    it('ends the Play phase when time runs out', () => {
+      toPlayPhase();
+      const owner = game.state()!.turn.ownerSeatId;
+      advance(DECISION_SECONDS.play);
+      expect(game.state()!.turn.ownerSeatId === owner && game.state()!.phase === 'Play').toBe(false);
+      expect(game.lastError()).toBeNull();
+    });
+
+    it('keeps one Play-phase clock across actions, paused while a response is under way', () => {
+      // A deal where seat-0 can aim a card at seat-1 in its first Play phase.
+      for (let seed = 1; seed < 50; seed++) {
+        game.startGame(2, seed);
+        game.reveal(game.activeSeatId()!);
+        while (game.state()!.phase === 'GeneralSelection') {
+          game.submit(game.legalActions()[0]);
+          game.reveal(game.activeSeatId()!);
+        }
+        TestBed.tick();
+        const aimed = game.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1);
+        if (!aimed) continue;
+        const owner = game.activeSeatId()!;
+        advance(100);
+        expect(timer.secondsLeft()).toBe(200);
+        game.submit(aimed);
+        // The response belongs to seat-1: its own 60 seconds once its view shows.
+        const responder = game.activeSeatId()!;
+        game.reveal(responder);
+        TestBed.tick();
+        expect(timer.secondsLeft()).toBe(60);
+        advance(20); // the Play clock must not move meanwhile
+        game.submit(game.legalActions().find((a) => a.kind === 'PassAction')!);
+        game.reveal(owner);
+        TestBed.tick();
+        // Back in the owner's Play phase: resumed, not restarted.
+        expect(game.state()!.phase).toBe('Play');
+        expect(timer.secondsLeft()).toBe(200);
+        return;
+      }
+      throw new Error('no seed gave seat-0 a targeted play');
+    });
+
+    it('pauses behind the pass-and-play gate', () => {
+      game.startGame(2, 1);
+      TestBed.tick();
+      expect(game.revealedSeatId()).toBeNull();
+      expect(timer.secondsLeft()).toBeNull();
+    });
+
+    it('gives general selection 300 seconds, then picks the first legal pair', () => {
+      game.startGame(2, 1);
+      game.reveal(game.activeSeatId()!);
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.selection);
+      const first = game.legalActions()[0] as Extract<Action, { kind: 'ChooseGeneralsAction' }>;
+      advance(DECISION_SECONDS.selection - 1);
+      expect(game.state()!.seats[0].generals).toBeNull();
+      advance(1);
+      expect(game.state()!.seats[0].generals).toMatchObject({ main: { generalDefinitionId: first.mainId }, deputy: { generalDefinitionId: first.deputyId } });
+    });
+
+    it('answers No Response when a response times out', () => {
+      // Find a deal where seat-0 can aim a card at seat-1, then let seat-1's window time out.
+      for (let seed = 1; seed < 50; seed++) {
+        game.startGame(2, seed);
+        game.reveal(game.activeSeatId()!);
+        while (game.state()!.phase === 'GeneralSelection') {
+          game.submit(game.legalActions()[0]);
+          game.reveal(game.activeSeatId()!);
+        }
+        const aimed = game.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1);
+        if (!aimed) continue;
+        game.submit(aimed);
+        const responder = game.activeSeatId()!;
+        const hp = game.state()!.seats.find((s) => s.id === responder)!.combinedHp;
+        game.reveal(responder);
+        TestBed.tick();
+        expect(timer.secondsLeft()).toBe(60);
+        advance(DECISION_SECONDS.response);
+        expect(game.state()!.seats.find((s) => s.id === responder)!.combinedHp).toBeLessThan(hp);
+        return;
+      }
+      throw new Error('no seed gave seat-0 a targeted play');
+    });
+
+    it('discards the UI’s chosen cards when the Discard phase times out, else the first ones', () => {
+      toPlayPhase();
+      const seatId = game.activeSeatId()!;
+      game.submit(game.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
+      game.reveal(seatId);
+      TestBed.tick();
+      const over = cardsOverHandLimit(game.state()!, seatId);
+      expect(over).toBeGreaterThan(0);
+      const discards = game.legalActions().filter((a) => a.kind === 'DiscardCardAction');
+      const chosen = discards.slice(-over); // the last cards, unlike the default
+      expect(timer.secondsLeft()).toBe(60);
+      timer.setTimeoutChoice(chosen);
+      advance(DECISION_SECONDS.discard);
+      const discardPile = game.state()!.zones.find((z) => z.kind === 'discardPile')!.cards.map((c) => c.instanceId);
+      for (const a of chosen) expect(discardPile).toContain((a as Extract<Action, { kind: 'DiscardCardAction' }>).cardInstanceId);
+      expect(cardsOverHandLimit(game.state()!, seatId)).toBe(0);
+    });
+
+    it('gives each player 300 seconds overall for their lineup, kept across leaving the page', () => {
+      game.startGame(2, 1);
+      game.reveal(game.activeSeatId()!);
+      TestBed.tick();
+      advance(100);
+      expect(timer.secondsLeft()).toBe(200);
+      // Off to the Wiki and back: the same 200 seconds, not a fresh 300.
+      board.destroy();
+      TestBed.tick();
+      advance(50);
+      const back = boardLifetime();
+      timer.attach(back.ref);
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBe(200);
+      // The next player starts with their own 300.
+      game.submit(game.legalActions()[0]);
+      game.reveal(game.activeSeatId()!);
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.selection);
+    });
+
+    it('starts every clock afresh in a new game', () => {
+      game.startGame(2, 1);
+      game.reveal(game.activeSeatId()!);
+      TestBed.tick();
+      advance(100);
+      game.startGame(2, 1);
+      game.reveal(game.activeSeatId()!);
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.selection);
+    });
+
+    it('stops when the board leaves the screen', () => {
+      toPlayPhase();
+      board.destroy();
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBeNull();
+      const before = game.state();
+      advance(DECISION_SECONDS.play + 5);
+      expect(game.state()).toBe(before);
+    });
+  });
+});

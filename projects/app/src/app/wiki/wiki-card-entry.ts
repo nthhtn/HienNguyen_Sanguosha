@@ -29,7 +29,15 @@ import { printingLabel } from './printing-label';
           <p class="gap">Rules text not available</p>
         }
         @if (card().printings.length > 0) {
-          <p class="printings">{{ copies() }} copies: {{ printings() }}</p>
+          @if (own().length > 0) {
+            <p class="printings">{{ own().length }} copies: {{ labels(own()) }}</p>
+          }
+          <!-- Extra copies other expansions add, one line each. -->
+          @for (group of extras(); track group.expansion) {
+            <p class="printings extra" [attr.data-expansion]="group.expansion">
+              <span class="expansion">{{ group.expansion }}</span> +{{ group.printings.length }}: {{ labels(group.printings) }}
+            </p>
+          }
         } @else {
           <p class="gap">Printings not recorded</p>
         }
@@ -47,12 +55,24 @@ import { printingLabel } from './printing-label';
     .range { margin: 8px 0 0; font-weight: 600; }
     .text { margin: 8px 0; }
     .printings { margin: 8px 0; letter-spacing: 0.04em; }
+    .printings.extra { margin-top: -4px; color: var(--mat-sys-on-surface-variant); }
+    .expansion { padding: 0 6px; border-radius: 6px; background: var(--mat-sys-surface-container-high); font: var(--mat-sys-label-medium); letter-spacing: 0; }
     .gap { margin: 8px 0; color: var(--mat-sys-on-surface-variant); font-style: italic; }
     @media (max-width: 599px) { .entry { flex-direction: column; } }
   `,
 })
 export class WikiCardEntry {
   readonly card = input.required<WikiCard>();
-  protected readonly copies = computed(() => this.card().count ?? this.card().printings.length);
-  protected readonly printings = computed(() => this.card().printings.map(printingLabel).join(' '));
+  // The card's own printings, and the extra copies grouped by the expansion that adds them.
+  protected readonly own = computed(() => this.card().printings.filter((p) => !p.expansion));
+  protected readonly extras = computed(() => {
+    const groups = new Map<string, WikiCard['printings']>();
+    for (const p of this.card().printings) {
+      if (p.expansion) groups.set(p.expansion, [...(groups.get(p.expansion) ?? []), p]);
+    }
+    return [...groups].map(([expansion, printings]) => ({ expansion, printings }));
+  });
+  protected labels(printings: WikiCard['printings']): string {
+    return printings.map(printingLabel).join(' ');
+  }
 }

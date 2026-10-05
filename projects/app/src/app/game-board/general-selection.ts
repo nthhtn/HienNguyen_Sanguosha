@@ -7,10 +7,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, Kingdom, combinedMaxHp } from 'engine';
 import { GeneralDisplayData, generalDisplayData } from 'content';
 import { CardArt } from './card-art';
+import { DecisionCountdown } from './decision-countdown';
 import { generalDisplayName } from '../labels';
 
 export interface SelectionProgress {
   seatId: string;
+  name: string;
   done: boolean;
 }
 
@@ -30,11 +32,11 @@ interface CandidateViewModel {
 // engine's getLegalActions); this component never compares kingdoms itself.
 @Component({
   selector: 'app-general-selection',
-  imports: [MatButtonModule, MatCardModule, MatChipsModule, MatIconModule, MatTooltipModule, CardArt],
+  imports: [MatButtonModule, MatCardModule, MatChipsModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown],
   template: `
     <header class="intro">
-      <h2>{{ seatId() ? seatId() + ', choose your generals' : 'Choose your generals' }}</h2>
-      <p class="hint">Pick two generals of the same kingdom. Your first pick is your Main general.</p>
+      <h2>{{ seatName() ? seatName() + ', choose your Generals' : 'Choose your Generals' }}</h2>
+      <p class="hint">Pick two Generals of the same kingdom. Your first pick is your Main General.</p>
       @if (progress().length > 0) {
         <div class="progress">
           <span class="step">Seat {{ currentStep() }} of {{ progress().length }}</span>
@@ -44,7 +46,7 @@ interface CandidateViewModel {
                 @if (p.done) {
                   <mat-icon matChipAvatar>check_circle</mat-icon>
                 }
-                {{ p.seatId }}
+                {{ p.name }}
               </mat-chip>
             }
           </mat-chip-set>
@@ -122,6 +124,7 @@ interface CandidateViewModel {
           Kingdom: {{ s.kingdom }} · Combined HP: {{ s.hp }}
         }
       </span>
+      <app-decision-countdown class="timer" />
       <button mat-flat-button type="button" class="confirm" [disabled]="!matchingAction()" (click)="confirm()">
         <mat-icon>check</mat-icon> Confirm
       </button>
@@ -180,6 +183,7 @@ interface CandidateViewModel {
     .slot-label { font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); text-transform: uppercase; }
     .slot-name { font: var(--mat-sys-title-small); }
     .summary { flex: 1; font: var(--mat-sys-body-medium); }
+    .timer { width: 160px; }
     @media (max-width: 600px) {
       .bar { gap: 8px; }
       .summary { flex-basis: 100%; order: 3; }
@@ -192,6 +196,7 @@ export class GeneralSelection {
   readonly actions = input.required<ChooseGeneralsAction[]>();
   readonly registry = input.required<ContentRegistry>();
   readonly seatId = input<string>('');
+  readonly seatName = input<string>('');
   readonly progress = input<SelectionProgress[]>([]);
   readonly chosen = output<ChooseGeneralsAction>();
 
@@ -228,7 +233,7 @@ export class GeneralSelection {
 
   protected slotName(position: 0 | 1): string {
     const id = this.selected()[position];
-    if (!id) return 'Pick a general';
+    if (!id) return 'Pick a General';
     return generalDisplayData(id)?.name ?? generalDisplayName(id);
   }
 

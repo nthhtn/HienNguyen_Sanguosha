@@ -29,20 +29,20 @@ function render(s: GameState, viewerSeatId: string | null): string {
 
 describe('PhaseIndicator', () => {
   it('shows the turn owner, (you) for the viewer, and the phase', () => {
-    expect(render(state('Play'), 'seat-0')).toBe('seat-0 (you) – Play Phase');
+    expect(render(state('Play'), 'seat-0')).toBe('Seat 0 (you) – Play Phase');
   });
 
   it('leaves out (you) when it is someone else\'s turn', () => {
-    expect(render(state('Play'), 'seat-1')).toBe('seat-0 – Play Phase');
+    expect(render(state('Play'), 'seat-1')).toBe('Seat 0 – Play Phase');
   });
 
   it('adds how many cards are left to discard while over the hand limit', () => {
-    expect(render(state('Discard', 6, 4), 'seat-0')).toBe('seat-0 (you) – Discard Phase – discard 2 more');
+    expect(render(state('Discard', 6, 4), 'seat-0')).toBe('Seat 0 (you) – Discard Phase – discard 2 more');
   });
 
   it('names every phase the same way', () => {
     for (const phase of ['Start', 'Judgment', 'Draw', 'End'] as const) {
-      expect(render(state(phase), null)).toBe(`seat-0 – ${phase} Phase`);
+      expect(render(state(phase), null)).toBe(`Seat 0 – ${phase} Phase`);
     }
   });
 });

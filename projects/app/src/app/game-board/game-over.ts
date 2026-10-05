@@ -2,8 +2,8 @@ import { Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { GameResult } from 'engine';
-import { kingdomDisplayName } from '../labels';
+import { GameResult, Player } from 'engine';
+import { kingdomDisplayName, seatName } from '../labels';
 
 @Component({
   selector: 'app-game-over',
@@ -12,18 +12,18 @@ import { kingdomDisplayName } from '../labels';
     <div class="game-over">
       <mat-card appearance="raised" class="result-card">
         <mat-icon class="big-icon">emoji_events</mat-icon>
-        <h2>Game over</h2>
+        <h2>Game Over</h2>
         @if (result().winningKingdom) {
           <p class="headline">{{ kingdomDisplayName(result().winningKingdom!) }} wins!</p>
         } @else if (result().winningSeatIds.length > 0) {
-          <p class="headline">{{ result().winningSeatIds.join(', ') }} wins!</p>
+          <p class="headline">{{ names(result().winningSeatIds) }} wins!</p>
         } @else {
           <p class="headline">Draw — no survivors.</p>
         }
-        <p>Winners: {{ result().winningSeatIds.join(', ') || 'none' }}</p>
-        <p>Losers: {{ result().losingSeatIds.join(', ') || 'none' }}</p>
+        <p>Winners: {{ names(result().winningSeatIds) || 'None' }}</p>
+        <p>Losers: {{ names(result().losingSeatIds) || 'None' }}</p>
         <button mat-flat-button type="button" (click)="newGame.emit()">
-          <mat-icon>replay</mat-icon> New game
+          <mat-icon>replay</mat-icon> New Game
         </button>
       </mat-card>
     </div>
@@ -40,7 +40,12 @@ import { kingdomDisplayName } from '../labels';
 })
 export class GameOver {
   readonly result = input.required<GameResult>();
+  readonly players = input<Player[]>([]);
   readonly newGame = output<void>();
+
+  protected names(seatIds: string[]): string {
+    return seatIds.map((id) => seatName(this.players(), id)).join(', ');
+  }
 
   protected readonly kingdomDisplayName = kingdomDisplayName;
 }

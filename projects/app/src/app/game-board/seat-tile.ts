@@ -1,21 +1,24 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
 import { equipSlotOf } from 'content';
-import { cardIdDisplayName, generalDisplayName, kingdomDisplayName } from '../labels';
+import { cardIdDisplayName, forceOf, generalDisplayName, kingdomDisplayName } from '../labels';
 import { CardArt } from './card-art';
+import { PlayingCard } from './playing-card';
+import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 
 const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
   weapon: { label: 'Weapon', icon: 'gavel' },
   armor: { label: 'Armor', icon: 'shield' },
-  plusMount: { label: '+1 Horse', icon: 'add' },
-  minusMount: { label: '−1 Horse', icon: 'remove' },
+  defensiveMount: { label: 'Defensive Mount', icon: 'add' },
+  offensiveMount: { label: 'Offensive Mount', icon: 'remove' },
 };
 
 // One seat at the round table, compact enough to sit on the table's rim.
 @Component({
   selector: 'app-seat-tile',
-  imports: [CardArt, MatIconModule],
+  imports: [CardArt, PlayingCard, MatIconModule],
   template: `
     <div
       class="tile"
@@ -23,9 +26,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       [class.responding]="isResponding()"
       [class.eliminated]="seat().eliminated"
       [class.viewer]="isViewer()"
+      [attr.data-force]="force()"
     >
       <div class="header">
-        <strong>{{ seat().id }}</strong>
+        <strong>{{ name() }}</strong>
         @if (isBot()) {
           <mat-icon class="bot-icon" aria-label="Computer player">smart_toy</mat-icon>
         }
@@ -44,13 +48,13 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
             [label]="generalDisplayName(generals.deputy.generalDefinitionId)"
           />
         } @else {
-          <span class="choosing">Choosing generals…</span>
+          <span class="choosing">Choosing Generals…</span>
         }
       </div>
       <div class="stats">
         <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomDisplayName(seat().kingdom) }}</span>
         <span>HP {{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
-        <span class="hand-count" title="Cards in hand">🂠 {{ handCount() }}</span>
+        <span class="hand-count" title="Cards in Hand">🂠 {{ handCount() }}</span>
       </div>
       <div class="equip">
         @for (s of slots(); track s.slot) {
@@ -61,24 +65,30 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
             [attr.title]="s.card ? s.label + ': ' + cardIdDisplayName(s.card.definitionId) : s.label + ' (empty)'"
           >
             @if (s.card; as card) {
-              <app-card-art size="small" [id]="card.definitionId" [label]="cardIdDisplayName(card.definitionId)" />
+              <!-- Its rules text is in the Info popup. -->
+              <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
+                <app-playing-card size="small" [card]="card" />
+              </button>
             } @else {
               <mat-icon>{{ s.icon }}</mat-icon>
             }
           </div>
         }
       </div>
+      <!-- Status lines in the seat's force colour. -->
       @if (seat().eliminated) {
-        <div class="status">Eliminated</div>
+        <div class="status force-status" [attr.data-force]="force()">Eliminated</div>
+      } @else if (seat().combinedHp <= 0) {
+        <div class="status force-status dying" [attr.data-force]="force()">Dying…</div>
       } @else if (isResponding()) {
-        <div class="status">Responding…</div>
+        <div class="status force-status" [attr.data-force]="force()">Responding…</div>
       }
     </div>
   `,
   styles: `
     .tile {
       background: #fffdf7;
-      border: 2px solid #b9a37a;
+      border: 2px solid var(--force);
       border-radius: 14px;
       padding: 8px 10px;
       box-shadow: 0 2px 6px rgb(0 0 0 / 25%);
@@ -86,9 +96,17 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       min-width: 200px;
       text-align: center;
     }
-    .tile.turn-owner { border-color: #1565c0; box-shadow: 0 0 0 3px rgb(21 101 192 / 35%); }
-    .tile.responding { border-color: #e65100; box-shadow: 0 0 0 3px rgb(230 81 0 / 35%); }
-    .tile.eliminated { opacity: 0.45; filter: grayscale(1); }
+    /* The border is the seat's force colour; a hidden or force-less seat is yellow. */
+    .tile { --force: var(--force-none); }
+    .tile[data-force='Wei'] { --force: var(--force-wei); }
+    .tile[data-force='Shu'] { --force: var(--force-shu); }
+    .tile[data-force='Wu'] { --force: var(--force-wu); }
+    .tile[data-force='Qun'] { --force: var(--force-qun); }
+    /* Highlights add to the force colour rather than replacing it. */
+    .tile.turn-owner { border-width: 4px; padding: 6px 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--force) 40%, transparent), 0 2px 6px rgb(0 0 0 / 25%); }
+    .tile.responding { box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgb(230 81 0 / 70%); }
+    /* Faded, but the status line keeps its force colour. */
+    .tile.eliminated > :not(.status) { opacity: 0.45; filter: grayscale(1); }
     .bot-icon { font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-left: 3px; color: #666; }
     .you { margin-left: 4px; color: #1565c0; }
     .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; min-height: 96px; align-items: center; }
@@ -101,17 +119,35 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .status { font-weight: bold; margin-top: 2px; }
     .equip { display: grid; grid-template-columns: repeat(4, 44px); gap: 5px; justify-content: center; margin-top: 4px; }
     .slot { width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
+    .slot-card { padding: 0; border: none; background: none; cursor: pointer; display: block; }
+    .slot-card:focus-visible { outline: 2px solid #1565c0; outline-offset: -2px; }
     .slot.empty mat-icon { font-size: 22px; width: 22px; height: 22px; color: #b9a37a; }
   `,
 })
 export class SeatTile {
   readonly seat = input.required<Seat>();
+  readonly name = input.required<string>();
   readonly handCount = input.required<number>();
   readonly isTurnOwner = input(false);
   readonly isResponding = input(false);
   readonly isViewer = input(false);
   readonly isBot = input(false);
   readonly equipment = input<CardInstance[]>([]);
+
+  // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a
+  // seat that belongs to no force).
+  protected readonly force = computed(() => forceOf(this.seat().kingdom));
+
+
+  private readonly dialog = inject(MatDialog);
+
+  protected openInfo(card: CardInstance): void {
+    this.dialog.open<CardInfoDialog, CardInfoDialogData>(CardInfoDialog, {
+      data: { card, name: CardInfoDialog.nameFor(card.definitionId, undefined) },
+      width: 'min(92vw, 480px)',
+    });
+  }
+
 
   protected readonly slots = computed(() =>
     EQUIP_SLOTS.map((slot) => ({

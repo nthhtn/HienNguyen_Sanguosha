@@ -128,7 +128,7 @@ describe('Setup', () => {
     it('starts a pass-and-play game when that mode is picked (Review Focus 5)', async () => {
       const { fixture, el, gameService } = await create();
       const passAndPlay = [...el.querySelectorAll('.mode mat-button-toggle button')].find((b) =>
-        b.textContent!.includes('Pass-and-play')
+        b.textContent!.includes('Pass and Play')
       ) as HTMLButtonElement;
       passAndPlay.click();
       fixture.detectChanges();
@@ -137,12 +137,44 @@ describe('Setup', () => {
       expect(gameService.mode()).toBe('pass-and-play');
       expect(gameService.state()!.players.every((p) => p.kind === 'human')).toBe(true);
     });
+    it('asks for your name against bots, and names the bots by seat', async () => {
+      const { fixture, el, gameService } = await create();
+      const fields = el.querySelectorAll('input.name');
+      expect(fields).toHaveLength(1);
+      expect(el.querySelector('.names mat-label')!.textContent).toContain('Your Name');
+      const yours = fields[0] as HTMLInputElement;
+      yours.value = '  Hing ';
+      yours.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      (el.querySelector('button.start') as HTMLButtonElement).click();
+      expect(gameService.state()!.players.map((p) => p.name)).toEqual(['Hing', 'Seat 1', 'Seat 2', 'Seat 3']);
+    });
+
+    it('asks for every seat’s name in pass-and-play, and a blank name stays "Seat N"', async () => {
+      const { fixture, el, gameService } = await create();
+      const passAndPlay = [...el.querySelectorAll('.mode mat-button-toggle button')].find((b) =>
+        b.textContent!.includes('Pass and Play')
+      ) as HTMLButtonElement;
+      passAndPlay.click();
+      fixture.detectChanges();
+      const fields = [...el.querySelectorAll('input.name')] as HTMLInputElement[];
+      expect(fields).toHaveLength(4);
+      expect(fields.map((f) => f.placeholder)).toEqual(['Seat 0', 'Seat 1', 'Seat 2', 'Seat 3']);
+      fields[0].value = 'Ann';
+      fields[0].dispatchEvent(new Event('input'));
+      fields[2].value = 'Bo';
+      fields[2].dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      (el.querySelector('button.start') as HTMLButtonElement).click();
+      expect(gameService.state()!.players.map((p) => p.name)).toEqual(['Ann', 'Seat 1', 'Bo', 'Seat 3']);
+    });
+
     it('describes the chosen mode in the card header and how-it-works lines', async () => {
       const { fixture, el } = await create();
       expect(el.querySelector('mat-card-subtitle')!.textContent).toContain('you against computer opponents');
       expect(el.querySelector('.how')!.textContent).not.toContain('Pass the device');
       const passAndPlay = [...el.querySelectorAll('.mode mat-button-toggle button')].find((b) =>
-        b.textContent!.includes('Pass-and-play')
+        b.textContent!.includes('Pass and Play')
       ) as HTMLButtonElement;
       passAndPlay.click();
       fixture.detectChanges();

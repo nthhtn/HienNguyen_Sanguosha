@@ -27,3 +27,23 @@ body {
 }
 
 .mat-mdc-menu-item.current { font-weight: 600; background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent); }
+
+// The force colours — Wei, Shu, Wu, Qun — and yellow for a seat whose force is
+// hidden or that belongs to none. Seat borders and status text both use these.
+:root {
+  --force-wei: #3f6fd8;
+  --force-shu: #d84a3f;
+  --force-wu: #2f9e58;
+  --force-qun: #8a7f8c;
+  --force-none: #e0a800;
+  // The same yellow, deep enough to read as text on a light background.
+  --force-none-text: #a87b00;
+}
+
+// Text about a player's status (HP lost, dying, eliminated…), in that player's
+// force colour: <span class="force-status" data-force="Wei">…</span>.
+.force-status { font-weight: 600; color: var(--force-none-text); }
+.force-status[data-force='Wei'] { color: var(--force-wei); }
+.force-status[data-force='Shu'] { color: var(--force-shu); }
+.force-status[data-force='Wu'] { color: var(--force-wu); }
+.force-status[data-force='Qun'] { color: var(--force-qun); }

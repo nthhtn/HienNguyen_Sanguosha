@@ -10,10 +10,10 @@ import { MatIconModule } from '@angular/material/icon';
     <div class="reveal-gate">
       <mat-card appearance="raised" class="gate-card">
         <mat-icon class="big-icon">phone_android</mat-icon>
-        <h2>Pass the device to {{ seatId() }}</h2>
-        <p>Everyone else, look away — the next screen shows {{ seatId() }}'s private cards.</p>
+        <h2>Pass the device to {{ name() }}</h2>
+        <p>Everyone else, look away — the next screen shows {{ name() }}'s private cards.</p>
         <button mat-flat-button type="button" (click)="revealed.emit()">
-          <mat-icon>visibility</mat-icon> Tap to reveal
+          <mat-icon>visibility</mat-icon> Tap to Reveal
         </button>
       </mat-card>
     </div>
@@ -27,6 +27,6 @@ import { MatIconModule } from '@angular/material/icon';
   `,
 })
 export class RevealGateOverlay {
-  readonly seatId = input.required<string>();
+  readonly name = input.required<string>();
   readonly revealed = output<void>();
 }

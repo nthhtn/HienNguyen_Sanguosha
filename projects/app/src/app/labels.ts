@@ -1,4 +1,4 @@
-import { Action, CardInstance, ContentRegistry, EngineEvent, GameState, Kingdom, Target } from 'engine';
+import { Action, CardInstance, ContentRegistry, GameState, Kingdom, Player, Target } from 'engine';
 
 function findCardInstance(state: GameState, cardInstanceId: string): CardInstance | undefined {
   for (const zone of state.zones) {
@@ -14,17 +14,28 @@ function cardDisplayName(state: GameState, registry: ContentRegistry, cardInstan
   return registry.cards.get(card.definitionId)?.name ?? card.definitionId;
 }
 
-function targetLabel(target: Target): string {
-  if (target.kind === 'seat') return target.seatId;
-  return `${target.seatId}'s ${target.generalSlot} general`;
+function capitalise(word: string): string {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+// "seat-0" → "Seat 0": the fallback for a seat with no player name.
+function titleCaseId(id: string): string {
+  return id.split('-').map(capitalise).join(' ');
+}
+
+// The name shown for a seat: its player's name, else its id in Title Case.
+export function seatName(players: readonly Player[], seatId: string): string {
+  return players.find((p) => p.seatId === seatId)?.name ?? titleCaseId(seatId);
+}
+
+export function targetLabel(target: Target, players: readonly Player[] = []): string {
+  if (target.kind === 'seat') return seatName(players, target.seatId);
+  return `${seatName(players, target.seatId)}'s ${capitalise(target.generalSlot)} General`;
 }
 
 export function cardIdDisplayName(cardDefinitionId: string): string {
-  if (cardDefinitionId === 'hidden') return 'a hidden card';
-  return cardDefinitionId
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
+  if (cardDefinitionId === 'hidden') return 'Hidden Card';
+  return titleCaseId(cardDefinitionId);
 }
 
 export function cardDefinitionId(state: GameState, cardInstanceId: string): string | undefined {
@@ -32,11 +43,15 @@ export function cardDefinitionId(state: GameState, cardInstanceId: string): stri
 }
 
 export function generalDisplayName(generalDefinitionId: string): string {
-  if (generalDefinitionId === 'hidden') return 'a hidden general';
-  return generalDefinitionId
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
+  if (generalDefinitionId === 'hidden') return 'Hidden General';
+  return titleCaseId(generalDefinitionId);
+}
+
+// The force colour a seat is shown in: its kingdom once known, else 'none'
+// (hidden, or a seat that belongs to no force).
+export type Force = 'Wei' | 'Shu' | 'Wu' | 'Qun' | 'none';
+export function forceOf(kingdom: Kingdom | undefined): Force {
+  return kingdom === 'Wei' || kingdom === 'Shu' || kingdom === 'Wu' || kingdom === 'Qun' ? kingdom : 'none';
 }
 
 export function kingdomDisplayName(kingdom: Kingdom): string {
@@ -46,47 +61,24 @@ export function kingdomDisplayName(kingdom: Kingdom): string {
 export function actionLabel(action: Action, state: GameState, registry: ContentRegistry): string {
   switch (action.kind) {
     case 'DrawCardsAction':
-      return `Draw ${action.count} card${action.count === 1 ? '' : 's'}`;
+      return `Draw ${action.count} Card${action.count === 1 ? '' : 's'}`;
     case 'PlayCardAction': {
       const name = cardDisplayName(state, registry, action.cardInstanceId);
       if (action.targets.length === 0) return `Play ${name}`;
-      return `Play ${name} targeting ${action.targets.map(targetLabel).join(', ')}`;
+      return `Play ${name} Targeting ${action.targets.map((t) => targetLabel(t, state.players)).join(', ')}`;
     }
     case 'ChooseGeneralsAction':
-      return `Choose ${generalDisplayName(action.mainId)} (main) and ${generalDisplayName(action.deputyId)} (deputy)`;
+      return `Choose ${generalDisplayName(action.mainId)} (Main) and ${generalDisplayName(action.deputyId)} (Deputy)`;
     case 'RevealGeneralAction':
-      return `Reveal ${action.slot} general`;
+      return `Reveal ${capitalise(action.slot)} General`;
     case 'RespondAction':
       return `Respond with ${cardDisplayName(state, registry, action.cardInstanceId)}`;
     case 'PassAction':
       return 'Pass';
     case 'EndPhaseAction':
-      return 'End phase';
+      return 'End Phase';
     case 'DiscardCardAction':
       return `Discard ${cardDisplayName(state, registry, action.cardInstanceId)}`;
-  }
-}
-
-export function eventLabel(event: EngineEvent): string {
-  switch (event.kind) {
-    case 'CardsDrawnEvent':
-      return `${event.seatId} drew ${event.cardInstanceIds.length} card(s)`;
-    case 'DamageDealtEvent':
-      return `${targetLabel(event.damage.target)} took ${event.damage.amount} ${event.damage.nature} damage`;
-    case 'PhaseChangedEvent':
-      return `${event.seatId} entered the ${event.phase} phase`;
-    case 'TurnAdvancedEvent':
-      return `Turn ${event.turnNumber}: ${event.seatId}'s turn`;
-    case 'GeneralRevealedEvent':
-      return `${event.seatId} revealed their ${event.slot} general`;
-    case 'HealEvent':
-      return `${targetLabel(event.target)} healed ${event.amount}`;
-    case 'CardMovedEvent':
-      return `A card moved to ${event.toZoneId}`;
-    case 'SeatEliminatedEvent':
-      return `${event.seatId} was eliminated`;
-    case 'GeneralsChosenEvent':
-      return `${event.seatId} chose their generals`;
   }
 }
 

@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { GameBoard } from './game-board';
 import { GameService } from '../game.service';
+import { Action, cardsOverHandLimit } from 'engine';
 import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
 
@@ -69,7 +70,7 @@ describe('GameBoard', () => {
     fixture.detectChanges();
 
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('app-general-selection h2')!.textContent).toContain('seat-1, choose your generals');
+    expect(el.querySelector('app-general-selection h2')!.textContent).toContain('Seat 1, choose your Generals');
     const chips = [...el.querySelectorAll('app-general-selection .progress mat-chip')];
     expect(chips.map((c) => c.classList.contains('done'))).toEqual([true, false, false]);
   });
@@ -190,6 +191,80 @@ describe('GameBoard', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('app-reveal-gate-overlay')).not.toBeNull();
   });
 
+  it('opens the Discard dialog in the viewer’s Discard phase, and Discard ends the phase in one step', async () => {
+    gameService.startGame(2, 1);
+    finishSelection(gameService);
+    const seatId = gameService.activeSeatId()!;
+    gameService.reveal(seatId);
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
+    gameService.reveal(seatId);
+    const over = cardsOverHandLimit(gameService.state()!, seatId);
+    expect(over).toBeGreaterThan(0);
+
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
+    const dialog = overlay.querySelector('app-discard-dialog')!;
+    expect(dialog).not.toBeNull();
+    // The old per-card Discard buttons are gone from under the hand.
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-action-list')!.textContent).not.toContain('Discard');
+
+    const cards = [...dialog.querySelectorAll('button.card')] as HTMLButtonElement[];
+    cards.slice(0, over).forEach((c) => c.click());
+    fixture.detectChanges();
+    (dialog.querySelector('button.discard') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(gameService.lastError()).toBeNull();
+    expect(cardsOverHandLimit(gameService.state()!, seatId)).toBe(0);
+    expect(gameService.state()!.turn.ownerSeatId).not.toBe(seatId);
+    overlay.replaceChildren();
+  });
+
+  it('opens the Response dialog for the seat that must answer, and No Response lets the effect go ahead', async () => {
+    // Find a deal where the first seat can aim a card (Sha or Duel) at the other.
+    let sha: Action | undefined; // the targeted play
+    for (let seed = 1; seed < 50 && !sha; seed++) {
+      gameService.startGame(2, seed);
+      finishSelection(gameService);
+      gameService.reveal(gameService.activeSeatId()!);
+      sha = gameService.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1);
+    }
+    expect(sha).toBeDefined();
+    gameService.submit(sha!);
+    const responder = gameService.activeSeatId()!;
+    expect(gameService.state()!.pendingResponse!.respondingSeatId).toBe(responder);
+    const hpBefore = gameService.state()!.seats.find((x) => x.id === responder)!.combinedHp;
+    gameService.reveal(responder);
+
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
+    const dialog = overlay.querySelector('app-response-dialog')!;
+    expect(dialog).not.toBeNull();
+    expect(dialog.querySelector('.source')!.textContent).toContain('played');
+    // The answer controls live only in the dialog now.
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-action-list')!.textContent).not.toContain('Pass');
+
+    // It starts on the first answering card if there is one, else No Response.
+    const confirm = dialog.querySelector('button.confirm') as HTMLButtonElement;
+    const hasCard = dialog.querySelectorAll('.card-option').length > 0;
+    expect(confirm.textContent!.trim()).toEqual(hasCard ? expect.stringContaining('Respond with') : 'No Response');
+    (dialog.querySelector('.no-response input') as HTMLInputElement).click();
+    fixture.detectChanges();
+    expect(confirm.textContent!.trim()).toBe('No Response');
+    confirm.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(gameService.lastError()).toBeNull();
+    expect(gameService.state()!.pendingResponse).toBeNull();
+    expect(gameService.state()!.seats.find((x) => x.id === responder)!.combinedHp).toBeLessThan(hpBefore);
+    overlay.replaceChildren();
+  });
+
   it('shows a dismissible error banner when GameService reports an error', () => {
     gameService.startGame(2, 1);
     gameService.reveal(gameService.activeSeatId()!);
@@ -276,7 +351,7 @@ describe('GameBoard in vs-bots mode', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-general-selection')).toBeNull();
-    expect(el.querySelector('.bots-choosing')!.textContent).toContain('Bots are choosing their generals');
+    expect(el.querySelector('.bots-choosing')!.textContent).toContain('Bots are choosing their Generals');
   });
 
   it('keeps the table on seat-0 and shows the thinking bot during a bot turn', () => {
@@ -309,7 +384,11 @@ describe('GameBoard in vs-bots mode', () => {
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();
     const indicator = (fixture.nativeElement as HTMLElement).querySelector('app-phase-indicator')!;
-    expect(indicator.textContent!.replace(/\s+/g, ' ').trim()).toBe('seat-0 (you) – Play Phase');
+    const timer = indicator.querySelector('app-decision-countdown')!;
+    const label = indicator.textContent!.replace(timer.textContent!, '').replace(/\s+/g, ' ').trim();
+    expect(label).toBe('Seat 0 (you) – Play Phase');
+    // Your own Play phase is timed: 300 seconds for the whole phase.
+    expect(timer.textContent).toContain('300s');
   });
 
   it('offers a way out to a new game when a bot move fails', () => {
@@ -325,7 +404,7 @@ describe('GameBoard in vs-bots mode', () => {
     expect(banner.textContent).toContain('bot exploded');
     const router = TestBed.inject(Router);
     const navigate = jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
-    const newGame = [...banner.querySelectorAll('button')].find((b) => b.textContent!.includes('New game')) as HTMLButtonElement;
+    const newGame = [...banner.querySelectorAll('button')].find((b) => b.textContent!.includes('New Game')) as HTMLButtonElement;
     newGame.click();
     expect(navigate).toHaveBeenCalledWith('/setup');
     jest.restoreAllMocks();

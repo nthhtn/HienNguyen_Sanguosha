@@ -1,5 +1,5 @@
-import { actionLabel, cardDefinitionId, cardIdDisplayName, eventLabel, generalDisplayName, kingdomDisplayName } from './labels';
-import { Action, ContentRegistry, EngineEvent, GameState } from 'engine';
+import { actionLabel, cardDefinitionId, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, targetLabel } from './labels';
+import { Action, ContentRegistry, GameState } from 'engine';
 
 function stateWithZones(): GameState {
   return {
@@ -34,8 +34,8 @@ describe('generalDisplayName', () => {
     expect(generalDisplayName('xiahou-dun')).toBe('Xiahou Dun');
   });
 
-  it('renders the hidden sentinel as a human phrase', () => {
-    expect(generalDisplayName('hidden')).toBe('a hidden general');
+  it('renders the hidden sentinel in Title Case', () => {
+    expect(generalDisplayName('hidden')).toBe('Hidden General');
   });
 });
 
@@ -44,8 +44,8 @@ describe('cardIdDisplayName', () => {
     expect(cardIdDisplayName('green-dragon-blade')).toBe('Green Dragon Blade');
   });
 
-  it('renders the hidden sentinel as a human phrase', () => {
-    expect(cardIdDisplayName('hidden')).toBe('a hidden card');
+  it('renders the hidden sentinel in Title Case', () => {
+    expect(cardIdDisplayName('hidden')).toBe('Hidden Card');
   });
 });
 
@@ -64,7 +64,7 @@ describe('kingdomDisplayName', () => {
     expect(kingdomDisplayName('Wei')).toBe('Wei');
   });
 
-  it('renders the hidden sentinel as a human phrase', () => {
+  it('renders the hidden sentinel in Title Case', () => {
     expect(kingdomDisplayName('hidden')).toBe('Hidden');
   });
 });
@@ -72,7 +72,7 @@ describe('kingdomDisplayName', () => {
 describe('actionLabel', () => {
   it('labels DrawCardsAction with the count', () => {
     const action: Action = { kind: 'DrawCardsAction', seatId: 'seat-0', count: 2 };
-    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Draw 2 cards');
+    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Draw 2 Cards');
   });
 
   it('labels a targetless PlayCardAction with the card name', () => {
@@ -92,12 +92,12 @@ describe('actionLabel', () => {
       cardInstanceId: 'card-1',
       targets: [{ kind: 'seat', seatId: 'seat-1' }],
     };
-    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Play Sha targeting seat-1');
+    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Play Sha Targeting Seat 1');
   });
 
   it('labels ChooseGeneralsAction with both generals and their roles', () => {
     const action: Action = { kind: 'ChooseGeneralsAction', seatId: 'seat-0', mainId: 'cao-cao', deputyId: 'xu-chu' };
-    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Choose Cao Cao (main) and Xu Chu (deputy)');
+    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Choose Cao Cao (Main) and Xu Chu (Deputy)');
   });
 
   it('labels PassAction and EndPhaseAction', () => {
@@ -105,7 +105,7 @@ describe('actionLabel', () => {
       actionLabel({ kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' }, stateWithZones(), registryWithSha())
     ).toBe('Pass');
     expect(actionLabel({ kind: 'EndPhaseAction', seatId: 'seat-0' }, stateWithZones(), registryWithSha())).toBe(
-      'End phase'
+      'End Phase'
     );
   });
 
@@ -116,20 +116,19 @@ describe('actionLabel', () => {
   });
 });
 
-describe('eventLabel', () => {
-  it('labels DamageDealtEvent', () => {
-    const event: EngineEvent = {
-      kind: 'DamageDealtEvent',
-      damage: { source: null, target: { kind: 'seat', seatId: 'seat-1' }, amount: 2, nature: 'normal' },
-    };
-    expect(eventLabel(event)).toBe('seat-1 took 2 normal damage');
+
+describe('seatName', () => {
+  const players = [{ id: 'p0', seatId: 'seat-0', kind: 'human' as const, name: 'Hing' }];
+
+  it('shows the player’s name', () => {
+    expect(seatName(players, 'seat-0')).toBe('Hing');
   });
 
-  it('labels SeatEliminatedEvent', () => {
-    expect(eventLabel({ kind: 'SeatEliminatedEvent', seatId: 'seat-2' })).toBe('seat-2 was eliminated');
+  it('falls back to the seat id in Title Case, without the dash', () => {
+    expect(seatName(players, 'seat-3')).toBe('Seat 3');
   });
 
-  it('labels GeneralsChosenEvent without naming any general', () => {
-    expect(eventLabel({ kind: 'GeneralsChosenEvent', seatId: 'seat-1' })).toBe('seat-1 chose their generals');
+  it('names a general target after its seat', () => {
+    expect(targetLabel({ kind: 'general', seatId: 'seat-0', generalSlot: 'deputy' }, players)).toBe("Hing's Deputy General");
   });
 });

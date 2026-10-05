@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -23,7 +23,7 @@ import { GameMode, GameService } from '../game.service';
         </mat-card-header>
         <mat-card-content>
           <ul class="how">
-            <li><mat-icon>groups</mat-icon>Each seat picks two hidden generals of one kingdom.</li>
+            <li><mat-icon>groups</mat-icon>Each seat picks two hidden Generals of one kingdom.</li>
             @if (mode() === 'vs-bots') {
               <li><mat-icon>smart_toy</mat-icon>Bots play their own turns — you only ever see your own cards.</li>
             } @else {
@@ -41,13 +41,13 @@ import { GameMode, GameService } from '../game.service';
               [value]="mode()"
               (change)="mode.set($event.value)"
             >
-              <mat-button-toggle value="vs-bots"><mat-icon>smart_toy</mat-icon> Play vs bots</mat-button-toggle>
-              <mat-button-toggle value="pass-and-play"><mat-icon>groups</mat-icon> Pass-and-play</mat-button-toggle>
+              <mat-button-toggle value="vs-bots"><mat-icon>smart_toy</mat-icon> Play vs Bots</mat-button-toggle>
+              <mat-button-toggle value="pass-and-play"><mat-icon>groups</mat-icon> Pass and Play</mat-button-toggle>
             </mat-button-toggle-group>
           </div>
           <p class="mode-hint">
             {{ mode() === 'vs-bots'
-              ? 'You play seat-0; every other seat is a computer opponent.'
+              ? 'You take the first seat; every other seat is a computer opponent.'
               : 'Everyone plays on this device, passing it between turns.' }}
           </p>
           <div class="field">
@@ -65,6 +65,22 @@ import { GameMode, GameService } from '../game.service';
             </mat-button-toggle-group>
           </div>
 
+          <div class="names">
+            @for (i of nameSlots(); track i) {
+              <mat-form-field appearance="outline" class="name-field">
+                <mat-label>{{ mode() === 'vs-bots' ? 'Your Name' : 'Seat ' + i + ' Name' }}</mat-label>
+                <input
+                  matInput
+                  class="name"
+                  maxlength="24"
+                  [placeholder]="'Seat ' + i"
+                  [value]="names()[i] ?? ''"
+                  (input)="setName(i, $any($event.target).value)"
+                />
+              </mat-form-field>
+            }
+          </div>
+
           <mat-form-field appearance="outline" class="seed-field">
             <mat-label>Seed</mat-label>
             <input
@@ -78,7 +94,7 @@ import { GameMode, GameService } from '../game.service';
         </mat-card-content>
         <mat-card-actions align="end">
           <button mat-flat-button type="button" class="start" (click)="startGame()">
-            <mat-icon>play_arrow</mat-icon> Start game
+            <mat-icon>play_arrow</mat-icon> Start Game
           </button>
         </mat-card-actions>
       </mat-card>
@@ -112,6 +128,7 @@ import { GameMode, GameService } from '../game.service';
     .how mat-icon { color: var(--mat-sys-primary); }
     .field { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
     .label { font: var(--mat-sys-title-small); min-width: 48px; }
+    .names { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: 12px; }
     .seed-field { width: 100%; }
     .mode-hint { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .mode mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; vertical-align: middle; }
@@ -127,10 +144,22 @@ export class Setup {
   readonly mode = signal<GameMode>('vs-bots');
   readonly seatCount = signal(4);
   readonly seed = signal<number | undefined>(undefined);
+  // Typed names by seat index; blanks fall back to "Seat N".
+  readonly names = signal<(string | undefined)[]>([]);
+  // Vs bots asks only for the human's name (seat 0); pass-and-play asks for every seat's.
+  protected readonly nameSlots = computed(() =>
+    this.mode() === 'vs-bots' ? [0] : Array.from({ length: this.seatCount() }, (_, i) => i)
+  );
+
+  setName(index: number, value: string): void {
+    const names = [...this.names()];
+    names[index] = value;
+    this.names.set(names);
+  }
 
   startGame(): void {
     const clamped = Math.min(this.maxSeats, Math.max(2, this.seatCount() || 2));
-    this.gameService.startGame(clamped, this.seed(), this.mode());
+    this.gameService.startGame(clamped, this.seed(), this.mode(), this.nameSlots().map((i) => this.names()[i] ?? ''));
     this.router.navigateByUrl('/game');
   }
 }

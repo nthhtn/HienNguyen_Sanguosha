@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
+import { MUSIC_PLAYER_FACTORY } from './music.service';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
+        // jsdom can't play media; a silent stand-in player.
+        { provide: MUSIC_PLAYER_FACTORY, useValue: () => ({ loop: false, volume: 1, play: () => Promise.resolve(), pause: () => undefined }) },
         provideRouter([
           { path: 'setup', children: [] },
           { path: 'game', children: [] },
@@ -26,6 +29,18 @@ describe('App', () => {
     await fixture.whenStable();
     return { fixture, el: fixture.nativeElement as HTMLElement };
   }
+
+  it('has a music on/off button in the toolbar', async () => {
+    localStorage.clear();
+    const { fixture, el } = await render();
+    const button = el.querySelector('button.music-toggle') as HTMLButtonElement;
+    expect(button.getAttribute('aria-label')).toBe('Turn Music Off');
+    button.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-label')).toBe('Turn Music On');
+    expect(button.textContent).toContain('music_off');
+    localStorage.clear();
+  });
 
   it('should render title', async () => {
     const { el } = await render();

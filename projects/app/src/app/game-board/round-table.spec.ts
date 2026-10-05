@@ -25,10 +25,13 @@ function state(overrides: Partial<GameState> = {}): GameState {
     { id: 'seat-2:hand', kind: 'hand', ownerSeatId: 'seat-2', cards: [] },
   ];
   const log: EngineEvent[] = [
+    { kind: 'GeneralsChosenEvent', seatId: 'seat-0' },
     { kind: 'SeatEliminatedEvent', seatId: 'seat-2' },
     { kind: 'TurnAdvancedEvent', seatId: 'seat-1', turnNumber: 3 },
     { kind: 'PhaseChangedEvent', seatId: 'seat-1', phase: 'Draw' },
+    { kind: 'CardsDrawnEvent', seatId: 'seat-1', cardInstanceIds: ['a', 'b'] },
     { kind: 'PhaseChangedEvent', seatId: 'seat-1', phase: 'Play' },
+    { kind: 'GeneralRevealedEvent', seatId: 'seat-1', slot: 'main' },
   ];
   return {
     seats, players: [], zones, log,
@@ -74,18 +77,18 @@ describe('RoundTable', () => {
     expect(tile(el, 'seat-2').querySelector('.tile')!.classList).toContain('eliminated');
   });
 
-  it('shows the turn number, turn owner and pile counts in the centre', () => {
+  it('shows the turn number, turn owner and draw pile count in the centre (the discard pile sits beside the table)', () => {
     const centre = render(state()).querySelector('.centre')!.textContent!;
     expect(centre).toContain('Turn 3');
     expect(centre).not.toContain('· Play');
-    expect(centre).toContain("seat-1's turn");
-    expect(centre).toContain('Draw pile 9');
-    expect(centre).toContain('Discard 2');
+    expect(centre).toContain("Seat 1's turn");
+    expect(centre).toContain('Draw Pile 9');
+    expect(centre).not.toContain('Discard');
   });
 
-  it('shows the last three log lines in the centre, newest last', () => {
+  it('shows the last three actions in the centre, newest last, in the action history’s wording', () => {
     const lines = [...render(state()).querySelectorAll('.centre .recent li')].map((li) => li.textContent!.trim());
-    expect(lines).toEqual(["Turn 3: seat-1's turn", 'seat-1 entered the Draw phase', 'seat-1 entered the Play phase']);
+    expect(lines).toEqual(['Seat 2 was eliminated', 'Seat 1 drew 2 cards', 'Seat 1 revealed their Main General']);
   });
 
   it('marks the responding seat and says who the table is waiting on', () => {
@@ -95,11 +98,11 @@ describe('RoundTable', () => {
     };
     const el = render(state({ pendingResponse: pending }));
     expect(tile(el, 'seat-0').querySelector('.tile')!.classList).toContain('responding');
-    expect(el.querySelector('.centre')!.textContent).toContain('Waiting on seat-0');
+    expect(el.querySelector('.centre')!.textContent).toContain('Waiting on Seat 0');
   });
   it('shows which seat is thinking, and marks bot seats', () => {
     const el = render(state(), 'seat-0', 'seat-1', ['seat-1', 'seat-2']);
-    expect(el.querySelector('.centre .thinking')!.textContent).toContain('seat-1 is thinking');
+    expect(el.querySelector('.centre .thinking')!.textContent).toContain('Seat 1 is thinking');
     expect(tile(el, 'seat-1').querySelector('.bot-icon')).not.toBeNull();
     expect(tile(el, 'seat-0').querySelector('.bot-icon')).toBeNull();
   });
@@ -107,32 +110,12 @@ describe('RoundTable', () => {
   it('shows no thinking line when nobody is thinking', () => {
     expect(render(state(), 'seat-0').querySelector('.centre .thinking')).toBeNull();
   });
-  it('shows the most recently discarded card face-up with its name and the pile count', () => {
-    const s = state();
-    const withDiscards = {
-      ...s,
-      zones: s.zones.map((z) =>
-        z.kind === 'discardPile'
-          ? { ...z, cards: [
-              { instanceId: 'd1', definitionId: 'shan', suit: 'heart' as const, rank: 2 },
-              { instanceId: 'd2', definitionId: 'sha', suit: 'spade' as const, rank: 7 },
-            ] }
-          : z
-      ),
-    };
-    const el = render(withDiscards);
-    const discard = el.querySelector('.centre .discard')!;
-    expect(discard.querySelector('app-card-art img')!.getAttribute('src')).toBe('/card-art/cards/basic/sha.jpg');
-    expect(discard.textContent).toContain('Last discarded: Sha');
-    expect(discard.textContent).toContain('Discard 2');
-  });
-
-  it('shows an empty discard placeholder when the pile is empty (Review Focus 3)', () => {
-    const s = state();
-    const empty = { ...s, zones: s.zones.map((z) => (z.kind === 'discardPile' ? { ...z, cards: [] } : z)) };
-    const discard = render(empty).querySelector('.centre .discard')!;
-    expect(discard.querySelector('.discard-empty')).not.toBeNull();
-    expect(discard.textContent).toContain('Discard 0');
+  it('shows each seat by its player’s name', () => {
+    const named = state({ players: [{ id: 'p1', seatId: 'seat-1', kind: 'human', name: 'Hing' }] });
+    const el = render(named, 'seat-0');
+    expect(tile(el, 'seat-1').querySelector('.header strong')!.textContent).toBe('Hing');
+    expect(tile(el, 'seat-0').querySelector('.header strong')!.textContent).toBe('Seat 0');
+    expect(el.querySelector('.centre')!.textContent).toContain("Hing's turn");
   });
 
   it('passes each seat’s equipment to its tile', () => {

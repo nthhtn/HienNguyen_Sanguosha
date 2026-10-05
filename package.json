@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "node --watch-path=angular.json --watch-path=tsconfig.json --watch-path=projects/app/tsconfig.app.json --watch-path=package.json --watch-preserve-output scripts/dev-server.mjs",
     "build": "npm run build:engine && npm run build:content",
     "build:engine": "ng build engine",
     "build:content": "ng build content",

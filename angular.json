@@ -68,6 +68,11 @@
                 "glob": "**/*.@(jpg|jpeg|png|webp)",
                 "input": "projects/content/assets",
                 "output": "card-art"
+              },
+              {
+                "glob": "**/*.mp3",
+                "input": "projects/content/assets/audio",
+                "output": "audio"
               }
             ],
             "styles": ["projects/app/src/styles.scss"]

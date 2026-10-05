@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CardInstance } from 'engine';
 import { cardDisplayData } from 'content';
 import { cardFaceLabel, cardIdDisplayName } from '../labels';
-import { CardArt } from './card-art';
+import { PlayingCard } from './playing-card';
 
 export interface CardInfoDialogData {
   card: CardInstance;
@@ -14,11 +14,11 @@ export interface CardInfoDialogData {
 // Read-only card details (art, printing, rules text) for a card in the hand.
 @Component({
   selector: 'app-card-info-dialog',
-  imports: [MatDialogModule, MatButtonModule, CardArt],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard],
   template: `
     <h2 mat-dialog-title>{{ data.name }}</h2>
     <mat-dialog-content class="content">
-      <app-card-art size="large" [id]="data.card.definitionId" [label]="data.name" />
+      <app-playing-card size="large" [card]="data.card" />
       <div class="details">
         <div class="face">{{ face }}</div>
         @if (display; as d) {

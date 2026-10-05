@@ -14,6 +14,18 @@
       }
     </mat-menu>
   </nav>
+  <span class="spacer"></span>
+  <button
+    mat-icon-button
+    type="button"
+    class="music-toggle"
+    (click)="music.toggle()"
+    [attr.aria-label]="music.enabled() ? 'Turn Music Off' : 'Turn Music On'"
+    [attr.aria-pressed]="music.enabled()"
+    [attr.title]="music.enabled() ? 'Turn Music Off' : 'Turn Music On'"
+  >
+    <mat-icon>{{ music.enabled() ? 'music_note' : 'music_off' }}</mat-icon>
+  </button>
 </mat-toolbar>
 <main class="content">
   <router-outlet />

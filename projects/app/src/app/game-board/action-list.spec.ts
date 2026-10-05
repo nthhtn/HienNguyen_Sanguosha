@@ -49,8 +49,8 @@ describe('ActionList', () => {
     const el = fixture.nativeElement as HTMLElement;
     const buttons = el.querySelectorAll('button');
     expect(buttons).toHaveLength(2);
-    expect(buttons[0].textContent).toContain('End phase');
-    expect(buttons[1].textContent).toContain('Draw 1 card');
+    expect(buttons[0].textContent).toContain('End Phase');
+    expect(buttons[1].textContent).toContain('Draw 1 Card');
 
     const chosenSpy = jest.fn();
     fixture.componentInstance.actionChosen.subscribe(chosenSpy);
@@ -75,7 +75,7 @@ describe('ActionList', () => {
 
     const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll('button');
     expect(buttons).toHaveLength(1);
-    expect(buttons[0].textContent).toContain('End phase');
+    expect(buttons[0].textContent).toContain('End Phase');
   });
 
   it('renders Material buttons', () => {

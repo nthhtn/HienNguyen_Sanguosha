@@ -1,46 +1,35 @@
 import { Component, computed, input } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GameState } from 'engine';
-import { cardIdDisplayName, eventLabel } from '../labels';
+import { actionHistory } from './action-history';
+import { seatName } from '../labels';
 import { SeatTile } from './seat-tile';
-import { CardArt } from './card-art';
 import { seatPlacements } from './table-layout';
 
 const RECENT_LOG_LINES = 3;
 
 // The seats arranged around a rounded rectangular table, seen from the viewer's chair.
+// The discard pile sits beside the table (discard-pile.ts), not on it.
 // Presentational: everything shown is read straight off the (redacted) state.
 @Component({
   selector: 'app-round-table',
-  imports: [SeatTile, MatProgressSpinnerModule, CardArt],
+  imports: [SeatTile, MatProgressSpinnerModule],
   template: `
     <div class="table" [class.crowded]="state().seats.length > 6">
       <div class="felt"></div>
       <div class="centre">
         <div class="turn">Turn {{ state().turn.turnNumber }}</div>
-        <div>{{ state().turn.ownerSeatId }}'s turn</div>
+        <div>{{ name(state().turn.ownerSeatId) }}'s turn</div>
         @if (state().pendingResponse; as pending) {
-          <div class="waiting">Waiting on {{ pending.respondingSeatId }}</div>
+          <div class="waiting">Waiting on {{ name(pending.respondingSeatId) }}</div>
         }
         @if (thinkingSeatId(); as thinking) {
-          <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ thinking }} is thinking…</div>
+          <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ name(thinking) }} is thinking…</div>
         }
-        <div class="piles">Draw pile {{ pileCount('drawPile') }}</div>
-        <div class="discard">
-          @if (lastDiscard(); as card) {
-            <app-card-art size="small" [id]="card.definitionId" [label]="cardIdDisplayName(card.definitionId)" />
-            <div class="discard-text">
-              <div>Last discarded: {{ cardIdDisplayName(card.definitionId) }}</div>
-              <div>Discard {{ pileCount('discardPile') }}</div>
-            </div>
-          } @else {
-            <div class="discard-empty" aria-hidden="true"></div>
-            <div class="discard-text"><div>Discard 0</div></div>
-          }
-        </div>
+        <div class="piles">Draw Pile {{ drawPileCount() }}</div>
         <ul class="recent">
           @for (line of recentLog(); track $index) {
-            <li>{{ line }}</li>
+            <li><span [class.force-status]="!!line.force" [attr.data-force]="line.force ?? null">{{ line.text }}</span></li>
           }
         </ul>
       </div>
@@ -48,6 +37,7 @@ const RECENT_LOG_LINES = 3;
         <div class="seat" [attr.data-seat-id]="p.seat.id" [style.left.%]="p.x" [style.top.%]="p.y">
           <app-seat-tile
             [seat]="p.seat"
+            [name]="name(p.seat.id)"
             [handCount]="handCount(p.seat.hand.zoneId)"
             [isViewer]="p.isViewer"
             [isTurnOwner]="p.seat.id === state().turn.ownerSeatId"
@@ -94,9 +84,8 @@ const RECENT_LOG_LINES = 3;
     .waiting { color: #ffcc80; font-weight: bold; }
     .thinking { display: flex; align-items: center; justify-content: center; gap: 6px; color: #b1c5ff; --mdc-circular-progress-active-indicator-color: #b1c5ff; --mat-progress-spinner-active-indicator-color: #b1c5ff; }
     .recent { list-style: none; padding: 0; margin: 6px 0 0; opacity: 0.85; font-size: 0.9em; }
-    .discard { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 4px 0; }
-    .discard-text { text-align: left; }
-    .discard-empty { width: 44px; height: 60px; border: 1px dashed rgb(255 255 255 / 50%); border-radius: 4px; }
+    /* Status lines in the player's force colour, on a light chip to read on the felt. */
+    .recent .force-status { padding: 0 6px; border-radius: 6px; background: rgb(255 255 255 / 92%); }
     .seat { position: absolute; transform: translate(-50%, -50%) scale(var(--crowd, 1)); }
     /* Seat tiles are sized for a full-width table; scale them down in steps as
        the table's container narrows, so rim seats stay on screen and clear of
@@ -129,15 +118,17 @@ export class RoundTable {
 
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId()));
 
-  protected readonly recentLog = computed(() => this.state().log.slice(-RECENT_LOG_LINES).map(eventLabel));
+  // The latest few actions, oldest first, in the action history's wording.
+  protected readonly recentLog = computed(() =>
+    actionHistory(this.state().log, this.state().zones, this.state().players, this.state().seats)
+      .flatMap((e) => (e.kind === 'action' ? [e] : []))
+      .slice(0, RECENT_LOG_LINES)
+      .reverse()
+  );
 
-  // moveCard appends, so the discard pile's last card is the most recent discard.
-  protected readonly lastDiscard = computed(() => {
-    const cards = this.state().zones.find((z) => z.kind === 'discardPile')?.cards ?? [];
-    return cards.length > 0 ? cards[cards.length - 1] : null;
-  });
-
-  protected readonly cardIdDisplayName = cardIdDisplayName;
+  protected name(seatId: string): string {
+    return seatName(this.state().players, seatId);
+  }
 
   protected equipmentOf(zoneId: string) {
     return this.state().zones.find((z) => z.id === zoneId)?.cards ?? [];
@@ -147,7 +138,7 @@ export class RoundTable {
     return this.state().zones.find((z) => z.id === zoneId)?.cards.length ?? 0;
   }
 
-  protected pileCount(kind: 'drawPile' | 'discardPile'): number {
-    return this.state().zones.find((z) => z.kind === kind)?.cards.length ?? 0;
+  protected drawPileCount(): number {
+    return this.state().zones.find((z) => z.kind === 'drawPile')?.cards.length ?? 0;
   }
 }

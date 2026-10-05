@@ -33,31 +33,31 @@ describe('Wiki pages', () => {
 
   it('shows one tab per basic card', async () => {
     const { el } = await open('/wiki/basic');
-    expect(tabLabels(el())).toEqual(['Sha (1)', 'Shan (1)', 'Wine (1)', 'Peach (1)']);
+    expect(tabLabels(el())).toEqual(['Sha (1)', 'Fire Attack (1)', 'Lightning Attack (1)', 'Shan (1)', 'Wine (1)', 'Peach (1)']);
     expect(entryIds(el())).toEqual(['sha']);
   });
 
   it('opens the tab named in the URL (Review Focus 1)', async () => {
-    const { el } = await open('/wiki/equipment?tab=minus-mount');
-    expect(tabLabels(el())).toEqual(['Weapons (8)', 'Armors (1)', 'Plus Mount (3)', 'Minus Mount (3)']);
-    expect(selectedTab(el())).toBe('Minus Mount (3)');
+    const { el } = await open('/wiki/equipment?tab=offensive-mount');
+    expect(tabLabels(el())).toEqual(['Weapons (11)', 'Armors (4)', 'Defensive Mount (4)', 'Offensive Mount (3)']);
+    expect(selectedTab(el())).toBe('Offensive Mount (3)');
     expect(entryIds(el())).toEqual(['da-yuan', 'red-hare', 'zi-xing']);
   });
 
   it('falls back to the first tab for an unknown tab (Review Focus 2)', async () => {
     const { el } = await open('/wiki/equipment?tab=nope');
-    expect(selectedTab(el())).toBe('Weapons (8)');
-    expect(el().querySelectorAll('app-wiki-card-entry')).toHaveLength(8);
+    expect(selectedTab(el())).toBe('Weapons (11)');
+    expect(el().querySelectorAll('app-wiki-card-entry')).toHaveLength(11);
   });
 
   it('records the chosen tab in the URL', async () => {
     const { harness, el, router } = await open('/wiki/tools');
-    expect(tabLabels(el())).toEqual(['Instant (10)', 'Delayed (2)']);
+    expect(tabLabels(el())).toEqual(['Instant (12)', 'Delayed (3)']);
     (el().querySelectorAll('[role="tab"]')[1] as HTMLElement).click();
     await harness.fixture.whenStable();
     harness.fixture.detectChanges();
     expect(router.url).toBe('/wiki/tools?tab=delayed');
-    expect(entryIds(el())).toEqual(['capture', 'lightning']);
+    expect(entryIds(el())).toEqual(['capture', 'lightning', 'starvation']);
   });
 
   it('each card route renders its own category', async () => {
@@ -66,6 +66,6 @@ describe('Wiki pages', () => {
     await harness.navigateByUrl('/wiki/tools');
     await harness.fixture.whenStable();
     expect(el().querySelector('h2')!.textContent).toBe('Tools');
-    expect(el().querySelector('.summary')!.textContent).toContain('12 cards · 2 in the game');
+    expect(el().querySelector('.summary')!.textContent).toContain('15 cards · 2 in the game');
   });
 });

@@ -1,13 +1,16 @@
 import { Component, computed, input } from '@angular/core';
 import { GameState, cardsOverHandLimit } from 'engine';
+import { seatName } from '../labels';
+import { DecisionCountdown } from './decision-countdown';
 
-// Whose turn it is and which phase, e.g. "seat-0 (you) – Play Phase".
+// Whose turn it is and which phase, e.g. "Seat 0 (you) – Play Phase".
 // Presentational: every value comes from the (redacted) state or the engine.
 @Component({
   selector: 'app-phase-indicator',
+  imports: [DecisionCountdown],
   template: `
     <div class="phase-indicator" role="status" aria-live="polite">
-      <span class="seat">{{ state().turn.ownerSeatId }}</span>
+      <span class="seat">{{ ownerName() }}</span>
       @if (isViewersTurn()) {
         {{ ' ' }}<span class="you">(you)</span>
       }
@@ -15,9 +18,14 @@ import { GameState, cardsOverHandLimit } from 'engine';
       @if (discardsLeft() > 0) {
         {{ ' ' }}<span class="discard">– discard {{ discardsLeft() }} more</span>
       }
+      @if (isViewersTurn() && state().phase === 'Play' && !state().pendingResponse) {
+        <!-- At zero: End Phase. -->
+        <app-decision-countdown class="timer" />
+      }
     </div>
   `,
   styles: `
+    .timer { width: 160px; margin-left: 12px; }
     :host { display: block; position: sticky; top: var(--mat-toolbar-standard-height, 64px); z-index: 2; }
     @media (max-width: 599px) { :host { top: var(--mat-toolbar-mobile-height, 56px); } }
     .phase-indicator {
@@ -33,6 +41,8 @@ import { GameState, cardsOverHandLimit } from 'engine';
 export class PhaseIndicator {
   readonly state = input.required<GameState>();
   readonly viewerSeatId = input<string | null>(null);
+
+  protected readonly ownerName = computed(() => seatName(this.state().players, this.state().turn.ownerSeatId));
 
   protected readonly isViewersTurn = computed(() => this.state().turn.ownerSeatId === this.viewerSeatId());
   protected readonly discardsLeft = computed(() => {

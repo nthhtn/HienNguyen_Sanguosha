@@ -20,9 +20,10 @@ function makeSeat(overrides: Partial<Seat> = {}): Seat {
   };
 }
 
-function render(seat: Seat, opts: { handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[] } = {}) {
+function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[] } = {}) {
   const fixture = TestBed.createComponent(SeatTile);
   fixture.componentRef.setInput('seat', seat);
+  fixture.componentRef.setInput('name', opts.name ?? 'Seat 1');
   fixture.componentRef.setInput('handCount', opts.handCount ?? 4);
   fixture.componentRef.setInput('isTurnOwner', opts.isTurnOwner ?? false);
   fixture.componentRef.setInput('isResponding', opts.isResponding ?? false);
@@ -35,11 +36,12 @@ function render(seat: Seat, opts: { handCount?: number; isTurnOwner?: boolean; i
 
 describe('SeatTile', () => {
   it('shows the seat name, hidden kingdom and generals, HP and hand count', () => {
-    const el = render(makeSeat(), { handCount: 3 });
+    const el = render(makeSeat(), { handCount: 3, name: 'Hing' });
     const text = el.textContent!;
-    expect(text).toContain('seat-1');
+    expect(el.querySelector('.header strong')!.textContent).toBe('Hing');
+    expect(text).not.toContain('seat-1');
     expect(text).toContain('Hidden');
-    expect(text).toContain('a hidden general');
+    expect(text).toContain('Hidden General');
     expect(text).toContain('HP 6/8');
     expect(el.querySelector('.hand-count')!.textContent).toContain('3');
   });
@@ -56,7 +58,7 @@ describe('SeatTile', () => {
 
   it('shows a placeholder for a seat still choosing generals', () => {
     const el = render(makeSeat({ generals: null }));
-    expect(el.textContent).toContain('Choosing generals');
+    expect(el.textContent).toContain('Choosing Generals');
     expect(el.querySelectorAll('.generals app-card-art')).toHaveLength(0);
   });
 
@@ -86,11 +88,11 @@ describe('SeatTile', () => {
   it('renders four equipment slots in order, filled or empty', () => {
     const el = render(makeSeat(), { equipment: [eq('e1', 'silver-lion'), eq('e2', 'green-dragon-blade')] });
     const slots = [...el.querySelectorAll('.equip .slot')] as HTMLElement[];
-    expect(slots.map((s) => s.dataset['slot'])).toEqual(['weapon', 'armor', 'plusMount', 'minusMount']);
+    expect(slots.map((s) => s.dataset['slot'])).toEqual(['weapon', 'armor', 'defensiveMount', 'offensiveMount']);
     expect(slots[0].querySelector('app-card-art img')!.classList).toContain('small');
     expect(slots[1].querySelector('app-card-art')).not.toBeNull();
     expect(slots[2].classList).toContain('empty');
-    expect(slots[3].getAttribute('title')).toBe('−1 Horse (empty)');
+    expect(slots[3].getAttribute('title')).toBe('Offensive Mount (empty)');
   });
 
   it('ignores an equipped card with no known slot (Review Focus 5)', () => {
@@ -109,5 +111,53 @@ describe('SeatTile', () => {
     );
     expect(el.querySelector('.generals app-card-art img')!.classList).not.toContain('small');
     expect(el.querySelector('.equip .slot app-card-art img')!.classList).toContain('small');
+  });
+
+  it('shows each equipped card’s name and suit and number, and opens its Info on click', async () => {
+    const el = render(makeSeat(), { equipment: [{ instanceId: 'e1', definitionId: 'green-dragon-blade', suit: 'spade', rank: 5 }] });
+    const weapon = el.querySelector('.slot[data-slot="weapon"]')!;
+    expect(weapon.querySelector('.name')!.textContent).toBe('Green Dragon Blade');
+    expect(weapon.querySelector('.face')!.textContent).toBe('5 ♠');
+    (weapon.querySelector('button.slot-card') as HTMLButtonElement).click();
+    await new Promise((r) => setTimeout(r));
+    const info = document.querySelector('.cdk-overlay-container app-card-info-dialog')!;
+    expect(info.textContent).toContain('Green Dragon Blade');
+    // The Info popup shows the card as in the hand, at large size.
+    expect(info.querySelector('app-playing-card .card.large .face')!.textContent).toBe('5 ♠');
+    expect(info.querySelector('app-playing-card .card.large .name')!.textContent).toBe('Green Dragon Blade');
+    expect(info.textContent).toContain('Range 3');
+    document.querySelector('.cdk-overlay-container')!.replaceChildren();
+  });
+
+  it('colours the border after the seat’s force, and yellow while it is hidden', () => {
+    for (const kingdom of ['Wei', 'Shu', 'Wu', 'Qun'] as const) {
+      expect(render({ ...makeSeat(), kingdom }).querySelector('.tile')!.getAttribute('data-force')).toBe(kingdom);
+    }
+    expect(render({ ...makeSeat(), kingdom: 'hidden' }).querySelector('.tile')!.getAttribute('data-force')).toBe('none');
+  });
+
+  it('keeps the force colour on the turn owner and on a responding seat', () => {
+    const owner = render({ ...makeSeat(), kingdom: 'Shu' }, { isTurnOwner: true }).querySelector('.tile')!;
+    expect(owner.getAttribute('data-force')).toBe('Shu');
+    expect(owner.classList).toContain('turn-owner');
+    const responding = render({ ...makeSeat(), kingdom: 'Wu' }, { isResponding: true }).querySelector('.tile')!;
+    expect(responding.getAttribute('data-force')).toBe('Wu');
+  });
+
+  it('says a seat at 0 HP or below is dying, and shows its HP as it is', () => {
+    const el = render({ ...makeSeat(), combinedHp: -1 });
+    expect(el.querySelector('.status.dying')!.textContent).toContain('Dying');
+    expect(el.textContent).toContain('HP -1/');
+    expect(render({ ...makeSeat(), combinedHp: -1, eliminated: true }).querySelector('.status')!.textContent).toContain('Eliminated');
+  });
+
+  it('shows status lines in the seat’s force colour, even once eliminated', () => {
+    const dying = render({ ...makeSeat(), kingdom: 'Wu', combinedHp: 0 }).querySelector('.status')!;
+    expect(dying.classList).toContain('force-status');
+    expect(dying.getAttribute('data-force')).toBe('Wu');
+    const out = render({ ...makeSeat(), kingdom: 'Shu', eliminated: true }).querySelector('.status')!;
+    expect(out.textContent).toContain('Eliminated');
+    expect(out.getAttribute('data-force')).toBe('Shu');
+    expect(render({ ...makeSeat(), kingdom: 'hidden' }, { isResponding: true }).querySelector('.status')!.getAttribute('data-force')).toBe('none');
   });
 });

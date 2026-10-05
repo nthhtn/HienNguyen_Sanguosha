@@ -50,7 +50,6 @@ describe('HandView', () => {
     fixture.componentRef.setInput('actions', [shaAtSeat1, shaAtSeat2, equipBow, endPhase]);
     fixture.componentRef.setInput('state', state());
     fixture.componentRef.setInput('registry', registry);
-    fixture.componentRef.setInput('viewerSeatId', 'seat-0');
     played = [];
     fixture.componentInstance.play.subscribe((a) => played.push(a));
     fixture.detectChanges();
@@ -59,8 +58,6 @@ describe('HandView', () => {
 
   afterEach(() => overlay()?.replaceChildren());
 
-  const tooltipFor = (instanceId: string) =>
-    fixture.debugElement.query(By.css(`[data-card-id="${instanceId}"] .play-wrap`)).injector.get(MatTooltip);
 
   it('renders every hand card in one row, each with Play and Info buttons', () => {
     const row = el.querySelector('.hand-row')!;
@@ -69,6 +66,13 @@ describe('HandView', () => {
       expect(playButton(c.instanceId).textContent).toContain('Play');
       expect(infoButton(c.instanceId).textContent).toContain('Info');
     }
+  });
+
+  it('shows each hand card’s name and suit and number on the card itself', () => {
+    const bow = el.querySelector('[data-card-id="c-bow"]')!;
+    expect(bow.querySelector('.name')!.textContent).toBe('Crossbow');
+    expect(bow.querySelector('.face')!.textContent).toBe('A ♦');
+    expect(bow.textContent).not.toContain('attack as much as desired');
   });
 
   it('plays a card with a single legal action immediately', () => {
@@ -81,7 +85,7 @@ describe('HandView', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const items = [...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[];
-    expect(items.map((i) => i.textContent!.trim())).toEqual(['Play Sha targeting seat-1', 'Play Sha targeting seat-2']);
+    expect(items.map((i) => i.textContent!.trim())).toEqual(['Play Sha Targeting Seat 1', 'Play Sha Targeting Seat 2']);
     expect(played).toEqual([]);
     items[1].click();
     expect(played).toEqual([shaAtSeat2]);
@@ -113,33 +117,17 @@ describe('HandView', () => {
     expect(dialog.textContent).toContain('No rules text available yet');
   });
 
-  it('shows Discard, and emits the discard, for cards the engine says to discard', () => {
+  it('leaves discards to the Discard dialog: no Discard button on the cards', () => {
     const discardSha: Action = { kind: 'DiscardCardAction', seatId: 'seat-0', cardInstanceId: 'c-sha' };
     fixture.componentRef.setInput('actions', [discardSha]);
     fixture.componentRef.setInput('state', { ...state(), phase: 'Discard' });
     fixture.detectChanges();
-    expect(playButton('c-sha').textContent).toContain('Discard');
-    expect(playButton('c-sha').classList).toContain('discard');
-    playButton('c-sha').click();
-    expect(played).toEqual([discardSha]);
+    expect(el.textContent).not.toContain('Discard');
+    expect(playButton('c-sha').disabled).toBe(true);
   });
 
-  it('explains a disabled Play button', () => {
+  it('adds no tooltip to a card that cannot be played', () => {
     expect(playButton('c-peach').disabled).toBe(true);
-    expect(tooltipFor('c-peach').message).toBe("Can't be played now");
-    expect(tooltipFor('c-peach').disabled).toBe(false);
-    expect(tooltipFor('c-bow').disabled).toBe(true);
-
-    fixture.componentRef.setInput('actions', []);
-    fixture.componentRef.setInput('state', { ...state(), phase: 'Discard' });
-    fixture.detectChanges();
-    expect(tooltipFor('c-sha').message).toBe('Only in your Play phase');
-  });
-
-  it('says "Only in your Play phase" during another seat\'s Play phase', () => {
-    fixture.componentRef.setInput('actions', []);
-    fixture.componentRef.setInput('state', { ...state(), turn: { turnNumber: 1, ownerSeatId: 'seat-1', extraTurnStack: [] } });
-    fixture.detectChanges();
-    expect(tooltipFor('c-sha').message).toBe('Only in your Play phase');
+    expect(fixture.debugElement.queryAll(By.directive(MatTooltip))).toHaveLength(0);
   });
 });

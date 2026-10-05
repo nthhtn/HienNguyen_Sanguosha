@@ -115,7 +115,7 @@ describe('GeneralSelection', () => {
 
   it('fills the Main and Deputy slots in the bottom bar as cards are picked', () => {
     const slot = (role: string) => el.querySelector(`.slot.${role}`)!.textContent!;
-    expect(slot('main')).toContain('Pick a general');
+    expect(slot('main')).toContain('Pick a General');
     click('w1');
     click('w2');
     expect(slot('main')).toContain('W1');
@@ -135,19 +135,20 @@ describe('GeneralSelection header', () => {
     fixture.componentRef.setInput('actions', actions);
     fixture.componentRef.setInput('registry', registry);
     fixture.componentRef.setInput('seatId', 'seat-1');
+    fixture.componentRef.setInput('seatName', 'Hing');
     fixture.componentRef.setInput('progress', [
-      { seatId: 'seat-0', done: true },
-      { seatId: 'seat-1', done: false },
-      { seatId: 'seat-2', done: false },
+      { seatId: 'seat-0', name: 'Seat 0', done: true },
+      { seatId: 'seat-1', name: 'Hing', done: false },
+      { seatId: 'seat-2', name: 'Seat 2', done: false },
     ]);
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('h2')!.textContent).toContain('seat-1, choose your generals');
+    expect(el.querySelector('h2')!.textContent).toBe('Hing, choose your Generals');
     const chips = [...el.querySelectorAll('.progress mat-chip')];
     expect(chips.map((c) => c.textContent!.trim())).toEqual([
-      expect.stringContaining('seat-0'),
-      expect.stringContaining('seat-1'),
-      expect.stringContaining('seat-2'),
+      expect.stringContaining('Seat 0'),
+      expect.stringContaining('Hing'),
+      expect.stringContaining('Seat 2'),
     ]);
     expect(chips[0].classList).toContain('done');
     expect(chips[1].classList).toContain('current');

@@ -37,6 +37,7 @@ export class GameService {
   private readonly _lastError: WritableSignal<string | null> = signal(null);
   private readonly _mode: WritableSignal<GameMode> = signal('pass-and-play');
   private readonly _botThinkingSeatId: WritableSignal<string | null> = signal(null);
+  private readonly _gameNumber: WritableSignal<number> = signal(0);
 
   private botTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly botMemories = new Map<string, BotTurnMemory>();
@@ -46,6 +47,8 @@ export class GameService {
   readonly lastError: Signal<string | null> = this._lastError.asReadonly();
   readonly mode: Signal<GameMode> = this._mode.asReadonly();
   readonly botThinkingSeatId: Signal<string | null> = this._botThinkingSeatId.asReadonly();
+  // Counts games started, so per-game bookkeeping (e.g. clocks) can't leak into the next.
+  readonly gameNumber: Signal<number> = this._gameNumber.asReadonly();
 
   readonly humanSeatId: Signal<string | null> = computed(() => (this._mode() === 'vs-bots' ? HUMAN_SEAT_ID : null));
 
@@ -73,17 +76,20 @@ export class GameService {
     return redactStateForSeat(state, seatId);
   });
 
-  startGame(seatCount: number, seed?: number, mode: GameMode = 'pass-and-play'): void {
+  // `names[i]` names seat i; a blank or missing name keeps the mode's default ("Seat i").
+  startGame(seatCount: number, seed?: number, mode: GameMode = 'pass-and-play', names: string[] = []): void {
     this.cancelBotTimer();
     this.botMemories.clear();
     this._mode.set(mode);
+    this._gameNumber.update((n) => n + 1);
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
       const created = createGame(kingdomWarMode, this.registry, seatIds, rngSeed);
-      const players = created.players.map((p) => ({
+      const players = created.players.map((p, i) => ({
         ...p,
         kind: mode === 'vs-bots' && p.seatId !== HUMAN_SEAT_ID ? ('bot' as const) : ('human' as const),
+        name: names[i]?.trim() || p.name,
       }));
       this._state.set({ ...created, players });
       this._revealedSeatId.set(this.humanSeatId());
@@ -107,18 +113,30 @@ export class GameService {
     if (this.apply(action)) this.scheduleBotIfDue();
   }
 
+  // Resolves several actions as one move (e.g. a whole Discard phase): the
+  // view is gated once afterwards, not between them. Stops at the first error.
+  submitAll(actions: Action[]): void {
+    const activeSeatId = this.activeSeatId();
+    if (activeSeatId && this.botSeatIds().includes(activeSeatId)) return;
+    for (const action of actions) {
+      if (!this.apply(action, false)) break;
+    }
+    this._revealedSeatId.set(this.humanSeatId());
+    this.scheduleBotIfDue();
+  }
+
   clearError(): void {
     this._lastError.set(null);
   }
 
   // Resolves one action; on success the next view is gated again in
   // pass-and-play, and stays on the human's seat in vs-bots.
-  private apply(action: Action): boolean {
+  private apply(action: Action, regate = true): boolean {
     const state = this._state();
     if (!state) return false;
     try {
       this._state.set(resolve(state, action, this.ctx).state);
-      this._revealedSeatId.set(this.humanSeatId());
+      if (regate) this._revealedSeatId.set(this.humanSeatId());
       this._lastError.set(null);
       return true;
     } catch (err) {

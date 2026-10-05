@@ -16,9 +16,9 @@ describe('GameOver', () => {
 
     const text = (fixture.nativeElement as HTMLElement).textContent!;
     expect(text).toContain('Wei');
-    expect(text).toContain('seat-0');
-    expect(text).toContain('seat-2');
-    expect(text).toContain('seat-1');
+    expect(text).toContain('Seat 0');
+    expect(text).toContain('Seat 2');
+    expect(text).toContain('Seat 1');
 
     const newGameSpy = jest.fn();
     fixture.componentInstance.newGame.subscribe(newGameSpy);
@@ -50,7 +50,7 @@ describe('GameOver', () => {
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement).textContent!;
-    expect(text).toContain('seat-0 wins!');
+    expect(text).toContain('Seat 0 wins!');
     expect(text).not.toContain('Draw');
   });
 
@@ -61,5 +61,20 @@ describe('GameOver', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('mat-card')).not.toBeNull();
     expect(el.querySelector('button')!.classList).toContain('mat-mdc-button-base');
+  });
+});
+
+describe('GameOver with player names', () => {
+  it('names the winners and losers by their players’ names', () => {
+    const fixture = TestBed.createComponent(GameOver);
+    fixture.componentRef.setInput('result', { endedAt: 1, winningSeatIds: ['seat-0'], losingSeatIds: ['seat-1'] });
+    fixture.componentRef.setInput('players', [
+      { id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' },
+      { id: 'p1', seatId: 'seat-1', kind: 'bot', name: 'Seat 1' },
+    ]);
+    fixture.detectChanges();
+    const text = (fixture.nativeElement as HTMLElement).textContent!;
+    expect(text).toContain('Hing wins!');
+    expect(text).toContain('Losers: Seat 1');
   });
 });
