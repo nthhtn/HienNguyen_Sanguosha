@@ -139,7 +139,7 @@ the content data pipeline spec's extraction discipline.
    - `source.expansion?: string`.
 
    `cards/index.ts` imports `wine.json` as a basic card. This resolves the
-   content data pipeline spec's open item 6 (delayed tricks are not
+   content data pipeline spec's open item 6 (delayed tools are not
    distinguished) with a field rather than a folder, so no file moves and no
    asset path changes. That spec's open-items section is updated to say so.
 
@@ -172,7 +172,7 @@ export function wikiCardTabs(category: WikiCard['category']): WikiTab<WikiCard>[
   - A horse with no `mount` goes in a trailing "Other mounts" tab.
   - A treasure goes in a trailing "Treasures" tab.
   - These trailing tabs appear only when they have entries.
-- `wikiCardTabs('trick')` returns Instant and Delayed, keyed `instant` and
+- `wikiCardTabs('tool')` returns Instant and Delayed, keyed `instant` and
   `delayed`.
 - `wikiGenerals()` and `wikiCards()` stay. The tab functions are built on
   them.

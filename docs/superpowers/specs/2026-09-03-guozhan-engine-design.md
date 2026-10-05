@@ -172,7 +172,7 @@ Target = { kind: 'seat', seatId: string }
 Four distinct concepts replace what would otherwise be loosely-typed arrays:
 
 - **CardDefinition** — static rule data for a card type, lives in
-  `content`: `{ id, name, category: 'basic' | 'trick' | 'equipment', play: (state, ctx) => Effect[] }`.
+  `content`: `{ id, name, category: 'basic' | 'tool' | 'equipment', play: (state, ctx) => Effect[] }`.
 - **CardInstance** — one physical card: `{ instanceId, definitionId, suit, rank }`.
   Suit and rank live on the instance (not the definition) because the
   physical deck has a fixed suit/rank per card and some skills key off them.
@@ -237,7 +237,7 @@ need finer-grained hooks, but this is the current shape:
    targeting/legality module? A structurally legal action can still name an
    illegal target, so this is checked as its own stage.
 4. **Response Window** — does resolving this action open a
-   `PendingResponse` for another seat (Shan to a Sha, Wuxie to a trick)? If
+   `PendingResponse` for another seat (Shan to a Sha, Wuxie to a tool)? If
    so, `resolve()` sets `GameState.pendingResponse` and returns; the
    pipeline only continues once a matching `RespondAction`/`PassAction` is
    submitted (see Response, below).
@@ -310,7 +310,7 @@ Damage {
 ### Response
 
 Sanguosha requires pausing resolution mid-way to ask a specific seat
-whether it wants to respond (e.g. Shan to a Sha, Wuxie to cancel a trick).
+whether it wants to respond (e.g. Shan to a Sha, Wuxie to cancel a tool).
 Modeled as explicit, inspectable state rather than a hidden call-stack
 pause or synchronous callback:
 

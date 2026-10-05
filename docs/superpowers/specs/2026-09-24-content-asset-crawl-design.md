@@ -17,7 +17,7 @@ sub-project), so there is no consumer to integrate with today.
 ## Key finding from the pre-design spike
 
 Before designing storage/process, a spike against four sample pages (one
-general, one weapon, one horse, one trick card) confirmed two things that
+general, one weapon, one horse, one tool card) confirmed two things that
 shape this design:
 
 1. **"General portrait" and "card face art" are the same asset.** Each
@@ -71,7 +71,7 @@ The prior text-crawl milestone required heavy supervision because a naive
 LLM fetch-and-summarize pass was observed to **fabricate** plausible-looking
 field values. Image identification does not carry that risk in the same
 way: the spike found a single, consistent, mechanical marker across every
-page template sampled (general, weapon, horse, trick) — the content image
+page template sampled (general, weapon, horse, tool) — the content image
 is the only `<img>` tag with `class="CENy8b"`; every other `<img>` on the
 page is a duplicate copy of the site's own banner logo. This is a structural
 HTML property to check for, not a judgment call about what a page "means,"
@@ -88,7 +88,7 @@ projects/content/assets/
     shu/..., wu/..., qun/...
   cards/
     basic/sha.jpg, ...                       (same subfolder layout as data/cards/)
-    trick/duel.jpg, ...
+    tool/duel.jpg, ...
     equipment/weapon/crossbow.jpg, ...
     equipment/armor/eight-trigrams.jpg
     equipment/horse/di-lu.jpg, ...
@@ -182,7 +182,7 @@ for it. Verification is:
   correctness safeguard — it refuses to store an unidentified image rather
   than silently storing a wrong one.
 - After running the full crawl, manually open a spot-check sample spanning
-  every category (at least one general, one basic card, one trick card, one
+  every category (at least one general, one basic card, one tool card, one
   weapon, one horse, one armor) and visually confirm each downloaded image
   matches its id before treating the batch as good.
 - Confirm `git status` shows only `manifest.json`/`README.md` as trackable

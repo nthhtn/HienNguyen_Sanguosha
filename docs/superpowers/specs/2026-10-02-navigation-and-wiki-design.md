@@ -10,7 +10,7 @@ Date: 2026-10-02
    Game** and **Wiki**.
 2. **Wiki.** A read-only reference of the game's content, split into four
    pages: **Generals**, **Basic Cards**, **Equipments**, and **Tools** (the
-   source site's name for trick cards).
+   source site's name for tool cards).
 
 Decisions settled with the user:
 - The Wiki lists **every crawled base-set card and general**, not only those
@@ -63,7 +63,7 @@ export const WIKI_ROUTES: Routes = [
   { path: 'generals', loadComponent: () => import('./wiki-generals').then((m) => m.WikiGenerals) },
   { path: 'basic', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'basic' } },
   { path: 'equipment', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'equipment' } },
-  { path: 'tools', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'trick' } },
+  { path: 'tools', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'tool' } },
   { path: '', redirectTo: 'generals', pathMatch: 'full' },
 ];
 ```
@@ -100,7 +100,7 @@ export interface WikiCard {
   id: string;
   name: string;
   nameZh: string | null;
-  category: 'basic' | 'trick' | 'equipment';
+  category: 'basic' | 'tool' | 'equipment';
   subtype: 'weapon' | 'armor' | 'horse' | 'treasure' | null;
   text: string | null;
   range: number | null;
@@ -119,7 +119,7 @@ export function wikiCards(category: WikiCard['category']): WikiCard[];
   - `skillsInGame` = `GENERAL_SKILLS.has(id)`.
 - **Order:**
   - Generals by kingdom (Wei, Shu, Wu, Qun), then by name.
-  - Basic and trick cards by name.
+  - Basic and tool cards by name.
   - Equipment by subtype (weapon, armor, horse, treasure), then by name.
 - **Silver Lion** is in the registry but has no data file, so it does not
   appear. The Wiki lists data files.
@@ -183,7 +183,7 @@ Content (Jest, `projects/content`):
   zhao-yun, huang-yueying (the ids in `GENERAL_SKILLS`). Cao Cao does not,
   but carries both skills with their Chinese names. Lu Meng has
   `nameZh: null`.
-- `wikiCards('basic' | 'equipment' | 'trick')`: counts 3 / 15 / 12; equipment
+- `wikiCards('basic' | 'equipment' | 'tool')`: counts 3 / 15 / 12; equipment
   ordered by subtype; `inGame` matches the registry; a horse has
   `text: null`; Duel's printings are ♠A ♣A ♦A; Silver Lion appears nowhere.
 

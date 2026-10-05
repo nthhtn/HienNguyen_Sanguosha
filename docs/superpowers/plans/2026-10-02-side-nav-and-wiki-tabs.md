@@ -60,7 +60,7 @@
 
 **Files:**
 - Modify: `projects/content/data/cards/equipment/horse/*.json` (6 files)
-- Modify: `projects/content/data/cards/trick/capture.json` and `projects/content/data/cards/trick/lightning.json`
+- Modify: `projects/content/data/cards/tool/capture.json` and `projects/content/data/cards/tool/lightning.json`
 - Create: `projects/content/data/cards/basic/wine.json`
 - Modify: `projects/content/data/cards/index.ts`
 - Modify: `projects/content/assets/manifest.json` (via the crawler)
@@ -106,7 +106,7 @@ In `projects/content/src/lib/wiki.spec.ts`, replace the test "lists the basic ca
   });
 
   it('marks exactly Capture and Lightning as delayed', () => {
-    expect(wikiCards('trick').filter((c) => c.delayed).map((c) => c.id)).toEqual(['capture', 'lightning']);
+    expect(wikiCards('tool').filter((c) => c.delayed).map((c) => c.id)).toEqual(['capture', 'lightning']);
     expect([...wikiCards('basic'), ...wikiCards('equipment')].some((c) => c.delayed)).toBe(false);
   });
 ```
@@ -147,7 +147,7 @@ for horse in ['red-hare', 'da-yuan', 'zi-xing']:
 
 # AllCards spreadsheet Type "Delay Tool".
 for tool in ['capture', 'lightning']:
-    edit(f'trick/{tool}.json', delayed=True)
+    edit(f'tool/{tool}.json', delayed=True)
 
 # Army expansion page text (verbatim) + AllCards spreadsheet Wine row (Army, Number 5).
 write(root / 'basic' / 'wine.json', {
@@ -219,7 +219,7 @@ Expected: PASS.
 
 - [ ] **Step 8: Close the pipeline spec's open item**
 
-In `docs/superpowers/specs/2026-09-09-content-data-pipeline-design.md`, append to open item 6 ("Delayed tricks are not distinguished in the data"):
+In `docs/superpowers/specs/2026-09-09-content-data-pipeline-design.md`, append to open item 6 ("Delayed tools are not distinguished in the data"):
 
 ```markdown
    **Resolved 2026-10-02** (see `2026-10-02-side-nav-and-wiki-tabs-design.md`)
@@ -302,7 +302,7 @@ describe('wiki tabs', () => {
   });
 
   it('splits Tools into Instant and Delayed', () => {
-    const tabs = wikiCardTabs('trick');
+    const tabs = wikiCardTabs('tool');
     expect(summary(tabs)).toEqual([['instant', 'Instant', 10], ['delayed', 'Delayed', 2]]);
     expect(tabs[1].entries.map((c) => c.id)).toEqual(['capture', 'lightning']);
   });
@@ -400,7 +400,7 @@ export function wikiGeneralTabs(): WikiTab<WikiGeneral>[] {
 const CARD_TABS: Record<WikiCard['category'], (cards: WikiCard[]) => WikiTab<WikiCard>[]> = {
   basic: basicTabs,
   equipment: equipmentTabs,
-  trick: toolTabs,
+  tool: toolTabs,
 };
 
 export function wikiCardTabs(category: WikiCard['category']): WikiTab<WikiCard>[] {
@@ -621,7 +621,7 @@ import { wikiCardTabs, wikiCards, WikiCard } from 'content';
 import { WikiCardEntry } from './wiki-card-entry';
 import { tabQueryParam } from './tab-param';
 
-const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards', equipment: 'Equipments', trick: 'Tools' };
+const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards', equipment: 'Equipments', tool: 'Tools' };
 
 // One page per card category; the category comes from the route's data and
 // the tabs from content.

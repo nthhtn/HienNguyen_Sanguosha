@@ -3,7 +3,7 @@
 Status: Approved for implementation planning
 Date: 2026-09-09 (revised 2026-09-10: authoritative spreadsheets discovered
 mid-crawl; data model restructured to one-file-per-item; full base-set crawl
-completed; revised 2026-10-02: the 9 remaining base-set trick cards crawled)
+completed; revised 2026-10-02: the 9 remaining base-set tool cards crawled)
 
 ## Purpose
 
@@ -31,7 +31,7 @@ In scope:
   data fields (currently hardcoded in `setOne.ts`/`setTwo.ts`/`cards/*.ts`) into
   the new data files, with `setOne.ts`/`setTwo.ts` refactored to export logic only.
 - The base-set crawl: the 25 base-set generals (Wei 7, Shu 7, Wu 8, Hero/Qun 3)
-  and the base card set (3 basic + 12 trick + 15 equipment = 30 cards) —
+  and the base card set (3 basic + 12 tool + 15 equipment = 30 cards) —
   **crawl is now complete**, see "Base-set crawl results" below.
 - A documented crawl process that turned out to combine two sources: two
   authoritative spreadsheets (kingdom/HP/gender for generals; suit/rank/count for
@@ -74,7 +74,7 @@ projects/content/data/
     index.ts
   cards/
     basic/sha.json, shan.json, peach.json
-    trick/duel.json, wuxie.json, draw-two.json, barbarians.json, break.json,
+    tool/duel.json, wuxie.json, draw-two.json, barbarians.json, break.json,
           capture.json, coerce.json, hail-of-arrows.json, harvest.json,
           lightning.json, peach-garden.json, steal.json
     equipment/weapon/crossbow.json, black-pommel.json, gender-swords.json,
@@ -121,7 +121,7 @@ interface CardFileData {
                   // absent for the 6 horse cards, see Open Items
   range?: number; // weapons only, e.g. Crossbow's "Range: 1"
   printings?: Array<{ suit: 'spade' | 'heart' | 'club' | 'diamond'; rank: number }>;
-                     // basic/trick cards only — every real physical copy's
+                     // basic/tool cards only — every real physical copy's
                      // printed suit/rank, from the AllCards spreadsheet
   count?: number; // number of physical copies in a standard base-set deck
   source: { url: string; site: string; crawledAt: string };
@@ -129,7 +129,7 @@ interface CardFileData {
 ```
 
 `cards/index.ts` imports every file, adds `category` (derived from the
-top-level folder: `basic/` | `trick/` | `equipment/`) and `subtype` (derived
+top-level folder: `basic/` | `tool/` | `equipment/`) and `subtype` (derived
 from the sub-folder, equipment only: `weapon/` | `armor/` | `horse/`), and
 exports `cardsData: Record<string, CardData>` where
 `CardData extends CardFileData { category: ...; subtype?: ... }`.
@@ -248,7 +248,7 @@ real discrepancy found (see Open Items, Lu Bu). `null` remains the explicit
 placeholder for "not yet looked up in the spreadsheet" — never a guessed number.
 
 The equivalent `AllCards` spreadsheet (linked from the `cards` hub page) is the
-source of truth for `printings`/`count` on basic and trick cards. Equipment is
+source of truth for `printings`/`count` on basic and tool cards. Equipment is
 not in either spreadsheet — its `text`/`range` still comes from page-by-page
 crawling (see Extraction discipline).
 
@@ -343,7 +343,7 @@ reported as absent rather than guessed — see Open Items). A later re-check
 found two pilot-batch prose fields that do not match their source pages —
 see Open Items, item 5.
 
-The last 9 trick cards (Barbarians, Break, Capture, Coerce, Hail of Arrows,
+The last 9 tool cards (Barbarians, Break, Capture, Coerce, Hail of Arrows,
 Harvest, Lightning, Peach Garden, Steal) were added on 2026-10-02 the same
 way: `printings`/`count` from the AllCards spreadsheet's Base rows (`Number`
 column; printing count checked against it for every card), `name`/`nameZh`/
@@ -353,7 +353,7 @@ notes. Completeness was checked against the site's Base hub page
 (`expansions/original/base`), which lists exactly these 25 generals and 30
 cards.
 
-Cards: 3 basic (Sha, Shan, Peach), 12 trick (10 instant, plus 2 delayed —
+Cards: 3 basic (Sha, Shan, Peach), 12 tool (10 instant, plus 2 delayed —
 Capture and Lightning, see Open Items, item 6), 8 weapons, 1 armor (Eight
 Trigrams — the only Base-set armor that exists), 6 horses (data-only, no rule
 text available — see Open Items).
@@ -404,12 +404,12 @@ before this data is treated as fully authoritative:
    the source must take damage or attack. Whoever does not attack, takes
    damage."; Negate: "Any player can play this in response to any tool card
    being played. The tool card then no longer works." (Draw Two, the third
-   pilot-batch trick, does match.) Not yet corrected.
-6. **Delayed tricks are not distinguished in the data.** The AllCards
+   pilot-batch tool, does match.) Not yet corrected.
+6. **Delayed tools are not distinguished in the data.** The AllCards
    spreadsheet types Capture and Lightning as "Delay Tool", but they sit in
-   the flat `trick/` folder with no `subtype`, same as instant tricks. The
+   the flat `tool/` folder with no `subtype`, same as instant tools. The
    engine will need the distinction once either is implemented; options
-   include a `trick/delay/` sub-folder that derives a `subtype: 'delay'`,
+   include a `tool/delay/` sub-folder that derives a `subtype: 'delay'`,
    which would extend the folder-derived-field rule beyond equipment. Their
    card art is also landscape (974×654), unlike every other card.
    **Resolved 2026-10-02** (see `2026-10-02-side-nav-and-wiki-tabs-design.md`)
@@ -428,7 +428,7 @@ before this data is treated as fully authoritative:
   every not-yet-implemented card, not an error condition).
 - The 6-general/7-card migration is checked by the *unchanged* existing
   general/card spec files (`setOne.spec.ts`, `setTwo.spec.ts`, `cards.spec.ts`,
-  `tricks.spec.ts`) continuing to pass byte-for-byte after the refactor — this is
+  `tools.spec.ts`) continuing to pass byte-for-byte after the refactor — this is
   the regression proof that the migration preserved behavior.
 - No test asserts against the crawled prose fields' exact wording (`skills[].text`,
   `cards[].text`) — those are reference data, not executable behavior, and pinning

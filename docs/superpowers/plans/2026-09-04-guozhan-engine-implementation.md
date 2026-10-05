@@ -45,7 +45,7 @@ projects/engine/src/lib/
 
 projects/content/src/lib/
   cards/sha.ts, cards/shan.ts, cards/peach.ts, cards/cards.spec.ts
-  cards/duel.ts, cards/wuxie.ts, cards/equipment.ts, cards/tricks.spec.ts
+  cards/duel.ts, cards/wuxie.ts, cards/equipment.ts, cards/tools.spec.ts
   generals/setOne.ts, generals/setOne.spec.ts
   generals/setTwo.ts, generals/setTwo.spec.ts
   shared/queries.ts                                             — findSeatIdForGeneral, getSeatDistance (used by generals/*, no standalone spec — exercised through the general specs above)
@@ -62,7 +62,7 @@ projects/sim/src/
   tsconfig.json
 ```
 
-Each `lib` subfolder has one clear responsibility (RNG, domain types, card/zone mechanics, registries, the pipeline, skills, rule modules, setup). `content` mirrors this by content category (basic cards, trick cards, two general sets, the mode definition) so each file stays focused and files that change together (a card and its test) live together.
+Each `lib` subfolder has one clear responsibility (RNG, domain types, card/zone mechanics, registries, the pipeline, skills, rule modules, setup). `content` mirrors this by content category (basic cards, tool cards, two general sets, the mode definition) so each file stays focused and files that change together (a card and its test) live together.
 
 ---
 
@@ -755,7 +755,7 @@ export interface PlayContext {
 export interface CardDefinition {
   id: string;
   name: string;
-  category: 'basic' | 'trick' | 'equipment';
+  category: 'basic' | 'tool' | 'equipment';
   play(state: GameState, ctx: PlayContext): unknown[];
 }
 
@@ -3199,16 +3199,16 @@ git commit -m "feat(content): add Sha, Shan, and Peach cards"
 
 ---
 
-## Task 16: Trick cards Duel/Wuxie Kongjie and two equipment cards (content)
+## Task 16: Tool cards Duel/Wuxie Kongjie and two equipment cards (content)
 
 **Rule text (written before implementation):**
 - **Duel (决斗)** — simplified for this milestone: play, targeting one other living seat. Opens a response window where the target may respond with Sha to cancel Duel's damage entirely, or Pass and take 2 points of normal damage from the source. *(Simplification: the official rule has both sides alternate playing Sha until one side stops, with the loser taking damage — an extension of this same `PendingResponse` mechanism, deferred here to keep this task bite-sized. Note: full alternation lets a seat take damage from a card it played itself, which is the first thing in this content pack able to eliminate a seat mid-resolution — so it depends on the eliminated-seat handling added in the final review's Fix 5 (turn advancement skipping/continuing past eliminated seats, `getLegalActions`/`seatToAct` refusing to act for an eliminated seat, triggers not being gathered for an eliminated seat's generals, and an all-eliminated draw result), which is now already in place.)*
-- **Wuxie Kongjie (无懈可击 / Nullify)** — simplified for this milestone: playable only by the seat Duel is currently targeting (added to Duel's response whitelist alongside Sha); cancels Duel's damage the same way Sha's counter does. *(Simplification: the official rule lets any seat nullify a trick card, not only its target — supporting that needs `PendingResponse.respondingSeatId` broadened from one seat to a set of eligible seats, a natural but out-of-scope engine extension here.)*
+- **Wuxie Kongjie (无懈可击 / Nullify)** — simplified for this milestone: playable only by the seat Duel is currently targeting (added to Duel's response whitelist alongside Sha); cancels Duel's damage the same way Sha's counter does. *(Simplification: the official rule lets any seat nullify a tool card, not only its target — supporting that needs `PendingResponse.respondingSeatId` broadened from one seat to a set of eligible seats, a natural but out-of-scope engine extension here.)*
 - **Equipment (this milestone):** two equipment cards, "Silver Lion" (armor) and "Green Dragon Blade" (weapon). Playing either only moves the card into the playing seat's equip zone via `MoveCardEffect` — neither grants a passive ability yet. *(Simplification: a passive equipment ability needs `gatherTriggeredSkills` to also scan a seat's equipped cards, not only its generals — the same trigger-point mechanism already supports it, deferred here.)*
 
 **Files:**
 - Create: `projects/content/src/lib/cards/duel.ts`, `wuxie.ts`, `equipment.ts`
-- Test: `projects/content/src/lib/cards/tricks.spec.ts`
+- Test: `projects/content/src/lib/cards/tools.spec.ts`
 
 **Interfaces:**
 - Produces: `duelCard: CardDefinition`, `wuxieCard: CardDefinition`, `silverLionCard: CardDefinition`, `greenDragonBladeCard: CardDefinition`.
@@ -3216,7 +3216,7 @@ git commit -m "feat(content): add Sha, Shan, and Peach cards"
 - [ ] **Step 1: Write the failing test**
 
 ```ts
-// projects/content/src/lib/cards/tricks.spec.ts
+// projects/content/src/lib/cards/tools.spec.ts
 import { duelCard } from './duel';
 import { wuxieCard } from './wuxie';
 import { silverLionCard, greenDragonBladeCard } from './equipment';
@@ -3327,7 +3327,7 @@ describe('Equipment', () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx jest tricks.spec.ts`
+Run: `npx jest tools.spec.ts`
 Expected: FAIL with "Cannot find module './duel'" (etc).
 
 - [ ] **Step 3: Write minimal implementations**
@@ -3339,7 +3339,7 @@ import type { CardDefinition } from 'engine';
 export const duelCard: CardDefinition = {
   id: 'duel',
   name: 'Duel',
-  category: 'trick',
+  category: 'tool',
   play: (_state, ctx) => {
     if (ctx.respondingTo) return [];
     if (ctx.targets.length === 0) return []; // no target chosen — a no-op rather than a crash
@@ -3378,7 +3378,7 @@ import type { CardDefinition } from 'engine';
 export const wuxieCard: CardDefinition = {
   id: 'wuxie',
   name: 'Wuxie Kongjie',
-  category: 'trick',
+  category: 'tool',
   play: () => [],
 };
 ```
@@ -3404,7 +3404,7 @@ export const greenDragonBladeCard = makeEquipmentCard('green-dragon-blade', 'Gre
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx jest tricks.spec.ts`
+Run: `npx jest tools.spec.ts`
 Expected: PASS (6 tests).
 
 - [ ] **Step 5: Commit**

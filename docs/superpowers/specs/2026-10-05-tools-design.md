@@ -7,7 +7,7 @@ Date: 2026-10-05
 
 ## Purpose
 
-Make every Tool (trick) card playable with its real rules. Today Duel and
+Make every Tool card playable with its real rules. Today Duel and
 Wuxie Kongjie are in the game. Wuxie only answers a Duel, and it can't be
 cancelled in turn. The other ten Tools are data only.
 

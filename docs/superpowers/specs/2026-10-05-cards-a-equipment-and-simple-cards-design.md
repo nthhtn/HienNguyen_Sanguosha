@@ -21,7 +21,7 @@ Decisions settled during brainstorming:
 - **Fidelity:** faithful rules, delivered in phases. A card joins the deck
   only once its rules really work. A card whose full rules need a later
   sub-project joins now only if the missing part is a separate use that can
-  wait. Wine's dying rescue (E) and Wuxie windows on tricks (B) are such parts.
+  wait. Wine's dying rescue (E) and Wuxie windows on tools (B) are such parts.
 - **Order:** A → B → E → C → D → F (roadmap below).
 - **Deck:** built from each card's real printings in the data, exactly the
   printed quantity of each card at every table size.
@@ -77,11 +77,11 @@ Trigrams joins in D.
   (replaced by another armour, or later taken or discarded by another card),
   you recover 1 health, up to your max. This happens after the move.
 
-### Draw Two (trick)
+### Draw Two (tool)
 
 Play it with no target. You draw 2 cards.
 
-Wuxie can't negate it yet. Sub-project B adds a Wuxie window to every trick
+Wuxie can't negate it yet. Sub-project B adds a Wuxie window to every tool
 at once, Draw Two included.
 
 ### Wine (basic)
@@ -302,7 +302,7 @@ already show all four slots.
 
 | Sub-project | Delivers |
 |---|---|
-| **B** | A resumable resolution queue. Barbarians, Hail of Arrows, Peach Garden, Harvest. Wuxie windows on every trick (chainable). |
+| **B** | A resumable resolution queue. Barbarians, Hail of Arrows, Peach Garden, Harvest. Wuxie windows on every tool (chainable). |
 | **E** | The dying state and a rescue window for everyone: Peach on others, Wine on yourself. |
 | **C** | A generic "choose a card / choose an option" decision, with UI and bot support. Steal, Break, Coerce, Longbow, Gender Swords, Axe. |
 | **D** | Judgments and the judgment zone: Lightning, Capture, Eight Trigrams. |

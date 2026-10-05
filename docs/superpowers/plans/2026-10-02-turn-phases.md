@@ -944,7 +944,7 @@ Replace the test "ends the phase outside the Play phase" with:
   describe('in the Discard phase', () => {
     const hand = (...ids: [string, string][]) => ids.map(([instanceId, definitionId]) => ({ instanceId, definitionId }));
 
-    it('discards a trick before equipment, Sha, Shan or Peach', () => {
+    it('discards a tool before equipment, Sha, Shan or Peach', () => {
       const h = hand(['p', 'peach'], ['s', 'sha'], ['d', 'duel'], ['e', 'shan'], ['b', 'blade']);
       const legal = h.map((c) => discard(c.instanceId));
       expect(decide(view({ phase: 'Discard', hand: h }), legal).action).toEqual(discard('d'));

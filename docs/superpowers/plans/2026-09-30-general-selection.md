@@ -571,7 +571,7 @@ Every spec file below has exactly one `result: null,` at the end of a line insid
 ```bash
 for f in projects/app/src/app/labels.spec.ts projects/app/src/app/game-board/action-list.spec.ts \
   projects/content/src/lib/generals/setOne.spec.ts projects/content/src/lib/generals/setTwo.spec.ts \
-  projects/content/src/lib/cards/tricks.spec.ts projects/content/src/lib/cards/cards.spec.ts \
+  projects/content/src/lib/cards/tools.spec.ts projects/content/src/lib/cards/cards.spec.ts \
   projects/content/src/lib/shared/queries.spec.ts projects/sim/src/bot.spec.ts projects/sim/src/invariants.spec.ts \
   projects/engine/src/lib/pipeline/winCondition.spec.ts projects/engine/src/lib/pipeline/resolve.spec.ts \
   projects/engine/src/lib/setup/gameSetup.spec.ts projects/engine/src/lib/rules/phaseSequence.spec.ts \
@@ -604,7 +604,7 @@ If `tsc` reports another `seat.generals` access in a spec that the sed missed, a
 ```bash
 git add projects/engine/src projects/content/src/lib/modes/kingdomWar.ts projects/content/src/lib/modes/kingdomWar.spec.ts \
   projects/content/src/lib/generals/setOne.spec.ts projects/content/src/lib/generals/setTwo.spec.ts \
-  projects/content/src/lib/cards/tricks.spec.ts projects/content/src/lib/cards/cards.spec.ts \
+  projects/content/src/lib/cards/tools.spec.ts projects/content/src/lib/cards/cards.spec.ts \
   projects/content/src/lib/shared/queries.spec.ts projects/sim/src/bot.spec.ts projects/sim/src/invariants.spec.ts \
   projects/app/src/app/labels.spec.ts projects/app/src/app/game-board/action-list.spec.ts projects/app/src/app/game.service.spec.ts
 git commit -m "feat(engine): model the general-selection phase and nullable seat generals

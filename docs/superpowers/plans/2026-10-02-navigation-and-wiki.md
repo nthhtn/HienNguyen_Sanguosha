@@ -68,7 +68,7 @@ export interface WikiGeneral {
   kingdom: 'Wei' | 'Shu' | 'Wu' | 'Qun'; maxHp: number | null; skills: WikiSkill[]; skillsInGame: boolean;
 }
 export interface WikiCard {
-  id: string; name: string; nameZh: string | null; category: 'basic' | 'trick' | 'equipment';
+  id: string; name: string; nameZh: string | null; category: 'basic' | 'tool' | 'equipment';
   subtype: 'weapon' | 'armor' | 'horse' | 'treasure' | null; text: string | null; range: number | null;
   count: number | null; printings: { suit: 'spade' | 'heart' | 'club' | 'diamond'; rank: number }[]; inGame: boolean;
 }
@@ -135,7 +135,7 @@ describe('wikiCards', () => {
   });
 
   it('lists the 12 tools, with Duel and Wuxie in the game and their printings', () => {
-    const tools = wikiCards('trick');
+    const tools = wikiCards('tool');
     expect(tools).toHaveLength(12);
     expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['duel', 'wuxie']);
     const duel = tools.find((c) => c.id === 'duel')!;
@@ -144,7 +144,7 @@ describe('wikiCards', () => {
   });
 
   it('never lists Silver Lion, which has no data file', () => {
-    for (const category of ['basic', 'equipment', 'trick'] as const) {
+    for (const category of ['basic', 'equipment', 'tool'] as const) {
       expect(wikiCards(category).some((c) => c.id === 'silver-lion')).toBe(false);
     }
   });
@@ -316,7 +316,7 @@ const caoCao: WikiGeneral = {
   skills: [{ name: 'Evil Hero', nameZh: '奸雄', text: 'When Cao Cao is damaged by a card, he can put it into his hand.' }],
 };
 const duel: WikiCard = {
-  id: 'duel', name: 'Duel', nameZh: '决斗', category: 'trick', subtype: null, text: 'A player can target anyone with this card.',
+  id: 'duel', name: 'Duel', nameZh: '决斗', category: 'tool', subtype: null, text: 'A player can target anyone with this card.',
   range: null, count: 3, printings: [{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }], inGame: true,
 };
 const redHare: WikiCard = {
@@ -717,7 +717,7 @@ import { ActivatedRoute } from '@angular/router';
 import { wikiCards, WikiCard } from 'content';
 import { WikiCardEntry } from './wiki-card-entry';
 
-const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards', equipment: 'Equipments', trick: 'Tools' };
+const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards', equipment: 'Equipments', tool: 'Tools' };
 const SUBTYPE_TITLES: Record<NonNullable<WikiCard['subtype']>, string> = {
   weapon: 'Weapons',
   armor: 'Armor',
@@ -775,7 +775,7 @@ export const WIKI_ROUTES: Routes = [
   { path: 'generals', loadComponent: () => import('./wiki-generals').then((m) => m.WikiGenerals) },
   { path: 'basic', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'basic' } },
   { path: 'equipment', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'equipment' } },
-  { path: 'tools', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'trick' } },
+  { path: 'tools', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'tool' } },
   { path: '', redirectTo: 'generals', pathMatch: 'full' },
 ];
 ```

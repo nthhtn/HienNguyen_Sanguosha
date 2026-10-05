@@ -57,7 +57,7 @@ resolved, the phase passes to the next one, unless it waits for the player:
 | Phase | Waits for the player when… | Otherwise |
 |---|---|---|
 | Start | never (no Start skills exist yet) | passes |
-| Judgment | never (no delayed tricks can be played yet) | passes |
+| Judgment | never (no delayed tools can be played yet) | passes |
 | Draw | never | passes after the draw triggers (2 cards, plus Insight) |
 | Play | always | — |
 | Discard | the hand holds more cards than the hand limit | passes |
@@ -306,7 +306,7 @@ Discard in the Discard phase, and the disabled-Play tooltip shows.
 
 ## Out of scope
 
-- Delayed tricks and judgments. Judgment always passes until Capture and
+- Delayed tools and judgments. Judgment always passes until Capture and
   Lightning are implemented (the Judgment phase is ready for them).
 - Skills that change the hand limit or skip phases.
 - Optional "at the start of your turn" skills that ask the player a question

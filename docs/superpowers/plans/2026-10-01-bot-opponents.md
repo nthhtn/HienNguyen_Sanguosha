@@ -178,7 +178,7 @@ const registry: ContentRegistry = {
   generals: new Map([general('w1', 'Wei', 4), general('w2', 'Wei', 3), general('s1', 'Shu', 4), general('s2', 'Shu', 5)]),
   cards: new Map([
     card('sha', 'basic'), card('shan', 'basic'), card('peach', 'basic'),
-    card('duel', 'trick'), card('wuxie', 'trick'), card('blade', 'equipment'),
+    card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment'),
   ]),
 };
 
