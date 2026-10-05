@@ -1,4 +1,4 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { GeneralInstance, SeatGenerals } from 'engine';
@@ -47,8 +47,8 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance): AvatarHalf {
           [attr.aria-label]="h.masked ? h.name : 'Info: ' + h.name"
           (click)="openInfo(h)"
         >
-          @if (h.url; as url) {
-            <img [src]="url" [alt]="h.name" />
+          @if (h.url && !failedUrls().has(h.url)) {
+            <img [src]="h.url" [alt]="h.name" (error)="markFailed(h.url)" />
           } @else {
             <span class="placeholder"></span>
           }
@@ -108,6 +108,14 @@ export class SeatAvatar {
   readonly generals = input.required<SeatGenerals>();
 
   protected readonly halves = computed(() => [toHalf('main', this.generals().main), toHalf('deputy', this.generals().deputy)]);
+
+  // Art that didn't load (e.g. not crawled on this machine) falls back to the
+  // captioned placeholder rather than a broken image.
+  protected readonly failedUrls = signal<ReadonlySet<string>>(new Set());
+
+  protected markFailed(url: string): void {
+    this.failedUrls.update((urls) => new Set(urls).add(url));
+  }
 
   private readonly dialog = inject(MatDialog);
 

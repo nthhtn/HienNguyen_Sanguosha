@@ -63,6 +63,22 @@ describe('SeatAvatar', () => {
     expect(main.querySelector('.caption')!.textContent!.trim()).toBe('No Such General');
   });
 
+  it('falls back to the captioned placeholder when a portrait fails to load (e.g. card back not crawled)', () => {
+    const fixture = TestBed.createComponent(SeatAvatar);
+    fixture.componentRef.setInput('generals', {
+      main: { generalDefinitionId: 'hidden', revealed: false },
+      deputy: { generalDefinitionId: 'zhao-yun', revealed: true },
+    });
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    half(el, 'main').querySelector('img')!.dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+    expect(half(el, 'main').querySelector('img')).toBeNull();
+    expect(half(el, 'main').querySelector('.placeholder')).not.toBeNull();
+    expect(half(el, 'main').querySelector('.caption')!.textContent!.trim()).toBe('Hidden');
+    expect(src(half(el, 'deputy'))).toBe('/card-art/generals/shu/zhao-yun.jpg');
+  });
+
   it('opens the General’s info from a known half, and nothing from another seat’s hidden half (Review Focus 4)', async () => {
     const el = render({
       main: { generalDefinitionId: 'hidden', revealed: false },
