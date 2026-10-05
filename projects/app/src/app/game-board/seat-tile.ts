@@ -3,8 +3,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
 import { equipSlotOf } from 'content';
-import { cardIdDisplayName, forceOf, generalDisplayName, kingdomDisplayName } from '../labels';
-import { CardArt } from './card-art';
+import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
+import { SeatAvatar } from './seat-avatar';
 import { PlayingCard } from './playing-card';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 
@@ -18,7 +18,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
 // One seat at the round table, compact enough to sit on the table's rim.
 @Component({
   selector: 'app-seat-tile',
-  imports: [CardArt, PlayingCard, MatIconModule],
+  imports: [SeatAvatar, PlayingCard, MatIconModule],
   template: `
     <div
       class="tile"
@@ -39,14 +39,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       </div>
       <div class="generals">
         @if (seat().generals; as generals) {
-          <app-card-art
-            [id]="generals.main.generalDefinitionId"
-            [label]="generalDisplayName(generals.main.generalDefinitionId)"
-          />
-          <app-card-art
-            [id]="generals.deputy.generalDefinitionId"
-            [label]="generalDisplayName(generals.deputy.generalDefinitionId)"
-          />
+          <app-seat-avatar [generals]="generals" />
         } @else {
           <span class="choosing">Choosing Generals…</span>
         }
@@ -158,6 +151,5 @@ export class SeatTile {
   );
   protected readonly cardIdDisplayName = cardIdDisplayName;
 
-  protected readonly generalDisplayName = generalDisplayName;
   protected readonly kingdomDisplayName = kingdomDisplayName;
 }

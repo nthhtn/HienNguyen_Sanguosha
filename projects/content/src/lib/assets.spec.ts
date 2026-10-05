@@ -1,4 +1,4 @@
-import { cardArtUrl } from './assets';
+import { cardArtUrl, HIDDEN_GENERAL_ART_URL } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /card-art/ URL for a crawled id', () => {
@@ -15,5 +15,11 @@ describe('cardArtUrl', () => {
 
   it('returns null for the "hidden" redaction sentinel', () => {
     expect(cardArtUrl('hidden')).toBeNull();
+  });
+});
+
+describe('HIDDEN_GENERAL_ART_URL', () => {
+  it('points at the General card back that ships with the content assets', () => {
+    expect(HIDDEN_GENERAL_ART_URL).toBe('/card-art/generals/unnamed.jpg');
   });
 });

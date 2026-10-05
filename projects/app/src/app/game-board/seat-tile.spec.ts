@@ -41,7 +41,8 @@ describe('SeatTile', () => {
     expect(el.querySelector('.header strong')!.textContent).toBe('Hing');
     expect(text).not.toContain('seat-1');
     expect(text).toContain('Hidden');
-    expect(text).toContain('Hidden General');
+    expect(el.querySelectorAll('app-seat-avatar .half')).toHaveLength(2);
+    expect(el.querySelector('app-seat-avatar .half[data-slot="main"] .caption')!.textContent!.trim()).toBe('Hidden');
     expect(text).toContain('HP 6/8');
     expect(el.querySelector('.hand-count')!.textContent).toContain('3');
   });
@@ -51,15 +52,14 @@ describe('SeatTile', () => {
       makeSeat({ kingdom: 'Shu', generals: { main: { generalDefinitionId: 'zhao-yun', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } } })
     );
     expect(el.textContent).toContain('Shu');
-    const portrait = el.querySelector('.generals app-card-art img') as HTMLImageElement;
+    const portrait = el.querySelector('app-seat-avatar .half[data-slot="main"] img') as HTMLImageElement;
     expect(portrait.getAttribute('src')).toBe('/card-art/generals/shu/zhao-yun.jpg');
-    expect(portrait.classList).not.toContain('small');
   });
 
   it('shows a placeholder for a seat still choosing generals', () => {
     const el = render(makeSeat({ generals: null }));
     expect(el.textContent).toContain('Choosing Generals');
-    expect(el.querySelectorAll('.generals app-card-art')).toHaveLength(0);
+    expect(el.querySelector('app-seat-avatar')).toBeNull();
   });
 
   it('labels the viewer’s own tile', () => {
@@ -109,7 +109,7 @@ describe('SeatTile', () => {
       makeSeat({ generals: { main: { generalDefinitionId: 'cao-cao', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } } }),
       { equipment: [eq('e1', 'green-dragon-blade')] }
     );
-    expect(el.querySelector('.generals app-card-art img')!.classList).not.toContain('small');
+    expect(el.querySelector('app-seat-avatar .frame')).not.toBeNull();
     expect(el.querySelector('.equip .slot app-card-art img')!.classList).toContain('small');
   });
 
