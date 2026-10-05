@@ -3,6 +3,8 @@
 Status: Draft for review
 Date: 2026-10-05
 
+> **Amended (2026-10-05):** the [roadmap spec](2026-10-05-all-cards-and-skills-roadmap-design.md) makes this spec stage 4 and adds **Hua Liu**, the Army/EX equipment printings and **Wine's self-rescue**. Its `triggers` and `EquipmentAbility` fold into `abilities` ([Sha-Equipment spec](2026-10-05-sha-equipment-design.md)). Deck from printings is already built. The roadmap at the end is superseded by the roadmap spec.
+
 ## Purpose
 
 Make the first batch of the remaining crawled cards playable, and give

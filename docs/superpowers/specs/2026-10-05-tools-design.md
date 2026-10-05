@@ -3,6 +3,8 @@
 Status: Draft for review
 Date: 2026-10-05
 
+> **Amended (2026-10-05):** the [roadmap spec](2026-10-05-all-cards-and-skills-roadmap-design.md) makes this spec stages 1–3, adds **Starvation** to stage 3, makes Lightning's damage plain (not thunder), and has the Tool lifecycle carry a `UsedCard` ([Sha-Equipment spec](2026-10-05-sha-equipment-design.md)) from stage 1. The [General Skills spec](2026-10-05-general-skills-design.md) later splits `JudgeEffect` into three steps.
+
 ## Purpose
 
 Make every Tool (trick) card playable with its real rules. Today Duel and
