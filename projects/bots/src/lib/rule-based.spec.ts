@@ -13,7 +13,7 @@ const registry: ContentRegistry = {
   generals: new Map([general('w1', 'Wei', 4), general('w2', 'Wei', 3), general('s1', 'Shu', 4), general('s2', 'Shu', 5)]),
   cards: new Map([
     card('sha', 'basic'), card('shan', 'basic'), card('peach', 'basic'),
-    card('duel', 'trick'), card('wuxie', 'trick'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
+    card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
   ]),
 };
 
@@ -103,7 +103,7 @@ describe('ruleBasedPolicy', () => {
   describe('in the Discard phase', () => {
     const hand = (...ids: [string, string][]) => ids.map(([instanceId, definitionId]) => ({ instanceId, definitionId }));
 
-    it('discards a trick before equipment, Sha, Shan or Peach', () => {
+    it('discards a tool before equipment, Sha, Shan or Peach', () => {
       const h = hand(['p', 'peach'], ['s', 'sha'], ['d', 'duel'], ['e', 'shan'], ['b', 'blade']);
       const legal = h.map((c) => discard(c.instanceId));
       expect(decide(view({ phase: 'Discard', hand: h }), legal).action).toEqual(discard('d'));

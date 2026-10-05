@@ -155,7 +155,7 @@ export function wikiGeneralTabs(): WikiTab<WikiGeneral>[] {
 const CARD_TABS: Record<WikiCard['category'], (cards: WikiCard[]) => WikiTab<WikiCard>[]> = {
   basic: basicTabs,
   equipment: equipmentTabs,
-  trick: toolTabs,
+  tool: toolTabs,
 };
 
 export function wikiCardTabs(category: WikiCard['category']): WikiTab<WikiCard>[] {

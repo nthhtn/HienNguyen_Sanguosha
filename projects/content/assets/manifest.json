@@ -16,7 +16,7 @@
   "barbarians": {
     "crawledAt": "2026-10-02",
     "height": 976,
-    "localPath": "cards/trick/barbarians.jpg",
+    "localPath": "cards/tool/barbarians.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/barbarians",
     "width": 667
   },
@@ -37,14 +37,14 @@
   "blaze": {
     "crawledAt": "2026-10-05",
     "height": 968,
-    "localPath": "cards/trick/blaze.jpg",
+    "localPath": "cards/tool/blaze.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/blaze",
     "width": 661
   },
   "break": {
     "crawledAt": "2026-10-02",
     "height": 966,
-    "localPath": "cards/trick/break.jpg",
+    "localPath": "cards/tool/break.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/break",
     "width": 660
   },
@@ -79,21 +79,21 @@
   "capture": {
     "crawledAt": "2026-10-02",
     "height": 654,
-    "localPath": "cards/trick/capture.jpg",
+    "localPath": "cards/tool/capture.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/capture",
     "width": 974
   },
   "chains": {
     "crawledAt": "2026-10-05",
     "height": 969,
-    "localPath": "cards/trick/chains.jpg",
+    "localPath": "cards/tool/chains.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/chains",
     "width": 662
   },
   "coerce": {
     "crawledAt": "2026-10-02",
     "height": 961,
-    "localPath": "cards/trick/coerce.jpg",
+    "localPath": "cards/tool/coerce.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/coerce",
     "width": 656
   },
@@ -156,14 +156,14 @@
   "draw-two": {
     "crawledAt": "2026-09-24",
     "height": 977,
-    "localPath": "cards/trick/draw-two.jpg",
+    "localPath": "cards/tool/draw-two.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/draw-two",
     "width": 667
   },
   "duel": {
     "crawledAt": "2026-09-24",
     "height": 984,
-    "localPath": "cards/trick/duel.jpg",
+    "localPath": "cards/tool/duel.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/duel",
     "width": 672
   },
@@ -233,14 +233,14 @@
   "hail-of-arrows": {
     "crawledAt": "2026-10-02",
     "height": 973,
-    "localPath": "cards/trick/hail-of-arrows.jpg",
+    "localPath": "cards/tool/hail-of-arrows.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/hail-of-arrows",
     "width": 665
   },
   "harvest": {
     "crawledAt": "2026-10-02",
     "height": 982,
-    "localPath": "cards/trick/harvest.jpg",
+    "localPath": "cards/tool/harvest.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/harvest",
     "width": 671
   },
@@ -303,7 +303,7 @@
   "lightning": {
     "crawledAt": "2026-10-02",
     "height": 655,
-    "localPath": "cards/trick/lightning.jpg",
+    "localPath": "cards/tool/lightning.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/lightning",
     "width": 975
   },
@@ -387,7 +387,7 @@
   "peach-garden": {
     "crawledAt": "2026-10-02",
     "height": 981,
-    "localPath": "cards/trick/peach-garden.jpg",
+    "localPath": "cards/tool/peach-garden.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach-garden",
     "width": 670
   },
@@ -450,7 +450,7 @@
   "starvation": {
     "crawledAt": "2026-10-05",
     "height": 969,
-    "localPath": "cards/trick/starvation.jpg",
+    "localPath": "cards/tool/starvation.jpg",
     "note": "Source scan is sideways; rotated 90° counter-clockwise to portrait after download.",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/starvation",
     "width": 651
@@ -458,7 +458,7 @@
   "steal": {
     "crawledAt": "2026-10-02",
     "height": 971,
-    "localPath": "cards/trick/steal.jpg",
+    "localPath": "cards/tool/steal.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/steal",
     "width": 663
   },
@@ -528,7 +528,7 @@
   "wuxie": {
     "crawledAt": "2026-09-24",
     "height": 963,
-    "localPath": "cards/trick/wuxie.jpg",
+    "localPath": "cards/tool/wuxie.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/negate",
     "width": 658
   },

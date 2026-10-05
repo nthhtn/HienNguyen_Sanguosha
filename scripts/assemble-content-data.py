@@ -288,21 +288,21 @@ CARDS["peach"] = {
 }
 duel_printings, duel_count = printings_from_csv("Duel")
 CARDS["duel"] = {
-    "name": "Duel", "nameZh": "决斗", "category": "trick",
+    "name": "Duel", "nameZh": "决斗", "category": "tool",
     "text": "The player challenges another player to a duel. The two players alternate playing Attack cards, starting with the target. The first player unable to play one takes damage equal to the number of Attacks played by the other.",
     "printings": duel_printings, "count": duel_count,
     "source": source("https://sites.google.com/site/englishsanguosha/expansions/original/base/duel"),
 }
 negate_printings, negate_count = printings_from_csv("Negate", expansion="Base")
 CARDS["wuxie"] = {
-    "name": "Wuxie", "nameZh": "无懈可击", "category": "trick",
+    "name": "Wuxie", "nameZh": "无懈可击", "category": "tool",
     "text": "Negates the effects of a Tool card, or the effects of another Negate.",
     "printings": negate_printings, "count": negate_count,
     "source": source("https://sites.google.com/site/englishsanguosha/expansions/original/base/negate"),
 }
 draw_two_printings, draw_two_count = printings_from_csv("Draw Two")
 CARDS["draw-two"] = {
-    "name": "Draw Two", "nameZh": "无中生有", "category": "trick",
+    "name": "Draw Two", "nameZh": "无中生有", "category": "tool",
     "text": "The player that plays this draws two cards from the deck.",
     "printings": draw_two_printings, "count": draw_two_count,
     "source": source("https://sites.google.com/site/englishsanguosha/expansions/original/base/draw-two"),

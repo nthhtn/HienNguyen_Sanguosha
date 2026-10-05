@@ -88,7 +88,7 @@ describe('wikiCards', () => {
   });
 
   it('tags the extra copies Army and EX add to existing cards with their expansion', () => {
-    const all = [...wikiCards('basic'), ...wikiCards('trick')];
+    const all = [...wikiCards('basic'), ...wikiCards('tool')];
     const byExpansion = (id: string) => {
       const counts: Record<string, number> = {};
       for (const p of all.find((c) => c.id === id)!.printings) counts[p.expansion ?? 'own'] = (counts[p.expansion ?? 'own'] ?? 0) + 1;
@@ -121,7 +121,7 @@ describe('wikiCards', () => {
   });
 
   it('marks exactly Capture, Lightning and Starvation as delayed', () => {
-    expect(wikiCards('trick').filter((c) => c.delayed).map((c) => c.id)).toEqual(['capture', 'lightning', 'starvation']);
+    expect(wikiCards('tool').filter((c) => c.delayed).map((c) => c.id)).toEqual(['capture', 'lightning', 'starvation']);
     expect([...wikiCards('basic'), ...wikiCards('equipment')].some((c) => c.delayed)).toBe(false);
   });
 
@@ -140,7 +140,7 @@ describe('wikiCards', () => {
   });
 
   it('lists the 15 tools, with Duel and Wuxie in the game and their printings', () => {
-    const tools = wikiCards('trick');
+    const tools = wikiCards('tool');
     expect(tools).toHaveLength(15);
     expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['duel', 'wuxie']);
     const duel = tools.find((c) => c.id === 'duel')!;
@@ -149,7 +149,7 @@ describe('wikiCards', () => {
   });
 
   it('includes the crawled EX and Army cards, not yet in the game', () => {
-    const all = [...wikiCards('trick'), ...wikiCards('equipment')];
+    const all = [...wikiCards('tool'), ...wikiCards('equipment')];
     const ids = ['blaze', 'chains', 'starvation', 'hua-liu', 'ancient-scimitar', 'fire-fan', 'ice-sword', 'wood-armor', 'black-shield'];
     for (const id of ids) {
       const card = all.find((c) => c.id === id)!;
@@ -198,7 +198,7 @@ describe('wiki tabs', () => {
   });
 
   it('splits Tools into Instant and Delayed', () => {
-    const tabs = wikiCardTabs('trick');
+    const tabs = wikiCardTabs('tool');
     expect(summary(tabs)).toEqual([['instant', 'Instant', 12], ['delayed', 'Delayed', 3]]);
     expect(tabs[1].entries.map((c) => c.id)).toEqual(['capture', 'lightning', 'starvation']);
   });

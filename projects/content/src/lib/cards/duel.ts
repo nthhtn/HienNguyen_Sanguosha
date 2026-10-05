@@ -42,7 +42,7 @@ function duelWindow(
 export const duelCard: CardDefinition = {
   id: 'duel',
   name: 'Duel',
-  category: 'trick',
+  category: 'tool',
   legalPlayTargets: (state, ctx) => otherLivingSeatTargets(state, ctx.seatId),
   play: (_state, ctx) => {
     if (ctx.respondingTo) return [];

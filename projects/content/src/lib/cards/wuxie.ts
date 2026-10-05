@@ -3,7 +3,7 @@ import type { CardDefinition } from 'engine';
 export const wuxieCard: CardDefinition = {
   id: 'wuxie',
   name: 'Wuxie Kongjie',
-  category: 'trick',
+  category: 'tool',
   legalPlayTargets: () => [], // response only
   play: () => [],
 };

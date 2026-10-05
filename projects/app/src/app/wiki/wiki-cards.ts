@@ -5,7 +5,7 @@ import { wikiCardTabs, wikiCards, WikiCard } from 'content';
 import { WikiCardEntry } from './wiki-card-entry';
 import { tabQueryParam } from './tab-param';
 
-const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards', equipment: 'Equipments', trick: 'Tools' };
+const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards', equipment: 'Equipments', tool: 'Tools' };
 
 // One page per card category; the category comes from the route's data and
 // the tabs from content.

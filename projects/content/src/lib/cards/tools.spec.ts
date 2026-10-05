@@ -1,4 +1,4 @@
-// projects/content/src/lib/cards/tricks.spec.ts
+// projects/content/src/lib/cards/tools.spec.ts
 import { duelCard } from './duel';
 import { wuxieCard } from './wuxie';
 import { silverLionCard, greenDragonBladeCard } from './equipment';

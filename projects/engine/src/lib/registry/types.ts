@@ -20,7 +20,7 @@ export interface PlayOptionsContext {
 export interface CardDefinition {
   id: string;
   name: string;
-  category: 'basic' | 'trick' | 'equipment';
+  category: 'basic' | 'tool' | 'equipment';
   // Which equipment slot the card occupies; set exactly when category is 'equipment'.
   equipSlot?: EquipSlot;
   // Reach of a weapon (attack range while equipped); set only for weapons.

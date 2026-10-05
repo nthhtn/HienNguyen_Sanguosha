@@ -768,7 +768,7 @@ describe('resolve: RespondAction to a window a card opened', () => {
   // card that opened the window and heals seat-a whenever it is answered.
   function answered(sourceCard?: { instanceId: string; definitionId: string }) {
     const opener: CardDefinition = {
-      id: 'opener', name: 'Opener', category: 'trick', play: () => [],
+      id: 'opener', name: 'Opener', category: 'tool', play: () => [],
       onResponse: (_state, ctx) => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: ctx.seatId === 'seat-b' ? 1 : 0 }],
     };
     const answer: CardDefinition = { id: 'answer', name: 'Answer', category: 'basic', play: () => [] };

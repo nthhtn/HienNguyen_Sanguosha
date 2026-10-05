@@ -9,7 +9,7 @@ const caoCao: WikiGeneral = {
   skills: [{ name: 'Evil Hero', nameZh: '奸雄', text: 'When Cao Cao is damaged by a card, he can put it into his hand.' }],
 };
 const duel: WikiCard = {
-  id: 'duel', name: 'Duel', nameZh: '决斗', category: 'trick', subtype: null, text: 'A player can target anyone with this card.',
+  id: 'duel', name: 'Duel', nameZh: '决斗', category: 'tool', subtype: null, text: 'A player can target anyone with this card.',
   range: null, count: 3, printings: [{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }], inGame: true,
 };
 const redHare: WikiCard = {

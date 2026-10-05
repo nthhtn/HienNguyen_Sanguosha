@@ -5,6 +5,10 @@ describe('cardArtUrl', () => {
     expect(cardArtUrl('cao-cao')).toBe('/card-art/generals/wei/cao-cao.jpg');
   });
 
+  it('serves Tool art from the tool folder', () => {
+    expect(cardArtUrl('duel')).toBe('/card-art/cards/tool/duel.jpg');
+  });
+
   it('returns null for an id with no crawled art', () => {
     expect(cardArtUrl('does-not-exist')).toBeNull();
   });
