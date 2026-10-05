@@ -32,6 +32,6 @@ export function createSeat(
   };
 }
 
-export function createPlayer(id: string, seatId: string, kind: 'human' | 'bot'): Player {
-  return { id, seatId, kind };
+export function createPlayer(id: string, seatId: string, kind: 'human' | 'bot', name: string): Player {
+  return { id, seatId, kind, name };
 }

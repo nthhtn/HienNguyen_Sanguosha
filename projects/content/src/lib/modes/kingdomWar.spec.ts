@@ -2,6 +2,7 @@ import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT, MAX_KINGDOM_WAR_
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
 import type { GameState, CardDefinition, ContentRegistry } from 'engine';
+import { cardsData } from '../../../data/cards';
 
 // Skips general selection by seating fixed pairs directly, for tests about
 // in-game rules that must not depend on which candidates a seed deals.
@@ -86,15 +87,36 @@ describe('Kingdom War setup and deal', () => {
     expect(state.zones.find((z) => z.kind === 'drawPile')!.cards.length).toBeGreaterThan(0);
   });
 
-  it('keeps the 4-copies-per-card deck for tables of up to five seats', () => {
-    const total = (n: number) => {
-      const state = createGame(kingdomWarMode, registry, Array.from({ length: n }, (_, i) => `seat-${i}`), 1);
-      return state.zones.reduce((sum, z) => sum + z.cards.length, 0);
+  it('names each player after its seat position until the app renames it', () => {
+    const state = createGame(kingdomWarMode, registry, ['a', 'b', 'c'], 1);
+    expect(state.players.map((p) => [p.seatId, p.name])).toEqual([['a', 'Seat 0'], ['b', 'Seat 1'], ['c', 'Seat 2']]);
+  });
+
+  it('builds the deck from exactly each card’s printings, at every table size', () => {
+    const deckOf = (n: number) =>
+      createGame(kingdomWarMode, registry, Array.from({ length: n }, (_, i) => `seat-${i}`), 1)
+        .zones.flatMap((z) => z.cards)
+        .map((c) => `${c.definitionId} ${c.suit} ${c.rank}`)
+        .sort();
+    const printed = [...registry.cards.keys()]
+      .flatMap((id) => cardsData[id].printings!.filter((p) => !p.expansion).map((p) => `${id} ${p.suit} ${p.rank}`))
+      .sort();
+    expect(deckOf(2)).toEqual(printed);
+    expect(deckOf(10)).toEqual(printed);
+    expect(deckOf(2).filter((c) => c.startsWith('silver-lion '))).toEqual(['silver-lion club 1']);
+    // The Army and EX copies of Shan, Peach and Wuxie stay out for now.
+    expect(deckOf(2).filter((c) => c.startsWith('shan '))).toHaveLength(15);
+    expect(deckOf(2).filter((c) => c.startsWith('peach '))).toHaveLength(8);
+    expect(deckOf(2).filter((c) => c.startsWith('wuxie '))).toHaveLength(3);
+    expect(deckOf(2)).toHaveLength(61);
+  });
+
+  it('refuses to build a deck for a card with no printings', () => {
+    const withUnprinted: ContentRegistry = {
+      ...registry,
+      cards: new Map([...registry.cards, ['unprinted', { id: 'unprinted', name: 'Unprinted', category: 'basic', play: () => [] }]]),
     };
-    expect(total(2)).toBe(registry.cards.size * 4);
-    expect(total(5)).toBe(registry.cards.size * 4);
-    expect(total(6)).toBe(registry.cards.size * 8);
-    expect(total(10)).toBe(registry.cards.size * 8);
+    expect(() => createGame(kingdomWarMode, withUnprinted, ['a', 'b'], 1)).toThrow(/unprinted.*no printings/);
   });
 
   it('caps the table at its seat cap and rejects fewer than 2', () => {
@@ -146,41 +168,75 @@ describe('Kingdom War setup and deal', () => {
   });
 });
 
-describe('Kingdom War forced reveal and elimination', () => {
-  const testDamageCard: CardDefinition = {
-    id: 'test-damage-card', name: 'Test Damage Card', category: 'basic',
+describe('Kingdom War forced reveal, dying and elimination', () => {
+  const hit = (amount: number): CardDefinition => ({
+    id: `test-hit-${amount}`, name: `Test Hit ${amount}`, category: 'basic',
     play: (_state, ctx) => [{
       kind: 'DamageEffect',
-      damage: { source: { kind: 'seat', seatId: ctx.seatId }, target: ctx.targets[0], amount: 10, nature: 'normal' },
+      damage: { source: { kind: 'seat', seatId: ctx.seatId }, target: ctx.targets[0], amount, nature: 'normal' },
     }],
-  };
+  });
+  const peach = (instanceId: string) => ({ instanceId, definitionId: 'peach', suit: 'heart' as const, rank: 12 });
 
-  it('force-reveals both generals and eliminates the seat on lethal damage, ending the game', () => {
+  // seat-a (its turn) hits seat-b with a test card of `amount` damage. Hands
+  // are cleared so only the Peaches given here are in play.
+  function hitSeatB(amount: number, hands: { a?: ReturnType<typeof peach>[]; b?: ReturnType<typeof peach>[] } = {}) {
     const registry = buildContentRegistry();
-    registry.cards.set('test-damage-card', testDamageCard);
     const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
+    // Added after the deal: it has no printings, so it never goes in the deck.
+    const card = hit(amount);
+    registry.cards.set(card.id, card);
     const base = seated(created, registry, { 'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
     const state: GameState = {
       ...base,
       phase: 'Play',
       zones: base.zones.map((z) =>
-        z.id === base.seats[0].hand.zoneId
-          ? { ...z, cards: [{ instanceId: 'lethal-1', definitionId: 'test-damage-card', suit: 'spade', rank: 1 }] }
-          : z
+        z.id === 'seat-a:hand' ? { ...z, cards: [{ instanceId: 'hit-1', definitionId: card.id, suit: 'spade' as const, rank: 1 }, ...(hands.a ?? [])] }
+        : z.id === 'seat-b:hand' ? { ...z, cards: hands.b ?? [] }
+        : z
       ),
     };
-    const { state: next } = resolve(
-      state,
-      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'lethal-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
-      { registry, mode: kingdomWarMode }
-    );
-    const seatB = next.seats.find((s) => s.id === 'seat-b')!;
-    expect(seatB.generals!.main.revealed).toBe(true);
-    expect(seatB.generals!.deputy.revealed).toBe(true);
-    expect(seatB.eliminated).toBe(true);
-    expect(next.result).toEqual({ endedAt: 1, winningSeatIds: ['seat-a'], losingSeatIds: ['seat-b'] });
+    const ctx = { registry, mode: kingdomWarMode };
+    const next = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'hit-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, ctx).state;
+    return { next, ctx, hpBefore: base.seats[1].combinedHp };
+  }
+  const seatB = (s: GameState) => s.seats.find((x) => x.id === 'seat-b')!;
+
+  it('force-reveals both generals and puts the seat in the dying state instead of eliminating it', () => {
+    const { next } = hitSeatB(10);
+    expect(seatB(next).generals!.main.revealed).toBe(true);
+    expect(seatB(next).generals!.deputy.revealed).toBe(true);
+    expect(seatB(next).eliminated).toBe(false);
+    expect(seatB(next).combinedHp).toBeLessThan(0);
+    expect(next.log.map((e) => e.kind)).toContain('SeatDyingEvent');
+    // No one else holds a Peach: the dying seat itself is asked.
+    expect(next.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['peach'], reason: { kind: 'dying', seatId: 'seat-b' } });
+    expect(next.result).toBeNull();
+  });
+
+  it('eliminates the dying seat on No Response, ending the game', () => {
+    const { next, ctx } = hitSeatB(10);
+    const out = resolve(next, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: next.pendingResponse!.id }, ctx).state;
+    expect(seatB(out).eliminated).toBe(true);
+    expect(out.result).toEqual({ endedAt: 1, winningSeatIds: ['seat-a'], losingSeatIds: ['seat-b'] });
+  });
+
+  it('asks the turn owner first; the dying seat can still save itself with its own Peach', () => {
+    const { next, ctx, hpBefore } = hitSeatB(4, { a: [peach('pa')], b: [peach('pb')] });
+    expect(seatB(next).combinedHp).toBe(hpBefore - 4);
+    expect(next.pendingResponse!.respondingSeatId).toBe('seat-a');
+    const afterA = resolve(next, { kind: 'PassAction', seatId: 'seat-a', pendingResponseId: next.pendingResponse!.id }, ctx).state;
+    expect(afterA.pendingResponse!.respondingSeatId).toBe('seat-b');
+    const saved = resolve(afterA, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: afterA.pendingResponse!.id, cardInstanceId: 'pb' }, ctx).state;
+    expect(seatB(saved).combinedHp).toBe(1);
+    expect(seatB(saved).eliminated).toBe(false);
+    expect(saved.pendingResponse).toBeNull();
+    // Back to seat-a's Play phase, where the hit came from.
+    expect(saved.phase).toBe('Play');
+    expect(saved.turn.ownerSeatId).toBe('seat-a');
   });
 });
+
 
 describe('Kingdom War win condition', () => {
   const registry = buildContentRegistry();

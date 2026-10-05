@@ -1,6 +1,7 @@
 import { GameState, Damage, PendingResponse, Target } from '../domain/types';
 import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
 import { EngineEvent } from './events';
+import { isFaceUpZoneKind } from '../domain/redact';
 
 export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
@@ -9,7 +10,11 @@ export type Effect =
   | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy' }
   | { kind: 'HealEffect'; target: Target; amount: number }
   | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string }
-  | { kind: 'EliminateSeatEffect'; seatId: string };
+  | { kind: 'EliminateSeatEffect'; seatId: string }
+  // The dying round for `seatId`: ask the seats in `order` (turn order from the
+  // turn owner) one at a time for one of `rescueCardIds` (content says which —
+  // Peach). See the Peach and dying spec.
+  | { kind: 'DyingEffect'; seatId: string; order: string[]; rescueCardIds: string[]; entering?: boolean };
 
 export interface ApplyResult {
   state: GameState;
@@ -22,13 +27,12 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const seat = state.seats.find((s) => s.id === effect.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
       const drawPile = requireZoneOfKind(state.zones, 'drawPile');
-      const { zones, drawn, rng } = drawTop(state.zones, drawPile.id, seat.hand.zoneId, effect.count, state.rng);
-      const event: EngineEvent = {
-        kind: 'CardsDrawnEvent',
-        seatId: seat.id,
-        cardInstanceIds: drawn.map((c) => c.instanceId),
-      };
-      return { state: { ...state, zones, rng, log: [...state.log, event] }, events: [event] };
+      const { zones, drawn, rng, reshuffled } = drawTop(state.zones, drawPile.id, seat.hand.zoneId, effect.count, state.rng);
+      const events: EngineEvent[] = [
+        ...(reshuffled > 0 ? [{ kind: 'DiscardPileReshuffledEvent' as const, cardCount: reshuffled }] : []),
+        { kind: 'CardsDrawnEvent', seatId: seat.id, cardInstanceIds: drawn.map((c) => c.instanceId) },
+      ];
+      return { state: { ...state, zones, rng, log: [...state.log, ...events] }, events };
     }
     case 'DamageEffect': {
       if (effect.damage.target.kind !== 'seat') {
@@ -38,7 +42,8 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const seat = state.seats.find((s) => s.id === seatId);
       if (!seat) throw new Error(`Unknown seat: ${seatId}`);
       const seats = state.seats.map((s) =>
-        s.id === seatId ? { ...s, combinedHp: Math.max(0, s.combinedHp - effect.damage.amount) } : s
+        // HP may go below 0: a big hit needs more Peaches to recover from.
+        s.id === seatId ? { ...s, combinedHp: s.combinedHp - effect.damage.amount } : s
       );
       const event: EngineEvent = { kind: 'DamageDealtEvent', damage: effect.damage };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
@@ -71,8 +76,18 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'MoveCardEffect': {
+      const origin = state.zones.find((z) => z.cards.some((c) => c.instanceId === effect.cardInstanceId));
       const zones = moveCard(state.zones, effect.cardInstanceId, effect.toZoneId);
-      const event: EngineEvent = { kind: 'CardMovedEvent', cardInstanceId: effect.cardInstanceId, toZoneId: effect.toZoneId };
+      const destination = zones.find((z) => z.id === effect.toZoneId)!;
+      const card = destination.cards.at(-1)!;
+      const event: EngineEvent = {
+        kind: 'CardMovedEvent',
+        cardInstanceId: effect.cardInstanceId,
+        // moveCard has already thrown if the card was in no zone.
+        fromZoneId: origin!.id,
+        toZoneId: effect.toZoneId,
+        ...(isFaceUpZoneKind(destination.kind) ? { card } : {}),
+      };
       return { state: { ...state, zones, log: [...state.log, event] }, events: [event] };
     }
     case 'EliminateSeatEffect': {
@@ -83,7 +98,54 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const event: EngineEvent = { kind: 'SeatEliminatedEvent', seatId: effect.seatId };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
+    case 'DyingEffect':
+      return applyDying(state, effect);
     default:
       throw new Error(`Unhandled effect kind: ${(effect as Effect).kind}`);
   }
+}
+
+// One step of the dying round. Saved once above 0 HP; otherwise ask the next
+// seat in `order` that must be asked — the dying seat always, any other seat
+// only while it holds a rescue card; eliminated when no one is left to ask.
+function applyDying(state: GameState, effect: Extract<Effect, { kind: 'DyingEffect' }>): ApplyResult {
+  const seat = state.seats.find((s) => s.id === effect.seatId);
+  if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+  if (seat.eliminated) return { state, events: [] };
+  const events: EngineEvent[] = effect.entering && seat.combinedHp <= 0 ? [{ kind: 'SeatDyingEvent', seatId: seat.id }] : [];
+  const logged = (next: GameState, more: EngineEvent[] = []): ApplyResult => ({
+    state: { ...next, log: [...next.log, ...events, ...more] },
+    events: [...events, ...more],
+  });
+
+  if (seat.combinedHp > 0) return logged(state, [{ kind: 'SeatSavedEvent', seatId: seat.id }]);
+
+  const holdsRescue = (seatId: string) => {
+    const s = state.seats.find((x) => x.id === seatId);
+    const hand = s && state.zones.find((z) => z.id === s.hand.zoneId);
+    return !!hand?.cards.some((c) => effect.rescueCardIds.includes(c.definitionId));
+  };
+  const isLiving = (seatId: string) => !!state.seats.find((x) => x.id === seatId && !x.eliminated);
+  const index = effect.order.findIndex((id) => isLiving(id) && (id === seat.id || holdsRescue(id)));
+  if (index === -1) {
+    const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, eliminated: true } : s));
+    return logged({ ...state, seats }, [{ kind: 'SeatEliminatedEvent', seatId: seat.id }]);
+  }
+
+  const askerId = effect.order[index];
+  const pendingResponse: PendingResponse = {
+    id: `dying-${seat.id}-${state.log.length + events.length}`,
+    respondingSeatId: askerId,
+    allowedActionKinds: ['RespondAction', 'PassAction'],
+    allowedCardIds: effect.rescueCardIds,
+    reason: { kind: 'dying', seatId: seat.id },
+    // Pass: move on to the next seat.
+    context: { effect: { kind: 'DyingEffect', seatId: seat.id, order: effect.order.slice(index + 1), rescueCardIds: effect.rescueCardIds } },
+    // A rescue card: heal the dying seat, then ask again from this same seat.
+    onAnswer: [
+      { kind: 'HealEffect', target: { kind: 'seat', seatId: seat.id }, amount: 1 },
+      { kind: 'DyingEffect', seatId: seat.id, order: effect.order.slice(index), rescueCardIds: effect.rescueCardIds },
+    ],
+  };
+  return logged({ ...state, pendingResponse });
 }

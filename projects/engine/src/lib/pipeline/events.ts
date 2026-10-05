@@ -1,4 +1,4 @@
-import { Damage, Phase, Target } from '../domain/types';
+import { CardInstance, Damage, Phase, Target } from '../domain/types';
 
 export interface CardsDrawnEvent {
   kind: 'CardsDrawnEvent';
@@ -38,7 +38,42 @@ export interface HealEvent {
 export interface CardMovedEvent {
   kind: 'CardMovedEvent';
   cardInstanceId: string;
+  fromZoneId: string;
   toZoneId: string;
+  // The card's face, only when it lands face-up (discard pile, equipment,
+  // judgment): the log is visible to every seat, so a move into a hand or the
+  // draw pile never says what the card was.
+  card?: CardInstance;
+}
+
+// A seat used a card: played it in its Play phase, or answered a pending
+// response with it. Played cards are face-up, so the face is public.
+export interface CardPlayedEvent {
+  kind: 'CardPlayedEvent';
+  seatId: string;
+  card: CardInstance;
+  targets: Target[];
+  // Set for a response: the seat and card whose effect it answered, when known,
+  // or the dying seat a Peach was played to save.
+  inResponseTo?: { seatId?: string; cardInstanceId?: string; dyingSeatId?: string };
+}
+
+// The discard pile was shuffled into the draw pile to finish a draw.
+export interface DiscardPileReshuffledEvent {
+  kind: 'DiscardPileReshuffledEvent';
+  cardCount: number;
+}
+
+// A seat at 0 HP or below: the rescue round begins.
+export interface SeatDyingEvent {
+  kind: 'SeatDyingEvent';
+  seatId: string;
+}
+
+// A dying seat is back above 0 HP.
+export interface SeatSavedEvent {
+  kind: 'SeatSavedEvent';
+  seatId: string;
 }
 
 export interface SeatEliminatedEvent {
@@ -60,5 +95,9 @@ export type EngineEvent =
   | GeneralRevealedEvent
   | HealEvent
   | CardMovedEvent
+  | CardPlayedEvent
+  | DiscardPileReshuffledEvent
   | SeatEliminatedEvent
+  | SeatDyingEvent
+  | SeatSavedEvent
   | GeneralsChosenEvent;

@@ -40,14 +40,15 @@ export function moveCard(zones: CardZone[], cardInstanceId: string, toZoneId: st
 // same seeded shuffle used to build the initial deck) and moved into
 // `fromZoneId` before drawing continues. Reshuffling happens at most once per
 // call — if the combined total still can't satisfy `count`, as many cards as
-// are available are drawn and no error is thrown.
+// are available are drawn and no error is thrown. `reshuffled` is how many
+// cards the reshuffle moved (0 when there was none).
 export function drawTop(
   zones: CardZone[],
   fromZoneId: string,
   toZoneId: string,
   count: number,
   rng: RngState
-): { zones: CardZone[]; drawn: CardInstance[]; rng: RngState } {
+): { zones: CardZone[]; drawn: CardInstance[]; rng: RngState; reshuffled: number } {
   const source = zones.find((z) => z.id === fromZoneId);
   if (!source) throw new Error(`Zone ${fromZoneId} not found`);
   // Same asymmetry as moveCard had: an unknown destination would remove the
@@ -58,12 +59,14 @@ export function drawTop(
 
   let currentZones = zones;
   let currentRng = rng;
+  let reshuffled = 0;
 
   if (source.cards.length < count) {
     const discardZone = findZoneByKind(currentZones, 'discardPile');
     if (discardZone && discardZone.cards.length > 0) {
       const shuffled = shuffle(discardZone.cards, currentRng);
       currentRng = shuffled.rng;
+      reshuffled = discardZone.cards.length;
       currentZones = currentZones.map((zone) => {
         if (zone.id === discardZone.id) return { ...zone, cards: [] };
         if (zone.id === fromZoneId) return { ...zone, cards: [...zone.cards, ...shuffled.items] };
@@ -79,5 +82,5 @@ export function drawTop(
     if (zone.id === toZoneId) return { ...zone, cards: [...zone.cards, ...drawn] };
     return zone;
   });
-  return { zones: result, drawn, rng: currentRng };
+  return { zones: result, drawn, rng: currentRng, reshuffled };
 }

@@ -75,10 +75,29 @@ describe('wikiGenerals', () => {
 });
 
 describe('wikiCards', () => {
-  it('lists the basic cards by name; Wine is not in the game', () => {
+  it('lists the basic cards by name; the Army ones are not in the game', () => {
     const basic = wikiCards('basic');
-    expect(basic.map((c) => c.name)).toEqual(['Peach', 'Sha', 'Shan', 'Wine']);
-    expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual(['wine']);
+    expect(basic.map((c) => c.name)).toEqual(['Fire Attack', 'Lightning Attack', 'Peach', 'Sha', 'Shan', 'Wine']);
+    expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual(['fire-attack', 'lightning-attack', 'wine']);
+  });
+
+  it('records the Army basics with their spreadsheet printings', () => {
+    const basic = wikiCards('basic');
+    expect(basic.find((c) => c.id === 'fire-attack')).toMatchObject({ nameZh: '火杀', count: 5 });
+    expect(basic.find((c) => c.id === 'lightning-attack')).toMatchObject({ nameZh: '雷杀', count: 9 });
+  });
+
+  it('tags the extra copies Army and EX add to existing cards with their expansion', () => {
+    const all = [...wikiCards('basic'), ...wikiCards('trick')];
+    const byExpansion = (id: string) => {
+      const counts: Record<string, number> = {};
+      for (const p of all.find((c) => c.id === id)!.printings) counts[p.expansion ?? 'own'] = (counts[p.expansion ?? 'own'] ?? 0) + 1;
+      return counts;
+    };
+    expect(byExpansion('shan')).toEqual({ own: 15, Army: 9 });
+    expect(byExpansion('peach')).toEqual({ own: 8, Army: 4 });
+    expect(byExpansion('wuxie')).toEqual({ own: 3, Army: 3, EX: 1 });
+    expect(byExpansion('lightning')).toEqual({ own: 1, EX: 1 });
   });
 
   it('carries Wine from the Army expansion', () => {
@@ -96,43 +115,57 @@ describe('wikiCards', () => {
     const equipment = wikiCards('equipment');
     const mountOf = Object.fromEntries(equipment.filter((c) => c.subtype === 'horse').map((c) => [c.id, c.mount]));
     expect(mountOf).toEqual({
-      'da-yuan': 'minus', 'di-lu': 'plus', 'red-hare': 'minus', 'shadow-runner': 'plus', 'storm-runner': 'plus', 'zi-xing': 'minus',
+      'da-yuan': 'offensive', 'di-lu': 'defensive', 'hua-liu': 'defensive', 'red-hare': 'offensive', 'shadow-runner': 'defensive', 'storm-runner': 'defensive', 'zi-xing': 'offensive',
     });
     expect(equipment.filter((c) => c.subtype !== 'horse').every((c) => c.mount === null)).toBe(true);
   });
 
-  it('marks exactly Capture and Lightning as delayed', () => {
-    expect(wikiCards('trick').filter((c) => c.delayed).map((c) => c.id)).toEqual(['capture', 'lightning']);
+  it('marks exactly Capture, Lightning and Starvation as delayed', () => {
+    expect(wikiCards('trick').filter((c) => c.delayed).map((c) => c.id)).toEqual(['capture', 'lightning', 'starvation']);
     expect([...wikiCards('basic'), ...wikiCards('equipment')].some((c) => c.delayed)).toBe(false);
   });
 
-  it('lists equipment by subtype then name, with only Green Dragon Blade in the game', () => {
+  it('lists equipment by subtype then name, with Green Dragon Blade and Silver Lion in the game', () => {
     const equipment = wikiCards('equipment');
-    expect(equipment).toHaveLength(15);
-    expect(equipment.map((c) => c.subtype)).toEqual([...Array(8).fill('weapon'), 'armor', ...Array(6).fill('horse')]);
-    expect(equipment.slice(0, 3).map((c) => c.name)).toEqual(['Axe', 'Black Pommel', 'Crossbow']);
-    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['green-dragon-blade']);
+    expect(equipment).toHaveLength(22);
+    expect(equipment.map((c) => c.subtype)).toEqual([...Array(11).fill('weapon'), ...Array(4).fill('armor'), ...Array(7).fill('horse')]);
+    expect(equipment.slice(0, 3).map((c) => c.name)).toEqual(['Ancient Scimitar', 'Axe', 'Black Pommel']);
+    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['green-dragon-blade', 'silver-lion']);
   });
 
   it('reports data gaps as null or empty, never guessed (Review Focus 2)', () => {
     const redHare = wikiCards('equipment').find((c) => c.id === 'red-hare')!;
-    expect(redHare).toMatchObject({ name: 'Red Hare', nameZh: '赤兔', text: null, range: null, count: null, printings: [] });
+    expect(redHare).toMatchObject({ name: 'Red Hare', nameZh: '赤兔', text: null, range: null, count: 1, printings: [{ suit: 'heart', rank: 5 }] });
     expect(wikiCards('equipment').find((c) => c.id === 'axe')!.range).toBe(3);
   });
 
-  it('lists the 12 tools, with Duel and Wuxie in the game and their printings', () => {
+  it('lists the 15 tools, with Duel and Wuxie in the game and their printings', () => {
     const tools = wikiCards('trick');
-    expect(tools).toHaveLength(12);
+    expect(tools).toHaveLength(15);
     expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['duel', 'wuxie']);
     const duel = tools.find((c) => c.id === 'duel')!;
     expect(duel.count).toBe(3);
     expect(duel.printings).toEqual([{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }]);
   });
 
-  it('never lists Silver Lion, which has no data file', () => {
-    for (const category of ['basic', 'equipment', 'trick'] as const) {
-      expect(wikiCards(category).some((c) => c.id === 'silver-lion')).toBe(false);
+  it('includes the crawled EX and Army cards, not yet in the game', () => {
+    const all = [...wikiCards('trick'), ...wikiCards('equipment')];
+    const ids = ['blaze', 'chains', 'starvation', 'hua-liu', 'ancient-scimitar', 'fire-fan', 'ice-sword', 'wood-armor', 'black-shield'];
+    for (const id of ids) {
+      const card = all.find((c) => c.id === id)!;
+      expect(card).toBeDefined();
+      expect(card.inGame).toBe(false);
+      expect(card.nameZh).toMatch(/[\u4e00-\u9fff]/);
     }
+    expect(all.find((c) => c.id === 'chains')).toMatchObject({ count: 6, nameZh: '铁索连环' });
+    expect(all.find((c) => c.id === 'ice-sword')).toMatchObject({ range: 2, subtype: 'weapon' });
+    expect(all.find((c) => c.id === 'black-shield')!.printings).toEqual([]);
+  });
+
+  it('lists Silver Lion as in-game armour with its single printing', () => {
+    const lion = wikiCards('equipment').find((c) => c.id === 'silver-lion')!;
+    expect(lion.inGame).toBe(true);
+    expect(lion.printings).toEqual([{ suit: 'club', rank: 1 }]);
   });
 });
 
@@ -146,25 +179,28 @@ describe('wiki tabs', () => {
     expect(tabs[0].entries[0].name).toBe('Cao Cao');
   });
 
-  it('gives each basic card its own tab, in the order Sha, Shan, Wine, Peach', () => {
+  it('gives each basic card its own tab, the fire and lightning Sha right after Sha', () => {
     const tabs = wikiCardTabs('basic');
-    expect(summary(tabs)).toEqual([['sha', 'Sha', 1], ['shan', 'Shan', 1], ['wine', 'Wine', 1], ['peach', 'Peach', 1]]);
-    expect(tabs.map((t) => t.entries[0].id)).toEqual(['sha', 'shan', 'wine', 'peach']);
+    expect(summary(tabs)).toEqual([
+      ['sha', 'Sha', 1], ['fire-attack', 'Fire Attack', 1], ['lightning-attack', 'Lightning Attack', 1],
+      ['shan', 'Shan', 1], ['wine', 'Wine', 1], ['peach', 'Peach', 1],
+    ]);
+    expect(tabs.map((t) => t.entries[0].id)).toEqual(['sha', 'fire-attack', 'lightning-attack', 'shan', 'wine', 'peach']);
   });
 
   it('splits equipment into Weapons, Armors and the two kinds of mount', () => {
     const tabs = wikiCardTabs('equipment');
     expect(summary(tabs)).toEqual([
-      ['weapons', 'Weapons', 8], ['armors', 'Armors', 1], ['plus-mount', 'Plus Mount', 3], ['minus-mount', 'Minus Mount', 3],
+      ['weapons', 'Weapons', 11], ['armors', 'Armors', 4], ['defensive-mount', 'Defensive Mount', 4], ['offensive-mount', 'Offensive Mount', 3],
     ]);
-    expect(tabs[2].entries.map((c) => c.id)).toEqual(['di-lu', 'shadow-runner', 'storm-runner']);
+    expect(tabs[2].entries.map((c) => c.id)).toEqual(['di-lu', 'hua-liu', 'shadow-runner', 'storm-runner']);
     expect(tabs[3].entries.map((c) => c.id)).toEqual(['da-yuan', 'red-hare', 'zi-xing']);
   });
 
   it('splits Tools into Instant and Delayed', () => {
     const tabs = wikiCardTabs('trick');
-    expect(summary(tabs)).toEqual([['instant', 'Instant', 10], ['delayed', 'Delayed', 2]]);
-    expect(tabs[1].entries.map((c) => c.id)).toEqual(['capture', 'lightning']);
+    expect(summary(tabs)).toEqual([['instant', 'Instant', 12], ['delayed', 'Delayed', 3]]);
+    expect(tabs[1].entries.map((c) => c.id)).toEqual(['capture', 'lightning', 'starvation']);
   });
 
   it('puts unclaimed entries in a trailing tab (Review Focus 4)', () => {
@@ -175,8 +211,8 @@ describe('wiki tabs', () => {
       card({ id: 'jade-seal', name: 'Jade Seal', subtype: 'treasure', mount: null }),
     ]);
     expect(summary(tabs)).toEqual([
-      ['weapons', 'Weapons', 0], ['armors', 'Armors', 0], ['plus-mount', 'Plus Mount', 0], ['minus-mount', 'Minus Mount', 0],
-      ['other-mounts', 'Other mounts', 1], ['treasures', 'Treasures', 1],
+      ['weapons', 'Weapons', 0], ['armors', 'Armors', 0], ['defensive-mount', 'Defensive Mount', 0], ['offensive-mount', 'Offensive Mount', 0],
+      ['other-mounts', 'Other Mounts', 1], ['treasures', 'Treasures', 1],
     ]);
   });
 });

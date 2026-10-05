@@ -26,10 +26,25 @@ describe('checkInvariants', () => {
     expect(checkInvariants(baseState())).toEqual([]);
   });
 
-  it('flags negative combinedHp', () => {
+  it('flags a living seat at 0 HP or below with no rescue round pending', () => {
     const state = baseState();
     state.seats[0].combinedHp = -1;
-    expect(checkInvariants(state)).toEqual([expect.stringContaining('negative combinedHp')]);
+    expect(checkInvariants(state)).toEqual([expect.stringContaining('no rescue round pending')]);
+  });
+
+  it('allows a seat below 0 HP while its rescue round is asking, or once eliminated', () => {
+    const dying = baseState();
+    dying.seats[0].combinedHp = -1;
+    dying.pendingResponse = {
+      id: 'd1', respondingSeatId: dying.seats[0].id, allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['peach'],
+      reason: { kind: 'dying', seatId: dying.seats[0].id },
+      context: { effect: { kind: 'DyingEffect', seatId: dying.seats[0].id, order: [], rescueCardIds: ['peach'] } },
+    };
+    expect(checkInvariants(dying)).toEqual([]);
+    const out = baseState();
+    out.seats[0].combinedHp = -1;
+    out.seats[0].eliminated = true;
+    expect(checkInvariants(out).filter((v) => v.includes('HP'))).toEqual([]);
   });
 
   it('flags a pendingResponse pointing at an eliminated seat', () => {

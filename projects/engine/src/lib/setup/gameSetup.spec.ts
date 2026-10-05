@@ -13,7 +13,7 @@ function stubSetupMode(): GameModeDefinition {
           combinedHp: 5, maxCombinedHp: 5,
           hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, eliminated: false,
         })),
-        players: seatIds.map((id) => ({ id: `player-${id}`, seatId: id, kind: 'bot' as const })),
+        players: seatIds.map((id) => ({ id: `player-${id}`, seatId: id, kind: 'bot' as const, name: id })),
         turn: { turnNumber: 1, ownerSeatId: seatIds[0], extraTurnStack: [] },
         phase: 'Judgment',
         zones: [],

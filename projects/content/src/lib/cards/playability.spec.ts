@@ -5,12 +5,12 @@ import { kingdomWarMode } from '../modes/kingdomWar';
 import { attackRange, seatDistance } from '../shared/queries';
 
 const t = (seatId: string): Target => ({ kind: 'seat', seatId });
-const stubMount = (id: string, equipSlot: 'plusMount' | 'minusMount'): CardDefinition => ({ id, name: id, category: 'equipment', equipSlot, play: () => [] });
+const stubMount = (id: string, equipSlot: 'defensiveMount' | 'offensiveMount'): CardDefinition => ({ id, name: id, category: 'equipment', equipSlot, play: () => [] });
 
 function registry(): ContentRegistry {
   const r = buildContentRegistry();
-  r.cards.set('plus-horse', stubMount('plus-horse', 'plusMount'));
-  r.cards.set('minus-horse', stubMount('minus-horse', 'minusMount'));
+  r.cards.set('defensive-horse', stubMount('defensive-horse', 'defensiveMount'));
+  r.cards.set('offensive-horse', stubMount('offensive-horse', 'offensiveMount'));
   return r;
 }
 
@@ -54,9 +54,9 @@ describe('distance and attack range', () => {
   it('is the living-seat ring distance, adjusted by mounts and never below 1', () => {
     const r = registry();
     expect(seatDistance(table(), 'seat-0', 'seat-2', r)).toBe(2);
-    expect(seatDistance(table({ equip: { 'seat-2': ['plus-horse'] } }), 'seat-0', 'seat-2', r)).toBe(3);
-    expect(seatDistance(table({ equip: { 'seat-0': ['minus-horse'] } }), 'seat-0', 'seat-2', r)).toBe(1);
-    expect(seatDistance(table({ equip: { 'seat-0': ['minus-horse'] } }), 'seat-0', 'seat-1', r)).toBe(1);
+    expect(seatDistance(table({ equip: { 'seat-2': ['defensive-horse'] } }), 'seat-0', 'seat-2', r)).toBe(3);
+    expect(seatDistance(table({ equip: { 'seat-0': ['offensive-horse'] } }), 'seat-0', 'seat-2', r)).toBe(1);
+    expect(seatDistance(table({ equip: { 'seat-0': ['offensive-horse'] } }), 'seat-0', 'seat-1', r)).toBe(1);
   });
 
   it('skips eliminated seats (Review Focus 3)', () => {

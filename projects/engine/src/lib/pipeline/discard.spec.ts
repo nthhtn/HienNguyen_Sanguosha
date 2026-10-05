@@ -47,11 +47,14 @@ describe('DiscardCardAction', () => {
     expect(getLegalActions(state(), 'seat-b', registry)).toEqual([]);
   });
 
-  it('moves the chosen card to the discard pile and logs a CardMovedEvent', () => {
+  it('moves the chosen card to the discard pile and logs a CardMovedEvent with the card’s face', () => {
     const { state: next, events } = resolve(state(), discard('h2'), ctx);
     expect(zone(next, 'seat-a:hand')).toEqual(['h1', 'h3']);
     expect(zone(next, 'discardPile')).toEqual(['h2']);
-    expect(events[0]).toEqual({ kind: 'CardMovedEvent', cardInstanceId: 'h2', toZoneId: 'discardPile' });
+    expect(events[0]).toEqual({
+      kind: 'CardMovedEvent', cardInstanceId: 'h2', fromZoneId: 'seat-a:hand', toZoneId: 'discardPile',
+      card: { instanceId: 'h2', definitionId: 'sha', suit: 'spade', rank: 1 },
+    });
   });
 
   it('stops offering discards once the hand is down to the limit', () => {

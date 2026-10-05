@@ -51,8 +51,8 @@ function baseState(): GameState {
       },
     ],
     players: [
-      { id: 'p1', seatId: 'seat-a', kind: 'bot' },
-      { id: 'p2', seatId: 'seat-b', kind: 'bot' },
+      { id: 'p1', seatId: 'seat-a', kind: 'bot', name: 'Seat A' },
+      { id: 'p2', seatId: 'seat-b', kind: 'bot', name: 'Seat B' },
     ],
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
     phase: 'Play',
@@ -151,6 +151,12 @@ describe('resolve: PlayCardAction with Target Selection and Damage', () => {
     const seatB = next.seats.find((s) => s.id === 'seat-b')!;
     expect(seatB.combinedHp).toBe(4);
     expect(events).toEqual([
+      // The play itself is public: who used which card on whom.
+      {
+        kind: 'CardPlayedEvent', seatId: 'seat-a',
+        card: { instanceId: 'test-card-1', definitionId: 'test-damage-card', suit: 'spade', rank: 5 },
+        targets: [{ kind: 'seat', seatId: 'seat-b' }],
+      },
       {
         kind: 'DamageDealtEvent',
         damage: {
@@ -162,11 +168,14 @@ describe('resolve: PlayCardAction with Target Selection and Damage', () => {
         },
       },
       // non-equipment cards are discarded after play() resolves (Task 21b)
-      { kind: 'CardMovedEvent', cardInstanceId: 'test-card-1', toZoneId: 'discardPile' },
+      {
+        kind: 'CardMovedEvent', cardInstanceId: 'test-card-1', fromZoneId: 'seat-a:hand', toZoneId: 'discardPile',
+        card: { instanceId: 'test-card-1', definitionId: 'test-damage-card', suit: 'spade', rank: 5 },
+      },
     ]);
   });
 
-  it('clamps combinedHp at 0 rather than going negative on overkill damage', () => {
+  it('takes combinedHp below 0 on overkill damage (a big hit needs more Peaches)', () => {
     const state = withTestCardInSeatAHand(baseState());
     state.seats[1].combinedHp = 1; // less than the 2 damage the test card deals
     const { state: next } = resolve(
@@ -180,7 +189,7 @@ describe('resolve: PlayCardAction with Target Selection and Damage', () => {
       { registry: registryWithTestDamageCard(), mode: stubMode() }
     );
     const seatB = next.seats.find((s) => s.id === 'seat-b')!;
-    expect(seatB.combinedHp).toBe(0);
+    expect(seatB.combinedHp).toBe(-1);
   });
 
   it('rejects an illegal target (eliminated seat) without mutating state', () => {
@@ -751,6 +760,46 @@ describe('resolve: discard-after-play', () => {
     const discard = next.zones.find((z) => z.id === 'discardPile')!;
     expect(hand.cards.map((c) => c.instanceId)).not.toContain('trivial-2');
     expect(discard.cards.map((c) => c.instanceId)).toContain('trivial-2');
+  });
+});
+
+describe('resolve: RespondAction to a window a card opened', () => {
+  // seat-b answers a pending 1-damage effect with 'answer-1'; 'opener' is the
+  // card that opened the window and heals seat-a whenever it is answered.
+  function answered(sourceCard?: { instanceId: string; definitionId: string }) {
+    const opener: CardDefinition = {
+      id: 'opener', name: 'Opener', category: 'trick', play: () => [],
+      onResponse: (_state, ctx) => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: ctx.seatId === 'seat-b' ? 1 : 0 }],
+    };
+    const answer: CardDefinition = { id: 'answer', name: 'Answer', category: 'basic', play: () => [] };
+    const registry: ContentRegistry = { cards: new Map([['opener', opener], ['answer', answer]]), generals: new Map() };
+    const base = baseState();
+    const state: GameState = {
+      ...base,
+      seats: base.seats.map((seat) => (seat.id === 'seat-a' ? { ...seat, combinedHp: seat.maxCombinedHp - 1 } : seat)),
+      pendingResponse: {
+        id: 'opened-1', respondingSeatId: 'seat-b', allowedActionKinds: ['RespondAction', 'PassAction'],
+        context: { effect: { kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-a' }, target: { kind: 'seat', seatId: 'seat-b' }, amount: 1, nature: 'normal' } } },
+        ...(sourceCard ? { sourceCard } : {}),
+      },
+      zones: base.zones.map((z) =>
+        z.id === 'seat-b:hand' ? { ...z, cards: [{ instanceId: 'answer-1', definitionId: 'answer', suit: 'heart' as const, rank: 2 }] } : z
+      ),
+    };
+    return resolve(state, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'opened-1', cardInstanceId: 'answer-1' }, { registry, mode: stubMode() }).state;
+  }
+  const hpOf = (state: GameState, seatId: string) => state.seats.find((s) => s.id === seatId)!;
+
+  it('lets the opening card decide what the answer leads to', () => {
+    const next = answered({ instanceId: 'opener-1', definitionId: 'opener' });
+    expect(hpOf(next, 'seat-a').combinedHp).toBe(hpOf(next, 'seat-a').maxCombinedHp);
+    expect(hpOf(next, 'seat-b').combinedHp).toBe(hpOf(next, 'seat-b').maxCombinedHp);
+  });
+
+  it('just cancels the pending effect when no card opened the window', () => {
+    const next = answered();
+    expect(hpOf(next, 'seat-a').combinedHp).toBe(hpOf(next, 'seat-a').maxCombinedHp - 1);
+    expect(hpOf(next, 'seat-b').combinedHp).toBe(hpOf(next, 'seat-b').maxCombinedHp);
   });
 });
 

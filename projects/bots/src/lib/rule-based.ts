@@ -64,9 +64,14 @@ function decide(
     if (choices.length > 0) return take(choices.reduce((best, a) => (hp(a) > hp(best) ? a : best)));
   }
 
-  // 2. Responding: every response the engine offers cancels damage to us.
+  // 2. Responding. A dying round: spend a Peach only on ourselves or a
+  // revealed ally. Any other window: every answer cancels damage to us.
   if (view.pendingResponse?.respondingSeatId === seatId) {
-    const answer = legal.find((a) => a.kind === 'RespondAction') ?? legal.find((a) => a.kind === 'PassAction');
+    const reason = view.pendingResponse.reason;
+    const self = view.seats.find((s) => s.id === seatId);
+    const dying = reason?.kind === 'dying' ? view.seats.find((s) => s.id === reason.seatId) : undefined;
+    const worthAnswering = !reason || (!!self && !!dying && (dying.id === seatId || isAlly(self, dying)));
+    const answer = (worthAnswering ? legal.find((a) => a.kind === 'RespondAction') : undefined) ?? legal.find((a) => a.kind === 'PassAction');
     if (answer) return take(answer);
   }
 

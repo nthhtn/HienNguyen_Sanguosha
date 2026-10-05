@@ -13,8 +13,8 @@ describe('domain factories', () => {
   });
 
   it('creates a player bound to a seat', () => {
-    const player = createPlayer('player-1', 'seat-1', 'bot');
-    expect(player).toEqual({ id: 'player-1', seatId: 'seat-1', kind: 'bot' });
+    const player = createPlayer('player-1', 'seat-1', 'bot', 'Seat 1');
+    expect(player).toEqual({ id: 'player-1', seatId: 'seat-1', kind: 'bot', name: 'Seat 1' });
   });
 
   it('halves the two generals\' HP and rounds down', () => {

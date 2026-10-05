@@ -7,9 +7,14 @@ function maskCard(card: CardInstance): CardInstance {
   return { ...card, definitionId: HIDDEN_CARD_DEFINITION_ID, suit: 'spade', rank: 0 };
 }
 
+// Zones whose cards lie face-up for every seat to see.
+export function isFaceUpZoneKind(kind: CardZone['kind']): boolean {
+  return kind !== 'hand' && kind !== 'drawPile';
+}
+
 function redactZone(zone: CardZone, viewerSeatId: string): CardZone {
   const isViewersOwnHand = zone.kind === 'hand' && zone.ownerSeatId === viewerSeatId;
-  const shouldMask = (zone.kind === 'hand' && !isViewersOwnHand) || zone.kind === 'drawPile';
+  const shouldMask = !isFaceUpZoneKind(zone.kind) && !isViewersOwnHand;
   if (!shouldMask) return zone;
   return { ...zone, cards: zone.cards.map(maskCard) };
 }

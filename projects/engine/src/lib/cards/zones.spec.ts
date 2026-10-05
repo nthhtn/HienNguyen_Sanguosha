@@ -106,9 +106,19 @@ describe('zones', () => {
         { id: 'discard', kind: 'discardPile', cards: [card('d1'), card('d2')] },
         { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] },
       ];
-      const { zones: result } = drawTop(zones, 'draw', 'seat-a:hand', 2, createRng(1));
+      const { zones: result, reshuffled } = drawTop(zones, 'draw', 'seat-a:hand', 2, createRng(1));
       const discard = result.find((z) => z.id === 'discard')!;
       expect(discard.cards).toEqual([]);
+      expect(reshuffled).toBe(2);
+    });
+
+    it('reports no reshuffle when the draw pile has enough cards', () => {
+      const zones: CardZone[] = [
+        { id: 'draw', kind: 'drawPile', cards: [card('c1'), card('c2')] },
+        { id: 'discard', kind: 'discardPile', cards: [card('d1')] },
+        { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] },
+      ];
+      expect(drawTop(zones, 'draw', 'seat-a:hand', 2, createRng(1)).reshuffled).toBe(0);
     });
 
     it('draws as many cards as available and stops, without crashing, when drawPile and discardPile combined cannot satisfy count', () => {

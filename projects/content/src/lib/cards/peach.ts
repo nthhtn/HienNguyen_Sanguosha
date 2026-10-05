@@ -8,5 +8,7 @@ export const peachCard: CardDefinition = {
     const seat = state.seats.find((s) => s.id === ctx.seatId);
     return seat && seat.combinedHp < seat.maxCombinedHp ? [[]] : [];
   },
-  play: (_state, ctx) => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: ctx.seatId }, amount: 1 }],
+  // In the Play phase it heals its user. As a rescue in the dying round it does
+  // nothing itself: the round's window heals the dying seat, whoever that is.
+  play: (_state, ctx) => (ctx.respondingTo ? [] : [{ kind: 'HealEffect', target: { kind: 'seat', seatId: ctx.seatId }, amount: 1 }]),
 };

@@ -9,7 +9,7 @@ import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence'
 import { legalTargetListsFor } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
-import { PhaseChangedEvent, TurnAdvancedEvent } from './events';
+import { CardPlayedEvent, PhaseChangedEvent, TurnAdvancedEvent } from './events';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -152,14 +152,15 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
         throw new Error(`Card ${cardInHand.definitionId} cannot be played with those targets`);
       }
       const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
-      const effects = cardDefinition.play(state, {
+      const played = logCardPlayed(state, { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: action.targets }, ctx, depth);
+      const effects = cardDefinition.play(played.state, {
         seatId: action.seatId,
         cardInstanceId: action.cardInstanceId,
         targets: action.targets,
       }) as Effect[];
 
-      let currentState = state;
-      let allEvents: GameEvent[] = [];
+      let currentState = played.state;
+      let allEvents: GameEvent[] = played.events;
       for (const effect of effects) {
         const result = resolveEffectWithTriggers(currentState, effect, ctx, depth);
         currentState = result.state;
@@ -206,8 +207,20 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
       if (pending.allowedCardIds && !pending.allowedCardIds.includes(cardInHand.definitionId)) {
         throw new Error(`Card ${cardInHand.definitionId} is not a legal response here`);
       }
-      const clearedState: GameState = { ...state, pendingResponse: null };
       const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
+      const answered = pending.context.effect.kind === 'DamageEffect' ? pending.context.effect.damage : null;
+      const inResponseTo = {
+        ...(answered?.source?.kind === 'seat' ? { seatId: answered.source.seatId } : {}),
+        ...(answered?.cause?.cardInstanceId ? { cardInstanceId: answered.cause.cardInstanceId } : {}),
+        ...(pending.reason?.kind === 'dying' ? { dyingSeatId: pending.reason.seatId } : {}),
+      };
+      const played = logCardPlayed(
+        { ...state, pendingResponse: null },
+        { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: [], inResponseTo },
+        ctx,
+        depth
+      );
+      const clearedState = played.state;
       const effects = cardDefinition.play(clearedState, {
         seatId: action.seatId,
         cardInstanceId: action.cardInstanceId,
@@ -215,7 +228,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
         respondingTo: action.pendingResponseId,
       }) as Effect[];
       let currentState = clearedState;
-      let allEvents: GameEvent[] = [];
+      let allEvents: GameEvent[] = played.events;
       for (const effect of effects) {
         const result = resolveEffectWithTriggers(currentState, effect, ctx, depth);
         currentState = result.state;
@@ -224,6 +237,26 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
       const discarded = discardAfterPlay(currentState, seat, cardDefinition, action.cardInstanceId, ctx, depth);
       currentState = discarded.state;
       allEvents = [...allEvents, ...discarded.events];
+      // Effects the window itself asks for on an answer, then the opening
+      // card's say in what the answer leads to.
+      for (const effect of pending.onAnswer ?? []) {
+        const result = resolveEffectWithTriggers(currentState, effect, ctx, depth);
+        currentState = result.state;
+        allEvents = [...allEvents, ...result.events];
+      }
+      if (pending.sourceCard) {
+        const source = lookupCard(ctx.registry, pending.sourceCard.definitionId);
+        const followUps = (source.onResponse?.(currentState, {
+          pending,
+          seatId: action.seatId,
+          cardInstanceId: action.cardInstanceId,
+        }) ?? []) as Effect[];
+        for (const effect of followUps) {
+          const result = resolveEffectWithTriggers(currentState, effect, ctx, depth);
+          currentState = result.state;
+          allEvents = [...allEvents, ...result.events];
+        }
+      }
       return { state: currentState, events: allEvents };
     }
 
@@ -316,6 +349,12 @@ function discardAfterPlay(
     ctx,
     depth
   );
+}
+
+// Logs a card use, then runs its after-triggers.
+function logCardPlayed(state: GameState, event: CardPlayedEvent, ctx: EngineContext, depth: number): ResolveResult {
+  const followUp = runAfterTriggers({ ...state, log: [...state.log, event] }, event, ctx, depth);
+  return { state: followUp.state, events: [event, ...followUp.events] };
 }
 
 // Gathers and dispatches every `after:<event kind>` trigger for one event,

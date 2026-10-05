@@ -121,6 +121,9 @@ export function generalTabs(generals: WikiGeneral[]): WikiTab<WikiGeneral>[] {
 export function basicTabs(cards: WikiCard[]): WikiTab<WikiCard>[] {
   return splitIntoTabs(cards, [
     { key: 'sha', label: 'Sha', holds: (c) => c.id === 'sha' },
+    // The Army expansion's fire and lightning Sha sit beside Sha.
+    { key: 'fire-attack', label: 'Fire Attack', holds: (c) => c.id === 'fire-attack' },
+    { key: 'lightning-attack', label: 'Lightning Attack', holds: (c) => c.id === 'lightning-attack' },
     { key: 'shan', label: 'Shan', holds: (c) => c.id === 'shan' },
     { key: 'wine', label: 'Wine', holds: (c) => c.id === 'wine' },
     { key: 'peach', label: 'Peach', holds: (c) => c.id === 'peach' },
@@ -131,9 +134,9 @@ export function equipmentTabs(cards: WikiCard[]): WikiTab<WikiCard>[] {
   return splitIntoTabs(cards, [
     { key: 'weapons', label: 'Weapons', holds: (c) => c.subtype === 'weapon' },
     { key: 'armors', label: 'Armors', holds: (c) => c.subtype === 'armor' },
-    { key: 'plus-mount', label: 'Plus Mount', holds: (c) => c.subtype === 'horse' && c.mount === 'plus' },
-    { key: 'minus-mount', label: 'Minus Mount', holds: (c) => c.subtype === 'horse' && c.mount === 'minus' },
-    { key: 'other-mounts', label: 'Other mounts', holds: (c) => c.subtype === 'horse' && c.mount === null, optional: true },
+    { key: 'defensive-mount', label: 'Defensive Mount', holds: (c) => c.subtype === 'horse' && c.mount === 'defensive' },
+    { key: 'offensive-mount', label: 'Offensive Mount', holds: (c) => c.subtype === 'horse' && c.mount === 'offensive' },
+    { key: 'other-mounts', label: 'Other Mounts', holds: (c) => c.subtype === 'horse' && c.mount === null, optional: true },
     { key: 'treasures', label: 'Treasures', holds: (c) => c.subtype === 'treasure', optional: true },
   ]);
 }

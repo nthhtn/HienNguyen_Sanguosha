@@ -66,6 +66,8 @@ export interface Player {
   id: string;
   seatId: string;
   kind: 'human' | 'bot';
+  // Shown wherever the seat appears; the seat id stays the stable key.
+  name: string;
 }
 
 export interface PendingResponse {
@@ -74,7 +76,19 @@ export interface PendingResponse {
   allowedActionKinds: string[];
   allowedCardIds?: string[];
   context: { effect: Effect };
+  // The card whose effect opened this window. When set, that card's
+  // definition decides what an answer does (CardDefinition.onResponse);
+  // otherwise an answer simply cancels context.effect.
+  sourceCard?: { instanceId: string; definitionId: string };
+  // Effects resolved, in order, after the answering card's own effects — for
+  // windows the engine itself opens (e.g. the dying round's Peach heals the
+  // dying seat, then asks again).
+  onAnswer?: Effect[];
+  // What is being asked, so the UI and bots can tell windows apart.
+  reason?: DecisionReason;
 }
+
+export type DecisionReason = { kind: 'dying'; seatId: string };
 
 export interface CardZone {
   id: string;

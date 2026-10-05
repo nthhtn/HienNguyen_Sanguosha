@@ -23,7 +23,7 @@ function seat(id: string, index: number, mainId: string, deputyId: string, elimi
 function stateWithSeats(seats: Seat[]): GameState {
   return {
     seats,
-    players: seats.map((s) => ({ id: `p-${s.id}`, seatId: s.id, kind: 'bot' as const })),
+    players: seats.map((s) => ({ id: `p-${s.id}`, seatId: s.id, kind: 'bot' as const, name: s.id })),
     turn: { turnNumber: 1, ownerSeatId: seats[0].id, extraTurnStack: [] },
     phase: 'Play',
     zones: [],

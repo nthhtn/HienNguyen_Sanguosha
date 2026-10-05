@@ -1,4 +1,4 @@
-import { GameState, Target, Kingdom, GameResult } from '../domain/types';
+import { GameState, Target, Kingdom, GameResult, PendingResponse } from '../domain/types';
 import { RngState } from '../rng/rng';
 
 export interface PlayContext {
@@ -9,8 +9,8 @@ export interface PlayContext {
 }
 
 // The four equipment slots a seat has. One card per slot.
-export type EquipSlot = 'weapon' | 'armor' | 'plusMount' | 'minusMount';
-export const EQUIP_SLOTS: readonly EquipSlot[] = ['weapon', 'armor', 'plusMount', 'minusMount'];
+export type EquipSlot = 'weapon' | 'armor' | 'defensiveMount' | 'offensiveMount';
+export const EQUIP_SLOTS: readonly EquipSlot[] = ['weapon', 'armor', 'defensiveMount', 'offensiveMount'];
 
 export interface PlayOptionsContext {
   seatId: string;
@@ -30,6 +30,18 @@ export interface CardDefinition {
   // these targets. Absent = legacy offers (untargeted + each living other seat).
   legalPlayTargets?(state: GameState, ctx: PlayOptionsContext, registry: ContentRegistry): Target[][];
   play(state: GameState, ctx: PlayContext): unknown[];
+  // Called when a seat answers a response window this card opened (see
+  // PendingResponse.sourceCard), after the answering card's own effects. Its
+  // effects replace the default of simply cancelling the pending effect, e.g.
+  // a Duel turning back on the other player.
+  onResponse?(state: GameState, ctx: ResponseContext): unknown[];
+}
+
+export interface ResponseContext {
+  pending: PendingResponse;
+  // The seat that answered, and the card it answered with.
+  seatId: string;
+  cardInstanceId: string;
 }
 
 export type TriggerPoint = `before:${string}` | `after:${string}`;

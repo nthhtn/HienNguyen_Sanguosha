@@ -5,8 +5,11 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
   const violations: string[] = [];
 
   for (const seat of state.seats) {
-    if (seat.combinedHp < 0) {
-      violations.push(`Seat ${seat.id} has negative combinedHp: ${seat.combinedHp}`);
+    // At 0 HP or below a seat is dying until its rescue round ends: it may
+    // only be living while that round is still asking.
+    const rescuePending = state.pendingResponse?.reason?.kind === 'dying' && state.pendingResponse.reason.seatId === seat.id;
+    if (!seat.eliminated && seat.combinedHp <= 0 && !rescuePending) {
+      violations.push(`Seat ${seat.id} is living at ${seat.combinedHp} HP with no rescue round pending`);
     }
   }
 

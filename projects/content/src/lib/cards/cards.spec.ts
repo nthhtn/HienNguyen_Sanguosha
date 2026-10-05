@@ -65,6 +65,18 @@ describe('Sha/Shan/Peach', () => {
     expect(next.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId).sort()).toEqual(['sha-1', 'shan-1']);
   });
 
+  it('logs who used which card on whom, and what a response answered', () => {
+    const opened = resolve(twoSeatState(), { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
+    const { state: next } = resolve(opened.state, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'sha-response-sha-1', cardInstanceId: 'shan-1' }, { registry: registry(), mode: stubMode() });
+    expect(next.log.filter((e) => e.kind === 'CardPlayedEvent')).toEqual([
+      { kind: 'CardPlayedEvent', seatId: 'seat-a', card: { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade', rank: 1 }, targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+      {
+        kind: 'CardPlayedEvent', seatId: 'seat-b', card: { instanceId: 'shan-1', definitionId: 'shan', suit: 'club', rank: 2 }, targets: [],
+        inResponseTo: { seatId: 'seat-a', cardInstanceId: 'sha-1' },
+      },
+    ]);
+  });
+
   it('Peach heals the playing seat up to maxCombinedHp and lands in the discard pile', () => {
     const state = twoSeatState();
     const { state: next } = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'peach-1', targets: [] }, { registry: registry(), mode: stubMode() });

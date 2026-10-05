@@ -36,6 +36,6 @@ describe('cardDisplayData', () => {
   });
 
   it('returns null for an unknown id', () => {
-    expect(cardDisplayData('silver-lion')).toBeNull();
+    expect(cardDisplayData('no-such-card')).toBeNull();
   });
 });

@@ -10,8 +10,7 @@ import type {
   RngState,
 } from 'engine';
 import { buildDeck, drawTop, shuffle } from 'engine';
-
-const SUITS = ['spade', 'heart', 'club', 'diamond'] as const;
+import { cardsData } from '../../../data/cards';
 
 export const GENERALS_PER_SEAT = 5;
 // A real Kingdom War table seats at most 10.
@@ -43,24 +42,28 @@ function dealCandidates(seatIds: string[], registry: ContentRegistry, rng: RngSt
   return { candidates, rng: afterShuffle };
 }
 
-// Four copies of each card for every five seats, so big tables still deal full
-// starting hands with cards left to draw; tables of up to five keep 4 copies.
-const COPIES_PER_DECK = 4;
-const SEATS_PER_DECK = 5;
-function copiesPerCard(seatCount: number): number {
-  return COPIES_PER_DECK * Math.ceil(seatCount / SEATS_PER_DECK);
+// Exactly one card per printing in the data, at every table size: the deck
+// holds each card's printed quantity. Big tables lean on the reshuffle.
+// Only a card's own printings: the extra copies other expansions add (tagged
+// with their expansion) stay out until expansions can be switched on.
+function buildDeckSpec(registry: ContentRegistry) {
+  return [...registry.cards.keys()].flatMap((cardId) => {
+    const all = Object.prototype.hasOwnProperty.call(cardsData, cardId) ? cardsData[cardId].printings ?? [] : [];
+    const printings = all.filter((p) => !p.expansion);
+    // A card with no printings would silently never be dealt.
+    if (printings.length === 0) throw new Error(`Card "${cardId}" has no printings in the data, so it cannot be put in the deck`);
+    return printings.map(({ suit, rank }) => ({ definitionId: cardId, suit, rank }));
+  });
 }
 
-function buildDeckSpec(registry: ContentRegistry, seatCount: number) {
-  const entries: { definitionId: string; suit: (typeof SUITS)[number]; rank: number }[] = [];
-  let i = 0;
-  for (const cardId of registry.cards.keys()) {
-    for (let copy = 0; copy < copiesPerCard(seatCount); copy++) {
-      entries.push({ definitionId: cardId, suit: SUITS[i % SUITS.length], rank: (i % 13) + 1 });
-      i++;
-    }
-  }
-  return entries;
+// Cards that can save a dying seat. Wine (on yourself) joins later.
+export const RESCUE_CARD_IDS = ['peach'];
+
+// Living seats in turn order, starting with `firstSeatId`.
+function turnOrderFrom(state: GameState, firstSeatId: string): string[] {
+  const living = [...state.seats].filter((s) => !s.eliminated).sort((a, b) => a.index - b.index);
+  const start = Math.max(0, living.findIndex((s) => s.id === firstSeatId));
+  return [...living.slice(start), ...living.slice(0, start)].map((s) => s.id);
 }
 
 function seatIdOfTarget(target: Target): string {
@@ -95,7 +98,7 @@ export const kingdomWarMode: GameModeDefinition = {
       eliminated: false,
     }));
 
-    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry, seats.length), afterDeal);
+    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry), afterDeal);
     let zones: CardZone[] = [
       { id: 'drawPile', kind: 'drawPile' as const, cards },
       { id: 'discardPile', kind: 'discardPile' as const, cards: [] },
@@ -113,7 +116,8 @@ export const kingdomWarMode: GameModeDefinition = {
 
     const state: GameState = {
       seats,
-      players: seatIds.map((id) => ({ id: `player-${id}`, seatId: id, kind: 'bot' as const })),
+      // Default names by seat position; the application layer may rename players.
+      players: seatIds.map((id, index) => ({ id: `player-${id}`, seatId: id, kind: 'bot' as const, name: `Seat ${index}` })),
       turn: { turnNumber: 1, ownerSeatId: seatIds[0], extraTurnStack: [] },
       phase: 'GeneralSelection',
       zones,
@@ -196,9 +200,17 @@ export const kingdomWarMode: GameModeDefinition = {
         const seat = state.seats.find((s) => s.id === event.damage.target.seatId);
         return !!seat && !seat.eliminated && seat.combinedHp <= 0;
       },
-      effect: (_state, subject) => {
+      // At 0 HP or below the seat is dying, not yet out: the rescue round asks
+      // every living seat in turn order from the turn owner for a Peach.
+      effect: (state, subject) => {
         const event = subject as DamageDealtEvent;
-        return [{ kind: 'EliminateSeatEffect', seatId: seatIdOfTarget(event.damage.target) }];
+        return [{
+          kind: 'DyingEffect',
+          seatId: seatIdOfTarget(event.damage.target),
+          order: turnOrderFrom(state, state.turn.ownerSeatId),
+          rescueCardIds: RESCUE_CARD_IDS,
+          entering: true,
+        }];
       },
     },
   ],

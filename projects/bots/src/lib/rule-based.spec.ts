@@ -86,6 +86,20 @@ describe('ruleBasedPolicy', () => {
     expect(decide(view({ pendingFor: 'seat-0' }), [pass]).action).toBe(pass);
   });
 
+  it('spends a Peach in a dying round only on itself or a revealed ally', () => {
+    const respond: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'c-peach' };
+    const pass: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' };
+    const dyingRound = (dyingSeatId: string, seats: Seat[]): GameState => {
+      const v = view({ pendingFor: 'seat-0', seats });
+      return { ...v, pendingResponse: { ...v.pendingResponse!, allowedCardIds: ['peach'], reason: { kind: 'dying', seatId: dyingSeatId } } };
+    };
+    const seats = [seat('seat-0', 0, 'Wei', 8), seat('seat-1', 1, 'Wei', 0), seat('seat-2', 2, 'Shu', 0), seat('seat-3', 3, 'hidden', 0)];
+    expect(decide(dyingRound('seat-0', [seat('seat-0', 0, 'Wei', 0), ...seats.slice(1)]), [pass, respond]).action).toBe(respond);
+    expect(decide(dyingRound('seat-1', seats), [pass, respond]).action).toBe(respond); // revealed ally
+    expect(decide(dyingRound('seat-2', seats), [pass, respond]).action).toBe(pass); // enemy
+    expect(decide(dyingRound('seat-3', seats), [pass, respond]).action).toBe(pass); // unknown
+  });
+
   describe('in the Discard phase', () => {
     const hand = (...ids: [string, string][]) => ids.map(([instanceId, definitionId]) => ({ instanceId, definitionId }));
 

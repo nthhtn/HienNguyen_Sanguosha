@@ -65,8 +65,8 @@ describe('equipment slots', () => {
     const next = equip(state([blade(2)], [blade(1)]), 'blade-2');
     const moves = next.log.filter((e) => e.kind === 'CardMovedEvent');
     expect(moves).toEqual([
-      { kind: 'CardMovedEvent', cardInstanceId: 'blade-1', toZoneId: 'discardPile' },
-      { kind: 'CardMovedEvent', cardInstanceId: 'blade-2', toZoneId: 'seat-a:equip' },
+      { kind: 'CardMovedEvent', cardInstanceId: 'blade-1', fromZoneId: 'seat-a:equip', toZoneId: 'discardPile', card: blade(1) },
+      { kind: 'CardMovedEvent', cardInstanceId: 'blade-2', fromZoneId: 'seat-a:hand', toZoneId: 'seat-a:equip', card: blade(2) },
     ]);
   });
 });
