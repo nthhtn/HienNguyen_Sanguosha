@@ -1,10 +1,18 @@
 {
-  "mount": "plus",
+  "count": 1,
+  "mount": "defensive",
   "name": "Shadow Runner",
   "nameZh": "绝影",
+  "printings": [
+    {
+      "rank": 5,
+      "suit": "spade"
+    }
+  ],
   "source": {
     "crawledAt": "2026-09-10",
     "mountFrom": "card art",
+    "printingsFrom": "standard-edition printing list (manual, not crawled)",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
     "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/shadow-runner"
   }

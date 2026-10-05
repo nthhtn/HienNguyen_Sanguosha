@@ -1,0 +1,34 @@
+{
+  "count": 5,
+  "name": "Fire Attack",
+  "nameZh": "火杀",
+  "printings": [
+    {
+      "rank": 4,
+      "suit": "diamond"
+    },
+    {
+      "rank": 5,
+      "suit": "diamond"
+    },
+    {
+      "rank": 4,
+      "suit": "heart"
+    },
+    {
+      "rank": 7,
+      "suit": "heart"
+    },
+    {
+      "rank": 10,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-05",
+    "expansion": "Army",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/fire-attack"
+  },
+  "text": "Once per turn, a player can use this to attack anyone in their attacking range. If the target does not use an Escape, they receive one unit of fire damage."
+}

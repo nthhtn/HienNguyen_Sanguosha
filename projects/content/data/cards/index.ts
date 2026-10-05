@@ -1,8 +1,12 @@
+import ancientScimitarEquipmentWeapon from './equipment/weapon/ancient-scimitar.json';
 import axeEquipmentWeapon from './equipment/weapon/axe.json';
 import barbariansTrick from './trick/barbarians.json';
 import blackPommelEquipmentWeapon from './equipment/weapon/black-pommel.json';
+import blackShieldEquipmentArmor from './equipment/armor/black-shield.json';
+import blazeTrick from './trick/blaze.json';
 import breakTrick from './trick/break.json';
 import captureTrick from './trick/capture.json';
+import chainsTrick from './trick/chains.json';
 import coerceTrick from './trick/coerce.json';
 import crossbowEquipmentWeapon from './equipment/weapon/crossbow.json';
 import daYuanEquipmentHorse from './equipment/horse/da-yuan.json';
@@ -10,10 +14,15 @@ import diLuEquipmentHorse from './equipment/horse/di-lu.json';
 import drawTwoTrick from './trick/draw-two.json';
 import duelTrick from './trick/duel.json';
 import eightTrigramsEquipmentArmor from './equipment/armor/eight-trigrams.json';
+import fireAttackBasic from './basic/fire-attack.json';
+import fireFanEquipmentWeapon from './equipment/weapon/fire-fan.json';
 import genderSwordsEquipmentWeapon from './equipment/weapon/gender-swords.json';
 import greenDragonBladeEquipmentWeapon from './equipment/weapon/green-dragon-blade.json';
 import hailOfArrowsTrick from './trick/hail-of-arrows.json';
 import harvestTrick from './trick/harvest.json';
+import huaLiuEquipmentHorse from './equipment/horse/hua-liu.json';
+import iceSwordEquipmentWeapon from './equipment/weapon/ice-sword.json';
+import lightningAttackBasic from './basic/lightning-attack.json';
 import lightningTrick from './trick/lightning.json';
 import longbowEquipmentWeapon from './equipment/weapon/longbow.json';
 import peachBasic from './basic/peach.json';
@@ -23,16 +32,22 @@ import serpentSpearEquipmentWeapon from './equipment/weapon/serpent-spear.json';
 import shaBasic from './basic/sha.json';
 import shadowRunnerEquipmentHorse from './equipment/horse/shadow-runner.json';
 import shanBasic from './basic/shan.json';
+import silverLionEquipmentArmor from './equipment/armor/silver-lion.json';
 import skyScorcherEquipmentWeapon from './equipment/weapon/sky-scorcher.json';
+import starvationTrick from './trick/starvation.json';
 import stealTrick from './trick/steal.json';
 import stormRunnerEquipmentHorse from './equipment/horse/storm-runner.json';
 import wineBasic from './basic/wine.json';
+import woodArmorEquipmentArmor from './equipment/armor/wood-armor.json';
 import wuxieTrick from './trick/wuxie.json';
 import ziXingEquipmentHorse from './equipment/horse/zi-xing.json';
 
 export interface CardPrinting {
   suit: 'spade' | 'heart' | 'club' | 'diamond';
   rank: number;
+  // Set on an extra copy that another expansion adds (e.g. 'Army', 'EX');
+  // absent on the card's own printings.
+  expansion?: string;
 }
 
 export interface CardFileData {
@@ -42,9 +57,9 @@ export interface CardFileData {
   range?: number;
   printings?: CardPrinting[];
   count?: number;
-  mount?: 'plus' | 'minus'; // horses only: the printed +1 / -1 on the card art
+  mount?: 'defensive' | 'offensive'; // horses only: defensive (+1) or offensive (−1), from the printed sign on the card art
   delayed?: true; // tools only: a delayed ("Delay Tool") card
-  source: { url: string; site: string; crawledAt: string; expansion?: string; mountFrom?: string };
+  source: { url: string; site: string; crawledAt: string; expansion?: string; mountFrom?: string; printingsFrom?: string; nameOnSite?: string; expansionPrintingsFrom?: string };
 }
 
 export interface CardData extends CardFileData {
@@ -53,11 +68,15 @@ export interface CardData extends CardFileData {
 }
 
 export const cardsData: Record<string, CardData> = {
+  'ancient-scimitar': { ...(ancientScimitarEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
   'axe': { ...(axeEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
   'barbarians': { ...(barbariansTrick as CardFileData), category: 'trick' },
   'black-pommel': { ...(blackPommelEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
+  'black-shield': { ...(blackShieldEquipmentArmor as CardFileData), category: 'equipment', subtype: 'armor' },
+  'blaze': { ...(blazeTrick as CardFileData), category: 'trick' },
   'break': { ...(breakTrick as CardFileData), category: 'trick' },
   'capture': { ...(captureTrick as CardFileData), category: 'trick' },
+  'chains': { ...(chainsTrick as CardFileData), category: 'trick' },
   'coerce': { ...(coerceTrick as CardFileData), category: 'trick' },
   'crossbow': { ...(crossbowEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
   'da-yuan': { ...(daYuanEquipmentHorse as CardFileData), category: 'equipment', subtype: 'horse' },
@@ -65,11 +84,16 @@ export const cardsData: Record<string, CardData> = {
   'draw-two': { ...(drawTwoTrick as CardFileData), category: 'trick' },
   'duel': { ...(duelTrick as CardFileData), category: 'trick' },
   'eight-trigrams': { ...(eightTrigramsEquipmentArmor as CardFileData), category: 'equipment', subtype: 'armor' },
+  'fire-attack': { ...(fireAttackBasic as CardFileData), category: 'basic' },
+  'fire-fan': { ...(fireFanEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
   'gender-swords': { ...(genderSwordsEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
   'green-dragon-blade': { ...(greenDragonBladeEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
   'hail-of-arrows': { ...(hailOfArrowsTrick as CardFileData), category: 'trick' },
   'harvest': { ...(harvestTrick as CardFileData), category: 'trick' },
+  'hua-liu': { ...(huaLiuEquipmentHorse as CardFileData), category: 'equipment', subtype: 'horse' },
+  'ice-sword': { ...(iceSwordEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
   'lightning': { ...(lightningTrick as CardFileData), category: 'trick' },
+  'lightning-attack': { ...(lightningAttackBasic as CardFileData), category: 'basic' },
   'longbow': { ...(longbowEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
   'peach': { ...(peachBasic as CardFileData), category: 'basic' },
   'peach-garden': { ...(peachGardenTrick as CardFileData), category: 'trick' },
@@ -78,10 +102,13 @@ export const cardsData: Record<string, CardData> = {
   'sha': { ...(shaBasic as CardFileData), category: 'basic' },
   'shadow-runner': { ...(shadowRunnerEquipmentHorse as CardFileData), category: 'equipment', subtype: 'horse' },
   'shan': { ...(shanBasic as CardFileData), category: 'basic' },
+  'silver-lion': { ...(silverLionEquipmentArmor as CardFileData), category: 'equipment', subtype: 'armor' },
   'sky-scorcher': { ...(skyScorcherEquipmentWeapon as CardFileData), category: 'equipment', subtype: 'weapon' },
+  'starvation': { ...(starvationTrick as CardFileData), category: 'trick' },
   'steal': { ...(stealTrick as CardFileData), category: 'trick' },
   'storm-runner': { ...(stormRunnerEquipmentHorse as CardFileData), category: 'equipment', subtype: 'horse' },
   'wine': { ...(wineBasic as CardFileData), category: 'basic' },
+  'wood-armor': { ...(woodArmorEquipmentArmor as CardFileData), category: 'equipment', subtype: 'armor' },
   'wuxie': { ...(wuxieTrick as CardFileData), category: 'trick' },
   'zi-xing': { ...(ziXingEquipmentHorse as CardFileData), category: 'equipment', subtype: 'horse' },
 };

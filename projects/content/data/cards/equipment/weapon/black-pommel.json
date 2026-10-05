@@ -1,9 +1,17 @@
 {
+  "count": 1,
   "name": "Black Pommel",
   "nameZh": "青釭剑",
+  "printings": [
+    {
+      "rank": 6,
+      "suit": "spade"
+    }
+  ],
   "range": 2,
   "source": {
     "crawledAt": "2026-09-10",
+    "printingsFrom": "standard-edition printing list (manual, not crawled)",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
     "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/black-pommel"
   },

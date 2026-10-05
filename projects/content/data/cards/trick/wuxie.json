@@ -1,5 +1,5 @@
 {
-  "count": 3,
+  "count": 7,
   "name": "Wuxie",
   "nameZh": "无懈可击",
   "printings": [
@@ -14,10 +14,31 @@
     {
       "rank": 13,
       "suit": "club"
+    },
+    {
+      "expansion": "Army",
+      "rank": 13,
+      "suit": "spade"
+    },
+    {
+      "expansion": "Army",
+      "rank": 1,
+      "suit": "heart"
+    },
+    {
+      "expansion": "Army",
+      "rank": 13,
+      "suit": "heart"
+    },
+    {
+      "expansion": "EX",
+      "rank": 12,
+      "suit": "diamond"
     }
   ],
   "source": {
     "crawledAt": "2026-09-10",
+    "expansionPrintingsFrom": "AllCards spreadsheet (Army and EX rows), crawled 2026-10-05",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
     "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/negate"
   },

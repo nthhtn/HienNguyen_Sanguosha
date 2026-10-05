@@ -1,4 +1,11 @@
 {
+  "ancient-scimitar": {
+    "crawledAt": "2026-10-05",
+    "height": 656,
+    "localPath": "cards/equipment/weapon/ancient-scimitar.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/ancient-scimitar",
+    "width": 448
+  },
   "axe": {
     "crawledAt": "2026-09-24",
     "height": 973,
@@ -19,6 +26,20 @@
     "localPath": "cards/equipment/weapon/black-pommel.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/black-pommel",
     "width": 667
+  },
+  "black-shield": {
+    "crawledAt": "2026-10-05",
+    "height": 977,
+    "localPath": "cards/equipment/armor/black-shield.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/ex/black-shield",
+    "width": 667
+  },
+  "blaze": {
+    "crawledAt": "2026-10-05",
+    "height": 968,
+    "localPath": "cards/trick/blaze.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/blaze",
+    "width": 661
   },
   "break": {
     "crawledAt": "2026-10-02",
@@ -61,6 +82,13 @@
     "localPath": "cards/trick/capture.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/capture",
     "width": 974
+  },
+  "chains": {
+    "crawledAt": "2026-10-05",
+    "height": 969,
+    "localPath": "cards/trick/chains.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/chains",
+    "width": 662
   },
   "coerce": {
     "crawledAt": "2026-10-02",
@@ -146,6 +174,20 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/eight-trigrams",
     "width": 669
   },
+  "fire-attack": {
+    "crawledAt": "2026-10-05",
+    "height": 970,
+    "localPath": "cards/basic/fire-attack.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/fire-attack",
+    "width": 663
+  },
+  "fire-fan": {
+    "crawledAt": "2026-10-05",
+    "height": 966,
+    "localPath": "cards/equipment/weapon/fire-fan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/fire-fan",
+    "width": 660
+  },
   "fire-zhuge-liang": {
     "crawledAt": "2026-10-02",
     "height": 969,
@@ -202,6 +244,13 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/harvest",
     "width": 671
   },
+  "hua-liu": {
+    "crawledAt": "2026-10-05",
+    "height": 977,
+    "localPath": "cards/equipment/horse/hua-liu.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/hua-liu",
+    "width": 667
+  },
   "hua-tuo": {
     "crawledAt": "2026-09-24",
     "height": 965,
@@ -230,6 +279,13 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-huang-zhong",
     "width": 662
   },
+  "ice-sword": {
+    "crawledAt": "2026-10-05",
+    "height": 976,
+    "localPath": "cards/equipment/weapon/ice-sword.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/ex/ice-sword",
+    "width": 667
+  },
   "jia-xu": {
     "crawledAt": "2026-10-02",
     "height": 995,
@@ -250,6 +306,13 @@
     "localPath": "cards/trick/lightning.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/lightning",
     "width": 975
+  },
+  "lightning-attack": {
+    "crawledAt": "2026-10-05",
+    "height": 977,
+    "localPath": "cards/basic/lightning-attack.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/lightning-attack",
+    "width": 667
   },
   "liu-bei": {
     "crawledAt": "2026-09-24",
@@ -363,6 +426,13 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/escape",
     "width": 658
   },
+  "silver-lion": {
+    "crawledAt": "2026-10-05",
+    "height": 975,
+    "localPath": "cards/equipment/armor/silver-lion.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/silver-helmet",
+    "width": 666
+  },
   "sima-yi": {
     "crawledAt": "2026-09-24",
     "height": 965,
@@ -376,6 +446,14 @@
     "localPath": "cards/equipment/weapon/sky-scorcher.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/sky-scorcher",
     "width": 447
+  },
+  "starvation": {
+    "crawledAt": "2026-10-05",
+    "height": 969,
+    "localPath": "cards/trick/starvation.jpg",
+    "note": "Source scan is sideways; rotated 90° counter-clockwise to portrait after download.",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/starvation",
+    "width": 651
   },
   "steal": {
     "crawledAt": "2026-10-02",
@@ -438,6 +516,13 @@
     "height": 975,
     "localPath": "cards/basic/wine.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wine",
+    "width": 666
+  },
+  "wood-armor": {
+    "crawledAt": "2026-10-05",
+    "height": 975,
+    "localPath": "cards/equipment/armor/wood-armor.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wood-armor",
     "width": 666
   },
   "wuxie": {

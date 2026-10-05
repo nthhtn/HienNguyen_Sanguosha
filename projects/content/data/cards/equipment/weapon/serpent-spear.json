@@ -1,9 +1,17 @@
 {
+  "count": 1,
   "name": "Serpent Spear",
   "nameZh": "丈八蛇矛",
+  "printings": [
+    {
+      "rank": 12,
+      "suit": "spade"
+    }
+  ],
   "range": 3,
   "source": {
     "crawledAt": "2026-09-10",
+    "printingsFrom": "standard-edition printing list (manual, not crawled)",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
     "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/serpent-spear"
   },

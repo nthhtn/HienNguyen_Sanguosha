@@ -1,5 +1,5 @@
 {
-  "count": 1,
+  "count": 2,
   "delayed": true,
   "name": "Lightning",
   "nameZh": "闪电",
@@ -7,10 +7,16 @@
     {
       "rank": 1,
       "suit": "spade"
+    },
+    {
+      "expansion": "EX",
+      "rank": 12,
+      "suit": "heart"
     }
   ],
   "source": {
     "crawledAt": "2026-10-02",
+    "expansionPrintingsFrom": "AllCards spreadsheet (Army and EX rows), crawled 2026-10-05",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
     "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/lightning"
   },

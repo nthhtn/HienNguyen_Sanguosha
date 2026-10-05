@@ -1,0 +1,23 @@
+{
+  "count": 2,
+  "delayed": true,
+  "name": "Starvation",
+  "nameZh": "兵粮寸断",
+  "printings": [
+    {
+      "rank": 10,
+      "suit": "spade"
+    },
+    {
+      "rank": 4,
+      "suit": "club"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-05",
+    "expansion": "Army",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/starvation"
+  },
+  "text": "A player can put this delay tool on any other player within range. The target must do a judgment during their turn. If it is not a club, the target loses their drawing phase."
+}

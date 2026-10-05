@@ -1,0 +1,12 @@
+{
+  "name": "Ancient Scimitar",
+  "nameZh": "古锭刀",
+  "range": 2,
+  "source": {
+    "crawledAt": "2026-10-05",
+    "expansion": "Army",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/ancient-scimitar"
+  },
+  "text": "When the target of an attack receives damage and does not have any hand cards, the damage is increased by one."
+}

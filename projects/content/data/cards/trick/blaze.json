@@ -1,0 +1,26 @@
+{
+  "count": 3,
+  "name": "Blaze",
+  "nameZh": "火攻",
+  "printings": [
+    {
+      "rank": 12,
+      "suit": "diamond"
+    },
+    {
+      "rank": 2,
+      "suit": "heart"
+    },
+    {
+      "rank": 3,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-05",
+    "expansion": "Army",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/blaze"
+  },
+  "text": "A player can target anyone with a hand with blaze. The target then shows any hand card of theirs. The player can then discard any hand card of the same suit to damage them one with fire."
+}

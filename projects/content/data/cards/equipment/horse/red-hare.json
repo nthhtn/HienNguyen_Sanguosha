@@ -1,10 +1,18 @@
 {
-  "mount": "minus",
+  "count": 1,
+  "mount": "offensive",
   "name": "Red Hare",
   "nameZh": "赤兔",
+  "printings": [
+    {
+      "rank": 5,
+      "suit": "heart"
+    }
+  ],
   "source": {
     "crawledAt": "2026-09-10",
     "mountFrom": "card art",
+    "printingsFrom": "standard-edition printing list (manual, not crawled)",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
     "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/red-hare"
   }

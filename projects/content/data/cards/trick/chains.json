@@ -1,0 +1,38 @@
+{
+  "count": 6,
+  "name": "Chains",
+  "nameZh": "铁索连环",
+  "printings": [
+    {
+      "rank": 11,
+      "suit": "spade"
+    },
+    {
+      "rank": 12,
+      "suit": "spade"
+    },
+    {
+      "rank": 10,
+      "suit": "club"
+    },
+    {
+      "rank": 11,
+      "suit": "club"
+    },
+    {
+      "rank": 12,
+      "suit": "club"
+    },
+    {
+      "rank": 13,
+      "suit": "club"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-05",
+    "expansion": "Army",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/chains"
+  },
+  "text": "A player can target up to two players and toggles if they are in the chain. A second option is to discard the chains and draw another card."
+}

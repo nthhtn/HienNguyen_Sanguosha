@@ -1,0 +1,11 @@
+{
+  "name": "Wood Armor",
+  "nameZh": "藤甲",
+  "source": {
+    "crawledAt": "2026-10-05",
+    "expansion": "Army",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wood-armor"
+  },
+  "text": "While this is equipped, the wearer cannot be damaged by barbarians, hail of arrows, or non-elemental attacks. When receiving any fire damage however, the damage is increased by one."
+}
