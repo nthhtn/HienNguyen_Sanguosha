@@ -86,6 +86,26 @@ independently. For example, the UI MUST NOT determine whether a player is
 allowed to play Slash; it SHOULD ask the game/application layer for the
 legal actions available to the player.
 
+### UI text style
+
+Every piece of visible text MUST follow these casing rules:
+
+- **Title Case for names and short labels:** titles, headings that name
+  something, buttons, tabs and field labels. Examples: "Response Needed",
+  "Start Game", "Discard Pile", "Your Name".
+- **Sentence case for anything that reads as a sentence:** announcements,
+  status lines, prompts, descriptions, hints, empty states and Action History
+  lines. Examples: "Bots are choosing their Generals…", "Pass the device to
+  Hing", "Nothing yet", "Seat 1 used Sha (7 ♠) on Hing".
+- **Keywords keep their capitals inside sentences:**
+  - player and seat names, card names, general names;
+  - forces (Wei, Shu, Wu, Qun);
+  - card types (Basic, Tool, Equipment, Weapon, Armor, Mount);
+  - phase names ("Play Phase");
+  - the term General(s), including Main General and Deputy General;
+  - HP.
+- Ids are never shown as they are: show "Seat 0", not `seat-0`.
+
 Angular Signals SHOULD be preferred for reactive UI state where
 appropriate. Dependency Injection SHOULD be used for application services
 and replaceable infrastructure. The application SHOULD favor standalone
