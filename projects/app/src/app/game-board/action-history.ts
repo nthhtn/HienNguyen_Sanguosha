@@ -1,4 +1,4 @@
-import { CardInstance, CardZone, EngineEvent, Player, Seat } from 'engine';
+import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat } from 'engine';
 import { cardDisplayData } from 'content';
 import { Force, cardFaceLabel, cardIdDisplayName, forceOf, seatName, targetLabel } from '../labels';
 
@@ -29,6 +29,23 @@ export function actionHistory(
   const playedCards = new Map<string, CardInstance>();
   // Cards used but not yet moved on: their next move is the play's own.
   const awaitingMove = new Set<string>();
+  // A pick waiting for its card's move, which says what was picked.
+  let picked: ChoiceMadeEvent | null = null;
+  // The last face seen of each card, from moves into face-up zones.
+  const knownFaces = new Map<string, CardInstance>();
+  // "Seat 1 took Hing's Silver Lion (A ♣) with Steal", "Seat 1 took a hand card
+  // from Hing with Steal", "Seat 1 discarded Sha (7 ♠) from Hing's hand with Break".
+  const pickLine = (made: ChoiceMadeEvent, face: CardInstance | undefined, ownerSeatId: string | undefined): string => {
+    const tool = made.reason.kind === 'choice' ? ` with ${cardName(made.reason.card.as)}` : '';
+    const chooser = name(made.seatId);
+    if (made.shows.kind === 'hidden-hand') {
+      return made.verb === 'take'
+        ? `${chooser} took a hand card from ${name(made.shows.seatId)}${tool}`
+        : `${chooser} discarded ${face ? named(face) : 'a card'} from ${name(made.shows.seatId)}'s hand${tool}`;
+    }
+    const what = face ? named(face) : 'a card';
+    return `${chooser} ${made.verb === 'take' ? 'took' : 'discarded'} ${ownerSeatId ? `${name(ownerSeatId)}'s ${what}` : what}${tool}`;
+  };
   const entries: ActionHistoryEntry[] = [];
   const forceOfSeat = (seatId: string) => forceOf(seats.find((s) => s.id === seatId)?.kingdom);
   const status = (seatId: string, text: string) => entries.push({ kind: 'action', text, card: null, force: forceOfSeat(seatId) });
@@ -78,9 +95,22 @@ export function actionHistory(
         break;
       }
       case 'CardMovedEvent': {
+        if (event.card) knownFaces.set(event.cardInstanceId, event.card);
         if (awaitingMove.delete(event.cardInstanceId)) break;
         const from = zoneById.get(event.fromZoneId);
         const to = zoneById.get(event.toZoneId);
+        if (picked) {
+          const face = event.card ?? (picked.shows.kind === 'card' ? picked.shows.card : undefined);
+          action(pickLine(picked, face, from?.ownerSeatId), face ?? null);
+          picked = null;
+          break;
+        }
+        // A worn card handed to another seat (Coerce's weapon).
+        if (from?.kind === 'equip' && to?.kind === 'hand' && from.ownerSeatId && to.ownerSeatId && from.ownerSeatId !== to.ownerSeatId) {
+          const face = knownFaces.get(event.cardInstanceId);
+          action(`${name(to.ownerSeatId)} took ${name(from.ownerSeatId)}'s ${face ? named(face) : 'card'}`, face ?? null);
+          break;
+        }
         if (!event.card || to?.kind !== 'discardPile' || !from?.ownerSeatId) break;
         if (from.kind === 'hand') action(`${name(from.ownerSeatId)} discarded ${named(event.card)}`, event.card);
         if (from.kind === 'equip') action(`${name(from.ownerSeatId)}'s ${cardName(event.card.definitionId)} was discarded`, event.card);
@@ -112,6 +142,12 @@ export function actionHistory(
         break;
       case 'GeneralsChosenEvent':
         action(`${name(event.seatId)} chose their generals`);
+        break;
+      case 'ChoiceMadeEvent':
+        picked = event;
+        break;
+      case 'CardsTurnedUpEvent':
+        action(`Turned up ${event.cards.length} ${event.cards.length === 1 ? 'card' : 'cards'}: ${event.cards.map(named).join(', ')}`);
         break;
       case 'DiscardPileReshuffledEvent':
         action(`The discard pile (${event.cardCount}) was shuffled into the draw pile`);

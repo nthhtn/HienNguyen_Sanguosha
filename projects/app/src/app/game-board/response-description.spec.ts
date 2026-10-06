@@ -148,3 +148,28 @@ describe('startsOnNoResponse', () => {
     expect(startsOnNoResponse(state([], null))).toBe(false);
   });
 });
+
+describe('describeResponse: Coerce', () => {
+  it('asks the holder to play a Sha at the victim, or hand over the weapon', () => {
+    const coerce: CardInstance = { instanceId: 'co-1', definitionId: 'coerce', suit: 'club', rank: 12 };
+    const blade: CardInstance = { instanceId: 'blade-1', definitionId: 'green-dragon-blade', suit: 'spade', rank: 5 };
+    const pending: PendingResponse = {
+      id: 'k1', respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
+      reason: { kind: 'card-effect', card: used(coerce), userSeatId: 'seat-1', victimSeatId: 'seat-2' },
+      sourceCard: { instanceId: 'co-1', definitionId: 'coerce' },
+      context: { effect: { kind: 'MoveCardEffect', cardInstanceId: 'blade-1', toZoneId: 'seat-1:hand' } },
+    };
+    const s: GameState = {
+      ...state([], pending),
+      zones: [
+        { id: 'seat-0:equip', kind: 'equip', ownerSeatId: 'seat-0', cards: [blade] },
+        { id: 'seat-1:hand', kind: 'hand', ownerSeatId: 'seat-1', cards: [] },
+      ],
+    };
+    expect(describeResponse(s, 'seat-0')).toMatchObject({
+      source: 'Seat 1 used Coerce on you',
+      prompt: 'Play Sha at Seat 2?',
+      outcome: 'Green Dragon Blade goes to Seat 1',
+    });
+  });
+});

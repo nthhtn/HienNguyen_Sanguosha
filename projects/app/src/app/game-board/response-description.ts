@@ -67,6 +67,12 @@ function outcomeOf(effect: Effect, viewerSeatId: string, state: GameState): stri
       return `${targetLabel(effect.target, state.players)} recovers ${effect.amount} HP`;
     case 'DrawCardsEffect':
       return `${name(effect.seatId)} draws ${effect.count} ${effect.count === 1 ? 'card' : 'cards'}`;
+    case 'MoveCardEffect': {
+      const card = state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === effect.cardInstanceId);
+      const owner = state.zones.find((z) => z.id === effect.toZoneId)?.ownerSeatId;
+      if (!owner) return 'The effect goes ahead';
+      return `${card ? cardName(card) : 'A card'} goes to ${owner === viewerSeatId ? 'you' : name(owner)}`;
+    }
     default:
       return 'The effect goes ahead';
   }
@@ -118,6 +124,18 @@ export function describeResponse(state: GameState, viewerSeatId: string): Respon
       prompt: `Play ${counter} to cancel it?`,
       outcome: `${name(wuxieSeatId)}'s ${counter} stands`,
       outcomeForce: forceOf(state.seats.find((s) => s.id === wuxieSeatId)?.kingdom),
+    };
+  }
+
+  if (pending.reason?.kind === 'card-effect' && pending.reason.victimSeatId) {
+    const { card, userSeatId, victimSeatId } = pending.reason;
+    const holder = pending.respondingSeatId;
+    return {
+      source: `${name(userSeatId)} used ${cardName({ definitionId: card.as })} on ${holder === viewerSeatId ? 'you' : name(holder)}`,
+      latest: null,
+      prompt: `Play ${askedCardName(state)} at ${victimSeatId === viewerSeatId ? 'you' : name(victimSeatId)}?`,
+      outcome: outcomeOf(pending.context.effect, viewerSeatId, state),
+      outcomeForce: forceOf(state.seats.find((s) => s.id === holder)?.kingdom),
     };
   }
 

@@ -139,6 +139,52 @@ describe('actionHistory', () => {
     ])[0]).toBe("Hing cancelled Seat 1's Draw Two with Wuxie (J ♠)");
   });
 
+  describe('picks and handed-over cards', () => {
+    const players = [
+      { id: 'p0', seatId: 'seat-0', kind: 'human' as const, name: 'Hing' },
+      { id: 'p1', seatId: 'seat-1', kind: 'bot' as const, name: 'Seat 1' },
+    ];
+    const withProcessing = [...zones, { id: 'processing', kind: 'processing' as const, cards: [] }];
+    const lines = (log: EngineEvent[]) => actionHistory(log, withProcessing, players).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
+    const reason = (as: string) => ({ kind: 'choice' as const, card: { as, colour: 'black' as const, physical: [] }, userSeatId: 'seat-1', targetSeatId: 'seat-0' });
+
+    it('says what a Steal took, by face when worn, unnamed from the hand', () => {
+      expect(lines([
+        { kind: 'ChoiceMadeEvent', seatId: 'seat-1', reason: reason('steal'), verb: 'take', shows: { kind: 'card', card: lion } },
+        { kind: 'CardMovedEvent', cardInstanceId: 'lion-1', fromZoneId: 'seat-0:equip', toZoneId: 'seat-1:hand' },
+      ])).toEqual(["Seat 1 took Hing's Silver Lion (A ♣) with Steal"]);
+      expect(lines([
+        { kind: 'ChoiceMadeEvent', seatId: 'seat-1', reason: reason('steal'), verb: 'take', shows: { kind: 'hidden-hand', seatId: 'seat-0', count: 2 } },
+        { kind: 'CardMovedEvent', cardInstanceId: 'x', fromZoneId: 'seat-0:hand', toZoneId: 'seat-1:hand' },
+      ])).toEqual(['Seat 1 took a hand card from Hing with Steal']);
+    });
+
+    it('names a card broken from the hand, since the discard shows it', () => {
+      expect(lines([
+        { kind: 'ChoiceMadeEvent', seatId: 'seat-1', reason: reason('break'), verb: 'discard', shows: { kind: 'hidden-hand', seatId: 'seat-0', count: 2 } },
+        move(sha, 'seat-0:hand', 'discardPile'),
+      ])).toEqual(["Seat 1 discarded Sha (7 ♠) from Hing's hand with Break"]);
+    });
+
+    it('tells the Harvest: what was turned up, and who took what', () => {
+      expect(lines([
+        { kind: 'CardsTurnedUpEvent', zoneId: 'processing', cards: [peach, sha] },
+        {
+          kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'take', shows: { kind: 'card', card: peach },
+          reason: { kind: 'choice', card: { as: 'harvest', colour: 'red', physical: [] }, userSeatId: 'seat-0' },
+        },
+        { kind: 'CardMovedEvent', cardInstanceId: 'peach-1', fromZoneId: 'processing', toZoneId: 'seat-0:hand' },
+      ])).toEqual(['Hing took Peach (Q ♥) with Harvest', 'Turned up 2 cards: Peach (Q ♥), Sha (7 ♠)']);
+    });
+
+    it('says who took a worn card handed over (Coerce’s weapon)', () => {
+      expect(lines([
+        move(blade, 'seat-1:hand', 'seat-1:equip'),
+        { kind: 'CardMovedEvent', cardInstanceId: 'blade-1', fromZoneId: 'seat-1:equip', toZoneId: 'seat-0:hand' },
+      ])).toEqual(["Hing took Seat 1's Green Dragon Blade (5 ♠)"]);
+    });
+  });
+
   it('tells the story of a dying seat: dying, the Peach that saved it, and saved', () => {
     const log: EngineEvent[] = [
       { kind: 'SeatDyingEvent', seatId: 'seat-1' },

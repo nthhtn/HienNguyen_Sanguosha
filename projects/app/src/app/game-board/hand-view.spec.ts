@@ -91,6 +91,26 @@ describe('HandView', () => {
     expect(played).toEqual([shaAtSeat2]);
   });
 
+  it('picks a two-seat play (Coerce) in two steps: the first seat, then the second', async () => {
+    const pair = (first: string, second: string): Action => ({
+      kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c-peach', targets: [{ kind: 'seat', seatId: first }, { kind: 'seat', seatId: second }],
+    });
+    fixture.componentRef.setInput('actions', [pair('seat-1', 'seat-0'), pair('seat-1', 'seat-2'), pair('seat-2', 'seat-1')]);
+    fixture.detectChanges();
+    playButton('c-peach').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const firsts = [...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[];
+    expect(firsts.map((i) => i.textContent!.trim())).toEqual(['Play Peach Targeting Seat 1', 'Play Peach Targeting Seat 2']);
+    firsts[0].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const seconds = ([...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[]).filter((i) => i.textContent!.trim().startsWith('At '));
+    expect(seconds.map((i) => i.textContent!.trim())).toEqual(['At Seat 0', 'At Seat 2']);
+    seconds[1].click();
+    expect(played).toEqual([pair('seat-1', 'seat-2')]);
+  });
+
   it('disables Play for a card with no legal action', () => {
     expect(playButton('c-peach').disabled).toBe(true);
   });

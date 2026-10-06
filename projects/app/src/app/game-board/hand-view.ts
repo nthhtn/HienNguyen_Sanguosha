@@ -3,19 +3,39 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { Action, CardInstance, ContentRegistry, GameState } from 'engine';
-import { actionLabel } from '../labels';
+import { Action, CardInstance, ContentRegistry, GameState, Target } from 'engine';
+import { actionLabel, targetLabel } from '../labels';
 import { PlayingCard } from './playing-card';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
+
+type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
 
 interface HandCardViewModel {
   card: CardInstance;
   name: string;
   actions: { action: Action; label: string }[];
+  // Two-seat plays (Coerce: the holder, then the victim), grouped by first seat.
+  pairs: { seatId: string; label: string; seconds: { action: Action; label: string }[] }[] | null;
 }
 
 function cardInstanceIdOf(action: Action): string | undefined {
   return action.kind === 'PlayCardAction' ? action.cardInstanceId : undefined;
+}
+
+// Two-seat plays grouped by their first seat, in order: "Play Coerce
+// Targeting Seat 1", then "At Seat 2".
+function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegistry): NonNullable<HandCardViewModel['pairs']> {
+  const groups: NonNullable<HandCardViewModel['pairs']> = [];
+  for (const play of plays) {
+    const [first, second]: Target[] = play.targets;
+    let group = groups.find((g) => g.seatId === first.seatId);
+    if (!group) {
+      group = { seatId: first.seatId, label: actionLabel({ ...play, targets: [first] }, state, registry), seconds: [] };
+      groups.push(group);
+    }
+    group.seconds.push({ action: play, label: `At ${targetLabel(second, state.players)}` });
+  }
+  return groups;
 }
 
 // The viewer's own hand as one row of cards. Hovering (or focusing, for touch)
@@ -30,7 +50,23 @@ function cardInstanceIdOf(action: Action): string | undefined {
         <div class="hand-card" role="listitem" tabindex="0" [attr.data-card-id]="vm.card.instanceId">
           <app-playing-card [card]="vm.card" />
           <div class="overlay">
-            @if (vm.actions.length > 1) {
+            @if (vm.pairs) {
+              <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="firsts">
+                <mat-icon>play_arrow</mat-icon> Play
+              </button>
+              <mat-menu #firsts="matMenu">
+                @for (group of vm.pairs; track group.seatId) {
+                  <button mat-menu-item type="button" [matMenuTriggerFor]="seconds" [matMenuTriggerData]="{ group }">{{ group.label }}</button>
+                }
+              </mat-menu>
+              <mat-menu #seconds="matMenu">
+                <ng-template matMenuContent let-group="group">
+                  @for (second of group.seconds; track second.label) {
+                    <button mat-menu-item type="button" (click)="play.emit(second.action)">{{ second.label }}</button>
+                  }
+                </ng-template>
+              </mat-menu>
+            } @else if (vm.actions.length > 1) {
               <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="choices">
                 <mat-icon>play_arrow</mat-icon> Play
               </button>
@@ -115,6 +151,8 @@ export class HandView {
 
   protected readonly cardViewModels = computed<HandCardViewModel[]>(() =>
     this.cards().map((card) => {
+      const plays = this.actions().filter((a): a is PlayCard => a.kind === 'PlayCardAction' && a.cardInstanceId === card.instanceId);
+      const pairs = plays.length > 0 && plays.every((p) => p.targets.length === 2) ? groupPairs(plays, this.state(), this.registry()) : null;
       const actions = this.actions()
         .filter((action) => cardInstanceIdOf(action) === card.instanceId)
         .map((action) => ({ action, label: actionLabel(action, this.state(), this.registry()) }));
@@ -122,6 +160,7 @@ export class HandView {
         card,
         name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name),
         actions,
+        pairs,
       };
     })
   );
