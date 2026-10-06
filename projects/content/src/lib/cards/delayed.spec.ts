@@ -228,3 +228,19 @@ describe('Lightning', () => {
     expect(next.phase).toBe('Play');
   });
 });
+
+describe('an eliminated seat', () => {
+  it('discards everything in its hand, equipment and Judgment slot, so its Lightning stays in the game', () => {
+    const s: GameState = {
+      ...table(
+        { 'seat-c:hand': [card('h1', 'sha')], 'seat-c:equip': [card('dl', 'di-lu')], 'seat-c:judgment': [card('L', 'lightning')] },
+        { owner: 'seat-a', phase: 'Play' }
+      ),
+      resolutionQueue: [{ kind: 'EliminateSeatEffect', seatId: 'seat-c' }],
+    };
+    const next = run(s);
+    expect(next.seats.find((x) => x.id === 'seat-c')!.eliminated).toBe(true);
+    for (const zone of ['seat-c:hand', 'seat-c:equip', 'seat-c:judgment']) expect(idsIn(next, zone)).toEqual([]);
+    expect(idsIn(next, 'discardPile').sort()).toEqual(['L', 'dl', 'h1']);
+  });
+});

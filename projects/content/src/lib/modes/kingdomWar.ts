@@ -3,6 +3,7 @@ import type {
   GameState,
   ContentRegistry,
   DamageDealtEvent,
+  SeatEliminatedEvent,
   PhaseChangedEvent,
   Target,
   CardZone,
@@ -159,6 +160,17 @@ export const kingdomWarMode: GameModeDefinition = {
 
   triggers: [
     judgmentPhaseTrigger,
+    // A seat that is out discards every card it holds: hand, equipment and
+    // Judgment slot (so a Lightning there stays in the game).
+    {
+      point: 'after:SeatEliminatedEvent',
+      condition: () => true,
+      effect: (state, subject) => {
+        const { seatId } = subject as SeatEliminatedEvent;
+        const seat = state.seats.find((s) => s.id === seatId);
+        return seat ? [seat.hand, seat.equipped, seat.judgment].map(({ zoneId }) => ({ kind: 'DiscardZoneEffect', zoneId })) : [];
+      },
+    },
     {
       point: 'after:PhaseChangedEvent',
       condition: (_state, subject) => {

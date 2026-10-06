@@ -91,6 +91,17 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
     }
   }
 
+  // An eliminated seat's cards are discarded (once the game is over, whatever
+  // was still queued is dropped, so this holds only while it runs).
+  if (!state.result) {
+    for (const zone of state.zones) {
+      const owner = state.seats.find((s) => s.id === zone.ownerSeatId);
+      if (owner?.eliminated && zone.cards.length > 0) {
+        violations.push(`Eliminated seat ${owner.id} still holds ${zone.cards.length} card(s) in ${zone.id}`);
+      }
+    }
+  }
+
   // A seat never holds two of the same delayed Tool (Capture, Lightning, Starvation).
   for (const zone of state.zones.filter((z) => z.kind === 'judgment')) {
     const seen = new Set<string>();

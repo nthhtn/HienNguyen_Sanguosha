@@ -70,6 +70,15 @@ describe('checkInvariants', () => {
     });
     expect(checkInvariants(state)).toEqual(['Judgment zone seat-a:judgment holds two capture cards']);
   });
+  it('flags an eliminated seat still holding cards while the game runs', () => {
+    const base = baseState();
+    const out = { ...base.seats[0], eliminated: true };
+    const state = baseState({ seats: [out], zones: [{ id: 'seat-a:judgment', kind: 'judgment', ownerSeatId: 'seat-a', cards: [card('c1')] }] });
+    expect(checkInvariants(state)).toContain('Eliminated seat seat-a still holds 1 card(s) in seat-a:judgment');
+    expect(checkInvariants({ ...state, result: { endedAt: 1, winningSeatIds: [], losingSeatIds: ['seat-a'] } })).not.toContain(
+      'Eliminated seat seat-a still holds 1 card(s) in seat-a:judgment'
+    );
+  });
 });
 
 describe('general-selection invariants', () => {
