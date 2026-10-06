@@ -15,7 +15,7 @@ export const harvestCard: CardDefinition = {
     const order = livingSeatOrderFrom(state, ctx.seatId);
     const processing = requireZoneOfKind(state.zones, 'processing');
     return [
-      { kind: 'RevealToProcessingEffect', count: order.length },
+      { kind: 'RevealToProcessingEffect', count: order.length, keepInDiscard: [ctx.cardInstanceId] },
       ...toolOnTargets(state, ctx.seatId, ctx.cardInstanceId, order.map((seatId) => ({ kind: 'seat' as const, seatId }))),
       { kind: 'DiscardZoneEffect', zoneId: processing.id },
     ];

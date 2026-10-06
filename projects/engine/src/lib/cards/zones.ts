@@ -41,13 +41,15 @@ export function moveCard(zones: CardZone[], cardInstanceId: string, toZoneId: st
 // `fromZoneId` before drawing continues. Reshuffling happens at most once per
 // call — if the combined total still can't satisfy `count`, as many cards as
 // are available are drawn and no error is thrown. `reshuffled` is how many
-// cards the reshuffle moved (0 when there was none).
+// cards the reshuffle moved (0 when there was none). Cards named in
+// `keepInDiscard` stay in the discard pile (e.g. the Tool being resolved).
 export function drawTop(
   zones: CardZone[],
   fromZoneId: string,
   toZoneId: string,
   count: number,
-  rng: RngState
+  rng: RngState,
+  keepInDiscard: readonly string[] = []
 ): { zones: CardZone[]; drawn: CardInstance[]; rng: RngState; reshuffled: number } {
   const source = zones.find((z) => z.id === fromZoneId);
   if (!source) throw new Error(`Zone ${fromZoneId} not found`);
@@ -63,12 +65,13 @@ export function drawTop(
 
   if (source.cards.length < count) {
     const discardZone = findZoneByKind(currentZones, 'discardPile');
-    if (discardZone && discardZone.cards.length > 0) {
-      const shuffled = shuffle(discardZone.cards, currentRng);
+    const reshuffling = discardZone?.cards.filter((c) => !keepInDiscard.includes(c.instanceId)) ?? [];
+    if (discardZone && reshuffling.length > 0) {
+      const shuffled = shuffle(reshuffling, currentRng);
       currentRng = shuffled.rng;
-      reshuffled = discardZone.cards.length;
+      reshuffled = reshuffling.length;
       currentZones = currentZones.map((zone) => {
-        if (zone.id === discardZone.id) return { ...zone, cards: [] };
+        if (zone.id === discardZone.id) return { ...zone, cards: zone.cards.filter((c) => keepInDiscard.includes(c.instanceId)) };
         if (zone.id === fromZoneId) return { ...zone, cards: [...zone.cards, ...shuffled.items] };
         return zone;
       });

@@ -31,8 +31,9 @@ export type Effect =
   // hand the chooser can't see. Nothing happens when the zone is empty.
   | { kind: 'MoveRandomCardEffect'; fromZoneId: string; toZoneId: string }
   // Turns `count` cards from the draw pile face up into the processing zone
-  // (Harvest), shuffling the discard pile in first when the draw pile is short.
-  | { kind: 'RevealToProcessingEffect'; count: number }
+  // (Harvest), shuffling the discard pile in first when the draw pile is short
+  // (all but `keepInDiscard`: the Tool being resolved never turns itself up).
+  | { kind: 'RevealToProcessingEffect'; count: number; keepInDiscard?: string[] }
   // Moves every card in `zoneId` to the discard pile, in order.
   | { kind: 'DiscardZoneEffect'; zoneId: string };
 
@@ -130,7 +131,7 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     case 'RevealToProcessingEffect': {
       const drawPile = requireZoneOfKind(state.zones, 'drawPile');
       const processing = requireZoneOfKind(state.zones, 'processing');
-      const { zones, drawn, rng, reshuffled } = drawTop(state.zones, drawPile.id, processing.id, effect.count, state.rng);
+      const { zones, drawn, rng, reshuffled } = drawTop(state.zones, drawPile.id, processing.id, effect.count, state.rng, effect.keepInDiscard);
       const events: EngineEvent[] = [
         ...(reshuffled > 0 ? [{ kind: 'DiscardPileReshuffledEvent' as const, cardCount: reshuffled }] : []),
         { kind: 'CardsTurnedUpEvent', zoneId: processing.id, cards: drawn },

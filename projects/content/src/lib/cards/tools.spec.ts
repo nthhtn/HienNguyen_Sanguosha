@@ -402,13 +402,15 @@ describe('Harvest and Coerce', () => {
   it('Harvest with too few cards to go round: the later seats get no pick (Review Focus 2)', () => {
     const start = fourSeats('harvest');
     const short = { ...start, zones: start.zones.map((z) => (z.kind === 'drawPile' ? { ...z, cards: z.cards.slice(0, 2) } : z)) };
-    // Two cards left, plus the discard pile (Harvest itself) shuffled in: three cards for four seats.
+    // Two cards left for four seats. The discard pile is shuffled in, but never the Harvest being resolved.
     let s = use(short);
-    expect(idsIn(s, 'processing')).toHaveLength(3);
-    s = pickFirst(pickFirst(pickFirst(s)));
+    expect(idsIn(s, 'processing')).toEqual(['d1', 'd2']);
+    s = pickFirst(pickFirst(s));
     expect(s.pendingChoice).toBeUndefined();
     expect(s.pendingResponse).toBeNull();
+    expect(idsIn(s, 'c:hand')).toEqual([]);
     expect(idsIn(s, 'd:hand')).toEqual([]);
+    expect(idsIn(s, 'discardPile')).toContain('tool');
     expect(s.resolutionQueue).toBeUndefined();
   });
 
