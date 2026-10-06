@@ -1,4 +1,4 @@
-import { cardArtUrl, HIDDEN_GENERAL_ART_URL, hpImageUrl } from './assets';
+import { cardArtUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /card-art/ URL for a crawled id', () => {
@@ -24,15 +24,18 @@ describe('HIDDEN_GENERAL_ART_URL', () => {
   });
 });
 
-describe('hpImageUrl', () => {
-  it('shows the image for HP 1 to 4', () => {
-    expect([1, 2, 3, 4].map(hpImageUrl)).toEqual([1, 2, 3, 4].map((n) => `/card-art/misc/hp_${n}.jpg`));
+describe('hpIconUrls', () => {
+  const icon = (n: number) => `/card-art/misc/hp${n}.png`;
+  it('shows one icon per HP, from hp1 up to the current HP', () => {
+    expect(hpIconUrls(1)).toEqual([icon(1)]);
+    expect(hpIconUrls(2)).toEqual([icon(1), icon(2)]);
+    expect(hpIconUrls(4)).toEqual([1, 2, 3, 4].map(icon));
   });
-  it('uses the 4 HP image above 4', () => {
-    expect(hpImageUrl(6)).toBe('/card-art/misc/hp_4.jpg');
+  it('stops at the 4 icons above 4 HP', () => {
+    expect(hpIconUrls(6)).toEqual([1, 2, 3, 4].map(icon));
   });
   it('shows none at 0 HP or below', () => {
-    expect(hpImageUrl(0)).toBeNull();
-    expect(hpImageUrl(-2)).toBeNull();
+    expect(hpIconUrls(0)).toEqual([]);
+    expect(hpIconUrls(-2)).toEqual([]);
   });
 });

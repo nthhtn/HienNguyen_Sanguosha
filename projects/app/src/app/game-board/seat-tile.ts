@@ -2,7 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
-import { equipSlotOf, hpImageUrl } from 'content';
+import { equipSlotOf, hpIconUrls } from 'content';
 import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
 import { SeatAvatar } from './seat-avatar';
 import { PlayingCard } from './playing-card';
@@ -46,8 +46,12 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       </div>
       <div class="stats">
         <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomDisplayName(seat().kingdom) }}</span>
-        @if (hpImage(); as src) {
-          <img class="hp-image" [src]="src" alt="" />
+        @if (hpIcons().length) {
+          <span class="hp-icons">
+            @for (src of hpIcons(); track src) {
+              <img class="hp-icon" [src]="src" alt="" />
+            }
+          </span>
         }
         <span>HP {{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
         <span class="hand-count" title="Cards in Hand">🂠 {{ handCount() }}</span>
@@ -119,7 +123,8 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; min-height: 96px; align-items: center; }
     .choosing { font-style: italic; color: #666; }
     .stats { display: flex; gap: 6px; justify-content: center; align-items: center; white-space: nowrap; }
-    .hp-image { height: 22px; width: auto; border-radius: 4px; vertical-align: middle; }
+    .hp-icons { display: inline-flex; gap: 1px; vertical-align: middle; }
+    .hp-icon { height: 20px; width: auto; }
     .kingdom { padding: 0 5px; border-radius: 6px; background: #e6e1e5; }
     .kingdom-Wei { background: #d6e4ff; }
     .kingdom-Shu { background: #ffd9d6; }
@@ -147,7 +152,7 @@ export class SeatTile {
   // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a
   // seat that belongs to no force).
   protected readonly force = computed(() => forceOf(this.seat().kingdom));
-  protected readonly hpImage = computed(() => hpImageUrl(this.seat().combinedHp));
+  protected readonly hpIcons = computed(() => hpIconUrls(this.seat().combinedHp));
 
 
   private readonly dialog = inject(MatDialog);

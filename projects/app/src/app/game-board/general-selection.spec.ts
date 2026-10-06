@@ -111,7 +111,7 @@ describe('GeneralSelection', () => {
     click('w2');
     expect(el.querySelector('.summary')!.textContent).toContain('Kingdom: Wei');
     expect(el.querySelector('.summary')!.textContent).toContain('Combined HP: 3'); // half of 4 + 3, rounded down, as the engine seats it
-    expect(el.querySelector('.summary img.hp-image')!.getAttribute('src')).toBe('/card-art/misc/hp_3.jpg');
+    expect(el.querySelector('.summary img')).toBeNull(); // HP is text only here
   });
 
   it('fills the Main and Deputy slots in the bottom bar as cards are picked', () => {

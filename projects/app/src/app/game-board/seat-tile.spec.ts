@@ -123,14 +123,14 @@ describe('SeatTile', () => {
     expect(render(makeSeat({ eliminated: true })).querySelector('.judgment .slot')).not.toBeNull();
   });
 
-  it('shows the image for the seat’s current HP next to its HP text', () => {
-    const img = render(makeSeat({ combinedHp: 3 })).querySelector('.stats img.hp-image') as HTMLImageElement;
-    expect(img.getAttribute('src')).toBe('/card-art/misc/hp_3.jpg');
-    expect(img.getAttribute('alt')).toBe('');
+  it('shows one HP icon per HP, hp1 up to the seat’s current HP, next to its HP text', () => {
+    const imgs = Array.from(render(makeSeat({ combinedHp: 3 })).querySelectorAll('.stats img.hp-icon')) as HTMLImageElement[];
+    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['/card-art/misc/hp1.png', '/card-art/misc/hp2.png', '/card-art/misc/hp3.png']);
+    expect(imgs.every((i) => i.getAttribute('alt') === '')).toBe(true);
   });
 
-  it('shows no HP image for a dying seat', () => {
-    expect(render(makeSeat({ combinedHp: 0 })).querySelector('img.hp-image')).toBeNull();
+  it('shows no HP icon for a dying seat', () => {
+    expect(render(makeSeat({ combinedHp: 0 })).querySelector('img.hp-icon')).toBeNull();
   });
 
   it('ignores an equipped card with no known slot (Review Focus 5)', () => {

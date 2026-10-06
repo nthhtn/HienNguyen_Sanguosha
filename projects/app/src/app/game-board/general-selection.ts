@@ -5,7 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, Kingdom, combinedMaxHp } from 'engine';
-import { GeneralDisplayData, generalDisplayData, hpImageUrl } from 'content';
+import { GeneralDisplayData, generalDisplayData } from 'content';
 import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
 import { generalDisplayName } from '../labels';
@@ -122,9 +122,6 @@ interface CandidateViewModel {
       <span class="summary">
         @if (summary(); as s) {
           Kingdom: {{ s.kingdom }} · Combined HP: {{ s.hp }}
-          @if (s.hpImage; as src) {
-            <img class="hp-image" [src]="src" alt="" />
-          }
         }
       </span>
       <app-decision-countdown class="timer" />
@@ -186,7 +183,6 @@ interface CandidateViewModel {
     .slot-label { font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); text-transform: uppercase; }
     .slot-name { font: var(--mat-sys-title-small); }
     .summary { flex: 1; font: var(--mat-sys-body-medium); }
-    .hp-image { height: 28px; width: auto; border-radius: 4px; vertical-align: middle; margin-left: 6px; }
     .timer { width: 160px; }
     @media (max-width: 600px) {
       .bar { gap: 8px; }
@@ -254,7 +250,7 @@ export class GeneralSelection {
     if (!main || !deputy) return null;
     // The engine decides the seat's max HP; the screen only shows it.
     const hp = combinedMaxHp(main.maxHp, deputy.maxHp);
-    return { kingdom: main.kingdom, hp, hpImage: hpImageUrl(hp) };
+    return { kingdom: main.kingdom, hp };
   });
 
   // Selectable iff already picked, or the engine offers a pair containing it:

@@ -15,12 +15,12 @@ export function cardArtUrl(id: string): string | null {
 // Not in the manifest (it isn't a crawled item), but it ships with the assets.
 export const HIDDEN_GENERAL_ART_URL = '/card-art/generals/unnamed.jpg';
 
-// The highest HP with its own image (misc/hp_1.jpg … hp_4.jpg).
-const MAX_HP_IMAGE = 4;
+// The highest HP with its own icon (misc/hp1.png … hp4.png).
+const MAX_HP_ICONS = 4;
 
-// The image for a seat's current HP, alongside its number. Above 4 it shows
-// the 4 HP image; at 0 or below (dying) there is none.
-export function hpImageUrl(hp: number): string | null {
-  if (hp <= 0) return null;
-  return `/card-art/misc/hp_${Math.min(hp, MAX_HP_IMAGE)}.jpg`;
+// The icons for a seat's current HP, shown alongside its number: hp1 up to
+// hpN for N HP, stopping at the 4 icons above 4; none at 0 or below (dying).
+export function hpIconUrls(hp: number): string[] {
+  const count = Math.max(0, Math.min(hp, MAX_HP_ICONS));
+  return Array.from({ length: count }, (_, i) => `/card-art/misc/hp${i + 1}.png`);
 }
