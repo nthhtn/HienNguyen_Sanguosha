@@ -263,7 +263,31 @@ of a seat's cards, and Harvest picks one of the turned-up cards. A pick is a
 Redaction masks any card a viewer can't see wherever it appears in the queue
 or a pending decision, so a choice can't leak a hand card.
 
-## Plugging into the chain
+## Judgments
+
+A **delayed Tool** (Capture, Lightning, Starvation) doesn't take effect when it
+is played. Its `play()` puts it face up in a seat's Judgment slot
+(`Seat.judgment`; `CardDefinition.delayed` stops `PlayCardAction` from
+discarding it).
+
+In Kingdom War, entering the Judgment Phase queues two steps for each card in
+the turn owner's Judgment slot, last in, first out:
+
+1. `ToolOnTargetEffect` on the owner. It runs the usual Wuxie check, asked from
+   the owner. If nobody cancels, the Tool's `onTarget` queues a `JudgeEffect`.
+2. `DelayedCleanupEffect`. It always runs, cancelled or not. It runs the card's
+   `onCleanup` (Lightning moves on). Without one, it discards the card if it is
+   still in the judgment area.
+
+`JudgeEffect` turns up the draw pile's top card into `processing` and logs
+`JudgmentEvent`. It then queues the Tool's `onJudged` reading of that card,
+followed by the judged card's move to the discard pile. With no card left
+anywhere, nothing is judged.
+
+A reading usually sets a **turn flag** (`SetTurnFlagEffect`). `advancePhaseOrTurn`
+passes over any phase whose skip flag (`skipFlagOf(phase)`, e.g. `skipPlay`) is
+set, and `PhaseSkippedEvent` records it. Flags end with the turn.
+
 ## Plugging into the chain
 
 | To add… | Write… | Example |
