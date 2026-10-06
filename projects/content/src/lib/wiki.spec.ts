@@ -139,7 +139,7 @@ describe('wikiCards', () => {
     expect(equipment.map((c) => c.subtype)).toEqual([...Array(11).fill('weapon'), ...Array(4).fill('armor'), ...Array(7).fill('horse')]);
     expect(equipment.slice(7, 11).map((c) => [c.name, c.expansion])).toEqual([['Sky Scorcher', 'Base'], ['Ice Sword', 'EX'], ['Ancient Scimitar', 'Army'], ['Fire Fan', 'Army']]);
     expect(equipment.slice(11, 15).map((c) => c.id)).toEqual(['eight-trigrams', 'black-shield', 'silver-lion', 'wood-armor']);
-    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['black-pommel', 'crossbow', 'green-dragon-blade', 'silver-lion', 'da-yuan', 'di-lu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'hua-liu']);
+    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['black-pommel', 'crossbow', 'green-dragon-blade', 'eight-trigrams', 'black-shield', 'silver-lion', 'wood-armor', 'da-yuan', 'di-lu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'hua-liu']);
   });
 
   it('reports data gaps as null or empty, never guessed (Review Focus 2)', () => {
@@ -157,15 +157,15 @@ describe('wikiCards', () => {
     expect(duel.printings).toEqual([{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }]);
   });
 
-  it('includes the crawled EX and Army cards, not yet in the game', () => {
+  it('includes the crawled EX and Army cards; the elemental ones stay out of the game', () => {
     const all = [...wikiCards('tool'), ...wikiCards('equipment')];
     const ids = ['blaze', 'chains', 'ancient-scimitar', 'fire-fan', 'ice-sword', 'wood-armor', 'black-shield'];
     for (const id of ids) {
       const card = all.find((c) => c.id === id)!;
       expect(card).toBeDefined();
-      expect(card.inGame).toBe(false);
       expect(card.nameZh).toMatch(/[\u4e00-\u9fff]/);
     }
+    expect(['blaze', 'chains', 'fire-fan'].map((id) => all.find((c) => c.id === id)!.inGame)).toEqual([false, false, false]);
     expect(all.find((c) => c.id === 'chains')).toMatchObject({ count: 6, nameZh: '铁索连环' });
     expect(all.find((c) => c.id === 'ice-sword')).toMatchObject({ range: 2, subtype: 'weapon' });
     expect(all.find((c) => c.id === 'black-shield')!.printings).toEqual([{ suit: 'club', rank: 2 }]);

@@ -1,7 +1,7 @@
 import type { Abilities, CardDefinition, Effect, EquipSlot, GameState } from 'engine';
 import { requireZoneOfKind } from 'engine';
-import { cardsData } from '../../../data/cards';
-import { armorIgnored } from '../shared/abilities';
+import { cardsData } from '../../../../data/cards';
+import { armorIgnored } from '../../shared/abilities';
 
 // Every equipment card's slot, keyed by definition id. play() has no registry
 // access, so this is how an equip finds the slot of the card already worn.
@@ -14,6 +14,7 @@ export function equipSlotOf(definitionId: string): EquipSlot | null {
 interface EquipmentExtras {
   abilities?: Abilities;
   onUnequip?: CardDefinition['onUnequip'];
+  onJudged?: CardDefinition['onJudged'];
 }
 
 export function makeEquipmentCard(id: string, name: string, equipSlot: EquipSlot, weaponRange?: number, extras: EquipmentExtras = {}): CardDefinition {
@@ -26,6 +27,7 @@ export function makeEquipmentCard(id: string, name: string, equipSlot: EquipSlot
     ...(weaponRange !== undefined ? { weaponRange } : {}),
     ...(extras.abilities ? { abilities: extras.abilities } : {}),
     ...(extras.onUnequip ? { onUnequip: extras.onUnequip } : {}),
+    ...(extras.onJudged ? { onJudged: extras.onJudged } : {}),
     legalPlayTargets: () => [[]],
     // One card per slot: whatever already fills this slot goes to the discard
     // pile first, then the played card is equipped.

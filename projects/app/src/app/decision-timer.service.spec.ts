@@ -1,6 +1,6 @@
 import { DestroyRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Action, cardsOverHandLimit } from 'engine';
+import { Action, GameState, cardsOverHandLimit } from 'engine';
 import { DECISION_SECONDS, DecisionTimer } from './decision-timer.service';
 import { GameService } from './game.service';
 import { cardDefinitionId } from './labels';
@@ -10,6 +10,14 @@ function boardLifetime() {
   const callbacks: (() => void)[] = [];
   const ref = { onDestroy: (fn: () => void) => (callbacks.push(fn), () => undefined) } as unknown as DestroyRef;
   return { ref, destroy: () => callbacks.forEach((fn) => fn()) };
+}
+
+
+// Whether the state waits on the target's own answer to a damage card (a Sha's
+// Shan window or a Duel's), not on a Wuxie question or an ability's ask.
+function waitsOnDamageAnswer(state: GameState): boolean {
+  const reason = state.pendingResponse?.reason;
+  return !!state.pendingResponse && !state.pendingChoice && (!reason || reason.kind === 'card-effect');
 }
 
 describe('DecisionTimer', () => {
@@ -85,6 +93,7 @@ describe('DecisionTimer', () => {
         advance(100);
         expect(timer.secondsLeft()).toBe(200);
         game.submit(aimed);
+        if (!waitsOnDamageAnswer(game.state()!)) continue;
         // The response belongs to seat-1: its own 60 seconds once its view shows.
         const responder = game.activeSeatId()!;
         game.reveal(responder);
@@ -159,6 +168,7 @@ describe('DecisionTimer', () => {
         );
         if (!aimed) continue;
         game.submit(aimed);
+        if (!waitsOnDamageAnswer(game.state()!)) continue;
         const responder = game.activeSeatId()!;
         const hp = game.state()!.seats.find((s) => s.id === responder)!.combinedHp;
         game.reveal(responder);

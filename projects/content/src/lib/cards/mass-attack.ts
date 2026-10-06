@@ -1,7 +1,8 @@
-import type { CardDefinition, Effect, Target, UsedCard } from 'engine';
+import type { CardDefinition, ContentRegistry, Effect, GameState, Target, UsedCard } from 'engine';
 import { usedCardKey } from 'engine';
 import { otherSeatsInTurnOrder, toolOnTargets } from '../shared/tools';
 import { cardStep } from '../shared/steps';
+import { untargetableBy } from '../shared/abilities';
 
 // Targets every other living seat in turn order; each must play `answerCardId`
 // or take 1 damage from the user. With `step` (Hail of Arrows), the ask is a
@@ -33,12 +34,15 @@ function massAttack(id: string, name: string, answerCardId: string, step?: strin
       },
     };
   };
+  // Every other living seat in turn order that this card may target.
+  const targetsOf = (state: GameState, seatId: string, registry: ContentRegistry) =>
+    otherSeatsInTurnOrder(state, seatId).filter((t) => !untargetableBy(state, t.seatId, id, registry));
   return {
     id,
     name,
     category: 'tool',
-    legalPlayTargets: (state, ctx) => (otherSeatsInTurnOrder(state, ctx.seatId).length > 0 ? [[]] : []),
-    play: (state, ctx) => (ctx.respondingTo ? [] : toolOnTargets(state, ctx.seatId, ctx.cardInstanceId, otherSeatsInTurnOrder(state, ctx.seatId))),
+    legalPlayTargets: (state, ctx, registry) => (targetsOf(state, ctx.seatId, registry).length > 0 ? [[]] : []),
+    play: (state, ctx, registry) => (ctx.respondingTo ? [] : toolOnTargets(state, ctx.seatId, ctx.cardInstanceId, targetsOf(state, ctx.seatId, registry))),
     onTarget: (_state, { tool, userSeatId, target }) =>
       step ? [cardStep(step, tool, userSeatId, target, { needed: 1, provided: 0 })] : [window(tool, userSeatId, target)],
     ...(step

@@ -117,6 +117,8 @@ export interface AbilityModifiers {
   shaLimit?: number;
   // The wearer's Sha ignores the target's armour (Black Pommel).
   ignoresArmor?: boolean;
+  // Card ids that can't target the wearer (Wood Armor: Barbarians, Hail of Arrows).
+  untargetableBy?: string[];
 }
 
 // Using hand cards as another card (Serpent Spear: 2 hand cards as a Sha).

@@ -5,7 +5,7 @@ import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { GameBoard } from './game-board';
 import { GameService } from '../game.service';
-import { Action, cardsOverHandLimit } from 'engine';
+import { Action, GameState, cardsOverHandLimit } from 'engine';
 import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
@@ -14,6 +14,14 @@ function finishSelection(gameService: GameService): void {
   while (gameService.state()!.phase === 'GeneralSelection') {
     gameService.submit(gameService.legalActions()[0]);
   }
+}
+
+
+// Whether the state waits on the target's own answer to a damage card (a Sha's
+// Shan window or a Duel's), not on a Wuxie question or an ability's ask.
+function waitsOnDamageAnswer(state: GameState): boolean {
+  const reason = state.pendingResponse?.reason;
+  return !!state.pendingResponse && !state.pendingChoice && (!reason || reason.kind === 'card-effect');
 }
 
 describe('GameBoard', () => {
@@ -226,17 +234,20 @@ describe('GameBoard', () => {
 
   it('opens the Response dialog for the seat that must answer, and No Response lets the effect go ahead', async () => {
     // Find a deal where the first seat can aim a card (Sha or Duel) at the other.
+    // Its play must open the target's own answer (not a Wuxie question or an ask).
     let sha: Action | undefined; // the targeted play
     for (let seed = 1; seed < 50 && !sha; seed++) {
       gameService.startGame(2, seed);
       finishSelection(gameService);
       gameService.reveal(gameService.activeSeatId()!);
-      sha = gameService.legalActions().find(
+      const aimed = gameService.legalActions().find(
         (a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(gameService.state()!, a.cardInstanceId) ?? '')
       );
+      if (!aimed) continue;
+      gameService.submit(aimed);
+      if (waitsOnDamageAnswer(gameService.state()!)) sha = aimed;
     }
     expect(sha).toBeDefined();
-    gameService.submit(sha!);
     const responder = gameService.activeSeatId()!;
     expect(gameService.state()!.pendingResponse!.respondingSeatId).toBe(responder);
     const hpBefore = gameService.state()!.seats.find((x) => x.id === responder)!.combinedHp;
