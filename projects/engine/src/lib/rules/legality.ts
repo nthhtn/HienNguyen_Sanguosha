@@ -32,6 +32,15 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     return choice.options.map((o) => ({ kind: 'ChooseOptionAction' as const, seatId, choiceId: choice.id, optionId: o.id }));
   }
 
+  if (state.pendingSelection) {
+    const selection = state.pendingSelection;
+    if (selection.seatId !== seatId) return [];
+    // A template: the seat fills in the picked ids (validateSelection checks them).
+    const actions: Action[] = [{ kind: 'SelectAction', seatId, selectionId: selection.id, ids: [] }];
+    if (selection.onCancel) actions.push({ kind: 'CancelSelectionAction', seatId, selectionId: selection.id });
+    return actions;
+  }
+
   if (state.pendingResponse) {
     const pending = state.pendingResponse;
     if (pending.respondingSeatId !== seatId) return [];

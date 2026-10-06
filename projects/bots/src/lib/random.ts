@@ -1,4 +1,4 @@
-import { nextInt, getActiveSeatId, getLegalActions } from 'engine';
+import { nextInt, getActiveSeatId, getLegalActions, shuffle } from 'engine';
 import type { GameState, RngState, Action, ContentRegistry } from 'engine';
 
 // Kept as the bot's named entry point; the engine owns the rule.
@@ -23,5 +23,10 @@ export function pickRandomAction(
     throw new Error(`No legal actions for seat ${seatId} to act with`);
   }
   const step = nextInt(rng, legal.length);
-  return { action: legal[step.value], rng: step.rng };
+  const picked = legal[step.value];
+  const selection = state.pendingSelection;
+  if (picked.kind !== 'SelectAction' || !selection) return { action: picked, rng: step.rng };
+  // A selection template: fill it with `min` eligible ids, picked at random.
+  const shuffled = shuffle(selection.eligibleIds, step.rng);
+  return { action: { ...picked, ids: shuffled.items.slice(0, selection.min) }, rng: shuffled.rng };
 }

@@ -5,6 +5,7 @@ type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
 type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
 type DiscardCard = Extract<Action, { kind: 'DiscardCardAction' }>;
 type ChooseOption = Extract<Action, { kind: 'ChooseOptionAction' }>;
+type Select = Extract<Action, { kind: 'SelectAction' }>;
 
 function definitionIdOf(view: GameState, cardInstanceId: string): string | undefined {
   for (const zone of view.zones) {
@@ -66,6 +67,17 @@ function decide(
     const hp = (a: ChooseGenerals) =>
       (registry.generals.get(a.mainId)?.maxHp ?? 0) + (registry.generals.get(a.deputyId)?.maxHp ?? 0);
     if (choices.length > 0) return take(choices.reduce((best, a) => (hp(a) > hp(best) ? a : best)));
+  }
+
+  // 1a. A selection. With no rule for it, cancel when allowed; else pick the
+  // least useful eligible cards.
+  const selectTemplate = legal.find((a): a is Select => a.kind === 'SelectAction');
+  if (selectTemplate && view.pendingSelection) {
+    const selection = view.pendingSelection;
+    const cancel = legal.find((a) => a.kind === 'CancelSelectionAction');
+    if (cancel) return take(cancel);
+    const ids = [...selection.eligibleIds].sort((a, b) => keepRank(view, registry, a) - keepRank(view, registry, b)).slice(0, selection.min);
+    return take({ ...selectTemplate, ids });
   }
 
   // 1b. A pick (Steal, Break, Harvest): a weapon, then armour, then a mount,

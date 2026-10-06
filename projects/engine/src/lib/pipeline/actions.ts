@@ -9,7 +9,10 @@ export type Action =
   | { kind: 'PassAction'; seatId: string; pendingResponseId: string }
   | { kind: 'EndPhaseAction'; seatId: string }
   | { kind: 'DiscardCardAction'; seatId: string; cardInstanceId: string }
-  | { kind: 'ChooseOptionAction'; seatId: string; choiceId: string; optionId: string };
+  | { kind: 'ChooseOptionAction'; seatId: string; choiceId: string; optionId: string }
+  // Fills the pending selection; getLegalActions offers it as a template with no ids.
+  | { kind: 'SelectAction'; seatId: string; selectionId: string; ids: string[] }
+  | { kind: 'CancelSelectionAction'; seatId: string; selectionId: string };
 
 export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'DrawCardsAction',
@@ -21,6 +24,8 @@ export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'EndPhaseAction',
   'DiscardCardAction',
   'ChooseOptionAction',
+  'SelectAction',
+  'CancelSelectionAction',
 ]);
 
 export function isAction(value: { kind: string }): value is Action {

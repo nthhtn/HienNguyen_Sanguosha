@@ -92,3 +92,19 @@ describe('pickRandomAction', () => {
     expect(() => pickRandomAction(withEliminatedOwner, createRng(5), emptyRegistry)).toThrow(/No seat is able to act/);
   });
 });
+describe('pickRandomAction with a selection', () => {
+  it('fills the template with `min` of the eligible ids', () => {
+    const s: GameState = {
+      ...state(),
+      pendingSelection: {
+        id: 's1', seatId: 'seat-a', of: 'cards', eligibleIds: ['c1', 'c2', 'c3'], min: 2, max: 2, then: { kind: 'discard' },
+        reason: { kind: 'ability', owner: { kind: 'equipment', seatId: 'seat-a', cardInstanceId: 'x' }, abilityId: 'x' },
+      },
+    };
+    const { action } = pickRandomAction(s, createRng(3), emptyRegistry);
+    if (action.kind !== 'SelectAction') throw new Error(`expected a SelectAction, got ${action.kind}`);
+    expect(action.ids).toHaveLength(2);
+    expect(action.ids.every((id) => ['c1', 'c2', 'c3'].includes(id))).toBe(true);
+    expect(new Set(action.ids).size).toBe(2);
+  });
+});

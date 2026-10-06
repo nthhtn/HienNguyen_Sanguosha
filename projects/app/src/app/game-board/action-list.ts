@@ -17,7 +17,9 @@ function isCardAction(action: Action): boolean {
     action.kind === 'RespondAction' ||
     action.kind === 'PassAction' ||
     action.kind === 'DiscardCardAction' ||
-    action.kind === 'ChooseOptionAction'
+    action.kind === 'ChooseOptionAction' ||
+    action.kind === 'SelectAction' ||
+    action.kind === 'CancelSelectionAction'
   );
 }
 

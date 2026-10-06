@@ -1,4 +1,4 @@
-import { AbilityOwner, GameState, Damage, PendingChoice, PendingResponse, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GameState, Damage, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
@@ -56,7 +56,9 @@ export type Effect =
   // `effects`, Don't queues `otherwise`.
   | { kind: 'AskUseEffect'; owner: AbilityOwner; abilityId: string; effects: Effect[]; otherwise?: Effect[]; targetSeatId?: string }
   // Logs that an ability applied, for the Action History.
-  | { kind: 'AbilityUsedEffect'; owner: AbilityOwner; abilityId: string; outcome: string; targetSeatId?: string };
+  | { kind: 'AbilityUsedEffect'; owner: AbilityOwner; abilityId: string; outcome: string; targetSeatId?: string }
+  // Asks `selection.seatId` to pick cards or seats; the queue waits.
+  | { kind: 'OpenSelectionEffect'; selection: PendingSelection };
 
 export interface ApplyResult {
   state: GameState;
@@ -184,6 +186,8 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     }
     case 'DyingEffect':
       return applyDying(state, effect);
+    case 'OpenSelectionEffect':
+      return { state: { ...state, pendingSelection: effect.selection }, events: [] };
     case 'AskUseEffect': {
       const owner = state.seats.find((s) => s.id === effect.owner.seatId);
       // An owner who is out can't be asked: what happens otherwise goes ahead.

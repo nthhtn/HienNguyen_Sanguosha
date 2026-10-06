@@ -65,7 +65,7 @@ export class DecisionTimer {
     const legal = this.game.legalActions();
     if (legal.length === 0) return null;
     const game = this.game.gameNumber();
-    if (state.pendingChoice) return { kind: 'choice', state, key: this.keyOf(state) };
+    if (state.pendingChoice || state.pendingSelection) return { kind: 'choice', state, key: this.keyOf(state) };
     if (state.pendingResponse) return { kind: 'response', state, key: this.keyOf(state) };
     if (state.phase === 'GeneralSelection') return { kind: 'selection', state, key: `${game}:selection:${seatId}` };
     if (legal.some((a) => a.kind === 'DiscardCardAction')) return { kind: 'discard', state, key: this.keyOf(state) };
@@ -154,6 +154,14 @@ export class DecisionTimer {
 
   private defaultActions(state: GameState): Action[] {
     const legal = this.game.legalActions();
+    // A selection: Cancel when it may be, else the first eligible picks.
+    const cancel = legal.find((a) => a.kind === 'CancelSelectionAction');
+    if (cancel) return [cancel];
+    const select = legal.find((a): a is Extract<Action, { kind: 'SelectAction' }> => a.kind === 'SelectAction');
+    if (select && state.pendingSelection) return [{ ...select, ids: state.pendingSelection.eligibleIds.slice(0, state.pendingSelection.min) }];
+    // An ask (or "let them draw"): Don't.
+    const decline = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === 'decline');
+    if (decline) return [decline];
     const pick = legal.find((a) => a.kind === 'ChooseOptionAction');
     if (pick) return [pick];
     const pass = legal.find((a) => a.kind === 'PassAction');

@@ -20,6 +20,7 @@ export * from './lib/pipeline/events';
 export * from './lib/pipeline/resolve';
 export * from './lib/skills/triggers';
 export * from './lib/rules/legality';
+export * from './lib/rules/selection';
 export * from './lib/rules/activeSeat';
 export * from './lib/rules/generalSelection';
 export * from './lib/rules/phaseSequence';

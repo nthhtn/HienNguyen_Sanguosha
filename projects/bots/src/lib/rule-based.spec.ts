@@ -1,4 +1,4 @@
-import type { Action, CardDefinition, CardZone, DecisionReason, EquipSlot, PendingChoice, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
+import type { Action, CardDefinition, CardZone, DecisionReason, EquipSlot, PendingChoice, PendingSelection, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
 import { ruleBasedPolicy } from './rule-based';
 import { MAX_BOT_ACTIONS_PER_TURN } from './policy';
 
@@ -37,6 +37,7 @@ interface ViewOptions {
   turnNumber?: number;
   pendingReason?: DecisionReason;
   pendingChoice?: PendingChoice;
+  pendingSelection?: PendingSelection;
   // More zones, e.g. another seat's equipment or the processing zone.
   zones?: CardZone[];
 }
@@ -58,6 +59,7 @@ function view(o: ViewOptions = {}): GameState {
       ? { id: 'r1', respondingSeatId: o.pendingFor, allowedActionKinds: ['RespondAction', 'PassAction'], ...(o.pendingReason ? { reason: o.pendingReason } : {}), context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-0' }, amount: 1 } } }
       : null,
     ...(o.pendingChoice ? { pendingChoice: o.pendingChoice } : {}),
+    ...(o.pendingSelection ? { pendingSelection: o.pendingSelection } : {}),
     log: [],
     rng: { seed: 1, counter: 0 },
     result: null,
@@ -373,5 +375,24 @@ describe('ruleBasedPolicy: Wine', () => {
     expect(decide(both, [respond('w'), respond('p'), passIt]).action).toEqual(respond('p'));
     const wineOnly = view({ pendingFor: 'seat-0', pendingReason: reason, hand: [{ instanceId: 'w', definitionId: 'wine' }] });
     expect(decide(wineOnly, [respond('w'), passIt]).action).toEqual(respond('w'));
+  });
+});
+
+describe('selections', () => {
+  const sel = (over: Partial<PendingSelection> = {}): PendingSelection => ({
+    id: 's1', seatId: 'seat-0', reason: { kind: 'ability', owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'eq-0' }, abilityId: 'unknown' },
+    of: 'cards', eligibleIds: ['p1', 's1', 'x1'], min: 2, max: 2, then: { kind: 'discard' }, ...over,
+  });
+  const template: Action = { kind: 'SelectAction', seatId: 'seat-0', selectionId: 's1', ids: [] };
+  const cancel: Action = { kind: 'CancelSelectionAction', seatId: 'seat-0', selectionId: 's1' };
+  const hand = [{ instanceId: 'p1', definitionId: 'peach' }, { instanceId: 's1', definitionId: 'sha' }, { instanceId: 'x1', definitionId: 'duel' }];
+
+  it('cancels an unknown ability’s selection when it can', () => {
+    expect(ruleBasedPolicy.decide(view({ hand, pendingSelection: sel({ onCancel: [] }) }), 'seat-0', [template, cancel], registry, null).action).toEqual(cancel);
+  });
+
+  it('otherwise picks the least useful eligible cards', () => {
+    const { action } = ruleBasedPolicy.decide(view({ hand, pendingSelection: sel() }), 'seat-0', [template], registry, null);
+    expect(action).toEqual({ ...template, ids: ['x1', 's1'] });
   });
 });

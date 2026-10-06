@@ -1,5 +1,6 @@
-import { GameState, GameEvent, PendingResponse, QueueItem, Target, UsedCard } from '../domain/types';
-import { usedCardOf } from '../domain/usedCard';
+import { GameState, GameEvent, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
+import { usedCardFrom, usedCardOf } from '../domain/usedCard';
+import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
 import { Effect, applyEffect } from './effects';
@@ -10,7 +11,7 @@ import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence'
 import { legalTargetListsFor } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
-import { CardPlayedEvent, ChoiceMadeEvent, EngineEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
+import { CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
@@ -62,7 +63,7 @@ export function advanceToDecision(state: GameState, ctx: EngineContext, budget: 
     const drained = drain(current, ctx, budget);
     current = drained.state;
     events = [...events, ...drained.events];
-    if (current.result || current.phase === 'GeneralSelection' || current.pendingResponse || current.pendingChoice) break;
+    if (current.result || current.phase === 'GeneralSelection' || current.pendingResponse || current.pendingChoice || current.pendingSelection) break;
     const ownerEliminated = !!current.seats.find((s) => s.id === current.turn.ownerSeatId)?.eliminated;
     if (!ownerEliminated && phaseWaitsForPlayer(current)) break;
     if (steps >= maxSteps) {
@@ -81,7 +82,7 @@ export function advanceToDecision(state: GameState, ctx: EngineContext, budget: 
 function drain(state: GameState, ctx: EngineContext, budget: StepBudget): ResolveResult {
   let current = withWinCheck(state, ctx);
   const events: GameEvent[] = [];
-  while (!current.result && !current.pendingResponse && !current.pendingChoice && (current.resolutionQueue?.length ?? 0) > 0) {
+  while (!current.result && !current.pendingResponse && !current.pendingChoice && !current.pendingSelection && (current.resolutionQueue?.length ?? 0) > 0) {
     const [item, ...rest] = current.resolutionQueue!;
     budget.used += 1;
     if (budget.used > MAX_RESOLUTION_STEPS) {
@@ -285,13 +286,47 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
   };
 }
 
+// What a selection's picks lead to (its continuation).
+function continueSelection(state: GameState, selection: PendingSelection, ids: string[], ctx: EngineContext): ResolveResult {
+  const then = selection.then;
+  switch (then.kind) {
+    case 'discard': {
+      const discardPileId = requireZoneOfKind(state.zones, 'discardPile').id;
+      const moves: Effect[] = ids.map((id) => ({ kind: 'MoveCardEffect', cardInstanceId: id, toZoneId: discardPileId }));
+      return { state: queueFront(state, [...moves, ...(then.then ?? [])]), events: [] };
+    }
+    case 'card-step':
+      return { state: queueFront(state, [{ ...then.step, data: { ...then.step.data, picked: ids } }]), events: [] };
+    case 'use-card': {
+      const cards = ids.map((id) => {
+        const card = state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === id);
+        if (!card) throw new Error(`Card ${id} is in no zone`);
+        return card;
+      });
+      const used = then.as ? usedCardFrom(cards, then.as, then.via) : usedCardOf(cards[0]);
+      const respondTo = then.respondTo ? state.pendingResponse : null;
+      if (then.respondTo && respondTo?.id !== then.respondTo) throw new Error(`Window ${then.respondTo} is no longer open`);
+      return useCard(
+        state,
+        selection.seatId,
+        used,
+        { targets: then.targets, ...(respondTo ? { respondTo } : {}), counted: then.counted, ...(then.free ? { free: true } : {}) },
+        ctx
+      );
+    }
+  }
+}
+
 // Validates an action and queues what it leads to. Nothing here resolves an
 // effect directly: the caller drains the queue.
 function resolveAction(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
+  if (state.pendingSelection && action.kind !== 'SelectAction' && action.kind !== 'CancelSelectionAction') {
+    throw new Error(`Action ${action.kind} is not legal while a selection is pending`);
+  }
   if (state.pendingChoice && action.kind !== 'ChooseOptionAction') {
     throw new Error(`Action ${action.kind} is not legal while a choice is pending`);
   }
-  if (state.pendingResponse && !state.pendingResponse.allowedActionKinds.includes(action.kind)) {
+  if (state.pendingResponse && !state.pendingSelection && !state.pendingResponse.allowedActionKinds.includes(action.kind)) {
     throw new Error(`Action ${action.kind} is not legal while a response is pending`);
   }
   if (state.phase === 'GeneralSelection' && action.kind !== 'ChooseGeneralsAction') {
@@ -416,6 +451,26 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const event: ChoiceMadeEvent = { kind: 'ChoiceMadeEvent', seatId: action.seatId, reason: choice.reason, verb: choice.verb, shows: option.shows };
       const made = logged(cleared, [event]);
       return { state: queueFront(made, [...afterTriggerFollowUps(made, [event], ctx), ...option.effects]), events: [event] };
+    }
+
+    case 'SelectAction': {
+      const error = validateSelection(state, action);
+      if (error) throw new Error(error);
+      const selection = state.pendingSelection!;
+      const { pendingSelection: _done, ...cleared } = state;
+      // Logged for the history; nothing reacts to it.
+      const event: SelectionMadeEvent = { kind: 'SelectionMadeEvent', seatId: action.seatId, reason: selection.reason, of: selection.of, ids: action.ids };
+      const continued = continueSelection(logged(cleared, [event]), selection, action.ids, ctx);
+      return { state: continued.state, events: [event, ...continued.events] };
+    }
+
+    case 'CancelSelectionAction': {
+      const selection = state.pendingSelection;
+      if (!selection || selection.id !== action.selectionId) throw new Error(`No matching pending selection: ${action.selectionId}`);
+      if (action.seatId !== selection.seatId) throw new Error(`Seat ${action.seatId} is not the selector for ${selection.id}`);
+      if (!selection.onCancel) throw new Error(`Selection ${selection.id} can’t be cancelled`);
+      const { pendingSelection: _done, ...cleared } = state;
+      return { state: queueFront(cleared, selection.onCancel), events: [] };
     }
 
     default:

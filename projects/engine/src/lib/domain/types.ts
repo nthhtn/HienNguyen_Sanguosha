@@ -142,6 +142,35 @@ export interface ChoiceOption {
   effects: Effect[];
 }
 
+// A seat picking cards or seats (Axe's 2 cards, Sky Scorcher's extra targets,
+// Serpent Spear's 2 hand cards). Pauses the queue like a response window or a
+// choice, and may be open over a response window (Serpent Spear answering).
+export interface PendingSelection {
+  id: string;
+  seatId: string;
+  reason: DecisionReason;
+  of: 'cards' | 'seats';
+  // The card instance ids, or seat ids, that may be picked.
+  eligibleIds: string[];
+  min: number;
+  max: number;
+  // What the picks lead to.
+  then: SelectionContinuation;
+  // Queued on Cancel; absent = the selection can't be cancelled.
+  onCancel?: Effect[];
+}
+
+// What a selection's picks lead to: plain data, so the state stays serialisable.
+export type SelectionContinuation =
+  // Discard the picked cards, then queue `then`.
+  | { kind: 'discard'; then?: Effect[] }
+  // Use the picked cards as one `as` card (with no `as`: the one picked card as
+  // itself), at `targets` or as the answer to the window `respondTo`.
+  // `counted`: toward per-turn limits. `free`: outside the Play Phase's limits.
+  | { kind: 'use-card'; as?: string; via?: UsedCard['via']; targets: Target[]; respondTo?: string; counted: boolean; free?: boolean }
+  // Queue `step` with the picked ids added to its data as `picked`.
+  | { kind: 'card-step'; step: Extract<Effect, { kind: 'CardStepEffect' }> };
+
 export interface CardZone {
   id: string;
   kind: 'hand' | 'equip' | 'drawPile' | 'discardPile' | 'judgment' | 'processing';
@@ -206,6 +235,9 @@ export interface GameState {
   resolutionQueue?: QueueItem[];
   // The pick a seat owes, if any. Absent (never null) when none, like the queue.
   pendingChoice?: PendingChoice;
+  // The cards or seats a seat owes a pick of, if any. Absent (never null) when
+  // none, like the choice.
+  pendingSelection?: PendingSelection;
   log: EngineEvent[];
   rng: RngState;
   result: GameResult | null;

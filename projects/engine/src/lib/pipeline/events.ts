@@ -132,6 +132,16 @@ export interface AbilityUsedEvent {
   targetSeatId?: string;
 }
 
+// A seat made a selection. Card ids name no face (a hand card stays hidden
+// until it moves face up); seat ids are public.
+export interface SelectionMadeEvent {
+  kind: 'SelectionMadeEvent';
+  seatId: string;
+  reason: DecisionReason;
+  of: 'cards' | 'seats';
+  ids: string[];
+}
+
 export type EngineEvent =
   | CardsDrawnEvent
   | DamageDealtEvent
@@ -150,4 +160,5 @@ export type EngineEvent =
   | ChoiceMadeEvent
   | CardsTurnedUpEvent
   | JudgmentEvent
-  | AbilityUsedEvent;
+  | AbilityUsedEvent
+  | SelectionMadeEvent;

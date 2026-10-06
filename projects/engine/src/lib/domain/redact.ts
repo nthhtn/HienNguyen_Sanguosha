@@ -81,6 +81,7 @@ export function redactStateForSeat(state: GameState, viewerSeatId: string): Game
     generalSelection: redactSelection(state.generalSelection, viewerSeatId),
     pendingResponse: maskHiddenCards(state.pendingResponse, hidden),
     ...(state.pendingChoice ? { pendingChoice: maskHiddenCards(state.pendingChoice, hidden) } : {}),
+    ...(state.pendingSelection ? { pendingSelection: maskHiddenCards(state.pendingSelection, hidden) } : {}),
     ...(state.resolutionQueue ? { resolutionQueue: maskHiddenCards(state.resolutionQueue, hidden) } : {}),
   };
 }
