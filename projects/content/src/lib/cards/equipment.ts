@@ -1,6 +1,7 @@
 import type { Abilities, CardDefinition, Effect, EquipSlot, GameState } from 'engine';
 import { requireZoneOfKind } from 'engine';
 import { cardsData } from '../../../data/cards';
+import { armorIgnored } from '../shared/abilities';
 
 // Every equipment card's slot, keyed by definition id. play() has no registry
 // access, so this is how an equip finds the slot of the card already worn.
@@ -40,7 +41,36 @@ export function makeEquipmentCard(id: string, name: string, equipSlot: EquipSlot
   };
 }
 
-export const silverLionCard = makeEquipmentCard('silver-lion', 'Silver Lion', 'armor');
+type DamageStep = Extract<Effect, { kind: 'DamageEffect' }>;
+
+// Silver Lion: damage over 1 to its wearer becomes 1, unless it comes from a
+// Sha whose user ignores armour. When it leaves its wearer's equipment for any
+// reason, the wearer recovers 1 HP (not once they're out of the game).
+export const silverLionCard = makeEquipmentCard('silver-lion', 'Silver Lion', 'armor', undefined, {
+  abilities: {
+    triggers: [
+      {
+        point: 'before:DamageEffect',
+        condition: (state, subject, owner, registry) => {
+          const { damage } = subject as DamageStep;
+          return (
+            owner?.kind === 'equipment' &&
+            damage.target.kind === 'seat' &&
+            damage.target.seatId === owner.seatId &&
+            damage.amount > 1 &&
+            !(registry && armorIgnored(state, damage, registry))
+          );
+        },
+        effect: (_state, subject) => {
+          const step = subject as DamageStep;
+          return [{ ...step, damage: { ...step.damage, amount: 1 } }];
+        },
+      },
+    ],
+  },
+  onUnequip: (state, { seatId }) =>
+    state.seats.some((s) => s.id === seatId && !s.eliminated) ? [{ kind: 'HealEffect', target: { kind: 'seat', seatId }, amount: 1 }] : [],
+});
 export const greenDragonBladeCard = makeEquipmentCard(
   'green-dragon-blade',
   'Green Dragon Blade',
