@@ -288,6 +288,28 @@ A reading usually sets a **turn flag** (`SetTurnFlagEffect`). `advancePhaseOrTur
 passes over any phase whose skip flag (`skipFlagOf(phase)`, e.g. `skipPlay`) is
 set, and `PhaseSkippedEvent` records it. Flags end with the turn.
 
+## Equipment abilities
+
+A worn card can carry **abilities** (`CardDefinition.abilities`):
+
+- `triggers` join the chain like a General's skill while the card sits in a
+  living seat's equip zone. They are gathered after the mode's triggers and
+  the Generals' skills, in seat order and then zone order. Their owner is
+  `{ kind: 'equipment', seatId, cardInstanceId }`; a General's is
+  `{ kind: 'general', seatId, slot }`. Every trigger also receives the
+  registry, so it can read other worn cards' modifiers (Silver Lion checks
+  Black Pommel).
+- `modifiers` (`shaLimit`, `ignoresArmor`) are plain data. The engine never
+  reads them; content's queries do, through `activeAbilities`.
+
+When a card leaves an equip zone for any reason, its `onUnequip` runs for the
+former wearer, right after the move's own after-triggers (Silver Lion's
+parting heal). A trigger can't do this job, because a card that has left is no
+longer gathered.
+
+The dying round takes `rescueCardIds: { any, self }`. Any seat may answer
+with `any` (Peach); only the dying seat may also use `self` (Wine).
+
 ## Plugging into the chain
 
 | To add… | Write… | Example |
