@@ -21,42 +21,56 @@ not an illustration.
 
 Actions produce effects, effects produce events, and events wake triggers.
 Triggers return more effects or actions, and the chain keeps going until
-nothing new happens. The engine itself knows no card or skill by name: it
-asks content what a card does (`CardDefinition.play`) and who reacts
-(triggers).
+nothing new happens. Everything still to resolve waits in one queue, stored
+in the state, so the game can stop for a player's answer at any point and
+pick up exactly where it left off. The engine itself knows no card or skill
+by name: it asks content what a card does (`CardDefinition.play`) and who
+reacts (triggers).
 
 ## The pipeline
 
 ```
 resolve(state, action)                      ← the only entry point
- ├─ resolveAction(action, depth 0)            validate, then turn the action into effects
- │    └─ for each effect:
- │         resolveEffectWithTriggers(effect)
- │           1. before:<EffectKind> triggers  → may rewrite or cancel the effect
- │           2. applyEffect(state, effect)    → new state + events (logged)
- │           3. for each event:
- │                runAfterTriggers(event)
- │                  └─ each matching trigger returns follow-ups
- │                       ├─ an Effect → resolveEffectWithTriggers (depth + 1)  ┐ the chain
- │                       └─ an Action → resolveAction (depth + 1)              ┘ recurses
+ ├─ resolveAction(action)                     validate, then queue what it leads to
+ │    (a card play logs CardPlayedEvent, moves the card out of the hand,
+ │     and queues: the move, CardPlayedEvent's trigger follow-ups, play()'s effects)
  └─ advanceToDecision(state)
-      loop: win check → response pending? stop → a player must decide? stop
-            → otherwise enter the next phase (logs PhaseChangedEvent, runs its after-triggers)
+      loop:
+        drain the queue, front first:
+          an Effect → before:<EffectKind> triggers → applyEffect → events logged
+                      → each event's after-trigger follow-ups go to the FRONT
+          an Action → resolveAction (queues more)
+          stop when a response is pending, the queue is empty, or the game is over
+        response pending / player must decide / game over? stop
+        otherwise enter the next phase (logs PhaseChangedEvent, queues its triggers)
 ```
 
 ### Stage by stage
 
 **`resolve`** is the one function the application layer calls. It refuses
-any action once the game has a result, runs the action's whole chain, then
-settles the game with `advanceToDecision`.
+any action once the game has a result, lets `resolveAction` queue what the
+action leads to, then settles the game with `advanceToDecision`.
 
 **`resolveAction`** validates first: the right seat, the card in hand, the
 targets among the engine's own legal target lists
 ([`legality.ts`](../../projects/engine/src/lib/rules/legality.ts)). While a
 response is pending, only that window's allowed actions are accepted. Then it
-asks content what the action means. For a card play it logs a
-`CardPlayedEvent`, calls `CardDefinition.play()` to get the card's effects,
-resolves them, and moves the used card to the discard pile.
+asks content what the action means, and queues it; it resolves nothing
+itself. For a card play it logs a `CardPlayedEvent`, counts the play, and puts
+at the front of the queue: the move of the used card to the discard pile
+(so it can't be reused mid-resolution; Equipment places itself instead), the
+play's after-trigger follow-ups, then the effects `CardDefinition.play()`
+returned.
+
+**The resolution queue** is plain data in `GameState.resolutionQueue`: effects
+and actions, front first. It is absent, never `[]`, when empty. Its rules:
+
+- **Trigger follow-ups go to the front**, ahead of the effect's siblings, so
+  a reaction always finishes before the next sibling starts.
+- **A pending response pauses draining.** Whatever is still queued waits,
+  through any number of calls, and even through a save and reload.
+- **The game ending drops what's left.** The mode's win check runs after
+  every item; once there is a result, the rest of the queue is discarded.
 
 **Before-triggers** (`before:DamageEffect`, …) see an effect before it
 applies. Each returns the replacement effect, or nothing to cancel it. A
@@ -64,28 +78,31 @@ damage-reduction skill works this way.
 
 **`applyEffect`** is the only place state changes. It is a pure function: old
 state in, new state and events out. Each event is appended to `state.log`.
+The Tool lifecycle's effects (below) only reshape the queue or open a window,
+so they are applied beside it, in
+[`toolLifecycle.ts`](../../projects/engine/src/lib/pipeline/toolLifecycle.ts).
 
 **After-triggers** (`after:DamageDealtEvent`, …) are gathered from the game
 mode and from every living seat's generals. Each one whose `condition` holds
-returns follow-ups, resolved through the same functions one level deeper.
+returns follow-ups, which go to the front of the queue.
 
-**`advanceToDecision`** runs once the action's chain has finished. It walks
-through phases that need no input (Start → Judgment → Draw → Play), each a
-`PhaseChangedEvent` with its own after-triggers. Kingdom War's Draw phase,
-for instance, is an `after:PhaseChangedEvent` trigger that deals 2 cards. The
+**`advanceToDecision`** drains the queue, then walks through phases that need
+no input (Start → Judgment → Draw → Play), each a `PhaseChangedEvent` whose
+after-triggers are queued and drained in turn. Kingdom War's Draw phase, for
+instance, is an `after:PhaseChangedEvent` trigger that deals 2 cards. The
 loop stops when a player must decide (their Play phase, or a Discard over the
 hand limit), when a response is pending, or when the game is over.
 
 ### Safety rails
 
-- **Depth limit.** Every follow-up from a trigger runs one level deeper.
-  Beyond `MAX_TRIGGER_DEPTH` (64) the engine throws, naming the effect or
-  action, so a content trigger loop fails loudly instead of overflowing the
-  stack.
+- **Step budget.** One `resolve` call may resolve at most
+  `MAX_RESOLUTION_STEPS` (10,000) queue items. Beyond that the engine throws,
+  naming the item, so a content trigger loop fails loudly instead of running
+  forever.
 - **Phase-step limit.** `advanceToDecision` throws if phases keep advancing
   without reaching a decision (6 steps per seat, plus 6).
-- **Win check.** The mode's `checkWinCondition` runs before the first phase
-  step and after every one.
+- **Win check.** The mode's `checkWinCondition` runs before draining and
+  after every queue item.
 
 ## Prime example: a lethal Sha
 
@@ -97,32 +114,33 @@ engine produces, across three calls.
 
 1. `resolveAction` checks the play is legal, then logs the play:
    **`CardPlayedEvent`** (A used Sha ♠7 on B).
-2. `sha.play()` returns one effect:
+2. The used Sha goes to the discard pile, right after the play:
+   **`CardMovedEvent`** (sha-1, seat-a:hand → discardPile).
+3. The play is counted toward the turn's Sha limit (`turn.cardPlays.sha`).
+4. `sha.play()` returned one effect:
    `OpenResponseEffect`: B must play a Shan, otherwise `DamageEffect` A→B, 1.
    Applying it stores a `PendingResponse` in the state. It logs no event.
-3. The used Sha goes to the discard pile:
-   **`CardMovedEvent`** (sha-1, seat-a:hand → discardPile).
-4. The play is counted toward the turn's Sha limit (`turn.cardPlays.sha`).
-5. `advanceToDecision` sees the pending response and stops.
+5. The queue stops at the pending response, and so does `advanceToDecision`.
 
 The call returns. The UI shows "Waiting on Seat B", and B is offered
 `PassAction` (and a `RespondAction` per Shan in hand, if they had one).
 
 ### Call 2: `resolve(PassAction by B)`
 
-1. `resolveAction` clears the pending response and resolves the effect it was
+1. `resolveAction` clears the pending response and queues the effect it was
    holding back: the `DamageEffect`.
 2. Before-triggers on `DamageEffect` run. None apply here.
 3. `applyEffect`: B's HP goes 1 → 0.
    **`DamageDealtEvent`** (A→B, 1 normal, caused by sha-1).
 4. Kingdom War's three after-triggers on `DamageDealtEvent` are gathered,
    all checked against the state right after the damage:
+   their follow-ups go to the front of the queue, in this order:
    - HP ≤ half and main general hidden → `RevealGeneralAction(main)`
-     → **`GeneralRevealedEvent`** (B, main), at depth 1
+     → **`GeneralRevealedEvent`** (B, main)
    - HP ≤ 0 and deputy general hidden → `RevealGeneralAction(deputy)`
-     → **`GeneralRevealedEvent`** (B, deputy), at depth 1
+     → **`GeneralRevealedEvent`** (B, deputy)
    - HP ≤ 0 → `DyingEffect` (the rescue round, starting at the turn owner)
-     → **`SeatDyingEvent`** (B), at depth 1. The round looks for the next seat
+     → **`SeatDyingEvent`** (B). The round looks for the next seat
      to ask: A holds no Peach and is skipped; B, the dying seat, is always
      asked. A new window opens: B may play a Peach.
 5. `advanceToDecision` sees the pending window and stops.
@@ -158,24 +176,24 @@ Discard History are views built from it, never separate records.
 A card can't stop in the middle of a function to wait for a player. Instead
 it emits `OpenResponseEffect`, which stores a `PendingResponse`: who must
 answer, with which cards, and the effect to apply if they don't
-(`context.effect`). `resolve` then returns, and the game resumes with the
-next action:
+(`context.effect`). The queue stops draining, `resolve` returns, and the game
+resumes with the next action, with everything still queued behind the window:
 
-- **`PassAction`** applies the held-back effect (the Sha's damage, above).
+- **`PassAction`** queues the held-back effect (the Sha's damage, above).
 - **`RespondAction`** plays the answering card. By default the held-back
   effect is then dropped: a Shan cancels a Sha.
 - If the window records the card that opened it (`PendingResponse.sourceCard`),
   that card's `onResponse` decides what the answer leads to instead.
-- A window the engine opens itself can carry `onAnswer`: effects resolved
-  after the answering card. The dying round uses it to heal the dying seat
+- A window the engine opens itself can carry `onAnswer`: effects queued
+  after the answering card's own. The dying round uses it to heal the dying seat
   and ask again.
 
 ### Example: Duel
 
-Duel uses `onResponse` to alternate. A plays Duel on B:
+Duel uses `onResponse` to alternate. A plays Duel on B, and once its Wuxie
+check (below) has passed:
 
-1. Duel opens a window: B plays a Sha (or Wuxie Kongjie), or takes 1 damage
-   from A.
+1. Duel opens a window: B plays a Sha, or takes 1 damage from A.
 2. B answers with a Sha. Duel's `onResponse` opens the next window, reversed:
    A plays a Sha, or takes 1 damage from B.
 3. This repeats until someone passes. Their window's held-back damage applies.
@@ -183,12 +201,54 @@ Duel uses `onResponse` to alternate. A plays Duel on B:
 No Duel-specific code is in the engine; the alternation lives entirely in
 [`duel.ts`](../../projects/content/src/lib/cards/duel.ts).
 
+## The Tool lifecycle
+
+Every Tool resolves the same way on each of its targets, and the engine runs
+it without naming a card:
+
+1. The Tool's `play()` returns one **`ToolOnTargetEffect`** per target, in
+   order (content's `toolOnTargets` builds them). Each carries the Tool as a
+   `UsedCard` and the counter card ids content supplies (`['wuxie']`). A
+   target eliminated before its turn comes is skipped.
+2. Each `ToolOnTargetEffect` becomes a **`WuxieCheckEffect`** followed by a
+   **`ToolRuleEffect`**, at the front of the queue.
+3. The check asks the living seats in seat order **from the Tool's user**,
+   but only those holding a counter card at that moment. Passing asks the
+   next holder; nobody left means no cancel.
+4. A seat that plays a Wuxie queues, after it, a counter-check (from the seat
+   after it; it is never asked about its own card) and a **`SkipNextEffect`**.
+   If nobody counters, the skip removes what the Wuxie guards: the
+   `ToolRuleEffect`. A Wuxie on that Wuxie queues its own check and skip, and
+   its skip removes the first Wuxie's skip, so the Tool goes ahead. Any length
+   of Wuxie-on-Wuxie chain falls out of queue order this way.
+5. **`ToolRuleEffect`** calls the Tool's `CardDefinition.onTarget`, whose
+   effects go to the front of the queue. That is where a Tool's own rule
+   lives.
+
+### Example: Barbarians
+
+A uses Barbarians at a four-seat table. Only C holds a Wuxie, and B holds a
+Sha.
+
+1. Barbarians' `play()` queues three `ToolOnTargetEffect`s: B, C, D.
+2. B's check: C is the only holder and passes. `onTarget` opens a window:
+   B plays a Sha or takes 1 damage from A. B plays the Sha.
+3. C's check: C plays its Wuxie. The counter-check (D, A, B) finds no holder,
+   so the skip removes the `ToolRuleEffect` for C. C is spared.
+4. D's check finds no holder (C's Wuxie is spent). D's window opens; D passes
+   and takes 1 damage.
+
+Every step that waits for a player is a window, and everything after it
+stays queued until the answer comes.
+
+## Plugging into the chain
 ## Plugging into the chain
 
 | To add… | Write… | Example |
 |---|---|---|
 | A card's effect | `CardDefinition.play()` returning effects | Peach returns `HealEffect` |
 | A card that asks someone to answer | `OpenResponseEffect` from `play()` | Sha asks for a Shan |
+| A Tool's rule on each target | `play()` returning `ToolOnTargetEffect`s (content's `toolOnTargets`), and `CardDefinition.onTarget` | Barbarians opens a Sha window on each target |
 | What answering does, beyond cancelling | `CardDefinition.onResponse()` and `sourceCard` on the window | Duel turns back on the other player |
 | A reaction to something that happened | An `after:<EventKind>` trigger on a skill or mode | Kingdom War's dying round at 0 HP |
 | Effects that follow an answer to an engine-opened window | `onAnswer` on the `PendingResponse` | The dying round's Peach heals, then asks again |
@@ -202,16 +262,13 @@ fits instead.
 
 1. **After-trigger conditions are checked together, once.** All triggers
    for an event are gathered against the state right after that event, then
-   their follow-ups run in order. In the example, the deputy reveal and the
-   dying round were both decided before the main reveal applied. That is
+   their follow-ups are queued in order. In the example, the deputy reveal and
+   the dying round were both decided before the main reveal applied. That is
    right for today's triggers, but a trigger that depends on an earlier
    trigger's outcome for the same event won't see it.
-2. **Before-triggers only rewrite the effect.** They can't change the state
+2. **Trigger conditions are checked when gathered.** A follow-up waits in the
+   queue; its trigger's condition was checked against the state at the moment
+   the event happened, not when the follow-up runs.
+3. **Before-triggers only rewrite the effect.** They can't change the state
    themselves. Each one sees the state as it was when the effect began
    resolving, along with the effect as rewritten by the triggers before it.
-3. **A response window isn't a full suspension.** If `play()` returns
-   `[OpenResponseEffect, X]`, effect X resolves straight away, before anyone
-   answers. Today's cards only ever return the window as their last effect.
-   Cards that ask several seats in turn (Barbarians, Hail of Arrows) need a
-   resumable resolution queue; that is planned as sub-project B (see the
-   [cards spec](../superpowers/specs/2026-10-05-cards-a-equipment-and-simple-cards-design.md)).
