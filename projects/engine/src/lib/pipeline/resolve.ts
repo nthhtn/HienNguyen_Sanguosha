@@ -147,9 +147,10 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   return logWithTriggers({ ...state, phase, turn }, events, ctx);
 }
 
-// One effect: before-triggers may rewrite or cancel it, then it applies and its
-// events' after-trigger follow-ups go to the front of the queue.
-function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {
+// `effect` as its before-triggers would rewrite it (e.g. Silver Lion's cap),
+// or null if one would cancel it. Applies nothing: the UI uses it to state what
+// a pending effect would really do.
+export function previewEffect(state: GameState, effect: Effect, ctx: EngineContext): Effect | null {
   const beforeTriggers = gatherTriggeredSkills(state, ctx.registry, ctx.mode, `before:${effect.kind}`, effect);
   let current: Effect | null = effect;
   for (const gathered of beforeTriggers) {
@@ -157,6 +158,13 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
     const outputs = gathered.trigger.effect(state, current, gathered.owner, ctx.registry) as Effect[];
     current = outputs.length > 0 ? outputs[0] : null;
   }
+  return current;
+}
+
+// One effect: before-triggers may rewrite or cancel it, then it applies and its
+// events' after-trigger follow-ups go to the front of the queue.
+function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {
+  const current = previewEffect(state, effect, ctx);
   if (current === null) return { state, events: [] };
 
   const applied = isLifecycleEffect(current)

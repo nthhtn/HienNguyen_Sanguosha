@@ -2,11 +2,13 @@ import { Injectable, Signal, WritableSignal, computed, signal } from '@angular/c
 import {
   Action,
   ContentRegistry,
+  Effect,
   EngineContext,
   GameState,
   createGame,
   getActiveSeatId,
   getLegalActions,
+  previewEffect,
   redactStateForSeat,
   resolve,
 } from 'engine';
@@ -60,6 +62,12 @@ export class GameService {
     const state = this._state();
     return state ? getActiveSeatId(state) : null;
   });
+
+  // A pending effect as it would really land (before-triggers applied), for
+  // what the UI tells the player. The engine decides; the UI only reads it.
+  previewEffect(state: GameState, effect: Effect): Effect | null {
+    return previewEffect(state, effect, this.ctx);
+  }
 
   // Only the human's moves are offered to the UI; bots decide for themselves.
   readonly legalActions: Signal<Action[]> = computed(() => {

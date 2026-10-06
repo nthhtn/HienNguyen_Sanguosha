@@ -1,4 +1,4 @@
-import { advanceToDecision, getLegalActions, resolve } from 'engine';
+import { advanceToDecision, getLegalActions, previewEffect, resolve } from 'engine';
 import type { CardDefinition, CardInstance, ContentRegistry, GameState } from 'engine';
 import { kingdomWarMode, RESCUE_CARD_IDS } from '../modes/kingdomWar';
 import { wineCard } from './wine';
@@ -112,5 +112,20 @@ describe('Wine saves only yourself', () => {
   it('Kingdom War’s dying round offers Wine to the dying seat only', () => {
     const asked = dying({ 'seat-a:hand': [card('p1', 'peach'), card('w1', 'wine')] });
     expect(asked.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a', allowedCardIds: ['peach'] });
+  });
+});
+
+describe('previewing damage against Silver Lion', () => {
+  const boostedSha = (s: GameState) => ({
+    kind: 'DamageEffect' as const,
+    damage: { source: { kind: 'seat' as const, seatId: 'seat-a' }, target: { kind: 'seat' as const, seatId: 'seat-b' }, amount: 2, nature: 'normal' as const, cause: { cardInstanceId: 's1' } },
+  });
+
+  it('shows a Wine-boosted Sha landing as 1 on a Silver Lion wearer, and as 2 with Black Pommel', () => {
+    const lion = table({ 'seat-b:equip': [card('l', 'silver-lion')] });
+    const withSha = { ...lion, zones: lion.zones.map((z) => (z.id === 'discardPile' ? { ...z, cards: [card('s1', 'sha')] } : z)) };
+    expect(previewEffect(withSha, boostedSha(withSha), ctx)).toMatchObject({ damage: { amount: 1 } });
+    const pommel = { ...withSha, zones: withSha.zones.map((z) => (z.id === 'seat-a:equip' ? { ...z, cards: [card('bp', 'black-pommel')] } : z)) };
+    expect(previewEffect(pommel, boostedSha(pommel), ctx)).toMatchObject({ damage: { amount: 2 } });
   });
 });

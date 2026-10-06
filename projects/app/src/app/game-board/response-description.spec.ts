@@ -1,4 +1,4 @@
-import { CardInstance, EngineEvent, GameState, PendingResponse } from 'engine';
+import { CardInstance, Effect, EngineEvent, GameState, PendingResponse } from 'engine';
 import { describeResponse, startsOnNoResponse, waitingLine } from './response-description';
 
 const duel: CardInstance = { instanceId: 'duel-1', definitionId: 'duel', suit: 'spade', rank: 1 };
@@ -217,5 +217,19 @@ describe('describeResponse: saving yourself with Wine', () => {
 
   it('asks only for a Peach when you hold no Wine', () => {
     expect(describeResponse(withHand(dyingWindow(['peach', 'wine']), []), 'seat-0')!.prompt).toBe('Play a Peach to save yourself?');
+  });
+});
+
+describe('describeResponse: the outcome after armour', () => {
+  it('states the damage as it would land, through the preview it is given', () => {
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: sha, targets: [seat('seat-0')] }];
+    const window: PendingResponse = {
+      ...damageWindow('w9', 'seat-0', 'seat-1', 'sha-1'),
+      context: { effect: { kind: 'DamageEffect', damage: { source: seat('seat-1'), target: seat('seat-0'), amount: 2, nature: 'normal', cause: { cardInstanceId: 'sha-1' } } } },
+    };
+    const capped = (effect: Effect): Effect | null =>
+      effect.kind === 'DamageEffect' ? { ...effect, damage: { ...effect.damage, amount: 1 } } : effect;
+    expect(describeResponse(state(log, window), 'seat-0')!.outcome).toBe('You lose 2 HP (2 damage from Seat 1)');
+    expect(describeResponse(state(log, window), 'seat-0', capped)!.outcome).toBe('You lose 1 HP (1 damage from Seat 1)');
   });
 });

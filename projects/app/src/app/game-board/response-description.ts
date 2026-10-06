@@ -80,7 +80,13 @@ function outcomeOf(effect: Effect, viewerSeatId: string, state: GameState): stri
 
 // Everything the Response window says, read off the (redacted) state and its
 // public log. Null when no response is pending.
-export function describeResponse(state: GameState, viewerSeatId: string): ResponseDescription | null {
+// `preview` shows a pending effect as it would really land (e.g. after Silver
+// Lion's cap); without one, the effect is described as it stands.
+export function describeResponse(
+  state: GameState,
+  viewerSeatId: string,
+  preview: (effect: Effect) => Effect | null = (effect) => effect
+): ResponseDescription | null {
   const pending = state.pendingResponse;
   if (!pending) return null;
   const name = (seatId: string) => seatName(state.players, seatId);
@@ -150,7 +156,7 @@ export function describeResponse(state: GameState, viewerSeatId: string): Respon
       source: `${name(userSeatId)} used ${cardName({ definitionId: card.as })} on ${holder === viewerSeatId ? 'you' : name(holder)}`,
       latest: null,
       prompt: `Play ${askedCardName(state)} at ${victimSeatId === viewerSeatId ? 'you' : name(victimSeatId)}?`,
-      outcome: outcomeOf(pending.context.effect, viewerSeatId, state),
+      outcome: outcomeOf(preview(pending.context.effect) ?? pending.context.effect, viewerSeatId, state),
       outcomeForce: forceOf(state.seats.find((s) => s.id === holder)?.kingdom),
     };
   }
@@ -181,7 +187,7 @@ export function describeResponse(state: GameState, viewerSeatId: string): Respon
     source,
     latest,
     prompt,
-    outcome: outcomeOf(pending.context.effect, viewerSeatId, state),
+    outcome: outcomeOf(preview(pending.context.effect) ?? pending.context.effect, viewerSeatId, state),
     outcomeForce: forceOf(state.seats.find((s) => s.id === affectedSeatOf(pending.context.effect))?.kingdom),
   };
 }

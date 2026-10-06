@@ -271,7 +271,7 @@ export class GameBoard {
     const visible = this.visibleState();
     const seatId = this.viewerSeatId();
     if (this.responseDialogFor === pendingId || !visible || !seatId) return;
-    const description = describeResponse(visible, seatId);
+    const description = describeResponse(visible, seatId, (effect) => this.gameService.previewEffect(visible, effect));
     const legal = this.gameService.legalActions();
     const noResponse = legal.find((a) => a.kind === 'PassAction');
     if (!description || !noResponse) return;
