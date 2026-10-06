@@ -1,4 +1,4 @@
-import { GameState, Target, Kingdom, GameResult, PendingResponse } from '../domain/types';
+import { GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
 import { RngState } from '../rng/rng';
 
 export interface PlayContext {
@@ -35,6 +35,9 @@ export interface CardDefinition {
   // effects replace the default of simply cancelling the pending effect, e.g.
   // a Duel turning back on the other player.
   onResponse?(state: GameState, ctx: ResponseContext): unknown[];
+  // A Tool's rule on one target, once its Wuxie check has passed
+  // (ToolRuleEffect). Its effects go to the front of the queue.
+  onTarget?(state: GameState, ctx: ToolTargetContext): unknown[];
 }
 
 export interface ResponseContext {
@@ -42,6 +45,13 @@ export interface ResponseContext {
   // The seat that answered, and the card it answered with.
   seatId: string;
   cardInstanceId: string;
+}
+
+export interface ToolTargetContext {
+  tool: UsedCard;
+  userSeatId: string;
+  target: Target;
+  extra?: Target[];
 }
 
 export type TriggerPoint = `before:${string}` | `after:${string}`;

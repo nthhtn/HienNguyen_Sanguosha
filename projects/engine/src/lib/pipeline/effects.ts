@@ -1,4 +1,4 @@
-import { GameState, Damage, PendingResponse, Target } from '../domain/types';
+import { GameState, Damage, PendingResponse, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
 import { EngineEvent } from './events';
 import { isFaceUpZoneKind } from '../domain/redact';
@@ -14,7 +14,16 @@ export type Effect =
   // The dying round for `seatId`: ask the seats in `order` (turn order from the
   // turn owner) one at a time for one of `rescueCardIds` (content says which —
   // Peach). See the Peach and dying spec.
-  | { kind: 'DyingEffect'; seatId: string; order: string[]; rescueCardIds: string[]; entering?: boolean };
+  | { kind: 'DyingEffect'; seatId: string; order: string[]; rescueCardIds: string[]; entering?: boolean }
+  // The Tool lifecycle (see the Tools spec). One per target: a Wuxie check,
+  // then the Tool's own rule (CardDefinition.onTarget). Content supplies the
+  // counter card ids, so the engine names no card.
+  | { kind: 'ToolOnTargetEffect'; tool: UsedCard; userSeatId: string; target: Target; extra?: Target[]; counterCardIds: string[] }
+  | { kind: 'ToolRuleEffect'; tool: UsedCard; userSeatId: string; target: Target; extra?: Target[] }
+  // Asks, in `order`, the next living seat holding a counter card; none left = no cancel.
+  | { kind: 'WuxieCheckEffect'; subject: WuxieSubject; order: string[]; counterCardIds: string[] }
+  // Removes the next queued item: a counter card's way of cancelling what it guards.
+  | { kind: 'SkipNextEffect' };
 
 export interface ApplyResult {
   state: GameState;

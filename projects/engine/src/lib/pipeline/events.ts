@@ -53,9 +53,10 @@ export interface CardPlayedEvent {
   seatId: string;
   card: CardInstance;
   targets: Target[];
-  // Set for a response: the seat and card whose effect it answered, when known,
-  // or the dying seat a Peach was played to save.
-  inResponseTo?: { seatId?: string; cardInstanceId?: string; dyingSeatId?: string };
+  // Set for a response: the seat and card whose effect it answered, when known;
+  // the dying seat a Peach was played to save; for a cancel, the target the Tool
+  // was cancelled on; `counters` when it cancelled another counter card.
+  inResponseTo?: { seatId?: string; cardInstanceId?: string; dyingSeatId?: string; targetSeatId?: string; counters?: boolean };
 }
 
 // The discard pile was shuffled into the draw pile to finish a draw.

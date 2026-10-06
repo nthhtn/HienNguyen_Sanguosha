@@ -89,7 +89,14 @@ export interface PendingResponse {
   reason?: DecisionReason;
 }
 
-export type DecisionReason = { kind: 'dying'; seatId: string };
+export type DecisionReason =
+  | { kind: 'dying'; seatId: string }
+  // May this seat cancel `tool` (used by toolUserSeatId) on `target`?
+  | { kind: 'wuxie'; tool: UsedCard; toolUserSeatId: string; target: Target }
+  // May this seat cancel the counter card wuxieSeatId just played?
+  | { kind: 'counter-wuxie'; wuxieSeatId: string }
+  // A card's own demand, e.g. Barbarians: play a Sha or take 1 damage.
+  | { kind: 'card-effect'; card: UsedCard; userSeatId: string };
 
 export interface CardZone {
   id: string;
@@ -104,6 +111,23 @@ export interface CardInstance {
   suit: 'spade' | 'heart' | 'club' | 'diamond';
   rank: number;
 }
+
+// A card as it is being used: what it counts as, its colour, and the physical
+// cards behind it (one normally; none for a card a skill makes, two for a
+// Serpent Spear Sha, from stage 5).
+export interface UsedCard {
+  as: string;
+  colour: 'red' | 'black' | 'none';
+  suit?: CardInstance['suit'];
+  rank?: number;
+  physical: CardInstance[];
+}
+
+// What a Wuxie check is about: a Tool on one target, or a counter card someone
+// just played (so a counter can itself be countered).
+export type WuxieSubject =
+  | { kind: 'tool'; tool: UsedCard; userSeatId: string; target: Target }
+  | { kind: 'counter'; seatId: string };
 
 // The weak structural shape every engine event satisfies. `GameState.log` is
 // typed as the concrete `EngineEvent` union instead, so consumers can read a

@@ -11,6 +11,7 @@ import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { CardPlayedEvent, PhaseChangedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
+import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -152,7 +153,7 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
   }
   if (current === null) return { state, events: [] };
 
-  const applied = applyEffect(state, current);
+  const applied = isLifecycleEffect(current) ? applyLifecycleEffect(state, current, ctx.registry) : applyEffect(state, current);
   return { state: queueFront(applied.state, afterTriggerFollowUps(applied.state, applied.events, ctx)), events: applied.events };
 }
 
@@ -247,11 +248,21 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       }
       const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
       const answered = pending.context.effect.kind === 'DamageEffect' ? pending.context.effect.damage : null;
-      const inResponseTo = {
-        ...(answered?.source?.kind === 'seat' ? { seatId: answered.source.seatId } : {}),
-        ...(answered?.cause?.cardInstanceId ? { cardInstanceId: answered.cause.cardInstanceId } : {}),
-        ...(pending.reason?.kind === 'dying' ? { dyingSeatId: pending.reason.seatId } : {}),
-      };
+      const reason = pending.reason;
+      const inResponseTo =
+        reason?.kind === 'wuxie'
+          ? {
+              seatId: reason.toolUserSeatId,
+              ...(reason.tool.physical[0] ? { cardInstanceId: reason.tool.physical[0].instanceId } : {}),
+              ...(reason.target.kind === 'seat' ? { targetSeatId: reason.target.seatId } : {}),
+            }
+          : reason?.kind === 'counter-wuxie'
+            ? { seatId: reason.wuxieSeatId, counters: true }
+            : {
+                ...(answered?.source?.kind === 'seat' ? { seatId: answered.source.seatId } : {}),
+                ...(answered?.cause?.cardInstanceId ? { cardInstanceId: answered.cause.cardInstanceId } : {}),
+                ...(reason?.kind === 'dying' ? { dyingSeatId: reason.seatId } : {}),
+              };
       const event: CardPlayedEvent = { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: [], inResponseTo };
       const afterLog = logged({ ...state, pendingResponse: null }, [event]);
       const effects = cardDefinition.play(afterLog, {
