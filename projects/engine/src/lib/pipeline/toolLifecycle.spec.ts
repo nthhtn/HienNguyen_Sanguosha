@@ -134,6 +134,15 @@ describe('the Tool lifecycle', () => {
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'b', reason: { kind: 'wuxie', target: { kind: 'seat', seatId: 'c' } } });
   });
 
+  it('gives each window its own id, even when the same seat is asked twice with nothing logged between', () => {
+    let s = counterWith(playBlessing(table(['c', 'd']))); // c cancels the Blessing on b
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'd', reason: { kind: 'counter-wuxie' } });
+    const first = s.pendingResponse!.id;
+    s = pass(s); // d lets c's counter stand; next, d is asked about the Blessing on c
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'd', reason: { kind: 'wuxie', target: { kind: 'seat', seatId: 'c' } } });
+    expect(s.pendingResponse!.id).not.toBe(first);
+  });
+
   it('does nothing for a target eliminated before its turn comes (Review Focus 1)', () => {
     const s = table();
     const withCEliminatedLater = { ...s, seats: s.seats.map((x) => (x.id === 'c' ? { ...x, eliminated: true } : x)) };

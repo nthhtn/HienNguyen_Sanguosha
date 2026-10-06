@@ -1,4 +1,4 @@
-import { DecisionReason, GameState, PendingResponse } from '../domain/types';
+import { DecisionReason, GameState, PendingResponse, WuxieSubject } from '../domain/types';
 import { ContentRegistry } from '../registry/types';
 import { lookupCard } from '../registry/lookup';
 import { livingSeatOrderFrom } from '../rules/seatOrder';
@@ -48,6 +48,12 @@ export function applyLifecycleEffect(state: GameState, effect: LifecycleEffect, 
   }
 }
 
+function subjectKey(subject: WuxieSubject): string {
+  if (subject.kind === 'counter') return `counter-${subject.seatId}`;
+  const target = subject.target.kind === 'seat' ? subject.target.seatId : `${subject.target.seatId}-${subject.target.generalSlot}`;
+  return `${subject.tool.as}-${subject.tool.physical[0]?.instanceId ?? 'virtual'}-${target}`;
+}
+
 function applyWuxieCheck(state: GameState, effect: Extract<Effect, { kind: 'WuxieCheckEffect' }>): ApplyResult {
   const holdsCounter = (seatId: string) => {
     const seat = state.seats.find((s) => s.id === seatId);
@@ -64,7 +70,10 @@ function applyWuxieCheck(state: GameState, effect: Extract<Effect, { kind: 'Wuxi
       ? { kind: 'wuxie', tool: subject.tool, toolUserSeatId: subject.userSeatId, target: subject.target }
       : { kind: 'counter-wuxie', wuxieSeatId: subject.seatId };
   const pendingResponse: PendingResponse = {
-    id: `wuxie-check-${state.log.length}-${askerId}`,
+    // Names what is asked, not only who and when: a pass logs nothing, so the
+    // same seat can be asked about a counter and then the next target at the
+    // same log length, and the UI tells windows apart by id.
+    id: `wuxie-check-${state.log.length}-${askerId}-${subjectKey(subject)}`,
     respondingSeatId: askerId,
     allowedActionKinds: ['RespondAction', 'PassAction'],
     allowedCardIds: effect.counterCardIds,
