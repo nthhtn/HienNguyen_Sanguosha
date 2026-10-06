@@ -54,6 +54,15 @@ function render(s: GameState, viewerSeatId = 'seat-1', thinkingSeatId: string | 
 const tile = (el: HTMLElement, seatId: string) => el.querySelector(`[data-seat-id="${seatId}"]`) as HTMLElement;
 
 describe('RoundTable', () => {
+  it('passes each seat the cards in its Judgment slot', () => {
+    const lightning = { instanceId: 'L', definitionId: 'lightning', suit: 'spade' as const, rank: 1 };
+    const zones: CardZone[] = [...state().zones, { id: 'seat-0:judgment', kind: 'judgment', ownerSeatId: 'seat-0', cards: [lightning] }];
+    const el = render(state({ zones }));
+    expect(tile(el, 'seat-0').querySelectorAll('.judgment app-playing-card')).toHaveLength(1);
+    expect(tile(el, 'seat-1').querySelectorAll('.judgment app-playing-card')).toHaveLength(0);
+    expect(tile(el, 'seat-1').querySelector('.judgment .slot.empty')).not.toBeNull();
+  });
+
   it('shrinks the tiles of a crowded table (more than six seats)', () => {
     const seats = (n: number) => Array.from({ length: n }, (_, i) => seat(`seat-${i}`, i));
     expect(render(state({ seats: seats(7) })).querySelector('.table')!.classList).toContain('crowded');

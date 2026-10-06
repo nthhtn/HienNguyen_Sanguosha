@@ -68,6 +68,17 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
           </div>
         }
       </div>
+      <div class="judgment" aria-label="Judgment Area">
+        @for (card of judgment(); track card.instanceId) {
+          <div class="slot" [attr.title]="'Judgment Area: ' + cardIdDisplayName(card.definitionId)">
+            <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
+              <app-playing-card size="small" [card]="card" />
+            </button>
+          </div>
+        } @empty {
+          <div class="slot empty" title="Judgment Area (empty)"><mat-icon>balance</mat-icon></div>
+        }
+      </div>
       <!-- Status lines in the seat's force colour. -->
       @if (seat().eliminated) {
         <div class="status force-status" [attr.data-force]="force()">Eliminated</div>
@@ -114,6 +125,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .slot { width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
     .slot-card { padding: 0; border: none; background: none; cursor: pointer; display: block; }
     .slot-card:focus-visible { outline: 2px solid #1565c0; outline-offset: -2px; }
+    .judgment { display: flex; gap: 5px; justify-content: center; margin-top: 4px; }
     .slot.empty mat-icon { font-size: 22px; width: 22px; height: 22px; color: #b9a37a; }
   `,
 })
@@ -126,6 +138,7 @@ export class SeatTile {
   readonly isViewer = input(false);
   readonly isBot = input(false);
   readonly equipment = input<CardInstance[]>([]);
+  readonly judgment = input<CardInstance[]>([]);
 
   // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a
   // seat that belongs to no force).

@@ -111,9 +111,14 @@ export function actionHistory(
           action(`${name(to.ownerSeatId)} took ${name(from.ownerSeatId)}'s ${face ? named(face) : 'card'}`, face ?? null);
           break;
         }
+        // Lightning moving on to the next seat's judgment area.
+        if (event.card && from?.kind === 'judgment' && to?.kind === 'judgment' && from.ownerSeatId && to.ownerSeatId) {
+          action(`${named(event.card)} moved on from ${name(from.ownerSeatId)} to ${name(to.ownerSeatId)}`, event.card);
+          break;
+        }
         if (!event.card || to?.kind !== 'discardPile' || !from?.ownerSeatId) break;
         if (from.kind === 'hand') action(`${name(from.ownerSeatId)} discarded ${named(event.card)}`, event.card);
-        if (from.kind === 'equip') action(`${name(from.ownerSeatId)}'s ${cardName(event.card.definitionId)} was discarded`, event.card);
+        if (from.kind === 'equip' || from.kind === 'judgment') action(`${name(from.ownerSeatId)}'s ${cardName(event.card.definitionId)} was discarded`, event.card);
         break;
       }
       case 'DamageDealtEvent': {
@@ -148,6 +153,12 @@ export function actionHistory(
         break;
       case 'CardsTurnedUpEvent':
         action(`Turned up ${event.cards.length} ${event.cards.length === 1 ? 'card' : 'cards'}: ${event.cards.map(named).join(', ')}`);
+        break;
+      case 'JudgmentEvent':
+        action(`${name(event.seatId)}'s ${cardName(event.tool.as)} judgment: ${cardFaceLabel(event.card)}`, event.card);
+        break;
+      case 'PhaseSkippedEvent':
+        action(`${name(event.seatId)} skipped the ${event.phase} Phase`);
         break;
       case 'DiscardPileReshuffledEvent':
         action(`The discard pile (${event.cardCount}) was shuffled into the draw pile`);

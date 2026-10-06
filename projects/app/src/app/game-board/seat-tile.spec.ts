@@ -21,7 +21,7 @@ function makeSeat(overrides: Partial<Seat> = {}): Seat {
   };
 }
 
-function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[] } = {}) {
+function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[]; judgment?: CardInstance[] } = {}) {
   const fixture = TestBed.createComponent(SeatTile);
   fixture.componentRef.setInput('seat', seat);
   fixture.componentRef.setInput('name', opts.name ?? 'Seat 1');
@@ -31,6 +31,7 @@ function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwn
   fixture.componentRef.setInput('isViewer', opts.isViewer ?? false);
   fixture.componentRef.setInput('isBot', opts.isBot ?? false);
   fixture.componentRef.setInput('equipment', opts.equipment ?? []);
+  fixture.componentRef.setInput('judgment', opts.judgment ?? []);
   fixture.detectChanges();
   return fixture.nativeElement as HTMLElement;
 }
@@ -94,6 +95,32 @@ describe('SeatTile', () => {
     expect(slots[1].querySelector('app-card-art')).not.toBeNull();
     expect(slots[2].classList).toContain('empty');
     expect(slots[3].getAttribute('title')).toBe('Offensive Mount (empty)');
+  });
+
+  it('always has a Judgment slot, with a placeholder while it is empty', () => {
+    const area = render(makeSeat()).querySelector('.judgment')!;
+    expect(area.getAttribute('aria-label')).toBe('Judgment Area');
+    expect(area.querySelectorAll('.slot')).toHaveLength(1);
+    expect(area.querySelector('.slot')!.classList).toContain('empty');
+    expect(area.querySelector('.slot')!.getAttribute('title')).toBe('Judgment Area (empty)');
+  });
+
+  it('shows each card in the Judgment slot, small and face up, oldest first, with its Info', () => {
+    const el = render(makeSeat(), {
+      judgment: [
+        { instanceId: 'j1', definitionId: 'capture', suit: 'spade', rank: 6 },
+        { instanceId: 'j2', definitionId: 'lightning', suit: 'spade', rank: 1 },
+      ],
+    });
+    const slots = [...el.querySelectorAll('.judgment .slot')] as HTMLElement[];
+    expect(slots).toHaveLength(2);
+    expect(slots.some((x) => x.classList.contains('empty'))).toBe(false);
+    expect(slots[0].querySelector('app-card-art img')!.classList).toContain('small');
+    expect(slots.map((x) => x.querySelector('button.slot-card')!.getAttribute('aria-label'))).toEqual(['Info: Capture', 'Info: Lightning']);
+  });
+
+  it('still shows the Judgment slot for an eliminated seat', () => {
+    expect(render(makeSeat({ eliminated: true })).querySelector('.judgment .slot')).not.toBeNull();
   });
 
   it('ignores an equipped card with no known slot (Review Focus 5)', () => {

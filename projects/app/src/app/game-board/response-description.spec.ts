@@ -173,3 +173,23 @@ describe('describeResponse: Coerce', () => {
     });
   });
 });
+
+describe('describeResponse: a judgment’s Wuxie Kongjie check', () => {
+  const capture: CardInstance = { instanceId: 'cap-1', definitionId: 'capture', suit: 'spade', rank: 6 };
+  const judging = (owner: string): GameState => ({
+    ...state([], wuxieWindow('seat-0', { kind: 'wuxie', tool: used(capture), toolUserSeatId: owner, target: seat(owner) })),
+    zones: [{ id: `${owner}:judgment`, kind: 'judgment', ownerSeatId: owner, cards: [capture] }],
+  });
+
+  it('says whose judgment is coming, not who used the card', () => {
+    expect(describeResponse(judging('seat-1'), 'seat-0')).toMatchObject({
+      source: 'Seat 1 is about to judge Capture',
+      prompt: 'Play Wuxie to cancel it?',
+      outcome: 'Seat 1 judges Capture',
+    });
+  });
+
+  it('speaks to the viewer about their own judgment', () => {
+    expect(describeResponse(judging('seat-0'), 'seat-0')).toMatchObject({ source: 'You are about to judge Capture', outcome: 'You judge Capture' });
+  });
+});

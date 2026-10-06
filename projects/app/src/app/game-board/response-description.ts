@@ -104,6 +104,19 @@ export function describeResponse(state: GameState, viewerSeatId: string): Respon
   if (pending.reason?.kind === 'wuxie') {
     const { tool, toolUserSeatId, target } = pending.reason;
     const toolName = cardName({ definitionId: tool.as });
+    // A delayed Tool still lying in a judgment area is being judged there.
+    const toolCardId = tool.physical[0]?.instanceId;
+    const judgedOwner = state.zones.find((z) => z.kind === 'judgment' && z.cards.some((c) => c.instanceId === toolCardId))?.ownerSeatId;
+    if (judgedOwner) {
+      const you = judgedOwner === viewerSeatId;
+      return {
+        source: `${you ? 'You are' : `${name(judgedOwner)} is`} about to judge ${toolName}`,
+        latest: null,
+        prompt: `Play ${askedCardName(state)} to cancel it?`,
+        outcome: `${you ? 'You judge' : `${name(judgedOwner)} judges`} ${toolName}`,
+        outcomeForce: forceOf(state.seats.find((s) => s.id === judgedOwner)?.kingdom),
+      };
+    }
     const targetId = target.kind === 'seat' ? target.seatId : undefined;
     const on = !targetId || targetId === toolUserSeatId ? '' : ` on ${targetId === viewerSeatId ? 'you' : name(targetId)}`;
     return {

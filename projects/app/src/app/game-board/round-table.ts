@@ -53,6 +53,7 @@ const RECENT_LOG_LINES = 3;
             [isResponding]="p.seat.id === (state().pendingChoice?.seatId ?? state().pendingResponse?.respondingSeatId)"
             [isBot]="botSeatIds().includes(p.seat.id)"
             [equipment]="equipmentOf(p.seat.equipped.zoneId)"
+            [judgment]="judgmentOf(p.seat.judgment.zoneId)"
           />
         </div>
       }
@@ -143,6 +144,10 @@ export class RoundTable {
   }
 
   protected equipmentOf(zoneId: string) {
+    return this.state().zones.find((z) => z.id === zoneId)?.cards ?? [];
+  }
+
+  protected judgmentOf(zoneId: string) {
     return this.state().zones.find((z) => z.id === zoneId)?.cards ?? [];
   }
 

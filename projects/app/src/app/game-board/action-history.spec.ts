@@ -233,3 +233,38 @@ describe('actionHistory', () => {
     ]);
   });
 });
+
+describe('actionHistory: judgments', () => {
+  const judgmentZones: CardZone[] = [
+    ...zones,
+    { id: 'processing', kind: 'processing', cards: [] },
+    { id: 'seat-0:judgment', kind: 'judgment', ownerSeatId: 'seat-0', cards: [] },
+    { id: 'seat-1:judgment', kind: 'judgment', ownerSeatId: 'seat-1', cards: [] },
+  ];
+  const lines = (log: EngineEvent[]) => actionHistory(log, judgmentZones).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
+  const lightning: CardInstance = { instanceId: 'L', definitionId: 'lightning', suit: 'spade', rank: 1 };
+  const capture: CardInstance = { instanceId: 'cap', definitionId: 'capture', suit: 'heart', rank: 6 };
+  const judged: CardInstance = { instanceId: 'j1', definitionId: 'shan', suit: 'heart', rank: 5 };
+  const used = (card: CardInstance) => ({ as: card.definitionId, colour: 'black' as const, suit: card.suit, rank: card.rank, physical: [card] });
+
+  it('tells the judgment, the skipped phase, and the delayed Tool discarded', () => {
+    const log: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: capture, targets: [seat('seat-0')] },
+      move(capture, 'seat-1:hand', 'seat-0:judgment'),
+      { kind: 'JudgmentEvent', seatId: 'seat-0', tool: used(capture), card: judged },
+      move(judged, 'processing', 'discardPile'),
+      move(capture, 'seat-0:judgment', 'discardPile'),
+      { kind: 'PhaseSkippedEvent', seatId: 'seat-0', phase: 'Play' },
+    ];
+    expect(lines(log)).toEqual([
+      'Seat 0 skipped the Play Phase',
+      "Seat 0's Capture was discarded",
+      "Seat 0's Capture judgment: 5 ♥",
+      'Seat 1 used Capture (6 ♥) on Seat 0',
+    ]);
+  });
+
+  it('says where Lightning moved on to', () => {
+    expect(lines([move(lightning, 'seat-0:judgment', 'seat-1:judgment')])).toEqual(['Lightning (A ♠) moved on from Seat 0 to Seat 1']);
+  });
+});
