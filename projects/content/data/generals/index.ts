@@ -68,8 +68,9 @@ export interface GeneralFileData {
   title?: string;
   titleZh?: string;
   maxHp: number | null;
+  gender: 'male' | 'female';
   skills: GeneralSkillData[];
-  source: { url: string; site: string; crawledAt: string; expansion?: string };
+  source: { url: string; site: string; crawledAt: string; expansion?: string; genderFrom?: string };
 }
 
 export interface GeneralData extends GeneralFileData {

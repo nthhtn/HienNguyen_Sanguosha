@@ -1,4 +1,4 @@
-import type { ContentRegistry, EquipSlot, GameState, Target } from 'engine';
+import type { CardInstance, ContentRegistry, EquipSlot, GameState, Target } from 'engine';
 import { activeAbilities } from './abilities';
 
 // Seat-to-seat distance measured around the table over living seats only.
@@ -51,4 +51,10 @@ export function otherLivingSeatTargets(state: GameState, seatId: string): Target
     .sort((a, b) => a.index - b.index)
     .filter((s) => s.id !== seatId && !s.eliminated)
     .map((s) => [{ kind: 'seat' as const, seatId: s.id }]);
+}
+
+// The cards in `seatId`'s hand.
+export function handOf(state: GameState, seatId: string): CardInstance[] {
+  const seat = state.seats.find((s) => s.id === seatId);
+  return (seat && state.zones.find((z) => z.id === seat.hand.zoneId)?.cards) ?? [];
 }

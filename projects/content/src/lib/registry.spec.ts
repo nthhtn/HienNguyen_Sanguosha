@@ -4,7 +4,7 @@ describe('buildContentRegistry', () => {
   it('registers the fifteen playable cards', () => {
     const registry = buildContentRegistry();
     expect([...registry.cards.keys()].sort()).toEqual(
-      ['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'green-dragon-blade', 'hail-of-arrows', 'harvest', 'lightning', 'peach', 'peach-garden', 'sha', 'shan', 'silver-lion', 'starvation', 'steal', 'wuxie', 'wine', 'black-pommel', 'crossbow', 'da-yuan', 'di-lu', 'hua-liu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'eight-trigrams', 'black-shield', 'wood-armor'].sort()
+      ['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'green-dragon-blade', 'hail-of-arrows', 'harvest', 'lightning', 'peach', 'peach-garden', 'sha', 'shan', 'silver-lion', 'starvation', 'steal', 'wuxie', 'wine', 'black-pommel', 'crossbow', 'da-yuan', 'di-lu', 'hua-liu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'eight-trigrams', 'black-shield', 'wood-armor', 'gender-swords', 'ancient-scimitar', 'ice-sword', 'longbow'].sort()
     );
   });
 
@@ -48,5 +48,12 @@ describe('buildContentRegistry', () => {
       if (card.category === 'equipment') expect(card.equipSlot).toBeDefined();
       else expect(card.equipSlot).toBeUndefined();
     }
+  });
+  it('gives every General a gender; eight are female', () => {
+    const generals = [...buildContentRegistry().generals.values()];
+    expect(generals.every((g) => g.gender === 'male' || g.gender === 'female')).toBe(true);
+    expect(generals.filter((g) => g.gender === 'female').map((g) => g.id).sort()).toEqual(
+      ['cai-wenji', 'da-qiao', 'diao-chan', 'huang-yueying', 'sun-shangxiang', 'xiao-qiao', 'zhen-ji', 'zhu-rong']
+    );
   });
 });

@@ -1,4 +1,5 @@
 {
+  "gender": "male",
   "maxHp": 4,
   "name": "Zhang He",
   "nameZh": "张郃",
@@ -12,6 +13,7 @@
   "source": {
     "crawledAt": "2026-10-02",
     "expansion": "Mountain",
+    "genderFrom": "manual (standard character list)",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
     "url": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-zhang-he"
   },

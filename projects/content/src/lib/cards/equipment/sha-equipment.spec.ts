@@ -169,3 +169,129 @@ describe('Eight Trigrams', () => {
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
   });
 });
+describe('Gender Swords', () => {
+  const swords = card('gs', 'gender-swords', 'spade', 2);
+  const female: TableOptions['generals'] = { 'seat-b': ['huang-yueying', 'dong-zhuo'] };
+  const attack = (more: Record<string, CardInstance[]> = {}, generals: TableOptions['generals'] = female) =>
+    play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [swords], drawPile: [card('d1', 'peach')], ...more }, { generals }), 's1', 'seat-b');
+
+  it('asks when the target’s gender differs', () => {
+    expect(askedAbout(attack())).toBe('gender-swords');
+  });
+
+  it('doesn’t when it doesn’t, or when the target has no gender (both Generals hidden)', () => {
+    expect(attack({}, {}).pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
+    const hidden = attack({}, { 'seat-b': ['huang-yueying', 'dong-zhuo', false] });
+    expect(hidden.pendingChoice).toBeUndefined();
+    expect(hidden.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
+  });
+
+  it('Use: the target discards a hand card of its choice, then the Sha goes on', () => {
+    const s = use(attack({ 'seat-b:hand': [card('b1', 'peach')] }));
+    expect(s.pendingChoice).toMatchObject({
+      seatId: 'seat-b', verb: 'discard',
+      reason: { kind: 'choice', card: { as: 'gender-swords' }, userSeatId: 'seat-a', targetSeatId: 'seat-b' },
+      options: [{ id: 'b1' }, { id: 'decline', shows: { kind: 'decline' } }],
+    });
+    const after = choose(s, 'b1');
+    expect(ids(after, 'discardPile')).toContain('b1');
+    expect(after.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
+  });
+
+  it('…or lets the user draw 1', () => {
+    const after = choose(use(attack({ 'seat-b:hand': [card('b1', 'peach')] })), 'decline');
+    expect(ids(after, 'seat-a:hand')).toEqual(['d1']);
+    expect(ids(after, 'seat-b:hand')).toEqual(['b1']);
+    expect(after.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
+  });
+
+  it('a target with no hand cards must let the user draw', () => {
+    const after = use(attack());
+    expect(ids(after, 'seat-a:hand')).toEqual(['d1']);
+    expect(after.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
+  });
+});
+
+describe('Ancient Scimitar', () => {
+  const scimitar = card('as', 'ancient-scimitar', 'spade', 1);
+  const hit = (more: Record<string, CardInstance[]> = {}, o: TableOptions = {}) =>
+    pass(play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [scimitar], ...more }, o), 's1', 'seat-b'));
+
+  it('deals 1 extra damage to a target with no hand cards', () => {
+    expect(hp(hit(), 'seat-b')).toBe(2);
+  });
+
+  it('none to a target holding a card', () => {
+    expect(hp(hit({ 'seat-b:hand': [card('b1', 'peach')] }), 'seat-b')).toBe(3);
+  });
+
+  it('adds to Wine’s +1', () => {
+    expect(hp(hit({}, { flags: { wine: true } }), 'seat-b')).toBe(1);
+  });
+
+  it('comes before Silver Lion’s cap, which brings it back to 1', () => {
+    expect(hp(hit({ 'seat-b:equip': [card('sl', 'silver-lion', 'club', 1)] }), 'seat-b')).toBe(3);
+  });
+});
+
+describe('Ice Sword', () => {
+  const sword = card('is', 'ice-sword', 'spade', 2);
+  const hitWith = (more: Record<string, CardInstance[]> = {}) => pass(play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [sword], ...more }), 's1', 'seat-b'));
+
+  it('asks before the damage, when the target holds a card', () => {
+    expect(askedAbout(hitWith({ 'seat-b:hand': [card('b1', 'peach')] }))).toBe('ice-sword');
+  });
+
+  it('isn’t asked when the target holds nothing', () => {
+    expect(hp(hitWith(), 'seat-b')).toBe(3);
+  });
+
+  it('Use: no damage; the user discards 2 of the target’s cards, one pick at a time', () => {
+    let s = use(hitWith({ 'seat-b:hand': [card('b1', 'peach')], 'seat-b:equip': [card('h1', 'di-lu', 'club', 5)] }));
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-a', verb: 'discard', reason: { kind: 'choice', card: { as: 'ice-sword' }, targetSeatId: 'seat-b' } });
+    s = choose(s, 'h1');
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['hand']);
+    s = choose(s, 'hand');
+    expect(ids(s, 'discardPile')).toEqual(expect.arrayContaining(['h1', 'b1']));
+    expect(hp(s, 'seat-b')).toBe(4);
+    expect(s.log.some((e) => e.kind === 'DamageDealtEvent')).toBe(false);
+  });
+
+  it('a target with only 1 card loses just that one', () => {
+    const s = choose(use(hitWith({ 'seat-b:hand': [card('b1', 'peach')] })), 'hand');
+    expect(s.pendingChoice).toBeUndefined();
+    expect(ids(s, 'seat-b:hand')).toEqual([]);
+  });
+
+  it('Don’t: the damage is dealt', () => {
+    expect(hp(decline(hitWith({ 'seat-b:hand': [card('b1', 'peach')] })), 'seat-b')).toBe(3);
+  });
+});
+
+describe('Longbow', () => {
+  const bow = card('lb', 'longbow', 'heart', 5);
+  const hitWith = (more: Record<string, CardInstance[]> = {}) => pass(play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [bow], ...more }), 's1', 'seat-b'));
+
+  it('after damage, may discard the target’s only Mount', () => {
+    const s = hitWith({ 'seat-b:equip': [card('h1', 'di-lu', 'club', 5)] });
+    expect(hp(s, 'seat-b')).toBe(3);
+    expect(askedAbout(s)).toBe('longbow');
+    expect(ids(use(s), 'seat-b:equip')).toEqual([]);
+  });
+
+  it('the user picks which, of two Mounts', () => {
+    let s = use(hitWith({ 'seat-b:equip': [card('h1', 'di-lu', 'club', 5), card('h2', 'red-hare', 'heart', 5)] }));
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['h1', 'h2']);
+    s = choose(s, 'h2');
+    expect(ids(s, 'seat-b:equip')).toEqual(['h1']);
+  });
+
+  it('isn’t asked without a Mount, or when the Sha is dodged', () => {
+    expect(hitWith().pendingChoice).toBeUndefined();
+    const dodged = respond(
+      play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [bow], 'seat-b:hand': [card('d', 'shan')], 'seat-b:equip': [card('h1', 'di-lu')] }), 's1', 'seat-b'),
+      'd'
+    );
+    expect(dodged.pendingChoice).toBeUndefined();
+  });
+});

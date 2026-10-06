@@ -21,6 +21,10 @@ import { silverLionCard, greenDragonBladeCard, horseCards, crossbowCard, blackPo
 import { eightTrigramsCard } from './cards/equipment/eight-trigrams';
 import { blackShieldCard } from './cards/equipment/black-shield';
 import { woodArmorCard } from './cards/equipment/wood-armor';
+import { genderSwordsCard } from './cards/equipment/gender-swords';
+import { ancientScimitarCard } from './cards/equipment/ancient-scimitar';
+import { iceSwordCard } from './cards/equipment/ice-sword';
+import { longbowCard } from './cards/equipment/longbow';
 
 function buildGenerals(): GeneralDefinition[] {
   const generals: GeneralDefinition[] = [];
@@ -31,7 +35,7 @@ function buildGenerals(): GeneralDefinition[] {
       console.warn(`Excluding general "${id}" from registry: maxHp not yet known.`);
       continue;
     }
-    generals.push({ id, kingdom: data.kingdom, maxHp: data.maxHp, skills: GENERAL_SKILLS.get(id) ?? [] });
+    generals.push({ id, kingdom: data.kingdom, maxHp: data.maxHp, gender: data.gender, skills: GENERAL_SKILLS.get(id) ?? [] });
   }
   // Skill logic with no data file would silently never be playable.
   for (const id of GENERAL_SKILLS.keys()) {
@@ -43,7 +47,7 @@ function buildGenerals(): GeneralDefinition[] {
 }
 
 export function buildContentRegistry(): ContentRegistry {
-  const cards = [shaCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard];
+  const cards = [shaCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard, genderSwordsCard, ancientScimitarCard, iceSwordCard, longbowCard];
   const generals = buildGenerals();
   return {
     cards: new Map(cards.map((c) => [c.id, c])),

@@ -156,6 +156,8 @@ export interface GeneralDefinition {
   id: string;
   kingdom: Kingdom;
   maxHp: number;
+  // From the data; read through content's seatGender (Gender Swords).
+  gender?: 'male' | 'female';
   skills: SkillDefinition[];
 }
 

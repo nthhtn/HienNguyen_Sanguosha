@@ -1,4 +1,5 @@
 {
+  "gender": "male",
   "maxHp": 4,
   "name": "Zhou Tai",
   "nameZh": "周泰",
@@ -12,6 +13,7 @@
   "source": {
     "crawledAt": "2026-10-02",
     "expansion": "Wind",
+    "genderFrom": "manual (standard character list)",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
     "url": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-zhou-tai"
   },
