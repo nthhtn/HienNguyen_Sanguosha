@@ -1,4 +1,4 @@
-import { advanceToDecision, getLegalActions, previewEffect, resolve } from 'engine';
+import { advanceToDecision, getLegalActions, previewEffect, resolve, usedCardOf } from 'engine';
 import type { CardDefinition, CardInstance, ContentRegistry, GameState } from 'engine';
 import { kingdomWarMode, RESCUE_CARD_IDS } from '../modes/kingdomWar';
 import { wineCard } from './wine';
@@ -70,7 +70,7 @@ describe('Wine', () => {
 
   it('doesn’t boost a Sha played as a response, and keeps the boost for later', () => {
     const boosted = { ...table(), turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [], flags: { wine: true } } };
-    expect(shaCard.play(boosted, { seatId: 'seat-a', cardInstanceId: 's1', targets: [], respondingTo: 'x' })).toEqual([]);
+    expect(shaCard.play(boosted, { seatId: 'seat-a', cardInstanceId: 's1', card: usedCardOf(card('s1', 'sha')), targets: [], respondingTo: 'x' }, registry)).toEqual([]);
   });
 
   it('lapses at the end of the turn', () => {
@@ -118,7 +118,7 @@ describe('Wine saves only yourself', () => {
 describe('previewing damage against Silver Lion', () => {
   const boostedSha = (s: GameState) => ({
     kind: 'DamageEffect' as const,
-    damage: { source: { kind: 'seat' as const, seatId: 'seat-a' }, target: { kind: 'seat' as const, seatId: 'seat-b' }, amount: 2, nature: 'normal' as const, cause: { cardInstanceId: 's1' } },
+    damage: { source: { kind: 'seat' as const, seatId: 'seat-a' }, target: { kind: 'seat' as const, seatId: 'seat-b' }, amount: 2, nature: 'normal' as const, cause: { cardInstanceId: 's1', card: usedCardOf(card('s1', 'sha')) } },
   });
 
   it('shows a Wine-boosted Sha landing as 1 on a Silver Lion wearer, and as 2 with Black Pommel', () => {

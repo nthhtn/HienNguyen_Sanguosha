@@ -1,7 +1,7 @@
 import { shaCard } from './sha';
 import { shanCard } from './shan';
 import { peachCard } from './peach';
-import { resolve } from 'engine';
+import { resolve, usedCardOf } from 'engine';
 import type { GameState, ContentRegistry } from 'engine';
 
 function registry(): ContentRegistry {
@@ -69,10 +69,13 @@ describe('Sha/Shan/Peach', () => {
     const opened = resolve(twoSeatState(), { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
     const { state: next } = resolve(opened.state, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'sha-response-sha-1', cardInstanceId: 'shan-1' }, { registry: registry(), mode: stubMode() });
     expect(next.log.filter((e) => e.kind === 'CardPlayedEvent')).toEqual([
-      { kind: 'CardPlayedEvent', seatId: 'seat-a', card: { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade', rank: 1 }, targets: [{ kind: 'seat', seatId: 'seat-b' }] },
       {
-        kind: 'CardPlayedEvent', seatId: 'seat-b', card: { instanceId: 'shan-1', definitionId: 'shan', suit: 'club', rank: 2 }, targets: [],
-        inResponseTo: { seatId: 'seat-a', cardInstanceId: 'sha-1' },
+        kind: 'CardPlayedEvent', seatId: 'seat-a', targets: [{ kind: 'seat', seatId: 'seat-b' }],
+        card: { as: 'sha', colour: 'black', suit: 'spade', rank: 1, physical: [{ instanceId: 'sha-1', definitionId: 'sha', suit: 'spade', rank: 1 }] },
+      },
+      {
+        kind: 'CardPlayedEvent', seatId: 'seat-b', targets: [], inResponseTo: { seatId: 'seat-a', cardInstanceId: 'sha-1' },
+        card: { as: 'shan', colour: 'black', suit: 'club', rank: 2, physical: [{ instanceId: 'shan-1', definitionId: 'shan', suit: 'club', rank: 2 }] },
       },
     ]);
   });
@@ -89,6 +92,6 @@ describe('Sha/Shan/Peach', () => {
     expect(() =>
       resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [] }, { registry: registry(), mode: stubMode() })
     ).toThrow('Card sha cannot be played with those targets');
-    expect(shaCard.play(state, { seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [] })).toEqual([]);
+    expect(shaCard.play(state, { seatId: 'seat-a', cardInstanceId: 'sha-1', card: usedCardOf(state.zones[1].cards[0]), targets: [] }, registry())).toEqual([]);
   });
 });

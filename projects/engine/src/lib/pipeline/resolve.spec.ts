@@ -1,3 +1,4 @@
+import { usedCardOf } from '../domain/usedCard';
 import { resolve, MAX_RESOLUTION_STEPS } from './resolve';
 import { createRng } from '../rng/rng';
 import { GameState } from '../domain/types';
@@ -154,7 +155,7 @@ describe('resolve: PlayCardAction with Target Selection and Damage', () => {
       // The play itself is public: who used which card on whom.
       {
         kind: 'CardPlayedEvent', seatId: 'seat-a',
-        card: { instanceId: 'test-card-1', definitionId: 'test-damage-card', suit: 'spade', rank: 5 },
+        card: usedCardOf({ instanceId: 'test-card-1', definitionId: 'test-damage-card', suit: 'spade', rank: 5 }),
         targets: [{ kind: 'seat', seatId: 'seat-b' }],
       },
       // A used non-equipment card leaves the hand before its effects resolve.

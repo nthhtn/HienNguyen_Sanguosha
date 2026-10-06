@@ -59,9 +59,9 @@ export const coerceCard: CardDefinition = {
     return [window];
   },
   // The holder's Sha: the victim answers it like any Sha, from the holder.
-  onResponse: (state, { pending, seatId, cardInstanceId }) => {
+  onResponse: (state, { pending, seatId, card }) => {
     const victimSeatId = pending.reason?.kind === 'card-effect' ? pending.reason.victimSeatId : undefined;
     const victim = state.seats.find((s) => s.id === victimSeatId && !s.eliminated);
-    return victim ? [shaWindow(cardInstanceId, seatId, seat(victim.id))] : [];
+    return victim ? [shaWindow(card, seatId, seat(victim.id))] : [];
   },
 };

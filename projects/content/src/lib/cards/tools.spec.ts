@@ -143,7 +143,7 @@ describe('Duel and Wuxie Kongjie', () => {
     expect(() =>
       resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [] }, { registry: registry(), mode: stubMode() })
     ).toThrow('Card duel cannot be played with those targets');
-    expect(duelCard.play(state, { seatId: 'seat-a', cardInstanceId: 'card-1', targets: [] })).toEqual([]);
+    expect(duelCard.play(state, { seatId: 'seat-a', cardInstanceId: 'card-1', card: { as: 'duel', colour: 'black', physical: [] }, targets: [] }, registry())).toEqual([]);
   });
 });
 

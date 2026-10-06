@@ -1,4 +1,5 @@
-import { GameState, GameEvent, QueueItem } from '../domain/types';
+import { GameState, GameEvent, PendingResponse, QueueItem, Target, UsedCard } from '../domain/types';
+import { usedCardOf } from '../domain/usedCard';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
 import { Effect, applyEffect } from './effects';
@@ -194,6 +195,89 @@ function unequipFollowUps(before: GameState, after: GameState, events: GameEvent
   return followUps;
 }
 
+interface UseOptions {
+  targets: Target[];
+  // The window this use answers; absent for a play.
+  respondTo?: PendingResponse;
+  // Counted toward per-turn limits (turn.cardPlays): a proactive play.
+  counted: boolean;
+  // Played by an ability, outside the Play Phase's limits.
+  free?: boolean;
+}
+
+// What an answer to `pending` answered, for the log.
+function inResponseToOf(pending: PendingResponse): NonNullable<CardPlayedEvent['inResponseTo']> {
+  const reason = pending.reason;
+  if (reason?.kind === 'wuxie') {
+    return {
+      seatId: reason.toolUserSeatId,
+      ...(reason.tool.physical[0] ? { cardInstanceId: reason.tool.physical[0].instanceId } : {}),
+      ...(reason.target.kind === 'seat' ? { targetSeatId: reason.target.seatId } : {}),
+    };
+  }
+  if (reason?.kind === 'counter-wuxie') return { seatId: reason.wuxieSeatId, counters: true };
+  if (reason?.kind === 'card-effect') {
+    return { seatId: reason.userSeatId, ...(reason.card.physical[0] ? { cardInstanceId: reason.card.physical[0].instanceId } : {}) };
+  }
+  const answered = pending.context.effect.kind === 'DamageEffect' ? pending.context.effect.damage : null;
+  return {
+    ...(answered?.source?.kind === 'seat' ? { seatId: answered.source.seatId } : {}),
+    ...(answered?.cause?.cardInstanceId ? { cardInstanceId: answered.cause.cardInstanceId } : {}),
+    ...(reason?.kind === 'dying' ? { dyingSeatId: reason.seatId } : {}),
+  };
+}
+
+// One card used, as itself or as what a conversion made it: logs the
+// CardPlayedEvent, then queues the physical cards' trip to the discard pile,
+// the event's after-triggers, the card's own effects and, for an answer, what
+// the window says answering leads to. The caller has checked legality.
+function useCard(state: GameState, seatId: string, used: UsedCard, options: UseOptions, ctx: EngineContext): ResolveResult {
+  const definition = lookupCard(ctx.registry, used.as);
+  const pending = options.respondTo;
+  const event: CardPlayedEvent = {
+    kind: 'CardPlayedEvent',
+    seatId,
+    card: used,
+    targets: options.targets,
+    ...(pending ? { inResponseTo: inResponseToOf(pending) } : {}),
+  };
+  const afterLog = logged(pending ? { ...state, pendingResponse: null } : state, [event]);
+  const cardInstanceId = used.physical[0]?.instanceId ?? '';
+  const effects = definition.play(
+    afterLog,
+    {
+      seatId,
+      cardInstanceId,
+      card: used,
+      targets: options.targets,
+      ...(pending ? { respondingTo: pending.id } : {}),
+      ...(options.free ? { free: true } : {}),
+    },
+    ctx.registry
+  ) as Effect[];
+  // Counted when played, for per-turn limits, whatever happens next.
+  const plays = afterLog.turn.cardPlays ?? {};
+  const counted: GameState = options.counted
+    ? { ...afterLog, turn: { ...afterLog.turn, cardPlays: { ...plays, [used.as]: (plays[used.as] ?? 0) + 1 } } }
+    : afterLog;
+  // A used card leaves the hand at once, so it can't be reused mid-resolution.
+  // Equipment and delayed Tools played as themselves are placed by their own play().
+  const placesItself = !pending && !used.via && (definition.category === 'equipment' || !!definition.delayed);
+  const discardPileId = requireZoneOfKind(state.zones, 'discardPile').id;
+  const leaveHand: Effect[] = placesItself
+    ? []
+    : used.physical.map((c) => ({ kind: 'MoveCardEffect', cardInstanceId: c.instanceId, toZoneId: discardPileId }));
+  // The opening card's say in what the answer leads to (e.g. a Duel turning back).
+  const fromSource = pending?.sourceCard
+    ? ((lookupCard(ctx.registry, pending.sourceCard.definitionId).onResponse?.(afterLog, { pending, seatId, cardInstanceId, card: used }) ?? []) as Effect[])
+    : [];
+  const followUps = afterTriggerFollowUps(counted, [event], ctx);
+  return {
+    state: queueFront(counted, [...leaveHand, ...followUps, ...effects, ...(pending?.onAnswer ?? []), ...fromSource]),
+    events: [event],
+  };
+}
+
 // Validates an action and queues what it leads to. Nothing here resolves an
 // effect directly: the caller drains the queue.
 function resolveAction(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
@@ -236,28 +320,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!allowed.some((targets) => JSON.stringify(targets) === JSON.stringify(action.targets))) {
         throw new Error(`Card ${cardInHand.definitionId} cannot be played with those targets`);
       }
-      const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
-      const event: CardPlayedEvent = { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: action.targets };
-      const afterLog = logged(state, [event]);
-      const effects = cardDefinition.play(afterLog, {
-        seatId: action.seatId,
-        cardInstanceId: action.cardInstanceId,
-        targets: action.targets,
-      }) as Effect[];
-      // Counted when played, for per-turn limits, whatever happens next.
-      const plays = afterLog.turn.cardPlays ?? {};
-      const counted: GameState = {
-        ...afterLog,
-        turn: { ...afterLog.turn, cardPlays: { ...plays, [cardInHand.definitionId]: (plays[cardInHand.definitionId] ?? 0) + 1 } },
-      };
-      // A used card leaves the hand at once, so it can't be reused mid-resolution.
-      // Equipment and delayed Tools are placed by their own play() instead.
-      const leaveHand: Effect[] =
-        cardDefinition.category === 'equipment' || cardDefinition.delayed
-          ? []
-          : [{ kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: requireZoneOfKind(state.zones, 'discardPile').id }];
-      const followUps = afterTriggerFollowUps(counted, [event], ctx);
-      return { state: queueFront(counted, [...leaveHand, ...followUps, ...effects]), events: [event] };
+      return useCard(state, action.seatId, usedCardOf(cardInHand), { targets: action.targets, counted: true }, ctx);
     }
 
     case 'PassAction': {
@@ -286,47 +349,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (pending.allowedCardIds && !pending.allowedCardIds.includes(cardInHand.definitionId)) {
         throw new Error(`Card ${cardInHand.definitionId} is not a legal response here`);
       }
-      const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
-      const answered = pending.context.effect.kind === 'DamageEffect' ? pending.context.effect.damage : null;
-      const reason = pending.reason;
-      const inResponseTo =
-        reason?.kind === 'wuxie'
-          ? {
-              seatId: reason.toolUserSeatId,
-              ...(reason.tool.physical[0] ? { cardInstanceId: reason.tool.physical[0].instanceId } : {}),
-              ...(reason.target.kind === 'seat' ? { targetSeatId: reason.target.seatId } : {}),
-            }
-          : reason?.kind === 'counter-wuxie'
-            ? { seatId: reason.wuxieSeatId, counters: true }
-            : reason?.kind === 'card-effect'
-              ? { seatId: reason.userSeatId, ...(reason.card.physical[0] ? { cardInstanceId: reason.card.physical[0].instanceId } : {}) }
-              : {
-                  ...(answered?.source?.kind === 'seat' ? { seatId: answered.source.seatId } : {}),
-                  ...(answered?.cause?.cardInstanceId ? { cardInstanceId: answered.cause.cardInstanceId } : {}),
-                  ...(reason?.kind === 'dying' ? { dyingSeatId: reason.seatId } : {}),
-                };
-      const event: CardPlayedEvent = { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: [], inResponseTo };
-      const afterLog = logged({ ...state, pendingResponse: null }, [event]);
-      const effects = cardDefinition.play(afterLog, {
-        seatId: action.seatId,
-        cardInstanceId: action.cardInstanceId,
-        targets: [],
-        respondingTo: action.pendingResponseId,
-      }) as Effect[];
-      // The opening card's say in what the answer leads to (e.g. a Duel turning back).
-      const fromSource = pending.sourceCard
-        ? ((lookupCard(ctx.registry, pending.sourceCard.definitionId).onResponse?.(afterLog, {
-            pending,
-            seatId: action.seatId,
-            cardInstanceId: action.cardInstanceId,
-          }) ?? []) as Effect[])
-        : [];
-      const leaveHand: Effect = { kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: requireZoneOfKind(state.zones, 'discardPile').id };
-      const followUps = afterTriggerFollowUps(afterLog, [event], ctx);
-      return {
-        state: queueFront(afterLog, [leaveHand, ...followUps, ...effects, ...(pending.onAnswer ?? []), ...fromSource]),
-        events: [event],
-      };
+      return useCard(state, action.seatId, usedCardOf(cardInHand), { targets: [], respondTo: pending, counted: false }, ctx);
     }
 
     case 'EndPhaseAction': {

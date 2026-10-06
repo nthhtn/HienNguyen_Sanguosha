@@ -1,4 +1,4 @@
-import { advanceToDecision, getLegalActions, resolve } from 'engine';
+import { advanceToDecision, getLegalActions, resolve, usedCardOf } from 'engine';
 import type { CardDefinition, CardInstance, ContentRegistry, Damage, GameModeDefinition, GameState, QueueItem } from 'engine';
 import { blackPommelCard, crossbowCard, equipSlotOf, horseCards, silverLionCard, greenDragonBladeCard } from './equipment';
 import { shaCard } from './sha';
@@ -113,9 +113,12 @@ describe('Silver Lion', () => {
   const lion = (n = 1) => card(`lion-${n}`, 'silver-lion', 'club', 1);
   const run = (s: GameState, queue: QueueItem[]) => advanceToDecision({ ...s, resolutionQueue: queue }, ctx).state;
   const hp = (s: GameState, seatId: string) => s.seats.find((x) => x.id === seatId)!.combinedHp;
-  const hit = (amount: number, causeId?: string, from: string | null = 'seat-a'): QueueItem => ({
+  const hit = (amount: number, cause?: CardInstance, from: string | null = 'seat-a'): QueueItem => ({
     kind: 'DamageEffect',
-    damage: { source: from ? { kind: 'seat', seatId: from } : null, target: { kind: 'seat', seatId: 'seat-b' }, amount, nature: 'normal', ...(causeId ? { cause: { cardInstanceId: causeId } } : {}) } as Damage,
+    damage: {
+      source: from ? { kind: 'seat', seatId: from } : null, target: { kind: 'seat', seatId: 'seat-b' }, amount, nature: 'normal',
+      ...(cause ? { cause: { cardInstanceId: cause.instanceId, card: usedCardOf(cause) } } : {}),
+    } as Damage,
   });
 
   it('caps damage over 1 to 1 for its wearer', () => {
@@ -130,12 +133,12 @@ describe('Silver Lion', () => {
 
   it('doesn’t cap damage from a Sha whose user wears Black Pommel', () => {
     const s = table({ 'seat-b:equip': [lion()], 'seat-a:equip': [card('bp', 'black-pommel')], discardPile: [card('s1', 'sha')] });
-    expect(hp(run(s, [hit(2, 's1')]), 'seat-b')).toBe(2);
+    expect(hp(run(s, [hit(2, card('s1', 'sha'))]), 'seat-b')).toBe(2);
   });
 
   it('still caps a Black Pommel wearer’s damage that isn’t from a Sha', () => {
     const s = table({ 'seat-b:equip': [lion()], 'seat-a:equip': [card('bp', 'black-pommel')], discardPile: [card('d1', 'shan')] });
-    expect(hp(run(s, [hit(2, 'd1')]), 'seat-b')).toBe(3);
+    expect(hp(run(s, [hit(2, card('d1', 'shan'))]), 'seat-b')).toBe(3);
   });
 
   it('heals its wearer by 1 when it is replaced, up to max', () => {

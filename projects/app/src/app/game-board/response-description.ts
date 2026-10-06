@@ -40,7 +40,7 @@ function causeInstanceId(state: GameState): string | undefined {
 function lastPlayOf(log: EngineEvent[], instanceId: string): CardPlayed | undefined {
   for (let i = log.length - 1; i >= 0; i--) {
     const event = log[i];
-    if (event.kind === 'CardPlayedEvent' && event.card.instanceId === instanceId) return event;
+    if (event.kind === 'CardPlayedEvent' && event.card.physical.some((c) => c.instanceId === instanceId)) return event;
   }
   return undefined;
 }
@@ -168,8 +168,8 @@ export function describeResponse(
   let prompt = 'Your turn to respond';
   if (played) {
     const on = played.targets.length > 0 ? ` against ${played.targets.map((t) => targetLabel(t, state.players)).join(', ')}` : '';
-    source = `${name(played.seatId)} played ${cardName(played.card)}${on}`;
-    prompt = `Your turn to respond to ${cardName(played.card)}`;
+    source = `${name(played.seatId)} played ${cardName({ definitionId: played.card.as })}${on}`;
+    prompt = `Your turn to respond to ${cardName({ definitionId: played.card.as })}`;
   }
 
   // The latest answer to that same card, if the window follows one (a Duel's Sha).
@@ -178,7 +178,7 @@ export function describeResponse(
     const event = state.log[i];
     if (event.kind !== 'CardPlayedEvent') continue;
     if (causeId && event.inResponseTo?.cardInstanceId === causeId) {
-      latest = `${name(event.seatId)} answered with ${cardName(event.card)}`;
+      latest = `${name(event.seatId)} answered with ${cardName({ definitionId: event.card.as })}`;
     }
     break;
   }

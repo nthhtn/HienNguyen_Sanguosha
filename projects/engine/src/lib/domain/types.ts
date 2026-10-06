@@ -13,6 +13,13 @@ export type Target =
   | { kind: 'seat'; seatId: string }
   | { kind: 'general'; seatId: string; generalSlot: 'main' | 'deputy' };
 
+// Who an ability belongs to: a General's skill (the seat and slot it was
+// gathered for: the same General can be held by more than one seat), or a worn
+// card (its wearer and the card).
+export type AbilityOwner =
+  | { kind: 'general'; seatId: string; slot: 'main' | 'deputy' }
+  | { kind: 'equipment'; seatId: string; cardInstanceId: string };
+
 export interface Turn {
   turnNumber: number;
   ownerSeatId: string;
@@ -143,13 +150,14 @@ export interface CardInstance {
 
 // A card as it is being used: what it counts as, its colour, and the physical
 // cards behind it (one normally; none for a card a skill makes, two for a
-// Serpent Spear Sha, from stage 5).
+// Serpent Spear Sha). `via` names the conversion that made it, if any.
 export interface UsedCard {
   as: string;
   colour: 'red' | 'black' | 'none';
   suit?: CardInstance['suit'];
   rank?: number;
   physical: CardInstance[];
+  via?: { owner: AbilityOwner; abilityId: string; conversionId: string };
 }
 
 // What a Wuxie check is about: a Tool on one target, or a counter card someone
@@ -173,7 +181,9 @@ export interface Damage {
   target: Target;
   amount: number;
   nature: 'normal' | 'fire' | 'thunder';
-  cause?: { cardInstanceId?: string; skillId?: string };
+  // What caused it. `card` is the card as used (a Serpent Spear Sha has two
+  // physical cards); `cardInstanceId` is its first physical card, if any.
+  cause?: { cardInstanceId?: string; card?: UsedCard; skillId?: string };
 }
 
 export interface GameState {

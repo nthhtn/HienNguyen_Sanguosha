@@ -1,4 +1,4 @@
-import { CardInstance, Effect, EngineEvent, GameState, PendingResponse } from 'engine';
+import { CardInstance, Effect, EngineEvent, GameState, PendingResponse, usedCardOf } from 'engine';
 import { describeResponse, startsOnNoResponse, waitingLine } from './response-description';
 
 const duel: CardInstance = { instanceId: 'duel-1', definitionId: 'duel', suit: 'spade', rank: 1 };
@@ -25,7 +25,7 @@ const damageWindow = (id: string, responder: string, from: string, cause: string
 
 describe('describeResponse', () => {
   it('names the card that asks for a response, who played it on whom, and what No Response costs', () => {
-    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: sha, targets: [seat('seat-0')] }];
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [seat('seat-0')] }];
     expect(describeResponse(state(log, damageWindow('w1', 'seat-0', 'seat-1', 'sha-1')), 'seat-0')).toEqual({
       source: 'Seat 1 played Sha against Hing',
       latest: null,
@@ -37,8 +37,8 @@ describe('describeResponse', () => {
 
   it('follows a Duel’s back-and-forth: the latest answer, and the damage now coming from the other side', () => {
     const log: EngineEvent[] = [
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: duel, targets: [seat('seat-1')] },
-      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: sha, targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'duel-1' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(duel), targets: [seat('seat-1')] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'duel-1' } },
     ];
     expect(describeResponse(state(log, damageWindow('w2', 'seat-0', 'seat-1', 'duel-1', duel)), 'seat-0')).toEqual({
       source: 'Hing played Duel against Seat 1',
@@ -85,7 +85,7 @@ const wuxieWindow = (responder: string, reason: PendingResponse['reason']): Pend
 
 describe('describeResponse: Wuxie Kongjie checks', () => {
   it('asks whether to cancel a Tool aimed at the viewer', () => {
-    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: barbarians, targets: [] }];
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(barbarians), targets: [] }];
     const pending = wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat('seat-0') });
     expect(describeResponse(state(log, pending), 'seat-0')).toMatchObject({
       source: 'Seat 1 used Barbarians on you',
@@ -95,7 +95,7 @@ describe('describeResponse: Wuxie Kongjie checks', () => {
   });
 
   it('leaves out the target when the Tool is aimed at its own user', () => {
-    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: drawTwo, targets: [] }];
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(drawTwo), targets: [] }];
     const pending = wuxieWindow('seat-0', { kind: 'wuxie', tool: used(drawTwo), toolUserSeatId: 'seat-1', target: seat('seat-1') });
     expect(describeResponse(state(log, pending), 'seat-0')).toMatchObject({ source: 'Seat 1 used Draw Two', outcome: 'Draw Two takes effect' });
   });
@@ -222,7 +222,7 @@ describe('describeResponse: saving yourself with Wine', () => {
 
 describe('describeResponse: the outcome after armour', () => {
   it('states the damage as it would land, through the preview it is given', () => {
-    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: sha, targets: [seat('seat-0')] }];
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [seat('seat-0')] }];
     const window: PendingResponse = {
       ...damageWindow('w9', 'seat-0', 'seat-1', 'sha-1'),
       context: { effect: { kind: 'DamageEffect', damage: { source: seat('seat-1'), target: seat('seat-0'), amount: 2, nature: 'normal', cause: { cardInstanceId: 'sha-1' } } } },

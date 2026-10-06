@@ -1,4 +1,4 @@
-import { CardInstance, CardZone, EngineEvent } from 'engine';
+import { CardInstance, CardZone, EngineEvent, usedCardOf } from 'engine';
 import { actionHistory } from './action-history';
 
 const zones: CardZone[] = [
@@ -27,8 +27,8 @@ const texts = (log: EngineEvent[]) =>
 describe('actionHistory', () => {
   it('says who used which card on whom, and what a response answered', () => {
     const log: EngineEvent[] = [
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: sha, targets: [seat('seat-1')] },
-      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: shan, targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'sha-1' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(shan), targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'sha-1' } },
       move(shan, 'seat-1:hand', 'discardPile'),
       move(sha, 'seat-0:hand', 'discardPile'),
     ];
@@ -40,8 +40,8 @@ describe('actionHistory', () => {
 
   it('names damage with its source, and a Duel answered with a Sha', () => {
     const log: EngineEvent[] = [
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: duel, targets: [seat('seat-1')] },
-      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: sha, targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'duel-1' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(duel), targets: [seat('seat-1')] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'duel-1' } },
       { kind: 'DamageDealtEvent', damage: { source: seat('seat-1'), target: seat('seat-0'), amount: 2, nature: 'normal' } },
       { kind: 'DamageDealtEvent', damage: { source: null, target: seat('seat-0'), amount: 3, nature: 'thunder' } },
     ];
@@ -55,10 +55,10 @@ describe('actionHistory', () => {
 
   it('tells equips, untargeted uses, Discard-phase discards and replaced equipment apart', () => {
     const log: EngineEvent[] = [
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: lion, targets: [] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(lion), targets: [] },
       move(blade, 'seat-0:equip', 'discardPile'),
       move(lion, 'seat-0:hand', 'seat-0:equip'),
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: peach, targets: [] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(peach), targets: [] },
       { kind: 'HealEvent', target: seat('seat-0'), amount: 1 },
       move(peach, 'seat-0:hand', 'discardPile'),
       move(sha, 'seat-0:hand', 'discardPile'),
@@ -100,8 +100,8 @@ describe('actionHistory', () => {
     ];
     const log: EngineEvent[] = [
       { kind: 'TurnAdvancedEvent', seatId: 'seat-0', turnNumber: 4 },
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: sha, targets: [seat('seat-1')] },
-      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: shan, targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'sha-1' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(shan), targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'sha-1' } },
       { kind: 'GeneralRevealedEvent', seatId: 'seat-0', slot: 'deputy' },
     ];
     expect(actionHistory(log, zones, players).map((e) => (e.kind === 'turn' ? `Turn ${e.turnNumber} · ${e.seatName}` : e.text))).toEqual([
@@ -125,17 +125,17 @@ describe('actionHistory', () => {
     const lines = (log: EngineEvent[]) => actionHistory(log, zones, players).map((e) => (e.kind === 'turn' ? '' : e.text));
 
     expect(lines([
-      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: barbarians, targets: [] },
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: wuxie, targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'barb-1', targetSeatId: 'seat-2' } },
-      { kind: 'CardPlayedEvent', seatId: 'seat-2', card: counter, targets: [], inResponseTo: { seatId: 'seat-0', counters: true } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(barbarians), targets: [] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(wuxie), targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'barb-1', targetSeatId: 'seat-2' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-2', card: usedCardOf(counter), targets: [], inResponseTo: { seatId: 'seat-0', counters: true } },
     ])).toEqual([
       "Seat 2 cancelled Hing's Wuxie with Wuxie (3 ♣)",
       "Hing cancelled Seat 1's Barbarians on Seat 2 with Wuxie (J ♠)",
       'Seat 1 used Barbarians (7 ♠)',
     ]);
     expect(lines([
-      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: drawTwo, targets: [] },
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: wuxie, targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'dt-1', targetSeatId: 'seat-1' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(drawTwo), targets: [] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(wuxie), targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'dt-1', targetSeatId: 'seat-1' } },
     ])[0]).toBe("Hing cancelled Seat 1's Draw Two with Wuxie (J ♠)");
   });
 
@@ -188,11 +188,11 @@ describe('actionHistory', () => {
   it('tells the story of a dying seat: dying, the Peach that saved it, and saved', () => {
     const log: EngineEvent[] = [
       { kind: 'SeatDyingEvent', seatId: 'seat-1' },
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: peach, targets: [], inResponseTo: { dyingSeatId: 'seat-1' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(peach), targets: [], inResponseTo: { dyingSeatId: 'seat-1' } },
       { kind: 'HealEvent', target: seat('seat-1'), amount: 1 },
       { kind: 'SeatSavedEvent', seatId: 'seat-1' },
       { kind: 'SeatDyingEvent', seatId: 'seat-0' },
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: { ...peach, instanceId: 'peach-2' }, targets: [], inResponseTo: { dyingSeatId: 'seat-0' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf({ ...peach, instanceId: 'peach-2' }), targets: [], inResponseTo: { dyingSeatId: 'seat-0' } },
     ];
     expect(texts(log)).toEqual([
       'Seat 0 used Peach (Q ♥) to save themselves',
@@ -209,7 +209,7 @@ describe('actionHistory', () => {
       { id: 'seat-0', index: 0, kingdom: 'Shu' as const }, { id: 'seat-1', index: 1, kingdom: 'hidden' as const },
     ].map((s) => ({ ...s, eliminated: false, combinedHp: 3, maxCombinedHp: 4, generals: null, hand: { zoneId: `${s.id}:hand` }, equipped: { zoneId: `${s.id}:equip` }, judgment: { zoneId: `${s.id}:judgment` } }));
     const entries = actionHistory([
-      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: sha, targets: [seat('seat-0')] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [seat('seat-0')] },
       { kind: 'DamageDealtEvent', damage: { source: seat('seat-1'), target: seat('seat-0'), amount: 1, nature: 'normal' } },
       { kind: 'SeatDyingEvent', seatId: 'seat-0' },
       { kind: 'SeatEliminatedEvent', seatId: 'seat-1' },
@@ -224,7 +224,7 @@ describe('actionHistory', () => {
 
   it('keeps the card on each card line, and none on the others', () => {
     const entries = actionHistory([
-      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: sha, targets: [seat('seat-1')] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
       { kind: 'SeatEliminatedEvent', seatId: 'seat-1' },
     ], zones);
     expect(entries).toEqual([
@@ -249,7 +249,7 @@ describe('actionHistory: judgments', () => {
 
   it('tells the judgment, the skipped phase, and the delayed Tool discarded', () => {
     const log: EngineEvent[] = [
-      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: capture, targets: [seat('seat-0')] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(capture), targets: [seat('seat-0')] },
       move(capture, 'seat-1:hand', 'seat-0:judgment'),
       { kind: 'JudgmentEvent', seatId: 'seat-0', tool: used(capture), card: judged },
       move(judged, 'processing', 'discardPile'),

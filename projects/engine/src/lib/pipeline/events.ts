@@ -54,11 +54,12 @@ export interface CardMovedEvent {
 }
 
 // A seat used a card: played it in its Play phase, or answered a pending
-// response with it. Played cards are face-up, so the face is public.
+// response with it. Played cards are face-up, so the face is public. `card` is
+// the card as used: one physical card normally, two for a Serpent Spear Sha.
 export interface CardPlayedEvent {
   kind: 'CardPlayedEvent';
   seatId: string;
-  card: CardInstance;
+  card: UsedCard;
   targets: Target[];
   // Set for a response: the seat and card whose effect it answered, when known;
   // the dying seat a Peach was played to save; for a cancel, the target the Tool

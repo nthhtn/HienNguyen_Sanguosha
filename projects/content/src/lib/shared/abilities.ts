@@ -12,12 +12,8 @@ export function activeAbilities(state: GameState, seatId: string, registry: Cont
 }
 
 // Whether armour has no effect on `damage`: it comes from a Sha whose user has
-// an ability that ignores armour (Black Pommel). The Sha is found by instance
-// id in any zone; when damage is dealt it is usually in the discard pile.
+// an ability that ignores armour (Black Pommel).
 export function armorIgnored(state: GameState, damage: Damage, registry: ContentRegistry): boolean {
-  const causeId = damage.cause?.cardInstanceId;
-  if (!causeId || damage.source?.kind !== 'seat') return false;
-  const cause = state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === causeId);
-  if (cause?.definitionId !== 'sha') return false;
+  if (damage.cause?.card?.as !== 'sha' || damage.source?.kind !== 'seat') return false;
   return activeAbilities(state, damage.source.seatId, registry).some((a) => a.modifiers?.ignoresArmor);
 }

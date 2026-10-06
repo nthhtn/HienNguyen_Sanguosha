@@ -1,11 +1,17 @@
-import { CardInstance, GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
+import { AbilityOwner, CardInstance, GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
 import { RngState } from '../rng/rng';
 
 export interface PlayContext {
   seatId: string;
+  // The first physical card's instance id ('' for a card with none).
   cardInstanceId: string;
+  // The card as used: itself, or what a conversion made it.
+  card: UsedCard;
   targets: Target[];
   respondingTo?: string;
+  // Played by an ability, outside the Play Phase's limits (Green Dragon
+  // Blade's follow-up Sha): it never counts toward a limit or spends Wine.
+  free?: boolean;
 }
 
 // The four equipment slots a seat has. One card per slot.
@@ -29,7 +35,7 @@ export interface CardDefinition {
   // Play phase: [] = not playable now, [[]] = no target, [[t1], [t2]] = one of
   // these targets. Absent = legacy offers (untargeted + each living other seat).
   legalPlayTargets?(state: GameState, ctx: PlayOptionsContext, registry: ContentRegistry): Target[][];
-  play(state: GameState, ctx: PlayContext): unknown[];
+  play(state: GameState, ctx: PlayContext, registry: ContentRegistry): unknown[];
   // Called when a seat answers a response window this card opened (see
   // PendingResponse.sourceCard), after the answering card's own effects. Its
   // effects replace the default of simply cancelling the pending effect, e.g.
@@ -60,6 +66,8 @@ export interface ResponseContext {
   // The seat that answered, and the card it answered with.
   seatId: string;
   cardInstanceId: string;
+  // The answering card as used (two physical cards for a Serpent Spear Sha).
+  card: UsedCard;
 }
 
 export interface ToolTargetContext {
@@ -84,13 +92,9 @@ export interface DelayedToolContext {
 
 export type TriggerPoint = `before:${string}` | `after:${string}`;
 
-// Who a gathered trigger acts for. A General's skill: the seat and slot it was
-// gathered for (the same General can be held by more than one seat, so a skill
-// must never search GameState for its own id). A worn card: its wearer and the
-// card. `owner` is undefined only for a mode's own triggers.
-export type TriggerOwner =
-  | { kind: 'general'; seatId: string; slot: 'main' | 'deputy' }
-  | { kind: 'equipment'; seatId: string; cardInstanceId: string };
+// Who a gathered trigger acts for. `owner` is undefined only for a mode's own
+// triggers. (The domain name is AbilityOwner.)
+export type TriggerOwner = AbilityOwner;
 
 export interface SkillTrigger {
   point: TriggerPoint;

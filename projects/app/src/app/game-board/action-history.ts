@@ -1,4 +1,4 @@
-import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat } from 'engine';
+import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat, UsedCard } from 'engine';
 import { cardDisplayData } from 'content';
 import { Force, cardFaceLabel, cardIdDisplayName, forceOf, seatName, targetLabel } from '../labels';
 
@@ -13,6 +13,12 @@ function cardName(definitionId: string): string {
 }
 
 const named = (card: CardInstance) => `${cardName(card.definitionId)} (${cardFaceLabel(card)})`;
+// A used card for a history line: "Sha (7 ♠)" for one card used as itself,
+// otherwise its name.
+const usedLabel = (used: UsedCard) =>
+  used.physical.length === 1 && used.physical[0].definitionId === used.as ? named(used.physical[0]) : cardName(used.as);
+// The card shown beside a line: the physical card, when there is exactly one.
+const faceOf = (used: UsedCard): CardInstance | null => (used.physical.length === 1 ? used.physical[0] : null);
 
 // What happened at the table, read off the public log, most recent first, with
 // a marker at the start of each turn. Phase changes are left out, and so is a
@@ -26,7 +32,7 @@ export function actionHistory(
   const name = (seatId: string) => seatName(players, seatId);
   const target = (t: Parameters<typeof targetLabel>[0]) => targetLabel(t, players);
   const zoneById = new Map(zones.map((z) => [z.id, z]));
-  const playedCards = new Map<string, CardInstance>();
+  const playedCards = new Map<string, UsedCard>();
   // Cards used but not yet moved on: their next move is the play's own.
   const awaitingMove = new Set<string>();
   // A pick waiting for its card's move, which says what was picked.
@@ -66,31 +72,35 @@ export function actionHistory(
         }
         break;
       case 'CardPlayedEvent': {
-        playedCards.set(event.card.instanceId, event.card);
-        awaitingMove.add(event.card.instanceId);
+        const used = event.card;
+        for (const c of used.physical) {
+          playedCards.set(c.instanceId, used);
+          awaitingMove.add(c.instanceId);
+        }
+        const face = faceOf(used);
         const answered = event.inResponseTo;
         if (answered?.dyingSeatId) {
           const saved = answered.dyingSeatId === event.seatId ? 'themselves' : name(answered.dyingSeatId);
-          action(`${name(event.seatId)} used ${named(event.card)} to save ${saved}`, event.card);
+          action(`${name(event.seatId)} used ${usedLabel(used)} to save ${saved}`, face);
         } else if (answered?.counters && answered.seatId) {
-          action(`${name(event.seatId)} cancelled ${name(answered.seatId)}'s ${cardName(event.card.definitionId)} with ${named(event.card)}`, event.card);
+          action(`${name(event.seatId)} cancelled ${name(answered.seatId)}'s ${cardName(used.as)} with ${usedLabel(used)}`, face);
         } else if (answered?.targetSeatId && answered.seatId) {
           const tool = answered.cardInstanceId ? playedCards.get(answered.cardInstanceId) : undefined;
-          const toolName = tool ? cardName(tool.definitionId) : 'Tool';
+          const toolName = tool ? cardName(tool.as) : 'Tool';
           const on = answered.targetSeatId === answered.seatId ? '' : ` on ${name(answered.targetSeatId)}`;
-          action(`${name(event.seatId)} cancelled ${name(answered.seatId)}'s ${toolName}${on} with ${named(event.card)}`, event.card);
+          action(`${name(event.seatId)} cancelled ${name(answered.seatId)}'s ${toolName}${on} with ${usedLabel(used)}`, face);
         } else if (answered) {
           const answeredCard = answered.cardInstanceId ? playedCards.get(answered.cardInstanceId) : undefined;
           const against = answered.seatId
-            ? ` against ${name(answered.seatId)}${answeredCard ? `'s ${cardName(answeredCard.definitionId)}` : ''}`
+            ? ` against ${name(answered.seatId)}${answeredCard ? `'s ${cardName(answeredCard.as)}` : ''}`
             : ' in response';
-          action(`${name(event.seatId)} used ${named(event.card)}${against}`, event.card);
-        } else if (cardDisplayData(event.card.definitionId)?.category === 'equipment') {
-          action(`${name(event.seatId)} equipped ${named(event.card)}`, event.card);
+          action(`${name(event.seatId)} used ${usedLabel(used)}${against}`, face);
+        } else if (cardDisplayData(used.as)?.category === 'equipment') {
+          action(`${name(event.seatId)} equipped ${usedLabel(used)}`, face);
         } else if (event.targets.length > 0) {
-          action(`${name(event.seatId)} used ${named(event.card)} on ${event.targets.map(target).join(', ')}`, event.card);
+          action(`${name(event.seatId)} used ${usedLabel(used)} on ${event.targets.map(target).join(', ')}`, face);
         } else {
-          action(`${name(event.seatId)} used ${named(event.card)}`, event.card);
+          action(`${name(event.seatId)} used ${usedLabel(used)}`, face);
         }
         break;
       }
