@@ -193,3 +193,29 @@ describe('describeResponse: a judgment’s Wuxie Kongjie check', () => {
     expect(describeResponse(judging('seat-0'), 'seat-0')).toMatchObject({ source: 'You are about to judge Capture', outcome: 'You judge Capture' });
   });
 });
+
+describe('describeResponse: saving yourself with Wine', () => {
+  const dyingWindow = (allowedCardIds: string[]): PendingResponse => ({
+    id: 'd1', respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds,
+    reason: { kind: 'dying', seatId: 'seat-0' },
+    context: { effect: { kind: 'DyingEffect', seatId: 'seat-0', order: [], rescueCardIds: { any: ['peach'], self: ['wine'] } } },
+  });
+  const withHand = (pending: PendingResponse, hand: CardInstance[]): GameState => ({
+    ...state([], pending),
+    seats: [{
+      id: 'seat-0', index: 0, kingdom: 'Wei', eliminated: false, combinedHp: 0, maxCombinedHp: 4,
+      generals: { main: { generalDefinitionId: 'g1', revealed: true }, deputy: { generalDefinitionId: 'g2', revealed: true } },
+      hand: { zoneId: 'seat-0:hand' }, equipped: { zoneId: 'seat-0:equip' }, judgment: { zoneId: 'seat-0:judgment' },
+    }],
+    zones: [{ id: 'seat-0:hand', kind: 'hand', ownerSeatId: 'seat-0', cards: hand }],
+  });
+  const wine: CardInstance = { instanceId: 'w1', definitionId: 'wine', suit: 'spade', rank: 9 };
+
+  it('offers Peach or Wine when you are dying and hold a Wine', () => {
+    expect(describeResponse(withHand(dyingWindow(['peach', 'wine']), [wine]), 'seat-0')!.prompt).toBe('Play a Peach or Wine to save yourself?');
+  });
+
+  it('asks only for a Peach when you hold no Wine', () => {
+    expect(describeResponse(withHand(dyingWindow(['peach', 'wine']), []), 'seat-0')!.prompt).toBe('Play a Peach to save yourself?');
+  });
+});

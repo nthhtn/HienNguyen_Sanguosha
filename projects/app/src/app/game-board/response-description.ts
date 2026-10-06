@@ -92,10 +92,13 @@ export function describeResponse(state: GameState, viewerSeatId: string): Respon
     const hp = dying?.combinedHp ?? 0;
     const self = dyingId === viewerSeatId;
     const needed = 1 - hp;
+    // Wine is offered only to the dying seat itself; name it when you hold one.
+    const viewerHand = state.zones.find((z) => z.kind === 'hand' && z.ownerSeatId === viewerSeatId)?.cards ?? [];
+    const canDrink = self && !!pending.allowedCardIds?.includes('wine') && viewerHand.some((c) => c.definitionId === 'wine');
     return {
       source: `${self ? 'You are' : `${name(dyingId)} is`} dying (HP ${hp})`,
       latest: null,
-      prompt: `Play a Peach to save ${self ? 'yourself' : name(dyingId)}?${needed > 1 ? ` (needs ${needed} Peaches)` : ''}`,
+      prompt: `Play a Peach${canDrink ? ' or Wine' : ''} to save ${self ? 'yourself' : name(dyingId)}?${needed > 1 ? ` (needs ${needed} Peaches)` : ''}`,
       outcome: self ? 'You are eliminated' : `${name(dyingId)} is eliminated`,
       outcomeForce: forceOf(dying?.kingdom),
     };
