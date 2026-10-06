@@ -12,7 +12,8 @@ function render() {
   const data: ChoiceDialogData = {
     description: { title: 'Steal', prompt: 'Choose a card to take from Seat 1', confirmLabel: 'Take' },
     options: [
-      { id: 'hand', action: pickHand, hiddenCount: 3, label: "Seat 1's Hand (3 Cards)" },
+      { id: 'hand#1', action: pickHand, faceDown: true, label: 'Hand Card 1' },
+      { id: 'hand#2', action: pickHand, faceDown: true, label: 'Hand Card 2' },
       { id: 'lion-1', action: pickLion, card: { instanceId: 'lion-1', definitionId: 'silver-lion', suit: 'club', rank: 1 }, label: 'Silver Lion (A ♣)' },
     ],
     pickedChanged,
@@ -24,11 +25,13 @@ function render() {
 }
 
 describe('ChoiceDialog', () => {
-  it('shows the Tool, the prompt, a face-down hand with its size, and each face-up card', () => {
+  it('shows the Tool, the prompt, each hand card face down, and each face-up card', () => {
     const { el } = render();
     expect(el.querySelector('h2')!.textContent).toContain('Steal');
     expect(el.querySelector('.prompt')!.textContent).toContain('Choose a card to take from Seat 1');
-    expect(el.querySelector('[data-option-id="hand"] .card-back .count')!.textContent!.trim()).toBe('3');
+    const backs = Array.from(el.querySelectorAll('img.card-back')) as HTMLImageElement[];
+    expect(backs.map((b) => b.getAttribute('src'))).toEqual(['/card-art/cards/back.jpg', '/card-art/cards/back.jpg']);
+    expect(el.querySelector('[data-option-id="hand#2"] .label')!.textContent!.trim()).toBe('Hand Card 2');
     expect(el.querySelector('[data-option-id="lion-1"] app-playing-card')).not.toBeNull();
   });
 
@@ -43,5 +46,13 @@ describe('ChoiceDialog', () => {
     expect(confirm.disabled).toBe(false);
     confirm.click();
     expect(close).toHaveBeenCalledWith(pickLion);
+  });
+
+  it('highlights only the face-down card picked, though all of them pick the hand', () => {
+    const { el, fixture, pickedChanged } = render();
+    (el.querySelector('[data-option-id="hand#2"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(pickedChanged).toHaveBeenCalledWith(pickHand);
+    expect(Array.from(el.querySelectorAll('.option.picked')).map((b) => b.getAttribute('data-option-id'))).toEqual(['hand#2']);
   });
 });

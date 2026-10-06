@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { Action, CardInstance } from 'engine';
+import { CARD_BACK_ART_URL } from 'content';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
 import { ChoiceDescription } from './choice-description';
@@ -9,9 +10,9 @@ import { ChoiceDescription } from './choice-description';
 export interface ChoiceDialogOption {
   id: string;
   action: Action;
-  // A face-up card; or, for a hand, its size shown on a face-down card.
+  // A face-up card; or one card of a hand, face down.
   card?: CardInstance;
-  hiddenCount?: number;
+  faceDown?: true;
   label: string;
 }
 
@@ -46,7 +47,7 @@ export interface ChoiceDialogData {
               @if (option.card; as card) {
                 <app-playing-card [card]="card" />
               } @else {
-                <span class="card-back"><span class="count">{{ option.hiddenCount }}</span></span>
+                <img class="card-back" [src]="cardBackUrl" alt="" />
               }
               <span class="label">{{ option.label }}</span>
             </button>
@@ -69,11 +70,7 @@ export interface ChoiceDialogData {
     }
     .option:focus-visible { outline: 3px solid var(--mat-sys-primary); outline-offset: 2px; }
     .option.picked { border-color: var(--mat-sys-primary); background: var(--mat-sys-primary-container); }
-    .card-back {
-      display: flex; align-items: center; justify-content: center; width: 72px; height: 100px; border-radius: 6px;
-      background: repeating-linear-gradient(45deg, #7a2e2e, #7a2e2e 6px, #8e3a3a 6px, #8e3a3a 12px); color: #fff;
-    }
-    .count { font: 700 22px/1 system-ui, sans-serif; text-shadow: 0 1px 2px rgb(0 0 0 / 60%); }
+    .card-back { display: block; width: 72px; height: 100px; object-fit: cover; border-radius: 6px; }
     .label { font: var(--mat-sys-body-small); text-align: center; }
     .timer { display: block; padding: 8px 24px 0; }
   `,
@@ -82,6 +79,7 @@ export class ChoiceDialog {
   protected readonly data = inject<ChoiceDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<ChoiceDialog, Action>>(MatDialogRef);
 
+  protected readonly cardBackUrl = CARD_BACK_ART_URL;
   protected readonly picked = signal<string | null>(null);
 
   protected pick(option: ChoiceDialogOption): void {

@@ -1,6 +1,7 @@
-import { ChoiceOption, GameState, Player } from 'engine';
+import { Action, ChoiceOption, GameState, Player } from 'engine';
 import { cardDisplayData } from 'content';
 import { cardFaceLabel, cardIdDisplayName, seatName } from '../labels';
+import type { ChoiceDialogOption } from './choice-dialog';
 
 export interface ChoiceDescription {
   // The Tool's name, e.g. "Steal".
@@ -33,4 +34,18 @@ export function choiceOptionLabel(shows: ChoiceOption['shows'], players: readonl
     return `${seatName(players, shows.seatId)}'s Hand (${shows.count} ${shows.count === 1 ? 'Card' : 'Cards'})`;
   }
   return `${cardName(shows.card.definitionId)} (${cardFaceLabel(shows.card)})`;
+}
+
+// What the Choice window offers: the engine's options it can legally pick. A
+// hand shows as one face-down card per card in it; every one of them picks the
+// hand, and the engine takes a card from it at random.
+export function choiceDialogOptions(options: readonly ChoiceOption[], legal: readonly Action[], players: readonly Player[]): ChoiceDialogOption[] {
+  return options.flatMap((option): ChoiceDialogOption[] => {
+    const action = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === option.id);
+    if (!action) return [];
+    if (option.shows.kind === 'card') {
+      return [{ id: option.id, action, card: option.shows.card, label: choiceOptionLabel(option.shows, players) }];
+    }
+    return Array.from({ length: option.shows.count }, (_, i) => ({ id: `${option.id}#${i + 1}`, action, faceDown: true as const, label: `Hand Card ${i + 1}` }));
+  });
 }

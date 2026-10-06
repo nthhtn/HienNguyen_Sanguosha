@@ -1,4 +1,4 @@
-import { cardArtUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
+import { CARD_BACK_ART_URL, cardArtUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /card-art/ URL for a crawled id', () => {
@@ -15,6 +15,12 @@ describe('cardArtUrl', () => {
 
   it('returns null for the "hidden" redaction sentinel', () => {
     expect(cardArtUrl('hidden')).toBeNull();
+  });
+});
+
+describe('CARD_BACK_ART_URL', () => {
+  it('points at the playing-card back that ships with the content assets', () => {
+    expect(CARD_BACK_ART_URL).toBe('/card-art/cards/back.jpg');
   });
 });
 

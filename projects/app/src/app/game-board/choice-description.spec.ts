@@ -1,5 +1,5 @@
-import { GameState, PendingChoice } from 'engine';
-import { choiceOptionLabel, describeChoice } from './choice-description';
+import { Action, ChoiceOption, GameState, PendingChoice } from 'engine';
+import { choiceDialogOptions, choiceOptionLabel, describeChoice } from './choice-description';
 
 const players = [
   { id: 'p0', seatId: 'seat-0', kind: 'human' as const, name: 'Hing' },
@@ -33,5 +33,31 @@ describe('choiceOptionLabel', () => {
     expect(choiceOptionLabel({ kind: 'hidden-hand', seatId: 'seat-1', count: 3 }, players)).toBe("Seat 1's Hand (3 Cards)");
     expect(choiceOptionLabel({ kind: 'hidden-hand', seatId: 'seat-1', count: 1 }, players)).toBe("Seat 1's Hand (1 Card)");
     expect(choiceOptionLabel({ kind: 'card', card: { instanceId: 'l', definitionId: 'silver-lion', suit: 'club', rank: 1 } }, players)).toBe('Silver Lion (A ♣)');
+  });
+});
+
+describe('choiceDialogOptions', () => {
+  const pick = (optionId: string): Action => ({ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'c', optionId });
+  const lion = { instanceId: 'lion-1', definitionId: 'silver-lion', suit: 'club' as const, rank: 1 };
+  const options: ChoiceOption[] = [
+    { id: 'hand', shows: { kind: 'hidden-hand', seatId: 'seat-1', count: 3 }, effects: [] },
+    { id: 'lion-1', shows: { kind: 'card', card: lion }, effects: [] },
+  ];
+
+  it('shows a hand as one face-down card per card in it, each picking the hand at random', () => {
+    const shown = choiceDialogOptions(options, [pick('hand'), pick('lion-1')], players);
+    const hand = shown.filter((o) => o.faceDown);
+    expect(hand.map((o) => o.id)).toEqual(['hand#1', 'hand#2', 'hand#3']);
+    expect(hand.map((o) => o.label)).toEqual(['Hand Card 1', 'Hand Card 2', 'Hand Card 3']);
+    expect(hand.every((o) => o.action === shown[0].action && !o.card)).toBe(true);
+    expect(hand[0].action).toEqual(pick('hand'));
+  });
+
+  it('keeps each face-up card as its own option', () => {
+    expect(choiceDialogOptions(options, [pick('hand'), pick('lion-1')], players)[3]).toEqual({ id: 'lion-1', action: pick('lion-1'), card: lion, label: 'Silver Lion (A ♣)' });
+  });
+
+  it('drops an option the engine does not offer', () => {
+    expect(choiceDialogOptions(options, [pick('lion-1')], players).map((o) => o.id)).toEqual(['lion-1']);
   });
 });

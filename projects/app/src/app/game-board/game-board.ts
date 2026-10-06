@@ -24,8 +24,8 @@ import { actionHistory } from './action-history';
 import { DiscardDialog, DiscardDialogData } from './discard-dialog';
 import { ResponseDialog, ResponseDialogData, ResponseOption } from './response-dialog';
 import { describeResponse, startsOnNoResponse } from './response-description';
-import { ChoiceDialog, ChoiceDialogData, ChoiceDialogOption } from './choice-dialog';
-import { choiceOptionLabel, describeChoice } from './choice-description';
+import { ChoiceDialog, ChoiceDialogData } from './choice-dialog';
+import { choiceDialogOptions, describeChoice } from './choice-description';
 import { DecisionTimer } from '../decision-timer.service';
 
 @Component({
@@ -304,13 +304,7 @@ export class GameBoard {
     if (this.choiceDialogFor === choiceId || !visible || !choice || !seatId) return;
     const description = describeChoice(visible, seatId);
     if (!description) return;
-    const legal = this.gameService.legalActions();
-    const options: ChoiceDialogOption[] = choice.options.flatMap((option) => {
-      const action = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === option.id);
-      if (!action) return [];
-      const shown = option.shows.kind === 'card' ? { card: option.shows.card } : { hiddenCount: option.shows.count };
-      return [{ id: option.id, action, ...shown, label: choiceOptionLabel(option.shows, visible.players) }];
-    });
+    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players);
     this.choiceDialogFor = choiceId;
     const ref = this.dialog.open<ChoiceDialog, ChoiceDialogData, Action>(ChoiceDialog, {
       data: { description, options, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },

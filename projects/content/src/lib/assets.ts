@@ -11,6 +11,9 @@ export function cardArtUrl(id: string): string | null {
   return entry ? `/card-art/${entry.localPath}` : null;
 }
 
+// The back of a playing card, shown for a card whose face is hidden.
+export const CARD_BACK_ART_URL = '/card-art/cards/back.jpg';
+
 // The face-down General card, shown for a General another seat hasn't revealed.
 // Not in the manifest (it isn't a crawled item), but it ships with the assets.
 export const HIDDEN_GENERAL_ART_URL = '/card-art/generals/unnamed.jpg';
