@@ -5,12 +5,12 @@ import { captureCard } from './capture';
 import { starvationCard } from './starvation';
 import { wuxieCard } from './wuxie';
 import { breakCard } from './break';
+import { lightningCard } from './lightning';
 
 const plain = (id: string): CardDefinition => ({ id, name: id, category: 'basic', play: () => [] });
 const diLu: CardDefinition = { id: 'di-lu', name: 'Di Lu', category: 'equipment', equipSlot: 'defensiveMount', play: () => [] };
 
-// Task 5 adds Lightning here.
-const cards: CardDefinition[] = [captureCard, starvationCard, wuxieCard, breakCard, diLu, plain('sha'), plain('shan'), plain('peach')];
+const cards: CardDefinition[] = [captureCard, starvationCard, lightningCard, wuxieCard, breakCard, diLu, plain('sha'), plain('shan'), plain('peach')];
 const registry: ContentRegistry = { cards: new Map(cards.map((c) => [c.id, c])), generals: new Map() };
 // Kingdom War's own triggers: the Judgment Phase, the Draw Phase's 2 cards, and dying.
 const ctx = { registry, mode: kingdomWarMode };
@@ -154,6 +154,77 @@ describe('the Judgment Phase', () => {
     const next = run(table());
     expect(judgments(next.log)).toEqual([]);
     expect(next.turn.ownerSeatId).toBe('seat-b');
+    expect(next.phase).toBe('Play');
+  });
+});
+
+describe('Lightning', () => {
+  const hp = (s: GameState, seatId: string) => s.seats.find((x) => x.id === seatId)!.combinedHp;
+
+  it('goes in the user’s own judgment area, one per seat', () => {
+    const s = table({ 'seat-a:hand': [card('L', 'lightning')] }, { owner: 'seat-a', phase: 'Play' });
+    expect(targetsFor(s, 'L')).toEqual([[]]);
+    const next = resolve(s, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'L', targets: [] }, ctx).state;
+    expect(idsIn(next, 'seat-a:judgment')).toEqual(['L']);
+    const held = table({ 'seat-a:hand': [card('L', 'lightning')], 'seat-a:judgment': [card('L2', 'lightning')] }, { owner: 'seat-a', phase: 'Play' });
+    expect(targetsFor(held, 'L')).toEqual([]);
+  });
+
+  it('a spade from 2 to 9 deals 3 damage to its holder, with no source, and Lightning is discarded', () => {
+    for (const rank of [2, 9]) {
+      const next = run(table({ 'seat-b:judgment': [card('L', 'lightning', 'spade', 1)], drawPile: [card('j1', 'shan', 'spade', rank), ...filler(6)] }));
+      expect(hp(next, 'seat-b')).toBe(1);
+      expect(next.log.find((e) => e.kind === 'DamageDealtEvent')).toMatchObject({
+        damage: { source: null, target: { kind: 'seat', seatId: 'seat-b' }, amount: 3, nature: 'normal' },
+      });
+      expect(idsIn(next, 'discardPile')).toEqual(expect.arrayContaining(['L', 'j1']));
+    }
+  });
+
+  it('anything else moves it on to the next living seat that holds no Lightning', () => {
+    for (const judged of [card('j1', 'shan', 'spade', 10), card('j1', 'shan', 'spade', 1), card('j1', 'shan', 'heart', 5)]) {
+      const next = run(table({ 'seat-b:judgment': [card('L', 'lightning')], drawPile: [judged, ...filler(6)] }));
+      expect(hp(next, 'seat-b')).toBe(4);
+      expect(idsIn(next, 'seat-c:judgment')).toEqual(['L']);
+      expect(next.log).toContainEqual(expect.objectContaining({ kind: 'CardMovedEvent', cardInstanceId: 'L', fromZoneId: 'seat-b:judgment', toZoneId: 'seat-c:judgment' }));
+    }
+  });
+
+  it('passes over a seat that already holds a Lightning', () => {
+    const next = run(table({ 'seat-b:judgment': [card('L', 'lightning')], 'seat-c:judgment': [card('L2', 'lightning')], drawPile: [card('j1', 'shan', 'heart', 5), ...filler(6)] }));
+    expect(idsIn(next, 'seat-a:judgment')).toEqual(['L']);
+  });
+
+  it('stays put when every other living seat holds a Lightning (Review Focus 4)', () => {
+    const next = run(table({
+      'seat-a:judgment': [card('L1', 'lightning')], 'seat-b:judgment': [card('L', 'lightning')], 'seat-c:judgment': [card('L2', 'lightning')],
+      drawPile: [card('j1', 'shan', 'heart', 5), ...filler(6)],
+    }));
+    expect(idsIn(next, 'seat-b:judgment')).toEqual(['L']);
+    expect(next.turn.ownerSeatId).toBe('seat-b');
+    expect(next.phase).toBe('Play');
+  });
+
+  it('a Wuxie Kongjie cancels it: no judgment, and it moves on', () => {
+    const asked = run(table({ 'seat-b:judgment': [card('L', 'lightning')], 'seat-a:hand': [card('wx', 'wuxie')] }));
+    const next = respond(asked, 'seat-a', 'wx');
+    expect(judgments(next.log)).toEqual([]);
+    expect(idsIn(next, 'seat-c:judgment')).toEqual(['L']);
+  });
+
+  it('kills its holder: eliminated, Lightning and the seat’s other delayed Tool discarded, and the next seat plays (Review Focus 1)', () => {
+    const dying = run(table(
+      { 'seat-b:judgment': [card('cap', 'capture'), card('L', 'lightning')], drawPile: [card('j1', 'shan', 'spade', 5), ...filler(6)] },
+      { hp: { 'seat-b': 3 } }
+    ));
+    expect(dying.pendingResponse?.reason).toEqual({ kind: 'dying', seatId: 'seat-b' });
+    const next = pass(dying, 'seat-b');
+    expect(next.seats.find((s) => s.id === 'seat-b')!.eliminated).toBe(true);
+    expect(judgments(next.log)).toEqual(['lightning:j1']); // Capture is never judged
+    expect(idsIn(next, 'seat-b:judgment')).toEqual([]);
+    expect(idsIn(next, 'discardPile')).toEqual(expect.arrayContaining(['L', 'cap', 'j1']));
+    expect(next.result).toBeNull();
+    expect(next.turn.ownerSeatId).toBe('seat-c');
     expect(next.phase).toBe('Play');
   });
 });
