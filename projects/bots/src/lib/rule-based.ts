@@ -21,7 +21,7 @@ function isAlly(self: Seat, other: Seat): boolean {
 }
 
 // Tools worth cancelling when they are aimed at this bot.
-const HARMFUL_TOOLS = new Set(['barbarians', 'hail-of-arrows', 'duel', 'steal', 'break', 'capture', 'lightning']);
+const HARMFUL_TOOLS = new Set(['barbarians', 'hail-of-arrows', 'duel', 'steal', 'break', 'capture', 'lightning', 'starvation']);
 
 // Plays of `definitionId` aimed at a living non-ally, weakest target first.
 function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string): PlayCard[] {
@@ -166,6 +166,22 @@ function decide(
       (a, b) => Number(wearsEquipment(b)) - Number(wearsEquipment(a))
     );
     if (grab) return take(grab);
+
+    // Delayed Tools. Capture: the highest-HP non-ally. Starvation: the
+    // non-ally in reach with the most hand cards. Lightning: at 3 HP or more.
+    const targetOf = (p: PlayCard) => view.seats.find((s) => s.id === p.targets[0]?.seatId);
+    const handSize = (p: PlayCard) => {
+      const target = targetOf(p);
+      return target ? (view.zones.find((z) => z.id === target.hand.zoneId)?.cards.length ?? 0) : 0;
+    };
+    const best = (candidates: PlayCard[], score: (p: PlayCard) => number) =>
+      candidates.reduce<PlayCard | undefined>((top, p) => (!top || score(p) > score(top) ? p : top), undefined);
+    const capture = best(targetedPlays(view, self, plays, 'capture'), (p) => targetOf(p)?.combinedHp ?? 0);
+    if (capture) return take(capture);
+    const starvation = best(targetedPlays(view, self, plays, 'starvation'), handSize);
+    if (starvation) return take(starvation);
+    const lightning = untargetedOf('lightning');
+    if (lightning && self.combinedHp >= 3) return take(lightning);
 
     if (mem.shaPlayed === 0) {
       const [sha] = targetedPlays(view, self, plays, 'sha');

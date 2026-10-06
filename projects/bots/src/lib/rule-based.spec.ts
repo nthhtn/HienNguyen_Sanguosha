@@ -16,6 +16,7 @@ const registry: ContentRegistry = {
     card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
     card('draw-two', 'tool'), card('barbarians', 'tool'), card('hail-of-arrows', 'tool'), card('peach-garden', 'tool'),
     card('steal', 'tool'), card('break', 'tool'), card('coerce', 'tool'), card('harvest', 'tool'),
+    card('capture', 'tool'), card('starvation', 'tool'), card('lightning', 'tool'),
   ]),
 };
 
@@ -312,5 +313,39 @@ describe('ruleBasedPolicy: picks, Steal, Break and Coerce', () => {
     const v = view({ hand: [{ instanceId: 'co', definitionId: 'coerce' }] });
     expect(decide(v, [pair('seat-1', 'seat-0'), pair('seat-1', 'seat-2'), end]).action).toEqual(pair('seat-1', 'seat-2'));
     expect(decide(v, [pair('seat-1', 'seat-0'), end]).action).toEqual(end);
+  });
+});
+
+describe('ruleBasedPolicy: delayed Tools', () => {
+  const hand = (n: number, seatId: string) => ({
+    id: `${seatId}:hand`, kind: 'hand' as const, ownerSeatId: seatId,
+    cards: Array.from({ length: n }, (_, i) => ({ instanceId: `${seatId}-h${i}`, definitionId: 'hidden', suit: 'spade' as const, rank: 0 })),
+  });
+
+  it('places Capture on the highest-HP non-ally', () => {
+    // seat-1 has 6 HP, seat-2 has 3.
+    const v = view({ hand: [{ instanceId: 'cap', definitionId: 'capture' }] });
+    expect(decide(v, [play('cap', 'seat-1'), play('cap', 'seat-2'), end]).action).toEqual(play('cap', 'seat-1'));
+  });
+
+  it('places Starvation on the non-ally in reach with the most hand cards', () => {
+    const v = view({ hand: [{ instanceId: 'st', definitionId: 'starvation' }], zones: [hand(1, 'seat-1'), hand(3, 'seat-2')] });
+    expect(decide(v, [play('st', 'seat-1'), play('st', 'seat-2'), end]).action).toEqual(play('st', 'seat-2'));
+  });
+
+  it('plays Lightning only at 3 HP or more', () => {
+    const at = (hp: number) => view({ seats: [seat('seat-0', 0, 'Wei', hp), seat('seat-1', 1, 'hidden', 6)], hand: [{ instanceId: 'L', definitionId: 'lightning' }] });
+    expect(decide(at(3), [play('L'), end]).action).toEqual(play('L'));
+    expect(decide(at(2), [play('L'), end]).action).toEqual(end);
+  });
+
+  it('cancels a Starvation judged on itself', () => {
+    const v = view({
+      pendingFor: 'seat-0', hand: [{ instanceId: 'wx', definitionId: 'wuxie' }],
+      pendingReason: { kind: 'wuxie', tool: { as: 'starvation', colour: 'black', physical: [] }, toolUserSeatId: 'seat-0', target: { kind: 'seat', seatId: 'seat-0' } },
+    });
+    const respond: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'wx' };
+    const passIt: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' };
+    expect(decide(v, [respond, passIt]).action).toEqual(respond);
   });
 });

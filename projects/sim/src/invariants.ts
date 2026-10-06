@@ -91,6 +91,15 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
     }
   }
 
+  // A seat never holds two of the same delayed Tool (Capture, Lightning, Starvation).
+  for (const zone of state.zones.filter((z) => z.kind === 'judgment')) {
+    const seen = new Set<string>();
+    for (const card of zone.cards) {
+      if (seen.has(card.definitionId)) violations.push(`Judgment zone ${zone.id} holds two ${card.definitionId} cards`);
+      seen.add(card.definitionId);
+    }
+  }
+
   if (state.result) {
     const allIds = new Set(state.seats.map((s) => s.id));
     const seen = new Set<string>();

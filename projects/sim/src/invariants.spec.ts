@@ -63,6 +63,13 @@ describe('checkInvariants', () => {
     const state = baseState({ result: { endedAt: 1, winningSeatIds: ['ghost-seat'], losingSeatIds: [] } });
     expect(checkInvariants(state)).toEqual([expect.stringContaining('unknown seat')]);
   });
+  it('flags a judgment area holding two of the same delayed Tool', () => {
+    const delayed = (instanceId: string, definitionId: string): CardInstance => ({ instanceId, definitionId, suit: 'spade', rank: 1 });
+    const state = baseState({
+      zones: [{ id: 'seat-a:judgment', kind: 'judgment', ownerSeatId: 'seat-a', cards: [delayed('c1', 'capture'), delayed('l1', 'lightning'), delayed('c2', 'capture')] }],
+    });
+    expect(checkInvariants(state)).toEqual(['Judgment zone seat-a:judgment holds two capture cards']);
+  });
 });
 
 describe('general-selection invariants', () => {
