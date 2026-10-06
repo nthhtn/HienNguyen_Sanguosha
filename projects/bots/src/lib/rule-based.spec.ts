@@ -16,7 +16,7 @@ const registry: ContentRegistry = {
     card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
     card('draw-two', 'tool'), card('barbarians', 'tool'), card('hail-of-arrows', 'tool'), card('peach-garden', 'tool'),
     card('steal', 'tool'), card('break', 'tool'), card('coerce', 'tool'), card('harvest', 'tool'),
-    card('wine', 'basic'), card('capture', 'tool'), card('starvation', 'tool'), card('lightning', 'tool'),
+    card('wine', 'basic'), card('capture', 'tool'), card('starvation', 'tool'), card('lightning', 'tool'), card('gender-swords', 'equipment', 'weapon'),
   ]),
 };
 
@@ -394,5 +394,108 @@ describe('selections', () => {
   it('otherwise picks the least useful eligible cards', () => {
     const { action } = ruleBasedPolicy.decide(view({ hand, pendingSelection: sel() }), 'seat-0', [template], registry, null);
     expect(action).toEqual({ ...template, ids: ['x1', 's1'] });
+  });
+});
+
+describe('optional abilities', () => {
+  const ask = (abilityId: string, targetSeatId?: string): PendingChoice => ({
+    id: 'ask', seatId: 'seat-0', verb: 'use',
+    reason: { kind: 'ability', owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'eq-0' }, abilityId, ...(targetSeatId ? { targetSeatId } : {}) },
+    options: [{ id: 'use', shows: { kind: 'use' }, effects: [] }, { id: 'decline', shows: { kind: 'decline' }, effects: [] }],
+  });
+  const asked: Action[] = ['use', 'decline'].map((optionId) => ({ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'ask', optionId }));
+  // seat-1 is an ally (Wei, revealed); seat-2 is not.
+  const seats = [seat('seat-0', 0, 'Wei', 8), seat('seat-1', 1, 'Wei', 6), seat('seat-2', 2, 'hidden', 3)];
+  const answer = (choice: PendingChoice, zones: CardZone[] = []) => {
+    const action = ruleBasedPolicy.decide(view({ seats, pendingChoice: choice, zones }), 'seat-0', asked, registry, null).action;
+    return action.kind === 'ChooseOptionAction' ? action.optionId : action.kind;
+  };
+
+  it('always uses Eight Trigrams, Longbow, Gender Swords, Sky Scorcher and Green Dragon Blade', () => {
+    for (const id of ['eight-trigrams', 'longbow', 'gender-swords', 'sky-scorcher', 'green-dragon-blade']) {
+      expect(answer(ask(id, 'seat-1'))).toBe('use');
+    }
+  });
+
+  it('uses Axe only against a non-ally', () => {
+    expect(answer(ask('axe', 'seat-2'))).toBe('use');
+    expect(answer(ask('axe', 'seat-1'))).toBe('decline');
+  });
+
+  it('uses Ice Sword only on a non-ally above 1 HP who wears equipment', () => {
+    const worn = (seatId: string): CardZone => ({ id: `${seatId}:equip`, kind: 'equip', ownerSeatId: seatId, cards: [{ instanceId: 'w', definitionId: 'blade', suit: 'club', rank: 2 }] });
+    expect(answer(ask('ice-sword', 'seat-2'), [worn('seat-2')])).toBe('use');
+    expect(answer(ask('ice-sword', 'seat-2'))).toBe('decline'); // wears nothing
+    expect(answer(ask('ice-sword', 'seat-1'), [worn('seat-1')])).toBe('decline'); // an ally
+    const lowSeats = [seats[0], seats[1], seat('seat-2', 2, 'hidden', 1)];
+    const low = ruleBasedPolicy.decide(view({ seats: lowSeats, pendingChoice: ask('ice-sword', 'seat-2'), zones: [worn('seat-2')] }), 'seat-0', asked, registry, null).action;
+    expect(low).toMatchObject({ optionId: 'decline' }); // at 1 HP the damage would do more
+  });
+
+  it('declines an ability it has no rule for', () => {
+    expect(answer(ask('something-new', 'seat-2'))).toBe('decline');
+  });
+
+  it('as Gender Swords’ target: discards its least useful card when holding more than 2, else lets them draw', () => {
+    const choiceFor = (hand: string[]): PendingChoice => ({
+      id: 'gs', seatId: 'seat-0', verb: 'discard',
+      reason: { kind: 'choice', card: { as: 'gender-swords', colour: 'black', physical: [] }, userSeatId: 'seat-2', targetSeatId: 'seat-0' },
+      options: [
+        ...hand.map((id) => ({ id, shows: { kind: 'card' as const, card: { instanceId: id, definitionId: id.split('-')[0], suit: 'spade' as const, rank: 1 } }, effects: [] })),
+        { id: 'decline', shows: { kind: 'decline' }, effects: [] },
+      ],
+    });
+    const pick = (hand: string[]) => {
+      const legal: Action[] = [...hand, 'decline'].map((optionId) => ({ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'gs', optionId }));
+      const cards = hand.map((id) => ({ instanceId: id, definitionId: id.split('-')[0] }));
+      return ruleBasedPolicy.decide(view({ hand: cards, pendingChoice: choiceFor(hand) }), 'seat-0', legal, registry, null).action;
+    };
+    expect(pick(['peach-1', 'duel-1', 'sha-1'])).toMatchObject({ optionId: 'duel-1' });
+    expect(pick(['peach-1', 'duel-1'])).toMatchObject({ optionId: 'decline' });
+  });
+});
+
+describe('ability selections', () => {
+  const template: Action = { kind: 'SelectAction', seatId: 'seat-0', selectionId: 's1', ids: [] };
+  const cancel: Action = { kind: 'CancelSelectionAction', seatId: 'seat-0', selectionId: 's1' };
+  const sel = (abilityId: string, over: Partial<PendingSelection> = {}): PendingSelection => ({
+    id: 's1', seatId: 'seat-0', reason: { kind: 'ability', owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'eq-0' }, abilityId },
+    of: 'cards', eligibleIds: [], min: 2, max: 2, then: { kind: 'discard' }, onCancel: [], ...over,
+  });
+
+  it('Axe: discards the 2 least useful cards', () => {
+    const hand = [{ instanceId: 'p1', definitionId: 'peach' }, { instanceId: 's1', definitionId: 'sha' }, { instanceId: 'x1', definitionId: 'duel' }];
+    const { action } = ruleBasedPolicy.decide(view({ hand, pendingSelection: sel('axe', { eligibleIds: ['p1', 's1', 'x1'] }) }), 'seat-0', [template, cancel], registry, null);
+    expect(action).toEqual({ ...template, ids: ['x1', 's1'] });
+  });
+
+  it('Sky Scorcher: only non-allies as extra targets; with none, cancels', () => {
+    const seats = [seat('seat-0', 0, 'Wei', 8), seat('seat-1', 1, 'Wei', 6), seat('seat-2', 2, 'hidden', 3)];
+    const seatSel = (eligibleIds: string[]) => sel('sky-scorcher', { of: 'seats', eligibleIds, min: 1, max: 2, then: { kind: 'card-step', step: { kind: 'CardStepEffect', step: 'sha-use', card: { as: 'sha', colour: 'black', physical: [] }, userSeatId: 'seat-0', target: { kind: 'seat', seatId: 'seat-2' } } } });
+    expect(ruleBasedPolicy.decide(view({ seats, pendingSelection: seatSel(['seat-1', 'seat-2']) }), 'seat-0', [template, cancel], registry, null).action).toEqual({ ...template, ids: ['seat-2'] });
+    expect(ruleBasedPolicy.decide(view({ seats, pendingSelection: seatSel(['seat-1']) }), 'seat-0', [template, cancel], registry, null).action).toEqual(cancel);
+  });
+});
+
+describe('Serpent Spear', () => {
+  const via = { owner: { kind: 'equipment' as const, seatId: 'seat-0', cardInstanceId: 'eq-0' }, conversionId: 'serpent-spear' };
+  const pass: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' };
+  const convertAnswer: Action = { kind: 'UseConversionAction', seatId: 'seat-0', via, targets: [], pendingResponseId: 'r1' };
+  const barbarians: DecisionReason = { kind: 'card-effect', card: { as: 'barbarians', colour: 'black', physical: [] }, userSeatId: 'seat-2' };
+
+  it('answers with 2 cards only with no real answer, and not when a Peach would go', () => {
+    const cheap = [{ instanceId: 'x1', definitionId: 'duel' }, { instanceId: 'x2', definitionId: 'draw-two' }];
+    expect(ruleBasedPolicy.decide(view({ hand: cheap, pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, convertAnswer], registry, null).action).toEqual(convertAnswer);
+    const dear = [{ instanceId: 'p1', definitionId: 'peach' }, { instanceId: 'x1', definitionId: 'duel' }];
+    expect(ruleBasedPolicy.decide(view({ hand: dear, pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, convertAnswer], registry, null).action).toEqual(pass);
+    const realSha: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 's1' };
+    const withSha = [...cheap, { instanceId: 's1', definitionId: 'sha' }];
+    expect(ruleBasedPolicy.decide(view({ hand: withSha, pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, realSha, convertAnswer], registry, null).action).toEqual(realSha);
+  });
+
+  it('in the Play Phase, converts only with no real Sha, at the weakest non-ally', () => {
+    const cheap = [{ instanceId: 'x1', definitionId: 'duel' }, { instanceId: 'x2', definitionId: 'wuxie' }];
+    const at = (seatId: string): Action => ({ kind: 'UseConversionAction', seatId: 'seat-0', via, targets: [{ kind: 'seat', seatId }] });
+    expect(ruleBasedPolicy.decide(view({ hand: cheap }), 'seat-0', [end, at('seat-1'), at('seat-2')], registry, null).action).toEqual(at('seat-2'));
   });
 });

@@ -6,6 +6,7 @@ type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
 type DiscardCard = Extract<Action, { kind: 'DiscardCardAction' }>;
 type ChooseOption = Extract<Action, { kind: 'ChooseOptionAction' }>;
 type Select = Extract<Action, { kind: 'SelectAction' }>;
+type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
 
 function definitionIdOf(view: GameState, cardInstanceId: string): string | undefined {
   for (const zone of view.zones) {
@@ -44,6 +45,42 @@ function keepRank(view: GameState, registry: ContentRegistry, cardInstanceId: st
   return 0;
 }
 
+// Instance ids, least useful first (then lowest rank).
+function leastUseful(view: GameState, registry: ContentRegistry, ids: readonly string[]): string[] {
+  return [...ids].sort((a, b) => keepRank(view, registry, a) - keepRank(view, registry, b));
+}
+
+// Whether to use an optional ability (the Sha-Equipment spec's bot rules).
+function wantsToUse(view: GameState, self: Seat, abilityId: string, targetSeatId: string | undefined): boolean {
+  const target = view.seats.find((s) => s.id === targetSeatId);
+  const hostile = !!target && !isAlly(self, target);
+  switch (abilityId) {
+    case 'eight-trigrams':
+    case 'longbow':
+    case 'gender-swords':
+    case 'sky-scorcher':
+    case 'green-dragon-blade':
+      return true;
+    case 'axe':
+      return hostile;
+    case 'ice-sword': {
+      const wears = !!target && (view.zones.find((z) => z.id === target.equipped.zoneId)?.cards.length ?? 0) > 0;
+      return hostile && !!target && target.combinedHp > 1 && wears;
+    }
+    default:
+      return false;
+  }
+}
+
+// Abilities whose card selections the bot fills rather than cancels.
+const SELECTS_FOR = new Set(['axe', 'green-dragon-blade', 'serpent-spear']);
+
+// Serpent Spear is worth it when the 2 least useful hand cards hold no Peach.
+function spareForConversion(view: GameState, self: Seat, registry: ContentRegistry): boolean {
+  const hand = (view.zones.find((z) => z.id === self.hand.zoneId)?.cards ?? []).map((c) => c.instanceId);
+  return hand.length >= 2 && !leastUseful(view, registry, hand).slice(0, 2).some((id) => definitionIdOf(view, id) === 'peach');
+}
+
 function decide(
   view: GameState,
   seatId: string,
@@ -60,6 +97,7 @@ function decide(
     action,
     memory: { ...mem, shaPlayed: mem.shaPlayed + shaPlayed, actionsThisTurn: mem.actionsThisTurn + 1 },
   });
+  const me = view.seats.find((s) => s.id === seatId);
 
   // 1. General selection: highest combined max HP, first on ties.
   if (view.phase === 'GeneralSelection') {
@@ -69,15 +107,44 @@ function decide(
     if (choices.length > 0) return take(choices.reduce((best, a) => (hp(a) > hp(best) ? a : best)));
   }
 
-  // 1a. A selection. With no rule for it, cancel when allowed; else pick the
-  // least useful eligible cards.
+  // 1a. A selection. Sky Scorcher's seats: non-allies only, else cancel. Cards
+  // for Axe, Green Dragon Blade, Serpent Spear: the least useful. Anything
+  // else: cancel when allowed.
   const selectTemplate = legal.find((a): a is Select => a.kind === 'SelectAction');
-  if (selectTemplate && view.pendingSelection) {
+  if (selectTemplate && view.pendingSelection && me) {
     const selection = view.pendingSelection;
     const cancel = legal.find((a) => a.kind === 'CancelSelectionAction');
-    if (cancel) return take(cancel);
-    const ids = [...selection.eligibleIds].sort((a, b) => keepRank(view, registry, a) - keepRank(view, registry, b)).slice(0, selection.min);
-    return take({ ...selectTemplate, ids });
+    if (selection.of === 'seats') {
+      const ids = selection.eligibleIds
+        .filter((id) => {
+          const other = view.seats.find((s) => s.id === id);
+          return !!other && !isAlly(me, other);
+        })
+        .slice(0, selection.max);
+      if (ids.length >= selection.min) return take({ ...selectTemplate, ids });
+      if (cancel) return take(cancel);
+    }
+    const known = selection.reason.kind === 'ability' && SELECTS_FOR.has(selection.reason.abilityId);
+    if (cancel && !known) return take(cancel);
+    return take({ ...selectTemplate, ids: leastUseful(view, registry, selection.eligibleIds).slice(0, selection.min) });
+  }
+
+  // 1a'. An ability's ask; Gender Swords' choice for its target.
+  const choiceNow = view.pendingChoice;
+  const choiceActions = legal.filter((a): a is ChooseOption => a.kind === 'ChooseOptionAction');
+  if (choiceNow && me && choiceActions.length > 0) {
+    if (choiceNow.reason.kind === 'ability') {
+      const optionId = wantsToUse(view, me, choiceNow.reason.abilityId, choiceNow.reason.targetSeatId) ? 'use' : 'decline';
+      const pick = choiceActions.find((a) => a.optionId === optionId);
+      if (pick) return take(pick);
+    }
+    const decline = choiceActions.find((a) => a.optionId === 'decline');
+    if (decline && choiceNow.reason.kind === 'choice' && choiceNow.reason.targetSeatId === seatId) {
+      const handSize = view.zones.find((z) => z.id === me.hand.zoneId)?.cards.length ?? 0;
+      const discards = choiceActions.filter((a) => a !== decline);
+      if (handSize <= 2 || discards.length === 0) return take(decline);
+      return take(discards.reduce((best, a) => (keepRank(view, registry, a.optionId) < keepRank(view, registry, best.optionId) ? a : best)));
+    }
   }
 
   // 1b. A pick (Steal, Break, Harvest): a weapon, then armour, then a mount,
@@ -116,7 +183,10 @@ function decide(
     const answers = legal.filter((a): a is Extract<Action, { kind: 'RespondAction' }> => a.kind === 'RespondAction');
     // A Peach before anything else (a dying bot drinks Wine only without one).
     const best = answers.find((a) => definitionIdOf(view, a.cardInstanceId) === 'peach') ?? answers[0];
-    const answer = (worthAnswering ? best : undefined) ?? legal.find((a) => a.kind === 'PassAction');
+    // Serpent Spear: only with no real answer, and no Peach among the 2 cards it would take.
+    const converted = legal.find((a): a is UseConversion => a.kind === 'UseConversionAction');
+    const chosen = best ?? (converted && self && spareForConversion(view, self, registry) ? converted : undefined);
+    const answer = (worthAnswering ? chosen : undefined) ?? legal.find((a) => a.kind === 'PassAction');
     if (answer) return take(answer);
   }
 
@@ -206,6 +276,14 @@ function decide(
     // Whenever the engine offers a Sha (Crossbow lifts the limit); the safety cap still ends the turn.
     const [sha] = shaPlays;
     if (sha) return take(sha, 1);
+    // Serpent Spear: with no real Sha, 2 cards as one at the weakest non-ally.
+    const [conversion] = legal
+      .filter((a): a is UseConversion => a.kind === 'UseConversionAction' && a.targets.length === 1)
+      .map((a) => ({ a, target: view.seats.find((s) => s.id === a.targets[0].seatId) }))
+      .filter((t): t is { a: UseConversion; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
+      .sort((x, y) => x.target.combinedHp - y.target.combinedHp || x.target.index - y.target.index)
+      .map((t) => t.a);
+    if (conversion && spareForConversion(view, self, registry)) return take(conversion, 1);
     const [duel] = targetedPlays(view, self, plays, 'duel');
     if (duel) return take(duel);
     // Coerce: when one non-ally's weapon can reach another non-ally.
