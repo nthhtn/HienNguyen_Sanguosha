@@ -25,6 +25,9 @@ import { DiscardDialog, DiscardDialogData } from './discard-dialog';
 import { ResponseDialog, ResponseDialogData, ResponseOption } from './response-dialog';
 import { describeResponse, startsOnNoResponse } from './response-description';
 import { ChoiceDialog, ChoiceDialogData } from './choice-dialog';
+import { AskDialog, AskDialogData } from './ask-dialog';
+import { SelectionDialog, SelectionDialogData } from './selection-dialog';
+import { describeAsk, describeSelection } from './ability-description';
 import { choiceDialogOptions, describeChoice } from './choice-description';
 import { DecisionTimer } from '../decision-timer.service';
 
@@ -127,7 +130,16 @@ export class GameBoard {
   private readonly timer = inject(DecisionTimer);
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
-  private choiceDialog: MatDialogRef<ChoiceDialog, Action> | null = null;
+  private choiceDialog: MatDialogRef<unknown, Action> | null = null;
+  private selectionDialog: MatDialogRef<SelectionDialog, Action> | null = null;
+  // The selection whose dialog is showing, so each opens only once.
+  private selectionDialogFor: string | null = null;
+  // The selection the viewer owes, while the board is on screen and the engine offers it.
+  protected readonly selectionDue = computed(() => {
+    const selection = this.visibleState()?.pendingSelection;
+    if (!selection || selection.seatId !== this.viewerSeatId()) return null;
+    return this.gameService.legalActions().some((a) => a.kind === 'SelectAction') ? selection.id : null;
+  });
   // The choice whose dialog is showing, so each opens only once.
   private choiceDialogFor: string | null = null;
   // The choice the viewer owes, while the board is on screen and the engine
@@ -176,6 +188,13 @@ export class GameBoard {
       untracked(() => {
         if (this.responseDialogFor && this.responseDialogFor !== pendingId) this.closeDialog(this.responseDialog);
         if (pendingId) this.openResponseDialog(pendingId);
+      });
+    });
+    effect(() => {
+      const selectionId = this.selectionDue();
+      untracked(() => {
+        if (this.selectionDialogFor && this.selectionDialogFor !== selectionId) this.closeDialog(this.selectionDialog);
+        if (selectionId) this.openSelectionDialog(selectionId);
       });
     });
     effect(() => {
@@ -302,6 +321,19 @@ export class GameBoard {
     const seatId = this.viewerSeatId();
     const choice = visible?.pendingChoice;
     if (this.choiceDialogFor === choiceId || !visible || !choice || !seatId) return;
+    // A "may": the Ask window instead.
+    const ask = describeAsk(visible, seatId, this.gameService.legalActions());
+    if (ask) {
+      this.choiceDialogFor = choiceId;
+      const ref = this.dialog.open<AskDialog, AskDialogData, Action>(AskDialog, { data: { description: ask }, width: 'min(92vw, 480px)', disableClose: true });
+      this.choiceDialog = ref;
+      ref.beforeClosed().subscribe((action) => {
+        this.choiceDialogFor = null;
+        this.choiceDialog = null;
+        if (action) this.submit(action);
+      });
+      return;
+    }
     const description = describeChoice(visible, seatId);
     if (!description) return;
     const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players);
@@ -315,6 +347,28 @@ export class GameBoard {
     ref.beforeClosed().subscribe((action) => {
       this.choiceDialogFor = null;
       this.choiceDialog = null;
+      if (action) this.submit(action);
+    });
+  }
+
+  // Opens the Selection dialog for one pending selection; it closes with the
+  // engine's SelectAction (ids filled) or its CancelSelectionAction.
+  private openSelectionDialog(selectionId: string): void {
+    const visible = this.visibleState();
+    const seatId = this.viewerSeatId();
+    if (this.selectionDialogFor === selectionId || !visible || !seatId) return;
+    const description = describeSelection(visible, seatId, this.gameService.legalActions());
+    if (!description) return;
+    this.selectionDialogFor = selectionId;
+    const ref = this.dialog.open<SelectionDialog, SelectionDialogData, Action>(SelectionDialog, {
+      data: { description, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },
+      width: 'min(92vw, 640px)',
+      disableClose: true,
+    });
+    this.selectionDialog = ref;
+    ref.beforeClosed().subscribe((action) => {
+      this.selectionDialogFor = null;
+      this.selectionDialog = null;
       if (action) this.submit(action);
     });
   }

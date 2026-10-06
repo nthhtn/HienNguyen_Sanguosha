@@ -127,6 +127,20 @@ describe('describeResponse: Wuxie Kongjie checks', () => {
 });
 
 describe('waitingLine', () => {
+  it('says who is choosing for an ability, and who is being asked about one', () => {
+    const owner = { kind: 'equipment' as const, seatId: 'seat-1', cardInstanceId: 'ax' };
+    const selecting = {
+      ...state([], null),
+      pendingSelection: { id: 's1', seatId: 'seat-1', reason: { kind: 'ability' as const, owner, abilityId: 'axe' }, of: 'cards' as const, eligibleIds: [], min: 2, max: 2, then: { kind: 'discard' as const } },
+    };
+    expect(waitingLine(selecting)).toBe('Waiting on Seat 1 to choose');
+    const asking = {
+      ...state([], null),
+      pendingChoice: { id: 'ask', seatId: 'seat-1', verb: 'use' as const, reason: { kind: 'ability' as const, owner, abilityId: 'axe' }, options: [] },
+    };
+    expect(waitingLine(asking)).toBe('Waiting on Seat 1: Axe?');
+  });
+
   it('is null when nothing is pending', () => {
     expect(waitingLine(state([], null))).toBeNull();
   });

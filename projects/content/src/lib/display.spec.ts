@@ -1,4 +1,4 @@
-import { cardDisplayData, generalDisplayData } from './display';
+import { abilityHint, cardDisplayData, generalDisplayData } from './display';
 
 describe('generalDisplayData', () => {
   it('returns name, title and skill name/text for a known general', () => {
@@ -37,5 +37,12 @@ describe('cardDisplayData', () => {
 
   it('returns null for an unknown id', () => {
     expect(cardDisplayData('no-such-card')).toBeNull();
+  });
+});
+describe('abilityHint', () => {
+  it('says what an ability does, in the game’s own words', () => {
+    expect(abilityHint('axe')).toBe('Discard 2 cards to make your Sha hit {target}');
+    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Shan');
+    expect(abilityHint('sha')).toBeNull();
   });
 });

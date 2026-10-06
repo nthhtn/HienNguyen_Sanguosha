@@ -197,6 +197,12 @@ export function describeResponse(
 
 // The table centre's "Waiting on …" line, with what the seat is being asked.
 export function waitingLine(state: GameState): string | null {
+  const selection = state.pendingSelection;
+  if (selection) return `Waiting on ${seatName(state.players, selection.seatId)} to choose`;
+  const asking = state.pendingChoice;
+  if (asking?.reason.kind === 'ability') {
+    return `Waiting on ${seatName(state.players, asking.seatId)}: ${cardName({ definitionId: asking.reason.abilityId })}?`;
+  }
   const choice = state.pendingChoice;
   if (choice) return `Waiting on ${seatName(state.players, choice.seatId)} to choose a card`;
   const pending = state.pendingResponse;
