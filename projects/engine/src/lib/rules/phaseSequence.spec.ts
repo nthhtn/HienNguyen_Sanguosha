@@ -1,4 +1,4 @@
-import { advancePhaseOrTurn, PHASE_ORDER } from './phaseSequence';
+import { advancePhaseOrTurn, PHASE_ORDER, skipFlagOf } from './phaseSequence';
 import { GameState, Seat } from '../domain/types';
 import { createRng } from '../rng/rng';
 
@@ -18,6 +18,32 @@ function state(phase: GameState['phase'], turn: GameState['turn'], seats: Seat[]
 }
 
 describe('advancePhaseOrTurn', () => {
+  it('names a phase’s skip flag after the phase', () => {
+    expect(skipFlagOf('Play')).toBe('skipPlay');
+    expect(skipFlagOf('Draw')).toBe('skipDraw');
+  });
+
+  it('passes over every phase flagged to skip this turn, and says which', () => {
+    const turn = { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [], flags: { skipDraw: true, skipPlay: true } };
+    const result = advancePhaseOrTurn(state('Judgment', turn, [seat('seat-a', 0), seat('seat-b', 1)]));
+    expect(result.phase).toBe('Discard');
+    expect(result.skipped).toEqual(['Draw', 'Play']);
+    expect(result.turn).toBe(turn);
+  });
+
+  it('skips nothing without flags', () => {
+    const turn = { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] };
+    expect(advancePhaseOrTurn(state('Draw', turn, [seat('seat-a', 0)])).skipped).toEqual([]);
+  });
+
+  it('starts the next turn without the last turn’s flags', () => {
+    const turn = { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [], flags: { skipPlay: true } };
+    const result = advancePhaseOrTurn(state('End', turn, [seat('seat-a', 0), seat('seat-b', 1)]));
+    expect(result.phase).toBe('Start');
+    expect(result.turn.flags).toBeUndefined();
+    expect(result.skipped).toEqual([]);
+  });
+
   it('has six phases, starting at Start', () => {
     expect(PHASE_ORDER).toEqual(['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End']);
   });

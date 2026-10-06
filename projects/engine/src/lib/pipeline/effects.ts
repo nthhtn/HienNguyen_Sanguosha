@@ -35,7 +35,9 @@ export type Effect =
   // (all but `keepInDiscard`: the Tool being resolved never turns itself up).
   | { kind: 'RevealToProcessingEffect'; count: number; keepInDiscard?: string[] }
   // Moves every card in `zoneId` to the discard pile, in order.
-  | { kind: 'DiscardZoneEffect'; zoneId: string };
+  | { kind: 'DiscardZoneEffect'; zoneId: string }
+  // Turns a flag of the current turn on (e.g. skipFlagOf('Play')). Flags end with the turn.
+  | { kind: 'SetTurnFlagEffect'; flag: string };
 
 export interface ApplyResult {
   state: GameState;
@@ -151,6 +153,8 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       }
       return { state: current, events };
     }
+    case 'SetTurnFlagEffect':
+      return { state: { ...state, turn: { ...state.turn, flags: { ...(state.turn.flags ?? {}), [effect.flag]: true } } }, events: [] };
     case 'DyingEffect':
       return applyDying(state, effect);
     default:

@@ -12,17 +12,31 @@ export function phaseWaitsForPlayer(state: GameState): boolean {
   return false;
 }
 
-export function advancePhaseOrTurn(state: GameState): { phase: Phase; turn: Turn } {
+// The turn flag that makes the turn owner skip `phase` (e.g. 'skipPlay').
+export function skipFlagOf(phase: Phase): string {
+  return `skip${phase}`;
+}
+
+// The next phase, passing over any phase flagged to skip this turn (`skipped`,
+// in order). After End, the next turn's Start: a new turn has no flags.
+export function advancePhaseOrTurn(state: GameState): { phase: Phase; turn: Turn; skipped: Phase[] } {
   const currentIndex = PHASE_ORDER.indexOf(state.phase);
   // An unrecognized phase means a real bug upstream, not a case to paper over
   // by silently restarting the phase sequence.
   if (currentIndex === -1) {
     throw new Error(`Unrecognized phase: ${state.phase}`);
   }
-  if (currentIndex < PHASE_ORDER.length - 1) {
-    return { phase: PHASE_ORDER[currentIndex + 1], turn: state.turn };
+  if (currentIndex === PHASE_ORDER.length - 1) {
+    return { phase: PHASE_ORDER[0], turn: advanceTurn(state.turn, state.seats), skipped: [] };
   }
-  return { phase: PHASE_ORDER[0], turn: advanceTurn(state.turn, state.seats) };
+  const skipped: Phase[] = [];
+  let next = currentIndex + 1;
+  // End is never skipped, so a turn always ends.
+  while (next < PHASE_ORDER.length - 1 && state.turn.flags?.[skipFlagOf(PHASE_ORDER[next])]) {
+    skipped.push(PHASE_ORDER[next]);
+    next++;
+  }
+  return { phase: PHASE_ORDER[next], turn: state.turn, skipped };
 }
 
 function advanceTurn(turn: Turn, seats: Seat[]): Turn {

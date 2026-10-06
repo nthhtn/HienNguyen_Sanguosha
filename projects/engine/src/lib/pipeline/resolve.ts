@@ -9,7 +9,7 @@ import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence'
 import { legalTargetListsFor } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
-import { CardPlayedEvent, ChoiceMadeEvent, PhaseChangedEvent, TurnAdvancedEvent } from './events';
+import { CardPlayedEvent, ChoiceMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 
@@ -128,13 +128,18 @@ function logWithTriggers(state: GameState, events: GameEvent[], ctx: EngineConte
   return { state: queueFront(withLog, afterTriggerFollowUps(withLog, events, ctx)), events };
 }
 
-// Moves to the next phase (or the next turn's Start) and enters it.
+// Moves to the next phase (or the next turn's Start) and enters it. Phases
+// flagged to skip are logged as skipped and never entered.
 function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
-  const { phase, turn } = advancePhaseOrTurn(state);
+  const { phase, turn, skipped } = advancePhaseOrTurn(state);
   const events: GameEvent[] = [];
   if (turn.turnNumber !== state.turn.turnNumber) {
     const turnEvent: TurnAdvancedEvent = { kind: 'TurnAdvancedEvent', seatId: turn.ownerSeatId, turnNumber: turn.turnNumber };
     events.push(turnEvent);
+  }
+  for (const skippedPhase of skipped) {
+    const skipEvent: PhaseSkippedEvent = { kind: 'PhaseSkippedEvent', seatId: turn.ownerSeatId, phase: skippedPhase };
+    events.push(skipEvent);
   }
   const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: turn.ownerSeatId, phase };
   events.push(phaseEvent);

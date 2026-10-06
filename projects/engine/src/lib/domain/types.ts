@@ -19,6 +19,9 @@ export interface Turn {
   extraTurnStack: string[];
   // Proactive card plays this turn, by card definition id (responses excluded).
   cardPlays?: Record<string, number>;
+  // Flags that last until the turn ends, e.g. skipPlay (see skipFlagOf).
+  // Absent until one is set.
+  flags?: Record<string, boolean>;
 }
 
 export type Phase = 'GeneralSelection' | 'Start' | 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End';

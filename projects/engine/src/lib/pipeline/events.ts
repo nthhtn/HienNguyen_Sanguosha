@@ -17,6 +17,13 @@ export interface PhaseChangedEvent {
   phase: Phase;
 }
 
+// The turn owner passed over a phase (a skip flag, e.g. Capture's skipPlay).
+export interface PhaseSkippedEvent {
+  kind: 'PhaseSkippedEvent';
+  seatId: string;
+  phase: Phase;
+}
+
 export interface TurnAdvancedEvent {
   kind: 'TurnAdvancedEvent';
   seatId: string;
@@ -109,6 +116,7 @@ export type EngineEvent =
   | CardsDrawnEvent
   | DamageDealtEvent
   | PhaseChangedEvent
+  | PhaseSkippedEvent
   | TurnAdvancedEvent
   | GeneralRevealedEvent
   | HealEvent
