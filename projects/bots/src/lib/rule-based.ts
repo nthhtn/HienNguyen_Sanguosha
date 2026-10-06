@@ -19,6 +19,9 @@ function isAlly(self: Seat, other: Seat): boolean {
   return self.kingdom !== 'Qun' && self.kingdom !== 'hidden' && other.kingdom === self.kingdom;
 }
 
+// Tools worth cancelling when they are aimed at this bot.
+const HARMFUL_TOOLS = new Set(['barbarians', 'hail-of-arrows', 'duel', 'steal', 'break', 'capture', 'lightning']);
+
 // Plays of `definitionId` aimed at a living non-ally, weakest target first.
 function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string): PlayCard[] {
   return plays
@@ -65,12 +68,20 @@ function decide(
   }
 
   // 2. Responding. A dying round: spend a Peach only on ourselves or a
-  // revealed ally. Any other window: every answer cancels damage to us.
+  // revealed ally. A Wuxie check: cancel only a harmful Tool aimed at us, and
+  // never counter a Wuxie. Any other window: every answer cancels damage to us.
   if (view.pendingResponse?.respondingSeatId === seatId) {
     const reason = view.pendingResponse.reason;
     const self = view.seats.find((s) => s.id === seatId);
     const dying = reason?.kind === 'dying' ? view.seats.find((s) => s.id === reason.seatId) : undefined;
-    const worthAnswering = !reason || (!!self && !!dying && (dying.id === seatId || isAlly(self, dying)));
+    const worthAnswering =
+      !reason || reason.kind === 'card-effect'
+        ? true
+        : reason.kind === 'dying'
+          ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying))
+          : reason.kind === 'wuxie'
+            ? reason.target.kind === 'seat' && reason.target.seatId === seatId && HARMFUL_TOOLS.has(reason.tool.as)
+            : false; // never counter a Wuxie Kongjie
     const answer = (worthAnswering ? legal.find((a) => a.kind === 'RespondAction') : undefined) ?? legal.find((a) => a.kind === 'PassAction');
     if (answer) return take(answer);
   }
@@ -110,6 +121,23 @@ function decide(
       return untargeted(p) && !!slot && !equippedSlots.has(slot);
     });
     if (equipment) return take(equipment);
+
+    const untargetedOf = (definitionId: string) => plays.find((p) => untargeted(p) && definitionIdOf(view, p.cardInstanceId) === definitionId);
+
+    const drawTwo = untargetedOf('draw-two');
+    if (drawTwo) return take(drawTwo);
+
+    const peachGarden = untargetedOf('peach-garden');
+    if (peachGarden && self.combinedHp < self.maxCombinedHp) return take(peachGarden);
+
+    // Barbarians and Hail of Arrows hit everyone else: only worth it when
+    // non-allies are at least as many as allies.
+    const others = view.seats.filter((s) => s.id !== seatId && !s.eliminated);
+    const allies = others.filter((s) => isAlly(self, s)).length;
+    if (others.length - allies >= allies) {
+      const massAttack = untargetedOf('barbarians') ?? untargetedOf('hail-of-arrows');
+      if (massAttack) return take(massAttack);
+    }
 
     if (mem.shaPlayed === 0) {
       const [sha] = targetedPlays(view, self, plays, 'sha');

@@ -1,4 +1,4 @@
-import type { Action, CardDefinition, EquipSlot, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
+import type { Action, CardDefinition, DecisionReason, EquipSlot, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
 import { ruleBasedPolicy } from './rule-based';
 import { MAX_BOT_ACTIONS_PER_TURN } from './policy';
 
@@ -14,6 +14,7 @@ const registry: ContentRegistry = {
   cards: new Map([
     card('sha', 'basic'), card('shan', 'basic'), card('peach', 'basic'),
     card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
+    card('draw-two', 'tool'), card('barbarians', 'tool'), card('hail-of-arrows', 'tool'), card('peach-garden', 'tool'),
   ]),
 };
 
@@ -32,6 +33,7 @@ interface ViewOptions {
   equip?: string[];
   pendingFor?: string;
   turnNumber?: number;
+  pendingReason?: DecisionReason;
 }
 
 // seat-0 is the bot. Its own hand and equipment are visible; the rest is redacted.
@@ -47,7 +49,7 @@ function view(o: ViewOptions = {}): GameState {
       { id: 'seat-0:equip', kind: 'equip', ownerSeatId: 'seat-0', cards: (o.equip ?? []).map((d, i) => ({ instanceId: `eq-${i}`, definitionId: d, suit: 'club' as const, rank: 2 })) },
     ],
     pendingResponse: o.pendingFor
-      ? { id: 'r1', respondingSeatId: o.pendingFor, allowedActionKinds: ['RespondAction', 'PassAction'], context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-0' }, amount: 1 } } }
+      ? { id: 'r1', respondingSeatId: o.pendingFor, allowedActionKinds: ['RespondAction', 'PassAction'], ...(o.pendingReason ? { reason: o.pendingReason } : {}), context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-0' }, amount: 1 } } }
       : null,
     log: [],
     rng: { seed: 1, counter: 0 },
@@ -206,5 +208,54 @@ describe('ruleBasedPolicy', () => {
     const hand = [{ instanceId: 'c-lion', definitionId: 'lion' }];
     const legal = [play('c-lion'), end];
     expect(decide(view({ hand, equip: ['blade'] }), legal).action).toBe(legal[0]);
+  });
+});
+
+describe('ruleBasedPolicy: Tools and Wuxie Kongjie', () => {
+  const respond = (id: string): Action => ({ kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: id });
+  const pass: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' };
+  const tool = (as: string) => ({ as, colour: 'black' as const, physical: [] });
+  const wuxieOn = (as: string, targetSeatId: string) =>
+    view({ pendingFor: 'seat-0', hand: [{ instanceId: 'wx', definitionId: 'wuxie' }], pendingReason: { kind: 'wuxie', tool: tool(as), toolUserSeatId: 'seat-1', target: { kind: 'seat', seatId: targetSeatId } } });
+
+  it('cancels a harmful Tool aimed at itself', () => {
+    expect(decide(wuxieOn('barbarians', 'seat-0'), [respond('wx'), pass]).action).toEqual(respond('wx'));
+  });
+
+  it('lets a Tool aimed at someone else, or a harmless one, through', () => {
+    expect(decide(wuxieOn('barbarians', 'seat-2'), [respond('wx'), pass]).action).toEqual(pass);
+    expect(decide(wuxieOn('draw-two', 'seat-0'), [respond('wx'), pass]).action).toEqual(pass);
+  });
+
+  it('never counters a Wuxie Kongjie', () => {
+    const v = view({ pendingFor: 'seat-0', hand: [{ instanceId: 'wx', definitionId: 'wuxie' }], pendingReason: { kind: 'counter-wuxie', wuxieSeatId: 'seat-1' } });
+    expect(decide(v, [respond('wx'), pass]).action).toEqual(pass);
+  });
+
+  it('answers a Barbarians window with a Sha', () => {
+    const v = view({ pendingFor: 'seat-0', hand: [{ instanceId: 's', definitionId: 'sha' }], pendingReason: { kind: 'card-effect', card: tool('barbarians'), userSeatId: 'seat-1' } });
+    expect(decide(v, [respond('s'), pass]).action).toEqual(respond('s'));
+  });
+
+  it('plays Draw Two before attacking', () => {
+    const v = view({ hand: [{ instanceId: 'dt', definitionId: 'draw-two' }, { instanceId: 's', definitionId: 'sha' }] });
+    expect(decide(v, [play('dt'), play('s', 'seat-1'), end]).action).toEqual(play('dt'));
+  });
+
+  it('plays Barbarians when non-allies are at least as many as allies, and not when allies outnumber them', () => {
+    const v = view({ hand: [{ instanceId: 'b', definitionId: 'barbarians' }] });
+    expect(decide(v, [play('b'), end]).action).toEqual(play('b'));
+    const allied = view({
+      hand: [{ instanceId: 'b', definitionId: 'barbarians' }],
+      seats: [seat('seat-0', 0, 'Wei', 8), seat('seat-1', 1, 'Wei', 6), seat('seat-2', 2, 'Wei', 3), seat('seat-3', 3, 'hidden', 4)],
+    });
+    expect(decide(allied, [play('b'), end]).action).toEqual(end);
+  });
+
+  it('plays Peach Garden only when hurt', () => {
+    const hurt = view({ hand: [{ instanceId: 'pg', definitionId: 'peach-garden' }] }); // seat-0 is at 8/8 by default
+    expect(decide(hurt, [play('pg'), end]).action).toEqual(end);
+    const v = view({ hand: [{ instanceId: 'pg', definitionId: 'peach-garden' }], seats: [seat('seat-0', 0, 'Wei', 5), seat('seat-1', 1, 'hidden', 6)] });
+    expect(decide(v, [play('pg'), end]).action).toEqual(play('pg'));
   });
 });
