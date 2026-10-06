@@ -29,7 +29,12 @@ export type Effect =
   | { kind: 'OpenChoiceEffect'; choice: PendingChoice }
   // Moves a random card (seeded) of `fromZoneId` to `toZoneId`: a pick from a
   // hand the chooser can't see. Nothing happens when the zone is empty.
-  | { kind: 'MoveRandomCardEffect'; fromZoneId: string; toZoneId: string };
+  | { kind: 'MoveRandomCardEffect'; fromZoneId: string; toZoneId: string }
+  // Turns `count` cards from the draw pile face up into the processing zone
+  // (Harvest), shuffling the discard pile in first when the draw pile is short.
+  | { kind: 'RevealToProcessingEffect'; count: number }
+  // Moves every card in `zoneId` to the discard pile, in order.
+  | { kind: 'DiscardZoneEffect'; zoneId: string };
 
 export interface ApplyResult {
   state: GameState;
@@ -121,6 +126,29 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       if (from.cards.length === 0) return { state, events: [] };
       const { value, rng } = nextInt(state.rng, from.cards.length);
       return applyEffect({ ...state, rng }, { kind: 'MoveCardEffect', cardInstanceId: from.cards[value].instanceId, toZoneId: effect.toZoneId });
+    }
+    case 'RevealToProcessingEffect': {
+      const drawPile = requireZoneOfKind(state.zones, 'drawPile');
+      const processing = requireZoneOfKind(state.zones, 'processing');
+      const { zones, drawn, rng, reshuffled } = drawTop(state.zones, drawPile.id, processing.id, effect.count, state.rng);
+      const events: EngineEvent[] = [
+        ...(reshuffled > 0 ? [{ kind: 'DiscardPileReshuffledEvent' as const, cardCount: reshuffled }] : []),
+        { kind: 'CardsTurnedUpEvent', zoneId: processing.id, cards: drawn },
+      ];
+      return { state: { ...state, zones, rng, log: [...state.log, ...events] }, events };
+    }
+    case 'DiscardZoneEffect': {
+      const zone = state.zones.find((z) => z.id === effect.zoneId);
+      if (!zone) throw new Error(`Zone ${effect.zoneId} not found`);
+      const discardPile = requireZoneOfKind(state.zones, 'discardPile');
+      let current = state;
+      const events: EngineEvent[] = [];
+      for (const card of zone.cards) {
+        const moved = applyEffect(current, { kind: 'MoveCardEffect', cardInstanceId: card.instanceId, toZoneId: discardPile.id });
+        current = moved.state;
+        events.push(...moved.events);
+      }
+      return { state: current, events };
     }
     case 'DyingEffect':
       return applyDying(state, effect);

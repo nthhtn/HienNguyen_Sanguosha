@@ -95,8 +95,9 @@ export type DecisionReason =
   | { kind: 'wuxie'; tool: UsedCard; toolUserSeatId: string; target: Target }
   // May this seat cancel the counter card wuxieSeatId just played?
   | { kind: 'counter-wuxie'; wuxieSeatId: string }
-  // A card's own demand, e.g. Barbarians: play a Sha or take 1 damage.
-  | { kind: 'card-effect'; card: UsedCard; userSeatId: string }
+  // A card's own demand, e.g. Barbarians: play a Sha or take 1 damage. For
+  // Coerce, `victimSeatId` is the seat the Sha must be played at.
+  | { kind: 'card-effect'; card: UsedCard; userSeatId: string; victimSeatId?: string }
   // A Tool's pick (Steal, Break, Harvest): `userSeatId` used `card`; the
   // chooser takes or discards one of `targetSeatId`'s cards (none for Harvest).
   | { kind: 'choice'; card: UsedCard; userSeatId: string; targetSeatId?: string };
@@ -123,7 +124,7 @@ export interface ChoiceOption {
 
 export interface CardZone {
   id: string;
-  kind: 'hand' | 'equip' | 'drawPile' | 'discardPile' | 'judgment';
+  kind: 'hand' | 'equip' | 'drawPile' | 'discardPile' | 'judgment' | 'processing';
   ownerSeatId?: string;
   cards: CardInstance[];
 }

@@ -261,11 +261,13 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
             }
           : reason?.kind === 'counter-wuxie'
             ? { seatId: reason.wuxieSeatId, counters: true }
-            : {
-                ...(answered?.source?.kind === 'seat' ? { seatId: answered.source.seatId } : {}),
-                ...(answered?.cause?.cardInstanceId ? { cardInstanceId: answered.cause.cardInstanceId } : {}),
-                ...(reason?.kind === 'dying' ? { dyingSeatId: reason.seatId } : {}),
-              };
+            : reason?.kind === 'card-effect'
+              ? { seatId: reason.userSeatId, ...(reason.card.physical[0] ? { cardInstanceId: reason.card.physical[0].instanceId } : {}) }
+              : {
+                  ...(answered?.source?.kind === 'seat' ? { seatId: answered.source.seatId } : {}),
+                  ...(answered?.cause?.cardInstanceId ? { cardInstanceId: answered.cause.cardInstanceId } : {}),
+                  ...(reason?.kind === 'dying' ? { dyingSeatId: reason.seatId } : {}),
+                };
       const event: CardPlayedEvent = { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: [], inResponseTo };
       const afterLog = logged({ ...state, pendingResponse: null }, [event]);
       const effects = cardDefinition.play(afterLog, {

@@ -48,3 +48,21 @@ describe('DrawCardsEffect', () => {
   });
 });
 
+
+describe('the processing zone', () => {
+  const withProcessing = (s: GameState): GameState => ({ ...s, zones: [...s.zones, { id: 'processing', kind: 'processing', cards: [] }] });
+
+  it('RevealToProcessingEffect turns cards up from the draw pile, face up for all to see', () => {
+    const { state: next, events } = applyEffect(withProcessing(state([card('c1'), card('c2'), card('c3')], [])), { kind: 'RevealToProcessingEffect', count: 2 });
+    expect(next.zones.find((z) => z.id === 'processing')!.cards).toEqual([card('c1'), card('c2')]);
+    expect(events).toEqual([{ kind: 'CardsTurnedUpEvent', zoneId: 'processing', cards: [card('c1'), card('c2')] }]);
+  });
+
+  it('DiscardZoneEffect moves every card in the zone to the discard pile, in order', () => {
+    const turnedUp = applyEffect(withProcessing(state([card('c1'), card('c2')], [])), { kind: 'RevealToProcessingEffect', count: 2 }).state;
+    const { state: next, events } = applyEffect(turnedUp, { kind: 'DiscardZoneEffect', zoneId: 'processing' });
+    expect(next.zones.find((z) => z.id === 'processing')!.cards).toEqual([]);
+    expect(next.zones.find((z) => z.id === 'discardPile')!.cards).toEqual([card('c1'), card('c2')]);
+    expect(events.map((e) => e.kind)).toEqual(['CardMovedEvent', 'CardMovedEvent']);
+  });
+});

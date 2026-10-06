@@ -40,7 +40,7 @@ resolve(state, action)                      ← the only entry point
           an Effect → before:<EffectKind> triggers → applyEffect → events logged
                       → each event's after-trigger follow-ups go to the FRONT
           an Action → resolveAction (queues more)
-          stop when a response is pending, the queue is empty, or the game is over
+          stop when a response or choice is pending, the queue is empty, or the game is over
         response pending / player must decide / game over? stop
         otherwise enter the next phase (logs PhaseChangedEvent, queues its triggers)
 ```
@@ -241,6 +241,28 @@ Sha.
 Every step that waits for a player is a window, and everything after it
 stays queued until the answer comes.
 
+## Choices
+
+Some Tools ask a seat to pick one of several things: Steal and Break pick one
+of a seat's cards, and Harvest picks one of the turned-up cards. A pick is a
+**pending choice**, and the queue waits for it the way it waits for a response:
+
+- `OpenChoiceEffect` stores a `PendingChoice` in `state.pendingChoice`: who
+  picks, why (its `reason`), whether the card is taken or discarded (`verb`),
+  and the options. Each option says what it shows and which effects it queues.
+- While a choice is pending, the chooser is the active seat and its only legal
+  actions are one `ChooseOptionAction` per option.
+- `ChooseOptionAction` logs `ChoiceMadeEvent` and queues the option's effects
+  at the front. The queue then carries on.
+- **A hand is never shown.** It is a single `hidden-hand` option with only its
+  size. Its effect, `MoveRandomCardEffect`, picks a card with the seeded RNG.
+- **Harvest's cards** are turned up into the face-up `processing` zone
+  (`RevealToProcessingEffect`). Whatever no seat took is discarded at the end
+  (`DiscardZoneEffect`).
+
+Redaction masks any card a viewer can't see wherever it appears in the queue
+or a pending decision, so a choice can't leak a hand card.
+
 ## Plugging into the chain
 ## Plugging into the chain
 
@@ -249,6 +271,7 @@ stays queued until the answer comes.
 | A card's effect | `CardDefinition.play()` returning effects | Peach returns `HealEffect` |
 | A card that asks someone to answer | `OpenResponseEffect` from `play()` | Sha asks for a Shan |
 | A Tool's rule on each target | `play()` returning `ToolOnTargetEffect`s (content's `toolOnTargets`), and `CardDefinition.onTarget` | Barbarians opens a Sha window on each target |
+| A pick among cards or options | `OpenChoiceEffect` with options whose `effects` say what each pick does | Steal offers the target's hand (face down) and each worn card |
 | What answering does, beyond cancelling | `CardDefinition.onResponse()` and `sourceCard` on the window | Duel turns back on the other player |
 | A reaction to something that happened | An `after:<EventKind>` trigger on a skill or mode | Kingdom War's dying round at 0 HP |
 | Effects that follow an answer to an engine-opened window | `onAnswer` on the `PendingResponse` | The dying round's Peach heals, then asks again |

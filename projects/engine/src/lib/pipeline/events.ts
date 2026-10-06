@@ -88,6 +88,13 @@ export interface GeneralsChosenEvent {
   seatId: string;
 }
 
+// Cards turned face up from the draw pile into `zoneId` (Harvest's cards).
+export interface CardsTurnedUpEvent {
+  kind: 'CardsTurnedUpEvent';
+  zoneId: string;
+  cards: CardInstance[];
+}
+
 // A seat picked an option of a pending choice. `shows` is what the option
 // showed, so a pick from a hidden hand never names the card.
 export interface ChoiceMadeEvent {
@@ -112,4 +119,5 @@ export type EngineEvent =
   | SeatDyingEvent
   | SeatSavedEvent
   | GeneralsChosenEvent
-  | ChoiceMadeEvent;
+  | ChoiceMadeEvent
+  | CardsTurnedUpEvent;

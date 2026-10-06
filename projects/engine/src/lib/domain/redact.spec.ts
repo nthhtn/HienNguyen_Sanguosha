@@ -148,3 +148,33 @@ describe('redactStateForSeat with seats that have not chosen generals', () => {
     expect(redacted.seats[1].kingdom).toBe('hidden');
   });
 });
+
+describe('redactStateForSeat: hidden cards in the queue and pending decisions (Review Focus 3)', () => {
+  const secret = { instanceId: 'b-secret', definitionId: 'peach', suit: 'heart' as const, rank: 3 };
+  const used = { as: 'mystery', colour: 'red' as const, physical: [secret] };
+  const leaky: GameState = {
+    seats: [], players: [], turn: { turnNumber: 1, ownerSeatId: 'a', extraTurnStack: [] }, phase: 'Play',
+    zones: [
+      { id: 'a:hand', kind: 'hand', ownerSeatId: 'a', cards: [] },
+      { id: 'b:hand', kind: 'hand', ownerSeatId: 'b', cards: [secret] },
+    ],
+    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
+    resolutionQueue: [{ kind: 'ToolRuleEffect', tool: used, userSeatId: 'b', target: { kind: 'seat', seatId: 'b' } }],
+    pendingChoice: {
+      id: 'c', seatId: 'a', verb: 'take', reason: { kind: 'choice', card: used, userSeatId: 'b' },
+      options: [{ id: 'x', shows: { kind: 'card', card: secret }, effects: [] }],
+    },
+  };
+
+  it('masks another seat’s hand card wherever the queue or a pending choice mentions it', () => {
+    const forA = redactStateForSeat(leaky, 'a');
+    expect(JSON.stringify(forA.resolutionQueue)).not.toContain('"definitionId":"peach"');
+    expect(forA.pendingChoice!.options[0].shows).toEqual({ kind: 'card', card: { instanceId: 'b-secret', definitionId: 'hidden', suit: 'spade', rank: 0 } });
+  });
+
+  it('leaves the card visible to its owner', () => {
+    const forB = redactStateForSeat(leaky, 'b');
+    expect(forB.resolutionQueue).toEqual(leaky.resolutionQueue);
+    expect(forB.pendingChoice).toEqual(leaky.pendingChoice);
+  });
+});

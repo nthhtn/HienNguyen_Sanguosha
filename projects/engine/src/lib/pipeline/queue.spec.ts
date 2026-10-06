@@ -120,3 +120,28 @@ describe('resolution queue', () => {
     );
   });
 });
+
+describe('answering a card-effect window', () => {
+  it('records the seat and card it answered, from the window’s reason', () => {
+    const demand: Effect = {
+      kind: 'OpenResponseEffect',
+      pendingResponse: {
+        id: 'w2', respondingSeatId: 'seat-b', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['answer'],
+        reason: {
+          kind: 'card-effect', userSeatId: 'seat-a', victimSeatId: 'seat-a',
+          card: { as: 'demand', colour: 'black', suit: 'spade', rank: 1, physical: [{ instanceId: 'played', definitionId: 'demand', suit: 'spade', rank: 1 }] },
+        },
+        context: { effect: { kind: 'MoveCardEffect', cardInstanceId: 'd1', toZoneId: 'seat-a:hand' } },
+      },
+    };
+    const ctx = { registry: registry(cardThat('demand', [demand]), cardThat('answer', [])), mode: mode() };
+    const s = state('demand');
+    const withAnswer = {
+      ...s,
+      zones: s.zones.map((z) => (z.id === 'seat-b:hand' ? { ...z, cards: [{ instanceId: 'ans', definitionId: 'answer', suit: 'heart' as const, rank: 2 }] } : z)),
+    };
+    const answered = resolve(play(withAnswer, ctx), { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'w2', cardInstanceId: 'ans' }, ctx).state;
+    expect(answered.log.find((e) => e.kind === 'CardPlayedEvent' && e.seatId === 'seat-b')).toMatchObject({ inResponseTo: { seatId: 'seat-a', cardInstanceId: 'played' } });
+    expect(answered.zones.find((z) => z.id === 'seat-a:hand')!.cards).toEqual([]); // the held-back move was cancelled
+  });
+});
