@@ -37,7 +37,11 @@ export type Effect =
   // Moves every card in `zoneId` to the discard pile, in order.
   | { kind: 'DiscardZoneEffect'; zoneId: string }
   // Turns a flag of the current turn on (e.g. skipFlagOf('Play')). Flags end with the turn.
-  | { kind: 'SetTurnFlagEffect'; flag: string };
+  | { kind: 'SetTurnFlagEffect'; flag: string }
+  // A judgment for `seatId`, read by the delayed Tool `tool` (CardDefinition.onJudged).
+  | { kind: 'JudgeEffect'; seatId: string; tool: UsedCard }
+  // A delayed Tool's turn in the Judgment phase is over (CardDefinition.onCleanup).
+  | { kind: 'DelayedCleanupEffect'; tool: UsedCard; ownerSeatId: string };
 
 export interface ApplyResult {
   state: GameState;

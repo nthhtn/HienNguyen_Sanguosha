@@ -1,4 +1,4 @@
-import { CardInstance, ChoiceOption, Damage, DecisionReason, Phase, Target } from '../domain/types';
+import { CardInstance, ChoiceOption, Damage, DecisionReason, Phase, Target, UsedCard } from '../domain/types';
 
 export interface CardsDrawnEvent {
   kind: 'CardsDrawnEvent';
@@ -112,6 +112,14 @@ export interface ChoiceMadeEvent {
   shows: ChoiceOption['shows'];
 }
 
+// A card turned up for `seatId`'s judgment, read by the delayed Tool `tool`.
+export interface JudgmentEvent {
+  kind: 'JudgmentEvent';
+  seatId: string;
+  tool: UsedCard;
+  card: CardInstance;
+}
+
 export type EngineEvent =
   | CardsDrawnEvent
   | DamageDealtEvent
@@ -128,4 +136,5 @@ export type EngineEvent =
   | SeatSavedEvent
   | GeneralsChosenEvent
   | ChoiceMadeEvent
-  | CardsTurnedUpEvent;
+  | CardsTurnedUpEvent
+  | JudgmentEvent;

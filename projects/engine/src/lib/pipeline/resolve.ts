@@ -12,6 +12,7 @@ import { cardsOverHandLimit } from '../rules/handLimit';
 import { CardPlayedEvent, ChoiceMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
+import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -158,7 +159,11 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
   }
   if (current === null) return { state, events: [] };
 
-  const applied = isLifecycleEffect(current) ? applyLifecycleEffect(state, current, ctx.registry) : applyEffect(state, current);
+  const applied = isLifecycleEffect(current)
+    ? applyLifecycleEffect(state, current, ctx.registry)
+    : isJudgmentStepEffect(current)
+      ? applyJudgmentStepEffect(state, current, ctx.registry)
+      : applyEffect(state, current);
   return { state: queueFront(applied.state, afterTriggerFollowUps(applied.state, applied.events, ctx)), events: applied.events };
 }
 
@@ -219,9 +224,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         turn: { ...afterLog.turn, cardPlays: { ...plays, [cardInHand.definitionId]: (plays[cardInHand.definitionId] ?? 0) + 1 } },
       };
       // A used card leaves the hand at once, so it can't be reused mid-resolution.
-      // Equipment is placed by its own play() instead.
+      // Equipment and delayed Tools are placed by their own play() instead.
       const leaveHand: Effect[] =
-        cardDefinition.category === 'equipment'
+        cardDefinition.category === 'equipment' || cardDefinition.delayed
           ? []
           : [{ kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: requireZoneOfKind(state.zones, 'discardPile').id }];
       const followUps = afterTriggerFollowUps(counted, [event], ctx);

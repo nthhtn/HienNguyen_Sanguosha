@@ -1,4 +1,4 @@
-import { GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
+import { CardInstance, GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
 import { RngState } from '../rng/rng';
 
 export interface PlayContext {
@@ -38,6 +38,16 @@ export interface CardDefinition {
   // A Tool's rule on one target, once its Wuxie check has passed
   // (ToolRuleEffect). Its effects go to the front of the queue.
   onTarget?(state: GameState, ctx: ToolTargetContext): unknown[];
+  // A delayed Tool: play() puts it in a judgment area, so playing it doesn't
+  // send it to the discard pile (like Equipment).
+  delayed?: boolean;
+  // A delayed Tool reading its judgment card (JudgeEffect). Its effects go to
+  // the front of the queue, ahead of the judged card's move to the discard pile.
+  onJudged?(state: GameState, ctx: JudgedContext): unknown[];
+  // What becomes of a delayed Tool once it has had its turn in the Judgment
+  // phase (DelayedCleanupEffect). Absent = discarded, if it is still in its
+  // owner's judgment area.
+  onCleanup?(state: GameState, ctx: DelayedToolContext): unknown[];
 }
 
 export interface ResponseContext {
@@ -52,6 +62,19 @@ export interface ToolTargetContext {
   userSeatId: string;
   target: Target;
   extra?: Target[];
+}
+
+export interface JudgedContext {
+  tool: UsedCard;
+  // The seat being judged, and the card turned up for it.
+  seatId: string;
+  judged: CardInstance;
+}
+
+export interface DelayedToolContext {
+  tool: UsedCard;
+  // The seat whose judgment area the delayed Tool was judged in.
+  ownerSeatId: string;
 }
 
 export type TriggerPoint = `before:${string}` | `after:${string}`;
