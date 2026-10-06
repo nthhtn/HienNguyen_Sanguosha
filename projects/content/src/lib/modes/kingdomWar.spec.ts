@@ -108,7 +108,7 @@ describe('Kingdom War setup and deal', () => {
     expect(deckOf(2).filter((c) => c.startsWith('shan '))).toHaveLength(15);
     expect(deckOf(2).filter((c) => c.startsWith('peach '))).toHaveLength(8);
     expect(deckOf(2).filter((c) => c.startsWith('wuxie '))).toHaveLength(3);
-    expect(deckOf(2)).toHaveLength(61);
+    expect(deckOf(2)).toHaveLength(70);
   });
 
   it('refuses to build a deck for a card with no printings', () => {

@@ -139,10 +139,10 @@ describe('wikiCards', () => {
     expect(wikiCards('equipment').find((c) => c.id === 'axe')!.range).toBe(3);
   });
 
-  it('lists the 15 tools, with Duel and Wuxie in the game and their printings', () => {
+  it('lists the 15 tools, with the playable ones in the game and their printings', () => {
     const tools = wikiCards('tool');
     expect(tools).toHaveLength(15);
-    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['duel', 'wuxie']);
+    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'draw-two', 'duel', 'hail-of-arrows', 'peach-garden', 'wuxie']);
     const duel = tools.find((c) => c.id === 'duel')!;
     expect(duel.count).toBe(3);
     expect(duel.printings).toEqual([{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }]);
