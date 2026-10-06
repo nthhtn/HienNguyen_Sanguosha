@@ -1,4 +1,5 @@
 import type { ContentRegistry, EquipSlot, GameState, Target } from 'engine';
+import { activeAbilities } from './abilities';
 
 // Seat-to-seat distance measured around the table over living seats only.
 // Returns Infinity when either seat is missing from the living set (an
@@ -39,9 +40,9 @@ export function attackRange(state: GameState, seatId: string, registry: ContentR
   return equippedSlot(state, seatId, 'weapon', registry)?.weaponRange ?? 1;
 }
 
-// Sha plays allowed per turn. The single place a future effect (e.g. Crossbow) raises it.
-export function shaLimit(_state: GameState, _seatId: string, _registry: ContentRegistry): number {
-  return 1;
+// Sha plays allowed per turn: the highest any active ability allows, else 1.
+export function shaLimit(state: GameState, seatId: string, registry: ContentRegistry): number {
+  return Math.max(1, ...activeAbilities(state, seatId, registry).map((a) => a.modifiers?.shaLimit ?? 1));
 }
 
 // Every living seat other than `seatId`, as single-target lists, in seat order.

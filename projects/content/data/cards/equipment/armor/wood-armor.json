@@ -1,9 +1,20 @@
 {
   "name": "Wood Armor",
   "nameZh": "藤甲",
+  "printings": [
+    {
+      "rank": 2,
+      "suit": "spade"
+    },
+    {
+      "rank": 2,
+      "suit": "club"
+    }
+  ],
   "source": {
     "crawledAt": "2026-10-05",
     "expansion": "Army",
+    "printingsFrom": "army/EX printing list (manual, not crawled)",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
     "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wood-armor"
   },

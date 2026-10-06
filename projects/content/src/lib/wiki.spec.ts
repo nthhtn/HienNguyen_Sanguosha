@@ -125,12 +125,12 @@ describe('wikiCards', () => {
     expect([...wikiCards('basic'), ...wikiCards('equipment')].some((c) => c.delayed)).toBe(false);
   });
 
-  it('lists equipment by subtype then name, with Green Dragon Blade and Silver Lion in the game', () => {
+  it('lists equipment by subtype then name, with the playable ones in the game', () => {
     const equipment = wikiCards('equipment');
     expect(equipment).toHaveLength(22);
     expect(equipment.map((c) => c.subtype)).toEqual([...Array(11).fill('weapon'), ...Array(4).fill('armor'), ...Array(7).fill('horse')]);
     expect(equipment.slice(0, 3).map((c) => c.name)).toEqual(['Ancient Scimitar', 'Axe', 'Black Pommel']);
-    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['green-dragon-blade', 'silver-lion']);
+    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['black-pommel', 'crossbow', 'green-dragon-blade', 'silver-lion', 'da-yuan', 'di-lu', 'hua-liu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing']);
   });
 
   it('reports data gaps as null or empty, never guessed (Review Focus 2)', () => {
@@ -150,7 +150,7 @@ describe('wikiCards', () => {
 
   it('includes the crawled EX and Army cards, not yet in the game', () => {
     const all = [...wikiCards('tool'), ...wikiCards('equipment')];
-    const ids = ['blaze', 'chains', 'hua-liu', 'ancient-scimitar', 'fire-fan', 'ice-sword', 'wood-armor', 'black-shield'];
+    const ids = ['blaze', 'chains', 'ancient-scimitar', 'fire-fan', 'ice-sword', 'wood-armor', 'black-shield'];
     for (const id of ids) {
       const card = all.find((c) => c.id === id)!;
       expect(card).toBeDefined();
@@ -159,7 +159,7 @@ describe('wikiCards', () => {
     }
     expect(all.find((c) => c.id === 'chains')).toMatchObject({ count: 6, nameZh: '铁索连环' });
     expect(all.find((c) => c.id === 'ice-sword')).toMatchObject({ range: 2, subtype: 'weapon' });
-    expect(all.find((c) => c.id === 'black-shield')!.printings).toEqual([]);
+    expect(all.find((c) => c.id === 'black-shield')!.printings).toEqual([{ suit: 'club', rank: 2 }]);
   });
 
   it('lists Silver Lion as in-game armour with its single printing', () => {

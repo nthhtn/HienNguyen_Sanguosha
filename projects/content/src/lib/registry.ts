@@ -16,7 +16,7 @@ import { coerceCard } from './cards/coerce';
 import { captureCard } from './cards/capture';
 import { starvationCard } from './cards/starvation';
 import { lightningCard } from './cards/lightning';
-import { silverLionCard, greenDragonBladeCard } from './cards/equipment';
+import { silverLionCard, greenDragonBladeCard, horseCards, crossbowCard, blackPommelCard } from './cards/equipment';
 
 function buildGenerals(): GeneralDefinition[] {
   const generals: GeneralDefinition[] = [];
@@ -39,7 +39,7 @@ function buildGenerals(): GeneralDefinition[] {
 }
 
 export function buildContentRegistry(): ContentRegistry {
-  const cards = [shaCard, shanCard, peachCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard];
+  const cards = [shaCard, shanCard, peachCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard];
   const generals = buildGenerals();
   return {
     cards: new Map(cards.map((c) => [c.id, c])),

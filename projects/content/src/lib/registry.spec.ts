@@ -4,7 +4,7 @@ describe('buildContentRegistry', () => {
   it('registers the fifteen playable cards', () => {
     const registry = buildContentRegistry();
     expect([...registry.cards.keys()].sort()).toEqual(
-      ['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'green-dragon-blade', 'hail-of-arrows', 'harvest', 'lightning', 'peach', 'peach-garden', 'sha', 'shan', 'silver-lion', 'starvation', 'steal', 'wuxie'].sort()
+      ['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'green-dragon-blade', 'hail-of-arrows', 'harvest', 'lightning', 'peach', 'peach-garden', 'sha', 'shan', 'silver-lion', 'starvation', 'steal', 'wuxie', 'black-pommel', 'crossbow', 'da-yuan', 'di-lu', 'hua-liu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing'].sort()
     );
   });
 
