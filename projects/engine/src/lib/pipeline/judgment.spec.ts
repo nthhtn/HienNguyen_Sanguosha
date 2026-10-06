@@ -77,6 +77,14 @@ const phasesOf = (log: EngineEvent[]) =>
   log.flatMap((e) => (e.kind === 'PhaseChangedEvent' ? [`${e.seatId}:${e.phase}`] : e.kind === 'TurnAdvancedEvent' ? [`turn ${e.turnNumber}`] : []));
 
 describe('turn flags', () => {
+  it('SetTurnFlagEffect with value false clears a flag, and leaves no empty flags behind', () => {
+    const set = applyEffect(table({ flags: { wine: true, skipPlay: true } }), { kind: 'SetTurnFlagEffect', flag: 'wine', value: false }).state;
+    expect(set.turn.flags).toEqual({ skipPlay: true });
+    const cleared = applyEffect(table({ flags: { wine: true } }), { kind: 'SetTurnFlagEffect', flag: 'wine', value: false }).state;
+    expect(cleared.turn).not.toHaveProperty('flags');
+    expect(applyEffect(table(), { kind: 'SetTurnFlagEffect', flag: 'wine', value: false }).state.turn).not.toHaveProperty('flags');
+  });
+
   it('SetTurnFlagEffect sets a flag for the rest of the turn', () => {
     expect(applyEffect(table(), { kind: 'SetTurnFlagEffect', flag: 'skipPlay' }).state.turn.flags).toEqual({ skipPlay: true });
   });

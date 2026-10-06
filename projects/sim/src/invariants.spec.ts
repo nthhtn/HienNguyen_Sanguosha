@@ -38,7 +38,7 @@ describe('checkInvariants', () => {
     dying.pendingResponse = {
       id: 'd1', respondingSeatId: dying.seats[0].id, allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['peach'],
       reason: { kind: 'dying', seatId: dying.seats[0].id },
-      context: { effect: { kind: 'DyingEffect', seatId: dying.seats[0].id, order: [], rescueCardIds: ['peach'] } },
+      context: { effect: { kind: 'DyingEffect', seatId: dying.seats[0].id, order: [], rescueCardIds: { any: ['peach'], self: [] } } },
     };
     expect(checkInvariants(dying)).toEqual([]);
     const out = baseState();

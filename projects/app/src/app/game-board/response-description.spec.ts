@@ -53,7 +53,7 @@ describe('describeResponse', () => {
     const dyingWindow = (seatId: string): PendingResponse => ({
       id: 'd1', respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['peach'],
       reason: { kind: 'dying', seatId },
-      context: { effect: { kind: 'DyingEffect', seatId, order: [], rescueCardIds: ['peach'] } },
+      context: { effect: { kind: 'DyingEffect', seatId, order: [], rescueCardIds: { any: ['peach'], self: [] } } },
     });
     const withHp = (s: GameState, seatId: string, hp: number): GameState => ({
       ...s,

@@ -7,7 +7,10 @@ import { Action } from './actions';
 
 // A stand-in Peach: as a response it does nothing itself — the dying window heals.
 const registry: ContentRegistry = {
-  cards: new Map([['peach', { id: 'peach', name: 'Peach', category: 'basic', play: () => [] }]]),
+  cards: new Map([
+    ['peach', { id: 'peach', name: 'Peach', category: 'basic', play: () => [] }],
+    ['wine', { id: 'wine', name: 'Wine', category: 'basic', play: () => [] }],
+  ]),
   generals: new Map(),
 };
 const mode: GameModeDefinition = {
@@ -40,7 +43,7 @@ function state(hp: number, hands: Record<string, CardInstance[]> = {}): GameStat
 }
 
 const ORDER = ['seat-b', 'seat-c', 'seat-d', 'seat-a'];
-const dying = (s: GameState) => applyEffect(s, { kind: 'DyingEffect', seatId: 'seat-c', order: ORDER, rescueCardIds: ['peach'], entering: true }).state;
+const dying = (s: GameState) => applyEffect(s, { kind: 'DyingEffect', seatId: 'seat-c', order: ORDER, rescueCardIds: { any: ['peach'], self: ['wine'] }, entering: true }).state;
 const hpOf = (s: GameState) => s.seats.find((x) => x.id === 'seat-c')!.combinedHp;
 const asked = (s: GameState) => s.pendingResponse?.respondingSeatId ?? null;
 const pass = (s: GameState) => resolve(s, { kind: 'PassAction', seatId: asked(s)!, pendingResponseId: s.pendingResponse!.id }, ctx).state;
@@ -61,7 +64,7 @@ describe('the dying round', () => {
     const s = dying(state(0));
     expect(s.log).toEqual([{ kind: 'SeatDyingEvent', seatId: 'seat-c' }]);
     expect(asked(s)).toBe('seat-c');
-    expect(s.pendingResponse).toMatchObject({ allowedCardIds: ['peach'], reason: { kind: 'dying', seatId: 'seat-c' } });
+    expect(s.pendingResponse).toMatchObject({ allowedCardIds: ['peach', 'wine'], reason: { kind: 'dying', seatId: 'seat-c' } });
     expect(s.seats.find((x) => x.id === 'seat-c')!.eliminated).toBe(false);
   });
 
@@ -107,8 +110,31 @@ describe('the dying round', () => {
   });
 
   it('does nothing for a seat that is not at 0 or below', () => {
-    const s = applyEffect(state(2), { kind: 'DyingEffect', seatId: 'seat-c', order: ORDER, rescueCardIds: ['peach'] }).state;
+    const s = applyEffect(state(2), { kind: 'DyingEffect', seatId: 'seat-c', order: ORDER, rescueCardIds: { any: ['peach'], self: ['wine'] } }).state;
     expect(s.pendingResponse).toBeNull();
     expect(s.log).toEqual([{ kind: 'SeatSavedEvent', seatId: 'seat-c' }]);
+  });
+});
+
+describe('self-only rescue cards', () => {
+  const wine = (instanceId: string): CardInstance => ({ instanceId, definitionId: 'wine', suit: 'spade', rank: 9 });
+
+  it('the dying seat may answer with a self-only card; another seat may not', () => {
+    // seat-b (turn owner) holds a Peach, so it is asked first, for Peach only.
+    const first = dying(state(0, { 'seat-b': [peach('p1')], 'seat-c': [wine('w1')] }));
+    expect(first.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['peach'] });
+    const own = pass(first);
+    expect(own.pendingResponse).toMatchObject({ respondingSeatId: 'seat-c', allowedCardIds: ['peach', 'wine'] });
+    const saved = givePeach(own, 'w1');
+    expect(hpOf(saved)).toBe(1);
+    expect(saved.log).toContainEqual({ kind: 'SeatSavedEvent', seatId: 'seat-c' });
+  });
+
+  it('never asks a seat that holds only a self-only card (Review Focus 4)', () => {
+    const s = dying(state(0, { 'seat-d': [wine('w1')] }));
+    // seat-b has nothing; the dying seat-c is asked; seat-d (Wine only) is skipped.
+    expect(asked(s)).toBe('seat-c');
+    const next = pass(s);
+    expect(next.seats.find((x) => x.id === 'seat-c')!.eliminated).toBe(true);
   });
 });

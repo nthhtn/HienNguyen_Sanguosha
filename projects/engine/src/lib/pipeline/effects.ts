@@ -13,9 +13,10 @@ export type Effect =
   | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string }
   | { kind: 'EliminateSeatEffect'; seatId: string }
   // The dying round for `seatId`: ask the seats in `order` (turn order from the
-  // turn owner) one at a time for one of `rescueCardIds` (content says which —
-  // Peach). See the Peach and dying spec.
-  | { kind: 'DyingEffect'; seatId: string; order: string[]; rescueCardIds: string[]; entering?: boolean }
+  // turn owner) one at a time. Any seat may save it with `rescueCardIds.any`
+  // (Peach); only the dying seat itself may also use `rescueCardIds.self`
+  // (Wine). Content says which. See the Peach and dying spec.
+  | { kind: 'DyingEffect'; seatId: string; order: string[]; rescueCardIds: { any: string[]; self: string[] }; entering?: boolean }
   // The Tool lifecycle (see the Tools spec). One per target: a Wuxie check,
   // then the Tool's own rule (CardDefinition.onTarget). Content supplies the
   // counter card ids, so the engine names no card.
@@ -36,8 +37,9 @@ export type Effect =
   | { kind: 'RevealToProcessingEffect'; count: number; keepInDiscard?: string[] }
   // Moves every card in `zoneId` to the discard pile, in order.
   | { kind: 'DiscardZoneEffect'; zoneId: string }
-  // Turns a flag of the current turn on (e.g. skipFlagOf('Play')). Flags end with the turn.
-  | { kind: 'SetTurnFlagEffect'; flag: string }
+  // Sets a flag of the current turn (e.g. skipFlagOf('Play')), or clears it
+  // with `value: false`. Flags end with the turn.
+  | { kind: 'SetTurnFlagEffect'; flag: string; value?: boolean }
   // A judgment for `seatId`, read by the delayed Tool `tool` (CardDefinition.onJudged).
   | { kind: 'JudgeEffect'; seatId: string; tool: UsedCard }
   // A delayed Tool's turn in the Judgment phase is over (CardDefinition.onCleanup).
@@ -157,8 +159,12 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       }
       return { state: current, events };
     }
-    case 'SetTurnFlagEffect':
-      return { state: { ...state, turn: { ...state.turn, flags: { ...(state.turn.flags ?? {}), [effect.flag]: true } } }, events: [] };
+    case 'SetTurnFlagEffect': {
+      const { [effect.flag]: _previous, ...others } = state.turn.flags ?? {};
+      const flags = effect.value === false ? others : { ...others, [effect.flag]: true };
+      const { flags: _old, ...turn } = state.turn;
+      return { state: { ...state, turn: Object.keys(flags).length > 0 ? { ...turn, flags } : turn }, events: [] };
+    }
     case 'DyingEffect':
       return applyDying(state, effect);
     default:
@@ -181,10 +187,11 @@ function applyDying(state: GameState, effect: Extract<Effect, { kind: 'DyingEffe
 
   if (seat.combinedHp > 0) return logged(state, [{ kind: 'SeatSavedEvent', seatId: seat.id }]);
 
+  // Other seats are asked only while they hold a card that may save someone else.
   const holdsRescue = (seatId: string) => {
     const s = state.seats.find((x) => x.id === seatId);
     const hand = s && state.zones.find((z) => z.id === s.hand.zoneId);
-    return !!hand?.cards.some((c) => effect.rescueCardIds.includes(c.definitionId));
+    return !!hand?.cards.some((c) => effect.rescueCardIds.any.includes(c.definitionId));
   };
   const isLiving = (seatId: string) => !!state.seats.find((x) => x.id === seatId && !x.eliminated);
   const index = effect.order.findIndex((id) => isLiving(id) && (id === seat.id || holdsRescue(id)));
@@ -198,7 +205,7 @@ function applyDying(state: GameState, effect: Extract<Effect, { kind: 'DyingEffe
     id: `dying-${seat.id}-${state.log.length + events.length}`,
     respondingSeatId: askerId,
     allowedActionKinds: ['RespondAction', 'PassAction'],
-    allowedCardIds: effect.rescueCardIds,
+    allowedCardIds: askerId === seat.id ? [...effect.rescueCardIds.any, ...effect.rescueCardIds.self] : effect.rescueCardIds.any,
     reason: { kind: 'dying', seatId: seat.id },
     // Pass: move on to the next seat.
     context: { effect: { kind: 'DyingEffect', seatId: seat.id, order: effect.order.slice(index + 1), rescueCardIds: effect.rescueCardIds } },

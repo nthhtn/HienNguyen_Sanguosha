@@ -58,8 +58,8 @@ function buildDeckSpec(registry: ContentRegistry) {
   });
 }
 
-// Cards that can save a dying seat. Wine (on yourself) joins later.
-export const RESCUE_CARD_IDS = ['peach'];
+// Cards that can save a dying seat: any seat's Peach; Wine (stage 4, Task 5) only on yourself.
+export const RESCUE_CARD_IDS = { any: ['peach'], self: [] as string[] };
 
 // Living seats in turn order, starting with `firstSeatId`.
 function turnOrderFrom(state: GameState, firstSeatId: string): string[] {
