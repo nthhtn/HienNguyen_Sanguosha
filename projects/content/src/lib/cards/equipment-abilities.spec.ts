@@ -145,6 +145,8 @@ describe('Silver Lion', () => {
     expect(next.log.map((e) => e.kind)).toEqual(['CardPlayedEvent', 'CardMovedEvent', 'HealEvent', 'CardMovedEvent']);
     const full = equip(table({ 'seat-a:hand': [lion(2)], 'seat-a:equip': [lion(1)] }), 'lion-2');
     expect(hp(full, 'seat-a')).toBe(4);
+    // At full HP nothing is healed, so no heal is logged.
+    expect(full.log.some((e) => e.kind === 'HealEvent')).toBe(false);
   });
 
   it('heals its wearer when taken into another hand, where the move shows no face (Review Focus 5)', () => {

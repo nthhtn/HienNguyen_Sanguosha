@@ -74,13 +74,14 @@ describe('equipment abilities', () => {
   });
 
   it('runs onUnequip for the former wearer after a card leaves an equip zone, after the move’s after-triggers', () => {
-    const healOnMove: SkillTrigger = {
+    const drawOnMove: SkillTrigger = {
       point: 'after:CardMovedEvent', condition: () => true,
-      effect: () => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-b' }, amount: 1 }],
+      effect: () => [{ kind: 'DrawCardsEffect', seatId: 'seat-b', count: 1 }],
     };
     const s = table({ equipA: [card('c1', 'charm')], queue: [{ kind: 'MoveCardEffect', cardInstanceId: 'c1', toZoneId: 'seat-b:hand' }] });
-    const next = advanceToDecision(s, { registry, mode: mode([healOnMove]) }).state;
-    expect(next.log.map((e) => e.kind)).toEqual(['CardMovedEvent', 'HealEvent', 'CardsDrawnEvent']);
+    const next = advanceToDecision(s, { registry, mode: mode([drawOnMove]) }).state;
+    expect(next.log.map((e) => e.kind)).toEqual(['CardMovedEvent', 'CardsDrawnEvent', 'CardsDrawnEvent']);
+    expect(next.log[1]).toMatchObject({ kind: 'CardsDrawnEvent', seatId: 'seat-b' });
     expect(next.log[2]).toMatchObject({ kind: 'CardsDrawnEvent', seatId: 'seat-a' });
   });
 

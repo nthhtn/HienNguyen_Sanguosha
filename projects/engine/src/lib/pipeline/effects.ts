@@ -100,8 +100,11 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const seat = state.seats.find((s) => s.id === effect.target.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.target.seatId}`);
       const combinedHp = Math.min(seat.maxCombinedHp, seat.combinedHp + effect.amount);
+      // Only what was actually recovered is logged; at full HP, nothing.
+      const recovered = combinedHp - seat.combinedHp;
+      if (recovered <= 0) return { state, events: [] };
       const seats = state.seats.map((s) => (s.id === effect.target.seatId ? { ...s, combinedHp } : s));
-      const event: EngineEvent = { kind: 'HealEvent', target: effect.target, amount: effect.amount };
+      const event: EngineEvent = { kind: 'HealEvent', target: effect.target, amount: recovered };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'MoveCardEffect': {

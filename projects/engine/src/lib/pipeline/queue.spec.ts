@@ -110,13 +110,13 @@ describe('resolution queue', () => {
   });
 
   it('throws, naming the item, when one call resolves more than the step budget', () => {
+    // Drawing nothing still logs a draw, so this cycle never ends on its own.
+    const drawNone = { kind: 'DrawCardsEffect' as const, seatId: 'seat-a', count: 0 };
     const forever = mode({
-      triggers: [
-        { point: 'after:HealEvent', condition: () => true, effect: () => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: 0 }] },
-      ],
+      triggers: [{ point: 'after:CardsDrawnEvent', condition: () => true, effect: () => [drawNone] }],
     });
-    expect(() => play(state('healer'), { registry: registry(cardThat('healer', [healA])), mode: forever })).toThrow(
-      new RegExp(`Resolution step budget exceeded \\(${MAX_RESOLUTION_STEPS} steps\\) while resolving HealEffect`)
+    expect(() => play(state('drawer'), { registry: registry(cardThat('drawer', [drawNone])), mode: forever })).toThrow(
+      new RegExp(`Resolution step budget exceeded \\(${MAX_RESOLUTION_STEPS} steps\\) while resolving DrawCardsEffect`)
     );
   });
 });

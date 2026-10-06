@@ -503,13 +503,14 @@ describe('resolve: Response Window pause and resume', () => {
 
 describe('resolve: step budget', () => {
   // Two fixture triggers that each produce an effect the other reacts to:
-  // HealEvent -> DamageEffect -> DamageDealtEvent -> HealEffect -> ...
+  // DamageDealtEvent -> HealEffect -> HealEvent -> DamageEffect -> ... (the
+  // seat's HP swings between 3 and 4, so every heal really heals and is logged)
   function registryWithCyclicTriggers(): ContentRegistry {
     const healCard: CardDefinition = {
       id: 'test-heal-card',
       name: 'Test Heal Card',
       category: 'basic',
-      play: (_state, ctx) => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: ctx.seatId }, amount: 1 }],
+      play: (_state, ctx) => [{ kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId: ctx.seatId }, amount: 1, nature: 'normal' } }],
     };
     const healToDamageGeneral: GeneralDefinition = {
       id: 'heal-to-damage-general',
@@ -529,7 +530,7 @@ describe('resolve: step budget', () => {
                   damage: {
                     source: null,
                     target: { kind: 'seat', seatId: 'seat-a' },
-                    amount: 0,
+                    amount: 1,
                     nature: 'normal',
                   },
                 },
@@ -551,7 +552,7 @@ describe('resolve: step budget', () => {
             {
               point: 'after:DamageDealtEvent',
               condition: () => true,
-              effect: () => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: 0 }],
+              effect: () => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: 1 }],
             },
           ],
         },

@@ -66,3 +66,25 @@ describe('the processing zone', () => {
     expect(events.map((e) => e.kind)).toEqual(['CardMovedEvent', 'CardMovedEvent']);
   });
 });
+
+describe('HealEffect', () => {
+  const seatAt = (hp: number) => ({
+    seats: [{ id: 'a', index: 0, kingdom: 'Wei' as const, generals: null, combinedHp: hp, maxCombinedHp: 4, eliminated: false,
+      hand: { zoneId: 'a:hand' }, equipped: { zoneId: 'a:equip' }, judgment: { zoneId: 'a:judgment' } }],
+    players: [], turn: { turnNumber: 1, ownerSeatId: 'a', extraTurnStack: [] }, phase: 'Play' as const, zones: [],
+    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
+  });
+  const heal = (amount: number) => ({ kind: 'HealEffect' as const, target: { kind: 'seat' as const, seatId: 'a' }, amount });
+
+  it('logs only the HP actually recovered', () => {
+    const { state, events } = applyEffect(seatAt(3), heal(2));
+    expect(state.seats[0].combinedHp).toBe(4);
+    expect(events).toEqual([{ kind: 'HealEvent', target: { kind: 'seat', seatId: 'a' }, amount: 1 }]);
+  });
+
+  it('logs nothing at full HP', () => {
+    const { state, events } = applyEffect(seatAt(4), heal(1));
+    expect(state.log).toEqual([]);
+    expect(events).toEqual([]);
+  });
+});
