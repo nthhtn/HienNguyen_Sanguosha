@@ -1,4 +1,4 @@
-import { CardInstance, ChoiceOption, Damage, DecisionReason, Phase, Target, UsedCard } from '../domain/types';
+import { AbilityOwner, CardInstance, ChoiceOption, Damage, DecisionReason, PendingChoice, Phase, Target, UsedCard } from '../domain/types';
 
 export interface CardsDrawnEvent {
   kind: 'CardsDrawnEvent';
@@ -109,7 +109,7 @@ export interface ChoiceMadeEvent {
   kind: 'ChoiceMadeEvent';
   seatId: string;
   reason: DecisionReason;
-  verb: 'take' | 'discard';
+  verb: PendingChoice['verb'];
   shows: ChoiceOption['shows'];
 }
 
@@ -119,6 +119,17 @@ export interface JudgmentEvent {
   seatId: string;
   tool: UsedCard;
   card: CardInstance;
+}
+
+// An ability applied (Black Shield stopping a Sha; Eight Trigrams counting as a
+// Shan). `outcome` is content's code for what it did; `targetSeatId` is the
+// other seat involved, if any.
+export interface AbilityUsedEvent {
+  kind: 'AbilityUsedEvent';
+  owner: AbilityOwner;
+  abilityId: string;
+  outcome: string;
+  targetSeatId?: string;
 }
 
 export type EngineEvent =
@@ -138,4 +149,5 @@ export type EngineEvent =
   | GeneralsChosenEvent
   | ChoiceMadeEvent
   | CardsTurnedUpEvent
-  | JudgmentEvent;
+  | JudgmentEvent
+  | AbilityUsedEvent;

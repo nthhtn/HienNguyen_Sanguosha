@@ -14,6 +14,7 @@ import { CardPlayedEvent, ChoiceMadeEvent, EngineEvent, PhaseChangedEvent, Phase
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
+import { applyCardStep } from './cardStep';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -150,14 +151,18 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
 
 // `effect` as its before-triggers would rewrite it (e.g. Silver Lion's cap),
 // or null if one would cancel it. Applies nothing: the UI uses it to state what
-// a pending effect would really do.
+// a pending effect would really do. Each trigger after the first is checked
+// again against the effect as rewritten so far. A rewrite into another kind of
+// effect (an ask) ends it: the rest get their say when the effect comes back.
 export function previewEffect(state: GameState, effect: Effect, ctx: EngineContext): Effect | null {
   const beforeTriggers = gatherTriggeredSkills(state, ctx.registry, ctx.mode, `before:${effect.kind}`, effect);
-  let current: Effect | null = effect;
-  for (const gathered of beforeTriggers) {
-    if (current === null) break;
+  let current: Effect = effect;
+  for (const [index, gathered] of beforeTriggers.entries()) {
+    if (index > 0 && !gathered.trigger.condition(state, current, gathered.owner, ctx.registry)) continue;
     const outputs = gathered.trigger.effect(state, current, gathered.owner, ctx.registry) as Effect[];
-    current = outputs.length > 0 ? outputs[0] : null;
+    if (outputs.length === 0) return null;
+    current = outputs[0];
+    if (current.kind !== effect.kind) return current;
   }
   return current;
 }
@@ -172,7 +177,9 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
     ? applyLifecycleEffect(state, current, ctx.registry)
     : isJudgmentStepEffect(current)
       ? applyJudgmentStepEffect(state, current, ctx.registry)
-      : applyEffect(state, current);
+      : current.kind === 'CardStepEffect'
+        ? applyCardStep(state, current, ctx.registry)
+        : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
   return { state: queueFront(applied.state, followUps), events: applied.events };
 }

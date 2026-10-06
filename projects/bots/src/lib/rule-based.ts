@@ -77,6 +77,7 @@ function decide(
       const shows = options.find((o) => o.id === p.optionId)?.shows;
       if (!shows) return -1;
       if (shows.kind === 'hidden-hand') return 1;
+      if (shows.kind !== 'card') return 0;
       const zone = view.zones.find((z) => z.cards.some((c) => c.instanceId === shows.card.instanceId));
       if (zone?.kind === 'processing') return keepRank(view, registry, shows.card.instanceId);
       const slot = registry.cards.get(shows.card.definitionId)?.equipSlot;

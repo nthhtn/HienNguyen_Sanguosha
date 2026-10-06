@@ -1,4 +1,5 @@
-import { GameState, Damage, PendingChoice, PendingResponse, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GameState, Damage, PendingChoice, PendingResponse, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
 import { EngineEvent } from './events';
@@ -10,7 +11,9 @@ export type Effect =
   | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse }
   | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy' }
   | { kind: 'HealEffect'; target: Target; amount: number }
-  | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string }
+  // `onlyFrom`: move it only if it is still in that zone (a judged card a
+  // reader already moved on).
+  | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string; onlyFrom?: string }
   | { kind: 'EliminateSeatEffect'; seatId: string }
   // The dying round for `seatId`: ask the seats in `order` (turn order from the
   // turn owner) one at a time. Any seat may save it with `rescueCardIds.any`
@@ -40,10 +43,20 @@ export type Effect =
   // Sets a flag of the current turn (e.g. skipFlagOf('Play')), or clears it
   // with `value: false`. Flags end with the turn.
   | { kind: 'SetTurnFlagEffect'; flag: string; value?: boolean }
-  // A judgment for `seatId`, read by the delayed Tool `tool` (CardDefinition.onJudged).
-  | { kind: 'JudgeEffect'; seatId: string; tool: UsedCard }
+  // A judgment for `seatId`, read by `tool` (CardDefinition.onJudged), which
+  // also receives `data`.
+  | { kind: 'JudgeEffect'; seatId: string; tool: UsedCard; data?: Record<string, unknown> }
   // A delayed Tool's turn in the Judgment phase is over (CardDefinition.onCleanup).
-  | { kind: 'DelayedCleanupEffect'; tool: UsedCard; ownerSeatId: string };
+  | { kind: 'DelayedCleanupEffect'; tool: UsedCard; ownerSeatId: string }
+  // One step of a card's resolution (a Sha's steps; see the Sha-Equipment
+  // spec). The card's onStep says what it leads to; abilities hook in with
+  // before:CardStepEffect triggers.
+  | { kind: 'CardStepEffect'; step: string; card: UsedCard; userSeatId: string; target: Target; data?: Record<string, unknown> }
+  // Asks `owner`'s seat whether to use an optional ability: Use queues
+  // `effects`, Don't queues `otherwise`.
+  | { kind: 'AskUseEffect'; owner: AbilityOwner; abilityId: string; effects: Effect[]; otherwise?: Effect[]; targetSeatId?: string }
+  // Logs that an ability applied, for the Action History.
+  | { kind: 'AbilityUsedEffect'; owner: AbilityOwner; abilityId: string; outcome: string; targetSeatId?: string };
 
 export interface ApplyResult {
   state: GameState;
@@ -109,6 +122,7 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     }
     case 'MoveCardEffect': {
       const origin = state.zones.find((z) => z.cards.some((c) => c.instanceId === effect.cardInstanceId));
+      if (effect.onlyFrom && origin?.id !== effect.onlyFrom) return { state, events: [] };
       const zones = moveCard(state.zones, effect.cardInstanceId, effect.toZoneId);
       const destination = zones.find((z) => z.id === effect.toZoneId)!;
       const card = destination.cards.at(-1)!;
@@ -170,6 +184,32 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     }
     case 'DyingEffect':
       return applyDying(state, effect);
+    case 'AskUseEffect': {
+      const owner = state.seats.find((s) => s.id === effect.owner.seatId);
+      // An owner who is out can't be asked: what happens otherwise goes ahead.
+      if (!owner || owner.eliminated) return { state: queueFront(state, effect.otherwise ?? []), events: [] };
+      const choice: PendingChoice = {
+        id: `ask-${effect.abilityId}-${owner.id}-${state.log.length}`,
+        seatId: owner.id,
+        reason: { kind: 'ability', owner: effect.owner, abilityId: effect.abilityId, ...(effect.targetSeatId ? { targetSeatId: effect.targetSeatId } : {}) },
+        verb: 'use',
+        options: [
+          { id: 'use', shows: { kind: 'use' }, effects: effect.effects },
+          { id: 'decline', shows: { kind: 'decline' }, effects: effect.otherwise ?? [] },
+        ],
+      };
+      return { state: { ...state, pendingChoice: choice }, events: [] };
+    }
+    case 'AbilityUsedEffect': {
+      const event: EngineEvent = {
+        kind: 'AbilityUsedEvent',
+        owner: effect.owner,
+        abilityId: effect.abilityId,
+        outcome: effect.outcome,
+        ...(effect.targetSeatId ? { targetSeatId: effect.targetSeatId } : {}),
+      };
+      return { state: { ...state, log: [...state.log, event] }, events: [event] };
+    }
     default:
       throw new Error(`Unhandled effect kind: ${(effect as Effect).kind}`);
   }

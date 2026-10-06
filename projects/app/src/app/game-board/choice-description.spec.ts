@@ -61,3 +61,10 @@ describe('choiceDialogOptions', () => {
     expect(choiceDialogOptions(options, [pick('lion-1')], players).map((o) => o.id)).toEqual(['lion-1']);
   });
 });
+
+describe('ability asks', () => {
+  it('labels the Use and Don’t options', () => {
+    expect(choiceOptionLabel({ kind: 'use' }, [])).toBe('Use');
+    expect(choiceOptionLabel({ kind: 'decline' }, [])).toBe("Don't");
+  });
+});

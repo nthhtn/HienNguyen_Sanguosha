@@ -1,5 +1,6 @@
 import { AbilityOwner, CardInstance, GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
 import { RngState } from '../rng/rng';
+import type { Effect } from '../pipeline/effects';
 
 export interface PlayContext {
   seatId: string;
@@ -59,6 +60,10 @@ export interface CardDefinition {
   // Resolved for the former wearer right after the card leaves an equip zone,
   // for any reason (Silver Lion's parting heal).
   onUnequip?(state: GameState, ctx: UnequipContext): unknown[];
+  // One step of this card's resolution (CardStepEffect, e.g. a Sha's
+  // 'sha-shan'). Its effects go to the front of the queue. Abilities hook in
+  // with before:CardStepEffect triggers.
+  onStep?(state: GameState, step: Extract<Effect, { kind: 'CardStepEffect' }>): unknown[];
 }
 
 export interface ResponseContext {
@@ -82,6 +87,8 @@ export interface JudgedContext {
   // The seat being judged, and the card turned up for it.
   seatId: string;
   judged: CardInstance;
+  // What the JudgeEffect carried for its reader (Eight Trigrams: the step it answers).
+  data?: Record<string, unknown>;
 }
 
 export interface DelayedToolContext {

@@ -99,6 +99,9 @@ export interface PendingResponse {
   onAnswer?: Effect[];
   // What is being asked, so the UI and bots can tell windows apart.
   reason?: DecisionReason;
+  // For display only: what not answering is expected to lead to, when
+  // context.effect is a step on the way there (a Sha's hit leads to damage).
+  outcome?: Effect;
 }
 
 export type DecisionReason =
@@ -112,7 +115,10 @@ export type DecisionReason =
   | { kind: 'card-effect'; card: UsedCard; userSeatId: string; victimSeatId?: string }
   // A Tool's pick (Steal, Break, Harvest): `userSeatId` used `card`; the
   // chooser takes or discards one of `targetSeatId`'s cards (none for Harvest).
-  | { kind: 'choice'; card: UsedCard; userSeatId: string; targetSeatId?: string };
+  | { kind: 'choice'; card: UsedCard; userSeatId: string; targetSeatId?: string }
+  // An ability's say: whether to use it (an ask), or what to pick for it (a
+  // selection). `targetSeatId`: the seat it is aimed at, if any.
+  | { kind: 'ability'; owner: AbilityOwner; abilityId: string; targetSeatId?: string };
 
 // A pick a seat owes (Steal, Break, Harvest). Pauses the queue like a
 // response window.
@@ -120,8 +126,9 @@ export interface PendingChoice {
   id: string;
   seatId: string;
   reason: DecisionReason;
-  // What picking does with the card, for display: take it, or discard it.
-  verb: 'take' | 'discard';
+  // What picking does, for display: take the card, discard it, or (an ask)
+  // use the ability or not.
+  verb: 'take' | 'discard' | 'use';
   options: ChoiceOption[];
 }
 
@@ -129,7 +136,8 @@ export interface ChoiceOption {
   id: string;
   // A face-up card, or a seat's whole hand as one face-down option (the card
   // inside it is picked at random, so the chooser never sees the hand).
-  shows: { kind: 'card'; card: CardInstance } | { kind: 'hidden-hand'; seatId: string; count: number };
+  // For an ask: Use or Don't (`decline` also serves "let them draw" and the like).
+  shows: { kind: 'card'; card: CardInstance } | { kind: 'hidden-hand'; seatId: string; count: number } | { kind: 'use' } | { kind: 'decline' };
   // Queued at the front when picked.
   effects: Effect[];
 }

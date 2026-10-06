@@ -29,8 +29,9 @@ export function applyJudgmentStepEffect(state: GameState, effect: JudgmentStepEf
         { kind: 'JudgmentEvent', seatId: effect.seatId, tool: effect.tool, card: judged },
       ];
       const turnedUp: GameState = { ...state, zones, rng, log: [...state.log, ...events] };
-      const readings = (lookupCard(registry, effect.tool.as).onJudged?.(turnedUp, { tool: effect.tool, seatId: effect.seatId, judged }) ?? []) as Effect[];
-      const done: Effect = { kind: 'MoveCardEffect', cardInstanceId: judged.instanceId, toZoneId: discardPile.id };
+      const readings = (lookupCard(registry, effect.tool.as).onJudged?.(turnedUp, { tool: effect.tool, seatId: effect.seatId, judged, ...(effect.data ? { data: effect.data } : {}) }) ?? []) as Effect[];
+      // The judged card goes to the discard pile, unless a reading moved it already.
+      const done: Effect = { kind: 'MoveCardEffect', cardInstanceId: judged.instanceId, toZoneId: discardPile.id, onlyFrom: processing.id };
       return { state: queueFront(turnedUp, [...readings, done]), events };
     }
     case 'DelayedCleanupEffect': {

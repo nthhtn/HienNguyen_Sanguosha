@@ -30,6 +30,8 @@ export function describeChoice(state: GameState, viewerSeatId: string): ChoiceDe
 
 // An option's label: a hand by its owner and size, a card by its name and face.
 export function choiceOptionLabel(shows: ChoiceOption['shows'], players: readonly Player[]): string {
+  if (shows.kind === 'use') return 'Use';
+  if (shows.kind === 'decline') return "Don't";
   if (shows.kind === 'hidden-hand') {
     return `${seatName(players, shows.seatId)}'s Hand (${shows.count} ${shows.count === 1 ? 'Card' : 'Cards'})`;
   }
@@ -43,9 +45,12 @@ export function choiceDialogOptions(options: readonly ChoiceOption[], legal: rea
   return options.flatMap((option): ChoiceDialogOption[] => {
     const action = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === option.id);
     if (!action) return [];
+    if (option.shows.kind === 'hidden-hand') {
+      return Array.from({ length: option.shows.count }, (_, i) => ({ id: `${option.id}#${i + 1}`, action, faceDown: true as const, label: `Hand Card ${i + 1}` }));
+    }
     if (option.shows.kind === 'card') {
       return [{ id: option.id, action, card: option.shows.card, label: choiceOptionLabel(option.shows, players) }];
     }
-    return Array.from({ length: option.shows.count }, (_, i) => ({ id: `${option.id}#${i + 1}`, action, faceDown: true as const, label: `Hand Card ${i + 1}` }));
+    return [{ id: option.id, action, label: choiceOptionLabel(option.shows, players) }];
   });
 }

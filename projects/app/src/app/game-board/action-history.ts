@@ -159,7 +159,7 @@ export function actionHistory(
         action(`${name(event.seatId)} chose their generals`);
         break;
       case 'ChoiceMadeEvent':
-        picked = event;
+        if (event.shows.kind === 'card' || event.shows.kind === 'hidden-hand') picked = event;
         break;
       case 'CardsTurnedUpEvent':
         action(`Turned up ${event.cards.length} ${event.cards.length === 1 ? 'card' : 'cards'}: ${event.cards.map(named).join(', ')}`);

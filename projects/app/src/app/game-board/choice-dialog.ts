@@ -46,7 +46,7 @@ export interface ChoiceDialogData {
             >
               @if (option.card; as card) {
                 <app-playing-card [card]="card" />
-              } @else {
+              } @else if (option.faceDown) {
                 <img class="card-back" [src]="cardBackUrl" alt="" />
               }
               <span class="label">{{ option.label }}</span>
