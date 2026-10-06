@@ -2,7 +2,7 @@ import type { CardDefinition, Effect, Target } from 'engine';
 import { attackRange, seatDistance } from '../shared/queries';
 import { toolOnTargets } from '../shared/tools';
 import { equipSlotOf } from './equipment';
-import { shaWindow } from './sha';
+import { shaAt } from './sha';
 
 const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
 
@@ -58,10 +58,10 @@ export const coerceCard: CardDefinition = {
     };
     return [window];
   },
-  // The holder's Sha: the victim answers it like any Sha, from the holder.
+  // The holder's Sha: a Sha at the victim, from step 1, answered like any Sha.
   onResponse: (state, { pending, seatId, card }) => {
     const victimSeatId = pending.reason?.kind === 'card-effect' ? pending.reason.victimSeatId : undefined;
     const victim = state.seats.find((s) => s.id === victimSeatId && !s.eliminated);
-    return victim ? [shaWindow(card, seatId, seat(victim.id))] : [];
+    return victim ? shaAt(state, card, seatId, [seat(victim.id)]) : [];
   },
 };

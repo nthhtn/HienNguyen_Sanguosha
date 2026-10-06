@@ -28,12 +28,13 @@ function askedCardName(state: GameState): string {
 }
 
 // The card whose effect the window holds back: the window's own source card,
-// else the cause of the damage it would deal.
+// else the card its reason names, else the cause of the damage it would deal.
 function causeInstanceId(state: GameState): string | undefined {
   const pending = state.pendingResponse;
   if (!pending) return undefined;
   if (pending.sourceCard) return pending.sourceCard.instanceId;
-  const effect = pending.context.effect;
+  if (pending.reason?.kind === 'card-effect') return pending.reason.card.physical[0]?.instanceId;
+  const effect = pending.outcome ?? pending.context.effect;
   return effect.kind === 'DamageEffect' ? effect.damage.cause?.cardInstanceId : undefined;
 }
 
@@ -90,6 +91,8 @@ export function describeResponse(
   const pending = state.pendingResponse;
   if (!pending) return null;
   const name = (seatId: string) => seatName(state.players, seatId);
+  // What not answering leads to, as the window shows it.
+  const shown = pending.outcome ?? pending.context.effect;
 
   // The dying round: save the seat, or it is out.
   if (pending.reason?.kind === 'dying') {
@@ -156,7 +159,7 @@ export function describeResponse(
       source: `${name(userSeatId)} used ${cardName({ definitionId: card.as })} on ${holder === viewerSeatId ? 'you' : name(holder)}`,
       latest: null,
       prompt: `Play ${askedCardName(state)} at ${victimSeatId === viewerSeatId ? 'you' : name(victimSeatId)}?`,
-      outcome: outcomeOf(preview(pending.context.effect) ?? pending.context.effect, viewerSeatId, state),
+      outcome: outcomeOf(preview(shown) ?? shown, viewerSeatId, state),
       outcomeForce: forceOf(state.seats.find((s) => s.id === holder)?.kingdom),
     };
   }
@@ -187,8 +190,8 @@ export function describeResponse(
     source,
     latest,
     prompt,
-    outcome: outcomeOf(preview(pending.context.effect) ?? pending.context.effect, viewerSeatId, state),
-    outcomeForce: forceOf(state.seats.find((s) => s.id === affectedSeatOf(pending.context.effect))?.kingdom),
+    outcome: outcomeOf(preview(shown) ?? shown, viewerSeatId, state),
+    outcomeForce: forceOf(state.seats.find((s) => s.id === affectedSeatOf(shown))?.kingdom),
   };
 }
 

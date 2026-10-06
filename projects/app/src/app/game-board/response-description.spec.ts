@@ -24,6 +24,22 @@ const damageWindow = (id: string, responder: string, from: string, cause: string
 });
 
 describe('describeResponse', () => {
+  it('describes a Sha’s Shan window from its reason, and No Response from the damage it would deal', () => {
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [seat('seat-0')] }];
+    const used = usedCardOf(sha);
+    const window: PendingResponse = {
+      id: 'w1', respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['shan'],
+      reason: { kind: 'card-effect', card: used, userSeatId: 'seat-1' },
+      context: { effect: { kind: 'CardStepEffect', step: 'sha-hit', card: used, userSeatId: 'seat-1', target: seat('seat-0'), data: { extra: 1 } } },
+      outcome: { kind: 'DamageEffect', damage: { source: seat('seat-1'), target: seat('seat-0'), amount: 2, nature: 'normal', cause: { cardInstanceId: 'sha-1', card: used } } },
+    };
+    expect(describeResponse(state(log, window), 'seat-0')).toMatchObject({
+      source: 'Seat 1 played Sha against Hing',
+      prompt: 'Your turn to respond to Sha',
+      outcome: 'You lose 2 HP (2 damage from Seat 1)',
+    });
+  });
+
   it('names the card that asks for a response, who played it on whom, and what No Response costs', () => {
     const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [seat('seat-0')] }];
     expect(describeResponse(state(log, damageWindow('w1', 'seat-0', 'seat-1', 'sha-1')), 'seat-0')).toEqual({

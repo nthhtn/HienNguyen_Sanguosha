@@ -8,6 +8,7 @@ import { stealCard } from './steal';
 import { breakCard } from './break';
 import { harvestCard } from './harvest';
 import { coerceCard } from './coerce';
+import { shaCard } from './sha';
 import { silverLionCard, greenDragonBladeCard } from './equipment';
 import { getLegalActions, redactStateForSeat, resolve } from 'engine';
 import type { CardDefinition, GameState, ContentRegistry, GameModeDefinition, Target } from 'engine';
@@ -15,7 +16,7 @@ import type { CardDefinition, GameState, ContentRegistry, GameModeDefinition, Ta
 const plain = (id: string): CardDefinition => ({ id, name: id, category: 'basic', play: () => [] });
 
 function registry(): ContentRegistry {
-  const cards = [duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, silverLionCard, greenDragonBladeCard, plain('sha'), plain('shan')];
+  const cards = [duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, silverLionCard, greenDragonBladeCard, shaCard, plain('shan')];
   return { cards: new Map(cards.map((c) => [c.id, c])), generals: new Map() };
 }
 

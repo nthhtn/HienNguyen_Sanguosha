@@ -50,7 +50,7 @@ describe('Sha/Shan/Peach', () => {
     let state = twoSeatState();
     state = { ...state, zones: state.zones.map((z) => (z.id === 'seat-b:hand' ? { ...z, cards: [] } : z)) };
     const opened = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
-    const { state: next } = resolve(opened.state, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: 'sha-response-sha-1' }, { registry: registry(), mode: stubMode() });
+    const { state: next } = resolve(opened.state, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: opened.state.pendingResponse!.id }, { registry: registry(), mode: stubMode() });
     expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(5);
     expect(next.zones.find((z) => z.id === 'seat-a:hand')!.cards.map((c) => c.instanceId)).toEqual(['peach-1']);
     expect(next.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId)).toEqual(['sha-1']);
@@ -59,7 +59,7 @@ describe('Sha/Shan/Peach', () => {
   it('Shan prevents Sha\'s damage when played in response, and both cards land in the discard pile', () => {
     const state = twoSeatState();
     const opened = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
-    const { state: next } = resolve(opened.state, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'sha-response-sha-1', cardInstanceId: 'shan-1' }, { registry: registry(), mode: stubMode() });
+    const { state: next } = resolve(opened.state, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: opened.state.pendingResponse!.id, cardInstanceId: 'shan-1' }, { registry: registry(), mode: stubMode() });
     expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(6);
     expect(next.zones.find((z) => z.id === 'seat-b:hand')!.cards).toHaveLength(0);
     expect(next.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId).sort()).toEqual(['sha-1', 'shan-1']);
@@ -67,7 +67,7 @@ describe('Sha/Shan/Peach', () => {
 
   it('logs who used which card on whom, and what a response answered', () => {
     const opened = resolve(twoSeatState(), { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
-    const { state: next } = resolve(opened.state, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'sha-response-sha-1', cardInstanceId: 'shan-1' }, { registry: registry(), mode: stubMode() });
+    const { state: next } = resolve(opened.state, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: opened.state.pendingResponse!.id, cardInstanceId: 'shan-1' }, { registry: registry(), mode: stubMode() });
     expect(next.log.filter((e) => e.kind === 'CardPlayedEvent')).toEqual([
       {
         kind: 'CardPlayedEvent', seatId: 'seat-a', targets: [{ kind: 'seat', seatId: 'seat-b' }],
