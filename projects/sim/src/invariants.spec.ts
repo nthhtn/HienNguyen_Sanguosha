@@ -204,3 +204,19 @@ describe('checkRestingState', () => {
     expect(checkRestingState({ ...restingState('Draw'), result: { endedAt: 3, winningSeatIds: [], losingSeatIds: [] } })).toEqual([]);
   });
 });
+
+describe('checkRestingState: the resolution queue', () => {
+  it('flags a game resting with items still queued and no decision pending', () => {
+    const resting = { ...baseState(), phase: 'Play' as const, resolutionQueue: [{ kind: 'SkipNextEffect' as const }] };
+    expect(checkRestingState(resting)).toEqual([expect.stringMatching(/1 item\(s\) still queued/)]);
+  });
+
+  it('allows queued items while a response is pending', () => {
+    const paused = {
+      ...baseState(),
+      resolutionQueue: [{ kind: 'SkipNextEffect' as const }],
+      pendingResponse: { id: 'r', respondingSeatId: baseState().seats[0].id, allowedActionKinds: ['PassAction'], context: { effect: { kind: 'SkipNextEffect' as const } } },
+    };
+    expect(checkRestingState(paused)).toEqual([]);
+  });
+});

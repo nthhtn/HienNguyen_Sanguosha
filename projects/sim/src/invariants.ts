@@ -100,6 +100,10 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
 
 // Between actions the engine must only ever rest where someone has to decide.
 export function checkRestingState(state: GameState): string[] {
+  const queued = state.resolutionQueue?.length ?? 0;
+  if (!state.result && !state.pendingResponse && queued > 0) {
+    return [`Game is resting with ${queued} item(s) still queued and no decision pending`];
+  }
   if (state.result || state.pendingResponse || state.phase === 'GeneralSelection' || phaseWaitsForPlayer(state)) {
     return [];
   }
