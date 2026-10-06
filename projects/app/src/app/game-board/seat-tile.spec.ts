@@ -123,6 +123,16 @@ describe('SeatTile', () => {
     expect(render(makeSeat({ eliminated: true })).querySelector('.judgment .slot')).not.toBeNull();
   });
 
+  it('shows the image for the seat’s current HP next to its HP text', () => {
+    const img = render(makeSeat({ combinedHp: 3 })).querySelector('.stats img.hp-image') as HTMLImageElement;
+    expect(img.getAttribute('src')).toBe('/card-art/misc/hp_3.jpg');
+    expect(img.getAttribute('alt')).toBe('');
+  });
+
+  it('shows no HP image for a dying seat', () => {
+    expect(render(makeSeat({ combinedHp: 0 })).querySelector('img.hp-image')).toBeNull();
+  });
+
   it('ignores an equipped card with no known slot (Review Focus 5)', () => {
     const el = render(makeSeat(), { equipment: [eq('e1', 'mystery-thing')] });
     expect(el.querySelectorAll('.equip .slot.empty')).toHaveLength(4);
