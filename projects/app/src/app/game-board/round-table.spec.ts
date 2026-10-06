@@ -100,6 +100,20 @@ describe('RoundTable', () => {
     expect(tile(el, 'seat-0').querySelector('.tile')!.classList).toContain('responding');
     expect(el.querySelector('.centre')!.textContent).toContain('Waiting on Seat 0');
   });
+  it('says what the waiting seat is being asked', () => {
+    const pending = {
+      id: 'x1', respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['wuxie'],
+      reason: {
+        kind: 'wuxie' as const, toolUserSeatId: 'seat-1', target: { kind: 'seat' as const, seatId: 'seat-0' },
+        tool: { as: 'barbarians', colour: 'black' as const, physical: [] },
+      },
+      context: { effect: { kind: 'SkipNextEffect' as const } },
+    };
+    const players = [{ id: 'p0', seatId: 'seat-0', kind: 'human' as const, name: 'Hing' }];
+    const el = render(state({ pendingResponse: pending, players }));
+    expect(el.querySelector('.waiting')!.textContent!.trim()).toBe('Waiting on Hing: Wuxie?');
+  });
+
   it('shows which seat is thinking, and marks bot seats', () => {
     const el = render(state(), 'seat-0', 'seat-1', ['seat-1', 'seat-2']);
     expect(el.querySelector('.centre .thinking')!.textContent).toContain('Seat 1 is thinking');

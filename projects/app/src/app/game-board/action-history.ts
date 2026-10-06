@@ -55,6 +55,13 @@ export function actionHistory(
         if (answered?.dyingSeatId) {
           const saved = answered.dyingSeatId === event.seatId ? 'themselves' : name(answered.dyingSeatId);
           action(`${name(event.seatId)} used ${named(event.card)} to save ${saved}`, event.card);
+        } else if (answered?.counters && answered.seatId) {
+          action(`${name(event.seatId)} cancelled ${name(answered.seatId)}'s ${cardName(event.card.definitionId)} with ${named(event.card)}`, event.card);
+        } else if (answered?.targetSeatId && answered.seatId) {
+          const tool = answered.cardInstanceId ? playedCards.get(answered.cardInstanceId) : undefined;
+          const toolName = tool ? cardName(tool.definitionId) : 'Tool';
+          const on = answered.targetSeatId === answered.seatId ? '' : ` on ${name(answered.targetSeatId)}`;
+          action(`${name(event.seatId)} cancelled ${name(answered.seatId)}'s ${toolName}${on} with ${named(event.card)}`, event.card);
         } else if (answered) {
           const answeredCard = answered.cardInstanceId ? playedCards.get(answered.cardInstanceId) : undefined;
           const against = answered.seatId

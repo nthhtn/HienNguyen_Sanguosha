@@ -112,6 +112,33 @@ describe('actionHistory', () => {
     ]);
   });
 
+  it('says whose Tool a Wuxie Kongjie cancelled, on whom, and when it cancelled another Wuxie Kongjie', () => {
+    const players = [
+      { id: 'p0', seatId: 'seat-0', kind: 'human' as const, name: 'Hing' },
+      { id: 'p1', seatId: 'seat-1', kind: 'bot' as const, name: 'Seat 1' },
+      { id: 'p2', seatId: 'seat-2', kind: 'bot' as const, name: 'Seat 2' },
+    ];
+    const barbarians: CardInstance = { instanceId: 'barb-1', definitionId: 'barbarians', suit: 'spade', rank: 7 };
+    const drawTwo: CardInstance = { instanceId: 'dt-1', definitionId: 'draw-two', suit: 'heart', rank: 7 };
+    const wuxie: CardInstance = { instanceId: 'wx-1', definitionId: 'wuxie', suit: 'spade', rank: 11 };
+    const counter: CardInstance = { instanceId: 'wx-2', definitionId: 'wuxie', suit: 'club', rank: 3 };
+    const lines = (log: EngineEvent[]) => actionHistory(log, zones, players).map((e) => (e.kind === 'turn' ? '' : e.text));
+
+    expect(lines([
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: barbarians, targets: [] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: wuxie, targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'barb-1', targetSeatId: 'seat-2' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-2', card: counter, targets: [], inResponseTo: { seatId: 'seat-0', counters: true } },
+    ])).toEqual([
+      "Seat 2 cancelled Hing's Wuxie with Wuxie (3 ♣)",
+      "Hing cancelled Seat 1's Barbarians on Seat 2 with Wuxie (J ♠)",
+      'Seat 1 used Barbarians (7 ♠)',
+    ]);
+    expect(lines([
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: drawTwo, targets: [] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: wuxie, targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'dt-1', targetSeatId: 'seat-1' } },
+    ])[0]).toBe("Hing cancelled Seat 1's Draw Two with Wuxie (J ♠)");
+  });
+
   it('tells the story of a dying seat: dying, the Peach that saved it, and saved', () => {
     const log: EngineEvent[] = [
       { kind: 'SeatDyingEvent', seatId: 'seat-1' },

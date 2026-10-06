@@ -21,6 +21,12 @@ function cardName(card: Pick<CardInstance, 'definitionId'>): string {
   return cardDisplayData(card.definitionId)?.name ?? cardIdDisplayName(card.definitionId);
 }
 
+// The card a window asks for, by name ("Wuxie Kongjie"), when it names one.
+function askedCardName(state: GameState): string {
+  const id = state.pendingResponse?.allowedCardIds?.[0];
+  return id ? cardName({ definitionId: id }) : 'a card';
+}
+
 // The card whose effect the window holds back: the window's own source card,
 // else the cause of the damage it would deal.
 function causeInstanceId(state: GameState): string | undefined {
@@ -89,6 +95,32 @@ export function describeResponse(state: GameState, viewerSeatId: string): Respon
     };
   }
 
+  if (pending.reason?.kind === 'wuxie') {
+    const { tool, toolUserSeatId, target } = pending.reason;
+    const toolName = cardName({ definitionId: tool.as });
+    const targetId = target.kind === 'seat' ? target.seatId : undefined;
+    const on = !targetId || targetId === toolUserSeatId ? '' : ` on ${targetId === viewerSeatId ? 'you' : name(targetId)}`;
+    return {
+      source: `${name(toolUserSeatId)} used ${toolName}${on}`,
+      latest: null,
+      prompt: `Play ${askedCardName(state)} to cancel it?`,
+      outcome: `${toolName} takes effect${on}`,
+      outcomeForce: forceOf(state.seats.find((s) => s.id === targetId)?.kingdom),
+    };
+  }
+
+  if (pending.reason?.kind === 'counter-wuxie') {
+    const { wuxieSeatId } = pending.reason;
+    const counter = askedCardName(state);
+    return {
+      source: `${name(wuxieSeatId)} played ${counter}`,
+      latest: null,
+      prompt: `Play ${counter} to cancel it?`,
+      outcome: `${name(wuxieSeatId)}'s ${counter} stands`,
+      outcomeForce: forceOf(state.seats.find((s) => s.id === wuxieSeatId)?.kingdom),
+    };
+  }
+
   const causeId = causeInstanceId(state);
   const played = causeId ? lastPlayOf(state.log, causeId) : undefined;
 
@@ -118,4 +150,16 @@ export function describeResponse(state: GameState, viewerSeatId: string): Respon
     outcome: outcomeOf(pending.context.effect, viewerSeatId, state),
     outcomeForce: forceOf(state.seats.find((s) => s.id === affectedSeatOf(pending.context.effect))?.kingdom),
   };
+}
+
+// The table centre's "Waiting on …" line, with what the seat is being asked.
+export function waitingLine(state: GameState): string | null {
+  const pending = state.pendingResponse;
+  if (!pending) return null;
+  const who = `Waiting on ${seatName(state.players, pending.respondingSeatId)}`;
+  const reason = pending.reason;
+  if (reason?.kind === 'dying') return `${who} to save ${seatName(state.players, reason.seatId)}`;
+  if (reason?.kind === 'wuxie' || reason?.kind === 'counter-wuxie') return `${who}: ${askedCardName(state)}?`;
+  if (reason?.kind === 'card-effect') return `${who} to answer ${cardName({ definitionId: reason.card.as })}`;
+  return who;
 }

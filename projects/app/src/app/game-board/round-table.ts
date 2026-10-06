@@ -2,6 +2,7 @@ import { Component, computed, input } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GameState } from 'engine';
 import { actionHistory } from './action-history';
+import { waitingLine } from './response-description';
 import { seatName } from '../labels';
 import { SeatTile } from './seat-tile';
 import { seatPlacements } from './table-layout';
@@ -20,8 +21,8 @@ const RECENT_LOG_LINES = 3;
       <div class="centre">
         <div class="turn">Turn {{ state().turn.turnNumber }}</div>
         <div>{{ name(state().turn.ownerSeatId) }}'s turn</div>
-        @if (state().pendingResponse; as pending) {
-          <div class="waiting">Waiting on {{ name(pending.respondingSeatId) }}</div>
+        @if (waiting(); as line) {
+          <div class="waiting">{{ line }}</div>
         }
         @if (thinkingSeatId(); as thinking) {
           <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ name(thinking) }} is thinking…</div>
@@ -116,6 +117,7 @@ export class RoundTable {
   readonly thinkingSeatId = input<string | null>(null);
   readonly botSeatIds = input<string[]>([]);
 
+  protected readonly waiting = computed(() => waitingLine(this.state()));
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId()));
 
   // The latest few actions, oldest first, in the action history's wording.

@@ -1,5 +1,5 @@
 import { CardInstance, EngineEvent, GameState, PendingResponse } from 'engine';
-import { describeResponse } from './response-description';
+import { describeResponse, waitingLine } from './response-description';
 
 const duel: CardInstance = { instanceId: 'duel-1', definitionId: 'duel', suit: 'spade', rank: 1 };
 const sha: CardInstance = { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade', rank: 7 };
@@ -11,6 +11,7 @@ function state(log: EngineEvent[], pendingResponse: PendingResponse | null): Gam
     players: [
       { id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' },
       { id: 'p1', seatId: 'seat-1', kind: 'bot', name: 'Seat 1' },
+      { id: 'p2', seatId: 'seat-2', kind: 'bot', name: 'Seat 2' },
     ],
     turn: { turnNumber: 1, ownerSeatId: 'seat-1', extraTurnStack: [] }, rng: { seed: 1, counter: 0 },
   };
@@ -71,5 +72,62 @@ describe('describeResponse', () => {
 
   it('is null when nothing is pending', () => {
     expect(describeResponse(state([], null), 'seat-0')).toBeNull();
+  });
+});
+
+const barbarians: CardInstance = { instanceId: 'barb-1', definitionId: 'barbarians', suit: 'spade', rank: 7 };
+const drawTwo: CardInstance = { instanceId: 'dt-1', definitionId: 'draw-two', suit: 'heart', rank: 7 };
+const used = (card: CardInstance) => ({ as: card.definitionId, colour: 'black' as const, suit: card.suit, rank: card.rank, physical: [card] });
+const noop = { kind: 'SkipNextEffect' as const };
+const wuxieWindow = (responder: string, reason: PendingResponse['reason']): PendingResponse => ({
+  id: 'x1', respondingSeatId: responder, allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['wuxie'], reason, context: { effect: noop },
+});
+
+describe('describeResponse: Wuxie Kongjie checks', () => {
+  it('asks whether to cancel a Tool aimed at the viewer', () => {
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: barbarians, targets: [] }];
+    const pending = wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat('seat-0') });
+    expect(describeResponse(state(log, pending), 'seat-0')).toMatchObject({
+      source: 'Seat 1 used Barbarians on you',
+      prompt: 'Play Wuxie to cancel it?',
+      outcome: 'Barbarians takes effect on you',
+    });
+  });
+
+  it('leaves out the target when the Tool is aimed at its own user', () => {
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: drawTwo, targets: [] }];
+    const pending = wuxieWindow('seat-0', { kind: 'wuxie', tool: used(drawTwo), toolUserSeatId: 'seat-1', target: seat('seat-1') });
+    expect(describeResponse(state(log, pending), 'seat-0')).toMatchObject({ source: 'Seat 1 used Draw Two', outcome: 'Draw Two takes effect' });
+  });
+
+  it('asks whether to cancel another seat’s Wuxie Kongjie', () => {
+    const pending = wuxieWindow('seat-0', { kind: 'counter-wuxie', wuxieSeatId: 'seat-2' });
+    expect(describeResponse(state([], pending), 'seat-0')).toMatchObject({
+      source: 'Seat 2 played Wuxie',
+      prompt: 'Play Wuxie to cancel it?',
+      outcome: "Seat 2's Wuxie stands",
+    });
+  });
+});
+
+describe('waitingLine', () => {
+  it('is null when nothing is pending', () => {
+    expect(waitingLine(state([], null))).toBeNull();
+  });
+
+  it('says who is asked, and what for', () => {
+    const dying: PendingResponse = {
+      id: 'd1', respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['peach'],
+      reason: { kind: 'dying', seatId: 'seat-2' }, context: { effect: noop },
+    };
+    expect(waitingLine(state([], dying))).toBe('Waiting on Hing to save Seat 2');
+    const wuxie = wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat('seat-0') });
+    expect(waitingLine(state([], wuxie))).toBe('Waiting on Hing: Wuxie?');
+    const barbariansWindow: PendingResponse = {
+      id: 'b1', respondingSeatId: 'seat-1', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
+      reason: { kind: 'card-effect', card: used(barbarians), userSeatId: 'seat-0' }, context: { effect: noop },
+    };
+    expect(waitingLine(state([], barbariansWindow))).toBe('Waiting on Seat 1 to answer Barbarians');
+    expect(waitingLine(state([], damageWindow('s1', 'seat-1', 'seat-0', 'sha-1')))).toBe('Waiting on Seat 1');
   });
 });
