@@ -122,7 +122,7 @@ describe('Kingdom War setup and deal', () => {
     expect(deckOf(2).filter((c) => c.startsWith('shan '))).toHaveLength(15);
     expect(deckOf(2).filter((c) => c.startsWith('peach '))).toHaveLength(8);
     expect(deckOf(2).filter((c) => c.startsWith('wuxie '))).toHaveLength(3);
-    expect(deckOf(2)).toHaveLength(101);
+    expect(deckOf(2)).toHaveLength(106);
   });
 
   it('refuses to build a deck for a card with no printings', () => {
@@ -224,7 +224,7 @@ describe('Kingdom War forced reveal, dying and elimination', () => {
     expect(seatB(next).combinedHp).toBeLessThan(0);
     expect(next.log.map((e) => e.kind)).toContain('SeatDyingEvent');
     // No one else holds a Peach: the dying seat itself is asked.
-    expect(next.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['peach'], reason: { kind: 'dying', seatId: 'seat-b' } });
+    expect(next.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['peach', 'wine'], reason: { kind: 'dying', seatId: 'seat-b' } });
     expect(next.result).toBeNull();
   });
 

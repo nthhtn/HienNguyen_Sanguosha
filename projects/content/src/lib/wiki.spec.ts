@@ -78,7 +78,7 @@ describe('wikiCards', () => {
   it('lists the basic cards by name; the Army ones are not in the game', () => {
     const basic = wikiCards('basic');
     expect(basic.map((c) => c.name)).toEqual(['Fire Attack', 'Lightning Attack', 'Peach', 'Sha', 'Shan', 'Wine']);
-    expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual(['fire-attack', 'lightning-attack', 'wine']);
+    expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual(['fire-attack', 'lightning-attack']);
   });
 
   it('records the Army basics with their spreadsheet printings', () => {

@@ -4,6 +4,7 @@ import { GENERAL_SKILLS } from './generals';
 import { shaCard } from './cards/sha';
 import { shanCard } from './cards/shan';
 import { peachCard } from './cards/peach';
+import { wineCard } from './cards/wine';
 import { duelCard } from './cards/duel';
 import { wuxieCard } from './cards/wuxie';
 import { drawTwoCard } from './cards/draw-two';
@@ -39,7 +40,7 @@ function buildGenerals(): GeneralDefinition[] {
 }
 
 export function buildContentRegistry(): ContentRegistry {
-  const cards = [shaCard, shanCard, peachCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard];
+  const cards = [shaCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard];
   const generals = buildGenerals();
   return {
     cards: new Map(cards.map((c) => [c.id, c])),
