@@ -1,4 +1,4 @@
-import type { Action, CardDefinition, DecisionReason, EquipSlot, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
+import type { Action, CardDefinition, CardZone, DecisionReason, EquipSlot, PendingChoice, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
 import { ruleBasedPolicy } from './rule-based';
 import { MAX_BOT_ACTIONS_PER_TURN } from './policy';
 
@@ -15,6 +15,7 @@ const registry: ContentRegistry = {
     card('sha', 'basic'), card('shan', 'basic'), card('peach', 'basic'),
     card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
     card('draw-two', 'tool'), card('barbarians', 'tool'), card('hail-of-arrows', 'tool'), card('peach-garden', 'tool'),
+    card('steal', 'tool'), card('break', 'tool'), card('coerce', 'tool'), card('harvest', 'tool'),
   ]),
 };
 
@@ -34,6 +35,9 @@ interface ViewOptions {
   pendingFor?: string;
   turnNumber?: number;
   pendingReason?: DecisionReason;
+  pendingChoice?: PendingChoice;
+  // More zones, e.g. another seat's equipment or the processing zone.
+  zones?: CardZone[];
 }
 
 // seat-0 is the bot. Its own hand and equipment are visible; the rest is redacted.
@@ -47,10 +51,12 @@ function view(o: ViewOptions = {}): GameState {
     zones: [
       { id: 'seat-0:hand', kind: 'hand', ownerSeatId: 'seat-0', cards: (o.hand ?? []).map((c) => ({ ...c, suit: 'spade' as const, rank: 1 })) },
       { id: 'seat-0:equip', kind: 'equip', ownerSeatId: 'seat-0', cards: (o.equip ?? []).map((d, i) => ({ instanceId: `eq-${i}`, definitionId: d, suit: 'club' as const, rank: 2 })) },
+      ...(o.zones ?? []),
     ],
     pendingResponse: o.pendingFor
       ? { id: 'r1', respondingSeatId: o.pendingFor, allowedActionKinds: ['RespondAction', 'PassAction'], ...(o.pendingReason ? { reason: o.pendingReason } : {}), context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-0' }, amount: 1 } } }
       : null,
+    ...(o.pendingChoice ? { pendingChoice: o.pendingChoice } : {}),
     log: [],
     rng: { seed: 1, counter: 0 },
     result: null,
@@ -257,5 +263,54 @@ describe('ruleBasedPolicy: Tools and Wuxie Kongjie', () => {
     expect(decide(hurt, [play('pg'), end]).action).toEqual(end);
     const v = view({ hand: [{ instanceId: 'pg', definitionId: 'peach-garden' }], seats: [seat('seat-0', 0, 'Wei', 5), seat('seat-1', 1, 'hidden', 6)] });
     expect(decide(v, [play('pg'), end]).action).toEqual(play('pg'));
+  });
+});
+
+describe('ruleBasedPolicy: picks, Steal, Break and Coerce', () => {
+  const pick = (optionId: string): Action => ({ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'c1', optionId });
+  const faceUp = (instanceId: string, definitionId: string) => ({ instanceId, definitionId, suit: 'spade' as const, rank: 1 });
+  const choiceOf = (options: PendingChoice['options']): PendingChoice => ({
+    id: 'c1', seatId: 'seat-0', verb: 'take', options,
+    reason: { kind: 'choice', card: { as: 'steal', colour: 'black', physical: [] }, userSeatId: 'seat-0', targetSeatId: 'seat-1' },
+  });
+
+  it('takes a weapon before armour, and armour before the hand', () => {
+    const options: PendingChoice['options'] = [
+      { id: 'hand', shows: { kind: 'hidden-hand', seatId: 'seat-1', count: 2 }, effects: [] },
+      { id: 'l', shows: { kind: 'card', card: faceUp('l', 'lion') }, effects: [] },
+      { id: 'b', shows: { kind: 'card', card: faceUp('b', 'blade') }, effects: [] },
+    ];
+    const v = view({
+      pendingChoice: choiceOf(options),
+      zones: [{ id: 'seat-1:equip', kind: 'equip', ownerSeatId: 'seat-1', cards: [faceUp('l', 'lion'), faceUp('b', 'blade')] }],
+    });
+    expect(decide(v, ['hand', 'l', 'b'].map(pick)).action).toEqual(pick('b'));
+    expect(decide(v, ['hand', 'l'].map(pick)).action).toEqual(pick('l'));
+  });
+
+  it('takes the Harvest card worth keeping most', () => {
+    const options: PendingChoice['options'] = [
+      { id: 's', shows: { kind: 'card', card: faceUp('s', 'sha') }, effects: [] },
+      { id: 'p', shows: { kind: 'card', card: faceUp('p', 'peach') }, effects: [] },
+    ];
+    const v = view({ pendingChoice: choiceOf(options), zones: [{ id: 'processing', kind: 'processing', cards: [faceUp('s', 'sha'), faceUp('p', 'peach')] }] });
+    expect(decide(v, ['s', 'p'].map(pick)).action).toEqual(pick('p'));
+  });
+
+  it('Steals from the lowest-HP non-ally, preferring one that wears equipment', () => {
+    // seat-2 (3 HP) wears nothing; seat-1 (6 HP) wears a blade.
+    const armed = view({ hand: [{ instanceId: 'st', definitionId: 'steal' }], zones: [{ id: 'seat-1:equip', kind: 'equip', ownerSeatId: 'seat-1', cards: [faceUp('b', 'blade')] }] });
+    expect(decide(armed, [play('st', 'seat-1'), play('st', 'seat-2'), end]).action).toEqual(play('st', 'seat-1'));
+    const bare = view({ hand: [{ instanceId: 'st', definitionId: 'steal' }] });
+    expect(decide(bare, [play('st', 'seat-1'), play('st', 'seat-2'), end]).action).toEqual(play('st', 'seat-2'));
+  });
+
+  it('Coerces only when a non-ally’s weapon can reach another non-ally', () => {
+    const pair = (holder: string, victim: string): Action => ({
+      kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'co', targets: [{ kind: 'seat', seatId: holder }, { kind: 'seat', seatId: victim }],
+    });
+    const v = view({ hand: [{ instanceId: 'co', definitionId: 'coerce' }] });
+    expect(decide(v, [pair('seat-1', 'seat-0'), pair('seat-1', 'seat-2'), end]).action).toEqual(pair('seat-1', 'seat-2'));
+    expect(decide(v, [pair('seat-1', 'seat-0'), end]).action).toEqual(end);
   });
 });

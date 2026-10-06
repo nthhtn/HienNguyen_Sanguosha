@@ -4,6 +4,7 @@ import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
 type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
 type DiscardCard = Extract<Action, { kind: 'DiscardCardAction' }>;
+type ChooseOption = Extract<Action, { kind: 'ChooseOptionAction' }>;
 
 function definitionIdOf(view: GameState, cardInstanceId: string): string | undefined {
   for (const zone of view.zones) {
@@ -65,6 +66,23 @@ function decide(
     const hp = (a: ChooseGenerals) =>
       (registry.generals.get(a.mainId)?.maxHp ?? 0) + (registry.generals.get(a.deputyId)?.maxHp ?? 0);
     if (choices.length > 0) return take(choices.reduce((best, a) => (hp(a) > hp(best) ? a : best)));
+  }
+
+  // 1b. A pick (Steal, Break, Harvest): a weapon, then armour, then a mount,
+  // then the hand; among Harvest's face-up cards, the one worth keeping most.
+  const picks = legal.filter((a): a is ChooseOption => a.kind === 'ChooseOptionAction');
+  if (picks.length > 0 && view.pendingChoice) {
+    const options = view.pendingChoice.options;
+    const worth = (p: ChooseOption): number => {
+      const shows = options.find((o) => o.id === p.optionId)?.shows;
+      if (!shows) return -1;
+      if (shows.kind === 'hidden-hand') return 1;
+      const zone = view.zones.find((z) => z.cards.some((c) => c.instanceId === shows.card.instanceId));
+      if (zone?.kind === 'processing') return keepRank(view, registry, shows.card.instanceId);
+      const slot = registry.cards.get(shows.card.definitionId)?.equipSlot;
+      return slot === 'weapon' ? 4 : slot === 'armor' ? 3 : slot ? 2 : 0;
+    };
+    return take(picks.reduce((best, p) => (worth(p) > worth(best) ? p : best)));
   }
 
   // 2. Responding. A dying round: spend a Peach only on ourselves or a
@@ -139,12 +157,29 @@ function decide(
       if (massAttack) return take(massAttack);
     }
 
+    // Steal and Break: the lowest-HP non-ally, preferring one that wears equipment.
+    const wearsEquipment = (p: PlayCard) => {
+      const target = view.seats.find((s) => s.id === p.targets[0]?.seatId);
+      return !!target && (view.zones.find((z) => z.id === target.equipped.zoneId)?.cards.length ?? 0) > 0;
+    };
+    const [grab] = [...targetedPlays(view, self, plays, 'steal'), ...targetedPlays(view, self, plays, 'break')].sort(
+      (a, b) => Number(wearsEquipment(b)) - Number(wearsEquipment(a))
+    );
+    if (grab) return take(grab);
+
     if (mem.shaPlayed === 0) {
       const [sha] = targetedPlays(view, self, plays, 'sha');
       if (sha) return take(sha, 1);
     }
     const [duel] = targetedPlays(view, self, plays, 'duel');
     if (duel) return take(duel);
+    // Coerce: when one non-ally's weapon can reach another non-ally.
+    const coerce = plays.find((p) => {
+      if (p.targets.length !== 2 || definitionIdOf(view, p.cardInstanceId) !== 'coerce') return false;
+      const [holder, victim] = p.targets.map((t) => view.seats.find((s) => s.id === t.seatId));
+      return !!holder && !!victim && victim.id !== seatId && !isAlly(self, holder) && !isAlly(self, victim);
+    });
+    if (coerce) return take(coerce);
     if (endPhase) return take(endPhase);
   }
 
