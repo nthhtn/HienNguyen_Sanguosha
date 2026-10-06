@@ -11,6 +11,7 @@ import type {
 } from 'engine';
 import { buildDeck, drawTop, shuffle } from 'engine';
 import { cardsData } from '../../../data/cards';
+import { judgmentPhaseTrigger } from '../shared/delayed';
 
 export const GENERALS_PER_SEAT = 5;
 // A real Kingdom War table seats at most 10.
@@ -157,6 +158,7 @@ export const kingdomWarMode: GameModeDefinition = {
   },
 
   triggers: [
+    judgmentPhaseTrigger,
     {
       point: 'after:PhaseChangedEvent',
       condition: (_state, subject) => {
