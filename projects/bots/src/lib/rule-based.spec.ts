@@ -16,7 +16,7 @@ const registry: ContentRegistry = {
     card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
     card('draw-two', 'tool'), card('barbarians', 'tool'), card('hail-of-arrows', 'tool'), card('peach-garden', 'tool'),
     card('steal', 'tool'), card('break', 'tool'), card('coerce', 'tool'), card('harvest', 'tool'),
-    card('capture', 'tool'), card('starvation', 'tool'), card('lightning', 'tool'),
+    card('wine', 'basic'), card('capture', 'tool'), card('starvation', 'tool'), card('lightning', 'tool'),
   ]),
 };
 
@@ -160,13 +160,12 @@ describe('ruleBasedPolicy', () => {
     expect(decide(view({ hand, equip: ['blade'] }), legal).action).toBe(end);
   });
 
-  it('plays one Sha per turn, at the lowest-HP non-ally, never untargeted', () => {
+  it('plays a Sha at the lowest-HP non-ally whenever the engine offers one, never untargeted (Crossbow repeats)', () => {
     const hand = [{ instanceId: 'c-sha', definitionId: 'sha' }];
     const legal = [play('c-sha'), play('c-sha', 'seat-1'), play('c-sha', 'seat-2'), end];
     const first = decide(view({ hand }), legal);
     expect(first.action).toBe(legal[2]); // seat-2 has 3 HP, seat-1 has 6
-    expect(first.memory.shaPlayed).toBe(1);
-    expect(decide(view({ hand }), legal, first.memory).action).toBe(end);
+    expect(decide(view({ hand }), legal, first.memory).action).toBe(legal[2]);
   });
 
   it('never targets a seat with the same revealed kingdom, but Qun has no allies', () => {
@@ -185,11 +184,10 @@ describe('ruleBasedPolicy', () => {
     expect(decide(view({ hand, seats }), legal).action).toBe(legal[0]);
   });
 
-  it('duels a non-ally once its Sha is spent', () => {
-    const hand = [{ instanceId: 'c-sha', definitionId: 'sha' }, { instanceId: 'c-duel', definitionId: 'duel' }];
-    const legal = [play('c-sha', 'seat-1'), play('c-duel', 'seat-1'), end];
-    const memory = { turnNumber: 1, shaPlayed: 1, actionsThisTurn: 1 };
-    expect(decide(view({ hand }), legal, memory).action).toBe(legal[1]);
+  it('duels a non-ally once the engine offers no Sha', () => {
+    const hand = [{ instanceId: 'c-duel', definitionId: 'duel' }];
+    const legal = [play('c-duel', 'seat-1'), end];
+    expect(decide(view({ hand }), legal).action).toBe(legal[0]);
   });
 
   it('resets its turn memory on a new turn', () => {
@@ -347,5 +345,33 @@ describe('ruleBasedPolicy: delayed Tools', () => {
     const respond: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'wx' };
     const passIt: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' };
     expect(decide(v, [respond, passIt]).action).toEqual(respond);
+  });
+});
+
+describe('ruleBasedPolicy: Wine', () => {
+  it('drinks Wine first when a Sha at a non-ally is legal, then plays the Sha', () => {
+    const hand = [{ instanceId: 'w', definitionId: 'wine' }, { instanceId: 's', definitionId: 'sha' }];
+    expect(decide(view({ hand }), [play('w'), play('s', 'seat-1'), end]).action).toEqual(play('w'));
+    expect(decide(view({ hand: [hand[1]] }), [play('s', 'seat-1'), end]).action).toEqual(play('s', 'seat-1'));
+  });
+
+  it('keeps its Wine when no Sha at a non-ally is legal', () => {
+    const hand = [{ instanceId: 'w', definitionId: 'wine' }];
+    expect(decide(view({ hand }), [play('w'), end]).action).toEqual(end);
+  });
+
+  it('discards equipment before Wine', () => {
+    const hand = [{ instanceId: 'w', definitionId: 'wine' }, { instanceId: 'b', definitionId: 'blade' }];
+    expect(decide(view({ phase: 'Discard', hand }), [discard('w'), discard('b')]).action).toEqual(discard('b'));
+  });
+
+  it('dying, saves itself with a Peach before a Wine', () => {
+    const reason = { kind: 'dying' as const, seatId: 'seat-0' };
+    const respond = (id: string): Action => ({ kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: id });
+    const passIt: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' };
+    const both = view({ pendingFor: 'seat-0', pendingReason: reason, hand: [{ instanceId: 'w', definitionId: 'wine' }, { instanceId: 'p', definitionId: 'peach' }] });
+    expect(decide(both, [respond('w'), respond('p'), passIt]).action).toEqual(respond('p'));
+    const wineOnly = view({ pendingFor: 'seat-0', pendingReason: reason, hand: [{ instanceId: 'w', definitionId: 'wine' }] });
+    expect(decide(wineOnly, [respond('w'), passIt]).action).toEqual(respond('w'));
   });
 });

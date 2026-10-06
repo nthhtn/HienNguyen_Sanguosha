@@ -38,7 +38,7 @@ function keepRank(view: GameState, registry: ContentRegistry, cardInstanceId: st
   const definitionId = definitionIdOf(view, cardInstanceId);
   if (definitionId === 'peach') return 4;
   if (definitionId === 'shan') return 3;
-  if (definitionId === 'sha') return 2;
+  if (definitionId === 'sha' || definitionId === 'wine' || definitionId === 'draw-two') return 2;
   if (definitionId && registry.cards.get(definitionId)?.category === 'equipment') return 1;
   return 0;
 }
@@ -100,7 +100,10 @@ function decide(
           : reason.kind === 'wuxie'
             ? reason.target.kind === 'seat' && reason.target.seatId === seatId && HARMFUL_TOOLS.has(reason.tool.as)
             : false; // never counter a Wuxie Kongjie
-    const answer = (worthAnswering ? legal.find((a) => a.kind === 'RespondAction') : undefined) ?? legal.find((a) => a.kind === 'PassAction');
+    const answers = legal.filter((a): a is Extract<Action, { kind: 'RespondAction' }> => a.kind === 'RespondAction');
+    // A Peach before anything else (a dying bot drinks Wine only without one).
+    const best = answers.find((a) => definitionIdOf(view, a.cardInstanceId) === 'peach') ?? answers[0];
+    const answer = (worthAnswering ? best : undefined) ?? legal.find((a) => a.kind === 'PassAction');
     if (answer) return take(answer);
   }
 
@@ -183,10 +186,13 @@ function decide(
     const lightning = untargetedOf('lightning');
     if (lightning && self.combinedHp >= 3) return take(lightning);
 
-    if (mem.shaPlayed === 0) {
-      const [sha] = targetedPlays(view, self, plays, 'sha');
-      if (sha) return take(sha, 1);
-    }
+    // Wine first when a Sha at a non-ally is legal: the Sha follows next.
+    const shaPlays = targetedPlays(view, self, plays, 'sha');
+    const wine = untargetedOf('wine');
+    if (wine && shaPlays.length > 0) return take(wine);
+    // Whenever the engine offers a Sha (Crossbow lifts the limit); the safety cap still ends the turn.
+    const [sha] = shaPlays;
+    if (sha) return take(sha, 1);
     const [duel] = targetedPlays(view, self, plays, 'duel');
     if (duel) return take(duel);
     // Coerce: when one non-ally's weapon can reach another non-ally.
