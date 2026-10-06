@@ -22,6 +22,12 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
     }
   }
 
+  if (state.pendingChoice) {
+    const seat = state.seats.find((s) => s.id === state.pendingChoice!.seatId);
+    if (!seat) violations.push(`pendingChoice references unknown seat ${state.pendingChoice.seatId}`);
+    else if (seat.eliminated) violations.push(`pendingChoice references eliminated seat ${seat.id}`);
+  }
+
   // Card conservation (partial): a CardInstance is a unique physical card, so
   // its instanceId must appear exactly once across the whole game state. A
   // duplicate means a card was copied — either into two zones at once, or twice
@@ -100,11 +106,12 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
 
 // Between actions the engine must only ever rest where someone has to decide.
 export function checkRestingState(state: GameState): string[] {
+  const decisionPending = !!state.pendingResponse || !!state.pendingChoice;
   const queued = state.resolutionQueue?.length ?? 0;
-  if (!state.result && !state.pendingResponse && queued > 0) {
+  if (!state.result && !decisionPending && queued > 0) {
     return [`Game is resting with ${queued} item(s) still queued and no decision pending`];
   }
-  if (state.result || state.pendingResponse || state.phase === 'GeneralSelection' || phaseWaitsForPlayer(state)) {
+  if (state.result || decisionPending || state.phase === 'GeneralSelection' || phaseWaitsForPlayer(state)) {
     return [];
   }
   return [

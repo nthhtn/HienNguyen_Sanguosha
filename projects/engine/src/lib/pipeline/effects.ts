@@ -1,4 +1,5 @@
-import { GameState, Damage, PendingResponse, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { GameState, Damage, PendingChoice, PendingResponse, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
 import { EngineEvent } from './events';
 import { isFaceUpZoneKind } from '../domain/redact';
@@ -23,7 +24,12 @@ export type Effect =
   // Asks, in `order`, the next living seat holding a counter card; none left = no cancel.
   | { kind: 'WuxieCheckEffect'; subject: WuxieSubject; order: string[]; counterCardIds: string[] }
   // Removes the next queued item: a counter card's way of cancelling what it guards.
-  | { kind: 'SkipNextEffect' };
+  | { kind: 'SkipNextEffect' }
+  // Asks `choice.seatId` to pick one option; the queue waits for the pick.
+  | { kind: 'OpenChoiceEffect'; choice: PendingChoice }
+  // Moves a random card (seeded) of `fromZoneId` to `toZoneId`: a pick from a
+  // hand the chooser can't see. Nothing happens when the zone is empty.
+  | { kind: 'MoveRandomCardEffect'; fromZoneId: string; toZoneId: string };
 
 export interface ApplyResult {
   state: GameState;
@@ -106,6 +112,15 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const seats = state.seats.map((s) => (s.id === effect.seatId ? { ...s, eliminated: true } : s));
       const event: EngineEvent = { kind: 'SeatEliminatedEvent', seatId: effect.seatId };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'OpenChoiceEffect':
+      return { state: { ...state, pendingChoice: effect.choice }, events: [] };
+    case 'MoveRandomCardEffect': {
+      const from = state.zones.find((z) => z.id === effect.fromZoneId);
+      if (!from) throw new Error(`Zone ${effect.fromZoneId} not found`);
+      if (from.cards.length === 0) return { state, events: [] };
+      const { value, rng } = nextInt(state.rng, from.cards.length);
+      return applyEffect({ ...state, rng }, { kind: 'MoveCardEffect', cardInstanceId: from.cards[value].instanceId, toZoneId: effect.toZoneId });
     }
     case 'DyingEffect':
       return applyDying(state, effect);

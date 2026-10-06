@@ -26,6 +26,12 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     return getLegalGeneralChoices(state, seatId, registry);
   }
 
+  if (state.pendingChoice) {
+    const choice = state.pendingChoice;
+    if (choice.seatId !== seatId) return [];
+    return choice.options.map((o) => ({ kind: 'ChooseOptionAction' as const, seatId, choiceId: choice.id, optionId: o.id }));
+  }
+
   if (state.pendingResponse) {
     const pending = state.pendingResponse;
     if (pending.respondingSeatId !== seatId) return [];

@@ -8,7 +8,8 @@ export type Action =
   | { kind: 'RespondAction'; seatId: string; pendingResponseId: string; cardInstanceId: string }
   | { kind: 'PassAction'; seatId: string; pendingResponseId: string }
   | { kind: 'EndPhaseAction'; seatId: string }
-  | { kind: 'DiscardCardAction'; seatId: string; cardInstanceId: string };
+  | { kind: 'DiscardCardAction'; seatId: string; cardInstanceId: string }
+  | { kind: 'ChooseOptionAction'; seatId: string; choiceId: string; optionId: string };
 
 export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'DrawCardsAction',
@@ -19,6 +20,7 @@ export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'PassAction',
   'EndPhaseAction',
   'DiscardCardAction',
+  'ChooseOptionAction',
 ]);
 
 export function isAction(value: { kind: string }): value is Action {

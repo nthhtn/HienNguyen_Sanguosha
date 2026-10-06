@@ -1,4 +1,4 @@
-import { CardInstance, Damage, Phase, Target } from '../domain/types';
+import { CardInstance, ChoiceOption, Damage, DecisionReason, Phase, Target } from '../domain/types';
 
 export interface CardsDrawnEvent {
   kind: 'CardsDrawnEvent';
@@ -88,6 +88,16 @@ export interface GeneralsChosenEvent {
   seatId: string;
 }
 
+// A seat picked an option of a pending choice. `shows` is what the option
+// showed, so a pick from a hidden hand never names the card.
+export interface ChoiceMadeEvent {
+  kind: 'ChoiceMadeEvent';
+  seatId: string;
+  reason: DecisionReason;
+  verb: 'take' | 'discard';
+  shows: ChoiceOption['shows'];
+}
+
 export type EngineEvent =
   | CardsDrawnEvent
   | DamageDealtEvent
@@ -101,4 +111,5 @@ export type EngineEvent =
   | SeatEliminatedEvent
   | SeatDyingEvent
   | SeatSavedEvent
-  | GeneralsChosenEvent;
+  | GeneralsChosenEvent
+  | ChoiceMadeEvent;

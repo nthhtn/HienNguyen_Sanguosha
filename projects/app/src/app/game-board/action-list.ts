@@ -9,14 +9,15 @@ interface LabeledAction {
 }
 
 // Card plays are offered on the cards themselves (HandView), discards in the
-// Discard dialog, and responses (Pass included) in the Response dialog; this
-// list carries every other legal action (End Phase, …).
+// Discard dialog, responses (Pass included) in the Response dialog, and picks
+// in the Choice dialog; this list carries every other legal action (End Phase, …).
 function isCardAction(action: Action): boolean {
   return (
     action.kind === 'PlayCardAction' ||
     action.kind === 'RespondAction' ||
     action.kind === 'PassAction' ||
-    action.kind === 'DiscardCardAction'
+    action.kind === 'DiscardCardAction' ||
+    action.kind === 'ChooseOptionAction'
   );
 }
 

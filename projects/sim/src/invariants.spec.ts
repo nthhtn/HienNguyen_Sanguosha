@@ -220,3 +220,21 @@ describe('checkRestingState: the resolution queue', () => {
     expect(checkRestingState(paused)).toEqual([]);
   });
 });
+
+describe('a pending choice', () => {
+  const choiceFor = (seatId: string) => ({
+    id: 'c', seatId, verb: 'take' as const, options: [],
+    reason: { kind: 'choice' as const, card: { as: 'steal', colour: 'black' as const, physical: [] }, userSeatId: seatId },
+  });
+
+  it('counts as a decision, so a game may rest with items queued behind it', () => {
+    const s = baseState();
+    expect(checkRestingState({ ...s, resolutionQueue: [{ kind: 'SkipNextEffect' }], pendingChoice: choiceFor(s.seats[0].id) })).toEqual([]);
+  });
+
+  it('flags a pending choice for an eliminated seat', () => {
+    const s = baseState();
+    const out = { ...s, seats: s.seats.map((x) => ({ ...x, eliminated: true })), pendingChoice: choiceFor(s.seats[0].id) };
+    expect(checkInvariants(out)).toContain(`pendingChoice references eliminated seat ${s.seats[0].id}`);
+  });
+});

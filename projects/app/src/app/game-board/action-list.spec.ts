@@ -87,4 +87,12 @@ describe('ActionList', () => {
 
     expect((fixture.nativeElement as HTMLElement).querySelector('button')!.classList).toContain('mat-mdc-button-base');
   });
+  it('leaves choice picks to the Choice dialog', () => {
+    const fixture = TestBed.createComponent(ActionList);
+    fixture.componentRef.setInput('actions', [{ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'c', optionId: 'hand' }] as Action[]);
+    fixture.componentRef.setInput('state', emptyState());
+    fixture.componentRef.setInput('registry', emptyRegistry());
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('button')).toHaveLength(0);
+  });
 });

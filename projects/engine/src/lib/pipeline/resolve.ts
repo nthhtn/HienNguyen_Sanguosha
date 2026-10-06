@@ -9,7 +9,7 @@ import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence'
 import { legalTargetListsFor } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
-import { CardPlayedEvent, PhaseChangedEvent, TurnAdvancedEvent } from './events';
+import { CardPlayedEvent, ChoiceMadeEvent, PhaseChangedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 
@@ -59,7 +59,7 @@ export function advanceToDecision(state: GameState, ctx: EngineContext, budget: 
     const drained = drain(current, ctx, budget);
     current = drained.state;
     events = [...events, ...drained.events];
-    if (current.result || current.phase === 'GeneralSelection' || current.pendingResponse) break;
+    if (current.result || current.phase === 'GeneralSelection' || current.pendingResponse || current.pendingChoice) break;
     const ownerEliminated = !!current.seats.find((s) => s.id === current.turn.ownerSeatId)?.eliminated;
     if (!ownerEliminated && phaseWaitsForPlayer(current)) break;
     if (steps >= maxSteps) {
@@ -78,7 +78,7 @@ export function advanceToDecision(state: GameState, ctx: EngineContext, budget: 
 function drain(state: GameState, ctx: EngineContext, budget: StepBudget): ResolveResult {
   let current = withWinCheck(state, ctx);
   const events: GameEvent[] = [];
-  while (!current.result && !current.pendingResponse && (current.resolutionQueue?.length ?? 0) > 0) {
+  while (!current.result && !current.pendingResponse && !current.pendingChoice && (current.resolutionQueue?.length ?? 0) > 0) {
     const [item, ...rest] = current.resolutionQueue!;
     budget.used += 1;
     if (budget.used > MAX_RESOLUTION_STEPS) {
@@ -160,6 +160,9 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
 // Validates an action and queues what it leads to. Nothing here resolves an
 // effect directly: the caller drains the queue.
 function resolveAction(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
+  if (state.pendingChoice && action.kind !== 'ChooseOptionAction') {
+    throw new Error(`Action ${action.kind} is not legal while a choice is pending`);
+  }
   if (state.pendingResponse && !state.pendingResponse.allowedActionKinds.includes(action.kind)) {
     throw new Error(`Action ${action.kind} is not legal while a response is pending`);
   }
@@ -332,6 +335,18 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         state: queueFront(entered, [...choiceFollowUps, ...afterTriggerFollowUps(entered, [phaseEvent], ctx)]),
         events: [event, phaseEvent],
       };
+    }
+
+    case 'ChooseOptionAction': {
+      const choice = state.pendingChoice;
+      if (!choice || choice.id !== action.choiceId) throw new Error(`No matching pending choice: ${action.choiceId}`);
+      if (action.seatId !== choice.seatId) throw new Error(`Seat ${action.seatId} is not the chooser for ${action.choiceId}`);
+      const option = choice.options.find((o) => o.id === action.optionId);
+      if (!option) throw new Error(`Choice ${action.choiceId} has no option ${action.optionId}`);
+      const { pendingChoice: _settled, ...cleared } = state;
+      const event: ChoiceMadeEvent = { kind: 'ChoiceMadeEvent', seatId: action.seatId, reason: choice.reason, verb: choice.verb, shows: option.shows };
+      const made = logged(cleared, [event]);
+      return { state: queueFront(made, [...afterTriggerFollowUps(made, [event], ctx), ...option.effects]), events: [event] };
     }
 
     default:

@@ -96,7 +96,30 @@ export type DecisionReason =
   // May this seat cancel the counter card wuxieSeatId just played?
   | { kind: 'counter-wuxie'; wuxieSeatId: string }
   // A card's own demand, e.g. Barbarians: play a Sha or take 1 damage.
-  | { kind: 'card-effect'; card: UsedCard; userSeatId: string };
+  | { kind: 'card-effect'; card: UsedCard; userSeatId: string }
+  // A Tool's pick (Steal, Break, Harvest): `userSeatId` used `card`; the
+  // chooser takes or discards one of `targetSeatId`'s cards (none for Harvest).
+  | { kind: 'choice'; card: UsedCard; userSeatId: string; targetSeatId?: string };
+
+// A pick a seat owes (Steal, Break, Harvest). Pauses the queue like a
+// response window.
+export interface PendingChoice {
+  id: string;
+  seatId: string;
+  reason: DecisionReason;
+  // What picking does with the card, for display: take it, or discard it.
+  verb: 'take' | 'discard';
+  options: ChoiceOption[];
+}
+
+export interface ChoiceOption {
+  id: string;
+  // A face-up card, or a seat's whole hand as one face-down option (the card
+  // inside it is picked at random, so the chooser never sees the hand).
+  shows: { kind: 'card'; card: CardInstance } | { kind: 'hidden-hand'; seatId: string; count: number };
+  // Queued at the front when picked.
+  effects: Effect[];
+}
 
 export interface CardZone {
   id: string;
@@ -157,6 +180,8 @@ export interface GameState {
   // What is left to resolve, front first. Absent (never []) when nothing is
   // left: the engine only rests with items here while a decision is pending.
   resolutionQueue?: QueueItem[];
+  // The pick a seat owes, if any. Absent (never null) when none, like the queue.
+  pendingChoice?: PendingChoice;
   log: EngineEvent[];
   rng: RngState;
   result: GameResult | null;

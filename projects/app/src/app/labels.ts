@@ -77,6 +77,8 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
       return 'Pass';
     case 'EndPhaseAction':
       return 'End Phase';
+    case 'ChooseOptionAction':
+      return 'Choose';
     case 'DiscardCardAction':
       return `Discard ${cardDisplayName(state, registry, action.cardInstanceId)}`;
   }
