@@ -4,14 +4,16 @@ import { wuxieCard } from './wuxie';
 import { drawTwoCard } from './draw-two';
 import { barbariansCard, hailOfArrowsCard } from './mass-attack';
 import { peachGardenCard } from './peach-garden';
+import { stealCard } from './steal';
+import { breakCard } from './break';
 import { silverLionCard, greenDragonBladeCard } from './equipment';
-import { resolve } from 'engine';
-import type { CardDefinition, GameState, ContentRegistry, GameModeDefinition } from 'engine';
+import { getLegalActions, redactStateForSeat, resolve } from 'engine';
+import type { CardDefinition, GameState, ContentRegistry, GameModeDefinition, Target } from 'engine';
 
 const plain = (id: string): CardDefinition => ({ id, name: id, category: 'basic', play: () => [] });
 
 function registry(): ContentRegistry {
-  const cards = [duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, silverLionCard, greenDragonBladeCard, plain('sha'), plain('shan')];
+  const cards = [duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, silverLionCard, greenDragonBladeCard, plain('sha'), plain('shan')];
   return { cards: new Map(cards.map((c) => [c.id, c])), generals: new Map() };
 }
 
@@ -173,6 +175,19 @@ function fourSeats(userCard: string, hands: Record<string, [string, string][]> =
   };
 }
 
+const withEquip = (s: GameState, seatId: string, [definitionId, instanceId]: [string, string]): GameState => ({
+  ...s,
+  zones: s.zones.map((z) => (z.id === `${seatId}:equip` ? { ...z, cards: [...z.cards, { instanceId, definitionId, suit: 'spade' as const, rank: 5 }] } : z)),
+});
+// The target lists the engine offers for seat a's card 'tool'.
+const aimedTargets = (s: GameState): Target[][] =>
+  getLegalActions(s, 'a', registry())
+    .filter((x): x is Extract<typeof x, { kind: 'PlayCardAction' }> => x.kind === 'PlayCardAction' && x.cardInstanceId === 'tool')
+    .map((x) => x.targets);
+const pickOption = (s: GameState, optionId: string): GameState =>
+  resolve(s, { kind: 'ChooseOptionAction', seatId: s.pendingChoice!.seatId, choiceId: s.pendingChoice!.id, optionId }, { registry: registry(), mode: stubMode() }).state;
+const idsIn = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
+
 describe('Draw Two, Barbarians, Hail of Arrows, Peach Garden', () => {
   const ctx = () => ({ registry: registry(), mode: stubMode() });
   const use = (s: GameState) => resolve(s, { kind: 'PlayCardAction', seatId: 'a', cardInstanceId: 'tool', targets: [] }, ctx()).state;
@@ -258,6 +273,78 @@ describe('Draw Two, Barbarians, Hail of Arrows, Peach Garden', () => {
     const done = answer(asked, 'c-wuxie');
     expect(done.pendingResponse).toBeNull();
     expect(done.log.some((e) => e.kind === 'DamageDealtEvent')).toBe(false);
+  });
+});
+
+describe('Steal and Break', () => {
+  const ctx = () => ({ registry: registry(), mode: stubMode() });
+  const aim = (s: GameState, seatId: string) =>
+    resolve(s, { kind: 'PlayCardAction', seatId: 'a', cardInstanceId: 'tool', targets: [{ kind: 'seat', seatId }] }, ctx()).state;
+  const answer = (s: GameState, cardInstanceId: string) =>
+    resolve(s, { kind: 'RespondAction', seatId: s.pendingResponse!.respondingSeatId, pendingResponseId: s.pendingResponse!.id, cardInstanceId }, ctx()).state;
+  const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
+
+  it('Steal targets only seats at distance 1 that hold a card', () => {
+    // a's neighbours are b and d; c is 2 away. d holds nothing.
+    expect(aimedTargets(fourSeats('steal', { b: [['shan', 'b-1']], c: [['shan', 'c-1']] }))).toEqual([[seat('b')]]);
+  });
+
+  it('Break targets any other seat that holds a card, at any distance', () => {
+    expect(aimedTargets(fourSeats('break', { b: [['shan', 'b-1']], c: [['shan', 'c-1']] }))).toEqual([[seat('b')], [seat('c')]]);
+  });
+
+  it('Steal: the user picks the hand (face down) or a worn card (face up), and takes it', () => {
+    const s = aim(withEquip(fourSeats('steal', { b: [['shan', 'b-1'], ['shan', 'b-2']] }), 'b', ['silver-lion', 'b-lion']), 'b');
+    expect(s.pendingChoice).toMatchObject({
+      seatId: 'a', verb: 'take', reason: { kind: 'choice', userSeatId: 'a', targetSeatId: 'b', card: { as: 'steal' } },
+      options: [
+        { id: 'hand', shows: { kind: 'hidden-hand', seatId: 'b', count: 2 } },
+        { id: 'b-lion', shows: { kind: 'card', card: { instanceId: 'b-lion', definitionId: 'silver-lion' } } },
+      ],
+    });
+    const taken = pickOption(s, 'b-lion');
+    expect(idsIn(taken, 'a:hand')).toEqual(['b-lion']);
+    expect(idsIn(taken, 'b:equip')).toEqual([]);
+    expect(taken.pendingChoice).toBeUndefined();
+  });
+
+  it('Steal from the hand takes one card at random, the same one for the same seed', () => {
+    const s = aim(fourSeats('steal', { b: [['shan', 'b-1'], ['shan', 'b-2'], ['shan', 'b-3']] }), 'b');
+    const taken = pickOption(s, 'hand');
+    expect(idsIn(taken, 'a:hand')).toHaveLength(1);
+    expect(idsIn(taken, 'b:hand')).toHaveLength(2);
+    expect(idsIn(pickOption(s, 'hand'), 'a:hand')).toEqual(idsIn(taken, 'a:hand'));
+  });
+
+  it('Break: the picked card goes to the discard pile', () => {
+    const s = aim(withEquip(fourSeats('break', { c: [['shan', 'c-1']] }), 'c', ['silver-lion', 'c-lion']), 'c');
+    expect(s.pendingChoice).toMatchObject({ seatId: 'a', verb: 'discard', reason: { targetSeatId: 'c' } });
+    const broken = pickOption(s, 'c-lion');
+    expect(idsIn(broken, 'discardPile')).toContain('c-lion');
+    expect(idsIn(broken, 'a:hand')).toEqual([]);
+  });
+
+  it('opens no choice when the target has nothing left by the time Steal takes effect (Review Focus 1)', () => {
+    // b's only card is a Wuxie: b cancels the Steal on itself, d cancels b's Wuxie, so the Steal goes ahead on an empty b.
+    let s = aim(fourSeats('steal', { b: [['wuxie', 'b-wx']], d: [['wuxie', 'd-wx']] }), 'b');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'b', reason: { kind: 'wuxie' } });
+    s = answer(s, 'b-wx');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'd', reason: { kind: 'counter-wuxie' } });
+    s = answer(s, 'd-wx');
+    expect(s.pendingChoice).toBeUndefined();
+    expect(s.pendingResponse).toBeNull();
+    expect(s.resolutionQueue).toBeUndefined();
+  });
+
+  it('a game paused on a Steal survives a JSON round trip, and no one else sees the hand (Review Focus 3)', () => {
+    const s = aim(fourSeats('steal', { b: [['shan', 'b-1'], ['shan', 'b-2']] }), 'b');
+    const copy = JSON.parse(JSON.stringify(s)) as GameState;
+    expect(pickOption(copy, 'hand')).toEqual(pickOption(s, 'hand'));
+    for (const viewer of ['a', 'c']) {
+      const seen = JSON.stringify(redactStateForSeat(s, viewer).pendingChoice);
+      expect(seen).not.toContain('b-1');
+      expect(seen).not.toContain('shan');
+    }
   });
 });
 

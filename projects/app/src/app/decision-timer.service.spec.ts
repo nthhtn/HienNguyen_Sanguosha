@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { Action, cardsOverHandLimit } from 'engine';
 import { DECISION_SECONDS, DecisionTimer } from './decision-timer.service';
 import { GameService } from './game.service';
+import { cardDefinitionId } from './labels';
 
 // A stand-in for the board's DestroyRef, to attach and later detach.
 function boardLifetime() {
@@ -76,7 +77,9 @@ describe('DecisionTimer', () => {
           game.reveal(game.activeSeatId()!);
         }
         TestBed.tick();
-        const aimed = game.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1);
+        const aimed = game.legalActions().find(
+          (a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(game.state()!, a.cardInstanceId) ?? '')
+        );
         if (!aimed) continue;
         const owner = game.activeSeatId()!;
         advance(100);
@@ -127,7 +130,9 @@ describe('DecisionTimer', () => {
           game.submit(game.legalActions()[0]);
           game.reveal(game.activeSeatId()!);
         }
-        const aimed = game.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1);
+        const aimed = game.legalActions().find(
+          (a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(game.state()!, a.cardInstanceId) ?? '')
+        );
         if (!aimed) continue;
         game.submit(aimed);
         const responder = game.activeSeatId()!;

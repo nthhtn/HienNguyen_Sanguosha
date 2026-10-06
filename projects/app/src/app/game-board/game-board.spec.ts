@@ -8,6 +8,7 @@ import { GameService } from '../game.service';
 import { Action, cardsOverHandLimit } from 'engine';
 import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
+import { cardDefinitionId } from '../labels';
 
 function finishSelection(gameService: GameService): void {
   while (gameService.state()!.phase === 'GeneralSelection') {
@@ -230,7 +231,9 @@ describe('GameBoard', () => {
       gameService.startGame(2, seed);
       finishSelection(gameService);
       gameService.reveal(gameService.activeSeatId()!);
-      sha = gameService.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1);
+      sha = gameService.legalActions().find(
+        (a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(gameService.state()!, a.cardInstanceId) ?? '')
+      );
     }
     expect(sha).toBeDefined();
     gameService.submit(sha!);
