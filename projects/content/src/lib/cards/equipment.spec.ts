@@ -17,7 +17,7 @@ function state(hand: CardInstance[], equipped: CardInstance[]): GameState {
     seats: [{
       id: 'seat-a', index: 0, kingdom: 'Wei',
       generals: { main: { generalDefinitionId: 'g1', revealed: false }, deputy: { generalDefinitionId: 'g2', revealed: false } },
-      combinedHp: 6, maxCombinedHp: 6, hand: { zoneId: 'seat-a:hand' }, equipped: { zoneId: 'seat-a:equip' }, eliminated: false,
+      combinedHp: 6, maxCombinedHp: 6, hand: { zoneId: 'seat-a:hand' }, equipped: { zoneId: 'seat-a:equip' }, judgment: { zoneId: 'seat-a:judgment' }, eliminated: false,
     }],
     players: [], turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] }, phase: 'Play',
     zones: [

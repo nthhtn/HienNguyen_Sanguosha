@@ -16,6 +16,7 @@ export function createSeat(
   const maxCombinedHp = combinedMaxHp(maxHpLookup(mainGeneralId), maxHpLookup(deputyGeneralId));
   const hand: CardZoneRef = { zoneId: `${id}:hand` };
   const equipped: CardZoneRef = { zoneId: `${id}:equip` };
+  const judgment: CardZoneRef = { zoneId: `${id}:judgment` };
   return {
     id,
     index,
@@ -28,6 +29,7 @@ export function createSeat(
     maxCombinedHp,
     hand,
     equipped,
+    judgment,
     eliminated: false,
   };
 }

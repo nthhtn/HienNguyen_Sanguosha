@@ -15,7 +15,7 @@ function seat(id: string, index: number, mainId: string, deputyId: string, elimi
     combinedHp: 7,
     maxCombinedHp: 7,
     hand: { zoneId: `${id}:hand` },
-    equipped: { zoneId: `${id}:equip` },
+    equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
     eliminated,
   };
 }

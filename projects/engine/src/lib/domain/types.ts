@@ -60,6 +60,8 @@ export interface Seat {
   maxCombinedHp: number;
   hand: CardZoneRef;
   equipped: CardZoneRef;
+  // Where delayed Tools wait to be judged (Capture, Lightning, Starvation).
+  judgment: CardZoneRef;
   eliminated: boolean;
 }
 

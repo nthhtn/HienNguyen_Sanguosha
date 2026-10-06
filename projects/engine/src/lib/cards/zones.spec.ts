@@ -1,5 +1,5 @@
-import { moveCard, drawTop, findZoneByKind, requireZoneOfKind } from './zones';
-import { CardZone } from '../domain/types';
+import { moveCard, drawTop, findZoneByKind, judgmentZoneOf, requireZoneOfKind } from './zones';
+import { CardZone, GameState } from '../domain/types';
 import { createRng } from '../rng/rng';
 
 function card(instanceId: string): { instanceId: string; definitionId: string; suit: 'spade'; rank: number } {
@@ -159,5 +159,22 @@ describe('zones', () => {
       const discard = result.find((z) => z.id === 'discard')!;
       expect(discard.cards.map((c) => c.instanceId)).toEqual(['d1']);
     });
+  });
+});
+
+describe('judgmentZoneOf', () => {
+  const seat = (id: string) => ({ id, judgment: { zoneId: `${id}:judgment` } });
+  const state = {
+    seats: [seat('a'), seat('b')],
+    zones: [
+      { id: 'a:judgment', kind: 'judgment', ownerSeatId: 'a', cards: [] },
+      { id: 'b:judgment', kind: 'judgment', ownerSeatId: 'b', cards: [] },
+    ],
+  } as unknown as GameState;
+  it('finds a seat’s Judgment slot through Seat.judgment', () => {
+    expect(judgmentZoneOf(state, 'b')?.id).toBe('b:judgment');
+  });
+  it('is undefined for an unknown seat', () => {
+    expect(judgmentZoneOf(state, 'ghost')).toBeUndefined();
   });
 });

@@ -59,7 +59,7 @@ describe('describeResponse', () => {
       ...s,
       seats: [seatId === 'seat-0' ? 'seat-0' : 'seat-1'].map((id, index) => ({
         id, index, kingdom: 'Wei' as const, eliminated: false, combinedHp: hp, maxCombinedHp: 4, generals: null,
-        hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` },
+        hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
       })),
     });
     expect(describeResponse(withHp(state([], dyingWindow('seat-1')), 'seat-1', 0), 'seat-0')).toEqual({

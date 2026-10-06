@@ -32,7 +32,7 @@ function baseState(): GameState {
         combinedHp: 7,
         maxCombinedHp: 7,
         hand: { zoneId: 'seat-a:hand' },
-        equipped: { zoneId: 'seat-a:equip' },
+        equipped: { zoneId: 'seat-a:equip' }, judgment: { zoneId: 'seat-a:judgment' },
         eliminated: false,
       },
       {
@@ -46,7 +46,7 @@ function baseState(): GameState {
         combinedHp: 6,
         maxCombinedHp: 6,
         hand: { zoneId: 'seat-b:hand' },
-        equipped: { zoneId: 'seat-b:equip' },
+        equipped: { zoneId: 'seat-b:equip' }, judgment: { zoneId: 'seat-b:judgment' },
         eliminated: false,
       },
     ],

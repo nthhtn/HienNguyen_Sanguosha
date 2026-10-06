@@ -41,7 +41,7 @@ function table(counters: string[] = [], eliminated: string[] = []): GameState {
     seats: ids.map((id, index) => ({
       id, index, kingdom: 'Wei' as const, combinedHp: 2, maxCombinedHp: 4, eliminated: eliminated.includes(id),
       generals: { main: { generalDefinitionId: `${id}1`, revealed: true }, deputy: { generalDefinitionId: `${id}2`, revealed: true } },
-      hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` },
+      hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
     })),
     players: [],
     turn: { turnNumber: 1, ownerSeatId: 'a', extraTurnStack: [] },

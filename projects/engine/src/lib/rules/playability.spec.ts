@@ -18,7 +18,7 @@ function seat(id: string, index: number): Seat {
   return {
     id, index, kingdom: 'Wei', combinedHp: 4, maxCombinedHp: 4, eliminated: false,
     generals: { main: { generalDefinitionId: 'g1', revealed: false }, deputy: { generalDefinitionId: 'g2', revealed: false } },
-    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` },
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
   };
 }
 

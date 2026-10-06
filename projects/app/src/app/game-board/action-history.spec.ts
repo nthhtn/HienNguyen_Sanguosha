@@ -207,7 +207,7 @@ describe('actionHistory', () => {
   it('colours a line about a player’s status in that player’s force, and no other line', () => {
     const seats = [
       { id: 'seat-0', index: 0, kingdom: 'Shu' as const }, { id: 'seat-1', index: 1, kingdom: 'hidden' as const },
-    ].map((s) => ({ ...s, eliminated: false, combinedHp: 3, maxCombinedHp: 4, generals: null, hand: { zoneId: `${s.id}:hand` }, equipped: { zoneId: `${s.id}:equip` } }));
+    ].map((s) => ({ ...s, eliminated: false, combinedHp: 3, maxCombinedHp: 4, generals: null, hand: { zoneId: `${s.id}:hand` }, equipped: { zoneId: `${s.id}:equip` }, judgment: { zoneId: `${s.id}:judgment` } }));
     const entries = actionHistory([
       { kind: 'CardPlayedEvent', seatId: 'seat-1', card: sha, targets: [seat('seat-0')] },
       { kind: 'DamageDealtEvent', damage: { source: seat('seat-1'), target: seat('seat-0'), amount: 1, nature: 'normal' } },

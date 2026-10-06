@@ -24,7 +24,7 @@ function state(hp: number, hands: Record<string, CardInstance[]> = {}): GameStat
       id, index, kingdom: 'Wei' as const, eliminated: false,
       generals: { main: { generalDefinitionId: 'g1', revealed: true }, deputy: { generalDefinitionId: 'g2', revealed: true } },
       combinedHp: id === 'seat-c' ? hp : 3, maxCombinedHp: 3,
-      hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` },
+      hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
     })),
     players: [], turn: { turnNumber: 1, ownerSeatId: 'seat-b', extraTurnStack: [] }, phase: 'Play',
     zones: [

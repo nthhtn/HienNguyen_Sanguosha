@@ -23,7 +23,7 @@ function seat(id: string, index: number, kingdom: Kingdom, combinedHp = 4, elimi
   return {
     id, index, kingdom, combinedHp, maxCombinedHp: 8, eliminated,
     generals: { main: { generalDefinitionId: 'w1', revealed: false }, deputy: { generalDefinitionId: 'w2', revealed: false } },
-    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` },
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
   };
 }
 

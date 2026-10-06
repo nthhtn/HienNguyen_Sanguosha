@@ -94,7 +94,7 @@ export const kingdomWarMode: GameModeDefinition = {
       combinedHp: 0,
       maxCombinedHp: 0,
       hand: { zoneId: `${id}:hand` },
-      equipped: { zoneId: `${id}:equip` },
+      equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
       eliminated: false,
     }));
 
@@ -106,6 +106,7 @@ export const kingdomWarMode: GameModeDefinition = {
       ...seats.flatMap((s) => [
         { id: s.hand.zoneId, kind: 'hand' as const, ownerSeatId: s.id, cards: [] },
         { id: s.equipped.zoneId, kind: 'equip' as const, ownerSeatId: s.id, cards: [] },
+        { id: s.judgment.zoneId, kind: 'judgment' as const, ownerSeatId: s.id, cards: [] },
       ]),
     ];
     let currentRng = afterShuffle;

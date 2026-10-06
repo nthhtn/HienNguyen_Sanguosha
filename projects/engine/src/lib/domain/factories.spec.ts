@@ -23,4 +23,8 @@ describe('domain factories', () => {
     expect(combinedMaxHp(3, 3)).toBe(3);
     expect(combinedMaxHp(5, 4)).toBe(4);
   });
+  it('gives a seat a Judgment slot next to its hand and equipment', () => {
+    const seat = createSeat('seat-a', 0, 'Wei', 'g1', 'g2', () => 4);
+    expect(seat.judgment).toEqual({ zoneId: 'seat-a:judgment' });
+  });
 });

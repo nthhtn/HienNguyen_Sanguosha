@@ -42,7 +42,7 @@ function seat(id: string, index: number, generalId: string, combinedHp: number, 
     id, index, kingdom: 'Wei' as const,
     generals: { main: { generalDefinitionId: generalId, revealed: false }, deputy: { generalDefinitionId: 'filler', revealed: false } },
     combinedHp, maxCombinedHp,
-    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, eliminated: false,
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, eliminated: false,
   };
 }
 

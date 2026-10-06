@@ -6,7 +6,7 @@ function seat(id: string, index: number, eliminated = false): Seat {
     id, index, kingdom: 'Wei',
     generals: { main: { generalDefinitionId: 'g1', revealed: false }, deputy: { generalDefinitionId: 'g2', revealed: false } },
     combinedHp: 5, maxCombinedHp: 5,
-    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, eliminated,
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, eliminated,
   };
 }
 

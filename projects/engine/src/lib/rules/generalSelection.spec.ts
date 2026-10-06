@@ -22,7 +22,7 @@ const registry: ContentRegistry = {
 function unchosenSeat(id: string, index: number): Seat {
   return {
     id, index, kingdom: 'hidden', generals: null, combinedHp: 0, maxCombinedHp: 0,
-    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, eliminated: false,
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, eliminated: false,
   };
 }
 

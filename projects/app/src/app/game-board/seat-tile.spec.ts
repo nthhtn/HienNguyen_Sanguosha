@@ -15,6 +15,7 @@ function makeSeat(overrides: Partial<Seat> = {}): Seat {
     maxCombinedHp: 8,
     hand: { zoneId: 'hand-1' },
     equipped: { zoneId: 'equip-1' },
+    judgment: { zoneId: 'judgment-1' },
     eliminated: false,
     ...overrides,
   };

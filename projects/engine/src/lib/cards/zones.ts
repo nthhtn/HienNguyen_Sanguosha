@@ -1,4 +1,4 @@
-import { CardZone, CardInstance } from '../domain/types';
+import { CardZone, CardInstance, GameState } from '../domain/types';
 import { RngState, shuffle } from '../rng/rng';
 
 // Locates a "well-known" zone (the draw pile, the discard pile, ...) by its
@@ -13,6 +13,12 @@ export function requireZoneOfKind(zones: CardZone[], kind: CardZone['kind']): Ca
   const zone = findZoneByKind(zones, kind);
   if (!zone) throw new Error(`No zone of kind '${kind}' exists in this game state`);
   return zone;
+}
+
+// A seat's Judgment slot (Seat.judgment), where its delayed Tools wait.
+export function judgmentZoneOf(state: GameState, seatId: string): CardZone | undefined {
+  const seat = state.seats.find((s) => s.id === seatId);
+  return seat && state.zones.find((z) => z.id === seat.judgment.zoneId);
 }
 
 export function moveCard(zones: CardZone[], cardInstanceId: string, toZoneId: string): CardZone[] {

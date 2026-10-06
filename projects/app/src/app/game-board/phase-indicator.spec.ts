@@ -8,7 +8,7 @@ function state(phase: GameState['phase'], handSize = 0, combinedHp = 4): GameSta
       id: 'seat-0', index: 0, kingdom: 'Wei',
       generals: { main: { generalDefinitionId: 'g1', revealed: false }, deputy: { generalDefinitionId: 'g2', revealed: false } },
       combinedHp, maxCombinedHp: 4,
-      hand: { zoneId: 'seat-0:hand' }, equipped: { zoneId: 'seat-0:equip' }, eliminated: false,
+      hand: { zoneId: 'seat-0:hand' }, equipped: { zoneId: 'seat-0:equip' }, judgment: { zoneId: 'seat-0:judgment' }, eliminated: false,
     }],
     players: [], turn: { turnNumber: 2, ownerSeatId: 'seat-0', extraTurnStack: [] }, phase,
     zones: [{

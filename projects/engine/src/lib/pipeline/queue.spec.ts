@@ -18,7 +18,7 @@ function state(handCardId: string): GameState {
   const seat = (id: string, index: number) => ({
     id, index, kingdom: (index === 0 ? 'Wei' : 'Shu') as 'Wei' | 'Shu',
     generals: { main: { generalDefinitionId: `${id}-m`, revealed: true }, deputy: { generalDefinitionId: `${id}-d`, revealed: true } },
-    combinedHp: 4, maxCombinedHp: 6, hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, eliminated: false,
+    combinedHp: 4, maxCombinedHp: 6, hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, eliminated: false,
   });
   return {
     seats: [seat('seat-a', 0), seat('seat-b', 1)],

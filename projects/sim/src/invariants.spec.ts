@@ -12,7 +12,7 @@ function baseState(overrides: Partial<GameState> = {}): GameState {
         id: 'seat-a', index: 0, kingdom: 'Wei',
         generals: { main: { generalDefinitionId: 'g1', revealed: false }, deputy: { generalDefinitionId: 'g2', revealed: false } },
         combinedHp: 5, maxCombinedHp: 5,
-        hand: { zoneId: 'seat-a:hand' }, equipped: { zoneId: 'seat-a:equip' }, eliminated: false,
+        hand: { zoneId: 'seat-a:hand' }, equipped: { zoneId: 'seat-a:equip' }, judgment: { zoneId: 'seat-a:judgment' }, eliminated: false,
       },
     ],
     players: [], turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] }, phase: 'Play',
@@ -69,7 +69,7 @@ describe('general-selection invariants', () => {
   const secondSeat = (generals: GameState['seats'][number]['generals']): GameState['seats'][number] => ({
     id: 'seat-b', index: 1, kingdom: 'Wei', generals,
     combinedHp: 5, maxCombinedHp: 5,
-    hand: { zoneId: 'seat-b:hand' }, equipped: { zoneId: 'seat-b:equip' }, eliminated: false,
+    hand: { zoneId: 'seat-b:hand' }, equipped: { zoneId: 'seat-b:equip' }, judgment: { zoneId: 'seat-b:judgment' }, eliminated: false,
   });
 
   it('flags a seat with no generals after selection has ended', () => {

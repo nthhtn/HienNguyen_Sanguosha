@@ -18,7 +18,7 @@ function state(): GameState {
   const seat = (id: string, index: number) => ({
     id, index, kingdom: 'Wei' as const, combinedHp: 3, maxCombinedHp: 4, eliminated: false,
     generals: { main: { generalDefinitionId: `${id}-m`, revealed: true }, deputy: { generalDefinitionId: `${id}-d`, revealed: true } },
-    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` },
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
   });
   const card = (instanceId: string, rank: number) => ({ instanceId, definitionId: 'filler', suit: 'club' as const, rank });
   return {

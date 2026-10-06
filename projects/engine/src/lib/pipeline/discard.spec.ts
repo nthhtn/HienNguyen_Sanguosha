@@ -20,7 +20,7 @@ function state(phase: Phase = 'Discard', combinedHp = 1): GameState {
     id, index, kingdom: 'Wei' as const,
     generals: { main: { generalDefinitionId: 'g1', revealed: false }, deputy: { generalDefinitionId: 'g2', revealed: false } },
     combinedHp, maxCombinedHp: 4,
-    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, eliminated: false,
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, eliminated: false,
   });
   return {
     seats: [seat('seat-a', 0), seat('seat-b', 1)],

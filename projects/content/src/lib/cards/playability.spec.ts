@@ -21,7 +21,7 @@ function seat(id: string, index: number, combinedHp = 4, eliminated = false): Se
   return {
     id, index, kingdom: KINGDOMS[index], combinedHp, maxCombinedHp: 4, eliminated,
     generals: { main: { generalDefinitionId: 'cao-cao', revealed: false }, deputy: { generalDefinitionId: 'xu-chu', revealed: false } },
-    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` },
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
   };
 }
 
