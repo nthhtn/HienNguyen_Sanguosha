@@ -8,7 +8,7 @@ import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
 import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence';
-import { legalTargetListsFor } from '../rules/legality';
+import { conversionActions, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
@@ -326,7 +326,8 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
   if (state.pendingChoice && action.kind !== 'ChooseOptionAction') {
     throw new Error(`Action ${action.kind} is not legal while a choice is pending`);
   }
-  if (state.pendingResponse && !state.pendingSelection && !state.pendingResponse.allowedActionKinds.includes(action.kind)) {
+  const windowKind = action.kind === 'UseConversionAction' ? 'RespondAction' : action.kind;
+  if (state.pendingResponse && !state.pendingSelection && !state.pendingResponse.allowedActionKinds.includes(windowKind)) {
     throw new Error(`Action ${action.kind} is not legal while a response is pending`);
   }
   if (state.phase === 'GeneralSelection' && action.kind !== 'ChooseGeneralsAction') {
@@ -462,6 +463,42 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const event: SelectionMadeEvent = { kind: 'SelectionMadeEvent', seatId: action.seatId, reason: selection.reason, of: selection.of, ids: action.ids };
       const continued = continueSelection(logged(cleared, [event]), selection, action.ids, ctx);
       return { state: continued.state, events: [event, ...continued.events] };
+    }
+
+    case 'UseConversionAction': {
+      const offered = conversionActions(state, action.seatId, ctx.registry).some(
+        (a) =>
+          a.via.conversionId === action.via.conversionId &&
+          sameAbilityOwner(a.via.owner, action.via.owner) &&
+          a.pendingResponseId === action.pendingResponseId &&
+          JSON.stringify(a.targets) === JSON.stringify(action.targets)
+      );
+      if (!offered) throw new Error(`Seat ${action.seatId} can’t use that conversion now`);
+      const owned = conversionsOf(state, action.seatId, ctx.registry).find(
+        (o) => o.conversion.id === action.via.conversionId && sameAbilityOwner(o.owner, action.via.owner)
+      )!;
+      const seat = state.seats.find((s) => s.id === action.seatId)!;
+      const hand = state.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [];
+      const selection: PendingSelection = {
+        id: `convert-${owned.conversion.id}-${action.seatId}-${state.log.length}`,
+        seatId: action.seatId,
+        reason: { kind: 'ability', owner: owned.owner, abilityId: owned.abilityId },
+        of: 'cards',
+        eligibleIds: hand.map((c) => c.instanceId),
+        min: owned.conversion.cards,
+        max: owned.conversion.cards,
+        then: {
+          kind: 'use-card',
+          as: owned.conversion.as,
+          via: { owner: owned.owner, abilityId: owned.abilityId, conversionId: owned.conversion.id },
+          targets: action.targets,
+          ...(action.pendingResponseId ? { respondTo: action.pendingResponseId } : {}),
+          counted: !action.pendingResponseId,
+        },
+        // Cancel: back where the seat was (its Play Phase, or the open window).
+        onCancel: [],
+      };
+      return { state: { ...state, pendingSelection: selection }, events: [] };
     }
 
     case 'CancelSelectionAction': {

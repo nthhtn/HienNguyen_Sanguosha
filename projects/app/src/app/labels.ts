@@ -79,6 +79,8 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
       return 'End Phase';
     case 'ChooseOptionAction':
       return 'Choose';
+    case 'UseConversionAction':
+      return conversionLabel(action, state, registry);
     case 'SelectAction':
       return 'Confirm';
     case 'CancelSelectionAction':
@@ -86,6 +88,15 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
     case 'DiscardCardAction':
       return `Discard ${cardDisplayName(state, registry, action.cardInstanceId)}`;
   }
+}
+
+// "Use 2 Cards as Sha", with its targets for a play.
+export function conversionLabel(action: Extract<Action, { kind: 'UseConversionAction' }>, state: GameState, registry: ContentRegistry): string {
+  const owner = action.via.owner;
+  const worn = owner.kind === 'equipment' ? findCardInstance(state, owner.cardInstanceId) : undefined;
+  const conversion = worn && registry.cards.get(worn.definitionId)?.abilities?.conversions?.find((c) => c.id === action.via.conversionId);
+  const base = conversion ? `Use ${conversion.cards} Cards as ${registry.cards.get(conversion.as)?.name ?? conversion.as}` : 'Use Cards';
+  return action.targets.length > 0 ? `${base} Targeting ${action.targets.map((t) => targetLabel(t, state.players)).join(', ')}` : base;
 }
 
 const SUIT_SYMBOLS: Record<CardInstance['suit'], string> = { spade: '♠', heart: '♥', club: '♣', diamond: '♦' };

@@ -119,10 +119,23 @@ export interface AbilityModifiers {
   ignoresArmor?: boolean;
 }
 
+// Using hand cards as another card (Serpent Spear: 2 hand cards as a Sha).
+export interface Conversion {
+  // Unique among its owner's conversions.
+  id: string;
+  // The card the picked cards count as.
+  as: string;
+  // How many hand cards it takes. (1-card conversions come with stage 7.)
+  cards: 2;
+  // 'play': proactively in your Play Phase; 'respond': to answer a window.
+  when: 'play' | 'respond' | 'both';
+}
+
 // What a card does while worn.
 export interface Abilities {
   triggers?: SkillTrigger[];
   modifiers?: AbilityModifiers;
+  conversions?: Conversion[];
 }
 
 export interface UnequipContext {

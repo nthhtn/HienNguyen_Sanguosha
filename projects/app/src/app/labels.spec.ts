@@ -1,5 +1,5 @@
 import { actionLabel, cardDefinitionId, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, targetLabel } from './labels';
-import { Action, ContentRegistry, GameState } from 'engine';
+import { Action, ContentRegistry, GameState, Target } from 'engine';
 
 function stateWithZones(): GameState {
   return {
@@ -70,6 +70,24 @@ describe('kingdomDisplayName', () => {
 });
 
 describe('actionLabel', () => {
+  it('labels a conversion by what it makes, and its targets for a play', () => {
+    const base = stateWithZones();
+    const state: GameState = {
+      ...base,
+      zones: [...base.zones, { id: 'equip-0', kind: 'equip', ownerSeatId: 'seat-0', cards: [{ instanceId: 'spear', definitionId: 'serpent-spear', suit: 'spade', rank: 12 }] }],
+    };
+    const registry = registryWithSha();
+    registry.cards.set('serpent-spear', {
+      id: 'serpent-spear', name: 'Serpent Spear', category: 'equipment', equipSlot: 'weapon', play: () => [],
+      abilities: { conversions: [{ id: 'serpent-spear', as: 'sha', cards: 2, when: 'both' }] },
+    });
+    const use = (targets: Target[]): Action => ({
+      kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'spear' }, conversionId: 'serpent-spear' }, targets,
+    });
+    expect(actionLabel(use([]), state, registry)).toBe('Use 2 Cards as Sha');
+    expect(actionLabel(use([{ kind: 'seat', seatId: 'seat-1' }]), state, registry)).toBe('Use 2 Cards as Sha Targeting Seat 1');
+  });
+
   it('labels DrawCardsAction with the count', () => {
     const action: Action = { kind: 'DrawCardsAction', seatId: 'seat-0', count: 2 };
     expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Draw 2 Cards');

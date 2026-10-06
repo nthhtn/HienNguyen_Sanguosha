@@ -1,6 +1,6 @@
-import { GameState, Target } from '../domain/types';
+import { AbilityOwner, GameState, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
-import { ContentRegistry } from '../registry/types';
+import { ContentRegistry, Conversion } from '../registry/types';
 import { getActiveSeatId } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
 import { cardsOverHandLimit } from './handLimit';
@@ -61,6 +61,7 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
         }
       }
     }
+    if (registry) actions.push(...conversionActions(state, seatId, registry));
     return actions;
   }
 
@@ -81,6 +82,7 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
       actions.push({ kind: 'PlayCardAction', seatId, cardInstanceId: card.instanceId, targets });
     }
   }
+  if (registry) actions.push(...conversionActions(state, seatId, registry));
   return actions;
 }
 
@@ -97,4 +99,58 @@ export function legalTargetListsFor(
     return definition.legalPlayTargets(state, { seatId, cardInstanceId }, registry);
   }
   return [[], ...getLegalTargets(state, seatId).map((t) => [t])];
+}
+
+type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
+
+export interface OwnedConversion {
+  owner: AbilityOwner;
+  // The ability's id: the worn card's definition id.
+  abilityId: string;
+  conversion: Conversion;
+}
+
+export function sameAbilityOwner(a: AbilityOwner, b: AbilityOwner): boolean {
+  if (a.kind === 'equipment' && b.kind === 'equipment') return a.seatId === b.seatId && a.cardInstanceId === b.cardInstanceId;
+  if (a.kind === 'general' && b.kind === 'general') return a.seatId === b.seatId && a.slot === b.slot;
+  return false;
+}
+
+// Every conversion `seatId` has: those of the cards it wears, in zone order.
+// (Generals' conversions join in stage 6.)
+export function conversionsOf(state: GameState, seatId: string, registry: ContentRegistry): OwnedConversion[] {
+  const seat = state.seats.find((s) => s.id === seatId);
+  if (!seat || seat.eliminated) return [];
+  const worn = state.zones.find((z) => z.id === seat.equipped.zoneId)?.cards ?? [];
+  return worn.flatMap((card) =>
+    (registry.cards.get(card.definitionId)?.abilities?.conversions ?? []).map((conversion) => ({
+      owner: { kind: 'equipment' as const, seatId, cardInstanceId: card.instanceId },
+      abilityId: card.definitionId,
+      conversion,
+    }))
+  );
+}
+
+// The conversions `seatId` may use now. In its Play Phase: one per legal target
+// list of the card made. Answering a window that allows the card made: one
+// each. Either way the seat must hold enough hand cards.
+export function conversionActions(state: GameState, seatId: string, registry: ContentRegistry): UseConversion[] {
+  const seat = state.seats.find((s) => s.id === seatId);
+  if (!seat || state.pendingChoice || state.pendingSelection) return [];
+  const handSize = state.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
+  const usable = conversionsOf(state, seatId, registry).filter((o) => handSize >= o.conversion.cards);
+  const via = (o: OwnedConversion) => ({ owner: o.owner, conversionId: o.conversion.id });
+  const pending = state.pendingResponse;
+  if (pending) {
+    if (pending.respondingSeatId !== seatId || !pending.allowedActionKinds.includes('RespondAction')) return [];
+    return usable
+      .filter((o) => o.conversion.when !== 'play' && (!pending.allowedCardIds || pending.allowedCardIds.includes(o.conversion.as)))
+      .map((o) => ({ kind: 'UseConversionAction', seatId, via: via(o), targets: [], pendingResponseId: pending.id }));
+  }
+  if (state.phase !== 'Play' || state.turn.ownerSeatId !== seatId) return [];
+  return usable
+    .filter((o) => o.conversion.when !== 'respond')
+    .flatMap((o) =>
+      legalTargetListsFor(state, seatId, '', o.conversion.as, registry).map((targets): UseConversion => ({ kind: 'UseConversionAction', seatId, via: via(o), targets }))
+    );
 }

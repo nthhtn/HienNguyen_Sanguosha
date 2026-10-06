@@ -1,4 +1,4 @@
-import { Target } from '../domain/types';
+import { AbilityOwner, Target } from '../domain/types';
 
 export type Action =
   | { kind: 'DrawCardsAction'; seatId: string; count: number }
@@ -12,7 +12,10 @@ export type Action =
   | { kind: 'ChooseOptionAction'; seatId: string; choiceId: string; optionId: string }
   // Fills the pending selection; getLegalActions offers it as a template with no ids.
   | { kind: 'SelectAction'; seatId: string; selectionId: string; ids: string[] }
-  | { kind: 'CancelSelectionAction'; seatId: string; selectionId: string };
+  | { kind: 'CancelSelectionAction'; seatId: string; selectionId: string }
+  // Uses a conversion: in the Play Phase at `targets`, or (with
+  // pendingResponseId) to answer that window. Opens a selection of the cards.
+  | { kind: 'UseConversionAction'; seatId: string; via: { owner: AbilityOwner; conversionId: string }; targets: Target[]; pendingResponseId?: string };
 
 export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'DrawCardsAction',
@@ -26,6 +29,7 @@ export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'ChooseOptionAction',
   'SelectAction',
   'CancelSelectionAction',
+  'UseConversionAction',
 ]);
 
 export function isAction(value: { kind: string }): value is Action {
