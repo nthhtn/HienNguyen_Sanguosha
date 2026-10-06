@@ -23,7 +23,7 @@ import { ActionHistoryPanel } from './action-history-panel';
 import { actionHistory } from './action-history';
 import { DiscardDialog, DiscardDialogData } from './discard-dialog';
 import { ResponseDialog, ResponseDialogData, ResponseOption } from './response-dialog';
-import { describeResponse } from './response-description';
+import { describeResponse, startsOnNoResponse } from './response-description';
 import { DecisionTimer } from '../decision-timer.service';
 
 @Component({
@@ -264,7 +264,7 @@ export class GameBoard {
     });
     this.responseDialogFor = pendingId;
     const ref = this.dialog.open<ResponseDialog, ResponseDialogData, Action>(ResponseDialog, {
-      data: { description, cards, skills: [], noResponse },
+      data: { description, cards, skills: [], noResponse, startOnNoResponse: startsOnNoResponse(visible) },
       width: 'min(92vw, 520px)',
       disableClose: true,
     });

@@ -10,11 +10,11 @@ const description = {
   source: 'Seat 1 played Sha against Hing', latest: null, prompt: 'Your turn to respond to Sha', outcome: 'You lose 1 HP (1 damage from Seat 1)', outcomeForce: 'Shu' as const,
 };
 
-function render(cards: ResponseDialogData['cards'], skills: ResponseDialogData['skills'] = []) {
+function render(cards: ResponseDialogData['cards'], skills: ResponseDialogData['skills'] = [], startOnNoResponse = false) {
   const close = jest.fn();
   TestBed.configureTestingModule({
     providers: [
-      { provide: MAT_DIALOG_DATA, useValue: { description, cards, skills, noResponse: pass } satisfies ResponseDialogData },
+      { provide: MAT_DIALOG_DATA, useValue: { description, cards, skills, noResponse: pass, startOnNoResponse } satisfies ResponseDialogData },
       { provide: MatDialogRef, useValue: { close } },
     ],
   });
@@ -67,6 +67,13 @@ describe('ResponseDialog', () => {
     expect(confirm().textContent!.trim()).toBe('Respond with Shan');
     confirm().click();
     expect(close).toHaveBeenCalledWith(respond);
+  });
+
+  it('starts on No Response when asked to, even with an answering card (a Wuxie question)', () => {
+    const { confirm, close } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Shan (2 ♥)' }], [], true);
+    expect(confirm().textContent!.trim()).toBe('No Response');
+    confirm().click();
+    expect(close).toHaveBeenCalledWith(pass);
   });
 
   it('starts on the first skill when a skill can respond, ahead of any card', () => {

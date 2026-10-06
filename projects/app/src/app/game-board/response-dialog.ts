@@ -23,6 +23,8 @@ export interface ResponseDialogData {
   skills: ResponseOption[];
   // The engine's PassAction for this window.
   noResponse: Action;
+  // Start on No Response instead of the first answer (see startsOnNoResponse).
+  startOnNoResponse?: boolean;
 }
 
 const NO_RESPONSE = 'no-response';
@@ -104,7 +106,9 @@ export class ResponseDialog {
   private readonly dialogRef = inject<MatDialogRef<ResponseDialog, Action>>(MatDialogRef);
 
   protected readonly noResponseId = NO_RESPONSE;
-  protected readonly picked = signal<string>(this.data.skills[0]?.id ?? this.data.cards[0]?.id ?? NO_RESPONSE);
+  protected readonly picked = signal<string>(
+    this.data.startOnNoResponse ? NO_RESPONSE : (this.data.skills[0]?.id ?? this.data.cards[0]?.id ?? NO_RESPONSE)
+  );
 
   private readonly pickedOption = computed(
     () => [...this.data.cards, ...this.data.skills].find((o) => o.id === this.picked()) ?? null

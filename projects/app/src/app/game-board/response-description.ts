@@ -163,3 +163,11 @@ export function waitingLine(state: GameState): string | null {
   if (reason?.kind === 'card-effect') return `${who} to answer ${cardName({ definitionId: reason.card.as })}`;
   return who;
 }
+
+// Whether the Response window should start on No Response rather than the
+// first answer: true for Wuxie questions, where answering cancels a Tool
+// (possibly the viewer's own), so a hasty click must not do it.
+export function startsOnNoResponse(state: GameState): boolean {
+  const kind = state.pendingResponse?.reason?.kind;
+  return kind === 'wuxie' || kind === 'counter-wuxie';
+}

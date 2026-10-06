@@ -1,5 +1,5 @@
 import { CardInstance, EngineEvent, GameState, PendingResponse } from 'engine';
-import { describeResponse, waitingLine } from './response-description';
+import { describeResponse, startsOnNoResponse, waitingLine } from './response-description';
 
 const duel: CardInstance = { instanceId: 'duel-1', definitionId: 'duel', suit: 'spade', rank: 1 };
 const sha: CardInstance = { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade', rank: 7 };
@@ -129,5 +129,14 @@ describe('waitingLine', () => {
     };
     expect(waitingLine(state([], barbariansWindow))).toBe('Waiting on Seat 1 to answer Barbarians');
     expect(waitingLine(state([], damageWindow('s1', 'seat-1', 'seat-0', 'sha-1')))).toBe('Waiting on Seat 1');
+  });
+});
+
+describe('startsOnNoResponse', () => {
+  it('is true for Wuxie questions only, so one click never cancels a Tool by accident', () => {
+    expect(startsOnNoResponse(state([], wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-0', target: seat('seat-1') })))).toBe(true);
+    expect(startsOnNoResponse(state([], wuxieWindow('seat-0', { kind: 'counter-wuxie', wuxieSeatId: 'seat-2' })))).toBe(true);
+    expect(startsOnNoResponse(state([], damageWindow('s1', 'seat-0', 'seat-1', 'sha-1')))).toBe(false);
+    expect(startsOnNoResponse(state([], null))).toBe(false);
   });
 });
