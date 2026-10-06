@@ -5,6 +5,7 @@ import { GameService } from './game.service';
 // Seconds per kind of decision.
 export const DECISION_SECONDS = {
   response: 60,
+  choice: 60,
   discard: 60,
   selection: 300,
   // One budget for a whole Play phase, paused while a response is under way.
@@ -24,14 +25,15 @@ interface Decision {
 // Times every decision a person makes. The clock runs only while a game board
 // is on screen and the deciding seat's view is showing (in pass-and-play,
 // after the hand-off gate); bots are never timed.
-//   - Responses and discards: a clock per decision.
+//   - Responses, choices and discards: a clock per decision.
 //   - General selection: one clock per player for their whole choice.
 //   - The Play phase: one clock for the phase.
 // Any clock pauses whenever its decision isn't on screen (a response under
 // way, the pass-and-play gate, the board left for another page) and resumes
 // with the time it had left.
 // At zero the timer submits an engine-legal default: a response → No Response
-// (Pass); the Play phase → End Phase; the Discard phase → the UI's current
+// (Pass); a choice → the UI's current pick if it gave one, else the first
+// option; the Play phase → End Phase; the Discard phase → the UI's current
 // choice if it gave one, else the first cards in hand; general selection →
 // the first legal pair.
 @Injectable({ providedIn: 'root' })
@@ -63,6 +65,7 @@ export class DecisionTimer {
     const legal = this.game.legalActions();
     if (legal.length === 0) return null;
     const game = this.game.gameNumber();
+    if (state.pendingChoice) return { kind: 'choice', state, key: this.keyOf(state) };
     if (state.pendingResponse) return { kind: 'response', state, key: this.keyOf(state) };
     if (state.phase === 'GeneralSelection') return { kind: 'selection', state, key: `${game}:selection:${seatId}` };
     if (legal.some((a) => a.kind === 'DiscardCardAction')) return { kind: 'discard', state, key: this.keyOf(state) };
@@ -151,6 +154,8 @@ export class DecisionTimer {
 
   private defaultActions(state: GameState): Action[] {
     const legal = this.game.legalActions();
+    const pick = legal.find((a) => a.kind === 'ChooseOptionAction');
+    if (pick) return [pick];
     const pass = legal.find((a) => a.kind === 'PassAction');
     if (pass) return [pass];
     const generals = legal.find((a) => a.kind === 'ChooseGeneralsAction');

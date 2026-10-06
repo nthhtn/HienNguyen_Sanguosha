@@ -268,6 +268,39 @@ describe('GameBoard', () => {
     overlay.replaceChildren();
   });
 
+  it('opens the Choice dialog for a Steal or Break, and its button submits the picked option', async () => {
+    let chose = false;
+    for (let seed = 1; seed < 200 && !chose; seed++) {
+      gameService.startGame(2, seed);
+      finishSelection(gameService);
+      gameService.reveal(gameService.activeSeatId()!);
+      const grab = gameService.legalActions().find(
+        (a) => a.kind === 'PlayCardAction' && ['steal', 'break'].includes(cardDefinitionId(gameService.state()!, a.cardInstanceId) ?? '')
+      );
+      if (!grab) continue;
+      gameService.submit(grab);
+      chose = !!gameService.state()!.pendingChoice;
+    }
+    expect(chose).toBe(true);
+    gameService.reveal(gameService.activeSeatId()!);
+
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
+    const dialog = overlay.querySelector('app-choice-dialog')!;
+    expect(dialog).not.toBeNull();
+    expect(dialog.querySelector('.prompt')!.textContent).toMatch(/Choose a card to (take|discard) from Seat 1/);
+    (dialog.querySelector('button.option') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (dialog.querySelector('button.confirm') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(gameService.lastError()).toBeNull();
+    expect(gameService.state()!.pendingChoice).toBeUndefined();
+    overlay.replaceChildren();
+  });
+
   it('shows a dismissible error banner when GameService reports an error', () => {
     gameService.startGame(2, 1);
     gameService.reveal(gameService.activeSeatId()!);

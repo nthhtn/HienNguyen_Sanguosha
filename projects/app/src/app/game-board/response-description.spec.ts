@@ -130,6 +130,14 @@ describe('waitingLine', () => {
     expect(waitingLine(state([], barbariansWindow))).toBe('Waiting on Seat 1 to answer Barbarians');
     expect(waitingLine(state([], damageWindow('s1', 'seat-1', 'seat-0', 'sha-1')))).toBe('Waiting on Seat 1');
   });
+
+  it('says who is choosing a card', () => {
+    const choosing: GameState = {
+      ...state([], null),
+      pendingChoice: { id: 'c', seatId: 'seat-0', verb: 'take', options: [], reason: { kind: 'choice', card: { as: 'steal', colour: 'black', physical: [] }, userSeatId: 'seat-0' } },
+    };
+    expect(waitingLine(choosing)).toBe('Waiting on Hing to choose a card');
+  });
 });
 
 describe('startsOnNoResponse', () => {

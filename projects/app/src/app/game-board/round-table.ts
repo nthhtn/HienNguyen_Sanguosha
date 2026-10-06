@@ -5,6 +5,7 @@ import { actionHistory } from './action-history';
 import { waitingLine } from './response-description';
 import { seatName } from '../labels';
 import { SeatTile } from './seat-tile';
+import { PlayingCard } from './playing-card';
 import { seatPlacements } from './table-layout';
 
 const RECENT_LOG_LINES = 3;
@@ -14,7 +15,7 @@ const RECENT_LOG_LINES = 3;
 // Presentational: everything shown is read straight off the (redacted) state.
 @Component({
   selector: 'app-round-table',
-  imports: [SeatTile, MatProgressSpinnerModule],
+  imports: [SeatTile, PlayingCard, MatProgressSpinnerModule],
   template: `
     <div class="table" [class.crowded]="state().seats.length > 6">
       <div class="felt"></div>
@@ -28,6 +29,13 @@ const RECENT_LOG_LINES = 3;
           <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ name(thinking) }} is thinking…</div>
         }
         <div class="piles">Draw Pile {{ drawPileCount() }}</div>
+        @if (turnedUp().length > 0) {
+          <div class="turned-up" aria-label="Turned Up Cards">
+            @for (card of turnedUp(); track card.instanceId) {
+              <app-playing-card [card]="card" size="small" />
+            }
+          </div>
+        }
         <ul class="recent">
           @for (line of recentLog(); track $index) {
             <li><span [class.force-status]="!!line.force" [attr.data-force]="line.force ?? null">{{ line.text }}</span></li>
@@ -42,7 +50,7 @@ const RECENT_LOG_LINES = 3;
             [handCount]="handCount(p.seat.hand.zoneId)"
             [isViewer]="p.isViewer"
             [isTurnOwner]="p.seat.id === state().turn.ownerSeatId"
-            [isResponding]="p.seat.id === state().pendingResponse?.respondingSeatId"
+            [isResponding]="p.seat.id === (state().pendingChoice?.seatId ?? state().pendingResponse?.respondingSeatId)"
             [isBot]="botSeatIds().includes(p.seat.id)"
             [equipment]="equipmentOf(p.seat.equipped.zoneId)"
           />
@@ -82,6 +90,7 @@ const RECENT_LOG_LINES = 3;
       font-size: 1.05em;
     }
     .turn { font-size: 1.25em; font-weight: bold; }
+    .turned-up { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 4px; }
     .waiting { color: #ffcc80; font-weight: bold; }
     .thinking { display: flex; align-items: center; justify-content: center; gap: 6px; color: #b1c5ff; --mdc-circular-progress-active-indicator-color: #b1c5ff; --mat-progress-spinner-active-indicator-color: #b1c5ff; }
     .recent { list-style: none; padding: 0; margin: 6px 0 0; opacity: 0.85; font-size: 0.9em; }
@@ -118,6 +127,7 @@ export class RoundTable {
   readonly botSeatIds = input<string[]>([]);
 
   protected readonly waiting = computed(() => waitingLine(this.state()));
+  protected readonly turnedUp = computed(() => this.state().zones.find((z) => z.kind === 'processing')?.cards ?? []);
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId()));
 
   // The latest few actions, oldest first, in the action history's wording.

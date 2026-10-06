@@ -114,6 +114,20 @@ describe('RoundTable', () => {
     expect(el.querySelector('.waiting')!.textContent!.trim()).toBe('Waiting on Hing: Wuxie?');
   });
 
+  it('shows the turned-up cards in the centre, and marks the seat choosing one', () => {
+    const base = state();
+    const turnedUp = [
+      { instanceId: 't1', definitionId: 'peach', suit: 'heart' as const, rank: 3 },
+      { instanceId: 't2', definitionId: 'sha', suit: 'spade' as const, rank: 7 },
+    ];
+    const el = render(state({
+      zones: [...base.zones, { id: 'processing', kind: 'processing', cards: turnedUp }],
+      pendingChoice: { id: 'c', seatId: 'seat-0', verb: 'take', options: [], reason: { kind: 'choice', card: { as: 'harvest', colour: 'red', physical: [] }, userSeatId: 'seat-1' } },
+    }));
+    expect(el.querySelectorAll('.centre .turned-up app-playing-card')).toHaveLength(2);
+    expect(tile(el, 'seat-0').querySelector('.tile')!.classList).toContain('responding');
+  });
+
   it('shows which seat is thinking, and marks bot seats', () => {
     const el = render(state(), 'seat-0', 'seat-1', ['seat-1', 'seat-2']);
     expect(el.querySelector('.centre .thinking')!.textContent).toContain('Seat 1 is thinking');

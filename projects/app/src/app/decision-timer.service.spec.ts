@@ -121,6 +121,30 @@ describe('DecisionTimer', () => {
       expect(game.state()!.seats[0].generals).toMatchObject({ main: { generalDefinitionId: first.mainId }, deputy: { generalDefinitionId: first.deputyId } });
     });
 
+    it('picks the first option when a choice times out, never ending the Play phase (Review Focus 4)', () => {
+      for (let seed = 1; seed < 200; seed++) {
+        game.startGame(2, seed);
+        game.reveal(game.activeSeatId()!);
+        while (game.state()!.phase === 'GeneralSelection') {
+          game.submit(game.legalActions()[0]);
+          game.reveal(game.activeSeatId()!);
+        }
+        const grab = game.legalActions().find((a) => a.kind === 'PlayCardAction' && ['steal', 'break'].includes(cardDefinitionId(game.state()!, a.cardInstanceId) ?? ''));
+        if (!grab) continue;
+        game.submit(grab);
+        if (!game.state()!.pendingChoice) continue; // a Wuxie window came first
+        game.reveal(game.activeSeatId()!);
+        TestBed.tick();
+        expect(timer.secondsLeft()).toBe(DECISION_SECONDS.choice);
+        advance(DECISION_SECONDS.choice);
+        expect(game.state()!.pendingChoice).toBeUndefined();
+        expect(game.state()!.phase).toBe('Play');
+        expect(game.state()!.turn.ownerSeatId).toBe('seat-0');
+        return;
+      }
+      throw new Error('no seed gave seat-0 a Steal or Break');
+    });
+
     it('answers No Response when a response times out', () => {
       // Find a deal where seat-0 can aim a card at seat-1, then let seat-1's window time out.
       for (let seed = 1; seed < 50; seed++) {

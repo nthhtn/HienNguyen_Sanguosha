@@ -24,6 +24,8 @@ import { actionHistory } from './action-history';
 import { DiscardDialog, DiscardDialogData } from './discard-dialog';
 import { ResponseDialog, ResponseDialogData, ResponseOption } from './response-dialog';
 import { describeResponse, startsOnNoResponse } from './response-description';
+import { ChoiceDialog, ChoiceDialogData, ChoiceDialogOption } from './choice-dialog';
+import { choiceOptionLabel, describeChoice } from './choice-description';
 import { DecisionTimer } from '../decision-timer.service';
 
 @Component({
@@ -125,6 +127,16 @@ export class GameBoard {
   private readonly timer = inject(DecisionTimer);
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
+  private choiceDialog: MatDialogRef<ChoiceDialog, Action> | null = null;
+  // The choice whose dialog is showing, so each opens only once.
+  private choiceDialogFor: string | null = null;
+  // The choice the viewer owes, while the board is on screen and the engine
+  // offers them its options.
+  protected readonly choiceDue = computed(() => {
+    const choice = this.visibleState()?.pendingChoice;
+    if (!choice || choice.seatId !== this.viewerSeatId()) return null;
+    return this.gameService.legalActions().some((a) => a.kind === 'ChooseOptionAction') ? choice.id : null;
+  });
   // The response window whose dialog is showing, so each opens only once.
   private responseDialogFor: string | null = null;
 
@@ -164,6 +176,13 @@ export class GameBoard {
       untracked(() => {
         if (this.responseDialogFor && this.responseDialogFor !== pendingId) this.closeDialog(this.responseDialog);
         if (pendingId) this.openResponseDialog(pendingId);
+      });
+    });
+    effect(() => {
+      const choiceId = this.choiceDue();
+      untracked(() => {
+        if (this.choiceDialogFor && this.choiceDialogFor !== choiceId) this.closeDialog(this.choiceDialog);
+        if (choiceId) this.openChoiceDialog(choiceId);
       });
     });
   }
@@ -272,6 +291,36 @@ export class GameBoard {
     ref.beforeClosed().subscribe((action) => {
       this.responseDialogFor = null;
       this.responseDialog = null;
+      if (action) this.submit(action);
+    });
+  }
+
+  // Opens the Choice dialog (Steal, Break, Harvest) for one pending choice;
+  // the picked action is the engine's own ChooseOptionAction.
+  private openChoiceDialog(choiceId: string): void {
+    const visible = this.visibleState();
+    const seatId = this.viewerSeatId();
+    const choice = visible?.pendingChoice;
+    if (this.choiceDialogFor === choiceId || !visible || !choice || !seatId) return;
+    const description = describeChoice(visible, seatId);
+    if (!description) return;
+    const legal = this.gameService.legalActions();
+    const options: ChoiceDialogOption[] = choice.options.flatMap((option) => {
+      const action = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === option.id);
+      if (!action) return [];
+      const shown = option.shows.kind === 'card' ? { card: option.shows.card } : { hiddenCount: option.shows.count };
+      return [{ id: option.id, action, ...shown, label: choiceOptionLabel(option.shows, visible.players) }];
+    });
+    this.choiceDialogFor = choiceId;
+    const ref = this.dialog.open<ChoiceDialog, ChoiceDialogData, Action>(ChoiceDialog, {
+      data: { description, options, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },
+      width: 'min(92vw, 640px)',
+      disableClose: true,
+    });
+    this.choiceDialog = ref;
+    ref.beforeClosed().subscribe((action) => {
+      this.choiceDialogFor = null;
+      this.choiceDialog = null;
       if (action) this.submit(action);
     });
   }
