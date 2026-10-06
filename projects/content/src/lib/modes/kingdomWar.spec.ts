@@ -87,6 +87,11 @@ describe('Kingdom War setup and deal', () => {
     expect(state.zones.find((z) => z.kind === 'drawPile')!.cards.length).toBeGreaterThan(0);
   });
 
+  it('sets up an empty processing zone for Harvest', () => {
+    const state = createGame(kingdomWarMode, buildContentRegistry(), ['seat-0', 'seat-1'], 1);
+    expect(state.zones.find((z) => z.kind === 'processing')).toEqual({ id: 'processing', kind: 'processing', cards: [] });
+  });
+
   it('names each player after its seat position until the app renames it', () => {
     const state = createGame(kingdomWarMode, registry, ['a', 'b', 'c'], 1);
     expect(state.players.map((p) => [p.seatId, p.name])).toEqual([['a', 'Seat 0'], ['b', 'Seat 1'], ['c', 'Seat 2']]);
@@ -108,7 +113,7 @@ describe('Kingdom War setup and deal', () => {
     expect(deckOf(2).filter((c) => c.startsWith('shan '))).toHaveLength(15);
     expect(deckOf(2).filter((c) => c.startsWith('peach '))).toHaveLength(8);
     expect(deckOf(2).filter((c) => c.startsWith('wuxie '))).toHaveLength(3);
-    expect(deckOf(2)).toHaveLength(81);
+    expect(deckOf(2)).toHaveLength(85);
   });
 
   it('refuses to build a deck for a card with no printings', () => {

@@ -102,6 +102,7 @@ export const kingdomWarMode: GameModeDefinition = {
     let zones: CardZone[] = [
       { id: 'drawPile', kind: 'drawPile' as const, cards },
       { id: 'discardPile', kind: 'discardPile' as const, cards: [] },
+      { id: 'processing', kind: 'processing' as const, cards: [] },
       ...seats.flatMap((s) => [
         { id: s.hand.zoneId, kind: 'hand' as const, ownerSeatId: s.id, cards: [] },
         { id: s.equipped.zoneId, kind: 'equip' as const, ownerSeatId: s.id, cards: [] },

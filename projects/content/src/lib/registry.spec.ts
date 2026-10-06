@@ -1,10 +1,10 @@
 import { buildContentRegistry } from './registry';
 
 describe('buildContentRegistry', () => {
-  it('registers the thirteen playable cards', () => {
+  it('registers the fifteen playable cards', () => {
     const registry = buildContentRegistry();
     expect([...registry.cards.keys()].sort()).toEqual(
-      ['barbarians', 'break', 'draw-two', 'duel', 'green-dragon-blade', 'hail-of-arrows', 'peach', 'peach-garden', 'sha', 'shan', 'silver-lion', 'steal', 'wuxie'].sort()
+      ['barbarians', 'break', 'coerce', 'draw-two', 'duel', 'green-dragon-blade', 'hail-of-arrows', 'harvest', 'peach', 'peach-garden', 'sha', 'shan', 'silver-lion', 'steal', 'wuxie'].sort()
     );
   });
 

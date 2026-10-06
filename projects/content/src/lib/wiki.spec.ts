@@ -142,7 +142,7 @@ describe('wikiCards', () => {
   it('lists the 15 tools, with the playable ones in the game and their printings', () => {
     const tools = wikiCards('tool');
     expect(tools).toHaveLength(15);
-    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'break', 'draw-two', 'duel', 'hail-of-arrows', 'peach-garden', 'steal', 'wuxie']);
+    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'break', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'peach-garden', 'steal', 'wuxie']);
     const duel = tools.find((c) => c.id === 'duel')!;
     expect(duel.count).toBe(3);
     expect(duel.printings).toEqual([{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }]);

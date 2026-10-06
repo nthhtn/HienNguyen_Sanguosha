@@ -6,6 +6,8 @@ import { barbariansCard, hailOfArrowsCard } from './mass-attack';
 import { peachGardenCard } from './peach-garden';
 import { stealCard } from './steal';
 import { breakCard } from './break';
+import { harvestCard } from './harvest';
+import { coerceCard } from './coerce';
 import { silverLionCard, greenDragonBladeCard } from './equipment';
 import { getLegalActions, redactStateForSeat, resolve } from 'engine';
 import type { CardDefinition, GameState, ContentRegistry, GameModeDefinition, Target } from 'engine';
@@ -13,7 +15,7 @@ import type { CardDefinition, GameState, ContentRegistry, GameModeDefinition, Ta
 const plain = (id: string): CardDefinition => ({ id, name: id, category: 'basic', play: () => [] });
 
 function registry(): ContentRegistry {
-  const cards = [duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, silverLionCard, greenDragonBladeCard, plain('sha'), plain('shan')];
+  const cards = [duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, silverLionCard, greenDragonBladeCard, plain('sha'), plain('shan')];
   return { cards: new Map(cards.map((c) => [c.id, c])), generals: new Map() };
 }
 
@@ -160,6 +162,7 @@ function fourSeats(userCard: string, hands: Record<string, [string, string][]> =
     zones: [
       { id: 'drawPile', kind: 'drawPile', cards: [1, 2, 3, 4].map((n) => ({ instanceId: `d${n}`, definitionId: 'shan', suit: 'heart' as const, rank: n })) },
       { id: 'discardPile', kind: 'discardPile', cards: [] },
+      { id: 'processing', kind: 'processing', cards: [] },
       ...ids.flatMap((id) => [
         {
           id: `${id}:hand`, kind: 'hand' as const, ownerSeatId: id,
@@ -345,6 +348,105 @@ describe('Steal and Break', () => {
       expect(seen).not.toContain('b-1');
       expect(seen).not.toContain('shan');
     }
+  });
+});
+
+describe('Harvest and Coerce', () => {
+  const ctx = () => ({ registry: registry(), mode: stubMode() });
+  const use = (s: GameState) => resolve(s, { kind: 'PlayCardAction', seatId: 'a', cardInstanceId: 'tool', targets: [] }, ctx()).state;
+  const coerce = (s: GameState, holder: string, victim: string) =>
+    resolve(s, { kind: 'PlayCardAction', seatId: 'a', cardInstanceId: 'tool', targets: [{ kind: 'seat', seatId: holder }, { kind: 'seat', seatId: victim }] }, ctx()).state;
+  const answer = (s: GameState, cardInstanceId: string) =>
+    resolve(s, { kind: 'RespondAction', seatId: s.pendingResponse!.respondingSeatId, pendingResponseId: s.pendingResponse!.id, cardInstanceId }, ctx()).state;
+  const pass = (s: GameState) =>
+    resolve(s, { kind: 'PassAction', seatId: s.pendingResponse!.respondingSeatId, pendingResponseId: s.pendingResponse!.id }, ctx()).state;
+  const pickFirst = (s: GameState) => pickOption(s, s.pendingChoice!.options[0].id);
+  const hps = (s: GameState) => s.seats.map((x) => x.combinedHp);
+  const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
+  const armed = (hands: Record<string, [string, string][]> = {}) => withEquip(fourSeats('coerce', hands), 'c', ['green-dragon-blade', 'c-blade']);
+
+  it('Harvest turns up one card per living seat, and each seat from the user takes one in turn', () => {
+    let s = use(fourSeats('harvest'));
+    expect(idsIn(s, 'processing')).toEqual(['d1', 'd2', 'd3', 'd4']);
+    expect(s.pendingChoice).toMatchObject({ seatId: 'a', verb: 'take', reason: { kind: 'choice', userSeatId: 'a', card: { as: 'harvest' } } });
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['d1', 'd2', 'd3', 'd4']);
+    s = pickOption(s, 'd3');
+    expect(s.pendingChoice).toMatchObject({ seatId: 'b' });
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['d1', 'd2', 'd4']);
+    s = pickOption(s, 'd1');
+    s = pickOption(s, 'd2');
+    expect(s.pendingChoice).toMatchObject({ seatId: 'd' });
+    s = pickOption(s, 'd4');
+    expect(['a', 'b', 'c', 'd'].map((id) => idsIn(s, `${id}:hand`))).toEqual([['d3'], ['d1'], ['d2'], ['d4']]);
+    expect(idsIn(s, 'processing')).toEqual([]);
+    expect(s.pendingChoice).toBeUndefined();
+    expect(s.resolutionQueue).toBeUndefined();
+  });
+
+  it('Harvest: a seat whose pick is cancelled takes nothing, and the leftover is discarded', () => {
+    // c holds a Wuxie Kongjie: it lets a's pick through, then cancels b's.
+    let s = use(fourSeats('harvest', { c: [['wuxie', 'c-wx']] }));
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'c', reason: { kind: 'wuxie', target: seat('a') } });
+    s = pass(s);
+    s = pickOption(s, 'd1');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'c', reason: { kind: 'wuxie', target: seat('b') } });
+    s = answer(s, 'c-wx');
+    expect(s.pendingChoice).toMatchObject({ seatId: 'c' });
+    s = pickOption(s, 'd2');
+    s = pickOption(s, 'd3');
+    expect(idsIn(s, 'b:hand')).toEqual([]);
+    expect(idsIn(s, 'processing')).toEqual([]);
+    expect(idsIn(s, 'discardPile')).toEqual(expect.arrayContaining(['tool', 'c-wx', 'd4']));
+  });
+
+  it('Harvest with too few cards to go round: the later seats get no pick (Review Focus 2)', () => {
+    const start = fourSeats('harvest');
+    const short = { ...start, zones: start.zones.map((z) => (z.kind === 'drawPile' ? { ...z, cards: z.cards.slice(0, 2) } : z)) };
+    // Two cards left, plus the discard pile (Harvest itself) shuffled in: three cards for four seats.
+    let s = use(short);
+    expect(idsIn(s, 'processing')).toHaveLength(3);
+    s = pickFirst(pickFirst(pickFirst(s)));
+    expect(s.pendingChoice).toBeUndefined();
+    expect(s.pendingResponse).toBeNull();
+    expect(idsIn(s, 'd:hand')).toEqual([]);
+    expect(s.resolutionQueue).toBeUndefined();
+  });
+
+  it('Coerce pairs each other seat wearing a weapon with every seat it can reach, the user included', () => {
+    expect(aimedTargets(armed())).toEqual([
+      [seat('c'), seat('a')],
+      [seat('c'), seat('b')],
+      [seat('c'), seat('d')],
+    ]);
+    expect(aimedTargets(fourSeats('coerce'))).toEqual([]);
+  });
+
+  it('Coerce: a holder who plays no Sha hands its weapon to the user', () => {
+    const s = coerce(armed({ c: [['sha', 'c-sha']] }), 'c', 'b');
+    expect(s.pendingResponse).toMatchObject({
+      respondingSeatId: 'c', allowedCardIds: ['sha'],
+      reason: { kind: 'card-effect', userSeatId: 'a', victimSeatId: 'b', card: { as: 'coerce' } },
+    });
+    const after = pass(s);
+    expect(idsIn(after, 'a:hand')).toEqual(['c-blade']);
+    expect(idsIn(after, 'c:equip')).toEqual([]);
+  });
+
+  it('Coerce: the holder’s Sha is answered like any Sha, and the holder keeps its weapon', () => {
+    let s = answer(coerce(armed({ c: [['sha', 'c-sha']] }), 'c', 'b'), 'c-sha');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'b', allowedCardIds: ['shan'] });
+    s = pass(s);
+    expect(hps(s)).toEqual([3, 2, 3, 3]);
+    expect(s.log.find((e) => e.kind === 'DamageDealtEvent')).toMatchObject({ damage: { source: seat('c'), target: seat('b') } });
+    expect(idsIn(s, 'c:equip')).toEqual(['c-blade']);
+    expect(s.turn.cardPlays?.['sha'] ?? 0).toBe(0);
+  });
+
+  it('Coerce can make the holder attack the user (Review Focus 5)', () => {
+    let s = answer(coerce(armed({ c: [['sha', 'c-sha']] }), 'c', 'a'), 'c-sha');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'a', allowedCardIds: ['shan'] });
+    s = pass(s);
+    expect(hps(s)[0]).toBe(2);
   });
 });
 
