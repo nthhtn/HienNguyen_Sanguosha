@@ -117,9 +117,12 @@ engine produces, across three calls.
 2. The used Sha goes to the discard pile, right after the play:
    **`CardMovedEvent`** (sha-1, seat-a:hand → discardPile).
 3. The play is counted toward the turn's Sha limit (`turn.cardPlays.sha`).
-4. `sha.play()` returned one effect:
-   `OpenResponseEffect`: B must play a Shan, otherwise `DamageEffect` A→B, 1.
-   Applying it stores a `PendingResponse` in the state. It logs no event.
+4. `sha.play()` returned one effect, the Sha's first step:
+   `CardStepEffect('sha-use')`. Each step's `onStep` queues the next:
+   `sha-use` → `sha-targeted` (one per target) → `sha-armor` → `sha-shan`.
+   `sha-shan` opens the window: B must play a Shan, otherwise the
+   `sha-hit` step goes ahead (the window's `outcome` shows the damage it would
+   lead to). Steps log no events of their own.
 5. The queue stops at the pending response, and so does `advanceToDecision`.
 
 The call returns. The UI shows "Waiting on Seat B", and B is offered
@@ -128,7 +131,8 @@ The call returns. The UI shows "Waiting on Seat B", and B is offered
 ### Call 2: `resolve(PassAction by B)`
 
 1. `resolveAction` clears the pending response and queues the effect it was
-   holding back: the `DamageEffect`.
+   holding back: the `sha-hit` step, which leads to `sha-damage`, which
+   queues the `DamageEffect` and then `sha-after-damage`.
 2. Before-triggers on `DamageEffect` run. None apply here.
 3. `applyEffect`: B's HP goes 1 → 0.
    **`DamageDealtEvent`** (A→B, 1 normal, caused by sha-1).
@@ -310,6 +314,52 @@ longer gathered.
 The dying round takes `rescueCardIds: { any, self }`. Any seat may answer
 with `any` (Peach); only the dying seat may also use `self` (Wine).
 
+## Card steps, asks, selections and conversions
+
+**Steps.** A card that resolves in stages (Sha; Hail of Arrows' Shan) queues
+`CardStepEffect { step, card, userSeatId, target, data }`. Applying one calls
+the card's `onStep`, whose effects go to the front of the queue. Step names
+belong to content: Sha's are `sha-use`, `sha-targeted`, `sha-armor`,
+`sha-shan`, `sha-dodged`, `sha-hit`, `sha-damage` and `sha-after-damage`.
+
+**Abilities at a step** are `before:CardStepEffect` triggers (content's
+`atStep`). One may:
+- rewrite the step (Ancient Scimitar adds to `data.extra`);
+- replace it with something else (Black Shield's logged `AbilityUsedEffect`,
+  and the Sha goes no further at that target);
+- or replace it with an ask.
+
+Each marks the step (`actedOn`) so it has its say once. `previewEffect`
+re-checks each later trigger against the step as rewritten, and stops when
+the step becomes another kind of effect: the rest get their say when it comes
+back.
+
+**Asks.** `AskUseEffect { owner, abilityId, effects, otherwise }` opens a
+pending choice with two options: Use (`effects`) and Don't (`otherwise`,
+usually the marked step).
+
+**Selections.** `pendingSelection` asks a seat for `min`–`max` cards or
+seats. It pauses the queue like a choice, and may sit over an open response
+window. Its continuation is plain data:
+- `discard` (then more effects);
+- `use-card` (the picked cards as one card: to play at targets, or to answer
+  a window);
+- `card-step` (a step with the picks as `data.picked`).
+
+`getLegalActions` offers a `SelectAction` template; `validateSelection`
+checks a filled one.
+
+**Conversions.** A worn card's `abilities.conversions` give
+`UseConversionAction`s:
+- in the Play Phase, one per legal target list of the card made;
+- in a window that allows the card made, one each.
+
+Each opens a selection of the cards to use. The result is one `UsedCard`
+(`via` names the conversion), which counts toward limits like the real card.
+
+A card in use is always a `UsedCard`: what it counts as, its colour (two cards
+of different colours: none), and its physical cards.
+
 ## Plugging into the chain
 
 | To add… | Write… | Example |
@@ -322,6 +372,11 @@ with `any` (Peach); only the dying seat may also use `self` (Wine).
 | A reaction to something that happened | An `after:<EventKind>` trigger on a skill or mode | Kingdom War's dying round at 0 HP |
 | Effects that follow an answer to an engine-opened window | `onAnswer` on the `PendingResponse` | The dying round's Peach heals, then asks again |
 | A change to something about to happen | A `before:<EffectKind>` trigger returning the replacement effect, or nothing | A skill that reduces damage |
+| A card that resolves in stages | `CardStepEffect`s and `CardDefinition.onStep` | Sha's eight steps |
+| An ability at a stage | An `atStep` trigger returning the step changed, replaced, or an `askAtStep` | Axe at `sha-dodged` |
+| A "may" | `AskUseEffect` (`askAtStep` in content) | Eight Trigrams before a Shan |
+| Picking cards or seats | `OpenSelectionEffect` with a continuation | Axe's 2 cards, Sky Scorcher's targets |
+| Using cards as another card | `abilities.conversions` | Serpent Spear |
 
 A new card or skill should need only its own definition. If a change seems to
 need a branch for one card inside the pipeline, look for the hook above that
