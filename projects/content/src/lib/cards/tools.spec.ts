@@ -9,7 +9,8 @@ import { breakCard } from './break';
 import { harvestCard } from './harvest';
 import { coerceCard } from './coerce';
 import { shaCard } from './sha';
-import { silverLionCard, greenDragonBladeCard } from './equipment';
+import { silverLionCard } from './equipment';
+import { greenDragonBladeCard } from './equipment/green-dragon-blade';
 import { getLegalActions, redactStateForSeat, resolve } from 'engine';
 import type { CardDefinition, GameState, ContentRegistry, GameModeDefinition, Target } from 'engine';
 

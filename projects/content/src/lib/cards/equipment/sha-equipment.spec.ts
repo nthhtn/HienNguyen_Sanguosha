@@ -295,3 +295,170 @@ describe('Longbow', () => {
     expect(dodged.pendingChoice).toBeUndefined();
   });
 });
+describe('Axe', () => {
+  const axe = card('ax', 'axe', 'diamond', 5);
+  const dodgedWith = (more: Record<string, CardInstance[]> = {}, o: TableOptions = {}) =>
+    respond(
+      play(table({ 'seat-a:hand': [card('s1', 'sha'), card('k1', 'peach'), card('k2', 'duel')], 'seat-a:equip': [axe], 'seat-b:hand': [card('d', 'shan')], ...more }, o), 's1', 'seat-b'),
+      'd'
+    );
+
+  it('asks when the Sha is dodged and 2 other cards can be paid', () => {
+    expect(askedAbout(dodgedWith())).toBe('axe');
+  });
+
+  it('Use: discard 2 cards from hand or equipment (never the Axe), and the Sha hits', () => {
+    let s = use(dodgedWith({ 'seat-a:equip': [axe, card('h1', 'red-hare', 'heart', 5)] }));
+    expect(s.pendingSelection).toMatchObject({ seatId: 'seat-a', of: 'cards', min: 2, max: 2, eligibleIds: ['k1', 'k2', 'h1'], reason: { abilityId: 'axe', targetSeatId: 'seat-b' } });
+    s = select(s, 'k1', 'h1');
+    expect(ids(s, 'discardPile')).toEqual(expect.arrayContaining(['k1', 'h1']));
+    expect(hp(s, 'seat-b')).toBe(3);
+  });
+
+  it('isn’t asked with fewer than 2 other cards', () => {
+    const s = respond(play(table({ 'seat-a:hand': [card('s1', 'sha'), card('k1', 'peach')], 'seat-a:equip': [axe], 'seat-b:hand': [card('d', 'shan')] }), 's1', 'seat-b'), 'd');
+    expect(s.pendingChoice).toBeUndefined();
+  });
+
+  it('Don’t, or cancelling the discard, leaves the Sha dodged', () => {
+    expect(hp(decline(dodgedWith()), 'seat-b')).toBe(4);
+    const cancelled = cancel(use(dodgedWith()));
+    expect(cancelled.pendingSelection).toBeUndefined();
+    expect(cancelled.pendingChoice).toBeUndefined();
+    expect(hp(cancelled, 'seat-b')).toBe(4);
+  });
+
+  it('discarding its wearer’s own Silver Lion heals the wearer', () => {
+    const s = select(use(dodgedWith({ 'seat-a:equip': [axe, card('sl', 'silver-lion', 'club', 1)] }, { hp: { 'seat-a': 3 } })), 'k1', 'sl');
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(hp(s, 'seat-b')).toBe(3);
+  });
+});
+
+describe('Green Dragon Blade', () => {
+  const blade = card('gdb', 'green-dragon-blade', 'spade', 5);
+  const dodgedWith = (more: Record<string, CardInstance[]> = {}, o: TableOptions = {}) =>
+    respond(
+      play(table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha', 'heart')], 'seat-a:equip': [blade], 'seat-b:hand': [card('d', 'shan'), card('d2', 'shan')], ...more }, o), 's1', 'seat-b'),
+      'd'
+    );
+
+  it('asks when the Sha is dodged and its user holds another Sha', () => {
+    expect(askedAbout(dodgedWith())).toBe('green-dragon-blade');
+  });
+
+  it('Use: another Sha at the same target, uncounted, with Wine already spent', () => {
+    let s = use(dodgedWith({}, { flags: { wine: true } }));
+    expect(s.pendingSelection).toMatchObject({ of: 'cards', eligibleIds: ['s2'], min: 1, max: 1 });
+    s = select(s, 's2');
+    expect(s.turn.cardPlays).toEqual({ sha: 1 });
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
+    expect(hp(pass(s), 'seat-b')).toBe(3);
+  });
+
+  it('dodged again, it asks again (while a Sha is left)', () => {
+    let s = select(use(dodgedWith({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha', 'heart'), card('s3', 'sha')] })), 's2');
+    s = respond(s, 'd2');
+    expect(askedAbout(s)).toBe('green-dragon-blade');
+  });
+
+  it('the follow-up gets its own armour check', () => {
+    // The first Sha is red, so Black Shield lets it through to be dodged; the black follow-up is stopped.
+    let s = respond(
+      play(table({ 'seat-a:hand': [card('s1', 'sha', 'heart'), card('s2', 'sha', 'spade')], 'seat-a:equip': [blade], 'seat-b:hand': [card('d', 'shan')], 'seat-b:equip': [card('bs', 'black-shield', 'club', 2)] }), 's1', 'seat-b'),
+      'd'
+    );
+    s = select(use(s), 's2');
+    expect(abilityLog(s)).toMatchObject([{ abilityId: 'black-shield' }]);
+  });
+
+  it('isn’t asked without another Sha', () => {
+    expect(respond(play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [blade], 'seat-b:hand': [card('d', 'shan')] }), 's1', 'seat-b'), 'd').pendingChoice).toBeUndefined();
+  });
+});
+
+describe('Sky Scorcher', () => {
+  const scorcher = card('sk', 'sky-scorcher', 'diamond', 12);
+  const lastSha = () => play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [scorcher] }), 's1', 'seat-d');
+
+  it('asks when the Sha is its user’s last hand card', () => {
+    expect(askedAbout(lastSha())).toBe('sky-scorcher');
+  });
+
+  it('isn’t asked when it isn’t', () => {
+    expect(play(table({ 'seat-a:hand': [card('s1', 'sha'), card('k', 'peach')], 'seat-a:equip': [scorcher] }), 's1', 'seat-d').pendingChoice).toBeUndefined();
+  });
+
+  it('Use: up to 2 more targets in range; each is asked in seat order from the user', () => {
+    let s = use(lastSha());
+    expect(s.pendingSelection).toMatchObject({ of: 'seats', eligibleIds: ['seat-b', 'seat-c'], min: 1, max: 2 });
+    s = select(s, 'seat-c', 'seat-b');
+    expect(s.pendingResponse!.respondingSeatId).toBe('seat-b');
+    s = pass(s);
+    expect(s.pendingResponse!.respondingSeatId).toBe('seat-c');
+    s = pass(s);
+    expect(s.pendingResponse!.respondingSeatId).toBe('seat-d');
+    s = pass(s);
+    expect([hp(s, 'seat-b'), hp(s, 'seat-c'), hp(s, 'seat-d')]).toEqual([3, 3, 3]);
+  });
+
+  it('a target gone before its turn in the steps is skipped (Review Focus 2)', () => {
+    let s = select(use(lastSha()), 'seat-b', 'seat-c');
+    s = { ...s, seats: s.seats.map((x) => (x.id === 'seat-c' ? { ...x, eliminated: true } : x)) };
+    s = pass(s); // seat-b
+    expect(s.pendingResponse!.respondingSeatId).toBe('seat-d');
+  });
+});
+
+describe('Serpent Spear', () => {
+  const spear = card('sp', 'serpent-spear', 'spade', 12);
+  const hand = [card('h1', 'peach', 'heart', 3), card('c1', 'duel', 'club', 4)];
+  const conversions = (s: GameState, seatId = s.turn.ownerSeatId) => getLegalActions(s, seatId, registry).filter((a) => a.kind === 'UseConversionAction');
+  const ownTurn = (s: GameState, seatId: string): GameState => ({ ...s, turn: { ...s.turn, ownerSeatId: seatId } });
+
+  it('in the Play Phase: 2 hand cards as one Sha at a target in range; it has no colour, and it counts', () => {
+    const t = table({ 'seat-a:hand': hand, 'seat-a:equip': [spear] });
+    expect(conversions(t).map((a) => (a.kind === 'UseConversionAction' ? a.targets : []))).toEqual([[seat('seat-b')], [seat('seat-c')], [seat('seat-d')]]);
+    let s = select(act(t, conversions(t)[0]), 'h1', 'c1');
+    expect(s.log.find((e) => e.kind === 'CardPlayedEvent')).toMatchObject({ card: { as: 'sha', colour: 'none', physical: [{ instanceId: 'h1' }, { instanceId: 'c1' }] } });
+    expect(s.turn.cardPlays).toEqual({ sha: 1 });
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
+    s = pass(s);
+    expect(hp(s, 'seat-b')).toBe(3);
+  });
+
+  it('a Sha with no colour still hits a Black Shield wearer (Review Focus 1)', () => {
+    const t = table({ 'seat-a:hand': hand, 'seat-a:equip': [spear], 'seat-b:equip': [card('bs', 'black-shield', 'club', 2)] });
+    const s = select(act(t, conversions(t)[0]), 'h1', 'c1');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
+    expect(abilityLog(s)).toEqual([]);
+  });
+
+  it('answers a Duel with 2 hand cards: the Duel turns back', () => {
+    let s = play(ownTurn(table({ 'seat-a:hand': hand, 'seat-a:equip': [spear], 'seat-b:hand': [card('du', 'duel')] }), 'seat-b'), 'du', 'seat-a');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a', allowedCardIds: ['sha'] });
+    s = select(act(s, conversions(s, 'seat-a')[0]), 'h1', 'c1');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['sha'] });
+  });
+
+  it('answers Barbarians', () => {
+    let s = play(ownTurn(table({ 'seat-a:hand': hand, 'seat-a:equip': [spear], 'seat-d:hand': [card('ba', 'barbarians')] }), 'seat-d'), 'ba');
+    expect(s.pendingResponse!.respondingSeatId).toBe('seat-a');
+    s = select(act(s, conversions(s, 'seat-a')[0]), 'h1', 'c1');
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(s.pendingResponse!.respondingSeatId).toBe('seat-b');
+  });
+});
+
+describe('pausing on the new decisions (Review Focus 5)', () => {
+  it('a game paused on an ask, or on a selection, survives a JSON round trip and resumes identically', () => {
+    const asking = respond(
+      play(table({ 'seat-a:hand': [card('s1', 'sha'), card('k1', 'peach'), card('k2', 'duel')], 'seat-a:equip': [card('ax', 'axe', 'diamond', 5)], 'seat-b:hand': [card('d', 'shan')] }), 's1', 'seat-b'),
+      'd'
+    );
+    const roundTrip = (s: GameState) => JSON.parse(JSON.stringify(s)) as GameState;
+    expect(use(roundTrip(asking))).toEqual(use(asking));
+    const selecting = use(asking);
+    expect(select(roundTrip(selecting), 'k1', 'k2')).toEqual(select(selecting, 'k1', 'k2'));
+  });
+});

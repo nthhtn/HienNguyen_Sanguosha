@@ -17,7 +17,11 @@ import { coerceCard } from './cards/coerce';
 import { captureCard } from './cards/capture';
 import { starvationCard } from './cards/starvation';
 import { lightningCard } from './cards/lightning';
-import { silverLionCard, greenDragonBladeCard, horseCards, crossbowCard, blackPommelCard } from './cards/equipment';
+import { silverLionCard, horseCards, crossbowCard, blackPommelCard } from './cards/equipment';
+import { greenDragonBladeCard } from './cards/equipment/green-dragon-blade';
+import { axeCard } from './cards/equipment/axe';
+import { skyScorcherCard } from './cards/equipment/sky-scorcher';
+import { serpentSpearCard } from './cards/equipment/serpent-spear';
 import { eightTrigramsCard } from './cards/equipment/eight-trigrams';
 import { blackShieldCard } from './cards/equipment/black-shield';
 import { woodArmorCard } from './cards/equipment/wood-armor';
@@ -47,7 +51,7 @@ function buildGenerals(): GeneralDefinition[] {
 }
 
 export function buildContentRegistry(): ContentRegistry {
-  const cards = [shaCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard, genderSwordsCard, ancientScimitarCard, iceSwordCard, longbowCard];
+  const cards = [shaCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard, genderSwordsCard, ancientScimitarCard, iceSwordCard, longbowCard, axeCard, skyScorcherCard, serpentSpearCard];
   const generals = buildGenerals();
   return {
     cards: new Map(cards.map((c) => [c.id, c])),

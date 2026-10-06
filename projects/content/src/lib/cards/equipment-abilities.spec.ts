@@ -1,6 +1,7 @@
 import { advanceToDecision, getLegalActions, resolve, usedCardOf } from 'engine';
 import type { CardDefinition, CardInstance, ContentRegistry, Damage, GameModeDefinition, GameState, QueueItem } from 'engine';
-import { blackPommelCard, crossbowCard, equipSlotOf, horseCards, silverLionCard, greenDragonBladeCard } from './equipment';
+import { blackPommelCard, crossbowCard, equipSlotOf, horseCards, silverLionCard } from './equipment';
+import { greenDragonBladeCard } from './equipment/green-dragon-blade';
 import { shaCard } from './sha';
 import { attackRange, seatDistance, shaLimit } from '../shared/queries';
 

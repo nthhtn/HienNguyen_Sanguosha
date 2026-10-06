@@ -73,13 +73,6 @@ export const silverLionCard = makeEquipmentCard('silver-lion', 'Silver Lion', 'a
   onUnequip: (state, { seatId }) =>
     state.seats.some((s) => s.id === seatId && !s.eliminated) ? [{ kind: 'HealEffect', target: { kind: 'seat', seatId }, amount: 1 }] : [],
 });
-export const greenDragonBladeCard = makeEquipmentCard(
-  'green-dragon-blade',
-  'Green Dragon Blade',
-  'weapon',
-  cardsData['green-dragon-blade'].range
-);
-
 const HORSE_IDS = ['di-lu', 'shadow-runner', 'storm-runner', 'hua-liu', 'red-hare', 'da-yuan', 'zi-xing'];
 
 // Horses: the data's `mount` names the slot. Distance is read from the slot (seatDistance).

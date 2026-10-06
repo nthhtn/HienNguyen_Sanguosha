@@ -1,6 +1,7 @@
 import { resolve } from 'engine';
 import type { CardInstance, ContentRegistry, GameModeDefinition, GameState } from 'engine';
-import { equipSlotOf, greenDragonBladeCard, silverLionCard } from './equipment';
+import { equipSlotOf, silverLionCard } from './equipment';
+import { greenDragonBladeCard } from './equipment/green-dragon-blade';
 
 const registry: ContentRegistry = {
   cards: new Map([[greenDragonBladeCard.id, greenDragonBladeCard], [silverLionCard.id, silverLionCard]]),

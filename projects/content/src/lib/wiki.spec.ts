@@ -139,7 +139,7 @@ describe('wikiCards', () => {
     expect(equipment.map((c) => c.subtype)).toEqual([...Array(11).fill('weapon'), ...Array(4).fill('armor'), ...Array(7).fill('horse')]);
     expect(equipment.slice(7, 11).map((c) => [c.name, c.expansion])).toEqual([['Sky Scorcher', 'Base'], ['Ice Sword', 'EX'], ['Ancient Scimitar', 'Army'], ['Fire Fan', 'Army']]);
     expect(equipment.slice(11, 15).map((c) => c.id)).toEqual(['eight-trigrams', 'black-shield', 'silver-lion', 'wood-armor']);
-    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['black-pommel', 'crossbow', 'gender-swords', 'green-dragon-blade', 'longbow', 'ice-sword', 'ancient-scimitar', 'eight-trigrams', 'black-shield', 'silver-lion', 'wood-armor', 'da-yuan', 'di-lu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'hua-liu']);
+    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['axe', 'black-pommel', 'crossbow', 'gender-swords', 'green-dragon-blade', 'longbow', 'serpent-spear', 'sky-scorcher', 'ice-sword', 'ancient-scimitar', 'eight-trigrams', 'black-shield', 'silver-lion', 'wood-armor', 'da-yuan', 'di-lu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'hua-liu']);
   });
 
   it('reports data gaps as null or empty, never guessed (Review Focus 2)', () => {
