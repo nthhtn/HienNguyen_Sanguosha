@@ -17,7 +17,7 @@ import { GameOver } from './game-over';
 import { GeneralSelection, SelectionProgress } from './general-selection';
 import { PhaseIndicator } from './phase-indicator';
 import { DiscardPile } from './discard-pile';
-import { seatName } from '../labels';
+import { conversionLabel, seatName } from '../labels';
 import { discardHistory } from './discard-history';
 import { ActionHistoryPanel } from './action-history-panel';
 import { actionHistory } from './action-history';
@@ -300,9 +300,12 @@ export class GameBoard {
       const card = hand.find((c) => c.instanceId === action.cardInstanceId);
       return card ? [{ id: card.instanceId, action, card, label: ResponseDialog.cardLabel(card) }] : [];
     });
+    const skills: ResponseOption[] = legal.flatMap((action, i) =>
+      action.kind === 'UseConversionAction' ? [{ id: `convert-${i}`, action, label: conversionLabel(action, visible, this.gameService.registry) }] : []
+    );
     this.responseDialogFor = pendingId;
     const ref = this.dialog.open<ResponseDialog, ResponseDialogData, Action>(ResponseDialog, {
-      data: { description, cards, skills: [], noResponse, startOnNoResponse: startsOnNoResponse(visible) },
+      data: { description, cards, skills, noResponse, startOnNoResponse: startsOnNoResponse(visible) },
       width: 'min(92vw, 520px)',
       disableClose: true,
     });
@@ -336,7 +339,7 @@ export class GameBoard {
     }
     const description = describeChoice(visible, seatId);
     if (!description) return;
-    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players);
+    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players, description.declineLabel);
     this.choiceDialogFor = choiceId;
     const ref = this.dialog.open<ChoiceDialog, ChoiceDialogData, Action>(ChoiceDialog, {
       data: { description, options, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },

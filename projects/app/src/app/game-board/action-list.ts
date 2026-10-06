@@ -1,7 +1,8 @@
 import { Component, computed, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { Action, ContentRegistry, GameState } from 'engine';
-import { actionLabel } from '../labels';
+import { MatMenuModule } from '@angular/material/menu';
+import { actionLabel, conversionLabel, targetLabel } from '../labels';
 
 interface LabeledAction {
   action: Action;
@@ -19,17 +20,31 @@ function isCardAction(action: Action): boolean {
     action.kind === 'DiscardCardAction' ||
     action.kind === 'ChooseOptionAction' ||
     action.kind === 'SelectAction' ||
-    action.kind === 'CancelSelectionAction'
+    action.kind === 'CancelSelectionAction' ||
+    action.kind === 'UseConversionAction'
   );
+}
+
+interface ConversionGroup {
+  label: string;
+  uses: LabeledAction[];
 }
 
 @Component({
   selector: 'app-action-list',
-  imports: [MatButtonModule],
+  imports: [MatButtonModule, MatMenuModule],
   template: `
     <div class="action-list">
       @for (item of labeledActions(); track item.action) {
         <button mat-stroked-button type="button" (click)="actionChosen.emit(item.action)">{{ item.label }}</button>
+      }
+      @for (group of conversionGroups(); track group.label) {
+        <button mat-stroked-button type="button" class="conversion" [matMenuTriggerFor]="targets">{{ group.label }}</button>
+        <mat-menu #targets="matMenu">
+          @for (use of group.uses; track use.label) {
+            <button mat-menu-item type="button" (click)="actionChosen.emit(use.action)">{{ use.label }}</button>
+          }
+        </mat-menu>
       }
     </div>
   `,
@@ -48,4 +63,17 @@ export class ActionList {
       .filter((action) => !isCardAction(action))
       .map((action) => ({ action, label: actionLabel(action, this.state(), this.registry()) }))
   );
+
+  // A conversion's plays, one button each ("Use 2 Cards as Sha"), with a menu of targets.
+  readonly conversionGroups = computed<ConversionGroup[]>(() => {
+    const groups = new Map<string, ConversionGroup>();
+    for (const action of this.actions()) {
+      if (action.kind !== 'UseConversionAction' || action.pendingResponseId) continue;
+      const label = conversionLabel({ ...action, targets: [] }, this.state(), this.registry());
+      const group = groups.get(label) ?? { label, uses: [] };
+      group.uses.push({ action, label: `Targeting ${action.targets.map((t) => targetLabel(t, this.state().players)).join(', ')}` });
+      groups.set(label, group);
+    }
+    return [...groups.values()];
+  });
 }

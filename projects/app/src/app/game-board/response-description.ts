@@ -1,6 +1,6 @@
 import { CardInstance, Effect, EngineEvent, GameState } from 'engine';
 import { cardDisplayData } from 'content';
-import { Force, cardIdDisplayName, forceOf, seatName, targetLabel } from '../labels';
+import { Force, cardFaceLabel, cardIdDisplayName, forceOf, seatName, targetLabel } from '../labels';
 
 export interface ResponseDescription {
   // What started it, e.g. "Seat 1 played Duel against Hing".
@@ -184,6 +184,19 @@ export function describeResponse(
       latest = `${name(event.seatId)} answered with ${cardName({ definitionId: event.card.as })}`;
     }
     break;
+  }
+
+  // An armour's judgment for the responder just before the window (Eight Trigrams on black).
+  if (!latest) {
+    for (let i = state.log.length - 1; i >= 0; i--) {
+      const event = state.log[i];
+      if (event.kind === 'CardMovedEvent') continue;
+      if (event.kind === 'JudgmentEvent' && event.seatId === pending.respondingSeatId) {
+        const whose = event.seatId === viewerSeatId ? 'Your' : `${name(event.seatId)}'s`;
+        latest = `${whose} ${cardName({ definitionId: event.tool.as })} judgment: ${cardFaceLabel(event.card)}`;
+      }
+      break;
+    }
   }
 
   return {

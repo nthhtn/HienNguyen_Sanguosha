@@ -1,4 +1,4 @@
-import { CardInstance, CardZone, EngineEvent, usedCardOf } from 'engine';
+import { CardInstance, CardZone, EngineEvent, usedCardFrom, usedCardOf } from 'engine';
 import { actionHistory } from './action-history';
 
 const zones: CardZone[] = [
@@ -266,5 +266,58 @@ describe('actionHistory: judgments', () => {
 
   it('says where Lightning moved on to', () => {
     expect(lines([move(lightning, 'seat-0:judgment', 'seat-1:judgment')])).toEqual(['Lightning (A ♠) moved on from Seat 0 to Seat 1']);
+  });
+});
+
+describe('equipment abilities in the history', () => {
+  const owner = (seatId: string, cardInstanceId: string) => ({ kind: 'equipment' as const, seatId, cardInstanceId });
+  const h1: CardInstance = { instanceId: 'h1', definitionId: 'peach', suit: 'heart', rank: 3 };
+  const c1: CardInstance = { instanceId: 'c1', definitionId: 'duel', suit: 'club', rank: 4 };
+
+  it('names a Sha made from 2 cards, and where it came from', () => {
+    const used = usedCardFrom([h1, c1], 'sha', { owner: owner('seat-0', 'sp'), abilityId: 'serpent-spear', conversionId: 'serpent-spear' });
+    expect(texts([{ kind: 'CardPlayedEvent', seatId: 'seat-0', card: used, targets: [seat('seat-1')] }])).toContain('Seat 0 used 2 cards as Sha (Serpent Spear) on Seat 1');
+  });
+
+  it('says when an armour stops a Sha', () => {
+    expect(texts([{ kind: 'AbilityUsedEvent', owner: owner('seat-1', 'bs'), abilityId: 'black-shield', outcome: 'no-effect', targetSeatId: 'seat-0' }])).toContain(
+      "Seat 1's Black Shield: Seat 0's Sha has no effect"
+    );
+  });
+
+  it('adds "counts as Shan" to an Eight Trigrams judgment', () => {
+    const judged: CardInstance = { instanceId: 'j', definitionId: 'peach', suit: 'heart', rank: 9 };
+    const log: EngineEvent[] = [
+      { kind: 'JudgmentEvent', seatId: 'seat-1', tool: usedCardOf({ instanceId: 'et', definitionId: 'eight-trigrams', suit: 'spade', rank: 2 }), card: judged },
+      { kind: 'AbilityUsedEvent', owner: owner('seat-1', 'et'), abilityId: 'eight-trigrams', outcome: 'counts-as-shan' },
+    ];
+    expect(texts(log)).toEqual(["Seat 1's Eight Trigrams judgment: 9 ♥, counts as Shan"]);
+  });
+
+  it('says who used an ability, on whom; a Don’t says nothing', () => {
+    const made = (shows: { kind: 'use' } | { kind: 'decline' }): EngineEvent => ({
+      kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'use', shows,
+      reason: { kind: 'ability', owner: owner('seat-0', 'ax'), abilityId: 'axe', targetSeatId: 'seat-1' },
+    });
+    expect(texts([made({ kind: 'use' })])).toEqual(['Seat 0 used Axe on Seat 1']);
+    expect(texts([made({ kind: 'decline' })])).toEqual([]);
+  });
+
+  it('Gender Swords’ target: letting the user draw, or discarding its own card', () => {
+    const reason = { kind: 'choice' as const, card: usedCardOf({ instanceId: 'gs', definitionId: 'gender-swords', suit: 'spade', rank: 2 }), userSeatId: 'seat-1', targetSeatId: 'seat-0' };
+    expect(texts([{ kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'discard', reason, shows: { kind: 'decline' } }])).toEqual(['Seat 0 let Seat 1 draw a card (Gender Swords)']);
+    const discard: EngineEvent[] = [
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'discard', reason, shows: { kind: 'card', card: h1 } },
+      move(h1, 'seat-0:hand', 'discardPile'),
+    ];
+    expect(texts(discard)).toEqual(['Seat 0 discarded Peach (3 ♥) with Gender Swords']);
+  });
+
+  it('names the seats picked as extra targets', () => {
+    const picked: EngineEvent = {
+      kind: 'SelectionMadeEvent', seatId: 'seat-0', of: 'seats', ids: ['seat-1', 'seat-2'],
+      reason: { kind: 'ability', owner: owner('seat-0', 'sk'), abilityId: 'sky-scorcher' },
+    };
+    expect(texts([picked])).toEqual(['Seat 0 picked Seat 1 and Seat 2 with Sky Scorcher']);
   });
 });

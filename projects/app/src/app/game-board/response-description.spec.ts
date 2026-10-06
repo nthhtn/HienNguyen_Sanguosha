@@ -24,6 +24,17 @@ const damageWindow = (id: string, responder: string, from: string, cause: string
 });
 
 describe('describeResponse', () => {
+  it('shows an Eight Trigrams judgment just before the window as the latest', () => {
+    const et = usedCardOf({ instanceId: 'et', definitionId: 'eight-trigrams', suit: 'spade', rank: 2 });
+    const judged: CardInstance = { instanceId: 'j', definitionId: 'peach', suit: 'club', rank: 3 };
+    const log: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [seat('seat-0')] },
+      { kind: 'JudgmentEvent', seatId: 'seat-0', tool: et, card: judged },
+      { kind: 'CardMovedEvent', cardInstanceId: 'j', fromZoneId: 'processing', toZoneId: 'discardPile', card: judged },
+    ];
+    expect(describeResponse(state(log, damageWindow('w1', 'seat-0', 'seat-1', 'sha-1')), 'seat-0')?.latest).toBe('Your Eight Trigrams judgment: 3 ♣');
+  });
+
   it('describes a Sha’s Shan window from its reason, and No Response from the damage it would deal', () => {
     const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [seat('seat-0')] }];
     const used = usedCardOf(sha);

@@ -35,6 +35,41 @@ function stateWithShaInHand(): GameState {
 }
 
 describe('ActionList', () => {
+  it('groups a conversion’s plays under one button, with a menu of targets', () => {
+    const state: GameState = {
+      ...emptyState(),
+      zones: [{ id: 'equip-0', kind: 'equip', ownerSeatId: 'seat-0', cards: [{ instanceId: 'sp', definitionId: 'serpent-spear', suit: 'spade', rank: 12 }] }],
+    };
+    const registry: ContentRegistry = {
+      cards: new Map([
+        ['sha', { id: 'sha', name: 'Sha', category: 'basic', play: () => [] }],
+        ['serpent-spear', {
+          id: 'serpent-spear', name: 'Serpent Spear', category: 'equipment', equipSlot: 'weapon', play: () => [],
+          abilities: { conversions: [{ id: 'serpent-spear', as: 'sha', cards: 2, when: 'both' }] },
+        }],
+      ]),
+      generals: new Map(),
+    };
+    const via = { owner: { kind: 'equipment' as const, seatId: 'seat-0', cardInstanceId: 'sp' }, conversionId: 'serpent-spear' };
+    const at = (seatId: string): Action => ({ kind: 'UseConversionAction', seatId: 'seat-0', via, targets: [{ kind: 'seat', seatId }] });
+    const fixture = TestBed.createComponent(ActionList);
+    fixture.componentRef.setInput('actions', [{ kind: 'EndPhaseAction', seatId: 'seat-0' }, at('seat-1'), at('seat-2')]);
+    fixture.componentRef.setInput('state', state);
+    fixture.componentRef.setInput('registry', registry);
+    fixture.detectChanges();
+    const chosen = jest.fn();
+    fixture.componentInstance.actionChosen.subscribe(chosen);
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect([...el.querySelectorAll('button')].map((b) => b.textContent!.trim())).toEqual(['End Phase', 'Use 2 Cards as Sha']);
+    (el.querySelector('button.conversion') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    const items = [...document.querySelectorAll('.mat-mdc-menu-item')] as HTMLButtonElement[];
+    expect(items.map((b) => b.textContent!.trim())).toEqual(['Targeting Seat 1', 'Targeting Seat 2']);
+    items[1].click();
+    expect(chosen).toHaveBeenCalledWith(at('seat-2'));
+  });
+
   it('renders one button per action and emits the chosen action on click', () => {
     const fixture = TestBed.createComponent(ActionList);
     const actions: Action[] = [

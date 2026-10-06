@@ -16,6 +16,21 @@ const state = (pendingChoice?: PendingChoice): GameState => ({
 });
 
 describe('describeChoice', () => {
+  it('Gender Swords’ target: discard a hand card, or let the user draw', () => {
+    const gs: PendingChoice = {
+      id: 'gs', seatId: 'seat-0', verb: 'discard',
+      reason: { kind: 'choice', card: { as: 'gender-swords', colour: 'black', physical: [] }, userSeatId: 'seat-1', targetSeatId: 'seat-0' },
+      options: [{ id: 'decline', shows: { kind: 'decline' }, effects: [] }],
+    };
+    expect(describeChoice(state(gs), 'seat-0')).toEqual({
+      title: 'Gender Swords',
+      prompt: 'Discard a hand card, or let Seat 1 draw 1 card',
+      confirmLabel: 'Discard',
+      declineLabel: 'Let Seat 1 Draw',
+    });
+    expect(choiceOptionLabel({ kind: 'decline' }, players, 'Let Seat 1 Draw')).toBe('Let Seat 1 Draw');
+  });
+
   it('names the Tool, says what to do, and labels the button Take or Discard', () => {
     expect(describeChoice(state(choice('steal', 'take', 'seat-1')), 'seat-0')).toEqual({ title: 'Steal', prompt: 'Choose a card to take from Seat 1', confirmLabel: 'Take' });
     expect(describeChoice(state(choice('break', 'discard', 'seat-1')), 'seat-0')).toEqual({ title: 'Break', prompt: 'Choose a card to discard from Seat 1', confirmLabel: 'Discard' });

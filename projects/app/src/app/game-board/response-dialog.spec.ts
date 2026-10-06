@@ -30,6 +30,15 @@ function render(cards: ResponseDialogData['cards'], skills: ResponseDialogData['
 }
 
 describe('ResponseDialog', () => {
+  it('a skill answer (a conversion) confirms with its own label', () => {
+    const convert: Action = { kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'sp' }, conversionId: 'serpent-spear' }, targets: [], pendingResponseId: 'w1' };
+    const { el, confirm, close } = render([], [{ id: 'convert-0', action: convert, label: 'Use 2 Cards as Sha' }]);
+    expect(el.textContent).toContain('Use 2 Cards as Sha');
+    expect(confirm().textContent!.trim()).toBe('Use 2 Cards as Sha');
+    confirm().click();
+    expect(close).toHaveBeenCalledWith(convert);
+  });
+
   it('describes the source, the prompt and what No Response costs', () => {
     const { el } = render([]);
     expect(el.querySelector('.source')!.textContent).toContain('Seat 1 played Sha against Hing');
@@ -83,7 +92,7 @@ describe('ResponseDialog', () => {
       [{ id: 'skill-1', action: skillAction, label: 'Eight Trigrams' }]
     );
     expect(el.querySelector('.skill-option')!.textContent).toContain('Eight Trigrams');
-    expect(confirm().textContent!.trim()).toBe('Respond with Eight Trigrams');
+    expect(confirm().textContent!.trim()).toBe('Eight Trigrams');
     confirm().click();
     expect(close).toHaveBeenCalledWith(skillAction);
   });

@@ -15,8 +15,10 @@ function cardName(definitionId: string): string {
 const named = (card: CardInstance) => `${cardName(card.definitionId)} (${cardFaceLabel(card)})`;
 // A used card for a history line: "Sha (7 ♠)" for one card used as itself,
 // otherwise its name.
-const usedLabel = (used: UsedCard) =>
-  used.physical.length === 1 && used.physical[0].definitionId === used.as ? named(used.physical[0]) : cardName(used.as);
+const usedLabel = (used: UsedCard) => {
+  if (used.via) return `${used.physical.length} cards as ${cardName(used.as)} (${cardName(used.via.abilityId)})`;
+  return used.physical.length === 1 && used.physical[0].definitionId === used.as ? named(used.physical[0]) : cardName(used.as);
+};
 // The card shown beside a line: the physical card, when there is exactly one.
 const faceOf = (used: UsedCard): CardInstance | null => (used.physical.length === 1 ? used.physical[0] : null);
 
@@ -50,7 +52,8 @@ export function actionHistory(
         : `${chooser} discarded ${face ? named(face) : 'a card'} from ${name(made.shows.seatId)}'s hand${tool}`;
     }
     const what = face ? named(face) : 'a card';
-    return `${chooser} ${made.verb === 'take' ? 'took' : 'discarded'} ${ownerSeatId ? `${name(ownerSeatId)}'s ${what}` : what}${tool}`;
+    const whose = ownerSeatId && ownerSeatId !== made.seatId ? `${name(ownerSeatId)}'s ${what}` : what;
+    return `${chooser} ${made.verb === 'take' ? 'took' : 'discarded'} ${whose}${tool}`;
   };
   const entries: ActionHistoryEntry[] = [];
   const forceOfSeat = (seatId: string) => forceOf(seats.find((s) => s.id === seatId)?.kingdom);
@@ -158,8 +161,37 @@ export function actionHistory(
       case 'GeneralsChosenEvent':
         action(`${name(event.seatId)} chose their generals`);
         break;
-      case 'ChoiceMadeEvent':
-        if (event.shows.kind === 'card' || event.shows.kind === 'hidden-hand') picked = event;
+      case 'ChoiceMadeEvent': {
+        const { reason, shows } = event;
+        if (shows.kind === 'card' || shows.kind === 'hidden-hand') {
+          picked = event;
+        } else if (shows.kind === 'use' && reason.kind === 'ability') {
+          const on = reason.targetSeatId && reason.targetSeatId !== event.seatId ? ` on ${name(reason.targetSeatId)}` : '';
+          action(`${name(event.seatId)} used ${cardName(reason.abilityId)}${on}`);
+        } else if (shows.kind === 'decline' && reason.kind === 'choice') {
+          action(`${name(event.seatId)} let ${name(reason.userSeatId)} draw a card (${cardName(reason.card.as)})`);
+        }
+        break;
+      }
+      case 'AbilityUsedEvent': {
+        const owner = name(event.owner.seatId);
+        const ability = cardName(event.abilityId);
+        if (event.outcome === 'no-effect' && event.targetSeatId) {
+          action(`${owner}'s ${ability}: ${name(event.targetSeatId)}'s Sha has no effect`);
+        } else if (event.outcome === 'counts-as-shan') {
+          // Said on its judgment's line, which comes just before.
+          const last = entries[entries.length - 1];
+          if (last?.kind === 'action' && last.text.startsWith(`${owner}'s ${ability} judgment:`)) last.text += ', counts as Shan';
+          else action(`${owner}'s ${ability} counts as Shan`);
+        }
+        break;
+      }
+      case 'SelectionMadeEvent':
+        if (event.of === 'seats' && event.reason.kind === 'ability') {
+          const seats = event.ids.map(name);
+          const list = seats.length > 1 ? `${seats.slice(0, -1).join(', ')} and ${seats.at(-1)}` : seats[0];
+          action(`${name(event.seatId)} picked ${list} with ${cardName(event.reason.abilityId)}`);
+        }
         break;
       case 'CardsTurnedUpEvent':
         action(`Turned up ${event.cards.length} ${event.cards.length === 1 ? 'card' : 'cards'}: ${event.cards.map(named).join(', ')}`);

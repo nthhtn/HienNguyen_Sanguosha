@@ -115,8 +115,10 @@ export class ResponseDialog {
   );
   protected readonly confirmLabel = computed(() => {
     const option = this.pickedOption();
-    return option ? `Respond with ${option.card ? this.name(option.card) : option.label}` : 'No Response';
+    if (!option) return 'No Response';
+    return option.card ? `Respond with ${this.name(option.card)}` : option.label;
   });
+
 
   protected name(card: CardInstance): string {
     return cardIdDisplayName(card.definitionId);
