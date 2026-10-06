@@ -3,12 +3,20 @@ import { equipmentTabs, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, 
 describe('wikiGenerals', () => {
   const generals = wikiGenerals();
 
-  it('lists every general with data, grouped by kingdom then sorted by name', () => {
+  it('lists every general with data, grouped by kingdom, its leader first, then by pack, then by name', () => {
     expect(generals).toHaveLength(57);
     expect([...new Set(generals.map((g) => g.kingdom))]).toEqual(['Wei', 'Shu', 'Wu', 'Qun']);
     expect(generals.filter((g) => g.kingdom === 'Wei').map((g) => g.name)).toEqual([
-      'Cao Cao', 'Cao Pi', 'Cao Ren', 'Deng Ai', 'Dian Wei', 'Guo Jia', 'Sima Yi', 'Xiahou Dun',
-      'Xiahou Yuan', 'Xu Chu', 'Xu Huang', 'Xun Yu', 'Zhang He', 'Zhang Liao', 'Zhen Ji',
+      'Cao Cao', 'Guo Jia', 'Sima Yi', 'Xiahou Dun', 'Xu Chu', 'Zhang Liao', 'Zhen Ji',
+      'Cao Ren', 'Xiahou Yuan', 'Dian Wei', 'Xun Yu', 'Cao Pi', 'Xu Huang', 'Deng Ai', 'Zhang He',
+    ]);
+  });
+
+  it('puts each kingdom’s leader first, even one from a later pack', () => {
+    const first = (kingdom: string) => generals.find((g) => g.kingdom === kingdom)!.name;
+    expect(['Wei', 'Shu', 'Wu', 'Qun'].map(first)).toEqual(['Cao Cao', 'Liu Bei', 'Sun Jian', 'Yuan Shao']);
+    expect(generals.filter((g) => g.kingdom === 'Wu').map((g) => g.expansion)).toEqual([
+      'Forest', ...Array(8).fill('Base'), 'Wind', 'Wind', 'Fire', 'Forest', 'Mountain', 'Mountain',
     ]);
   });
 
@@ -75,9 +83,9 @@ describe('wikiGenerals', () => {
 });
 
 describe('wikiCards', () => {
-  it('lists the basic cards by name; the Army ones are not in the game', () => {
+  it('lists the basic cards by pack then name; the Army ones are not in the game', () => {
     const basic = wikiCards('basic');
-    expect(basic.map((c) => c.name)).toEqual(['Fire Attack', 'Lightning Attack', 'Peach', 'Sha', 'Shan', 'Wine']);
+    expect(basic.map((c) => c.name)).toEqual(['Peach', 'Sha', 'Shan', 'Fire Attack', 'Lightning Attack', 'Wine']);
     expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual(['fire-attack', 'lightning-attack']);
   });
 
@@ -125,12 +133,13 @@ describe('wikiCards', () => {
     expect([...wikiCards('basic'), ...wikiCards('equipment')].some((c) => c.delayed)).toBe(false);
   });
 
-  it('lists equipment by subtype then name, with the playable ones in the game', () => {
+  it('lists equipment by subtype, then pack (Base, EX, Army), then name, with the playable ones in the game', () => {
     const equipment = wikiCards('equipment');
     expect(equipment).toHaveLength(22);
     expect(equipment.map((c) => c.subtype)).toEqual([...Array(11).fill('weapon'), ...Array(4).fill('armor'), ...Array(7).fill('horse')]);
-    expect(equipment.slice(0, 3).map((c) => c.name)).toEqual(['Ancient Scimitar', 'Axe', 'Black Pommel']);
-    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['black-pommel', 'crossbow', 'green-dragon-blade', 'silver-lion', 'da-yuan', 'di-lu', 'hua-liu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing']);
+    expect(equipment.slice(7, 11).map((c) => [c.name, c.expansion])).toEqual([['Sky Scorcher', 'Base'], ['Ice Sword', 'EX'], ['Ancient Scimitar', 'Army'], ['Fire Fan', 'Army']]);
+    expect(equipment.slice(11, 15).map((c) => c.id)).toEqual(['eight-trigrams', 'black-shield', 'silver-lion', 'wood-armor']);
+    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['black-pommel', 'crossbow', 'green-dragon-blade', 'silver-lion', 'da-yuan', 'di-lu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'hua-liu']);
   });
 
   it('reports data gaps as null or empty, never guessed (Review Focus 2)', () => {
@@ -142,7 +151,7 @@ describe('wikiCards', () => {
   it('lists the 15 tools, with the playable ones in the game and their printings', () => {
     const tools = wikiCards('tool');
     expect(tools).toHaveLength(15);
-    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'lightning', 'peach-garden', 'starvation', 'steal', 'wuxie']);
+    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'lightning', 'peach-garden', 'steal', 'wuxie', 'starvation']);
     const duel = tools.find((c) => c.id === 'duel')!;
     expect(duel.count).toBe(3);
     expect(duel.printings).toEqual([{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }]);
@@ -193,7 +202,7 @@ describe('wiki tabs', () => {
     expect(summary(tabs)).toEqual([
       ['weapons', 'Weapons', 11], ['armors', 'Armors', 4], ['defensive-mount', 'Defensive Mount', 4], ['offensive-mount', 'Offensive Mount', 3],
     ]);
-    expect(tabs[2].entries.map((c) => c.id)).toEqual(['di-lu', 'hua-liu', 'shadow-runner', 'storm-runner']);
+    expect(tabs[2].entries.map((c) => c.id)).toEqual(['di-lu', 'shadow-runner', 'storm-runner', 'hua-liu']);
     expect(tabs[3].entries.map((c) => c.id)).toEqual(['da-yuan', 'red-hare', 'zi-xing']);
   });
 

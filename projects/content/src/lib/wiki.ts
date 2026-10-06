@@ -3,6 +3,10 @@ import { generalsData, GeneralData } from '../../data/generals';
 import { GENERAL_SKILLS } from './generals';
 import { buildContentRegistry } from './registry';
 
+// Every pack, in the order the Wiki lists them.
+const PACK_ORDER = ['Base', 'EX', 'Army', 'Wind', 'Fire', 'Forest', 'Mountain'] as const;
+export type WikiPack = (typeof PACK_ORDER)[number];
+
 export interface WikiSkill {
   name: string;
   nameZh: string | null;
@@ -21,7 +25,7 @@ export interface WikiGeneral {
   maxHp: number | null;
   skills: WikiSkill[];
   skillsInGame: boolean;
-  expansion: 'Base' | 'Wind' | 'Fire' | 'Forest' | 'Mountain';
+  expansion: Extract<WikiPack, 'Base' | 'Wind' | 'Fire' | 'Forest' | 'Mountain'>;
 }
 
 // One card as the Wiki shows it, plus whether its rules are implemented
@@ -38,13 +42,19 @@ export interface WikiCard {
   printings: NonNullable<CardData['printings']>;
   mount: NonNullable<CardData['mount']> | null;
   delayed: boolean;
+  expansion: Extract<WikiPack, 'Base' | 'EX' | 'Army'>;
   inGame: boolean;
 }
 
 const KINGDOM_ORDER: readonly WikiGeneral['kingdom'][] = ['Wei', 'Shu', 'Wu', 'Qun'];
 const SUBTYPE_ORDER: readonly NonNullable<WikiCard['subtype']>[] = ['weapon', 'armor', 'horse', 'treasure'];
 
+// Each kingdom's leader heads its list; the rest follow by pack.
+const KINGDOM_LEADERS: ReadonlySet<string> = new Set(['cao-cao', 'liu-bei', 'sun-jian', 'yuan-shao']);
+
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
+const byPack = (a: { expansion: WikiPack }, b: { expansion: WikiPack }) => PACK_ORDER.indexOf(a.expansion) - PACK_ORDER.indexOf(b.expansion);
+const leaderFirst = (a: { id: string }, b: { id: string }) => Number(KINGDOM_LEADERS.has(b.id)) - Number(KINGDOM_LEADERS.has(a.id));
 
 export function wikiGenerals(): WikiGeneral[] {
   return Object.entries(generalsData)
@@ -60,7 +70,7 @@ export function wikiGenerals(): WikiGeneral[] {
       skillsInGame: GENERAL_SKILLS.has(id),
       expansion: (data.source.expansion ?? 'Base') as WikiGeneral['expansion'],
     }))
-    .sort((a, b) => KINGDOM_ORDER.indexOf(a.kingdom) - KINGDOM_ORDER.indexOf(b.kingdom) || byName(a, b));
+    .sort((a, b) => KINGDOM_ORDER.indexOf(a.kingdom) - KINGDOM_ORDER.indexOf(b.kingdom) || leaderFirst(a, b) || byPack(a, b) || byName(a, b));
 }
 
 export function wikiCards(category: WikiCard['category']): WikiCard[] {
@@ -80,9 +90,10 @@ export function wikiCards(category: WikiCard['category']): WikiCard[] {
       printings: data.printings ?? [],
       mount: data.mount ?? null,
       delayed: data.delayed === true,
+      expansion: (data.source.expansion ?? 'Base') as WikiCard['expansion'],
       inGame: registry.cards.has(id),
     }))
-    .sort((a, b) => subtypeRank(a) - subtypeRank(b) || byName(a, b));
+    .sort((a, b) => subtypeRank(a) - subtypeRank(b) || byPack(a, b) || byName(a, b));
 }
 
 export interface WikiTab<T> {

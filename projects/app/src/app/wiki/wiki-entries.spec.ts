@@ -10,11 +10,12 @@ const caoCao: WikiGeneral = {
 };
 const duel: WikiCard = {
   id: 'duel', name: 'Duel', nameZh: '决斗', category: 'tool', subtype: null, text: 'A player can target anyone with this card.',
-  range: null, count: 3, printings: [{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }], inGame: true,
+  range: null, count: 3, printings: [{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }],
+  mount: null, delayed: false, expansion: 'Base', inGame: true,
 };
 const redHare: WikiCard = {
   id: 'red-hare', name: 'Red Hare', nameZh: '赤兔', category: 'equipment', subtype: 'horse', text: null,
-  range: null, count: null, printings: [], inGame: false,
+  range: null, count: null, printings: [], mount: 'offensive', delayed: false, expansion: 'Base', inGame: false,
 };
 
 function renderGeneral(general: WikiGeneral): HTMLElement {
