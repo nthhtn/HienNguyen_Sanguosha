@@ -137,12 +137,12 @@ describe('gatherTriggeredSkills', () => {
 
     expect(found).toHaveLength(2);
     expect(found.map((f) => f.owner)).toEqual([
-      { seatId: 'seat-a', slot: 'main' },
-      { seatId: 'seat-c', slot: 'deputy' },
+      { kind: 'general', seatId: 'seat-a', slot: 'main' },
+      { kind: 'general', seatId: 'seat-c', slot: 'deputy' },
     ]);
     expect(seenOwners).toEqual([
-      { seatId: 'seat-a', slot: 'main' },
-      { seatId: 'seat-c', slot: 'deputy' },
+      { kind: 'general', seatId: 'seat-a', slot: 'main' },
+      { kind: 'general', seatId: 'seat-c', slot: 'deputy' },
     ]);
   });
 
@@ -168,7 +168,7 @@ describe('gatherTriggeredSkills', () => {
     const found = gatherTriggeredSkills(state, registry, stubMode(), 'before:DamageEffect', {});
 
     expect(found).toHaveLength(1);
-    expect(found[0].owner).toEqual({ seatId: 'seat-b', slot: 'main' });
+    expect(found[0].owner).toEqual({ kind: 'general', seatId: 'seat-b', slot: 'main' });
   });
 });
 

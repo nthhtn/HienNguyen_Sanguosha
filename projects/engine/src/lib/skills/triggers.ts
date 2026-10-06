@@ -7,7 +7,7 @@ import {
   TriggerPoint,
 } from '../registry/types';
 
-// A trigger paired with the general-instance it was gathered for. `owner` is
+// A trigger paired with the General or worn card it was gathered for. `owner` is
 // undefined for mode-level triggers, which belong to the GameModeDefinition
 // rather than to any single seat's general.
 export interface GatheredTrigger {
@@ -38,12 +38,26 @@ export function gatherTriggeredSkills(
       for (const skill of general.skills) {
         for (const trigger of skill.triggers) {
           if (trigger.point === point) {
-            candidates.push({ trigger, owner: { seatId: seat.id, slot } });
+            candidates.push({ trigger, owner: { kind: 'general', seatId: seat.id, slot } });
           }
         }
       }
     }
   }
 
-  return candidates.filter((candidate) => candidate.trigger.condition(state, subject, candidate.owner));
+  // Worn equipment, after every General: in seat order, then zone order. An
+  // eliminated seat's cards are out of the game.
+  for (const seat of state.seats) {
+    if (seat.eliminated) continue;
+    const worn = state.zones.find((z) => z.id === seat.equipped.zoneId)?.cards ?? [];
+    for (const card of worn) {
+      for (const trigger of registry.cards.get(card.definitionId)?.abilities?.triggers ?? []) {
+        if (trigger.point === point) {
+          candidates.push({ trigger, owner: { kind: 'equipment', seatId: seat.id, cardInstanceId: card.instanceId } });
+        }
+      }
+    }
+  }
+
+  return candidates.filter((candidate) => candidate.trigger.condition(state, subject, candidate.owner, registry));
 }

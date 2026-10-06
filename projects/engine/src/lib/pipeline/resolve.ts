@@ -9,7 +9,7 @@ import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence'
 import { legalTargetListsFor } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
-import { CardPlayedEvent, ChoiceMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
+import { CardPlayedEvent, ChoiceMadeEvent, EngineEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
@@ -116,7 +116,7 @@ function afterTriggerFollowUps(state: GameState, events: GameEvent[], ctx: Engin
   const followUps: QueueItem[] = [];
   for (const event of events) {
     for (const gathered of gatherTriggeredSkills(state, ctx.registry, ctx.mode, `after:${event.kind}`, event)) {
-      followUps.push(...(gathered.trigger.effect(state, event, gathered.owner) as QueueItem[]));
+      followUps.push(...(gathered.trigger.effect(state, event, gathered.owner, ctx.registry) as QueueItem[]));
     }
   }
   return followUps;
@@ -154,7 +154,7 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
   let current: Effect | null = effect;
   for (const gathered of beforeTriggers) {
     if (current === null) break;
-    const outputs = gathered.trigger.effect(state, current, gathered.owner) as Effect[];
+    const outputs = gathered.trigger.effect(state, current, gathered.owner, ctx.registry) as Effect[];
     current = outputs.length > 0 ? outputs[0] : null;
   }
   if (current === null) return { state, events: [] };
@@ -164,7 +164,26 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
     : isJudgmentStepEffect(current)
       ? applyJudgmentStepEffect(state, current, ctx.registry)
       : applyEffect(state, current);
-  return { state: queueFront(applied.state, afterTriggerFollowUps(applied.state, applied.events, ctx)), events: applied.events };
+  const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
+  return { state: queueFront(applied.state, followUps), events: applied.events };
+}
+
+// Cards that just left an equip zone: each one's onUnequip runs for its former
+// wearer, after the moves' own after-triggers (Silver Lion's parting heal). A
+// trigger can't do this: once the card has left, its triggers aren't gathered.
+function unequipFollowUps(before: GameState, after: GameState, events: GameEvent[], registry: ContentRegistry): QueueItem[] {
+  const followUps: QueueItem[] = [];
+  for (const event of events as EngineEvent[]) {
+    if (event.kind !== 'CardMovedEvent') continue;
+    const from = before.zones.find((z) => z.id === event.fromZoneId);
+    if (from?.kind !== 'equip' || !from.ownerSeatId) continue;
+    const card = after.zones.flatMap((z) => z.cards).find((c) => c.instanceId === event.cardInstanceId);
+    const definition = card && registry.cards.get(card.definitionId);
+    if (definition?.onUnequip) {
+      followUps.push(...(definition.onUnequip(after, { seatId: from.ownerSeatId, cardInstanceId: event.cardInstanceId }) as QueueItem[]));
+    }
+  }
+  return followUps;
 }
 
 // Validates an action and queues what it leads to. Nothing here resolves an

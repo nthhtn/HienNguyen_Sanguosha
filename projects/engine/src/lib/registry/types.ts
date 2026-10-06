@@ -48,6 +48,11 @@ export interface CardDefinition {
   // phase (DelayedCleanupEffect). Absent = discarded, if it is still in its
   // owner's judgment area.
   onCleanup?(state: GameState, ctx: DelayedToolContext): unknown[];
+  // Active while the card is worn (in an equip zone); the wearer owns them.
+  abilities?: Abilities;
+  // Resolved for the former wearer right after the card leaves an equip zone,
+  // for any reason (Silver Lion's parting heal).
+  onUnequip?(state: GameState, ctx: UnequipContext): unknown[];
 }
 
 export interface ResponseContext {
@@ -79,23 +84,40 @@ export interface DelayedToolContext {
 
 export type TriggerPoint = `before:${string}` | `after:${string}`;
 
-// Identifies the general-instance a trigger was gathered for. A general skill's
-// `condition`/`effect` must know which of its holders it is currently acting
-// for: the same GeneralDefinition can legitimately be held by more than one
-// Seat at once, so a skill may NOT derive "which seat am I" by searching
-// GameState for a general id (that would resolve to whichever holder happens to
-// come first, mis-attributing and double-firing the trigger). `owner` is
-// `undefined` only for triggers that have no owning general at all — currently
-// the mode-level triggers declared by a GameModeDefinition.
-export interface TriggerOwner {
-  seatId: string;
-  slot: 'main' | 'deputy';
-}
+// Who a gathered trigger acts for. A General's skill: the seat and slot it was
+// gathered for (the same General can be held by more than one seat, so a skill
+// must never search GameState for its own id). A worn card: its wearer and the
+// card. `owner` is undefined only for a mode's own triggers.
+export type TriggerOwner =
+  | { kind: 'general'; seatId: string; slot: 'main' | 'deputy' }
+  | { kind: 'equipment'; seatId: string; cardInstanceId: string };
 
 export interface SkillTrigger {
   point: TriggerPoint;
-  condition(state: GameState, subject: unknown, owner?: TriggerOwner): boolean;
-  effect(state: GameState, subject: unknown, owner?: TriggerOwner): unknown[];
+  // `registry` lets content read worn cards' abilities (e.g. Black Pommel).
+  condition(state: GameState, subject: unknown, owner?: TriggerOwner, registry?: ContentRegistry): boolean;
+  effect(state: GameState, subject: unknown, owner?: TriggerOwner, registry?: ContentRegistry): unknown[];
+}
+
+// Rule changes a worn card gives its wearer. Content's queries read them; the
+// engine never does.
+export interface AbilityModifiers {
+  // Sha plays allowed per turn: the highest wins; Infinity = no limit (Crossbow).
+  shaLimit?: number;
+  // The wearer's Sha ignores the target's armour (Black Pommel).
+  ignoresArmor?: boolean;
+}
+
+// What a card does while worn.
+export interface Abilities {
+  triggers?: SkillTrigger[];
+  modifiers?: AbilityModifiers;
+}
+
+export interface UnequipContext {
+  // The former wearer, and the card that left its equipment.
+  seatId: string;
+  cardInstanceId: string;
 }
 
 export interface SkillDefinition {
