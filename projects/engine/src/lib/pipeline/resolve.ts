@@ -1,5 +1,5 @@
-import { GameState, GameEvent, Seat } from '../domain/types';
-import { ContentRegistry, GameModeDefinition, CardDefinition } from '../registry/types';
+import { GameState, GameEvent, QueueItem } from '../domain/types';
+import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
 import { Effect, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
@@ -10,6 +10,7 @@ import { legalTargetListsFor } from '../rules/legality';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { CardPlayedEvent, PhaseChangedEvent, TurnAdvancedEvent } from './events';
+import { queueFront, withQueue } from './queue';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -21,23 +22,13 @@ export interface ResolveResult {
   events: GameEvent[];
 }
 
-// `resolveEffectWithTriggers` and `resolveAction` recurse into each other every
-// time a trigger produces a follow-up effect or action. A content trigger cycle
-// (say, `after:HealEvent -> DamageEffect` combined with
-// `after:DamageDealtEvent -> HealEffect`) would otherwise recurse until the
-// native call stack blows up, with no indication of which content caused it.
-// The limit is deliberately far above any legitimate chain: the longest real
-// interaction in this content pack is three levels deep
-// (damage -> forced reveal -> elimination).
-export const MAX_TRIGGER_DEPTH = 64;
+// Queue items one `resolve` call may work through. Far above any real chain
+// (a 10-seat Barbarians with every Wuxie played is a few hundred); a content
+// trigger cycle hits it and fails loudly, naming the item, instead of looping.
+export const MAX_RESOLUTION_STEPS = 10_000;
 
-function guardDepth(depth: number, what: string): void {
-  if (depth > MAX_TRIGGER_DEPTH) {
-    throw new Error(
-      `Trigger recursion limit exceeded (depth ${depth} > ${MAX_TRIGGER_DEPTH}) while resolving ${what} — ` +
-        'a content trigger cycle is the likely cause'
-    );
-  }
+interface StepBudget {
+  used: number;
 }
 
 // Every phase entered by advanceToDecision is one step. One full turn is at
@@ -49,20 +40,24 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
   if (state.result) {
     throw new Error('Cannot submit an action after the game has ended');
   }
-  const acted = resolveAction(state, action, ctx, 0);
-  const settled = advanceToDecision(acted.state, ctx);
+  const budget: StepBudget = { used: 0 };
+  const acted = resolveAction(state, action, ctx);
+  const settled = advanceToDecision(acted.state, ctx, budget);
   return { state: settled.state, events: [...acted.events, ...settled.events] };
 }
 
-// Moves the game on through every phase that needs no decision, until a
-// player must act (Play, or Discard over the hand limit), a response is
-// pending, or the game has ended. An eliminated turn owner forfeits the rest
-// of their turn.
-export function advanceToDecision(state: GameState, ctx: EngineContext): ResolveResult {
-  let current = withWinCheck(state, ctx);
+// Drains the queue, then moves the game on through every phase that needs no
+// decision, until a player must act (Play, or Discard over the hand limit), a
+// response is pending, or the game has ended. An eliminated turn owner forfeits
+// the rest of their turn.
+export function advanceToDecision(state: GameState, ctx: EngineContext, budget: StepBudget = { used: 0 }): ResolveResult {
+  let current = state;
   let events: GameEvent[] = [];
   const maxSteps = MAX_AUTO_PHASE_STEPS_PER_SEAT * current.seats.length + MAX_AUTO_PHASE_STEPS_PER_SEAT;
   for (let steps = 0; ; steps++) {
+    const drained = drain(current, ctx, budget);
+    current = drained.state;
+    events = [...events, ...drained.events];
     if (current.result || current.phase === 'GeneralSelection' || current.pendingResponse) break;
     const ownerEliminated = !!current.seats.find((s) => s.id === current.turn.ownerSeatId)?.eliminated;
     if (!ownerEliminated && phaseWaitsForPlayer(current)) break;
@@ -70,10 +65,33 @@ export function advanceToDecision(state: GameState, ctx: EngineContext): Resolve
       throw new Error(`Phases advanced ${steps} times without reaching a player decision`);
     }
     const from: GameState = ownerEliminated ? { ...current, phase: 'End' } : current;
-    const step = enterNextPhase(from, ctx, 0);
-    current = withWinCheck(step.state, ctx);
+    const step = enterNextPhase(from, ctx);
+    current = step.state;
     events = [...events, ...step.events];
   }
+  return { state: current, events };
+}
+
+// Resolves queue items front first until a response is pending, the queue is
+// empty, or the game is over (whatever is left is then dropped).
+function drain(state: GameState, ctx: EngineContext, budget: StepBudget): ResolveResult {
+  let current = withWinCheck(state, ctx);
+  const events: GameEvent[] = [];
+  while (!current.result && !current.pendingResponse && (current.resolutionQueue?.length ?? 0) > 0) {
+    const [item, ...rest] = current.resolutionQueue!;
+    budget.used += 1;
+    if (budget.used > MAX_RESOLUTION_STEPS) {
+      throw new Error(
+        `Resolution step budget exceeded (${MAX_RESOLUTION_STEPS} steps) while resolving ${item.kind} — ` +
+          'a content trigger cycle is the likely cause'
+      );
+    }
+    const popped = withQueue(current, rest);
+    const step = isAction(item) ? resolveAction(popped, item, ctx) : resolveEffect(popped, item, ctx);
+    current = withWinCheck(step.state, ctx);
+    events.push(...step.events);
+  }
+  if (current.result) current = withQueue(current, []);
   return { state: current, events };
 }
 
@@ -85,30 +103,62 @@ function withWinCheck(state: GameState, ctx: EngineContext): GameState {
   return result ? { ...state, result } : state;
 }
 
-// Logs entering the phase the state is already in, then runs its "after" triggers.
-function enterPhase(state: GameState, ctx: EngineContext, depth: number): ResolveResult {
-  const event: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: state.turn.ownerSeatId, phase: state.phase };
-  const followUp = runAfterTriggers({ ...state, log: [...state.log, event] }, event, ctx, depth);
-  return { state: followUp.state, events: [event, ...followUp.events] };
+// Appends events to the log.
+function logged(state: GameState, events: GameEvent[]): GameState {
+  return { ...state, log: [...state.log, ...(events as GameState['log'])] };
+}
+
+// Every after-trigger follow-up for `events`, in event order then trigger
+// order. All are gathered against `state`, before any of them resolves.
+function afterTriggerFollowUps(state: GameState, events: GameEvent[], ctx: EngineContext): QueueItem[] {
+  const followUps: QueueItem[] = [];
+  for (const event of events) {
+    for (const gathered of gatherTriggeredSkills(state, ctx.registry, ctx.mode, `after:${event.kind}`, event)) {
+      followUps.push(...(gathered.trigger.effect(state, event, gathered.owner) as QueueItem[]));
+    }
+  }
+  return followUps;
+}
+
+// Logs events that happened outside applyEffect, and queues their after-trigger
+// follow-ups at the front.
+function logWithTriggers(state: GameState, events: GameEvent[], ctx: EngineContext): ResolveResult {
+  const withLog = logged(state, events);
+  return { state: queueFront(withLog, afterTriggerFollowUps(withLog, events, ctx)), events };
 }
 
 // Moves to the next phase (or the next turn's Start) and enters it.
-function enterNextPhase(state: GameState, ctx: EngineContext, depth: number): ResolveResult {
+function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   const { phase, turn } = advancePhaseOrTurn(state);
-  let current: GameState = { ...state, phase, turn };
-  let events: GameEvent[] = [];
+  const events: GameEvent[] = [];
   if (turn.turnNumber !== state.turn.turnNumber) {
     const turnEvent: TurnAdvancedEvent = { kind: 'TurnAdvancedEvent', seatId: turn.ownerSeatId, turnNumber: turn.turnNumber };
-    const followUp = runAfterTriggers({ ...current, log: [...current.log, turnEvent] }, turnEvent, ctx, depth);
-    current = followUp.state;
-    events = [turnEvent, ...followUp.events];
+    events.push(turnEvent);
   }
-  const entered = enterPhase(current, ctx, depth);
-  return { state: entered.state, events: [...events, ...entered.events] };
+  const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: turn.ownerSeatId, phase };
+  events.push(phaseEvent);
+  return logWithTriggers({ ...state, phase, turn }, events, ctx);
 }
 
-function resolveAction(state: GameState, action: Action, ctx: EngineContext, depth: number): ResolveResult {
-  guardDepth(depth, `action ${action.kind}`);
+// One effect: before-triggers may rewrite or cancel it, then it applies and its
+// events' after-trigger follow-ups go to the front of the queue.
+function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {
+  const beforeTriggers = gatherTriggeredSkills(state, ctx.registry, ctx.mode, `before:${effect.kind}`, effect);
+  let current: Effect | null = effect;
+  for (const gathered of beforeTriggers) {
+    if (current === null) break;
+    const outputs = gathered.trigger.effect(state, current, gathered.owner) as Effect[];
+    current = outputs.length > 0 ? outputs[0] : null;
+  }
+  if (current === null) return { state, events: [] };
+
+  const applied = applyEffect(state, current);
+  return { state: queueFront(applied.state, afterTriggerFollowUps(applied.state, applied.events, ctx)), events: applied.events };
+}
+
+// Validates an action and queues what it leads to. Nothing here resolves an
+// effect directly: the caller drains the queue.
+function resolveAction(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
   if (state.pendingResponse && !state.pendingResponse.allowedActionKinds.includes(action.kind)) {
     throw new Error(`Action ${action.kind} is not legal while a response is pending`);
   }
@@ -118,14 +168,8 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
 
   switch (action.kind) {
     case 'DrawCardsAction': {
-      const seat = state.seats.find((s) => s.id === action.seatId);
-      if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
-      return resolveEffectWithTriggers(
-        state,
-        { kind: 'DrawCardsEffect', seatId: action.seatId, count: action.count },
-        ctx,
-        depth
-      );
+      if (!state.seats.some((s) => s.id === action.seatId)) throw new Error(`Unknown seat: ${action.seatId}`);
+      return { state: queueFront(state, [{ kind: 'DrawCardsEffect', seatId: action.seatId, count: action.count }]), events: [] };
     }
 
     case 'PlayCardAction': {
@@ -152,32 +196,27 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
         throw new Error(`Card ${cardInHand.definitionId} cannot be played with those targets`);
       }
       const cardDefinition = lookupCard(ctx.registry, cardInHand.definitionId);
-      const played = logCardPlayed(state, { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: action.targets }, ctx, depth);
-      const effects = cardDefinition.play(played.state, {
+      const event: CardPlayedEvent = { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: action.targets };
+      const afterLog = logged(state, [event]);
+      const effects = cardDefinition.play(afterLog, {
         seatId: action.seatId,
         cardInstanceId: action.cardInstanceId,
         targets: action.targets,
       }) as Effect[];
-
-      let currentState = played.state;
-      let allEvents: GameEvent[] = played.events;
-      for (const effect of effects) {
-        const result = resolveEffectWithTriggers(currentState, effect, ctx, depth);
-        currentState = result.state;
-        allEvents = [...allEvents, ...result.events];
-      }
-      const discarded = discardAfterPlay(currentState, seat, cardDefinition, action.cardInstanceId, ctx, depth);
-      currentState = discarded.state;
-      allEvents = [...allEvents, ...discarded.events];
-      // Count this proactive play for per-turn limits (only if still the same turn).
-      if (currentState.turn.turnNumber === state.turn.turnNumber) {
-        const plays = currentState.turn.cardPlays ?? {};
-        currentState = {
-          ...currentState,
-          turn: { ...currentState.turn, cardPlays: { ...plays, [cardInHand.definitionId]: (plays[cardInHand.definitionId] ?? 0) + 1 } },
-        };
-      }
-      return { state: currentState, events: allEvents };
+      // Counted when played, for per-turn limits, whatever happens next.
+      const plays = afterLog.turn.cardPlays ?? {};
+      const counted: GameState = {
+        ...afterLog,
+        turn: { ...afterLog.turn, cardPlays: { ...plays, [cardInHand.definitionId]: (plays[cardInHand.definitionId] ?? 0) + 1 } },
+      };
+      // A used card leaves the hand at once, so it can't be reused mid-resolution.
+      // Equipment is placed by its own play() instead.
+      const leaveHand: Effect[] =
+        cardDefinition.category === 'equipment'
+          ? []
+          : [{ kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: requireZoneOfKind(state.zones, 'discardPile').id }];
+      const followUps = afterTriggerFollowUps(counted, [event], ctx);
+      return { state: queueFront(counted, [...leaveHand, ...followUps, ...effects]), events: [event] };
     }
 
     case 'PassAction': {
@@ -185,8 +224,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
       if (!pending || pending.id !== action.pendingResponseId) {
         throw new Error(`No matching pending response: ${action.pendingResponseId}`);
       }
-      const clearedState: GameState = { ...state, pendingResponse: null };
-      return resolveEffectWithTriggers(clearedState, pending.context.effect, ctx, depth);
+      return { state: queueFront({ ...state, pendingResponse: null }, [pending.context.effect]), events: [] };
     }
 
     case 'RespondAction': {
@@ -214,62 +252,39 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
         ...(answered?.cause?.cardInstanceId ? { cardInstanceId: answered.cause.cardInstanceId } : {}),
         ...(pending.reason?.kind === 'dying' ? { dyingSeatId: pending.reason.seatId } : {}),
       };
-      const played = logCardPlayed(
-        { ...state, pendingResponse: null },
-        { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: [], inResponseTo },
-        ctx,
-        depth
-      );
-      const clearedState = played.state;
-      const effects = cardDefinition.play(clearedState, {
+      const event: CardPlayedEvent = { kind: 'CardPlayedEvent', seatId: action.seatId, card: cardInHand, targets: [], inResponseTo };
+      const afterLog = logged({ ...state, pendingResponse: null }, [event]);
+      const effects = cardDefinition.play(afterLog, {
         seatId: action.seatId,
         cardInstanceId: action.cardInstanceId,
         targets: [],
         respondingTo: action.pendingResponseId,
       }) as Effect[];
-      let currentState = clearedState;
-      let allEvents: GameEvent[] = played.events;
-      for (const effect of effects) {
-        const result = resolveEffectWithTriggers(currentState, effect, ctx, depth);
-        currentState = result.state;
-        allEvents = [...allEvents, ...result.events];
-      }
-      const discarded = discardAfterPlay(currentState, seat, cardDefinition, action.cardInstanceId, ctx, depth);
-      currentState = discarded.state;
-      allEvents = [...allEvents, ...discarded.events];
-      // Effects the window itself asks for on an answer, then the opening
-      // card's say in what the answer leads to.
-      for (const effect of pending.onAnswer ?? []) {
-        const result = resolveEffectWithTriggers(currentState, effect, ctx, depth);
-        currentState = result.state;
-        allEvents = [...allEvents, ...result.events];
-      }
-      if (pending.sourceCard) {
-        const source = lookupCard(ctx.registry, pending.sourceCard.definitionId);
-        const followUps = (source.onResponse?.(currentState, {
-          pending,
-          seatId: action.seatId,
-          cardInstanceId: action.cardInstanceId,
-        }) ?? []) as Effect[];
-        for (const effect of followUps) {
-          const result = resolveEffectWithTriggers(currentState, effect, ctx, depth);
-          currentState = result.state;
-          allEvents = [...allEvents, ...result.events];
-        }
-      }
-      return { state: currentState, events: allEvents };
+      // The opening card's say in what the answer leads to (e.g. a Duel turning back).
+      const fromSource = pending.sourceCard
+        ? ((lookupCard(ctx.registry, pending.sourceCard.definitionId).onResponse?.(afterLog, {
+            pending,
+            seatId: action.seatId,
+            cardInstanceId: action.cardInstanceId,
+          }) ?? []) as Effect[])
+        : [];
+      const leaveHand: Effect = { kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: requireZoneOfKind(state.zones, 'discardPile').id };
+      const followUps = afterTriggerFollowUps(afterLog, [event], ctx);
+      return {
+        state: queueFront(afterLog, [leaveHand, ...followUps, ...effects, ...(pending.onAnswer ?? []), ...fromSource]),
+        events: [event],
+      };
     }
 
     case 'EndPhaseAction': {
-      const seat = state.seats.find((s) => s.id === action.seatId);
-      if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
+      if (!state.seats.some((s) => s.id === action.seatId)) throw new Error(`Unknown seat: ${action.seatId}`);
       if (state.turn.ownerSeatId !== action.seatId) {
         throw new Error(`It is not seat ${action.seatId}'s turn`);
       }
       if (state.phase !== 'Play') {
         throw new Error('EndPhaseAction is only legal in the Play phase');
       }
-      return enterNextPhase(state, ctx, depth);
+      return enterNextPhase(state, ctx);
     }
 
     case 'DiscardCardAction': {
@@ -286,129 +301,29 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext, dep
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
       const discardPile = requireZoneOfKind(state.zones, 'discardPile');
-      return resolveEffectWithTriggers(
-        state,
-        { kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: discardPile.id },
-        ctx,
-        depth
-      );
+      return { state: queueFront(state, [{ kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: discardPile.id }]), events: [] };
     }
 
     case 'RevealGeneralAction': {
-      const seat = state.seats.find((s) => s.id === action.seatId);
-      if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
-      return resolveEffectWithTriggers(
-        state,
-        { kind: 'RevealGeneralEffect', seatId: action.seatId, slot: action.slot },
-        ctx,
-        depth
-      );
+      if (!state.seats.some((s) => s.id === action.seatId)) throw new Error(`Unknown seat: ${action.seatId}`);
+      return { state: queueFront(state, [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: action.slot }]), events: [] };
     }
 
     case 'ChooseGeneralsAction': {
+      // applyGeneralChoice logs its own event.
       const { state: chosen, event } = applyGeneralChoice(state, action, ctx.registry);
-      const followUp = runAfterTriggers(chosen, event, ctx, depth);
-      if (chosen.generalSelection !== null) return { state: followUp.state, events: [event, ...followUp.events] };
+      const choiceFollowUps = afterTriggerFollowUps(chosen, [event], ctx);
+      if (chosen.generalSelection !== null) return { state: queueFront(chosen, choiceFollowUps), events: [event] };
       // The last seat has chosen: turn 1 begins at Start.
-      const started = enterPhase(followUp.state, ctx, depth);
-      return { state: started.state, events: [event, ...followUp.events, ...started.events] };
+      const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: chosen.turn.ownerSeatId, phase: chosen.phase };
+      const entered = logged(chosen, [phaseEvent]);
+      return {
+        state: queueFront(entered, [...choiceFollowUps, ...afterTriggerFollowUps(entered, [phaseEvent], ctx)]),
+        events: [event, phaseEvent],
+      };
     }
 
     default:
       throw new Error(`Action kind not yet handled by resolve(): ${(action as Action).kind}`);
   }
-}
-
-// Generic post-play discard: any non-equipment card still sitting in the acting
-// seat's hand once its play() effects have finished resolving is moved to the
-// discard pile. Equipment cards are exempt — their own play() already relocates
-// them to the seat's equip zone, where they must stay.
-//
-// The destination is looked up by zone `kind`, not by a hardcoded id: a
-// GameModeDefinition may name its discard pile anything it likes.
-function discardAfterPlay(
-  state: GameState,
-  seat: Seat,
-  cardDefinition: CardDefinition,
-  cardInstanceId: string,
-  ctx: EngineContext,
-  depth: number
-): ResolveResult {
-  if (cardDefinition.category === 'equipment') {
-    return { state, events: [] };
-  }
-  const handZone = state.zones.find((z) => z.id === seat.hand.zoneId);
-  const stillInHand = !!handZone?.cards.some((c) => c.instanceId === cardInstanceId);
-  if (!stillInHand) {
-    return { state, events: [] };
-  }
-  const discardPile = requireZoneOfKind(state.zones, 'discardPile');
-  return resolveEffectWithTriggers(
-    state,
-    { kind: 'MoveCardEffect', cardInstanceId, toZoneId: discardPile.id },
-    ctx,
-    depth
-  );
-}
-
-// Logs a card use, then runs its after-triggers.
-function logCardPlayed(state: GameState, event: CardPlayedEvent, ctx: EngineContext, depth: number): ResolveResult {
-  const followUp = runAfterTriggers({ ...state, log: [...state.log, event] }, event, ctx, depth);
-  return { state: followUp.state, events: [event, ...followUp.events] };
-}
-
-// Gathers and dispatches every `after:<event kind>` trigger for one event,
-// resolving each follow-up action/effect in turn. Shared by the effect
-// resolution path and by phase and turn changes.
-function runAfterTriggers(
-  state: GameState,
-  event: GameEvent,
-  ctx: EngineContext,
-  depth: number
-): ResolveResult {
-  let currentState = state;
-  let allEvents: GameEvent[] = [];
-  const afterTriggers = gatherTriggeredSkills(currentState, ctx.registry, ctx.mode, `after:${event.kind}`, event);
-  for (const gathered of afterTriggers) {
-    const followUps = gathered.trigger.effect(currentState, event, gathered.owner) as Array<Action | Effect>;
-    for (const followUp of followUps) {
-      const result = isAction(followUp)
-        ? resolveAction(currentState, followUp, ctx, depth + 1)
-        : resolveEffectWithTriggers(currentState, followUp, ctx, depth + 1);
-      currentState = result.state;
-      allEvents = [...allEvents, ...result.events];
-    }
-  }
-  return { state: currentState, events: allEvents };
-}
-
-function resolveEffectWithTriggers(
-  state: GameState,
-  effect: Effect,
-  ctx: EngineContext,
-  depth: number
-): ResolveResult {
-  guardDepth(depth, `effect ${effect.kind}`);
-  const beforeTriggers = gatherTriggeredSkills(state, ctx.registry, ctx.mode, `before:${effect.kind}`, effect);
-  let currentEffect: Effect | null = effect;
-  for (const gathered of beforeTriggers) {
-    if (currentEffect === null) break;
-    const outputs = gathered.trigger.effect(state, currentEffect, gathered.owner) as Effect[];
-    currentEffect = outputs.length > 0 ? outputs[0] : null;
-  }
-  if (currentEffect === null) {
-    return { state, events: [] };
-  }
-
-  const applied = applyEffect(state, currentEffect);
-  let currentState = applied.state;
-  let allEvents: GameEvent[] = [...applied.events];
-
-  for (const event of applied.events) {
-    const followUp = runAfterTriggers(currentState, event, ctx, depth);
-    currentState = followUp.state;
-    allEvents = [...allEvents, ...followUp.events];
-  }
-
-  return { state: currentState, events: allEvents };
 }

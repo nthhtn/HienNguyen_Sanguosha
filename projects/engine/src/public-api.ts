@@ -11,6 +11,7 @@ export * from './lib/registry/types';
 export * from './lib/registry/lookup';
 export * from './lib/pipeline/actions';
 export * from './lib/pipeline/effects';
+export * from './lib/pipeline/queue';
 export * from './lib/pipeline/events';
 export * from './lib/pipeline/resolve';
 export * from './lib/skills/triggers';

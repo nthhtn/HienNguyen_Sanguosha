@@ -5,6 +5,7 @@ import { RngState } from '../rng/rng';
 // is no runtime dependency from the domain module back onto the pipeline.
 import type { Effect } from '../pipeline/effects';
 import type { EngineEvent } from '../pipeline/events';
+import type { Action } from '../pipeline/actions';
 
 export type Kingdom = 'Wei' | 'Shu' | 'Wu' | 'Qun' | 'hidden';
 
@@ -111,6 +112,9 @@ export interface GameEvent {
   kind: string;
 }
 
+// One step still to resolve: an effect, or an action a trigger asked for.
+export type QueueItem = Effect | Action;
+
 export interface Damage {
   source: Target | null;
   target: Target;
@@ -126,6 +130,9 @@ export interface GameState {
   phase: Phase;
   zones: CardZone[];
   pendingResponse: PendingResponse | null;
+  // What is left to resolve, front first. Absent (never []) when nothing is
+  // left: the engine only rests with items here while a decision is pending.
+  resolutionQueue?: QueueItem[];
   log: EngineEvent[];
   rng: RngState;
   result: GameResult | null;

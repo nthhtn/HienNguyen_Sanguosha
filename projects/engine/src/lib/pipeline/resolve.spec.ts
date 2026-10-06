@@ -1,4 +1,4 @@
-import { resolve, MAX_TRIGGER_DEPTH } from './resolve';
+import { resolve, MAX_RESOLUTION_STEPS } from './resolve';
 import { createRng } from '../rng/rng';
 import { GameState } from '../domain/types';
 import { ContentRegistry, GameModeDefinition, CardDefinition, GeneralDefinition } from '../registry/types';
@@ -157,6 +157,11 @@ describe('resolve: PlayCardAction with Target Selection and Damage', () => {
         card: { instanceId: 'test-card-1', definitionId: 'test-damage-card', suit: 'spade', rank: 5 },
         targets: [{ kind: 'seat', seatId: 'seat-b' }],
       },
+      // A used non-equipment card leaves the hand before its effects resolve.
+      {
+        kind: 'CardMovedEvent', cardInstanceId: 'test-card-1', fromZoneId: 'seat-a:hand', toZoneId: 'discardPile',
+        card: { instanceId: 'test-card-1', definitionId: 'test-damage-card', suit: 'spade', rank: 5 },
+      },
       {
         kind: 'DamageDealtEvent',
         damage: {
@@ -166,11 +171,6 @@ describe('resolve: PlayCardAction with Target Selection and Damage', () => {
           nature: 'normal',
           cause: { cardInstanceId: 'test-card-1' },
         },
-      },
-      // non-equipment cards are discarded after play() resolves (Task 21b)
-      {
-        kind: 'CardMovedEvent', cardInstanceId: 'test-card-1', fromZoneId: 'seat-a:hand', toZoneId: 'discardPile',
-        card: { instanceId: 'test-card-1', definitionId: 'test-damage-card', suit: 'spade', rank: 5 },
       },
     ]);
   });
@@ -501,7 +501,7 @@ describe('resolve: Response Window pause and resume', () => {
   });
 });
 
-describe('resolve: trigger recursion depth guard', () => {
+describe('resolve: step budget', () => {
   // Two fixture triggers that each produce an effect the other reacts to:
   // HealEvent -> DamageEffect -> DamageDealtEvent -> HealEffect -> ...
   function registryWithCyclicTriggers(): ContentRegistry {
@@ -600,8 +600,8 @@ describe('resolve: trigger recursion depth guard', () => {
     }
     expect(thrown).toBeInstanceOf(Error);
     const message = (thrown as Error).message;
-    expect(message).toMatch(/Trigger recursion limit exceeded/);
-    expect(message).toMatch(new RegExp(String(MAX_TRIGGER_DEPTH)));
+    expect(message).toMatch(/Resolution step budget exceeded/);
+    expect(message).toMatch(new RegExp(String(MAX_RESOLUTION_STEPS)));
     expect(message).toMatch(/DamageEffect|HealEffect/);
     expect(message).toMatch(/trigger cycle/);
   });
