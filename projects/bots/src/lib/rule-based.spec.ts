@@ -1,4 +1,4 @@
-import type { Action, CardDefinition, CardZone, DecisionReason, EquipSlot, PendingChoice, PendingSelection, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
+import type { Action, CardDefinition, CardZone, DecisionReason, EquipSlot, PendingArrangement, PendingChoice, PendingSelection, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
 import { ruleBasedPolicy } from './rule-based';
 import { MAX_BOT_ACTIONS_PER_TURN } from './policy';
 
@@ -497,5 +497,53 @@ describe('Serpent Spear', () => {
     const cheap = [{ instanceId: 'x1', definitionId: 'duel' }, { instanceId: 'x2', definitionId: 'wuxie' }];
     const at = (seatId: string): Action => ({ kind: 'UseConversionAction', seatId: 'seat-0', via, targets: [{ kind: 'seat', seatId }] });
     expect(ruleBasedPolicy.decide(view({ hand: cheap }), 'seat-0', [end, at('seat-1'), at('seat-2')], registry, null).action).toEqual(at('seat-2'));
+  });
+});
+
+describe('reveal to use', () => {
+  // An ask from the bot's own hidden Main General. 'eight-trigrams' is an id the bot always wants to use.
+  const revealAsk: PendingChoice = {
+    id: 'ask', seatId: 'seat-0', verb: 'use',
+    reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'eight-trigrams' }, abilityId: 'eight-trigrams' },
+    options: [{ id: 'use', shows: { kind: 'use', reveals: 'main' }, effects: [] }, { id: 'decline', shows: { kind: 'decline' }, effects: [] }],
+  };
+  const asked: Action[] = ['use', 'decline'].map((optionId) => ({ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'ask', optionId }));
+  const answer = (me: Seat) => {
+    const action = ruleBasedPolicy.decide(view({ seats: [me, seat('seat-1', 1, 'hidden', 6)], pendingChoice: revealAsk }), 'seat-0', asked, registry, null).action;
+    return action.kind === 'ChooseOptionAction' ? action.optionId : action.kind;
+  };
+
+  it('reveals with 4 HP or more', () => {
+    expect(answer(seat('seat-0', 0, 'Wei', 4))).toBe('use');
+  });
+
+  it('keeps hidden below 4 HP while both Generals are hidden', () => {
+    expect(answer(seat('seat-0', 0, 'Wei', 3))).toBe('decline');
+  });
+
+  it('reveals below 4 HP once its kingdom is known (a General already revealed)', () => {
+    const shown = seat('seat-0', 0, 'Wei', 3);
+    expect(answer({ ...shown, generals: { ...shown.generals!, deputy: { ...shown.generals!.deputy, revealed: true } } })).toBe('use');
+  });
+});
+
+describe('arranging the draw pile', () => {
+  it('keeps Peach, Shan and Sha on top and sends the rest to the bottom', () => {
+    const arrangement: PendingArrangement = {
+      id: 'arr', seatId: 'seat-0', cardInstanceIds: ['a1', 'a2', 'a3', 'a4'],
+      reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'astrology' }, abilityId: 'astrology' },
+    };
+    const pile: CardZone = {
+      id: 'drawPile', kind: 'drawPile',
+      cards: [
+        { instanceId: 'a1', definitionId: 'duel', suit: 'spade', rank: 1 },
+        { instanceId: 'a2', definitionId: 'shan', suit: 'heart', rank: 2 },
+        { instanceId: 'a3', definitionId: 'lion', suit: 'club', rank: 3 },
+        { instanceId: 'a4', definitionId: 'peach', suit: 'heart', rank: 4 },
+      ],
+    };
+    const template: Action = { kind: 'ArrangeCardsAction', seatId: 'seat-0', arrangementId: 'arr', top: [], bottom: [] };
+    const s = { ...view({ zones: [pile] }), pendingArrangement: arrangement };
+    expect(ruleBasedPolicy.decide(s, 'seat-0', [template], registry, null).action).toEqual({ ...template, top: ['a2', 'a4'], bottom: ['a1', 'a3'] });
   });
 });

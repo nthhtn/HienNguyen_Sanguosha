@@ -1,4 +1,4 @@
-import { phaseWaitsForPlayer } from 'engine';
+import { decisionPending as isDecisionPending, phaseWaitsForPlayer } from 'engine';
 import type { ContentRegistry, GameState } from 'engine';
 
 export function checkInvariants(state: GameState, registry?: ContentRegistry): string[] {
@@ -32,6 +32,11 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
     const seat = state.seats.find((s) => s.id === state.pendingSelection!.seatId);
     if (!seat) violations.push(`pendingSelection references unknown seat ${state.pendingSelection.seatId}`);
     else if (seat.eliminated) violations.push(`pendingSelection references eliminated seat ${seat.id}`);
+  }
+  if (state.pendingArrangement) {
+    const seat = state.seats.find((s) => s.id === state.pendingArrangement!.seatId);
+    if (!seat) violations.push(`pendingArrangement references unknown seat ${state.pendingArrangement.seatId}`);
+    else if (seat.eliminated) violations.push(`pendingArrangement references eliminated seat ${seat.id}`);
   }
 
   // Card conservation (partial): a CardInstance is a unique physical card, so
@@ -132,7 +137,7 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
 
 // Between actions the engine must only ever rest where someone has to decide.
 export function checkRestingState(state: GameState): string[] {
-  const decisionPending = !!state.pendingResponse || !!state.pendingChoice || !!state.pendingSelection;
+  const decisionPending = isDecisionPending(state);
   const queued = state.resolutionQueue?.length ?? 0;
   if (!state.result && !decisionPending && queued > 0) {
     return [`Game is resting with ${queued} item(s) still queued and no decision pending`];
