@@ -220,6 +220,9 @@ export interface CardZone {
   kind: 'hand' | 'equip' | 'drawPile' | 'discardPile' | 'judgment' | 'processing';
   ownerSeatId?: string;
   cards: CardInstance[];
+  // Cards here that count as another card than their own (a diamond placed as
+  // Capture), by instance id. Forgotten when the card leaves. Absent when none.
+  countsAs?: Record<string, string>;
 }
 
 export interface CardInstance {

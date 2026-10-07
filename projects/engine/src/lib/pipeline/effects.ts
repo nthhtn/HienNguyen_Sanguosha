@@ -1,7 +1,7 @@
 import { AbilityOwner, GeneralOwner, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
-import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
+import { drawTop, moveCard, recordCountsAs, requireZoneOfKind } from '../cards/zones';
 import { EngineEvent } from './events';
 import { isFaceUpZoneKind } from '../domain/redact';
 
@@ -25,7 +25,9 @@ export type Effect =
   | { kind: 'HealEffect'; target: Target; amount: number }
   // `onlyFrom`: move it only if it is still in that zone (a judged card a
   // reader already moved on).
-  | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string; onlyFrom?: string }
+  // `countsAs`: the card counts as that card where it lands (a Tool placed
+  // through a conversion).
+  | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string; onlyFrom?: string; countsAs?: string }
   | { kind: 'EliminateSeatEffect'; seatId: string }
   // The dying round for `seatId`: ask the seats in `order` (turn order from the
   // turn owner) one at a time. Any seat may save it with `rescueCardIds.any`
@@ -161,9 +163,10 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     case 'MoveCardEffect': {
       const origin = state.zones.find((z) => z.cards.some((c) => c.instanceId === effect.cardInstanceId));
       if (effect.onlyFrom && origin?.id !== effect.onlyFrom) return { state, events: [] };
-      const zones = moveCard(state.zones, effect.cardInstanceId, effect.toZoneId);
+      const moved = moveCard(state.zones, effect.cardInstanceId, effect.toZoneId);
+      const card = moved.find((z) => z.id === effect.toZoneId)!.cards.at(-1)!;
+      const zones = recordCountsAs(moved, origin!.id, effect.toZoneId, card, effect.countsAs);
       const destination = zones.find((z) => z.id === effect.toZoneId)!;
-      const card = destination.cards.at(-1)!;
       const event: EngineEvent = {
         kind: 'CardMovedEvent',
         cardInstanceId: effect.cardInstanceId,
@@ -295,7 +298,10 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
 // One step of the dying round. Saved once above 0 HP; otherwise ask the next
 // seat in `order` that must be asked — the dying seat always, any other seat
 // only while it holds a rescue card; eliminated when no one is left to ask.
-function applyDying(state: GameState, effect: Extract<Effect, { kind: 'DyingEffect' }>): ApplyResult {
+// `mayRescue`: whether a seat with no rescue card in hand could still answer
+// with one (a conversion into a Peach); the pipeline supplies it, since it
+// needs the registry.
+export function applyDying(state: GameState, effect: Extract<Effect, { kind: 'DyingEffect' }>, mayRescue?: (seatId: string) => boolean): ApplyResult {
   const seat = state.seats.find((s) => s.id === effect.seatId);
   if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
   if (seat.eliminated) return { state, events: [] };
@@ -311,7 +317,7 @@ function applyDying(state: GameState, effect: Extract<Effect, { kind: 'DyingEffe
   const holdsRescue = (seatId: string) => {
     const s = state.seats.find((x) => x.id === seatId);
     const hand = s && state.zones.find((z) => z.id === s.hand.zoneId);
-    return !!hand?.cards.some((c) => effect.rescueCardIds.any.includes(c.definitionId));
+    return !!hand?.cards.some((c) => effect.rescueCardIds.any.includes(c.definitionId)) || !!mayRescue?.(seatId);
   };
   const isLiving = (seatId: string) => !!state.seats.find((x) => x.id === seatId && !x.eliminated);
   const index = effect.order.findIndex((id) => isLiving(id) && (id === seat.id || holdsRescue(id)));

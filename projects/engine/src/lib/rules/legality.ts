@@ -1,4 +1,4 @@
-import { AbilityOwner, GameState, Target } from '../domain/types';
+import { AbilityOwner, CardInstance, GameState, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
 import { ContentRegistry, Conversion } from '../registry/types';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
@@ -163,25 +163,48 @@ export function conversionsOf(state: GameState, seatId: string, registry: Conten
   return [...fromSkills, ...fromCards];
 }
 
+// The cards `seatId` could use for `conversion`: its hand, then its worn
+// equipment when the conversion allows, that the conversion accepts.
+export function conversionCards(state: GameState, seatId: string, conversion: Conversion): CardInstance[] {
+  const seat = state.seats.find((s) => s.id === seatId);
+  if (!seat) return [];
+  const cardsIn = (zoneId: string) => state.zones.find((z) => z.id === zoneId)?.cards ?? [];
+  const pool = [...cardsIn(seat.hand.zoneId), ...(conversion.from === 'hand-and-equipment' ? cardsIn(seat.equipped.zoneId) : [])];
+  return conversion.accepts ? pool.filter((c) => conversion.accepts!(c)) : pool;
+}
+
+// Whether `owned` can be used now: enough cards, and not barred by whose turn it is.
+function usableNow(state: GameState, seatId: string, owned: OwnedConversion): boolean {
+  if (owned.conversion.outsideOwnTurnOnly && state.turn.ownerSeatId === seatId) return false;
+  return conversionCards(state, seatId, owned.conversion).length >= owned.conversion.cards;
+}
+
+// The conversions `seatId` could answer with, in a window that allows
+// `allowedCardIds` (absent: any card).
+export function answeringConversions(state: GameState, seatId: string, allowedCardIds: string[] | undefined, registry: ContentRegistry): OwnedConversion[] {
+  return conversionsOf(state, seatId, registry).filter(
+    (o) => o.conversion.when !== 'play' && (!allowedCardIds || allowedCardIds.includes(o.conversion.as)) && usableNow(state, seatId, o)
+  );
+}
+
 // The conversions `seatId` may use now. In its Play Phase: one per legal target
 // list of the card made. Answering a window that allows the card made: one
-// each. Either way the seat must hold enough hand cards.
+// each. Either way the seat must hold enough cards the conversion accepts, and
+// a conversion only for outside its owner's turn isn't offered on that turn.
 export function conversionActions(state: GameState, seatId: string, registry: ContentRegistry): UseConversion[] {
   const seat = state.seats.find((s) => s.id === seatId);
   if (!seat || state.pendingChoice || state.pendingSelection || state.pendingArrangement) return [];
-  const handSize = state.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
-  const usable = conversionsOf(state, seatId, registry).filter((o) => handSize >= o.conversion.cards);
   const via = (o: OwnedConversion) => ({ owner: o.owner, conversionId: o.conversion.id });
   const pending = state.pendingResponse;
   if (pending) {
     if (pending.respondingSeatId !== seatId || !pending.allowedActionKinds.includes('RespondAction')) return [];
-    return usable
-      .filter((o) => o.conversion.when !== 'play' && (!pending.allowedCardIds || pending.allowedCardIds.includes(o.conversion.as)))
-      .map((o) => ({ kind: 'UseConversionAction', seatId, via: via(o), targets: [], pendingResponseId: pending.id }));
+    return answeringConversions(state, seatId, pending.allowedCardIds, registry).map((o): UseConversion => ({
+      kind: 'UseConversionAction', seatId, via: via(o), targets: [], pendingResponseId: pending.id,
+    }));
   }
   if (state.phase !== 'Play' || state.turn.ownerSeatId !== seatId) return [];
-  return usable
-    .filter((o) => o.conversion.when !== 'respond')
+  return conversionsOf(state, seatId, registry)
+    .filter((o) => o.conversion.when !== 'respond' && usableNow(state, seatId, o))
     .flatMap((o) =>
       legalTargetListsFor(state, seatId, '', o.conversion.as, registry).map((targets): UseConversion => ({ kind: 'UseConversionAction', seatId, via: via(o), targets }))
     );

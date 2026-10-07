@@ -3,14 +3,14 @@ import { usedCardFrom, usedCardOf } from '../domain/usedCard';
 import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
-import { Effect, applyEffect } from './effects';
+import { Effect, applyDying, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer } from '../rules/phaseSequence';
-import { activeSkillActions, conversionActions, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
+import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { ArrangementMadeEvent, CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
@@ -201,7 +201,9 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
         ? applyCardStep(state, current, ctx.registry)
         : current.kind === 'SkillStepEffect'
           ? applySkillStep(state, current, ctx.registry)
-          : applyEffect(state, current);
+          : current.kind === 'DyingEffect'
+            ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry).length > 0)
+            : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
   return { state: queueFront(applied.state, [...followUps, ...rewritten.after]), events: applied.events };
 }
@@ -295,7 +297,9 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
     seatId === counted.turn.ownerSeatId ? { ...counted, turn: { ...counted.turn, ownerUses: { ...ownerUses, [used.as]: (ownerUses[used.as] ?? 0) + 1 } } } : counted;
   // A used card leaves the hand at once, so it can't be reused mid-resolution.
   // Equipment and delayed Tools played as themselves are placed by their own play().
-  const placesItself = !pending && !used.via && (definition.category === 'equipment' || !!definition.delayed);
+  // Equipment and delayed Tools played (not answered) place their own card,
+  // a converted delayed Tool included (it lies there as what it was used as).
+  const placesItself = !pending && (definition.category === 'equipment' || !!definition.delayed);
   const discardPileId = requireZoneOfKind(state.zones, 'discardPile').id;
   const leaveHand: Effect[] = placesItself
     ? []
@@ -538,14 +542,12 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const owned = conversionsOf(state, action.seatId, ctx.registry).find(
         (o) => o.conversion.id === action.via.conversionId && sameAbilityOwner(o.owner, action.via.owner)
       )!;
-      const seat = state.seats.find((s) => s.id === action.seatId)!;
-      const hand = state.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [];
       const selection: PendingSelection = {
         id: `convert-${owned.conversion.id}-${action.seatId}-${state.log.length}`,
         seatId: action.seatId,
         reason: { kind: 'ability', owner: owned.owner, abilityId: owned.abilityId },
         of: 'cards',
-        eligibleIds: hand.map((c) => c.instanceId),
+        eligibleIds: conversionCards(state, action.seatId, owned.conversion).map((c) => c.instanceId),
         min: owned.conversion.cards,
         max: owned.conversion.cards,
         then: {

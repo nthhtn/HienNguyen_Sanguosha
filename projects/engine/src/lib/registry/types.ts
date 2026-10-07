@@ -135,16 +135,23 @@ export interface AbilityModifiers {
   untargetableBy?: string[];
 }
 
-// Using hand cards as another card (Serpent Spear: 2 hand cards as a Sha).
+// Using cards as another card (Serpent Spear: 2 hand cards as a Sha; Fighting
+// Saint: a red card as a Sha).
 export interface Conversion {
   // Unique among its owner's conversions.
   id: string;
   // The card the picked cards count as.
   as: string;
-  // How many hand cards it takes. (1-card conversions come with stage 7.)
-  cards: 2;
+  // How many cards it takes.
+  cards: 1 | 2;
+  // Where they come from: the hand (default), or the hand and worn equipment.
+  from?: 'hand' | 'hand-and-equipment';
+  // Which cards may be used; absent = any.
+  accepts?(card: CardInstance): boolean;
   // 'play': proactively in your Play Phase; 'respond': to answer a window.
   when: 'play' | 'respond' | 'both';
+  // Only while it is not its owner's turn (First Aid).
+  outsideOwnTurnOnly?: boolean;
 }
 
 // What a card does while worn.
