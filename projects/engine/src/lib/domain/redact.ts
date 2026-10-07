@@ -1,4 +1,4 @@
-import { CardInstance, CardZone, GameState, GeneralSelectionState, Seat, SeatGenerals } from './types';
+import { CardInstance, CardZone, GameState, GeneralOwner, GeneralSelectionState, PendingSelection, Seat, SeatGenerals } from './types';
 
 const HIDDEN_GENERAL_ID = 'hidden';
 const HIDDEN_CARD_DEFINITION_ID = 'hidden';
@@ -49,6 +49,46 @@ function maskHiddenCards<T>(value: T, hidden: ReadonlySet<string>): T {
   return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, maskHiddenCards(v, hidden)])) as T;
 }
 
+// The skill ids of another seat's hidden Generals that `value` mentions (a
+// GeneralOwner whose slot is still hidden): the viewer mustn't learn them.
+function hiddenSkillIds(value: unknown, state: GameState, viewerSeatId: string, found = new Set<string>()): Set<string> {
+  if (Array.isArray(value)) value.forEach((v) => hiddenSkillIds(v, state, viewerSeatId, found));
+  else if (value !== null && typeof value === 'object') {
+    const v = value as Partial<GeneralOwner>;
+    if (v.kind === 'general' && typeof v.seatId === 'string' && (v.slot === 'main' || v.slot === 'deputy') && typeof v.skillId === 'string' && v.seatId !== viewerSeatId) {
+      const general = state.seats.find((s) => s.id === v.seatId)?.generals?.[v.slot];
+      if (general && !general.revealed) found.add(v.skillId);
+    }
+    Object.values(value).forEach((x) => hiddenSkillIds(x, state, viewerSeatId, found));
+  }
+  return found;
+}
+
+const SKILL_ID_KEYS = new Set(['skillId', 'abilityId', 'forAbilityId', 'conversionId']);
+
+// `value` with every mention of `skills` (as a skill, ability or conversion id) replaced by 'hidden'.
+function maskSkills<T>(value: T, skills: ReadonlySet<string>): T {
+  if (skills.size === 0) return value;
+  if (Array.isArray(value)) return value.map((v) => maskSkills(v, skills)) as T;
+  if (value === null || typeof value !== 'object') return value;
+  // A conversion of a hidden owner (UsedCard.via) names it by its own id.
+  const owner = (value as { owner?: Partial<GeneralOwner> }).owner;
+  const hiddenOwner = owner?.kind === 'general' && typeof owner.skillId === 'string' && skills.has(owner.skillId);
+  return Object.fromEntries(
+    Object.entries(value).map(([k, v]) => [
+      k,
+      typeof v === 'string' && ((SKILL_ID_KEYS.has(k) && skills.has(v)) || (hiddenOwner && k === 'conversionId')) ? HIDDEN_GENERAL_ID : maskSkills(v, skills),
+    ])
+  ) as T;
+}
+
+// A pending selection as the viewer may see it: hidden cards masked, and no
+// eligible id of a card it can't see (which cards a skill accepts would tell).
+function redactPendingSelection(selection: PendingSelection, hidden: ReadonlySet<string>): PendingSelection {
+  const masked = maskHiddenCards(selection, hidden);
+  return { ...masked, eligibleIds: masked.eligibleIds.filter((id) => !hidden.has(id)) };
+}
+
 function isKingdomRevealed(generals: SeatGenerals): boolean {
   return generals.main.revealed || generals.deputy.revealed;
 }
@@ -81,14 +121,17 @@ function redactSelection(selection: GeneralSelectionState | null, viewerSeatId: 
 export function redactStateForSeat(state: GameState, viewerSeatId: string): GameState {
   const shown = shownToViewer(state, viewerSeatId);
   const hidden = hiddenInstanceIds(state, viewerSeatId, shown);
+  // Another seat's hidden General's skills, named in what it is deciding or what is queued.
+  const skills = hiddenSkillIds([state.pendingResponse, state.pendingChoice, state.pendingSelection, state.pendingArrangement, state.resolutionQueue], state, viewerSeatId);
   return {
     ...state,
     seats: state.seats.map((seat) => redactSeat(seat, viewerSeatId)),
     zones: state.zones.map((zone) => redactZone(zone, viewerSeatId, shown)),
     generalSelection: redactSelection(state.generalSelection, viewerSeatId),
-    pendingResponse: maskHiddenCards(state.pendingResponse, hidden),
-    ...(state.pendingChoice ? { pendingChoice: maskHiddenCards(state.pendingChoice, hidden) } : {}),
-    ...(state.pendingSelection ? { pendingSelection: maskHiddenCards(state.pendingSelection, hidden) } : {}),
-    ...(state.resolutionQueue ? { resolutionQueue: maskHiddenCards(state.resolutionQueue, hidden) } : {}),
+    pendingResponse: maskSkills(maskHiddenCards(state.pendingResponse, hidden), skills),
+    ...(state.pendingChoice ? { pendingChoice: maskSkills(maskHiddenCards(state.pendingChoice, hidden), skills) } : {}),
+    ...(state.pendingSelection ? { pendingSelection: maskSkills(redactPendingSelection(state.pendingSelection, hidden), skills) } : {}),
+    ...(state.pendingArrangement ? { pendingArrangement: maskSkills(state.pendingArrangement, skills) } : {}),
+    ...(state.resolutionQueue ? { resolutionQueue: maskSkills(maskHiddenCards(state.resolutionQueue, hidden), skills) } : {}),
   };
 }
