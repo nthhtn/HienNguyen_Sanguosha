@@ -1,8 +1,15 @@
-import type { CardInstance, CardMovedEvent, PhaseChangedEvent, SkillDefinition } from 'engine';
+import type { CardInstance, CardMovedEvent, ContentRegistry, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition } from 'engine';
 import { cardsOverHandLimit, colourOf, skipFlagOf } from 'engine';
 import type { GeneralSkillSet } from './types';
-import { handOf } from '../shared/queries';
-import { ask, atDrawPhase, draw, equipZoneId, handZoneId, on, used } from '../shared/skills';
+import { attackRange, handOf, seatDistance } from '../shared/queries';
+import { untargetableBy } from '../shared/abilities';
+import { seatGender } from '../shared/gender';
+import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
+import { shaStep } from '../cards/sha';
+import {
+  ask, atDrawPhase, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, isHurt, isLiving, lastMoveBetween, on,
+  otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillDamage, skillStep, used,
+} from '../shared/skills';
 
 // The Wu base Generals' skills (General Skills spec, "Wu"). Every skill acts
 // for the `owner` the engine passes in, never by searching for its General.
@@ -75,11 +82,161 @@ export const selfRestraint: SkillDefinition = {
   ],
 };
 
+// The state as if `cardInstanceId` were gone (to work out range after a discard).
+const without = (state: GameState, cardInstanceId: string): GameState => ({
+  ...state,
+  zones: state.zones.map((z) => ({ ...z, cards: z.cards.filter((c) => c.instanceId !== cardInstanceId) })),
+});
+
+// Where Da Qiao could move the Sha: other living seats in her attack range,
+// not its user, that a Sha may target.
+function displaceTargets(state: GameState, step: CardStep, ownerSeatId: string, registry: ContentRegistry): string[] {
+  const range = attackRange(state, ownerSeatId, registry);
+  return otherLivingSeatIds(state, ownerSeatId).filter(
+    (id) => id !== step.userSeatId && seatDistance(state, ownerSeatId, id, registry) <= range && !untargetableBy(state, id, 'sha', registry)
+  );
+}
+
+// The cards she could discard that still leave a seat to move the Sha to.
+const spareCards = (state: GameState, step: CardStep, ownerSeatId: string, registry: ContentRegistry) =>
+  ownCards(state, ownerSeatId, true)
+    .filter((c) => displaceTargets(without(state, c.instanceId), step, ownerSeatId, registry).length > 0)
+    .map((c) => c.instanceId);
+
+// Displace (may): when a Sha targets you, you may discard 1 card to move it
+// onto another living seat within your attack range (worked out after the
+// discard), not its user. It goes on against that seat from its armour check.
+export const displace: SkillDefinition = {
+  id: 'displace',
+  triggers: [
+    atStep(['sha-targeted'], {
+      condition: (state, step, owner, registry) => owner.kind === 'general' && step.target.seatId === owner.seatId && spareCards(state, step, owner.seatId, registry).length > 0,
+      effect: (state, step, owner, registry) => {
+        const general = owner as GeneralOwner;
+        const passed = actedOn(step, owner);
+        const pick = selectionOf(state, general, {
+          of: 'cards', eligibleIds: spareCards(state, step, owner.seatId, registry), min: 1, max: 1,
+          then: { kind: 'skill-step', step: skillStep(general, 'discarded', { step: passed }) },
+          onCancel: [passed], targetSeatId: step.userSeatId,
+        });
+        return [askAtStep(owner, 'displace', step, [pick], step.userSeatId)];
+      },
+    }),
+  ],
+  onStep: (state, s, registry) => {
+    const step = s.data?.['step'] as CardStep;
+    if (s.step === 'discarded') return [...discardMoves(state, (s.data?.['picked'] as string[]) ?? []), skillStep(s.owner, 'move', { step })];
+    const targets = displaceTargets(state, step, s.owner.seatId, registry);
+    if (targets.length === 0) return [step];
+    const options = seatOptions(targets, (seatId) => [used(s.owner, 'moved', seatId), { ...shaStep(step, 'sha-armor'), target: { kind: 'seat', seatId } }]);
+    return [choiceOf(state, s.owner, { verb: 'pick', options, targetSeatId: step.userSeatId })];
+  },
+};
+
+// Battered Body (active, any number of times): lose 1 HP, then draw 2. If that
+// leaves you dying, the dying round comes first; you draw only if you survive.
+export const batteredBody: SkillDefinition = {
+  id: 'battered-body',
+  active: {
+    canUse: (state, { seatId }) => isLiving(state, seatId),
+    start: (_state, { seatId, owner }) => [{ kind: 'LoseHpEffect', seatId, amount: 1, abilityId: owner.skillId }, skillStep(owner, 'draw')],
+  },
+  onStep: (state, step) => (isLiving(state, step.owner.seatId) ? [draw(step.owner.seatId, 2)] : []),
+};
+
+// Reconsider (active, once per turn): discard any number of cards (at least 1)
+// from your hand or equipment, then draw that many.
+export const reconsider: SkillDefinition = {
+  id: 'reconsider',
+  active: {
+    usesPerTurn: 1,
+    canUse: (state, { seatId }) => ownCards(state, seatId, true).length > 0,
+    start: (state, { seatId, owner }) => {
+      const cards = ownCards(state, seatId, true).map((c) => c.instanceId);
+      return [selectionOf(state, owner, { of: 'cards', eligibleIds: cards, min: 1, max: cards.length, then: { kind: 'skill-step', step: skillStep(owner, 'discarded') }, onCancel: [] })];
+    },
+  },
+  onStep: (state, step) => {
+    const picked = (step.data?.['picked'] as string[]) ?? [];
+    return [...discardMoves(state, picked), draw(step.owner.seatId, picked.length)];
+  },
+};
+
+// Rescued: a Lord skill, inactive in Kingdom War.
+export const rescued: SkillDefinition = { id: 'rescued', lord: true };
+
+// Other living male seats below their max HP.
+const hurtMales = (state: GameState, seatId: string, registry: ContentRegistry) =>
+  otherLivingSeatIds(state, seatId).filter((id) => isHurt(state, id) && seatGender(state, id, registry) === 'male');
+
+// Marriage (active, once per turn): discard 2 hand cards and choose a male seat
+// below its max HP; you and that seat each recover 1 HP.
+export const marriage: SkillDefinition = {
+  id: 'marriage',
+  active: {
+    usesPerTurn: 1,
+    canUse: (state, { seatId }, registry) => handOf(state, seatId).length >= 2 && hurtMales(state, seatId, registry).length > 0,
+    start: (state, { seatId, owner }) => [
+      selectionOf(state, owner, { of: 'cards', eligibleIds: handOf(state, seatId).map((c) => c.instanceId), min: 2, max: 2, then: { kind: 'skill-step', step: skillStep(owner, 'discarded') }, onCancel: [] }),
+    ],
+  },
+  onStep: (state, step, registry) => {
+    const { owner } = step;
+    if (step.step === 'discarded') return [...discardMoves(state, (step.data?.['picked'] as string[]) ?? []), skillStep(owner, 'pick')];
+    const seats = hurtMales(state, owner.seatId, registry);
+    return seats.length > 0 ? [choiceOf(state, owner, { verb: 'pick', options: seatOptions(seats, (id) => [heal(owner.seatId), heal(id)]) })] : [];
+  },
+};
+
+const SUITS: CardInstance['suit'][] = ['spade', 'heart', 'club', 'diamond'];
+
+// Sow Revolt (active, once per turn, needs a hand card): choose another seat.
+// It names a suit, then takes 1 of your hand cards at random, shown to all,
+// into its hand. If the card's suit isn't the one it named, it takes 1 damage
+// from you.
+export const sowRevolt: SkillDefinition = {
+  id: 'sow-revolt',
+  active: {
+    usesPerTurn: 1,
+    canUse: (state, { seatId }) => handOf(state, seatId).length > 0 && otherLivingSeatIds(state, seatId).length > 0,
+    start: (state, { seatId, owner }) => [
+      selectionOf(state, owner, { of: 'seats', eligibleIds: otherLivingSeatIds(state, seatId), min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'chosen') }, onCancel: [] }),
+    ],
+  },
+  onStep: (state, step) => {
+    const { owner } = step;
+    const data = step.data ?? {};
+    switch (step.step) {
+      case 'chosen': {
+        const target = (data['picked'] as string[])[0];
+        const options = SUITS.map((suit) => ({ id: suit, shows: { kind: 'suit' as const, suit }, effects: [skillStep(owner, 'named', { target, suit })] }));
+        return [choiceOf(state, owner, { seatId: target, targetSeatId: target, verb: 'pick', options })];
+      }
+      case 'named': {
+        const target = data['target'] as string;
+        if (!isLiving(state, target) || handOf(state, owner.seatId).length === 0) return [];
+        return [{ kind: 'MoveRandomCardEffect', fromZoneId: handZoneId(state, owner.seatId), toZoneId: handZoneId(state, target) }, skillStep(owner, 'taken', data)];
+      }
+      default: {
+        // 'taken': show it, and the damage on a wrong suit.
+        const target = data['target'] as string;
+        const takenId = lastMoveBetween(state, handZoneId(state, owner.seatId), handZoneId(state, target));
+        const taken = handOf(state, target).find((c) => c.instanceId === takenId);
+        if (!taken) return [];
+        const show = { kind: 'ShowCardEffect' as const, seatId: target, cardInstanceId: taken.instanceId, abilityId: owner.skillId };
+        return taken.suit !== data['suit'] && isLiving(state, target) ? [show, skillDamage(owner, target)] : [show];
+      }
+    }
+  },
+};
+
 export const WU_GENERALS: GeneralSkillSet[] = [
-  { id: 'da-qiao', skills: [countryScene] },
+  { id: 'da-qiao', skills: [countryScene, displace] },
   { id: 'gan-ning', skills: [surprise] },
+  { id: 'huang-gai', skills: [batteredBody] },
   { id: 'lu-meng', skills: [selfRestraint] },
   { id: 'lu-xun', skills: [humility, linkedCamps] },
-  { id: 'sun-shangxiang', skills: [armedConsorts] },
-  { id: 'zhou-yu', skills: [braveGesture] },
+  { id: 'sun-quan', skills: [reconsider, rescued] },
+  { id: 'sun-shangxiang', skills: [marriage, armedConsorts] },
+  { id: 'zhou-yu', skills: [braveGesture, sowRevolt] },
 ];
