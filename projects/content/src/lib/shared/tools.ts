@@ -1,16 +1,13 @@
-import type { Effect, GameState, Target } from 'engine';
-import { livingSeatOrderFrom, usedCardOf } from 'engine';
+import type { Effect, GameState, Target, UsedCard } from 'engine';
+import { livingSeatOrderFrom } from 'engine';
 
 // The cards that cancel a Tool in a Wuxie check.
 export const COUNTER_CARD_IDS = ['wuxie'];
 
-// One ToolOnTargetEffect per target, in the order given, for the Tool card
-// `cardInstanceId` that `userSeatId` is playing. `extra` rides along with each
-// (Coerce's victim).
-export function toolOnTargets(state: GameState, userSeatId: string, cardInstanceId: string, targets: Target[], extra?: Target[]): Effect[] {
-  const card = state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === cardInstanceId);
-  if (!card) throw new Error(`Tool card ${cardInstanceId} is in no zone`);
-  const tool = usedCardOf(card);
+// One ToolOnTargetEffect per target, in the order given, for `tool` (the Tool
+// card as `userSeatId` uses it: itself, a conversion's card, or a skill's card
+// with no physical card). `extra` rides along with each (Coerce's victim).
+export function toolOnTargets(tool: UsedCard, userSeatId: string, targets: Target[], extra?: Target[]): Effect[] {
   return targets.map((target) => ({ kind: 'ToolOnTargetEffect', tool, userSeatId, target, ...(extra ? { extra } : {}), counterCardIds: COUNTER_CARD_IDS }));
 }
 

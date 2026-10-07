@@ -133,6 +133,14 @@ export interface AbilityModifiers {
   ignoresArmor?: boolean;
   // Card ids that can't target the wearer (Wood Armor: Barbarians, Hail of Arrows).
   untargetableBy?: string[];
+  // Added to the owner's distance to every other seat (Horsemanship: -1); never below 1.
+  distanceToOthers?: number;
+  // The owner's Tools ignore distance (Wondrous Talent: Steal, Starvation).
+  toolsIgnoreDistance?: boolean;
+  // Card ids that can't target the owner while its hand is empty (Empty City: Sha, Duel).
+  untargetableWithEmptyHandBy?: string[];
+  // The owner's Sha needs two Shan, and in a Duel with it the other seat plays two Sha each time (Matchless).
+  doubleAnswers?: boolean;
 }
 
 // Using cards as another card (Serpent Spear: 2 hand cards as a Sha; Fighting

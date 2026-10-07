@@ -42,7 +42,7 @@ function massAttack(id: string, name: string, answerCardId: string, step?: strin
     name,
     category: 'tool',
     legalPlayTargets: (state, ctx, registry) => (targetsOf(state, ctx.seatId, registry).length > 0 ? [[]] : []),
-    play: (state, ctx, registry) => (ctx.respondingTo ? [] : toolOnTargets(state, ctx.seatId, ctx.cardInstanceId, targetsOf(state, ctx.seatId, registry))),
+    play: (state, ctx, registry) => (ctx.respondingTo ? [] : toolOnTargets(ctx.card, ctx.seatId, targetsOf(state, ctx.seatId, registry))),
     onTarget: (_state, { tool, userSeatId, target }) =>
       step ? [cardStep(step, tool, userSeatId, target, { needed: 1, provided: 0 })] : [window(tool, userSeatId, target)],
     ...(step

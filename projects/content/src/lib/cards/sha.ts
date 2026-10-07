@@ -2,26 +2,31 @@ import type { CardDefinition, Effect, GameState, Target, UsedCard } from 'engine
 import { livingSeatOrderFrom, usedCardKey } from 'engine';
 import { attackRange, otherLivingSeatTargets, seatDistance, shaLimit } from '../shared/queries';
 import { CardStep, cardStep } from '../shared/steps';
+import { answersNeededAgainst, untargetableBy } from '../shared/abilities';
 import { WINE_FLAG } from './wine';
 
 // What a Sha's steps carry. `extra`: damage added to a hit (Wine, Ancient
 // Scimitar). `lastHandCard`: played as its user's last hand card (Sky
 // Scorcher). `picked`: extra targets chosen at 'sha-use'. `needed`/`provided`:
-// Shan asked for and given so far. `acted`: abilities that had their say.
+// Shan asked for and given so far. `unblockable`: no Shan is asked for (Iron
+// Cavalry). `acted`: abilities that had their say.
 export interface ShaStepData {
   extra?: number;
   lastHandCard?: boolean;
   picked?: string[];
   needed?: number;
   provided?: number;
+  unblockable?: boolean;
   acted?: string[];
 }
 
 export const shaData = (step: CardStep) => (step.data ?? {}) as ShaStepData;
 
-// The next step of the same Sha at the same target, keeping its extra damage.
+// The next step of the same Sha at the same target, keeping its extra damage
+// and whether it can be dodged.
 export function shaStep(from: CardStep, step: string, more: ShaStepData = {}): CardStep {
-  return cardStep(step, from.card, from.userSeatId, from.target, { extra: shaData(from).extra ?? 0, ...more });
+  const { extra = 0, unblockable } = shaData(from);
+  return cardStep(step, from.card, from.userSeatId, from.target, { extra, ...(unblockable ? { unblockable } : {}), ...more });
 }
 
 // A Sha's steps from step 1 at each target, in seat order from its user.
@@ -76,7 +81,7 @@ export const shaCard: CardDefinition = {
     if ((state.turn.cardPlays?.['sha'] ?? 0) >= shaLimit(state, ctx.seatId, registry)) return [];
     const range = attackRange(state, ctx.seatId, registry);
     return otherLivingSeatTargets(state, ctx.seatId).filter(
-      ([target]) => target.kind === 'seat' && seatDistance(state, ctx.seatId, target.seatId, registry) <= range
+      ([target]) => target.kind === 'seat' && seatDistance(state, ctx.seatId, target.seatId, registry) <= range && !untargetableBy(state, target.seatId, 'sha', registry)
     );
   },
   play: (state, ctx) => {
@@ -89,7 +94,7 @@ export const shaCard: CardDefinition = {
     const lastHandCard = !ctx.free && hand.length > 0 && hand.every((c) => ctx.card.physical.some((p) => p.instanceId === c.instanceId));
     return [...spend, cardStep('sha-use', ctx.card, ctx.seatId, ctx.targets[0], { extra: boosted ? 1 : 0, ...(lastHandCard ? { lastHandCard: true } : {}) })];
   },
-  onStep: (state, step) => {
+  onStep: (state, step, registry) => {
     const data = shaData(step);
     if (step.step === 'sha-use') {
       const extraTargets: Target[] = (data.picked ?? []).map((seatId) => ({ kind: 'seat', seatId }));
@@ -101,7 +106,10 @@ export const shaCard: CardDefinition = {
       case 'sha-targeted':
         return [shaStep(step, 'sha-armor')];
       case 'sha-armor':
-        return [shaStep(step, 'sha-shan', { needed: 1, provided: 0 })];
+        // An unblockable Sha hits; otherwise the target owes 1 Shan (2 against Matchless).
+        return shaData(step).unblockable
+          ? [shaStep(step, 'sha-hit')]
+          : [shaStep(step, 'sha-shan', { needed: answersNeededAgainst(state, step.userSeatId, registry), provided: 0 })];
       case 'sha-shan':
         return (data.provided ?? 0) >= (data.needed ?? 1) ? [shaStep(step, 'sha-dodged')] : [shanWindow(step)];
       case 'sha-dodged':

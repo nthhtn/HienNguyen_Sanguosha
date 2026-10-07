@@ -6,18 +6,19 @@ export function cardStep(step: string, card: UsedCard, userSeatId: string, targe
   return { kind: 'CardStepEffect', step, card, userSeatId, target, data };
 }
 
-const ownerKey = (owner: AbilityOwner) => (owner.kind === 'equipment' ? owner.cardInstanceId : `${owner.seatId}:${owner.slot}:${owner.skillId}`);
+// An ability's key in an `acted` list: the worn card, or the seat/slot/skill.
+export const abilityKey = (owner: AbilityOwner) => (owner.kind === 'equipment' ? owner.cardInstanceId : `${owner.seatId}:${owner.slot}:${owner.skillId}`);
 const actedKeys = (step: CardStep) => (step.data?.['acted'] as string[] | undefined) ?? [];
 
 // Whether `owner`'s ability has already had its say at this step.
 export function hasActed(step: CardStep, owner: AbilityOwner): boolean {
-  return actedKeys(step).includes(ownerKey(owner));
+  return actedKeys(step).includes(abilityKey(owner));
 }
 
 // The step, marked so `owner`'s ability doesn't act on it again (an ask's
 // Don't sends it back through its before-triggers).
 export function actedOn(step: CardStep, owner: AbilityOwner): CardStep {
-  return { ...step, data: { ...step.data, acted: [...actedKeys(step), ownerKey(owner)] } };
+  return { ...step, data: { ...step.data, acted: [...actedKeys(step), abilityKey(owner)] } };
 }
 
 // An optional ability at a step: ask its owner. Use queues `effects`; Don't

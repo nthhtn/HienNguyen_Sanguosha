@@ -7,6 +7,6 @@ export const drawTwoCard: CardDefinition = {
   name: 'Draw Two',
   category: 'tool',
   legalPlayTargets: () => [[]],
-  play: (state, ctx) => (ctx.respondingTo ? [] : toolOnTargets(state, ctx.seatId, ctx.cardInstanceId, [{ kind: 'seat', seatId: ctx.seatId }])),
+  play: (state, ctx) => (ctx.respondingTo ? [] : toolOnTargets(ctx.card, ctx.seatId, [{ kind: 'seat', seatId: ctx.seatId }])),
   onTarget: (_state, { userSeatId }) => [{ kind: 'DrawCardsEffect', seatId: userSeatId, count: 2 }],
 };

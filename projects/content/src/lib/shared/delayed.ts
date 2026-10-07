@@ -1,18 +1,21 @@
 import type { CardDefinition, CardInstance, Effect, GameState, Phase, PhaseChangedEvent, SkillTrigger } from 'engine';
-import { judgmentZoneOf, skipFlagOf, usedCardOf } from 'engine';
+import { cardCountsAs, judgmentZoneOf, skipFlagOf, usedCardFrom, usedCardOf } from 'engine';
+import { toolsIgnoreDistance, untargetableBy } from './abilities';
 import { otherLivingSeatTargets, seatDistance } from './queries';
 import { COUNTER_CARD_IDS } from './tools';
 
-// Whether `seatId`'s judgment area already holds a `definitionId`.
+// Whether `seatId`'s judgment area already holds a `definitionId` (or a card placed as one).
 export function holdsDelayed(state: GameState, seatId: string, definitionId: string): boolean {
-  return !!judgmentZoneOf(state, seatId)?.cards.some((c) => c.definitionId === definitionId);
+  const zone = judgmentZoneOf(state, seatId);
+  return !!zone?.cards.some((c) => cardCountsAs(zone, c) === definitionId);
 }
 
-// The move that puts a delayed Tool face up into `seatId`'s judgment area.
-export function placeInJudgmentArea(state: GameState, cardInstanceId: string, seatId: string): Effect[] {
+// The move that puts a delayed Tool face up into `seatId`'s judgment area, as
+// `countsAs` when it is another card used as that Tool (Country Scene).
+export function placeInJudgmentArea(state: GameState, cardInstanceId: string, seatId: string, countsAs?: string): Effect[] {
   const zone = judgmentZoneOf(state, seatId);
   if (!zone) throw new Error(`Seat ${seatId} has no judgment area`);
-  return [{ kind: 'MoveCardEffect', cardInstanceId, toZoneId: zone.id }];
+  return [{ kind: 'MoveCardEffect', cardInstanceId, toZoneId: zone.id, ...(countsAs ? { countsAs } : {}) }];
 }
 
 // A delayed Tool's rule once its Wuxie check has passed: judge its seat.
@@ -44,11 +47,12 @@ export function skipPhaseTool({ id, name, skips, spares, maxDistance }: SkipPhas
         ([target]) =>
           target.kind === 'seat' &&
           !holdsDelayed(state, target.seatId, id) &&
-          (maxDistance === undefined || seatDistance(state, ctx.seatId, target.seatId, registry) <= maxDistance)
+          !untargetableBy(state, target.seatId, id, registry) &&
+          (maxDistance === undefined || toolsIgnoreDistance(state, ctx.seatId, registry) || seatDistance(state, ctx.seatId, target.seatId, registry) <= maxDistance)
       ),
     play: (state, ctx) => {
       const [target] = ctx.targets;
-      return ctx.respondingTo || target?.kind !== 'seat' ? [] : placeInJudgmentArea(state, ctx.cardInstanceId, target.seatId);
+      return ctx.respondingTo || target?.kind !== 'seat' ? [] : placeInJudgmentArea(state, ctx.cardInstanceId, target.seatId, ctx.card.as);
     },
     onTarget: judgeTarget,
     onJudged: (_state, { judged }) => (judged.suit === spares ? [] : [{ kind: 'SetTurnFlagEffect', flag: skipFlagOf(skips) }]),
@@ -67,9 +71,12 @@ export const judgmentPhaseTrigger: SkillTrigger = {
   },
   effect: (state, subject) => {
     const { seatId } = subject as PhaseChangedEvent;
-    const lastInFirstOut = [...judgmentZoneOf(state, seatId)!.cards].reverse();
+    const zone = judgmentZoneOf(state, seatId)!;
+    const lastInFirstOut = [...zone.cards].reverse();
     return lastInFirstOut.flatMap((card): Effect[] => {
-      const tool = usedCardOf(card);
+      // A card placed as another (Country Scene's Capture) is judged as that.
+      const as = cardCountsAs(zone, card);
+      const tool = as === card.definitionId ? usedCardOf(card) : usedCardFrom([card], as);
       return [
         { kind: 'ToolOnTargetEffect', tool, userSeatId: seatId, target: { kind: 'seat', seatId }, counterCardIds: COUNTER_CARD_IDS },
         { kind: 'DelayedCleanupEffect', tool, ownerSeatId: seatId },
