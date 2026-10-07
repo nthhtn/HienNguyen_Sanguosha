@@ -132,6 +132,30 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
     }
   }
 
+  if (registry) violations.push(...checkCompulsoryWhileHidden(state, registry));
+  return violations;
+}
+
+// A hidden General never fires a compulsory skill: in log order, every
+// AbilityUsedEvent of a compulsory General skill comes after that General was
+// revealed (or it was revealed before the log began, as in a built state).
+export function checkCompulsoryWhileHidden(state: GameState, registry: ContentRegistry): string[] {
+  const slotKey = (seatId: string, slot: 'main' | 'deputy') => `${seatId}/${slot}`;
+  const revealedByEvent = new Set(state.log.flatMap((e) => (e.kind === 'GeneralRevealedEvent' ? [slotKey(e.seatId, e.slot)] : [])));
+  const revealed = new Set(
+    state.seats.flatMap((s) =>
+      (['main', 'deputy'] as const).filter((slot) => s.generals?.[slot].revealed && !revealedByEvent.has(slotKey(s.id, slot))).map((slot) => slotKey(s.id, slot))
+    )
+  );
+  const violations: string[] = [];
+  for (const event of state.log) {
+    if (event.kind === 'GeneralRevealedEvent') revealed.add(slotKey(event.seatId, event.slot));
+    if (event.kind !== 'AbilityUsedEvent' || event.owner.kind !== 'general') continue;
+    const { seatId, slot, skillId } = event.owner;
+    const generalId = state.seats.find((s) => s.id === seatId)?.generals?.[slot].generalDefinitionId;
+    const skill = generalId ? registry.generals.get(generalId)?.skills.find((s) => s.id === skillId) : undefined;
+    if (skill?.compulsory && !revealed.has(slotKey(seatId, slot))) violations.push(`${seatId}'s hidden ${generalId} fired its compulsory ${skillId}`);
+  }
   return violations;
 }
 

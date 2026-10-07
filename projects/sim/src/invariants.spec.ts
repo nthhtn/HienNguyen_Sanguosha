@@ -1,4 +1,5 @@
-import { checkInvariants, checkRestingState } from './invariants';
+import { buildContentRegistry } from 'content';
+import { checkCompulsoryWhileHidden, checkInvariants, checkRestingState } from './invariants';
 import type { CardInstance, GameState, PendingArrangement, PendingSelection } from 'engine';
 
 function card(instanceId: string): CardInstance {
@@ -287,5 +288,28 @@ describe('a pending arrangement', () => {
     const s = baseState();
     const out = { ...s, seats: s.seats.map((x) => ({ ...x, eliminated: true })), pendingArrangement: arrangementFor(s.seats[0].id) };
     expect(checkInvariants(out)).toContain(`pendingArrangement references eliminated seat ${s.seats[0].id}`);
+  });
+});
+
+
+describe('checkCompulsoryWhileHidden', () => {
+  const registry = buildContentRegistry();
+  const owner = { kind: 'general' as const, seatId: 'seat-a', slot: 'main' as const, skillId: 'linked-camps' };
+  const fired = { kind: 'AbilityUsedEvent' as const, owner, abilityId: 'linked-camps', outcome: 'used' };
+  const luXun = (revealed: boolean, log: GameState['log']) =>
+    baseState({
+      seats: [{ ...baseState().seats[0], kingdom: 'Wu', generals: { main: { generalDefinitionId: 'lu-xun', revealed }, deputy: { generalDefinitionId: 'sun-jian', revealed: false } } }],
+      log,
+    });
+
+  it('flags a compulsory skill used while its General was hidden', () => {
+    expect(checkCompulsoryWhileHidden(luXun(true, [fired, { kind: 'GeneralRevealedEvent', seatId: 'seat-a', slot: 'main' }]), registry)).toEqual([
+      "seat-a's hidden lu-xun fired its compulsory linked-camps",
+    ]);
+  });
+
+  it('accepts it once revealed, by an event or from the start', () => {
+    expect(checkCompulsoryWhileHidden(luXun(true, [{ kind: 'GeneralRevealedEvent', seatId: 'seat-a', slot: 'main' }, fired]), registry)).toEqual([]);
+    expect(checkCompulsoryWhileHidden(luXun(true, [fired]), registry)).toEqual([]);
   });
 });
