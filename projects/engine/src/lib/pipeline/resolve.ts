@@ -8,6 +8,7 @@ import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
+import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer } from '../rules/phaseSequence';
 import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, legalTargetListsFor, playConversionCards, sameAbilityOwner } from '../rules/legality';
@@ -164,7 +165,10 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   }
   const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: turn.ownerSeatId, phase };
   events.push(phaseEvent);
-  return logWithTriggers({ ...current, phase, turn }, events, ctx);
+  // The Discard Phase owes what the owner is over its limit now (discardOwed).
+  const entered: GameState = { ...current, phase, turn };
+  const counted = phase === 'Discard' ? { ...entered, turn: { ...turn, discardsLeft: cardsOverHandLimit(entered, turn.ownerSeatId) } } : entered;
+  return logWithTriggers(counted, events, ctx);
 }
 
 // `effect` as its before-triggers would rewrite it (e.g. Silver Lion's cap),
@@ -500,7 +504,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
       const discardPile = requireZoneOfKind(state.zones, 'discardPile');
-      return { state: queueFront(state, [{ kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: discardPile.id }]), events: [] };
+      const left = state.turn.discardsLeft;
+      const owing: GameState = left === undefined ? state : { ...state, turn: { ...state.turn, discardsLeft: Math.max(0, left - 1) } };
+      return { state: queueFront(owing, [{ kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: discardPile.id }]), events: [] };
     }
 
     case 'RevealGeneralAction': {

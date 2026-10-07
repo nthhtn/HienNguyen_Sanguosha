@@ -33,6 +33,10 @@ export interface Turn {
   // Every card the turn owner used this turn, by what it counted as,
   // responses included (Self-Restraint reads 'sha').
   ownerUses?: Record<string, number>;
+  // Cards still owed in this turn's Discard Phase: what the owner was over its
+  // hand limit as the phase began, less what it has discarded since. A card
+  // drawn meanwhile (Linked Camps) isn't owed too. Absent outside it.
+  discardsLeft?: number;
   // Flags that last until the turn ends, e.g. skipPlay (see skipFlagOf).
   // Absent until one is set.
   flags?: Record<string, boolean>;

@@ -44,7 +44,7 @@ export function table(cards: Record<string, CardInstance[]> = {}, o: TableOption
         id, index, kingdom: o.kingdoms?.[id] ?? KINGDOMS[index], eliminated: false,
         generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },
         combinedHp: o.hp?.[id] ?? 4, maxCombinedHp: o.maxHp?.[id] ?? 4,
-        hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
+        hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, pile: { zoneId: `${id}:pile` },
       };
     }),
     players: [],
@@ -61,6 +61,7 @@ export function table(cards: Record<string, CardInstance[]> = {}, o: TableOption
         { id: `${id}:hand`, kind: 'hand' as const, ownerSeatId: id, cards: cards[`${id}:hand`] ?? [] },
         { id: `${id}:equip`, kind: 'equip' as const, ownerSeatId: id, cards: cards[`${id}:equip`] ?? [] },
         { id: `${id}:judgment`, kind: 'judgment' as const, ownerSeatId: id, cards: cards[`${id}:judgment`] ?? [] },
+        { id: `${id}:pile`, kind: 'pile' as const, ownerSeatId: id, cards: cards[`${id}:pile`] ?? [] },
       ]),
     ],
     pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,

@@ -1,9 +1,10 @@
-import type { ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
-import { endFlagOf, skipFlagOf } from 'engine';
+import type { ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
+import { drawPileTop, endFlagOf, pileZoneOf, skipFlagOf } from 'engine';
+import { suitOf } from '../shared/suits';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
-import { actedOn, askAtStep, atStep } from '../shared/steps';
+import { abilityKey, actedOn, askAtStep, atStep } from '../shared/steps';
 import { ask, choiceOf, discardMoves, draw, equipZoneId, heal, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Wind Generals' skills (stage 8 spec, "Rule text"). Every skill acts for
@@ -115,9 +116,98 @@ export const violentSpirit: SkillDefinition = {
   ],
 };
 
+type DamageStep = Extract<Effect, { kind: 'DamageEffect' }>;
+type Dying = Extract<Effect, { kind: 'DyingEffect' }>;
+
+// Her hand cards that count as hearts.
+const heartsIn = (state: GameState, seatId: string, registry: ContentRegistry) => handOf(state, seatId).filter((c) => suitOf(state, seatId, c, registry) === 'heart');
+
+// Fantasy (may): when damage would be dealt to you, you may discard a heart
+// card to move it onto another living seat (same source, amount and cause).
+// After it is dealt, that seat draws as many cards as it is missing HP.
+export const fantasy: SkillDefinition = {
+  id: 'fantasy',
+  triggers: [
+    on<DamageStep>('before:DamageEffect', {
+      condition: (state, step, owner, registry) =>
+        step.damage.target.seatId === owner.seatId && step.damage.amount > 0 && !(step.acted ?? []).includes(abilityKey(owner)) &&
+        heartsIn(state, owner.seatId, registry).length > 0 && otherLivingSeatIds(state, owner.seatId).length > 0,
+      effect: (state, step, owner, registry) => {
+        const passed: DamageStep = { ...step, acted: [...(step.acted ?? []), abilityKey(owner)] };
+        const pick = selectionOf(state, owner, {
+          of: 'cards', eligibleIds: heartsIn(state, owner.seatId, registry).map((c) => c.instanceId), min: 1, max: 1,
+          then: { kind: 'skill-step', step: skillStep(owner, 'discarded', { damage: passed }) }, onCancel: [passed],
+        });
+        return [ask(owner, [pick], [passed])];
+      },
+    }),
+  ],
+  onStep: (state, step) => {
+    const { owner } = step;
+    const damage = step.data?.['damage'] as DamageStep;
+    if (step.step === 'discarded') return [...discardMoves(state, (step.data?.['picked'] as string[]) ?? []), skillStep(owner, 'move', { damage })];
+    if (step.step === 'move') {
+      const moveTo = (seatId: string): Effect[] => [{ ...damage, damage: { ...damage.damage, target: { kind: 'seat', seatId } } }, skillStep(owner, 'draw', { seatId })];
+      return [choiceOf(state, owner, { verb: 'pick', options: seatOptions(otherLivingSeatIds(state, owner.seatId), moveTo) })];
+    }
+    // 'draw': the seat that took it draws as many cards as it is missing HP.
+    const seatId = step.data?.['seatId'] as string;
+    const seat = state.seats.find((s) => s.id === seatId);
+    const missing = seat && !seat.eliminated ? seat.maxCombinedHp - Math.max(seat.combinedHp, 0) : 0;
+    return missing > 0 ? [draw(seatId, missing)] : [];
+  },
+};
+
+// Beauty (compulsory): your spades count as hearts (suitOf).
+export const beauty: SkillDefinition = { id: 'beauty', compulsory: true, modifiers: { suitAs: { spade: 'heart' } } };
+
+// One Refusing Death card: asked, then turned up under the General and checked.
+const refusingAsk = (owner: GeneralOwner, dying: Dying, left: number): Effect => ask(owner, [skillStep(owner, 'turn', { dying, left })], [dying]);
+
+// Refusing Death (may): when you would enter the dying round, you may turn the
+// top card of the draw pile face up under your General, and again for each
+// further point the drop took below 1. A rank already there: the dying round
+// goes ahead. Otherwise you stay alive below 0 HP. Each time you recover HP,
+// you may discard one of those cards.
+export const refusingDeath: SkillDefinition = {
+  id: 'refusing-death',
+  triggers: [
+    on<Dying>('before:DyingEffect', {
+      condition: (state, dying, owner) =>
+        dying.entering === true && dying.seatId === owner.seatId && !(dying.acted ?? []).includes(abilityKey(owner)) && !!pileZoneOf(state, owner.seatId) && drawPileTop(state, 1).length > 0,
+      effect: (_state, dying, owner) => [refusingAsk(owner, { ...dying, acted: [...(dying.acted ?? []), abilityKey(owner)] }, Math.max(1, dying.pointsBelowOne ?? 1))],
+    }),
+    on<HealEvent>('after:HealEvent', {
+      condition: (state, event, owner) => event.target.seatId === owner.seatId && isLiving(state, owner.seatId) && (pileZoneOf(state, owner.seatId)?.cards.length ?? 0) > 0,
+      effect: (state, _event, owner) => [
+        ask(owner, [
+          selectionOf(state, owner, { of: 'cards', eligibleIds: pileZoneOf(state, owner.seatId)!.cards.map((c) => c.instanceId), min: 1, max: 1, then: { kind: 'discard' }, onCancel: [] }),
+        ]),
+      ],
+    }),
+  ],
+  onStep: (state, step) => {
+    const { owner } = step;
+    const dying = step.data?.['dying'] as Dying;
+    const left = step.data?.['left'] as number;
+    const pile = pileZoneOf(state, owner.seatId);
+    if (step.step === 'turn') {
+      const [top] = drawPileTop(state, 1);
+      if (!top || !pile) return [dying];
+      return [{ kind: 'MoveCardEffect', cardInstanceId: top.instanceId, toZoneId: pile.id }, skillStep(owner, 'check', { dying, left, cardInstanceId: top.instanceId })];
+    }
+    // 'check': a matching rank sends him to the dying round.
+    const turned = pile?.cards.find((c) => c.instanceId === step.data?.['cardInstanceId']);
+    if (!turned || pile!.cards.some((c) => c.instanceId !== turned.instanceId && c.rank === turned.rank)) return [used(owner, 'matched'), dying];
+    return left > 1 ? [refusingAsk(owner, dying, left - 1)] : [used(owner, 'stays-alive')];
+  },
+};
+
 export const WIND_GENERALS: GeneralSkillSet[] = [
   { id: 'cao-ren', skills: [entrench] },
   { id: 'xiahou-yuan', skills: [godspeed] },
   { id: 'huang-zhong', skills: [strongBow] },
   { id: 'wei-yan', skills: [violentSpirit] },
+  { id: 'xiao-qiao', skills: [fantasy, beauty] },
+  { id: 'zhou-tai', skills: [refusingDeath] },
 ];

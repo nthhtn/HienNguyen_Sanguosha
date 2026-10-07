@@ -18,7 +18,9 @@ export function phaseWaitsForPlayer(state: GameState): boolean {
 // as the phase began, Self-Restraint), which then ends at once.
 export function discardOwed(state: GameState, seatId: string): number {
   if (seatId === state.turn.ownerSeatId && state.turn.flags?.[skipFlagOf('Discard')]) return 0;
-  return cardsOverHandLimit(state, seatId);
+  const over = cardsOverHandLimit(state, seatId);
+  const left = seatId === state.turn.ownerSeatId ? state.turn.discardsLeft : undefined;
+  return left === undefined ? over : Math.min(over, left);
 }
 
 // The turn flag that ends `phase` while it runs, once nothing is left to
