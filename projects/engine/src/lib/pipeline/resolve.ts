@@ -461,8 +461,16 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const { pendingSelection: _done, ...cleared } = state;
       // Logged for the history; nothing reacts to it.
       const event: SelectionMadeEvent = { kind: 'SelectionMadeEvent', seatId: action.seatId, reason: selection.reason, of: selection.of, ids: action.ids };
-      const continued = continueSelection(logged(cleared, [event]), selection, action.ids, ctx);
-      return { state: continued.state, events: [event, ...continued.events] };
+      let current = logged(cleared, [event]);
+      const events: GameEvent[] = [event];
+      // What confirming does at once (a reveal, a use counted), before the continuation.
+      for (const effect of selection.onSelect ?? []) {
+        const step = resolveEffect(current, effect, ctx);
+        current = step.state;
+        events.push(...step.events);
+      }
+      const continued = continueSelection(current, selection, action.ids, ctx);
+      return { state: continued.state, events: [...events, ...continued.events] };
     }
 
     case 'UseConversionAction': {
@@ -498,7 +506,12 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         // Cancel: back where the seat was (its Play Phase, or the open window).
         onCancel: [],
       };
-      return { state: { ...state, pendingSelection: selection }, events: [] };
+      // A hidden General's conversion reveals it once the cards are confirmed.
+      const reveal: Effect[] =
+        owned.needsReveal && owned.owner.kind === 'general'
+          ? [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: owned.owner.slot, forAbilityId: owned.abilityId }]
+          : [];
+      return { state: { ...state, pendingSelection: reveal.length ? { ...selection, onSelect: reveal } : selection }, events: [] };
     }
 
     case 'CancelSelectionAction': {

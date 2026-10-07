@@ -34,6 +34,8 @@ export interface GeneralRevealedEvent {
   kind: 'GeneralRevealedEvent';
   seatId: string;
   slot: 'main' | 'deputy';
+  // Set when it was revealed to use that skill.
+  forAbilityId?: string;
 }
 
 export interface HealEvent {

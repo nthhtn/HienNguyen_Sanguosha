@@ -9,7 +9,8 @@ export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
   | { kind: 'DamageEffect'; damage: Damage }
   | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse }
-  | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy' }
+  // `forAbilityId`: revealed to use that skill (the history names it).
+  | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy'; forAbilityId?: string }
   | { kind: 'HealEffect'; target: Target; amount: number }
   // `onlyFrom`: move it only if it is still in that zone (a judged card a
   // reader already moved on).
@@ -107,7 +108,12 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
           ? { ...s, generals: { ...generals, [effect.slot]: { ...generals[effect.slot], revealed: true } } }
           : s
       );
-      const event: EngineEvent = { kind: 'GeneralRevealedEvent', seatId: effect.seatId, slot: effect.slot };
+      const event: EngineEvent = {
+        kind: 'GeneralRevealedEvent',
+        seatId: effect.seatId,
+        slot: effect.slot,
+        ...(effect.forAbilityId ? { forAbilityId: effect.forAbilityId } : {}),
+      };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'HealEffect': {
@@ -192,13 +198,16 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const owner = state.seats.find((s) => s.id === effect.owner.seatId);
       // An owner who is out can't be asked: what happens otherwise goes ahead.
       if (!owner || owner.eliminated) return { state: queueFront(state, effect.otherwise ?? []), events: [] };
+      // A hidden General's skill: Use reveals it first.
+      const hidden = effect.owner.kind === 'general' && owner.generals && !owner.generals[effect.owner.slot].revealed ? effect.owner.slot : null;
+      const reveal: Effect[] = hidden ? [{ kind: 'RevealGeneralEffect', seatId: owner.id, slot: hidden, forAbilityId: effect.abilityId }] : [];
       const choice: PendingChoice = {
         id: `ask-${effect.abilityId}-${owner.id}-${state.log.length}`,
         seatId: owner.id,
         reason: { kind: 'ability', owner: effect.owner, abilityId: effect.abilityId, ...(effect.targetSeatId ? { targetSeatId: effect.targetSeatId } : {}) },
         verb: 'use',
         options: [
-          { id: 'use', shows: { kind: 'use' }, effects: effect.effects },
+          { id: 'use', shows: { kind: 'use', ...(hidden ? { reveals: hidden } : {}) }, effects: [...reveal, ...effect.effects] },
           { id: 'decline', shows: { kind: 'decline' }, effects: effect.otherwise ?? [] },
         ],
       };

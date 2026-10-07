@@ -139,7 +139,12 @@ export interface ChoiceOption {
   // A face-up card, or a seat's whole hand as one face-down option (the card
   // inside it is picked at random, so the chooser never sees the hand).
   // For an ask: Use or Don't (`decline` also serves "let them draw" and the like).
-  shows: { kind: 'card'; card: CardInstance } | { kind: 'hidden-hand'; seatId: string; count: number } | { kind: 'use' } | { kind: 'decline' };
+  // `reveals`: Use reveals that hidden General first.
+  shows:
+    | { kind: 'card'; card: CardInstance }
+    | { kind: 'hidden-hand'; seatId: string; count: number }
+    | { kind: 'use'; reveals?: 'main' | 'deputy' }
+    | { kind: 'decline' };
   // Queued at the front when picked.
   effects: Effect[];
 }
@@ -160,6 +165,10 @@ export interface PendingSelection {
   then: SelectionContinuation;
   // Queued on Cancel; absent = the selection can't be cancelled.
   onCancel?: Effect[];
+  // Resolved, in order, the moment the picks are confirmed, before the
+  // continuation: a hidden General's reveal, an active skill's use being
+  // counted. They must not open a decision.
+  onSelect?: Effect[];
 }
 
 // What a selection's picks lead to: plain data, so the state stays serialisable.
