@@ -139,7 +139,7 @@ GENERALS = {
         "name": "Ma Chao", "nameZh": "马超", "title": "One Rider Matches One Thousand", "titleZh": "一骑当千",
         "skills": [
             {"name": "Horsemanship", "nameZh": "马术", "text": "Ma Chao always has a -1 bonus."},
-            {"name": "Iron Calvary", "nameZh": "铁骑", "text": "When Ma Chao attacks a player, he can flip a judgment card. If it is red, the attack cannot be escaped."},
+            {"name": "Iron Cavalry", "nameZh": "铁骑", "text": "When Ma Chao attacks a player, he can flip a judgment card. If it is red, the attack cannot be escaped."},
         ],
         "source": source("https://sites.google.com/site/englishsanguosha/expansions/original/base/base-ma-chao"),
     },

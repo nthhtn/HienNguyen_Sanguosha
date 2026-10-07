@@ -1,0 +1,6 @@
+import type { GeneralSkillSet } from './types';
+
+// The Wu base Generals' skills (General Skills spec, "Wu"). Every skill acts
+// for the `owner` the engine passes in: the same General can sit at two seats
+// in tests, so a skill must never find "its" seat by searching for its id.
+export const WU_GENERALS: GeneralSkillSet[] = [];

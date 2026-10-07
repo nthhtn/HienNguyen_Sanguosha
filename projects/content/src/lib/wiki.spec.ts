@@ -1,3 +1,4 @@
+import { GENERAL_SKILLS } from './generals';
 import { equipmentTabs, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, WikiCard } from './wiki';
 
 describe('wikiGenerals', () => {
@@ -28,9 +29,7 @@ describe('wikiGenerals', () => {
   });
 
   it('marks exactly the generals whose skills are coded', () => {
-    expect(generals.filter((g) => g.skillsInGame).map((g) => g.id).sort()).toEqual(
-      ['huang-yueying', 'sun-shangxiang', 'xiahou-dun', 'zhao-yun', 'zhuge-liang']
-    );
+    expect(generals.filter((g) => g.skillsInGame).map((g) => g.id).sort()).toEqual([...GENERAL_SKILLS.keys()].sort());
   });
 
   it('carries names, title, HP and skills from the data file', () => {
