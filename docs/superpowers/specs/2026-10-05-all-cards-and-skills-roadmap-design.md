@@ -56,10 +56,13 @@ count, in the stage that makes its rules work.
 | 5 | Sha steps, abilities, conversions. Eight Trigrams, Black Shield, Wood Armor, Ancient Scimitar, Ice Sword, Axe, Longbow, Gender Swords, Green Dragon Blade, Sky Scorcher, Serpent Spear. | Sha-Equipment |
 | 6 | Skill engine: reveal to use, gender, counters, new decisions | General Skills, part 1 |
 | 7 | The 25 base Generals' skills | General Skills, part 2 |
+| 8 | The Wind Generals' skills | [Stage 8 spec](2026-10-07-stage-8-wind-generals-design.md) |
+| 9 | The Fire Generals' skills | its own spec, written before it is built |
+| 10 | The Forest Generals' skills | its own spec, written before it is built |
+| 11 | The Mountain Generals' skills | its own spec, written before it is built |
 
-Out of scope: Wind, Fire, Forest and Mountain skills (each a later
-sub-project, mostly content on the stage 6 engine), and elemental damage
-with its cards.
+Out of scope: elemental damage with its cards. (Wind, Fire, Forest and
+Mountain skills were added as stages 8–11 on 2026-10-07.)
 
 ## Stage 0: Trick becomes Tool
 
