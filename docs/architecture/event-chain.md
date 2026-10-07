@@ -414,6 +414,17 @@ the count or replace the draw.
   (`ArrangeCardsAction`, checked by `validateArrangement`). Only that seat
   sees the cards.
 
+**Judgment changers' order.** Content lists the skills that may replace a
+judgment's card (`JUDGMENT_CHANGERS` in `shared/judgments.ts`). Each one's
+`before:JudgmentShownEffect` trigger acts only when `nextToChange` says its
+seat is next: in seat order from the judged seat; after a replacement, from
+the seat after the one that replaced it (that seat last). `acted` on the shown
+step records who has had their say.
+
+**Rescuing through a conversion.** The dying round asks a seat with no rescue
+card in hand when one of its conversions could make one (First Aid); the
+pipeline supplies that check to `applyDying`.
+
 ## Plugging into the chain
 
 | To add… | Write… | Example |
@@ -430,12 +441,18 @@ the count or replace the draw.
 | An ability at a stage | An `atStep` trigger returning the step changed, replaced, or an `askAtStep` | Axe at `sha-dodged` |
 | A "may" | `AskUseEffect` (`askAtStep` in content) | Eight Trigrams before a Shan |
 | Picking cards or seats | `OpenSelectionEffect` with a continuation | Axe's 2 cards, Sky Scorcher's targets |
-| Using cards as another card | `abilities.conversions` | Serpent Spear |
-| A General's skill | `SkillDefinition` (abilities, plus `compulsory`, `lord`, `active`, `onJudged`) | the placeholder skills |
-| A skill used on purpose | `SkillDefinition.active` → `UseSkillAction` | Kindness (stage 7) |
-| Changing or taking a judgment | `before:JudgmentShownEffect` / `before:JudgmentDoneEffect` triggers | Devil, Heaven's Envy (stage 7) |
-| Rewriting the Draw Phase | a `before:DrawPhaseEffect` trigger | Brave Gesture (stage 7) |
-| Arranging the draw pile | `OpenArrangementEffect` | Astrology (stage 7) |
+| Using cards as another card | `conversions` (`cards: 1 \| 2`, `from`, `accepts`, `outsideOwnTurnOnly`) | Serpent Spear, Fighting Saint, First Aid |
+| A General's skill | `SkillDefinition` (abilities, plus `compulsory`, `lord`, `active`, `onJudged`, `onStep`) | the 25 base Generals (`generals/wei.ts` …) |
+| A skill used on purpose | `SkillDefinition.active` → `UseSkillAction` | Kindness, Reconsider |
+| Changing or taking a judgment | `before:JudgmentShownEffect` / `before:JudgmentDoneEffect` triggers | Devil, Heaven's Envy |
+| Rewriting the Draw Phase | a `before:DrawPhaseEffect` trigger (content's `atDrawPhase`, asked once per draw via `acted`) | Brave Gesture, Bare the Chest, Raid |
+| Arranging the draw pile | `OpenArrangementEffect` (`drawPileTop` for the cards) | Astrology |
+| A skill deciding in several moves | `SkillStepEffect` → `SkillDefinition.onStep`; a selection's `skill-step` continuation | Raid, Kindness, Sow Revolt |
+| A seat using a card a skill made | `UseCardEffect` (not counted, outside limits) | Sow Discord's Duel |
+| Showing a card to everyone | `ShowCardEffect` → `CardShownEvent` | Sow Revolt |
+| A card lying as another card | `MoveCardEffect.countsAs` → `CardZone.countsAs` (`cardCountsAs`) | Country Scene's Capture |
+| Skipping the Discard Phase as it begins | the `skipDiscard` turn flag (`discardOwed`) | Self-Restraint |
+| A rule change read by content's queries | `AbilityModifiers` (`distanceToOthers`, `toolsIgnoreDistance`, `untargetableWithEmptyHandBy`, `doubleAnswers`) | Horsemanship, Wondrous Talent, Empty City, Matchless |
 
 A new card or skill should need only its own definition. If a change seems to
 need a branch for one card inside the pipeline, look for the hook above that
