@@ -84,6 +84,8 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
       return conversionLabel(action, state, registry);
     case 'UseSkillAction':
       return action.owner.kind === 'general' ? `Use ${abilityName(action.owner.skillId)}` : 'Use Skill';
+    case 'ArrangeCardsAction':
+      return 'Arrange';
     case 'SelectAction':
       return 'Confirm';
     case 'CancelSelectionAction':
@@ -103,6 +105,12 @@ export function conversionLabel(action: Extract<Action, { kind: 'UseConversionAc
 }
 
 const SUIT_SYMBOLS: Record<CardInstance['suit'], string> = { spade: '♠', heart: '♥', club: '♣', diamond: '♦' };
+const SUIT_NAMES: Record<CardInstance['suit'], string> = { spade: 'Spade', heart: 'Heart', club: 'Club', diamond: 'Diamond' };
+
+// "♥ Heart": a suit as an option to pick.
+export function suitLabel(suit: CardInstance['suit']): string {
+  return `${SUIT_SYMBOLS[suit]} ${SUIT_NAMES[suit]}`;
+}
 const FACE_RANKS: Record<number, string> = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
 
 // "A ♦", "7 ♠", "Q ♥" — a card's printed corner.

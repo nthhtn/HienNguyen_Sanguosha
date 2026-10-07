@@ -1,6 +1,6 @@
 import { Action, ChoiceOption, GameState, Player } from 'engine';
 import { cardDisplayData } from 'content';
-import { cardFaceLabel, cardIdDisplayName, seatName } from '../labels';
+import { cardFaceLabel, cardIdDisplayName, seatName, suitLabel } from '../labels';
 import type { ChoiceDialogOption } from './choice-dialog';
 
 export interface ChoiceDescription {
@@ -37,6 +37,9 @@ export function describeChoice(state: GameState, viewerSeatId: string): ChoiceDe
 
 // An option's label: a hand by its owner and size, a card by its name and face.
 export function choiceOptionLabel(shows: ChoiceOption['shows'], players: readonly Player[], declineLabel?: string): string {
+  if (shows.kind === 'seat') return seatName(players, shows.seatId);
+  if (shows.kind === 'suit') return suitLabel(shows.suit);
+  if (shows.kind === 'label') return shows.text;
   if (shows.kind === 'use') return 'Use';
   if (shows.kind === 'decline') return declineLabel ?? "Don't";
   if (shows.kind === 'hidden-hand') {

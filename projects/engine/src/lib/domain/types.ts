@@ -136,8 +136,9 @@ export interface PendingChoice {
   seatId: string;
   reason: DecisionReason;
   // What picking does, for display: take the card, discard it, or (an ask)
-  // use the ability or not.
-  verb: 'take' | 'discard' | 'use';
+  // use the ability or not. `pick`: a seat, a suit or a label; `give`: who
+  // gets the cards.
+  verb: 'take' | 'discard' | 'use' | 'pick' | 'give';
   options: ChoiceOption[];
 }
 
@@ -147,11 +148,16 @@ export interface ChoiceOption {
   // inside it is picked at random, so the chooser never sees the hand).
   // For an ask: Use or Don't (`decline` also serves "let them draw" and the like).
   // `reveals`: Use reveals that hidden General first.
+  // A seat (Raid's targets, who gets given cards), a suit to name, or a label
+  // (Done, an Unyielding outcome).
   shows:
     | { kind: 'card'; card: CardInstance }
     | { kind: 'hidden-hand'; seatId: string; count: number }
     | { kind: 'use'; reveals?: 'main' | 'deputy' }
-    | { kind: 'decline' };
+    | { kind: 'decline' }
+    | { kind: 'seat'; seatId: string }
+    | { kind: 'suit'; suit: CardInstance['suit'] }
+    | { kind: 'label'; text: string };
   // Queued at the front when picked.
   effects: Effect[];
 }
@@ -189,7 +195,19 @@ export type SelectionContinuation =
   // Queue `step` with the picked ids added to its data as `picked`.
   | { kind: 'card-step'; step: Extract<Effect, { kind: 'CardStepEffect' }> }
   // Replace the judgment's card with the one picked (Devil).
-  | { kind: 'replace-judgment'; judgment: Judgment; owner: AbilityOwner; abilityId: string };
+  | { kind: 'replace-judgment'; judgment: Judgment; owner: AbilityOwner; abilityId: string }
+  // Give the picked cards to one of `toSeatIds`, chosen next; then `then`.
+  | { kind: 'give'; toSeatIds: string[]; then?: Effect[] };
+
+// A seat putting cards from the top of the draw pile back in the order it
+// likes, some on top and some at the bottom (Astrology). The cards stay in the
+// draw pile meanwhile; only the arranging seat sees them.
+export interface PendingArrangement {
+  id: string;
+  seatId: string;
+  reason: DecisionReason;
+  cardInstanceIds: string[];
+}
 
 export interface CardZone {
   id: string;
@@ -271,6 +289,8 @@ export interface GameState {
   // The cards or seats a seat owes a pick of, if any. Absent (never null) when
   // none, like the choice.
   pendingSelection?: PendingSelection;
+  // The cards a seat owes an arrangement of, if any. Absent (never null) when none.
+  pendingArrangement?: PendingArrangement;
   log: EngineEvent[];
   rng: RngState;
   result: GameResult | null;

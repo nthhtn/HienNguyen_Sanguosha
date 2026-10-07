@@ -1,4 +1,4 @@
-import { AbilityOwner, GameState, Damage, Judgment, JudgmentReader, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
@@ -9,6 +9,8 @@ export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
   | { kind: 'DamageEffect'; damage: Damage }
   | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse }
+  // Asks `arrangement.seatId` to arrange cards; the queue waits.
+  | { kind: 'OpenArrangementEffect'; arrangement: PendingArrangement }
   // Lowers HP without damage (see HpLostEvent). The mode starts the dying round.
   | { kind: 'LoseHpEffect'; seatId: string; amount: number; abilityId?: string }
   // The Draw Phase's draw: `count` cards. Skills rewrite the count or replace
@@ -212,6 +214,8 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     }
     case 'DyingEffect':
       return applyDying(state, effect);
+    case 'OpenArrangementEffect':
+      return { state: { ...state, pendingArrangement: effect.arrangement }, events: [] };
     case 'LoseHpEffect': {
       const seat = state.seats.find((s) => s.id === effect.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);

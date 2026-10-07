@@ -2,7 +2,7 @@ import { AbilityOwner, GameState, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
 import { ContentRegistry, Conversion } from '../registry/types';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
-import { getActiveSeatId } from './activeSeat';
+import { decisionPending, getActiveSeatId } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
 import { cardsOverHandLimit } from './handLimit';
 
@@ -40,6 +40,13 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     const actions: Action[] = [{ kind: 'SelectAction', seatId, selectionId: selection.id, ids: [] }];
     if (selection.onCancel) actions.push({ kind: 'CancelSelectionAction', seatId, selectionId: selection.id });
     return actions;
+  }
+
+  if (state.pendingArrangement) {
+    const arrangement = state.pendingArrangement;
+    if (arrangement.seatId !== seatId) return [];
+    // A template: the seat fills in top and bottom (validateArrangement checks them).
+    return [{ kind: 'ArrangeCardsAction', seatId, arrangementId: arrangement.id, top: [], bottom: [] }];
   }
 
   if (state.pendingResponse) {
@@ -94,7 +101,7 @@ type UseSkill = Extract<Action, { kind: 'UseSkillAction' }>;
 // limit. A hidden General's are offered too (using one reveals it).
 export function activeSkillActions(state: GameState, seatId: string, registry: ContentRegistry): UseSkill[] {
   if (state.phase !== 'Play' || state.turn.ownerSeatId !== seatId) return [];
-  if (state.pendingResponse || state.pendingChoice || state.pendingSelection) return [];
+  if (decisionPending(state)) return [];
   return skillsInPlay(state, seatId, registry)
     .filter(({ owner, skill }) => {
       const active = skill.active;
@@ -161,7 +168,7 @@ export function conversionsOf(state: GameState, seatId: string, registry: Conten
 // each. Either way the seat must hold enough hand cards.
 export function conversionActions(state: GameState, seatId: string, registry: ContentRegistry): UseConversion[] {
   const seat = state.seats.find((s) => s.id === seatId);
-  if (!seat || state.pendingChoice || state.pendingSelection) return [];
+  if (!seat || state.pendingChoice || state.pendingSelection || state.pendingArrangement) return [];
   const handSize = state.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
   const usable = conversionsOf(state, seatId, registry).filter((o) => handSize >= o.conversion.cards);
   const via = (o: OwnedConversion) => ({ owner: o.owner, conversionId: o.conversion.id });

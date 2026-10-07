@@ -1,4 +1,4 @@
-import { GameState, GameEvent, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
+import { GameState, GameEvent, PendingChoice, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
 import { usedCardFrom, usedCardOf } from '../domain/usedCard';
 import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
@@ -7,12 +7,14 @@ import { Effect, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
+import { decisionPending } from '../rules/activeSeat';
+import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence';
 import { activeSkillActions, conversionActions, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
-import { CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
+import { ArrangementMadeEvent, CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
@@ -64,7 +66,7 @@ export function advanceToDecision(state: GameState, ctx: EngineContext, budget: 
     const drained = drain(current, ctx, budget);
     current = drained.state;
     events = [...events, ...drained.events];
-    if (current.result || current.phase === 'GeneralSelection' || current.pendingResponse || current.pendingChoice || current.pendingSelection) break;
+    if (current.result || current.phase === 'GeneralSelection' || decisionPending(current)) break;
     const ownerEliminated = !!current.seats.find((s) => s.id === current.turn.ownerSeatId)?.eliminated;
     if (!ownerEliminated && phaseWaitsForPlayer(current)) break;
     if (steps >= maxSteps) {
@@ -83,7 +85,7 @@ export function advanceToDecision(state: GameState, ctx: EngineContext, budget: 
 function drain(state: GameState, ctx: EngineContext, budget: StepBudget): ResolveResult {
   let current = withWinCheck(state, ctx);
   const events: GameEvent[] = [];
-  while (!current.result && !current.pendingResponse && !current.pendingChoice && !current.pendingSelection && (current.resolutionQueue?.length ?? 0) > 0) {
+  while (!current.result && !decisionPending(current) && (current.resolutionQueue?.length ?? 0) > 0) {
     const [item, ...rest] = current.resolutionQueue!;
     budget.used += 1;
     if (budget.used > MAX_RESOLUTION_STEPS) {
@@ -302,6 +304,22 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
     }
     case 'card-step':
       return { state: queueFront(state, [{ ...then.step, data: { ...then.step.data, picked: ids } }]), events: [] };
+    case 'give': {
+      // Who gets the picked cards: one choice, each option a seat.
+      const choice: PendingChoice = {
+        id: `give-${selection.id}`,
+        seatId: selection.seatId,
+        reason: selection.reason,
+        verb: 'give',
+        options: then.toSeatIds.map((seatId) => {
+          const seat = state.seats.find((s) => s.id === seatId);
+          if (!seat) throw new Error(`Unknown seat: ${seatId}`);
+          const moves: Effect[] = ids.map((id) => ({ kind: 'MoveCardEffect', cardInstanceId: id, toZoneId: seat.hand.zoneId }));
+          return { id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [...moves, ...(then.then ?? [])] };
+        }),
+      };
+      return { state: queueFront(state, [{ kind: 'OpenChoiceEffect', choice }]), events: [] };
+    }
     case 'replace-judgment':
       return {
         state: queueFront(state, [{ kind: 'ReplaceJudgmentEffect', judgment: then.judgment, withCardInstanceId: ids[0], owner: then.owner, abilityId: then.abilityId }]),
@@ -332,6 +350,9 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
 function resolveAction(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
   if (state.pendingSelection && action.kind !== 'SelectAction' && action.kind !== 'CancelSelectionAction') {
     throw new Error(`Action ${action.kind} is not legal while a selection is pending`);
+  }
+  if (state.pendingArrangement && action.kind !== 'ArrangeCardsAction') {
+    throw new Error(`Action ${action.kind} is not legal while an arrangement is pending`);
   }
   if (state.pendingChoice && action.kind !== 'ChooseOptionAction') {
     throw new Error(`Action ${action.kind} is not legal while a choice is pending`);
@@ -522,6 +543,23 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
           ? [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: owned.owner.slot, forAbilityId: owned.abilityId }]
           : [];
       return { state: { ...state, pendingSelection: reveal.length ? { ...selection, onSelect: reveal } : selection }, events: [] };
+    }
+
+    case 'ArrangeCardsAction': {
+      const error = validateArrangement(state, action);
+      if (error) throw new Error(error);
+      const arrangement = state.pendingArrangement!;
+      const { pendingArrangement: _done, ...cleared } = state;
+      const drawPile = requireZoneOfKind(state.zones, 'drawPile');
+      const inPile = (id: string) => {
+        const found = drawPile.cards.find((c) => c.instanceId === id);
+        if (!found) throw new Error(`Card ${id} is no longer in the draw pile`);
+        return found;
+      };
+      const rest = drawPile.cards.filter((c) => !arrangement.cardInstanceIds.includes(c.instanceId));
+      const zones = state.zones.map((z) => (z.id === drawPile.id ? { ...z, cards: [...action.top.map(inPile), ...rest, ...action.bottom.map(inPile)] } : z));
+      const event: ArrangementMadeEvent = { kind: 'ArrangementMadeEvent', seatId: action.seatId, reason: arrangement.reason, top: action.top.length, bottom: action.bottom.length };
+      return logWithTriggers({ ...cleared, zones }, [event], ctx);
     }
 
     case 'UseSkillAction': {

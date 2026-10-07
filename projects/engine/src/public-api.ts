@@ -22,6 +22,7 @@ export * from './lib/skills/triggers';
 export * from './lib/skills/generalSkills';
 export * from './lib/rules/legality';
 export * from './lib/rules/selection';
+export * from './lib/rules/arrangement';
 export * from './lib/rules/activeSeat';
 export * from './lib/rules/generalSelection';
 export * from './lib/rules/phaseSequence';

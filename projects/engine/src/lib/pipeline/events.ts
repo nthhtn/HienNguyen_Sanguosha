@@ -38,6 +38,15 @@ export interface GeneralRevealedEvent {
   forAbilityId?: string;
 }
 
+// A seat arranged cards from the draw pile. Counts only: the cards stay hidden.
+export interface ArrangementMadeEvent {
+  kind: 'ArrangementMadeEvent';
+  seatId: string;
+  reason: DecisionReason;
+  top: number;
+  bottom: number;
+}
+
 // A seat lost HP: not damage, so it has no source and nothing that reacts to
 // damage applies. `abilityId`: the skill that cost it (Battered Body).
 export interface HpLostEvent {
@@ -183,5 +192,6 @@ export type EngineEvent =
   | CardsTurnedUpEvent
   | JudgmentEvent
   | JudgmentChangedEvent
+  | ArrangementMadeEvent
   | AbilityUsedEvent
   | SelectionMadeEvent;

@@ -127,4 +127,12 @@ describe('selections', () => {
     expect(redactStateForSeat(s, 'a').pendingSelection).toEqual(s.pendingSelection);
     expect(getLegalActions(redactStateForSeat(s, 'a'), 'a', registry)[0]).toMatchObject({ kind: 'SelectAction' });
   });
+
+  it('give: after the cards are picked, the seat picks who gets them; they go to that hand, then `then`', () => {
+    const s = select(opened(selection({ then: { kind: 'give', toSeatIds: ['b'], then: [{ kind: 'DrawCardsEffect', seatId: 'a', count: 1 }] } })), ['k1', 'k2']);
+    expect(s.pendingChoice).toMatchObject({ seatId: 'a', verb: 'give', reason: selection().reason, options: [{ id: 'b', shows: { kind: 'seat', seatId: 'b' } }] });
+    const given = resolve(s, { kind: 'ChooseOptionAction', seatId: 'a', choiceId: s.pendingChoice!.id, optionId: 'b' }, ctx).state;
+    expect(cardsIn(given, 'b:hand')).toEqual(['k1', 'k2', 'd2']);
+    expect(cardsIn(given, 'a:hand')).toEqual(['bolt-1', 'd1']);
+  });
 });

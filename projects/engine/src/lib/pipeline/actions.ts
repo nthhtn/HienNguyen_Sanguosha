@@ -17,7 +17,10 @@ export type Action =
   // pendingResponseId) to answer that window. Opens a selection of the cards.
   | { kind: 'UseConversionAction'; seatId: string; via: { owner: AbilityOwner; conversionId: string }; targets: Target[]; pendingResponseId?: string }
   // Uses an active skill of the seat's General (owner.kind === 'general').
-  | { kind: 'UseSkillAction'; seatId: string; owner: AbilityOwner };
+  | { kind: 'UseSkillAction'; seatId: string; owner: AbilityOwner }
+  // Fills the pending arrangement: `top` (top card first) and `bottom` (in the
+  // order they go under the pile). Offered as a template with both empty.
+  | { kind: 'ArrangeCardsAction'; seatId: string; arrangementId: string; top: string[]; bottom: string[] };
 
 export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'DrawCardsAction',
@@ -33,6 +36,7 @@ export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'CancelSelectionAction',
   'UseConversionAction',
   'UseSkillAction',
+  'ArrangeCardsAction',
 ]);
 
 export function isAction(value: { kind: string }): value is Action {
