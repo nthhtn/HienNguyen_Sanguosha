@@ -24,9 +24,25 @@ export function armorIgnored(state: GameState, damage: Damage, registry: Content
   return activeAbilities(state, damage.source.seatId, registry).some((a) => a.modifiers?.ignoresArmor);
 }
 
-// Whether `cardId` can't target `seatId`: an ability of its says so (Wood Armor).
+// Whether `cardId` can't target `seatId`: an ability of its says so (Wood
+// Armor, Humility), or says so while its hand is empty (Empty City).
 export function untargetableBy(state: GameState, seatId: string, cardId: string, registry: ContentRegistry): boolean {
-  return activeAbilities(state, seatId, registry).some((a) => a.modifiers?.untargetableBy?.includes(cardId));
+  const seat = state.seats.find((s) => s.id === seatId);
+  const handEmpty = !seat || (state.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0) === 0;
+  return activeAbilities(state, seatId, registry).some(
+    ({ modifiers }) => !!modifiers?.untargetableBy?.includes(cardId) || (handEmpty && !!modifiers?.untargetableWithEmptyHandBy?.includes(cardId))
+  );
+}
+
+// How many answers `seatId`'s attacks need: Shan to dodge its Sha, Sha each
+// time in a Duel with it. Two with Matchless, else one.
+export function answersNeededAgainst(state: GameState, seatId: string, registry: ContentRegistry): 1 | 2 {
+  return activeAbilities(state, seatId, registry).some((a) => a.modifiers?.doubleAnswers) ? 2 : 1;
+}
+
+// Whether `seatId`'s Tools ignore distance (Wondrous Talent).
+export function toolsIgnoreDistance(state: GameState, seatId: string, registry: ContentRegistry): boolean {
+  return activeAbilities(state, seatId, registry).some((a) => a.modifiers?.toolsIgnoreDistance);
 }
 
 // The worn card behind an equipment owner, wherever it now lies.

@@ -21,6 +21,11 @@ const cardName = (definitionId: string) => cardDisplayData(definitionId)?.name ?
 export function describeChoice(state: GameState, viewerSeatId: string): ChoiceDescription | null {
   const choice = state.pendingChoice;
   if (!choice || choice.seatId !== viewerSeatId) return null;
+  // A skill's take from another seat (Feedback).
+  if (choice.reason.kind === 'ability' && choice.verb === 'take') {
+    const from = choice.reason.targetSeatId ? ` from ${seatName(state.players, choice.reason.targetSeatId)}` : '';
+    return { title: abilityName(choice.reason.abilityId), prompt: `Choose a card to take${from}`, confirmLabel: 'Take' };
+  }
   // A skill's pick (a seat, a suit, one of several labels) or who gets given cards.
   if (choice.reason.kind === 'ability' && (choice.verb === 'pick' || choice.verb === 'give')) {
     const title = abilityName(choice.reason.abilityId);

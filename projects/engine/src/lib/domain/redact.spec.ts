@@ -178,3 +178,40 @@ describe('redactStateForSeat: hidden cards in the queue and pending decisions (R
     expect(forB.pendingChoice).toEqual(leaky.pendingChoice);
   });
 });
+
+describe('redactStateForSeat: a hidden General’s decision seen by another seat (final review #2)', () => {
+  const owner = { kind: 'general' as const, seatId: 'b', slot: 'main' as const, skillId: 'dragon-courage' };
+  const black = { instanceId: 'b-black', definitionId: 'sha', suit: 'club' as const, rank: 4 };
+  const red = { instanceId: 'b-red', definitionId: 'peach', suit: 'heart' as const, rank: 3 };
+  const seatOf = (id: string, mainRevealed: boolean) => ({
+    id, index: id === 'a' ? 0 : 1, kingdom: 'Shu' as const, eliminated: false, combinedHp: 4, maxCombinedHp: 4,
+    generals: { main: { generalDefinitionId: 'zhao-yun', revealed: mainRevealed }, deputy: { generalDefinitionId: 'x', revealed: false } },
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
+  });
+  const state = (mainRevealed: boolean): GameState => ({
+    seats: [seatOf('a', true), seatOf('b', mainRevealed)], players: [], turn: { turnNumber: 1, ownerSeatId: 'a', extraTurnStack: [] }, phase: 'Play',
+    zones: [
+      { id: 'a:hand', kind: 'hand', ownerSeatId: 'a', cards: [] },
+      { id: 'b:hand', kind: 'hand', ownerSeatId: 'b', cards: [black, red] },
+    ],
+    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
+    pendingSelection: {
+      id: 's', seatId: 'b', reason: { kind: 'ability', owner, abilityId: 'dragon-courage' }, of: 'cards', eligibleIds: ['b-black'], min: 1, max: 1,
+      then: { kind: 'use-card', as: 'shan', via: { owner, abilityId: 'dragon-courage', conversionId: 'sha-as-shan' }, targets: [], counted: false },
+      onCancel: [], onSelect: [{ kind: 'RevealGeneralEffect', seatId: 'b', slot: 'main', forAbilityId: 'dragon-courage' }],
+    },
+  });
+
+  it('hides which skill it is, and which hand cards it may use', () => {
+    const forA = redactStateForSeat(state(false), 'a');
+    expect(JSON.stringify(forA.pendingSelection)).not.toContain('dragon-courage');
+    expect(JSON.stringify(forA.pendingSelection)).not.toContain('sha-as-shan');
+    expect(forA.pendingSelection!.reason).toEqual({ kind: 'ability', owner: { ...owner, skillId: 'hidden' }, abilityId: 'hidden' });
+    expect(forA.pendingSelection!.eligibleIds).toEqual([]);
+  });
+
+  it('shows it all to its own seat, and to others once the General is revealed', () => {
+    expect(redactStateForSeat(state(false), 'b').pendingSelection).toEqual(state(false).pendingSelection);
+    expect(redactStateForSeat(state(true), 'a').pendingSelection!.reason).toEqual({ kind: 'ability', owner, abilityId: 'dragon-courage' });
+  });
+});

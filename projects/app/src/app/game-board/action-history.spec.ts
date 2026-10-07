@@ -447,3 +447,35 @@ describe('skill lines', () => {
     ]);
   });
 });
+
+describe('actionHistory: the base Generals’ skills', () => {
+  const general = (seatId: string, skillId: string) => ({ kind: 'general' as const, seatId, slot: 'main' as const, skillId });
+  const used = (seatId: string, skillId: string, outcome: string, targetSeatId?: string): EngineEvent => ({
+    kind: 'AbilityUsedEvent', owner: general(seatId, skillId), abilityId: skillId, outcome, ...(targetSeatId ? { targetSeatId } : {}),
+  });
+
+  it('names a one-card conversion by the card, what it counted as, and the skill', () => {
+    const red: CardInstance = { instanceId: 'r', definitionId: 'peach', suit: 'heart', rank: 9 };
+    const via = { owner: general('seat-0', 'fighting-saint'), abilityId: 'fighting-saint', conversionId: 'fighting-saint' };
+    expect(texts([{ kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardFrom([red], 'sha', via), targets: [seat('seat-1')] }])).toEqual([
+      'Seat 0 used Peach (9 ♥) as Sha (Fighting Saint) on Seat 1',
+    ]);
+  });
+
+  it('says what a skill did', () => {
+    expect(texts([used('seat-0', 'linked-camps', 'used')])).toEqual(['Seat 0 used Linked Camps']);
+    expect(texts([used('seat-0', 'bare-the-chest', 'more-damage', 'seat-1')])).toEqual(["Seat 0's Bare the Chest: 1 more damage"]);
+    expect(texts([used('seat-0', 'iron-cavalry', 'unblockable', 'seat-1')])).toEqual(["Seat 0's Iron Cavalry: Seat 1 can't play a Shan"]);
+    expect(texts([used('seat-0', 'displace', 'moved', 'seat-1')])).toEqual(["Seat 0's Displace moved the Sha to Seat 1"]);
+    expect(texts([used('seat-0', 'raid', 'took-hand-card', 'seat-1')])).toEqual(['Seat 0 took a hand card from Seat 1 (Raid)']);
+  });
+
+  it('says a shown card, and a card taken with a skill', () => {
+    expect(texts([{ kind: 'CardShownEvent', seatId: 'seat-1', card: sha, abilityId: 'sow-revolt' }])).toEqual(['Seat 1 showed Sha (7 ♠)']);
+    const took: EngineEvent[] = [
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'take', reason: { kind: 'ability', owner: general('seat-0', 'feedback'), abilityId: 'feedback', targetSeatId: 'seat-1' }, shows: { kind: 'hidden-hand', seatId: 'seat-1', count: 2 } },
+      { kind: 'CardMovedEvent', cardInstanceId: 'x', fromZoneId: 'seat-1:hand', toZoneId: 'seat-0:hand' },
+    ];
+    expect(texts(took)).toEqual(['Seat 0 took a hand card from Seat 1 with Feedback']);
+  });
+});

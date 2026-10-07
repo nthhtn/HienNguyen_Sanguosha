@@ -1,5 +1,5 @@
 // projects/sim/src/property.spec.ts
-import { createGame, cardsOverHandLimit } from 'engine';
+import { createGame, discardOwed } from 'engine';
 import type { GameModeDefinition, PhaseChangedEvent } from 'engine';
 import { buildContentRegistry, kingdomWarMode, kingdomWarMaxSeats } from 'content';
 import { runGame } from './runGame';
@@ -22,7 +22,7 @@ describe('property: simulated Kingdom War games across many seeds and every lega
           point: 'after:PhaseChangedEvent',
           condition: (state, subject) => {
             const event = subject as PhaseChangedEvent;
-            if (event.phase === 'End' && cardsOverHandLimit(state, event.seatId) > 0) {
+            if (event.phase === 'End' && discardOwed(state, event.seatId) > 0) {
               handLimitBreaches.push(`${event.seatId} entered End over its hand limit on turn ${state.turn.turnNumber}`);
             }
             return false;

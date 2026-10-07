@@ -1,11 +1,11 @@
-import { ruleBasedPolicy } from 'bots';
+import { pickRandomAction, ruleBasedPolicy } from 'bots';
 import { Router } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { GameBoard } from './game-board';
 import { GameService } from '../game.service';
-import { Action, GameState, cardsOverHandLimit } from 'engine';
+import { Action, GameState, cardsOverHandLimit, createRng } from 'engine';
 import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
@@ -333,20 +333,18 @@ describe('GameBoard', () => {
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();
 
-    // Play out actions via the real engine until the game ends. Repeatedly
-    // ending phases alone never deals damage (only playing cards does), so
-    // pick uniformly at random among every legal action each step — the same
-    // action-selection strategy sim's random-legal-move bot uses, which this
-    // engine's own property.spec.ts already proves reliably terminates
-    // Kingdom War games across many seeds and seat counts.
+    // Play out actions via the real engine until the game ends, with sim's
+    // seeded random-legal-move bot (it fills selection templates), which the
+    // sim's property spec proves terminates Kingdom War games.
+    let rng = createRng(7);
     let guard = 0;
     while (!gameService.state()!.result && guard < 5000) {
       const seatId = gameService.activeSeatId()!;
       gameService.reveal(seatId);
-      const actions = gameService.legalActions();
-      expect(actions.length).toBeGreaterThan(0);
-      const chosen = actions[Math.floor(Math.random() * actions.length)];
-      gameService.submit(chosen);
+      expect(gameService.legalActions().length).toBeGreaterThan(0);
+      const picked = pickRandomAction(gameService.state()!, rng, gameService.registry);
+      rng = picked.rng;
+      gameService.submit(picked.action);
       guard++;
     }
     expect(gameService.state()!.result).not.toBeNull();

@@ -169,15 +169,15 @@ describe('Kingdom War setup and deal', () => {
       ...state,
       generalSelection: {
         candidates: {
-          'seat-a': ['cao-cao', 'xu-chu', 'guan-yu', 'lu-xun', 'lu-bu'],
-          'seat-b': ['sima-yi', 'guo-jia', 'zhang-fei', 'gan-ning', 'hua-tuo'],
+          'seat-a': ['cao-ren', 'xiahou-yuan', 'wei-yan', 'zhang-zhao-and-zhang-hong', 'yuan-shao'],
+          'seat-b': ['xun-yu', 'cao-pi', 'meng-huo', 'zhou-tai', 'jia-xu'],
         },
       },
     };
     const ctx = { registry, mode: kingdomWarMode };
-    const afterA = resolve(allWei, { kind: 'ChooseGeneralsAction', seatId: 'seat-a', mainId: 'cao-cao', deputyId: 'xu-chu' }, ctx).state;
+    const afterA = resolve(allWei, { kind: 'ChooseGeneralsAction', seatId: 'seat-a', mainId: 'cao-ren', deputyId: 'xiahou-yuan' }, ctx).state;
     expect(afterA.result).toBeNull();
-    const afterB = resolve(afterA, { kind: 'ChooseGeneralsAction', seatId: 'seat-b', mainId: 'sima-yi', deputyId: 'guo-jia' }, ctx).state;
+    const afterB = resolve(afterA, { kind: 'ChooseGeneralsAction', seatId: 'seat-b', mainId: 'xun-yu', deputyId: 'cao-pi' }, ctx).state;
     expect(afterB.result).toEqual({ endedAt: 1, winningKingdom: 'Wei', winningSeatIds: ['seat-a', 'seat-b'], losingSeatIds: [] });
   });
 });
@@ -200,7 +200,7 @@ describe('Kingdom War forced reveal, dying and elimination', () => {
     // Added after the deal: it has no printings, so it never goes in the deck.
     const card = hit(amount);
     registry.cards.set(card.id, card);
-    const base = seated(created, registry, { 'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
+    const base = seated(created, registry, { 'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'] });
     const state: GameState = {
       ...base,
       phase: 'Play',
@@ -257,7 +257,7 @@ describe('Kingdom War win condition', () => {
 
   it('returns a real draw result — not null — when every seat is eliminated at once', () => {
     const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3), registry, {
-      'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'],
+      'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'],
     });
     const allEliminated: GameState = {
       ...created,
@@ -272,7 +272,7 @@ describe('Kingdom War win condition', () => {
 
   it('still returns null while more than one kingdom is alive', () => {
     const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3), registry, {
-      'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'],
+      'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'],
     });
     expect(kingdomWarMode.checkWinCondition(created)).toBeNull();
   });
@@ -282,9 +282,9 @@ describe('Kingdom War per-turn draw', () => {
   const registry = buildContentRegistry();
 
   it('draws 2 cards for whichever seat enters the Draw phase', () => {
-    // cao-cao and xu-chu have no hand-coded skills, isolating the mode-level draw.
+    // cao-ren and xiahou-yuan have no skills, isolating the mode-level draw.
     const state = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, {
-      'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'],
+      'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'],
     });
     const handBefore = state.zones.find((z) => z.id === state.seats[0].hand.zoneId)!;
     expect(handBefore.cards).toHaveLength(4);
@@ -298,36 +298,17 @@ describe('Kingdom War per-turn draw', () => {
     expect(handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id))).toHaveLength(2);
   });
 
-  it('draws 3 cards (2 base + 1 Zhuge Liang bonus) when a Zhuge Liang-holding seat enters Draw', () => {
-    const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42), registry, {
-      'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['sun-quan', 'zhou-yu'], 'seat-c': ['zhao-yun', 'zhuge-liang'],
-    });
-    const seatC = created.seats.find((s) => s.id === 'seat-c')!;
-    // Zhuge Liang revealed: the placeholder bonus is compulsory, off while hidden.
-    const state: GameState = {
-      ...created,
-      turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] },
-      seats: created.seats.map((s) => (s.id === 'seat-c' ? { ...s, generals: { ...s.generals!, deputy: { ...s.generals!.deputy, revealed: true } } } : s)),
-    };
-    const originalCardIds = new Set(state.zones.find((z) => z.id === seatC.hand.zoneId)!.cards.map((c) => c.instanceId));
-
-    const { state: next } = advanceToDecision(state, { registry, mode: kingdomWarMode });
-
-    expect(next.phase).toBe('Play');
-    const handAfter = next.zones.find((z) => z.id === seatC.hand.zoneId)!;
-    expect(handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id))).toHaveLength(3);
-  });
 });
 
 describe('Kingdom War: losing HP', () => {
-  // seat-a (its turn) plays a test card that makes seat-b (Liu Bei and Guan
-  // Yu: 4 HP) lose `amount` HP.
+  // seat-a (its turn) plays a test card that makes seat-b (Huang Zhong and Wei
+  // Yan: 4 HP) lose `amount` HP.
   function loseHp(amount: number, bHand: CardInstance[] = []) {
     const registry = buildContentRegistry();
     const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
     const card: CardDefinition = { id: `test-lose-${amount}`, name: 'Test Lose', category: 'basic', play: (_s, ctx) => [{ kind: 'LoseHpEffect', seatId: ctx.targets[0].seatId, amount }] };
     registry.cards.set(card.id, card);
-    const base = seated(created, registry, { 'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
+    const base = seated(created, registry, { 'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'] });
     const state: GameState = {
       ...base,
       phase: 'Play',
@@ -377,7 +358,7 @@ describe('Kingdom War: the Draw Phase step', () => {
         }],
       }],
     });
-    const base = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, { 'seat-a': ['test-scholar', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
+    const base = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, { 'seat-a': ['test-scholar', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'] });
     const state: GameState = { ...base, seats: base.seats.map((s) => (s.id === 'seat-a' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: true } } } : s)) };
     const next = advanceToDecision(state, { registry, mode: kingdomWarMode }).state;
     const draws = next.log.flatMap((e) => (e.kind === 'CardsDrawnEvent' ? [e.cardInstanceIds.length] : []));

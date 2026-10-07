@@ -21,6 +21,34 @@ export function judgmentZoneOf(state: GameState, seatId: string): CardZone | und
   return seat && state.zones.find((z) => z.id === seat.judgment.zoneId);
 }
 
+// The top `count` cards of the draw pile, top first (fewer if it holds fewer).
+// They stay where they are (Astrology looks at them).
+export function drawPileTop(state: GameState, count: number): CardInstance[] {
+  return requireZoneOfKind(state.zones, 'drawPile').cards.slice(0, Math.max(0, count));
+}
+
+// What `card` counts as where it lies in `zone`: what it was placed as, else itself.
+export function cardCountsAs(zone: CardZone, card: CardInstance): string {
+  return zone.countsAs?.[card.instanceId] ?? card.definitionId;
+}
+
+// `zones` after `card` moved from `fromZoneId` to `toZoneId`: the old zone
+// forgets what it counted as there; the new one records `countsAs` (unless that
+// is the card itself).
+export function recordCountsAs(zones: CardZone[], fromZoneId: string, toZoneId: string, card: CardInstance, countsAs?: string): CardZone[] {
+  return zones.map((zone) => {
+    let map = zone.countsAs;
+    if (zone.id === fromZoneId && map && card.instanceId in map) {
+      const { [card.instanceId]: _gone, ...rest } = map;
+      map = rest;
+    }
+    if (zone.id === toZoneId && countsAs && countsAs !== card.definitionId) map = { ...(map ?? {}), [card.instanceId]: countsAs };
+    if (map === zone.countsAs) return zone;
+    const { countsAs: _old, ...plain } = zone;
+    return map && Object.keys(map).length > 0 ? { ...plain, countsAs: map } : plain;
+  });
+}
+
 export function moveCard(zones: CardZone[], cardInstanceId: string, toZoneId: string): CardZone[] {
   // Validate the destination BEFORE detaching the card: an unknown destination
   // used to silently delete the card instance from the game.

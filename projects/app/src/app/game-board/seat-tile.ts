@@ -87,10 +87,14 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
         <section class="panel judgment-section" aria-label="Judgment">
           <div class="judgment" aria-label="Judgment Area">
             @for (card of judgment(); track card.instanceId) {
-              <div class="slot" [attr.title]="'Judgment Area: ' + cardIdDisplayName(card.definitionId)">
+              @let countsAs = judgmentCountsAs()[card.instanceId];
+              <div class="slot" [attr.title]="'Judgment Area: ' + cardIdDisplayName(card.definitionId) + (countsAs ? ' as ' + cardIdDisplayName(countsAs) : '')">
                 <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
                   <app-playing-card size="small" [card]="card" />
                 </button>
+                @if (countsAs) {
+                  <span class="counts-as">As {{ cardIdDisplayName(countsAs) }}</span>
+                }
               </div>
             } @empty {
               <div class="slot empty" title="Judgment Area (empty)"><mat-icon>balance</mat-icon></div>
@@ -151,7 +155,9 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .general { flex: 1; min-width: 0; }
     .equipment, .judgment-section { flex: none; }
     .equip { display: grid; grid-template-columns: repeat(2, 44px); gap: 5px; justify-content: center; }
-    .slot { width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
+    .slot { position: relative; width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
+    /* A card placed as another (Country Scene's Capture): named over its bottom edge. */
+    .counts-as { position: absolute; left: 0; right: 0; bottom: 0; font-size: 9px; line-height: 1.2; text-align: center; background: rgb(251 247 236 / 0.9); pointer-events: none; }
     .slot-card { padding: 0; border: none; background: none; cursor: pointer; display: block; }
     .slot-card:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: -2px; }
     .judgment { display: flex; flex-direction: column; gap: 5px; align-items: center; }
@@ -171,6 +177,8 @@ export class SeatTile {
   readonly isBot = input(false);
   readonly equipment = input<CardInstance[]>([]);
   readonly judgment = input<CardInstance[]>([]);
+  // What each Judgment slot card counts as, when placed as another card.
+  readonly judgmentCountsAs = input<Record<string, string>>({});
 
   // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a
   // seat that belongs to no force).

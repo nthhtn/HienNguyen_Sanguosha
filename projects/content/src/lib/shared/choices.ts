@@ -2,6 +2,7 @@ import type { CardDefinition, ChoiceOption, GameState, PendingChoice } from 'eng
 import { requireZoneOfKind } from 'engine';
 import { otherLivingSeatTargets, seatDistance } from './queries';
 import { toolOnTargets } from './tools';
+import { toolsIgnoreDistance, untargetableBy } from './abilities';
 
 const PICKABLE_ZONE_KINDS = ['hand', 'equip', 'judgment'];
 
@@ -14,7 +15,8 @@ export function holdsAnyCard(state: GameState, seatId: string): boolean {
 // One option per thing of `ownerSeatId`'s that may be picked: the hand as a
 // single face-down option (its card is picked at random), then each worn and
 // judgment card face up. Each option moves its card to `toZoneId`.
-export function seatCardOptions(state: GameState, ownerSeatId: string, toZoneId: string): ChoiceOption[] {
+// `judgment: false` leaves the Judgment slot out (Feedback).
+export function seatCardOptions(state: GameState, ownerSeatId: string, toZoneId: string, { judgment = true }: { judgment?: boolean } = {}): ChoiceOption[] {
   const owned = (kind: string) => state.zones.filter((z) => z.ownerSeatId === ownerSeatId && z.kind === kind);
   const options: ChoiceOption[] = [];
   for (const hand of owned('hand')) {
@@ -25,7 +27,7 @@ export function seatCardOptions(state: GameState, ownerSeatId: string, toZoneId:
       effects: [{ kind: 'MoveRandomCardEffect', fromZoneId: hand.id, toZoneId }],
     });
   }
-  for (const zone of [...owned('equip'), ...owned('judgment')]) {
+  for (const zone of [...owned('equip'), ...(judgment ? owned('judgment') : [])]) {
     for (const card of zone.cards) {
       options.push({ id: card.instanceId, shows: { kind: 'card', card }, effects: [{ kind: 'MoveCardEffect', cardInstanceId: card.instanceId, toZoneId }] });
     }
@@ -54,9 +56,10 @@ export function pickACardTool({ id, name, verb, maxDistance }: PickACardToolSpec
         ([target]) =>
           target.kind === 'seat' &&
           holdsAnyCard(state, target.seatId) &&
-          (maxDistance === undefined || seatDistance(state, ctx.seatId, target.seatId, registry) <= maxDistance)
+          !untargetableBy(state, target.seatId, id, registry) &&
+          (maxDistance === undefined || toolsIgnoreDistance(state, ctx.seatId, registry) || seatDistance(state, ctx.seatId, target.seatId, registry) <= maxDistance)
       ),
-    play: (state, ctx) => (ctx.respondingTo || ctx.targets.length === 0 ? [] : toolOnTargets(state, ctx.seatId, ctx.cardInstanceId, [ctx.targets[0]])),
+    play: (state, ctx) => (ctx.respondingTo || ctx.targets.length === 0 ? [] : toolOnTargets(ctx.card, ctx.seatId, [ctx.targets[0]])),
     onTarget: (state, { tool, userSeatId, target }) => {
       const user = state.seats.find((s) => s.id === userSeatId);
       if (target.kind !== 'seat' || !user) return [];

@@ -25,7 +25,7 @@ describe('Wiki pages', () => {
   it('shows Generals in Wei, Shu, Wu and Qun tabs, opening on Wei', async () => {
     const { el } = await open('/wiki/generals');
     expect(el().querySelector('h2')!.textContent).toBe('Generals');
-    expect(el().querySelector('.summary')!.textContent).toContain('57 generals · 5 with skills in the game');
+    expect(el().querySelector('.summary')!.textContent).toMatch(/57 generals · \d+ with skills in the game/);
     expect(tabLabels(el())).toEqual(['Wei (15)', 'Shu (15)', 'Wu (15)', 'Qun (12)']);
     expect(selectedTab(el())).toBe('Wei (15)');
     expect(el().querySelectorAll('app-wiki-general-entry')).toHaveLength(15);

@@ -1,7 +1,7 @@
-import { AbilityOwner, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GeneralOwner, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
-import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
+import { drawTop, moveCard, recordCountsAs, requireZoneOfKind } from '../cards/zones';
 import { EngineEvent } from './events';
 import { isFaceUpZoneKind } from '../domain/redact';
 
@@ -14,8 +14,9 @@ export type Effect =
   // Lowers HP without damage (see HpLostEvent). The mode starts the dying round.
   | { kind: 'LoseHpEffect'; seatId: string; amount: number; abilityId?: string }
   // The Draw Phase's draw: `count` cards. Skills rewrite the count or replace
-  // the draw with before-triggers.
-  | { kind: 'DrawPhaseEffect'; seatId: string; count: number }
+  // the draw with before-triggers. `acted`: the skills that had their say (an
+  // ask's Don't sends it back through its before-triggers).
+  | { kind: 'DrawPhaseEffect'; seatId: string; count: number; acted?: string[] }
   // Adds `by` to a counter: this turn's ability uses (scope 'turn'), or a
   // seat's game-long marks (scope 'seat', with `seatId`). Logs nothing.
   | { kind: 'IncrementEffect'; scope: 'turn' | 'seat'; key: string; by: number; seatId?: string }
@@ -24,7 +25,9 @@ export type Effect =
   | { kind: 'HealEffect'; target: Target; amount: number }
   // `onlyFrom`: move it only if it is still in that zone (a judged card a
   // reader already moved on).
-  | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string; onlyFrom?: string }
+  // `countsAs`: the card counts as that card where it lands (a Tool placed
+  // through a conversion).
+  | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string; onlyFrom?: string; countsAs?: string }
   | { kind: 'EliminateSeatEffect'; seatId: string }
   // The dying round for `seatId`: ask the seats in `order` (turn order from the
   // turn owner) one at a time. Any seat may save it with `rescueCardIds.any`
@@ -81,7 +84,14 @@ export type Effect =
   // Logs that an ability applied, for the Action History.
   | { kind: 'AbilityUsedEffect'; owner: AbilityOwner; abilityId: string; outcome: string; targetSeatId?: string }
   // Asks `selection.seatId` to pick cards or seats; the queue waits.
-  | { kind: 'OpenSelectionEffect'; selection: PendingSelection };
+  | { kind: 'OpenSelectionEffect'; selection: PendingSelection }
+  // One step of a General's skill (SkillDefinition.onStep).
+  | { kind: 'SkillStepEffect'; owner: GeneralOwner; step: string; data?: Record<string, unknown> }
+  // `seatId` uses `card` at `targets`, as a play outside any limit: a card a
+  // skill makes a seat use (Sow Discord's Duel). Not counted toward limits.
+  | { kind: 'UseCardEffect'; seatId: string; card: UsedCard; targets: Target[] }
+  // Shows a card to everyone (Sow Revolt's taken card): logs its face.
+  | { kind: 'ShowCardEffect'; seatId: string; cardInstanceId: string; abilityId?: string };
 
 export interface ApplyResult {
   state: GameState;
@@ -153,9 +163,10 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     case 'MoveCardEffect': {
       const origin = state.zones.find((z) => z.cards.some((c) => c.instanceId === effect.cardInstanceId));
       if (effect.onlyFrom && origin?.id !== effect.onlyFrom) return { state, events: [] };
-      const zones = moveCard(state.zones, effect.cardInstanceId, effect.toZoneId);
+      const moved = moveCard(state.zones, effect.cardInstanceId, effect.toZoneId);
+      const card = moved.find((z) => z.id === effect.toZoneId)!.cards.at(-1)!;
+      const zones = recordCountsAs(moved, origin!.id, effect.toZoneId, card, effect.countsAs);
       const destination = zones.find((z) => z.id === effect.toZoneId)!;
-      const card = destination.cards.at(-1)!;
       const event: EngineEvent = {
         kind: 'CardMovedEvent',
         cardInstanceId: effect.cardInstanceId,
@@ -270,6 +281,15 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       };
       return { state: { ...state, log: [...state.log, event] }, events: [event] };
     }
+    case 'ShowCardEffect': {
+      const card = state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === effect.cardInstanceId);
+      if (!card) return { state, events: [] };
+      const event: EngineEvent = { kind: 'CardShownEvent', seatId: effect.seatId, card, ...(effect.abilityId ? { abilityId: effect.abilityId } : {}) };
+      return { state: { ...state, log: [...state.log, event] }, events: [event] };
+    }
+    case 'SkillStepEffect':
+    case 'UseCardEffect':
+      throw new Error(`${effect.kind} needs the registry: resolve it through the pipeline`);
     default:
       throw new Error(`Unhandled effect kind: ${(effect as Effect).kind}`);
   }
@@ -278,7 +298,10 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
 // One step of the dying round. Saved once above 0 HP; otherwise ask the next
 // seat in `order` that must be asked — the dying seat always, any other seat
 // only while it holds a rescue card; eliminated when no one is left to ask.
-function applyDying(state: GameState, effect: Extract<Effect, { kind: 'DyingEffect' }>): ApplyResult {
+// `mayRescue`: whether a seat with no rescue card in hand could still answer
+// with one (a conversion into a Peach); the pipeline supplies it, since it
+// needs the registry.
+export function applyDying(state: GameState, effect: Extract<Effect, { kind: 'DyingEffect' }>, mayRescue?: (seatId: string) => boolean): ApplyResult {
   const seat = state.seats.find((s) => s.id === effect.seatId);
   if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
   if (seat.eliminated) return { state, events: [] };
@@ -294,7 +317,7 @@ function applyDying(state: GameState, effect: Extract<Effect, { kind: 'DyingEffe
   const holdsRescue = (seatId: string) => {
     const s = state.seats.find((x) => x.id === seatId);
     const hand = s && state.zones.find((z) => z.id === s.hand.zoneId);
-    return !!hand?.cards.some((c) => effect.rescueCardIds.any.includes(c.definitionId));
+    return !!hand?.cards.some((c) => effect.rescueCardIds.any.includes(c.definitionId)) || !!mayRescue?.(seatId);
   };
   const isLiving = (seatId: string) => !!state.seats.find((x) => x.id === seatId && !x.eliminated);
   const index = effect.order.findIndex((id) => isLiving(id) && (id === seat.id || holdsRescue(id)));

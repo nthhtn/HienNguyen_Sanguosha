@@ -1,5 +1,8 @@
 import type { Action, ContentRegistry, GameState, Seat } from 'engine';
+import { conversionsOf, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
+import { definitionIdOf, isAlly, keepRank, leastUseful, mayReveal } from './helpers';
+import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
 type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
@@ -9,19 +12,7 @@ type Select = Extract<Action, { kind: 'SelectAction' }>;
 type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
 type Arrange = Extract<Action, { kind: 'ArrangeCardsAction' }>;
 
-function definitionIdOf(view: GameState, cardInstanceId: string): string | undefined {
-  for (const zone of view.zones) {
-    const found = zone.cards.find((c) => c.instanceId === cardInstanceId);
-    if (found) return found.definitionId;
-  }
-  return undefined;
-}
 
-// An ally shares the bot's own (known) kingdom and has revealed it. Qun is
-// allied with no one; a hidden kingdom could be anyone, so it is not an ally.
-function isAlly(self: Seat, other: Seat): boolean {
-  return self.kingdom !== 'Qun' && self.kingdom !== 'hidden' && other.kingdom === self.kingdom;
-}
 
 // Tools worth cancelling when they are aimed at this bot.
 const HARMFUL_TOOLS = new Set(['barbarians', 'hail-of-arrows', 'duel', 'steal', 'break', 'capture', 'lightning', 'starvation']);
@@ -36,20 +27,7 @@ function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitio
     .map((t) => t.play);
 }
 
-// Higher = keep longer. Peach saves a life, Shan blocks a Sha, Sha attacks.
-function keepRank(view: GameState, registry: ContentRegistry, cardInstanceId: string): number {
-  const definitionId = definitionIdOf(view, cardInstanceId);
-  if (definitionId === 'peach') return 4;
-  if (definitionId === 'shan') return 3;
-  if (definitionId === 'sha' || definitionId === 'wine' || definitionId === 'draw-two') return 2;
-  if (definitionId && registry.cards.get(definitionId)?.category === 'equipment') return 1;
-  return 0;
-}
 
-// Instance ids, least useful first (then lowest rank).
-function leastUseful(view: GameState, registry: ContentRegistry, ids: readonly string[]): string[] {
-  return [...ids].sort((a, b) => keepRank(view, registry, a) - keepRank(view, registry, b));
-}
 
 // Whether to use an optional ability (the Sha-Equipment spec's bot rules).
 function wantsToUse(view: GameState, self: Seat, abilityId: string, targetSeatId: string | undefined): boolean {
@@ -73,24 +51,16 @@ function wantsToUse(view: GameState, self: Seat, abilityId: string, targetSeatId
   }
 }
 
-// Whether the bot will reveal a hidden General to use a skill: once its
-// kingdom is known anyway (a General already revealed), or while it holds at
-// least 4 HP.
-function mayReveal(self: Seat): boolean {
-  return !!self.generals && (self.generals.main.revealed || self.generals.deputy.revealed || self.combinedHp >= 4);
-}
 
 // Cards worth drawing soon: kept on top when arranging the draw pile.
 const KEEP_ON_TOP = new Set(['peach', 'shan', 'sha']);
 
 // Abilities whose card selections the bot fills rather than cancels.
-const SELECTS_FOR = new Set(['axe', 'green-dragon-blade', 'serpent-spear']);
+const SELECTS_FOR = new Set(['axe', 'green-dragon-blade', 'serpent-spear', ...CONVERSION_SKILLS]);
 
-// Serpent Spear is worth it when the 2 least useful hand cards hold no Peach.
-function spareForConversion(view: GameState, self: Seat, registry: ContentRegistry): boolean {
-  const hand = (view.zones.find((z) => z.id === self.hand.zoneId)?.cards ?? []).map((c) => c.instanceId);
-  return hand.length >= 2 && !leastUseful(view, registry, hand).slice(0, 2).some((id) => definitionIdOf(view, id) === 'peach');
-}
+// What a conversion action makes, read from the seat's conversions.
+const conversionAs = (a: UseConversion, view: GameState, registry: ContentRegistry) =>
+  conversionsOf(view, a.seatId, registry).find((o) => o.conversion.id === a.via.conversionId && sameAbilityOwner(o.owner, a.via.owner))?.conversion.as;
 
 function decide(
   view: GameState,
@@ -133,6 +103,9 @@ function decide(
   if (selectTemplate && view.pendingSelection && me) {
     const selection = view.pendingSelection;
     const cancel = legal.find((a) => a.kind === 'CancelSelectionAction');
+    const skillPick = skillSelection(view, me, selection, registry);
+    if (skillPick === 'cancel' && cancel) return take(cancel);
+    if (Array.isArray(skillPick) && skillPick.length >= selection.min) return take({ ...selectTemplate, ids: skillPick });
     if (selection.of === 'seats') {
       const ids = selection.eligibleIds
         .filter((id) => {
@@ -152,12 +125,18 @@ function decide(
   const choiceNow = view.pendingChoice;
   const choiceActions = legal.filter((a): a is ChooseOption => a.kind === 'ChooseOptionAction');
   if (choiceNow && me && choiceActions.length > 0) {
-    if (choiceNow.reason.kind === 'ability') {
+    if (choiceNow.reason.kind === 'ability' && choiceNow.verb === 'use') {
       const use = choiceNow.options.find((o) => o.id === 'use')?.shows;
       const reveals = use?.kind === 'use' && !!use.reveals;
-      const wants = wantsToUse(view, me, choiceNow.reason.abilityId, choiceNow.reason.targetSeatId) && (!reveals || mayReveal(me));
+      const skillWants = wantsSkill(view, me, choiceNow, registry);
+      const wants = (skillWants ?? wantsToUse(view, me, choiceNow.reason.abilityId, choiceNow.reason.targetSeatId)) && (!reveals || mayReveal(me));
       const pick = choiceActions.find((a) => a.optionId === (wants ? 'use' : 'decline'));
       if (pick) return take(pick);
+    }
+    // A skill's pick of a seat, a suit or a label, or who gets given cards.
+    if (choiceNow.reason.kind === 'ability' && (choiceNow.verb === 'pick' || choiceNow.verb === 'give')) {
+      const optionId = skillChoice(view, me, choiceNow);
+      return take(choiceActions.find((a) => a.optionId === optionId) ?? choiceActions[0]);
     }
     const decline = choiceActions.find((a) => a.optionId === 'decline');
     if (decline && choiceNow.reason.kind === 'choice' && choiceNow.reason.targetSeatId === seatId) {
@@ -205,8 +184,8 @@ function decide(
     // A Peach before anything else (a dying bot drinks Wine only without one).
     const best = answers.find((a) => definitionIdOf(view, a.cardInstanceId) === 'peach') ?? answers[0];
     // Serpent Spear: only with no real answer, and no Peach among the 2 cards it would take.
-    const converted = legal.find((a): a is UseConversion => a.kind === 'UseConversionAction');
-    const chosen = best ?? (converted && self && spareForConversion(view, self, registry) ? converted : undefined);
+    const converted = legal.find((a): a is UseConversion => a.kind === 'UseConversionAction' && !!self && conversionSpare(view, self, a, registry));
+    const chosen = best ?? converted;
     const answer = (worthAnswering ? chosen : undefined) ?? legal.find((a) => a.kind === 'PassAction');
     if (answer) return take(answer);
   }
@@ -255,6 +234,9 @@ function decide(
     const peachGarden = untargetedOf('peach-garden');
     if (peachGarden && self.combinedHp < self.maxCombinedHp) return take(peachGarden);
 
+    const early = pickActiveSkill(view, self, legal, registry, 'early');
+    if (early) return take(early);
+
     // Barbarians and Hail of Arrows hit everyone else: only worth it when
     // non-allies are at least as many as allies.
     const others = view.seats.filter((s) => s.id !== seatId && !s.eliminated);
@@ -273,6 +255,18 @@ function decide(
       (a, b) => Number(wearsEquipment(b)) - Number(wearsEquipment(a))
     );
     if (grab) return take(grab);
+
+    // Conversions into a Break or a Capture, under the same rules as the cards.
+    const targetSeat = (a: UseConversion) => view.seats.find((s) => s.id === a.targets[0].seatId)!;
+    const conversionsAs = (as: string) =>
+      legal.filter(
+        (a): a is UseConversion =>
+          a.kind === 'UseConversionAction' && !a.pendingResponseId && a.targets.length === 1 && conversionAs(a, view, registry) === as && conversionSpare(view, self, a, registry) && !isAlly(self, targetSeat(a))
+      );
+    const [breakVia] = conversionsAs('break');
+    if (breakVia) return take(breakVia);
+    const [captureVia] = conversionsAs('capture').sort((x, y) => targetSeat(y).combinedHp - targetSeat(x).combinedHp);
+    if (captureVia) return take(captureVia);
 
     // Delayed Tools. Capture: the highest-HP non-ally. Starvation: the
     // non-ally in reach with the most hand cards. Lightning: at 3 HP or more.
@@ -297,14 +291,14 @@ function decide(
     // Whenever the engine offers a Sha (Crossbow lifts the limit); the safety cap still ends the turn.
     const [sha] = shaPlays;
     if (sha) return take(sha, 1);
-    // Serpent Spear: with no real Sha, 2 cards as one at the weakest non-ally.
+    // A conversion into a Sha (Serpent Spear, Fighting Saint…): with no real Sha, at the weakest non-ally.
     const [conversion] = legal
-      .filter((a): a is UseConversion => a.kind === 'UseConversionAction' && a.targets.length === 1)
+      .filter((a): a is UseConversion => a.kind === 'UseConversionAction' && a.targets.length === 1 && conversionAs(a, view, registry) === 'sha')
       .map((a) => ({ a, target: view.seats.find((s) => s.id === a.targets[0].seatId) }))
       .filter((t): t is { a: UseConversion; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
       .sort((x, y) => x.target.combinedHp - y.target.combinedHp || x.target.index - y.target.index)
       .map((t) => t.a);
-    if (conversion && spareForConversion(view, self, registry)) return take(conversion, 1);
+    if (conversion && conversionSpare(view, self, conversion, registry)) return take(conversion, 1);
     const [duel] = targetedPlays(view, self, plays, 'duel');
     if (duel) return take(duel);
     // Coerce: when one non-ally's weapon can reach another non-ally.
@@ -314,6 +308,8 @@ function decide(
       return !!holder && !!victim && victim.id !== seatId && !isAlly(self, holder) && !isAlly(self, victim);
     });
     if (coerce) return take(coerce);
+    const late = pickActiveSkill(view, self, legal, registry, 'late');
+    if (late) return take(late);
     if (endPhase) return take(endPhase);
   }
 

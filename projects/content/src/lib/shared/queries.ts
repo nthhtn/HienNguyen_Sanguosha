@@ -26,13 +26,15 @@ function equippedSlot(state: GameState, seatId: string, slot: EquipSlot, registr
 }
 
 // Distance for targeting: living-seat ring distance, +1 if the target rides a
-// defensive mount, −1 if the attacker rides an offensive mount, never below 1.
+// defensive mount, −1 if the attacker rides an offensive mount, plus the
+// attacker's distance modifiers (Horsemanship), never below 1.
 export function seatDistance(state: GameState, fromSeatId: string, toSeatId: string, registry: ContentRegistry): number {
   const base = getSeatDistance(state, fromSeatId, toSeatId);
   if (!Number.isFinite(base)) return base;
   const defensive = equippedSlot(state, toSeatId, 'defensiveMount', registry) ? 1 : 0;
   const offensive = equippedSlot(state, fromSeatId, 'offensiveMount', registry) ? 1 : 0;
-  return Math.max(1, base + defensive - offensive);
+  const skills = activeAbilities(state, fromSeatId, registry).reduce((sum, a) => sum + (a.modifiers?.distanceToOthers ?? 0), 0);
+  return Math.max(1, base + defensive - offensive + skills);
 }
 
 // How far the seat can attack: its weapon's reach, or 1 unarmed.

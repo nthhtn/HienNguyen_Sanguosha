@@ -46,7 +46,7 @@ export interface SelectionDialogData {
     <app-decision-countdown class="timer" />
     <mat-dialog-actions align="end">
       @if (d.cancel; as cancel) {
-        <button mat-button type="button" class="cancel" (click)="dialogRef.close(cancel)">Cancel</button>
+        <button mat-button type="button" class="cancel" (click)="dialogRef.close(cancel)">{{ d.cancelLabel }}</button>
       }
       <button mat-flat-button type="button" class="confirm" [disabled]="!ready()" (click)="confirm()">{{ d.confirmLabel }}</button>
     </mat-dialog-actions>

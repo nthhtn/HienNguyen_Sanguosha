@@ -41,10 +41,10 @@ export interface CardDefinition {
   // PendingResponse.sourceCard), after the answering card's own effects. Its
   // effects replace the default of simply cancelling the pending effect, e.g.
   // a Duel turning back on the other player.
-  onResponse?(state: GameState, ctx: ResponseContext): unknown[];
+  onResponse?(state: GameState, ctx: ResponseContext, registry: ContentRegistry): unknown[];
   // A Tool's rule on one target, once its Wuxie check has passed
   // (ToolRuleEffect). Its effects go to the front of the queue.
-  onTarget?(state: GameState, ctx: ToolTargetContext): unknown[];
+  onTarget?(state: GameState, ctx: ToolTargetContext, registry: ContentRegistry): unknown[];
   // A delayed Tool: play() puts it in a judgment area, so playing it doesn't
   // send it to the discard pile (like Equipment).
   delayed?: boolean;
@@ -63,7 +63,7 @@ export interface CardDefinition {
   // One step of this card's resolution (CardStepEffect, e.g. a Sha's
   // 'sha-shan'). Its effects go to the front of the queue. Abilities hook in
   // with before:CardStepEffect triggers.
-  onStep?(state: GameState, step: Extract<Effect, { kind: 'CardStepEffect' }>): unknown[];
+  onStep?(state: GameState, step: Extract<Effect, { kind: 'CardStepEffect' }>, registry: ContentRegistry): unknown[];
 }
 
 export interface ResponseContext {
@@ -133,18 +133,33 @@ export interface AbilityModifiers {
   ignoresArmor?: boolean;
   // Card ids that can't target the wearer (Wood Armor: Barbarians, Hail of Arrows).
   untargetableBy?: string[];
+  // Added to the owner's distance to every other seat (Horsemanship: -1); never below 1.
+  distanceToOthers?: number;
+  // The owner's Tools ignore distance (Wondrous Talent: Steal, Starvation).
+  toolsIgnoreDistance?: boolean;
+  // Card ids that can't target the owner while its hand is empty (Empty City: Sha, Duel).
+  untargetableWithEmptyHandBy?: string[];
+  // The owner's Sha needs two Shan, and in a Duel with it the other seat plays two Sha each time (Matchless).
+  doubleAnswers?: boolean;
 }
 
-// Using hand cards as another card (Serpent Spear: 2 hand cards as a Sha).
+// Using cards as another card (Serpent Spear: 2 hand cards as a Sha; Fighting
+// Saint: a red card as a Sha).
 export interface Conversion {
   // Unique among its owner's conversions.
   id: string;
   // The card the picked cards count as.
   as: string;
-  // How many hand cards it takes. (1-card conversions come with stage 7.)
-  cards: 2;
+  // How many cards it takes.
+  cards: 1 | 2;
+  // Where they come from: the hand (default), or the hand and worn equipment.
+  from?: 'hand' | 'hand-and-equipment';
+  // Which cards may be used; absent = any.
+  accepts?(card: CardInstance): boolean;
   // 'play': proactively in your Play Phase; 'respond': to answer a window.
   when: 'play' | 'respond' | 'both';
+  // Only while it is not its owner's turn (First Aid).
+  outsideOwnTurnOnly?: boolean;
 }
 
 // What a card does while worn.
@@ -188,6 +203,10 @@ export interface SkillDefinition extends Abilities {
   active?: ActiveSkill;
   // Reads a judgment this skill asked for (JudgmentReader 'skill').
   onJudged?(state: GameState, ctx: SkillJudgedContext): unknown[];
+  // One step of this skill's own resolution (SkillStepEffect), for skills that
+  // decide in several moves (Raid, Kindness, Sow Revolt). Its effects go to the
+  // front of the queue.
+  onStep?(state: GameState, step: Extract<Effect, { kind: 'SkillStepEffect' }>, registry: ContentRegistry): unknown[];
 }
 
 export interface GeneralDefinition {

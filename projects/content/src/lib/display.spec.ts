@@ -1,4 +1,4 @@
-import { abilityHint, abilityName, cardDisplayData, generalDisplayData, skillIdOf } from './display';
+import { abilityHint, abilityName, cardDisplayData, generalDisplayData, selectionText, skillIdOf } from './display';
 
 describe('generalDisplayData', () => {
   it('returns name, title and skill name/text for a known general', () => {
@@ -59,5 +59,16 @@ describe('skill names', () => {
     expect(abilityName('kindness')).toBe('Kindness');
     expect(abilityName('heavens-envy')).toBe("Heaven's Envy");
     expect(abilityName('ferocity')).toBe('Ferocity');
+  });
+});
+
+describe('skill texts', () => {
+  it('every asked base skill has a hint, and the multi-pick skills have selection text', () => {
+    for (const id of ['evil-hero', 'feedback', 'unyielding', 'bestowed-rouse', 'heavens-envy', 'devil', 'river-goddess', 'bare-the-chest', 'raid', 'brave-gesture', 'gathering-wisdom', 'iron-cavalry', 'astrology', 'displace', 'self-restraint']) {
+      expect(abilityHint(id)).toEqual(expect.any(String));
+    }
+    expect(selectionText('reconsider')).toEqual({ prompt: 'Choose cards to discard, then draw as many', confirm: 'Discard' });
+    expect(selectionText('bestowed-rouse')).toEqual({ prompt: 'Choose drawn cards to give away', confirm: 'Give', cancel: 'Keep the Rest' });
+    expect(selectionText('sha')).toBeNull();
   });
 });

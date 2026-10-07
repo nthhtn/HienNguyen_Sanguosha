@@ -4,13 +4,14 @@ import { makeEquipmentCard } from './index';
 import { CardStep, actedOn, askAtStep, atStep } from '../../shared/steps';
 import { attackRange, seatDistance } from '../../shared/queries';
 import { shaData } from '../sha';
+import { untargetableBy } from '../../shared/abilities';
 
 // Living seats other than the user and the Sha's target, within the user's attack range, in seat order.
 function extraTargets(state: GameState, step: CardStep, registry: ContentRegistry): string[] {
   const range = attackRange(state, step.userSeatId, registry);
   return [...state.seats]
     .sort((a, b) => a.index - b.index)
-    .filter((s) => !s.eliminated && s.id !== step.userSeatId && s.id !== step.target.seatId && seatDistance(state, step.userSeatId, s.id, registry) <= range)
+    .filter((s) => !s.eliminated && s.id !== step.userSeatId && s.id !== step.target.seatId && seatDistance(state, step.userSeatId, s.id, registry) <= range && !untargetableBy(state, s.id, 'sha', registry))
     .map((s) => s.id);
 }
 

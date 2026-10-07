@@ -3,22 +3,22 @@ import { usedCardFrom, usedCardOf } from '../domain/usedCard';
 import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
-import { Effect, applyEffect } from './effects';
+import { Effect, applyDying, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
 import { validateArrangement } from '../rules/arrangement';
-import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence';
-import { activeSkillActions, conversionActions, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
+import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer } from '../rules/phaseSequence';
+import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, legalTargetListsFor, playConversionCards, sameAbilityOwner } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
-import { cardsOverHandLimit } from '../rules/handLimit';
 import { ArrangementMadeEvent, CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
 import { applyCardStep } from './cardStep';
+import { applySkillStep } from './skillStep';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -187,13 +187,23 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
   if (rewritten === null) return { state, events: [] };
   const current = rewritten.effect;
 
+  // A card used by an effect goes through useCard, which logs and queues its own follow-ups.
+  if (current.kind === 'UseCardEffect') {
+    const used = useCard(state, current.seatId, current.card, { targets: current.targets, counted: false, free: true }, ctx);
+    return { state: queueFront(used.state, rewritten.after), events: used.events };
+  }
+
   const applied = isLifecycleEffect(current)
     ? applyLifecycleEffect(state, current, ctx.registry)
     : isJudgmentStepEffect(current)
       ? applyJudgmentStepEffect(state, current, ctx.registry)
       : current.kind === 'CardStepEffect'
         ? applyCardStep(state, current, ctx.registry)
-        : applyEffect(state, current);
+        : current.kind === 'SkillStepEffect'
+          ? applySkillStep(state, current, ctx.registry)
+          : current.kind === 'DyingEffect'
+            ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry).length > 0)
+            : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
   return { state: queueFront(applied.state, [...followUps, ...rewritten.after]), events: applied.events };
 }
@@ -287,14 +297,16 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
     seatId === counted.turn.ownerSeatId ? { ...counted, turn: { ...counted.turn, ownerUses: { ...ownerUses, [used.as]: (ownerUses[used.as] ?? 0) + 1 } } } : counted;
   // A used card leaves the hand at once, so it can't be reused mid-resolution.
   // Equipment and delayed Tools played as themselves are placed by their own play().
-  const placesItself = !pending && !used.via && (definition.category === 'equipment' || !!definition.delayed);
+  // Equipment and delayed Tools played (not answered) place their own card,
+  // a converted delayed Tool included (it lies there as what it was used as).
+  const placesItself = !pending && (definition.category === 'equipment' || !!definition.delayed);
   const discardPileId = requireZoneOfKind(state.zones, 'discardPile').id;
   const leaveHand: Effect[] = placesItself
     ? []
     : used.physical.map((c) => ({ kind: 'MoveCardEffect', cardInstanceId: c.instanceId, toZoneId: discardPileId }));
   // The opening card's say in what the answer leads to (e.g. a Duel turning back).
   const fromSource = pending?.sourceCard
-    ? ((lookupCard(ctx.registry, pending.sourceCard.definitionId).onResponse?.(afterLog, { pending, seatId, cardInstanceId, card: used }) ?? []) as Effect[])
+    ? ((lookupCard(ctx.registry, pending.sourceCard.definitionId).onResponse?.(afterLog, { pending, seatId, cardInstanceId, card: used }, ctx.registry) ?? []) as Effect[])
     : [];
   const followUps = afterTriggerFollowUps(tallied, [event], ctx);
   return {
@@ -325,11 +337,14 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
           const seat = state.seats.find((s) => s.id === seatId);
           if (!seat) throw new Error(`Unknown seat: ${seatId}`);
           const moves: Effect[] = ids.map((id) => ({ kind: 'MoveCardEffect', cardInstanceId: id, toZoneId: seat.hand.zoneId }));
-          return { id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [...moves, ...(then.then ?? [])] };
+          const tally: Effect[] = then.tally ? [{ kind: 'IncrementEffect', scope: 'turn', key: then.tally, by: ids.length }] : [];
+          return { id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [...moves, ...tally, ...(then.then ?? [])] };
         }),
       };
       return { state: queueFront(state, [{ kind: 'OpenChoiceEffect', choice }]), events: [] };
     }
+    case 'skill-step':
+      return { state: queueFront(state, [{ ...then.step, data: { ...then.step.data, picked: ids } }]), events: [] };
     case 'replace-judgment':
       return {
         state: queueFront(state, [{ kind: 'ReplaceJudgmentEffect', judgment: then.judgment, withCardInstanceId: ids[0], owner: then.owner, abilityId: then.abilityId }]),
@@ -453,7 +468,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (state.phase !== 'Discard' || state.turn.ownerSeatId !== action.seatId) {
         throw new Error('Cards can only be discarded during your Discard phase');
       }
-      if (cardsOverHandLimit(state, action.seatId) === 0) {
+      if (discardOwed(state, action.seatId) === 0) {
         throw new Error(`Seat ${action.seatId} is within its hand limit and has nothing to discard`);
       }
       const handZone = state.zones.find((z) => z.id === seat.hand.zoneId);
@@ -509,6 +524,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         const step = resolveEffect(current, effect, ctx);
         current = step.state;
         events.push(...step.events);
+        // A window the selection answers is already open; anything else is new.
+        const opened = !!current.pendingChoice || !!current.pendingSelection || !!current.pendingArrangement || current.pendingResponse !== cleared.pendingResponse;
+        if (opened) throw new Error(`An onSelect effect of ${selection.id} opened a decision (${effect.kind})`);
       }
       const continued = continueSelection(current, selection, action.ids, ctx);
       return { state: continued.state, events: [...events, ...continued.events] };
@@ -526,14 +544,13 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const owned = conversionsOf(state, action.seatId, ctx.registry).find(
         (o) => o.conversion.id === action.via.conversionId && sameAbilityOwner(o.owner, action.via.owner)
       )!;
-      const seat = state.seats.find((s) => s.id === action.seatId)!;
-      const hand = state.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [];
       const selection: PendingSelection = {
         id: `convert-${owned.conversion.id}-${action.seatId}-${state.log.length}`,
         seatId: action.seatId,
         reason: { kind: 'ability', owner: owned.owner, abilityId: owned.abilityId },
         of: 'cards',
-        eligibleIds: hand.map((c) => c.instanceId),
+        // A play may only use cards whose leaving keeps its targets legal.
+        eligibleIds: (action.pendingResponseId ? conversionCards(state, action.seatId, owned.conversion) : playConversionCards(state, action.seatId, owned.conversion, action.targets, ctx.registry)).map((c) => c.instanceId),
         min: owned.conversion.cards,
         max: owned.conversion.cards,
         then: {

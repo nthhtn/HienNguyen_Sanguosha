@@ -21,7 +21,7 @@ function makeSeat(overrides: Partial<Seat> = {}): Seat {
   };
 }
 
-function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[]; judgment?: CardInstance[] } = {}) {
+function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[]; judgment?: CardInstance[]; judgmentCountsAs?: Record<string, string> } = {}) {
   const fixture = TestBed.createComponent(SeatTile);
   fixture.componentRef.setInput('seat', seat);
   fixture.componentRef.setInput('name', opts.name ?? 'Seat 1');
@@ -32,11 +32,19 @@ function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwn
   fixture.componentRef.setInput('isBot', opts.isBot ?? false);
   fixture.componentRef.setInput('equipment', opts.equipment ?? []);
   fixture.componentRef.setInput('judgment', opts.judgment ?? []);
+  if (opts.judgmentCountsAs) fixture.componentRef.setInput('judgmentCountsAs', opts.judgmentCountsAs);
   fixture.detectChanges();
   return fixture.nativeElement as HTMLElement;
 }
 
 describe('SeatTile', () => {
+  it('names a Judgment slot card placed as another card', () => {
+    const el = render(makeSeat(), { judgment: [{ instanceId: 'dm', definitionId: 'shan', suit: 'diamond', rank: 3 }], judgmentCountsAs: { dm: 'capture' } });
+    const slot = el.querySelector('.judgment .slot') as HTMLElement;
+    expect(slot.textContent).toContain('As Capture');
+    expect(slot.getAttribute('title')).toBe('Judgment Area: Shan as Capture');
+  });
+
   it('shows the seat name, hidden kingdom and generals, HP and hand count', () => {
     const el = render(makeSeat(), { handCount: 3, name: 'Hing' });
     const text = el.textContent!;

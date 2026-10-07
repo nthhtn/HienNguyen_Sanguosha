@@ -16,7 +16,7 @@ const registry: ContentRegistry = {
     card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
     card('draw-two', 'tool'), card('barbarians', 'tool'), card('hail-of-arrows', 'tool'), card('peach-garden', 'tool'),
     card('steal', 'tool'), card('break', 'tool'), card('coerce', 'tool'), card('harvest', 'tool'),
-    card('wine', 'basic'), card('capture', 'tool'), card('starvation', 'tool'), card('lightning', 'tool'), card('gender-swords', 'equipment', 'weapon'),
+    card('wine', 'basic'), ['serpent-spear', { id: 'serpent-spear', name: 'serpent-spear', category: 'equipment', equipSlot: 'weapon', play: () => [], abilities: { conversions: [{ id: 'serpent-spear', as: 'sha', cards: 2, when: 'both' }] } }], card('capture', 'tool'), card('starvation', 'tool'), card('lightning', 'tool'), card('gender-swords', 'equipment', 'weapon'),
   ]),
 };
 
@@ -485,18 +485,18 @@ describe('Serpent Spear', () => {
 
   it('answers with 2 cards only with no real answer, and not when a Peach would go', () => {
     const cheap = [{ instanceId: 'x1', definitionId: 'duel' }, { instanceId: 'x2', definitionId: 'draw-two' }];
-    expect(ruleBasedPolicy.decide(view({ hand: cheap, pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, convertAnswer], registry, null).action).toEqual(convertAnswer);
+    expect(ruleBasedPolicy.decide(view({ hand: cheap, equip: ['serpent-spear'], pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, convertAnswer], registry, null).action).toEqual(convertAnswer);
     const dear = [{ instanceId: 'p1', definitionId: 'peach' }, { instanceId: 'x1', definitionId: 'duel' }];
-    expect(ruleBasedPolicy.decide(view({ hand: dear, pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, convertAnswer], registry, null).action).toEqual(pass);
+    expect(ruleBasedPolicy.decide(view({ hand: dear, equip: ['serpent-spear'], pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, convertAnswer], registry, null).action).toEqual(pass);
     const realSha: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 's1' };
     const withSha = [...cheap, { instanceId: 's1', definitionId: 'sha' }];
-    expect(ruleBasedPolicy.decide(view({ hand: withSha, pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, realSha, convertAnswer], registry, null).action).toEqual(realSha);
+    expect(ruleBasedPolicy.decide(view({ hand: withSha, equip: ['serpent-spear'], pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, realSha, convertAnswer], registry, null).action).toEqual(realSha);
   });
 
   it('in the Play Phase, converts only with no real Sha, at the weakest non-ally', () => {
     const cheap = [{ instanceId: 'x1', definitionId: 'duel' }, { instanceId: 'x2', definitionId: 'wuxie' }];
     const at = (seatId: string): Action => ({ kind: 'UseConversionAction', seatId: 'seat-0', via, targets: [{ kind: 'seat', seatId }] });
-    expect(ruleBasedPolicy.decide(view({ hand: cheap }), 'seat-0', [end, at('seat-1'), at('seat-2')], registry, null).action).toEqual(at('seat-2'));
+    expect(ruleBasedPolicy.decide(view({ hand: cheap, equip: ['serpent-spear'] }), 'seat-0', [end, at('seat-1'), at('seat-2')], registry, null).action).toEqual(at('seat-2'));
   });
 });
 

@@ -38,7 +38,7 @@ export function applyLifecycleEffect(state: GameState, effect: LifecycleEffect, 
       const definition = lookupCard(registry, effect.tool.as);
       if (!definition.onTarget) throw new Error(`Tool ${effect.tool.as} has no onTarget rule`);
       const extra = effect.extra ? { extra: effect.extra } : {};
-      const effects = definition.onTarget(state, { tool: effect.tool, userSeatId: effect.userSeatId, target: effect.target, ...extra }) as Effect[];
+      const effects = definition.onTarget(state, { tool: effect.tool, userSeatId: effect.userSeatId, target: effect.target, ...extra }, registry) as Effect[];
       return { state: queueFront(state, effects), events: [] };
     }
     case 'WuxieCheckEffect':

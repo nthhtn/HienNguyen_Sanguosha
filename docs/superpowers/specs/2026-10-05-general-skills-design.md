@@ -393,3 +393,16 @@ keeps the registry shape.
     once.
   - Invariants: cards are conserved, and a hidden General never fires a
     compulsory skill.
+
+## Stage 7 rulings
+
+Settled while building stage 7 (see its plan for the reasons):
+
+- Self-Restraint is asked as the Discard Phase begins, only when there is something to discard.
+- Matchless is a modifier; under it, Eight Trigrams may judge once for each Shan still owed.
+- Lightning is discarded before its damage, so Evil Hero can take it.
+- Feedback takes from the hand or the equipment, not the Judgment slot.
+- A card used through a conversion as a delayed Tool lies in the Judgment slot as that Tool.
+- Lord skills have definitions marked `lord: true` and nothing else.
+- Base-only simulations run at 2 and 5 seats; 10 seats use the whole registry.
+- Bots use Devil to save themselves or an ally only from Lightning, Capture or Starvation (as the Bots section says); Sima Yi with Zhen Ji could otherwise re-judge River Goddess without end.

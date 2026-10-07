@@ -16,6 +16,14 @@ const state = (pendingChoice?: PendingChoice): GameState => ({
 });
 
 describe('describeChoice', () => {
+  it("a skill's take (Feedback): choose a card to take from the seat", () => {
+    const feedback: PendingChoice = {
+      id: 'f', seatId: 'seat-0', verb: 'take', options: [],
+      reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'feedback' }, abilityId: 'feedback', targetSeatId: 'seat-1' },
+    };
+    expect(describeChoice(state(feedback), 'seat-0')).toEqual({ title: 'Feedback', prompt: 'Choose a card to take from Seat 1', confirmLabel: 'Take' });
+  });
+
   it('Gender Swords’ target: discard a hand card, or let the user draw', () => {
     const gs: PendingChoice = {
       id: 'gs', seatId: 'seat-0', verb: 'discard',

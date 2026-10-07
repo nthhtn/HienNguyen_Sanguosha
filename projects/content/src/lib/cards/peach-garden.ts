@@ -18,6 +18,6 @@ export const peachGardenCard: CardDefinition = {
   name: 'Peach Garden',
   category: 'tool',
   legalPlayTargets: () => [[]],
-  play: (state, ctx) => (ctx.respondingTo ? [] : toolOnTargets(state, ctx.seatId, ctx.cardInstanceId, hurtSeatsFrom(state, ctx.seatId))),
+  play: (state, ctx) => (ctx.respondingTo ? [] : toolOnTargets(ctx.card, ctx.seatId, hurtSeatsFrom(state, ctx.seatId))),
   onTarget: (_state, { target }) => [{ kind: 'HealEffect', target, amount: 1 }],
 };

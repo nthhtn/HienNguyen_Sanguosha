@@ -1,3 +1,4 @@
+import { GENERAL_SKILLS } from './generals';
 import { buildContentRegistry } from './registry';
 
 describe('buildContentRegistry', () => {
@@ -25,13 +26,9 @@ describe('buildContentRegistry', () => {
   it('attaches hand-coded skills by id and gives data-only generals no skills', () => {
     const registry = buildContentRegistry();
     const skillIds = (id: string) => registry.generals.get(id)!.skills.map((s) => s.id);
-    expect(skillIds('xiahou-dun')).toEqual(['ferocity']);
-    expect(skillIds('sun-shangxiang')).toEqual(['valor']);
-    expect(skillIds('zhuge-liang')).toEqual(['insight']);
+    for (const [id, skills] of GENERAL_SKILLS) expect(skillIds(id)).toEqual(skills.map((s) => s.id));
     expect(skillIds('dong-zhuo')).toEqual([]);
-    expect(skillIds('zhao-yun')).toEqual(['vanguard']);
-    expect(skillIds('huang-yueying')).toEqual([]);
-    expect(skillIds('cao-cao')).toEqual([]);
+    expect(skillIds('cao-ren')).toEqual([]);
   });
 
   it('has at least two generals in each of the four kingdoms', () => {

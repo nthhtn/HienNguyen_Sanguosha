@@ -1,6 +1,7 @@
 import type { CardDefinition, Effect, Target } from 'engine';
 import { attackRange, seatDistance } from '../shared/queries';
 import { toolOnTargets } from '../shared/tools';
+import { untargetableBy } from '../shared/abilities';
 import { equipSlotOf } from './equipment';
 import { shaAt } from './sha';
 
@@ -27,13 +28,13 @@ export const coerceCard: CardDefinition = {
       .flatMap((holder) => {
         const range = attackRange(state, holder.id, registry);
         return living
-          .filter((victim) => victim.id !== holder.id && seatDistance(state, holder.id, victim.id, registry) <= range)
+          .filter((victim) => victim.id !== holder.id && seatDistance(state, holder.id, victim.id, registry) <= range && !untargetableBy(state, victim.id, 'sha', registry))
           .map((victim) => [seat(holder.id), seat(victim.id)]);
       });
   },
   play: (state, ctx) => {
     if (ctx.respondingTo || ctx.targets.length < 2) return [];
-    return toolOnTargets(state, ctx.seatId, ctx.cardInstanceId, [ctx.targets[0]], [ctx.targets[1]]);
+    return toolOnTargets(ctx.card, ctx.seatId, [ctx.targets[0]], [ctx.targets[1]]);
   },
   onTarget: (state, { tool, userSeatId, target, extra }) => {
     const coerceId = tool.physical[0]?.instanceId;

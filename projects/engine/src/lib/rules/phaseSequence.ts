@@ -8,8 +8,16 @@ export const PHASE_ORDER: readonly Phase[] = ['Start', 'Judgment', 'Draw', 'Play
 // passes on its own once its entry triggers have resolved.
 export function phaseWaitsForPlayer(state: GameState): boolean {
   if (state.phase === 'Play') return true;
-  if (state.phase === 'Discard') return cardsOverHandLimit(state, state.turn.ownerSeatId) > 0;
+  if (state.phase === 'Discard') return discardOwed(state, state.turn.ownerSeatId) > 0;
   return false;
+}
+
+// How many cards `seatId` must still discard in its Discard Phase: what it is
+// over its hand limit, or none once the phase is flagged to skip (a skill used
+// as the phase began, Self-Restraint), which then ends at once.
+export function discardOwed(state: GameState, seatId: string): number {
+  if (seatId === state.turn.ownerSeatId && state.turn.flags?.[skipFlagOf('Discard')]) return 0;
+  return cardsOverHandLimit(state, seatId);
 }
 
 // The turn flag that makes the turn owner skip `phase` (e.g. 'skipPlay').

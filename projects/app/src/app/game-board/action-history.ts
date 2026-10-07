@@ -19,7 +19,10 @@ const named = (card: CardInstance) => `${cardName(card.definitionId)} (${cardFac
 // A used card for a history line: "Sha (7 ♠)" for one card used as itself,
 // otherwise its name.
 const usedLabel = (used: UsedCard) => {
-  if (used.via) return `${used.physical.length} cards as ${cardName(used.as)} (${cardName(used.via.abilityId)})`;
+  if (used.via) {
+    const as = `${cardName(used.as)} (${abilityName(used.via.abilityId)})`;
+    return used.physical.length === 1 ? `${named(used.physical[0])} as ${as}` : `${used.physical.length} cards as ${as}`;
+  }
   return used.physical.length === 1 && used.physical[0].definitionId === used.as ? named(used.physical[0]) : cardName(used.as);
 };
 // The card shown beside a line: the physical card, when there is exactly one.
@@ -55,7 +58,7 @@ export function actionHistory(
   // "Seat 1 took Hing's Silver Lion (A ♣) with Steal", "Seat 1 took a hand card
   // from Hing with Steal", "Seat 1 discarded Sha (7 ♠) from Hing's hand with Break".
   const pickLine = (made: ChoiceMadeEvent, face: CardInstance | undefined, ownerSeatId: string | undefined): string => {
-    const tool = made.reason.kind === 'choice' ? ` with ${cardName(made.reason.card.as)}` : '';
+    const tool = made.reason.kind === 'choice' ? ` with ${cardName(made.reason.card.as)}` : made.reason.kind === 'ability' ? ` with ${abilityName(made.reason.abilityId)}` : '';
     const chooser = name(made.seatId);
     if (made.shows.kind === 'hidden-hand') {
       return made.verb === 'take'
@@ -221,6 +224,14 @@ export function actionHistory(
           const last = entries[entries.length - 1];
           if (last?.kind === 'action' && last.text.startsWith(`${owner}'s ${ability} judgment:`)) last.text += ', Counts as Shan';
           else action(`${owner}'s ${ability} counts as Shan`);
+        } else if (event.outcome === 'more-damage') {
+          action(`${owner}'s ${ability}: 1 more damage`);
+        } else if (event.outcome === 'unblockable' && event.targetSeatId) {
+          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} can't play a Shan`);
+        } else if (event.outcome === 'moved' && event.targetSeatId) {
+          action(`${owner}'s ${ability} moved the Sha to ${name(event.targetSeatId)}`);
+        } else if (event.outcome === 'took-hand-card' && event.targetSeatId) {
+          action(`${owner} took a hand card from ${name(event.targetSeatId)} (${ability})`);
         }
         break;
       }
@@ -244,6 +255,9 @@ export function actionHistory(
         action(`${name(event.seatId)} put ${[top, bottom].filter(Boolean).join(' and ')}`);
         break;
       }
+      case 'CardShownEvent':
+        action(`${name(event.seatId)} showed ${named(event.card)}`, event.card);
+        break;
       case 'CardsTurnedUpEvent':
         action(`Turned up ${event.cards.length} ${event.cards.length === 1 ? 'card' : 'cards'}: ${event.cards.map(named).join(', ')}`);
         break;
