@@ -1,11 +1,12 @@
-import type { ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
+import type { CardPlayedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
 import { drawPileTop, endFlagOf, pileZoneOf, skipFlagOf } from 'engine';
-import { suitOf } from '../shared/suits';
+import { colourFor, suitOf } from '../shared/suits';
+import { JUDGMENT_CHANGERS, nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
 import { abilityKey, actedOn, askAtStep, atStep } from '../shared/steps';
-import { ask, choiceOf, discardMoves, draw, equipZoneId, heal, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Wind Generals' skills (stage 8 spec, "Rule text"). Every skill acts for
 // the `owner` the engine passes in: the same General can sit at two seats in
@@ -203,6 +204,58 @@ export const refusingDeath: SkillDefinition = {
   },
 };
 
+type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
+
+// Lightning Strike (may): after you play or use a Shan, you may pick any
+// living seat. It judges: on a spade it takes 2 plain damage with no source.
+export const lightningStrike: SkillDefinition = {
+  id: 'lightning-strike',
+  triggers: [
+    on<CardPlayedEvent>('after:CardPlayedEvent', {
+      condition: (_state, event, owner) => event.seatId === owner.seatId && event.card.as === 'shan',
+      effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'pick')])],
+    }),
+  ],
+  onStep: (state, step) => {
+    const { owner } = step;
+    const living = state.seats.filter((s) => !s.eliminated).sort((a, b) => a.index - b.index).map((s) => s.id);
+    const judge = (seatId: string): Effect[] => [{ kind: 'JudgeEffect', seatId, reader: { kind: 'skill', owner } }];
+    return [choiceOf(state, owner, { verb: 'pick', options: seatOptions(living, judge) })];
+  },
+  onJudged: (state, { owner, seatId, judged, done }, registry) =>
+    suitOf(state, seatId, judged, registry) === 'spade' && isLiving(state, seatId)
+      ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'normal', cause: { skillId: owner.skillId } } }]
+      : [done],
+};
+
+// The black cards in a seat's hand and equipment (Dark Magic's).
+const blackCards = (state: GameState, seatId: string, registry: ContentRegistry) => ownCards(state, seatId, true).filter((c) => colourFor(state, seatId, c, registry) === 'black');
+JUDGMENT_CHANGERS.set('dark-magic', blackCards);
+
+// Dark Magic (may): when any seat's judgment card is turned up, before it takes
+// effect, you may replace it with a black card from your hand or equipment;
+// the old card goes into your hand. Ordered with Devil (shared/judgments.ts).
+export const darkMagic: SkillDefinition = {
+  id: 'dark-magic',
+  triggers: [
+    on<Shown>('before:JudgmentShownEffect', {
+      condition: (state, shown, owner, registry) => nextToChange(state, shown, owner, registry) && blackCards(state, owner.seatId, registry).length > 0,
+      effect: (state, shown, owner, registry) => {
+        const passed: Shown = { ...shown, acted: [...(shown.acted ?? []), owner.seatId] };
+        const pick = selectionOf(state, owner, {
+          of: 'cards', eligibleIds: blackCards(state, owner.seatId, registry).map((c) => c.instanceId), min: 1, max: 1,
+          then: { kind: 'replace-judgment', judgment: shown.judgment, owner, abilityId: owner.skillId, oldTo: handZoneId(state, owner.seatId) },
+          onCancel: [passed], targetSeatId: shown.judgment.seatId,
+        });
+        return [ask(owner, [pick], [passed], shown.judgment.seatId)];
+      },
+    }),
+  ],
+};
+
+// Amber Sky: a Lord skill, inactive in Kingdom War.
+export const amberSky: SkillDefinition = { id: 'amber-sky', lord: true };
+
 export const WIND_GENERALS: GeneralSkillSet[] = [
   { id: 'cao-ren', skills: [entrench] },
   { id: 'xiahou-yuan', skills: [godspeed] },
@@ -210,4 +263,5 @@ export const WIND_GENERALS: GeneralSkillSet[] = [
   { id: 'wei-yan', skills: [violentSpirit] },
   { id: 'xiao-qiao', skills: [fantasy, beauty] },
   { id: 'zhou-tai', skills: [refusingDeath] },
+  { id: 'zhang-jiao', skills: [lightningStrike, darkMagic, amberSky] },
 ];
