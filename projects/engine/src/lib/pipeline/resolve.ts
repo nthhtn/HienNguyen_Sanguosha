@@ -10,7 +10,7 @@ import { requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer } from '../rules/phaseSequence';
-import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
+import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, legalTargetListsFor, playConversionCards, sameAbilityOwner } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { ArrangementMadeEvent, CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
@@ -549,7 +549,8 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         seatId: action.seatId,
         reason: { kind: 'ability', owner: owned.owner, abilityId: owned.abilityId },
         of: 'cards',
-        eligibleIds: conversionCards(state, action.seatId, owned.conversion).map((c) => c.instanceId),
+        // A play may only use cards whose leaving keeps its targets legal.
+        eligibleIds: (action.pendingResponseId ? conversionCards(state, action.seatId, owned.conversion) : playConversionCards(state, action.seatId, owned.conversion, action.targets, ctx.registry)).map((c) => c.instanceId),
         min: owned.conversion.cards,
         max: owned.conversion.cards,
         then: {

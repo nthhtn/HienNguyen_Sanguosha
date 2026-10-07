@@ -95,3 +95,18 @@ describe('Zhao Yun — Dragon Courage', () => {
     expect(hp(s, 'seat-a')).toBe(4);
   });
 });
+
+describe('Fighting Saint with a worn card (final review #1)', () => {
+  it('can’t use the horse that brings the target in reach', () => {
+    const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart')], 'seat-a:equip': [card('rh', 'red-hare', 'heart', 5)] }, { generals: at('seat-a', 'guan-yu') });
+    expect(convert(s, 'seat-a', 'fighting-saint', 'seat-c').pendingSelection?.eligibleIds).toEqual(['p']);
+    const horseOnly = table({ 'seat-a:equip': [card('rh', 'red-hare', 'heart', 5)] }, { generals: at('seat-a', 'guan-yu') });
+    expect(conversions(horseOnly, 'seat-a').map((a) => a.targets[0]?.seatId)).toEqual(['seat-b', 'seat-d']);
+  });
+
+  it('can’t use the Crossbow that lifts the Sha limit', () => {
+    const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart')], 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)] }, { generals: at('seat-a', 'guan-yu') });
+    const afterOne = { ...s, turn: { ...s.turn, cardPlays: { sha: 1 } } };
+    expect(convert(afterOne, 'seat-a', 'fighting-saint', 'seat-b').pendingSelection?.eligibleIds).toEqual(['p']);
+  });
+});

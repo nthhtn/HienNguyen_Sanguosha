@@ -173,6 +173,17 @@ export function conversionCards(state: GameState, seatId: string, conversion: Co
   return conversion.accepts ? pool.filter((c) => conversion.accepts!(c)) : pool;
 }
 
+// The cards `seatId` may use for `conversion` in a play at `targets`: those
+// whose leaving still leaves the targets legal (a worn horse or Crossbow the
+// play needs can't be the card used).
+export function playConversionCards(state: GameState, seatId: string, conversion: Conversion, targets: Target[], registry: ContentRegistry): CardInstance[] {
+  const wanted = JSON.stringify(targets);
+  return conversionCards(state, seatId, conversion).filter((card) => {
+    const without: GameState = { ...state, zones: state.zones.map((z) => ({ ...z, cards: z.cards.filter((c) => c.instanceId !== card.instanceId) })) };
+    return legalTargetListsFor(without, seatId, '', conversion.as, registry).some((t) => JSON.stringify(t) === wanted);
+  });
+}
+
 // Whether `owned` can be used now: enough cards, and not barred by whose turn it is.
 function usableNow(state: GameState, seatId: string, owned: OwnedConversion): boolean {
   if (owned.conversion.outsideOwnTurnOnly && state.turn.ownerSeatId === seatId) return false;
@@ -206,6 +217,8 @@ export function conversionActions(state: GameState, seatId: string, registry: Co
   return conversionsOf(state, seatId, registry)
     .filter((o) => o.conversion.when !== 'respond' && usableNow(state, seatId, o))
     .flatMap((o) =>
-      legalTargetListsFor(state, seatId, '', o.conversion.as, registry).map((targets): UseConversion => ({ kind: 'UseConversionAction', seatId, via: via(o), targets }))
+      legalTargetListsFor(state, seatId, '', o.conversion.as, registry)
+        .filter((targets) => playConversionCards(state, seatId, o.conversion, targets, registry).length >= o.conversion.cards)
+        .map((targets): UseConversion => ({ kind: 'UseConversionAction', seatId, via: via(o), targets }))
     );
 }
