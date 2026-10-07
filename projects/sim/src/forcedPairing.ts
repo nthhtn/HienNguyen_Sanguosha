@@ -1,15 +1,18 @@
 import type { ContentRegistry, GameState } from 'engine';
 import { BASE_GENERAL_IDS } from 'content';
 
-// The registry with only the 25 base Generals (their skills are the real ones).
-export function baseRegistry(registry: ContentRegistry): ContentRegistry {
-  return { cards: registry.cards, generals: new Map([...registry.generals].filter(([id]) => BASE_GENERAL_IDS.includes(id))) };
+// The registry with only the Generals in `ids`.
+export function registryWith(registry: ContentRegistry, ids: readonly string[]): ContentRegistry {
+  return { cards: registry.cards, generals: new Map([...registry.generals].filter(([id]) => ids.includes(id))) };
 }
 
-// The next base General of the same kingdom (in BASE_GENERAL_IDS order, wrapping).
-export function partnerOf(generalId: string, registry: ContentRegistry): string {
+// The registry with only the 25 base Generals (their skills are the real ones).
+export const baseRegistry = (registry: ContentRegistry) => registryWith(registry, BASE_GENERAL_IDS);
+
+// The next General of the same kingdom in `pool` (wrapping).
+export function partnerOf(generalId: string, registry: ContentRegistry, pool: readonly string[] = BASE_GENERAL_IDS): string {
   const kingdom = registry.generals.get(generalId)?.kingdom;
-  const same = BASE_GENERAL_IDS.filter((id) => registry.generals.get(id)?.kingdom === kingdom);
+  const same = pool.filter((id) => registry.generals.get(id)?.kingdom === kingdom);
   return same[(same.indexOf(generalId) + 1) % same.length];
 }
 
