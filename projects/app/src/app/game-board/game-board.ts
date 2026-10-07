@@ -339,7 +339,7 @@ export class GameBoard {
     }
     const description = describeChoice(visible, seatId);
     if (!description) return;
-    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players, description.declineLabel);
+    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players, description.declineLabel, visible.seats);
     this.choiceDialogFor = choiceId;
     const ref = this.dialog.open<ChoiceDialog, ChoiceDialogData, Action>(ChoiceDialog, {
       data: { description, options, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },

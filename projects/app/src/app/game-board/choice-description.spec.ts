@@ -83,3 +83,34 @@ describe('ability asks', () => {
     expect(choiceOptionLabel({ kind: 'decline' }, [])).toBe("Don't");
   });
 });
+
+describe('describeChoice for a skill’s pick or give', () => {
+  const owner = { kind: 'general' as const, seatId: 'seat-1', slot: 'main' as const, skillId: 'kindness' };
+  const pick = (verb: 'pick' | 'give', options: ChoiceOption[]): PendingChoice => ({ id: 'p', seatId: 'seat-0', verb, options, reason: { kind: 'ability', owner, abilityId: 'kindness' } });
+
+  it('give: who gets the cards', () => {
+    expect(describeChoice(state(pick('give', [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }])), 'seat-0')).toEqual({
+      title: 'Kindness', prompt: 'Choose who gets the cards', confirmLabel: 'Give',
+    });
+  });
+
+  it('pick: a seat, a suit, or one of several things', () => {
+    const say = (options: ChoiceOption[]) => describeChoice(state(pick('pick', options)), 'seat-0')?.prompt;
+    expect(say([{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }])).toBe('Choose a seat');
+    expect(say([{ id: 'heart', shows: { kind: 'suit', suit: 'heart' }, effects: [] }])).toBe('Name a suit');
+    expect(say([{ id: 'done', shows: { kind: 'label', text: 'Done' }, effects: [] }, { id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }])).toBe('Choose one');
+  });
+
+  it('labels seats by name, suits by symbol and name, labels by their text; a seat carries its force', () => {
+    expect(choiceOptionLabel({ kind: 'seat', seatId: 'seat-1' }, players)).toBe('Seat 1');
+    expect(choiceOptionLabel({ kind: 'suit', suit: 'heart' }, players)).toBe('♥ Heart');
+    expect(choiceOptionLabel({ kind: 'label', text: 'Discard 2 Hand Cards' }, players)).toBe('Discard 2 Hand Cards');
+    const seats = [{ id: 'seat-1', index: 1, kingdom: 'Wu' as const, combinedHp: 3, maxCombinedHp: 3, eliminated: false, generals: null, hand: { zoneId: 'h' }, equipped: { zoneId: 'e' }, judgment: { zoneId: 'j' } }];
+    const legal: Action[] = [{ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'seat-1' }, { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'spade' }];
+    const options: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }, { id: 'spade', shows: { kind: 'suit', suit: 'spade' }, effects: [] }];
+    expect(choiceDialogOptions(options, legal, players, undefined, seats)).toEqual([
+      { id: 'seat-1', action: legal[0], label: 'Seat 1', force: 'Wu' },
+      { id: 'spade', action: legal[1], label: '♠ Spade', suit: 'spade' },
+    ]);
+  });
+});

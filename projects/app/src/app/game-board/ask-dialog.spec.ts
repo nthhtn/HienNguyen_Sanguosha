@@ -6,14 +6,14 @@ import { AskDialog, AskDialogData } from './ask-dialog';
 const use: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'ask', optionId: 'use' };
 const decline: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'ask', optionId: 'decline' };
 
-function render() {
+function render(over: Partial<AskDialogData['description']> = {}) {
   const close = jest.fn();
   TestBed.configureTestingModule({
     providers: [
       {
         provide: MAT_DIALOG_DATA,
         useValue: {
-          description: { title: 'Axe', prompt: 'Use Axe on Seat 1?', hint: 'Discard 2 cards to make your Sha hit Seat 1', card: { instanceId: 'ax', definitionId: 'axe', suit: 'diamond', rank: 5 }, use, decline },
+          description: { title: 'Axe', prompt: 'Use Axe on Seat 1?', hint: 'Discard 2 cards to make your Sha hit Seat 1', card: { instanceId: 'ax', definitionId: 'axe', suit: 'diamond', rank: 5 }, generalId: null, useLabel: 'Use', use, decline, ...over },
         } satisfies AskDialogData,
       },
       { provide: MatDialogRef, useValue: { close } },
@@ -40,5 +40,12 @@ describe('AskDialog', () => {
     expect(el.querySelector('button.decline')!.textContent!.trim()).toBe("Don't");
     (el.querySelector('button.decline') as HTMLButtonElement).click();
     expect(close).toHaveBeenCalledWith(decline);
+  });
+
+  it('a skill: shows its General’s art, and the Use button says it reveals', () => {
+    const { el } = render({ card: null, generalId: 'guan-yu', useLabel: 'Reveal and Use' });
+    expect(el.querySelector('app-card-art')).not.toBeNull();
+    expect(el.querySelector('app-playing-card')).toBeNull();
+    expect(el.querySelector('button.use')!.textContent!.trim()).toBe('Reveal and Use');
   });
 });

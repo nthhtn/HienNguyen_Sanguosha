@@ -1,4 +1,4 @@
-import { actionLabel, cardDefinitionId, judgmentReaderName, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, targetLabel } from './labels';
+import { actionLabel, cardDefinitionId, judgmentReaderName, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, suitLabel, targetLabel } from './labels';
 import { Action, ContentRegistry, GameState, Target } from 'engine';
 
 function stateWithZones(): GameState {
@@ -153,6 +153,12 @@ describe('seatName', () => {
 
   it('names a general target after its seat', () => {
     expect(targetLabel({ kind: 'general', seatId: 'seat-0', generalSlot: 'deputy' }, players)).toBe("Hing's Deputy General");
+  });
+});
+
+describe('suitLabel', () => {
+  it('names a suit with its symbol', () => {
+    expect([suitLabel('spade'), suitLabel('heart'), suitLabel('club'), suitLabel('diamond')]).toEqual(['♠ Spade', '♥ Heart', '♣ Club', '♦ Diamond']);
   });
 });
 

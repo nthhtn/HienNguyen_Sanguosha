@@ -1,6 +1,6 @@
 import { Action, CardInstance, GameState, PendingSelection } from 'engine';
-import { abilityHint, cardDisplayData } from 'content';
-import { cardFaceLabel, cardIdDisplayName, seatName } from '../labels';
+import { abilityHint, abilityName, cardDisplayData, generalDisplayData } from 'content';
+import { cardFaceLabel, cardIdDisplayName, generalDisplayName, seatName } from '../labels';
 
 type SelectAction = Extract<Action, { kind: 'SelectAction' }>;
 
@@ -16,6 +16,10 @@ export interface AskDescription {
   hint: string | null;
   // The worn card the ability comes from, shown as its art.
   card: CardInstance | null;
+  // The General a skill belongs to, shown as its art (null for a worn card).
+  generalId: string | null;
+  // The Use button: "Use", or "Reveal and Use" when using it reveals a hidden General.
+  useLabel: string;
   use: Action;
   decline: Action;
 }
@@ -28,14 +32,21 @@ export function describeAsk(state: GameState, viewerSeatId: string, legal: reado
   const decline = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === 'decline');
   if (!use || !decline) return null;
   const { abilityId, owner, targetSeatId } = choice.reason;
-  const name = cardName(abilityId);
+  const name = abilityName(abilityId);
   const target = targetSeatId && targetSeatId !== viewerSeatId ? seatName(state.players, targetSeatId) : null;
+  const on = target ? ` on ${target}` : '';
+  const shows = choice.options.find((o) => o.id === 'use')?.shows;
+  const reveals = shows?.kind === 'use' && !!shows.reveals;
+  const generalId = owner.kind === 'general' ? (state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId ?? null) : null;
+  const generalName = generalId ? (generalDisplayData(generalId)?.name ?? generalDisplayName(generalId)) : null;
   const hint = abilityHint(abilityId);
   return {
     title: name,
-    prompt: `Use ${name}${target ? ` on ${target}` : ''}?`,
+    prompt: reveals && generalName ? `Reveal ${generalName} to use ${name}${on}?` : `Use ${name}${on}?`,
     hint: hint ? hint.replace('{target}', target ?? 'the target') : null,
     card: owner.kind === 'equipment' ? (findCard(state, owner.cardInstanceId) ?? null) : null,
+    generalId,
+    useLabel: reveals ? 'Reveal and Use' : 'Use',
     use,
     decline,
   };
@@ -98,7 +109,7 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
     return card ? { id, card, label: `${cardName(card.definitionId)} (${cardFaceLabel(card)})` } : { id, label: 'Card' };
   });
   return {
-    title: selection.reason.kind === 'ability' ? cardName(selection.reason.abilityId) : 'Choose',
+    title: selection.reason.kind === 'ability' ? abilityName(selection.reason.abilityId) : 'Choose',
     prompt: selectionPrompt(state, selection, items),
     confirmLabel: CONFIRM_LABELS[selection.then.kind],
     min: selection.min,

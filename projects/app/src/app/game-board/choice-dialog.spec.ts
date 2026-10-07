@@ -55,4 +55,21 @@ describe('ChoiceDialog', () => {
     expect(pickedChanged).toHaveBeenCalledWith(pickHand);
     expect(Array.from(el.querySelectorAll('.option.picked')).map((b) => b.getAttribute('data-option-id'))).toEqual(['hand#2']);
   });
+
+  it('shows a seat in its force colour, and a suit in its colour', () => {
+    const close = jest.fn();
+    const pickSeat: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'seat-1' };
+    const pickHeart: Action = { ...pickSeat, optionId: 'heart' };
+    const data: ChoiceDialogData = {
+      description: { title: 'Sow Revolt', prompt: 'Name a suit', confirmLabel: 'Choose' },
+      options: [{ id: 'seat-1', action: pickSeat, label: 'Seat 1', force: 'Wu' }, { id: 'heart', action: pickHeart, label: '♥ Heart', suit: 'heart' }],
+    };
+    TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close } }] });
+    const fixture = TestBed.createComponent(ChoiceDialog);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[data-option-id="seat-1"]')!.getAttribute('data-force')).toBe('Wu');
+    expect(el.querySelector('[data-option-id="heart"]')!.classList).toContain('red-suit');
+    expect(el.querySelector('button.confirm')!.textContent!.trim()).toBe('Choose');
+  });
 });
