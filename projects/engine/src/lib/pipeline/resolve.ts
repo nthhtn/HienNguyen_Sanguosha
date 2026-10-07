@@ -159,23 +159,33 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
 // again against the effect as rewritten so far. A rewrite into another kind of
 // effect (an ask) ends it: the rest get their say when the effect comes back.
 export function previewEffect(state: GameState, effect: Effect, ctx: EngineContext): Effect | null {
+  return rewriteEffect(state, effect, ctx)?.effect ?? null;
+}
+
+// The before-triggers' say: the effect as it will apply (null: cancelled),
+// and what any trigger returned after its first output, to run after it.
+function rewriteEffect(state: GameState, effect: Effect, ctx: EngineContext): { effect: Effect; after: Effect[] } | null {
   const beforeTriggers = gatherTriggeredSkills(state, ctx.registry, ctx.mode, `before:${effect.kind}`, effect);
   let current: Effect = effect;
+  const after: Effect[] = [];
   for (const [index, gathered] of beforeTriggers.entries()) {
     if (index > 0 && !gathered.trigger.condition(state, current, gathered.owner, ctx.registry)) continue;
     const outputs = gathered.trigger.effect(state, current, gathered.owner, ctx.registry) as Effect[];
     if (outputs.length === 0) return null;
     current = outputs[0];
-    if (current.kind !== effect.kind) return current;
+    after.unshift(...outputs.slice(1));
+    if (current.kind !== effect.kind) return { effect: current, after };
   }
-  return current;
+  return { effect: current, after };
 }
 
 // One effect: before-triggers may rewrite or cancel it, then it applies and its
-// events' after-trigger follow-ups go to the front of the queue.
+// events' after-trigger follow-ups go to the front of the queue, ahead of
+// whatever the rewriting triggers returned after the rewrite.
 function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {
-  const current = previewEffect(state, effect, ctx);
-  if (current === null) return { state, events: [] };
+  const rewritten = rewriteEffect(state, effect, ctx);
+  if (rewritten === null) return { state, events: [] };
+  const current = rewritten.effect;
 
   const applied = isLifecycleEffect(current)
     ? applyLifecycleEffect(state, current, ctx.registry)
@@ -185,7 +195,7 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
         ? applyCardStep(state, current, ctx.registry)
         : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
-  return { state: queueFront(applied.state, followUps), events: applied.events };
+  return { state: queueFront(applied.state, [...followUps, ...rewritten.after]), events: applied.events };
 }
 
 // Cards that just left an equip zone: each one's onUnequip runs for its former
@@ -576,6 +586,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const [first, ...rest] = skill.active!.start(state, { seatId: action.seatId, owner }, ctx.registry) as Effect[];
       // A cancellable first selection: the use happens only once its picks are confirmed.
       if (first?.kind === 'OpenSelectionEffect' && first.selection.onCancel) {
+        // Anything queued behind it would run even after a Cancel: what follows
+        // the picks belongs in the selection's continuation.
+        if (rest.length > 0) throw new Error(`A cancellable first selection must be the only effect of ${owner.skillId}'s start`);
         const selection = { ...first.selection, onSelect: [...spend, ...(first.selection.onSelect ?? [])] };
         return { state: queueFront(state, [{ ...first, selection }, ...rest]), events: [] };
       }

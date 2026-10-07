@@ -172,7 +172,9 @@ export interface ActiveSkill {
   usesPerTurn?: number;
   canUse(state: GameState, ctx: ActiveContext, registry: ContentRegistry): boolean;
   // The effects that open its decisions. If the first is a selection with
-  // onCancel, Cancel undoes the use: it counts only once the picks are confirmed.
+  // onCancel, Cancel undoes the use: it counts only once the picks are confirmed,
+  // and that selection must be the only effect (what follows goes in its
+  // continuation).
   start(state: GameState, ctx: ActiveContext, registry: ContentRegistry): unknown[];
 }
 

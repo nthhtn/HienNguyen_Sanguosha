@@ -82,3 +82,16 @@ describe('skipping the Discard Phase', () => {
     expect(ended.turn.ownerSeatId).toBe('b');
   });
 });
+
+describe('before-triggers (final review)', () => {
+  it('a rewrite’s further outputs run after the effect it rewrote, not dropped', () => {
+    const insteadAndMore: SkillTrigger = {
+      point: 'before:DrawPhaseEffect', condition: () => true,
+      effect: () => [{ kind: 'HealEffect', target: { kind: 'seat', seatId: 'a' }, amount: 1 }, { kind: 'SetTurnFlagEffect', flag: 'second' }],
+    };
+    const next = settle(table({ queue: [{ kind: 'DrawPhaseEffect', seatId: 'a', count: 2 }] }), [insteadAndMore]);
+    expect(next.seats[0].combinedHp).toBe(4);
+    expect(next.turn.flags).toEqual({ second: true });
+    expect(hand(next)).toEqual([]);
+  });
+});

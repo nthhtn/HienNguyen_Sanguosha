@@ -74,7 +74,9 @@ and actions, front first. It is absent, never `[]`, when empty. Its rules:
 
 **Before-triggers** (`before:DamageEffect`, …) see an effect before it
 applies. Each returns the replacement effect, or nothing to cancel it. A
-damage-reduction skill works this way.
+damage-reduction skill works this way. Anything it returns after the
+replacement runs once the replacement has applied (a skill that takes a
+judgment's card, then lets the Done step go on).
 
 **`applyEffect`** is the only place state changes. It is a pure function: old
 state in, new state and events out. Each event is appended to `state.log`.

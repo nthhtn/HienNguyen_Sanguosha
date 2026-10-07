@@ -121,6 +121,25 @@ describe('active skills', () => {
     expect(() => act(table(), { kind: 'UseSkillAction', seatId: 'a', owner: { ...studyOwner, skillId: 'nope' } })).toThrow('can’t use');
   });
 
+  it('a cancellable first selection must be all of start: nothing may slip past a Cancel (final review)', () => {
+    const greedy: SkillDefinition = {
+      id: 'greedy',
+      active: {
+        usesPerTurn: 1,
+        canUse: () => true,
+        start: (state, { seatId, owner }) => [
+          { kind: 'OpenSelectionEffect', selection: { id: 'g-1', seatId, reason: { kind: 'ability', owner, abilityId: 'greedy' }, of: 'cards', eligibleIds: ['k1'], min: 1, max: 1, then: { kind: 'discard' }, onCancel: [] } },
+          { kind: 'DrawCardsEffect', seatId, count: 2 },
+        ],
+      },
+    };
+    const withGreedy: ContentRegistry = { ...registry, generals: new Map([...registry.generals, ['miser', { id: 'miser', kingdom: 'Wu', maxHp: 4, skills: [greedy] }]]) };
+    const s = table();
+    s.seats = s.seats.map((x) => (x.id === 'a' ? { ...x, generals: { ...x.generals!, main: { generalDefinitionId: 'miser', revealed: true } } } : x));
+    const owner: GeneralOwner = { kind: 'general', seatId: 'a', slot: 'main', skillId: 'greedy' };
+    expect(() => resolve(s, { kind: 'UseSkillAction', seatId: 'a', owner }, { registry: withGreedy, mode })).toThrow('only effect');
+  });
+
   it('a paused first selection survives a JSON round trip', () => {
     const opened = act(table(false), useSkill(studyOwner));
     const select = (s: GameState) => act(s, { kind: 'SelectAction', seatId: 'a', selectionId: opened.pendingSelection!.id, ids: ['k1'] });
