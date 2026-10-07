@@ -3,9 +3,11 @@ import type {
   GameState,
   ContentRegistry,
   DamageDealtEvent,
+  HpLostEvent,
   SeatEliminatedEvent,
+  SkillTrigger,
+  TriggerPoint,
   PhaseChangedEvent,
-  Target,
   CardZone,
   Seat,
   RngState,
@@ -68,9 +70,51 @@ function turnOrderFrom(state: GameState, firstSeatId: string): string[] {
   return [...living.slice(start), ...living.slice(0, start)].map((s) => s.id);
 }
 
-function seatIdOfTarget(target: Target): string {
-  if (target.kind !== 'seat') throw new Error('Expected a seat target');
-  return target.seatId;
+// The seat whose HP just dropped: a damaged seat, or one that lost HP.
+function droppedSeatId(subject: unknown): string | null {
+  const event = subject as DamageDealtEvent | HpLostEvent;
+  if (event.kind === 'HpLostEvent') return event.seatId;
+  return event.damage.target.kind === 'seat' ? event.damage.target.seatId : null;
+}
+
+// What happens when a seat's HP drops, by damage or by losing HP: at half its
+// max HP or below its Main General is revealed; at 0 or below its Deputy too,
+// and it is dying (the rescue round asks every living seat in turn order from
+// the turn owner).
+function hpDropTriggers(point: TriggerPoint): SkillTrigger[] {
+  const seatOf = (state: GameState, subject: unknown) => state.seats.find((s) => s.id === droppedSeatId(subject));
+  return [
+    {
+      point,
+      condition: (state, subject) => {
+        const seat = seatOf(state, subject);
+        return !!seat && !!seat.generals && !seat.generals.main.revealed && seat.combinedHp <= Math.floor(seat.maxCombinedHp / 2);
+      },
+      effect: (_state, subject) => [{ kind: 'RevealGeneralAction', seatId: droppedSeatId(subject)!, slot: 'main' as const }],
+    },
+    {
+      point,
+      condition: (state, subject) => {
+        const seat = seatOf(state, subject);
+        return !!seat && !!seat.generals && !seat.generals.deputy.revealed && seat.combinedHp <= 0;
+      },
+      effect: (_state, subject) => [{ kind: 'RevealGeneralAction', seatId: droppedSeatId(subject)!, slot: 'deputy' as const }],
+    },
+    {
+      point,
+      condition: (state, subject) => {
+        const seat = seatOf(state, subject);
+        return !!seat && !seat.eliminated && seat.combinedHp <= 0;
+      },
+      effect: (state, subject) => [{
+        kind: 'DyingEffect',
+        seatId: droppedSeatId(subject)!,
+        order: turnOrderFrom(state, state.turn.ownerSeatId),
+        rescueCardIds: RESCUE_CARD_IDS,
+        entering: true,
+      }],
+    },
+  ];
 }
 
 export const kingdomWarMode: GameModeDefinition = {
@@ -179,55 +223,10 @@ export const kingdomWarMode: GameModeDefinition = {
       },
       effect: (_state, subject) => {
         const event = subject as PhaseChangedEvent;
-        return [{ kind: 'DrawCardsEffect', seatId: event.seatId, count: 2 }];
+        return [{ kind: 'DrawPhaseEffect', seatId: event.seatId, count: 2 }];
       },
     },
-    {
-      point: 'after:DamageDealtEvent',
-      condition: (state, subject) => {
-        const event = subject as DamageDealtEvent;
-        if (event.damage.target.kind !== 'seat') return false;
-        const seat = state.seats.find((s) => s.id === event.damage.target.seatId);
-        return !!seat && !!seat.generals && !seat.generals.main.revealed && seat.combinedHp <= Math.floor(seat.maxCombinedHp / 2);
-      },
-      effect: (_state, subject) => {
-        const event = subject as DamageDealtEvent;
-        return [{ kind: 'RevealGeneralAction', seatId: seatIdOfTarget(event.damage.target), slot: 'main' as const }];
-      },
-    },
-    {
-      point: 'after:DamageDealtEvent',
-      condition: (state, subject) => {
-        const event = subject as DamageDealtEvent;
-        if (event.damage.target.kind !== 'seat') return false;
-        const seat = state.seats.find((s) => s.id === event.damage.target.seatId);
-        return !!seat && !!seat.generals && !seat.generals.deputy.revealed && seat.combinedHp <= 0;
-      },
-      effect: (_state, subject) => {
-        const event = subject as DamageDealtEvent;
-        return [{ kind: 'RevealGeneralAction', seatId: seatIdOfTarget(event.damage.target), slot: 'deputy' as const }];
-      },
-    },
-    {
-      point: 'after:DamageDealtEvent',
-      condition: (state, subject) => {
-        const event = subject as DamageDealtEvent;
-        if (event.damage.target.kind !== 'seat') return false;
-        const seat = state.seats.find((s) => s.id === event.damage.target.seatId);
-        return !!seat && !seat.eliminated && seat.combinedHp <= 0;
-      },
-      // At 0 HP or below the seat is dying, not yet out: the rescue round asks
-      // every living seat in turn order from the turn owner for a Peach.
-      effect: (state, subject) => {
-        const event = subject as DamageDealtEvent;
-        return [{
-          kind: 'DyingEffect',
-          seatId: seatIdOfTarget(event.damage.target),
-          order: turnOrderFrom(state, state.turn.ownerSeatId),
-          rescueCardIds: RESCUE_CARD_IDS,
-          entering: true,
-        }];
-      },
-    },
+    ...hpDropTriggers('after:DamageDealtEvent'),
+    ...hpDropTriggers('after:HpLostEvent'),
   ],
 };

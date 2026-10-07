@@ -9,6 +9,11 @@ export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
   | { kind: 'DamageEffect'; damage: Damage }
   | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse }
+  // Lowers HP without damage (see HpLostEvent). The mode starts the dying round.
+  | { kind: 'LoseHpEffect'; seatId: string; amount: number; abilityId?: string }
+  // The Draw Phase's draw: `count` cards. Skills rewrite the count or replace
+  // the draw with before-triggers.
+  | { kind: 'DrawPhaseEffect'; seatId: string; count: number }
   // Adds `by` to a counter: this turn's ability uses (scope 'turn'), or a
   // seat's game-long marks (scope 'seat', with `seatId`). Logs nothing.
   | { kind: 'IncrementEffect'; scope: 'turn' | 'seat'; key: string; by: number; seatId?: string }
@@ -195,6 +200,17 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     }
     case 'DyingEffect':
       return applyDying(state, effect);
+    case 'LoseHpEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      if (seat.eliminated) return { state, events: [] };
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, combinedHp: s.combinedHp - effect.amount } : s));
+      const event: EngineEvent = { kind: 'HpLostEvent', seatId: seat.id, amount: effect.amount, ...(effect.abilityId ? { abilityId: effect.abilityId } : {}) };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'DrawPhaseEffect':
+      if (effect.count <= 0) return { state, events: [] };
+      return applyEffect(state, { kind: 'DrawCardsEffect', seatId: effect.seatId, count: effect.count });
     case 'IncrementEffect': {
       if (effect.scope === 'turn') {
         const uses = state.turn.abilityUses ?? {};

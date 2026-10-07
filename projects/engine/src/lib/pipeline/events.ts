@@ -38,6 +38,15 @@ export interface GeneralRevealedEvent {
   forAbilityId?: string;
 }
 
+// A seat lost HP: not damage, so it has no source and nothing that reacts to
+// damage applies. `abilityId`: the skill that cost it (Battered Body).
+export interface HpLostEvent {
+  kind: 'HpLostEvent';
+  seatId: string;
+  amount: number;
+  abilityId?: string;
+}
+
 export interface HealEvent {
   kind: 'HealEvent';
   target: Target;
@@ -147,6 +156,7 @@ export interface SelectionMadeEvent {
 export type EngineEvent =
   | CardsDrawnEvent
   | DamageDealtEvent
+  | HpLostEvent
   | PhaseChangedEvent
   | PhaseSkippedEvent
   | TurnAdvancedEvent
