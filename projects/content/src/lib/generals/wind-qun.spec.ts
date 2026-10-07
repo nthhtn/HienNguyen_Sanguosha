@@ -47,3 +47,12 @@ describe('Zhang Jiao — Dark Magic', () => {
     expect(h.decline(s).pendingChoice).toMatchObject({ seatId: 'seat-b', reason: { abilityId: 'devil' } });
   });
 });
+
+describe('Lightning Strike and Eight Trigrams (final review #2)', () => {
+  it("an Eight Trigrams red judgment counts as his Shan: Lightning Strike is asked", () => {
+    let s = h.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:equip': [card('et', 'eight-trigrams', 'spade', 2)], drawPile: [card('j', 'peach', 'heart', 3)] }, { owner: 'seat-b', generals: zhangJiao('seat-a') }), 's1', 'seat-a');
+    s = h.use(s); // Eight Trigrams: red
+    if (askedAbout(s) === 'dark-magic') s = h.decline(s); // his own Dark Magic, on his worn black card
+    expect(askedAbout(s)).toBe('lightning-strike');
+  });
+});

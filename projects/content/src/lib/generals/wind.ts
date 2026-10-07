@@ -1,4 +1,4 @@
-import type { CardPlayedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
+import type { AbilityUsedEvent, CardPlayedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
 import { drawPileTop, endFlagOf, pileZoneOf, skipFlagOf, usedCardFrom } from 'engine';
 import { colourFor, suitOf } from '../shared/suits';
 import { JUDGMENT_CHANGERS, nextToChange } from '../shared/judgments';
@@ -213,6 +213,11 @@ export const lightningStrike: SkillDefinition = {
   triggers: [
     on<CardPlayedEvent>('after:CardPlayedEvent', {
       condition: (_state, event, owner) => event.seatId === owner.seatId && event.card.as === 'shan',
+      effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'pick')])],
+    }),
+    // A worn card's judgment that counts as his Shan (Eight Trigrams) is using one too.
+    on<AbilityUsedEvent>('after:AbilityUsedEvent', {
+      condition: (_state, event, owner) => event.owner.seatId === owner.seatId && event.outcome === 'counts-as-shan',
       effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'pick')])],
     }),
   ],
