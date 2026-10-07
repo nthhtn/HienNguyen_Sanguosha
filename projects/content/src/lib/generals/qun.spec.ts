@@ -83,7 +83,7 @@ describe('Diao Chan — Sow Discord', () => {
   });
 
   it('is not offered without two other male seats', () => {
-    expect(offered(her({ generals: { 'seat-c': ['xiao-qiao', 'sun-jian'], 'seat-d': ['xiao-qiao', 'sun-jian'] } }), 'seat-a', 'sow-discord')).toBe(false);
+    expect(offered(her({ generals: { 'seat-c': ['zhu-rong', 'sun-jian'], 'seat-d': ['cai-wenji', 'sun-jian'] } }), 'seat-a', 'sow-discord')).toBe(false);
   });
 
   it('a seat the Duel can’t target (Empty City) is never the first pick', () => {

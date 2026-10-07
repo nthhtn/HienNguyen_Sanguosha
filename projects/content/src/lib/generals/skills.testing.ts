@@ -16,7 +16,7 @@ export const card = (instanceId: string, definitionId: string, suit: CardInstanc
 export const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
 
 export interface TableOptions {
-  // A seat's [Main, Deputy, revealed?]. Default: Cao Ren and Dong Zhuo (male, no skills), revealed.
+  // A seat's [Main, Deputy, revealed?]. Default: Xu Huang and Dong Zhuo (male, no skills), revealed.
   generals?: Record<string, [string, string, boolean?]>;
   kingdoms?: Record<string, Kingdom>;
   hp?: Record<string, number>;
@@ -39,7 +39,7 @@ export function table(cards: Record<string, CardInstance[]> = {}, o: TableOption
   const ids = SEAT_IDS.slice(0, o.seats ?? 4);
   return {
     seats: ids.map((id, index) => {
-      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['cao-ren', 'dong-zhuo'];
+      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['xu-huang', 'dong-zhuo'];
       return {
         id, index, kingdom: o.kingdoms?.[id] ?? KINGDOMS[index], eliminated: false,
         generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },

@@ -2,7 +2,7 @@ import type { GameState } from 'engine';
 import { card, handIds, harness, hp, table, TableOptions } from './skills.testing';
 
 const { legal, play, pass, respond, convert, select, cancel } = harness();
-const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'wei-yan', revealed] });
+const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'meng-huo', revealed] });
 const playTargets = (s: GameState, seatId: string, cardId: string) =>
   legal(s, seatId).flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === cardId ? [a.targets[0]?.seatId] : []));
 const conversions = (s: GameState, seatId: string) => legal(s, seatId).filter((a) => a.kind === 'UseConversionAction');
@@ -43,7 +43,7 @@ describe('Zhuge Liang — Empty City', () => {
 
 describe('Huang Yueying — Wondrous Talent', () => {
   it('her Steal and Starvation ignore distance', () => {
-    const s = table({ 'seat-a:hand': [card('st', 'steal'), card('sv', 'starvation', 'club', 4)], 'seat-c:hand': [card('x', 'shan')] }, { generals: { 'seat-a': ['huang-yueying', 'wei-yan'] } });
+    const s = table({ 'seat-a:hand': [card('st', 'steal'), card('sv', 'starvation', 'club', 4)], 'seat-c:hand': [card('x', 'shan')] }, { generals: { 'seat-a': ['huang-yueying', 'meng-huo'] } });
     expect(playTargets(s, 'seat-a', 'st')).toContain('seat-c');
     expect(playTargets(s, 'seat-a', 'sv')).toContain('seat-c');
   });

@@ -21,7 +21,7 @@ function table(cards: Record<string, CardInstance[]> = {}, o: Options = {}): Gam
   const kingdoms: Kingdom[] = ['Wei', 'Shu', 'Wu', 'Qun'];
   return {
     seats: ids.map((id, index) => {
-      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['cao-ren', 'dong-zhuo'];
+      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['xu-huang', 'dong-zhuo'];
       return {
         id, index, kingdom: o.kingdoms?.[id] ?? kingdoms[index], eliminated: false,
         generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },
@@ -148,7 +148,7 @@ describe('active skills in the Play Phase', () => {
 
   it('Kindness gives the cards above 3 to a revealed ally', () => {
     const hand = ['k1', 'k2', 'k3', 'k4', 'k5'].map((id) => card(id, 'shan'));
-    const s = table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['liu-bei', 'wei-yan'], 'seat-b': ['huang-zhong', 'jiang-wei'] }, kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Shu' } });
+    const s = table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['liu-bei', 'meng-huo'], 'seat-b': ['jiang-wei', 'liu-shan'] }, kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Shu' } });
     expect(decide(s)).toMatchObject({ kind: 'UseSkillAction', owner: { skillId: 'kindness' } });
     const selecting = useSkill(s, 'kindness');
     expect(picked(decide(selecting))).toHaveLength(2);
@@ -210,13 +210,13 @@ describe('Sow Revolt’s suit', () => {
 
 describe('conversions', () => {
   it('Fighting Saint as a Sha when no real Sha is in hand, never spending a Peach', () => {
-    const guanYu = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['guan-yu', 'wei-yan'] }, kingdoms: { 'seat-a': 'Shu' } });
+    const guanYu = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['guan-yu', 'meng-huo'] }, kingdoms: { 'seat-a': 'Shu' } });
     expect(decide(guanYu([card('h', 'shan', 'heart')]))).toMatchObject({ kind: 'UseConversionAction', via: { conversionId: 'fighting-saint' } });
     expect(decide(guanYu([card('p', 'peach', 'heart')])).kind).toBe('EndPhaseAction');
   });
 
   it('a hidden General’s conversion only when the bot may reveal', () => {
-    const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'wei-yan', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
+    const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'meng-huo', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
     expect(decide(hidden).kind).toBe('EndPhaseAction');
   });
 });

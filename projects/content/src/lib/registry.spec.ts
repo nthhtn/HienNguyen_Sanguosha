@@ -28,7 +28,7 @@ describe('buildContentRegistry', () => {
     const skillIds = (id: string) => registry.generals.get(id)!.skills.map((s) => s.id);
     for (const [id, skills] of GENERAL_SKILLS) expect(skillIds(id)).toEqual(skills.map((s) => s.id));
     expect(skillIds('dong-zhuo')).toEqual([]);
-    expect(skillIds('cao-ren')).toEqual([]);
+    expect(skillIds('xu-huang')).toEqual([]);
   });
 
   it('has at least two generals in each of the four kingdoms', () => {
