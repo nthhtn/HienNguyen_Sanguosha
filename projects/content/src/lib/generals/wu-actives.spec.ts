@@ -126,3 +126,18 @@ describe('Zhou Yu — Sow Revolt', () => {
     expect(offered(revolt(card('t', 'sha', 'spade'), 'spade'), 'seat-a', 'sow-revolt')).toBe(false);
   });
 });
+
+describe('Displace after Iron Cavalry (final review #3)', () => {
+  it('the new target may still play a Shan: Iron Cavalry was about Da Qiao', () => {
+    // Ma Chao (seat-a, asked first) at Da Qiao (seat-b); Iron Cavalry judges red; Da Qiao moves the Sha to seat-c.
+    let s = h.play(
+      table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('x', 'peach', 'heart')], drawPile: [card('j', 'shan', 'heart', 2)] }, { generals: { 'seat-a': ['ma-chao', 'wei-yan'], ...at('seat-b', 'da-qiao') } }),
+      's1', 'seat-b'
+    );
+    expect(askedAbout(s)).toBe('iron-cavalry');
+    s = h.use(s);
+    expect(askedAbout(s)).toBe('displace');
+    s = h.choose(h.select(h.use(s), 'x'), 'seat-c');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-c', allowedCardIds: ['shan'] });
+  });
+});

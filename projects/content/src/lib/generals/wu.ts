@@ -128,7 +128,13 @@ export const displace: SkillDefinition = {
     if (s.step === 'discarded') return [...discardMoves(state, (s.data?.['picked'] as string[]) ?? []), skillStep(s.owner, 'move', { step })];
     const targets = displaceTargets(state, step, s.owner.seatId, registry);
     if (targets.length === 0) return [step];
-    const options = seatOptions(targets, (seatId) => [used(s.owner, 'moved', seatId), { ...shaStep(step, 'sha-armor'), target: { kind: 'seat', seatId } }]);
+    // On from the armour check at the new seat. Iron Cavalry's red judgment was about Da Qiao, so it doesn't follow the Sha.
+    const moved = (seatId: string) => {
+      const next = shaStep(step, 'sha-armor');
+      const { unblockable: _ironCavalry, ...data } = next.data ?? {};
+      return { ...next, target: { kind: 'seat' as const, seatId }, data };
+    };
+    const options = seatOptions(targets, (seatId) => [used(s.owner, 'moved', seatId), moved(seatId)]);
     return [choiceOf(state, s.owner, { verb: 'pick', options, targetSeatId: step.userSeatId })];
   },
 };
