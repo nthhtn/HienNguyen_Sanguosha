@@ -1,6 +1,7 @@
 import type { Action, CardInstance, ContentRegistry, Effect, GameState, Judgment, PendingChoice, PendingSelection, Seat } from 'engine';
 import { abilityUseKey, colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
 import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards } from './helpers';
+import { wantsWind, windChoice, windSelection } from './wind';
 
 // The General Skills spec's bot rules, skill by skill.
 
@@ -43,14 +44,15 @@ const SAVES_FROM = new Set(['lightning', 'capture', 'starvation']);
 // The hand card Devil replaces `judgment`'s card with, or null: only when it
 // saves the bot or an ally from Lightning, Capture or Starvation, or hurts a
 // non-ally, with the least useful card that flips the outcome.
-export function devilCard(view: GameState, me: Seat, judgment: Judgment, registry: ContentRegistry): string | null {
+export function devilCard(view: GameState, me: Seat, judgment: Judgment, registry: ContentRegistry, candidates: string[] = handCards(view, me).map((c) => c.instanceId)): string | null {
   const judged = view.seats.find((s) => s.id === judgment.seatId);
   const now = goodForJudged(judgment, judgment.card);
   if (!judged || now === null) return null;
   const wantGood = judged.id === me.id || isAlly(me, judged);
   if (wantGood && !(judgment.reader.kind === 'card' && SAVES_FROM.has(judgment.reader.card.as))) return null;
   if (now === wantGood) return null;
-  const flips = handCards(view, me).filter((c) => goodForJudged(judgment, c) === wantGood).map((c) => c.instanceId);
+  const cards = view.zones.flatMap((z) => z.cards).filter((c) => candidates.includes(c.instanceId));
+  const flips = cards.filter((c) => goodForJudged(judgment, c) === wantGood).map((c) => c.instanceId);
   return flips.length > 0 ? leastUseful(view, registry, flips)[0] : null;
 }
 
@@ -86,7 +88,7 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
       // A card to spare (ranked below Shan) and a non-ally other than the Sha's user to move it to.
       return ownCards(view, me).some((c) => keepRank(view, registry, c.instanceId) < 3) && others(view, me).some((s) => !isAlly(me, s) && s.id !== target?.id);
     default:
-      return null;
+      return wantsWind(view, me, choice, registry);
   }
 }
 
@@ -131,7 +133,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       return [truthful ?? leastUseful(view, registry, eligible)[0]];
     }
     default:
-      return null;
+      return windSelection(view, me, selection, registry);
   }
 }
 
@@ -173,7 +175,7 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice): s
       return choice.options.some((o) => o.id === pick) ? pick : choice.options[0].id;
     }
     default:
-      return null;
+      return windChoice(view, me, choice);
   }
 }
 
