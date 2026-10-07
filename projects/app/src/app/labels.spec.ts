@@ -1,3 +1,4 @@
+import { buildContentRegistry } from 'content';
 import { actionLabel, cardDefinitionId, judgmentReaderName, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, suitLabel, targetLabel } from './labels';
 import { Action, ContentRegistry, GameState, Target } from 'engine';
 
@@ -91,6 +92,24 @@ describe('actionLabel', () => {
     });
     expect(actionLabel(use([]), state, registry)).toBe('Use 2 Cards as Sha');
     expect(actionLabel(use([{ kind: 'seat', seatId: 'seat-1' }]), state, registry)).toBe('Use 2 Cards as Sha Targeting Seat 1');
+  });
+
+  it('labels a skill conversion as what it makes and the skill', () => {
+    const registry = buildContentRegistry();
+    const base = stateWithZones();
+    const state: GameState = {
+      ...base,
+      seats: [{
+        id: 'seat-0', index: 0, kingdom: 'Shu', eliminated: false, combinedHp: 4, maxCombinedHp: 4,
+        generals: { main: { generalDefinitionId: 'guan-yu', revealed: true }, deputy: { generalDefinitionId: 'wei-yan', revealed: true } },
+        hand: { zoneId: 'hand-0' }, equipped: { zoneId: 'equip-0' }, judgment: { zoneId: 'judgment-0' },
+      }],
+    };
+    const use = (targets: Target[]): Action => ({
+      kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'fighting-saint' }, conversionId: 'fighting-saint' }, targets,
+    });
+    expect(actionLabel(use([]), state, registry)).toBe('As Sha · Fighting Saint');
+    expect(actionLabel(use([{ kind: 'seat', seatId: 'seat-1' }]), state, registry)).toBe('As Sha · Fighting Saint Targeting Seat 1');
   });
 
   it('labels DrawCardsAction with the count', () => {

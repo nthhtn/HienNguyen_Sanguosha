@@ -59,6 +59,7 @@ const DEFAULT_SIZE = { width: 1280, height: 640 };
             [isBot]="botSeatIds().includes(p.seat.id)"
             [equipment]="equipmentOf(p.seat.equipped.zoneId)"
             [judgment]="judgmentOf(p.seat.judgment.zoneId)"
+            [judgmentCountsAs]="countsAsOf(p.seat.judgment.zoneId)"
           />
         </div>
       }
@@ -151,6 +152,11 @@ export class RoundTable {
 
   protected judgmentOf(zoneId: string) {
     return this.state().zones.find((z) => z.id === zoneId)?.cards ?? [];
+  }
+
+  // What each card in a zone counts as, when placed as another card (Country Scene's Capture).
+  protected countsAsOf(zoneId: string): Record<string, string> {
+    return this.state().zones.find((z) => z.id === zoneId)?.countsAs ?? {};
   }
 
   protected handCount(zoneId: string): number {

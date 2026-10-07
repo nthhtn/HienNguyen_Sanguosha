@@ -83,9 +83,18 @@ describe('describeSelection', () => {
   });
   const describe2 = (sel: PendingSelection, legal: Action[] = [template, cancel]) => describeSelection(state({ pendingSelection: sel }), 'seat-0', legal);
 
+  it("a skill's selection uses the skill's words", () => {
+    const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'bestowed-rouse' };
+    const sel: PendingSelection = {
+      id: 'sel', seatId: 'seat-0', reason: { kind: 'ability', owner, abilityId: 'bestowed-rouse' }, of: 'cards', eligibleIds: [], min: 1, max: 2,
+      then: { kind: 'give', toSeatIds: ['seat-1'] }, onCancel: [],
+    };
+    expect(describe2(sel)).toMatchObject({ title: 'Bestowed Rouse', prompt: 'Choose drawn cards to give away', confirmLabel: 'Give', cancelLabel: 'Keep the Rest' });
+  });
+
   it('Axe: choose 2 cards to discard, shown face up, with Cancel', () => {
     expect(describe2(selection('axe', { eligibleIds: ['p1', 's2'] }))).toEqual({
-      title: 'Axe', prompt: 'Choose 2 cards to discard', confirmLabel: 'Discard', min: 2, max: 2,
+      title: 'Axe', prompt: 'Choose 2 cards to discard', confirmLabel: 'Discard', cancelLabel: 'Cancel', min: 2, max: 2,
       items: [{ id: 'p1', card: peach, label: 'Peach (3 ♥)' }, { id: 's2', card: sha, label: 'Sha (7 ♠)' }],
       template, cancel,
     });

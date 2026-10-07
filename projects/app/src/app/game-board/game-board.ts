@@ -89,6 +89,7 @@ import { DecisionTimer } from '../decision-timer.service';
                       [isBot]="gameService.botSeatIds().includes(seat.id)"
                       [equipment]="zoneCards(seat.equipped.zoneId)"
                       [judgment]="zoneCards(seat.judgment.zoneId)"
+                      [judgmentCountsAs]="countsAsOf(seat.judgment.zoneId)"
                       [skills]="viewerSkills()"
                       (useSkill)="submit($event)"
                     />
@@ -310,6 +311,11 @@ export class GameBoard {
 
   protected zoneCards(zoneId: string): CardInstance[] {
     return this.visibleState()?.zones.find((z) => z.id === zoneId)?.cards ?? [];
+  }
+
+  // What each card in a zone counts as, when placed as another card (Country Scene's Capture).
+  protected countsAsOf(zoneId: string): Record<string, string> {
+    return this.visibleState()?.zones.find((z) => z.id === zoneId)?.countsAs ?? {};
   }
 
   protected readonly discardPile = computed(() => this.visibleState()?.zones.find((z) => z.kind === 'discardPile'));

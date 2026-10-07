@@ -95,12 +95,22 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
   }
 }
 
-// "Use 2 Cards as Sha", with its targets for a play.
+// "Use 2 Cards as Sha" (a worn card's), "As Sha · Fighting Saint" (a skill's),
+// with its targets for a play.
 export function conversionLabel(action: Extract<Action, { kind: 'UseConversionAction' }>, state: GameState, registry: ContentRegistry): string {
   const owner = action.via.owner;
-  const worn = owner.kind === 'equipment' ? findCardInstance(state, owner.cardInstanceId) : undefined;
-  const conversion = worn && registry.cards.get(worn.definitionId)?.abilities?.conversions?.find((c) => c.id === action.via.conversionId);
-  const base = conversion ? `Use ${conversion.cards} Cards as ${registry.cards.get(conversion.as)?.name ?? conversion.as}` : 'Use Cards';
+  const cardName = (id: string) => registry.cards.get(id)?.name ?? id;
+  let base = 'Use Cards';
+  if (owner.kind === 'equipment') {
+    const worn = findCardInstance(state, owner.cardInstanceId);
+    const conversion = worn && registry.cards.get(worn.definitionId)?.abilities?.conversions?.find((c) => c.id === action.via.conversionId);
+    if (conversion) base = `Use ${conversion.cards} Cards as ${cardName(conversion.as)}`;
+  } else {
+    const generalId = state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId;
+    const skill = generalId ? registry.generals.get(generalId)?.skills.find((s) => s.id === owner.skillId) : undefined;
+    const conversion = skill?.conversions?.find((c) => c.id === action.via.conversionId);
+    if (conversion) base = `As ${cardName(conversion.as)} · ${abilityName(owner.skillId)}`;
+  }
   return action.targets.length > 0 ? `${base} Targeting ${action.targets.map((t) => targetLabel(t, state.players)).join(', ')}` : base;
 }
 

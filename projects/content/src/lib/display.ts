@@ -49,10 +49,43 @@ const ABILITY_HINTS: Record<string, string> = {
   'ice-sword': "Prevent the damage and discard 2 of {target}'s cards instead",
   longbow: "Discard one of {target}'s Mounts",
   'sky-scorcher': 'Add up to 2 more targets to your Sha',
+  'evil-hero': 'Take the card that damaged you into your hand',
+  feedback: "Take one of {target}'s cards",
+  unyielding: 'Judge: unless it is a heart, {target} discards 2 hand cards or takes 1 damage',
+  'bestowed-rouse': 'Draw 2 cards, then give any of them away',
+  'heavens-envy': 'Take the judgment card into your hand',
+  devil: "Replace {target}'s judgment card with one of your hand cards",
+  'river-goddess': 'Judge: keep each black card and judge again; a red card ends it',
+  'bare-the-chest': 'Draw 1 fewer card; your Sha and Duel deal 1 more damage this turn',
+  raid: 'Instead of drawing, take a hand card from 1 or 2 other seats',
+  'brave-gesture': 'Draw 1 more card',
+  'gathering-wisdom': 'Draw 1 card',
+  'iron-cavalry': "Judge: on red, {target} can't play a Shan against this Sha",
+  astrology: 'Look at the top cards of the draw pile and put them back in any order',
+  displace: 'Discard 1 card to move the Sha to another seat in your attack range',
+  'self-restraint': 'Skip your Discard Phase',
 };
 
 export function abilityHint(abilityId: string): string | null {
   return ABILITY_HINTS[abilityId] ?? null;
+}
+
+// What a skill's selection says: its prompt, its confirm button and, when
+// cancelling means something else than "back", its cancel button.
+const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?: string }> = {
+  reconsider: { prompt: 'Choose cards to discard, then draw as many', confirm: 'Discard' },
+  kindness: { prompt: 'Choose cards to give', confirm: 'Give' },
+  'bestowed-rouse': { prompt: 'Choose drawn cards to give away', confirm: 'Give', cancel: 'Keep the Rest' },
+  marriage: { prompt: 'Choose 2 hand cards to discard', confirm: 'Discard' },
+  'green-vesicle': { prompt: 'Choose a hand card to discard', confirm: 'Discard' },
+  'sow-discord': { prompt: 'Choose a card to discard', confirm: 'Discard' },
+  displace: { prompt: 'Choose a card to discard', confirm: 'Discard' },
+  raid: { prompt: 'Choose 1 or 2 seats to take a hand card from', confirm: 'Take' },
+  'sow-revolt': { prompt: 'Choose a seat', confirm: 'Choose' },
+};
+
+export function selectionText(abilityId: string): { prompt: string; confirm: string; cancel?: string } | null {
+  return SELECTION_TEXT[abilityId] ?? null;
 }
 
 // A skill's id: its English name in kebab case, apostrophes dropped

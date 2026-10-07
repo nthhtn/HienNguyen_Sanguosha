@@ -1,5 +1,5 @@
 import { Action, CardInstance, GameState, PendingSelection } from 'engine';
-import { abilityHint, abilityName, cardDisplayData, generalDisplayData } from 'content';
+import { abilityHint, abilityName, cardDisplayData, generalDisplayData, selectionText } from 'content';
 import { cardFaceLabel, cardIdDisplayName, generalDisplayName, seatName } from '../labels';
 
 type SelectAction = Extract<Action, { kind: 'SelectAction' }>;
@@ -64,6 +64,8 @@ export interface SelectionDescription {
   prompt: string;
   // The primary button: Discard, Use or Add Targets.
   confirmLabel: string;
+  // The cancel button's label: "Cancel", or the skill's own ("Keep the Rest").
+  cancelLabel: string;
   min: number;
   max: number;
   items: SelectionItem[];
@@ -79,7 +81,7 @@ function selectionPrompt(state: GameState, selection: PendingSelection, items: S
     case 'discard':
       return `Choose ${count} ${selection.max === 1 ? 'card' : 'cards'} to discard`;
     case 'use-card': {
-      if (then.as) return `Choose ${count} hand cards to use as ${cardName(then.as)}`;
+      if (then.as) return selection.max === 1 ? `Choose a card to use as ${cardName(then.as)}` : `Choose ${count} hand cards to use as ${cardName(then.as)}`;
       const kinds = new Set(items.map((i) => i.card?.definitionId));
       const [only] = [...kinds];
       const what = kinds.size === 1 && only ? cardName(only) : 'card';
@@ -92,10 +94,12 @@ function selectionPrompt(state: GameState, selection: PendingSelection, items: S
       return `Choose ${selection.max === 1 ? 'a card' : 'cards'} to give`;
     case 'replace-judgment':
       return 'Choose a hand card to replace the judgment';
+    case 'skill-step':
+      return `Choose ${count} ${selection.of === 'seats' ? (selection.max === 1 ? 'seat' : 'seats') : selection.max === 1 ? 'card' : 'cards'}`;
   }
 }
 
-const CONFIRM_LABELS: Record<PendingSelection['then']['kind'], string> = { discard: 'Discard', 'use-card': 'Use', 'card-step': 'Add Targets', give: 'Give', 'replace-judgment': 'Replace' };
+const CONFIRM_LABELS: Record<PendingSelection['then']['kind'], string> = { discard: 'Discard', 'use-card': 'Use', 'card-step': 'Add Targets', give: 'Give', 'replace-judgment': 'Replace', 'skill-step': 'Confirm' };
 
 // What the Selection window says, read off a pending selection the viewer owes. Null otherwise.
 export function describeSelection(state: GameState, viewerSeatId: string, legal: readonly Action[]): SelectionDescription | null {
@@ -108,10 +112,12 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
     const card = findCard(state, id);
     return card ? { id, card, label: `${cardName(card.definitionId)} (${cardFaceLabel(card)})` } : { id, label: 'Card' };
   });
+  const text = selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId) : null;
   return {
     title: selection.reason.kind === 'ability' ? abilityName(selection.reason.abilityId) : 'Choose',
-    prompt: selectionPrompt(state, selection, items),
-    confirmLabel: CONFIRM_LABELS[selection.then.kind],
+    prompt: text?.prompt ?? selectionPrompt(state, selection, items),
+    confirmLabel: text?.confirm ?? CONFIRM_LABELS[selection.then.kind],
+    cancelLabel: text?.cancel ?? 'Cancel',
     min: selection.min,
     max: selection.max,
     items,
