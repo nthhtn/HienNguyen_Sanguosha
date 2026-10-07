@@ -1,4 +1,4 @@
-import { AbilityOwner, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GeneralOwner, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
@@ -14,8 +14,9 @@ export type Effect =
   // Lowers HP without damage (see HpLostEvent). The mode starts the dying round.
   | { kind: 'LoseHpEffect'; seatId: string; amount: number; abilityId?: string }
   // The Draw Phase's draw: `count` cards. Skills rewrite the count or replace
-  // the draw with before-triggers.
-  | { kind: 'DrawPhaseEffect'; seatId: string; count: number }
+  // the draw with before-triggers. `acted`: the skills that had their say (an
+  // ask's Don't sends it back through its before-triggers).
+  | { kind: 'DrawPhaseEffect'; seatId: string; count: number; acted?: string[] }
   // Adds `by` to a counter: this turn's ability uses (scope 'turn'), or a
   // seat's game-long marks (scope 'seat', with `seatId`). Logs nothing.
   | { kind: 'IncrementEffect'; scope: 'turn' | 'seat'; key: string; by: number; seatId?: string }
@@ -81,7 +82,14 @@ export type Effect =
   // Logs that an ability applied, for the Action History.
   | { kind: 'AbilityUsedEffect'; owner: AbilityOwner; abilityId: string; outcome: string; targetSeatId?: string }
   // Asks `selection.seatId` to pick cards or seats; the queue waits.
-  | { kind: 'OpenSelectionEffect'; selection: PendingSelection };
+  | { kind: 'OpenSelectionEffect'; selection: PendingSelection }
+  // One step of a General's skill (SkillDefinition.onStep).
+  | { kind: 'SkillStepEffect'; owner: GeneralOwner; step: string; data?: Record<string, unknown> }
+  // `seatId` uses `card` at `targets`, as a play outside any limit: a card a
+  // skill makes a seat use (Sow Discord's Duel). Not counted toward limits.
+  | { kind: 'UseCardEffect'; seatId: string; card: UsedCard; targets: Target[] }
+  // Shows a card to everyone (Sow Revolt's taken card): logs its face.
+  | { kind: 'ShowCardEffect'; seatId: string; cardInstanceId: string; abilityId?: string };
 
 export interface ApplyResult {
   state: GameState;
@@ -270,6 +278,15 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       };
       return { state: { ...state, log: [...state.log, event] }, events: [event] };
     }
+    case 'ShowCardEffect': {
+      const card = state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === effect.cardInstanceId);
+      if (!card) return { state, events: [] };
+      const event: EngineEvent = { kind: 'CardShownEvent', seatId: effect.seatId, card, ...(effect.abilityId ? { abilityId: effect.abilityId } : {}) };
+      return { state: { ...state, log: [...state.log, event] }, events: [event] };
+    }
+    case 'SkillStepEffect':
+    case 'UseCardEffect':
+      throw new Error(`${effect.kind} needs the registry: resolve it through the pipeline`);
     default:
       throw new Error(`Unhandled effect kind: ${(effect as Effect).kind}`);
   }

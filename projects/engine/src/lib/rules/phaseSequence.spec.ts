@@ -1,4 +1,4 @@
-import { advancePhaseOrTurn, PHASE_ORDER, skipFlagOf } from './phaseSequence';
+import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer, PHASE_ORDER, skipFlagOf } from './phaseSequence';
 import { GameState, Seat } from '../domain/types';
 import { createRng } from '../rng/rng';
 
@@ -108,5 +108,26 @@ describe('advancePhaseOrTurn', () => {
     const seats = [seat('seat-a', 0), seat('seat-b', 1)];
     const bogus = { ...state('Play', turn, seats), phase: 'NotAPhase' as unknown as GameState['phase'] };
     expect(() => advancePhaseOrTurn(bogus)).toThrow(/Unrecognized phase: NotAPhase/);
+  });
+});
+
+function discardTable(handSize: number): GameState {
+  const hand = Array.from({ length: handSize }, (_, i) => ({ instanceId: `c${i}`, definitionId: 'x', suit: 'spade' as const, rank: 1 }));
+  return {
+    seats: [{ id: 'a', index: 0, kingdom: 'Wei', eliminated: false, generals: null, combinedHp: 3, maxCombinedHp: 4, hand: { zoneId: 'a:hand' }, equipped: { zoneId: 'a:equip' }, judgment: { zoneId: 'a:judgment' } }],
+    players: [], turn: { turnNumber: 1, ownerSeatId: 'a', extraTurnStack: [] }, phase: 'Discard',
+    zones: [{ id: 'a:hand', kind: 'hand', ownerSeatId: 'a', cards: hand }],
+    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
+  };
+}
+
+describe('discardOwed', () => {
+  it('is what the turn owner is over its hand limit, or none once its Discard Phase is flagged to skip', () => {
+    const base = discardTable(5); // the owner 'a' holds 5 cards at 3 HP: 2 over
+    expect(discardOwed(base, 'a')).toBe(2);
+    expect(phaseWaitsForPlayer(base)).toBe(true);
+    const skipping = { ...base, turn: { ...base.turn, flags: { [skipFlagOf('Discard')]: true } } };
+    expect(discardOwed(skipping, 'a')).toBe(0);
+    expect(phaseWaitsForPlayer(skipping)).toBe(false);
   });
 });

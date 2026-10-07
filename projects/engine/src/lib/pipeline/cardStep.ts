@@ -9,5 +9,5 @@ import { queueFront } from './queue';
 export function applyCardStep(state: GameState, step: Extract<Effect, { kind: 'CardStepEffect' }>, registry: ContentRegistry): ApplyResult {
   const definition = lookupCard(registry, step.card.as);
   if (!definition.onStep) throw new Error(`Card ${step.card.as} has no onStep (step ${step.step})`);
-  return { state: queueFront(state, definition.onStep(state, step) as Effect[]), events: [] };
+  return { state: queueFront(state, definition.onStep(state, step, registry) as Effect[]), events: [] };
 }

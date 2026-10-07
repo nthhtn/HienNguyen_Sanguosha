@@ -111,6 +111,9 @@ export interface PendingResponse {
   // For display only: what not answering is expected to lead to, when
   // context.effect is a step on the way there (a Sha's hit leads to damage).
   outcome?: Effect;
+  // What the opening card carries from one answer to the next (Duel: how many
+  // Sha are still owed this turn of it).
+  data?: Record<string, unknown>;
 }
 
 export type DecisionReason =
@@ -197,7 +200,10 @@ export type SelectionContinuation =
   // Replace the judgment's card with the one picked (Devil).
   | { kind: 'replace-judgment'; judgment: Judgment; owner: AbilityOwner; abilityId: string }
   // Give the picked cards to one of `toSeatIds`, chosen next; then `then`.
-  | { kind: 'give'; toSeatIds: string[]; then?: Effect[] };
+  // `tally`: add how many were given to turn.abilityUses[tally] (Kindness).
+  | { kind: 'give'; toSeatIds: string[]; then?: Effect[]; tally?: string }
+  // Queue a skill's `step` with the picked ids added to its data as `picked`.
+  | { kind: 'skill-step'; step: Extract<Effect, { kind: 'SkillStepEffect' }> };
 
 // A seat putting cards from the top of the draw pile back in the order it
 // likes, some on top and some at the bottom (Astrology). The cards stay in the

@@ -141,6 +141,14 @@ export interface JudgmentEvent {
   card: CardInstance;
 }
 
+// A card shown to every seat (Sow Revolt's taken card): its face is public.
+export interface CardShownEvent {
+  kind: 'CardShownEvent';
+  seatId: string;
+  card: CardInstance;
+  abilityId?: string;
+}
+
 // A skill replaced a judgment's card (`replaced`) with `card`.
 export interface JudgmentChangedEvent {
   kind: 'JudgmentChangedEvent';
@@ -192,6 +200,7 @@ export type EngineEvent =
   | CardsTurnedUpEvent
   | JudgmentEvent
   | JudgmentChangedEvent
+  | CardShownEvent
   | ArrangementMadeEvent
   | AbilityUsedEvent
   | SelectionMadeEvent;

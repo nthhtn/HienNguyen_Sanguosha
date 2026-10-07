@@ -41,10 +41,10 @@ export interface CardDefinition {
   // PendingResponse.sourceCard), after the answering card's own effects. Its
   // effects replace the default of simply cancelling the pending effect, e.g.
   // a Duel turning back on the other player.
-  onResponse?(state: GameState, ctx: ResponseContext): unknown[];
+  onResponse?(state: GameState, ctx: ResponseContext, registry: ContentRegistry): unknown[];
   // A Tool's rule on one target, once its Wuxie check has passed
   // (ToolRuleEffect). Its effects go to the front of the queue.
-  onTarget?(state: GameState, ctx: ToolTargetContext): unknown[];
+  onTarget?(state: GameState, ctx: ToolTargetContext, registry: ContentRegistry): unknown[];
   // A delayed Tool: play() puts it in a judgment area, so playing it doesn't
   // send it to the discard pile (like Equipment).
   delayed?: boolean;
@@ -63,7 +63,7 @@ export interface CardDefinition {
   // One step of this card's resolution (CardStepEffect, e.g. a Sha's
   // 'sha-shan'). Its effects go to the front of the queue. Abilities hook in
   // with before:CardStepEffect triggers.
-  onStep?(state: GameState, step: Extract<Effect, { kind: 'CardStepEffect' }>): unknown[];
+  onStep?(state: GameState, step: Extract<Effect, { kind: 'CardStepEffect' }>, registry: ContentRegistry): unknown[];
 }
 
 export interface ResponseContext {
@@ -188,6 +188,10 @@ export interface SkillDefinition extends Abilities {
   active?: ActiveSkill;
   // Reads a judgment this skill asked for (JudgmentReader 'skill').
   onJudged?(state: GameState, ctx: SkillJudgedContext): unknown[];
+  // One step of this skill's own resolution (SkillStepEffect), for skills that
+  // decide in several moves (Raid, Kindness, Sow Revolt). Its effects go to the
+  // front of the queue.
+  onStep?(state: GameState, step: Extract<Effect, { kind: 'SkillStepEffect' }>, registry: ContentRegistry): unknown[];
 }
 
 export interface GeneralDefinition {

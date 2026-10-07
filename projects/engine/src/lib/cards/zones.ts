@@ -21,6 +21,12 @@ export function judgmentZoneOf(state: GameState, seatId: string): CardZone | und
   return seat && state.zones.find((z) => z.id === seat.judgment.zoneId);
 }
 
+// The top `count` cards of the draw pile, top first (fewer if it holds fewer).
+// They stay where they are (Astrology looks at them).
+export function drawPileTop(state: GameState, count: number): CardInstance[] {
+  return requireZoneOfKind(state.zones, 'drawPile').cards.slice(0, Math.max(0, count));
+}
+
 export function moveCard(zones: CardZone[], cardInstanceId: string, toZoneId: string): CardZone[] {
   // Validate the destination BEFORE detaching the card: an unknown destination
   // used to silently delete the card instance from the game.
