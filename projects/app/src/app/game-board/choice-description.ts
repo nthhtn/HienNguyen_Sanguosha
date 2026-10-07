@@ -21,6 +21,11 @@ const cardName = (definitionId: string) => cardDisplayData(definitionId)?.name ?
 export function describeChoice(state: GameState, viewerSeatId: string): ChoiceDescription | null {
   const choice = state.pendingChoice;
   if (!choice || choice.seatId !== viewerSeatId) return null;
+  // A claim to believe or doubt (Bewilder).
+  if (choice.reason.kind === 'ability' && choice.reason.cardId && choice.verb === 'pick') {
+    const claimer = seatName(state.players, choice.reason.owner.seatId);
+    return { title: abilityName(choice.reason.abilityId), prompt: `${claimer} claims ${cardName(choice.reason.cardId)}. Believe or doubt?`, confirmLabel: 'Choose' };
+  }
   // A skill's take from another seat (Feedback).
   if (choice.reason.kind === 'ability' && choice.verb === 'take') {
     const from = choice.reason.targetSeatId ? ` from ${seatName(state.players, choice.reason.targetSeatId)}` : '';

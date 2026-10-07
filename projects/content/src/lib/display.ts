@@ -64,6 +64,13 @@ const ABILITY_HINTS: Record<string, string> = {
   astrology: 'Look at the top cards of the draw pile and put them back in any order',
   displace: 'Discard 1 card to move the Sha to another seat in your attack range',
   'self-restraint': 'Skip your Discard Phase',
+  entrench: 'Turn face down and draw 3 cards',
+  godspeed: 'Skip phases to use a Sha on any seat, ignoring distance',
+  'strong-bow': 'Make your Sha unblockable for {target}',
+  fantasy: 'Discard a heart card to pass the damage to another seat',
+  'refusing-death': 'Turn the top card of the draw pile under your General to stay alive',
+  'lightning-strike': 'A seat of your choice judges: on a spade it takes 2 damage',
+  'dark-magic': "Replace {target}'s judgment card with a black card, and take the old one",
 };
 
 export function abilityHint(abilityId: string): string | null {
@@ -82,6 +89,10 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   displace: { prompt: 'Choose a card to discard', confirm: 'Discard' },
   raid: { prompt: 'Choose 1 or 2 seats to take a hand card from', confirm: 'Take' },
   'sow-revolt': { prompt: 'Choose a seat', confirm: 'Choose' },
+  fantasy: { prompt: 'Choose a heart card to discard', confirm: 'Discard' },
+  godspeed: { prompt: 'Choose an Equipment card to discard', confirm: 'Discard' },
+  'refusing-death': { prompt: 'Choose a card under your General to discard', confirm: 'Discard', cancel: 'Keep Them' },
+  'dark-magic': { prompt: 'Choose a black card to replace the judgment', confirm: 'Replace' },
 };
 
 export function selectionText(abilityId: string): { prompt: string; confirm: string; cancel?: string } | null {

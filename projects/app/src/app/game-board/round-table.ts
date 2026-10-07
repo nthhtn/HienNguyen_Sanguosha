@@ -1,10 +1,10 @@
 import { Component, DestroyRef, ElementRef, computed, inject, input, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { GameState } from 'engine';
+import { GameState, Seat } from 'engine';
 import { actionHistory, latestSequence } from './action-history';
 import { waitingLine } from './response-description';
 import { seatName } from '../labels';
-import { SeatTile } from './seat-tile';
+import { SeatTile, seatIsDying } from './seat-tile';
 import { PlayingCard } from './playing-card';
 import { fitTable, seatPlacements } from './table-layout';
 
@@ -60,6 +60,8 @@ const DEFAULT_SIZE = { width: 1280, height: 640 };
             [equipment]="equipmentOf(p.seat.equipped.zoneId)"
             [judgment]="judgmentOf(p.seat.judgment.zoneId)"
             [judgmentCountsAs]="countsAsOf(p.seat.judgment.zoneId)"
+            [pile]="judgmentOf(p.seat.pile?.zoneId ?? '')"
+            [dying]="dyingOf(p.seat)"
           />
         </div>
       }
@@ -148,6 +150,10 @@ export class RoundTable {
 
   protected equipmentOf(zoneId: string) {
     return this.state().zones.find((z) => z.id === zoneId)?.cards ?? [];
+  }
+
+  protected dyingOf(seat: Seat): boolean {
+    return seatIsDying(this.state(), seat);
   }
 
   protected judgmentOf(zoneId: string) {

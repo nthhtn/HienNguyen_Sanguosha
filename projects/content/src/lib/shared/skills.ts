@@ -29,8 +29,8 @@ export function ask(owner: GeneralOwner, effects: Effect[], otherwise: Effect[] 
 }
 
 // Logs that the skill applied: `outcome` is content's code the history reads.
-export function used(owner: GeneralOwner, outcome = 'used', targetSeatId?: string): Effect {
-  return { kind: 'AbilityUsedEffect', owner, abilityId: owner.skillId, outcome, ...(targetSeatId ? { targetSeatId } : {}) };
+export function used(owner: GeneralOwner, outcome = 'used', targetSeatId?: string, cardId?: string): Effect {
+  return { kind: 'AbilityUsedEffect', owner, abilityId: owner.skillId, outcome, ...(targetSeatId ? { targetSeatId } : {}), ...(cardId ? { cardId } : {}) };
 }
 
 export const draw = (seatId: string, count: number): Effect => ({ kind: 'DrawCardsEffect', seatId, count });

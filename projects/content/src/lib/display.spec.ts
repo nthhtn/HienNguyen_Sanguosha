@@ -72,3 +72,11 @@ describe('skill texts', () => {
     expect(selectionText('sha')).toBeNull();
   });
 });
+
+describe('Wind skill texts', () => {
+  it('every Wind ask has a hint, and the Wind selections have their words', () => {
+    for (const id of ['entrench', 'godspeed', 'strong-bow', 'fantasy', 'refusing-death', 'lightning-strike', 'dark-magic']) expect(abilityHint(id)).toEqual(expect.any(String));
+    expect(selectionText('fantasy')).toEqual({ prompt: 'Choose a heart card to discard', confirm: 'Discard' });
+    expect(selectionText('godspeed')).toEqual({ prompt: 'Choose an Equipment card to discard', confirm: 'Discard' });
+  });
+});

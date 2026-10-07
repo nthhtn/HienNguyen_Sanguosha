@@ -177,6 +177,8 @@ export interface AbilityUsedEvent {
   abilityId: string;
   outcome: string;
   targetSeatId?: string;
+  // The card it was about (Bewilder's claim).
+  cardId?: string;
 }
 
 // A seat made a selection. Card ids name no face (a hand card stays hidden

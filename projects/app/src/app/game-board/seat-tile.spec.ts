@@ -21,7 +21,7 @@ function makeSeat(overrides: Partial<Seat> = {}): Seat {
   };
 }
 
-function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[]; judgment?: CardInstance[]; judgmentCountsAs?: Record<string, string> } = {}) {
+function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[]; judgment?: CardInstance[]; judgmentCountsAs?: Record<string, string>; pile?: CardInstance[]; dying?: boolean } = {}) {
   const fixture = TestBed.createComponent(SeatTile);
   fixture.componentRef.setInput('seat', seat);
   fixture.componentRef.setInput('name', opts.name ?? 'Seat 1');
@@ -33,11 +33,30 @@ function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwn
   fixture.componentRef.setInput('equipment', opts.equipment ?? []);
   fixture.componentRef.setInput('judgment', opts.judgment ?? []);
   if (opts.judgmentCountsAs) fixture.componentRef.setInput('judgmentCountsAs', opts.judgmentCountsAs);
+  if (opts.pile) fixture.componentRef.setInput('pile', opts.pile);
+  if (opts.dying !== undefined) fixture.componentRef.setInput('dying', opts.dying);
   fixture.detectChanges();
   return fixture.nativeElement as HTMLElement;
 }
 
 describe('SeatTile', () => {
+  it('a seat kept alive below 1 HP (Refusing Death) is not shown as dying when its parent says so', () => {
+    expect(render({ ...makeSeat(), combinedHp: -1 }, { dying: false }).querySelector('.status.dying')).toBeNull();
+    expect(render({ ...makeSeat(), combinedHp: -1 }, { dying: true }).querySelector('.status.dying')).not.toBeNull();
+  });
+
+  it('shows a face-down seat with a badge and dimmed portraits', () => {
+    const el = render(makeSeat({ faceDown: true }));
+    expect(el.querySelector('.face-down-badge')?.textContent?.trim()).toBe('Face Down');
+    expect(el.querySelector('.generals')?.classList).toContain('face-down');
+    expect(render(makeSeat()).querySelector('.face-down-badge')).toBeNull();
+  });
+
+  it('shows the cards under the General face up', () => {
+    const el = render(makeSeat(), { pile: [{ instanceId: 'p1', definitionId: 'sha', suit: 'spade', rank: 7 }, { instanceId: 'p2', definitionId: 'shan', suit: 'heart', rank: 2 }] });
+    expect(el.querySelectorAll('[aria-label="Under General"] app-playing-card')).toHaveLength(2);
+  });
+
   it('names a Judgment slot card placed as another card', () => {
     const el = render(makeSeat(), { judgment: [{ instanceId: 'dm', definitionId: 'shan', suit: 'diamond', rank: 3 }], judgmentCountsAs: { dm: 'capture' } });
     const slot = el.querySelector('.judgment .slot') as HTMLElement;

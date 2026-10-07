@@ -150,6 +150,11 @@ export function actionHistory(
           action(`${name(to.ownerSeatId)} took ${name(from.ownerSeatId)}'s ${face ? named(face) : 'card'}`, face ?? null);
           break;
         }
+        // A card put under a General (Refusing Death).
+        if (event.card && to?.kind === 'pile' && to.ownerSeatId) {
+          action(`${name(to.ownerSeatId)} put ${named(event.card)} under their General`, event.card);
+          break;
+        }
         // Lightning moving on to the next seat's judgment area.
         if (event.card && from?.kind === 'judgment' && to?.kind === 'judgment' && from.ownerSeatId && to.ownerSeatId) {
           action(`${named(event.card)} moved on from ${name(from.ownerSeatId)} to ${name(to.ownerSeatId)}`, event.card);
@@ -207,6 +212,9 @@ export function actionHistory(
           action(event.verb === 'give' ? `${chooser} gave ${cards(given)} to ${name(shows.seatId)}` : `${chooser} chose ${name(shows.seatId)}`);
         } else if (shows.kind === 'suit') {
           action(`${chooser} named ${suitSymbol(shows.suit)}`);
+        } else if (shows.kind === 'label' && reason.kind === 'ability' && reason.cardId) {
+          // Believing or doubting a claim (Bewilder).
+          action(`${chooser} ${shows.text === 'Doubt' ? 'doubted' : 'believed'} ${name(reason.owner.seatId)}'s ${cardName(reason.cardId)}`);
         } else if (shows.kind === 'label') {
           action(`${chooser} chose ${shows.text}`);
         }
@@ -230,6 +238,12 @@ export function actionHistory(
           action(`${owner}'s ${ability}: ${name(event.targetSeatId)} can't play a Shan`);
         } else if (event.outcome === 'moved' && event.targetSeatId) {
           action(`${owner}'s ${ability} moved the Sha to ${name(event.targetSeatId)}`);
+        } else if (event.outcome === 'stays-alive') {
+          action(`${owner}'s ${ability}: no match, ${owner} stays alive`);
+        } else if (event.outcome === 'matched') {
+          action(`${owner}'s ${ability}: a rank matched`);
+        } else if ((event.outcome === 'claim-true' || event.outcome === 'claim-false') && event.cardId) {
+          action(`${owner}'s ${cardName(event.cardId)} ${event.outcome === 'claim-true' ? 'was true' : 'was a bluff'}`);
         } else if (event.outcome === 'took-hand-card' && event.targetSeatId) {
           action(`${owner} took a hand card from ${name(event.targetSeatId)} (${ability})`);
         }
@@ -255,6 +269,9 @@ export function actionHistory(
         action(`${name(event.seatId)} put ${[top, bottom].filter(Boolean).join(' and ')}`);
         break;
       }
+      case 'SeatTurnedEvent':
+        action(event.faceDown ? `${name(event.seatId)} turned face down` : event.passedTurn ? `${name(event.seatId)} turned face up and passed the turn` : `${name(event.seatId)} turned face up`);
+        break;
       case 'CardShownEvent':
         action(`${name(event.seatId)} showed ${named(event.card)}`, event.card);
         break;

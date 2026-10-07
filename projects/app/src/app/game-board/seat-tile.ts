@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
+import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, GameState, Seat } from 'engine';
 import { equipSlotOf, hpIconUrls } from 'content';
 import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
 import { SeatAvatar } from './seat-avatar';
@@ -40,13 +40,23 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
             <span class="you">(you)</span>
           }
         </div>
-        <div class="generals">
+        <div class="generals" [class.face-down]="seat().faceDown">
           @if (seat().generals; as generals) {
             <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
           } @else {
             <span class="choosing">Choosing Generals…</span>
           }
+          @if (seat().faceDown) {
+            <span class="face-down-badge">Face Down</span>
+          }
         </div>
+        @if (pile().length) {
+          <div class="pile" aria-label="Under General">
+            @for (card of pile(); track card.instanceId) {
+              <app-playing-card size="small" [card]="card" />
+            }
+          </div>
+        }
         <div class="stats">
           <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomDisplayName(seat().kingdom) }}</span>
           @if (hpIcons().length) {
@@ -105,7 +115,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       <!-- Status lines in the seat's force colour. -->
       @if (seat().eliminated) {
         <div class="status force-status" [attr.data-force]="force()">Eliminated</div>
-      } @else if (seat().combinedHp <= 0) {
+      } @else if (dying() ?? seat().combinedHp <= 0) {
         <div class="status force-status dying" [attr.data-force]="force()">Dying…</div>
       } @else if (isResponding()) {
         <div class="status force-status" [attr.data-force]="force()">Responding…</div>
@@ -155,6 +165,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .general { flex: 1; min-width: 0; }
     .equipment, .judgment-section { flex: none; }
     .equip { display: grid; grid-template-columns: repeat(2, 44px); gap: 5px; justify-content: center; }
+    .generals { position: relative; }
+    .generals.face-down app-seat-avatar { filter: grayscale(0.6) brightness(0.8); }
+    .face-down-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
+    .pile { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
     .slot { position: relative; width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
     /* A card placed as another (Country Scene's Capture): named over its bottom edge. */
     .counts-as { position: absolute; left: 0; right: 0; bottom: 0; font-size: 9px; line-height: 1.2; text-align: center; background: rgb(251 247 236 / 0.9); pointer-events: none; }
@@ -177,6 +191,11 @@ export class SeatTile {
   readonly isBot = input(false);
   readonly equipment = input<CardInstance[]>([]);
   readonly judgment = input<CardInstance[]>([]);
+  // The cards kept face up under the seat's General (Refusing Death).
+  readonly pile = input<CardInstance[]>([]);
+  // Whether the seat is dying, when the parent knows (a seat Refusing Death
+  // keeps alive below 1 HP isn't); null: judged by its HP.
+  readonly dying = input<boolean | null>(null);
   // What each Judgment slot card counts as, when placed as another card.
   readonly judgmentCountsAs = input<Record<string, string>>({});
 
@@ -206,4 +225,13 @@ export class SeatTile {
   protected readonly cardIdDisplayName = cardIdDisplayName;
 
   protected readonly kingdomDisplayName = kingdomDisplayName;
+}
+
+// Whether `seat` is dying: at 0 HP or below, unless a skill keeps it alive there
+// (cards under its General, Refusing Death) and no rescue round is asking for it.
+export function seatIsDying(state: GameState, seat: Seat): boolean {
+  if (seat.eliminated || seat.combinedHp > 0) return false;
+  const rescuing = state.pendingResponse?.reason?.kind === 'dying' && state.pendingResponse.reason.seatId === seat.id;
+  const pile = seat.pile ? (state.zones.find((z) => z.id === seat.pile!.zoneId)?.cards.length ?? 0) : 0;
+  return rescuing || pile === 0;
 }

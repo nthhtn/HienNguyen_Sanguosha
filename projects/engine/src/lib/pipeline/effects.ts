@@ -86,7 +86,8 @@ export type Effect =
   // `effects`, Don't queues `otherwise`.
   | { kind: 'AskUseEffect'; owner: AbilityOwner; abilityId: string; effects: Effect[]; otherwise?: Effect[]; targetSeatId?: string }
   // Logs that an ability applied, for the Action History.
-  | { kind: 'AbilityUsedEffect'; owner: AbilityOwner; abilityId: string; outcome: string; targetSeatId?: string }
+  // `cardId`: the card it was about (Bewilder's claim).
+  | { kind: 'AbilityUsedEffect'; owner: AbilityOwner; abilityId: string; outcome: string; targetSeatId?: string; cardId?: string }
   // Asks `selection.seatId` to pick cards or seats; the queue waits.
   | { kind: 'OpenSelectionEffect'; selection: PendingSelection }
   // One step of a General's skill (SkillDefinition.onStep).
@@ -286,6 +287,7 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
         abilityId: effect.abilityId,
         outcome: effect.outcome,
         ...(effect.targetSeatId ? { targetSeatId: effect.targetSeatId } : {}),
+        ...(effect.cardId ? { cardId: effect.cardId } : {}),
       };
       return { state: { ...state, log: [...state.log, event] }, events: [event] };
     }

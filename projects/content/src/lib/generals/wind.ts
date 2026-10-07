@@ -319,10 +319,10 @@ export const bewilder: SkillDefinition = {
       targets: claim.targets, counted: !claim.window, ...(claim.window ? { answering: claim.window } : {}),
     };
     const discard = [...discardMoves(state, [picked.instanceId]), ...reopen];
-    if (claim.doubters.length === 0) return [show, used(owner, 'claim-believed'), useIt];
-    if (picked.definitionId !== claim.as) return [show, used(owner, 'claim-false'), ...claim.doubters.map((id) => draw(id, 1)), ...discard];
+    if (claim.doubters.length === 0) return [show, used(owner, 'claim-believed', undefined, claim.as), useIt];
+    if (picked.definitionId !== claim.as) return [show, used(owner, 'claim-false', undefined, claim.as), ...claim.doubters.map((id) => draw(id, 1)), ...discard];
     const losses: Effect[] = claim.doubters.map((seatId) => ({ kind: 'LoseHpEffect', seatId, amount: 1, abilityId: owner.skillId }));
-    return [show, used(owner, 'claim-true'), ...losses, ...(suitOf(state, owner.seatId, picked, registry) === 'heart' ? [useIt] : discard)];
+    return [show, used(owner, 'claim-true', undefined, claim.as), ...losses, ...(suitOf(state, owner.seatId, picked, registry) === 'heart' ? [useIt] : discard)];
   },
 };
 
