@@ -18,8 +18,8 @@ export function skillStep(owner: GeneralOwner, step: string, data: Record<string
 }
 
 // What a skill's decisions are about; `targetSeatId`: the other seat involved.
-export function reasonOf(owner: GeneralOwner, targetSeatId?: string): DecisionReason {
-  return { kind: 'ability', owner, abilityId: owner.skillId, ...(targetSeatId ? { targetSeatId } : {}) };
+export function reasonOf(owner: GeneralOwner, targetSeatId?: string, cardId?: string): DecisionReason {
+  return { kind: 'ability', owner, abilityId: owner.skillId, ...(targetSeatId ? { targetSeatId } : {}), ...(cardId ? { cardId } : {}) };
 }
 
 // Asks `owner`'s seat whether to use the skill: Use queues `effects`, Don't
@@ -88,6 +88,8 @@ interface ChoiceSpec {
   // Who chooses; default the owner's seat.
   seatId?: string;
   targetSeatId?: string;
+  // The card the choice is about (Bewilder's claim).
+  cardId?: string;
 }
 
 // A choice for `owner`'s skill.
@@ -95,7 +97,7 @@ export function choiceOf(state: GameState, owner: GeneralOwner, spec: ChoiceSpec
   const seatId = spec.seatId ?? owner.seatId;
   return {
     kind: 'OpenChoiceEffect',
-    choice: { id: `${owner.skillId}-${seatId}-${state.log.length}`, seatId, reason: reasonOf(owner, spec.targetSeatId), verb: spec.verb, options: spec.options },
+    choice: { id: `${owner.skillId}-${seatId}-${state.log.length}`, seatId, reason: reasonOf(owner, spec.targetSeatId, spec.cardId), verb: spec.verb, options: spec.options },
   };
 }
 

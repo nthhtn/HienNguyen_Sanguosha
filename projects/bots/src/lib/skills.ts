@@ -124,6 +124,12 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
     }
     case 'bestowed-rouse':
       return 'cancel'; // keep both cards
+    case 'bewilder': {
+      // A true claim if a card is what was named; else the least useful (a bluff).
+      const as = selection.then.kind === 'skill-step' ? (selection.then.step.data?.['as'] as string | undefined) : undefined;
+      const truthful = eligible.find((id) => view.zones.some((z) => z.cards.some((c) => c.instanceId === id && c.definitionId === as)));
+      return [truthful ?? leastUseful(view, registry, eligible)[0]];
+    }
     default:
       return null;
   }
@@ -221,6 +227,9 @@ export function pickActiveSkill(view: GameState, me: Seat, legal: Action[], regi
 export function conversionSpare(view: GameState, me: Seat, action: UseConversion, registry: ContentRegistry): boolean {
   const owned = conversionsOf(view, me.id, registry).find((o) => o.conversion.id === action.via.conversionId && sameAbilityOwner(o.owner, action.via.owner));
   if (!owned || (owned.needsReveal && !mayReveal(me))) return false;
+  // A deferred claim (Bewilder): the bot bluffs only with more than 4 cards; a
+  // true claim it makes with the real card itself.
+  if (owned.conversion.deferred) return handCards(view, me).length > 4;
   const cards = leastUseful(view, registry, conversionCards(view, me.id, owned.conversion, registry).map((c) => c.instanceId)).slice(0, owned.conversion.cards);
   return cards.length === owned.conversion.cards && !cards.some((id) => definitionIdOf(view, id) === 'peach');
 }

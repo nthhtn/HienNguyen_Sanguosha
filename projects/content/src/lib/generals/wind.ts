@@ -1,5 +1,5 @@
-import type { CardPlayedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
-import { drawPileTop, endFlagOf, pileZoneOf, skipFlagOf } from 'engine';
+import type { CardPlayedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
+import { drawPileTop, endFlagOf, pileZoneOf, skipFlagOf, usedCardFrom } from 'engine';
 import { colourFor, suitOf } from '../shared/suits';
 import { JUDGMENT_CHANGERS, nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
@@ -256,6 +256,76 @@ export const darkMagic: SkillDefinition = {
 // Amber Sky: a Lord skill, inactive in Kingdom War.
 export const amberSky: SkillDefinition = { id: 'amber-sky', lord: true };
 
+// The cards Yu Ji may name: every Basic card and non-delayed Tool.
+export const BEWILDER_CARDS = ['sha', 'shan', 'peach', 'wine', 'duel', 'draw-two', 'barbarians', 'hail-of-arrows', 'peach-garden', 'steal', 'break', 'harvest', 'coerce', 'wuxie'];
+
+// A Bewilder claim on its way: what was named, at whom, the face-down card,
+// the window it answers (set aside meanwhile), and the doubt round so far.
+interface Claim {
+  as: string;
+  conversionId: string;
+  targets: Target[];
+  cardInstanceId: string;
+  window?: PendingResponse;
+  order: string[];
+  next: number;
+  doubters: string[];
+}
+
+// Bewilder (in your Play Phase, and to answer a window): you pick a hand card
+// face down and name a Basic or non-delayed Tool card you could use now. Each
+// other living seat, in turn order, believes or doubts. Then the card is shown:
+// nobody doubted, it takes effect as named; doubted and a lie, each doubter
+// draws 1 and it is discarded; doubted and true, each doubter loses 1 HP, and it
+// takes effect only if it is a heart.
+export const bewilder: SkillDefinition = {
+  id: 'bewilder',
+  conversions: BEWILDER_CARDS.map((as) => ({ id: `bewilder-${as}`, as, cards: 1 as const, when: 'both' as const, deferred: true as const })),
+  onStep: (state, step, registry) => {
+    const { owner } = step;
+    if (step.step === 'deferred') {
+      const data = step.data as { as: string; conversionId: string; targets: Target[]; picked: string[]; window?: PendingResponse };
+      const claim: Claim = {
+        as: data.as, conversionId: data.conversionId, targets: data.targets, cardInstanceId: data.picked[0],
+        ...(data.window ? { window: data.window } : {}), order: otherLivingSeatIds(state, owner.seatId), next: 0, doubters: [],
+      };
+      return [skillStep(owner, 'ask', { claim })];
+    }
+    const claim = step.data?.['claim'] as Claim;
+    if (step.step === 'ask') {
+      let i = claim.next;
+      while (i < claim.order.length && !isLiving(state, claim.order[i])) i++;
+      if (i >= claim.order.length) return [skillStep(owner, 'reveal', { claim })];
+      const seatId = claim.order[i];
+      const after = (doubters: string[]) => [skillStep(owner, 'ask', { claim: { ...claim, next: i + 1, doubters } })];
+      return [
+        choiceOf(state, owner, {
+          seatId, verb: 'pick', cardId: claim.as,
+          options: [
+            { id: 'believe', shows: { kind: 'label', text: 'Believe' }, effects: after(claim.doubters) },
+            { id: 'doubt', shows: { kind: 'label', text: 'Doubt' }, effects: after([...claim.doubters, seatId]) },
+          ],
+        }),
+      ];
+    }
+    // 'reveal'
+    const reopen: Effect[] = claim.window ? [{ kind: 'OpenResponseEffect', pendingResponse: claim.window }] : [];
+    const picked = handOf(state, owner.seatId).find((c) => c.instanceId === claim.cardInstanceId);
+    if (!picked) return reopen;
+    const show: Effect = { kind: 'ShowCardEffect', seatId: owner.seatId, cardInstanceId: picked.instanceId, abilityId: owner.skillId };
+    const useIt: Effect = {
+      kind: 'UseCardEffect', seatId: owner.seatId,
+      card: usedCardFrom([picked], claim.as, { owner, abilityId: owner.skillId, conversionId: claim.conversionId }),
+      targets: claim.targets, counted: !claim.window, ...(claim.window ? { answering: claim.window } : {}),
+    };
+    const discard = [...discardMoves(state, [picked.instanceId]), ...reopen];
+    if (claim.doubters.length === 0) return [show, used(owner, 'claim-believed'), useIt];
+    if (picked.definitionId !== claim.as) return [show, used(owner, 'claim-false'), ...claim.doubters.map((id) => draw(id, 1)), ...discard];
+    const losses: Effect[] = claim.doubters.map((seatId) => ({ kind: 'LoseHpEffect', seatId, amount: 1, abilityId: owner.skillId }));
+    return [show, used(owner, 'claim-true'), ...losses, ...(suitOf(state, owner.seatId, picked, registry) === 'heart' ? [useIt] : discard)];
+  },
+};
+
 export const WIND_GENERALS: GeneralSkillSet[] = [
   { id: 'cao-ren', skills: [entrench] },
   { id: 'xiahou-yuan', skills: [godspeed] },
@@ -264,4 +334,5 @@ export const WIND_GENERALS: GeneralSkillSet[] = [
   { id: 'xiao-qiao', skills: [fantasy, beauty] },
   { id: 'zhou-tai', skills: [refusingDeath] },
   { id: 'zhang-jiao', skills: [lightningStrike, darkMagic, amberSky] },
+  { id: 'yu-ji', skills: [bewilder] },
 ];
