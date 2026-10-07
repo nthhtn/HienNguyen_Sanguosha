@@ -236,13 +236,19 @@ export const bareTheChest: SkillDefinition = {
       use: (_state, passed) => [{ kind: 'SetTurnFlagEffect', flag: BARE_THE_CHEST_FLAG }, { ...passed, count: passed.count - 1 }],
     }),
     on<DamageStep>('before:DamageEffect', {
-      condition: (state, { damage }, owner) =>
+      // Once per damage (`acted`): an ask later in the chain (Fantasy) sends the
+      // damage back through these triggers, and it must not grow again.
+      condition: (state, { damage, acted }, owner) =>
+        !(acted ?? []).includes(abilityKey(owner)) &&
         !!state.turn.flags?.[BARE_THE_CHEST_FLAG] &&
         state.turn.ownerSeatId === owner.seatId &&
         damage.source?.kind === 'seat' &&
         damage.source.seatId === owner.seatId &&
         ['sha', 'duel'].includes(damage.cause?.card?.as ?? ''),
-      effect: (_state, step, owner) => [{ ...step, damage: { ...step.damage, amount: step.damage.amount + 1 } }, used(owner, 'more-damage', step.damage.target.seatId)],
+      effect: (_state, step, owner) => [
+        { ...step, damage: { ...step.damage, amount: step.damage.amount + 1 }, acted: [...(step.acted ?? []), abilityKey(owner)] },
+        used(owner, 'more-damage', step.damage.target.seatId),
+      ],
     }),
   ],
 };

@@ -90,3 +90,16 @@ describe('Zhou Tai — Refusing Death', () => {
     expect(ids(s, 'discardPile')).toContain('r1');
   });
 });
+
+describe('Fantasy after another before-damage skill (final review #1)', () => {
+  // Xu Chu (seat-a, Bare the Chest used) hits Xiao Qiao (seat-b) with a Sha; Bare the Chest is asked first by seat order.
+  const hit = () =>
+    h.pass(h.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('h', 'peach', 'heart')] }, { generals: { 'seat-a': ['xu-chu', 'zhang-he'], 'seat-b': ['xiao-qiao', 'sun-ce'] }, flags: { 'bare-the-chest': true } }), 's1', 'seat-b'));
+
+  it('Bare the Chest adds its 1 once, whether she declines or moves the damage', () => {
+    const asked = hit();
+    expect(askedAbout(asked)).toBe('fantasy');
+    expect(hp(h.decline(asked), 'seat-b')).toBe(2);
+    expect(hp(h.choose(h.select(h.use(asked), 'h'), 'seat-c'), 'seat-c')).toBe(2);
+  });
+});
