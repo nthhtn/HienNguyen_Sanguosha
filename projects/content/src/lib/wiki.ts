@@ -11,6 +11,8 @@ export interface WikiSkill {
   name: string;
   nameZh: string | null;
   text: string;
+  // A Lord skill: not used in Kingdom War.
+  lord: boolean;
 }
 
 // One general as the Wiki shows it: everything the data file knows, plus
@@ -23,6 +25,7 @@ export interface WikiGeneral {
   titleZh: string | null;
   kingdom: GeneralData['kingdom'];
   maxHp: number | null;
+  gender: 'male' | 'female';
   skills: WikiSkill[];
   skillsInGame: boolean;
   expansion: Extract<WikiPack, 'Base' | 'Wind' | 'Fire' | 'Forest' | 'Mountain'>;
@@ -66,7 +69,8 @@ export function wikiGenerals(): WikiGeneral[] {
       titleZh: data.titleZh ?? null,
       kingdom: data.kingdom,
       maxHp: data.maxHp,
-      skills: data.skills.map((s) => ({ name: s.name, nameZh: s.nameZh || null, text: s.text })),
+      gender: data.gender,
+      skills: data.skills.map((s) => ({ name: s.name, nameZh: s.nameZh || null, text: s.text, lord: !!s.lord })),
       skillsInGame: GENERAL_SKILLS.has(id),
       expansion: (data.source.expansion ?? 'Base') as WikiGeneral['expansion'],
     }))

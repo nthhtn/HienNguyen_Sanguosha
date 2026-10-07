@@ -5,8 +5,8 @@ import { WikiGeneralEntry } from './wiki-general-entry';
 
 const caoCao: WikiGeneral = {
   id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'Martial Emperor of Wei', titleZh: '魏武帝',
-  kingdom: 'Wei', maxHp: 4, skillsInGame: false, expansion: 'Base',
-  skills: [{ name: 'Evil Hero', nameZh: '奸雄', text: 'When Cao Cao is damaged by a card, he can put it into his hand.' }],
+  kingdom: 'Wei', maxHp: 4, skillsInGame: false, expansion: 'Base', gender: 'male',
+  skills: [{ name: 'Evil Hero', nameZh: '奸雄', text: 'When Cao Cao is damaged by a card, he can put it into his hand.', lord: false }],
 };
 const duel: WikiCard = {
   id: 'duel', name: 'Duel', nameZh: '决斗', category: 'tool', subtype: null, text: 'A player can target anyone with this card.',
@@ -61,6 +61,21 @@ describe('WikiGeneralEntry', () => {
     const el = renderGeneral({ ...caoCao, nameZh: null, title: null, titleZh: null });
     expect(el.querySelector('h4 .zh')).toBeNull();
     expect(el.querySelector('.title')).toBeNull();
+  });
+
+  it('shows the gender and notes a Lord skill as not used in Kingdom War', () => {
+    const liuBei: WikiGeneral = {
+      ...caoCao, id: 'liu-bei', name: 'Liu Bei', kingdom: 'Shu',
+      skills: [
+        { name: 'Kindness', nameZh: null, text: 'Give cards away.', lord: false },
+        { name: 'Fierce General', nameZh: null, text: 'King Ability.', lord: true },
+      ],
+    };
+    const el = renderGeneral(liuBei);
+    expect(el.querySelector('.gender-tag')!.textContent!.trim()).toBe('Male');
+    const notes = el.querySelectorAll('.lord-note');
+    expect(notes).toHaveLength(1);
+    expect(notes[0].textContent!.trim()).toBe('Not used in Kingdom War');
   });
 });
 

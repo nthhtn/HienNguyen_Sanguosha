@@ -10,6 +10,7 @@
       "text": "Yuan Shao can use two hand cards of the same suit to unleash a hail of arrows."
     },
     {
+      "lord": true,
       "name": "Bloodline",
       "nameZh": "血裔",
       "text": "King Ability: Yuan Shao's maximum hand limit is increased by two for every other living hero."

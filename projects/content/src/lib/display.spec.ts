@@ -1,4 +1,4 @@
-import { abilityHint, cardDisplayData, generalDisplayData } from './display';
+import { abilityHint, abilityName, cardDisplayData, generalDisplayData, skillIdOf } from './display';
 
 describe('generalDisplayData', () => {
   it('returns name, title and skill name/text for a known general', () => {
@@ -44,5 +44,20 @@ describe('abilityHint', () => {
     expect(abilityHint('axe')).toBe('Discard 2 cards to make your Sha hit {target}');
     expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Shan');
     expect(abilityHint('sha')).toBeNull();
+  });
+});
+
+describe('skill names', () => {
+  it('a skill id is its English name in kebab case, apostrophes dropped', () => {
+    expect(skillIdOf("Heaven's Envy")).toBe('heavens-envy');
+    expect(skillIdOf('Self-Restraint')).toBe('self-restraint');
+    expect(skillIdOf('Fighting Saint')).toBe('fighting-saint');
+  });
+
+  it('names a card, a skill from the data, or else the id in Title Case', () => {
+    expect(abilityName('eight-trigrams')).toBe('Eight Trigrams');
+    expect(abilityName('kindness')).toBe('Kindness');
+    expect(abilityName('heavens-envy')).toBe("Heaven's Envy");
+    expect(abilityName('ferocity')).toBe('Ferocity');
   });
 });

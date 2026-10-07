@@ -10,6 +10,7 @@
       "text": "Liu Bei's can give any number of his hand cards to any players. If he gives away more than one card, he recovers one unit of health."
     },
     {
+      "lord": true,
       "name": "Fierce General",
       "nameZh": "激将",
       "text": "King Ability: If Liu Bei needs to use an attack, he can ask any member of Shu to provide him one."

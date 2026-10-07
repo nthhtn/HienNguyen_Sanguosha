@@ -10,6 +10,7 @@
       "text": "Once during his turn, Sun Quan can discard any number of cards to draw the same number."
     },
     {
+      "lord": true,
       "name": "Rescued",
       "nameZh": "救援",
       "text": "King Ability: Whenever another member of Wu uses a Peach to save Sun Quan from the brink of death, it provides him with two units of health."

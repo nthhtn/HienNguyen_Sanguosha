@@ -1,14 +1,20 @@
 import type { Abilities, AbilityOwner, CardInstance, ContentRegistry, Damage, GameState } from 'engine';
+import { skillsInPlay } from 'engine';
 
-// Every ability active for a seat: those of the cards it wears. (Generals'
-// skills join in stage 6.) Queries read modifiers through this, never by card id.
+// Every ability active for a seat: its revealed Generals' skills (a hidden
+// General's modifiers don't apply), then the cards it wears. Queries read
+// modifiers through this, never by card or skill id.
 export function activeAbilities(state: GameState, seatId: string, registry: ContentRegistry): Abilities[] {
+  const skills = skillsInPlay(state, seatId, registry).filter((s) => !s.needsReveal).map((s) => s.skill);
   const seat = state.seats.find((s) => s.id === seatId);
   const worn = seat ? (state.zones.find((z) => z.id === seat.equipped.zoneId)?.cards ?? []) : [];
-  return worn.flatMap((card) => {
-    const abilities = registry.cards.get(card.definitionId)?.abilities;
-    return abilities ? [abilities] : [];
-  });
+  return [
+    ...skills,
+    ...worn.flatMap((card) => {
+      const abilities = registry.cards.get(card.definitionId)?.abilities;
+      return abilities ? [abilities] : [];
+    }),
+  ];
 }
 
 // Whether armour has no effect on `damage`: it comes from a Sha whose user has

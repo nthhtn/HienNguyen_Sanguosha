@@ -44,7 +44,7 @@ function stateWithMainGeneral(generalId: string, seatACombinedHp = 5): GameState
     seats: [
       {
         id: 'seat-a', index: 0, kingdom: 'Wei',
-        generals: { main: { generalDefinitionId: generalId, revealed: false }, deputy: { generalDefinitionId: 'filler', revealed: false } },
+        generals: { main: { generalDefinitionId: generalId, revealed: true }, deputy: { generalDefinitionId: 'filler', revealed: false } },
         combinedHp: seatACombinedHp, maxCombinedHp: 7,
         hand: { zoneId: 'seat-a:hand' }, equipped: { zoneId: 'seat-a:equip' }, judgment: { zoneId: 'seat-a:judgment' }, eliminated: false,
       },
@@ -77,6 +77,18 @@ describe('Xiahou Dun — Ferocity', () => {
       { ...state, phase: 'Play' }, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
     expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(3); // 6 - (2+1)
   });
+
+  it('is off while Xiahou Dun is hidden', () => {
+    const state = stateWithMainGeneral('xiahou-dun');
+    const hidden: GameState = {
+      ...state,
+      phase: 'Play',
+      seats: state.seats.map((s) => (s.id === 'seat-a' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: false } } } : s)),
+    };
+    const { state: next } = resolve(
+      hidden, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
+    expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(4); // 6 - 2, no +1
+  });
 });
 
 describe('Sun Shangxiang — Valor', () => {
@@ -106,7 +118,7 @@ describe('Zhuge Liang — Insight', () => {
       ...state,
       seats: state.seats.map((s) =>
         s.id === 'seat-b'
-          ? { ...s, generals: { ...s.generals!, main: { generalDefinitionId: 'zhuge-liang', revealed: false } } }
+          ? { ...s, generals: { ...s.generals!, main: { generalDefinitionId: 'zhuge-liang', revealed: true } } }
           : s
       ),
     };
@@ -133,7 +145,7 @@ describe('owner scoping across two holders of the same general', () => {
               ...s,
               combinedHp: 4,
               maxCombinedHp: 6,
-              generals: { ...s.generals!, main: { generalDefinitionId: 'sun-shangxiang', revealed: false } },
+              generals: { ...s.generals!, main: { generalDefinitionId: 'sun-shangxiang', revealed: true } },
             }
           : s
       ),

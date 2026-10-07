@@ -20,6 +20,7 @@
       "text": "At the end of Dong Zhuo's turn, if he has more health than any other character, he must either lose one health or reduce his maximum health limit by one."
     },
     {
+      "lord": true,
       "name": "Violent Tyrant",
       "nameZh": "暴虐",
       "text": "King Ability: When another character deals damage to a player, they may allow Dong Zhuo to flip a judgment card. If it is a spade, Dong Zhuo heals one health."

@@ -303,7 +303,12 @@ describe('Kingdom War per-turn draw', () => {
       'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['sun-quan', 'zhou-yu'], 'seat-c': ['zhao-yun', 'zhuge-liang'],
     });
     const seatC = created.seats.find((s) => s.id === 'seat-c')!;
-    const state: GameState = { ...created, turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] } };
+    // Zhuge Liang revealed: the placeholder bonus is compulsory, off while hidden.
+    const state: GameState = {
+      ...created,
+      turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] },
+      seats: created.seats.map((s) => (s.id === 'seat-c' ? { ...s, generals: { ...s.generals!, deputy: { ...s.generals!.deputy, revealed: true } } } : s)),
+    };
     const originalCardIds = new Set(state.zones.find((z) => z.id === seatC.hand.zoneId)!.cards.map((c) => c.instanceId));
 
     const { state: next } = advanceToDecision(state, { registry, mode: kingdomWarMode });

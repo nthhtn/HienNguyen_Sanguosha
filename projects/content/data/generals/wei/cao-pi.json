@@ -15,6 +15,7 @@
       "text": "When Cao Pi is damaged, he can choose any character (other than himself) and force them to flip their character card. The flipped character then draws X cards, where X is the difference between Cao Pi's maximum health level and his current health level after the damage was inflicted."
     },
     {
+      "lord": true,
       "name": "Exaltation",
       "nameZh": "颂威",
       "text": "King Ability: When a Wei character flips a black judgement card, they can allow Cao Pi to draw a card."

@@ -15,6 +15,7 @@
       "text": "After a judgment is flipped, Zhang Jiao can discard any black card to replace the judgment card. The original card that was flipped goes into Zhang Jiao's hand."
     },
     {
+      "lord": true,
       "name": "Amber Sky",
       "nameZh": "黄天",
       "text": "King Ability: Other heroes can give Zhang Jiao one Escape or Lightning during their turn."

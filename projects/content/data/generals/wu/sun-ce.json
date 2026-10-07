@@ -15,6 +15,7 @@
       "text": "If, at the beginning of his turn, Sun Ce has one health, Sun Ce must immediately reduce his maximum health by one. Then, Sun Ce permanently gains \"Brave Gesture\" and \"Brave Spirit.\""
     },
     {
+      "lord": true,
       "name": "Takeover",
       "nameZh": "制霸",
       "text": "King Ability: Other Wu characters can compete with Sun Ce. If Sun Ce wins, he keeps both cards. After \"Soul Position,\" Sun Ce can refuse to compete."
