@@ -21,6 +21,12 @@ export function judgmentZoneOf(state: GameState, seatId: string): CardZone | und
   return seat && state.zones.find((z) => z.id === seat.judgment.zoneId);
 }
 
+// The pile under `seatId`'s General, if its table has one.
+export function pileZoneOf(state: GameState, seatId: string): CardZone | undefined {
+  const seat = state.seats.find((s) => s.id === seatId);
+  return seat?.pile && state.zones.find((z) => z.id === seat.pile!.zoneId);
+}
+
 // The top `count` cards of the draw pile, top first (fewer if it holds fewer).
 // They stay where they are (Astrology looks at them).
 export function drawPileTop(state: GameState, count: number): CardInstance[] {

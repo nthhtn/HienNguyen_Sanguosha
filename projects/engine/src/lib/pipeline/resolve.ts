@@ -13,7 +13,7 @@ import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer } from '../rules/p
 import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, legalTargetListsFor, playConversionCards, sameAbilityOwner } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
-import { ArrangementMadeEvent, CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
+import { ArrangementMadeEvent, CardPlayedEvent, SeatTurnedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
@@ -138,9 +138,23 @@ function logWithTriggers(state: GameState, events: GameEvent[], ctx: EngineConte
 // Moves to the next phase (or the next turn's Start) and enters it. Phases
 // flagged to skip are logged as skipped and never entered.
 function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
-  const { phase, turn, skipped } = advancePhaseOrTurn(state);
+  let current = state;
+  let next = advancePhaseOrTurn(current);
   const events: GameEvent[] = [];
-  if (turn.turnNumber !== state.turn.turnNumber) {
+  // A face-down seat's turn: it turns face up instead, and the turn passes on.
+  // Every seat turned up stops being face down, so this ends.
+  while (next.turn.turnNumber !== current.turn.turnNumber) {
+    const owner = current.seats.find((s) => s.id === next.turn.ownerSeatId);
+    if (!owner?.faceDown) break;
+    const { faceDown: _up, ...faceUp } = owner;
+    current = { ...current, seats: current.seats.map((s) => (s.id === owner.id ? faceUp : s)), turn: next.turn, phase: 'End' };
+    const passed: TurnAdvancedEvent = { kind: 'TurnAdvancedEvent', seatId: owner.id, turnNumber: next.turn.turnNumber };
+    const turnedUp: SeatTurnedEvent = { kind: 'SeatTurnedEvent', seatId: owner.id, faceDown: false, passedTurn: true };
+    events.push(passed, turnedUp);
+    next = advancePhaseOrTurn(current);
+  }
+  const { phase, turn, skipped } = next;
+  if (turn.turnNumber !== current.turn.turnNumber) {
     const turnEvent: TurnAdvancedEvent = { kind: 'TurnAdvancedEvent', seatId: turn.ownerSeatId, turnNumber: turn.turnNumber };
     events.push(turnEvent);
   }
@@ -150,7 +164,7 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   }
   const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: turn.ownerSeatId, phase };
   events.push(phaseEvent);
-  return logWithTriggers({ ...state, phase, turn }, events, ctx);
+  return logWithTriggers({ ...current, phase, turn }, events, ctx);
 }
 
 // `effect` as its before-triggers would rewrite it (e.g. Silver Lion's cap),
@@ -347,7 +361,7 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
       return { state: queueFront(state, [{ ...then.step, data: { ...then.step.data, picked: ids } }]), events: [] };
     case 'replace-judgment':
       return {
-        state: queueFront(state, [{ kind: 'ReplaceJudgmentEffect', judgment: then.judgment, withCardInstanceId: ids[0], owner: then.owner, abilityId: then.abilityId }]),
+        state: queueFront(state, [{ kind: 'ReplaceJudgmentEffect', judgment: then.judgment, withCardInstanceId: ids[0], owner: then.owner, abilityId: then.abilityId, ...(then.oldTo ? { oldTo: then.oldTo } : {}) }]),
         events: [],
       };
     case 'use-card': {

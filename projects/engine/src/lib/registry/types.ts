@@ -50,7 +50,7 @@ export interface CardDefinition {
   delayed?: boolean;
   // A delayed Tool reading its judgment card (JudgeEffect). Its effects go to
   // the front of the queue, ahead of the judged card's move to the discard pile.
-  onJudged?(state: GameState, ctx: JudgedContext): unknown[];
+  onJudged?(state: GameState, ctx: JudgedContext, registry: ContentRegistry): unknown[];
   // What becomes of a delayed Tool once it has had its turn in the Judgment
   // phase (DelayedCleanupEffect). Absent = discarded, if it is still in its
   // owner's judgment area.
@@ -202,7 +202,7 @@ export interface SkillDefinition extends Abilities {
   lord?: boolean;
   active?: ActiveSkill;
   // Reads a judgment this skill asked for (JudgmentReader 'skill').
-  onJudged?(state: GameState, ctx: SkillJudgedContext): unknown[];
+  onJudged?(state: GameState, ctx: SkillJudgedContext, registry: ContentRegistry): unknown[];
   // One step of this skill's own resolution (SkillStepEffect), for skills that
   // decide in several moves (Raid, Kindness, Sow Revolt). Its effects go to the
   // front of the queue.

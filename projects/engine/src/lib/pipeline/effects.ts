@@ -7,7 +7,8 @@ import { isFaceUpZoneKind } from '../domain/redact';
 
 export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
-  | { kind: 'DamageEffect'; damage: Damage }
+  // `acted`: abilities that had their say on it (Fantasy).
+  | { kind: 'DamageEffect'; damage: Damage; acted?: string[] }
   | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse }
   // Asks `arrangement.seatId` to arrange cards; the queue waits.
   | { kind: 'OpenArrangementEffect'; arrangement: PendingArrangement }
@@ -33,7 +34,9 @@ export type Effect =
   // turn owner) one at a time. Any seat may save it with `rescueCardIds.any`
   // (Peach); only the dying seat itself may also use `rescueCardIds.self`
   // (Wine). Content says which. See the Peach and dying spec.
-  | { kind: 'DyingEffect'; seatId: string; order: string[]; rescueCardIds: { any: string[]; self: string[] }; entering?: boolean }
+  // `acted`: abilities that had their say on entering (Refusing Death);
+  // `pointsBelowOne`: how many points of HP the drop took below 1, set by the mode on entering.
+  | { kind: 'DyingEffect'; seatId: string; order: string[]; rescueCardIds: { any: string[]; self: string[] }; entering?: boolean; acted?: string[]; pointsBelowOne?: number }
   // The Tool lifecycle (see the Tools spec). One per target: a Wuxie check,
   // then the Tool's own rule (CardDefinition.onTarget). Content supplies the
   // counter card ids, so the engine names no card.
@@ -71,7 +74,8 @@ export type Effect =
   | { kind: 'JudgmentDoneEffect'; judgment: Judgment; acted?: string[] }
   // Replaces the judgment's card with a hand card: the old one is discarded,
   // and the judgment is shown again.
-  | { kind: 'ReplaceJudgmentEffect'; judgment: Judgment; withCardInstanceId: string; owner: AbilityOwner; abilityId: string }
+  // `oldTo`: where the replaced card goes; default the discard pile.
+  | { kind: 'ReplaceJudgmentEffect'; judgment: Judgment; withCardInstanceId: string; owner: AbilityOwner; abilityId: string; oldTo?: string }
   // A delayed Tool's turn in the Judgment phase is over (CardDefinition.onCleanup).
   | { kind: 'DelayedCleanupEffect'; tool: UsedCard; ownerSeatId: string }
   // One step of a card's resolution (a Sha's steps; see the Sha-Equipment
@@ -90,6 +94,8 @@ export type Effect =
   // `seatId` uses `card` at `targets`, as a play outside any limit: a card a
   // skill makes a seat use (Sow Discord's Duel). Not counted toward limits.
   | { kind: 'UseCardEffect'; seatId: string; card: UsedCard; targets: Target[] }
+  // Turns a seat face down (Entrench): its next turn is passed as it turns up.
+  | { kind: 'TurnFaceDownEffect'; seatId: string }
   // Shows a card to everyone (Sow Revolt's taken card): logs its face.
   | { kind: 'ShowCardEffect'; seatId: string; cardInstanceId: string; abilityId?: string };
 
@@ -286,6 +292,14 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       if (!card) return { state, events: [] };
       const event: EngineEvent = { kind: 'CardShownEvent', seatId: effect.seatId, card, ...(effect.abilityId ? { abilityId: effect.abilityId } : {}) };
       return { state: { ...state, log: [...state.log, event] }, events: [event] };
+    }
+    case 'TurnFaceDownEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      if (seat.eliminated || seat.faceDown) return { state, events: [] };
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, faceDown: true as const } : s));
+      const event: EngineEvent = { kind: 'SeatTurnedEvent', seatId: seat.id, faceDown: true };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'SkillStepEffect':
     case 'UseCardEffect':

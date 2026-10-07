@@ -28,8 +28,8 @@ export function isJudgmentStepEffect(effect: Effect): effect is JudgmentStepEffe
 function readJudgment(state: GameState, judgment: Judgment, done: Effect, registry: ContentRegistry): Effect[] {
   const { reader, seatId, card: judged, data } = judgment;
   const ctx = { seatId, judged, ...(data ? { data } : {}), done };
-  if (reader.kind === 'card') return (lookupCard(registry, reader.card.as).onJudged?.(state, { tool: reader.card, ...ctx }) ?? []) as Effect[];
-  return (skillOf(state, reader.owner, registry)?.onJudged?.(state, { owner: reader.owner, ...ctx }) ?? []) as Effect[];
+  if (reader.kind === 'card') return (lookupCard(registry, reader.card.as).onJudged?.(state, { tool: reader.card, ...ctx }, registry) ?? []) as Effect[];
+  return (skillOf(state, reader.owner, registry)?.onJudged?.(state, { owner: reader.owner, ...ctx }, registry) ?? []) as Effect[];
 }
 
 // Judgments (turned up, shown, read, done; a card replaced) and delayed Tools'
@@ -67,7 +67,7 @@ export function applyJudgmentStepEffect(state: GameState, effect: JudgmentStepEf
       return applyEffect(state, { kind: 'MoveCardEffect', cardInstanceId: effect.judgment.card.instanceId, toZoneId: discardPile.id, onlyFrom: processing.id });
     case 'ReplaceJudgmentEffect': {
       const old = effect.judgment.card;
-      const out = applyEffect(state, { kind: 'MoveCardEffect', cardInstanceId: old.instanceId, toZoneId: discardPile.id, onlyFrom: processing.id });
+      const out = applyEffect(state, { kind: 'MoveCardEffect', cardInstanceId: old.instanceId, toZoneId: effect.oldTo ?? discardPile.id, onlyFrom: processing.id });
       const into = applyEffect(out.state, { kind: 'MoveCardEffect', cardInstanceId: effect.withCardInstanceId, toZoneId: processing.id });
       const card = requireZoneOfKind(into.state.zones, 'processing').cards.find((c) => c.instanceId === effect.withCardInstanceId)!;
       const changed: EngineEvent = { kind: 'JudgmentChangedEvent', owner: effect.owner, abilityId: effect.abilityId, judgedSeatId: effect.judgment.seatId, card, replaced: old };
