@@ -69,7 +69,7 @@ describe('wikiGenerals', () => {
     const xiahouYuan = generals.find((g) => g.id === 'xiahou-yuan')!;
     expect(xiahouYuan).toMatchObject({ name: 'Xiahou Yuan', nameZh: '夏侯渊', title: 'Running Cheetah', titleZh: '急行的猎豹', maxHp: 4 });
     expect(xiahouYuan.skills).toEqual([{
-      name: 'Godspeed', nameZh: '神速',
+      name: 'Godspeed', nameZh: '神速', lord: false,
       text: 'During his turn, Xiahou Yuan can exercise either or both of the following options to attack any character regardless of their distance from him: Skip his judgment and drawing phases. Skip his action phase and discard any equipment card.',
     }]);
   });
@@ -223,5 +223,20 @@ describe('wiki tabs', () => {
       ['weapons', 'Weapons', 0], ['armors', 'Armors', 0], ['defensive-mount', 'Defensive Mount', 0], ['offensive-mount', 'Offensive Mount', 0],
       ['other-mounts', 'Other Mounts', 1], ['treasures', 'Treasures', 1],
     ]);
+  });
+});
+
+describe('wiki Generals: gender and Lord skills', () => {
+  const general = (id: string) => wikiGenerals().find((g) => g.id === id)!;
+
+  it('shows each General’s gender', () => {
+    expect(general('diao-chan').gender).toBe('female');
+    expect(general('lu-bu').gender).toBe('male');
+  });
+
+  it('flags the Lord skills, which Kingdom War doesn’t use', () => {
+    expect(general('liu-bei').skills.map((s) => [s.name, s.lord])).toEqual([['Kindness', false], ['Fierce General', true]]);
+    const lords = wikiGenerals().flatMap((g) => g.skills.filter((s) => s.lord).map((s) => s.name)).sort();
+    expect(lords).toEqual(['Amber Sky', 'Bloodline', 'Escort', 'Exaltation', 'Fierce General', 'Rescued', 'Seem Foolish', 'Takeover', 'Violent Tyrant']);
   });
 });

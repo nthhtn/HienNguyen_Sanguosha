@@ -1,7 +1,7 @@
 import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT, MAX_KINGDOM_WAR_SEATS } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
-import type { GameState, CardDefinition, ContentRegistry } from 'engine';
+import type { GameState, CardDefinition, CardInstance, ContentRegistry, Effect } from 'engine';
 import { cardsData } from '../../../data/cards';
 
 // Skips general selection by seating fixed pairs directly, for tests about
@@ -303,7 +303,12 @@ describe('Kingdom War per-turn draw', () => {
       'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['sun-quan', 'zhou-yu'], 'seat-c': ['zhao-yun', 'zhuge-liang'],
     });
     const seatC = created.seats.find((s) => s.id === 'seat-c')!;
-    const state: GameState = { ...created, turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] } };
+    // Zhuge Liang revealed: the placeholder bonus is compulsory, off while hidden.
+    const state: GameState = {
+      ...created,
+      turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] },
+      seats: created.seats.map((s) => (s.id === 'seat-c' ? { ...s, generals: { ...s.generals!, deputy: { ...s.generals!.deputy, revealed: true } } } : s)),
+    };
     const originalCardIds = new Set(state.zones.find((z) => z.id === seatC.hand.zoneId)!.cards.map((c) => c.instanceId));
 
     const { state: next } = advanceToDecision(state, { registry, mode: kingdomWarMode });
@@ -311,5 +316,71 @@ describe('Kingdom War per-turn draw', () => {
     expect(next.phase).toBe('Play');
     const handAfter = next.zones.find((z) => z.id === seatC.hand.zoneId)!;
     expect(handAfter.cards.map((c) => c.instanceId).filter((id) => !originalCardIds.has(id))).toHaveLength(3);
+  });
+});
+
+describe('Kingdom War: losing HP', () => {
+  // seat-a (its turn) plays a test card that makes seat-b (Liu Bei and Guan
+  // Yu: 4 HP) lose `amount` HP.
+  function loseHp(amount: number, bHand: CardInstance[] = []) {
+    const registry = buildContentRegistry();
+    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
+    const card: CardDefinition = { id: `test-lose-${amount}`, name: 'Test Lose', category: 'basic', play: (_s, ctx) => [{ kind: 'LoseHpEffect', seatId: ctx.targets[0].seatId, amount }] };
+    registry.cards.set(card.id, card);
+    const base = seated(created, registry, { 'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
+    const state: GameState = {
+      ...base,
+      phase: 'Play',
+      zones: base.zones.map((z) =>
+        z.id === 'seat-a:hand' ? { ...z, cards: [{ instanceId: 'lose-1', definitionId: card.id, suit: 'spade' as const, rank: 1 }] }
+        : z.id === 'seat-b:hand' ? { ...z, cards: bHand }
+        : z
+      ),
+    };
+    const ctx = { registry, mode: kingdomWarMode };
+    const next = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'lose-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, ctx).state;
+    return { next, ctx };
+  }
+  const seatB = (s: GameState) => s.seats.find((x) => x.id === 'seat-b')!;
+
+  it('at 0 HP the seat is dying, its Generals revealed, and a Peach saves it — with no damage at all (Review Focus 4)', () => {
+    const { next, ctx } = loseHp(4, [{ instanceId: 'pb', definitionId: 'peach', suit: 'heart', rank: 12 }]);
+    expect(seatB(next).combinedHp).toBe(0);
+    expect(seatB(next).generals!.main.revealed && seatB(next).generals!.deputy.revealed).toBe(true);
+    expect(next.log.some((e) => e.kind === 'DamageDealtEvent')).toBe(false);
+    expect(next.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', reason: { kind: 'dying', seatId: 'seat-b' } });
+    const saved = resolve(next, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: next.pendingResponse!.id, cardInstanceId: 'pb' }, ctx).state;
+    expect(seatB(saved).combinedHp).toBe(1);
+    expect(seatB(saved).eliminated).toBe(false);
+  });
+
+  it('above half HP nothing is revealed', () => {
+    const { next } = loseHp(1);
+    expect(seatB(next).generals!.main.revealed).toBe(false);
+  });
+});
+
+describe('Kingdom War: the Draw Phase step', () => {
+  it('is one DrawPhaseEffect of 2, which a skill’s before-trigger can change', () => {
+    const registry = buildContentRegistry();
+    registry.generals.set('test-scholar', {
+      id: 'test-scholar', kingdom: 'Wei', maxHp: 4,
+      skills: [{
+        id: 'study-hard', compulsory: true,
+        triggers: [{
+          point: 'before:DrawPhaseEffect',
+          condition: (_s, subject, owner) => (subject as Extract<Effect, { kind: 'DrawPhaseEffect' }>).seatId === owner?.seatId,
+          effect: (_s, subject) => {
+            const draw = subject as Extract<Effect, { kind: 'DrawPhaseEffect' }>;
+            return [{ ...draw, count: draw.count + 1 }];
+          },
+        }],
+      }],
+    });
+    const base = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, { 'seat-a': ['test-scholar', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
+    const state: GameState = { ...base, seats: base.seats.map((s) => (s.id === 'seat-a' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: true } } } : s)) };
+    const next = advanceToDecision(state, { registry, mode: kingdomWarMode }).state;
+    const draws = next.log.flatMap((e) => (e.kind === 'CardsDrawnEvent' ? [e.cardInstanceIds.length] : []));
+    expect(draws).toEqual([3]);
   });
 });

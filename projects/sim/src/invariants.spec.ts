@@ -1,5 +1,5 @@
 import { checkInvariants, checkRestingState } from './invariants';
-import type { CardInstance, GameState, PendingSelection } from 'engine';
+import type { CardInstance, GameState, PendingArrangement, PendingSelection } from 'engine';
 
 function card(instanceId: string): CardInstance {
   return { instanceId, definitionId: 'sha', suit: 'spade', rank: 1 };
@@ -269,5 +269,23 @@ describe('a pending selection', () => {
     const s = baseState();
     const out = { ...s, seats: s.seats.map((x) => ({ ...x, eliminated: true })), pendingSelection: selectionFor(s.seats[0].id) };
     expect(checkInvariants(out)).toContain(`pendingSelection references eliminated seat ${s.seats[0].id}`);
+  });
+});
+
+describe('a pending arrangement', () => {
+  const arrangementFor = (seatId: string): PendingArrangement => ({
+    id: 'arr', seatId, cardInstanceIds: [],
+    reason: { kind: 'ability', owner: { kind: 'general', seatId, slot: 'main', skillId: 'x' }, abilityId: 'x' },
+  });
+
+  it('counts as a decision, so a game may rest with items queued behind it', () => {
+    const s = baseState();
+    expect(checkRestingState({ ...s, resolutionQueue: [{ kind: 'SkipNextEffect' }], pendingArrangement: arrangementFor(s.seats[0].id) })).toEqual([]);
+  });
+
+  it('flags a pending arrangement for an eliminated seat', () => {
+    const s = baseState();
+    const out = { ...s, seats: s.seats.map((x) => ({ ...x, eliminated: true })), pendingArrangement: arrangementFor(s.seats[0].id) };
+    expect(checkInvariants(out)).toContain(`pendingArrangement references eliminated seat ${s.seats[0].id}`);
   });
 });

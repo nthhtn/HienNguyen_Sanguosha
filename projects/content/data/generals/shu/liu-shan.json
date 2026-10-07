@@ -15,6 +15,7 @@
       "text": "Liu Shan can choose to skip his action phase. At the end of his turn, he discards an additional hand card. He can then choose another character and allow them to immediately take a turn. After this, the player to Liu Shan’s right begins their turn."
     },
     {
+      "lord": true,
       "name": "Seem Foolish",
       "nameZh": "若愚",
       "text": "King Ability: When Liu Shan has, or is tied for, the least amount of health at the beginning of his turn, he immediately increases his health limit by one, recovers one unit of health, and permanently gains \"Fierce General.\""

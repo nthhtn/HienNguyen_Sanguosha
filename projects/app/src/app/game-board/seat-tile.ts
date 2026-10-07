@@ -1,10 +1,11 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
+import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
 import { equipSlotOf, hpIconUrls } from 'content';
 import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
 import { SeatAvatar } from './seat-avatar';
+import { AvatarSkill } from './avatar-skills';
 import { PlayingCard } from './playing-card';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 
@@ -39,7 +40,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       </div>
       <div class="generals">
         @if (seat().generals; as generals) {
-          <app-seat-avatar [generals]="generals" />
+          <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
         } @else {
           <span class="choosing">Choosing Generals…</span>
         }
@@ -140,6 +141,9 @@ export class SeatTile {
   readonly name = input.required<string>();
   readonly handCount = input.required<number>();
   readonly isTurnOwner = input(false);
+  // The viewer's own active skills, shown on the avatar.
+  readonly skills = input<AvatarSkill[]>([]);
+  readonly useSkill = output<Action>();
   readonly isResponding = input(false);
   readonly isViewer = input(false);
   readonly isBot = input(false);

@@ -74,7 +74,9 @@ and actions, front first. It is absent, never `[]`, when empty. Its rules:
 
 **Before-triggers** (`before:DamageEffect`, …) see an effect before it
 applies. Each returns the replacement effect, or nothing to cancel it. A
-damage-reduction skill works this way.
+damage-reduction skill works this way. Anything it returns after the
+replacement runs once the replacement has applied (a skill that takes a
+judgment's card, then lets the Done step go on).
 
 **`applyEffect`** is the only place state changes. It is a pure function: old
 state in, new state and events out. Each event is appended to `state.log`.
@@ -360,6 +362,58 @@ Each opens a selection of the cards to use. The result is one `UsedCard`
 A card in use is always a `UsedCard`: what it counts as, its colour (two cards
 of different colours: none), and its physical cards.
 
+## General skills
+
+**Which skills count.** `skillsInPlay(state, seatId, registry)` decides, for
+triggers, conversions, active skills and content's modifiers alike:
+- a revealed General's skills all count;
+- a hidden General's compulsory skills (and their modifiers) are off; its
+  other skills count, marked `needsReveal`;
+- Lord skills never count (Kingdom War has no Lord).
+
+A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
+
+**Reveal to use.** An `AskUseEffect` from a hidden General's skill puts a
+`RevealGeneralEffect` (with `forAbilityId`) at the front of its Use option. A
+hidden General's conversion or active skill reveals when its first selection
+is confirmed: `PendingSelection.onSelect` resolves at the confirm, before the
+continuation. Cancel leaves the General hidden.
+
+**Active skills.** `SkillDefinition.active` gives a `UseSkillAction` in its
+owner's Play Phase while `canUse` holds and `Turn.abilityUses` is under
+`usesPerTurn`. Using one counts it (`IncrementEffect`) and logs an
+`AbilityUsedEvent` (`used`), at once or, when `start` opens with a
+cancellable selection, through that selection's `onSelect`.
+
+**Counters.** `Turn.abilityUses` and `Turn.ownerUses` (every card the turn
+owner used, answers included) end with the turn; `Seat.marks` last the game.
+
+**Losing HP** (`LoseHpEffect` → `HpLostEvent`) is not damage: damage triggers
+don't fire. Kingdom War runs its reveal and dying rules after both.
+
+**The Draw Phase** is one `DrawPhaseEffect { count }`. Before-triggers change
+the count or replace the draw.
+
+**Judgments** run in steps, each a queue item:
+1. `JudgeEffect`: the top card is turned up into `processing` (nothing left:
+   `otherwise` goes ahead).
+2. `JudgmentShownEffect`: skills that change judgments hook in here.
+   `ReplaceJudgmentEffect` discards the card, puts a hand card in its place
+   and shows the judgment again.
+3. `JudgmentResolveEffect`: the reader (a card's `onJudged`, or a skill's)
+   reads the final card.
+4. `JudgmentDoneEffect`: the card goes to the discard pile unless something
+   took it first. A reader may place this step itself (Eight Trigrams does,
+   ahead of the Shan window it opens).
+
+**More decisions.**
+- Choice options may show a seat, a suit or a label (`pick`), and a `give`
+  selection is followed by a choice of who gets the cards.
+- `pendingArrangement` asks a seat to put cards from the top of the draw
+  pile back, some on top and some at the bottom, in its order
+  (`ArrangeCardsAction`, checked by `validateArrangement`). Only that seat
+  sees the cards.
+
 ## Plugging into the chain
 
 | To add… | Write… | Example |
@@ -377,6 +431,11 @@ of different colours: none), and its physical cards.
 | A "may" | `AskUseEffect` (`askAtStep` in content) | Eight Trigrams before a Shan |
 | Picking cards or seats | `OpenSelectionEffect` with a continuation | Axe's 2 cards, Sky Scorcher's targets |
 | Using cards as another card | `abilities.conversions` | Serpent Spear |
+| A General's skill | `SkillDefinition` (abilities, plus `compulsory`, `lord`, `active`, `onJudged`) | the placeholder skills |
+| A skill used on purpose | `SkillDefinition.active` → `UseSkillAction` | Kindness (stage 7) |
+| Changing or taking a judgment | `before:JudgmentShownEffect` / `before:JudgmentDoneEffect` triggers | Devil, Heaven's Envy (stage 7) |
+| Rewriting the Draw Phase | a `before:DrawPhaseEffect` trigger | Brave Gesture (stage 7) |
+| Arranging the draw pile | `OpenArrangementEffect` | Astrology (stage 7) |
 
 A new card or skill should need only its own definition. If a change seems to
 need a branch for one card inside the pipeline, look for the hook above that

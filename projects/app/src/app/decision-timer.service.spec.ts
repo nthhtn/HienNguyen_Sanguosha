@@ -1,7 +1,7 @@
 import { DestroyRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Action, GameState, cardsOverHandLimit } from 'engine';
-import { DECISION_SECONDS, DecisionTimer } from './decision-timer.service';
+import { DECISION_SECONDS, DecisionTimer, defaultDecision } from './decision-timer.service';
 import { GameService } from './game.service';
 import { cardDefinitionId } from './labels';
 
@@ -240,5 +240,16 @@ describe('DecisionTimer', () => {
       advance(DECISION_SECONDS.play + 5);
       expect(game.state()).toBe(before);
     });
+  });
+});
+
+describe('defaultDecision', () => {
+  it('an arrangement times out with every card on top, as given', () => {
+    const template: Action = { kind: 'ArrangeCardsAction', seatId: 'seat-0', arrangementId: 'arr', top: [], bottom: [] };
+    const state = {
+      pendingArrangement: { id: 'arr', seatId: 'seat-0', cardInstanceIds: ['t1', 't2'], reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'x' }, abilityId: 'x' } },
+      turn: { turnNumber: 1, ownerSeatId: 'seat-0', extraTurnStack: [] },
+    } as unknown as GameState;
+    expect(defaultDecision(state, [template])).toEqual([{ ...template, top: ['t1', 't2'], bottom: [] }]);
   });
 });

@@ -1,4 +1,4 @@
-import { AbilityOwner, CardInstance, GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
+import { AbilityOwner, CardInstance, GeneralOwner, GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
 import { RngState } from '../rng/rng';
 import type { Effect } from '../pipeline/effects';
 
@@ -89,6 +89,20 @@ export interface JudgedContext {
   judged: CardInstance;
   // What the JudgeEffect carried for its reader (Eight Trigrams: the step it answers).
   data?: Record<string, unknown>;
+  // The judgment's last step (the card to the discard pile). Include it among
+  // the returned effects to place it there; otherwise it comes after them.
+  done: Effect;
+}
+
+// A skill reading its own judgment (Unyielding, Iron Cavalry, River Goddess).
+export interface SkillJudgedContext {
+  owner: GeneralOwner;
+  // The seat being judged, and the card it got.
+  seatId: string;
+  judged: CardInstance;
+  data?: Record<string, unknown>;
+  // As JudgedContext.done.
+  done: Effect;
 }
 
 export interface DelayedToolContext {
@@ -146,10 +160,34 @@ export interface UnequipContext {
   cardInstanceId: string;
 }
 
-export interface SkillDefinition {
+// Who is using an active skill: its owner's seat, and the skill.
+export interface ActiveContext {
+  seatId: string;
+  owner: GeneralOwner;
+}
+
+// A skill used on purpose in its owner's Play Phase (Kindness, Reconsider).
+export interface ActiveSkill {
+  // Uses allowed per turn; absent = any number.
+  usesPerTurn?: number;
+  canUse(state: GameState, ctx: ActiveContext, registry: ContentRegistry): boolean;
+  // The effects that open its decisions. If the first is a selection with
+  // onCancel, Cancel undoes the use: it counts only once the picks are confirmed,
+  // and that selection must be the only effect (what follows goes in its
+  // continuation).
+  start(state: GameState, ctx: ActiveContext, registry: ContentRegistry): unknown[];
+}
+
+// A General's skill: abilities like a worn card's, owned by the General's seat.
+export interface SkillDefinition extends Abilities {
   id: string;
-  triggers: SkillTrigger[];
-  activation: 'auto' | 'player-choice';
+  // Applies without asking. Off while its General is hidden (see skillsInPlay).
+  compulsory?: boolean;
+  // A Lord skill: never in play, since Kingdom War has no Lord.
+  lord?: boolean;
+  active?: ActiveSkill;
+  // Reads a judgment this skill asked for (JudgmentReader 'skill').
+  onJudged?(state: GameState, ctx: SkillJudgedContext): unknown[];
 }
 
 export interface GeneralDefinition {

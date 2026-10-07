@@ -7,6 +7,7 @@ type DiscardCard = Extract<Action, { kind: 'DiscardCardAction' }>;
 type ChooseOption = Extract<Action, { kind: 'ChooseOptionAction' }>;
 type Select = Extract<Action, { kind: 'SelectAction' }>;
 type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
+type Arrange = Extract<Action, { kind: 'ArrangeCardsAction' }>;
 
 function definitionIdOf(view: GameState, cardInstanceId: string): string | undefined {
   for (const zone of view.zones) {
@@ -72,6 +73,16 @@ function wantsToUse(view: GameState, self: Seat, abilityId: string, targetSeatId
   }
 }
 
+// Whether the bot will reveal a hidden General to use a skill: once its
+// kingdom is known anyway (a General already revealed), or while it holds at
+// least 4 HP.
+function mayReveal(self: Seat): boolean {
+  return !!self.generals && (self.generals.main.revealed || self.generals.deputy.revealed || self.combinedHp >= 4);
+}
+
+// Cards worth drawing soon: kept on top when arranging the draw pile.
+const KEEP_ON_TOP = new Set(['peach', 'shan', 'sha']);
+
 // Abilities whose card selections the bot fills rather than cancels.
 const SELECTS_FOR = new Set(['axe', 'green-dragon-blade', 'serpent-spear']);
 
@@ -107,6 +118,14 @@ function decide(
     if (choices.length > 0) return take(choices.reduce((best, a) => (hp(a) > hp(best) ? a : best)));
   }
 
+  // 1a0. An arrangement: Peach, Shan and Sha on top, the rest at the bottom.
+  const arrangeTemplate = legal.find((a): a is Arrange => a.kind === 'ArrangeCardsAction');
+  if (arrangeTemplate && view.pendingArrangement) {
+    const ids = view.pendingArrangement.cardInstanceIds;
+    const onTop = (id: string) => KEEP_ON_TOP.has(definitionIdOf(view, id) ?? '');
+    return take({ ...arrangeTemplate, top: ids.filter(onTop), bottom: ids.filter((id) => !onTop(id)) });
+  }
+
   // 1a. A selection. Sky Scorcher's seats: non-allies only, else cancel. Cards
   // for Axe, Green Dragon Blade, Serpent Spear: the least useful. Anything
   // else: cancel when allowed.
@@ -134,8 +153,10 @@ function decide(
   const choiceActions = legal.filter((a): a is ChooseOption => a.kind === 'ChooseOptionAction');
   if (choiceNow && me && choiceActions.length > 0) {
     if (choiceNow.reason.kind === 'ability') {
-      const optionId = wantsToUse(view, me, choiceNow.reason.abilityId, choiceNow.reason.targetSeatId) ? 'use' : 'decline';
-      const pick = choiceActions.find((a) => a.optionId === optionId);
+      const use = choiceNow.options.find((o) => o.id === 'use')?.shows;
+      const reveals = use?.kind === 'use' && !!use.reveals;
+      const wants = wantsToUse(view, me, choiceNow.reason.abilityId, choiceNow.reason.targetSeatId) && (!reveals || mayReveal(me));
+      const pick = choiceActions.find((a) => a.optionId === (wants ? 'use' : 'decline'));
       if (pick) return take(pick);
     }
     const decline = choiceActions.find((a) => a.optionId === 'decline');

@@ -1,4 +1,4 @@
-import { GameState, GameEvent, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
+import { GameState, GameEvent, PendingChoice, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
 import { usedCardFrom, usedCardOf } from '../domain/usedCard';
 import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
@@ -7,11 +7,14 @@ import { Effect, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
+import { decisionPending } from '../rules/activeSeat';
+import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence';
-import { conversionActions, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
+import { activeSkillActions, conversionActions, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
+import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
-import { CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
+import { ArrangementMadeEvent, CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
@@ -63,7 +66,7 @@ export function advanceToDecision(state: GameState, ctx: EngineContext, budget: 
     const drained = drain(current, ctx, budget);
     current = drained.state;
     events = [...events, ...drained.events];
-    if (current.result || current.phase === 'GeneralSelection' || current.pendingResponse || current.pendingChoice || current.pendingSelection) break;
+    if (current.result || current.phase === 'GeneralSelection' || decisionPending(current)) break;
     const ownerEliminated = !!current.seats.find((s) => s.id === current.turn.ownerSeatId)?.eliminated;
     if (!ownerEliminated && phaseWaitsForPlayer(current)) break;
     if (steps >= maxSteps) {
@@ -82,7 +85,7 @@ export function advanceToDecision(state: GameState, ctx: EngineContext, budget: 
 function drain(state: GameState, ctx: EngineContext, budget: StepBudget): ResolveResult {
   let current = withWinCheck(state, ctx);
   const events: GameEvent[] = [];
-  while (!current.result && !current.pendingResponse && !current.pendingChoice && !current.pendingSelection && (current.resolutionQueue?.length ?? 0) > 0) {
+  while (!current.result && !decisionPending(current) && (current.resolutionQueue?.length ?? 0) > 0) {
     const [item, ...rest] = current.resolutionQueue!;
     budget.used += 1;
     if (budget.used > MAX_RESOLUTION_STEPS) {
@@ -156,23 +159,33 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
 // again against the effect as rewritten so far. A rewrite into another kind of
 // effect (an ask) ends it: the rest get their say when the effect comes back.
 export function previewEffect(state: GameState, effect: Effect, ctx: EngineContext): Effect | null {
+  return rewriteEffect(state, effect, ctx)?.effect ?? null;
+}
+
+// The before-triggers' say: the effect as it will apply (null: cancelled),
+// and what any trigger returned after its first output, to run after it.
+function rewriteEffect(state: GameState, effect: Effect, ctx: EngineContext): { effect: Effect; after: Effect[] } | null {
   const beforeTriggers = gatherTriggeredSkills(state, ctx.registry, ctx.mode, `before:${effect.kind}`, effect);
   let current: Effect = effect;
+  const after: Effect[] = [];
   for (const [index, gathered] of beforeTriggers.entries()) {
     if (index > 0 && !gathered.trigger.condition(state, current, gathered.owner, ctx.registry)) continue;
     const outputs = gathered.trigger.effect(state, current, gathered.owner, ctx.registry) as Effect[];
     if (outputs.length === 0) return null;
     current = outputs[0];
-    if (current.kind !== effect.kind) return current;
+    after.unshift(...outputs.slice(1));
+    if (current.kind !== effect.kind) return { effect: current, after };
   }
-  return current;
+  return { effect: current, after };
 }
 
 // One effect: before-triggers may rewrite or cancel it, then it applies and its
-// events' after-trigger follow-ups go to the front of the queue.
+// events' after-trigger follow-ups go to the front of the queue, ahead of
+// whatever the rewriting triggers returned after the rewrite.
 function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {
-  const current = previewEffect(state, effect, ctx);
-  if (current === null) return { state, events: [] };
+  const rewritten = rewriteEffect(state, effect, ctx);
+  if (rewritten === null) return { state, events: [] };
+  const current = rewritten.effect;
 
   const applied = isLifecycleEffect(current)
     ? applyLifecycleEffect(state, current, ctx.registry)
@@ -182,7 +195,7 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
         ? applyCardStep(state, current, ctx.registry)
         : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
-  return { state: queueFront(applied.state, followUps), events: applied.events };
+  return { state: queueFront(applied.state, [...followUps, ...rewritten.after]), events: applied.events };
 }
 
 // Cards that just left an equip zone: each one's onUnequip runs for its former
@@ -268,6 +281,10 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
   const counted: GameState = options.counted
     ? { ...afterLog, turn: { ...afterLog.turn, cardPlays: { ...plays, [used.as]: (plays[used.as] ?? 0) + 1 } } }
     : afterLog;
+  // Every card the turn owner uses, answers included (Self-Restraint).
+  const ownerUses = counted.turn.ownerUses ?? {};
+  const tallied: GameState =
+    seatId === counted.turn.ownerSeatId ? { ...counted, turn: { ...counted.turn, ownerUses: { ...ownerUses, [used.as]: (ownerUses[used.as] ?? 0) + 1 } } } : counted;
   // A used card leaves the hand at once, so it can't be reused mid-resolution.
   // Equipment and delayed Tools played as themselves are placed by their own play().
   const placesItself = !pending && !used.via && (definition.category === 'equipment' || !!definition.delayed);
@@ -279,9 +296,9 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
   const fromSource = pending?.sourceCard
     ? ((lookupCard(ctx.registry, pending.sourceCard.definitionId).onResponse?.(afterLog, { pending, seatId, cardInstanceId, card: used }) ?? []) as Effect[])
     : [];
-  const followUps = afterTriggerFollowUps(counted, [event], ctx);
+  const followUps = afterTriggerFollowUps(tallied, [event], ctx);
   return {
-    state: queueFront(counted, [...leaveHand, ...followUps, ...effects, ...(pending?.onAnswer ?? []), ...fromSource]),
+    state: queueFront(tallied, [...leaveHand, ...followUps, ...effects, ...(pending?.onAnswer ?? []), ...fromSource]),
     events: [event],
   };
 }
@@ -297,6 +314,27 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
     }
     case 'card-step':
       return { state: queueFront(state, [{ ...then.step, data: { ...then.step.data, picked: ids } }]), events: [] };
+    case 'give': {
+      // Who gets the picked cards: one choice, each option a seat.
+      const choice: PendingChoice = {
+        id: `give-${selection.id}`,
+        seatId: selection.seatId,
+        reason: selection.reason,
+        verb: 'give',
+        options: then.toSeatIds.map((seatId) => {
+          const seat = state.seats.find((s) => s.id === seatId);
+          if (!seat) throw new Error(`Unknown seat: ${seatId}`);
+          const moves: Effect[] = ids.map((id) => ({ kind: 'MoveCardEffect', cardInstanceId: id, toZoneId: seat.hand.zoneId }));
+          return { id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [...moves, ...(then.then ?? [])] };
+        }),
+      };
+      return { state: queueFront(state, [{ kind: 'OpenChoiceEffect', choice }]), events: [] };
+    }
+    case 'replace-judgment':
+      return {
+        state: queueFront(state, [{ kind: 'ReplaceJudgmentEffect', judgment: then.judgment, withCardInstanceId: ids[0], owner: then.owner, abilityId: then.abilityId }]),
+        events: [],
+      };
     case 'use-card': {
       const cards = ids.map((id) => {
         const card = state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === id);
@@ -322,6 +360,9 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
 function resolveAction(state: GameState, action: Action, ctx: EngineContext): ResolveResult {
   if (state.pendingSelection && action.kind !== 'SelectAction' && action.kind !== 'CancelSelectionAction') {
     throw new Error(`Action ${action.kind} is not legal while a selection is pending`);
+  }
+  if (state.pendingArrangement && action.kind !== 'ArrangeCardsAction') {
+    throw new Error(`Action ${action.kind} is not legal while an arrangement is pending`);
   }
   if (state.pendingChoice && action.kind !== 'ChooseOptionAction') {
     throw new Error(`Action ${action.kind} is not legal while a choice is pending`);
@@ -461,8 +502,16 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const { pendingSelection: _done, ...cleared } = state;
       // Logged for the history; nothing reacts to it.
       const event: SelectionMadeEvent = { kind: 'SelectionMadeEvent', seatId: action.seatId, reason: selection.reason, of: selection.of, ids: action.ids };
-      const continued = continueSelection(logged(cleared, [event]), selection, action.ids, ctx);
-      return { state: continued.state, events: [event, ...continued.events] };
+      let current = logged(cleared, [event]);
+      const events: GameEvent[] = [event];
+      // What confirming does at once (a reveal, a use counted), before the continuation.
+      for (const effect of selection.onSelect ?? []) {
+        const step = resolveEffect(current, effect, ctx);
+        current = step.state;
+        events.push(...step.events);
+      }
+      const continued = continueSelection(current, selection, action.ids, ctx);
+      return { state: continued.state, events: [...events, ...continued.events] };
     }
 
     case 'UseConversionAction': {
@@ -498,7 +547,52 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         // Cancel: back where the seat was (its Play Phase, or the open window).
         onCancel: [],
       };
-      return { state: { ...state, pendingSelection: selection }, events: [] };
+      // A hidden General's conversion reveals it once the cards are confirmed.
+      const reveal: Effect[] =
+        owned.needsReveal && owned.owner.kind === 'general'
+          ? [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: owned.owner.slot, forAbilityId: owned.abilityId }]
+          : [];
+      return { state: { ...state, pendingSelection: reveal.length ? { ...selection, onSelect: reveal } : selection }, events: [] };
+    }
+
+    case 'ArrangeCardsAction': {
+      const error = validateArrangement(state, action);
+      if (error) throw new Error(error);
+      const arrangement = state.pendingArrangement!;
+      const { pendingArrangement: _done, ...cleared } = state;
+      const drawPile = requireZoneOfKind(state.zones, 'drawPile');
+      const inPile = (id: string) => {
+        const found = drawPile.cards.find((c) => c.instanceId === id);
+        if (!found) throw new Error(`Card ${id} is no longer in the draw pile`);
+        return found;
+      };
+      const rest = drawPile.cards.filter((c) => !arrangement.cardInstanceIds.includes(c.instanceId));
+      const zones = state.zones.map((z) => (z.id === drawPile.id ? { ...z, cards: [...action.top.map(inPile), ...rest, ...action.bottom.map(inPile)] } : z));
+      const event: ArrangementMadeEvent = { kind: 'ArrangementMadeEvent', seatId: action.seatId, reason: arrangement.reason, top: action.top.length, bottom: action.bottom.length };
+      return logWithTriggers({ ...cleared, zones }, [event], ctx);
+    }
+
+    case 'UseSkillAction': {
+      const offered = activeSkillActions(state, action.seatId, ctx.registry).some((a) => sameAbilityOwner(a.owner, action.owner));
+      if (!offered || action.owner.kind !== 'general') throw new Error(`Seat ${action.seatId} can’t use that skill now`);
+      const owner = action.owner;
+      const { skill, needsReveal } = skillsInPlay(state, action.seatId, ctx.registry).find((s) => sameAbilityOwner(s.owner, owner))!;
+      // The use itself: reveal a hidden General, count it, log it.
+      const spend: Effect[] = [
+        ...(needsReveal ? [{ kind: 'RevealGeneralEffect' as const, seatId: action.seatId, slot: owner.slot, forAbilityId: owner.skillId }] : []),
+        { kind: 'IncrementEffect', scope: 'turn', key: abilityUseKey(owner), by: 1 },
+        { kind: 'AbilityUsedEffect', owner, abilityId: owner.skillId, outcome: 'used' },
+      ];
+      const [first, ...rest] = skill.active!.start(state, { seatId: action.seatId, owner }, ctx.registry) as Effect[];
+      // A cancellable first selection: the use happens only once its picks are confirmed.
+      if (first?.kind === 'OpenSelectionEffect' && first.selection.onCancel) {
+        // Anything queued behind it would run even after a Cancel: what follows
+        // the picks belongs in the selection's continuation.
+        if (rest.length > 0) throw new Error(`A cancellable first selection must be the only effect of ${owner.skillId}'s start`);
+        const selection = { ...first.selection, onSelect: [...spend, ...(first.selection.onSelect ?? [])] };
+        return { state: queueFront(state, [{ ...first, selection }, ...rest]), events: [] };
+      }
+      return { state: queueFront(state, [...spend, ...(first ? [first] : []), ...rest]), events: [] };
     }
 
     case 'CancelSelectionAction': {

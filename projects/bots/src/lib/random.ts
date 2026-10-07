@@ -24,6 +24,10 @@ export function pickRandomAction(
   }
   const step = nextInt(rng, legal.length);
   const picked = legal[step.value];
+  // An arrangement template: every card on top, as given.
+  if (picked.kind === 'ArrangeCardsAction' && state.pendingArrangement) {
+    return { action: { ...picked, top: [...state.pendingArrangement.cardInstanceIds], bottom: [] }, rng: step.rng };
+  }
   const selection = state.pendingSelection;
   if (picked.kind !== 'SelectAction' || !selection) return { action: picked, rng: step.rng };
   // A selection template: fill it with `min` eligible ids, picked at random.

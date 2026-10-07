@@ -118,3 +118,23 @@ describe('MoveRandomCardEffect', () => {
     expect(applyEffect(empty, { kind: 'MoveRandomCardEffect', fromZoneId: 'b:hand', toZoneId: 'a:hand' })).toEqual({ state: empty, events: [] });
   });
 });
+
+describe('seat, suit and label options', () => {
+  it('are offered and logged like any option, and survive a JSON round trip', () => {
+    const naming: PendingChoice = {
+      id: 'c2', seatId: 'a', verb: 'pick',
+      reason: { kind: 'ability', owner: { kind: 'general', seatId: 'b', slot: 'main', skillId: 'sow-revolt' }, abilityId: 'sow-revolt' },
+      options: [
+        { id: 'b', shows: { kind: 'seat', seatId: 'b' }, effects: [] },
+        { id: 'heart', shows: { kind: 'suit', suit: 'heart' }, effects: [healA] },
+        { id: 'done', shows: { kind: 'label', text: 'Done' }, effects: [] },
+      ],
+    };
+    const s = applyEffect(state(), { kind: 'OpenChoiceEffect', choice: naming }).state;
+    expect(getLegalActions(s, 'a').map((a) => (a.kind === 'ChooseOptionAction' ? a.optionId : a.kind))).toEqual(['b', 'heart', 'done']);
+    const chosen = (from: GameState) => resolve(from, { kind: 'ChooseOptionAction', seatId: 'a', choiceId: 'c2', optionId: 'heart' }, ctx).state;
+    expect(chosen(s).log[0]).toEqual({ kind: 'ChoiceMadeEvent', seatId: 'a', reason: naming.reason, verb: 'pick', shows: { kind: 'suit', suit: 'heart' } });
+    expect(chosen(s).seats[0].combinedHp).toBe(4);
+    expect(chosen(JSON.parse(JSON.stringify(s)))).toEqual(chosen(s));
+  });
+});

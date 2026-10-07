@@ -1,6 +1,6 @@
 import { CardInstance, Effect, EngineEvent, GameState } from 'engine';
 import { cardDisplayData } from 'content';
-import { Force, cardFaceLabel, cardIdDisplayName, forceOf, seatName, targetLabel } from '../labels';
+import { Force, cardFaceLabel, cardIdDisplayName, forceOf, judgmentReaderName, seatName, targetLabel } from '../labels';
 
 export interface ResponseDescription {
   // What started it, e.g. "Seat 1 played Duel against Hing".
@@ -193,7 +193,7 @@ export function describeResponse(
       if (event.kind === 'CardMovedEvent') continue;
       if (event.kind === 'JudgmentEvent' && event.seatId === pending.respondingSeatId) {
         const whose = event.seatId === viewerSeatId ? 'Your' : `${name(event.seatId)}'s`;
-        latest = `${whose} ${cardName({ definitionId: event.tool.as })} judgment: ${cardFaceLabel(event.card)}`;
+        latest = `${whose} ${judgmentReaderName(event.reader)} judgment: ${cardFaceLabel(event.card)}`;
       }
       break;
     }

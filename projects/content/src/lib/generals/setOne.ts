@@ -8,13 +8,15 @@ import type { GeneralSkillSet } from './types';
 // own id: the same general can be held by more than one seat at once, and such
 // a search would resolve to whichever holder comes first — double-firing for
 // that seat and never firing for the others.
+//
+// Placeholders until stage 7: compulsory, so off while their General is hidden.
 
 export const xiahouDunGeneral: GeneralSkillSet = {
   id: 'xiahou-dun',
   skills: [
     {
       id: 'ferocity',
-      activation: 'auto',
+      compulsory: true,
       triggers: [
         {
           point: 'before:DamageEffect',
@@ -42,7 +44,7 @@ export const sunShangxiangGeneral: GeneralSkillSet = {
   skills: [
     {
       id: 'valor',
-      activation: 'auto',
+      compulsory: true,
       triggers: [
         {
           point: 'after:DamageDealtEvent',
@@ -65,7 +67,7 @@ export const zhugeLiangGeneral: GeneralSkillSet = {
   skills: [
     {
       id: 'insight',
-      activation: 'auto',
+      compulsory: true,
       triggers: [
         {
           point: 'after:PhaseChangedEvent',

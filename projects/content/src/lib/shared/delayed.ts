@@ -17,7 +17,7 @@ export function placeInJudgmentArea(state: GameState, cardInstanceId: string, se
 
 // A delayed Tool's rule once its Wuxie check has passed: judge its seat.
 export const judgeTarget: NonNullable<CardDefinition['onTarget']> = (_state, { tool, target }) =>
-  target.kind === 'seat' ? [{ kind: 'JudgeEffect', seatId: target.seatId, tool }] : [];
+  target.kind === 'seat' ? [{ kind: 'JudgeEffect', seatId: target.seatId, reader: { kind: 'card', card: tool } }] : [];
 
 interface SkipPhaseToolSpec {
   id: string;

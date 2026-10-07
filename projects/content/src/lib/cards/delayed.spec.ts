@@ -53,7 +53,7 @@ const respond = (s: GameState, seatId: string, cardInstanceId: string) =>
   resolve(s, { kind: 'RespondAction', seatId, pendingResponseId: s.pendingResponse!.id, cardInstanceId }, ctx).state;
 const pass = (s: GameState, seatId: string) => resolve(s, { kind: 'PassAction', seatId, pendingResponseId: s.pendingResponse!.id }, ctx).state;
 const idsIn = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
-const judgments = (log: EngineEvent[]) => log.flatMap((e) => (e.kind === 'JudgmentEvent' ? [`${e.tool.as}:${e.card.instanceId}`] : []));
+const judgments = (log: EngineEvent[]) => log.flatMap((e) => (e.kind === 'JudgmentEvent' ? [`${e.reader.kind === 'card' ? e.reader.card.as : e.reader.owner.skillId}:${e.card.instanceId}`] : []));
 const skips = (log: EngineEvent[]) => log.flatMap((e) => (e.kind === 'PhaseSkippedEvent' ? [`${e.seatId}:${e.phase}`] : []));
 const targetsFor = (s: GameState, cardInstanceId: string) =>
   getLegalActions(s, 'seat-a', registry).flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === cardInstanceId ? [a.targets] : []));

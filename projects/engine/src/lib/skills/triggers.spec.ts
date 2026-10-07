@@ -56,7 +56,6 @@ describe('gatherTriggeredSkills', () => {
       skills: [
         {
           id: 'skill-1',
-          activation: 'auto',
           triggers: [{ point: 'before:DamageEffect', condition: () => true, effect: () => [] }],
         },
       ],
@@ -75,7 +74,6 @@ describe('gatherTriggeredSkills', () => {
       skills: [
         {
           id: 'skill-1',
-          activation: 'auto',
           triggers: [{ point: 'after:DamageDealtEvent', condition: () => false, effect: () => [] }],
         },
       ],
@@ -112,7 +110,6 @@ describe('gatherTriggeredSkills', () => {
       skills: [
         {
           id: 'skill-1',
-          activation: 'auto',
           triggers: [
             {
               point: 'before:DamageEffect',
@@ -137,12 +134,12 @@ describe('gatherTriggeredSkills', () => {
 
     expect(found).toHaveLength(2);
     expect(found.map((f) => f.owner)).toEqual([
-      { kind: 'general', seatId: 'seat-a', slot: 'main' },
-      { kind: 'general', seatId: 'seat-c', slot: 'deputy' },
+      { kind: 'general', seatId: 'seat-a', slot: 'main', skillId: 'skill-1' },
+      { kind: 'general', seatId: 'seat-c', slot: 'deputy', skillId: 'skill-1' },
     ]);
     expect(seenOwners).toEqual([
-      { kind: 'general', seatId: 'seat-a', slot: 'main' },
-      { kind: 'general', seatId: 'seat-c', slot: 'deputy' },
+      { kind: 'general', seatId: 'seat-a', slot: 'main', skillId: 'skill-1' },
+      { kind: 'general', seatId: 'seat-c', slot: 'deputy', skillId: 'skill-1' },
     ]);
   });
 
@@ -154,7 +151,6 @@ describe('gatherTriggeredSkills', () => {
       skills: [
         {
           id: 'skill-1',
-          activation: 'auto',
           triggers: [{ point: 'before:DamageEffect', condition: () => true, effect: () => [] }],
         },
       ],
@@ -168,7 +164,7 @@ describe('gatherTriggeredSkills', () => {
     const found = gatherTriggeredSkills(state, registry, stubMode(), 'before:DamageEffect', {});
 
     expect(found).toHaveLength(1);
-    expect(found[0].owner).toEqual({ kind: 'general', seatId: 'seat-b', slot: 'main' });
+    expect(found[0].owner).toEqual({ kind: 'general', seatId: 'seat-b', slot: 'main', skillId: 'skill-1' });
   });
 });
 
@@ -176,7 +172,7 @@ describe('gatherTriggeredSkills with a seat that has not chosen generals', () =>
   it('skips the seat instead of throwing', () => {
     const skill: GeneralDefinition = {
       id: 'g1', kingdom: 'Wei', maxHp: 4,
-      skills: [{ id: 's', activation: 'auto', triggers: [{ point: 'after:X', condition: () => true, effect: () => [] }] }],
+      skills: [{ id: 's', triggers: [{ point: 'after:X', condition: () => true, effect: () => [] }] }],
     };
     const registry: ContentRegistry = { cards: new Map(), generals: new Map([['g1', skill]]) };
     const mode: GameModeDefinition = { id: 'm', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };

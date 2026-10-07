@@ -1,4 +1,4 @@
-import { actionLabel, cardDefinitionId, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, targetLabel } from './labels';
+import { actionLabel, cardDefinitionId, judgmentReaderName, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, suitLabel, targetLabel } from './labels';
 import { Action, ContentRegistry, GameState, Target } from 'engine';
 
 function stateWithZones(): GameState {
@@ -70,6 +70,11 @@ describe('kingdomDisplayName', () => {
 });
 
 describe('actionLabel', () => {
+  it('labels an active skill by its name', () => {
+    const use: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'reconsider' } };
+    expect(actionLabel(use, stateWithZones(), registryWithSha())).toBe('Use Reconsider');
+  });
+
   it('labels a conversion by what it makes, and its targets for a play', () => {
     const base = stateWithZones();
     const state: GameState = {
@@ -148,5 +153,18 @@ describe('seatName', () => {
 
   it('names a general target after its seat', () => {
     expect(targetLabel({ kind: 'general', seatId: 'seat-0', generalSlot: 'deputy' }, players)).toBe("Hing's Deputy General");
+  });
+});
+
+describe('suitLabel', () => {
+  it('names a suit with its symbol', () => {
+    expect([suitLabel('spade'), suitLabel('heart'), suitLabel('club'), suitLabel('diamond')]).toEqual(['♠ Spade', '♥ Heart', '♣ Club', '♦ Diamond']);
+  });
+});
+
+describe('judgmentReaderName', () => {
+  it('names the card or the skill a judgment is for', () => {
+    expect(judgmentReaderName({ kind: 'card', card: { as: 'eight-trigrams', colour: 'none', physical: [] } })).toBe('Eight Trigrams');
+    expect(judgmentReaderName({ kind: 'skill', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'unyielding' } })).toBe('Unyielding');
   });
 });

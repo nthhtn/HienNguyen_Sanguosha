@@ -253,7 +253,6 @@ describe('resolve: skill triggers modify effects and queue follow-ups', () => {
       skills: [
         {
           id: 'shield-skill',
-          activation: 'auto',
           triggers: [
             {
               point: 'before:DamageEffect',
@@ -274,7 +273,6 @@ describe('resolve: skill triggers modify effects and queue follow-ups', () => {
       skills: [
         {
           id: 'draw-skill',
-          activation: 'auto',
           triggers: [
             {
               point: 'after:DamageDealtEvent',
@@ -520,7 +518,6 @@ describe('resolve: step budget', () => {
       skills: [
         {
           id: 'heal-to-damage',
-          activation: 'auto',
           triggers: [
             {
               point: 'after:HealEvent',
@@ -548,7 +545,6 @@ describe('resolve: step budget', () => {
       skills: [
         {
           id: 'damage-to-heal',
-          activation: 'auto',
           triggers: [
             {
               point: 'after:DamageDealtEvent',

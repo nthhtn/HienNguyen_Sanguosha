@@ -14,11 +14,13 @@ export type Target =
   | { kind: 'general'; seatId: string; generalSlot: 'main' | 'deputy' };
 
 // Who an ability belongs to: a General's skill (the seat and slot it was
-// gathered for: the same General can be held by more than one seat), or a worn
-// card (its wearer and the card).
+// gathered for, since the same General can be held by more than one seat, and
+// the skill's id), or a worn card (its wearer and the card).
 export type AbilityOwner =
-  | { kind: 'general'; seatId: string; slot: 'main' | 'deputy' }
+  | { kind: 'general'; seatId: string; slot: 'main' | 'deputy'; skillId: string }
   | { kind: 'equipment'; seatId: string; cardInstanceId: string };
+
+export type GeneralOwner = Extract<AbilityOwner, { kind: 'general' }>;
 
 export interface Turn {
   turnNumber: number;
@@ -26,6 +28,11 @@ export interface Turn {
   extraTurnStack: string[];
   // Proactive card plays this turn, by card definition id (responses excluded).
   cardPlays?: Record<string, number>;
+  // Active skills' uses this turn, by abilityUseKey (seatId/slot/skillId).
+  abilityUses?: Record<string, number>;
+  // Every card the turn owner used this turn, by what it counted as,
+  // responses included (Self-Restraint reads 'sha').
+  ownerUses?: Record<string, number>;
   // Flags that last until the turn ends, e.g. skipPlay (see skipFlagOf).
   // Absent until one is set.
   flags?: Record<string, boolean>;
@@ -72,6 +79,8 @@ export interface Seat {
   equipped: CardZoneRef;
   // Where delayed Tools wait to be judged (Capture, Lightning, Starvation).
   judgment: CardZoneRef;
+  // Game-long marks some skills keep (none of the base Generals do yet).
+  marks?: Record<string, number>;
   eliminated: boolean;
 }
 
@@ -127,8 +136,9 @@ export interface PendingChoice {
   seatId: string;
   reason: DecisionReason;
   // What picking does, for display: take the card, discard it, or (an ask)
-  // use the ability or not.
-  verb: 'take' | 'discard' | 'use';
+  // use the ability or not. `pick`: a seat, a suit or a label; `give`: who
+  // gets the cards.
+  verb: 'take' | 'discard' | 'use' | 'pick' | 'give';
   options: ChoiceOption[];
 }
 
@@ -137,7 +147,17 @@ export interface ChoiceOption {
   // A face-up card, or a seat's whole hand as one face-down option (the card
   // inside it is picked at random, so the chooser never sees the hand).
   // For an ask: Use or Don't (`decline` also serves "let them draw" and the like).
-  shows: { kind: 'card'; card: CardInstance } | { kind: 'hidden-hand'; seatId: string; count: number } | { kind: 'use' } | { kind: 'decline' };
+  // `reveals`: Use reveals that hidden General first.
+  // A seat (Raid's targets, who gets given cards), a suit to name, or a label
+  // (Done, an Unyielding outcome).
+  shows:
+    | { kind: 'card'; card: CardInstance }
+    | { kind: 'hidden-hand'; seatId: string; count: number }
+    | { kind: 'use'; reveals?: 'main' | 'deputy' }
+    | { kind: 'decline' }
+    | { kind: 'seat'; seatId: string }
+    | { kind: 'suit'; suit: CardInstance['suit'] }
+    | { kind: 'label'; text: string };
   // Queued at the front when picked.
   effects: Effect[];
 }
@@ -158,6 +178,10 @@ export interface PendingSelection {
   then: SelectionContinuation;
   // Queued on Cancel; absent = the selection can't be cancelled.
   onCancel?: Effect[];
+  // Resolved, in order, the moment the picks are confirmed, before the
+  // continuation: a hidden General's reveal, an active skill's use being
+  // counted. They must not open a decision.
+  onSelect?: Effect[];
 }
 
 // What a selection's picks lead to: plain data, so the state stays serialisable.
@@ -169,7 +193,21 @@ export type SelectionContinuation =
   // `counted`: toward per-turn limits. `free`: outside the Play Phase's limits.
   | { kind: 'use-card'; as?: string; via?: UsedCard['via']; targets: Target[]; respondTo?: string; counted: boolean; free?: boolean }
   // Queue `step` with the picked ids added to its data as `picked`.
-  | { kind: 'card-step'; step: Extract<Effect, { kind: 'CardStepEffect' }> };
+  | { kind: 'card-step'; step: Extract<Effect, { kind: 'CardStepEffect' }> }
+  // Replace the judgment's card with the one picked (Devil).
+  | { kind: 'replace-judgment'; judgment: Judgment; owner: AbilityOwner; abilityId: string }
+  // Give the picked cards to one of `toSeatIds`, chosen next; then `then`.
+  | { kind: 'give'; toSeatIds: string[]; then?: Effect[] };
+
+// A seat putting cards from the top of the draw pile back in the order it
+// likes, some on top and some at the bottom (Astrology). The cards stay in the
+// draw pile meanwhile; only the arranging seat sees them.
+export interface PendingArrangement {
+  id: string;
+  seatId: string;
+  reason: DecisionReason;
+  cardInstanceIds: string[];
+}
 
 export interface CardZone {
   id: string;
@@ -195,6 +233,19 @@ export interface UsedCard {
   rank?: number;
   physical: CardInstance[];
   via?: { owner: AbilityOwner; abilityId: string; conversionId: string };
+}
+
+// Who reads a judgment: a card through its definition's onJudged (a delayed
+// Tool; a worn card such as Eight Trigrams), or a General's skill through its own.
+export type JudgmentReader = { kind: 'card'; card: UsedCard } | { kind: 'skill'; owner: GeneralOwner };
+
+// A judgment under way: whose it is, who reads it, what the reader passed
+// along, and the card turned up (the latest, once a skill has replaced it).
+export interface Judgment {
+  seatId: string;
+  reader: JudgmentReader;
+  card: CardInstance;
+  data?: Record<string, unknown>;
 }
 
 // What a Wuxie check is about: a Tool on one target, or a counter card someone
@@ -238,6 +289,8 @@ export interface GameState {
   // The cards or seats a seat owes a pick of, if any. Absent (never null) when
   // none, like the choice.
   pendingSelection?: PendingSelection;
+  // The cards a seat owes an arrangement of, if any. Absent (never null) when none.
+  pendingArrangement?: PendingArrangement;
   log: EngineEvent[];
   rng: RngState;
   result: GameResult | null;

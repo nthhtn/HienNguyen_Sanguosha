@@ -156,7 +156,7 @@ describe('small engine pieces', () => {
         return [{ kind: 'MoveCardEffect', cardInstanceId: judged.instanceId, toZoneId: 'a:hand' }];
       },
     };
-    const s = table([{ kind: 'JudgeEffect', seatId: 'a', tool: { as: 'omen', colour: 'none', physical: [] }, data: { note: 1 } }], [{ ...bolt, instanceId: 'j1' }]);
+    const s = table([{ kind: 'JudgeEffect', seatId: 'a', reader: { kind: 'card', card: { as: 'omen', colour: 'none', physical: [] } }, data: { note: 1 } }], [{ ...bolt, instanceId: 'j1' }]);
     const next = run(s, ctxWith([], [omen]));
     expect(seen).toEqual([{ note: 1 }]);
     expect(cardsIn(next, 'a:hand')).toEqual(['j1']);

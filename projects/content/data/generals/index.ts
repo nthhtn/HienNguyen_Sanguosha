@@ -60,6 +60,8 @@ export interface GeneralSkillData {
   name: string;
   nameZh: string;
   text: string;
+  // A Lord skill ("King Ability"): not used in Kingdom War.
+  lord?: boolean;
 }
 
 export interface GeneralFileData {

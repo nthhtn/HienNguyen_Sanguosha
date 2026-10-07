@@ -27,7 +27,9 @@ import { describeResponse, startsOnNoResponse } from './response-description';
 import { ChoiceDialog, ChoiceDialogData } from './choice-dialog';
 import { AskDialog, AskDialogData } from './ask-dialog';
 import { SelectionDialog, SelectionDialogData } from './selection-dialog';
-import { describeAsk, describeSelection } from './ability-description';
+import { describeArrangement, describeAsk, describeSelection } from './ability-description';
+import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
+import { avatarSkills } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
 import { DecisionTimer } from '../decision-timer.service';
 
@@ -73,7 +75,7 @@ import { DecisionTimer } from '../decision-timer.service';
             <div class="board">
               <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
               <div class="board-grid">
-                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="gameService.botThinkingSeatId()" [botSeatIds]="gameService.botSeatIds()" />
+                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="gameService.botThinkingSeatId()" [botSeatIds]="gameService.botSeatIds()" [viewerSkills]="viewerSkills()" (actionChosen)="submit($event)" />
                 <section class="your-hand">
                   <h3>Your Hand</h3>
                   <app-hand-view
@@ -163,6 +165,15 @@ export class GameBoard {
     if (!selection || selection.seatId !== this.viewerSeatId()) return null;
     return this.gameService.legalActions().some((a) => a.kind === 'SelectAction') ? selection.id : null;
   });
+  private arrangeDialog: MatDialogRef<ArrangeDialog, Action> | null = null;
+  // The arrangement whose dialog is showing, so each opens only once.
+  private arrangeDialogFor: string | null = null;
+  // The arrangement the viewer owes, while the board is on screen and the engine offers it.
+  protected readonly arrangementDue = computed(() => {
+    const arrangement = this.visibleState()?.pendingArrangement;
+    if (!arrangement || arrangement.seatId !== this.viewerSeatId()) return null;
+    return this.gameService.legalActions().some((a) => a.kind === 'ArrangeCardsAction') ? arrangement.id : null;
+  });
   // The choice whose dialog is showing, so each opens only once.
   private choiceDialogFor: string | null = null;
   // The choice the viewer owes, while the board is on screen and the engine
@@ -221,6 +232,13 @@ export class GameBoard {
       });
     });
     effect(() => {
+      const arrangementId = this.arrangementDue();
+      untracked(() => {
+        if (this.arrangeDialogFor && this.arrangeDialogFor !== arrangementId) this.closeDialog(this.arrangeDialog);
+        if (arrangementId) this.openArrangeDialog(arrangementId);
+      });
+    });
+    effect(() => {
       const choiceId = this.choiceDue();
       untracked(() => {
         if (this.choiceDialogFor && this.choiceDialogFor !== choiceId) this.closeDialog(this.choiceDialog);
@@ -243,6 +261,12 @@ export class GameBoard {
     const seat = visible?.seats.find((s) => s.id === seatId);
     if (!visible || !seat) return [];
     return visible.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [];
+  });
+
+  // The viewer's active skills, as buttons on their avatar.
+  protected readonly viewerSkills = computed(() => {
+    const seat = this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId());
+    return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions()) : [];
   });
 
   protected readonly discardPile = computed(() => this.visibleState()?.zones.find((z) => z.kind === 'discardPile'));
@@ -362,7 +386,7 @@ export class GameBoard {
     }
     const description = describeChoice(visible, seatId);
     if (!description) return;
-    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players, description.declineLabel);
+    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players, description.declineLabel, visible.seats);
     this.choiceDialogFor = choiceId;
     const ref = this.dialog.open<ChoiceDialog, ChoiceDialogData, Action>(ChoiceDialog, {
       data: { description, options, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },
@@ -395,6 +419,28 @@ export class GameBoard {
     ref.beforeClosed().subscribe((action) => {
       this.selectionDialogFor = null;
       this.selectionDialog = null;
+      if (action) this.submit(action);
+    });
+  }
+
+  // Opens the Arrange dialog for one pending arrangement; it closes with the
+  // engine's ArrangeCardsAction filled in.
+  private openArrangeDialog(arrangementId: string): void {
+    const visible = this.visibleState();
+    const seatId = this.viewerSeatId();
+    if (this.arrangeDialogFor === arrangementId || !visible || !seatId) return;
+    const description = describeArrangement(visible, seatId, this.gameService.legalActions());
+    if (!description) return;
+    this.arrangeDialogFor = arrangementId;
+    const ref = this.dialog.open<ArrangeDialog, ArrangeDialogData, Action>(ArrangeDialog, {
+      data: { description, arrangedChanged: (action) => this.timer.setTimeoutChoice([action]) },
+      width: 'min(92vw, 720px)',
+      disableClose: true,
+    });
+    this.arrangeDialog = ref;
+    ref.beforeClosed().subscribe((action) => {
+      this.arrangeDialogFor = null;
+      this.arrangeDialog = null;
       if (action) this.submit(action);
     });
   }

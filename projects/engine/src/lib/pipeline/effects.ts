@@ -1,4 +1,4 @@
-import { AbilityOwner, GameState, Damage, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
@@ -9,7 +9,18 @@ export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
   | { kind: 'DamageEffect'; damage: Damage }
   | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse }
-  | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy' }
+  // Asks `arrangement.seatId` to arrange cards; the queue waits.
+  | { kind: 'OpenArrangementEffect'; arrangement: PendingArrangement }
+  // Lowers HP without damage (see HpLostEvent). The mode starts the dying round.
+  | { kind: 'LoseHpEffect'; seatId: string; amount: number; abilityId?: string }
+  // The Draw Phase's draw: `count` cards. Skills rewrite the count or replace
+  // the draw with before-triggers.
+  | { kind: 'DrawPhaseEffect'; seatId: string; count: number }
+  // Adds `by` to a counter: this turn's ability uses (scope 'turn'), or a
+  // seat's game-long marks (scope 'seat', with `seatId`). Logs nothing.
+  | { kind: 'IncrementEffect'; scope: 'turn' | 'seat'; key: string; by: number; seatId?: string }
+  // `forAbilityId`: revealed to use that skill (the history names it).
+  | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy'; forAbilityId?: string }
   | { kind: 'HealEffect'; target: Target; amount: number }
   // `onlyFrom`: move it only if it is still in that zone (a judged card a
   // reader already moved on).
@@ -43,9 +54,21 @@ export type Effect =
   // Sets a flag of the current turn (e.g. skipFlagOf('Play')), or clears it
   // with `value: false`. Flags end with the turn.
   | { kind: 'SetTurnFlagEffect'; flag: string; value?: boolean }
-  // A judgment for `seatId`, read by `tool` (CardDefinition.onJudged), which
-  // also receives `data`.
-  | { kind: 'JudgeEffect'; seatId: string; tool: UsedCard; data?: Record<string, unknown> }
+  // Judgment, step 1: turn the top card up for `seatId`, for `reader` (which
+  // receives `data`). Nothing left to judge with: `otherwise` goes ahead.
+  | { kind: 'JudgeEffect'; seatId: string; reader: JudgmentReader; data?: Record<string, unknown>; otherwise?: Effect[] }
+  // Step 2: the card is shown. Skills that change judgments hook in here with
+  // before-triggers (`acted`: those that had their say; `changedBy`: the seat
+  // that replaced the card last).
+  | { kind: 'JudgmentShownEffect'; judgment: Judgment; acted?: string[]; changedBy?: string }
+  // Step 3: the reader reads the final card.
+  | { kind: 'JudgmentResolveEffect'; judgment: Judgment }
+  // Step 4: the card goes to the discard pile, unless something took it
+  // (a before-trigger here may take it first; `acted` as above).
+  | { kind: 'JudgmentDoneEffect'; judgment: Judgment; acted?: string[] }
+  // Replaces the judgment's card with a hand card: the old one is discarded,
+  // and the judgment is shown again.
+  | { kind: 'ReplaceJudgmentEffect'; judgment: Judgment; withCardInstanceId: string; owner: AbilityOwner; abilityId: string }
   // A delayed Tool's turn in the Judgment phase is over (CardDefinition.onCleanup).
   | { kind: 'DelayedCleanupEffect'; tool: UsedCard; ownerSeatId: string }
   // One step of a card's resolution (a Sha's steps; see the Sha-Equipment
@@ -107,7 +130,12 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
           ? { ...s, generals: { ...generals, [effect.slot]: { ...generals[effect.slot], revealed: true } } }
           : s
       );
-      const event: EngineEvent = { kind: 'GeneralRevealedEvent', seatId: effect.seatId, slot: effect.slot };
+      const event: EngineEvent = {
+        kind: 'GeneralRevealedEvent',
+        seatId: effect.seatId,
+        slot: effect.slot,
+        ...(effect.forAbilityId ? { forAbilityId: effect.forAbilityId } : {}),
+      };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'HealEffect': {
@@ -186,19 +214,47 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     }
     case 'DyingEffect':
       return applyDying(state, effect);
+    case 'OpenArrangementEffect':
+      return { state: { ...state, pendingArrangement: effect.arrangement }, events: [] };
+    case 'LoseHpEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      if (seat.eliminated) return { state, events: [] };
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, combinedHp: s.combinedHp - effect.amount } : s));
+      const event: EngineEvent = { kind: 'HpLostEvent', seatId: seat.id, amount: effect.amount, ...(effect.abilityId ? { abilityId: effect.abilityId } : {}) };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'DrawPhaseEffect':
+      if (effect.count <= 0) return { state, events: [] };
+      return applyEffect(state, { kind: 'DrawCardsEffect', seatId: effect.seatId, count: effect.count });
+    case 'IncrementEffect': {
+      if (effect.scope === 'turn') {
+        const uses = state.turn.abilityUses ?? {};
+        return { state: { ...state, turn: { ...state.turn, abilityUses: { ...uses, [effect.key]: (uses[effect.key] ?? 0) + effect.by } } }, events: [] };
+      }
+      if (!effect.seatId) throw new Error('IncrementEffect with scope seat needs a seatId');
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      const marks = seat.marks ?? {};
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, marks: { ...marks, [effect.key]: (marks[effect.key] ?? 0) + effect.by } } : s));
+      return { state: { ...state, seats }, events: [] };
+    }
     case 'OpenSelectionEffect':
       return { state: { ...state, pendingSelection: effect.selection }, events: [] };
     case 'AskUseEffect': {
       const owner = state.seats.find((s) => s.id === effect.owner.seatId);
       // An owner who is out can't be asked: what happens otherwise goes ahead.
       if (!owner || owner.eliminated) return { state: queueFront(state, effect.otherwise ?? []), events: [] };
+      // A hidden General's skill: Use reveals it first.
+      const hidden = effect.owner.kind === 'general' && owner.generals && !owner.generals[effect.owner.slot].revealed ? effect.owner.slot : null;
+      const reveal: Effect[] = hidden ? [{ kind: 'RevealGeneralEffect', seatId: owner.id, slot: hidden, forAbilityId: effect.abilityId }] : [];
       const choice: PendingChoice = {
         id: `ask-${effect.abilityId}-${owner.id}-${state.log.length}`,
         seatId: owner.id,
         reason: { kind: 'ability', owner: effect.owner, abilityId: effect.abilityId, ...(effect.targetSeatId ? { targetSeatId: effect.targetSeatId } : {}) },
         verb: 'use',
         options: [
-          { id: 'use', shows: { kind: 'use' }, effects: effect.effects },
+          { id: 'use', shows: { kind: 'use', ...(hidden ? { reveals: hidden } : {}) }, effects: [...reveal, ...effect.effects] },
           { id: 'decline', shows: { kind: 'decline' }, effects: effect.otherwise ?? [] },
         ],
       };

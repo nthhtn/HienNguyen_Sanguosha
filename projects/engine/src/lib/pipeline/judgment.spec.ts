@@ -1,8 +1,8 @@
 import { advanceToDecision, resolve } from './resolve';
-import { applyEffect } from './effects';
+import { Effect, applyEffect } from './effects';
 import { createRng } from '../rng/rng';
-import { CardInstance, GameState, Phase, QueueItem } from '../domain/types';
-import { CardDefinition, ContentRegistry, GameModeDefinition } from '../registry/types';
+import { CardInstance, GameState, GeneralOwner, Judgment, Phase, QueueItem } from '../domain/types';
+import { CardDefinition, ContentRegistry, GameModeDefinition, SkillDefinition } from '../registry/types';
 import { skipFlagOf } from '../rules/phaseSequence';
 import { usedCardOf } from '../domain/usedCard';
 import { EngineEvent } from './events';
@@ -57,7 +57,7 @@ function table(o: TableOptions = {}): GameState {
     zones: [
       { id: 'drawPile', kind: 'drawPile', cards: cardsOf('drawPile') },
       { id: 'discardPile', kind: 'discardPile', cards: cardsOf('discardPile') },
-      { id: 'processing', kind: 'processing', cards: [] },
+      { id: 'processing', kind: 'processing', cards: cardsOf('processing') },
       ...['seat-a', 'seat-b'].flatMap((id) => [
         { id: `${id}:hand`, kind: 'hand' as const, ownerSeatId: id, cards: cardsOf(`${id}:hand`) },
         { id: `${id}:equip`, kind: 'equip' as const, ownerSeatId: id, cards: [] },
@@ -113,15 +113,29 @@ describe('delayed cards', () => {
   });
 });
 
-describe('JudgeEffect', () => {
-  const tool = usedCardOf(card('o1', 'omen'));
-  const judge = { kind: 'JudgeEffect' as const, seatId: 'seat-a', tool };
+type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
+type Done = Extract<Effect, { kind: 'JudgmentDoneEffect' }>;
 
-  it('turns up the top card, logs it, lets the delayed Tool read it, then discards it', () => {
+// A registry whose seat-a Main General ('g1') has the given skills.
+function ctxWith(skills: SkillDefinition[], cards: CardDefinition[] = []) {
+  return {
+    registry: { cards: new Map([...registry.cards, ...cards.map((c): [string, CardDefinition] => [c.id, c])]), generals: new Map([['g1', { id: 'g1', kingdom: 'Wei' as const, maxHp: 4, skills }]]) },
+    mode,
+  };
+}
+const settleWith = (s: GameState, c: ReturnType<typeof ctxWith>) => advanceToDecision(s, c).state;
+const owner = (skillId: string): GeneralOwner => ({ kind: 'general', seatId: 'seat-a', slot: 'main', skillId });
+
+describe('judgment steps', () => {
+  const tool = usedCardOf(card('o1', 'omen'));
+  const reader = { kind: 'card' as const, card: tool };
+  const judge: Effect = { kind: 'JudgeEffect', seatId: 'seat-a', reader };
+
+  it('turns up the top card, logs it, lets the reader read it, then discards it', () => {
     const judged = card('j1', 'x', 'club', 3);
     const next = settle(table({ queue: [judge], cards: { drawPile: [judged, card('j2')] } }));
     expect(next.log).toEqual([
-      { kind: 'JudgmentEvent', seatId: 'seat-a', tool, card: judged },
+      { kind: 'JudgmentEvent', seatId: 'seat-a', reader, card: judged },
       { kind: 'CardMovedEvent', cardInstanceId: 'j1', fromZoneId: 'processing', toZoneId: 'discardPile', card: judged },
     ]);
     expect(next.turn.flags).toEqual({ skipPlay: true });
@@ -129,7 +143,7 @@ describe('JudgeEffect', () => {
     expect(idsIn(next, 'drawPile')).toEqual(['j2']);
   });
 
-  it('a card the delayed Tool reads as harmless does nothing', () => {
+  it('a card the reader reads as harmless does nothing', () => {
     const next = settle(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'heart', 3)] } }));
     expect(next.turn.flags).toBeUndefined();
     expect(idsIn(next, 'discardPile')).toEqual(['j1']);
@@ -138,20 +152,105 @@ describe('JudgeEffect', () => {
   it('shuffles the discard pile in when the draw pile is empty', () => {
     const next = settle(table({ queue: [judge], cards: { discardPile: [card('j1')] } }));
     expect(next.log.map((e) => e.kind)).toEqual(['DiscardPileReshuffledEvent', 'JudgmentEvent', 'CardMovedEvent']);
-    expect(next.log[1]).toMatchObject({ kind: 'JudgmentEvent', card: { instanceId: 'j1' } });
   });
 
-  it('with no card left anywhere, judges nothing and reads nothing (Review Focus 2)', () => {
-    const next = settle(table({ queue: [judge, { kind: 'DelayedCleanupEffect', tool, ownerSeatId: 'seat-a' }], cards: { 'seat-a:judgment': [card('o1', 'omen')] } }));
-    expect(next.log.map((e) => e.kind)).toEqual(['CardMovedEvent']); // only the cleanup's discard
+  it('with no card left anywhere, judges nothing and goes on with `otherwise` (stage 5 follow-up)', () => {
+    const next = settle(table({ queue: [{ ...judge, otherwise: [{ kind: 'SetTurnFlagEffect', flag: 'nothingJudged' }] }] }));
+    expect(next.log).toEqual([]);
+    expect(next.turn.flags).toEqual({ nothingJudged: true });
+  });
+
+  it('a skill can read a judgment: its onJudged gets its owner, the card and the data', () => {
+    const seen: unknown[] = [];
+    const seer: SkillDefinition = { id: 'seer', onJudged: (_s, ctx) => { seen.push([ctx.owner, ctx.seatId, ctx.judged.instanceId, ctx.data]); return [{ kind: 'SetTurnFlagEffect', flag: 'read' }]; } };
+    const skillReader = { kind: 'skill' as const, owner: owner('seer') };
+    const next = settleWith(table({ queue: [{ kind: 'JudgeEffect', seatId: 'seat-a', reader: skillReader, data: { x: 1 } }], cards: { drawPile: [card('j1')] } }), ctxWith([seer]));
+    expect(seen).toEqual([[owner('seer'), 'seat-a', 'j1', { x: 1 }]]);
+    expect(next.turn.flags).toEqual({ read: true });
+    expect(next.log[0]).toMatchObject({ kind: 'JudgmentEvent', reader: skillReader });
+    expect(idsIn(next, 'discardPile')).toEqual(['j1']);
+  });
+
+  it('a reader may place the Done step itself, ahead of what it does', () => {
+    const early: CardDefinition = { id: 'early', name: 'Early', category: 'basic', play: () => [], onJudged: (_s, { done }) => [done, { kind: 'DrawCardsEffect', seatId: 'seat-a', count: 1 }] };
+    const next = settleWith(
+      table({ queue: [{ kind: 'JudgeEffect', seatId: 'seat-a', reader: { kind: 'card', card: usedCardOf(card('e1', 'early')) } }], cards: { drawPile: [card('j1'), card('j2')] } }),
+      ctxWith([], [early])
+    );
+    expect(next.log.map((e) => e.kind)).toEqual(['JudgmentEvent', 'CardMovedEvent', 'CardsDrawnEvent']);
+  });
+
+  it('a changer at the Shown step replaces the card and is asked again; replaced twice (Review Focus 3)', () => {
+    // While seat-a holds a card, it swaps the first one in.
+    const changer: SkillDefinition = {
+      id: 'changer',
+      triggers: [{
+        point: 'before:JudgmentShownEffect',
+        condition: (state) => idsIn(state, 'seat-a:hand').length > 0,
+        effect: (state, subject, o) => [{ kind: 'ReplaceJudgmentEffect', judgment: (subject as Shown).judgment, withCardInstanceId: idsIn(state, 'seat-a:hand')[0], owner: o!, abilityId: 'changer' }],
+      }],
+    };
+    const next = settleWith(
+      table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)], 'seat-a:hand': [card('r1', 'x', 'spade', 4), card('r2', 'x', 'heart', 5)] } }),
+      ctxWith([changer])
+    );
+    expect(next.log.filter((e) => e.kind === 'JudgmentChangedEvent')).toEqual([
+      { kind: 'JudgmentChangedEvent', owner: owner('changer'), abilityId: 'changer', judgedSeatId: 'seat-a', card: card('r1', 'x', 'spade', 4), replaced: card('j1', 'x', 'club', 3) },
+      { kind: 'JudgmentChangedEvent', owner: owner('changer'), abilityId: 'changer', judgedSeatId: 'seat-a', card: card('r2', 'x', 'heart', 5), replaced: card('r1', 'x', 'spade', 4) },
+    ]);
+    // Omen reads the last card, a heart: harmless.
     expect(next.turn.flags).toBeUndefined();
-    expect(idsIn(next, 'discardPile')).toEqual(['o1']);
-    expect(next.resolutionQueue).toBeUndefined();
+    expect(idsIn(next, 'discardPile')).toEqual(['j1', 'r1', 'r2']);
+    expect(idsIn(next, 'processing')).toEqual([]);
   });
 
-  it('survives a JSON round trip while queued', () => {
+  it('a replace-judgment selection swaps in the picked card, and the Shown step says who changed it', () => {
+    const picker: SkillDefinition = {
+      id: 'picker',
+      triggers: [{
+        point: 'before:JudgmentShownEffect',
+        condition: (_s, subject) => !(subject as Shown).changedBy,
+        effect: (state, subject, o) => [{
+          kind: 'OpenSelectionEffect',
+          selection: {
+            id: 'pick-1', seatId: 'seat-a', reason: { kind: 'ability', owner: o!, abilityId: 'picker' }, of: 'cards', eligibleIds: idsIn(state, 'seat-a:hand'), min: 1, max: 1,
+            then: { kind: 'replace-judgment', judgment: (subject as Shown).judgment, owner: o!, abilityId: 'picker' },
+          },
+        }],
+      }],
+    };
+    const c = ctxWith([picker]);
+    const opened = settleWith(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)], 'seat-a:hand': [card('r1', 'x', 'heart', 4)] } }), c);
+    expect(opened.pendingSelection).toMatchObject({ id: 'pick-1' });
+    const next = resolve(opened, { kind: 'SelectAction', seatId: 'seat-a', selectionId: 'pick-1', ids: ['r1'] }, c).state;
+    expect(next.turn.flags).toBeUndefined(); // a heart now
+    expect(idsIn(next, 'discardPile')).toEqual(['j1', 'r1']);
+  });
+
+  it('a taker at the Done step takes the card instead of the discard pile', () => {
+    const taker: SkillDefinition = {
+      id: 'taker',
+      triggers: [{
+        point: 'before:JudgmentDoneEffect',
+        condition: (_s, subject) => !(subject as Done).acted?.includes('taker'),
+        effect: (_s, subject) => {
+          const done = subject as Done;
+          return [{ kind: 'MoveCardEffect', cardInstanceId: done.judgment.card.instanceId, toZoneId: 'seat-a:hand' }, { ...done, acted: ['taker'] }];
+        },
+      }],
+    };
+    const next = settleWith(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } }), ctxWith([taker]));
+    expect(next.turn.flags).toEqual({ skipPlay: true }); // read first, then taken
+    expect(idsIn(next, 'seat-a:hand')).toEqual(['j1']);
+    expect(idsIn(next, 'discardPile')).toEqual([]);
+  });
+
+  it('survives a JSON round trip while queued, and mid-way', () => {
     const queued = table({ queue: [judge], cards: { drawPile: [card('j1')] } });
     expect(settle(JSON.parse(JSON.stringify(queued)))).toEqual(settle(queued));
+    const judgment: Judgment = { seatId: 'seat-a', reader, card: card('j1') };
+    const midway = table({ queue: [{ kind: 'JudgmentResolveEffect', judgment }], cards: { processing: [card('j1')] } });
+    expect(settle(JSON.parse(JSON.stringify(midway)))).toEqual(settle(midway));
   });
 });
 

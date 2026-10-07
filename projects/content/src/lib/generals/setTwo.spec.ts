@@ -40,7 +40,7 @@ function stubMode(): GameModeDefinition {
 function seat(id: string, index: number, generalId: string, combinedHp: number, maxCombinedHp: number): Seat {
   return {
     id, index, kingdom: 'Wei' as const,
-    generals: { main: { generalDefinitionId: generalId, revealed: false }, deputy: { generalDefinitionId: 'filler', revealed: false } },
+    generals: { main: { generalDefinitionId: generalId, revealed: true }, deputy: { generalDefinitionId: 'filler', revealed: false } },
     combinedHp, maxCombinedHp,
     hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, eliminated: false,
   };

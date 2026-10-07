@@ -12,20 +12,26 @@ export function isFaceUpZoneKind(kind: CardZone['kind']): boolean {
   return kind !== 'hand' && kind !== 'drawPile';
 }
 
-function redactZone(zone: CardZone, viewerSeatId: string): CardZone {
+function redactZone(zone: CardZone, viewerSeatId: string, shown: ReadonlySet<string>): CardZone {
   const isViewersOwnHand = zone.kind === 'hand' && zone.ownerSeatId === viewerSeatId;
   const shouldMask = !isFaceUpZoneKind(zone.kind) && !isViewersOwnHand;
   if (!shouldMask) return zone;
-  return { ...zone, cards: zone.cards.map(maskCard) };
+  return { ...zone, cards: zone.cards.map((c) => (shown.has(c.instanceId) ? c : maskCard(c))) };
+}
+
+// Cards the viewer sees though their zone is hidden: those it is arranging.
+function shownToViewer(state: GameState, viewerSeatId: string): ReadonlySet<string> {
+  return new Set(state.pendingArrangement?.seatId === viewerSeatId ? state.pendingArrangement.cardInstanceIds : []);
 }
 
 // The instance ids `viewerSeatId` can't see where they lie: other seats'
 // hands and the draw pile.
-function hiddenInstanceIds(state: GameState, viewerSeatId: string): ReadonlySet<string> {
+function hiddenInstanceIds(state: GameState, viewerSeatId: string, shown: ReadonlySet<string>): ReadonlySet<string> {
   return new Set(
     state.zones
       .filter((z) => !isFaceUpZoneKind(z.kind) && !(z.kind === 'hand' && z.ownerSeatId === viewerSeatId))
       .flatMap((z) => z.cards.map((c) => c.instanceId))
+      .filter((id) => !shown.has(id))
   );
 }
 
@@ -73,11 +79,12 @@ function redactSelection(selection: GeneralSelectionState | null, viewerSeatId: 
 }
 
 export function redactStateForSeat(state: GameState, viewerSeatId: string): GameState {
-  const hidden = hiddenInstanceIds(state, viewerSeatId);
+  const shown = shownToViewer(state, viewerSeatId);
+  const hidden = hiddenInstanceIds(state, viewerSeatId, shown);
   return {
     ...state,
     seats: state.seats.map((seat) => redactSeat(seat, viewerSeatId)),
-    zones: state.zones.map((zone) => redactZone(zone, viewerSeatId)),
+    zones: state.zones.map((zone) => redactZone(zone, viewerSeatId, shown)),
     generalSelection: redactSelection(state.generalSelection, viewerSeatId),
     pendingResponse: maskHiddenCards(state.pendingResponse, hidden),
     ...(state.pendingChoice ? { pendingChoice: maskHiddenCards(state.pendingChoice, hidden) } : {}),

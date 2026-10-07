@@ -6,6 +6,7 @@ import {
   TriggerOwner,
   TriggerPoint,
 } from '../registry/types';
+import { skillsInPlay } from './generalSkills';
 
 // A trigger paired with the General or worn card it was gathered for. `owner` is
 // undefined for mode-level triggers, which belong to the GameModeDefinition
@@ -13,9 +14,9 @@ import {
 export interface GatheredTrigger {
   trigger: SkillTrigger;
   owner?: TriggerOwner;
+  // A hidden General's skill: using it reveals the General first.
+  needsReveal?: boolean;
 }
-
-const GENERAL_SLOTS: readonly ('main' | 'deputy')[] = ['main', 'deputy'];
 
 export function gatherTriggeredSkills(
   state: GameState,
@@ -28,19 +29,11 @@ export function gatherTriggeredSkills(
     .filter((trigger) => trigger.point === point)
     .map((trigger) => ({ trigger }));
 
+  // Generals' skills in play, seat by seat (see skillsInPlay).
   for (const seat of state.seats) {
-    // An eliminated seat's generals are out of the game — their skills must not
-    // keep firing. A seat still choosing its generals has none to fire.
-    if (seat.eliminated || !seat.generals) continue;
-    for (const slot of GENERAL_SLOTS) {
-      const general = registry.generals.get(seat.generals[slot].generalDefinitionId);
-      if (!general) continue;
-      for (const skill of general.skills) {
-        for (const trigger of skill.triggers) {
-          if (trigger.point === point) {
-            candidates.push({ trigger, owner: { kind: 'general', seatId: seat.id, slot } });
-          }
-        }
+    for (const { owner, skill, needsReveal } of skillsInPlay(state, seat.id, registry)) {
+      for (const trigger of skill.triggers ?? []) {
+        if (trigger.point === point) candidates.push({ trigger, owner, ...(needsReveal ? { needsReveal } : {}) });
       }
     }
   }

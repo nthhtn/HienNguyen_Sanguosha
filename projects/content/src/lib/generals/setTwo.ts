@@ -4,13 +4,15 @@ import type { GeneralSkillSet } from './types';
 
 // See the note in setOne.ts: "which seat am I" comes from the `owner` context
 // the engine passes in, never from searching GameState for this general's id.
+//
+// Placeholders until stage 7: compulsory, so off while their General is hidden.
 
 export const zhaoYunGeneral: GeneralSkillSet = {
   id: 'zhao-yun',
   skills: [
     {
       id: 'vanguard',
-      activation: 'auto',
+      compulsory: true,
       triggers: [
         {
           point: 'before:DamageEffect',

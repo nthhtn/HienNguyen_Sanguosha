@@ -1,6 +1,6 @@
 import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat, UsedCard } from 'engine';
-import { cardDisplayData } from 'content';
-import { Force, cardFaceLabel, cardIdDisplayName, forceOf, seatName, targetLabel } from '../labels';
+import { abilityName, cardDisplayData, generalDisplayData } from 'content';
+import { Force, cardFaceLabel, cardIdDisplayName, forceOf, generalDisplayName, judgmentReaderName, seatName, suitSymbol, targetLabel } from '../labels';
 
 export type ActionHistoryEntry =
   | { kind: 'turn'; turnNumber: number; seatName: string }
@@ -42,6 +42,14 @@ export function actionHistory(
   const awaitingMove = new Set<string>();
   // A pick waiting for its card's move, which says what was picked.
   let picked: ChoiceMadeEvent | null = null;
+  const cards = (n: number) => `${n} ${n === 1 ? 'card' : 'cards'}`;
+  // The General in `slot` of a seat, by name, when the viewer can see it.
+  const generalIn = (seatId: string, slot: 'main' | 'deputy'): string | null => {
+    const id = seats.find((s) => s.id === seatId)?.generals?.[slot].generalDefinitionId;
+    return id && id !== 'hidden' ? (generalDisplayData(id)?.name ?? generalDisplayName(id)) : null;
+  };
+  // How many cards a seat picked last, for "gave 2 cards".
+  let lastPicked: { seatId: string; count: number } | null = null;
   // The last face seen of each card, from moves into face-up zones.
   const knownFaces = new Map<string, CardInstance>();
   // "Seat 1 took Hing's Silver Lion (A ♣) with Steal", "Seat 1 took a hand card
@@ -161,9 +169,11 @@ export function actionHistory(
       case 'CardsDrawnEvent':
         action(`${name(event.seatId)} drew ${event.cardInstanceIds.length} ${event.cardInstanceIds.length === 1 ? 'card' : 'cards'}`);
         break;
-      case 'GeneralRevealedEvent':
-        action(`${name(event.seatId)} revealed their ${event.slot === 'main' ? 'Main' : 'Deputy'} General`);
+      case 'GeneralRevealedEvent': {
+        const which = generalIn(event.seatId, event.slot) ?? `their ${event.slot === 'main' ? 'Main' : 'Deputy'} General`;
+        action(event.forAbilityId ? `${name(event.seatId)} revealed ${which} to use ${abilityName(event.forAbilityId)}` : `${name(event.seatId)} revealed their ${event.slot === 'main' ? 'Main' : 'Deputy'} General`);
         break;
+      }
       case 'SeatDyingEvent':
         status(event.seatId, `${name(event.seatId)} is dying`);
         break;
@@ -178,20 +188,33 @@ export function actionHistory(
         break;
       case 'ChoiceMadeEvent': {
         const { reason, shows } = event;
+        const chooser = name(event.seatId);
         if (shows.kind === 'card' || shows.kind === 'hidden-hand') {
           picked = event;
         } else if (shows.kind === 'use' && reason.kind === 'ability') {
-          const on = reason.targetSeatId && reason.targetSeatId !== event.seatId ? ` on ${name(reason.targetSeatId)}` : '';
-          action(`${name(event.seatId)} used ${cardName(reason.abilityId)}${on}`);
+          // A reveal says it on its own line, next.
+          if (!shows.reveals) {
+            const on = reason.targetSeatId && reason.targetSeatId !== event.seatId ? ` on ${name(reason.targetSeatId)}` : '';
+            action(`${chooser} used ${abilityName(reason.abilityId)}${on}`);
+          }
         } else if (shows.kind === 'decline' && reason.kind === 'choice') {
-          action(`${name(event.seatId)} let ${name(reason.userSeatId)} draw a card (${cardName(reason.card.as)})`);
+          action(`${chooser} let ${name(reason.userSeatId)} draw a card (${cardName(reason.card.as)})`);
+        } else if (shows.kind === 'seat') {
+          const given = lastPicked?.seatId === event.seatId ? lastPicked.count : 0;
+          action(event.verb === 'give' ? `${chooser} gave ${cards(given)} to ${name(shows.seatId)}` : `${chooser} chose ${name(shows.seatId)}`);
+        } else if (shows.kind === 'suit') {
+          action(`${chooser} named ${suitSymbol(shows.suit)}`);
+        } else if (shows.kind === 'label') {
+          action(`${chooser} chose ${shows.text}`);
         }
         break;
       }
       case 'AbilityUsedEvent': {
         const owner = name(event.owner.seatId);
-        const ability = cardName(event.abilityId);
-        if (event.outcome === 'no-effect' && event.targetSeatId) {
+        const ability = abilityName(event.abilityId);
+        if (event.outcome === 'used') {
+          action(`${owner} used ${ability}`);
+        } else if (event.outcome === 'no-effect' && event.targetSeatId) {
           action(`${owner}'s ${ability}: ${name(event.targetSeatId)}'s Sha has no effect`);
         } else if (event.outcome === 'counts-as-shan') {
           // Said on its judgment's line, which comes just before.
@@ -202,17 +225,30 @@ export function actionHistory(
         break;
       }
       case 'SelectionMadeEvent':
+        if (event.of === 'cards') lastPicked = { seatId: event.seatId, count: event.ids.length };
         if (event.of === 'seats' && event.reason.kind === 'ability') {
-          const seats = event.ids.map(name);
-          const list = seats.length > 1 ? `${seats.slice(0, -1).join(', ')} and ${seats.at(-1)}` : seats[0];
-          action(`${name(event.seatId)} picked ${list} with ${cardName(event.reason.abilityId)}`);
+          const picks = event.ids.map(name);
+          const list = picks.length > 1 ? `${picks.slice(0, -1).join(', ')} and ${picks.at(-1)}` : picks[0];
+          action(`${name(event.seatId)} picked ${list} with ${abilityName(event.reason.abilityId)}`);
         }
         break;
+      case 'HpLostEvent':
+        status(event.seatId, `${name(event.seatId)} lost ${event.amount} HP${event.abilityId ? ` (${abilityName(event.abilityId)})` : ''}`);
+        break;
+      case 'JudgmentChangedEvent':
+        action(`${name(event.owner.seatId)}'s ${abilityName(event.abilityId)} changed the judgment to ${cardFaceLabel(event.card)}`, event.card);
+        break;
+      case 'ArrangementMadeEvent': {
+        const top = event.top > 0 ? `${cards(event.top)} on top of the draw pile` : '';
+        const bottom = event.bottom > 0 ? (top ? `${event.bottom} at the bottom` : `${cards(event.bottom)} at the bottom of the draw pile`) : '';
+        action(`${name(event.seatId)} put ${[top, bottom].filter(Boolean).join(' and ')}`);
+        break;
+      }
       case 'CardsTurnedUpEvent':
         action(`Turned up ${event.cards.length} ${event.cards.length === 1 ? 'card' : 'cards'}: ${event.cards.map(named).join(', ')}`);
         break;
       case 'JudgmentEvent':
-        action(`${name(event.seatId)}'s ${cardName(event.tool.as)} judgment: ${cardFaceLabel(event.card)}`, event.card);
+        action(`${name(event.seatId)}'s ${judgmentReaderName(event.reader)} judgment: ${cardFaceLabel(event.card)}`, event.card);
         break;
       case 'PhaseSkippedEvent':
         action(`${name(event.seatId)} skipped the ${event.phase} Phase`);

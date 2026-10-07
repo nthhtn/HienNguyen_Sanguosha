@@ -10,6 +10,7 @@
       "text": "When Cao Cao is damaged by a card, he can immediately put it into his hand."
     },
     {
+      "lord": true,
       "name": "Escort",
       "nameZh": "护驾",
       "text": "King Ability: If Cao Cao needs to use an Escape, a member of Wei can use an Escape on his behalf."

@@ -6,6 +6,7 @@ import { CARD_BACK_ART_URL } from 'content';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
 import { ChoiceDescription } from './choice-description';
+import { Force } from '../labels';
 
 export interface ChoiceDialogOption {
   id: string;
@@ -14,6 +15,10 @@ export interface ChoiceDialogOption {
   card?: CardInstance;
   faceDown?: true;
   label: string;
+  // A seat's force colour.
+  force?: Force;
+  // A suit to name.
+  suit?: CardInstance['suit'];
 }
 
 export interface ChoiceDialogData {
@@ -23,7 +28,8 @@ export interface ChoiceDialogData {
   pickedChanged?: (action: Action) => void;
 }
 
-// A Tool's pick (Steal, Break, Harvest): pick one option, then Take or Discard.
+// A pick: a card (Steal, Break, Harvest), a seat, a suit or one of several
+// labels; then the confirm button.
 // Closes only through that button, with the engine's own ChooseOptionAction.
 @Component({
   selector: 'app-choice-dialog',
@@ -42,12 +48,17 @@ export interface ChoiceDialogData {
               [attr.aria-pressed]="picked() === option.id"
               [attr.aria-label]="option.label"
               [attr.data-option-id]="option.id"
+              [attr.data-force]="option.force ?? null"
+              [class.red-suit]="option.suit === 'heart' || option.suit === 'diamond'"
               (click)="pick(option)"
             >
               @if (option.card; as card) {
                 <app-playing-card [card]="card" />
               } @else if (option.faceDown) {
                 <img class="card-back" [src]="cardBackUrl" alt="" />
+              }
+              @if (option.force) {
+                <span class="swatch" aria-hidden="true"></span>
               }
               <span class="label">{{ option.label }}</span>
             </button>
@@ -73,6 +84,14 @@ export interface ChoiceDialogData {
     .card-back { display: block; width: 72px; height: 100px; object-fit: cover; border-radius: 6px; }
     .label { font: var(--mat-sys-body-small); text-align: center; }
     .timer { display: block; padding: 8px 24px 0; }
+    .option[data-force] { --force: var(--force-none); --force-text: var(--force-none-text); }
+    .option[data-force='Wei'] { --force: var(--force-wei); --force-text: var(--force-wei); }
+    .option[data-force='Shu'] { --force: var(--force-shu); --force-text: var(--force-shu); }
+    .option[data-force='Wu'] { --force: var(--force-wu); --force-text: var(--force-wu); }
+    .option[data-force='Qun'] { --force: var(--force-qun); --force-text: var(--force-qun); }
+    .swatch { width: 28px; height: 28px; border-radius: 50%; background: var(--force); }
+    .option[data-force] .label { color: var(--force-text); font-weight: 500; }
+    .red-suit .label { color: #c62828; }
   `,
 })
 export class ChoiceDialog {

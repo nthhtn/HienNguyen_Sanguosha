@@ -1,4 +1,4 @@
-import { AbilityOwner, CardInstance, ChoiceOption, Damage, DecisionReason, PendingChoice, Phase, Target, UsedCard } from '../domain/types';
+import { AbilityOwner, CardInstance, ChoiceOption, Damage, DecisionReason, JudgmentReader, PendingChoice, Phase, Target, UsedCard } from '../domain/types';
 
 export interface CardsDrawnEvent {
   kind: 'CardsDrawnEvent';
@@ -34,6 +34,26 @@ export interface GeneralRevealedEvent {
   kind: 'GeneralRevealedEvent';
   seatId: string;
   slot: 'main' | 'deputy';
+  // Set when it was revealed to use that skill.
+  forAbilityId?: string;
+}
+
+// A seat arranged cards from the draw pile. Counts only: the cards stay hidden.
+export interface ArrangementMadeEvent {
+  kind: 'ArrangementMadeEvent';
+  seatId: string;
+  reason: DecisionReason;
+  top: number;
+  bottom: number;
+}
+
+// A seat lost HP: not damage, so it has no source and nothing that reacts to
+// damage applies. `abilityId`: the skill that cost it (Battered Body).
+export interface HpLostEvent {
+  kind: 'HpLostEvent';
+  seatId: string;
+  amount: number;
+  abilityId?: string;
 }
 
 export interface HealEvent {
@@ -113,12 +133,22 @@ export interface ChoiceMadeEvent {
   shows: ChoiceOption['shows'];
 }
 
-// A card turned up for `seatId`'s judgment, read by the delayed Tool `tool`.
+// A card turned up for `seatId`'s judgment, for `reader`.
 export interface JudgmentEvent {
   kind: 'JudgmentEvent';
   seatId: string;
-  tool: UsedCard;
+  reader: JudgmentReader;
   card: CardInstance;
+}
+
+// A skill replaced a judgment's card (`replaced`) with `card`.
+export interface JudgmentChangedEvent {
+  kind: 'JudgmentChangedEvent';
+  owner: AbilityOwner;
+  abilityId: string;
+  judgedSeatId: string;
+  card: CardInstance;
+  replaced: CardInstance;
 }
 
 // An ability applied (Black Shield stopping a Sha; Eight Trigrams counting as a
@@ -145,6 +175,7 @@ export interface SelectionMadeEvent {
 export type EngineEvent =
   | CardsDrawnEvent
   | DamageDealtEvent
+  | HpLostEvent
   | PhaseChangedEvent
   | PhaseSkippedEvent
   | TurnAdvancedEvent
@@ -160,5 +191,7 @@ export type EngineEvent =
   | ChoiceMadeEvent
   | CardsTurnedUpEvent
   | JudgmentEvent
+  | JudgmentChangedEvent
+  | ArrangementMadeEvent
   | AbilityUsedEvent
   | SelectionMadeEvent;

@@ -19,7 +19,7 @@ const charm: CardDefinition = {
 const plain: CardDefinition = { id: 'plain', name: 'Plain', category: 'basic', play: () => [] };
 const registry: ContentRegistry = {
   cards: new Map([[charm.id, charm], [plain.id, plain]]),
-  generals: new Map([['g1', { id: 'g1', kingdom: 'Wei', maxHp: 4, skills: [{ id: 's', activation: 'auto', triggers: [always('general')] }] }]]),
+  generals: new Map([['g1', { id: 'g1', kingdom: 'Wei', maxHp: 4, skills: [{ id: 's', triggers: [always('general')] }] }]]),
 };
 const mode = (triggers: SkillTrigger[] = []): GameModeDefinition => ({
   id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers,
@@ -55,8 +55,8 @@ describe('equipment abilities', () => {
     const found = gatherTriggeredSkills(table({ equipA: [card('c1', 'charm')] }), registry, mode([always('mode')]), point, {});
     expect(found.map((g) => g.owner)).toEqual([
       undefined,
-      { kind: 'general', seatId: 'seat-a', slot: 'main' },
-      { kind: 'general', seatId: 'seat-b', slot: 'main' },
+      { kind: 'general', seatId: 'seat-a', slot: 'main', skillId: 's' },
+      { kind: 'general', seatId: 'seat-b', slot: 'main', skillId: 's' },
       { kind: 'equipment', seatId: 'seat-a', cardInstanceId: 'c1' },
     ]);
   });

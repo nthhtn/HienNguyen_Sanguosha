@@ -54,3 +54,25 @@ const ABILITY_HINTS: Record<string, string> = {
 export function abilityHint(abilityId: string): string | null {
   return ABILITY_HINTS[abilityId] ?? null;
 }
+
+// A skill's id: its English name in kebab case, apostrophes dropped
+// ("Heaven's Envy" → "heavens-envy"). Stage 7's skills use these ids.
+export function skillIdOf(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+const SKILL_NAMES: ReadonlyMap<string, string> = new Map(
+  Object.values(generalsData).flatMap((g) => g.skills.map((s): [string, string] => [skillIdOf(s.name), s.name]))
+);
+
+const titleCase = (id: string) => id.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+// The name of an ability, for any text: a worn card's name, else a skill's
+// name from the General data, else its id in Title Case.
+export function abilityName(abilityId: string): string {
+  return cardDisplayData(abilityId)?.name ?? SKILL_NAMES.get(abilityId) ?? titleCase(abilityId);
+}

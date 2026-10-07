@@ -6,7 +6,7 @@ export function cardStep(step: string, card: UsedCard, userSeatId: string, targe
   return { kind: 'CardStepEffect', step, card, userSeatId, target, data };
 }
 
-const ownerKey = (owner: AbilityOwner) => (owner.kind === 'equipment' ? owner.cardInstanceId : `${owner.seatId}:${owner.slot}`);
+const ownerKey = (owner: AbilityOwner) => (owner.kind === 'equipment' ? owner.cardInstanceId : `${owner.seatId}:${owner.slot}:${owner.skillId}`);
 const actedKeys = (step: CardStep) => (step.data?.['acted'] as string[] | undefined) ?? [];
 
 // Whether `owner`'s ability has already had its say at this step.
@@ -35,13 +35,15 @@ export interface StepRule {
 // A worn card's (or skill's) rule at the named steps: a before-trigger on
 // CardStepEffect that acts at most once per step. Its effect replaces the step:
 // a rewrite (return the step changed, marked with actedOn), a stop (return
-// something else, or nothing), or an ask (askAtStep).
+// something else, or nothing), or an ask (askAtStep). It never acts on an
+// eliminated target.
 export function atStep(steps: string[], rule: StepRule): SkillTrigger {
   return {
     point: 'before:CardStepEffect',
     condition: (state, subject, owner, registry) => {
       const step = subject as CardStep;
-      return !!owner && !!registry && steps.includes(step.step) && !hasActed(step, owner) && (rule.condition?.(state, step, owner, registry) ?? true);
+      const targetLiving = state.seats.some((s) => s.id === step.target.seatId && !s.eliminated);
+      return !!owner && !!registry && steps.includes(step.step) && targetLiving && !hasActed(step, owner) && (rule.condition?.(state, step, owner, registry) ?? true);
     },
     effect: (state, subject, owner, registry) => rule.effect(state, subject as CardStep, owner!, registry!),
   };

@@ -1,5 +1,5 @@
 import { Action, CardInstance, GameState, PendingChoice, PendingSelection } from 'engine';
-import { describeAsk, describeSelection } from './ability-description';
+import { describeArrangement, describeAsk, describeSelection } from './ability-description';
 
 const axe: CardInstance = { instanceId: 'ax', definitionId: 'axe', suit: 'diamond', rank: 5 };
 const peach: CardInstance = { instanceId: 'p1', definitionId: 'peach', suit: 'heart', rank: 3 };
@@ -36,8 +36,32 @@ describe('describeAsk', () => {
       prompt: 'Use Axe on Seat 1?',
       hint: 'Discard 2 cards to make your Sha hit Seat 1',
       card: axe,
+      generalId: null,
+      useLabel: 'Use',
       use: asked[0],
       decline: asked[1],
+    });
+  });
+
+  it('a hidden General’s skill: shows the General and asks to reveal it', () => {
+    const general = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'fighting-saint' };
+    const revealAsk: PendingChoice = {
+      id: 'ask', seatId: 'seat-0', verb: 'use',
+      reason: { kind: 'ability', owner: general, abilityId: 'fighting-saint' },
+      options: [{ id: 'use', shows: { kind: 'use', reveals: 'main' }, effects: [] }, { id: 'decline', shows: { kind: 'decline' }, effects: [] }],
+    };
+    const seated = state({ pendingChoice: revealAsk });
+    seated.seats = [{
+      id: 'seat-0', index: 0, kingdom: 'Shu', combinedHp: 4, maxCombinedHp: 4, eliminated: false,
+      generals: { main: { generalDefinitionId: 'guan-yu', revealed: false }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } },
+      hand: { zoneId: 'seat-0:hand' }, equipped: { zoneId: 'seat-0:equip' }, judgment: { zoneId: 'seat-0:judgment' },
+    }];
+    expect(describeAsk(seated, 'seat-0', asked)).toMatchObject({
+      title: 'Fighting Saint',
+      prompt: 'Reveal Guan Yu to use Fighting Saint?',
+      useLabel: 'Reveal and Use',
+      generalId: 'guan-yu',
+      card: null,
     });
   });
 
@@ -86,5 +110,32 @@ describe('describeSelection', () => {
   it('has no Cancel when the engine offers none, and is null for another seat', () => {
     expect(describe2(selection('axe', { eligibleIds: ['p1', 's2'] }), [template])?.cancel).toBeNull();
     expect(describeSelection(state({ pendingSelection: selection('axe', {}) }), 'seat-1', [])).toBeNull();
+  });
+
+  it('prompts for giving cards and for replacing a judgment', () => {
+    const general = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'kindness' };
+    const base: PendingSelection = { id: 'g', seatId: 'seat-0', reason: { kind: 'ability', owner: general, abilityId: 'kindness' }, of: 'cards', eligibleIds: ['p1'], min: 1, max: 2, then: { kind: 'give', toSeatIds: ['seat-1'] } };
+    const template: Action[] = [{ kind: 'SelectAction', seatId: 'seat-0', selectionId: 'g', ids: [] }];
+    expect(describeSelection(state({ pendingSelection: base }), 'seat-0', template)).toMatchObject({ title: 'Kindness', prompt: 'Choose cards to give', confirmLabel: 'Give' });
+    const judgment = { seatId: 'seat-1', reader: { kind: 'card' as const, card: { as: 'capture', colour: 'red' as const, physical: [] } }, card: sha };
+    const replace: PendingSelection = { ...base, reason: { ...base.reason, abilityId: 'devil' } as PendingSelection['reason'], then: { kind: 'replace-judgment', judgment, owner: general, abilityId: 'devil' } };
+    expect(describeSelection(state({ pendingSelection: replace }), 'seat-0', template)).toMatchObject({ title: 'Devil', prompt: 'Choose a hand card to replace the judgment', confirmLabel: 'Replace' });
+  });
+});
+
+describe('describeArrangement', () => {
+  const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'astrology' };
+  const template: Action = { kind: 'ArrangeCardsAction', seatId: 'seat-0', arrangementId: 'arr', top: [], bottom: [] };
+  it('names the skill and shows the cards being arranged, in order', () => {
+    const s = state();
+    s.zones = [...s.zones, { id: 'drawPile', kind: 'drawPile', cards: [sha, peach] }];
+    s.pendingArrangement = { id: 'arr', seatId: 'seat-0', reason: { kind: 'ability', owner, abilityId: 'astrology' }, cardInstanceIds: ['s2', 'p1'] };
+    expect(describeArrangement(s, 'seat-0', [template])).toEqual({
+      title: 'Astrology',
+      prompt: 'Put each card on top of the draw pile or at the bottom. Left to right is the order they go in.',
+      cards: [sha, peach],
+      template,
+    });
+    expect(describeArrangement(s, 'seat-1', [])).toBeNull();
   });
 });

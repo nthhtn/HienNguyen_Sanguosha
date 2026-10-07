@@ -108,3 +108,16 @@ describe('pickRandomAction with a selection', () => {
     expect(new Set(action.ids).size).toBe(2);
   });
 });
+
+describe('pickRandomAction with an arrangement', () => {
+  it('puts every card on top, in the order given', () => {
+    const s: GameState = {
+      ...state(),
+      pendingArrangement: {
+        id: 'arr', seatId: 'seat-a', cardInstanceIds: ['t1', 't2'],
+        reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-a', slot: 'main', skillId: 'x' }, abilityId: 'x' },
+      },
+    };
+    expect(pickRandomAction(s, createRng(3), emptyRegistry).action).toEqual({ kind: 'ArrangeCardsAction', seatId: 'seat-a', arrangementId: 'arr', top: ['t1', 't2'], bottom: [] });
+  });
+});

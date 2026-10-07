@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { Action } from 'engine';
 import { PlayingCard } from './playing-card';
+import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
 import { AskDescription } from './ability-description';
 
@@ -14,12 +15,14 @@ export interface AskDialogData {
 // buttons, with the engine's own ChooseOptionAction.
 @Component({
   selector: 'app-ask-dialog',
-  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard, CardArt, DecisionCountdown],
   template: `
     <h2 mat-dialog-title>{{ data.description.title }}</h2>
     <mat-dialog-content class="body">
       @if (data.description.card; as card) {
         <app-playing-card [card]="card" />
+      } @else if (data.description.generalId; as generalId) {
+        <app-card-art [id]="generalId" [label]="data.description.title" size="small" />
       }
       <div class="words">
         <p class="prompt">{{ data.description.prompt }}</p>
@@ -32,7 +35,7 @@ export interface AskDialogData {
     <app-decision-countdown class="timer" />
     <mat-dialog-actions align="end">
       <button mat-button type="button" class="decline" (click)="close(data.description.decline)">Don't</button>
-      <button mat-flat-button type="button" class="use" (click)="close(data.description.use)">Use</button>
+      <button mat-flat-button type="button" class="use" (click)="close(data.description.use)">{{ data.description.useLabel }}</button>
     </mat-dialog-actions>
   `,
   styles: `
