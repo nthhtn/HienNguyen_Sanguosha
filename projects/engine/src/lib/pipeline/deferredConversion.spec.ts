@@ -88,4 +88,11 @@ describe('a Wuxie check', () => {
     expect(advanceToDecision({ ...table('n'), resolutionQueue: [check] }, ctx).state.pendingResponse?.respondingSeatId).toBe('b');
     expect(advanceToDecision({ ...table('v'), resolutionQueue: [check] }, ctx).state.pendingResponse).toBeNull();
   });
+
+  it('not when that conversion is a hidden General’s: asking would give the General away (final review #3)', () => {
+    const check: Effect = { kind: 'WuxieCheckEffect', subject: { kind: 'tool', tool: { as: 'mend', colour: 'none', physical: [] }, userSeatId: 'a', target: { kind: 'seat', seatId: 'b' } }, order: ['b'], counterCardIds: ['nay'] };
+    const hidden = table('n');
+    hidden.seats[1] = { ...hidden.seats[1], generals: { ...hidden.seats[1].generals!, main: { ...hidden.seats[1].generals!.main, revealed: false } } };
+    expect(advanceToDecision({ ...hidden, resolutionQueue: [check] }, ctx).state.pendingResponse).toBeNull();
+  });
 });

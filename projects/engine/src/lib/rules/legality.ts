@@ -191,10 +191,21 @@ function usableNow(state: GameState, seatId: string, owned: OwnedConversion, reg
 }
 
 // The conversions `seatId` could answer with, in a window that allows
-// `allowedCardIds` (absent: any card).
-export function answeringConversions(state: GameState, seatId: string, allowedCardIds: string[] | undefined, registry: ContentRegistry): OwnedConversion[] {
+// `allowedCardIds` (absent: any card). `revealedOnly`: leave out a hidden
+// General's, for deciding whom to ask at all (being asked would give it away).
+export function answeringConversions(
+  state: GameState,
+  seatId: string,
+  allowedCardIds: string[] | undefined,
+  registry: ContentRegistry,
+  { revealedOnly = false }: { revealedOnly?: boolean } = {}
+): OwnedConversion[] {
   return conversionsOf(state, seatId, registry).filter(
-    (o) => o.conversion.when !== 'play' && (!allowedCardIds || allowedCardIds.includes(o.conversion.as)) && usableNow(state, seatId, o, registry)
+    (o) =>
+      (!revealedOnly || !o.needsReveal) &&
+      o.conversion.when !== 'play' &&
+      (!allowedCardIds || allowedCardIds.includes(o.conversion.as)) &&
+      usableNow(state, seatId, o, registry)
   );
 }
 

@@ -61,10 +61,25 @@ describe('a one-card conversion from hand and equipment', () => {
   });
 });
 
+describe('a dying round and a hidden General’s conversion (final review #3)', () => {
+  it('a seat whose only rescue is a hidden General’s conversion is not asked', () => {
+    const base = table('a');
+    const hidden: GameState = { ...base, seats: base.seats.map((s) => (s.id === 'b' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: false } } } : s)) };
+    const asked = advanceToDecision(hidden, ctx).state;
+    const passed = resolve(asked, { kind: 'PassAction', seatId: 'a', pendingResponseId: asked.pendingResponse!.id }, ctx).state;
+    expect(passed.seats[0].eliminated).toBe(true);
+  });
+});
+
 describe('a hidden General’s conversion answering a window', () => {
   it('reveals the General on confirm, with the window it answers still open until then', () => {
     const base = table('a');
-    const hidden: GameState = { ...base, seats: base.seats.map((s) => (s.id === 'b' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: false } } } : s)) };
+    const hidden: GameState = {
+      ...base,
+      seats: base.seats.map((s) => (s.id === 'b' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: false } } } : s)),
+      // b also holds a real Peach, so it is asked; it may still use the conversion.
+      zones: base.zones.map((z) => (z.id === 'b:hand' ? { ...z, cards: [...z.cards, { instanceId: 'p1', definitionId: 'peach', suit: 'spade' as const, rank: 1 }] } : z)),
+    };
     const asked = advanceToDecision(hidden, ctx).state;
     const passed = resolve(asked, { kind: 'PassAction', seatId: 'a', pendingResponseId: asked.pendingResponse!.id }, ctx).state;
     const convert = getLegalActions(passed, 'b', registry).find((a) => a.kind === 'UseConversionAction')!;

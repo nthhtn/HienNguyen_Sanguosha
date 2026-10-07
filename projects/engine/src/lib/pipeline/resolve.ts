@@ -227,7 +227,7 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
         : current.kind === 'SkillStepEffect'
           ? applySkillStep(state, current, ctx.registry)
           : current.kind === 'DyingEffect'
-            ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry).length > 0)
+            ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry, { revealedOnly: true }).length > 0)
             : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
   return { state: queueFront(applied.state, [...followUps, ...rewritten.after]), events: applied.events };
