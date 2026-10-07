@@ -72,3 +72,13 @@ describe('Zhou Yu — Brave Gesture', () => {
     expect(handIds(kw.decline(s), 'seat-a')).toEqual(['d1', 'd2']);
   });
 });
+
+describe('Bare the Chest, then Raid (final review #4)', () => {
+  it('once Bare the Chest is used, Raid is not asked: the 1 fewer card must be drawn', () => {
+    let s = drawPhase(['xu-chu', 'zhang-liao'], { 'seat-b:hand': [card('b1', 'sha')], 'seat-d:hand': [card('x1', 'shan')] });
+    expect(askedAbout(s)).toBe('bare-the-chest');
+    s = kw.use(s);
+    expect(s.pendingChoice).toBeUndefined();
+    expect(handIds(s, 'seat-a')).toEqual(['d1']);
+  });
+});

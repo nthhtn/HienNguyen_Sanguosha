@@ -231,7 +231,8 @@ export const bareTheChest: SkillDefinition = {
   triggers: [
     atDrawPhase({
       condition: (_state, draw) => draw.count > 0,
-      use: (_state, passed) => [{ ...passed, count: passed.count - 1 }, { kind: 'SetTurnFlagEffect', flag: BARE_THE_CHEST_FLAG }],
+      // The flag first: a skill that would replace the draw (Raid) sees it and stays out.
+      use: (_state, passed) => [{ kind: 'SetTurnFlagEffect', flag: BARE_THE_CHEST_FLAG }, { ...passed, count: passed.count - 1 }],
     }),
     on<DamageStep>('before:DamageEffect', {
       condition: (state, { damage }, owner) =>
@@ -255,7 +256,8 @@ export const raid: SkillDefinition = {
   id: 'raid',
   triggers: [
     atDrawPhase({
-      condition: (state, _draw, owner) => raidable(state, owner.seatId).length > 0,
+      // Not once Bare the Chest has cut this draw: its 1 fewer card must be drawn.
+      condition: (state, _draw, owner) => raidable(state, owner.seatId).length > 0 && !state.turn.flags?.[BARE_THE_CHEST_FLAG],
       use: (state, passed, owner) => [
         selectionOf(state, owner, { of: 'seats', eligibleIds: raidable(state, owner.seatId), min: 1, max: 2, then: { kind: 'skill-step', step: skillStep(owner, 'take') }, onCancel: [passed] }),
       ],
