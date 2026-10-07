@@ -154,12 +154,16 @@ export interface Conversion {
   cards: 1 | 2;
   // Where they come from: the hand (default), or the hand and worn equipment.
   from?: 'hand' | 'hand-and-equipment';
-  // Which cards may be used; absent = any.
-  accepts?(card: CardInstance): boolean;
+  // Which cards may be used; absent = any. `seatId` holds the card (a suit
+  // modifier of that seat may apply).
+  accepts?(card: CardInstance, state: GameState, seatId: string, registry: ContentRegistry): boolean;
   // 'play': proactively in your Play Phase; 'respond': to answer a window.
   when: 'play' | 'respond' | 'both';
   // Only while it is not its owner's turn (First Aid).
   outsideOwnTurnOnly?: boolean;
+  // The picked card isn't used at once: the owning skill's step 'deferred'
+  // decides (Bewilder's doubt round). Only a General's skill may defer.
+  deferred?: true;
 }
 
 // What a card does while worn.

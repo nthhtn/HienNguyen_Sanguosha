@@ -221,7 +221,7 @@ export function pickActiveSkill(view: GameState, me: Seat, legal: Action[], regi
 export function conversionSpare(view: GameState, me: Seat, action: UseConversion, registry: ContentRegistry): boolean {
   const owned = conversionsOf(view, me.id, registry).find((o) => o.conversion.id === action.via.conversionId && sameAbilityOwner(o.owner, action.via.owner));
   if (!owned || (owned.needsReveal && !mayReveal(me))) return false;
-  const cards = leastUseful(view, registry, conversionCards(view, me.id, owned.conversion).map((c) => c.instanceId)).slice(0, owned.conversion.cards);
+  const cards = leastUseful(view, registry, conversionCards(view, me.id, owned.conversion, registry).map((c) => c.instanceId)).slice(0, owned.conversion.cards);
   return cards.length === owned.conversion.cards && !cards.some((id) => definitionIdOf(view, id) === 'peach');
 }
 

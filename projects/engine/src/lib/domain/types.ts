@@ -209,7 +209,9 @@ export type SelectionContinuation =
   // `tally`: add how many were given to turn.abilityUses[tally] (Kindness).
   | { kind: 'give'; toSeatIds: string[]; then?: Effect[]; tally?: string }
   // Queue a skill's `step` with the picked ids added to its data as `picked`.
-  | { kind: 'skill-step'; step: Extract<Effect, { kind: 'SkillStepEffect' }> };
+  // `suspendWindow`: the open window goes into the step's data as `window` and
+  // is cleared while the skill decides.
+  | { kind: 'skill-step'; step: Extract<Effect, { kind: 'SkillStepEffect' }>; suspendWindow?: true };
 
 // A seat putting cards from the top of the draw pile back in the order it
 // likes, some on top and some at the bottom (Astrology). The cards stay in the

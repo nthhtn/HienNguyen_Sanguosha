@@ -93,7 +93,9 @@ export type Effect =
   | { kind: 'SkillStepEffect'; owner: GeneralOwner; step: string; data?: Record<string, unknown> }
   // `seatId` uses `card` at `targets`, as a play outside any limit: a card a
   // skill makes a seat use (Sow Discord's Duel). Not counted toward limits.
-  | { kind: 'UseCardEffect'; seatId: string; card: UsedCard; targets: Target[] }
+  // `counted`: a play toward per-turn limits, spending Wine; `answering`: the
+  // card answers that window.
+  | { kind: 'UseCardEffect'; seatId: string; card: UsedCard; targets: Target[]; counted?: boolean; answering?: PendingResponse }
   // Turns a seat face down (Entrench): its next turn is passed as it turns up.
   | { kind: 'TurnFaceDownEffect'; seatId: string }
   // Shows a card to everyone (Sow Revolt's taken card): logs its face.

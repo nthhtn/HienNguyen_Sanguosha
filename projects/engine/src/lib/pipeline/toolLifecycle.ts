@@ -2,6 +2,7 @@ import { DecisionReason, GameState, PendingResponse, WuxieSubject } from '../dom
 import { ContentRegistry } from '../registry/types';
 import { lookupCard } from '../registry/lookup';
 import { livingSeatOrderFrom } from '../rules/seatOrder';
+import { answeringConversions } from '../rules/legality';
 import { ApplyResult, Effect } from './effects';
 import { queueFront, withQueue } from './queue';
 
@@ -42,7 +43,7 @@ export function applyLifecycleEffect(state: GameState, effect: LifecycleEffect, 
       return { state: queueFront(state, effects), events: [] };
     }
     case 'WuxieCheckEffect':
-      return applyWuxieCheck(state, effect);
+      return applyWuxieCheck(state, effect, registry);
     case 'SkipNextEffect':
       return { state: withQueue(state, (state.resolutionQueue ?? []).slice(1)), events: [] };
   }
@@ -54,11 +55,12 @@ function subjectKey(subject: WuxieSubject): string {
   return `${subject.tool.as}-${subject.tool.physical[0]?.instanceId ?? 'virtual'}-${target}`;
 }
 
-function applyWuxieCheck(state: GameState, effect: Extract<Effect, { kind: 'WuxieCheckEffect' }>): ApplyResult {
+function applyWuxieCheck(state: GameState, effect: Extract<Effect, { kind: 'WuxieCheckEffect' }>, registry: ContentRegistry): ApplyResult {
   const holdsCounter = (seatId: string) => {
     const seat = state.seats.find((s) => s.id === seatId);
     const hand = seat && state.zones.find((z) => z.id === seat.hand.zoneId);
-    return !!hand?.cards.some((c) => effect.counterCardIds.includes(c.definitionId));
+    // A counter card in hand, or a conversion that makes one.
+    return !!hand?.cards.some((c) => effect.counterCardIds.includes(c.definitionId)) || answeringConversions(state, seatId, effect.counterCardIds, registry).length > 0;
   };
   const index = effect.order.findIndex((seatId) => isLiving(state, seatId) && holdsCounter(seatId));
   if (index === -1) return { state, events: [] };
