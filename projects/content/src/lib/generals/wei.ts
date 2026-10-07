@@ -1,11 +1,11 @@
 import type { CardInstance, DamageDealtEvent, Effect, GameState, PhaseChangedEvent, SkillDefinition } from 'engine';
-import { colourOf, requireZoneOfKind } from 'engine';
+import { colourOf, livingSeatOrderFrom, requireZoneOfKind } from 'engine';
 import { abilityKey } from '../shared/steps';
 import { nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
 import { seatCardOptions } from '../shared/choices';
 import { handOf } from '../shared/queries';
-import { ask, choiceOf, handZoneId, isLiving, lastDrawnBy, on, otherLivingSeatIds, selectionOf, skillDamage, skillStep } from '../shared/skills';
+import { ask, atDrawPhase, choiceOf, handZoneId, isLiving, lastDrawnBy, on, otherLivingSeatIds, selectionOf, skillDamage, skillStep, used } from '../shared/skills';
 
 // The Wei base Generals' skills (General Skills spec, "Wei"). Every skill acts
 // for the `owner` the engine passes in: the same General can sit at two seats
@@ -219,10 +219,65 @@ export const riverGoddess: SkillDefinition = {
   },
 };
 
+// The turn flag Bare the Chest sets: this turn, its owner's Sha and Duel deal 1 more.
+export const BARE_THE_CHEST_FLAG = 'bare-the-chest';
+
+type DamageStep = Extract<Effect, { kind: 'DamageEffect' }>;
+
+// Bare the Chest (may): in your Draw Phase you may draw 1 fewer card. If you
+// do, damage from your Sha and Duel this turn is 1 greater.
+export const bareTheChest: SkillDefinition = {
+  id: 'bare-the-chest',
+  triggers: [
+    atDrawPhase({
+      condition: (_state, draw) => draw.count > 0,
+      use: (_state, passed) => [{ ...passed, count: passed.count - 1 }, { kind: 'SetTurnFlagEffect', flag: BARE_THE_CHEST_FLAG }],
+    }),
+    on<DamageStep>('before:DamageEffect', {
+      condition: (state, { damage }, owner) =>
+        !!state.turn.flags?.[BARE_THE_CHEST_FLAG] &&
+        state.turn.ownerSeatId === owner.seatId &&
+        damage.source?.kind === 'seat' &&
+        damage.source.seatId === owner.seatId &&
+        ['sha', 'duel'].includes(damage.cause?.card?.as ?? ''),
+      effect: (_state, step, owner) => [{ ...step, damage: { ...step.damage, amount: step.damage.amount + 1 } }, used(owner, 'more-damage', step.damage.target.seatId)],
+    }),
+  ],
+};
+
+// The other living seats holding a hand card, in turn order.
+const raidable = (state: GameState, seatId: string) => otherLivingSeatIds(state, seatId).filter((id) => handOf(state, id).length > 0);
+
+// Raid (may): in your Draw Phase, instead of drawing, you may choose 1 or 2
+// other seats that hold hand cards and take 1 random hand card from each, in
+// seat order. Cancel at the pick goes back to the draw.
+export const raid: SkillDefinition = {
+  id: 'raid',
+  triggers: [
+    atDrawPhase({
+      condition: (state, _draw, owner) => raidable(state, owner.seatId).length > 0,
+      use: (state, passed, owner) => [
+        selectionOf(state, owner, { of: 'seats', eligibleIds: raidable(state, owner.seatId), min: 1, max: 2, then: { kind: 'skill-step', step: skillStep(owner, 'take') }, onCancel: [passed] }),
+      ],
+    }),
+  ],
+  onStep: (state, step) => {
+    const { owner } = step;
+    const order = livingSeatOrderFrom(state, owner.seatId);
+    const picked = [...((step.data?.['picked'] as string[]) ?? [])].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    return picked.flatMap((seatId): Effect[] => [
+      { kind: 'MoveRandomCardEffect', fromZoneId: handZoneId(state, seatId), toZoneId: handZoneId(state, owner.seatId) },
+      used(owner, 'took-hand-card', seatId),
+    ]);
+  },
+};
+
 export const WEI_GENERALS: GeneralSkillSet[] = [
   { id: 'cao-cao', skills: [evilHero, escort] },
   { id: 'sima-yi', skills: [feedback, devil] },
   { id: 'xiahou-dun', skills: [unyielding] },
   { id: 'guo-jia', skills: [heavensEnvy, bestowedRouse] },
   { id: 'zhen-ji', skills: [overturnedCountry, riverGoddess] },
+  { id: 'xu-chu', skills: [bareTheChest] },
+  { id: 'zhang-liao', skills: [raid] },
 ];
