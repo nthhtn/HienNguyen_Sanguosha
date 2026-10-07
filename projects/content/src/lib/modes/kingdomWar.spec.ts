@@ -1,3 +1,4 @@
+import { table, kwMode } from '../generals/skills.testing';
 import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT, MAX_KINGDOM_WAR_SEATS } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
@@ -363,5 +364,17 @@ describe('Kingdom War: the Draw Phase step', () => {
     const next = advanceToDecision(state, { registry, mode: kingdomWarMode }).state;
     const draws = next.log.flatMap((e) => (e.kind === 'CardsDrawnEvent' ? [e.cardInstanceIds.length] : []));
     expect(draws).toEqual([3]);
+  });
+});
+
+describe('Kingdom War: the dying round knows how far below 1 HP a drop went', () => {
+  it('the mode’s dying trigger sets pointsBelowOne from the drop', () => {
+    const s = table({}, { hp: { 'seat-b': -1 } });
+    const event = { kind: 'DamageDealtEvent' as const, damage: { source: null, target: { kind: 'seat' as const, seatId: 'seat-b' }, amount: 2, nature: 'normal' as const } };
+    const dying = kwMode.triggers.filter((t) => t.point === 'after:DamageDealtEvent' && t.condition(s, event)).flatMap((t) => t.effect(s, event)).find((e) => (e as { kind: string }).kind === 'DyingEffect');
+    expect(dying).toMatchObject({ kind: 'DyingEffect', seatId: 'seat-b', entering: true, pointsBelowOne: 2 });
+    const later = { ...event, damage: { ...event.damage, amount: 1 } };
+    const s2 = table({}, { hp: { 'seat-b': -2 } });
+    expect(kwMode.triggers.filter((t) => t.point === 'after:DamageDealtEvent' && t.condition(s2, later)).flatMap((t) => t.effect(s2, later)).find((e) => (e as { kind: string }).kind === 'DyingEffect')).toMatchObject({ pointsBelowOne: 1 });
   });
 });

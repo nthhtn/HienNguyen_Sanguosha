@@ -1,6 +1,7 @@
 import type { CardDefinition, CardInstance, Effect, GameState, Phase, PhaseChangedEvent, SkillTrigger } from 'engine';
 import { cardCountsAs, judgmentZoneOf, skipFlagOf, usedCardFrom, usedCardOf } from 'engine';
 import { toolsIgnoreDistance, untargetableBy } from './abilities';
+import { suitOf } from './suits';
 import { otherLivingSeatTargets, seatDistance } from './queries';
 import { COUNTER_CARD_IDS } from './tools';
 
@@ -55,7 +56,7 @@ export function skipPhaseTool({ id, name, skips, spares, maxDistance }: SkipPhas
       return ctx.respondingTo || target?.kind !== 'seat' ? [] : placeInJudgmentArea(state, ctx.cardInstanceId, target.seatId, ctx.card.as);
     },
     onTarget: judgeTarget,
-    onJudged: (_state, { judged }) => (judged.suit === spares ? [] : [{ kind: 'SetTurnFlagEffect', flag: skipFlagOf(skips) }]),
+    onJudged: (state, { judged, seatId }, registry) => (suitOf(state, seatId, judged, registry) === spares ? [] : [{ kind: 'SetTurnFlagEffect', flag: skipFlagOf(skips) }]),
   };
 }
 

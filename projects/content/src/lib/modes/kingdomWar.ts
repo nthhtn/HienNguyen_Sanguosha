@@ -106,13 +106,20 @@ function hpDropTriggers(point: TriggerPoint): SkillTrigger[] {
         const seat = seatOf(state, subject);
         return !!seat && !seat.eliminated && seat.combinedHp <= 0;
       },
-      effect: (state, subject) => [{
-        kind: 'DyingEffect',
-        seatId: droppedSeatId(subject)!,
-        order: turnOrderFrom(state, state.turn.ownerSeatId),
-        rescueCardIds: RESCUE_CARD_IDS,
-        entering: true,
-      }],
+      effect: (state, subject) => {
+        const seat = seatOf(state, subject)!;
+        const event = subject as DamageDealtEvent | HpLostEvent;
+        const amount = event.kind === 'HpLostEvent' ? event.amount : event.damage.amount;
+        return [{
+          kind: 'DyingEffect',
+          seatId: seat.id,
+          order: turnOrderFrom(state, state.turn.ownerSeatId),
+          rescueCardIds: RESCUE_CARD_IDS,
+          entering: true,
+          // How many points of HP this drop took below 1 (Refusing Death turns one card each).
+          pointsBelowOne: Math.min(amount, 1 - seat.combinedHp),
+        }];
+      },
     },
   ];
 }
@@ -140,7 +147,7 @@ export const kingdomWarMode: GameModeDefinition = {
       combinedHp: 0,
       maxCombinedHp: 0,
       hand: { zoneId: `${id}:hand` },
-      equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
+      equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, pile: { zoneId: `${id}:pile` },
       eliminated: false,
     }));
 
@@ -153,6 +160,7 @@ export const kingdomWarMode: GameModeDefinition = {
         { id: s.hand.zoneId, kind: 'hand' as const, ownerSeatId: s.id, cards: [] },
         { id: s.equipped.zoneId, kind: 'equip' as const, ownerSeatId: s.id, cards: [] },
         { id: s.judgment.zoneId, kind: 'judgment' as const, ownerSeatId: s.id, cards: [] },
+        { id: `${s.id}:pile`, kind: 'pile' as const, ownerSeatId: s.id, cards: [] },
       ]),
     ];
     let currentRng = afterShuffle;
@@ -212,7 +220,7 @@ export const kingdomWarMode: GameModeDefinition = {
       effect: (state, subject) => {
         const { seatId } = subject as SeatEliminatedEvent;
         const seat = state.seats.find((s) => s.id === seatId);
-        return seat ? [seat.hand, seat.equipped, seat.judgment].map(({ zoneId }) => ({ kind: 'DiscardZoneEffect', zoneId })) : [];
+        return seat ? [seat.hand, seat.equipped, seat.judgment, ...(seat.pile ? [seat.pile] : [])].map(({ zoneId }) => ({ kind: 'DiscardZoneEffect', zoneId })) : [];
       },
     },
     {

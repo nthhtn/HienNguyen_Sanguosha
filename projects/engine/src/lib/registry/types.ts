@@ -141,6 +141,9 @@ export interface AbilityModifiers {
   untargetableWithEmptyHandBy?: string[];
   // The owner's Sha needs two Shan, and in a Duel with it the other seat plays two Sha each time (Matchless).
   doubleAnswers?: boolean;
+  // How the owner's own cards' suits count (Beauty: { spade: 'heart' }): its
+  // hand, worn and judgment cards wherever a rule reads a suit.
+  suitAs?: Partial<Record<CardInstance['suit'], CardInstance['suit']>>;
 }
 
 // Using cards as another card (Serpent Spear: 2 hand cards as a Sha; Fighting

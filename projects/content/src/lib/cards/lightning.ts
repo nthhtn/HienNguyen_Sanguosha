@@ -1,6 +1,7 @@
 import type { CardDefinition, Effect } from 'engine';
 import { judgmentZoneOf, livingSeatOrderFrom, requireZoneOfKind } from 'engine';
 import { holdsDelayed, judgeTarget, placeInJudgmentArea } from '../shared/delayed';
+import { suitOf } from '../shared/suits';
 
 const isStruck = (suit: string, rank: number) => suit === 'spade' && rank >= 2 && rank <= 9;
 
@@ -17,8 +18,8 @@ export const lightningCard: CardDefinition = {
   legalPlayTargets: (state, ctx) => (holdsDelayed(state, ctx.seatId, 'lightning') ? [] : [[]]),
   play: (state, ctx) => (ctx.respondingTo ? [] : placeInJudgmentArea(state, ctx.cardInstanceId, ctx.seatId, ctx.card.as)),
   onTarget: judgeTarget,
-  onJudged: (state, { tool, seatId, judged }) => {
-    if (!isStruck(judged.suit, judged.rank)) return [];
+  onJudged: (state, { tool, seatId, judged }, registry) => {
+    if (!isStruck(suitOf(state, seatId, judged, registry), judged.rank)) return [];
     const card = tool.physical[0];
     const effects: Effect[] = [];
     // To the discard pile first, so a skill reacting to the damage can take it (Evil Hero).
