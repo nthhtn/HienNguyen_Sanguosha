@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { SeatGenerals } from 'engine';
+import { Action, SeatGenerals } from 'engine';
 import { SeatAvatar } from './seat-avatar';
+import { AvatarSkill } from './avatar-skills';
 
 function render(generals: SeatGenerals): HTMLElement {
   const fixture = TestBed.createComponent(SeatAvatar);
@@ -94,5 +95,31 @@ describe('SeatAvatar', () => {
     await new Promise((r) => setTimeout(r));
     const info = document.querySelector('.cdk-overlay-container app-general-info-dialog')!;
     expect(info.textContent).toContain('Fighting Saint');
+  });
+
+  it('shows skill buttons under each half; a disabled one when not offered; clicking one emits its action', () => {
+    const use: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'reconsider' } };
+    const skills: AvatarSkill[] = [
+      { slot: 'main', skillId: 'reconsider', label: 'Reconsider', action: use },
+      { slot: 'deputy', skillId: 'kindness', label: 'Kindness', action: null },
+    ];
+    const fixture = TestBed.createComponent(SeatAvatar);
+    fixture.componentRef.setInput('generals', { main: { generalDefinitionId: 'sun-quan', revealed: true }, deputy: { generalDefinitionId: 'liu-bei', revealed: true } });
+    fixture.componentRef.setInput('skills', skills);
+    const emitted: Action[] = [];
+    fixture.componentInstance.useSkill.subscribe((a) => emitted.push(a));
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    const main = el.querySelector('.skill-column[data-slot="main"] button.skill') as HTMLButtonElement;
+    const deputy = el.querySelector('.skill-column[data-slot="deputy"] button.skill') as HTMLButtonElement;
+    expect(main.textContent!.trim()).toBe('Reconsider');
+    expect(deputy.disabled).toBe(true);
+    main.click();
+    expect(emitted).toEqual([use]);
+  });
+
+  it('shows no skill row without skills', () => {
+    const el = render({ main: { generalDefinitionId: 'guan-yu', revealed: true }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } });
+    expect(el.querySelector('.skills')).toBeNull();
   });
 });

@@ -1,10 +1,11 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { GeneralInstance, SeatGenerals } from 'engine';
+import { Action, GeneralInstance, SeatGenerals } from 'engine';
 import { cardArtUrl, generalDisplayData, HIDDEN_GENERAL_ART_URL } from 'content';
 import { generalDisplayName } from '../labels';
 import { GeneralInfoDialog, GeneralInfoDialogData } from './general-info-dialog';
+import { AvatarSkill } from './avatar-skills';
 
 const HIDDEN_ID = 'hidden';
 
@@ -59,6 +60,17 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance): AvatarHalf {
         </button>
       }
     </div>
+    @if (skills().length) {
+      <div class="skills">
+        @for (slot of slots; track slot) {
+          <div class="skill-column" [attr.data-slot]="slot">
+            @for (s of skillsOf(slot); track s.skillId) {
+              <button type="button" class="skill" [disabled]="!s.action" (click)="s.action && useSkill.emit(s.action)">{{ s.label }}</button>
+            }
+          </div>
+        }
+      </div>
+    }
   `,
   styles: `
     .frame {
@@ -102,10 +114,26 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance): AvatarHalf {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .skills { display: flex; width: 146px; gap: 2px; margin-top: 3px; }
+    .skill-column { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .skill {
+      padding: 2px 4px; border: 1px solid var(--force, var(--force-none)); border-radius: 6px;
+      background: #fff; font-size: 0.62em; line-height: 1.2; cursor: pointer;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .skill:disabled { opacity: 0.45; cursor: default; }
+    .skill:focus-visible { outline: 2px solid #1565c0; outline-offset: 1px; }
   `,
 })
 export class SeatAvatar {
   readonly generals = input.required<SeatGenerals>();
+  // The viewer's own active skills, as buttons under each half.
+  readonly skills = input<AvatarSkill[]>([]);
+  readonly useSkill = output<Action>();
+  protected readonly slots = ['main', 'deputy'] as const;
+  protected skillsOf(slot: 'main' | 'deputy'): AvatarSkill[] {
+    return this.skills().filter((s) => s.slot === slot);
+  }
 
   protected readonly halves = computed(() => [toHalf('main', this.generals().main), toHalf('deputy', this.generals().deputy)]);
 

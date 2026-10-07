@@ -119,3 +119,27 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
     cancel: legal.find((a) => a.kind === 'CancelSelectionAction') ?? null,
   };
 }
+
+type ArrangeAction = Extract<Action, { kind: 'ArrangeCardsAction' }>;
+
+export interface ArrangeDescription {
+  title: string;
+  prompt: string;
+  // The cards being arranged, top of the draw pile first.
+  cards: CardInstance[];
+  template: ArrangeAction;
+}
+
+// What the Arrange window says, read off a pending arrangement the viewer owes. Null otherwise.
+export function describeArrangement(state: GameState, viewerSeatId: string, legal: readonly Action[]): ArrangeDescription | null {
+  const arrangement = state.pendingArrangement;
+  if (!arrangement || arrangement.seatId !== viewerSeatId) return null;
+  const template = legal.find((a): a is ArrangeAction => a.kind === 'ArrangeCardsAction');
+  if (!template) return null;
+  return {
+    title: arrangement.reason.kind === 'ability' ? abilityName(arrangement.reason.abilityId) : 'Arrange',
+    prompt: 'Put each card on top of the draw pile or at the bottom. Left to right is the order they go in.',
+    cards: arrangement.cardInstanceIds.map((id) => findCard(state, id)).filter((c): c is CardInstance => !!c),
+    template,
+  };
+}

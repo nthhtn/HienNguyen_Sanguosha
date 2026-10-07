@@ -1,10 +1,11 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { GameState } from 'engine';
+import { Action, GameState } from 'engine';
 import { actionHistory } from './action-history';
 import { waitingLine } from './response-description';
 import { seatName } from '../labels';
 import { SeatTile } from './seat-tile';
+import { AvatarSkill } from './avatar-skills';
 import { PlayingCard } from './playing-card';
 import { seatPlacements } from './table-layout';
 
@@ -54,6 +55,8 @@ const RECENT_LOG_LINES = 3;
             [isBot]="botSeatIds().includes(p.seat.id)"
             [equipment]="equipmentOf(p.seat.equipped.zoneId)"
             [judgment]="judgmentOf(p.seat.judgment.zoneId)"
+            [skills]="p.isViewer ? viewerSkills() : []"
+            (useSkill)="actionChosen.emit($event)"
           />
         </div>
       }
@@ -126,6 +129,9 @@ export class RoundTable {
   readonly viewerSeatId = input.required<string>();
   readonly thinkingSeatId = input<string | null>(null);
   readonly botSeatIds = input<string[]>([]);
+  // The viewer's active skills, as buttons on its avatar; a click is an action.
+  readonly viewerSkills = input<AvatarSkill[]>([]);
+  readonly actionChosen = output<Action>();
 
   protected readonly waiting = computed(() => waitingLine(this.state()));
   protected readonly turnedUp = computed(() => this.state().zones.find((z) => z.kind === 'processing')?.cards ?? []);

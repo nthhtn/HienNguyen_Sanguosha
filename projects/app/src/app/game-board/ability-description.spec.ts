@@ -1,5 +1,5 @@
 import { Action, CardInstance, GameState, PendingChoice, PendingSelection } from 'engine';
-import { describeAsk, describeSelection } from './ability-description';
+import { describeArrangement, describeAsk, describeSelection } from './ability-description';
 
 const axe: CardInstance = { instanceId: 'ax', definitionId: 'axe', suit: 'diamond', rank: 5 };
 const peach: CardInstance = { instanceId: 'p1', definitionId: 'peach', suit: 'heart', rank: 3 };
@@ -120,5 +120,22 @@ describe('describeSelection', () => {
     const judgment = { seatId: 'seat-1', reader: { kind: 'card' as const, card: { as: 'capture', colour: 'red' as const, physical: [] } }, card: sha };
     const replace: PendingSelection = { ...base, reason: { ...base.reason, abilityId: 'devil' } as PendingSelection['reason'], then: { kind: 'replace-judgment', judgment, owner: general, abilityId: 'devil' } };
     expect(describeSelection(state({ pendingSelection: replace }), 'seat-0', template)).toMatchObject({ title: 'Devil', prompt: 'Choose a hand card to replace the judgment', confirmLabel: 'Replace' });
+  });
+});
+
+describe('describeArrangement', () => {
+  const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'astrology' };
+  const template: Action = { kind: 'ArrangeCardsAction', seatId: 'seat-0', arrangementId: 'arr', top: [], bottom: [] };
+  it('names the skill and shows the cards being arranged, in order', () => {
+    const s = state();
+    s.zones = [...s.zones, { id: 'drawPile', kind: 'drawPile', cards: [sha, peach] }];
+    s.pendingArrangement = { id: 'arr', seatId: 'seat-0', reason: { kind: 'ability', owner, abilityId: 'astrology' }, cardInstanceIds: ['s2', 'p1'] };
+    expect(describeArrangement(s, 'seat-0', [template])).toEqual({
+      title: 'Astrology',
+      prompt: 'Put each card on top of the draw pile or at the bottom. Left to right is the order they go in.',
+      cards: [sha, peach],
+      template,
+    });
+    expect(describeArrangement(s, 'seat-1', [])).toBeNull();
   });
 });
