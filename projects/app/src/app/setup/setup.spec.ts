@@ -60,27 +60,6 @@ describe('Setup', () => {
     expect(gameService.state()!.seats).toHaveLength(gameService.maxSeats);
   });
 
-  it('passes an explicit seed through to GameService when provided', async () => {
-    await TestBed.configureTestingModule({
-      imports: [Setup],
-      providers: [provideRouter([{ path: 'game', children: [] }])],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(Setup);
-    const component = fixture.componentInstance;
-    const gameService = TestBed.inject(GameService);
-
-    component.seatCount.set(3);
-    component.seed.set(99);
-    component.startGame();
-    const first = gameService.state();
-
-    component.startGame();
-    const second = gameService.state();
-
-    expect(JSON.stringify(second)).toEqual(JSON.stringify(first));
-  });
-
   describe('home screen controls', () => {
     async function create() {
       await TestBed.configureTestingModule({
@@ -107,16 +86,6 @@ describe('Setup', () => {
       expect(gameService.state()!.seats).toHaveLength(3);
     });
 
-    it('reads an optional seed from the seed field', async () => {
-      const { fixture, el } = await create();
-      const input = el.querySelector('input.seed') as HTMLInputElement;
-      input.value = '42';
-      input.dispatchEvent(new Event('input'));
-      expect(fixture.componentInstance.seed()).toBe(42);
-      input.value = '';
-      input.dispatchEvent(new Event('input'));
-      expect(fixture.componentInstance.seed()).toBeUndefined();
-    });
     it('defaults to playing against bots', async () => {
       const { el, gameService } = await create();
       (el.querySelector('button.start') as HTMLButtonElement).click();
@@ -132,7 +101,7 @@ describe('Setup', () => {
       ) as HTMLButtonElement;
       passAndPlay.click();
       fixture.detectChanges();
-      expect(el.querySelector('.mode-hint')!.textContent).toContain('passing it between turns');
+      expect(el.querySelector('.mode-hint')!.textContent).toContain('Passing it between turns');
       (el.querySelector('button.start') as HTMLButtonElement).click();
       expect(gameService.mode()).toBe('pass-and-play');
       expect(gameService.state()!.players.every((p) => p.kind === 'human')).toBe(true);

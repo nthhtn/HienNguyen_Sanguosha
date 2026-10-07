@@ -20,6 +20,7 @@ import { printingLabel } from './printing-label';
           </h4>
           <span class="badge" [class.on]="card().inGame">{{ card().inGame ? 'In the game' : 'Not in the game yet' }}</span>
         </header>
+        <p class="meta"><span class="expansion-tag">{{ card().expansion }}</span></p>
         @if (card().range !== null) {
           <p class="range">Range {{ card().range }}</p>
         }
@@ -52,6 +53,8 @@ import { printingLabel } from './printing-label';
     .zh { margin-left: 8px; color: var(--mat-sys-on-surface-variant); }
     .badge { padding: 2px 10px; border-radius: 12px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
     .badge.on { background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); border-color: var(--mat-sys-primary); }
+    .meta { margin: 8px 0 0; }
+    .expansion-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
     .range { margin: 8px 0 0; font-weight: 600; }
     .text { margin: 8px 0; }
     .printings { margin: 8px 0; letter-spacing: 0.04em; }

@@ -24,7 +24,7 @@ describe('describeChoice', () => {
     };
     expect(describeChoice(state(gs), 'seat-0')).toEqual({
       title: 'Gender Swords',
-      prompt: 'Discard a hand card, or let Seat 1 draw 1 card',
+      prompt: 'Discard a hand card, Or let Seat 1 draw 1 card',
       confirmLabel: 'Discard',
       declineLabel: 'Let Seat 1 Draw',
     });

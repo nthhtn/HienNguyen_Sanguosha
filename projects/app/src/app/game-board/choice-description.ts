@@ -35,7 +35,7 @@ export function describeChoice(state: GameState, viewerSeatId: string): ChoiceDe
   // Choosing among your own cards (Gender Swords): discard one, or let the user draw.
   if (targetSeatId === viewerSeatId && choice.options.some((o) => o.shows.kind === 'decline')) {
     const user = seatName(state.players, choice.reason.userSeatId);
-    return { title: cardName(card.as), prompt: `Discard a hand card, or let ${user} draw 1 card`, confirmLabel: 'Discard', declineLabel: `Let ${user} Draw` };
+    return { title: cardName(card.as), prompt: `Discard a hand card, Or let ${user} draw 1 card`, confirmLabel: 'Discard', declineLabel: `Let ${user} Draw` };
   }
   const from = targetSeatId ? ` from ${seatName(state.players, targetSeatId)}` : '';
   return {

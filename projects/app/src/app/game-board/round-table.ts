@@ -1,20 +1,19 @@
-import { Component, DestroyRef, ElementRef, computed, inject, input, output, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, computed, inject, input, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Action, GameState } from 'engine';
+import { GameState } from 'engine';
 import { actionHistory, latestSequence } from './action-history';
 import { waitingLine } from './response-description';
 import { seatName } from '../labels';
 import { SeatTile } from './seat-tile';
-import { AvatarSkill } from './avatar-skills';
 import { PlayingCard } from './playing-card';
 import { fitTable, seatPlacements } from './table-layout';
 
 // The table's size before it is first measured (and in tests).
 const DEFAULT_SIZE = { width: 1280, height: 640 };
 
-// The battlefield: the seats around its rim, seen from the viewer's chair, and
-// the latest action sequence in its centre. The discard pile and the action
-// history sit beside it (discard-pile.ts, action-history-panel.ts).
+// The battlefield: the other seats around its rim, seen from the viewer's chair
+// (the viewer's own seat is in the board's bottom-left corner), and the latest
+// action sequence in its centre.
 // Presentational: everything shown is read straight off the (redacted) state.
 @Component({
   selector: 'app-round-table',
@@ -55,14 +54,11 @@ const DEFAULT_SIZE = { width: 1280, height: 640 };
             [seat]="p.seat"
             [name]="name(p.seat.id)"
             [handCount]="handCount(p.seat.hand.zoneId)"
-            [isViewer]="p.isViewer"
             [isTurnOwner]="p.seat.id === state().turn.ownerSeatId"
             [isResponding]="p.seat.id === (state().pendingChoice?.seatId ?? state().pendingResponse?.respondingSeatId)"
             [isBot]="botSeatIds().includes(p.seat.id)"
             [equipment]="equipmentOf(p.seat.equipped.zoneId)"
             [judgment]="judgmentOf(p.seat.judgment.zoneId)"
-            [skills]="p.isViewer ? viewerSkills() : []"
-            (useSkill)="actionChosen.emit($event)"
           />
         </div>
       }
@@ -76,7 +72,7 @@ const DEFAULT_SIZE = { width: 1280, height: 640 };
       position: relative;
       width: 100%;
       height: 100%;
-      border-radius: 16px;
+      border-radius: 0;
       overflow: hidden;
       background: radial-gradient(ellipse at center, #8b7559 0%, #6d5a43 55%, #4b3e2f 100%);
       box-shadow: inset 0 0 40px rgb(0 0 0 / 45%);
@@ -111,9 +107,6 @@ export class RoundTable {
   readonly viewerSeatId = input.required<string>();
   readonly thinkingSeatId = input<string | null>(null);
   readonly botSeatIds = input<string[]>([]);
-  // The viewer's active skills, as buttons on its avatar; a click is an action.
-  readonly viewerSkills = input<AvatarSkill[]>([]);
-  readonly actionChosen = output<Action>();
 
   protected readonly waiting = computed(() => waitingLine(this.state()));
   protected readonly turnedUp = computed(() => this.state().zones.find((z) => z.kind === 'processing')?.cards ?? []);
@@ -121,7 +114,7 @@ export class RoundTable {
   // The battlefield's measured size, in px.
   private readonly size = signal(DEFAULT_SIZE);
   protected readonly fit = computed(() => fitTable(this.size().width, this.size().height, this.state().seats.length));
-  protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId(), this.fit()));
+  protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId(), this.fit()).filter((p) => !p.isViewer));
 
   // The latest action sequence, oldest first, in the action history's wording.
   protected readonly sequence = computed(() =>

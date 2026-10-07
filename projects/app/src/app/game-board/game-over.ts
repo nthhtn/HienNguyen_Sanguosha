@@ -18,7 +18,7 @@ import { forceOf, kingdomDisplayName, seatName } from '../labels';
         } @else if (result().winningSeatIds.length > 0) {
           <p class="headline">{{ names(result().winningSeatIds) }} wins!</p>
         } @else {
-          <p class="headline">Draw — no survivors.</p>
+          <p class="headline">Draw — No survivors.</p>
         }
         <p>Winners: {{ names(result().winningSeatIds) || 'None' }}</p>
         <p>Losers: {{ names(result().losingSeatIds) || 'None' }}</p>

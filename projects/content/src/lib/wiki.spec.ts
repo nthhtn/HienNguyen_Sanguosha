@@ -3,20 +3,27 @@ import { equipmentTabs, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, 
 describe('wikiGenerals', () => {
   const generals = wikiGenerals();
 
-  it('lists every general with data, grouped by kingdom, its leader first, then by pack, then by name', () => {
+  it('lists every general with data, grouped by kingdom, its Lords first, then by pack, then by name', () => {
     expect(generals).toHaveLength(57);
     expect([...new Set(generals.map((g) => g.kingdom))]).toEqual(['Wei', 'Shu', 'Wu', 'Qun']);
     expect(generals.filter((g) => g.kingdom === 'Wei').map((g) => g.name)).toEqual([
-      'Cao Cao', 'Guo Jia', 'Sima Yi', 'Xiahou Dun', 'Xu Chu', 'Zhang Liao', 'Zhen Ji',
-      'Cao Ren', 'Xiahou Yuan', 'Dian Wei', 'Xun Yu', 'Cao Pi', 'Xu Huang', 'Deng Ai', 'Zhang He',
+      'Cao Cao', 'Cao Pi', 'Guo Jia', 'Sima Yi', 'Xiahou Dun', 'Xu Chu', 'Zhang Liao', 'Zhen Ji',
+      'Cao Ren', 'Xiahou Yuan', 'Dian Wei', 'Xun Yu', 'Xu Huang', 'Deng Ai', 'Zhang He',
     ]);
   });
 
-  it('puts each kingdom’s leader first, even one from a later pack', () => {
+  it('puts each kingdom’s Lords first, by pack, even from a later pack', () => {
     const first = (kingdom: string) => generals.find((g) => g.kingdom === kingdom)!.name;
-    expect(['Wei', 'Shu', 'Wu', 'Qun'].map(first)).toEqual(['Cao Cao', 'Liu Bei', 'Sun Jian', 'Yuan Shao']);
+    expect(['Wei', 'Shu', 'Wu'].map(first)).toEqual(['Cao Cao', 'Liu Bei', 'Sun Quan']);
+    expect(generals.filter((g) => g.kingdom === 'Shu').slice(0, 2).map((g) => g.name)).toEqual(['Liu Bei', 'Liu Shan']);
     expect(generals.filter((g) => g.kingdom === 'Wu').map((g) => g.expansion)).toEqual([
-      'Forest', ...Array(8).fill('Base'), 'Wind', 'Wind', 'Fire', 'Forest', 'Mountain', 'Mountain',
+      'Base', 'Mountain', ...Array(7).fill('Base'), 'Wind', 'Wind', 'Fire', 'Forest', 'Forest', 'Mountain',
+    ]);
+  });
+
+  it('puts Qun’s Lords first, by pack, then its other Generals by pack', () => {
+    expect(generals.filter((g) => g.kingdom === 'Qun').map((g) => g.name)).toEqual([
+      'Zhang Jiao', 'Yuan Shao', 'Dong Zhuo', 'Diao Chan', 'Hua Tuo', 'Lu Bu', 'Yu Ji', 'Pang De', 'Yan Liang and Wen Chou', 'Jia Xu', 'Cai Wenji', 'Zuo Ci',
     ]);
   });
 
@@ -185,7 +192,7 @@ describe('wiki tabs', () => {
     const tabs = wikiGeneralTabs();
     expect(summary(tabs)).toEqual([['wei', 'Wei', 15], ['shu', 'Shu', 15], ['wu', 'Wu', 15], ['qun', 'Qun', 12]]);
     expect(tabs[3].entries.every((g) => g.kingdom === 'Qun')).toBe(true);
-    expect(tabs[0].entries[0].name).toBe('Cao Cao');
+    expect(tabs.map((t) => t.entries[0].name)).toEqual(['Cao Cao', 'Liu Bei', 'Sun Quan', 'Zhang Jiao']);
   });
 
   it('gives each basic card its own tab, the fire and lightning Sha right after Sha', () => {

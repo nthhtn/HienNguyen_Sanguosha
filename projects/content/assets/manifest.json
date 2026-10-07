@@ -321,6 +321,13 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-liu-bei",
     "width": 663
   },
+  "liu-shan": {
+    "crawledAt": "2026-10-07",
+    "height": 978,
+    "localPath": "generals/shu/liu-shan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-liu-shan",
+    "width": 668
+  },
   "longbow": {
     "crawledAt": "2026-09-24",
     "height": 979,
@@ -376,6 +383,13 @@
     "localPath": "generals/qun/pang-de.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-pang-de",
     "width": 658
+  },
+  "pang-tong": {
+    "crawledAt": "2026-10-07",
+    "height": 959,
+    "localPath": "generals/shu/pang-tong.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-pang-tong",
+    "width": 655
   },
   "peach": {
     "crawledAt": "2026-09-24",

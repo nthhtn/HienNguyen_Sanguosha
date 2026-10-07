@@ -15,6 +15,11 @@ const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards'
   template: `
     <h2>{{ title }}</h2>
     <p class="summary">{{ cards.length }} cards · {{ inGame }} in the game</p>
+    @if (flat) {
+      @for (card of ordered; track card.id) {
+        <app-wiki-card-entry [card]="card" />
+      }
+    } @else {
     <mat-tab-group
       [selectedIndex]="tab.selectedIndex()"
       (selectedIndexChange)="tab.select($event)"
@@ -33,6 +38,7 @@ const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards'
         </mat-tab>
       }
     </mat-tab-group>
+    }
   `,
   styles: `
     :host { display: block; max-width: 960px; margin: 0 auto; }
@@ -43,7 +49,11 @@ export class WikiCards {
   private readonly category = inject(ActivatedRoute).snapshot.data['category'] as WikiCard['category'];
   protected readonly title = PAGE_TITLES[this.category];
   protected readonly cards = wikiCards(this.category);
+  // The list in the order the cards are meant to read.
+  protected readonly ordered = this.category === 'basic' ? wikiCardTabs('basic').flatMap((t) => t.entries) : this.cards;
   protected readonly inGame = this.cards.filter((c) => c.inGame).length;
-  protected readonly tabs = wikiCardTabs(this.category);
+  // Basic Cards are only six: one list, no tabs.
+  protected readonly flat = this.category === 'basic';
+  protected readonly tabs = this.flat ? [] : wikiCardTabs(this.category);
   protected readonly tab = tabQueryParam(this.tabs.map((t) => t.key));
 }

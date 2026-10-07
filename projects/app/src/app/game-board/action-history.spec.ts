@@ -356,7 +356,7 @@ describe('equipment abilities in the history', () => {
       { kind: 'JudgmentEvent', seatId: 'seat-1', reader: { kind: 'card', card: usedCardOf({ instanceId: 'et', definitionId: 'eight-trigrams', suit: 'spade', rank: 2 }) }, card: judged },
       { kind: 'AbilityUsedEvent', owner: owner('seat-1', 'et'), abilityId: 'eight-trigrams', outcome: 'counts-as-shan' },
     ];
-    expect(texts(log)).toEqual(["Seat 1's Eight Trigrams judgment: 9 ♥, counts as Shan"]);
+    expect(texts(log)).toEqual(["Seat 1's Eight Trigrams judgment: 9 ♥, Counts as Shan"]);
   });
 
   it('says who used an ability, on whom; a Don’t says nothing', () => {

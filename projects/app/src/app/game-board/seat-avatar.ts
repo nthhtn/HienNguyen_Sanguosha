@@ -75,8 +75,8 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance): AvatarHalf {
   styles: `
     .frame {
       display: flex;
-      width: 146px;
-      height: 96px;
+      width: 190px;
+      height: 132px;
       border: 2px solid var(--force, var(--force-none));
       border-radius: 10px;
       overflow: hidden;
@@ -114,7 +114,7 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance): AvatarHalf {
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .skills { display: flex; width: 146px; gap: 2px; margin-top: 3px; }
+    .skills { display: flex; width: 190px; gap: 2px; margin-top: 3px; }
     .skill-column { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
     .skill {
       padding: 2px 4px; border: 1px solid var(--force, var(--force-none)); border-radius: 6px;

@@ -29,63 +29,74 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       [class.viewer]="isViewer()"
       [attr.data-force]="force()"
     >
-      <div class="header">
-        <strong>{{ name() }}</strong>
-        @if (isBot()) {
-          <mat-icon class="bot-icon" aria-label="Computer player">smart_toy</mat-icon>
-        }
-        @if (isViewer()) {
-          <span class="you">(you)</span>
-        }
-      </div>
-      <div class="generals">
-        @if (seat().generals; as generals) {
-          <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
-        } @else {
-          <span class="choosing">Choosing Generals…</span>
-        }
-      </div>
-      <div class="stats">
-        <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomDisplayName(seat().kingdom) }}</span>
-        @if (hpIcons().length) {
-          <span class="hp-icons">
-            @for (src of hpIcons(); track src) {
-              <img class="hp-icon" [src]="src" alt="" />
-            }
+      <div class="sections">
+      <section class="panel general" aria-label="General">
+        <div class="header">
+          <strong>{{ name() }}</strong>
+          @if (isBot()) {
+            <mat-icon class="bot-icon" aria-label="Computer player">smart_toy</mat-icon>
+          }
+          @if (isViewer()) {
+            <span class="you">(you)</span>
+          }
+        </div>
+        <div class="generals">
+          @if (seat().generals; as generals) {
+            <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
+          } @else {
+            <span class="choosing">Choosing Generals…</span>
+          }
+        </div>
+        <div class="stats">
+          <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomDisplayName(seat().kingdom) }}</span>
+          @if (hpIcons().length) {
+            <span class="hp-icons">
+              @for (src of hpIcons(); track src) {
+                <img class="hp-icon" [src]="src" alt="" />
+              }
+            </span>
+          }
+          <span>HP {{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
+          <span class="hand-count" title="Cards in Hand" [attr.aria-label]="'Cards in Hand: ' + handCount()">
+            <mat-icon aria-hidden="true">style</mat-icon>{{ handCount() }}
           </span>
-        }
-        <span>HP {{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
-        <span class="hand-count" title="Cards in Hand">🂠 {{ handCount() }}</span>
-      </div>
-      <div class="equip">
-        @for (s of slots(); track s.slot) {
-          <div
-            class="slot"
-            [class.empty]="!s.card"
-            [attr.data-slot]="s.slot"
-            [attr.title]="s.card ? s.label + ': ' + cardIdDisplayName(s.card.definitionId) : s.label + ' (empty)'"
-          >
-            @if (s.card; as card) {
-              <!-- Its rules text is in the Info popup. -->
-              <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
-                <app-playing-card size="small" [card]="card" />
-              </button>
-            } @else {
-              <mat-icon>{{ s.icon }}</mat-icon>
+        </div>
+      </section>
+        <section class="panel equipment" aria-label="Equipment">
+          <!-- Weapon, Armor on top; Defensive Mount, Offensive Mount below. -->
+          <div class="equip">
+            @for (s of slots(); track s.slot) {
+              <div
+                class="slot"
+                [class.empty]="!s.card"
+                [attr.data-slot]="s.slot"
+                [attr.title]="s.card ? s.label + ': ' + cardIdDisplayName(s.card.definitionId) : s.label + ' (empty)'"
+              >
+                @if (s.card; as card) {
+                  <!-- Its rules text is in the Info popup. -->
+                  <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
+                    <app-playing-card size="small" [card]="card" />
+                  </button>
+                } @else {
+                  <mat-icon>{{ s.icon }}</mat-icon>
+                }
+              </div>
             }
           </div>
-        }
-      </div>
-      <div class="judgment" aria-label="Judgment Area">
-        @for (card of judgment(); track card.instanceId) {
-          <div class="slot" [attr.title]="'Judgment Area: ' + cardIdDisplayName(card.definitionId)">
-            <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
-              <app-playing-card size="small" [card]="card" />
-            </button>
+        </section>
+        <section class="panel judgment-section" aria-label="Judgment">
+          <div class="judgment" aria-label="Judgment Area">
+            @for (card of judgment(); track card.instanceId) {
+              <div class="slot" [attr.title]="'Judgment Area: ' + cardIdDisplayName(card.definitionId)">
+                <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
+                  <app-playing-card size="small" [card]="card" />
+                </button>
+              </div>
+            } @empty {
+              <div class="slot empty" title="Judgment Area (empty)"><mat-icon>balance</mat-icon></div>
+            }
           </div>
-        } @empty {
-          <div class="slot empty" title="Judgment Area (empty)"><mat-icon>balance</mat-icon></div>
-        }
+        </section>
       </div>
       <!-- Status lines in the seat's force colour. -->
       @if (seat().eliminated) {
@@ -99,13 +110,17 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
   `,
   styles: `
     .tile {
+      box-sizing: border-box;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       background: #fffdf7;
       border: 2px solid var(--force);
       border-radius: 14px;
       padding: 8px 10px;
       box-shadow: 0 2px 6px rgb(0 0 0 / 25%);
       font-size: 1.1em;
-      min-width: 200px;
       text-align: center;
     }
     /* The border and name are the seat's force colour (data-force, styles.scss);
@@ -118,21 +133,28 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .tile.eliminated > :not(.status) { opacity: 0.45; filter: grayscale(1); }
     .bot-icon { font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-left: 3px; color: #666; }
     .you { margin-left: 4px; color: var(--mat-sys-primary); }
-    .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; min-height: 96px; align-items: center; }
+    .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; align-items: center; }
     .choosing { font-style: italic; color: #666; }
-    .stats { display: flex; gap: 6px; justify-content: center; align-items: center; white-space: nowrap; }
+    .stats { display: flex; flex-wrap: wrap; gap: 2px 8px; justify-content: center; align-items: center; white-space: nowrap; }
     .hp-icons { display: inline-flex; gap: 1px; vertical-align: middle; }
     .hp-icon { height: 20px; width: auto; }
     .kingdom { padding: 0 5px; border-radius: 6px; background: #e6e1e5; }
     .kingdom-Wei { background: #d6e4ff; }
     .kingdom-Shu { background: #ffd9d6; }
     .kingdom-Wu { background: #d6f5dc; }
+    .hand-count { display: inline-flex; align-items: center; gap: 2px; }
+    .hand-count mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .status { font-weight: bold; margin-top: 2px; }
-    .equip { display: grid; grid-template-columns: repeat(4, 44px); gap: 5px; justify-content: center; margin-top: 4px; }
+    .sections { flex: 1; min-height: 0; display: flex; gap: 6px; align-items: stretch; }
+    /* Three equal-height panels: General, Equipment, Judgment. */
+    .panel { box-sizing: border-box; padding: 4px 6px; border: 1px solid #d5c8ad; border-radius: 8px; background: #fbf7ec; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .general { flex: 1; min-width: 0; }
+    .equipment, .judgment-section { flex: none; }
+    .equip { display: grid; grid-template-columns: repeat(2, 44px); gap: 5px; justify-content: center; }
     .slot { width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
     .slot-card { padding: 0; border: none; background: none; cursor: pointer; display: block; }
     .slot-card:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: -2px; }
-    .judgment { display: flex; gap: 5px; justify-content: center; margin-top: 4px; }
+    .judgment { display: flex; flex-direction: column; gap: 5px; align-items: center; }
     .slot.empty mat-icon { font-size: 22px; width: 22px; height: 22px; color: #b9a37a; }
   `,
 })

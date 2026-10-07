@@ -55,30 +55,19 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/wiki/generals');
     fixture.detectChanges();
     expect(play.classList).not.toContain('active');
-    expect(el.querySelector('button.nav-wiki')!.classList).toContain('active');
+    expect(el.querySelector('a[href="/wiki/generals"]')!.classList).toContain('active');
   });
 
-  it('opens the Wiki menu with links to the four pages', async () => {
-    const { el, fixture } = await render();
-    (el.querySelector('button.nav-wiki') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const items = [...document.querySelectorAll('.cdk-overlay-container a[mat-menu-item]')] as HTMLAnchorElement[];
-    expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
+  it('has a Wiki-icon item for each of the four pages, side by side in the bar', async () => {
+    const { el } = await render();
+    const items = [...el.querySelectorAll('nav.nav a.nav-wiki')] as HTMLAnchorElement[];
+    expect(items.map((a) => [a.querySelector('.label')!.textContent, a.getAttribute('href')])).toEqual([
       ['Generals', '/wiki/generals'],
       ['Basic Cards', '/wiki/basic'],
-      ['Equipments', '/wiki/equipment'],
+      ['Equipment', '/wiki/equipment'],
       ['Tools', '/wiki/tools'],
     ]);
-  });
-
-  it('puts the Wiki dropdown arrow after its label', async () => {
-    const { el } = await render();
-    const wiki = el.querySelector('button.nav-wiki')!;
-    const arrow = wiki.querySelector('mat-icon.drop')!;
-    const label = wiki.querySelector('.label')!;
-    expect(arrow.hasAttribute('iconpositionend')).toBe(true);
-    expect(label.compareDocumentPosition(arrow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(items.map((a) => a.querySelector('mat-icon')!.textContent)).toEqual(['sports_kabaddi', 'umbrella', 'swords', 'menu_book']);
   });
 
   it('sits on the left, straight after the title, with no side panel', async () => {
@@ -95,16 +84,13 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/wiki/basic');
     fixture.detectChanges();
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBeNull();
-    (el.querySelector('button.nav-wiki') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const current = [...document.querySelectorAll('.cdk-overlay-container a[mat-menu-item][aria-current="page"]')];
-    expect(current.map((a) => a.textContent!.trim())).toEqual(['Basic Cards']);
+    const current = [...el.querySelectorAll('nav.nav a.nav-wiki[aria-current="page"]')];
+    expect(current.map((a) => a.textContent!.trim())).toEqual(['umbrellaBasic Cards']);
   });
 
   it('icon buttons have accessible names (Review Focus 4)', async () => {
     const { el } = await render();
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play Game');
-    expect(el.querySelector('button.nav-wiki')!.getAttribute('aria-label')).toBe('Wiki');
+    expect(el.querySelector('a.nav-wiki')!.getAttribute('aria-label')).toBe('Generals');
   });
 });

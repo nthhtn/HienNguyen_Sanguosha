@@ -11,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
       <mat-card appearance="raised" class="gate-card">
         <mat-icon class="big-icon">phone_android</mat-icon>
         <h2>Pass the device to {{ name() }}</h2>
-        <p>Everyone else, look away — the next screen shows {{ name() }}'s private cards.</p>
+        <p>Everyone else, Look away — The next screen shows {{ name() }}'s private cards.</p>
         <button mat-flat-button type="button" (click)="revealed.emit()">
           <mat-icon>visibility</mat-icon> Tap to Reveal
         </button>

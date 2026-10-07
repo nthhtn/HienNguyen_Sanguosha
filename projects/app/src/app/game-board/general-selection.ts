@@ -10,12 +10,6 @@ import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
 import { generalDisplayName } from '../labels';
 
-export interface SelectionProgress {
-  seatId: string;
-  name: string;
-  done: boolean;
-}
-
 interface CandidateViewModel {
   id: string;
   name: string;
@@ -35,23 +29,8 @@ interface CandidateViewModel {
   imports: [MatButtonModule, MatCardModule, MatChipsModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown],
   template: `
     <header class="intro">
-      <h2>{{ seatName() ? seatName() + ', choose your Generals' : 'Choose your Generals' }}</h2>
+      <h2>{{ seatName() ? seatName() + ', Choose your Generals' : 'Choose your Generals' }}</h2>
       <p class="hint">Pick two Generals of the same kingdom. Your first pick is your Main General.</p>
-      @if (progress().length > 0) {
-        <div class="progress">
-          <span class="step">Seat {{ currentStep() }} of {{ progress().length }}</span>
-          <mat-chip-set>
-            @for (p of progress(); track p.seatId) {
-              <mat-chip [class.done]="p.done" [class.current]="p.seatId === seatId()" [disableRipple]="true">
-                @if (p.done) {
-                  <mat-icon matChipAvatar>check_circle</mat-icon>
-                }
-                {{ p.name }}
-              </mat-chip>
-            }
-          </mat-chip-set>
-        </div>
-      }
     </header>
 
     <div class="candidates">
@@ -121,7 +100,7 @@ interface CandidateViewModel {
       </div>
       <span class="summary">
         @if (summary(); as s) {
-          Kingdom: {{ s.kingdom }} · Combined HP: {{ s.hp }}
+          Kingdom: <span class="force-name" [attr.data-force]="s.kingdom">{{ s.kingdom }}</span> · Combined HP: {{ s.hp }}
         }
       </span>
       <app-decision-countdown class="timer" />
@@ -141,7 +120,6 @@ interface CandidateViewModel {
     .intro { flex: none; }
     .intro h2 { margin: 8px 0 0; font: var(--mat-sys-headline-small); }
     .hint { color: var(--mat-sys-on-surface-variant); margin: 4px 0 8px; }
-    .progress { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .step { font: var(--mat-sys-label-large); }
     mat-chip.current { outline: 2px solid var(--mat-sys-primary); }
     mat-chip.done { opacity: 0.7; }
@@ -179,6 +157,7 @@ interface CandidateViewModel {
     .role-chip.deputy { background: var(--mat-sys-surface); color: var(--mat-sys-primary); box-shadow: inset 0 0 0 2px var(--mat-sys-primary); }
     mat-card-header { padding-top: 12px; }
     .meta { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+    .force-name { color: var(--force-text); font-weight: 600; }
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
     .hearts { display: inline-flex; color: #d84a3f; }
     .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
@@ -209,7 +188,6 @@ export class GeneralSelection {
   readonly registry = input.required<ContentRegistry>();
   readonly seatId = input<string>('');
   readonly seatName = input<string>('');
-  readonly progress = input<SelectionProgress[]>([]);
   readonly chosen = output<ChooseGeneralsAction>();
 
   // UI-only state: the player's picks in order, [main, deputy].
@@ -240,8 +218,6 @@ export class GeneralSelection {
       };
     });
   });
-
-  protected readonly currentStep = computed(() => this.progress().findIndex((p) => p.seatId === this.seatId()) + 1);
 
   protected slotName(position: 0 | 1): string {
     const id = this.selected()[position];

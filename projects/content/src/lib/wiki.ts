@@ -52,12 +52,12 @@ export interface WikiCard {
 const KINGDOM_ORDER: readonly WikiGeneral['kingdom'][] = ['Wei', 'Shu', 'Wu', 'Qun'];
 const SUBTYPE_ORDER: readonly NonNullable<WikiCard['subtype']>[] = ['weapon', 'armor', 'horse', 'treasure'];
 
-// Each kingdom's leader heads its list; the rest follow by pack.
-const KINGDOM_LEADERS: ReadonlySet<string> = new Set(['cao-cao', 'liu-bei', 'sun-jian', 'yuan-shao']);
-
+// Each kingdom's Lords (a General with a Lord skill, whether or not it is used
+// in the game) head its list; the rest follow. Each group sorts by pack, then name.
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
 const byPack = (a: { expansion: WikiPack }, b: { expansion: WikiPack }) => PACK_ORDER.indexOf(a.expansion) - PACK_ORDER.indexOf(b.expansion);
-const leaderFirst = (a: { id: string }, b: { id: string }) => Number(KINGDOM_LEADERS.has(b.id)) - Number(KINGDOM_LEADERS.has(a.id));
+const lordRank = (g: { skills: { lord: boolean }[] }) => (g.skills.some((s) => s.lord) ? 0 : 1);
+const lordsFirst = (a: Parameters<typeof lordRank>[0], b: Parameters<typeof lordRank>[0]) => lordRank(a) - lordRank(b);
 
 export function wikiGenerals(): WikiGeneral[] {
   return Object.entries(generalsData)
@@ -74,7 +74,7 @@ export function wikiGenerals(): WikiGeneral[] {
       skillsInGame: GENERAL_SKILLS.has(id),
       expansion: (data.source.expansion ?? 'Base') as WikiGeneral['expansion'],
     }))
-    .sort((a, b) => KINGDOM_ORDER.indexOf(a.kingdom) - KINGDOM_ORDER.indexOf(b.kingdom) || leaderFirst(a, b) || byPack(a, b) || byName(a, b));
+    .sort((a, b) => KINGDOM_ORDER.indexOf(a.kingdom) - KINGDOM_ORDER.indexOf(b.kingdom) || lordsFirst(a, b) || byPack(a, b) || byName(a, b));
 }
 
 export function wikiCards(category: WikiCard['category']): WikiCard[] {

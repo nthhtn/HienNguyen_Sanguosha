@@ -219,7 +219,7 @@ export function actionHistory(
         } else if (event.outcome === 'counts-as-shan') {
           // Said on its judgment's line, which comes just before.
           const last = entries[entries.length - 1];
-          if (last?.kind === 'action' && last.text.startsWith(`${owner}'s ${ability} judgment:`)) last.text += ', counts as Shan';
+          if (last?.kind === 'action' && last.text.startsWith(`${owner}'s ${ability} judgment:`)) last.text += ', Counts as Shan';
           else action(`${owner}'s ${ability} counts as Shan`);
         }
         break;

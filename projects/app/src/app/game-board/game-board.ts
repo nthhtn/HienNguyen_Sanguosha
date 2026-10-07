@@ -12,9 +12,10 @@ import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { RoundTable } from './round-table';
+import { SeatTile } from './seat-tile';
 import { HandView } from './hand-view';
 import { GameOver } from './game-over';
-import { GeneralSelection, SelectionProgress } from './general-selection';
+import { GeneralSelection } from './general-selection';
 import { PhaseIndicator } from './phase-indicator';
 import { DiscardPile } from './discard-pile';
 import { conversionLabel, seatName } from '../labels';
@@ -35,7 +36,7 @@ import { DecisionTimer } from '../decision-timer.service';
 
 @Component({
   selector: 'app-game-board',
-  imports: [RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -68,36 +69,53 @@ import { DecisionTimer } from '../decision-timer.service';
               [registry]="gameService.registry"
               [seatId]="activeSeatId"
               [seatName]="nameOf(activeSeatId)"
-              [progress]="selectionProgress()"
               (chosen)="submit($event)"
             />
           } @else {
             <div class="board">
               <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
               <div class="board-grid">
-                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="gameService.botThinkingSeatId()" [botSeatIds]="gameService.botSeatIds()" [viewerSkills]="viewerSkills()" (actionChosen)="submit($event)" />
+                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="gameService.botThinkingSeatId()" [botSeatIds]="gameService.botSeatIds()" />
+                <!-- Bottom left corner: the viewer's own seat, off the table. -->
+                @if (viewerSeat(); as seat) {
+                  <div class="your-seat">
+                    <app-seat-tile
+                      [seat]="seat"
+                      [name]="nameOf(seat.id)"
+                      [handCount]="ownHand().length"
+                      [isViewer]="true"
+                      [isTurnOwner]="seat.id === visible.turn.ownerSeatId"
+                      [isResponding]="seat.id === (visible.pendingChoice?.seatId ?? visible.pendingResponse?.respondingSeatId)"
+                      [isBot]="gameService.botSeatIds().includes(seat.id)"
+                      [equipment]="zoneCards(seat.equipped.zoneId)"
+                      [judgment]="zoneCards(seat.judgment.zoneId)"
+                      [skills]="viewerSkills()"
+                      (useSkill)="submit($event)"
+                    />
+                  </div>
+                }
                 <section class="your-hand">
-                  <h3>Your Hand</h3>
-                  <app-hand-view
-                    [cards]="ownHand()"
+                  <div class="hand">
+                    <h3>Your Hand</h3>
+                    <app-hand-view
+                      [cards]="ownHand()"
+                      [actions]="gameService.legalActions()"
+                      [state]="visible"
+                      [registry]="gameService.registry"
+                      (play)="submit($event)"
+                    />
+                  </div>
+                  <app-action-list
+                    class="actions"
                     [actions]="gameService.legalActions()"
                     [state]="visible"
                     [registry]="gameService.registry"
-                    (play)="submit($event)"
+                    (actionChosen)="submit($event)"
                   />
                 </section>
-                <app-action-list
-                  class="actions"
-                  [actions]="gameService.legalActions()"
-                  [state]="visible"
-                  [registry]="gameService.registry"
-                  (actionChosen)="submit($event)"
-                />
-                <!-- Bottom right: the action history, and the discard pile under it. -->
-                <aside class="side">
-                  <app-action-history [history]="actionHistory()" />
-                  <app-discard-pile [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
-                </aside>
+                <!-- Bottom right: the action history, then the discard pile; same height. -->
+                <app-action-history class="history" [history]="actionHistory()" />
+                <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
               </div>
             </div>
           }
@@ -123,28 +141,47 @@ import { DecisionTimer } from '../decision-timer.service';
     }
     @media (max-width: 599px) { :host:has(.board) { height: calc(100dvh - var(--mat-toolbar-mobile-height, 56px) - 16px); } }
     .board { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    /* Bottom row: Player Seat, Hand (the rest of the width), Action History, Discard Pile.
+       All four sections share one fixed height, so the battlefield gets the rest. */
     .board-grid {
+      --bottom-height: 200px;
       flex: 1; min-height: 0;
-      display: grid; gap: 8px 12px;
-      grid-template-columns: minmax(0, 1fr) auto 170px;
-      grid-template-rows: minmax(0, 1fr) auto;
-      grid-template-areas: 'battlefield battlefield side' 'hand actions side';
+      display: grid; gap: 8px;
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-rows: minmax(0, 1fr) var(--bottom-height);
+      grid-template-areas: 'battlefield battlefield battlefield battlefield' 'seat hand history discard';
     }
-    .battlefield { grid-area: battlefield; }
-    .your-hand { grid-area: hand; min-width: 0; }
-    .your-hand h3 { margin: 0; font: var(--mat-sys-title-small); }
+    /* The battlefield runs the full width of the screen: out past the page padding. */
+    .battlefield { grid-area: battlefield; margin-inline: -16px; min-height: 0; }
+    /* The seat tile is shrunk to fit the row, and stretched to the row's full height. */
+    .your-seat { --seat-zoom: 0.78; grid-area: seat; overflow: hidden; zoom: var(--seat-zoom); height: calc(var(--bottom-height) / var(--seat-zoom)); }
+    .your-seat app-seat-tile { display: block; height: 100%; }
+    .your-hand {
+      grid-area: hand; min-width: 0; overflow: hidden; box-sizing: border-box;
+      display: flex; align-items: stretch; gap: 12px; padding: 6px 10px; border-radius: 12px;
+      background: var(--mat-sys-surface-container); color: var(--mat-sys-on-surface);
+    }
+    .hand { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .your-hand h3 { margin: 0; font: var(--mat-sys-label-large); }
     .your-hand app-hand-view { display: block; }
-    .actions { grid-area: actions; align-self: center; max-width: 320px; }
-    .side { grid-area: side; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; min-height: 0; }
+    .actions { align-self: center; max-width: 320px; }
+    .history { grid-area: history; }
+    .discard { grid-area: discard; }
+    .history, .discard { box-sizing: border-box; width: 140px; min-height: 0; overflow: hidden; justify-content: center; }
     /* Phone-sized: stack, and let the page scroll. */
     @media (max-width: 767px) {
       :host:has(.board) { height: auto; }
       .board-grid {
-        grid-template-columns: minmax(0, 1fr) 150px;
-        grid-template-rows: 70vh auto auto;
-        grid-template-areas: 'battlefield battlefield' 'hand side' 'actions side';
+        --bottom-height: auto;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: 70vh auto auto auto;
+        grid-template-areas: 'battlefield battlefield' 'seat seat' 'hand hand' 'history discard';
       }
+      .your-seat { justify-self: center; height: auto; }
+      .your-seat app-seat-tile { height: auto; }
+      .your-hand { flex-direction: column; }
       .actions { max-width: none; }
+      .history, .discard { width: auto; }
     }
   `,
 })
@@ -269,6 +306,12 @@ export class GameBoard {
     return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions()) : [];
   });
 
+  protected readonly viewerSeat = computed(() => this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId()) ?? null);
+
+  protected zoneCards(zoneId: string): CardInstance[] {
+    return this.visibleState()?.zones.find((z) => z.id === zoneId)?.cards ?? [];
+  }
+
   protected readonly discardPile = computed(() => this.visibleState()?.zones.find((z) => z.kind === 'discardPile'));
 
   protected readonly actionHistory = computed(() => {
@@ -288,13 +331,6 @@ export class GameBoard {
     const seatId = this.activeSeatId();
     if (!visible || !seatId) return [];
     return visible.generalSelection?.candidates[seatId] ?? [];
-  });
-
-  // A seat has chosen once its candidate entry is gone from the selection state.
-  protected readonly selectionProgress = computed<SelectionProgress[]>(() => {
-    const visible = this.visibleState();
-    const pending = visible?.generalSelection?.candidates ?? {};
-    return (visible?.seats ?? []).map((s) => ({ seatId: s.id, name: this.nameOf(s.id), done: !Object.prototype.hasOwnProperty.call(pending, s.id) }));
   });
 
   protected readonly generalChoices = computed<ChooseGeneralsAction[]>(() =>

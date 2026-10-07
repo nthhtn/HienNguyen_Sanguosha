@@ -25,9 +25,9 @@ import { GameMode, GameService } from '../game.service';
           <ul class="how">
             <li><mat-icon>groups</mat-icon>Each seat picks two hidden Generals of one kingdom.</li>
             @if (mode() === 'vs-bots') {
-              <li><mat-icon>smart_toy</mat-icon>Bots play their own turns — you only ever see your own cards.</li>
+              <li><mat-icon>smart_toy</mat-icon>Bots play their own turns — You only ever see your own cards.</li>
             } @else {
-              <li><mat-icon>swap_horiz</mat-icon>Pass the device — every seat sees only its own cards.</li>
+              <li><mat-icon>swap_horiz</mat-icon>Pass the device — Every seat sees only its own cards.</li>
             }
             <li><mat-icon>emoji_events</mat-icon>The last kingdom standing wins.</li>
           </ul>
@@ -48,7 +48,7 @@ import { GameMode, GameService } from '../game.service';
           <p class="mode-hint">
             {{ mode() === 'vs-bots'
               ? 'You take the first seat; every other seat is a computer opponent.'
-              : 'Everyone plays on this device, passing it between turns.' }}
+              : 'Everyone plays on this device, Passing it between turns.' }}
           </p>
           <div class="field">
             <span class="label" id="seat-label">Seats</span>
@@ -81,16 +81,6 @@ import { GameMode, GameService } from '../game.service';
             }
           </div>
 
-          <mat-form-field appearance="outline" class="seed-field">
-            <mat-label>Seed</mat-label>
-            <input
-              matInput
-              class="seed"
-              type="number"
-              (input)="seed.set($any($event.target).value ? +$any($event.target).value : undefined)"
-            />
-            <mat-hint>Optional. The same seed replays the same deal.</mat-hint>
-          </mat-form-field>
         </mat-card-content>
         <mat-card-actions align="end">
           <button mat-flat-button type="button" class="start" (click)="startGame()">
@@ -129,7 +119,6 @@ import { GameMode, GameService } from '../game.service';
     .field { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
     .label { font: var(--mat-sys-title-small); min-width: 48px; }
     .names { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: 12px; }
-    .seed-field { width: 100%; }
     .mode-hint { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .mode mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; vertical-align: middle; }
     .start { padding: 0 24px; }
@@ -143,7 +132,6 @@ export class Setup {
 
   readonly mode = signal<GameMode>('vs-bots');
   readonly seatCount = signal(4);
-  readonly seed = signal<number | undefined>(undefined);
   // Typed names by seat index; blanks fall back to "Seat N".
   readonly names = signal<(string | undefined)[]>([]);
   // Vs bots asks only for the human's name (seat 0); pass-and-play asks for every seat's.
@@ -159,7 +147,7 @@ export class Setup {
 
   startGame(): void {
     const clamped = Math.min(this.maxSeats, Math.max(2, this.seatCount() || 2));
-    this.gameService.startGame(clamped, this.seed(), this.mode(), this.nameSlots().map((i) => this.names()[i] ?? ''));
+    this.gameService.startGame(clamped, undefined, this.mode(), this.nameSlots().map((i) => this.names()[i] ?? ''));
     this.router.navigateByUrl('/game');
   }
 }

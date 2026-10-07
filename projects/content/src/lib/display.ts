@@ -42,7 +42,7 @@ export function cardDisplayData(id: string): CardDisplayData | null {
 // What an optional ability does, for its ask, in the game's own terms.
 // '{target}' stands for the seat it is aimed at.
 const ABILITY_HINTS: Record<string, string> = {
-  'eight-trigrams': 'Judge: on red, it counts as a Shan',
+  'eight-trigrams': 'Judge: On red, It counts as a Shan',
   'gender-swords': "{target} discards a hand card or lets you draw 1 card",
   axe: 'Discard 2 cards to make your Sha hit {target}',
   'green-dragon-blade': 'Play another Sha at {target}',

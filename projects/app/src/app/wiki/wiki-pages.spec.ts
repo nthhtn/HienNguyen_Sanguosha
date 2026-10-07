@@ -31,10 +31,17 @@ describe('Wiki pages', () => {
     expect(el().querySelectorAll('app-wiki-general-entry')).toHaveLength(15);
   });
 
-  it('shows one tab per basic card', async () => {
+  it('lists all six basic cards together, with no tabs', async () => {
     const { el } = await open('/wiki/basic');
-    expect(tabLabels(el())).toEqual(['Sha (1)', 'Fire Attack (1)', 'Lightning Attack (1)', 'Shan (1)', 'Wine (1)', 'Peach (1)']);
-    expect(entryIds(el())).toEqual(['sha']);
+    expect(el().querySelector('mat-tab-group')).toBeNull();
+    expect(entryIds(el())).toEqual(['sha', 'fire-attack', 'lightning-attack', 'shan', 'wine', 'peach']);
+  });
+
+  it.each(['/wiki/equipment', '/wiki/tools'])('tags each card on %s with Base or its expansion pack', async (path) => {
+    const { el } = await open(path);
+    const tags = [...el().querySelectorAll('.expansion-tag')].map((t) => t.textContent!.trim());
+    expect(tags.length).toBeGreaterThan(0);
+    expect(tags.every((t) => ['Base', 'EX', 'Army'].includes(t))).toBe(true);
   });
 
   it('opens the tab named in the URL (Review Focus 1)', async () => {

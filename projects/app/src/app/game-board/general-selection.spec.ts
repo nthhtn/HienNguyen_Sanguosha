@@ -137,22 +137,8 @@ describe('GeneralSelection header', () => {
     fixture.componentRef.setInput('registry', registry);
     fixture.componentRef.setInput('seatId', 'seat-1');
     fixture.componentRef.setInput('seatName', 'Hing');
-    fixture.componentRef.setInput('progress', [
-      { seatId: 'seat-0', name: 'Seat 0', done: true },
-      { seatId: 'seat-1', name: 'Hing', done: false },
-      { seatId: 'seat-2', name: 'Seat 2', done: false },
-    ]);
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('h2')!.textContent).toBe('Hing, choose your Generals');
-    const chips = [...el.querySelectorAll('.progress mat-chip')];
-    expect(chips.map((c) => c.textContent!.trim())).toEqual([
-      expect.stringContaining('Seat 0'),
-      expect.stringContaining('Hing'),
-      expect.stringContaining('Seat 2'),
-    ]);
-    expect(chips[0].classList).toContain('done');
-    expect(chips[1].classList).toContain('current');
-    expect(el.querySelector('.progress')!.textContent).toContain('Seat 2 of 3');
+    expect(el.querySelector('h2')!.textContent).toBe('Hing, Choose your Generals');
   });
 });

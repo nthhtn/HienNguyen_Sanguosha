@@ -57,7 +57,7 @@ describe('RoundTable', () => {
   it('passes each seat the cards in its Judgment slot', () => {
     const lightning = { instanceId: 'L', definitionId: 'lightning', suit: 'spade' as const, rank: 1 };
     const zones: CardZone[] = [...state().zones, { id: 'seat-0:judgment', kind: 'judgment', ownerSeatId: 'seat-0', cards: [lightning] }];
-    const el = render(state({ zones }));
+    const el = render(state({ zones }), 'seat-2');
     expect(tile(el, 'seat-0').querySelectorAll('.judgment app-playing-card')).toHaveLength(1);
     expect(tile(el, 'seat-1').querySelectorAll('.judgment app-playing-card')).toHaveLength(0);
     expect(tile(el, 'seat-1').querySelector('.judgment .slot.empty')).not.toBeNull();
@@ -69,20 +69,19 @@ describe('RoundTable', () => {
     expect(render(state({ seats: seats(6) })).querySelector('.table')!.classList).not.toContain('crowded');
   });
 
-  it('renders one tile per seat, the viewer at the bottom', () => {
+  it('renders a tile for every seat but the viewer’s, which sits in the board corner', () => {
     const el = render(state(), 'seat-1');
-    expect(el.querySelectorAll('app-seat-tile')).toHaveLength(3);
-    const viewer = tile(el, 'seat-1');
-    expect(viewer.textContent).toContain('(you)');
-    expect(viewer.style.left).toBe('50%');
-    expect(parseFloat(viewer.style.top)).toBeGreaterThan(80);
+    expect(el.querySelectorAll('app-seat-tile')).toHaveLength(2);
+    expect(tile(el, 'seat-1')).toBeNull();
+    expect(tile(el, 'seat-0')).not.toBeNull();
   });
+
 
   it('passes hand counts, the turn owner and eliminated state to the tiles', () => {
     const el = render(state(), 'seat-0');
+    expect(tile(el, 'seat-0')).toBeNull();
     expect(tile(el, 'seat-1').querySelector('.hand-count')!.textContent).toContain('5');
     expect(tile(el, 'seat-1').querySelector('.tile')!.classList).toContain('turn-owner');
-    expect(tile(el, 'seat-0').querySelector('.tile')!.classList).not.toContain('turn-owner');
     expect(tile(el, 'seat-2').querySelector('.tile')!.classList).toContain('eliminated');
   });
 
@@ -154,7 +153,7 @@ describe('RoundTable', () => {
     const el = render(state(), 'seat-0', 'seat-1', ['seat-1', 'seat-2']);
     expect(el.querySelector('.centre .thinking')!.textContent).toContain('Seat 1 is thinking');
     expect(tile(el, 'seat-1').querySelector('.bot-icon')).not.toBeNull();
-    expect(tile(el, 'seat-0').querySelector('.bot-icon')).toBeNull();
+    expect(tile(el, 'seat-2').querySelector('.bot-icon')).not.toBeNull();
   });
 
   it('shows no thinking line when nobody is thinking', () => {
@@ -164,7 +163,7 @@ describe('RoundTable', () => {
     const named = state({ players: [{ id: 'p1', seatId: 'seat-1', kind: 'human', name: 'Hing' }] });
     const el = render(named, 'seat-0');
     expect(tile(el, 'seat-1').querySelector('.header strong')!.textContent).toBe('Hing');
-    expect(tile(el, 'seat-0').querySelector('.header strong')!.textContent).toBe('Seat 0');
+    expect(tile(el, 'seat-2').querySelector('.header strong')!.textContent).toBe('Seat 2');
   });
 
   it('passes each seat’s equipment to its tile', () => {
@@ -175,7 +174,7 @@ describe('RoundTable', () => {
         { instanceId: 'e1', definitionId: 'green-dragon-blade', suit: 'spade' as const, rank: 5 },
       ] }],
     };
-    const el = render(equipped, 'seat-0');
+    const el = render(equipped, 'seat-2');
     expect(tile(el, 'seat-0').querySelector('.equip .slot[data-slot="weapon"] app-card-art')).not.toBeNull();
   });
 });

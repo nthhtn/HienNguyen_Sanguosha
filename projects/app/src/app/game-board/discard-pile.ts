@@ -77,15 +77,15 @@ export class DiscardHistoryDialog {
       <div class="top-name">{{ name(card) }}</div>
     } @else if (history().length > 0) {
       <!-- Emptied by a reshuffle: the history is still worth a look. -->
-      <button type="button" class="pile empty" (click)="openHistory()" aria-label="Discard pile, empty. Show discard history"></button>
+      <button type="button" class="pile empty" (click)="openHistory()" aria-label="Discard pile, Empty. Show discard history"></button>
       <div class="top-name">Empty</div>
     } @else {
-      <div class="pile empty" aria-label="Discard pile, empty"></div>
+      <div class="pile empty" aria-label="Discard pile, Empty"></div>
       <div class="top-name">Empty</div>
     }
   `,
   styles: `
-    :host { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px; border-radius: 12px;
+    :host { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px; border-radius: 12px;
       background: var(--mat-sys-surface-container); color: var(--mat-sys-on-surface); }
     .label { font: var(--mat-sys-label-large); }
     .pile { position: relative; display: block; padding: 0; border: none; background: none; cursor: pointer; border-radius: 4px; }

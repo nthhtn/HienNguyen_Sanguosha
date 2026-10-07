@@ -71,7 +71,7 @@ describe('GameBoard', () => {
     expect(el.querySelectorAll('app-general-selection [data-general-id]')).toHaveLength(5);
   });
 
-  it('tells the selection view which seat is choosing and who has already chosen', () => {
+  it('tells the selection view which seat is choosing', () => {
     gameService.startGame(3, 1);
     gameService.submit(gameService.legalActions()[0]);
     gameService.reveal('seat-1');
@@ -79,9 +79,8 @@ describe('GameBoard', () => {
     fixture.detectChanges();
 
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('app-general-selection h2')!.textContent).toContain('Seat 1, choose your Generals');
-    const chips = [...el.querySelectorAll('app-general-selection .progress mat-chip')];
-    expect(chips.map((c) => c.classList.contains('done'))).toEqual([true, false, false]);
+    expect(el.querySelector('app-general-selection h2')!.textContent).toContain('Seat 1, Choose your Generals');
+    expect(el.querySelector('app-general-selection .progress')).toBeNull();
   });
 
   it('submits the chosen generals and gates the next seat', () => {
@@ -121,8 +120,9 @@ describe('GameBoard', () => {
 
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-round-table')).not.toBeNull();
-    expect(el.querySelectorAll('app-round-table app-seat-tile')).toHaveLength(3);
-    expect(el.querySelector(`app-round-table [data-seat-id="${viewer}"]`)!.textContent).toContain('(you)');
+    expect(el.querySelectorAll('app-round-table app-seat-tile')).toHaveLength(2);
+    expect(el.querySelector(`app-round-table [data-seat-id="${viewer}"]`)).toBeNull();
+    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(you)');
     const state = gameService.visibleState()!;
     const ownHand = state.zones.find((z) => z.id === state.seats.find((s) => s.id === viewer)!.hand.zoneId)!;
     expect(el.querySelectorAll('.your-hand app-hand-view .hand-card')).toHaveLength(ownHand.cards.length);
@@ -417,7 +417,7 @@ describe('GameBoard in vs-bots mode', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
-    expect(el.querySelector('app-round-table [data-seat-id="seat-0"]')!.textContent).toContain('(you)');
+    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(you)');
     expect(el.querySelector('app-round-table .thinking')!.textContent).toContain('is thinking');
     // Nothing is playable while a bot acts (Review Focus 4).
     const playButtons = [...el.querySelectorAll('app-hand-view button.play')] as HTMLButtonElement[];
