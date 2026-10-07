@@ -131,7 +131,14 @@ interface CandidateViewModel {
     </mat-card>
   `,
   styles: `
-    :host { display: block; padding-bottom: 8px; }
+    /* The whole view fits the window below the app bar: only the list of
+       Generals scrolls (sideways), and each card scrolls (down) on its own. */
+    :host {
+      display: flex; flex-direction: column; padding-bottom: 8px; box-sizing: border-box;
+      height: calc(100dvh - var(--mat-toolbar-standard-height, 64px) - 16px);
+    }
+    @media (max-width: 599px) { :host { height: calc(100dvh - var(--mat-toolbar-mobile-height, 56px) - 16px); } }
+    .intro { flex: none; }
     .intro h2 { margin: 8px 0 0; font: var(--mat-sys-headline-small); }
     .hint { color: var(--mat-sys-on-surface-variant); margin: 4px 0 8px; }
     .progress { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -139,14 +146,18 @@ interface CandidateViewModel {
     mat-chip.current { outline: 2px solid var(--mat-sys-primary); }
     mat-chip.done { opacity: 0.7; }
     .candidates {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
-      gap: 16px;
-      margin: 16px 0;
+      flex: 1; min-height: 0;
+      display: flex; align-items: stretch; gap: 16px;
+      overflow-x: auto; overflow-y: hidden;
+      /* Room for the hover lift and the selected ring. */
+      margin: 8px 0; padding: 8px 4px;
     }
     .candidate {
+      flex: 0 0 240px;
+      max-height: 100%;
+      box-sizing: border-box;
       cursor: pointer;
-      overflow: hidden;
+      overflow-x: hidden; overflow-y: auto;
       border-top: 6px solid var(--kingdom);
       transition: transform 150ms, box-shadow 150ms, opacity 150ms;
     }
@@ -164,7 +175,8 @@ interface CandidateViewModel {
       background: var(--mat-sys-primary); color: var(--mat-sys-on-primary);
       font: var(--mat-sys-label-large);
     }
-    .role-chip.deputy { background: var(--mat-sys-tertiary); color: var(--mat-sys-on-tertiary); }
+    /* Main and Deputy differ by style, not colour: no kingdom's hue. */
+    .role-chip.deputy { background: var(--mat-sys-surface); color: var(--mat-sys-primary); box-shadow: inset 0 0 0 2px var(--mat-sys-primary); }
     mat-card-header { padding-top: 12px; }
     .meta { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
@@ -174,7 +186,7 @@ interface CandidateViewModel {
     .skills { padding-left: 1.1em; margin: 4px 0 0; font: var(--mat-sys-body-small); }
     .skills li { margin-bottom: 4px; }
     .bar {
-      position: sticky; bottom: 8px; z-index: 2;
+      flex: none;
       display: flex; flex-direction: row; align-items: center; gap: 16px; flex-wrap: wrap;
       padding: 8px 16px;
     }

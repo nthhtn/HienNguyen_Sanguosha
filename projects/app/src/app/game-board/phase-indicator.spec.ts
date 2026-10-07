@@ -24,7 +24,10 @@ function render(s: GameState, viewerSeatId: string | null): string {
   fixture.componentRef.setInput('state', s);
   fixture.componentRef.setInput('viewerSeatId', viewerSeatId);
   fixture.detectChanges();
-  return (fixture.nativeElement as HTMLElement).querySelector('.phase-indicator')!.textContent!.replace(/\s+/g, ' ').trim();
+  // The turn and phase line, without the counts either side of it.
+  const bar = (fixture.nativeElement as HTMLElement).querySelector('.phase-indicator')!.cloneNode(true) as HTMLElement;
+  bar.querySelectorAll('.count').forEach((c) => c.remove());
+  return bar.textContent!.replace(/\s+/g, ' ').trim();
 }
 
 describe('PhaseIndicator', () => {
@@ -44,5 +47,21 @@ describe('PhaseIndicator', () => {
     for (const phase of ['Start', 'Judgment', 'Draw', 'End'] as const) {
       expect(render(state(phase), null)).toBe(`Seat 0 – ${phase} Phase`);
     }
+  });
+
+  it('tags the bar with the turn owner\'s force, for the name and timer colour', () => {
+    const fixture = TestBed.createComponent(PhaseIndicator);
+    fixture.componentRef.setInput('state', state('Play'));
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.phase-indicator')!.getAttribute('data-force')).toBe('Wei');
+  });
+
+  it('shows the turn number before the turn owner, and the draw pile count after the phase', () => {
+    const fixture = TestBed.createComponent(PhaseIndicator);
+    const s = state('Play');
+    fixture.componentRef.setInput('state', { ...s, zones: [...s.zones, { id: 'drawPile', kind: 'drawPile', cards: [] }] });
+    fixture.detectChanges();
+    const counts = [...(fixture.nativeElement as HTMLElement).querySelectorAll('.count')].map((c) => c.textContent!.trim());
+    expect(counts).toEqual(['Turn 2', 'Draw Pile 0']);
   });
 });

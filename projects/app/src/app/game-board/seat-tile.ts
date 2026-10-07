@@ -107,19 +107,16 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       min-width: 200px;
       text-align: center;
     }
-    /* The border is the seat's force colour; a hidden or force-less seat is yellow. */
-    .tile { --force: var(--force-none); }
-    .tile[data-force='Wei'] { --force: var(--force-wei); }
-    .tile[data-force='Shu'] { --force: var(--force-shu); }
-    .tile[data-force='Wu'] { --force: var(--force-wu); }
-    .tile[data-force='Qun'] { --force: var(--force-qun); }
+    /* The border and name are the seat's force colour (data-force, styles.scss);
+       a hidden or force-less seat is yellow. */
+    .header strong { color: var(--force-text); }
     /* Highlights add to the force colour rather than replacing it. */
     .tile.turn-owner { border-width: 4px; padding: 6px 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--force) 40%, transparent), 0 2px 6px rgb(0 0 0 / 25%); }
     .tile.responding { box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgb(230 81 0 / 70%); }
     /* Faded, but the status line keeps its force colour. */
     .tile.eliminated > :not(.status) { opacity: 0.45; filter: grayscale(1); }
     .bot-icon { font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-left: 3px; color: #666; }
-    .you { margin-left: 4px; color: #1565c0; }
+    .you { margin-left: 4px; color: var(--mat-sys-primary); }
     .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; min-height: 96px; align-items: center; }
     .choosing { font-style: italic; color: #666; }
     .stats { display: flex; gap: 6px; justify-content: center; align-items: center; white-space: nowrap; }
@@ -133,7 +130,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .equip { display: grid; grid-template-columns: repeat(4, 44px); gap: 5px; justify-content: center; margin-top: 4px; }
     .slot { width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
     .slot-card { padding: 0; border: none; background: none; cursor: pointer; display: block; }
-    .slot-card:focus-visible { outline: 2px solid #1565c0; outline-offset: -2px; }
+    .slot-card:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: -2px; }
     .judgment { display: flex; gap: 5px; justify-content: center; margin-top: 4px; }
     .slot.empty mat-icon { font-size: 22px; width: 22px; height: 22px; color: #b9a37a; }
   `,

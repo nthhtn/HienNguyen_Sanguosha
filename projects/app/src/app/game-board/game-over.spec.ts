@@ -19,6 +19,8 @@ describe('GameOver', () => {
     expect(text).toContain('Seat 0');
     expect(text).toContain('Seat 2');
     expect(text).toContain('Seat 1');
+    // The headline takes Wei's force colour.
+    expect((fixture.nativeElement as HTMLElement).querySelector('.headline')!.getAttribute('data-force')).toBe('Wei');
 
     const newGameSpy = jest.fn();
     fixture.componentInstance.newGame.subscribe(newGameSpy);

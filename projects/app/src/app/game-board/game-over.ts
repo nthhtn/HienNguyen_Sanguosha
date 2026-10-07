@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { GameResult, Player } from 'engine';
-import { kingdomDisplayName, seatName } from '../labels';
+import { forceOf, kingdomDisplayName, seatName } from '../labels';
 
 @Component({
   selector: 'app-game-over',
@@ -14,7 +14,7 @@ import { kingdomDisplayName, seatName } from '../labels';
         <mat-icon class="big-icon">emoji_events</mat-icon>
         <h2>Game Over</h2>
         @if (result().winningKingdom) {
-          <p class="headline">{{ kingdomDisplayName(result().winningKingdom!) }} wins!</p>
+          <p class="headline" [attr.data-force]="forceOf(result().winningKingdom)">{{ kingdomDisplayName(result().winningKingdom!) }} wins!</p>
         } @else if (result().winningSeatIds.length > 0) {
           <p class="headline">{{ names(result().winningSeatIds) }} wins!</p>
         } @else {
@@ -34,6 +34,8 @@ import { kingdomDisplayName, seatName } from '../labels';
     .big-icon { font-size: 48px; width: 48px; height: 48px; color: var(--mat-sys-primary); }
     h2 { margin: 8px 0 0; font: var(--mat-sys-headline-small); }
     .headline { font: var(--mat-sys-title-large); color: var(--mat-sys-primary); }
+    /* "Wei wins!" in Wei's force colour, and so on. */
+    .headline[data-force] { color: var(--force-text); font-weight: 600; }
     p { margin: 2px 0; }
     button { margin-top: 16px; }
   `,
@@ -48,4 +50,5 @@ export class GameOver {
   }
 
   protected readonly kingdomDisplayName = kingdomDisplayName;
+  protected readonly forceOf = forceOf;
 }

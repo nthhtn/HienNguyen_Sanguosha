@@ -83,7 +83,7 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance): AvatarHalf {
     }
     .half + .half { border-left: 1px solid rgb(0 0 0 / 35%); }
     .half:disabled { cursor: default; }
-    .half:focus-visible { outline: 2px solid #1565c0; outline-offset: -2px; }
+    .half:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: -2px; }
     img, .placeholder { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
     .placeholder { background: #e0d8c6; }
     .own-hidden img { filter: brightness(0.6) saturate(0.6); }

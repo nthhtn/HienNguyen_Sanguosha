@@ -5,8 +5,11 @@ import { Force, cardFaceLabel, cardIdDisplayName, forceOf, seatName, targetLabel
 export type ActionHistoryEntry =
   | { kind: 'turn'; turnNumber: number; seatName: string }
   // `force` is set on a line about a player's status (HP lost or recovered,
-  // dying, saved, eliminated): that player's force colour.
-  | { kind: 'action'; text: string; card: CardInstance | null; force?: Force };
+  // dying, saved, eliminated): that player's force colour. `starts` marks the
+  // first line of an action sequence (latestSequence).
+  | { kind: 'action'; text: string; card: CardInstance | null; force?: Force; starts?: true };
+
+export type ActionLine = Extract<ActionHistoryEntry, { kind: 'action' }>;
 
 function cardName(definitionId: string): string {
   return cardDisplayData(definitionId)?.name ?? cardIdDisplayName(definitionId);
@@ -56,18 +59,29 @@ export function actionHistory(
     return `${chooser} ${made.verb === 'take' ? 'took' : 'discarded'} ${whose}${tool}`;
   };
   const entries: ActionHistoryEntry[] = [];
+  // A sequence starts with a phase's first line, or a card used on its user's
+  // own initiative (not as an answer).
+  let phaseStarted = false;
+  let initiative = false;
+  const line = (entry: ActionLine) => {
+    if (phaseStarted || initiative) entry.starts = true;
+    phaseStarted = initiative = false;
+    entries.push(entry);
+  };
   const forceOfSeat = (seatId: string) => forceOf(seats.find((s) => s.id === seatId)?.kingdom);
-  const status = (seatId: string, text: string) => entries.push({ kind: 'action', text, card: null, force: forceOfSeat(seatId) });
+  const status = (seatId: string, text: string) => line({ kind: 'action', text, card: null, force: forceOfSeat(seatId) });
   let sawTurn = false;
-  const action = (text: string, card: CardInstance | null = null) => entries.push({ kind: 'action', text, card });
+  const action = (text: string, card: CardInstance | null = null) => line({ kind: 'action', text, card });
 
   for (const event of log) {
     switch (event.kind) {
       case 'TurnAdvancedEvent':
         sawTurn = true;
+        phaseStarted = true;
         entries.push({ kind: 'turn', turnNumber: event.turnNumber, seatName: name(event.seatId) });
         break;
       case 'PhaseChangedEvent':
+        phaseStarted = true;
         // Turn 1 starts without a TurnAdvancedEvent.
         if (!sawTurn) {
           sawTurn = true;
@@ -82,6 +96,7 @@ export function actionHistory(
         }
         const face = faceOf(used);
         const answered = event.inResponseTo;
+        if (!answered) initiative = true;
         if (answered?.dyingSeatId) {
           const saved = answered.dyingSeatId === event.seatId ? 'themselves' : name(answered.dyingSeatId);
           action(`${name(event.seatId)} used ${usedLabel(used)} to save ${saved}`, face);
@@ -208,4 +223,17 @@ export function actionHistory(
     }
   }
   return entries.reverse();
+}
+
+// The latest action sequence, oldest first: the line that started it and every
+// line since (responses, damage, dying, rescues, picks). Turn markers are skipped,
+// so it stays on screen until the next sequence starts.
+export function latestSequence(history: ActionHistoryEntry[]): ActionLine[] {
+  const lines: ActionLine[] = [];
+  for (const entry of history) {
+    if (entry.kind !== 'action') continue;
+    lines.push(entry);
+    if (entry.starts) break;
+  }
+  return lines.reverse();
 }

@@ -1,34 +1,34 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, DestroyRef, ElementRef, computed, inject, input, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GameState } from 'engine';
-import { actionHistory } from './action-history';
+import { actionHistory, latestSequence } from './action-history';
 import { waitingLine } from './response-description';
 import { seatName } from '../labels';
 import { SeatTile } from './seat-tile';
 import { PlayingCard } from './playing-card';
-import { seatPlacements } from './table-layout';
+import { fitTable, seatPlacements } from './table-layout';
 
-const RECENT_LOG_LINES = 3;
+// The table's size before it is first measured (and in tests).
+const DEFAULT_SIZE = { width: 1280, height: 640 };
 
-// The seats arranged around a rounded rectangular table, seen from the viewer's chair.
-// The discard pile sits beside the table (discard-pile.ts), not on it.
+// The battlefield: the seats around its rim, seen from the viewer's chair, and
+// the latest action sequence in its centre. The discard pile and the action
+// history sit beside it (discard-pile.ts, action-history-panel.ts).
 // Presentational: everything shown is read straight off the (redacted) state.
 @Component({
   selector: 'app-round-table',
   imports: [SeatTile, PlayingCard, MatProgressSpinnerModule],
   template: `
     <div class="table" [class.crowded]="state().seats.length > 6">
-      <div class="felt"></div>
-      <div class="centre">
-        <div class="turn">Turn {{ state().turn.turnNumber }}</div>
-        <div>{{ name(state().turn.ownerSeatId) }}'s turn</div>
-        @if (waiting(); as line) {
-          <div class="waiting">{{ line }}</div>
+      <!-- Only the latest action sequence: its cards and its lines. -->
+      <div class="centre" [style.width.px]="fit().centreWidth" [style.max-height.px]="fit().centreHeight">
+        @if (sequenceCards().length > 0) {
+          <div class="sequence-cards" aria-label="Cards in Play">
+            @for (card of sequenceCards(); track card.instanceId) {
+              <app-playing-card [card]="card" />
+            }
+          </div>
         }
-        @if (thinkingSeatId(); as thinking) {
-          <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ name(thinking) }} is thinking…</div>
-        }
-        <div class="piles">Draw Pile {{ drawPileCount() }}</div>
         @if (turnedUp().length > 0) {
           <div class="turned-up" aria-label="Turned Up Cards">
             @for (card of turnedUp(); track card.instanceId) {
@@ -36,14 +36,20 @@ const RECENT_LOG_LINES = 3;
             }
           </div>
         }
-        <ul class="recent">
-          @for (line of recentLog(); track $index) {
+        <ul class="sequence">
+          @for (line of sequence(); track $index) {
             <li><span [class.force-status]="!!line.force" [attr.data-force]="line.force ?? null">{{ line.text }}</span></li>
           }
         </ul>
+        @if (waiting(); as line) {
+          <div class="waiting">{{ line }}</div>
+        }
+        @if (thinkingSeatId(); as thinking) {
+          <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ name(thinking) }} is thinking…</div>
+        }
       </div>
       @for (p of placements(); track p.seat.id) {
-        <div class="seat" [attr.data-seat-id]="p.seat.id" [style.left.%]="p.x" [style.top.%]="p.y">
+        <div class="seat" [attr.data-seat-id]="p.seat.id" [style.left.%]="p.x" [style.top.%]="p.y" [style.--scale]="fit().scale">
           <app-seat-tile
             [seat]="p.seat"
             [name]="name(p.seat.id)"
@@ -60,65 +66,41 @@ const RECENT_LOG_LINES = 3;
     </div>
   `,
   styles: `
-    /* The table sizes itself from the room it actually has (beside the side
-       panel or not), not from the viewport. */
-    :host { display: block; container-type: inline-size; }
+    /* The battlefield fills the room the board gives it; tiles are scaled and
+       placed to fit it (fitTable in table-layout.ts). */
+    :host { display: block; height: 100%; min-height: 0; }
     .table {
       position: relative;
       width: 100%;
-      max-width: 1280px;
-      /* Room for half a seat tile above the top rim and below the bottom rim. */
-      margin: 130px auto 120px;
-      aspect-ratio: 16 / 10;
-    }
-    .felt {
-      position: absolute;
-      /* Rounded rectangle whose edges run through the seat rim (table-layout.ts). */
-      inset: 12% 8%;
-      border-radius: 36px;
-      background: radial-gradient(ellipse at center, #3f7d4e 0%, #2b5c38 70%, #234a2e 100%);
-      border: 10px solid #7a5230;
-      box-shadow: inset 0 0 30px rgb(0 0 0 / 45%), 0 6px 18px rgb(0 0 0 / 30%);
+      height: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      background: radial-gradient(ellipse at center, #8b7559 0%, #6d5a43 55%, #4b3e2f 100%);
+      box-shadow: inset 0 0 40px rgb(0 0 0 / 45%);
     }
     .centre {
       position: absolute;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 42%;
-      color: #f4f1e8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      overflow: auto;
+      color: #f4ecdc;
       text-align: center;
       font-size: 1.05em;
+      text-shadow: 0 1px 2px rgb(0 0 0 / 50%);
     }
-    .turn { font-size: 1.25em; font-weight: bold; }
-    .turned-up { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 4px; }
+    .sequence-cards, .turned-up { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
     .waiting { color: #ffcc80; font-weight: bold; }
-    .thinking { display: flex; align-items: center; justify-content: center; gap: 6px; color: #b1c5ff; --mdc-circular-progress-active-indicator-color: #b1c5ff; --mat-progress-spinner-active-indicator-color: #b1c5ff; }
-    .recent { list-style: none; padding: 0; margin: 6px 0 0; opacity: 0.85; font-size: 0.9em; }
-    /* Status lines in the player's force colour, on a light chip to read on the felt. */
-    .recent .force-status { padding: 0 6px; border-radius: 6px; background: rgb(255 255 255 / 92%); }
-    .seat { position: absolute; transform: translate(-50%, -50%) scale(var(--crowd, 1)); }
-    /* Seat tiles are sized for a full-width table; scale them down in steps as
-       the table's container narrows, so rim seats stay on screen and clear of
-       the centre. Each step is the old viewport step minus the page's 32px of
-       side padding, so the layout without the side panel is unchanged. */
-    @container (max-width: 1247px) { .seat { transform: translate(-50%, -50%) scale(calc(0.8 * var(--crowd, 1))); } }
-    @container (max-width: 991px) { .seat { transform: translate(-50%, -50%) scale(calc(0.66 * var(--crowd, 1))); } .table { margin: 100px auto 90px; } }
-    @container (max-width: 867px) { .seat { transform: translate(-50%, -50%) scale(calc(0.58 * var(--crowd, 1))); } .centre { width: 38%; } }
-    @container (max-width: 767px) { .seat { transform: translate(-50%, -50%) scale(calc(0.5 * var(--crowd, 1))); } .table { margin: 80px auto 70px; } }
-    @container (max-width: 667px) { .seat { transform: translate(-50%, -50%) scale(calc(0.44 * var(--crowd, 1))); } .centre { width: 32%; } }
-    /* More than six seats crowd the rim: shrink every tile further. The factor
-       multiplies into each step's own scale, after the centring translate, so
-       tiles stay centred on their rim points. */
-    .table.crowded { --crowd: 0.75; }
-    @container (max-width: 568px) {
-      /* Narrower than its container so rim seats (at 8% / 92%) stay on screen. */
-      .table { aspect-ratio: 1; width: 80%; margin: 64px auto 56px; }
-      .felt { inset: 12% 8%; border-radius: 24px; }
-      .centre { width: 34%; font-size: 0.62em; }
-      .seat { transform: translate(-50%, -50%) scale(calc(0.4 * var(--crowd, 1))); }
-      .table.crowded { --crowd: 0.7; }
-    }
+    .thinking { display: flex; align-items: center; justify-content: center; gap: 6px; font-style: italic; color: #e8dcc6; --mdc-circular-progress-active-indicator-color: #e8dcc6; --mat-progress-spinner-active-indicator-color: #e8dcc6; }
+    .sequence { list-style: none; padding: 0; margin: 0; font-size: 0.9em; }
+    /* Status lines in the player's force colour, on a light chip to read on the battlefield. */
+    .sequence .force-status { padding: 0 6px; border-radius: 6px; background: rgb(255 255 255 / 92%); text-shadow: none; }
+    .seat { position: absolute; transform: translate(-50%, -50%) scale(var(--scale, 1)); }
   `,
 })
 export class RoundTable {
@@ -129,15 +111,36 @@ export class RoundTable {
 
   protected readonly waiting = computed(() => waitingLine(this.state()));
   protected readonly turnedUp = computed(() => this.state().zones.find((z) => z.kind === 'processing')?.cards ?? []);
-  protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId()));
 
-  // The latest few actions, oldest first, in the action history's wording.
-  protected readonly recentLog = computed(() =>
-    actionHistory(this.state().log, this.state().zones, this.state().players, this.state().seats)
-      .flatMap((e) => (e.kind === 'action' ? [e] : []))
-      .slice(0, RECENT_LOG_LINES)
-      .reverse()
+  // The battlefield's measured size, in px.
+  private readonly size = signal(DEFAULT_SIZE);
+  protected readonly fit = computed(() => fitTable(this.size().width, this.size().height, this.state().seats.length));
+  protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId(), this.fit()));
+
+  // The latest action sequence, oldest first, in the action history's wording.
+  protected readonly sequence = computed(() =>
+    latestSequence(actionHistory(this.state().log, this.state().zones, this.state().players, this.state().seats))
   );
+  // Its cards, each once; turned-up cards show in their own row.
+  protected readonly sequenceCards = computed(() => {
+    const shown = new Set(this.turnedUp().map((c) => c.instanceId));
+    return this.sequence().flatMap((line) => {
+      if (!line.card || shown.has(line.card.instanceId)) return [];
+      shown.add(line.card.instanceId);
+      return [line.card];
+    });
+  });
+
+  constructor() {
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) this.size.set({ width, height });
+    });
+    observer.observe(host);
+    inject(DestroyRef).onDestroy(() => observer.disconnect());
+  }
 
   protected name(seatId: string): string {
     return seatName(this.state().players, seatId);
@@ -153,9 +156,5 @@ export class RoundTable {
 
   protected handCount(zoneId: string): number {
     return this.state().zones.find((z) => z.id === zoneId)?.cards.length ?? 0;
-  }
-
-  protected drawPileCount(): number {
-    return this.state().zones.find((z) => z.kind === 'drawPile')?.cards.length ?? 0;
   }
 }

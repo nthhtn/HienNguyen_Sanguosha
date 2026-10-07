@@ -1,9 +1,12 @@
 @use '@angular/material' as mat;
 @use './theme-colors' as theme;
 
-// Material 3 theme generated from Wei's kingdom colour (#3f6fd8), with Shu red
-// as the tertiary accent. Regenerate _theme-colors.scss with
-// `ng generate @angular/material:theme-color` to change it.
+// Material 3 theme for everything that is not about a kingdom: "ink and
+// parchment". It has no hue of its own, so the force colours (below) are the
+// only colours on screen. Palettes generated from ink (#3b332c), a softer ink
+// (#6b6058) and a warm neutral (#7d756b); regenerate _theme-colors.scss with
+// `ng generate @angular/material:theme-color` to change them. The overrides
+// pin the primary to the ink itself and the page to parchment.
 html {
   color-scheme: light;
   @include mat.theme(
@@ -14,6 +17,13 @@ html {
       ),
       typography: Roboto,
       density: 0,
+    )
+  );
+  @include mat.theme-overrides(
+    (
+      primary: #3b332c,
+      on-primary: #ffffff,
+      surface: #f7f1e6,
     )
   );
 }
@@ -40,10 +50,15 @@ body {
   --force-none-text: #a87b00;
 }
 
+// Anything tagged with a player's force (data-force="Wei" | … | "none") gets
+// --force for borders, bars and fills, and --force-text for text on a light
+// background.
+[data-force] { --force: var(--force-none); --force-text: var(--force-none-text); }
+[data-force='Wei'] { --force: var(--force-wei); --force-text: var(--force-wei); }
+[data-force='Shu'] { --force: var(--force-shu); --force-text: var(--force-shu); }
+[data-force='Wu'] { --force: var(--force-wu); --force-text: var(--force-wu); }
+[data-force='Qun'] { --force: var(--force-qun); --force-text: var(--force-qun); }
+
 // Text about a player's status (HP lost, dying, eliminated…), in that player's
 // force colour: <span class="force-status" data-force="Wei">…</span>.
-.force-status { font-weight: 600; color: var(--force-none-text); }
-.force-status[data-force='Wei'] { color: var(--force-wei); }
-.force-status[data-force='Shu'] { color: var(--force-shu); }
-.force-status[data-force='Wu'] { color: var(--force-wu); }
-.force-status[data-force='Qun'] { color: var(--force-qun); }
+.force-status { font-weight: 600; color: var(--force-text, var(--force-none-text)); }

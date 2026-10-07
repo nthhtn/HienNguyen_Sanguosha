@@ -433,7 +433,7 @@ describe('GameBoard in vs-bots mode', () => {
     const indicator = (fixture.nativeElement as HTMLElement).querySelector('app-phase-indicator')!;
     const timer = indicator.querySelector('app-decision-countdown')!;
     const label = indicator.textContent!.replace(timer.textContent!, '').replace(/\s+/g, ' ').trim();
-    expect(label).toBe('Seat 0 (you) – Play Phase');
+    expect(label).toMatch(/^Turn 1 Seat 0 \(you\) – Play Phase Draw Pile \d+$/);
     // Your own Play phase is timed: 300 seconds for the whole phase.
     expect(timer.textContent).toContain('300s');
   });

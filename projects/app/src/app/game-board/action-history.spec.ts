@@ -1,5 +1,5 @@
 import { CardInstance, CardZone, EngineEvent, usedCardFrom, usedCardOf } from 'engine';
-import { actionHistory } from './action-history';
+import { actionHistory, latestSequence } from './action-history';
 
 const zones: CardZone[] = [
   { id: 'drawPile', kind: 'drawPile', cards: [] },
@@ -229,8 +229,73 @@ describe('actionHistory', () => {
     ], zones);
     expect(entries).toEqual([
       { kind: 'action', text: 'Seat 1 was eliminated', card: null, force: 'none' },
-      { kind: 'action', text: 'Seat 0 used Sha (7 ♠) on Seat 1', card: sha },
+      { kind: 'action', text: 'Seat 0 used Sha (7 ♠) on Seat 1', card: sha, starts: true },
     ]);
+  });
+});
+
+describe('latestSequence', () => {
+  const sequence = (log: EngineEvent[]) => latestSequence(actionHistory(log, zones)).map((e) => e.text);
+  const phase = (phase: 'Judgment' | 'Draw' | 'Play' | 'Discard', seatId = 'seat-0'): EngineEvent => ({ kind: 'PhaseChangedEvent', seatId, phase });
+
+  it('is empty before anything has happened', () => {
+    expect(sequence([])).toEqual([]);
+    expect(sequence([phase('Play')])).toEqual([]);
+  });
+
+  it('is the latest card played on its user\'s own initiative, and everything that answered or followed it, oldest first', () => {
+    const log: EngineEvent[] = [
+      phase('Play'),
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(duel), targets: [seat('seat-1')] },
+      { kind: 'DamageDealtEvent', damage: { source: seat('seat-0'), target: seat('seat-1'), amount: 1, nature: 'normal' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(shan), targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'sha-1' } },
+    ];
+    expect(sequence(log)).toEqual(['Seat 0 used Sha (7 ♠) on Seat 1', "Seat 1 used Shan (2 ♥) against Seat 0's Sha"]);
+  });
+
+  it('keeps a dying seat\'s rescue in the sequence that brought it down', () => {
+    const log: EngineEvent[] = [
+      phase('Play'),
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
+      { kind: 'DamageDealtEvent', damage: { source: seat('seat-0'), target: seat('seat-1'), amount: 1, nature: 'normal' } },
+      { kind: 'SeatDyingEvent', seatId: 'seat-1' },
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(peach), targets: [], inResponseTo: { dyingSeatId: 'seat-1' } },
+      { kind: 'SeatSavedEvent', seatId: 'seat-1' },
+    ];
+    expect(sequence(log)).toEqual([
+      'Seat 0 used Sha (7 ♠) on Seat 1',
+      'Seat 1 took 1 damage from Seat 0',
+      'Seat 1 is dying',
+      'Seat 1 used Peach (Q ♥) to save themselves',
+      'Seat 1 was saved',
+    ]);
+  });
+
+  it('starts afresh with each phase: a Draw Phase draw, a Discard Phase\'s discards', () => {
+    const drawn: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
+      phase('Draw'),
+      { kind: 'CardsDrawnEvent', seatId: 'seat-0', cardInstanceIds: ['a', 'b'] },
+    ];
+    expect(sequence(drawn)).toEqual(['Seat 0 drew 2 cards']);
+    const discarded: EngineEvent[] = [
+      ...drawn,
+      phase('Discard'),
+      move(duel, 'seat-0:hand', 'discardPile'),
+      move(shan, 'seat-0:hand', 'discardPile'),
+    ];
+    expect(sequence(discarded)).toEqual(['Seat 0 discarded Duel (A ♠)', 'Seat 0 discarded Shan (2 ♥)']);
+  });
+
+  it('keeps showing the latest sequence until the next one starts', () => {
+    const log: EngineEvent[] = [
+      phase('Play'),
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
+      phase('Discard'),
+      { kind: 'TurnAdvancedEvent', seatId: 'seat-1', turnNumber: 2 },
+    ];
+    expect(sequence(log)).toEqual(['Seat 0 used Sha (7 ♠) on Seat 1']);
   });
 });
 

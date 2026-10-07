@@ -110,8 +110,8 @@ import { GameMode, GameService } from '../game.service';
       padding: 24px 16px;
       box-sizing: border-box;
       background:
-        radial-gradient(circle at 20% 20%, rgb(216 74 63 / 12%), transparent 45%),
-        radial-gradient(circle at 80% 80%, rgb(63 111 216 / 12%), transparent 45%),
+        radial-gradient(circle at 20% 20%, rgb(59 51 44 / 8%), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgb(59 51 44 / 8%), transparent 45%),
         var(--mat-sys-surface-container-low);
     }
     .hero { width: min(100%, 520px); overflow: hidden; }

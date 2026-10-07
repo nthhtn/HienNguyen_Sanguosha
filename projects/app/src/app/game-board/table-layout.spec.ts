@@ -1,4 +1,4 @@
-import { seatPlacements, TABLE_RADIUS_X, TABLE_RADIUS_Y } from './table-layout';
+import { fitTable, seatPlacements, TABLE_RADIUS_X, TABLE_RADIUS_Y, TILE_HEIGHT, TILE_WIDTH } from './table-layout';
 
 const seats = (n: number) => Array.from({ length: n }, (_, index) => ({ id: `seat-${index}`, index }));
 
@@ -57,5 +57,63 @@ describe('seatPlacements', () => {
 
   it('throws for a viewer who is not at the table', () => {
     expect(() => seatPlacements(seats(3), 'seat-9')).toThrow(/seat-9/);
+  });
+});
+
+describe('fitTable', () => {
+  // Every tile's box, in px, for a table of this size.
+  const boxes = (width: number, height: number, n: number) => {
+    const fit = fitTable(width, height, n);
+    return seatPlacements(seats(n), 'seat-0', fit).map((p) => {
+      const w = TILE_WIDTH * fit.scale;
+      const h = TILE_HEIGHT * fit.scale;
+      const x = (p.x / 100) * width;
+      const y = (p.y / 100) * height;
+      return { left: x - w / 2, right: x + w / 2, top: y - h / 2, bottom: y + h / 2 };
+    });
+  };
+
+  it('keeps tiles full size on a table with room to spare', () => {
+    expect(fitTable(2400, 1400, 4).scale).toBe(1);
+  });
+
+  it('shrinks tiles on a short table, and further for a crowded one', () => {
+    const roomy = fitTable(1200, 560, 5).scale;
+    expect(roomy).toBeLessThan(1);
+    expect(fitTable(1200, 560, 8).scale).toBeLessThanOrEqual(roomy);
+  });
+
+  it.each([
+    [1280, 520, 8],
+    [1000, 480, 6],
+    [1600, 700, 4],
+    [900, 600, 8],
+    [600, 500, 4],
+  ])('keeps every tile inside a %ix%i table with %i seats, clear of the others', (width, height, n) => {
+    const all = boxes(width, height, n);
+    for (const box of all) {
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.top).toBeGreaterThanOrEqual(0);
+      expect(box.right).toBeLessThanOrEqual(width);
+      expect(box.bottom).toBeLessThanOrEqual(height);
+      for (const other of all) {
+        if (other === box) continue;
+        const apart = box.right <= other.left || other.right <= box.left || box.bottom <= other.top || other.bottom <= box.top;
+        expect(apart).toBe(true);
+      }
+    }
+  });
+
+  it('falls back to the smallest scale when nothing fits', () => {
+    expect(fitTable(300, 200, 8).scale).toBe(0.25);
+  });
+
+  it('leaves room in the centre between the top and bottom tiles, and the side ones', () => {
+    const fit = fitTable(1280, 520, 8);
+    expect(fit.centreHeight).toBeGreaterThanOrEqual(130);
+    expect(fit.centreWidth).toBeGreaterThanOrEqual(240);
+    const [viewer, , right, , top, , left] = boxes(1280, 520, 8);
+    expect(viewer.top - top.bottom).toBeGreaterThanOrEqual(fit.centreHeight);
+    expect(right.left - left.right).toBeGreaterThanOrEqual(fit.centreWidth);
   });
 });

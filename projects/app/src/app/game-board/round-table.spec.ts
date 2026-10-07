@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { CardZone, EngineEvent, GameState, Seat } from 'engine';
+import { CardZone, EngineEvent, GameState, Seat, usedCardOf } from 'engine';
 import { RoundTable } from './round-table';
 
 function seat(id: string, index: number, eliminated = false): Seat {
@@ -86,18 +86,31 @@ describe('RoundTable', () => {
     expect(tile(el, 'seat-2').querySelector('.tile')!.classList).toContain('eliminated');
   });
 
-  it('shows the turn number, turn owner and draw pile count in the centre (the discard pile sits beside the table)', () => {
+  it('keeps the turn number and draw pile count out of the centre (they are in the turn bar)', () => {
     const centre = render(state()).querySelector('.centre')!.textContent!;
-    expect(centre).toContain('Turn 3');
-    expect(centre).not.toContain('· Play');
-    expect(centre).toContain("Seat 1's turn");
-    expect(centre).toContain('Draw Pile 9');
-    expect(centre).not.toContain('Discard');
+    expect(centre).not.toContain('Turn 3');
+    expect(centre).not.toContain('Draw Pile');
   });
 
-  it('shows the last three actions in the centre, newest last, in the action history’s wording', () => {
-    const lines = [...render(state()).querySelectorAll('.centre .recent li')].map((li) => li.textContent!.trim());
-    expect(lines).toEqual(['Seat 2 was eliminated', 'Seat 1 drew 2 cards', 'Seat 1 revealed their Main General']);
+  it('shows only the latest action sequence in the centre, oldest first, in the action history\'s wording', () => {
+    const lines = [...render(state()).querySelectorAll('.centre .sequence li')].map((li) => li.textContent!.trim());
+    expect(lines).toEqual(['Seat 1 revealed their Main General']);
+  });
+
+  it('shows the cards of the latest sequence in the centre', () => {
+    const sha = { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
+    const shan = { instanceId: 'shan-1', definitionId: 'shan', suit: 'heart' as const, rank: 2 };
+    const log: EngineEvent[] = [
+      ...state().log,
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [{ kind: 'seat', seatId: 'seat-0' }] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(shan), targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'sha-1' } },
+    ];
+    const el = render(state({ log }));
+    expect([...el.querySelectorAll('.centre .sequence li')].map((li) => li.textContent!.trim())).toEqual([
+      'Seat 1 used Sha (7 ♠) on Seat 0',
+      "Seat 0 used Shan (2 ♥) against Seat 1's Sha",
+    ]);
+    expect(el.querySelectorAll('.centre .sequence-cards app-playing-card')).toHaveLength(2);
   });
 
   it('marks the responding seat and says who the table is waiting on', () => {
@@ -152,7 +165,6 @@ describe('RoundTable', () => {
     const el = render(named, 'seat-0');
     expect(tile(el, 'seat-1').querySelector('.header strong')!.textContent).toBe('Hing');
     expect(tile(el, 'seat-0').querySelector('.header strong')!.textContent).toBe('Seat 0');
-    expect(el.querySelector('.centre')!.textContent).toContain("Hing's turn");
   });
 
   it('passes each seat’s equipment to its tile', () => {

@@ -70,30 +70,34 @@ import { DecisionTimer } from '../decision-timer.service';
               (chosen)="submit($event)"
             />
           } @else {
-            <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
-            <div class="table-row">
-              <app-round-table [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="gameService.botThinkingSeatId()" [botSeatIds]="gameService.botSeatIds()" />
-              <aside class="side">
-                <app-discard-pile [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
-                <app-action-history [history]="actionHistory()" />
-              </aside>
+            <div class="board">
+              <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
+              <div class="board-grid">
+                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="gameService.botThinkingSeatId()" [botSeatIds]="gameService.botSeatIds()" />
+                <section class="your-hand">
+                  <h3>Your Hand</h3>
+                  <app-hand-view
+                    [cards]="ownHand()"
+                    [actions]="gameService.legalActions()"
+                    [state]="visible"
+                    [registry]="gameService.registry"
+                    (play)="submit($event)"
+                  />
+                </section>
+                <app-action-list
+                  class="actions"
+                  [actions]="gameService.legalActions()"
+                  [state]="visible"
+                  [registry]="gameService.registry"
+                  (actionChosen)="submit($event)"
+                />
+                <!-- Bottom right: the action history, and the discard pile under it. -->
+                <aside class="side">
+                  <app-action-history [history]="actionHistory()" />
+                  <app-discard-pile [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                </aside>
+              </div>
             </div>
-            <section class="your-hand">
-              <h3>Your Hand</h3>
-              <app-hand-view
-                [cards]="ownHand()"
-                [actions]="gameService.legalActions()"
-                [state]="visible"
-                [registry]="gameService.registry"
-                (play)="submit($event)"
-              />
-            </section>
-            <app-action-list
-              [actions]="gameService.legalActions()"
-              [state]="visible"
-              [registry]="gameService.registry"
-              (actionChosen)="submit($event)"
-            />
           }
         }
       }
@@ -109,18 +113,37 @@ import { DecisionTimer } from '../decision-timer.service';
     }
     .error-banner .message { flex: 1; }
     .bots-choosing { display: flex; align-items: center; gap: 16px; padding: 24px; margin: 24px auto; max-width: 420px; }
-    /* The discard pile and the action history get their own column off the
-       table, to its right; on narrow screens they drop below, side by side. */
-    .table-row { display: flex; align-items: center; gap: 16px; }
-    .table-row app-round-table { flex: 1; min-width: 0; }
-    .side { flex: none; width: 150px; display: flex; flex-direction: column; gap: 12px; }
-    @media (max-width: 600px) {
-      .table-row { flex-direction: column; align-items: stretch; gap: 0; }
-      .side { width: auto; flex-direction: row; justify-content: center; align-items: flex-start; }
-      .side > * { flex: 0 1 150px; }
+    /* The game board fits the window below the app bar: no page scroll. The
+       battlefield takes the room the hand row and the side column leave. */
+    :host:has(.board) {
+      display: flex; flex-direction: column;
+      height: calc(100dvh - var(--mat-toolbar-standard-height, 64px) - 16px);
     }
-    .your-hand { margin: 8px 0; }
-    .your-hand h3 { margin: 0 0 4px; }
+    @media (max-width: 599px) { :host:has(.board) { height: calc(100dvh - var(--mat-toolbar-mobile-height, 56px) - 16px); } }
+    .board { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .board-grid {
+      flex: 1; min-height: 0;
+      display: grid; gap: 8px 12px;
+      grid-template-columns: minmax(0, 1fr) auto 170px;
+      grid-template-rows: minmax(0, 1fr) auto;
+      grid-template-areas: 'battlefield battlefield side' 'hand actions side';
+    }
+    .battlefield { grid-area: battlefield; }
+    .your-hand { grid-area: hand; min-width: 0; }
+    .your-hand h3 { margin: 0; font: var(--mat-sys-title-small); }
+    .your-hand app-hand-view { display: block; }
+    .actions { grid-area: actions; align-self: center; max-width: 320px; }
+    .side { grid-area: side; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; min-height: 0; }
+    /* Phone-sized: stack, and let the page scroll. */
+    @media (max-width: 767px) {
+      :host:has(.board) { height: auto; }
+      .board-grid {
+        grid-template-columns: minmax(0, 1fr) 150px;
+        grid-template-rows: 70vh auto auto;
+        grid-template-areas: 'battlefield battlefield' 'hand side' 'actions side';
+      }
+      .actions { max-width: none; }
+    }
   `,
 })
 export class GameBoard {
