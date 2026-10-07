@@ -89,6 +89,20 @@ export interface JudgedContext {
   judged: CardInstance;
   // What the JudgeEffect carried for its reader (Eight Trigrams: the step it answers).
   data?: Record<string, unknown>;
+  // The judgment's last step (the card to the discard pile). Include it among
+  // the returned effects to place it there; otherwise it comes after them.
+  done: Effect;
+}
+
+// A skill reading its own judgment (Unyielding, Iron Cavalry, River Goddess).
+export interface SkillJudgedContext {
+  owner: GeneralOwner;
+  // The seat being judged, and the card it got.
+  seatId: string;
+  judged: CardInstance;
+  data?: Record<string, unknown>;
+  // As JudgedContext.done.
+  done: Effect;
 }
 
 export interface DelayedToolContext {
@@ -170,6 +184,8 @@ export interface SkillDefinition extends Abilities {
   // A Lord skill: never in play, since Kingdom War has no Lord.
   lord?: boolean;
   active?: ActiveSkill;
+  // Reads a judgment this skill asked for (JudgmentReader 'skill').
+  onJudged?(state: GameState, ctx: SkillJudgedContext): unknown[];
 }
 
 export interface GeneralDefinition {

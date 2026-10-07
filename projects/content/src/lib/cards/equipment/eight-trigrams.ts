@@ -1,5 +1,5 @@
 import type { Effect } from 'engine';
-import { colourOf, requireZoneOfKind, usedCardOf } from 'engine';
+import { colourOf, usedCardOf } from 'engine';
 import { makeEquipmentCard } from './index';
 import { CardStep, actedOn, askAtStep, atStep } from '../../shared/steps';
 import { shaIgnoresArmor } from '../../shared/armor';
@@ -25,23 +25,24 @@ export const eightTrigramsCard = makeEquipmentCard('eight-trigrams', 'Eight Trig
         effect: (state, step, owner) => {
           const worn = ownerCard(state, owner);
           if (!worn) return [actedOn(step, owner)];
-          const judge: Effect = { kind: 'JudgeEffect', seatId: owner.seatId, tool: usedCardOf(worn), data: { step: actedOn(step, owner) } };
+          // Nothing left to judge with: the Shan is asked for as normal.
+          const judge: Effect = {
+            kind: 'JudgeEffect',
+            seatId: owner.seatId,
+            reader: { kind: 'card', card: usedCardOf(worn) },
+            data: { step: actedOn(step, owner) },
+            otherwise: [actedOn(step, owner)],
+          };
           return [askAtStep(owner, 'eight-trigrams', step, [judge])];
         },
       }),
     ],
   },
-  // The judged card goes to the discard pile first, so it doesn't lie in
-  // processing while the Shan window waits. Then the step goes on: with one
+  // The judged card goes to the discard pile first (`done`), so it doesn't lie
+  // in processing while the Shan window waits. Then the step goes on: with one
   // more Shan provided on red.
-  onJudged: (state, { judged, data, seatId, tool }) => {
+  onJudged: (_state, { judged, data, seatId, tool, done }) => {
     const step = data?.['step'] as CardStep;
-    const done: Effect = {
-      kind: 'MoveCardEffect',
-      cardInstanceId: judged.instanceId,
-      toZoneId: requireZoneOfKind(state.zones, 'discardPile').id,
-      onlyFrom: requireZoneOfKind(state.zones, 'processing').id,
-    };
     if (colourOf(judged) === 'black') return [done, step];
     const { provided = 0 } = (step.data ?? {}) as ShanData;
     const owner = { kind: 'equipment' as const, seatId, cardInstanceId: tool.physical[0].instanceId };

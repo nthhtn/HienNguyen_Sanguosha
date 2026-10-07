@@ -1,4 +1,4 @@
-import { AbilityOwner, GameState, Damage, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GameState, Damage, Judgment, JudgmentReader, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, requireZoneOfKind } from '../cards/zones';
@@ -52,9 +52,21 @@ export type Effect =
   // Sets a flag of the current turn (e.g. skipFlagOf('Play')), or clears it
   // with `value: false`. Flags end with the turn.
   | { kind: 'SetTurnFlagEffect'; flag: string; value?: boolean }
-  // A judgment for `seatId`, read by `tool` (CardDefinition.onJudged), which
-  // also receives `data`.
-  | { kind: 'JudgeEffect'; seatId: string; tool: UsedCard; data?: Record<string, unknown> }
+  // Judgment, step 1: turn the top card up for `seatId`, for `reader` (which
+  // receives `data`). Nothing left to judge with: `otherwise` goes ahead.
+  | { kind: 'JudgeEffect'; seatId: string; reader: JudgmentReader; data?: Record<string, unknown>; otherwise?: Effect[] }
+  // Step 2: the card is shown. Skills that change judgments hook in here with
+  // before-triggers (`acted`: those that had their say; `changedBy`: the seat
+  // that replaced the card last).
+  | { kind: 'JudgmentShownEffect'; judgment: Judgment; acted?: string[]; changedBy?: string }
+  // Step 3: the reader reads the final card.
+  | { kind: 'JudgmentResolveEffect'; judgment: Judgment }
+  // Step 4: the card goes to the discard pile, unless something took it
+  // (a before-trigger here may take it first; `acted` as above).
+  | { kind: 'JudgmentDoneEffect'; judgment: Judgment; acted?: string[] }
+  // Replaces the judgment's card with a hand card: the old one is discarded,
+  // and the judgment is shown again.
+  | { kind: 'ReplaceJudgmentEffect'; judgment: Judgment; withCardInstanceId: string; owner: AbilityOwner; abilityId: string }
   // A delayed Tool's turn in the Judgment phase is over (CardDefinition.onCleanup).
   | { kind: 'DelayedCleanupEffect'; tool: UsedCard; ownerSeatId: string }
   // One step of a card's resolution (a Sha's steps; see the Sha-Equipment

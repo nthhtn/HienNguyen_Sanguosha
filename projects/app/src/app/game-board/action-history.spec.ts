@@ -251,7 +251,7 @@ describe('actionHistory: judgments', () => {
     const log: EngineEvent[] = [
       { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(capture), targets: [seat('seat-0')] },
       move(capture, 'seat-1:hand', 'seat-0:judgment'),
-      { kind: 'JudgmentEvent', seatId: 'seat-0', tool: used(capture), card: judged },
+      { kind: 'JudgmentEvent', seatId: 'seat-0', reader: { kind: 'card', card: used(capture) }, card: judged },
       move(judged, 'processing', 'discardPile'),
       move(capture, 'seat-0:judgment', 'discardPile'),
       { kind: 'PhaseSkippedEvent', seatId: 'seat-0', phase: 'Play' },
@@ -288,7 +288,7 @@ describe('equipment abilities in the history', () => {
   it('adds "counts as Shan" to an Eight Trigrams judgment', () => {
     const judged: CardInstance = { instanceId: 'j', definitionId: 'peach', suit: 'heart', rank: 9 };
     const log: EngineEvent[] = [
-      { kind: 'JudgmentEvent', seatId: 'seat-1', tool: usedCardOf({ instanceId: 'et', definitionId: 'eight-trigrams', suit: 'spade', rank: 2 }), card: judged },
+      { kind: 'JudgmentEvent', seatId: 'seat-1', reader: { kind: 'card', card: usedCardOf({ instanceId: 'et', definitionId: 'eight-trigrams', suit: 'spade', rank: 2 }) }, card: judged },
       { kind: 'AbilityUsedEvent', owner: owner('seat-1', 'et'), abilityId: 'eight-trigrams', outcome: 'counts-as-shan' },
     ];
     expect(texts(log)).toEqual(["Seat 1's Eight Trigrams judgment: 9 ♥, counts as Shan"]);

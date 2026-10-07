@@ -1,4 +1,4 @@
-import { AbilityOwner, CardInstance, ChoiceOption, Damage, DecisionReason, PendingChoice, Phase, Target, UsedCard } from '../domain/types';
+import { AbilityOwner, CardInstance, ChoiceOption, Damage, DecisionReason, JudgmentReader, PendingChoice, Phase, Target, UsedCard } from '../domain/types';
 
 export interface CardsDrawnEvent {
   kind: 'CardsDrawnEvent';
@@ -124,12 +124,22 @@ export interface ChoiceMadeEvent {
   shows: ChoiceOption['shows'];
 }
 
-// A card turned up for `seatId`'s judgment, read by the delayed Tool `tool`.
+// A card turned up for `seatId`'s judgment, for `reader`.
 export interface JudgmentEvent {
   kind: 'JudgmentEvent';
   seatId: string;
-  tool: UsedCard;
+  reader: JudgmentReader;
   card: CardInstance;
+}
+
+// A skill replaced a judgment's card (`replaced`) with `card`.
+export interface JudgmentChangedEvent {
+  kind: 'JudgmentChangedEvent';
+  owner: AbilityOwner;
+  abilityId: string;
+  judgedSeatId: string;
+  card: CardInstance;
+  replaced: CardInstance;
 }
 
 // An ability applied (Black Shield stopping a Sha; Eight Trigrams counting as a
@@ -172,5 +182,6 @@ export type EngineEvent =
   | ChoiceMadeEvent
   | CardsTurnedUpEvent
   | JudgmentEvent
+  | JudgmentChangedEvent
   | AbilityUsedEvent
   | SelectionMadeEvent;

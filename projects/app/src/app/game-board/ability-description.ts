@@ -77,10 +77,12 @@ function selectionPrompt(state: GameState, selection: PendingSelection, items: S
     }
     case 'card-step':
       return `Choose ${count} more ${selection.max === 1 ? 'target' : 'targets'}`;
+    case 'replace-judgment':
+      return 'Choose a hand card to replace the judgment';
   }
 }
 
-const CONFIRM_LABELS: Record<PendingSelection['then']['kind'], string> = { discard: 'Discard', 'use-card': 'Use', 'card-step': 'Add Targets' };
+const CONFIRM_LABELS: Record<PendingSelection['then']['kind'], string> = { discard: 'Discard', 'use-card': 'Use', 'card-step': 'Add Targets', 'replace-judgment': 'Replace' };
 
 // What the Selection window says, read off a pending selection the viewer owes. Null otherwise.
 export function describeSelection(state: GameState, viewerSeatId: string, legal: readonly Action[]): SelectionDescription | null {

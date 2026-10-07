@@ -128,12 +128,18 @@ describe('Eight Trigrams', () => {
     expect(s.pendingChoice!.seatId).toBe('seat-b');
   });
 
+  it('with nothing left to judge, the Shan is asked for as normal (stage 5 follow-up)', () => {
+    const s = attack(card('j', 'peach', 'heart', 9));
+    const judge = s.pendingChoice!.options.find((o) => o.id === 'use')!.effects.find((e) => e.kind === 'JudgeEffect');
+    expect(judge).toMatchObject({ otherwise: [{ kind: 'CardStepEffect', step: 'sha-shan', target: { seatId: 'seat-b' } }] });
+  });
+
   it('a red judgment counts as a Shan: dodged, with no card from the hand', () => {
     const s = use(attack(card('j', 'peach', 'heart', 9), { 'seat-b:hand': [card('d1', 'shan')] }));
     expect(s.pendingResponse).toBeNull();
     expect(hp(s, 'seat-b')).toBe(4);
     expect(ids(s, 'seat-b:hand')).toEqual(['d1']);
-    expect(s.log.find((e) => e.kind === 'JudgmentEvent')).toMatchObject({ seatId: 'seat-b', tool: { as: 'eight-trigrams' }, card: { instanceId: 'j' } });
+    expect(s.log.find((e) => e.kind === 'JudgmentEvent')).toMatchObject({ seatId: 'seat-b', reader: { kind: 'card', card: { as: 'eight-trigrams' } }, card: { instanceId: 'j' } });
     expect(abilityLog(s)).toMatchObject([{ abilityId: 'eight-trigrams', outcome: 'counts-as-shan' }]);
   });
 

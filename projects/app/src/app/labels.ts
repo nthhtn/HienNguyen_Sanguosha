@@ -1,4 +1,4 @@
-import { Action, CardInstance, ContentRegistry, GameState, Kingdom, Player, Target } from 'engine';
+import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target } from 'engine';
 import { abilityName } from 'content';
 
 function findCardInstance(state: GameState, cardInstanceId: string): CardInstance | undefined {
@@ -108,4 +108,9 @@ const FACE_RANKS: Record<number, string> = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' }
 // "A ♦", "7 ♠", "Q ♥" — a card's printed corner.
 export function cardFaceLabel(card: Pick<CardInstance, 'suit' | 'rank'>): string {
   return `${FACE_RANKS[card.rank] ?? card.rank} ${SUIT_SYMBOLS[card.suit]}`;
+}
+
+// What a judgment is for: the card's name, or the skill's.
+export function judgmentReaderName(reader: JudgmentReader): string {
+  return abilityName(reader.kind === 'card' ? reader.card.as : reader.owner.skillId);
 }

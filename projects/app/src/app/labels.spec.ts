@@ -1,4 +1,4 @@
-import { actionLabel, cardDefinitionId, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, targetLabel } from './labels';
+import { actionLabel, cardDefinitionId, judgmentReaderName, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, targetLabel } from './labels';
 import { Action, ContentRegistry, GameState, Target } from 'engine';
 
 function stateWithZones(): GameState {
@@ -153,5 +153,12 @@ describe('seatName', () => {
 
   it('names a general target after its seat', () => {
     expect(targetLabel({ kind: 'general', seatId: 'seat-0', generalSlot: 'deputy' }, players)).toBe("Hing's Deputy General");
+  });
+});
+
+describe('judgmentReaderName', () => {
+  it('names the card or the skill a judgment is for', () => {
+    expect(judgmentReaderName({ kind: 'card', card: { as: 'eight-trigrams', colour: 'none', physical: [] } })).toBe('Eight Trigrams');
+    expect(judgmentReaderName({ kind: 'skill', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'unyielding' } })).toBe('Unyielding');
   });
 });

@@ -1,6 +1,6 @@
 import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat, UsedCard } from 'engine';
 import { cardDisplayData } from 'content';
-import { Force, cardFaceLabel, cardIdDisplayName, forceOf, seatName, targetLabel } from '../labels';
+import { Force, cardFaceLabel, cardIdDisplayName, forceOf, judgmentReaderName, seatName, targetLabel } from '../labels';
 
 export type ActionHistoryEntry =
   | { kind: 'turn'; turnNumber: number; seatName: string }
@@ -197,7 +197,7 @@ export function actionHistory(
         action(`Turned up ${event.cards.length} ${event.cards.length === 1 ? 'card' : 'cards'}: ${event.cards.map(named).join(', ')}`);
         break;
       case 'JudgmentEvent':
-        action(`${name(event.seatId)}'s ${cardName(event.tool.as)} judgment: ${cardFaceLabel(event.card)}`, event.card);
+        action(`${name(event.seatId)}'s ${judgmentReaderName(event.reader)} judgment: ${cardFaceLabel(event.card)}`, event.card);
         break;
       case 'PhaseSkippedEvent':
         action(`${name(event.seatId)} skipped the ${event.phase} Phase`);

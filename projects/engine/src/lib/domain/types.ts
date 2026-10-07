@@ -187,7 +187,9 @@ export type SelectionContinuation =
   // `counted`: toward per-turn limits. `free`: outside the Play Phase's limits.
   | { kind: 'use-card'; as?: string; via?: UsedCard['via']; targets: Target[]; respondTo?: string; counted: boolean; free?: boolean }
   // Queue `step` with the picked ids added to its data as `picked`.
-  | { kind: 'card-step'; step: Extract<Effect, { kind: 'CardStepEffect' }> };
+  | { kind: 'card-step'; step: Extract<Effect, { kind: 'CardStepEffect' }> }
+  // Replace the judgment's card with the one picked (Devil).
+  | { kind: 'replace-judgment'; judgment: Judgment; owner: AbilityOwner; abilityId: string };
 
 export interface CardZone {
   id: string;
@@ -213,6 +215,19 @@ export interface UsedCard {
   rank?: number;
   physical: CardInstance[];
   via?: { owner: AbilityOwner; abilityId: string; conversionId: string };
+}
+
+// Who reads a judgment: a card through its definition's onJudged (a delayed
+// Tool; a worn card such as Eight Trigrams), or a General's skill through its own.
+export type JudgmentReader = { kind: 'card'; card: UsedCard } | { kind: 'skill'; owner: GeneralOwner };
+
+// A judgment under way: whose it is, who reads it, what the reader passed
+// along, and the card turned up (the latest, once a skill has replaced it).
+export interface Judgment {
+  seatId: string;
+  reader: JudgmentReader;
+  card: CardInstance;
+  data?: Record<string, unknown>;
 }
 
 // What a Wuxie check is about: a Tool on one target, or a counter card someone

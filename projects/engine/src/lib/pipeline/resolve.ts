@@ -302,6 +302,11 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
     }
     case 'card-step':
       return { state: queueFront(state, [{ ...then.step, data: { ...then.step.data, picked: ids } }]), events: [] };
+    case 'replace-judgment':
+      return {
+        state: queueFront(state, [{ kind: 'ReplaceJudgmentEffect', judgment: then.judgment, withCardInstanceId: ids[0], owner: then.owner, abilityId: then.abilityId }]),
+        events: [],
+      };
     case 'use-card': {
       const cards = ids.map((id) => {
         const card = state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === id);
