@@ -103,3 +103,13 @@ describe('Fantasy after another before-damage skill (final review #1)', () => {
     expect(hp(h.choose(h.select(h.use(asked), 'h'), 'seat-c'), 'seat-c')).toBe(2);
   });
 });
+
+describe('Refusing Death with an empty draw pile (final review #6)', () => {
+  it('shuffles the discard pile in to turn its card, as a draw would', () => {
+    let s = kw.run(table({ discardPile: [card('r1', 'shan', 'heart', 5)] }, { generals: zhouTai, hp: { 'seat-a': 1 } }), [hit(1)]);
+    expect(askedAbout(s)).toBe('refusing-death');
+    s = kw.use(s);
+    expect(ids(s, 'seat-a:pile')).toEqual(['r1']);
+    expect(s.pendingResponse).toBeNull();
+  });
+});

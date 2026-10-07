@@ -1,5 +1,5 @@
-import type { AbilityUsedEvent, CardPlayedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
-import { drawPileTop, endFlagOf, pileZoneOf, skipFlagOf, usedCardFrom } from 'engine';
+import type { AbilityUsedEvent, CardPlayedEvent, CardsTurnedUpEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
+import { drawPileTop, endFlagOf, pileZoneOf, requireZoneOfKind, skipFlagOf, usedCardFrom } from 'engine';
 import { colourFor, suitOf } from '../shared/suits';
 import { JUDGMENT_CHANGERS, nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
@@ -162,6 +162,10 @@ export const fantasy: SkillDefinition = {
 // Beauty (compulsory): your spades count as hearts (suitOf).
 export const beauty: SkillDefinition = { id: 'beauty', compulsory: true, modifiers: { suitAs: { spade: 'heart' } } };
 
+// Whether a card is left to turn up: in the draw pile, or the discard pile to shuffle in.
+const cardsLeftToTurn = (state: GameState) =>
+  drawPileTop(state, 1).length > 0 || requireZoneOfKind(state.zones, 'discardPile').cards.length > 0;
+
 // One Refusing Death card: asked, then turned up under the General and checked.
 const refusingAsk = (owner: GeneralOwner, dying: Dying, left: number): Effect => ask(owner, [skillStep(owner, 'turn', { dying, left })], [dying]);
 
@@ -175,7 +179,7 @@ export const refusingDeath: SkillDefinition = {
   triggers: [
     on<Dying>('before:DyingEffect', {
       condition: (state, dying, owner) =>
-        dying.entering === true && dying.seatId === owner.seatId && !(dying.acted ?? []).includes(abilityKey(owner)) && !!pileZoneOf(state, owner.seatId) && drawPileTop(state, 1).length > 0,
+        dying.entering === true && dying.seatId === owner.seatId && !(dying.acted ?? []).includes(abilityKey(owner)) && !!pileZoneOf(state, owner.seatId) && cardsLeftToTurn(state),
       effect: (_state, dying, owner) => [refusingAsk(owner, { ...dying, acted: [...(dying.acted ?? []), abilityKey(owner)] }, Math.max(1, dying.pointsBelowOne ?? 1))],
     }),
     on<HealEvent>('after:HealEvent', {
@@ -193,9 +197,15 @@ export const refusingDeath: SkillDefinition = {
     const left = step.data?.['left'] as number;
     const pile = pileZoneOf(state, owner.seatId);
     if (step.step === 'turn') {
-      const [top] = drawPileTop(state, 1);
-      if (!top || !pile) return [dying];
-      return [{ kind: 'MoveCardEffect', cardInstanceId: top.instanceId, toZoneId: pile.id }, skillStep(owner, 'check', { dying, left, cardInstanceId: top.instanceId })];
+      // Turned up through processing, so an empty draw pile is refilled from the discard pile first.
+      if (!pile || !cardsLeftToTurn(state)) return [dying];
+      return [{ kind: 'RevealToProcessingEffect', count: 1 }, skillStep(owner, 'place', { dying, left })];
+    }
+    if (step.step === 'place') {
+      const turned = [...state.log].reverse().find((e): e is CardsTurnedUpEvent => e.kind === 'CardsTurnedUpEvent')?.cards[0];
+      const inProcessing = turned && requireZoneOfKind(state.zones, 'processing').cards.some((c) => c.instanceId === turned.instanceId);
+      if (!turned || !inProcessing || !pile) return [dying];
+      return [{ kind: 'MoveCardEffect', cardInstanceId: turned.instanceId, toZoneId: pile.id }, skillStep(owner, 'check', { dying, left, cardInstanceId: turned.instanceId })];
     }
     // 'check': a matching rank sends him to the dying round.
     const turned = pile?.cards.find((c) => c.instanceId === step.data?.['cardInstanceId']);
