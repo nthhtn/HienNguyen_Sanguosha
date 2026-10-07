@@ -313,6 +313,19 @@ export const bewilder: SkillDefinition = {
         }),
       ];
     }
+    if (step.step === 'use') {
+      // A target that died meanwhile drops out; with none left, the card is discarded.
+      const card = handOf(state, owner.seatId).find((c) => c.instanceId === claim.cardInstanceId);
+      const reopenAfter: Effect[] = claim.window ? [{ kind: 'OpenResponseEffect', pendingResponse: claim.window }] : [];
+      if (!card) return reopenAfter;
+      const targets = claim.targets.filter((t) => isLiving(state, t.seatId));
+      if (claim.targets.length > 0 && targets.length === 0) return [...discardMoves(state, [card.instanceId]), ...reopenAfter];
+      return [{
+        kind: 'UseCardEffect', seatId: owner.seatId,
+        card: usedCardFrom([card], claim.as, { owner, abilityId: owner.skillId, conversionId: claim.conversionId }),
+        targets, counted: !claim.window, ...(claim.window ? { answering: claim.window } : {}),
+      }];
+    }
     // 'reveal'
     const reopen: Effect[] = claim.window ? [{ kind: 'OpenResponseEffect', pendingResponse: claim.window }] : [];
     const picked = handOf(state, owner.seatId).find((c) => c.instanceId === claim.cardInstanceId);
@@ -327,7 +340,8 @@ export const bewilder: SkillDefinition = {
     if (claim.doubters.length === 0) return [show, used(owner, 'claim-believed', undefined, claim.as), useIt];
     if (picked.definitionId !== claim.as) return [show, used(owner, 'claim-false', undefined, claim.as), ...claim.doubters.map((id) => draw(id, 1)), ...discard];
     const losses: Effect[] = claim.doubters.map((seatId) => ({ kind: 'LoseHpEffect', seatId, amount: 1, abilityId: owner.skillId }));
-    return [show, used(owner, 'claim-true', undefined, claim.as), ...losses, ...(suitOf(state, owner.seatId, picked, registry) === 'heart' ? [useIt] : discard)];
+    // A heart still takes effect, once the doubters' HP loss (and any dying round) is over.
+    return [show, used(owner, 'claim-true', undefined, claim.as), ...losses, ...(suitOf(state, owner.seatId, picked, registry) === 'heart' ? [skillStep(owner, 'use', { claim })] : discard)];
   },
 };
 

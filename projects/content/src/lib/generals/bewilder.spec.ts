@@ -1,5 +1,5 @@
 import type { GameState } from 'engine';
-import { abilityLog, askedAbout, card, handIds, harness, hp, ids, table, TableOptions } from './skills.testing';
+import { abilityLog, askedAbout, card, handIds, harness, hp, ids, kwMode, table, TableOptions } from './skills.testing';
 
 const h = harness();
 const yuJi = (seatId = 'seat-a'): TableOptions['generals'] => ({ [seatId]: ['yu-ji', 'zuo-ci'] });
@@ -67,5 +67,20 @@ describe('Yu Ji — Bewilder', () => {
     // The Steal goes ahead once: seat-b picks from Yu Ji, whose hand is empty now, so nothing is left to pick.
     expect(lie.log.filter((e) => e.kind === 'CardPlayedEvent' && e.card.as === 'steal')).toHaveLength(1);
     expect(lie.pendingResponse).toBeNull();
+  });
+});
+
+describe('Bewilder and a target who dies doubting (final review #5)', () => {
+  it('a true heart Sha whose only target died of doubting is discarded, not played', () => {
+    const kw = harness(kwMode);
+    let s = kw.select(kw.convert(table({ 'seat-a:hand': [card('x', 'sha', 'heart')] }, { generals: yuJi(), hp: { 'seat-b': 1 } }), 'seat-a', 'bewilder-sha', 'seat-b'), 'x');
+    s = kw.choose(s, 'doubt'); // seat-b doubts
+    s = kw.choose(s, 'believe');
+    s = kw.choose(s, 'believe');
+    while (s.pendingResponse?.reason?.kind === 'dying') s = kw.pass(s);
+    expect(s.seats[1].eliminated).toBe(true);
+    expect(s.log.some((e) => e.kind === 'CardPlayedEvent' && e.card.as === 'sha')).toBe(false);
+    expect(s.turn.cardPlays).toBeUndefined();
+    expect(ids(s, 'discardPile')).toContain('x');
   });
 });
