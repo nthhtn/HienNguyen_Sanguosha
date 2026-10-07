@@ -146,10 +146,13 @@ export interface UnequipContext {
   cardInstanceId: string;
 }
 
-export interface SkillDefinition {
+// A General's skill: abilities like a worn card's, owned by the General's seat.
+export interface SkillDefinition extends Abilities {
   id: string;
-  triggers: SkillTrigger[];
-  activation: 'auto' | 'player-choice';
+  // Applies without asking. Off while its General is hidden (see skillsInPlay).
+  compulsory?: boolean;
+  // A Lord skill: never in play, since Kingdom War has no Lord.
+  lord?: boolean;
 }
 
 export interface GeneralDefinition {

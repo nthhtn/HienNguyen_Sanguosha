@@ -14,11 +14,13 @@ export type Target =
   | { kind: 'general'; seatId: string; generalSlot: 'main' | 'deputy' };
 
 // Who an ability belongs to: a General's skill (the seat and slot it was
-// gathered for: the same General can be held by more than one seat), or a worn
-// card (its wearer and the card).
+// gathered for, since the same General can be held by more than one seat, and
+// the skill's id), or a worn card (its wearer and the card).
 export type AbilityOwner =
-  | { kind: 'general'; seatId: string; slot: 'main' | 'deputy' }
+  | { kind: 'general'; seatId: string; slot: 'main' | 'deputy'; skillId: string }
   | { kind: 'equipment'; seatId: string; cardInstanceId: string };
+
+export type GeneralOwner = Extract<AbilityOwner, { kind: 'general' }>;
 
 export interface Turn {
   turnNumber: number;

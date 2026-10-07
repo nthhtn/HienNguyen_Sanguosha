@@ -19,6 +19,7 @@ export * from './lib/pipeline/judgment';
 export * from './lib/pipeline/events';
 export * from './lib/pipeline/resolve';
 export * from './lib/skills/triggers';
+export * from './lib/skills/generalSkills';
 export * from './lib/rules/legality';
 export * from './lib/rules/selection';
 export * from './lib/rules/activeSeat';

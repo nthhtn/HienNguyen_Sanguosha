@@ -1,6 +1,7 @@
 import { AbilityOwner, GameState, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
 import { ContentRegistry, Conversion } from '../registry/types';
+import { skillsInPlay } from '../skills/generalSkills';
 import { getActiveSeatId } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
 import { cardsOverHandLimit } from './handLimit';
@@ -105,30 +106,36 @@ type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
 
 export interface OwnedConversion {
   owner: AbilityOwner;
-  // The ability's id: the worn card's definition id.
+  // The ability's id: the skill's id, or the worn card's definition id.
   abilityId: string;
   conversion: Conversion;
+  // A hidden General's: using it reveals the General.
+  needsReveal?: boolean;
 }
 
 export function sameAbilityOwner(a: AbilityOwner, b: AbilityOwner): boolean {
   if (a.kind === 'equipment' && b.kind === 'equipment') return a.seatId === b.seatId && a.cardInstanceId === b.cardInstanceId;
-  if (a.kind === 'general' && b.kind === 'general') return a.seatId === b.seatId && a.slot === b.slot;
+  if (a.kind === 'general' && b.kind === 'general') return a.seatId === b.seatId && a.slot === b.slot && a.skillId === b.skillId;
   return false;
 }
 
-// Every conversion `seatId` has: those of the cards it wears, in zone order.
-// (Generals' conversions join in stage 6.)
+// Every conversion `seatId` has: its Generals' skills in play (Main, then
+// Deputy), then the cards it wears, in zone order.
 export function conversionsOf(state: GameState, seatId: string, registry: ContentRegistry): OwnedConversion[] {
   const seat = state.seats.find((s) => s.id === seatId);
   if (!seat || seat.eliminated) return [];
+  const fromSkills = skillsInPlay(state, seatId, registry).flatMap(({ owner, skill, needsReveal }) =>
+    (skill.conversions ?? []).map((conversion): OwnedConversion => ({ owner, abilityId: skill.id, conversion, ...(needsReveal ? { needsReveal } : {}) }))
+  );
   const worn = state.zones.find((z) => z.id === seat.equipped.zoneId)?.cards ?? [];
-  return worn.flatMap((card) =>
-    (registry.cards.get(card.definitionId)?.abilities?.conversions ?? []).map((conversion) => ({
-      owner: { kind: 'equipment' as const, seatId, cardInstanceId: card.instanceId },
+  const fromCards = worn.flatMap((card) =>
+    (registry.cards.get(card.definitionId)?.abilities?.conversions ?? []).map((conversion): OwnedConversion => ({
+      owner: { kind: 'equipment', seatId, cardInstanceId: card.instanceId },
       abilityId: card.definitionId,
       conversion,
     }))
   );
+  return [...fromSkills, ...fromCards];
 }
 
 // The conversions `seatId` may use now. In its Play Phase: one per legal target
