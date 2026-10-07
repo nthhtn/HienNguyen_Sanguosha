@@ -1,4 +1,4 @@
-import { AbilityOwner, CardInstance, GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
+import { AbilityOwner, CardInstance, GeneralOwner, GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
 import { RngState } from '../rng/rng';
 import type { Effect } from '../pipeline/effects';
 
@@ -146,6 +146,22 @@ export interface UnequipContext {
   cardInstanceId: string;
 }
 
+// Who is using an active skill: its owner's seat, and the skill.
+export interface ActiveContext {
+  seatId: string;
+  owner: GeneralOwner;
+}
+
+// A skill used on purpose in its owner's Play Phase (Kindness, Reconsider).
+export interface ActiveSkill {
+  // Uses allowed per turn; absent = any number.
+  usesPerTurn?: number;
+  canUse(state: GameState, ctx: ActiveContext, registry: ContentRegistry): boolean;
+  // The effects that open its decisions. If the first is a selection with
+  // onCancel, Cancel undoes the use: it counts only once the picks are confirmed.
+  start(state: GameState, ctx: ActiveContext, registry: ContentRegistry): unknown[];
+}
+
 // A General's skill: abilities like a worn card's, owned by the General's seat.
 export interface SkillDefinition extends Abilities {
   id: string;
@@ -153,6 +169,7 @@ export interface SkillDefinition extends Abilities {
   compulsory?: boolean;
   // A Lord skill: never in play, since Kingdom War has no Lord.
   lord?: boolean;
+  active?: ActiveSkill;
 }
 
 export interface GeneralDefinition {

@@ -11,7 +11,8 @@ interface LabeledAction {
 
 // Card plays are offered on the cards themselves (HandView), discards in the
 // Discard dialog, responses (Pass included) in the Response dialog, and picks
-// in the Choice dialog; this list carries every other legal action (End Phase, …).
+// in the Choice dialog, active skills on the seat's avatar; this list carries
+// every other legal action (End Phase, …).
 function isCardAction(action: Action): boolean {
   return (
     action.kind === 'PlayCardAction' ||
@@ -21,7 +22,8 @@ function isCardAction(action: Action): boolean {
     action.kind === 'ChooseOptionAction' ||
     action.kind === 'SelectAction' ||
     action.kind === 'CancelSelectionAction' ||
-    action.kind === 'UseConversionAction'
+    action.kind === 'UseConversionAction' ||
+    action.kind === 'UseSkillAction'
   );
 }
 

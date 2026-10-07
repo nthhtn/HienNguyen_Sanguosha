@@ -9,6 +9,9 @@ export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
   | { kind: 'DamageEffect'; damage: Damage }
   | { kind: 'OpenResponseEffect'; pendingResponse: PendingResponse }
+  // Adds `by` to a counter: this turn's ability uses (scope 'turn'), or a
+  // seat's game-long marks (scope 'seat', with `seatId`). Logs nothing.
+  | { kind: 'IncrementEffect'; scope: 'turn' | 'seat'; key: string; by: number; seatId?: string }
   // `forAbilityId`: revealed to use that skill (the history names it).
   | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy'; forAbilityId?: string }
   | { kind: 'HealEffect'; target: Target; amount: number }
@@ -192,6 +195,18 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     }
     case 'DyingEffect':
       return applyDying(state, effect);
+    case 'IncrementEffect': {
+      if (effect.scope === 'turn') {
+        const uses = state.turn.abilityUses ?? {};
+        return { state: { ...state, turn: { ...state.turn, abilityUses: { ...uses, [effect.key]: (uses[effect.key] ?? 0) + effect.by } } }, events: [] };
+      }
+      if (!effect.seatId) throw new Error('IncrementEffect with scope seat needs a seatId');
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      const marks = seat.marks ?? {};
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, marks: { ...marks, [effect.key]: (marks[effect.key] ?? 0) + effect.by } } : s));
+      return { state: { ...state, seats }, events: [] };
+    }
     case 'OpenSelectionEffect':
       return { state: { ...state, pendingSelection: effect.selection }, events: [] };
     case 'AskUseEffect': {

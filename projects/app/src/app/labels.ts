@@ -1,4 +1,5 @@
 import { Action, CardInstance, ContentRegistry, GameState, Kingdom, Player, Target } from 'engine';
+import { abilityName } from 'content';
 
 function findCardInstance(state: GameState, cardInstanceId: string): CardInstance | undefined {
   for (const zone of state.zones) {
@@ -81,6 +82,8 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
       return 'Choose';
     case 'UseConversionAction':
       return conversionLabel(action, state, registry);
+    case 'UseSkillAction':
+      return action.owner.kind === 'general' ? `Use ${abilityName(action.owner.skillId)}` : 'Use Skill';
     case 'SelectAction':
       return 'Confirm';
     case 'CancelSelectionAction':

@@ -28,6 +28,11 @@ export interface Turn {
   extraTurnStack: string[];
   // Proactive card plays this turn, by card definition id (responses excluded).
   cardPlays?: Record<string, number>;
+  // Active skills' uses this turn, by abilityUseKey (seatId/slot/skillId).
+  abilityUses?: Record<string, number>;
+  // Every card the turn owner used this turn, by what it counted as,
+  // responses included (Self-Restraint reads 'sha').
+  ownerUses?: Record<string, number>;
   // Flags that last until the turn ends, e.g. skipPlay (see skipFlagOf).
   // Absent until one is set.
   flags?: Record<string, boolean>;
@@ -74,6 +79,8 @@ export interface Seat {
   equipped: CardZoneRef;
   // Where delayed Tools wait to be judged (Capture, Lightning, Starvation).
   judgment: CardZoneRef;
+  // Game-long marks some skills keep (none of the base Generals do yet).
+  marks?: Record<string, number>;
   eliminated: boolean;
 }
 

@@ -1,7 +1,7 @@
 import { AbilityOwner, GameState, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
 import { ContentRegistry, Conversion } from '../registry/types';
-import { skillsInPlay } from '../skills/generalSkills';
+import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { getActiveSeatId } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
 import { cardsOverHandLimit } from './handLimit';
@@ -83,8 +83,26 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
       actions.push({ kind: 'PlayCardAction', seatId, cardInstanceId: card.instanceId, targets });
     }
   }
-  if (registry) actions.push(...conversionActions(state, seatId, registry));
+  if (registry) actions.push(...conversionActions(state, seatId, registry), ...activeSkillActions(state, seatId, registry));
   return actions;
+}
+
+type UseSkill = Extract<Action, { kind: 'UseSkillAction' }>;
+
+// The active skills `seatId` may use now: in its own Play Phase with nothing
+// pending, each one whose canUse holds and whose uses this turn are under its
+// limit. A hidden General's are offered too (using one reveals it).
+export function activeSkillActions(state: GameState, seatId: string, registry: ContentRegistry): UseSkill[] {
+  if (state.phase !== 'Play' || state.turn.ownerSeatId !== seatId) return [];
+  if (state.pendingResponse || state.pendingChoice || state.pendingSelection) return [];
+  return skillsInPlay(state, seatId, registry)
+    .filter(({ owner, skill }) => {
+      const active = skill.active;
+      if (!active) return false;
+      const uses = state.turn.abilityUses?.[abilityUseKey(owner)] ?? 0;
+      return (active.usesPerTurn === undefined || uses < active.usesPerTurn) && active.canUse(state, { seatId, owner }, registry);
+    })
+    .map(({ owner }): UseSkill => ({ kind: 'UseSkillAction', seatId, owner }));
 }
 
 // The card's own rule when it has one; legacy offers otherwise.

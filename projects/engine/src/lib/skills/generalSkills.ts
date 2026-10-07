@@ -35,3 +35,8 @@ export function skillOf(state: GameState, owner: GeneralOwner, registry: Content
   const general = state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot];
   return general && registry.generals.get(general.generalDefinitionId)?.skills.find((s) => s.id === owner.skillId);
 }
+
+// The key an active skill's uses are counted under in Turn.abilityUses.
+export function abilityUseKey(owner: GeneralOwner): string {
+  return `${owner.seatId}/${owner.slot}/${owner.skillId}`;
+}

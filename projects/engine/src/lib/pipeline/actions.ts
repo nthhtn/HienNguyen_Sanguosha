@@ -15,7 +15,9 @@ export type Action =
   | { kind: 'CancelSelectionAction'; seatId: string; selectionId: string }
   // Uses a conversion: in the Play Phase at `targets`, or (with
   // pendingResponseId) to answer that window. Opens a selection of the cards.
-  | { kind: 'UseConversionAction'; seatId: string; via: { owner: AbilityOwner; conversionId: string }; targets: Target[]; pendingResponseId?: string };
+  | { kind: 'UseConversionAction'; seatId: string; via: { owner: AbilityOwner; conversionId: string }; targets: Target[]; pendingResponseId?: string }
+  // Uses an active skill of the seat's General (owner.kind === 'general').
+  | { kind: 'UseSkillAction'; seatId: string; owner: AbilityOwner };
 
 export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'DrawCardsAction',
@@ -30,6 +32,7 @@ export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'SelectAction',
   'CancelSelectionAction',
   'UseConversionAction',
+  'UseSkillAction',
 ]);
 
 export function isAction(value: { kind: string }): value is Action {

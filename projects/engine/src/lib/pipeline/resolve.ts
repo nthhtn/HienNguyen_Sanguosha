@@ -8,7 +8,8 @@ import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
 import { advancePhaseOrTurn, phaseWaitsForPlayer } from '../rules/phaseSequence';
-import { conversionActions, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
+import { activeSkillActions, conversionActions, conversionsOf, legalTargetListsFor, sameAbilityOwner } from '../rules/legality';
+import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
@@ -268,6 +269,10 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
   const counted: GameState = options.counted
     ? { ...afterLog, turn: { ...afterLog.turn, cardPlays: { ...plays, [used.as]: (plays[used.as] ?? 0) + 1 } } }
     : afterLog;
+  // Every card the turn owner uses, answers included (Self-Restraint).
+  const ownerUses = counted.turn.ownerUses ?? {};
+  const tallied: GameState =
+    seatId === counted.turn.ownerSeatId ? { ...counted, turn: { ...counted.turn, ownerUses: { ...ownerUses, [used.as]: (ownerUses[used.as] ?? 0) + 1 } } } : counted;
   // A used card leaves the hand at once, so it can't be reused mid-resolution.
   // Equipment and delayed Tools played as themselves are placed by their own play().
   const placesItself = !pending && !used.via && (definition.category === 'equipment' || !!definition.delayed);
@@ -279,9 +284,9 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
   const fromSource = pending?.sourceCard
     ? ((lookupCard(ctx.registry, pending.sourceCard.definitionId).onResponse?.(afterLog, { pending, seatId, cardInstanceId, card: used }) ?? []) as Effect[])
     : [];
-  const followUps = afterTriggerFollowUps(counted, [event], ctx);
+  const followUps = afterTriggerFollowUps(tallied, [event], ctx);
   return {
-    state: queueFront(counted, [...leaveHand, ...followUps, ...effects, ...(pending?.onAnswer ?? []), ...fromSource]),
+    state: queueFront(tallied, [...leaveHand, ...followUps, ...effects, ...(pending?.onAnswer ?? []), ...fromSource]),
     events: [event],
   };
 }
@@ -512,6 +517,26 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
           ? [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: owned.owner.slot, forAbilityId: owned.abilityId }]
           : [];
       return { state: { ...state, pendingSelection: reveal.length ? { ...selection, onSelect: reveal } : selection }, events: [] };
+    }
+
+    case 'UseSkillAction': {
+      const offered = activeSkillActions(state, action.seatId, ctx.registry).some((a) => sameAbilityOwner(a.owner, action.owner));
+      if (!offered || action.owner.kind !== 'general') throw new Error(`Seat ${action.seatId} can’t use that skill now`);
+      const owner = action.owner;
+      const { skill, needsReveal } = skillsInPlay(state, action.seatId, ctx.registry).find((s) => sameAbilityOwner(s.owner, owner))!;
+      // The use itself: reveal a hidden General, count it, log it.
+      const spend: Effect[] = [
+        ...(needsReveal ? [{ kind: 'RevealGeneralEffect' as const, seatId: action.seatId, slot: owner.slot, forAbilityId: owner.skillId }] : []),
+        { kind: 'IncrementEffect', scope: 'turn', key: abilityUseKey(owner), by: 1 },
+        { kind: 'AbilityUsedEffect', owner, abilityId: owner.skillId, outcome: 'used' },
+      ];
+      const [first, ...rest] = skill.active!.start(state, { seatId: action.seatId, owner }, ctx.registry) as Effect[];
+      // A cancellable first selection: the use happens only once its picks are confirmed.
+      if (first?.kind === 'OpenSelectionEffect' && first.selection.onCancel) {
+        const selection = { ...first.selection, onSelect: [...spend, ...(first.selection.onSelect ?? [])] };
+        return { state: queueFront(state, [{ ...first, selection }, ...rest]), events: [] };
+      }
+      return { state: queueFront(state, [...spend, ...(first ? [first] : []), ...rest]), events: [] };
     }
 
     case 'CancelSelectionAction': {

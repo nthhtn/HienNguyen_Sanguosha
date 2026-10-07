@@ -70,6 +70,11 @@ describe('kingdomDisplayName', () => {
 });
 
 describe('actionLabel', () => {
+  it('labels an active skill by its name', () => {
+    const use: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'reconsider' } };
+    expect(actionLabel(use, stateWithZones(), registryWithSha())).toBe('Use Reconsider');
+  });
+
   it('labels a conversion by what it makes, and its targets for a play', () => {
     const base = stateWithZones();
     const state: GameState = {
