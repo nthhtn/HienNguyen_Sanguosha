@@ -35,7 +35,7 @@ describe('wikiGenerals', () => {
   it('carries names, title, HP and skills from the data file', () => {
     const caoCao = generals.find((g) => g.id === 'cao-cao')!;
     expect(caoCao).toMatchObject({
-      name: 'Cao Cao', nameZh: '曹操', title: 'Martial Emperor of Wei', titleZh: '魏武帝', kingdom: 'Wei', maxHp: 4, skillsInGame: false,
+      name: 'Cao Cao', nameZh: '曹操', title: 'Martial Emperor of Wei', titleZh: '魏武帝', kingdom: 'Wei', maxHp: 4, skillsInGame: true,
     });
     expect(caoCao.skills.map((s) => [s.name, s.nameZh])).toEqual([['Evil Hero', '奸雄'], ['Escort', '护驾']]);
   });
