@@ -415,11 +415,17 @@ the count or replace the draw.
   sees the cards.
 
 **Judgment changers' order.** Content lists the skills that may replace a
-judgment's card (`JUDGMENT_CHANGERS` in `shared/judgments.ts`). Each one's
+judgment's card (`JUDGMENT_CHANGERS` in `shared/judgments.ts`), each with the
+cards its seat may change one with (Devil: a hand card; Dark Magic: a black
+hand or worn card). Each one's
 `before:JudgmentShownEffect` trigger acts only when `nextToChange` says its
 seat is next: in seat order from the judged seat; after a replacement, from
 the seat after the one that replaced it (that seat last). `acted` on the shown
 step records who has had their say.
+
+**The Discard Phase's count.** It owes what the owner was over its hand limit
+as the phase began (`Turn.discardsLeft`), so a card drawn mid-phase (Linked
+Camps) isn't owed too.
 
 **Rescuing through a conversion.** The dying round asks a seat with no rescue
 card in hand when one of its conversions could make one (First Aid); the
@@ -453,6 +459,11 @@ pipeline supplies that check to `applyDying`.
 | A card lying as another card | `MoveCardEffect.countsAs` → `CardZone.countsAs` (`cardCountsAs`) | Country Scene's Capture |
 | Skipping the Discard Phase as it begins | the `skipDiscard` turn flag (`discardOwed`) | Self-Restraint |
 | A rule change read by content's queries | `AbilityModifiers` (`distanceToOthers`, `toolsIgnoreDistance`, `untargetableWithEmptyHandBy`, `doubleAnswers`) | Horsemanship, Wondrous Talent, Empty City, Matchless |
+| Turning a seat face down | `TurnFaceDownEffect`; its next turn is passed (`SeatTurnedEvent`) | Entrench |
+| Ending a Play Phase already entered | the `endFlagOf('Play')` turn flag | Godspeed |
+| Cards kept under a General | the seat's `pile` zone (`pileZoneOf`) | Refusing Death |
+| A conversion decided later | `Conversion.deferred` → the skill's `deferred` step; a window it answers is set aside, then answered (`UseCardEffect.answering`) or re-opened | Bewilder |
+| A suit that counts as another | `AbilityModifiers.suitAs`, read through content's `suitOf` / `colourFor` | Beauty |
 
 A new card or skill should need only its own definition. If a change seems to
 need a branch for one card inside the pipeline, look for the hook above that
