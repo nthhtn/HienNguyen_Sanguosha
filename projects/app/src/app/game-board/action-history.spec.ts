@@ -1,4 +1,4 @@
-import { CardInstance, CardZone, EngineEvent, usedCardFrom, usedCardOf } from 'engine';
+import { CardInstance, CardZone, EngineEvent, Seat, usedCardFrom, usedCardOf } from 'engine';
 import { actionHistory } from './action-history';
 
 const zones: CardZone[] = [
@@ -319,5 +319,66 @@ describe('equipment abilities in the history', () => {
       reason: { kind: 'ability', owner: owner('seat-0', 'sk'), abilityId: 'sky-scorcher' },
     };
     expect(texts([picked])).toEqual(['Seat 0 picked Seat 1 and Seat 2 with Sky Scorcher']);
+  });
+});
+
+describe('skill lines', () => {
+  const general = (seatId: string, slot: 'main' | 'deputy', skillId: string) => ({ kind: 'general' as const, seatId, slot, skillId });
+  const seats: Seat[] = [{
+    id: 'seat-0', index: 0, kingdom: 'Shu', combinedHp: 3, maxCombinedHp: 4, eliminated: false,
+    generals: { main: { generalDefinitionId: 'guan-yu', revealed: true }, deputy: { generalDefinitionId: 'liu-bei', revealed: false } },
+    hand: { zoneId: 'seat-0:hand' }, equipped: { zoneId: 'seat-0:equip' }, judgment: { zoneId: 'seat-0:judgment' },
+  }];
+  const lines = (log: EngineEvent[]) => actionHistory(log, zones, [], seats).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
+
+  it('a reveal to use a skill names the General and the skill, once', () => {
+    expect(lines([
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'use', shows: { kind: 'use', reveals: 'main' }, reason: { kind: 'ability', owner: general('seat-0', 'main', 'fighting-saint'), abilityId: 'fighting-saint' } },
+      { kind: 'GeneralRevealedEvent', seatId: 'seat-0', slot: 'main', forAbilityId: 'fighting-saint' },
+    ])).toEqual(['Seat 0 revealed Guan Yu to use Fighting Saint']);
+  });
+
+  it('an active skill’s use, and HP lost to a skill', () => {
+    expect(lines([
+      { kind: 'AbilityUsedEvent', owner: general('seat-0', 'main', 'battered-body'), abilityId: 'battered-body', outcome: 'used' },
+      { kind: 'HpLostEvent', seatId: 'seat-0', amount: 1, abilityId: 'battered-body' },
+      { kind: 'HpLostEvent', seatId: 'seat-0', amount: 2 },
+    ])).toEqual(['Seat 0 lost 2 HP', 'Seat 0 lost 1 HP (Battered Body)', 'Seat 0 used Battered Body']);
+    expect(actionHistory([{ kind: 'HpLostEvent', seatId: 'seat-0', amount: 1 }], zones, [], seats)[0]).toMatchObject({ force: 'Shu' });
+  });
+
+  it('a changed judgment, and a skill’s judgment', () => {
+    const three: CardInstance = { instanceId: 'r1', definitionId: 'sha', suit: 'spade', rank: 3 };
+    const five: CardInstance = { instanceId: 'j1', definitionId: 'shan', suit: 'heart', rank: 5 };
+    const history = actionHistory([
+      { kind: 'JudgmentEvent', seatId: 'seat-1', reader: { kind: 'skill', owner: general('seat-1', 'main', 'unyielding') }, card: five },
+      { kind: 'JudgmentChangedEvent', owner: general('seat-0', 'main', 'devil'), abilityId: 'devil', judgedSeatId: 'seat-1', card: three, replaced: five },
+    ], zones, [], seats);
+    expect(history.flatMap((e) => (e.kind === 'action' ? [e.text] : []))).toEqual(["Seat 0's Devil changed the judgment to 3 ♠", "Seat 1's Unyielding judgment: 5 ♥"]);
+    expect(history[0]).toMatchObject({ card: three });
+  });
+
+  it('giving cards, picking a seat, naming a suit, choosing a label', () => {
+    const reason = { kind: 'ability' as const, owner: general('seat-0', 'deputy', 'kindness'), abilityId: 'kindness' };
+    expect(lines([
+      { kind: 'SelectionMadeEvent', seatId: 'seat-0', reason, of: 'cards', ids: ['a', 'b'] },
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'give', shows: { kind: 'seat', seatId: 'seat-1' }, reason },
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'pick', shows: { kind: 'seat', seatId: 'seat-1' }, reason },
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-1', verb: 'pick', shows: { kind: 'suit', suit: 'heart' }, reason },
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'pick', shows: { kind: 'label', text: 'Done' }, reason },
+    ])).toEqual(['Seat 0 chose Done', 'Seat 1 named ♥', 'Seat 0 chose Seat 1', 'Seat 0 gave 2 cards to Seat 1']);
+  });
+
+  it('an arrangement of the draw pile, by its counts', () => {
+    const reason = { kind: 'ability' as const, owner: general('seat-0', 'main', 'astrology'), abilityId: 'astrology' };
+    expect(lines([
+      { kind: 'ArrangementMadeEvent', seatId: 'seat-0', reason, top: 2, bottom: 1 },
+      { kind: 'ArrangementMadeEvent', seatId: 'seat-0', reason, top: 3, bottom: 0 },
+      { kind: 'ArrangementMadeEvent', seatId: 'seat-0', reason, top: 0, bottom: 1 },
+    ])).toEqual([
+      'Seat 0 put 1 card at the bottom of the draw pile',
+      'Seat 0 put 3 cards on top of the draw pile',
+      'Seat 0 put 2 cards on top of the draw pile and 1 at the bottom',
+    ]);
   });
 });

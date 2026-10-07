@@ -105,6 +105,11 @@ export function conversionLabel(action: Extract<Action, { kind: 'UseConversionAc
 }
 
 const SUIT_SYMBOLS: Record<CardInstance['suit'], string> = { spade: '♠', heart: '♥', club: '♣', diamond: '♦' };
+// "♥": a suit's symbol alone.
+export function suitSymbol(suit: CardInstance['suit']): string {
+  return SUIT_SYMBOLS[suit];
+}
+
 const SUIT_NAMES: Record<CardInstance['suit'], string> = { spade: 'Spade', heart: 'Heart', club: 'Club', diamond: 'Diamond' };
 
 // "♥ Heart": a suit as an option to pick.
