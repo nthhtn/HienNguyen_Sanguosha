@@ -524,7 +524,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         const step = resolveEffect(current, effect, ctx);
         current = step.state;
         events.push(...step.events);
-        if (decisionPending(current)) throw new Error(`An onSelect effect of ${selection.id} opened a decision (${effect.kind})`);
+        // A window the selection answers is already open; anything else is new.
+        const opened = !!current.pendingChoice || !!current.pendingSelection || !!current.pendingArrangement || current.pendingResponse !== cleared.pendingResponse;
+        if (opened) throw new Error(`An onSelect effect of ${selection.id} opened a decision (${effect.kind})`);
       }
       const continued = continueSelection(current, selection, action.ids, ctx);
       return { state: continued.state, events: [...events, ...continued.events] };

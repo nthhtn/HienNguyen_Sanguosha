@@ -60,3 +60,17 @@ describe('a one-card conversion from hand and equipment', () => {
     expect(passed.seats[0].eliminated).toBe(true);
   });
 });
+
+describe('a hidden General’s conversion answering a window', () => {
+  it('reveals the General on confirm, with the window it answers still open until then', () => {
+    const base = table('a');
+    const hidden: GameState = { ...base, seats: base.seats.map((s) => (s.id === 'b' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: false } } } : s)) };
+    const asked = advanceToDecision(hidden, ctx).state;
+    const passed = resolve(asked, { kind: 'PassAction', seatId: 'a', pendingResponseId: asked.pendingResponse!.id }, ctx).state;
+    const convert = getLegalActions(passed, 'b', registry).find((a) => a.kind === 'UseConversionAction')!;
+    const selecting = resolve(passed, convert, ctx).state;
+    const saved = resolve(selecting, { kind: 'SelectAction', seatId: 'b', selectionId: selecting.pendingSelection!.id, ids: ['h1'] }, ctx).state;
+    expect(saved.seats[1].generals!.main.revealed).toBe(true);
+    expect(saved.seats[0].combinedHp).toBe(1);
+  });
+});

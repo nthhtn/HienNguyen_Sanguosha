@@ -84,7 +84,7 @@ function mayReveal(self: Seat): boolean {
 const KEEP_ON_TOP = new Set(['peach', 'shan', 'sha']);
 
 // Abilities whose card selections the bot fills rather than cancels.
-const SELECTS_FOR = new Set(['axe', 'green-dragon-blade', 'serpent-spear']);
+const SELECTS_FOR = new Set(['axe', 'green-dragon-blade', 'serpent-spear', 'fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise']);
 
 // Serpent Spear is worth it when the 2 least useful hand cards hold no Peach.
 function spareForConversion(view: GameState, self: Seat, registry: ContentRegistry): boolean {

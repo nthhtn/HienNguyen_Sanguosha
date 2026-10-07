@@ -1,5 +1,7 @@
-import type { CardInstance, DamageDealtEvent, Effect, GameState, SkillDefinition } from 'engine';
-import { requireZoneOfKind } from 'engine';
+import type { CardInstance, DamageDealtEvent, Effect, GameState, PhaseChangedEvent, SkillDefinition } from 'engine';
+import { colourOf, requireZoneOfKind } from 'engine';
+import { abilityKey } from '../shared/steps';
+import { nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
 import { seatCardOptions } from '../shared/choices';
 import { handOf } from '../shared/queries';
@@ -146,9 +148,81 @@ export const bestowedRouse: SkillDefinition = {
   },
 };
 
+type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
+type Done = Extract<Effect, { kind: 'JudgmentDoneEffect' }>;
+
+const inProcessing = (state: GameState, cardInstanceId: string) => requireZoneOfKind(state.zones, 'processing').cards.some((c) => c.instanceId === cardInstanceId);
+
+// Heaven's Envy (may): after a judgment of yours takes effect (Lightning has
+// struck), you may take the judged card into your hand instead of discarding it.
+export const heavensEnvy: SkillDefinition = {
+  id: 'heavens-envy',
+  triggers: [
+    on<Done>('before:JudgmentDoneEffect', {
+      condition: (state, done, owner) =>
+        done.judgment.seatId === owner.seatId && !(done.acted ?? []).includes(abilityKey(owner)) && inProcessing(state, done.judgment.card.instanceId),
+      effect: (state, done, owner) => {
+        const passed: Done = { ...done, acted: [...(done.acted ?? []), abilityKey(owner)] };
+        const take: Effect = { kind: 'MoveCardEffect', cardInstanceId: done.judgment.card.instanceId, toZoneId: handZoneId(state, owner.seatId) };
+        return [ask(owner, [take, passed], [passed])];
+      },
+    }),
+  ],
+};
+
+// Devil (may): when any seat's judgment card is turned up, before it takes
+// effect, you may play a hand card to replace it; the old card is discarded.
+// Asked in seat order from the judged seat; after a replacement, again from
+// the seat after the one that replaced it (shared/judgments.ts).
+export const devil: SkillDefinition = {
+  id: 'devil',
+  triggers: [
+    on<Shown>('before:JudgmentShownEffect', {
+      condition: (state, shown, owner, registry) => nextToChange(state, shown, owner, registry),
+      effect: (state, shown, owner) => {
+        const passed: Shown = { ...shown, acted: [...(shown.acted ?? []), owner.seatId] };
+        const pick = selectionOf(state, owner, {
+          of: 'cards', eligibleIds: handOf(state, owner.seatId).map((c) => c.instanceId), min: 1, max: 1,
+          then: { kind: 'replace-judgment', judgment: shown.judgment, owner, abilityId: owner.skillId },
+          onCancel: [passed], targetSeatId: shown.judgment.seatId,
+        });
+        return [ask(owner, [pick], [passed], shown.judgment.seatId)];
+      },
+    }),
+  ],
+};
+
+// Overturned Country (conversion, respond): any black hand card as a Shan.
+export const overturnedCountry: SkillDefinition = {
+  id: 'overturned-country',
+  conversions: [{ id: 'overturned-country', as: 'shan', cards: 1, accepts: (c) => colourOf(c) === 'black', when: 'respond' }],
+};
+
+// The ask that starts one River Goddess judgment.
+const riverGoddessAsk = (owner: Parameters<typeof ask>[0]): Effect => ask(owner, [{ kind: 'JudgeEffect', seatId: owner.seatId, reader: { kind: 'skill', owner } }]);
+
+// River Goddess (may): in your Start Phase you may judge again and again: each
+// black card goes into your hand and you may judge again; the first red card
+// is discarded, and that ends it.
+export const riverGoddess: SkillDefinition = {
+  id: 'river-goddess',
+  triggers: [
+    on<PhaseChangedEvent>('after:PhaseChangedEvent', {
+      condition: (_state, event, owner) => event.phase === 'Start' && event.seatId === owner.seatId,
+      effect: (_state, _event, owner) => [riverGoddessAsk(owner)],
+    }),
+  ],
+  onJudged: (state, { owner, judged, done }) => {
+    if (colourOf(judged) === 'red' || !isLiving(state, owner.seatId)) return [done];
+    const keep: Effect = { kind: 'MoveCardEffect', cardInstanceId: judged.instanceId, toZoneId: handZoneId(state, owner.seatId), onlyFrom: requireZoneOfKind(state.zones, 'processing').id };
+    return [keep, done, riverGoddessAsk(owner)];
+  },
+};
+
 export const WEI_GENERALS: GeneralSkillSet[] = [
   { id: 'cao-cao', skills: [evilHero, escort] },
-  { id: 'sima-yi', skills: [feedback] },
+  { id: 'sima-yi', skills: [feedback, devil] },
   { id: 'xiahou-dun', skills: [unyielding] },
-  { id: 'guo-jia', skills: [bestowedRouse] },
+  { id: 'guo-jia', skills: [heavensEnvy, bestowedRouse] },
+  { id: 'zhen-ji', skills: [overturnedCountry, riverGoddess] },
 ];
