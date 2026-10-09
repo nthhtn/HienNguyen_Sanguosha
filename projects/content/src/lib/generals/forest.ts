@@ -97,7 +97,122 @@ export const exile: SkillDefinition = {
   },
 };
 
+// Culprit (compulsory): Barbarians skips you, and the damage another seat's
+// Barbarians deals counts as yours.
+export const culprit: SkillDefinition = {
+  id: 'culprit',
+  compulsory: true,
+  modifiers: { untargetableBy: ['barbarians'] },
+  triggers: [
+    on<DamageStep>('before:DamageEffect', {
+      // Once per damage (`acted`): an ask later in the chain sends the damage back through here.
+      condition: (state, { damage, acted }, owner) =>
+        !(acted ?? []).includes(abilityKey(owner)) &&
+        damage.cause?.card?.as === 'barbarians' &&
+        damage.source?.kind === 'seat' &&
+        damage.source.seatId !== owner.seatId &&
+        isLiving(state, owner.seatId),
+      effect: (_state, step, owner) => [
+        { ...step, damage: { ...step.damage, source: { kind: 'seat', seatId: owner.seatId } }, acted: [...(step.acted ?? []), abilityKey(owner)] },
+        used(owner, 'culprit', (step.damage.target as { seatId: string }).seatId),
+      ],
+    }),
+  ],
+};
+
+// Resurgence (may): in your Draw Phase, if hurt, instead of drawing reveal as
+// many cards as you miss HP. Each heart recovers 1 HP and is discarded; the
+// rest go to your hand.
+export const resurgence: SkillDefinition = {
+  id: 'resurgence',
+  triggers: [
+    atDrawPhase({
+      condition: (state, draw, owner) => draw.count > 0 && isHurt(state, owner.seatId),
+      use: (state, _passed, owner) => [{ kind: 'RevealToProcessingEffect', count: missingHp(state, owner.seatId) }, skillStep(owner, 'sort')],
+    }),
+  ],
+  onStep: (state, step) => {
+    const { owner } = step;
+    const processing = requireZoneOfKind(state.zones, 'processing');
+    const turnedUp = [...state.log].reverse().find((e): e is CardsTurnedUpEvent => e.kind === 'CardsTurnedUpEvent');
+    const here = new Set(processing.cards.map((c) => c.instanceId));
+    const revealed = (turnedUp?.cards ?? []).filter((c) => here.has(c.instanceId));
+    const hearts = revealed.filter((c) => c.suit === 'heart');
+    const rest = revealed.filter((c) => c.suit !== 'heart');
+    return [
+      used(owner, 'revealed'),
+      ...hearts.map(() => heal(owner.seatId, 1)),
+      ...discardMoves(state, hearts.map((c) => c.instanceId)),
+      ...rest.map((c): Effect => ({ kind: 'MoveCardEffect', cardInstanceId: c.instanceId, toZoneId: handZoneId(state, owner.seatId), onlyFrom: processing.id })),
+    ];
+  },
+};
+
+// Giant Elephant (compulsory): another seat's Barbarians skips you; once it has
+// finished resolving, you take it into your hand (if it still lies discarded).
+export const giantElephant: SkillDefinition = {
+  id: 'giant-elephant',
+  compulsory: true,
+  modifiers: { untargetableBy: ['barbarians'] },
+  triggers: [
+    on<ToolResolved>('before:ToolResolvedEffect', {
+      condition: (state, effect, owner) => {
+        const discard = requireZoneOfKind(state.zones, 'discardPile');
+        return (
+          effect.tool.as === 'barbarians' &&
+          effect.seatId !== owner.seatId &&
+          isLiving(state, owner.seatId) &&
+          effect.tool.physical.some((c) => discard.cards.some((d) => d.instanceId === c.instanceId))
+        );
+      },
+      effect: (state, effect, owner) => {
+        const discard = requireZoneOfKind(state.zones, 'discardPile');
+        const moves = effect.tool.physical.map((c): Effect => ({ kind: 'MoveCardEffect', cardInstanceId: c.instanceId, toZoneId: handZoneId(state, owner.seatId), onlyFrom: discard.id }));
+        // The first effect stands in for the marker; the log line follows.
+        return [...moves, used(owner, 'took-card')];
+      },
+    }),
+  ],
+};
+
+// Intense Edge (may): when your Sha damages another seat, compete with it; on a
+// win take one of its cards (a hidden hand card, or a worn or Judgment card).
+export const intenseEdge: SkillDefinition = {
+  id: 'intense-edge',
+  triggers: [
+    on<DamageDealtEvent>('after:DamageDealtEvent', {
+      condition: (state, event, owner) => {
+        const { source, target, amount, cause } = event.damage;
+        return (
+          source?.kind === 'seat' && source.seatId === owner.seatId &&
+          target.kind === 'seat' && target.seatId !== owner.seatId &&
+          amount > 0 && cause?.card?.as === 'sha' &&
+          isLiving(state, owner.seatId) && isLiving(state, target.seatId) &&
+          handOf(state, owner.seatId).length > 0 && handOf(state, target.seatId).length > 0
+        );
+      },
+      effect: (_state, event, owner) => {
+        const target = (event.damage.target as { seatId: string }).seatId;
+        return [ask(owner, [skillStep(owner, 'start', { target })], [], target)];
+      },
+    }),
+  ],
+  onStep: (state, step) => {
+    const competing = competeStep(state, step);
+    if (competing) return competing;
+    const { owner } = step;
+    const target = step.data?.['target'] as string;
+    if (step.step === 'start') return competeStart(state, owner, target, 'result');
+    // 'result'
+    if (!step.data?.['won'] || !isLiving(state, target) || !isLiving(state, owner.seatId)) return [];
+    const options = seatCardOptions(state, target, handZoneId(state, owner.seatId));
+    return options.length > 0 ? [choiceOf(state, owner, { verb: 'take', targetSeatId: target, options })] : [];
+  },
+};
+
 export const FOREST_GENERALS: GeneralSkillSet[] = [
   { id: 'xu-huang', skills: [blockade] },
   { id: 'cao-pi', skills: [unnaturalDeath, exile, exaltation] },
+  { id: 'meng-huo', skills: [culprit, resurgence] },
+  { id: 'zhu-rong', skills: [giantElephant, intenseEdge] },
 ];
