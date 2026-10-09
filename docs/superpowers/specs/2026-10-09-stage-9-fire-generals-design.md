@@ -40,27 +40,42 @@ Rouse the Tiger and Heaven's Justice make two seats compete:
 A seat with no hand card can't be chosen to compete, and the user needs a
 hand card too.
 
-## Sha with several targets
+## Several equal targets: one window
 
-- **One Sha, several targets.** A Sha that gains extra targets is still one
-  Sha: it counts once toward the limit, and Wine spent on it adds 1 to the
-  damage at each target. It goes through every step at each target
-  separately, in seat order from its user: armour, Shan (and Eight Trigrams),
-  hit, damage. A target that dies before its turn comes is skipped.
-- **When targets are added:** at the Sha's first step (`sha-use`), before any
-  target is dealt with. Each skill that adds targets asks once there:
-  - Sky Scorcher: up to 2 more seats within attack range, when the Sha is the
-    user's last hand card.
-  - Heaven's Justice (after a won compete): 1 more seat, at any distance.
-- **They stack.** Taishi Ci wearing Sky Scorcher and playing his last hand
-  card after a won compete may add up to 3 more targets. The picks are added
-  together, never replacing each other.
-- **Any Sha counts,** whether a real card or made by a conversion or a skill
-  (Godspeed, Fighting Saint, Bewilder).
-- **An added target** is a living seat other than the user and the targets
-  already chosen, which a Sha may target (not Zhuge Liang with an empty hand
-  under Empty City). Skills that work per target (Iron Cavalry, Strong Bow,
-  Black Shield, Sudden Attack) act at each target on their own.
+An effect whose targets are all **equal** (each suffers the same effect: a Sha
+at several seats, or Chains linking two seats) has all its targets chosen in
+**one window**. An effect whose seats play different roles (Coerce: whose
+weapon, and whom it attacks) keeps its two-step menu.
+
+- **One window.** When a card, or a card made by a conversion, may take more
+  than one target now, its Play button opens a **"Choose Targets"** window
+  rather than the one-seat menu. It lists every eligible seat, says how many
+  to pick ("Choose up to 3 targets"), and plays the card on Confirm. A card
+  limited to one target keeps today's one-click seat menu.
+- **The window is the ask.** Picking more than one seat uses the skills or
+  equipment that allowed it. They don't ask a separate question.
+- **A Sha's maximum targets:**
+  - 1;
+  - +2 with Sky Scorcher, when the Sha is the user's last hand card (for a
+    conversion: when the cards it uses are all of the user's hand);
+  - +1 after a won Heaven's Justice.
+
+  They add up: Taishi Ci wearing Sky Scorcher may pick up to 4 targets.
+- **Eligible seats:** living seats other than the user that a Sha may target
+  (not Zhuge Liang with an empty hand under Empty City), within attack range,
+  or at any distance after a won Heaven's Justice.
+- **One Sha, several targets.** It counts once toward the limit, and Wine
+  spent on it adds 1 to the damage at each target. It goes through every step
+  at each target separately, in seat order from its user: armour, Shan (and
+  Eight Trigrams), hit, damage. A target that dies before its turn comes is
+  skipped. Skills that act per target (Iron Cavalry, Strong Bow, Black Shield,
+  Sudden Attack) act at each target on their own.
+- **Any Sha counts,** whether a real card or one made by a conversion
+  (Fighting Saint, Bewilder, Serpent Spear).
+- **A Sha a skill makes from a choice of seat** (Godspeed) offers the same
+  window when its maximum is above 1.
+- **Sky Scorcher changes:** it no longer asks at the Sha's first step. Its
+  extra targets are picked in the window (the stage 5 ask is removed).
 
 ## Rule text: the 8 Fire Generals
 
@@ -108,8 +123,8 @@ hand card too.
 - **Taishi Ci: Heaven's Justice** (active, once per turn). You compete with
   any seat.
   - Win: for the rest of this turn you may use 1 more Sha, your Sha ignore
-    distance, and each of your Sha may take 1 extra target (see "Sha with
-    several targets").
+    distance, and each of your Sha may take 1 extra target, picked in the same
+    window as its first (see "Several equal targets: one window").
   - Lose: you can't use a Sha for the rest of this turn.
 
 ### Qun
@@ -131,14 +146,21 @@ hand card too.
 
 Generic; the engine names no card or skill.
 
-1. **Pair conversions.**
+1. **Several targets in one pick.**
+   - `CardDefinition.targetPick?(state, ctx, registry): { eligibleIds; min; max } | null`.
+     When it allows more than one target, the legal actions offer a single
+     play template carrying that pick (`PlayCardAction.pickTargets`), rather
+     than one action per target. `UseConversionAction` gets the same template.
+   - `resolve` checks the submitted targets: only listed seats, no repeats,
+     between `min` and `max`.
+2. **Pair conversions.**
    - `Conversion.sameSuit?: true`. It is offered only when the seat holds
      enough cards of one suit.
    - Its selection carries `sameSuit`, and `validateSelection` rejects picks
      of mixed suits.
-2. **Cards out of the deck.** `CardDefinition.outOfDeck?: true`. Kingdom War's
+3. **Cards out of the deck.** `CardDefinition.outOfDeck?: true`. Kingdom War's
    deck builder skips it.
-3. **`TurnFaceUpEffect { seatId }`**, the mirror of `TurnFaceDownEffect`
+4. **`TurnFaceUpEffect { seatId }`**, the mirror of `TurnFaceDownEffect`
    (logs `SeatTurnedEvent` with `faceDown: false`).
 
 Nothing else is new. Competing, once-per-game marks (`Seat.marks`), the
@@ -154,10 +176,10 @@ pieces.
   the skill's own step with the winner.
 - **Turn-long Sha rules:** turn flags named for what they change: one more
   Sha, no distance limit, one extra target, no Sha. Content's Sha queries read
-  them: the limit, the legal targets, and an extra-target ask at `sha-use`.
-  Heaven's Justice sets them; a later skill may reuse them.
-- **Added targets accumulate:** a step's `picked` list is added to, never
-  replaced, so Sky Scorcher and Heaven's Justice stack.
+  them: the limit, the eligible seats and the maximum targets. Heaven's
+  Justice sets them; a later skill may reuse them.
+- **Sha's `targetPick`** works out eligible seats and the maximum (Sky
+  Scorcher's +2 is read as a modifier of the worn card, not an ask).
 - **Eight Trigrams' ability is shared** between the armour and Eight Arrays.
   The judgment reader is the worn card for one and the skill for the other.
 - **Hooks:**
@@ -188,7 +210,8 @@ pieces.
 - **Rouse the Tiger:** when holding a card ranked 10 or higher, and a non-ally
   with more HP has another non-ally in its attack range.
 - **Heaven's Justice:** when holding 2 or more Sha and a card ranked 10 or
-  higher. The extra target is the non-ally with the least HP.
+  higher.
+- **Choosing several targets:** non-allies, weakest first, up to the maximum.
 - **Competing:** the user plays its highest card. A target plays its highest
   against a non-ally and its lowest against an ally.
 - **Eternal Loyalty:** always. It picks itself, unless an ally is further short
@@ -215,7 +238,9 @@ pieces.
     Cancel means don't.
 - **History lines** for Nirvana, Assault, Heaven's Justice's win or loss, and
   Dueling Heroes' colour.
-- **Extra targets:** the Heaven's Justice ask reads "Add a target to your Sha".
+- **Choose Targets window:** "Choose up to N targets", seat buttons, Confirm
+  plays the card (Cancel goes back). Conversions ask for targets first, then
+  the cards.
 - **Wiki:** the Fire Generals show as in play.
 - **Text** follows CLAUDE.md's UI text style.
 
@@ -234,9 +259,11 @@ pieces.
   - See Through in a Wuxie check;
   - Eight Arrays off with armour worn, and ignored by Black Pommel.
 - **Several targets:**
+  - the one-target menu when the maximum is 1, the template when it is more;
+  - submitted targets checked (unlisted, repeated, too many rejected);
   - Heaven's Justice's extra target at any distance;
-  - Sky Scorcher and Heaven's Justice together adding 3;
-  - a Sha made by a conversion taking the extra target;
+  - Sky Scorcher and Heaven's Justice together (up to 4 targets);
+  - a Sha made by a conversion taking extra targets;
   - each target dodging or not on its own;
   - one Sha counted once.
 - **Fillers:** existing specs use the test-only fillers; a check that no filler
@@ -247,5 +274,5 @@ pieces.
     and 8 seats.
   - A forced pairing per Fire General, with every skill that leaves a trace
     fired.
-- **App:** the competing and Blaze prompts, the extra-target ask, and the new
-  history lines.
+- **App:** the competing and Blaze prompts, the Choose Targets window, and the
+  new history lines.
