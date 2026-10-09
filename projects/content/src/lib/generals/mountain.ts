@@ -537,7 +537,10 @@ export const lament: SkillDefinition = {
     const victim = step.data?.['victim'] as string;
     const source = step.data?.['source'] as string | undefined;
     if (step.step === 'pay') {
-      return [selectionOf(state, owner, { of: 'cards', eligibleIds: ownedCards(state, owner.seatId).map((c) => c.instanceId), min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'judge', { victim, ...(source ? { source } : {}) }) }, onCancel: [] })];
+      // The card may be gone by now (spent while a dying round came first).
+      const cards = ownedCards(state, owner.seatId);
+      if (cards.length === 0 || !isLiving(state, victim)) return [];
+      return [selectionOf(state, owner, { of: 'cards', eligibleIds: cards.map((c) => c.instanceId), min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'judge', { victim, ...(source ? { source } : {}) }) }, onCancel: [] })];
     }
     if (step.step === 'judge') {
       return isLiving(state, victim)

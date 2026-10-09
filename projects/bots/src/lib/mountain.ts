@@ -156,6 +156,7 @@ export function mountainSelection(view: GameState, me: Seat, selection: PendingS
     case 'lament': {
       // The payment (cancel when only a Shan or Peach would go) or the club discard (it must pick).
       const least = leastUseful(view, registry, eligible).slice(0, selection.min);
+      if (least.length === 0) return 'cancel';
       if (selection.then.kind === 'discard') return least;
       return keepRank(view, registry, least[0]) < 3 ? [least[0]] : 'cancel';
     }

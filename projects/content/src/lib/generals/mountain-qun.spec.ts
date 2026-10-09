@@ -57,6 +57,12 @@ describe('Cai Wenji — Lament', () => {
     expect(s.pendingSelection).toBeUndefined();
   });
 
+  it('if the card is gone by the time he pays (spent in a dying round), nothing is asked or discarded', () => {
+    const owner = { kind: 'general' as const, seatId: 'seat-a', slot: 'main' as const, skillId: 'lament' };
+    const s = h.run(table({}, { generals: at('seat-a', 'cai-wenji') }), [{ kind: 'SkillStepEffect', owner, step: 'pay', data: { victim: 'seat-b', source: 'seat-c' } }]);
+    expect(s.pendingSelection).toBeUndefined();
+  });
+
   it('is not asked with no card to discard', () => {
     expect(askedAbout(hurt('heart', { 'seat-a:hand': [] }))).toBeNull();
   });

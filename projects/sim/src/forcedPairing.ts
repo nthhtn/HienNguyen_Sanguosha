@@ -27,7 +27,12 @@ export function withForcedPairing(state: GameState, seatId: string, pair: [strin
   if (pool.length < others.length * 5) throw new Error(`Not enough Generals left to deal ${others.length} seats`);
   const next: Record<string, string[]> = { [seatId]: [...pair] };
   others.forEach((id, i) => (next[id] = pool.slice(i * 5, i * 5 + 5)));
-  return { ...state, generalSelection: { candidates: next } };
+  return {
+    ...state,
+    generalSelection: { candidates: next },
+    // A forced General must not also be a spare one.
+    ...(state.spareGenerals ? { spareGenerals: state.spareGenerals.filter((id) => !pair.includes(id)) } : {}),
+  };
 }
 
 // The skills of `seatId`'s Generals that left a trace in the log: an ask

@@ -4,6 +4,7 @@ import { buildContentRegistry } from '../registry';
 import { kingdomWarMode } from '../modes/kingdomWar';
 import { awakenedKey, isAwakened } from './awaken';
 import { farmCount, stashZoneOf } from './farm';
+import { competeStart } from './compete';
 import { formSkillOptions } from './forms';
 import { seatGender } from './gender';
 import { seatDistance } from './queries';
@@ -18,6 +19,14 @@ describe('awakened marks', () => {
     expect(isAwakened(s, 'seat-a', 'x')).toBe(false);
     const marked = { ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, marks: { [awakenedKey('x')]: 1 } } : x)) };
     expect(isAwakened(marked, 'seat-a', 'x')).toBe(true);
+  });
+});
+
+describe('competing with no hand card left', () => {
+  it('competeStart opens nothing when its user’s hand emptied after the ask (a dying round came first)', () => {
+    const owner = { kind: 'general' as const, seatId: 'seat-a', slot: 'main' as const, skillId: 'intense-edge' };
+    expect(competeStart(table(), owner, 'seat-b', 'result')).toEqual([]);
+    expect(competeStart(table({ 'seat-a:hand': [card('c1', 'sha')] }), owner, 'seat-b', 'result')).toHaveLength(1);
   });
 });
 

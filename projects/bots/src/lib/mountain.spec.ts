@@ -87,6 +87,11 @@ describe('choices and selections', () => {
     expect(picked(decide(selecting(base, 'clever-change', 'seats', ['seat-b', 'seat-c', 'seat-d'], 'draw-take', 1, 2)))).toEqual(['seat-b', 'seat-c']);
   });
 
+  it('Lament: with nothing eligible to pay it cancels rather than picking nothing', () => {
+    const s = selecting(table({}, { generals: generals('cai-wenji') }), 'lament', 'cards', [], 'judge');
+    expect(picked(decide(s))).toBe('CancelSelectionAction');
+  });
+
   it('Stubborn: gives back the least useful discarded card', () => {
     const s = choiceOf(table({}, { generals: generals('zhang-zhao-and-zhang-hong') }), ['p', 'x'], 'stubborn');
     const withCards = { ...s, zones: s.zones.map((z) => (z.id === 'discardPile' ? { ...z, cards: [card('p', 'peach', 'heart'), card('x', 'draw-two', 'club')] } : z)),

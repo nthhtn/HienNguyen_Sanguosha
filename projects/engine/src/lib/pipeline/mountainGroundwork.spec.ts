@@ -1,5 +1,5 @@
 import { advanceToDecision } from './resolve';
-import { skillsInPlay } from '../skills/generalSkills';
+import { skillOf, skillsInPlay } from '../skills/generalSkills';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { advancePhaseOrTurn } from '../rules/phaseSequence';
 import { conversionCards } from '../rules/legality';
@@ -76,6 +76,24 @@ describe('gained skills', () => {
     expect(ids(hidden, 'a')).toEqual(['main:plain', 'deputy:plain']);
     const shown = withSeat(table(), 'a', { gainedSkills: [{ slot: 'main', skillId: 'quiet' }, { slot: 'main', skillId: 'lordly' }] });
     expect(ids(shown, 'a')).toEqual(['main:plain', 'deputy:plain', 'main:quiet']);
+  });
+});
+
+describe('skillOf', () => {
+  it('finds a gained skill and the chosen Form’s skill for their owners, not only a General’s own', () => {
+    const gained = withSeat(table(), 'a', { gainedSkills: [{ slot: 'main', skillId: 'quiet' }] });
+    expect(skillOf(gained, { kind: 'general', seatId: 'a', slot: 'main', skillId: 'quiet' }, registry)).toBe(quiet);
+    const borrowed = withSeat(table(), 'a', { forms: { slot: 'deputy', held: ['h'], chosen: { generalId: 'h', skillId: 'quiet' } } });
+    expect(skillOf(borrowed, { kind: 'general', seatId: 'a', slot: 'deputy', skillId: 'quiet' }, registry)).toBe(quiet);
+    expect(skillOf(table(), { kind: 'general', seatId: 'a', slot: 'main', skillId: 'quiet' }, registry)).toBeUndefined();
+  });
+});
+
+describe('a step of a skill the seat no longer holds', () => {
+  it('does nothing (Zuo Ci switched Forms, or the General lost it, while the step waited)', () => {
+    const s = run(table(), { kind: 'SkillStepEffect', owner: { kind: 'general', seatId: 'a', slot: 'main', skillId: 'quiet' }, step: 'x' });
+    expect(s.log).toEqual([]);
+    expect(s.resolutionQueue ?? []).toEqual([]);
   });
 });
 

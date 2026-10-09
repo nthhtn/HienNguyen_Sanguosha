@@ -39,10 +39,16 @@ export function skillsInPlay(state: GameState, seatId: string, registry: Content
   return found;
 }
 
-// The skill behind a General owner, whether or not it is in play now.
+// The skill behind a General owner (printed, gained or borrowed), whether or not it is in play now.
 export function skillOf(state: GameState, owner: GeneralOwner, registry: ContentRegistry): SkillDefinition | undefined {
-  const general = state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot];
-  return general && registry.generals.get(general.generalDefinitionId)?.skills.find((s) => s.id === owner.skillId);
+  const seat = state.seats.find((s) => s.id === owner.seatId);
+  const general = seat?.generals?.[owner.slot];
+  const own = general && registry.generals.get(general.generalDefinitionId)?.skills.find((s) => s.id === owner.skillId);
+  if (own || !seat) return own;
+  // A skill the General gained, or borrowed from the Form chosen by its slot.
+  if (seat.gainedSkills?.some((g) => g.slot === owner.slot && g.skillId === owner.skillId)) return findSkill(registry, owner.skillId);
+  const chosen = seat.forms?.slot === owner.slot ? seat.forms.chosen : undefined;
+  return chosen && chosen.skillId === owner.skillId ? registry.generals.get(chosen.generalId)?.skills.find((s) => s.id === owner.skillId) : undefined;
 }
 
 // The key an active skill's uses are counted under in Turn.abilityUses.
