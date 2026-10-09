@@ -68,7 +68,7 @@ describe('a pending choice', () => {
     const s = opened();
     expect(s.pendingChoice).toEqual(choice);
     expect(hp(s, 'a')).toBe(3); // the heal waits
-    expect(s.resolutionQueue).toEqual([healA]);
+    expect(s.resolutionQueue).toEqual([healA, expect.objectContaining({ kind: 'ToolResolvedEffect' })]); // the Tool's end marker trails
     expect(getActiveSeatId(s)).toBe('a');
     expect(getLegalActions(s, 'a')).toEqual([
       { kind: 'ChooseOptionAction', seatId: 'a', choiceId: 'c1', optionId: 'hand' },

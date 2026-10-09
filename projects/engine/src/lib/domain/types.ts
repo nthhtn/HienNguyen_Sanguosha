@@ -115,6 +115,10 @@ export interface PendingResponse {
   // windows the engine itself opens (e.g. the dying round's Peach heals the
   // dying seat, then asks again).
   onAnswer?: Effect[];
+  // A General's skill opened this window: answering it queues the skill's
+  // `step` with `data` plus who answered (`answeredBy`) and the card as used
+  // (`answeredCard`), in place of the card definition's say (`sourceCard`).
+  sourceSkill?: { owner: GeneralOwner; step: string; data?: Record<string, unknown> };
   // What is being asked, so the UI and bots can tell windows apart.
   reason?: DecisionReason;
   // For display only: what not answering is expected to lead to, when

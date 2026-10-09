@@ -110,6 +110,14 @@ export interface SeatEliminatedEvent {
   seatId: string;
 }
 
+// A seat's max HP went down (Collapse); `maxHp` is what it is now.
+export interface MaxHpReducedEvent {
+  kind: 'MaxHpReducedEvent';
+  seatId: string;
+  amount: number;
+  maxHp: number;
+}
+
 // Deliberately carries no general ids: the log is visible to every seat.
 export interface GeneralsChosenEvent {
   kind: 'GeneralsChosenEvent';
@@ -204,6 +212,7 @@ export type EngineEvent =
   | CardPlayedEvent
   | DiscardPileReshuffledEvent
   | SeatEliminatedEvent
+  | MaxHpReducedEvent
   | SeatDyingEvent
   | SeatSavedEvent
   | GeneralsChosenEvent

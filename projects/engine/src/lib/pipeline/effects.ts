@@ -30,6 +30,10 @@ export type Effect =
   // through a conversion).
   | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string; onlyFrom?: string; countsAs?: string }
   | { kind: 'EliminateSeatEffect'; seatId: string }
+  | { kind: 'ReduceMaxHpEffect'; seatId: string; amount: number }
+  // Marks the end of a played Tool's queue items; it does nothing itself. A
+  // before-trigger on it is "after the Tool has finished resolving".
+  | { kind: 'ToolResolvedEffect'; seatId: string; tool: UsedCard }
   // The dying round for `seatId`: ask the seats in `order` (turn order from the
   // turn owner) one at a time. Any seat may save it with `rescueCardIds.any`
   // (Peach); only the dying seat itself may also use `rescueCardIds.self`
@@ -56,7 +60,7 @@ export type Effect =
   // (all but `keepInDiscard`: the Tool being resolved never turns itself up).
   | { kind: 'RevealToProcessingEffect'; count: number; keepInDiscard?: string[] }
   // Moves every card in `zoneId` to the discard pile, in order.
-  | { kind: 'DiscardZoneEffect'; zoneId: string }
+  | { kind: 'DiscardZoneEffect'; zoneId: string; acted?: string[] }
   // Sets a flag of the current turn (e.g. skipFlagOf('Play')), or clears it
   // with `value: false`. Flags end with the turn.
   | { kind: 'SetTurnFlagEffect'; flag: string; value?: boolean }
@@ -315,6 +319,22 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const event: EngineEvent = { kind: 'SeatTurnedEvent', seatId: seat.id, faceDown: false };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
+    case 'ReduceMaxHpEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      if (seat.eliminated || effect.amount <= 0) return { state, events: [] };
+      const maxCombinedHp = Math.max(0, seat.maxCombinedHp - effect.amount);
+      const combinedHp = Math.min(seat.combinedHp, maxCombinedHp);
+      const out = maxCombinedHp <= 0;
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, maxCombinedHp, combinedHp, eliminated: out } : s));
+      const events: EngineEvent[] = [
+        { kind: 'MaxHpReducedEvent', seatId: seat.id, amount: seat.maxCombinedHp - maxCombinedHp, maxHp: maxCombinedHp },
+        ...(out ? [{ kind: 'SeatEliminatedEvent' as const, seatId: seat.id }] : []),
+      ];
+      return { state: { ...state, seats, log: [...state.log, ...events] }, events };
+    }
+    case 'ToolResolvedEffect':
+      return { state, events: [] };
     case 'SkillStepEffect':
     case 'UseCardEffect':
       throw new Error(`${effect.kind} needs the registry: resolve it through the pipeline`);
