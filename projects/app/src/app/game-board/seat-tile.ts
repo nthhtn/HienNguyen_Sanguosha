@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, GameState, Seat } from 'engine';
-import { equipSlotOf, hpIconUrls } from 'content';
+import { abilityName, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
 import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
 import { SeatAvatar } from './seat-avatar';
 import { AvatarSkill } from './avatar-skills';
@@ -56,6 +56,19 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
               <app-playing-card size="small" [card]="card" />
             }
           </div>
+        }
+        @if (stash().length) {
+          <div class="pile" aria-label="Farms">
+            @for (card of stash(); track card.instanceId) {
+              <app-playing-card size="small" [card]="card" />
+            }
+          </div>
+        }
+        @if (formName(); as form) {
+          <span class="form-badge">Form: {{ form }}</span>
+        }
+        @if (seat().silenced) {
+          <span class="silenced-badge">No Skills</span>
         }
         <div class="stats">
           <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomDisplayName(seat().kingdom) }}</span>
@@ -167,6 +180,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
     .equip { display: grid; grid-template-columns: repeat(2, 44px); gap: 5px; justify-content: center; }
     .generals { position: relative; }
     .generals.face-down app-seat-avatar { filter: grayscale(0.6) brightness(0.8); }
+    .form-badge, .silenced-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
     .face-down-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
     .pile { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
     .slot { position: relative; width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
@@ -193,6 +207,13 @@ export class SeatTile {
   readonly judgment = input<CardInstance[]>([]);
   // The cards kept face up under the seat's General (Refusing Death).
   readonly pile = input<CardInstance[]>([]);
+  // Cards in the seat's stash pile (Deng Ai's Farms), face up.
+  readonly stash = input<CardInstance[]>([]);
+  // The General whose skill Zuo Ci holds now (his chosen Form), shown to everyone.
+  readonly formName = computed(() => {
+    const chosen = this.seat().forms?.chosen;
+    return chosen ? `${generalDisplayData(chosen.generalId)?.name ?? 'Form'} (${abilityName(chosen.skillId)})` : null;
+  });
   // Whether the seat is dying, when the parent knows (a seat Refusing Death
   // keeps alive below 1 HP isn't); null: judged by its HP.
   readonly dying = input<boolean | null>(null);

@@ -77,6 +77,7 @@ const STATUS_HEIGHT = 24;
             [judgment]="judgmentOf(p.seat.judgment.zoneId)"
             [judgmentCountsAs]="countsAsOf(p.seat.judgment.zoneId)"
             [pile]="judgmentOf(p.seat.pile?.zoneId ?? '')"
+            [stash]="judgmentOf(p.seat.stash?.zoneId ?? '')"
             [dying]="dyingOf(p.seat)"
           />
         </div>

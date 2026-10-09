@@ -33,7 +33,10 @@ export function seatDistance(state: GameState, fromSeatId: string, toSeatId: str
   if (!Number.isFinite(base)) return base;
   const defensive = equippedSlot(state, toSeatId, 'defensiveMount', registry) ? 1 : 0;
   const offensive = equippedSlot(state, fromSeatId, 'offensiveMount', registry) ? 1 : 0;
-  const skills = activeAbilities(state, fromSeatId, registry).reduce((sum, a) => sum + (a.modifiers?.distanceToOthers ?? 0), 0);
+  const skills = activeAbilities(state, fromSeatId, registry).reduce(
+    (sum, a) => sum + (a.modifiers?.distanceToOthers ?? 0) + (a.modifiers?.distanceToOthersFrom?.(state, fromSeatId) ?? 0),
+    0
+  );
   return Math.max(1, base + defensive - offensive + skills);
 }
 

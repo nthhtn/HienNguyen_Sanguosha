@@ -90,6 +90,8 @@ interface ChoiceSpec {
   targetSeatId?: string;
   // The card the choice is about (Bewilder's claim).
   cardId?: string;
+  // Only the choosing seat sees the options.
+  secret?: true;
 }
 
 // A choice for `owner`'s skill.
@@ -97,7 +99,7 @@ export function choiceOf(state: GameState, owner: GeneralOwner, spec: ChoiceSpec
   const seatId = spec.seatId ?? owner.seatId;
   return {
     kind: 'OpenChoiceEffect',
-    choice: { id: `${owner.skillId}-${seatId}-${state.log.length}`, seatId, reason: reasonOf(owner, spec.targetSeatId, spec.cardId), verb: spec.verb, options: spec.options },
+    choice: { id: `${owner.skillId}-${seatId}-${state.log.length}`, seatId, reason: reasonOf(owner, spec.targetSeatId, spec.cardId), verb: spec.verb, options: spec.options, ...(spec.secret ? { secret: true as const } : {}) },
   };
 }
 

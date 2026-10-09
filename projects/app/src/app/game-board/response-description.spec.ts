@@ -294,3 +294,25 @@ describe('the Upheaval window', () => {
     expect(waitingLine(state([], window))).toBe('Waiting on Seat 1 to play a Sha for Upheaval');
   });
 });
+
+describe('the Instigate window', () => {
+  const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'instigate' };
+  const window: PendingResponse = {
+    id: 'i', respondingSeatId: 'seat-1', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
+    reason: { kind: 'ability', owner, abilityId: 'instigate', targetSeatId: 'seat-0' },
+    context: { effect: { kind: 'SkillStepEffect', owner, step: 'penalty', data: { seatId: 'seat-1' } } },
+  };
+
+  it('asks for a Sha at the instigator, or a card', () => {
+    expect(describeResponse(state([], window), 'seat-1')).toMatchObject({
+      source: 'Hing used Instigate',
+      prompt: 'Play a Sha at Hing, or discard a card?',
+      outcome: 'Hing discards one of your cards',
+    });
+  });
+
+  it('says who is waited on', () => {
+    expect(waitingLine(state([], window))).toBe('Waiting on Seat 1 to play a Sha for Instigate');
+  });
+});
+

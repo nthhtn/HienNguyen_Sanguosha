@@ -1,4 +1,4 @@
-import { CardInstance, CardZone, GameState, GeneralOwner, GeneralSelectionState, PendingSelection, Seat, SeatGenerals } from './types';
+import { CardInstance, CardZone, GameState, GeneralOwner, GeneralSelectionState, PendingChoice, PendingSelection, Seat, SeatGenerals } from './types';
 
 const HIDDEN_GENERAL_ID = 'hidden';
 const HIDDEN_CARD_DEFINITION_ID = 'hidden';
@@ -97,8 +97,12 @@ function redactSeat(seat: Seat, viewerSeatId: string): Seat {
   // A seat with no generals yet has nothing to mask (its kingdom is 'hidden').
   if (seat.id === viewerSeatId || !seat.generals) return seat;
   const { main, deputy } = seat.generals;
+  // Spare Generals: none shown while their holder is hidden, and never which.
+  const { forms, ...rest } = seat;
+  const holderShown = !!forms && seat.generals[forms.slot].revealed;
   return {
-    ...seat,
+    ...rest,
+    ...(forms && holderShown ? { forms: { ...forms, held: forms.held.map(() => HIDDEN_GENERAL_ID) } } : {}),
     kingdom: isKingdomRevealed(seat.generals) ? seat.kingdom : 'hidden',
     generals: {
       main: main.revealed ? main : { ...main, generalDefinitionId: HIDDEN_GENERAL_ID },
@@ -123,13 +127,15 @@ export function redactStateForSeat(state: GameState, viewerSeatId: string): Game
   const hidden = hiddenInstanceIds(state, viewerSeatId, shown);
   // Another seat's hidden General's skills, named in what it is deciding or what is queued.
   const skills = hiddenSkillIds([state.pendingResponse, state.pendingChoice, state.pendingSelection, state.pendingArrangement, state.resolutionQueue], state, viewerSeatId);
+  const hideSecret = (choice: PendingChoice): PendingChoice => (choice.secret && choice.seatId !== viewerSeatId ? { ...choice, options: [] } : choice);
   return {
     ...state,
+    ...(state.spareGenerals ? { spareGenerals: [] } : {}),
     seats: state.seats.map((seat) => redactSeat(seat, viewerSeatId)),
     zones: state.zones.map((zone) => redactZone(zone, viewerSeatId, shown)),
     generalSelection: redactSelection(state.generalSelection, viewerSeatId),
     pendingResponse: maskSkills(maskHiddenCards(state.pendingResponse, hidden), skills),
-    ...(state.pendingChoice ? { pendingChoice: maskSkills(maskHiddenCards(state.pendingChoice, hidden), skills) } : {}),
+    ...(state.pendingChoice ? { pendingChoice: maskSkills(maskHiddenCards(hideSecret(state.pendingChoice), hidden), skills) } : {}),
     ...(state.pendingSelection ? { pendingSelection: maskSkills(redactPendingSelection(state.pendingSelection, hidden), skills) } : {}),
     ...(state.pendingArrangement ? { pendingArrangement: maskSkills(state.pendingArrangement, skills) } : {}),
     ...(state.resolutionQueue ? { resolutionQueue: maskSkills(maskHiddenCards(state.resolutionQueue, hidden), skills) } : {}),

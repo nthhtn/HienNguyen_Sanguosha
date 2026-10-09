@@ -10,6 +10,8 @@ import { queueFront } from './queue';
 // been eliminated); onStep decides what still happens.
 export function applySkillStep(state: GameState, step: Extract<Effect, { kind: 'SkillStepEffect' }>, registry: ContentRegistry): ApplyResult {
   const skill = skillOf(state, step.owner, registry);
-  if (!skill?.onStep) throw new Error(`Skill ${step.owner.skillId} has no onStep (step ${step.step})`);
+  // The seat no longer holds the skill (a Form switched away, or it was lost while the step waited): nothing to do.
+  if (!skill) return { state, events: [] };
+  if (!skill.onStep) throw new Error(`Skill ${step.owner.skillId} has no onStep (step ${step.step})`);
   return { state: queueFront(state, skill.onStep(state, step, registry) as Effect[]), events: [] };
 }

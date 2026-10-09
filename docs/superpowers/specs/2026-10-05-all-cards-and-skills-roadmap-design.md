@@ -59,7 +59,7 @@ count, in the stage that makes its rules work.
 | 8 | The Wind Generals' skills | [Stage 8 spec](2026-10-07-stage-8-wind-generals-design.md) |
 | 9 | The Fire Generals' skills (done 2026-10-09) | [Stage 9 spec](2026-10-09-stage-9-fire-generals-design.md) |
 | 10 | The Forest Generals' skills (done 2026-10-09) | [Stage 10 spec](2026-10-09-stage-10-forest-generals-design.md) |
-| 11 | The Mountain Generals' skills | its own spec, written before it is built |
+| 11 | The Mountain Generals' skills (done 2026-10-09) | [Stage 11 spec](2026-10-09-stage-11-mountain-generals-design.md) |
 
 Out of scope: elemental damage with its cards. (Wind, Fire, Forest and
 Mountain skills were added as stages 8–11 on 2026-10-07.)

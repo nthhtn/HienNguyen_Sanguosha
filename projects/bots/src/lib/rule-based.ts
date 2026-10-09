@@ -187,7 +187,7 @@ function decide(
           ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying))
           : reason.kind === 'wuxie'
             ? reason.target.kind === 'seat' && reason.target.seatId === seatId && HARMFUL_TOOLS.has(reason.tool.as)
-            : reason.kind === 'ability' && reason.abilityId === 'upheaval'
+            : reason.kind === 'ability' && (reason.abilityId === 'upheaval' || reason.abilityId === 'instigate')
               ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId)
               : false; // never counter a Wuxie Kongjie
     const answers = legal.filter((a): a is Extract<Action, { kind: 'RespondAction' }> => a.kind === 'RespondAction');
@@ -280,6 +280,9 @@ function decide(
       );
     const [breakVia] = conversionsAs('break');
     if (breakVia) return take(breakVia);
+    // Strategic Pass: a Farm as Steal.
+    const [stealVia] = conversionsAs('steal');
+    if (stealVia) return take(stealVia);
     const [captureVia] = conversionsAs('capture').sort((x, y) => targetSeat(y).combinedHp - targetSeat(x).combinedHp);
     if (captureVia) return take(captureVia);
     // Blockade: a Starvation at the non-ally with the most hand cards.

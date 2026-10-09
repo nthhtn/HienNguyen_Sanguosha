@@ -29,6 +29,6 @@ describe('Kingdom War: the pile under each General', () => {
   it('every seat has one, face up', () => {
     const { state } = kwMode.setup(['seat-0', 'seat-1'], registry, { seed: 3, counter: 0 });
     expect(state.seats.map((s) => s.pile)).toEqual([{ zoneId: 'seat-0:pile' }, { zoneId: 'seat-1:pile' }]);
-    expect(state.zones.filter((z) => z.kind === 'pile').map((z) => z.ownerSeatId)).toEqual(['seat-0', 'seat-1']);
+    expect(state.zones.filter((z) => z.kind === 'pile' && z.id.endsWith(':pile')).map((z) => z.ownerSeatId)).toEqual(['seat-0', 'seat-1']);
   });
 });

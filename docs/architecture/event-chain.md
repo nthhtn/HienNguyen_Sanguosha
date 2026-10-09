@@ -481,6 +481,44 @@ condition.
   Break, Duel, Coerce, Capture, Starvation, through `untargetableBy`'s
   `colour`) plus a `before:ToolOnTargetEffect` trigger for the rest.
 
+**Mountain hooks** (stage 11).
+- **Skills gained for good.** `GainSkillEffect` appends to `Seat.gainedSkills`
+  (`{ slot, skillId }`); `skillsInPlay` reads them like printed skills of the
+  General in `slot` (a hidden slot still needs a reveal; compulsory ones are off).
+  `skillOf` finds them too, so their steps and judgments resolve. A step for a
+  skill the seat no longer holds does nothing.
+- **Awakening.** `SkillDefinition.awakening`; content's `awakeningAtTurnStart`
+  fires once at its owner's turn start when its condition holds and marks the
+  seat (`awakened:<skillId>`, an `IncrementEffect`). `limited` and `awakening`
+  skills are never offered by Incarnation.
+- **Silencing.** `SilenceSeatEffect` sets `Seat.silenced`; `skillsInPlay` then
+  returns nothing, so no trigger, modifier, active skill or conversion remains.
+- **A skill that outlives its owner.** An eliminated seat has no skills in play.
+  `SkillDefinition.afterDeath` skills are gathered for their own seat's
+  `SeatEliminatedEvent` only. The killer travels on the dying round:
+  `DyingEffect.killerSeatId` (set by the mode from the fatal damage's source) →
+  `SeatEliminatedEvent.killerSeatId`.
+- **Spare Generals (Forms).** `GameState.spareGenerals` is the pool of Generals
+  nobody was dealt. When Generals are chosen, a Kingdom War trigger on
+  `after:GeneralsChosenEvent` deals `SkillDefinition.spareGenerals` of them
+  (`DealSpareGeneralsEffect`, which logs nothing: the log is public).
+  `ChooseFormSkillEffect` sets `Seat.forms.chosen`; `skillsInPlay` then includes
+  that skill under the holding slot, and content's `seatGender` follows the Form.
+  Redaction hides `forms` while the holder is hidden, shows `held` as hidden
+  Generals otherwise, empties the pool, and empties a `PendingChoice.secret`
+  choice's options for other viewers.
+- **Extra turns.** `GrantExtraTurnEffect` pushes onto `extraTurnStack` and sets
+  `Turn.resumeAfterSeatId`; after the extra turn the normal order resumes after
+  that seat.
+- **A second pile.** `Seat.stash` (Deng Ai's Farms) is a face-up `pile` zone;
+  `Conversion.from: 'stash'` draws a conversion's cards from it, and the
+  modifier `distanceToOthersFrom(state, seatId)` lets a skill's distance bonus
+  depend on the state (each Farm is -1).
+- **Clever Change reaches each phase with what exists:** Judgment is asked as the
+  turn starts (the phase judges on entry; `skipFlagOf`), Draw is a
+  `before:DrawPhaseEffect` replacement, Play is asked as it begins and ended with
+  `endFlagOf`, Discard is asked as it begins and skipped with `skipFlagOf`.
+
 ## Plugging into the chain
 
 | To add… | Write… | Example |

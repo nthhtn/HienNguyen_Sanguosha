@@ -151,6 +151,7 @@ const NIRVANA_MARK = 'nirvana-used';
 // (at most your max HP) and turn face up. You don't enter the dying round.
 export const nirvana: SkillDefinition = {
   id: 'nirvana',
+  limited: true,
   triggers: [
     on<Dying>('before:DyingEffect', {
       condition: (state, dying, owner) =>

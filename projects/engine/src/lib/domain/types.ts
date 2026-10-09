@@ -40,6 +40,9 @@ export interface Turn {
   // Flags that last until the turn ends, e.g. skipPlay (see skipFlagOf).
   // Absent until one is set.
   flags?: Record<string, boolean>;
+  // After an extra turn (GrantExtraTurnEffect): the seat whose turn it was
+  // granted from. The normal order resumes after it, not after the extra seat.
+  resumeAfterSeatId?: string;
 }
 
 export type Phase = 'GeneralSelection' | 'Start' | 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End';
@@ -86,6 +89,16 @@ export interface Seat {
   // Cards kept face up under the seat's General (Refusing Death). Absent in
   // tables without one.
   pile?: CardZoneRef;
+  // A second face-up pile beside `pile` (Deng Ai's Farms). Absent in tables without one.
+  stash?: CardZoneRef;
+  // Lost every skill for the rest of the game (Heartbroken).
+  silenced?: true;
+  // Skills gained for the rest of the game. `slot` is the General that gained
+  // them: its reveal state governs their use.
+  gainedSkills?: { slot: 'main' | 'deputy'; skillId: string }[];
+  // Spare Generals (Forms) the General in `slot` holds, and the one skill
+  // chosen from them, which that General then holds too.
+  forms?: { slot: 'main' | 'deputy'; held: string[]; chosen?: { generalId: string; skillId: string } };
   // Turned face down (Entrench): its next turn is skipped as it turns face up.
   faceDown?: true;
   // Game-long marks some skills keep (none of the base Generals do yet).
@@ -157,6 +170,8 @@ export interface PendingChoice {
   // gets the cards.
   verb: 'take' | 'discard' | 'use' | 'pick' | 'give';
   options: ChoiceOption[];
+  // Only the choosing seat sees the options (Incarnation's Forms).
+  secret?: true;
 }
 
 export interface ChoiceOption {
@@ -322,4 +337,7 @@ export interface GameState {
   rng: RngState;
   result: GameResult | null;
   generalSelection: GeneralSelectionState | null;
+  // General ids nobody was dealt, in order: where spare Generals come from.
+  // Hidden from every viewer.
+  spareGenerals?: string[];
 }

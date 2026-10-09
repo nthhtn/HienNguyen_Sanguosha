@@ -38,7 +38,7 @@ export function table(cards: Record<string, CardInstance[]> = {}, o: Options = {
         id, index, kingdom: o.kingdoms?.[id] ?? kingdoms[index], eliminated: false,
         generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },
         combinedHp: o.hp?.[id] ?? 4, maxCombinedHp: o.maxHp?.[id] ?? 4,
-        hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
+        hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, stash: { zoneId: `${id}:stash` },
       };
     }),
     players: [], turn: { turnNumber: 1, ownerSeatId: o.owner ?? 'seat-a', extraTurnStack: [] }, phase: 'Play',
@@ -50,6 +50,7 @@ export function table(cards: Record<string, CardInstance[]> = {}, o: Options = {
         { id: `${id}:hand`, kind: 'hand' as const, ownerSeatId: id, cards: cards[`${id}:hand`] ?? [] },
         { id: `${id}:equip`, kind: 'equip' as const, ownerSeatId: id, cards: cards[`${id}:equip`] ?? [] },
         { id: `${id}:judgment`, kind: 'judgment' as const, ownerSeatId: id, cards: [] },
+        { id: `${id}:stash`, kind: 'pile' as const, ownerSeatId: id, cards: cards[`${id}:stash`] ?? [] },
       ]),
     ],
     pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,

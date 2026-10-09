@@ -5,6 +5,8 @@ import type {
   DamageDealtEvent,
   HpLostEvent,
   SeatEliminatedEvent,
+  GeneralsChosenEvent,
+  Effect,
   SkillTrigger,
   TriggerPoint,
   PhaseChangedEvent,
@@ -33,7 +35,8 @@ function hasSameKingdomPair(generalIds: string[], registry: ContentRegistry): bo
 // Deals GENERALS_PER_SEAT unique generals to each seat from a seeded shuffle of
 // the whole registry. With four kingdoms, five candidates always contain a
 // same-kingdom pair (pigeonhole); the check guards a future fifth kingdom or a
-// smaller deal rather than silently seating an unplayable hand.
+// smaller deal rather than silently seating an unplayable hand. The Generals
+// nobody was dealt are the spare pool (those that deal spare Generals stay out).
 function dealCandidates(seatIds: string[], registry: ContentRegistry, rng: RngState) {
   const { items: pool, rng: afterShuffle } = shuffle([...registry.generals.keys()].sort(), rng);
   const candidates: Record<string, string[]> = {};
@@ -44,7 +47,8 @@ function dealCandidates(seatIds: string[], registry: ContentRegistry, rng: RngSt
     }
     candidates[seatId] = dealt;
   });
-  return { candidates, rng: afterShuffle };
+  const spare = pool.slice(seatIds.length * GENERALS_PER_SEAT).filter((id) => !(registry.generals.get(id)?.skills ?? []).some((s) => s.spareGenerals));
+  return { candidates, spare, rng: afterShuffle };
 }
 
 // Exactly one card per printing in the data, at every table size: the deck
@@ -71,6 +75,17 @@ function turnOrderFrom(state: GameState, firstSeatId: string): string[] {
   const living = [...state.seats].filter((s) => !s.eliminated).sort((a, b) => a.index - b.index);
   const start = Math.max(0, living.findIndex((s) => s.id === firstSeatId));
   return [...living.slice(start), ...living.slice(0, start)].map((s) => s.id);
+}
+
+// One DealSpareGeneralsEffect per chosen General that deals spare Generals.
+function spareDeals(state: GameState, seatId: string, registry?: ContentRegistry): Effect[] {
+  const generals = state.seats.find((s) => s.id === seatId)?.generals;
+  if (!generals || !registry) return [];
+  return (['main', 'deputy'] as const).flatMap((slot) =>
+    (registry.generals.get(generals[slot].generalDefinitionId)?.skills ?? []).flatMap((s) =>
+      s.spareGenerals ? [{ kind: 'DealSpareGeneralsEffect' as const, seatId, slot, count: s.spareGenerals }] : []
+    )
+  );
 }
 
 // The seat whose HP just dropped: a damaged seat, or one that lost HP.
@@ -124,6 +139,8 @@ function hpDropTriggers(point: TriggerPoint): SkillTrigger[] {
           entering: true,
           // How many points of HP this drop took below 1 (Refusing Death turns one card each).
           pointsBelowOne: Math.min(amount, 1 - seat.combinedHp),
+          // The seat whose damage brought it down, for Heartbroken.
+          ...(event.kind === 'DamageDealtEvent' && event.damage.source?.kind === 'seat' && event.damage.source.seatId !== seat.id ? { killerSeatId: event.damage.source.seatId } : {}),
         }];
       },
     },
@@ -141,7 +158,7 @@ export const kingdomWarMode: GameModeDefinition = {
         `Kingdom War needs between 2 and ${limit} seats with ${registry.generals.size} generals; got ${seatIds.length}`
       );
     }
-    const { candidates, rng: afterDeal } = dealCandidates(seatIds, registry, rng);
+    const { candidates, spare, rng: afterDeal } = dealCandidates(seatIds, registry, rng);
 
     // Generals, kingdom and HP are set when each seat resolves its
     // ChooseGeneralsAction during the GeneralSelection phase.
@@ -153,7 +170,7 @@ export const kingdomWarMode: GameModeDefinition = {
       combinedHp: 0,
       maxCombinedHp: 0,
       hand: { zoneId: `${id}:hand` },
-      equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, pile: { zoneId: `${id}:pile` },
+      equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, pile: { zoneId: `${id}:pile` }, stash: { zoneId: `${id}:stash` },
       eliminated: false,
     }));
 
@@ -167,6 +184,7 @@ export const kingdomWarMode: GameModeDefinition = {
         { id: s.equipped.zoneId, kind: 'equip' as const, ownerSeatId: s.id, cards: [] },
         { id: s.judgment.zoneId, kind: 'judgment' as const, ownerSeatId: s.id, cards: [] },
         { id: `${s.id}:pile`, kind: 'pile' as const, ownerSeatId: s.id, cards: [] },
+        { id: `${s.id}:stash`, kind: 'pile' as const, ownerSeatId: s.id, cards: [] },
       ]),
     ];
     let currentRng = afterShuffle;
@@ -188,6 +206,7 @@ export const kingdomWarMode: GameModeDefinition = {
       rng: currentRng,
       result: null,
       generalSelection: { candidates },
+      spareGenerals: spare,
     };
     return { state, rng: currentRng };
   },
@@ -226,7 +245,7 @@ export const kingdomWarMode: GameModeDefinition = {
       effect: (state, subject) => {
         const { seatId } = subject as SeatEliminatedEvent;
         const seat = state.seats.find((s) => s.id === seatId);
-        return seat ? [seat.hand, seat.equipped, seat.judgment, ...(seat.pile ? [seat.pile] : [])].map(({ zoneId }) => ({ kind: 'DiscardZoneEffect', zoneId })) : [];
+        return seat ? [seat.hand, seat.equipped, seat.judgment, ...(seat.pile ? [seat.pile] : []), ...(seat.stash ? [seat.stash] : [])].map(({ zoneId }) => ({ kind: 'DiscardZoneEffect', zoneId })) : [];
       },
     },
     {
@@ -239,6 +258,12 @@ export const kingdomWarMode: GameModeDefinition = {
         const event = subject as PhaseChangedEvent;
         return [{ kind: 'DrawPhaseEffect', seatId: event.seatId, count: 2 }];
       },
+    },
+    // A seat that chose a General with spare Generals to deal gets them (Incarnation).
+    {
+      point: 'after:GeneralsChosenEvent',
+      condition: (state, subject, _owner, registry) => spareDeals(state, (subject as GeneralsChosenEvent).seatId, registry).length > 0,
+      effect: (state, subject, _owner, registry) => spareDeals(state, (subject as GeneralsChosenEvent).seatId, registry),
     },
     ...hpDropTriggers('after:DamageDealtEvent'),
     ...hpDropTriggers('after:HpLostEvent'),

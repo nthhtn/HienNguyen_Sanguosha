@@ -295,6 +295,30 @@ export function actionHistory(
           action(`${owner} lost 1 HP to ${ability}`);
         } else if (event.outcome === 'collapsed-max') {
           action(`${owner} reduced their max HP with ${ability}`);
+        } else if (event.outcome.startsWith('skipped-')) {
+          action(`${owner} skipped their ${event.outcome.slice('skipped-'.length).replace(/^./, (c) => c.toUpperCase())} Phase with ${ability}`);
+        } else if (event.outcome === 'moved-card' && event.targetSeatId) {
+          action(`${owner} moved a card to ${name(event.targetSeatId)} (${ability})`);
+        } else if (event.outcome === 'farmed') {
+          action(`${owner}'s ${ability}: the judged card becomes a Farm`);
+        } else if (event.outcome === 'awakened') {
+          action(`${owner} awakened: ${ability}`);
+        } else if (event.outcome === 'paid' && event.targetSeatId) {
+          action(`${name(event.targetSeatId)} discarded a Basic card for ${owner}'s ${ability}`);
+        } else if (event.outcome === 'extra-turn' && event.targetSeatId) {
+          action(`${owner} gave ${name(event.targetSeatId)} an extra turn (${ability})`);
+        } else if (event.outcome === 'drew') {
+          action(`${owner} drew a card (${ability})`);
+        } else if (event.outcome === 'placed' && event.targetSeatId) {
+          action(`${owner} placed an Equipment card in ${name(event.targetSeatId)}'s equipment (${ability})`);
+        } else if (event.outcome === 'gave-back' && event.targetSeatId) {
+          action(`${owner} gave a discarded card back to ${name(event.targetSeatId)} and took the rest (${ability})`);
+        } else if (event.outcome === 'lamented' && event.targetSeatId) {
+          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} judges`);
+        } else if (event.outcome === 'silenced' && event.targetSeatId) {
+          action(`${name(event.targetSeatId)} loses all skills (${ability})`);
+        } else if (event.outcome === 'new-form') {
+          action(`${owner} gained a Form (${ability})`);
         } else if (event.outcome === 'swap-first' && event.targetSeatId) {
           swapFirst = event.targetSeatId;
         } else if (event.outcome === 'swapped' && event.targetSeatId) {
@@ -310,6 +334,12 @@ export function actionHistory(
           const list = picks.length > 1 ? `${picks.slice(0, -1).join(', ')} and ${picks.at(-1)}` : picks[0];
           action(`${name(event.seatId)} picked ${list} with ${abilityName(event.reason.abilityId)}`);
         }
+        break;
+      case 'SkillGainedEvent':
+        action(`${name(event.seatId)} gained ${abilityName(event.skillId)}`);
+        break;
+      case 'FormChosenEvent':
+        action(`${name(event.seatId)} chose ${abilityName(event.skillId)} from ${generalDisplayData(event.generalId)?.name ?? 'a Form'}`);
         break;
       case 'MaxHpReducedEvent':
         status(event.seatId, `${name(event.seatId)} now has a max HP of ${event.maxHp}`);

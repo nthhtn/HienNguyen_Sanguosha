@@ -8,6 +8,8 @@ import { discardMoves, isLiving, selectionOf, skillStep, type SkillStep, used } 
 // skill's steps: its onStep hands every step to competeStep first, and gets
 // `resultStep` with { ...data, target, won, userCard, targetCard }.
 export function competeStart(state: GameState, owner: GeneralOwner, targetSeatId: string, resultStep: string, data: Record<string, unknown> = {}): Effect[] {
+  // Nothing to compete with: the hand may have emptied since the skill was asked (a dying round).
+  if (handOf(state, owner.seatId).length === 0) return [];
   return [
     selectionOf(state, owner, {
       of: 'cards',

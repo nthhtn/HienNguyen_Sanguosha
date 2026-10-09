@@ -1,4 +1,4 @@
-import { Action, ContentRegistry, SeatGenerals } from 'engine';
+import { Action, ContentRegistry, Seat, SeatGenerals, SkillDefinition, findSkill } from 'engine';
 import { abilityName } from 'content';
 
 type UseSkill = Extract<Action, { kind: 'UseSkillAction' }>;
@@ -12,14 +12,29 @@ export interface AvatarSkill {
   action: UseSkill | null;
 }
 
+export interface ExtraSkill { slot: 'main' | 'deputy'; skill: SkillDefinition }
+
+// The skills a seat holds besides its Generals' printed ones: those gained for
+// good, and the one it chose from its Forms (Incarnation). The engine decides
+// which are in play; the buttons only ever enable on its actions.
+export function extraSkillsOf(seat: Pick<Seat, 'gainedSkills' | 'forms'>, registry: ContentRegistry): ExtraSkill[] {
+  const gained = (seat.gainedSkills ?? []).flatMap(({ slot, skillId }) => {
+    const skill = findSkill(registry, skillId);
+    return skill ? [{ slot, skill }] : [];
+  });
+  const chosen = seat.forms?.chosen;
+  const borrowed = chosen ? registry.generals.get(chosen.generalId)?.skills.find((s) => s.id === chosen.skillId) : undefined;
+  return [...gained, ...(chosen && borrowed ? [{ slot: seat.forms!.slot, skill: borrowed }] : [])];
+}
+
 // One button per active skill of the viewer's own Generals, Lord skills left
 // out (they are never in play). Each is enabled exactly when the engine lists
 // its UseSkillAction: the UI never decides whether a skill may be used.
-export function avatarSkills(generals: SeatGenerals | null, registry: ContentRegistry, legal: readonly Action[]): AvatarSkill[] {
+export function avatarSkills(generals: SeatGenerals | null, registry: ContentRegistry, legal: readonly Action[], extra: readonly ExtraSkill[] = []): AvatarSkill[] {
   if (!generals) return [];
   return (['main', 'deputy'] as const).flatMap((slot) => {
     const general = generals[slot];
-    const skills = registry.generals.get(general.generalDefinitionId)?.skills ?? [];
+    const skills = [...(registry.generals.get(general.generalDefinitionId)?.skills ?? []), ...extra.filter((e) => e.slot === slot).map((e) => e.skill)];
     return skills
       .filter((skill) => skill.active && !skill.lord)
       .map((skill): AvatarSkill => {
