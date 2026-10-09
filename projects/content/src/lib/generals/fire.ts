@@ -1,11 +1,15 @@
 import type { CardInstance, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, SkillDefinition } from 'engine';
+import { requireZoneOfKind } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
 import { competeStart, competeStep } from '../shared/compete';
 import { colourFor, suitOf } from '../shared/suits';
-import { abilityKey } from '../shared/steps';
+import { abilityKey, actedOn, askAtStep, atStep } from '../shared/steps';
+import { seatCardOptions } from '../shared/choices';
+import { SHA_FLAGS } from '../shared/shaRules';
+import { horsemanship } from './shu';
 import { eightTrigramsJudged, eightTrigramsTrigger } from '../cards/equipment/eight-trigrams';
-import { ask, choiceOf, discardMoves, draw, equipZoneId, hpOf, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillDamage, skillStep, used } from '../shared/skills';
+import { ask, atDrawPhase, choiceOf, discardMoves, draw, equipZoneId, handZoneId, hpOf, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillDamage, skillStep, used } from '../shared/skills';
 
 // The Fire Generals' skills (stage 9 spec, "Rule text"). Every skill acts for
 // the `owner` the engine passes in: the same General can sit at two seats in
@@ -203,9 +207,103 @@ export const fireStrategy: SkillDefinition = { id: 'fire-strategy', conversions:
 // See Through: a black hand card may be used as Wuxie.
 export const seeThrough: SkillDefinition = { id: 'see-through', conversions: [{ id: 'see-through', as: 'wuxie', cards: 1, accepts: ofColour('black'), when: 'respond' }] };
 
+// Other living seats holding a hand card to compete with.
+const competable = (state: GameState, seatId: string) => otherLivingSeatIds(state, seatId).filter((id) => handOf(state, id).length > 0);
+
+// Heaven's Justice (active, once per turn): compete with any seat. Win: this
+// turn, one more Sha, Sha ignore distance and may take one more target. Lose:
+// no Sha this turn.
+export const heavensJustice: SkillDefinition = {
+  id: 'heavens-justice',
+  active: {
+    usesPerTurn: 1,
+    canUse: (state, { seatId }) => handOf(state, seatId).length > 0 && competable(state, seatId).length > 0,
+    start: (state, { seatId, owner }) => [
+      selectionOf(state, owner, { of: 'seats', eligibleIds: competable(state, seatId), min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'chosen') }, onCancel: [] }),
+    ],
+  },
+  onStep: (state, step) => {
+    const competing = competeStep(state, step);
+    if (competing) return competing;
+    const { owner } = step;
+    if (step.step === 'chosen') return competeStart(state, owner, picked(step)[0], 'result');
+    // 'result'
+    const flags = step.data?.['won'] ? [SHA_FLAGS.extraPlay, SHA_FLAGS.anyDistance, SHA_FLAGS.extraTarget] : [SHA_FLAGS.none];
+    return flags.map((flag): Effect => ({ kind: 'SetTurnFlagEffect', flag }));
+  },
+};
+
+// Sudden Attack (may): after a seat dodges your Sha (Shan or Eight Trigrams),
+// you may discard one of its cards: a face-down hand card or a worn one.
+export const suddenAttack: SkillDefinition = {
+  id: 'sudden-attack',
+  triggers: [
+    atStep(['sha-dodged'], {
+      condition: (state, step, owner) => owner.kind === 'general' && step.userSeatId === owner.seatId && isLiving(state, step.target.seatId) && ownCards(state, step.target.seatId, true).length > 0,
+      effect: (state, step, owner) => {
+        const general = owner as GeneralOwner;
+        const target = step.target.seatId;
+        const options = seatCardOptions(state, target, requireZoneOfKind(state.zones, 'discardPile').id, { judgment: false });
+        return [askAtStep(owner, 'sudden-attack', step, [used(general, 'discarded', target), choiceOf(state, general, { verb: 'discard', targetSeatId: target, options }), actedOn(step, owner)])];
+      },
+    }),
+  ],
+};
+
+// The turn flags recording Dueling Heroes' judged colour.
+const DUEL_FLAG = { red: 'dueling-heroes-red', black: 'dueling-heroes-black' } as const;
+
+// The colour Dueling Heroes judged this turn, for the turn owner only.
+const judgedColour = (state: GameState, seatId: string): 'red' | 'black' | null => {
+  if (state.turn.ownerSeatId !== seatId) return null;
+  if (state.turn.flags?.[DUEL_FLAG.red]) return 'red';
+  return state.turn.flags?.[DUEL_FLAG.black] ? 'black' : null;
+};
+
+// Dueling Heroes (may): at your Draw Phase, instead of drawing, judge and take
+// the judgment card. For the rest of the turn, a hand card of the other colour
+// may be played as Duel.
+export const duelingHeroes: SkillDefinition = {
+  id: 'dueling-heroes',
+  triggers: [
+    atDrawPhase({
+      condition: (_state, draw) => draw.count > 0,
+      use: (_state, _passed, owner) => [{ kind: 'JudgeEffect', seatId: owner.seatId, reader: { kind: 'skill', owner } }],
+    }),
+  ],
+  onJudged: (state, { owner, judged, done }, registry) => {
+    const colour = colourFor(state, owner.seatId, judged, registry) === 'red' ? 'red' : 'black';
+    const keep: Effect = { kind: 'MoveCardEffect', cardInstanceId: judged.instanceId, toZoneId: handZoneId(state, owner.seatId), onlyFrom: requireZoneOfKind(state.zones, 'processing').id };
+    return [keep, done, used(owner, `judged-${colour}`), { kind: 'SetTurnFlagEffect', flag: DUEL_FLAG[colour] }];
+  },
+  conversions: [
+    {
+      id: 'dueling-heroes',
+      as: 'duel',
+      cards: 1,
+      when: 'play',
+      accepts: (card, state, seatId, registry) => {
+        const judged = judgedColour(state, seatId);
+        const colour = colourFor(state, seatId, card, registry);
+        return judged !== null && colour !== judged;
+      },
+    },
+  ],
+};
+
+// Random Strike: 2 hand cards of one suit may be played as Hail of Arrows.
+export const randomStrike: SkillDefinition = { id: 'random-strike', conversions: [{ id: 'random-strike', as: 'hail-of-arrows', cards: 2, sameSuit: true, when: 'play' }] };
+
+// Bloodline: a Lord skill, inactive in Kingdom War.
+export const bloodline: SkillDefinition = { id: 'bloodline', lord: true };
+
 export const FIRE_GENERALS: GeneralSkillSet[] = [
   { id: 'dian-wei', skills: [assault] },
   { id: 'xun-yu', skills: [rouseTheTiger, eternalLoyalty] },
   { id: 'pang-tong', skills: [shackle, nirvana] },
   { id: 'fire-zhuge-liang', skills: [eightArrays, fireStrategy, seeThrough] },
+  { id: 'taishi-ci', skills: [heavensJustice] },
+  { id: 'pang-de', skills: [horsemanship, suddenAttack] },
+  { id: 'yan-liang-and-wen-chou', skills: [duelingHeroes] },
+  { id: 'yuan-shao', skills: [randomStrike, bloodline] },
 ];
