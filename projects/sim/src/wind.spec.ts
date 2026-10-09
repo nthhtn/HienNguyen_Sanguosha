@@ -44,7 +44,7 @@ describe('simulated games with the base and Wind Generals', () => {
     for (const generalId of WIND_GENERAL_IDS) {
       const expected = (registry.generals.get(generalId)?.skills ?? []).filter((s) => !s.lord).map((s) => s.id).filter((id) => !MODIFIERS_ONLY.has(id));
       const fired = new Set<string>();
-      for (let seed = 1; seed <= 30 && expected.some((id) => !fired.has(id)); seed++) {
+      for (let seed = 1; seed <= 100 && expected.some((id) => !fired.has(id)); seed++) {
         const initial = withForcedPairing(createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed), 'seat-0', [generalId, partnerOf(generalId, registry, POOL)]);
         const { finalState } = runGame(initial, ctx, seed * 13 + 5, 20000, 'rule-based');
         checked(finalState, `${generalId} seed ${seed}`, failures);

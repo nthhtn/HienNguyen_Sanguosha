@@ -447,6 +447,10 @@ in seat order; the card is counted once.
 target's (`compete-target`); both cards are shown and discarded, an
 `AbilityUsedEvent` says `compete-won` or `compete-lost`, and the skill's result
 step gets `won`. A tie loses.
+The app's `competeResults` reads the public log (the two `CardShownEvent`s and
+the `AbilityUsedEvent`) into the Compete popup's data; the outcome wording per
+skill is `competeOutcomeText` in `display.ts`, and the popup is themed in the
+source seat's Force.
 
 **Same-suit pairs.** `Conversion.sameSuit` leaves out cards whose suit can't
 make a pair and marks the selection `sameSuit`; `validateSelection` rejects a
@@ -571,3 +575,23 @@ fits instead.
 3. **Before-triggers only rewrite the effect.** They can't change the state
    themselves. Each one sees the state as it was when the effect began
    resolving, along with the effect as rewritten by the triggers before it.
+
+## Reveal bonuses
+
+Two Kingdom War triggers react to `after:GeneralRevealedEvent` with a
+`DrawCardsEffect`:
+
+- **First reveal** (optional, `state.rules.firstRevealDraw`, 5+ seats): the
+  first `GeneralRevealedEvent` in the log gives its seat 2 cards.
+- **Rounding** (always): when both of a seat's Generals are revealed and their
+  printed HP sum is odd, the seat draws 1 card, once, on the second reveal.
+
+## Kill reward and penalty
+
+A Kingdom War trigger on `after:SeatEliminatedEvent` (when `killerSeatId` is
+set, is not the dead seat, and is still living):
+
+- killer has revealed a General and shares the dead seat's Kingdom (Qun is one
+  Kingdom) → `DiscardZoneEffect` on its hand;
+- otherwise → `DrawCardsEffect` of (living seats of the dead seat's Kingdom + the
+  dead seat itself).

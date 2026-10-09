@@ -16,12 +16,11 @@ import { MusicService } from './music.service';
 })
 export class App {
   protected readonly title = signal('Kingdom War');
-  protected readonly wikiPages = [
-    { path: '/wiki/generals', label: 'Generals', icon: 'sports_kabaddi', symbol: false },
-    { path: '/wiki/basic', label: 'Basic Cards', icon: 'umbrella', symbol: false },
-    // "swords" only exists in Material Symbols, not the legacy Material Icons font.
-    { path: '/wiki/equipment', label: 'Equipment', icon: 'swords', symbol: true },
-    { path: '/wiki/tools', label: 'Tools', icon: 'build', symbol: false },
+  protected readonly cardPages = [
+    { path: '/wiki/generals', label: 'Generals' },
+    { path: '/wiki/basic', label: 'Basic Cards' },
+    { path: '/wiki/equipment', label: 'Equipment' },
+    { path: '/wiki/tools', label: 'Tools' },
   ];
   protected readonly rulesPages = [
     { path: '/wiki/rules/overview', label: 'Overview' },
@@ -42,6 +41,7 @@ export class App {
   );
   protected readonly playActive = computed(() => /^\/(setup|game)(\/|$|\?)/.test(this.url()));
 
+  protected readonly cardsActive = computed(() => /^\/wiki\/(generals|basic|equipment|tools)(\/|$|\?)/.test(this.url()));
   protected readonly rulesActive = computed(() => /^\/wiki\/rules(\/|$|\?)/.test(this.url()));
 
   protected readonly music = inject(MusicService);

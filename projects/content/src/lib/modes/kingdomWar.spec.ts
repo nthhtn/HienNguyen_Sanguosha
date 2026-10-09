@@ -1,5 +1,5 @@
 import { withFillers } from '../generals/fillers.testing';
-import { table, kwMode } from '../generals/skills.testing';
+import { table, kwMode, harness, card } from '../generals/skills.testing';
 import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT, MAX_KINGDOM_WAR_SEATS } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
@@ -378,5 +378,123 @@ describe('Kingdom War: the dying round knows how far below 1 HP a drop went', ()
     const later = { ...event, damage: { ...event.damage, amount: 1 } };
     const s2 = table({}, { hp: { 'seat-b': -2 } });
     expect(kwMode.triggers.filter((t) => t.point === 'after:DamageDealtEvent' && t.condition(s2, later)).flatMap((t) => t.effect(s2, later)).find((e) => (e as { kind: string }).kind === 'DyingEffect')).toMatchObject({ pointsBelowOne: 1 });
+  });
+});
+
+describe('Kingdom War reveal bonuses', () => {
+  const makeTable = table;
+  const h = harness(kwMode);
+  const reveal = (s: GameState, seatId: string, slot: 'main' | 'deputy') => h.settle(h.act(s, { kind: 'RevealGeneralAction', seatId, slot }));
+  const handSize = (s: GameState, seatId: string) => s.zones.find((z) => z.id === `${seatId}:hand`)!.cards.length;
+  const deck = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => card(id, 'sha'));
+  // Both Generals hidden on every seat; Xu Huang (4) + Dong Zhuo (4) is even, Xu Huang (4) + Jia Xu (3) is odd.
+  const hidden = { generals: Object.fromEntries(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'].map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]])) };
+  const oddPair = (id: string) => ({ [id]: ['filler-xu-huang', 'filler-jia-xu', false] });
+
+  it('the first seat to reveal a General draws 2 when the option is on at 5 seats', () => {
+    const s = { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: true } };
+    const after = reveal(s, 'seat-b', 'main');
+    expect(handSize(after, 'seat-b')).toBe(2);
+  });
+
+  it('only the first reveal at the table gets the bonus', () => {
+    const s = { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: true } };
+    const after = reveal(reveal(s, 'seat-b', 'main'), 'seat-c', 'main');
+    expect(handSize(after, 'seat-b')).toBe(2);
+    expect(handSize(after, 'seat-c')).toBe(0);
+  });
+
+  it('gives nothing with the option off, unset, or below 5 seats', () => {
+    for (const s of [
+      { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: false } },
+      makeTable({ drawPile: deck }, { seats: 5, ...hidden }),
+      { ...makeTable({ drawPile: deck }, { seats: 4, ...hidden }), rules: { firstRevealDraw: true } },
+    ]) {
+      expect(handSize(reveal(s, 'seat-b', 'main'), 'seat-b')).toBe(0);
+    }
+  });
+
+  it('revealing the second General draws 1 when the printed HP sum is odd', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: { ...hidden.generals, ...oddPair('seat-b') } });
+    const once = reveal(s, 'seat-b', 'main');
+    expect(handSize(once, 'seat-b')).toBe(0);
+    expect(handSize(reveal(once, 'seat-b', 'deputy'), 'seat-b')).toBe(1);
+  });
+
+  it('draws 1 on the second reveal whichever General is revealed second', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: { ...hidden.generals, ...oddPair('seat-b') } });
+    expect(handSize(reveal(reveal(s, 'seat-b', 'deputy'), 'seat-b', 'main'), 'seat-b')).toBe(1);
+  });
+
+  it('draws nothing on the second reveal when the HP sum is even', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: hidden.generals });
+    expect(handSize(reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy'), 'seat-b')).toBe(0);
+  });
+
+  it('both bonuses stack for the first revealer', () => {
+    const s = { ...makeTable({ drawPile: deck }, { seats: 5, generals: { ...hidden.generals, ...oddPair('seat-b') } }), rules: { firstRevealDraw: true } };
+    expect(handSize(reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy'), 'seat-b')).toBe(3);
+  });
+});
+
+describe('Kingdom War game rules option', () => {
+  const registry = withFillers(buildContentRegistry());
+  const ids = ['a', 'b', 'c', 'd', 'e'];
+  it('stores the first-reveal option on the state', () => {
+    expect(createGame(kingdomWarMode, registry, ids, 1, { firstRevealDraw: true }).rules).toEqual({ firstRevealDraw: true });
+  });
+  it('stores no rules when none are given', () => {
+    expect(createGame(kingdomWarMode, registry, ids, 1).rules).toBeUndefined();
+  });
+});
+
+describe('Kingdom War kill reward and penalty', () => {
+  const h = harness(kwMode);
+  const rescue = { any: ['peach'], self: ['wine'] };
+  const deck = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => card(id, 'sha'));
+  const handOf = (s: GameState, id: string) => s.zones.find((z) => z.id === `${id}:hand`)!.cards;
+  // Five seats: a Wei, b Shu, c Shu, d Shu, e Wei. Seat b is at 0 HP and nobody can save it.
+  const kill = (killer: string | undefined, o: { kingdoms?: Record<string, 'Wei' | 'Shu' | 'Wu' | 'Qun'>; hidden?: string[]; eliminated?: string[] } = {}) => {
+    const kingdoms = { 'seat-a': 'Wei', 'seat-b': 'Shu', 'seat-c': 'Shu', 'seat-d': 'Shu', 'seat-e': 'Wei', ...o.kingdoms } as const;
+    const generals = Object.fromEntries((o.hidden ?? []).map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]]));
+    let s = table({ drawPile: deck, 'seat-a:hand': [card('h1', 'sha'), card('h2', 'sha')], 'seat-c:hand': [card('c1', 'sha')] }, { seats: 5, kingdoms, generals, hp: { 'seat-b': 0 } });
+    s = { ...s, seats: s.seats.map((x) => (o.eliminated?.includes(x.id) ? { ...x, eliminated: true } : x)) };
+    return h.run(s, [{ kind: 'DyingEffect', seatId: 'seat-b', order: [], rescueCardIds: rescue, ...(killer ? { killerSeatId: killer } : {}) }]);
+  };
+
+  it('rewards a killer of another Kingdom with the dead seat\'s Kingdom count, the dead seat included', () => {
+    const out = kill('seat-a');
+    expect(out.seats.find((x) => x.id === 'seat-b')!.eliminated).toBe(true);
+    expect(handOf(out, 'seat-a')).toHaveLength(2 + 3);
+  });
+
+  it('counts only living seats of that Kingdom besides the dead one', () => {
+    expect(handOf(kill('seat-a', { eliminated: ['seat-d'] }), 'seat-a')).toHaveLength(2 + 2);
+  });
+
+  it('makes a same-Kingdom killer discard its entire hand', () => {
+    const out = kill('seat-c');
+    expect(handOf(out, 'seat-c')).toHaveLength(0);
+    expect(out.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId)).toContain('c1');
+  });
+
+  it('treats Qun as one Kingdom: Qun killing Qun is penalized, Qun killing another is rewarded', () => {
+    const qun = { kingdoms: { 'seat-b': 'Qun', 'seat-c': 'Qun', 'seat-d': 'Wu' } as const };
+    expect(handOf(kill('seat-c', qun), 'seat-c')).toHaveLength(0);
+    expect(handOf(kill('seat-a', qun), 'seat-a')).toHaveLength(2 + 2);
+  });
+
+  it('rewards a killer with no revealed General even when it shares the Kingdom', () => {
+    const out = kill('seat-c', { hidden: ['seat-c'] });
+    expect(handOf(out, 'seat-c')).toHaveLength(1 + 3);
+  });
+
+  it('does nothing without a killer', () => {
+    expect(handOf(kill(undefined), 'seat-a')).toHaveLength(2);
+  });
+
+  it('does nothing when the killer is the dead seat or is out too', () => {
+    expect(handOf(kill('seat-b'), 'seat-b')).toHaveLength(0);
+    expect(handOf(kill('seat-a', { eliminated: ['seat-a'] }), 'seat-a')).toHaveLength(2);
   });
 });

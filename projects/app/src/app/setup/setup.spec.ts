@@ -86,6 +86,45 @@ describe('Setup', () => {
       expect(gameService.state()!.seats).toHaveLength(3);
     });
 
+    describe('first reveal bonus', () => {
+      const pick = (fixture: { detectChanges(): void }, el: HTMLElement, n: number) => {
+        ([...el.querySelectorAll('.seats mat-button-toggle button')].find((b) => b.textContent!.trim() === String(n)) as HTMLButtonElement).click();
+        fixture.detectChanges();
+      };
+
+      it('shows the checkbox, checked, only from 5 seats', async () => {
+        const { fixture, el } = await create();
+        pick(fixture, el, 4);
+        expect(el.querySelector('.first-reveal')).toBeNull();
+        pick(fixture, el, 5);
+        expect(el.querySelector('.first-reveal')!.textContent).toContain('First Reveal Bonus');
+        expect(el.querySelector('.first-reveal input')).toHaveProperty('checked', true);
+      });
+
+      it('starts a game with the rule on by default at 5 seats', async () => {
+        const { fixture, el, gameService } = await create();
+        pick(fixture, el, 5);
+        (el.querySelector('button.start') as HTMLButtonElement).click();
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true });
+      });
+
+      it('starts a game with the rule off when unchecked', async () => {
+        const { fixture, el, gameService } = await create();
+        pick(fixture, el, 5);
+        (el.querySelector('.first-reveal input') as HTMLInputElement).click();
+        fixture.detectChanges();
+        (el.querySelector('button.start') as HTMLButtonElement).click();
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: false });
+      });
+
+      it('sets no rule below 5 seats', async () => {
+        const { fixture, el, gameService } = await create();
+        pick(fixture, el, 4);
+        (el.querySelector('button.start') as HTMLButtonElement).click();
+        expect(gameService.state()!.rules).toBeUndefined();
+      });
+    });
+
     it('defaults to playing against bots', async () => {
       const { el, gameService } = await create();
       (el.querySelector('button.start') as HTMLButtonElement).click();

@@ -1,6 +1,7 @@
 import { pickRandomAction, ruleBasedPolicy } from 'bots';
 import { Router } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { GameBoard } from './game-board';
@@ -497,6 +498,54 @@ describe('GameBoard event sounds', () => {
   it('plays the heal sound when someone recovers HP', () => {
     logEvent({ kind: 'HealEvent', target: { kind: 'seat', seatId: 'seat-0' }, amount: 1 });
     expect(effects()).toEqual([EFFECT_URLS.heal]);
+  });
+
+  describe('Compete popup', () => {
+    const nine = { instanceId: 'c9', definitionId: 'sha', suit: 'spade' as const, rank: 9 };
+    const seven = { instanceId: 'c7', definitionId: 'shan', suit: 'heart' as const, rank: 7 };
+    const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'heavens-justice' };
+    const compete = (): GameState['log'] => [
+      { kind: 'CardShownEvent', seatId: 'seat-0', card: nine, abilityId: 'heavens-justice' },
+      { kind: 'CardShownEvent', seatId: 'seat-1', card: seven, abilityId: 'heavens-justice' },
+      { kind: 'AbilityUsedEvent', owner, abilityId: 'heavens-justice', outcome: 'compete-won', targetSeatId: 'seat-1' },
+    ];
+    const append = async (events: GameState['log']) => {
+      (gameService as unknown as { _state: { update(f: (s: GameState) => GameState): void } })._state.update((s) => ({ ...s, log: [...s.log, ...events] }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+    const popups = () => document.querySelectorAll('app-compete-dialog');
+
+    afterEach(() => TestBed.inject(MatDialog).closeAll());
+
+    it('opens for a Compete that happens while the board is open, once', async () => {
+      expect(popups()).toHaveLength(0);
+      await append(compete());
+      expect(popups()).toHaveLength(1);
+      expect(popups()[0].textContent).toContain('Heaven');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(popups()).toHaveLength(1);
+    });
+
+    it('is themed in the source seat’s Force', async () => {
+      await append(compete());
+      const force = gameService.state()!.seats[0].kingdom;
+      expect(document.querySelector('.cdk-overlay-pane')!.className).toContain(`force-dialog-${force === 'hidden' ? 'none' : force}`);
+    });
+
+    it('shows Competes one after another', async () => {
+      await append([...compete(), ...compete()]);
+      expect(popups()).toHaveLength(1);
+      const first = popups()[0];
+      (first.querySelector('button.continue') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      fixture.detectChanges();
+      expect(popups()).toHaveLength(1);
+      expect(popups()[0]).not.toBe(first);
+    });
   });
 });
 });

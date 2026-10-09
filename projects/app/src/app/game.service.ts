@@ -4,6 +4,7 @@ import {
   ContentRegistry,
   Effect,
   EngineContext,
+  GameRules,
   GameState,
   createGame,
   getActiveSeatId,
@@ -85,7 +86,7 @@ export class GameService {
   });
 
   // `names[i]` names seat i; a blank or missing name keeps the mode's default ("Seat i").
-  startGame(seatCount: number, seed?: number, mode: GameMode = 'pass-and-play', names: string[] = []): void {
+  startGame(seatCount: number, seed?: number, mode: GameMode = 'pass-and-play', names: string[] = [], rules?: GameRules): void {
     this.cancelBotTimer();
     this.botMemories.clear();
     this._mode.set(mode);
@@ -93,7 +94,7 @@ export class GameService {
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
-      const created = createGame(kingdomWarMode, this.registry, seatIds, rngSeed);
+      const created = createGame(kingdomWarMode, this.registry, seatIds, rngSeed, rules);
       const players = created.players.map((p, i) => ({
         ...p,
         kind: mode === 'vs-bots' && p.seatId !== HUMAN_SEAT_ID ? ('bot' as const) : ('human' as const),

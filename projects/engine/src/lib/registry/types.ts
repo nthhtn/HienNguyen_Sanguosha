@@ -1,4 +1,4 @@
-import { AbilityOwner, CardInstance, GeneralOwner, GameState, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
+import { AbilityOwner, CardInstance, GeneralOwner, GameState, GameRules, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
 import { RngState } from '../rng/rng';
 import type { Effect } from '../pipeline/effects';
 
@@ -274,7 +274,7 @@ export interface ContentRegistry {
 
 export interface GameModeDefinition {
   id: string;
-  setup(seatIds: string[], registry: ContentRegistry, rng: RngState): { state: GameState; rng: RngState };
+  setup(seatIds: string[], registry: ContentRegistry, rng: RngState, rules?: GameRules): { state: GameState; rng: RngState };
   checkWinCondition(state: GameState): GameResult | null;
   triggers: SkillTrigger[];
   // Largest table this mode can seat with the given content, if it is limited.
