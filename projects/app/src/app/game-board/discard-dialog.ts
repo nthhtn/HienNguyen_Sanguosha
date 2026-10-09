@@ -62,11 +62,10 @@ export interface DiscardDialogData {
       padding: 6px 4px; border: 2px solid transparent; border-radius: 10px; background: none; color: inherit; cursor: pointer;
     }
     .card:focus-visible { outline: 3px solid var(--mat-sys-primary); outline-offset: 2px; }
-    .card.checked { border-color: var(--mat-sys-error); background: var(--mat-sys-error-container); }
+    .card.checked { border-color: var(--force); background: color-mix(in srgb, var(--force) 18%, white); }
     .card:disabled { opacity: 0.5; cursor: default; }
-    .tick { position: absolute; top: 2px; right: 2px; z-index: 1; color: var(--mat-sys-error); background: #fff; border-radius: 50%; }
+    .tick { position: absolute; top: 2px; right: 2px; z-index: 1; color: var(--force); background: #fff; border-radius: 50%; }
     .timer { display: block; padding: 8px 24px 0; }
-    .discard { --mat-button-filled-container-color: var(--mat-sys-error); --mat-button-filled-label-text-color: var(--mat-sys-on-error); }
   `,
 })
 export class DiscardDialog {

@@ -91,6 +91,19 @@ describe('HandView', () => {
     expect(played).toEqual([shaAtSeat2]);
   });
 
+  it('still offers a menu when a targeted card has only one possible target, so the viewer confirms it', async () => {
+    fixture.componentRef.setInput('actions', [shaAtSeat1, equipBow, endPhase]);
+    fixture.detectChanges();
+    playButton('c-sha').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[];
+    expect(items.map((i) => i.textContent!.trim())).toEqual(['Play Sha Targeting Seat 1']);
+    expect(played).toEqual([]);
+    items[0].click();
+    expect(played).toEqual([shaAtSeat1]);
+  });
+
   it('picks a two-seat play (Coerce) in two steps: the first seat, then the second', async () => {
     const pair = (first: string, second: string): Action => ({
       kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c-peach', targets: [{ kind: 'seat', seatId: first }, { kind: 'seat', seatId: second }],

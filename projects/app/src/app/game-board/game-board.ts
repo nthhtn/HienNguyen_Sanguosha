@@ -18,7 +18,7 @@ import { GameOver } from './game-over';
 import { GeneralSelection } from './general-selection';
 import { PhaseIndicator } from './phase-indicator';
 import { DiscardPile } from './discard-pile';
-import { conversionLabel, seatName } from '../labels';
+import { conversionLabel, forceOf, seatName } from '../labels';
 import { discardHistory } from './discard-history';
 import { ActionHistoryPanel } from './action-history-panel';
 import { actionHistory } from './action-history';
@@ -32,6 +32,9 @@ import { describeArrangement, describeAsk, describeSelection } from './ability-d
 import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
 import { avatarSkills } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
+import { openForceDialog } from './force-dialog';
+import { soundsFor } from './event-sounds';
+import { MusicService, SoundEffects } from '../music.service';
 import { DecisionTimer } from '../decision-timer.service';
 
 @Component({
@@ -193,6 +196,8 @@ export class GameBoard {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly timer = inject(DecisionTimer);
+  private readonly music = inject(MusicService);
+  private readonly sounds = inject(SoundEffects);
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
   private choiceDialog: MatDialogRef<unknown, Action> | null = null;
@@ -249,6 +254,21 @@ export class GameBoard {
   constructor() {
     // Decisions are timed only while the board is on screen.
     this.timer.attach(inject(DestroyRef));
+    // The win track while the game is won; back to the background track on leaving.
+    effect(() => this.music.setTrack(this.visibleState()?.result ? 'win' : 'background'));
+    inject(DestroyRef).onDestroy(() => this.music.setTrack('background'));
+    // Event sounds (soundsFor) for whatever the log gained since the last look.
+    // The first look, and a new game's shorter log, only set the baseline, so
+    // joining mid-game is silent.
+    let seen: number | null = null;
+    effect(() => {
+      const log = this.visibleState()?.log;
+      if (!log) return;
+      untracked(() => {
+        if (seen !== null && log.length > seen) for (const sound of soundsFor(log.slice(seen))) this.sounds.play(sound);
+        seen = log.length;
+      });
+    });
     effect(() => {
       const count = this.discardsDue();
       untracked(() => {
@@ -309,6 +329,8 @@ export class GameBoard {
     return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions()) : [];
   });
 
+  // The viewer's force colour, which their decision dialogs are themed in.
+  private readonly viewerForce = computed(() => forceOf(this.viewerSeat()?.kingdom));
   protected readonly viewerSeat = computed(() => this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId()) ?? null);
 
   protected dyingOf(seat: Seat): boolean {
@@ -366,7 +388,7 @@ export class GameBoard {
       const legal = this.gameService.legalActions().filter((a): a is DiscardCardAction => a.kind === 'DiscardCardAction');
       this.timer.setTimeoutChoice(ids.map((id) => legal.find((a) => a.cardInstanceId === id)).filter((a): a is DiscardCardAction => !!a));
     };
-    const ref = this.dialog.open<DiscardDialog, DiscardDialogData, string[]>(DiscardDialog, {
+    const ref = openForceDialog<DiscardDialog, DiscardDialogData, string[]>(this.dialog, DiscardDialog, this.viewerForce(), {
       data: { cards: hand, count, chosenChanged: timeoutChoice },
       width: 'min(92vw, 640px)',
       disableClose: true,
@@ -400,7 +422,7 @@ export class GameBoard {
       action.kind === 'UseConversionAction' ? [{ id: `convert-${i}`, action, label: conversionLabel(action, visible, this.gameService.registry) }] : []
     );
     this.responseDialogFor = pendingId;
-    const ref = this.dialog.open<ResponseDialog, ResponseDialogData, Action>(ResponseDialog, {
+    const ref = openForceDialog<ResponseDialog, ResponseDialogData, Action>(this.dialog, ResponseDialog, this.viewerForce(), {
       data: { description, cards, skills, noResponse, startOnNoResponse: startsOnNoResponse(visible) },
       width: 'min(92vw, 520px)',
       disableClose: true,
@@ -424,7 +446,7 @@ export class GameBoard {
     const ask = describeAsk(visible, seatId, this.gameService.legalActions());
     if (ask) {
       this.choiceDialogFor = choiceId;
-      const ref = this.dialog.open<AskDialog, AskDialogData, Action>(AskDialog, { data: { description: ask }, width: 'min(92vw, 480px)', disableClose: true });
+      const ref = openForceDialog<AskDialog, AskDialogData, Action>(this.dialog, AskDialog, this.viewerForce(), { data: { description: ask }, width: 'min(92vw, 480px)', disableClose: true });
       this.choiceDialog = ref;
       ref.beforeClosed().subscribe((action) => {
         this.choiceDialogFor = null;
@@ -437,7 +459,7 @@ export class GameBoard {
     if (!description) return;
     const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players, description.declineLabel, visible.seats);
     this.choiceDialogFor = choiceId;
-    const ref = this.dialog.open<ChoiceDialog, ChoiceDialogData, Action>(ChoiceDialog, {
+    const ref = openForceDialog<ChoiceDialog, ChoiceDialogData, Action>(this.dialog, ChoiceDialog, this.viewerForce(), {
       data: { description, options, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },
       width: 'min(92vw, 640px)',
       disableClose: true,
@@ -459,7 +481,7 @@ export class GameBoard {
     const description = describeSelection(visible, seatId, this.gameService.legalActions());
     if (!description) return;
     this.selectionDialogFor = selectionId;
-    const ref = this.dialog.open<SelectionDialog, SelectionDialogData, Action>(SelectionDialog, {
+    const ref = openForceDialog<SelectionDialog, SelectionDialogData, Action>(this.dialog, SelectionDialog, this.viewerForce(), {
       data: { description, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },
       width: 'min(92vw, 640px)',
       disableClose: true,
@@ -481,7 +503,7 @@ export class GameBoard {
     const description = describeArrangement(visible, seatId, this.gameService.legalActions());
     if (!description) return;
     this.arrangeDialogFor = arrangementId;
-    const ref = this.dialog.open<ArrangeDialog, ArrangeDialogData, Action>(ArrangeDialog, {
+    const ref = openForceDialog<ArrangeDialog, ArrangeDialogData, Action>(this.dialog, ArrangeDialog, this.viewerForce(), {
       data: { description, arrangedChanged: (action) => this.timer.setTimeoutChoice([action]) },
       width: 'min(92vw, 720px)',
       disableClose: true,

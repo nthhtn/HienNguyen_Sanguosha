@@ -16,6 +16,9 @@ interface HandCardViewModel {
   actions: { action: Action; label: string }[];
   // Two-seat plays (Coerce: the holder, then the victim), grouped by first seat.
   pairs: { seatId: string; label: string; seconds: { action: Action; label: string }[] }[] | null;
+  // A lone targeted play is still shown as a menu: the viewer decides whether
+  // the only target is really the one they want.
+  confirmTargets: boolean;
 }
 
 function cardInstanceIdOf(action: Action): string | undefined {
@@ -66,7 +69,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
                   }
                 </ng-template>
               </mat-menu>
-            } @else if (vm.actions.length > 1) {
+            } @else if (vm.confirmTargets || vm.actions.length > 1) {
               <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="choices">
                 <mat-icon>play_arrow</mat-icon> Play
               </button>
@@ -161,6 +164,7 @@ export class HandView {
         name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name),
         actions,
         pairs,
+        confirmTargets: plays.length > 0 && plays.every((p) => p.targets.length > 0),
       };
     })
   );

@@ -75,7 +75,7 @@
                 "output": "/"
               },
               {
-                "glob": "**/*.mp3",
+                "glob": "**/*.@(mp3|ogg)",
                 "input": "projects/content/assets/audio",
                 "output": "audio"
               }

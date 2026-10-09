@@ -1,3 +1,4 @@
+import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CardZone, EngineEvent, GameState, Seat, usedCardOf } from 'engine';
 import { RoundTable } from './round-table';
@@ -92,7 +93,7 @@ describe('RoundTable', () => {
   });
 
   it('shows only the latest action sequence in the centre, oldest first, in the action history\'s wording', () => {
-    const lines = [...render(state()).querySelectorAll('.centre .sequence li')].map((li) => li.textContent!.trim());
+    const lines = [...render(state()).querySelectorAll('.centre .sequence .step .text')].map((li) => li.textContent!.trim());
     expect(lines).toEqual(['Seat 1 revealed their Main General']);
   });
 
@@ -105,11 +106,61 @@ describe('RoundTable', () => {
       { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(shan), targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'sha-1' } },
     ];
     const el = render(state({ log }));
-    expect([...el.querySelectorAll('.centre .sequence li')].map((li) => li.textContent!.trim())).toEqual([
+    expect([...el.querySelectorAll('.centre .sequence .step .text')].map((li) => li.textContent!.trim())).toEqual([
       'Seat 1 used Sha (7 ♠) on Seat 0',
       "Seat 0 used Shan (2 ♥) against Seat 1's Sha",
     ]);
-    expect(el.querySelectorAll('.centre .sequence-cards app-playing-card')).toHaveLength(2);
+    // Each card sits in the step it belongs to, as a thumbnail.
+    const steps = [...el.querySelectorAll('.centre .sequence .step')];
+    expect(steps.map((step) => step.querySelectorAll('app-card-art').length)).toEqual([1, 1]);
+  });
+
+  it('shows a step with no card of its own without a thumbnail', () => {
+    const steps = [...render(state()).querySelectorAll('.centre .sequence .step')];
+    expect(steps).toHaveLength(1);
+    expect(steps[0].querySelector('app-card-art')).toBeNull();
+  });
+
+  describe('a sequence longer than the centre has room for', () => {
+    const sha = { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
+    const long = (losses: number) => {
+      const log: EngineEvent[] = [
+        ...state().log,
+        { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [{ kind: 'seat', seatId: 'seat-0' }] },
+        ...Array.from({ length: losses }, (): EngineEvent => ({ kind: 'HpLostEvent', seatId: 'seat-1', amount: 1 })),
+      ];
+      return render(state({ log }));
+    };
+
+    it('keeps the newest steps and folds the oldest into one “earlier steps” chip', () => {
+      const el = long(40);
+      const earlier = el.querySelector('.centre .sequence .earlier')!;
+      expect(earlier.textContent!.trim()).toMatch(/^\d+ earlier steps$/);
+      const texts = [...el.querySelectorAll('.centre .sequence .step:not(.earlier) .text')].map((t) => t.textContent!.trim());
+      expect(texts.at(-1)).toBe('Seat 1 lost 1 HP');
+      expect(texts[0]).not.toContain('Sha');
+      // Every step is either shown or counted in the chip.
+      expect(texts.length + Number(earlier.textContent!.match(/\d+/)![0])).toBe(41);
+    });
+
+    it('shows a short sequence whole, with no chip', () => {
+      expect(long(2).querySelector('.centre .sequence .earlier')).toBeNull();
+    });
+  });
+
+  it('opens the card’s info from its thumbnail in a step', async () => {
+    const sha = { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
+    const log: EngineEvent[] = [
+      ...state().log,
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [{ kind: 'seat', seatId: 'seat-0' }] },
+    ];
+    const el = render(state({ log }));
+    (el.querySelector('.centre .step button.thumb') as HTMLButtonElement).click();
+    TestBed.inject(ApplicationRef).tick();
+    await new Promise((r) => setTimeout(r));
+    TestBed.inject(ApplicationRef).tick();
+    expect(document.querySelector('.cdk-overlay-container')!.textContent).toContain('Sha');
+    document.querySelector('.cdk-overlay-container')!.replaceChildren();
   });
 
   it('marks the responding seat and says who the table is waiting on', () => {

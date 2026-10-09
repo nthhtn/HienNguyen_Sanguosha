@@ -28,9 +28,11 @@ export interface TableFit {
   // Rim half-widths, in percent of the table.
   radiusX: number;
   radiusY: number;
-  // The centre's free room around the table's centre, in px.
+  // The centre's free room, in px: its size, and where its middle is (from the
+  // table's top). Horizontally it is always centred on the table.
   centreWidth: number;
   centreHeight: number;
+  centreY: number;
 }
 
 interface Box { left: number; right: number; top: number; bottom: number }
@@ -49,7 +51,7 @@ export function fitTable(width: number, height: number, seatCount: number): Tabl
       break;
     }
   }
-  return { scale: fit.scale, radiusX: fit.radiusX, radiusY: fit.radiusY, centreWidth: fit.centreWidth, centreHeight: fit.centreHeight };
+  return { scale: fit.scale, radiusX: fit.radiusX, radiusY: fit.radiusY, centreWidth: fit.centreWidth, centreHeight: fit.centreHeight, centreY: fit.centreY };
 }
 
 function layoutAt(scale: number, width: number, height: number, seats: { id: string; index: number }[]): TableFit & { fits: boolean } {
@@ -64,16 +66,31 @@ function layoutAt(scale: number, width: number, height: number, seats: { id: str
   });
   const cx = width / 2;
   const cy = height / 2;
-  // The centre's height: up to the nearest tile above or below its middle column.
+  // The tiles in the middle column. One that starts below the middle limits the
+  // centre from below, any other from above.
   const column = boxes.filter((b) => b.right > cx - CENTRE_MIN_WIDTH / 2 && b.left < cx + CENTRE_MIN_WIDTH / 2);
+  // How wide a centre spanning y from `top` to `bottom` can be: up to the nearest tile beside it.
+  const widthBetween = (top: number, bottom: number) => {
+    const band = boxes.filter((b) => b.bottom > top && b.top < bottom);
+    return Math.max(0, 2 * Math.min(cx - EDGE_GAP, ...band.map((b) => (b.left >= cx ? b.left - cx : cx - b.right) - EDGE_GAP)));
+  };
+  // Two ways to place it. Centred on the table, as tall as the nearest tiles above and below allow; or
+  // anchored to all the free felt between the lowest tile above the middle and the table's edge (the
+  // viewer's own seat is not on the table, so its half is empty). Whichever gives the larger room wins:
+  // anchoring is taller, but can be narrower once side tiles reach down.
   const halfH = Math.min(cy - EDGE_GAP, ...column.map((b) => (b.top >= cy ? b.top - cy : cy - b.bottom) - EDGE_GAP));
-  // Its width: up to the nearest tile beside it, within that height.
-  const band = boxes.filter((b) => b.bottom > cy - halfH && b.top < cy + halfH);
-  const halfW = Math.min(cx - EDGE_GAP, ...band.map((b) => (b.left >= cx ? b.left - cx : cx - b.right) - EDGE_GAP));
+  const freeTop = Math.max(EDGE_GAP, ...column.filter((b) => b.top < cy).map((b) => b.bottom + EDGE_GAP));
+  const freeBottom = Math.min(height - EDGE_GAP, ...column.filter((b) => b.top >= cy).map((b) => b.top - EDGE_GAP));
+  const candidates = [
+    { top: cy - halfH, bottom: cy + halfH },
+    { top: freeTop, bottom: freeBottom },
+  ].map((c) => ({ ...c, w: widthBetween(c.top, c.bottom), h: Math.max(0, c.bottom - c.top) }));
+  const roomy = candidates.filter((c) => c.w >= CENTRE_MIN_WIDTH && c.h >= CENTRE_MIN_HEIGHT);
+  const best = (roomy.length > 0 ? roomy : candidates).reduce((a, c) => (c.w * c.h > a.w * a.h ? c : a));
   const meet = (a: Box, b: Box) => a.left < b.right + EDGE_GAP && b.left < a.right + EDGE_GAP && a.top < b.bottom + EDGE_GAP && b.top < a.bottom + EDGE_GAP;
   const overlaps = boxes.some((a, i) => boxes.some((b, j) => j > i && meet(a, b)));
-  const fits = radiusX > 0 && radiusY > 0 && !overlaps && 2 * halfH >= CENTRE_MIN_HEIGHT && 2 * halfW >= CENTRE_MIN_WIDTH;
-  return { scale, radiusX, radiusY, centreWidth: Math.max(0, 2 * halfW), centreHeight: Math.max(0, 2 * halfH), fits };
+  const fits = radiusX > 0 && radiusY > 0 && !overlaps && roomy.length > 0;
+  return { scale, radiusX, radiusY, centreWidth: best.w, centreHeight: best.h, centreY: (best.top + best.bottom) / 2, fits };
 }
 
 export interface SeatPlacement<T> {

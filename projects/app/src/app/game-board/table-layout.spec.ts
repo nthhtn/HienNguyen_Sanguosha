@@ -108,12 +108,62 @@ describe('fitTable', () => {
     expect(fitTable(300, 200, 8).scale).toBe(0.25);
   });
 
-  it('leaves room in the centre between the top and bottom tiles, and the side ones', () => {
-    const fit = fitTable(1280, 520, 8);
+  // The centre's box, in px, and the other seats' tiles (the viewer's seat is not on the table).
+  const centreAndTiles = (width: number, height: number, n: number) => {
+    const fit = fitTable(width, height, n);
+    const tiles = boxes(width, height, n).slice(1);
+    const centre = { left: width / 2 - fit.centreWidth / 2, right: width / 2 + fit.centreWidth / 2, top: fit.centreY - fit.centreHeight / 2, bottom: fit.centreY + fit.centreHeight / 2 };
+    return { fit, tiles, centre };
+  };
+
+  it.each([
+    [1440, 612, 4],
+    [1440, 612, 5],
+    [1440, 612, 6],
+    [1440, 612, 10],
+    [1280, 432, 8],
+    [1280, 432, 10],
+    [1920, 792, 4],
+  ])('keeps the centre of a %ix%i table with %i seats inside the table and clear of every tile', (width, height, n) => {
+    const { fit, tiles, centre } = centreAndTiles(width, height, n);
     expect(fit.centreHeight).toBeGreaterThanOrEqual(130);
     expect(fit.centreWidth).toBeGreaterThanOrEqual(240);
-    const [viewer, , right, , top, , left] = boxes(1280, 520, 8);
-    expect(viewer.top - top.bottom).toBeGreaterThanOrEqual(fit.centreHeight);
-    expect(right.left - left.right).toBeGreaterThanOrEqual(fit.centreWidth);
+    expect(centre.left).toBeGreaterThanOrEqual(0);
+    expect(centre.right).toBeLessThanOrEqual(width);
+    expect(centre.top).toBeGreaterThanOrEqual(0);
+    expect(centre.bottom).toBeLessThanOrEqual(height);
+    for (const t of tiles) {
+      const apart = centre.right <= t.left || t.right <= centre.left || centre.bottom <= t.top || t.bottom <= centre.top;
+      expect(apart).toBe(true);
+    }
+  });
+
+  it('uses the empty felt below the top tile instead of centring on the table (the viewer sits outside it)', () => {
+    const { fit } = centreAndTiles(1440, 612, 4);
+    // It was 635 x 135 at the table's middle (y 306), with tiles at 0.81.
+    expect(fit.centreHeight).toBeGreaterThan(300);
+    expect(fit.centreY).toBeGreaterThan(612 / 2 + 60);
+    expect(fit.scale).toBeGreaterThan(0.81);
+  });
+
+  // The room the centre had when it was always centred on the table (width x height).
+  // (A 1280x432 table with 4 seats is left out: its tiles grow from 0.48 to 0.88, which takes
+  // some of the room, as tiles always take priority over the centre above its minimum.)
+  it.each([
+    [1440, 612, 4, 635 * 135],
+    [1440, 612, 5, 244 * 600],
+    [1440, 612, 6, 635 * 135],
+    [1440, 612, 8, 735 * 194],
+    [1440, 612, 10, 917 * 302],
+    [1280, 432, 5, 246 * 420],
+    [1280, 432, 8, 775 * 133],
+    [1280, 432, 10, 848 * 176],
+    [1920, 792, 4, 942 * 212],
+    [1920, 792, 5, 403 * 780],
+    [1920, 792, 8, 1015 * 255],
+    [1920, 792, 10, 1242 * 390],
+  ])('never leaves a %ix%i table with %i seats a smaller centre than before (was %i px²)', (width, height, n, before) => {
+    const { fit } = centreAndTiles(width, height, n);
+    expect(fit.centreWidth * fit.centreHeight).toBeGreaterThanOrEqual(before - 1);
   });
 });

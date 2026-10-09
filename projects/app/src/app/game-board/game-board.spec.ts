@@ -9,6 +9,7 @@ import { Action, GameState, cardsOverHandLimit, createRng } from 'engine';
 import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
+import { EFFECT_URLS, MUSIC_PLAYER_FACTORY } from '../music.service';
 
 function finishSelection(gameService: GameService): void {
   while (gameService.state()!.phase === 'GeneralSelection') {
@@ -454,4 +455,48 @@ describe('GameBoard in vs-bots mode', () => {
     expect(navigate).toHaveBeenCalledWith('/setup');
     jest.restoreAllMocks();
   });
+});
+
+
+describe('GameBoard event sounds', () => {
+  let gameService: GameService;
+  let played: string[];
+  let fixture: ReturnType<typeof TestBed.createComponent<GameBoard>>;
+  const logEvent = (event: GameState['log'][number]) => {
+    (gameService as unknown as { _state: { update(f: (s: GameState) => GameState): void } })._state.update((s) => ({ ...s, log: [...s.log, event] }));
+    fixture.detectChanges();
+  };
+  const effects = () => played.filter((u) => Object.values(EFFECT_URLS).includes(u));
+
+  beforeEach(async () => {
+    played = [];
+    await TestBed.configureTestingModule({
+      imports: [GameBoard],
+      providers: [
+        provideRouter([{ path: 'setup', children: [] }]),
+        { provide: MUSIC_PLAYER_FACTORY, useValue: (url: string) => ({ loop: false, volume: 1, play: () => (played.push(url), Promise.resolve()), pause: () => undefined }) },
+      ],
+    }).compileComponents();
+    gameService = TestBed.inject(GameService);
+    gameService.startGame(2, 1, 'vs-bots');
+    fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+  });
+
+  it('plays the injure sound when someone takes damage, once', () => {
+    expect(effects()).toEqual([]);
+    logEvent({ kind: 'DamageDealtEvent', damage: { target: { kind: 'seat', seatId: 'seat-0' }, amount: 1 } } as never);
+    expect(effects()).toEqual([EFFECT_URLS.injure]);
+  });
+
+  it('plays the injure sound for plain HP loss', () => {
+    logEvent({ kind: 'HpLostEvent', seatId: 'seat-0', amount: 1 });
+    expect(effects()).toEqual([EFFECT_URLS.injure]);
+  });
+
+  it('plays the heal sound when someone recovers HP', () => {
+    logEvent({ kind: 'HealEvent', target: { kind: 'seat', seatId: 'seat-0' }, amount: 1 });
+    expect(effects()).toEqual([EFFECT_URLS.heal]);
+  });
+});
 });
