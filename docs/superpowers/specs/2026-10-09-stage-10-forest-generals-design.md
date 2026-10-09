@@ -1,6 +1,6 @@
 # Stage 10: The Forest Generals — Design Spec
 
-Status: Draft for review
+Status: Built
 Date: 2026-10-09
 
 ## Purpose
@@ -253,3 +253,22 @@ These are my best readings of ambiguous crawled text:
 4. **Alliance** takes two other seats, never Lu Su.
 5. **Garden of Lust** covers Sha only, not Duel.
 6. **Unnatural Death** takes the Judgment slot cards too.
+
+## Rulings made while building
+
+- **Upheaval asks the target first, then opens a Sha window.** Each seat picks a
+  seat in its range (or "Pass (Lose 1 HP)"), then a response window asks for the
+  Sha, real or converted. A seat with a target but no Sha presses Pass; only a
+  seat with nothing in range loses the HP at once.
+- **Unnatural Death is a before-trigger on the dead seat's `DiscardZoneEffect`**,
+  not a new death hook (`DiscardZoneEffect.acted`).
+- **Giant Elephant needs `ToolResolvedEffect`**, queued behind a played Tool,
+  because a used card is in the discard pile at once.
+- **Complete Kill filters the dying round's order**, not Peach plays.
+- **Curtain is a modifier plus a backstop trigger** on `ToolOnTargetEffect`.
+- **Blockade's +1 range counts only while Xu Huang is revealed.**
+- **Resurgence's hearts are the printed suit** of the revealed card.
+- **Culprit logs its rewrite** (`culprit`) so the history can say the damage
+  counts as Meng Huo's.
+- **Alliance logs two events** (`swap-first`, `swapped`) so the history reads
+  "A and B swapped hands".

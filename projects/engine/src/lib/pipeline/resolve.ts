@@ -333,9 +333,15 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
   const fromSource = pending?.sourceCard
     ? ((lookupCard(ctx.registry, pending.sourceCard.definitionId).onResponse?.(afterLog, { pending, seatId, cardInstanceId, card: used }, ctx.registry) ?? []) as Effect[])
     : [];
+  // A skill's own window: its step hears who answered and with what.
+  const fromSkill: Effect[] = pending?.sourceSkill
+    ? [{ kind: 'SkillStepEffect', owner: pending.sourceSkill.owner, step: pending.sourceSkill.step, data: { ...pending.sourceSkill.data, answeredBy: seatId, answeredCard: used } }]
+    : [];
+  // The end of a played Tool's queue items (not of a delayed Tool, which waits to be judged).
+  const toolDone: Effect[] = !pending && definition.category === 'tool' && !definition.delayed ? [{ kind: 'ToolResolvedEffect', seatId, tool: used }] : [];
   const followUps = afterTriggerFollowUps(tallied, [event], ctx);
   return {
-    state: queueFront(tallied, [...leaveHand, ...followUps, ...effects, ...(pending?.onAnswer ?? []), ...fromSource]),
+    state: queueFront(tallied, [...leaveHand, ...followUps, ...effects, ...(pending?.onAnswer ?? []), ...fromSource, ...fromSkill, ...toolDone]),
     events: [event],
   };
 }

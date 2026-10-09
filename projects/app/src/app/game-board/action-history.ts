@@ -57,6 +57,7 @@ export function actionHistory(
   const knownFaces = new Map<string, CardInstance>();
   // The card each seat showed last, and its line (competing folds two into one).
   const lastShown = new Map<string, { card: CardInstance; line: ActionLine }>();
+  let swapFirst: string | null = null;
   // "Seat 1 took Hing's Silver Lion (A ♣) with Steal", "Seat 1 took a hand card
   // from Hing with Steal", "Seat 1 discarded Sha (7 ♠) from Hing's hand with Break".
   const pickLine = (made: ChoiceMadeEvent, face: CardInstance | undefined, ownerSeatId: string | undefined): string => {
@@ -226,7 +227,7 @@ export function actionHistory(
         const owner = name(event.owner.seatId);
         const ability = abilityName(event.abilityId);
         if (event.outcome === 'used') {
-          action(`${owner} used ${ability}`);
+          action(event.abilityId === 'upheaval' ? `${owner} used ${ability}: every other seat plays a Sha or loses 1 HP` : `${owner} used ${ability}`);
         } else if (event.outcome === 'no-effect' && event.targetSeatId) {
           action(`${owner}'s ${ability}: ${name(event.targetSeatId)}'s Sha has no effect`);
         } else if (event.outcome === 'counts-as-shan') {
@@ -276,6 +277,29 @@ export function actionHistory(
           action(`${owner}'s ${ability}: discards one of ${name(event.targetSeatId)}'s cards`);
         } else if (event.outcome === 'recast') {
           action(`${owner} recast a club with ${ability}`);
+        } else if (event.outcome === 'took-cards' && event.targetSeatId) {
+          action(`${owner} took all of ${name(event.targetSeatId)}'s cards (${ability})`);
+        } else if (event.outcome === 'exiled' && event.targetSeatId) {
+          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} turns over and draws cards`);
+        } else if (event.outcome === 'revealed') {
+          action(`${owner} used ${ability}`);
+        } else if (event.outcome === 'culprit' && event.targetSeatId) {
+          action(`${owner}'s ${ability}: the damage to ${name(event.targetSeatId)} counts as theirs`);
+        } else if (event.outcome === 'took-card') {
+          action(`${owner}'s ${ability}: took the Tool card`);
+        } else if (event.outcome === 'drew' && event.targetSeatId) {
+          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} draws and discards`);
+        } else if (event.outcome === 'gave' && event.targetSeatId) {
+          action(`${owner} gave half of their hand to ${name(event.targetSeatId)} (${ability})`);
+        } else if (event.outcome === 'collapsed') {
+          action(`${owner} lost 1 HP to ${ability}`);
+        } else if (event.outcome === 'collapsed-max') {
+          action(`${owner} reduced their max HP with ${ability}`);
+        } else if (event.outcome === 'swap-first' && event.targetSeatId) {
+          swapFirst = event.targetSeatId;
+        } else if (event.outcome === 'swapped' && event.targetSeatId) {
+          action(`${swapFirst ? name(swapFirst) : 'A seat'} and ${name(event.targetSeatId)} swapped hands (${ability})`);
+          swapFirst = null;
         }
         break;
       }
@@ -286,6 +310,9 @@ export function actionHistory(
           const list = picks.length > 1 ? `${picks.slice(0, -1).join(', ')} and ${picks.at(-1)}` : picks[0];
           action(`${name(event.seatId)} picked ${list} with ${abilityName(event.reason.abilityId)}`);
         }
+        break;
+      case 'MaxHpReducedEvent':
+        status(event.seatId, `${name(event.seatId)} now has a max HP of ${event.maxHp}`);
         break;
       case 'HpLostEvent':
         status(event.seatId, `${name(event.seatId)} lost ${event.amount} HP${event.abilityId ? ` (${abilityName(event.abilityId)})` : ''}`);

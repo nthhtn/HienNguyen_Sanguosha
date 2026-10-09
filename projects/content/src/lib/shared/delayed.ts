@@ -1,9 +1,9 @@
 import type { CardDefinition, CardInstance, Effect, GameState, Phase, PhaseChangedEvent, SkillTrigger } from 'engine';
 import { cardCountsAs, judgmentZoneOf, skipFlagOf, usedCardFrom, usedCardOf } from 'engine';
-import { toolsIgnoreDistance, untargetableBy } from './abilities';
+import { rangeBonusFor, toolsIgnoreDistance, untargetableBy } from './abilities';
 import { suitOf } from './suits';
 import { otherLivingSeatTargets, seatDistance } from './queries';
-import { COUNTER_CARD_IDS } from './tools';
+import { COUNTER_CARD_IDS, playColour } from './tools';
 
 // Whether `seatId`'s judgment area already holds a `definitionId` (or a card placed as one).
 export function holdsDelayed(state: GameState, seatId: string, definitionId: string): boolean {
@@ -48,8 +48,10 @@ export function skipPhaseTool({ id, name, skips, spares, maxDistance }: SkipPhas
         ([target]) =>
           target.kind === 'seat' &&
           !holdsDelayed(state, target.seatId, id) &&
-          !untargetableBy(state, target.seatId, id, registry) &&
-          (maxDistance === undefined || toolsIgnoreDistance(state, ctx.seatId, registry) || seatDistance(state, ctx.seatId, target.seatId, registry) <= maxDistance)
+          !untargetableBy(state, target.seatId, id, registry, playColour(state, ctx, registry)) &&
+          (maxDistance === undefined ||
+            toolsIgnoreDistance(state, ctx.seatId, registry) ||
+            seatDistance(state, ctx.seatId, target.seatId, registry) <= maxDistance + rangeBonusFor(state, ctx.seatId, id, registry))
       ),
     play: (state, ctx) => {
       const [target] = ctx.targets;
