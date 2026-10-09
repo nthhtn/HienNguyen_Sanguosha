@@ -1,7 +1,7 @@
 import type { Action, ContentRegistry, GameState, Seat } from 'engine';
 import { conversionsOf, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
-import { definitionIdOf, isAlly, keepRank, leastUseful, mayReveal } from './helpers';
+import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal } from './helpers';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -20,7 +20,7 @@ const HARMFUL_TOOLS = new Set(['barbarians', 'hail-of-arrows', 'duel', 'steal', 
 // Plays of `definitionId` aimed at a living non-ally, weakest target first.
 function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string): PlayCard[] {
   return plays
-    .filter((p) => p.targets.length === 1 && p.targets[0].kind === 'seat' && definitionIdOf(view, p.cardInstanceId) === definitionId)
+    .filter((p) => p.targets.length >= 1 && p.targets[0].kind === 'seat' && definitionIdOf(view, p.cardInstanceId) === definitionId)
     .map((p) => ({ play: p, target: view.seats.find((s) => p.targets[0].kind === 'seat' && s.id === p.targets[0].seatId) }))
     .filter((t): t is { play: PlayCard; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
     .sort((a, b) => a.target.combinedHp - b.target.combinedHp || a.target.index - b.target.index)
@@ -65,11 +65,18 @@ const conversionAs = (a: UseConversion, view: GameState, registry: ContentRegist
 function decide(
   view: GameState,
   seatId: string,
-  legal: Action[],
+  offered: Action[],
   registry: ContentRegistry,
   memory: BotTurnMemory | null
 ): BotDecision {
-  if (legal.length === 0) throw new Error(`Bot ${seatId} has no legal action`);
+  if (offered.length === 0) throw new Error(`Bot ${seatId} has no legal action`);
+  // Target templates filled in (several targets in one pick), or dropped when no non-ally fits.
+  const mine = view.seats.find((s) => s.id === seatId);
+  const legal = offered.flatMap((a): Action[] => {
+    if ((a.kind !== 'PlayCardAction' && a.kind !== 'UseConversionAction') || !a.pickTargets) return [a];
+    const filled = mine ? fillPick(view, mine, a) : null;
+    return filled ? [filled] : [];
+  });
   const mem: BotTurnMemory =
     memory && memory.turnNumber === view.turn.turnNumber
       ? memory
@@ -118,7 +125,7 @@ function decide(
     }
     const known = selection.reason.kind === 'ability' && SELECTS_FOR.has(selection.reason.abilityId);
     if (cancel && !known) return take(cancel);
-    return take({ ...selectTemplate, ids: leastUseful(view, registry, selection.eligibleIds).slice(0, selection.min) });
+    return take({ ...selectTemplate, ids: fillSelection(view, selection, leastUseful(view, registry, selection.eligibleIds)) });
   }
 
   // 1a'. An ability's ask; Gender Swords' choice for its target.
@@ -293,7 +300,7 @@ function decide(
     if (sha) return take(sha, 1);
     // A conversion into a Sha (Serpent Spear, Fighting Saint…): with no real Sha, at the weakest non-ally.
     const [conversion] = legal
-      .filter((a): a is UseConversion => a.kind === 'UseConversionAction' && a.targets.length === 1 && conversionAs(a, view, registry) === 'sha')
+      .filter((a): a is UseConversion => a.kind === 'UseConversionAction' && a.targets.length >= 1 && conversionAs(a, view, registry) === 'sha')
       .map((a) => ({ a, target: view.seats.find((s) => s.id === a.targets[0].seatId) }))
       .filter((t): t is { a: UseConversion; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
       .sort((x, y) => x.target.combinedHp - y.target.combinedHp || x.target.index - y.target.index)
