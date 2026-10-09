@@ -1,4 +1,4 @@
-import type { CardInstance, CardMovedEvent, CardZone, ContentRegistry, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
+import type { CardInstance, CardMovedEvent, CardZone, ContentRegistry, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard, DamageDealtEvent, GeneralRevealedEvent, SeatEliminatedEvent } from 'engine';
 import { cardCountsAs, discardOwed, endFlagOf, requireZoneOfKind, skipFlagOf } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
@@ -10,6 +10,8 @@ import { equipSlotOf } from '../cards/equipment';
 import { suitOf } from '../shared/suits';
 import { awakeningAtTurnStart, isAwakened } from '../shared/awaken';
 import { farmCount, stashMove } from '../shared/farm';
+import { formSkillOptions } from '../shared/forms';
+import { abilityName, generalDisplayData } from '../display';
 import {
   ask, atDrawPhase, choiceOf, discardMoves, draw, handZoneId, heal, hpOf, isHurt, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used,
 } from '../shared/skills';
@@ -510,6 +512,124 @@ export const stubborn: SkillDefinition = {
   },
 };
 
+// ── Cai Wenji ──────────────────────────────────────────────────────────────
+
+const ownedCards = (state: GameState, seatId: string) => [...handOf(state, seatId), ...cardsIn(state, seatOf(state, seatId)!.equipped.zoneId)];
+
+// Lament (may): whenever any seat takes damage from a Sha, discard a card; the
+// victim then judges: heart it recovers 1 HP, diamond it draws 2, club the
+// source discards 2 cards, spade the source turns over.
+export const lament: SkillDefinition = {
+  id: 'lament',
+  triggers: [
+    on<DamageDealtEvent>('after:DamageDealtEvent', {
+      condition: (state, event, owner) =>
+        event.damage.cause?.card?.as === 'sha' && event.damage.target.kind === 'seat' && event.damage.amount > 0 && isLiving(state, event.damage.target.seatId) && isLiving(state, owner.seatId) && ownedCards(state, owner.seatId).length > 0,
+      effect: (_state, event, owner) => {
+        const victim = (event.damage.target as { seatId: string }).seatId;
+        const source = event.damage.source?.kind === 'seat' ? event.damage.source.seatId : undefined;
+        return [ask(owner, [skillStep(owner, 'pay', { victim, ...(source ? { source } : {}) })], [], victim)];
+      },
+    }),
+  ],
+  onStep: (state, step) => {
+    const { owner } = step;
+    const victim = step.data?.['victim'] as string;
+    const source = step.data?.['source'] as string | undefined;
+    if (step.step === 'pay') {
+      return [selectionOf(state, owner, { of: 'cards', eligibleIds: ownedCards(state, owner.seatId).map((c) => c.instanceId), min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'judge', { victim, ...(source ? { source } : {}) }) }, onCancel: [] })];
+    }
+    if (step.step === 'judge') {
+      return isLiving(state, victim)
+        ? [...discardMoves(state, picked(step)), used(owner, 'lamented', victim), { kind: 'JudgeEffect', seatId: victim, reader: { kind: 'skill', owner }, data: { victim, ...(source ? { source } : {}) } }]
+        : discardMoves(state, picked(step));
+    }
+    if (step.step === 'club') {
+      if (!source || !isLiving(state, source)) return [];
+      const cards = ownedCards(state, source);
+      const count = Math.min(2, cards.length);
+      return count === 0 ? [] : [selectionOf(state, owner, { of: 'cards', seatId: source, targetSeatId: source, eligibleIds: cards.map((c) => c.instanceId), min: count, max: count, then: { kind: 'discard' } })];
+    }
+    return [];
+  },
+  // The judged card goes to the discard pile first; then what its suit does.
+  onJudged: (state, { owner, judged, data, done }, registry) => {
+    const victim = data?.['victim'] as string;
+    const source = data?.['source'] as string | undefined;
+    const suit = suitOf(state, victim, judged, registry);
+    if (suit === 'heart') return [done, heal(victim, 1)];
+    if (suit === 'diamond') return [done, draw(victim, 2)];
+    if (!source || !isLiving(state, source)) return [done];
+    if (suit === 'club') return [done, skillStep(owner, 'club', { source })];
+    return [done, seatOf(state, source)?.faceDown ? { kind: 'TurnFaceUpEffect', seatId: source } : { kind: 'TurnFaceDownEffect', seatId: source }];
+  },
+};
+
+// Heartbroken (compulsory): when a seat kills her, that seat loses all its
+// skills for the rest of the game. She is out when it acts (afterDeath).
+export const heartbroken: SkillDefinition = {
+  id: 'heartbroken',
+  compulsory: true,
+  afterDeath: true,
+  triggers: [
+    on<SeatEliminatedEvent>('after:SeatEliminatedEvent', {
+      condition: (state, event, owner) =>
+        event.seatId === owner.seatId && !!event.killerSeatId && event.killerSeatId !== owner.seatId && isLiving(state, event.killerSeatId),
+      effect: (_state, event, owner) => [used(owner, 'silenced', event.killerSeatId), { kind: 'SilenceSeatEffect', seatId: event.killerSeatId! }],
+    }),
+  ],
+};
+
+// ── Zuo Ci ─────────────────────────────────────────────────────────────────
+
+// The pick of a Form's skill; secret, since the options name spare Generals.
+function chooseForm(state: GameState, owner: GeneralOwner, registry: ContentRegistry): Effect {
+  return choiceOf(state, owner, {
+    verb: 'pick',
+    secret: true,
+    options: formSkillOptions(state, owner.seatId, registry).map(({ generalId, skillId }) => ({
+      id: `${generalId}/${skillId}`,
+      shows: { kind: 'label' as const, text: `${abilityName(skillId)} (${generalDisplayData(generalId)?.name ?? generalId})` },
+      effects: [{ kind: 'ChooseFormSkillEffect' as const, seatId: owner.seatId, generalId, skillId }, used(owner, 'incarnated')],
+    })),
+  });
+}
+
+// Incarnation (may): he holds 2 Forms (spare Generals, dealt when Generals are
+// chosen) and may choose one skill of one of them when he is revealed and at
+// the start and end of each of his turns. That Form turns face up; he holds the
+// skill, and its gender. Lord, awakening and limited skills cannot be chosen.
+export const incarnation: SkillDefinition = {
+  id: 'incarnation',
+  spareGenerals: 2,
+  triggers: [
+    on<PhaseChangedEvent>('after:PhaseChangedEvent', {
+      condition: (state, event, owner, registry) =>
+        (event.phase === 'Start' || event.phase === 'End') && event.seatId === owner.seatId && state.turn.ownerSeatId === owner.seatId && formSkillOptions(state, owner.seatId, registry).length > 0,
+      effect: (state, _event, owner, registry) => [ask(owner, [chooseForm(state, owner, registry)])],
+    }),
+    // Revealed for any reason but this skill: the first choice.
+    on<GeneralRevealedEvent>('after:GeneralRevealedEvent', {
+      condition: (state, event, owner, registry) =>
+        event.seatId === owner.seatId && event.slot === owner.slot && event.forAbilityId !== 'incarnation' && !seatOf(state, owner.seatId)?.forms?.chosen && formSkillOptions(state, owner.seatId, registry).length > 0,
+      effect: (state, _event, owner, registry) => [ask(owner, [chooseForm(state, owner, registry)])],
+    }),
+  ],
+};
+
+// New Life (compulsory): each point of damage you take deals you one more Form.
+export const newLife: SkillDefinition = {
+  id: 'new-life',
+  compulsory: true,
+  triggers: [
+    on<DamageDealtEvent>('after:DamageDealtEvent', {
+      condition: (state, event, owner) =>
+        event.damage.target.kind === 'seat' && event.damage.target.seatId === owner.seatId && event.damage.amount > 0 && isLiving(state, owner.seatId) && (state.spareGenerals ?? []).length > 0,
+      effect: (_state, event, owner) => [used(owner, 'new-form'), { kind: 'DealSpareGeneralsEffect', seatId: owner.seatId, slot: owner.slot, count: event.damage.amount }],
+    }),
+  ],
+};
+
 export const MOUNTAIN_GENERALS: GeneralSkillSet[] = [
   { id: 'zhang-he', skills: [cleverChange] },
   { id: 'deng-ai', skills: [militaryFarm, strategicPass] },
@@ -517,4 +637,6 @@ export const MOUNTAIN_GENERALS: GeneralSkillSet[] = [
   { id: 'jiang-wei', skills: [instigate, followTheMaster] },
   { id: 'sun-ce', skills: [passion, soulPosition, takeover] },
   { id: 'zhang-zhao-and-zhang-hong', skills: [directInstruction, stubborn] },
+  { id: 'cai-wenji', skills: [lament, heartbroken] },
+  { id: 'zuo-ci', skills: [incarnation, newLife] },
 ];

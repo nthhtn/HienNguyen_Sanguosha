@@ -416,6 +416,7 @@ const shaReach = (state: GameState, seatId: string, registry: ContentRegistry) =
 // order, picks a seat in its attack range and plays a Sha at it, or loses 1 HP.
 export const upheaval: SkillDefinition = {
   id: 'upheaval',
+  limited: true,
   active: {
     canUse: (state, { seatId }) =>
       isLiving(state, seatId) && !state.seats.find((s) => s.id === seatId)?.marks?.[UPHEAVAL_MARK] && otherLivingSeatIds(state, seatId).length > 0,
