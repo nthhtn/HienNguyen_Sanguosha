@@ -27,8 +27,8 @@ describe('buildContentRegistry', () => {
     const registry = buildContentRegistry();
     const skillIds = (id: string) => registry.generals.get(id)!.skills.map((s) => s.id);
     for (const [id, skills] of GENERAL_SKILLS) expect(skillIds(id)).toEqual(skills.map((s) => s.id));
-    expect(skillIds('deng-ai')).toEqual([]);
-    expect(skillIds('zhang-he')).toEqual([]);
+    // A General with no hand-coded skills is playable and has none.
+    for (const g of registry.generals.values()) if (!GENERAL_SKILLS.has(g.id)) expect(g.skills).toEqual([]);
   });
 
   it('has at least two generals in each of the four kingdoms', () => {
