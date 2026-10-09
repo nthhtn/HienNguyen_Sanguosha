@@ -31,6 +31,16 @@ export type Effect =
   | { kind: 'MoveCardEffect'; cardInstanceId: string; toZoneId: string; onlyFrom?: string; countsAs?: string }
   | { kind: 'EliminateSeatEffect'; seatId: string }
   | { kind: 'ReduceMaxHpEffect'; seatId: string; amount: number }
+  // The seat gains a skill for the rest of the game, held by the General in `slot`.
+  | { kind: 'GainSkillEffect'; seatId: string; slot: 'main' | 'deputy'; skillId: string }
+  // The seat loses every skill for the rest of the game.
+  | { kind: 'SilenceSeatEffect'; seatId: string }
+  // Deals up to `count` spare Generals from the pool to the seat; the General in `slot` holds them. Logs nothing.
+  | { kind: 'DealSpareGeneralsEffect'; seatId: string; slot: 'main' | 'deputy'; count: number }
+  // The seat chooses `skillId` of its spare General `generalId`, which turns face up.
+  | { kind: 'ChooseFormSkillEffect'; seatId: string; generalId: string; skillId: string }
+  // Queues an extra turn for `seatId`; the normal order resumes after `resumeAfterSeatId`.
+  | { kind: 'GrantExtraTurnEffect'; seatId: string; resumeAfterSeatId: string }
   // Marks the end of a played Tool's queue items; it does nothing itself. A
   // before-trigger on it is "after the Tool has finished resolving".
   | { kind: 'ToolResolvedEffect'; seatId: string; tool: UsedCard }
@@ -40,7 +50,7 @@ export type Effect =
   // (Wine). Content says which. See the Peach and dying spec.
   // `acted`: abilities that had their say on entering (Refusing Death);
   // `pointsBelowOne`: how many points of HP the drop took below 1, set by the mode on entering.
-  | { kind: 'DyingEffect'; seatId: string; order: string[]; rescueCardIds: { any: string[]; self: string[] }; entering?: boolean; acted?: string[]; pointsBelowOne?: number }
+  | { kind: 'DyingEffect'; seatId: string; order: string[]; rescueCardIds: { any: string[]; self: string[] }; entering?: boolean; acted?: string[]; pointsBelowOne?: number; killerSeatId?: string }
   // The Tool lifecycle (see the Tools spec). One per target: a Wuxie check,
   // then the Tool's own rule (CardDefinition.onTarget). Content supplies the
   // counter card ids, so the engine names no card.
@@ -190,6 +200,47 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
         ...(isFaceUpZoneKind(destination.kind) ? { card } : {}),
       };
       return { state: { ...state, zones, log: [...state.log, event] }, events: [event] };
+    }
+    case 'GainSkillEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      const held = seat.gainedSkills ?? [];
+      if (held.some((g) => g.slot === effect.slot && g.skillId === effect.skillId)) return { state, events: [] };
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, gainedSkills: [...held, { slot: effect.slot, skillId: effect.skillId }] } : s));
+      const event: EngineEvent = { kind: 'SkillGainedEvent', seatId: seat.id, slot: effect.slot, skillId: effect.skillId };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'SilenceSeatEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      if (seat.silenced) return { state, events: [] };
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, silenced: true as const } : s));
+      const event: EngineEvent = { kind: 'SeatSilencedEvent', seatId: seat.id };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'DealSpareGeneralsEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      const pool = state.spareGenerals ?? [];
+      const taken = pool.slice(0, Math.max(0, effect.count));
+      if (taken.length === 0) return { state, events: [] };
+      const forms = { slot: effect.slot, held: [...(seat.forms?.held ?? []), ...taken], ...(seat.forms?.chosen ? { chosen: seat.forms.chosen } : {}) };
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, forms } : s));
+      // Nothing is logged: the log is public, and a seat dealt Forms would give its hidden General away.
+      return { state: { ...state, seats, spareGenerals: pool.slice(taken.length) }, events: [] };
+    }
+    case 'ChooseFormSkillEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat?.forms) throw new Error(`Seat ${effect.seatId} holds no spare Generals`);
+      const forms = { ...seat.forms, chosen: { generalId: effect.generalId, skillId: effect.skillId } };
+      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, forms } : s));
+      const event: EngineEvent = { kind: 'FormChosenEvent', seatId: seat.id, generalId: effect.generalId, skillId: effect.skillId };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'GrantExtraTurnEffect': {
+      const turn = { ...state.turn, extraTurnStack: [...state.turn.extraTurnStack, effect.seatId], resumeAfterSeatId: state.turn.resumeAfterSeatId ?? effect.resumeAfterSeatId };
+      const event: EngineEvent = { kind: 'ExtraTurnGrantedEvent', seatId: effect.seatId };
+      return { state: { ...state, turn, log: [...state.log, event] }, events: [event] };
     }
     case 'EliminateSeatEffect': {
       const seat = state.seats.find((s) => s.id === effect.seatId);
@@ -371,7 +422,7 @@ export function applyDying(state: GameState, effect: Extract<Effect, { kind: 'Dy
   const index = effect.order.findIndex((id) => isLiving(id) && (id === seat.id || holdsRescue(id)));
   if (index === -1) {
     const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, eliminated: true } : s));
-    return logged({ ...state, seats }, [{ kind: 'SeatEliminatedEvent', seatId: seat.id }]);
+    return logged({ ...state, seats }, [{ kind: 'SeatEliminatedEvent', seatId: seat.id, ...(effect.killerSeatId ? { killerSeatId: effect.killerSeatId } : {}) }]);
   }
 
   const askerId = effect.order[index];
@@ -382,11 +433,11 @@ export function applyDying(state: GameState, effect: Extract<Effect, { kind: 'Dy
     allowedCardIds: askerId === seat.id ? [...effect.rescueCardIds.any, ...effect.rescueCardIds.self] : effect.rescueCardIds.any,
     reason: { kind: 'dying', seatId: seat.id },
     // Pass: move on to the next seat.
-    context: { effect: { kind: 'DyingEffect', seatId: seat.id, order: effect.order.slice(index + 1), rescueCardIds: effect.rescueCardIds } },
+    context: { effect: { kind: 'DyingEffect', seatId: seat.id, order: effect.order.slice(index + 1), rescueCardIds: effect.rescueCardIds, ...(effect.killerSeatId ? { killerSeatId: effect.killerSeatId } : {}) } },
     // A rescue card: heal the dying seat, then ask again from this same seat.
     onAnswer: [
       { kind: 'HealEffect', target: { kind: 'seat', seatId: seat.id }, amount: 1 },
-      { kind: 'DyingEffect', seatId: seat.id, order: effect.order.slice(index), rescueCardIds: effect.rescueCardIds },
+      { kind: 'DyingEffect', seatId: seat.id, order: effect.order.slice(index), rescueCardIds: effect.rescueCardIds, ...(effect.killerSeatId ? { killerSeatId: effect.killerSeatId } : {}) },
     ],
   };
   return logged({ ...state, pendingResponse });

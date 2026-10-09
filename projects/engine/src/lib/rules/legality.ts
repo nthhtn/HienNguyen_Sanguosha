@@ -172,7 +172,7 @@ export function targetsAllowed(
 
 // What a conversion tells a card's targetPick about the cards it takes.
 export function conversionVia(conversion: Conversion): NonNullable<PlayOptionsContext['via']> {
-  return { cards: conversion.cards, fromHandOnly: conversion.from !== 'hand-and-equipment' };
+  return { cards: conversion.cards, fromHandOnly: conversion.from === undefined || conversion.from === 'hand' };
 }
 
 type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
@@ -212,12 +212,15 @@ export function conversionsOf(state: GameState, seatId: string, registry: Conten
 }
 
 // The cards `seatId` could use for `conversion`: its hand, then its worn
-// equipment when the conversion allows, that the conversion accepts.
+// equipment when the conversion allows (or only its stash), that the conversion accepts.
 export function conversionCards(state: GameState, seatId: string, conversion: Conversion, registry: ContentRegistry): CardInstance[] {
   const seat = state.seats.find((s) => s.id === seatId);
   if (!seat) return [];
   const cardsIn = (zoneId: string) => state.zones.find((z) => z.id === zoneId)?.cards ?? [];
-  const pool = [...cardsIn(seat.hand.zoneId), ...(conversion.from === 'hand-and-equipment' ? cardsIn(seat.equipped.zoneId) : [])];
+  const pool =
+    conversion.from === 'stash'
+      ? cardsIn(seat.stash?.zoneId ?? '')
+      : [...cardsIn(seat.hand.zoneId), ...(conversion.from === 'hand-and-equipment' ? cardsIn(seat.equipped.zoneId) : [])];
   const accepted = conversion.accepts ? pool.filter((c) => conversion.accepts!(c, state, seatId, registry)) : pool;
   if (!conversion.sameSuit) return accepted;
   // Same suit: only suits with enough accepted cards (the printed suit).

@@ -1,5 +1,6 @@
 import { GameState, GeneralOwner } from '../domain/types';
 import { ContentRegistry, SkillDefinition } from '../registry/types';
+import { findSkill } from '../registry/lookup';
 
 // One skill of a seat's Generals that is in play, and whether using it
 // reveals its General first (the General is hidden).
@@ -18,14 +19,22 @@ const SLOTS = ['main', 'deputy'] as const;
 // seat has none.
 export function skillsInPlay(state: GameState, seatId: string, registry: ContentRegistry): SkillInPlay[] {
   const seat = state.seats.find((s) => s.id === seatId);
-  if (!seat || seat.eliminated || !seat.generals) return [];
+  if (!seat || seat.eliminated || !seat.generals || seat.silenced) return [];
   const found: SkillInPlay[] = [];
+  const add = (slot: 'main' | 'deputy', skill: SkillDefinition | undefined) => {
+    const general = seat.generals![slot];
+    if (!skill || skill.lord || (!general.revealed && skill.compulsory)) return;
+    if (found.some((f) => f.owner.slot === slot && f.skill.id === skill.id)) return;
+    found.push({ owner: { kind: 'general', seatId, slot, skillId: skill.id }, skill, needsReveal: !general.revealed });
+  };
   for (const slot of SLOTS) {
-    const general = seat.generals[slot];
-    for (const skill of registry.generals.get(general.generalDefinitionId)?.skills ?? []) {
-      if (skill.lord || (!general.revealed && skill.compulsory)) continue;
-      found.push({ owner: { kind: 'general', seatId, slot, skillId: skill.id }, skill, needsReveal: !general.revealed });
-    }
+    for (const skill of registry.generals.get(seat.generals[slot].generalDefinitionId)?.skills ?? []) add(slot, skill);
+  }
+  // Skills gained for good, then the chosen spare General's skill.
+  for (const { slot, skillId } of seat.gainedSkills ?? []) add(slot, findSkill(registry, skillId));
+  if (seat.forms?.chosen) {
+    const { generalId, skillId } = seat.forms.chosen;
+    add(seat.forms.slot, registry.generals.get(generalId)?.skills.find((s) => s.id === skillId));
   }
   return found;
 }

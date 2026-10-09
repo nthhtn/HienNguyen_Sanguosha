@@ -58,18 +58,20 @@ export function advancePhaseOrTurn(state: GameState): { phase: Phase; turn: Turn
 }
 
 function advanceTurn(turn: Turn, seats: Seat[]): Turn {
+  const resume = turn.resumeAfterSeatId ?? turn.ownerSeatId;
   if (turn.extraTurnStack.length > 0) {
-    const nextSeatId = turn.extraTurnStack[turn.extraTurnStack.length - 1];
     return {
       turnNumber: turn.turnNumber + 1,
-      ownerSeatId: nextSeatId,
+      ownerSeatId: turn.extraTurnStack[turn.extraTurnStack.length - 1],
       extraTurnStack: turn.extraTurnStack.slice(0, -1),
+      // The grantor's mark travels with the extra turn (GrantExtraTurnEffect sets it).
+      ...(turn.resumeAfterSeatId ? { resumeAfterSeatId: turn.resumeAfterSeatId } : {}),
     };
   }
   const ordered = [...seats].sort((a, b) => a.index - b.index);
-  const currentIdx = ordered.findIndex((s) => s.id === turn.ownerSeatId);
+  const currentIdx = ordered.findIndex((s) => s.id === resume);
   if (currentIdx === -1) {
-    throw new Error(`Cannot advance the turn: unknown current turn owner ${turn.ownerSeatId}`);
+    throw new Error(`Cannot advance the turn: unknown current turn owner ${resume}`);
   }
   // Walk clockwise from the current owner's seat position rather than from its
   // position within the living-seats subsequence: the current owner may itself

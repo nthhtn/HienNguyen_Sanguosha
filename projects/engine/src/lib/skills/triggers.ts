@@ -38,6 +38,19 @@ export function gatherTriggeredSkills(
     }
   }
 
+  // An eliminated seat's afterDeath skills, for its own elimination only.
+  const dying = point === 'after:SeatEliminatedEvent' ? (subject as { seatId?: string }).seatId : undefined;
+  const gone = dying ? state.seats.find((s) => s.id === dying && s.eliminated && s.generals && !s.silenced) : undefined;
+  for (const slot of ['main', 'deputy'] as const) {
+    const general = gone?.generals?.[slot];
+    for (const skill of general ? (registry.generals.get(general.generalDefinitionId)?.skills ?? []) : []) {
+      if (!skill.afterDeath || skill.lord) continue;
+      for (const trigger of skill.triggers ?? []) {
+        if (trigger.point === point) candidates.push({ trigger, owner: { kind: 'general', seatId: gone!.id, slot, skillId: skill.id } });
+      }
+    }
+  }
+
   // Worn equipment, after every General: in seat order, then zone order. An
   // eliminated seat's cards are out of the game.
   for (const seat of state.seats) {

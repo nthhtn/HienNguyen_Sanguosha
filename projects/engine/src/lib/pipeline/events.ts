@@ -108,7 +108,18 @@ export interface SeatSavedEvent {
 export interface SeatEliminatedEvent {
   kind: 'SeatEliminatedEvent';
   seatId: string;
+  // The seat whose damage brought it to its end, if any.
+  killerSeatId?: string;
 }
+
+// A seat gained a skill for the rest of the game.
+export interface SkillGainedEvent { kind: 'SkillGainedEvent'; seatId: string; slot: 'main' | 'deputy'; skillId: string }
+// A seat lost every skill for the rest of the game.
+export interface SeatSilencedEvent { kind: 'SeatSilencedEvent'; seatId: string }
+// A seat chose a skill of one of its spare Generals, which turns face up.
+export interface FormChosenEvent { kind: 'FormChosenEvent'; seatId: string; generalId: string; skillId: string }
+// A seat was granted an extra turn.
+export interface ExtraTurnGrantedEvent { kind: 'ExtraTurnGrantedEvent'; seatId: string }
 
 // A seat's max HP went down (Collapse); `maxHp` is what it is now.
 export interface MaxHpReducedEvent {
@@ -212,6 +223,10 @@ export type EngineEvent =
   | CardPlayedEvent
   | DiscardPileReshuffledEvent
   | SeatEliminatedEvent
+  | SkillGainedEvent
+  | SeatSilencedEvent
+  | FormChosenEvent
+  | ExtraTurnGrantedEvent
   | MaxHpReducedEvent
   | SeatDyingEvent
   | SeatSavedEvent

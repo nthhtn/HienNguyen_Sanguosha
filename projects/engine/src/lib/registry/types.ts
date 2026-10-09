@@ -159,6 +159,9 @@ export interface AbilityModifiers {
   untargetableWithEmptyHandBy?: string[];
   // The owner's Sha needs two Shan, and in a Duel with it the other seat plays two Sha each time (Matchless).
   doubleAnswers?: boolean;
+  // Added to the owner's distance to every other seat, from the state (Farms:
+  // -1 each). Added with `distanceToOthers`; the distance never goes below 1.
+  distanceToOthersFrom?(state: GameState, seatId: string): number;
   // How the owner's own cards' suits count (Beauty: { spade: 'heart' }): its
   // hand, worn and judgment cards wherever a rule reads a suit.
   suitAs?: Partial<Record<CardInstance['suit'], CardInstance['suit']>>;
@@ -182,7 +185,8 @@ export interface Conversion {
   // How many cards it takes.
   cards: 1 | 2;
   // Where they come from: the hand (default), or the hand and worn equipment.
-  from?: 'hand' | 'hand-and-equipment';
+  // or only from the seat's stash pile.
+  from?: 'hand' | 'hand-and-equipment' | 'stash';
   // Which cards may be used; absent = any. `seatId` holds the card (a suit
   // modifier of that seat may apply).
   accepts?(card: CardInstance, state: GameState, seatId: string, registry: ContentRegistry): boolean;
@@ -235,6 +239,16 @@ export interface SkillDefinition extends Abilities {
   compulsory?: boolean;
   // A Lord skill: never in play, since Kingdom War has no Lord.
   lord?: boolean;
+  // Fires once, compulsorily, when its condition holds at its owner's turn
+  // start (content marks it awakened). Never borrowed (Incarnation).
+  awakening?: true;
+  // Usable once per game. Never borrowed (Incarnation).
+  limited?: true;
+  // Its triggers are also gathered for its own seat's elimination, though an
+  // eliminated seat has no skills in play (Heartbroken).
+  afterDeath?: true;
+  // Spare Generals dealt to its owner's seat when Generals are chosen.
+  spareGenerals?: number;
   active?: ActiveSkill;
   // Reads a judgment this skill asked for (JudgmentReader 'skill').
   onJudged?(state: GameState, ctx: SkillJudgedContext, registry: ContentRegistry): unknown[];
