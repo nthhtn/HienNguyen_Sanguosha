@@ -1,6 +1,6 @@
 # Stage 11: The Mountain Generals — Design Spec
 
-Status: Draft (awaiting review)
+Status: Built
 Date: 2026-10-09
 
 ## Purpose
@@ -292,4 +292,10 @@ Generic; the engine names no card, skill or General.
 
 ## Rulings made while building
 
-(none yet)
+- **Spare Generals are stored as `Seat.forms = { slot, held, chosen? }`**, the Farm pile as `Seat.stash`; dealing Forms logs nothing, and other seats see no Forms at all while their holder is hidden (the log is public).
+- **An extra turn for a seat that is out is not passed over** (an existing spec pins that eliminated stack seats become the owner; a seat granted an extra turn at End cannot die before it).
+- **Upheaval and Nirvana are flagged `limited`** so Incarnation cannot borrow them.
+- **A step of a skill the seat no longer holds does nothing** (Zuo Ci switching Forms while an ask waited, or a silenced seat).
+- **Stage 10's `competeStart` opens nothing when the user's hand emptied after the ask** (found by the 10-seat property spec once Mountain changed the deal).
+- **Lament's payment step opens nothing when the card was spent meanwhile.**
+- **The wiki gets no "Awakening" label:** the crawled skill text already says "Awakened Ability".
