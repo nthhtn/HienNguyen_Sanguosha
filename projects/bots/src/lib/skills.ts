@@ -237,4 +237,4 @@ export function conversionSpare(view: GameState, me: Seat, action: UseConversion
 }
 
 // The conversion abilities whose card selection the bot fills (least useful first).
-export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise']);
+export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes']);
