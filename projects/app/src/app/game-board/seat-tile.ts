@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, GameState, Seat } from 'engine';
-import { equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
+import { abilityName, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
 import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
 import { SeatAvatar } from './seat-avatar';
 import { AvatarSkill } from './avatar-skills';
@@ -211,8 +211,8 @@ export class SeatTile {
   readonly stash = input<CardInstance[]>([]);
   // The General whose skill Zuo Ci holds now (his chosen Form), shown to everyone.
   readonly formName = computed(() => {
-    const generalId = this.seat().forms?.chosen?.generalId;
-    return generalId ? (generalDisplayData(generalId)?.name ?? null) : null;
+    const chosen = this.seat().forms?.chosen;
+    return chosen ? `${generalDisplayData(chosen.generalId)?.name ?? 'Form'} (${abilityName(chosen.skillId)})` : null;
   });
   // Whether the seat is dying, when the parent knows (a seat Refusing Death
   // keeps alive below 1 HP isn't); null: judged by its HP.

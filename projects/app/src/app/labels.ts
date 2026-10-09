@@ -1,4 +1,4 @@
-import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target } from 'engine';
+import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target, findSkill } from 'engine';
 import { abilityName } from 'content';
 
 function findCardInstance(state: GameState, cardInstanceId: string): CardInstance | undefined {
@@ -107,7 +107,7 @@ export function conversionLabel(action: Extract<Action, { kind: 'UseConversionAc
     if (conversion) base = `Use ${conversion.cards} Cards as ${cardName(conversion.as)}`;
   } else {
     const generalId = state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId;
-    const skill = generalId ? registry.generals.get(generalId)?.skills.find((s) => s.id === owner.skillId) : undefined;
+    const skill = (generalId ? registry.generals.get(generalId)?.skills.find((s) => s.id === owner.skillId) : undefined) ?? findSkill(registry, owner.skillId);
     const conversion = skill?.conversions?.find((c) => c.id === action.via.conversionId);
     if (conversion) base = `As ${cardName(conversion.as)} · ${abilityName(owner.skillId)}`;
   }

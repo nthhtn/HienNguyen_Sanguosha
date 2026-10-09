@@ -21,20 +21,21 @@ export function skillsInPlay(state: GameState, seatId: string, registry: Content
   const seat = state.seats.find((s) => s.id === seatId);
   if (!seat || seat.eliminated || !seat.generals || seat.silenced) return [];
   const found: SkillInPlay[] = [];
-  const add = (slot: 'main' | 'deputy', skill: SkillDefinition | undefined) => {
+  // `unique`: a gained or borrowed skill the seat already holds on its other General adds nothing.
+  const add = (slot: 'main' | 'deputy', skill: SkillDefinition | undefined, unique = false) => {
     const general = seat.generals![slot];
     if (!skill || skill.lord || (!general.revealed && skill.compulsory)) return;
-    if (found.some((f) => f.owner.slot === slot && f.skill.id === skill.id)) return;
+    if (found.some((f) => f.skill.id === skill.id && (unique || f.owner.slot === slot))) return;
     found.push({ owner: { kind: 'general', seatId, slot, skillId: skill.id }, skill, needsReveal: !general.revealed });
   };
   for (const slot of SLOTS) {
     for (const skill of registry.generals.get(seat.generals[slot].generalDefinitionId)?.skills ?? []) add(slot, skill);
   }
   // Skills gained for good, then the chosen spare General's skill.
-  for (const { slot, skillId } of seat.gainedSkills ?? []) add(slot, findSkill(registry, skillId));
+  for (const { slot, skillId } of seat.gainedSkills ?? []) add(slot, findSkill(registry, skillId), true);
   if (seat.forms?.chosen) {
     const { generalId, skillId } = seat.forms.chosen;
-    add(seat.forms.slot, registry.generals.get(generalId)?.skills.find((s) => s.id === skillId));
+    add(seat.forms.slot, registry.generals.get(generalId)?.skills.find((s) => s.id === skillId), true);
   }
   return found;
 }
@@ -42,6 +43,8 @@ export function skillsInPlay(state: GameState, seatId: string, registry: Content
 // The skill behind a General owner (printed, gained or borrowed), whether or not it is in play now.
 export function skillOf(state: GameState, owner: GeneralOwner, registry: ContentRegistry): SkillDefinition | undefined {
   const seat = state.seats.find((s) => s.id === owner.seatId);
+  // A silenced seat holds nothing.
+  if (seat?.silenced) return undefined;
   const general = seat?.generals?.[owner.slot];
   const own = general && registry.generals.get(general.generalDefinitionId)?.skills.find((s) => s.id === owner.skillId);
   if (own || !seat) return own;

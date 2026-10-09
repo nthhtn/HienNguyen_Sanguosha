@@ -45,6 +45,14 @@ describe('asks', () => {
     expect(picked(decide(s('seat-c')))).toBe('decline');
   });
 
+  it('Lament: reads the source through a reveal effect when Cai Wenji is hidden', () => {
+    // Allies seat-a (the bot, Cai Wenji hidden) and seat-b; the Sha came from seat-b onto seat-a: a club or spade must not land on an ally.
+    const s = asking(table({ 'seat-a:hand': cards('h', 2) }, { generals: generals('cai-wenji'), kingdoms: { ...kingdoms, 'seat-b': 'Wei' } }), 'lament', 'seat-a');
+    const use = { id: 'use', shows: { kind: 'use' as const }, effects: [{ kind: 'RevealGeneralEffect' as const, seatId: 'seat-a', slot: 'main' as const }, { kind: 'SkillStepEffect' as const, owner: general('seat-a', 'lament'), step: 'pay', data: { victim: 'seat-a', source: 'seat-b' } }] };
+    const hidden = { ...s, pendingChoice: { ...s.pendingChoice!, options: [use, s.pendingChoice!.options[1]] } };
+    expect(picked(decide(hidden))).toBe('decline');
+  });
+
   it('Clever Change: skips the Draw Phase against two non-allies with 2 or more cards each; never Judgment or Discard', () => {
     const t = (phase: GameState['phase'], hands: number) => ({
       ...asking(table({ 'seat-a:hand': cards('h', 2), 'seat-c:hand': cards('c', hands), 'seat-d:hand': cards('d', hands) }, { generals: generals('zhang-he'), kingdoms }), 'clever-change'),

@@ -65,7 +65,7 @@ describe('SeatTile', () => {
 
   it('shows the chosen Form and a silenced seat', () => {
     const forms = { slot: 'main' as const, held: ['hidden'], chosen: { generalId: 'zhou-yu', skillId: 'brave-gesture' } };
-    expect(render(makeSeat({ forms }), {}).querySelector('.form-badge')?.textContent?.trim()).toBe('Form: Zhou Yu');
+    expect(render(makeSeat({ forms }), {}).querySelector('.form-badge')?.textContent?.trim()).toBe('Form: Zhou Yu (Brave Gesture)');
     expect(render(makeSeat({ silenced: true }), {}).querySelector('.silenced-badge')?.textContent?.trim()).toBe('No Skills');
     expect(render(makeSeat(), {}).querySelector('.silenced-badge')).toBeNull();
   });

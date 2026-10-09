@@ -10,6 +10,6 @@ export function seatGender(state: GameState, seatId: string, registry: ContentRe
   const slot = generals.main.revealed ? 'main' : generals.deputy.revealed ? 'deputy' : null;
   if (!slot) return null;
   // A Form chosen by the shown General's slot lends its gender (Incarnation).
-  if (seat.forms?.chosen && seat.forms.slot === slot) return registry.generals.get(seat.forms.chosen.generalId)?.gender ?? null;
+  if (seat.forms?.chosen && seat.forms.slot === slot && !seat.silenced) return registry.generals.get(seat.forms.chosen.generalId)?.gender ?? null;
   return registry.generals.get(generals[slot].generalDefinitionId)?.gender ?? null;
 }

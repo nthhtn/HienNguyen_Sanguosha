@@ -87,6 +87,11 @@ describe('skillOf', () => {
     expect(skillOf(borrowed, { kind: 'general', seatId: 'a', slot: 'deputy', skillId: 'quiet' }, registry)).toBe(quiet);
     expect(skillOf(table(), { kind: 'general', seatId: 'a', slot: 'main', skillId: 'quiet' }, registry)).toBeUndefined();
   });
+
+  it('finds nothing for a silenced seat, printed skills included', () => {
+    const silenced = withSeat(table(), 'a', { silenced: true });
+    expect(skillOf(silenced, { kind: 'general', seatId: 'a', slot: 'main', skillId: 'plain' }, registry)).toBeUndefined();
+  });
 });
 
 describe('a step of a skill the seat no longer holds', () => {
@@ -94,6 +99,17 @@ describe('a step of a skill the seat no longer holds', () => {
     const s = run(table(), { kind: 'SkillStepEffect', owner: { kind: 'general', seatId: 'a', slot: 'main', skillId: 'quiet' }, step: 'x' });
     expect(s.log).toEqual([]);
     expect(s.resolutionQueue ?? []).toEqual([]);
+  });
+});
+
+describe('the same skill twice', () => {
+  it('a gained skill the seat already holds on its other General adds nothing (skills do not stack)', () => {
+    // 'plain' is printed on both Generals of this table; gaining it again changes nothing.
+    const s = withSeat(table(), 'a', { gainedSkills: [{ slot: 'main', skillId: 'plain' }] });
+    expect(ids(s, 'a')).toEqual(['main:plain', 'deputy:plain']);
+    const other: GameState = withSeat(table(), 'a', { gainedSkills: [{ slot: 'main', skillId: 'quiet' }], generals: { main: { generalDefinitionId: 'g', revealed: true }, deputy: { generalDefinitionId: 'h', revealed: true } } });
+    // 'quiet' is printed on the Deputy (h): the gain on main is not a second copy.
+    expect(ids(other, 'a').filter((x) => x.endsWith(':quiet'))).toEqual(['deputy:quiet']);
   });
 });
 

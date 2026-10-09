@@ -609,15 +609,20 @@ export const incarnation: SkillDefinition = {
     on<PhaseChangedEvent>('after:PhaseChangedEvent', {
       condition: (state, event, owner, registry) =>
         (event.phase === 'Start' || event.phase === 'End') && event.seatId === owner.seatId && state.turn.ownerSeatId === owner.seatId && formSkillOptions(state, owner.seatId, registry).length > 0,
-      effect: (state, _event, owner, registry) => [ask(owner, [chooseForm(state, owner, registry)])],
+      effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'choose')])],
     }),
     // Revealed for any reason but this skill: the first choice.
     on<GeneralRevealedEvent>('after:GeneralRevealedEvent', {
       condition: (state, event, owner, registry) =>
         event.seatId === owner.seatId && event.slot === owner.slot && event.forAbilityId !== 'incarnation' && !seatOf(state, owner.seatId)?.forms?.chosen && formSkillOptions(state, owner.seatId, registry).length > 0,
-      effect: (state, _event, owner, registry) => [ask(owner, [chooseForm(state, owner, registry)])],
+      effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'choose')])],
     }),
   ],
+  // The secret choice is built only now: the ask itself (public, and queued in the state) names no Form.
+  onStep: (state, step, registry) => {
+    const { owner } = step;
+    return isLiving(state, owner.seatId) && formSkillOptions(state, owner.seatId, registry).length > 0 ? [chooseForm(state, owner, registry)] : [];
+  },
 };
 
 // New Life (compulsory): each point of damage you take deals you one more Form.

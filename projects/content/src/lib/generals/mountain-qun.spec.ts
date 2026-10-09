@@ -157,6 +157,26 @@ describe('Zuo Ci — Incarnation', () => {
   });
 });
 
+describe('Zuo Ci — Incarnation: nothing about the Forms is readable before he answers', () => {
+  it('the ask other seats can see names no spare General, and neither does the secret choice for them', () => {
+    const base = table({}, { generals: at('seat-a', 'zuo-ci'), owner: 'seat-d', phase: 'End' });
+    const s0 = { ...base, seats: base.seats.map((x) => (x.id === 'seat-a' ? { ...x, forms: { slot: 'main' as const, held: ['zhou-yu', 'da-qiao'] } } : x)) };
+    const asked = h.settle(s0);
+    expect(asked.pendingChoice?.reason).toMatchObject({ abilityId: 'incarnation' });
+    expect(JSON.stringify(redactStateForSeat(asked, 'seat-b'))).not.toMatch(/zhou-yu|da-qiao|brave-gesture|displace/);
+    const chosen = h.use(asked);
+    expect(JSON.stringify(redactStateForSeat(chosen, 'seat-b'))).not.toMatch(/zhou-yu|da-qiao|brave-gesture|displace/);
+  });
+});
+
+describe('seatGender when silenced', () => {
+  it('a silenced Zuo Ci has lost his Form’s gender', () => {
+    const t = table({}, { generals: at('seat-a', 'zuo-ci') });
+    const s = { ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, silenced: true as const, forms: { slot: 'main' as const, held: ['da-qiao'], chosen: { generalId: 'da-qiao', skillId: 'displace' } } } : x)) };
+    expect(seatGender(s, 'seat-a', registry)).toBe('male'); // Zuo Ci's own
+  });
+});
+
 describe('Zuo Ci — New Life', () => {
   it('each point of damage deals him one more Form from the pool', () => {
     const s = table({}, { generals: at('seat-a', 'zuo-ci') });

@@ -30,7 +30,7 @@ import { AskDialog, AskDialogData } from './ask-dialog';
 import { SelectionDialog, SelectionDialogData } from './selection-dialog';
 import { describeArrangement, describeAsk, describeSelection } from './ability-description';
 import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
-import { avatarSkills } from './avatar-skills';
+import { avatarSkills, extraSkillsOf } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
 import { openForceDialog } from './force-dialog';
 import { soundsFor } from './event-sounds';
@@ -327,7 +327,7 @@ export class GameBoard {
   // The viewer's active skills, as buttons on their avatar.
   protected readonly viewerSkills = computed(() => {
     const seat = this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId());
-    return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions()) : [];
+    return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions(), extraSkillsOf(seat, this.gameService.registry)) : [];
   });
 
   // The viewer's force colour, which their decision dialogs are themed in.

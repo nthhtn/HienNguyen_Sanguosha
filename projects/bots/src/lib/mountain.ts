@@ -45,7 +45,8 @@ const FORM_PREFERENCE = ['brave-gesture', 'gathering-wisdom', 'astrology', 'kind
 
 // The Lament's source, read off the ask's Use effects (the step it will queue).
 function lamentSource(choice: PendingChoice): string | undefined {
-  const step = choice.options.find((o) => o.id === 'use')?.effects[0] as { data?: Record<string, unknown> } | undefined;
+  // A hidden owner's ask reveals first: the skill's step is not always the first effect.
+  const step = choice.options.find((o) => o.id === 'use')?.effects.find((e) => e.kind === 'SkillStepEffect') as { data?: Record<string, unknown> } | undefined;
   return step?.data?.['source'] as string | undefined;
 }
 

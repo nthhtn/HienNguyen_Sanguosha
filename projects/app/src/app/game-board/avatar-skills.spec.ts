@@ -1,5 +1,5 @@
 import { Action, ContentRegistry, SeatGenerals } from 'engine';
-import { avatarSkills } from './avatar-skills';
+import { avatarSkills, extraSkillsOf } from './avatar-skills';
 
 const active = { canUse: () => true, start: () => [] };
 const registry: ContentRegistry = {
@@ -14,6 +14,24 @@ const generals = (mainRevealed: boolean): SeatGenerals => ({
   deputy: { generalDefinitionId: 'liu-bei', revealed: true },
 });
 const kindness: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'deputy', skillId: 'kindness' } };
+
+describe('extra skills (gained, or borrowed through a chosen Form)', () => {
+  const seat = (patch: object) => ({ generals: generals(true), ...patch }) as never;
+  it('lists a gained skill and the chosen Form’s skill under the slot that holds them', () => {
+    const reg: ContentRegistry = { ...registry, generals: new Map(registry.generals).set('zuo', { id: 'zuo', kingdom: 'Qun', maxHp: 3, skills: [{ id: 'instigate', active }] }) };
+    const gained = extraSkillsOf(seat({ gainedSkills: [{ slot: 'main', skillId: 'kindness' }] }), reg);
+    expect(gained.map((e) => [e.slot, e.skill.id])).toEqual([['main', 'kindness']]);
+    const borrowed = extraSkillsOf(seat({ forms: { slot: 'deputy', held: ['zuo'], chosen: { generalId: 'zuo', skillId: 'instigate' } } }), reg);
+    expect(borrowed.map((e) => [e.slot, e.skill.id])).toEqual([['deputy', 'instigate']]);
+  });
+
+  it('a borrowed active skill gets its own button, enabled by the engine’s action', () => {
+    const instigate: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'deputy', skillId: 'instigate' } };
+    const extra = [{ slot: 'deputy' as const, skill: { id: 'instigate', active } }];
+    expect(avatarSkills(generals(true), registry, [instigate], extra).map((b) => b.skillId)).toEqual(['reconsider', 'kindness', 'instigate']);
+    expect(avatarSkills(generals(true), registry, [instigate], extra).at(-1)).toMatchObject({ action: instigate, label: 'Instigate' });
+  });
+});
 
 describe('avatarSkills', () => {
   it('one button per active skill, Lord skills left out, enabled exactly when the engine offers it', () => {

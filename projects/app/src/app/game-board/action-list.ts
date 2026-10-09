@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { Action, ContentRegistry, GameState } from 'engine';
+import { Action, ContentRegistry, GameState, findSkill } from 'engine';
 import { MatMenuModule } from '@angular/material/menu';
 import { actionLabel, conversionLabel, targetLabel } from '../labels';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
@@ -122,7 +122,7 @@ function conversionAsName(action: UseConversion, state: GameState, registry: Con
   const conversions =
     owner.kind === 'equipment'
       ? registry.cards.get(state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === owner.cardInstanceId)?.definitionId ?? '')?.abilities?.conversions
-      : registry.generals.get(state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId ?? '')?.skills.find((s) => s.id === owner.skillId)?.conversions;
+      : (registry.generals.get(state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId ?? '')?.skills.find((s) => s.id === owner.skillId) ?? findSkill(registry, owner.skillId))?.conversions;
   const as = conversions?.find((c) => c.id === action.via.conversionId)?.as;
   return (as && registry.cards.get(as)?.name) ?? 'the Card';
 }
