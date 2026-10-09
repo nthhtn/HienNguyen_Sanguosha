@@ -3,6 +3,7 @@ import { conversionsOf, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
 import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal } from './helpers';
 import { fireSelection } from './fire';
+import { upheavalVictimIsFoe } from './forest';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -186,7 +187,9 @@ function decide(
           ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying))
           : reason.kind === 'wuxie'
             ? reason.target.kind === 'seat' && reason.target.seatId === seatId && HARMFUL_TOOLS.has(reason.tool.as)
-            : false; // never counter a Wuxie Kongjie
+            : reason.kind === 'ability' && reason.abilityId === 'upheaval'
+              ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId)
+              : false; // never counter a Wuxie Kongjie
     const answers = legal.filter((a): a is Extract<Action, { kind: 'RespondAction' }> => a.kind === 'RespondAction');
     // A Peach before anything else (a dying bot drinks Wine only without one).
     const best = answers.find((a) => definitionIdOf(view, a.cardInstanceId) === 'peach') ?? answers[0];
@@ -279,6 +282,10 @@ function decide(
     if (breakVia) return take(breakVia);
     const [captureVia] = conversionsAs('capture').sort((x, y) => targetSeat(y).combinedHp - targetSeat(x).combinedHp);
     if (captureVia) return take(captureVia);
+    // Blockade: a Starvation at the non-ally with the most hand cards.
+    const holds = (seat: Seat) => view.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
+    const [starvationVia] = conversionsAs('starvation').sort((x, y) => holds(targetSeat(y)) - holds(targetSeat(x)));
+    if (starvationVia) return take(starvationVia);
     // Fire Strategy: Blaze at the weakest non-ally while holding 3 or more hand cards.
     const handCount = view.zones.find((z) => z.id === self.hand.zoneId)?.cards.length ?? 0;
     const byWeakest = (x: UseConversion, y: UseConversion) => targetSeat(x).combinedHp - targetSeat(y).combinedHp || targetSeat(x).index - targetSeat(y).index;
@@ -305,6 +312,9 @@ function decide(
     const shaPlays = targetedPlays(view, self, plays, 'sha');
     const wine = untargetedOf('wine');
     if (wine && shaPlays.length > 0) return take(wine);
+    // Dong Zhuo's Wine, made from a spade, when he holds no real one.
+    const wineVia = legal.find((a): a is UseConversion => a.kind === 'UseConversionAction' && !a.pendingResponseId && a.targets.length === 0 && conversionAs(a, view, registry) === 'wine' && conversionSpare(view, self, a, registry));
+    if (wineVia && shaPlays.length > 0) return take(wineVia);
     // Whenever the engine offers a Sha (Crossbow lifts the limit); the safety cap still ends the turn.
     const [sha] = shaPlays;
     if (sha) return take(sha, 1);

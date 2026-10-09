@@ -3,6 +3,7 @@ import { abilityUseKey, colourOf, conversionCards, conversionsOf, sameAbilityOwn
 import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards } from './helpers';
 import { wantsWind, windChoice, windSelection } from './wind';
 import { fireChoice, wantsFire, wantsFireActive } from './fire';
+import { forestChoice, forestSelection, wantsForest, wantsForestActive } from './forest';
 
 // The General Skills spec's bot rules, skill by skill.
 
@@ -90,7 +91,7 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
       // A card to spare (ranked below Shan) and a non-ally other than the Sha's user to move it to.
       return ownCards(view, me).some((c) => keepRank(view, registry, c.instanceId) < 3) && others(view, me).some((s) => !isAlly(me, s) && s.id !== target?.id);
     default:
-      return wantsWind(view, me, choice, registry) ?? wantsFire(view, me, choice);
+      return wantsWind(view, me, choice, registry) ?? wantsFire(view, me, choice) ?? wantsForest(view, me, choice);
   }
 }
 
@@ -135,7 +136,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       return [truthful ?? leastUseful(view, registry, eligible)[0]];
     }
     default:
-      return windSelection(view, me, selection, registry);
+      return windSelection(view, me, selection, registry) ?? forestSelection(view, me, selection, registry);
   }
 }
 
@@ -177,7 +178,7 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
       return choice.options.some((o) => o.id === pick) ? pick : choice.options[0].id;
     }
     default:
-      return windChoice(view, me, choice) ?? fireChoice(view, me, choice, registry);
+      return windChoice(view, me, choice) ?? fireChoice(view, me, choice, registry) ?? forestChoice(view, me, choice, registry);
   }
 }
 
@@ -207,13 +208,13 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
       return allies.length > 0 && (hand.length > 3 || (hurt(me) && given < 2 && hand.length >= 2));
     }
     default:
-      return wantsFireActive(view, me, skillId, registry) ?? false;
+      return wantsFireActive(view, me, skillId, registry) ?? wantsForestActive(view, me, skillId) ?? false;
   }
 }
 
 const ACTIVE_ORDER = {
-  early: ['battered-body', 'reconsider', 'green-vesicle', 'marriage', 'shackle', 'heavens-justice', 'rouse-the-tiger'],
-  late: ['sow-revolt', 'sow-discord', 'kindness', 'assault'],
+  early: ['battered-body', 'reconsider', 'green-vesicle', 'marriage', 'shackle', 'heavens-justice', 'rouse-the-tiger', 'alliance'],
+  late: ['sow-revolt', 'sow-discord', 'kindness', 'assault', 'upheaval'],
 } as const;
 
 // The active skill to use now from `group`, if any: offered, wanted, and its
@@ -242,4 +243,4 @@ export function conversionSpare(view: GameState, me: Seat, action: UseConversion
 }
 
 // The conversion abilities whose card selection the bot fills (least useful first).
-export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes']);
+export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes', 'blockade', 'wine']);
