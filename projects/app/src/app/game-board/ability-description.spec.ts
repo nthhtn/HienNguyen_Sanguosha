@@ -110,10 +110,31 @@ describe('describeSelection', () => {
     expect(describe2(sel)).toMatchObject({ prompt: 'Choose a Sha to play at Seat 1', confirmLabel: 'Use' });
   });
 
-  it('Sky Scorcher: up to 2 more targets, by name', () => {
-    const step = { kind: 'CardStepEffect' as const, step: 'sha-use', card: { as: 'sha', colour: 'black' as const, physical: [] }, userSeatId: 'seat-0', target: { kind: 'seat' as const, seatId: 'seat-1' } };
-    const sel = selection('sky-scorcher', { of: 'seats', eligibleIds: ['seat-2'], min: 1, max: 2, then: { kind: 'card-step', step } });
-    expect(describe2(sel)).toMatchObject({ prompt: 'Choose up to 2 more targets', confirmLabel: 'Add Targets', items: [{ id: 'seat-2', label: 'Seat 2' }] });
+  it('competing: both seats are asked for a hand card to compete with', () => {
+    const general = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'rouse-the-tiger' };
+    for (const step of ['compete-user', 'compete-target']) {
+      const sel = selection('rouse-the-tiger', { reason: { kind: 'ability', owner: general, abilityId: 'rouse-the-tiger', targetSeatId: 'seat-1' }, eligibleIds: ['s2'], min: 1, max: 1, then: { kind: 'skill-step', step: { kind: 'SkillStepEffect', owner: general, step, data: {} } } });
+      expect(describe2(sel, [template])).toMatchObject({ title: 'Rouse the Tiger', prompt: 'Choose a hand card to compete with', confirmLabel: 'Compete' });
+    }
+  });
+
+  it('Blaze: the target shows a card; the user may discard a match', () => {
+    const blaze = { as: 'blaze', colour: 'red' as const, physical: [] };
+    const step = (name: string) => ({ kind: 'CardStepEffect' as const, step: name, card: blaze, userSeatId: 'seat-1', target: { kind: 'seat' as const, seatId: 'seat-0' } });
+    const reason = { kind: 'choice' as const, card: blaze, userSeatId: 'seat-1', targetSeatId: 'seat-0' };
+    const shown = selection('x', { reason, eligibleIds: ['s2'], min: 1, max: 1, then: { kind: 'card-step', step: step('blaze-shown') } });
+    expect(describe2(shown, [template])).toMatchObject({ title: 'Blaze', prompt: 'Choose a hand card to show', confirmLabel: 'Show' });
+    const hit = selection('x', { reason, eligibleIds: ['s2'], min: 1, max: 1, then: { kind: 'card-step', step: step('blaze-hit') } });
+    expect(describe2(hit)).toMatchObject({ title: 'Blaze', prompt: 'Discard a card of the same suit to deal 1 damage', confirmLabel: 'Discard', cancelLabel: 'Cancel' });
+  });
+
+  it('the Fire skills’ own selections', () => {
+    const general = (skillId: string) => ({ kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId });
+    const sel = (skillId: string, of: 'cards' | 'seats') => selection(skillId, { reason: { kind: 'ability', owner: general(skillId), abilityId: skillId }, of, eligibleIds: [], min: 1, max: 1, then: { kind: 'skill-step', step: { kind: 'SkillStepEffect', owner: general(skillId), step: 'chosen', data: {} } } });
+    expect(describe2(sel('shackle', 'cards'))).toMatchObject({ prompt: 'Choose a club to discard, then draw 1', confirmLabel: 'Recast' });
+    expect(describe2(sel('assault', 'cards'))).toMatchObject({ prompt: 'Choose a Weapon to discard', confirmLabel: 'Discard' });
+    expect(describe2(sel('rouse-the-tiger', 'seats'))).toMatchObject({ prompt: 'Choose a seat with more HP to compete with', confirmLabel: 'Choose' });
+    expect(describe2(sel('heavens-justice', 'seats'))).toMatchObject({ prompt: 'Choose a seat to compete with', confirmLabel: 'Choose' });
   });
 
   it('has no Cancel when the engine offers none, and is null for another seat', () => {

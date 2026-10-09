@@ -7,6 +7,7 @@ import { Action, CardInstance, ContentRegistry, GameState, Target } from 'engine
 import { actionLabel, targetLabel } from '../labels';
 import { PlayingCard } from './playing-card';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
+import { TargetsDialog, TargetsDialogData } from './targets-dialog';
 
 type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
 
@@ -16,6 +17,8 @@ interface HandCardViewModel {
   actions: { action: Action; label: string }[];
   // Two-seat plays (Coerce: the holder, then the victim), grouped by first seat.
   pairs: { seatId: string; label: string; seconds: { action: Action; label: string }[] }[] | null;
+  // A play with several equal targets (Sha with Sky Scorcher): picked in the Choose Targets window.
+  template: PlayCard | null;
 }
 
 function cardInstanceIdOf(action: Action): string | undefined {
@@ -50,7 +53,11 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
         <div class="hand-card" role="listitem" tabindex="0" [attr.data-card-id]="vm.card.instanceId">
           <app-playing-card [card]="vm.card" />
           <div class="overlay">
-            @if (vm.pairs) {
+            @if (vm.template) {
+              <button mat-flat-button type="button" class="play" (click)="pickTargets(vm)">
+                <mat-icon>play_arrow</mat-icon> Play
+              </button>
+            } @else if (vm.pairs) {
               <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="firsts">
                 <mat-icon>play_arrow</mat-icon> Play
               </button>
@@ -161,9 +168,24 @@ export class HandView {
         name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name),
         actions,
         pairs,
+        template: plays.find((p) => !!p.pickTargets) ?? null,
       };
     })
   );
+
+  // The Choose Targets window, then the play at the seats picked (none: nothing is played).
+  protected pickTargets(vm: HandCardViewModel): void {
+    const template = vm.template;
+    if (!template?.pickTargets) return;
+    this.dialog
+      .open<TargetsDialog, TargetsDialogData, string[]>(TargetsDialog, { data: { title: vm.name, pick: template.pickTargets, state: this.state() }, width: 'min(92vw, 420px)' })
+      .beforeClosed()
+      .subscribe((ids) => {
+        if (!ids?.length) return;
+        const { pickTargets: _pick, ...play } = template;
+        this.play.emit({ ...play, targets: ids.map((seatId) => ({ kind: 'seat' as const, seatId })) });
+      });
+  }
 
   protected openInfo(vm: HandCardViewModel): void {
     this.dialog.open<CardInfoDialog, CardInfoDialogData>(CardInfoDialog, {

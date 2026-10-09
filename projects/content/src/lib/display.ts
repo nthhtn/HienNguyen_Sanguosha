@@ -48,7 +48,6 @@ const ABILITY_HINTS: Record<string, string> = {
   'green-dragon-blade': 'Play another Sha at {target}',
   'ice-sword': "Prevent the damage and discard 2 of {target}'s cards instead",
   longbow: "Discard one of {target}'s Mounts",
-  'sky-scorcher': 'Add up to 2 more targets to your Sha',
   'evil-hero': 'Take the card that damaged you into your hand',
   feedback: "Take one of {target}'s cards",
   unyielding: 'Judge: unless it is a heart, {target} discards 2 hand cards or takes 1 damage',
@@ -71,6 +70,11 @@ const ABILITY_HINTS: Record<string, string> = {
   'refusing-death': 'Turn the top card of the draw pile under your General to stay alive',
   'lightning-strike': 'A seat of your choice judges: on a spade it takes 2 damage',
   'dark-magic': "Replace {target}'s judgment card with a black card, and take the old one",
+  'eternal-loyalty': 'A seat of your choice draws up to its max HP',
+  nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
+  'eight-arrays': 'Judge: On red, It counts as a Shan',
+  'sudden-attack': "Discard one of {target}'s cards",
+  'dueling-heroes': 'Instead of drawing, judge and take the card; cards of the other colour can be used as Duel this turn',
 };
 
 export function abilityHint(abilityId: string): string | null {
@@ -93,10 +97,37 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   godspeed: { prompt: 'Choose an Equipment card to discard', confirm: 'Discard' },
   'refusing-death': { prompt: 'Choose a card under your General to discard', confirm: 'Discard', cancel: 'Keep Them' },
   'dark-magic': { prompt: 'Choose a black card to replace the judgment', confirm: 'Replace' },
+  shackle: { prompt: 'Choose a club to discard, then draw 1', confirm: 'Recast' },
+  assault: { prompt: 'Choose a Weapon to discard', confirm: 'Discard' },
+  'rouse-the-tiger': { prompt: 'Choose a seat with more HP to compete with', confirm: 'Choose' },
+  'heavens-justice': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
 };
 
 export function selectionText(abilityId: string): { prompt: string; confirm: string; cancel?: string } | null {
   return SELECTION_TEXT[abilityId] ?? null;
+}
+
+// What a skill's seat pick asks, when "Choose a seat" says too little.
+// '{target}' stands for the seat the skill is aimed at.
+const SEAT_PICK_TEXT: Record<string, string> = {
+  'rouse-the-tiger': 'Choose a seat for {target} to damage',
+};
+
+export function seatPickText(abilityId: string): string | null {
+  return SEAT_PICK_TEXT[abilityId] ?? null;
+}
+
+// What a selection says by the step it leads to, whatever opened it:
+// competing (any skill's), and Blaze's two picks.
+const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?: string }> = {
+  'compete-user': { prompt: 'Choose a hand card to compete with', confirm: 'Compete' },
+  'compete-target': { prompt: 'Choose a hand card to compete with', confirm: 'Compete' },
+  'blaze-shown': { prompt: 'Choose a hand card to show', confirm: 'Show' },
+  'blaze-hit': { prompt: 'Discard a card of the same suit to deal 1 damage', confirm: 'Discard' },
+};
+
+export function stepSelectionText(step: string): { prompt: string; confirm: string; cancel?: string } | null {
+  return STEP_SELECTION_TEXT[step] ?? null;
 }
 
 // A skill's id: its English name in kebab case, apostrophes dropped

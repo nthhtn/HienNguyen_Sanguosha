@@ -1,5 +1,5 @@
 import { Action, CardInstance, GameState, PendingSelection } from 'engine';
-import { abilityHint, abilityName, cardDisplayData, generalDisplayData, selectionText } from 'content';
+import { abilityHint, abilityName, cardDisplayData, generalDisplayData, selectionText, stepSelectionText } from 'content';
 import { cardFaceLabel, cardIdDisplayName, generalDisplayName, seatName } from '../labels';
 
 type SelectAction = Extract<Action, { kind: 'SelectAction' }>;
@@ -112,9 +112,12 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
     const card = findCard(state, id);
     return card ? { id, card, label: `${cardName(card.definitionId)} (${cardFaceLabel(card)})` } : { id, label: 'Card' };
   });
-  const text = selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId) : null;
+  const then = selection.then;
+  const step = then.kind === 'skill-step' || then.kind === 'card-step' ? then.step.step : null;
+  const text = (step ? stepSelectionText(step) : null) ?? (selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId) : null);
+  const reason = selection.reason;
   return {
-    title: selection.reason.kind === 'ability' ? abilityName(selection.reason.abilityId) : 'Choose',
+    title: reason.kind === 'ability' ? abilityName(reason.abilityId) : reason.kind === 'choice' ? cardName(reason.card.as) : 'Choose',
     prompt: text?.prompt ?? selectionPrompt(state, selection, items),
     confirmLabel: text?.confirm ?? CONFIRM_LABELS[selection.then.kind],
     cancelLabel: text?.cancel ?? 'Cancel',

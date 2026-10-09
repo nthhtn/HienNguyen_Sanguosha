@@ -507,4 +507,42 @@ describe('actionHistory: the Wind skills', () => {
     expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-false', cardId: 'sha' }])).toEqual(["Seat 1's Sha was a bluff"]);
     expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-believed', cardId: 'sha' }])).toEqual([]);
   });
+
+  describe('Fire Generals', () => {
+    const nine: CardInstance = { instanceId: 'n', definitionId: 'shan', suit: 'spade', rank: 9 };
+    const seven: CardInstance = { instanceId: 's', definitionId: 'sha', suit: 'heart', rank: 7 };
+    const competed = (skillId: string, outcome: 'compete-won' | 'compete-lost'): EngineEvent[] => [
+      { kind: 'CardShownEvent', seatId: 'seat-0', card: nine, abilityId: skillId },
+      { kind: 'CardShownEvent', seatId: 'seat-1', card: seven, abilityId: skillId },
+      { kind: 'AbilityUsedEvent', owner: general('seat-0', skillId), abilityId: skillId, outcome, targetSeatId: 'seat-1' },
+    ];
+
+    it('one line for competing, naming both cards and the winner', () => {
+      expect(texts(competed('rouse-the-tiger', 'compete-won'))).toEqual(['Seat 0 competed with Seat 1: 9 ♠ against 7 ♥, Seat 0 won']);
+      expect(texts(competed('rouse-the-tiger', 'compete-lost'))).toEqual(['Seat 0 competed with Seat 1: 9 ♠ against 7 ♥, Seat 1 won']);
+    });
+
+    it("Heaven's Justice says what the win or loss means", () => {
+      expect(texts(competed('heavens-justice', 'compete-won'))).toEqual([
+        "Seat 0's Heaven's Justice: one more Sha this turn, at any distance, with one more target",
+        'Seat 0 competed with Seat 1: 9 ♠ against 7 ♥, Seat 0 won',
+      ]);
+      expect(texts(competed('heavens-justice', 'compete-lost'))[0]).toBe("Seat 0's Heaven's Justice: no Sha this turn");
+    });
+
+    it('Nirvana, Assault, Eternal Loyalty, Dueling Heroes and Sudden Attack', () => {
+      const line = (skillId: string, outcome: string, targetSeatId?: string) =>
+        texts([{ kind: 'AbilityUsedEvent', owner: general('seat-0', skillId), abilityId: skillId, outcome, ...(targetSeatId ? { targetSeatId } : {}) }]);
+      expect(line('nirvana', 'reborn')).toEqual(['Seat 0 used Nirvana: discards every card, draws 3, recovers to 3 HP and turns face up']);
+      expect(line('assault', 'paid-weapon')).toEqual(['Seat 0 discarded a Weapon for Assault']);
+      expect(line('assault', 'paid-hp')).toEqual([]); // the HP line says it
+      expect(line('assault', 'struck', 'seat-1')).toEqual(['Seat 0 struck Seat 1 with Assault']);
+      expect(line('eternal-loyalty', 'drew-up', 'seat-1')).toEqual(["Seat 0's Eternal Loyalty: Seat 1 draws up to its max HP"]);
+      expect(line('dueling-heroes', 'judged-red')).toEqual(["Seat 0's Dueling Heroes: black hand cards can be used as Duel this turn"]);
+      expect(line('dueling-heroes', 'judged-black')).toEqual(["Seat 0's Dueling Heroes: red hand cards can be used as Duel this turn"]);
+      expect(line('sudden-attack', 'discarded', 'seat-1')).toEqual(["Seat 0's Sudden Attack: discards one of Seat 1's cards"]);
+      expect(line('shackle', 'recast')).toEqual(['Seat 0 recast a club with Shackle']);
+    });
+  });
 });
+

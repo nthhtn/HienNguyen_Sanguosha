@@ -70,6 +70,58 @@ describe('ActionList', () => {
     expect(chosen).toHaveBeenCalledWith(at('seat-2'));
   });
 
+  describe('a skill’s conversion', () => {
+    const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'random-strike' };
+    const state: GameState = { ...emptyState(), seats: [{ id: 'seat-0', index: 0, kingdom: 'Qun', eliminated: false, combinedHp: 4, maxCombinedHp: 4, generals: { main: { generalDefinitionId: 'g', revealed: true }, deputy: { generalDefinitionId: 'g', revealed: true } }, hand: { zoneId: 'h' }, equipped: { zoneId: 'e' }, judgment: { zoneId: 'j' } }] };
+    const registry: ContentRegistry = {
+      cards: new Map([
+        ['hail-of-arrows', { id: 'hail-of-arrows', name: 'Hail of Arrows', category: 'tool', play: () => [] }],
+        ['sha', { id: 'sha', name: 'Sha', category: 'basic', play: () => [] }],
+      ]),
+      generals: new Map([['g', { id: 'g', kingdom: 'Qun', maxHp: 4, skills: [
+        { id: 'random-strike', conversions: [{ id: 'random-strike', as: 'hail-of-arrows', cards: 2, sameSuit: true, when: 'play' }] },
+        { id: 'pairs', conversions: [{ id: 'pairs', as: 'sha', cards: 2, when: 'play' }] },
+      ] }]]),
+    };
+    const render = (actions: Action[]) => {
+      const fixture = TestBed.createComponent(ActionList);
+      fixture.componentRef.setInput('actions', actions);
+      fixture.componentRef.setInput('state', state);
+      fixture.componentRef.setInput('registry', registry);
+      fixture.detectChanges();
+      const chosen = jest.fn();
+      fixture.componentInstance.actionChosen.subscribe(chosen);
+      return { fixture, chosen, el: fixture.nativeElement as HTMLElement };
+    };
+
+    it('with no target: one button that uses it at once', () => {
+      const hail: Action = { kind: 'UseConversionAction', seatId: 'seat-0', via: { owner, conversionId: 'random-strike' }, targets: [] };
+      const { el, chosen } = render([hail]);
+      const button = el.querySelector('button.conversion') as HTMLButtonElement;
+      expect(button.textContent!.trim()).toBe('As Hail of Arrows · Random Strike');
+      button.click();
+      expect(chosen).toHaveBeenCalledWith(hail);
+    });
+
+    it('with several targets: the Choose Targets window first', async () => {
+      const pairs = { ...owner, skillId: 'pairs' };
+      const template: Action = { kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: pairs, conversionId: 'pairs' }, targets: [], pickTargets: { eligibleIds: ['seat-1', 'seat-2'], min: 1, max: 2 } };
+      const { el, chosen, fixture } = render([template]);
+      (el.querySelector('button.conversion') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const dialog = document.querySelector('app-targets-dialog') as HTMLElement;
+      expect(dialog.textContent).toContain('Choose up to 2 targets for Sha');
+      const button = (text: string) => [...dialog.querySelectorAll('button')].find((b) => b.textContent!.trim() === text) as HTMLButtonElement;
+      button('Seat 2').click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      button('Confirm').click();
+      expect(chosen).toHaveBeenCalledWith({ kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: pairs, conversionId: 'pairs' }, targets: [{ kind: 'seat', seatId: 'seat-2' }] });
+      (document.querySelector('.cdk-overlay-container') as HTMLElement | null)?.replaceChildren();
+    });
+  });
+
   it('renders one button per action and emits the chosen action on click', () => {
     const fixture = TestBed.createComponent(ActionList);
     const actions: Action[] = [

@@ -1,5 +1,5 @@
 import { Action, ChoiceOption, GameState, Player, Seat } from 'engine';
-import { abilityName, cardDisplayData } from 'content';
+import { abilityName, cardDisplayData, seatPickText } from 'content';
 import { cardFaceLabel, cardIdDisplayName, forceOf, seatName, suitLabel } from '../labels';
 import type { ChoiceDialogOption } from './choice-dialog';
 
@@ -26,10 +26,11 @@ export function describeChoice(state: GameState, viewerSeatId: string): ChoiceDe
     const claimer = seatName(state.players, choice.reason.owner.seatId);
     return { title: abilityName(choice.reason.abilityId), prompt: `${claimer} claims ${cardName(choice.reason.cardId)}. Believe or doubt?`, confirmLabel: 'Choose' };
   }
-  // A skill's take from another seat (Feedback).
-  if (choice.reason.kind === 'ability' && choice.verb === 'take') {
+  // A skill's take from, or discard of, another seat's card (Feedback, Sudden Attack).
+  if (choice.reason.kind === 'ability' && (choice.verb === 'take' || choice.verb === 'discard')) {
     const from = choice.reason.targetSeatId ? ` from ${seatName(state.players, choice.reason.targetSeatId)}` : '';
-    return { title: abilityName(choice.reason.abilityId), prompt: `Choose a card to take${from}`, confirmLabel: 'Take' };
+    const take = choice.verb === 'take';
+    return { title: abilityName(choice.reason.abilityId), prompt: `Choose a card to ${choice.verb}${from}`, confirmLabel: take ? 'Take' : 'Discard' };
   }
   // A skill's pick (a seat, a suit, one of several labels) or who gets given cards.
   if (choice.reason.kind === 'ability' && (choice.verb === 'pick' || choice.verb === 'give')) {
@@ -37,7 +38,11 @@ export function describeChoice(state: GameState, viewerSeatId: string): ChoiceDe
     if (choice.verb === 'give') return { title, prompt: 'Choose who gets the cards', confirmLabel: 'Give' };
     const kinds = new Set(choice.options.map((o) => o.shows.kind));
     const only = kinds.size === 1 ? [...kinds][0] : null;
-    const prompt = only === 'seat' ? 'Choose a seat' : only === 'suit' ? 'Name a suit' : 'Choose one';
+    // A skill's own words for its seat pick (Rouse the Tiger), its target named.
+    const own = seatPickText(choice.reason.abilityId);
+    const target = choice.reason.targetSeatId;
+    const seatPrompt = own && target ? own.replace('{target}', seatName(state.players, target)) : 'Choose a seat';
+    const prompt = only === 'seat' ? seatPrompt : only === 'suit' ? 'Name a suit' : 'Choose one';
     return { title, prompt, confirmLabel: 'Choose' };
   }
   if (choice.reason.kind !== 'choice') return null;
