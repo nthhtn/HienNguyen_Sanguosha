@@ -10,6 +10,14 @@
         <mat-icon [fontSet]="page.symbol ? 'material-symbols-outlined' : ''">{{ page.icon }}</mat-icon><span class="label">{{ page.label }}</span>
       </a>
     }
+    <button mat-button type="button" class="nav-rules" [matMenuTriggerFor]="rulesMenu" [class.active]="rulesActive()" aria-label="Rules">
+      <mat-icon>menu_book</mat-icon><span class="label">Rules</span>
+    </button>
+    <mat-menu #rulesMenu="matMenu">
+      @for (page of rulesPages; track page.path) {
+        <a mat-menu-item [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label }}</a>
+      }
+    </mat-menu>
   </nav>
   <span class="spacer"></span>
   <button
