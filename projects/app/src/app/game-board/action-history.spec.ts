@@ -8,6 +8,7 @@ const zones: CardZone[] = [
     { id: `${id}:hand`, kind: 'hand' as const, ownerSeatId: id, cards: [] },
     { id: `${id}:equip`, kind: 'equip' as const, ownerSeatId: id, cards: [] },
     { id: `${id}:pile`, kind: 'pile' as const, ownerSeatId: id, cards: [] },
+    { id: `${id}:stash`, kind: 'pile' as const, ownerSeatId: id, cards: [] },
   ]),
 ];
 
