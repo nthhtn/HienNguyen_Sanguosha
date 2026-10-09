@@ -447,3 +447,54 @@ describe('Kingdom War game rules option', () => {
     expect(createGame(kingdomWarMode, registry, ids, 1).rules).toBeUndefined();
   });
 });
+
+describe('Kingdom War kill reward and penalty', () => {
+  const h = harness(kwMode);
+  const rescue = { any: ['peach'], self: ['wine'] };
+  const deck = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => card(id, 'sha'));
+  const handOf = (s: GameState, id: string) => s.zones.find((z) => z.id === `${id}:hand`)!.cards;
+  // Five seats: a Wei, b Shu, c Shu, d Shu, e Wei. Seat b is at 0 HP and nobody can save it.
+  const kill = (killer: string | undefined, o: { kingdoms?: Record<string, 'Wei' | 'Shu' | 'Wu' | 'Qun'>; hidden?: string[]; eliminated?: string[] } = {}) => {
+    const kingdoms = { 'seat-a': 'Wei', 'seat-b': 'Shu', 'seat-c': 'Shu', 'seat-d': 'Shu', 'seat-e': 'Wei', ...o.kingdoms } as const;
+    const generals = Object.fromEntries((o.hidden ?? []).map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]]));
+    let s = table({ drawPile: deck, 'seat-a:hand': [card('h1', 'sha'), card('h2', 'sha')], 'seat-c:hand': [card('c1', 'sha')] }, { seats: 5, kingdoms, generals, hp: { 'seat-b': 0 } });
+    s = { ...s, seats: s.seats.map((x) => (o.eliminated?.includes(x.id) ? { ...x, eliminated: true } : x)) };
+    return h.run(s, [{ kind: 'DyingEffect', seatId: 'seat-b', order: [], rescueCardIds: rescue, ...(killer ? { killerSeatId: killer } : {}) }]);
+  };
+
+  it('rewards a killer of another Kingdom with the dead seat\'s Kingdom count, the dead seat included', () => {
+    const out = kill('seat-a');
+    expect(out.seats.find((x) => x.id === 'seat-b')!.eliminated).toBe(true);
+    expect(handOf(out, 'seat-a')).toHaveLength(2 + 3);
+  });
+
+  it('counts only living seats of that Kingdom besides the dead one', () => {
+    expect(handOf(kill('seat-a', { eliminated: ['seat-d'] }), 'seat-a')).toHaveLength(2 + 2);
+  });
+
+  it('makes a same-Kingdom killer discard its entire hand', () => {
+    const out = kill('seat-c');
+    expect(handOf(out, 'seat-c')).toHaveLength(0);
+    expect(out.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId)).toContain('c1');
+  });
+
+  it('treats Qun as one Kingdom: Qun killing Qun is penalized, Qun killing another is rewarded', () => {
+    const qun = { kingdoms: { 'seat-b': 'Qun', 'seat-c': 'Qun', 'seat-d': 'Wu' } as const };
+    expect(handOf(kill('seat-c', qun), 'seat-c')).toHaveLength(0);
+    expect(handOf(kill('seat-a', qun), 'seat-a')).toHaveLength(2 + 2);
+  });
+
+  it('rewards a killer with no revealed General even when it shares the Kingdom', () => {
+    const out = kill('seat-c', { hidden: ['seat-c'] });
+    expect(handOf(out, 'seat-c')).toHaveLength(1 + 3);
+  });
+
+  it('does nothing without a killer', () => {
+    expect(handOf(kill(undefined), 'seat-a')).toHaveLength(2);
+  });
+
+  it('does nothing when the killer is the dead seat or is out too', () => {
+    expect(handOf(kill('seat-b'), 'seat-b')).toHaveLength(0);
+    expect(handOf(kill('seat-a', { eliminated: ['seat-a'] }), 'seat-a')).toHaveLength(2);
+  });
+});

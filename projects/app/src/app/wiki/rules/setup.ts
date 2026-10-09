@@ -22,6 +22,15 @@ import { RouterLink } from '@angular/router';
       <li>When you reveal your second General and the two Generals' HP added together was odd (so your HP was rounded down), you draw 1 card.</li>
       <li>Optional, with 5 or more seats: the first seat to reveal a General draws 2 cards. This is a checkbox in Game Setup.</li>
     </ul>
+    <h3>Killing a seat</h3>
+    <ul>
+      <li>When a seat is eliminated, the seat whose damage killed it is rewarded or penalized.</li>
+      <li>Different Force: the killer draws one card for each living seat of the dead seat's Force, counting the dead seat itself.</li>
+      <li>Same Force: the killer discards its entire hand.</li>
+      <li>A killer who has not revealed either General always counts as a different Force, even if it secretly shares the dead seat's Force.</li>
+      <li>Qun counts as one Force like the others.</li>
+      <li>Nothing happens if the death had no source, the seat killed itself, or the killer is out as well.</li>
+    </ul>
     <p>Next: <a routerLink="/wiki/rules/turn">Turn Structure</a>.</p>
   `,
 })

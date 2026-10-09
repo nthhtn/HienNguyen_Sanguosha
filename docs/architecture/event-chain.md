@@ -581,3 +581,13 @@ Two Kingdom War triggers react to `after:GeneralRevealedEvent` with a
   first `GeneralRevealedEvent` in the log gives its seat 2 cards.
 - **Rounding** (always): when both of a seat's Generals are revealed and their
   printed HP sum is odd, the seat draws 1 card, once, on the second reveal.
+
+## Kill reward and penalty
+
+A Kingdom War trigger on `after:SeatEliminatedEvent` (when `killerSeatId` is
+set, is not the dead seat, and is still living):
+
+- killer has revealed a General and shares the dead seat's Kingdom (Qun is one
+  Kingdom) → `DiscardZoneEffect` on its hand;
+- otherwise → `DrawCardsEffect` of (living seats of the dead seat's Kingdom + the
+  dead seat itself).
