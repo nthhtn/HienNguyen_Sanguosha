@@ -40,9 +40,14 @@ describe('cardDisplayData', () => {
   });
 });
 describe('abilityHint', () => {
+  it('Eight Trigrams and Eight Arrays read in sentence case', () => {
+    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Shan');
+    expect(abilityHint('eight-arrays')).toBe('Judge: on red, it counts as a Shan');
+  });
+
   it('says what an ability does, in the game’s own words', () => {
     expect(abilityHint('axe')).toBe('Discard 2 cards to make your Sha hit {target}');
-    expect(abilityHint('eight-trigrams')).toBe('Judge: On red, It counts as a Shan');
+    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Shan');
     expect(abilityHint('sha')).toBeNull();
   });
 });

@@ -33,30 +33,29 @@ const damageFrom = (sourceSeatId: string, targetSeatId: string, skillId: string)
 
 // Assault (active, once per turn): discard a Weapon (hand or worn) or lose 1
 // HP; then deal 1 damage to a seat within your attack range, measured after
-// the discard. Losing HP to dying: the dying round comes first.
+// the discard. Losing HP to dying: the dying round comes first. It opens with
+// a cancellable pick: a Weapon to discard, or none to lose 1 HP.
 export const assault: SkillDefinition = {
   id: 'assault',
   active: {
     usesPerTurn: 1,
-    canUse: (state, { seatId }) => isLiving(state, seatId) && otherLivingSeatIds(state, seatId).length > 0,
-    start: (state, { seatId, owner }, registry) => {
-      const weapons = weaponsOf(state, seatId, registry).map((c) => c.instanceId);
-      const payWeapon = selectionOf(state, owner, { of: 'cards', eligibleIds: weapons, min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'paid-weapon') } });
-      const loseHp: Effect[] = [{ kind: 'LoseHpEffect', seatId, amount: 1, abilityId: owner.skillId }, used(owner, 'paid-hp'), skillStep(owner, 'strike')];
-      return [
-        choiceOf(state, owner, {
-          verb: 'pick',
-          options: [
-            ...(weapons.length > 0 ? [{ id: 'discard-weapon', shows: { kind: 'label' as const, text: 'Discard a Weapon' }, effects: [payWeapon] }] : []),
-            { id: 'lose-hp', shows: { kind: 'label' as const, text: 'Lose 1 HP' }, effects: loseHp },
-          ],
-        }),
-      ];
-    },
+    canUse: (state, { seatId }, registry) => isLiving(state, seatId) && inRangeOf(state, seatId, registry).length > 0,
+    start: (state, { seatId, owner }, registry) => [
+      selectionOf(state, owner, {
+        of: 'cards', eligibleIds: weaponsOf(state, seatId, registry).map((c) => c.instanceId), min: 0, max: 1,
+        then: { kind: 'skill-step', step: skillStep(owner, 'paid') }, onCancel: [],
+      }),
+    ],
   },
   onStep: (state, step, registry) => {
     const { owner } = step;
-    if (step.step === 'paid-weapon') return [...discardMoves(state, picked(step)), used(owner, 'paid-weapon'), skillStep(owner, 'strike')];
+    if (step.step === 'paid') {
+      const weapon = picked(step);
+      const pay: Effect[] = weapon.length > 0
+        ? [...discardMoves(state, weapon), used(owner, 'paid-weapon')]
+        : [{ kind: 'LoseHpEffect', seatId: owner.seatId, amount: 1, abilityId: owner.skillId }, used(owner, 'paid-hp')];
+      return [...pay, skillStep(owner, 'strike')];
+    }
     // 'strike'
     const seats = inRangeOf(state, owner.seatId, registry);
     if (!isLiving(state, owner.seatId) || seats.length === 0) return [];
@@ -96,7 +95,8 @@ export const rouseTheTiger: SkillDefinition = {
 };
 
 // One Eternal Loyalty ask, with `left` points of damage still to answer.
-const loyaltyAsk = (owner: GeneralOwner, left: number): Effect => ask(owner, [skillStep(owner, 'pick', { left })]);
+// Don't still asks for the next point.
+const loyaltyAsk = (owner: GeneralOwner, left: number): Effect => ask(owner, [skillStep(owner, 'pick', { left })], left > 1 ? [loyaltyAsk(owner, left - 1)] : []);
 
 // Eternal Loyalty (may, per point of damage you take): pick any living seat,
 // you included; it draws until it holds as many hand cards as its max HP.

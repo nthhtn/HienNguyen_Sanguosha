@@ -3,10 +3,13 @@ import { livingSeatOrderFrom } from 'engine';
 import { handCards, isAlly, keepRank, leastUseful } from './helpers';
 
 // The stage 9 spec's bot rules for the Fire skills. Bots don't read content's
-// range rules, so reach is the seats round the table plus a worn Weapon's
-// range (horses aside).
+// range rules, so distance is worked out here the same way: seats round the
+// table, +1 to a seat riding a defensive horse, -1 riding an offensive one,
+// plus the bot's own revealed Generals' distance modifiers (Horsemanship).
 
 const others = (view: GameState, me: Seat) => view.seats.filter((s) => !s.eliminated && s.id !== me.id);
+// With nobody else to pick, the one best able to take a hit.
+const byHighestHp = (seats: Seat[]) => [...seats].sort((a, b) => b.combinedHp - a.combinedHp || a.index - b.index);
 const weakest = (seats: Seat[]) => [...seats].sort((a, b) => a.combinedHp - b.combinedHp || a.index - b.index)[0];
 const handSize = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
 const cardOf = (view: GameState, id: string) => view.zones.flatMap((z) => z.cards).find((c) => c.instanceId === id);
@@ -14,11 +17,25 @@ const byRank = (view: GameState, ids: readonly string[]) => [...ids].sort((a, b)
 const isWeapon = (registry: ContentRegistry, c: CardInstance) => registry.cards.get(c.definitionId)?.equipSlot === 'weapon';
 const worn = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === seat.equipped.zoneId)?.cards ?? [];
 
-// Seats apart round the table.
-function ringDistance(view: GameState, from: Seat, to: Seat): number {
+const rides = (view: GameState, seat: Seat, registry: ContentRegistry, slot: 'defensiveMount' | 'offensiveMount') =>
+  worn(view, seat).some((c) => registry.cards.get(c.definitionId)?.equipSlot === slot);
+
+// `from`'s revealed Generals' distance modifiers (Horsemanship: -1).
+const skillDistance = (from: Seat, registry: ContentRegistry) =>
+  (['main', 'deputy'] as const)
+    .map((slot) => from.generals?.[slot])
+    .filter((g) => !!g?.revealed)
+    .flatMap((g) => registry.generals.get(g!.generalDefinitionId)?.skills ?? [])
+    .reduce((sum, s) => sum + (s.modifiers?.distanceToOthers ?? 0), 0);
+
+// The distance from `from` to `to`, as content measures it for targeting.
+function distance(view: GameState, from: Seat, to: Seat, registry: ContentRegistry): number {
   const order = livingSeatOrderFrom(view, from.id);
   const i = order.indexOf(to.id);
-  return i < 0 ? Infinity : Math.min(i, order.length - i);
+  if (i < 0) return Infinity;
+  const ring = Math.min(i, order.length - i);
+  const horses = (rides(view, to, registry, 'defensiveMount') ? 1 : 0) - (rides(view, from, registry, 'offensiveMount') ? 1 : 0);
+  return Math.max(1, ring + horses + skillDistance(from, registry));
 }
 
 // How far `seat` reaches: its worn Weapon's range, else 1.
@@ -27,7 +44,7 @@ const reach = (view: GameState, seat: Seat, registry: ContentRegistry) =>
 
 // Non-allies within `seat`'s reach.
 const nonAlliesInReach = (view: GameState, me: Seat, seat: Seat, registry: ContentRegistry) =>
-  others(view, seat).filter((s) => s.id !== me.id && !isAlly(me, s) && ringDistance(view, seat, s) <= reach(view, seat, registry));
+  others(view, seat).filter((s) => s.id !== me.id && !isAlly(me, s) && distance(view, seat, s, registry) <= reach(view, seat, registry));
 
 // A Weapon in hand for a Weapon slot already filled.
 const spareWeapons = (view: GameState, me: Seat, registry: ContentRegistry) =>
@@ -102,8 +119,9 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
       return pick ? [pick.id] : 'cancel';
     }
     case 'assault': {
+      // A spare Weapon, else none: lose 1 HP.
       const spare = spareWeapons(view, me, registry).map((c) => c.instanceId).filter((id) => eligible.includes(id));
-      return [spare[0] ?? leastUseful(view, registry, eligible)[0]];
+      return spare.slice(0, 1);
     }
     case 'shackle': {
       const clubs = leastUseful(view, registry, spareClubs(view, me, registry, eligible));
@@ -117,13 +135,11 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
 export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
-  const has = (id: string) => choice.options.some((o) => o.id === id);
   switch (choice.reason.abilityId) {
     case 'assault':
-      if (has('lose-hp')) return has('discard-weapon') && (spareWeapons(view, me, registry).length > 0 || me.combinedHp < 3) ? 'discard-weapon' : 'lose-hp';
-      return (weakest(seats.filter((s) => !isAlly(me, s))) ?? seats[0])?.id ?? null;
+      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'rouse-the-tiger':
-      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s))) ?? seats.find((s) => s.id !== me.id) ?? seats[0])?.id ?? null;
+      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'eternal-loyalty': {
       const short = (s: Seat) => s.maxCombinedHp - handSize(view, s);
       const ally = seats.filter((s) => s.id !== me.id && isAlly(me, s)).sort((a, b) => short(b) - short(a))[0];

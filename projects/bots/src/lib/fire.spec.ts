@@ -79,7 +79,7 @@ describe('Assault', () => {
     let s = table({}, { generals: dianWei, hp: { 'seat-b': 3, 'seat-d': 2 } });
     expect(skillOf(decide(s))).toBe('assault');
     s = useSkill(s, 'assault');
-    expect(seatOf(decide(s))).toBe('lose-hp');
+    expect(picked(decide(s))).toEqual([]); // no Weapon: lose 1 HP
     s = act(s, decide(s));
     expect(seatOf(decide(s))).toBe('seat-d');
   });
@@ -87,10 +87,27 @@ describe('Assault', () => {
   it('with a spare Weapon in hand it pays with that; below 3 HP and none, it doesn’t', () => {
     let s = table({ 'seat-a:hand': [card('cb', 'crossbow', 'club', 1)], 'seat-a:equip': [card('bp', 'black-pommel', 'spade', 6)] }, { generals: dianWei, hp: { 'seat-a': 2 } });
     s = useSkill(s, 'assault');
-    expect(seatOf(decide(s))).toBe('discard-weapon');
-    s = act(s, decide(s));
     expect(picked(decide(s))).toEqual(['cb']);
     expect(skillOf(decide(table({}, { generals: dianWei, hp: { 'seat-a': 2 } })))).toBe('EndPhaseAction');
+  });
+
+  it('counts a defensive horse: not used when the only non-ally next to it rides one', () => {
+    // seat-b is an ally (Wei); seat-d (Qun) rides Di Lu (+1), so 2 away; seat-c is 2 away anyway.
+    const s = table({ 'seat-d:equip': [card('dl', 'di-lu', 'club', 5)] }, { generals: dianWei, kingdoms: { 'seat-b': 'Wei' } });
+    expect(skillOf(decide(s))).toBe('EndPhaseAction');
+  });
+});
+
+describe('who takes damage', () => {
+  it('Rouse the Tiger’s victim: never itself while another seat can be picked', () => {
+    const owner = { kind: 'general' as const, seatId: 'seat-a', slot: 'main' as const, skillId: 'rouse-the-tiger' };
+    const s = table({}, { kingdoms: { 'seat-c': 'Wei' } });
+    const choice = {
+      id: 'v', seatId: 'seat-a', verb: 'pick' as const,
+      reason: { kind: 'ability' as const, owner, abilityId: 'rouse-the-tiger', targetSeatId: 'seat-b' },
+      options: ['seat-a', 'seat-c'].map((id) => ({ id, shows: { kind: 'seat' as const, seatId: id }, effects: [] })),
+    };
+    expect(seatOf(decide({ ...s, pendingChoice: choice }))).toBe('seat-c');
   });
 });
 

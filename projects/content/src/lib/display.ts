@@ -42,7 +42,7 @@ export function cardDisplayData(id: string): CardDisplayData | null {
 // What an optional ability does, for its ask, in the game's own terms.
 // '{target}' stands for the seat it is aimed at.
 const ABILITY_HINTS: Record<string, string> = {
-  'eight-trigrams': 'Judge: On red, It counts as a Shan',
+  'eight-trigrams': 'Judge: on red, it counts as a Shan',
   'gender-swords': "{target} discards a hand card or lets you draw 1 card",
   axe: 'Discard 2 cards to make your Sha hit {target}',
   'green-dragon-blade': 'Play another Sha at {target}',
@@ -72,7 +72,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'dark-magic': "Replace {target}'s judgment card with a black card, and take the old one",
   'eternal-loyalty': 'A seat of your choice draws up to its max HP',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
-  'eight-arrays': 'Judge: On red, It counts as a Shan',
+  'eight-arrays': 'Judge: on red, it counts as a Shan',
   'sudden-attack': "Discard one of {target}'s cards",
   'dueling-heroes': 'Instead of drawing, judge and take the card; cards of the other colour can be used as Duel this turn',
 };
@@ -98,7 +98,7 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   'refusing-death': { prompt: 'Choose a card under your General to discard', confirm: 'Discard', cancel: 'Keep Them' },
   'dark-magic': { prompt: 'Choose a black card to replace the judgment', confirm: 'Replace' },
   shackle: { prompt: 'Choose a club to discard, then draw 1', confirm: 'Recast' },
-  assault: { prompt: 'Choose a Weapon to discard', confirm: 'Discard' },
+  assault: { prompt: 'Choose a Weapon to discard, or none to lose 1 HP', confirm: 'Confirm' },
   'rouse-the-tiger': { prompt: 'Choose a seat with more HP to compete with', confirm: 'Choose' },
   'heavens-justice': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
 };

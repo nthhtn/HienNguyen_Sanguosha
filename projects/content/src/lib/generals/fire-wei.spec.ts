@@ -12,14 +12,25 @@ describe('Dian Wei — Assault', () => {
   // 4 seats: seat-b and seat-d are 1 away from seat-a, seat-c 2 away.
   const pommel = card('w', 'black-pommel', 'spade', 6); // range 2
 
-  it('offers discarding a Weapon only when he has one; Lose 1 HP always', () => {
-    expect(optionIds(h.useSkill(table({}, { generals: at('seat-a', 'dian-wei') }), 'seat-a', 'assault'))).toEqual(['lose-hp']);
-    expect(optionIds(h.useSkill(table({ 'seat-a:hand': [pommel] }, { generals: at('seat-a', 'dian-wei') }), 'seat-a', 'assault'))).toEqual(['discard-weapon', 'lose-hp']);
+  it('opens with a cancellable pick: a Weapon (hand or worn) to discard, or none to lose 1 HP', () => {
+    const s = h.useSkill(table({ 'seat-a:hand': [pommel, card('x', 'shan')] }, { generals: at('seat-a', 'dian-wei') }), 'seat-a', 'assault');
+    expect(s.pendingSelection).toMatchObject({ of: 'cards', eligibleIds: ['w'], min: 0, max: 1, onCancel: [] });
+  });
+
+  it('Cancel: nothing happens, and it can still be used this turn', () => {
+    const s = h.cancel(h.useSkill(table({}, { generals: at('seat-a', 'dian-wei') }), 'seat-a', 'assault'));
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(offered(s, 'seat-a', 'assault')).toBe(true);
+  });
+
+  it('not offered with nobody in attack range', () => {
+    const horse = (id: string) => card(id, 'di-lu', 'club', 5); // +1: defensive
+    expect(offered(table({ 'seat-b:equip': [horse('h1')], 'seat-d:equip': [horse('h2')] }, { generals: at('seat-a', 'dian-wei') }), 'seat-a', 'assault')).toBe(false);
   });
 
   it('discards a worn Weapon, then deals 1 damage within the range left after it', () => {
     let s = h.useSkill(table({ 'seat-a:equip': [pommel] }, { generals: at('seat-a', 'dian-wei') }), 'seat-a', 'assault');
-    s = h.select(h.choose(s, 'discard-weapon'), 'w');
+    s = h.select(s, 'w');
     expect(ids(s, 'discardPile')).toContain('w');
     expect(optionIds(s)).toEqual(['seat-b', 'seat-d']); // seat-c was in range only with the sword
     s = h.choose(s, 'seat-b');
@@ -29,7 +40,7 @@ describe('Dian Wei — Assault', () => {
   });
 
   it('or loses 1 HP; dying comes first, and a dead Dian Wei deals nothing', () => {
-    const s = kw.choose(kw.useSkill(table({}, { generals: at('seat-a', 'dian-wei'), hp: { 'seat-a': 1 } }), 'seat-a', 'assault'), 'lose-hp');
+    const s = kw.select(kw.useSkill(table({}, { generals: at('seat-a', 'dian-wei'), hp: { 'seat-a': 1 } }), 'seat-a', 'assault'));
     expect(s.pendingResponse?.reason).toEqual({ kind: 'dying', seatId: 'seat-a' });
     const gone = kw.pass(s);
     expect(gone.seats[0].eliminated).toBe(true);
@@ -37,7 +48,7 @@ describe('Dian Wei — Assault', () => {
   });
 
   it('once per turn', () => {
-    let s = h.choose(h.useSkill(table({}, { generals: at('seat-a', 'dian-wei') }), 'seat-a', 'assault'), 'lose-hp');
+    let s = h.select(h.useSkill(table({}, { generals: at('seat-a', 'dian-wei') }), 'seat-a', 'assault'));
     s = h.choose(s, 'seat-b');
     expect(hp(s, 'seat-a')).toBe(3);
     expect(offered(s, 'seat-a', 'assault')).toBe(false);
@@ -87,6 +98,16 @@ describe('Xun Yu — Eternal Loyalty', () => {
     s = h.use(s); // the second point
     s = h.choose(s, 'seat-c');
     expect(handIds(s, 'seat-c')).toHaveLength(4);
+    expect(s.pendingChoice).toBeUndefined();
+  });
+
+  it('Don’t for one point still asks for the next', () => {
+    let s = h.run(table({}, { generals: at('seat-a', 'xun-yu') }), [
+      { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId: 'seat-a' }, amount: 2, nature: 'normal', cause: {} } },
+    ]);
+    s = h.decline(s);
+    expect(s.pendingChoice?.reason).toMatchObject({ abilityId: 'eternal-loyalty' });
+    s = h.decline(s);
     expect(s.pendingChoice).toBeUndefined();
   });
 

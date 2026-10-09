@@ -132,7 +132,7 @@ describe('describeSelection', () => {
     const general = (skillId: string) => ({ kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId });
     const sel = (skillId: string, of: 'cards' | 'seats') => selection(skillId, { reason: { kind: 'ability', owner: general(skillId), abilityId: skillId }, of, eligibleIds: [], min: 1, max: 1, then: { kind: 'skill-step', step: { kind: 'SkillStepEffect', owner: general(skillId), step: 'chosen', data: {} } } });
     expect(describe2(sel('shackle', 'cards'))).toMatchObject({ prompt: 'Choose a club to discard, then draw 1', confirmLabel: 'Recast' });
-    expect(describe2(sel('assault', 'cards'))).toMatchObject({ prompt: 'Choose a Weapon to discard', confirmLabel: 'Discard' });
+    expect(describe2(sel('assault', 'cards'))).toMatchObject({ prompt: 'Choose a Weapon to discard, or none to lose 1 HP', confirmLabel: 'Confirm' });
     expect(describe2(sel('rouse-the-tiger', 'seats'))).toMatchObject({ prompt: 'Choose a seat with more HP to compete with', confirmLabel: 'Choose' });
     expect(describe2(sel('heavens-justice', 'seats'))).toMatchObject({ prompt: 'Choose a seat to compete with', confirmLabel: 'Choose' });
   });
