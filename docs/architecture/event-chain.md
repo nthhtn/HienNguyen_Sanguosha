@@ -461,6 +461,26 @@ Dragon Blade does. Eight Arrays shares Eight Trigrams' trigger
 (`eightTrigramsTrigger`), with a skill judgment reader and a "no armour worn"
 condition.
 
+**Forest hooks** (stage 10).
+- **A Tool's end.** `useCard` queues `ToolResolvedEffect` behind a played,
+  non-delayed Tool's other items. It does nothing itself; `before:ToolResolvedEffect`
+  is "after the Tool finished resolving" (Giant Elephant takes the Barbarians
+  card there).
+- **A skill's own window.** `PendingResponse.sourceSkill { owner, step, data }`:
+  answering the window queues that skill step with `answeredBy` and
+  `answeredCard` (the card as used) added to `data`. Upheaval uses it to throw
+  the Sha the seat answered with; a Pass runs the window's `context.effect`.
+- **A dead seat's cards.** The mode queues one `DiscardZoneEffect` per zone
+  after `SeatEliminatedEvent`. Unnatural Death is a `before:DiscardZoneEffect`
+  ask on the dead seat's hand zone; `acted` stops a declined ask repeating.
+- **Max HP.** `ReduceMaxHpEffect` lowers max HP and clamps HP, logs
+  `MaxHpReducedEvent`, and eliminates the seat at 0.
+- **Complete Kill** is read when the dying round is built: the mode lists only
+  the turn owner and the dying seat in `DyingEffect.order`.
+- **Curtain** is the `untargetableByBlackTools` modifier (seat lists of Steal,
+  Break, Duel, Coerce, Capture, Starvation, through `untargetableBy`'s
+  `colour`) plus a `before:ToolOnTargetEffect` trigger for the rest.
+
 ## Plugging into the chain
 
 | To add… | Write… | Example |
