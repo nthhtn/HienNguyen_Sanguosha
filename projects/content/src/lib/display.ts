@@ -75,6 +75,12 @@ const ABILITY_HINTS: Record<string, string> = {
   'eight-arrays': 'Judge: on red, it counts as a Shan',
   'sudden-attack': "Discard one of {target}'s cards",
   'dueling-heroes': 'Instead of drawing, judge and take the card; cards of the other colour can be used as Duel this turn',
+  'unnatural-death': "Take all of {target}'s cards into your hand",
+  exile: 'A seat of your choice turns over and draws cards',
+  resurgence: 'Instead of drawing, reveal cards: each heart recovers 1 HP, the rest go to your hand',
+  'intense-edge': 'Compete with {target}; if you win, take one of its cards',
+  'brave-spirit': 'A seat of your choice draws and discards cards',
+  charity: 'Draw 2 more cards; with more than 5, give half to the seat with the fewest',
 };
 
 export function abilityHint(abilityId: string): string | null {
@@ -101,6 +107,9 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   assault: { prompt: 'Choose a Weapon to discard, or none to lose 1 HP', confirm: 'Confirm' },
   'rouse-the-tiger': { prompt: 'Choose a seat with more HP to compete with', confirm: 'Choose' },
   'heavens-justice': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
+  alliance: { prompt: 'Choose a seat to swap hands', confirm: 'Choose' },
+  'brave-spirit': { prompt: 'Choose cards to discard', confirm: 'Discard' },
+  charity: { prompt: 'Choose half of your hand to give away', confirm: 'Give' },
 };
 
 export function selectionText(abilityId: string): { prompt: string; confirm: string; cancel?: string } | null {
@@ -111,10 +120,24 @@ export function selectionText(abilityId: string): { prompt: string; confirm: str
 // '{target}' stands for the seat the skill is aimed at.
 const SEAT_PICK_TEXT: Record<string, string> = {
   'rouse-the-tiger': 'Choose a seat for {target} to damage',
+  exile: 'Choose a seat to turn over',
+  'brave-spirit': 'Choose a seat to draw and discard cards',
+  alliance: 'Choose a seat to swap hands with {target}',
 };
 
 export function seatPickText(abilityId: string): string | null {
   return SEAT_PICK_TEXT[abilityId] ?? null;
+}
+
+// What a skill's pick says when it mixes seats and labels, or is all labels.
+const CHOICE_PROMPT_TEXT: Record<string, string> = {
+  upheaval: 'Choose a seat to play a Sha at, or pass',
+  collapse: 'Choose how Collapse costs you',
+  'brave-spirit': 'Choose how to draw and discard',
+};
+
+export function choicePromptText(abilityId: string): string | null {
+  return CHOICE_PROMPT_TEXT[abilityId] ?? null;
 }
 
 // What a selection says by the step it leads to, whatever opened it:
@@ -124,6 +147,7 @@ const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; can
   'compete-target': { prompt: 'Choose a hand card to compete with', confirm: 'Compete' },
   'blaze-shown': { prompt: 'Choose a hand card to show', confirm: 'Show' },
   'blaze-hit': { prompt: 'Discard a card of the same suit to deal 1 damage', confirm: 'Discard' },
+  pay: { prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' },
 };
 
 export function stepSelectionText(step: string): { prompt: string; confirm: string; cancel?: string } | null {

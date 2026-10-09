@@ -274,3 +274,23 @@ describe('describeResponse: the outcome after armour', () => {
     expect(describeResponse(state(log, window), 'seat-0', capped)!.outcome).toBe('You lose 1 HP (1 damage from Seat 1)');
   });
 });
+
+describe('the Upheaval window', () => {
+  const window: PendingResponse = {
+    id: 'u', respondingSeatId: 'seat-1', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
+    reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'upheaval' }, abilityId: 'upheaval', targetSeatId: 'seat-2' },
+    context: { effect: { kind: 'SkillStepEffect', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'upheaval' }, step: 'penalty', data: {} } },
+  };
+
+  it('asks for a Sha at the seat picked, or 1 HP', () => {
+    expect(describeResponse(state([], window), 'seat-1')).toMatchObject({
+      source: 'Hing used Upheaval',
+      prompt: 'Play a Sha at Seat 2, or lose 1 HP?',
+      outcome: 'You lose 1 HP',
+    });
+  });
+
+  it('says who is waited on', () => {
+    expect(waitingLine(state([], window))).toBe('Waiting on Seat 1 to play a Sha for Upheaval');
+  });
+});

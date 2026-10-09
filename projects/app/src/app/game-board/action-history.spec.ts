@@ -543,6 +543,29 @@ describe('actionHistory: the Wind skills', () => {
       expect(line('sudden-attack', 'discarded', 'seat-1')).toEqual(["Seat 0's Sudden Attack: discards one of Seat 1's cards"]);
       expect(line('shackle', 'recast')).toEqual(['Seat 0 recast a club with Shackle']);
     });
+
+    it('the Forest skills', () => {
+      const line = (skillId: string, outcome: string, targetSeatId?: string) =>
+        texts([{ kind: 'AbilityUsedEvent', owner: general('seat-0', skillId), abilityId: skillId, outcome, ...(targetSeatId ? { targetSeatId } : {}) }]);
+      expect(line('unnatural-death', 'took-cards', 'seat-1')).toEqual(["Seat 0 took all of Seat 1's cards (Unnatural Death)"]);
+      expect(line('exile', 'exiled', 'seat-1')).toEqual(["Seat 0's Exile: Seat 1 turns over and draws cards"]);
+      expect(line('resurgence', 'revealed')).toEqual(['Seat 0 used Resurgence']);
+      expect(line('culprit', 'culprit', 'seat-1')).toEqual(["Seat 0's Culprit: the damage to Seat 1 counts as theirs"]);
+      expect(line('giant-elephant', 'took-card')).toEqual(["Seat 0's Giant Elephant: took the Tool card"]);
+      expect(line('brave-spirit', 'drew', 'seat-1')).toEqual(["Seat 0's Brave Spirit: Seat 1 draws and discards"]);
+      expect(line('charity', 'gave', 'seat-1')).toEqual(['Seat 0 gave half of their hand to Seat 1 (Charity)']);
+      expect(line('collapse', 'collapsed')).toEqual(['Seat 0 lost 1 HP to Collapse']);
+      expect(line('collapse', 'collapsed-max')).toEqual(["Seat 0 reduced their max HP with Collapse"]);
+      expect(line('upheaval', 'used')).toEqual(['Seat 0 used Upheaval: every other seat plays a Sha or loses 1 HP']);
+      expect(texts([
+        { kind: 'AbilityUsedEvent', owner: general('seat-0', 'alliance'), abilityId: 'alliance', outcome: 'swap-first', targetSeatId: 'seat-1' },
+        { kind: 'AbilityUsedEvent', owner: general('seat-0', 'alliance'), abilityId: 'alliance', outcome: 'swapped', targetSeatId: 'seat-2' },
+      ])).toEqual(['Seat 1 and Seat 2 swapped hands (Alliance)']);
+    });
+
+    it('max HP reduced', () => {
+      expect(texts([{ kind: 'MaxHpReducedEvent', seatId: 'seat-0', amount: 1, maxHp: 3 }])).toEqual(['Seat 0 now has a max HP of 3']);
+    });
   });
 });
 

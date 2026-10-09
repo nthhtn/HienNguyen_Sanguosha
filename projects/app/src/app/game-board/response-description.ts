@@ -1,5 +1,5 @@
 import { CardInstance, Effect, EngineEvent, GameState } from 'engine';
-import { cardDisplayData } from 'content';
+import { abilityName, cardDisplayData } from 'content';
 import { Force, cardFaceLabel, cardIdDisplayName, forceOf, judgmentReaderName, seatName, targetLabel } from '../labels';
 
 export interface ResponseDescription {
@@ -164,6 +164,19 @@ export function describeResponse(
     };
   }
 
+  // Upheaval: play a Sha at the seat this seat picked, or lose 1 HP.
+  if (pending.reason?.kind === 'ability' && pending.reason.abilityId === 'upheaval') {
+    const { owner, targetSeatId } = pending.reason;
+    const you = pending.respondingSeatId === viewerSeatId;
+    return {
+      source: `${name(owner.seatId)} used ${abilityName('upheaval')}`,
+      latest: null,
+      prompt: `Play a Sha at ${targetSeatId ? (targetSeatId === viewerSeatId ? 'you' : name(targetSeatId)) : 'the seat you picked'}, or lose 1 HP?`,
+      outcome: you ? 'You lose 1 HP' : `${name(pending.respondingSeatId)} loses 1 HP`,
+      outcomeForce: forceOf(state.seats.find((s) => s.id === pending.respondingSeatId)?.kingdom),
+    };
+  }
+
   const causeId = causeInstanceId(state);
   const played = causeId ? lastPlayOf(state.log, causeId) : undefined;
 
@@ -225,6 +238,7 @@ export function waitingLine(state: GameState): string | null {
   if (reason?.kind === 'dying') return `${who} to save ${seatName(state.players, reason.seatId)}`;
   if (reason?.kind === 'wuxie' || reason?.kind === 'counter-wuxie') return `${who}: ${askedCardName(state)}?`;
   if (reason?.kind === 'card-effect') return `${who} to answer ${cardName({ definitionId: reason.card.as })}`;
+  if (reason?.kind === 'ability' && reason.abilityId === 'upheaval') return `${who} to play a Sha for ${abilityName('upheaval')}`;
   return who;
 }
 

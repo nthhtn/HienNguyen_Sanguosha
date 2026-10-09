@@ -1,5 +1,5 @@
 import { Action, ChoiceOption, GameState, Player, Seat } from 'engine';
-import { abilityName, cardDisplayData, seatPickText } from 'content';
+import { abilityName, cardDisplayData, choicePromptText, seatPickText } from 'content';
 import { cardFaceLabel, cardIdDisplayName, forceOf, seatName, suitLabel } from '../labels';
 import type { ChoiceDialogOption } from './choice-dialog';
 
@@ -36,12 +36,16 @@ export function describeChoice(state: GameState, viewerSeatId: string): ChoiceDe
   if (choice.reason.kind === 'ability' && (choice.verb === 'pick' || choice.verb === 'give')) {
     const title = abilityName(choice.reason.abilityId);
     if (choice.verb === 'give') return { title, prompt: 'Choose who gets the cards', confirmLabel: 'Give' };
+    const fixed = choicePromptText(choice.reason.abilityId);
+    // A seat pick keeps the seat wording (Exile, Alliance); a mixed or label pick uses its own prompt.
+    const onlySeats = choice.options.every((o) => o.shows.kind === 'seat');
+    if (fixed && !(onlySeats && seatPickText(choice.reason.abilityId))) return { title, prompt: fixed, confirmLabel: 'Choose' };
     const kinds = new Set(choice.options.map((o) => o.shows.kind));
     const only = kinds.size === 1 ? [...kinds][0] : null;
     // A skill's own words for its seat pick (Rouse the Tiger), its target named.
     const own = seatPickText(choice.reason.abilityId);
     const target = choice.reason.targetSeatId;
-    const seatPrompt = own && target ? own.replace('{target}', seatName(state.players, target)) : 'Choose a seat';
+    const seatPrompt = own ? own.replace('{target}', target ? seatName(state.players, target) : 'a seat') : 'Choose a seat';
     const prompt = only === 'seat' ? seatPrompt : only === 'suit' ? 'Name a suit' : 'Choose one';
     return { title, prompt, confirmLabel: 'Choose' };
   }

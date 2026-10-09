@@ -71,6 +71,26 @@ describe('describeChoice', () => {
     expect(describeChoice(state(choice('steal', 'take', 'seat-1')), 'seat-1')).toBeNull();
     expect(describeChoice(state(), 'seat-0')).toBeNull();
   });
+  it('Upheaval: a seat to Sha, or pass', () => {
+    const options: ChoiceOption[] = [
+      { id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] },
+      { id: 'pass', shows: { kind: 'label', text: 'Pass (Lose 1 HP)' }, effects: [] },
+    ];
+    expect(describeChoice(state(skill('upheaval', 'pick', undefined, options)), 'seat-0')).toEqual({ title: 'Upheaval', prompt: 'Choose a seat to play a Sha at, or pass', confirmLabel: 'Choose' });
+  });
+
+  it('Collapse and Brave Spirit: their own words', () => {
+    const labels: ChoiceOption[] = [{ id: 'a', shows: { kind: 'label', text: 'A' }, effects: [] }, { id: 'b', shows: { kind: 'label', text: 'B' }, effects: [] }];
+    expect(describeChoice(state(skill('collapse', 'pick', undefined, labels)), 'seat-0')).toEqual({ title: 'Collapse', prompt: 'Choose how Collapse costs you', confirmLabel: 'Choose' });
+    expect(describeChoice(state(skill('brave-spirit', 'pick', 'seat-1', labels)), 'seat-0')).toEqual({ title: 'Brave Spirit', prompt: 'Choose how to draw and discard', confirmLabel: 'Choose' });
+  });
+
+  it('Exile, Brave Spirit and Alliance seat picks name what the seat does', () => {
+    const seats: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }];
+    expect(describeChoice(state(skill('exile', 'pick', undefined, seats)), 'seat-0')!.prompt).toBe('Choose a seat to turn over');
+    expect(describeChoice(state(skill('brave-spirit', 'pick', undefined, seats)), 'seat-0')!.prompt).toBe('Choose a seat to draw and discard cards');
+    expect(describeChoice(state(skill('alliance', 'pick', 'seat-1', seats)), 'seat-0')!.prompt).toBe('Choose a seat to swap hands with Seat 1');
+  });
 });
 
 describe('choiceOptionLabel', () => {
