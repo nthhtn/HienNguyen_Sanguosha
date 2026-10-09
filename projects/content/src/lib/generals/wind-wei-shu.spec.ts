@@ -2,7 +2,7 @@ import type { GameState } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, hp, table, TableOptions } from './skills.testing';
 
 const h = harness();
-const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'zhang-he', revealed] });
+const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-zhang-he', revealed] });
 const pile = Array.from({ length: 6 }, (_, i) => card(`d${i + 1}`, 'shan', 'diamond', i + 1));
 
 describe('Cao Ren — Entrench', () => {

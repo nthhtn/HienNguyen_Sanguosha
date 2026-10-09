@@ -2,7 +2,7 @@ import { usedCardOf } from 'engine';
 import { askedAbout, card, handIds, harness, hp, ids, table, TableOptions } from './skills.testing';
 
 const h = harness();
-const zhangJiao = (seatId: string): TableOptions['generals'] => ({ [seatId]: ['zhang-jiao', 'zuo-ci'] });
+const zhangJiao = (seatId: string): TableOptions['generals'] => ({ [seatId]: ['zhang-jiao', 'filler-zuo-ci'] });
 
 describe('Zhang Jiao — Lightning Strike', () => {
   const dodged = (judged: ReturnType<typeof card>) => {
@@ -42,7 +42,7 @@ describe('Zhang Jiao — Dark Magic', () => {
   });
 
   it('is ordered with Devil, from the judged seat', () => {
-    const s = judgedOnC({ ...zhangJiao('seat-d'), 'seat-b': ['sima-yi', 'xun-yu'] }, { 'seat-d': [card('k', 'sha', 'club', 3)], 'seat-b': [card('x', 'shan')] });
+    const s = judgedOnC({ ...zhangJiao('seat-d'), 'seat-b': ['sima-yi', 'filler-xun-yu'] }, { 'seat-d': [card('k', 'sha', 'club', 3)], 'seat-b': [card('x', 'shan')] });
     expect(s.pendingChoice).toMatchObject({ seatId: 'seat-d', reason: { abilityId: 'dark-magic' } });
     expect(h.decline(s).pendingChoice).toMatchObject({ seatId: 'seat-b', reason: { abilityId: 'devil' } });
   });

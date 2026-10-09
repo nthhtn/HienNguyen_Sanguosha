@@ -2,7 +2,7 @@ import type { GameState } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, hp, ids, table, TableOptions } from './skills.testing';
 
 const h = harness();
-const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'meng-huo', revealed] });
+const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', revealed] });
 const pile = (n: number, suit: 'heart' | 'spade' = 'heart') => Array.from({ length: n }, (_, i) => card(`c${i + 1}`, 'shan', suit, i + 1));
 const drawn = (s: GameState) => s.log.flatMap((e) => (e.kind === 'CardsDrawnEvent' ? [e.cardInstanceIds.length] : []));
 

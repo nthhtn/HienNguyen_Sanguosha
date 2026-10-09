@@ -69,21 +69,21 @@ describe('active skills in the Play Phase', () => {
   it('Battered Body above 3 HP, or above 2 holding a Peach', () => {
     // At full HP (max 3 in the second case) so the bot doesn't just eat the Peach.
     const huangGai = (combinedHp: number, hand: CardInstance[] = [], maxHp = 4) =>
-      table({ 'seat-a:hand': hand, drawPile: [card('d1', 'shan'), card('d2', 'shan')] }, { generals: { 'seat-a': ['huang-gai', 'sun-jian'] }, kingdoms: { 'seat-a': 'Wu' }, hp: { 'seat-a': combinedHp }, maxHp: { 'seat-a': maxHp } });
+      table({ 'seat-a:hand': hand, drawPile: [card('d1', 'shan'), card('d2', 'shan')] }, { generals: { 'seat-a': ['huang-gai', 'filler-sun-jian'] }, kingdoms: { 'seat-a': 'Wu' }, hp: { 'seat-a': combinedHp }, maxHp: { 'seat-a': maxHp } });
     expect(decide(huangGai(4))).toMatchObject({ kind: 'UseSkillAction', owner: { skillId: 'battered-body' } });
     expect(decide(huangGai(3, [card('p', 'peach', 'heart')], 3))).toMatchObject({ kind: 'UseSkillAction' });
     expect(decide(huangGai(3)).kind).toBe('EndPhaseAction');
   });
 
   it('Reconsider discards every hand card ranked below Shan, never a Peach or worn cards', () => {
-    const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart'), card('n', 'shan'), card('x', 'harvest', 'heart', 3), card('s', 'sha')], 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)] }, { generals: { 'seat-a': ['sun-quan', 'sun-jian'] }, kingdoms: { 'seat-a': 'Wu' } });
+    const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart'), card('n', 'shan'), card('x', 'harvest', 'heart', 3), card('s', 'sha')], 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)] }, { generals: { 'seat-a': ['sun-quan', 'filler-sun-jian'] }, kingdoms: { 'seat-a': 'Wu' } });
     const selecting = useSkill(s, 'reconsider');
     expect(picked(decide(selecting))).toEqual(['x', 's']);
   });
 
   it('Kindness gives the cards above 3 to a revealed ally', () => {
     const hand = ['k1', 'k2', 'k3', 'k4', 'k5'].map((id) => card(id, 'shan'));
-    const s = table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['liu-bei', 'meng-huo'], 'seat-b': ['jiang-wei', 'liu-shan'] }, kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Shu' } });
+    const s = table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['liu-bei', 'filler-meng-huo'], 'seat-b': ['filler-jiang-wei', 'filler-liu-shan'] }, kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Shu' } });
     expect(decide(s)).toMatchObject({ kind: 'UseSkillAction', owner: { skillId: 'kindness' } });
     const selecting = useSkill(s, 'kindness');
     expect(picked(decide(selecting))).toHaveLength(2);
@@ -93,13 +93,13 @@ describe('active skills in the Play Phase', () => {
 
   it('Sow Revolt at the non-ally with the lowest HP', () => {
     // seat-c is Wu too (an ally); seat-d is the weakest non-ally.
-    const s = table({ 'seat-a:hand': [card('k', 'shan')] }, { generals: { 'seat-a': ['zhou-yu', 'sun-jian'] }, kingdoms: { 'seat-a': 'Wu' }, hp: { 'seat-c': 1, 'seat-d': 2 } });
+    const s = table({ 'seat-a:hand': [card('k', 'shan')] }, { generals: { 'seat-a': ['zhou-yu', 'filler-sun-jian'] }, kingdoms: { 'seat-a': 'Wu' }, hp: { 'seat-c': 1, 'seat-d': 2 } });
     const selecting = useSkill(s, 'sow-revolt');
     expect(picked(decide(selecting))).toEqual(['seat-d']);
   });
 
   it('Green Vesicle heals itself first', () => {
-    const s = table({ 'seat-a:hand': [card('k', 'shan')] }, { generals: { 'seat-a': ['hua-tuo', 'jia-xu'] }, kingdoms: { 'seat-a': 'Qun' }, hp: { 'seat-a': 2, 'seat-b': 2 } });
+    const s = table({ 'seat-a:hand': [card('k', 'shan')] }, { generals: { 'seat-a': ['hua-tuo', 'filler-jia-xu'] }, kingdoms: { 'seat-a': 'Qun' }, hp: { 'seat-a': 2, 'seat-b': 2 } });
     expect(decide(s)).toMatchObject({ kind: 'UseSkillAction', owner: { skillId: 'green-vesicle' } });
     const choosing = act(useSkill(s, 'green-vesicle'), { kind: 'SelectAction', seatId: 'seat-a', selectionId: useSkill(s, 'green-vesicle').pendingSelection!.id, ids: ['k'] });
     expect(picked(decide(choosing))).toBe('seat-a');
@@ -145,13 +145,13 @@ describe('Sow Revolt’s suit', () => {
 
 describe('conversions', () => {
   it('Fighting Saint as a Sha when no real Sha is in hand, never spending a Peach', () => {
-    const guanYu = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['guan-yu', 'meng-huo'] }, kingdoms: { 'seat-a': 'Shu' } });
+    const guanYu = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['guan-yu', 'filler-meng-huo'] }, kingdoms: { 'seat-a': 'Shu' } });
     expect(decide(guanYu([card('h', 'shan', 'heart')]))).toMatchObject({ kind: 'UseConversionAction', via: { conversionId: 'fighting-saint' } });
     expect(decide(guanYu([card('p', 'peach', 'heart')])).kind).toBe('EndPhaseAction');
   });
 
   it('a hidden General’s conversion only when the bot may reveal', () => {
-    const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'meng-huo', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
+    const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'filler-meng-huo', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
     expect(decide(hidden).kind).toBe('EndPhaseAction');
   });
 });

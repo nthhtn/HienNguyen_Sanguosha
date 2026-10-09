@@ -2,7 +2,7 @@ import type { GameState } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, hp, ids, kwMode, table, TableOptions } from './skills.testing';
 
 const h = harness();
-const at = (seatId: string, main: string, deputy = 'sun-jian', revealed = true): TableOptions['generals'] => ({ [seatId]: [main, deputy, revealed] });
+const at = (seatId: string, main: string, deputy = 'filler-sun-jian', revealed = true): TableOptions['generals'] => ({ [seatId]: [main, deputy, revealed] });
 const pile = Array.from({ length: 6 }, (_, i) => card(`d${i + 1}`, 'shan', 'heart', i + 1));
 const offered = (s: GameState, seatId: string, skillId: string) =>
   h.legal(s, seatId).some((a) => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.skillId === skillId);
@@ -81,7 +81,7 @@ describe('Sun Shangxiang — Marriage', () => {
   // Hurt: seat-b (male), seat-c (female: Xiao Qiao), seat-d (both Generals hidden: no gender).
   const her = (hand = [card('k1', 'shan'), card('k2', 'sha')]) =>
     table({ 'seat-a:hand': hand }, {
-      generals: { ...at('seat-a', 'sun-shangxiang'), 'seat-c': ['zhu-rong', 'sun-jian'], 'seat-d': ['xu-huang', 'dong-zhuo', false] },
+      generals: { ...at('seat-a', 'sun-shangxiang'), 'seat-c': ['filler-zhu-rong', 'filler-sun-jian'], 'seat-d': ['filler-xu-huang', 'filler-dong-zhuo', false] },
       hp: { 'seat-a': 2, 'seat-b': 2, 'seat-c': 2, 'seat-d': 2 },
     });
 
@@ -131,7 +131,7 @@ describe('Displace after Iron Cavalry (final review #3)', () => {
   it('the new target may still play a Shan: Iron Cavalry was about Da Qiao', () => {
     // Ma Chao (seat-a, asked first) at Da Qiao (seat-b); Iron Cavalry judges red; Da Qiao moves the Sha to seat-c.
     let s = h.play(
-      table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('x', 'peach', 'heart')], drawPile: [card('j', 'shan', 'heart', 2)] }, { generals: { 'seat-a': ['ma-chao', 'meng-huo'], ...at('seat-b', 'da-qiao') } }),
+      table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('x', 'peach', 'heart')], drawPile: [card('j', 'shan', 'heart', 2)] }, { generals: { 'seat-a': ['ma-chao', 'filler-meng-huo'], ...at('seat-b', 'da-qiao') } }),
       's1', 'seat-b'
     );
     expect(askedAbout(s)).toBe('iron-cavalry');

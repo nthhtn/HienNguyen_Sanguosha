@@ -2,7 +2,7 @@ import type { GameState } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, ids, table, TableOptions } from './skills.testing';
 
 const h = harness();
-const at = (seatId: string, main: string, deputy = 'sun-jian', revealed = true): TableOptions['generals'] => ({ [seatId]: [main, deputy, revealed] });
+const at = (seatId: string, main: string, deputy = 'filler-sun-jian', revealed = true): TableOptions['generals'] => ({ [seatId]: [main, deputy, revealed] });
 const pile = Array.from({ length: 6 }, (_, i) => card(`d${i + 1}`, 'shan', 'heart', i + 1));
 const drawnCount = (s: GameState) => s.log.reduce((n, e) => n + (e.kind === 'CardsDrawnEvent' ? e.cardInstanceIds.length : 0), 0);
 const playTargets = (s: GameState, seatId: string, cardId: string) =>
@@ -64,12 +64,12 @@ describe('Lu Xun — Linked Camps', () => {
 
   it('not while a card is left, and not while he is hidden', () => {
     expect(handIds(h.play(luXun([card('s1', 'sha'), card('x', 'shan')]), 's1', 'seat-b'), 'seat-a')).toEqual(['x']);
-    expect(handIds(h.play(luXun([card('s1', 'sha')], { generals: at('seat-a', 'lu-xun', 'sun-jian', false) }), 's1', 'seat-b'), 'seat-a')).toEqual([]);
+    expect(handIds(h.play(luXun([card('s1', 'sha')], { generals: at('seat-a', 'lu-xun', 'filler-sun-jian', false) }), 's1', 'seat-b'), 'seat-a')).toEqual([]);
   });
 });
 
 describe('Sun Shangxiang — Armed Consorts', () => {
-  const her = (equip: ReturnType<typeof card>[], hand: ReturnType<typeof card>[], deputy = 'sun-jian', o: TableOptions = {}, more = {}) =>
+  const her = (equip: ReturnType<typeof card>[], hand: ReturnType<typeof card>[], deputy = 'filler-sun-jian', o: TableOptions = {}, more = {}) =>
     table({ 'seat-a:equip': equip, 'seat-a:hand': hand, drawPile: pile, ...more }, { generals: at('seat-a', 'sun-shangxiang', deputy), ...o });
 
   it('draws 2 when a worn card is replaced', () => {
@@ -78,7 +78,7 @@ describe('Sun Shangxiang — Armed Consorts', () => {
   });
 
   it('draws 2 when Steal takes a worn card', () => {
-    let s = h.play(her([card('cb', 'crossbow', 'diamond', 1)], [], 'sun-jian', { owner: 'seat-b' }, { 'seat-b:hand': [card('st', 'steal', 'spade', 3)] }), 'st', 'seat-a');
+    let s = h.play(her([card('cb', 'crossbow', 'diamond', 1)], [], 'filler-sun-jian', { owner: 'seat-b' }, { 'seat-b:hand': [card('st', 'steal', 'spade', 3)] }), 'st', 'seat-a');
     s = h.choose(s, 'cb');
     expect(handIds(s, 'seat-a')).toEqual(['d1', 'd2']);
   });

@@ -1,10 +1,11 @@
+import { withFillers } from '../../generals/fillers.testing';
 import { advanceToDecision, getLegalActions, resolve } from 'engine';
 import type { Action, CardInstance, GameModeDefinition, GameState, QueueItem } from 'engine';
 import { buildContentRegistry } from '../../registry';
 import { cardStep } from '../../shared/steps';
 
 // The real cards and Generals; a mode with no triggers of its own.
-const registry = buildContentRegistry();
+const registry = withFillers(buildContentRegistry());
 const mode: GameModeDefinition = { id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
 const ctx = { registry, mode };
 
@@ -25,7 +26,7 @@ function table(cards: Record<string, CardInstance[]> = {}, o: TableOptions = {})
   const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d'];
   return {
     seats: ids.map((id, index) => {
-      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['xu-huang', 'dong-zhuo'];
+      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['filler-xu-huang', 'filler-dong-zhuo'];
       return {
         id, index, kingdom: (['Wei', 'Shu', 'Wu', 'Qun'] as const)[index], eliminated: false,
         generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },
@@ -177,7 +178,7 @@ describe('Eight Trigrams', () => {
 });
 describe('Gender Swords', () => {
   const swords = card('gs', 'gender-swords', 'spade', 2);
-  const female: TableOptions['generals'] = { 'seat-b': ['zhu-rong', 'dong-zhuo'] };
+  const female: TableOptions['generals'] = { 'seat-b': ['filler-zhu-rong', 'filler-dong-zhuo'] };
   const attack = (more: Record<string, CardInstance[]> = {}, generals: TableOptions['generals'] = female) =>
     play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [swords], drawPile: [card('d1', 'peach')], ...more }, { generals }), 's1', 'seat-b');
 
@@ -187,7 +188,7 @@ describe('Gender Swords', () => {
 
   it('doesn’t when it doesn’t, or when the target has no gender (both Generals hidden)', () => {
     expect(attack({}, {}).pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
-    const hidden = attack({}, { 'seat-b': ['zhu-rong', 'dong-zhuo', false] });
+    const hidden = attack({}, { 'seat-b': ['filler-zhu-rong', 'filler-dong-zhuo', false] });
     expect(hidden.pendingChoice).toBeUndefined();
     expect(hidden.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
   });

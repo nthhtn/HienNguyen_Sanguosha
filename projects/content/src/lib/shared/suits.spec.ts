@@ -4,7 +4,7 @@ import { usedCardOf } from 'engine';
 
 // A test General whose spades count as hearts (Beauty's modifier), not in the real data.
 registry.generals.set('test-beauty', { id: 'test-beauty', kingdom: 'Wu', maxHp: 3, skills: [{ id: 'test-beauty', compulsory: true, modifiers: { suitAs: { spade: 'heart' } } }] });
-const withBeauty = (revealed = true) => table({}, { generals: { 'seat-a': ['test-beauty', 'dong-zhuo', revealed] } });
+const withBeauty = (revealed = true) => table({}, { generals: { 'seat-a': ['test-beauty', 'filler-dong-zhuo', revealed] } });
 
 describe('suitOf', () => {
   it("applies the seat's suit modifiers, only while its General is revealed", () => {
