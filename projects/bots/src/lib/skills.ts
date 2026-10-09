@@ -2,6 +2,7 @@ import type { Action, CardInstance, ContentRegistry, Effect, GameState, Judgment
 import { abilityUseKey, colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
 import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards } from './helpers';
 import { wantsWind, windChoice, windSelection } from './wind';
+import { fireChoice, wantsFire, wantsFireActive } from './fire';
 
 // The General Skills spec's bot rules, skill by skill.
 
@@ -31,6 +32,7 @@ function goodForJudged(judgment: Judgment, card: CardInstance): boolean | null {
     case 'starvation': return card.suit === 'club';
     case 'lightning': return !(card.suit === 'spade' && card.rank >= 2 && card.rank <= 9);
     case 'eight-trigrams':
+    case 'eight-arrays':
     case 'iron-cavalry': return colourOf(card) === 'red';
     case 'river-goddess': return colourOf(card) === 'black';
     case 'unyielding': return card.suit !== 'heart';
@@ -88,7 +90,7 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
       // A card to spare (ranked below Shan) and a non-ally other than the Sha's user to move it to.
       return ownCards(view, me).some((c) => keepRank(view, registry, c.instanceId) < 3) && others(view, me).some((s) => !isAlly(me, s) && s.id !== target?.id);
     default:
-      return wantsWind(view, me, choice, registry);
+      return wantsWind(view, me, choice, registry) ?? wantsFire(view, me, choice);
   }
 }
 
@@ -151,7 +153,7 @@ function leastShownSuit(view: GameState, seatId: string): CardInstance['suit'] {
 
 // The option to pick in a skill's choice of a seat, suit or label (or who gets
 // given cards); null when it isn't one the bot knows.
-export function skillChoice(view: GameState, me: Seat, choice: PendingChoice): string | null {
+export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
   if (choice.reason.kind !== 'ability' || choice.reason.owner.kind !== 'general') return null;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
   const ally = seats.find((s) => s.id !== me.id && isAlly(me, s));
@@ -175,7 +177,7 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice): s
       return choice.options.some((o) => o.id === pick) ? pick : choice.options[0].id;
     }
     default:
-      return windChoice(view, me, choice);
+      return windChoice(view, me, choice) ?? fireChoice(view, me, choice, registry);
   }
 }
 
@@ -205,11 +207,14 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
       return allies.length > 0 && (hand.length > 3 || (hurt(me) && given < 2 && hand.length >= 2));
     }
     default:
-      return false;
+      return wantsFireActive(view, me, skillId, registry) ?? false;
   }
 }
 
-const ACTIVE_ORDER = { early: ['battered-body', 'reconsider', 'green-vesicle', 'marriage'], late: ['sow-revolt', 'sow-discord', 'kindness'] } as const;
+const ACTIVE_ORDER = {
+  early: ['battered-body', 'reconsider', 'green-vesicle', 'marriage', 'shackle', 'heavens-justice', 'rouse-the-tiger'],
+  late: ['sow-revolt', 'sow-discord', 'kindness', 'assault'],
+} as const;
 
 // The active skill to use now from `group`, if any: offered, wanted, and its
 // General revealed or the bot willing to reveal it.

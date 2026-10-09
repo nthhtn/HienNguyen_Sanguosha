@@ -411,8 +411,8 @@ describe('optional abilities', () => {
     return action.kind === 'ChooseOptionAction' ? action.optionId : action.kind;
   };
 
-  it('always uses Eight Trigrams, Longbow, Gender Swords, Sky Scorcher and Green Dragon Blade', () => {
-    for (const id of ['eight-trigrams', 'longbow', 'gender-swords', 'sky-scorcher', 'green-dragon-blade']) {
+  it('always uses Eight Trigrams, Longbow, Gender Swords and Green Dragon Blade', () => {
+    for (const id of ['eight-trigrams', 'longbow', 'gender-swords', 'green-dragon-blade']) {
       expect(answer(ask(id, 'seat-1'))).toBe('use');
     }
   });
@@ -469,7 +469,7 @@ describe('ability selections', () => {
     expect(action).toEqual({ ...template, ids: ['x1', 's1'] });
   });
 
-  it('Sky Scorcher: only non-allies as extra targets; with none, cancels', () => {
+  it('a seat selection: only non-allies; with none, cancels', () => {
     const seats = [seat('seat-0', 0, 'Wei', 8), seat('seat-1', 1, 'Wei', 6), seat('seat-2', 2, 'hidden', 3)];
     const seatSel = (eligibleIds: string[]) => sel('sky-scorcher', { of: 'seats', eligibleIds, min: 1, max: 2, then: { kind: 'card-step', step: { kind: 'CardStepEffect', step: 'sha-use', card: { as: 'sha', colour: 'black', physical: [] }, userSeatId: 'seat-0', target: { kind: 'seat', seatId: 'seat-2' } } } });
     expect(ruleBasedPolicy.decide(view({ seats, pendingSelection: seatSel(['seat-1', 'seat-2']) }), 'seat-0', [template, cancel], registry, null).action).toEqual({ ...template, ids: ['seat-2'] });

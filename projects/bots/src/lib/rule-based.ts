@@ -2,6 +2,7 @@ import type { Action, ContentRegistry, GameState, Seat } from 'engine';
 import { conversionsOf, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
 import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal } from './helpers';
+import { fireSelection } from './fire';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -37,7 +38,6 @@ function wantsToUse(view: GameState, self: Seat, abilityId: string, targetSeatId
     case 'eight-trigrams':
     case 'longbow':
     case 'gender-swords':
-    case 'sky-scorcher':
     case 'green-dragon-blade':
       return true;
     case 'axe':
@@ -110,7 +110,7 @@ function decide(
   if (selectTemplate && view.pendingSelection && me) {
     const selection = view.pendingSelection;
     const cancel = legal.find((a) => a.kind === 'CancelSelectionAction');
-    const skillPick = skillSelection(view, me, selection, registry);
+    const skillPick = fireSelection(view, me, selection, registry) ?? skillSelection(view, me, selection, registry);
     if (skillPick === 'cancel' && cancel) return take(cancel);
     if (Array.isArray(skillPick) && skillPick.length >= selection.min) return take({ ...selectTemplate, ids: skillPick });
     if (selection.of === 'seats') {
@@ -142,7 +142,7 @@ function decide(
     }
     // A skill's pick of a seat, a suit or a label, or who gets given cards.
     if (choiceNow.reason.kind === 'ability' && (choiceNow.verb === 'pick' || choiceNow.verb === 'give')) {
-      const optionId = skillChoice(view, me, choiceNow);
+      const optionId = skillChoice(view, me, choiceNow, registry);
       return take(choiceActions.find((a) => a.optionId === optionId) ?? choiceActions[0]);
     }
     const decline = choiceActions.find((a) => a.optionId === 'decline');
@@ -251,6 +251,11 @@ function decide(
     if (others.length - allies >= allies) {
       const massAttack = untargetedOf('barbarians') ?? untargetedOf('hail-of-arrows');
       if (massAttack) return take(massAttack);
+      // Random Strike: a Hail of Arrows from 2 same-suit cards.
+      const hailVia = legal.find(
+        (a): a is UseConversion => a.kind === 'UseConversionAction' && !a.pendingResponseId && conversionAs(a, view, registry) === 'hail-of-arrows' && conversionSpare(view, self, a, registry)
+      );
+      if (hailVia) return take(hailVia);
     }
 
     // Steal and Break: the lowest-HP non-ally, preferring one that wears equipment.
@@ -274,6 +279,11 @@ function decide(
     if (breakVia) return take(breakVia);
     const [captureVia] = conversionsAs('capture').sort((x, y) => targetSeat(y).combinedHp - targetSeat(x).combinedHp);
     if (captureVia) return take(captureVia);
+    // Fire Strategy: Blaze at the weakest non-ally while holding 3 or more hand cards.
+    const handCount = view.zones.find((z) => z.id === self.hand.zoneId)?.cards.length ?? 0;
+    const byWeakest = (x: UseConversion, y: UseConversion) => targetSeat(x).combinedHp - targetSeat(y).combinedHp || targetSeat(x).index - targetSeat(y).index;
+    const [blazeVia] = conversionsAs('blaze').filter((a) => targetSeat(a).id !== seatId).sort(byWeakest);
+    if (blazeVia && handCount >= 3) return take(blazeVia);
 
     // Delayed Tools. Capture: the highest-HP non-ally. Starvation: the
     // non-ally in reach with the most hand cards. Lightning: at 3 HP or more.
@@ -308,6 +318,9 @@ function decide(
     if (conversion && conversionSpare(view, self, conversion, registry)) return take(conversion, 1);
     const [duel] = targetedPlays(view, self, plays, 'duel');
     if (duel) return take(duel);
+    // Dueling Heroes: a Duel from an opposite-colour card, at the weakest non-ally.
+    const [duelVia] = conversionsAs('duel').sort(byWeakest);
+    if (duelVia) return take(duelVia);
     // Coerce: when one non-ally's weapon can reach another non-ally.
     const coerce = plays.find((p) => {
       if (p.targets.length !== 2 || definitionIdOf(view, p.cardInstanceId) !== 'coerce') return false;
