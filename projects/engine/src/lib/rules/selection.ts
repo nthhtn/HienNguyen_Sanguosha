@@ -14,5 +14,10 @@ export function validateSelection(state: GameState, action: Extract<Action, { ki
   if (action.ids.length < selection.min || action.ids.length > selection.max) {
     return `Pick between ${selection.min} and ${selection.max}; got ${action.ids.length}`;
   }
+  if (selection.sameSuit) {
+    const cards = state.zones.flatMap((z) => z.cards);
+    const suits = new Set(action.ids.map((id) => cards.find((c) => c.instanceId === id)?.suit));
+    if (suits.size > 1) return 'The cards must share the same suit';
+  }
   return null;
 }

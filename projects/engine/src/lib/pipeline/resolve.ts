@@ -11,7 +11,7 @@ import { decisionPending } from '../rules/activeSeat';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer } from '../rules/phaseSequence';
-import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, legalTargetListsFor, playConversionCards, sameAbilityOwner } from '../rules/legality';
+import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { ArrangementMadeEvent, CardPlayedEvent, SeatTurnedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
@@ -443,8 +443,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (state.phase !== 'Play' || state.turn.ownerSeatId !== action.seatId) {
         throw new Error('Cards can only be played during your Play phase');
       }
-      const allowed = legalTargetListsFor(state, action.seatId, action.cardInstanceId, cardInHand.definitionId, ctx.registry);
-      if (!allowed.some((targets) => JSON.stringify(targets) === JSON.stringify(action.targets))) {
+      if (!targetsAllowed(state, action.seatId, action.cardInstanceId, cardInHand.definitionId, action.targets, ctx.registry)) {
         throw new Error(`Card ${cardInHand.definitionId} cannot be played with those targets`);
       }
       return useCard(state, action.seatId, usedCardOf(cardInHand), { targets: action.targets, counted: true }, ctx);
@@ -568,12 +567,16 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
           a.via.conversionId === action.via.conversionId &&
           sameAbilityOwner(a.via.owner, action.via.owner) &&
           a.pendingResponseId === action.pendingResponseId &&
-          JSON.stringify(a.targets) === JSON.stringify(action.targets)
+          // A template: any targets within its pick.
+          (a.pickTargets ? fitsPick(a.pickTargets, action.targets) : JSON.stringify(a.targets) === JSON.stringify(action.targets))
       );
       if (!offered) throw new Error(`Seat ${action.seatId} can’t use that conversion now`);
       const owned = conversionsOf(state, action.seatId, ctx.registry).find(
         (o) => o.conversion.id === action.via.conversionId && sameAbilityOwner(o.owner, action.via.owner)
       )!;
+      if (!action.pendingResponseId && playConversionCards(state, action.seatId, owned.conversion, action.targets, ctx.registry).length < owned.conversion.cards) {
+        throw new Error(`Seat ${action.seatId} has too few cards for that conversion at those targets`);
+      }
       const selection: PendingSelection = {
         id: `convert-${owned.conversion.id}-${action.seatId}-${state.log.length}`,
         seatId: action.seatId,
@@ -583,6 +586,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         eligibleIds: (action.pendingResponseId ? conversionCards(state, action.seatId, owned.conversion, ctx.registry) : playConversionCards(state, action.seatId, owned.conversion, action.targets, ctx.registry)).map((c) => c.instanceId),
         min: owned.conversion.cards,
         max: owned.conversion.cards,
+        ...(owned.conversion.sameSuit ? { sameSuit: true as const } : {}),
         then: {
           kind: 'use-card',
           as: owned.conversion.as,

@@ -1,6 +1,6 @@
 import { AbilityOwner, CardInstance, GameState, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
-import { ContentRegistry, Conversion } from '../registry/types';
+import { ContentRegistry, Conversion, PlayOptionsContext, TargetPick } from '../registry/types';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { decisionPending, getActiveSeatId } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
@@ -86,6 +86,12 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
   const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }];
   const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
   for (const card of handZone?.cards ?? []) {
+    // Several targets allowed now: one template carrying the pick.
+    const pick = targetPickFor(state, seatId, card.instanceId, card.definitionId, registry);
+    if (pick) {
+      actions.push({ kind: 'PlayCardAction', seatId, cardInstanceId: card.instanceId, targets: [], pickTargets: pick });
+      continue;
+    }
     for (const targets of legalTargetListsFor(state, seatId, card.instanceId, card.definitionId, registry)) {
       actions.push({ kind: 'PlayCardAction', seatId, cardInstanceId: card.instanceId, targets });
     }
@@ -125,6 +131,48 @@ export function legalTargetListsFor(
     return definition.legalPlayTargets(state, { seatId, cardInstanceId }, registry);
   }
   return [[], ...getLegalTargets(state, seatId).map((t) => [t])];
+}
+
+// The card's pick of several targets, when it may take more than one now.
+export function targetPickFor(
+  state: GameState,
+  seatId: string,
+  cardInstanceId: string,
+  definitionId: string,
+  registry?: ContentRegistry,
+  via?: PlayOptionsContext['via']
+): TargetPick | null {
+  if (!registry) return null;
+  const pick = registry.cards.get(definitionId)?.targetPick?.(state, { seatId, cardInstanceId, ...(via ? { via } : {}) }, registry);
+  return pick && pick.max > 1 ? pick : null;
+}
+
+// Whether `targets` fit `pick`: distinct seats, all listed, between min and max.
+export function fitsPick(pick: TargetPick, targets: Target[]): boolean {
+  const ids = targets.map((t) => (t.kind === 'seat' ? t.seatId : ''));
+  return new Set(ids).size === ids.length && ids.length >= pick.min && ids.length <= pick.max && ids.every((id) => pick.eligibleIds.includes(id));
+}
+
+// Whether a card may be played at `targets` now: within its pick when it may
+// take several targets, else one of its legal target lists.
+export function targetsAllowed(
+  state: GameState,
+  seatId: string,
+  cardInstanceId: string,
+  definitionId: string,
+  targets: Target[],
+  registry?: ContentRegistry,
+  via?: PlayOptionsContext['via']
+): boolean {
+  const pick = targetPickFor(state, seatId, cardInstanceId, definitionId, registry, via);
+  if (pick) return fitsPick(pick, targets);
+  const wanted = JSON.stringify(targets);
+  return legalTargetListsFor(state, seatId, cardInstanceId, definitionId, registry).some((t) => JSON.stringify(t) === wanted);
+}
+
+// What a conversion tells a card's targetPick about the cards it takes.
+export function conversionVia(conversion: Conversion): NonNullable<PlayOptionsContext['via']> {
+  return { cards: conversion.cards, fromHandOnly: conversion.from !== 'hand-and-equipment' };
 }
 
 type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
@@ -170,7 +218,10 @@ export function conversionCards(state: GameState, seatId: string, conversion: Co
   if (!seat) return [];
   const cardsIn = (zoneId: string) => state.zones.find((z) => z.id === zoneId)?.cards ?? [];
   const pool = [...cardsIn(seat.hand.zoneId), ...(conversion.from === 'hand-and-equipment' ? cardsIn(seat.equipped.zoneId) : [])];
-  return conversion.accepts ? pool.filter((c) => conversion.accepts!(c, state, seatId, registry)) : pool;
+  const accepted = conversion.accepts ? pool.filter((c) => conversion.accepts!(c, state, seatId, registry)) : pool;
+  if (!conversion.sameSuit) return accepted;
+  // Same suit: only suits with enough accepted cards (the printed suit).
+  return accepted.filter((c) => accepted.filter((o) => o.suit === c.suit).length >= conversion.cards);
 }
 
 // The cards `seatId` may use for `conversion` in a play at `targets`: those
@@ -178,8 +229,15 @@ export function conversionCards(state: GameState, seatId: string, conversion: Co
 // play needs can't be the card used).
 export function playConversionCards(state: GameState, seatId: string, conversion: Conversion, targets: Target[], registry: ContentRegistry): CardInstance[] {
   const wanted = JSON.stringify(targets);
+  const via = conversionVia(conversion);
+  const pick = targetPickFor(state, seatId, '', conversion.as, registry, via);
+  const wornIds = new Set(state.zones.find((z) => z.id === state.seats.find((s) => s.id === seatId)?.equipped.zoneId)?.cards.map((c) => c.instanceId) ?? []);
   return conversionCards(state, seatId, conversion, registry).filter((card) => {
+    // A hand card for a pick of several: the pick is read with the hand as it
+    // is (Sky Scorcher's "last hand cards"); a worn card must not be needed.
+    if (pick && !wornIds.has(card.instanceId)) return fitsPick(pick, targets);
     const without: GameState = { ...state, zones: state.zones.map((z) => ({ ...z, cards: z.cards.filter((c) => c.instanceId !== card.instanceId) })) };
+    if (pick) return targetsAllowed(without, seatId, '', conversion.as, targets, registry, via);
     return legalTargetListsFor(without, seatId, '', conversion.as, registry).some((t) => JSON.stringify(t) === wanted);
   });
 }
@@ -227,9 +285,16 @@ export function conversionActions(state: GameState, seatId: string, registry: Co
   if (state.phase !== 'Play' || state.turn.ownerSeatId !== seatId) return [];
   return conversionsOf(state, seatId, registry)
     .filter((o) => o.conversion.when !== 'respond' && usableNow(state, seatId, o, registry))
-    .flatMap((o) =>
-      legalTargetListsFor(state, seatId, '', o.conversion.as, registry)
-        .filter((targets) => playConversionCards(state, seatId, o.conversion, targets, registry).length >= o.conversion.cards)
-        .map((targets): UseConversion => ({ kind: 'UseConversionAction', seatId, via: via(o), targets }))
-    );
+    .flatMap((o): UseConversion[] => {
+      const enoughAt = (targets: Target[]) => playConversionCards(state, seatId, o.conversion, targets, registry).length >= o.conversion.cards;
+      // Several targets allowed now: one template carrying the pick.
+      const pick = targetPickFor(state, seatId, '', o.conversion.as, registry, conversionVia(o.conversion));
+      if (pick) {
+        const any = pick.eligibleIds.some((id) => enoughAt([{ kind: 'seat', seatId: id }]));
+        return any ? [{ kind: 'UseConversionAction', seatId, via: via(o), targets: [], pickTargets: pick }] : [];
+      }
+      return legalTargetListsFor(state, seatId, '', o.conversion.as, registry)
+        .filter(enoughAt)
+        .map((targets): UseConversion => ({ kind: 'UseConversionAction', seatId, via: via(o), targets }));
+    });
 }
