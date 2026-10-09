@@ -11,7 +11,7 @@ import { suitOf } from '../shared/suits';
 import { awakeningAtTurnStart, isAwakened } from '../shared/awaken';
 import { farmCount, stashMove } from '../shared/farm';
 import {
-  ask, atDrawPhase, choiceOf, discardMoves, draw, handZoneId, heal, isHurt, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used,
+  ask, atDrawPhase, choiceOf, discardMoves, draw, handZoneId, heal, hpOf, isHurt, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used,
 } from '../shared/skills';
 
 // The Mountain Generals' skills (stage 11 spec, "Rule text"). Every skill acts
@@ -369,9 +369,152 @@ export const followTheMaster: SkillDefinition = {
   ],
 };
 
+// ── Sun Ce ─────────────────────────────────────────────────────────────────
+
+type ToolOnTarget = Extract<Effect, { kind: 'ToolOnTargetEffect' }>;
+
+// Passion (compulsory): you draw 1 card when you use a Duel or a red Sha, or
+// when one is used on you (a Sha: once per target).
+export const passion: SkillDefinition = {
+  id: 'passion',
+  compulsory: true,
+  triggers: [
+    atStep(['sha-targeted'], {
+      condition: (state, step, owner) =>
+        step.card.colour === 'red' && (step.userSeatId === owner.seatId || step.target.seatId === owner.seatId) && isLiving(state, (owner as GeneralOwner).seatId),
+      // The step goes on, marked so the draw is paid once; the draw follows it.
+      effect: (_state, step, owner) => [actedOn(step, owner), used(owner as GeneralOwner, 'drew'), draw((owner as GeneralOwner).seatId, 1)],
+    }),
+    on<ToolOnTarget>('before:ToolOnTargetEffect', {
+      condition: (state, effect, owner) =>
+        effect.tool.as === 'duel' && effect.target.kind === 'seat' && (effect.userSeatId === owner.seatId || effect.target.seatId === owner.seatId) && isLiving(state, owner.seatId),
+      effect: (_state, effect, owner) => [effect, used(owner, 'drew'), draw(owner.seatId, 1)],
+    }),
+  ],
+};
+
+// Soul Position (awakening): at the start of your turn with exactly 1 HP,
+// reduce your max HP by 1 and gain Brave Gesture and Brave Spirit.
+export const soulPosition: SkillDefinition = {
+  id: 'soul-position',
+  compulsory: true,
+  awakening: true,
+  triggers: [
+    awakeningAtTurnStart({
+      skillId: 'soul-position',
+      condition: (state, owner) => hpOf(state, owner.seatId) === 1,
+      effects: (_state, owner) => [
+        { kind: 'ReduceMaxHpEffect', seatId: owner.seatId, amount: 1 },
+        { kind: 'GainSkillEffect', seatId: owner.seatId, slot: owner.slot, skillId: 'brave-gesture' },
+        { kind: 'GainSkillEffect', seatId: owner.seatId, slot: owner.slot, skillId: 'brave-spirit' },
+      ],
+    }),
+  ],
+};
+
+// Takeover: a Lord skill, inactive in Kingdom War.
+export const takeover: SkillDefinition = { id: 'takeover', lord: true };
+
+// ── Zhang Zhao and Zhang Hong ──────────────────────────────────────────────
+
+// The seats whose slot for `card` is empty, other than `seatId`.
+const freeSlotSeats = (state: GameState, seatId: string, card: CardInstance) => {
+  const slot = equipSlotOf(card.definitionId);
+  return slot ? otherLivingSeatIds(state, seatId).filter((id) => !cardsIn(state, seatOf(state, id)!.equipped.zoneId).some((w) => equipSlotOf(w.definitionId) === slot)) : [];
+};
+const equipmentInHand = (state: GameState, seatId: string, registry: ContentRegistry) =>
+  handOf(state, seatId).filter((c) => registry.cards.get(c.definitionId)?.category === 'equipment' && freeSlotSeats(state, seatId, c).length > 0);
+
+// Direct Instruction (active, any number of times in your Play Phase): place an
+// equipment card from your hand in another seat's empty slot, then draw 1.
+export const directInstruction: SkillDefinition = {
+  id: 'direct-instruction',
+  active: {
+    canUse: (state, { seatId }, registry) => isLiving(state, seatId) && equipmentInHand(state, seatId, registry).length > 0,
+    start: (state, { seatId, owner }, registry) => [
+      selectionOf(state, owner, {
+        of: 'cards',
+        eligibleIds: equipmentInHand(state, seatId, registry).map((c) => c.instanceId),
+        min: 1,
+        max: 1,
+        then: { kind: 'skill-step', step: skillStep(owner, 'to') },
+        onCancel: [],
+      }),
+    ],
+  },
+  onStep: (state, step) => {
+    const { owner } = step;
+    const card = handOf(state, owner.seatId).find((c) => c.instanceId === picked(step)[0]);
+    if (!card) return [];
+    const seats = freeSlotSeats(state, owner.seatId, card);
+    return seats.length === 0
+      ? []
+      : [
+          choiceOf(state, owner, {
+            verb: 'pick',
+            options: seatOptions(seats, (to) => [
+              used(owner, 'placed', to, card.instanceId),
+              { kind: 'MoveCardEffect', cardInstanceId: card.instanceId, toZoneId: seatOf(state, to)!.equipped.zoneId },
+              draw(owner.seatId, 1),
+            ]),
+          }),
+        ];
+  },
+};
+
+// The cards `seatId` discarded in its latest Discard Phase that still lie in the discard pile.
+function discardedInDiscardPhase(state: GameState, seatId: string): string[] {
+  let start = -1;
+  state.log.forEach((e, i) => {
+    if (e.kind === 'PhaseChangedEvent' && e.phase === 'Discard' && e.seatId === seatId) start = i;
+  });
+  if (start === -1) return [];
+  const seat = seatOf(state, seatId);
+  const discardPileId = requireZoneOfKind(state.zones, 'discardPile').id;
+  const stillThere = new Set(cardsIn(state, discardPileId).map((c) => c.instanceId));
+  return state.log
+    .slice(start)
+    .flatMap((e) => (e.kind === 'CardMovedEvent' && seat && e.fromZoneId === seat.hand.zoneId && e.toZoneId === discardPileId && stillThere.has(e.cardInstanceId) ? [e.cardInstanceId] : []));
+}
+
+// Stubborn (may): at the end of another seat's Discard Phase, if it discarded
+// 2 or more cards, give one of them back to it and take the others.
+export const stubborn: SkillDefinition = {
+  id: 'stubborn',
+  triggers: [
+    on<PhaseChangedEvent>('after:PhaseChangedEvent', {
+      condition: (state, event, owner) =>
+        event.phase === 'End' && event.seatId !== owner.seatId && state.turn.ownerSeatId === event.seatId && isLiving(state, event.seatId) && isLiving(state, owner.seatId) &&
+        discardedInDiscardPhase(state, event.seatId).length >= 2,
+      effect: (state, event, owner) => [ask(owner, [skillStep(owner, 'give', { seat: event.seatId, cards: discardedInDiscardPhase(state, event.seatId) })], [], event.seatId)],
+    }),
+  ],
+  onStep: (state, step) => {
+    const { owner } = step;
+    const seat = step.data?.['seat'] as string;
+    const discardPile = requireZoneOfKind(state.zones, 'discardPile');
+    const cards = ((step.data?.['cards'] as string[] | undefined) ?? []).flatMap((id) => discardPile.cards.filter((c) => c.instanceId === id));
+    if (cards.length < 2 || !isLiving(state, seat) || !isLiving(state, owner.seatId)) return [];
+    const move = (id: string, to: string): Effect => ({ kind: 'MoveCardEffect', cardInstanceId: id, toZoneId: handZoneId(state, to), onlyFrom: discardPile.id });
+    return [
+      choiceOf(state, owner, {
+        verb: 'pick',
+        targetSeatId: seat,
+        options: cards.map((card) => ({
+          id: card.instanceId,
+          shows: { kind: 'card' as const, card },
+          effects: [used(owner, 'gave-back', seat), move(card.instanceId, seat), ...cards.filter((c) => c.instanceId !== card.instanceId).map((c) => move(c.instanceId, owner.seatId))],
+        })),
+      }),
+    ];
+  },
+};
+
 export const MOUNTAIN_GENERALS: GeneralSkillSet[] = [
   { id: 'zhang-he', skills: [cleverChange] },
   { id: 'deng-ai', skills: [militaryFarm, strategicPass] },
   { id: 'liu-shan', skills: [pleasure, decentralization, seemFoolish] },
   { id: 'jiang-wei', skills: [instigate, followTheMaster] },
+  { id: 'sun-ce', skills: [passion, soulPosition, takeover] },
+  { id: 'zhang-zhao-and-zhang-hong', skills: [directInstruction, stubborn] },
 ];
