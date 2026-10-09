@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, Signal, computed, effect, inject, signal, untracked } from '@angular/core';
-import { Action, GameState, cardsOverHandLimit } from 'engine';
+import { Action, GameState, discardOwed } from 'engine';
 import { GameService } from './game.service';
 
 // Seconds per kind of decision.
@@ -182,7 +182,7 @@ export function defaultDecision(state: GameState, legal: readonly Action[]): Act
   const generals = legal.find((a) => a.kind === 'ChooseGeneralsAction');
   if (generals) return [generals];
   const discards = legal.filter((a) => a.kind === 'DiscardCardAction');
-  if (discards.length > 0) return discards.slice(0, cardsOverHandLimit(state, state.turn.ownerSeatId));
+  if (discards.length > 0) return discards.slice(0, discardOwed(state, state.turn.ownerSeatId));
   const endPhase = legal.find((a) => a.kind === 'EndPhaseAction');
   return [endPhase ?? legal[0]];
 }

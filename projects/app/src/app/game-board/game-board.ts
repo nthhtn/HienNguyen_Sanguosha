@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Action, CardInstance, ChooseGeneralsAction, Seat, cardsOverHandLimit } from 'engine';
+import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { GameService } from '../game.service';
@@ -243,7 +243,7 @@ export class GameBoard {
     const seatId = this.viewerSeatId();
     if (!visible || !seatId || visible.phase !== 'Discard' || visible.turn.ownerSeatId !== seatId) return 0;
     if (!this.gameService.legalActions().some((a) => a.kind === 'DiscardCardAction')) return 0;
-    return cardsOverHandLimit(visible, seatId);
+    return discardOwed(visible, seatId);
   });
 
   constructor() {
