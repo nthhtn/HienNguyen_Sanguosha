@@ -33,4 +33,13 @@ describe('the base Generals', () => {
       expect({ id, lord: defined.map((s) => !!s.lord) }).toEqual({ id, lord: data.map((s) => !!s.lord) });
     }
   });
+
+  it('every Forest General defines every skill in its data, in order, with matching Lord flags', () => {
+    for (const id of FOREST_GENERAL_IDS) {
+      const defined = GENERAL_SKILLS.get(id) ?? [];
+      const data = generalsData[id].skills;
+      expect({ id, skills: defined.map((s) => s.id) }).toEqual({ id, skills: data.map((s) => skillIdOf(s.name)) });
+      expect({ id, lord: defined.map((s) => !!s.lord) }).toEqual({ id, lord: data.map((s) => !!s.lord) });
+    }
+  });
 });

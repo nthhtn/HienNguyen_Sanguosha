@@ -4,7 +4,7 @@ import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
 import { competeStart, competeStep } from '../shared/compete';
-import { colourFor } from '../shared/suits';
+import { colourFor, suitOf } from '../shared/suits';
 import { abilityKey } from '../shared/steps';
 import { seatCardOptions } from '../shared/choices';
 import { shaAt } from '../cards/sha';
@@ -346,6 +346,133 @@ export const alliance: SkillDefinition = {
   },
 };
 
+// Accepts spade hand cards (as the holder's suits count).
+const spade = (card: CardInstance, state: GameState, seatId: string, registry: ContentRegistry) => suitOf(state, seatId, card, registry) === 'spade';
+
+// Wine: a spade hand card may be used as Wine, in the Play Phase or to rescue yourself.
+export const wine: SkillDefinition = { id: 'wine', conversions: [{ id: 'wine', as: 'wine', cards: 1, accepts: spade, when: 'both' }] };
+
+// Garden of Lust (compulsory): a Sha between you and a female seat needs two
+// Shan (read by the Sha's steps).
+export const gardenOfLust: SkillDefinition = { id: 'garden-of-lust', compulsory: true, modifiers: { doubleAnswersWithFemale: true } };
+
+// Collapse (compulsory): at the end of your turn, with strictly more HP than
+// every other living seat, lose 1 HP or reduce your max HP by 1.
+export const collapse: SkillDefinition = {
+  id: 'collapse',
+  compulsory: true,
+  triggers: [
+    on<PhaseChangedEvent>('after:PhaseChangedEvent', {
+      condition: (state, event, owner) => {
+        if (event.phase !== 'End' || event.seatId !== owner.seatId || !isLiving(state, owner.seatId)) return false;
+        const others = otherLivingSeatIds(state, owner.seatId);
+        return others.length > 0 && others.every((id) => hpOf(state, id) < hpOf(state, owner.seatId));
+      },
+      effect: (state, _event, owner) => [
+        choiceOf(state, owner, {
+          verb: 'pick',
+          options: [
+            { id: 'lose-hp', shows: { kind: 'label', text: 'Lose 1 HP' }, effects: [used(owner, 'collapsed'), { kind: 'LoseHpEffect', seatId: owner.seatId, amount: 1, abilityId: owner.skillId }] },
+            { id: 'reduce-max-hp', shows: { kind: 'label', text: 'Reduce Max HP by 1' }, effects: [used(owner, 'collapsed-max'), { kind: 'ReduceMaxHpEffect', seatId: owner.seatId, amount: 1 }] },
+          ],
+        }),
+      ],
+    }),
+  ],
+};
+
+// Complete Kill (compulsory): in your turn only you and the dying seat can use
+// Peach. Kingdom War's dying round reads this when it lists who is asked.
+export const completeKill: SkillDefinition = { id: 'complete-kill', compulsory: true, modifiers: { peachOnlyOwnerAndDying: true } };
+
+// Curtain (compulsory): black Tools can't target you. The modifier keeps them
+// off the seat lists; this trigger cancels any that still name you (an area
+// Tool, a conversion). Your own delayed Tools, judged on you, are not "aimed".
+export const curtain: SkillDefinition = {
+  id: 'curtain',
+  compulsory: true,
+  modifiers: { untargetableByBlackTools: true },
+  triggers: [
+    on<ToolOnTarget>('before:ToolOnTargetEffect', {
+      condition: (_state, effect, owner) => effect.target.kind === 'seat' && effect.target.seatId === owner.seatId && effect.userSeatId !== owner.seatId && effect.tool.colour === 'black',
+      effect: () => [],
+    }),
+  ],
+};
+
+// The seat mark that records Upheaval's one use.
+const UPHEAVAL_MARK = 'upheaval-used';
+
+// Other living seats within `seatId`'s attack range that a Sha may target.
+const shaReach = (state: GameState, seatId: string, registry: ContentRegistry) =>
+  otherLivingSeatIds(state, seatId).filter((id) => seatDistance(state, seatId, id, registry) <= attackRange(state, seatId, registry) && !untargetableBy(state, id, 'sha', registry));
+
+// Upheaval (active, Play Phase, once per game): every other living seat, in turn
+// order, picks a seat in its attack range and plays a Sha at it, or loses 1 HP.
+export const upheaval: SkillDefinition = {
+  id: 'upheaval',
+  active: {
+    canUse: (state, { seatId }) =>
+      isLiving(state, seatId) && !state.seats.find((s) => s.id === seatId)?.marks?.[UPHEAVAL_MARK] && otherLivingSeatIds(state, seatId).length > 0,
+    start: (state, { seatId, owner }) => [
+      { kind: 'IncrementEffect', scope: 'seat', seatId, key: UPHEAVAL_MARK, by: 1 },
+      used(owner, 'used'),
+      skillStep(owner, 'next', { left: otherLivingSeatIds(state, seatId) }),
+    ],
+  },
+  onStep: (state, step, registry) => {
+    const { owner } = step;
+    const left = ((step.data?.['left'] as string[] | undefined) ?? []).filter((id) => isLiving(state, id));
+    const loseHp = (seatId: string, rest: string[]): Effect[] => [
+      { kind: 'LoseHpEffect', seatId, amount: 1, abilityId: owner.skillId },
+      skillStep(owner, 'next', { left: rest }),
+    ];
+    if (step.step === 'next') {
+      const [seatId, ...rest] = left;
+      if (!seatId) return [];
+      const reach = shaReach(state, seatId, registry);
+      if (reach.length === 0) return loseHp(seatId, rest);
+      return [
+        choiceOf(state, owner, {
+          verb: 'pick',
+          seatId,
+          options: [
+            ...seatOptions(reach, (victim) => [skillStep(owner, 'ask', { seatId, victim, left: rest })]),
+            { id: 'pass', shows: { kind: 'label', text: 'Pass (Lose 1 HP)' }, effects: loseHp(seatId, rest) },
+          ],
+        }),
+      ];
+    }
+    const seatId = step.data?.['seatId'] as string;
+    if (step.step === 'penalty') return isLiving(state, seatId) ? loseHp(seatId, left) : [skillStep(owner, 'next', { left })];
+    if (step.step === 'ask') {
+      const victim = step.data?.['victim'] as string;
+      if (!isLiving(state, seatId)) return [skillStep(owner, 'next', { left })];
+      return [
+        {
+          kind: 'OpenResponseEffect',
+          pendingResponse: {
+            id: `upheaval-${seatId}-${state.log.length}`,
+            respondingSeatId: seatId,
+            allowedActionKinds: ['RespondAction', 'PassAction'],
+            allowedCardIds: ['sha'],
+            reason: { kind: 'ability', owner, abilityId: owner.skillId, targetSeatId: victim },
+            // No Sha: the seat loses 1 HP, then the next seat is asked.
+            context: { effect: skillStep(owner, 'penalty', { seatId, left }) },
+            sourceSkill: { owner, step: 'sha', data: { victim, left } },
+          },
+        },
+      ];
+    }
+    // 'sha': the seat answered with a Sha (a real card or a conversion's).
+    const answeredBy = step.data?.['answeredBy'] as string;
+    const card = step.data?.['answeredCard'] as UsedCard;
+    const victim = step.data?.['victim'] as string;
+    const sha: Effect[] = isLiving(state, answeredBy) && isLiving(state, victim) ? shaAt(state, card, answeredBy, [{ kind: 'seat', seatId: victim }]) : [];
+    return [...sha, skillStep(owner, 'next', { left })];
+  },
+};
+
 export const FOREST_GENERALS: GeneralSkillSet[] = [
   { id: 'xu-huang', skills: [blockade] },
   { id: 'cao-pi', skills: [unnaturalDeath, exile, exaltation] },
@@ -353,4 +480,6 @@ export const FOREST_GENERALS: GeneralSkillSet[] = [
   { id: 'zhu-rong', skills: [giantElephant, intenseEdge] },
   { id: 'sun-jian', skills: [braveSpirit] },
   { id: 'lu-su', skills: [charity, alliance] },
+  { id: 'dong-zhuo', skills: [wine, gardenOfLust, collapse, violentTyrant] },
+  { id: 'jia-xu', skills: [completeKill, upheaval, curtain] },
 ];
