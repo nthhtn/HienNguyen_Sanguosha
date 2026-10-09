@@ -198,3 +198,25 @@ const titleCase = (id: string) => id.split('-').map((w) => w.charAt(0).toUpperCa
 export function abilityName(abilityId: string): string {
   return cardDisplayData(abilityId)?.name ?? SKILL_NAMES.get(abilityId) ?? titleCase(abilityId);
 }
+
+// What a Compete leads to for the skill that started it: `{user}` competed
+// with `{target}`. `null` for an ability that does not compete.
+const COMPETE_OUTCOMES: Record<string, { won: string; lost: string }> = {
+  'heavens-justice': {
+    won: '{user} can play one more Sha this turn, at any distance, with one more target',
+    lost: "{user} can't play a Sha this turn",
+  },
+  'rouse-the-tiger': {
+    won: "{user} will choose a seat within {target}'s attack range; {target} deals it 1 damage",
+    lost: '{target} deals 1 damage to {user}',
+  },
+  'intense-edge': {
+    won: "{user} will take one of {target}'s cards",
+    lost: 'Nothing happens',
+  },
+};
+
+export function competeOutcomeText(abilityId: string, won: boolean, names: { user: string; target: string }): string | null {
+  const outcome = Object.prototype.hasOwnProperty.call(COMPETE_OUTCOMES, abilityId) ? COMPETE_OUTCOMES[abilityId] : null;
+  return outcome ? (won ? outcome.won : outcome.lost).replaceAll('{user}', names.user).replaceAll('{target}', names.target) : null;
+}

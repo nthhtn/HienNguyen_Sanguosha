@@ -33,6 +33,8 @@ import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
 import { avatarSkills, extraSkillsOf } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
 import { openForceDialog } from './force-dialog';
+import { CompeteDialog } from './compete-dialog';
+import { CompeteResult, competeResults } from './compete-result';
 import { soundsFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
 import { DecisionTimer } from '../decision-timer.service';
@@ -270,6 +272,21 @@ export class GameBoard {
         seen = log.length;
       });
     });
+    // A Compete popup for every Compete the log gains while the board is open
+    // (same baseline rule as the sounds); several wait their turn.
+    let competesSeen: number | null = null;
+    effect(() => {
+      const visible = this.visibleState();
+      if (!visible) return;
+      untracked(() => {
+        const log = visible.log;
+        if (competesSeen !== null && log.length > competesSeen) {
+          this.competeQueue.push(...competeResults(log, competesSeen, visible.seats, visible.players));
+          this.showNextCompete();
+        }
+        competesSeen = log.length;
+      });
+    });
     effect(() => {
       const count = this.discardsDue();
       untracked(() => {
@@ -375,6 +392,22 @@ export class GameBoard {
 
   protected nameOf(seatId: string): string {
     return seatName(this.gameService.state()?.players ?? [], seatId);
+  }
+
+  private readonly competeQueue: CompeteResult[] = [];
+  private competeDialog: MatDialogRef<CompeteDialog> | null = null;
+
+  // Opens the next waiting Compete popup, themed in its source General's Force.
+  private showNextCompete(): void {
+    if (this.competeDialog) return;
+    const next = this.competeQueue.shift();
+    if (!next) return;
+    const ref = openForceDialog<CompeteDialog, CompeteResult>(this.dialog, CompeteDialog, next.force, { data: next, width: 'min(92vw, 520px)', autoFocus: 'dialog' });
+    this.competeDialog = ref;
+    ref.afterClosed().subscribe(() => {
+      this.competeDialog = null;
+      this.showNextCompete();
+    });
   }
 
   // The Discard phase in one step: the dialog returns exactly `count` cards,

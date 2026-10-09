@@ -447,6 +447,10 @@ in seat order; the card is counted once.
 target's (`compete-target`); both cards are shown and discarded, an
 `AbilityUsedEvent` says `compete-won` or `compete-lost`, and the skill's result
 step gets `won`. A tie loses.
+The app's `competeResults` reads the public log (the two `CardShownEvent`s and
+the `AbilityUsedEvent`) into the Compete popup's data; the outcome wording per
+skill is `competeOutcomeText` in `display.ts`, and the popup is themed in the
+source seat's Force.
 
 **Same-suit pairs.** `Conversion.sameSuit` leaves out cards whose suit can't
 make a pair and marks the selection `sameSuit`; `validateSelection` rejects a
