@@ -276,3 +276,25 @@ pieces.
     fired.
 - **App:** the competing and Blaze prompts, the Choose Targets window, and the
   new history lines.
+
+## Rulings made while building
+
+- **Godspeed's Sha keeps its one-seat choice.** Its maximum is always 1
+  (Xiahou Yuan can't pair with Taishi Ci, and it has no physical card to be a
+  last hand card), so the window has nothing to offer.
+- **Sky Scorcher's +2 for a conversion** applies only to a conversion taken
+  from the hand alone, when the hand holds exactly the cards it takes (targets
+  are picked before the cards).
+- **Same suit is the printed suit** for Random Strike (the engine checks it;
+  Yuan Shao can't pair with Beauty's holder).
+- **Competing is content**, run as the owning skill's steps; its history is
+  one line in place of the two "showed" lines.
+- **Blaze is in the wiki's game cards** (usable via Fire Strategy), never
+  dealt.
+- **Bots** measure reach round the table plus a worn Weapon's range (they
+  don't read content's distance rules); Heaven's Justice competes with the
+  weakest non-ally holding a card; Sudden Attack takes a worn card before the
+  hidden hand.
+- **An untargeted conversion** (Random Strike's Hail of Arrows) is one button
+  used at once.
+

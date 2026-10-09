@@ -431,6 +431,36 @@ Camps) isn't owed too.
 card in hand when one of its conversions could make one (First Aid); the
 pipeline supplies that check to `applyDying`.
 
+**Several equal targets in one pick** (stage 9). A card's `targetPick` says
+when it may take more than one target now (Sha: Sky Scorcher's +2 with the
+last hand card, Heaven's Justice's +1). `getLegalActions` then offers that
+card, or that conversion, once: a template with `targets: []` and
+`pickTargets { eligibleIds, min, max }`. The player (or bot) fills the targets
+and submits without `pickTargets`; `resolve` accepts them when `fitsPick` holds
+(distinct, listed, within min..max). A conversion asks `targetPick` with `via`
+(how many cards, hand only), so "the last hand cards" can be read before the
+cards are picked. Each target then goes through the card's steps on its own,
+in seat order; the card is counted once.
+
+**Competing** (content, `shared/compete.ts`) runs as the owning skill's steps:
+`competeStart` opens the user's face-down pick (`compete-user`), then the
+target's (`compete-target`); both cards are shown and discarded, an
+`AbilityUsedEvent` says `compete-won` or `compete-lost`, and the skill's result
+step gets `won`. A tie loses.
+
+**Same-suit pairs.** `Conversion.sameSuit` leaves out cards whose suit can't
+make a pair and marks the selection `sameSuit`; `validateSelection` rejects a
+mixed pick.
+
+**Fire hooks.** Blaze is a Tool made only by Fire Strategy (`outOfDeck`): its
+rule opens the target's pick of a card to show (card step `blaze-shown`), then
+the user's optional matching discard (`blaze-hit`) for 1 plain damage.
+Nirvana is a `before:DyingEffect` trigger like Refusing Death; it ends with
+`TurnFaceUpEffect`. Sudden Attack hooks Sha's `sha-dodged` step, as Green
+Dragon Blade does. Eight Arrays shares Eight Trigrams' trigger
+(`eightTrigramsTrigger`), with a skill judgment reader and a "no armour worn"
+condition.
+
 ## Plugging into the chain
 
 | To add… | Write… | Example |
