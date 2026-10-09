@@ -571,3 +571,13 @@ fits instead.
 3. **Before-triggers only rewrite the effect.** They can't change the state
    themselves. Each one sees the state as it was when the effect began
    resolving, along with the effect as rewritten by the triggers before it.
+
+## Reveal bonuses
+
+Two Kingdom War triggers react to `after:GeneralRevealedEvent` with a
+`DrawCardsEffect`:
+
+- **First reveal** (optional, `state.rules.firstRevealDraw`, 5+ seats): the
+  first `GeneralRevealedEvent` in the log gives its seat 2 cards.
+- **Rounding** (always): when both of a seat's Generals are revealed and their
+  printed HP sum is odd, the seat draws 1 card, once, on the second reveal.

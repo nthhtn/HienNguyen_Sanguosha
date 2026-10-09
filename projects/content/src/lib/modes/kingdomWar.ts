@@ -6,6 +6,7 @@ import type {
   HpLostEvent,
   SeatEliminatedEvent,
   GeneralsChosenEvent,
+  GeneralRevealedEvent,
   Effect,
   SkillTrigger,
   TriggerPoint,
@@ -147,11 +148,40 @@ function hpDropTriggers(point: TriggerPoint): SkillTrigger[] {
   ];
 }
 
+// The first-reveal rule needs a table of at least this many seats.
+export const FIRST_REVEAL_MIN_SEATS = 5;
+
+// Common table rules on revealing Generals. Both fire after the reveal is logged.
+const revealBonusTriggers: SkillTrigger[] = [
+  // Optional rule: the first General revealed at the table draws 2 cards.
+  {
+    point: 'after:GeneralRevealedEvent',
+    condition: (state) =>
+      !!state.rules?.firstRevealDraw &&
+      state.seats.length >= FIRST_REVEAL_MIN_SEATS &&
+      state.log.filter((e) => e.kind === 'GeneralRevealedEvent').length === 1,
+    effect: (_state, subject) => [{ kind: 'DrawCardsEffect', seatId: (subject as GeneralRevealedEvent).seatId, count: 2 }],
+  },
+  // A combined max HP that was rounded down (the printed sum is odd): revealing
+  // the second General draws 1 card.
+  {
+    point: 'after:GeneralRevealedEvent',
+    condition: (state, subject, _owner, registry) => {
+      const event = subject as GeneralRevealedEvent;
+      const generals = state.seats.find((s) => s.id === event.seatId)?.generals;
+      if (!generals || !generals.main.revealed || !generals.deputy.revealed || !registry) return false;
+      const printed = [generals.main, generals.deputy].map((g) => registry.generals.get(g.generalDefinitionId)?.maxHp ?? 0);
+      return (printed[0] + printed[1]) % 2 === 1;
+    },
+    effect: (_state, subject) => [{ kind: 'DrawCardsEffect', seatId: (subject as GeneralRevealedEvent).seatId, count: 1 }],
+  },
+];
+
 export const kingdomWarMode: GameModeDefinition = {
   id: 'kingdom-war',
   maxSeats: kingdomWarMaxSeats,
 
-  setup: (seatIds, registry, rng) => {
+  setup: (seatIds, registry, rng, rules) => {
     const limit = kingdomWarMaxSeats(registry);
     if (seatIds.length < 2 || seatIds.length > limit) {
       throw new Error(
@@ -207,6 +237,7 @@ export const kingdomWarMode: GameModeDefinition = {
       result: null,
       generalSelection: { candidates },
       spareGenerals: spare,
+      ...(rules ? { rules } : {}),
     };
     return { state, rng: currentRng };
   },
@@ -237,6 +268,7 @@ export const kingdomWarMode: GameModeDefinition = {
 
   triggers: [
     judgmentPhaseTrigger,
+    ...revealBonusTriggers,
     // A seat that is out discards every card it holds: hand, equipment and
     // Judgment slot (so a Lightning there stays in the game).
     {

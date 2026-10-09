@@ -316,6 +316,13 @@ export interface Damage {
   cause?: { cardInstanceId?: string; card?: UsedCard; skillId?: string };
 }
 
+// Optional table rules chosen when the game is created. Stored on the state so
+// they survive saving and replay.
+export interface GameRules {
+  // With 5 or more seats, the first seat to reveal a General draws 2 cards.
+  firstRevealDraw?: boolean;
+}
+
 export interface GameState {
   seats: Seat[];
   players: Player[];
@@ -337,6 +344,8 @@ export interface GameState {
   rng: RngState;
   result: GameResult | null;
   generalSelection: GeneralSelectionState | null;
+  // Absent when no optional rule was chosen.
+  rules?: GameRules;
   // General ids nobody was dealt, in order: where spare Generals come from.
   // Hidden from every viewer.
   spareGenerals?: string[];

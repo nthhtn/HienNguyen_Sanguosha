@@ -1,5 +1,5 @@
 import { withFillers } from '../generals/fillers.testing';
-import { table, kwMode } from '../generals/skills.testing';
+import { table, kwMode, harness, card } from '../generals/skills.testing';
 import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT, MAX_KINGDOM_WAR_SEATS } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
@@ -378,5 +378,72 @@ describe('Kingdom War: the dying round knows how far below 1 HP a drop went', ()
     const later = { ...event, damage: { ...event.damage, amount: 1 } };
     const s2 = table({}, { hp: { 'seat-b': -2 } });
     expect(kwMode.triggers.filter((t) => t.point === 'after:DamageDealtEvent' && t.condition(s2, later)).flatMap((t) => t.effect(s2, later)).find((e) => (e as { kind: string }).kind === 'DyingEffect')).toMatchObject({ pointsBelowOne: 1 });
+  });
+});
+
+describe('Kingdom War reveal bonuses', () => {
+  const makeTable = table;
+  const h = harness(kwMode);
+  const reveal = (s: GameState, seatId: string, slot: 'main' | 'deputy') => h.settle(h.act(s, { kind: 'RevealGeneralAction', seatId, slot }));
+  const handSize = (s: GameState, seatId: string) => s.zones.find((z) => z.id === `${seatId}:hand`)!.cards.length;
+  const deck = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => card(id, 'sha'));
+  // Both Generals hidden on every seat; Xu Huang (4) + Dong Zhuo (4) is even, Xu Huang (4) + Jia Xu (3) is odd.
+  const hidden = { generals: Object.fromEntries(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'].map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]])) };
+  const oddPair = (id: string) => ({ [id]: ['filler-xu-huang', 'filler-jia-xu', false] });
+
+  it('the first seat to reveal a General draws 2 when the option is on at 5 seats', () => {
+    const s = { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: true } };
+    const after = reveal(s, 'seat-b', 'main');
+    expect(handSize(after, 'seat-b')).toBe(2);
+  });
+
+  it('only the first reveal at the table gets the bonus', () => {
+    const s = { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: true } };
+    const after = reveal(reveal(s, 'seat-b', 'main'), 'seat-c', 'main');
+    expect(handSize(after, 'seat-b')).toBe(2);
+    expect(handSize(after, 'seat-c')).toBe(0);
+  });
+
+  it('gives nothing with the option off, unset, or below 5 seats', () => {
+    for (const s of [
+      { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: false } },
+      makeTable({ drawPile: deck }, { seats: 5, ...hidden }),
+      { ...makeTable({ drawPile: deck }, { seats: 4, ...hidden }), rules: { firstRevealDraw: true } },
+    ]) {
+      expect(handSize(reveal(s, 'seat-b', 'main'), 'seat-b')).toBe(0);
+    }
+  });
+
+  it('revealing the second General draws 1 when the printed HP sum is odd', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: { ...hidden.generals, ...oddPair('seat-b') } });
+    const once = reveal(s, 'seat-b', 'main');
+    expect(handSize(once, 'seat-b')).toBe(0);
+    expect(handSize(reveal(once, 'seat-b', 'deputy'), 'seat-b')).toBe(1);
+  });
+
+  it('draws 1 on the second reveal whichever General is revealed second', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: { ...hidden.generals, ...oddPair('seat-b') } });
+    expect(handSize(reveal(reveal(s, 'seat-b', 'deputy'), 'seat-b', 'main'), 'seat-b')).toBe(1);
+  });
+
+  it('draws nothing on the second reveal when the HP sum is even', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: hidden.generals });
+    expect(handSize(reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy'), 'seat-b')).toBe(0);
+  });
+
+  it('both bonuses stack for the first revealer', () => {
+    const s = { ...makeTable({ drawPile: deck }, { seats: 5, generals: { ...hidden.generals, ...oddPair('seat-b') } }), rules: { firstRevealDraw: true } };
+    expect(handSize(reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy'), 'seat-b')).toBe(3);
+  });
+});
+
+describe('Kingdom War game rules option', () => {
+  const registry = withFillers(buildContentRegistry());
+  const ids = ['a', 'b', 'c', 'd', 'e'];
+  it('stores the first-reveal option on the state', () => {
+    expect(createGame(kingdomWarMode, registry, ids, 1, { firstRevealDraw: true }).rules).toEqual({ firstRevealDraw: true });
+  });
+  it('stores no rules when none are given', () => {
+    expect(createGame(kingdomWarMode, registry, ids, 1).rules).toBeUndefined();
   });
 });

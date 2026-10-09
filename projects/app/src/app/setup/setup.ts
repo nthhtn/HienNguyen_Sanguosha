@@ -2,15 +2,17 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { FIRST_REVEAL_MIN_SEATS } from 'content';
 import { GameMode, GameService } from '../game.service';
 
 @Component({
   selector: 'app-setup',
-  imports: [MatButtonModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule],
   template: `
     <div class="home">
       <mat-card class="hero" appearance="raised">
@@ -64,6 +66,13 @@ import { GameMode, GameService } from '../game.service';
               }
             </mat-button-toggle-group>
           </div>
+
+          @if (showFirstReveal()) {
+            <div class="field">
+              <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">First Reveal Bonus</mat-checkbox>
+            </div>
+            <p class="rule-hint">The first seat to reveal a General draws 2 cards.</p>
+          }
 
           <div class="names">
             @for (i of nameSlots(); track i) {
@@ -119,6 +128,7 @@ import { GameMode, GameService } from '../game.service';
     .field { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
     .label { font: var(--mat-sys-title-small); min-width: 48px; }
     .names { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: 12px; }
+    .rule-hint { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .mode-hint { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .mode mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; vertical-align: middle; }
     .start { padding: 0 24px; }
@@ -132,6 +142,9 @@ export class Setup {
 
   readonly mode = signal<GameMode>('vs-bots');
   readonly seatCount = signal(4);
+  readonly firstRevealDraw = signal(true);
+  // The rule needs a big table, so the option only appears there.
+  protected readonly showFirstReveal = computed(() => this.seatCount() >= FIRST_REVEAL_MIN_SEATS);
   // Typed names by seat index; blanks fall back to "Seat N".
   readonly names = signal<(string | undefined)[]>([]);
   // Vs bots asks only for the human's name (seat 0); pass-and-play asks for every seat's.
@@ -147,7 +160,7 @@ export class Setup {
 
   startGame(): void {
     const clamped = Math.min(this.maxSeats, Math.max(2, this.seatCount() || 2));
-    this.gameService.startGame(clamped, undefined, this.mode(), this.nameSlots().map((i) => this.names()[i] ?? ''));
+    this.gameService.startGame(clamped, undefined, this.mode(), this.nameSlots().map((i) => this.names()[i] ?? ''), clamped >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : undefined);
     this.router.navigateByUrl('/game');
   }
 }

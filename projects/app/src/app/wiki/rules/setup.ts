@@ -19,6 +19,8 @@ import { RouterLink } from '@angular/router';
       <li>You can reveal a General when you need its skill or Force.</li>
       <li>A seat's Main General is revealed when its HP drops to half its maximum or lower.</li>
       <li>Its Deputy General is revealed when its HP drops to 0 or lower.</li>
+      <li>When you reveal your second General and the two Generals' HP added together was odd (so your HP was rounded down), you draw 1 card.</li>
+      <li>Optional, with 5 or more seats: the first seat to reveal a General draws 2 cards. This is a checkbox in Game Setup.</li>
     </ul>
     <p>Next: <a routerLink="/wiki/rules/turn">Turn Structure</a>.</p>
   `,
