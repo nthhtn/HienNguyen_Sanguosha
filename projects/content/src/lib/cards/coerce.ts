@@ -1,6 +1,6 @@
 import type { CardDefinition, Effect, Target } from 'engine';
 import { attackRange, seatDistance } from '../shared/queries';
-import { toolOnTargets } from '../shared/tools';
+import { playColour, toolOnTargets } from '../shared/tools';
 import { untargetableBy } from '../shared/abilities';
 import { equipSlotOf } from './equipment';
 import { shaAt } from './sha';
@@ -24,7 +24,7 @@ export const coerceCard: CardDefinition = {
       return worn.some((c) => registry.cards.get(c.definitionId)?.equipSlot === 'weapon');
     };
     return living
-      .filter((holder) => holder.id !== ctx.seatId && wearsWeapon(holder.id))
+      .filter((holder) => holder.id !== ctx.seatId && wearsWeapon(holder.id) && !untargetableBy(state, holder.id, 'coerce', registry, playColour(state, ctx, registry)))
       .flatMap((holder) => {
         const range = attackRange(state, holder.id, registry);
         return living

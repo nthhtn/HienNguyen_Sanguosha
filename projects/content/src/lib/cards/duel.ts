@@ -1,7 +1,7 @@
 import type { CardDefinition, Effect, UsedCard } from 'engine';
 import { usedCardKey } from 'engine';
 import { otherLivingSeatTargets } from '../shared/queries';
-import { toolOnTargets } from '../shared/tools';
+import { playColour, toolOnTargets } from '../shared/tools';
 import { answersNeededAgainst, untargetableBy } from '../shared/abilities';
 
 const DUEL_DAMAGE = 1;
@@ -51,7 +51,7 @@ export const duelCard: CardDefinition = {
   id: 'duel',
   name: 'Duel',
   category: 'tool',
-  legalPlayTargets: (state, ctx, registry) => otherLivingSeatTargets(state, ctx.seatId).filter(([t]) => t.kind === 'seat' && !untargetableBy(state, t.seatId, 'duel', registry)),
+  legalPlayTargets: (state, ctx, registry) => otherLivingSeatTargets(state, ctx.seatId).filter(([t]) => t.kind === 'seat' && !untargetableBy(state, t.seatId, 'duel', registry, playColour(state, ctx, registry))),
   play: (_state, ctx) => {
     if (ctx.respondingTo) return [];
     if (ctx.targets.length === 0) return []; // no target chosen — a no-op rather than a crash

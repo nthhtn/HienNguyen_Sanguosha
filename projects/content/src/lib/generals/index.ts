@@ -6,8 +6,9 @@ import { WU_GENERALS } from './wu';
 import { QUN_GENERALS } from './qun';
 import { WIND_GENERALS } from './wind';
 import { FIRE_GENERALS } from './fire';
+import { FOREST_GENERALS } from './forest';
 
-const HAND_CODED: GeneralSkillSet[] = [...WEI_GENERALS, ...SHU_GENERALS, ...WU_GENERALS, ...QUN_GENERALS, ...WIND_GENERALS, ...FIRE_GENERALS];
+const HAND_CODED: GeneralSkillSet[] = [...WEI_GENERALS, ...SHU_GENERALS, ...WU_GENERALS, ...QUN_GENERALS, ...WIND_GENERALS, ...FIRE_GENERALS, ...FOREST_GENERALS];
 
 // Skill logic keyed by general id. A general with data but no entry here is a
 // playable vanilla general (skills: []).
@@ -27,3 +28,6 @@ export const WIND_GENERAL_IDS: readonly string[] = ['cao-ren', 'xiahou-yuan', 'h
 
 // The 8 Fire Generals (stage 9).
 export const FIRE_GENERAL_IDS: readonly string[] = ['dian-wei', 'xun-yu', 'pang-tong', 'fire-zhuge-liang', 'taishi-ci', 'pang-de', 'yan-liang-and-wen-chou', 'yuan-shao'];
+
+// The 8 Forest Generals (stage 10).
+export const FOREST_GENERAL_IDS: readonly string[] = ['xu-huang', 'cao-pi', 'meng-huo', 'zhu-rong', 'sun-jian', 'lu-su', 'dong-zhuo', 'jia-xu'];

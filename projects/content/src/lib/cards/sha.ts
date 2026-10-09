@@ -123,7 +123,7 @@ export const shaCard: CardDefinition = {
         // An unblockable Sha hits; otherwise the target owes 1 Shan (2 against Matchless).
         return shaData(step).unblockable
           ? [shaStep(step, 'sha-hit')]
-          : [shaStep(step, 'sha-shan', { needed: answersNeededAgainst(state, step.userSeatId, registry), provided: 0 })];
+          : [shaStep(step, 'sha-shan', { needed: answersNeededAgainst(state, step.userSeatId, registry, step.target.seatId), provided: 0 })];
       case 'sha-shan':
         return (data.provided ?? 0) >= (data.needed ?? 1) ? [shaStep(step, 'sha-dodged')] : [shanWindow(step)];
       case 'sha-dodged':

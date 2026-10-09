@@ -1,7 +1,7 @@
 import type { CardDefinition, ChoiceOption, GameState, PendingChoice } from 'engine';
 import { requireZoneOfKind } from 'engine';
 import { otherLivingSeatTargets, seatDistance } from './queries';
-import { toolOnTargets } from './tools';
+import { playColour, toolOnTargets } from './tools';
 import { toolsIgnoreDistance, untargetableBy } from './abilities';
 
 const PICKABLE_ZONE_KINDS = ['hand', 'equip', 'judgment'];
@@ -56,7 +56,7 @@ export function pickACardTool({ id, name, verb, maxDistance }: PickACardToolSpec
         ([target]) =>
           target.kind === 'seat' &&
           holdsAnyCard(state, target.seatId) &&
-          !untargetableBy(state, target.seatId, id, registry) &&
+          !untargetableBy(state, target.seatId, id, registry, playColour(state, ctx, registry)) &&
           (maxDistance === undefined || toolsIgnoreDistance(state, ctx.seatId, registry) || seatDistance(state, ctx.seatId, target.seatId, registry) <= maxDistance)
       ),
     play: (state, ctx) => (ctx.respondingTo || ctx.targets.length === 0 ? [] : toolOnTargets(ctx.card, ctx.seatId, [ctx.targets[0]])),

@@ -162,6 +162,14 @@ export interface AbilityModifiers {
   // How the owner's own cards' suits count (Beauty: { spade: 'heart' }): its
   // hand, worn and judgment cards wherever a rule reads a suit.
   suitAs?: Partial<Record<CardInstance['suit'], CardInstance['suit']>>;
+  // Extra reach for using the named cards (Blockade: { starvation: 1 }).
+  rangeBonusFor?: Record<string, number>;
+  // Black Tools can't target the owner (Curtain).
+  untargetableByBlackTools?: boolean;
+  // In the turn owner's turn, only the owner and the dying seat may use Peach (Complete Kill).
+  peachOnlyOwnerAndDying?: boolean;
+  // The owner's Sha needs two Shan against a female, and a female's Sha at the owner needs two (Garden of Lust).
+  doubleAnswersWithFemale?: boolean;
 }
 
 // Using cards as another card (Serpent Spear: 2 hand cards as a Sha; Fighting

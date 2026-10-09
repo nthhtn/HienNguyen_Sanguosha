@@ -15,6 +15,7 @@ import type {
 import { buildDeck, drawTop, shuffle } from 'engine';
 import { cardsData } from '../../../data/cards';
 import { judgmentPhaseTrigger } from '../shared/delayed';
+import { peachLockedTo } from '../shared/abilities';
 
 export const GENERALS_PER_SEAT = 5;
 // A real Kingdom War table seats at most 10.
@@ -108,14 +109,17 @@ function hpDropTriggers(point: TriggerPoint): SkillTrigger[] {
         const seat = seatOf(state, subject);
         return !!seat && !seat.eliminated && seat.combinedHp <= 0;
       },
-      effect: (state, subject) => {
+      effect: (state, subject, _owner, registry) => {
         const seat = seatOf(state, subject)!;
         const event = subject as DamageDealtEvent | HpLostEvent;
         const amount = event.kind === 'HpLostEvent' ? event.amount : event.damage.amount;
+        const everyone = turnOrderFrom(state, state.turn.ownerSeatId);
+        // Complete Kill: in its owner's turn only the owner and the dying seat are asked.
+        const locked = registry ? peachLockedTo(state, registry) : null;
         return [{
           kind: 'DyingEffect',
           seatId: seat.id,
-          order: turnOrderFrom(state, state.turn.ownerSeatId),
+          order: locked ? everyone.filter((id) => id === locked || id === seat.id) : everyone,
           rescueCardIds: RESCUE_CARD_IDS,
           entering: true,
           // How many points of HP this drop took below 1 (Refusing Death turns one card each).
