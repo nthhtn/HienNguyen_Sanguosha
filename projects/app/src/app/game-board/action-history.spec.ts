@@ -564,6 +564,31 @@ describe('actionHistory: the Wind skills', () => {
       ])).toEqual(['Seat 1 and Seat 2 swapped hands (Alliance)']);
     });
 
+    it('the Mountain skills', () => {
+      const line = (skillId: string, outcome: string, targetSeatId?: string) =>
+        texts([{ kind: 'AbilityUsedEvent', owner: general('seat-0', skillId), abilityId: skillId, outcome, ...(targetSeatId ? { targetSeatId } : {}) }]);
+      expect(line('clever-change', 'skipped-judgment')).toEqual(['Seat 0 skipped their Judgment Phase with Clever Change']);
+      expect(line('clever-change', 'skipped-draw')).toEqual(['Seat 0 skipped their Draw Phase with Clever Change']);
+      expect(line('clever-change', 'skipped-play')).toEqual(['Seat 0 skipped their Play Phase with Clever Change']);
+      expect(line('clever-change', 'skipped-discard')).toEqual(['Seat 0 skipped their Discard Phase with Clever Change']);
+      expect(line('clever-change', 'moved-card', 'seat-1')).toEqual(['Seat 0 moved a card to Seat 1 (Clever Change)']);
+      expect(line('military-farm', 'farmed')).toEqual(["Seat 0's Military Farm: the judged card becomes a Farm"]);
+      expect(line('strategic-pass', 'awakened')).toEqual(['Seat 0 awakened: Strategic Pass']);
+      expect(line('pleasure', 'paid', 'seat-1')).toEqual(["Seat 1 discarded a Basic card for Seat 0's Pleasure"]);
+      expect(line('decentralization', 'extra-turn', 'seat-1')).toEqual(['Seat 0 gave Seat 1 an extra turn (Decentralization)']);
+      expect(line('passion', 'drew')).toEqual(['Seat 0 drew a card (Passion)']);
+      expect(line('direct-instruction', 'placed', 'seat-1')).toEqual(["Seat 0 placed an Equipment card in Seat 1's equipment (Direct Instruction)"]);
+      expect(line('stubborn', 'gave-back', 'seat-1')).toEqual(['Seat 0 gave a discarded card back to Seat 1 and took the rest (Stubborn)']);
+      expect(line('lament', 'lamented', 'seat-1')).toEqual(["Seat 0's Lament: Seat 1 judges"]);
+      expect(line('heartbroken', 'silenced', 'seat-1')).toEqual(['Seat 1 loses all skills (Heartbroken)']);
+      expect(line('new-life', 'new-form')).toEqual(['Seat 0 gained a Form (New Life)']);
+      expect(texts([{ kind: 'SkillGainedEvent', seatId: 'seat-0', slot: 'main', skillId: 'astrology' }])).toEqual(['Seat 0 gained Astrology']);
+      expect(texts([{ kind: 'FormChosenEvent', seatId: 'seat-0', generalId: 'zhou-yu', skillId: 'brave-gesture' }])).toEqual(['Seat 0 chose Brave Gesture from Zhou Yu']);
+      // The events these lines already say.
+      expect(texts([{ kind: 'SeatSilencedEvent', seatId: 'seat-1' }, { kind: 'ExtraTurnGrantedEvent', seatId: 'seat-1' }])).toEqual([]);
+    });
+
+
     it('max HP reduced', () => {
       expect(texts([{ kind: 'MaxHpReducedEvent', seatId: 'seat-0', amount: 1, maxHp: 3 }])).toEqual(['Seat 0 now has a max HP of 3']);
     });

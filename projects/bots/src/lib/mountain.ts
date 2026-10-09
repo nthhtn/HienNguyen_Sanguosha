@@ -50,8 +50,9 @@ function lamentSource(choice: PendingChoice): string | undefined {
 }
 
 export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): boolean | null {
-  if (choice.reason.kind !== 'ability') return null;
-  switch (choice.reason.abilityId) {
+  const reason = choice.reason;
+  if (reason.kind !== 'ability') return null;
+  switch (reason.abilityId) {
     case 'military-farm':
     case 'incarnation':
     case 'stubborn':
@@ -59,7 +60,7 @@ export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, 
     case 'decentralization':
       return handCards(view, me).length > 3;
     case 'lament': {
-      const victim = view.seats.find((s) => s.id === choice.reason.targetSeatId);
+      const victim = view.seats.find((s) => s.id === reason.targetSeatId);
       const source = view.seats.find((s) => s.id === lamentSource(choice));
       // Good for its own side; a club or spade must not land on an ally.
       return !!victim && ours(me, victim) && (!source || source.id === victim.id || !ours(me, source));

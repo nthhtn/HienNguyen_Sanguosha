@@ -94,6 +94,7 @@ import { DecisionTimer } from '../decision-timer.service';
                       [judgment]="zoneCards(seat.judgment.zoneId)"
                       [judgmentCountsAs]="countsAsOf(seat.judgment.zoneId)"
                       [pile]="zoneCards(seat.pile?.zoneId ?? '')"
+                      [stash]="zoneCards(seat.stash?.zoneId ?? '')"
                       [dying]="dyingOf(seat)"
                       [skills]="viewerSkills()"
                       (useSkill)="submit($event)"

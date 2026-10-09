@@ -177,6 +177,19 @@ export function describeResponse(
     };
   }
 
+  // Instigate: play a Sha at its user, or have a card discarded.
+  if (pending.reason?.kind === 'ability' && pending.reason.abilityId === 'instigate') {
+    const { owner } = pending.reason;
+    const you = pending.respondingSeatId === viewerSeatId;
+    return {
+      source: `${name(owner.seatId)} used ${abilityName('instigate')}`,
+      latest: null,
+      prompt: `Play a Sha at ${owner.seatId === viewerSeatId ? 'you' : name(owner.seatId)}, or discard a card?`,
+      outcome: you ? `${name(owner.seatId)} discards one of your cards` : `${name(owner.seatId)} discards one of ${name(pending.respondingSeatId)}'s cards`,
+      outcomeForce: forceOf(state.seats.find((s) => s.id === pending.respondingSeatId)?.kingdom),
+    };
+  }
+
   const causeId = causeInstanceId(state);
   const played = causeId ? lastPlayOf(state.log, causeId) : undefined;
 
@@ -239,6 +252,7 @@ export function waitingLine(state: GameState): string | null {
   if (reason?.kind === 'wuxie' || reason?.kind === 'counter-wuxie') return `${who}: ${askedCardName(state)}?`;
   if (reason?.kind === 'card-effect') return `${who} to answer ${cardName({ definitionId: reason.card.as })}`;
   if (reason?.kind === 'ability' && reason.abilityId === 'upheaval') return `${who} to play a Sha for ${abilityName('upheaval')}`;
+  if (reason?.kind === 'ability' && reason.abilityId === 'instigate') return `${who} to play a Sha for ${abilityName('instigate')}`;
   return who;
 }
 

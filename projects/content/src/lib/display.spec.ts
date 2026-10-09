@@ -1,4 +1,4 @@
-import { abilityHint, abilityName, cardDisplayData, generalDisplayData, selectionText, skillIdOf } from './display';
+import { abilityHint, abilityName, cardDisplayData, choicePromptText, generalDisplayData, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
 
 describe('generalDisplayData', () => {
   it('returns name, title and skill name/text for a known general', () => {
@@ -83,5 +83,21 @@ describe('Wind skill texts', () => {
     for (const id of ['entrench', 'godspeed', 'strong-bow', 'fantasy', 'refusing-death', 'lightning-strike', 'dark-magic']) expect(abilityHint(id)).toEqual(expect.any(String));
     expect(selectionText('fantasy')).toEqual({ prompt: 'Choose a heart card to discard', confirm: 'Discard' });
     expect(selectionText('godspeed')).toEqual({ prompt: 'Choose an Equipment card to discard', confirm: 'Discard' });
+  });
+});
+
+describe('Mountain texts', () => {
+  it('names a hint for each skill the player is asked about', () => {
+    for (const id of ['clever-change', 'military-farm', 'decentralization', 'stubborn', 'lament', 'incarnation', 'instigate', 'direct-instruction']) expect(abilityHint(id)).toBeTruthy();
+  });
+
+  it('words the skills’ selections, seat picks and choices', () => {
+    expect(selectionText('clever-change')?.confirm).toBe('Discard');
+    expect(selectionText('pleasure')?.cancel).toBe('Give Up');
+    expect(stepSelectionText('draw-take')?.prompt).toBe('Choose up to 2 seats to take a hand card from');
+    expect(stepSelectionText('move-card')?.prompt).toBe('Choose a seat to move a card from');
+    expect(seatPickText('clever-change')).toBe('Choose a seat to move the card to');
+    expect(choicePromptText('incarnation')).toBe('Choose a Form skill');
+    expect(choicePromptText('stubborn')).toBe('Choose a card to give back; you take the others');
   });
 });

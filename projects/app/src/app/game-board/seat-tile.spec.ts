@@ -21,7 +21,7 @@ function makeSeat(overrides: Partial<Seat> = {}): Seat {
   };
 }
 
-function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[]; judgment?: CardInstance[]; judgmentCountsAs?: Record<string, string>; pile?: CardInstance[]; dying?: boolean } = {}) {
+function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwner?: boolean; isResponding?: boolean; isViewer?: boolean; isBot?: boolean; equipment?: CardInstance[]; judgment?: CardInstance[]; judgmentCountsAs?: Record<string, string>; pile?: CardInstance[]; stash?: CardInstance[]; dying?: boolean } = {}) {
   const fixture = TestBed.createComponent(SeatTile);
   fixture.componentRef.setInput('seat', seat);
   fixture.componentRef.setInput('name', opts.name ?? 'Seat 1');
@@ -34,6 +34,7 @@ function render(seat: Seat, opts: { name?: string; handCount?: number; isTurnOwn
   fixture.componentRef.setInput('judgment', opts.judgment ?? []);
   if (opts.judgmentCountsAs) fixture.componentRef.setInput('judgmentCountsAs', opts.judgmentCountsAs);
   if (opts.pile) fixture.componentRef.setInput('pile', opts.pile);
+  if (opts.stash) fixture.componentRef.setInput('stash', opts.stash);
   if (opts.dying !== undefined) fixture.componentRef.setInput('dying', opts.dying);
   fixture.detectChanges();
   return fixture.nativeElement as HTMLElement;
@@ -56,6 +57,19 @@ describe('SeatTile', () => {
     const el = render(makeSeat(), { pile: [{ instanceId: 'p1', definitionId: 'sha', suit: 'spade', rank: 7 }, { instanceId: 'p2', definitionId: 'shan', suit: 'heart', rank: 2 }] });
     expect(el.querySelectorAll('[aria-label="Under General"] app-playing-card')).toHaveLength(2);
   });
+
+  it('shows the Farms under the General, face up', () => {
+    const el = render(makeSeat(), { stash: [{ instanceId: 'f1', definitionId: 'shan', suit: 'spade', rank: 3 }] });
+    expect(el.querySelectorAll('[aria-label="Farms"] app-playing-card')).toHaveLength(1);
+  });
+
+  it('shows the chosen Form and a silenced seat', () => {
+    const forms = { slot: 'main' as const, held: ['hidden'], chosen: { generalId: 'zhou-yu', skillId: 'brave-gesture' } };
+    expect(render(makeSeat({ forms }), {}).querySelector('.form-badge')?.textContent?.trim()).toBe('Form: Zhou Yu');
+    expect(render(makeSeat({ silenced: true }), {}).querySelector('.silenced-badge')?.textContent?.trim()).toBe('No Skills');
+    expect(render(makeSeat(), {}).querySelector('.silenced-badge')).toBeNull();
+  });
+
 
   it('names a Judgment slot card placed as another card', () => {
     const el = render(makeSeat(), { judgment: [{ instanceId: 'dm', definitionId: 'shan', suit: 'diamond', rank: 3 }], judgmentCountsAs: { dm: 'capture' } });

@@ -81,6 +81,14 @@ const ABILITY_HINTS: Record<string, string> = {
   'intense-edge': 'Compete with {target}; if you win, take one of its cards',
   'brave-spirit': 'A seat of your choice draws and discards cards',
   charity: 'Draw 2 more cards; with more than 5, give half to the seat with the fewest',
+  'clever-change': 'Discard a hand card to skip this phase',
+  'military-farm': 'Judge: a card that is not a heart becomes a Farm under your General',
+  decentralization: 'Skip your Play Phase; at the end of your turn another seat takes an extra turn',
+  stubborn: 'Give one of the discarded cards back and take the rest',
+  lament: 'Discard a card: {target} judges, and a heart, diamond, club or spade has its effect',
+  incarnation: 'Choose a skill of one of your Forms',
+  instigate: 'Choose a seat to play a Sha at you, or you discard one of its cards',
+  'direct-instruction': "Place an Equipment card from your hand in another seat's empty slot, then draw 1 card",
 };
 
 export function abilityHint(abilityId: string): string | null {
@@ -110,6 +118,12 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   alliance: { prompt: 'Choose a seat to swap hands', confirm: 'Choose' },
   'brave-spirit': { prompt: 'Choose cards to discard', confirm: 'Discard' },
   charity: { prompt: 'Choose half of your hand to give away', confirm: 'Give' },
+  'clever-change': { prompt: 'Choose a hand card to discard to skip the phase', confirm: 'Discard' },
+  pleasure: { prompt: 'Choose a Basic card to discard, or the Sha has no effect', confirm: 'Discard', cancel: 'Give Up' },
+  decentralization: { prompt: 'Choose a hand card to discard', confirm: 'Discard' },
+  lament: { prompt: 'Choose cards to discard', confirm: 'Discard' },
+  'direct-instruction': { prompt: 'Choose an Equipment card to place', confirm: 'Place' },
+  instigate: { prompt: 'Choose a seat to play a Sha at you', confirm: 'Choose' },
 };
 
 export function selectionText(abilityId: string): { prompt: string; confirm: string; cancel?: string } | null {
@@ -123,6 +137,9 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   exile: 'Choose a seat to turn over',
   'brave-spirit': 'Choose a seat to draw and discard cards',
   alliance: 'Choose a seat to swap hands with {target}',
+  'clever-change': 'Choose a seat to move the card to',
+  decentralization: 'Choose a seat to take an extra turn',
+  'direct-instruction': 'Choose a seat to place the card in',
 };
 
 export function seatPickText(abilityId: string): string | null {
@@ -134,6 +151,10 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
   upheaval: 'Choose a seat to play a Sha at, or pass',
   collapse: 'Choose how Collapse costs you',
   'brave-spirit': 'Choose how to draw and discard',
+  'clever-change': 'Choose a card to move',
+  'follow-the-master': 'Choose how Follow the Master helps you',
+  incarnation: 'Choose a Form skill',
+  stubborn: 'Choose a card to give back; you take the others',
 };
 
 export function choicePromptText(abilityId: string): string | null {
@@ -148,6 +169,8 @@ const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; can
   'blaze-shown': { prompt: 'Choose a hand card to show', confirm: 'Show' },
   'blaze-hit': { prompt: 'Discard a card of the same suit to deal 1 damage', confirm: 'Discard' },
   pay: { prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' },
+  'draw-take': { prompt: 'Choose up to 2 seats to take a hand card from', confirm: 'Take' },
+  'move-card': { prompt: 'Choose a seat to move a card from', confirm: 'Choose' },
 };
 
 export function stepSelectionText(step: string): { prompt: string; confirm: string; cancel?: string } | null {
