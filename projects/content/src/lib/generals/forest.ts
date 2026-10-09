@@ -394,7 +394,12 @@ export const curtain: SkillDefinition = {
   modifiers: { untargetableByBlackTools: true },
   triggers: [
     on<ToolOnTarget>('before:ToolOnTargetEffect', {
-      condition: (_state, effect, owner) => effect.target.kind === 'seat' && effect.target.seatId === owner.seatId && effect.userSeatId !== owner.seatId && effect.tool.colour === 'black',
+      // The colour the user's own suits make it (Beauty), as the seat lists read it.
+      condition: (state, effect, owner, registry) => {
+        if (effect.target.kind !== 'seat' || effect.target.seatId !== owner.seatId || effect.userSeatId === owner.seatId) return false;
+        const first = effect.tool.physical[0];
+        return (first ? colourFor(state, effect.userSeatId, first, registry) : effect.tool.colour) === 'black';
+      },
       effect: () => [],
     }),
   ],
@@ -416,7 +421,6 @@ export const upheaval: SkillDefinition = {
       isLiving(state, seatId) && !state.seats.find((s) => s.id === seatId)?.marks?.[UPHEAVAL_MARK] && otherLivingSeatIds(state, seatId).length > 0,
     start: (state, { seatId, owner }) => [
       { kind: 'IncrementEffect', scope: 'seat', seatId, key: UPHEAVAL_MARK, by: 1 },
-      used(owner, 'used'),
       skillStep(owner, 'next', { left: otherLivingSeatIds(state, seatId) }),
     ],
   },

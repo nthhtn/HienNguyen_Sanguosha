@@ -119,6 +119,13 @@ describe('Jia Xu — Curtain', () => {
     expect(hp(s, 'seat-a')).toBe(4);
   });
 
+  it('a Tool that counts as red through Beauty is not black: it is offered and takes effect', () => {
+    const t = table({ 'seat-b:hand': [card('bl', 'duel', 'spade', 5)] }, { owner: 'seat-b', generals: { ...at('seat-a', 'jia-xu'), ...at('seat-b', 'xiao-qiao') } });
+    expect(h.legal(t, 'seat-b').some((a) => a.kind === 'PlayCardAction' && a.targets[0]?.seatId === 'seat-a')).toBe(true);
+    const s = h.play(t, 'bl', 'seat-a');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a' }); // the Duel went ahead
+  });
+
   it('a hidden Jia Xu is hit', () => {
     let s = h.play(table({ 'seat-b:hand': [card('bb', 'barbarians', 'spade', 7)] }, { owner: 'seat-b', generals: at('seat-a', 'jia-xu', 'filler-jiang-wei', false) }), 'bb');
     const asked: string[] = [];
@@ -138,6 +145,7 @@ describe('Jia Xu — Upheaval', () => {
     expect(s.pendingChoice).toMatchObject({ seatId: 'seat-b' });
     expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-c', 'seat-a', 'pass']); // turn order after seat-b
     expect(s.seats[0].marks).toEqual({ 'upheaval-used': 1 });
+    expect(s.log.filter((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === 'upheaval' && e.outcome === 'used')).toHaveLength(1);
   });
 
   it('a seat that plays a Sha at the seat it picked: answered like any Sha, then the next seat is asked', () => {
