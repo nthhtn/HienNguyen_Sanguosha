@@ -52,6 +52,8 @@ function dealCandidates(seatIds: string[], registry: ContentRegistry, rng: RngSt
 // with their expansion) stay out until expansions can be switched on.
 function buildDeckSpec(registry: ContentRegistry) {
   return [...registry.cards.keys()].flatMap((cardId) => {
+    // Made only by a skill (Blaze): never dealt.
+    if (registry.cards.get(cardId)?.outOfDeck) return [];
     const all = Object.prototype.hasOwnProperty.call(cardsData, cardId) ? cardsData[cardId].printings ?? [] : [];
     const printings = all.filter((p) => !p.expansion);
     // A card with no printings would silently never be dealt.

@@ -1,18 +1,18 @@
 import type { CardDefinition, Effect, GameState, Target, UsedCard } from 'engine';
 import { livingSeatOrderFrom, usedCardKey } from 'engine';
-import { attackRange, otherLivingSeatTargets, seatDistance, shaLimit } from '../shared/queries';
+import { handOf, SHA_FLAGS, shaFlag, shaLimit } from '../shared/queries';
+import { shaTargetIds } from '../shared/shaRules';
+import { activeAbilities } from '../shared/abilities';
 import { CardStep, cardStep } from '../shared/steps';
-import { answersNeededAgainst, untargetableBy } from '../shared/abilities';
+import { answersNeededAgainst } from '../shared/abilities';
 import { WINE_FLAG } from './wine';
 
 // What a Sha's steps carry. `extra`: damage added to a hit (Wine, Ancient
-// Scimitar). `lastHandCard`: played as its user's last hand card (Sky
-// Scorcher). `picked`: extra targets chosen at 'sha-use'. `needed`/`provided`:
+// Scimitar). `picked`: the other targets chosen with the first. `needed`/`provided`:
 // Shan asked for and given so far. `unblockable`: no Shan is asked for (Iron
 // Cavalry). `acted`: abilities that had their say.
 export interface ShaStepData {
   extra?: number;
-  lastHandCard?: boolean;
   picked?: string[];
   needed?: number;
   provided?: number;
@@ -71,6 +71,11 @@ function shanWindow(step: CardStep): Effect {
 
 const isLiving = (state: GameState, seatId: string) => state.seats.some((s) => s.id === seatId && !s.eliminated);
 
+// Whether `seatId` may play a Sha now: under its limit, and not barred this
+// turn (a lost Heaven's Justice).
+const shaPlayable = (state: GameState, seatId: string, registry: Parameters<typeof shaLimit>[2]) =>
+  !shaFlag(state, seatId, SHA_FLAGS.none) && (state.turn.cardPlays?.['sha'] ?? 0) < shaLimit(state, seatId, registry);
+
 // Sha: see the Sha-Equipment spec's steps. Played in the Play Phase it counts
 // toward the limit and spends Wine at once, whatever its steps bring.
 export const shaCard: CardDefinition = {
@@ -78,21 +83,30 @@ export const shaCard: CardDefinition = {
   name: 'Sha',
   category: 'basic',
   legalPlayTargets: (state, ctx, registry) => {
-    if ((state.turn.cardPlays?.['sha'] ?? 0) >= shaLimit(state, ctx.seatId, registry)) return [];
-    const range = attackRange(state, ctx.seatId, registry);
-    return otherLivingSeatTargets(state, ctx.seatId).filter(
-      ([target]) => target.kind === 'seat' && seatDistance(state, ctx.seatId, target.seatId, registry) <= range && !untargetableBy(state, target.seatId, 'sha', registry)
-    );
+    if (!shaPlayable(state, ctx.seatId, registry)) return [];
+    return shaTargetIds(state, ctx.seatId, registry).map((seatId) => [{ kind: 'seat' as const, seatId }]);
+  },
+  // Several targets at once (stage 9 spec, "Several equal targets"): Sky
+  // Scorcher's +2 when it is the user's last hand card (for a conversion: hand
+  // cards alone, and all of them), +1 after a won Heaven's Justice. Null when
+  // only one target is allowed.
+  targetPick: (state, ctx, registry) => {
+    if (!shaPlayable(state, ctx.seatId, registry)) return null;
+    const hand = handOf(state, ctx.seatId);
+    const lastCard = ctx.via ? ctx.via.fromHandOnly && hand.length === ctx.via.cards : hand.length === 1 && hand[0].instanceId === ctx.cardInstanceId;
+    const scorcher = lastCard ? Math.max(0, ...activeAbilities(state, ctx.seatId, registry).map((a) => a.modifiers?.extraShaTargetsWhenLastCard ?? 0)) : 0;
+    const extra = shaFlag(state, ctx.seatId, SHA_FLAGS.extraTarget) ? 1 : 0;
+    const eligibleIds = shaTargetIds(state, ctx.seatId, registry);
+    const max = Math.min(1 + scorcher + extra, eligibleIds.length);
+    return max > 1 ? { eligibleIds, min: 1, max } : null;
   },
   play: (state, ctx) => {
     if (ctx.respondingTo) return []; // played as an answer (a Duel, Barbarians, Coerce): the window decides what it does
     if (ctx.targets.length === 0) return []; // no target chosen: a no-op rather than a crash
     const boosted = !ctx.free && !!state.turn.flags?.[WINE_FLAG];
     const spend: Effect[] = boosted ? [{ kind: 'SetTurnFlagEffect', flag: WINE_FLAG, value: false }] : [];
-    // Still in hand while play() runs: is it all that's left there?
-    const hand = state.zones.find((z) => z.kind === 'hand' && z.ownerSeatId === ctx.seatId)?.cards ?? [];
-    const lastHandCard = !ctx.free && hand.length > 0 && hand.every((c) => ctx.card.physical.some((p) => p.instanceId === c.instanceId));
-    return [...spend, cardStep('sha-use', ctx.card, ctx.seatId, ctx.targets[0], { extra: boosted ? 1 : 0, ...(lastHandCard ? { lastHandCard: true } : {}) })];
+    const picked = ctx.targets.slice(1).map((t) => t.seatId);
+    return [...spend, cardStep('sha-use', ctx.card, ctx.seatId, ctx.targets[0], { extra: boosted ? 1 : 0, ...(picked.length > 0 ? { picked } : {}) })];
   },
   onStep: (state, step, registry) => {
     const data = shaData(step);

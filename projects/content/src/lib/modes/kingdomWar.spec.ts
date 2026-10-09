@@ -115,6 +115,7 @@ describe('Kingdom War setup and deal', () => {
         .map((c) => `${c.definitionId} ${c.suit} ${c.rank}`)
         .sort();
     const printed = [...registry.cards.keys()]
+      .filter((id) => !registry.cards.get(id)!.outOfDeck) // Blaze: made only by Fire Strategy
       .flatMap((id) => cardsData[id].printings!.filter((p) => !p.expansion).map((p) => `${id} ${p.suit} ${p.rank}`))
       .sort();
     expect(deckOf(2)).toEqual(printed);
