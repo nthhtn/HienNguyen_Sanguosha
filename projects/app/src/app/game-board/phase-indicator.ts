@@ -1,5 +1,5 @@
 import { Component, computed, input } from '@angular/core';
-import { GameState, cardsOverHandLimit } from 'engine';
+import { GameState, discardOwed } from 'engine';
 import { forceOf, seatName } from '../labels';
 import { DecisionCountdown } from './decision-countdown';
 
@@ -60,6 +60,6 @@ export class PhaseIndicator {
   protected readonly isViewersTurn = computed(() => this.state().turn.ownerSeatId === this.viewerSeatId());
   protected readonly discardsLeft = computed(() => {
     const state = this.state();
-    return state.phase === 'Discard' ? cardsOverHandLimit(state, state.turn.ownerSeatId) : 0;
+    return state.phase === 'Discard' ? discardOwed(state, state.turn.ownerSeatId) : 0;
   });
 }

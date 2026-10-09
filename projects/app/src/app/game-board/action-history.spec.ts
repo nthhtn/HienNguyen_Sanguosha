@@ -7,6 +7,7 @@ const zones: CardZone[] = [
   ...['seat-0', 'seat-1'].flatMap((id) => [
     { id: `${id}:hand`, kind: 'hand' as const, ownerSeatId: id, cards: [] },
     { id: `${id}:equip`, kind: 'equip' as const, ownerSeatId: id, cards: [] },
+    { id: `${id}:pile`, kind: 'pile' as const, ownerSeatId: id, cards: [] },
   ]),
 ];
 
@@ -477,5 +478,33 @@ describe('actionHistory: the base Generals’ skills', () => {
       { kind: 'CardMovedEvent', cardInstanceId: 'x', fromZoneId: 'seat-1:hand', toZoneId: 'seat-0:hand' },
     ];
     expect(texts(took)).toEqual(['Seat 0 took a hand card from Seat 1 with Feedback']);
+  });
+});
+
+describe('actionHistory: the Wind skills', () => {
+  const general = (seatId: string, skillId: string) => ({ kind: 'general' as const, seatId, slot: 'main' as const, skillId });
+  const used = (seatId: string, skillId: string, outcome: string): EngineEvent => ({ kind: 'AbilityUsedEvent', owner: general(seatId, skillId), abilityId: skillId, outcome });
+
+  it('turning face down and up', () => {
+    expect(texts([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: true }])).toEqual(['Seat 0 turned face down']);
+    expect(texts([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: false, passedTurn: true }])).toEqual(['Seat 0 turned face up and passed the turn']);
+  });
+
+  it('Refusing Death', () => {
+    expect(texts([move(sha, 'drawPile', 'seat-0:pile')])).toEqual(['Seat 0 put Sha (7 ♠) under their General']);
+    expect(texts([used('seat-0', 'refusing-death', 'stays-alive')])).toEqual(["Seat 0's Refusing Death: no match, Seat 0 stays alive"]);
+    expect(texts([used('seat-0', 'refusing-death', 'matched')])).toEqual(["Seat 0's Refusing Death: a rank matched"]);
+  });
+
+  it('Bewilder', () => {
+    const answer = (text: string): EngineEvent => ({
+      kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'pick', shows: { kind: 'label', text },
+      reason: { kind: 'ability', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', cardId: 'sha' },
+    });
+    expect(texts([answer('Doubt')])).toEqual(["Seat 0 doubted Seat 1's Sha"]);
+    expect(texts([answer('Believe')])).toEqual(["Seat 0 believed Seat 1's Sha"]);
+    expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-true', cardId: 'sha' }])).toEqual(["Seat 1's Sha was true"]);
+    expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-false', cardId: 'sha' }])).toEqual(["Seat 1's Sha was a bluff"]);
+    expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-believed', cardId: 'sha' }])).toEqual([]);
   });
 });

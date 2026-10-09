@@ -43,6 +43,12 @@ describe('PhaseIndicator', () => {
     expect(render(state('Discard', 6, 4), 'seat-0')).toBe('Seat 0 (you) – Discard Phase – discard 2 more');
   });
 
+  it('counts what the engine still owes, not the whole excess (final review #7)', () => {
+    // 6 cards at 4 HP, but only 1 discard is still owed this phase (a card was drawn mid-phase).
+    const owing = state('Discard', 6, 4);
+    expect(render({ ...owing, turn: { ...owing.turn, discardsLeft: 1 } }, 'seat-0')).toBe('Seat 0 (you) – Discard Phase – discard 1 more');
+  });
+
   it('names every phase the same way', () => {
     for (const phase of ['Start', 'Judgment', 'Draw', 'End'] as const) {
       expect(render(state(phase), null)).toBe(`Seat 0 – ${phase} Phase`);

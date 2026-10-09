@@ -165,12 +165,12 @@ export function conversionsOf(state: GameState, seatId: string, registry: Conten
 
 // The cards `seatId` could use for `conversion`: its hand, then its worn
 // equipment when the conversion allows, that the conversion accepts.
-export function conversionCards(state: GameState, seatId: string, conversion: Conversion): CardInstance[] {
+export function conversionCards(state: GameState, seatId: string, conversion: Conversion, registry: ContentRegistry): CardInstance[] {
   const seat = state.seats.find((s) => s.id === seatId);
   if (!seat) return [];
   const cardsIn = (zoneId: string) => state.zones.find((z) => z.id === zoneId)?.cards ?? [];
   const pool = [...cardsIn(seat.hand.zoneId), ...(conversion.from === 'hand-and-equipment' ? cardsIn(seat.equipped.zoneId) : [])];
-  return conversion.accepts ? pool.filter((c) => conversion.accepts!(c)) : pool;
+  return conversion.accepts ? pool.filter((c) => conversion.accepts!(c, state, seatId, registry)) : pool;
 }
 
 // The cards `seatId` may use for `conversion` in a play at `targets`: those
@@ -178,23 +178,34 @@ export function conversionCards(state: GameState, seatId: string, conversion: Co
 // play needs can't be the card used).
 export function playConversionCards(state: GameState, seatId: string, conversion: Conversion, targets: Target[], registry: ContentRegistry): CardInstance[] {
   const wanted = JSON.stringify(targets);
-  return conversionCards(state, seatId, conversion).filter((card) => {
+  return conversionCards(state, seatId, conversion, registry).filter((card) => {
     const without: GameState = { ...state, zones: state.zones.map((z) => ({ ...z, cards: z.cards.filter((c) => c.instanceId !== card.instanceId) })) };
     return legalTargetListsFor(without, seatId, '', conversion.as, registry).some((t) => JSON.stringify(t) === wanted);
   });
 }
 
 // Whether `owned` can be used now: enough cards, and not barred by whose turn it is.
-function usableNow(state: GameState, seatId: string, owned: OwnedConversion): boolean {
+function usableNow(state: GameState, seatId: string, owned: OwnedConversion, registry: ContentRegistry): boolean {
   if (owned.conversion.outsideOwnTurnOnly && state.turn.ownerSeatId === seatId) return false;
-  return conversionCards(state, seatId, owned.conversion).length >= owned.conversion.cards;
+  return conversionCards(state, seatId, owned.conversion, registry).length >= owned.conversion.cards;
 }
 
 // The conversions `seatId` could answer with, in a window that allows
-// `allowedCardIds` (absent: any card).
-export function answeringConversions(state: GameState, seatId: string, allowedCardIds: string[] | undefined, registry: ContentRegistry): OwnedConversion[] {
+// `allowedCardIds` (absent: any card). `revealedOnly`: leave out a hidden
+// General's, for deciding whom to ask at all (being asked would give it away).
+export function answeringConversions(
+  state: GameState,
+  seatId: string,
+  allowedCardIds: string[] | undefined,
+  registry: ContentRegistry,
+  { revealedOnly = false }: { revealedOnly?: boolean } = {}
+): OwnedConversion[] {
   return conversionsOf(state, seatId, registry).filter(
-    (o) => o.conversion.when !== 'play' && (!allowedCardIds || allowedCardIds.includes(o.conversion.as)) && usableNow(state, seatId, o)
+    (o) =>
+      (!revealedOnly || !o.needsReveal) &&
+      o.conversion.when !== 'play' &&
+      (!allowedCardIds || allowedCardIds.includes(o.conversion.as)) &&
+      usableNow(state, seatId, o, registry)
   );
 }
 
@@ -215,7 +226,7 @@ export function conversionActions(state: GameState, seatId: string, registry: Co
   }
   if (state.phase !== 'Play' || state.turn.ownerSeatId !== seatId) return [];
   return conversionsOf(state, seatId, registry)
-    .filter((o) => o.conversion.when !== 'respond' && usableNow(state, seatId, o))
+    .filter((o) => o.conversion.when !== 'respond' && usableNow(state, seatId, o, registry))
     .flatMap((o) =>
       legalTargetListsFor(state, seatId, '', o.conversion.as, registry)
         .filter((targets) => playConversionCards(state, seatId, o.conversion, targets, registry).length >= o.conversion.cards)

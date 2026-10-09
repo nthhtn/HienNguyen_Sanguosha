@@ -141,6 +141,15 @@ export interface JudgmentEvent {
   card: CardInstance;
 }
 
+// A seat turned face down, or face up again; `passedTurn`: it turned face up
+// instead of taking its turn.
+export interface SeatTurnedEvent {
+  kind: 'SeatTurnedEvent';
+  seatId: string;
+  faceDown: boolean;
+  passedTurn?: true;
+}
+
 // A card shown to every seat (Sow Revolt's taken card): its face is public.
 export interface CardShownEvent {
   kind: 'CardShownEvent';
@@ -168,6 +177,8 @@ export interface AbilityUsedEvent {
   abilityId: string;
   outcome: string;
   targetSeatId?: string;
+  // The card it was about (Bewilder's claim).
+  cardId?: string;
 }
 
 // A seat made a selection. Card ids name no face (a hand card stays hidden
@@ -201,6 +212,7 @@ export type EngineEvent =
   | JudgmentEvent
   | JudgmentChangedEvent
   | CardShownEvent
+  | SeatTurnedEvent
   | ArrangementMadeEvent
   | AbilityUsedEvent
   | SelectionMadeEvent;

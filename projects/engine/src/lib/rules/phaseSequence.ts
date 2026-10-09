@@ -7,7 +7,8 @@ export const PHASE_ORDER: readonly Phase[] = ['Start', 'Judgment', 'Draw', 'Play
 // Play, and in Discard while they are over their hand limit. Every other phase
 // passes on its own once its entry triggers have resolved.
 export function phaseWaitsForPlayer(state: GameState): boolean {
-  if (state.phase === 'Play') return true;
+  // A Play Phase flagged to end (Godspeed, endFlagOf) stops waiting at once.
+  if (state.phase === 'Play') return !state.turn.flags?.[endFlagOf('Play')];
   if (state.phase === 'Discard') return discardOwed(state, state.turn.ownerSeatId) > 0;
   return false;
 }
@@ -17,7 +18,16 @@ export function phaseWaitsForPlayer(state: GameState): boolean {
 // as the phase began, Self-Restraint), which then ends at once.
 export function discardOwed(state: GameState, seatId: string): number {
   if (seatId === state.turn.ownerSeatId && state.turn.flags?.[skipFlagOf('Discard')]) return 0;
-  return cardsOverHandLimit(state, seatId);
+  const over = cardsOverHandLimit(state, seatId);
+  const left = seatId === state.turn.ownerSeatId ? state.turn.discardsLeft : undefined;
+  return left === undefined ? over : Math.min(over, left);
+}
+
+// The turn flag that ends `phase` while it runs, once nothing is left to
+// resolve (Godspeed skipping a Play Phase already entered). A skip flag set
+// before the phase (Capture) doesn't end it: the phase is skipped on entry.
+export function endFlagOf(phase: Phase): string {
+  return `end${phase}`;
 }
 
 // The turn flag that makes the turn owner skip `phase` (e.g. 'skipPlay').

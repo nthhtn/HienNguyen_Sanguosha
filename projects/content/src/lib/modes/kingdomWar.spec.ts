@@ -1,3 +1,4 @@
+import { table, kwMode } from '../generals/skills.testing';
 import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT, MAX_KINGDOM_WAR_SEATS } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
@@ -169,13 +170,13 @@ describe('Kingdom War setup and deal', () => {
       ...state,
       generalSelection: {
         candidates: {
-          'seat-a': ['cao-ren', 'xiahou-yuan', 'wei-yan', 'zhang-zhao-and-zhang-hong', 'yuan-shao'],
-          'seat-b': ['xun-yu', 'cao-pi', 'meng-huo', 'zhou-tai', 'jia-xu'],
+          'seat-a': ['xu-huang', 'zhang-he', 'meng-huo', 'zhang-zhao-and-zhang-hong', 'yuan-shao'],
+          'seat-b': ['xun-yu', 'cao-pi', 'meng-huo', 'sun-ce', 'jia-xu'],
         },
       },
     };
     const ctx = { registry, mode: kingdomWarMode };
-    const afterA = resolve(allWei, { kind: 'ChooseGeneralsAction', seatId: 'seat-a', mainId: 'cao-ren', deputyId: 'xiahou-yuan' }, ctx).state;
+    const afterA = resolve(allWei, { kind: 'ChooseGeneralsAction', seatId: 'seat-a', mainId: 'xu-huang', deputyId: 'zhang-he' }, ctx).state;
     expect(afterA.result).toBeNull();
     const afterB = resolve(afterA, { kind: 'ChooseGeneralsAction', seatId: 'seat-b', mainId: 'xun-yu', deputyId: 'cao-pi' }, ctx).state;
     expect(afterB.result).toEqual({ endedAt: 1, winningKingdom: 'Wei', winningSeatIds: ['seat-a', 'seat-b'], losingSeatIds: [] });
@@ -200,7 +201,7 @@ describe('Kingdom War forced reveal, dying and elimination', () => {
     // Added after the deal: it has no printings, so it never goes in the deck.
     const card = hit(amount);
     registry.cards.set(card.id, card);
-    const base = seated(created, registry, { 'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'] });
+    const base = seated(created, registry, { 'seat-a': ['xu-huang', 'zhang-he'], 'seat-b': ['jiang-wei', 'meng-huo'] });
     const state: GameState = {
       ...base,
       phase: 'Play',
@@ -257,7 +258,7 @@ describe('Kingdom War win condition', () => {
 
   it('returns a real draw result — not null — when every seat is eliminated at once', () => {
     const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3), registry, {
-      'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'],
+      'seat-a': ['xu-huang', 'zhang-he'], 'seat-b': ['jiang-wei', 'meng-huo'],
     });
     const allEliminated: GameState = {
       ...created,
@@ -272,7 +273,7 @@ describe('Kingdom War win condition', () => {
 
   it('still returns null while more than one kingdom is alive', () => {
     const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3), registry, {
-      'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'],
+      'seat-a': ['xu-huang', 'zhang-he'], 'seat-b': ['jiang-wei', 'meng-huo'],
     });
     expect(kingdomWarMode.checkWinCondition(created)).toBeNull();
   });
@@ -284,7 +285,7 @@ describe('Kingdom War per-turn draw', () => {
   it('draws 2 cards for whichever seat enters the Draw phase', () => {
     // cao-ren and xiahou-yuan have no skills, isolating the mode-level draw.
     const state = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, {
-      'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'],
+      'seat-a': ['xu-huang', 'zhang-he'], 'seat-b': ['jiang-wei', 'meng-huo'],
     });
     const handBefore = state.zones.find((z) => z.id === state.seats[0].hand.zoneId)!;
     expect(handBefore.cards).toHaveLength(4);
@@ -308,7 +309,7 @@ describe('Kingdom War: losing HP', () => {
     const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
     const card: CardDefinition = { id: `test-lose-${amount}`, name: 'Test Lose', category: 'basic', play: (_s, ctx) => [{ kind: 'LoseHpEffect', seatId: ctx.targets[0].seatId, amount }] };
     registry.cards.set(card.id, card);
-    const base = seated(created, registry, { 'seat-a': ['cao-ren', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'] });
+    const base = seated(created, registry, { 'seat-a': ['xu-huang', 'zhang-he'], 'seat-b': ['jiang-wei', 'meng-huo'] });
     const state: GameState = {
       ...base,
       phase: 'Play',
@@ -358,10 +359,22 @@ describe('Kingdom War: the Draw Phase step', () => {
         }],
       }],
     });
-    const base = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, { 'seat-a': ['test-scholar', 'xiahou-yuan'], 'seat-b': ['huang-zhong', 'wei-yan'] });
+    const base = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, { 'seat-a': ['test-scholar', 'zhang-he'], 'seat-b': ['jiang-wei', 'meng-huo'] });
     const state: GameState = { ...base, seats: base.seats.map((s) => (s.id === 'seat-a' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: true } } } : s)) };
     const next = advanceToDecision(state, { registry, mode: kingdomWarMode }).state;
     const draws = next.log.flatMap((e) => (e.kind === 'CardsDrawnEvent' ? [e.cardInstanceIds.length] : []));
     expect(draws).toEqual([3]);
+  });
+});
+
+describe('Kingdom War: the dying round knows how far below 1 HP a drop went', () => {
+  it('the mode’s dying trigger sets pointsBelowOne from the drop', () => {
+    const s = table({}, { hp: { 'seat-b': -1 } });
+    const event = { kind: 'DamageDealtEvent' as const, damage: { source: null, target: { kind: 'seat' as const, seatId: 'seat-b' }, amount: 2, nature: 'normal' as const } };
+    const dying = kwMode.triggers.filter((t) => t.point === 'after:DamageDealtEvent' && t.condition(s, event)).flatMap((t) => t.effect(s, event)).find((e) => (e as { kind: string }).kind === 'DyingEffect');
+    expect(dying).toMatchObject({ kind: 'DyingEffect', seatId: 'seat-b', entering: true, pointsBelowOne: 2 });
+    const later = { ...event, damage: { ...event.damage, amount: 1 } };
+    const s2 = table({}, { hp: { 'seat-b': -2 } });
+    expect(kwMode.triggers.filter((t) => t.point === 'after:DamageDealtEvent' && t.condition(s2, later)).flatMap((t) => t.effect(s2, later)).find((e) => (e as { kind: string }).kind === 'DyingEffect')).toMatchObject({ pointsBelowOne: 1 });
   });
 });

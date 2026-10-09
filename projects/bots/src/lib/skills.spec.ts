@@ -1,70 +1,5 @@
-import { advanceToDecision, getLegalActions, redactStateForSeat, resolve } from 'engine';
-import type { Action, CardInstance, Effect, GameModeDefinition, GameState, GeneralOwner, Kingdom, PendingChoice, PendingSelection } from 'engine';
-import { buildContentRegistry } from 'content';
-import { ruleBasedPolicy } from './rule-based';
-
-const registry = buildContentRegistry();
-const mode: GameModeDefinition = { id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
-const ctx = { registry, mode };
-const card = (instanceId: string, definitionId: string, suit: CardInstance['suit'] = 'spade', rank = 7): CardInstance => ({ instanceId, definitionId, suit, rank });
-
-interface Options {
-  generals?: Record<string, [string, string, boolean?]>;
-  kingdoms?: Record<string, Kingdom>;
-  hp?: Record<string, number>;
-  maxHp?: Record<string, number>;
-  owner?: string;
-}
-// Four seats (Wei, Shu, Wu, Qun by default) at 4/4 HP, all Generals revealed; seat-a's Play Phase.
-function table(cards: Record<string, CardInstance[]> = {}, o: Options = {}): GameState {
-  const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d'];
-  const kingdoms: Kingdom[] = ['Wei', 'Shu', 'Wu', 'Qun'];
-  return {
-    seats: ids.map((id, index) => {
-      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['cao-ren', 'dong-zhuo'];
-      return {
-        id, index, kingdom: o.kingdoms?.[id] ?? kingdoms[index], eliminated: false,
-        generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },
-        combinedHp: o.hp?.[id] ?? 4, maxCombinedHp: o.maxHp?.[id] ?? 4,
-        hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
-      };
-    }),
-    players: [], turn: { turnNumber: 1, ownerSeatId: o.owner ?? 'seat-a', extraTurnStack: [] }, phase: 'Play',
-    zones: [
-      { id: 'drawPile', kind: 'drawPile', cards: cards['drawPile'] ?? [] },
-      { id: 'discardPile', kind: 'discardPile', cards: [] },
-      { id: 'processing', kind: 'processing', cards: cards['processing'] ?? [] },
-      ...ids.flatMap((id) => [
-        { id: `${id}:hand`, kind: 'hand' as const, ownerSeatId: id, cards: cards[`${id}:hand`] ?? [] },
-        { id: `${id}:equip`, kind: 'equip' as const, ownerSeatId: id, cards: cards[`${id}:equip`] ?? [] },
-        { id: `${id}:judgment`, kind: 'judgment' as const, ownerSeatId: id, cards: [] },
-      ]),
-    ],
-    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
-  };
-}
-
-const actor = (s: GameState) => s.pendingChoice?.seatId ?? s.pendingSelection?.seatId ?? s.pendingResponse?.respondingSeatId ?? s.turn.ownerSeatId;
-const decide = (s: GameState): Action => {
-  const seatId = actor(s);
-  return ruleBasedPolicy.decide(redactStateForSeat(s, seatId), seatId, getLegalActions(s, seatId, registry), registry, null).action;
-};
-const act = (s: GameState, action: Action) => resolve(s, action, ctx).state;
-const general = (seatId: string, skillId: string): GeneralOwner => ({ kind: 'general', seatId, slot: 'main', skillId });
-// An ask of `skillId` for seat-a, about `targetSeatId`; Don't queues `otherwise`.
-const asking = (s: GameState, skillId: string, targetSeatId?: string, otherwise: Effect[] = []): GameState => {
-  const choice: PendingChoice = {
-    id: 'ask', seatId: 'seat-a', verb: 'use',
-    reason: { kind: 'ability', owner: general('seat-a', skillId), abilityId: skillId, ...(targetSeatId ? { targetSeatId } : {}) },
-    options: [{ id: 'use', shows: { kind: 'use' }, effects: [] }, { id: 'decline', shows: { kind: 'decline' }, effects: otherwise }],
-  };
-  return { ...s, pendingChoice: choice };
-};
-const picked = (a: Action) => (a.kind === 'ChooseOptionAction' ? a.optionId : a.kind === 'SelectAction' ? a.ids : a.kind);
-const useSkill = (s: GameState, skillId: string) => {
-  const action = getLegalActions(s, 'seat-a', registry).find((a) => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.skillId === skillId)!;
-  return act(s, action);
-};
+import type { CardInstance, Effect, GameState, PendingSelection } from 'engine';
+import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
 
 describe('may-skills the bot always uses', () => {
   it.each(['evil-hero', 'feedback', 'heavens-envy', 'bestowed-rouse', 'gathering-wisdom', 'brave-gesture', 'self-restraint', 'river-goddess', 'iron-cavalry', 'astrology'])('%s', (skillId) => {
@@ -148,7 +83,7 @@ describe('active skills in the Play Phase', () => {
 
   it('Kindness gives the cards above 3 to a revealed ally', () => {
     const hand = ['k1', 'k2', 'k3', 'k4', 'k5'].map((id) => card(id, 'shan'));
-    const s = table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['liu-bei', 'wei-yan'], 'seat-b': ['huang-zhong', 'jiang-wei'] }, kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Shu' } });
+    const s = table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['liu-bei', 'meng-huo'], 'seat-b': ['jiang-wei', 'liu-shan'] }, kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Shu' } });
     expect(decide(s)).toMatchObject({ kind: 'UseSkillAction', owner: { skillId: 'kindness' } });
     const selecting = useSkill(s, 'kindness');
     expect(picked(decide(selecting))).toHaveLength(2);
@@ -210,13 +145,13 @@ describe('Sow Revolt’s suit', () => {
 
 describe('conversions', () => {
   it('Fighting Saint as a Sha when no real Sha is in hand, never spending a Peach', () => {
-    const guanYu = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['guan-yu', 'wei-yan'] }, kingdoms: { 'seat-a': 'Shu' } });
+    const guanYu = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['guan-yu', 'meng-huo'] }, kingdoms: { 'seat-a': 'Shu' } });
     expect(decide(guanYu([card('h', 'shan', 'heart')]))).toMatchObject({ kind: 'UseConversionAction', via: { conversionId: 'fighting-saint' } });
     expect(decide(guanYu([card('p', 'peach', 'heart')])).kind).toBe('EndPhaseAction');
   });
 
   it('a hidden General’s conversion only when the bot may reveal', () => {
-    const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'wei-yan', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
+    const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'meng-huo', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
     expect(decide(hidden).kind).toBe('EndPhaseAction');
   });
 });

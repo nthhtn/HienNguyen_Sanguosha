@@ -1,5 +1,6 @@
 import type { Effect } from 'engine';
-import { colourOf, usedCardOf } from 'engine';
+import { usedCardOf } from 'engine';
+import { colourFor } from '../../shared/suits';
 import { makeEquipmentCard } from './index';
 import { CardStep, actedOn, askAtStep, atStep } from '../../shared/steps';
 import { shaIgnoresArmor } from '../../shared/armor';
@@ -41,9 +42,9 @@ export const eightTrigramsCard = makeEquipmentCard('eight-trigrams', 'Eight Trig
   // The judged card goes to the discard pile first (`done`), so it doesn't lie
   // in processing while the Shan window waits. Then the step goes on: with one
   // more Shan provided on red.
-  onJudged: (_state, { judged, data, seatId, tool, done }) => {
+  onJudged: (state, { judged, data, seatId, tool, done }, registry) => {
     const step = data?.['step'] as CardStep;
-    if (colourOf(judged) === 'black') return [done, step];
+    if (colourFor(state, seatId, judged, registry) === 'black') return [done, step];
     const { provided = 0 } = (step.data ?? {}) as ShanData;
     const owner = { kind: 'equipment' as const, seatId, cardInstanceId: tool.physical[0].instanceId };
     return [

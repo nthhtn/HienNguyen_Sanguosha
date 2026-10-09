@@ -50,7 +50,7 @@ export interface CardDefinition {
   delayed?: boolean;
   // A delayed Tool reading its judgment card (JudgeEffect). Its effects go to
   // the front of the queue, ahead of the judged card's move to the discard pile.
-  onJudged?(state: GameState, ctx: JudgedContext): unknown[];
+  onJudged?(state: GameState, ctx: JudgedContext, registry: ContentRegistry): unknown[];
   // What becomes of a delayed Tool once it has had its turn in the Judgment
   // phase (DelayedCleanupEffect). Absent = discarded, if it is still in its
   // owner's judgment area.
@@ -141,6 +141,9 @@ export interface AbilityModifiers {
   untargetableWithEmptyHandBy?: string[];
   // The owner's Sha needs two Shan, and in a Duel with it the other seat plays two Sha each time (Matchless).
   doubleAnswers?: boolean;
+  // How the owner's own cards' suits count (Beauty: { spade: 'heart' }): its
+  // hand, worn and judgment cards wherever a rule reads a suit.
+  suitAs?: Partial<Record<CardInstance['suit'], CardInstance['suit']>>;
 }
 
 // Using cards as another card (Serpent Spear: 2 hand cards as a Sha; Fighting
@@ -154,12 +157,16 @@ export interface Conversion {
   cards: 1 | 2;
   // Where they come from: the hand (default), or the hand and worn equipment.
   from?: 'hand' | 'hand-and-equipment';
-  // Which cards may be used; absent = any.
-  accepts?(card: CardInstance): boolean;
+  // Which cards may be used; absent = any. `seatId` holds the card (a suit
+  // modifier of that seat may apply).
+  accepts?(card: CardInstance, state: GameState, seatId: string, registry: ContentRegistry): boolean;
   // 'play': proactively in your Play Phase; 'respond': to answer a window.
   when: 'play' | 'respond' | 'both';
   // Only while it is not its owner's turn (First Aid).
   outsideOwnTurnOnly?: boolean;
+  // The picked card isn't used at once: the owning skill's step 'deferred'
+  // decides (Bewilder's doubt round). Only a General's skill may defer.
+  deferred?: true;
 }
 
 // What a card does while worn.
@@ -202,7 +209,7 @@ export interface SkillDefinition extends Abilities {
   lord?: boolean;
   active?: ActiveSkill;
   // Reads a judgment this skill asked for (JudgmentReader 'skill').
-  onJudged?(state: GameState, ctx: SkillJudgedContext): unknown[];
+  onJudged?(state: GameState, ctx: SkillJudgedContext, registry: ContentRegistry): unknown[];
   // One step of this skill's own resolution (SkillStepEffect), for skills that
   // decide in several moves (Raid, Kindness, Sow Revolt). Its effects go to the
   // front of the queue.

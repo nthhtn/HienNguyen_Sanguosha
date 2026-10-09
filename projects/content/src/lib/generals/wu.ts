@@ -1,5 +1,6 @@
 import type { CardInstance, CardMovedEvent, ContentRegistry, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition } from 'engine';
-import { cardsOverHandLimit, colourOf, skipFlagOf } from 'engine';
+import { cardsOverHandLimit, skipFlagOf } from 'engine';
+import { colourFor, suitOf } from '../shared/suits';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
@@ -20,12 +21,12 @@ export const braveGesture: SkillDefinition = {
   triggers: [atDrawPhase({ use: (_state, passed) => [{ ...passed, count: passed.count + 1 }] })],
 };
 
-const black = (card: CardInstance) => colourOf(card) === 'black';
+const black = (card: CardInstance, state: GameState, seatId: string, registry: ContentRegistry) => colourFor(state, seatId, card, registry) === 'black';
 
 // Country Scene (conversion, play): any diamond card from your hand or equipment as a Capture.
 export const countryScene: SkillDefinition = {
   id: 'country-scene',
-  conversions: [{ id: 'country-scene', as: 'capture', cards: 1, from: 'hand-and-equipment', accepts: (c) => c.suit === 'diamond', when: 'play' }],
+  conversions: [{ id: 'country-scene', as: 'capture', cards: 1, from: 'hand-and-equipment', accepts: (c, state, seatId, registry) => suitOf(state, seatId, c, registry) === 'diamond', when: 'play' }],
 };
 
 // Surprise (conversion, play): any black card from your hand or equipment as a Break.
@@ -209,7 +210,7 @@ export const sowRevolt: SkillDefinition = {
       selectionOf(state, owner, { of: 'seats', eligibleIds: otherLivingSeatIds(state, seatId), min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'chosen') }, onCancel: [] }),
     ],
   },
-  onStep: (state, step) => {
+  onStep: (state, step, registry) => {
     const { owner } = step;
     const data = step.data ?? {};
     switch (step.step) {
@@ -230,7 +231,7 @@ export const sowRevolt: SkillDefinition = {
         const taken = handOf(state, target).find((c) => c.instanceId === takenId);
         if (!taken) return [];
         const show = { kind: 'ShowCardEffect' as const, seatId: target, cardInstanceId: taken.instanceId, abilityId: owner.skillId };
-        return taken.suit !== data['suit'] && isLiving(state, target) ? [show, skillDamage(owner, target)] : [show];
+        return suitOf(state, target, taken, registry) !== data['suit'] && isLiving(state, target) ? [show, skillDamage(owner, target)] : [show];
       }
     }
   },

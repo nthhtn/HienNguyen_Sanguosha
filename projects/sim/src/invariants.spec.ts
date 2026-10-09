@@ -313,3 +313,14 @@ describe('checkCompulsoryWhileHidden', () => {
     expect(checkCompulsoryWhileHidden(luXun(true, [fired]), registry)).toEqual([]);
   });
 });
+
+describe('a seat kept alive below 0 HP', () => {
+  it('is fine after Refusing Death says so, and not before', () => {
+    const owner = { kind: 'general' as const, seatId: 'seat-a', slot: 'main' as const, skillId: 'refusing-death' };
+    const hit = { kind: 'DamageDealtEvent' as const, damage: { source: null, target: { kind: 'seat' as const, seatId: 'seat-a' }, amount: 2, nature: 'normal' as const } };
+    const alive = { kind: 'AbilityUsedEvent' as const, owner, abilityId: 'refusing-death', outcome: 'stays-alive' };
+    const below = (log: GameState['log']) => baseState({ seats: [{ ...baseState().seats[0], combinedHp: -1 }], log });
+    expect(checkInvariants(below([hit, alive]))).toEqual([]);
+    expect(checkInvariants(below([alive, hit]))).toEqual(['Seat seat-a is living at -1 HP with no rescue round pending']);
+  });
+});

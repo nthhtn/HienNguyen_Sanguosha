@@ -1,7 +1,8 @@
 import type { CardInstance, DamageDealtEvent, Effect, GameState, PhaseChangedEvent, SkillDefinition } from 'engine';
-import { colourOf, livingSeatOrderFrom, requireZoneOfKind } from 'engine';
+import { livingSeatOrderFrom, requireZoneOfKind } from 'engine';
 import { abilityKey } from '../shared/steps';
 import { nextToChange } from '../shared/judgments';
+import { colourFor, suitOf } from '../shared/suits';
 import type { GeneralSkillSet } from './types';
 import { seatCardOptions } from '../shared/choices';
 import { handOf } from '../shared/queries';
@@ -88,9 +89,9 @@ export const unyielding: SkillDefinition = {
     }),
   ],
   // The judged card goes to the discard pile first; then the outcome.
-  onJudged: (state, { owner, judged, data, done }) => {
+  onJudged: (state, { owner, judged, data, done }, registry) => {
     const sourceSeatId = data?.['sourceSeatId'] as string;
-    if (judged.suit === 'heart' || !isLiving(state, sourceSeatId)) return [done];
+    if (suitOf(state, owner.seatId, judged, registry) === 'heart' || !isLiving(state, sourceSeatId)) return [done];
     return [done, skillStep(owner, 'outcome', { sourceSeatId })];
   },
   onStep: (state, step) => {
@@ -195,7 +196,7 @@ export const devil: SkillDefinition = {
 // Overturned Country (conversion, respond): any black hand card as a Shan.
 export const overturnedCountry: SkillDefinition = {
   id: 'overturned-country',
-  conversions: [{ id: 'overturned-country', as: 'shan', cards: 1, accepts: (c) => colourOf(c) === 'black', when: 'respond' }],
+  conversions: [{ id: 'overturned-country', as: 'shan', cards: 1, accepts: (c, state, seatId, registry) => colourFor(state, seatId, c, registry) === 'black', when: 'respond' }],
 };
 
 // The ask that starts one River Goddess judgment.
@@ -212,8 +213,8 @@ export const riverGoddess: SkillDefinition = {
       effect: (_state, _event, owner) => [riverGoddessAsk(owner)],
     }),
   ],
-  onJudged: (state, { owner, judged, done }) => {
-    if (colourOf(judged) === 'red' || !isLiving(state, owner.seatId)) return [done];
+  onJudged: (state, { owner, judged, done }, registry) => {
+    if (colourFor(state, owner.seatId, judged, registry) === 'red' || !isLiving(state, owner.seatId)) return [done];
     const keep: Effect = { kind: 'MoveCardEffect', cardInstanceId: judged.instanceId, toZoneId: handZoneId(state, owner.seatId), onlyFrom: requireZoneOfKind(state.zones, 'processing').id };
     return [keep, done, riverGoddessAsk(owner)];
   },
@@ -235,13 +236,19 @@ export const bareTheChest: SkillDefinition = {
       use: (_state, passed) => [{ kind: 'SetTurnFlagEffect', flag: BARE_THE_CHEST_FLAG }, { ...passed, count: passed.count - 1 }],
     }),
     on<DamageStep>('before:DamageEffect', {
-      condition: (state, { damage }, owner) =>
+      // Once per damage (`acted`): an ask later in the chain (Fantasy) sends the
+      // damage back through these triggers, and it must not grow again.
+      condition: (state, { damage, acted }, owner) =>
+        !(acted ?? []).includes(abilityKey(owner)) &&
         !!state.turn.flags?.[BARE_THE_CHEST_FLAG] &&
         state.turn.ownerSeatId === owner.seatId &&
         damage.source?.kind === 'seat' &&
         damage.source.seatId === owner.seatId &&
         ['sha', 'duel'].includes(damage.cause?.card?.as ?? ''),
-      effect: (_state, step, owner) => [{ ...step, damage: { ...step.damage, amount: step.damage.amount + 1 } }, used(owner, 'more-damage', step.damage.target.seatId)],
+      effect: (_state, step, owner) => [
+        { ...step, damage: { ...step.damage, amount: step.damage.amount + 1 }, acted: [...(step.acted ?? []), abilityKey(owner)] },
+        used(owner, 'more-damage', step.damage.target.seatId),
+      ],
     }),
   ],
 };

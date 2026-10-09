@@ -16,6 +16,15 @@ const state = (pendingChoice?: PendingChoice): GameState => ({
 });
 
 describe('describeChoice', () => {
+  it('Bewilder: believe or doubt the claim', () => {
+    const doubt: PendingChoice = {
+      id: 'b', seatId: 'seat-0', verb: 'pick',
+      reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-1', slot: 'main', skillId: 'bewilder' }, abilityId: 'bewilder', cardId: 'sha' },
+      options: [{ id: 'believe', shows: { kind: 'label', text: 'Believe' }, effects: [] }, { id: 'doubt', shows: { kind: 'label', text: 'Doubt' }, effects: [] }],
+    };
+    expect(describeChoice(state(doubt), 'seat-0')).toEqual({ title: 'Bewilder', prompt: 'Seat 1 claims Sha. Believe or doubt?', confirmLabel: 'Choose' });
+  });
+
   it("a skill's take (Feedback): choose a card to take from the seat", () => {
     const feedback: PendingChoice = {
       id: 'f', seatId: 'seat-0', verb: 'take', options: [],

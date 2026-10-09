@@ -1,5 +1,6 @@
 import type { CardInstance, ContentRegistry, GameState, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
-import { colourOf, livingSeatOrderFrom } from 'engine';
+import { livingSeatOrderFrom } from 'engine';
+import { colourFor } from '../shared/suits';
 import type { GeneralSkillSet } from './types';
 import { handOf } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
@@ -9,7 +10,7 @@ import { choiceOf, discardMoves, draw, heal, isHurt, isLiving, on, otherLivingSe
 // The Qun base Generals' skills (General Skills spec, "Qun"). Every skill acts
 // for the `owner` the engine passes in, never by searching for its General.
 
-const red = (card: CardInstance) => colourOf(card) === 'red';
+const red = (card: CardInstance, state: GameState, seatId: string, registry: ContentRegistry) => colourFor(state, seatId, card, registry) === 'red';
 
 // Matchless (compulsory): your Sha needs two Shan to dodge (an Eight Trigrams
 // red judgment counts as one); in a Duel with you, the other seat plays two Sha

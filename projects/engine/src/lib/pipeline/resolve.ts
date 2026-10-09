@@ -8,12 +8,13 @@ import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
+import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer } from '../rules/phaseSequence';
 import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, legalTargetListsFor, playConversionCards, sameAbilityOwner } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
-import { ArrangementMadeEvent, CardPlayedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
+import { ArrangementMadeEvent, CardPlayedEvent, SeatTurnedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
@@ -138,9 +139,23 @@ function logWithTriggers(state: GameState, events: GameEvent[], ctx: EngineConte
 // Moves to the next phase (or the next turn's Start) and enters it. Phases
 // flagged to skip are logged as skipped and never entered.
 function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
-  const { phase, turn, skipped } = advancePhaseOrTurn(state);
+  let current = state;
+  let next = advancePhaseOrTurn(current);
   const events: GameEvent[] = [];
-  if (turn.turnNumber !== state.turn.turnNumber) {
+  // A face-down seat's turn: it turns face up instead, and the turn passes on.
+  // Every seat turned up stops being face down, so this ends.
+  while (next.turn.turnNumber !== current.turn.turnNumber) {
+    const owner = current.seats.find((s) => s.id === next.turn.ownerSeatId);
+    if (!owner?.faceDown) break;
+    const { faceDown: _up, ...faceUp } = owner;
+    current = { ...current, seats: current.seats.map((s) => (s.id === owner.id ? faceUp : s)), turn: next.turn, phase: 'End' };
+    const passed: TurnAdvancedEvent = { kind: 'TurnAdvancedEvent', seatId: owner.id, turnNumber: next.turn.turnNumber };
+    const turnedUp: SeatTurnedEvent = { kind: 'SeatTurnedEvent', seatId: owner.id, faceDown: false, passedTurn: true };
+    events.push(passed, turnedUp);
+    next = advancePhaseOrTurn(current);
+  }
+  const { phase, turn, skipped } = next;
+  if (turn.turnNumber !== current.turn.turnNumber) {
     const turnEvent: TurnAdvancedEvent = { kind: 'TurnAdvancedEvent', seatId: turn.ownerSeatId, turnNumber: turn.turnNumber };
     events.push(turnEvent);
   }
@@ -150,7 +165,10 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   }
   const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: turn.ownerSeatId, phase };
   events.push(phaseEvent);
-  return logWithTriggers({ ...state, phase, turn }, events, ctx);
+  // The Discard Phase owes what the owner is over its limit now (discardOwed).
+  const entered: GameState = { ...current, phase, turn };
+  const counted = phase === 'Discard' ? { ...entered, turn: { ...turn, discardsLeft: cardsOverHandLimit(entered, turn.ownerSeatId) } } : entered;
+  return logWithTriggers(counted, events, ctx);
 }
 
 // `effect` as its before-triggers would rewrite it (e.g. Silver Lion's cap),
@@ -189,7 +207,14 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
 
   // A card used by an effect goes through useCard, which logs and queues its own follow-ups.
   if (current.kind === 'UseCardEffect') {
-    const used = useCard(state, current.seatId, current.card, { targets: current.targets, counted: false, free: true }, ctx);
+    const counted = !!current.counted;
+    const used = useCard(
+      state,
+      current.seatId,
+      current.card,
+      { targets: current.targets, counted, ...(counted ? {} : { free: true }), ...(current.answering ? { respondTo: current.answering } : {}) },
+      ctx
+    );
     return { state: queueFront(used.state, rewritten.after), events: used.events };
   }
 
@@ -202,7 +227,7 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
         : current.kind === 'SkillStepEffect'
           ? applySkillStep(state, current, ctx.registry)
           : current.kind === 'DyingEffect'
-            ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry).length > 0)
+            ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry, { revealedOnly: true }).length > 0)
             : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
   return { state: queueFront(applied.state, [...followUps, ...rewritten.after]), events: applied.events };
@@ -343,11 +368,14 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
       };
       return { state: queueFront(state, [{ kind: 'OpenChoiceEffect', choice }]), events: [] };
     }
-    case 'skill-step':
-      return { state: queueFront(state, [{ ...then.step, data: { ...then.step.data, picked: ids } }]), events: [] };
+    case 'skill-step': {
+      const window = then.suspendWindow ? state.pendingResponse : null;
+      const step = { ...then.step, data: { ...then.step.data, picked: ids, ...(window ? { window } : {}) } };
+      return { state: queueFront(window ? { ...state, pendingResponse: null } : state, [step]), events: [] };
+    }
     case 'replace-judgment':
       return {
-        state: queueFront(state, [{ kind: 'ReplaceJudgmentEffect', judgment: then.judgment, withCardInstanceId: ids[0], owner: then.owner, abilityId: then.abilityId }]),
+        state: queueFront(state, [{ kind: 'ReplaceJudgmentEffect', judgment: then.judgment, withCardInstanceId: ids[0], owner: then.owner, abilityId: then.abilityId, ...(then.oldTo ? { oldTo: then.oldTo } : {}) }]),
         events: [],
       };
     case 'use-card': {
@@ -476,7 +504,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
       const discardPile = requireZoneOfKind(state.zones, 'discardPile');
-      return { state: queueFront(state, [{ kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: discardPile.id }]), events: [] };
+      const left = state.turn.discardsLeft;
+      const owing: GameState = left === undefined ? state : { ...state, turn: { ...state.turn, discardsLeft: Math.max(0, left - 1) } };
+      return { state: queueFront(owing, [{ kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: discardPile.id }]), events: [] };
     }
 
     case 'RevealGeneralAction': {
@@ -550,7 +580,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         reason: { kind: 'ability', owner: owned.owner, abilityId: owned.abilityId },
         of: 'cards',
         // A play may only use cards whose leaving keeps its targets legal.
-        eligibleIds: (action.pendingResponseId ? conversionCards(state, action.seatId, owned.conversion) : playConversionCards(state, action.seatId, owned.conversion, action.targets, ctx.registry)).map((c) => c.instanceId),
+        eligibleIds: (action.pendingResponseId ? conversionCards(state, action.seatId, owned.conversion, ctx.registry) : playConversionCards(state, action.seatId, owned.conversion, action.targets, ctx.registry)).map((c) => c.instanceId),
         min: owned.conversion.cards,
         max: owned.conversion.cards,
         then: {
@@ -564,6 +594,17 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
         // Cancel: back where the seat was (its Play Phase, or the open window).
         onCancel: [],
       };
+      // A deferred conversion: the owning skill's step decides what the card does.
+      if (owned.conversion.deferred) {
+        if (owned.owner.kind !== 'general') throw new Error(`Only a General's skill may defer a conversion (${owned.conversion.id})`);
+        const step = {
+          kind: 'SkillStepEffect' as const,
+          owner: owned.owner,
+          step: 'deferred',
+          data: { as: owned.conversion.as, conversionId: owned.conversion.id, targets: action.targets },
+        };
+        selection.then = { kind: 'skill-step', step, ...(action.pendingResponseId ? { suspendWindow: true as const } : {}) };
+      }
       // A hidden General's conversion reveals it once the cards are confirmed.
       const reveal: Effect[] =
         owned.needsReveal && owned.owner.kind === 'general'

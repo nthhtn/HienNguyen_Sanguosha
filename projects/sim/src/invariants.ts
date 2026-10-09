@@ -1,6 +1,17 @@
 import { decisionPending as isDecisionPending, phaseWaitsForPlayer } from 'engine';
 import type { ContentRegistry, GameState } from 'engine';
 
+// Whether a skill kept `seatId` alive below 1 HP since its HP last dropped
+// (Refusing Death logs outcome 'stays-alive').
+function keptAlive(state: GameState, seatId: string): boolean {
+  for (let i = state.log.length - 1; i >= 0; i--) {
+    const e = state.log[i];
+    if (e.kind === 'AbilityUsedEvent' && e.owner.seatId === seatId && e.outcome === 'stays-alive') return true;
+    if ((e.kind === 'DamageDealtEvent' && e.damage.target.seatId === seatId) || (e.kind === 'HpLostEvent' && e.seatId === seatId)) return false;
+  }
+  return false;
+}
+
 export function checkInvariants(state: GameState, registry?: ContentRegistry): string[] {
   const violations: string[] = [];
 
@@ -8,7 +19,7 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
     // At 0 HP or below a seat is dying until its rescue round ends: it may
     // only be living while that round is still asking.
     const rescuePending = state.pendingResponse?.reason?.kind === 'dying' && state.pendingResponse.reason.seatId === seat.id;
-    if (!seat.eliminated && seat.combinedHp <= 0 && !rescuePending) {
+    if (!seat.eliminated && seat.combinedHp <= 0 && !rescuePending && !keptAlive(state, seat.id)) {
       violations.push(`Seat ${seat.id} is living at ${seat.combinedHp} HP with no rescue round pending`);
     }
   }

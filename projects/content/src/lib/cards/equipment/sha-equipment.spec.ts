@@ -13,7 +13,7 @@ const seat = (seatId: string) => ({ kind: 'seat' as const, seatId });
 
 interface TableOptions {
   hp?: Record<string, number>;
-  // A seat's [Main, Deputy, revealed?]. Default: Cao Ren and Dong Zhuo (male,
+  // A seat's [Main, Deputy, revealed?]. Default: Xu Huang and Dong Zhuo (male,
   // no skills), revealed.
   generals?: Record<string, [string, string, boolean?]>;
   flags?: Record<string, boolean>;
@@ -25,7 +25,7 @@ function table(cards: Record<string, CardInstance[]> = {}, o: TableOptions = {})
   const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d'];
   return {
     seats: ids.map((id, index) => {
-      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['cao-ren', 'dong-zhuo'];
+      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['xu-huang', 'dong-zhuo'];
       return {
         id, index, kingdom: (['Wei', 'Shu', 'Wu', 'Qun'] as const)[index], eliminated: false,
         generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },
@@ -177,7 +177,7 @@ describe('Eight Trigrams', () => {
 });
 describe('Gender Swords', () => {
   const swords = card('gs', 'gender-swords', 'spade', 2);
-  const female: TableOptions['generals'] = { 'seat-b': ['xiao-qiao', 'dong-zhuo'] };
+  const female: TableOptions['generals'] = { 'seat-b': ['zhu-rong', 'dong-zhuo'] };
   const attack = (more: Record<string, CardInstance[]> = {}, generals: TableOptions['generals'] = female) =>
     play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [swords], drawPile: [card('d1', 'peach')], ...more }, { generals }), 's1', 'seat-b');
 
@@ -187,7 +187,7 @@ describe('Gender Swords', () => {
 
   it('doesn’t when it doesn’t, or when the target has no gender (both Generals hidden)', () => {
     expect(attack({}, {}).pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
-    const hidden = attack({}, { 'seat-b': ['xiao-qiao', 'dong-zhuo', false] });
+    const hidden = attack({}, { 'seat-b': ['zhu-rong', 'dong-zhuo', false] });
     expect(hidden.pendingChoice).toBeUndefined();
     expect(hidden.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
   });

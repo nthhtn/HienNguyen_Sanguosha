@@ -1,5 +1,7 @@
 import type { CardInstance, CardPlayedEvent, GeneralOwner, PhaseChangedEvent, SkillDefinition } from 'engine';
-import { abilityUseKey, colourOf, drawPileTop } from 'engine';
+import { abilityUseKey, drawPileTop } from 'engine';
+import type { ContentRegistry, GameState } from 'engine';
+import { colourFor } from '../shared/suits';
 import type { GeneralSkillSet } from './types';
 import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
 import { handOf } from '../shared/queries';
@@ -8,7 +10,7 @@ import { ask, draw, heal, on, otherLivingSeatIds, reasonOf, selectionOf, skillSt
 // The Shu base Generals' skills (General Skills spec, "Shu"). Every skill acts
 // for the `owner` the engine passes in, never by searching for its General.
 
-const red = (card: CardInstance) => colourOf(card) === 'red';
+const red = (card: CardInstance, state: GameState, seatId: string, registry: ContentRegistry) => colourFor(state, seatId, card, registry) === 'red';
 
 // Roar (compulsory): there is no limit on how many Sha you play.
 export const roar: SkillDefinition = { id: 'roar', compulsory: true, modifiers: { shaLimit: Number.POSITIVE_INFINITY } };
@@ -67,9 +69,9 @@ export const ironCavalry: SkillDefinition = {
       },
     }),
   ],
-  onJudged: (_state, { owner, judged, data, done }) => {
+  onJudged: (state, { owner, judged, data, done }, registry) => {
     const step = data?.['step'] as CardStep;
-    if (colourOf(judged) !== 'red') return [done, step];
+    if (colourFor(state, owner.seatId, judged, registry) !== 'red') return [done, step];
     return [done, used(owner, 'unblockable', step.target.seatId), { ...step, data: { ...step.data, unblockable: true } }];
   },
 };

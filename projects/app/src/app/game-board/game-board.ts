@@ -5,14 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Action, CardInstance, ChooseGeneralsAction, cardsOverHandLimit } from 'engine';
+import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { RoundTable } from './round-table';
-import { SeatTile } from './seat-tile';
+import { SeatTile, seatIsDying } from './seat-tile';
 import { HandView } from './hand-view';
 import { GameOver } from './game-over';
 import { GeneralSelection } from './general-selection';
@@ -90,6 +90,8 @@ import { DecisionTimer } from '../decision-timer.service';
                       [equipment]="zoneCards(seat.equipped.zoneId)"
                       [judgment]="zoneCards(seat.judgment.zoneId)"
                       [judgmentCountsAs]="countsAsOf(seat.judgment.zoneId)"
+                      [pile]="zoneCards(seat.pile?.zoneId ?? '')"
+                      [dying]="dyingOf(seat)"
                       [skills]="viewerSkills()"
                       (useSkill)="submit($event)"
                     />
@@ -241,7 +243,7 @@ export class GameBoard {
     const seatId = this.viewerSeatId();
     if (!visible || !seatId || visible.phase !== 'Discard' || visible.turn.ownerSeatId !== seatId) return 0;
     if (!this.gameService.legalActions().some((a) => a.kind === 'DiscardCardAction')) return 0;
-    return cardsOverHandLimit(visible, seatId);
+    return discardOwed(visible, seatId);
   });
 
   constructor() {
@@ -308,6 +310,11 @@ export class GameBoard {
   });
 
   protected readonly viewerSeat = computed(() => this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId()) ?? null);
+
+  protected dyingOf(seat: Seat): boolean {
+    const state = this.visibleState();
+    return !!state && seatIsDying(state, seat);
+  }
 
   protected zoneCards(zoneId: string): CardInstance[] {
     return this.visibleState()?.zones.find((z) => z.id === zoneId)?.cards ?? [];

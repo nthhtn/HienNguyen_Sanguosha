@@ -33,6 +33,10 @@ export interface Turn {
   // Every card the turn owner used this turn, by what it counted as,
   // responses included (Self-Restraint reads 'sha').
   ownerUses?: Record<string, number>;
+  // Cards still owed in this turn's Discard Phase: what the owner was over its
+  // hand limit as the phase began, less what it has discarded since. A card
+  // drawn meanwhile (Linked Camps) isn't owed too. Absent outside it.
+  discardsLeft?: number;
   // Flags that last until the turn ends, e.g. skipPlay (see skipFlagOf).
   // Absent until one is set.
   flags?: Record<string, boolean>;
@@ -79,6 +83,11 @@ export interface Seat {
   equipped: CardZoneRef;
   // Where delayed Tools wait to be judged (Capture, Lightning, Starvation).
   judgment: CardZoneRef;
+  // Cards kept face up under the seat's General (Refusing Death). Absent in
+  // tables without one.
+  pile?: CardZoneRef;
+  // Turned face down (Entrench): its next turn is skipped as it turns face up.
+  faceDown?: true;
   // Game-long marks some skills keep (none of the base Generals do yet).
   marks?: Record<string, number>;
   eliminated: boolean;
@@ -130,7 +139,8 @@ export type DecisionReason =
   | { kind: 'choice'; card: UsedCard; userSeatId: string; targetSeatId?: string }
   // An ability's say: whether to use it (an ask), or what to pick for it (a
   // selection). `targetSeatId`: the seat it is aimed at, if any.
-  | { kind: 'ability'; owner: AbilityOwner; abilityId: string; targetSeatId?: string };
+  // `cardId`: the card the decision is about (Bewilder's claim).
+  | { kind: 'ability'; owner: AbilityOwner; abilityId: string; targetSeatId?: string; cardId?: string };
 
 // A pick a seat owes (Steal, Break, Harvest). Pauses the queue like a
 // response window.
@@ -198,12 +208,14 @@ export type SelectionContinuation =
   // Queue `step` with the picked ids added to its data as `picked`.
   | { kind: 'card-step'; step: Extract<Effect, { kind: 'CardStepEffect' }> }
   // Replace the judgment's card with the one picked (Devil).
-  | { kind: 'replace-judgment'; judgment: Judgment; owner: AbilityOwner; abilityId: string }
+  | { kind: 'replace-judgment'; judgment: Judgment; owner: AbilityOwner; abilityId: string; oldTo?: string }
   // Give the picked cards to one of `toSeatIds`, chosen next; then `then`.
   // `tally`: add how many were given to turn.abilityUses[tally] (Kindness).
   | { kind: 'give'; toSeatIds: string[]; then?: Effect[]; tally?: string }
   // Queue a skill's `step` with the picked ids added to its data as `picked`.
-  | { kind: 'skill-step'; step: Extract<Effect, { kind: 'SkillStepEffect' }> };
+  // `suspendWindow`: the open window goes into the step's data as `window` and
+  // is cleared while the skill decides.
+  | { kind: 'skill-step'; step: Extract<Effect, { kind: 'SkillStepEffect' }>; suspendWindow?: true };
 
 // A seat putting cards from the top of the draw pile back in the order it
 // likes, some on top and some at the bottom (Astrology). The cards stay in the
@@ -217,7 +229,7 @@ export interface PendingArrangement {
 
 export interface CardZone {
   id: string;
-  kind: 'hand' | 'equip' | 'drawPile' | 'discardPile' | 'judgment' | 'processing';
+  kind: 'hand' | 'equip' | 'drawPile' | 'discardPile' | 'judgment' | 'processing' | 'pile';
   ownerSeatId?: string;
   cards: CardInstance[];
   // Cards here that count as another card than their own (a diamond placed as

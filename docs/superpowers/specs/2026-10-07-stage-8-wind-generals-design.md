@@ -230,3 +230,13 @@ Generic; the engine names no card or skill.
     alive by Refusing Death.
 - **App:** the face-down badge, the pile row, the doubt and naming dialogs, and
   the new Action History lines.
+
+## Stage 8 rulings
+
+- Godspeed's first option is asked as the Start Phase begins: Kingdom War judges delayed Tools on entering the Judgment Phase. Its second option ends the Play Phase with its own flag (`endFlagOf('Play')`), so a skip flag keeps meaning "skip on entry".
+- Bewilder has no naming dialog: each nameable card is a conversion button ("As Sha · Bewilder"), with its targets.
+- While Bewilder answers a window, the window is set aside and then answered or re-opened.
+- Every suit rule reads `suitOf`, so Beauty reaches the delayed Tools and Eight Trigrams. A used card's colour (as armour sees it) is unchanged by Beauty.
+- Refusing Death asks once per card; declining a later card lets the dying round go ahead.
+- The Discard Phase owes what was over the limit as it began, so Linked Camps with Refusing Death at 0 HP doesn't loop.
+- A seat kept alive below 1 HP by Refusing Death isn't shown as dying.
