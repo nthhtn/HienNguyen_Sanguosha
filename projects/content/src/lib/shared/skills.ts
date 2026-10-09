@@ -106,6 +106,7 @@ export function seatOptions(seatIds: readonly string[], effectsFor: (seatId: str
   return seatIds.map((seatId) => ({ id: seatId, shows: { kind: 'seat', seatId }, effects: effectsFor(seatId) }));
 }
 
+export const hpOf = (state: GameState, seatId: string) => state.seats.find((s) => s.id === seatId)?.combinedHp ?? 0;
 export const isLiving = (state: GameState, seatId: string) => state.seats.some((s) => s.id === seatId && !s.eliminated);
 export const isHurt = (state: GameState, seatId: string) => state.seats.some((s) => s.id === seatId && !s.eliminated && s.combinedHp < s.maxCombinedHp);
 
