@@ -8,7 +8,7 @@ import { CompetePlayer, CompeteResult } from './compete-result';
 import { PlayingCard } from './playing-card';
 
 // Seconds before the popup closes itself, so a Compete between bots never stalls the table.
-export const AUTO_CLOSE_SECONDS = 8;
+export const AUTO_CLOSE_SECONDS = 10;
 
 // The result of one Compete, for every seat at the table to see: the source
 // skill, both players and their cards, who won and what that leads to. Themed
