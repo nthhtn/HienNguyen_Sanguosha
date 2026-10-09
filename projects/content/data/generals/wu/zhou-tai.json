@@ -1,0 +1,22 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Zhou Tai",
+  "nameZh": "周泰",
+  "skills": [
+    {
+      "name": "Refusing Death",
+      "nameZh": "不屈",
+      "text": "When Zhou Tai is on the brink of death, he can choose to flip the top card of the deck and place it under his character card. He is always considered to be on the brink of death. For each additional point of damage, he can flip over another card. Zhou Tai dies if two of these cards have the same number. Whenever Zhou Tai is healed, he can discard one of these cards."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Wind",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-zhou-tai"
+  },
+  "title": "Battle Records in Scars",
+  "titleZh": "历战之躯"
+}

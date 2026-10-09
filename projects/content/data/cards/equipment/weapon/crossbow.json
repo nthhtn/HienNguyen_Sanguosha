@@ -1,0 +1,23 @@
+{
+  "count": 2,
+  "name": "Crossbow",
+  "nameZh": "诸葛连弩",
+  "printings": [
+    {
+      "rank": 1,
+      "suit": "club"
+    },
+    {
+      "rank": 1,
+      "suit": "diamond"
+    }
+  ],
+  "range": 1,
+  "source": {
+    "crawledAt": "2026-09-10",
+    "printingsFrom": "standard-edition printing list (manual, not crawled)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/crossbow"
+  },
+  "text": "Range: 1. With this equipped, a player may attack as much as desired during their turn."
+}

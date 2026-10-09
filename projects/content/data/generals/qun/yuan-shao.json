@@ -1,0 +1,28 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Yuan Shao",
+  "nameZh": "袁绍",
+  "skills": [
+    {
+      "name": "Random Strike",
+      "nameZh": "乱击",
+      "text": "Yuan Shao can use two hand cards of the same suit to unleash a hail of arrows."
+    },
+    {
+      "lord": true,
+      "name": "Bloodline",
+      "nameZh": "血裔",
+      "text": "King Ability: Yuan Shao's maximum hand limit is increased by two for every other living hero."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Fire",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-yuan-shao"
+  },
+  "title": "Noble Heritage",
+  "titleZh": "高贵的名门"
+}

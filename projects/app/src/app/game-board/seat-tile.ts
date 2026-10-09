@@ -1,0 +1,258 @@
+import { Component, computed, inject, input, output } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, GameState, Seat } from 'engine';
+import { abilityName, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
+import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
+import { SeatAvatar } from './seat-avatar';
+import { AvatarSkill } from './avatar-skills';
+import { PlayingCard } from './playing-card';
+import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
+
+const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
+  weapon: { label: 'Weapon', icon: 'gavel' },
+  armor: { label: 'Armor', icon: 'shield' },
+  defensiveMount: { label: 'Defensive Mount', icon: 'add' },
+  offensiveMount: { label: 'Offensive Mount', icon: 'remove' },
+};
+
+// One seat at the round table, compact enough to sit on the table's rim.
+@Component({
+  selector: 'app-seat-tile',
+  imports: [SeatAvatar, PlayingCard, MatIconModule],
+  template: `
+    <div
+      class="tile"
+      [class.turn-owner]="isTurnOwner()"
+      [class.responding]="isResponding()"
+      [class.eliminated]="seat().eliminated"
+      [class.viewer]="isViewer()"
+      [attr.data-force]="force()"
+    >
+      <div class="sections">
+      <section class="panel general" aria-label="General">
+        <div class="header">
+          <strong>{{ name() }}</strong>
+          @if (isBot()) {
+            <mat-icon class="bot-icon" aria-label="Computer player">smart_toy</mat-icon>
+          }
+          @if (isViewer()) {
+            <span class="you">(you)</span>
+          }
+        </div>
+        <div class="generals" [class.face-down]="seat().faceDown">
+          @if (seat().generals; as generals) {
+            <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
+          } @else {
+            <span class="choosing">Choosing Generals…</span>
+          }
+          @if (seat().faceDown) {
+            <span class="face-down-badge">Face Down</span>
+          }
+        </div>
+        @if (pile().length) {
+          <div class="pile" aria-label="Under General">
+            @for (card of pile(); track card.instanceId) {
+              <app-playing-card size="small" [card]="card" />
+            }
+          </div>
+        }
+        @if (stash().length) {
+          <div class="pile" aria-label="Farms">
+            @for (card of stash(); track card.instanceId) {
+              <app-playing-card size="small" [card]="card" />
+            }
+          </div>
+        }
+        @if (formName(); as form) {
+          <span class="form-badge">Form: {{ form }}</span>
+        }
+        @if (seat().silenced) {
+          <span class="silenced-badge">No Skills</span>
+        }
+        <div class="stats">
+          <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomDisplayName(seat().kingdom) }}</span>
+          @if (hpIcons().length) {
+            <span class="hp-icons">
+              @for (src of hpIcons(); track src) {
+                <img class="hp-icon" [src]="src" alt="" />
+              }
+            </span>
+          }
+          <span>HP {{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
+          <span class="hand-count" title="Cards in Hand" [attr.aria-label]="'Cards in Hand: ' + handCount()">
+            <mat-icon aria-hidden="true">style</mat-icon>{{ handCount() }}
+          </span>
+        </div>
+      </section>
+        <section class="panel equipment" aria-label="Equipment">
+          <!-- Weapon, Armor on top; Defensive Mount, Offensive Mount below. -->
+          <div class="equip">
+            @for (s of slots(); track s.slot) {
+              <div
+                class="slot"
+                [class.empty]="!s.card"
+                [attr.data-slot]="s.slot"
+                [attr.title]="s.card ? s.label + ': ' + cardIdDisplayName(s.card.definitionId) : s.label + ' (empty)'"
+              >
+                @if (s.card; as card) {
+                  <!-- Its rules text is in the Info popup. -->
+                  <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
+                    <app-playing-card size="small" [card]="card" />
+                  </button>
+                } @else {
+                  <mat-icon>{{ s.icon }}</mat-icon>
+                }
+              </div>
+            }
+          </div>
+        </section>
+        <section class="panel judgment-section" aria-label="Judgment">
+          <div class="judgment" aria-label="Judgment Area">
+            @for (card of judgment(); track card.instanceId) {
+              @let countsAs = judgmentCountsAs()[card.instanceId];
+              <div class="slot" [attr.title]="'Judgment Area: ' + cardIdDisplayName(card.definitionId) + (countsAs ? ' as ' + cardIdDisplayName(countsAs) : '')">
+                <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
+                  <app-playing-card size="small" [card]="card" />
+                </button>
+                @if (countsAs) {
+                  <span class="counts-as">As {{ cardIdDisplayName(countsAs) }}</span>
+                }
+              </div>
+            } @empty {
+              <div class="slot empty" title="Judgment Area (empty)"><mat-icon>balance</mat-icon></div>
+            }
+          </div>
+        </section>
+      </div>
+      <!-- Status lines in the seat's force colour. -->
+      @if (seat().eliminated) {
+        <div class="status force-status" [attr.data-force]="force()">Eliminated</div>
+      } @else if (dying() ?? seat().combinedHp <= 0) {
+        <div class="status force-status dying" [attr.data-force]="force()">Dying…</div>
+      } @else if (isResponding()) {
+        <div class="status force-status" [attr.data-force]="force()">Responding…</div>
+      }
+    </div>
+  `,
+  styles: `
+    .tile {
+      box-sizing: border-box;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: #fffdf7;
+      border: 2px solid var(--force);
+      border-radius: 14px;
+      padding: 8px 10px;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 25%);
+      font-size: 1.1em;
+      text-align: center;
+    }
+    /* The border and name are the seat's force colour (data-force, styles.scss);
+       a hidden or force-less seat is yellow. */
+    .header strong { color: var(--force-text); }
+    /* Highlights add to the force colour rather than replacing it. */
+    .tile.turn-owner { border-width: 4px; padding: 6px 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--force) 40%, transparent), 0 2px 6px rgb(0 0 0 / 25%); }
+    .tile.responding { box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgb(230 81 0 / 70%); }
+    /* Faded, but the status line keeps its force colour. */
+    .tile.eliminated > :not(.status) { opacity: 0.45; filter: grayscale(1); }
+    .bot-icon { font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-left: 3px; color: #666; }
+    .you { margin-left: 4px; color: var(--mat-sys-primary); }
+    .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; align-items: center; }
+    .choosing { font-style: italic; color: #666; }
+    .stats { display: flex; flex-wrap: wrap; gap: 2px 8px; justify-content: center; align-items: center; white-space: nowrap; }
+    .hp-icons { display: inline-flex; gap: 1px; vertical-align: middle; }
+    .hp-icon { height: 20px; width: auto; }
+    .kingdom { padding: 0 5px; border-radius: 6px; background: #e6e1e5; }
+    .kingdom-Wei { background: #d6e4ff; }
+    .kingdom-Shu { background: #ffd9d6; }
+    .kingdom-Wu { background: #d6f5dc; }
+    .hand-count { display: inline-flex; align-items: center; gap: 2px; }
+    .hand-count mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    .status { font-weight: bold; margin-top: 2px; }
+    .sections { flex: 1; min-height: 0; display: flex; gap: 6px; align-items: stretch; }
+    /* Three equal-height panels: General, Equipment, Judgment. */
+    .panel { box-sizing: border-box; padding: 4px 6px; border: 1px solid #d5c8ad; border-radius: 8px; background: #fbf7ec; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .general { flex: 1; min-width: 0; }
+    .equipment, .judgment-section { flex: none; }
+    .equip { display: grid; grid-template-columns: repeat(2, 44px); gap: 5px; justify-content: center; }
+    .generals { position: relative; }
+    .generals.face-down app-seat-avatar { filter: grayscale(0.6) brightness(0.8); }
+    .form-badge, .silenced-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
+    .face-down-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
+    .pile { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
+    .slot { position: relative; width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
+    /* A card placed as another (Country Scene's Capture): named over its bottom edge. */
+    .counts-as { position: absolute; left: 0; right: 0; bottom: 0; font-size: 9px; line-height: 1.2; text-align: center; background: rgb(251 247 236 / 0.9); pointer-events: none; }
+    .slot-card { padding: 0; border: none; background: none; cursor: pointer; display: block; }
+    .slot-card:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: -2px; }
+    .judgment { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+    .slot.empty mat-icon { font-size: 22px; width: 22px; height: 22px; color: #b9a37a; }
+  `,
+})
+export class SeatTile {
+  readonly seat = input.required<Seat>();
+  readonly name = input.required<string>();
+  readonly handCount = input.required<number>();
+  readonly isTurnOwner = input(false);
+  // The viewer's own active skills, shown on the avatar.
+  readonly skills = input<AvatarSkill[]>([]);
+  readonly useSkill = output<Action>();
+  readonly isResponding = input(false);
+  readonly isViewer = input(false);
+  readonly isBot = input(false);
+  readonly equipment = input<CardInstance[]>([]);
+  readonly judgment = input<CardInstance[]>([]);
+  // The cards kept face up under the seat's General (Refusing Death).
+  readonly pile = input<CardInstance[]>([]);
+  // Cards in the seat's stash pile (Deng Ai's Farms), face up.
+  readonly stash = input<CardInstance[]>([]);
+  // The General whose skill Zuo Ci holds now (his chosen Form), shown to everyone.
+  readonly formName = computed(() => {
+    const chosen = this.seat().forms?.chosen;
+    return chosen ? `${generalDisplayData(chosen.generalId)?.name ?? 'Form'} (${abilityName(chosen.skillId)})` : null;
+  });
+  // Whether the seat is dying, when the parent knows (a seat Refusing Death
+  // keeps alive below 1 HP isn't); null: judged by its HP.
+  readonly dying = input<boolean | null>(null);
+  // What each Judgment slot card counts as, when placed as another card.
+  readonly judgmentCountsAs = input<Record<string, string>>({});
+
+  // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a
+  // seat that belongs to no force).
+  protected readonly force = computed(() => forceOf(this.seat().kingdom));
+  protected readonly hpIcons = computed(() => hpIconUrls(this.seat().combinedHp));
+
+
+  private readonly dialog = inject(MatDialog);
+
+  protected openInfo(card: CardInstance): void {
+    this.dialog.open<CardInfoDialog, CardInfoDialogData>(CardInfoDialog, {
+      data: { card, name: CardInfoDialog.nameFor(card.definitionId, undefined) },
+      width: 'min(92vw, 480px)',
+    });
+  }
+
+
+  protected readonly slots = computed(() =>
+    EQUIP_SLOTS.map((slot) => ({
+      slot,
+      ...SLOT_LABELS[slot],
+      card: this.equipment().find((c) => equipSlotOf(c.definitionId) === slot) ?? null,
+    }))
+  );
+  protected readonly cardIdDisplayName = cardIdDisplayName;
+
+  protected readonly kingdomDisplayName = kingdomDisplayName;
+}
+
+// Whether `seat` is dying: at 0 HP or below, unless a skill keeps it alive there
+// (cards under its General, Refusing Death) and no rescue round is asking for it.
+export function seatIsDying(state: GameState, seat: Seat): boolean {
+  if (seat.eliminated || seat.combinedHp > 0) return false;
+  const rescuing = state.pendingResponse?.reason?.kind === 'dying' && state.pendingResponse.reason.seatId === seat.id;
+  const pile = seat.pile ? (state.zones.find((z) => z.id === seat.pile!.zoneId)?.cards.length ?? 0) : 0;
+  return rescuing || pile === 0;
+}

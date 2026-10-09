@@ -1,0 +1,19 @@
+{
+  "mount": "defensive",
+  "name": "Hua Liu",
+  "nameZh": "骅骝",
+  "printings": [
+    {
+      "rank": 13,
+      "suit": "diamond"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-05",
+    "expansion": "Army",
+    "mountFrom": "card art",
+    "printingsFrom": "army/EX printing list (manual, not crawled)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/hua-liu"
+  }
+}

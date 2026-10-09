@@ -1,0 +1,26 @@
+{
+  "gender": "female",
+  "maxHp": 3,
+  "name": "Huang Yueying",
+  "nameZh": "黄月英",
+  "skills": [
+    {
+      "name": "Gathering Wisdom",
+      "nameZh": "集智",
+      "text": "Whenever Huang Yueying uses a non-delay tool card, she immediately draws a card."
+    },
+    {
+      "name": "Wondrous Talent",
+      "nameZh": "奇才",
+      "text": "Whenever Huang Yueying uses a tool card, she has no range restrictions."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-huang-yueying"
+  },
+  "title": "Veiled Heroine",
+  "titleZh": "归隐的杰女"
+}

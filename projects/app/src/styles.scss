@@ -1,0 +1,97 @@
+@use '@angular/material' as mat;
+@use './theme-colors' as theme;
+
+// Material 3 theme for everything that is not about a kingdom: "ink and
+// parchment". It has no hue of its own, so the force colours (below) are the
+// only colours on screen. Palettes generated from ink (#3b332c), a softer ink
+// (#6b6058) and a warm neutral (#7d756b); regenerate _theme-colors.scss with
+// `ng generate @angular/material:theme-color` to change them. The overrides
+// pin the primary to the ink itself and the page to parchment.
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        primary: theme.$primary-palette,
+        tertiary: theme.$tertiary-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+  @include mat.theme-overrides(
+    (
+      primary: #3b332c,
+      on-primary: #ffffff,
+      surface: #f7f1e6,
+    )
+  );
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font-family: Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.mat-mdc-menu-item.current { font-weight: 600; background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent); }
+
+// The force colours — Wei, Shu, Wu, Qun — and yellow for a seat whose force is
+// hidden or that belongs to none. Seat borders and status text both use these.
+:root {
+  --force-wei: #3f6fd8;
+  --force-shu: #d84a3f;
+  --force-wu: #2f9e58;
+  --force-qun: #8a7f8c;
+  --force-none: #e0a800;
+  // The same yellow, deep enough to read as text on a light background.
+  --force-none-text: #a87b00;
+}
+
+// Anything tagged with a player's force (data-force="Wei" | … | "none") gets
+// --force for borders, bars and fills, and --force-text for text on a light
+// background.
+[data-force] { --force: var(--force-none); --force-text: var(--force-none-text); }
+[data-force='Wei'] { --force: var(--force-wei); --force-text: var(--force-wei); }
+[data-force='Shu'] { --force: var(--force-shu); --force-text: var(--force-shu); }
+[data-force='Wu'] { --force: var(--force-wu); --force-text: var(--force-wu); }
+[data-force='Qun'] { --force: var(--force-qun); --force-text: var(--force-qun); }
+
+// A decision dialog (Response, Ask, Choice, Selection, Arrange, Discard) takes
+// the deciding seat's force colour: a coloured top edge, title and primary
+// accents. The surface itself stays parchment. See openForceDialog.
+.force-dialog-Wei { --force: var(--force-wei); --force-text: var(--force-wei); }
+.force-dialog-Shu { --force: var(--force-shu); --force-text: var(--force-shu); }
+.force-dialog-Wu { --force: var(--force-wu); --force-text: var(--force-wu); }
+.force-dialog-Qun { --force: var(--force-qun); --force-text: var(--force-qun); }
+.force-dialog-none { --force: var(--force-none); --force-text: var(--force-none-text); }
+.force-dialog {
+  // Primary accents used directly by dialog styles (outlines, picked tiles, prompts).
+  --mat-sys-primary: var(--force-text);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: color-mix(in srgb, var(--force) 18%, white);
+  // Material components read their own tokens, resolved at the root, so the
+  // force colour has to be set on those tokens too.
+  --mat-button-filled-container-color: var(--force-text);
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-text-label-text-color: var(--force-text);
+  --mat-button-outlined-label-text-color: var(--force-text);
+  --mat-radio-selected-icon-color: var(--force-text);
+  --mat-radio-selected-hover-icon-color: var(--force-text);
+  --mat-radio-selected-focus-icon-color: var(--force-text);
+  --mat-radio-selected-pressed-icon-color: var(--force-text);
+  --mat-radio-ripple-color: var(--force);
+  --mat-checkbox-selected-icon-color: var(--force-text);
+  --mat-checkbox-selected-hover-icon-color: var(--force-text);
+  --mat-checkbox-selected-focus-icon-color: var(--force-text);
+  --mat-checkbox-selected-pressed-icon-color: var(--force-text);
+  --mat-checkbox-selected-checkmark-color: #ffffff;
+  .mat-mdc-dialog-surface { border-top: 4px solid var(--force); }
+  .mat-mdc-dialog-title { color: var(--force-text); }
+}
+
+// Text about a player's status (HP lost, dying, eliminated…), in that player's
+// force colour: <span class="force-status" data-force="Wei">…</span>.
+.force-status { font-weight: 600; color: var(--force-text, var(--force-none-text)); }

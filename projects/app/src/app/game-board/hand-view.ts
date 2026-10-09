@@ -1,0 +1,200 @@
+import { Component, computed, inject, input, output } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { Action, CardInstance, ContentRegistry, GameState, Target } from 'engine';
+import { actionLabel, targetLabel } from '../labels';
+import { PlayingCard } from './playing-card';
+import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
+import { TargetsDialog, TargetsDialogData } from './targets-dialog';
+
+type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
+
+interface HandCardViewModel {
+  card: CardInstance;
+  name: string;
+  actions: { action: Action; label: string }[];
+  // Two-seat plays (Coerce: the holder, then the victim), grouped by first seat.
+  pairs: { seatId: string; label: string; seconds: { action: Action; label: string }[] }[] | null;
+  // A lone targeted play is still shown as a menu: the viewer decides whether
+  // the only target is really the one they want.
+  confirmTargets: boolean;
+  // A play with several equal targets (Sha with Sky Scorcher): picked in the Choose Targets window.
+  template: PlayCard | null;
+}
+
+function cardInstanceIdOf(action: Action): string | undefined {
+  return action.kind === 'PlayCardAction' ? action.cardInstanceId : undefined;
+}
+
+// Two-seat plays grouped by their first seat, in order: "Play Coerce
+// Targeting Seat 1", then "At Seat 2".
+function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegistry): NonNullable<HandCardViewModel['pairs']> {
+  const groups: NonNullable<HandCardViewModel['pairs']> = [];
+  for (const play of plays) {
+    const [first, second]: Target[] = play.targets;
+    let group = groups.find((g) => g.seatId === first.seatId);
+    if (!group) {
+      group = { seatId: first.seatId, label: actionLabel({ ...play, targets: [first] }, state, registry), seconds: [] };
+      groups.push(group);
+    }
+    group.seconds.push({ action: play, label: `At ${targetLabel(second, state.players)}` });
+  }
+  return groups;
+}
+
+// The viewer's own hand as one row of cards. Hovering (or focusing, for touch)
+// a card reveals its Play button, from the engine's legal actions for that card
+// only, and Info. Discards and responses have their own dialogs.
+@Component({
+  selector: 'app-hand-view',
+  imports: [MatButtonModule, MatIconModule, MatMenuModule, PlayingCard],
+  template: `
+    <div class="hand-row" role="list">
+      @for (vm of cardViewModels(); track vm.card.instanceId) {
+        <div class="hand-card" role="listitem" tabindex="0" [attr.data-card-id]="vm.card.instanceId">
+          <app-playing-card [card]="vm.card" />
+          <div class="overlay">
+            @if (vm.template) {
+              <button mat-flat-button type="button" class="play" (click)="pickTargets(vm)">
+                <mat-icon>play_arrow</mat-icon> Play
+              </button>
+            } @else if (vm.pairs) {
+              <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="firsts">
+                <mat-icon>play_arrow</mat-icon> Play
+              </button>
+              <mat-menu #firsts="matMenu">
+                @for (group of vm.pairs; track group.seatId) {
+                  <button mat-menu-item type="button" [matMenuTriggerFor]="seconds" [matMenuTriggerData]="{ group }">{{ group.label }}</button>
+                }
+              </mat-menu>
+              <mat-menu #seconds="matMenu">
+                <ng-template matMenuContent let-group="group">
+                  @for (second of group.seconds; track second.label) {
+                    <button mat-menu-item type="button" (click)="play.emit(second.action)">{{ second.label }}</button>
+                  }
+                </ng-template>
+              </mat-menu>
+            } @else if (vm.confirmTargets || vm.actions.length > 1) {
+              <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="choices">
+                <mat-icon>play_arrow</mat-icon> Play
+              </button>
+              <mat-menu #choices="matMenu">
+                @for (choice of vm.actions; track choice.action) {
+                  <button mat-menu-item type="button" (click)="play.emit(choice.action)">{{ choice.label }}</button>
+                }
+              </mat-menu>
+            } @else {
+              <button
+                mat-flat-button
+                type="button"
+                class="play"
+                [disabled]="vm.actions.length === 0"
+                (click)="play.emit(vm.actions[0].action)"
+              >
+                <mat-icon>play_arrow</mat-icon> Play
+              </button>
+            }
+            <button mat-stroked-button type="button" class="info" (click)="openInfo(vm)">
+              <mat-icon>info</mat-icon> Info
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <span class="empty">No cards in hand</span>
+      }
+    </div>
+  `,
+  styles: `
+    .hand-row {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 16px 4px 8px;
+    }
+    .hand-card {
+      position: relative;
+      flex: 0 0 auto;
+      border-radius: 6px;
+      transition: transform 150ms;
+      outline: none;
+    }
+    .hand-card:hover,
+    .hand-card:focus-within { transform: translateY(-10px); }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 6px;
+      background: rgb(0 0 0 / 55%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 150ms;
+    }
+    .hand-card:hover .overlay,
+    .hand-card:focus-within .overlay { opacity: 1; pointer-events: auto; }
+    .overlay button {
+      min-width: 0;
+      height: 32px;
+      padding: 0 6px;
+      font-size: 12px;
+      --mat-button-outlined-label-text-color: #fff;
+    }
+    .overlay mat-icon { margin-right: 2px; font-size: 18px; width: 18px; height: 18px; }
+    .empty { color: var(--mat-sys-on-surface-variant); }
+  `,
+})
+export class HandView {
+  readonly cards = input.required<CardInstance[]>();
+  readonly actions = input.required<Action[]>();
+  readonly state = input.required<GameState>();
+  readonly registry = input.required<ContentRegistry>();
+  readonly play = output<Action>();
+
+  private readonly dialog = inject(MatDialog);
+
+  protected readonly cardViewModels = computed<HandCardViewModel[]>(() =>
+    this.cards().map((card) => {
+      const plays = this.actions().filter((a): a is PlayCard => a.kind === 'PlayCardAction' && a.cardInstanceId === card.instanceId);
+      const pairs = plays.length > 0 && plays.every((p) => p.targets.length === 2) ? groupPairs(plays, this.state(), this.registry()) : null;
+      const actions = this.actions()
+        .filter((action) => cardInstanceIdOf(action) === card.instanceId)
+        .map((action) => ({ action, label: actionLabel(action, this.state(), this.registry()) }));
+      return {
+        card,
+        name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name),
+        actions,
+        pairs,
+        confirmTargets: plays.length > 0 && plays.every((p) => p.targets.length > 0),
+        template: plays.find((p) => !!p.pickTargets) ?? null,
+      };
+    })
+  );
+
+  // The Choose Targets window, then the play at the seats picked (none: nothing is played).
+  protected pickTargets(vm: HandCardViewModel): void {
+    const template = vm.template;
+    if (!template?.pickTargets) return;
+    this.dialog
+      .open<TargetsDialog, TargetsDialogData, string[]>(TargetsDialog, { data: { title: vm.name, pick: template.pickTargets, state: this.state() }, width: 'min(92vw, 420px)' })
+      .beforeClosed()
+      .subscribe((ids) => {
+        if (!ids?.length) return;
+        const { pickTargets: _pick, ...play } = template;
+        this.play.emit({ ...play, targets: ids.map((seatId) => ({ kind: 'seat' as const, seatId })) });
+      });
+  }
+
+  protected openInfo(vm: HandCardViewModel): void {
+    this.dialog.open<CardInfoDialog, CardInfoDialogData>(CardInfoDialog, {
+      data: { card: vm.card, name: vm.name },
+      width: 'min(92vw, 480px)',
+    });
+  }
+}

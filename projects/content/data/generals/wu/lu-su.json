@@ -1,0 +1,27 @@
+{
+  "gender": "male",
+  "maxHp": 3,
+  "name": "Lu Su",
+  "nameZh": "鲁肃",
+  "skills": [
+    {
+      "name": "Charity",
+      "nameZh": "好施",
+      "text": "Lu Su can choose to draw an additional two cards. If he has more than five cards afterward, Lu Su must give half of his hand, rounded down, to a character with the least number of hand cards."
+    },
+    {
+      "name": "Alliance",
+      "nameZh": "缔盟",
+      "text": "Once per turn, Lu Su can discard X cards to force two characters to exchange hands, where X is the difference in the number of hand cards between the two characters."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Forest",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-lu-su"
+  },
+  "title": "Arbitrary Diplomat",
+  "titleZh": "独断的外交家"
+}

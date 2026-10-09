@@ -1,0 +1,27 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Deng Ai",
+  "nameZh": "邓艾",
+  "skills": [
+    {
+      "name": "Military Farm",
+      "nameZh": "屯田",
+      "text": "Whenever Deng Ai loses cards outside his turn, he can flip a judgment. If it is not a heart, it becomes a Farm, and he acquires it. Each Farm Deng Ai has grants him a -1 horse."
+    },
+    {
+      "name": "Strategic Pass",
+      "nameZh": "凿险",
+      "text": "Awakened Ability: When Deng Ai starts his turn with three or more Farms, he must decrease his maximum health level by one. He then permanently gains the ability to use his Farms as Steals."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Mountain",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-deng-ai"
+  },
+  "title": "Warrior Gaining Strength",
+  "titleZh": "矫然的壮士"
+}

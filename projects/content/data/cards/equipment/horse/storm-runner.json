@@ -1,0 +1,19 @@
+{
+  "count": 1,
+  "mount": "defensive",
+  "name": "Storm Runner",
+  "nameZh": "爪黄飞电",
+  "printings": [
+    {
+      "rank": 13,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "mountFrom": "card art",
+    "printingsFrom": "standard-edition printing list (manual, not crawled)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/storm-runner"
+  }
+}

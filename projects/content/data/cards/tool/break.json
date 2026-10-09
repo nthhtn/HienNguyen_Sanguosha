@@ -1,0 +1,37 @@
+{
+  "count": 6,
+  "name": "Break",
+  "nameZh": "过河拆桥",
+  "printings": [
+    {
+      "rank": 3,
+      "suit": "spade"
+    },
+    {
+      "rank": 4,
+      "suit": "spade"
+    },
+    {
+      "rank": 12,
+      "suit": "spade"
+    },
+    {
+      "rank": 3,
+      "suit": "club"
+    },
+    {
+      "rank": 4,
+      "suit": "club"
+    },
+    {
+      "rank": 12,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/break"
+  },
+  "text": "A player chooses a card from any other player and discards it."
+}

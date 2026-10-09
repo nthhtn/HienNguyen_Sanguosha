@@ -1,0 +1,703 @@
+{
+  "ancient-scimitar": {
+    "crawledAt": "2026-10-05",
+    "height": 656,
+    "localPath": "cards/equipment/weapon/ancient-scimitar.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/ancient-scimitar",
+    "width": 448
+  },
+  "axe": {
+    "crawledAt": "2026-09-24",
+    "height": 973,
+    "localPath": "cards/equipment/weapon/axe.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/axe",
+    "width": 665
+  },
+  "barbarians": {
+    "crawledAt": "2026-10-02",
+    "height": 976,
+    "localPath": "cards/tool/barbarians.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/barbarians",
+    "width": 667
+  },
+  "black-pommel": {
+    "crawledAt": "2026-09-24",
+    "height": 977,
+    "localPath": "cards/equipment/weapon/black-pommel.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/black-pommel",
+    "width": 667
+  },
+  "black-shield": {
+    "crawledAt": "2026-10-05",
+    "height": 977,
+    "localPath": "cards/equipment/armor/black-shield.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/ex/black-shield",
+    "width": 667
+  },
+  "blaze": {
+    "crawledAt": "2026-10-05",
+    "height": 968,
+    "localPath": "cards/tool/blaze.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/blaze",
+    "width": 661
+  },
+  "break": {
+    "crawledAt": "2026-10-02",
+    "height": 966,
+    "localPath": "cards/tool/break.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/break",
+    "width": 660
+  },
+  "cai-wenji": {
+    "crawledAt": "2026-10-02",
+    "height": 978,
+    "localPath": "generals/qun/cai-wenji.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-cai-wenji",
+    "width": 668
+  },
+  "cao-cao": {
+    "crawledAt": "2026-09-24",
+    "height": 967,
+    "localPath": "generals/wei/cao-cao.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-cao-cao",
+    "width": 660
+  },
+  "cao-pi": {
+    "crawledAt": "2026-10-02",
+    "height": 997,
+    "localPath": "generals/wei/cao-pi.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-cao-pi",
+    "width": 681
+  },
+  "cao-ren": {
+    "crawledAt": "2026-10-02",
+    "height": 968,
+    "localPath": "generals/wei/cao-ren.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-cao-ren",
+    "width": 661
+  },
+  "capture": {
+    "crawledAt": "2026-10-02",
+    "height": 654,
+    "localPath": "cards/tool/capture.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/capture",
+    "width": 974
+  },
+  "chains": {
+    "crawledAt": "2026-10-05",
+    "height": 969,
+    "localPath": "cards/tool/chains.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/chains",
+    "width": 662
+  },
+  "coerce": {
+    "crawledAt": "2026-10-02",
+    "height": 961,
+    "localPath": "cards/tool/coerce.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/coerce",
+    "width": 656
+  },
+  "crossbow": {
+    "crawledAt": "2026-09-24",
+    "height": 965,
+    "localPath": "cards/equipment/weapon/crossbow.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/crossbow",
+    "width": 659
+  },
+  "da-qiao": {
+    "crawledAt": "2026-09-24",
+    "height": 963,
+    "localPath": "generals/wu/da-qiao.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-da-qiao",
+    "width": 658
+  },
+  "da-yuan": {
+    "crawledAt": "2026-09-24",
+    "height": 983,
+    "localPath": "cards/equipment/horse/da-yuan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/da-yuan",
+    "width": 671
+  },
+  "deng-ai": {
+    "crawledAt": "2026-10-02",
+    "height": 978,
+    "localPath": "generals/wei/deng-ai.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-deng-ai",
+    "width": 668
+  },
+  "di-lu": {
+    "crawledAt": "2026-09-24",
+    "height": 977,
+    "localPath": "cards/equipment/horse/di-lu.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/di-lu",
+    "width": 667
+  },
+  "dian-wei": {
+    "crawledAt": "2026-10-02",
+    "height": 964,
+    "localPath": "generals/wei/dian-wei.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-dian-wei",
+    "width": 658
+  },
+  "diao-chan": {
+    "crawledAt": "2026-09-24",
+    "height": 965,
+    "localPath": "generals/qun/diao-chan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-diao-chan",
+    "width": 659
+  },
+  "dong-zhuo": {
+    "crawledAt": "2026-10-02",
+    "height": 997,
+    "localPath": "generals/qun/dong-zhuo.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-dong-zhuo",
+    "width": 681
+  },
+  "draw-two": {
+    "crawledAt": "2026-09-24",
+    "height": 977,
+    "localPath": "cards/tool/draw-two.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/draw-two",
+    "width": 667
+  },
+  "duel": {
+    "crawledAt": "2026-09-24",
+    "height": 984,
+    "localPath": "cards/tool/duel.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/duel",
+    "width": 672
+  },
+  "eight-trigrams": {
+    "crawledAt": "2026-09-24",
+    "height": 979,
+    "localPath": "cards/equipment/armor/eight-trigrams.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/eight-trigrams",
+    "width": 669
+  },
+  "fire-attack": {
+    "crawledAt": "2026-10-05",
+    "height": 970,
+    "localPath": "cards/basic/fire-attack.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/fire-attack",
+    "width": 663
+  },
+  "fire-fan": {
+    "crawledAt": "2026-10-05",
+    "height": 966,
+    "localPath": "cards/equipment/weapon/fire-fan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/fire-fan",
+    "width": 660
+  },
+  "fire-zhuge-liang": {
+    "crawledAt": "2026-10-02",
+    "height": 969,
+    "localPath": "generals/shu/fire-zhuge-liang.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-zhuge-liang",
+    "width": 662
+  },
+  "gan-ning": {
+    "crawledAt": "2026-09-24",
+    "height": 967,
+    "localPath": "generals/wu/gan-ning.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-gan-ning",
+    "width": 660
+  },
+  "gender-swords": {
+    "crawledAt": "2026-09-24",
+    "height": 982,
+    "localPath": "cards/equipment/weapon/gender-swords.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/gender-swords",
+    "width": 671
+  },
+  "green-dragon-blade": {
+    "crawledAt": "2026-09-24",
+    "height": 656,
+    "localPath": "cards/equipment/weapon/green-dragon-blade.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/green-dragon-blade",
+    "width": 448
+  },
+  "guan-yu": {
+    "crawledAt": "2026-09-24",
+    "height": 965,
+    "localPath": "generals/shu/guan-yu.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-guan-yu",
+    "width": 659
+  },
+  "guo-jia": {
+    "crawledAt": "2026-09-24",
+    "height": 964,
+    "localPath": "generals/wei/guo-jia.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-guo-jia",
+    "width": 658
+  },
+  "hail-of-arrows": {
+    "crawledAt": "2026-10-02",
+    "height": 973,
+    "localPath": "cards/tool/hail-of-arrows.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/hail-of-arrows",
+    "width": 665
+  },
+  "harvest": {
+    "crawledAt": "2026-10-02",
+    "height": 982,
+    "localPath": "cards/tool/harvest.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/harvest",
+    "width": 671
+  },
+  "hua-liu": {
+    "crawledAt": "2026-10-05",
+    "height": 977,
+    "localPath": "cards/equipment/horse/hua-liu.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/hua-liu",
+    "width": 667
+  },
+  "hua-tuo": {
+    "crawledAt": "2026-09-24",
+    "height": 965,
+    "localPath": "generals/qun/hua-tuo.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-hua-tuo",
+    "width": 659
+  },
+  "huang-gai": {
+    "crawledAt": "2026-09-24",
+    "height": 981,
+    "localPath": "generals/wu/huang-gai.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-huang-gai",
+    "width": 670
+  },
+  "huang-yueying": {
+    "crawledAt": "2026-09-24",
+    "height": 965,
+    "localPath": "generals/shu/huang-yueying.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-huang-yueying",
+    "width": 659
+  },
+  "huang-zhong": {
+    "crawledAt": "2026-10-02",
+    "height": 969,
+    "localPath": "generals/shu/huang-zhong.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-huang-zhong",
+    "width": 662
+  },
+  "ice-sword": {
+    "crawledAt": "2026-10-05",
+    "height": 976,
+    "localPath": "cards/equipment/weapon/ice-sword.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/ex/ice-sword",
+    "width": 667
+  },
+  "jia-xu": {
+    "crawledAt": "2026-10-02",
+    "height": 995,
+    "localPath": "generals/qun/jia-xu.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-jia-xu",
+    "width": 680
+  },
+  "jiang-wei": {
+    "crawledAt": "2026-10-02",
+    "height": 978,
+    "localPath": "generals/shu/jiang-wei.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-jiang-wei",
+    "width": 668
+  },
+  "lightning": {
+    "crawledAt": "2026-10-02",
+    "height": 655,
+    "localPath": "cards/tool/lightning.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/lightning",
+    "width": 975
+  },
+  "lightning-attack": {
+    "crawledAt": "2026-10-05",
+    "height": 977,
+    "localPath": "cards/basic/lightning-attack.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/lightning-attack",
+    "width": 667
+  },
+  "liu-bei": {
+    "crawledAt": "2026-09-24",
+    "height": 971,
+    "localPath": "generals/shu/liu-bei.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-liu-bei",
+    "width": 663
+  },
+  "liu-shan": {
+    "crawledAt": "2026-10-07",
+    "height": 978,
+    "localPath": "generals/shu/liu-shan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-liu-shan",
+    "width": 668
+  },
+  "longbow": {
+    "crawledAt": "2026-09-24",
+    "height": 979,
+    "localPath": "cards/equipment/weapon/longbow.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/longbow",
+    "width": 669
+  },
+  "lu-bu": {
+    "crawledAt": "2026-09-24",
+    "height": 964,
+    "localPath": "generals/qun/lu-bu.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-lu-bu",
+    "width": 658
+  },
+  "lu-meng": {
+    "crawledAt": "2026-09-24",
+    "height": 968,
+    "localPath": "generals/wu/lu-meng.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-lu-meng",
+    "width": 661
+  },
+  "lu-su": {
+    "crawledAt": "2026-10-02",
+    "height": 996,
+    "localPath": "generals/wu/lu-su.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-lu-su",
+    "width": 680
+  },
+  "lu-xun": {
+    "crawledAt": "2026-09-24",
+    "height": 967,
+    "localPath": "generals/wu/lu-xun.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-lu-xun",
+    "width": 660
+  },
+  "ma-chao": {
+    "crawledAt": "2026-09-24",
+    "height": 968,
+    "localPath": "generals/shu/ma-chao.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-ma-chao",
+    "width": 661
+  },
+  "meng-huo": {
+    "crawledAt": "2026-10-02",
+    "height": 995,
+    "localPath": "generals/shu/meng-huo.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-meng-huo",
+    "width": 680
+  },
+  "pang-de": {
+    "crawledAt": "2026-10-02",
+    "height": 963,
+    "localPath": "generals/qun/pang-de.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-pang-de",
+    "width": 658
+  },
+  "pang-tong": {
+    "crawledAt": "2026-10-07",
+    "height": 959,
+    "localPath": "generals/shu/pang-tong.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-pang-tong",
+    "width": 655
+  },
+  "peach": {
+    "crawledAt": "2026-09-24",
+    "height": 967,
+    "localPath": "cards/basic/peach.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach",
+    "width": 660
+  },
+  "peach-garden": {
+    "crawledAt": "2026-10-02",
+    "height": 981,
+    "localPath": "cards/tool/peach-garden.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach-garden",
+    "width": 670
+  },
+  "red-hare": {
+    "crawledAt": "2026-09-24",
+    "height": 977,
+    "localPath": "cards/equipment/horse/red-hare.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/red-hare",
+    "width": 667
+  },
+  "serpent-spear": {
+    "crawledAt": "2026-09-24",
+    "height": 979,
+    "localPath": "cards/equipment/weapon/serpent-spear.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/serpent-spear",
+    "width": 669
+  },
+  "sha": {
+    "crawledAt": "2026-09-24",
+    "height": 969,
+    "localPath": "cards/basic/sha.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/attack",
+    "width": 662
+  },
+  "shadow-runner": {
+    "crawledAt": "2026-09-24",
+    "height": 977,
+    "localPath": "cards/equipment/horse/shadow-runner.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/shadow-runner",
+    "width": 667
+  },
+  "shan": {
+    "crawledAt": "2026-09-24",
+    "height": 964,
+    "localPath": "cards/basic/shan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/escape",
+    "width": 658
+  },
+  "silver-lion": {
+    "crawledAt": "2026-10-05",
+    "height": 975,
+    "localPath": "cards/equipment/armor/silver-lion.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/silver-helmet",
+    "width": 666
+  },
+  "sima-yi": {
+    "crawledAt": "2026-09-24",
+    "height": 965,
+    "localPath": "generals/wei/sima-yi.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-sima-yi",
+    "width": 659
+  },
+  "sky-scorcher": {
+    "crawledAt": "2026-09-24",
+    "height": 655,
+    "localPath": "cards/equipment/weapon/sky-scorcher.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/sky-scorcher",
+    "width": 447
+  },
+  "starvation": {
+    "crawledAt": "2026-10-05",
+    "height": 969,
+    "localPath": "cards/tool/starvation.jpg",
+    "note": "Source scan is sideways; rotated 90° counter-clockwise to portrait after download.",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/starvation",
+    "width": 651
+  },
+  "steal": {
+    "crawledAt": "2026-10-02",
+    "height": 971,
+    "localPath": "cards/tool/steal.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/steal",
+    "width": 663
+  },
+  "storm-runner": {
+    "crawledAt": "2026-09-24",
+    "height": 970,
+    "localPath": "cards/equipment/horse/storm-runner.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/storm-runner",
+    "width": 662
+  },
+  "sun-ce": {
+    "crawledAt": "2026-10-02",
+    "height": 978,
+    "localPath": "generals/wu/sun-ce.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-sun-ce",
+    "width": 668
+  },
+  "sun-jian": {
+    "crawledAt": "2026-10-02",
+    "height": 990,
+    "localPath": "generals/wu/sun-jian.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-sun-jian",
+    "width": 676
+  },
+  "sun-quan": {
+    "crawledAt": "2026-09-24",
+    "height": 964,
+    "localPath": "generals/wu/sun-quan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-sun-quan",
+    "width": 658
+  },
+  "sun-shangxiang": {
+    "crawledAt": "2026-09-24",
+    "height": 963,
+    "localPath": "generals/wu/sun-shangxiang.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-sun-shangxiang",
+    "width": 658
+  },
+  "taishi-ci": {
+    "crawledAt": "2026-10-02",
+    "height": 967,
+    "localPath": "generals/wu/taishi-ci.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-taishi-ci",
+    "width": 660
+  },
+  "wei-yan": {
+    "crawledAt": "2026-10-02",
+    "height": 966,
+    "localPath": "generals/shu/wei-yan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-wei-yan",
+    "width": 660
+  },
+  "wine": {
+    "crawledAt": "2026-10-02",
+    "height": 975,
+    "localPath": "cards/basic/wine.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wine",
+    "width": 666
+  },
+  "wood-armor": {
+    "crawledAt": "2026-10-05",
+    "height": 975,
+    "localPath": "cards/equipment/armor/wood-armor.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wood-armor",
+    "width": 666
+  },
+  "wuxie": {
+    "crawledAt": "2026-09-24",
+    "height": 963,
+    "localPath": "cards/tool/wuxie.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/negate",
+    "width": 658
+  },
+  "xiahou-dun": {
+    "crawledAt": "2026-09-24",
+    "height": 968,
+    "localPath": "generals/wei/xiahou-dun.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-xiahou-dun",
+    "width": 661
+  },
+  "xiahou-yuan": {
+    "crawledAt": "2026-10-02",
+    "height": 966,
+    "localPath": "generals/wei/xiahou-yuan.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-xiahou-yuan",
+    "width": 660
+  },
+  "xiao-qiao": {
+    "crawledAt": "2026-10-02",
+    "height": 960,
+    "localPath": "generals/wu/xiao-qiao.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-xiao-qiao",
+    "width": 656
+  },
+  "xu-chu": {
+    "crawledAt": "2026-09-24",
+    "height": 967,
+    "localPath": "generals/wei/xu-chu.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-xu-chu",
+    "width": 660
+  },
+  "xu-huang": {
+    "crawledAt": "2026-10-02",
+    "height": 991,
+    "localPath": "generals/wei/xu-huang.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-xu-huang",
+    "width": 677
+  },
+  "xun-yu": {
+    "crawledAt": "2026-10-02",
+    "height": 965,
+    "localPath": "generals/wei/xun-yu.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-xun-yu",
+    "width": 659
+  },
+  "yan-liang-and-wen-chou": {
+    "crawledAt": "2026-10-02",
+    "height": 967,
+    "localPath": "generals/qun/yan-liang-and-wen-chou.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-yan-liang-and-wen-chou",
+    "width": 660
+  },
+  "yu-ji": {
+    "crawledAt": "2026-10-02",
+    "height": 960,
+    "localPath": "generals/qun/yu-ji.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-yu-ji",
+    "width": 656
+  },
+  "yuan-shao": {
+    "crawledAt": "2026-10-02",
+    "height": 962,
+    "localPath": "generals/qun/yuan-shao.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-yuan-shao",
+    "width": 657
+  },
+  "zhang-fei": {
+    "crawledAt": "2026-09-24",
+    "height": 964,
+    "localPath": "generals/shu/zhang-fei.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhang-fei",
+    "width": 658
+  },
+  "zhang-he": {
+    "crawledAt": "2026-10-02",
+    "height": 978,
+    "localPath": "generals/wei/zhang-he.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-zhang-he",
+    "width": 668
+  },
+  "zhang-jiao": {
+    "crawledAt": "2026-10-02",
+    "height": 967,
+    "localPath": "generals/qun/zhang-jiao.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-zhang-jiao",
+    "width": 660
+  },
+  "zhang-liao": {
+    "crawledAt": "2026-09-24",
+    "height": 966,
+    "localPath": "generals/wei/zhang-liao.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhang-liao",
+    "width": 660
+  },
+  "zhang-zhao-and-zhang-hong": {
+    "crawledAt": "2026-10-02",
+    "height": 978,
+    "localPath": "generals/wu/zhang-zhao-and-zhang-hong.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-zhang-zhao-and-zhang-hong",
+    "width": 668
+  },
+  "zhao-yun": {
+    "crawledAt": "2026-09-24",
+    "height": 967,
+    "localPath": "generals/shu/zhao-yun.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhao-yun",
+    "width": 660
+  },
+  "zhen-ji": {
+    "crawledAt": "2026-09-24",
+    "height": 967,
+    "localPath": "generals/wei/zhen-ji.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhen-ji",
+    "width": 660
+  },
+  "zhou-tai": {
+    "crawledAt": "2026-10-02",
+    "height": 977,
+    "localPath": "generals/wu/zhou-tai.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-zhou-tai",
+    "width": 667
+  },
+  "zhou-yu": {
+    "crawledAt": "2026-09-24",
+    "height": 961,
+    "localPath": "generals/wu/zhou-yu.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhou-yu",
+    "width": 656
+  },
+  "zhu-rong": {
+    "crawledAt": "2026-10-02",
+    "height": 996,
+    "localPath": "generals/shu/zhu-rong.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-zhu-rong",
+    "width": 680
+  },
+  "zhuge-liang": {
+    "crawledAt": "2026-09-24",
+    "height": 964,
+    "localPath": "generals/shu/zhuge-liang.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhuge-liang",
+    "width": 658
+  },
+  "zi-xing": {
+    "crawledAt": "2026-09-24",
+    "height": 977,
+    "localPath": "cards/equipment/horse/zi-xing.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/zi-xing",
+    "width": 667
+  },
+  "zuo-ci": {
+    "crawledAt": "2026-10-02",
+    "height": 978,
+    "localPath": "generals/qun/zuo-ci.jpg",
+    "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-zuo-ci",
+    "width": 668
+  }
+}

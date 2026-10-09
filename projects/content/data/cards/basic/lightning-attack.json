@@ -1,0 +1,50 @@
+{
+  "count": 9,
+  "name": "Lightning Attack",
+  "nameZh": "雷杀",
+  "printings": [
+    {
+      "rank": 4,
+      "suit": "spade"
+    },
+    {
+      "rank": 5,
+      "suit": "spade"
+    },
+    {
+      "rank": 6,
+      "suit": "spade"
+    },
+    {
+      "rank": 7,
+      "suit": "spade"
+    },
+    {
+      "rank": 8,
+      "suit": "spade"
+    },
+    {
+      "rank": 5,
+      "suit": "club"
+    },
+    {
+      "rank": 6,
+      "suit": "club"
+    },
+    {
+      "rank": 7,
+      "suit": "club"
+    },
+    {
+      "rank": 8,
+      "suit": "club"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-05",
+    "expansion": "Army",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/lightning-attack"
+  },
+  "text": "Once per turn, a player can use this to attack anyone within their attacking range. If the target does not use an escape, they receive one unit of lightning damage."
+}

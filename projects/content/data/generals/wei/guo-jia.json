@@ -1,0 +1,26 @@
+{
+  "gender": "male",
+  "maxHp": 3,
+  "name": "Guo Jia",
+  "nameZh": "郭嘉",
+  "skills": [
+    {
+      "name": "Heaven's Envy",
+      "nameZh": "天妒",
+      "text": "Whenever Guo Jia flips a judgement card, he places into his hand before it takes effect."
+    },
+    {
+      "name": "Bestowed Rouse",
+      "nameZh": "遣计",
+      "text": "For each unit of damage that Guo Jia receives, he draws two cards. He can then distribute these cards in any way that he sees fit among the characters in play."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-guo-jia"
+  },
+  "title": "Prophet with an Early End",
+  "titleZh": "早终的先知"
+}

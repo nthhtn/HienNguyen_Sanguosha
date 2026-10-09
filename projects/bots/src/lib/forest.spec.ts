@@ -1,0 +1,116 @@
+import { getLegalActions } from 'engine';
+import type { GameState } from 'engine';
+import { act, asking, card, decide, picked, registry, table, useSkill } from './testing';
+
+// The Forest Generals' bot rules (stage 10 spec, "Bots").
+
+const generals = (a: string, extra: Record<string, [string, string]> = {}) => ({ 'seat-a': [a, 'filler-jiang-wei'] as [string, string], ...extra });
+const choiceOf = (s: GameState, ids: string[], verb: 'pick' | 'give' = 'pick', abilityId = 'x', ownerSeatId = 'seat-a') => ({
+  ...s,
+  pendingChoice: {
+    id: 'c', seatId: 'seat-a', verb,
+    reason: { kind: 'ability' as const, owner: { kind: 'general' as const, seatId: ownerSeatId, slot: 'main' as const, skillId: abilityId }, abilityId },
+    options: ids.map((id) => ({ id, shows: id.startsWith('seat') ? { kind: 'seat' as const, seatId: id } : { kind: 'label' as const, text: id }, effects: [] })),
+  },
+});
+
+describe('asks', () => {
+  it('Unnatural Death and Brave Spirit: always; Exile: always', () => {
+    for (const skill of ['unnatural-death', 'brave-spirit', 'exile']) {
+      expect(picked(decide(asking(table({}, { generals: generals('cao-pi') }), skill)))).toBe('use');
+    }
+  });
+
+  it('Resurgence: only when missing 2 or more HP', () => {
+    const s = (hp: number) => asking(table({}, { generals: generals('meng-huo'), hp: { 'seat-a': hp } }), 'resurgence');
+    expect(picked(decide(s(2)))).toBe('use');
+    expect(picked(decide(s(3)))).toBe('decline');
+  });
+
+  it('Intense Edge: with a card ranked 9 or higher', () => {
+    const s = (rank: number) => asking(table({ 'seat-a:hand': [card('c', 'sha', 'heart', rank)] }, { generals: generals('zhu-rong') }), 'intense-edge', 'seat-b');
+    expect(picked(decide(s(9)))).toBe('use');
+    expect(picked(decide(s(8)))).toBe('decline');
+  });
+
+  it('Charity: with 3 or fewer cards', () => {
+    const hand = (n: number) => Array.from({ length: n }, (_, i) => card(`h${i}`, 'shan', 'heart', i + 1));
+    expect(picked(decide(asking(table({ 'seat-a:hand': hand(3) }, { generals: generals('lu-su') }), 'charity')))).toBe('use');
+    expect(picked(decide(asking(table({ 'seat-a:hand': hand(4) }, { generals: generals('lu-su') }), 'charity')))).toBe('decline');
+  });
+});
+
+describe('choices', () => {
+  it('Exile: the non-ally with the fewest hand cards', () => {
+    const s = choiceOf(table({ 'seat-b:hand': [card('x', 'sha'), card('y', 'sha')], 'seat-c:hand': [card('z', 'sha')], 'seat-d:hand': [card('w', 'sha'), card('v', 'sha')] }, { generals: generals('cao-pi') }), ['seat-b', 'seat-c', 'seat-d'], 'pick', 'exile');
+    expect(picked(decide(s))).toBe('seat-c');
+  });
+
+  it('Collapse: loses HP at 3 or more, else reduces max HP', () => {
+    const s = (hp: number) => choiceOf(table({}, { generals: generals('dong-zhuo'), hp: { 'seat-a': hp } }), ['lose-hp', 'reduce-max-hp'], 'pick', 'collapse');
+    expect(picked(decide(s(3)))).toBe('lose-hp');
+    expect(picked(decide(s(2)))).toBe('reduce-max-hp');
+  });
+
+  it('Upheaval: the weakest non-ally in range, never an ally, else pass', () => {
+    const t = (o: Parameters<typeof table>[1] = {}) => choiceOf(table({}, { generals: generals('filler-xu-huang'), ...o }), ['seat-b', 'seat-d', 'pass'], 'pick', 'upheaval');
+    expect(picked(decide(t({ hp: { 'seat-b': 3, 'seat-d': 2 } })))).toBe('seat-d');
+    expect(picked(decide(t({ kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-d': 'Wei' } })))).toBe('pass');
+  });
+
+  it('Charity: gives to an ally among the tied seats', () => {
+    const s = choiceOf(table({}, { generals: generals('lu-su'), kingdoms: { 'seat-a': 'Wu', 'seat-b': 'Wei', 'seat-c': 'Wu', 'seat-d': 'Shu' } }), ['seat-b', 'seat-c', 'seat-d'], 'give', 'charity');
+    expect(picked(decide(s))).toBe('seat-c');
+  });
+
+  it("Brave Spirit's seat: an ally short of cards, else himself; the target's own pick: draw X for X of 2 or less", () => {
+    const seats = choiceOf(table({ 'seat-c:hand': [] }, { generals: generals('sun-jian'), kingdoms: { 'seat-a': 'Wu', 'seat-b': 'Wei', 'seat-c': 'Wu', 'seat-d': 'Qun' }, hp: { 'seat-a': 2 } }), ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 'pick', 'brave-spirit');
+    expect(picked(decide(seats))).toBe('seat-c');
+    // The target's own pick, X = Sun Jian's missing HP (seat-b: 4 max, 2 HP, so X = 2).
+    const forced = (hp: number, hand: ReturnType<typeof card>[] = []) =>
+      choiceOf(table({ 'seat-a:hand': hand }, { generals: { 'seat-b': ['sun-jian', 'filler-jiang-wei'] }, hp: { 'seat-b': hp } }), ['draw-x', 'draw-1'], 'pick', 'brave-spirit', 'seat-b');
+    expect(picked(decide(forced(2)))).toBe('draw-x');
+    // X = 3 with 4 spare cards: draw 1, discard 3.
+    const spare = Array.from({ length: 4 }, (_, i) => card(`p${i}`, 'sha', 'club', i + 1));
+    expect(picked(decide(forced(1, spare)))).toBe('draw-1');
+    expect(picked(decide(forced(1)))).toBe('draw-x'); // nothing spare to discard
+  });
+});
+
+describe('active skills', () => {
+  it('Alliance: swaps a non-ally’s larger hand into a short ally at a cost it can pay', () => {
+    const cards = (p: string, n: number) => Array.from({ length: n }, (_, i) => card(`${p}${i}`, 'shan', 'heart', i + 1));
+    const t = (aHand: number) =>
+      table({ 'seat-a:hand': cards('a', aHand), 'seat-b:hand': cards('b', 4), 'seat-c:hand': cards('c', 2) }, { generals: generals('lu-su'), kingdoms: { 'seat-a': 'Wu', 'seat-b': 'Wei', 'seat-c': 'Wu', 'seat-d': 'Qun' } });
+    const offered = (s: GameState) => getLegalActions(s, 'seat-a', registry).some((a) => a.kind === 'UseSkillAction');
+    expect(offered(t(3))).toBe(true);
+    const s = decide(t(3));
+    expect(s.kind).toBe('UseSkillAction');
+  });
+
+  it('Upheaval: only with 3 or more non-allies', () => {
+    const t = (kingdoms: Record<string, 'Wei' | 'Shu' | 'Wu' | 'Qun'>) => table({}, { generals: generals('jia-xu'), kingdoms });
+    expect(decide(t({ 'seat-a': 'Qun' })).kind).toBe('UseSkillAction');
+    expect(decide(t({ 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Wei' })).kind).not.toBe('UseSkillAction');
+  });
+});
+
+describe('the Upheaval window', () => {
+  it('answers with a Sha when it holds one, at a non-ally; else passes', () => {
+    // Built directly: seat-b is asked to Sha seat-c.
+    const open = (hasSha: boolean, ally: boolean) => {
+      const t = table({ 'seat-b:hand': hasSha ? [card('s1', 'sha')] : [] }, { kingdoms: { 'seat-a': 'Qun', 'seat-b': 'Wei', 'seat-c': ally ? 'Wei' : 'Shu', 'seat-d': 'Wu' } });
+      return {
+        ...t,
+        pendingResponse: {
+          id: 'w', respondingSeatId: 'seat-b', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
+          reason: { kind: 'ability' as const, owner: { kind: 'general' as const, seatId: 'seat-a', slot: 'main' as const, skillId: 'upheaval' }, abilityId: 'upheaval', targetSeatId: 'seat-c' },
+          context: { effect: { kind: 'LoseHpEffect' as const, seatId: 'seat-b', amount: 1 } },
+        },
+      };
+    };
+    expect(decide(open(true, false)).kind).toBe('RespondAction');
+    expect(decide(open(false, false)).kind).toBe('PassAction');
+    expect(decide(open(true, true)).kind).toBe('PassAction'); // never a Sha at an ally
+  });
+});

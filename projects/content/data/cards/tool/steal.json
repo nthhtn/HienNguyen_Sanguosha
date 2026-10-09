@@ -1,0 +1,33 @@
+{
+  "count": 5,
+  "name": "Steal",
+  "nameZh": "顺手牵羊",
+  "printings": [
+    {
+      "rank": 3,
+      "suit": "spade"
+    },
+    {
+      "rank": 4,
+      "suit": "spade"
+    },
+    {
+      "rank": 11,
+      "suit": "spade"
+    },
+    {
+      "rank": 3,
+      "suit": "diamond"
+    },
+    {
+      "rank": 4,
+      "suit": "diamond"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/steal"
+  },
+  "text": "A player chooses a card from another player within range and puts it in their hand."
+}

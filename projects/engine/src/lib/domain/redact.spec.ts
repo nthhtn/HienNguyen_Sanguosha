@@ -1,0 +1,217 @@
+import { redactStateForSeat } from './redact';
+import { createSeat, createPlayer } from './factories';
+import { GameState, CardZone } from './types';
+
+function makeZones(): CardZone[] {
+  return [
+    {
+      id: 'hand-a',
+      kind: 'hand',
+      ownerSeatId: 'seat-a',
+      cards: [{ instanceId: 'card-1', definitionId: 'sha', suit: 'spade', rank: 7 }],
+    },
+    {
+      id: 'hand-b',
+      kind: 'hand',
+      ownerSeatId: 'seat-b',
+      cards: [
+        { instanceId: 'card-2', definitionId: 'shan', suit: 'heart', rank: 3 },
+        { instanceId: 'card-3', definitionId: 'peach', suit: 'club', rank: 9 },
+      ],
+    },
+    {
+      id: 'draw-pile',
+      kind: 'drawPile',
+      cards: [{ instanceId: 'card-4', definitionId: 'duel', suit: 'diamond', rank: 5 }],
+    },
+    {
+      id: 'discard-pile',
+      kind: 'discardPile',
+      cards: [{ instanceId: 'card-5', definitionId: 'wuxie', suit: 'spade', rank: 2 }],
+    },
+    {
+      id: 'equip-a',
+      kind: 'equip',
+      ownerSeatId: 'seat-a',
+      cards: [{ instanceId: 'card-6', definitionId: 'silver-lion', suit: 'club', rank: 11 }],
+    },
+    { id: 'judgment-b', kind: 'judgment', ownerSeatId: 'seat-b', cards: [] },
+  ];
+}
+
+function makeState(): GameState {
+  const maxHp = () => 4;
+  const seatA = createSeat('seat-a', 0, 'Wei', 'general-x', 'general-y', maxHp);
+  const seatB = createSeat('seat-b', 1, 'Shu', 'general-z', 'general-w', maxHp);
+  return {
+    seats: [seatA, seatB],
+    players: [createPlayer('p1', 'seat-a', 'human'), createPlayer('p2', 'seat-b', 'bot')],
+    turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
+    phase: 'Play',
+    zones: makeZones(),
+    pendingResponse: null,
+    log: [],
+    rng: { seed: 1, counter: 0 },
+    result: null, generalSelection: null,
+  };
+}
+
+describe('redactStateForSeat', () => {
+  it('hides unrevealed generals from other seats but keeps them visible to the owner', () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    const ownSeat = viewFromA.seats.find((s) => s.id === 'seat-a')!;
+    expect(ownSeat.generals!.main.generalDefinitionId).toBe('general-x');
+
+    const otherSeat = viewFromA.seats.find((s) => s.id === 'seat-b')!;
+    expect(otherSeat.generals!.main.generalDefinitionId).toBe('hidden');
+    expect(otherSeat.generals!.deputy.generalDefinitionId).toBe('hidden');
+  });
+
+  it('reveals a general to everyone once revealed is true', () => {
+    const state = makeState();
+    state.seats[1].generals!.main.revealed = true;
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    const otherSeat = viewFromA.seats.find((s) => s.id === 'seat-b')!;
+    expect(otherSeat.generals!.main.generalDefinitionId).toBe('general-z');
+    expect(otherSeat.generals!.deputy.generalDefinitionId).toBe('hidden');
+  });
+
+  it("masks another seat's hand contents but preserves card count and instance ids", () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    const handB = viewFromA.zones.find((z) => z.id === 'hand-b')!;
+    expect(handB.cards).toHaveLength(2);
+    expect(handB.cards.map((c) => c.instanceId)).toEqual(['card-2', 'card-3']);
+    expect(handB.cards.every((c) => c.definitionId === 'hidden')).toBe(true);
+    expect(handB.cards.every((c) => c.suit === 'spade' && c.rank === 0)).toBe(true);
+  });
+
+  it('never masks the viewer\'s own hand', () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    const handA = viewFromA.zones.find((z) => z.id === 'hand-a')!;
+    expect(handA.cards[0].definitionId).toBe('sha');
+  });
+
+  it('masks the draw pile for every viewer, including seat-a', () => {
+    const state = makeState();
+
+    for (const viewerSeatId of ['seat-a', 'seat-b']) {
+      const view = redactStateForSeat(state, viewerSeatId);
+      const drawPile = view.zones.find((z) => z.id === 'draw-pile')!;
+      expect(drawPile.cards[0].definitionId).toBe('hidden');
+    }
+  });
+
+  it('leaves discard pile, equip zones, and judgment zones untouched', () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    expect(viewFromA.zones.find((z) => z.id === 'discard-pile')!.cards[0].definitionId).toBe('wuxie');
+    expect(viewFromA.zones.find((z) => z.id === 'equip-a')!.cards[0].definitionId).toBe('silver-lion');
+  });
+
+  it("masks another seat's kingdom while both generals are hidden", () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    expect(viewFromA.seats.find((s) => s.id === 'seat-b')!.kingdom).toBe('hidden');
+  });
+
+  it('reveals a kingdom once either of that seat\'s generals is revealed', () => {
+    const state = makeState();
+    state.seats[1].generals!.deputy.revealed = true;
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    expect(viewFromA.seats.find((s) => s.id === 'seat-b')!.kingdom).toBe('Shu');
+  });
+
+  it("never masks the viewer's own kingdom", () => {
+    const state = makeState();
+    const viewFromA = redactStateForSeat(state, 'seat-a');
+
+    expect(viewFromA.seats.find((s) => s.id === 'seat-a')!.kingdom).toBe('Wei');
+  });
+});
+
+describe('redactStateForSeat with seats that have not chosen generals', () => {
+  it('passes an unchosen seat through without masking', () => {
+    const state = makeState();
+    state.seats[1] = { ...state.seats[1], generals: null, kingdom: 'hidden' };
+    const redacted = redactStateForSeat(state, 'seat-a');
+    expect(redacted.seats[1].generals).toBeNull();
+    expect(redacted.seats[1].kingdom).toBe('hidden');
+  });
+});
+
+describe('redactStateForSeat: hidden cards in the queue and pending decisions (Review Focus 3)', () => {
+  const secret = { instanceId: 'b-secret', definitionId: 'peach', suit: 'heart' as const, rank: 3 };
+  const used = { as: 'mystery', colour: 'red' as const, physical: [secret] };
+  const leaky: GameState = {
+    seats: [], players: [], turn: { turnNumber: 1, ownerSeatId: 'a', extraTurnStack: [] }, phase: 'Play',
+    zones: [
+      { id: 'a:hand', kind: 'hand', ownerSeatId: 'a', cards: [] },
+      { id: 'b:hand', kind: 'hand', ownerSeatId: 'b', cards: [secret] },
+    ],
+    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
+    resolutionQueue: [{ kind: 'ToolRuleEffect', tool: used, userSeatId: 'b', target: { kind: 'seat', seatId: 'b' } }],
+    pendingChoice: {
+      id: 'c', seatId: 'a', verb: 'take', reason: { kind: 'choice', card: used, userSeatId: 'b' },
+      options: [{ id: 'x', shows: { kind: 'card', card: secret }, effects: [] }],
+    },
+  };
+
+  it('masks another seat’s hand card wherever the queue or a pending choice mentions it', () => {
+    const forA = redactStateForSeat(leaky, 'a');
+    expect(JSON.stringify(forA.resolutionQueue)).not.toContain('"definitionId":"peach"');
+    expect(forA.pendingChoice!.options[0].shows).toEqual({ kind: 'card', card: { instanceId: 'b-secret', definitionId: 'hidden', suit: 'spade', rank: 0 } });
+  });
+
+  it('leaves the card visible to its owner', () => {
+    const forB = redactStateForSeat(leaky, 'b');
+    expect(forB.resolutionQueue).toEqual(leaky.resolutionQueue);
+    expect(forB.pendingChoice).toEqual(leaky.pendingChoice);
+  });
+});
+
+describe('redactStateForSeat: a hidden General’s decision seen by another seat (final review #2)', () => {
+  const owner = { kind: 'general' as const, seatId: 'b', slot: 'main' as const, skillId: 'dragon-courage' };
+  const black = { instanceId: 'b-black', definitionId: 'sha', suit: 'club' as const, rank: 4 };
+  const red = { instanceId: 'b-red', definitionId: 'peach', suit: 'heart' as const, rank: 3 };
+  const seatOf = (id: string, mainRevealed: boolean) => ({
+    id, index: id === 'a' ? 0 : 1, kingdom: 'Shu' as const, eliminated: false, combinedHp: 4, maxCombinedHp: 4,
+    generals: { main: { generalDefinitionId: 'zhao-yun', revealed: mainRevealed }, deputy: { generalDefinitionId: 'x', revealed: false } },
+    hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
+  });
+  const state = (mainRevealed: boolean): GameState => ({
+    seats: [seatOf('a', true), seatOf('b', mainRevealed)], players: [], turn: { turnNumber: 1, ownerSeatId: 'a', extraTurnStack: [] }, phase: 'Play',
+    zones: [
+      { id: 'a:hand', kind: 'hand', ownerSeatId: 'a', cards: [] },
+      { id: 'b:hand', kind: 'hand', ownerSeatId: 'b', cards: [black, red] },
+    ],
+    pendingResponse: null, log: [], rng: { seed: 1, counter: 0 }, result: null, generalSelection: null,
+    pendingSelection: {
+      id: 's', seatId: 'b', reason: { kind: 'ability', owner, abilityId: 'dragon-courage' }, of: 'cards', eligibleIds: ['b-black'], min: 1, max: 1,
+      then: { kind: 'use-card', as: 'shan', via: { owner, abilityId: 'dragon-courage', conversionId: 'sha-as-shan' }, targets: [], counted: false },
+      onCancel: [], onSelect: [{ kind: 'RevealGeneralEffect', seatId: 'b', slot: 'main', forAbilityId: 'dragon-courage' }],
+    },
+  });
+
+  it('hides which skill it is, and which hand cards it may use', () => {
+    const forA = redactStateForSeat(state(false), 'a');
+    expect(JSON.stringify(forA.pendingSelection)).not.toContain('dragon-courage');
+    expect(JSON.stringify(forA.pendingSelection)).not.toContain('sha-as-shan');
+    expect(forA.pendingSelection!.reason).toEqual({ kind: 'ability', owner: { ...owner, skillId: 'hidden' }, abilityId: 'hidden' });
+    expect(forA.pendingSelection!.eligibleIds).toEqual([]);
+  });
+
+  it('shows it all to its own seat, and to others once the General is revealed', () => {
+    expect(redactStateForSeat(state(false), 'b').pendingSelection).toEqual(state(false).pendingSelection);
+    expect(redactStateForSeat(state(true), 'a').pendingSelection!.reason).toEqual({ kind: 'ability', owner, abilityId: 'dragon-courage' });
+  });
+});

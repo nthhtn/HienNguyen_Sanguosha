@@ -1,0 +1,64 @@
+{
+  "count": 12,
+  "name": "Peach",
+  "printings": [
+    {
+      "rank": 12,
+      "suit": "diamond"
+    },
+    {
+      "rank": 3,
+      "suit": "heart"
+    },
+    {
+      "rank": 4,
+      "suit": "heart"
+    },
+    {
+      "rank": 6,
+      "suit": "heart"
+    },
+    {
+      "rank": 7,
+      "suit": "heart"
+    },
+    {
+      "rank": 8,
+      "suit": "heart"
+    },
+    {
+      "rank": 9,
+      "suit": "heart"
+    },
+    {
+      "rank": 12,
+      "suit": "heart"
+    },
+    {
+      "expansion": "Army",
+      "rank": 2,
+      "suit": "diamond"
+    },
+    {
+      "expansion": "Army",
+      "rank": 3,
+      "suit": "diamond"
+    },
+    {
+      "expansion": "Army",
+      "rank": 5,
+      "suit": "heart"
+    },
+    {
+      "expansion": "Army",
+      "rank": 6,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "expansionPrintingsFrom": "AllCards spreadsheet (Army and EX rows), crawled 2026-10-05",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach"
+  }
+}

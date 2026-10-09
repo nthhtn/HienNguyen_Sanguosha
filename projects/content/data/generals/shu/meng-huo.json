@@ -1,0 +1,27 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Meng Huo",
+  "nameZh": "孟获",
+  "skills": [
+    {
+      "name": "Culprit",
+      "nameZh": "祸首",
+      "text": "Meng Huo is not affected by Barbarians and is always considered the source of any damage it causes."
+    },
+    {
+      "name": "Resurgence",
+      "nameZh": "再起",
+      "text": "At the beginning of his turn, if Meng Huo is not at full health, he can skip drawing to flip over X cards from the top of the deck. X is equal to the difference between his current and maximum health. For each heart that is flipped, Meng Huo recovers one health. The heart cards are discarded, and the rest of the cards go into Meng Huo's hand."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Forest",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-meng-huo"
+  },
+  "title": "Southern Barbarian King",
+  "titleZh": "南蛮王"
+}

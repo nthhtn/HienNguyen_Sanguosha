@@ -1,0 +1,16 @@
+/* Used only by the `ng build content` (ng-packagr) architect target — see angular.json.
+   ng-packagr forces `rootDir` to this package's own `src/` directory for every library it
+   packages, so a `paths` entry pointing at a sibling project's raw TypeScript source (as the
+   root tsconfig.json does, for the fast tsc/Jest dev loop) fails with TS6059. This config
+   overrides `engine` to resolve against its built package (`dist/engine`, produced by
+   `ng build engine`) instead, which is declaration-only and not subject to rootDir.
+   Do NOT point `tsc --noEmit` verification at this file — the mandated gate is
+   `tsconfig.lib.json`, which this file does not affect. */
+{
+  "extends": "./tsconfig.lib.json",
+  "compilerOptions": {
+    "paths": {
+      "engine": ["../../dist/engine"]
+    }
+  }
+}

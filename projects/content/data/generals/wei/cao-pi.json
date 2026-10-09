@@ -1,0 +1,33 @@
+{
+  "gender": "male",
+  "maxHp": 3,
+  "name": "Cao Pi",
+  "nameZh": "曹丕",
+  "skills": [
+    {
+      "name": "Unnatural Death",
+      "nameZh": "行殇",
+      "text": "When another character dies, Cao Pi can choose to take all of their cards."
+    },
+    {
+      "name": "Exile",
+      "nameZh": "放逐",
+      "text": "When Cao Pi is damaged, he can choose any character (other than himself) and force them to flip their character card. The flipped character then draws X cards, where X is the difference between Cao Pi's maximum health level and his current health level after the damage was inflicted."
+    },
+    {
+      "lord": true,
+      "name": "Exaltation",
+      "nameZh": "颂威",
+      "text": "King Ability: When a Wei character flips a black judgement card, they can allow Cao Pi to draw a card."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Forest",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-cao-pi"
+  },
+  "title": "Dominating Successor",
+  "titleZh": "霸业的继承者"
+}

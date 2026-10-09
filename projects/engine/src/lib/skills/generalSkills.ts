@@ -1,0 +1,60 @@
+import { GameState, GeneralOwner } from '../domain/types';
+import { ContentRegistry, SkillDefinition } from '../registry/types';
+import { findSkill } from '../registry/lookup';
+
+// One skill of a seat's Generals that is in play, and whether using it
+// reveals its General first (the General is hidden).
+export interface SkillInPlay {
+  owner: GeneralOwner;
+  skill: SkillDefinition;
+  needsReveal: boolean;
+}
+
+const SLOTS = ['main', 'deputy'] as const;
+
+// The skills of `seatId`'s Generals that are in play, Main first, in skill
+// order. All of a revealed General's. A hidden General's compulsory skills are
+// off (its modifiers with them); its other skills are offered, but using one
+// reveals it. Lord skills never are: Kingdom War has no Lord. An eliminated
+// seat has none.
+export function skillsInPlay(state: GameState, seatId: string, registry: ContentRegistry): SkillInPlay[] {
+  const seat = state.seats.find((s) => s.id === seatId);
+  if (!seat || seat.eliminated || !seat.generals || seat.silenced) return [];
+  const found: SkillInPlay[] = [];
+  // `unique`: a gained or borrowed skill the seat already holds on its other General adds nothing.
+  const add = (slot: 'main' | 'deputy', skill: SkillDefinition | undefined, unique = false) => {
+    const general = seat.generals![slot];
+    if (!skill || skill.lord || (!general.revealed && skill.compulsory)) return;
+    if (found.some((f) => f.skill.id === skill.id && (unique || f.owner.slot === slot))) return;
+    found.push({ owner: { kind: 'general', seatId, slot, skillId: skill.id }, skill, needsReveal: !general.revealed });
+  };
+  for (const slot of SLOTS) {
+    for (const skill of registry.generals.get(seat.generals[slot].generalDefinitionId)?.skills ?? []) add(slot, skill);
+  }
+  // Skills gained for good, then the chosen spare General's skill.
+  for (const { slot, skillId } of seat.gainedSkills ?? []) add(slot, findSkill(registry, skillId), true);
+  if (seat.forms?.chosen) {
+    const { generalId, skillId } = seat.forms.chosen;
+    add(seat.forms.slot, registry.generals.get(generalId)?.skills.find((s) => s.id === skillId), true);
+  }
+  return found;
+}
+
+// The skill behind a General owner (printed, gained or borrowed), whether or not it is in play now.
+export function skillOf(state: GameState, owner: GeneralOwner, registry: ContentRegistry): SkillDefinition | undefined {
+  const seat = state.seats.find((s) => s.id === owner.seatId);
+  // A silenced seat holds nothing.
+  if (seat?.silenced) return undefined;
+  const general = seat?.generals?.[owner.slot];
+  const own = general && registry.generals.get(general.generalDefinitionId)?.skills.find((s) => s.id === owner.skillId);
+  if (own || !seat) return own;
+  // A skill the General gained, or borrowed from the Form chosen by its slot.
+  if (seat.gainedSkills?.some((g) => g.slot === owner.slot && g.skillId === owner.skillId)) return findSkill(registry, owner.skillId);
+  const chosen = seat.forms?.slot === owner.slot ? seat.forms.chosen : undefined;
+  return chosen && chosen.skillId === owner.skillId ? registry.generals.get(chosen.generalId)?.skills.find((s) => s.id === owner.skillId) : undefined;
+}
+
+// The key an active skill's uses are counted under in Turn.abilityUses.
+export function abilityUseKey(owner: GeneralOwner): string {
+  return `${owner.seatId}/${owner.slot}/${owner.skillId}`;
+}

@@ -1,0 +1,117 @@
+{
+  "count": 24,
+  "name": "Shan",
+  "printings": [
+    {
+      "rank": 2,
+      "suit": "diamond"
+    },
+    {
+      "rank": 2,
+      "suit": "diamond"
+    },
+    {
+      "rank": 3,
+      "suit": "diamond"
+    },
+    {
+      "rank": 4,
+      "suit": "diamond"
+    },
+    {
+      "rank": 5,
+      "suit": "diamond"
+    },
+    {
+      "rank": 6,
+      "suit": "diamond"
+    },
+    {
+      "rank": 7,
+      "suit": "diamond"
+    },
+    {
+      "rank": 8,
+      "suit": "diamond"
+    },
+    {
+      "rank": 9,
+      "suit": "diamond"
+    },
+    {
+      "rank": 10,
+      "suit": "diamond"
+    },
+    {
+      "rank": 11,
+      "suit": "diamond"
+    },
+    {
+      "rank": 11,
+      "suit": "diamond"
+    },
+    {
+      "rank": 2,
+      "suit": "heart"
+    },
+    {
+      "rank": 2,
+      "suit": "heart"
+    },
+    {
+      "rank": 13,
+      "suit": "heart"
+    },
+    {
+      "expansion": "Army",
+      "rank": 6,
+      "suit": "diamond"
+    },
+    {
+      "expansion": "Army",
+      "rank": 7,
+      "suit": "diamond"
+    },
+    {
+      "expansion": "Army",
+      "rank": 8,
+      "suit": "diamond"
+    },
+    {
+      "expansion": "Army",
+      "rank": 10,
+      "suit": "diamond"
+    },
+    {
+      "expansion": "Army",
+      "rank": 11,
+      "suit": "diamond"
+    },
+    {
+      "expansion": "Army",
+      "rank": 8,
+      "suit": "heart"
+    },
+    {
+      "expansion": "Army",
+      "rank": 9,
+      "suit": "heart"
+    },
+    {
+      "expansion": "Army",
+      "rank": 11,
+      "suit": "heart"
+    },
+    {
+      "expansion": "Army",
+      "rank": 12,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "expansionPrintingsFrom": "AllCards spreadsheet (Army and EX rows), crawled 2026-10-05",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/escape"
+  }
+}

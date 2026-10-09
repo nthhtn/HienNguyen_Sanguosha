@@ -1,0 +1,21 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Guan Yu",
+  "nameZh": "关羽",
+  "skills": [
+    {
+      "name": "Fighting Saint",
+      "nameZh": "武圣",
+      "text": "Guan Yu can use any red card as an attack."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-guan-yu"
+  },
+  "title": "Bearded Gentleman",
+  "titleZh": "美须公"
+}

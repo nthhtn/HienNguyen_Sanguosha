@@ -1,0 +1,21 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Zhang Fei",
+  "nameZh": "张飞",
+  "skills": [
+    {
+      "name": "Roar",
+      "nameZh": "咆哮",
+      "text": "Zhang Fei has no restrictions on how many times he can attack during his turn."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-zhang-fei"
+  },
+  "title": "Ten Thousand Men Cannot Equal",
+  "titleZh": "万夫不当"
+}

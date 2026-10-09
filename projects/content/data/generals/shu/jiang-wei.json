@@ -1,0 +1,27 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Jiang Wei",
+  "nameZh": "姜维",
+  "skills": [
+    {
+      "name": "Instigate",
+      "nameZh": "挑嚣",
+      "text": "Once during his turn, Jiang Wei may select any player who has him in their attack range. This character must attack Jiang Wei. If they do not, Jiang Wei may select one of their cards and discard it."
+    },
+    {
+      "name": "Follow the Master",
+      "nameZh": "志继",
+      "text": "Awakened Ability: When Jiang Wei starts his turn with no hand cards, he must either regain one unit of health or draw two cards. Then, he decreases his maximum health by one and permanently acquires \"Astrology.\""
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Mountain",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-jiang-wei"
+  },
+  "title": "The Dragon's Mantle",
+  "titleZh": "龙的衣钵"
+}

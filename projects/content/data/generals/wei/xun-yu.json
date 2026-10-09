@@ -1,0 +1,27 @@
+{
+  "gender": "male",
+  "maxHp": 3,
+  "name": "Xun Yu",
+  "nameZh": "荀彧",
+  "skills": [
+    {
+      "name": "Rouse the Tiger",
+      "nameZh": "驱虎",
+      "text": "Once during his action phase, Xun Yu can compete with any character with more health. If Xun Yu wins, he can select a player within the target's attacking range, and the target deals one unit of damage to that player. If Xun Yu loses, the target deals one unit of damage to Xun Yu."
+    },
+    {
+      "name": "Eternal Loyalty",
+      "nameZh": "节命",
+      "text": "For each unit of damage that Xun Yu receives, he can select one character. This character then draws cards until the number of cards in their hand is equal to their maximum health limit."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Fire",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-xun-yu"
+  },
+  "title": "Advisor of Kings",
+  "titleZh": "王佐之才"
+}

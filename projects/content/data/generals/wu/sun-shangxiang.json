@@ -1,0 +1,26 @@
+{
+  "gender": "female",
+  "maxHp": 3,
+  "name": "Sun Shangxiang",
+  "nameZh": "孙尚香",
+  "skills": [
+    {
+      "name": "Marriage",
+      "nameZh": "结姻",
+      "text": "Once during Sun Shangxiang's turn, she can discard two hand cards and select a male character who is not at full health. By doing so, she heals herself and the male character by one unit of health each."
+    },
+    {
+      "name": "Armed Consorts",
+      "nameZh": "枭姬",
+      "text": "For each piece of equipment that leaves her equipment area, Sun Shangxiang draws two cards."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-sun-shangxiang"
+  },
+  "title": "Archery Lady",
+  "titleZh": "弓腰姬"
+}

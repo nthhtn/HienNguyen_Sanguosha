@@ -1,0 +1,22 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Sun Jian",
+  "nameZh": "孙坚",
+  "skills": [
+    {
+      "name": "Brave Spirit",
+      "nameZh": "英魂",
+      "text": "Before his turn, if Sun Jian is damaged, he can force any player to either: Draw X cards, then discard 1. Draw 1 card, then discard X. X equals the number of health units Sun Jian is missing."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Forest",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/forest/forest-sun-jian"
+  },
+  "title": "Emperor Wulie",
+  "titleZh": "武烈帝"
+}

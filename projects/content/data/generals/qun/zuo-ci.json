@@ -1,0 +1,27 @@
+{
+  "gender": "male",
+  "maxHp": 3,
+  "name": "Zuo Ci",
+  "nameZh": "左慈",
+  "skills": [
+    {
+      "name": "Incarnation",
+      "nameZh": "化身",
+      "text": "At the beginning of the game, Zuo Ci draws two unused character cards, called Forms, and places them face down. He selects one ability from one of these Forms and leaves that Form face up. Zuo Ci cannot use a king ability, single-use ability, or awakening ability. Zuo Ci acquires the selected ability along with the alignment and gender of that Form. At the beginning and end of each of his turns, Zuo Ci may choose a new ability from his Forms."
+    },
+    {
+      "name": "New Life",
+      "nameZh": "新生",
+      "text": "For every unit of damage Zuo Ci receives, he acquires an additional Form."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Mountain",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-zuo-ci"
+  },
+  "title": "Bewildering Immortal",
+  "titleZh": "迷之仙人"
+}

@@ -1,0 +1,20 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Lu Meng",
+  "skills": [
+    {
+      "name": "Self-Restraint",
+      "nameZh": "克己",
+      "text": "If Lu Meng does not use any Attack cards during his turn, he can skip his discard phase."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-lu-meng"
+  },
+  "title": "Ford the River in White",
+  "titleZh": "白衣渡江"
+}

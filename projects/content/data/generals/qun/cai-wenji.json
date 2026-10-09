@@ -1,0 +1,27 @@
+{
+  "gender": "female",
+  "maxHp": 3,
+  "name": "Cai Wenji",
+  "nameZh": "蔡文姬",
+  "skills": [
+    {
+      "name": "Lament",
+      "nameZh": "悲歌",
+      "text": "Whenever any player is damaged by an attack, Cai Wenji can discard any card. The victim then flips a judgment. If it is a heart, the victim regains one health. If it is a diamond, the victim draws two cards. If it is a club, the source of the damage discards two cards. If it is a spade, the source of the damage flips their character card."
+    },
+    {
+      "name": "Heartbroken",
+      "nameZh": "断肠",
+      "text": "When a player kills Cai Wenji, they lose all of their abilities for the rest of the game."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Mountain",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-cai-wenji"
+  },
+  "title": "Foreign Orphan",
+  "titleZh": "异乡的孤女"
+}

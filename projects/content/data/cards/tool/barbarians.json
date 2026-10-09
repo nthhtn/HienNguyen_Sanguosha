@@ -1,0 +1,25 @@
+{
+  "count": 3,
+  "name": "Barbarians",
+  "nameZh": "南蛮入侵",
+  "printings": [
+    {
+      "rank": 7,
+      "suit": "spade"
+    },
+    {
+      "rank": 13,
+      "suit": "spade"
+    },
+    {
+      "rank": 7,
+      "suit": "club"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/barbarians"
+  },
+  "text": "All other players play an attack or take one damage."
+}

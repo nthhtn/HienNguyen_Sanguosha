@@ -1,0 +1,131 @@
+{
+  "count": 30,
+  "name": "Sha",
+  "printings": [
+    {
+      "rank": 7,
+      "suit": "spade"
+    },
+    {
+      "rank": 8,
+      "suit": "spade"
+    },
+    {
+      "rank": 8,
+      "suit": "spade"
+    },
+    {
+      "rank": 9,
+      "suit": "spade"
+    },
+    {
+      "rank": 9,
+      "suit": "spade"
+    },
+    {
+      "rank": 10,
+      "suit": "spade"
+    },
+    {
+      "rank": 10,
+      "suit": "spade"
+    },
+    {
+      "rank": 2,
+      "suit": "club"
+    },
+    {
+      "rank": 3,
+      "suit": "club"
+    },
+    {
+      "rank": 4,
+      "suit": "club"
+    },
+    {
+      "rank": 5,
+      "suit": "club"
+    },
+    {
+      "rank": 6,
+      "suit": "club"
+    },
+    {
+      "rank": 7,
+      "suit": "club"
+    },
+    {
+      "rank": 8,
+      "suit": "club"
+    },
+    {
+      "rank": 8,
+      "suit": "club"
+    },
+    {
+      "rank": 9,
+      "suit": "club"
+    },
+    {
+      "rank": 9,
+      "suit": "club"
+    },
+    {
+      "rank": 10,
+      "suit": "club"
+    },
+    {
+      "rank": 10,
+      "suit": "club"
+    },
+    {
+      "rank": 11,
+      "suit": "club"
+    },
+    {
+      "rank": 11,
+      "suit": "club"
+    },
+    {
+      "rank": 6,
+      "suit": "diamond"
+    },
+    {
+      "rank": 7,
+      "suit": "diamond"
+    },
+    {
+      "rank": 8,
+      "suit": "diamond"
+    },
+    {
+      "rank": 9,
+      "suit": "diamond"
+    },
+    {
+      "rank": 10,
+      "suit": "diamond"
+    },
+    {
+      "rank": 13,
+      "suit": "diamond"
+    },
+    {
+      "rank": 10,
+      "suit": "heart"
+    },
+    {
+      "rank": 10,
+      "suit": "heart"
+    },
+    {
+      "rank": 11,
+      "suit": "heart"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/attack"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "my-sanguosha-workspace",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "node --watch-path=angular.json --watch-path=tsconfig.json --watch-path=projects/app/tsconfig.app.json --watch-path=package.json --watch-preserve-output scripts/dev-server.mjs",
+    "build": "npm run build:engine && npm run build:content",
+    "build:engine": "ng build engine",
+    "build:content": "ng build content",
+    "watch": "ng build --watch --configuration development",
+    "test": "jest"
+  },
+  "private": true,
+  "packageManager": "npm@11.17.0",
+  "dependencies": {
+    "@angular/cdk": "^22.2.0",
+    "@angular/common": "^22.1.0",
+    "@angular/compiler": "^22.1.0",
+    "@angular/core": "^22.1.0",
+    "@angular/forms": "^22.1.0",
+    "@angular/material": "^22.2.0",
+    "@angular/platform-browser": "^22.1.0",
+    "@angular/router": "^22.1.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.1.7",
+    "@angular/cli": "^22.1.7",
+    "@angular/compiler-cli": "^22.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26.4.1",
+    "jest": "^30.5.1",
+    "jest-environment-jsdom": "^30.5.1",
+    "jest-preset-angular": "^17.0.0",
+    "jsdom": "^28.0.0",
+    "ng-packagr": "^22.1.0",
+    "prettier": "^3.8.1",
+    "ts-jest": "^29.4.12",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "~6.0.2"
+  }
+}

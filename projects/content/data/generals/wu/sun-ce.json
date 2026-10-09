@@ -1,0 +1,33 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Sun Ce",
+  "nameZh": "孙策",
+  "skills": [
+    {
+      "name": "Passion",
+      "nameZh": "激昂",
+      "text": "Whenever Sun Ce uses or is targeted with a Duel or red Attack, Sun Ce draws a card."
+    },
+    {
+      "name": "Soul Position",
+      "nameZh": "魂姿",
+      "text": "If, at the beginning of his turn, Sun Ce has one health, Sun Ce must immediately reduce his maximum health by one. Then, Sun Ce permanently gains \"Brave Gesture\" and \"Brave Spirit.\""
+    },
+    {
+      "lord": true,
+      "name": "Takeover",
+      "nameZh": "制霸",
+      "text": "King Ability: Other Wu characters can compete with Sun Ce. If Sun Ce wins, he keeps both cards. After \"Soul Position,\" Sun Ce can refuse to compete."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Mountain",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-sun-ce"
+  },
+  "title": "Little Conqueror of Jiangdong",
+  "titleZh": "江东的小霸王"
+}

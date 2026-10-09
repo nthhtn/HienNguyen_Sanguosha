@@ -1,0 +1,18 @@
+{
+  "name": "Black Shield",
+  "nameZh": "仁王盾",
+  "printings": [
+    {
+      "rank": 2,
+      "suit": "club"
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-05",
+    "expansion": "EX",
+    "printingsFrom": "army/EX printing list (manual, not crawled)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/ex/black-shield"
+  },
+  "text": "Black attacks cannot hit the wearer."
+}

@@ -1,0 +1,21 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Xu Chu",
+  "nameZh": "许诸",
+  "skills": [
+    {
+      "name": "Bare the Chest",
+      "nameZh": "裸衣",
+      "text": "During Xu Chu's drawing phase, he can choose to draw one fewer card. During his action phase, all damage that he causes by using Attacks or Duels is increased by one."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-xu-chu"
+  },
+  "title": "Crazy Tiger",
+  "titleZh": "虎痴"
+}

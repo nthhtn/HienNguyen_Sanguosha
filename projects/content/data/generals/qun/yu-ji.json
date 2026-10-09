@@ -1,0 +1,22 @@
+{
+  "gender": "male",
+  "maxHp": 3,
+  "name": "Yu Ji",
+  "nameZh": "于吉",
+  "skills": [
+    {
+      "name": "Bewilder",
+      "nameZh": "蛊惑",
+      "text": "Whenever Yu Ji wants to use a non-delay tool or basic card, he can play any card face down and speak the card he wishes to use. Then, anyone can choose to doubt him. If everybody believes Yu Ji, the card is flipped and goes into effect as stated. If there are any players in doubt, the card is flipped. If Yu Ji was not telling the truth, the doubting characters draw a card. If Yu Ji is telling the truth, all characters that doubted lose one health. If the card is also a heart, the card still goes into effect. Otherwise, the card is discarded."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Wind",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/wind/wind-yu-ji"
+  },
+  "title": "Immortal of Peace",
+  "titleZh": "太平道人"
+}

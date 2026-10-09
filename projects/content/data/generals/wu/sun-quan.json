@@ -1,0 +1,27 @@
+{
+  "gender": "male",
+  "maxHp": 4,
+  "name": "Sun Quan",
+  "nameZh": "孙权",
+  "skills": [
+    {
+      "name": "Reconsider",
+      "nameZh": "制衡",
+      "text": "Once during his turn, Sun Quan can discard any number of cards to draw the same number."
+    },
+    {
+      "lord": true,
+      "name": "Rescued",
+      "nameZh": "救援",
+      "text": "King Ability: Whenever another member of Wu uses a Peach to save Sun Quan from the brink of death, it provides him with two units of health."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-sun-quan"
+  },
+  "title": "Young and Worthy Lord",
+  "titleZh": "年轻的贤君"
+}

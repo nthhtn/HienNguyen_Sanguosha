@@ -1,0 +1,26 @@
+{
+  "gender": "female",
+  "maxHp": 3,
+  "name": "Da Qiao",
+  "nameZh": "大乔",
+  "skills": [
+    {
+      "name": "Country Scene",
+      "nameZh": "国色",
+      "text": "During Da Qiao's turn, she can use any diamond-suited card as Capture."
+    },
+    {
+      "name": "Displace",
+      "nameZh": "流离",
+      "text": "When Da Qiao is the target of an attack, she can discard any card to redirect the attack to any other player within her attacking range other than the source."
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-09-10",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/base/base-da-qiao"
+  },
+  "title": "Reserved Flower",
+  "titleZh": "矜持之花"
+}

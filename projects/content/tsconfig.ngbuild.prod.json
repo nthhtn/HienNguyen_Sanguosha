@@ -1,0 +1,11 @@
+/* Production variant of tsconfig.ngbuild.json — see that file's comment for why this exists
+   separately from tsconfig.lib.prod.json. */
+{
+  "extends": "./tsconfig.ngbuild.json",
+  "compilerOptions": {
+    "declarationMap": false
+  },
+  "angularCompilerOptions": {
+    "compilationMode": "partial"
+  }
+}

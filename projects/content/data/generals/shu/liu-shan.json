@@ -1,0 +1,33 @@
+{
+  "gender": "male",
+  "maxHp": 3,
+  "name": "Liu Shan",
+  "nameZh": "刘禅",
+  "skills": [
+    {
+      "name": "Pleasure",
+      "nameZh": "享乐",
+      "text": "When someone attacks Liu Shan, they must immediately discard another basic card. Otherwise, the attack does nothing."
+    },
+    {
+      "name": "Decentralization",
+      "nameZh": "放权",
+      "text": "Liu Shan can choose to skip his action phase. At the end of his turn, he discards an additional hand card. He can then choose another character and allow them to immediately take a turn. After this, the player to Liu Shan’s right begins their turn."
+    },
+    {
+      "lord": true,
+      "name": "Seem Foolish",
+      "nameZh": "若愚",
+      "text": "King Ability: When Liu Shan has, or is tied for, the least amount of health at the beginning of his turn, he immediately increases his health limit by one, recovers one unit of health, and permanently gains \"Fierce General.\""
+    }
+  ],
+  "source": {
+    "crawledAt": "2026-10-02",
+    "expansion": "Mountain",
+    "genderFrom": "manual (standard character list)",
+    "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/mountain/mountain-liu-shan"
+  },
+  "title": "Destiny's Inactive Man",
+  "titleZh": "无为的真命主"
+}
