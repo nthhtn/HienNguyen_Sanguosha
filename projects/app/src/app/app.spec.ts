@@ -48,7 +48,7 @@ describe('App', () => {
     expect(el.querySelector('mat-toolbar h1')?.textContent).toContain('Kingdom War');
   });
 
-  it('links Play Game to /play, highlighted on the play screens', async () => {
+  it('links Play to /play, highlighted on the play screens', async () => {
     const { el, fixture } = await render('/setup');
     const play = el.querySelector('a.nav-play') as HTMLAnchorElement;
     expect(play.getAttribute('href')).toBe('/play');
@@ -56,19 +56,32 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/wiki/generals');
     fixture.detectChanges();
     expect(play.classList).not.toContain('active');
-    expect(el.querySelector('a[href="/wiki/generals"]')!.classList).toContain('active');
+    expect(el.querySelector('button.nav-cards')!.classList).toContain('active');
   });
 
-  it('has a Wiki-icon item for each of the four pages, side by side in the bar', async () => {
+  it('has three items in the bar: Play, Cards and Rules, each with an icon', async () => {
     const { el } = await render();
-    const items = [...el.querySelectorAll('nav.nav a.nav-wiki')] as HTMLAnchorElement[];
-    expect(items.map((a) => [a.querySelector('.label')!.textContent, a.getAttribute('href')])).toEqual([
+    const items = [...el.querySelectorAll('nav.nav > a, nav.nav > button')];
+    expect(items.map((i) => [i.querySelector('.label')!.textContent, i.querySelector('mat-icon')!.textContent])).toEqual([
+      ['Play', 'play_arrow'],
+      ['Cards', 'swords'],
+      ['Rules', 'menu_book'],
+    ]);
+  });
+
+  it('has a Cards menu with four options and no icons', async () => {
+    const { el, fixture } = await render();
+    (el.querySelector('nav.nav button.nav-cards') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...document.querySelectorAll('.mat-mdc-menu-panel a[mat-menu-item]')] as HTMLAnchorElement[];
+    expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
       ['Generals', '/wiki/generals'],
       ['Basic Cards', '/wiki/basic'],
       ['Equipment', '/wiki/equipment'],
       ['Tools', '/wiki/tools'],
     ]);
-    expect(items.map((a) => a.querySelector('mat-icon')!.textContent)).toEqual(['sports_kabaddi', 'umbrella', 'swords', 'build']);
+    expect(items.every((a) => !a.querySelector('mat-icon'))).toBe(true);
   });
 
   it('has a Rules menu with the six rules pages, highlighted on any of them', async () => {
@@ -108,13 +121,17 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/wiki/basic');
     fixture.detectChanges();
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBeNull();
-    const current = [...el.querySelectorAll('nav.nav a.nav-wiki[aria-current="page"]')];
-    expect(current.map((a) => a.textContent!.trim())).toEqual(['umbrellaBasic Cards']);
+    (el.querySelector('nav.nav button.nav-cards') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const current = [...document.querySelectorAll('.mat-mdc-menu-panel a[aria-current="page"]')];
+    expect(current.map((a) => a.textContent!.trim())).toEqual(['Basic Cards']);
   });
 
   it('icon buttons have accessible names (Review Focus 4)', async () => {
     const { el } = await render();
-    expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play Game');
-    expect(el.querySelector('a.nav-wiki')!.getAttribute('aria-label')).toBe('Generals');
+    expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play');
+    expect(el.querySelector('button.nav-cards')!.getAttribute('aria-label')).toBe('Cards');
+    expect(el.querySelector('button.nav-rules')!.getAttribute('aria-label')).toBe('Rules');
   });
 });

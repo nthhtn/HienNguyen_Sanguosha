@@ -2,14 +2,18 @@
   <img class="logo" src="card-art/misc/logo.png" alt="" />
   <h1><a class="brand" routerLink="/play">{{ title() }}</a></h1>
   <nav class="nav">
-    <a mat-button class="nav-play" routerLink="/play" [class.active]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" aria-label="Play Game">
-      <mat-icon>play_arrow</mat-icon><span class="label">Play Game</span>
+    <a mat-button class="nav-play" routerLink="/play" [class.active]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" aria-label="Play">
+      <mat-icon>play_arrow</mat-icon><span class="label">Play</span>
     </a>
-    @for (page of wikiPages; track page.path) {
-      <a mat-button class="nav-wiki" [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page" [attr.aria-label]="page.label">
-        <mat-icon [fontSet]="page.symbol ? 'material-symbols-outlined' : ''">{{ page.icon }}</mat-icon><span class="label">{{ page.label }}</span>
-      </a>
-    }
+    <button mat-button type="button" class="nav-cards" [matMenuTriggerFor]="cardsMenu" [class.active]="cardsActive()" aria-label="Cards">
+      <!-- "swords" only exists in Material Symbols, not the legacy Material Icons font. -->
+      <mat-icon fontSet="material-symbols-outlined">swords</mat-icon><span class="label">Cards</span>
+    </button>
+    <mat-menu #cardsMenu="matMenu">
+      @for (page of cardPages; track page.path) {
+        <a mat-menu-item [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label }}</a>
+      }
+    </mat-menu>
     <button mat-button type="button" class="nav-rules" [matMenuTriggerFor]="rulesMenu" [class.active]="rulesActive()" aria-label="Rules">
       <mat-icon>menu_book</mat-icon><span class="label">Rules</span>
     </button>
