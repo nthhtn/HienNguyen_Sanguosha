@@ -57,7 +57,7 @@ count, in the stage that makes its rules work.
 | 6 | Skill engine: reveal to use, gender, counters, new decisions | General Skills, part 1 |
 | 7 | The 25 base Generals' skills | General Skills, part 2 |
 | 8 | The Wind Generals' skills | [Stage 8 spec](2026-10-07-stage-8-wind-generals-design.md) |
-| 9 | The Fire Generals' skills | its own spec, written before it is built |
+| 9 | The Fire Generals' skills | [Stage 9 spec](2026-10-09-stage-9-fire-generals-design.md) |
 | 10 | The Forest Generals' skills | its own spec, written before it is built |
 | 11 | The Mountain Generals' skills | its own spec, written before it is built |
 
