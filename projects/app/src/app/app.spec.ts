@@ -15,6 +15,7 @@ describe('App', () => {
           { path: 'game', children: [] },
           { path: 'play', children: [] },
           { path: 'wiki/:page', children: [] },
+          { path: 'wiki/rules/:page', children: [] },
         ]),
       ],
     }).compileComponents();
@@ -67,7 +68,30 @@ describe('App', () => {
       ['Equipment', '/wiki/equipment'],
       ['Tools', '/wiki/tools'],
     ]);
-    expect(items.map((a) => a.querySelector('mat-icon')!.textContent)).toEqual(['sports_kabaddi', 'umbrella', 'swords', 'menu_book']);
+    expect(items.map((a) => a.querySelector('mat-icon')!.textContent)).toEqual(['sports_kabaddi', 'umbrella', 'swords', 'build']);
+  });
+
+  it('has a Rules menu with the six rules pages, highlighted on any of them', async () => {
+    const { el, fixture } = await render();
+    const button = el.querySelector('nav.nav button.nav-rules') as HTMLButtonElement;
+    expect(button.querySelector('mat-icon')!.textContent).toBe('menu_book');
+    expect(button.querySelector('.label')!.textContent).toBe('Rules');
+    expect(button.classList).not.toContain('active');
+    button.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...document.querySelectorAll('.mat-mdc-menu-panel a[mat-menu-item]')] as HTMLAnchorElement[];
+    expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
+      ['Overview', '/wiki/rules/overview'],
+      ['Card Types', '/wiki/rules/card-types'],
+      ['Setup', '/wiki/rules/setup'],
+      ['Turn Structure', '/wiki/rules/turn'],
+      ['Distance / Range', '/wiki/rules/distance'],
+      ['Judgment', '/wiki/rules/judgment'],
+    ]);
+    await TestBed.inject(Router).navigateByUrl('/wiki/rules/turn');
+    fixture.detectChanges();
+    expect(button.classList).toContain('active');
   });
 
   it('sits on the left, straight after the title, with no side panel', async () => {

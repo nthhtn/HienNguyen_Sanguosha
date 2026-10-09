@@ -75,4 +75,27 @@ describe('Wiki pages', () => {
     expect(el().querySelector('h2')!.textContent).toBe('Tools');
     expect(el().querySelector('.summary')!.textContent).toContain('15 cards · 14 in the game');
   });
+
+  it('redirects /wiki/rules to the Overview page', async () => {
+    const { router } = await open('/wiki/rules');
+    expect(router.url).toBe('/wiki/rules/overview');
+  });
+
+  it.each([
+    ['overview', 'Overview'],
+    ['card-types', 'Card Types'],
+    ['setup', 'Setup'],
+    ['turn', 'Turn Structure'],
+    ['distance', 'Distance / Range'],
+    ['judgment', 'Judgment'],
+  ])('renders the %s rules page', async (path, title) => {
+    const { el } = await open(`/wiki/rules/${path}`);
+    expect(el().querySelector('h2')!.textContent).toBe(title);
+  });
+
+  it('links each card type to its Wiki page', async () => {
+    const { el } = await open('/wiki/rules/card-types');
+    const hrefs = [...el().querySelectorAll('th a')].map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(['/wiki/basic', '/wiki/tools', '/wiki/equipment']);
+  });
 });
