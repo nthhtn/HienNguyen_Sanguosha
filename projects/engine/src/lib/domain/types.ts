@@ -185,6 +185,8 @@ export interface PendingSelection {
   of: 'cards' | 'seats';
   // The card instance ids, or seat ids, that may be picked.
   eligibleIds: string[];
+  // Picks must share a suit.
+  sameSuit?: true;
   min: number;
   max: number;
   // What the picks lead to.

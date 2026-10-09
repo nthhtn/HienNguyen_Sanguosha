@@ -6,7 +6,7 @@ import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
 import { abilityKey, actedOn, askAtStep, atStep } from '../shared/steps';
-import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, hpOf, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Wind Generals' skills (stage 8 spec, "Rule text"). Every skill acts for
 // the `owner` the engine passes in: the same General can sit at two seats in
@@ -75,8 +75,6 @@ export const godspeed: SkillDefinition = {
     return targets.length > 0 && isLiving(state, owner.seatId) ? [choiceOf(state, owner, { verb: 'pick', options: seatOptions(targets, shaAt) })] : [];
   },
 };
-
-const hpOf = (state: GameState, seatId: string) => state.seats.find((s) => s.id === seatId)?.combinedHp ?? 0;
 
 // Strong Bow (may): in your turn, after your Sha targets a seat whose hand size
 // is at least your HP, or at most your attack range, you may make it

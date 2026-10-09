@@ -163,4 +163,26 @@ describe('HandView', () => {
     expect(playButton('c-peach').disabled).toBe(true);
     expect(fixture.debugElement.queryAll(By.directive(MatTooltip))).toHaveLength(0);
   });
+
+  it('a play with several targets opens the Choose Targets window, then plays at the seats picked', async () => {
+    const template: Action = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c-sha', targets: [], pickTargets: { eligibleIds: ['seat-1', 'seat-2'], min: 1, max: 2 } };
+    fixture.componentRef.setInput('actions', [template, endPhase]);
+    fixture.detectChanges();
+    playButton('c-sha').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const dialog = overlay().querySelector('app-targets-dialog') as HTMLElement;
+    expect(dialog.textContent).toContain('Choose up to 2 targets for Sha');
+    const seatButton = (text: string) => [...dialog.querySelectorAll('button')].find((b) => b.textContent!.trim() === text) as HTMLButtonElement;
+    seatButton('Seat 2').click();
+    seatButton('Seat 1').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(seatButton('Confirm').disabled).toBe(false);
+    seatButton('Confirm').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(played).toEqual([{ kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c-sha', targets: [{ kind: 'seat', seatId: 'seat-1' }, { kind: 'seat', seatId: 'seat-2' }] }]);
+  });
 });
+

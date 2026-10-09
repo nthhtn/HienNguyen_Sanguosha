@@ -57,7 +57,7 @@ describe('Wind skills: picks', () => {
 
 describe('Bewilder as Yu Ji', () => {
   it('bluffs only with more than 4 cards', () => {
-    const yuJi = (n: number) => table({ 'seat-a:hand': Array.from({ length: n }, (_, i) => card(`x${i}`, 'shan', 'club', i + 2)) }, { generals: { 'seat-a': ['yu-ji', 'zuo-ci'] }, kingdoms: { 'seat-a': 'Qun' } });
+    const yuJi = (n: number) => table({ 'seat-a:hand': Array.from({ length: n }, (_, i) => card(`x${i}`, 'shan', 'club', i + 2)) }, { generals: { 'seat-a': ['yu-ji', 'filler-zuo-ci'] }, kingdoms: { 'seat-a': 'Qun' } });
     expect(decide(yuJi(3)).kind).toBe('EndPhaseAction');
     expect(decide(yuJi(5))).toMatchObject({ kind: 'UseConversionAction', via: { conversionId: expect.stringMatching(/^bewilder-/) } });
   });

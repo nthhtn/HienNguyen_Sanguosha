@@ -1,4 +1,4 @@
-import type { CardInstance, ContentRegistry, GameState, Seat } from 'engine';
+import type { CardInstance, ContentRegistry, GameState, PendingSelection, Seat, Target, TargetPick } from 'engine';
 
 // What the rule-based bot knows about cards and seats, shared by its rules.
 
@@ -46,4 +46,31 @@ export function handCards(view: GameState, seat: Seat): CardInstance[] {
 // A seat's hand, then its worn cards.
 export function ownCards(view: GameState, seat: Seat): CardInstance[] {
   return [...handCards(view, seat), ...(view.zones.find((z) => z.id === seat.equipped.zoneId)?.cards ?? [])];
+}
+
+// The first `selection.min` of `ordered` (eligible ids, best first) that the
+// selection accepts: for a same-suit pick, the first suit with enough cards.
+export function fillSelection(view: GameState, selection: PendingSelection, ordered: readonly string[]): string[] {
+  if (!selection.sameSuit) return ordered.slice(0, selection.min);
+  const suitOf = (id: string) => view.zones.flatMap((z) => z.cards).find((c) => c.instanceId === id)?.suit;
+  for (const id of ordered) {
+    const group = ordered.filter((other) => suitOf(other) === suitOf(id));
+    if (group.length >= selection.min) return group.slice(0, selection.min);
+  }
+  return ordered.slice(0, selection.min);
+}
+
+// A target template filled for the bot: non-allies, weakest first, up to the
+// maximum; null when none qualifies. Any other action comes back as it is.
+export function fillPick<A extends { targets: Target[]; pickTargets?: TargetPick }>(view: GameState, me: Seat, action: A): A | null {
+  const pick = action.pickTargets;
+  if (!pick) return action;
+  const seats = pick.eligibleIds
+    .map((id) => view.seats.find((s) => s.id === id))
+    .filter((s): s is Seat => !!s && !isAlly(me, s))
+    .sort((a, b) => a.combinedHp - b.combinedHp || a.index - b.index)
+    .slice(0, pick.max);
+  if (seats.length < Math.max(1, pick.min)) return null;
+  const { pickTargets: _pick, ...rest } = action;
+  return { ...rest, targets: seats.map((s) => ({ kind: 'seat' as const, seatId: s.id })) } as A;
 }

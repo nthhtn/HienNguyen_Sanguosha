@@ -22,6 +22,17 @@ export const EQUIP_SLOTS: readonly EquipSlot[] = ['weapon', 'armor', 'defensiveM
 export interface PlayOptionsContext {
   seatId: string;
   cardInstanceId: string;
+  // Set when asked for a conversion: how many cards it takes, and whether only
+  // from the hand.
+  via?: { cards: number; fromHandOnly: boolean };
+}
+
+// A card's targets picked in one go: between `min` and `max` of `eligibleIds`
+// (several equal targets: a Sha at several seats).
+export interface TargetPick {
+  eligibleIds: string[];
+  min: number;
+  max: number;
 }
 
 export interface CardDefinition {
@@ -36,6 +47,11 @@ export interface CardDefinition {
   // Play phase: [] = not playable now, [[]] = no target, [[t1], [t2]] = one of
   // these targets. Absent = legacy offers (untargeted + each living other seat).
   legalPlayTargets?(state: GameState, ctx: PlayOptionsContext, registry: ContentRegistry): Target[][];
+  // When it may take more than one target now: the pick (legal actions then
+  // offer one template). Null or max 1: legalPlayTargets as usual.
+  targetPick?(state: GameState, ctx: PlayOptionsContext, registry: ContentRegistry): TargetPick | null;
+  // Never dealt (Blaze: made only by a skill).
+  outOfDeck?: true;
   play(state: GameState, ctx: PlayContext, registry: ContentRegistry): unknown[];
   // Called when a seat answers a response window this card opened (see
   // PendingResponse.sourceCard), after the answering card's own effects. Its
@@ -129,6 +145,8 @@ export interface SkillTrigger {
 export interface AbilityModifiers {
   // Sha plays allowed per turn: the highest wins; Infinity = no limit (Crossbow).
   shaLimit?: number;
+  // More targets for the wearer's Sha when it is its last hand card (Sky Scorcher: 2).
+  extraShaTargetsWhenLastCard?: number;
   // The wearer's Sha ignores the target's armour (Black Pommel).
   ignoresArmor?: boolean;
   // Card ids that can't target the wearer (Wood Armor: Barbarians, Hail of Arrows).
@@ -167,6 +185,8 @@ export interface Conversion {
   // The picked card isn't used at once: the owning skill's step 'deferred'
   // decides (Bewilder's doubt round). Only a General's skill may defer.
   deferred?: true;
+  // Its cards must share a suit (Random Strike).
+  sameSuit?: true;
 }
 
 // What a card does while worn.

@@ -9,7 +9,7 @@ const filler = (n: number) => Array.from({ length: n }, (_, i) => card(`f${i}`, 
 const judging = (cards: Record<string, ReturnType<typeof card>[]>, o: TableOptions) => kw.settle(table(cards, { phase: 'Start', ...o }));
 
 describe("Guo Jia — Heaven's Envy", () => {
-  const guoJia: TableOptions['generals'] = { 'seat-a': ['guo-jia', 'cao-pi'] };
+  const guoJia: TableOptions['generals'] = { 'seat-a': ['guo-jia', 'filler-cao-pi'] };
 
   it('after a judgment of his takes effect, may take the judged card instead of discarding it', () => {
     const s = judging({ 'seat-a:judgment': [card('cp', 'capture', 'spade', 6)], drawPile: [card('j', 'sha', 'heart', 4), ...filler(4)] }, { generals: guoJia });
@@ -31,7 +31,7 @@ describe("Guo Jia — Heaven's Envy", () => {
   });
 
   it("works on an Eight Trigrams judgment, before the Shan it counts as", () => {
-    let s = stub.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:equip': [card('et', 'eight-trigrams', 'spade', 2)], drawPile: [card('j', 'peach', 'heart', 3)] }, { generals: { 'seat-b': ['guo-jia', 'cao-pi'] } }), 's1', 'seat-b');
+    let s = stub.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:equip': [card('et', 'eight-trigrams', 'spade', 2)], drawPile: [card('j', 'peach', 'heart', 3)] }, { generals: { 'seat-b': ['guo-jia', 'filler-cao-pi'] } }), 's1', 'seat-b');
     s = stub.use(s); // Eight Trigrams
     expect(askedAbout(s)).toBe('heavens-envy');
     s = stub.use(s);
@@ -44,7 +44,7 @@ describe('Sima Yi — Devil', () => {
   const capture = card('cp', 'capture', 'spade', 6);
   // seat-c is judged for a Capture; Devil holders at the seats given.
   const judged = (devils: string[], hands: Record<string, ReturnType<typeof card>[]>) => {
-    const generals = Object.fromEntries(devils.map((id) => [id, ['sima-yi', 'xun-yu'] as [string, string]]));
+    const generals = Object.fromEntries(devils.map((id) => [id, ['sima-yi', 'filler-xun-yu'] as [string, string]]));
     const cards = Object.fromEntries(Object.entries(hands).map(([id, cs]) => [`${id}:hand`, cs]));
     return stub.run(table({ ...cards, drawPile: [card('j', 'sha', 'club', 9)] }, { generals }), [
       { kind: 'JudgeEffect', seatId: 'seat-c', reader: { kind: 'card', card: usedCardOf(capture) } },
@@ -86,7 +86,7 @@ describe('Sima Yi — Devil', () => {
 
 describe('Zhen Ji — River Goddess', () => {
   // seat-d's turn ends; seat-a's starts.
-  const startOfTurn = (drawPile: ReturnType<typeof card>[]) => stub.settle(table({ drawPile }, { generals: { 'seat-a': ['zhen-ji', 'xun-yu'] }, owner: 'seat-d', phase: 'End' }));
+  const startOfTurn = (drawPile: ReturnType<typeof card>[]) => stub.settle(table({ drawPile }, { generals: { 'seat-a': ['zhen-ji', 'filler-xun-yu'] }, owner: 'seat-d', phase: 'End' }));
 
   it('judges again and again: each black card to her hand, the first red one discarded', () => {
     let s = startOfTurn([card('b1', 'sha', 'spade'), card('b2', 'shan', 'club'), card('r1', 'peach', 'heart'), card('x', 'sha')]);
@@ -110,7 +110,7 @@ describe('Zhen Ji — River Goddess', () => {
 
 describe('Zhen Ji — Overturned Country', () => {
   it('uses a black hand card as a Shan', () => {
-    let s = stub.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('k', 'wuxie', 'club', 4), card('r', 'peach', 'heart')] }, { owner: 'seat-b', generals: { 'seat-a': ['zhen-ji', 'xun-yu'] } }), 's1', 'seat-a');
+    let s = stub.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('k', 'wuxie', 'club', 4), card('r', 'peach', 'heart')] }, { owner: 'seat-b', generals: { 'seat-a': ['zhen-ji', 'filler-xun-yu'] } }), 's1', 'seat-a');
     s = stub.convert(s, 'seat-a', 'overturned-country');
     expect(s.pendingSelection?.eligibleIds).toEqual(['k']);
     s = stub.select(s, 'k');
@@ -119,7 +119,7 @@ describe('Zhen Ji — Overturned Country', () => {
   });
 
   it('is not offered in her own Play Phase', () => {
-    const s = table({ 'seat-a:hand': [card('k', 'wuxie', 'club')] }, { generals: { 'seat-a': ['zhen-ji', 'xun-yu'] } });
+    const s = table({ 'seat-a:hand': [card('k', 'wuxie', 'club')] }, { generals: { 'seat-a': ['zhen-ji', 'filler-xun-yu'] } });
     expect(stub.legal(s, 'seat-a').some((a) => a.kind === 'UseConversionAction')).toBe(false);
   });
 });

@@ -1,12 +1,13 @@
 import { advanceToDecision, getLegalActions, resolve } from 'engine';
 import type { Action, CardInstance, GameModeDefinition, GameState, Kingdom, Phase, QueueItem, Target } from 'engine';
 import { buildContentRegistry } from '../registry';
+import { withFillers } from './fillers.testing';
 import { kingdomWarMode } from '../modes/kingdomWar';
 
 // Shared by the skill specs (not exported from the package).
 
 // The real cards and Generals.
-export const registry = buildContentRegistry();
+export const registry = withFillers(buildContentRegistry());
 // A mode with no triggers of its own: only the skills under test act.
 export const stubMode: GameModeDefinition = { id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
 // Kingdom War's own triggers (Draw Phase draw, Judgment Phase, dying, elimination), never ending the game.
@@ -39,7 +40,7 @@ export function table(cards: Record<string, CardInstance[]> = {}, o: TableOption
   const ids = SEAT_IDS.slice(0, o.seats ?? 4);
   return {
     seats: ids.map((id, index) => {
-      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['xu-huang', 'dong-zhuo'];
+      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['filler-xu-huang', 'filler-dong-zhuo'];
       return {
         id, index, kingdom: o.kingdoms?.[id] ?? KINGDOMS[index], eliminated: false,
         generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },

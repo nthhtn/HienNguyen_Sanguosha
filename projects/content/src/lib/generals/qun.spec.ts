@@ -2,7 +2,7 @@ import type { Effect, GameState } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, hp, kwMode, seat, table, TableOptions } from './skills.testing';
 
 const h = harness();
-const at = (seatId: string, main: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [main, 'jia-xu', revealed] });
+const at = (seatId: string, main: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [main, 'filler-jia-xu', revealed] });
 const offered = (s: GameState, seatId: string, skillId: string) =>
   h.legal(s, seatId).some((a) => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.skillId === skillId);
 
@@ -83,11 +83,11 @@ describe('Diao Chan — Sow Discord', () => {
   });
 
   it('is not offered without two other male seats', () => {
-    expect(offered(her({ generals: { 'seat-c': ['zhu-rong', 'sun-jian'], 'seat-d': ['cai-wenji', 'sun-jian'] } }), 'seat-a', 'sow-discord')).toBe(false);
+    expect(offered(her({ generals: { 'seat-c': ['filler-zhu-rong', 'filler-sun-jian'], 'seat-d': ['filler-cai-wenji', 'filler-sun-jian'] } }), 'seat-a', 'sow-discord')).toBe(false);
   });
 
   it('a seat the Duel can’t target (Empty City) is never the first pick', () => {
-    const s = h.select(h.useSkill(her({ generals: { 'seat-b': ['zhuge-liang', 'liu-shan'] } }), 'seat-a', 'sow-discord'), 'k');
+    const s = h.select(h.useSkill(her({ generals: { 'seat-b': ['zhuge-liang', 'filler-liu-shan'] } }), 'seat-a', 'sow-discord'), 'k');
     expect(s.pendingChoice?.options.map((o) => o.id)).toEqual(['seat-c', 'seat-d']);
   });
 });

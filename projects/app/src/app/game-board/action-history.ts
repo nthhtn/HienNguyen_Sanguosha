@@ -55,6 +55,8 @@ export function actionHistory(
   let lastPicked: { seatId: string; count: number } | null = null;
   // The last face seen of each card, from moves into face-up zones.
   const knownFaces = new Map<string, CardInstance>();
+  // The card each seat showed last, and its line (competing folds two into one).
+  const lastShown = new Map<string, { card: CardInstance; line: ActionLine }>();
   // "Seat 1 took Hing's Silver Lion (A ♣) with Steal", "Seat 1 took a hand card
   // from Hing with Steal", "Seat 1 discarded Sha (7 ♠) from Hing's hand with Break".
   const pickLine = (made: ChoiceMadeEvent, face: CardInstance | undefined, ownerSeatId: string | undefined): string => {
@@ -246,6 +248,34 @@ export function actionHistory(
           action(`${owner}'s ${cardName(event.cardId)} ${event.outcome === 'claim-true' ? 'was true' : 'was a bluff'}`);
         } else if (event.outcome === 'took-hand-card' && event.targetSeatId) {
           action(`${owner} took a hand card from ${name(event.targetSeatId)} (${ability})`);
+        } else if ((event.outcome === 'compete-won' || event.outcome === 'compete-lost') && event.targetSeatId) {
+          // "Seat 1 competed with Seat 2: 9 ♠ against 7 ♥, Seat 1 won", in place of the two "showed" lines.
+          const mine = lastShown.get(event.owner.seatId);
+          const theirs = lastShown.get(event.targetSeatId);
+          for (const shown of [mine, theirs]) {
+            const at = shown ? entries.lastIndexOf(shown.line) : -1;
+            if (at >= 0) entries.splice(at, 1);
+          }
+          const faces = mine && theirs ? `: ${cardFaceLabel(mine.card)} against ${cardFaceLabel(theirs.card)}` : '';
+          const winner = event.outcome === 'compete-won' ? owner : name(event.targetSeatId);
+          action(`${owner} competed with ${name(event.targetSeatId)}${faces}, ${winner} won`);
+          if (event.abilityId === 'heavens-justice') {
+            action(`${owner}'s ${ability}: ${event.outcome === 'compete-won' ? 'one more Sha this turn, at any distance, with one more target' : 'no Sha this turn'}`);
+          }
+        } else if (event.outcome === 'reborn') {
+          action(`${owner} used ${ability}: discards every card, draws 3, recovers to 3 HP and turns face up`);
+        } else if (event.outcome === 'paid-weapon') {
+          action(`${owner} discarded a Weapon for ${ability}`);
+        } else if (event.outcome === 'struck' && event.targetSeatId) {
+          action(`${owner} struck ${name(event.targetSeatId)} with ${ability}`);
+        } else if (event.outcome === 'drew-up' && event.targetSeatId) {
+          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} draws up to its max HP`);
+        } else if (event.outcome === 'judged-red' || event.outcome === 'judged-black') {
+          action(`${owner}'s ${ability}: ${event.outcome === 'judged-red' ? 'black' : 'red'} hand cards can be used as Duel this turn`);
+        } else if (event.outcome === 'discarded' && event.targetSeatId) {
+          action(`${owner}'s ${ability}: discards one of ${name(event.targetSeatId)}'s cards`);
+        } else if (event.outcome === 'recast') {
+          action(`${owner} recast a club with ${ability}`);
         }
         break;
       }
@@ -274,6 +304,7 @@ export function actionHistory(
         break;
       case 'CardShownEvent':
         action(`${name(event.seatId)} showed ${named(event.card)}`, event.card);
+        lastShown.set(event.seatId, { card: event.card, line: entries[entries.length - 1] as ActionLine });
         break;
       case 'CardsTurnedUpEvent':
         action(`Turned up ${event.cards.length} ${event.cards.length === 1 ? 'card' : 'cards'}: ${event.cards.map(named).join(', ')}`);

@@ -20,7 +20,7 @@ const KINGDOMS = ['Wei', 'Shu', 'Wu', 'Qun', 'Shu'] as const;
 function seat(id: string, index: number, combinedHp = 4, eliminated = false): Seat {
   return {
     id, index, kingdom: KINGDOMS[index], combinedHp, maxCombinedHp: 4, eliminated,
-    generals: { main: { generalDefinitionId: 'xu-huang', revealed: false }, deputy: { generalDefinitionId: 'zhang-he', revealed: false } },
+    generals: { main: { generalDefinitionId: 'filler-xu-huang', revealed: false }, deputy: { generalDefinitionId: 'filler-zhang-he', revealed: false } },
     hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` },
   };
 }

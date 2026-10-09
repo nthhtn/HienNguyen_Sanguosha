@@ -13,7 +13,7 @@ tester('test-empty', { untargetableWithEmptyHandBy: ['sha', 'duel'] });
 tester('test-matchless', { doubleAnswers: true });
 
 const { legal, play, pass, respond, run } = harness();
-const withA = (main: string, revealed = true) => ({ 'seat-a': [main, 'dong-zhuo', revealed] as [string, string, boolean] });
+const withA = (main: string, revealed = true) => ({ 'seat-a': [main, 'filler-dong-zhuo', revealed] as [string, string, boolean] });
 const targetsOf = (s: GameState, cardId: string) =>
   legal(s, 'seat-a').flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === cardId ? [a.targets[0]?.seatId] : []));
 
@@ -37,16 +37,16 @@ describe('toolsIgnoreDistance', () => {
 
 describe('untargetableBy', () => {
   it('keeps Steal and Capture off the seat', () => {
-    const s = table({ 'seat-a:hand': [card('st', 'steal'), card('cp', 'capture', 'spade', 6)], 'seat-b:hand': [card('x', 'shan')] }, { generals: { 'seat-b': ['test-humble', 'dong-zhuo'] } });
+    const s = table({ 'seat-a:hand': [card('st', 'steal'), card('cp', 'capture', 'spade', 6)], 'seat-b:hand': [card('x', 'shan')] }, { generals: { 'seat-b': ['test-humble', 'filler-dong-zhuo'] } });
     expect(targetsOf(s, 'st')).not.toContain('seat-b');
     expect(targetsOf(s, 'cp')).not.toContain('seat-b');
   });
 
   it('with an empty hand only: Sha and Duel can’t target the seat', () => {
-    const empty = table({ 'seat-a:hand': [card('s1', 'sha'), card('d1', 'duel')] }, { generals: { 'seat-b': ['test-empty', 'dong-zhuo'] } });
+    const empty = table({ 'seat-a:hand': [card('s1', 'sha'), card('d1', 'duel')] }, { generals: { 'seat-b': ['test-empty', 'filler-dong-zhuo'] } });
     expect(targetsOf(empty, 's1')).not.toContain('seat-b');
     expect(targetsOf(empty, 'd1')).not.toContain('seat-b');
-    const holding = table({ 'seat-a:hand': [card('s1', 'sha'), card('d1', 'duel')], 'seat-b:hand': [card('x', 'peach')] }, { generals: { 'seat-b': ['test-empty', 'dong-zhuo'] } });
+    const holding = table({ 'seat-a:hand': [card('s1', 'sha'), card('d1', 'duel')], 'seat-b:hand': [card('x', 'peach')] }, { generals: { 'seat-b': ['test-empty', 'filler-dong-zhuo'] } });
     expect(targetsOf(holding, 's1')).toContain('seat-b');
     expect(targetsOf(holding, 'd1')).toContain('seat-b');
   });

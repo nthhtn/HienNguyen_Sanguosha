@@ -298,7 +298,7 @@ describe('checkCompulsoryWhileHidden', () => {
   const fired = { kind: 'AbilityUsedEvent' as const, owner, abilityId: 'linked-camps', outcome: 'used' };
   const luXun = (revealed: boolean, log: GameState['log']) =>
     baseState({
-      seats: [{ ...baseState().seats[0], kingdom: 'Wu', generals: { main: { generalDefinitionId: 'lu-xun', revealed }, deputy: { generalDefinitionId: 'sun-jian', revealed: false } } }],
+      seats: [{ ...baseState().seats[0], kingdom: 'Wu', generals: { main: { generalDefinitionId: 'lu-xun', revealed }, deputy: { generalDefinitionId: 'filler-sun-jian', revealed: false } } }],
       log,
     });
 

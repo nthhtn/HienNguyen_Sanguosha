@@ -3,7 +3,7 @@ import { skillsInPlay, usedCardFrom } from 'engine';
 import { askedAbout, card, handIds, harness, hp, ids, registry, seat, table, TableOptions } from './skills.testing';
 
 const { play, pass, run, use, decline, choose, select, cancel } = harness();
-const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'zhang-he', revealed] });
+const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-zhang-he', revealed] });
 // seat-b's turn: it plays Sha s1 at seat-a, which doesn't dodge.
 const shaHits = (cards: Record<string, ReturnType<typeof card>[]>, o: TableOptions) =>
   pass(play(table({ ...cards, 'seat-b:hand': [card('s1', 'sha'), ...(cards['seat-b:hand'] ?? [])] }, { owner: 'seat-b', ...o }), 's1', 'seat-a'));

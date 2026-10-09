@@ -4,7 +4,18 @@ import type { Action, CardInstance, Effect, GameModeDefinition, GameState, Gener
 import { buildContentRegistry } from 'content';
 import { ruleBasedPolicy } from './rule-based';
 
+// Test-only stand-ins (as content's fillers.testing.ts): `filler-<id>` has the
+// real General's kingdom, gender and max HP, and no skills.
+const FILLER_IDS = [
+  'cai-wenji', 'cao-pi', 'deng-ai', 'dian-wei', 'dong-zhuo', 'jia-xu', 'jiang-wei', 'liu-shan',
+  'lu-su', 'meng-huo', 'pang-de', 'pang-tong', 'sun-ce', 'sun-jian', 'taishi-ci', 'xu-huang',
+  'xun-yu', 'yuan-shao', 'zhang-he', 'zhang-zhao-and-zhang-hong', 'zhu-rong', 'zuo-ci',
+];
 export const registry = buildContentRegistry();
+for (const id of FILLER_IDS) {
+  const real = registry.generals.get(id)!;
+  registry.generals.set(`filler-${id}`, { id: `filler-${id}`, kingdom: real.kingdom, maxHp: real.maxHp, ...(real.gender ? { gender: real.gender } : {}), skills: [] });
+}
 export const mode: GameModeDefinition = { id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
 export const ctx = { registry, mode };
 export const card = (instanceId: string, definitionId: string, suit: CardInstance['suit'] = 'spade', rank = 7): CardInstance => ({ instanceId, definitionId, suit, rank });
@@ -22,7 +33,7 @@ export function table(cards: Record<string, CardInstance[]> = {}, o: Options = {
   const kingdoms: Kingdom[] = ['Wei', 'Shu', 'Wu', 'Qun'];
   return {
     seats: ids.map((id, index) => {
-      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['xu-huang', 'dong-zhuo'];
+      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['filler-xu-huang', 'filler-dong-zhuo'];
       return {
         id, index, kingdom: o.kingdoms?.[id] ?? kingdoms[index], eliminated: false,
         generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },

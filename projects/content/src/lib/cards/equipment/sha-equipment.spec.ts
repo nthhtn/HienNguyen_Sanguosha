@@ -1,10 +1,11 @@
+import { withFillers } from '../../generals/fillers.testing';
 import { advanceToDecision, getLegalActions, resolve } from 'engine';
 import type { Action, CardInstance, GameModeDefinition, GameState, QueueItem } from 'engine';
 import { buildContentRegistry } from '../../registry';
 import { cardStep } from '../../shared/steps';
 
 // The real cards and Generals; a mode with no triggers of its own.
-const registry = buildContentRegistry();
+const registry = withFillers(buildContentRegistry());
 const mode: GameModeDefinition = { id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
 const ctx = { registry, mode };
 
@@ -25,7 +26,7 @@ function table(cards: Record<string, CardInstance[]> = {}, o: TableOptions = {})
   const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d'];
   return {
     seats: ids.map((id, index) => {
-      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['xu-huang', 'dong-zhuo'];
+      const [main, deputy, revealed = true] = o.generals?.[id] ?? ['filler-xu-huang', 'filler-dong-zhuo'];
       return {
         id, index, kingdom: (['Wei', 'Shu', 'Wu', 'Qun'] as const)[index], eliminated: false,
         generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: deputy, revealed } },
@@ -177,7 +178,7 @@ describe('Eight Trigrams', () => {
 });
 describe('Gender Swords', () => {
   const swords = card('gs', 'gender-swords', 'spade', 2);
-  const female: TableOptions['generals'] = { 'seat-b': ['zhu-rong', 'dong-zhuo'] };
+  const female: TableOptions['generals'] = { 'seat-b': ['filler-zhu-rong', 'filler-dong-zhuo'] };
   const attack = (more: Record<string, CardInstance[]> = {}, generals: TableOptions['generals'] = female) =>
     play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [swords], drawPile: [card('d1', 'peach')], ...more }, { generals }), 's1', 'seat-b');
 
@@ -187,7 +188,7 @@ describe('Gender Swords', () => {
 
   it('doesn’t when it doesn’t, or when the target has no gender (both Generals hidden)', () => {
     expect(attack({}, {}).pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
-    const hidden = attack({}, { 'seat-b': ['zhu-rong', 'dong-zhuo', false] });
+    const hidden = attack({}, { 'seat-b': ['filler-zhu-rong', 'filler-dong-zhuo', false] });
     expect(hidden.pendingChoice).toBeUndefined();
     expect(hidden.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
   });
@@ -385,20 +386,23 @@ describe('Green Dragon Blade', () => {
 
 describe('Sky Scorcher', () => {
   const scorcher = card('sk', 'sky-scorcher', 'diamond', 12);
-  const lastSha = () => play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [scorcher] }), 's1', 'seat-d');
+  const plays = (s: GameState) => getLegalActions(s, 'seat-a', registry).filter((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === 's1');
+  const lastShaTable = () => table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [scorcher] });
 
-  it('asks when the Sha is its user’s last hand card', () => {
-    expect(askedAbout(lastSha())).toBe('sky-scorcher');
+  it('with the last hand card, the play is one template of up to 3 targets in range', () => {
+    expect(plays(lastShaTable())).toEqual([
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 's1', targets: [], pickTargets: { eligibleIds: ['seat-b', 'seat-c', 'seat-d'], min: 1, max: 3 } },
+    ]);
   });
 
-  it('isn’t asked when it isn’t', () => {
-    expect(play(table({ 'seat-a:hand': [card('s1', 'sha'), card('k', 'peach')], 'seat-a:equip': [scorcher] }), 's1', 'seat-d').pendingChoice).toBeUndefined();
+  it('a Sha that isn’t the last hand card has one target per action', () => {
+    const s = table({ 'seat-a:hand': [card('s1', 'sha'), card('k', 'peach')], 'seat-a:equip': [scorcher] });
+    expect(plays(s).map((a) => (a.kind === 'PlayCardAction' ? a.targets : []))).toEqual([[seat('seat-b')], [seat('seat-c')], [seat('seat-d')]]);
   });
 
-  it('Use: up to 2 more targets in range; each is asked in seat order from the user', () => {
-    let s = use(lastSha());
-    expect(s.pendingSelection).toMatchObject({ of: 'seats', eligibleIds: ['seat-b', 'seat-c'], min: 1, max: 2 });
-    s = select(s, 'seat-c', 'seat-b');
+  it('never asks; each target is asked in seat order from the user', () => {
+    let s = play(lastShaTable(), 's1', 'seat-d', 'seat-c', 'seat-b');
+    expect(s.pendingChoice).toBeUndefined();
     expect(s.pendingResponse!.respondingSeatId).toBe('seat-b');
     s = pass(s);
     expect(s.pendingResponse!.respondingSeatId).toBe('seat-c');
@@ -409,7 +413,7 @@ describe('Sky Scorcher', () => {
   });
 
   it('a target gone before its turn in the steps is skipped (Review Focus 2)', () => {
-    let s = select(use(lastSha()), 'seat-b', 'seat-c');
+    let s = play(lastShaTable(), 's1', 'seat-b', 'seat-c', 'seat-d');
     s = { ...s, seats: s.seats.map((x) => (x.id === 'seat-c' ? { ...x, eliminated: true } : x)) };
     s = pass(s); // seat-b
     expect(s.pendingResponse!.respondingSeatId).toBe('seat-d');

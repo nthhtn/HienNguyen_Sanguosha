@@ -16,6 +16,19 @@ const state = (pendingChoice?: PendingChoice): GameState => ({
 });
 
 describe('describeChoice', () => {
+  const skill = (skillId: string, verb: PendingChoice['verb'], targetSeatId?: string, options: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }]): PendingChoice => ({
+    id: 'k', seatId: 'seat-0', verb, options,
+    reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId }, abilityId: skillId, ...(targetSeatId ? { targetSeatId } : {}) },
+  });
+
+  it("Sudden Attack: choose one of the seat's cards to discard", () => {
+    expect(describeChoice(state(skill('sudden-attack', 'discard', 'seat-1')), 'seat-0')).toEqual({ title: 'Sudden Attack', prompt: 'Choose a card to discard from Seat 1', confirmLabel: 'Discard' });
+  });
+
+  it('Rouse the Tiger: the seat its target damages', () => {
+    expect(describeChoice(state(skill('rouse-the-tiger', 'pick', 'seat-1')), 'seat-0')).toEqual({ title: 'Rouse the Tiger', prompt: 'Choose a seat for Seat 1 to damage', confirmLabel: 'Choose' });
+  });
+
   it('Bewilder: believe or doubt the claim', () => {
     const doubt: PendingChoice = {
       id: 'b', seatId: 'seat-0', verb: 'pick',

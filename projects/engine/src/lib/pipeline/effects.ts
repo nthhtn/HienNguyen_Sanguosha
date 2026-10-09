@@ -99,6 +99,7 @@ export type Effect =
   | { kind: 'UseCardEffect'; seatId: string; card: UsedCard; targets: Target[]; counted?: boolean; answering?: PendingResponse }
   // Turns a seat face down (Entrench): its next turn is passed as it turns up.
   | { kind: 'TurnFaceDownEffect'; seatId: string }
+  | { kind: 'TurnFaceUpEffect'; seatId: string }
   // Shows a card to everyone (Sow Revolt's taken card): logs its face.
   | { kind: 'ShowCardEffect'; seatId: string; cardInstanceId: string; abilityId?: string };
 
@@ -303,6 +304,15 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       if (seat.eliminated || seat.faceDown) return { state, events: [] };
       const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, faceDown: true as const } : s));
       const event: EngineEvent = { kind: 'SeatTurnedEvent', seatId: seat.id, faceDown: true };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'TurnFaceUpEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      if (!seat.faceDown) return { state, events: [] };
+      const { faceDown: _up, ...faceUp } = seat;
+      const seats = state.seats.map((s) => (s.id === seat.id ? faceUp : s));
+      const event: EngineEvent = { kind: 'SeatTurnedEvent', seatId: seat.id, faceDown: false };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'SkillStepEffect':

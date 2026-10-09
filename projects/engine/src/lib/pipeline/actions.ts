@@ -1,8 +1,10 @@
 import { AbilityOwner, Target } from '../domain/types';
+import type { TargetPick } from '../registry/types';
 
 export type Action =
   | { kind: 'DrawCardsAction'; seatId: string; count: number }
-  | { kind: 'PlayCardAction'; seatId: string; cardInstanceId: string; targets: Target[] }
+  // `pickTargets`: on an offered template, pick the targets, then submit with them.
+  | { kind: 'PlayCardAction'; seatId: string; cardInstanceId: string; targets: Target[]; pickTargets?: TargetPick }
   | { kind: 'RevealGeneralAction'; seatId: string; slot: 'main' | 'deputy' }
   | { kind: 'ChooseGeneralsAction'; seatId: string; mainId: string; deputyId: string }
   | { kind: 'RespondAction'; seatId: string; pendingResponseId: string; cardInstanceId: string }
@@ -15,7 +17,7 @@ export type Action =
   | { kind: 'CancelSelectionAction'; seatId: string; selectionId: string }
   // Uses a conversion: in the Play Phase at `targets`, or (with
   // pendingResponseId) to answer that window. Opens a selection of the cards.
-  | { kind: 'UseConversionAction'; seatId: string; via: { owner: AbilityOwner; conversionId: string }; targets: Target[]; pendingResponseId?: string }
+  | { kind: 'UseConversionAction'; seatId: string; via: { owner: AbilityOwner; conversionId: string }; targets: Target[]; pendingResponseId?: string; pickTargets?: TargetPick }
   // Uses an active skill of the seat's General (owner.kind === 'general').
   | { kind: 'UseSkillAction'; seatId: string; owner: AbilityOwner }
   // Fills the pending arrangement: `top` (top card first) and `bottom` (in the

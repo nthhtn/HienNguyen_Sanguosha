@@ -2,7 +2,7 @@ import type { GameState } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, hp, ids, kwMode, table, TableOptions } from './skills.testing';
 
 const h = harness();
-const yuJi = (seatId = 'seat-a'): TableOptions['generals'] => ({ [seatId]: ['yu-ji', 'zuo-ci'] });
+const yuJi = (seatId = 'seat-a'): TableOptions['generals'] => ({ [seatId]: ['yu-ji', 'filler-zuo-ci'] });
 // Each other seat answers in turn: 'b' for believe, 'd' for doubt.
 const answer = (s: GameState, answers: string) => [...answers].reduce((acc, a) => h.choose(acc, a === 'd' ? 'doubt' : 'believe'), s);
 const claimSha = (claimed: ReturnType<typeof card>, answers: string) =>

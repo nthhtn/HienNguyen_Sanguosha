@@ -42,9 +42,25 @@ export function attackRange(state: GameState, seatId: string, registry: ContentR
   return equippedSlot(state, seatId, 'weapon', registry)?.weaponRange ?? 1;
 }
 
-// Sha plays allowed per turn: the highest any active ability allows, else 1.
+// Turn flags that change the turn owner's Sha for the rest of the turn (set by
+// skills: Heaven's Justice). Named for what they do, so any skill may set them.
+export const SHA_FLAGS = {
+  extraPlay: 'sha-extra-play',
+  anyDistance: 'sha-any-distance',
+  extraTarget: 'sha-extra-target',
+  none: 'sha-none',
+} as const;
+
+// Whether `flag` holds for `seatId`'s Sha now (only in its own turn).
+export function shaFlag(state: GameState, seatId: string, flag: string): boolean {
+  return state.turn.ownerSeatId === seatId && !!state.turn.flags?.[flag];
+}
+
+// Sha plays allowed per turn: the highest any active ability allows, else 1;
+// one more after a won Heaven's Justice (SHA_FLAGS.extraPlay).
 export function shaLimit(state: GameState, seatId: string, registry: ContentRegistry): number {
-  return Math.max(1, ...activeAbilities(state, seatId, registry).map((a) => a.modifiers?.shaLimit ?? 1));
+  const base = Math.max(1, ...activeAbilities(state, seatId, registry).map((a) => a.modifiers?.shaLimit ?? 1));
+  return base + (shaFlag(state, seatId, SHA_FLAGS.extraPlay) ? 1 : 0);
 }
 
 // Every living seat other than `seatId`, as single-target lists, in seat order.
