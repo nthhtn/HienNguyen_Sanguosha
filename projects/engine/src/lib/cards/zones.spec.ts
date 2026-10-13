@@ -137,7 +137,7 @@ describe('zones', () => {
         1,
         createRng(1)
       );
-      const discardAgain = first.zones.map((z) => (z.id === 'discard' ? { ...z, cards: [card('d2')] } : z));
+      const discardAgain = first.zones.map((z) => (z.id === 'discard' ? { ...z, cards: [card('d1')] } : z));
       const second = drawTop(discardAgain, 'draw', 'seat-a:hand', 1, first.rng);
       expect(second.drawn[0].instanceId).not.toBe(first.drawn[0].instanceId);
     });
