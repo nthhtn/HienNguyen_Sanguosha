@@ -108,6 +108,7 @@ describe('SocketService', () => {
     ['replaced', { type: 'replaced' }],
     ['room.left', { type: 'room.left', reason: 'removed' }],
     ['a version error', { type: 'error', code: 'version', message: 'Please reload to get the latest version' }],
+    ['an unasked invalid_message error', { type: 'error', code: 'invalid_message', message: 'That request was not understood' }],
     ['a not_member error', { type: 'error', code: 'not_member', message: "You're not in this room" }],
   ])('stops for good after %s', (_label, message) => {
     connected();

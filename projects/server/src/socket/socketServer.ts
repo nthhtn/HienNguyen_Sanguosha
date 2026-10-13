@@ -129,7 +129,12 @@ export function attachSocketServer(app: TypedApp, deps: SocketDeps): void {
         fail('version', reqId);
         return ws.close(CLOSE_POLICY);
       }
-      if (!clientMessage.Check(value)) return fail('invalid_message', reqId);
+      if (!clientMessage.Check(value)) {
+        fail('invalid_message', reqId);
+        // A refused hello can never succeed on retry, so end the connection.
+        if ((value as { type?: unknown } | null)?.type === 'hello') ws.close(CLOSE_POLICY);
+        return;
+      }
       const message: ClientMessage = value;
 
       if (message.type === 'hello') {

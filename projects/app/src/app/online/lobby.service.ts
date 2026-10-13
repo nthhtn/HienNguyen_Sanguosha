@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { ERROR_MESSAGES, REPLACED_MESSAGE, ROOM_LEFT_MESSAGES } from 'protocol';
@@ -6,6 +6,9 @@ import type { ErrorMessage, RoomRequest, RoomSnapshot, ServerMessage } from 'pro
 import { ApiError } from '../auth/auth.service';
 import { OnlineNotice } from './online-notice';
 import { SocketService } from './socket.service';
+
+// How long the host-change notice stays.
+export const NOTICE_MS = 6_000;
 
 // The Lobby's state, kept from the room socket. Provide it in the Lobby
 // component together with SocketService. The server decides every rule:
@@ -15,6 +18,7 @@ export class LobbyService {
   private readonly socket = inject(SocketService);
   private readonly router = inject(Router);
   private readonly notices = inject(OnlineNotice);
+  private noticeTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly _room = signal<RoomSnapshot | null>(null);
   private readonly _you = signal<string | null>(null);
   private readonly _notice = signal<string | null>(null);
@@ -46,6 +50,7 @@ export class LobbyService {
   });
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => this.clearNoticeTimer());
     this.socket.messages.pipe(takeUntilDestroyed()).subscribe((message) => this.receive(message));
   }
 
@@ -114,7 +119,7 @@ export class LobbyService {
   private refused(message: ErrorMessage): void {
     if (message.code === 'version') {
       this._ended.set(message.message);
-    } else if (message.code === 'not_member' || message.code === 'not_found') {
+    } else if (message.code === 'not_member' || message.code === 'not_found' || message.code === 'invalid_message') {
       this.notices.show(message.message);
       void this.router.navigateByUrl('/rooms');
     }
@@ -123,6 +128,17 @@ export class LobbyService {
   private noteHostChange(before: RoomSnapshot | null, after: RoomSnapshot): void {
     if (!before || !after.hostPlayerId || before.hostPlayerId === after.hostPlayerId) return;
     const host = after.members.find((m) => m.playerId === after.hostPlayerId);
-    if (host) this._notice.set(`${host.name} is now the host`);
+    if (!host) return;
+    this._notice.set(`${host.name} is now the host`);
+    this.clearNoticeTimer();
+    this.noticeTimer = setTimeout(() => {
+      this.noticeTimer = null;
+      this._notice.set(null);
+    }, NOTICE_MS);
+  }
+
+  private clearNoticeTimer(): void {
+    if (this.noticeTimer !== null) clearTimeout(this.noticeTimer);
+    this.noticeTimer = null;
   }
 }

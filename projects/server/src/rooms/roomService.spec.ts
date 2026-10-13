@@ -71,12 +71,23 @@ describe('RoomService', () => {
         visibility: 'open',
         status: 'lobby',
         seatCount: 4,
-        rules: { firstRevealDraw: true },
+        rules: {},
         hostPlayerId: snapshot.members[0].playerId,
         members: [{ playerId: expect.any(String), name: 'Ann', kind: 'human', isRegistered: true, connected: false, botControlled: false }],
         lastResult: null,
         seatLimits: LIMITS,
       });
+    });
+
+    it('keeps First Reveal Bonus only from the minimum seat count', async () => {
+      const { rooms, registered } = await setup();
+      const rulesOf = async (name: string, seatCount: number) => {
+        const user = await registered(name);
+        const id = await rooms.create(user, { seatCount, rules: { firstRevealDraw: true }, displayName: name });
+        return rooms.snapshot(user, id).rules;
+      };
+      expect(await rulesOf('Ann', 3)).toEqual({});
+      expect(await rulesOf('Bo', 5)).toEqual({ firstRevealDraw: true });
     });
 
     it('stores the room with its host', async () => {
@@ -284,6 +295,17 @@ describe('RoomService', () => {
       const { run, host } = await lobby();
       await expect(run({ type: 'lobby.removePlayer', playerId: host.playerId })).rejects.toEqual(code('invalid_message'));
       await expect(run({ type: 'lobby.removePlayer', playerId: 'nobody' })).rejects.toEqual(code('not_found'));
+    });
+
+    it('drops First Reveal Bonus below the minimum seat count, keeps it from there', async () => {
+      const { run, host } = await lobby();
+      await run({ type: 'lobby.setRules', seatCount: 6, rules: { firstRevealDraw: true } });
+      expect(host.connection.room).toMatchObject({ seatCount: 6, rules: { firstRevealDraw: true } });
+      await run({ type: 'lobby.setRules', seatCount: 5, rules: { firstRevealDraw: true } });
+      expect(host.connection.room?.rules).toEqual({ firstRevealDraw: true });
+      await run({ type: 'lobby.setRules', seatCount: 4, rules: { firstRevealDraw: true } });
+      expect(host.connection.room).toMatchObject({ seatCount: 4, rules: {} });
+      expect(host.connection.room?.rules).toEqual({});
     });
 
     it('changes the seat count and rules, within the limits and never below the member count', async () => {

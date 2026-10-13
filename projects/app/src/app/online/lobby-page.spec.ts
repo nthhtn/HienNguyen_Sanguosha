@@ -1,6 +1,9 @@
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { MatButtonToggle } from '@angular/material/button-toggle';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { RouterTestingHarness } from '@angular/router/testing';
 import type { RoomSnapshot } from 'protocol';
 import { LobbyPage } from './lobby-page';
@@ -100,6 +103,29 @@ describe('LobbyPage', () => {
     expect(lobby.removePlayer).toHaveBeenCalledWith('p-gus');
     expect(lobby.setRules).toHaveBeenCalledWith(6, { firstRevealDraw: true });
     expect(lobby.leave).toHaveBeenCalled();
+  });
+
+  it('puts the seat toggle back when the server refuses the change', async () => {
+    lobby.setRules.mockResolvedValue(false);
+    const { el, harness } = await render();
+    const checked = () => harness.routeDebugElement!.queryAll(By.directive(MatButtonToggle)).filter((t) => (t.componentInstance as MatButtonToggle).checked).map((t) => (t.componentInstance as MatButtonToggle).value);
+    harness.detectChanges();
+    expect(checked()).toEqual([5]);
+    const six = [...el.querySelectorAll('.seats mat-button-toggle')].find((t) => t.textContent?.trim() === '6')!;
+    (six.querySelector('button') as HTMLButtonElement).click();
+    expect(checked()).toEqual([6]);
+    await harness.fixture.whenStable();
+    expect(checked()).toEqual([5]);
+  });
+
+  it('puts the First Reveal checkbox back when the server refuses the change', async () => {
+    lobby.setRules.mockResolvedValue(false);
+    const { el, harness } = await render();
+    const box = harness.routeDebugElement!.query(By.directive(MatCheckbox)).componentInstance as MatCheckbox;
+    (el.querySelector('.first-reveal input') as HTMLInputElement).click();
+    expect(box.checked).toBe(false);
+    await harness.fixture.whenStable();
+    expect(box.checked).toBe(true);
   });
 
   it('offers seat counts from the member count up to the limit', async () => {

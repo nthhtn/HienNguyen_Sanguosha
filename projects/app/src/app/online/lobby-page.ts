@@ -1,9 +1,9 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatButtonToggleGroup, MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
 import { LobbyService } from './lobby.service';
@@ -122,6 +122,8 @@ import { SocketService } from './socket.service';
 export class LobbyPage {
   protected readonly lobby = inject(LobbyService);
   protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
+  private readonly seats = viewChild(MatButtonToggleGroup);
+  private readonly firstReveal = viewChild(MatCheckbox);
 
   // From the member count (the server refuses fewer seats) up to the limit.
   protected readonly seatOptions = computed(() => {
@@ -150,11 +152,22 @@ export class LobbyPage {
 
   protected setSeats(seatCount: number): void {
     const room = this.lobby.room();
-    if (room) void this.lobby.setRules(seatCount, room.rules);
+    if (room) void this.lobby.setRules(seatCount, room.rules).then((ok) => ok || this.restoreControls());
   }
 
   protected setFirstReveal(on: boolean): void {
     const room = this.lobby.room();
-    if (room) void this.lobby.setRules(room.seatCount, { ...room.rules, firstRevealDraw: on });
+    if (room) void this.lobby.setRules(room.seatCount, { ...room.rules, firstRevealDraw: on }).then((ok) => ok || this.restoreControls());
+  }
+
+  // A refused change leaves the snapshot as it was, so the bindings never
+  // re-apply: put the controls back to what the server holds.
+  private restoreControls(): void {
+    const room = this.lobby.room();
+    if (!room) return;
+    const seats = this.seats();
+    if (seats) seats.value = room.seatCount;
+    const firstReveal = this.firstReveal();
+    if (firstReveal) firstReveal.checked = !!room.rules.firstRevealDraw;
   }
 }

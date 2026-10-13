@@ -1,3 +1,4 @@
+import { FIRST_REVEAL_MIN_SEATS } from 'content';
 import type { GameRules } from 'engine';
 import { normalizeDisplayName } from 'protocol';
 import type { CreateRoomBody, RoomCommand, RoomLeftReason, RoomList, RoomSnapshot, SeatLimits, ServerMessage } from 'protocol';
@@ -38,9 +39,10 @@ interface LiveRoom {
   connections: Map<string, MemberConnection>;
 }
 
-// The rules the engine reads. Unknown keys never get stored.
-function rulesFrom(rules: GameRules): GameRules {
-  return rules.firstRevealDraw === undefined ? {} : { firstRevealDraw: rules.firstRevealDraw };
+// The rules the engine reads. Unknown keys never get stored, and First Reveal
+// Bonus is dropped below the seat count where it applies.
+function rulesFrom(rules: GameRules, seatCount: number): GameRules {
+  return rules.firstRevealDraw === undefined || seatCount < FIRST_REVEAL_MIN_SEATS ? {} : { firstRevealDraw: rules.firstRevealDraw };
 }
 
 function requireName(raw: string): string {
@@ -106,7 +108,7 @@ export class RoomService {
       this.requireNoOtherRoom(user.id, null);
       const now = this.now();
       const at = new Date(now);
-      const rules = rulesFrom(body.rules);
+      const rules = rulesFrom(body.rules, body.seatCount);
       const { room, host } = await this.repos.transaction(async (tx) => {
         const created = await tx.rooms.create({ visibility: 'open', seatCount: body.seatCount, rules, now: at });
         const player = await tx.rooms.addPlayer({ roomId: created.id, userId: user.id, kind: 'human', displayName: name, now: at });
@@ -245,7 +247,7 @@ export class RoomService {
     this.requireHostInLobby(entry, actor);
     this.requireSeatCount(seatCount, entry.room.members.length);
     const now = this.now();
-    const clean = rulesFrom(rules);
+    const clean = rulesFrom(rules, seatCount);
     await this.repos.rooms.update(entry.room.id, { seatCount, rules: clean }, new Date(now));
     entry.room.record = { ...entry.room.record, seatCount, rules: clean, updatedAt: new Date(now) };
     this.touched(entry, now);

@@ -80,7 +80,7 @@ describe('room routes', () => {
   it('stores only the known rules', async () => {
     ({ app } = await setup());
     const ann = await signUp(app, 'Ann');
-    const { id } = (await createRoom(app, ann, { rules: { firstRevealDraw: true, houseRule: 'chaos' } })).json();
+    const { id } = (await createRoom(app, ann, { seatCount: 5, rules: { firstRevealDraw: true, houseRule: 'chaos' } })).json();
     expect((await get(app, `/api/rooms/${id}`, ann)).json().rules).toEqual({ firstRevealDraw: true });
   });
 

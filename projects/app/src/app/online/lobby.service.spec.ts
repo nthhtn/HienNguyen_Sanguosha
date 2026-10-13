@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import type { RoomSnapshot } from 'protocol';
-import { LobbyService } from './lobby.service';
+import { LobbyService, NOTICE_MS } from './lobby.service';
 import { OnlineNotice } from './online-notice';
 import { SocketService, WEB_SOCKET_FACTORY } from './socket.service';
 import { FakeSocket, ROOM, welcome } from './testing';
@@ -47,6 +47,21 @@ describe('LobbyService', () => {
     socket.serverSends(welcome(ROOM, 'p-bo'));
     socket.serverSends({ type: 'room.updated', room: withHost('p-bo') });
     expect(lobby.notice()).toBe('Bo is now the host');
+  });
+
+  it('clears the host notice after a while', () => {
+    jest.useFakeTimers();
+    try {
+      socket.serverSends(welcome(ROOM, 'p-bo'));
+      socket.serverSends({ type: 'room.updated', room: withHost('p-bo') });
+      expect(lobby.notice()).toBe('Bo is now the host');
+      jest.advanceTimersByTime(NOTICE_MS - 1);
+      expect(lobby.notice()).toBe('Bo is now the host');
+      jest.advanceTimersByTime(1);
+      expect(lobby.notice()).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('says it is waiting for an away host', () => {
@@ -114,6 +129,13 @@ describe('LobbyService', () => {
     socket.serverSends({ type: 'error', code: 'not_member', message: "You're not in this room" });
     await flush();
     expect(notices.take()).toBe("You're not in this room");
+    expect(navigate).toHaveBeenCalledWith('/rooms');
+  });
+
+  it('goes back to Rooms, saying why, when the server refuses the hello as malformed', async () => {
+    socket.serverSends({ type: 'error', code: 'invalid_message', message: 'That request was not understood' });
+    await flush();
+    expect(notices.take()).toBe('That request was not understood');
     expect(navigate).toHaveBeenCalledWith('/rooms');
   });
 });

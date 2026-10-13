@@ -99,6 +99,15 @@ describe('socket server', () => {
     await client.closed();
   });
 
+  it('answers a hello with a malformed room id with invalid_message, then closes', async () => {
+    ctx = await setup();
+    const ann = await ctx.signUp('Ann');
+    const client = await ctx.open(ann);
+    client.send({ type: 'hello', protocolVersion: PROTOCOL_VERSION, roomId: 'abc' });
+    expect(await client.next('error')).toMatchObject({ code: 'invalid_message' });
+    await client.closed();
+  });
+
   it('answers a hello from a non-member with not_member, then closes', async () => {
     ctx = await setup();
     const roomId = await ctx.createRoom(await ctx.signUp('Ann'));

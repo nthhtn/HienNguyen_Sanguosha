@@ -16,8 +16,9 @@ export const WEB_SOCKET_FACTORY = new InjectionToken<(url: string) => WebSocketL
 export type SocketStatus = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'ended';
 
 export const RECONNECT_DELAYS_MS = [1_000, 2_000, 4_000, 8_000, 15_000];
-// Errors, sent unasked, that no reconnect can fix.
-const FATAL_ERRORS: ReadonlySet<ErrorCode> = new Set<ErrorCode>(['version', 'not_member', 'not_found']);
+// Errors, sent unasked, that no reconnect can fix. The client never sends a
+// malformed message, so an unasked invalid_message means its hello was refused.
+const FATAL_ERRORS: ReadonlySet<ErrorCode> = new Set<ErrorCode>(['version', 'not_member', 'not_found', 'invalid_message']);
 
 export function socketUrl(location: Pick<Location, 'protocol' | 'host'> = window.location): string {
   return `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}${SOCKET_PATH}`;
