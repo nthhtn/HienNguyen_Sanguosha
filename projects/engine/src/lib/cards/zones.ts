@@ -1,5 +1,5 @@
 import { CardZone, CardInstance, GameState } from '../domain/types';
-import { RngState, shuffle } from '../rng/rng';
+import { RngState, nextFloat, shuffle } from '../rng/rng';
 
 // Locates a "well-known" zone (the draw pile, the discard pile, ...) by its
 // `kind` rather than by a hardcoded id string. A GameModeDefinition is free to
@@ -108,11 +108,16 @@ export function drawTop(
     const reshuffling = discardZone?.cards.filter((c) => !keepInDiscard.includes(c.instanceId)) ?? [];
     if (discardZone && reshuffling.length > 0) {
       const shuffled = shuffle(reshuffling, currentRng);
-      currentRng = shuffled.rng;
+      // Fresh ids: these cards were face up in the discard pile, so under their
+      // old ids everyone would know the new pile's order. One extra RNG step
+      // makes every reshuffle's counter its own, even a one-card shuffle's.
+      const stamp = nextFloat(shuffled.rng);
+      currentRng = stamp.rng;
+      const renamed = shuffled.items.map((c, position) => ({ ...c, instanceId: `r${currentRng.counter}-${position}` }));
       reshuffled = reshuffling.length;
       currentZones = currentZones.map((zone) => {
         if (zone.id === discardZone.id) return { ...zone, cards: zone.cards.filter((c) => keepInDiscard.includes(c.instanceId)) };
-        if (zone.id === fromZoneId) return { ...zone, cards: [...zone.cards, ...shuffled.items] };
+        if (zone.id === fromZoneId) return { ...zone, cards: [...zone.cards, ...renamed] };
         return zone;
       });
     }
