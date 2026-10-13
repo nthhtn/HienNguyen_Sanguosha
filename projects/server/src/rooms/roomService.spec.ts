@@ -1,31 +1,13 @@
 import { randomUUID } from 'node:crypto';
-import type { RoomSnapshot, ServerMessage } from 'protocol';
+import type { RoomSnapshot } from 'protocol';
 import { createMemoryRepositories } from '../persistence/memory/memoryRepositories';
 import { UserRecord } from '../persistence/records';
 import type { Repositories } from '../persistence/repositories';
-import { HOST_AWAY_MS, LOBBY_IDLE_MS, MemberConnection, RoomService } from './roomService';
+import { HOST_AWAY_MS, LOBBY_IDLE_MS, RoomService } from './roomService';
+import { FakeConnection } from './testing';
 
 const T0 = Date.parse('2026-10-13T12:00:00.000Z');
 const LIMITS = { min: 2, max: 6 };
-
-class FakeConnection implements MemberConnection {
-  readonly sent: ServerMessage[] = [];
-  closed = false;
-  send(message: ServerMessage): void {
-    this.sent.push(message);
-  }
-  close(): void {
-    this.closed = true;
-  }
-  last<T extends ServerMessage['type']>(type: T): Extract<ServerMessage, { type: T }> | undefined {
-    return [...this.sent].reverse().find((m) => m.type === type) as Extract<ServerMessage, { type: T }> | undefined;
-  }
-  // The room as this connection last saw it.
-  get room(): RoomSnapshot | undefined {
-    const message = [...this.sent].reverse().find((m) => m.type === 'room.updated' || m.type === 'welcome');
-    return message && (message.type === 'room.updated' || message.type === 'welcome') ? message.room : undefined;
-  }
-}
 
 async function setup() {
   const repos = createMemoryRepositories();

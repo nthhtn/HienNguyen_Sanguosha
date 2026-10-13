@@ -1,4 +1,4 @@
-import type { MemberKind } from 'protocol';
+import type { LastGame, MemberKind } from 'protocol';
 import { RoomPlayerRecord, RoomRecord } from '../persistence/records';
 
 export interface RoomMember {
@@ -37,6 +37,8 @@ export const sameName = (a: string, b: string) => a.toLowerCase() === b.toLowerC
 export class Room {
   // The last input (join, connect, lobby command), in ms.
   lastActivityAt: number;
+  // The last game's outcome, until another starts. In memory only.
+  lastGame: LastGame | null = null;
 
   constructor(
     public record: RoomRecord,

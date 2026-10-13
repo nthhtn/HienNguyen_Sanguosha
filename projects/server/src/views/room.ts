@@ -1,8 +1,14 @@
 import type { RoomListItem, RoomSnapshot, SeatLimits } from 'protocol';
 import { Room } from '../rooms/room';
 
+// What the running game says about each member (a GameRunner is one).
+export interface SeatingView {
+  seatOf(playerId: string): string | null;
+  botControlled(playerId: string): boolean;
+}
+
 // The room every member sees. Never user ids: members are known by player id.
-export function toRoomSnapshot(room: Room, seatLimits: SeatLimits): RoomSnapshot {
+export function toRoomSnapshot(room: Room, seatLimits: SeatLimits, seating: SeatingView | null = null): RoomSnapshot {
   const { record } = room;
   return {
     id: record.id,
@@ -15,12 +21,12 @@ export function toRoomSnapshot(room: Room, seatLimits: SeatLimits): RoomSnapshot
       playerId: m.id,
       name: m.name,
       kind: m.kind,
-      seatId: null,
+      seatId: seating?.seatOf(m.id) ?? null,
       isRegistered: m.isRegistered,
       connected: m.connected,
-      botControlled: false,
+      botControlled: seating?.botControlled(m.id) ?? false,
     })),
-    lastGame: null,
+    lastGame: room.lastGame ? structuredClone(room.lastGame) : null,
     seatLimits: { ...seatLimits },
   };
 }

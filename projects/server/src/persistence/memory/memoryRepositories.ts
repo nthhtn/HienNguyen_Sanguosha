@@ -339,6 +339,15 @@ class MemoryRooms implements RoomRepository {
   }
 }
 
+// A deep copy of a record's plain data. Not structuredClone: under Jest that
+// builds its Dates in another realm, which `instanceof Date` rejects.
+function deepCopy<T>(value: T): T {
+  if (Object.prototype.toString.call(value) === '[object Date]') return new Date((value as Date).getTime()) as T;
+  if (Array.isArray(value)) return value.map((item) => deepCopy(item)) as T;
+  if (value !== null && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, deepCopy(item)])) as T;
+  return value;
+}
+
 const actionKey = (gameId: string, seq: number) => `${gameId}:${seq}`;
 
 class MemoryGames implements GameRepository {
@@ -351,7 +360,7 @@ class MemoryGames implements GameRepository {
       id: randomUUID(),
       roomId: input.roomId,
       seed: input.seed,
-      seats: structuredClone(input.seats),
+      seats: deepCopy(input.seats),
       rules: { ...input.rules },
       buildId: input.buildId,
       status: 'running',
@@ -361,7 +370,7 @@ class MemoryGames implements GameRepository {
       finishedAt: null,
     };
     this.store.games.set(game.id, game);
-    return structuredClone(game);
+    return deepCopy(game);
   }
 
   async appendActions(gameId: string, afterSeq: number, actions: NewGameAction[], now: Date): Promise<void> {
@@ -371,31 +380,31 @@ class MemoryGames implements GameRepository {
     actions.forEach((action, i) => {
       if (action.seq !== afterSeq + 1 + i) throw new Error(`Action ${action.seq} is out of order`);
     });
-    for (const action of actions) this.store.gameActions.set(actionKey(gameId, action.seq), { ...structuredClone(action), gameId, createdAt: now });
+    for (const action of actions) this.store.gameActions.set(actionKey(gameId, action.seq), { ...deepCopy(action), gameId, createdAt: now });
     this.store.games.set(gameId, { ...game, actionCount: afterSeq + actions.length });
   }
 
   async update(gameId: string, changes: GameChanges): Promise<void> {
     const game = this.store.games.get(gameId);
-    if (game) this.store.games.set(gameId, { ...game, ...structuredClone(changes) });
+    if (game) this.store.games.set(gameId, { ...game, ...deepCopy(changes) });
   }
 
   async findById(gameId: string): Promise<GameRecord | null> {
     const game = this.store.games.get(gameId);
-    return game ? structuredClone(game) : null;
+    return game ? deepCopy(game) : null;
   }
 
   async listRunning(): Promise<GameRecord[]> {
     return [...this.store.games.values()]
       .filter((game) => game.status === 'running')
       .sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime())
-      .map((game) => structuredClone(game));
+      .map((game) => deepCopy(game));
   }
 
   async listActions(gameId: string): Promise<GameActionRecord[]> {
     return [...this.store.gameActions.values()]
       .filter((action) => action.gameId === gameId)
       .sort((a, b) => a.seq - b.seq)
-      .map((action) => structuredClone(action));
+      .map((action) => deepCopy(action));
   }
 }
