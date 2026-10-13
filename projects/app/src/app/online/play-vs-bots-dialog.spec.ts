@@ -1,11 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import type { RoomList, RoomListItem } from 'protocol';
 import { ApiError } from '../auth/auth.service';
 import { PlayVsBotsDialog, PlayVsBotsDialogData } from './play-vs-bots-dialog';
 import { RoomsService } from './rooms.service';
 
 describe('PlayVsBotsDialog', () => {
-  const rooms = { createSolo: jest.fn() };
+  const rooms = { createSolo: jest.fn(), refresh: jest.fn(), list: jest.fn() };
+  const listing = (rooms: Partial<RoomListItem>[]): RoomList => ({
+    seatLimits: { min: 2, max: 8 },
+    rooms: rooms.map((room) => ({ id: 'r', visibility: 'open', hostName: 'Ann', memberCount: 1, capacity: 4, status: 'lobby', youAreMember: false, ...room })),
+  });
   const dialogRef = { close: jest.fn() };
 
   async function create(existingRoomId: string | null = null) {
@@ -25,6 +30,8 @@ describe('PlayVsBotsDialog', () => {
 
   beforeEach(() => {
     rooms.createSolo.mockReset();
+    rooms.refresh.mockReset().mockResolvedValue(undefined);
+    rooms.list.mockReset().mockReturnValue(listing([]));
     dialogRef.close.mockReset();
   });
 
@@ -61,5 +68,30 @@ describe('PlayVsBotsDialog', () => {
     fixture.detectChanges();
     expect(dialogRef.close).not.toHaveBeenCalled();
     expect(el.querySelector('.error')?.textContent?.trim()).toBe('You already have a game against bots in progress');
+  });
+
+  it('offers Resume Game or Abandon and Start New when Start Game finds one already running', async () => {
+    rooms.createSolo.mockRejectedValueOnce(new ApiError('solo_exists', 'You already have a game against bots in progress', 409));
+    rooms.list.mockReturnValue(
+      listing([
+        { id: 'r-open', visibility: 'open', status: 'playing', youAreMember: true },
+        { id: 'r-done', visibility: 'solo', status: 'lobby', youAreMember: true },
+        { id: 'r-solo', visibility: 'solo', status: 'playing', youAreMember: true },
+      ])
+    );
+    const { fixture, component, el } = await create();
+    await component.submit();
+    fixture.detectChanges();
+    expect(rooms.refresh).toHaveBeenCalled();
+    expect(el.querySelector('.in-progress')?.textContent?.trim()).toBe('You have a game against bots in progress');
+    expect(el.querySelector('.error')).toBeNull();
+    (el.querySelector('button.resume') as HTMLButtonElement).click();
+    expect(dialogRef.close).toHaveBeenCalledWith('r-solo');
+    (el.querySelector('button.abandon') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    rooms.createSolo.mockResolvedValue('r-new');
+    await component.submit();
+    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: {}, replace: true });
+    expect(dialogRef.close).toHaveBeenLastCalledWith('r-new');
   });
 });

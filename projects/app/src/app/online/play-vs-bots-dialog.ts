@@ -81,10 +81,14 @@ export class PlayVsBotsDialog {
   readonly startingNew = signal(false);
   readonly error = signal<string | null>(null);
   readonly busy = signal(false);
-  protected readonly offerResume = () => this.data.existingRoomId !== null && !this.startingNew();
+  // Your running game against bots: from the data, or found after Start Game
+  // learns of one the room list didn't show yet.
+  readonly existingRoomId = signal(this.data.existingRoomId);
+  protected readonly offerResume = () => this.existingRoomId() !== null && !this.startingNew();
 
   resume(): void {
-    if (this.data.existingRoomId) this.dialogRef.close(this.data.existingRoomId);
+    const id = this.existingRoomId();
+    if (id) this.dialogRef.close(id);
   }
 
   async submit(): Promise<void> {
@@ -96,13 +100,24 @@ export class PlayVsBotsDialog {
       const id = await this.rooms.createSolo({
         seatCount,
         rules: seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {},
-        ...(this.data.existingRoomId ? { replace: true } : {}),
+        ...(this.existingRoomId() ? { replace: true } : {}),
       });
       this.dialogRef.close(id);
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'solo_exists' && (await this.findRunning())) return;
       this.error.set(err instanceof ApiError ? err.message : ERROR_MESSAGES.internal);
     } finally {
       this.busy.set(false);
     }
+  }
+
+  // Offers your running game against bots, if the room list now shows one.
+  private async findRunning(): Promise<boolean> {
+    await this.rooms.refresh();
+    const running = this.rooms.list()?.rooms.find((room) => room.visibility === 'solo' && room.youAreMember && room.status === 'playing');
+    if (!running) return false;
+    this.existingRoomId.set(running.id);
+    this.startingNew.set(false);
+    return true;
   }
 }
