@@ -98,10 +98,15 @@ and secret choices. Two things need attention before it is a network boundary:
    view-mapping layer or by extending the redaction.
 2. **The log is public by design, but it is not filtered.** Events are written
    so a face-down move carries no face, but a server should test that no event
-   leaks a hidden card or General to a seat that should not see it, using the
-   same invariants-and-property approach as the simulator.
+   leaks a hidden card or General to a seat that should not see it (now
+   `projects/sim/src/leakProperty.spec.ts`).
+3. **Card ids must not name cards.** Done in backend Stage 1: the deck names
+   each card `card-<position>` after the shuffle, and a reshuffle gives every
+   reshuffled card a fresh `r<counter>-<position>` id, so neither a masked
+   card nor the draw-pile order can be read from ids. `projects/sim/src/leaks.ts`
+   checks views, the log and reshuffles over simulated games.
 
-Both belong in a server-side mapping layer between the engine's types and the
+Items 1 and 2 belong in a server-side mapping layer between the engine's types and the
 wire contracts, which also gives a single place to version the contract.
 
 ### Processing a request
@@ -138,10 +143,11 @@ content it was played with.
 
 ### Clocks and bots
 
-`DecisionTimer` (client UI state today) moves to the server: it knows each
-human decision's budget, pauses when no decision is open, and on timeout
-submits the same engine-legal default the client does today (No Response, the
-first option, End Phase). Bots run as server-side seats using the same
+The decision clock (`describeDecision`, `switchClock`) and the timeout defaults
+(`defaultActionsFor`) are engine functions, so the server runs the same clock:
+it knows each human decision's budget, pauses when no decision is open, and on
+timeout submits the same engine-legal default the client does today (No Response,
+the first option, End Phase). Bots run as server-side seats using the same
 `ruleBasedPolicy.decide` over a redacted view, with the same per-move delay.
 
 ### Reconnection

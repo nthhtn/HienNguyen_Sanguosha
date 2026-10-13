@@ -81,9 +81,11 @@ describe('zones', () => {
 
   describe('drawTop: reshuffle-on-exhaustion', () => {
     it('reshuffles discardPile into drawPile and completes the requested count when drawPile runs out mid-draw', () => {
+      // Reshuffled cards are renamed, so identify cards by definitionId here.
+      const named = (id: string) => ({ ...card(id), definitionId: id });
       const zones: CardZone[] = [
-        { id: 'draw', kind: 'drawPile', cards: [card('c1')] },
-        { id: 'discard', kind: 'discardPile', cards: [card('d1'), card('d2'), card('d3')] },
+        { id: 'draw', kind: 'drawPile', cards: [named('c1')] },
+        { id: 'discard', kind: 'discardPile', cards: [named('d1'), named('d2'), named('d3')] },
         { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] },
       ];
       const { zones: result, drawn } = drawTop(zones, 'draw', 'seat-a:hand', 3, createRng(1));
@@ -92,12 +94,52 @@ describe('zones', () => {
       // (c1) plus what was reshuffled in from discardPile (d1, d2, d3) — which
       // exact 2 of the 3 discard cards make it depends on shuffle order, but c1
       // (already in drawPile before any reshuffle) must be drawn first.
-      expect(drawn.map((c) => c.instanceId).every((id) => ['c1', 'd1', 'd2', 'd3'].includes(id))).toBe(true);
+      expect(drawn.map((c) => c.definitionId).every((id) => ['c1', 'd1', 'd2', 'd3'].includes(id))).toBe(true);
       expect(drawn[0].instanceId).toBe('c1');
       const uniqueIds = new Set(drawn.map((c) => c.instanceId));
       expect(uniqueIds.size).toBe(3);
       const hand = result.find((z) => z.id === 'seat-a:hand')!;
       expect(hand.cards.map((c) => c.instanceId)).toEqual(drawn.map((c) => c.instanceId));
+    });
+
+    it('renames every reshuffled card, so its old face-up id tells nothing', () => {
+      const zones: CardZone[] = [
+        { id: 'draw', kind: 'drawPile', cards: [] },
+        { id: 'discard', kind: 'discardPile', cards: [card('d1'), card('d2'), card('d3')] },
+        { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] },
+      ];
+      const { zones: result, drawn } = drawTop(zones, 'draw', 'seat-a:hand', 1, createRng(1));
+      const ids = [...drawn, ...result.find((z) => z.id === 'draw')!.cards].map((c) => c.instanceId);
+      expect(ids).toHaveLength(3);
+      for (const id of ids) expect(id).toMatch(/^r\d+-\d$/);
+      expect(new Set(ids).size).toBe(3);
+    });
+
+    it('keeps the ids of cards held back in the discard pile', () => {
+      const zones: CardZone[] = [
+        { id: 'draw', kind: 'drawPile', cards: [] },
+        { id: 'discard', kind: 'discardPile', cards: [card('d1'), card('d2')] },
+        { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] },
+      ];
+      const { zones: result } = drawTop(zones, 'draw', 'seat-a:hand', 1, createRng(1), ['d2']);
+      expect(result.find((z) => z.id === 'discard')!.cards.map((c) => c.instanceId)).toEqual(['d2']);
+    });
+
+    it('gives two one-card reshuffles different ids, though a one-card shuffle draws no randomness', () => {
+      const first = drawTop(
+        [
+          { id: 'draw', kind: 'drawPile', cards: [] },
+          { id: 'discard', kind: 'discardPile', cards: [card('d1')] },
+          { id: 'seat-a:hand', kind: 'hand', ownerSeatId: 'seat-a', cards: [] },
+        ],
+        'draw',
+        'seat-a:hand',
+        1,
+        createRng(1)
+      );
+      const discardAgain = first.zones.map((z) => (z.id === 'discard' ? { ...z, cards: [card('d1')] } : z));
+      const second = drawTop(discardAgain, 'draw', 'seat-a:hand', 1, first.rng);
+      expect(second.drawn[0].instanceId).not.toBe(first.drawn[0].instanceId);
     });
 
     it('leaves discardPile empty after reshuffling', () => {
