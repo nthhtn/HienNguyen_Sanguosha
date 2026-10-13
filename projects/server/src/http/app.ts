@@ -3,9 +3,12 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import Fastify, { FastifyError, FastifyInstance } from 'fastify';
 import { AccountService, AuthError, Authenticated } from '../auth/accounts';
 import { AuthRateLimits } from '../auth/rateLimits';
+import { RoomError } from '../rooms/errors';
+import { RoomService } from '../rooms/roomService';
 import { registerAuthRoutes } from './authRoutes';
-import { AUTH_ERROR_STATUS, errorBody } from './errors';
+import { AUTH_ERROR_STATUS, errorBody, ROOM_ERROR_STATUS } from './errors';
 import { requestGuard } from './guard';
+import { registerRoomRoutes } from './roomRoutes';
 import { clearSessionCookie, SESSION_COOKIE, setSessionCookie } from './session';
 
 declare module 'fastify' {
@@ -17,6 +20,7 @@ declare module 'fastify' {
 
 export interface AppDeps {
   accounts: AccountService;
+  rooms: RoomService;
   publicOrigin: string;
   cookieSecure: boolean;
   // Passed to Fastify; see ServerConfig.trustProxy.
@@ -50,6 +54,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
   app.setErrorHandler((error: FastifyError, request, reply) => {
     if (error instanceof AuthError) return reply.code(AUTH_ERROR_STATUS[error.code]).send(errorBody(error.code));
+    if (error instanceof RoomError) return reply.code(ROOM_ERROR_STATUS[error.code]).send(errorBody(error.code));
     if (error.validation) return reply.code(400).send(errorBody('invalid_body'));
     // Body parsing errors (bad JSON, empty body, too large) carry their 4xx status.
     if (error.statusCode !== undefined && error.statusCode >= 400 && error.statusCode < 500) return reply.code(error.statusCode).send(errorBody('invalid_body'));
@@ -65,6 +70,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     cookieSecure: deps.cookieSecure,
     now: deps.now ?? Date.now,
   });
+
+  registerRoomRoutes(app, { rooms: deps.rooms });
 
   await app.ready();
   return app;
