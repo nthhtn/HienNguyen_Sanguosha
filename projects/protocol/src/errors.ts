@@ -12,7 +12,17 @@ export type ErrorCode =
   | 'bad_origin'
   | 'unsupported_media_type'
   | 'not_found'
-  | 'internal';
+  | 'internal'
+  | 'version'
+  | 'not_member'
+  | 'not_host'
+  | 'room_full'
+  | 'in_progress'
+  | 'name_taken'
+  | 'host_must_be_registered'
+  | 'already_in_room'
+  | 'invalid_seat_count'
+  | 'invalid_message';
 
 // Every error the server sends: a stable code for code, a message for people.
 export interface ErrorBody {
@@ -33,4 +43,14 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   unsupported_media_type: 'Requests must be sent as JSON',
   not_found: 'Not found',
   internal: 'Something went wrong. Please try again',
+  version: 'Please reload to get the latest version',
+  not_member: "You're not in this room",
+  not_host: 'Only the host can do that',
+  room_full: 'This room is full',
+  in_progress: 'This room is already playing',
+  name_taken: 'That name is already taken in this room. Choose another.',
+  host_must_be_registered: 'Only registered players can host a room',
+  already_in_room: "You're already in another room. Leave it first",
+  invalid_seat_count: "That seat count doesn't fit this room",
+  invalid_message: 'That request was not understood',
 };
