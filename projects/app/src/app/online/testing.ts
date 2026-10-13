@@ -1,4 +1,7 @@
-import type { RoomSnapshot, ServerMessage } from 'protocol';
+import { buildContentRegistry, kingdomWarMode } from 'content';
+import { createGame, getLegalActions, redactStateForSeat, resolve } from 'engine';
+import type { Action, GameState } from 'engine';
+import type { GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
 import type { WebSocketLike } from './socket.service';
 
 // Test fixtures for the online screens. `ng build` compiles this file, so it
@@ -19,8 +22,9 @@ export const ROOM: RoomSnapshot = {
   seatLimits: { min: 2, max: 8 },
 };
 
-export function welcome(room: RoomSnapshot = ROOM, playerId = 'p-ann'): ServerMessage {
-  return { type: 'welcome', you: { playerId, seatId: null }, room, game: null };
+export function welcome(room: RoomSnapshot = ROOM, playerId = 'p-ann', game: GameUpdate | null = null): ServerMessage {
+  const seatId = room.members.find((m) => m.playerId === playerId)?.seatId ?? null;
+  return { type: 'welcome', you: { playerId, seatId }, room, game };
 }
 
 // A WebSocket the test drives: it records what the app sends, and the test
@@ -62,4 +66,38 @@ export class FakeSocket implements WebSocketLike {
   get lastSent(): Record<string, unknown> | undefined {
     return this.sent.at(-1);
   }
+}
+
+export const GAME_ID = '9a1e7c52-1b0f-4f7e-8d2a-3c4b5d6e7f80';
+
+// ROOM while a two-seat game runs: Ann on seat-0, Bo on seat-1.
+export const PLAYING: RoomSnapshot = {
+  ...ROOM,
+  status: 'playing',
+  seatCount: 2,
+  members: ROOM.members.map((m, i) => ({ ...m, seatId: `seat-${i}` })),
+};
+
+export const LAST_GAME: LastGame = {
+  gameId: GAME_ID,
+  outcome: 'finished',
+  result: { endedAt: 40, winningSeatIds: ['seat-0'], losingSeatIds: ['seat-1'] },
+  seats: [
+    { seatId: 'seat-0', playerId: 'p-ann', name: 'Ann' },
+    { seatId: 'seat-1', playerId: 'p-bo', name: 'Bo' },
+  ],
+};
+
+// What Ann (seat-0) is sent in a two-seat game: at the start, when she
+// chooses her Generals first, and after she chose (Bo to choose).
+export function gameUpdates(): [GameUpdate, GameUpdate] {
+  const registry = buildContentRegistry();
+  const created = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1'], 7);
+  const opening: GameState = { ...created, players: created.players.map((p) => ({ ...p, kind: 'human' as const, name: p.seatId === 'seat-0' ? 'Ann' : 'Bo' })) };
+  const next = resolve(opening, getLegalActions(opening, 'seat-0', registry)[0], { registry, mode: kingdomWarMode }).state;
+  const update = (state: GameState, seq: number, logFrom: number, legalActions: Action[]): GameUpdate => {
+    const { rng: _rng, log, ...view } = redactStateForSeat(state, 'seat-0');
+    return { gameId: GAME_ID, seq, view, legalActions, logFrom, events: log.slice(logFrom), clock: null, paused: false };
+  };
+  return [update(opening, 0, 0, getLegalActions(opening, 'seat-0', registry)), update(next, 1, opening.log.length, [])];
 }
