@@ -41,6 +41,7 @@ export class App {
     { initialValue: this.router.url }
   );
   protected readonly playActive = computed(() => /^\/(setup|game)(\/|$|\?)/.test(this.url()));
+  protected readonly onlineActive = computed(() => /^\/rooms(\/|$|\?)/.test(this.url()));
 
   protected readonly cardsActive = computed(() => /^\/wiki\/(generals|basic|equipment|tools)(\/|$|\?)/.test(this.url()));
   protected readonly rulesActive = computed(() => /^\/wiki\/rules(\/|$|\?)/.test(this.url()));

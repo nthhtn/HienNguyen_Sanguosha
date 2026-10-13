@@ -1,0 +1,101 @@
+import { Component, computed, inject, signal } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { DISPLAY_NAME_MAX, ERROR_MESSAGES } from 'protocol';
+import type { SeatLimits } from 'protocol';
+import { ApiError } from '../auth/auth.service';
+import { RoomsService } from './rooms.service';
+
+export interface CreateRoomDialogData {
+  seatLimits: SeatLimits;
+  displayName: string;
+}
+
+// Your name, the seat count and the table rules for a new open room. Closes
+// with the new room's id.
+@Component({
+  selector: 'app-create-room-dialog',
+  imports: [MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatFormFieldModule, MatInputModule],
+  template: `
+    <h2 mat-dialog-title>Create Room</h2>
+    <mat-dialog-content>
+      <form id="create-room-form" (submit)="$event.preventDefault(); submit()">
+        <mat-form-field appearance="outline" class="name-field">
+          <mat-label>Your Name</mat-label>
+          <input matInput class="name" autocomplete="nickname" [maxLength]="nameMax" [value]="displayName()" (input)="displayName.set($any($event.target).value)" />
+        </mat-form-field>
+        <div class="field">
+          <span class="label" id="create-room-seats">Seats</span>
+          <mat-button-toggle-group
+            class="seats"
+            aria-labelledby="create-room-seats"
+            [hideSingleSelectionIndicator]="true"
+            [value]="seatCount()"
+            (change)="seatCount.set($event.value)"
+          >
+            @for (n of seatOptions; track n) {
+              <mat-button-toggle [value]="n">{{ n }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+        @if (seatCount() >= firstRevealMinSeats) {
+          <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">First Reveal Bonus</mat-checkbox>
+          <p class="hint">The first seat to reveal a General draws 2 cards.</p>
+        }
+        @if (error()) {
+          <p class="error" role="alert">{{ error() }}</p>
+        }
+      </form>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" mat-dialog-close>Cancel</button>
+      <button mat-flat-button type="submit" class="submit" form="create-room-form" [disabled]="busy() || !canSubmit()">Create Room</button>
+    </mat-dialog-actions>
+  `,
+  styles: `
+    .name-field { width: 100%; }
+    .field { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+    .label { font: var(--mat-sys-title-small); }
+    .hint { margin: 0 0 12px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
+    .error { margin: 0 0 12px; color: var(--mat-sys-error); font: var(--mat-sys-body-medium); }
+  `,
+})
+export class CreateRoomDialog {
+  protected readonly data = inject<CreateRoomDialogData>(MAT_DIALOG_DATA);
+  private readonly dialogRef = inject<MatDialogRef<CreateRoomDialog, string>>(MatDialogRef);
+  private readonly rooms = inject(RoomsService);
+  protected readonly nameMax = DISPLAY_NAME_MAX;
+  protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
+  protected readonly seatOptions = Array.from({ length: this.data.seatLimits.max - this.data.seatLimits.min + 1 }, (_, i) => this.data.seatLimits.min + i);
+
+  readonly displayName = signal(this.data.displayName);
+  readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
+  readonly firstRevealDraw = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly busy = signal(false);
+  protected readonly canSubmit = computed(() => this.displayName().trim() !== '');
+
+  async submit(): Promise<void> {
+    if (this.busy() || !this.canSubmit()) return;
+    this.busy.set(true);
+    this.error.set(null);
+    const seatCount = this.seatCount();
+    try {
+      const id = await this.rooms.create({
+        seatCount,
+        rules: seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {},
+        displayName: this.displayName(),
+      });
+      this.dialogRef.close(id);
+    } catch (err) {
+      this.error.set(err instanceof ApiError ? err.message : ERROR_MESSAGES.internal);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+}
