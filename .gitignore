@@ -30,6 +30,8 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
+# Local server settings (see .env.example)
+.env
 /.angular/cache
 .sass-cache/
 /connect.lock

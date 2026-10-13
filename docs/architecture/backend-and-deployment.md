@@ -178,3 +178,5 @@ call, so components do not change.
   default, or a bot takes over).
 
 None of these requires changing the engine.
+
+Implementation status: the server foundation and accounts (Stage 2) live in `projects/server`; see its README for running it locally.
