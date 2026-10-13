@@ -60,7 +60,8 @@ In scope:
 - the socket protocol: lobby, game updates, chat
 - the server-side game runner: validation, persistence, clocks, bots,
   takeover, reclaim, restore
-- engine additions: `defaultActionFor` and `DecisionClock`, plus a leak test
+- engine additions: `defaultActionsFor`, the decision clock and opaque card
+  ids, plus a leak test
 - the Angular screens (auth, Rooms, Lobby, My Games) and `RemoteGameService`
 
 Out of scope (v1):
@@ -500,14 +501,16 @@ affected.
 
 ### Decision clocks
 
-- The budgets and pause rules move from the Angular `DecisionTimer` into a
-  framework-free `DecisionClock` in the engine package:
+- The budgets and pause rules move from the Angular `DecisionTimer` into the
+  engine package as pure functions over plain data (`describeDecision`,
+  `switchClock`, `DECISION_SECONDS`):
   - `response` 60 s, `choice` 60 s, `discard` 60 s
   - `selection` 300 s per player
   - `play` 300 s per Play phase, paused while a response is under way
-- At zero the runner submits `defaultActionFor(state, seatId, legalActions)`
-  with `source = 'timeout'`.
-- `defaultActionFor` is a new engine function that holds today's defaults:
+- At zero the runner submits `defaultActionsFor(state, legalActions)`
+  atomically, with `source = 'timeout'`. It returns `Action[]` because one
+  default can be several actions (a whole discard).
+- `defaultActionsFor` is a new engine function that holds today's defaults:
   - a response → No Response
   - a choice → the first option
   - the Play phase → End Phase
@@ -516,8 +519,8 @@ affected.
 
   The server can't see a player's half-made pick, so it always uses the
   first option.
-- The Angular `DecisionTimer` is rewired onto `DecisionClock` and
-  `defaultActionFor` for Pass and Play, keeping its "the UI's current pick"
+- The Angular `DecisionTimer` is rewired onto the clock functions and
+  `defaultActionsFor` for Pass and Play, keeping its "the UI's current pick"
   preference, so offline and online behaviour can't drift apart.
 
 ### Bots, takeover and reclaim
@@ -631,16 +634,43 @@ must send `Content-Type: application/json` and a matching `Origin`.
 
 ## Engine changes
 
-1. `defaultActionFor(state, seatId, legalActions): Action`, moved out of
+1. `defaultActionsFor(state, legalActions): Action[]`, moved out of
    `DecisionTimer`.
-2. `DecisionClock`: framework-free clock rules (budgets, keys, pause and
-   resume), moved out of `DecisionTimer`.
-3. A **leak test** over simulated games from `sim`. For every seat and every
-   step it asserts that no `SeatView` (after the server mapping) and no log
-   event exposes another seat's hand, a face-down card, a hidden General, the
-   draw pile order or the RNG state.
+2. The decision clock, moved out of `DecisionTimer` as pure functions over
+   plain data:
+   - `describeDecision(state, seatId, legal, stepKey)` gives the kind and key
+     of a decision;
+   - `switchClock(clock, decision, now)` and `clockRemainingMs(clock, now)`
+     handle the budgets and pause and resume;
+   - `DECISION_SECONDS` holds the budgets.
 
-No rule changes.
+   Callers pass `now`, so the functions use no timers and are deterministic.
+3. **Opaque card ids.** Today `buildDeck` names each card
+   `${definitionId}-${suit}-${rank}-${index}`, so a masked card still gives
+   away what it is. Instead, each card is named after its position in the
+   shuffled deck (`card-0`, `card-1`, …), which tells nothing about the card.
+4. **Fresh ids on reshuffle.** When the discard pile is shuffled into the
+   draw pile, every card that moves gets a new id that can't be linked to
+   its old one: `r<rng counter>-<position>`. This is unique, because the RNG
+   counter only grows. Without it, cards seen face up in the discard pile
+   keep their ids, and the draw-pile order in the view plus the public draw
+   log reveal what everyone draws. Cards kept back with `keepInDiscard` keep
+   their ids.
+5. A **leak checker** in `sim`, with a test that runs it over simulated
+   games. For every seat and every step, it asserts that:
+   - no view names a hidden General;
+   - no view shows the face of a hidden card;
+   - no hidden card's id contains its card name;
+   - a view carries neither `rng` nor `log` (the view tested is
+     `redactStateForSeat` minus `rng` and `log`, the server's mapping);
+   - no log event names a hidden General;
+   - no card move into a hand or the draw pile carries the card's face;
+   - after a reshuffle, no draw-pile card keeps an id it had before.
+
+   A self-test plants each kind of leak and checks that the checker reports
+   it.
+
+These change hidden information only. No game rule changes.
 
 ## Testing
 
@@ -648,7 +678,7 @@ No rule changes.
   - room rules: unique names, capacity, start conditions, the host only ever
     registered, host transfer
   - solo room behaviour
-  - `DecisionClock` and `defaultActionFor`
+  - the decision clock functions and `defaultActionsFor`
   - view mapping (no `rng`, no `log`)
   - auth: hashing, session sliding and revocation, reset-token single use and
     expiry, rate limits
@@ -670,7 +700,8 @@ No rule changes.
 
 Each stage has its own plan, branch and merge, as the engine stages did.
 
-1. **Engine prep:** `defaultActionFor`, `DecisionClock` and the leak test,
+1. **Engine prep:** opaque card ids, fresh ids on reshuffle,
+   `defaultActionsFor`, the decision clock functions and the leak checker,
    with `DecisionTimer` rewired onto them. No server.
 2. **Server foundation and accounts:** the `protocol` and `server` projects,
    config, Postgres, migrations and repositories, users, sessions, guests,
