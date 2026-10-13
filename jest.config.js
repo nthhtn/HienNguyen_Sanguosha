@@ -41,6 +41,13 @@ module.exports = {
       },
     },
     {
+      displayName: 'protocol',
+      preset: 'ts-jest',
+      testEnvironment: 'node',
+      rootDir: 'projects/protocol/src',
+      testMatch: ['**/*.spec.ts'],
+    },
+    {
       displayName: 'app',
       preset: 'jest-preset-angular',
       testEnvironment: 'jsdom',
