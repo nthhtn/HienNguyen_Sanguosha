@@ -1,15 +1,15 @@
 import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 
-// scrypt cost: 128 * N * r bytes = 16 MiB per hash.
+// scrypt cost: 128 * N * r bytes = 16 MiB per hash. maxmem is derived from the
+// parameters in use (double that, for headroom) so raising them never locks users out.
 const N = 16384;
 const R = 8;
 const P = 1;
 const KEY_LENGTH = 64;
-const MAX_MEMORY = 64 * 1024 * 1024;
 
 function derive(password: string, salt: Buffer, keyLength: number, n: number, r: number, p: number): Promise<Buffer> {
   return new Promise((resolve, reject) =>
-    scrypt(password.normalize('NFC'), salt, keyLength, { N: n, r, p, maxmem: MAX_MEMORY }, (err, key) => (err ? reject(err) : resolve(key)))
+    scrypt(password.normalize('NFC'), salt, keyLength, { N: n, r, p, maxmem: 256 * n * r }, (err, key) => (err ? reject(err) : resolve(key)))
   );
 }
 

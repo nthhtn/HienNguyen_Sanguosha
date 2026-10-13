@@ -21,7 +21,7 @@ describe('password hashing', () => {
   });
 
   it('treats composed and decomposed Unicode as the same password', async () => {
-    const stored = await hashPassword('café-secret');
-    expect(await verifyPassword('café-secret', stored)).toBe(true);
+    const stored = await hashPassword('caf\u00e9-secret');
+    expect(await verifyPassword('cafe\u0301-secret', stored)).toBe(true);
   });
 });
