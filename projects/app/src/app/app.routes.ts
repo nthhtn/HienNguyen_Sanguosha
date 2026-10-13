@@ -9,5 +9,8 @@ export const routes: Routes = [
   // Never renders: the guard always redirects to /game or /setup.
   { path: 'play', canActivate: [playRedirect], children: [] },
   { path: 'wiki', loadChildren: () => import('./wiki/wiki.routes').then((m) => m.WIKI_ROUTES) },
+  { path: 'sign-in', loadComponent: () => import('./auth/sign-in').then((m) => m.SignIn) },
+  { path: 'sign-up', loadComponent: () => import('./auth/sign-up').then((m) => m.SignUp) },
+  { path: 'guest', loadComponent: () => import('./auth/guest').then((m) => m.PlayAsGuest) },
   { path: '', redirectTo: 'setup', pathMatch: 'full' },
 ];
