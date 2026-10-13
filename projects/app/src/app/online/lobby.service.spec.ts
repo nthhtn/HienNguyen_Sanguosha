@@ -159,4 +159,24 @@ describe('LobbyService', () => {
     socket.serverSends({ type: 'room.updated', room: PLAYING });
     expect(lobby.notice()).toBe('Bo is back');
   });
+
+  it('does not announce a player who is still away when the game ends', () => {
+    const away = (room: RoomSnapshot, botControlled: boolean): RoomSnapshot => ({
+      ...room,
+      members: room.members.map((m) => (m.playerId === 'p-bo' ? { ...m, connected: false, botControlled } : m)),
+    });
+    socket.serverSends(welcome(away(PLAYING, true), 'p-ann'));
+    socket.serverSends({ type: 'room.updated', room: away(ROOM, false) });
+    expect(lobby.notice()).toBeNull();
+  });
+
+  it('does not announce a player whose seat a bot gives back while they are still away', () => {
+    const away = (botControlled: boolean): RoomSnapshot => ({
+      ...PLAYING,
+      members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, connected: false, botControlled } : m)),
+    });
+    socket.serverSends(welcome(away(true), 'p-ann'));
+    socket.serverSends({ type: 'room.updated', room: away(false) });
+    expect(lobby.notice()).toBeNull();
+  });
 });

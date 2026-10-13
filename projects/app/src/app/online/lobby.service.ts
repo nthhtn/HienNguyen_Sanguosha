@@ -137,8 +137,11 @@ export class LobbyService {
     if (!before) return;
     const host = after.hostPlayerId && before.hostPlayerId !== after.hostPlayerId ? after.members.find((m) => m.playerId === after.hostPlayerId) : undefined;
     if (host) return this.announce(`${host.name} is now the host`);
+    // Only during a game, and only once they are here: when a game ends every
+    // seat's bot lets go, even one whose player is still away.
+    if (before.status !== 'playing' || after.status !== 'playing') return;
     const back = after.members.find(
-      (m) => m.playerId !== this._you() && !m.botControlled && before.members.some((b) => b.playerId === m.playerId && b.botControlled)
+      (m) => m.playerId !== this._you() && m.connected && !m.botControlled && before.members.some((b) => b.playerId === m.playerId && b.botControlled)
     );
     if (back) this.announce(`${back.name} is back`);
   }
