@@ -1,11 +1,24 @@
 import { Kysely } from 'kysely';
-import { ResetTokenRecord, SessionRecord, UserRecord } from '../records';
-import { EmailTakenError, Repositories, ResetTokenRepository, SessionRepository, UserRepository } from '../repositories';
-import { toResetTokenRecord, toSessionRecord, toUserRecord } from './mappers';
+import { ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
+import {
+  EmailTakenError,
+  LiveRoomRecord,
+  NameTakenError,
+  Repositories,
+  ResetTokenRepository,
+  RoomChanges,
+  RoomRepository,
+  SessionRepository,
+  UserRepository,
+} from '../repositories';
+import { toResetTokenRecord, toRoomPlayerRecord, toRoomRecord, toSessionRecord, toUserRecord } from './mappers';
 import { Database } from './schema';
 
 const UNIQUE_VIOLATION = '23505';
 const isUniqueViolation = (err: unknown) => (err as { code?: unknown } | null)?.code === UNIQUE_VIOLATION;
+
+// For a unique index (not a constraint), Postgres reports the index name here.
+const violatedIndex = (err: unknown) => (err as { constraint?: unknown } | null)?.constraint;
 
 // `db` may be a Transaction (a Kysely too): then every method runs inside it.
 export function createPostgresRepositories(db: Kysely<Database>): Repositories {
@@ -13,6 +26,7 @@ export function createPostgresRepositories(db: Kysely<Database>): Repositories {
     users: new PostgresUsers(db),
     sessions: new PostgresSessions(db),
     resetTokens: new PostgresResetTokens(db),
+    rooms: new PostgresRooms(db),
     transaction: (work) => db.transaction().execute((trx) => work(createPostgresRepositories(trx))),
   };
 }
@@ -153,5 +167,75 @@ class PostgresResetTokens implements ResetTokenRepository {
   async deleteExpired(cutoff: Date): Promise<number> {
     const result = await this.db.deleteFrom('password_reset_tokens').where('expires_at', '<', cutoff).executeTakeFirst();
     return Number(result.numDeletedRows);
+  }
+}
+
+class PostgresRooms implements RoomRepository {
+  constructor(private readonly db: Kysely<Database>) {}
+
+  async create(input: { visibility: RoomRecord['visibility']; seatCount: number; rules: RoomRecord['rules']; now: Date }): Promise<RoomRecord> {
+    const row = await this.db
+      .insertInto('rooms')
+      .values({
+        visibility: input.visibility,
+        status: 'lobby',
+        seat_count: input.seatCount,
+        rules: JSON.stringify(input.rules),
+        created_at: input.now,
+        updated_at: input.now,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return toRoomRecord(row);
+  }
+
+  async update(roomId: string, changes: RoomChanges, now: Date): Promise<void> {
+    await this.db
+      .updateTable('rooms')
+      .set({
+        updated_at: now,
+        ...(changes.status !== undefined ? { status: changes.status } : {}),
+        ...(changes.seatCount !== undefined ? { seat_count: changes.seatCount } : {}),
+        ...(changes.rules !== undefined ? { rules: JSON.stringify(changes.rules) } : {}),
+        ...(changes.hostPlayerId !== undefined ? { host_player_id: changes.hostPlayerId } : {}),
+      })
+      .where('id', '=', roomId)
+      .execute();
+  }
+
+  async addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; now: Date }): Promise<RoomPlayerRecord> {
+    try {
+      const row = await this.db
+        .insertInto('room_players')
+        .values({ room_id: input.roomId, user_id: input.userId, kind: input.kind, display_name: input.displayName, joined_at: input.now })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      return toRoomPlayerRecord(row);
+    } catch (err) {
+      if (isUniqueViolation(err) && violatedIndex(err) === 'room_players_current_name') throw new NameTakenError();
+      throw err;
+    }
+  }
+
+  async markLeft(playerId: string, now: Date): Promise<void> {
+    await this.db.updateTable('room_players').set({ left_at: now }).where('id', '=', playerId).where('left_at', 'is', null).execute();
+  }
+
+  async listLive(): Promise<LiveRoomRecord[]> {
+    const rooms = await this.db.selectFrom('rooms').selectAll().where('status', '<>', 'closed').orderBy('created_at').execute();
+    if (rooms.length === 0) return [];
+    const players = await this.db
+      .selectFrom('room_players')
+      .selectAll()
+      .where(
+        'room_id',
+        'in',
+        rooms.map((room) => room.id)
+      )
+      .where('left_at', 'is', null)
+      .orderBy('joined_at')
+      .orderBy('id')
+      .execute();
+    return rooms.map((row) => ({ room: toRoomRecord(row), players: players.filter((p) => p.room_id === row.id).map(toRoomPlayerRecord) }));
   }
 }
