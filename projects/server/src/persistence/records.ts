@@ -1,5 +1,5 @@
-import type { GameRules } from 'engine';
-import type { MemberKind, RoomStatus, RoomVisibility, UserKind } from 'protocol';
+import type { Action, GameResult, GameRules } from 'engine';
+import type { ActionSource, GameStatus, MemberKind, RoomStatus, RoomVisibility, UserKind } from 'protocol';
 
 // Domain records: what the server works with. Database rows map to these in
 // persistence/postgres/mappers.ts, and these map to wire shapes in views/.
@@ -56,4 +56,42 @@ export interface RoomPlayerRecord {
   displayName: string;
   joinedAt: Date;
   leftAt: Date | null;
+}
+
+// Who played each seat of a game, fixed when it starts.
+export interface GameSeat {
+  seatId: string;
+  roomPlayerId: string;
+  name: string;
+  kind: MemberKind;
+}
+
+// One Start Game. Its actions (GameActionRecord) are the event-sourced log.
+export interface GameRecord {
+  id: string;
+  roomId: string;
+  // Drives seating and all of the game's randomness. Secret while it runs.
+  seed: number;
+  seats: GameSeat[];
+  rules: GameRules;
+  // The engine + content build the game started on.
+  buildId: string;
+  status: GameStatus;
+  result: GameResult | null;
+  // How many actions are stored: the seq of the last one.
+  actionCount: number;
+  startedAt: Date;
+  finishedAt: Date | null;
+}
+
+export interface GameActionRecord {
+  gameId: string;
+  // 1, 2, 3, … in the order the actions applied.
+  seq: number;
+  seatId: string;
+  source: ActionSource;
+  action: Action;
+  // sha256 of JSON.stringify(state) after this action.
+  stateHash: string;
+  createdAt: Date;
 }

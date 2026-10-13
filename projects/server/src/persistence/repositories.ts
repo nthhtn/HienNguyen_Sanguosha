@@ -1,4 +1,5 @@
-import { ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from './records';
+import type { GameRules } from 'engine';
+import { GameActionRecord, GameRecord, GameSeat, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from './records';
 
 export class EmailTakenError extends Error {
   constructor() {
@@ -11,6 +12,13 @@ export class NameTakenError extends Error {
   constructor() {
     super('A current member of the room already has that name');
     this.name = 'NameTakenError';
+  }
+}
+
+export class StaleGameError extends Error {
+  constructor() {
+    super('The game has moved past the expected action count');
+    this.name = 'StaleGameError';
   }
 }
 
@@ -69,11 +77,31 @@ export interface RoomRepository {
   listLive(): Promise<LiveRoomRecord[]>;
 }
 
+export type GameChanges = Partial<Pick<GameRecord, 'status' | 'result' | 'finishedAt'>>;
+// An action to store; the repository stamps the game and the time.
+export type NewGameAction = Omit<GameActionRecord, 'gameId' | 'createdAt'>;
+
+export interface GameRepository {
+  // A new 'running' game with no actions. Throws when the room already has a running game.
+  create(input: { roomId: string; seed: number; seats: GameSeat[]; rules: GameRules; buildId: string; now: Date }): Promise<GameRecord>;
+  // Stores `actions`, numbered afterSeq + 1, afterSeq + 2, …, and sets
+  // actionCount to the last. Throws StaleGameError when actionCount isn't
+  // `afterSeq`. It makes two writes, so call it inside `transaction`.
+  appendActions(gameId: string, afterSeq: number, actions: NewGameAction[], now: Date): Promise<void>;
+  update(gameId: string, changes: GameChanges): Promise<void>;
+  findById(gameId: string): Promise<GameRecord | null>;
+  // Every running game, oldest first.
+  listRunning(): Promise<GameRecord[]>;
+  // A game's actions in seq order.
+  listActions(gameId: string): Promise<GameActionRecord[]>;
+}
+
 export interface Repositories {
   users: UserRepository;
   sessions: SessionRepository;
   resetTokens: ResetTokenRepository;
   rooms: RoomRepository;
+  games: GameRepository;
   // Runs `work` against repositories whose writes all commit together when it
   // resolves, or none of them when it throws (the error is rethrown). Not
   // nestable: don't call `transaction` on the repositories passed to `work`.

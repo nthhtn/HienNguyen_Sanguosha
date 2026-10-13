@@ -1,14 +1,18 @@
 import { randomUUID } from 'node:crypto';
-import { ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
+import { GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
 import {
   EmailTakenError,
+  GameChanges,
+  GameRepository,
   LiveRoomRecord,
   NameTakenError,
+  NewGameAction,
   Repositories,
   ResetTokenRepository,
   RoomChanges,
   RoomRepository,
   SessionRepository,
+  StaleGameError,
   UserRepository,
 } from '../repositories';
 
@@ -18,10 +22,12 @@ interface Store {
   resetTokens: Map<string, ResetTokenRecord>;
   rooms: Map<string, RoomRecord>;
   roomPlayers: Map<string, RoomPlayerRecord>;
+  games: Map<string, GameRecord>;
+  gameActions: Map<string, GameActionRecord>;
 }
 
 type Table = keyof Store;
-const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers'];
+const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions'];
 // Retries of a transaction whose records others changed under it, before giving up.
 const MAX_TRANSACTION_ATTEMPTS = 10;
 
@@ -29,7 +35,7 @@ const MAX_TRANSACTION_ATTEMPTS = 10;
 // and writes with no `await` between them, so concurrent calls can't interleave
 // (the uniqueness and single-use rules hold under Promise.all).
 export function createMemoryRepositories(): Repositories {
-  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map() });
+  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map(), games: new Map(), gameActions: new Map() });
 }
 
 function repositoriesOver(store: Store): Repositories {
@@ -38,6 +44,7 @@ function repositoriesOver(store: Store): Repositories {
     sessions: new MemorySessions(store),
     resetTokens: new MemoryResetTokens(store),
     rooms: new MemoryRooms(store),
+    games: new MemoryGames(store),
     transaction: (work) => transact(store, work),
   };
 }
@@ -75,8 +82,8 @@ function commit(store: Store, snapshot: Store, draft: Store): boolean {
   return true;
 }
 
-// Records hold dates and, for rooms, a rules object. Dates are replaced, never
-// mutated, and so are rules objects, so copying each record is a deep enough copy.
+// Records hold dates and objects (rules, seats, results, actions). These are
+// replaced, never mutated in place, so copying each record is a deep enough copy.
 const cloneMap = <T extends object>(map: Map<string, T>) => new Map([...map].map(([key, record]) => [key, { ...record }]));
 const cloneStore = (store: Store): Store => ({
   users: cloneMap(store.users),
@@ -84,6 +91,8 @@ const cloneStore = (store: Store): Store => ({
   resetTokens: cloneMap(store.resetTokens),
   rooms: cloneMap(store.rooms),
   roomPlayers: cloneMap(store.roomPlayers),
+  games: cloneMap(store.games),
+  gameActions: cloneMap(store.gameActions),
 });
 
 // Compare field by field: dates by time, plain objects (rules) by their JSON.
@@ -327,5 +336,66 @@ class MemoryRooms implements RoomRepository {
     return [...this.store.rooms.values()]
       .filter((room) => room.status !== 'closed')
       .map((room) => ({ room: copyRoom(room), players: current.filter((p) => p.roomId === room.id).map((p) => ({ ...p })) }));
+  }
+}
+
+const actionKey = (gameId: string, seq: number) => `${gameId}:${seq}`;
+
+class MemoryGames implements GameRepository {
+  constructor(private readonly store: Store) {}
+
+  async create(input: { roomId: string; seed: number; seats: GameRecord['seats']; rules: GameRecord['rules']; buildId: string; now: Date }): Promise<GameRecord> {
+    if (!this.store.rooms.has(input.roomId)) throw new Error(`No room ${input.roomId}`);
+    if ([...this.store.games.values()].some((g) => g.roomId === input.roomId && g.status === 'running')) throw new Error('That room already has a running game');
+    const game: GameRecord = {
+      id: randomUUID(),
+      roomId: input.roomId,
+      seed: input.seed,
+      seats: structuredClone(input.seats),
+      rules: { ...input.rules },
+      buildId: input.buildId,
+      status: 'running',
+      result: null,
+      actionCount: 0,
+      startedAt: input.now,
+      finishedAt: null,
+    };
+    this.store.games.set(game.id, game);
+    return structuredClone(game);
+  }
+
+  async appendActions(gameId: string, afterSeq: number, actions: NewGameAction[], now: Date): Promise<void> {
+    const game = this.store.games.get(gameId);
+    if (!game) throw new Error(`No game ${gameId}`);
+    if (game.actionCount !== afterSeq) throw new StaleGameError();
+    actions.forEach((action, i) => {
+      if (action.seq !== afterSeq + 1 + i) throw new Error(`Action ${action.seq} is out of order`);
+    });
+    for (const action of actions) this.store.gameActions.set(actionKey(gameId, action.seq), { ...structuredClone(action), gameId, createdAt: now });
+    this.store.games.set(gameId, { ...game, actionCount: afterSeq + actions.length });
+  }
+
+  async update(gameId: string, changes: GameChanges): Promise<void> {
+    const game = this.store.games.get(gameId);
+    if (game) this.store.games.set(gameId, { ...game, ...structuredClone(changes) });
+  }
+
+  async findById(gameId: string): Promise<GameRecord | null> {
+    const game = this.store.games.get(gameId);
+    return game ? structuredClone(game) : null;
+  }
+
+  async listRunning(): Promise<GameRecord[]> {
+    return [...this.store.games.values()]
+      .filter((game) => game.status === 'running')
+      .sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime())
+      .map((game) => structuredClone(game));
+  }
+
+  async listActions(gameId: string): Promise<GameActionRecord[]> {
+    return [...this.store.gameActions.values()]
+      .filter((action) => action.gameId === gameId)
+      .sort((a, b) => a.seq - b.seq)
+      .map((action) => structuredClone(action));
   }
 }
