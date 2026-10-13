@@ -25,4 +25,10 @@ describe('buildDeck', () => {
     expect(a).toEqual(b);
     expect(a).not.toEqual(c);
   });
+
+  it('names each card by its place in the shuffled deck, so an id says nothing about the card', () => {
+    const { cards } = buildDeck(entries(), createRng(1));
+    expect(cards.map((c) => c.instanceId)).toEqual(['card-0', 'card-1', 'card-2', 'card-3']);
+    for (const c of cards) expect(c.instanceId).not.toContain(c.definitionId);
+  });
 });
