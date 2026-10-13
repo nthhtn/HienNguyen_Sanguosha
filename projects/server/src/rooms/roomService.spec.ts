@@ -73,8 +73,8 @@ describe('RoomService', () => {
         seatCount: 4,
         rules: {},
         hostPlayerId: snapshot.members[0].playerId,
-        members: [{ playerId: expect.any(String), name: 'Ann', kind: 'human', isRegistered: true, connected: false, botControlled: false }],
-        lastResult: null,
+        members: [{ playerId: expect.any(String), name: 'Ann', kind: 'human', seatId: null, isRegistered: true, connected: false, botControlled: false }],
+        lastGame: null,
         seatLimits: LIMITS,
       });
     });

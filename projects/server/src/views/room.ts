@@ -15,11 +15,12 @@ export function toRoomSnapshot(room: Room, seatLimits: SeatLimits): RoomSnapshot
       playerId: m.id,
       name: m.name,
       kind: m.kind,
+      seatId: null,
       isRegistered: m.isRegistered,
       connected: m.connected,
       botControlled: false,
     })),
-    lastResult: null,
+    lastGame: null,
     seatLimits: { ...seatLimits },
   };
 }

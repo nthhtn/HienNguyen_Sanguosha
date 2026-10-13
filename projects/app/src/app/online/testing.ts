@@ -12,10 +12,10 @@ export const ROOM: RoomSnapshot = {
   rules: { firstRevealDraw: true },
   hostPlayerId: 'p-ann',
   members: [
-    { playerId: 'p-ann', name: 'Ann', kind: 'human', isRegistered: true, connected: true, botControlled: false },
-    { playerId: 'p-bo', name: 'Bo', kind: 'human', isRegistered: true, connected: true, botControlled: false },
+    { playerId: 'p-ann', name: 'Ann', kind: 'human', seatId: null, isRegistered: true, connected: true, botControlled: false },
+    { playerId: 'p-bo', name: 'Bo', kind: 'human', seatId: null, isRegistered: true, connected: true, botControlled: false },
   ],
-  lastResult: null,
+  lastGame: null,
   seatLimits: { min: 2, max: 8 },
 };
 

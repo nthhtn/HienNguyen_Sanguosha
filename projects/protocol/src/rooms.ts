@@ -1,5 +1,6 @@
 import type { Static } from '@sinclair/typebox';
-import type { GameResult, GameRules } from 'engine';
+import type { GameRules } from 'engine';
+import type { LastGame } from './game';
 import type { CreateRoomBodySchema, JoinRoomBodySchema } from './schemas/rooms';
 
 export type RoomVisibility = 'open' | 'solo';
@@ -19,9 +20,11 @@ export interface RoomMemberView {
   playerId: string;
   name: string;
   kind: MemberKind;
+  // The seat this member plays in the running game; null in the lobby.
+  seatId: string | null;
   isRegistered: boolean;
   connected: boolean;
-  // A bot is playing this human's seat (from Stage 4); false in the lobby.
+  // A bot is playing this human's seat in the running game.
   botControlled: boolean;
 }
 
@@ -35,7 +38,8 @@ export interface RoomSnapshot {
   hostPlayerId: string | null;
   // In join order. Seat order is only drawn when a game starts.
   members: RoomMemberView[];
-  lastResult: GameResult | null;
+  // The room's last game, until another starts. Kept in memory only.
+  lastGame: LastGame | null;
   seatLimits: SeatLimits;
 }
 

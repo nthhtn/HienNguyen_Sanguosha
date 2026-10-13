@@ -15,10 +15,10 @@ const MIXED: RoomSnapshot = {
   ...ROOM,
   seatCount: 5,
   members: [
-    { playerId: 'p-ann', name: 'Ann', kind: 'human', isRegistered: true, connected: true, botControlled: false },
-    { playerId: 'p-bo', name: 'Bo', kind: 'human', isRegistered: true, connected: false, botControlled: false },
-    { playerId: 'p-gus', name: 'Gus', kind: 'human', isRegistered: false, connected: true, botControlled: false },
-    { playerId: 'p-bot', name: 'Bot 1', kind: 'bot', isRegistered: false, connected: true, botControlled: false },
+    { playerId: 'p-ann', name: 'Ann', kind: 'human', seatId: null, isRegistered: true, connected: true, botControlled: false },
+    { playerId: 'p-bo', name: 'Bo', kind: 'human', seatId: null, isRegistered: true, connected: false, botControlled: false },
+    { playerId: 'p-gus', name: 'Gus', kind: 'human', seatId: null, isRegistered: false, connected: true, botControlled: false },
+    { playerId: 'p-bot', name: 'Bot 1', kind: 'bot', seatId: null, isRegistered: false, connected: true, botControlled: false },
   ],
 };
 

@@ -26,4 +26,10 @@ export const ROOM_ERROR_STATUS: Record<RoomErrorCode, number> = {
   invalid_seat_count: 400,
   invalid_name: 400,
   invalid_message: 400,
+  not_full: 409,
+  no_game: 409,
+  not_your_turn: 409,
+  stale: 409,
+  illegal_action: 400,
+  solo_exists: 409,
 };

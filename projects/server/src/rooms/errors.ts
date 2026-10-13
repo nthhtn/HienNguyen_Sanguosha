@@ -13,6 +13,12 @@ export type RoomErrorCode = Extract<
   | 'invalid_seat_count'
   | 'invalid_name'
   | 'invalid_message'
+  | 'not_full'
+  | 'no_game'
+  | 'not_your_turn'
+  | 'stale'
+  | 'illegal_action'
+  | 'solo_exists'
 >;
 
 // A room input that the rules refuse. Nothing changed; the sender gets the code.

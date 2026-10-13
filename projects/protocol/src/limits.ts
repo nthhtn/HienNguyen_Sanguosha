@@ -8,3 +8,5 @@ export const DISPLAY_NAME_MAX = 24;
 export const MIN_SEATS = 2;
 // The longest request id a client may attach to a socket message.
 export const REQ_ID_MAX = 64;
+// The most actions one game.submit may carry (a whole Discard phase is one move).
+export const MAX_SUBMIT_ACTIONS = 50;
