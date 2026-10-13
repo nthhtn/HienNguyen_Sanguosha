@@ -4,15 +4,15 @@ import type { BotPolicy } from 'bots';
 import { buildContentRegistry, FIRST_REVEAL_MIN_SEATS } from 'content';
 import type { Action, ContentRegistry, EngineContext, GameResult, GameRules, GameState } from 'engine';
 import { normalizeDisplayName } from 'protocol';
-import type { CreateRoomBody, GameOutcome, RoomCommand, RoomLeftReason, RoomList, RoomSnapshot, SeatLimits, ServerMessage } from 'protocol';
-import { drawSeats, engineContext, openingState } from '../game/engineGame';
+import type { CreateRoomBody, GameOutcome, RoomCommand, RoomLeftReason, RoomList, RoomSnapshot, SeatLimits, ServerMessage, SoloRoomBody } from 'protocol';
+import { drawSeats, engineContext, openingState, replay } from '../game/engineGame';
 import { BOT_DELAY_MS, GameRunner, RunnerHost, TAKEOVER_AWAY_MS } from '../game/gameRunner';
 import { realScheduler, Scheduler } from '../game/scheduler';
 import { GameRecord, RoomPlayerRecord, UserRecord } from '../persistence/records';
 import { NameTakenError, Repositories } from '../persistence/repositories';
 import { toRoomListItem, toRoomSnapshot } from '../views/room';
 import { RoomError } from './errors';
-import { memberFrom, Room, RoomMember } from './room';
+import { memberFrom, Room, RoomMember, sameName } from './room';
 import { SerialQueue } from './serialQueue';
 
 // A host away this long in the lobby hands the role on (spec "Host rules").
@@ -79,6 +79,13 @@ function requireName(raw: string): string {
   return name;
 }
 
+// "Bot 1", "Bot 2", … skipping the player's own name.
+function botNamesBeside(name: string, count: number): string[] {
+  const names: string[] = [];
+  for (let n = 1; names.length < count; n += 1) if (!sameName(`Bot ${n}`, name)) names.push(`Bot ${n}`);
+  return names;
+}
+
 // Every live room, held in memory. Each room's inputs run one at a time on
 // its queue: check, persist, commit in memory, publish. A playing room's
 // GameRunner moves its game, and its timers run on the same queue.
@@ -119,17 +126,27 @@ export class RoomService {
     return this.engine;
   }
 
-  // Reloads every lobby from the store after a restart. Nobody is connected
-  // yet, so every human starts away and the usual host and idle rules apply.
+  // Reloads every live room from the store after a restart. Nobody is
+  // connected yet, so every human starts away: lobbies follow the usual host
+  // and idle rules, and running games are rebuilt from their stored actions.
   async restore(): Promise<void> {
     const now = this.now();
+    const running = new Map((await this.repos.games.listRunning()).map((game) => [game.roomId, game]));
     for (const { room, players } of await this.repos.rooms.listLive()) {
-      // Rooms with a running game come back with their game in Task 8.
-      if (room.status !== 'lobby') continue;
       const members = await Promise.all(players.map(async (player) => memberFrom(player, await this.isRegistered(player), now)));
       const entry = this.track(new Room(room, members, now));
-      if (entry.room.humans().length === 0) await entry.queue.run(() => this.closeRoom(entry, 'idle'));
+      await entry.queue
+        .run(async () => {
+          if (room.status === 'playing') await this.restoreGame(entry, running.get(room.id) ?? null);
+          else if (entry.room.humans().length === 0) await this.closeRoom(entry, 'idle');
+        })
+        .catch((err: unknown) => this.logError(err, `Restoring room ${room.id} failed`));
     }
+  }
+
+  // Graceful shutdown: no more game timers, and every queued input finishes.
+  async stop(): Promise<void> {
+    await Promise.all([...this.live.values()].map((entry) => entry.queue.run(async () => entry.runner?.stop()).catch(() => undefined)));
   }
 
   // Your rooms first, then the other open rooms; newest first within each.
@@ -188,6 +205,38 @@ export class RoomService {
         this.touched(entry, now);
       })
     );
+  }
+
+  // Play vs Bots (spec "Solo rooms"): an unlisted room with the user and
+  // bots, whose game starts at once. One per user. A solo room with no
+  // running game is replaced without asking; a running one only with
+  // `replace`, which ends its game unfinished.
+  createSolo(user: UserRecord, body: SoloRoomBody): Promise<string> {
+    return this.membership.run(async () => {
+      this.requireSeatCount(body.seatCount, 1);
+      const name = requireName(user.displayName);
+      const existing = [...this.live.values()].find((entry) => entry.room.record.visibility === 'solo' && entry.room.memberForUser(user.id));
+      if (existing) {
+        if (existing.room.record.status === 'playing' && !body.replace) throw new RoomError('solo_exists');
+        await existing.queue.run(async () => {
+          if (this.live.get(existing.room.id) === existing) await this.abortAndClose(existing, 'left');
+        });
+      }
+      const now = this.now();
+      const rules = rulesFrom(body.rules, body.seatCount);
+      const { room, players } = await this.repos.transaction(async (tx) => {
+        const created = await tx.rooms.create({ visibility: 'solo', seatCount: body.seatCount, rules, now: new Date(now) });
+        const added = [await tx.rooms.addPlayer({ roomId: created.id, userId: user.id, kind: 'human', displayName: name, now: new Date(now) })];
+        for (const [i, botName] of botNamesBeside(name, body.seatCount - 1).entries()) {
+          added.push(await tx.rooms.addPlayer({ roomId: created.id, userId: null, kind: 'bot', displayName: botName, now: new Date(now + i + 1) }));
+        }
+        return { room: created, players: added };
+      });
+      const members = players.map((player) => memberFrom(player, player.kind === 'human' && user.kind === 'registered', now));
+      const entry = this.track(new Room(room, members, now));
+      await entry.queue.run(() => this.startGame(entry));
+      return room.id;
+    });
   }
 
   // A member's socket said hello. The newest connection wins: an older one is
@@ -472,6 +521,41 @@ export class RoomService {
       await this.setHost(entry, successor.id, now);
     }
     this.broadcast(entry);
+  }
+
+  // Rebuilds a room's running game from its stored actions (spec "Restore on
+  // startup"). Hashes are checked only when the build changed. A replay that
+  // fails, or a hash that differs, stops the game as 'outdated'.
+  private async restoreGame(entry: LiveRoom, game: GameRecord | null): Promise<void> {
+    const { room } = entry;
+    if (!game) {
+      // Playing, but its game is gone: back to the lobby.
+      const at = new Date(this.now());
+      await this.repos.rooms.update(room.id, { status: 'lobby' }, at);
+      room.record = { ...room.record, status: 'lobby', updatedAt: at };
+      return;
+    }
+    if (room.humans().length === 0) return this.abortAndClose(entry, 'idle', game);
+    const actions = await this.repos.games.listActions(game.id);
+    let state: GameState;
+    try {
+      state = replay(this.ctx, game, actions, game.buildId !== this.buildId);
+    } catch (err) {
+      this.logError(err, `Game ${game.id} can't continue after an update`);
+      return this.closeGame(entry, game, 'outdated', null);
+    }
+    if (state.result) return this.closeGame(entry, game, 'finished', state.result);
+    this.run(entry, game, state, actions.length);
+  }
+
+  // Ends the room's running game unfinished (the runner's, or `game`), and closes the room.
+  private async abortAndClose(entry: LiveRoom, reason: RoomLeftReason, game: GameRecord | null = entry.runner?.record ?? null): Promise<void> {
+    const at = new Date(this.now());
+    await this.repos.transaction(async (tx) => {
+      if (game) await tx.games.update(game.id, { status: 'aborted', finishedAt: at });
+      await tx.rooms.update(entry.room.id, { status: 'closed' }, at);
+    });
+    this.dropRoom(entry, reason);
   }
 
   private async leave(entry: LiveRoom, actor: RoomMember): Promise<void> {
