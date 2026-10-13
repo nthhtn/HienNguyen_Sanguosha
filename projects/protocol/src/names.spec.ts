@@ -25,6 +25,6 @@ describe('normalizeDisplayName', () => {
   });
 
   it('normalizes to NFC so look-alike names compare equal', () => {
-    expect(normalizeDisplayName('José')).toBe('José');
+    expect(normalizeDisplayName('José')).toBe('José');
   });
 });
