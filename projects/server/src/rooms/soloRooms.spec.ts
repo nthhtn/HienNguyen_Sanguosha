@@ -110,6 +110,38 @@ describe('solo rooms', () => {
     expect(await repos.games.findById(game.id)).toMatchObject({ status: 'aborted' });
   });
 
+  it("stores a game's end that could not be stored yet when the room is replaced", async () => {
+    const logError = jest.fn();
+    const { rooms, repos, scheduler, registered, connect, gameOf } = await setup({ botPolicy: failing, logError });
+    // The first transaction that marks a game broken fails, so its end stays pending.
+    const transaction = repos.transaction.bind(repos);
+    let failNext = true;
+    jest.spyOn(repos, 'transaction').mockImplementation((work) =>
+      transaction((tx) => {
+        const update = tx.games.update.bind(tx.games);
+        tx.games.update = async (gameId, changes) => {
+          if (failNext && changes.status === 'broken') {
+            failNext = false;
+            throw new Error('store down');
+          }
+          return update(gameId, changes);
+        };
+        return work(tx);
+      })
+    );
+    const ann = await registered('Ann');
+    const id = await rooms.createSolo(ann, { seatCount: 2, rules: {} });
+    const game = await gameOf(id);
+    await connect(ann, id);
+    await scheduler.runUntil(() => !failNext);
+    expect(logError).toHaveBeenCalled();
+    expect(rooms.snapshot(ann, id).status).toBe('playing');
+    expect(await repos.games.findById(game.id)).toMatchObject({ status: 'running' });
+    await rooms.createSolo(ann, { seatCount: 2, rules: {}, replace: true });
+    expect(await repos.games.findById(game.id)).toMatchObject({ status: 'broken', result: null, finishedAt: expect.any(Date) });
+    expect((await repos.rooms.listLive()).map((entry) => entry.room.id)).not.toContain(id);
+  });
+
   it('pauses while the player is away, and never hands their seat to a bot', async () => {
     const { rooms, repos, scheduler, registered, connect, gameOf } = await setup();
     const ann = await registered('Ann');

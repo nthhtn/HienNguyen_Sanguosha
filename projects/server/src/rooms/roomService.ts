@@ -67,6 +67,11 @@ interface PendingEnd {
   result: GameResult | null;
 }
 
+// Stores a game's end that could not be stored when the game ended, if any.
+async function storePendingEnd(tx: Repositories, end: PendingEnd | null, at: Date): Promise<void> {
+  if (end) await tx.games.update(end.game.id, { status: end.outcome === 'finished' ? 'finished' : 'broken', result: end.result, finishedAt: at });
+}
+
 // The rules the engine reads. Unknown keys never get stored, and First Reveal
 // Bonus is dropped below the seat count where it applies.
 function rulesFrom(rules: GameRules, seatCount: number): GameRules {
@@ -548,11 +553,13 @@ export class RoomService {
     this.run(entry, game, state, actions.length);
   }
 
-  // Ends the room's running game unfinished (the runner's, or `game`), and closes the room.
+  // Ends the room's running game unfinished (the runner's, or `game`), and
+  // closes the room. A game whose end was not stored yet gets it stored now.
   private async abortAndClose(entry: LiveRoom, reason: RoomLeftReason, game: GameRecord | null = entry.runner?.record ?? null): Promise<void> {
     const at = new Date(this.now());
     await this.repos.transaction(async (tx) => {
       if (game) await tx.games.update(game.id, { status: 'aborted', finishedAt: at });
+      await storePendingEnd(tx, entry.pendingEnd, at);
       await tx.rooms.update(entry.room.id, { status: 'closed' }, at);
     });
     this.dropRoom(entry, reason);
@@ -595,8 +602,7 @@ export class RoomService {
         await tx.rooms.markLeft(actor.id, at);
         if (runner) await tx.games.update(runner.record.id, { status: 'aborted', finishedAt: at });
         // A game whose end was not stored yet gets it stored now.
-        const end = entry.pendingEnd;
-        if (end) await tx.games.update(end.game.id, { status: end.outcome === 'finished' ? 'finished' : 'broken', result: end.result, finishedAt: at });
+        await storePendingEnd(tx, entry.pendingEnd, at);
         await tx.rooms.update(room.id, { status: 'closed' }, at);
       });
       room.remove(actor.id);
