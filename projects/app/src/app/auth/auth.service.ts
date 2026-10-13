@@ -16,11 +16,13 @@ export class ApiError extends Error {
   }
 }
 
+export const NETWORK_ERROR_MESSAGE = "Can't reach the server. Check your connection and try again";
+
 export function toApiError(err: unknown): ApiError {
   if (err instanceof HttpErrorResponse) {
     const body = err.error as Partial<ErrorBody> | null;
     if (body && typeof body.code === 'string' && typeof body.message === 'string') return new ApiError(body.code, body.message, err.status);
-    if (err.status === 0) return new ApiError('network', "Can't reach the server. Check your connection and try again", 0);
+    if (err.status === 0) return new ApiError('network', NETWORK_ERROR_MESSAGE, 0);
     return new ApiError('internal', ERROR_MESSAGES.internal, err.status);
   }
   return new ApiError('internal', ERROR_MESSAGES.internal, 0);
