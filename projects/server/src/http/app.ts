@@ -19,7 +19,8 @@ export interface AppDeps {
   accounts: AccountService;
   publicOrigin: string;
   cookieSecure: boolean;
-  trustProxy?: boolean;
+  // Passed to Fastify; see ServerConfig.trustProxy.
+  trustProxy?: false | number | string[];
   rateLimits?: AuthRateLimits;
   // Clock for the rate limits.
   now?: () => number;
@@ -27,7 +28,7 @@ export interface AppDeps {
 }
 
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
-  const app = Fastify({ logger: deps.logger ?? false, trustProxy: deps.trustProxy ?? false }).withTypeProvider<TypeBoxTypeProvider>();
+  const app = Fastify({ logger: deps.logger ?? false, trustProxy: fastifyTrustProxy(deps.trustProxy ?? false) }).withTypeProvider<TypeBoxTypeProvider>();
   await app.register(cookie);
   app.decorateRequest('auth', null);
 
@@ -67,4 +68,13 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
   await app.ready();
   return app;
+}
+
+// Fastify 5 treats a numeric trustProxy as "trust nothing", so a hop count
+// becomes a trust function: the socket peer is hop 0, the X-Forwarded-For
+// entries behind it are hops 1, 2, ... A hop count assumes the server is only
+// reachable through the proxy; otherwise configure the proxy addresses.
+function fastifyTrustProxy(trust: false | number | string[]): boolean | string[] | ((address: string, hop: number) => boolean) {
+  if (typeof trust !== 'number') return trust;
+  return (_address, hop) => hop < trust;
 }

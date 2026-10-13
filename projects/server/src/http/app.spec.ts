@@ -199,6 +199,22 @@ describe('HTTP app', () => {
       expect((await post(app, '/api/auth/signup', SIGN_UP)).statusCode).toBe(429);
     });
 
+    it('behind one trusted proxy, a spoofed X-Forwarded-For entry does not dodge the per-IP limit', async () => {
+      ({ app } = await setup({ trustProxy: 1, rateLimits: new AuthRateLimits({ ...RATE_LIMITS, signUpPerIp: { limit: 1, windowMs: 60_000 } }) }));
+      const guest = (forwardedFor: string) =>
+        app.inject({ method: 'POST', url: '/api/auth/guest', payload: { displayName: 'A' }, headers: { origin: ORIGIN, 'x-forwarded-for': forwardedFor } });
+      expect((await guest('spoofed-a, 10.0.0.9')).statusCode).toBe(201);
+      expect((await guest('spoofed-b, 10.0.0.9')).statusCode).toBe(429);
+    });
+
+    it('behind one trusted proxy, clients with different real IPs have separate budgets', async () => {
+      ({ app } = await setup({ trustProxy: 1, rateLimits: new AuthRateLimits({ ...RATE_LIMITS, signUpPerIp: { limit: 1, windowMs: 60_000 } }) }));
+      const guest = (forwardedFor: string) =>
+        app.inject({ method: 'POST', url: '/api/auth/guest', payload: { displayName: 'A' }, headers: { origin: ORIGIN, 'x-forwarded-for': forwardedFor } });
+      expect((await guest('10.0.0.9')).statusCode).toBe(201);
+      expect((await guest('10.0.0.10')).statusCode).toBe(201);
+    });
+
     it('limits forgot-password per email', async () => {
       ({ app } = await setup({ rateLimits: new AuthRateLimits({ ...RATE_LIMITS, forgotPerEmail: { limit: 1, windowMs: 60_000 } }) }));
       expect((await post(app, '/api/auth/forgot-password', { email: 'a@example.com' })).statusCode).toBe(200);
