@@ -1,0 +1,70 @@
+import cookie from '@fastify/cookie';
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import Fastify, { FastifyError, FastifyInstance } from 'fastify';
+import { AccountService, AuthError, Authenticated } from '../auth/accounts';
+import { AuthRateLimits } from '../auth/rateLimits';
+import { registerAuthRoutes } from './authRoutes';
+import { AUTH_ERROR_STATUS, errorBody } from './errors';
+import { requestGuard } from './guard';
+import { clearSessionCookie, SESSION_COOKIE, setSessionCookie } from './session';
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    // The signed-in user and session, or null; set for every request.
+    auth: Authenticated | null;
+  }
+}
+
+export interface AppDeps {
+  accounts: AccountService;
+  publicOrigin: string;
+  cookieSecure: boolean;
+  trustProxy?: boolean;
+  rateLimits?: AuthRateLimits;
+  // Clock for the rate limits.
+  now?: () => number;
+  logger?: boolean;
+}
+
+export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
+  const app = Fastify({ logger: deps.logger ?? false, trustProxy: deps.trustProxy ?? false }).withTypeProvider<TypeBoxTypeProvider>();
+  await app.register(cookie);
+  app.decorateRequest('auth', null);
+
+  app.addHook('onRequest', requestGuard(deps.publicOrigin));
+
+  // Resolve the session cookie. A valid one is refreshed so the browser's copy
+  // slides along with the stored expiry; an invalid one is cleared.
+  app.addHook('onRequest', async (request, reply) => {
+    const token = request.cookies[SESSION_COOKIE];
+    if (!token) return;
+    const auth = await deps.accounts.authenticate(token);
+    if (auth) {
+      request.auth = auth;
+      setSessionCookie(reply, token, auth.session.expiresAt, deps.cookieSecure);
+    } else {
+      clearSessionCookie(reply, deps.cookieSecure);
+    }
+  });
+
+  app.setErrorHandler((error: FastifyError, request, reply) => {
+    if (error instanceof AuthError) return reply.code(AUTH_ERROR_STATUS[error.code]).send(errorBody(error.code));
+    if (error.validation) return reply.code(400).send(errorBody('invalid_body'));
+    // Body parsing errors (bad JSON, empty body, too large) carry their 4xx status.
+    if (error.statusCode !== undefined && error.statusCode >= 400 && error.statusCode < 500) return reply.code(error.statusCode).send(errorBody('invalid_body'));
+    request.log.error(error);
+    return reply.code(500).send(errorBody('internal'));
+  });
+
+  app.setNotFoundHandler((_request, reply) => reply.code(404).send(errorBody('not_found')));
+
+  registerAuthRoutes(app, {
+    accounts: deps.accounts,
+    limits: deps.rateLimits ?? new AuthRateLimits(),
+    cookieSecure: deps.cookieSecure,
+    now: deps.now ?? Date.now,
+  });
+
+  await app.ready();
+  return app;
+}
