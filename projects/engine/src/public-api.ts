@@ -29,3 +29,4 @@ export * from './lib/rules/phaseSequence';
 export * from './lib/rules/handLimit';
 export * from './lib/setup/gameSetup';
 export * from './lib/rules/decisionClock';
+export * from './lib/rules/defaultActions';
