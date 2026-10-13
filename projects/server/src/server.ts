@@ -19,7 +19,7 @@ export interface RunningServer {
 
 // Everything the process runs, wired from config: the store (Postgres,
 // migrated on start, or in memory), accounts, the HTTP app and an hourly
-// clean-up of rate-limit windows and idle guests.
+// clean-up of rate-limit windows, idle guests, and dead sessions and reset tokens.
 export async function createServer(config: ServerConfig, options: { logger?: boolean } = {}): Promise<RunningServer> {
   const store = await openStore(config.databaseUrl);
   const accounts = new AccountService({ repos: store.repos, mailer: new ConsoleMailer(), publicOrigin: config.publicOrigin });
@@ -36,6 +36,7 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
   const housekeeping = setInterval(() => {
     rateLimits.prune(Date.now());
     accounts.purgeIdleGuests().catch((err: unknown) => app.log.error(err, 'Purging idle guests failed'));
+    accounts.purgeExpired().catch((err: unknown) => app.log.error(err, 'Purging expired sessions and reset tokens failed'));
   }, HOUSEKEEPING_MS);
   housekeeping.unref();
 

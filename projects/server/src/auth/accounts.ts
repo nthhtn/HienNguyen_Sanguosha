@@ -10,6 +10,9 @@ const DAY_MS = 24 * 60 * 60_000;
 export const SESSION_DAYS = { registered: 30, guest: 7 } as const;
 export const RESET_TOKEN_MS = 60 * 60_000;
 export const GUEST_IDLE_DAYS = 7;
+// Expired or revoked sessions, and expired reset tokens, are kept this long
+// before housekeeping deletes them.
+export const PURGE_AFTER_DAYS = 30;
 
 export type AuthErrorCode = Extract<ErrorCode, 'email_taken' | 'invalid_credentials' | 'invalid_reset_token' | 'invalid_name' | 'weak_password'>;
 
@@ -142,6 +145,12 @@ export class AccountService {
 
   purgeIdleGuests(): Promise<number> {
     return this.repos.users.deleteIdleGuests(new Date(this.now().getTime() - GUEST_IDLE_DAYS * DAY_MS));
+  }
+
+  async purgeExpired(): Promise<void> {
+    const cutoff = new Date(this.now().getTime() - PURGE_AFTER_DAYS * DAY_MS);
+    await this.repos.sessions.deleteExpired(cutoff);
+    await this.repos.resetTokens.deleteExpired(cutoff);
   }
 
   private startSession(user: UserRecord, now: Date): Promise<SignedIn> {

@@ -1,6 +1,6 @@
 import { RecordingMailer } from '../mail/recordingMailer';
 import { createMemoryRepositories } from '../persistence/memory/memoryRepositories';
-import { AccountService, AuthError } from './accounts';
+import { AccountService, AuthError, PURGE_AFTER_DAYS } from './accounts';
 
 const ORIGIN = 'http://localhost:4200';
 const DAY = 24 * 60 * 60_000;
@@ -82,6 +82,28 @@ describe('AccountService', () => {
       expect(await accounts.purgeIdleGuests()).toBe(1);
       expect(await repos.users.findById(guest.user.id)).toBeNull();
       expect(await repos.users.findById(ann.user.id)).not.toBeNull();
+    });
+  });
+
+  describe('purging dead sessions and reset links', () => {
+    it(`deletes sessions and reset links dead for more than ${PURGE_AFTER_DAYS} days, and keeps the rest`, async () => {
+      const { accounts, repos, advance } = setup();
+      const FOREVER = new Date(8_640_000_000_000_000);
+      await accounts.signUp({ email: 'ann@example.com', password: 'secret-pass', displayName: 'Ann' });
+      const otherDevice = await accounts.signIn({ email: 'ann@example.com', password: 'secret-pass' });
+      await accounts.signOut(otherDevice.token);
+      await accounts.forgotPassword('ann@example.com');
+      advance(DAY);
+      await accounts.createGuest({ displayName: 'Guest' });
+      advance(PURGE_AFTER_DAYS * DAY);
+
+      // Deleted: the session revoked and the reset link expired 31 days ago.
+      // Kept: Ann's first session (expired 1 day ago) and the guest's (23 days ago).
+      await accounts.purgeExpired();
+
+      // What is left, counted by deleting everything.
+      expect(await repos.resetTokens.deleteExpired(FOREVER)).toBe(0);
+      expect(await repos.sessions.deleteExpired(FOREVER)).toBe(2);
     });
   });
 

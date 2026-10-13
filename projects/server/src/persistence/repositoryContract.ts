@@ -132,6 +132,29 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
       for (const tokenHash of annHashes) expect(await repos().sessions.findActiveByTokenHash(tokenHash, minutes(2))).toBeNull();
       expect(await repos().sessions.findActiveByTokenHash(boHash, minutes(2))).not.toBeNull();
     });
+
+    it('deleteExpired deletes sessions expired or revoked before the cutoff, and only those', async () => {
+      // Dates long before every other test's, so the count is exact on a shared store.
+      const at = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
+      const cutoff = at('2020-06-01');
+      const user = await registered();
+      const hash = () => `t-${randomUUID()}`;
+      const [expired, revoked, live, revokedLater] = [hash(), hash(), hash(), hash()];
+      await repos().sessions.create({ userId: user.id, tokenHash: expired, now: at('2020-01-01'), expiresAt: at('2020-03-01') });
+      const revokedSession = await repos().sessions.create({ userId: user.id, tokenHash: revoked, now: at('2020-01-01'), expiresAt: at('2030-01-01') });
+      await repos().sessions.revoke(revokedSession.id, at('2020-03-01'));
+      await repos().sessions.create({ userId: user.id, tokenHash: live, now: at('2020-01-01'), expiresAt: at('2020-09-01') });
+      const revokedLaterSession = await repos().sessions.create({ userId: user.id, tokenHash: revokedLater, now: at('2020-01-01'), expiresAt: at('2030-01-01') });
+      await repos().sessions.revoke(revokedLaterSession.id, at('2020-09-01'));
+
+      expect(await repos().sessions.deleteExpired(cutoff)).toBe(2);
+
+      expect(await repos().sessions.deleteExpired(cutoff)).toBe(0);
+      // Still there: active at a time before it expires.
+      expect(await repos().sessions.findActiveByTokenHash(live, at('2020-08-01'))).not.toBeNull();
+      // Gone: it would otherwise be active at this time.
+      expect(await repos().sessions.findActiveByTokenHash(expired, at('2020-02-01'))).toBeNull();
+    });
   });
 
   describe('reset tokens', () => {
@@ -171,6 +194,20 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
 
       for (const tokenHash of annHashes) expect(await repos().resetTokens.consume(tokenHash, minutes(2))).toBeNull();
       expect(await repos().resetTokens.consume(boHash, minutes(2))).not.toBeNull();
+    });
+
+    it('deleteExpired deletes tokens expired before the cutoff, and only those', async () => {
+      const at = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
+      const user = await registered();
+      const expired = `r-${randomUUID()}`;
+      const live = `r-${randomUUID()}`;
+      await repos().resetTokens.create({ userId: user.id, tokenHash: expired, now: at('2020-01-01'), expiresAt: at('2020-03-01') });
+      await repos().resetTokens.create({ userId: user.id, tokenHash: live, now: at('2020-01-01'), expiresAt: at('2020-09-01') });
+
+      expect(await repos().resetTokens.deleteExpired(at('2020-06-01'))).toBe(1);
+
+      expect(await repos().resetTokens.consume(expired, at('2020-02-01'))).toBeNull();
+      expect(await repos().resetTokens.consume(live, at('2020-08-01'))).not.toBeNull();
     });
   });
 

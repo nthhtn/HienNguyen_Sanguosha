@@ -27,6 +27,8 @@ export interface SessionRepository {
   slide(sessionId: string, now: Date, expiresAt: Date): Promise<void>;
   revoke(sessionId: string, now: Date): Promise<void>;
   revokeAllForUser(userId: string, now: Date): Promise<void>;
+  // Deletes sessions that expired or were revoked before `cutoff`; returns how many.
+  deleteExpired(cutoff: Date): Promise<number>;
 }
 
 export interface ResetTokenRepository {
@@ -35,6 +37,8 @@ export interface ResetTokenRepository {
   consume(tokenHash: string, now: Date): Promise<ResetTokenRecord | null>;
   // Marks every unused token of the user used at `now`.
   invalidateAllForUser(userId: string, now: Date): Promise<void>;
+  // Deletes tokens that expired before `cutoff`; returns how many.
+  deleteExpired(cutoff: Date): Promise<number>;
 }
 
 export interface Repositories {

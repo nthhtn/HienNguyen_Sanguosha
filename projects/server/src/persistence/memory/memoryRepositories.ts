@@ -194,6 +194,16 @@ class MemorySessions implements SessionRepository {
       if (session.userId === userId && session.revokedAt === null) session.revokedAt = now;
     }
   }
+
+  async deleteExpired(cutoff: Date): Promise<number> {
+    let deleted = 0;
+    for (const [id, session] of this.store.sessions) {
+      if (session.expiresAt >= cutoff && (session.revokedAt === null || session.revokedAt >= cutoff)) continue;
+      this.store.sessions.delete(id);
+      deleted += 1;
+    }
+    return deleted;
+  }
 }
 
 class MemoryResetTokens implements ResetTokenRepository {
@@ -226,5 +236,15 @@ class MemoryResetTokens implements ResetTokenRepository {
     for (const token of this.store.resetTokens.values()) {
       if (token.userId === userId && token.usedAt === null) token.usedAt = now;
     }
+  }
+
+  async deleteExpired(cutoff: Date): Promise<number> {
+    let deleted = 0;
+    for (const [id, token] of this.store.resetTokens) {
+      if (token.expiresAt >= cutoff) continue;
+      this.store.resetTokens.delete(id);
+      deleted += 1;
+    }
+    return deleted;
   }
 }

@@ -111,6 +111,14 @@ class PostgresSessions implements SessionRepository {
   async revokeAllForUser(userId: string, now: Date): Promise<void> {
     await this.db.updateTable('sessions').set({ revoked_at: now }).where('user_id', '=', userId).where('revoked_at', 'is', null).execute();
   }
+
+  async deleteExpired(cutoff: Date): Promise<number> {
+    const result = await this.db
+      .deleteFrom('sessions')
+      .where((eb) => eb.or([eb('expires_at', '<', cutoff), eb('revoked_at', '<', cutoff)]))
+      .executeTakeFirst();
+    return Number(result.numDeletedRows);
+  }
 }
 
 class PostgresResetTokens implements ResetTokenRepository {
@@ -140,5 +148,10 @@ class PostgresResetTokens implements ResetTokenRepository {
 
   async invalidateAllForUser(userId: string, now: Date): Promise<void> {
     await this.db.updateTable('password_reset_tokens').set({ used_at: now }).where('user_id', '=', userId).where('used_at', 'is', null).execute();
+  }
+
+  async deleteExpired(cutoff: Date): Promise<number> {
+    const result = await this.db.deleteFrom('password_reset_tokens').where('expires_at', '<', cutoff).executeTakeFirst();
+    return Number(result.numDeletedRows);
   }
 }
