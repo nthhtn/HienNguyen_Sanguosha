@@ -33,12 +33,18 @@ export interface ResetTokenRepository {
   create(input: { userId: string; tokenHash: string; now: Date; expiresAt: Date }): Promise<ResetTokenRecord>;
   // Atomically marks an unused, unexpired token used and returns it; null otherwise.
   consume(tokenHash: string, now: Date): Promise<ResetTokenRecord | null>;
+  // Marks every unused token of the user used at `now`.
+  invalidateAllForUser(userId: string, now: Date): Promise<void>;
 }
 
 export interface Repositories {
   users: UserRepository;
   sessions: SessionRepository;
   resetTokens: ResetTokenRepository;
+  // Runs `work` against repositories whose writes all commit together when it
+  // resolves, or none of them when it throws (the error is rethrown). Not
+  // nestable: don't call `transaction` on the repositories passed to `work`.
+  transaction<T>(work: (repos: Repositories) => Promise<T>): Promise<T>;
 }
 
 // A store opened for a test run, and how to close it afterwards.

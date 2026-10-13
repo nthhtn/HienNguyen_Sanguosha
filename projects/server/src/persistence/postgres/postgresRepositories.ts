@@ -7,8 +7,14 @@ import { Database } from './schema';
 const UNIQUE_VIOLATION = '23505';
 const isUniqueViolation = (err: unknown) => (err as { code?: unknown } | null)?.code === UNIQUE_VIOLATION;
 
+// `db` may be a Transaction (a Kysely too): then every method runs inside it.
 export function createPostgresRepositories(db: Kysely<Database>): Repositories {
-  return { users: new PostgresUsers(db), sessions: new PostgresSessions(db), resetTokens: new PostgresResetTokens(db) };
+  return {
+    users: new PostgresUsers(db),
+    sessions: new PostgresSessions(db),
+    resetTokens: new PostgresResetTokens(db),
+    transaction: (work) => db.transaction().execute((trx) => work(createPostgresRepositories(trx))),
+  };
 }
 
 class PostgresUsers implements UserRepository {
@@ -130,5 +136,9 @@ class PostgresResetTokens implements ResetTokenRepository {
       .returningAll()
       .executeTakeFirst();
     return row ? toResetTokenRecord(row) : null;
+  }
+
+  async invalidateAllForUser(userId: string, now: Date): Promise<void> {
+    await this.db.updateTable('password_reset_tokens').set({ used_at: now }).where('user_id', '=', userId).where('used_at', 'is', null).execute();
   }
 }

@@ -123,27 +123,37 @@ export class AccountService {
   async resetPassword(input: { token: string; password: string }): Promise<SignedIn> {
     // Checked before the token is consumed, so a weak password doesn't burn the link.
     requirePassword(input.password);
-    const now = this.now();
-    const record = await this.repos.resetTokens.consume(hashToken(input.token), now);
-    if (!record) throw new AuthError('invalid_reset_token');
-    const user = await this.repos.users.findById(record.userId);
-    if (!user) throw new AuthError('invalid_reset_token');
+    // Hashed outside the transaction: it's slow, and would hold it open.
     const passwordHash = await hashPassword(input.password);
-    await this.repos.users.setPasswordHash(user.id, passwordHash, now);
-    await this.repos.sessions.revokeAllForUser(user.id, now);
-    return this.startSession({ ...user, passwordHash, updatedAt: now }, now);
+    const now = this.now();
+    // All or nothing: if any write fails, the link still works and the old
+    // password and sessions (possibly an attacker's) are untouched for a retry.
+    return this.repos.transaction(async (repos) => {
+      const record = await repos.resetTokens.consume(hashToken(input.token), now);
+      if (!record) throw new AuthError('invalid_reset_token');
+      const user = await repos.users.findById(record.userId);
+      if (!user) throw new AuthError('invalid_reset_token');
+      await repos.users.setPasswordHash(user.id, passwordHash, now);
+      await repos.sessions.revokeAllForUser(user.id, now);
+      await repos.resetTokens.invalidateAllForUser(user.id, now);
+      return startSession(repos, { ...user, passwordHash, updatedAt: now }, now);
+    });
   }
 
   purgeIdleGuests(): Promise<number> {
     return this.repos.users.deleteIdleGuests(new Date(this.now().getTime() - GUEST_IDLE_DAYS * DAY_MS));
   }
 
-  private async startSession(user: UserRecord, now: Date): Promise<SignedIn> {
-    const token = newToken();
-    const expiresAt = sessionExpiry(user, now);
-    await this.repos.sessions.create({ userId: user.id, tokenHash: hashToken(token), now, expiresAt });
-    return { user, token, expiresAt };
+  private startSession(user: UserRecord, now: Date): Promise<SignedIn> {
+    return startSession(this.repos, user, now);
   }
+}
+
+async function startSession(repos: Repositories, user: UserRecord, now: Date): Promise<SignedIn> {
+  const token = newToken();
+  const expiresAt = sessionExpiry(user, now);
+  await repos.sessions.create({ userId: user.id, tokenHash: hashToken(token), now, expiresAt });
+  return { user, token, expiresAt };
 }
 
 function sessionExpiry(user: UserRecord, now: Date): Date {

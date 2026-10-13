@@ -177,6 +177,34 @@ describe('AccountService', () => {
       expect(await authCode(accounts.resetPassword({ token, password: 'another-pass' }))).toBe('invalid_reset_token');
     });
 
+    it('a reset ends every other reset link of the user', async () => {
+      const { accounts, mailer } = await signedUp();
+      await accounts.forgotPassword('ann@example.com');
+      await accounts.forgotPassword('ann@example.com');
+      await accounts.resetPassword({ token: resetTokenFrom(mailer.sent[0].link), password: 'brand-new-pass' });
+      expect(await authCode(accounts.resetPassword({ token: resetTokenFrom(mailer.sent[1].link), password: 'another-pass' }))).toBe('invalid_reset_token');
+    });
+
+    it('a reset that fails part-way changes nothing and leaves the link usable', async () => {
+      const { accounts, mailer, repos, ann } = await signedUp();
+      await accounts.forgotPassword('ann@example.com');
+      const token = resetTokenFrom(mailer.sent[0].link);
+      // The revoke, after the token is consumed and the hash set, fails inside the transaction.
+      const transaction = repos.transaction.bind(repos);
+      jest.spyOn(repos, 'transaction').mockImplementationOnce((work) =>
+        transaction((tx) => {
+          jest.spyOn(tx.sessions, 'revokeAllForUser').mockRejectedValueOnce(new Error('database went away'));
+          return work(tx);
+        })
+      );
+
+      await expect(accounts.resetPassword({ token, password: 'brand-new-pass' })).rejects.toThrow('database went away');
+
+      expect(await accounts.authenticate(ann.token)).not.toBeNull();
+      expect((await accounts.signIn({ email: 'ann@example.com', password: 'secret-pass' })).user.id).toBe(ann.user.id);
+      expect(await authCode(accounts.resetPassword({ token, password: 'brand-new-pass' }))).toBe('resolved');
+    });
+
     it('refuses a link older than 1 hour', async () => {
       const { accounts, mailer, advance } = await signedUp();
       await accounts.forgotPassword('ann@example.com');

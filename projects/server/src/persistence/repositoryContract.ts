@@ -158,5 +158,89 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
       expect(await repos().resetTokens.consume(tokenHash, minutes(60))).toBeNull();
       expect(await repos().resetTokens.consume(`r-${randomUUID()}`, NOW)).toBeNull();
     });
+
+    it("invalidateAllForUser uses up that user's unused tokens, and no one else's", async () => {
+      const ann = await registered();
+      const bo = await registered();
+      const annHashes = [`r-${randomUUID()}`, `r-${randomUUID()}`];
+      const boHash = `r-${randomUUID()}`;
+      for (const tokenHash of annHashes) await repos().resetTokens.create({ userId: ann.id, tokenHash, now: NOW, expiresAt: minutes(60) });
+      await repos().resetTokens.create({ userId: bo.id, tokenHash: boHash, now: NOW, expiresAt: minutes(60) });
+
+      await repos().resetTokens.invalidateAllForUser(ann.id, minutes(1));
+
+      for (const tokenHash of annHashes) expect(await repos().resetTokens.consume(tokenHash, minutes(2))).toBeNull();
+      expect(await repos().resetTokens.consume(boHash, minutes(2))).not.toBeNull();
+    });
+  });
+
+  describe('transactions', () => {
+    it('commits every write of the work and returns its result', async () => {
+      const user = await registered();
+      const tokenHash = `r-${randomUUID()}`;
+      const sessionHash = `t-${randomUUID()}`;
+      await repos().resetTokens.create({ userId: user.id, tokenHash, now: NOW, expiresAt: minutes(60) });
+
+      const result = await repos().transaction(async (tx) => {
+        await tx.resetTokens.consume(tokenHash, minutes(1));
+        await tx.users.setPasswordHash(user.id, 'new-hash', minutes(1));
+        await tx.sessions.create({ userId: user.id, tokenHash: sessionHash, now: minutes(1), expiresAt: minutes(10) });
+        return 'done';
+      });
+
+      expect(result).toBe('done');
+      expect(await repos().resetTokens.consume(tokenHash, minutes(2))).toBeNull();
+      expect((await repos().users.findById(user.id))?.passwordHash).toBe('new-hash');
+      expect(await repos().sessions.findActiveByTokenHash(sessionHash, minutes(2))).not.toBeNull();
+    });
+
+    it('rolls back every write when the work throws, and rethrows', async () => {
+      const user = await registered();
+      const tokenHash = `r-${randomUUID()}`;
+      await repos().resetTokens.create({ userId: user.id, tokenHash, now: NOW, expiresAt: minutes(60) });
+      const failure = new Error('boom');
+
+      await expect(
+        repos().transaction(async (tx) => {
+          await tx.resetTokens.consume(tokenHash, minutes(1));
+          await tx.users.setPasswordHash(user.id, 'new-hash', minutes(1));
+          throw failure;
+        })
+      ).rejects.toBe(failure);
+
+      expect((await repos().users.findById(user.id))?.passwordHash).toBe('hash');
+      expect(await repos().resetTokens.consume(tokenHash, minutes(2))).not.toBeNull();
+    });
+
+    it('lets exactly one of two racing transactions consume the same token', async () => {
+      const user = await registered();
+      const tokenHash = `r-${randomUUID()}`;
+      await repos().resetTokens.create({ userId: user.id, tokenHash, now: NOW, expiresAt: minutes(60) });
+      const attempt = (passwordHash: string) =>
+        repos().transaction(async (tx) => {
+          const token = await tx.resetTokens.consume(tokenHash, minutes(1));
+          if (!token) return false;
+          await tx.users.setPasswordHash(user.id, passwordHash, minutes(1));
+          return true;
+        });
+
+      const results = await Promise.all([attempt('hash-a'), attempt('hash-b')]);
+
+      expect(results.filter(Boolean)).toHaveLength(1);
+      expect((await repos().users.findById(user.id))?.passwordHash).toBe(results[0] ? 'hash-a' : 'hash-b');
+    });
+
+    it("keeps other callers' writes made while the work runs", async () => {
+      const user = await registered();
+      const outsideHash = `t-${randomUUID()}`;
+
+      await repos().transaction(async (tx) => {
+        await repos().sessions.create({ userId: user.id, tokenHash: outsideHash, now: NOW, expiresAt: minutes(10) });
+        await tx.users.setPasswordHash(user.id, 'new-hash', minutes(1));
+      });
+
+      expect(await repos().sessions.findActiveByTokenHash(outsideHash, minutes(1))).not.toBeNull();
+      expect((await repos().users.findById(user.id))?.passwordHash).toBe('new-hash');
+    });
   });
 }
