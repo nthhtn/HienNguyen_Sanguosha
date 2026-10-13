@@ -9,6 +9,9 @@
     "build:content": "ng build content",
     "watch": "ng build --watch --configuration development",
     "test": "jest",
+    "db:up": "docker compose up -d --wait db",
+    "db:down": "docker compose down",
+    "test:db": "TEST_DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5433/postgres jest --selectProjects server",
     "typecheck:server": "tsc -p projects/protocol/tsconfig.json --noEmit && tsc -p projects/server/tsconfig.json --noEmit"
   },
   "private": true,

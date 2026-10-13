@@ -81,13 +81,15 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
       const idleGuest = await repos().users.createGuest({ displayName: 'Idle', now: longAgo });
       const freshGuest = await repos().users.createGuest({ displayName: 'Fresh', now: NOW });
       const idleRegistered = await repos().users.createRegistered({ email: freshEmail(), passwordHash: 'h', displayName: 'Old', now: longAgo });
-      await repos().sessions.create({ userId: idleGuest.id, tokenHash: `t-${randomUUID()}`, now: longAgo, expiresAt: minutes(60) });
+      const idleSessionHash = `t-${randomUUID()}`;
+      await repos().sessions.create({ userId: idleGuest.id, tokenHash: idleSessionHash, now: longAgo, expiresAt: minutes(60) });
 
       expect(await repos().users.deleteIdleGuests(cutoff)).toBeGreaterThanOrEqual(1);
 
       expect(await repos().users.findById(idleGuest.id)).toBeNull();
       expect(await repos().users.findById(freshGuest.id)).not.toBeNull();
       expect(await repos().users.findById(idleRegistered.id)).not.toBeNull();
+      expect(await repos().sessions.findActiveByTokenHash(idleSessionHash, new Date('2025-12-01T00:30:00.000Z'))).toBeNull();
     });
   });
 

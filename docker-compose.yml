@@ -1,0 +1,14 @@
+# Local Postgres for the server (npm run db:up). Data persists in a named volume.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: sanguosha
+      POSTGRES_PASSWORD: sanguosha
+      POSTGRES_DB: sanguosha
+    ports:
+      - '5433:5432' # host 5433: 5432 is often taken by another local Postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+volumes:
+  db-data:
