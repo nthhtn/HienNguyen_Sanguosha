@@ -1,17 +1,21 @@
 import { Kysely } from 'kysely';
-import { ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
+import { GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
 import {
   EmailTakenError,
+  GameChanges,
+  GameRepository,
   LiveRoomRecord,
   NameTakenError,
+  NewGameAction,
   Repositories,
   ResetTokenRepository,
   RoomChanges,
   RoomRepository,
   SessionRepository,
+  StaleGameError,
   UserRepository,
 } from '../repositories';
-import { toResetTokenRecord, toRoomPlayerRecord, toRoomRecord, toSessionRecord, toUserRecord } from './mappers';
+import { toGameActionRecord, toGameRecord, toResetTokenRecord, toRoomPlayerRecord, toRoomRecord, toSessionRecord, toUserRecord } from './mappers';
 import { Database } from './schema';
 
 const UNIQUE_VIOLATION = '23505';
@@ -27,6 +31,7 @@ export function createPostgresRepositories(db: Kysely<Database>): Repositories {
     sessions: new PostgresSessions(db),
     resetTokens: new PostgresResetTokens(db),
     rooms: new PostgresRooms(db),
+    games: new PostgresGames(db),
     transaction: (work) => db.transaction().execute((trx) => work(createPostgresRepositories(trx))),
   };
 }
@@ -237,5 +242,80 @@ class PostgresRooms implements RoomRepository {
       .orderBy('id')
       .execute();
     return rooms.map((row) => ({ room: toRoomRecord(row), players: players.filter((p) => p.room_id === row.id).map(toRoomPlayerRecord) }));
+  }
+}
+
+class PostgresGames implements GameRepository {
+  constructor(private readonly db: Kysely<Database>) {}
+
+  async create(input: { roomId: string; seed: number; seats: GameRecord['seats']; rules: GameRecord['rules']; buildId: string; now: Date }): Promise<GameRecord> {
+    const row = await this.db
+      .insertInto('games')
+      .values({
+        room_id: input.roomId,
+        seed: input.seed,
+        seats: JSON.stringify(input.seats),
+        rules: JSON.stringify(input.rules),
+        build_id: input.buildId,
+        status: 'running',
+        result: null,
+        started_at: input.now,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return toGameRecord(row);
+  }
+
+  async appendActions(gameId: string, afterSeq: number, actions: NewGameAction[], now: Date): Promise<void> {
+    actions.forEach((action, i) => {
+      if (action.seq !== afterSeq + 1 + i) throw new Error(`Action ${action.seq} is out of order`);
+    });
+    // The row lock this takes makes a racing append wait, then find the count moved.
+    const updated = await this.db
+      .updateTable('games')
+      .set({ action_count: afterSeq + actions.length })
+      .where('id', '=', gameId)
+      .where('action_count', '=', afterSeq)
+      .executeTakeFirst();
+    if (Number(updated.numUpdatedRows) !== 1) throw new StaleGameError();
+    await this.db
+      .insertInto('game_actions')
+      .values(
+        actions.map((action) => ({
+          game_id: gameId,
+          seq: action.seq,
+          seat_id: action.seatId,
+          source: action.source,
+          action: JSON.stringify(action.action),
+          state_hash: action.stateHash,
+          created_at: now,
+        }))
+      )
+      .execute();
+  }
+
+  async update(gameId: string, changes: GameChanges): Promise<void> {
+    const set = {
+      ...(changes.status !== undefined ? { status: changes.status } : {}),
+      ...(changes.result !== undefined ? { result: changes.result === null ? null : JSON.stringify(changes.result) } : {}),
+      ...(changes.finishedAt !== undefined ? { finished_at: changes.finishedAt } : {}),
+    };
+    if (Object.keys(set).length === 0) return;
+    await this.db.updateTable('games').set(set).where('id', '=', gameId).execute();
+  }
+
+  async findById(gameId: string): Promise<GameRecord | null> {
+    const row = await this.db.selectFrom('games').selectAll().where('id', '=', gameId).executeTakeFirst();
+    return row ? toGameRecord(row) : null;
+  }
+
+  async listRunning(): Promise<GameRecord[]> {
+    const rows = await this.db.selectFrom('games').selectAll().where('status', '=', 'running').orderBy('started_at').orderBy('id').execute();
+    return rows.map(toGameRecord);
+  }
+
+  async listActions(gameId: string): Promise<GameActionRecord[]> {
+    const rows = await this.db.selectFrom('game_actions').selectAll().where('game_id', '=', gameId).orderBy('seq').execute();
+    return rows.map(toGameActionRecord);
   }
 }

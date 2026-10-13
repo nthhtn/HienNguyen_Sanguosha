@@ -1,6 +1,7 @@
 import { Kysely, Migration, Migrator } from 'kysely';
 import * as accounts from './migrations/0001_accounts';
 import * as rooms from './migrations/0002_rooms';
+import * as games from './migrations/0003_games';
 import { Database } from './postgres/schema';
 
 // Listed explicitly rather than read from disk, so migrations run the same
@@ -8,6 +9,7 @@ import { Database } from './postgres/schema';
 const MIGRATIONS: Record<string, Migration> = {
   '0001_accounts': accounts,
   '0002_rooms': rooms,
+  '0003_games': games,
 };
 
 export async function migrateToLatest(db: Kysely<Database>): Promise<void> {
