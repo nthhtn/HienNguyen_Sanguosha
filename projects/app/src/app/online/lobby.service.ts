@@ -28,7 +28,7 @@ export class LobbyService {
   readonly room = this._room.asReadonly();
   // Your player id in this room.
   readonly you = this._you.asReadonly();
-  // The latest host change, as "Hing is now the host".
+  // The latest change of hands, as "Hing is now the host" or "Hing is back".
   readonly notice = this._notice.asReadonly();
   // Why this connection is over for good, when it is.
   readonly ended = this._ended.asReadonly();
@@ -48,6 +48,9 @@ export class LobbyService {
     const host = this.host();
     return host && !host.connected ? `Waiting for ${host.name} to return…` : null;
   });
+  readonly isSolo = computed(() => this._room()?.visibility === 'solo');
+  // Who may press Start Game: the host, or a solo room's player, in the lobby.
+  readonly canStart = computed(() => this._room()?.status === 'lobby' && (this.isHost() || this.isSolo()));
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.clearNoticeTimer());
@@ -74,6 +77,10 @@ export class LobbyService {
     return this.run({ type: 'lobby.setRules', seatCount, rules });
   }
 
+  start(): Promise<boolean> {
+    return this.run({ type: 'lobby.start' });
+  }
+
   async leave(): Promise<void> {
     if (!(await this.run({ type: 'room.leave' }))) return;
     this.socket.end();
@@ -94,12 +101,12 @@ export class LobbyService {
   private receive(message: ServerMessage): void {
     switch (message.type) {
       case 'welcome':
-        this.noteHostChange(this._room(), message.room);
+        this.noteChanges(this._room(), message.room);
         this._you.set(message.you.playerId);
         this._room.set(message.room);
         return;
       case 'room.updated':
-        this.noteHostChange(this._room(), message.room);
+        this.noteChanges(this._room(), message.room);
         this._room.set(message.room);
         return;
       case 'room.left':
@@ -125,11 +132,19 @@ export class LobbyService {
     }
   }
 
-  private noteHostChange(before: RoomSnapshot | null, after: RoomSnapshot): void {
-    if (!before || !after.hostPlayerId || before.hostPlayerId === after.hostPlayerId) return;
-    const host = after.members.find((m) => m.playerId === after.hostPlayerId);
-    if (!host) return;
-    this._notice.set(`${host.name} is now the host`);
+  // What changed hands, as a notice: "Hing is now the host", "Hing is back".
+  private noteChanges(before: RoomSnapshot | null, after: RoomSnapshot): void {
+    if (!before) return;
+    const host = after.hostPlayerId && before.hostPlayerId !== after.hostPlayerId ? after.members.find((m) => m.playerId === after.hostPlayerId) : undefined;
+    if (host) return this.announce(`${host.name} is now the host`);
+    const back = after.members.find(
+      (m) => m.playerId !== this._you() && !m.botControlled && before.members.some((b) => b.playerId === m.playerId && b.botControlled)
+    );
+    if (back) this.announce(`${back.name} is back`);
+  }
+
+  private announce(text: string): void {
+    this._notice.set(text);
     this.clearNoticeTimer();
     this.noticeTimer = setTimeout(() => {
       this.noticeTimer = null;
