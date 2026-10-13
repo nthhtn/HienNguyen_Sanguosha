@@ -611,16 +611,20 @@ must send `Content-Type: application/json` and a matching `Origin`.
 
 - New screens: Sign In, Sign Up, Forgot Password, Reset Password,
   Play as Guest, Rooms, Lobby and My Games.
-- Navigation: Play offers **Online**, which leads to Rooms, alongside
-  **Play vs Bots**, which now creates a solo room, and **Pass and Play**,
-  which stays local.
+- **The existing Play (Setup) and Game screens stay exactly as they are**,
+  running fully locally, so the frontend can keep being tested without the
+  backend. The online flow uses **duplicate** screens on their own routes: an
+  online Play screen (Online → Rooms, and Play vs Bots creating a solo room)
+  and an online Game screen. The duplicates replace the local ones only when
+  the user says so.
 - `AuthService` (signals `me` and `isRegistered`), `RoomsService` (polling)
   and `SocketService` (connection, reconnect, typed messages).
 - `RemoteGameService` exposes the same public signals and methods as
   `GameService` (`visibleState`, `legalActions`, `activeSeatId`,
   `botSeatIds`, `botThinkingSeatId`, `lastError`, `submit`, `submitAll`).
-  The board is provided with one or the other through dependency injection,
-  so board components don't change.
+  The online Game screen provides it through dependency injection, so the
+  board's child components are reused unchanged; the local Game screen keeps
+  `GameService`.
 - `submitAll` maps to a single atomic `game.submit`.
 - Previews such as `previewEffect` run locally on the received `SeatView`.
   They only read the state, and the engine package is already in the bundle.
