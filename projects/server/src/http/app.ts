@@ -5,6 +5,7 @@ import { AccountService, AuthError, Authenticated } from '../auth/accounts';
 import { AuthRateLimits } from '../auth/rateLimits';
 import { RoomError } from '../rooms/errors';
 import { RoomService } from '../rooms/roomService';
+import { attachSocketServer, SocketOptions } from '../socket/socketServer';
 import { registerAuthRoutes } from './authRoutes';
 import { AUTH_ERROR_STATUS, errorBody, ROOM_ERROR_STATUS } from './errors';
 import { requestGuard } from './guard';
@@ -22,6 +23,8 @@ export interface AppDeps {
   accounts: AccountService;
   rooms: RoomService;
   publicOrigin: string;
+  // Heartbeat and hello timeouts; tests shorten them.
+  socket?: SocketOptions;
   cookieSecure: boolean;
   // Passed to Fastify; see ServerConfig.trustProxy.
   trustProxy?: false | number | string[];
@@ -73,6 +76,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
   registerRoomRoutes(app, { rooms: deps.rooms });
 
+  attachSocketServer(app, { accounts: deps.accounts, rooms: deps.rooms, publicOrigin: deps.publicOrigin, ...deps.socket });
   await app.ready();
   return app;
 }
