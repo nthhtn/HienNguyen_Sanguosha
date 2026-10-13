@@ -48,6 +48,17 @@ module.exports = {
       testMatch: ['**/*.spec.ts'],
     },
     {
+      displayName: 'server',
+      preset: 'ts-jest',
+      testEnvironment: 'node',
+      rootDir: 'projects/server/src',
+      testMatch: ['**/*.spec.ts'],
+      moduleNameMapper: {
+        '^protocol$': '<rootDir>/../../protocol/src/public-api.ts',
+        '^protocol/schemas$': '<rootDir>/../../protocol/src/schemas/index.ts',
+      },
+    },
+    {
       displayName: 'app',
       preset: 'jest-preset-angular',
       testEnvironment: 'jsdom',
