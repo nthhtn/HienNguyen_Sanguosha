@@ -3,6 +3,7 @@ import { AccountService } from '../auth/accounts';
 import { AuthRateLimits, RATE_LIMITS } from '../auth/rateLimits';
 import { RecordingMailer } from '../mail/recordingMailer';
 import { createMemoryRepositories } from '../persistence/memory/memoryRepositories';
+import { RoomService } from '../rooms/roomService';
 import { AppDeps, buildApp } from './app';
 
 const ORIGIN = 'http://localhost:4200';
@@ -10,8 +11,10 @@ const SIGN_UP = { email: 'ann@example.com', password: 'secret-pass', displayName
 
 async function setup(overrides: Partial<AppDeps> = {}) {
   const mailer = new RecordingMailer();
-  const accounts = new AccountService({ repos: createMemoryRepositories(), mailer, publicOrigin: ORIGIN });
-  const app = await buildApp({ accounts, publicOrigin: ORIGIN, cookieSecure: false, ...overrides });
+  const repos = createMemoryRepositories();
+  const accounts = new AccountService({ repos, mailer, publicOrigin: ORIGIN });
+  const rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 } });
+  const app = await buildApp({ accounts, rooms, publicOrigin: ORIGIN, cookieSecure: false, ...overrides });
   return { app, mailer };
 }
 

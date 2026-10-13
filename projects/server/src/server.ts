@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { AccountService } from './auth/accounts';
 import { AuthRateLimits } from './auth/rateLimits';
+import { buildContentRegistry, kingdomWarMaxSeats } from 'content';
+import { MIN_SEATS } from 'protocol';
 import { ServerConfig } from './config';
 import { buildApp } from './http/app';
 import { ConsoleMailer } from './mail/mailer';
@@ -9,6 +11,7 @@ import { migrateToLatest } from './persistence/migrate';
 import { createDb } from './persistence/postgres/db';
 import { createPostgresRepositories } from './persistence/postgres/postgresRepositories';
 import { Repositories } from './persistence/repositories';
+import { ROOM_TICK_MS, RoomService } from './rooms/roomService';
 
 const HOUSEKEEPING_MS = 60 * 60_000;
 
@@ -18,14 +21,22 @@ export interface RunningServer {
 }
 
 // Everything the process runs, wired from config: the store (Postgres,
-// migrated on start, or in memory), accounts, the HTTP app and an hourly
-// clean-up of rate-limit windows, idle guests, and dead sessions and reset tokens.
+// migrated on start, or in memory), accounts, rooms (restored from the store),
+// the HTTP app, the room tick every 5 s, and an hourly clean-up of rate-limit
+// windows, idle guests, and dead sessions and reset tokens.
 export async function createServer(config: ServerConfig, options: { logger?: boolean } = {}): Promise<RunningServer> {
   const store = await openStore(config.databaseUrl);
   const accounts = new AccountService({ repos: store.repos, mailer: new ConsoleMailer(), publicOrigin: config.publicOrigin });
   const rateLimits = new AuthRateLimits();
+  const rooms = new RoomService({
+    repos: store.repos,
+    seatLimits: { min: MIN_SEATS, max: kingdomWarMaxSeats(buildContentRegistry()) },
+    logError: (err, message) => app.log.error(err, message),
+  });
+  await rooms.restore();
   const app = await buildApp({
     accounts,
+    rooms,
     publicOrigin: config.publicOrigin,
     cookieSecure: config.cookieSecure,
     trustProxy: config.trustProxy,
@@ -40,9 +51,13 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
   }, HOUSEKEEPING_MS);
   housekeeping.unref();
 
+  const roomTick = setInterval(() => void rooms.tick(), ROOM_TICK_MS);
+  roomTick.unref();
+
   return {
     app,
     close: async () => {
+      clearInterval(roomTick);
       clearInterval(housekeeping);
       await app.close();
       await store.close();

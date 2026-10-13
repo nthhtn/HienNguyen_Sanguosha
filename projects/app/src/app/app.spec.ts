@@ -31,6 +31,7 @@ describe('App', () => {
           { path: 'setup', children: [] },
           { path: 'game', children: [] },
           { path: 'play', children: [] },
+          { path: 'rooms', children: [] },
           { path: 'sign-in', children: [] },
           { path: 'sign-up', children: [] },
           { path: 'wiki/:page', children: [] },
@@ -78,14 +79,28 @@ describe('App', () => {
     expect(el.querySelector('button.nav-cards')!.classList).toContain('active');
   });
 
-  it('has three items in the bar: Play, Cards and Rules, each with an icon', async () => {
+  it('has four items in the bar: Play, Online, Cards and Rules, each with an icon', async () => {
     const { el } = await render();
     const items = [...el.querySelectorAll('nav.nav > a, nav.nav > button')];
     expect(items.map((i) => [i.querySelector('.label')!.textContent, i.querySelector('mat-icon')!.textContent])).toEqual([
       ['Play', 'play_arrow'],
+      ['Online', 'public'],
       ['Cards', 'swords'],
       ['Rules', 'menu_book'],
     ]);
+  });
+
+  it('links Online to /rooms, highlighted on the online screens', async () => {
+    const { el, fixture } = await render('/rooms');
+    const online = el.querySelector('a.nav-online') as HTMLAnchorElement;
+    expect(online.getAttribute('href')).toBe('/rooms');
+    expect(online.getAttribute('aria-label')).toBe('Online');
+    expect(online.classList).toContain('active');
+    expect(online.getAttribute('aria-current')).toBe('page');
+    expect(el.querySelector('a.nav-play')!.classList).not.toContain('active');
+    await TestBed.inject(Router).navigateByUrl('/setup');
+    fixture.detectChanges();
+    expect(online.classList).not.toContain('active');
   });
 
   it('has a Cards menu with four options and no icons', async () => {

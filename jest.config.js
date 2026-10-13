@@ -46,6 +46,9 @@ module.exports = {
       testEnvironment: 'node',
       rootDir: 'projects/protocol/src',
       testMatch: ['**/*.spec.ts'],
+      moduleNameMapper: {
+        '^engine$': '<rootDir>/../../engine/src/public-api.ts',
+      },
     },
     {
       displayName: 'server',
@@ -54,6 +57,8 @@ module.exports = {
       rootDir: 'projects/server/src',
       testMatch: ['**/*.spec.ts'],
       moduleNameMapper: {
+        '^engine$': '<rootDir>/../../engine/src/public-api.ts',
+        '^content$': '<rootDir>/../../content/src/public-api.ts',
         '^protocol$': '<rootDir>/../../protocol/src/public-api.ts',
         '^protocol/schemas$': '<rootDir>/../../protocol/src/schemas/index.ts',
       },

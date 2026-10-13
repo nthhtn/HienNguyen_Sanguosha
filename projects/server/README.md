@@ -1,6 +1,6 @@
 # Server
 
-The Node backend: Fastify HTTP API (and, from Stage 3, the WebSocket),
+The Node backend: Fastify HTTP API, the room WebSocket on `/api/ws`, and
 Postgres through Kysely. Design: `docs/superpowers/specs/2026-10-13-backend-multiplayer-design.md`.
 
 ## Run it locally
@@ -36,6 +36,18 @@ IP. Set `TRUST_PROXY` to say which `X-Forwarded-For` hops to believe:
 `true` is refused: trusting every hop takes the left-most `X-Forwarded-For`
 entry, which the client writes itself, so anyone could dodge the rate limits.
 
+## Rooms and the socket
+
+- Live rooms are held in memory by `RoomService`, and every change is written
+  through to Postgres. On start, lobbies are reloaded from the store with every
+  player away, so a restart (or `tsx watch` reloading) keeps them.
+- Each room processes its inputs one at a time (`rooms/serialQueue.ts`).
+- The socket authenticates with the session cookie and `Origin`, like the HTTP
+  API. A browser opens one socket per Lobby screen, and its first message is
+  `hello { protocolVersion, roomId }`.
+- In dev, `projects/app/proxy.conf.json` already proxies `/api` with
+  `ws: true`, so the socket works through `npm start`.
+
 ## Tests
 
 - `npx jest --selectProjects server` runs the unit and HTTP tests on the in-memory store.
@@ -56,3 +68,5 @@ tests move off CommonJS Jest.
 - `src/persistence/`: domain records and repository interfaces, the in-memory and Postgres stores, migrations.
 - `src/views/`: domain records to wire shapes.
 - `src/mail/`: the Mailer interface and the console implementation.
+- `src/rooms/`: `Room` (lobby rules), `RoomService` (live rooms, host rules, restore), the serial queue.
+- `src/socket/`: the WebSocket server and the end-to-end `TestClient`.

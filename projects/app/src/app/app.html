@@ -5,6 +5,9 @@
     <a mat-button class="nav-play" routerLink="/play" [class.active]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" aria-label="Play">
       <mat-icon>play_arrow</mat-icon><span class="label">Play</span>
     </a>
+    <a mat-button class="nav-online" routerLink="/rooms" [class.active]="onlineActive()" [attr.aria-current]="onlineActive() ? 'page' : null" aria-label="Online">
+      <mat-icon>public</mat-icon><span class="label">Online</span>
+    </a>
     <button mat-button type="button" class="nav-cards" [matMenuTriggerFor]="cardsMenu" [class.active]="cardsActive()" aria-label="Cards">
       <!-- "swords" only exists in Material Symbols, not the legacy Material Icons font. -->
       <mat-icon fontSet="material-symbols-outlined">swords</mat-icon><span class="label">Cards</span>
