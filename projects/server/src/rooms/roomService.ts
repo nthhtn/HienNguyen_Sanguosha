@@ -56,6 +56,15 @@ interface LiveRoom {
   connections: Map<string, MemberConnection>;
   // The running game, while the room is playing.
   runner: GameRunner | null;
+  // A game that ended but whose end could not be stored yet: the room stays
+  // playing until the tick stores it.
+  pendingEnd: PendingEnd | null;
+}
+
+interface PendingEnd {
+  game: GameRecord;
+  outcome: GameOutcome;
+  result: GameResult | null;
 }
 
 // The rules the engine reads. Unknown keys never get stored, and First Reveal
@@ -264,7 +273,10 @@ export class RoomService {
       entry.queue
         .run(async () => {
           if (this.live.get(entry.room.id) !== entry) return;
-          if (entry.room.record.status === 'playing') return entry.runner?.tick();
+          if (entry.room.record.status === 'playing') {
+            if (entry.pendingEnd && !entry.runner) return this.storeEnd(entry, entry.pendingEnd);
+            return entry.runner?.tick();
+          }
           if (entry.room.record.status !== 'lobby') return;
           const now = this.now();
           if (now - entry.room.lastActivityAt >= LOBBY_IDLE_MS) return this.closeRoom(entry, 'idle');
@@ -422,7 +434,21 @@ export class RoomService {
     if (!runner) return;
     runner.stop();
     entry.runner = null;
-    await this.closeGame(entry, runner.record, outcome, outcome === 'finished' ? runner.state.result : null);
+    await this.storeEnd(entry, { game: runner.record, outcome, result: outcome === 'finished' ? runner.state.result : null });
+  }
+
+  // Tries to store a game's end. On failure the end stays pending and the
+  // room tick retries it; nothing is rethrown, since the move that ended the
+  // game is already stored. Memory stays playing until the store succeeds.
+  private async storeEnd(entry: LiveRoom, end: PendingEnd): Promise<void> {
+    try {
+      entry.pendingEnd = null;
+      await this.closeGame(entry, end.game, end.outcome, end.result);
+    } catch (err) {
+      // Only a failure before the room left `playing` needs a retry.
+      if (entry.room.record.status === 'playing') entry.pendingEnd = end;
+      this.logError(err, `Room ${entry.room.id}: storing the game's end failed; retrying`);
+    }
   }
 
   // Stores how a game ended and returns its room to the lobby with the result
@@ -484,6 +510,9 @@ export class RoomService {
       await this.repos.transaction(async (tx) => {
         await tx.rooms.markLeft(actor.id, at);
         if (runner) await tx.games.update(runner.record.id, { status: 'aborted', finishedAt: at });
+        // A game whose end was not stored yet gets it stored now.
+        const end = entry.pendingEnd;
+        if (end) await tx.games.update(end.game.id, { status: end.outcome === 'finished' ? 'finished' : 'broken', result: end.result, finishedAt: at });
         await tx.rooms.update(room.id, { status: 'closed' }, at);
       });
       room.remove(actor.id);
@@ -518,6 +547,7 @@ export class RoomService {
   private dropRoom(entry: LiveRoom, reason: RoomLeftReason): void {
     entry.runner?.stop();
     entry.runner = null;
+    entry.pendingEnd = null;
     this.live.delete(entry.room.id);
     for (const playerId of [...entry.connections.keys()]) this.dropConnection(entry, playerId, reason);
   }
@@ -573,7 +603,7 @@ export class RoomService {
   }
 
   private track(room: Room): LiveRoom {
-    const entry: LiveRoom = { room, queue: new SerialQueue(), connections: new Map(), runner: null };
+    const entry: LiveRoom = { room, queue: new SerialQueue(), connections: new Map(), runner: null, pendingEnd: null };
     this.live.set(room.id, entry);
     return entry;
   }

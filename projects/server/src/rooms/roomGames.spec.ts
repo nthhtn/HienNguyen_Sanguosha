@@ -209,6 +209,40 @@ describe('RoomService games', () => {
     expect(back.connection.last('welcome')).toMatchObject({ game: null, you: { seatId: null } });
   }, 60_000);
 
+  it("retries storing the game's end on the room tick when the store fails", async () => {
+    const { rooms, repos, scheduler, logError, withBot, start } = await setup();
+    // The first transaction that marks a game finished fails.
+    const transaction = repos.transaction.bind(repos);
+    let failNext = true;
+    jest.spyOn(repos, 'transaction').mockImplementation((work) =>
+      transaction((tx) => {
+        const update = tx.games.update.bind(tx.games);
+        tx.games.update = async (gameId, changes) => {
+          if (failNext && changes.status === 'finished') {
+            failNext = false;
+            throw new Error('store down');
+          }
+          return update(gameId, changes);
+        };
+        return work(tx);
+      })
+    );
+    const { roomId, a } = await withBot();
+    await start(a, roomId);
+    const gameId = a.connection.game!.gameId;
+    await rooms.disconnect(roomId, a.playerId, a.connection);
+    await scheduler.runUntil(() => !failNext, 50_000);
+    expect(failNext).toBe(false);
+    expect(rooms.snapshot(a.user, roomId).status).toBe('playing');
+    expect(logError).toHaveBeenCalled();
+    expect(await repos.games.findById(gameId)).toMatchObject({ status: 'running' });
+    await rooms.tick();
+    const room = rooms.snapshot(a.user, roomId);
+    expect(room.status).toBe('lobby');
+    expect(room.lastGame).toMatchObject({ gameId, outcome: 'finished' });
+    expect(await repos.games.findById(gameId)).toMatchObject({ status: 'finished', result: room.lastGame!.result });
+  }, 60_000);
+
   it('gives a host who is away when the game ends 60 s before the role passes', async () => {
     const { rooms, scheduler, pair, start } = await setup({ botPolicy: failing });
     const { roomId, a, b } = await pair();
