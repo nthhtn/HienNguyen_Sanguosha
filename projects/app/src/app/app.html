@@ -24,6 +24,22 @@
     </mat-menu>
   </nav>
   <span class="spacer"></span>
+  @if (auth.loaded()) {
+    @if (auth.me(); as me) {
+      <button mat-button type="button" class="account" [matMenuTriggerFor]="accountMenu" aria-label="Account">
+        <mat-icon>account_circle</mat-icon><span class="label">{{ me.displayName }}</span>
+      </button>
+      <mat-menu #accountMenu="matMenu">
+        <div class="account-summary" mat-menu-item disabled>{{ me.kind === 'guest' ? 'Playing as a guest' : me.email }}</div>
+        @if (me.kind === 'guest') {
+          <a mat-menu-item class="create-account" routerLink="/sign-up">Create Account</a>
+        }
+        <button mat-menu-item type="button" class="sign-out" (click)="signOut()">Sign Out</button>
+      </mat-menu>
+    } @else {
+      <a mat-button class="sign-in" routerLink="/sign-in"><mat-icon>login</mat-icon><span class="label">Sign In</span></a>
+    }
+  }
   <button
     mat-icon-button
     type="button"

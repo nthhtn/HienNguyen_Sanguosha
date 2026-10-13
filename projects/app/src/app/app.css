@@ -51,3 +51,15 @@
     padding: 0 8px;
   }
 }
+
+.account,
+.sign-in {
+  --mat-button-text-label-text-color: var(--mat-sys-on-primary);
+  color: var(--mat-sys-on-primary);
+}
+@media (max-width: 599px) {
+  .account .label,
+  .sign-in .label {
+    display: none;
+  }
+}

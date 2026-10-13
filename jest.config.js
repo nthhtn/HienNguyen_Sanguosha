@@ -69,6 +69,7 @@ module.exports = {
         '^engine$': '<rootDir>/../engine/src/public-api.ts',
         '^content$': '<rootDir>/../content/src/public-api.ts',
         '^bots$': '<rootDir>/../bots/src/public-api.ts',
+        '^protocol$': '<rootDir>/../protocol/src/public-api.ts',
       },
     },
   ],
