@@ -26,6 +26,8 @@ class FakeHost implements RunnerHost {
   finishedCount = 0;
   broken: unknown = null;
   failPersist = false;
+  // An error publish throws, as the engine might while building the updates.
+  failPublish: Error | null = null;
   now = () => this.scheduler.now;
   schedule = (delayMs: number, work: () => Promise<void>) => this.scheduler.schedule(delayMs, work);
   async persist(actions: NewGameAction[]): Promise<void> {
@@ -33,6 +35,7 @@ class FakeHost implements RunnerHost {
     this.stored.push(...actions);
   }
   publish(logFrom: number): void {
+    if (this.failPublish) throw this.failPublish;
     this.published.push(logFrom);
   }
   seatsChanged(): void {
@@ -271,5 +274,35 @@ describe('GameRunner', () => {
     expect(runner.botControlled('p0')).toBe(true);
     await scheduler.advance(BOT_DELAY_MS);
     expect(host.stored[0]).toMatchObject({ seatId: 'seat-0', source: 'takeover' });
+  });
+
+  it('reports the game broken, not the move refused, when the engine fails after a human move is stored', async () => {
+    const { runner, host, scheduler, legal } = setup();
+    host.failPublish = new Error('engine bug');
+    await expect(runner.submit('p0', GAME_ID, 0, [legal()[0]])).resolves.toBeUndefined();
+    expect(host.stored).toHaveLength(1);
+    expect(runner.seq).toBe(1);
+    expect(host.broken).toEqual(new Error('engine bug'));
+    expect(scheduler.pending).toBe(0);
+  });
+
+  it('reports the game broken when the engine fails after a bot move is stored', async () => {
+    const { host, scheduler } = setup({ kinds: ['bot', 'human'], connected: ['p1'] });
+    host.failPublish = new Error('engine bug');
+    await scheduler.advance(BOT_DELAY_MS);
+    expect(host.stored).toHaveLength(1);
+    expect(host.broken).toEqual(new Error('engine bug'));
+    expect(scheduler.pending).toBe(0);
+  });
+
+  it('counts a timeout that could not be stored only once, when its retry is stored', async () => {
+    const { runner, host, scheduler } = setup({ connected: [] });
+    host.failPersist = true;
+    await scheduler.runUntil(() => host.errors.length > 0);
+    host.failPersist = false;
+    await scheduler.runUntil(() => host.stored.length > 0);
+    expect(host.stored).toEqual([expect.objectContaining({ seq: 1, seatId: 'seat-0', source: 'timeout' })]);
+    expect(runner.botControlled('p0')).toBe(false);
+    expect(host.seatsChangedCount).toBe(0);
   });
 });

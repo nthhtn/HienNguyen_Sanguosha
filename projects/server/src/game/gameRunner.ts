@@ -218,8 +218,12 @@ export class GameRunner {
   }
 
   // Stores a move, then applies it. A human move that can't be stored throws.
-  // A server move that can't be stored is logged and retried.
-  private async commit(seatId: string, source: ActionSource, actions: Action[], steps: GameState[]): Promise<boolean> {
+  // A server move that can't be stored is logged and retried. `stored` runs
+  // once the move is stored, before the next decision is scheduled. Returns
+  // whether the move was stored. An engine failure after that (setting the
+  // next timer, or building the updates) breaks the game: the move stands, so
+  // it is not thrown.
+  private async commit(seatId: string, source: ActionSource, actions: Action[], steps: GameState[], stored?: () => void): Promise<boolean> {
     const rows: NewGameAction[] = actions.map((action, i) => ({ seq: this.seq + 1 + i, seatId, source, action, stateHash: stateHash(steps[i]) }));
     try {
       await this.host.persist(rows);
@@ -232,14 +236,16 @@ export class GameRunner {
     const logFrom = this.state.log.length;
     this.state = steps[steps.length - 1];
     this.seq += rows.length;
-    if (this.state.result) {
-      this.stop();
+    try {
+      stored?.();
+      if (this.state.result) this.stop();
+      else this.reschedule();
       this.host.publish(logFrom);
-      await this.host.finished();
+    } catch (err) {
+      await this.breakDown(err);
       return true;
     }
-    this.reschedule();
-    this.host.publish(logFrom);
+    if (this.state.result) await this.host.finished();
     return true;
   }
 
@@ -313,12 +319,17 @@ export class GameRunner {
       return this.breakDown(err);
     }
     const playerId = this.record.seats.find((s) => s.seatId === seatId)?.roomPlayerId ?? null;
-    const inARow = playerId !== null && this.away.has(playerId) ? (this.timeouts.get(seatId) ?? 0) + 1 : 0;
-    this.timeouts.set(seatId, inARow);
-    const takeOver = !this.options.solo && inARow >= TAKEOVER_TIMEOUTS;
-    // Before the commit, so the seat's next decision already goes to the bot.
-    if (takeOver) this.controlled.add(seatId);
-    await this.commit(seatId, 'timeout', actions, steps);
+    let takeOver = false;
+    // Counted only once stored, so a retried timeout counts once. The seat
+    // goes to the bot before the next decision is scheduled, so that decision
+    // is already the bot's.
+    const stored = () => {
+      const inARow = playerId !== null && this.away.has(playerId) ? (this.timeouts.get(seatId) ?? 0) + 1 : 0;
+      this.timeouts.set(seatId, inARow);
+      takeOver = !this.options.solo && inARow >= TAKEOVER_TIMEOUTS;
+      if (takeOver) this.controlled.add(seatId);
+    };
+    await this.commit(seatId, 'timeout', actions, steps, stored);
     if (takeOver) this.host.seatsChanged();
   }
 
