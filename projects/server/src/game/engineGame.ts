@@ -36,8 +36,23 @@ export function openingState(ctx: EngineContext, seed: number, seats: readonly G
   return { ...created, players };
 }
 
+// The sha256 of the state's canonical JSON (see canonicalJson). A state
+// replayed from actions read back from Postgres jsonb, which keeps no key
+// order, hashes the same as the live state did.
 export function stateHash(state: GameState): string {
-  return createHash('sha256').update(JSON.stringify(state)).digest('hex');
+  return createHash('sha256').update(canonicalJson(state)).digest('hex');
+}
+
+// JSON with every object's keys sorted, recursively; arrays keep their order.
+// Keys whose value is undefined are left out, and undefined in an array is
+// null, as JSON.stringify does.
+export function canonicalJson(value: unknown): string {
+  return JSON.stringify(value, (_key, item: unknown) => {
+    if (item === null || typeof item !== 'object' || Array.isArray(item)) return item;
+    const sorted: Record<string, unknown> = {};
+    for (const key of Object.keys(item).sort()) sorted[key] = (item as Record<string, unknown>)[key];
+    return sorted;
+  });
 }
 
 // A player's move that the engine refuses or never offered. Nothing changed.

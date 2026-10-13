@@ -1,3 +1,8 @@
+import { ruleBasedPolicy } from 'bots';
+import type { BotTurnMemory } from 'bots';
+import { getActiveSeatId, getLegalActions, redactStateForSeat } from 'engine';
+import type { Action, EngineContext, GameState } from 'engine';
+import { applyActions } from './engineGame';
 import { Scheduler } from './scheduler';
 
 interface Task {
@@ -53,4 +58,36 @@ export class ManualScheduler implements Scheduler {
       await this.advance(Math.max(0, at - this.now));
     }
   }
+}
+
+// A copy of `value` with every object's keys in the order Postgres jsonb hands
+// them back: shorter keys first, then by bytes (not the order they were stored in).
+export function reorderKeys<T>(value: T): T {
+  if (Array.isArray(value)) return value.map((item) => reorderKeys(item)) as T;
+  if (value === null || typeof value !== 'object') return value;
+  const byteOrder = (a: string, b: string) => Buffer.compare(Buffer.from(a), Buffer.from(b));
+  const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.length - b.length || byteOrder(a, b));
+  return Object.fromEntries(entries.map(([key, item]) => [key, reorderKeys(item)])) as T;
+}
+
+export interface BotPlayedMove {
+  seatId: string;
+  action: Action;
+  after: GameState;
+}
+
+// Plays up to `count` moves from `state`, the rule-based bot choosing for
+// whoever must act; stops early when the game ends.
+export function playBots(ctx: EngineContext, state: GameState, count: number): { state: GameState; moves: BotPlayedMove[] } {
+  const memories = new Map<string, BotTurnMemory>();
+  const moves: BotPlayedMove[] = [];
+  let current = state;
+  for (let i = 0; i < count && !current.result; i += 1) {
+    const seatId = getActiveSeatId(current)!;
+    const decision = ruleBasedPolicy.decide(redactStateForSeat(current, seatId), seatId, getLegalActions(current, seatId, ctx.registry), ctx.registry, memories.get(seatId) ?? null);
+    memories.set(seatId, decision.memory);
+    current = applyActions(ctx, current, [decision.action]).at(-1)!;
+    moves.push({ seatId, action: decision.action, after: current });
+  }
+  return { state: current, moves };
 }

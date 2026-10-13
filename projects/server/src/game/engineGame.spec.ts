@@ -1,11 +1,10 @@
-import { ruleBasedPolicy } from 'bots';
-import type { BotTurnMemory } from 'bots';
 import { buildContentRegistry } from 'content';
-import { getActiveSeatId, getLegalActions, redactStateForSeat } from 'engine';
+import { getActiveSeatId, getLegalActions } from 'engine';
 import type { Action, GameState } from 'engine';
 import { GameActionRecord, GameRecord, GameSeat } from '../persistence/records';
 import { toGameUpdate, toSeatView } from '../views/game';
 import { applyActions, applyMove, drawSeats, engineContext, IllegalMoveError, openingState, replay, stateHash } from './engineGame';
+import { playBots, reorderKeys } from './testing';
 
 const registry = buildContentRegistry();
 const ctx = engineContext(registry);
@@ -16,19 +15,7 @@ const SEATS: GameSeat[] = [
 ];
 
 // Plays `count` moves, the rule-based bot choosing for whoever must act.
-function botMoves(state: GameState, count: number): { state: GameState; moves: { seatId: string; action: Action; after: GameState }[] } {
-  const memories = new Map<string, BotTurnMemory>();
-  const moves: { seatId: string; action: Action; after: GameState }[] = [];
-  let current = state;
-  for (let i = 0; i < count && !current.result; i += 1) {
-    const seatId = getActiveSeatId(current)!;
-    const decision = ruleBasedPolicy.decide(redactStateForSeat(current, seatId), seatId, getLegalActions(current, seatId, registry), registry, memories.get(seatId) ?? null);
-    memories.set(seatId, decision.memory);
-    current = applyActions(ctx, current, [decision.action]).at(-1)!;
-    moves.push({ seatId, action: decision.action, after: current });
-  }
-  return { state: current, moves };
-}
+const botMoves = (state: GameState, count: number) => playBots(ctx, state, count);
 
 const record = (): GameRecord => ({
   id: 'game-1',
@@ -71,6 +58,20 @@ describe('engineGame', () => {
       ]);
       expect(stateHash(openingState(ctx, SEED, SEATS, {}))).toBe(stateHash(state));
       expect(stateHash(state)).toMatch(/^[0-9a-f]{64}$/);
+    });
+  });
+
+  describe('stateHash', () => {
+    it('does not depend on the order of object keys, but does on array order and values', () => {
+      const { state } = botMoves(openingState(ctx, SEED, SEATS, {}), 40);
+      expect(stateHash(reorderKeys(state))).toBe(stateHash(state));
+      expect(stateHash({ ...state, players: [...state.players].reverse() })).not.toBe(stateHash(state));
+      expect(stateHash({ ...state, rng: { ...state.rng, extra: 1 } } as GameState)).not.toBe(stateHash(state));
+    });
+
+    it('skips keys whose value is undefined, as JSON does', () => {
+      const state = openingState(ctx, SEED, SEATS, {});
+      expect(stateHash({ ...state, extra: undefined } as GameState)).toBe(stateHash(state));
     });
   });
 
@@ -119,6 +120,16 @@ describe('engineGame', () => {
     it('rebuilds the same state from the stored actions, checking every hash', () => {
       const { state, moves } = botMoves(openingState(ctx, SEED, SEATS, {}), 30);
       expect(stateHash(replay(ctx, record(), stored(moves), true))).toBe(stateHash(state));
+    });
+
+    it('checks hashes of actions read back with their object keys in another order, as jsonb does', () => {
+      const seats4: GameSeat[] = ['Ann', 'Bo', 'Cy', 'Di'].map((name, i) => ({ seatId: `seat-${i}`, roomPlayerId: `p-${name}`, name, kind: 'bot' }));
+      for (const seed of [1, 2, 3, 4]) {
+        const { state, moves } = botMoves(openingState(ctx, seed, seats4, {}), 400);
+        const game = { ...record(), seed, seats: seats4 };
+        const readBack = stored(moves).map((row) => ({ ...row, action: reorderKeys(row.action) }));
+        expect(stateHash(replay(ctx, game, readBack, true))).toBe(stateHash(state));
+      }
     });
 
     it('throws on a hash that differs when checking, and trusts it when not', () => {

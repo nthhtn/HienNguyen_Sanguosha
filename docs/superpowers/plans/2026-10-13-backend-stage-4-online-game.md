@@ -60,7 +60,7 @@
     - or after 2 timeouts in a row while away (`TAKEOVER_TIMEOUTS`);
   - decision budgets: the engine's `DECISION_SECONDS`, through `describeDecision` and `switchClock`, with the clock key `String(seq)`.
 - **Seeds:** `randomInt(0, 2 ** 31)` from `node:crypto`. Seating uses `shuffle(members, createRng(seed ^ SEATING_SALT))` with `SEATING_SALT = 0x5eed5ea7`, over the members in join order.
-- **State hash:** sha256 (hex) of `JSON.stringify(state)` after each action.
+- **State hash:** sha256 (hex) of the state's canonical JSON (object keys sorted recursively, so jsonb's key order doesn't matter) after each action.
 - **User-facing text, verbatim:**
   - "This game hit an error and has stopped"
   - "This game can't continue after an update"
@@ -838,7 +838,7 @@ export interface GameActionRecord {
   seatId: string;
   source: ActionSource;
   action: Action;
-  // sha256 of JSON.stringify(state) after this action.
+  // sha256 of the state's canonical JSON (keys sorted) after this action.
   stateHash: string;
   createdAt: Date;
 }

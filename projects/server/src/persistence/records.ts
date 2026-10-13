@@ -91,7 +91,7 @@ export interface GameActionRecord {
   seatId: string;
   source: ActionSource;
   action: Action;
-  // sha256 of JSON.stringify(state) after this action.
+  // sha256 of the state's canonical JSON (keys sorted) after this action; see stateHash.
   stateHash: string;
   createdAt: Date;
 }
