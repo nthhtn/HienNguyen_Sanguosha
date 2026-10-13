@@ -65,7 +65,9 @@ In scope:
 
 Out of scope (v1):
 
-- room codes or passwords, share links
+- room codes or passwords, share links. When a room password is added later,
+  it is a convenience rather than a secret, so it is stored as plain text
+  (`rooms.join_code`), not hashed.
 - spectators
 - emotes and quick reactions
 - a replay viewer UI
@@ -166,8 +168,8 @@ room_players                     -- a member of a room: a person or a bot
 games                            -- one per Start Game
   id                 uuid PK
   room_id            uuid → rooms
-  seed               bigint      -- never sent to any client
-  seats              jsonb       -- [{ seatId, roomPlayerId, name, kind }] as drawn at start
+  seed               bigint      -- drives seating and all game randomness; secret while running
+  seats              jsonb       -- [{ seatId, roomPlayerId, name, kind }] derived from the seed at start
   rules              jsonb
   build_id           text        -- engine + content build the game started on
   status             text        -- 'running' | 'finished' | 'aborted' | 'broken'
@@ -230,6 +232,9 @@ Migrations use Kysely's migrator and live in `server/persistence/migrations`.
 - **Session cookie:** an opaque random 32-byte token, set as `HttpOnly`,
   `Secure` and `SameSite=Lax`, with path `/`. The database stores only its
   sha256. Each request slides `last_seen_at` and `expires_at`.
+- **What is hashed, and why:** user passwords (scrypt), session tokens and
+  password-reset tokens (sha256). Each of these lets its holder act as the
+  user, so a database leak must not reveal them. Nothing else is hashed.
 - **Sign out:** revokes the session.
 - **Forgot password:** `{ email }`. The response is always "If that email has
   an account, we sent a link". For a registered user, the server emails a
@@ -325,9 +330,13 @@ result shown. **Play Again** means the host presses Start Game again.
   - **Start Game:** allowed only when the member count equals `seat_count`,
     and that count is within the mode's limits.
 - **Start Game, step by step:**
-  1. Shuffle the members with `crypto.randomInt` and assign them `seat-0` to
-     `seat-n` in that order.
-  2. Generate the seed with `crypto.randomInt`.
+  1. Generate the game seed with `crypto.randomInt`. This one number drives
+     all of the game's randomness: seating, shuffles, deals and judgments.
+  2. Order the members by `joined_at`, shuffle them with the engine's seeded
+     RNG derived from the seed (`createRng(seed ^ SEATING_SALT)`, a stream
+     separate from the game's own), and assign them `seat-0` to `seat-n` in
+     that order. `games.seats` stores the result for display and history, and
+     restore recomputes it from the seed and checks that it matches.
   3. Call `createGame(kingdomWarMode, registry, seatIds, seed, rules)`, then
      apply each player's kind and name, as `GameService.startGame` does
      today.
