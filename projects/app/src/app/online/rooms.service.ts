@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import type { CreateRoomBody, JoinRoomBody, RoomCreated, RoomList } from 'protocol';
+import type { CreateRoomBody, JoinRoomBody, RoomCreated, RoomList, SoloRoomBody } from 'protocol';
 import { toApiError } from '../auth/auth.service';
 
 export const ROOM_LIST_POLL_MS = 5_000;
@@ -42,6 +42,15 @@ export class RoomsService {
   async create(body: CreateRoomBody): Promise<string> {
     try {
       return (await firstValueFrom(this.http.post<RoomCreated>('/api/rooms', body))).id;
+    } catch (err) {
+      throw toApiError(err);
+    }
+  }
+
+  // Play vs Bots: a solo room whose game starts at once.
+  async createSolo(body: SoloRoomBody): Promise<string> {
+    try {
+      return (await firstValueFrom(this.http.post<RoomCreated>('/api/rooms/solo', body))).id;
     } catch (err) {
       throw toApiError(err);
     }

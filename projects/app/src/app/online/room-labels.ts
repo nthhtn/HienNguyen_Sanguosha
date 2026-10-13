@@ -10,3 +10,8 @@ export function roomStatusLabel(room: RoomListItem): 'Waiting for Players' | 'Fu
 export function canJoin(room: RoomListItem): boolean {
   return room.status === 'lobby' && room.memberCount < room.capacity;
 }
+
+// The name column of the Rooms list: the host, or Play vs Bots for your solo room.
+export function roomTitle(room: RoomListItem): string {
+  return room.visibility === 'solo' ? 'Play vs Bots' : (room.hostName ?? 'Room');
+}

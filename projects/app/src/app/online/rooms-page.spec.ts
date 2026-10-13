@@ -7,6 +7,7 @@ import type { Me, RoomList } from 'protocol';
 import { AuthService } from '../auth/auth.service';
 import { CreateRoomDialog } from './create-room-dialog';
 import { JoinRoomDialog } from './join-room-dialog';
+import { PlayVsBotsDialog } from './play-vs-bots-dialog';
 import { OnlineNotice } from './online-notice';
 import { RoomsPage } from './rooms-page';
 import { RoomsService } from './rooms.service';
@@ -116,6 +117,28 @@ describe('RoomsPage', () => {
     await fixture.whenStable();
     expect(dialog.open).toHaveBeenCalledWith(CreateRoomDialog, expect.objectContaining({ data: { seatLimits: { min: 2, max: 8 }, displayName: 'Ann' } }));
     expect(router.url).toBe('/rooms/r-new');
+  });
+
+  it('opens Play vs Bots with the seat limits, and goes to the new room', async () => {
+    dialog.open.mockReturnValue({ afterClosed: () => of('r-solo') });
+    const { el, router } = await create();
+    const navigate = jest.spyOn(router, 'navigate').mockResolvedValue(true);
+    const button = el.querySelector('button.play-vs-bots') as HTMLButtonElement;
+    expect(button.textContent).toContain('Play vs Bots');
+    expect(button.disabled).toBe(false);
+    button.click();
+    expect(dialog.open).toHaveBeenCalledWith(PlayVsBotsDialog, expect.objectContaining({ data: { seatLimits: LIST.seatLimits, existingRoomId: null } }));
+    expect(navigate).toHaveBeenCalledWith(['/rooms', 'r-solo']);
+  });
+
+  it('lets a guest play vs bots, and names a running game against bots as such', async () => {
+    me.set(GUS);
+    list.set({ ...LIST, rooms: [{ id: 'r-solo', visibility: 'solo', hostName: null, memberCount: 3, capacity: 3, status: 'playing', youAreMember: true }, ...LIST.rooms] });
+    dialog.open.mockReturnValue({ afterClosed: () => of(undefined) });
+    const { el } = await create();
+    expect(row(el, 'Play vs Bots')).toBeTruthy();
+    (el.querySelector('button.play-vs-bots') as HTMLButtonElement).click();
+    expect(dialog.open).toHaveBeenCalledWith(PlayVsBotsDialog, expect.objectContaining({ data: { seatLimits: LIST.seatLimits, existingRoomId: 'r-solo' } }));
   });
 
   it('disables Create Room for a guest, and says why', async () => {
