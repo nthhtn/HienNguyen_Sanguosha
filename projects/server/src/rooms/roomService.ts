@@ -264,17 +264,24 @@ export class RoomService {
   private async leave(entry: LiveRoom, actor: RoomMember): Promise<void> {
     // Leaving a running game hands the seat to a bot: Stage 4.
     if (entry.room.record.status !== 'lobby') throw new RoomError('in_progress');
+    const { room } = entry;
     const now = this.now();
-    await this.repos.rooms.markLeft(actor.id, new Date(now));
-    entry.room.remove(actor.id);
+    const at = new Date(now);
+    // Decide from the room as it is, then persist it all at once, then change memory.
+    const lastHuman = room.humans().length === 1;
+    const wasHost = room.record.hostPlayerId === actor.id;
+    const successor = wasHost && !lastHuman ? room.successor(false) : null;
+    const closeReason: RoomLeftReason | null = lastHuman ? 'idle' : wasHost && !successor ? 'host_left' : null;
+    await this.repos.transaction(async (tx) => {
+      await tx.rooms.markLeft(actor.id, at);
+      if (closeReason) await tx.rooms.update(room.id, { status: 'closed' }, at);
+      else if (successor) await tx.rooms.update(room.id, { hostPlayerId: successor.id }, at);
+    });
+    room.remove(actor.id);
     // The socket layer acks, then closes the leaver's connection.
     entry.connections.delete(actor.id);
-    if (entry.room.humans().length === 0) return this.closeRoom(entry, 'idle');
-    if (entry.room.record.hostPlayerId === actor.id) {
-      const next = entry.room.successor(false);
-      if (!next) return this.closeRoom(entry, 'host_left');
-      await this.setHost(entry, next.id, now);
-    }
+    if (closeReason) return this.dropRoom(entry, closeReason);
+    if (successor) room.record = { ...room.record, hostPlayerId: successor.id, updatedAt: at };
     this.touched(entry, now);
   }
 
@@ -285,6 +292,11 @@ export class RoomService {
 
   private async closeRoom(entry: LiveRoom, reason: RoomLeftReason): Promise<void> {
     await this.repos.rooms.update(entry.room.id, { status: 'closed' }, new Date(this.now()));
+    this.dropRoom(entry, reason);
+  }
+
+  // The in-memory part of closing: forget the room, and tell and close every connection.
+  private dropRoom(entry: LiveRoom, reason: RoomLeftReason): void {
     this.live.delete(entry.room.id);
     for (const playerId of [...entry.connections.keys()]) this.dropConnection(entry, playerId, reason);
   }

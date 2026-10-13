@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { RoomSnapshot, ServerMessage } from 'protocol';
 import { createMemoryRepositories } from '../persistence/memory/memoryRepositories';
 import { UserRecord } from '../persistence/records';
+import type { Repositories } from '../persistence/repositories';
 import { HOST_AWAY_MS, LOBBY_IDLE_MS, MemberConnection, RoomService } from './roomService';
 
 const T0 = Date.parse('2026-10-13T12:00:00.000Z');
@@ -368,6 +369,44 @@ describe('RoomService', () => {
       expect(rooms.list(gus).rooms).toEqual([]);
       expect((await repos.rooms.listLive()).find((entry) => entry.room.id === id)).toBeUndefined();
       expect(thrown(() => rooms.snapshot(gus, id))).toEqual(code('not_found'));
+    });
+
+    it('changes nothing when the store fails while the host leaves', async () => {
+      const repos = createMemoryRepositories();
+      let failNext = false;
+      // Delegates to the real store; only `update` can be made to fail once.
+      const failing = (rooms: Repositories['rooms']): Repositories['rooms'] => ({
+        create: (input) => rooms.create(input),
+        addPlayer: (input) => rooms.addPlayer(input),
+        markLeft: (playerId, at) => rooms.markLeft(playerId, at),
+        listLive: () => rooms.listLive(),
+        update: async (roomId, changes, at) => {
+          if (failNext) {
+            failNext = false;
+            throw new Error('store down');
+          }
+          return rooms.update(roomId, changes, at);
+        },
+      });
+      const wrapped: Repositories = {
+        ...repos,
+        rooms: failing(repos.rooms),
+        transaction: (work) => repos.transaction((tx) => work({ ...tx, rooms: failing(tx.rooms) })),
+      };
+      const rooms = new RoomService({ repos: wrapped, seatLimits: LIMITS, now: () => T0 });
+      const ann = await repos.users.createRegistered({ email: 'ann@example.com', passwordHash: 'h', displayName: 'Ann', now: new Date(T0) });
+      const bo = await repos.users.createRegistered({ email: 'bo@example.com', passwordHash: 'h', displayName: 'Bo', now: new Date(T0) });
+      const id = await rooms.create(ann, { seatCount: 4, rules: {}, displayName: 'Ann' });
+      await rooms.join(bo, id, 'Bo');
+      const before = rooms.snapshot(ann, id);
+
+      failNext = true;
+      await expect(rooms.command(ann, id, before.hostPlayerId!, { type: 'room.leave' })).rejects.toThrow('store down');
+
+      expect(rooms.snapshot(ann, id)).toEqual(before);
+      const stored = (await repos.rooms.listLive()).find((entry) => entry.room.id === id);
+      expect(stored?.players.map((p) => p.displayName)).toEqual(['Ann', 'Bo']);
+      expect(stored?.room.hostPlayerId).toBe(before.hostPlayerId);
     });
 
     it('closes the room when the last human leaves', async () => {
