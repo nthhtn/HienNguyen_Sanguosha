@@ -89,3 +89,22 @@ mat-card-header {
 .member.away .name {
   color: var(--mat-sys-on-surface-variant);
 }
+.rules h3,
+.players h3 {
+  margin: 16px 0 8px;
+  font: var(--mat-sys-title-medium);
+}
+.field {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.label {
+  font: var(--mat-sys-title-small);
+}
+.rules-summary {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
