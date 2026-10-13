@@ -2546,6 +2546,7 @@ git add projects/server/src/rooms projects/server/src/views
 git commit -m "feat(server): RoomService with lobby commands, connections, host rules and restore
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
 
 ---
 
