@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { AddressInfo } from 'node:net';
+import { AddressInfo, connect as tcpConnect } from 'node:net';
 import { FastifyInstance } from 'fastify';
 import { PROTOCOL_VERSION } from 'protocol';
 import type { RoomSnapshot } from 'protocol';
@@ -62,7 +62,7 @@ async function setup(socket: SocketOptions = {}) {
     for (const client of clients) client.close();
     await app.close();
   };
-  return { app, url, signUp, createRoom, join, snapshot, settle, open, connect, twoInRoom, teardown };
+  return { app, accounts, url, signUp, createRoom, join, snapshot, settle, open, connect, twoInRoom, teardown };
 }
 
 describe('socket server', () => {
@@ -192,6 +192,30 @@ describe('socket server', () => {
     await silent.client.closed();
     await host.client.next('room.updated', (m) => m.room.members.find((member) => member.name === 'Bo')?.connected === false);
     expect(host.client.isOpen).toBe(true);
+  });
+
+  it('survives a client that resets the connection while its upgrade is being authenticated', async () => {
+    ctx = await setup();
+    const session = await ctx.signUp('Ann');
+    const authenticate = ctx.accounts.authenticate.bind(ctx.accounts);
+    jest.spyOn(ctx.accounts, 'authenticate').mockImplementation(async (token) => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return authenticate(token);
+    });
+    const port = Number(new URL(ctx.url).port);
+    const raw = tcpConnect(port, '127.0.0.1');
+    raw.on('error', () => undefined);
+    await new Promise((resolve) => raw.once('connect', resolve));
+    raw.write(
+      `GET /api/ws HTTP/1.1\r\nHost: 127.0.0.1:${port}\r\nOrigin: ${ORIGIN}\r\nCookie: sgs_session=${session}\r\n` +
+        'Connection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n'
+    );
+    await ctx.settle();
+    raw.resetAndDestroy();
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    const roomId = await ctx.createRoom(session);
+    const { client } = await ctx.connect(session, roomId);
+    expect(client.isOpen).toBe(true);
   });
 
   it('closes a socket that never says hello', async () => {

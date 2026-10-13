@@ -69,7 +69,13 @@ export function attachSocketServer(app: TypedApp, deps: SocketDeps): void {
   const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_PAYLOAD });
   const missedPongs = new Map<WebSocket, number>();
 
+  // Node removes its own socket 'error' listener for upgrades and ws adds one only
+  // inside handleUpgrade, so without this a reset during authentication or while
+  // refusing is an uncaught exception.
+  const onSocketError = (err: Error) => app.log.debug(err, 'Upgrade socket error');
+
   app.server.on('upgrade', (request: IncomingMessage, socket: Duplex, head: Buffer) => {
+    socket.on('error', onSocketError);
     upgrade(request, socket, head).catch((err: unknown) => {
       app.log.error(err, 'WebSocket upgrade failed');
       refuse(socket, 500, 'Internal Server Error');
@@ -82,6 +88,7 @@ export function attachSocketServer(app: TypedApp, deps: SocketDeps): void {
     const token = app.parseCookie(request.headers.cookie ?? '')[SESSION_COOKIE];
     const auth = token ? await deps.accounts.authenticate(token) : null;
     if (!auth) return refuse(socket, 401, 'Unauthorized');
+    socket.removeListener('error', onSocketError);
     wss.handleUpgrade(request, socket, head, (ws) => serve(ws, auth.user));
   }
 
@@ -134,7 +141,7 @@ export function attachSocketServer(app: TypedApp, deps: SocketDeps): void {
             state = { roomId: message.roomId, playerId };
             // The socket closed while the hello was handled: the close
             // handler saw no membership, so release it here.
-            if (ws.readyState !== WebSocket.OPEN) void deps.rooms.disconnect(message.roomId, playerId, connection);
+            if (ws.readyState !== WebSocket.OPEN) void deps.rooms.disconnect(message.roomId, playerId, connection).catch((err: unknown) => app.log.error(err, 'Disconnect failed'));
           },
           (err: unknown) => {
             failWith(err, reqId);
