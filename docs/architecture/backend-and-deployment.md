@@ -106,7 +106,7 @@ and secret choices. Two things need attention before it is a network boundary:
    card nor the draw-pile order can be read from ids. `projects/sim/src/leaks.ts`
    checks views, the log and reshuffles over simulated games.
 
-Both belong in a server-side mapping layer between the engine's types and the
+Items 1 and 2 belong in a server-side mapping layer between the engine's types and the
 wire contracts, which also gives a single place to version the contract.
 
 ### Processing a request

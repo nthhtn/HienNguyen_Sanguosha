@@ -63,6 +63,7 @@ export function findViewLeaks(state: GameState, view: object, viewerSeatId: stri
       const real = cards.get(v.instanceId);
       if (!real) return;
       if (v.definitionId !== HIDDEN) leaks.push(`${viewerSeatId}: ${path} shows hidden card ${v.instanceId} as ${v.definitionId}`);
+      if (v.rank !== 0) leaks.push(`${viewerSeatId}: ${path} shows hidden card ${v.instanceId}'s rank ${v.rank}`);
       if (v.instanceId.includes(real.definitionId)) leaks.push(`${viewerSeatId}: ${path} hidden card id ${v.instanceId} names its card ${real.definitionId}`);
     },
     'view'

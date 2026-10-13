@@ -59,6 +59,15 @@ describe('findViewLeaks', () => {
     expect(findViewLeaks(state, sentView(state, 'seat-0'), 'seat-0')).toEqual([expect.stringContaining('names its card duel')]);
   });
 
+  it('reports a card masked by name only, whose rank is still shown', () => {
+    const state = table();
+    const view = JSON.parse(JSON.stringify(sentView(state, 'seat-0'))) as GameState;
+    const hidden = view.zones.find((z) => z.id === 'seat-1:hand')!.cards[0];
+    expect(hidden.definitionId).toBe('hidden');
+    (hidden as { rank: number }).rank = 1;
+    expect(findViewLeaks(state, view, 'seat-0')).toEqual([expect.stringContaining("shows hidden card card-4's rank 1")]);
+  });
+
   it("reports another seat's face-down General named anywhere in the view", () => {
     const state = table();
     const leaky = { ...sentView(state, 'seat-0'), seats: state.seats };

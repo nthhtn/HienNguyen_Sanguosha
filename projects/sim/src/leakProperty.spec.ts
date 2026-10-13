@@ -23,7 +23,8 @@ describe('property: no seat learns hidden information over simulated Kingdom War
           prev = next;
         };
         record(initial);
-        runGame(initial, { registry, mode: kingdomWarMode }, seed * 7 + 1, 20000, 'rule-based', record);
+        const result = runGame(initial, { registry, mode: kingdomWarMode }, seed * 7 + 1, 20000, 'rule-based', record);
+        if (!result.finalState.result) failures.push(`${label}: did not finish within 20000 actions`);
       }
     }
     expect(failures).toEqual([]);
