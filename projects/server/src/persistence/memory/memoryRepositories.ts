@@ -1,15 +1,27 @@
 import { randomUUID } from 'node:crypto';
-import { ResetTokenRecord, SessionRecord, UserRecord } from '../records';
-import { EmailTakenError, Repositories, ResetTokenRepository, SessionRepository, UserRepository } from '../repositories';
+import { ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
+import {
+  EmailTakenError,
+  LiveRoomRecord,
+  NameTakenError,
+  Repositories,
+  ResetTokenRepository,
+  RoomChanges,
+  RoomRepository,
+  SessionRepository,
+  UserRepository,
+} from '../repositories';
 
 interface Store {
   users: Map<string, UserRecord>;
   sessions: Map<string, SessionRecord>;
   resetTokens: Map<string, ResetTokenRecord>;
+  rooms: Map<string, RoomRecord>;
+  roomPlayers: Map<string, RoomPlayerRecord>;
 }
 
 type Table = keyof Store;
-const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens'];
+const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers'];
 // Retries of a transaction whose records others changed under it, before giving up.
 const MAX_TRANSACTION_ATTEMPTS = 10;
 
@@ -17,7 +29,7 @@ const MAX_TRANSACTION_ATTEMPTS = 10;
 // and writes with no `await` between them, so concurrent calls can't interleave
 // (the uniqueness and single-use rules hold under Promise.all).
 export function createMemoryRepositories(): Repositories {
-  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map() });
+  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map() });
 }
 
 function repositoriesOver(store: Store): Repositories {
@@ -25,6 +37,7 @@ function repositoriesOver(store: Store): Repositories {
     users: new MemoryUsers(store),
     sessions: new MemorySessions(store),
     resetTokens: new MemoryResetTokens(store),
+    rooms: new MemoryRooms(store),
     transaction: (work) => transact(store, work),
   };
 }
@@ -62,12 +75,18 @@ function commit(store: Store, snapshot: Store, draft: Store): boolean {
   return true;
 }
 
-// Records are flat and their dates are replaced, never mutated, so copying each
-// record is a deep enough copy.
+// Records hold dates and, for rooms, a rules object. Dates are replaced, never
+// mutated, and so are rules objects, so copying each record is a deep enough copy.
 const cloneMap = <T extends object>(map: Map<string, T>) => new Map([...map].map(([key, record]) => [key, { ...record }]));
-const cloneStore = (store: Store): Store => ({ users: cloneMap(store.users), sessions: cloneMap(store.sessions), resetTokens: cloneMap(store.resetTokens) });
+const cloneStore = (store: Store): Store => ({
+  users: cloneMap(store.users),
+  sessions: cloneMap(store.sessions),
+  resetTokens: cloneMap(store.resetTokens),
+  rooms: cloneMap(store.rooms),
+  roomPlayers: cloneMap(store.roomPlayers),
+});
 
-// Records are flat: compare field by field, dates by time.
+// Compare field by field: dates by time, plain objects (rules) by their JSON.
 function sameRecord(a: object | undefined, b: object | undefined): boolean {
   if (!a || !b) return a === b;
   const left = a as Record<string, unknown>;
@@ -76,7 +95,9 @@ function sameRecord(a: object | undefined, b: object | undefined): boolean {
   return [...keys].every((key) => {
     const x = left[key];
     const y = right[key];
-    return x instanceof Date && y instanceof Date ? x.getTime() === y.getTime() : x === y;
+    if (x instanceof Date && y instanceof Date) return x.getTime() === y.getTime();
+    if (x !== null && y !== null && typeof x === 'object' && typeof y === 'object') return JSON.stringify(x) === JSON.stringify(y);
+    return x === y;
   });
 }
 
@@ -149,6 +170,7 @@ class MemoryUsers implements UserRepository {
       this.store.users.delete(user.id);
       for (const [id, session] of this.store.sessions) if (session.userId === user.id) this.store.sessions.delete(id);
       for (const [id, token] of this.store.resetTokens) if (token.userId === user.id) this.store.resetTokens.delete(id);
+      for (const player of this.store.roomPlayers.values()) if (player.userId === user.id) player.userId = null;
       deleted += 1;
     }
     return deleted;
@@ -246,5 +268,64 @@ class MemoryResetTokens implements ResetTokenRepository {
       deleted += 1;
     }
     return deleted;
+  }
+}
+
+const copyRoom = (room: RoomRecord): RoomRecord => ({ ...room, rules: { ...room.rules } });
+
+class MemoryRooms implements RoomRepository {
+  constructor(private readonly store: Store) {}
+
+  async create(input: { visibility: RoomRecord['visibility']; seatCount: number; rules: RoomRecord['rules']; now: Date }): Promise<RoomRecord> {
+    const room: RoomRecord = {
+      id: randomUUID(),
+      visibility: input.visibility,
+      status: 'lobby',
+      seatCount: input.seatCount,
+      rules: { ...input.rules },
+      hostPlayerId: null,
+      createdAt: input.now,
+      updatedAt: input.now,
+    };
+    this.store.rooms.set(room.id, room);
+    return copyRoom(room);
+  }
+
+  async update(roomId: string, changes: RoomChanges, now: Date): Promise<void> {
+    const room = this.store.rooms.get(roomId);
+    if (!room) return;
+    this.store.rooms.set(roomId, { ...room, ...changes, ...(changes.rules ? { rules: { ...changes.rules } } : {}), updatedAt: now });
+  }
+
+  async addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; now: Date }): Promise<RoomPlayerRecord> {
+    if (!this.store.rooms.has(input.roomId)) throw new Error(`No room ${input.roomId}`);
+    const current = [...this.store.roomPlayers.values()].filter((p) => p.roomId === input.roomId && p.leftAt === null);
+    const name = input.displayName.toLowerCase();
+    if (current.some((p) => p.displayName.toLowerCase() === name)) throw new NameTakenError();
+    if (input.userId !== null && current.some((p) => p.userId === input.userId)) throw new Error('That user is already a member of this room');
+    const player: RoomPlayerRecord = {
+      id: randomUUID(),
+      roomId: input.roomId,
+      userId: input.userId,
+      kind: input.kind,
+      displayName: input.displayName,
+      joinedAt: input.now,
+      leftAt: null,
+    };
+    this.store.roomPlayers.set(player.id, player);
+    return { ...player };
+  }
+
+  async markLeft(playerId: string, now: Date): Promise<void> {
+    const player = this.store.roomPlayers.get(playerId);
+    if (player && player.leftAt === null) player.leftAt = now;
+  }
+
+  async listLive(): Promise<LiveRoomRecord[]> {
+    // A stable sort keeps insertion order for members who joined at the same time.
+    const current = [...this.store.roomPlayers.values()].filter((p) => p.leftAt === null).sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime());
+    return [...this.store.rooms.values()]
+      .filter((room) => room.status !== 'closed')
+      .map((room) => ({ room: copyRoom(room), players: current.filter((p) => p.roomId === room.id).map((p) => ({ ...p })) }));
   }
 }

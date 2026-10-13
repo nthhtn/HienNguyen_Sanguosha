@@ -1,9 +1,16 @@
-import { ResetTokenRecord, SessionRecord, UserRecord } from './records';
+import { ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from './records';
 
 export class EmailTakenError extends Error {
   constructor() {
     super('A user with that email already exists');
     this.name = 'EmailTakenError';
+  }
+}
+
+export class NameTakenError extends Error {
+  constructor() {
+    super('A current member of the room already has that name');
+    this.name = 'NameTakenError';
   }
 }
 
@@ -41,10 +48,32 @@ export interface ResetTokenRepository {
   deleteExpired(cutoff: Date): Promise<number>;
 }
 
+export type RoomChanges = Partial<Pick<RoomRecord, 'status' | 'seatCount' | 'rules' | 'hostPlayerId'>>;
+
+export interface LiveRoomRecord {
+  room: RoomRecord;
+  // Current members (leftAt null), in join order.
+  players: RoomPlayerRecord[];
+}
+
+export interface RoomRepository {
+  // A new room in 'lobby' with no host yet.
+  create(input: { visibility: RoomRecord['visibility']; seatCount: number; rules: RoomRecord['rules']; now: Date }): Promise<RoomRecord>;
+  // Applies the changes and sets updatedAt.
+  update(roomId: string, changes: RoomChanges, now: Date): Promise<void>;
+  // Throws NameTakenError when a current member has the name (compared
+  // case-insensitively), and an Error when the user is already a current member.
+  addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; now: Date }): Promise<RoomPlayerRecord>;
+  markLeft(playerId: string, now: Date): Promise<void>;
+  // Every room that is not closed, with its current members.
+  listLive(): Promise<LiveRoomRecord[]>;
+}
+
 export interface Repositories {
   users: UserRepository;
   sessions: SessionRepository;
   resetTokens: ResetTokenRepository;
+  rooms: RoomRepository;
   // Runs `work` against repositories whose writes all commit together when it
   // resolves, or none of them when it throws (the error is rethrown). Not
   // nestable: don't call `transaction` on the repositories passed to `work`.

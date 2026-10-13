@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { EmailTakenError, RepositoryHarness } from './repositories';
+import { EmailTakenError, NameTakenError, RepositoryHarness } from './repositories';
 
 const NOW = new Date('2026-10-13T12:00:00.000Z');
 const minutes = (n: number) => new Date(NOW.getTime() + n * 60_000);
@@ -278,6 +278,114 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
 
       expect(await repos().sessions.findActiveByTokenHash(outsideHash, minutes(1))).not.toBeNull();
       expect((await repos().users.findById(user.id))?.passwordHash).toBe('new-hash');
+    });
+  });
+
+  describe('rooms', () => {
+    const newRoom = (rules = { firstRevealDraw: true }) => repos().rooms.create({ visibility: 'open', seatCount: 4, rules, now: NOW });
+    const addHuman = (roomId: string, userId: string, displayName: string, at = NOW) =>
+      repos().rooms.addPlayer({ roomId, userId, kind: 'human', displayName, now: at });
+    const addBot = (roomId: string, displayName: string, at = NOW) => repos().rooms.addPlayer({ roomId, userId: null, kind: 'bot', displayName, now: at });
+    const live = async (roomId: string) => (await repos().rooms.listLive()).find((entry) => entry.room.id === roomId);
+
+    it('creates a room in the lobby with no host yet', async () => {
+      const room = await newRoom();
+      expect(room).toEqual({
+        id: expect.any(String),
+        visibility: 'open',
+        status: 'lobby',
+        seatCount: 4,
+        rules: { firstRevealDraw: true },
+        hostPlayerId: null,
+        createdAt: NOW,
+        updatedAt: NOW,
+      });
+      expect((await live(room.id))?.room).toEqual(room);
+    });
+
+    it('adds members and lists them in join order, a bot with no user', async () => {
+      const room = await newRoom();
+      const ann = await registered();
+      const host = await addHuman(room.id, ann.id, 'Ann', minutes(1));
+      const bot = await addBot(room.id, 'Bot 1', minutes(2));
+      expect(host).toEqual({ id: expect.any(String), roomId: room.id, userId: ann.id, kind: 'human', displayName: 'Ann', joinedAt: minutes(1), leftAt: null });
+      expect(bot).toMatchObject({ userId: null, kind: 'bot', displayName: 'Bot 1' });
+      expect((await live(room.id))?.players).toEqual([host, bot]);
+    });
+
+    it('updates the status, seat count, rules and host, and the update time', async () => {
+      const room = await newRoom();
+      const host = await addHuman(room.id, (await registered()).id, 'Ann');
+      await repos().rooms.update(room.id, { hostPlayerId: host.id, seatCount: 6, rules: { firstRevealDraw: false } }, minutes(3));
+      expect((await live(room.id))?.room).toMatchObject({ hostPlayerId: host.id, seatCount: 6, rules: { firstRevealDraw: false }, status: 'lobby', updatedAt: minutes(3) });
+    });
+
+    it('refuses a name a current member has, in any case (Review Focus 2)', async () => {
+      const room = await newRoom();
+      await addHuman(room.id, (await registered()).id, 'Ann');
+      await addBot(room.id, 'Bot 1');
+      await expect(addHuman(room.id, (await registered()).id, 'ANN')).rejects.toBeInstanceOf(NameTakenError);
+      await expect(addHuman(room.id, (await registered()).id, 'bot 1')).rejects.toBeInstanceOf(NameTakenError);
+    });
+
+    it('allows the same name in another room', async () => {
+      const first = await newRoom();
+      const second = await newRoom();
+      await addHuman(first.id, (await registered()).id, 'Ann');
+      await expect(addHuman(second.id, (await registered()).id, 'Ann')).resolves.toMatchObject({ displayName: 'Ann' });
+    });
+
+    it('frees a name once its member has left, and drops them from the live list', async () => {
+      const room = await newRoom();
+      const user = await registered();
+      const ann = await addHuman(room.id, user.id, 'Ann');
+      await repos().rooms.markLeft(ann.id, minutes(1));
+      expect((await live(room.id))?.players).toEqual([]);
+      await expect(addHuman(room.id, user.id, 'Ann', minutes(2))).resolves.toMatchObject({ displayName: 'Ann', leftAt: null });
+    });
+
+    it('lets exactly one of two racing joins with the same name win', async () => {
+      const room = await newRoom();
+      const [a, b] = [await registered(), await registered()];
+      const results = await Promise.allSettled([addHuman(room.id, a.id, 'Cao Cao'), addHuman(room.id, b.id, 'cao cao')]);
+      expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+      expect((results.find((r) => r.status === 'rejected') as PromiseRejectedResult).reason).toBeInstanceOf(NameTakenError);
+    });
+
+    it('refuses a second current membership for one user', async () => {
+      const room = await newRoom();
+      const user = await registered();
+      await addHuman(room.id, user.id, 'Ann');
+      await expect(addHuman(room.id, user.id, 'Annie')).rejects.toThrow();
+    });
+
+    it('leaves closed rooms out of the live list', async () => {
+      const room = await newRoom();
+      await repos().rooms.update(room.id, { status: 'closed' }, minutes(1));
+      expect(await live(room.id)).toBeUndefined();
+    });
+
+    it("keeps a deleted guest's membership, with no user", async () => {
+      const longAgo = new Date('2025-12-01T00:00:00.000Z');
+      const room = await newRoom();
+      const guest = await repos().users.createGuest({ displayName: 'Zhou Yu', now: longAgo });
+      await addHuman(room.id, guest.id, 'Zhou Yu');
+      await repos().users.deleteIdleGuests(new Date('2026-01-01T00:00:00.000Z'));
+      expect((await live(room.id))?.players).toEqual([expect.objectContaining({ displayName: 'Zhou Yu', userId: null, kind: 'human' })]);
+    });
+
+    it('rolls back a room created in a failed transaction', async () => {
+      const failure = new Error('boom');
+      let roomId = '';
+      await expect(
+        repos().transaction(async (tx) => {
+          const room = await tx.rooms.create({ visibility: 'open', seatCount: 4, rules: {}, now: NOW });
+          roomId = room.id;
+          await tx.rooms.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: 'Bot 1', now: NOW });
+          throw failure;
+        })
+      ).rejects.toBe(failure);
+      expect(await live(roomId)).toBeUndefined();
     });
   });
 }
