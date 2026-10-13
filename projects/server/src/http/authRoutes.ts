@@ -67,6 +67,7 @@ export function registerAuthRoutes(app: TypedApp, deps: AuthRouteDeps): void {
   });
 
   app.post('/api/auth/reset-password', { schema: { body: ResetPasswordBodySchema } }, async (request, reply) => {
+    if (!limits.resetIp.hit(request.ip, now())) return tooMany(reply);
     return signedIn(request, reply, await accounts.resetPassword(request.body), 200);
   });
 

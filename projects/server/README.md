@@ -24,7 +24,7 @@ provider-backed one arrives with deployment.
 
 ## Behind a reverse proxy
 
-The per-IP rate limits (sign-up, guest, forgot password) need the real client
+The per-IP rate limits (sign-up, guest, forgot password, reset password) need the real client
 IP. Set `TRUST_PROXY` to say which `X-Forwarded-For` hops to believe:
 
 - unset, empty or `false`: trust none; the client IP is the socket peer.

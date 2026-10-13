@@ -215,6 +215,17 @@ describe('HTTP app', () => {
       expect((await guest('10.0.0.10')).statusCode).toBe(201);
     });
 
+    it('limits reset-password per IP before it hashes anything', async () => {
+      ({ app } = await setup({ rateLimits: new AuthRateLimits({ ...RATE_LIMITS, resetPerIp: { limit: 1, windowMs: 60_000 } }) }));
+      const attempt = () => post(app, '/api/auth/reset-password', { token: 'junk', password: 'brand-new-pass' });
+      const first = await attempt();
+      expect(first.statusCode).toBe(400);
+      expect(first.json().code).toBe('invalid_reset_token');
+      const second = await attempt();
+      expect(second.statusCode).toBe(429);
+      expect(second.json()).toEqual({ code: 'rate_limited', message: 'Too many attempts. Wait a few minutes and try again' });
+    });
+
     it('limits forgot-password per email', async () => {
       ({ app } = await setup({ rateLimits: new AuthRateLimits({ ...RATE_LIMITS, forgotPerEmail: { limit: 1, windowMs: 60_000 } }) }));
       expect((await post(app, '/api/auth/forgot-password', { email: 'a@example.com' })).statusCode).toBe(200);

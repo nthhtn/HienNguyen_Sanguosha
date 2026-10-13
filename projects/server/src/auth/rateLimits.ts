@@ -9,6 +9,8 @@ export interface RateLimitRules {
   signUpPerIp: RateLimit;
   forgotPerIp: RateLimit;
   forgotPerEmail: RateLimit;
+  // Guards the scrypt hash a reset costs.
+  resetPerIp: RateLimit;
 }
 
 export const RATE_LIMITS: RateLimitRules = {
@@ -17,6 +19,7 @@ export const RATE_LIMITS: RateLimitRules = {
   signUpPerIp: { limit: 10, windowMs: 60 * MINUTE },
   forgotPerIp: { limit: 10, windowMs: 60 * MINUTE },
   forgotPerEmail: { limit: 3, windowMs: 60 * MINUTE },
+  resetPerIp: { limit: 10, windowMs: 60 * MINUTE },
 };
 
 export class AuthRateLimits {
@@ -25,6 +28,7 @@ export class AuthRateLimits {
   readonly signUpIp: RateLimiter;
   readonly forgotIp: RateLimiter;
   readonly forgotEmail: RateLimiter;
+  readonly resetIp: RateLimiter;
 
   constructor(rules: RateLimitRules = RATE_LIMITS) {
     this.signInIp = new RateLimiter(rules.signInPerIp);
@@ -32,9 +36,10 @@ export class AuthRateLimits {
     this.signUpIp = new RateLimiter(rules.signUpPerIp);
     this.forgotIp = new RateLimiter(rules.forgotPerIp);
     this.forgotEmail = new RateLimiter(rules.forgotPerEmail);
+    this.resetIp = new RateLimiter(rules.resetPerIp);
   }
 
   prune(now: number): void {
-    for (const limiter of [this.signInIp, this.signInEmail, this.signUpIp, this.forgotIp, this.forgotEmail]) limiter.prune(now);
+    for (const limiter of [this.signInIp, this.signInEmail, this.signUpIp, this.forgotIp, this.forgotEmail, this.resetIp]) limiter.prune(now);
   }
 }
