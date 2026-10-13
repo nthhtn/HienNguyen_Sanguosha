@@ -14,7 +14,13 @@ npm start                # the Angular app; /api is proxied to the server
 
 Without `DATABASE_URL` the server runs on an in-memory store. Migrations run on start.
 
-Password reset emails are printed to the server log (`[mail] Password reset for …`) in development.
+Open the app at http://localhost:4200, not http://127.0.0.1:4200: the API only
+accepts requests whose `Origin` equals `PUBLIC_ORIGIN`, so from any other origin
+sign-in and sign-up answer 403.
+
+Password reset emails are printed to the server log (`[mail] Password reset for …`).
+The console Mailer is the only Mailer in this stage, in every environment; a
+provider-backed one arrives with deployment.
 
 ## Behind a reverse proxy
 
@@ -35,6 +41,13 @@ entry, which the client writes itself, so anyone could dodge the rate limits.
 - `npx jest --selectProjects server` runs the unit and HTTP tests on the in-memory store.
 - `npm run test:db` also runs the repository contract against Postgres. It needs `npm run db:up`, and each run creates and drops its own database.
 - `npm run typecheck:server` type-checks `protocol` and `server`.
+
+## Pinned dependencies
+
+`@fastify/cookie` is pinned to 11.0.2 and `light-my-request` is overridden to
+6.6.0 (root `package.json`), because newer versions load an ESM-only `cookie`
+package that Jest's CommonJS runtime can't load. Unpin both when the server
+tests move off CommonJS Jest.
 
 ## Layout
 
