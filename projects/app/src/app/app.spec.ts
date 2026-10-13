@@ -1,19 +1,38 @@
+import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import type { Me } from 'protocol';
 import { App } from './app';
+import { AuthService } from './auth/auth.service';
 import { MUSIC_PLAYER_FACTORY } from './music.service';
+
+const me = signal<Me | null>(null);
+const loaded = signal(true);
+const fakeAuth = {
+  me,
+  loaded,
+  isRegistered: computed(() => me()?.kind === 'registered'),
+  load: jest.fn(async () => me()),
+  signOut: jest.fn(async () => me.set(null)),
+};
 
 describe('App', () => {
   beforeEach(async () => {
+    me.set(null);
+    loaded.set(true);
+    fakeAuth.signOut.mockClear();
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
+        { provide: AuthService, useValue: fakeAuth },
         // jsdom can't play media; a silent stand-in player.
         { provide: MUSIC_PLAYER_FACTORY, useValue: () => ({ loop: false, volume: 1, play: () => Promise.resolve(), pause: () => undefined }) },
         provideRouter([
           { path: 'setup', children: [] },
           { path: 'game', children: [] },
           { path: 'play', children: [] },
+          { path: 'sign-in', children: [] },
+          { path: 'sign-up', children: [] },
           { path: 'wiki/:page', children: [] },
           { path: 'wiki/rules/:page', children: [] },
         ]),
@@ -133,5 +152,53 @@ describe('App', () => {
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play');
     expect(el.querySelector('button.nav-cards')!.getAttribute('aria-label')).toBe('Cards');
     expect(el.querySelector('button.nav-rules')!.getAttribute('aria-label')).toBe('Rules');
+  });
+
+  it('loads who is signed in on start', async () => {
+    fakeAuth.load.mockClear();
+    await render();
+    expect(fakeAuth.load).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows Sign In when nobody is signed in', async () => {
+    const { el } = await render();
+    expect(el.querySelector('a.sign-in')?.textContent).toContain('Sign In');
+    expect(el.querySelector('button.account')).toBeNull();
+  });
+
+  it('shows nothing for the account until the first answer arrives', async () => {
+    loaded.set(false);
+    const { el } = await render();
+    expect(el.querySelector('a.sign-in')).toBeNull();
+    expect(el.querySelector('button.account')).toBeNull();
+  });
+
+  it("shows the signed-in user's name, and Sign Out signs out and goes to Setup", async () => {
+    me.set({ id: 'u1', kind: 'registered', displayName: 'Ann', email: 'ann@example.com' });
+    const { fixture, el } = await render('/wiki/generals');
+    const account = el.querySelector('button.account') as HTMLButtonElement;
+    expect(account.textContent).toContain('Ann');
+    account.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const signOut = document.querySelector('.cdk-overlay-container button.sign-out') as HTMLButtonElement;
+    expect(signOut.textContent).toContain('Sign Out');
+    signOut.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fakeAuth.signOut).toHaveBeenCalled();
+    expect(TestBed.inject(Router).url).toBe('/setup');
+    expect(el.querySelector('a.sign-in')).not.toBeNull();
+  });
+
+  it('offers Create Account to a guest', async () => {
+    me.set({ id: 'u2', kind: 'guest', displayName: 'Guest' });
+    const { fixture, el } = await render();
+    (el.querySelector('button.account') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
+    expect(overlay.textContent).toContain('Playing as a guest');
+    expect(overlay.querySelector('a.create-account')?.textContent).toContain('Create Account');
   });
 });

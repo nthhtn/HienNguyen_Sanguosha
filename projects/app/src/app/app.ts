@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { AuthService } from './auth/auth.service';
 import { MusicService } from './music.service';
 
 @Component({
@@ -46,7 +47,20 @@ export class App {
 
   protected readonly music = inject(MusicService);
 
+  protected readonly auth = inject(AuthService);
+
   constructor() {
     this.music.start();
+    void this.auth.load();
+  }
+
+  protected async signOut(): Promise<void> {
+    try {
+      await this.auth.signOut();
+    } catch {
+      // Still signed in on the server; the menu keeps showing the account.
+      return;
+    }
+    await this.router.navigateByUrl('/setup');
   }
 }

@@ -1380,7 +1380,7 @@ services:
       POSTGRES_PASSWORD: sanguosha
       POSTGRES_DB: sanguosha
     ports:
-      - '5432:5432'
+      - '5433:5432' # host 5433: 5432 is often taken by another local Postgres
     volumes:
       - db-data:/var/lib/postgresql/data
 volumes:
@@ -1392,7 +1392,7 @@ Add these to `package.json` `scripts`:
 ```json
     "db:up": "docker compose up -d --wait db",
     "db:down": "docker compose down",
-    "test:db": "TEST_DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5432/postgres jest --selectProjects server"
+    "test:db": "TEST_DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5433/postgres jest --selectProjects server"
 ```
 
 Run: `npm run db:up`
@@ -2946,7 +2946,7 @@ In `package.json` `scripts`, add:
 ```
 # Copy to .env for `npm run server`. Without DATABASE_URL the server uses an
 # in-memory store (fine for UI work; nothing survives a restart).
-DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5432/sanguosha
+DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5433/sanguosha
 PUBLIC_ORIGIN=http://localhost:4200
 PORT=3000
 ```
@@ -3043,7 +3043,7 @@ Expected:
 - `HTTP/1.1 401 Unauthorized`
 - then `HTTP/1.1 201 Created`, plus a `set-cookie: sgs_session=…; …HttpOnly; SameSite=Lax` line.
 
-If Docker is running, repeat the smoke test with `DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5432/sanguosha`. Expect the same results, with migrations applied on start.
+If Docker is running, repeat the smoke test with `DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5433/sanguosha`. Expect the same results, with migrations applied on start.
 
 - [ ] **Step 5: Commit**
 

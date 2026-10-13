@@ -41,6 +41,24 @@ module.exports = {
       },
     },
     {
+      displayName: 'protocol',
+      preset: 'ts-jest',
+      testEnvironment: 'node',
+      rootDir: 'projects/protocol/src',
+      testMatch: ['**/*.spec.ts'],
+    },
+    {
+      displayName: 'server',
+      preset: 'ts-jest',
+      testEnvironment: 'node',
+      rootDir: 'projects/server/src',
+      testMatch: ['**/*.spec.ts'],
+      moduleNameMapper: {
+        '^protocol$': '<rootDir>/../../protocol/src/public-api.ts',
+        '^protocol/schemas$': '<rootDir>/../../protocol/src/schemas/index.ts',
+      },
+    },
+    {
       displayName: 'app',
       preset: 'jest-preset-angular',
       testEnvironment: 'jsdom',
@@ -51,6 +69,7 @@ module.exports = {
         '^engine$': '<rootDir>/../engine/src/public-api.ts',
         '^content$': '<rootDir>/../content/src/public-api.ts',
         '^bots$': '<rootDir>/../bots/src/public-api.ts',
+        '^protocol$': '<rootDir>/../protocol/src/public-api.ts',
       },
     },
   ],

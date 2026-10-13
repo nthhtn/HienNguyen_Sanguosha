@@ -3,12 +3,17 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "server": "tsx watch --tsconfig projects/server/tsconfig.json projects/server/src/main.ts",
     "start": "node --watch-path=angular.json --watch-path=tsconfig.json --watch-path=projects/app/tsconfig.app.json --watch-path=package.json --watch-preserve-output scripts/dev-server.mjs",
     "build": "npm run build:engine && npm run build:content",
     "build:engine": "ng build engine",
     "build:content": "ng build content",
     "watch": "ng build --watch --configuration development",
-    "test": "jest"
+    "test": "jest",
+    "db:up": "docker compose up -d --wait db",
+    "db:down": "docker compose down",
+    "test:db": "TEST_DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5433/postgres jest --selectProjects server",
+    "typecheck:server": "tsc -p projects/protocol/tsconfig.json --noEmit && tsc -p projects/server/tsconfig.json --noEmit"
   },
   "private": true,
   "packageManager": "npm@11.17.0",
@@ -21,6 +26,12 @@
     "@angular/material": "^22.2.0",
     "@angular/platform-browser": "^22.1.0",
     "@angular/router": "^22.1.0",
+    "@fastify/cookie": "11.0.2",
+    "@fastify/type-provider-typebox": "^5.2.0",
+    "@sinclair/typebox": "^0.34.52",
+    "fastify": "^5.12.6",
+    "kysely": "~0.28.17",
+    "pg": "^8.23.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -30,6 +41,7 @@
     "@angular/compiler-cli": "^22.1.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.4.1",
+    "@types/pg": "^8.23.1",
     "jest": "^30.5.1",
     "jest-environment-jsdom": "^30.5.1",
     "jest-preset-angular": "^17.0.0",
@@ -39,6 +51,10 @@
     "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.2"
+  },
+  "overrides": {
+    "light-my-request": "6.6.0"
   }
 }

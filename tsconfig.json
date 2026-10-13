@@ -6,7 +6,9 @@
     "paths": {
       "bots": ["./projects/bots/src/public-api.ts"],
       "content": ["./projects/content/src/public-api.ts"],
-      "engine": ["./projects/engine/src/public-api.ts"]
+      "engine": ["./projects/engine/src/public-api.ts"],
+      "protocol": ["./projects/protocol/src/public-api.ts"],
+      "protocol/schemas": ["./projects/protocol/src/schemas/index.ts"]
     },
     "strict": true,
     "noImplicitOverride": true,
