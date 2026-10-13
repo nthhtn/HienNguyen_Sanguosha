@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import type { RoomCreated } from 'protocol';
-import { CreateRoomBodySchema, JoinRoomBodySchema, RoomParamsSchema } from 'protocol/schemas';
+import { CreateRoomBodySchema, JoinRoomBodySchema, RoomParamsSchema, SoloRoomBodySchema } from 'protocol/schemas';
 import { RoomService } from '../rooms/roomService';
 import { errorBody } from './errors';
 import { TypedApp } from './types';
@@ -18,6 +18,11 @@ export function registerRoomRoutes(app: TypedApp, deps: { rooms: RoomService }):
 
   app.post('/api/rooms', { onRequest: signedIn, schema: { body: CreateRoomBodySchema } }, async (request, reply) => {
     const created: RoomCreated = { id: await rooms.create(request.auth!.user, request.body) };
+    return reply.code(201).send(created);
+  });
+
+  app.post('/api/rooms/solo', { onRequest: signedIn, schema: { body: SoloRoomBodySchema } }, async (request, reply) => {
+    const created: RoomCreated = { id: await rooms.createSolo(request.auth!.user, request.body) };
     return reply.code(201).send(created);
   });
 

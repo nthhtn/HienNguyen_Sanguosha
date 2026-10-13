@@ -9,11 +9,12 @@ import { AuthService } from '../auth/auth.service';
 import { CreateRoomDialog, CreateRoomDialogData } from './create-room-dialog';
 import { JoinRoomDialog, JoinRoomDialogData } from './join-room-dialog';
 import { OnlineNotice } from './online-notice';
-import { canJoin, roomStatusLabel } from './room-labels';
+import { PlayVsBotsDialog, PlayVsBotsDialogData } from './play-vs-bots-dialog';
+import { canJoin, roomStatusLabel, roomTitle } from './room-labels';
 import { RoomsService } from './rooms.service';
 
-// Open rooms to join, your own rooms pinned on top, and Create Room for
-// registered players. The list refreshes every 5 s while this screen is open.
+// Open rooms to join, your own rooms pinned on top, Create Room for
+// registered players, and Play vs Bots, which any signed-in player can start. The list refreshes every 5 s while this screen is open.
 @Component({
   selector: 'app-rooms-page',
   imports: [MatButtonModule, MatCardModule, MatIconModule],
@@ -30,6 +31,9 @@ import { RoomsService } from './rooms.service';
             @if (!auth.isRegistered()) {
               <span class="hint host-hint">Sign in to host a room</span>
             }
+            <button mat-stroked-button type="button" class="play-vs-bots" [disabled]="!rooms.list()" (click)="playVsBots()">
+              <mat-icon>smart_toy</mat-icon> Play vs Bots
+            </button>
           </div>
           @if (notice(); as text) {
             <p class="notice" role="status">{{ text }}</p>
@@ -45,7 +49,7 @@ import { RoomsService } from './rooms.service';
                 @for (room of list.rooms; track room.id) {
                   <li class="room" [class.mine]="room.youAreMember">
                     <mat-icon aria-hidden="true">{{ room.youAreMember ? 'push_pin' : 'meeting_room' }}</mat-icon>
-                    <span class="host-name">{{ room.hostName ?? 'Room' }}</span>
+                    <span class="host-name">{{ roomTitle(room) }}</span>
                     <span class="count">{{ room.memberCount }} / {{ room.capacity }}</span>
                     <span class="status">{{ statusLabel(room) }}</span>
                     @if (room.youAreMember) {
@@ -74,6 +78,7 @@ export class RoomsPage {
   protected readonly notice = signal(inject(OnlineNotice).take());
   protected readonly statusLabel = roomStatusLabel;
   protected readonly canJoin = canJoin;
+  protected readonly roomTitle = roomTitle;
 
   constructor() {
     this.rooms.startPolling();
@@ -86,6 +91,20 @@ export class RoomsPage {
     const data: CreateRoomDialogData = { seatLimits: list.seatLimits, displayName: this.auth.me()?.displayName ?? '' };
     this.dialog
       .open<CreateRoomDialog, CreateRoomDialogData, string>(CreateRoomDialog, { data, width: '440px' })
+      .afterClosed()
+      .subscribe((id) => {
+        if (id) void this.router.navigate(['/rooms', id]);
+      });
+  }
+
+  // Your running game against bots is offered first; otherwise a new one.
+  playVsBots(): void {
+    const list = this.rooms.list();
+    if (!list) return;
+    const running = list.rooms.find((room) => room.visibility === 'solo' && room.youAreMember && room.status === 'playing');
+    const data: PlayVsBotsDialogData = { seatLimits: list.seatLimits, existingRoomId: running?.id ?? null };
+    this.dialog
+      .open<PlayVsBotsDialog, PlayVsBotsDialogData, string>(PlayVsBotsDialog, { data, width: '440px' })
       .afterClosed()
       .subscribe((id) => {
         if (id) void this.router.navigate(['/rooms', id]);

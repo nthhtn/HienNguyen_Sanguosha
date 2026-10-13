@@ -127,4 +127,27 @@ describe('room routes', () => {
     expect((await get(app, `/api/rooms/${randomUUID()}`, bo)).statusCode).toBe(404);
     expect((await get(app, '/api/rooms/not-a-uuid', bo)).statusCode).toBe(400);
   });
+
+  it('creates a solo room for any signed-in user, guests included', async () => {
+    ({ app } = await setup());
+    const res = await post(app, '/api/rooms/solo', { seatCount: 3, rules: {} }, await guest(app, 'Gus'));
+    expect(res.statusCode).toBe(201);
+    expect(res.json()).toEqual({ id: expect.any(String) });
+  });
+
+  it('refuses a second running solo game with 409 solo_exists, and replaces it when asked', async () => {
+    ({ app } = await setup());
+    const ann = await signUp(app, 'Ann');
+    expect((await post(app, '/api/rooms/solo', { seatCount: 2, rules: {} }, ann)).statusCode).toBe(201);
+    const again = await post(app, '/api/rooms/solo', { seatCount: 2, rules: {} }, ann);
+    expect(again.statusCode).toBe(409);
+    expect(again.json()).toEqual({ code: 'solo_exists', message: 'You already have a game against bots in progress' });
+    expect((await post(app, '/api/rooms/solo', { seatCount: 2, rules: {}, replace: true }, ann)).statusCode).toBe(201);
+  });
+
+  it('needs a signed-in user and a valid body for a solo room', async () => {
+    ({ app } = await setup());
+    expect((await post(app, '/api/rooms/solo', { seatCount: 2, rules: {} })).statusCode).toBe(401);
+    expect((await post(app, '/api/rooms/solo', { seatCount: 2 }, await signUp(app, 'Ann'))).statusCode).toBe(400);
+  });
 });

@@ -48,6 +48,10 @@ entry, which the client writes itself, so anyone could dodge the rate limits.
 - In dev, `projects/app/proxy.conf.json` already proxies `/api` with
   `ws: true`, so the socket works through `npm start`.
 
+## Games
+
+A room's host starts a game with `lobby.start`. The server keeps each running game in a `GameRunner` (`src/game/`), stores every action in `game_actions` (with the sha256 of the state after it, as JSON with its keys sorted, so jsonb's key order doesn't matter), and restores running games on start: the same build replays the log as stored, another build checks every hash and stops a game whose hash differs. `POST /api/rooms/solo` starts Play vs Bots, which pauses while its player is away. `BUILD_ID` (default `dev`) tags each game with the build it started on.
+
 ## Tests
 
 - `npx jest --selectProjects server` runs the unit and HTTP tests on the in-memory store.

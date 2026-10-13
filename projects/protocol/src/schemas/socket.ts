@@ -1,5 +1,6 @@
 import { Type } from '@sinclair/typebox';
-import { REQ_ID_MAX } from '../limits';
+import { MAX_SUBMIT_ACTIONS, REQ_ID_MAX } from '../limits';
+import { ActionSchema } from './game';
 import { RoomIdSchema, RoomRulesSchema, SeatCountSchema } from './rooms';
 
 // Every client message is an object with a `type`, and may carry a `reqId`
@@ -15,4 +16,27 @@ export const SetRulesSchema = Type.Object({ type: Type.Literal('lobby.setRules')
 export const MakeHostSchema = Type.Object({ type: Type.Literal('lobby.makeHost'), reqId: ReqId, playerId: PlayerId }, strict);
 export const LeaveSchema = Type.Object({ type: Type.Literal('room.leave'), reqId: ReqId }, strict);
 
-export const ClientMessageSchema = Type.Union([HelloSchema, AddBotSchema, RemovePlayerSchema, SetRulesSchema, MakeHostSchema, LeaveSchema]);
+export const StartSchema = Type.Object({ type: Type.Literal('lobby.start'), reqId: ReqId }, strict);
+export const SubmitSchema = Type.Object(
+  {
+    type: Type.Literal('game.submit'),
+    reqId: ReqId,
+    gameId: RoomIdSchema,
+    baseSeq: Type.Integer({ minimum: 0 }),
+    actions: Type.Array(ActionSchema, { minItems: 1, maxItems: MAX_SUBMIT_ACTIONS }),
+  },
+  strict
+);
+export const ResyncSchema = Type.Object({ type: Type.Literal('game.resync'), reqId: ReqId }, strict);
+
+export const ClientMessageSchema = Type.Union([
+  HelloSchema,
+  AddBotSchema,
+  RemovePlayerSchema,
+  SetRulesSchema,
+  MakeHostSchema,
+  LeaveSchema,
+  StartSchema,
+  SubmitSchema,
+  ResyncSchema,
+]);

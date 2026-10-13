@@ -5,20 +5,22 @@ import { By } from '@angular/platform-browser';
 import { MatButtonToggle } from '@angular/material/button-toggle';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { RouterTestingHarness } from '@angular/router/testing';
-import type { RoomSnapshot } from 'protocol';
+import type { LastGame, RoomSnapshot } from 'protocol';
 import { LobbyPage } from './lobby-page';
 import { LobbyService } from './lobby.service';
+import { OnlineGame } from './online-game';
+import { RemoteGameService } from './remote-game.service';
 import { SocketStatus } from './socket.service';
-import { ROOM } from './testing';
+import { LAST_GAME, ROOM } from './testing';
 
 const MIXED: RoomSnapshot = {
   ...ROOM,
   seatCount: 5,
   members: [
-    { playerId: 'p-ann', name: 'Ann', kind: 'human', isRegistered: true, connected: true, botControlled: false },
-    { playerId: 'p-bo', name: 'Bo', kind: 'human', isRegistered: true, connected: false, botControlled: false },
-    { playerId: 'p-gus', name: 'Gus', kind: 'human', isRegistered: false, connected: true, botControlled: false },
-    { playerId: 'p-bot', name: 'Bot 1', kind: 'bot', isRegistered: false, connected: true, botControlled: false },
+    { playerId: 'p-ann', name: 'Ann', kind: 'human', seatId: null, isRegistered: true, connected: true, botControlled: false },
+    { playerId: 'p-bo', name: 'Bo', kind: 'human', seatId: null, isRegistered: true, connected: false, botControlled: false },
+    { playerId: 'p-gus', name: 'Gus', kind: 'human', seatId: null, isRegistered: false, connected: true, botControlled: false },
+    { playerId: 'p-bot', name: 'Bot 1', kind: 'bot', seatId: null, isRegistered: false, connected: true, botControlled: false },
   ],
 };
 
@@ -27,16 +29,20 @@ function fakeLobby() {
   const you = signal<string | null>('p-ann');
   const status = signal<SocketStatus>('open');
   const ended = signal<string | null>(null);
+  const isSolo = signal(false);
   return {
     room,
     you,
     status,
     ended,
+    isSolo,
     notice: signal<string | null>(null),
     error: signal<string | null>(null),
     waitingForHost: signal<string | null>(null),
     isHost: computed(() => room()?.hostPlayerId === you()),
     canAct: computed(() => status() === 'open' && ended() === null),
+    canStart: computed(() => room()?.status === 'lobby' && (room()?.hostPlayerId === you() || isSolo())),
+    start: jest.fn(async () => true),
     open: jest.fn(),
     addBot: jest.fn(async () => true),
     removePlayer: jest.fn(async () => true),
@@ -46,12 +52,18 @@ function fakeLobby() {
   };
 }
 
+function fakeGame() {
+  return { ending: signal<LastGame | null>(null), playing: signal(false), dismiss: jest.fn() };
+}
+
 describe('LobbyPage', () => {
   let lobby: ReturnType<typeof fakeLobby>;
+  let game: ReturnType<typeof fakeGame>;
 
   async function render() {
     TestBed.configureTestingModule({ providers: [provideRouter([{ path: 'rooms/:id', component: LobbyPage }, { path: 'rooms', children: [] }])] });
-    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }] } });
+    TestBed.overrideComponent(OnlineGame, { set: { imports: [], providers: [], template: '' } });
+    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }] } });
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(`/rooms/${ROOM.id}`, LobbyPage);
     const el = harness.routeNativeElement as HTMLElement;
@@ -62,6 +74,7 @@ describe('LobbyPage', () => {
 
   beforeEach(() => {
     lobby = fakeLobby();
+    game = fakeGame();
   });
 
   it('connects to the room in the URL', async () => {
@@ -178,5 +191,64 @@ describe('LobbyPage', () => {
     const { el } = await render();
     expect(el.querySelector('.notice')?.textContent?.trim()).toBe('Bo is now the host');
     expect(el.querySelector('.error')?.textContent?.trim()).toBe('Only the host can do that');
+  });
+  it('gives the host Start Game, held back with a hint until every seat is filled', async () => {
+    const { el, harness } = await render();
+    const start = () => el.querySelector('button.start') as HTMLButtonElement;
+    expect(start().textContent).toContain('Start Game');
+    expect(start().disabled).toBe(true);
+    expect(el.querySelector('.start-hint')?.textContent?.trim()).toBe('Fill every seat to start');
+    lobby.room.set({ ...MIXED, seatCount: 4 });
+    harness.detectChanges();
+    expect(start().disabled).toBe(false);
+    expect(el.querySelector('.start-hint')).toBeNull();
+    start().click();
+    expect(lobby.start).toHaveBeenCalled();
+  });
+
+  it("shows Start Game to a solo room's player, and to no other member", async () => {
+    lobby.you.set('p-bo');
+    const { el, harness } = await render();
+    expect(el.querySelector('button.start')).toBeNull();
+    lobby.isSolo.set(true);
+    harness.detectChanges();
+    expect(el.querySelector('button.start')).not.toBeNull();
+  });
+
+  it('shows the board instead of the lobby while the game runs', async () => {
+    game.playing.set(true);
+    const { el } = await render();
+    expect(el.querySelector('app-online-game')).not.toBeNull();
+    expect(el.querySelector('.member-list')).toBeNull();
+  });
+
+  it('says it is waiting for the game, with no lobby controls, while the room plays without a game to show', async () => {
+    lobby.room.set({ ...MIXED, status: 'playing' });
+    const { el } = await render();
+    expect(el.querySelector('.waiting-for-game')?.textContent?.trim()).toBe('Waiting for the game…');
+    expect(el.querySelector('.rules')).toBeNull();
+    expect(el.querySelector('.member-list')).toBeNull();
+    expect(el.querySelector('button.add-bot')).toBeNull();
+    expect(el.querySelector('button.start')).toBeNull();
+    expect(el.querySelector('button.leave')?.textContent).toContain('Leave Room');
+  });
+
+  it('shows how the last game ended, and Back to Lobby returns to the lobby', async () => {
+    game.ending.set(LAST_GAME);
+    const { el } = await render();
+    expect(el.querySelector('app-online-result .headline')?.textContent?.trim()).toBe('Ann wins!');
+    expect(el.querySelector('.member-list')).toBeNull();
+    (el.querySelector('button.back-to-lobby') as HTMLButtonElement).click();
+    expect(game.dismiss).toHaveBeenCalled();
+  });
+
+  it('offers Play Again and Back to Rooms after a solo game', async () => {
+    lobby.isSolo.set(true);
+    game.ending.set(LAST_GAME);
+    const { el } = await render();
+    (el.querySelector('button.play-again') as HTMLButtonElement).click();
+    expect(lobby.start).toHaveBeenCalled();
+    (el.querySelector('button.back-to-rooms') as HTMLButtonElement).click();
+    expect(lobby.leave).toHaveBeenCalled();
   });
 });

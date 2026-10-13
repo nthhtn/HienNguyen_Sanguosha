@@ -1,6 +1,6 @@
 import { Selectable } from 'kysely';
-import { ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
-import { PasswordResetTokensTable, RoomPlayersTable, RoomsTable, SessionsTable, UsersTable } from './schema';
+import { GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
+import { GameActionsTable, GamesTable, PasswordResetTokensTable, RoomPlayersTable, RoomsTable, SessionsTable, UsersTable } from './schema';
 
 export function toUserRecord(row: Selectable<UsersTable>): UserRecord {
   return {
@@ -61,5 +61,33 @@ export function toRoomPlayerRecord(row: Selectable<RoomPlayersTable>): RoomPlaye
     displayName: row.display_name,
     joinedAt: row.joined_at,
     leftAt: row.left_at,
+  };
+}
+
+export function toGameRecord(row: Selectable<GamesTable>): GameRecord {
+  return {
+    id: row.id,
+    roomId: row.room_id,
+    seed: Number(row.seed),
+    seats: row.seats,
+    rules: row.rules,
+    buildId: row.build_id,
+    status: row.status,
+    result: row.result,
+    actionCount: row.action_count,
+    startedAt: row.started_at,
+    finishedAt: row.finished_at,
+  };
+}
+
+export function toGameActionRecord(row: Selectable<GameActionsTable>): GameActionRecord {
+  return {
+    gameId: row.game_id,
+    seq: row.seq,
+    seatId: row.seat_id,
+    source: row.source,
+    action: row.action,
+    stateHash: row.state_hash,
+    createdAt: row.created_at,
   };
 }

@@ -72,4 +72,13 @@ describe('RoomsService', () => {
     expect(err).toBeInstanceOf(ApiError);
     expect(err).toMatchObject({ code: 'name_taken', message: 'That name is already taken in this room. Choose another.' });
   });
+
+  it('creates a solo room and returns its id, or throws the API error', async () => {
+    const created = rooms.createSolo({ seatCount: 3, rules: {} });
+    const req = http.expectOne('/api/rooms/solo');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ seatCount: 3, rules: {} });
+    req.flush({ id: 'r-solo' });
+    await expect(created).resolves.toBe('r-solo');
+  });
 });

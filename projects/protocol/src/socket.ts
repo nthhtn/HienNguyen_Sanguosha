@@ -1,4 +1,5 @@
 import type { Static } from '@sinclair/typebox';
+import type { GameUpdate } from './game';
 import type { ErrorCode } from './errors';
 import type { RoomSnapshot } from './rooms';
 import type { ClientMessageSchema } from './schemas/socket';
@@ -17,13 +18,19 @@ export interface WelcomeMessage {
   type: 'welcome';
   you: { playerId: string; seatId: string | null };
   room: RoomSnapshot;
-  // The running game: always null until online games arrive (Stage 4).
-  game: null;
+  // The running game with its full log (logFrom 0), or null.
+  game: GameUpdate | null;
 }
 
 export interface RoomUpdatedMessage {
   type: 'room.updated';
   room: RoomSnapshot;
+}
+
+// The game moved on (or the client asked for game.resync).
+export interface GameUpdateMessage {
+  type: 'game.update';
+  game: GameUpdate;
 }
 
 export type RoomLeftReason = 'left' | 'removed' | 'host_left' | 'idle';
@@ -51,7 +58,7 @@ export interface ErrorMessage {
   message: string;
 }
 
-export type ServerMessage = WelcomeMessage | RoomUpdatedMessage | RoomLeftMessage | ReplacedMessage | AckMessage | ErrorMessage;
+export type ServerMessage = WelcomeMessage | RoomUpdatedMessage | GameUpdateMessage | RoomLeftMessage | ReplacedMessage | AckMessage | ErrorMessage;
 
 export const ROOM_LEFT_MESSAGES: Record<RoomLeftReason, string> = {
   left: 'You left the room',

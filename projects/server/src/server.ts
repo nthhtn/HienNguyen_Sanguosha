@@ -21,16 +21,21 @@ export interface RunningServer {
 }
 
 // Everything the process runs, wired from config: the store (Postgres,
-// migrated on start, or in memory), accounts, rooms (restored from the store),
-// the HTTP app, the room tick every 5 s, and an hourly clean-up of rate-limit
-// windows, idle guests, and dead sessions and reset tokens.
+// migrated on start, or in memory), accounts, rooms (restored from the store,
+// running games included, rebuilt from their stored actions), the HTTP app,
+// the room tick every 5 s, and an hourly clean-up of rate-limit windows, idle
+// guests, and dead sessions and reset tokens. Closing stops the game timers
+// first, then the HTTP app and the store.
 export async function createServer(config: ServerConfig, options: { logger?: boolean } = {}): Promise<RunningServer> {
   const store = await openStore(config.databaseUrl);
   const accounts = new AccountService({ repos: store.repos, mailer: new ConsoleMailer(), publicOrigin: config.publicOrigin });
   const rateLimits = new AuthRateLimits();
+  const registry = buildContentRegistry();
   const rooms = new RoomService({
     repos: store.repos,
-    seatLimits: { min: MIN_SEATS, max: kingdomWarMaxSeats(buildContentRegistry()) },
+    seatLimits: { min: MIN_SEATS, max: kingdomWarMaxSeats(registry) },
+    registry,
+    buildId: config.buildId,
     logError: (err, message) => app.log.error(err, message),
   });
   await rooms.restore();
@@ -59,6 +64,7 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
     close: async () => {
       clearInterval(roomTick);
       clearInterval(housekeeping);
+      await rooms.stop();
       await app.close();
       await store.close();
     },

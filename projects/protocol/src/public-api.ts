@@ -6,4 +6,5 @@ export * from './names';
 export * from './errors';
 export * from './auth';
 export * from './rooms';
+export * from './game';
 export * from './socket';

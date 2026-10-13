@@ -4,7 +4,7 @@ import type { RoomSnapshot } from 'protocol';
 import { LobbyService, NOTICE_MS } from './lobby.service';
 import { OnlineNotice } from './online-notice';
 import { SocketService, WEB_SOCKET_FACTORY } from './socket.service';
-import { FakeSocket, ROOM, welcome } from './testing';
+import { FakeSocket, PLAYING, ROOM, welcome } from './testing';
 
 describe('LobbyService', () => {
   let socket: FakeSocket;
@@ -137,5 +137,46 @@ describe('LobbyService', () => {
     await flush();
     expect(notices.take()).toBe('That request was not understood');
     expect(navigate).toHaveBeenCalledWith('/rooms');
+  });
+  it('lets the host start the game, and a solo room its player', async () => {
+    socket.serverSends(welcome(ROOM, 'p-ann'));
+    expect(lobby.canStart()).toBe(true);
+    void lobby.start();
+    expect(socket.lastSent).toMatchObject({ type: 'lobby.start' });
+    socket.serverSends(welcome(ROOM, 'p-bo'));
+    expect(lobby.canStart()).toBe(false);
+    socket.serverSends(welcome({ ...ROOM, visibility: 'solo', hostPlayerId: null }, 'p-bo'));
+    expect(lobby.isSolo()).toBe(true);
+    expect(lobby.canStart()).toBe(true);
+    socket.serverSends({ type: 'room.updated', room: { ...PLAYING, visibility: 'solo', hostPlayerId: null } });
+    expect(lobby.canStart()).toBe(false);
+  });
+
+  it('announces a player who takes their seat back from a bot', () => {
+    const takenOver = { ...PLAYING, members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, botControlled: true } : m)) };
+    socket.serverSends(welcome(takenOver, 'p-ann'));
+    expect(lobby.notice()).toBeNull();
+    socket.serverSends({ type: 'room.updated', room: PLAYING });
+    expect(lobby.notice()).toBe('Bo is back');
+  });
+
+  it('does not announce a player who is still away when the game ends', () => {
+    const away = (room: RoomSnapshot, botControlled: boolean): RoomSnapshot => ({
+      ...room,
+      members: room.members.map((m) => (m.playerId === 'p-bo' ? { ...m, connected: false, botControlled } : m)),
+    });
+    socket.serverSends(welcome(away(PLAYING, true), 'p-ann'));
+    socket.serverSends({ type: 'room.updated', room: away(ROOM, false) });
+    expect(lobby.notice()).toBeNull();
+  });
+
+  it('does not announce a player whose seat a bot gives back while they are still away', () => {
+    const away = (botControlled: boolean): RoomSnapshot => ({
+      ...PLAYING,
+      members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, connected: false, botControlled } : m)),
+    });
+    socket.serverSends(welcome(away(true), 'p-ann'));
+    socket.serverSends({ type: 'room.updated', room: away(false) });
+    expect(lobby.notice()).toBeNull();
   });
 });

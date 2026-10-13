@@ -108,3 +108,8 @@ mat-card-header {
   margin: 0;
   color: var(--mat-sys-on-surface-variant);
 }
+
+/* The notices above the online board. */
+.game-banners:empty {
+  display: none;
+}

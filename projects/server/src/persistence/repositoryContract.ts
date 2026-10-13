@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { EmailTakenError, NameTakenError, RepositoryHarness } from './repositories';
+import type { ActionSource } from 'protocol';
+import { GameSeat } from './records';
+import { EmailTakenError, NameTakenError, NewGameAction, RepositoryHarness, StaleGameError } from './repositories';
 
 const NOW = new Date('2026-10-13T12:00:00.000Z');
 const minutes = (n: number) => new Date(NOW.getTime() + n * 60_000);
@@ -386,6 +388,104 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
         })
       ).rejects.toBe(failure);
       expect(await live(roomId)).toBeUndefined();
+    });
+  });
+
+  describe('games', () => {
+    const SEATS: GameSeat[] = [
+      { seatId: 'seat-0', roomPlayerId: randomUUID(), name: 'Ann', kind: 'human' },
+      { seatId: 'seat-1', roomPlayerId: randomUUID(), name: 'Bot 1', kind: 'bot' },
+    ];
+    const newRoom = () => repos().rooms.create({ visibility: 'open', seatCount: 2, rules: {}, now: NOW });
+    const newGame = async (roomId?: string) =>
+      repos().games.create({ roomId: roomId ?? (await newRoom()).id, seed: 2 ** 31 - 1, seats: SEATS, rules: { firstRevealDraw: true }, buildId: 'build-1', now: NOW });
+    const row = (seq: number, source: ActionSource = 'human'): NewGameAction => ({
+      seq,
+      seatId: 'seat-0',
+      source,
+      action: { kind: 'EndPhaseAction', seatId: 'seat-0' },
+      stateHash: `hash-${seq}`,
+    });
+    const append = (gameId: string, afterSeq: number, rows: NewGameAction[], at = NOW) =>
+      repos().transaction((tx) => tx.games.appendActions(gameId, afterSeq, rows, at));
+
+    it('creates a running game with no actions, and finds and lists it', async () => {
+      const game = await newGame();
+      expect(game).toEqual({
+        id: expect.any(String),
+        roomId: expect.any(String),
+        seed: 2 ** 31 - 1,
+        seats: SEATS,
+        rules: { firstRevealDraw: true },
+        buildId: 'build-1',
+        status: 'running',
+        result: null,
+        actionCount: 0,
+        startedAt: NOW,
+        finishedAt: null,
+      });
+      expect(await repos().games.findById(game.id)).toEqual(game);
+      expect((await repos().games.listRunning()).map((g) => g.id)).toContain(game.id);
+      expect(await repos().games.listActions(game.id)).toEqual([]);
+    });
+
+    it('refuses a second running game in one room', async () => {
+      const game = await newGame();
+      await expect(newGame(game.roomId)).rejects.toThrow();
+    });
+
+    it('lets a room start a new game once its last one has ended', async () => {
+      const game = await newGame();
+      await repos().games.update(game.id, { status: 'aborted', finishedAt: minutes(1) });
+      await expect(newGame(game.roomId)).resolves.toMatchObject({ status: 'running' });
+    });
+
+    it('appends actions in order, stamps them, and counts them', async () => {
+      const game = await newGame();
+      await append(game.id, 0, [row(1), row(2, 'bot')], minutes(1));
+      await append(game.id, 2, [row(3, 'timeout')], minutes(2));
+      expect(await repos().games.listActions(game.id)).toEqual([
+        { gameId: game.id, seq: 1, seatId: 'seat-0', source: 'human', action: { kind: 'EndPhaseAction', seatId: 'seat-0' }, stateHash: 'hash-1', createdAt: minutes(1) },
+        expect.objectContaining({ seq: 2, source: 'bot', createdAt: minutes(1) }),
+        expect.objectContaining({ seq: 3, source: 'timeout', createdAt: minutes(2) }),
+      ]);
+      expect((await repos().games.findById(game.id))?.actionCount).toBe(3);
+    });
+
+    it('refuses actions after a stale count, and stores none of them (Review Focus 2)', async () => {
+      const game = await newGame();
+      await append(game.id, 0, [row(1)]);
+      await expect(append(game.id, 0, [row(1), row(2)])).rejects.toBeInstanceOf(StaleGameError);
+      expect((await repos().games.listActions(game.id)).map((a) => a.seq)).toEqual([1]);
+      expect((await repos().games.findById(game.id))?.actionCount).toBe(1);
+    });
+
+    it('lets exactly one of two racing appends at the same count win', async () => {
+      const game = await newGame();
+      const results = await Promise.allSettled([append(game.id, 0, [row(1)]), append(game.id, 0, [row(1, 'bot')])]);
+      expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+      expect(await repos().games.listActions(game.id)).toHaveLength(1);
+    });
+
+    it('finishes a game with its result, and drops it from the running list', async () => {
+      const game = await newGame();
+      const result = { endedAt: 12, winningKingdom: 'Wei' as const, winningSeatIds: ['seat-0'], losingSeatIds: ['seat-1'] };
+      await repos().games.update(game.id, { status: 'finished', result, finishedAt: minutes(5) });
+      expect(await repos().games.findById(game.id)).toMatchObject({ status: 'finished', result, finishedAt: minutes(5), actionCount: 0 });
+      expect((await repos().games.listRunning()).map((g) => g.id)).not.toContain(game.id);
+    });
+
+    it('rolls back appended actions in a failed transaction', async () => {
+      const game = await newGame();
+      const failure = new Error('boom');
+      await expect(
+        repos().transaction(async (tx) => {
+          await tx.games.appendActions(game.id, 0, [row(1)], NOW);
+          throw failure;
+        })
+      ).rejects.toBe(failure);
+      expect(await repos().games.listActions(game.id)).toEqual([]);
+      expect((await repos().games.findById(game.id))?.actionCount).toBe(0);
     });
   });
 }

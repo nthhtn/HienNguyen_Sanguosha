@@ -1,4 +1,8 @@
 import { WebSocket } from 'ws';
+import { ruleBasedPolicy } from 'bots';
+import type { BotTurnMemory } from 'bots';
+import type { ContentRegistry, EngineEvent, GameState } from 'engine';
+import type { GameUpdate } from 'protocol';
 import type { ServerMessage } from 'protocol';
 
 type MessageOf<T extends ServerMessage['type']> = Extract<ServerMessage, { type: T }>;
@@ -9,11 +13,14 @@ export class TestClient {
   readonly received: ServerMessage[] = [];
   private readonly handedOut = new Set<number>();
   private listeners: (() => void)[] = [];
+  private readonly messageListeners: ((message: ServerMessage) => void)[] = [];
   private closeCode: number | null = null;
 
   private constructor(private readonly ws: WebSocket) {
     ws.on('message', (data) => {
-      this.received.push(JSON.parse(data.toString()) as ServerMessage);
+      const message = JSON.parse(data.toString()) as ServerMessage;
+      this.received.push(message);
+      for (const listener of this.messageListeners) listener(message);
       this.notify();
     });
     ws.on('close', (code) => {
@@ -33,6 +40,11 @@ export class TestClient {
     });
   }
 
+  // Called with every message as it arrives, before any `next` sees it.
+  onMessage(listener: (message: ServerMessage) => void): void {
+    this.messageListeners.push(listener);
+  }
+
   send(message: object | string): void {
     this.ws.send(typeof message === 'string' ? message : JSON.stringify(message));
   }
@@ -41,14 +53,24 @@ export class TestClient {
     this.ws.send(bytes, { binary: true });
   }
 
-  // The next message of `type` (that also passes `match`, when given).
-  next<T extends ServerMessage['type']>(type: T, match: (message: MessageOf<T>) => boolean = () => true, timeoutMs = 2000): Promise<MessageOf<T>> {
+  // The next message of `type` (that also passes `match`, when given). With
+  // `after` (an earlier `received.length`), only messages that arrived since.
+  next<T extends ServerMessage['type']>(type: T, match: (message: MessageOf<T>) => boolean = () => true, timeoutMs = 2000, after = 0): Promise<MessageOf<T>> {
     return this.waitFor(() => {
-      const index = this.received.findIndex((m, i) => m.type === type && !this.handedOut.has(i) && match(m as MessageOf<T>));
+      const index = this.received.findIndex((m, i) => i >= after && m.type === type && !this.handedOut.has(i) && match(m as MessageOf<T>));
       if (index === -1) return undefined;
       this.handedOut.add(index);
       return this.received[index] as MessageOf<T>;
     }, `a ${type} message`, timeoutMs);
+  }
+
+  // The game in the latest welcome or game.update, if any.
+  get latestGame(): GameUpdate | null {
+    for (let i = this.received.length - 1; i >= 0; i--) {
+      const m = this.received[i];
+      if ((m.type === 'welcome' || m.type === 'game.update') && m.game) return m.game;
+    }
+    return null;
   }
 
   closed(timeoutMs = 2000): Promise<number> {
@@ -98,4 +120,46 @@ export function refusedStatus(url: string, headers: Record<string, string>): Pro
     ws.once('open', () => reject(new Error('The upgrade was accepted')));
     ws.once('error', () => undefined);
   });
+}
+
+// Plays a seat over the socket the way a person's client would (spec
+// "Testing": bots acting as humans). It keeps the log from each update's
+// events, asks for game.resync when one is missing, and answers each update
+// that offers it moves with the rule-based bot's pick.
+export class BotSeat {
+  resyncs = 0;
+  lastUpdate: GameUpdate | null = null;
+  private log: EngineEvent[] = [];
+  private memory: BotTurnMemory | null = null;
+  private answered: string | null = null;
+  private nextReqId = 1;
+
+  constructor(
+    private readonly client: TestClient,
+    private readonly registry: ContentRegistry
+  ) {
+    client.onMessage((message) => this.receive(message));
+  }
+
+  private receive(message: ServerMessage): void {
+    const game = message.type === 'welcome' || message.type === 'game.update' ? message.game : null;
+    if (!game) return;
+    if (game.logFrom === 0) this.log = [];
+    if (game.logFrom !== this.log.length) {
+      this.resyncs += 1;
+      this.client.send({ type: 'game.resync' });
+      return;
+    }
+    this.log = [...this.log, ...game.events];
+    this.lastUpdate = game;
+    // One answer per state: a repeated update (a clock change) gets none.
+    const key = `${game.gameId}:${game.seq}`;
+    if (game.legalActions.length === 0 || this.answered === key) return;
+    this.answered = key;
+    const view = { ...game.view, log: this.log, rng: { seed: 0, counter: 0 } } as GameState;
+    const seatId = game.legalActions[0].seatId;
+    const decision = ruleBasedPolicy.decide(view, seatId, game.legalActions, this.registry, this.memory);
+    this.memory = decision.memory;
+    this.client.send({ type: 'game.submit', reqId: `bot-${this.nextReqId++}`, gameId: game.gameId, baseSeq: game.seq, actions: [decision.action] });
+  }
 }

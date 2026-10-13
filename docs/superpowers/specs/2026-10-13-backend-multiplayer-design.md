@@ -185,7 +185,7 @@ game_actions                     -- the event-sourced log
   seat_id            text
   source             text        -- 'human' | 'bot' | 'timeout' | 'takeover'
   action             jsonb       -- engine Action, verbatim
-  state_hash         text        -- sha256 of JSON.stringify(state) after this action
+  state_hash         text        -- sha256 of the state's JSON, keys sorted, after this action
   created_at
   PRIMARY KEY (game_id, seq)
 

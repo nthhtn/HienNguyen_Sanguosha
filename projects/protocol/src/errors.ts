@@ -22,7 +22,13 @@ export type ErrorCode =
   | 'host_must_be_registered'
   | 'already_in_room'
   | 'invalid_seat_count'
-  | 'invalid_message';
+  | 'invalid_message'
+  | 'not_full'
+  | 'no_game'
+  | 'not_your_turn'
+  | 'stale'
+  | 'illegal_action'
+  | 'solo_exists';
 
 // Every error the server sends: a stable code for code, a message for people.
 export interface ErrorBody {
@@ -53,4 +59,10 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   already_in_room: "You're already in another room. Leave it first",
   invalid_seat_count: "That seat count doesn't fit this room",
   invalid_message: 'That request was not understood',
+  not_full: 'Fill every seat to start',
+  no_game: 'No game is running in this room',
+  not_your_turn: "It's not your turn",
+  stale: 'The game moved on. Try again',
+  illegal_action: "That move isn't allowed",
+  solo_exists: 'You already have a game against bots in progress',
 };
