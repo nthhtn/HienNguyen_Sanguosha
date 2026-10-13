@@ -16,9 +16,33 @@ const ORIGIN = 'http://localhost:4200';
 const registry = buildContentRegistry();
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Checks `done` every 10 ms until it holds; fails after `timeoutMs`.
+async function until(done: () => boolean | Promise<boolean>, what: string, timeoutMs = 3000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (!(await done())) {
+    if (Date.now() > deadline) throw new Error(`Timed out waiting for ${what}`);
+    await wait(10);
+  }
+}
+
+// Makes the client's first offered move, once per state, until `done` holds.
+async function playUntil(client: TestClient, done: () => boolean | Promise<boolean>, what: string): Promise<void> {
+  let answered = -1;
+  let reqs = 0;
+  await until(async () => {
+    if (await done()) return true;
+    const game = client.latestGame;
+    if (game && game.legalActions.length > 0 && game.seq !== answered) {
+      answered = game.seq;
+      client.send({ type: 'game.submit', reqId: `play-${reqs++}`, gameId: game.gameId, baseSeq: game.seq, actions: [game.legalActions[0]] });
+    }
+    return false;
+  }, what);
+}
+
 // One in-memory store across restarts. Bots move at once, and a seat goes to
 // a bot after 300 ms away, so whole games and takeovers run in test time.
-async function setup() {
+async function setup(options: { botDelayMs?: number } = {}) {
   const repos = createMemoryRepositories();
   const accounts = new AccountService({ repos, mailer: new RecordingMailer(), publicOrigin: ORIGIN });
   const rateLimits = new AuthRateLimits({ ...RATE_LIMITS, signUpPerIp: { limit: 1000, windowMs: 60_000 } });
@@ -29,7 +53,7 @@ async function setup() {
 
   const startServer = async () => {
     // A fixed seed: with a random one, two seats can get the same kingdom and the game ends at General selection.
-    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, botDelayMs: 0, takeoverAwayMs: 300 });
+    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
     await rooms.restore();
     app = await buildApp({ accounts, rooms, publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
     await app.listen({ port: 0, host: '127.0.0.1' });
@@ -131,14 +155,16 @@ describe('games over the socket', () => {
     submit(mover.client, 'x5', { gameId: randomUUID() });
     expect(await refusal(mover.client, 'x5')).toMatchObject({ code: 'stale' });
 
+    const beforeResync = mover.client.received.length;
     mover.client.send({ type: 'game.resync', reqId: 'x6' });
-    const resynced = await mover.client.next('game.update');
+    const resynced = await mover.client.next('game.update', () => true, 2000, beforeResync);
     expect(resynced.game).toMatchObject({ seq: 0, logFrom: 0 });
     expect(mover.client.isOpen).toBe(true);
 
+    const beforeMove = other.client.received.length;
     submit(mover.client, 'x7');
     await mover.client.next('ack', (m) => m.reqId === 'x7');
-    expect((await other.client.next('game.update')).game.seq).toBe(1);
+    expect((await other.client.next('game.update', () => true, 2000, beforeMove)).game.seq).toBe(1);
     expect(await ctx.repos.games.listActions(game.gameId)).toHaveLength(1);
   });
 
@@ -148,20 +174,41 @@ describe('games over the socket', () => {
     const a = await ctx.connect(ann, roomId);
     const b = await ctx.connect(bo, roomId);
     await ctx.startGame(a.client);
+    const gameId = (await a.client.next('game.update')).game.gameId;
+    const takeovers = async () => (await ctx.repos.games.listActions(gameId)).filter((x) => x.source === 'takeover');
     b.client.close();
     await a.client.next('room.updated', (m) => m.room.members.some((x) => x.name === 'Bo' && !x.connected));
     await wait(350);
     await ctx.rooms().tick();
     await a.client.next('room.updated', (m) => m.room.members.some((x) => x.name === 'Bo' && x.botControlled));
+
+    // Ann plays on until a bot has moved for Bo and the game waits on Ann.
+    await playUntil(
+      a.client,
+      async () => (await takeovers()).length > 0 && (a.client.latestGame?.legalActions.length ?? 0) > 0,
+      'a takeover move for Bo'
+    );
+    const before = await takeovers();
+    const boSeat = before[0].seatId;
+    expect(before.every((x) => x.seatId === boSeat)).toBe(true);
+
+    const beforeReturn = a.client.received.length;
     const back = await ctx.connect(bo, roomId);
     expect(back.welcome.room.members.find((x) => x.name === 'Bo')).toMatchObject({ botControlled: false, connected: true });
     expect(back.welcome.you.seatId).toMatch(/^seat-[01]$/);
+    expect(back.welcome.you.seatId).toBe(boSeat);
     expect(back.welcome.game).toMatchObject({ logFrom: 0 });
-    await a.client.next('room.updated', (m) => m.room.members.some((x) => x.name === 'Bo' && !x.botControlled));
+    await a.client.next('room.updated', (m) => m.room.members.some((x) => x.name === 'Bo' && x.connected && !x.botControlled), 2000, beforeReturn);
+
+    // Ann plays on until Bo has a move of his own: no bot moves for him now.
+    await playUntil(a.client, () => (back.client.latestGame?.legalActions.length ?? 0) > 0, 'a move for Bo');
+    await wait(50);
+    expect(await takeovers()).toHaveLength(before.length);
   });
 
   it('pauses a solo game while its player is away, and resumes when they return', async () => {
-    ctx = await setup();
+    // The bot waits 200 ms before each move, so it has a move due when Ann leaves.
+    ctx = await setup({ botDelayMs: 200 });
     const ann = await ctx.signUp('Ann');
     const created = await ctx.post('/api/rooms/solo', { seatCount: 2, rules: {} }, ann);
     expect(created.statusCode).toBe(201);
@@ -169,13 +216,29 @@ describe('games over the socket', () => {
     const first = await ctx.connect(ann, id);
     const game = first.welcome.game as GameUpdate;
     expect(game.paused).toBe(false);
+
+    // Ann makes her moves until the bot is to move next, then leaves at once.
+    await until(() => (first.client.latestGame?.legalActions.length ?? 0) > 0, 'a move for Ann');
+    let mine = first.client.latestGame!;
+    for (let i = 0; mine.legalActions.length > 0; i++) {
+      if (i === 50) throw new Error('Ann never handed the move to the bot');
+      first.client.send({ type: 'game.submit', reqId: `ann-${i}`, gameId: mine.gameId, baseSeq: mine.seq, actions: [mine.legalActions[0]] });
+      await first.client.next('ack', (m) => m.reqId === `ann-${i}`);
+      const seq = mine.seq + 1;
+      mine = (await first.client.next('game.update', (m) => m.game.seq === seq)).game;
+    }
+    expect(mine.view.result).toBeNull();
     first.client.close();
     await wait(100);
     const stored = (await ctx.repos.games.listActions(game.gameId)).length;
+    expect(stored).toBe(mine.seq);
     await wait(200);
     expect(await ctx.repos.games.listActions(game.gameId)).toHaveLength(stored);
     const again = await ctx.connect(ann, id);
     expect(again.welcome.game).toMatchObject({ gameId: game.gameId, paused: false, seq: stored });
+    // Play goes on: the bot makes its move after Ann's return.
+    await again.client.next('game.update', (m) => m.game.seq > stored);
+    expect((await ctx.repos.games.listActions(game.gameId)).length).toBeGreaterThan(stored);
   });
 
   it('restores a game after a restart: the same seq and the same view (Review Focus 4)', async () => {

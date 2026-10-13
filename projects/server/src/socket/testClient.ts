@@ -53,14 +53,24 @@ export class TestClient {
     this.ws.send(bytes, { binary: true });
   }
 
-  // The next message of `type` (that also passes `match`, when given).
-  next<T extends ServerMessage['type']>(type: T, match: (message: MessageOf<T>) => boolean = () => true, timeoutMs = 2000): Promise<MessageOf<T>> {
+  // The next message of `type` (that also passes `match`, when given). With
+  // `after` (an earlier `received.length`), only messages that arrived since.
+  next<T extends ServerMessage['type']>(type: T, match: (message: MessageOf<T>) => boolean = () => true, timeoutMs = 2000, after = 0): Promise<MessageOf<T>> {
     return this.waitFor(() => {
-      const index = this.received.findIndex((m, i) => m.type === type && !this.handedOut.has(i) && match(m as MessageOf<T>));
+      const index = this.received.findIndex((m, i) => i >= after && m.type === type && !this.handedOut.has(i) && match(m as MessageOf<T>));
       if (index === -1) return undefined;
       this.handedOut.add(index);
       return this.received[index] as MessageOf<T>;
     }, `a ${type} message`, timeoutMs);
+  }
+
+  // The game in the latest welcome or game.update, if any.
+  get latestGame(): GameUpdate | null {
+    for (let i = this.received.length - 1; i >= 0; i--) {
+      const m = this.received[i];
+      if ((m.type === 'welcome' || m.type === 'game.update') && m.game) return m.game;
+    }
+    return null;
   }
 
   closed(timeoutMs = 2000): Promise<number> {
