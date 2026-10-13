@@ -222,6 +222,17 @@ describe('LobbyPage', () => {
     expect(el.querySelector('.member-list')).toBeNull();
   });
 
+  it('says it is waiting for the game, with no lobby controls, while the room plays without a game to show', async () => {
+    lobby.room.set({ ...MIXED, status: 'playing' });
+    const { el } = await render();
+    expect(el.querySelector('.waiting-for-game')?.textContent?.trim()).toBe('Waiting for the game…');
+    expect(el.querySelector('.rules')).toBeNull();
+    expect(el.querySelector('.member-list')).toBeNull();
+    expect(el.querySelector('button.add-bot')).toBeNull();
+    expect(el.querySelector('button.start')).toBeNull();
+    expect(el.querySelector('button.leave')?.textContent).toContain('Leave Room');
+  });
+
   it('shows how the last game ended, and Back to Lobby returns to the lobby', async () => {
     game.ending.set(LAST_GAME);
     const { el } = await render();

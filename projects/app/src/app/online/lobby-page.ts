@@ -65,67 +65,71 @@ import { SocketService } from './socket.service';
               <p class="error" role="alert">{{ text }}</p>
             }
             @if (lobby.room(); as room) {
-              <section class="rules">
-                <h3>Rules</h3>
-                @if (lobby.isHost()) {
-                  <div class="field">
-                    <span class="label" id="lobby-seats">Seats</span>
-                    <mat-button-toggle-group
-                      class="seats"
-                      aria-labelledby="lobby-seats"
-                      [hideSingleSelectionIndicator]="true"
-                      [disabled]="!lobby.canAct()"
-                      [value]="room.seatCount"
-                      (change)="setSeats($event.value)"
-                    >
-                      @for (n of seatOptions(); track n) {
-                        <mat-button-toggle [value]="n">{{ n }}</mat-button-toggle>
-                      }
-                    </mat-button-toggle-group>
-                  </div>
-                  @if (room.seatCount >= firstRevealMinSeats) {
-                    <mat-checkbox class="first-reveal" [disabled]="!lobby.canAct()" [checked]="!!room.rules.firstRevealDraw" (change)="setFirstReveal($event.checked)">
-                      First Reveal Bonus
-                    </mat-checkbox>
-                  }
-                } @else {
-                  <p class="rules-summary">{{ rulesSummary() }}</p>
-                }
-              </section>
-              <section class="players">
-                <h3>Players</h3>
-                <ul class="member-list">
-                  @for (member of room.members; track member.playerId) {
-                    <li class="member" [class.away]="member.kind === 'human' && !member.connected">
-                      <mat-icon aria-hidden="true">{{ member.kind === 'bot' ? 'smart_toy' : 'person' }}</mat-icon>
-                      <span class="name">{{ member.name }}</span>
-                      @if (member.playerId === room.hostPlayerId) {
-                        <span class="badge host">Host</span>
-                      }
-                      @if (member.playerId === lobby.you()) {
-                        <span class="badge you">You</span>
-                      }
-                      @if (member.kind === 'bot') {
-                        <span class="badge bot">Bot</span>
-                      } @else if (!member.isRegistered) {
-                        <span class="badge guest">Guest</span>
-                      }
-                      @if (member.kind === 'human' && !member.connected) {
-                        <span class="badge away">Away</span>
-                      }
-                      @if (lobby.isHost() && member.playerId !== lobby.you()) {
-                        @if (member.kind === 'human' && member.isRegistered) {
-                          <button mat-button type="button" class="make-host" [disabled]="!lobby.canAct()" (click)="lobby.makeHost(member.playerId)">Make Host</button>
+              @if (waitingForGame()) {
+                <p class="banner waiting-for-game" role="status">Waiting for the game…</p>
+              } @else {
+                <section class="rules">
+                  <h3>Rules</h3>
+                  @if (lobby.isHost()) {
+                    <div class="field">
+                      <span class="label" id="lobby-seats">Seats</span>
+                      <mat-button-toggle-group
+                        class="seats"
+                        aria-labelledby="lobby-seats"
+                        [hideSingleSelectionIndicator]="true"
+                        [disabled]="!lobby.canAct()"
+                        [value]="room.seatCount"
+                        (change)="setSeats($event.value)"
+                      >
+                        @for (n of seatOptions(); track n) {
+                          <mat-button-toggle [value]="n">{{ n }}</mat-button-toggle>
                         }
-                        <button mat-button type="button" class="remove" [disabled]="!lobby.canAct()" (click)="lobby.removePlayer(member.playerId)">Remove</button>
-                      }
-                    </li>
+                      </mat-button-toggle-group>
+                    </div>
+                    @if (room.seatCount >= firstRevealMinSeats) {
+                      <mat-checkbox class="first-reveal" [disabled]="!lobby.canAct()" [checked]="!!room.rules.firstRevealDraw" (change)="setFirstReveal($event.checked)">
+                        First Reveal Bonus
+                      </mat-checkbox>
+                    }
+                  } @else {
+                    <p class="rules-summary">{{ rulesSummary() }}</p>
                   }
-                </ul>
-                @if (lobby.canStart() && isFull() === false) {
-                  <p class="hint start-hint">Fill every seat to start</p>
-                }
-              </section>
+                </section>
+                <section class="players">
+                  <h3>Players</h3>
+                  <ul class="member-list">
+                    @for (member of room.members; track member.playerId) {
+                      <li class="member" [class.away]="member.kind === 'human' && !member.connected">
+                        <mat-icon aria-hidden="true">{{ member.kind === 'bot' ? 'smart_toy' : 'person' }}</mat-icon>
+                        <span class="name">{{ member.name }}</span>
+                        @if (member.playerId === room.hostPlayerId) {
+                          <span class="badge host">Host</span>
+                        }
+                        @if (member.playerId === lobby.you()) {
+                          <span class="badge you">You</span>
+                        }
+                        @if (member.kind === 'bot') {
+                          <span class="badge bot">Bot</span>
+                        } @else if (!member.isRegistered) {
+                          <span class="badge guest">Guest</span>
+                        }
+                        @if (member.kind === 'human' && !member.connected) {
+                          <span class="badge away">Away</span>
+                        }
+                        @if (lobby.isHost() && member.playerId !== lobby.you()) {
+                          @if (member.kind === 'human' && member.isRegistered) {
+                            <button mat-button type="button" class="make-host" [disabled]="!lobby.canAct()" (click)="lobby.makeHost(member.playerId)">Make Host</button>
+                          }
+                          <button mat-button type="button" class="remove" [disabled]="!lobby.canAct()" (click)="lobby.removePlayer(member.playerId)">Remove</button>
+                        }
+                      </li>
+                    }
+                  </ul>
+                  @if (lobby.canStart() && isFull() === false) {
+                    <p class="hint start-hint">Fill every seat to start</p>
+                  }
+                </section>
+              }
             } @else if (!lobby.ended()) {
               <p class="loading">Connecting…</p>
             }
@@ -139,7 +143,7 @@ import { SocketService } from './socket.service';
                   <mat-icon>play_arrow</mat-icon> Start Game
                 </button>
               }
-              @if (lobby.isHost()) {
+              @if (lobby.isHost() && !waitingForGame()) {
                 <button mat-stroked-button type="button" class="add-bot" [disabled]="!lobby.canAct() || isFull()" (click)="lobby.addBot()">
                   <mat-icon>smart_toy</mat-icon> Add Bot
                 </button>
@@ -166,6 +170,10 @@ export class LobbyPage {
     const from = Math.max(room.seatLimits.min, room.members.length);
     return Array.from({ length: Math.max(0, room.seatLimits.max - from + 1) }, (_, i) => from + i);
   });
+
+  // The room plays but there is no game to show yet: it is starting, being
+  // restored, or its end is still being stored. No lobby controls meanwhile.
+  protected readonly waitingForGame = computed(() => this.lobby.room()?.status === 'playing');
 
   protected readonly isFull = computed(() => {
     const room = this.lobby.room();
