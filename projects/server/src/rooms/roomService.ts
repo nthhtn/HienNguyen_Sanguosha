@@ -12,6 +12,7 @@ import { GameRecord, RoomPlayerRecord, UserRecord } from '../persistence/records
 import { NameTakenError, Repositories } from '../persistence/repositories';
 import { toRoomListItem, toRoomSnapshot } from '../views/room';
 import { RoomError } from './errors';
+import { ChatService } from './chatService';
 import { memberFrom, Room, RoomMember, sameName } from './room';
 import { SerialQueue } from './serialQueue';
 
@@ -106,6 +107,7 @@ export class RoomService {
   private readonly botDelayMs: number;
   private readonly takeoverAwayMs: number;
   private readonly botPolicy: BotPolicy;
+  private readonly chat: ChatService;
   private engine: EngineContext | null = null;
   private readonly live = new Map<string, LiveRoom>();
   // Create and join check memberships across rooms, so they run one at a time.
@@ -123,6 +125,7 @@ export class RoomService {
     this.botDelayMs = deps.botDelayMs ?? BOT_DELAY_MS;
     this.takeoverAwayMs = deps.takeoverAwayMs ?? TAKEOVER_AWAY_MS;
     this.botPolicy = deps.botPolicy ?? ruleBasedPolicy;
+    this.chat = new ChatService(this.repos, this.now);
   }
 
   // The engine, built on first use: lobby-only tests never need the content.
@@ -251,6 +254,8 @@ export class RoomService {
     return this.inRoom(roomId, async (entry) => {
       const member = entry.room.memberForUser(user.id);
       if (!member) throw new RoomError('not_member');
+      // Read first, so a store error leaves the member as they were.
+      const chat = entry.room.record.visibility === 'solo' ? [] : await this.chat.recent(roomId);
       const previous = entry.connections.get(member.id);
       entry.connections.delete(member.id);
       if (previous) {
@@ -268,6 +273,7 @@ export class RoomService {
         you: { playerId: member.id, seatId: runner?.seatOf(member.id) ?? null },
         room: this.snapshotOf(entry),
         game: runner?.updateFor(member.id, 0) ?? null,
+        chat,
       });
       this.broadcast(entry, member.id);
       return member.id;
@@ -315,6 +321,8 @@ export class RoomService {
           return this.submit(entry, actor, command.gameId, command.baseSeq, command.actions as unknown as Action[]);
         case 'game.resync':
           return this.resync(entry, actor);
+        case 'chat.send':
+          return this.sendChat(entry, actor, command.body);
       }
     });
   }
@@ -482,6 +490,21 @@ export class RoomService {
     entry.connections.get(actor.id)?.send({ type: 'game.update', game });
   }
 
+  // A member's chat message: stored, then sent to everyone connected. It
+  // counts as activity, so a lobby where people talk is not idle. Solo rooms
+  // have no chat.
+  private async sendChat(entry: LiveRoom, actor: RoomMember, body: string): Promise<void> {
+    if (entry.room.record.visibility === 'solo') throw new RoomError('chat_unavailable');
+    const runner = entry.runner;
+    const message = await this.chat.send(
+      { roomId: entry.room.id, playerId: actor.id, gameId: runner?.id ?? null, afterSeq: runner ? runner.seq : null },
+      body
+    );
+    entry.room.lastActivityAt = this.now();
+    const notice: ServerMessage = { type: 'chat.message', ...message };
+    for (const connection of entry.connections.values()) connection.send(notice);
+  }
+
   // The runner's game ended (a result, or a failure): store that, and the room returns to the lobby.
   private async endGame(entry: LiveRoom, outcome: 'finished' | 'broken'): Promise<void> {
     const runner = entry.runner;
@@ -635,6 +658,7 @@ export class RoomService {
   // The in-memory part of closing: stop the game, forget the room, and tell
   // and close every connection.
   private dropRoom(entry: LiveRoom, reason: RoomLeftReason): void {
+    this.chat.forget(entry.room.members.map((m) => m.id));
     entry.runner?.stop();
     entry.runner = null;
     entry.pendingEnd = null;

@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox';
-import { MAX_SUBMIT_ACTIONS, REQ_ID_MAX } from '../limits';
+import { CHAT_BODY_MAX, MAX_SUBMIT_ACTIONS, REQ_ID_MAX } from '../limits';
 import { ActionSchema } from './game';
 import { RoomIdSchema, RoomRulesSchema, SeatCountSchema } from './rooms';
 
@@ -28,6 +28,9 @@ export const SubmitSchema = Type.Object(
   strict
 );
 export const ResyncSchema = Type.Object({ type: Type.Literal('game.resync'), reqId: ReqId }, strict);
+// Shape only: the server normalizes the body and answers with a specific
+// code (empty, too long), so the schema allows more than the limit.
+export const ChatSendSchema = Type.Object({ type: Type.Literal('chat.send'), reqId: ReqId, body: Type.String({ maxLength: CHAT_BODY_MAX * 4 }) }, strict);
 
 export const ClientMessageSchema = Type.Union([
   HelloSchema,
@@ -39,4 +42,5 @@ export const ClientMessageSchema = Type.Union([
   StartSchema,
   SubmitSchema,
   ResyncSchema,
+  ChatSendSchema,
 ]);
