@@ -4,3 +4,4 @@
 export * from './lib/random';
 export * from './lib/policy';
 export * from './lib/rule-based';
+export * from './lib/policies';

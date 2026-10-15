@@ -1,7 +1,7 @@
 import type { Action, ContentRegistry, GameState, Seat } from 'engine';
 import { conversionsOf, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
-import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal } from './helpers';
+import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
 import { fireSelection } from './fire';
 import { upheavalVictimIsFoe } from './forest';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
@@ -19,13 +19,13 @@ type Arrange = Extract<Action, { kind: 'ArrangeCardsAction' }>;
 // Tools worth cancelling when they are aimed at this bot.
 const HARMFUL_TOOLS = new Set(['barbarians', 'hail-of-arrows', 'duel', 'steal', 'break', 'capture', 'lightning', 'starvation']);
 
-// Plays of `definitionId` aimed at a living non-ally, weakest target first.
-function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string): PlayCard[] {
+// Plays of `definitionId` aimed at a living non-ally, best target first.
+function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string, rank: TargetRanker): PlayCard[] {
   return plays
     .filter((p) => p.targets.length >= 1 && p.targets[0].kind === 'seat' && definitionIdOf(view, p.cardInstanceId) === definitionId)
     .map((p) => ({ play: p, target: view.seats.find((s) => p.targets[0].kind === 'seat' && s.id === p.targets[0].seatId) }))
     .filter((t): t is { play: PlayCard; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
-    .sort((a, b) => a.target.combinedHp - b.target.combinedHp || a.target.index - b.target.index)
+    .sort((a, b) => rank(view, self, b.target) - rank(view, self, a.target) || a.target.index - b.target.index)
     .map((t) => t.play);
 }
 
@@ -64,6 +64,7 @@ const conversionAs = (a: UseConversion, view: GameState, registry: ContentRegist
   conversionsOf(view, a.seatId, registry).find((o) => o.conversion.id === a.via.conversionId && sameAbilityOwner(o.owner, a.via.owner))?.conversion.as;
 
 function decide(
+  rank: TargetRanker,
   view: GameState,
   seatId: string,
   offered: Action[],
@@ -75,7 +76,7 @@ function decide(
   const mine = view.seats.find((s) => s.id === seatId);
   const legal = offered.flatMap((a): Action[] => {
     if ((a.kind !== 'PlayCardAction' && a.kind !== 'UseConversionAction') || !a.pickTargets) return [a];
-    const filled = mine ? fillPick(view, mine, a) : null;
+    const filled = mine ? fillPick(view, mine, a, rank) : null;
     return filled ? [filled] : [];
   });
   const mem: BotTurnMemory =
@@ -266,7 +267,7 @@ function decide(
       const target = view.seats.find((s) => s.id === p.targets[0]?.seatId);
       return !!target && (view.zones.find((z) => z.id === target.equipped.zoneId)?.cards.length ?? 0) > 0;
     };
-    const [grab] = [...targetedPlays(view, self, plays, 'steal'), ...targetedPlays(view, self, plays, 'break')].sort(
+    const [grab] = [...targetedPlays(view, self, plays, 'steal', rank), ...targetedPlays(view, self, plays, 'break', rank)].sort(
       (a, b) => Number(wearsEquipment(b)) - Number(wearsEquipment(a))
     );
     if (grab) return take(grab);
@@ -291,7 +292,7 @@ function decide(
     if (starvationVia) return take(starvationVia);
     // Fire Strategy: Blaze at the weakest non-ally while holding 3 or more hand cards.
     const handCount = view.zones.find((z) => z.id === self.hand.zoneId)?.cards.length ?? 0;
-    const byWeakest = (x: UseConversion, y: UseConversion) => targetSeat(x).combinedHp - targetSeat(y).combinedHp || targetSeat(x).index - targetSeat(y).index;
+    const byWeakest = (x: UseConversion, y: UseConversion) => rank(view, self, targetSeat(y)) - rank(view, self, targetSeat(x)) || targetSeat(x).index - targetSeat(y).index;
     const [blazeVia] = conversionsAs('blaze').filter((a) => targetSeat(a).id !== seatId).sort(byWeakest);
     if (blazeVia && handCount >= 3) return take(blazeVia);
 
@@ -304,15 +305,15 @@ function decide(
     };
     const best = (candidates: PlayCard[], score: (p: PlayCard) => number) =>
       candidates.reduce<PlayCard | undefined>((top, p) => (!top || score(p) > score(top) ? p : top), undefined);
-    const capture = best(targetedPlays(view, self, plays, 'capture'), (p) => targetOf(p)?.combinedHp ?? 0);
+    const capture = best(targetedPlays(view, self, plays, 'capture', rank), (p) => targetOf(p)?.combinedHp ?? 0);
     if (capture) return take(capture);
-    const starvation = best(targetedPlays(view, self, plays, 'starvation'), handSize);
+    const starvation = best(targetedPlays(view, self, plays, 'starvation', rank), handSize);
     if (starvation) return take(starvation);
     const lightning = untargetedOf('lightning');
     if (lightning && self.combinedHp >= 3) return take(lightning);
 
     // Wine first when a Sha at a non-ally is legal: the Sha follows next.
-    const shaPlays = targetedPlays(view, self, plays, 'sha');
+    const shaPlays = targetedPlays(view, self, plays, 'sha', rank);
     const wine = untargetedOf('wine');
     if (wine && shaPlays.length > 0) return take(wine);
     // Dong Zhuo's Wine, made from a spade, when he holds no real one.
@@ -326,10 +327,10 @@ function decide(
       .filter((a): a is UseConversion => a.kind === 'UseConversionAction' && a.targets.length >= 1 && conversionAs(a, view, registry) === 'sha')
       .map((a) => ({ a, target: view.seats.find((s) => s.id === a.targets[0].seatId) }))
       .filter((t): t is { a: UseConversion; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
-      .sort((x, y) => x.target.combinedHp - y.target.combinedHp || x.target.index - y.target.index)
+      .sort((x, y) => rank(view, self, y.target) - rank(view, self, x.target) || x.target.index - y.target.index)
       .map((t) => t.a);
     if (conversion && conversionSpare(view, self, conversion, registry)) return take(conversion, 1);
-    const [duel] = targetedPlays(view, self, plays, 'duel');
+    const [duel] = targetedPlays(view, self, plays, 'duel', rank);
     if (duel) return take(duel);
     // Dueling Heroes: a Duel from an opposite-colour card, at the weakest non-ally.
     const [duelVia] = conversionsAs('duel').sort(byWeakest);
@@ -351,4 +352,12 @@ function decide(
 }
 
 // Simple, explainable opponent; see the bot-opponents design spec for its rules.
-export const ruleBasedPolicy: BotPolicy = { id: 'rule-based', decide };
+// The ranker decides which non-ally a targeted play goes to.
+export function createRuleBasedPolicy(id: string, rank: TargetRanker): BotPolicy {
+  return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, view, seatId, legal, registry, memory) };
+}
+
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst);
+
+// The behaviour before smarter targeting, kept as a fixed opponent for the tournament harness.
+export const ruleBasedV1Policy: BotPolicy = createRuleBasedPolicy('rule-based-v1', weakestFirst);

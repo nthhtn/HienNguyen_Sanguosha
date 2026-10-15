@@ -60,15 +60,23 @@ export function fillSelection(view: GameState, selection: PendingSelection, orde
   return ordered.slice(0, selection.min);
 }
 
-// A target template filled for the bot: non-allies, weakest first, up to the
-// maximum; null when none qualifies. Any other action comes back as it is.
-export function fillPick<A extends { targets: Target[]; pickTargets?: TargetPick }>(view: GameState, me: Seat, action: A): A | null {
+// How good a target is for a play: higher is better. The rule-based bot picks
+// the highest-ranked non-ally; which ranker it uses is the one difference
+// between 'rule-based' and 'rule-based-v1'.
+export type TargetRanker = (view: GameState, me: Seat, target: Seat) => number;
+
+// The original ordering: the weakest first, then seat order.
+export const weakestFirst: TargetRanker = (_view, _me, target) => -(target.combinedHp * 100 + target.index);
+
+// A target template filled for the bot: non-allies, best first by `rank`, up to
+// the maximum; null when none qualifies. Any other action comes back as it is.
+export function fillPick<A extends { targets: Target[]; pickTargets?: TargetPick }>(view: GameState, me: Seat, action: A, rank: TargetRanker): A | null {
   const pick = action.pickTargets;
   if (!pick) return action;
   const seats = pick.eligibleIds
     .map((id) => view.seats.find((s) => s.id === id))
     .filter((s): s is Seat => !!s && !isAlly(me, s))
-    .sort((a, b) => a.combinedHp - b.combinedHp || a.index - b.index)
+    .sort((a, b) => rank(view, me, b) - rank(view, me, a) || a.index - b.index)
     .slice(0, pick.max);
   if (seats.length < Math.max(1, pick.min)) return null;
   const { pickTargets: _pick, ...rest } = action;
