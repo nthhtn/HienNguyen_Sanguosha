@@ -1,4 +1,5 @@
 import type { Static } from '@sinclair/typebox';
+import type { ChatMessage } from './chat';
 import type { GameUpdate } from './game';
 import type { ErrorCode } from './errors';
 import type { RoomSnapshot } from './rooms';
@@ -20,6 +21,8 @@ export interface WelcomeMessage {
   room: RoomSnapshot;
   // The running game with its full log (logFrom 0), or null.
   game: GameUpdate | null;
+  // The room's last 100 messages, oldest first; empty in a solo room.
+  chat: ChatMessage[];
 }
 
 export interface RoomUpdatedMessage {
@@ -58,7 +61,12 @@ export interface ErrorMessage {
   message: string;
 }
 
-export type ServerMessage = WelcomeMessage | RoomUpdatedMessage | GameUpdateMessage | RoomLeftMessage | ReplacedMessage | AckMessage | ErrorMessage;
+// A chat message was accepted; every connected member gets it, the sender too.
+export interface ChatMessageMessage extends ChatMessage {
+  type: 'chat.message';
+}
+
+export type ServerMessage = WelcomeMessage | RoomUpdatedMessage | GameUpdateMessage | ChatMessageMessage | RoomLeftMessage | ReplacedMessage | AckMessage | ErrorMessage;
 
 export const ROOM_LEFT_MESSAGES: Record<RoomLeftReason, string> = {
   left: 'You left the room',

@@ -1,3 +1,5 @@
+import { GameHistory } from '../game/history';
+import { registerGameRoutes } from './gameRoutes';
 import cookie from '@fastify/cookie';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import Fastify, { FastifyError, FastifyInstance } from 'fastify';
@@ -22,6 +24,7 @@ declare module 'fastify' {
 export interface AppDeps {
   accounts: AccountService;
   rooms: RoomService;
+  history: GameHistory;
   publicOrigin: string;
   // Heartbeat and hello timeouts; tests shorten them.
   socket?: SocketOptions;
@@ -75,6 +78,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   });
 
   registerRoomRoutes(app, { rooms: deps.rooms });
+  registerGameRoutes(app, { history: deps.history });
 
   attachSocketServer(app, { accounts: deps.accounts, rooms: deps.rooms, publicOrigin: deps.publicOrigin, ...deps.socket });
   await app.ready();

@@ -1,7 +1,7 @@
 import { buildContentRegistry, kingdomWarMode } from 'content';
 import { createGame, getLegalActions, redactStateForSeat, resolve } from 'engine';
 import type { Action, GameState } from 'engine';
-import type { GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
+import type { ChatMessage, GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
 import type { WebSocketLike } from './socket.service';
 
 // Test fixtures for the online screens. `ng build` compiles this file, so it
@@ -22,9 +22,14 @@ export const ROOM: RoomSnapshot = {
   seatLimits: { min: 2, max: 8 },
 };
 
-export function welcome(room: RoomSnapshot = ROOM, playerId = 'p-ann', game: GameUpdate | null = null): ServerMessage {
+export function welcome(room: RoomSnapshot = ROOM, playerId = 'p-ann', game: GameUpdate | null = null, chat: ChatMessage[] = []): ServerMessage {
   const seatId = room.members.find((m) => m.playerId === playerId)?.seatId ?? null;
-  return { type: 'welcome', you: { playerId, seatId }, room, game };
+  return { type: 'welcome', you: { playerId, seatId }, room, game, chat };
+}
+
+// A chat message from the named member; `playerId` defaults to "p-" and the lowercased name.
+export function chatMessage(id: number, from: string, body: string, playerId = `p-${from.toLowerCase()}`): ChatMessage {
+  return { id, from: { playerId, name: from }, body, at: Date.parse('2026-10-15T12:00:00.000Z') + id * 1000 };
 }
 
 // A WebSocket the test drives: it records what the app sends, and the test

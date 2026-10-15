@@ -1,5 +1,5 @@
 import type { GameRules } from 'engine';
-import { GameActionRecord, GameRecord, GameSeat, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from './records';
+import { ChatMessageRecord, GameActionRecord, GameRecord, GameSeat, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from './records';
 
 export class EmailTakenError extends Error {
   constructor() {
@@ -94,6 +94,28 @@ export interface GameRepository {
   listRunning(): Promise<GameRecord[]>;
   // A game's actions in seq order.
   listActions(gameId: string): Promise<GameActionRecord[]>;
+  // The finished games the user sat in, newest finish first (ties by id).
+  listFinishedForUser(userId: string): Promise<UserGameRecord[]>;
+  // One finished game the user sat in; null for anyone else's, an unfinished or an unknown one.
+  findFinishedForUser(userId: string, gameId: string): Promise<UserGameRecord | null>;
+}
+
+export interface NewChatMessage {
+  roomId: string;
+  gameId: string | null;
+  afterSeq: number | null;
+  roomPlayerId: string;
+  body: string;
+  now: Date;
+}
+
+export interface ChatRepository {
+  // Throws when `roomPlayerId` is not a member of any room.
+  add(input: NewChatMessage): Promise<ChatMessageRecord>;
+  // The room's last `limit` messages, oldest first.
+  listRecent(roomId: string, limit: number): Promise<ChatMessageRecord[]>;
+  // The messages sent while a game ran, oldest first.
+  listForGame(gameId: string): Promise<ChatMessageRecord[]>;
 }
 
 export interface Repositories {
@@ -102,6 +124,7 @@ export interface Repositories {
   resetTokens: ResetTokenRepository;
   rooms: RoomRepository;
   games: GameRepository;
+  chat: ChatRepository;
   // Runs `work` against repositories whose writes all commit together when it
   // resolves, or none of them when it throws (the error is rethrown). Not
   // nestable: don't call `transaction` on the repositories passed to `work`.

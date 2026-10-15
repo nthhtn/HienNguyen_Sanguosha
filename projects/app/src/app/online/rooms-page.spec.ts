@@ -51,7 +51,7 @@ describe('RoomsPage', () => {
         { provide: AuthService, useValue: auth },
         { provide: MatDialog, useValue: dialog },
         { provide: OnlineNotice, useValue: notice },
-        provideRouter([{ path: 'rooms/:id', children: [] }]),
+        provideRouter([{ path: 'rooms/:id', children: [] }, { path: 'my-games', children: [] }]),
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(RoomsPage);
@@ -139,6 +139,17 @@ describe('RoomsPage', () => {
     expect(row(el, 'Play vs Bots')).toBeTruthy();
     (el.querySelector('button.play-vs-bots') as HTMLButtonElement).click();
     expect(dialog.open).toHaveBeenCalledWith(PlayVsBotsDialog, expect.objectContaining({ data: { seatLimits: LIST.seatLimits, existingRoomId: 'r-solo' } }));
+  });
+
+  it('links registered players to My Games, and shows guests no link', async () => {
+    const registered = await create();
+    const link = registered.el.querySelector('a.my-games') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe('/my-games');
+    expect(link.textContent).toContain('My Games');
+    TestBed.resetTestingModule();
+    me.set(GUS);
+    const guest = await create();
+    expect(guest.el.querySelector('a.my-games')).toBeNull();
   });
 
   it('disables Create Room for a guest, and says why', async () => {

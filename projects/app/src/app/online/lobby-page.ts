@@ -6,6 +6,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { BoardChat } from './board-chat';
+import { ChatPanel } from './chat-panel';
+import { ChatService } from './chat.service';
 import { LobbyService } from './lobby.service';
 import { OnlineGame } from './online-game';
 import { OnlineResult } from './online-result';
@@ -15,8 +18,8 @@ import { SocketService } from './socket.service';
 // A room over its socket: the lobby (members, host controls, Start Game, Leave Room), the board while a game runs, and how the last game ended.
 @Component({
   selector: 'app-lobby-page',
-  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult],
-  providers: [SocketService, LobbyService, RemoteGameService, RemoteDecisionClock],
+  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat],
+  providers: [SocketService, LobbyService, ChatService, RemoteGameService, RemoteDecisionClock],
   styleUrl: './online-page.css',
   template: `
     @if (game.ending(); as ending) {
@@ -40,6 +43,9 @@ import { SocketService } from './socket.service';
         }
       </div>
       <app-online-game />
+      @if (!lobby.isSolo()) {
+        <app-board-chat [you]="lobby.you()" [canSend]="lobby.canAct()" />
+      }
     } @else {
       <div class="online-page">
         <mat-card class="online-card" appearance="raised">
@@ -130,6 +136,12 @@ import { SocketService } from './socket.service';
                   }
                 </section>
               }
+              @if (!lobby.isSolo()) {
+                <section class="chat">
+                  <h3>Chat</h3>
+                  <app-chat-panel [you]="lobby.you()" [canSend]="lobby.canAct()" />
+                </section>
+              }
             } @else if (!lobby.ended()) {
               <p class="loading">Connecting…</p>
             }
@@ -158,6 +170,9 @@ import { SocketService } from './socket.service';
 })
 export class LobbyPage {
   protected readonly lobby = inject(LobbyService);
+  // Injected here so it exists before the first welcome: the socket does not
+  // replay, and the panel only renders once the room is known.
+  protected readonly chat = inject(ChatService);
   protected readonly game = inject(RemoteGameService);
   protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
   private readonly seats = viewChild(MatButtonToggleGroup);

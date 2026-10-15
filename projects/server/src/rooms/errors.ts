@@ -19,6 +19,10 @@ export type RoomErrorCode = Extract<
   | 'stale'
   | 'illegal_action'
   | 'solo_exists'
+  | 'chat_empty'
+  | 'chat_too_long'
+  | 'chat_rate_limited'
+  | 'chat_unavailable'
 >;
 
 // A room input that the rules refuse. Nothing changed; the sender gets the code.

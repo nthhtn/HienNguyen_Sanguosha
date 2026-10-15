@@ -32,4 +32,8 @@ export const ROOM_ERROR_STATUS: Record<RoomErrorCode, number> = {
   stale: 409,
   illegal_action: 400,
   solo_exists: 409,
+  chat_empty: 400,
+  chat_too_long: 400,
+  chat_rate_limited: 429,
+  chat_unavailable: 409,
 };

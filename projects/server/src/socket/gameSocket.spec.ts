@@ -1,3 +1,4 @@
+import { GameHistory } from '../game/history';
 import { randomUUID } from 'node:crypto';
 import { AddressInfo } from 'node:net';
 import { FastifyInstance } from 'fastify';
@@ -55,7 +56,7 @@ async function setup(options: { botDelayMs?: number } = {}) {
     // A fixed seed: with a random one, two seats can get the same kingdom and the game ends at General selection.
     rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
     await rooms.restore();
-    app = await buildApp({ accounts, rooms, publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
+    app = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
     await app.listen({ port: 0, host: '127.0.0.1' });
     url = `ws://127.0.0.1:${(app.server.address() as AddressInfo).port}/api/ws`;
   };

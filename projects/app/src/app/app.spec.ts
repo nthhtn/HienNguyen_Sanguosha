@@ -32,6 +32,7 @@ describe('App', () => {
           { path: 'game', children: [] },
           { path: 'play', children: [] },
           { path: 'rooms', children: [] },
+          { path: 'my-games', children: [] },
           { path: 'sign-in', children: [] },
           { path: 'sign-up', children: [] },
           { path: 'wiki/:page', children: [] },
@@ -101,6 +102,11 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/setup');
     fixture.detectChanges();
     expect(online.classList).not.toContain('active');
+  });
+
+  it('keeps Online highlighted on My Games', async () => {
+    const { el } = await render('/my-games');
+    expect(el.querySelector('a.nav-online')!.classList).toContain('active');
   });
 
   it('has a Cards menu with four options and no icons', async () => {

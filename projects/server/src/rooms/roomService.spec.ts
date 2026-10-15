@@ -177,7 +177,7 @@ describe('RoomService', () => {
       const bo = await registered('Bo');
       await rooms.join(bo, id, 'Bo');
       const guestSide = await connect(bo, id);
-      expect(guestSide.connection.last('welcome')).toEqual({ type: 'welcome', you: { playerId: guestSide.playerId, seatId: null }, room: expect.any(Object), game: null });
+      expect(guestSide.connection.last('welcome')).toEqual({ type: 'welcome', you: { playerId: guestSide.playerId, seatId: null }, room: expect.any(Object), game: null, chat: [] });
       expect(host.connection.room?.members.map((m) => m.connected)).toEqual([true, true]);
     });
 

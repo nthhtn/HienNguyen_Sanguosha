@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox';
-import { RoomRulesSchema, SeatCountSchema } from './rooms';
+import { RoomIdSchema, RoomRulesSchema, SeatCountSchema } from './rooms';
 
 // Shape only: an engine action is an object with a kind and a seat. The server
 // accepts only actions the engine offered, so it checks the rest itself.
@@ -10,3 +10,5 @@ export const ActionSchema = Type.Object(
 
 // POST /api/rooms/solo. `replace` abandons a running solo game first.
 export const SoloRoomBodySchema = Type.Object({ seatCount: SeatCountSchema, rules: RoomRulesSchema, replace: Type.Optional(Type.Boolean()) });
+
+export const GameParamsSchema = Type.Object({ id: RoomIdSchema });

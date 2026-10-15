@@ -8,3 +8,5 @@ export * from './auth';
 export * from './rooms';
 export * from './game';
 export * from './socket';
+export * from './chat';
+export * from './history';

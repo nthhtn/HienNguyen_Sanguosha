@@ -12,3 +12,15 @@ export function requestGuard(publicOrigin: string) {
     if (!/^application\/json\s*(;|$)/i.test(request.headers['content-type'] ?? '')) return reply.code(415).send(errorBody('unsupported_media_type'));
   };
 }
+
+// Route hooks. They run before the body is parsed and validated, so a
+// signed-out request is always told to sign in rather than that its body is wrong.
+export async function signedIn(request: FastifyRequest, reply: FastifyReply) {
+  if (!request.auth) return reply.code(401).send(errorBody('not_signed_in'));
+}
+
+// Signed in with an account: a guest is refused.
+export async function registeredOnly(request: FastifyRequest, reply: FastifyReply) {
+  if (!request.auth) return reply.code(401).send(errorBody('not_signed_in'));
+  if (request.auth.user.kind !== 'registered') return reply.code(403).send(errorBody('registered_only'));
+}
