@@ -2,45 +2,45 @@
   <img class="logo" src="card-art/misc/logo.png" alt="" />
   <h1><a class="brand" routerLink="/play">{{ title() }}</a></h1>
   <nav class="nav">
-    <a mat-button class="nav-play" routerLink="/play" [class.active]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" aria-label="Play">
-      <mat-icon>play_arrow</mat-icon><span class="label">Play</span>
+    <a mat-button class="nav-play" routerLink="/play" [class.active]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" [attr.aria-label]="'nav.play' | t">
+      <mat-icon>play_arrow</mat-icon><span class="label">{{ 'nav.play' | t }}</span>
     </a>
-    <a mat-button class="nav-online" routerLink="/rooms" [class.active]="onlineActive()" [attr.aria-current]="onlineActive() ? 'page' : null" aria-label="Online">
-      <mat-icon>public</mat-icon><span class="label">Online</span>
+    <a mat-button class="nav-online" routerLink="/rooms" [class.active]="onlineActive()" [attr.aria-current]="onlineActive() ? 'page' : null" [attr.aria-label]="'nav.online' | t">
+      <mat-icon>public</mat-icon><span class="label">{{ 'nav.online' | t }}</span>
     </a>
-    <button mat-button type="button" class="nav-cards" [matMenuTriggerFor]="cardsMenu" [class.active]="cardsActive()" aria-label="Cards">
+    <button mat-button type="button" class="nav-cards" [matMenuTriggerFor]="cardsMenu" [class.active]="cardsActive()" [attr.aria-label]="'nav.cards' | t">
       <!-- "swords" only exists in Material Symbols, not the legacy Material Icons font. -->
-      <mat-icon fontSet="material-symbols-outlined">swords</mat-icon><span class="label">Cards</span>
+      <mat-icon fontSet="material-symbols-outlined">swords</mat-icon><span class="label">{{ 'nav.cards' | t }}</span>
     </button>
     <mat-menu #cardsMenu="matMenu">
       @for (page of cardPages; track page.path) {
-        <a mat-menu-item [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label }}</a>
+        <a mat-menu-item [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label | t }}</a>
       }
     </mat-menu>
-    <button mat-button type="button" class="nav-rules" [matMenuTriggerFor]="rulesMenu" [class.active]="rulesActive()" aria-label="Rules">
-      <mat-icon>menu_book</mat-icon><span class="label">Rules</span>
+    <button mat-button type="button" class="nav-rules" [matMenuTriggerFor]="rulesMenu" [class.active]="rulesActive()" [attr.aria-label]="'nav.rules' | t">
+      <mat-icon>menu_book</mat-icon><span class="label">{{ 'nav.rules' | t }}</span>
     </button>
     <mat-menu #rulesMenu="matMenu">
       @for (page of rulesPages; track page.path) {
-        <a mat-menu-item [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label }}</a>
+        <a mat-menu-item [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label | t }}</a>
       }
     </mat-menu>
   </nav>
   <span class="spacer"></span>
   @if (auth.loaded()) {
     @if (auth.me(); as me) {
-      <button mat-button type="button" class="account" [matMenuTriggerFor]="accountMenu" aria-label="Account">
+      <button mat-button type="button" class="account" [matMenuTriggerFor]="accountMenu" [attr.aria-label]="'nav.account' | t">
         <mat-icon>account_circle</mat-icon><span class="label">{{ me.displayName }}</span>
       </button>
       <mat-menu #accountMenu="matMenu">
-        <div class="account-summary" mat-menu-item disabled>{{ me.kind === 'guest' ? 'Playing as a guest' : me.email }}</div>
+        <div class="account-summary" mat-menu-item disabled>{{ me.kind === 'guest' ? ('nav.guest' | t) : me.email }}</div>
         @if (me.kind === 'guest') {
-          <a mat-menu-item class="create-account" routerLink="/sign-up">Create Account</a>
+          <a mat-menu-item class="create-account" routerLink="/sign-up">{{ 'nav.createAccount' | t }}</a>
         }
-        <button mat-menu-item type="button" class="sign-out" (click)="signOut()">Sign Out</button>
+        <button mat-menu-item type="button" class="sign-out" (click)="signOut()">{{ 'nav.signOut' | t }}</button>
       </mat-menu>
     } @else {
-      <a mat-button class="sign-in" routerLink="/sign-in"><mat-icon>login</mat-icon><span class="label">Sign In</span></a>
+      <a mat-button class="sign-in" routerLink="/sign-in"><mat-icon>login</mat-icon><span class="label">{{ 'nav.signIn' | t }}</span></a>
     }
   }
   <app-language-switcher />
@@ -49,9 +49,9 @@
     type="button"
     class="music-toggle"
     (click)="music.toggle()"
-    [attr.aria-label]="music.enabled() ? 'Turn Music Off' : 'Turn Music On'"
+    [attr.aria-label]="(music.enabled() ? 'nav.musicOff' : 'nav.musicOn') | t"
     [attr.aria-pressed]="music.enabled()"
-    [attr.title]="music.enabled() ? 'Turn Music Off' : 'Turn Music On'"
+    [attr.title]="(music.enabled() ? 'nav.musicOff' : 'nav.musicOn') | t"
   >
     <mat-icon>{{ music.enabled() ? 'music_note' : 'music_off' }}</mat-icon>
   </button>
@@ -60,9 +60,9 @@
     type="button"
     class="effects-toggle"
     (click)="effects.toggle()"
-    [attr.aria-label]="effects.enabled() ? 'Turn Sound Effects Off' : 'Turn Sound Effects On'"
+    [attr.aria-label]="(effects.enabled() ? 'nav.effectsOff' : 'nav.effectsOn') | t"
     [attr.aria-pressed]="effects.enabled()"
-    [attr.title]="effects.enabled() ? 'Turn Sound Effects Off' : 'Turn Sound Effects On'"
+    [attr.title]="(effects.enabled() ? 'nav.effectsOff' : 'nav.effectsOn') | t"
   >
     <mat-icon>{{ effects.enabled() ? 'volume_up' : 'volume_off' }}</mat-icon>
   </button>
