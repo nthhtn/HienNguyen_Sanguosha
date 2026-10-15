@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { Action, ContentRegistry, GameState, findSkill } from 'engine';
 import { MatMenuModule } from '@angular/material/menu';
-import { actionLabel, conversionLabel, targetLabel } from '../labels';
+import { actionLabel, conversionLabel, registryCardName, targetLabel } from '../labels';
 import { TargetLabel } from './target-label';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
 import { I18n } from '../i18n/i18n.service';
@@ -129,5 +129,5 @@ function conversionAsName(action: UseConversion, state: GameState, registry: Con
       ? registry.cards.get(state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === owner.cardInstanceId)?.definitionId ?? '')?.abilities?.conversions
       : (registry.generals.get(state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId ?? '')?.skills.find((s) => s.id === owner.skillId) ?? findSkill(registry, owner.skillId))?.conversions;
   const as = conversions?.find((c) => c.id === action.via.conversionId)?.as;
-  return (as && registry.cards.get(as)?.name) ?? tr('actions.theCard');
+  return (as && registry.cards.has(as) ? registryCardName(registry, as, tr) : undefined) ?? tr('actions.theCard');
 }

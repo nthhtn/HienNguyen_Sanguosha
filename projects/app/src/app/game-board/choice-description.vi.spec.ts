@@ -1,7 +1,7 @@
 import { ChoiceOption, GameState, PendingChoice } from 'engine';
 import { makeTranslator } from '../i18n/translator';
 import { vi } from '../i18n/vi';
-import { choiceDialogOptions, choiceOptionLabel, describeChoice } from './choice-description';
+import { choiceDialogOptions, choiceOptionLabel, describeChoice, translateLabelText } from './choice-description';
 
 const tr = makeTranslator(vi);
 const players = [
@@ -108,5 +108,18 @@ describe('the engine’s fixed label options', () => {
   it('name a Form’s skill and its General in Vietnamese', () => {
     expect(label('guan-yu/fighting-saint', 'Fighting Saint (Guan Yu)', trVi)).toBe('Võ thánh (Quan Vũ)');
     expect(label('guan-yu/fighting-saint', 'Fighting Saint (Guan Yu)')).toBe('Fighting Saint (Guan Yu)');
+  });
+});
+
+describe('the Action History wording of a label the engine sent', () => {
+  const trVi = makeTranslator(vi, 'vi');
+  it('is found from the text alone', () => {
+    expect(translateLabelText('Lose 1 HP', trVi)).toBe('Mất 1 Sinh lực');
+    expect(translateLabelText('Draw 3, Then Discard 1', trVi)).toBe('Rút 3 lá bài, rồi bỏ 1 lá');
+    expect(translateLabelText('Draw 1, Then Discard 3', trVi)).toBe('Rút 1 lá bài, rồi bỏ 3 lá');
+    expect(translateLabelText('Reduce Max HP by 1', trVi)).toBe('Giảm Sinh lực tối đa đi 1');
+  });
+  it('is the text itself for an unknown label', () => {
+    expect(translateLabelText('Something else', trVi)).toBe('Something else');
   });
 });

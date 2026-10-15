@@ -41,7 +41,7 @@
       },
       "collapse": {
         "name": "Băng hoại",
-        "text": "Vào cuối lượt của Đổng Trác, nếu ông có nhiều Sinh lực hơn mọi người chơi khác, ông phải mất một Sinh lực hoặc giảm giới hạn Sinh lực tối đa đi một."
+        "text": "Vào cuối lượt của Đổng Trác, nếu ông có nhiều Sinh lực hơn mọi người chơi khác, ông phải mất một Sinh lực hoặc giảm Sinh lực tối đa đi một."
       },
       "violent-tyrant": {
         "name": "Bạo ngược",
@@ -135,7 +135,7 @@
       },
       "bloodline": {
         "name": "Huyết duệ",
-        "text": "Kỹ năng Chủ công: Giới hạn bài trên tay của Viên Thiệu tăng thêm hai với mỗi anh hùng còn sống khác."
+        "text": "Kỹ năng Chủ công: Giới hạn bài trên tay của Viên Thiệu tăng thêm hai với mỗi người chơi còn sống khác."
       }
     }
   },
@@ -153,7 +153,7 @@
       },
       "amber-sky": {
         "name": "Hoàng thiên",
-        "text": "Kỹ năng Chủ công: Các anh hùng khác có thể đưa cho Trương Giác một Thiểm hoặc một Thiểm Điện trong lượt của họ."
+        "text": "Kỹ năng Chủ công: Các người chơi khác có thể đưa cho Trương Giác một Thiểm hoặc một Thiểm Điện trong lượt của họ."
       }
     }
   },
@@ -265,7 +265,7 @@
       },
       "seem-foolish": {
         "name": "Nhược ngu",
-        "text": "Kỹ năng Chủ công: Khi đầu lượt của Lưu Thiện, nếu ông có Sinh lực ít nhất hoặc đồng ít nhất, ông lập tức tăng giới hạn Sinh lực thêm một, hồi một Sinh lực và vĩnh viễn có kỹ năng Kích tướng."
+        "text": "Kỹ năng Chủ công: Khi đầu lượt của Lưu Thiện, nếu ông có Sinh lực ít nhất hoặc đồng ít nhất, ông lập tức tăng Sinh lực tối đa thêm một, hồi một Sinh lực và vĩnh viễn có kỹ năng Kích tướng."
       }
     }
   },
@@ -275,7 +275,7 @@
     "skills": {
       "horsemanship": {
         "name": "Mã thuật",
-        "text": "Mã Siêu luôn được tính khoảng cách -1."
+        "text": "Mã Siêu luôn có một Tọa kỵ công -1."
       },
       "iron-cavalry": {
         "name": "Thiết kỵ",
@@ -327,7 +327,7 @@
     "skills": {
       "roar": {
         "name": "Bào hao",
-        "text": "Trương Phi không bị giới hạn số lần tấn công trong lượt của mình."
+        "text": "Trương Phi không bị giới hạn số Sát có thể đánh trong lượt của mình."
       }
     }
   },
@@ -421,7 +421,7 @@
       },
       "strategic-pass": {
         "name": "Tạc hiểm",
-        "text": "Kỹ năng thức tỉnh: Khi bắt đầu lượt của Đặng Ngải mà ông có từ ba Điền trở lên, ông phải giảm Sinh lực tối đa đi một. Sau đó ông vĩnh viễn có khả năng dùng Điền như Thuận Thủ Khiên Dương."
+        "text": "Kỹ năng thức tỉnh: Khi bắt đầu lượt của Đặng Ngải mà ông có từ ba Điền trở lên, ông phải giảm Sinh lực tối đa đi một. Sau đó ông vĩnh viễn có khả năng dùng Điền làm Thuận Thủ Khiên Dương."
       }
     }
   },
@@ -489,7 +489,7 @@
     "skills": {
       "bare-the-chest": {
         "name": "Khỏa y",
-        "text": "Trong giai đoạn rút bài, Hứa Chử có thể rút ít hơn một lá bài. Trong giai đoạn ra bài, mọi sát thương ông gây ra bằng Sát hoặc Quyết Đấu tăng thêm một."
+        "text": "Trong giai đoạn rút bài, Hứa Chử có thể rút ít đi một lá bài. Trong giai đoạn ra bài, mọi sát thương ông gây ra bằng Sát hoặc Quyết Đấu tăng thêm một."
       }
     }
   },
@@ -538,7 +538,7 @@
     }
   },
   "zhen-ji": {
-    "name": "Chân Mật",
+    "name": "Chân Cơ",
     "title": "Bạc hạnh mỹ nhân",
     "skills": {
       "overturned-country": {
@@ -628,7 +628,7 @@
     "title": "Tiểu Bá Vương Giang Đông",
     "skills": {
       "passion": {
-        "name": "Khích ngang",
+        "name": "Kích ngang",
         "text": "Mỗi khi Tôn Sách dùng Quyết Đấu hoặc Sát đỏ, hoặc là mục tiêu của chúng, Tôn Sách rút một lá bài."
       },
       "soul-position": {
@@ -647,7 +647,7 @@
     "skills": {
       "brave-spirit": {
         "name": "Anh hồn",
-        "text": "Trước lượt của mình, nếu Tôn Kiên bị sát thương, ông có thể bắt một người chơi bất kỳ chọn một trong hai: rút X lá bài rồi bỏ 1 lá; hoặc rút 1 lá bài rồi bỏ X lá. X bằng số Sinh lực Tôn Kiên đang thiếu."
+        "text": "Trước lượt của mình, nếu Tôn Kiên đang bị thương, ông có thể bắt một người chơi bất kỳ chọn một trong hai: rút X lá bài rồi bỏ 1 lá; hoặc rút 1 lá bài rồi bỏ X lá. X bằng số Sinh lực Tôn Kiên đang thiếu."
       }
     }
   },

@@ -180,7 +180,7 @@ describe('HandView in Vietnamese', () => {
     (card(el, 'c-sha').querySelector('button.play') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(items().map((i) => text(i))).toEqual(['Đánh Sha nhắm vào Người chơi 1', 'Đánh Sha nhắm vào Người chơi 2']);
+    expect(items().map((i) => text(i))).toEqual(['Đánh Sát nhắm vào Người chơi 1', 'Đánh Sát nhắm vào Người chơi 2']);
   });
 
   it('a two-seat play: the first seat, then "Vào" the second', async () => {
@@ -189,7 +189,7 @@ describe('HandView in Vietnamese', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const firsts = items();
-    expect(firsts.map((i) => text(i))).toEqual(['Đánh Peach nhắm vào Người chơi 1']);
+    expect(firsts.map((i) => text(i))).toEqual(['Đánh Đào nhắm vào Người chơi 1']);
     firsts[0].click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -238,7 +238,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
     fixture.componentRef.setInput('registry', registry);
     fixture.detectChanges();
     const buttons = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].map((b) => text(b));
-    expect(buttons).toEqual(['Kết thúc giai đoạn', 'Dùng 2 lá bài làm Sha']);
+    expect(buttons).toEqual(['Kết thúc giai đoạn', 'Dùng 2 lá bài làm Sát']);
     ((fixture.nativeElement as HTMLElement).querySelector('button.conversion') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();

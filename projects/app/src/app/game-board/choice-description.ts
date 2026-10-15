@@ -23,6 +23,17 @@ const LABEL_OPTIONS: Record<string, { key: MessageKey; params: (numbers: string[
   damage: { key: 'choice.label.damage1', params: () => ({}) },
 };
 
+// The language's wording of a label the engine sent, found from its English text alone (the
+// Action History has no option id); the text itself when no known label matches.
+export function translateLabelText(text: string, tr: Translator): string {
+  const numbers = text.match(/\d+/g) ?? [];
+  for (const entry of Object.values(LABEL_OPTIONS)) {
+    const params = entry.params(numbers);
+    if (englishTranslator(entry.key, params) === text) return tr(entry.key, params);
+  }
+  return text;
+}
+
 function labelOptionText(optionId: string | undefined, text: string, tr: Translator): string {
   if (!optionId) return text;
   const form = optionId.split('/');

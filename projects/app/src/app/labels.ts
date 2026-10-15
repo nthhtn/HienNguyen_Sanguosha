@@ -1,5 +1,5 @@
 import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target, findSkill } from 'engine';
-import { abilityName } from 'content';
+import { abilityName, cardDisplayData } from 'content';
 import type { MessageKey } from './i18n/messages';
 import { englishTranslator, localeOf, Translator } from './i18n/translator';
 
@@ -11,10 +11,16 @@ function findCardInstance(state: GameState, cardInstanceId: string): CardInstanc
   return undefined;
 }
 
-function cardDisplayName(state: GameState, registry: ContentRegistry, cardInstanceId: string): string {
+// A card's name: the registry's English name, or the language's own name when it has one.
+export function registryCardName(registry: ContentRegistry, definitionId: string, tr: Translator = englishTranslator): string {
+  const locale = localeOf(tr);
+  return (locale === 'en' ? undefined : cardDisplayData(definitionId, locale)?.name) ?? registry.cards.get(definitionId)?.name ?? definitionId;
+}
+
+function cardDisplayName(state: GameState, registry: ContentRegistry, cardInstanceId: string, tr: Translator = englishTranslator): string {
   const card = findCardInstance(state, cardInstanceId);
   if (!card) return cardInstanceId;
-  return registry.cards.get(card.definitionId)?.name ?? card.definitionId;
+  return registryCardName(registry, card.definitionId, tr);
 }
 
 function capitalise(word: string): string {
@@ -79,7 +85,7 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
     case 'DrawCardsAction':
       return tr(action.count === 1 ? 'label.action.draw.one' : 'label.action.draw.other', { n: action.count });
     case 'PlayCardAction': {
-      const card = cardDisplayName(state, registry, action.cardInstanceId);
+      const card = cardDisplayName(state, registry, action.cardInstanceId, tr);
       if (action.targets.length === 0) return tr('label.action.play', { card });
       return tr('label.action.playTargeting', { card, targets: action.targets.map((t) => targetLabel(t, state.players, tr)).join(', ') });
     }
@@ -88,7 +94,7 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
     case 'RevealGeneralAction':
       return tr(action.slot === 'main' ? 'label.action.revealMain' : 'label.action.revealDeputy');
     case 'RespondAction':
-      return tr('label.action.respond', { card: cardDisplayName(state, registry, action.cardInstanceId) });
+      return tr('label.action.respond', { card: cardDisplayName(state, registry, action.cardInstanceId, tr) });
     case 'PassAction':
       return tr('label.action.pass');
     case 'EndPhaseAction':
@@ -106,7 +112,7 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
     case 'CancelSelectionAction':
       return tr('label.action.cancel');
     case 'DiscardCardAction':
-      return tr('label.action.discard', { card: cardDisplayName(state, registry, action.cardInstanceId) });
+      return tr('label.action.discard', { card: cardDisplayName(state, registry, action.cardInstanceId, tr) });
   }
 }
 
@@ -126,7 +132,7 @@ export function conversionLabel(
   tr: Translator = englishTranslator
 ): string {
   const owner = action.via.owner;
-  const cardName = (id: string) => registry.cards.get(id)?.name ?? id;
+  const cardName = (id: string) => registryCardName(registry, id, tr);
   let base = tr('label.useCards');
   if (owner.kind === 'equipment') {
     const worn = findCardInstance(state, owner.cardInstanceId);

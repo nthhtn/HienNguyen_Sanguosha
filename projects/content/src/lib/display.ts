@@ -226,7 +226,12 @@ const titleCase = (id: string) => id.split('-').map((w) => w.charAt(0).toUpperCa
 // The name of an ability, for any text: a worn card's name, else a skill's
 // name from the General data, else its id in Title Case.
 export function abilityName(abilityId: string, locale = 'en'): string {
-  return cardDisplayData(abilityId, locale)?.name ?? skillNames(locale).get(abilityId) ?? SKILL_NAMES.get(abilityId) ?? titleCase(abilityId);
+  const card = cardDisplayData(abilityId, locale);
+  // A General's skill can share an id with a card (Dong Zhuo's Wine skill and the Wine card): a
+  // worn card is an ability only through its Equipment, so a skill of that id wins otherwise.
+  const skill = skillNames(locale).get(abilityId);
+  if (skill && card?.category !== 'equipment') return skill;
+  return card?.name ?? SKILL_NAMES.get(abilityId) ?? titleCase(abilityId);
 }
 
 // A language's skill names by skill id, built once per language.

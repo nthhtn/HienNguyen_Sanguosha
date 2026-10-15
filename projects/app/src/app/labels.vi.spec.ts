@@ -3,7 +3,7 @@ import { buildContentRegistry } from 'content';
 import { makeTranslator } from './i18n/translator';
 import { vi } from './i18n/vi';
 import {
-  actionLabel, cardIdDisplayName, conversionLabel, generalDisplayName, kingdomDisplayName, seatName, suitLabel, targetLabel, targetingParts,
+  actionLabel, cardIdDisplayName, conversionLabel, generalDisplayName, kingdomDisplayName, registryCardName, seatName, suitLabel, targetLabel, targetingParts,
 } from './labels';
 
 const tr = makeTranslator(vi);
@@ -170,5 +170,15 @@ describe('General and skill names follow the translator locale', () => {
   it('a skill with no Vietnamese name keeps its English name', () => {
     const reconsider: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'made-up-skill' } };
     expect(actionLabel(reconsider, state, registry, trVi)).toBe('Dùng Made Up Skill');
+  });
+});
+
+describe('card names in action labels follow the translator locale', () => {
+  const trVi = makeTranslator(vi, 'vi');
+  it('a registry card reads in Vietnamese, and in English with no translator', () => {
+    expect(registryCardName(registry, 'sha', trVi)).toBe('Sát');
+    expect(registryCardName(registry, 'sha')).toBe('Sha');
+    expect(registryCardName(registry, 'sha', tr)).toBe('Sha');
+    expect(registryCardName(registry, 'no-such-card', trVi)).toBe('no-such-card');
   });
 });

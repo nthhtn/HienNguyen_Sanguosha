@@ -85,3 +85,17 @@ describe('the locale-aware display lookups', () => {
     expect(abilityName('constructor', 'vi')).toBe('Constructor');
   });
 });
+
+describe('skill and card ids that coincide', () => {
+  it('only Dong Zhuo’s Wine skill shares an id with a card that is not Equipment', () => {
+    const skillIds = new Set(Object.values(generalsData).flatMap((g) => g.skills.map((s) => skillIdOf(s.name))));
+    expect(Object.keys(cardsData).filter((id) => skillIds.has(id) && cardsData[id].category !== 'equipment')).toEqual(['wine']);
+  });
+
+  it('names the skill for the skill’s id and the card for the card’s', () => {
+    expect(abilityName('wine', 'vi')).toBe('Tửu trì');
+    expect(cardDisplayData('wine', 'vi')!.name).toBe('Tửu');
+    expect(abilityName('wine')).toBe('Wine');
+    expect(abilityName('axe', 'vi')).toBe('Quán Thạch Phủ');
+  });
+});

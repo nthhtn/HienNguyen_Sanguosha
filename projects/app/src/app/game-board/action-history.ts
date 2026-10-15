@@ -2,6 +2,7 @@ import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat, Use
 import { abilityName, cardDisplayData, generalDisplayData } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 import { Force, cardFaceLabel, cardIdDisplayName, forceOf, generalDisplayName, judgmentReaderName, seatName, suitSymbol, targetLabel } from '../labels';
+import { translateLabelText } from './choice-description';
 
 export type ActionHistoryEntry =
   | { kind: 'turn'; turnNumber: number; seatName: string }
@@ -246,7 +247,7 @@ export function actionHistory(
           // Believing or doubting a claim (Bewilder).
           action(tr(shows.text === 'Doubt' ? 'history.doubted' : 'history.believed', { chooser, owner: name(reason.owner.seatId), card: cardName(reason.cardId, tr) }));
         } else if (shows.kind === 'label') {
-          action(tr('history.chose', { chooser, what: shows.text }));
+          action(tr('history.chose', { chooser, what: translateLabelText(shows.text, tr) }));
         }
         break;
       }
