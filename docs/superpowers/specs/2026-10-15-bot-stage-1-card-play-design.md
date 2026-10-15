@@ -1,6 +1,6 @@
 # Bot Stage 1 — Card Play — Design Spec
 
-Status: Approved in conversation (the roadmap); pending written-spec review
+Status: Approved
 Date: 2026-10-15
 
 Part of `docs/superpowers/specs/2026-10-15-bot-improvement-roadmap-design.md`.
@@ -77,7 +77,7 @@ the last cards the bot discards.
   and `discardRank`), keeping `rule-based.ts` from growing.
 - `policies.ts` registers the all-on variant as `rule-based-cards` and gains
   `registerPolicy(policy)` so experiments can add single-rule variants without
-  editing the registry file. `sim`'s `BOT_KINDS` accepts any registered id.
+  editing the registry file. `sim`'s `botKinds()` (used by `parseBotKind`) lists `random` and every registered id.
 
 ## Experiment
 
@@ -124,8 +124,12 @@ game, with a 95% interval.
 | Equipment only | −2.1 pp (−3.0 to −1.3): baseline better |
 | Discard only | +0.6 pp (−0.1 to +1.3): no clear difference |
 
-Sanity checks before the experiment: with every switch off, `rule-based`
-against `rule-based-v1` reads exactly 0.0 pp over 200 games.
+Check that the switches off leave the bot unchanged: `rule-based` against
+`rule-based-v1` reads exactly 0.0 pp, but that proves only that the tournament
+is deterministic (both policies now run the same code). The real check, made
+by the branch reviewer, compared a hash of every game's full event log with
+`rule-based` in every seat, on this branch and on the commit before it
+(300 games, seeds 0 to 149, 4 and 6 seats): all identical.
 
 Conclusion: **nothing ships and `rule-based` is unchanged.** The all-rules
 variant was worse, so the confirmation range (seed 200000) was never run, and
@@ -133,17 +137,21 @@ no single rule cleared on its own, so none went to it either.
 
 What the runs suggest, as hypotheses and not findings:
 - The equipment rule (swapping a worn weapon or armor for a better one by range
-  or by a fixed armor order) hurts. It accounts for the whole of the all-rules
-  loss; the other three rules sum to roughly +1.5 pp. Likely causes: range
-  is a poor proxy for a weapon's value here (weapon skills matter more than
-  range), and the armor order is a guess.
+  or by a fixed armor order) is the only single rule that clearly hurts
+  (−2.1 pp); the other three sum to roughly +1.5 pp. The single-rule results
+  do not add up to the all-rules figure (their sum is −0.6 pp against −1.2 pp
+  measured), so the rules may interact, or it may be noise. The all-rules
+  interval (−2.3 to −0.0) only just excludes zero after rounding. Plausible
+  causes of the equipment loss: range is a poor proxy for a weapon's value
+  here (weapon skills may matter more than range), and the armor order is a
+  guess.
 - Wine (+0.8) and the discard ranking (+0.6) both lean positive, but neither
   cleared its margin. A variant of Peach, Wine and Discard without the
   equipment rule was not run: it is outside the experiment this spec fixed, and
   running it to pick a winner after seeing the results is the "best of several
   tries" trap. It would need to be a new, pre-registered experiment on fresh
   seed ranges.
-- The bot's weapon choices do not depend on range alone, so any later
+- A weapon's value probably does not depend on range alone, so any later
   equipment rule should be judged per card, not by a single ordering.
 
 The single-rule runs used a throwaway script outside the repository that
