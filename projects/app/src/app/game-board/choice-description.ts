@@ -1,6 +1,6 @@
 import { Action, ChoiceOption, GameState, PendingChoice, Player, Seat } from 'engine';
 import { abilityName, cardDisplayData, choicePromptText, seatPickText } from 'content';
-import { englishTranslator, Translator } from '../i18n/translator';
+import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 import { cardFaceLabel, cardIdDisplayName, forceOf, seatName, suitLabel } from '../labels';
 import type { ChoiceDialogOption } from './choice-dialog';
 
@@ -41,14 +41,14 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
   if (choice.reason.kind === 'ability' && (choice.verb === 'pick' || choice.verb === 'give')) {
     const title = abilityName(choice.reason.abilityId);
     if (choice.verb === 'give') return { title, prompt: tr('choice.give'), confirmLabel: tr('choice.confirm.give') };
-    const fixed = choicePromptText(choice.reason.abilityId);
+    const fixed = choicePromptText(choice.reason.abilityId, localeOf(tr));
     // A seat pick keeps the seat wording (Exile, Alliance); a mixed or label pick uses its own prompt.
     const onlySeats = choice.options.every((o) => o.shows.kind === 'seat');
-    if (fixed && !(onlySeats && seatPickText(choice.reason.abilityId))) return { title, prompt: fixed, confirmLabel: tr('choice.confirm.choose') };
+    if (fixed && !(onlySeats && seatPickText(choice.reason.abilityId, localeOf(tr)))) return { title, prompt: fixed, confirmLabel: tr('choice.confirm.choose') };
     const kinds = new Set(choice.options.map((o) => o.shows.kind));
     const only = kinds.size === 1 ? [...kinds][0] : null;
     // A skill's own words for its seat pick (Rouse the Tiger), its target named.
-    const own = seatPickText(choice.reason.abilityId);
+    const own = seatPickText(choice.reason.abilityId, localeOf(tr));
     const target = choice.reason.targetSeatId;
     const seatPrompt = own ? own.replace('{target}', target ? seatName(state.players, target, tr) : tr('choice.aSeat')) : tr('choice.pick.seat');
     const prompt = only === 'seat' ? seatPrompt : only === 'suit' ? tr('choice.pick.suit') : tr('choice.pick.one');

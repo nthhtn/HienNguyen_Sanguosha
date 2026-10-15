@@ -2,7 +2,7 @@ import { Action, CardInstance, GameState, PendingSelection } from 'engine';
 import { abilityHint, abilityName, cardDisplayData, generalDisplayData, selectionText, stepSelectionText } from 'content';
 import { cardFaceLabel, cardIdDisplayName, generalDisplayName, seatName } from '../labels';
 import type { MessageKey } from '../i18n/messages';
-import { englishTranslator, Translator } from '../i18n/translator';
+import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
 type SelectAction = Extract<Action, { kind: 'SelectAction' }>;
 
@@ -40,7 +40,7 @@ export function describeAsk(state: GameState, viewerSeatId: string, legal: reado
   const reveals = shows?.kind === 'use' && !!shows.reveals;
   const generalId = owner.kind === 'general' ? (state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId ?? null) : null;
   const generalName = generalId ? (generalDisplayData(generalId)?.name ?? generalDisplayName(generalId, tr)) : null;
-  const hint = abilityHint(abilityId);
+  const hint = abilityHint(abilityId, localeOf(tr));
   return {
     title: name,
     prompt: reveals && generalName
@@ -127,7 +127,7 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
   });
   const then = selection.then;
   const step = then.kind === 'skill-step' || then.kind === 'card-step' ? then.step.step : null;
-  const text = (step ? stepSelectionText(step) : null) ?? (selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId) : null);
+  const text = (step ? stepSelectionText(step, localeOf(tr)) : null) ?? (selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId, localeOf(tr)) : null);
   const reason = selection.reason;
   return {
     title: reason.kind === 'ability' ? abilityName(reason.abilityId) : reason.kind === 'choice' ? cardName(reason.card.as, tr) : tr('selection.title'),

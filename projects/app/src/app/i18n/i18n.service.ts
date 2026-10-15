@@ -40,7 +40,12 @@ export class I18n {
 
   readonly locale = signal<LocaleCode>(readLocale());
   // For the pure builders (history, descriptions): follows the current language.
-  readonly translator: Translator = (key, params) => this.t(key, params);
+  // `locale` is a getter over the signal, so a computed that calls a builder
+  // re-runs when the language changes.
+  readonly translator: Translator = Object.defineProperty((key: MessageKey, params?: MessageParams) => this.t(key, params), 'locale', {
+    get: () => this.locale(),
+    enumerable: true,
+  });
 
   constructor() {
     const saved = this.locale();

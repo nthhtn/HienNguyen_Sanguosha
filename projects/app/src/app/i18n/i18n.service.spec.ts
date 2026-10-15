@@ -95,6 +95,13 @@ describe('I18n', () => {
     expect(i18n.translator('nav.language')).toBe('Ngôn ngữ');
   });
 
+  it('reports the live locale on its translator, so a computed that uses it re-runs', async () => {
+    const i18n = setup();
+    expect(i18n.translator.locale).toBe('en');
+    await i18n.setLocale('vi');
+    expect(i18n.translator.locale).toBe('vi');
+  });
+
   it('lets the last click win when an earlier load finishes late', async () => {
     let release!: (messages: Messages) => void;
     const i18n = setup({ vi: () => new Promise<Messages>((resolve) => (release = resolve)) });
