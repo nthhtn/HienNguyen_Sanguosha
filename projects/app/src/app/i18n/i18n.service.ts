@@ -2,8 +2,12 @@ import { DOCUMENT } from '@angular/common';
 import { Injectable, inject, signal } from '@angular/core';
 import { CATALOG_LOADERS } from './catalogs';
 import { en } from './en';
+import { format } from './format';
 import { DEFAULT_LOCALE, LocaleCode, isLocaleCode } from './locales';
 import type { MessageKey, MessageParams, Messages } from './messages';
+import type { Translator } from './translator';
+
+export { format };
 
 const LOCALE_KEY = 'locale';
 
@@ -24,15 +28,6 @@ function writeLocale(code: LocaleCode): void {
   }
 }
 
-// Fills {name} placeholders. A missing param leaves its placeholder visible, and
-// a function replacer keeps '$&' and friends in a value from being interpreted.
-export function format(template: string, params?: MessageParams): string {
-  if (!params) return template;
-  return template.replace(/\{(\w+)\}/g, (placeholder, name: string) =>
-    Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : placeholder
-  );
-}
-
 // The app's language. Presentation only: nothing here reaches the engine, the
 // game state or the server.
 @Injectable({ providedIn: 'root' })
@@ -44,6 +39,8 @@ export class I18n {
   private latest = 0;
 
   readonly locale = signal<LocaleCode>(readLocale());
+  // For the pure builders (history, descriptions): follows the current language.
+  readonly translator: Translator = (key, params) => this.t(key, params);
 
   constructor() {
     const saved = this.locale();

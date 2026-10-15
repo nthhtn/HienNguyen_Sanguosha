@@ -88,6 +88,13 @@ describe('I18n', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 
+  it('offers a translator that follows the current language', async () => {
+    const i18n = setup();
+    expect(i18n.translator('nav.language')).toBe('Language');
+    await i18n.setLocale('vi');
+    expect(i18n.translator('nav.language')).toBe('Ngôn ngữ');
+  });
+
   it('lets the last click win when an earlier load finishes late', async () => {
     let release!: (messages: Messages) => void;
     const i18n = setup({ vi: () => new Promise<Messages>((resolve) => (release = resolve)) });
