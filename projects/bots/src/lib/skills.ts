@@ -104,7 +104,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
   const hand = new Set(handCards(view, me).map((c) => c.instanceId));
   switch (selection.reason.abilityId) {
     case 'devil': {
-      const id = selection.then.kind === 'replace-judgment' ? devilCard(view, me, selection.then.judgment, registry) : null;
+      const id = selection.then.kind === 'replace-judgment' ? devilCard(view, me, selection.then.judgment, registry, eligible) : null;
       return id ? [id] : 'cancel';
     }
     case 'displace': {
