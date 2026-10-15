@@ -223,7 +223,7 @@ export class GeneralSelection {
   });
 
   // What the chip says; the role values themselves ('Main', 'Deputy') stay the logic's.
-  protected roleName(role: string): string {
+  protected roleName(role: 'Main' | 'Deputy'): string {
     return this.i18n.t(role === 'Main' ? 'select.main' : 'select.deputy');
   }
 

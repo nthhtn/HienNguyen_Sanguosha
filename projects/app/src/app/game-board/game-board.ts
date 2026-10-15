@@ -418,9 +418,10 @@ export class GameBoard {
     });
   }
 
-  // The dialogs below describe their decision in the language that is on when they open
-  // (the open* methods run untracked): a language switch changes the next dialog, not
-  // an open one.
+  // The text that describes a decision (its prompt, option labels and the Compete result's
+  // names) is built when the dialog opens, in the language then on: the open* methods run
+  // untracked. A dialog's own fixed words do follow a switch, but dialogs are modal, so the
+  // toolbar cannot be reached while one is open.
   // The Discard phase in one step: the dialog returns exactly `count` cards,
   // each submitted as the engine's own legal DiscardCardAction.
   private openDiscardDialog(count: number): void {
