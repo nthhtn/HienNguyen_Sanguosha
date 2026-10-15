@@ -1,5 +1,6 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
+import viProse from '../../data/locales/vi/prose.json';
 
 export interface GeneralDisplayData {
   name: string;
@@ -91,8 +92,8 @@ const ABILITY_HINTS: Record<string, string> = {
   'direct-instruction': "Place an Equipment card from your hand in another seat's empty slot, then draw 1 card",
 };
 
-export function abilityHint(abilityId: string): string | null {
-  return ABILITY_HINTS[abilityId] ?? null;
+export function abilityHint(abilityId: string, locale = 'en'): string | null {
+  return lookup(proseOf(locale)?.hints, abilityId) ?? lookup(ABILITY_HINTS, abilityId) ?? null;
 }
 
 // What a skill's selection says: its prompt, its confirm button and, when
@@ -126,8 +127,8 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   instigate: { prompt: 'Choose a seat to play a Sha at you', confirm: 'Choose' },
 };
 
-export function selectionText(abilityId: string): { prompt: string; confirm: string; cancel?: string } | null {
-  return SELECTION_TEXT[abilityId] ?? null;
+export function selectionText(abilityId: string, locale = 'en'): { prompt: string; confirm: string; cancel?: string } | null {
+  return lookup(proseOf(locale)?.selection, abilityId) ?? lookup(SELECTION_TEXT, abilityId) ?? null;
 }
 
 // What a skill's seat pick asks, when "Choose a seat" says too little.
@@ -142,8 +143,8 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   'direct-instruction': 'Choose a seat to place the card in',
 };
 
-export function seatPickText(abilityId: string): string | null {
-  return SEAT_PICK_TEXT[abilityId] ?? null;
+export function seatPickText(abilityId: string, locale = 'en'): string | null {
+  return lookup(proseOf(locale)?.seatPick, abilityId) ?? lookup(SEAT_PICK_TEXT, abilityId) ?? null;
 }
 
 // What a skill's pick says when it mixes seats and labels, or is all labels.
@@ -157,8 +158,8 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
   stubborn: 'Choose a card to give back; you take the others',
 };
 
-export function choicePromptText(abilityId: string): string | null {
-  return CHOICE_PROMPT_TEXT[abilityId] ?? null;
+export function choicePromptText(abilityId: string, locale = 'en'): string | null {
+  return lookup(proseOf(locale)?.choicePrompt, abilityId) ?? lookup(CHOICE_PROMPT_TEXT, abilityId) ?? null;
 }
 
 // What a selection says by the step it leads to, whatever opened it:
@@ -173,8 +174,8 @@ const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; can
   'move-card': { prompt: 'Choose a seat to move a card from', confirm: 'Choose' },
 };
 
-export function stepSelectionText(step: string): { prompt: string; confirm: string; cancel?: string } | null {
-  return STEP_SELECTION_TEXT[step] ?? null;
+export function stepSelectionText(step: string, locale = 'en'): { prompt: string; confirm: string; cancel?: string } | null {
+  return lookup(proseOf(locale)?.stepSelection, step) ?? lookup(STEP_SELECTION_TEXT, step) ?? null;
 }
 
 // A skill's id: its English name in kebab case, apostrophes dropped
@@ -216,7 +217,45 @@ const COMPETE_OUTCOMES: Record<string, { won: string; lost: string }> = {
   },
 };
 
-export function competeOutcomeText(abilityId: string, won: boolean, names: { user: string; target: string }): string | null {
-  const outcome = Object.prototype.hasOwnProperty.call(COMPETE_OUTCOMES, abilityId) ? COMPETE_OUTCOMES[abilityId] : null;
+export function competeOutcomeText(abilityId: string, won: boolean, names: { user: string; target: string }, locale = 'en'): string | null {
+  const outcome = lookup(proseOf(locale)?.competeOutcomes, abilityId) ?? lookup(COMPETE_OUTCOMES, abilityId);
   return outcome ? (won ? outcome.won : outcome.lost).replaceAll('{user}', names.user).replaceAll('{target}', names.target) : null;
+}
+
+// The English prose tables, for the parity spec and for translation tools: every
+// other language's prose file must cover exactly these ids.
+export const ENGLISH_PROSE = {
+  hints: ABILITY_HINTS,
+  selection: SELECTION_TEXT,
+  seatPick: SEAT_PICK_TEXT,
+  choicePrompt: CHOICE_PROMPT_TEXT,
+  stepSelection: STEP_SELECTION_TEXT,
+  competeOutcomes: COMPETE_OUTCOMES,
+};
+
+// One language's prose, shaped like the English tables above.
+interface ProseText {
+  prompt: string;
+  confirm: string;
+  cancel?: string;
+}
+interface Prose {
+  hints: Record<string, string>;
+  selection: Record<string, ProseText>;
+  seatPick: Record<string, string>;
+  choicePrompt: Record<string, string>;
+  stepSelection: Record<string, ProseText>;
+  competeOutcomes: Record<string, { won: string; lost: string }>;
+}
+
+// Languages other than English that have prose; any other locale reads English.
+const PROSE: Record<string, Prose> = { vi: viProse };
+
+function proseOf(locale: string): Prose | undefined {
+  return Object.prototype.hasOwnProperty.call(PROSE, locale) ? PROSE[locale] : undefined;
+}
+
+// An own entry of a table: an id such as 'constructor' is not an entry.
+function lookup<T>(table: Readonly<Record<string, T>> | undefined, id: string): T | undefined {
+  return table && Object.prototype.hasOwnProperty.call(table, id) ? table[id] : undefined;
 }
