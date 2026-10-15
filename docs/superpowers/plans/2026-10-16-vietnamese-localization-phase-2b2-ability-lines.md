@@ -175,20 +175,20 @@ describe('competing', () => {
     ]);
     expect(vi_(won)).toEqual([
       `${justice} của Seat 0: thêm một Sha trong lượt này, ở mọi khoảng cách, thêm một mục tiêu`,
-      'Seat 0 so tài với Seat 1: 7 ♠ đấu Q ♥, Seat 0 thắng',
+      'Seat 0 đấu điểm với Seat 1: 7 ♠ so với Q ♥, Seat 0 thắng',
     ]);
   });
 
   it('a lost compete names the other seat as the winner, and bars the Sha', () => {
     const lost = [...shown, used('compete-lost', { targetSeatId: 'seat-1', abilityId: 'heavens-justice' })];
     expect(en_(lost)).toEqual([`Seat 0's ${justice}: no Sha this turn`, 'Seat 0 competed with Seat 1: 7 ♠ against Q ♥, Seat 1 won']);
-    expect(vi_(lost)).toEqual([`${justice} của Seat 0: không có Sha trong lượt này`, 'Seat 0 so tài với Seat 1: 7 ♠ đấu Q ♥, Seat 1 thắng']);
+    expect(vi_(lost)).toEqual([`${justice} của Seat 0: không có Sha trong lượt này`, 'Seat 0 đấu điểm với Seat 1: 7 ♠ so với Q ♥, Seat 1 thắng']);
   });
 
   it('with no shown cards prints no faces, and no follow-up for another skill', () => {
     const bare = [used('compete-won', { targetSeatId: 'seat-1' })];
     expect(en_(bare)).toEqual(['Seat 0 competed with Seat 1, Seat 0 won']);
-    expect(vi_(bare)).toEqual(['Seat 0 so tài với Seat 1, Seat 0 thắng']);
+    expect(vi_(bare)).toEqual(['Seat 0 đấu điểm với Seat 1, Seat 0 thắng']);
   });
 });
 
@@ -304,8 +304,8 @@ and in `projects/app/src/app/i18n/vi.ts`, append inside the object (after the la
   'history.claimTrue': '{card} của {owner} là thật',
   'history.claimFalse': '{card} của {owner} là nói dối',
   'history.tookHandCard': '{owner} lấy một lá bài trên tay của {target} ({ability})',
-  'history.competed': '{owner} so tài với {target}, {winner} thắng',
-  'history.competedFaces': '{owner} so tài với {target}: {mine} đấu {theirs}, {winner} thắng',
+  'history.competed': '{owner} đấu điểm với {target}, {winner} thắng',
+  'history.competedFaces': '{owner} đấu điểm với {target}: {mine} so với {theirs}, {winner} thắng',
   'history.heavensWon': '{ability} của {owner}: thêm một {sha} trong lượt này, ở mọi khoảng cách, thêm một mục tiêu',
   'history.heavensLost': '{ability} của {owner}: không có {sha} trong lượt này',
   'history.reborn': '{owner} dùng {ability}: bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3 và lật lại',
