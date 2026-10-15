@@ -121,6 +121,7 @@ Defaults proposed and accepted:
   Subtypes: Vũ khí (Weapon), Giáp (Armor), Ngựa (Mount).
 - Hand, Discard Pile, Draw Pile: Bài trên tay, Chồng bài bỏ, Chồng bài rút.
 - Dying: Cận kề cái chết. Reveal and Face Down: Lật Tướng, Úp.
+- Farm (Deng Ai's judged-card status): Điền (user decision, 2026-10-16).
 - Compete (a skill's point contest): đấu điểm (user decision, 2026-10-16); the two faces are joined with "so với".
 - Lord: Chủ công.
 - Suits keep their symbols. Colours: đỏ, đen.

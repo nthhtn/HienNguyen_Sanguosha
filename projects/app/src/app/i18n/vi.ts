@@ -182,7 +182,7 @@ export const vi: Messages = {
   'history.collapsedMax': '{owner} giảm Sinh lực tối đa bằng {ability}',
   'history.skippedOwnPhase': '{owner} bỏ qua giai đoạn {phase} của mình bằng {ability}',
   'history.movedCard': '{owner} chuyển một lá bài cho {target} ({ability})',
-  'history.farmed': '{ability} của {owner}: lá phán xét trở thành Farm',
+  'history.farmed': '{ability} của {owner}: lá phán xét trở thành Điền',
   'history.awakened': '{owner} thức tỉnh: {ability}',
   'history.paidBasic': '{target} bỏ một lá bài Cơ bản cho {ability} của {owner}',
   'history.extraTurn': '{owner} cho {target} thêm một lượt ({ability})',

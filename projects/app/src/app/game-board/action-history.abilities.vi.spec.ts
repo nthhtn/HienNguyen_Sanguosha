@@ -58,7 +58,7 @@ const rows: Row[] = [
   ['skipped-discard', 'skipped-discard', false, null, 'Seat 0 skipped their Discard Phase with Axe', 'Seat 0 bỏ qua giai đoạn bỏ bài của mình bằng Axe'],
   ['skipped, an unknown phase', 'skipped-start', false, null, 'Seat 0 skipped their Start Phase with Axe', 'Seat 0 bỏ qua giai đoạn Start của mình bằng Axe'],
   ['moved-card', 'moved-card', true, null, 'Seat 0 moved a card to Seat 1 (Axe)', 'Seat 0 chuyển một lá bài cho Seat 1 (Axe)'],
-  ['farmed', 'farmed', false, null, "Seat 0's Axe: the judged card becomes a Farm", 'Axe của Seat 0: lá phán xét trở thành Farm'],
+  ['farmed', 'farmed', false, null, "Seat 0's Axe: the judged card becomes a Farm", 'Axe của Seat 0: lá phán xét trở thành Điền'],
   ['awakened', 'awakened', false, null, 'Seat 0 awakened: Axe', 'Seat 0 thức tỉnh: Axe'],
   ['paid', 'paid', true, null, "Seat 1 discarded a Basic card for Seat 0's Axe", 'Seat 1 bỏ một lá bài Cơ bản cho Axe của Seat 0'],
   ['extra-turn', 'extra-turn', true, null, 'Seat 0 gave Seat 1 an extra turn (Axe)', 'Seat 0 cho Seat 1 thêm một lượt (Axe)'],
