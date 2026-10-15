@@ -37,7 +37,7 @@ describe('an ability hint', () => {
   it('is Vietnamese with a Vietnamese translator, with the target named', () => {
     expect(both((t) => describeAsk(state({ pendingChoice: ask('seat-1') }), 'seat-0', asked, t)!.hint)).toEqual({
       en: 'Discard 2 cards to make your Sha hit Seat 1',
-      vi: 'Bỏ 2 lá bài để Sát của bạn trúng Seat 1',
+      vi: 'Bỏ 2 lá bài để Sát của bạn trúng Người chơi 1',
     });
   });
 
@@ -49,7 +49,7 @@ describe('an ability hint', () => {
   });
 
   it('stays English when the translator has the catalog but no locale', () => {
-    expect(describeAsk(state({ pendingChoice: ask('seat-1') }), 'seat-0', asked, trCatalogOnly)!.hint).toBe('Discard 2 cards to make your Sha hit Seat 1');
+    expect(describeAsk(state({ pendingChoice: ask('seat-1') }), 'seat-0', asked, trCatalogOnly)!.hint).toBe('Discard 2 cards to make your Sha hit Người chơi 1');
   });
 });
 
@@ -97,7 +97,7 @@ describe('a skill’s pick prompt', () => {
   it('a seat pick in the skill’s own words, with its target named', () => {
     expect(both((t) => describeChoice(state({ pendingChoice: pick('rouse-the-tiger', [seatOption], 'seat-1') }), 'seat-0', t)!.prompt)).toEqual({
       en: 'Choose a seat for Seat 1 to damage',
-      vi: 'Chọn một người chơi để Seat 1 gây sát thương',
+      vi: 'Chọn một người chơi để Người chơi 1 gây sát thương',
     });
   });
 

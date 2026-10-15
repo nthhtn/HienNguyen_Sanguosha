@@ -34,8 +34,8 @@ const asked: Action[] = ['use', 'decline'].map((optionId) => ({ kind: 'ChooseOpt
 describe('describeAsk in Vietnamese', () => {
   it('names the ability and its target', () => {
     expect(describeAsk(state({ pendingChoice: ask('axe', 'seat-1') }), 'seat-0', asked, tr)).toMatchObject({
-      prompt: 'Dùng Axe lên Seat 1?',
-      hint: 'Discard 2 cards to make your Sha hit Seat 1',
+      prompt: 'Dùng Axe lên Người chơi 1?',
+      hint: 'Discard 2 cards to make your Sha hit Người chơi 1',
       useLabel: 'Dùng',
     });
   });
@@ -83,7 +83,7 @@ describe('describeSelection in Vietnamese', () => {
 
   it('use as a Tool, and play a card at a seat', () => {
     expect(describe2(selection({ then: { kind: 'use-card', as: 'sha', targets: [], counted: true } }))).toMatchObject({ prompt: 'Chọn 2 lá bài trên tay để dùng làm Sha', confirmLabel: 'Dùng' });
-    expect(describe2(selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } }))).toMatchObject({ prompt: 'Chọn Sha để đánh vào Seat 1' });
+    expect(describe2(selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } }))).toMatchObject({ prompt: 'Chọn Sha để đánh vào Người chơi 1' });
     expect(describeEn(selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } }))).toMatchObject({ prompt: 'Choose a Sha to play at Seat 1' });
   });
 

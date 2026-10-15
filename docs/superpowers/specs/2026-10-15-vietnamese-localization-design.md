@@ -1,6 +1,6 @@
 # Vietnamese Localization (Game Screen) — Design Spec
 
-Status: Approved; phase 1 built; phase 2 amended 2026-10-15
+Status: Approved; phases 1 to 5 built (2026-10-16); the Vietnamese text is draft until reviewed
 Date: 2026-10-15
 
 ## Purpose
@@ -196,6 +196,13 @@ Each phase is mergeable on its own. The app behaves as before until phase 5.
    rules text in batches by force, each batch validated.
 5. **Vietnamese UI catalog:** `vi` strings, the visual check, the
    unreviewed-entries report, and the Vietnamese style rule in `CLAUDE.md`.
+
+## Phase 5 notes
+
+- Review status: `projects/content/data/locales/vi/review.json` lists the reviewed entries (UI keys, General ids, card ids, prose ids by table); anything not listed is a draft. `npm run i18n:status` prints the counts (`-- --list` names the drafts) and fails on an id that no longer exists.
+- `projects/content/data/locales/vi/glossary.json` holds the checked terms: a spec requires each term that an English skill or card text uses to appear in its agreed form in the Vietnamese text.
+- Visual check (headless Chrome against `ng serve`, Vietnamese, a bot game): the toolbar, General selection, the board, the hand, the Instigate dialog and the history panel showed no overflow. It found one bug, fixed: the mode's default seat name "Seat N" was shown untranslated, so `seatName` now treats it as a placeholder.
+- Left for later: Setup, Wiki and Rules, auth, rooms, lobby and the online-only screens, and the error banner.
 
 ## Risks
 

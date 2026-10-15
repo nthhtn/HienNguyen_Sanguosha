@@ -24,11 +24,11 @@ const toolChoice = (verb: PendingChoice['verb'], targetSeatId?: string, options:
 
 describe('describeChoice in Vietnamese', () => {
   it('a skill discarding from another seat', () => {
-    expect(describeChoice(state(skill('sudden-attack', 'discard', 'seat-1')), 'seat-0', tr)).toMatchObject({ prompt: 'Chọn một lá bài của Seat 1 để bỏ', confirmLabel: 'Bỏ bài' });
+    expect(describeChoice(state(skill('sudden-attack', 'discard', 'seat-1')), 'seat-0', tr)).toMatchObject({ prompt: 'Chọn một lá bài của Người chơi 1 để bỏ', confirmLabel: 'Bỏ bài' });
   });
 
   it('a Tool taking from another seat', () => {
-    expect(describeChoice(state(toolChoice('take', 'seat-1')), 'seat-0', tr)).toMatchObject({ prompt: 'Chọn một lá bài để lấy từ Seat 1', confirmLabel: 'Lấy' });
+    expect(describeChoice(state(toolChoice('take', 'seat-1')), 'seat-0', tr)).toMatchObject({ prompt: 'Chọn một lá bài để lấy từ Người chơi 1', confirmLabel: 'Lấy' });
   });
 
   it('a verb other than take or discard keeps its own wording, in English and Vietnamese', () => {
@@ -40,7 +40,7 @@ describe('describeChoice in Vietnamese', () => {
   it('believe or doubt a claim', () => {
     const doubt = skill('bewilder', 'pick', undefined, [{ id: 'believe', shows: { kind: 'label', text: 'Believe' }, effects: [] }], 'sha');
     doubt.reason = { kind: 'ability', owner: { kind: 'general', seatId: 'seat-1', slot: 'main', skillId: 'bewilder' }, abilityId: 'bewilder', cardId: 'sha' };
-    expect(describeChoice(state(doubt), 'seat-0', tr)).toMatchObject({ prompt: 'Seat 1 tuyên bố có Sha. Tin hay nghi ngờ?', confirmLabel: 'Chọn' });
+    expect(describeChoice(state(doubt), 'seat-0', tr)).toMatchObject({ prompt: 'Người chơi 1 tuyên bố có Sha. Tin hay nghi ngờ?', confirmLabel: 'Chọn' });
   });
 
   it('gives cards, and picks a seat, a suit or one of several', () => {
@@ -54,9 +54,9 @@ describe('describeChoice in Vietnamese', () => {
   it('Gender Swords: discard a hand card or let the user draw', () => {
     const options: ChoiceOption[] = [{ id: 'decline', shows: { kind: 'decline' }, effects: [] }];
     expect(describeChoice(state(toolChoice('discard', 'seat-0', options)), 'seat-0', tr)).toMatchObject({
-      prompt: 'Bỏ một lá bài trên tay, hoặc để Seat 1 rút 1 lá bài',
+      prompt: 'Bỏ một lá bài trên tay, hoặc để Người chơi 1 rút 1 lá bài',
       confirmLabel: 'Bỏ bài',
-      declineLabel: 'Để Seat 1 rút bài',
+      declineLabel: 'Để Người chơi 1 rút bài',
     });
   });
 });
@@ -70,8 +70,8 @@ describe('choice options in Vietnamese', () => {
 
   it('labels a face-down hand by its owner and size, singular and plural', () => {
     const hand = (count: number) => choiceOptionLabel({ kind: 'hidden-hand', seatId: 'seat-1', count }, players, undefined, tr);
-    expect(hand(1)).toBe('Bài trên tay của Seat 1 (1 lá)');
-    expect(hand(2)).toBe('Bài trên tay của Seat 1 (2 lá)');
+    expect(hand(1)).toBe('Bài trên tay của Người chơi 1 (1 lá)');
+    expect(hand(2)).toBe('Bài trên tay của Người chơi 1 (2 lá)');
     expect(choiceOptionLabel({ kind: 'hidden-hand', seatId: 'seat-1', count: 1 }, players)).toBe("Seat 1's Hand (1 Card)");
     expect(choiceOptionLabel({ kind: 'hidden-hand', seatId: 'seat-1', count: 2 }, players)).toBe("Seat 1's Hand (2 Cards)");
   });

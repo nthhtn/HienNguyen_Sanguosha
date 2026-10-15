@@ -36,7 +36,10 @@ function titleCaseId(id: string): string {
 // language for a `seat-<n>` id, else the id in Title Case.
 export function seatName(players: readonly Player[], seatId: string, tr: Translator = englishTranslator): string {
   const numbered = /^seat-(\d+)$/.exec(seatId);
-  return players.find((p) => p.seatId === seatId)?.name ?? (numbered ? tr('label.seat', { n: numbered[1] }) : titleCaseId(seatId));
+  const name = players.find((p) => p.seatId === seatId)?.name;
+  // The mode's default name for a seat ("Seat 2") is a placeholder, not a name the player chose.
+  if (numbered && (name === undefined || name === `Seat ${numbered[1]}`)) return tr('label.seat', { n: numbered[1] });
+  return name ?? titleCaseId(seatId);
 }
 
 export function targetLabel(target: Target, players: readonly Player[] = [], tr: Translator = englishTranslator): string {

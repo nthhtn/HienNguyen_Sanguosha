@@ -182,3 +182,17 @@ describe('card names in action labels follow the translator locale', () => {
     expect(registryCardName(registry, 'no-such-card', trVi)).toBe('no-such-card');
   });
 });
+
+describe('the mode’s default seat name', () => {
+  const players = [
+    { id: 'p0', seatId: 'seat-0', kind: 'bot' as const, name: 'Seat 0' },
+    { id: 'p1', seatId: 'seat-1', kind: 'human' as const, name: 'Hing' },
+    { id: 'p2', seatId: 'seat-2', kind: 'bot' as const, name: 'Seat 5' },
+  ];
+  it('is a placeholder, shown in the language, while a chosen name is kept', () => {
+    expect(seatName(players, 'seat-0', tr)).toBe('Người chơi 0');
+    expect(seatName(players, 'seat-0')).toBe('Seat 0');
+    expect(seatName(players, 'seat-1', tr)).toBe('Hing');
+    expect(seatName(players, 'seat-2', tr)).toBe('Seat 5');
+  });
+});
