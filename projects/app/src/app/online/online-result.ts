@@ -13,6 +13,16 @@ import { forceOf, kingdomDisplayName } from '../labels';
   selector: 'app-online-result',
   imports: [MatButtonModule, MatCardModule, MatIconModule],
   styleUrl: './online-page.css',
+  styles: `
+    /* The same look as the Game Over card of a game against bots. */
+    .result mat-card-header { justify-content: center; }
+    .result mat-card-content { text-align: center; }
+    .big-icon { font-size: 48px; width: 48px; height: 48px; color: var(--mat-sys-primary); }
+    .headline { font: var(--mat-sys-title-large); color: var(--mat-sys-primary); }
+    /* "Wei wins!" in Wei's force colour, and so on. */
+    .headline[data-force] { color: var(--force-text); font-weight: 600; }
+    .winners, .losers { margin: 2px 0; }
+  `,
   template: `
     <div class="online-page">
       <mat-card class="online-card result" appearance="raised">
@@ -21,6 +31,7 @@ import { forceOf, kingdomDisplayName } from '../labels';
         </mat-card-header>
         <mat-card-content>
           @if (ending().result; as result) {
+            <mat-icon class="big-icon">emoji_events</mat-icon>
             <p class="headline" [attr.data-force]="result.winningKingdom ? forceOf(result.winningKingdom) : null">{{ headline(result) }}</p>
             <p class="winners">Winners: {{ names(result.winningSeatIds) || 'None' }}</p>
             <p class="losers">Losers: {{ names(result.losingSeatIds) || 'None' }}</p>
