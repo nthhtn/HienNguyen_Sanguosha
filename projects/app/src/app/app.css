@@ -24,7 +24,8 @@
 .spacer {
   flex: 1;
 }
-.music-toggle {
+.music-toggle,
+.effects-toggle {
   color: var(--mat-sys-on-primary);
 }
 /* Straight after the title, on the left. */

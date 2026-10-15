@@ -132,6 +132,17 @@ describe('SoundEffects', () => {
     expect(player.plays).toBe(2);
   });
 
+  it('plays a voice from the gender’s folder, and not when effects are off', () => {
+    const { urls } = setup();
+    const effects = TestBed.inject(SoundEffects);
+    effects.playVoice('female', 'sos');
+    effects.playVoice('male', 'slash');
+    expect(urls).toEqual(['/audio/female/sos.ogg', '/audio/male/slash.ogg']);
+    effects.toggle();
+    effects.playVoice('male', 'dodge');
+    expect(urls).toHaveLength(2);
+  });
+
   it('plays effects louder than the music', async () => {
     const { music, player } = setup();
     music.start();
@@ -141,9 +152,25 @@ describe('SoundEffects', () => {
     expect(player.volume).toBeGreaterThan(musicVolume * 2);
   });
 
-  it('is silent when the viewer turned sound off', () => {
-    const { player } = setup('false');
+  it('is silent when the viewer turned sound effects off', () => {
+    const { player } = setup();
+    localStorage.setItem('effects-enabled', 'false');
     TestBed.inject(SoundEffects).play('injure');
     expect(player.plays).toBe(0);
+  });
+
+  it('is independent of the music switch', async () => {
+    const { music, player } = setup('false');
+    TestBed.inject(SoundEffects).play('injure');
+    expect(player.plays).toBe(1);
+    music.toggle();
+    const effects = TestBed.inject(SoundEffects);
+    effects.toggle();
+    expect(effects.enabled()).toBe(false);
+    expect(localStorage.getItem('effects-enabled')).toBe('false');
+    expect(music.enabled()).toBe(true);
+    const before = player.plays;
+    effects.play('heal');
+    expect(player.plays).toBe(before);
   });
 });

@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AuthService } from './auth/auth.service';
-import { MusicService } from './music.service';
+import { MusicService, SoundEffects } from './music.service';
 
 @Component({
   imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule],
@@ -47,6 +47,7 @@ export class App {
   protected readonly rulesActive = computed(() => /^\/wiki\/rules(\/|$|\?)/.test(this.url()));
 
   protected readonly music = inject(MusicService);
+  protected readonly effects = inject(SoundEffects);
 
   protected readonly auth = inject(AuthService);
 
