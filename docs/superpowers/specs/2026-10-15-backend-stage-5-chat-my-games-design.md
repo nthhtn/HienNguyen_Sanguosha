@@ -57,13 +57,14 @@ with Typebox schemas beside the existing ones.
 
 ## Angular
 
-- `SocketService` gets a `chatMessages` signal (replaced by `welcome`,
-  appended by `chat.message`) and `sendChat(body)`.
-- `ChatPanelComponent` (standalone) renders the messages and an input limited
-  to 300 characters. It shows the server's error text and decides nothing
-  about the rate limit.
-- The board's unread count is presentation state and resets when the panel
-  opens.
+- `ChatService`, provided by the Lobby page beside `LobbyService`, keeps the
+  `messages` signal (replaced by `welcome`, appended by `chat.message`) and
+  sends with `send(body)`. `SocketService` stays transport only.
+- `ChatPanel` (standalone) renders the messages and an input limited to 300
+  characters. It shows the server's error text and decides nothing about the
+  rate limit.
+- `BoardChat` wraps the panel in the board's collapsible side panel. Its
+  unread count is presentation state and resets when the panel opens.
 - My Games: a route, an Online toolbar link hidden from guests, and a
   `MyGamesService` calling `GET /me/games`. Empty state: "No finished games
   yet".
