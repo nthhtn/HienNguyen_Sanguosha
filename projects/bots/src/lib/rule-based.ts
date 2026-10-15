@@ -2,6 +2,7 @@ import type { Action, ContentRegistry, GameState, Seat } from 'engine';
 import { conversionsOf, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
 import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
+import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
 import { upheavalVictimIsFoe } from './forest';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
@@ -65,6 +66,7 @@ const conversionAs = (a: UseConversion, view: GameState, registry: ContentRegist
 
 function decide(
   rank: TargetRanker,
+  rules: CardPlayRules,
   view: GameState,
   seatId: string,
   offered: Action[],
@@ -204,11 +206,8 @@ function decide(
   // 3. Discard phase: lose the least useful card first, first in hand on ties.
   const discards = legal.filter((a): a is DiscardCard => a.kind === 'DiscardCardAction');
   if (discards.length > 0) {
-    return take(
-      discards.reduce((best, a) =>
-        keepRank(view, registry, a.cardInstanceId) < keepRank(view, registry, best.cardInstanceId) ? a : best
-      )
-    );
+    const worth = rules.discard ? discardRank : keepRank;
+    return take(discards.reduce((best, a) => (worth(view, registry, a.cardInstanceId) < worth(view, registry, best.cardInstanceId) ? a : best)));
   }
 
   const endPhase = legal.find((a) => a.kind === 'EndPhaseAction');
@@ -227,13 +226,15 @@ function decide(
     );
 
     const peach = plays.find((p) => untargeted(p) && definitionIdOf(view, p.cardInstanceId) === 'peach');
-    if (peach && self.combinedHp < self.maxCombinedHp) return take(peach);
+    if (peach && self.combinedHp < self.maxCombinedHp && (!rules.peach || peachWorthPlaying(view, self))) return take(peach);
 
-    // Equip only into an empty slot; never swap one weapon for another.
+    // Equip into an empty slot; with the equipment rule, also swap a worn weapon or armor for a better one.
+    const wornIds = (view.zones.find((z) => z.id === self.equipped.zoneId)?.cards ?? []).map((c) => c.definitionId);
     const equipment = plays.find((p) => {
       const definitionId = definitionIdOf(view, p.cardInstanceId);
       const slot = definitionId ? registry.cards.get(definitionId)?.equipSlot : undefined;
-      return untargeted(p) && !!slot && !equippedSlots.has(slot);
+      const better = rules.equipment && !!definitionId && isEquipUpgrade(registry, definitionId, wornIds);
+      return untargeted(p) && !!slot && (!equippedSlots.has(slot) || better);
     });
     if (equipment) return take(equipment);
 
@@ -314,11 +315,13 @@ function decide(
 
     // Wine first when a Sha at a non-ally is legal: the Sha follows next.
     const shaPlays = targetedPlays(view, self, plays, 'sha', rank);
+    const shaTarget = view.seats.find((s) => s.id === shaPlays[0]?.targets[0]?.seatId);
+    const wineOk = shaPlays.length > 0 && (!rules.wine || wineWorthPlaying(shaTarget));
     const wine = untargetedOf('wine');
-    if (wine && shaPlays.length > 0) return take(wine);
+    if (wine && wineOk) return take(wine);
     // Dong Zhuo's Wine, made from a spade, when he holds no real one.
     const wineVia = legal.find((a): a is UseConversion => a.kind === 'UseConversionAction' && !a.pendingResponseId && a.targets.length === 0 && conversionAs(a, view, registry) === 'wine' && conversionSpare(view, self, a, registry));
-    if (wineVia && shaPlays.length > 0) return take(wineVia);
+    if (wineVia && wineOk) return take(wineVia);
     // Whenever the engine offers a Sha (Crossbow lifts the limit); the safety cap still ends the turn.
     const [sha] = shaPlays;
     if (sha) return take(sha, 1);
@@ -353,8 +356,8 @@ function decide(
 
 // Simple, explainable opponent; see the bot-opponents design spec for its rules.
 // The ranker decides which non-ally a targeted play goes to.
-export function createRuleBasedPolicy(id: string, rank: TargetRanker): BotPolicy {
-  return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, view, seatId, legal, registry, memory) };
+export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: CardPlayRules = NO_CARD_PLAY_RULES): BotPolicy {
+  return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, view, seatId, legal, registry, memory) };
 }
 
 export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst);

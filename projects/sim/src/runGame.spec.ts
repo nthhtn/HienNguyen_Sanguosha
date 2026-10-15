@@ -51,6 +51,7 @@ describe('parseBotKind', () => {
     expect(parseBotKind('random')).toBe('random');
     expect(parseBotKind('rule-based')).toBe('rule-based');
     expect(parseBotKind('rule-based-v1')).toBe('rule-based-v1');
+    expect(parseBotKind('rule-based-cards')).toBe('rule-based-cards');
   });
 
   it('names the valid kinds when the text is unknown', () => {

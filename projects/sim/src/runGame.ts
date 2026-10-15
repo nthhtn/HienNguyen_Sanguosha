@@ -1,15 +1,18 @@
 import { resolve, createRng, getActiveSeatId, getLegalActions, redactStateForSeat } from 'engine';
 import type { Action, GameState, EngineContext } from 'engine';
-import { pickRandomAction, policyById } from 'bots';
+import { pickRandomAction, policyById, policyIds } from 'bots';
 import type { BotTurnMemory } from 'bots';
 
-export const BOT_KINDS = ['random', 'rule-based', 'rule-based-v1'] as const;
-export type BotKind = (typeof BOT_KINDS)[number];
+// 'random', or the id of any registered policy.
+export type BotKind = string;
+
+export function botKinds(): string[] {
+  return ['random', ...policyIds()];
+}
 
 export function parseBotKind(text: string): BotKind {
-  const kind = BOT_KINDS.find((k) => k === text);
-  if (!kind) throw new Error(`Unknown bot "${text}". Valid bots: ${BOT_KINDS.join(', ')}`);
-  return kind;
+  if (!botKinds().includes(text)) throw new Error(`Unknown bot "${text}". Valid bots: ${botKinds().join(', ')}`);
+  return text;
 }
 
 export interface RunGameResult {

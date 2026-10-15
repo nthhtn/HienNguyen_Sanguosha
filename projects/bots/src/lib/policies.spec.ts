@@ -1,19 +1,28 @@
-import { policyById, POLICY_IDS } from './policies';
+import { policyById, policyIds, registerPolicy } from './policies';
 import { ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
 import { act, card, decide, table } from './testing';
 
 describe('policy registry', () => {
-  it('lists rule-based and rule-based-v1', () => {
-    expect([...POLICY_IDS].sort()).toEqual(['rule-based', 'rule-based-v1']);
+  it('lists the registered policies', () => {
+    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-v1']);
   });
 
   it('looks a policy up by id', () => {
     expect(policyById('rule-based')).toBe(ruleBasedPolicy);
     expect(policyById('rule-based-v1')).toBe(ruleBasedV1Policy);
+    expect(policyById('rule-based-cards').id).toBe('rule-based-cards');
+  });
+
+  it('registers a new policy under its id, and a later registration replaces it', () => {
+    registerPolicy({ id: 'test-only', decide: ruleBasedPolicy.decide });
+    expect(policyIds()).toContain('test-only');
+    const replacement = { id: 'test-only', decide: ruleBasedV1Policy.decide };
+    registerPolicy(replacement);
+    expect(policyById('test-only')).toBe(replacement);
   });
 
   it('names the valid ids when the id is unknown', () => {
-    expect(() => policyById('nope')).toThrow(/Unknown bot policy "nope".*rule-based, rule-based-v1/);
+    expect(() => policyById('nope')).toThrow(/Unknown bot policy "nope".*rule-based, rule-based-v1, rule-based-cards/);
   });
 });
 

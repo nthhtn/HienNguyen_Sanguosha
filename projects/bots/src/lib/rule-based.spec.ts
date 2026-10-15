@@ -1,5 +1,7 @@
 import type { Action, CardDefinition, CardZone, DecisionReason, EquipSlot, PendingArrangement, PendingChoice, PendingSelection, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
 import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
+import { NO_CARD_PLAY_RULES } from './card-play';
+import { weakestFirst } from './helpers';
 import { targetScore } from './targeting';
 import { MAX_BOT_ACTIONS_PER_TURN } from './policy';
 
@@ -18,6 +20,10 @@ const registry: ContentRegistry = {
     card('draw-two', 'tool'), card('barbarians', 'tool'), card('hail-of-arrows', 'tool'), card('peach-garden', 'tool'),
     card('steal', 'tool'), card('break', 'tool'), card('coerce', 'tool'), card('harvest', 'tool'),
     card('wine', 'basic'), ['serpent-spear', { id: 'serpent-spear', name: 'serpent-spear', category: 'equipment', equipSlot: 'weapon', play: () => [], abilities: { conversions: [{ id: 'serpent-spear', as: 'sha', cards: 2, when: 'both' }] } }], card('capture', 'tool'), card('starvation', 'tool'), card('lightning', 'tool'), card('gender-swords', 'equipment', 'weapon'),
+    ['long-blade', { id: 'long-blade', name: 'long-blade', category: 'equipment', equipSlot: 'weapon', weaponRange: 4, play: () => [] }],
+    ['short-blade', { id: 'short-blade', name: 'short-blade', category: 'equipment', equipSlot: 'weapon', weaponRange: 1, play: () => [] }],
+    ['horse-a', { id: 'horse-a', name: 'horse-a', category: 'equipment', equipSlot: 'defensiveMount', play: () => [] }],
+    ['horse-b', { id: 'horse-b', name: 'horse-b', category: 'equipment', equipSlot: 'defensiveMount', play: () => [] }],
   ]),
 };
 
@@ -558,5 +564,106 @@ describe('arranging the draw pile', () => {
     const template: Action = { kind: 'ArrangeCardsAction', seatId: 'seat-0', arrangementId: 'arr', top: [], bottom: [] };
     const s = { ...view({ zones: [pile] }), pendingArrangement: arrangement };
     expect(ruleBasedPolicy.decide(s, 'seat-0', [template], registry, null).action).toEqual({ ...template, top: ['a2', 'a4'], bottom: ['a1', 'a3'] });
+  });
+});
+
+describe('card-play rules', () => {
+  const off = createRuleBasedPolicy('off', weakestFirst, NO_CARD_PLAY_RULES);
+  const only = (rule: 'peach' | 'wine' | 'equipment' | 'discard') => createRuleBasedPolicy(rule, weakestFirst, { ...NO_CARD_PLAY_RULES, [rule]: true });
+  const run = (policy: typeof ruleBasedPolicy, v: GameState, legal: Action[]) => policy.decide(v, 'seat-0', legal, registry, null).action;
+  const cards = (...pairs: [string, string][]) => pairs.map(([instanceId, definitionId]) => ({ instanceId, definitionId }));
+
+  describe('Peach', () => {
+    const seats = (hp: number, allyHp = 8) => [seat('seat-0', 0, 'Wei', hp), seat('seat-1', 1, 'Wei', allyHp), seat('seat-2', 2, 'Shu', 8), seat('seat-3', 3, 'Wu', 8)];
+    const legal = [play('c-peach'), end];
+
+    it('keeps a Peach at 6 of 8 HP with a light hand when the rule is on; the old bot plays it', () => {
+      const v = view({ seats: seats(6), hand: cards(['c-peach', 'peach']) });
+      expect(run(off, v, legal)).toEqual(play('c-peach'));
+      expect(run(only('peach'), v, legal)).toEqual(end);
+    });
+
+    it('plays it at 2 HP', () => {
+      expect(run(only('peach'), view({ seats: seats(2), hand: cards(['c-peach', 'peach']) }), legal)).toEqual(play('c-peach'));
+    });
+
+    it('plays it holding more cards than HP', () => {
+      const v = view({ seats: seats(3), hand: cards(['c-peach', 'peach'], ['a', 'shan'], ['b', 'shan'], ['c', 'shan']) });
+      expect(run(only('peach'), v, legal)).toEqual(play('c-peach'));
+    });
+
+    it('keeps its last Peach for an ally at 2 HP, but plays one of two', () => {
+      const one = view({ seats: seats(2, 2), hand: cards(['c-peach', 'peach']) });
+      expect(run(only('peach'), one, legal)).toEqual(end);
+      const two = view({ seats: seats(2, 2), hand: cards(['c-peach', 'peach'], ['c-peach2', 'peach']) });
+      expect(run(only('peach'), two, legal)).toEqual(play('c-peach'));
+    });
+  });
+
+  describe('Wine', () => {
+    const hand = cards(['c-wine', 'wine'], ['c-sha', 'sha']);
+    const seatsWith = (targetHp: number) => [seat('seat-0', 0, 'Wei', 4), seat('seat-1', 1, 'Shu', targetHp), seat('seat-2', 2, 'Wu', 8), seat('seat-3', 3, 'Qun', 8)];
+
+    it('plays Wine before a Sha at a target at 2 HP or less', () => {
+      const legal = [play('c-wine'), play('c-sha', 'seat-1'), end];
+      expect(run(only('wine'), view({ seats: seatsWith(2), hand }), legal)).toEqual(play('c-wine'));
+    });
+
+    it('goes straight to the Sha at a healthier target; the old bot drinks first', () => {
+      const legal = [play('c-wine'), play('c-sha', 'seat-1'), end];
+      const v = view({ seats: seatsWith(4), hand });
+      expect(run(off, v, legal)).toEqual(play('c-wine'));
+      expect(run(only('wine'), v, legal)).toEqual(play('c-sha', 'seat-1'));
+    });
+
+    it('never drinks with no Sha to play', () => {
+      expect(run(only('wine'), view({ seats: seatsWith(1), hand: cards(['c-wine', 'wine']) }), [play('c-wine'), end])).toEqual(end);
+    });
+
+    it('never drinks when the only Sha target is a revealed ally', () => {
+      const seats = [seat('seat-0', 0, 'Wei', 4), seat('seat-1', 1, 'Wei', 1), seat('seat-2', 2, 'Wu', 8), seat('seat-3', 3, 'Qun', 8)];
+      expect(run(only('wine'), view({ seats, hand }), [play('c-wine'), play('c-sha', 'seat-1'), end])).toEqual(end);
+    });
+  });
+
+  describe('equipment', () => {
+    it('replaces a shorter weapon with a longer one when the rule is on; the old bot does not', () => {
+      const v = view({ hand: cards(['c-new', 'long-blade']), equip: ['short-blade'] });
+      expect(run(off, v, [play('c-new'), end])).toEqual(end);
+      expect(run(only('equipment'), v, [play('c-new'), end])).toEqual(play('c-new'));
+    });
+
+    it('does not replace a longer weapon with a shorter one, nor a mount with a mount', () => {
+      expect(run(only('equipment'), view({ hand: cards(['c-new', 'short-blade']), equip: ['long-blade'] }), [play('c-new'), end])).toEqual(end);
+      expect(run(only('equipment'), view({ hand: cards(['c-new', 'horse-a']), equip: ['horse-b'] }), [play('c-new'), end])).toEqual(end);
+    });
+
+    it('still fills an empty slot whatever the rule', () => {
+      const v = view({ hand: cards(['c-new', 'short-blade']) });
+      expect(run(off, v, [play('c-new'), end])).toEqual(play('c-new'));
+      expect(run(only('equipment'), v, [play('c-new'), end])).toEqual(play('c-new'));
+    });
+  });
+
+  describe('discarding', () => {
+    const h = cards(['e', 'blade'], ['w', 'wuxie'], ['d', 'duel']);
+    const legal = h.map((c) => discard(c.instanceId));
+
+    it('loses spare equipment before a Wuxie or Duel when the rule is on; the old bot loses the Wuxie', () => {
+      const v = view({ phase: 'Discard', hand: h });
+      expect(run(off, v, legal)).toEqual(discard('w'));
+      expect(run(only('discard'), v, legal)).toEqual(discard('e'));
+    });
+
+    it('keeps a Peach to the end', () => {
+      const withPeach = cards(['p', 'peach'], ['s', 'sha'], ['x', 'wine']);
+      const l = withPeach.map((c) => discard(c.instanceId));
+      expect(run(only('discard'), view({ phase: 'Discard', hand: withPeach }), l)).toEqual(discard('x'));
+    });
+  });
+
+  it('rule-based, with every rule off, is the policy it always was', () => {
+    const v = view({ seats: [seat('seat-0', 0, 'Wei', 6), seat('seat-1', 1, 'Shu', 8)], hand: cards(['c-peach', 'peach']) });
+    expect(run(ruleBasedPolicy, v, [play('c-peach'), end])).toEqual(play('c-peach'));
   });
 });
