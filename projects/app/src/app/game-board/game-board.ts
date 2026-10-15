@@ -35,7 +35,7 @@ import { choiceDialogOptions, describeChoice } from './choice-description';
 import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
 import { CompeteResult, competeResults } from './compete-result';
-import { soundsFor } from './event-sounds';
+import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
 import { DecisionTimer } from '../decision-timer.service';
 
@@ -265,10 +265,15 @@ export class GameBoard {
     // joining mid-game is silent.
     let seen: number | null = null;
     effect(() => {
-      const log = this.visibleState()?.log;
-      if (!log) return;
+      const state = this.visibleState();
+      const log = state?.log;
+      if (!state || !log) return;
       untracked(() => {
-        if (seen !== null && log.length > seen) for (const sound of soundsFor(log.slice(seen))) this.sounds.play(sound);
+        if (seen !== null && log.length > seen) {
+          const fresh = log.slice(seen);
+          for (const sound of [...soundsFor(fresh), ...deathSoundsFor(fresh, state)]) this.sounds.play(sound);
+          for (const cue of voicesFor(fresh, state, this.gameService.registry)) this.sounds.playVoice(cue.gender, cue.voice);
+        }
         seen = log.length;
       });
     });

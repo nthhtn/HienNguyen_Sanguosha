@@ -1,5 +1,5 @@
-import { CardInstance, EngineEvent } from 'engine';
-import { soundsFor } from './event-sounds';
+import { CardInstance, ContentRegistry, EngineEvent, GameState } from 'engine';
+import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 
 const moved = (definitionId: string, toZoneId: string): EngineEvent => ({
   kind: 'CardMovedEvent',
@@ -30,5 +30,45 @@ describe('soundsFor', () => {
 
   it('makes each sound once per stretch of log', () => {
     expect(soundsFor([moved('crossbow', 'seat-0:equip'), moved('axe', 'seat-1:equip')])).toEqual(['weapon']);
+  });
+});
+
+describe('voicesFor', () => {
+  const registry = { generals: new Map([['m', { gender: 'male' }], ['f', { gender: 'female' }]]) } as unknown as ContentRegistry;
+  const seat = (id: string, main: string, revealed: boolean) => ({
+    id,
+    generals: { main: { generalDefinitionId: main, revealed }, deputy: { generalDefinitionId: 'm', revealed: false } },
+  });
+  const state = { seats: [seat('s0', 'm', true), seat('s1', 'f', true), seat('s2', 'f', false)] } as unknown as GameState;
+  const played = (seatId: string, as: string): EngineEvent => ({ kind: 'CardPlayedEvent', seatId, card: { as, physical: [] }, targets: [] }) as never;
+
+  it('voices a Sha, a Shan and a dying seat by the seat’s gender', () => {
+    expect(voicesFor([played('s0', 'sha'), played('s1', 'shan'), { kind: 'SeatDyingEvent', seatId: 's1' }], state, registry)).toEqual([
+      { gender: 'male', voice: 'slash' },
+      { gender: 'female', voice: 'dodge' },
+      { gender: 'female', voice: 'sos' },
+    ]);
+  });
+
+  it('is silent for other cards, and uses the male voice for a seat with both Generals face down', () => {
+    expect(voicesFor([played('s0', 'peach')], state, registry)).toEqual([]);
+    expect(voicesFor([played('s2', 'sha')], state, registry)).toEqual([{ gender: 'male', voice: 'slash' }]);
+  });
+
+  it('says each line once per gender', () => {
+    expect(voicesFor([played('s0', 'sha'), played('s0', 'sha')], state, registry)).toEqual([{ gender: 'male', voice: 'slash' }]);
+  });
+});
+
+describe('deathSoundsFor', () => {
+  const state = { seats: [{ id: 's0', kingdom: 'Wei' }, { id: 's1', kingdom: 'Qun' }, { id: 's2', kingdom: 'Wei' }, { id: 's3', kingdom: 'hidden' }] } as unknown as GameState;
+  const out = (seatId: string): EngineEvent => ({ kind: 'SeatEliminatedEvent', seatId });
+
+  it('cries by the eliminated seat’s kingdom, once per kingdom', () => {
+    expect(deathSoundsFor([out('s0'), out('s1'), out('s2')], state)).toEqual(['death-wei', 'death-qun']);
+  });
+
+  it('is silent for a dying seat, and for an unrevealed kingdom', () => {
+    expect(deathSoundsFor([{ kind: 'SeatDyingEvent', seatId: 's0' }, out('s3')], state)).toEqual([]);
   });
 });

@@ -64,6 +64,18 @@ describe('App', () => {
     localStorage.clear();
   });
 
+  it('has a separate sound effects on/off button in the toolbar', async () => {
+    localStorage.clear();
+    const { fixture, el } = await render();
+    const button = el.querySelector('button.effects-toggle') as HTMLButtonElement;
+    expect(button.getAttribute('aria-label')).toBe('Turn Sound Effects Off');
+    button.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-label')).toBe('Turn Sound Effects On');
+    expect((el.querySelector('button.music-toggle') as HTMLButtonElement).getAttribute('aria-label')).toBe('Turn Music Off');
+    localStorage.clear();
+  });
+
   it('should render title', async () => {
     const { el } = await render();
     expect(el.querySelector('mat-toolbar h1')?.textContent).toContain('Kingdom War');
