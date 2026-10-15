@@ -1,5 +1,5 @@
 import type { GameSummary } from 'protocol';
-import { gameHeadline, gameOutcome, playerLabel } from './game-labels';
+import { gameHeadline, gameOutcome, gameWhen, playerLabel } from './game-labels';
 
 const GAME: GameSummary = {
   gameId: 'g1',
@@ -45,5 +45,13 @@ describe('playerLabel', () => {
     expect(playerLabel(GAME, 'seat-1')).toBe('Ann (You)');
     expect(playerLabel(GAME, 'seat-2')).toBe('Bo');
     expect(playerLabel(GAME, 'seat-0')).toBe('Bot 1 (Bot)');
+  });
+});
+
+describe('gameWhen', () => {
+  it('formats when the game finished, with the year', () => {
+    const text = gameWhen(GAME);
+    expect(text.length).toBeGreaterThan(0);
+    expect(text).toContain('2026');
   });
 });

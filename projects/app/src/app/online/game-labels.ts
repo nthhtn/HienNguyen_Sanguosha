@@ -23,3 +23,8 @@ export function playerLabel(game: GameSummary, seatId: string): string {
   if (seatId === game.yourSeat) return `${player.name} (You)`;
   return player.kind === 'bot' ? `${player.name} (Bot)` : player.name;
 }
+
+// When the game finished, in the viewer's locale and time zone.
+export function gameWhen(game: GameSummary): string {
+  return new Date(game.finishedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+}

@@ -1,17 +1,16 @@
-import { DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import type { GameSummary } from 'protocol';
-import { gameHeadline, gameOutcome, playerLabel } from './game-labels';
+import { gameHeadline, gameOutcome, gameWhen, playerLabel } from './game-labels';
 import { MyGamesService } from './my-games.service';
 
 // Your finished games, newest first. Read-only: there is no replay viewer yet.
 @Component({
   selector: 'app-my-games-page',
-  imports: [DatePipe, RouterLink, MatButtonModule, MatCardModule, MatIconModule],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule],
   styleUrl: './online-page.css',
   template: `
     <div class="online-page">
@@ -34,7 +33,7 @@ import { MyGamesService } from './my-games.service';
                       <span class="headline">{{ headline(game) }}</span>
                       <span class="players hint">{{ players(game) }}</span>
                     </span>
-                    <span class="when status">{{ game.finishedAt | date: 'medium' }}</span>
+                    <span class="when status">{{ when(game) }}</span>
                   </li>
                 }
               </ul>
@@ -60,6 +59,7 @@ export class MyGamesPage {
   protected readonly service = inject(MyGamesService);
   protected readonly outcome = gameOutcome;
   protected readonly headline = gameHeadline;
+  protected readonly when = gameWhen;
 
   constructor() {
     void this.service.load();
