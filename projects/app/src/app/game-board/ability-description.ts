@@ -6,7 +6,7 @@ import { englishTranslator, Translator } from '../i18n/translator';
 
 type SelectAction = Extract<Action, { kind: 'SelectAction' }>;
 
-const cardName = (definitionId: string) => cardDisplayData(definitionId)?.name ?? cardIdDisplayName(definitionId);
+const cardName = (definitionId: string, tr: Translator) => cardDisplayData(definitionId)?.name ?? cardIdDisplayName(definitionId, tr);
 const findCard = (state: GameState, instanceId: string) => state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === instanceId);
 
 export interface AskDescription {
@@ -35,11 +35,11 @@ export function describeAsk(state: GameState, viewerSeatId: string, legal: reado
   if (!use || !decline) return null;
   const { abilityId, owner, targetSeatId } = choice.reason;
   const name = abilityName(abilityId);
-  const target = targetSeatId && targetSeatId !== viewerSeatId ? seatName(state.players, targetSeatId) : null;
+  const target = targetSeatId && targetSeatId !== viewerSeatId ? seatName(state.players, targetSeatId, tr) : null;
   const shows = choice.options.find((o) => o.id === 'use')?.shows;
   const reveals = shows?.kind === 'use' && !!shows.reveals;
   const generalId = owner.kind === 'general' ? (state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId ?? null) : null;
-  const generalName = generalId ? (generalDisplayData(generalId)?.name ?? generalDisplayName(generalId)) : null;
+  const generalName = generalId ? (generalDisplayData(generalId)?.name ?? generalDisplayName(generalId, tr)) : null;
   const hint = abilityHint(abilityId);
   return {
     title: name,
@@ -85,12 +85,12 @@ function selectionPrompt(state: GameState, selection: PendingSelection, items: S
     case 'discard':
       return tr(one ? 'selection.discard.one' : 'selection.discard.other', { count });
     case 'use-card': {
-      if (then.as) return one ? tr('selection.useAs.one', { card: cardName(then.as) }) : tr('selection.useAs.other', { count, card: cardName(then.as) });
+      if (then.as) return one ? tr('selection.useAs.one', { card: cardName(then.as, tr) }) : tr('selection.useAs.other', { count, card: cardName(then.as, tr) });
       const kinds = new Set(items.map((i) => i.card?.definitionId));
       const [only] = [...kinds];
-      const what = kinds.size === 1 && only ? cardName(only) : tr('selection.anyCard');
+      const what = kinds.size === 1 && only ? cardName(only, tr) : tr('selection.anyCard');
       const target = then.targets[0];
-      return target ? tr('selection.play.at', { what, seat: seatName(state.players, target.seatId) }) : tr('selection.play', { what });
+      return target ? tr('selection.play.at', { what, seat: seatName(state.players, target.seatId, tr) }) : tr('selection.play', { what });
     }
     case 'card-step':
       return tr(one ? 'selection.targets.one' : 'selection.targets.other', { count });
@@ -121,16 +121,16 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
   const template = legal.find((a): a is SelectAction => a.kind === 'SelectAction');
   if (!template) return null;
   const items = selection.eligibleIds.map((id): SelectionItem => {
-    if (selection.of === 'seats') return { id, label: seatName(state.players, id) };
+    if (selection.of === 'seats') return { id, label: seatName(state.players, id, tr) };
     const card = findCard(state, id);
-    return card ? { id, card, label: tr('card.named', { name: cardName(card.definitionId), face: cardFaceLabel(card) }) } : { id, label: tr('selection.cardFallback') };
+    return card ? { id, card, label: tr('card.named', { name: cardName(card.definitionId, tr), face: cardFaceLabel(card) }) } : { id, label: tr('selection.cardFallback') };
   });
   const then = selection.then;
   const step = then.kind === 'skill-step' || then.kind === 'card-step' ? then.step.step : null;
   const text = (step ? stepSelectionText(step) : null) ?? (selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId) : null);
   const reason = selection.reason;
   return {
-    title: reason.kind === 'ability' ? abilityName(reason.abilityId) : reason.kind === 'choice' ? cardName(reason.card.as) : tr('selection.title'),
+    title: reason.kind === 'ability' ? abilityName(reason.abilityId) : reason.kind === 'choice' ? cardName(reason.card.as, tr) : tr('selection.title'),
     prompt: text?.prompt ?? selectionPrompt(state, selection, items, tr),
     confirmLabel: text?.confirm ?? tr(CONFIRM_KEYS[selection.then.kind]),
     cancelLabel: text?.cancel ?? tr('selection.cancel'),

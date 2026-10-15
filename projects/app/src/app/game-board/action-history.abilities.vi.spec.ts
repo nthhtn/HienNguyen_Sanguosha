@@ -6,7 +6,7 @@ import { actionHistory } from './action-history';
 
 const tr = makeTranslator(vi);
 const lines = (log: EngineEvent[], translator?: typeof tr) =>
-  actionHistory(log, [], [], [], translator).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
+  actionHistory(log, [], players, [], translator).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
 const en_ = (log: EngineEvent[]) => lines(log);
 const vi_ = (log: EngineEvent[]) => lines(log, tr);
 
@@ -20,6 +20,7 @@ const used = (outcome: string, extra: { targetSeatId?: string; cardId?: string; 
   ...(extra.cardId ? { cardId: extra.cardId } : {}),
 });
 const seat = (seatId: string) => ({ kind: 'seat' as const, seatId });
+const players = [0, 1, 2, 3].map((i) => ({ id: `p${i}`, seatId: `seat-${i}`, kind: 'bot' as const, name: `Seat ${i}` }));
 
 type Row = [name: string, outcome: string, targeted: boolean, cardId: string | null, english: string, vietnamese: string];
 const rows: Row[] = [
@@ -148,7 +149,7 @@ describe('Counts as Shan folds into its judgment line', () => {
   });
 
   it('keeps the judged card on the folded line', () => {
-    const history = actionHistory([judgment('seat-1'), counts('seat-1', 'eight-trigrams')], [], [], [], tr);
+    const history = actionHistory([judgment('seat-1'), counts('seat-1', 'eight-trigrams')], [], players, [], tr);
     expect(history[0]).toMatchObject({ card: judged });
   });
 

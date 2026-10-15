@@ -15,7 +15,7 @@ export interface ChoiceDescription {
   declineLabel?: string;
 }
 
-const cardName = (definitionId: string) => cardDisplayData(definitionId)?.name ?? cardIdDisplayName(definitionId);
+const cardName = (definitionId: string, tr: Translator) => cardDisplayData(definitionId)?.name ?? cardIdDisplayName(definitionId, tr);
 
 // "Choose a card to take from Seat 1", or without "from ..." when no seat is named.
 const chooseCardTo = (tr: Translator, verb: PendingChoice['verb'], from: string | null): string =>
@@ -28,12 +28,12 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
   if (!choice || choice.seatId !== viewerSeatId) return null;
   // A claim to believe or doubt (Bewilder).
   if (choice.reason.kind === 'ability' && choice.reason.cardId && choice.verb === 'pick') {
-    const claimer = seatName(state.players, choice.reason.owner.seatId);
-    return { title: abilityName(choice.reason.abilityId), prompt: tr('choice.claim', { claimer, card: cardName(choice.reason.cardId) }), confirmLabel: tr('choice.confirm.choose') };
+    const claimer = seatName(state.players, choice.reason.owner.seatId, tr);
+    return { title: abilityName(choice.reason.abilityId), prompt: tr('choice.claim', { claimer, card: cardName(choice.reason.cardId, tr) }), confirmLabel: tr('choice.confirm.choose') };
   }
   // A skill's take from, or discard of, another seat's card (Feedback, Sudden Attack).
   if (choice.reason.kind === 'ability' && (choice.verb === 'take' || choice.verb === 'discard')) {
-    const from = choice.reason.targetSeatId ? seatName(state.players, choice.reason.targetSeatId) : null;
+    const from = choice.reason.targetSeatId ? seatName(state.players, choice.reason.targetSeatId, tr) : null;
     const take = choice.verb === 'take';
     return { title: abilityName(choice.reason.abilityId), prompt: chooseCardTo(tr, choice.verb, from), confirmLabel: tr(take ? 'choice.confirm.take' : 'choice.confirm.discard') };
   }
@@ -50,7 +50,7 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
     // A skill's own words for its seat pick (Rouse the Tiger), its target named.
     const own = seatPickText(choice.reason.abilityId);
     const target = choice.reason.targetSeatId;
-    const seatPrompt = own ? own.replace('{target}', target ? seatName(state.players, target) : tr('choice.aSeat')) : tr('choice.pick.seat');
+    const seatPrompt = own ? own.replace('{target}', target ? seatName(state.players, target, tr) : tr('choice.aSeat')) : tr('choice.pick.seat');
     const prompt = only === 'seat' ? seatPrompt : only === 'suit' ? tr('choice.pick.suit') : tr('choice.pick.one');
     return { title, prompt, confirmLabel: tr('choice.confirm.choose') };
   }
@@ -58,12 +58,12 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
   const { card, targetSeatId } = choice.reason;
   // Choosing among your own cards (Gender Swords): discard one, or let the user draw.
   if (targetSeatId === viewerSeatId && choice.options.some((o) => o.shows.kind === 'decline')) {
-    const user = seatName(state.players, choice.reason.userSeatId);
-    return { title: cardName(card.as), prompt: tr('choice.discardOrDraw', { user }), confirmLabel: tr('choice.confirm.discard'), declineLabel: tr('choice.letDraw', { user }) };
+    const user = seatName(state.players, choice.reason.userSeatId, tr);
+    return { title: cardName(card.as, tr), prompt: tr('choice.discardOrDraw', { user }), confirmLabel: tr('choice.confirm.discard'), declineLabel: tr('choice.letDraw', { user }) };
   }
-  const from = targetSeatId ? seatName(state.players, targetSeatId) : null;
+  const from = targetSeatId ? seatName(state.players, targetSeatId, tr) : null;
   return {
-    title: cardName(card.as),
+    title: cardName(card.as, tr),
     prompt: chooseCardTo(tr, choice.verb, from),
     confirmLabel: tr(choice.verb === 'take' ? 'choice.confirm.take' : 'choice.confirm.discard'),
   };
@@ -71,15 +71,15 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
 
 // An option's label: a hand by its owner and size, a card by its name and face.
 export function choiceOptionLabel(shows: ChoiceOption['shows'], players: readonly Player[], declineLabel?: string, tr: Translator = englishTranslator): string {
-  if (shows.kind === 'seat') return seatName(players, shows.seatId);
-  if (shows.kind === 'suit') return suitLabel(shows.suit);
+  if (shows.kind === 'seat') return seatName(players, shows.seatId, tr);
+  if (shows.kind === 'suit') return suitLabel(shows.suit, tr);
   if (shows.kind === 'label') return shows.text;
   if (shows.kind === 'use') return tr('choice.option.use');
   if (shows.kind === 'decline') return declineLabel ?? tr('choice.option.decline');
   if (shows.kind === 'hidden-hand') {
-    return tr(shows.count === 1 ? 'choice.option.hand.one' : 'choice.option.hand.other', { seat: seatName(players, shows.seatId), count: shows.count });
+    return tr(shows.count === 1 ? 'choice.option.hand.one' : 'choice.option.hand.other', { seat: seatName(players, shows.seatId, tr), count: shows.count });
   }
-  return tr('card.named', { name: cardName(shows.card.definitionId), face: cardFaceLabel(shows.card) });
+  return tr('card.named', { name: cardName(shows.card.definitionId, tr), face: cardFaceLabel(shows.card) });
 }
 
 // What the Choice window offers: the engine's options it can legally pick. A

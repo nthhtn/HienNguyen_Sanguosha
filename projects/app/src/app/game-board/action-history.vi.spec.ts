@@ -14,6 +14,7 @@ const zones: CardZone[] = [
     { id: `${id}:judgment`, kind: 'judgment' as const, ownerSeatId: id, cards: [] },
   ]),
 ];
+const players = [0, 1, 2, 3].map((i) => ({ id: `p${i}`, seatId: `seat-${i}`, kind: 'bot' as const, name: `Seat ${i}` }));
 const seats: Seat[] = [{
   id: 'seat-0', index: 0, kingdom: 'Shu', combinedHp: 3, maxCombinedHp: 4, eliminated: false,
   generals: { main: { generalDefinitionId: 'guan-yu', revealed: true }, deputy: { generalDefinitionId: 'liu-bei', revealed: false } },
@@ -34,7 +35,7 @@ const seat = (seatId: string) => ({ kind: 'seat' as const, seatId });
 const move = (card: CardInstance, fromZoneId: string, toZoneId: string): EngineEvent => ({ kind: 'CardMovedEvent', cardInstanceId: card.instanceId, fromZoneId, toZoneId, card });
 const general = (seatId: string, skillId: string) => ({ kind: 'general' as const, seatId, slot: 'main' as const, skillId });
 const textsOf = (log: EngineEvent[], translator?: typeof tr) =>
-  actionHistory(log, zones, [], seats, translator).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
+  actionHistory(log, zones, players, seats, translator).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
 const vi_ = (log: EngineEvent[]) => textsOf(log, tr);
 const en_ = (log: EngineEvent[]) => textsOf(log);
 
@@ -164,7 +165,7 @@ describe('status and table lines in Vietnamese', () => {
   });
 
   it('keeps the force colour of a status line', () => {
-    const history = actionHistory([{ kind: 'HealEvent', target: seat('seat-0'), amount: 1 }], zones, [], seats, tr);
+    const history = actionHistory([{ kind: 'HealEvent', target: seat('seat-0'), amount: 1 }], zones, players, seats, tr);
     expect(history[0]).toMatchObject({ text: 'Seat 0 hồi 1 Sinh lực', force: 'Shu' });
   });
 
@@ -257,5 +258,14 @@ describe('choices and skills in Vietnamese', () => {
     expect(vi_([{ kind: 'CardShownEvent', seatId: 'seat-1', card: sha, abilityId: 'sow-revolt' }])).toEqual(['Seat 1 cho xem Sha (7 ♠)']);
     expect(vi_([{ kind: 'CardsTurnedUpEvent', zoneId: 'processing', cards: [peach, sha] }])).toEqual(['Đã lật 2 lá bài: Peach (Q ♥), Sha (7 ♠)']);
     expect(en_([{ kind: 'CardsTurnedUpEvent', zoneId: 'processing', cards: [peach] }])).toEqual(['Turned up 1 card: Peach (Q ♥)']);
+  });
+});
+
+describe('seats without a player name', () => {
+  it('are named in the viewer’s language', () => {
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(peach), targets: [] }];
+    const texts = (translator?: typeof tr) => actionHistory(log, zones, [], seats, translator).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
+    expect(texts(tr)).toEqual(['Người chơi 0 dùng Peach (Q ♥)']);
+    expect(texts()).toEqual(['Seat 0 used Peach (Q ♥)']);
   });
 });
