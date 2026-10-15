@@ -64,6 +64,8 @@ export interface TournamentConfig {
   baseline: BotKind;
   firstSeed?: number;
   maxActions?: number;
+  // Play each seed twice with the sides swapped; the interval is over pairs. Needs an even number of games.
+  mirrored?: boolean;
 }
 
 export interface SideTally {
@@ -79,17 +81,29 @@ export interface TournamentReport {
   unfinished: number;
   challenger: SideTally;
   baseline: SideTally;
-  // Per finished game: challenger share of seats won minus baseline share.
+  // Challenger share of seats won minus baseline share: per finished game, or per pair when mirrored.
   difference: Interval;
 }
 
 const DEFAULT_MAX_ACTIONS = 20000;
+
+// One value per consecutive pair of games (0 and 1, 2 and 3, …); a pair with an unfinished game is dropped.
+export function pairMeans(differences: (number | null)[]): number[] {
+  const means: number[] = [];
+  for (let i = 0; i + 1 < differences.length; i += 2) {
+    const a = differences[i];
+    const b = differences[i + 1];
+    if (a !== null && b !== null) means.push((a + b) / 2);
+  }
+  return means;
+}
 
 export function runTournament(config: TournamentConfig): TournamentReport {
   const wholeNumbers: [string, number | undefined, number][] = [['games', config.games, 0], ['seats', config.seats, 0], ['first seed', config.firstSeed, 0]];
   for (const [name, value, min] of wholeNumbers) {
     if (value !== undefined && (!Number.isInteger(value) || value < min)) throw new Error(`The ${name} must be a whole number, ${min} or more (got ${value})`);
   }
+  if (config.mirrored && config.games % 2 !== 0) throw new Error('A mirrored tournament needs an even number of games');
   if (config.seats < 2 || config.seats % 2 !== 0) throw new Error('A tournament needs an even number of seats, at least 2');
   const registry = buildContentRegistry();
   const seatIds = Array.from({ length: config.seats }, (_, i) => `seat-${i}`);
@@ -99,10 +113,9 @@ export function runTournament(config: TournamentConfig): TournamentReport {
     challenger: { bot: config.challenger, seats: 0, wins: 0, byKingdom: {} },
     baseline: { bot: config.baseline, seats: 0, wins: 0, byKingdom: {} },
   };
-  const differences: number[] = [];
-  let unfinished = 0;
+  const gameDifferences: (number | null)[] = []; // null for a game with no result
   for (let game = 0; game < config.games; game++) {
-    const seed = firstSeed + game;
+    const seed = firstSeed + (config.mirrored ? Math.floor(game / 2) : game);
     const sideOfSeat = (seatId: string): Side => sideOf(game, seatIds.indexOf(seatId));
     const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
     const { finalState } = runGame(
@@ -116,10 +129,10 @@ export function runTournament(config: TournamentConfig): TournamentReport {
     );
     const score = scoreGame(finalState, sideOfSeat);
     if (!score.finished) {
-      unfinished += 1;
+      gameDifferences.push(null);
       continue;
     }
-    differences.push(score.wins.challenger / half - score.wins.baseline / half);
+    gameDifferences.push(score.wins.challenger / half - score.wins.baseline / half);
     for (const side of ['challenger', 'baseline'] as const) {
       tallies[side].seats += score.seats[side];
       tallies[side].wins += score.wins[side];
@@ -130,7 +143,9 @@ export function runTournament(config: TournamentConfig): TournamentReport {
       }
     }
   }
-  return { config, finished: differences.length, unfinished, challenger: tallies.challenger, baseline: tallies.baseline, difference: interval(differences) };
+  const finished = gameDifferences.filter((d) => d !== null).length;
+  const values = config.mirrored ? pairMeans(gameDifferences) : gameDifferences.filter((d): d is number => d !== null);
+  return { config, finished, unfinished: gameDifferences.length - finished, challenger: tallies.challenger, baseline: tallies.baseline, difference: interval(values) };
 }
 
 const percent = (wins: number, seats: number): string => (seats === 0 ? '-' : `${((100 * wins) / seats).toFixed(1)}%`);
@@ -148,9 +163,9 @@ export function formatReport(report: TournamentReport): string {
   const pp = (v: number) => `${(100 * v).toFixed(1)} pp`;
   const verdict = d.games < 2 ? 'too few games to judge' : d.low > 0 ? 'challenger is better' : d.high < 0 ? 'baseline is better' : 'no clear difference';
   return [
-    `Games ${config.games} (${report.finished} finished, ${report.unfinished} unfinished), seats ${config.seats}, first seed ${config.firstSeed ?? 0}`,
+    `Games ${config.games} (${report.finished} finished, ${report.unfinished} unfinished), seats ${config.seats}, first seed ${config.firstSeed ?? 0}${config.mirrored ? ', mirrored pairs' : ''}`,
     formatSide('challenger', report.challenger),
     formatSide('baseline', report.baseline),
-    `Difference per game (challenger minus baseline): ${pp(d.mean)}, 95% interval ${pp(d.low)} to ${pp(d.high)} over ${d.games} games: ${verdict}`,
+    `Difference per game (challenger minus baseline): ${pp(d.mean)}, 95% interval ${pp(d.low)} to ${pp(d.high)} over ${d.games} ${config.mirrored ? 'pairs' : 'games'}: ${verdict}`,
   ].join('\n');
 }

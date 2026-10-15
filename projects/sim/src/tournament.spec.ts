@@ -1,5 +1,5 @@
 import type { GameState } from 'engine';
-import { formatReport, interval, runTournament, scoreGame, sideOf, Side } from './tournament';
+import { formatReport, interval, pairMeans, runTournament, scoreGame, sideOf, Side } from './tournament';
 
 // Just enough of a finished game for scoring: seats with kingdoms, and a result.
 const finished = (winners: string[]): GameState =>
@@ -101,5 +101,51 @@ describe('runTournament', () => {
   it('plays equal numbers of challenger and baseline seats', () => {
     const report = runTournament(config);
     expect(report.challenger.seats).toBe(report.baseline.seats);
+  });
+});
+
+describe('pairMeans', () => {
+  it('averages each consecutive pair and drops a pair with an unfinished game', () => {
+    expect(pairMeans([0.5, -0.1, null, 0.3, 1, 0])).toEqual([0.2, 0.5]);
+  });
+
+  it('is empty for no games, and ignores a trailing unpaired game', () => {
+    expect(pairMeans([])).toEqual([]);
+    expect(pairMeans([0.5])).toEqual([]);
+  });
+});
+
+describe('runTournament, mirrored', () => {
+  const mirrored = { games: 6, seats: 4, challenger: 'rule-based', baseline: 'rule-based-v1', firstSeed: 1, mirrored: true } as const;
+
+  it('gives exactly zero for two bots that behave identically: each pair replays one deal with the sides swapped', () => {
+    const report = runTournament(mirrored);
+    expect(report.finished).toBe(6);
+    expect(report.difference).toEqual({ mean: 0, low: 0, high: 0, games: 3 });
+  });
+
+  it('is deterministic', () => {
+    expect(runTournament(mirrored)).toEqual(runTournament(mirrored));
+  });
+
+  it('rejects an odd number of games, which cannot form pairs', () => {
+    expect(() => runTournament({ ...mirrored, games: 5 })).toThrow(/even number of games/);
+  });
+
+  it('allows an odd number of games when not mirrored', () => {
+    expect(runTournament({ ...mirrored, games: 3, mirrored: false }).finished).toBe(3);
+  });
+
+  it('reports no pairs, and no NaN, when every game is cut off by the action cap', () => {
+    const report = runTournament({ ...mirrored, games: 4, maxActions: 1 });
+    expect(report.unfinished).toBe(4);
+    expect(report.difference.games).toBe(0);
+    expect(formatReport(report)).not.toMatch(/NaN|Infinity/);
+    expect(formatReport(report)).toMatch(/too few games to judge/);
+  });
+
+  it('counts the report in pairs', () => {
+    expect(formatReport(runTournament(mirrored))).toMatch(/over 3 pairs/);
+    expect(formatReport(runTournament({ ...mirrored, mirrored: false }))).toMatch(/over 6 games/);
   });
 });

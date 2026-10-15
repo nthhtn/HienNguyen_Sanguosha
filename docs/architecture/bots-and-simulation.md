@@ -73,12 +73,16 @@ entry point is [cli.ts](../../projects/sim/src/cli.ts) (`single <seed> <seats>`
 prints a game's log; `batch <games> <seats>` reports how many pass). The same
 functions are what the Jest specs call.
 
-`tournament <games> <seats> <challenger> <baseline> [firstSeed]` compares two
+`tournament <games> <seats> <challenger> <baseline> [firstSeed] [mirrored|unmirrored]` compares two
 bots ([tournament.ts](../../projects/sim/src/tournament.ts)). Seats alternate
 between the two bots and the pattern flips every game, so each bot sits in each
 seat equally often. Each finished game gives the challenger's share of winning
-seats minus the baseline's; the report shows the mean of that difference with a
-95% interval and says which bot is better only when the interval excludes 0.
+seats minus the baseline's. By default the tournament is **mirrored**: each seed
+is played twice with the sides swapped, and a pair's average is one data point,
+which cancels the luck of the deal and of the Generals. The report shows the
+mean over pairs with a 95% interval and says which bot is better only when the
+interval excludes 0. Add `unmirrored` as a last argument for one fresh seed per
+game.
 Bots are `random`, `rule-based` and `rule-based-v1` (weakest-first targeting,
 kept as a fixed opponent). Today `rule-based` and `rule-based-v1` are the same
 bot, so comparing them only measures noise; that is a useful harness check. The
