@@ -155,3 +155,48 @@ function is the only injected difference, so the two cannot drift apart.
 4. If the new targeting does not beat `rule-based-v1` outside the interval,
    the weights are revisited or the change is dropped, and the stage notes
    say so.
+
+## Results
+
+Date: 2026-10-15. All runs: 4 seats, `rule-based` with the scored targeting
+(challenger) against `rule-based-v1` (baseline), difference in win rate per
+game with a 95% interval.
+
+Harness checks (before judging anything):
+
+| Run | Result |
+|---|---|
+| `rule-based-v1` against itself, 200 games, seed 0 | −1.5 pp (−8.7 to +5.7): no clear difference, as it should be |
+| `rule-based` against `random`, 100 games, seed 0 | +41.0 pp (+34.0 to +48.0): challenger better, as it should be |
+
+Default weights (`kill` 1000, `trigrams` −60, `perHandCard` −8 up to 5 cards,
+`emptyHand` +30, `threat` +60 up to 3, `perHp` −10, `seatOrder` −0.01):
+
+| Games | First seed | Difference |
+|---|---|---|
+| 500 | 1000 | +1.0 pp (−3.5 to +5.5): no clear difference |
+| 4000 | 10000 | +1.2 pp (−0.4 to +2.8): no clear difference |
+
+Three tuning attempts, each 4000 games on seed 20000, changing one idea:
+
+| Attempt | Change | Difference |
+|---|---|---|
+| A | `threat` 60 → 300 | +1.8 pp (+0.2 to +3.4) |
+| B | defence terms off (`trigrams`, `perHandCard`, `emptyHand` = 0) | +2.5 pp (+0.9 to +4.1) |
+| C | `perHp` −10 → −40 | +2.0 pp (+0.4 to +3.6) |
+
+The best of the three, B, was confirmed on a fresh range (4000 games, seed
+30000): **+1.1 pp (−0.5 to +2.7): no clear difference.** The +2.5 pp was the
+best of three tries and did not hold up.
+
+Conclusion: the scored targeting did **not** beat `rule-based-v1` by more than
+its margin of error on a seed range it was not tuned on. Every run leaned
+positive (+1.0 to +2.5 pp), which suggests a real but small effect of 1 to 2
+points, too small for the sample sizes used to separate it from noise. Per the
+acceptance criteria, `rule-based` stays on the original ordering (it is
+identical to `rule-based-v1`); `targetScore` and its tests remain in `bots`,
+unused by the shipped policy, as the starting point for a later attempt.
+
+Found along the way: the rule-based bot crashed a game (the engine rejected a
+Devil card pick the selection did not allow). Fixed in `skills.ts` with a
+regression test.

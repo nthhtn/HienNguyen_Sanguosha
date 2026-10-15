@@ -1,5 +1,6 @@
 import type { Action, CardDefinition, CardZone, DecisionReason, EquipSlot, PendingArrangement, PendingChoice, PendingSelection, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
-import { ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
+import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
+import { targetScore } from './targeting';
 import { MAX_BOT_ACTIONS_PER_TURN } from './policy';
 
 function general(id: string, kingdom: Kingdom, maxHp: number): [string, GeneralDefinition] {
@@ -162,13 +163,15 @@ describe('ruleBasedPolicy', () => {
     expect(decide(view({ hand, equip: ['blade'] }), legal).action).toBe(end);
   });
 
-  it('aims a Sha at an undefended target over a slightly weaker one holding a full hand; v1 still picks the weakest', () => {
+  it('ranks targets with the policy\'s ranker: the shipped bot picks the weakest, a scoring bot the undefended one', () => {
     const seats = [seat('seat-0', 0, 'Wei', 4), seat('seat-1', 1, 'Wei', 4), seat('seat-2', 2, 'Shu', 3), seat('seat-3', 3, 'Wu', 2)];
     const fullHand: CardZone = { id: 'seat-3:hand', kind: 'hand', ownerSeatId: 'seat-3', cards: Array.from({ length: 5 }, (_, i) => ({ instanceId: `f${i}`, definitionId: 'shan', suit: 'heart' as const, rank: 2 })) };
     const v = view({ seats, hand: [{ instanceId: 'c-sha', definitionId: 'sha' }], zones: [fullHand] });
     // seat-1 is a revealed Wei ally and is never aimed at; seat-2 holds nothing, seat-3 holds five cards.
     const legal = [play('c-sha', 'seat-1'), play('c-sha', 'seat-2'), play('c-sha', 'seat-3'), end];
-    expect(decide(v, legal).action).toEqual(play('c-sha', 'seat-2'));
+    const scoring = createRuleBasedPolicy('scoring', targetScore);
+    expect(scoring.decide(v, 'seat-0', legal, registry, null).action).toEqual(play('c-sha', 'seat-2'));
+    expect(decide(v, legal).action).toEqual(play('c-sha', 'seat-3'));
     expect(ruleBasedV1Policy.decide(v, 'seat-0', legal, registry, null).action).toEqual(play('c-sha', 'seat-3'));
   });
 

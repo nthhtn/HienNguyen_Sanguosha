@@ -2,7 +2,6 @@ import type { Action, ContentRegistry, GameState, Seat } from 'engine';
 import { conversionsOf, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
 import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
-import { targetScore } from './targeting';
 import { fireSelection } from './fire';
 import { upheavalVictimIsFoe } from './forest';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
@@ -358,7 +357,7 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker): BotPolicy
   return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, view, seatId, legal, registry, memory) };
 }
 
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', targetScore);
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst);
 
 // The behaviour before smarter targeting, kept as a fixed opponent for the tournament harness.
 export const ruleBasedV1Policy: BotPolicy = createRuleBasedPolicy('rule-based-v1', weakestFirst);
