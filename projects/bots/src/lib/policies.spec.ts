@@ -1,0 +1,29 @@
+import { policyById, POLICY_IDS } from './policies';
+import { ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
+import { act, card, decide, table } from './testing';
+
+describe('policy registry', () => {
+  it('lists rule-based and rule-based-v1', () => {
+    expect([...POLICY_IDS].sort()).toEqual(['rule-based', 'rule-based-v1']);
+  });
+
+  it('looks a policy up by id', () => {
+    expect(policyById('rule-based')).toBe(ruleBasedPolicy);
+    expect(policyById('rule-based-v1')).toBe(ruleBasedV1Policy);
+  });
+
+  it('names the valid ids when the id is unknown', () => {
+    expect(() => policyById('nope')).toThrow(/Unknown bot policy "nope".*rule-based, rule-based-v1/);
+  });
+});
+
+describe('rule-based-v1', () => {
+  it('has the id "rule-based-v1" and aims a Sha at the weakest non-ally in reach', () => {
+    expect(ruleBasedV1Policy.id).toBe('rule-based-v1');
+    // seat-a (Wei) reaches seat-b and seat-d (adjacent); seat-d has the lower HP.
+    const state = table({ 'seat-a:hand': [card('s1', 'sha')] }, { hp: { 'seat-b': 3, 'seat-d': 2 } });
+    const action = decide(state);
+    expect(action).toMatchObject({ kind: 'PlayCardAction', cardInstanceId: 's1', targets: [{ kind: 'seat', seatId: 'seat-d' }] });
+    expect(act(state, action)).toBeDefined();
+  });
+});

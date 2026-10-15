@@ -54,6 +54,15 @@ describe('Devil', () => {
     expect(picked(decide({ ...table({ 'seat-a:hand': hand }), pendingSelection: selection }))).toEqual(['h']);
   });
 
+  it('only picks among the cards the selection allows', () => {
+    const selection: PendingSelection = {
+      id: 'sel', seatId: 'seat-a', reason: { kind: 'ability', owner: general('seat-a', 'devil'), abilityId: 'devil' }, of: 'cards', eligibleIds: ['p', 'k'], min: 1, max: 1,
+      then: { kind: 'replace-judgment', judgment: (shown('seat-a') as Extract<Effect, { kind: 'JudgmentShownEffect' }>).judgment, owner: general('seat-a', 'devil'), abilityId: 'devil' }, onCancel: [],
+    };
+    // The Shan would flip the judgment too, but it is not allowed: the Peach is the only eligible flip.
+    expect(picked(decide({ ...table({ 'seat-a:hand': hand }), pendingSelection: selection }))).toEqual(['p']);
+  });
+
   it('saves itself only from Lightning, Capture or Starvation: never re-judges its own River Goddess', () => {
     const owner = { kind: 'general' as const, seatId: 'seat-a', slot: 'deputy' as const, skillId: 'river-goddess' };
     const riverGoddess: Effect = { kind: 'JudgmentShownEffect', judgment: { seatId: 'seat-a', reader: { kind: 'skill', owner }, card: card('j', 'peach', 'heart', 9) }, acted: [] };
