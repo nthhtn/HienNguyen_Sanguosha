@@ -61,6 +61,9 @@ export function actionHistory(
   // The card each seat showed last, and its line (competing folds two into one).
   const lastShown = new Map<string, { card: CardInstance; line: ActionLine }>();
   let swapFirst: string | null = null;
+  // The latest judgment line, remembered as data so "Counts as Shan" can fold into it
+  // by seat and reader id instead of by reading its text.
+  let lastJudgment: { line: ActionLine; seatId: string; readerId: string; reader: string; face: string } | null = null;
   // "Seat 1 took Hing's Silver Lion (A ♣) with Steal", "Seat 1 took a hand card
   // from Hing with Steal", "Seat 1 discarded Sha (7 ♠) from Hing's hand with Break".
   const pickLine = (made: ChoiceMadeEvent, face: CardInstance | undefined, ownerSeatId: string | undefined): string => {
@@ -250,103 +253,117 @@ export function actionHistory(
       case 'AbilityUsedEvent': {
         const owner = name(event.owner.seatId);
         const ability = abilityName(event.abilityId);
+        // The card names the sentences mention, looked up so they follow the locale.
+        const sha = cardName('sha');
+        const shan = cardName('shan');
+        const duel = cardName('duel');
         if (event.outcome === 'used') {
-          action(event.abilityId === 'upheaval' ? `${owner} used ${ability}: every other seat plays a Sha or loses 1 HP` : `${owner} used ${ability}`);
+          action(event.abilityId === 'upheaval' ? tr('history.upheaval', { owner, ability, sha }) : tr('history.abilityUsed', { owner, ability }));
         } else if (event.outcome === 'no-effect' && event.targetSeatId) {
-          action(`${owner}'s ${ability}: ${name(event.targetSeatId)}'s Sha has no effect`);
+          action(tr('history.noEffect', { owner, ability, target: name(event.targetSeatId), sha }));
         } else if (event.outcome === 'counts-as-shan') {
-          // Said on its judgment's line, which comes just before.
+          // Said on its judgment's line when that is still the last line: the
+          // same judged seat and reader, matched on ids, never on the text.
           const last = entries[entries.length - 1];
-          if (last?.kind === 'action' && last.text.startsWith(`${owner}'s ${ability} judgment:`)) last.text += ', Counts as Shan';
-          else action(`${owner}'s ${ability} counts as Shan`);
+          if (lastJudgment && last === lastJudgment.line && lastJudgment.seatId === event.owner.seatId && lastJudgment.readerId === event.abilityId) {
+            lastJudgment.line.text = tr('history.judgmentCountsAsShan', { seat: owner, reader: lastJudgment.reader, face: lastJudgment.face, shan });
+          } else {
+            action(tr('history.countsAsShan', { owner, ability, shan }));
+          }
         } else if (event.outcome === 'more-damage') {
-          action(`${owner}'s ${ability}: 1 more damage`);
+          action(tr('history.moreDamage', { owner, ability }));
         } else if (event.outcome === 'unblockable' && event.targetSeatId) {
-          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} can't play a Shan`);
+          action(tr('history.unblockable', { owner, ability, target: name(event.targetSeatId), shan }));
         } else if (event.outcome === 'moved' && event.targetSeatId) {
-          action(`${owner}'s ${ability} moved the Sha to ${name(event.targetSeatId)}`);
+          action(tr('history.movedSha', { owner, ability, target: name(event.targetSeatId), sha }));
         } else if (event.outcome === 'stays-alive') {
-          action(`${owner}'s ${ability}: no match, ${owner} stays alive`);
+          action(tr('history.staysAlive', { owner, ability }));
         } else if (event.outcome === 'matched') {
-          action(`${owner}'s ${ability}: a rank matched`);
+          action(tr('history.rankMatched', { owner, ability }));
         } else if ((event.outcome === 'claim-true' || event.outcome === 'claim-false') && event.cardId) {
-          action(`${owner}'s ${cardName(event.cardId)} ${event.outcome === 'claim-true' ? 'was true' : 'was a bluff'}`);
+          action(tr(event.outcome === 'claim-true' ? 'history.claimTrue' : 'history.claimFalse', { owner, card: cardName(event.cardId) }));
         } else if (event.outcome === 'took-hand-card' && event.targetSeatId) {
-          action(`${owner} took a hand card from ${name(event.targetSeatId)} (${ability})`);
+          action(tr('history.tookHandCard', { owner, target: name(event.targetSeatId), ability }));
         } else if ((event.outcome === 'compete-won' || event.outcome === 'compete-lost') && event.targetSeatId) {
           // "Seat 1 competed with Seat 2: 9 ♠ against 7 ♥, Seat 1 won", in place of the two "showed" lines.
+          const rival = name(event.targetSeatId);
           const mine = lastShown.get(event.owner.seatId);
           const theirs = lastShown.get(event.targetSeatId);
           for (const shown of [mine, theirs]) {
             const at = shown ? entries.lastIndexOf(shown.line) : -1;
             if (at >= 0) entries.splice(at, 1);
           }
-          const faces = mine && theirs ? `: ${cardFaceLabel(mine.card)} against ${cardFaceLabel(theirs.card)}` : '';
-          const winner = event.outcome === 'compete-won' ? owner : name(event.targetSeatId);
-          action(`${owner} competed with ${name(event.targetSeatId)}${faces}, ${winner} won`);
+          const winner = event.outcome === 'compete-won' ? owner : rival;
+          action(
+            mine && theirs
+              ? tr('history.competedFaces', { owner, target: rival, mine: cardFaceLabel(mine.card), theirs: cardFaceLabel(theirs.card), winner })
+              : tr('history.competed', { owner, target: rival, winner })
+          );
           if (event.abilityId === 'heavens-justice') {
-            action(`${owner}'s ${ability}: ${event.outcome === 'compete-won' ? 'one more Sha this turn, at any distance, with one more target' : 'no Sha this turn'}`);
+            action(tr(event.outcome === 'compete-won' ? 'history.heavensWon' : 'history.heavensLost', { owner, ability, sha }));
           }
         } else if (event.outcome === 'reborn') {
-          action(`${owner} used ${ability}: discards every card, draws 3, recovers to 3 HP and turns face up`);
+          action(tr('history.reborn', { owner, ability }));
         } else if (event.outcome === 'paid-weapon') {
-          action(`${owner} discarded a Weapon for ${ability}`);
+          action(tr('history.paidWeapon', { owner, ability }));
         } else if (event.outcome === 'struck' && event.targetSeatId) {
-          action(`${owner} struck ${name(event.targetSeatId)} with ${ability}`);
+          action(tr('history.struck', { owner, target: name(event.targetSeatId), ability }));
         } else if (event.outcome === 'drew-up' && event.targetSeatId) {
-          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} draws up to its max HP`);
+          action(tr('history.drewUp', { owner, ability, target: name(event.targetSeatId) }));
         } else if (event.outcome === 'judged-red' || event.outcome === 'judged-black') {
-          action(`${owner}'s ${ability}: ${event.outcome === 'judged-red' ? 'black' : 'red'} hand cards can be used as Duel this turn`);
+          action(tr(event.outcome === 'judged-red' ? 'history.blackAsDuel' : 'history.redAsDuel', { owner, ability, duel }));
         } else if (event.outcome === 'discarded' && event.targetSeatId) {
-          action(`${owner}'s ${ability}: discards one of ${name(event.targetSeatId)}'s cards`);
+          action(tr('history.discardedOne', { owner, ability, target: name(event.targetSeatId) }));
         } else if (event.outcome === 'recast') {
-          action(`${owner} recast a club with ${ability}`);
+          action(tr('history.recast', { owner, ability }));
         } else if (event.outcome === 'took-cards' && event.targetSeatId) {
-          action(`${owner} took all of ${name(event.targetSeatId)}'s cards (${ability})`);
+          action(tr('history.tookAllCards', { owner, target: name(event.targetSeatId), ability }));
         } else if (event.outcome === 'exiled' && event.targetSeatId) {
-          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} turns over and draws cards`);
+          action(tr('history.exiled', { owner, ability, target: name(event.targetSeatId) }));
         } else if (event.outcome === 'revealed') {
-          action(`${owner} used ${ability}`);
+          action(tr('history.abilityUsed', { owner, ability }));
         } else if (event.outcome === 'culprit' && event.targetSeatId) {
-          action(`${owner}'s ${ability}: the damage to ${name(event.targetSeatId)} counts as theirs`);
+          action(tr('history.culprit', { owner, ability, target: name(event.targetSeatId) }));
         } else if (event.outcome === 'took-card') {
-          action(`${owner}'s ${ability}: took the Tool card`);
+          action(tr('history.tookToolCard', { owner, ability }));
         } else if (event.outcome === 'drew' && event.targetSeatId) {
-          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} draws and discards`);
+          action(tr('history.drawsAndDiscards', { owner, ability, target: name(event.targetSeatId) }));
         } else if (event.outcome === 'gave' && event.targetSeatId) {
-          action(`${owner} gave half of their hand to ${name(event.targetSeatId)} (${ability})`);
+          action(tr('history.gaveHalf', { owner, target: name(event.targetSeatId), ability }));
         } else if (event.outcome === 'collapsed') {
-          action(`${owner} lost 1 HP to ${ability}`);
+          action(tr('history.collapsed', { owner, ability }));
         } else if (event.outcome === 'collapsed-max') {
-          action(`${owner} reduced their max HP with ${ability}`);
+          action(tr('history.collapsedMax', { owner, ability }));
         } else if (event.outcome.startsWith('skipped-')) {
-          action(`${owner} skipped their ${event.outcome.slice('skipped-'.length).replace(/^./, (c) => c.toUpperCase())} Phase with ${ability}`);
+          const raw = event.outcome.slice('skipped-'.length).replace(/^./, (c) => c.toUpperCase());
+          const phase = raw === 'Judgment' || raw === 'Draw' || raw === 'Play' || raw === 'Discard' ? tr(`history.phase.${raw}` as const) : raw;
+          action(tr('history.skippedOwnPhase', { owner, phase, ability }));
         } else if (event.outcome === 'moved-card' && event.targetSeatId) {
-          action(`${owner} moved a card to ${name(event.targetSeatId)} (${ability})`);
+          action(tr('history.movedCard', { owner, target: name(event.targetSeatId), ability }));
         } else if (event.outcome === 'farmed') {
-          action(`${owner}'s ${ability}: the judged card becomes a Farm`);
+          action(tr('history.farmed', { owner, ability }));
         } else if (event.outcome === 'awakened') {
-          action(`${owner} awakened: ${ability}`);
+          action(tr('history.awakened', { owner, ability }));
         } else if (event.outcome === 'paid' && event.targetSeatId) {
-          action(`${name(event.targetSeatId)} discarded a Basic card for ${owner}'s ${ability}`);
+          action(tr('history.paidBasic', { owner, ability, target: name(event.targetSeatId) }));
         } else if (event.outcome === 'extra-turn' && event.targetSeatId) {
-          action(`${owner} gave ${name(event.targetSeatId)} an extra turn (${ability})`);
+          action(tr('history.extraTurn', { owner, target: name(event.targetSeatId), ability }));
         } else if (event.outcome === 'drew') {
-          action(`${owner} drew a card (${ability})`);
+          action(tr('history.drewCard', { owner, ability }));
         } else if (event.outcome === 'placed' && event.targetSeatId) {
-          action(`${owner} placed an Equipment card in ${name(event.targetSeatId)}'s equipment (${ability})`);
+          action(tr('history.placedEquipment', { owner, target: name(event.targetSeatId), ability }));
         } else if (event.outcome === 'gave-back' && event.targetSeatId) {
-          action(`${owner} gave a discarded card back to ${name(event.targetSeatId)} and took the rest (${ability})`);
+          action(tr('history.gaveBack', { owner, target: name(event.targetSeatId), ability }));
         } else if (event.outcome === 'lamented' && event.targetSeatId) {
-          action(`${owner}'s ${ability}: ${name(event.targetSeatId)} judges`);
+          action(tr('history.lamented', { owner, ability, target: name(event.targetSeatId) }));
         } else if (event.outcome === 'silenced' && event.targetSeatId) {
-          action(`${name(event.targetSeatId)} loses all skills (${ability})`);
+          action(tr('history.silenced', { target: name(event.targetSeatId), ability }));
         } else if (event.outcome === 'new-form') {
-          action(`${owner} gained a Form (${ability})`);
+          action(tr('history.newForm', { owner, ability }));
         } else if (event.outcome === 'swap-first' && event.targetSeatId) {
           swapFirst = event.targetSeatId;
         } else if (event.outcome === 'swapped' && event.targetSeatId) {
-          action(`${swapFirst ? name(swapFirst) : 'A seat'} and ${name(event.targetSeatId)} swapped hands (${ability})`);
+          action(tr('history.swapped', { first: swapFirst ? name(swapFirst) : tr('history.aSeat'), second: name(event.targetSeatId), ability }));
           swapFirst = null;
         }
         break;
@@ -396,9 +413,19 @@ export function actionHistory(
       case 'CardsTurnedUpEvent':
         action(tr('history.turnedUp', { cards: cards(event.cards.length), list: event.cards.map(named).join(', ') }));
         break;
-      case 'JudgmentEvent':
-        action(tr('history.judgment', { seat: name(event.seatId), reader: judgmentReaderName(event.reader), face: cardFaceLabel(event.card) }), event.card);
+      case 'JudgmentEvent': {
+        const reader = judgmentReaderName(event.reader);
+        const face = cardFaceLabel(event.card);
+        action(tr('history.judgment', { seat: name(event.seatId), reader, face }), event.card);
+        lastJudgment = {
+          line: entries[entries.length - 1] as ActionLine,
+          seatId: event.seatId,
+          readerId: event.reader.kind === 'card' ? event.reader.card.as : event.reader.owner.skillId,
+          reader,
+          face,
+        };
         break;
+      }
       case 'PhaseSkippedEvent':
         action(tr('history.phaseSkipped', { seat: name(event.seatId), phase: tr(`history.phase.${event.phase}` as const) }));
         break;
