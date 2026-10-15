@@ -4,6 +4,7 @@ import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from 
 import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
+import { bestPair } from './general-values';
 import { NO_RESPONSE_RULES, ResponseRules, shouldHoldShan, wuxieWorthCancelling } from './responses';
 import { upheavalVictimIsFoe } from './forest';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
@@ -66,6 +67,7 @@ function decide(
   rank: TargetRanker,
   rules: CardPlayRules,
   responseRules: ResponseRules,
+  generalValues: Readonly<Record<string, number>> | undefined,
   view: GameState,
   seatId: string,
   offered: Action[],
@@ -95,7 +97,7 @@ function decide(
     const choices = legal.filter((a): a is ChooseGenerals => a.kind === 'ChooseGeneralsAction');
     const hp = (a: ChooseGenerals) =>
       (registry.generals.get(a.mainId)?.maxHp ?? 0) + (registry.generals.get(a.deputyId)?.maxHp ?? 0);
-    if (choices.length > 0) return take(choices.reduce((best, a) => (hp(a) > hp(best) ? a : best)));
+    if (choices.length > 0) return take(generalValues ? bestPair(generalValues, registry, choices) : choices.reduce((best, a) => (hp(a) > hp(best) ? a : best)));
   }
 
   // 1a0. An arrangement: Peach, Shan and Sha on top, the rest at the bottom.
@@ -356,8 +358,8 @@ function decide(
 
 // Simple, explainable opponent; see the bot-opponents design spec for its rules.
 // The ranker decides which non-ally a targeted play goes to.
-export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES): BotPolicy {
-  return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, view, seatId, legal, registry, memory) };
+export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES, generalValues?: Readonly<Record<string, number>>): BotPolicy {
+  return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, generalValues, view, seatId, legal, registry, memory) };
 }
 
 export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst);
