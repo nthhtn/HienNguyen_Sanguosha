@@ -7,3 +7,4 @@ export * from './lib/rule-based';
 export * from './lib/policies';
 export * from './lib/card-play';
 export * from './lib/targeting';
+export * from './lib/responses';

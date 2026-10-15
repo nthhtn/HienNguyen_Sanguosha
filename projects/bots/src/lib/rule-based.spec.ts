@@ -3,7 +3,8 @@ import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy } from './rul
 import { NO_CARD_PLAY_RULES } from './card-play';
 import { weakestFirst } from './helpers';
 import { targetScore } from './targeting';
-import { MAX_BOT_ACTIONS_PER_TURN } from './policy';
+import { BotPolicy, MAX_BOT_ACTIONS_PER_TURN } from './policy';
+import { NO_RESPONSE_RULES, ResponseRules } from './responses';
 
 function general(id: string, kingdom: Kingdom, maxHp: number): [string, GeneralDefinition] {
   return [id, { id, kingdom, maxHp, skills: [] }];
@@ -665,5 +666,32 @@ describe('card-play rules', () => {
   it('rule-based, with every rule off, is the policy it always was', () => {
     const v = view({ seats: [seat('seat-0', 0, 'Wei', 6), seat('seat-1', 1, 'Shu', 8)], hand: cards(['c-peach', 'peach']) });
     expect(run(ruleBasedPolicy, v, [play('c-peach'), end])).toEqual(play('c-peach'));
+  });
+});
+
+describe('response rules', () => {
+  const respond: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'sh' };
+  const passIt: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' };
+  const hit = (hp: number): GameState => {
+    const v = view({ pendingFor: 'seat-0', seats: [seat('seat-0', 0, 'Wei', hp), seat('seat-1', 1, 'hidden', 6)], hand: [{ instanceId: 'sh', definitionId: 'shan' }] });
+    return { ...v, pendingResponse: { ...v.pendingResponse!, allowedCardIds: ['shan'], outcome: { kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-1' }, target: { kind: 'seat', seatId: 'seat-0' }, amount: 1, nature: 'normal' } } } };
+  };
+  const policy = (r: ResponseRules) => createRuleBasedPolicy('t', weakestFirst, NO_CARD_PLAY_RULES, r);
+  const run = (p: BotPolicy, v: GameState) => p.decide(v, 'seat-0', [respond, passIt], registry, null).action;
+
+  it('with the switches off, blocks the hit as before', () => {
+    expect(run(policy(NO_RESPONSE_RULES), hit(5))).toBe(respond);
+    expect(run(ruleBasedPolicy, hit(5))).toBe(respond);
+  });
+  it('shanHold: passes a non-lethal hit at 5 HP, blocks at 2 HP', () => {
+    expect(run(policy({ shanHold: true, wuxie: false }), hit(5))).toBe(passIt);
+    expect(run(policy({ shanHold: true, wuxie: false }), hit(2))).toBe(respond);
+  });
+  it('wuxie: cancels a Duel aimed at a revealed ally only with the switch on', () => {
+    const seats = [seat('seat-0', 0, 'Wei', 4), seat('seat-1', 1, 'Wei', 4), seat('seat-2', 2, 'Shu', 4)];
+    const v = view({ pendingFor: 'seat-0', seats, hand: [{ instanceId: 'sh', definitionId: 'wuxie' }],
+      pendingReason: { kind: 'wuxie', tool: { as: 'duel', colour: 'black', physical: [] }, toolUserSeatId: 'seat-2', target: { kind: 'seat', seatId: 'seat-1' } } });
+    expect(run(policy(NO_RESPONSE_RULES), v)).toBe(passIt);
+    expect(run(policy({ shanHold: false, wuxie: true }), v)).toBe(respond);
   });
 });

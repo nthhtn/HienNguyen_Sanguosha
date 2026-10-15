@@ -4,6 +4,7 @@ import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from 
 import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
+import { NO_RESPONSE_RULES, ResponseRules, shouldHoldShan, wuxieWorthCancelling } from './responses';
 import { upheavalVictimIsFoe } from './forest';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
@@ -16,9 +17,6 @@ type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
 type Arrange = Extract<Action, { kind: 'ArrangeCardsAction' }>;
 
 
-
-// Tools worth cancelling when they are aimed at this bot.
-const HARMFUL_TOOLS = new Set(['barbarians', 'hail-of-arrows', 'duel', 'steal', 'break', 'capture', 'lightning', 'starvation']);
 
 // Plays of `definitionId` aimed at a living non-ally, best target first.
 function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string, rank: TargetRanker): PlayCard[] {
@@ -67,6 +65,7 @@ const conversionAs = (a: UseConversion, view: GameState, registry: ContentRegist
 function decide(
   rank: TargetRanker,
   rules: CardPlayRules,
+  responseRules: ResponseRules,
   view: GameState,
   seatId: string,
   offered: Action[],
@@ -189,7 +188,7 @@ function decide(
         : reason.kind === 'dying'
           ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying))
           : reason.kind === 'wuxie'
-            ? reason.target.kind === 'seat' && reason.target.seatId === seatId && HARMFUL_TOOLS.has(reason.tool.as)
+            ? !!self && wuxieWorthCancelling(view, self, reason, responseRules.wuxie)
             : reason.kind === 'ability' && (reason.abilityId === 'upheaval' || reason.abilityId === 'instigate')
               ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId)
               : false; // never counter a Wuxie Kongjie
@@ -198,7 +197,8 @@ function decide(
     const best = answers.find((a) => definitionIdOf(view, a.cardInstanceId) === 'peach') ?? answers[0];
     // Serpent Spear: only with no real answer, and no Peach among the 2 cards it would take.
     const converted = legal.find((a): a is UseConversion => a.kind === 'UseConversionAction' && !!self && conversionSpare(view, self, a, registry));
-    const chosen = best ?? converted;
+    const holding = responseRules.shanHold && !!self && !!best && definitionIdOf(view, best.cardInstanceId) === 'shan' && shouldHoldShan(view, self);
+    const chosen = holding ? undefined : (best ?? converted);
     const answer = (worthAnswering ? chosen : undefined) ?? legal.find((a) => a.kind === 'PassAction');
     if (answer) return take(answer);
   }
@@ -356,8 +356,8 @@ function decide(
 
 // Simple, explainable opponent; see the bot-opponents design spec for its rules.
 // The ranker decides which non-ally a targeted play goes to.
-export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: CardPlayRules = NO_CARD_PLAY_RULES): BotPolicy {
-  return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, view, seatId, legal, registry, memory) };
+export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES): BotPolicy {
+  return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, view, seatId, legal, registry, memory) };
 }
 
 export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst);
