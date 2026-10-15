@@ -327,7 +327,7 @@
       },
       "escort": {
         "name": "Hộ giá",
-        "text": "Chủ công kỹ: Nếu Tào Tháo cần dùng Thiểm, một người thuộc Ngụy có thể dùng Thiểm thay ông."
+        "text": "Kỹ năng Chủ công: Nếu Tào Tháo cần dùng Thiểm, một người thuộc Ngụy có thể dùng Thiểm thay ông."
       }
     }
   },
@@ -336,13 +336,16 @@
     "title": "Người kế thừa bá nghiệp",
     "skills": {
       "unnatural-death": {
-        "name": "Hành thương"
+        "name": "Hành thương",
+        "text": "Khi một người chơi khác chết, Tào Phi có thể lấy toàn bộ bài của người đó."
       },
       "exile": {
-        "name": "Phóng trục"
+        "name": "Phóng trục",
+        "text": "Khi Tào Phi bị sát thương, ông có thể chọn một người chơi bất kỳ (trừ bản thân) và bắt họ lật mặt. Người bị lật mặt sau đó rút X lá bài, với X là hiệu số giữa Sinh lực tối đa và Sinh lực hiện tại của Tào Phi sau khi chịu sát thương."
       },
       "exaltation": {
-        "name": "Tụng uy"
+        "name": "Tụng uy",
+        "text": "Kỹ năng Chủ công: Khi một người thuộc Ngụy lật được lá phán xét màu đen, họ có thể cho Tào Phi rút một lá bài."
       }
     }
   },
@@ -351,7 +354,8 @@
     "title": "Đại tướng quân",
     "skills": {
       "entrench": {
-        "name": "Cứ thủ"
+        "name": "Cứ thủ",
+        "text": "Sau giai đoạn bỏ bài, Tào Nhân có thể lật mặt rồi rút ba lá bài."
       }
     }
   },
@@ -360,10 +364,12 @@
     "title": "Kiểu nhiên tráng sĩ",
     "skills": {
       "military-farm": {
-        "name": "Đồn điền"
+        "name": "Đồn điền",
+        "text": "Mỗi khi Đặng Ngải mất bài ngoài lượt của mình, ông có thể phán xét. Nếu không phải cơ, lá bài đó trở thành Điền và ông nhận lấy nó. Mỗi Điền Đặng Ngải có cho ông một Tọa kỵ công -1."
       },
       "strategic-pass": {
-        "name": "Tạc hiểm"
+        "name": "Tạc hiểm",
+        "text": "Kỹ năng thức tỉnh: Khi bắt đầu lượt của Đặng Ngải mà ông có từ ba Điền trở lên, ông phải giảm Sinh lực tối đa đi một. Sau đó ông vĩnh viễn có khả năng dùng Điền như Thuận Thủ Khiên Dương."
       }
     }
   },
@@ -372,7 +378,8 @@
     "title": "Cổ chi Ác Lai",
     "skills": {
       "assault": {
-        "name": "Cường tập"
+        "name": "Cường tập",
+        "text": "Một lần trong lượt của Điển Vi, ông có thể gây một sát thương cho một người chơi bất kỳ trong tầm tấn công của mình bằng cách bỏ một lá vũ khí hoặc mất một Sinh lực."
       }
     }
   },
@@ -381,10 +388,12 @@
     "title": "Tảo chung tiên tri",
     "skills": {
       "heavens-envy": {
-        "name": "Thiên đố"
+        "name": "Thiên đố",
+        "text": "Mỗi khi Quách Gia phán xét, ông đưa lá phán xét vào bài trên tay trước khi nó có hiệu lực."
       },
       "bestowed-rouse": {
-        "name": "Khiển kế"
+        "name": "Khiển kế",
+        "text": "Với mỗi sát thương Quách Gia phải chịu, ông rút hai lá bài. Sau đó ông có thể chia những lá bài này cho các người chơi đang trong ván theo ý mình."
       }
     }
   },
@@ -393,10 +402,12 @@
     "title": "Lang cố chi quỷ",
     "skills": {
       "feedback": {
-        "name": "Phản quỹ"
+        "name": "Phản quỹ",
+        "text": "Khi một người chơi gây sát thương cho Tư Mã Ý, ông có thể lấy một lá bài của họ và đưa vào bài trên tay."
       },
       "devil": {
-        "name": "Quỷ tài"
+        "name": "Quỷ tài",
+        "text": "Sau khi một lá phán xét được lật, Tư Mã Ý có thể bỏ một lá bài trên tay. Lá bài ông bỏ trở thành lá phán xét mới."
       }
     }
   },
@@ -405,7 +416,8 @@
     "title": "La sát độc nhãn",
     "skills": {
       "unyielding": {
-        "name": "Cương liệt"
+        "name": "Cương liệt",
+        "text": "Khi Hạ Hầu Đôn bị một người chơi khác gây sát thương, ông có thể phán xét. Nếu lá bài không phải cơ, người đã gây sát thương cho ông phải chịu một sát thương từ Hạ Hầu Đôn hoặc bỏ hai lá bài trên tay."
       }
     }
   },
@@ -414,7 +426,8 @@
     "title": "Liệp báo cấp hành",
     "skills": {
       "godspeed": {
-        "name": "Thần tốc"
+        "name": "Thần tốc",
+        "text": "Trong lượt của mình, Hạ Hầu Uyên có thể dùng một hoặc cả hai lựa chọn sau để tấn công một người chơi bất kỳ bất kể khoảng cách: bỏ qua giai đoạn phán xét và giai đoạn rút bài; bỏ qua giai đoạn ra bài và bỏ một lá trang bị bất kỳ."
       }
     }
   },
@@ -423,7 +436,8 @@
     "title": "Hổ si",
     "skills": {
       "bare-the-chest": {
-        "name": "Khỏa y"
+        "name": "Khỏa y",
+        "text": "Trong giai đoạn rút bài, Hứa Chử có thể rút ít hơn một lá bài. Trong giai đoạn ra bài, mọi sát thương ông gây ra bằng Sát hoặc Quyết Đấu tăng thêm một."
       }
     }
   },
@@ -432,7 +446,8 @@
     "title": "Phong thái Chu Á Phu",
     "skills": {
       "blockade": {
-        "name": "Đoạn lương"
+        "name": "Đoạn lương",
+        "text": "Từ Hoảng có thể dùng bất kỳ lá bài Cơ bản hoặc Trang bị màu đen nào làm Binh Lương Thốn Đoạn. Ngoài ra, tầm dùng Binh Lương Thốn Đoạn của ông tăng thêm một."
       }
     }
   },
@@ -441,10 +456,12 @@
     "title": "Vương tá chi tài",
     "skills": {
       "rouse-the-tiger": {
-        "name": "Khu hổ"
+        "name": "Khu hổ",
+        "text": "Một lần trong giai đoạn ra bài, Tuân Úc có thể đấu điểm với một người chơi có nhiều Sinh lực hơn. Nếu Tuân Úc thắng, ông có thể chọn một người chơi trong tầm tấn công của mục tiêu, và mục tiêu gây một sát thương cho người đó. Nếu Tuân Úc thua, mục tiêu gây một sát thương cho Tuân Úc."
       },
       "eternal-loyalty": {
-        "name": "Tiết mệnh"
+        "name": "Tiết mệnh",
+        "text": "Với mỗi sát thương Tuân Úc phải chịu, ông có thể chọn một người chơi. Người này rút bài cho đến khi số bài trên tay bằng Sinh lực tối đa của họ."
       }
     }
   },
@@ -453,7 +470,8 @@
     "title": "Liệu địch cơ tiên",
     "skills": {
       "clever-change": {
-        "name": "Xảo biến"
+        "name": "Xảo biến",
+        "text": "Vào đầu giai đoạn phán xét, rút bài, ra bài hoặc bỏ bài của mình, Trương Cáp có thể bỏ một lá bài trên tay để bỏ qua giai đoạn đó. Nếu ông bỏ qua giai đoạn rút bài bằng kỹ năng này, ông có thể chọn tối đa hai người chơi và lấy một lá bài trên tay của mỗi người. Nếu ông bỏ qua giai đoạn ra bài theo cách này, ông có thể chọn một lá trang bị hoặc một Cẩm nang trì hoãn đang chờ của một người chơi và đặt nó vào vị trí tương ứng của người chơi khác. Nếu ông chuyển trang bị theo cách này, ông không thể dùng nó để thay thế trang bị cùng loại của người chơi khác."
       }
     }
   },
@@ -462,7 +480,8 @@
     "title": "Tiền tướng quân",
     "skills": {
       "raid": {
-        "name": "Đột tập"
+        "name": "Đột tập",
+        "text": "Trong giai đoạn rút bài, Trương Liêu có thể không rút hai lá bài từ chồng bài mà chọn tối đa hai người chơi có bài trên tay. Trương Liêu lấy một lá bài trên tay của mỗi người và đưa vào bài trên tay của mình."
       }
     }
   },
@@ -471,10 +490,12 @@
     "title": "Bạc hạnh mỹ nhân",
     "skills": {
       "overturned-country": {
-        "name": "Khuynh quốc"
+        "name": "Khuynh quốc",
+        "text": "Chân Mật có thể dùng bất kỳ lá bài đen nào trên tay làm Thiểm."
       },
       "river-goddess": {
-        "name": "Lạc thần"
+        "name": "Lạc thần",
+        "text": "Trước giai đoạn phán xét của mình, Chân Mật có thể phán xét. Nếu lá bài màu đen, nàng có thể tiếp tục phán xét thêm. Quá trình này lặp lại cho đến khi lật được lá bài đỏ. Lá đỏ bị bỏ, còn tất cả lá đen được đưa vào bài trên tay nàng."
       }
     }
   },

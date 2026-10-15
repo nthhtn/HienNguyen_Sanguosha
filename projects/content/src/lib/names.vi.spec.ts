@@ -66,7 +66,7 @@ describe('the locale-aware display lookups', () => {
     expect(generalDisplayData('cao-cao')).toMatchObject({ name: 'Cao Cao', title: 'Martial Emperor of Wei' });
     expect(generalDisplayData('cao-cao', 'fr')!.name).toBe('Cao Cao');
     expect(generalDisplayData('cao-pi', 'vi')!.name).toBe('Tào Phi');
-    expect(generalDisplayData('cao-pi', 'vi')!.skills.map((x) => x.text)).toEqual(generalDisplayData('cao-pi')!.skills.map((x) => x.text));
+    expect(generalDisplayData('cao-pi', 'fr')!.skills).toEqual(generalDisplayData('cao-pi')!.skills);
     expect(abilityName('evil-hero')).toBe('Evil Hero');
     expect(abilityName('godspeed', 'vi')).toBe('Thần tốc');
     expect(abilityName('godspeed')).toBe('Godspeed');
