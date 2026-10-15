@@ -10,3 +10,11 @@ export const MIN_SEATS = 2;
 export const REQ_ID_MAX = 64;
 // The most actions one game.submit may carry (a whole Discard phase is one move).
 export const MAX_SUBMIT_ACTIONS = 50;
+
+// The longest chat message, in characters (code points), after normalizing.
+export const CHAT_BODY_MAX = 300;
+// A member may send at most CHAT_RATE_LIMIT messages in any CHAT_RATE_WINDOW_MS.
+export const CHAT_RATE_LIMIT = 5;
+export const CHAT_RATE_WINDOW_MS = 10_000;
+// How many recent messages a welcome carries.
+export const CHAT_HISTORY = 100;

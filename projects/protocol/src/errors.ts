@@ -1,4 +1,4 @@
-import { DISPLAY_NAME_MAX, PASSWORD_MIN } from './limits';
+import { CHAT_BODY_MAX, DISPLAY_NAME_MAX, PASSWORD_MIN } from './limits';
 
 export type ErrorCode =
   | 'invalid_body'
@@ -28,7 +28,12 @@ export type ErrorCode =
   | 'not_your_turn'
   | 'stale'
   | 'illegal_action'
-  | 'solo_exists';
+  | 'solo_exists'
+  | 'chat_empty'
+  | 'chat_too_long'
+  | 'chat_rate_limited'
+  | 'chat_unavailable'
+  | 'registered_only';
 
 // Every error the server sends: a stable code for code, a message for people.
 export interface ErrorBody {
@@ -65,4 +70,9 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   stale: 'The game moved on. Try again',
   illegal_action: "That move isn't allowed",
   solo_exists: 'You already have a game against bots in progress',
+  chat_empty: 'Write a message first',
+  chat_too_long: `Messages can have at most ${CHAT_BODY_MAX} characters`,
+  chat_rate_limited: 'You are sending messages too fast. Wait a moment',
+  chat_unavailable: 'There is no chat in this room',
+  registered_only: 'Sign in with an account to see your games',
 };
