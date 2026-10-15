@@ -33,7 +33,7 @@ export class GameService {
   readonly maxSeats: number = kingdomWarMaxSeats(this.registry);
 
   // Delay before each bot move, so a human can follow along. Tests set 0.
-  botDelayMs = 700;
+  botDelayMs = 1500;
 
   private readonly _state: WritableSignal<GameState | null> = signal(null);
   private readonly _revealedSeatId: WritableSignal<string | null> = signal(null);

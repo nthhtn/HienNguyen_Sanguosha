@@ -9,7 +9,7 @@ import { toGameUpdate } from '../views/game';
 import { applyActions, applyMove, IllegalMoveError, stateHash } from './engineGame';
 
 // Delay before each bot move, so people can follow along.
-export const BOT_DELAY_MS = 700;
+export const BOT_DELAY_MS = 1500;
 // An open room's seat goes to a bot once its player has been away this long…
 export const TAKEOVER_AWAY_MS = 60_000;
 // …or after this many timeouts in a row while they are away (spec "Takeover").

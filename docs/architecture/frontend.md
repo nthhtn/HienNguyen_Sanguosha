@@ -54,7 +54,7 @@ What happens on a submit:
 2. On success the new state replaces the old, and in pass-and-play the view is
    gated again (`revealedSeatId` resets) so the next player must tap to reveal.
 3. `scheduleBotIfDue()` looks at the next decider. If it is a bot, a timer
-   (700 ms, so a person can follow) asks the rule-based policy for an action
+   (1.5 s, so a person can follow) asks the rule-based policy for an action
    from that seat's **redacted** state and the engine's legal actions, then
    submits it by the same path as a human move.
 
