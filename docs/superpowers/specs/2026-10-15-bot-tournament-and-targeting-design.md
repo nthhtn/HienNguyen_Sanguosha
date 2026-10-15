@@ -191,8 +191,10 @@ best of three tries and did not hold up.
 
 Conclusion: the scored targeting did **not** beat `rule-based-v1` by more than
 its margin of error on a seed range it was not tuned on. Every run leaned
-positive (+1.0 to +2.5 pp), which suggests a real but small effect of 1 to 2
-points, too small for the sample sizes used to separate it from noise. Per the
+positive (+1.0 to +2.5 pp). The three tuned runs use different weights on one
+seed range, so they are not independent evidence; a small effect of 1 to 2
+points is a hypothesis, not a finding. Playing each seed twice with the sides
+swapped would cancel the luck of the deal and is the first thing to try. Per the
 acceptance criteria, `rule-based` stays on the original ordering (it is
 identical to `rule-based-v1`); `targetScore` and its tests remain in `bots`,
 unused by the shipped policy, as the starting point for a later attempt.

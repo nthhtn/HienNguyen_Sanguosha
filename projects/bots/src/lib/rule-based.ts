@@ -359,5 +359,6 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker): BotPolicy
 
 export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst);
 
-// The behaviour before smarter targeting, kept as a fixed opponent for the tournament harness.
+// Weakest-first targeting, frozen as a fixed opponent for the tournament harness. It equals
+// 'rule-based' today; they differ again if 'rule-based' ever adopts another ranker.
 export const ruleBasedV1Policy: BotPolicy = createRuleBasedPolicy('rule-based-v1', weakestFirst);

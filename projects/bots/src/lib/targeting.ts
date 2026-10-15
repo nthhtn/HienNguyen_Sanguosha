@@ -1,7 +1,8 @@
 import type { CardPlayedEvent, DamageDealtEvent, GameState, Seat } from 'engine';
 import { handCards, isAlly, TargetRanker } from './helpers';
 
-// Tuned against the tournament harness (sim tournament); higher score = better target.
+// An alternative to weakest-first targeting; higher score = better target. Not used by the shipped
+// policy: it did not beat 'rule-based-v1' on fresh seeds (see the bot tournament spec's Results).
 export const TARGET_WEIGHTS = {
   kill: 1000, // the hit would take the target to 0 HP
   trigrams: -60, // wears Eight Trigrams, so a Shan may come for free

@@ -86,6 +86,10 @@ export interface TournamentReport {
 const DEFAULT_MAX_ACTIONS = 20000;
 
 export function runTournament(config: TournamentConfig): TournamentReport {
+  const wholeNumbers: [string, number | undefined, number][] = [['games', config.games, 0], ['seats', config.seats, 0], ['first seed', config.firstSeed, 0]];
+  for (const [name, value, min] of wholeNumbers) {
+    if (value !== undefined && (!Number.isInteger(value) || value < min)) throw new Error(`The ${name} must be a whole number, ${min} or more (got ${value})`);
+  }
   if (config.seats < 2 || config.seats % 2 !== 0) throw new Error('A tournament needs an even number of seats, at least 2');
   const registry = buildContentRegistry();
   const seatIds = Array.from({ length: config.seats }, (_, i) => `seat-${i}`);

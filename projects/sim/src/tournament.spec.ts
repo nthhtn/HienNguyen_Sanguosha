@@ -72,6 +72,17 @@ describe('runTournament', () => {
     expect(() => runTournament({ ...config, seats: 3 })).toThrow(/even number of seats/);
   });
 
+  it.each([
+    ['games', { games: NaN }],
+    ['games', { games: -1 }],
+    ['games', { games: 1.5 }],
+    ['first seed', { firstSeed: NaN }],
+    ['first seed', { firstSeed: 0.5 }],
+    ['seats', { seats: NaN }],
+  ])('rejects a %s that is not a whole number (a NaN seed would replay one deal)', (_name, bad) => {
+    expect(() => runTournament({ ...config, games: 1, ...bad })).toThrow(/whole number/);
+  });
+
   it('counts a game cut off by the action cap as unfinished, not as a win or loss', () => {
     const report = runTournament({ ...config, games: 2, maxActions: 1 });
     expect(report.unfinished).toBe(2);
