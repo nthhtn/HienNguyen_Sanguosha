@@ -9,25 +9,32 @@
     "name": "Đào"
   },
   "wine": {
-    "name": "Tửu"
+    "name": "Tửu",
+    "text": "Khi một người chơi cận kề cái chết, người đó có thể dùng Tửu để hồi một Sinh lực. Ngoài ra, mỗi người chơi có thể đánh lá này một lần trong lượt của mình. Nếu làm vậy, sát thương của Sát tiếp theo tăng thêm một."
   },
   "fire-attack": {
-    "name": "Hỏa Sát"
+    "name": "Hỏa Sát",
+    "text": "Một lần mỗi lượt, người chơi có thể dùng lá này để tấn công một người chơi bất kỳ trong tầm tấn công của mình. Nếu mục tiêu không dùng Thiểm, họ chịu một sát thương lửa."
   },
   "lightning-attack": {
-    "name": "Lôi Sát"
+    "name": "Lôi Sát",
+    "text": "Một lần mỗi lượt, người chơi có thể dùng lá này để tấn công một người chơi bất kỳ trong tầm tấn công của mình. Nếu mục tiêu không dùng Thiểm, họ chịu một sát thương sét."
   },
   "black-shield": {
-    "name": "Nhân Vương Thuẫn"
+    "name": "Nhân Vương Thuẫn",
+    "text": "Sát đen không thể trúng người mặc."
   },
   "eight-trigrams": {
-    "name": "Bát Quái Trận"
+    "name": "Bát Quái Trận",
+    "text": "Mỗi khi cần Thiểm, người mặc có thể phán xét. Nếu là lá đỏ, coi như đã đưa ra Thiểm."
   },
   "silver-lion": {
-    "name": "Bạch Ngân Sư Tử"
+    "name": "Bạch Ngân Sư Tử",
+    "text": "Khi trang bị, người mặc nhiều nhất chỉ mất một Sinh lực cho mỗi lần chịu sát thương. Ngoài ra, khi người mặc mất lá này khỏi khu trang bị, họ hồi một Sinh lực."
   },
   "wood-armor": {
-    "name": "Đằng Giáp"
+    "name": "Đằng Giáp",
+    "text": "Khi trang bị lá này, người mặc không thể bị sát thương bởi Nam Man Xâm Nhập, Vạn Tiễn Tề Phát hoặc Sát không có thuộc tính. Tuy nhiên, khi chịu bất kỳ sát thương lửa nào, sát thương tăng thêm một."
   },
   "da-yuan": {
     "name": "Đại Uyển"
@@ -51,81 +58,107 @@
     "name": "Tử Tinh"
   },
   "ancient-scimitar": {
-    "name": "Cổ Đĩnh Đao"
+    "name": "Cổ Đĩnh Đao",
+    "text": "Khi mục tiêu của một đòn tấn công chịu sát thương mà không có bài trên tay, sát thương tăng thêm một."
   },
   "axe": {
-    "name": "Quán Thạch Phủ"
+    "name": "Quán Thạch Phủ",
+    "text": "Khi mục tiêu của đòn tấn công của người chơi dùng Thiểm né được, người chơi có thể bỏ hai lá bài khác để đòn tấn công trúng đích."
   },
   "black-pommel": {
-    "name": "Thanh Cang Kiếm"
+    "name": "Thanh Cang Kiếm",
+    "text": "Khi trang bị lá này, người chơi bỏ qua giáp của mục tiêu."
   },
   "crossbow": {
-    "name": "Gia Cát Liên Nỏ"
+    "name": "Gia Cát Liên Nỏ",
+    "text": "Tầm: 1. Khi trang bị lá này, người chơi có thể tấn công bao nhiêu lần tùy ý trong lượt của mình."
   },
   "fire-fan": {
-    "name": "Chu Tước Vũ Phiến"
+    "name": "Chu Tước Vũ Phiến",
+    "text": "Khi dùng một Sát không có thuộc tính, nó có thể đổi thành Hỏa Sát."
   },
   "gender-swords": {
-    "name": "Thư Hùng Song Cổ Kiếm"
+    "name": "Thư Hùng Song Cổ Kiếm",
+    "text": "Khi người chơi tấn công một mục tiêu khác giới, người chơi có thể bắt mục tiêu đưa ra lựa chọn: mục tiêu phải bỏ một lá bài trên tay hoặc để người chơi rút một lá bài."
   },
   "green-dragon-blade": {
-    "name": "Thanh Long Yển Nguyệt Đao"
+    "name": "Thanh Long Yển Nguyệt Đao",
+    "text": "Tầm: 3. Khi người chơi trang bị lá này và mục tiêu của đòn tấn công dùng Thiểm, người tấn công có thể đánh Sát vào mục tiêu lần nữa."
   },
   "ice-sword": {
-    "name": "Hàn Băng Kiếm"
+    "name": "Hàn Băng Kiếm",
+    "text": "Khi một đòn tấn công trúng mục tiêu, người có vũ khí này có thể lựa chọn: gây sát thương cho mục tiêu, hoặc lấy đi hai lá bài của mục tiêu."
   },
   "longbow": {
-    "name": "Kỳ Lân Cung"
+    "name": "Kỳ Lân Cung",
+    "text": "Khi người chơi có vũ khí này gây sát thương cho người chơi khác bằng Sát, họ có thể bỏ một Tọa kỵ đang trang bị của mục tiêu."
   },
   "serpent-spear": {
-    "name": "Trượng Bát Xà Mâu"
+    "name": "Trượng Bát Xà Mâu",
+    "text": "Khi muốn tấn công, người mặc có thể bỏ hai lá bài trên tay để tạo ra một Sát."
   },
   "sky-scorcher": {
-    "name": "Phương Thiên Họa Kích"
+    "name": "Phương Thiên Họa Kích",
+    "text": "Khi người chơi trang bị lá này dùng lá bài cuối cùng trên tay để tấn công, họ có thể nhắm thêm tối đa hai người chơi."
   },
   "barbarians": {
-    "name": "Nam Man Xâm Nhập"
+    "name": "Nam Man Xâm Nhập",
+    "text": "Tất cả người chơi khác phải đánh một Sát hoặc chịu một sát thương."
   },
   "blaze": {
-    "name": "Hỏa Công"
+    "name": "Hỏa Công",
+    "text": "Người chơi có thể nhắm Hỏa Công vào bất kỳ ai có bài trên tay. Mục tiêu sau đó cho xem một lá bài trên tay bất kỳ của mình. Người chơi có thể bỏ một lá bài trên tay cùng chất để gây một sát thương lửa cho mục tiêu."
   },
   "break": {
-    "name": "Quá Hà Sách Kiều"
+    "name": "Quá Hà Sách Kiều",
+    "text": "Người chơi chọn một lá bài của một người chơi khác và bỏ nó."
   },
   "capture": {
-    "name": "Lạc Bất Tư Thục"
+    "name": "Lạc Bất Tư Thục",
+    "text": "Người chơi có thể đặt Cẩm nang trì hoãn này lên một người chơi khác. Mục tiêu phải phán xét trong lượt của mình. Nếu không phải cơ, họ mất giai đoạn ra bài."
   },
   "chains": {
-    "name": "Thiết Tỏa Liên Hoàn"
+    "name": "Thiết Tỏa Liên Hoàn",
+    "text": "Người chơi có thể nhắm tối đa hai người chơi và đổi trạng thái bị xích của họ. Lựa chọn thứ hai là bỏ Thiết Tỏa Liên Hoàn và rút một lá bài khác."
   },
   "coerce": {
-    "name": "Tá Đao Sát Nhân"
+    "name": "Tá Đao Sát Nhân",
+    "text": "Người chơi nhắm một người chơi khác đang có vũ khí. Sau đó người chơi chọn một người chơi bất kỳ trong tầm tấn công của mục tiêu. Mục tiêu có thể đánh Sát vào người đó. Nếu mục tiêu không làm vậy, người chơi lấy vũ khí của mục tiêu và đưa vào bài trên tay."
   },
   "draw-two": {
-    "name": "Vô Trung Sinh Hữu"
+    "name": "Vô Trung Sinh Hữu",
+    "text": "Người chơi đánh lá này rút hai lá bài từ chồng bài."
   },
   "duel": {
-    "name": "Quyết Đấu"
+    "name": "Quyết Đấu",
+    "text": "Người chơi thách đấu một người chơi khác. Hai người lần lượt đánh Sát, bắt đầu từ mục tiêu. Người đầu tiên không thể đánh Sát sẽ chịu sát thương bằng số Sát mà người kia đã đánh."
   },
   "hail-of-arrows": {
-    "name": "Vạn Tiễn Tề Phát"
+    "name": "Vạn Tiễn Tề Phát",
+    "text": "Tất cả người chơi khác phải đánh một Thiểm hoặc chịu một sát thương."
   },
   "harvest": {
-    "name": "Ngũ Cốc Phong Đăng"
+    "name": "Ngũ Cốc Phong Đăng",
+    "text": "Khi một người chơi dùng lá này, mỗi người chơi còn sống được một lá bài đặt ngửa. Sau đó bắt đầu từ người dùng lá bài, mỗi người chọn một lá và đưa vào bài trên tay."
   },
   "lightning": {
-    "name": "Thiểm Điện"
+    "name": "Thiểm Điện",
+    "text": "Người chơi đặt Cẩm nang trì hoãn này lên chính mình. Trong lượt kế tiếp của họ, họ phán xét cho lá bài này. Nếu là bích từ hai đến chín, người chơi chịu ba sát thương sét. Nếu không phải bích từ hai đến chín, lá bài chuyển sang người chơi bên phải."
   },
   "peach-garden": {
-    "name": "Đào Viên Kết Nghĩa"
+    "name": "Đào Viên Kết Nghĩa",
+    "text": "Tất cả người chơi bị thương hồi một Sinh lực."
   },
   "starvation": {
-    "name": "Binh Lương Thốn Đoạn"
+    "name": "Binh Lương Thốn Đoạn",
+    "text": "Người chơi có thể đặt Cẩm nang trì hoãn này lên một người chơi khác trong tầm. Mục tiêu phải phán xét trong lượt của mình. Nếu không phải chuồn, mục tiêu mất giai đoạn rút bài."
   },
   "steal": {
-    "name": "Thuận Thủ Khiên Dương"
+    "name": "Thuận Thủ Khiên Dương",
+    "text": "Người chơi chọn một lá bài của một người chơi khác trong tầm và đưa vào bài trên tay."
   },
   "wuxie": {
-    "name": "Vô Giải Khả Kích"
+    "name": "Vô Giải Khả Kích",
+    "text": "Vô hiệu hóa hiệu ứng của một Cẩm nang, hoặc hiệu ứng của một Vô Giải Khả Kích khác."
   }
 }

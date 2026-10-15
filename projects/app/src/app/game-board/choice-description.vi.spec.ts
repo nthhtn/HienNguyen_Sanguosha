@@ -83,3 +83,30 @@ describe('choice options in Vietnamese', () => {
     expect(choiceDialogOptions([option], legal, players).map((o) => o.label)).toEqual(['Hand Card 1', 'Hand Card 2']);
   });
 });
+
+describe('the engine’s fixed label options', () => {
+  const trVi = makeTranslator(vi, 'vi');
+  const label = (id: string, text: string, translator?: typeof trVi) => choiceOptionLabel({ kind: 'label', text }, players, undefined, translator, id);
+
+  it('read in Vietnamese, with their numbers', () => {
+    expect(label('doubt', 'Doubt', trVi)).toBe('Nghi ngờ');
+    expect(label('believe', 'Believe', trVi)).toBe('Tin');
+    expect(label('lose-hp', 'Lose 1 HP', trVi)).toBe('Mất 1 Sinh lực');
+    expect(label('draw-x', 'Draw 3, Then Discard 1', trVi)).toBe('Rút 3 lá bài, rồi bỏ 1 lá');
+    expect(label('draw-1', 'Draw 1, Then Discard 3', trVi)).toBe('Rút 1 lá bài, rồi bỏ 3 lá');
+    expect(label('pass', 'Pass (Lose 1 HP)', trVi)).toBe('Bỏ qua (mất 1 Sinh lực)');
+  });
+
+  it('keep the engine’s English in English, for an unknown id, and when the text differs from the template', () => {
+    expect(label('doubt', 'Doubt')).toBe('Doubt');
+    expect(label('doubt', 'Doubt', makeTranslator(vi))).toBe('Nghi ngờ');
+    expect(label('something-else', 'Anything', trVi)).toBe('Anything');
+    expect(label('doubt', 'Suspect', trVi)).toBe('Suspect');
+    expect(choiceOptionLabel({ kind: 'label', text: 'Doubt' }, players, undefined, trVi)).toBe('Doubt');
+  });
+
+  it('name a Form’s skill and its General in Vietnamese', () => {
+    expect(label('guan-yu/fighting-saint', 'Fighting Saint (Guan Yu)', trVi)).toBe('Võ thánh (Quan Vũ)');
+    expect(label('guan-yu/fighting-saint', 'Fighting Saint (Guan Yu)')).toBe('Fighting Saint (Guan Yu)');
+  });
+});

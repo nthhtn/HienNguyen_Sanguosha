@@ -1,8 +1,43 @@
 import { Action, ChoiceOption, GameState, PendingChoice, Player, Seat } from 'engine';
-import { abilityName, cardDisplayData, choicePromptText, seatPickText } from 'content';
+import { abilityName, cardDisplayData, choicePromptText, generalDisplayData, seatPickText } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 import { cardFaceLabel, cardIdDisplayName, forceOf, seatName, suitLabel } from '../labels';
+import type { MessageKey } from '../i18n/messages';
 import type { ChoiceDialogOption } from './choice-dialog';
+
+// The wording of the engine's fixed label options, by the option's id. The engine still
+// supplies its English text; a label is only replaced when the English template, filled with
+// the numbers of that text, gives the text back, so a label this table does not know keeps
+// showing the engine's own words.
+const LABEL_OPTIONS: Record<string, { key: MessageKey; params: (numbers: string[]) => Record<string, string> }> = {
+  'draw-x': { key: 'choice.label.drawXDiscard1', params: (n) => ({ n: n[0] }) },
+  'draw-1': { key: 'choice.label.draw1DiscardX', params: (n) => ({ n: n[1] }) },
+  'lose-hp': { key: 'choice.label.loseHp', params: () => ({}) },
+  'reduce-max-hp': { key: 'choice.label.reduceMaxHp', params: () => ({}) },
+  pass: { key: 'choice.label.pass', params: () => ({}) },
+  recover: { key: 'choice.label.recover', params: () => ({}) },
+  draw: { key: 'choice.label.draw2', params: () => ({}) },
+  believe: { key: 'choice.label.believe', params: () => ({}) },
+  doubt: { key: 'choice.label.doubt', params: () => ({}) },
+  discard: { key: 'choice.label.discard2', params: () => ({}) },
+  damage: { key: 'choice.label.damage1', params: () => ({}) },
+};
+
+function labelOptionText(optionId: string | undefined, text: string, tr: Translator): string {
+  if (!optionId) return text;
+  const form = optionId.split('/');
+  if (form.length === 2) {
+    // Zuo Ci's pick of a Form's skill: "Skill (General)".
+    const locale = localeOf(tr);
+    const general = generalDisplayData(form[0])?.name ?? form[0];
+    if (text !== `${abilityName(form[1])} (${general})`) return text;
+    return tr('choice.label.form', { skill: abilityName(form[1], locale), general: generalDisplayData(form[0], locale)?.name ?? form[0] });
+  }
+  const entry = Object.prototype.hasOwnProperty.call(LABEL_OPTIONS, optionId) ? LABEL_OPTIONS[optionId] : undefined;
+  if (!entry) return text;
+  const params = entry.params(text.match(/\d+/g) ?? []);
+  return englishTranslator(entry.key, params) === text ? tr(entry.key, params) : text;
+}
 
 export interface ChoiceDescription {
   // The Tool's name, e.g. "Steal".
@@ -70,10 +105,10 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
 }
 
 // An option's label: a hand by its owner and size, a card by its name and face.
-export function choiceOptionLabel(shows: ChoiceOption['shows'], players: readonly Player[], declineLabel?: string, tr: Translator = englishTranslator): string {
+export function choiceOptionLabel(shows: ChoiceOption['shows'], players: readonly Player[], declineLabel?: string, tr: Translator = englishTranslator, optionId?: string): string {
   if (shows.kind === 'seat') return seatName(players, shows.seatId, tr);
   if (shows.kind === 'suit') return suitLabel(shows.suit, tr);
-  if (shows.kind === 'label') return shows.text;
+  if (shows.kind === 'label') return labelOptionText(optionId, shows.text, tr);
   if (shows.kind === 'use') return tr('choice.option.use');
   if (shows.kind === 'decline') return declineLabel ?? tr('choice.option.decline');
   if (shows.kind === 'hidden-hand') {
@@ -100,9 +135,9 @@ export function choiceDialogOptions(
       return Array.from({ length: option.shows.count }, (_, i) => ({ id: `${option.id}#${i + 1}`, action, faceDown: true as const, label: tr('choice.option.handCard', { n: i + 1 }) }));
     }
     if (option.shows.kind === 'card') {
-      return [{ id: option.id, action, card: option.shows.card, label: choiceOptionLabel(option.shows, players, undefined, tr) }];
+      return [{ id: option.id, action, card: option.shows.card, label: choiceOptionLabel(option.shows, players, undefined, tr, option.id) }];
     }
-    const label = choiceOptionLabel(option.shows, players, declineLabel, tr);
+    const label = choiceOptionLabel(option.shows, players, declineLabel, tr, option.id);
     if (option.shows.kind === 'seat') {
       const seatId = option.shows.seatId;
       return [{ id: option.id, action, label, force: forceOf(seats.find((s) => s.id === seatId)?.kingdom) }];

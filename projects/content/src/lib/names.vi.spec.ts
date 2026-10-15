@@ -56,6 +56,10 @@ describe('Vietnamese names cover the whole roster', () => {
     expect(missing).toEqual([]);
   });
 
+  it('has rules text for every card that has English text', () => {
+    expect(Object.entries(cardsData).filter(([id, c]) => c.text && !cardTranslations('vi')[id]?.text).map(([id]) => id)).toEqual([]);
+  });
+
   it('names every card', () => {
     expect(Object.keys(cardsData).filter((id) => !cardTranslations('vi')[id]?.name)).toEqual([]);
   });
