@@ -1,3 +1,131 @@
 {
-  "sha": { "name": "Sát" }
+  "sha": {
+    "name": "Sát"
+  },
+  "shan": {
+    "name": "Thiểm"
+  },
+  "peach": {
+    "name": "Đào"
+  },
+  "wine": {
+    "name": "Tửu"
+  },
+  "fire-attack": {
+    "name": "Hỏa Sát"
+  },
+  "lightning-attack": {
+    "name": "Lôi Sát"
+  },
+  "black-shield": {
+    "name": "Nhân Vương Thuẫn"
+  },
+  "eight-trigrams": {
+    "name": "Bát Quái Trận"
+  },
+  "silver-lion": {
+    "name": "Bạch Ngân Sư Tử"
+  },
+  "wood-armor": {
+    "name": "Đằng Giáp"
+  },
+  "da-yuan": {
+    "name": "Đại Uyển"
+  },
+  "di-lu": {
+    "name": "Đích Lô"
+  },
+  "hua-liu": {
+    "name": "Hoa Lưu"
+  },
+  "red-hare": {
+    "name": "Xích Thố"
+  },
+  "shadow-runner": {
+    "name": "Tuyệt Ảnh"
+  },
+  "storm-runner": {
+    "name": "Trảo Hoàng Phi Điện"
+  },
+  "zi-xing": {
+    "name": "Tử Tinh"
+  },
+  "ancient-scimitar": {
+    "name": "Cổ Đĩnh Đao"
+  },
+  "axe": {
+    "name": "Quán Thạch Phủ"
+  },
+  "black-pommel": {
+    "name": "Thanh Cang Kiếm"
+  },
+  "crossbow": {
+    "name": "Gia Cát Liên Nỏ"
+  },
+  "fire-fan": {
+    "name": "Chu Tước Vũ Phiến"
+  },
+  "gender-swords": {
+    "name": "Thư Hùng Song Cổ Kiếm"
+  },
+  "green-dragon-blade": {
+    "name": "Thanh Long Yển Nguyệt Đao"
+  },
+  "ice-sword": {
+    "name": "Hàn Băng Kiếm"
+  },
+  "longbow": {
+    "name": "Kỳ Lân Cung"
+  },
+  "serpent-spear": {
+    "name": "Trượng Bát Xà Mâu"
+  },
+  "sky-scorcher": {
+    "name": "Phương Thiên Họa Kích"
+  },
+  "barbarians": {
+    "name": "Nam Man Xâm Nhập"
+  },
+  "blaze": {
+    "name": "Hỏa Công"
+  },
+  "break": {
+    "name": "Quá Hà Sách Kiều"
+  },
+  "capture": {
+    "name": "Lạc Bất Tư Thục"
+  },
+  "chains": {
+    "name": "Thiết Tỏa Liên Hoàn"
+  },
+  "coerce": {
+    "name": "Tá Đao Sát Nhân"
+  },
+  "draw-two": {
+    "name": "Vô Trung Sinh Hữu"
+  },
+  "duel": {
+    "name": "Quyết Đấu"
+  },
+  "hail-of-arrows": {
+    "name": "Vạn Tiễn Tề Phát"
+  },
+  "harvest": {
+    "name": "Ngũ Cốc Phong Đăng"
+  },
+  "lightning": {
+    "name": "Thiểm Điện"
+  },
+  "peach-garden": {
+    "name": "Đào Viên Kết Nghĩa"
+  },
+  "starvation": {
+    "name": "Binh Lương Thốn Đoạn"
+  },
+  "steal": {
+    "name": "Thuận Thủ Khiên Dương"
+  },
+  "wuxie": {
+    "name": "Vô Giải Khả Kích"
+  }
 }

@@ -91,7 +91,7 @@ describe('SeatTile in Vietnamese', () => {
     const piles = render(makeSeat(), { pile: [sha], stash: [{ ...sha, instanceId: 'c-2' }] }).el;
     expect([...piles.querySelectorAll('.pile')].map((p) => p.getAttribute('aria-label'))).toEqual(['Lá bài Sang', 'Điền']);
     const form = { slot: 'main', held: [], chosen: { generalId: 'guan-yu', skillId: 'fighting-saint' } } as never;
-    expect(text(render(makeSeat({ forms: form })).el.querySelector('.form-badge'))).toBe('Hóa thân: Guan Yu (Fighting Saint)');
+    expect(text(render(makeSeat({ forms: form })).el.querySelector('.form-badge'))).toBe('Hóa thân: Quan Vũ (Võ thánh)');
   });
 
   it('follows a language switch without being re-created, slot titles included', async () => {
@@ -120,9 +120,9 @@ describe('SeatAvatar and the skill buttons in Vietnamese', () => {
     expect(text(half(hidden, 'main').querySelector('.caption'))).toBe('Ẩn');
     expect(half(hidden, 'main').getAttribute('aria-label')).toBe('Tướng ẩn');
     const mixed = render({ main: { generalDefinitionId: 'guan-yu', revealed: false }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } });
-    expect(text(half(mixed, 'main').querySelector('.caption'))).toBe('Guan Yu (ẩn)');
-    expect(half(mixed, 'main').getAttribute('aria-label')).toBe('Thông tin: Guan Yu');
-    expect(text(half(mixed, 'deputy').querySelector('.caption'))).toBe('Zhang Fei');
+    expect(text(half(mixed, 'main').querySelector('.caption'))).toBe('Quan Vũ (ẩn)');
+    expect(half(mixed, 'main').getAttribute('aria-label')).toBe('Thông tin: Quan Vũ');
+    expect(text(half(mixed, 'deputy').querySelector('.caption'))).toBe('Trương Phi');
   });
 
   it('a hidden General’s skill button reads "Lật Tướng: …"', () => {
@@ -133,9 +133,9 @@ describe('SeatAvatar and the skill buttons in Vietnamese', () => {
     };
     const generals = (revealed: boolean) => ({ main: { generalDefinitionId: 'sun-quan', revealed }, deputy: { generalDefinitionId: 'hidden', revealed: false } });
     const tr = makeTranslator(vi, 'vi');
-    expect(avatarSkills(generals(false), registry, [], [], tr)[0].label).toBe('Lật Tướng: Reconsider');
+    expect(avatarSkills(generals(false), registry, [], [], tr)[0].label).toBe('Lật Tướng: Chế hành');
     expect(avatarSkills(generals(false), registry, [])[0].label).toBe('Reveal: Reconsider');
-    expect(avatarSkills(generals(true), registry, [], [], tr)[0].label).toBe('Reconsider');
+    expect(avatarSkills(generals(true), registry, [], [], tr)[0].label).toBe('Chế hành');
   });
 });
 

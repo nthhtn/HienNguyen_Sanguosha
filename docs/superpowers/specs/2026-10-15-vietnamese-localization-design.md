@@ -124,6 +124,7 @@ Defaults proposed and accepted:
 - Farm (Deng Ai's judged-card status): Điền (user decision, 2026-10-16).
 - Compete (a skill's point contest): đấu điểm (user decision, 2026-10-16); the two faces are joined with "so với".
 - Wording decisions of 2026-10-16: counts as = tính là; Defensive Mount = Tọa kỵ thủ +1; Offensive Mount = Tọa kỵ công -1; the pile under a General (Refusing Death) = Lá bài Sang; silenced seat = Mất kỹ năng; Combined HP = Tổng Sinh lực; draw pile positions = Đầu chồng / Đáy chồng; playing a card = đánh (the phase stays "giai đoạn ra bài"); respond = phản hồi; turn over = lật mặt; Main General = Chủ tướng and Deputy General = Phó tướng everywhere (chips, sentences, buttons).
+- Names (phase 4b, draft pending review): General, skill and card names are Hán-Việt from the Chinese. General names and card names are capitalised word by word (Tào Tháo, Quyết Đấu, Nam Man Xâm Nhập); titles and skill names are sentence case (Ngụy Võ Đế, Gian hùng). A skill name avoids the UI terms (Feedback is Phản quỹ, not Phản hồi).
 - Lord: Chủ công.
 - Suits keep their symbols. Colours: đỏ, đen.
 

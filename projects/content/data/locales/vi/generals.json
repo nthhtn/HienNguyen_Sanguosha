@@ -1,10 +1,646 @@
 {
+  "cai-wenji": {
+    "name": "Thái Văn Cơ",
+    "title": "Dị hương cô nữ",
+    "skills": {
+      "lament": {
+        "name": "Bi ca"
+      },
+      "heartbroken": {
+        "name": "Đoạn trường"
+      }
+    }
+  },
+  "diao-chan": {
+    "name": "Điêu Thuyền",
+    "title": "Tuyệt thế vũ cơ",
+    "skills": {
+      "sow-discord": {
+        "name": "Ly gián"
+      },
+      "eclipse-the-moon": {
+        "name": "Bế nguyệt"
+      }
+    }
+  },
+  "dong-zhuo": {
+    "name": "Đổng Trác",
+    "title": "Ma vương",
+    "skills": {
+      "wine": {
+        "name": "Tửu trì"
+      },
+      "garden-of-lust": {
+        "name": "Nhục lâm"
+      },
+      "collapse": {
+        "name": "Băng hoại"
+      },
+      "violent-tyrant": {
+        "name": "Bạo ngược"
+      }
+    }
+  },
+  "hua-tuo": {
+    "name": "Hoa Đà",
+    "title": "Thần y",
+    "skills": {
+      "first-aid": {
+        "name": "Cấp cứu"
+      },
+      "green-vesicle": {
+        "name": "Thanh nang"
+      }
+    }
+  },
+  "jia-xu": {
+    "name": "Giả Hủ",
+    "title": "Lãnh khốc độc sĩ",
+    "skills": {
+      "complete-kill": {
+        "name": "Hoàn sát"
+      },
+      "upheaval": {
+        "name": "Loạn vũ"
+      },
+      "curtain": {
+        "name": "Duy mạc"
+      }
+    }
+  },
+  "lu-bu": {
+    "name": "Lã Bố",
+    "title": "Hóa thân của võ",
+    "skills": {
+      "matchless": {
+        "name": "Vô song"
+      }
+    }
+  },
+  "pang-de": {
+    "name": "Bàng Đức",
+    "title": "Nhân mã nhất thể",
+    "skills": {
+      "horsemanship": {
+        "name": "Mã thuật"
+      },
+      "sudden-attack": {
+        "name": "Mãnh tiến"
+      }
+    }
+  },
+  "yan-liang-and-wen-chou": {
+    "name": "Nhan Lương & Văn Xú",
+    "title": "Hổ lang huynh đệ",
+    "skills": {
+      "dueling-heroes": {
+        "name": "Song hùng"
+      }
+    }
+  },
+  "yu-ji": {
+    "name": "Vu Cát",
+    "title": "Thái Bình đạo nhân",
+    "skills": {
+      "bewilder": {
+        "name": "Cổ hoặc"
+      }
+    }
+  },
+  "yuan-shao": {
+    "name": "Viên Thiệu",
+    "title": "Cao quý danh môn",
+    "skills": {
+      "random-strike": {
+        "name": "Loạn kích"
+      },
+      "bloodline": {
+        "name": "Huyết duệ"
+      }
+    }
+  },
+  "zhang-jiao": {
+    "name": "Trương Giác",
+    "title": "Thiên Công tướng quân",
+    "skills": {
+      "lightning-strike": {
+        "name": "Lôi kích"
+      },
+      "dark-magic": {
+        "name": "Quỷ đạo"
+      },
+      "amber-sky": {
+        "name": "Hoàng thiên"
+      }
+    }
+  },
+  "zuo-ci": {
+    "name": "Tả Từ",
+    "title": "Mê chi tiên nhân",
+    "skills": {
+      "incarnation": {
+        "name": "Hóa thân"
+      },
+      "new-life": {
+        "name": "Tân sinh"
+      }
+    }
+  },
+  "fire-zhuge-liang": {
+    "name": "Gia Cát Lượng",
+    "title": "Ngọa Long",
+    "skills": {
+      "eight-arrays": {
+        "name": "Bát trận"
+      },
+      "fire-strategy": {
+        "name": "Hỏa kế"
+      },
+      "see-through": {
+        "name": "Khán phá"
+      }
+    }
+  },
+  "guan-yu": {
+    "name": "Quan Vũ",
+    "title": "Mỹ Tu Công",
+    "skills": {
+      "fighting-saint": {
+        "name": "Võ thánh"
+      }
+    }
+  },
+  "huang-yueying": {
+    "name": "Hoàng Nguyệt Anh",
+    "title": "Quy ẩn kiệt nữ",
+    "skills": {
+      "gathering-wisdom": {
+        "name": "Tập trí"
+      },
+      "wondrous-talent": {
+        "name": "Kỳ tài"
+      }
+    }
+  },
+  "huang-zhong": {
+    "name": "Hoàng Trung",
+    "title": "Lão đương ích tráng",
+    "skills": {
+      "strong-bow": {
+        "name": "Liệt cung"
+      }
+    }
+  },
+  "jiang-wei": {
+    "name": "Khương Duy",
+    "title": "Long chi y bát",
+    "skills": {
+      "instigate": {
+        "name": "Khiêu hiêu"
+      },
+      "follow-the-master": {
+        "name": "Chí kế"
+      }
+    }
+  },
+  "liu-bei": {
+    "name": "Lưu Bị",
+    "title": "Kiêu hùng thời loạn",
+    "skills": {
+      "kindness": {
+        "name": "Nhân đức"
+      },
+      "fierce-general": {
+        "name": "Kích tướng"
+      }
+    }
+  },
+  "liu-shan": {
+    "name": "Lưu Thiện",
+    "title": "Vô vi chân mệnh chủ",
+    "skills": {
+      "pleasure": {
+        "name": "Hưởng lạc"
+      },
+      "decentralization": {
+        "name": "Phóng quyền"
+      },
+      "seem-foolish": {
+        "name": "Nhược ngu"
+      }
+    }
+  },
+  "ma-chao": {
+    "name": "Mã Siêu",
+    "title": "Nhất kỵ đương thiên",
+    "skills": {
+      "horsemanship": {
+        "name": "Mã thuật"
+      },
+      "iron-cavalry": {
+        "name": "Thiết kỵ"
+      }
+    }
+  },
+  "meng-huo": {
+    "name": "Mạnh Hoạch",
+    "title": "Nam Man vương",
+    "skills": {
+      "culprit": {
+        "name": "Họa thủ"
+      },
+      "resurgence": {
+        "name": "Tái khởi"
+      }
+    }
+  },
+  "pang-tong": {
+    "name": "Bàng Thống",
+    "title": "Phượng Sồ",
+    "skills": {
+      "shackle": {
+        "name": "Liên hoàn"
+      },
+      "nirvana": {
+        "name": "Niết bàn"
+      }
+    }
+  },
+  "wei-yan": {
+    "name": "Ngụy Diên",
+    "title": "Thị huyết độc lang",
+    "skills": {
+      "violent-spirit": {
+        "name": "Cuồng cốt"
+      }
+    }
+  },
+  "zhang-fei": {
+    "name": "Trương Phi",
+    "title": "Vạn phu bất đương",
+    "skills": {
+      "roar": {
+        "name": "Bào hao"
+      }
+    }
+  },
+  "zhao-yun": {
+    "name": "Triệu Vân",
+    "title": "Thiếu niên tướng quân",
+    "skills": {
+      "dragon-courage": {
+        "name": "Long đảm"
+      }
+    }
+  },
+  "zhu-rong": {
+    "name": "Chúc Dung",
+    "title": "Nữ vương hoang dã",
+    "skills": {
+      "giant-elephant": {
+        "name": "Cự tượng"
+      },
+      "intense-edge": {
+        "name": "Liệt nhận"
+      }
+    }
+  },
+  "zhuge-liang": {
+    "name": "Gia Cát Lượng",
+    "title": "Trì mộ thừa tướng",
+    "skills": {
+      "astrology": {
+        "name": "Quan tinh"
+      },
+      "empty-city": {
+        "name": "Không thành"
+      }
+    }
+  },
   "cao-cao": {
     "name": "Tào Tháo",
     "title": "Ngụy Võ Đế",
     "skills": {
-      "evil-hero": { "name": "Gian hùng", "text": "Khi Tào Tháo bị một lá bài gây sát thương, ông có thể lập tức đưa lá bài đó vào bài trên tay." },
-      "escort": { "name": "Hộ giá", "text": "Chủ công kỹ: Nếu Tào Tháo cần dùng Thiểm, một người thuộc Ngụy có thể dùng Thiểm thay ông." }
+      "evil-hero": {
+        "name": "Gian hùng",
+        "text": "Khi Tào Tháo bị một lá bài gây sát thương, ông có thể lập tức đưa lá bài đó vào bài trên tay."
+      },
+      "escort": {
+        "name": "Hộ giá",
+        "text": "Chủ công kỹ: Nếu Tào Tháo cần dùng Thiểm, một người thuộc Ngụy có thể dùng Thiểm thay ông."
+      }
+    }
+  },
+  "cao-pi": {
+    "name": "Tào Phi",
+    "title": "Người kế thừa bá nghiệp",
+    "skills": {
+      "unnatural-death": {
+        "name": "Hành thương"
+      },
+      "exile": {
+        "name": "Phóng trục"
+      },
+      "exaltation": {
+        "name": "Tụng uy"
+      }
+    }
+  },
+  "cao-ren": {
+    "name": "Tào Nhân",
+    "title": "Đại tướng quân",
+    "skills": {
+      "entrench": {
+        "name": "Cứ thủ"
+      }
+    }
+  },
+  "deng-ai": {
+    "name": "Đặng Ngải",
+    "title": "Kiểu nhiên tráng sĩ",
+    "skills": {
+      "military-farm": {
+        "name": "Đồn điền"
+      },
+      "strategic-pass": {
+        "name": "Tạc hiểm"
+      }
+    }
+  },
+  "dian-wei": {
+    "name": "Điển Vi",
+    "title": "Cổ chi Ác Lai",
+    "skills": {
+      "assault": {
+        "name": "Cường tập"
+      }
+    }
+  },
+  "guo-jia": {
+    "name": "Quách Gia",
+    "title": "Tảo chung tiên tri",
+    "skills": {
+      "heavens-envy": {
+        "name": "Thiên đố"
+      },
+      "bestowed-rouse": {
+        "name": "Khiển kế"
+      }
+    }
+  },
+  "sima-yi": {
+    "name": "Tư Mã Ý",
+    "title": "Lang cố chi quỷ",
+    "skills": {
+      "feedback": {
+        "name": "Phản quỹ"
+      },
+      "devil": {
+        "name": "Quỷ tài"
+      }
+    }
+  },
+  "xiahou-dun": {
+    "name": "Hạ Hầu Đôn",
+    "title": "La sát độc nhãn",
+    "skills": {
+      "unyielding": {
+        "name": "Cương liệt"
+      }
+    }
+  },
+  "xiahou-yuan": {
+    "name": "Hạ Hầu Uyên",
+    "title": "Liệp báo cấp hành",
+    "skills": {
+      "godspeed": {
+        "name": "Thần tốc"
+      }
+    }
+  },
+  "xu-chu": {
+    "name": "Hứa Chử",
+    "title": "Hổ si",
+    "skills": {
+      "bare-the-chest": {
+        "name": "Khỏa y"
+      }
+    }
+  },
+  "xu-huang": {
+    "name": "Từ Hoảng",
+    "title": "Phong thái Chu Á Phu",
+    "skills": {
+      "blockade": {
+        "name": "Đoạn lương"
+      }
+    }
+  },
+  "xun-yu": {
+    "name": "Tuân Úc",
+    "title": "Vương tá chi tài",
+    "skills": {
+      "rouse-the-tiger": {
+        "name": "Khu hổ"
+      },
+      "eternal-loyalty": {
+        "name": "Tiết mệnh"
+      }
+    }
+  },
+  "zhang-he": {
+    "name": "Trương Cáp",
+    "title": "Liệu địch cơ tiên",
+    "skills": {
+      "clever-change": {
+        "name": "Xảo biến"
+      }
+    }
+  },
+  "zhang-liao": {
+    "name": "Trương Liêu",
+    "title": "Tiền tướng quân",
+    "skills": {
+      "raid": {
+        "name": "Đột tập"
+      }
+    }
+  },
+  "zhen-ji": {
+    "name": "Chân Mật",
+    "title": "Bạc hạnh mỹ nhân",
+    "skills": {
+      "overturned-country": {
+        "name": "Khuynh quốc"
+      },
+      "river-goddess": {
+        "name": "Lạc thần"
+      }
+    }
+  },
+  "da-qiao": {
+    "name": "Đại Kiều",
+    "title": "Căng trì chi hoa",
+    "skills": {
+      "country-scene": {
+        "name": "Quốc sắc"
+      },
+      "displace": {
+        "name": "Lưu ly"
+      }
+    }
+  },
+  "gan-ning": {
+    "name": "Cam Ninh",
+    "title": "Cẩm phàm du hiệp",
+    "skills": {
+      "surprise": {
+        "name": "Kỳ tập"
+      }
+    }
+  },
+  "huang-gai": {
+    "name": "Hoàng Cái",
+    "title": "Khinh thân vị quốc",
+    "skills": {
+      "battered-body": {
+        "name": "Khổ nhục"
+      }
+    }
+  },
+  "lu-meng": {
+    "name": "Lã Mông",
+    "title": "Bạch y độ giang",
+    "skills": {
+      "self-restraint": {
+        "name": "Khắc kỷ"
+      }
+    }
+  },
+  "lu-su": {
+    "name": "Lỗ Túc",
+    "title": "Nhà ngoại giao độc đoán",
+    "skills": {
+      "charity": {
+        "name": "Hiếu thí"
+      },
+      "alliance": {
+        "name": "Đế minh"
+      }
+    }
+  },
+  "lu-xun": {
+    "name": "Lục Tốn",
+    "title": "Nho sinh hùng tài",
+    "skills": {
+      "humility": {
+        "name": "Khiêm tốn"
+      },
+      "linked-camps": {
+        "name": "Liên doanh"
+      }
+    }
+  },
+  "sun-ce": {
+    "name": "Tôn Sách",
+    "title": "Tiểu Bá Vương Giang Đông",
+    "skills": {
+      "passion": {
+        "name": "Khích ngang"
+      },
+      "soul-position": {
+        "name": "Hồn tư"
+      },
+      "takeover": {
+        "name": "Chế bá"
+      }
+    }
+  },
+  "sun-jian": {
+    "name": "Tôn Kiên",
+    "title": "Vũ Liệt Đế",
+    "skills": {
+      "brave-spirit": {
+        "name": "Anh hồn"
+      }
+    }
+  },
+  "sun-quan": {
+    "name": "Tôn Quyền",
+    "title": "Hiền quân trẻ tuổi",
+    "skills": {
+      "reconsider": {
+        "name": "Chế hành"
+      },
+      "rescued": {
+        "name": "Cứu viện"
+      }
+    }
+  },
+  "sun-shangxiang": {
+    "name": "Tôn Thượng Hương",
+    "title": "Cung yêu cơ",
+    "skills": {
+      "marriage": {
+        "name": "Kết nhân"
+      },
+      "armed-consorts": {
+        "name": "Kiêu cơ"
+      }
+    }
+  },
+  "taishi-ci": {
+    "name": "Thái Sử Từ",
+    "title": "Vạn liệt chi sĩ",
+    "skills": {
+      "heavens-justice": {
+        "name": "Thiên nghĩa"
+      }
+    }
+  },
+  "xiao-qiao": {
+    "name": "Tiểu Kiều",
+    "title": "Kiểu tình chi hoa",
+    "skills": {
+      "fantasy": {
+        "name": "Thiên hương"
+      },
+      "beauty": {
+        "name": "Hồng nhan"
+      }
+    }
+  },
+  "zhang-zhao-and-zhang-hong": {
+    "name": "Trương Chiêu & Trương Hoành",
+    "title": "Kinh thiên vĩ địa",
+    "skills": {
+      "direct-instruction": {
+        "name": "Trực gián"
+      },
+      "stubborn": {
+        "name": "Cố chấp"
+      }
+    }
+  },
+  "zhou-tai": {
+    "name": "Chu Thái",
+    "title": "Lịch chiến chi khu",
+    "skills": {
+      "refusing-death": {
+        "name": "Bất khuất"
+      }
+    }
+  },
+  "zhou-yu": {
+    "name": "Chu Du",
+    "title": "Đại đô đốc",
+    "skills": {
+      "brave-gesture": {
+        "name": "Anh tư"
+      },
+      "sow-revolt": {
+        "name": "Phản gián"
+      }
     }
   }
 }

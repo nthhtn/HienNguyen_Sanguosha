@@ -19,7 +19,7 @@ describe('Vietnamese General and card translations', () => {
     for (const [id, general] of Object.entries(generalTranslations('vi'))) {
       for (const skill of generalsData[id].skills) {
         const translated = general.skills?.[skillIdOf(skill.name)];
-        if (translated) expect({ id, skill: skill.name, numbers: numbers(translated.text) }).toEqual({ id, skill: skill.name, numbers: numbers(skill.text) });
+        if (translated?.text) expect({ id, skill: skill.name, numbers: numbers(translated.text) }).toEqual({ id, skill: skill.name, numbers: numbers(skill.text) });
       }
     }
     for (const [id, card] of Object.entries(cardTranslations('vi'))) {
@@ -30,9 +30,26 @@ describe('Vietnamese General and card translations', () => {
   it('every translated entry is non-empty', () => {
     for (const [id, general] of Object.entries(generalTranslations('vi'))) {
       expect({ id, name: general.name.trim() !== '' }).toEqual({ id, name: true });
-      for (const skill of Object.values(general.skills ?? {})) expect(skill.name.trim() !== '' && skill.text.trim() !== '').toBe(true);
+      for (const skill of Object.values(general.skills ?? {})) expect(skill.name.trim() !== '' && (skill.text ?? 'x').trim() !== '').toBe(true);
     }
     for (const card of Object.values(cardTranslations('vi'))) expect(card.name.trim()).not.toBe('');
+  });
+});
+
+describe('Vietnamese names cover the whole roster', () => {
+  it('names every General with a title, and every skill', () => {
+    const missing: string[] = [];
+    for (const [id, data] of Object.entries(generalsData)) {
+      const t = generalTranslations('vi')[id];
+      if (!t?.name) missing.push(`${id}: name`);
+      if (data.title && !t?.title) missing.push(`${id}: title`);
+      for (const skill of data.skills) if (!t?.skills?.[skillIdOf(skill.name)]?.name) missing.push(`${id}: ${skill.name}`);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('names every card', () => {
+    expect(Object.keys(cardsData).filter((id) => !cardTranslations('vi')[id]?.name)).toEqual([]);
   });
 });
 
@@ -48,9 +65,11 @@ describe('the locale-aware display lookups', () => {
   it('fall back to English for another locale and for an id with no entry', () => {
     expect(generalDisplayData('cao-cao')).toMatchObject({ name: 'Cao Cao', title: 'Martial Emperor of Wei' });
     expect(generalDisplayData('cao-cao', 'fr')!.name).toBe('Cao Cao');
-    expect(generalDisplayData('cao-pi', 'vi')!.name).toBe('Cao Pi');
+    expect(generalDisplayData('cao-pi', 'vi')!.name).toBe('Tào Phi');
+    expect(generalDisplayData('cao-pi', 'vi')!.skills.map((x) => x.text)).toEqual(generalDisplayData('cao-pi')!.skills.map((x) => x.text));
     expect(abilityName('evil-hero')).toBe('Evil Hero');
-    expect(abilityName('godspeed', 'vi')).toBe('Godspeed');
+    expect(abilityName('godspeed', 'vi')).toBe('Thần tốc');
+    expect(abilityName('godspeed')).toBe('Godspeed');
     expect(abilityName('constructor', 'vi')).toBe('Constructor');
   });
 });

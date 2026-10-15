@@ -9,7 +9,7 @@ import viProse from '../../data/locales/vi/prose.json';
 export interface GeneralTranslation {
   name: string;
   title?: string;
-  skills?: Record<string, { name: string; text: string }>;
+  skills?: Record<string, { name: string; text?: string }>;
 }
 export interface CardTranslation {
   name: string;

@@ -113,7 +113,7 @@ describe('CompeteDialog and competeResults in Vietnamese', () => {
   const seven: CardInstance = { instanceId: 'c7', definitionId: 'shan', suit: 'heart', rank: 7 };
   const result = (over: Partial<CompeteResult> = {}): CompeteResult => ({
     id: 'compete-3', abilityId: 'heavens-justice', abilityName: "Heaven's Justice", skillText: null,
-    generalId: 'taishi-ci', generalName: 'Taishi Ci', force: 'Wu',
+    generalId: 'taishi-ci', generalName: 'Thái Sử Từ', force: 'Wu',
     user: { seatId: 'seat-0', name: 'Hing', generalId: 'taishi-ci', card: nine },
     target: { seatId: 'seat-1', name: 'Seat 1', generalId: null, card: seven },
     won: true, tie: false, winnerName: 'Hing', outcome: 'Hing thắng',
@@ -154,7 +154,7 @@ describe('CompeteDialog and competeResults in Vietnamese', () => {
     const [shown] = competeResults(log, 0, [seat('seat-0', 0, 'Wu', 'taishi-ci'), seat('seat-1', 1, 'Shu', 'guan-yu')], [], tr);
     expect(shown).toMatchObject({
       winnerName: 'Người chơi 0',
-      generalName: 'Taishi Ci',
+      generalName: 'Thái Sử Từ',
       user: { name: 'Người chơi 0' },
       target: { name: 'Người chơi 1' },
       outcome: 'Người chơi 0 có thể đánh thêm một Sát trong lượt này, ở mọi khoảng cách, thêm một mục tiêu',

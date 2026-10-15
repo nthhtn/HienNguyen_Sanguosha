@@ -168,7 +168,7 @@ describe('General and skill names follow the translator locale', () => {
   });
 
   it('a skill with no Vietnamese name keeps its English name', () => {
-    const reconsider: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'reconsider' } };
-    expect(actionLabel(reconsider, state, registry, trVi)).toBe('Dùng Reconsider');
+    const reconsider: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'made-up-skill' } };
+    expect(actionLabel(reconsider, state, registry, trVi)).toBe('Dùng Made Up Skill');
   });
 });
