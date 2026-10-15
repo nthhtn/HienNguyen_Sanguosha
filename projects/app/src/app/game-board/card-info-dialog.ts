@@ -2,9 +2,12 @@ import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { CardInstance } from 'engine';
-import { cardDisplayData } from 'content';
+import { CardDisplayData, cardDisplayData } from 'content';
 import { cardFaceLabel, cardIdDisplayName } from '../labels';
 import { PlayingCard } from './playing-card';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
+import { englishTranslator, Translator } from '../i18n/translator';
 
 export interface CardInfoDialogData {
   card: CardInstance;
@@ -14,7 +17,7 @@ export interface CardInfoDialogData {
 // Read-only card details (art, printing, rules text) for a card in the hand.
 @Component({
   selector: 'app-card-info-dialog',
-  imports: [MatDialogModule, MatButtonModule, PlayingCard],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard, TPipe],
   template: `
     <h2 mat-dialog-title>{{ data.name }}</h2>
     <mat-dialog-content class="content">
@@ -23,16 +26,16 @@ export interface CardInfoDialogData {
         <div class="face">{{ face }}</div>
         @if (display; as d) {
           <div class="kind">
-            {{ capitalise(d.category) }}@if (d.subtype) { · {{ capitalise(d.subtype) }} }@if (d.range !== null) { · Range {{ d.range }} }
+            {{ categoryName(d.category) }}@if (d.subtype) { · {{ subtypeName(d.subtype) }} }@if (d.range !== null) { · {{ 'card.range' | t: { n: d.range } }} }
           </div>
-          <p class="text">{{ d.text ?? 'No rules text available yet.' }}</p>
+          <p class="text">{{ d.text ?? ('card.noText' | t) }}</p>
         } @else {
-          <p class="text">No rules text available yet.</p>
+          <p class="text">{{ 'card.noText' | t }}</p>
         }
       </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close type="button">Close</button>
+      <button mat-button mat-dialog-close type="button">{{ 'ui.close' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `
@@ -45,14 +48,19 @@ export interface CardInfoDialogData {
 })
 export class CardInfoDialog {
   protected readonly data = inject<CardInfoDialogData>(MAT_DIALOG_DATA);
+  private readonly i18n = inject(I18n);
   protected readonly display = cardDisplayData(this.data.card.definitionId);
   protected readonly face = cardFaceLabel(this.data.card);
 
-  protected capitalise(word: string): string {
-    return word.charAt(0).toUpperCase() + word.slice(1);
+  protected categoryName(category: CardDisplayData['category']): string {
+    return this.i18n.t(`card.category.${category}` as const);
   }
 
-  static nameFor(definitionId: string, registryName: string | undefined): string {
-    return cardDisplayData(definitionId)?.name ?? registryName ?? cardIdDisplayName(definitionId);
+  protected subtypeName(subtype: NonNullable<CardDisplayData['subtype']>): string {
+    return this.i18n.t(`card.subtype.${subtype}` as const);
+  }
+
+  static nameFor(definitionId: string, registryName: string | undefined, tr: Translator = englishTranslator): string {
+    return cardDisplayData(definitionId)?.name ?? registryName ?? cardIdDisplayName(definitionId, tr);
   }
 }

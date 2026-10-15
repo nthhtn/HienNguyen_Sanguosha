@@ -3,6 +3,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { GameState, TargetPick } from 'engine';
 import { seatName } from '../labels';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
 
 export interface TargetsDialogData {
   // What is being played: "Sha".
@@ -16,9 +18,9 @@ export interface TargetsDialogData {
 // nothing on Cancel. The engine checks the picks again when they are played.
 @Component({
   selector: 'app-targets-dialog',
-  imports: [MatButtonModule, MatDialogModule],
+  imports: [MatButtonModule, MatDialogModule, TPipe],
   template: `
-    <h2 mat-dialog-title>Choose Targets</h2>
+    <h2 mat-dialog-title>{{ 'targets.title' | t }}</h2>
     <mat-dialog-content>
       <p>{{ prompt }}</p>
       <div class="seats">
@@ -37,8 +39,8 @@ export interface TargetsDialogData {
       </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="ref.close()">Cancel</button>
-      <button mat-flat-button type="button" [disabled]="picked().length < data.pick.min" (click)="confirm()">Confirm</button>
+      <button mat-button type="button" (click)="ref.close()">{{ 'ui.cancel' | t }}</button>
+      <button mat-flat-button type="button" [disabled]="picked().length < data.pick.min" (click)="confirm()">{{ 'ui.confirm' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `
@@ -49,10 +51,11 @@ export interface TargetsDialogData {
 export class TargetsDialog {
   protected readonly data = inject<TargetsDialogData>(MAT_DIALOG_DATA);
   protected readonly ref = inject<MatDialogRef<TargetsDialog, string[]>>(MatDialogRef);
+  private readonly i18n = inject(I18n);
   protected readonly picked = signal<string[]>([]);
   protected readonly full = computed(() => this.picked().length >= this.data.pick.max);
-  protected readonly prompt = `Choose ${this.data.pick.min === this.data.pick.max ? '' : 'up to '}${this.data.pick.max} targets for ${this.data.title}`;
-  protected readonly seats = this.data.pick.eligibleIds.map((id) => ({ id, label: seatName(this.data.state.players, id) }));
+  protected readonly prompt = this.i18n.t(this.data.pick.min === this.data.pick.max ? 'targets.prompt' : 'targets.promptUpTo', { count: this.data.pick.max, title: this.data.title });
+  protected readonly seats = this.data.pick.eligibleIds.map((id) => ({ id, label: seatName(this.data.state.players, id, this.i18n.translator) }));
 
   protected toggle(id: string): void {
     this.picked.update((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));

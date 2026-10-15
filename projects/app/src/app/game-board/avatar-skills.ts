@@ -1,5 +1,6 @@
 import { Action, ContentRegistry, Seat, SeatGenerals, SkillDefinition, findSkill } from 'engine';
 import { abilityName } from 'content';
+import { englishTranslator, Translator } from '../i18n/translator';
 
 type UseSkill = Extract<Action, { kind: 'UseSkillAction' }>;
 
@@ -30,7 +31,7 @@ export function extraSkillsOf(seat: Pick<Seat, 'gainedSkills' | 'forms'>, regist
 // One button per active skill of the viewer's own Generals, Lord skills left
 // out (they are never in play). Each is enabled exactly when the engine lists
 // its UseSkillAction: the UI never decides whether a skill may be used.
-export function avatarSkills(generals: SeatGenerals | null, registry: ContentRegistry, legal: readonly Action[], extra: readonly ExtraSkill[] = []): AvatarSkill[] {
+export function avatarSkills(generals: SeatGenerals | null, registry: ContentRegistry, legal: readonly Action[], extra: readonly ExtraSkill[] = [], tr: Translator = englishTranslator): AvatarSkill[] {
   if (!generals) return [];
   return (['main', 'deputy'] as const).flatMap((slot) => {
     const general = generals[slot];
@@ -41,7 +42,7 @@ export function avatarSkills(generals: SeatGenerals | null, registry: ContentReg
         const action =
           legal.find((a): a is UseSkill => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.slot === slot && a.owner.skillId === skill.id) ?? null;
         const name = abilityName(skill.id);
-        return { slot, skillId: skill.id, label: general.revealed ? name : `Reveal: ${name}`, action };
+        return { slot, skillId: skill.id, label: general.revealed ? name : tr('avatar.revealSkill', { name }), action };
       });
   });
 }

@@ -6,6 +6,9 @@ import { cardArtUrl, generalDisplayData, HIDDEN_GENERAL_ART_URL } from 'content'
 import { generalDisplayName } from '../labels';
 import { GeneralInfoDialog, GeneralInfoDialogData } from './general-info-dialog';
 import { AvatarSkill } from './avatar-skills';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
+import type { Translator } from '../i18n/translator';
 
 const HIDDEN_ID = 'hidden';
 
@@ -21,21 +24,21 @@ interface AvatarHalf {
   name: string;
 }
 
-function toHalf(slot: 'main' | 'deputy', general: GeneralInstance): AvatarHalf {
+function toHalf(slot: 'main' | 'deputy', general: GeneralInstance, tr: Translator): AvatarHalf {
   const id = general.generalDefinitionId;
   if (id === HIDDEN_ID) {
-    return { slot, id, masked: true, ownHidden: false, url: HIDDEN_GENERAL_ART_URL, caption: 'Hidden', name: 'Hidden General' };
+    return { slot, id, masked: true, ownHidden: false, url: HIDDEN_GENERAL_ART_URL, caption: tr('avatar.hidden'), name: generalDisplayName(id, tr) };
   }
-  const name = generalDisplayData(id)?.name ?? generalDisplayName(id);
+  const name = generalDisplayData(id)?.name ?? generalDisplayName(id, tr);
   const ownHidden = !general.revealed;
-  return { slot, id, masked: false, ownHidden, url: cardArtUrl(id), caption: ownHidden ? `${name} (hidden)` : name, name };
+  return { slot, id, masked: false, ownHidden, url: cardArtUrl(id), caption: ownHidden ? tr('avatar.hiddenOwn', { name }) : name, name };
 }
 
 // One seat's Generals as a single split portrait: Main left, Deputy right.
 // The frame takes the force colour from the enclosing tile's --force.
 @Component({
   selector: 'app-seat-avatar',
-  imports: [MatIconModule],
+  imports: [MatIconModule, TPipe],
   template: `
     <div class="frame">
       @for (h of halves(); track h.slot) {
@@ -45,7 +48,7 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance): AvatarHalf {
           [attr.data-slot]="h.slot"
           [class.own-hidden]="h.ownHidden"
           [disabled]="h.masked"
-          [attr.aria-label]="h.masked ? h.name : 'Info: ' + h.name"
+          [attr.aria-label]="h.masked ? h.name : ('ui.info' | t: { name: h.name })"
           (click)="openInfo(h)"
         >
           @if (h.url && !failedUrls().has(h.url)) {
@@ -130,12 +133,13 @@ export class SeatAvatar {
   // The viewer's own active skills, as buttons under each half.
   readonly skills = input<AvatarSkill[]>([]);
   readonly useSkill = output<Action>();
+  private readonly i18n = inject(I18n);
   protected readonly slots = ['main', 'deputy'] as const;
   protected skillsOf(slot: 'main' | 'deputy'): AvatarSkill[] {
     return this.skills().filter((s) => s.slot === slot);
   }
 
-  protected readonly halves = computed(() => [toHalf('main', this.generals().main), toHalf('deputy', this.generals().deputy)]);
+  protected readonly halves = computed(() => [toHalf('main', this.generals().main, this.i18n.translator), toHalf('deputy', this.generals().deputy, this.i18n.translator)]);
 
   // Art that didn't load (e.g. not crawled on this machine) falls back to the
   // captioned placeholder rather than a broken image.

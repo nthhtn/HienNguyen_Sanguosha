@@ -9,6 +9,9 @@ import { TargetLabel } from './target-label';
 import { PlayingCard } from './playing-card';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
+import type { Translator } from '../i18n/translator';
 
 type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
 
@@ -32,8 +35,8 @@ interface LabeledPlay {
   targeting: { prefix: string; targets: Target[] } | null;
 }
 
-function labeled(action: Action, state: GameState, registry: ContentRegistry): LabeledPlay {
-  return { action, label: actionLabel(action, state, registry), targeting: targetingParts(action, state, registry) };
+function labeled(action: Action, state: GameState, registry: ContentRegistry, tr: Translator): LabeledPlay {
+  return { action, label: actionLabel(action, state, registry, tr), targeting: targetingParts(action, state, registry, tr) };
 }
 
 function cardInstanceIdOf(action: Action): string | undefined {
@@ -42,16 +45,16 @@ function cardInstanceIdOf(action: Action): string | undefined {
 
 // Two-seat plays grouped by their first seat, in order: "Play Coerce
 // Targeting Seat 1", then "At Seat 2".
-function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegistry): NonNullable<HandCardViewModel['pairs']> {
+function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegistry, tr: Translator): NonNullable<HandCardViewModel['pairs']> {
   const groups: NonNullable<HandCardViewModel['pairs']> = [];
   for (const play of plays) {
     const [first, second]: Target[] = play.targets;
     let group = groups.find((g) => g.seatId === first.seatId);
     if (!group) {
-      group = { seatId: first.seatId, labeled: labeled({ ...play, targets: [first] }, state, registry), seconds: [] };
+      group = { seatId: first.seatId, labeled: labeled({ ...play, targets: [first] }, state, registry, tr), seconds: [] };
       groups.push(group);
     }
-    group.seconds.push({ action: play, label: `At ${targetLabel(second, state.players)}`, targeting: { prefix: 'At', targets: [second] } });
+    group.seconds.push({ action: play, label: tr('hand.atTarget', { target: targetLabel(second, state.players, tr) }), targeting: { prefix: tr('hand.at'), targets: [second] } });
   }
   return groups;
 }
@@ -61,7 +64,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
 // only, and Info. Discards and responses have their own dialogs.
 @Component({
   selector: 'app-hand-view',
-  imports: [MatButtonModule, MatIconModule, MatMenuModule, PlayingCard, TargetLabel],
+  imports: [MatButtonModule, MatIconModule, MatMenuModule, PlayingCard, TargetLabel, TPipe],
   template: `
     <div class="hand-row" role="list">
       @for (vm of cardViewModels(); track vm.card.instanceId) {
@@ -70,11 +73,11 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
           <div class="overlay">
             @if (vm.template) {
               <button mat-flat-button type="button" class="play" (click)="pickTargets(vm)">
-                <mat-icon>play_arrow</mat-icon> Play
+                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
               </button>
             } @else if (vm.pairs) {
               <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="firsts">
-                <mat-icon>play_arrow</mat-icon> Play
+                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
               </button>
               <mat-menu #firsts="matMenu">
                 @for (group of vm.pairs; track group.seatId) {
@@ -90,7 +93,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
               </mat-menu>
             } @else if (vm.confirmTargets || vm.actions.length > 1) {
               <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="choices">
-                <mat-icon>play_arrow</mat-icon> Play
+                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
               </button>
               <mat-menu #choices="matMenu">
                 @for (choice of vm.actions; track choice.action) {
@@ -105,16 +108,16 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
                 [disabled]="vm.actions.length === 0"
                 (click)="play.emit(vm.actions[0].action)"
               >
-                <mat-icon>play_arrow</mat-icon> Play
+                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
               </button>
             }
             <button mat-stroked-button type="button" class="info" (click)="openInfo(vm)">
-              <mat-icon>info</mat-icon> Info
+              <mat-icon>info</mat-icon> {{ 'hand.info' | t }}
             </button>
           </div>
         </div>
       } @empty {
-        <span class="empty">No cards in hand</span>
+        <span class="empty">{{ 'hand.empty' | t }}</span>
       }
     </div>
   `,
@@ -170,17 +173,18 @@ export class HandView {
   readonly play = output<Action>();
 
   private readonly dialog = inject(MatDialog);
+  private readonly i18n = inject(I18n);
 
   protected readonly cardViewModels = computed<HandCardViewModel[]>(() =>
     this.cards().map((card) => {
       const plays = this.actions().filter((a): a is PlayCard => a.kind === 'PlayCardAction' && a.cardInstanceId === card.instanceId);
-      const pairs = plays.length > 0 && plays.every((p) => p.targets.length === 2) ? groupPairs(plays, this.state(), this.registry()) : null;
+      const pairs = plays.length > 0 && plays.every((p) => p.targets.length === 2) ? groupPairs(plays, this.state(), this.registry(), this.i18n.translator) : null;
       const actions = this.actions()
         .filter((action) => cardInstanceIdOf(action) === card.instanceId)
-        .map((action) => labeled(action, this.state(), this.registry()));
+        .map((action) => labeled(action, this.state(), this.registry(), this.i18n.translator));
       return {
         card,
-        name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name),
+        name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name, this.i18n.translator),
         actions,
         pairs,
         confirmTargets: plays.length > 0 && plays.every((p) => p.targets.length > 0),

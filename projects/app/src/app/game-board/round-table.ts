@@ -176,7 +176,7 @@ export class RoundTable {
   private readonly dialog = inject(MatDialog);
 
   protected cardName(card: CardInstance): string {
-    return CardInfoDialog.nameFor(card.definitionId, undefined);
+    return CardInfoDialog.nameFor(card.definitionId, undefined, this.i18n.translator);
   }
 
   protected openCard(card: CardInstance): void {

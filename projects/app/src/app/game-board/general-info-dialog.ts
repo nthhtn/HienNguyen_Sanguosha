@@ -4,6 +4,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { generalDisplayData } from 'content';
 import { generalDisplayName } from '../labels';
 import { CardArt } from './card-art';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
 
 export interface GeneralInfoDialogData {
   generalDefinitionId: string;
@@ -12,7 +14,7 @@ export interface GeneralInfoDialogData {
 // Read-only General details (art, title, skills), opened from a seat's avatar.
 @Component({
   selector: 'app-general-info-dialog',
-  imports: [MatDialogModule, MatButtonModule, CardArt],
+  imports: [MatDialogModule, MatButtonModule, CardArt, TPipe],
   template: `
     <h2 mat-dialog-title>{{ name }}</h2>
     <mat-dialog-content class="content">
@@ -28,12 +30,12 @@ export interface GeneralInfoDialogData {
             }
           </ul>
         } @else {
-          <p class="empty">No skills listed.</p>
+          <p class="empty">{{ 'general.noSkills' | t }}</p>
         }
       </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Close</button>
+      <button mat-button mat-dialog-close>{{ 'ui.close' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `
@@ -48,6 +50,7 @@ export interface GeneralInfoDialogData {
 })
 export class GeneralInfoDialog {
   protected readonly data = inject<GeneralInfoDialogData>(MAT_DIALOG_DATA);
+  private readonly i18n = inject(I18n);
   protected readonly display = generalDisplayData(this.data.generalDefinitionId);
-  protected readonly name = this.display?.name ?? generalDisplayName(this.data.generalDefinitionId);
+  protected readonly name = this.display?.name ?? generalDisplayName(this.data.generalDefinitionId, this.i18n.translator);
 }

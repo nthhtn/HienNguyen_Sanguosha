@@ -591,7 +591,7 @@ swap(p, '[attr.data-force]="force()">Responding…</div>', '[attr.data-force]="f
 swap(p, "    return chosen ? `${generalDisplayData(chosen.generalId)?.name ?? 'Form'} (${abilityName(chosen.skillId)})` : null;",
         "    return chosen ? this.i18n.t('seat.formName', { general: generalDisplayData(chosen.generalId)?.name ?? this.i18n.t('seat.formFallback'), skill: abilityName(chosen.skillId) }) : null;")
 swap(p, "  private readonly dialog = inject(MatDialog);\n", "  private readonly dialog = inject(MatDialog);\n  private readonly i18n = inject(I18n);\n")
-swap(p, "CardInfoDialog.nameFor(card.definitionId, undefined),", "CardInfoDialog.nameFor(card.definitionId, undefined, this.i18n.translator),")
+swap(p, "CardInfoDialog.nameFor(card.definitionId, undefined) }", "CardInfoDialog.nameFor(card.definitionId, undefined, this.i18n.translator) }")
 swap(p, "      ...SLOT_LABELS[slot],\n", "      label: this.i18n.t(SLOT_LABELS[slot].label),\n      icon: SLOT_LABELS[slot].icon,\n")
 swap(p, "  protected readonly cardIdDisplayName = cardIdDisplayName;\n\n  protected readonly kingdomDisplayName = kingdomDisplayName;",
         "  protected cardName(definitionId: string): string {\n    return cardIdDisplayName(definitionId, this.i18n.translator);\n  }\n\n"

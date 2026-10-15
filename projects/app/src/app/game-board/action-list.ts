@@ -6,6 +6,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { actionLabel, conversionLabel, targetLabel } from '../labels';
 import { TargetLabel } from './target-label';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
+import type { Translator } from '../i18n/translator';
 
 type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
 
@@ -47,7 +50,7 @@ interface ConversionGroup {
 
 @Component({
   selector: 'app-action-list',
-  imports: [MatButtonModule, MatMenuModule, TargetLabel],
+  imports: [MatButtonModule, MatMenuModule, TargetLabel, TPipe],
   template: `
     <div class="action-list">
       @for (item of labeledActions(); track item.action) {
@@ -62,7 +65,7 @@ interface ConversionGroup {
           <button mat-stroked-button type="button" class="conversion" [matMenuTriggerFor]="targets">{{ group.label }}</button>
           <mat-menu #targets="matMenu">
             @for (use of group.uses; track use.label) {
-              <button mat-menu-item type="button" (click)="actionChosen.emit(use.action)"><app-target-label [label]="use.label" prefix="Targeting" [targets]="use.action.targets" [state]="state()" /></button>
+              <button mat-menu-item type="button" (click)="actionChosen.emit(use.action)"><app-target-label [label]="use.label" [prefix]="'actions.targeting' | t" [targets]="use.action.targets" [state]="state()" /></button>
             }
           </mat-menu>
         }
@@ -80,11 +83,12 @@ export class ActionList {
   readonly actionChosen = output<Action>();
 
   private readonly dialog = inject(MatDialog);
+  private readonly i18n = inject(I18n);
 
   readonly labeledActions = computed<LabeledAction[]>(() =>
     this.actions()
       .filter((action) => !isCardAction(action))
-      .map((action) => ({ action, label: actionLabel(action, this.state(), this.registry()) }))
+      .map((action) => ({ action, label: actionLabel(action, this.state(), this.registry(), this.i18n.translator) }))
   );
 
   // A conversion's plays, one button each ("Use 2 Cards as Sha"), with a menu of targets.
@@ -92,11 +96,11 @@ export class ActionList {
     const groups = new Map<string, ConversionGroup>();
     for (const action of this.actions()) {
       if (action.kind !== 'UseConversionAction' || action.pendingResponseId) continue;
-      const label = conversionLabel({ ...action, targets: [] }, this.state(), this.registry());
-      const group = groups.get(label) ?? { label, uses: [], direct: null, template: null, as: conversionAsName(action, this.state(), this.registry()) };
+      const label = conversionLabel({ ...action, targets: [] }, this.state(), this.registry(), this.i18n.translator);
+      const group = groups.get(label) ?? { label, uses: [], direct: null, template: null, as: conversionAsName(action, this.state(), this.registry(), this.i18n.translator) };
       if (action.pickTargets) group.template = action;
       else if (action.targets.length === 0) group.direct = action;
-      else group.uses.push({ action, label: `Targeting ${action.targets.map((t) => targetLabel(t, this.state().players)).join(', ')}` });
+      else group.uses.push({ action, label: this.i18n.t('actions.targetingList', { targets: action.targets.map((t) => targetLabel(t, this.state().players, this.i18n.translator)).join(', ') }) });
       groups.set(label, group);
     }
     return [...groups.values()];
@@ -118,12 +122,12 @@ export class ActionList {
 }
 
 // The name of the card a conversion makes: "Sha".
-function conversionAsName(action: UseConversion, state: GameState, registry: ContentRegistry): string {
+function conversionAsName(action: UseConversion, state: GameState, registry: ContentRegistry, tr: Translator): string {
   const owner = action.via.owner;
   const conversions =
     owner.kind === 'equipment'
       ? registry.cards.get(state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === owner.cardInstanceId)?.definitionId ?? '')?.abilities?.conversions
       : (registry.generals.get(state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId ?? '')?.skills.find((s) => s.id === owner.skillId) ?? findSkill(registry, owner.skillId))?.conversions;
   const as = conversions?.find((c) => c.id === action.via.conversionId)?.as;
-  return (as && registry.cards.get(as)?.name) ?? 'the Card';
+  return (as && registry.cards.get(as)?.name) ?? tr('actions.theCard');
 }

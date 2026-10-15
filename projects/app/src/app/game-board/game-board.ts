@@ -352,7 +352,7 @@ export class GameBoard {
   // The viewer's active skills, as buttons on their avatar.
   protected readonly viewerSkills = computed(() => {
     const seat = this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId());
-    return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions(), extraSkillsOf(seat, this.gameService.registry)) : [];
+    return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions(), extraSkillsOf(seat, this.gameService.registry), this.i18n.translator) : [];
   });
 
   // The viewer's force colour, which their decision dialogs are themed in.

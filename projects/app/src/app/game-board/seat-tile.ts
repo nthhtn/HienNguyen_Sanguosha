@@ -8,18 +8,21 @@ import { SeatAvatar } from './seat-avatar';
 import { AvatarSkill } from './avatar-skills';
 import { PlayingCard } from './playing-card';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
+import type { MessageKey } from '../i18n/messages';
 
-const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
-  weapon: { label: 'Weapon', icon: 'gavel' },
-  armor: { label: 'Armor', icon: 'shield' },
-  defensiveMount: { label: 'Defensive Mount', icon: 'add' },
-  offensiveMount: { label: 'Offensive Mount', icon: 'remove' },
+const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
+  weapon: { label: 'slot.weapon', icon: 'gavel' },
+  armor: { label: 'slot.armor', icon: 'shield' },
+  defensiveMount: { label: 'slot.defensiveMount', icon: 'add' },
+  offensiveMount: { label: 'slot.offensiveMount', icon: 'remove' },
 };
 
 // One seat at the round table, compact enough to sit on the table's rim.
 @Component({
   selector: 'app-seat-tile',
-  imports: [SeatAvatar, PlayingCard, MatIconModule],
+  imports: [SeatAvatar, PlayingCard, MatIconModule, TPipe],
   template: `
     <div
       class="tile"
@@ -30,48 +33,48 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
       [attr.data-force]="force()"
     >
       <div class="sections">
-      <section class="panel general" aria-label="General">
+      <section class="panel general" [attr.aria-label]="'seat.generalAria' | t">
         <div class="header">
           <strong>{{ name() }}</strong>
           @if (isBot()) {
-            <mat-icon class="bot-icon" aria-label="Computer player">smart_toy</mat-icon>
+            <mat-icon class="bot-icon" [attr.aria-label]="'seat.computerAria' | t">smart_toy</mat-icon>
           }
           @if (isViewer()) {
-            <span class="you">(you)</span>
+            <span class="you">{{ 'seat.you' | t }}</span>
           }
         </div>
         <div class="generals" [class.face-down]="seat().faceDown">
           @if (seat().generals; as generals) {
             <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
           } @else {
-            <span class="choosing">Choosing Generals…</span>
+            <span class="choosing">{{ 'seat.choosing' | t }}</span>
           }
           @if (seat().faceDown) {
-            <span class="face-down-badge">Face Down</span>
+            <span class="face-down-badge">{{ 'seat.faceDown' | t }}</span>
           }
         </div>
         @if (pile().length) {
-          <div class="pile" aria-label="Under General">
+          <div class="pile" [attr.aria-label]="'seat.underGeneral' | t">
             @for (card of pile(); track card.instanceId) {
               <app-playing-card size="small" [card]="card" />
             }
           </div>
         }
         @if (stash().length) {
-          <div class="pile" aria-label="Farms">
+          <div class="pile" [attr.aria-label]="'seat.farms' | t">
             @for (card of stash(); track card.instanceId) {
               <app-playing-card size="small" [card]="card" />
             }
           </div>
         }
         @if (formName(); as form) {
-          <span class="form-badge">Form: {{ form }}</span>
+          <span class="form-badge">{{ 'seat.form' | t: { form: form } }}</span>
         }
         @if (seat().silenced) {
-          <span class="silenced-badge">No Skills</span>
+          <span class="silenced-badge">{{ 'seat.noSkills' | t }}</span>
         }
         <div class="stats">
-          <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomDisplayName(seat().kingdom) }}</span>
+          <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomName(seat().kingdom) }}</span>
           @if (hpIcons().length) {
             <span class="hp-icons">
               @for (src of hpIcons(); track src) {
@@ -79,13 +82,13 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
               }
             </span>
           }
-          <span>HP {{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
-          <span class="hand-count" title="Cards in Hand" [attr.aria-label]="'Cards in Hand: ' + handCount()">
+          <span>{{ 'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp } }}</span>
+          <span class="hand-count" [attr.title]="'seat.handTitle' | t" [attr.aria-label]="'seat.handAria' | t: { n: handCount() }">
             <mat-icon aria-hidden="true">style</mat-icon>{{ handCount() }}
           </span>
         </div>
       </section>
-        <section class="panel equipment" aria-label="Equipment">
+        <section class="panel equipment" [attr.aria-label]="'seat.equipment' | t">
           <!-- Weapon, Armor on top; Defensive Mount, Offensive Mount below. -->
           <div class="equip">
             @for (s of slots(); track s.slot) {
@@ -93,11 +96,11 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
                 class="slot"
                 [class.empty]="!s.card"
                 [attr.data-slot]="s.slot"
-                [attr.title]="s.card ? s.label + ': ' + cardIdDisplayName(s.card.definitionId) : s.label + ' (empty)'"
+                [attr.title]="s.card ? ('seat.slotTitle' | t: { slot: s.label, card: cardName(s.card.definitionId) }) : ('seat.slotEmpty' | t: { slot: s.label })"
               >
                 @if (s.card; as card) {
                   <!-- Its rules text is in the Info popup. -->
-                  <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
+                  <button type="button" class="slot-card" [attr.aria-label]="'ui.info' | t: { name: cardName(card.definitionId) }" (click)="openInfo(card)">
                     <app-playing-card size="small" [card]="card" />
                   </button>
                 } @else {
@@ -107,31 +110,31 @@ const SLOT_LABELS: Record<EquipSlot, { label: string; icon: string }> = {
             }
           </div>
         </section>
-        <section class="panel judgment-section" aria-label="Judgment">
-          <div class="judgment" aria-label="Judgment Area">
+        <section class="panel judgment-section" [attr.aria-label]="'seat.judgment' | t">
+          <div class="judgment" [attr.aria-label]="'seat.judgmentArea' | t">
             @for (card of judgment(); track card.instanceId) {
               @let countsAs = judgmentCountsAs()[card.instanceId];
-              <div class="slot" [attr.title]="'Judgment Area: ' + cardIdDisplayName(card.definitionId) + (countsAs ? ' as ' + cardIdDisplayName(countsAs) : '')">
-                <button type="button" class="slot-card" [attr.aria-label]="'Info: ' + cardIdDisplayName(card.definitionId)" (click)="openInfo(card)">
+              <div class="slot" [attr.title]="countsAs ? ('seat.judgmentTitleAs' | t: { card: cardName(card.definitionId), as: cardName(countsAs) }) : ('seat.judgmentTitle' | t: { card: cardName(card.definitionId) })">
+                <button type="button" class="slot-card" [attr.aria-label]="'ui.info' | t: { name: cardName(card.definitionId) }" (click)="openInfo(card)">
                   <app-playing-card size="small" [card]="card" />
                 </button>
                 @if (countsAs) {
-                  <span class="counts-as">As {{ cardIdDisplayName(countsAs) }}</span>
+                  <span class="counts-as">{{ 'seat.countsAs' | t: { card: cardName(countsAs) } }}</span>
                 }
               </div>
             } @empty {
-              <div class="slot empty" title="Judgment Area (empty)"><mat-icon>balance</mat-icon></div>
+              <div class="slot empty" [attr.title]="'seat.judgmentEmpty' | t"><mat-icon>balance</mat-icon></div>
             }
           </div>
         </section>
       </div>
       <!-- Status lines in the seat's force colour. -->
       @if (seat().eliminated) {
-        <div class="status force-status" [attr.data-force]="force()">Eliminated</div>
+        <div class="status force-status" [attr.data-force]="force()">{{ 'seat.eliminated' | t }}</div>
       } @else if (dying() ?? seat().combinedHp <= 0) {
-        <div class="status force-status dying" [attr.data-force]="force()">Dying…</div>
+        <div class="status force-status dying" [attr.data-force]="force()">{{ 'seat.dying' | t }}</div>
       } @else if (isResponding()) {
-        <div class="status force-status" [attr.data-force]="force()">Responding…</div>
+        <div class="status force-status" [attr.data-force]="force()">{{ 'seat.responding' | t }}</div>
       }
     </div>
   `,
@@ -212,7 +215,7 @@ export class SeatTile {
   // The General whose skill Zuo Ci holds now (his chosen Form), shown to everyone.
   readonly formName = computed(() => {
     const chosen = this.seat().forms?.chosen;
-    return chosen ? `${generalDisplayData(chosen.generalId)?.name ?? 'Form'} (${abilityName(chosen.skillId)})` : null;
+    return chosen ? this.i18n.t('seat.formName', { general: generalDisplayData(chosen.generalId)?.name ?? this.i18n.t('seat.formFallback'), skill: abilityName(chosen.skillId) }) : null;
   });
   // Whether the seat is dying, when the parent knows (a seat Refusing Death
   // keeps alive below 1 HP isn't); null: judged by its HP.
@@ -227,10 +230,11 @@ export class SeatTile {
 
 
   private readonly dialog = inject(MatDialog);
+  private readonly i18n = inject(I18n);
 
   protected openInfo(card: CardInstance): void {
     this.dialog.open<CardInfoDialog, CardInfoDialogData>(CardInfoDialog, {
-      data: { card, name: CardInfoDialog.nameFor(card.definitionId, undefined) },
+      data: { card, name: CardInfoDialog.nameFor(card.definitionId, undefined, this.i18n.translator) },
       width: 'min(92vw, 480px)',
     });
   }
@@ -239,13 +243,18 @@ export class SeatTile {
   protected readonly slots = computed(() =>
     EQUIP_SLOTS.map((slot) => ({
       slot,
-      ...SLOT_LABELS[slot],
+      label: this.i18n.t(SLOT_LABELS[slot].label),
+      icon: SLOT_LABELS[slot].icon,
       card: this.equipment().find((c) => equipSlotOf(c.definitionId) === slot) ?? null,
     }))
   );
-  protected readonly cardIdDisplayName = cardIdDisplayName;
+  protected cardName(definitionId: string): string {
+    return cardIdDisplayName(definitionId, this.i18n.translator);
+  }
 
-  protected readonly kingdomDisplayName = kingdomDisplayName;
+  protected kingdomName(kingdom: Parameters<typeof kingdomDisplayName>[0]): string {
+    return kingdomDisplayName(kingdom, this.i18n.translator);
+  }
 }
 
 // Whether `seat` is dying: at 0 HP or below, unless a skill keeps it alive there
