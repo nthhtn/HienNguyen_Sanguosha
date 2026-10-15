@@ -112,4 +112,41 @@ results show it did not and nothing changes in `rule-based`.
 
 ## Results
 
-(Filled in after the experiment.)
+Date: 2026-10-15. Variant against the shipped `rule-based`, 4 seats, mirrored
+pairs, 4000 games (2000 pairs) from seed 100000. Difference in win rate per
+game, with a 95% interval.
+
+| Run | Difference |
+|---|---|
+| All four rules (`rule-based-cards`) | −1.2 pp (−2.3 to −0.0): baseline better |
+| Peach only | +0.1 pp (−0.6 to +0.7): no clear difference |
+| Wine only | +0.8 pp (−0.1 to +1.8): no clear difference |
+| Equipment only | −2.1 pp (−3.0 to −1.3): baseline better |
+| Discard only | +0.6 pp (−0.1 to +1.3): no clear difference |
+
+Sanity checks before the experiment: with every switch off, `rule-based`
+against `rule-based-v1` reads exactly 0.0 pp over 200 games.
+
+Conclusion: **nothing ships and `rule-based` is unchanged.** The all-rules
+variant was worse, so the confirmation range (seed 200000) was never run, and
+no single rule cleared on its own, so none went to it either.
+
+What the runs suggest, as hypotheses and not findings:
+- The equipment rule (swapping a worn weapon or armor for a better one by range
+  or by a fixed armor order) hurts. It accounts for the whole of the all-rules
+  loss; the other three rules sum to roughly +1.5 pp. Likely causes: range
+  is a poor proxy for a weapon's value here (weapon skills matter more than
+  range), and the armor order is a guess.
+- Wine (+0.8) and the discard ranking (+0.6) both lean positive, but neither
+  cleared its margin. A variant of Peach, Wine and Discard without the
+  equipment rule was not run: it is outside the experiment this spec fixed, and
+  running it to pick a winner after seeing the results is the "best of several
+  tries" trap. It would need to be a new, pre-registered experiment on fresh
+  seed ranges.
+- The bot's weapon choices do not depend on range alone, so any later
+  equipment rule should be judged per card, not by a single ordering.
+
+The single-rule runs used a throwaway script outside the repository that
+registers one-rule variants with `registerPolicy`; nothing of it is committed.
+`card-play.ts`, the rule switches and the `rule-based-cards` id stay in `bots`
+for a later attempt.
