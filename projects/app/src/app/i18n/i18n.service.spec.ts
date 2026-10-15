@@ -79,6 +79,15 @@ describe('I18n', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 
+  it('falls back to English when a saved language fails to load, even if the user clicked it meanwhile', async () => {
+    localStorage.setItem('locale', 'vi');
+    const i18n = setup({ vi: () => Promise.reject(new Error('offline')) });
+    await i18n.setLocale('vi');
+    await flush();
+    expect(i18n.locale()).toBe('en');
+    expect(document.documentElement.lang).toBe('en');
+  });
+
   it('lets the last click win when an earlier load finishes late', async () => {
     let release!: (messages: Messages) => void;
     const i18n = setup({ vi: () => new Promise<Messages>((resolve) => (release = resolve)) });

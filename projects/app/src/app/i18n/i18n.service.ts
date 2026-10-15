@@ -52,7 +52,7 @@ export class I18n {
     // English shows until the saved language's catalog arrives; if it never
     // does, go back to English rather than claim a language we cannot show.
     void this.load(saved).then((loaded) => {
-      if (!loaded && this.latest === 0) {
+      if (!loaded && !this.catalogs()[this.locale()]) {
         this.locale.set(DEFAULT_LOCALE);
         this.syncDocument();
       }
