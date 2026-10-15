@@ -68,14 +68,17 @@ policy that played it, so a team made of both policies that wins gives each
 policy wins for its own seats. Tallies per policy:
 
 - seat-games (one per seat per game) and seat-wins, hence win rate
-- a 95% Wilson interval on that rate
 - a breakdown by the seat's kingdom at game end
 - games that ended without a result inside the action cap (`maxActions`),
   reported separately and excluded from win rates
 
-Because seats within one game are not independent, the interval is computed
-over games, not seat-games: each game contributes the challenger's share of
-winning seats. The report states the number of games used.
+Because seats within one game are not independent, the comparison is made
+over games, not seat-games. Each finished game gives a *challenger share* (the
+fraction of challenger seats that won) and a *baseline share*; the game's
+difference is the first minus the second. The report gives the mean
+difference with a 95% interval (mean ± 1.96 × standard error over finished
+games) and the number of games used. The challenger is better only when the
+whole interval lies above 0. Per-policy win rates are shown for reference.
 
 ### Output and CLI
 
@@ -98,9 +101,9 @@ are validated against the registry, with an error naming the valid ids.
 
 ### The score
 
-A new `targeting.ts` exports `targetScore(view, me, target, play)`; higher is
-a better target. `play` carries what is being played (the card or conversion
-and its damage). Factors, in the order they matter:
+A new `targeting.ts` exports `targetScore(view, me, target)`; higher is a
+better target. Damage is taken as 1 (a Sha or Duel; Wine's extra point is
+ignored). Factors, in the order they matter:
 
 1. **Kill chance.** The play's damage reaches the target's HP: a large bonus.
 2. **Defence.** Penalties for an Eight Trigrams worn, and for a large hand
