@@ -1,6 +1,6 @@
 # Bot Stage 2 — Responses — Design Spec
 
-Status: Approved in conversation (the roadmap); pending written-spec review
+Status: Approved; experiment done: nothing shipped
 Date: 2026-10-15
 
 Part of `docs/superpowers/specs/2026-10-15-bot-improvement-roadmap-design.md`.
@@ -110,4 +110,17 @@ show it did not and `rule-based` is unchanged.
 
 ## Results
 
-(Filled in after the experiment.)
+All runs: 4 seats, mirrored pairs, 4000 games (2000 pairs), challenger against `rule-based`.
+
+| Run | First seed | Difference | 95% interval | Verdict |
+|---|---|---|---|---|
+| `rule-based-responses` (both rules) | 300000 | -2.0 pp | -3.0 to -1.1 | baseline is better |
+| `shanHold` alone | 300000 | -2.5 pp | -3.4 to -1.5 | baseline is better |
+| `wuxie` alone | 300000 | +0.1 pp | -0.3 to +0.5 | no clear difference |
+
+**Nothing ships.** The combined variant failed on the first range, so the second range (400000) was
+not run. Of the two diagnoses, `shanHold` is clearly harmful and `wuxie` has no measurable effect, so
+no rule can clear alone on two ranges. `rule-based` is unchanged. Holding a Shan to avoid a spent card
+loses games: taking a hit costs HP now, and the saved Shan rarely pays that back. The Wuxie rule
+changes too few games to see. Both rules stay in the code as switches, off for every shipped policy;
+`rule-based-responses` stays registered as the recorded variant.
