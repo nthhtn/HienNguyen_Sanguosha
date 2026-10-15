@@ -1,5 +1,6 @@
-import { Action, ChoiceOption, GameState, Player, Seat } from 'engine';
+import { Action, ChoiceOption, GameState, PendingChoice, Player, Seat } from 'engine';
 import { abilityName, cardDisplayData, choicePromptText, seatPickText } from 'content';
+import { englishTranslator, Translator } from '../i18n/translator';
 import { cardFaceLabel, cardIdDisplayName, forceOf, seatName, suitLabel } from '../labels';
 import type { ChoiceDialogOption } from './choice-dialog';
 
@@ -8,73 +9,77 @@ export interface ChoiceDescription {
   title: string;
   // What to do, e.g. "Choose a card to take from Seat 1".
   prompt: string;
-  // The primary button.
-  confirmLabel: 'Take' | 'Discard' | 'Give' | 'Choose';
+  // The primary button: "Take", "Discard", "Give" or "Choose".
+  confirmLabel: string;
   // The label of a "decline" option, when the choice has one (Gender Swords: "Let Seat 1 Draw").
   declineLabel?: string;
 }
 
 const cardName = (definitionId: string) => cardDisplayData(definitionId)?.name ?? cardIdDisplayName(definitionId);
 
+// "Choose a card to take from Seat 1", or without "from ..." when no seat is named.
+const chooseCardTo = (tr: Translator, verb: PendingChoice['verb'], from: string | null): string =>
+  from === null ? tr(`choice.cardTo.${verb}` as const) : tr(`choice.cardTo.${verb}.from` as const, { seat: from });
+
 // What the Choice window says, read off the pending choice. Null unless the
 // viewer is the one choosing.
-export function describeChoice(state: GameState, viewerSeatId: string): ChoiceDescription | null {
+export function describeChoice(state: GameState, viewerSeatId: string, tr: Translator = englishTranslator): ChoiceDescription | null {
   const choice = state.pendingChoice;
   if (!choice || choice.seatId !== viewerSeatId) return null;
   // A claim to believe or doubt (Bewilder).
   if (choice.reason.kind === 'ability' && choice.reason.cardId && choice.verb === 'pick') {
     const claimer = seatName(state.players, choice.reason.owner.seatId);
-    return { title: abilityName(choice.reason.abilityId), prompt: `${claimer} claims ${cardName(choice.reason.cardId)}. Believe or doubt?`, confirmLabel: 'Choose' };
+    return { title: abilityName(choice.reason.abilityId), prompt: tr('choice.claim', { claimer, card: cardName(choice.reason.cardId) }), confirmLabel: tr('choice.confirm.choose') };
   }
   // A skill's take from, or discard of, another seat's card (Feedback, Sudden Attack).
   if (choice.reason.kind === 'ability' && (choice.verb === 'take' || choice.verb === 'discard')) {
-    const from = choice.reason.targetSeatId ? ` from ${seatName(state.players, choice.reason.targetSeatId)}` : '';
+    const from = choice.reason.targetSeatId ? seatName(state.players, choice.reason.targetSeatId) : null;
     const take = choice.verb === 'take';
-    return { title: abilityName(choice.reason.abilityId), prompt: `Choose a card to ${choice.verb}${from}`, confirmLabel: take ? 'Take' : 'Discard' };
+    return { title: abilityName(choice.reason.abilityId), prompt: chooseCardTo(tr, choice.verb, from), confirmLabel: tr(take ? 'choice.confirm.take' : 'choice.confirm.discard') };
   }
   // A skill's pick (a seat, a suit, one of several labels) or who gets given cards.
   if (choice.reason.kind === 'ability' && (choice.verb === 'pick' || choice.verb === 'give')) {
     const title = abilityName(choice.reason.abilityId);
-    if (choice.verb === 'give') return { title, prompt: 'Choose who gets the cards', confirmLabel: 'Give' };
+    if (choice.verb === 'give') return { title, prompt: tr('choice.give'), confirmLabel: tr('choice.confirm.give') };
     const fixed = choicePromptText(choice.reason.abilityId);
     // A seat pick keeps the seat wording (Exile, Alliance); a mixed or label pick uses its own prompt.
     const onlySeats = choice.options.every((o) => o.shows.kind === 'seat');
-    if (fixed && !(onlySeats && seatPickText(choice.reason.abilityId))) return { title, prompt: fixed, confirmLabel: 'Choose' };
+    if (fixed && !(onlySeats && seatPickText(choice.reason.abilityId))) return { title, prompt: fixed, confirmLabel: tr('choice.confirm.choose') };
     const kinds = new Set(choice.options.map((o) => o.shows.kind));
     const only = kinds.size === 1 ? [...kinds][0] : null;
     // A skill's own words for its seat pick (Rouse the Tiger), its target named.
     const own = seatPickText(choice.reason.abilityId);
     const target = choice.reason.targetSeatId;
-    const seatPrompt = own ? own.replace('{target}', target ? seatName(state.players, target) : 'a seat') : 'Choose a seat';
-    const prompt = only === 'seat' ? seatPrompt : only === 'suit' ? 'Name a suit' : 'Choose one';
-    return { title, prompt, confirmLabel: 'Choose' };
+    const seatPrompt = own ? own.replace('{target}', target ? seatName(state.players, target) : tr('choice.aSeat')) : tr('choice.pick.seat');
+    const prompt = only === 'seat' ? seatPrompt : only === 'suit' ? tr('choice.pick.suit') : tr('choice.pick.one');
+    return { title, prompt, confirmLabel: tr('choice.confirm.choose') };
   }
   if (choice.reason.kind !== 'choice') return null;
   const { card, targetSeatId } = choice.reason;
   // Choosing among your own cards (Gender Swords): discard one, or let the user draw.
   if (targetSeatId === viewerSeatId && choice.options.some((o) => o.shows.kind === 'decline')) {
     const user = seatName(state.players, choice.reason.userSeatId);
-    return { title: cardName(card.as), prompt: `Discard a hand card, Or let ${user} draw 1 card`, confirmLabel: 'Discard', declineLabel: `Let ${user} Draw` };
+    return { title: cardName(card.as), prompt: tr('choice.discardOrDraw', { user }), confirmLabel: tr('choice.confirm.discard'), declineLabel: tr('choice.letDraw', { user }) };
   }
-  const from = targetSeatId ? ` from ${seatName(state.players, targetSeatId)}` : '';
+  const from = targetSeatId ? seatName(state.players, targetSeatId) : null;
   return {
     title: cardName(card.as),
-    prompt: `Choose a card to ${choice.verb}${from}`,
-    confirmLabel: choice.verb === 'take' ? 'Take' : 'Discard',
+    prompt: chooseCardTo(tr, choice.verb, from),
+    confirmLabel: tr(choice.verb === 'take' ? 'choice.confirm.take' : 'choice.confirm.discard'),
   };
 }
 
 // An option's label: a hand by its owner and size, a card by its name and face.
-export function choiceOptionLabel(shows: ChoiceOption['shows'], players: readonly Player[], declineLabel?: string): string {
+export function choiceOptionLabel(shows: ChoiceOption['shows'], players: readonly Player[], declineLabel?: string, tr: Translator = englishTranslator): string {
   if (shows.kind === 'seat') return seatName(players, shows.seatId);
   if (shows.kind === 'suit') return suitLabel(shows.suit);
   if (shows.kind === 'label') return shows.text;
-  if (shows.kind === 'use') return 'Use';
-  if (shows.kind === 'decline') return declineLabel ?? "Don't";
+  if (shows.kind === 'use') return tr('choice.option.use');
+  if (shows.kind === 'decline') return declineLabel ?? tr('choice.option.decline');
   if (shows.kind === 'hidden-hand') {
-    return `${seatName(players, shows.seatId)}'s Hand (${shows.count} ${shows.count === 1 ? 'Card' : 'Cards'})`;
+    return tr(shows.count === 1 ? 'choice.option.hand.one' : 'choice.option.hand.other', { seat: seatName(players, shows.seatId), count: shows.count });
   }
-  return `${cardName(shows.card.definitionId)} (${cardFaceLabel(shows.card)})`;
+  return tr('card.named', { name: cardName(shows.card.definitionId), face: cardFaceLabel(shows.card) });
 }
 
 // What the Choice window offers: the engine's options it can legally pick. A
@@ -85,18 +90,19 @@ export function choiceDialogOptions(
   legal: readonly Action[],
   players: readonly Player[],
   declineLabel?: string,
-  seats: readonly Seat[] = []
+  seats: readonly Seat[] = [],
+  tr: Translator = englishTranslator
 ): ChoiceDialogOption[] {
   return options.flatMap((option): ChoiceDialogOption[] => {
     const action = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === option.id);
     if (!action) return [];
     if (option.shows.kind === 'hidden-hand') {
-      return Array.from({ length: option.shows.count }, (_, i) => ({ id: `${option.id}#${i + 1}`, action, faceDown: true as const, label: `Hand Card ${i + 1}` }));
+      return Array.from({ length: option.shows.count }, (_, i) => ({ id: `${option.id}#${i + 1}`, action, faceDown: true as const, label: tr('choice.option.handCard', { n: i + 1 }) }));
     }
     if (option.shows.kind === 'card') {
-      return [{ id: option.id, action, card: option.shows.card, label: choiceOptionLabel(option.shows, players) }];
+      return [{ id: option.id, action, card: option.shows.card, label: choiceOptionLabel(option.shows, players, undefined, tr) }];
     }
-    const label = choiceOptionLabel(option.shows, players, declineLabel);
+    const label = choiceOptionLabel(option.shows, players, declineLabel, tr);
     if (option.shows.kind === 'seat') {
       const seatId = option.shows.seatId;
       return [{ id: option.id, action, label, force: forceOf(seats.find((s) => s.id === seatId)?.kingdom) }];
