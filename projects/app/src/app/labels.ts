@@ -95,6 +95,13 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
   }
 }
 
+// An action's label split where its targets begin, so the targets can be shown
+// richly: "Play Sha Targeting" + [Seat 1]. Null for an action with no seat to name.
+export function targetingParts(action: Action, state: GameState, registry: ContentRegistry): { prefix: string; targets: Target[] } | null {
+  if ((action.kind !== 'PlayCardAction' && action.kind !== 'UseConversionAction') || action.targets.length === 0) return null;
+  return { prefix: `${actionLabel({ ...action, targets: [] }, state, registry)} Targeting`, targets: action.targets };
+}
+
 // "Use 2 Cards as Sha" (a worn card's), "As Sha · Fighting Saint" (a skill's),
 // with its targets for a play.
 export function conversionLabel(action: Extract<Action, { kind: 'UseConversionAction' }>, state: GameState, registry: ContentRegistry): string {

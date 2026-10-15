@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Action, ContentRegistry, GameState, findSkill } from 'engine';
 import { MatMenuModule } from '@angular/material/menu';
 import { actionLabel, conversionLabel, targetLabel } from '../labels';
+import { TargetLabel } from './target-label';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
 
 type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
@@ -35,7 +36,7 @@ function isCardAction(action: Action): boolean {
 
 interface ConversionGroup {
   label: string;
-  uses: LabeledAction[];
+  uses: { action: UseConversion; label: string }[];
   // Used at once: no target to choose (Random Strike's Hail of Arrows).
   direct: Action | null;
   // Several equal targets: chosen in the Choose Targets window first.
@@ -46,7 +47,7 @@ interface ConversionGroup {
 
 @Component({
   selector: 'app-action-list',
-  imports: [MatButtonModule, MatMenuModule],
+  imports: [MatButtonModule, MatMenuModule, TargetLabel],
   template: `
     <div class="action-list">
       @for (item of labeledActions(); track item.action) {
@@ -61,7 +62,7 @@ interface ConversionGroup {
           <button mat-stroked-button type="button" class="conversion" [matMenuTriggerFor]="targets">{{ group.label }}</button>
           <mat-menu #targets="matMenu">
             @for (use of group.uses; track use.label) {
-              <button mat-menu-item type="button" (click)="actionChosen.emit(use.action)">{{ use.label }}</button>
+              <button mat-menu-item type="button" (click)="actionChosen.emit(use.action)"><app-target-label [label]="use.label" prefix="Targeting" [targets]="use.action.targets" [state]="state()" /></button>
             }
           </mat-menu>
         }

@@ -4,7 +4,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Action, CardInstance, ContentRegistry, GameState, Target } from 'engine';
-import { actionLabel, targetLabel } from '../labels';
+import { actionLabel, targetLabel, targetingParts } from '../labels';
+import { TargetLabel } from './target-label';
 import { PlayingCard } from './playing-card';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
@@ -14,14 +15,25 @@ type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
 interface HandCardViewModel {
   card: CardInstance;
   name: string;
-  actions: { action: Action; label: string }[];
+  actions: LabeledPlay[];
   // Two-seat plays (Coerce: the holder, then the victim), grouped by first seat.
-  pairs: { seatId: string; label: string; seconds: { action: Action; label: string }[] }[] | null;
+  pairs: { seatId: string; labeled: LabeledPlay; seconds: LabeledPlay[] }[] | null;
   // A lone targeted play is still shown as a menu: the viewer decides whether
   // the only target is really the one they want.
   confirmTargets: boolean;
   // A play with several equal targets (Sha with Sky Scorcher): picked in the Choose Targets window.
   template: PlayCard | null;
+}
+
+// A menu entry: the plain label, and where its targets begin when it names any.
+interface LabeledPlay {
+  action: Action;
+  label: string;
+  targeting: { prefix: string; targets: Target[] } | null;
+}
+
+function labeled(action: Action, state: GameState, registry: ContentRegistry): LabeledPlay {
+  return { action, label: actionLabel(action, state, registry), targeting: targetingParts(action, state, registry) };
 }
 
 function cardInstanceIdOf(action: Action): string | undefined {
@@ -36,10 +48,10 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
     const [first, second]: Target[] = play.targets;
     let group = groups.find((g) => g.seatId === first.seatId);
     if (!group) {
-      group = { seatId: first.seatId, label: actionLabel({ ...play, targets: [first] }, state, registry), seconds: [] };
+      group = { seatId: first.seatId, labeled: labeled({ ...play, targets: [first] }, state, registry), seconds: [] };
       groups.push(group);
     }
-    group.seconds.push({ action: play, label: `At ${targetLabel(second, state.players)}` });
+    group.seconds.push({ action: play, label: `At ${targetLabel(second, state.players)}`, targeting: { prefix: 'At', targets: [second] } });
   }
   return groups;
 }
@@ -49,7 +61,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
 // only, and Info. Discards and responses have their own dialogs.
 @Component({
   selector: 'app-hand-view',
-  imports: [MatButtonModule, MatIconModule, MatMenuModule, PlayingCard],
+  imports: [MatButtonModule, MatIconModule, MatMenuModule, PlayingCard, TargetLabel],
   template: `
     <div class="hand-row" role="list">
       @for (vm of cardViewModels(); track vm.card.instanceId) {
@@ -66,13 +78,13 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
               </button>
               <mat-menu #firsts="matMenu">
                 @for (group of vm.pairs; track group.seatId) {
-                  <button mat-menu-item type="button" [matMenuTriggerFor]="seconds" [matMenuTriggerData]="{ group }">{{ group.label }}</button>
+                  <button mat-menu-item type="button" [matMenuTriggerFor]="seconds" [matMenuTriggerData]="{ group }"><app-target-label [label]="group.labeled.label" [prefix]="group.labeled.targeting?.prefix ?? null" [targets]="group.labeled.targeting?.targets ?? []" [state]="state()" /></button>
                 }
               </mat-menu>
               <mat-menu #seconds="matMenu">
                 <ng-template matMenuContent let-group="group">
                   @for (second of group.seconds; track second.label) {
-                    <button mat-menu-item type="button" (click)="play.emit(second.action)">{{ second.label }}</button>
+                    <button mat-menu-item type="button" (click)="play.emit(second.action)"><app-target-label [label]="second.label" [prefix]="second.targeting?.prefix ?? null" [targets]="second.targeting?.targets ?? []" [state]="state()" /></button>
                   }
                 </ng-template>
               </mat-menu>
@@ -82,7 +94,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
               </button>
               <mat-menu #choices="matMenu">
                 @for (choice of vm.actions; track choice.action) {
-                  <button mat-menu-item type="button" (click)="play.emit(choice.action)">{{ choice.label }}</button>
+                  <button mat-menu-item type="button" (click)="play.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
                 }
               </mat-menu>
             } @else {
@@ -165,7 +177,7 @@ export class HandView {
       const pairs = plays.length > 0 && plays.every((p) => p.targets.length === 2) ? groupPairs(plays, this.state(), this.registry()) : null;
       const actions = this.actions()
         .filter((action) => cardInstanceIdOf(action) === card.instanceId)
-        .map((action) => ({ action, label: actionLabel(action, this.state(), this.registry()) }));
+        .map((action) => labeled(action, this.state(), this.registry()));
       return {
         card,
         name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name),
