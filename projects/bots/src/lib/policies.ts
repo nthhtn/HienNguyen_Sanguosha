@@ -1,5 +1,6 @@
 import type { BotPolicy } from './policy';
-import { ALL_CARD_PLAY_RULES } from './card-play';
+import { ALL_CARD_PLAY_RULES, NO_CARD_PLAY_RULES } from './card-play';
+import { ALL_RESPONSE_RULES } from './responses';
 import { weakestFirst } from './helpers';
 import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
 
@@ -25,3 +26,5 @@ registerPolicy(ruleBasedPolicy);
 registerPolicy(ruleBasedV1Policy);
 // Stage 1 (card play): every card-play rule on; judged against 'rule-based' by the tournament.
 registerPolicy(createRuleBasedPolicy('rule-based-cards', weakestFirst, ALL_CARD_PLAY_RULES));
+// Stage 2 (responses): both response rules on; judged against 'rule-based' by the tournament.
+registerPolicy(createRuleBasedPolicy('rule-based-responses', weakestFirst, NO_CARD_PLAY_RULES, ALL_RESPONSE_RULES));
