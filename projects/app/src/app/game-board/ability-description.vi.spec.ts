@@ -59,7 +59,7 @@ describe('describeAsk in Vietnamese', () => {
       generals: { main: { generalDefinitionId: 'guan-yu', revealed: false }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } },
       hand: { zoneId: 'seat-0:hand' }, equipped: { zoneId: 'seat-0:equip' }, judgment: { zoneId: 'seat-0:judgment' },
     }];
-    expect(describeAsk(seated, 'seat-0', asked, tr)).toMatchObject({ prompt: 'Lật Guan Yu để dùng Fighting Saint?', useLabel: 'Lật và dùng' });
+    expect(describeAsk(seated, 'seat-0', asked, tr)).toMatchObject({ prompt: 'Lật Guan Yu để dùng Fighting Saint?', useLabel: 'Lật tướng và dùng' });
   });
 });
 
@@ -82,14 +82,55 @@ describe('describeSelection in Vietnamese', () => {
   });
 
   it('use as a Tool, and play a card at a seat', () => {
-    expect(describe2(selection({ then: { kind: 'use-card', as: 'sha', targets: [], counted: true } }))).toMatchObject({ prompt: 'Chọn 2 lá bài trên tay để dùng như Sha', confirmLabel: 'Dùng' });
+    expect(describe2(selection({ then: { kind: 'use-card', as: 'sha', targets: [], counted: true } }))).toMatchObject({ prompt: 'Chọn 2 lá bài trên tay để dùng làm Sha', confirmLabel: 'Dùng' });
     expect(describe2(selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } }))).toMatchObject({ prompt: 'Chọn Sha để đánh vào Seat 1' });
     expect(describeEn(selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } }))).toMatchObject({ prompt: 'Choose a Sha to play at Seat 1' });
   });
 
-  it('give, replace the judgment, and more targets', () => {
+  it('give: one card, and several', () => {
     expect(describe2(selection({ min: 1, max: 1, then: { kind: 'give', toSeatIds: ['seat-1'] } }))).toMatchObject({ prompt: 'Chọn một lá bài để đưa', confirmLabel: 'Đưa' });
     expect(describeEn(selection({ then: { kind: 'give', toSeatIds: ['seat-1'] } }))).toMatchObject({ prompt: 'Choose cards to give' });
+  });
+
+  it('use as a Tool: one card', () => {
+    const one = selection({ min: 1, max: 1, then: { kind: 'use-card', as: 'sha', targets: [], counted: true } });
+    expect(describe2(one)).toMatchObject({ prompt: 'Chọn một lá bài để dùng làm Sha' });
+    expect(describeEn(one)).toMatchObject({ prompt: 'Choose a card to use as Sha' });
+  });
+
+  it('play a card with no target seat', () => {
+    const play = selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [], counted: false, free: true } });
+    expect(describe2(play)).toMatchObject({ prompt: 'Chọn Sha để đánh' });
+    expect(describeEn(play)).toMatchObject({ prompt: 'Choose a Sha to play' });
+  });
+
+  it('more targets: one, and several, with the Add Targets button', () => {
+    const blaze = { as: 'blaze', colour: 'red' as const, physical: [] };
+    const step = { kind: 'CardStepEffect' as const, step: 'unnamed-step', card: blaze, userSeatId: 'seat-1', target: { kind: 'seat' as const, seatId: 'seat-0' } };
+    const reason = { kind: 'choice' as const, card: blaze, userSeatId: 'seat-1', targetSeatId: 'seat-0' };
+    const targets = (max: number) => selection({ reason, min: max, max, then: { kind: 'card-step', step } });
+    expect(describe2(targets(1))).toMatchObject({ prompt: 'Chọn thêm 1 mục tiêu', confirmLabel: 'Thêm mục tiêu' });
+    expect(describeEn(targets(1))).toMatchObject({ prompt: 'Choose 1 more target', confirmLabel: 'Add Targets' });
+    expect(describeEn(targets(2))).toMatchObject({ prompt: 'Choose 2 more targets' });
+  });
+
+  it('a skill step with no words of its own: seats and cards, one and several', () => {
+    const general = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'some-skill' };
+    const step = { kind: 'SkillStepEffect' as const, owner: general, step: 'unnamed-step', data: {} };
+    const pick = (of: 'cards' | 'seats', max: number) =>
+      selection({ reason: { kind: 'ability', owner: general, abilityId: 'some-skill' }, of, min: max, max, then: { kind: 'skill-step', step } });
+    expect(describe2(pick('seats', 1))).toMatchObject({ prompt: 'Chọn 1 người chơi', confirmLabel: 'Xác nhận' });
+    expect(describe2(pick('cards', 2))).toMatchObject({ prompt: 'Chọn 2 lá bài' });
+    expect(describeEn(pick('seats', 1))).toMatchObject({ prompt: 'Choose 1 seat', confirmLabel: 'Confirm' });
+    expect(describeEn(pick('seats', 2))).toMatchObject({ prompt: 'Choose 2 seats' });
+    expect(describeEn(pick('cards', 1))).toMatchObject({ prompt: 'Choose 1 card' });
+    expect(describeEn(pick('cards', 2))).toMatchObject({ prompt: 'Choose 2 cards' });
+  });
+
+  it('falls back to a plain title and a plain card label', () => {
+    const plain = selection({ reason: { kind: 'dying', seatId: 'seat-0' }, eligibleIds: ['gone'] });
+    expect(describe2(plain)).toMatchObject({ title: 'Chọn', items: [{ id: 'gone', label: 'Lá bài' }] });
+    expect(describeEn(plain)).toMatchObject({ title: 'Choose', items: [{ id: 'gone', label: 'Card' }] });
   });
 
   it('labels each card of the selection by name and face', () => {
@@ -108,5 +149,13 @@ describe('describeArrangement in Vietnamese', () => {
       title: 'Astrology',
       prompt: 'Đặt mỗi lá bài lên trên chồng bài rút hoặc xuống dưới cùng. Từ trái sang phải là thứ tự đặt.',
     });
+  });
+
+  it('falls back to a plain title when no skill asked', () => {
+    const s = state();
+    s.zones = [...s.zones, { id: 'drawPile', kind: 'drawPile', cards: [sha] }];
+    s.pendingArrangement = { id: 'arr', seatId: 'seat-0', reason: { kind: 'dying', seatId: 'seat-0' }, cardInstanceIds: ['s2'] };
+    expect(describeArrangement(s, 'seat-0', [template], tr)).toMatchObject({ title: 'Sắp xếp' });
+    expect(describeArrangement(s, 'seat-0', [template])).toMatchObject({ title: 'Arrange' });
   });
 });

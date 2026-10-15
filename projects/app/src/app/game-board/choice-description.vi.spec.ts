@@ -24,7 +24,7 @@ const toolChoice = (verb: PendingChoice['verb'], targetSeatId?: string, options:
 
 describe('describeChoice in Vietnamese', () => {
   it('a skill discarding from another seat', () => {
-    expect(describeChoice(state(skill('sudden-attack', 'discard', 'seat-1')), 'seat-0', tr)).toMatchObject({ prompt: 'Chọn một lá bài để bỏ từ Seat 1', confirmLabel: 'Bỏ' });
+    expect(describeChoice(state(skill('sudden-attack', 'discard', 'seat-1')), 'seat-0', tr)).toMatchObject({ prompt: 'Chọn một lá bài của Seat 1 để bỏ', confirmLabel: 'Bỏ bài' });
   });
 
   it('a Tool taking from another seat', () => {
@@ -55,7 +55,7 @@ describe('describeChoice in Vietnamese', () => {
     const options: ChoiceOption[] = [{ id: 'decline', shows: { kind: 'decline' }, effects: [] }];
     expect(describeChoice(state(toolChoice('discard', 'seat-0', options)), 'seat-0', tr)).toMatchObject({
       prompt: 'Bỏ một lá bài trên tay, hoặc để Seat 1 rút 1 lá bài',
-      confirmLabel: 'Bỏ',
+      confirmLabel: 'Bỏ bài',
       declineLabel: 'Để Seat 1 rút bài',
     });
   });
