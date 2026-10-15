@@ -176,7 +176,7 @@ describe('GeneralSelection in Vietnamese', () => {
   it('the title with and without a name, the hint, the kingdom tag and the HP', async () => {
     const named = await mount(GeneralSelection, undefined, inputs('Hing'));
     expect(text(named.el.querySelector('h2'))).toBe('Hing, hãy chọn Tướng của bạn');
-    expect(text(named.el.querySelector('.hint'))).toBe('Chọn hai Tướng cùng thế lực. Lựa chọn đầu tiên là Tướng chính của bạn.');
+    expect(text(named.el.querySelector('.hint'))).toBe('Chọn hai Tướng cùng thế lực. Lựa chọn đầu tiên là Chủ tướng của bạn.');
     expect(text(card(named.el, 'w1').querySelector('.kingdom-tag'))).toBe('Ngụy');
     expect(text(card(named.el, 'w1').querySelector('.hp-label'))).toBe('Sinh lực 4');
     expect(card(named.el, 'w1').querySelector('.hearts')!.getAttribute('aria-label')).toBe('Sinh lực 4');
@@ -196,7 +196,7 @@ describe('GeneralSelection in Vietnamese', () => {
     expect(card(el, 'w2').querySelector('.role-chip')!.classList).toContain('deputy');
     expect(text(el.querySelector('.slot.main .slot-label'))).toBe('Chủ tướng');
     expect(text(el.querySelector('.slot.deputy .slot-label'))).toBe('Phó tướng');
-    expect(el.querySelector('button.swap')!.getAttribute('aria-label')).toBe('Đổi Tướng chính và Tướng phụ');
+    expect(el.querySelector('button.swap')!.getAttribute('aria-label')).toBe('Đổi Chủ tướng và Phó tướng');
     expect(text(el.querySelector('.summary'))).toContain('Thế lực: Ngụy · Tổng Sinh lực: ');
     expect(text(el.querySelector('button.confirm'))).toContain('Xác nhận');
   });

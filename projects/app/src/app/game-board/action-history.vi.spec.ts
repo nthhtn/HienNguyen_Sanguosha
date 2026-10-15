@@ -170,10 +170,10 @@ describe('status and table lines in Vietnamese', () => {
   });
 
   it('revealing a General, with and without a skill and a known name', () => {
-    expect(vi_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-0', slot: 'main' }])).toEqual(['Seat 0 lật Tướng chính của mình']);
-    expect(vi_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-0', slot: 'deputy' }])).toEqual(['Seat 0 lật Tướng phụ của mình']);
+    expect(vi_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-0', slot: 'main' }])).toEqual(['Seat 0 lật Chủ tướng của mình']);
+    expect(vi_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-0', slot: 'deputy' }])).toEqual(['Seat 0 lật Phó tướng của mình']);
     expect(vi_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-0', slot: 'main', forAbilityId: 'fighting-saint' }])).toEqual(['Seat 0 lật Guan Yu để dùng Fighting Saint']);
-    expect(vi_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-1', slot: 'main', forAbilityId: 'fighting-saint' }])).toEqual(['Seat 1 lật Tướng chính của mình để dùng Fighting Saint']);
+    expect(vi_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-1', slot: 'main', forAbilityId: 'fighting-saint' }])).toEqual(['Seat 1 lật Chủ tướng của mình để dùng Fighting Saint']);
     expect(en_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-1', slot: 'deputy', forAbilityId: 'fighting-saint' }])).toEqual(['Seat 1 revealed their Deputy General to use Fighting Saint']);
   });
 

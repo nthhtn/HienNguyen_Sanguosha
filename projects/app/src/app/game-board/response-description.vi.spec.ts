@@ -101,7 +101,7 @@ describe('what No Response costs, in English and Vietnamese', () => {
     const hit = { kind: 'DamageEffect', damage: { source: seat('seat-2'), target: { kind: 'general', seatId: 'seat-0', generalSlot: 'main' }, amount: 1, nature: 'normal' } } as Effect;
     expect(outcome('seat-0', hit)).toEqual({
       en: "Hing's Main General loses 1 HP (1 damage from Seat 2)",
-      vi: 'Tướng chính của Hing mất 1 Sinh lực (1 sát thương từ Seat 2)',
+      vi: 'Chủ tướng của Hing mất 1 Sinh lực (1 sát thương từ Seat 2)',
     });
   });
 

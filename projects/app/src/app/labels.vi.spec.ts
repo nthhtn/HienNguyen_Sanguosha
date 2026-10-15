@@ -45,8 +45,8 @@ describe('seat and target names', () => {
   it('a seat target, and a Main or Deputy General target', () => {
     const seat: Target = { kind: 'seat', seatId: 'seat-0' };
     expect(targetLabel(seat, state.players, tr)).toBe('Hing');
-    expect(targetLabel({ kind: 'general', seatId: 'seat-0', generalSlot: 'main' }, state.players, tr)).toBe('Tướng chính của Hing');
-    expect(targetLabel({ kind: 'general', seatId: 'seat-0', generalSlot: 'deputy' }, state.players, tr)).toBe('Tướng phụ của Hing');
+    expect(targetLabel({ kind: 'general', seatId: 'seat-0', generalSlot: 'main' }, state.players, tr)).toBe('Chủ tướng của Hing');
+    expect(targetLabel({ kind: 'general', seatId: 'seat-0', generalSlot: 'deputy' }, state.players, tr)).toBe('Phó tướng của Hing');
     expect(targetLabel({ kind: 'general', seatId: 'seat-0', generalSlot: 'deputy' }, state.players)).toBe("Hing's Deputy General");
   });
 });
@@ -82,8 +82,8 @@ describe('action labels', () => {
     ['play at a seat', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }] }, 'Play Sha Targeting Hing', 'Đánh Sha nhắm vào Hing'],
     ['play at two seats', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }, { kind: 'seat', seatId: 'seat-1' }] }, 'Play Sha Targeting Hing, Seat 1', 'Đánh Sha nhắm vào Hing, Người chơi 1'],
     ['choose Generals', { kind: 'ChooseGeneralsAction', seatId: 'seat-0', mainId: 'cao-cao', deputyId: 'xu-chu' }, 'Choose Cao Cao (Main) and Xu Chu (Deputy)', 'Chọn Cao Cao (chính) và Xu Chu (phụ)'],
-    ['reveal main', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' }, 'Reveal Main General', 'Lật Tướng chính'],
-    ['reveal deputy', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'deputy' }, 'Reveal Deputy General', 'Lật Tướng phụ'],
+    ['reveal main', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' }, 'Reveal Main General', 'Lật Chủ tướng'],
+    ['reveal deputy', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'deputy' }, 'Reveal Deputy General', 'Lật Phó tướng'],
     ['respond', { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'card-1' }, 'Respond with Sha', 'Phản hồi bằng Sha'],
     ['pass', { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' }, 'Pass', 'Bỏ qua'],
     ['end phase', { kind: 'EndPhaseAction', seatId: 'seat-0' }, 'End Phase', 'Kết thúc giai đoạn'],

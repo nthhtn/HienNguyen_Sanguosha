@@ -105,7 +105,7 @@ Decided by the user (2026-10-15):
 
 | English | Vietnamese |
 |---|---|
-| General, Main General, Deputy General | Tướng, Tướng chính, Tướng phụ |
+| General, Main General, Deputy General | Tướng, Chủ tướng, Phó tướng |
 | HP | Sinh lực |
 | Tool (card type) | Cẩm nang |
 | Judgment | Phán xét |
@@ -123,7 +123,7 @@ Defaults proposed and accepted:
 - Dying: Cận kề cái chết. Reveal and Face Down: Lật Tướng, Úp.
 - Farm (Deng Ai's judged-card status): Điền (user decision, 2026-10-16).
 - Compete (a skill's point contest): đấu điểm (user decision, 2026-10-16); the two faces are joined with "so với".
-- Wording decisions of 2026-10-16: counts as = tính là; Defensive Mount = Tọa kỵ thủ +1; Offensive Mount = Tọa kỵ công -1; the pile under a General (Refusing Death) = Lá bài Sang; silenced seat = Mất kỹ năng; Combined HP = Tổng Sinh lực; draw pile positions = Đầu chồng / Đáy chồng; playing a card = đánh (the phase stays "giai đoạn ra bài"); respond = phản hồi; turn over = lật mặt; role chips Main = Chủ tướng, Deputy = Phó tướng.
+- Wording decisions of 2026-10-16: counts as = tính là; Defensive Mount = Tọa kỵ thủ +1; Offensive Mount = Tọa kỵ công -1; the pile under a General (Refusing Death) = Lá bài Sang; silenced seat = Mất kỹ năng; Combined HP = Tổng Sinh lực; draw pile positions = Đầu chồng / Đáy chồng; playing a card = đánh (the phase stays "giai đoạn ra bài"); respond = phản hồi; turn over = lật mặt; Main General = Chủ tướng and Deputy General = Phó tướng everywhere (chips, sentences, buttons).
 - Lord: Chủ công.
 - Suits keep their symbols. Colours: đỏ, đen.
 
