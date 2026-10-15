@@ -6,6 +6,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { ChatPanel } from './chat-panel';
+import { ChatService } from './chat.service';
 import { LobbyService } from './lobby.service';
 import { OnlineGame } from './online-game';
 import { OnlineResult } from './online-result';
@@ -15,8 +17,8 @@ import { SocketService } from './socket.service';
 // A room over its socket: the lobby (members, host controls, Start Game, Leave Room), the board while a game runs, and how the last game ended.
 @Component({
   selector: 'app-lobby-page',
-  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult],
-  providers: [SocketService, LobbyService, RemoteGameService, RemoteDecisionClock],
+  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel],
+  providers: [SocketService, LobbyService, ChatService, RemoteGameService, RemoteDecisionClock],
   styleUrl: './online-page.css',
   template: `
     @if (game.ending(); as ending) {
@@ -128,6 +130,12 @@ import { SocketService } from './socket.service';
                   @if (lobby.canStart() && isFull() === false) {
                     <p class="hint start-hint">Fill every seat to start</p>
                   }
+                </section>
+              }
+              @if (!lobby.isSolo()) {
+                <section class="chat">
+                  <h3>Chat</h3>
+                  <app-chat-panel [you]="lobby.you()" [canSend]="lobby.canAct()" />
                 </section>
               }
             } @else if (!lobby.ended()) {

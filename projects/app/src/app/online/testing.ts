@@ -27,6 +27,11 @@ export function welcome(room: RoomSnapshot = ROOM, playerId = 'p-ann', game: Gam
   return { type: 'welcome', you: { playerId, seatId }, room, game, chat };
 }
 
+// A chat message from the named member; `playerId` defaults to "p-" and the lowercased name.
+export function chatMessage(id: number, from: string, body: string, playerId = `p-${from.toLowerCase()}`): ChatMessage {
+  return { id, from: { playerId, name: from }, body, at: Date.parse('2026-10-15T12:00:00.000Z') + id * 1000 };
+}
+
 // A WebSocket the test drives: it records what the app sends, and the test
 // plays the server's side.
 export class FakeSocket implements WebSocketLike {

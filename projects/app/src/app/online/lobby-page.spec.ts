@@ -5,7 +5,8 @@ import { By } from '@angular/platform-browser';
 import { MatButtonToggle } from '@angular/material/button-toggle';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { RouterTestingHarness } from '@angular/router/testing';
-import type { LastGame, RoomSnapshot } from 'protocol';
+import type { ChatMessage, LastGame, RoomSnapshot } from 'protocol';
+import { ChatService } from './chat.service';
 import { LobbyPage } from './lobby-page';
 import { LobbyService } from './lobby.service';
 import { OnlineGame } from './online-game';
@@ -56,6 +57,10 @@ function fakeGame() {
   return { ending: signal<LastGame | null>(null), playing: signal(false), dismiss: jest.fn() };
 }
 
+function fakeChat() {
+  return { messages: signal<ChatMessage[]>([]), error: signal<string | null>(null), send: jest.fn(async () => true) };
+}
+
 describe('LobbyPage', () => {
   let lobby: ReturnType<typeof fakeLobby>;
   let game: ReturnType<typeof fakeGame>;
@@ -63,7 +68,7 @@ describe('LobbyPage', () => {
   async function render() {
     TestBed.configureTestingModule({ providers: [provideRouter([{ path: 'rooms/:id', component: LobbyPage }, { path: 'rooms', children: [] }])] });
     TestBed.overrideComponent(OnlineGame, { set: { imports: [], providers: [], template: '' } });
-    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }] } });
+    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }, { provide: ChatService, useValue: fakeChat() }] } });
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(`/rooms/${ROOM.id}`, LobbyPage);
     const el = harness.routeNativeElement as HTMLElement;
@@ -250,5 +255,17 @@ describe('LobbyPage', () => {
     expect(lobby.start).toHaveBeenCalled();
     (el.querySelector('button.back-to-rooms') as HTMLButtonElement).click();
     expect(lobby.leave).toHaveBeenCalled();
+  });
+
+  it('shows the chat in the lobby of an open room', async () => {
+    const { el } = await render();
+    expect(el.querySelector('section.chat h3')?.textContent?.trim()).toBe('Chat');
+    expect(el.querySelector('section.chat app-chat-panel')).not.toBeNull();
+  });
+
+  it('has no chat in a solo room', async () => {
+    lobby.isSolo.set(true);
+    const { el } = await render();
+    expect(el.querySelector('app-chat-panel')).toBeNull();
   });
 });
