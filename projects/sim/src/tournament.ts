@@ -81,7 +81,7 @@ export interface TournamentReport {
   unfinished: number;
   challenger: SideTally;
   baseline: SideTally;
-  // Per finished game: challenger share of seats won minus baseline share.
+  // Challenger share of seats won minus baseline share: per finished game, or per pair when mirrored.
   difference: Interval;
 }
 

@@ -64,13 +64,18 @@ share of seats won minus baseline share).
   `games` count is rejected.
 - The interval is taken over pairs: a pair counts only when both games finish.
   The report states pairs used and the number of unfinished games.
-- Both games of a pair share one seed, so the bots' random streams and the
-  deal match; only the side assignment differs.
+- Both games of a pair share one seed, so the deal and the Generals offered
+  match; only the side assignment differs. (The `random` bot's stream is shared
+  by all `random` seats and drifts once the sides swap; this does not affect
+  the validity of the pair means.)
 - Per-policy win rates and kingdom tables are summed over all finished games
   as before.
-- Check: `rule-based-v1` against itself (control) gives an interval that contains 0
-  and is narrower than the unmirrored one at the same game count; `rule-based`
-  against `random` is still clearly positive. The numbers are recorded in this
+- Checks: two bots that behave identically (`rule-based` against
+  `rule-based-v1`) give exactly 0.0 pp with a zero-width interval in mirrored
+  mode, which verifies the pairing (same deal, sides swapped) but cannot show
+  narrowing. Narrowing is checked on two close bots, the same comparison run
+  unmirrored and mirrored at the same number of games. `rule-based` against
+  `random` is still clearly positive. All numbers are recorded in this
   stage's results.
 - `sim tournament` gets `--mirrored` / `--unmirrored` behaviour by a trailing
   argument; the default is mirrored.
@@ -148,21 +153,25 @@ Date: 2026-10-15. Stage 0 implemented as specified. All runs 4 seats.
 | Run | Unmirrored | Mirrored |
 |---|---|---|
 | `rule-based` against `random`, 200 games, seed 0 | +39.3 pp (+34.1 to +44.4), ±5.2 | +41.8 pp (+36.4 to +47.1), ±5.4 over 100 pairs |
-| scored targeting against `rule-based-v1`, 4000 games, seed 10000 (the earlier run) | +1.2 pp (−0.4 to +2.8), ±1.6 | +1.1 pp (+0.1 to +2.2), ±1.05 over 2000 pairs |
+| scored targeting against `rule-based-v1`, 4000 games from seed 10000 (unmirrored: seeds 10000 to 13999; mirrored: 2000 pairs, seeds 10000 to 11999) | +1.2 pp (−0.4 to +2.8), ±1.6 | +1.1 pp (+0.1 to +2.2), ±1.05 over 2000 pairs |
 | `rule-based` against `rule-based-v1` (identical behaviour), 4000 games, seed 0 | n/a | 0.0 pp (0.0 to 0.0) over 2000 pairs |
 
 What this says:
 
 - Identical bots give exactly zero in mirrored mode, so the pairing (same deal,
   sides swapped) works. It checks the pairing, not the size of the noise.
-- Against `random` mirroring did **not** narrow the interval (±5.4 against
-  ±5.2). `random` adds so much noise of its own that the deal is a small part
-  of the variance.
+- Against `random` there was no measurable narrowing at this size (±5.4 against
+  ±5.2 over only 100 pairs, so the width itself is uncertain by several per
+  cent). A plausible reason, not measured, is that `random` adds so much noise
+  of its own that the deal is a small part of the variance.
 - Between two close bots, which is the case the harness exists for, mirroring
   narrowed the interval by about a third (±1.6 to ±1.05) for the same number of
-  games, which is the same precision as roughly 2.3 times as many unmirrored
-  games. The point estimate barely moved (+1.2 and +1.1 pp), as it should.
-- The mirrored run shows the scored targeting (default weights) just above its
+  games, equivalent to roughly 2.3 times as many unmirrored games. This rests
+  on one run per arm. The point estimate barely moved (+1.2 and +1.1 pp), as it should.
+- The mirrored scored-targeting run was made by temporarily switching
+  `rule-based` to `targetScore` (default weights) in the working tree and
+  restoring the file afterwards; nothing of it is committed. It shows the
+  scored targeting just above its
   margin on seed 10000 (+0.1 to +2.2). That is one run on a range that was
   already used, so it is a lead for a later attempt, not a result: the
   acceptance rule still requires it on two fresh ranges, and the earlier
