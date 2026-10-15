@@ -548,4 +548,3 @@ describe('GameBoard event sounds', () => {
     });
   });
 });
-});
