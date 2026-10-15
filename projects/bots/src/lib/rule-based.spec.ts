@@ -695,3 +695,13 @@ describe('response rules', () => {
     expect(run(policy({ shanHold: false, wuxie: true }), v)).toBe(respond);
   });
 });
+
+describe('General selection with a value table', () => {
+  it('takes the highest-valued same-kingdom pair; with none, the highest max HP', () => {
+    const choose = (mainId: string, deputyId: string): Action => ({ kind: 'ChooseGeneralsAction', seatId: 'seat-0', mainId, deputyId });
+    const legal = [choose('w1', 'w2'), choose('s1', 's2')];
+    const valued = createRuleBasedPolicy('t', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, { w1: 0.2 });
+    expect(valued.decide(view({ phase: 'GeneralSelection' }), 'seat-0', legal, registry, null).action).toBe(legal[0]);
+    expect(decide(view({ phase: 'GeneralSelection' }), legal).action).toBe(legal[1]);
+  });
+});
