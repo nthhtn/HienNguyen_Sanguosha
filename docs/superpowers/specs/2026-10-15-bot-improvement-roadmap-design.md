@@ -75,9 +75,6 @@ share of seats won minus baseline share).
 - `sim tournament` gets `--mirrored` / `--unmirrored` behaviour by a trailing
   argument; the default is mirrored.
 
-Stage 0 also adds the `rule-based-v2` mechanics (an id registry that can hold
-more than the two current ids) only when a stage ships; it adds nothing now.
-
 ## Stage 1 — Card play
 
 Rules (plain words; finalised in the stage spec):
