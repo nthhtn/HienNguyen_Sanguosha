@@ -106,6 +106,22 @@ Every piece of visible text MUST follow these casing rules:
   - HP.
 - Ids are never shown as they are: show "Seat 0", not `seat-0`.
 
+#### Other languages
+
+The rules above are the English rules. Vietnamese does not use Title Case, so it
+follows its own (the full terminology is in
+`docs/superpowers/specs/2026-10-15-vietnamese-localization-design.md`):
+
+- **Sentence case everywhere**, labels and buttons included ("Kết thúc giai
+  đoạn", "Bỏ bài"), with a capital only on the first word.
+- **Keywords keep their capitals inside sentences:** player and seat names,
+  card names (Sát, Đào, Quyết Đấu), General names and the terms Tướng, Chủ
+  tướng, Phó tướng and Sinh lực. Forces are Ngụy, Thục, Ngô, Quần.
+- Skill names and titles are sentence case ("Gian hùng"); General and card names
+  are capitalised word by word ("Tào Tháo", "Quyết Đấu").
+- New Vietnamese text starts as a draft. A native speaker reviews it, and
+  `npm run i18n:status` reports what is still draft.
+
 Angular Signals SHOULD be preferred for reactive UI state where
 appropriate. Dependency Injection SHOULD be used for application services
 and replaceable infrastructure. The application SHOULD favor standalone

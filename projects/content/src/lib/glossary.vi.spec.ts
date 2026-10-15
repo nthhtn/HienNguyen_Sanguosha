@@ -1,0 +1,31 @@
+import glossary from '../../data/locales/vi/glossary.json';
+import { cardsData } from '../../data/cards';
+import { generalsData } from '../../data/generals';
+import { cardTranslations, generalTranslations, skillIdOf } from './display';
+
+// Every glossary term that the English text uses must appear, in its agreed form, in the
+// Vietnamese text of the same entry.
+const terms = glossary.map((t) => ({ en: new RegExp(t.en, 'i'), vi: new RegExp(t.vi, 'i'), label: t.en }));
+const violations = (english: string, vietnamese: string) => terms.filter((t) => t.en.test(english) && !t.vi.test(vietnamese)).map((t) => t.label);
+
+describe('the Vietnamese glossary', () => {
+  it('holds in every skill text', () => {
+    const found: string[] = [];
+    for (const [id, general] of Object.entries(generalTranslations('vi'))) {
+      for (const skill of generalsData[id].skills) {
+        const text = general.skills?.[skillIdOf(skill.name)]?.text;
+        if (text) for (const label of violations(skill.text, text)) found.push(`${id}/${skill.name}: ${label}`);
+      }
+    }
+    expect(found).toEqual([]);
+  });
+
+  it('holds in every card text', () => {
+    const found: string[] = [];
+    for (const [id, card] of Object.entries(cardTranslations('vi'))) {
+      const english = cardsData[id].text;
+      if (english && card.text) for (const label of violations(english, card.text)) found.push(`${id}: ${label}`);
+    }
+    expect(found).toEqual([]);
+  });
+});

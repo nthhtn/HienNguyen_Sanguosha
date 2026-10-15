@@ -1,0 +1,19 @@
+[
+  { "en": "judg(e)?ment", "vi": "phán xét" },
+  { "en": "\\bpeach\\b", "vi": "Đào" },
+  { "en": "\\bduel", "vi": "quyết đấu", "note": "the skill and the card read the same" },
+  { "en": "\\b(health|HP)\\b", "vi": "Sinh lực" },
+  { "en": "\\bdiscard", "vi": "bỏ" },
+  { "en": "\\bdelay(ed)? tool", "vi": "trì hoãn" },
+  { "en": "\\bcompete", "vi": "đấu điểm" },
+  { "en": "\\bwine\\b", "vi": "Tửu" },
+  { "en": "\\bbarbarians\\b", "vi": "Nam Man Xâm Nhập" },
+  { "en": "\\bhail of arrows\\b", "vi": "Vạn Tiễn Tề Phát" },
+  { "en": "\\b(negate|wuxie)\\b", "vi": "Vô Giải Khả Kích" },
+  { "en": "\\bsteal\\b", "vi": "Thuận Thủ Khiên Dương" },
+  { "en": "\\bcapture\\b", "vi": "Lạc Bất Tư Thục" },
+  { "en": "\\bstarvation\\b", "vi": "Binh Lương Thốn Đoạn" },
+  { "en": "\\bescapes?\\b", "vi": "Thiểm" },
+  { "en": "king ability", "vi": "Chủ công" },
+  { "en": "\\bflip(ped)? (his|her|their|its|the) character card|\\bflip their character card", "vi": "lật mặt" }
+]

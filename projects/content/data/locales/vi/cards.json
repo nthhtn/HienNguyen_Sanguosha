@@ -131,7 +131,7 @@
   },
   "duel": {
     "name": "Quyết Đấu",
-    "text": "Người chơi thách đấu một người chơi khác. Hai người lần lượt đánh Sát, bắt đầu từ mục tiêu. Người đầu tiên không thể đánh Sát sẽ chịu sát thương bằng số Sát mà người kia đã đánh."
+    "text": "Người chơi thách một người chơi khác quyết đấu. Hai người lần lượt đánh Sát, bắt đầu từ mục tiêu. Người đầu tiên không thể đánh Sát sẽ chịu sát thương bằng số Sát mà người kia đã đánh."
   },
   "hail-of-arrows": {
     "name": "Vạn Tiễn Tề Phát",
