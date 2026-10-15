@@ -268,4 +268,18 @@ describe('LobbyPage', () => {
     const { el } = await render();
     expect(el.querySelector('app-chat-panel')).toBeNull();
   });
+
+  it("shows the board's chat button while a game runs, instead of the Lobby's chat", async () => {
+    game.playing.set(true);
+    const first = await render();
+    expect(first.el.querySelector('app-board-chat button.chat-toggle')).not.toBeNull();
+    expect(first.el.querySelector('section.chat')).toBeNull();
+  });
+
+  it('has no board chat in a solo room', async () => {
+    game.playing.set(true);
+    lobby.isSolo.set(true);
+    const { el } = await render();
+    expect(el.querySelector('app-board-chat')).toBeNull();
+  });
 });

@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { BoardChat } from './board-chat';
 import { ChatPanel } from './chat-panel';
 import { ChatService } from './chat.service';
 import { LobbyService } from './lobby.service';
@@ -17,7 +18,7 @@ import { SocketService } from './socket.service';
 // A room over its socket: the lobby (members, host controls, Start Game, Leave Room), the board while a game runs, and how the last game ended.
 @Component({
   selector: 'app-lobby-page',
-  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel],
+  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat],
   providers: [SocketService, LobbyService, ChatService, RemoteGameService, RemoteDecisionClock],
   styleUrl: './online-page.css',
   template: `
@@ -42,6 +43,9 @@ import { SocketService } from './socket.service';
         }
       </div>
       <app-online-game />
+      @if (!lobby.isSolo()) {
+        <app-board-chat [you]="lobby.you()" [canSend]="lobby.canAct()" />
+      }
     } @else {
       <div class="online-page">
         <mat-card class="online-card" appearance="raised">
