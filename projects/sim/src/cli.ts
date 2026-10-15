@@ -2,7 +2,8 @@
 // projects/sim/src/cli.ts
 import { createGame } from 'engine';
 import { buildContentRegistry, kingdomWarMode } from 'content';
-import { runGame } from './runGame';
+import { parseBotKind, runGame } from './runGame';
+import { formatReport, runTournament } from './tournament';
 import { checkInvariants } from './invariants';
 
 const registry = buildContentRegistry();
@@ -45,12 +46,26 @@ function runBatch(numGames: number, numSeats: number): void {
   if (failures > 0) process.exitCode = 1;
 }
 
-const [, , mode, arg1, arg2] = process.argv;
+function runTournamentCommand(games: number, numSeats: number, challenger: string, baseline: string, firstSeed: number): void {
+  const report = runTournament({ games, seats: numSeats, challenger: parseBotKind(challenger), baseline: parseBotKind(baseline), firstSeed });
+  console.log(formatReport(report));
+}
+
+const [, , mode, arg1, arg2, arg3, arg4, arg5] = process.argv;
 if (mode === 'single') {
   runSingle(Number(arg1 ?? 1), Number(arg2 ?? 4));
 } else if (mode === 'batch') {
   runBatch(Number(arg1 ?? 100), Number(arg2 ?? 4));
+} else if (mode === 'tournament') {
+  try {
+    runTournamentCommand(Number(arg1 ?? 100), Number(arg2 ?? 4), arg3 ?? 'rule-based', arg4 ?? 'rule-based-v1', Number(arg5 ?? 0));
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
+    process.exitCode = 1;
+  }
 } else {
-  console.error('Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats>');
+  console.error(
+    'Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats> | sim tournament <games> <numSeats> <challenger> <baseline> [firstSeed]'
+  );
   process.exitCode = 1;
 }

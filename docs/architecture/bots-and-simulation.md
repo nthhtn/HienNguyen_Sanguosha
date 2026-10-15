@@ -73,6 +73,16 @@ entry point is [cli.ts](../../projects/sim/src/cli.ts) (`single <seed> <seats>`
 prints a game's log; `batch <games> <seats>` reports how many pass). The same
 functions are what the Jest specs call.
 
+`tournament <games> <seats> <challenger> <baseline> [firstSeed]` compares two
+bots ([tournament.ts](../../projects/sim/src/tournament.ts)). Seats alternate
+between the two bots and the pattern flips every game, so each bot sits in each
+seat equally often. Each finished game gives the challenger's share of winning
+seats minus the baseline's; the report shows the mean of that difference with a
+95% interval and says which bot is better only when the interval excludes 0.
+Bots are `random`, `rule-based` and `rule-based-v1` (the rule-based bot before
+smarter targeting, kept as a fixed opponent). Run it with
+`npm run sim -- tournament 200 4 rule-based rule-based-v1`.
+
 ### Invariants
 
 [invariants.ts](../../projects/sim/src/invariants.ts) holds checks that must be
