@@ -76,6 +76,17 @@ describe('App', () => {
     localStorage.clear();
   });
 
+  it('has a flag button for each language in the toolbar, before the sound buttons', async () => {
+    localStorage.clear();
+    const { el } = await render();
+    const buttons = [...el.querySelectorAll('mat-toolbar app-language-switcher button')];
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['English', 'Tiếng Việt']);
+    const switcher = el.querySelector('app-language-switcher')!;
+    const music = el.querySelector('button.music-toggle')!;
+    expect(switcher.compareDocumentPosition(music) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    localStorage.clear();
+  });
+
   it('should render title', async () => {
     const { el } = await render();
     expect(el.querySelector('mat-toolbar h1')?.textContent).toContain('Kingdom War');

@@ -7,10 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AuthService } from './auth/auth.service';
+import { LanguageSwitcher } from './i18n/language-switcher';
 import { MusicService, SoundEffects } from './music.service';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule, LanguageSwitcher],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
