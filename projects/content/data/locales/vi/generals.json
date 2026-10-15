@@ -4,10 +4,12 @@
     "title": "Dị hương cô nữ",
     "skills": {
       "lament": {
-        "name": "Bi ca"
+        "name": "Bi ca",
+        "text": "Mỗi khi một người chơi bất kỳ bị Sát gây sát thương, Thái Văn Cơ có thể bỏ một lá bài bất kỳ. Người chịu sát thương sau đó phán xét. Nếu là cơ, họ hồi một Sinh lực. Nếu là rô, họ rút hai lá bài. Nếu là chuồn, người gây sát thương bỏ hai lá bài. Nếu là bích, người gây sát thương lật mặt."
       },
       "heartbroken": {
-        "name": "Đoạn trường"
+        "name": "Đoạn trường",
+        "text": "Khi một người chơi giết Thái Văn Cơ, họ mất toàn bộ kỹ năng trong phần còn lại của ván."
       }
     }
   },
@@ -16,10 +18,12 @@
     "title": "Tuyệt thế vũ cơ",
     "skills": {
       "sow-discord": {
-        "name": "Ly gián"
+        "name": "Ly gián",
+        "text": "Một lần trong lượt của mình, Điêu Thuyền có thể bỏ một lá bài bất kỳ và chọn hai người chơi nam để họ quyết đấu với nhau."
       },
       "eclipse-the-moon": {
-        "name": "Bế nguyệt"
+        "name": "Bế nguyệt",
+        "text": "Sau giai đoạn bỏ bài, Điêu Thuyền rút một lá bài."
       }
     }
   },
@@ -28,16 +32,20 @@
     "title": "Ma vương",
     "skills": {
       "wine": {
-        "name": "Tửu trì"
+        "name": "Tửu trì",
+        "text": "Đổng Trác có thể dùng bất kỳ lá bích nào trên tay làm Tửu."
       },
       "garden-of-lust": {
-        "name": "Nhục lâm"
+        "name": "Nhục lâm",
+        "text": "Mỗi khi Đổng Trác tấn công một người chơi nữ hoặc bị người chơi nữ tấn công, mục tiêu phải dùng thêm một Thiểm để tránh sát thương."
       },
       "collapse": {
-        "name": "Băng hoại"
+        "name": "Băng hoại",
+        "text": "Vào cuối lượt của Đổng Trác, nếu ông có nhiều Sinh lực hơn mọi người chơi khác, ông phải mất một Sinh lực hoặc giảm giới hạn Sinh lực tối đa đi một."
       },
       "violent-tyrant": {
-        "name": "Bạo ngược"
+        "name": "Bạo ngược",
+        "text": "Kỹ năng Chủ công: Khi một người chơi khác gây sát thương cho một người chơi, họ có thể cho Đổng Trác phán xét. Nếu là bích, Đổng Trác hồi một Sinh lực."
       }
     }
   },
@@ -46,10 +54,12 @@
     "title": "Thần y",
     "skills": {
       "first-aid": {
-        "name": "Cấp cứu"
+        "name": "Cấp cứu",
+        "text": "Ngoài lượt của mình, Hoa Đà có thể dùng bất kỳ lá bài đỏ nào làm Đào."
       },
       "green-vesicle": {
-        "name": "Thanh nang"
+        "name": "Thanh nang",
+        "text": "Một lần mỗi lượt, Hoa Đà có thể bỏ một lá bài trên tay để hồi một Sinh lực cho một người chơi bất kỳ."
       }
     }
   },
@@ -58,13 +68,16 @@
     "title": "Lãnh khốc độc sĩ",
     "skills": {
       "complete-kill": {
-        "name": "Hoàn sát"
+        "name": "Hoàn sát",
+        "text": "Trong lượt của Giả Hủ, chỉ Giả Hủ và người chơi đang cận kề cái chết mới có thể dùng Đào."
       },
       "upheaval": {
-        "name": "Loạn vũ"
+        "name": "Loạn vũ",
+        "text": "Một lần mỗi ván, Giả Hủ có thể bắt tất cả người chơi khác đánh Sát vào một người chơi trong tầm của họ. Người chơi nào không làm vậy sẽ mất một Sinh lực."
       },
       "curtain": {
-        "name": "Duy mạc"
+        "name": "Duy mạc",
+        "text": "Giả Hủ không thể là mục tiêu của Cẩm nang màu đen."
       }
     }
   },
@@ -73,7 +86,8 @@
     "title": "Hóa thân của võ",
     "skills": {
       "matchless": {
-        "name": "Vô song"
+        "name": "Vô song",
+        "text": "Khi Lã Bố tấn công một người chơi, họ phải dùng thêm một Thiểm để chặn đòn tấn công. Khi Lã Bố quyết đấu với người chơi khác, người đó phải đánh thêm một Sát mỗi hiệp của cuộc quyết đấu."
       }
     }
   },
@@ -82,10 +96,12 @@
     "title": "Nhân mã nhất thể",
     "skills": {
       "horsemanship": {
-        "name": "Mã thuật"
+        "name": "Mã thuật",
+        "text": "Bàng Đức luôn có thêm một Tọa kỵ công -1."
       },
       "sudden-attack": {
-        "name": "Mãnh tiến"
+        "name": "Mãnh tiến",
+        "text": "Mỗi khi Bàng Đức tấn công và mục tiêu dùng Thiểm, Bàng Đức có thể chọn một lá bài của mục tiêu và bỏ nó."
       }
     }
   },
@@ -94,7 +110,8 @@
     "title": "Hổ lang huynh đệ",
     "skills": {
       "dueling-heroes": {
-        "name": "Song hùng"
+        "name": "Song hùng",
+        "text": "Trong giai đoạn rút bài, Nhan Lương và Văn Xú có thể không rút bài. Thay vào đó, họ phán xét. Lá bài đó được đưa vào bài trên tay họ. Trong phần còn lại của lượt, mọi lá bài trên tay có màu ngược lại đều có thể dùng làm Quyết Đấu."
       }
     }
   },
@@ -103,7 +120,8 @@
     "title": "Thái Bình đạo nhân",
     "skills": {
       "bewilder": {
-        "name": "Cổ hoặc"
+        "name": "Cổ hoặc",
+        "text": "Mỗi khi Vu Cát muốn dùng một Cẩm nang không trì hoãn hoặc một lá bài Cơ bản, ông có thể đánh một lá bài bất kỳ úp xuống và nói tên lá bài ông muốn dùng. Sau đó, bất kỳ ai cũng có thể chọn nghi ngờ ông. Nếu mọi người đều tin Vu Cát, lá bài được lật và có hiệu lực như đã nói. Nếu có người chơi nghi ngờ, lá bài được lật. Nếu Vu Cát không nói thật, những người nghi ngờ rút một lá bài. Nếu Vu Cát nói thật, tất cả người đã nghi ngờ mất một Sinh lực. Nếu lá bài đó cũng là lá cơ, nó vẫn có hiệu lực. Nếu không, lá bài bị bỏ."
       }
     }
   },
@@ -112,10 +130,12 @@
     "title": "Cao quý danh môn",
     "skills": {
       "random-strike": {
-        "name": "Loạn kích"
+        "name": "Loạn kích",
+        "text": "Viên Thiệu có thể dùng hai lá bài trên tay cùng chất để tung ra Vạn Tiễn Tề Phát."
       },
       "bloodline": {
-        "name": "Huyết duệ"
+        "name": "Huyết duệ",
+        "text": "Kỹ năng Chủ công: Giới hạn bài trên tay của Viên Thiệu tăng thêm hai với mỗi anh hùng còn sống khác."
       }
     }
   },
@@ -124,13 +144,16 @@
     "title": "Thiên Công tướng quân",
     "skills": {
       "lightning-strike": {
-        "name": "Lôi kích"
+        "name": "Lôi kích",
+        "text": "Mỗi khi Trương Giác đánh Thiểm, ông có thể chọn một người chơi bất kỳ để họ phán xét. Nếu là bích, họ chịu hai sát thương sét."
       },
       "dark-magic": {
-        "name": "Quỷ đạo"
+        "name": "Quỷ đạo",
+        "text": "Sau khi một lá phán xét được lật, Trương Giác có thể bỏ một lá bài đen bất kỳ để thay thế lá phán xét. Lá bài ban đầu được lật sẽ vào bài trên tay Trương Giác."
       },
       "amber-sky": {
-        "name": "Hoàng thiên"
+        "name": "Hoàng thiên",
+        "text": "Kỹ năng Chủ công: Các anh hùng khác có thể đưa cho Trương Giác một Thiểm hoặc một Thiểm Điện trong lượt của họ."
       }
     }
   },
@@ -139,10 +162,12 @@
     "title": "Mê chi tiên nhân",
     "skills": {
       "incarnation": {
-        "name": "Hóa thân"
+        "name": "Hóa thân",
+        "text": "Vào đầu ván, Tả Từ rút hai lá Tướng chưa dùng, gọi là Hóa thân, và đặt chúng úp xuống. Ông chọn một kỹ năng của một trong các Hóa thân này và để Hóa thân đó ngửa lên. Tả Từ không thể dùng kỹ năng Chủ công, kỹ năng một lần hoặc kỹ năng thức tỉnh. Tả Từ có kỹ năng đã chọn cùng thế lực và giới tính của Hóa thân đó. Vào đầu và cuối mỗi lượt của mình, Tả Từ có thể chọn một kỹ năng mới từ các Hóa thân của mình."
       },
       "new-life": {
-        "name": "Tân sinh"
+        "name": "Tân sinh",
+        "text": "Với mỗi sát thương Tả Từ phải chịu, ông có thêm một Hóa thân."
       }
     }
   },
@@ -151,13 +176,16 @@
     "title": "Ngọa Long",
     "skills": {
       "eight-arrays": {
-        "name": "Bát trận"
+        "name": "Bát trận",
+        "text": "Nếu Gia Cát Lượng không có giáp, ông được Bát Quái Trận bảo vệ."
       },
       "fire-strategy": {
-        "name": "Hỏa kế"
+        "name": "Hỏa kế",
+        "text": "Gia Cát Lượng có thể dùng bất kỳ lá bài đỏ nào trên tay làm Hỏa Công."
       },
       "see-through": {
-        "name": "Khán phá"
+        "name": "Khán phá",
+        "text": "Gia Cát Lượng có thể dùng bất kỳ lá bài đen nào trên tay làm Vô Giải Khả Kích."
       }
     }
   },
@@ -166,7 +194,8 @@
     "title": "Mỹ Tu Công",
     "skills": {
       "fighting-saint": {
-        "name": "Võ thánh"
+        "name": "Võ thánh",
+        "text": "Quan Vũ có thể dùng bất kỳ lá bài đỏ nào làm Sát."
       }
     }
   },
@@ -175,10 +204,12 @@
     "title": "Quy ẩn kiệt nữ",
     "skills": {
       "gathering-wisdom": {
-        "name": "Tập trí"
+        "name": "Tập trí",
+        "text": "Mỗi khi Hoàng Nguyệt Anh dùng một Cẩm nang không trì hoãn, nàng lập tức rút một lá bài."
       },
       "wondrous-talent": {
-        "name": "Kỳ tài"
+        "name": "Kỳ tài",
+        "text": "Mỗi khi Hoàng Nguyệt Anh dùng Cẩm nang, nàng không bị giới hạn tầm."
       }
     }
   },
@@ -187,7 +218,8 @@
     "title": "Lão đương ích tráng",
     "skills": {
       "strong-bow": {
-        "name": "Liệt cung"
+        "name": "Liệt cung",
+        "text": "Khi Hoàng Trung tấn công một người chơi khác trong lượt của mình, ông có thể khiến đòn tấn công không thể bị chặn nếu một trong hai điều kiện sau đúng: tầm tấn công của Hoàng Trung lớn hơn hoặc bằng số bài trên tay của mục tiêu; Sinh lực của Hoàng Trung nhỏ hơn hoặc bằng số bài trên tay của mục tiêu."
       }
     }
   },
@@ -196,10 +228,12 @@
     "title": "Long chi y bát",
     "skills": {
       "instigate": {
-        "name": "Khiêu hiêu"
+        "name": "Khiêu hiêu",
+        "text": "Một lần trong lượt của mình, Khương Duy có thể chọn một người chơi có ông trong tầm tấn công của họ. Người này phải đánh Sát vào Khương Duy. Nếu họ không làm vậy, Khương Duy có thể chọn một lá bài của họ và bỏ nó."
       },
       "follow-the-master": {
-        "name": "Chí kế"
+        "name": "Chí kế",
+        "text": "Kỹ năng thức tỉnh: Khi bắt đầu lượt của Khương Duy mà ông không có bài trên tay, ông phải hồi một Sinh lực hoặc rút hai lá bài. Sau đó ông giảm Sinh lực tối đa đi một và vĩnh viễn có kỹ năng Quan tinh."
       }
     }
   },
@@ -208,10 +242,12 @@
     "title": "Kiêu hùng thời loạn",
     "skills": {
       "kindness": {
-        "name": "Nhân đức"
+        "name": "Nhân đức",
+        "text": "Lưu Bị có thể đưa số lá bài trên tay tùy ý cho bất kỳ người chơi nào. Nếu ông đưa đi nhiều hơn một lá bài, ông hồi một Sinh lực."
       },
       "fierce-general": {
-        "name": "Kích tướng"
+        "name": "Kích tướng",
+        "text": "Kỹ năng Chủ công: Nếu Lưu Bị cần dùng Sát, ông có thể yêu cầu bất kỳ người thuộc Thục đưa cho ông một lá."
       }
     }
   },
@@ -220,13 +256,16 @@
     "title": "Vô vi chân mệnh chủ",
     "skills": {
       "pleasure": {
-        "name": "Hưởng lạc"
+        "name": "Hưởng lạc",
+        "text": "Khi có người tấn công Lưu Thiện, họ phải lập tức bỏ thêm một lá bài Cơ bản khác. Nếu không, đòn tấn công không có hiệu lực."
       },
       "decentralization": {
-        "name": "Phóng quyền"
+        "name": "Phóng quyền",
+        "text": "Lưu Thiện có thể bỏ qua giai đoạn ra bài. Vào cuối lượt của mình, ông bỏ thêm một lá bài trên tay. Sau đó ông có thể chọn một người chơi khác để họ lập tức có một lượt. Sau đó, người ngồi bên phải Lưu Thiện bắt đầu lượt của mình."
       },
       "seem-foolish": {
-        "name": "Nhược ngu"
+        "name": "Nhược ngu",
+        "text": "Kỹ năng Chủ công: Khi đầu lượt của Lưu Thiện, nếu ông có Sinh lực ít nhất hoặc đồng ít nhất, ông lập tức tăng giới hạn Sinh lực thêm một, hồi một Sinh lực và vĩnh viễn có kỹ năng Kích tướng."
       }
     }
   },
@@ -235,10 +274,12 @@
     "title": "Nhất kỵ đương thiên",
     "skills": {
       "horsemanship": {
-        "name": "Mã thuật"
+        "name": "Mã thuật",
+        "text": "Mã Siêu luôn được tính khoảng cách -1."
       },
       "iron-cavalry": {
-        "name": "Thiết kỵ"
+        "name": "Thiết kỵ",
+        "text": "Khi Mã Siêu tấn công một người chơi, ông có thể phán xét. Nếu là lá đỏ, đòn tấn công không thể bị Thiểm."
       }
     }
   },
@@ -247,10 +288,12 @@
     "title": "Nam Man vương",
     "skills": {
       "culprit": {
-        "name": "Họa thủ"
+        "name": "Họa thủ",
+        "text": "Mạnh Hoạch không bị ảnh hưởng bởi Nam Man Xâm Nhập và luôn được coi là nguồn gây ra mọi sát thương do nó gây ra."
       },
       "resurgence": {
-        "name": "Tái khởi"
+        "name": "Tái khởi",
+        "text": "Vào đầu lượt của mình, nếu Mạnh Hoạch chưa đầy Sinh lực, ông có thể bỏ qua giai đoạn rút bài để lật X lá bài trên cùng của chồng bài. X bằng hiệu số giữa Sinh lực hiện tại và Sinh lực tối đa của ông. Với mỗi lá cơ được lật, Mạnh Hoạch hồi một Sinh lực. Các lá cơ bị bỏ, còn các lá còn lại vào bài trên tay Mạnh Hoạch."
       }
     }
   },
@@ -259,10 +302,12 @@
     "title": "Phượng Sồ",
     "skills": {
       "shackle": {
-        "name": "Liên hoàn"
+        "name": "Liên hoàn",
+        "text": "Bàng Thống có thể dùng bất kỳ lá chuồn nào trên tay để xích hai người chơi lại với nhau hoặc để dùng chức năng rút lại bài."
       },
       "nirvana": {
-        "name": "Niết bàn"
+        "name": "Niết bàn",
+        "text": "Một lần mỗi ván, khi Bàng Thống cận kề cái chết, ông có thể bỏ toàn bộ bài của mình, rút ba lá bài mới và trở lại với ba Sinh lực."
       }
     }
   },
@@ -271,7 +316,8 @@
     "title": "Thị huyết độc lang",
     "skills": {
       "violent-spirit": {
-        "name": "Cuồng cốt"
+        "name": "Cuồng cốt",
+        "text": "Với mỗi sát thương Ngụy Diên gây ra cho một người chơi trong tầm của ông, ông hồi một Sinh lực."
       }
     }
   },
@@ -280,7 +326,8 @@
     "title": "Vạn phu bất đương",
     "skills": {
       "roar": {
-        "name": "Bào hao"
+        "name": "Bào hao",
+        "text": "Trương Phi không bị giới hạn số lần tấn công trong lượt của mình."
       }
     }
   },
@@ -289,7 +336,8 @@
     "title": "Thiếu niên tướng quân",
     "skills": {
       "dragon-courage": {
-        "name": "Long đảm"
+        "name": "Long đảm",
+        "text": "Triệu Vân có thể dùng Sát và Thiểm thay thế cho nhau."
       }
     }
   },
@@ -298,10 +346,12 @@
     "title": "Nữ vương hoang dã",
     "skills": {
       "giant-elephant": {
-        "name": "Cự tượng"
+        "name": "Cự tượng",
+        "text": "Mỗi khi một người chơi khác dùng Nam Man Xâm Nhập, Chúc Dung không bị ảnh hưởng. Sau khi mọi hiệu ứng khác kết thúc, Chúc Dung đưa lá bài đó vào bài trên tay nàng."
       },
       "intense-edge": {
-        "name": "Liệt nhận"
+        "name": "Liệt nhận",
+        "text": "Mỗi khi Chúc Dung gây sát thương cho một người chơi khác bằng Sát, nàng có thể đấu điểm với người đó. Nếu nàng thắng, nàng có thể lấy một lá bài của họ và đưa vào bài trên tay."
       }
     }
   },
@@ -310,10 +360,12 @@
     "title": "Trì mộ thừa tướng",
     "skills": {
       "astrology": {
-        "name": "Quan tinh"
+        "name": "Quan tinh",
+        "text": "Trước giai đoạn phán xét của mình, Gia Cát Lượng có thể xem X lá bài trên cùng của chồng bài, với X là số người chơi đang trong ván hoặc 5, lấy số nhỏ hơn. Sau đó ông có thể sắp xếp lại thứ tự những lá bài này và đặt tùy ý số lá xuống đáy chồng bài."
       },
       "empty-city": {
-        "name": "Không thành"
+        "name": "Không thành",
+        "text": "Khi Gia Cát Lượng không có bài trên tay, ông không thể là mục tiêu của Sát hoặc Quyết Đấu."
       }
     }
   },
@@ -504,10 +556,12 @@
     "title": "Căng trì chi hoa",
     "skills": {
       "country-scene": {
-        "name": "Quốc sắc"
+        "name": "Quốc sắc",
+        "text": "Trong lượt của mình, Đại Kiều có thể dùng bất kỳ lá rô nào làm Lạc Bất Tư Thục."
       },
       "displace": {
-        "name": "Lưu ly"
+        "name": "Lưu ly",
+        "text": "Khi Đại Kiều là mục tiêu của Sát, nàng có thể bỏ một lá bài bất kỳ để chuyển đòn tấn công sang một người chơi khác trong tầm tấn công của nàng, trừ người đã tấn công."
       }
     }
   },
@@ -516,7 +570,8 @@
     "title": "Cẩm phàm du hiệp",
     "skills": {
       "surprise": {
-        "name": "Kỳ tập"
+        "name": "Kỳ tập",
+        "text": "Trong lượt của mình, Cam Ninh có thể dùng bất kỳ lá bài đen nào làm Quá Hà Sách Kiều."
       }
     }
   },
@@ -525,7 +580,8 @@
     "title": "Khinh thân vị quốc",
     "skills": {
       "battered-body": {
-        "name": "Khổ nhục"
+        "name": "Khổ nhục",
+        "text": "Trong lượt của mình, Hoàng Cái có thể mất một Sinh lực để rút hai lá bài, bao nhiêu lần tùy ý."
       }
     }
   },
@@ -534,7 +590,8 @@
     "title": "Bạch y độ giang",
     "skills": {
       "self-restraint": {
-        "name": "Khắc kỷ"
+        "name": "Khắc kỷ",
+        "text": "Nếu Lã Mông không dùng lá Sát nào trong lượt của mình, ông có thể bỏ qua giai đoạn bỏ bài."
       }
     }
   },
@@ -543,10 +600,12 @@
     "title": "Nhà ngoại giao độc đoán",
     "skills": {
       "charity": {
-        "name": "Hiếu thí"
+        "name": "Hiếu thí",
+        "text": "Lỗ Túc có thể rút thêm hai lá bài. Nếu sau đó ông có nhiều hơn năm lá bài, ông phải đưa một nửa số bài trên tay (làm tròn xuống) cho người chơi có ít bài trên tay nhất."
       },
       "alliance": {
-        "name": "Đế minh"
+        "name": "Đế minh",
+        "text": "Một lần mỗi lượt, Lỗ Túc có thể bỏ X lá bài để bắt hai người chơi đổi bài trên tay cho nhau, với X là hiệu số bài trên tay của hai người chơi đó."
       }
     }
   },
@@ -555,10 +614,12 @@
     "title": "Nho sinh hùng tài",
     "skills": {
       "humility": {
-        "name": "Khiêm tốn"
+        "name": "Khiêm tốn",
+        "text": "Lục Tốn không thể là mục tiêu của Thuận Thủ Khiên Dương hoặc Lạc Bất Tư Thục."
       },
       "linked-camps": {
-        "name": "Liên doanh"
+        "name": "Liên doanh",
+        "text": "Mỗi khi Lục Tốn dùng hoặc mất lá bài cuối cùng trên tay, ông lập tức rút một lá bài."
       }
     }
   },
@@ -567,13 +628,16 @@
     "title": "Tiểu Bá Vương Giang Đông",
     "skills": {
       "passion": {
-        "name": "Khích ngang"
+        "name": "Khích ngang",
+        "text": "Mỗi khi Tôn Sách dùng Quyết Đấu hoặc Sát đỏ, hoặc là mục tiêu của chúng, Tôn Sách rút một lá bài."
       },
       "soul-position": {
-        "name": "Hồn tư"
+        "name": "Hồn tư",
+        "text": "Nếu vào đầu lượt của mình, Tôn Sách chỉ còn một Sinh lực, ông phải lập tức giảm Sinh lực tối đa đi một. Sau đó Tôn Sách vĩnh viễn có kỹ năng Anh tư và Anh hồn."
       },
       "takeover": {
-        "name": "Chế bá"
+        "name": "Chế bá",
+        "text": "Kỹ năng Chủ công: Các người chơi khác thuộc Ngô có thể đấu điểm với Tôn Sách. Nếu Tôn Sách thắng, ông giữ cả hai lá bài. Sau khi có Hồn tư, Tôn Sách có thể từ chối đấu điểm."
       }
     }
   },
@@ -582,7 +646,8 @@
     "title": "Vũ Liệt Đế",
     "skills": {
       "brave-spirit": {
-        "name": "Anh hồn"
+        "name": "Anh hồn",
+        "text": "Trước lượt của mình, nếu Tôn Kiên bị sát thương, ông có thể bắt một người chơi bất kỳ chọn một trong hai: rút X lá bài rồi bỏ 1 lá; hoặc rút 1 lá bài rồi bỏ X lá. X bằng số Sinh lực Tôn Kiên đang thiếu."
       }
     }
   },
@@ -591,10 +656,12 @@
     "title": "Hiền quân trẻ tuổi",
     "skills": {
       "reconsider": {
-        "name": "Chế hành"
+        "name": "Chế hành",
+        "text": "Một lần trong lượt của mình, Tôn Quyền có thể bỏ số lá bài tùy ý để rút lại số lá bài bằng như vậy."
       },
       "rescued": {
-        "name": "Cứu viện"
+        "name": "Cứu viện",
+        "text": "Kỹ năng Chủ công: Mỗi khi một người thuộc Ngô khác dùng Đào để cứu Tôn Quyền khỏi cận kề cái chết, nó giúp ông hồi hai Sinh lực."
       }
     }
   },
@@ -603,10 +670,12 @@
     "title": "Cung yêu cơ",
     "skills": {
       "marriage": {
-        "name": "Kết nhân"
+        "name": "Kết nhân",
+        "text": "Một lần trong lượt của mình, Tôn Thượng Hương có thể bỏ hai lá bài trên tay và chọn một người chơi nam chưa đầy Sinh lực. Làm vậy, nàng và người chơi nam đó mỗi người hồi một Sinh lực."
       },
       "armed-consorts": {
-        "name": "Kiêu cơ"
+        "name": "Kiêu cơ",
+        "text": "Với mỗi lá trang bị rời khỏi khu trang bị của nàng, Tôn Thượng Hương rút hai lá bài."
       }
     }
   },
@@ -615,7 +684,8 @@
     "title": "Vạn liệt chi sĩ",
     "skills": {
       "heavens-justice": {
-        "name": "Thiên nghĩa"
+        "name": "Thiên nghĩa",
+        "text": "Một lần mỗi lượt, Thái Sử Từ có thể đấu điểm với một người chơi bất kỳ. Nếu ông thắng, ông có thể đánh thêm một Sát, mỗi Sát có tầm không giới hạn và có thể nhắm thêm một người chơi. Nếu Thái Sử Từ thua, ông không thể tấn công trong lượt đó."
       }
     }
   },
@@ -624,10 +694,12 @@
     "title": "Kiểu tình chi hoa",
     "skills": {
       "fantasy": {
-        "name": "Thiên hương"
+        "name": "Thiên hương",
+        "text": "Khi Tiểu Kiều chịu sát thương, nàng có thể bỏ một lá cơ và chuyển sát thương cho một người chơi khác. Người đó sau đó rút X lá bài, với X là số Sinh lực họ đang thiếu sau khi sát thương được chuyển."
       },
       "beauty": {
-        "name": "Hồng nhan"
+        "name": "Hồng nhan",
+        "text": "Tất cả lá bích của Tiểu Kiều được coi là lá cơ."
       }
     }
   },
@@ -636,10 +708,12 @@
     "title": "Kinh thiên vĩ địa",
     "skills": {
       "direct-instruction": {
-        "name": "Trực gián"
+        "name": "Trực gián",
+        "text": "Trong lượt của mình, Trương Chiêu và Trương Hoành có thể đặt một lá trang bị từ bài trên tay vào khu trang bị của người chơi khác, bao nhiêu lần tùy ý. Họ không thể thay thế một lá trang bị. Với mỗi lá trang bị họ đặt vào khu trang bị của người chơi khác, Trương Chiêu và Trương Hoành rút một lá bài."
       },
       "stubborn": {
-        "name": "Cố chấp"
+        "name": "Cố chấp",
+        "text": "Vào cuối giai đoạn bỏ bài của một người chơi khác, Trương Chiêu và Trương Hoành có thể trả một trong các lá bài đã bỏ về bài trên tay mình. Sau đó họ có thể đưa tất cả các lá bài đã bỏ còn lại vào bài trên tay."
       }
     }
   },
@@ -648,7 +722,8 @@
     "title": "Lịch chiến chi khu",
     "skills": {
       "refusing-death": {
-        "name": "Bất khuất"
+        "name": "Bất khuất",
+        "text": "Khi Chu Thái cận kề cái chết, ông có thể lật lá bài trên cùng của chồng bài và đặt nó dưới lá Tướng của mình. Ông luôn được coi là cận kề cái chết. Với mỗi sát thương thêm, ông có thể lật thêm một lá bài. Chu Thái chết nếu hai trong các lá bài này có cùng số. Mỗi khi Chu Thái được hồi Sinh lực, ông có thể bỏ một trong các lá bài này."
       }
     }
   },
@@ -657,10 +732,12 @@
     "title": "Đại đô đốc",
     "skills": {
       "brave-gesture": {
-        "name": "Anh tư"
+        "name": "Anh tư",
+        "text": "Trong giai đoạn rút bài, Chu Du có thể rút thêm một lá bài."
       },
       "sow-revolt": {
-        "name": "Phản gián"
+        "name": "Phản gián",
+        "text": "Một lần mỗi lượt, Chu Du có thể chọn một người chơi và bắt họ gọi tên một chất. Sau đó mục tiêu chọn một lá bài trên tay Chu Du. Lá bài đó được lật ra và đưa vào bài trên tay mục tiêu. Nếu mục tiêu đoán sai chất, họ chịu một sát thương."
       }
     }
   }

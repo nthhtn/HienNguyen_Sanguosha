@@ -48,6 +48,14 @@ describe('Vietnamese names cover the whole roster', () => {
     expect(missing).toEqual([]);
   });
 
+  it('has rules text for every skill', () => {
+    const missing: string[] = [];
+    for (const [id, data] of Object.entries(generalsData)) {
+      for (const skill of data.skills) if (!generalTranslations('vi')[id]?.skills?.[skillIdOf(skill.name)]?.text) missing.push(`${id}: ${skill.name}`);
+    }
+    expect(missing).toEqual([]);
+  });
+
   it('names every card', () => {
     expect(Object.keys(cardsData).filter((id) => !cardTranslations('vi')[id]?.name)).toEqual([]);
   });
