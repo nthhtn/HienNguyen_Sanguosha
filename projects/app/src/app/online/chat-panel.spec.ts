@@ -100,4 +100,17 @@ describe('ChatPanel', () => {
     await submit();
     expect(chat.send).not.toHaveBeenCalled();
   });
+
+  it('sends once when submitted twice before the server answers', async () => {
+    let finish!: (ok: boolean) => void;
+    chat.send.mockReturnValue(new Promise<boolean>((resolve) => (finish = resolve)));
+    const { fixture, type, el } = await render();
+    type('hello');
+    const form = el.querySelector('form')!;
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    finish(true);
+    await fixture.whenStable();
+    expect(chat.send).toHaveBeenCalledTimes(1);
+  });
 });

@@ -166,6 +166,9 @@ import { SocketService } from './socket.service';
 })
 export class LobbyPage {
   protected readonly lobby = inject(LobbyService);
+  // Injected here so it exists before the first welcome: the socket does not
+  // replay, and the panel only renders once the room is known.
+  protected readonly chat = inject(ChatService);
   protected readonly game = inject(RemoteGameService);
   protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
   private readonly seats = viewChild(MatButtonToggleGroup);
