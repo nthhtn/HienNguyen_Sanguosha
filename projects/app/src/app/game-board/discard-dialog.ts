@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CardInstance } from 'engine';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
+import { TPipe } from '../i18n/t.pipe';
 
 export interface DiscardDialogData {
   // The viewer's hand.
@@ -19,11 +20,11 @@ export interface DiscardDialogData {
 // Closes only through Discard, with the ticked instance ids, in hand order.
 @Component({
   selector: 'app-discard-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, PlayingCard, DecisionCountdown],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, PlayingCard, DecisionCountdown, TPipe],
   template: `
-    <h2 mat-dialog-title>Discard {{ data.count }} {{ data.count === 1 ? 'Card' : 'Cards' }}</h2>
+    <h2 mat-dialog-title>{{ (data.count === 1 ? 'discardDialog.title.one' : 'discardDialog.title.other') | t: { n: data.count } }}</h2>
     <mat-dialog-content>
-      <p class="hint">Your hand is over its limit. Choose {{ data.count }} to discard · {{ chosen().size }}/{{ data.count }} chosen</p>
+      <p class="hint">{{ 'discardDialog.hint' | t: { count: data.count, chosen: chosen().size } }}</p>
       <ul class="hand">
         @for (card of data.cards; track card.instanceId) {
           <li>
@@ -50,7 +51,7 @@ export interface DiscardDialogData {
     <app-decision-countdown class="timer" />
     <mat-dialog-actions align="end">
       <button mat-flat-button type="button" class="discard" [disabled]="!full()" (click)="discard()">
-        <mat-icon>delete</mat-icon> Discard
+        <mat-icon>delete</mat-icon> {{ 'ui.discard' | t }}
       </button>
     </mat-dialog-actions>
   `,

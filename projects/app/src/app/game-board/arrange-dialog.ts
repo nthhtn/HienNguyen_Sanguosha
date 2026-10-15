@@ -7,6 +7,7 @@ import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
 import { ArrangeDescription } from './ability-description';
 import { cardFaceLabel } from '../labels';
+import { TPipe } from '../i18n/t.pipe';
 
 type ArrangeAction = Extract<Action, { kind: 'ArrangeCardsAction' }>;
 
@@ -26,7 +27,7 @@ interface Placed {
 // engine's own ArrangeCardsAction filled in.
 @Component({
   selector: 'app-arrange-dialog',
-  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown, CdkDropList, CdkDrag],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown, CdkDropList, CdkDrag, TPipe],
   template: `
     <h2 mat-dialog-title>{{ data.description.title }}</h2>
     <mat-dialog-content>
@@ -35,13 +36,13 @@ interface Placed {
         @for (item of items(); track item.card.instanceId; let i = $index) {
           <li class="item" cdkDrag [attr.data-card-id]="item.card.instanceId" [class.bottom]="item.place === 'bottom'">
             <app-playing-card [card]="item.card" />
-            <div class="place" role="group" [attr.aria-label]="'Where ' + faceOf(item.card) + ' goes'">
-              <button type="button" class="top" [class.on]="item.place === 'top'" [attr.aria-pressed]="item.place === 'top'" (click)="place(i, 'top')">Top</button>
-              <button type="button" class="bottom" [class.on]="item.place === 'bottom'" [attr.aria-pressed]="item.place === 'bottom'" (click)="place(i, 'bottom')">Bottom</button>
+            <div class="place" role="group" [attr.aria-label]="'arrangeDialog.where' | t: { card: faceOf(item.card) }">
+              <button type="button" class="top" [class.on]="item.place === 'top'" [attr.aria-pressed]="item.place === 'top'" (click)="place(i, 'top')">{{ 'arrangeDialog.top' | t }}</button>
+              <button type="button" class="bottom" [class.on]="item.place === 'bottom'" [attr.aria-pressed]="item.place === 'bottom'" (click)="place(i, 'bottom')">{{ 'arrangeDialog.bottom' | t }}</button>
             </div>
             <div class="move">
-              <button type="button" class="left" [disabled]="i === 0" [attr.aria-label]="'Move ' + faceOf(item.card) + ' left'" (click)="move(i, -1)">‹</button>
-              <button type="button" class="right" [disabled]="i === items().length - 1" [attr.aria-label]="'Move ' + faceOf(item.card) + ' right'" (click)="move(i, 1)">›</button>
+              <button type="button" class="left" [disabled]="i === 0" [attr.aria-label]="'arrangeDialog.left' | t: { card: faceOf(item.card) }" (click)="move(i, -1)">‹</button>
+              <button type="button" class="right" [disabled]="i === items().length - 1" [attr.aria-label]="'arrangeDialog.right' | t: { card: faceOf(item.card) }" (click)="move(i, 1)">›</button>
             </div>
           </li>
         }
@@ -50,7 +51,7 @@ interface Placed {
     <!-- At zero: the arrangement as it stands. -->
     <app-decision-countdown class="timer" />
     <mat-dialog-actions align="end">
-      <button mat-flat-button type="button" class="confirm" (click)="confirm()">Confirm</button>
+      <button mat-flat-button type="button" class="confirm" (click)="confirm()">{{ 'ui.confirm' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `

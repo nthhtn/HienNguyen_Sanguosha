@@ -6,6 +6,7 @@ import { PlayingCard } from './playing-card';
 import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
 import { AskDescription } from './ability-description';
+import { TPipe } from '../i18n/t.pipe';
 
 export interface AskDialogData {
   description: AskDescription;
@@ -15,7 +16,7 @@ export interface AskDialogData {
 // buttons, with the engine's own ChooseOptionAction.
 @Component({
   selector: 'app-ask-dialog',
-  imports: [MatDialogModule, MatButtonModule, PlayingCard, CardArt, DecisionCountdown],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard, CardArt, DecisionCountdown, TPipe],
   template: `
     <h2 mat-dialog-title>{{ data.description.title }}</h2>
     <mat-dialog-content class="body">
@@ -34,7 +35,7 @@ export interface AskDialogData {
     <!-- At zero: Don't. -->
     <app-decision-countdown class="timer" />
     <mat-dialog-actions align="end">
-      <button mat-button type="button" class="decline" (click)="close(data.description.decline)">Don't</button>
+      <button mat-button type="button" class="decline" (click)="close(data.description.decline)">{{ 'choice.option.decline' | t }}</button>
       <button mat-flat-button type="button" class="use" (click)="close(data.description.use)">{{ data.description.useLabel }}</button>
     </mat-dialog-actions>
   `,

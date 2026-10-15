@@ -1,6 +1,7 @@
 import { CardInstance, EngineEvent, Player, Seat } from 'engine';
 import { abilityName, competeOutcomeText, generalDisplayData } from 'content';
 import { Force, forceOf, generalDisplayName, seatName } from '../labels';
+import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
 export interface CompetePlayer {
   seatId: string;
@@ -32,7 +33,7 @@ export interface CompeteResult {
 
 // The Competes in `log` from index `from` on (earlier events only supply the
 // cards shown). Skips one whose cards weren't shown.
-export function competeResults(log: readonly EngineEvent[], from: number, seats: readonly Seat[], players: readonly Player[] = []): CompeteResult[] {
+export function competeResults(log: readonly EngineEvent[], from: number, seats: readonly Seat[], players: readonly Player[] = [], tr: Translator = englishTranslator): CompeteResult[] {
   const results: CompeteResult[] = [];
   const lastShown = new Map<string, CardInstance>();
   const faceUpGeneral = (seat: Seat | undefined): string | null => {
@@ -50,8 +51,8 @@ export function competeResults(log: readonly EngineEvent[], from: number, seats:
     const sourceSeat = seats.find((s) => s.id === event.owner.seatId);
     const targetSeat = seats.find((s) => s.id === event.targetSeatId);
     const won = event.outcome === 'compete-won';
-    const userName = seatName(players, event.owner.seatId);
-    const targetName = seatName(players, event.targetSeatId);
+    const userName = seatName(players, event.owner.seatId, tr);
+    const targetName = seatName(players, event.targetSeatId, tr);
     // The General whose skill it is, when the viewer can see it.
     const slot = event.owner.kind === 'general' ? event.owner.slot : null;
     const sourceGeneral = slot ? sourceSeat?.generals?.[slot].generalDefinitionId : undefined;
@@ -64,14 +65,14 @@ export function competeResults(log: readonly EngineEvent[], from: number, seats:
       abilityName: name,
       skillText: display?.skills.find((s) => s.name === name)?.text ?? null,
       generalId,
-      generalName: generalId ? (display?.name ?? generalDisplayName(generalId)) : 'Hidden General',
+      generalName: generalId ? (display?.name ?? generalDisplayName(generalId, tr)) : generalDisplayName('hidden', tr),
       force: forceOf(sourceSeat?.kingdom),
       user: { seatId: event.owner.seatId, name: userName, generalId: faceUpGeneral(sourceSeat), card: mine },
       target: { seatId: event.targetSeatId, name: targetName, generalId: faceUpGeneral(targetSeat), card: theirs },
       won,
       tie: mine.rank === theirs.rank,
       winnerName: won ? userName : targetName,
-      outcome: competeOutcomeText(event.abilityId, won, { user: userName, target: targetName }),
+      outcome: competeOutcomeText(event.abilityId, won, { user: userName, target: targetName }, localeOf(tr)),
     });
   });
   return results;

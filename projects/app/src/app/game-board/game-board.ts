@@ -289,7 +289,7 @@ export class GameBoard {
       untracked(() => {
         const log = visible.log;
         if (competesSeen !== null && log.length > competesSeen) {
-          this.competeQueue.push(...competeResults(log, competesSeen, visible.seats, visible.players));
+          this.competeQueue.push(...competeResults(log, competesSeen, visible.seats, visible.players, this.i18n.translator));
           this.showNextCompete();
         }
         competesSeen = log.length;
@@ -418,6 +418,9 @@ export class GameBoard {
     });
   }
 
+  // The dialogs below describe their decision in the language that is on when they open
+  // (the open* methods run untracked): a language switch changes the next dialog, not
+  // an open one.
   // The Discard phase in one step: the dialog returns exactly `count` cards,
   // each submitted as the engine's own legal DiscardCardAction.
   private openDiscardDialog(count: number): void {
@@ -458,7 +461,7 @@ export class GameBoard {
     const cards: ResponseOption[] = legal.flatMap((action) => {
       if (action.kind !== 'RespondAction') return [];
       const card = hand.find((c) => c.instanceId === action.cardInstanceId);
-      return card ? [{ id: card.instanceId, action, card, label: ResponseDialog.cardLabel(card) }] : [];
+      return card ? [{ id: card.instanceId, action, card, label: ResponseDialog.cardLabel(card, this.i18n.translator) }] : [];
     });
     const skills: ResponseOption[] = legal.flatMap((action, i) =>
       action.kind === 'UseConversionAction' ? [{ id: `convert-${i}`, action, label: conversionLabel(action, visible, this.gameService.registry, this.i18n.translator) }] : []

@@ -8,6 +8,9 @@ import { cardFaceLabel, cardIdDisplayName } from '../labels';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
 import { ResponseDescription } from './response-description';
+import { TPipe } from '../i18n/t.pipe';
+import { I18n } from '../i18n/i18n.service';
+import { englishTranslator, Translator } from '../i18n/translator';
 
 // One way to respond: a card from the hand, or (later) a general's skill.
 export interface ResponseOption {
@@ -35,9 +38,9 @@ const NO_RESPONSE = 'no-response';
 // Closes only through that button, with the chosen engine action.
 @Component({
   selector: 'app-response-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, MatRadioModule, PlayingCard, DecisionCountdown],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, MatRadioModule, PlayingCard, DecisionCountdown, TPipe],
   template: `
-    <h2 mat-dialog-title>Response Needed</h2>
+    <h2 mat-dialog-title>{{ 'respDialog.title' | t }}</h2>
     <mat-dialog-content>
       <div class="description">
         <p class="source">{{ data.description.source }}</p>
@@ -47,17 +50,17 @@ const NO_RESPONSE = 'no-response';
         <p class="prompt">{{ data.description.prompt }}</p>
       </div>
 
-      <mat-radio-group class="options" [value]="picked()" (change)="picked.set($event.value)" aria-label="Choose a response">
-        <h3>Skills</h3>
+      <mat-radio-group class="options" [value]="picked()" (change)="picked.set($event.value)" [attr.aria-label]="'respDialog.choose' | t">
+        <h3>{{ 'respDialog.skills' | t }}</h3>
         @for (option of data.skills; track option.id) {
           <mat-radio-button class="option skill-option" [value]="option.id" [attr.data-option-id]="option.id">
             {{ option.label }}
           </mat-radio-button>
         } @empty {
-          <p class="empty">No skills can respond</p>
+          <p class="empty">{{ 'respDialog.noSkills' | t }}</p>
         }
 
-        <h3>Cards</h3>
+        <h3>{{ 'respDialog.cards' | t }}</h3>
         <div class="cards">
           @for (option of data.cards; track option.id) {
             <!-- The same card face as in the hand: name, suit and number. -->
@@ -67,14 +70,14 @@ const NO_RESPONSE = 'no-response';
               }
             </mat-radio-button>
           } @empty {
-            <p class="empty">No cards can respond</p>
+            <p class="empty">{{ 'respDialog.noCards' | t }}</p>
           }
         </div>
 
         <mat-radio-button class="option no-response" [value]="noResponseId">
           <span class="option-body">
-            <span>No Response</span>
-            <span class="outcome force-status" [attr.data-force]="data.description.outcomeForce">— {{ data.description.outcome }}</span>
+            <span>{{ 'respDialog.none' | t }}</span>
+            <span class="outcome force-status" [attr.data-force]="data.description.outcomeForce">{{ 'respDialog.outcome' | t: { outcome: data.description.outcome } }}</span>
           </span>
         </mat-radio-button>
       </mat-radio-group>
@@ -104,6 +107,7 @@ const NO_RESPONSE = 'no-response';
 export class ResponseDialog {
   protected readonly data = inject<ResponseDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<ResponseDialog, Action>>(MatDialogRef);
+  private readonly i18n = inject(I18n);
 
   protected readonly noResponseId = NO_RESPONSE;
   protected readonly picked = signal<string>(
@@ -115,20 +119,20 @@ export class ResponseDialog {
   );
   protected readonly confirmLabel = computed(() => {
     const option = this.pickedOption();
-    if (!option) return 'No Response';
-    return option.card ? `Respond with ${this.name(option.card)}` : option.label;
+    if (!option) return this.i18n.t('respDialog.none');
+    return option.card ? this.i18n.t('label.action.respond', { card: this.name(option.card) }) : option.label;
   });
 
 
   protected name(card: CardInstance): string {
-    return cardIdDisplayName(card.definitionId);
+    return cardIdDisplayName(card.definitionId, this.i18n.translator);
   }
 
   protected confirm(): void {
     this.dialogRef.close(this.pickedOption()?.action ?? this.data.noResponse);
   }
 
-  static cardLabel(card: CardInstance): string {
-    return `${cardIdDisplayName(card.definitionId)} (${cardFaceLabel(card)})`;
+  static cardLabel(card: CardInstance, tr: Translator = englishTranslator): string {
+    return tr('card.named', { name: cardIdDisplayName(card.definitionId, tr), face: cardFaceLabel(card) });
   }
 }

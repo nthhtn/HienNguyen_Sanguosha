@@ -6,6 +6,8 @@ import { cardFaceLabel } from '../labels';
 import { CardArt } from './card-art';
 import { CompetePlayer, CompeteResult } from './compete-result';
 import { PlayingCard } from './playing-card';
+import { TPipe } from '../i18n/t.pipe';
+import { I18n } from '../i18n/i18n.service';
 
 // Seconds before the popup closes itself, so a Compete between bots never stalls the table.
 export const AUTO_CLOSE_SECONDS = 15;
@@ -15,9 +17,9 @@ export const AUTO_CLOSE_SECONDS = 15;
 // in the source General's Force colour by its panel class (openForceDialog).
 @Component({
   selector: 'app-compete-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, PlayingCard],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, PlayingCard, TPipe],
   template: `
-    <h2 mat-dialog-title>Compete</h2>
+    <h2 mat-dialog-title>{{ 'compete.title' | t }}</h2>
     <mat-dialog-content class="body">
       <section class="source">
         @if (data.generalId; as generalId) {
@@ -31,11 +33,11 @@ export const AUTO_CLOSE_SECONDS = 15;
         </div>
       </section>
 
-      <section class="versus" aria-label="Competing players">
+      <section class="versus" [attr.aria-label]="'compete.players' | t">
         @for (side of sides(); track side.player.seatId; let i = $index) {
           <div class="side" [class.winner]="side.winner">
             @if (side.winner) {
-              <span class="badge"><mat-icon>emoji_events</mat-icon> Winner</span>
+              <span class="badge"><mat-icon>emoji_events</mat-icon> {{ 'compete.winner' | t }}</span>
             }
             <div class="player">
               @if (side.player.generalId; as generalId) {
@@ -46,7 +48,7 @@ export const AUTO_CLOSE_SECONDS = 15;
             <app-playing-card [card]="side.player.card" size="normal" />
           </div>
           @if (i === 0) {
-            <span class="vs" aria-hidden="true">vs</span>
+            <span class="vs" aria-hidden="true">{{ 'compete.vs' | t }}</span>
           }
         }
       </section>
@@ -54,17 +56,17 @@ export const AUTO_CLOSE_SECONDS = 15;
       <p class="result">{{ resultText() }}</p>
       @if (data.outcome; as outcome) {
         <section class="outcome">
-          <span class="label">Outcome</span>
+          <span class="label">{{ 'compete.outcome' | t }}</span>
           <p>{{ outcome }}</p>
         </section>
       }
     </mat-dialog-content>
-    <div class="timer" role="timer" [attr.aria-label]="seconds() + ' seconds left'">
+    <div class="timer" role="timer" [attr.aria-label]="'countdown.aria' | t: { n: seconds() }">
       <span class="seconds">{{ seconds() }}s</span>
       <span class="bar"><span class="fill" [style.width.%]="(seconds() / total) * 100"></span></span>
     </div>
     <mat-dialog-actions align="end">
-      <button mat-flat-button type="button" class="continue" (click)="close()">Continue</button>
+      <button mat-flat-button type="button" class="continue" (click)="close()">{{ 'compete.continue' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `
@@ -93,6 +95,7 @@ export const AUTO_CLOSE_SECONDS = 15;
 export class CompeteDialog {
   protected readonly data = inject<CompeteResult>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<CompeteDialog>>(MatDialogRef);
+  private readonly i18n = inject(I18n);
   protected readonly total = AUTO_CLOSE_SECONDS;
   protected readonly seconds = signal(AUTO_CLOSE_SECONDS);
 
@@ -111,8 +114,8 @@ export class CompeteDialog {
 
   protected resultText(): string {
     const { user, target, tie, winnerName } = this.data;
-    const faces = `${cardFaceLabel(user.card)} against ${cardFaceLabel(target.card)}`;
-    return tie ? `Tied: ${faces}. ${winnerName} won, as a tie counts as a loss for ${user.name}` : `${faces}, ${winnerName} won`;
+    const faces = this.i18n.t('compete.faces', { mine: cardFaceLabel(user.card), theirs: cardFaceLabel(target.card) });
+    return tie ? this.i18n.t('compete.tied', { faces, winner: winnerName, user: user.name }) : this.i18n.t('compete.result', { faces, winner: winnerName });
   }
 
   protected close(): void {

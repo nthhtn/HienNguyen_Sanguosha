@@ -1,4 +1,4 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, input, output, signal, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -8,7 +8,9 @@ import { ChooseGeneralsAction, ContentRegistry, Kingdom, combinedMaxHp } from 'e
 import { GeneralDisplayData, generalDisplayData } from 'content';
 import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
-import { generalDisplayName } from '../labels';
+import { generalDisplayName, kingdomDisplayName } from '../labels';
+import { TPipe } from '../i18n/t.pipe';
+import { I18n } from '../i18n/i18n.service';
 
 interface CandidateViewModel {
   id: string;
@@ -26,11 +28,11 @@ interface CandidateViewModel {
 // engine's getLegalActions); this component never compares kingdoms itself.
 @Component({
   selector: 'app-general-selection',
-  imports: [MatButtonModule, MatCardModule, MatChipsModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown],
+  imports: [MatButtonModule, MatCardModule, MatChipsModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown, TPipe],
   template: `
     <header class="intro">
-      <h2>{{ seatName() ? seatName() + ', Choose your Generals' : 'Choose your Generals' }}</h2>
-      <p class="hint">Pick two Generals of the same kingdom. Your first pick is your Main General.</p>
+      <h2>{{ seatName() ? ('select.titleFor' | t: { name: seatName() }) : ('select.title' | t) }}</h2>
+      <p class="hint">{{ 'select.hint' | t }}</p>
     </header>
 
     <div class="candidates">
@@ -54,7 +56,7 @@ interface CandidateViewModel {
           <div class="art">
             <app-card-art size="large" [id]="vm.id" [label]="vm.name" />
             @if (vm.role; as role) {
-              <span class="role-chip" [class.deputy]="role === 'Deputy'">{{ role }}</span>
+              <span class="role-chip" [class.deputy]="role === 'Deputy'">{{ roleName(role) }}</span>
             }
           </div>
           <mat-card-header>
@@ -65,13 +67,13 @@ interface CandidateViewModel {
           </mat-card-header>
           <mat-card-content>
             <div class="meta">
-              <span class="kingdom-tag">{{ vm.kingdom }}</span>
-              <span class="hearts" [attr.aria-label]="'HP ' + vm.maxHp">
+              <span class="kingdom-tag">{{ kingdomName(vm.kingdom) }}</span>
+              <span class="hearts" [attr.aria-label]="'select.hp' | t: { n: vm.maxHp }">
                 @for (h of vm.hearts; track $index) {
                   <mat-icon>favorite</mat-icon>
                 }
               </span>
-              <span class="hp-label">HP {{ vm.maxHp }}</span>
+              <span class="hp-label">{{ 'select.hp' | t: { n: vm.maxHp } }}</span>
             </div>
             <ul class="skills">
               @for (skill of vm.display?.skills ?? []; track skill.name) {
@@ -86,26 +88,26 @@ interface CandidateViewModel {
     <mat-card class="bar" appearance="raised">
       <div class="slots">
         <div class="slot main">
-          <span class="slot-label">Main</span>
+          <span class="slot-label">{{ 'select.main' | t }}</span>
           <span class="slot-name">{{ slotName(0) }}</span>
         </div>
-        <button mat-icon-button type="button" class="swap" aria-label="Swap Main and Deputy"
+        <button mat-icon-button type="button" class="swap" [attr.aria-label]="'select.swap' | t"
                 [disabled]="selected().length !== 2" (click)="swap()">
           <mat-icon>swap_horiz</mat-icon>
         </button>
         <div class="slot deputy">
-          <span class="slot-label">Deputy</span>
+          <span class="slot-label">{{ 'select.deputy' | t }}</span>
           <span class="slot-name">{{ slotName(1) }}</span>
         </div>
       </div>
       <span class="summary">
         @if (summary(); as s) {
-          Kingdom: <span class="force-name" [attr.data-force]="s.kingdom">{{ s.kingdom }}</span> · Combined HP: {{ s.hp }}
+          {{ 'select.kingdom' | t }} <span class="force-name" [attr.data-force]="s.kingdom">{{ kingdomName(s.kingdom) }}</span> {{ 'select.combinedHp' | t: { hp: s.hp } }}
         }
       </span>
       <app-decision-countdown class="timer" />
       <button mat-flat-button type="button" class="confirm" [disabled]="!matchingAction()" (click)="confirm()">
-        <mat-icon>check</mat-icon> Confirm
+        <mat-icon>check</mat-icon> {{ 'ui.confirm' | t }}
       </button>
     </mat-card>
   `,
@@ -190,6 +192,8 @@ export class GeneralSelection {
   readonly seatName = input<string>('');
   readonly chosen = output<ChooseGeneralsAction>();
 
+  private readonly i18n = inject(I18n);
+
   // UI-only state: the player's picks in order, [main, deputy].
   protected readonly selected = signal<string[]>([]);
 
@@ -199,15 +203,14 @@ export class GeneralSelection {
     // Nothing picked yet: a disabled card has no same-kingdom partner in the
     // whole pool. Once a first pick exists: it doesn't pair with that pick.
     // Either way, legality itself still comes only from `actions` above.
-    const disabledReason =
-      selected.length === 0 ? 'No other candidate shares this kingdom' : 'Must share a kingdom with your first pick';
+    const disabledReason = this.i18n.t(selected.length === 0 ? 'select.noPartner' : 'select.mustShare');
     return this.candidates().map((id) => {
       const definition = this.registry().generals.get(id);
       const display = generalDisplayData(id);
       const index = selected.indexOf(id);
       return {
         id,
-        name: display?.name ?? generalDisplayName(id),
+        name: display?.name ?? generalDisplayName(id, this.i18n.translator),
         display,
         kingdom: definition?.kingdom ?? 'hidden',
         maxHp: definition?.maxHp ?? 0,
@@ -219,10 +222,19 @@ export class GeneralSelection {
     });
   });
 
+  // What the chip says; the role values themselves ('Main', 'Deputy') stay the logic's.
+  protected roleName(role: string): string {
+    return this.i18n.t(role === 'Main' ? 'select.main' : 'select.deputy');
+  }
+
+  protected kingdomName(kingdom: Parameters<typeof kingdomDisplayName>[0]): string {
+    return kingdomDisplayName(kingdom, this.i18n.translator);
+  }
+
   protected slotName(position: 0 | 1): string {
     const id = this.selected()[position];
-    if (!id) return 'Pick a General';
-    return generalDisplayData(id)?.name ?? generalDisplayName(id);
+    if (!id) return this.i18n.t('select.pick');
+    return generalDisplayData(id)?.name ?? generalDisplayName(id, this.i18n.translator);
   }
 
   protected readonly matchingAction = computed<ChooseGeneralsAction | null>(() => {
