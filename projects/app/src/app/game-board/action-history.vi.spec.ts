@@ -226,11 +226,11 @@ describe('choices and skills in Vietnamese', () => {
   });
 
   it('gaining a skill, choosing a Form, a lower max HP, HP lost', () => {
-    expect(vi_([{ kind: 'SkillGainedEvent', seatId: 'seat-0', skillId: 'fighting-saint' }])).toEqual(['Seat 0 nhận được Fighting Saint']);
+    expect(vi_([{ kind: 'SkillGainedEvent', seatId: 'seat-0', slot: 'main', skillId: 'fighting-saint' }])).toEqual(['Seat 0 nhận được Fighting Saint']);
     expect(vi_([{ kind: 'FormChosenEvent', seatId: 'seat-0', skillId: 'fighting-saint', generalId: 'guan-yu' }])).toEqual(['Seat 0 chọn Fighting Saint từ Guan Yu']);
     expect(vi_([{ kind: 'FormChosenEvent', seatId: 'seat-0', skillId: 'fighting-saint', generalId: 'no-such-general' }])).toEqual(['Seat 0 chọn Fighting Saint từ một Hóa thân']);
     expect(en_([{ kind: 'FormChosenEvent', seatId: 'seat-0', skillId: 'fighting-saint', generalId: 'no-such-general' }])).toEqual(['Seat 0 chose Fighting Saint from a Form']);
-    expect(vi_([{ kind: 'MaxHpReducedEvent', seatId: 'seat-0', maxHp: 3 }])).toEqual(['Seat 0 giờ có Sinh lực tối đa là 3']);
+    expect(vi_([{ kind: 'MaxHpReducedEvent', seatId: 'seat-0', amount: 1, maxHp: 3 }])).toEqual(['Seat 0 giờ có Sinh lực tối đa là 3']);
     expect(vi_([{ kind: 'HpLostEvent', seatId: 'seat-0', amount: 2 }])).toEqual(['Seat 0 mất 2 Sinh lực']);
     expect(vi_([{ kind: 'HpLostEvent', seatId: 'seat-0', amount: 1, abilityId: 'battered-body' }])).toEqual(['Seat 0 mất 1 Sinh lực (Battered Body)']);
   });

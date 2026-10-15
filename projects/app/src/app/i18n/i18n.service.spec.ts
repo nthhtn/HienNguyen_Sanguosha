@@ -4,7 +4,7 @@ import { en } from './en';
 import { I18n, format } from './i18n.service';
 import type { MessageKey, Messages } from './messages';
 
-const VI: Messages = { 'nav.language': 'Ngôn ngữ' };
+const VI = { 'nav.language': 'Ngôn ngữ' } as Messages;
 const flush = () => new Promise<void>((resolve) => setTimeout(resolve));
 
 function setup(loaders: Partial<CatalogLoaders> = {}): I18n {

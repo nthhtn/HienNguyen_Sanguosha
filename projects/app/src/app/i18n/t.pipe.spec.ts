@@ -6,7 +6,7 @@ import { I18n } from './i18n.service';
 import type { Messages } from './messages';
 import { TPipe } from './t.pipe';
 
-const VI: Messages = { 'nav.language': 'Ngôn ngữ' };
+const VI = { 'nav.language': 'Ngôn ngữ' } as Messages;
 
 @Component({ imports: [TPipe], template: `<p>{{ 'nav.language' | t }}</p>` })
 class Host {}

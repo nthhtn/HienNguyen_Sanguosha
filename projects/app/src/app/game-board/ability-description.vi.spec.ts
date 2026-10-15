@@ -134,7 +134,7 @@ describe('describeSelection in Vietnamese', () => {
   });
 
   it('labels each card of the selection by name and face', () => {
-    expect(describe2(selection({})).items).toEqual([{ id: 'p1', card: peach, label: 'Peach (3 ♥)' }, { id: 's2', card: sha, label: 'Sha (7 ♠)' }]);
+    expect(describe2(selection({}))?.items).toEqual([{ id: 'p1', card: peach, label: 'Peach (3 ♥)' }, { id: 's2', card: sha, label: 'Sha (7 ♠)' }]);
   });
 });
 
