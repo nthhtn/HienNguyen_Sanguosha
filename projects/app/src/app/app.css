@@ -53,8 +53,8 @@
   }
 }
 
-.account,
-.sign-in {
+.app-bar .account,
+.app-bar .sign-in {
   --mat-button-text-label-text-color: var(--mat-sys-on-primary);
   color: var(--mat-sys-on-primary);
 }
