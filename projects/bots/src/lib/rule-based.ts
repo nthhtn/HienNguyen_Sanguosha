@@ -4,7 +4,7 @@ import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from 
 import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
-import { bestPair } from './general-values';
+import { bestPair, GENERAL_VALUES } from './general-values';
 import { NO_RESPONSE_RULES, ResponseRules, shouldHoldShan, wuxieWorthCancelling } from './responses';
 import { upheavalVictimIsFoe } from './forest';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
@@ -362,8 +362,11 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: Car
   return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, generalValues, view, seatId, legal, registry, memory) };
 }
 
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst);
+// Stage 4 shipped: General pairs are chosen with the measured value table (max HP breaks ties).
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES);
 
-// Weakest-first targeting, frozen as a fixed opponent for the tournament harness. It equals
-// 'rule-based' today; they differ again if 'rule-based' ever adopts another ranker.
+// Weakest-first targeting and highest-max-HP General pairs, frozen as a fixed opponent for the tournament
+// harness. 'rule-based-v1' was 'rule-based' before the Stage 4 value table; 'rule-based-v2' is the same bot,
+// kept as the baseline Stage 4 was judged against.
 export const ruleBasedV1Policy: BotPolicy = createRuleBasedPolicy('rule-based-v1', weakestFirst);
+export const ruleBasedV2Policy: BotPolicy = createRuleBasedPolicy('rule-based-v2', weakestFirst);

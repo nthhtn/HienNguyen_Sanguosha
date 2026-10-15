@@ -116,7 +116,7 @@ describe('pairMeans', () => {
 });
 
 describe('runTournament, mirrored', () => {
-  const mirrored = { games: 6, seats: 4, challenger: 'rule-based', baseline: 'rule-based-v1', firstSeed: 1, mirrored: true } as const;
+  const mirrored = { games: 6, seats: 4, challenger: 'rule-based', baseline: 'rule-based-picks', firstSeed: 1, mirrored: true } as const;
 
   it('gives exactly zero for two bots that behave identically: each pair replays one deal with the sides swapped', () => {
     const report = runTournament(mirrored);

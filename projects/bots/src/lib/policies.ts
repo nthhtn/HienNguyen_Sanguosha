@@ -3,7 +3,7 @@ import { ALL_CARD_PLAY_RULES, NO_CARD_PLAY_RULES } from './card-play';
 import { ALL_RESPONSE_RULES, NO_RESPONSE_RULES } from './responses';
 import { GENERAL_VALUES } from './general-values';
 import { weakestFirst } from './helpers';
-import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
+import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV2Policy } from './rule-based';
 
 const POLICIES = new Map<string, BotPolicy>();
 
@@ -25,9 +25,10 @@ export function policyById(id: string): BotPolicy {
 
 registerPolicy(ruleBasedPolicy);
 registerPolicy(ruleBasedV1Policy);
+registerPolicy(ruleBasedV2Policy);
 // Stage 1 (card play): every card-play rule on; judged against 'rule-based' by the tournament.
 registerPolicy(createRuleBasedPolicy('rule-based-cards', weakestFirst, ALL_CARD_PLAY_RULES));
 // Stage 2 (responses): both response rules on; judged against 'rule-based' by the tournament.
 registerPolicy(createRuleBasedPolicy('rule-based-responses', weakestFirst, NO_CARD_PLAY_RULES, ALL_RESPONSE_RULES));
-// Stage 4 (General selection): the measured value table; judged against 'rule-based' by the tournament.
+// Stage 4 (General selection): the measured value table. Shipped, so it now equals 'rule-based'.
 registerPolicy(createRuleBasedPolicy('rule-based-picks', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES));

@@ -1,6 +1,6 @@
 # Bot Stage 4 — General Selection — Design Spec
 
-Status: Pending written-spec review
+Status: Approved; experiment done: shipped on tuning set 1
 Date: 2026-10-15
 
 Part of `docs/superpowers/specs/2026-10-15-bot-improvement-roadmap-design.md`
@@ -96,4 +96,20 @@ not and `rule-based` is unchanged.
 
 ## Results
 
-(Filled in after the experiment.)
+All runs: 4 seats, mirrored pairs, 4000 games (2000 pairs).
+
+**Tuning set 1:** `npm run sim -- fit-generals 20000 4 500000` (3.5 minutes; about 2500 samples per General).
+Committed as `general-values.data.ts`.
+
+| Run | First seed | Difference | 95% interval | Verdict |
+|---|---|---|---|---|
+| `rule-based-picks` vs `rule-based` | 600000 | +3.3 pp | +2.1 to +4.4 | challenger is better |
+| `rule-based-picks` vs `rule-based` | 700000 | +4.6 pp | +3.4 to +5.8 | challenger is better |
+| shipped `rule-based` vs frozen `rule-based-v2` (record) | 800000 | +2.5 pp | +1.3 to +3.7 | challenger is better |
+
+**Shipped.** The whole interval is above 0 on both fresh ranges, and no range used to judge was used to
+fit. Tuning sets 2 and 3 were not needed. `rule-based` now chooses with the table; the old bot is frozen
+as `rule-based-v2` (`rule-based-v1` is the same bot). The third run is the post-merge record and shows
+a smaller gain than the first two, so the real gain is probably 2 to 4 points. The tournament check that
+two identical bots score exactly 0 now compares `rule-based` with `rule-based-picks`, which are the same bot
+after shipping.
