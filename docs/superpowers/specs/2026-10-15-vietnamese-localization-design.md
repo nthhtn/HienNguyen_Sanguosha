@@ -112,6 +112,7 @@ Decided by the user (2026-10-15):
 | Seat | Người chơi (so "Seat 0" is "Người chơi 0") |
 | Phases | Giai đoạn bắt đầu, phán xét, rút bài, ra bài, bỏ bài, kết thúc |
 | Core cards | Hán-Việt: Sát (Sha), Thiểm (Shan), Đào (Peach), Quyết Đấu (Duel) |
+| Discard (button), Use as, Reveal and Use (button) | Bỏ bài, dùng làm, Lật tướng và dùng |
 | General and skill names | Sino-Vietnamese, from `nameZh` |
 
 Defaults proposed and accepted:
@@ -178,9 +179,11 @@ Each phase is mergeable on its own. The app behaves as before until phase 5.
    exists, so the only visible change is the buttons.
 2. **Translator-based builders:** done in four mergeable steps, each with
    English output byte-identical and the existing specs unchanged:
-   2a the `Translator` type, `labels.ts`, and the choice and ability
+   2a the `Translator` type and the choice, ask, selection and arrange
    descriptions; 2b the Action History; 2c the response description; 2d the
-   ability hints in `content/src/lib/display.ts`.
+   ability hints and other prose tables in `content/src/lib/display.ts`;
+   2e `labels.ts` (seat, card and General fallback names, suit labels,
+   action labels), last because another workstream has uncommitted edits to it.
 3. **Templates:** replace hard-coded text in the Game screen components with
    `t()`.
 4. **Content:** glossary, locale-aware `display.ts`, Vietnamese names, then
