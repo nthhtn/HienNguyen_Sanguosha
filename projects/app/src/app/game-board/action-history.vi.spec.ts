@@ -99,7 +99,7 @@ describe('moves and picks in Vietnamese', () => {
 
   it('a worn card handed over, one put under a General, Lightning moving on', () => {
     expect(vi_([move(blade, 'seat-0:equip', 'seat-1:hand')])).toEqual(['Seat 1 lấy Green Dragon Blade (5 ♠) của Seat 0']);
-    expect(vi_([move(sha, 'drawPile', 'seat-0:pile')])).toEqual(['Seat 0 đặt Sha (7 ♠) dưới tướng của mình']);
+    expect(vi_([move(sha, 'drawPile', 'seat-0:pile')])).toEqual(['Seat 0 đặt Sha (7 ♠) dưới Tướng của mình']);
     expect(vi_([move(sha, 'seat-0:judgment', 'seat-1:judgment')])).toEqual(['Sha (7 ♠) chuyển từ Seat 0 sang Seat 1']);
     expect(en_([move(sha, 'seat-0:judgment', 'seat-1:judgment')])).toEqual(['Sha (7 ♠) moved on from Seat 0 to Seat 1']);
   });
@@ -153,19 +153,19 @@ describe('status and table lines in Vietnamese', () => {
   });
 
   it('healing, drawing, dying, saved, eliminated, generals chosen, reshuffle', () => {
-    expect(vi_([{ kind: 'HealEvent', target: seat('seat-0'), amount: 1 }])).toEqual(['Seat 0 hồi 1 sinh lực']);
+    expect(vi_([{ kind: 'HealEvent', target: seat('seat-0'), amount: 1 }])).toEqual(['Seat 0 hồi 1 Sinh lực']);
     expect(vi_([{ kind: 'CardsDrawnEvent', seatId: 'seat-0', cardInstanceIds: ['a'] }])).toEqual(['Seat 0 rút 1 lá bài']);
     expect(vi_([{ kind: 'CardsDrawnEvent', seatId: 'seat-1', cardInstanceIds: ['a', 'b'] }])).toEqual(['Seat 1 rút 2 lá bài']);
     expect(vi_([{ kind: 'SeatDyingEvent', seatId: 'seat-1' }])).toEqual(['Seat 1 cận kề cái chết']);
     expect(vi_([{ kind: 'SeatSavedEvent', seatId: 'seat-1' }])).toEqual(['Seat 1 đã được cứu']);
     expect(vi_([{ kind: 'SeatEliminatedEvent', seatId: 'seat-1' }])).toEqual(['Seat 1 bị loại']);
-    expect(vi_([{ kind: 'GeneralsChosenEvent', seatId: 'seat-0' }])).toEqual(['Seat 0 đã chọn tướng của mình']);
+    expect(vi_([{ kind: 'GeneralsChosenEvent', seatId: 'seat-0' }])).toEqual(['Seat 0 đã chọn Tướng của mình']);
     expect(vi_([{ kind: 'DiscardPileReshuffledEvent', cardCount: 9 }])).toEqual(['Chồng bài bỏ (9) đã được xáo vào chồng bài rút']);
   });
 
   it('keeps the force colour of a status line', () => {
     const history = actionHistory([{ kind: 'HealEvent', target: seat('seat-0'), amount: 1 }], zones, [], seats, tr);
-    expect(history[0]).toMatchObject({ text: 'Seat 0 hồi 1 sinh lực', force: 'Shu' });
+    expect(history[0]).toMatchObject({ text: 'Seat 0 hồi 1 Sinh lực', force: 'Shu' });
   });
 
   it('revealing a General, with and without a skill and a known name', () => {
@@ -230,9 +230,9 @@ describe('choices and skills in Vietnamese', () => {
     expect(vi_([{ kind: 'FormChosenEvent', seatId: 'seat-0', skillId: 'fighting-saint', generalId: 'guan-yu' }])).toEqual(['Seat 0 chọn Fighting Saint từ Guan Yu']);
     expect(vi_([{ kind: 'FormChosenEvent', seatId: 'seat-0', skillId: 'fighting-saint', generalId: 'no-such-general' }])).toEqual(['Seat 0 chọn Fighting Saint từ một Hóa thân']);
     expect(en_([{ kind: 'FormChosenEvent', seatId: 'seat-0', skillId: 'fighting-saint', generalId: 'no-such-general' }])).toEqual(['Seat 0 chose Fighting Saint from a Form']);
-    expect(vi_([{ kind: 'MaxHpReducedEvent', seatId: 'seat-0', maxHp: 3 }])).toEqual(['Seat 0 giờ có sinh lực tối đa là 3']);
-    expect(vi_([{ kind: 'HpLostEvent', seatId: 'seat-0', amount: 2 }])).toEqual(['Seat 0 mất 2 sinh lực']);
-    expect(vi_([{ kind: 'HpLostEvent', seatId: 'seat-0', amount: 1, abilityId: 'battered-body' }])).toEqual(['Seat 0 mất 1 sinh lực (Battered Body)']);
+    expect(vi_([{ kind: 'MaxHpReducedEvent', seatId: 'seat-0', maxHp: 3 }])).toEqual(['Seat 0 giờ có Sinh lực tối đa là 3']);
+    expect(vi_([{ kind: 'HpLostEvent', seatId: 'seat-0', amount: 2 }])).toEqual(['Seat 0 mất 2 Sinh lực']);
+    expect(vi_([{ kind: 'HpLostEvent', seatId: 'seat-0', amount: 1, abilityId: 'battered-body' }])).toEqual(['Seat 0 mất 1 Sinh lực (Battered Body)']);
   });
 
   it('a skill’s judgment, and a changed judgment', () => {
@@ -251,7 +251,7 @@ describe('choices and skills in Vietnamese', () => {
   });
 
   it('turning over, showing a card and turning cards up', () => {
-    expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: true }])).toEqual(['Seat 0 úp tướng']);
+    expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: true }])).toEqual(['Seat 0 úp Tướng']);
     expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: false }])).toEqual(['Seat 0 lật lại']);
     expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: false, passedTurn: true }])).toEqual(['Seat 0 lật lại và bỏ lượt']);
     expect(vi_([{ kind: 'CardShownEvent', seatId: 'seat-1', card: sha, abilityId: 'sow-revolt' }])).toEqual(['Seat 1 cho xem Sha (7 ♠)']);

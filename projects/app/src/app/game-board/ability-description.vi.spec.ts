@@ -59,7 +59,7 @@ describe('describeAsk in Vietnamese', () => {
       generals: { main: { generalDefinitionId: 'guan-yu', revealed: false }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } },
       hand: { zoneId: 'seat-0:hand' }, equipped: { zoneId: 'seat-0:equip' }, judgment: { zoneId: 'seat-0:judgment' },
     }];
-    expect(describeAsk(seated, 'seat-0', asked, tr)).toMatchObject({ prompt: 'Lật Guan Yu để dùng Fighting Saint?', useLabel: 'Lật tướng và dùng' });
+    expect(describeAsk(seated, 'seat-0', asked, tr)).toMatchObject({ prompt: 'Lật Guan Yu để dùng Fighting Saint?', useLabel: 'Lật Tướng và dùng' });
   });
 });
 

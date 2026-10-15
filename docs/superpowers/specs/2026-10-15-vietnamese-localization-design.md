@@ -112,7 +112,7 @@ Decided by the user (2026-10-15):
 | Seat | Người chơi (so "Seat 0" is "Người chơi 0") |
 | Phases | Giai đoạn bắt đầu, phán xét, rút bài, ra bài, bỏ bài, kết thúc |
 | Core cards | Hán-Việt: Sát (Sha), Thiểm (Shan), Đào (Peach), Quyết Đấu (Duel) |
-| Discard (button), Use as, Reveal and Use (button) | Bỏ bài, dùng làm, Lật tướng và dùng |
+| Discard (button), Use as, Reveal and Use (button) | Bỏ bài, dùng làm, Lật Tướng và dùng |
 | General and skill names | Sino-Vietnamese, from `nameZh` |
 
 Defaults proposed and accepted:
@@ -120,7 +120,7 @@ Defaults proposed and accepted:
 - Card types: Cơ bản (Basic), Cẩm nang (Tool), Trang bị (Equipment).
   Subtypes: Vũ khí (Weapon), Giáp (Armor), Ngựa (Mount).
 - Hand, Discard Pile, Draw Pile: Bài trên tay, Chồng bài bỏ, Chồng bài rút.
-- Dying: Cận kề cái chết. Reveal and Face Down: Lật tướng, Úp.
+- Dying: Cận kề cái chết. Reveal and Face Down: Lật Tướng, Úp.
 - Lord: Chủ công.
 - Suits keep their symbols. Colours: đỏ, đen.
 
@@ -131,7 +131,9 @@ ambiguous ones are listed for the user.
 
 Vietnamese does not use Title Case. Labels, buttons and sentences are sentence
 case ("Kết thúc giai đoạn"). Proper nouns stay capitalised: player names,
-General names, forces and card names (Sát, Đào). The per-locale rule is added
+General names, forces and card names (Sát, Đào). The keywords Tướng (General) and
+Sinh lực (HP) keep their capitals inside sentences too (user decision, 2026-10-16),
+so "hồi 1 Sinh lực", "úp Tướng", "Lật Tướng và dùng". The per-locale rule is added
 to the "UI text style" section of `CLAUDE.md`, so the two languages do not
 contradict it. Ids are never shown raw, in either language.
 
