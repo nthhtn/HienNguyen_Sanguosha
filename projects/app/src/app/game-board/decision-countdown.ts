@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { DecisionTimer } from '../decision-timer.service';
+import { TPipe } from '../i18n/t.pipe';
 
 // The time left on the current decision: seconds and a draining bar, pulsing
 // for the last 10 seconds (not red: that is Shu's colour, and a Shu player's
@@ -8,10 +9,10 @@ import { DecisionTimer } from '../decision-timer.service';
 // colour. Shows nothing when no decision is timed.
 @Component({
   selector: 'app-decision-countdown',
-  imports: [MatIconModule],
+  imports: [MatIconModule, TPipe],
   template: `
     @if (seconds() !== null) {
-      <div class="countdown" [class.urgent]="urgent()" role="timer" [attr.aria-label]="seconds() + ' seconds left'">
+      <div class="countdown" [class.urgent]="urgent()" role="timer" [attr.aria-label]="'countdown.aria' | t: { n: seconds()! }">
         <mat-icon>timer</mat-icon>
         <span class="seconds">{{ seconds() }}s</span>
         <span class="bar"><span class="fill" [style.width.%]="percent()"></span></span>

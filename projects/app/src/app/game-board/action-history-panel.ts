@@ -7,6 +7,8 @@ import { cardIdDisplayName } from '../labels';
 import { CardArt } from './card-art';
 import { PlayingCard } from './playing-card';
 import { ActionHistoryEntry } from './action-history';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
 
 export interface ActionHistoryDialogData {
   // Most recent first (action-history.ts). A signal, so the dialog keeps up
@@ -17,9 +19,9 @@ export interface ActionHistoryDialogData {
 // Everything that happened at the table, most recent first, one divider per turn.
 @Component({
   selector: 'app-action-history-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, TPipe],
   template: `
-    <h2 mat-dialog-title>Action History</h2>
+    <h2 mat-dialog-title>{{ 'history.title' | t }}</h2>
     <mat-dialog-content>
       <ol class="history">
         @for (entry of data.history(); track $index) {
@@ -35,16 +37,16 @@ export interface ActionHistoryDialogData {
           } @else {
             <li class="turn">
               <mat-icon>flag</mat-icon>
-              Turn {{ entry.turnNumber }} · {{ entry.seatName }}
+              {{ 'history.turnMarker' | t: { n: entry.turnNumber, seat: entry.seatName } }}
             </li>
           }
         } @empty {
-          <li class="empty">Nothing has happened yet.</li>
+          <li class="empty">{{ 'history.empty' | t }}</li>
         }
       </ol>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close type="button">Close</button>
+      <button mat-button mat-dialog-close type="button">{{ 'ui.close' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `
@@ -62,17 +64,18 @@ export interface ActionHistoryDialogData {
 })
 export class ActionHistoryDialog {
   protected readonly data = inject<ActionHistoryDialogData>(MAT_DIALOG_DATA);
-  protected readonly name = (card: CardInstance) => cardIdDisplayName(card.definitionId);
+  private readonly i18n = inject(I18n);
+  protected readonly name = (card: CardInstance) => cardIdDisplayName(card.definitionId, this.i18n.translator);
 }
 
 // Beside the table, under the discard pile: the latest action, face-up when
 // it was a card; clicking opens the whole history, newest first.
 @Component({
   selector: 'app-action-history',
-  imports: [PlayingCard, MatIconModule],
+  imports: [PlayingCard, MatIconModule, TPipe],
   template: `
-    <div class="label">Action History</div>
-    <button type="button" class="latest" (click)="openHistory()" aria-label="Show Action History">
+    <div class="label">{{ 'history.title' | t }}</div>
+    <button type="button" class="latest" (click)="openHistory()" [attr.aria-label]="'history.show' | t">
       @if (latest(); as entry) {
         @if (entry.card; as card) {
           <app-playing-card size="small" [card]="card" />
@@ -82,7 +85,7 @@ export class ActionHistoryDialog {
         <span class="text" [class.force-status]="!!entry.force" [attr.data-force]="entry.force ?? null">{{ entry.text }}</span>
       } @else {
         <mat-icon class="icon">history</mat-icon>
-        <span class="text">Nothing yet</span>
+        <span class="text">{{ 'history.nothingYet' | t }}</span>
       }
     </button>
   `,
@@ -109,11 +112,12 @@ export class ActionHistoryPanel {
   readonly history = input.required<ActionHistoryEntry[]>();
 
   private readonly dialog = inject(MatDialog);
+  private readonly i18n = inject(I18n);
 
   protected readonly latest = computed(
     () => this.history().find((e): e is Extract<ActionHistoryEntry, { kind: 'action' }> => e.kind === 'action') ?? null
   );
-  protected readonly name = (card: CardInstance) => cardIdDisplayName(card.definitionId);
+  protected readonly name = (card: CardInstance) => cardIdDisplayName(card.definitionId, this.i18n.translator);
 
   protected openHistory(): void {
     this.dialog.open<ActionHistoryDialog, ActionHistoryDialogData>(ActionHistoryDialog, {

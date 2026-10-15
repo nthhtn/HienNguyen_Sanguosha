@@ -509,7 +509,7 @@ swap(p, "cardIdDisplayName(card.definitionId);", "cardIdDisplayName(card.definit
 p = G + 'decision-countdown.ts'
 add_import(p, "import { TPipe } from '../i18n/t.pipe';")
 swap(p, "imports: [MatIconModule],", "imports: [MatIconModule, TPipe],")
-swap(p, """[attr.aria-label]="seconds() + ' seconds left'\"""", """[attr.aria-label]="'countdown.aria' | t: { n: seconds() }\"""")
+swap(p, """[attr.aria-label]="seconds() + ' seconds left'\"""", """[attr.aria-label]="'countdown.aria' | t: { n: seconds()! }\"""")
 
 # --- reveal-gate-overlay.ts
 p = G + 'reveal-gate-overlay.ts'

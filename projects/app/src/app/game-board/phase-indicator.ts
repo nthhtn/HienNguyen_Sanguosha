@@ -1,7 +1,9 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, inject } from '@angular/core';
 import { GameState, discardOwed } from 'engine';
 import { forceOf, seatName } from '../labels';
 import { DecisionCountdown } from './decision-countdown';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
 
 // Whose turn it is and which phase, e.g. "Seat 0 (you) – Play Phase", between
 // the turn number and the draw pile count.
@@ -9,23 +11,23 @@ import { DecisionCountdown } from './decision-countdown';
 // Presentational: every value comes from the (redacted) state or the engine.
 @Component({
   selector: 'app-phase-indicator',
-  imports: [DecisionCountdown],
+  imports: [DecisionCountdown, TPipe],
   template: `
     <div class="phase-indicator" role="status" aria-live="polite" [attr.data-force]="ownerForce()">
-      <span class="count turn">Turn {{ state().turn.turnNumber }}</span>{{ ' ' }}
+      <span class="count turn">{{ 'phase.turn' | t: { n: state().turn.turnNumber } }}</span>{{ ' ' }}
       <span class="seat">{{ ownerName() }}</span>
       @if (isViewersTurn()) {
-        {{ ' ' }}<span class="you">(you)</span>
+        {{ ' ' }}<span class="you">{{ 'phase.you' | t }}</span>
       }
-      {{ ' ' }}<span class="sep">–</span>{{ ' ' }}<span class="phase">{{ state().phase }} Phase</span>
+      {{ ' ' }}<span class="sep">–</span>{{ ' ' }}<span class="phase">{{ 'phase.indicator' | t: { phase: phaseName() } }}</span>
       @if (discardsLeft() > 0) {
-        {{ ' ' }}<span class="discard">– discard {{ discardsLeft() }} more</span>
+        {{ ' ' }}<span class="discard">{{ 'phase.discardMore' | t: { n: discardsLeft() } }}</span>
       }
       @if (isViewersTurn() && state().phase === 'Play' && !state().pendingResponse) {
         <!-- At zero: End Phase. -->
         <app-decision-countdown class="timer" />
       }
-      {{ ' ' }}<span class="count draw-pile">Draw Pile {{ drawPileCount() }}</span>
+      {{ ' ' }}<span class="count draw-pile">{{ 'phase.drawPile' | t: { n: drawPileCount() } }}</span>
     </div>
   `,
   styles: `
@@ -49,7 +51,10 @@ export class PhaseIndicator {
   readonly state = input.required<GameState>();
   readonly viewerSeatId = input<string | null>(null);
 
-  protected readonly ownerName = computed(() => seatName(this.state().players, this.state().turn.ownerSeatId));
+  private readonly i18n = inject(I18n);
+
+  protected readonly ownerName = computed(() => seatName(this.state().players, this.state().turn.ownerSeatId, this.i18n.translator));
+  protected readonly phaseName = computed(() => this.i18n.t(`history.phase.${this.state().phase}` as const));
 
   protected readonly ownerForce = computed(() =>
     forceOf(this.state().seats.find((s) => s.id === this.state().turn.ownerSeatId)?.kingdom)

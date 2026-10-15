@@ -38,10 +38,12 @@ import { CompeteResult, competeResults } from './compete-result';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
 import { DecisionTimer } from '../decision-timer.service';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-game-board',
-  imports: [RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -49,9 +51,9 @@ import { DecisionTimer } from '../decision-timer.service';
         <span class="message">{{ error }}</span>
         @if (gameService.mode() === 'vs-bots' && gameService.state() && !gameService.state()!.result) {
           <!-- A failed bot move stops the bots, so give the player a way out. -->
-          <button mat-button type="button" (click)="goToSetup()">New Game</button>
+          <button mat-button type="button" (click)="goToSetup()">{{ 'ui.newGame' | t }}</button>
         }
-        <button mat-button type="button" (click)="dismissError()">Dismiss</button>
+        <button mat-button type="button" (click)="dismissError()">{{ 'ui.dismiss' | t }}</button>
       </div>
     }
 
@@ -65,7 +67,7 @@ import { DecisionTimer } from '../decision-timer.service';
           @if (visible.phase === 'GeneralSelection' && activeSeatId !== viewerSeatId()) {
             <mat-card appearance="outlined" class="bots-choosing">
               <mat-progress-spinner mode="indeterminate" diameter="28" />
-              <span>Bots are choosing their Generals…</span>
+              <span>{{ 'board.botsChoosing' | t }}</span>
             </mat-card>
           } @else if (visible.phase === 'GeneralSelection') {
             <app-general-selection
@@ -105,7 +107,7 @@ import { DecisionTimer } from '../decision-timer.service';
                 }
                 <section class="your-hand">
                   <div class="hand">
-                    <h3>Your Hand</h3>
+                    <h3>{{ 'board.yourHand' | t }}</h3>
                     <app-hand-view
                       [cards]="ownHand()"
                       [actions]="gameService.legalActions()"
@@ -131,8 +133,8 @@ import { DecisionTimer } from '../decision-timer.service';
         }
       }
     } @else {
-      <p>No game in progress.</p>
-      <a mat-flat-button routerLink="/setup">Start a New Game</a>
+      <p>{{ 'board.noGame' | t }}</p>
+      <a mat-flat-button routerLink="/setup">{{ 'board.startNewGame' | t }}</a>
     }
   `,
   styles: `
@@ -201,6 +203,7 @@ export class GameBoard {
   private readonly timer = inject(DecisionTimer);
   private readonly music = inject(MusicService);
   private readonly sounds = inject(SoundEffects);
+  private readonly i18n = inject(I18n);
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
   private choiceDialog: MatDialogRef<unknown, Action> | null = null;
@@ -374,7 +377,7 @@ export class GameBoard {
 
   protected readonly actionHistory = computed(() => {
     const visible = this.visibleState();
-    return visible ? actionHistory(visible.log, visible.zones, visible.players, visible.seats) : [];
+    return visible ? actionHistory(visible.log, visible.zones, visible.players, visible.seats, this.i18n.translator) : [];
   });
 
   protected readonly discardHistory = computed(() => {
@@ -396,7 +399,7 @@ export class GameBoard {
   );
 
   protected nameOf(seatId: string): string {
-    return seatName(this.gameService.state()?.players ?? [], seatId);
+    return seatName(this.gameService.state()?.players ?? [], seatId, this.i18n.translator);
   }
 
   private readonly competeQueue: CompeteResult[] = [];
@@ -447,7 +450,7 @@ export class GameBoard {
     const visible = this.visibleState();
     const seatId = this.viewerSeatId();
     if (this.responseDialogFor === pendingId || !visible || !seatId) return;
-    const description = describeResponse(visible, seatId, (effect) => this.gameService.previewEffect(visible, effect));
+    const description = describeResponse(visible, seatId, (effect) => this.gameService.previewEffect(visible, effect), this.i18n.translator);
     const legal = this.gameService.legalActions();
     const noResponse = legal.find((a) => a.kind === 'PassAction');
     if (!description || !noResponse) return;
@@ -458,7 +461,7 @@ export class GameBoard {
       return card ? [{ id: card.instanceId, action, card, label: ResponseDialog.cardLabel(card) }] : [];
     });
     const skills: ResponseOption[] = legal.flatMap((action, i) =>
-      action.kind === 'UseConversionAction' ? [{ id: `convert-${i}`, action, label: conversionLabel(action, visible, this.gameService.registry) }] : []
+      action.kind === 'UseConversionAction' ? [{ id: `convert-${i}`, action, label: conversionLabel(action, visible, this.gameService.registry, this.i18n.translator) }] : []
     );
     this.responseDialogFor = pendingId;
     const ref = openForceDialog<ResponseDialog, ResponseDialogData, Action>(this.dialog, ResponseDialog, this.viewerForce(), {
@@ -482,7 +485,7 @@ export class GameBoard {
     const choice = visible?.pendingChoice;
     if (this.choiceDialogFor === choiceId || !visible || !choice || !seatId) return;
     // A "may": the Ask window instead.
-    const ask = describeAsk(visible, seatId, this.gameService.legalActions());
+    const ask = describeAsk(visible, seatId, this.gameService.legalActions(), this.i18n.translator);
     if (ask) {
       this.choiceDialogFor = choiceId;
       const ref = openForceDialog<AskDialog, AskDialogData, Action>(this.dialog, AskDialog, this.viewerForce(), { data: { description: ask }, width: 'min(92vw, 480px)', disableClose: true });
@@ -494,9 +497,9 @@ export class GameBoard {
       });
       return;
     }
-    const description = describeChoice(visible, seatId);
+    const description = describeChoice(visible, seatId, this.i18n.translator);
     if (!description) return;
-    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players, description.declineLabel, visible.seats);
+    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players, description.declineLabel, visible.seats, this.i18n.translator);
     this.choiceDialogFor = choiceId;
     const ref = openForceDialog<ChoiceDialog, ChoiceDialogData, Action>(this.dialog, ChoiceDialog, this.viewerForce(), {
       data: { description, options, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },
@@ -517,7 +520,7 @@ export class GameBoard {
     const visible = this.visibleState();
     const seatId = this.viewerSeatId();
     if (this.selectionDialogFor === selectionId || !visible || !seatId) return;
-    const description = describeSelection(visible, seatId, this.gameService.legalActions());
+    const description = describeSelection(visible, seatId, this.gameService.legalActions(), this.i18n.translator);
     if (!description) return;
     this.selectionDialogFor = selectionId;
     const ref = openForceDialog<SelectionDialog, SelectionDialogData, Action>(this.dialog, SelectionDialog, this.viewerForce(), {
@@ -539,7 +542,7 @@ export class GameBoard {
     const visible = this.visibleState();
     const seatId = this.viewerSeatId();
     if (this.arrangeDialogFor === arrangementId || !visible || !seatId) return;
-    const description = describeArrangement(visible, seatId, this.gameService.legalActions());
+    const description = describeArrangement(visible, seatId, this.gameService.legalActions(), this.i18n.translator);
     if (!description) return;
     this.arrangeDialogFor = arrangementId;
     const ref = openForceDialog<ArrangeDialog, ArrangeDialogData, Action>(this.dialog, ArrangeDialog, this.viewerForce(), {

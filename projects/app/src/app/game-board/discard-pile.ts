@@ -6,6 +6,8 @@ import { CardInstance } from 'engine';
 import { cardIdDisplayName } from '../labels';
 import { PlayingCard } from './playing-card';
 import { DiscardHistoryEntry } from './discard-history';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
 
 export interface DiscardHistoryDialogData {
   // Most recent first (discard-history.ts). A signal, so the dialog keeps up
@@ -17,11 +19,11 @@ export interface DiscardHistoryDialogData {
 // the draw pile sit below a reshuffle divider, dimmed.
 @Component({
   selector: 'app-discard-history-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, PlayingCard],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, PlayingCard, TPipe],
   template: `
-    <h2 mat-dialog-title>Discard History</h2>
+    <h2 mat-dialog-title>{{ 'discard.title' | t }}</h2>
     <mat-dialog-content>
-      <p class="summary">{{ inPileCount() }} in the pile · {{ discardCount() }} discarded this game</p>
+      <p class="summary">{{ 'discard.summary' | t: { inPile: inPileCount(), total: discardCount() } }}</p>
       <ol class="history">
         @for (entry of data.history(); track $index) {
           @if (entry.kind === 'card') {
@@ -31,14 +33,14 @@ export interface DiscardHistoryDialogData {
           } @else {
             <li class="reshuffle">
               <mat-icon>autorenew</mat-icon>
-              {{ entry.cardCount }} {{ entry.cardCount === 1 ? 'card' : 'cards' }} shuffled into the draw pile
+              {{ (entry.cardCount === 1 ? 'discard.reshuffled.one' : 'discard.reshuffled.other') | t: { n: entry.cardCount } }}
             </li>
           }
         }
       </ol>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close type="button">Close</button>
+      <button mat-button mat-dialog-close type="button">{{ 'ui.close' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `
@@ -63,11 +65,11 @@ export class DiscardHistoryDialog {
 // face-up; clicking it opens the whole discard history, newest first.
 @Component({
   selector: 'app-discard-pile',
-  imports: [PlayingCard],
+  imports: [PlayingCard, TPipe],
   template: `
-    <div class="label">Discard Pile</div>
+    <div class="label">{{ 'discard.pile' | t }}</div>
     @if (top(); as card) {
-      <button type="button" class="pile" (click)="openHistory()" [attr.aria-label]="'Discard pile, ' + cards().length + ' cards. Show discard history'">
+      <button type="button" class="pile" (click)="openHistory()" [attr.aria-label]="'discard.pileAria' | t: { n: cards().length }">
         @if (cards().length > 1) {
           <div class="under" aria-hidden="true"></div>
         }
@@ -77,11 +79,11 @@ export class DiscardHistoryDialog {
       <div class="top-name">{{ name(card) }}</div>
     } @else if (history().length > 0) {
       <!-- Emptied by a reshuffle: the history is still worth a look. -->
-      <button type="button" class="pile empty" (click)="openHistory()" aria-label="Discard pile, Empty. Show discard history"></button>
-      <div class="top-name">Empty</div>
+      <button type="button" class="pile empty" (click)="openHistory()" [attr.aria-label]="'discard.emptyShowAria' | t"></button>
+      <div class="top-name">{{ 'discard.empty' | t }}</div>
     } @else {
-      <div class="pile empty" aria-label="Discard pile, Empty"></div>
-      <div class="top-name">Empty</div>
+      <div class="pile empty" [attr.aria-label]="'discard.emptyAria' | t"></div>
+      <div class="top-name">{{ 'discard.empty' | t }}</div>
     }
   `,
   styles: `
@@ -110,9 +112,10 @@ export class DiscardPile {
   readonly history = input.required<DiscardHistoryEntry[]>();
 
   private readonly dialog = inject(MatDialog);
+  private readonly i18n = inject(I18n);
 
   protected readonly top = computed(() => this.cards().at(-1) ?? null);
-  protected readonly name = (card: CardInstance) => cardIdDisplayName(card.definitionId);
+  protected readonly name = (card: CardInstance) => cardIdDisplayName(card.definitionId, this.i18n.translator);
 
   protected openHistory(): void {
     this.dialog.open<DiscardHistoryDialog, DiscardHistoryDialogData>(DiscardHistoryDialog, {

@@ -10,6 +10,8 @@ import { PlayingCard } from './playing-card';
 import { CardArt } from './card-art';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { fitTable, seatPlacements } from './table-layout';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
 
 // The table's size before it is first measured (and in tests).
 const DEFAULT_SIZE = { width: 1280, height: 640 };
@@ -28,26 +30,26 @@ const STATUS_HEIGHT = 24;
 // Presentational: everything shown is read straight off the (redacted) state.
 @Component({
   selector: 'app-round-table',
-  imports: [SeatTile, PlayingCard, CardArt, MatProgressSpinnerModule],
+  imports: [SeatTile, PlayingCard, CardArt, MatProgressSpinnerModule, TPipe],
   template: `
     <div class="table" [class.crowded]="state().seats.length > 6">
       <!-- Only the latest action sequence, one step per line, each with its card. -->
       <div class="centre" [style.width.px]="fit().centreWidth" [style.top.px]="fit().centreY" [style.max-height.px]="fit().centreHeight">
         @if (turnedUp().length > 0) {
-          <div class="turned-up" aria-label="Turned Up Cards">
+          <div class="turned-up" [attr.aria-label]="'table.turnedUp' | t">
             @for (card of turnedUp(); track card.instanceId) {
               <app-playing-card [card]="card" size="small" />
             }
           </div>
         }
-        <ul class="sequence" aria-label="Action Sequence">
+        <ul class="sequence" [attr.aria-label]="'table.sequence' | t">
           @if (shown().earlier > 0) {
-            <li class="step earlier">{{ shown().earlier }} earlier steps</li>
+            <li class="step earlier">{{ 'table.earlier' | t: { n: shown().earlier } }}</li>
           }
           @for (line of shown().steps; track $index) {
             <li class="step">
               @if (line.card; as card) {
-                <button type="button" class="thumb" [attr.aria-label]="'Info: ' + cardName(card)" (click)="openCard(card)">
+                <button type="button" class="thumb" [attr.aria-label]="'ui.info' | t: { name: cardName(card) }" (click)="openCard(card)">
                   <app-card-art size="tiny" [id]="card.definitionId" [label]="cardName(card)" />
                 </button>
               } @else {
@@ -61,7 +63,7 @@ const STATUS_HEIGHT = 24;
           <div class="waiting">{{ line }}</div>
         }
         @if (thinkingSeatId(); as thinking) {
-          <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ name(thinking) }} is thinking…</div>
+          <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ 'table.thinking' | t: { seat: name(thinking) } }}</div>
         }
       </div>
       @for (p of placements(); track p.seat.id) {
@@ -139,7 +141,9 @@ export class RoundTable {
   readonly thinkingSeatId = input<string | null>(null);
   readonly botSeatIds = input<string[]>([]);
 
-  protected readonly waiting = computed(() => waitingLine(this.state()));
+  private readonly i18n = inject(I18n);
+
+  protected readonly waiting = computed(() => waitingLine(this.state(), this.i18n.translator));
   protected readonly turnedUp = computed(() => this.state().zones.find((z) => z.kind === 'processing')?.cards ?? []);
 
   // The battlefield's measured size, in px.
@@ -149,7 +153,7 @@ export class RoundTable {
 
   // The latest action sequence, oldest first, in the action history's wording.
   protected readonly sequence = computed(() =>
-    latestSequence(actionHistory(this.state().log, this.state().zones, this.state().players, this.state().seats))
+    latestSequence(actionHistory(this.state().log, this.state().zones, this.state().players, this.state().seats, this.i18n.translator))
   );
   // How many steps the centre has room for: the columns that fit across, times the rows that fit
   // down, after the turned-up row and the status lines.
@@ -191,7 +195,7 @@ export class RoundTable {
   }
 
   protected name(seatId: string): string {
-    return seatName(this.state().players, seatId);
+    return seatName(this.state().players, seatId, this.i18n.translator);
   }
 
   protected equipmentOf(zoneId: string) {

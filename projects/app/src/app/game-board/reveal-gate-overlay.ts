@@ -2,18 +2,19 @@ import { Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-reveal-gate-overlay',
-  imports: [MatButtonModule, MatCardModule, MatIconModule],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, TPipe],
   template: `
     <div class="reveal-gate">
       <mat-card appearance="raised" class="gate-card">
         <mat-icon class="big-icon">phone_android</mat-icon>
-        <h2>Pass the device to {{ name() }}</h2>
-        <p>Everyone else, Look away — The next screen shows {{ name() }}'s private cards.</p>
+        <h2>{{ 'reveal.pass' | t: { name: name() } }}</h2>
+        <p>{{ 'reveal.lookAway' | t: { name: name() } }}</p>
         <button mat-flat-button type="button" (click)="revealed.emit()">
-          <mat-icon>visibility</mat-icon> Tap to Reveal
+          <mat-icon>visibility</mat-icon> {{ 'reveal.tap' | t }}
         </button>
       </mat-card>
     </div>
