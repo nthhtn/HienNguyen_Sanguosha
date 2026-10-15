@@ -488,4 +488,106 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
       expect((await repos().games.findById(game.id))?.actionCount).toBe(0);
     });
   });
+  describe('chat', () => {
+    const newRoom = async () => {
+      const room = await repos().rooms.create({ visibility: 'open', seatCount: 4, rules: {}, now: NOW });
+      const ann = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'human', displayName: 'Ann', now: NOW });
+      const bo = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'human', displayName: 'Bo', now: NOW });
+      return { room, ann, bo };
+    };
+    const say = (roomId: string, roomPlayerId: string, body: string, extra: { gameId?: string; afterSeq?: number } = {}) =>
+      repos().chat.add({ roomId, gameId: extra.gameId ?? null, afterSeq: extra.afterSeq ?? null, roomPlayerId, body, now: NOW });
+
+    it('stores a message with the sender name and the game it followed', async () => {
+      const { room, ann } = await newRoom();
+      const game = await repos().games.create({ roomId: room.id, seed: 1, seats: [], rules: {}, buildId: 'build-1', now: NOW });
+      const lobby = await say(room.id, ann.id, 'hello');
+      const inGame = await say(room.id, ann.id, 'gg', { gameId: game.id, afterSeq: 3 });
+      expect(lobby).toEqual({ id: expect.any(Number), roomId: room.id, gameId: null, afterSeq: null, roomPlayerId: ann.id, name: 'Ann', body: 'hello', createdAt: NOW });
+      expect(inGame).toMatchObject({ gameId: game.id, afterSeq: 3, body: 'gg' });
+      expect(inGame.id).toBeGreaterThan(lobby.id);
+    });
+
+    it("lists a room's last messages, oldest first, and no other room's", async () => {
+      const { room, ann, bo } = await newRoom();
+      const other = await newRoom();
+      for (const [i, body] of ['m1', 'm2', 'm3', 'm4', 'm5'].entries()) await say(room.id, i % 2 === 0 ? ann.id : bo.id, body);
+      await say(other.room.id, other.ann.id, 'elsewhere');
+      expect((await repos().chat.listRecent(room.id, 3)).map((m) => [m.body, m.name])).toEqual([
+        ['m3', 'Ann'],
+        ['m4', 'Bo'],
+        ['m5', 'Ann'],
+      ]);
+      expect(await repos().chat.listRecent(room.id, 100)).toHaveLength(5);
+    });
+
+    it("lists one game's messages only, oldest first", async () => {
+      const { room, ann } = await newRoom();
+      const first = await repos().games.create({ roomId: room.id, seed: 1, seats: [], rules: {}, buildId: 'build-1', now: NOW });
+      await say(room.id, ann.id, 'lobby before');
+      await say(room.id, ann.id, 'one', { gameId: first.id, afterSeq: 0 });
+      await say(room.id, ann.id, 'two', { gameId: first.id, afterSeq: 5 });
+      await repos().games.update(first.id, { status: 'finished', finishedAt: minutes(1) });
+      const second = await repos().games.create({ roomId: room.id, seed: 2, seats: [], rules: {}, buildId: 'build-1', now: minutes(2) });
+      await say(room.id, ann.id, 'other game', { gameId: second.id, afterSeq: 0 });
+      expect((await repos().chat.listForGame(first.id)).map((m) => m.body)).toEqual(['one', 'two']);
+    });
+
+    it('refuses a message from someone who is not a member', async () => {
+      const { room } = await newRoom();
+      await expect(say(room.id, randomUUID(), 'hello')).rejects.toThrow();
+    });
+  });
+
+  describe('finished games of a user', () => {
+    const RESULT = { endedAt: 9, winningSeatIds: ['seat-1'], losingSeatIds: ['seat-0'] };
+    // A two-seat game in which the user sits on seat-1 (not the first seat, so
+    // the seat can't be found by position).
+    const play = async (userId: string | null, status: 'running' | 'finished' | 'aborted', finishedAt: Date | null) => {
+      const room = await repos().rooms.create({ visibility: 'open', seatCount: 2, rules: {}, now: NOW });
+      const person = await repos().rooms.addPlayer({ roomId: room.id, userId, kind: 'human', displayName: 'Ann', now: NOW });
+      const bot = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: 'Bot 1', now: NOW });
+      const seats: GameSeat[] = [
+        { seatId: 'seat-0', roomPlayerId: bot.id, name: 'Bot 1', kind: 'bot' },
+        { seatId: 'seat-1', roomPlayerId: person.id, name: 'Ann', kind: 'human' },
+      ];
+      const game = await repos().games.create({ roomId: room.id, seed: 1, seats, rules: {}, buildId: 'build-1', now: NOW });
+      if (status !== 'running') await repos().games.update(game.id, { status, result: status === 'finished' ? RESULT : null, finishedAt });
+      return game;
+    };
+
+    it('lists the finished games the user sat in, newest first, with their own seat', async () => {
+      const user = await registered();
+      const other = await registered();
+      const older = await play(user.id, 'finished', minutes(1));
+      const newer = await play(user.id, 'finished', minutes(5));
+      await play(other.id, 'finished', minutes(9));
+      const list = await repos().games.listFinishedForUser(user.id);
+      expect(list.map((entry) => entry.game.id)).toEqual([newer.id, older.id]);
+      expect(list.map((entry) => entry.yourSeatId)).toEqual(['seat-1', 'seat-1']);
+      expect(list[0].game).toEqual((await repos().games.findById(newer.id))!);
+    });
+
+    it('leaves out running and aborted games, and games of a deleted or unknown user', async () => {
+      const user = await registered();
+      await play(user.id, 'running', null);
+      await play(user.id, 'aborted', minutes(2));
+      await play(null, 'finished', minutes(3));
+      expect(await repos().games.listFinishedForUser(user.id)).toEqual([]);
+      expect(await repos().games.listFinishedForUser(randomUUID())).toEqual([]);
+    });
+
+    it("finds one finished game of the user, and null for someone else's, an unfinished or an unknown one", async () => {
+      const user = await registered();
+      const other = await registered();
+      const mine = await play(user.id, 'finished', minutes(1));
+      const running = await play(user.id, 'running', null);
+      const aborted = await play(user.id, 'aborted', minutes(2));
+      expect(await repos().games.findFinishedForUser(user.id, mine.id)).toEqual({ game: (await repos().games.findById(mine.id))!, yourSeatId: 'seat-1' });
+      expect(await repos().games.findFinishedForUser(other.id, mine.id)).toBeNull();
+      expect(await repos().games.findFinishedForUser(user.id, running.id)).toBeNull();
+      expect(await repos().games.findFinishedForUser(user.id, aborted.id)).toBeNull();
+      expect(await repos().games.findFinishedForUser(user.id, randomUUID())).toBeNull();
+    });
+  });
 }

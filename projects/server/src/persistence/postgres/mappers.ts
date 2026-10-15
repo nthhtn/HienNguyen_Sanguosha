@@ -1,6 +1,6 @@
 import { Selectable } from 'kysely';
-import { GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
-import { GameActionsTable, GamesTable, PasswordResetTokensTable, RoomPlayersTable, RoomsTable, SessionsTable, UsersTable } from './schema';
+import { ChatMessageRecord, GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from '../records';
+import { ChatMessagesTable, GameActionsTable, GamesTable, PasswordResetTokensTable, RoomPlayersTable, RoomsTable, SessionsTable, UsersTable } from './schema';
 
 export function toUserRecord(row: Selectable<UsersTable>): UserRecord {
   return {
@@ -90,4 +90,22 @@ export function toGameActionRecord(row: Selectable<GameActionsTable>): GameActio
     stateHash: row.state_hash,
     createdAt: row.created_at,
   };
+}
+
+export function toChatMessageRecord(row: Selectable<ChatMessagesTable> & { name: string }): ChatMessageRecord {
+  return {
+    id: Number(row.id),
+    roomId: row.room_id,
+    gameId: row.game_id,
+    afterSeq: row.after_seq,
+    roomPlayerId: row.room_player_id,
+    name: row.name,
+    body: row.body,
+    createdAt: row.created_at,
+  };
+}
+
+// A games row plus the seat found for the user by the query that read it.
+export function toUserGameRecord(row: Selectable<GamesTable> & { your_seat_id: string }): UserGameRecord {
+  return { game: toGameRecord(row), yourSeatId: row.your_seat_id };
 }

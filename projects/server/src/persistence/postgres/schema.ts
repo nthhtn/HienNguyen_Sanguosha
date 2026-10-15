@@ -85,7 +85,19 @@ export interface GameActionsTable {
   created_at: Timestamp;
 }
 
+export interface ChatMessagesTable {
+  // bigserial: read back as a string.
+  id: Generated<string>;
+  room_id: string;
+  game_id: string | null;
+  after_seq: number | null;
+  room_player_id: string;
+  body: string;
+  created_at: Timestamp;
+}
+
 export interface Database {
+  chat_messages: ChatMessagesTable;
   users: UsersTable;
   sessions: SessionsTable;
   password_reset_tokens: PasswordResetTokensTable;

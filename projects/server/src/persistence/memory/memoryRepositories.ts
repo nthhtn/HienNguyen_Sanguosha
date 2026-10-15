@@ -1,11 +1,13 @@
 import { randomUUID } from 'node:crypto';
-import { GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
+import { ChatMessageRecord, GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from '../records';
 import {
   EmailTakenError,
   GameChanges,
+  ChatRepository,
   GameRepository,
   LiveRoomRecord,
   NameTakenError,
+  NewChatMessage,
   NewGameAction,
   Repositories,
   ResetTokenRepository,
@@ -24,10 +26,11 @@ interface Store {
   roomPlayers: Map<string, RoomPlayerRecord>;
   games: Map<string, GameRecord>;
   gameActions: Map<string, GameActionRecord>;
+  chatMessages: Map<string, ChatMessageRecord>;
 }
 
 type Table = keyof Store;
-const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions'];
+const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions', 'chatMessages'];
 // Retries of a transaction whose records others changed under it, before giving up.
 const MAX_TRANSACTION_ATTEMPTS = 10;
 
@@ -35,7 +38,7 @@ const MAX_TRANSACTION_ATTEMPTS = 10;
 // and writes with no `await` between them, so concurrent calls can't interleave
 // (the uniqueness and single-use rules hold under Promise.all).
 export function createMemoryRepositories(): Repositories {
-  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map(), games: new Map(), gameActions: new Map() });
+  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map(), games: new Map(), gameActions: new Map(), chatMessages: new Map() });
 }
 
 function repositoriesOver(store: Store): Repositories {
@@ -45,6 +48,7 @@ function repositoriesOver(store: Store): Repositories {
     resetTokens: new MemoryResetTokens(store),
     rooms: new MemoryRooms(store),
     games: new MemoryGames(store),
+    chat: new MemoryChat(store),
     transaction: (work) => transact(store, work),
   };
 }
@@ -93,6 +97,7 @@ const cloneStore = (store: Store): Store => ({
   roomPlayers: cloneMap(store.roomPlayers),
   games: cloneMap(store.games),
   gameActions: cloneMap(store.gameActions),
+  chatMessages: cloneMap(store.chatMessages),
 });
 
 // Compare field by field: dates by time, plain objects (rules) by their JSON.
@@ -341,6 +346,44 @@ class MemoryRooms implements RoomRepository {
 
 // A deep copy of a record's plain data. Not structuredClone: under Jest that
 // builds its Dates in another realm, which `instanceof Date` rejects.
+
+class MemoryChat implements ChatRepository {
+  constructor(private readonly store: Store) {}
+
+  async add(input: NewChatMessage): Promise<ChatMessageRecord> {
+    const player = this.store.roomPlayers.get(input.roomPlayerId);
+    if (!player) throw new Error(`No room player ${input.roomPlayerId}`);
+    const id = [...this.store.chatMessages.values()].reduce((max, m) => Math.max(max, m.id), 0) + 1;
+    const record: ChatMessageRecord = {
+      id,
+      roomId: input.roomId,
+      gameId: input.gameId,
+      afterSeq: input.afterSeq,
+      roomPlayerId: input.roomPlayerId,
+      name: player.displayName,
+      body: input.body,
+      createdAt: input.now,
+    };
+    this.store.chatMessages.set(String(id), record);
+    return { ...record };
+  }
+
+  async listRecent(roomId: string, limit: number): Promise<ChatMessageRecord[]> {
+    return [...this.store.chatMessages.values()]
+      .filter((m) => m.roomId === roomId)
+      .sort((a, b) => a.id - b.id)
+      .slice(-limit)
+      .map((m) => ({ ...m }));
+  }
+
+  async listForGame(gameId: string): Promise<ChatMessageRecord[]> {
+    return [...this.store.chatMessages.values()]
+      .filter((m) => m.gameId === gameId)
+      .sort((a, b) => a.id - b.id)
+      .map((m) => ({ ...m }));
+  }
+}
+
 function deepCopy<T>(value: T): T {
   if (Object.prototype.toString.call(value) === '[object Date]') return new Date((value as Date).getTime()) as T;
   if (Array.isArray(value)) return value.map((item) => deepCopy(item)) as T;
@@ -406,5 +449,19 @@ class MemoryGames implements GameRepository {
       .filter((action) => action.gameId === gameId)
       .sort((a, b) => a.seq - b.seq)
       .map((action) => deepCopy(action));
+  }
+
+  async listFinishedForUser(userId: string): Promise<UserGameRecord[]> {
+    return [...this.store.games.values()]
+      .filter((game) => game.status === 'finished')
+      .flatMap((game) => {
+        const seat = game.seats.find((s) => this.store.roomPlayers.get(s.roomPlayerId)?.userId === userId);
+        return seat ? [{ game: deepCopy(game), yourSeatId: seat.seatId }] : [];
+      })
+      .sort((a, b) => (b.game.finishedAt?.getTime() ?? 0) - (a.game.finishedAt?.getTime() ?? 0) || a.game.id.localeCompare(b.game.id));
+  }
+
+  async findFinishedForUser(userId: string, gameId: string): Promise<UserGameRecord | null> {
+    return (await this.listFinishedForUser(userId)).find((entry) => entry.game.id === gameId) ?? null;
   }
 }

@@ -95,3 +95,23 @@ export interface GameActionRecord {
   stateHash: string;
   createdAt: Date;
 }
+
+// A chat message with the name its sender had in the room.
+export interface ChatMessageRecord {
+  id: number;
+  roomId: string;
+  // The game that was running when it was sent, and how many actions it had
+  // then; both null in a lobby.
+  gameId: string | null;
+  afterSeq: number | null;
+  roomPlayerId: string;
+  name: string;
+  body: string;
+  createdAt: Date;
+}
+
+// A finished game and the seat a user played in it.
+export interface UserGameRecord {
+  game: GameRecord;
+  yourSeatId: string;
+}

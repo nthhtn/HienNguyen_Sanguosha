@@ -1,11 +1,13 @@
-import { Kysely } from 'kysely';
-import { GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from '../records';
+import { Kysely, Selectable, sql } from 'kysely';
+import { ChatMessageRecord, GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from '../records';
 import {
   EmailTakenError,
   GameChanges,
+  ChatRepository,
   GameRepository,
   LiveRoomRecord,
   NameTakenError,
+  NewChatMessage,
   NewGameAction,
   Repositories,
   ResetTokenRepository,
@@ -15,8 +17,8 @@ import {
   StaleGameError,
   UserRepository,
 } from '../repositories';
-import { toGameActionRecord, toGameRecord, toResetTokenRecord, toRoomPlayerRecord, toRoomRecord, toSessionRecord, toUserRecord } from './mappers';
-import { Database } from './schema';
+import { toChatMessageRecord, toUserGameRecord, toGameActionRecord, toGameRecord, toResetTokenRecord, toRoomPlayerRecord, toRoomRecord, toSessionRecord, toUserRecord } from './mappers';
+import { Database, GamesTable } from './schema';
 
 const UNIQUE_VIOLATION = '23505';
 const isUniqueViolation = (err: unknown) => (err as { code?: unknown } | null)?.code === UNIQUE_VIOLATION;
@@ -32,6 +34,7 @@ export function createPostgresRepositories(db: Kysely<Database>): Repositories {
     resetTokens: new PostgresResetTokens(db),
     rooms: new PostgresRooms(db),
     games: new PostgresGames(db),
+    chat: new PostgresChat(db),
     transaction: (work) => db.transaction().execute((trx) => work(createPostgresRepositories(trx))),
   };
 }
@@ -317,5 +320,60 @@ class PostgresGames implements GameRepository {
   async listActions(gameId: string): Promise<GameActionRecord[]> {
     const rows = await this.db.selectFrom('game_actions').selectAll().where('game_id', '=', gameId).orderBy('seq').execute();
     return rows.map(toGameActionRecord);
+  }
+
+  async listFinishedForUser(userId: string): Promise<UserGameRecord[]> {
+    const { rows } = await sql<Selectable<GamesTable> & { your_seat_id: string }>`
+      SELECT g.*, s.seat ->> 'seatId' AS your_seat_id
+      FROM games g
+      JOIN room_players rp ON rp.room_id = g.room_id AND rp.user_id = ${userId}::uuid
+      CROSS JOIN LATERAL jsonb_array_elements(g.seats) AS s(seat)
+      WHERE g.status = 'finished' AND s.seat ->> 'roomPlayerId' = rp.id::text
+      ORDER BY g.finished_at DESC, g.id
+    `.execute(this.db);
+    return rows.map(toUserGameRecord);
+  }
+
+  async findFinishedForUser(userId: string, gameId: string): Promise<UserGameRecord | null> {
+    const { rows } = await sql<Selectable<GamesTable> & { your_seat_id: string }>`
+      SELECT g.*, s.seat ->> 'seatId' AS your_seat_id
+      FROM games g
+      JOIN room_players rp ON rp.room_id = g.room_id AND rp.user_id = ${userId}::uuid
+      CROSS JOIN LATERAL jsonb_array_elements(g.seats) AS s(seat)
+      WHERE g.status = 'finished' AND g.id = ${gameId}::uuid AND s.seat ->> 'roomPlayerId' = rp.id::text
+    `.execute(this.db);
+    return rows[0] ? toUserGameRecord(rows[0]) : null;
+  }
+}
+
+class PostgresChat implements ChatRepository {
+  constructor(private readonly db: Kysely<Database>) {}
+
+  async add(input: NewChatMessage): Promise<ChatMessageRecord> {
+    const { id } = await this.db
+      .insertInto('chat_messages')
+      .values({ room_id: input.roomId, game_id: input.gameId, after_seq: input.afterSeq, room_player_id: input.roomPlayerId, body: input.body, created_at: input.now })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    return toChatMessageRecord(await this.withName().where('chat_messages.id', '=', id).executeTakeFirstOrThrow());
+  }
+
+  async listRecent(roomId: string, limit: number): Promise<ChatMessageRecord[]> {
+    const rows = await this.withName().where('chat_messages.room_id', '=', roomId).orderBy('chat_messages.id', 'desc').limit(limit).execute();
+    return rows.reverse().map(toChatMessageRecord);
+  }
+
+  async listForGame(gameId: string): Promise<ChatMessageRecord[]> {
+    const rows = await this.withName().where('chat_messages.game_id', '=', gameId).orderBy('chat_messages.id').execute();
+    return rows.map(toChatMessageRecord);
+  }
+
+  // A message row with the sender's name from room_players.
+  private withName() {
+    return this.db
+      .selectFrom('chat_messages')
+      .innerJoin('room_players', 'room_players.id', 'chat_messages.room_player_id')
+      .selectAll('chat_messages')
+      .select('room_players.display_name as name');
   }
 }
