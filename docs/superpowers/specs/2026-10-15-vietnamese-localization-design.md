@@ -1,6 +1,6 @@
 # Vietnamese Localization (Game Screen) — Design Spec
 
-Status: Draft, awaiting review
+Status: Approved; phase 1 built; phase 2 amended 2026-10-15
 Date: 2026-10-15
 
 ## Purpose
@@ -66,23 +66,38 @@ content lookup by id and the message templates, which we would write anyway.
 - The locales live in one list (`{ code, flag, nativeName }`). Adding a
   language means adding an entry and a catalog, with no template changes.
 
-### Structured lines
+### Translator-based builders
+
+Amended 2026-10-15 (user decision), replacing the earlier "builders return
+`{ key, params }`" design.
 
 Today `action-history.ts`, `response-description.ts`,
-`choice-description.ts` and `ability-description.ts` return English prose,
-and `action-history.ts` also compares and edits that prose (for example
-`shows.text === 'Doubt'`, `last.text.startsWith(...)`, and appending
-`', Counts as Shan'` to an existing line). Translated sentences cannot be
-compared or appended to, so these builders return `{ key, params }`, where
-params are ids, numbers and already-structured pieces. Logic that checks or
-extends a line works on the key and params. Text is produced by `t()` at the
-render edge. English output stays byte-identical, and the existing specs for
-these files are the safety net. `labels.ts` is converted the same way, and
-its fallback names ("Seat 0", "Hidden Card", "Hidden General") become
-templates.
+`choice-description.ts`, `ability-description.ts` and `labels.ts` build
+English prose inline, and `action-history.ts` also compares and edits that
+prose (`last.text.startsWith(...)`, appending `', Counts as Shan'` to an
+existing line). The builders keep returning text, but build it through a
+translator passed in as a parameter:
 
-Sentences that English builds from pieces become whole-sentence templates,
-because Vietnamese word order differs.
+- `Translator` is `(key: MessageKey, params?: MessageParams) => string`.
+  `I18n.t` is one; the default is an English translator, so callers and
+  specs that pass nothing get exactly today's English.
+- Names inside a sentence (a seat, a card, an ability, a General) come from
+  locale-aware lookups and are passed to the template as params. Sentences
+  that English builds from pieces become whole-sentence templates, because
+  Vietnamese word order differs.
+- Logic that checked or extended a finished sentence works on ids and
+  flags instead (for example a `countsAsShan` mark on the judgment line, or
+  the event's own data), never on the text.
+- Text such as `'Doubt'` that arrives from the engine inside an event
+  (`shows.text`) is matched on exactly as today. Showing it translated is a
+  separate decision for the phase that translates the content.
+- The history and the descriptions are already computed from signals, so
+  reading the locale signal inside `t` makes them recompute when the
+  language changes. No line needs to be stored as a key.
+
+English output stays byte-identical, and the existing specs for these files
+are the safety net: they keep passing without edits. Vietnamese is covered by
+new specs that pass the Vietnamese translator.
 
 ## Terminology
 
@@ -122,7 +137,7 @@ contradict it. Ids are never shown raw, in either language.
 ## Content pipeline
 
 1. **Glossary:** hand-approved, the single reference for everything below.
-2. **UI catalog (`vi`):** written directly, about 200 strings, and checked in
+2. **UI catalog (`vi`):** written directly, roughly 300 to 400 strings, and checked in
    the running Game screen for overflow (Vietnamese runs longer than English).
 3. **General and card names:** drafted from `nameZh` plus the glossary.
    Ambiguous readings are listed for the user to settle.
@@ -161,9 +176,11 @@ Each phase is mergeable on its own. The app behaves as before until phase 5.
 1. **Plumbing:** `I18n` service, `en` catalog skeleton, flag buttons in the
    Navigation panel, locale persistence, parity test harness. Only English
    exists, so the only visible change is the buttons.
-2. **Structured lines:** convert the history builder, the response, choice
-   and ability descriptions, and `labels.ts` to keys plus params. English
-   output is byte-identical.
+2. **Translator-based builders:** done in four mergeable steps, each with
+   English output byte-identical and the existing specs unchanged:
+   2a the `Translator` type, `labels.ts`, and the choice and ability
+   descriptions; 2b the Action History; 2c the response description; 2d the
+   ability hints in `content/src/lib/display.ts`.
 3. **Templates:** replace hard-coded text in the Game screen components with
    `t()`.
 4. **Content:** glossary, locale-aware `display.ts`, Vietnamese names, then
@@ -174,7 +191,11 @@ Each phase is mergeable on its own. The app behaves as before until phase 5.
 ## Risks
 
 - Phase 2 is the riskiest: the history builder carries logic as well as text,
-  and that logic has to move onto ids and keys without changing behaviour.
+  and that logic has to move onto ids and flags without changing behaviour.
+- The amount of text is larger than first estimated: the builders alone hold
+  about 160 sentence templates (87 in the history, 40 in the response
+  description) and `display.ts` has 54 ability hints. Plan for roughly 300 to
+  400 templates in all, not 200, which makes phase 5 the biggest writing job.
 - Rules-text quality depends on the user's review. Until reviewed it is only
   a draft.
 - "Người chơi" for Seat reads like a player's own name in places ("Người chơi
