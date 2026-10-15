@@ -6,7 +6,9 @@ import { toApiError } from '../auth/auth.service';
 
 // The signed-in player's finished games, from GET /api/me/games. The server
 // decides who may ask (registered players only); this only shows its answer.
-@Injectable({ providedIn: 'root' })
+// Provided by MyGamesPage, not the root: each visit starts empty, so one
+// player's list never shows to the next who signs in on the same tab.
+@Injectable()
 export class MyGamesService {
   private readonly http = inject(HttpClient);
   private readonly _games = signal<GameSummary[] | null>(null);

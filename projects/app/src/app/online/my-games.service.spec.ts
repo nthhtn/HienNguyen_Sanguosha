@@ -21,7 +21,7 @@ describe('MyGamesService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), MyGamesService] });
     service = TestBed.inject(MyGamesService);
     http = TestBed.inject(HttpTestingController);
   });

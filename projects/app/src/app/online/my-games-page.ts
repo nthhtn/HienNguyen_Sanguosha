@@ -11,6 +11,7 @@ import { MyGamesService } from './my-games.service';
 @Component({
   selector: 'app-my-games-page',
   imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule],
+  providers: [MyGamesService],
   styleUrl: './online-page.css',
   template: `
     <div class="online-page">

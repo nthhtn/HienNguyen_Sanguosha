@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -23,7 +25,9 @@ describe('MyGamesPage', () => {
   const service = { games, error, load: jest.fn(async () => undefined) };
 
   async function render() {
-    await TestBed.configureTestingModule({ imports: [MyGamesPage], providers: [{ provide: MyGamesService, useValue: service }, provideRouter([])] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [MyGamesPage], providers: [provideRouter([])] })
+      .overrideComponent(MyGamesPage, { set: { providers: [{ provide: MyGamesService, useValue: service }] } })
+      .compileComponents();
     const fixture = TestBed.createComponent(MyGamesPage);
     fixture.detectChanges();
     return { fixture, el: fixture.nativeElement as HTMLElement };
@@ -73,5 +77,23 @@ describe('MyGamesPage', () => {
     const { el } = await render();
     expect((el.querySelector('a.back') as HTMLAnchorElement).getAttribute('href')).toBe('/rooms');
     expect(el.querySelector('a.back')?.textContent?.trim()).toBe('Back to Rooms');
+  });
+
+  it('starts each visit empty, so the next player never sees the last list', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({ imports: [MyGamesPage], providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] }).compileComponents();
+    const http = TestBed.inject(HttpTestingController);
+    const first = TestBed.createComponent(MyGamesPage);
+    first.detectChanges();
+    http.expectOne('/api/me/games').flush({ games: [WON] });
+    await first.whenStable();
+    first.detectChanges();
+    expect((first.nativeElement as HTMLElement).querySelectorAll('.game').length).toBe(1);
+    first.destroy();
+    const second = TestBed.createComponent(MyGamesPage);
+    second.detectChanges();
+    expect((second.nativeElement as HTMLElement).querySelectorAll('.game').length).toBe(0);
+    expect((second.nativeElement as HTMLElement).querySelector('.loading')).not.toBeNull();
+    http.expectOne('/api/me/games').flush({ games: [] });
   });
 });

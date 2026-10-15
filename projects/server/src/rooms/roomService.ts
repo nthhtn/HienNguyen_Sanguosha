@@ -374,6 +374,7 @@ export class RoomService {
     const now = this.now();
     await this.repos.rooms.markLeft(target.id, new Date(now));
     entry.room.remove(target.id);
+    this.chat.forget([target.id]);
     this.dropConnection(entry, target.id, 'removed');
     this.touched(entry, now);
   }
@@ -604,6 +605,7 @@ export class RoomService {
       else if (successor) await tx.rooms.update(room.id, { hostPlayerId: successor.id }, at);
     });
     room.remove(actor.id);
+    this.chat.forget([actor.id]);
     // The socket layer acks, then closes the leaver's connection.
     entry.connections.delete(actor.id);
     if (closeReason) return this.dropRoom(entry, closeReason);
@@ -629,6 +631,7 @@ export class RoomService {
         await tx.rooms.update(room.id, { status: 'closed' }, at);
       });
       room.remove(actor.id);
+      this.chat.forget([actor.id]);
       entry.connections.delete(actor.id);
       return this.dropRoom(entry, 'idle');
     }
@@ -639,6 +642,7 @@ export class RoomService {
       if (wasHost) await tx.rooms.update(room.id, { hostPlayerId: successor?.id ?? null }, at);
     });
     room.remove(actor.id);
+    this.chat.forget([actor.id]);
     entry.connections.delete(actor.id);
     if (wasHost) room.record = { ...room.record, hostPlayerId: successor?.id ?? null, updatedAt: at };
     runner?.left(actor.id);

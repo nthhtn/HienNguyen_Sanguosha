@@ -347,43 +347,6 @@ class MemoryRooms implements RoomRepository {
 // A deep copy of a record's plain data. Not structuredClone: under Jest that
 // builds its Dates in another realm, which `instanceof Date` rejects.
 
-class MemoryChat implements ChatRepository {
-  constructor(private readonly store: Store) {}
-
-  async add(input: NewChatMessage): Promise<ChatMessageRecord> {
-    const player = this.store.roomPlayers.get(input.roomPlayerId);
-    if (!player) throw new Error(`No room player ${input.roomPlayerId}`);
-    const id = [...this.store.chatMessages.values()].reduce((max, m) => Math.max(max, m.id), 0) + 1;
-    const record: ChatMessageRecord = {
-      id,
-      roomId: input.roomId,
-      gameId: input.gameId,
-      afterSeq: input.afterSeq,
-      roomPlayerId: input.roomPlayerId,
-      name: player.displayName,
-      body: input.body,
-      createdAt: input.now,
-    };
-    this.store.chatMessages.set(String(id), record);
-    return { ...record };
-  }
-
-  async listRecent(roomId: string, limit: number): Promise<ChatMessageRecord[]> {
-    return [...this.store.chatMessages.values()]
-      .filter((m) => m.roomId === roomId)
-      .sort((a, b) => a.id - b.id)
-      .slice(-limit)
-      .map((m) => ({ ...m }));
-  }
-
-  async listForGame(gameId: string): Promise<ChatMessageRecord[]> {
-    return [...this.store.chatMessages.values()]
-      .filter((m) => m.gameId === gameId)
-      .sort((a, b) => a.id - b.id)
-      .map((m) => ({ ...m }));
-  }
-}
-
 function deepCopy<T>(value: T): T {
   if (Object.prototype.toString.call(value) === '[object Date]') return new Date((value as Date).getTime()) as T;
   if (Array.isArray(value)) return value.map((item) => deepCopy(item)) as T;
@@ -463,5 +426,42 @@ class MemoryGames implements GameRepository {
 
   async findFinishedForUser(userId: string, gameId: string): Promise<UserGameRecord | null> {
     return (await this.listFinishedForUser(userId)).find((entry) => entry.game.id === gameId) ?? null;
+  }
+}
+
+class MemoryChat implements ChatRepository {
+  constructor(private readonly store: Store) {}
+
+  async add(input: NewChatMessage): Promise<ChatMessageRecord> {
+    const player = this.store.roomPlayers.get(input.roomPlayerId);
+    if (!player) throw new Error(`No room player ${input.roomPlayerId}`);
+    const id = [...this.store.chatMessages.values()].reduce((max, m) => Math.max(max, m.id), 0) + 1;
+    const record: ChatMessageRecord = {
+      id,
+      roomId: input.roomId,
+      gameId: input.gameId,
+      afterSeq: input.afterSeq,
+      roomPlayerId: input.roomPlayerId,
+      name: player.displayName,
+      body: input.body,
+      createdAt: input.now,
+    };
+    this.store.chatMessages.set(String(id), record);
+    return { ...record };
+  }
+
+  async listRecent(roomId: string, limit: number): Promise<ChatMessageRecord[]> {
+    return [...this.store.chatMessages.values()]
+      .filter((m) => m.roomId === roomId)
+      .sort((a, b) => a.id - b.id)
+      .slice(-limit)
+      .map((m) => ({ ...m }));
+  }
+
+  async listForGame(gameId: string): Promise<ChatMessageRecord[]> {
+    return [...this.store.chatMessages.values()]
+      .filter((m) => m.gameId === gameId)
+      .sort((a, b) => a.id - b.id)
+      .map((m) => ({ ...m }));
   }
 }

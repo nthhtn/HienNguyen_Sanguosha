@@ -11,7 +11,7 @@ const MIGRATIONS: Record<string, Migration> = {
   '0001_accounts': accounts,
   '0002_rooms': rooms,
   '0003_games': games,
-    '0004_chat': chat,
+  '0004_chat': chat,
 };
 
 export async function migrateToLatest(db: Kysely<Database>): Promise<void> {
