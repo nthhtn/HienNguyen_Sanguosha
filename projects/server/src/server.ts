@@ -1,3 +1,4 @@
+import { GameHistory } from './game/history';
 import { FastifyInstance } from 'fastify';
 import { AccountService } from './auth/accounts';
 import { AuthRateLimits } from './auth/rateLimits';
@@ -42,6 +43,7 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
   const app = await buildApp({
     accounts,
     rooms,
+    history: new GameHistory(store.repos),
     publicOrigin: config.publicOrigin,
     cookieSecure: config.cookieSecure,
     trustProxy: config.trustProxy,

@@ -1,15 +1,8 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
 import type { RoomCreated } from 'protocol';
 import { CreateRoomBodySchema, JoinRoomBodySchema, RoomParamsSchema, SoloRoomBodySchema } from 'protocol/schemas';
 import { RoomService } from '../rooms/roomService';
-import { errorBody } from './errors';
+import { signedIn } from './guard';
 import { TypedApp } from './types';
-
-// Runs before the body is parsed and validated, so a signed-out request is
-// always told to sign in rather than that its body is wrong.
-async function signedIn(request: FastifyRequest, reply: FastifyReply) {
-  if (!request.auth) return reply.code(401).send(errorBody('not_signed_in'));
-}
 
 export function registerRoomRoutes(app: TypedApp, deps: { rooms: RoomService }): void {
   const { rooms } = deps;

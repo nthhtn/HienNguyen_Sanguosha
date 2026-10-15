@@ -1,3 +1,4 @@
+import { GameHistory } from '../game/history';
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 import { AccountService } from '../auth/accounts';
 import { AuthRateLimits, RATE_LIMITS } from '../auth/rateLimits';
@@ -14,7 +15,7 @@ async function setup(overrides: Partial<AppDeps> = {}) {
   const repos = createMemoryRepositories();
   const accounts = new AccountService({ repos, mailer, publicOrigin: ORIGIN });
   const rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 } });
-  const app = await buildApp({ accounts, rooms, publicOrigin: ORIGIN, cookieSecure: false, ...overrides });
+  const app = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, ...overrides });
   return { app, mailer };
 }
 

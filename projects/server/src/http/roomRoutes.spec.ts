@@ -1,3 +1,4 @@
+import { GameHistory } from '../game/history';
 import { randomUUID } from 'node:crypto';
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 import { AccountService } from '../auth/accounts';
@@ -15,7 +16,7 @@ async function setup() {
   const accounts = new AccountService({ repos, mailer: new RecordingMailer(), publicOrigin: ORIGIN });
   const rooms = new RoomService({ repos, seatLimits: LIMITS });
   const rateLimits = new AuthRateLimits({ ...RATE_LIMITS, signUpPerIp: { limit: 1000, windowMs: 60_000 } });
-  const app = await buildApp({ accounts, rooms, publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
+  const app = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
   return { app };
 }
 
