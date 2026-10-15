@@ -67,7 +67,7 @@ describe('the display functions by locale', () => {
     expect(abilityHint('axe', 'vi')).toBe('Bỏ 2 lá bài để Sát của bạn trúng {target}');
     expect(selectionText('bestowed-rouse', 'vi')).toEqual({ prompt: 'Chọn các lá bài vừa rút để đưa đi', confirm: 'Đưa', cancel: 'Giữ phần còn lại' });
     expect(seatPickText('alliance', 'vi')).toBe('Chọn một người chơi để đổi bài trên tay với {target}');
-    expect(choicePromptText('upheaval', 'vi')).toBe('Chọn một người chơi để ra Sát vào, hoặc bỏ qua');
+    expect(choicePromptText('upheaval', 'vi')).toBe('Chọn một người chơi để đánh Sát vào, hoặc bỏ qua');
     expect(stepSelectionText('compete-user', 'vi')).toEqual({ prompt: 'Chọn một lá bài trên tay để đấu điểm', confirm: 'Đấu điểm' });
   });
 
@@ -95,6 +95,6 @@ describe('the display functions by locale', () => {
     expect(competeOutcomeText('rouse-the-tiger', true, names, 'vi')).toBe('Hing sẽ chọn một người chơi trong tầm đánh của Seat 1; Seat 1 gây cho họ 1 sát thương');
     expect(competeOutcomeText('rouse-the-tiger', false, names, 'vi')).toBe('Seat 1 gây 1 sát thương cho Hing');
     expect(competeOutcomeText('intense-edge', false, names, 'vi')).toBe('Không có gì xảy ra');
-    expect(competeOutcomeText('heavens-justice', false, names, 'vi')).toBe('Hing không thể ra Sát trong lượt này');
+    expect(competeOutcomeText('heavens-justice', false, names, 'vi')).toBe('Hing không thể đánh Sát trong lượt này');
   });
 });

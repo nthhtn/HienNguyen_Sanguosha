@@ -3,7 +3,7 @@
     "eight-trigrams": "Phán xét: nếu là lá đỏ, nó tính là một Thiểm",
     "gender-swords": "{target} bỏ một lá bài trên tay hoặc để bạn rút 1 lá bài",
     "axe": "Bỏ 2 lá bài để Sát của bạn trúng {target}",
-    "green-dragon-blade": "Ra thêm một Sát vào {target}",
+    "green-dragon-blade": "Đánh thêm một Sát vào {target}",
     "ice-sword": "Ngăn sát thương và thay vào đó bỏ 2 lá bài của {target}",
     "longbow": "Bỏ một Ngựa của {target}",
     "evil-hero": "Lấy lá bài đã gây sát thương cho bạn vào tay",
@@ -17,7 +17,7 @@
     "raid": "Thay vì rút bài, lấy một lá bài trên tay của 1 hoặc 2 người chơi khác",
     "brave-gesture": "Rút thêm 1 lá bài",
     "gathering-wisdom": "Rút 1 lá bài",
-    "iron-cavalry": "Phán xét: nếu là lá đỏ, {target} không thể ra Thiểm chống lại Sát này",
+    "iron-cavalry": "Phán xét: nếu là lá đỏ, {target} không thể đánh Thiểm chống lại Sát này",
     "astrology": "Xem các lá trên cùng của chồng bài rút và đặt lại theo thứ tự tùy ý",
     "displace": "Bỏ 1 lá bài để chuyển Sát sang một người chơi khác trong tầm đánh của bạn",
     "self-restraint": "Bỏ qua giai đoạn bỏ bài của bạn",
@@ -45,7 +45,7 @@
     "stubborn": "Trả lại một trong các lá bài đã bỏ và lấy phần còn lại",
     "lament": "Bỏ một lá bài: {target} phán xét, và lá cơ, rô, chuồn hoặc bích có hiệu lực tương ứng",
     "incarnation": "Chọn một kỹ năng của một Hóa thân của bạn",
-    "instigate": "Chọn một người chơi ra Sát vào bạn, hoặc bạn bỏ một lá bài của họ",
+    "instigate": "Chọn một người chơi đánh Sát vào bạn, hoặc bạn bỏ một lá bài của họ",
     "direct-instruction": "Đặt một lá bài Trang bị từ tay bạn vào ô trống của người chơi khác, rồi rút 1 lá bài"
   },
   "selection": {
@@ -74,7 +74,7 @@
     "decentralization": { "prompt": "Chọn một lá bài trên tay để bỏ", "confirm": "Bỏ bài" },
     "lament": { "prompt": "Chọn các lá bài để bỏ", "confirm": "Bỏ bài" },
     "direct-instruction": { "prompt": "Chọn một lá bài Trang bị để đặt", "confirm": "Đặt" },
-    "instigate": { "prompt": "Chọn một người chơi để ra Sát vào bạn", "confirm": "Chọn" }
+    "instigate": { "prompt": "Chọn một người chơi để đánh Sát vào bạn", "confirm": "Chọn" }
   },
   "seatPick": {
     "rouse-the-tiger": "Chọn một người chơi để {target} gây sát thương",
@@ -86,7 +86,7 @@
     "direct-instruction": "Chọn một người chơi để đặt lá bài vào"
   },
   "choicePrompt": {
-    "upheaval": "Chọn một người chơi để ra Sát vào, hoặc bỏ qua",
+    "upheaval": "Chọn một người chơi để đánh Sát vào, hoặc bỏ qua",
     "collapse": "Chọn cách Collapse gây tổn hại cho bạn",
     "brave-spirit": "Chọn cách rút bài và bỏ bài",
     "clever-change": "Chọn một lá bài để chuyển",
@@ -105,8 +105,8 @@
   },
   "competeOutcomes": {
     "heavens-justice": {
-      "won": "{user} có thể ra thêm một Sát trong lượt này, ở mọi khoảng cách, thêm một mục tiêu",
-      "lost": "{user} không thể ra Sát trong lượt này"
+      "won": "{user} có thể đánh thêm một Sát trong lượt này, ở mọi khoảng cách, thêm một mục tiêu",
+      "lost": "{user} không thể đánh Sát trong lượt này"
     },
     "rouse-the-tiger": {
       "won": "{user} sẽ chọn một người chơi trong tầm đánh của {target}; {target} gây cho họ 1 sát thương",

@@ -78,13 +78,13 @@ describe('action labels', () => {
   const rows: Array<[string, Action, string, string]> = [
     ['draw one', { kind: 'DrawCardsAction', seatId: 'seat-0', count: 1 }, 'Draw 1 Card', 'Rút 1 lá bài'],
     ['draw two', { kind: 'DrawCardsAction', seatId: 'seat-0', count: 2 }, 'Draw 2 Cards', 'Rút 2 lá bài'],
-    ['play', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [] }, 'Play Sha', 'Ra Sha'],
-    ['play at a seat', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }] }, 'Play Sha Targeting Hing', 'Ra Sha nhắm vào Hing'],
-    ['play at two seats', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }, { kind: 'seat', seatId: 'seat-1' }] }, 'Play Sha Targeting Hing, Seat 1', 'Ra Sha nhắm vào Hing, Người chơi 1'],
+    ['play', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [] }, 'Play Sha', 'Đánh Sha'],
+    ['play at a seat', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }] }, 'Play Sha Targeting Hing', 'Đánh Sha nhắm vào Hing'],
+    ['play at two seats', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }, { kind: 'seat', seatId: 'seat-1' }] }, 'Play Sha Targeting Hing, Seat 1', 'Đánh Sha nhắm vào Hing, Người chơi 1'],
     ['choose Generals', { kind: 'ChooseGeneralsAction', seatId: 'seat-0', mainId: 'cao-cao', deputyId: 'xu-chu' }, 'Choose Cao Cao (Main) and Xu Chu (Deputy)', 'Chọn Cao Cao (chính) và Xu Chu (phụ)'],
     ['reveal main', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' }, 'Reveal Main General', 'Lật Tướng chính'],
     ['reveal deputy', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'deputy' }, 'Reveal Deputy General', 'Lật Tướng phụ'],
-    ['respond', { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'card-1' }, 'Respond with Sha', 'Đáp lại bằng Sha'],
+    ['respond', { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'card-1' }, 'Respond with Sha', 'Phản hồi bằng Sha'],
     ['pass', { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' }, 'Pass', 'Bỏ qua'],
     ['end phase', { kind: 'EndPhaseAction', seatId: 'seat-0' }, 'End Phase', 'Kết thúc giai đoạn'],
     ['choose', { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'c', optionId: 'o' }, 'Choose', 'Chọn'],
@@ -103,7 +103,7 @@ describe('action labels', () => {
   it('the targeting prefix is the targetless label plus Targeting, and parts agree with the full label', () => {
     const play: Action = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }] };
     expect(targetingParts(play, state, registry)).toEqual({ prefix: 'Play Sha Targeting', targets: [{ kind: 'seat', seatId: 'seat-0' }] });
-    expect(targetingParts(play, state, registry, tr)).toEqual({ prefix: 'Ra Sha nhắm vào', targets: [{ kind: 'seat', seatId: 'seat-0' }] });
+    expect(targetingParts(play, state, registry, tr)).toEqual({ prefix: 'Đánh Sha nhắm vào', targets: [{ kind: 'seat', seatId: 'seat-0' }] });
     expect(targetingParts({ ...play, targets: [] }, state, registry, tr)).toBeNull();
     expect(`${targetingParts(play, state, registry)!.prefix} Hing`).toBe(actionLabel(play, state, registry));
   });
@@ -153,6 +153,6 @@ describe('conversion labels', () => {
       kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'fighting-saint' }, conversionId: 'fighting-saint' }, targets: [],
     };
     expect(conversionLabel(use, seated, real)).toBe('As Sha · Fighting Saint');
-    expect(conversionLabel(use, seated, real, tr)).toBe('Làm Sha · Fighting Saint');
+    expect(conversionLabel(use, seated, real, tr)).toBe('Tính là Sha · Fighting Saint');
   });
 });

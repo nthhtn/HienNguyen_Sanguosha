@@ -43,22 +43,22 @@ describe('ResponseDialog in Vietnamese', () => {
 
   it('the title, the section headings, the options and the confirm button', async () => {
     const { fixture, el } = await mount(ResponseDialog, data([{ id: 'shan-1', action: respond, card: shan, label: 'Shan (2 ♥)' }]));
-    expect(text(el.querySelector('h2'))).toBe('Cần đáp lại');
+    expect(text(el.querySelector('h2'))).toBe('Cần phản hồi');
     expect([...el.querySelectorAll('.options h3')].map(text)).toEqual(['Kỹ năng', 'Bài']);
-    expect(el.querySelector('.options')!.getAttribute('aria-label')).toBe('Chọn cách đáp lại');
-    expect(text(el.querySelector('.empty'))).toBe('Không có kỹ năng nào có thể đáp lại');
-    expect(text(el.querySelector('.no-response'))).toContain('Không đáp lại');
+    expect(el.querySelector('.options')!.getAttribute('aria-label')).toBe('Chọn cách phản hồi');
+    expect(text(el.querySelector('.empty'))).toBe('Không có kỹ năng nào có thể phản hồi');
+    expect(text(el.querySelector('.no-response'))).toContain('Không phản hồi');
     expect(text(el.querySelector('.no-response'))).toContain('— You lose 1 HP (1 damage from Seat 1)');
-    expect(text(el.querySelector('button.confirm'))).toBe('Đáp lại bằng Shan');
+    expect(text(el.querySelector('button.confirm'))).toBe('Phản hồi bằng Shan');
     (el.querySelector('.no-response input') as HTMLInputElement).click();
     fixture.detectChanges();
-    expect(text(el.querySelector('button.confirm'))).toBe('Không đáp lại');
+    expect(text(el.querySelector('button.confirm'))).toBe('Không phản hồi');
   });
 
   it('with nothing to answer with, both lists are empty and the button says No Response', async () => {
     const { el } = await mount(ResponseDialog, data([]));
-    expect([...el.querySelectorAll('.empty')].map(text)).toEqual(['Không có kỹ năng nào có thể đáp lại', 'Không có lá bài nào có thể đáp lại']);
-    expect(text(el.querySelector('button.confirm'))).toBe('Không đáp lại');
+    expect([...el.querySelectorAll('.empty')].map(text)).toEqual(['Không có kỹ năng nào có thể phản hồi', 'Không có lá bài nào có thể phản hồi']);
+    expect(text(el.querySelector('button.confirm'))).toBe('Không phản hồi');
   });
 
   it('a skill answer confirms with its own label', async () => {
@@ -90,8 +90,8 @@ describe('AskDialog, ArrangeDialog and DiscardDialog in Vietnamese', () => {
     const { el } = await mount(ArrangeDialog, { description: { title: 'Astrology', prompt: 'Đặt…', cards, template } });
     const first = el.querySelector('[data-card-id="t1"]') as HTMLElement;
     expect(first.querySelector('.place')!.getAttribute('aria-label')).toBe('Đặt 3 ♥ ở đâu');
-    expect(text(first.querySelector('button.top'))).toBe('Trên');
-    expect(text(first.querySelector('button.bottom'))).toBe('Dưới');
+    expect(text(first.querySelector('button.top'))).toBe('Đầu chồng');
+    expect(text(first.querySelector('button.bottom'))).toBe('Đáy chồng');
     expect(first.querySelector('button.right')!.getAttribute('aria-label')).toBe('Dời 3 ♥ sang phải');
     expect((el.querySelector('[data-card-id="t2"] button.left') as HTMLElement).getAttribute('aria-label')).toBe('Dời A ♠ sang trái');
     expect(text(el.querySelector('button.confirm'))).toBe('Xác nhận');
@@ -157,7 +157,7 @@ describe('CompeteDialog and competeResults in Vietnamese', () => {
       generalName: 'Taishi Ci',
       user: { name: 'Người chơi 0' },
       target: { name: 'Người chơi 1' },
-      outcome: 'Người chơi 0 có thể ra thêm một Sát trong lượt này, ở mọi khoảng cách, thêm một mục tiêu',
+      outcome: 'Người chơi 0 có thể đánh thêm một Sát trong lượt này, ở mọi khoảng cách, thêm một mục tiêu',
     });
     const [hidden] = competeResults(log, 0, [seat('seat-0', 0, 'Wu', 'hidden'), seat('seat-1', 1, 'Shu', 'guan-yu')], [], tr);
     expect(hidden.generalName).toBe('Tướng ẩn');
@@ -191,13 +191,13 @@ describe('GeneralSelection in Vietnamese', () => {
     fixture.detectChanges();
     card(el, 'w2').click();
     fixture.detectChanges();
-    expect(text(card(el, 'w1').querySelector('.role-chip'))).toBe('Chính');
-    expect(text(card(el, 'w2').querySelector('.role-chip'))).toBe('Phụ');
+    expect(text(card(el, 'w1').querySelector('.role-chip'))).toBe('Chủ tướng');
+    expect(text(card(el, 'w2').querySelector('.role-chip'))).toBe('Phó tướng');
     expect(card(el, 'w2').querySelector('.role-chip')!.classList).toContain('deputy');
-    expect(text(el.querySelector('.slot.main .slot-label'))).toBe('Chính');
-    expect(text(el.querySelector('.slot.deputy .slot-label'))).toBe('Phụ');
+    expect(text(el.querySelector('.slot.main .slot-label'))).toBe('Chủ tướng');
+    expect(text(el.querySelector('.slot.deputy .slot-label'))).toBe('Phó tướng');
     expect(el.querySelector('button.swap')!.getAttribute('aria-label')).toBe('Đổi Tướng chính và Tướng phụ');
-    expect(text(el.querySelector('.summary'))).toContain('Thế lực: Ngụy · Sinh lực tổng: ');
+    expect(text(el.querySelector('.summary'))).toContain('Thế lực: Ngụy · Tổng Sinh lực: ');
     expect(text(el.querySelector('button.confirm'))).toContain('Xác nhận');
   });
 

@@ -66,7 +66,7 @@ describe('SeatTile in Vietnamese', () => {
     expect(el.querySelector('section.judgment-section')!.getAttribute('aria-label')).toBe('Phán xét');
     expect(el.querySelector('.judgment')!.getAttribute('aria-label')).toBe('Khu phán xét');
     expect(['weapon', 'armor', 'defensiveMount', 'offensiveMount'].map((s) => el.querySelector(`[data-slot="${s}"]`)!.getAttribute('title'))).toEqual([
-      'Vũ khí (trống)', 'Giáp (trống)', 'Ngựa phòng thủ (trống)', 'Ngựa tấn công (trống)',
+      'Vũ khí (trống)', 'Giáp (trống)', 'Tọa kỵ thủ +1 (trống)', 'Tọa kỵ công -1 (trống)',
     ]);
     expect(el.querySelector('.slot.empty[title]:not([data-slot])')!.getAttribute('title')).toBe('Khu phán xét (trống)');
   });
@@ -76,20 +76,20 @@ describe('SeatTile in Vietnamese', () => {
     expect(worn.querySelector('[data-slot="weapon"]')!.getAttribute('title')).toBe('Vũ khí: Crossbow');
     expect(worn.querySelector('[data-slot="weapon"] .slot-card')!.getAttribute('aria-label')).toBe('Thông tin: Crossbow');
     const judged = render(makeSeat(), { judgment: [capture], judgmentCountsAs: { cap: 'sha' } }).el;
-    expect(judged.querySelector('.judgment .slot')!.getAttribute('title')).toBe('Khu phán xét: Capture làm Sha');
-    expect(text(judged.querySelector('.counts-as'))).toBe('Làm Sha');
+    expect(judged.querySelector('.judgment .slot')!.getAttribute('title')).toBe('Khu phán xét: Capture tính là Sha');
+    expect(text(judged.querySelector('.counts-as'))).toBe('Tính là Sha');
     expect(render(makeSeat(), { judgment: [capture] }).el.querySelector('.judgment .slot')!.getAttribute('title')).toBe('Khu phán xét: Capture');
   });
 
   it('status lines, badges, the under-General piles and a chosen Form', () => {
     expect(text(render(makeSeat({ eliminated: true })).el.querySelector('.status'))).toBe('Bị loại');
     expect(text(render(makeSeat({ combinedHp: 0 })).el.querySelector('.status.dying'))).toBe('Cận kề cái chết…');
-    expect(text(render(makeSeat(), { isResponding: true }).el.querySelector('.status'))).toBe('Đang đáp lại…');
+    expect(text(render(makeSeat(), { isResponding: true }).el.querySelector('.status'))).toBe('Đang phản hồi…');
     expect(text(render(makeSeat({ generals: null as never })).el.querySelector('.choosing'))).toBe('Đang chọn Tướng…');
     expect(text(render(makeSeat({ faceDown: true })).el.querySelector('.face-down-badge'))).toBe('Úp');
-    expect(text(render(makeSeat({ silenced: true })).el.querySelector('.silenced-badge'))).toBe('Không có kỹ năng');
+    expect(text(render(makeSeat({ silenced: true })).el.querySelector('.silenced-badge'))).toBe('Mất kỹ năng');
     const piles = render(makeSeat(), { pile: [sha], stash: [{ ...sha, instanceId: 'c-2' }] }).el;
-    expect([...piles.querySelectorAll('.pile')].map((p) => p.getAttribute('aria-label'))).toEqual(['Dưới Tướng', 'Điền']);
+    expect([...piles.querySelectorAll('.pile')].map((p) => p.getAttribute('aria-label'))).toEqual(['Lá bài Sang', 'Điền']);
     const form = { slot: 'main', held: [], chosen: { generalId: 'guan-yu', skillId: 'fighting-saint' } } as never;
     expect(text(render(makeSeat({ forms: form })).el.querySelector('.form-badge'))).toBe('Hóa thân: Guan Yu (Fighting Saint)');
   });
@@ -170,7 +170,7 @@ describe('HandView in Vietnamese', () => {
 
   it('Play and Info buttons, and the empty hand', () => {
     const { el } = render(hand, []);
-    expect(text(card(el, 'c-sha').querySelector('button.play'))).toContain('Ra bài');
+    expect(text(card(el, 'c-sha').querySelector('button.play'))).toContain('Đánh bài');
     expect(text(card(el, 'c-sha').querySelector('button.info'))).toContain('Thông tin');
     expect(text(render([], []).el.querySelector('.empty'))).toBe('Không có lá bài nào trên tay');
   });
@@ -180,7 +180,7 @@ describe('HandView in Vietnamese', () => {
     (card(el, 'c-sha').querySelector('button.play') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(items().map((i) => text(i))).toEqual(['Ra Sha nhắm vào Người chơi 1', 'Ra Sha nhắm vào Người chơi 2']);
+    expect(items().map((i) => text(i))).toEqual(['Đánh Sha nhắm vào Người chơi 1', 'Đánh Sha nhắm vào Người chơi 2']);
   });
 
   it('a two-seat play: the first seat, then "Vào" the second', async () => {
@@ -189,7 +189,7 @@ describe('HandView in Vietnamese', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const firsts = items();
-    expect(firsts.map((i) => text(i))).toEqual(['Ra Peach nhắm vào Người chơi 1']);
+    expect(firsts.map((i) => text(i))).toEqual(['Đánh Peach nhắm vào Người chơi 1']);
     firsts[0].click();
     fixture.detectChanges();
     await fixture.whenStable();

@@ -39,17 +39,17 @@ describe('what started the window, in English and Vietnamese', () => {
     const s = state(playLog([seat('seat-0')]), damageWindow('w1', 'seat-0', 'seat-1', 'sha-1'));
     expect(both((t) => describeResponse(s, 'seat-0', undefined, t))).toEqual({
       en: { source: 'Seat 1 played Sha against Hing', latest: null, prompt: 'Your turn to respond to Sha', outcome: 'You lose 1 HP (1 damage from Seat 1)', outcomeForce: 'none' },
-      vi: { source: 'Seat 1 ra Sha nhắm vào Hing', latest: null, prompt: 'Đến lượt bạn đáp lại Sha', outcome: 'Bạn mất 1 Sinh lực (1 sát thương từ Seat 1)', outcomeForce: 'none' },
+      vi: { source: 'Seat 1 đánh Sha nhắm vào Hing', latest: null, prompt: 'Đến lượt bạn phản hồi Sha', outcome: 'Bạn mất 1 Sinh lực (1 sát thương từ Seat 1)', outcomeForce: 'none' },
     });
   });
 
   it('a card with no target, and a window whose card was never seen played', () => {
     const none = state(playLog([]), damageWindow('w1', 'seat-0', 'seat-1', 'sha-1'));
-    expect(both((t) => describeResponse(none, 'seat-0', undefined, t)!.source)).toEqual({ en: 'Seat 1 played Sha', vi: 'Seat 1 ra Sha' });
+    expect(both((t) => describeResponse(none, 'seat-0', undefined, t)!.source)).toEqual({ en: 'Seat 1 played Sha', vi: 'Seat 1 đánh Sha' });
     const unseen = state([], damageWindow('w1', 'seat-0', 'seat-1', 'sha-1'));
     expect(both((t) => { const d = describeResponse(unseen, 'seat-0', undefined, t)!; return [d.source, d.prompt]; })).toEqual({
       en: ['A response is needed', 'Your turn to respond'],
-      vi: ['Cần một phản hồi', 'Đến lượt bạn đáp lại'],
+      vi: ['Cần một phản hồi', 'Đến lượt bạn phản hồi'],
     });
   });
 
@@ -59,7 +59,7 @@ describe('what started the window, in English and Vietnamese', () => {
       { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'duel-1' } },
     ];
     const s = state(log, damageWindow('w2', 'seat-0', 'seat-1', 'duel-1', duel));
-    expect(both((t) => describeResponse(s, 'seat-0', undefined, t)!.latest)).toEqual({ en: 'Seat 1 answered with Sha', vi: 'Seat 1 đáp lại bằng Sha' });
+    expect(both((t) => describeResponse(s, 'seat-0', undefined, t)!.latest)).toEqual({ en: 'Seat 1 answered with Sha', vi: 'Seat 1 phản hồi bằng Sha' });
   });
 
   it('an armour’s judgment as the latest, for the viewer and for another seat', () => {
@@ -139,22 +139,22 @@ describe('the dying round, in English and Vietnamese', () => {
   it('another seat is dying', () => {
     expect(both((t) => describeResponse(seated(state([], dyingWindow('seat-1')), 0), 'seat-0', undefined, t))).toEqual({
       en: { source: 'Seat 1 is dying (HP 0)', latest: null, prompt: 'Play a Peach to save Seat 1?', outcome: 'Seat 1 is eliminated', outcomeForce: 'Wei' },
-      vi: { source: 'Seat 1 cận kề cái chết (Sinh lực 0)', latest: null, prompt: 'Ra Peach để cứu Seat 1?', outcome: 'Seat 1 bị loại', outcomeForce: 'Wei' },
+      vi: { source: 'Seat 1 cận kề cái chết (Sinh lực 0)', latest: null, prompt: 'Đánh Peach để cứu Seat 1?', outcome: 'Seat 1 bị loại', outcomeForce: 'Wei' },
     });
   });
 
   it('the viewer is dying and needs three Peaches', () => {
     expect(both((t) => describeResponse(seated(state([], dyingWindow('seat-0')), -2), 'seat-0', undefined, t))).toEqual({
       en: { source: 'You are dying (HP -2)', latest: null, prompt: 'Play a Peach to save yourself? (needs 3 Peaches)', outcome: 'You are eliminated', outcomeForce: 'Wei' },
-      vi: { source: 'Bạn cận kề cái chết (Sinh lực -2)', latest: null, prompt: 'Ra Peach để cứu chính bạn? (cần 3 Peach)', outcome: 'Bạn bị loại', outcomeForce: 'Wei' },
+      vi: { source: 'Bạn cận kề cái chết (Sinh lực -2)', latest: null, prompt: 'Đánh Peach để cứu chính bạn? (cần 3 Peach)', outcome: 'Bạn bị loại', outcomeForce: 'Wei' },
     });
   });
 
   it('one Peach needed prints no suffix, and Wine is offered only when held', () => {
     const holding = seated(state([], dyingWindow('seat-0', ['peach', 'wine'])), 0, [wine]);
     const empty = seated(state([], dyingWindow('seat-0', ['peach', 'wine'])), 0);
-    expect(both((t) => describeResponse(holding, 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Play a Peach or Wine to save yourself?', vi: 'Ra Peach hoặc Wine để cứu chính bạn?' });
-    expect(both((t) => describeResponse(empty, 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Play a Peach to save yourself?', vi: 'Ra Peach để cứu chính bạn?' });
+    expect(both((t) => describeResponse(holding, 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Play a Peach or Wine to save yourself?', vi: 'Đánh Peach hoặc Wine để cứu chính bạn?' });
+    expect(both((t) => describeResponse(empty, 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Play a Peach to save yourself?', vi: 'Đánh Peach để cứu chính bạn?' });
   });
 });
 
@@ -162,7 +162,7 @@ describe('Wuxie and Coerce windows, in English and Vietnamese', () => {
   const barbarians: CardInstance = { instanceId: 'barb-1', definitionId: 'barbarians', suit: 'spade', rank: 7 };
   const drawTwo: CardInstance = { instanceId: 'dt-1', definitionId: 'draw-two', suit: 'heart', rank: 7 };
   const capture: CardInstance = { instanceId: 'cap-1', definitionId: 'capture', suit: 'spade', rank: 6 };
-  const cancel = { en: 'Play Wuxie to cancel it?', vi: 'Ra Wuxie để hủy?' };
+  const cancel = { en: 'Play Wuxie to cancel it?', vi: 'Đánh Wuxie để hủy?' };
 
   it('a Tool aimed at the viewer, at another seat, and at its own user', () => {
     const aimed = (target: string) => state([], wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat(target) }));
@@ -185,7 +185,7 @@ describe('Wuxie and Coerce windows, in English and Vietnamese', () => {
     const counter = state([], wuxieWindow('seat-0', { kind: 'counter-wuxie', wuxieSeatId: 'seat-2' }));
     expect(both((t) => describeResponse(counter, 'seat-0', undefined, t))).toMatchObject({
       en: { source: 'Seat 2 played Wuxie', prompt: cancel.en, outcome: "Seat 2's Wuxie stands" },
-      vi: { source: 'Seat 2 ra Wuxie', prompt: cancel.vi, outcome: 'Wuxie của Seat 2 có hiệu lực' },
+      vi: { source: 'Seat 2 đánh Wuxie', prompt: cancel.vi, outcome: 'Wuxie của Seat 2 có hiệu lực' },
     });
   });
 
@@ -219,9 +219,9 @@ describe('Wuxie and Coerce windows, in English and Vietnamese', () => {
     ];
     expect(both((t) => describeResponse({ ...state([], pending('seat-2')), zones }, 'seat-0', undefined, t))).toMatchObject({
       en: { source: 'Seat 1 used Coerce on you', prompt: 'Play Sha at Seat 2?', outcome: 'Green Dragon Blade goes to Seat 1' },
-      vi: { source: 'Seat 1 dùng Coerce lên bạn', prompt: 'Ra Sha vào Seat 2?', outcome: 'Green Dragon Blade chuyển cho Seat 1' },
+      vi: { source: 'Seat 1 dùng Coerce lên bạn', prompt: 'Đánh Sha vào Seat 2?', outcome: 'Green Dragon Blade chuyển cho Seat 1' },
     });
-    expect(both((t) => describeResponse({ ...state([], pending('seat-0')), zones }, 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Play Sha at you?', vi: 'Ra Sha vào bạn?' });
+    expect(both((t) => describeResponse({ ...state([], pending('seat-0')), zones }, 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Play Sha at you?', vi: 'Đánh Sha vào bạn?' });
   });
 });
 
@@ -242,12 +242,12 @@ describe('the Upheaval and Instigate windows, in English and Vietnamese', () => 
   it('Upheaval: the seat picked, the viewer, and no seat picked yet', () => {
     expect(both((t) => describeResponse(state([], upheaval('seat-2')), 'seat-1', undefined, t))).toMatchObject({
       en: { source: 'Hing used Upheaval', prompt: 'Play a Sha at Seat 2, or lose 1 HP?', outcome: 'You lose 1 HP' },
-      vi: { source: 'Hing dùng Upheaval', prompt: 'Ra Sha vào Seat 2, hoặc mất 1 Sinh lực?', outcome: 'Bạn mất 1 Sinh lực' },
+      vi: { source: 'Hing dùng Upheaval', prompt: 'Đánh Sha vào Seat 2, hoặc mất 1 Sinh lực?', outcome: 'Bạn mất 1 Sinh lực' },
     });
-    expect(both((t) => describeResponse(state([], upheaval('seat-1')), 'seat-1', undefined, t)!.prompt)).toEqual({ en: 'Play a Sha at you, or lose 1 HP?', vi: 'Ra Sha vào bạn, hoặc mất 1 Sinh lực?' });
+    expect(both((t) => describeResponse(state([], upheaval('seat-1')), 'seat-1', undefined, t)!.prompt)).toEqual({ en: 'Play a Sha at you, or lose 1 HP?', vi: 'Đánh Sha vào bạn, hoặc mất 1 Sinh lực?' });
     expect(both((t) => describeResponse(state([], upheaval()), 'seat-1', undefined, t)!.prompt)).toEqual({
       en: 'Play a Sha at the seat you picked, or lose 1 HP?',
-      vi: 'Ra Sha vào người chơi bạn đã chọn, hoặc mất 1 Sinh lực?',
+      vi: 'Đánh Sha vào người chơi bạn đã chọn, hoặc mất 1 Sinh lực?',
     });
     expect(both((t) => describeResponse(state([], upheaval('seat-2')), 'seat-0', undefined, t)!.outcome)).toEqual({ en: 'Seat 1 loses 1 HP', vi: 'Seat 1 mất 1 Sinh lực' });
   });
@@ -255,9 +255,9 @@ describe('the Upheaval and Instigate windows, in English and Vietnamese', () => 
   it('Instigate: to the responder, to the instigator, and to a bystander', () => {
     expect(both((t) => describeResponse(state([], instigate), 'seat-1', undefined, t))).toMatchObject({
       en: { source: 'Hing used Instigate', prompt: 'Play a Sha at Hing, or discard a card?', outcome: 'Hing discards one of your cards' },
-      vi: { source: 'Hing dùng Instigate', prompt: 'Ra Sha vào Hing, hoặc bỏ một lá bài?', outcome: 'Hing bỏ một lá bài của bạn' },
+      vi: { source: 'Hing dùng Instigate', prompt: 'Đánh Sha vào Hing, hoặc bỏ một lá bài?', outcome: 'Hing bỏ một lá bài của bạn' },
     });
-    expect(both((t) => describeResponse(state([], instigate), 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Play a Sha at you, or discard a card?', vi: 'Ra Sha vào bạn, hoặc bỏ một lá bài?' });
+    expect(both((t) => describeResponse(state([], instigate), 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Play a Sha at you, or discard a card?', vi: 'Đánh Sha vào bạn, hoặc bỏ một lá bài?' });
     expect(both((t) => describeResponse(state([], instigate), 'seat-2', undefined, t)!.outcome)).toEqual({ en: "Hing discards one of Seat 1's cards", vi: 'Hing bỏ một lá bài của Seat 1' });
   });
 });
@@ -300,7 +300,7 @@ describe('waitingLine, in English and Vietnamese', () => {
       id: 'b1', respondingSeatId: 'seat-1', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
       reason: { kind: 'card-effect', card: used(barbarians), userSeatId: 'seat-0' }, context: { effect: noop },
     };
-    expect(both((t) => waitingLine(state([], answer), t))).toEqual({ en: 'Waiting on Seat 1 to answer Barbarians', vi: 'Đang chờ Seat 1 đáp lại Barbarians' });
+    expect(both((t) => waitingLine(state([], answer), t))).toEqual({ en: 'Waiting on Seat 1 to answer Barbarians', vi: 'Đang chờ Seat 1 phản hồi Barbarians' });
     expect(both((t) => waitingLine(state([], damageWindow('s1', 'seat-1', 'seat-0', 'sha-1')), t))).toEqual({ en: 'Waiting on Seat 1', vi: 'Đang chờ Seat 1' });
     const abilityWindow = (skillId: string, abilityOwner: ReturnType<typeof upheavalOwnerFor>): PendingResponse => ({
       id: skillId, respondingSeatId: 'seat-1', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
@@ -309,11 +309,11 @@ describe('waitingLine, in English and Vietnamese', () => {
     });
     expect(both((t) => waitingLine(state([], abilityWindow('upheaval', upheavalOwnerFor('upheaval'))), t))).toEqual({
       en: 'Waiting on Seat 1 to play a Sha for Upheaval',
-      vi: 'Đang chờ Seat 1 ra Sha cho Upheaval',
+      vi: 'Đang chờ Seat 1 đánh Sha cho Upheaval',
     });
     expect(both((t) => waitingLine(state([], abilityWindow('instigate', upheavalOwnerFor('instigate'))), t))).toEqual({
       en: 'Waiting on Seat 1 to play a Sha for Instigate',
-      vi: 'Đang chờ Seat 1 ra Sha cho Instigate',
+      vi: 'Đang chờ Seat 1 đánh Sha cho Instigate',
     });
   });
 });

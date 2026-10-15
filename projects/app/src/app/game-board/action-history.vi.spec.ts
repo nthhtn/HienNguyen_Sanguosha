@@ -51,7 +51,7 @@ describe('card plays in Vietnamese', () => {
 
   it('an answer to no named seat, and an answer to a seat but no known card', () => {
     const answer = (inResponseTo: object): EngineEvent => ({ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(shan), targets: [], inResponseTo });
-    expect(vi_([answer({ cardInstanceId: 'sha-1' })])).toEqual(['Seat 1 dùng Shan (2 ♥) để đáp lại']);
+    expect(vi_([answer({ cardInstanceId: 'sha-1' })])).toEqual(['Seat 1 dùng Shan (2 ♥) để phản hồi']);
     expect(en_([answer({ cardInstanceId: 'sha-1' })])).toEqual(['Seat 1 used Shan (2 ♥) in response']);
     expect(vi_([answer({ seatId: 'seat-0' })])).toEqual(['Seat 1 dùng Shan (2 ♥) chống lại Seat 0']);
     expect(en_([answer({ seatId: 'seat-0' })])).toEqual(['Seat 1 used Shan (2 ♥) against Seat 0']);

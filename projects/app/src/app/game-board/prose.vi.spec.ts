@@ -111,7 +111,7 @@ describe('a skill’s pick prompt', () => {
   it('a mixed pick uses the skill’s fixed prompt', () => {
     expect(both((t) => describeChoice(state({ pendingChoice: pick('upheaval', [seatOption, labelOption]) }), 'seat-0', t)!.prompt)).toEqual({
       en: 'Choose a seat to play a Sha at, or pass',
-      vi: 'Chọn một người chơi để ra Sát vào, hoặc bỏ qua',
+      vi: 'Chọn một người chơi để đánh Sát vào, hoặc bỏ qua',
     });
   });
 
