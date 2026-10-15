@@ -46,26 +46,33 @@ function runBatch(numGames: number, numSeats: number): void {
   if (failures > 0) process.exitCode = 1;
 }
 
-function runTournamentCommand(games: number, numSeats: number, challenger: string, baseline: string, firstSeed: number): void {
-  const report = runTournament({ games, seats: numSeats, challenger: parseBotKind(challenger), baseline: parseBotKind(baseline), firstSeed });
+function parseMirrored(option: string | undefined): boolean {
+  if (option === undefined || option === 'mirrored') return true;
+  if (option === 'unmirrored') return false;
+  throw new Error(`Unknown option "${option}". Use mirrored or unmirrored`);
+}
+
+function runTournamentCommand(games: number, numSeats: number, challenger: string, baseline: string, firstSeed: number, option: string | undefined): void {
+  const mirrored = parseMirrored(option);
+  const report = runTournament({ games, seats: numSeats, challenger: parseBotKind(challenger), baseline: parseBotKind(baseline), firstSeed, mirrored });
   console.log(formatReport(report));
 }
 
-const [, , mode, arg1, arg2, arg3, arg4, arg5] = process.argv;
+const [, , mode, arg1, arg2, arg3, arg4, arg5, arg6] = process.argv;
 if (mode === 'single') {
   runSingle(Number(arg1 ?? 1), Number(arg2 ?? 4));
 } else if (mode === 'batch') {
   runBatch(Number(arg1 ?? 100), Number(arg2 ?? 4));
 } else if (mode === 'tournament') {
   try {
-    runTournamentCommand(Number(arg1 ?? 100), Number(arg2 ?? 4), arg3 ?? 'rule-based', arg4 ?? 'rule-based-v1', Number(arg5 ?? 0));
+    runTournamentCommand(Number(arg1 ?? 100), Number(arg2 ?? 4), arg3 ?? 'rule-based', arg4 ?? 'rule-based-v1', Number(arg5 ?? 0), arg6);
   } catch (err) {
     console.error(err instanceof Error ? err.message : String(err));
     process.exitCode = 1;
   }
 } else {
   console.error(
-    'Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats> | sim tournament <games> <numSeats> <challenger> <baseline> [firstSeed]'
+    'Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats> | sim tournament <games> <numSeats> <challenger> <baseline> [firstSeed] [mirrored|unmirrored]'
   );
   process.exitCode = 1;
 }

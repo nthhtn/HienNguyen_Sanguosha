@@ -140,3 +140,31 @@ three sets, as above.
   recorded.
 - Each later stage: either shipped under the rule above, or reported as not
   shipped with all runs recorded.
+
+## Stage 0 results
+
+Date: 2026-10-15. Stage 0 implemented as specified. All runs 4 seats.
+
+| Run | Unmirrored | Mirrored |
+|---|---|---|
+| `rule-based` against `random`, 200 games, seed 0 | +39.3 pp (+34.1 to +44.4), ±5.2 | +41.8 pp (+36.4 to +47.1), ±5.4 over 100 pairs |
+| scored targeting against `rule-based-v1`, 4000 games, seed 10000 (the earlier run) | +1.2 pp (−0.4 to +2.8), ±1.6 | +1.1 pp (+0.1 to +2.2), ±1.05 over 2000 pairs |
+| `rule-based` against `rule-based-v1` (identical behaviour), 4000 games, seed 0 | n/a | 0.0 pp (0.0 to 0.0) over 2000 pairs |
+
+What this says:
+
+- Identical bots give exactly zero in mirrored mode, so the pairing (same deal,
+  sides swapped) works. It checks the pairing, not the size of the noise.
+- Against `random` mirroring did **not** narrow the interval (±5.4 against
+  ±5.2). `random` adds so much noise of its own that the deal is a small part
+  of the variance.
+- Between two close bots, which is the case the harness exists for, mirroring
+  narrowed the interval by about a third (±1.6 to ±1.05) for the same number of
+  games, which is the same precision as roughly 2.3 times as many unmirrored
+  games. The point estimate barely moved (+1.2 and +1.1 pp), as it should.
+- The mirrored run shows the scored targeting (default weights) just above its
+  margin on seed 10000 (+0.1 to +2.2). That is one run on a range that was
+  already used, so it is a lead for a later attempt, not a result: the
+  acceptance rule still requires it on two fresh ranges, and the earlier
+  tuned-weights run on a fresh range (+1.1, −0.5 to +2.7, unmirrored) did not
+  clear it.
