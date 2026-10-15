@@ -206,7 +206,7 @@ export class GeneralSelection {
     const disabledReason = this.i18n.t(selected.length === 0 ? 'select.noPartner' : 'select.mustShare');
     return this.candidates().map((id) => {
       const definition = this.registry().generals.get(id);
-      const display = generalDisplayData(id);
+      const display = generalDisplayData(id, this.i18n.locale());
       const index = selected.indexOf(id);
       return {
         id,
@@ -234,7 +234,7 @@ export class GeneralSelection {
   protected slotName(position: 0 | 1): string {
     const id = this.selected()[position];
     if (!id) return this.i18n.t('select.pick');
-    return generalDisplayData(id)?.name ?? generalDisplayName(id, this.i18n.translator);
+    return generalDisplayData(id, this.i18n.locale())?.name ?? generalDisplayName(id, this.i18n.translator);
   }
 
   protected readonly matchingAction = computed<ChooseGeneralsAction | null>(() => {

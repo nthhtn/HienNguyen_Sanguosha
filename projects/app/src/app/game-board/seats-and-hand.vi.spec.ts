@@ -306,6 +306,6 @@ describe('CardInfoDialog.nameFor', () => {
   it('names a hidden card in the translator’s language, and keeps English without one', () => {
     expect(CardInfoDialog.nameFor('hidden', undefined)).toBe('Hidden Card');
     expect(CardInfoDialog.nameFor('hidden', undefined, makeTranslator(vi, 'vi'))).toBe('Lá bài ẩn');
-    expect(CardInfoDialog.nameFor('sha', undefined, makeTranslator(vi, 'vi'))).toBe('Sha');
+    expect(CardInfoDialog.nameFor('sha', undefined, makeTranslator(vi, 'vi'))).toBe('Sát');
   });
 });

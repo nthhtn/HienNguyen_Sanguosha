@@ -1,6 +1,30 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
+import viCards from '../../data/locales/vi/cards.json';
+import viGenerals from '../../data/locales/vi/generals.json';
 import viProse from '../../data/locales/vi/prose.json';
+
+// One language's names and rules text, keyed by the same ids as the English data. A missing
+// id, skill or field reads English, so a language can be filled in piece by piece.
+export interface GeneralTranslation {
+  name: string;
+  title?: string;
+  skills?: Record<string, { name: string; text: string }>;
+}
+export interface CardTranslation {
+  name: string;
+  text?: string;
+}
+const GENERAL_TEXT: Record<string, Record<string, GeneralTranslation>> = { vi: viGenerals };
+const CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viCards };
+
+// The translations of a language, exported for the parity spec.
+export function generalTranslations(locale: string): Record<string, GeneralTranslation> {
+  return lookup(GENERAL_TEXT, locale) ?? {};
+}
+export function cardTranslations(locale: string): Record<string, CardTranslation> {
+  return lookup(CARD_TEXT, locale) ?? {};
+}
 
 export interface GeneralDisplayData {
   name: string;
@@ -10,13 +34,17 @@ export interface GeneralDisplayData {
 
 // Presentation-facing view of a general's data file, so UI code never imports
 // raw content JSON.
-export function generalDisplayData(id: string): GeneralDisplayData | null {
+export function generalDisplayData(id: string, locale = 'en'): GeneralDisplayData | null {
   if (!Object.prototype.hasOwnProperty.call(generalsData, id)) return null;
   const data = generalsData[id];
+  const translated = lookup(generalTranslations(locale), id);
   return {
-    name: data.name,
-    title: data.title ?? null,
-    skills: data.skills.map(({ name, text }) => ({ name, text })),
+    name: translated?.name ?? data.name,
+    title: translated?.title ?? data.title ?? null,
+    skills: data.skills.map(({ name, text }) => {
+      const skill = lookup(translated?.skills, skillIdOf(name));
+      return { name: skill?.name ?? name, text: skill?.text ?? text };
+    }),
   };
 }
 
@@ -29,15 +57,16 @@ export interface CardDisplayData {
 }
 
 // Presentation-facing view of a card's data file (rules text etc.).
-export function cardDisplayData(id: string): CardDisplayData | null {
+export function cardDisplayData(id: string, locale = 'en'): CardDisplayData | null {
   if (!Object.prototype.hasOwnProperty.call(cardsData, id)) return null;
   const data = cardsData[id];
+  const translated = lookup(cardTranslations(locale), id);
   return {
-    name: data.name,
+    name: translated?.name ?? data.name,
     category: data.category,
     subtype: data.subtype ?? null,
     range: data.range ?? null,
-    text: data.text ?? null,
+    text: translated?.text ?? data.text ?? null,
   };
 }
 // What an optional ability does, for its ask, in the game's own terms.
@@ -196,8 +225,19 @@ const titleCase = (id: string) => id.split('-').map((w) => w.charAt(0).toUpperCa
 
 // The name of an ability, for any text: a worn card's name, else a skill's
 // name from the General data, else its id in Title Case.
-export function abilityName(abilityId: string): string {
-  return cardDisplayData(abilityId)?.name ?? SKILL_NAMES.get(abilityId) ?? titleCase(abilityId);
+export function abilityName(abilityId: string, locale = 'en'): string {
+  return cardDisplayData(abilityId, locale)?.name ?? skillNames(locale).get(abilityId) ?? SKILL_NAMES.get(abilityId) ?? titleCase(abilityId);
+}
+
+// A language's skill names by skill id, built once per language.
+const SKILL_NAMES_BY_LOCALE = new Map<string, ReadonlyMap<string, string>>();
+function skillNames(locale: string): ReadonlyMap<string, string> {
+  let names = SKILL_NAMES_BY_LOCALE.get(locale);
+  if (!names) {
+    names = new Map(Object.values(generalTranslations(locale)).flatMap((g) => Object.entries(g.skills ?? {}).map(([id, skill]): [string, string] => [id, skill.name])));
+    SKILL_NAMES_BY_LOCALE.set(locale, names);
+  }
+  return names;
 }
 
 // What a Compete leads to for the skill that started it: `{user}` competed

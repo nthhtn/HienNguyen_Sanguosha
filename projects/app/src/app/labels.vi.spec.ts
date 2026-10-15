@@ -156,3 +156,19 @@ describe('conversion labels', () => {
     expect(conversionLabel(use, seated, real, tr)).toBe('Tính là Sha · Fighting Saint');
   });
 });
+
+describe('General and skill names follow the translator locale', () => {
+  const trVi = makeTranslator(vi, 'vi');
+  const useEvilHero: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'evil-hero' } };
+
+  it('a skill label uses the Vietnamese skill name, and the English translator the English one', () => {
+    expect(actionLabel(useEvilHero, state, registry, trVi)).toBe('Dùng Gian hùng');
+    expect(actionLabel(useEvilHero, state, registry, tr)).toBe('Dùng Evil Hero');
+    expect(actionLabel(useEvilHero, state, registry)).toBe('Use Evil Hero');
+  });
+
+  it('a skill with no Vietnamese name keeps its English name', () => {
+    const reconsider: Action = { kind: 'UseSkillAction', seatId: 'seat-0', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'reconsider' } };
+    expect(actionLabel(reconsider, state, registry, trVi)).toBe('Dùng Reconsider');
+  });
+});

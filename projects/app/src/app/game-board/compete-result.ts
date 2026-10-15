@@ -57,8 +57,8 @@ export function competeResults(log: readonly EngineEvent[], from: number, seats:
     const slot = event.owner.kind === 'general' ? event.owner.slot : null;
     const sourceGeneral = slot ? sourceSeat?.generals?.[slot].generalDefinitionId : undefined;
     const generalId = sourceGeneral && sourceGeneral !== 'hidden' ? sourceGeneral : null;
-    const display = generalId ? generalDisplayData(generalId) : null;
-    const name = abilityName(event.abilityId);
+    const display = generalId ? generalDisplayData(generalId, localeOf(tr)) : null;
+    const name = abilityName(event.abilityId, localeOf(tr));
     results.push({
       id: `compete-${index}`,
       abilityId: event.abilityId,

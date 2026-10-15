@@ -51,7 +51,7 @@ export class PlayingCard {
   private readonly i18n = inject(I18n);
 
   protected readonly name = computed(
-    () => cardDisplayData(this.card().definitionId)?.name ?? cardIdDisplayName(this.card().definitionId, this.i18n.translator)
+    () => cardDisplayData(this.card().definitionId, this.i18n.locale())?.name ?? cardIdDisplayName(this.card().definitionId, this.i18n.translator)
   );
   protected readonly face = computed(() => cardFaceLabel(this.card()));
   protected readonly red = computed(() => this.card().suit === 'heart' || this.card().suit === 'diamond');

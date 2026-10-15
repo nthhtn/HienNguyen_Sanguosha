@@ -8,7 +8,7 @@ import { GeneralInfoDialog, GeneralInfoDialogData } from './general-info-dialog'
 import { AvatarSkill } from './avatar-skills';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
-import type { Translator } from '../i18n/translator';
+import { localeOf, type Translator } from '../i18n/translator';
 
 const HIDDEN_ID = 'hidden';
 
@@ -29,7 +29,7 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance, tr: Translato
   if (id === HIDDEN_ID) {
     return { slot, id, masked: true, ownHidden: false, url: HIDDEN_GENERAL_ART_URL, caption: tr('avatar.hidden'), name: generalDisplayName(id, tr) };
   }
-  const name = generalDisplayData(id)?.name ?? generalDisplayName(id, tr);
+  const name = generalDisplayData(id, localeOf(tr))?.name ?? generalDisplayName(id, tr);
   const ownHidden = !general.revealed;
   return { slot, id, masked: false, ownHidden, url: cardArtUrl(id), caption: ownHidden ? tr('avatar.hiddenOwn', { name }) : name, name };
 }

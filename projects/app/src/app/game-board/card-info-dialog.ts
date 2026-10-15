@@ -7,7 +7,7 @@ import { cardFaceLabel, cardIdDisplayName } from '../labels';
 import { PlayingCard } from './playing-card';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
-import { englishTranslator, Translator } from '../i18n/translator';
+import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
 export interface CardInfoDialogData {
   card: CardInstance;
@@ -49,7 +49,7 @@ export interface CardInfoDialogData {
 export class CardInfoDialog {
   protected readonly data = inject<CardInfoDialogData>(MAT_DIALOG_DATA);
   private readonly i18n = inject(I18n);
-  protected readonly display = cardDisplayData(this.data.card.definitionId);
+  protected readonly display = cardDisplayData(this.data.card.definitionId, this.i18n.locale());
   protected readonly face = cardFaceLabel(this.data.card);
 
   protected categoryName(category: CardDisplayData['category']): string {
@@ -61,6 +61,6 @@ export class CardInfoDialog {
   }
 
   static nameFor(definitionId: string, registryName: string | undefined, tr: Translator = englishTranslator): string {
-    return cardDisplayData(definitionId)?.name ?? registryName ?? cardIdDisplayName(definitionId, tr);
+    return cardDisplayData(definitionId, localeOf(tr))?.name ?? registryName ?? cardIdDisplayName(definitionId, tr);
   }
 }

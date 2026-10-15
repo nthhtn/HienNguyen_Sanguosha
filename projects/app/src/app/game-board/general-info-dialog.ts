@@ -51,6 +51,6 @@ export interface GeneralInfoDialogData {
 export class GeneralInfoDialog {
   protected readonly data = inject<GeneralInfoDialogData>(MAT_DIALOG_DATA);
   private readonly i18n = inject(I18n);
-  protected readonly display = generalDisplayData(this.data.generalDefinitionId);
+  protected readonly display = generalDisplayData(this.data.generalDefinitionId, this.i18n.locale());
   protected readonly name = this.display?.name ?? generalDisplayName(this.data.generalDefinitionId, this.i18n.translator);
 }

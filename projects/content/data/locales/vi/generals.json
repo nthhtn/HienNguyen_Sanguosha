@@ -1,0 +1,10 @@
+{
+  "cao-cao": {
+    "name": "Tào Tháo",
+    "title": "Ngụy Võ Đế",
+    "skills": {
+      "evil-hero": { "name": "Gian hùng", "text": "Khi Tào Tháo bị một lá bài gây sát thương, ông có thể lập tức đưa lá bài đó vào bài trên tay." },
+      "escort": { "name": "Hộ giá", "text": "Chủ công kỹ: Nếu Tào Tháo cần dùng Thiểm, một người thuộc Ngụy có thể dùng Thiểm thay ông." }
+    }
+  }
+}

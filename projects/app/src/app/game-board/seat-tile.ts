@@ -215,7 +215,7 @@ export class SeatTile {
   // The General whose skill Zuo Ci holds now (his chosen Form), shown to everyone.
   readonly formName = computed(() => {
     const chosen = this.seat().forms?.chosen;
-    return chosen ? this.i18n.t('seat.formName', { general: generalDisplayData(chosen.generalId)?.name ?? this.i18n.t('seat.formFallback'), skill: abilityName(chosen.skillId) }) : null;
+    return chosen ? this.i18n.t('seat.formName', { general: generalDisplayData(chosen.generalId, this.i18n.locale())?.name ?? this.i18n.t('seat.formFallback'), skill: abilityName(chosen.skillId, this.i18n.locale()) }) : null;
   });
   // Whether the seat is dying, when the parent knows (a seat Refusing Death
   // keeps alive below 1 HP isn't); null: judged by its HP.

@@ -6,7 +6,7 @@ import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
 type SelectAction = Extract<Action, { kind: 'SelectAction' }>;
 
-const cardName = (definitionId: string, tr: Translator) => cardDisplayData(definitionId)?.name ?? cardIdDisplayName(definitionId, tr);
+const cardName = (definitionId: string, tr: Translator) => cardDisplayData(definitionId, localeOf(tr))?.name ?? cardIdDisplayName(definitionId, tr);
 const findCard = (state: GameState, instanceId: string) => state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === instanceId);
 
 export interface AskDescription {
@@ -34,12 +34,12 @@ export function describeAsk(state: GameState, viewerSeatId: string, legal: reado
   const decline = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === 'decline');
   if (!use || !decline) return null;
   const { abilityId, owner, targetSeatId } = choice.reason;
-  const name = abilityName(abilityId);
+  const name = abilityName(abilityId, localeOf(tr));
   const target = targetSeatId && targetSeatId !== viewerSeatId ? seatName(state.players, targetSeatId, tr) : null;
   const shows = choice.options.find((o) => o.id === 'use')?.shows;
   const reveals = shows?.kind === 'use' && !!shows.reveals;
   const generalId = owner.kind === 'general' ? (state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId ?? null) : null;
-  const generalName = generalId ? (generalDisplayData(generalId)?.name ?? generalDisplayName(generalId, tr)) : null;
+  const generalName = generalId ? (generalDisplayData(generalId, localeOf(tr))?.name ?? generalDisplayName(generalId, tr)) : null;
   const hint = abilityHint(abilityId, localeOf(tr));
   return {
     title: name,
@@ -130,7 +130,7 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
   const text = (step ? stepSelectionText(step, localeOf(tr)) : null) ?? (selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId, localeOf(tr)) : null);
   const reason = selection.reason;
   return {
-    title: reason.kind === 'ability' ? abilityName(reason.abilityId) : reason.kind === 'choice' ? cardName(reason.card.as, tr) : tr('selection.title'),
+    title: reason.kind === 'ability' ? abilityName(reason.abilityId, localeOf(tr)) : reason.kind === 'choice' ? cardName(reason.card.as, tr) : tr('selection.title'),
     prompt: text?.prompt ?? selectionPrompt(state, selection, items, tr),
     confirmLabel: text?.confirm ?? tr(CONFIRM_KEYS[selection.then.kind]),
     cancelLabel: text?.cancel ?? tr('selection.cancel'),
@@ -159,7 +159,7 @@ export function describeArrangement(state: GameState, viewerSeatId: string, lega
   const template = legal.find((a): a is ArrangeAction => a.kind === 'ArrangeCardsAction');
   if (!template) return null;
   return {
-    title: arrangement.reason.kind === 'ability' ? abilityName(arrangement.reason.abilityId) : tr('arrange.title'),
+    title: arrangement.reason.kind === 'ability' ? abilityName(arrangement.reason.abilityId, localeOf(tr)) : tr('arrange.title'),
     prompt: tr('arrange.prompt'),
     cards: arrangement.cardInstanceIds.map((id) => findCard(state, id)).filter((c): c is CardInstance => !!c),
     template,

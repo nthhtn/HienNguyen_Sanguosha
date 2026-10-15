@@ -1,7 +1,7 @@
 import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target, findSkill } from 'engine';
 import { abilityName } from 'content';
 import type { MessageKey } from './i18n/messages';
-import { englishTranslator, Translator } from './i18n/translator';
+import { englishTranslator, localeOf, Translator } from './i18n/translator';
 
 function findCardInstance(state: GameState, cardInstanceId: string): CardInstance | undefined {
   for (const zone of state.zones) {
@@ -98,7 +98,7 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
     case 'UseConversionAction':
       return conversionLabel(action, state, registry, tr);
     case 'UseSkillAction':
-      return action.owner.kind === 'general' ? tr('label.action.useSkill', { ability: abilityName(action.owner.skillId) }) : tr('label.action.useSkillGeneric');
+      return action.owner.kind === 'general' ? tr('label.action.useSkill', { ability: abilityName(action.owner.skillId, localeOf(tr)) }) : tr('label.action.useSkillGeneric');
     case 'ArrangeCardsAction':
       return tr('label.action.arrange');
     case 'SelectAction':
@@ -136,7 +136,7 @@ export function conversionLabel(
     const generalId = state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId;
     const skill = (generalId ? registry.generals.get(generalId)?.skills.find((s) => s.id === owner.skillId) : undefined) ?? findSkill(registry, owner.skillId);
     const conversion = skill?.conversions?.find((c) => c.id === action.via.conversionId);
-    if (conversion) base = tr('label.asCardVia', { card: cardName(conversion.as), ability: abilityName(owner.skillId) });
+    if (conversion) base = tr('label.asCardVia', { card: cardName(conversion.as), ability: abilityName(owner.skillId, localeOf(tr)) });
   }
   return action.targets.length > 0 ? tr('label.withTargets', { base, targets: action.targets.map((t) => targetLabel(t, state.players, tr)).join(', ') }) : base;
 }
@@ -166,6 +166,6 @@ export function cardFaceLabel(card: Pick<CardInstance, 'suit' | 'rank'>): string
 }
 
 // What a judgment is for: the card's name, or the skill's.
-export function judgmentReaderName(reader: JudgmentReader): string {
-  return abilityName(reader.kind === 'card' ? reader.card.as : reader.owner.skillId);
+export function judgmentReaderName(reader: JudgmentReader, tr: Translator = englishTranslator): string {
+  return abilityName(reader.kind === 'card' ? reader.card.as : reader.owner.skillId, localeOf(tr));
 }
