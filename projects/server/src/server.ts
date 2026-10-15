@@ -1,6 +1,7 @@
 import { GameHistory } from './game/history';
 import { FastifyInstance } from 'fastify';
 import { AccountService } from './auth/accounts';
+import { seedDevAccount } from './auth/devAccount';
 import { AuthRateLimits } from './auth/rateLimits';
 import { buildContentRegistry, kingdomWarMaxSeats } from 'content';
 import { MIN_SEATS } from 'protocol';
@@ -25,11 +26,13 @@ export interface RunningServer {
 // migrated on start, or in memory), accounts, rooms (restored from the store,
 // running games included, rebuilt from their stored actions), the HTTP app,
 // the room tick every 5 s, and an hourly clean-up of rate-limit windows, idle
-// guests, and dead sessions and reset tokens. Closing stops the game timers
+// guests, and dead sessions and reset tokens. `seedDevAccount` adds the local
+// development account (player@sgs.com). Closing stops the game timers
 // first, then the HTTP app and the store.
-export async function createServer(config: ServerConfig, options: { logger?: boolean } = {}): Promise<RunningServer> {
+export async function createServer(config: ServerConfig, options: { logger?: boolean; seedDevAccount?: boolean } = {}): Promise<RunningServer> {
   const store = await openStore(config.databaseUrl);
   const accounts = new AccountService({ repos: store.repos, mailer: new ConsoleMailer(), publicOrigin: config.publicOrigin });
+  if (options.seedDevAccount) await seedDevAccount(accounts);
   const rateLimits = new AuthRateLimits();
   const registry = buildContentRegistry();
   const rooms = new RoomService({
