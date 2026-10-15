@@ -18,6 +18,10 @@ export interface CardTranslation {
 const GENERAL_TEXT: Record<string, Record<string, GeneralTranslation>> = { vi: viGenerals };
 const CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viCards };
 
+// Every General and card id, from the English data (the ids a translation has to cover).
+export const generalIds = (): string[] => Object.keys(generalsData);
+export const cardIds = (): string[] => Object.keys(cardsData);
+
 // The translations of a language, exported for the parity spec.
 export function generalTranslations(locale: string): Record<string, GeneralTranslation> {
   return lookup(GENERAL_TEXT, locale) ?? {};

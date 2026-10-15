@@ -117,8 +117,9 @@ follows its own (the full terminology is in
 - **Keywords keep their capitals inside sentences:** player and seat names,
   card names (Sát, Đào, Quyết Đấu), General names and the terms Tướng, Chủ
   tướng, Phó tướng and Sinh lực. Forces are Ngụy, Thục, Ngô, Quần.
-- Skill names and titles are sentence case ("Gian hùng"); General and card names
-  are capitalised word by word ("Tào Tháo", "Quyết Đấu").
+- Skill names and titles are sentence case ("Gian hùng"), keeping the capitals of
+  proper nouns inside them ("Thiên Công tướng quân"); General and card names are
+  capitalised word by word ("Tào Tháo", "Quyết Đấu").
 - New Vietnamese text starts as a draft. A native speaker reviews it, and
   `npm run i18n:status` reports what is still draft.
 

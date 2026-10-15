@@ -1,9 +1,9 @@
 [
   { "en": "judg(e)?ment", "vi": "phán xét" },
   { "en": "\\bpeach\\b", "vi": "Đào" },
-  { "en": "\\bduel", "vi": "quyết đấu", "note": "the skill and the card read the same" },
+  { "en": "\\bduel", "vi": "[Qq]uyết [Đđ]ấu", "note": "lower case for the verb, capitalised for the card" },
   { "en": "\\b(health|HP)\\b", "vi": "Sinh lực" },
-  { "en": "\\bdiscard", "vi": "bỏ" },
+  { "en": "\\bdiscard", "vi": "(?<![\\p{L}])bỏ(?! qua)(?![\\p{L}])", "note": "bỏ qua means skip" },
   { "en": "\\bdelay(ed)? tool", "vi": "trì hoãn" },
   { "en": "\\bcompete", "vi": "đấu điểm" },
   { "en": "\\bwine\\b", "vi": "Tửu" },

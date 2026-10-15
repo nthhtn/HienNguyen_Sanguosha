@@ -4,8 +4,8 @@ import { generalsData } from '../../data/generals';
 import { cardTranslations, generalTranslations, skillIdOf } from './display';
 
 // Every glossary term that the English text uses must appear, in its agreed form, in the
-// Vietnamese text of the same entry.
-const terms = glossary.map((t) => ({ en: new RegExp(t.en, 'i'), vi: new RegExp(t.vi, 'i'), label: t.en }));
+// Vietnamese text of the same entry, with its capitals (Sinh lực, Đào, Tửu are keywords).
+const terms = glossary.map((t) => ({ en: new RegExp(t.en, 'i'), vi: new RegExp(t.vi, 'u'), label: t.en }));
 const violations = (english: string, vietnamese: string) => terms.filter((t) => t.en.test(english) && !t.vi.test(vietnamese)).map((t) => t.label);
 
 describe('the Vietnamese glossary', () => {

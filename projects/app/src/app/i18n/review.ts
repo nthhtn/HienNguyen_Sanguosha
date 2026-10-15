@@ -9,6 +9,16 @@ export interface ReviewLists {
   prose: Record<string, string[]>;
 }
 
+// Every id that exists in the catalogs and data, given the English prose tables.
+export function reviewUniverse(en: Record<string, string>, generalIds: string[], cardIds: string[], proseTables: Record<string, object>): ReviewLists {
+  return {
+    ui: Object.keys(en),
+    generals: generalIds,
+    cards: cardIds,
+    prose: Object.fromEntries(Object.entries(proseTables).map(([table, entries]) => [table, Object.keys(entries)])),
+  };
+}
+
 export interface CategoryStatus {
   category: string;
   total: number;
@@ -37,5 +47,9 @@ export function reviewStatus(review: ReviewLists, universe: ReviewLists): Catego
     status('Generals (name, title and skills)', universe.generals, review.generals),
     status('Cards (name and text)', universe.cards, review.cards),
     ...Object.keys(universe.prose).map((table) => status(`Prose: ${table}`, universe.prose[table], review.prose[table] ?? [])),
+    // A table the review file lists that no longer exists: all of its ids are unknown.
+    ...Object.keys(review.prose)
+      .filter((table) => !Object.prototype.hasOwnProperty.call(universe.prose, table))
+      .map((table) => status(`Prose: ${table}`, [], review.prose[table])),
   ];
 }

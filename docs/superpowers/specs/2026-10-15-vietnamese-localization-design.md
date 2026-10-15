@@ -1,6 +1,6 @@
 # Vietnamese Localization (Game Screen) — Design Spec
 
-Status: Approved; phases 1 to 5 built (2026-10-16); the Vietnamese text is draft until reviewed
+Status: Approved; phases 1 to 5 built; the Vietnamese text is draft until reviewed
 Date: 2026-10-15
 
 ## Purpose

@@ -1,17 +1,12 @@
 // How much of the Vietnamese text a native speaker has reviewed.
 //   npm run i18n:status            counts per category
 //   npm run i18n:status -- --list  also lists the entries still in draft
-import { ENGLISH_PROSE, cardTranslations, generalTranslations } from 'content';
+import { ENGLISH_PROSE, cardIds, generalIds } from 'content';
 import review from '../projects/content/data/locales/vi/review.json';
 import { en } from '../projects/app/src/app/i18n/en';
-import { reviewStatus, ReviewLists } from '../projects/app/src/app/i18n/review';
+import { reviewStatus, reviewUniverse } from '../projects/app/src/app/i18n/review';
 
-const universe: ReviewLists = {
-  ui: Object.keys(en),
-  generals: Object.keys(generalTranslations('vi')),
-  cards: Object.keys(cardTranslations('vi')),
-  prose: Object.fromEntries(Object.entries(ENGLISH_PROSE).map(([table, entries]) => [table, Object.keys(entries)])),
-};
+const universe = reviewUniverse(en, generalIds(), cardIds(), ENGLISH_PROSE);
 const list = process.argv.includes('--list');
 const statuses = reviewStatus(review, universe);
 

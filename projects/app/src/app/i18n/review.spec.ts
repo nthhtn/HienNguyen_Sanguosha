@@ -1,14 +1,9 @@
-import { ENGLISH_PROSE, cardTranslations, generalTranslations } from 'content';
+import { ENGLISH_PROSE, cardIds, generalIds } from 'content';
 import review from '../../../../content/data/locales/vi/review.json';
 import { en } from './en';
-import { reviewStatus, ReviewLists } from './review';
+import { reviewStatus, reviewUniverse, ReviewLists } from './review';
 
-const universe: ReviewLists = {
-  ui: Object.keys(en),
-  generals: Object.keys(generalTranslations('vi')),
-  cards: Object.keys(cardTranslations('vi')),
-  prose: Object.fromEntries(Object.entries(ENGLISH_PROSE).map(([table, entries]) => [table, Object.keys(entries)])),
-};
+const universe = reviewUniverse(en, generalIds(), cardIds(), ENGLISH_PROSE);
 
 describe('reviewStatus', () => {
   it('counts the reviewed ids of each category and lists the rest', () => {
@@ -26,6 +21,11 @@ describe('reviewStatus', () => {
 });
 
 describe('the Vietnamese review file', () => {
+  it('reports a prose table that no longer exists', () => {
+    const result = reviewStatus({ ui: [], generals: [], cards: [], prose: { gone: ['a'] } }, { ui: [], generals: [], cards: [], prose: {} });
+    expect(result.find((r) => r.category === 'Prose: gone')!.unknown).toEqual(['a']);
+  });
+
   it('lists only ids that exist', () => {
     const stale = reviewStatus(review, universe).flatMap((r) => r.unknown.map((id) => `${r.category}: ${id}`));
     expect(stale).toEqual([]);
