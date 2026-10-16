@@ -180,3 +180,30 @@ describe('gatherTriggeredSkills with a seat that has not chosen generals', () =>
     expect(gatherTriggeredSkills(state, registry, mode, 'after:X', {})).toEqual([]);
   });
 });
+
+describe('gatherTriggeredSkills after a seat is eliminated', () => {
+  const afterDeathSkill = { id: 'last-words', afterDeath: true, triggers: [{ point: 'after:SeatEliminatedEvent' as const, condition: () => true, effect: () => [] }] };
+  const registry: ContentRegistry = {
+    cards: new Map(),
+    generals: new Map<string, GeneralDefinition>([
+      ['printed', { id: 'printed', kingdom: 'Wei', maxHp: 4, skills: [] }],
+      ['spare', { id: 'spare', kingdom: 'Wei', maxHp: 4, skills: [afterDeathSkill] }],
+    ]),
+  };
+  const gather = (extra: Partial<Seat>) => {
+    const state = stateWithSeats([{ ...seat('seat-a', 0, 'printed', 'printed', true), ...extra }]);
+    return gatherTriggeredSkills(state, registry, stubMode(), 'after:SeatEliminatedEvent', { seatId: 'seat-a' }).map((f) => f.owner);
+  };
+
+  it('gathers an afterDeath skill held as a chosen Form', () => {
+    expect(gather({ forms: { slot: 'deputy', held: ['spare'], chosen: { generalId: 'spare', skillId: 'last-words' } } })).toEqual([
+      { kind: 'general', seatId: 'seat-a', slot: 'deputy', skillId: 'last-words' },
+    ]);
+  });
+
+  it('gathers an afterDeath skill gained for good', () => {
+    const gained = gather({ gainedSkills: [{ slot: 'main', skillId: 'last-words' }] });
+    // `findSkill` finds it through the registry's generals.
+    expect(gained).toEqual([{ kind: 'general', seatId: 'seat-a', slot: 'main', skillId: 'last-words' }]);
+  });
+});

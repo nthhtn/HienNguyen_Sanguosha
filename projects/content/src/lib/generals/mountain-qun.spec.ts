@@ -86,6 +86,15 @@ describe('Cai Wenji — Heartbroken', () => {
     expect(inPlay(gained, 'seat-c')).toEqual([]);
   });
 
+  it('silences the killer when Zuo Ci holds Heartbroken as his chosen Form', () => {
+    const base = table({}, { generals: { 'seat-a': ['zuo-ci', 'filler-xu-huang', true], 'seat-c': ['zhang-he', 'liu-shan', true] }, hp: { 'seat-a': 1 } });
+    const withForm = { ...base, seats: base.seats.map((x) => (x.id === 'seat-a' ? { ...x, forms: { slot: 'main' as const, held: ['cai-wenji'], chosen: { generalId: 'cai-wenji', skillId: 'heartbroken' } } } : x)) };
+    let s = hk.run(withForm, [shaDamage('seat-c', 'seat-a')]);
+    for (let i = 0; i < 6 && s.pendingResponse; i++) s = hk.pass(s);
+    expect(s.seats.find((x) => x.id === 'seat-a')!.eliminated).toBe(true);
+    expect(s.seats.find((x) => x.id === 'seat-c')!.silenced).toBe(true);
+  });
+
   it('nothing happens when she dies with no killer, or by her own hand', () => {
     expect(killed({}, null).seats.some((x) => x.silenced)).toBe(false);
     expect(killed({}, 'seat-a').seats.some((x) => x.silenced)).toBe(false);
