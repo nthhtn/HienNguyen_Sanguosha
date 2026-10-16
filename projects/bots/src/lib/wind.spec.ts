@@ -16,6 +16,13 @@ describe('Wind skills: asks', () => {
     expect(picked(decide(start(4)))).toBe('decline');
   });
 
+  it('Godspeed in the Play Phase: a spare weapon and no Sha; a Fire Attack is a Sha', () => {
+    const play = (hand: ReturnType<typeof card>[]) => ({ ...asking(table({ 'seat-a:hand': hand, 'seat-a:equip': [card('w', 'crossbow')] }), 'godspeed'), phase: 'Play' as const });
+    expect(picked(decide(play([card('x', 'axe')])))).toBe('use');
+    expect(picked(decide(play([card('x', 'axe'), card('s', 'sha')])))).toBe('decline');
+    expect(picked(decide(play([card('x', 'axe'), card('s', 'fire-attack')])))).toBe('decline');
+  });
+
   it('Strong Bow on a non-ally; Refusing Death and Lightning Strike always', () => {
     expect(picked(decide(asking(table(), 'strong-bow', 'seat-b')))).toBe('use');
     expect(picked(decide(asking(table({}, { kingdoms: { 'seat-b': 'Wei' } }), 'strong-bow', 'seat-b')))).toBe('decline');

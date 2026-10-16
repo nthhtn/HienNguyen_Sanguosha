@@ -147,6 +147,11 @@ describe('Heaven’s Justice', () => {
     expect(skillOf(decide(table({ 'seat-a:hand': [...hand, card('s2', 'sha', 'club', 4)], 'seat-b:hand': [card('b', 'shan')] }, { generals: taishiCi, kingdoms: { 'seat-a': 'Wu' } })))).toBe('heavens-justice');
     expect(skillOf(decide(table({ 'seat-a:hand': hand, 'seat-b:hand': [card('b', 'shan')] }, { generals: taishiCi, kingdoms: { 'seat-a': 'Wu' } })))).not.toBe('heavens-justice');
   });
+
+  it('counts a Fire Attack and a Lightning Attack as Sha', () => {
+    const hand = [card('s1', 'fire-attack', 'spade', 3), card('s2', 'lightning-attack', 'club', 4), card('q', 'shan', 'heart', 12)];
+    expect(skillOf(decide(table({ 'seat-a:hand': hand, 'seat-b:hand': [card('b', 'shan')] }, { generals: taishiCi, kingdoms: { 'seat-a': 'Wu' } })))).toBe('heavens-justice');
+  });
 });
 
 describe('Eternal Loyalty', () => {

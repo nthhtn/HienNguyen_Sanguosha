@@ -70,7 +70,7 @@ export function wantsFireActive(view: GameState, me: Seat, skillId: string, regi
     case 'rouse-the-tiger':
       return highCard(view, me) && rousable(view, me, registry).length > 0;
     case 'heavens-justice':
-      return hand.filter((c) => c.definitionId === 'sha').length >= 2 && highCard(view, me) && others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) > 0);
+      return hand.filter((c) => isShaCard(registry, c.definitionId)).length >= 2 && highCard(view, me) && others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) > 0);
     default:
       return null;
   }

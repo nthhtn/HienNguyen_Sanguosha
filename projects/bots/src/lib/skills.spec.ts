@@ -38,6 +38,10 @@ describe('the Draw Phase', () => {
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha')] }), 'bare-the-chest')))).toBe('use');
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'sha')] }), 'bare-the-chest')))).toBe('decline');
   });
+
+  it('Bare the Chest counts a Fire Attack and a Lightning Attack as Sha', () => {
+    expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'fire-attack'), card('s2', 'lightning-attack')] }), 'bare-the-chest')))).toBe('use');
+  });
 });
 
 describe('Devil', () => {
