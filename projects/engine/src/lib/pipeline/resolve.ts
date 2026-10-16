@@ -11,7 +11,7 @@ import { findZoneByKind, moveCard, requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
-import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer } from '../rules/phaseSequence';
+import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer, startWindowOpens } from '../rules/phaseSequence';
 import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
@@ -195,6 +195,11 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   if (turn.turnNumber !== current.turn.turnNumber) {
     const turnEvent: TurnAdvancedEvent = { kind: 'TurnAdvancedEvent', seatId: turn.ownerSeatId, turnNumber: turn.turnNumber };
     events.push(turnEvent);
+    // A human holding a hidden General may reveal before the Start effects:
+    // the turn waits in Start, and EndPhaseAction enters it (enterStartPhase).
+    if (startWindowOpens(current, turn.ownerSeatId)) {
+      return logWithTriggers({ ...current, phase: 'Start', turn: { ...turn, startWindow: true } }, events, ctx);
+    }
   }
   for (const skippedPhase of skipped) {
     const skipEvent: PhaseSkippedEvent = { kind: 'PhaseSkippedEvent', seatId: turn.ownerSeatId, phase: skippedPhase };
@@ -206,6 +211,14 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   const entered: GameState = { ...current, phase, turn };
   const counted = phase === 'Discard' ? { ...entered, turn: { ...turn, discardsLeft: cardsOverHandLimit(entered, turn.ownerSeatId) } } : entered;
   return logWithTriggers(counted, events, ctx);
+}
+
+// Closes the Start window and enters Start: its PhaseChangedEvent is logged and
+// its triggers gathered, as enterNextPhase would have done without the window.
+function enterStartPhase(state: GameState, ctx: EngineContext): ResolveResult {
+  const { startWindow: _closed, ...turn } = state.turn;
+  const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: turn.ownerSeatId, phase: 'Start' };
+  return logWithTriggers({ ...state, turn }, [phaseEvent], ctx);
 }
 
 // `effect` as its before-triggers would rewrite it (e.g. Silver Lion's cap),
@@ -532,6 +545,8 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (state.turn.ownerSeatId !== action.seatId) {
         throw new Error(`It is not seat ${action.seatId}'s turn`);
       }
+      // Continuing from the Start window enters Start (enterStartPhase).
+      if (state.phase === 'Start' && state.turn.startWindow) return enterStartPhase(state, ctx);
       if (state.phase !== 'Play') {
         throw new Error('EndPhaseAction is only legal in the Play phase');
       }
@@ -567,7 +582,12 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const { state: chosen, event } = applyGeneralChoice(state, action, ctx.registry);
       const choiceFollowUps = afterTriggerFollowUps(chosen, [event], ctx);
       if (chosen.generalSelection !== null) return { state: queueFront(chosen, choiceFollowUps), events: [event] };
-      // The last seat has chosen: turn 1 begins at Start.
+      // The last seat has chosen: turn 1 begins at Start, after its owner's
+      // Start window if one opens (as in enterNextPhase).
+      if (startWindowOpens(chosen, chosen.turn.ownerSeatId)) {
+        const waiting: GameState = { ...chosen, turn: { ...chosen.turn, startWindow: true } };
+        return { state: queueFront(waiting, choiceFollowUps), events: [event] };
+      }
       const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: chosen.turn.ownerSeatId, phase: chosen.phase };
       const entered = logged(chosen, [phaseEvent]);
       return {

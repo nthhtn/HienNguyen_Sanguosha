@@ -121,6 +121,14 @@ function discardTable(handSize: number): GameState {
   };
 }
 
+describe('phaseWaitsForPlayer in Start', () => {
+  it('waits only while the Start window is open', () => {
+    const start: GameState = { ...discardTable(0), phase: 'Start' };
+    expect(phaseWaitsForPlayer(start)).toBe(false);
+    expect(phaseWaitsForPlayer({ ...start, turn: { ...start.turn, startWindow: true } })).toBe(true);
+  });
+});
+
 describe('discardOwed', () => {
   it('is what the turn owner is over its hand limit, or none once its Discard Phase is flagged to skip', () => {
     const base = discardTable(5); // the owner 'a' holds 5 cards at 3 HP: 2 over

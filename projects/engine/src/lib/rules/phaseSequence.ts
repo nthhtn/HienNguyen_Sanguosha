@@ -4,13 +4,25 @@ import { cardsOverHandLimit } from './handLimit';
 export const PHASE_ORDER: readonly Phase[] = ['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End'];
 
 // Whether the current phase must wait for the turn owner to act: always in
-// Play, and in Discard while they are over their hand limit. Every other phase
-// passes on its own once its entry triggers have resolved.
+// Play, in Discard while they are over their hand limit, and in Start while its
+// reveal window is open (startWindowOpens). Every other phase passes on its own
+// once its entry triggers have resolved.
 export function phaseWaitsForPlayer(state: GameState): boolean {
+  if (state.phase === 'Start') return !!state.turn.startWindow;
   // A Play Phase flagged to end (Godspeed, endFlagOf) stops waiting at once.
   if (state.phase === 'Play') return !state.turn.flags?.[endFlagOf('Play')];
   if (state.phase === 'Discard') return discardOwed(state, state.turn.ownerSeatId) > 0;
   return false;
+}
+
+// Whether `seatId`'s turn opens with a reveal window, before the Start Phase's
+// effects: a living, face-up seat holding a hidden General, played by a human.
+// Bots never wait, so bot-only games run as before.
+export function startWindowOpens(state: GameState, seatId: string): boolean {
+  const seat = state.seats.find((s) => s.id === seatId);
+  if (!seat || seat.eliminated || seat.faceDown || !seat.generals) return false;
+  if (seat.generals.main.revealed && seat.generals.deputy.revealed) return false;
+  return state.players.find((p) => p.seatId === seatId)?.kind === 'human';
 }
 
 // How many cards `seatId` must still discard in its Discard Phase: what it is

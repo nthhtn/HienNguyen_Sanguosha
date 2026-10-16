@@ -82,6 +82,9 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     return (handZone?.cards ?? []).map((card) => ({ kind: 'DiscardCardAction' as const, seatId, cardInstanceId: card.instanceId }));
   }
 
+  // The Start window: reveal a hidden General, or continue into Start.
+  if (state.phase === 'Start' && state.turn.startWindow) return [{ kind: 'EndPhaseAction', seatId }, ...hiddenGeneralReveals(state, seatId)];
+
   // Only the Play phase waits for the turn owner; every other phase passes on its own.
   if (state.phase !== 'Play') return [];
   const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }, ...hiddenGeneralReveals(state, seatId)];
