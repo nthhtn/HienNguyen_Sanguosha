@@ -44,7 +44,7 @@ happens only because every optional trigger goes through `ask()`, which becomes
 (`afterTriggerFollowUps`, `rewriteEffect` in `pipeline/resolve.ts`) never reads
 `needsReveal`. New behaviour: when a trigger marked `needsReveal` produces
 effects that contain neither an ask nor a `RevealGeneralEffect`, the pipeline puts
-a `RevealGeneralEffect` for that skill's General in front of them. Scope: triggers
+a `RevealGeneralEffect` for that skill's General in front of them. Before-triggers cannot take the reveal (it would have to run ahead of the effect they rewrite, and the rewritten effect would be offered to the before-triggers again), so a hidden General's before-trigger that returns direct effects instead of an ask throws, as a loud content bug; every current before-trigger asks (Nirvana and Refusing Death included). Scope: triggers
 only. Active skills and conversions already add the reveal themselves
 (`pipeline/resolve.ts` ~631 and ~658-661). The General revealed is the one in the
 trigger owner's slot (`owner.slot`), which is also right for a borrowed or Form
