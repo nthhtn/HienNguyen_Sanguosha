@@ -65,7 +65,7 @@ are only queued does not.
 
 **S13. The engine type names no card.** `AbilityModifiers.extraShaTargetsWhenLastCard`
 becomes a card-keyed field, `extraTargetsWhenLastCard?: Record<string, number>`
-(Sky Scorcher sets `{ sha: 1 }`; `cards/sha.ts` reads the `sha` entry). Behaviour
+(Sky Scorcher sets `{ sha: 2 }`, its current value; `cards/sha.ts` reads the `sha` entry). Behaviour
 is unchanged; the comment that says "the engine never reads them" stays true.
 
 **S14. `JUDGMENT_CHANGERS` is an explicit registry.** Today `shared/judgments.ts`
@@ -120,7 +120,7 @@ happen, so nothing is paid before `swap`. The use is counted when the first
 selection confirms (`IncrementEffect` in its `onSelect`), so a cancel at the
 second pick, and also at the `pay` card selection (my call, same rule), must undo
 that count. Cancel is an option of the existing choice or the selection's
-`onCancel`; no new action kind and no decision-id change. Bot: the second pick must
+`onCancel`; no new action kind and no decision-id change. The hidden General stays revealed after a cancel (the reveal happens when the first pick confirms and cannot be undone); only the use count is refunded. Bot: the second pick must
 keep the total cost at 2 or fewer (the first-pick pairing already does), and never
 falls back to the first seat offered.
 
