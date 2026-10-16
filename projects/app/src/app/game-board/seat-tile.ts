@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, GameState, Seat } from 'engine';
+import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
 import { abilityName, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
 import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
 import { SeatAvatar } from './seat-avatar';
@@ -255,13 +255,4 @@ export class SeatTile {
   protected kingdomName(kingdom: Parameters<typeof kingdomDisplayName>[0]): string {
     return kingdomDisplayName(kingdom, this.i18n.translator);
   }
-}
-
-// Whether `seat` is dying: at 0 HP or below, unless a skill keeps it alive there
-// (cards under its General, Refusing Death) and no rescue round is asking for it.
-export function seatIsDying(state: GameState, seat: Seat): boolean {
-  if (seat.eliminated || seat.combinedHp > 0) return false;
-  const rescuing = state.pendingResponse?.reason?.kind === 'dying' && state.pendingResponse.reason.seatId === seat.id;
-  const pile = seat.pile ? (state.zones.find((z) => z.id === seat.pile!.zoneId)?.cards.length ?? 0) : 0;
-  return rescuing || pile === 0;
 }

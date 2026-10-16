@@ -1,11 +1,11 @@
 import { Component, DestroyRef, ElementRef, computed, inject, input, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CardInstance, GameState, Seat } from 'engine';
+import { CardInstance, GameState, Seat, isSeatDying } from 'engine';
 import { actionHistory, latestSequence } from './action-history';
 import { waitingLine } from './response-description';
 import { seatName } from '../labels';
-import { SeatTile, seatIsDying } from './seat-tile';
+import { SeatTile } from './seat-tile';
 import { PlayingCard } from './playing-card';
 import { CardArt } from './card-art';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
@@ -203,7 +203,7 @@ export class RoundTable {
   }
 
   protected dyingOf(seat: Seat): boolean {
-    return seatIsDying(this.state(), seat);
+    return isSeatDying(this.state(), seat.id);
   }
 
   protected judgmentOf(zoneId: string) {
