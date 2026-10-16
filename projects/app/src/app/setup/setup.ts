@@ -9,10 +9,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
 import { GameMode, GameService } from '../game.service';
+import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-setup',
-  imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, TPipe],
   template: `
     <div class="home">
       <mat-card class="hero" appearance="raised">
@@ -20,22 +21,22 @@ import { GameMode, GameService } from '../game.service';
           <span class="wei"></span><span class="shu"></span><span class="wu"></span><span class="qun"></span>
         </div>
         <mat-card-header>
-          <mat-card-title>Kingdom War</mat-card-title>
-          <mat-card-subtitle>Guozhan · {{ mode() === 'vs-bots' ? 'you against computer opponents' : 'pass-and-play on one device' }}</mat-card-subtitle>
+          <mat-card-title>{{ 'app.title' | t }}</mat-card-title>
+          <mat-card-subtitle>{{ (mode() === 'vs-bots' ? 'setup.subtitle.bots' : 'setup.subtitle.pass') | t }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <ul class="how">
-            <li><mat-icon>groups</mat-icon>Each seat picks two hidden Generals of one kingdom.</li>
+            <li><mat-icon>groups</mat-icon>{{ 'setup.how.groups' | t }}</li>
             @if (mode() === 'vs-bots') {
-              <li><mat-icon>smart_toy</mat-icon>Bots play their own turns — You only ever see your own cards.</li>
+              <li><mat-icon>smart_toy</mat-icon>{{ 'setup.how.bots' | t }}</li>
             } @else {
-              <li><mat-icon>swap_horiz</mat-icon>Pass the device — Every seat sees only its own cards.</li>
+              <li><mat-icon>swap_horiz</mat-icon>{{ 'setup.how.pass' | t }}</li>
             }
-            <li><mat-icon>emoji_events</mat-icon>The last kingdom standing wins.</li>
+            <li><mat-icon>emoji_events</mat-icon>{{ 'setup.how.win' | t }}</li>
           </ul>
 
           <div class="field">
-            <span class="label" id="mode-label">Mode</span>
+            <span class="label" id="mode-label">{{ 'setup.mode' | t }}</span>
             <mat-button-toggle-group
               class="mode"
               aria-labelledby="mode-label"
@@ -43,17 +44,15 @@ import { GameMode, GameService } from '../game.service';
               [value]="mode()"
               (change)="mode.set($event.value)"
             >
-              <mat-button-toggle value="vs-bots"><mat-icon>smart_toy</mat-icon> Play vs Bots</mat-button-toggle>
-              <mat-button-toggle value="pass-and-play"><mat-icon>groups</mat-icon> Pass and Play</mat-button-toggle>
+              <mat-button-toggle value="vs-bots"><mat-icon>smart_toy</mat-icon> {{ 'setup.mode.bots' | t }}</mat-button-toggle>
+              <mat-button-toggle value="pass-and-play"><mat-icon>groups</mat-icon> {{ 'setup.mode.pass' | t }}</mat-button-toggle>
             </mat-button-toggle-group>
           </div>
           <p class="mode-hint">
-            {{ mode() === 'vs-bots'
-              ? 'You take the first seat; every other seat is a computer opponent.'
-              : 'Everyone plays on this device, Passing it between turns.' }}
+            {{ (mode() === 'vs-bots' ? 'setup.hint.bots' : 'setup.hint.pass') | t }}
           </p>
           <div class="field">
-            <span class="label" id="seat-label">Seats</span>
+            <span class="label" id="seat-label">{{ 'setup.seats' | t }}</span>
             <mat-button-toggle-group
               class="seats"
               aria-labelledby="seat-label"
@@ -69,20 +68,20 @@ import { GameMode, GameService } from '../game.service';
 
           @if (showFirstReveal()) {
             <div class="field">
-              <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">First Reveal Bonus</mat-checkbox>
+              <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
             </div>
-            <p class="rule-hint">The first seat to reveal a General draws 2 cards.</p>
+            <p class="rule-hint">{{ 'setup.firstReveal.hint' | t }}</p>
           }
 
           <div class="names">
             @for (i of nameSlots(); track i) {
               <mat-form-field appearance="outline" class="name-field">
-                <mat-label>{{ mode() === 'vs-bots' ? 'Your Name' : 'Seat ' + i + ' Name' }}</mat-label>
+                <mat-label>{{ mode() === 'vs-bots' ? ('setup.name.you' | t) : ('setup.name.seat' | t: { n: i }) }}</mat-label>
                 <input
                   matInput
                   class="name"
                   maxlength="24"
-                  [placeholder]="'Seat ' + i"
+                  [placeholder]="'label.seat' | t: { n: i }"
                   [value]="names()[i] ?? ''"
                   (input)="setName(i, $any($event.target).value)"
                 />
@@ -93,7 +92,7 @@ import { GameMode, GameService } from '../game.service';
         </mat-card-content>
         <mat-card-actions align="end">
           <button mat-flat-button type="button" class="start" (click)="startGame()">
-            <mat-icon>play_arrow</mat-icon> Start Game
+            <mat-icon>play_arrow</mat-icon> {{ 'setup.start' | t }}
           </button>
         </mat-card-actions>
       </mat-card>

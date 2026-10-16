@@ -1,28 +1,32 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import type { WikiGeneral } from 'content';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
+import type { MessageKey } from '../i18n/messages';
 import { CardArt } from '../game-board/card-art';
+import { wikiGeneralView } from './wiki-labels';
 
 // One general in the Wiki: art beside everything the data knows about it.
 @Component({
   selector: 'app-wiki-general-entry',
-  imports: [CardArt, MatIconModule],
+  imports: [CardArt, MatIconModule, TPipe],
   template: `
     <article class="entry kingdom-{{ general().kingdom }}" [attr.data-id]="general().id">
-      <app-card-art [id]="general().id" [label]="general().name" size="large" />
+      <app-card-art [id]="general().id" [label]="view().name" size="large" />
       <div class="body">
         <header>
           <h4>
-            <span class="name">{{ general().name }}</span>
+            <span class="name">{{ view().name }}</span>
             @if (general().nameZh; as zh) {
               <span class="zh">{{ zh }}</span>
             }
           </h4>
           <span class="badge" [class.on]="general().skillsInGame">
-            {{ general().skillsInGame ? 'Skills in game' : 'Skills not in game yet' }}
+            {{ (general().skillsInGame ? 'wiki.skillsInGame' : 'wiki.skillsNotInGame') | t }}
           </span>
         </header>
-        @if (general().title; as title) {
+        @if (view().title; as title) {
           <p class="title">
             {{ title }}
             @if (general().titleZh; as titleZh) {
@@ -31,33 +35,33 @@ import { CardArt } from '../game-board/card-art';
           </p>
         }
         <p class="meta">
-          <span class="kingdom-tag">{{ general().kingdom }}</span>
-          <span class="expansion-tag">{{ general().expansion }}</span>
-          <span class="gender-tag">{{ general().gender === 'female' ? 'Female' : 'Male' }}</span>
+          <span class="kingdom-tag">{{ kingdomKey() | t }}</span>
+          <span class="expansion-tag">{{ packKey() | t }}</span>
+          <span class="gender-tag">{{ (general().gender === 'female' ? 'wiki.female' : 'wiki.male') | t }}</span>
           @if (general().maxHp !== null) {
-            <span class="hearts" [attr.aria-label]="'HP ' + general().maxHp">
+            <span class="hearts" [attr.aria-label]="'wiki.hp' | t: { n: general().maxHp ?? 0 }">
               @for (h of hearts(); track $index) {
                 <mat-icon>favorite</mat-icon>
               }
             </span>
           } @else {
-            <span class="gap">HP not recorded</span>
+            <span class="gap">{{ 'wiki.noHp' | t }}</span>
           }
         </p>
         <ul class="skills">
-          @for (skill of general().skills; track skill.name) {
+          @for (skill of general().skills; track skill.name; let i = $index) {
             <li>
-              <strong>{{ skill.name }}</strong>
+              <strong>{{ view().skills[i].name }}</strong>
               @if (skill.nameZh; as zh) {
                 <span class="zh">{{ zh }}</span>
               }
-              <span class="skill-text">{{ skill.text }}</span>
+              <span class="skill-text">{{ view().skills[i].text }}</span>
               @if (skill.lord) {
-                <span class="lord-note">Not used in Kingdom War</span>
+                <span class="lord-note">{{ 'wiki.lordNote' | t }}</span>
               }
             </li>
           } @empty {
-            <li class="gap">No skills</li>
+            <li class="gap">{{ 'wiki.noSkills' | t }}</li>
           }
         </ul>
       </div>
@@ -90,6 +94,10 @@ import { CardArt } from '../game-board/card-art';
   `,
 })
 export class WikiGeneralEntry {
+  private readonly i18n = inject(I18n);
   readonly general = input.required<WikiGeneral>();
+  protected readonly view = computed(() => wikiGeneralView(this.general(), this.i18n.locale()));
+  protected readonly kingdomKey = computed((): MessageKey => `label.kingdom.${this.general().kingdom}`);
+  protected readonly packKey = computed((): MessageKey => `wiki.pack.${this.general().expansion}`);
   protected readonly hearts = computed(() => Array.from({ length: this.general().maxHp ?? 0 }));
 }

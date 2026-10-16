@@ -1,15 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
 import { MatTabsModule } from '@angular/material/tabs';
 import { wikiGeneralTabs, wikiGenerals } from 'content';
 import { WikiGeneralEntry } from './wiki-general-entry';
 import { tabQueryParam } from './tab-param';
+import { wikiTabLabel } from './wiki-labels';
 
 @Component({
   selector: 'app-wiki-generals',
-  imports: [MatTabsModule, WikiGeneralEntry],
+  imports: [MatTabsModule, WikiGeneralEntry, TPipe],
   template: `
-    <h2>Generals</h2>
-    <p class="summary">{{ generals.length }} generals · {{ withSkills }} with skills in the game</p>
+    <h2>{{ 'wiki.page.generals' | t }}</h2>
+    <p class="summary">{{ 'wiki.generals.summary' | t: { count: generals.length, withSkills } }}</p>
     <mat-tab-group
       [selectedIndex]="tab.selectedIndex()"
       (selectedIndexChange)="tab.select($event)"
@@ -17,12 +20,12 @@ import { tabQueryParam } from './tab-param';
       animationDuration="0ms"
     >
       @for (t of tabs; track t.key) {
-        <mat-tab [label]="t.label + ' (' + t.entries.length + ')'">
+        <mat-tab [label]="tabLabel(t) + ' (' + t.entries.length + ')'">
           <ng-template matTabContent>
             @for (general of t.entries; track general.id) {
               <app-wiki-general-entry [general]="general" />
             } @empty {
-              <p class="empty">Nothing here yet</p>
+              <p class="empty">{{ 'wiki.empty' | t }}</p>
             }
           </ng-template>
         </mat-tab>
@@ -35,8 +38,13 @@ import { tabQueryParam } from './tab-param';
   `,
 })
 export class WikiGenerals {
+  private readonly i18n = inject(I18n);
   protected readonly generals = wikiGenerals();
   protected readonly withSkills = this.generals.filter((g) => g.skillsInGame).length;
   protected readonly tabs = wikiGeneralTabs();
   protected readonly tab = tabQueryParam(this.tabs.map((t) => t.key));
+
+  protected tabLabel(t: { key: string; label: string }): string {
+    return wikiTabLabel(t, this.i18n.translator);
+  }
 }

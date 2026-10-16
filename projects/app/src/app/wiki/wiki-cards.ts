@@ -1,20 +1,24 @@
 import { Component, inject } from '@angular/core';
+import { I18n } from '../i18n/i18n.service';
+import { TPipe } from '../i18n/t.pipe';
+import type { MessageKey } from '../i18n/messages';
 import { ActivatedRoute } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
 import { wikiCardTabs, wikiCards, WikiCard } from 'content';
 import { WikiCardEntry } from './wiki-card-entry';
 import { tabQueryParam } from './tab-param';
+import { wikiTabLabel } from './wiki-labels';
 
-const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards', equipment: 'Equipments', tool: 'Tools' };
+const PAGE_TITLES: Record<WikiCard['category'], MessageKey> = { basic: 'wiki.page.basic', equipment: 'wiki.page.equipment', tool: 'wiki.page.tool' };
 
 // One page per card category; the category comes from the route's data and
 // the tabs from content.
 @Component({
   selector: 'app-wiki-cards',
-  imports: [MatTabsModule, WikiCardEntry],
+  imports: [MatTabsModule, WikiCardEntry, TPipe],
   template: `
-    <h2>{{ title }}</h2>
-    <p class="summary">{{ cards.length }} cards · {{ inGame }} in the game</p>
+    <h2>{{ title | t }}</h2>
+    <p class="summary">{{ 'wiki.cards.summary' | t: { count: cards.length, inGame } }}</p>
     @if (flat) {
       @for (card of ordered; track card.id) {
         <app-wiki-card-entry [card]="card" />
@@ -27,12 +31,12 @@ const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards'
       animationDuration="0ms"
     >
       @for (t of tabs; track t.key) {
-        <mat-tab [label]="t.label + ' (' + t.entries.length + ')'">
+        <mat-tab [label]="tabLabel(t) + ' (' + t.entries.length + ')'">
           <ng-template matTabContent>
             @for (card of t.entries; track card.id) {
               <app-wiki-card-entry [card]="card" />
             } @empty {
-              <p class="empty">Nothing here yet</p>
+              <p class="empty">{{ 'wiki.empty' | t }}</p>
             }
           </ng-template>
         </mat-tab>
@@ -46,6 +50,7 @@ const PAGE_TITLES: Record<WikiCard['category'], string> = { basic: 'Basic Cards'
   `,
 })
 export class WikiCards {
+  private readonly i18n = inject(I18n);
   private readonly category = inject(ActivatedRoute).snapshot.data['category'] as WikiCard['category'];
   protected readonly title = PAGE_TITLES[this.category];
   protected readonly cards = wikiCards(this.category);
@@ -56,4 +61,8 @@ export class WikiCards {
   protected readonly flat = this.category === 'basic';
   protected readonly tabs = this.flat ? [] : wikiCardTabs(this.category);
   protected readonly tab = tabQueryParam(this.tabs.map((t) => t.key));
+
+  protected tabLabel(t: { key: string; label: string }): string {
+    return wikiTabLabel(t, this.i18n.translator);
+  }
 }

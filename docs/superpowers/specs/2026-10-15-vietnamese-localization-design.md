@@ -28,7 +28,7 @@ In:
 - A language switcher in the Navigation panel.
 
 Out (a later version):
-- Setup, Wiki and Rules pages, auth, rooms, lobby and my-games.
+- Wiki Rules pages, auth, rooms, lobby and my-games. (Setup and the Wiki Cards pages, Generals included, were added afterwards; see Phase 6.)
 - Online-only chrome: in-game chat, `online/game-labels.ts`, the online
   result screen and notices.
 - Pluralisation, and any locale beyond English and Vietnamese (the design
@@ -202,7 +202,15 @@ Each phase is mergeable on its own. The app behaves as before until phase 5.
 - Review status: `projects/content/data/locales/vi/review.json` lists the reviewed entries (UI keys, General ids, card ids, prose ids by table); anything not listed is a draft. `npm run i18n:status` prints the counts (`-- --list` names the drafts) and fails on an id that no longer exists.
 - `projects/content/data/locales/vi/glossary.json` holds the checked terms: a spec requires each term that an English skill or card text uses to appear in its agreed form in the Vietnamese text.
 - Visual check (headless Chrome against `ng serve`, Vietnamese, a bot game): the toolbar, General selection, the board, the hand, the Instigate dialog and the history panel showed no overflow. It found one bug, fixed: the mode's default seat name "Seat N" was shown untranslated, so `seatName` now treats it as a placeholder.
-- Left for later: Setup, Wiki and Rules, auth, rooms, lobby and the online-only screens, and the error banner.
+- Left for later: Wiki Rules, auth, rooms, lobby and the online-only screens, and the error banner.
+
+## Phase 6 notes
+
+- Setup and the four Wiki Cards pages (Generals, Basic, Equipment, Tools) read in Vietnamese. Their strings are `setup.*` and `wiki.*` keys; card and General names, titles and rules text come from the content translations.
+- The content library's Wiki tab labels stay English. `wiki/wiki-labels.ts` translates them by tab key (a tab named after a card takes the card's name) and falls back to the English label.
+- Card ordering on the Wiki is still by English name, so both languages list in the same order.
+- Pack names (Base, EX, Army, Wind, Fire, Forest, Mountain) read Cơ bản, EX, Quân tranh, Phong, Hỏa, Lâm, Sơn: draft, like the rest.
+- Not visually checked in a browser (the headless-Chrome script was gone from the scratchpad); the component specs cover the text.
 
 ## Risks
 
