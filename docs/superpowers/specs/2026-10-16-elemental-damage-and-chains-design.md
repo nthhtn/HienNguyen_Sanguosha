@@ -97,6 +97,8 @@ cannot be targeted by Tools stays out). After the Wuxie check, each target in tu
 toggles: unchained becomes chained, chained becomes unchained. Or Recast: discard
 Chains and draw 1 card, instead of using it. 6 printings, as in the data.*
 
+**Targets in the UI.** Chains uses the Choose Targets window for its 1-2 seats (turn order from the user decides who toggles first); Recast is a separate button beside it. A Chains made by Pang Tong's Shackle has no Recast (Shackle has its own). Engine rule behind it: when a card has a target pick, a no-target play is still offered and accepted beside it if the card's own target rule lists one.
+
 **State.** A seat is chained or not. It starts not chained. The state is public
 (everyone sees it; the redaction rules are unchanged), is part of game state, and
 clears when the seat is eliminated.
