@@ -79,10 +79,14 @@ describe('GameService', () => {
     expect(service.state()).toBe(stateBefore);
   });
 
-  it('completes general selection for every seat, then settles in turn 1\'s Play phase', () => {
+  it('completes general selection for every seat, rests in turn 1\'s Start window, then settles in its Play phase', () => {
     // Seed 4 deals a mixed-kingdom table, so the game is still running after selection.
     service.startGame(3, 4);
     finishSelection(service);
+    expect(service.state()!.phase).toBe('Start');
+    expect(service.state()!.turn.startWindow).toBe(true);
+    expect(service.activeSeatId()).toBe('seat-0');
+    service.submit(service.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
     const state = service.state()!;
     expect(state.phase).toBe('Play');
     expect(state.seats.every((s) => s.generals !== null)).toBe(true);

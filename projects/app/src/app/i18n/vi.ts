@@ -227,6 +227,7 @@ export const vi: Messages = {
   'label.action.respond': 'Phản hồi bằng {card}',
   'label.action.pass': 'Bỏ qua',
   'label.action.endPhase': 'Kết thúc giai đoạn',
+  'label.action.continue': 'Tiếp tục',
   'label.action.choose': 'Chọn',
   'label.action.useSkill': 'Dùng {ability}',
   'label.action.useSkillGeneric': 'Dùng kỹ năng',

@@ -228,6 +228,7 @@ export const en = {
   'label.action.respond': 'Respond with {card}',
   'label.action.pass': 'Pass',
   'label.action.endPhase': 'End Phase',
+  'label.action.continue': 'Continue',
   'label.action.choose': 'Choose',
   'label.action.useSkill': 'Use {ability}',
   'label.action.useSkillGeneric': 'Use Skill',

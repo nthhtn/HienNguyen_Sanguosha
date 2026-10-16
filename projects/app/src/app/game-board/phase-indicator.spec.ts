@@ -35,6 +35,14 @@ describe('PhaseIndicator', () => {
     expect(render(state('Play'), 'seat-0')).toBe('Seat 0 (you) – Play Phase');
   });
 
+  it('names the Start phase in a Start window and never offers End Phase', () => {
+    const s = state('Start');
+    s.turn = { ...s.turn, startWindow: true };
+    const text = render(s, 'seat-0');
+    expect(text).toBe('Seat 0 (you) – Start Phase');
+    expect(text).not.toContain('End Phase');
+  });
+
   it('leaves out (you) when it is someone else\'s turn', () => {
     expect(render(state('Play'), 'seat-1')).toBe('Seat 0 – Play Phase');
   });
