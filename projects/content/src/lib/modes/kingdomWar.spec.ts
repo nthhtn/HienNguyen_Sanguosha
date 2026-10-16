@@ -115,7 +115,7 @@ describe('Kingdom War setup and deal', () => {
         .map((c) => `${c.definitionId} ${c.suit} ${c.rank}`)
         .sort();
     const printed = [...registry.cards.keys()]
-      .filter((id) => !registry.cards.get(id)!.outOfDeck) // Blaze: made only by Fire Strategy
+      .filter((id) => !registry.cards.get(id)!.outOfDeck)
       .flatMap((id) => cardsData[id].printings!.filter((p) => !p.expansion).map((p) => `${id} ${p.suit} ${p.rank}`))
       .sort();
     expect(deckOf(2)).toEqual(printed);
@@ -128,7 +128,8 @@ describe('Kingdom War setup and deal', () => {
     // The elemental Sha: 5 Fire Attack, 9 Lightning Attack.
     expect(deckOf(2).filter((c) => c.startsWith('fire-attack '))).toHaveLength(5);
     expect(deckOf(2).filter((c) => c.startsWith('lightning-attack '))).toHaveLength(9);
-    expect(deckOf(2)).toHaveLength(132);
+    expect(deckOf(2).filter((c) => c.startsWith('blaze '))).toHaveLength(3); // Blaze is dealt
+    expect(deckOf(2)).toHaveLength(135);
   });
 
   it('refuses to build a deck for a card with no printings', () => {

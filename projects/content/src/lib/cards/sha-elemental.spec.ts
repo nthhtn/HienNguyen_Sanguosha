@@ -1,6 +1,7 @@
 import type { GameState } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, hp, registry, table, TableOptions } from '../generals/skills.testing';
 import { isShaCard } from '../shared/queries';
+import { isShaDamage } from '../shared/abilities';
 
 // Fire Attack and Lightning Attack (spec "Fire Attack and Lightning Attack"):
 // Sha in every respect, except that the damage has the card's nature.
@@ -9,6 +10,7 @@ const at = (seatId: string, general: string, revealed = true): TableOptions['gen
 const damages = (s: GameState) => s.log.flatMap((e) => (e.kind === 'DamageDealtEvent' ? [e.damage] : []));
 const playTargets = (s: GameState, seatId: string, cardId: string) =>
   legal(s, seatId).flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === cardId ? [a.targets[0]?.seatId] : []));
+const chain = (s: GameState, ...ids: string[]): GameState => ({ ...s, seats: s.seats.map((x) => (ids.includes(x.id) ? { ...x, chained: true as const } : x)) });
 const respondable = (s: GameState) => legal(s, s.pendingResponse!.respondingSeatId).flatMap((a) => (a.kind === 'RespondAction' ? [a.cardInstanceId] : []));
 
 describe('Fire Attack and Lightning Attack', () => {
@@ -135,5 +137,66 @@ describe('Fire Attack and Lightning Attack', () => {
     expect(hp(s, 'seat-b')).toBe(4);
     expect(damages(s)).toEqual([]);
     expect(handIds(s, 'seat-b')).toEqual([]);
+  });
+});
+
+describe('Wood Armor against the elemental Sha', () => {
+  const armor = [card('wa', 'wood-armor', 'spade', 2)];
+  const attack = (id: string, definition: string, extra: Record<string, ReturnType<typeof card>[]> = {}, flags: Record<string, boolean> = {}) =>
+    play(table({ 'seat-a:hand': [card(id, definition, 'heart', 4)], 'seat-b:equip': armor, ...extra }, { flags }), id, 'seat-b');
+
+  it('does not stop a Fire Attack: it lands and deals 2', () => {
+    const s = pass(attack('f', 'fire-attack'));
+    expect(hp(s, 'seat-b')).toBe(2);
+    expect(damages(s)).toMatchObject([{ amount: 2, nature: 'fire' }]);
+  });
+
+  it('does not stop a Lightning Attack: it deals 1, thunder being no weakness', () => {
+    const s = pass(attack('l', 'lightning-attack'));
+    expect(hp(s, 'seat-b')).toBe(3);
+  });
+
+  it('still stops a plain Sha', () => {
+    const s = attack('s', 'sha');
+    expect(s.pendingResponse).toBeNull();
+    expect(abilityLog(s)).toMatchObject([{ abilityId: 'wood-armor', outcome: 'no-effect' }]);
+  });
+
+  it('is ignored by Black Pommel: a Fire Attack deals 1', () => {
+    const s = pass(attack('f', 'fire-attack', { 'seat-a:equip': [card('bp', 'black-pommel')] }));
+    expect(hp(s, 'seat-b')).toBe(3);
+  });
+
+  it('adds 1 to Wine’s boosted Fire Attack: 3', () => {
+    const s = pass(attack('f', 'fire-attack', {}, { wine: true }));
+    expect(hp(s, 'seat-b')).toBe(1);
+  });
+});
+
+describe('fire damage along a chain', () => {
+  const fire = (cards: Record<string, ReturnType<typeof card>[]>, flags: Record<string, boolean> = {}) =>
+    pass(play(chain(table({ 'seat-a:hand': [card('f', 'fire-attack', 'heart', 4)], ...cards }, { flags }), 'seat-b', 'seat-c'), 'f', 'seat-b'));
+
+  it('a Wine-boosted Fire Attack passes its original amount (2) on to the other chained seat', () => {
+    const s = fire({}, { wine: true });
+    expect([hp(s, 'seat-b'), hp(s, 'seat-c')]).toEqual([2, 2]);
+    expect(s.seats.filter((x) => x.chained)).toEqual([]);
+  });
+
+  it('a Wood Armor seat reached by a boosted hit takes 3', () => {
+    const s = fire({ 'seat-c:equip': [card('wa', 'wood-armor', 'spade', 2)] }, { wine: true });
+    expect([hp(s, 'seat-b'), hp(s, 'seat-c')]).toEqual([2, 1]);
+  });
+
+  it('Black Pommel’s armor ignoring does not follow the wave: Wood Armor still adds 1', () => {
+    const s = fire({ 'seat-a:equip': [card('bp', 'black-pommel')], 'seat-b:equip': [card('wa1', 'wood-armor', 'spade', 2)], 'seat-c:equip': [card('wa2', 'wood-armor', 'spade', 3)] });
+    expect([hp(s, 'seat-b'), hp(s, 'seat-c')]).toEqual([3, 2]);
+  });
+
+  it('a propagated hit is not Sha damage; the original is', () => {
+    const s = fire({});
+    const [first, second] = damages(s);
+    expect([isShaDamage(first), isShaDamage(second)]).toEqual([true, false]);
+    expect(second.chained).toBe(true);
   });
 });

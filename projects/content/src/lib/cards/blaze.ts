@@ -7,15 +7,15 @@ import { cardStep } from '../shared/steps';
 import { untargetableBy } from '../shared/abilities';
 import { discardMoves, isLiving } from '../shared/skills';
 
-// Blaze (a Tool made only by Fire Strategy; never dealt): any living seat
+// Blaze (a Tool, dealt: 3 printings; Fire Strategy also makes it): any living seat
 // holding a hand card, you included. Once its Wuxie check passes, the target
 // shows a hand card of its choice; you may then discard a hand card of the same
-// suit to deal it 1 plain damage (no elemental damage).
+// suit to deal it 1 fire damage. The nature is Blaze's own, so it holds when
+// Fire Strategy converts a card to Blaze.
 export const blazeCard: CardDefinition = {
   id: 'blaze',
   name: 'Blaze',
   category: 'tool',
-  outOfDeck: true,
   legalPlayTargets: (state, _ctx, registry) =>
     [...state.seats]
       .sort((a, b) => a.index - b.index)
@@ -78,7 +78,7 @@ export const blazeCard: CardDefinition = {
       ...(isLiving(state, target)
         ? [{
             kind: 'DamageEffect' as const,
-            damage: { source: { kind: 'seat' as const, seatId: step.userSeatId }, target: step.target, amount: 1, nature: 'normal' as const, cause: { ...(first ? { cardInstanceId: first } : {}), card: step.card } },
+            damage: { source: { kind: 'seat' as const, seatId: step.userSeatId }, target: step.target, amount: 1, nature: 'fire' as const, cause: { ...(first ? { cardInstanceId: first } : {}), card: step.card } },
           }]
         : []),
     ];

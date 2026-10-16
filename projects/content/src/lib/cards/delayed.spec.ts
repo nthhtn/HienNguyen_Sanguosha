@@ -196,10 +196,19 @@ describe('Lightning', () => {
       const next = run(table({ 'seat-b:judgment': [card('L', 'lightning', 'spade', 1)], drawPile: [card('j1', 'shan', 'spade', rank), ...filler(6)] }));
       expect(hp(next, 'seat-b')).toBe(1);
       expect(next.log.find((e) => e.kind === 'DamageDealtEvent')).toMatchObject({
-        damage: { source: null, target: { kind: 'seat', seatId: 'seat-b' }, amount: 3, nature: 'normal' },
+        damage: { source: null, target: { kind: 'seat', seatId: 'seat-b' }, amount: 3, nature: 'thunder' },
       });
       expect(idsIn(next, 'discardPile')).toEqual(expect.arrayContaining(['L', 'j1']));
     }
+  });
+
+  it('its strike is thunder damage 3 and passes along a chain to a chained seat', () => {
+    const base = table({ 'seat-b:judgment': [card('L', 'lightning', 'spade', 1)], drawPile: [card('j1', 'shan', 'spade', 5), ...filler(6)] });
+    const chained = { ...base, seats: base.seats.map((x) => (x.id === 'seat-b' || x.id === 'seat-c' ? { ...x, chained: true as const } : x)) };
+    const next = run(chained);
+    expect(next.log.filter((e) => e.kind === 'DamageDealtEvent')).toMatchObject([{ damage: { amount: 3, nature: 'thunder', target: { seatId: 'seat-b' } } }, { damage: { amount: 3, nature: 'thunder', target: { seatId: 'seat-c' } } }]);
+    expect(hp(next, 'seat-c')).toBe(1);
+    expect(next.seats.some((x) => x.chained)).toBe(false);
   });
 
   it('anything else moves it on to the next living seat that holds no Lightning', () => {

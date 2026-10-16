@@ -244,7 +244,7 @@ export const bareTheChest: SkillDefinition = {
         state.turn.ownerSeatId === owner.seatId &&
         damage.source?.kind === 'seat' &&
         damage.source.seatId === owner.seatId &&
-        ['sha', 'duel'].includes(damage.cause?.card?.as ?? ''),
+        !damage.chained && ['sha', 'duel'].includes(damage.cause?.card?.as ?? ''),
       effect: (_state, step, owner) => [
         { ...step, damage: { ...step.damage, amount: step.damage.amount + 1 }, acted: [...(step.acted ?? []), abilityKey(owner)] },
         used(owner, 'more-damage', step.damage.target.seatId),

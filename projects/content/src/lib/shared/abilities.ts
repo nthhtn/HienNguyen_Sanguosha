@@ -18,10 +18,17 @@ export function activeAbilities(state: GameState, seatId: string, registry: Cont
   ];
 }
 
+// Whether `damage` is a Sha's own: a Sha (of any nature) dealt it, and it is not
+// a hit passed along a chain. A propagated hit is no Sha damage: skills and
+// weapons that key on a Sha's damage (Black Pommel, Intense Edge, Lament) skip it.
+export function isShaDamage(damage: Damage): boolean {
+  return damage.cause?.card?.as === 'sha' && !damage.chained;
+}
+
 // Whether armour has no effect on `damage`: it comes from a Sha whose user has
 // an ability that ignores armour (Black Pommel).
 export function armorIgnored(state: GameState, damage: Damage, registry: ContentRegistry): boolean {
-  if (damage.cause?.card?.as !== 'sha' || damage.source?.kind !== 'seat') return false;
+  if (!isShaDamage(damage) || damage.source?.kind !== 'seat') return false;
   return activeAbilities(state, damage.source.seatId, registry).some((a) => a.modifiers?.ignoresArmor);
 }
 
