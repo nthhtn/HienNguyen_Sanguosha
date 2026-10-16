@@ -75,6 +75,31 @@ describe('Chains', () => {
     expect(toggles(s)).toEqual([['seat-c', true]]);
   });
 
+  it('a Wuxie on the second target cancels only that target’s toggle', () => {
+    let s = play(chainsIn({}, { 'seat-d:hand': [card('w', 'wuxie', 'spade', 12)] }), 'ch', 'seat-b', 'seat-c');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-d', reason: { kind: 'wuxie', target: { kind: 'seat', seatId: 'seat-b' } } });
+    s = pass(s);
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-d', reason: { kind: 'wuxie', target: { kind: 'seat', seatId: 'seat-c' } } });
+    s = respond(s, 'w');
+    while (s.pendingResponse) s = pass(s);
+    expect(chained(s)).toEqual(['seat-b']);
+    expect(toggles(s)).toEqual([['seat-b', true]]);
+  });
+
+  it('a target that dies before its toggle is skipped, without a throw', () => {
+    let s = play(chainsIn({}, { 'seat-d:hand': [card('w', 'wuxie', 'spade', 12)] }), 'ch', 'seat-b', 'seat-c');
+    expect(s.pendingResponse).toMatchObject({ reason: { kind: 'wuxie', target: { kind: 'seat', seatId: 'seat-b' } } });
+    // seat-c dies while the first target's Wuxie check is open.
+    s = { ...s, seats: s.seats.map((x) => (x.id === 'seat-c' ? { ...x, eliminated: true } : x)) };
+    expect(() => {
+      s = pass(s);
+      while (s.pendingResponse) s = pass(s);
+    }).not.toThrow();
+    expect(chained(s)).toEqual(['seat-b']);
+    expect(toggles(s)).toEqual([['seat-b', true]]);
+    expect(s.seats.find((x) => x.id === 'seat-c')!.chained).toBeFalsy();
+  });
+
   it('a target passed by every Wuxie holder toggles', () => {
     let s = play(chainsIn({}, { 'seat-d:hand': [card('w', 'wuxie', 'spade', 12)] }), 'ch', 'seat-b');
     while (s.pendingResponse) s = pass(s);

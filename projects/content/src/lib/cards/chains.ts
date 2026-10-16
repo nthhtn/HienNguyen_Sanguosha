@@ -1,4 +1,4 @@
-import type { CardDefinition, Target } from 'engine';
+import type { CardDefinition, CardPlayedEvent, Target } from 'engine';
 import { isChained, livingSeatOrderFrom } from 'engine';
 import { playColour, toolOnTargets } from '../shared/tools';
 import { untargetableBy } from '../shared/abilities';
@@ -14,6 +14,13 @@ const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
 // Offers: [] (Recast) when the card is itself, then each seat singly, then each
 // pair once, in turn order from the user. A converted Chains (Shackle) offers
 // no Recast: the skill recasts a club itself.
+// Whether a logged play is a Chains Recast: Chains played with no target, not
+// as an answer. A Recast is instead of using the card, so skills that react to
+// a card's use (Gathering Wisdom) leave it alone.
+export function isRecast(event: CardPlayedEvent): boolean {
+  return event.card.as === 'chains' && event.targets.length === 0 && !event.inResponseTo;
+}
+
 export const chainsCard: CardDefinition = {
   id: 'chains',
   name: 'Chains',

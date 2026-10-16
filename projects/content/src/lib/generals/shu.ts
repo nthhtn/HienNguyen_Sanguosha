@@ -5,6 +5,7 @@ import { colourFor } from '../shared/suits';
 import type { GeneralSkillSet } from './types';
 import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
 import { handOf, isShaCard } from '../shared/queries';
+import { isRecast } from '../cards/chains';
 import { ask, draw, heal, on, otherLivingSeatIds, reasonOf, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Shu base Generals' skills (General Skills spec, "Shu"). Every skill acts
@@ -41,14 +42,15 @@ export const dragonCourage: SkillDefinition = {
 };
 
 // Gathering Wisdom (may): when you play a non-delayed Tool (an answering Wuxie
-// included), you may draw 1 card, before the Tool takes effect.
+// included), you may draw 1 card, before the Tool takes effect. A Chains
+// Recast is not a use.
 export const gatheringWisdom: SkillDefinition = {
   id: 'gathering-wisdom',
   triggers: [
     on<CardPlayedEvent>('after:CardPlayedEvent', {
       condition: (_state, event, owner, registry) => {
         const definition = registry.cards.get(event.card.as);
-        return event.seatId === owner.seatId && definition?.category === 'tool' && !definition.delayed;
+        return event.seatId === owner.seatId && definition?.category === 'tool' && !definition.delayed && !isRecast(event);
       },
       effect: (_state, _event, owner) => [ask(owner, [draw(owner.seatId, 1)])],
     }),
