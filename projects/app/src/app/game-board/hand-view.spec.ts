@@ -63,7 +63,7 @@ describe('HandView', () => {
     const row = el.querySelector('.hand-row')!;
     expect(row.querySelectorAll('.hand-card')).toHaveLength(3);
     for (const c of hand) {
-      expect(playButton(c.instanceId).textContent).toContain('Play');
+      if (playButton(c.instanceId)) expect(playButton(c.instanceId).textContent).toContain('Play');
       expect(infoButton(c.instanceId).textContent).toContain('Info');
     }
   });
@@ -124,8 +124,8 @@ describe('HandView', () => {
     expect(played).toEqual([pair('seat-1', 'seat-2')]);
   });
 
-  it('disables Play for a card with no legal action', () => {
-    expect(playButton('c-peach').disabled).toBe(true);
+  it('shows no Play button for a card with no legal action', () => {
+    expect(playButton('c-peach')).toBeNull();
   });
 
   it('opens an info dialog with the card’s name, suit/rank and rules text', async () => {
@@ -156,11 +156,11 @@ describe('HandView', () => {
     fixture.componentRef.setInput('state', { ...state(), phase: 'Discard' });
     fixture.detectChanges();
     expect(el.textContent).not.toContain('Discard');
-    expect(playButton('c-sha').disabled).toBe(true);
+    expect(playButton('c-sha')).toBeNull();
   });
 
   it('adds no tooltip to a card that cannot be played', () => {
-    expect(playButton('c-peach').disabled).toBe(true);
+    expect(playButton('c-peach')).toBeNull();
     expect(fixture.debugElement.queryAll(By.directive(MatTooltip))).toHaveLength(0);
   });
 

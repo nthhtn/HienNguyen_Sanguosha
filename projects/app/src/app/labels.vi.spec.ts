@@ -196,3 +196,16 @@ describe('the mode’s default seat name', () => {
     expect(seatName(players, 'seat-2', tr)).toBe('Seat 5');
   });
 });
+
+describe('Vietnamese names from ids', () => {
+  const viTr = makeTranslator(vi, 'vi');
+  it('names a card and a General in Vietnamese, with hidden still localised', () => {
+    expect(cardIdDisplayName('sha', viTr)).toBe('Sát');
+    expect(generalDisplayName('gan-ning', viTr)).toBe('Cam Ninh');
+    expect(cardIdDisplayName('hidden', viTr)).toBe(vi['label.hiddenCard']);
+  });
+  it('keeps English names for the English locale', () => {
+    expect(cardIdDisplayName('sha')).toBe('Sha');
+    expect(generalDisplayName('gan-ning')).toBe('Gan Ning');
+  });
+});

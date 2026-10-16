@@ -1,5 +1,5 @@
 import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target, findSkill } from 'engine';
-import { abilityName, cardDisplayData } from 'content';
+import { abilityName, cardDisplayData, generalDisplayData } from 'content';
 import type { MessageKey } from './i18n/messages';
 import { englishTranslator, localeOf, Translator } from './i18n/translator';
 
@@ -50,7 +50,8 @@ export function targetLabel(target: Target, players: readonly Player[] = [], tr:
 
 export function cardIdDisplayName(cardDefinitionId: string, tr: Translator = englishTranslator): string {
   if (cardDefinitionId === 'hidden') return tr('label.hiddenCard');
-  return titleCaseId(cardDefinitionId);
+  const locale = localeOf(tr);
+  return (locale === 'en' ? undefined : cardDisplayData(cardDefinitionId, locale)?.name) ?? titleCaseId(cardDefinitionId);
 }
 
 export function cardDefinitionId(state: GameState, cardInstanceId: string): string | undefined {
@@ -59,7 +60,8 @@ export function cardDefinitionId(state: GameState, cardInstanceId: string): stri
 
 export function generalDisplayName(generalDefinitionId: string, tr: Translator = englishTranslator): string {
   if (generalDefinitionId === 'hidden') return tr('label.hiddenGeneral');
-  return titleCaseId(generalDefinitionId);
+  const locale = localeOf(tr);
+  return (locale === 'en' ? undefined : generalDisplayData(generalDefinitionId, locale)?.name) ?? titleCaseId(generalDefinitionId);
 }
 
 // The force colour a seat is shown in: its kingdom once known, else 'none'

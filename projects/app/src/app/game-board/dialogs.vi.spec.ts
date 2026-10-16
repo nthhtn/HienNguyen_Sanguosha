@@ -49,7 +49,7 @@ describe('ResponseDialog in Vietnamese', () => {
     expect(text(el.querySelector('.empty'))).toBe('Không có kỹ năng nào có thể phản hồi');
     expect(text(el.querySelector('.no-response'))).toContain('Không phản hồi');
     expect(text(el.querySelector('.no-response'))).toContain('— You lose 1 HP (1 damage from Seat 1)');
-    expect(text(el.querySelector('button.confirm'))).toBe('Phản hồi bằng Shan');
+    expect(text(el.querySelector('button.confirm'))).toBe('Phản hồi bằng Thiểm');
     (el.querySelector('.no-response input') as HTMLInputElement).click();
     fixture.detectChanges();
     expect(text(el.querySelector('button.confirm'))).toBe('Không phản hồi');

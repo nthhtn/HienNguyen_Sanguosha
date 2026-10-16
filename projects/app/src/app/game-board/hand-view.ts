@@ -60,7 +60,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
 }
 
 // The viewer's own hand as one row of cards. Hovering (or focusing, for touch)
-// a card reveals its Play button, from the engine's legal actions for that card
+// a card reveals its Play button (only when the card can be played), from the engine's legal actions for that card
 // only, and Info. Discards and responses have their own dialogs.
 @Component({
   selector: 'app-hand-view',
@@ -100,12 +100,11 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
                   <button mat-menu-item type="button" (click)="play.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
                 }
               </mat-menu>
-            } @else {
+            } @else if (vm.actions.length > 0) {
               <button
                 mat-flat-button
                 type="button"
                 class="play"
-                [disabled]="vm.actions.length === 0"
                 (click)="play.emit(vm.actions[0].action)"
               >
                 <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}

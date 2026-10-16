@@ -73,12 +73,12 @@ describe('SeatTile in Vietnamese', () => {
 
   it('a worn card and a judgment card, with and without "counts as"', () => {
     const worn = render(makeSeat(), { equipment: [crossbow] }).el;
-    expect(worn.querySelector('[data-slot="weapon"]')!.getAttribute('title')).toBe('Vũ khí: Crossbow');
-    expect(worn.querySelector('[data-slot="weapon"] .slot-card')!.getAttribute('aria-label')).toBe('Thông tin: Crossbow');
+    expect(worn.querySelector('[data-slot="weapon"]')!.getAttribute('title')).toBe('Vũ khí: Gia Cát Liên Nỏ');
+    expect(worn.querySelector('[data-slot="weapon"] .slot-card')!.getAttribute('aria-label')).toBe('Thông tin: Gia Cát Liên Nỏ');
     const judged = render(makeSeat(), { judgment: [capture], judgmentCountsAs: { cap: 'sha' } }).el;
-    expect(judged.querySelector('.judgment .slot')!.getAttribute('title')).toBe('Khu phán xét: Capture tính là Sha');
-    expect(text(judged.querySelector('.counts-as'))).toBe('Tính là Sha');
-    expect(render(makeSeat(), { judgment: [capture] }).el.querySelector('.judgment .slot')!.getAttribute('title')).toBe('Khu phán xét: Capture');
+    expect(judged.querySelector('.judgment .slot')!.getAttribute('title')).toBe('Khu phán xét: Lạc Bất Tư Thục tính là Sát');
+    expect(text(judged.querySelector('.counts-as'))).toBe('Tính là Sát');
+    expect(render(makeSeat(), { judgment: [capture] }).el.querySelector('.judgment .slot')!.getAttribute('title')).toBe('Khu phán xét: Lạc Bất Tư Thục');
   });
 
   it('status lines, badges, the under-General piles and a chosen Form', () => {
@@ -169,7 +169,7 @@ describe('HandView in Vietnamese', () => {
   const items = () => [...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[];
 
   it('Play and Info buttons, and the empty hand', () => {
-    const { el } = render(hand, []);
+    const { el } = render(hand, [at('c-sha', 'seat-1'), at('c-sha', 'seat-2')]);
     expect(text(card(el, 'c-sha').querySelector('button.play'))).toContain('Đánh bài');
     expect(text(card(el, 'c-sha').querySelector('button.info'))).toContain('Thông tin');
     expect(text(render([], []).el.querySelector('.empty'))).toBe('Không có lá bài nào trên tay');
@@ -255,7 +255,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
     fixture.componentRef.setInput('prefix', 'Nhắm vào');
     fixture.componentRef.setInput('targets', [{ kind: 'seat', seatId: 'seat-2' }, { kind: 'seat', seatId: 'seat-3' }]);
     fixture.detectChanges();
-    expect(text(fixture.nativeElement as HTMLElement)).toBe('Nhắm vào Bot Cao Cao - Sima Yi, Người chơi 3 Liu Bei');
+    expect(text(fixture.nativeElement as HTMLElement)).toBe('Nhắm vào Bot Tào Tháo - Tư Mã Ý, Người chơi 3 Lưu Bị');
   });
 
   it('the playing card names a hidden card in Vietnamese', () => {
