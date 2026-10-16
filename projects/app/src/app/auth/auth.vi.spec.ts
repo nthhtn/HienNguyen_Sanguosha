@@ -102,7 +102,24 @@ describe('Auth screens in Vietnamese', () => {
     expect(text(el.querySelector('.links a'))).toBe('Quay lại đăng nhập');
   });
 
-  it('reset password: the form with a token, the invalid-link error without one', () => {
+  it('reset password with a token: the form in Vietnamese', () => {
+    const fixture = TestBed.createComponent(ResetPassword);
+    (fixture.componentInstance as { token: string | null }).token = 't0ken'; // the link's token, as the route would give it
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(text(el.querySelector('mat-label'))).toBe('Mật khẩu mới');
+    expect(text(el.querySelector('.password-hint'))).toBe('Tối thiểu 8 ký tự');
+    expect(text(el.querySelector('button.submit'))).toBe('Đặt mật khẩu');
+    expect(el.querySelector('.error')).toBeNull();
+  });
+
+  it('the name and chat limits are filled into their errors', () => {
+    const tr = makeTranslator(vi, 'vi');
+    expect(resolveMsg(errorMsg(new ApiError('invalid_name', 'x', 400)), tr)).toBe('Tên cần từ 1 đến 24 ký tự');
+    expect(resolveMsg(errorMsg(new ApiError('chat_too_long', 'x', 400)), tr)).toBe('Tin nhắn tối đa 300 ký tự');
+  });
+
+  it('reset password: the invalid-link error without a token', () => {
     const { el } = render(ResetPassword);
     expect(text(el.querySelector('mat-card-title'))).toBe('Đặt lại mật khẩu');
     expect(text(el.querySelector('.error'))).toBe('Liên kết đặt lại này không hợp lệ hoặc đã hết hạn');

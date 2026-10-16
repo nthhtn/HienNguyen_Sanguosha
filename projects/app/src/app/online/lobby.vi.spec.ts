@@ -76,7 +76,7 @@ describe('LobbyPage in Vietnamese', () => {
   it('the host sees the title, count, headings, badges and controls in Vietnamese', async () => {
     const { el, member, badges } = await render(fakeLobby());
     expect(text(el.querySelector('mat-card-title'))).toBe('Sảnh chờ');
-    expect(text(el.querySelector('.player-count'))).toBe('4 / 5 Người chơi');
+    expect(text(el.querySelector('.player-count'))).toBe('4 / 5 người chơi');
     expect([...el.querySelectorAll('h3')].map(text)).toEqual(['Luật', 'Người chơi', 'Trò chuyện']);
     expect(text(el.querySelector('#lobby-seats'))).toBe('Số người chơi');
     expect(text(el.querySelector('.first-reveal'))).toBe('Thưởng lật đầu tiên');
@@ -95,13 +95,13 @@ describe('LobbyPage in Vietnamese', () => {
   it('a guest sees the rules summary', async () => {
     const lobby = fakeLobby('p-gus');
     const { harness, el } = await render(lobby);
-    expect(text(el.querySelector('.rules-summary'))).toBe('5 Người chơi · Thưởng lật đầu tiên: Bật');
+    expect(text(el.querySelector('.rules-summary'))).toBe('5 người chơi · Thưởng lật đầu tiên: Bật');
     lobby.room.set({ ...MIXED, rules: { firstRevealDraw: false } });
     harness.detectChanges();
-    expect(text(el.querySelector('.rules-summary'))).toBe('5 Người chơi · Thưởng lật đầu tiên: Tắt');
+    expect(text(el.querySelector('.rules-summary'))).toBe('5 người chơi · Thưởng lật đầu tiên: Tắt');
     lobby.room.set({ ...MIXED, seatCount: 4 });
     harness.detectChanges();
-    expect(text(el.querySelector('.rules-summary'))).toBe('4 Người chơi');
+    expect(text(el.querySelector('.rules-summary'))).toBe('4 người chơi');
   });
 
   it('the banners, the notice and the error read in Vietnamese and follow a language switch', async () => {

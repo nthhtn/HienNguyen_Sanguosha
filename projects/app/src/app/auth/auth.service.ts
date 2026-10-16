@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { CHAT_BODY_MAX, DISPLAY_NAME_MAX, ERROR_MESSAGES, PASSWORD_MIN } from 'protocol';
+import { en } from '../i18n/en';
 import { msg, type Msg } from '../i18n/msg';
 import type { MessageKey, MessageParams } from '../i18n/messages';
 import type { ErrorBody, ForgotPasswordBody, GuestBody, Me, MessageBody, ResetPasswordBody, SignInBody, SignUpBody } from 'protocol';
@@ -42,7 +43,7 @@ const ERROR_PARAMS: Record<string, MessageParams> = {
 export function errorMsg(err: unknown): Msg {
   if (err instanceof ApiError) {
     if (err.code === 'network') return msg('error.network');
-    if (Object.prototype.hasOwnProperty.call(ERROR_MESSAGES, err.code)) return msg(`error.${err.code}` as MessageKey, ERROR_PARAMS[err.code]);
+    if (Object.prototype.hasOwnProperty.call(en, `error.${err.code}`)) return msg(`error.${err.code}` as MessageKey, ERROR_PARAMS[err.code]);
     return { text: err.message };
   }
   return msg('error.internal');

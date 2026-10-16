@@ -146,6 +146,7 @@ describe('Rooms, My Games and the dialogs in Vietnamese', () => {
       expect(playerLabel(GAME, 'seat-1', tr)).toBe('Ann (bạn)');
       expect(playerLabel(GAME, 'seat-0', tr)).toBe('Bot 1 (máy)');
       expect(gameWhen(GAME, tr)).toMatch(/2026/);
+      expect(gameWhen(GAME, tr)).toContain('thg');
       expect(gameWhen(GAME, tr)).not.toBe(gameWhen(GAME, makeTranslator(vi, 'en')));
     });
   });
