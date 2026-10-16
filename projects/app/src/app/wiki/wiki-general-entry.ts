@@ -5,7 +5,7 @@ import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { CardArt } from '../game-board/card-art';
-import { wikiGeneralView } from './wiki-labels';
+import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
 
 // One general in the Wiki: art beside everything the data knows about it.
 @Component({
@@ -36,7 +36,7 @@ import { wikiGeneralView } from './wiki-labels';
         }
         <p class="meta">
           <span class="kingdom-tag">{{ kingdomKey() | t }}</span>
-          <span class="expansion-tag">{{ packKey() | t }}</span>
+          <span class="expansion-tag">{{ packLabel() }}</span>
           <span class="gender-tag">{{ (general().gender === 'female' ? 'wiki.female' : 'wiki.male') | t }}</span>
           @if (general().maxHp !== null) {
             <span class="hearts" [attr.aria-label]="'wiki.hp' | t: { n: general().maxHp ?? 0 }">
@@ -98,6 +98,6 @@ export class WikiGeneralEntry {
   readonly general = input.required<WikiGeneral>();
   protected readonly view = computed(() => wikiGeneralView(this.general(), this.i18n.locale()));
   protected readonly kingdomKey = computed((): MessageKey => `label.kingdom.${this.general().kingdom}`);
-  protected readonly packKey = computed((): MessageKey => `wiki.pack.${this.general().expansion}`);
+  protected readonly packLabel = computed(() => wikiPackLabel(this.general().expansion, this.i18n.translator));
   protected readonly hearts = computed(() => Array.from({ length: this.general().maxHp ?? 0 }));
 }

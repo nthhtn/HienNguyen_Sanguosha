@@ -53,3 +53,17 @@ export function wikiGeneralView(general: WikiGeneral, locale: string): WikiGener
     skills: general.skills.map((skill, i) => ({ name: display?.skills[i]?.name ?? skill.name, text: display?.skills[i]?.text ?? skill.text })),
   };
 }
+
+const PACK_KEYS: Record<string, MessageKey> = {
+  Base: 'wiki.pack.Base',
+  EX: 'wiki.pack.EX',
+  Army: 'wiki.pack.Army',
+  Wind: 'wiki.pack.Wind',
+  Fire: 'wiki.pack.Fire',
+  Forest: 'wiki.pack.Forest',
+  Mountain: 'wiki.pack.Mountain',
+};
+
+export function wikiPackLabel(pack: string, tr: Translator): string {
+  return Object.prototype.hasOwnProperty.call(PACK_KEYS, pack) ? tr(PACK_KEYS[pack]) : pack;
+}

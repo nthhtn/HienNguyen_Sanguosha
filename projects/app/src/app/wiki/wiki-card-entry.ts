@@ -2,10 +2,9 @@ import { Component, computed, inject, input } from '@angular/core';
 import type { WikiCard } from 'content';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
-import type { MessageKey } from '../i18n/messages';
 import { CardArt } from '../game-board/card-art';
 import { printingLabel } from './printing-label';
-import { wikiCardView } from './wiki-labels';
+import { wikiCardView, wikiPackLabel } from './wiki-labels';
 
 // One card in the Wiki: art beside its rules text, stats and printings.
 @Component({
@@ -24,7 +23,7 @@ import { wikiCardView } from './wiki-labels';
           </h4>
           <span class="badge" [class.on]="card().inGame">{{ (card().inGame ? 'wiki.inGame' : 'wiki.notInGame') | t }}</span>
         </header>
-        <p class="meta"><span class="expansion-tag">{{ packKey(card().expansion) | t }}</span></p>
+        <p class="meta"><span class="expansion-tag">{{ packLabel(card().expansion) }}</span></p>
         @if (card().range !== null) {
           <p class="range">{{ 'wiki.range' | t: { n: card().range ?? 0 } }}</p>
         }
@@ -40,7 +39,7 @@ import { wikiCardView } from './wiki-labels';
           <!-- Extra copies other expansions add, one line each. -->
           @for (group of extras(); track group.expansion) {
             <p class="printings extra" [attr.data-expansion]="group.expansion">
-              <span class="expansion">{{ packKey(group.expansion) | t }}</span> {{ 'wiki.extraCopies' | t: { n: group.printings.length, list: labels(group.printings) } }}
+              <span class="expansion">{{ packLabel(group.expansion) }}</span> {{ 'wiki.extraCopies' | t: { n: group.printings.length, list: labels(group.printings) } }}
             </p>
           }
         } @else {
@@ -72,8 +71,9 @@ export class WikiCardEntry {
   private readonly i18n = inject(I18n);
   readonly card = input.required<WikiCard>();
   protected readonly view = computed(() => wikiCardView(this.card(), this.i18n.locale()));
-  protected packKey(pack: string): MessageKey {
-    return `wiki.pack.${pack}` as MessageKey;
+  // A pack with no key of its own shows its raw name.
+  protected packLabel(pack: string): string {
+    return wikiPackLabel(pack, this.i18n.translator);
   }
   // The card's own printings, and the extra copies grouped by the expansion that adds them.
   protected readonly own = computed(() => this.card().printings.filter((p) => !p.expansion));
