@@ -1,3 +1,4 @@
+import type { EngineEvent } from '../pipeline/events';
 import { CardInstance, CardZone, GameState, GeneralOwner, GeneralSelectionState, PendingChoice, PendingSelection, Seat, SeatGenerals } from './types';
 
 const HIDDEN_GENERAL_ID = 'hidden';
@@ -49,21 +50,51 @@ function maskHiddenCards<T>(value: T, hidden: ReadonlySet<string>): T {
   return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, maskHiddenCards(v, hidden)])) as T;
 }
 
-// The skill ids of another seat's hidden Generals that `value` mentions (a
-// GeneralOwner whose slot is still hidden): the viewer mustn't learn them.
-function hiddenSkillIds(value: unknown, state: GameState, viewerSeatId: string, found = new Set<string>()): Set<string> {
-  const isHidden = (o: Partial<GeneralOwner> | undefined): o is GeneralOwner => {
-    if (!o || o.kind !== 'general' || typeof o.seatId !== 'string' || (o.slot !== 'main' && o.slot !== 'deputy') || typeof o.skillId !== 'string' || o.seatId === viewerSeatId) return false;
-    const general = state.seats.find((s) => s.id === o.seatId)?.generals?.[o.slot];
-    return !!general && !general.revealed;
-  };
-  if (Array.isArray(value)) value.forEach((v) => hiddenSkillIds(v, state, viewerSeatId, found));
+// A General's skill owner as `value` mentions it, with the ids that stand for
+// the skill beside it (the ability and conversion equal the skill id for General skills).
+interface OwnerMention {
+  owner: GeneralOwner;
+  ids: string[];
+}
+
+function isGeneralOwner(o: Partial<GeneralOwner> | undefined): o is GeneralOwner {
+  return !!o && o.kind === 'general' && typeof o.seatId === 'string' && (o.slot === 'main' || o.slot === 'deputy') && typeof o.skillId === 'string';
+}
+
+function ownerMentions(value: unknown, found: OwnerMention[] = []): OwnerMention[] {
+  if (Array.isArray(value)) value.forEach((v) => ownerMentions(v, found));
   else if (value !== null && typeof value === 'object') {
-    if (isHidden(value as Partial<GeneralOwner>)) found.add((value as GeneralOwner).skillId);
-    // The ability and conversion beside a hidden owner equal the skill id for General skills.
+    if (isGeneralOwner(value as Partial<GeneralOwner>)) found.push({ owner: value as GeneralOwner, ids: [] });
     const { owner, abilityId, conversionId } = value as { owner?: Partial<GeneralOwner>; abilityId?: unknown; conversionId?: unknown };
-    if (isHidden(owner)) for (const id of [abilityId, conversionId]) if (typeof id === 'string') found.add(id);
-    Object.values(value).forEach((x) => hiddenSkillIds(x, state, viewerSeatId, found));
+    if (isGeneralOwner(owner)) found.push({ owner, ids: [abilityId, conversionId].filter((id): id is string => typeof id === 'string') });
+    Object.values(value).forEach((x) => ownerMentions(x, found));
+  }
+  return found;
+}
+
+// Events are immutable and shared between log copies, so each is walked once.
+const eventMentions = new WeakMap<object, OwnerMention[]>();
+
+function mentionsOf(value: unknown): OwnerMention[] {
+  if (value === null || typeof value !== 'object') return [];
+  let mentions = eventMentions.get(value);
+  if (!mentions) eventMentions.set(value, (mentions = ownerMentions(value)));
+  return mentions;
+}
+
+// The skill ids of another seat's hidden Generals that `values` mention (a
+// GeneralOwner whose slot is still hidden): the viewer mustn't learn them.
+// Each of `values` is walked once and remembered, so pass immutable data only.
+function hiddenSkillIds(values: readonly unknown[], state: GameState, viewerSeatId: string): Set<string> {
+  const found = new Set<string>();
+  for (const value of values) {
+    for (const { owner, ids } of mentionsOf(value)) {
+      if (owner.seatId === viewerSeatId) continue;
+      const general = state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot];
+      if (!general || general.revealed) continue;
+      found.add(owner.skillId);
+      ids.forEach((id) => found.add(id));
+    }
   }
   return found;
 }
@@ -138,6 +169,32 @@ function redactSelection(selection: GeneralSelectionState | null, viewerSeatId: 
   return { candidates };
 }
 
+// Each event's masking per set of hidden skills (events are immutable and shared between log copies).
+const maskedEvents = new WeakMap<EngineEvent, Map<string, EngineEvent>>();
+
+// `events` with another seat's hidden General's skill ids read 'hidden', or
+// `events` itself when there is nothing to hide. Never changes them.
+function maskEvents(state: GameState, events: readonly EngineEvent[], viewerSeatId: string): readonly EngineEvent[] {
+  // Nothing to hide when every other seat's Generals are shown (or it has none yet).
+  const anyHidden = state.seats.some((s) => s.id !== viewerSeatId && !!s.generals && !(s.generals.main.revealed && s.generals.deputy.revealed));
+  if (!anyHidden) return events;
+  const skills = hiddenSkillIds(events, state, viewerSeatId);
+  if (skills.size === 0) return events;
+  const key = [...skills].sort().join('|');
+  return events.map((event) => {
+    let byKey = maskedEvents.get(event);
+    if (!byKey) maskedEvents.set(event, (byKey = new Map()));
+    let masked = byKey.get(key);
+    if (!masked) byKey.set(key, (masked = maskSkills(event, skills)));
+    return masked;
+  });
+}
+
+// `events` as `viewerSeatId` may see them: a copy; the events passed in are never changed.
+export function redactEventsForSeat(state: GameState, events: readonly EngineEvent[], viewerSeatId: string): EngineEvent[] {
+  return [...maskEvents(state, events, viewerSeatId)];
+}
+
 export function redactStateForSeat(state: GameState, viewerSeatId: string): GameState {
   const shown = shownToViewer(state, viewerSeatId);
   const hidden = hiddenInstanceIds(state, viewerSeatId, shown);
@@ -147,6 +204,7 @@ export function redactStateForSeat(state: GameState, viewerSeatId: string): Game
   return {
     ...state,
     ...(state.spareGenerals ? { spareGenerals: [] } : {}),
+    log: maskEvents(state, state.log, viewerSeatId) as EngineEvent[],
     seats: state.seats.map((seat) => redactSeat(seat, viewerSeatId)),
     zones: state.zones.map((zone) => redactZone(zone, viewerSeatId, shown)),
     generalSelection: redactSelection(state.generalSelection, viewerSeatId),

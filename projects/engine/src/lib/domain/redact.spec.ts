@@ -1,4 +1,5 @@
-import { redactStateForSeat } from './redact';
+import { redactEventsForSeat, redactStateForSeat } from './redact';
+import type { EngineEvent } from '../pipeline/events';
 import { createSeat, createPlayer } from './factories';
 import { GameState, CardZone } from './types';
 
@@ -252,5 +253,36 @@ describe('redactStateForSeat: skill ids inside id strings', () => {
     const view = redactStateForSeat(build('fire', { choice: 'ask-fire-seat-b-1', other: 'firewall-3' }), 'seat-a');
     expect(view.pendingChoice!.id).toBe('ask-hidden-seat-b-1');
     expect((view.pendingArrangement as unknown as { id: string }).id).toBe('firewall-3');
+  });
+});
+
+describe('redactEventsForSeat', () => {
+  const owner = { kind: 'general' as const, seatId: 'seat-b', slot: 'main' as const, skillId: 'refusing-death' };
+  const event = (): EngineEvent =>
+    ({ kind: 'ChoiceMadeEvent', seatId: 'seat-b', reason: { kind: 'ability', owner, abilityId: 'refusing-death' }, verb: 'use', shows: 'none' }) as unknown as EngineEvent;
+
+  it('masks a hidden General’s skill in a ChoiceMadeEvent for other seats', () => {
+    const [masked] = redactEventsForSeat(makeState(), [event()], 'seat-a') as unknown as { reason: { owner: { skillId: string }; abilityId: string } }[];
+    expect(masked.reason.owner.skillId).toBe('hidden');
+    expect(masked.reason.abilityId).toBe('hidden');
+    const [own] = redactEventsForSeat(makeState(), [event()], 'seat-b') as unknown as { reason: { owner: { skillId: string }; abilityId: string } }[];
+    expect(own.reason.owner.skillId).toBe('refusing-death');
+    expect(own.reason.abilityId).toBe('refusing-death');
+  });
+
+  it('does not change the events passed in', () => {
+    const events = [event()];
+    redactEventsForSeat(makeState(), events, 'seat-a');
+    expect(events).toEqual([event()]);
+  });
+});
+
+describe('redactStateForSeat: the log', () => {
+  it('leaves a hidden skill id out of the whole view, log included, but not the owner’s', () => {
+    const state = makeState();
+    const owner = { kind: 'general' as const, seatId: 'seat-b', slot: 'main' as const, skillId: 'refusing-death' };
+    state.log = [{ kind: 'ChoiceMadeEvent', seatId: 'seat-b', reason: { kind: 'ability', owner, abilityId: 'refusing-death' }, verb: 'use', shows: 'none' } as unknown as EngineEvent];
+    expect(JSON.stringify(redactStateForSeat(state, 'seat-a'))).not.toContain('refusing-death');
+    expect(JSON.stringify(redactStateForSeat(state, 'seat-b'))).toContain('refusing-death');
   });
 });
