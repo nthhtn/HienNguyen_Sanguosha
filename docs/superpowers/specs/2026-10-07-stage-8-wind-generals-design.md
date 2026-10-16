@@ -32,7 +32,9 @@ term is Tool.
 - **Source.** The crawled data's standard-edition skill text, applied to
   Kingdom War, as in stage 7. "You" is the seat holding the General.
 - **No elemental damage.** A skill that deals lightning or fire damage deals
-  plain damage instead (as the Lightning card does).
+  plain damage instead (as the Lightning card did).
+  Note: Lightning Strike now deals thunder damage, like the Lightning card's
+  strike (see the elemental spec).
 
 ## Rule text: the 8 Wind Generals
 
@@ -86,8 +88,8 @@ term is Tool.
 ### Qun
 
 - **Zhang Jiao: Lightning Strike** (may). After you play or use a Shan, you
-  may choose any living seat. It judges: on a spade it takes 2 plain damage
-  with no source.
+  may choose any living seat. It judges: on a spade it takes 2 thunder damage
+  with no source (it passes along a chain).
 - **Zhang Jiao: Dark Magic** (may). When any seat's judgment card is turned
   up, before it takes effect, you may replace it with a black card from your
   hand or equipment. The old judgment card goes into your hand. Judgment

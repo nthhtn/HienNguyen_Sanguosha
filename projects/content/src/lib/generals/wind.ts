@@ -215,7 +215,8 @@ export const refusingDeath: SkillDefinition = {
 type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
 
 // Lightning Strike (may): after you play or use a Shan, you may pick any
-// living seat. It judges: on a spade it takes 2 plain damage with no source.
+// living seat. It judges: on a spade it takes 2 thunder damage with no source (so it
+// passes along a chain, as the Lightning card's strike does).
 export const lightningStrike: SkillDefinition = {
   id: 'lightning-strike',
   triggers: [
@@ -237,7 +238,7 @@ export const lightningStrike: SkillDefinition = {
   },
   onJudged: (state, { owner, seatId, judged, done }, registry) =>
     suitOf(state, seatId, judged, registry) === 'spade' && isLiving(state, seatId)
-      ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'normal', cause: { skillId: owner.skillId } } }]
+      ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'thunder', cause: { skillId: owner.skillId } } }]
       : [done],
 };
 
