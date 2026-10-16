@@ -108,7 +108,7 @@ it fires once at that Start; a Form skill with an End trigger chosen at End fire
 - *Engine/content:* when Bewilder answers a response window and the lie fails (the
   card is discarded), the window re-opens only if the seat still has a legal answer
   other than Pass, read from the engine's own `getLegalActions` for that seat (so
-  conversions, other skills and equipment such as Eight Trigrams all count); if it
+  conversions and other skills count; equipment such as Eight Trigrams does not, because it is asked before the window opens); if it
   has none, the window resolves as no response without asking. Spec: a lie with an empty hand and no other answer does not
   re-open the window; with a real Shan in hand it does. (Eight Trigrams cannot be staged here: it is asked before the window opens, not offered inside it, so a seat wearing it has already answered or declined it when Bewilder is used; declined, a failed lie re-opens nothing, which a spec records.)
 - *Bot:* stage 8 says Yu Ji's bot *names only what the card truly is, unless it
