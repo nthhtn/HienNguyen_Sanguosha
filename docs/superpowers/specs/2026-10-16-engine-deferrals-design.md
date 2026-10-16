@@ -68,11 +68,13 @@ Two places leak, and both are fixed here:
   so replay is untouched.
 - "Hidden for this viewer" is what `maskSkills` already uses: a skill belonging
   to an unrevealed General slot of a seat other than the viewer's.
-- The ids to scrub are every skill, ability and conversion id of every
-  unrevealed slot on seats other than the viewer, not only those a given
-  decision mentions. Matching is on whole `-`-separated tokens inside an `id`,
-  so a skill id that is a substring of an unrelated id is left alone (one
-  false-positive spec).
+- The ids to scrub are those the redaction already finds: skills of hidden
+  General owners mentioned in the value being redacted, plus the ability and
+  conversion ids sitting beside such an owner. The redaction has no registry, and
+  an id string only embeds the id of its own decision's owner, so this covers
+  what another seat can observe. The scrub applies to string values under the
+  key `id` or a key ending in `Id`, and matches whole tokens: a skill id inside
+  a longer word is left alone (one false-positive spec).
 - The shared view code does the redaction (`game.service.ts` for the local
   board, the server's game view for online). The Setup and Game screens are not
   modified.
@@ -87,19 +89,17 @@ selection id, pending response reason, queued effect, `ChoiceMadeEvent`,
 
 Today `seatIsDying` in `app/src/app/game-board/seat-tile.ts` holds a rule: a
 seat is dying when it is not eliminated, its `combinedHp` is 0 or below, and
-either a dying rescue window is pending for it or it has no cards under its
-General. Two faults: it treats any `seat.pile` as Refusing Death, and it ignores
-`seat.stash`.
+either a dying rescue window is pending for it or it has no cards in `seat.pile`.
+`Seat.pile` is the engine's own field for the cards kept under a General that
+hold a seat alive at 0 HP (Refusing Death); `Seat.stash` is Deng Ai's Farms and
+never counts. So the rule is right; it only lives in the wrong layer.
 
-Move the derivation into the engine as one exported function. The engine must
-not name Refusing Death: content tells the engine, through a registry hook, that
-a skill keeps a seat alive below 1 HP. The UI calls the engine function only.
-The builder decides the hook's shape; the behaviour is fixed:
-
-- A seat at 0 HP or below with a rescue window pending is dying.
-- A seat at 0 HP or below kept alive by a skill (Refusing Death) is not dying.
-- Any other seat at 0 HP or below is dying. An eliminated seat is never dying.
-- Piles or stashes that belong to other skills do not count as "kept alive".
+Move it, unchanged in behaviour, into the engine as one exported pure function
+over `GameState` (no registry, no hook): it must work on a redacted state, where
+another seat's hidden General ids are masked and a registry lookup would fail.
+The UI calls the engine function only. (An earlier draft of this spec proposed a
+registry hook; reading the code showed it is unnecessary and would break under
+redaction.)
 
 ### 3. After-damage step
 
@@ -162,6 +162,6 @@ in the app, so it goes to the Frontend spec. The Instigate wording (S8) and the
 
 ## Left to the builder
 
-The exact registry hook for "kept alive below 1 HP"; how `DamageEffect` reports
-"damage landed"; the shape of redacted log events; where the end-of-game sweep
+How "damage landed" is detected for item 3 (the plan uses the log since the
+`sha-damage` step); the name of the log-redaction function; the shape of redacted log events; where the end-of-game sweep
 runs in the pipeline; spec file names.
