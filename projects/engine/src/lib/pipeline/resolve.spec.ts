@@ -305,8 +305,8 @@ describe('resolve: skill triggers modify effects and queue follow-ups', () => {
           ? {
               ...seat,
               generals: {
-                main: { generalDefinitionId: 'shield-general', revealed: false },
-                deputy: { generalDefinitionId: 'draw-general', revealed: false },
+                main: { generalDefinitionId: 'shield-general', revealed: true },
+                deputy: { generalDefinitionId: 'draw-general', revealed: true },
               },
             }
           : seat
