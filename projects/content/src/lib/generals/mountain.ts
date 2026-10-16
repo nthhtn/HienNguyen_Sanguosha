@@ -1,4 +1,4 @@
-import type { CardInstance, CardMovedEvent, CardZone, ContentRegistry, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard, DamageDealtEvent, GeneralRevealedEvent, SeatEliminatedEvent } from 'engine';
+import type { CardInstance, CardMovedEvent, CardZone, ContentRegistry, Effect, GameEvent, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard, DamageDealtEvent, GeneralRevealedEvent, SeatEliminatedEvent } from 'engine';
 import { cardCountsAs, discardOwed, endFlagOf, requireZoneOfKind, skipFlagOf } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
@@ -586,14 +586,22 @@ export const heartbroken: SkillDefinition = {
 // ── Zuo Ci ─────────────────────────────────────────────────────────────────
 
 // The pick of a Form's skill; secret, since the options name spare Generals.
-function chooseForm(state: GameState, owner: GeneralOwner, registry: ContentRegistry): Effect {
+// The chosen skill takes part in `event`, the one that offered the choice: its
+// after-triggers for it fire now (a Start trigger at that Start), once. No
+// `event`: a step queued before steps carried it (an older saved game).
+function chooseForm(state: GameState, owner: GeneralOwner, registry: ContentRegistry, event?: GameEvent): Effect {
+  const slot = seatOf(state, owner.seatId)!.forms!.slot;
   return choiceOf(state, owner, {
     verb: 'pick',
     secret: true,
     options: formSkillOptions(state, owner.seatId, registry).map(({ generalId, skillId }) => ({
       id: `${generalId}/${skillId}`,
       shows: { kind: 'label' as const, text: `${abilityName(skillId)} (${generalDisplayData(generalId)?.name ?? generalId})` },
-      effects: [{ kind: 'ChooseFormSkillEffect' as const, seatId: owner.seatId, generalId, skillId }, used(owner, 'incarnated')],
+      effects: [
+        { kind: 'ChooseFormSkillEffect' as const, seatId: owner.seatId, generalId, skillId },
+        used(owner, 'incarnated'),
+        ...(event ? [{ kind: 'FireSkillTriggersEffect' as const, owner: { kind: 'general' as const, seatId: owner.seatId, slot, skillId }, point: `after:${event.kind}` as const, subject: event }] : []),
+      ],
     })),
   });
 }
@@ -609,19 +617,19 @@ export const incarnation: SkillDefinition = {
     on<PhaseChangedEvent>('after:PhaseChangedEvent', {
       condition: (state, event, owner, registry) =>
         (event.phase === 'Start' || event.phase === 'End') && event.seatId === owner.seatId && state.turn.ownerSeatId === owner.seatId && formSkillOptions(state, owner.seatId, registry).length > 0,
-      effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'choose')])],
+      effect: (_state, event, owner) => [ask(owner, [skillStep(owner, 'choose', { event })])],
     }),
     // Revealed for any reason but this skill: the first choice.
     on<GeneralRevealedEvent>('after:GeneralRevealedEvent', {
       condition: (state, event, owner, registry) =>
         event.seatId === owner.seatId && event.slot === owner.slot && event.forAbilityId !== 'incarnation' && !seatOf(state, owner.seatId)?.forms?.chosen && formSkillOptions(state, owner.seatId, registry).length > 0,
-      effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'choose')])],
+      effect: (_state, event, owner) => [ask(owner, [skillStep(owner, 'choose', { event })])],
     }),
   ],
   // The secret choice is built only now: the ask itself (public, and queued in the state) names no Form.
   onStep: (state, step, registry) => {
     const { owner } = step;
-    return isLiving(state, owner.seatId) && formSkillOptions(state, owner.seatId, registry).length > 0 ? [chooseForm(state, owner, registry)] : [];
+    return isLiving(state, owner.seatId) && formSkillOptions(state, owner.seatId, registry).length > 0 ? [chooseForm(state, owner, registry, step.data?.['event'] as GameEvent | undefined)] : [];
   },
 };
 

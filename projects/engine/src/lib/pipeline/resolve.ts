@@ -154,6 +154,18 @@ function afterTriggerFollowUps(state: GameState, events: GameEvent[], ctx: Engin
   return followUps;
 }
 
+// One owner's triggers at `point` for `subject`, gathered against `state` now
+// and queued at the front (FireSkillTriggersEffect). Applies and logs nothing.
+function fireSkillTriggers(state: GameState, effect: Extract<Effect, { kind: 'FireSkillTriggersEffect' }>, ctx: EngineContext): ResolveResult {
+  const followUps: QueueItem[] = [];
+  for (const gathered of gatherTriggeredSkills(state, ctx.registry, ctx.mode, effect.point, effect.subject)) {
+    if (!gathered.owner || !sameAbilityOwner(gathered.owner, effect.owner)) continue;
+    const outputs = gathered.trigger.effect(state, effect.subject, gathered.owner, ctx.registry) as QueueItem[];
+    followUps.push(...revealFor(gathered, outputs), ...outputs);
+  }
+  return { state: queueFront(state, followUps), events: [] };
+}
+
 // Logs events that happened outside applyEffect, and queues their after-trigger
 // follow-ups at the front.
 function logWithTriggers(state: GameState, events: GameEvent[], ctx: EngineContext): ResolveResult {
@@ -255,7 +267,9 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
         ? applyCardStep(state, current, ctx.registry)
         : current.kind === 'SkillStepEffect'
           ? applySkillStep(state, current, ctx.registry)
-          : current.kind === 'DyingEffect'
+          : current.kind === 'FireSkillTriggersEffect'
+            ? fireSkillTriggers(state, current, ctx)
+            : current.kind === 'DyingEffect'
             ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry, { revealedOnly: true }).length > 0)
             : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];

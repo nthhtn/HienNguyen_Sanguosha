@@ -166,6 +166,36 @@ describe('Zuo Ci — Incarnation', () => {
   });
 });
 
+describe('Zuo Ci — Incarnation: a Form chosen at Start takes part in that Start (S10)', () => {
+  // Zuo Ci holds Zhen Ji (River Goddess: a Start trigger) and Da Qiao as Forms;
+  // seat-d's End passes the turn to his Start.
+  const startWith = (forms: object) => {
+    const s = table({ drawPile: Array.from({ length: 6 }, (_, i) => card(`d${i + 1}`, 'shan', 'heart', i + 1)) }, { generals: at('seat-a', 'zuo-ci'), owner: 'seat-d', phase: 'End' });
+    return h.settle({ ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, forms: { slot: 'main' as const, held: ['zhen-ji', 'da-qiao'], ...forms } } : x)) });
+  };
+  // Answers every ask of his Start: Incarnation picks `pick` (or is declined), the rest are declined.
+  // The abilities asked about, in order, until the Start is over.
+  const askedThroughStart = (s: ReturnType<typeof table>, pick?: string) => {
+    const asked: string[] = [];
+    while (s.phase === 'Start' && s.pendingChoice) {
+      const about = askedAbout(s);
+      if (about) asked.push(about);
+      if (about === 'incarnation' && pick) s = h.choose(h.use(s), pick);
+      else s = h.decline(s);
+    }
+    return asked;
+  };
+
+  it('a Start-trigger skill chosen at Zuo Ci’s Start fires once at that Start', () => {
+    expect(askedThroughStart(startWith({}), 'zhen-ji/river-goddess')).toEqual(['incarnation', 'river-goddess']);
+  });
+
+  it('the same skill does not fire twice at a later Start', () => {
+    const asked = askedThroughStart(startWith({ chosen: { generalId: 'zhen-ji', skillId: 'river-goddess' } }));
+    expect(asked.filter((a) => a === 'river-goddess')).toHaveLength(1);
+  });
+});
+
 describe('Zuo Ci — Incarnation: nothing about the Forms is readable before he answers', () => {
   it('the ask other seats can see names no spare General, and neither does the secret choice for them', () => {
     const base = table({}, { generals: at('seat-a', 'zuo-ci'), owner: 'seat-d', phase: 'End' });
