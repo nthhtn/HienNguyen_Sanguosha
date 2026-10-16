@@ -34,7 +34,7 @@
   },
   "wood-armor": {
     "name": "Đằng Giáp",
-    "text": "Khi trang bị lá này, người mặc không thể bị sát thương bởi Nam Man Xâm Nhập, Vạn Tiễn Tề Phát hoặc Sát không có thuộc tính. Tuy nhiên, khi chịu bất kỳ sát thương lửa nào, sát thương tăng thêm một."
+    "text": "Khi trang bị lá này, Nam Man Xâm Nhập, Vạn Tiễn Tề Phát và Sát thường không có tác dụng với người mặc (Hỏa Sát hoặc Lôi Sát vẫn có tác dụng). Sát thương lửa người mặc phải chịu tăng thêm 1."
   },
   "da-yuan": {
     "name": "Đại Uyển"
@@ -107,7 +107,7 @@
   },
   "blaze": {
     "name": "Hỏa Công",
-    "text": "Người chơi có thể nhắm Hỏa Công vào bất kỳ ai có bài trên tay. Mục tiêu sau đó cho xem một lá bài trên tay bất kỳ của mình. Người chơi có thể bỏ một lá bài trên tay cùng chất để gây một sát thương lửa cho mục tiêu."
+    "text": "Dùng lên một người chơi bất kỳ có bài trên tay, kể cả bản thân. Mục tiêu cho xem một lá bài trên tay do họ chọn; sau đó bạn có thể bỏ một lá bài trên tay cùng chất để gây 1 sát thương lửa cho họ."
   },
   "break": {
     "name": "Quá Hà Sách Kiều",
@@ -119,7 +119,7 @@
   },
   "chains": {
     "name": "Thiết Tỏa Liên Hoàn",
-    "text": "Người chơi có thể nhắm tối đa hai người chơi và đổi trạng thái bị xích của họ. Lựa chọn thứ hai là bỏ Thiết Tỏa Liên Hoàn và rút một lá bài khác."
+    "text": "Dùng lên 1 hoặc 2 người chơi ở bất kỳ khoảng cách nào, kể cả bản thân: mỗi mục tiêu chưa bị xích sẽ bị xích, mỗi mục tiêu đang bị xích sẽ được tháo xích. Hoặc đổi lại: bỏ lá này và rút 1 lá bài. Khi một người chơi bị xích chịu sát thương lửa hoặc sét, họ được tháo xích, rồi mọi người chơi bị xích khác lần lượt theo thứ tự lượt chịu cùng sát thương đó."
   },
   "coerce": {
     "name": "Tá Đao Sát Nhân",

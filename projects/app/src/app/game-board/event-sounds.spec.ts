@@ -55,6 +55,11 @@ describe('voicesFor', () => {
     expect(voicesFor([played('s2', 'sha')], state, registry)).toEqual([{ gender: 'male', voice: 'slash' }]);
   });
 
+  it('voices a Fire Attack or a Lightning Attack, played as a Sha, as a slash', () => {
+    const fire = { kind: 'CardPlayedEvent', seatId: 's0', card: { as: 'sha', nature: 'fire', physical: [{ instanceId: 'f', definitionId: 'fire-attack', suit: 'heart', rank: 4 }] }, targets: [] } as never;
+    expect(voicesFor([fire], state, registry)).toEqual([{ gender: 'male', voice: 'slash' }]);
+  });
+
   it('says each line once per gender', () => {
     expect(voicesFor([played('s0', 'sha'), played('s0', 'sha')], state, registry)).toEqual([{ gender: 'male', voice: 'slash' }]);
   });

@@ -94,7 +94,7 @@ describe('what No Response costs, in English and Vietnamese', () => {
 
   it('damage to another seat, from nowhere, with a nature word', () => {
     const hit = { kind: 'DamageEffect', damage: { source: null, target: seat('seat-1'), amount: 3, nature: 'thunder' } } as Effect;
-    expect(outcome('seat-0', hit)).toEqual({ en: 'Seat 1 loses 3 HP (3 thunder damage)', vi: 'Người chơi 1 mất 3 Sinh lực (3 sát thương thunder)' });
+    expect(outcome('seat-0', hit)).toEqual({ en: 'Seat 1 loses 3 HP (3 thunder damage)', vi: 'Người chơi 1 mất 3 Sinh lực (3 sát thương sét)' });
   });
 
   it('damage to a Main General is never "You"', () => {

@@ -63,6 +63,12 @@ describe('SeatTile', () => {
     expect(el.querySelectorAll('[aria-label="Farms"] app-playing-card')).toHaveLength(1);
   });
 
+  it('shows a chain marker on a chained seat, and none on an unchained one', () => {
+    const marker = render(makeSeat({ chained: true })).querySelector('.chain-badge');
+    expect(marker?.textContent?.trim()).toBe('Chained');
+    expect(render(makeSeat()).querySelector('.chain-badge')).toBeNull();
+  });
+
   it('shows the chosen Form and a silenced seat', () => {
     const forms = { slot: 'main' as const, held: ['hidden'], chosen: { generalId: 'zhou-yu', skillId: 'brave-gesture' } };
     expect(render(makeSeat({ forms }), {}).querySelector('.form-badge')?.textContent?.trim()).toBe('Form: Zhou Yu (Brave Gesture)');

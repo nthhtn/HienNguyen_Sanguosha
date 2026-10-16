@@ -18,7 +18,13 @@ const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
 // as an answer. A Recast is instead of using the card, so skills that react to
 // a card's use (Gathering Wisdom) leave it alone.
 export function isRecast(event: CardPlayedEvent): boolean {
-  return event.card.as === 'chains' && event.targets.length === 0 && !event.inResponseTo;
+  return isRecastPlay(event.card.as, event.targets) && !event.inResponseTo;
+}
+
+// Whether playing a card as `as` at `targets` is a Chains Recast (the offer
+// with no target), for labelling the offer before it is played.
+export function isRecastPlay(as: string, targets: readonly Target[]): boolean {
+  return as === 'chains' && targets.length === 0;
 }
 
 export const chainsCard: CardDefinition = {

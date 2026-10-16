@@ -1,3 +1,4 @@
+import { cardDisplayData } from './display';
 import { GENERAL_SKILLS } from './generals';
 import { equipmentTabs, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, WikiCard } from './wiki';
 
@@ -175,6 +176,17 @@ describe('wikiCards', () => {
     expect(all.find((c) => c.id === 'chains')).toMatchObject({ count: 6, nameZh: '铁索连环' });
     expect(all.find((c) => c.id === 'ice-sword')).toMatchObject({ range: 2, subtype: 'weapon' });
     expect(all.find((c) => c.id === 'black-shield')!.printings).toEqual([{ suit: 'club', rank: 2 }]);
+  });
+
+  it('states the rules of Chains, Blaze and Wood Armor, in English and Vietnamese', () => {
+    const text = (id: string) => [...wikiCards('tool'), ...wikiCards('equipment')].find((c) => c.id === id)!.text!;
+    expect(text('chains')).toMatch(/Recast/);
+    expect(text('chains')).toMatch(/fire or thunder damage/);
+    expect(text('blaze')).toMatch(/1 fire damage/);
+    expect(text('wood-armor')).toMatch(/fire damage the wearer takes is increased by 1/i);
+    expect(cardDisplayData('chains', 'vi')!.text).toMatch(/sát thương lửa hoặc sét/);
+    expect(cardDisplayData('blaze', 'vi')!.text).toMatch(/1 sát thương lửa/);
+    expect(cardDisplayData('wood-armor', 'vi')!.text).toMatch(/sát thương lửa người mặc phải chịu tăng thêm 1/i);
   });
 
   it('lists Silver Lion as in-game armour with its single printing', () => {

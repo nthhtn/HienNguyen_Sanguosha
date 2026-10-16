@@ -91,6 +91,24 @@ describe('HandView', () => {
     expect(played).toEqual([shaAtSeat2]);
   });
 
+  it('labels the no-target Chains offer as its Recast', async () => {
+    const chains: CardInstance = { instanceId: 'c-chains', definitionId: 'chains', suit: 'club', rank: 12 };
+    const withChains = { ...state(), zones: [{ id: 'seat-0:hand', kind: 'hand' as const, ownerSeatId: 'seat-0', cards: [chains] }] };
+    const chainsRegistry: ContentRegistry = { generals: new Map(), cards: new Map([['chains', { id: 'chains', name: 'Chains', category: 'tool' as const, play: () => [] }]]) };
+    const recast: Action = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c-chains', targets: [] };
+    const atSeat1: Action = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c-chains', targets: [{ kind: 'seat', seatId: 'seat-1' }] };
+    fixture.componentRef.setInput('cards', [chains]);
+    fixture.componentRef.setInput('actions', [recast, atSeat1]);
+    fixture.componentRef.setInput('state', withChains);
+    fixture.componentRef.setInput('registry', chainsRegistry);
+    fixture.detectChanges();
+    playButton('c-chains').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[];
+    expect(items.map((i) => i.textContent!.trim())).toEqual(['Recast Chains', 'Play Chains Targeting Seat 1']);
+  });
+
   it('still offers a menu when a targeted card has only one possible target, so the viewer confirms it', async () => {
     fixture.componentRef.setInput('actions', [shaAtSeat1, equipBow, endPhase]);
     fixture.detectChanges();

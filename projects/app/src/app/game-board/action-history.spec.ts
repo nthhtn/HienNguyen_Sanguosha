@@ -602,3 +602,47 @@ describe('actionHistory: the Wind skills', () => {
   });
 });
 
+
+describe('actionHistory: elemental Sha, Chains and chain toggles', () => {
+  const players = [0, 1, 2].map((i) => ({ id: `p${i}`, seatId: `seat-${i}`, kind: 'human' as const, name: i === 0 ? 'Hing' : `Seat ${i}` }));
+  const lines = (log: EngineEvent[]) => actionHistory(log, zones, players).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
+  const fire: CardInstance = { instanceId: 'fa-1', definitionId: 'fire-attack', suit: 'heart', rank: 4 };
+  const chains: CardInstance = { instanceId: 'ch-1', definitionId: 'chains', suit: 'club', rank: 12 };
+  // A Fire Attack is played as a Sha with the fire nature.
+  const fireAsSha = { ...usedCardOf(fire), as: 'sha', nature: 'fire' as const };
+
+  it('names a played Fire Attack by its own name, and a Shan against it', () => {
+    const log: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: fireAsSha, targets: [seat('seat-0')] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(shan), targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'fa-1' } },
+    ];
+    expect(lines(log)).toEqual(["Hing used Shan (2 ♥) against Seat 1's Fire Attack", 'Seat 1 used Fire Attack (4 ♥) on Hing']);
+  });
+
+  it('says a Chains Recast is a recast, not a use', () => {
+    const log: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(chains), targets: [] },
+      move(chains, 'seat-1:hand', 'discardPile'),
+      { kind: 'CardsDrawnEvent', seatId: 'seat-1', cardInstanceIds: ['x'] },
+    ];
+    expect(lines(log)).toEqual(['Seat 1 drew 1 card', 'Seat 1 recast Chains (Q ♣)']);
+  });
+
+  it('one line per chain toggle, by the Chains user, and a seat unchained by its damage', () => {
+    const log: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(chains), targets: [seat('seat-0'), seat('seat-1')] },
+      move(chains, 'seat-1:hand', 'discardPile'),
+      { kind: 'ChainToggledEvent', seatId: 'seat-0', chained: true },
+      { kind: 'ChainToggledEvent', seatId: 'seat-1', chained: false },
+      { kind: 'DamageDealtEvent', damage: { source: seat('seat-2'), target: seat('seat-0'), amount: 1, nature: 'fire' } },
+      { kind: 'ChainToggledEvent', seatId: 'seat-0', chained: false },
+    ];
+    expect(lines(log)).toEqual([
+      'Hing was unchained',
+      'Hing took 1 fire damage from Seat 2',
+      'Seat 1 unchained themselves',
+      'Seat 1 chained Hing',
+      'Seat 1 used Chains (Q ♣) on Hing, Seat 1',
+    ]);
+  });
+});
