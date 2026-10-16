@@ -1,7 +1,7 @@
 import type { GameState } from 'engine';
 import { card, handIds, harness, hp, table, TableOptions } from './skills.testing';
 
-const { legal, play, pass, respond, convert, select, cancel } = harness();
+const { act, legal, play, pass, respond, convert, select, cancel } = harness();
 const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', revealed] });
 const playTargets = (s: GameState, seatId: string, cardId: string) =>
   legal(s, seatId).flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === cardId ? [a.targets[0]?.seatId] : []));
@@ -18,6 +18,15 @@ describe('Zhang Fei — Roar', () => {
   it('is off while Zhang Fei is hidden', () => {
     const s = pass(play(table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha')] }, { generals: at('seat-a', 'zhang-fei', false) }), 's1', 'seat-b'));
     expect(playTargets(s, 'seat-a', 's2')).toEqual([]);
+  });
+});
+
+describe('Zhang Fei — Roar (revealed on purpose)', () => {
+  it('Zhang Fei: revealing him in the Play Phase turns Roar on', () => {
+    let s = pass(play(table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha'), card('s3', 'sha')] }, { generals: at('seat-a', 'zhang-fei', false) }), 's1', 'seat-b'));
+    expect(playTargets(s, 'seat-a', 's2')).toEqual([]);
+    s = act(s, { kind: 'RevealGeneralAction', seatId: 'seat-a', slot: 'main' });
+    expect(playTargets(s, 'seat-a', 's2')).toContain('seat-b');
   });
 });
 
