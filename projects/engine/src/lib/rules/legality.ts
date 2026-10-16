@@ -2,6 +2,7 @@ import { AbilityOwner, CardInstance, GameState, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
 import { ContentRegistry, Conversion, PlayOptionsContext, TargetPick } from '../registry/types';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
+import { sameValue } from './offered';
 import { decisionPending, getActiveSeatId } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
 import { discardOwed } from './phaseSequence';
@@ -166,8 +167,7 @@ export function targetsAllowed(
 ): boolean {
   const pick = targetPickFor(state, seatId, cardInstanceId, definitionId, registry, via);
   if (pick) return fitsPick(pick, targets);
-  const wanted = JSON.stringify(targets);
-  return legalTargetListsFor(state, seatId, cardInstanceId, definitionId, registry).some((t) => JSON.stringify(t) === wanted);
+  return legalTargetListsFor(state, seatId, cardInstanceId, definitionId, registry).some((t) => sameValue(t, targets));
 }
 
 // What a conversion tells a card's targetPick about the cards it takes.
@@ -231,7 +231,6 @@ export function conversionCards(state: GameState, seatId: string, conversion: Co
 // whose leaving still leaves the targets legal (a worn horse or Crossbow the
 // play needs can't be the card used).
 export function playConversionCards(state: GameState, seatId: string, conversion: Conversion, targets: Target[], registry: ContentRegistry): CardInstance[] {
-  const wanted = JSON.stringify(targets);
   const via = conversionVia(conversion);
   const pick = targetPickFor(state, seatId, '', conversion.as, registry, via);
   const wornIds = new Set(state.zones.find((z) => z.id === state.seats.find((s) => s.id === seatId)?.equipped.zoneId)?.cards.map((c) => c.instanceId) ?? []);
@@ -241,7 +240,7 @@ export function playConversionCards(state: GameState, seatId: string, conversion
     if (pick && !wornIds.has(card.instanceId)) return fitsPick(pick, targets);
     const without: GameState = { ...state, zones: state.zones.map((z) => ({ ...z, cards: z.cards.filter((c) => c.instanceId !== card.instanceId) })) };
     if (pick) return targetsAllowed(without, seatId, '', conversion.as, targets, registry, via);
-    return legalTargetListsFor(without, seatId, '', conversion.as, registry).some((t) => JSON.stringify(t) === wanted);
+    return legalTargetListsFor(without, seatId, '', conversion.as, registry).some((t) => sameValue(t, targets));
   });
 }
 

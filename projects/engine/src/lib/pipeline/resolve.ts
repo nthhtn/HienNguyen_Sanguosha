@@ -1,5 +1,6 @@
 import { GameState, GameEvent, PendingChoice, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
 import { usedCardFrom, usedCardOf } from '../domain/usedCard';
+import { sameValue } from '../rules/offered';
 import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
@@ -574,7 +575,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
           sameAbilityOwner(a.via.owner, action.via.owner) &&
           a.pendingResponseId === action.pendingResponseId &&
           // A template: any targets within its pick.
-          (a.pickTargets ? fitsPick(a.pickTargets, action.targets) : JSON.stringify(a.targets) === JSON.stringify(action.targets))
+          (a.pickTargets ? fitsPick(a.pickTargets, action.targets) : sameValue(a.targets, action.targets))
       );
       if (!offered) throw new Error(`Seat ${action.seatId} can’t use that conversion now`);
       const owned = conversionsOf(state, action.seatId, ctx.registry).find(

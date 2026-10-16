@@ -1,7 +1,7 @@
 import { usedCardOf } from '../domain/usedCard';
 import { resolve, MAX_RESOLUTION_STEPS } from './resolve';
 import { createRng } from '../rng/rng';
-import { GameState } from '../domain/types';
+import { GameState, Target } from '../domain/types';
 import { ContentRegistry, GameModeDefinition, CardDefinition, GeneralDefinition } from '../registry/types';
 import { Effect } from './effects';
 import { DamageDealtEvent } from './events';
@@ -841,5 +841,29 @@ describe('RevealGeneralAction on a seat with no generals yet', () => {
         { registry: emptyRegistry(), mode: stubMode() }
       )
     ).toThrow(/has not chosen its generals/);
+  });
+});
+
+describe('resolve: UseConversionAction', () => {
+  it('accepts a UseConversionAction whose targets have reordered keys', () => {
+    const damage = registryWithTestDamageCard().cards.get('test-damage-card')!;
+    const worn: CardDefinition = {
+      id: 'test-worn', name: 'Test Worn', category: 'equipment',
+      abilities: { conversions: [{ id: 'conv', as: 'test-damage-card', cards: 1, when: 'play' }] },
+    } as CardDefinition;
+    const registry: ContentRegistry = { cards: new Map([['test-damage-card', damage], ['test-worn', worn]]), generals: new Map() };
+    const base = baseState();
+    const state: GameState = {
+      ...base,
+      zones: base.zones.map((z) =>
+        z.id === 'seat-a:hand' ? { ...z, cards: [{ instanceId: 'h1', definitionId: 'test-damage-card', suit: 'spade' as const, rank: 5 }] }
+        : z.id === 'seat-a:equip' ? { ...z, cards: [{ instanceId: 'w1', definitionId: 'test-worn', suit: 'club' as const, rank: 2 }] }
+        : z
+      ),
+    };
+    const via = { owner: { kind: 'equipment' as const, seatId: 'seat-a', cardInstanceId: 'w1' }, conversionId: 'conv' };
+    const reordered = { seatId: 'seat-b', kind: 'seat' } as Target;
+    const action = { kind: 'UseConversionAction' as const, seatId: 'seat-a', via, targets: [reordered] };
+    expect(() => resolve(state, action, { registry, mode: stubMode() })).not.toThrow();
   });
 });

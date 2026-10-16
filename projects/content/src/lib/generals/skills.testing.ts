@@ -1,4 +1,4 @@
-import { advanceToDecision, getLegalActions, resolve } from 'engine';
+import { advanceToDecision, getLegalActions, resolve, sameValue } from 'engine';
 import type { Action, CardInstance, GameModeDefinition, GameState, Kingdom, Phase, QueueItem, Target } from 'engine';
 import { buildContentRegistry } from '../registry';
 import { withFillers } from './fillers.testing';
@@ -101,7 +101,7 @@ export function harness(mode: GameModeDefinition = stubMode) {
     // The seat's offered UseConversionAction for `conversionId` (at `targets`, or answering the open window).
     convert: (s: GameState, seatId: string, conversionId: string, ...targets: string[]) => {
       const action = legal(s, seatId).find(
-        (a) => a.kind === 'UseConversionAction' && a.via.conversionId === conversionId && JSON.stringify(a.targets) === JSON.stringify(targets.map(seat))
+        (a) => a.kind === 'UseConversionAction' && a.via.conversionId === conversionId && sameValue(a.targets, targets.map(seat))
       );
       if (!action) throw new Error(`${seatId} is not offered ${conversionId}`);
       return act(s, action);

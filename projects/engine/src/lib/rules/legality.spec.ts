@@ -1,5 +1,6 @@
-import { getLegalActions, getLegalTargets } from './legality';
-import { GameState } from '../domain/types';
+import { getLegalActions, getLegalTargets, targetsAllowed } from './legality';
+import { GameState, Target } from '../domain/types';
+import { ContentRegistry } from '../registry/types';
 import { createRng } from '../rng/rng';
 
 function state(overrides: Partial<GameState> = {}): GameState {
@@ -103,5 +104,14 @@ describe('getLegalActions', () => {
 
   it('returns no actions for an unknown seat id', () => {
     expect(getLegalActions(state(), 'ghost-seat')).toEqual([]);
+  });
+});
+
+describe('targetsAllowed', () => {
+  it('accepts targets whose keys come in another order', () => {
+    const registry: ContentRegistry = { cards: new Map([['sha', { id: 'sha', name: 'Sha', category: 'basic', play: () => [] }]]), generals: new Map() };
+    expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ kind: 'seat', seatId: 'seat-b' }], registry)).toBe(true);
+    expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ seatId: 'seat-b', kind: 'seat' } as Target], registry)).toBe(true);
+    expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ kind: 'seat', seatId: 'seat-c' }], registry)).toBe(false);
   });
 });
