@@ -28,9 +28,7 @@ In:
 - A language switcher in the Navigation panel.
 
 Out (a later version):
-- Wiki Rules pages, auth, rooms, lobby and my-games. (Setup and the Wiki Cards pages, Generals included, were added afterwards; see Phase 6.)
-- Online-only chrome: in-game chat, `online/game-labels.ts`, the online
-  result screen and notices.
+- Wiki Rules pages. (Setup and the Wiki Cards pages were added in Phase 6; auth, rooms, lobby, my-games, chat and the error banner in Phase 7.)
 - Pluralisation, and any locale beyond English and Vietnamese (the design
   allows them, but nothing is built for them).
 - Anything server-side.
@@ -202,7 +200,7 @@ Each phase is mergeable on its own. The app behaves as before until phase 5.
 - Review status: `projects/content/data/locales/vi/review.json` lists the reviewed entries (UI keys, General ids, card ids, prose ids by table); anything not listed is a draft. `npm run i18n:status` prints the counts (`-- --list` names the drafts) and fails on an id that no longer exists.
 - `projects/content/data/locales/vi/glossary.json` holds the checked terms: a spec requires each term that an English skill or card text uses to appear in its agreed form in the Vietnamese text.
 - Visual check (headless Chrome against `ng serve`, Vietnamese, a bot game): the toolbar, General selection, the board, the hand, the Instigate dialog and the history panel showed no overflow. It found one bug, fixed: the mode's default seat name "Seat N" was shown untranslated, so `seatName` now treats it as a placeholder.
-- Left for later: Wiki Rules, auth, rooms, lobby and the online-only screens, and the error banner.
+- Left for later: Wiki Rules.
 
 ## Phase 6 notes
 
@@ -211,6 +209,16 @@ Each phase is mergeable on its own. The app behaves as before until phase 5.
 - Card ordering on the Wiki is still by English name, so both languages list in the same order.
 - Pack names (Base, EX, Army, Wind, Fire, Forest, Mountain) read Cơ bản, EX, Quân tranh, Phong, Hỏa, Lâm, Sơn: draft, like the rest.
 - Not visually checked in a browser (the headless-Chrome script was gone from the scratchpad); the component specs cover the text.
+
+## Phase 7 notes
+
+- Auth (sign in, create account, guest, forgot and reset password), Rooms and its three dialogs, the Lobby, chat (panel and board drawer), the online result, My Games and the game board's error banner read in Vietnamese.
+- The server and the protocol are unchanged. A server error is shown by its stable `ErrorCode` through `error.<code>` keys, with the limits as params; a code the app has no key for shows the server's own text. Room-left reasons and game-stopped outcomes are keyed the same way (`roomLeft.*`, `outcome.*`, `room.replaced`).
+- Services no longer store finished English strings. `error`, `ended`, `notice`, `waitingForHost`, `lastError` and `OnlineNotice` hold a `Msg` (`i18n/msg.ts`: a catalog key with params, or raw text), and templates show it with the `tm` pipe, so a banner follows a language switch. `GameService.lastError` is a `Msg` too.
+- Local game errors (option A): the engine's error text is developer English and the engine never sees a locale, so the banner shows `error.internal` in the player's language and keeps the engine's text as a "Details: …" line. In English this adds the generic line above the old text.
+- The forgot-password confirmation is the screen's own `auth.resetSent`, not the server's message (same English).
+- Label builders in `online/game-labels.ts` and `room-labels.ts` take the translator; `gameWhen` formats the date in the language's locale (`vi`), English keeps the browser's format.
+- Names people type (display names, chat) and the server's bot names ("Bot 1") are not translated.
 
 ## Risks
 

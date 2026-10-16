@@ -34,4 +34,19 @@ describe('GameBoard in Vietnamese', () => {
     expect(latest).toMatch(/rút \d+ lá bài|đã chọn Tướng của mình/);
     expect(latest).not.toMatch(/drew|chose/);
   });
+
+  it('the error banner says something went wrong in Vietnamese and keeps the engine text as the detail', async () => {
+    const gameService = TestBed.inject(GameService);
+    gameService.startGame(gameService.maxSeats + 1, 1);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    const banner = el.querySelector('.error-banner .message')!;
+    expect(banner.firstChild!.textContent).toBe('Đã có lỗi xảy ra. Hãy thử lại');
+    expect(banner.querySelector('.detail')!.textContent).toMatch(/^Chi tiết: .*between 2 and \d+ seats/);
+    await TestBed.inject(I18n).setLocale('en');
+    fixture.detectChanges();
+    expect(banner.firstChild!.textContent).toBe('Something went wrong. Please try again');
+    expect(banner.querySelector('.detail')!.textContent).toMatch(/^Details: /);
+  });
 });
