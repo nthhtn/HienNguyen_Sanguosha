@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import type { RoomList } from 'protocol';
 import { ApiError } from '../auth/auth.service';
 import { RoomsService } from './rooms.service';
+import { english } from '../i18n/msg.testing';
 
 const LIST: RoomList = {
   rooms: [{ id: 'r1', visibility: 'open', hostName: 'Ann', memberCount: 2, capacity: 4, status: 'lobby', youAreMember: false }],
@@ -41,7 +42,7 @@ describe('RoomsService', () => {
     http.expectOne('/api/rooms').error(new ProgressEvent('error'), { status: 0 });
     await second;
     expect(rooms.list()).toEqual(LIST);
-    expect(rooms.error()).toBe("Can't reach the server. Check your connection and try again");
+    expect(english(rooms.error())).toBe("Can't reach the server. Check your connection and try again");
   });
 
   it('polls right away and then every pollMs until stopped', async () => {

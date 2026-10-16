@@ -6,9 +6,11 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
-import { DISPLAY_NAME_MAX, ERROR_MESSAGES } from 'protocol';
+import { DISPLAY_NAME_MAX } from 'protocol';
 import type { SeatLimits } from 'protocol';
-import { ApiError } from '../auth/auth.service';
+import { errorMsg } from '../auth/auth.service';
+import { TMsgPipe, type Msg } from '../i18n/msg';
+import { TPipe } from '../i18n/t.pipe';
 import { RoomsService } from './rooms.service';
 
 export interface CreateRoomDialogData {
@@ -20,17 +22,17 @@ export interface CreateRoomDialogData {
 // with the new room's id.
 @Component({
   selector: 'app-create-room-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatFormFieldModule, MatInputModule],
+  imports: [MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatFormFieldModule, MatInputModule, TPipe, TMsgPipe],
   template: `
-    <h2 mat-dialog-title>Create Room</h2>
+    <h2 mat-dialog-title>{{ 'rooms.create' | t }}</h2>
     <mat-dialog-content>
       <form id="create-room-form" (submit)="$event.preventDefault(); submit()">
         <mat-form-field appearance="outline" class="name-field">
-          <mat-label>Your Name</mat-label>
+          <mat-label>{{ 'auth.yourName' | t }}</mat-label>
           <input matInput class="name" autocomplete="nickname" [maxLength]="nameMax" [value]="displayName()" (input)="displayName.set($any($event.target).value)" />
         </mat-form-field>
         <div class="field">
-          <span class="label" id="create-room-seats">Seats</span>
+          <span class="label" id="create-room-seats">{{ 'setup.seats' | t }}</span>
           <mat-button-toggle-group
             class="seats"
             aria-labelledby="create-room-seats"
@@ -44,17 +46,17 @@ export interface CreateRoomDialogData {
           </mat-button-toggle-group>
         </div>
         @if (seatCount() >= firstRevealMinSeats) {
-          <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">First Reveal Bonus</mat-checkbox>
-          <p class="hint">The first seat to reveal a General draws 2 cards.</p>
+          <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
+          <p class="hint">{{ 'setup.firstReveal.hint' | t }}</p>
         }
         @if (error()) {
-          <p class="error" role="alert">{{ error() }}</p>
+          <p class="error" role="alert">{{ error() | tm }}</p>
         }
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button type="button" mat-dialog-close>Cancel</button>
-      <button mat-flat-button type="submit" class="submit" form="create-room-form" [disabled]="busy() || !canSubmit()">Create Room</button>
+      <button mat-button type="button" mat-dialog-close>{{ 'ui.cancel' | t }}</button>
+      <button mat-flat-button type="submit" class="submit" form="create-room-form" [disabled]="busy() || !canSubmit()">{{ 'rooms.create' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `
@@ -76,7 +78,7 @@ export class CreateRoomDialog {
   readonly displayName = signal(this.data.displayName);
   readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
   readonly firstRevealDraw = signal(true);
-  readonly error = signal<string | null>(null);
+  readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);
   protected readonly canSubmit = computed(() => this.displayName().trim() !== '');
 
@@ -93,7 +95,7 @@ export class CreateRoomDialog {
       });
       this.dialogRef.close(id);
     } catch (err) {
-      this.error.set(err instanceof ApiError ? err.message : ERROR_MESSAGES.internal);
+      this.error.set(errorMsg(err));
     } finally {
       this.busy.set(false);
     }

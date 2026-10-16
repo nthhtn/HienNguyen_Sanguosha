@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import type { MyGames } from 'protocol';
 import { MyGamesService } from './my-games.service';
+import { english } from '../i18n/msg.testing';
 
 const GAMES: MyGames = {
   games: [
@@ -45,7 +46,7 @@ describe('MyGamesService', () => {
     http.expectOne('/api/me/games').flush({ code: 'registered_only', message: 'Sign in with an account to see your games' }, { status: 403, statusText: 'Forbidden' });
     await done;
     expect(service.games()).toBeNull();
-    expect(service.error()).toBe('Sign in with an account to see your games');
+    expect(english(service.error())).toBe('Sign in with an account to see your games');
   });
 
   it('keeps the last list and shows an error when a reload fails', async () => {
@@ -56,6 +57,6 @@ describe('MyGamesService', () => {
     http.expectOne('/api/me/games').error(new ProgressEvent('error'), { status: 0 });
     await second;
     expect(service.games()).toEqual(GAMES.games);
-    expect(service.error()).toBe("Can't reach the server. Check your connection and try again");
+    expect(english(service.error())).toBe("Can't reach the server. Check your connection and try again");
   });
 });

@@ -5,6 +5,7 @@ import { LobbyService, NOTICE_MS } from './lobby.service';
 import { OnlineNotice } from './online-notice';
 import { SocketService, WEB_SOCKET_FACTORY } from './socket.service';
 import { FakeSocket, PLAYING, ROOM, welcome } from './testing';
+import { english } from '../i18n/msg.testing';
 
 describe('LobbyService', () => {
   let socket: FakeSocket;
@@ -46,7 +47,7 @@ describe('LobbyService', () => {
   it('announces a new host', () => {
     socket.serverSends(welcome(ROOM, 'p-bo'));
     socket.serverSends({ type: 'room.updated', room: withHost('p-bo') });
-    expect(lobby.notice()).toBe('Bo is now the host');
+    expect(english(lobby.notice())).toBe('Bo is now the host');
   });
 
   it('clears the host notice after a while', () => {
@@ -54,9 +55,9 @@ describe('LobbyService', () => {
     try {
       socket.serverSends(welcome(ROOM, 'p-bo'));
       socket.serverSends({ type: 'room.updated', room: withHost('p-bo') });
-      expect(lobby.notice()).toBe('Bo is now the host');
+      expect(english(lobby.notice())).toBe('Bo is now the host');
       jest.advanceTimersByTime(NOTICE_MS - 1);
-      expect(lobby.notice()).toBe('Bo is now the host');
+      expect(english(lobby.notice())).toBe('Bo is now the host');
       jest.advanceTimersByTime(1);
       expect(lobby.notice()).toBeNull();
     } finally {
@@ -68,7 +69,7 @@ describe('LobbyService', () => {
     socket.serverSends(welcome(ROOM, 'p-bo'));
     expect(lobby.waitingForHost()).toBeNull();
     socket.serverSends({ type: 'room.updated', room: { ...ROOM, members: ROOM.members.map((m) => (m.playerId === 'p-ann' ? { ...m, connected: false } : m)) } });
-    expect(lobby.waitingForHost()).toBe('Waiting for Ann to return…');
+    expect(english(lobby.waitingForHost())).toBe('Waiting for Ann to return…');
   });
 
   it("sends lobby commands, and shows the server's refusal", async () => {
@@ -82,7 +83,7 @@ describe('LobbyService', () => {
     expect(socket.lastSent).toEqual({ type: 'lobby.removePlayer', playerId: 'p-bo', reqId: 'r2' });
     socket.serverSends({ type: 'error', reqId: 'r2', code: 'not_host', message: 'Only the host can do that' });
     expect(await removed).toBe(false);
-    expect(lobby.error()).toBe('Only the host can do that');
+    expect(english(lobby.error())).toBe('Only the host can do that');
 
     void lobby.setRules(6, { firstRevealDraw: false });
     expect(socket.lastSent).toEqual({ type: 'lobby.setRules', seatCount: 6, rules: { firstRevealDraw: false }, reqId: 'r3' });
@@ -109,33 +110,33 @@ describe('LobbyService', () => {
     socket.serverSends(welcome());
     socket.serverSends({ type: 'room.left', reason });
     await flush();
-    expect(notices.take()).toBe(text);
+    expect(english(notices.take())).toBe(text);
     expect(navigate).toHaveBeenCalledWith('/rooms');
   });
 
   it('says so when another tab took over', () => {
     socket.serverSends(welcome());
     socket.serverSends({ type: 'replaced' });
-    expect(lobby.ended()).toBe('This room is open in another tab');
+    expect(english(lobby.ended())).toBe('This room is open in another tab');
     expect(lobby.canAct()).toBe(false);
   });
 
   it('asks for a reload after a version error', () => {
     socket.serverSends({ type: 'error', code: 'version', message: 'Please reload to get the latest version' });
-    expect(lobby.ended()).toBe('Please reload to get the latest version');
+    expect(english(lobby.ended())).toBe('Please reload to get the latest version');
   });
 
   it('goes back to Rooms, saying why, when you are not a member', async () => {
     socket.serverSends({ type: 'error', code: 'not_member', message: "You're not in this room" });
     await flush();
-    expect(notices.take()).toBe("You're not in this room");
+    expect(english(notices.take())).toBe("You're not in this room");
     expect(navigate).toHaveBeenCalledWith('/rooms');
   });
 
   it('goes back to Rooms, saying why, when the server refuses the hello as malformed', async () => {
     socket.serverSends({ type: 'error', code: 'invalid_message', message: 'That request was not understood' });
     await flush();
-    expect(notices.take()).toBe('That request was not understood');
+    expect(english(notices.take())).toBe('That request was not understood');
     expect(navigate).toHaveBeenCalledWith('/rooms');
   });
   it('lets the host start the game, and a solo room its player', async () => {
@@ -157,7 +158,7 @@ describe('LobbyService', () => {
     socket.serverSends(welcome(takenOver, 'p-ann'));
     expect(lobby.notice()).toBeNull();
     socket.serverSends({ type: 'room.updated', room: PLAYING });
-    expect(lobby.notice()).toBe('Bo is back');
+    expect(english(lobby.notice())).toBe('Bo is back');
   });
 
   it('does not announce a player who is still away when the game ends', () => {

@@ -14,6 +14,7 @@ import {
   resolve,
 } from 'engine';
 import { buildContentRegistry, kingdomWarMaxSeats, kingdomWarMode } from 'content';
+import type { Msg } from './i18n/msg';
 import { BotTurnMemory, ruleBasedPolicy } from 'bots';
 
 export type GameMode = 'vs-bots' | 'pass-and-play';
@@ -21,8 +22,11 @@ export type GameMode = 'vs-bots' | 'pass-and-play';
 // In vs-bots mode the one human always plays this seat.
 export const HUMAN_SEAT_ID = 'seat-0';
 
-function errorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
+// The engine's own error text is developer English and the engine never sees a
+// locale, so the banner says something went wrong in the player's language and
+// keeps the engine's text as the detail.
+function engineError(err: unknown): Msg {
+  return { key: 'error.internal', detail: err instanceof Error ? err.message : String(err) };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -37,7 +41,7 @@ export class GameService {
 
   private readonly _state: WritableSignal<GameState | null> = signal(null);
   private readonly _revealedSeatId: WritableSignal<string | null> = signal(null);
-  private readonly _lastError: WritableSignal<string | null> = signal(null);
+  private readonly _lastError: WritableSignal<Msg | null> = signal(null);
   private readonly _mode: WritableSignal<GameMode> = signal('pass-and-play');
   private readonly _botThinkingSeatId: WritableSignal<string | null> = signal(null);
   private readonly _gameNumber: WritableSignal<number> = signal(0);
@@ -47,7 +51,7 @@ export class GameService {
 
   readonly state: Signal<GameState | null> = this._state.asReadonly();
   readonly revealedSeatId: Signal<string | null> = this._revealedSeatId.asReadonly();
-  readonly lastError: Signal<string | null> = this._lastError.asReadonly();
+  readonly lastError: Signal<Msg | null> = this._lastError.asReadonly();
   readonly mode: Signal<GameMode> = this._mode.asReadonly();
   readonly botThinkingSeatId: Signal<string | null> = this._botThinkingSeatId.asReadonly();
   // Counts games started, so per-game bookkeeping (e.g. clocks) can't leak into the next.
@@ -106,7 +110,7 @@ export class GameService {
     } catch (err) {
       this._state.set(null);
       this._revealedSeatId.set(null);
-      this._lastError.set(errorMessage(err));
+      this._lastError.set(engineError(err));
     }
     this.scheduleBotIfDue();
   }
@@ -149,7 +153,7 @@ export class GameService {
       this._lastError.set(null);
       return true;
     } catch (err) {
-      this._lastError.set(errorMessage(err));
+      this._lastError.set(engineError(err));
       return false;
     }
   }
@@ -185,7 +189,7 @@ export class GameService {
       this.botMemories.set(seatId, decision.memory);
       action = decision.action;
     } catch (err) {
-      this._lastError.set(errorMessage(err));
+      this._lastError.set(engineError(err));
       this._botThinkingSeatId.set(null);
       return;
     }

@@ -1,9 +1,10 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { ERROR_MESSAGES, REPLACED_MESSAGE, ROOM_LEFT_MESSAGES } from 'protocol';
 import type { ErrorMessage, RoomRequest, RoomSnapshot, ServerMessage } from 'protocol';
-import { ApiError } from '../auth/auth.service';
+import { ApiError, errorMsg } from '../auth/auth.service';
+import { msg, type Msg } from '../i18n/msg';
+import type { MessageKey } from '../i18n/messages';
 import { OnlineNotice } from './online-notice';
 import { SocketService } from './socket.service';
 
@@ -21,9 +22,9 @@ export class LobbyService {
   private noticeTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly _room = signal<RoomSnapshot | null>(null);
   private readonly _you = signal<string | null>(null);
-  private readonly _notice = signal<string | null>(null);
-  private readonly _ended = signal<string | null>(null);
-  private readonly _error = signal<string | null>(null);
+  private readonly _notice = signal<Msg | null>(null);
+  private readonly _ended = signal<Msg | null>(null);
+  private readonly _error = signal<Msg | null>(null);
 
   readonly room = this._room.asReadonly();
   // Your player id in this room.
@@ -46,7 +47,7 @@ export class LobbyService {
   });
   readonly waitingForHost = computed(() => {
     const host = this.host();
-    return host && !host.connected ? `Waiting for ${host.name} to return…` : null;
+    return host && !host.connected ? msg('lobby.waitingForHost', { name: host.name }) : null;
   });
   readonly isSolo = computed(() => this._room()?.visibility === 'solo');
   // Who may press Start Game: the host, or a solo room's player, in the lobby.
@@ -93,7 +94,7 @@ export class LobbyService {
       await this.socket.request(command);
       return true;
     } catch (err) {
-      this._error.set(err instanceof ApiError ? err.message : ERROR_MESSAGES.internal);
+      this._error.set(errorMsg(err));
       return false;
     }
   }
@@ -110,11 +111,11 @@ export class LobbyService {
         this._room.set(message.room);
         return;
       case 'room.left':
-        if (message.reason !== 'left') this.notices.show(ROOM_LEFT_MESSAGES[message.reason]);
+        if (message.reason !== 'left') this.notices.show(msg(`roomLeft.${message.reason}` as MessageKey));
         void this.router.navigateByUrl('/rooms');
         return;
       case 'replaced':
-        this._ended.set(REPLACED_MESSAGE);
+        this._ended.set(msg('room.replaced'));
         return;
       case 'error':
         if (!message.reqId) this.refused(message);
@@ -124,10 +125,11 @@ export class LobbyService {
 
   // An error nobody asked for: the server refused this connection.
   private refused(message: ErrorMessage): void {
+    const reason = errorMsg(new ApiError(message.code, message.message, 0));
     if (message.code === 'version') {
-      this._ended.set(message.message);
+      this._ended.set(reason);
     } else if (message.code === 'not_member' || message.code === 'not_found' || message.code === 'invalid_message') {
-      this.notices.show(message.message);
+      this.notices.show(reason);
       void this.router.navigateByUrl('/rooms');
     }
   }
@@ -136,18 +138,18 @@ export class LobbyService {
   private noteChanges(before: RoomSnapshot | null, after: RoomSnapshot): void {
     if (!before) return;
     const host = after.hostPlayerId && before.hostPlayerId !== after.hostPlayerId ? after.members.find((m) => m.playerId === after.hostPlayerId) : undefined;
-    if (host) return this.announce(`${host.name} is now the host`);
+    if (host) return this.announce(msg('lobby.nowHost', { name: host.name }));
     // Only during a game, and only once they are here: when a game ends every
     // seat's bot lets go, even one whose player is still away.
     if (before.status !== 'playing' || after.status !== 'playing') return;
     const back = after.members.find(
       (m) => m.playerId !== this._you() && m.connected && !m.botControlled && before.members.some((b) => b.playerId === m.playerId && b.botControlled)
     );
-    if (back) this.announce(`${back.name} is back`);
+    if (back) this.announce(msg('lobby.isBack', { name: back.name }));
   }
 
-  private announce(text: string): void {
-    this._notice.set(text);
+  private announce(notice: Msg): void {
+    this._notice.set(notice);
     this.clearNoticeTimer();
     this.noticeTimer = setTimeout(() => {
       this.noticeTimer = null;

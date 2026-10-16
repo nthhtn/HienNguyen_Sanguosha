@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import type { CreateRoomBody, JoinRoomBody, RoomCreated, RoomList, SoloRoomBody } from 'protocol';
-import { toApiError } from '../auth/auth.service';
+import { errorMsg, toApiError } from '../auth/auth.service';
+import type { Msg } from '../i18n/msg';
 
 export const ROOM_LIST_POLL_MS = 5_000;
 
@@ -12,7 +13,7 @@ export const ROOM_LIST_POLL_MS = 5_000;
 export class RoomsService {
   private readonly http = inject(HttpClient);
   private readonly _list = signal<RoomList | null>(null);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Msg | null>(null);
   private timer: ReturnType<typeof setInterval> | null = null;
 
   pollMs = ROOM_LIST_POLL_MS;
@@ -24,7 +25,7 @@ export class RoomsService {
       this._list.set(await firstValueFrom(this.http.get<RoomList>('/api/rooms')));
       this._error.set(null);
     } catch (err) {
-      this._error.set(toApiError(err).message);
+      this._error.set(errorMsg(toApiError(err)));
     }
   }
 

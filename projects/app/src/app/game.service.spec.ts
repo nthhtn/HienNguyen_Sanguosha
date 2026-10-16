@@ -75,7 +75,7 @@ describe('GameService', () => {
     service.startGame(2, 1);
     const stateBefore = service.state();
     service.submit({ kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'does-not-exist' });
-    expect(service.lastError()).toContain('not legal during general selection');
+    expect(service.lastError()?.detail).toContain('not legal during general selection');
     expect(service.state()).toBe(stateBefore);
   });
 
@@ -96,7 +96,7 @@ describe('GameService', () => {
   it('startGame reports an over-cap table through lastError instead of throwing', () => {
     expect(() => service.startGame(service.maxSeats + 1, 1)).not.toThrow();
     expect(service.state()).toBeNull();
-    expect(service.lastError()).toContain(`between 2 and ${service.maxSeats} seats`);
+    expect(service.lastError()?.detail).toContain(`between 2 and ${service.maxSeats} seats`);
   });
 
   it('clearError resets lastError without touching state', () => {
@@ -223,7 +223,7 @@ describe('GameService in vs-bots mode', () => {
     });
     service.submit(service.legalActions()[0]);
     jest.runOnlyPendingTimers();
-    expect(service.lastError()).toContain('bot exploded');
+    expect(service.lastError()?.detail).toContain('bot exploded');
     expect(service.botThinkingSeatId()).toBeNull();
     expect(jest.getTimerCount()).toBe(0);
   });

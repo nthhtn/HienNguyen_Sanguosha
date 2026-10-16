@@ -1,8 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ERROR_MESSAGES } from 'protocol';
 import type { ChatMessage, ServerMessage } from 'protocol';
-import { ApiError } from '../auth/auth.service';
+import { errorMsg } from '../auth/auth.service';
+import type { Msg } from '../i18n/msg';
 import { SocketService } from './socket.service';
 
 // How many messages the screen keeps; older ones scroll away for good.
@@ -15,7 +15,7 @@ export const KEPT_MESSAGES = 300;
 export class ChatService {
   private readonly socket = inject(SocketService);
   private readonly _messages = signal<ChatMessage[]>([]);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Msg | null>(null);
 
   // Oldest first.
   readonly messages = this._messages.asReadonly();
@@ -33,7 +33,7 @@ export class ChatService {
       await this.socket.request({ type: 'chat.send', body });
       return true;
     } catch (err) {
-      this._error.set(err instanceof ApiError ? err.message : ERROR_MESSAGES.internal);
+      this._error.set(errorMsg(err));
       return false;
     }
   }

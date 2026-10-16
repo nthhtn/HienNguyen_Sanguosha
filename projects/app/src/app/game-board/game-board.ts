@@ -39,16 +39,17 @@ import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
 import { DecisionTimer } from '../decision-timer.service';
 import { I18n } from '../i18n/i18n.service';
+import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-game-board',
-  imports: [TPipe, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
         <mat-icon>error</mat-icon>
-        <span class="message">{{ error }}</span>
+        <span class="message">{{ error | tm }}@if (error.detail; as detail) {<small class="detail">{{ 'error.detail' | t: { text: detail } }}</small>}</span>
         @if (gameService.mode() === 'vs-bots' && gameService.state() && !gameService.state()!.result) {
           <!-- A failed bot move stops the bots, so give the player a way out. -->
           <button mat-button type="button" (click)="goToSetup()">{{ 'ui.newGame' | t }}</button>
@@ -143,6 +144,7 @@ import { TPipe } from '../i18n/t.pipe';
       background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container);
     }
     .error-banner .message { flex: 1; }
+    .error-banner .detail { display: block; opacity: 0.8; font: var(--mat-sys-body-small); overflow-wrap: anywhere; }
     .bots-choosing { display: flex; align-items: center; gap: 16px; padding: 24px; margin: 24px auto; max-width: 420px; }
     /* The game board fits the window below the app bar: no page scroll. The
        battlefield takes the room the hand row and the side column leave. */

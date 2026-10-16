@@ -6,6 +6,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { I18n } from '../i18n/i18n.service';
+import { TMsgPipe } from '../i18n/msg';
+import { TPipe } from '../i18n/t.pipe';
 import { BoardChat } from './board-chat';
 import { ChatPanel } from './chat-panel';
 import { ChatService } from './chat.service';
@@ -18,7 +21,7 @@ import { SocketService } from './socket.service';
 // A room over its socket: the lobby (members, host controls, Start Game, Leave Room), the board while a game runs, and how the last game ended.
 @Component({
   selector: 'app-lobby-page',
-  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat],
+  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat, TPipe, TMsgPipe],
   providers: [SocketService, LobbyService, ChatService, RemoteGameService, RemoteDecisionClock],
   styleUrl: './online-page.css',
   template: `
@@ -34,12 +37,12 @@ import { SocketService } from './socket.service';
     } @else if (game.playing()) {
       <div class="game-banners">
         @if (lobby.ended(); as text) {
-          <p class="banner ended" role="alert">{{ text }}</p>
+          <p class="banner ended" role="alert">{{ text | tm }}</p>
         } @else if (lobby.status() === 'reconnecting') {
-          <p class="banner reconnecting" role="status">Reconnecting…</p>
+          <p class="banner reconnecting" role="status">{{ 'lobby.reconnecting' | t }}</p>
         }
         @if (lobby.notice(); as text) {
-          <p class="notice" role="status">{{ text }}</p>
+          <p class="notice" role="status">{{ text | tm }}</p>
         }
       </div>
       <app-online-game />
@@ -50,35 +53,35 @@ import { SocketService } from './socket.service';
       <div class="online-page">
         <mat-card class="online-card" appearance="raised">
           <mat-card-header>
-            <mat-card-title>Lobby</mat-card-title>
+            <mat-card-title>{{ 'lobby.title' | t }}</mat-card-title>
             @if (lobby.room(); as room) {
-              <mat-card-subtitle class="player-count">{{ room.members.length }} / {{ room.seatCount }} Players</mat-card-subtitle>
+              <mat-card-subtitle class="player-count">{{ 'lobby.playerCount' | t: { count: room.members.length, max: room.seatCount } }}</mat-card-subtitle>
             }
           </mat-card-header>
           <mat-card-content>
             @if (lobby.ended(); as text) {
-              <p class="banner ended" role="alert">{{ text }}</p>
+              <p class="banner ended" role="alert">{{ text | tm }}</p>
             } @else if (lobby.status() === 'reconnecting') {
-              <p class="banner reconnecting" role="status">Reconnecting…</p>
+              <p class="banner reconnecting" role="status">{{ 'lobby.reconnecting' | t }}</p>
             }
             @if (lobby.waitingForHost(); as text) {
-              <p class="banner waiting" role="status">{{ text }}</p>
+              <p class="banner waiting" role="status">{{ text | tm }}</p>
             }
             @if (lobby.notice(); as text) {
-              <p class="notice" role="status">{{ text }}</p>
+              <p class="notice" role="status">{{ text | tm }}</p>
             }
             @if (lobby.error(); as text) {
-              <p class="error" role="alert">{{ text }}</p>
+              <p class="error" role="alert">{{ text | tm }}</p>
             }
             @if (lobby.room(); as room) {
               @if (waitingForGame()) {
-                <p class="banner waiting-for-game" role="status">Waiting for the game…</p>
+                <p class="banner waiting-for-game" role="status">{{ 'lobby.waitingForGame' | t }}</p>
               } @else {
                 <section class="rules">
-                  <h3>Rules</h3>
+                  <h3>{{ 'lobby.rules' | t }}</h3>
                   @if (lobby.isHost()) {
                     <div class="field">
-                      <span class="label" id="lobby-seats">Seats</span>
+                      <span class="label" id="lobby-seats">{{ 'setup.seats' | t }}</span>
                       <mat-button-toggle-group
                         class="seats"
                         aria-labelledby="lobby-seats"
@@ -94,7 +97,7 @@ import { SocketService } from './socket.service';
                     </div>
                     @if (room.seatCount >= firstRevealMinSeats) {
                       <mat-checkbox class="first-reveal" [disabled]="!lobby.canAct()" [checked]="!!room.rules.firstRevealDraw" (change)="setFirstReveal($event.checked)">
-                        First Reveal Bonus
+                        {{ 'setup.firstReveal' | t }}
                       </mat-checkbox>
                     }
                   } @else {
@@ -102,65 +105,65 @@ import { SocketService } from './socket.service';
                   }
                 </section>
                 <section class="players">
-                  <h3>Players</h3>
+                  <h3>{{ 'lobby.players' | t }}</h3>
                   <ul class="member-list">
                     @for (member of room.members; track member.playerId) {
                       <li class="member" [class.away]="member.kind === 'human' && !member.connected">
                         <mat-icon aria-hidden="true">{{ member.kind === 'bot' ? 'smart_toy' : 'person' }}</mat-icon>
                         <span class="name">{{ member.name }}</span>
                         @if (member.playerId === room.hostPlayerId) {
-                          <span class="badge host">Host</span>
+                          <span class="badge host">{{ 'lobby.host' | t }}</span>
                         }
                         @if (member.playerId === lobby.you()) {
-                          <span class="badge you">You</span>
+                          <span class="badge you">{{ 'lobby.you' | t }}</span>
                         }
                         @if (member.kind === 'bot') {
-                          <span class="badge bot">Bot</span>
+                          <span class="badge bot">{{ 'lobby.bot' | t }}</span>
                         } @else if (!member.isRegistered) {
-                          <span class="badge guest">Guest</span>
+                          <span class="badge guest">{{ 'lobby.guest' | t }}</span>
                         }
                         @if (member.kind === 'human' && !member.connected) {
-                          <span class="badge away">Away</span>
+                          <span class="badge away">{{ 'lobby.away' | t }}</span>
                         }
                         @if (lobby.isHost() && member.playerId !== lobby.you()) {
                           @if (member.kind === 'human' && member.isRegistered) {
-                            <button mat-button type="button" class="make-host" [disabled]="!lobby.canAct()" (click)="lobby.makeHost(member.playerId)">Make Host</button>
+                            <button mat-button type="button" class="make-host" [disabled]="!lobby.canAct()" (click)="lobby.makeHost(member.playerId)">{{ 'lobby.makeHost' | t }}</button>
                           }
-                          <button mat-button type="button" class="remove" [disabled]="!lobby.canAct()" (click)="lobby.removePlayer(member.playerId)">Remove</button>
+                          <button mat-button type="button" class="remove" [disabled]="!lobby.canAct()" (click)="lobby.removePlayer(member.playerId)">{{ 'lobby.remove' | t }}</button>
                         }
                       </li>
                     }
                   </ul>
                   @if (lobby.canStart() && isFull() === false) {
-                    <p class="hint start-hint">Fill every seat to start</p>
+                    <p class="hint start-hint">{{ 'lobby.fillSeats' | t }}</p>
                   }
                 </section>
               }
               @if (!lobby.isSolo()) {
                 <section class="chat">
-                  <h3>Chat</h3>
+                  <h3>{{ 'lobby.chat' | t }}</h3>
                   <app-chat-panel [you]="lobby.you()" [canSend]="lobby.canAct()" />
                 </section>
               }
             } @else if (!lobby.ended()) {
-              <p class="loading">Connecting…</p>
+              <p class="loading">{{ 'lobby.connecting' | t }}</p>
             }
           </mat-card-content>
           <mat-card-actions align="end">
             @if (lobby.ended()) {
-              <a mat-button class="back" routerLink="/rooms">Back to Rooms</a>
+              <a mat-button class="back" routerLink="/rooms">{{ 'rooms.back' | t }}</a>
             } @else {
               @if (lobby.canStart()) {
                 <button mat-flat-button type="button" class="start" [disabled]="!lobby.canAct() || !isFull()" (click)="lobby.start()">
-                  <mat-icon>play_arrow</mat-icon> Start Game
+                  <mat-icon>play_arrow</mat-icon> {{ 'setup.start' | t }}
                 </button>
               }
               @if (lobby.isHost() && !waitingForGame()) {
                 <button mat-stroked-button type="button" class="add-bot" [disabled]="!lobby.canAct() || isFull()" (click)="lobby.addBot()">
-                  <mat-icon>smart_toy</mat-icon> Add Bot
+                  <mat-icon>smart_toy</mat-icon> {{ 'lobby.addBot' | t }}
                 </button>
               }
-              <button mat-button type="button" class="leave" [disabled]="!lobby.canAct()" (click)="lobby.leave()">Leave Room</button>
+              <button mat-button type="button" class="leave" [disabled]="!lobby.canAct()" (click)="lobby.leave()">{{ 'lobby.leave' | t }}</button>
             }
           </mat-card-actions>
         </mat-card>
@@ -170,6 +173,7 @@ import { SocketService } from './socket.service';
 })
 export class LobbyPage {
   protected readonly lobby = inject(LobbyService);
+  private readonly i18n = inject(I18n);
   // Injected here so it exists before the first welcome: the socket does not
   // replay, and the panel only renders once the room is known.
   protected readonly chat = inject(ChatService);
@@ -198,9 +202,9 @@ export class LobbyPage {
   protected readonly rulesSummary = computed(() => {
     const room = this.lobby.room();
     if (!room) return '';
-    const seats = `${room.seatCount} Seats`;
+    const seats = this.i18n.t('lobby.seats', { n: room.seatCount });
     if (room.seatCount < FIRST_REVEAL_MIN_SEATS) return seats;
-    return `${seats} · First Reveal Bonus: ${room.rules.firstRevealDraw ? 'On' : 'Off'}`;
+    return this.i18n.t('lobby.rulesSummary', { seats, state: this.i18n.t(room.rules.firstRevealDraw ? 'lobby.on' : 'lobby.off') });
   });
 
   constructor() {

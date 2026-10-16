@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import type { GameSummary, MyGames } from 'protocol';
-import { toApiError } from '../auth/auth.service';
+import { errorMsg, toApiError } from '../auth/auth.service';
+import type { Msg } from '../i18n/msg';
 
 // The signed-in player's finished games, from GET /api/me/games. The server
 // decides who may ask (registered players only); this only shows its answer.
@@ -12,7 +13,7 @@ import { toApiError } from '../auth/auth.service';
 export class MyGamesService {
   private readonly http = inject(HttpClient);
   private readonly _games = signal<GameSummary[] | null>(null);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Msg | null>(null);
 
   // Newest first; null until the first load succeeds.
   readonly games = this._games.asReadonly();
@@ -23,7 +24,7 @@ export class MyGamesService {
       this._games.set((await firstValueFrom(this.http.get<MyGames>('/api/me/games'))).games);
       this._error.set(null);
     } catch (err) {
-      this._error.set(toApiError(err).message);
+      this._error.set(errorMsg(toApiError(err)));
     }
   }
 }

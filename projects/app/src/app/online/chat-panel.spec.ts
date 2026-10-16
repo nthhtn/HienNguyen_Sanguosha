@@ -4,9 +4,10 @@ import type { ChatMessage } from 'protocol';
 import { ChatPanel } from './chat-panel';
 import { ChatService } from './chat.service';
 import { chatMessage } from './testing';
+import { msg, type Msg } from '../i18n/msg';
 
 function fakeChat() {
-  return { messages: signal<ChatMessage[]>([]), error: signal<string | null>(null), send: jest.fn(async (_body: string) => true) };
+  return { messages: signal<ChatMessage[]>([]), error: signal<Msg | null>(null), send: jest.fn(async (_body: string) => true) };
 }
 
 describe('ChatPanel', () => {
@@ -71,7 +72,7 @@ describe('ChatPanel', () => {
 
   it('keeps the text when the server refuses it, and shows why', async () => {
     chat.send.mockResolvedValue(false);
-    chat.error.set('You are sending messages too fast. Wait a moment');
+    chat.error.set(msg('error.chat_rate_limited'));
     const { el, input, type, submit } = await render();
     type('hello');
     await submit();

@@ -1,7 +1,9 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { ERROR_MESSAGES } from 'protocol';
+import { CHAT_BODY_MAX, DISPLAY_NAME_MAX, ERROR_MESSAGES, PASSWORD_MIN } from 'protocol';
+import { msg, type Msg } from '../i18n/msg';
+import type { MessageKey, MessageParams } from '../i18n/messages';
 import type { ErrorBody, ForgotPasswordBody, GuestBody, Me, MessageBody, ResetPasswordBody, SignInBody, SignUpBody } from 'protocol';
 
 // A failed API call: the server's code and message, ready to show.
@@ -26,6 +28,24 @@ export function toApiError(err: unknown): ApiError {
     return new ApiError('internal', ERROR_MESSAGES.internal, err.status);
   }
   return new ApiError('internal', ERROR_MESSAGES.internal, 0);
+}
+
+const ERROR_PARAMS: Record<string, MessageParams> = {
+  invalid_name: { max: DISPLAY_NAME_MAX },
+  weak_password: { min: PASSWORD_MIN },
+  chat_too_long: { max: CHAT_BODY_MAX },
+};
+
+// What to show for a failed call, in the language the screen is in. The server
+// names its error by a stable code; a code this version has no text for shows
+// the server's own message.
+export function errorMsg(err: unknown): Msg {
+  if (err instanceof ApiError) {
+    if (err.code === 'network') return msg('error.network');
+    if (Object.prototype.hasOwnProperty.call(ERROR_MESSAGES, err.code)) return msg(`error.${err.code}` as MessageKey, ERROR_PARAMS[err.code]);
+    return { text: err.message };
+  }
+  return msg('error.internal');
 }
 
 // Who is signed in. The session lives in an HttpOnly cookie the app never

@@ -6,6 +6,7 @@ import { provideRouter } from '@angular/router';
 import type { GameSummary } from 'protocol';
 import { MyGamesPage } from './my-games-page';
 import { MyGamesService } from './my-games.service';
+import { msg, type Msg } from '../i18n/msg';
 
 const WON: GameSummary = {
   gameId: 'g-won',
@@ -21,7 +22,7 @@ const LOST: GameSummary = { ...WON, gameId: 'g-lost', yourSeat: 'seat-0' };
 
 describe('MyGamesPage', () => {
   const games = signal<GameSummary[] | null>(null);
-  const error = signal<string | null>(null);
+  const error = signal<Msg | null>(null);
   const service = { games, error, load: jest.fn(async () => undefined) };
 
   async function render() {
@@ -68,7 +69,7 @@ describe('MyGamesPage', () => {
   });
 
   it('shows why when it could not load', async () => {
-    error.set('Sign in with an account to see your games');
+    error.set(msg('error.registered_only'));
     const { el } = await render();
     expect(el.querySelector('.error')?.textContent?.trim()).toBe('Sign in with an account to see your games');
   });

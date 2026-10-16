@@ -3,6 +3,7 @@ import type { GameUpdate, RoomSnapshot } from 'protocol';
 import { RemoteDecisionClock, RemoteGameService } from './remote-game.service';
 import { SocketService, WEB_SOCKET_FACTORY } from './socket.service';
 import { FakeSocket, GAME_ID, gameUpdates, LAST_GAME, PLAYING, ROOM, welcome } from './testing';
+import { english } from '../i18n/msg.testing';
 
 describe('RemoteGameService', () => {
   let socket: FakeSocket;
@@ -74,7 +75,7 @@ describe('RemoteGameService', () => {
     game.submit(opening.legalActions[0]);
     socket.serverSends({ type: 'error', reqId: socket.lastSent!['reqId'] as string, code: 'stale', message: 'The game moved on. Try again' });
     await flush();
-    expect(game.lastError()).toBe('The game moved on. Try again');
+    expect(english(game.lastError())).toBe('The game moved on. Try again');
     expect(socket.lastSent).toMatchObject({ type: 'game.resync' });
     game.clearError();
     expect(game.lastError()).toBeNull();

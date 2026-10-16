@@ -4,33 +4,35 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { DISPLAY_NAME_MAX, ERROR_MESSAGES } from 'protocol';
-import { ApiError, AuthService } from './auth.service';
+import { DISPLAY_NAME_MAX } from 'protocol';
+import { errorMsg, AuthService } from './auth.service';
+import { TMsgPipe, type Msg } from '../i18n/msg';
+import { TPipe } from '../i18n/t.pipe';
 import { returnUrlParams, safeReturnUrl } from './return-url';
 
 @Component({
   selector: 'app-play-as-guest',
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, TPipe, TMsgPipe],
   styleUrl: './auth-card.css',
   template: `
     <div class="auth-page">
       <mat-card class="auth-card" appearance="raised">
-        <mat-card-header><mat-card-title>Play as Guest</mat-card-title></mat-card-header>
+        <mat-card-header><mat-card-title>{{ 'auth.playAsGuest' | t }}</mat-card-title></mat-card-header>
         <mat-card-content>
           <form (submit)="$event.preventDefault(); submit()">
             <mat-form-field appearance="outline">
-              <mat-label>Your Name</mat-label>
+              <mat-label>{{ 'auth.yourName' | t }}</mat-label>
               <input matInput class="name" autocomplete="nickname" [maxLength]="nameMax" [value]="displayName()" (input)="displayName.set($any($event.target).value)" />
             </mat-form-field>
-            <p class="hint">Playing as a guest: if you clear your browser data you can't return to this game</p>
+            <p class="hint">{{ 'auth.guestHint' | t }}</p>
             @if (error()) {
-              <p class="error" role="alert">{{ error() }}</p>
+              <p class="error" role="alert">{{ error() | tm }}</p>
             }
-            <button mat-flat-button class="submit" type="submit" [disabled]="busy() || !canSubmit()">Play as Guest</button>
+            <button mat-flat-button class="submit" type="submit" [disabled]="busy() || !canSubmit()">{{ 'auth.playAsGuest' | t }}</button>
           </form>
           <div class="links">
-            <a routerLink="/sign-in" [queryParams]="returnParams">Sign In</a>
-            <a routerLink="/sign-up" [queryParams]="returnParams">Create Account</a>
+            <a routerLink="/sign-in" [queryParams]="returnParams">{{ 'nav.signIn' | t }}</a>
+            <a routerLink="/sign-up" [queryParams]="returnParams">{{ 'nav.createAccount' | t }}</a>
           </div>
         </mat-card-content>
       </mat-card>
@@ -45,7 +47,7 @@ export class PlayAsGuest {
   protected readonly nameMax = DISPLAY_NAME_MAX;
 
   readonly displayName = signal('');
-  readonly error = signal<string | null>(null);
+  readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);
   protected readonly canSubmit = computed(() => this.displayName().trim() !== '');
 
@@ -57,7 +59,7 @@ export class PlayAsGuest {
       await this.auth.playAsGuest({ displayName: this.displayName() });
       await this.router.navigateByUrl(safeReturnUrl(this.returnUrl));
     } catch (err) {
-      this.error.set(err instanceof ApiError ? err.message : ERROR_MESSAGES.internal);
+      this.error.set(errorMsg(err));
     } finally {
       this.busy.set(false);
     }

@@ -11,6 +11,7 @@ import { PlayVsBotsDialog } from './play-vs-bots-dialog';
 import { OnlineNotice } from './online-notice';
 import { RoomsPage } from './rooms-page';
 import { RoomsService } from './rooms.service';
+import { msg, type Msg } from '../i18n/msg';
 
 const ANN: Me = { id: 'u1', kind: 'registered', displayName: 'Ann', email: 'ann@example.com' };
 const GUS: Me = { id: 'u2', kind: 'guest', displayName: 'Gus' };
@@ -26,7 +27,7 @@ const LIST: RoomList = {
 
 describe('RoomsPage', () => {
   const list = signal<RoomList | null>(null);
-  const error = signal<string | null>(null);
+  const error = signal<Msg | null>(null);
   const rooms = { list, error, startPolling: jest.fn(), stopPolling: jest.fn() };
   const me = signal<Me | null>(ANN);
   const auth = { me, isRegistered: computed(() => me()?.kind === 'registered') };
@@ -171,7 +172,7 @@ describe('RoomsPage', () => {
   });
 
   it('shows the notice the Lobby left, once', async () => {
-    notice.show('The host closed the room');
+    notice.show(msg('roomLeft.host_left'));
     const { el } = await create();
     expect(el.querySelector('.notice')?.textContent?.trim()).toBe('The host closed the room');
     expect(notice.take()).toBeNull();
@@ -179,7 +180,7 @@ describe('RoomsPage', () => {
 
   it('shows a load error', async () => {
     list.set(null);
-    error.set("Can't reach the server. Check your connection and try again");
+    error.set(msg('error.network'));
     const { el } = await create();
     expect(el.querySelector('.error')?.textContent).toContain("Can't reach the server");
   });

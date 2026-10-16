@@ -4,9 +4,10 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
-import { ERROR_MESSAGES } from 'protocol';
 import type { SeatLimits } from 'protocol';
-import { ApiError } from '../auth/auth.service';
+import { ApiError, errorMsg } from '../auth/auth.service';
+import { TMsgPipe, type Msg } from '../i18n/msg';
+import { TPipe } from '../i18n/t.pipe';
 import { RoomsService } from './rooms.service';
 
 export interface PlayVsBotsDialogData {
@@ -20,16 +21,16 @@ export interface PlayVsBotsDialogData {
 // the room to open.
 @Component({
   selector: 'app-play-vs-bots-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule],
+  imports: [MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, TPipe, TMsgPipe],
   template: `
-    <h2 mat-dialog-title>Play vs Bots</h2>
+    <h2 mat-dialog-title>{{ 'setup.mode.bots' | t }}</h2>
     <mat-dialog-content>
       @if (offerResume()) {
-        <p class="in-progress">You have a game against bots in progress</p>
+        <p class="in-progress">{{ 'rooms.inProgress' | t }}</p>
       } @else {
         <form id="play-vs-bots-form" (submit)="$event.preventDefault(); submit()">
           <div class="field">
-            <span class="label" id="play-vs-bots-seats">Seats</span>
+            <span class="label" id="play-vs-bots-seats">{{ 'setup.seats' | t }}</span>
             <mat-button-toggle-group
               class="seats"
               aria-labelledby="play-vs-bots-seats"
@@ -43,22 +44,22 @@ export interface PlayVsBotsDialogData {
             </mat-button-toggle-group>
           </div>
           @if (seatCount() >= firstRevealMinSeats) {
-            <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">First Reveal Bonus</mat-checkbox>
-            <p class="hint">The first seat to reveal a General draws 2 cards.</p>
+            <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
+            <p class="hint">{{ 'setup.firstReveal.hint' | t }}</p>
           }
           @if (error()) {
-            <p class="error" role="alert">{{ error() }}</p>
+            <p class="error" role="alert">{{ error() | tm }}</p>
           }
         </form>
       }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button type="button" mat-dialog-close>Cancel</button>
+      <button mat-button type="button" mat-dialog-close>{{ 'ui.cancel' | t }}</button>
       @if (offerResume()) {
-        <button mat-stroked-button type="button" class="abandon" (click)="startingNew.set(true)">Abandon and Start New</button>
-        <button mat-flat-button type="button" class="resume" (click)="resume()">Resume Game</button>
+        <button mat-stroked-button type="button" class="abandon" (click)="startingNew.set(true)">{{ 'rooms.abandon' | t }}</button>
+        <button mat-flat-button type="button" class="resume" (click)="resume()">{{ 'rooms.resume' | t }}</button>
       } @else {
-        <button mat-flat-button type="submit" class="submit" form="play-vs-bots-form" [disabled]="busy()">Start Game</button>
+        <button mat-flat-button type="submit" class="submit" form="play-vs-bots-form" [disabled]="busy()">{{ 'setup.start' | t }}</button>
       }
     </mat-dialog-actions>
   `,
@@ -79,7 +80,7 @@ export class PlayVsBotsDialog {
   readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
   readonly firstRevealDraw = signal(true);
   readonly startingNew = signal(false);
-  readonly error = signal<string | null>(null);
+  readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);
   // Your running game against bots: from the data, or found after Start Game
   // learns of one the room list didn't show yet.
@@ -105,7 +106,7 @@ export class PlayVsBotsDialog {
       this.dialogRef.close(id);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'solo_exists' && (await this.findRunning())) return;
-      this.error.set(err instanceof ApiError ? err.message : ERROR_MESSAGES.internal);
+      this.error.set(errorMsg(err));
     } finally {
       this.busy.set(false);
     }

@@ -3,9 +3,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { buildContentRegistry, kingdomWarMode } from 'content';
 import { getActiveSeatId, previewEffect } from 'engine';
 import type { Action, ContentRegistry, Effect, EngineContext, EngineEvent, GameState } from 'engine';
-import { ERROR_MESSAGES } from 'protocol';
 import type { GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
-import { ApiError } from '../auth/auth.service';
+import { ApiError, errorMsg } from '../auth/auth.service';
+import type { Msg } from '../i18n/msg';
 import type { DecisionTimer } from '../decision-timer.service';
 import type { GameMode, GameService } from '../game.service';
 import { SocketService } from './socket.service';
@@ -55,7 +55,7 @@ export class RemoteGameService implements BoardGame {
   private readonly _state = signal<GameState | null>(null);
   private readonly _room = signal<RoomSnapshot | null>(null);
   private readonly _you = signal<string | null>(null);
-  private readonly _lastError = signal<string | null>(null);
+  private readonly _lastError = signal<Msg | null>(null);
   private readonly _waiting = signal(false);
   private readonly _clock = signal<LocalClock | null>(null);
   private readonly _dismissed = signal<string | null>(null);
@@ -64,7 +64,7 @@ export class RemoteGameService implements BoardGame {
   readonly mode: Signal<GameMode> = signal<GameMode>('pass-and-play').asReadonly();
   readonly state: Signal<GameState | null> = this._state.asReadonly();
   readonly visibleState: Signal<GameState | null> = this._state.asReadonly();
-  readonly lastError: Signal<string | null> = this._lastError.asReadonly();
+  readonly lastError: Signal<Msg | null> = this._lastError.asReadonly();
   readonly clock: Signal<LocalClock | null> = this._clock.asReadonly();
   readonly paused = computed(() => this._update()?.paused ?? false);
 
@@ -142,7 +142,7 @@ export class RemoteGameService implements BoardGame {
     this.socket
       .request({ type: 'game.submit', gameId: update.gameId, baseSeq: update.seq, actions })
       .catch((err: unknown) => {
-        this._lastError.set(err instanceof ApiError ? err.message : ERROR_MESSAGES.internal);
+        this._lastError.set(errorMsg(err));
         if (err instanceof ApiError && err.code === 'stale') this.resync();
       })
       .finally(() => this._waiting.set(false));

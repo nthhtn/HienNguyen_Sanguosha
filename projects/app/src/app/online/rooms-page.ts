@@ -10,6 +10,9 @@ import { CreateRoomDialog, CreateRoomDialogData } from './create-room-dialog';
 import { JoinRoomDialog, JoinRoomDialogData } from './join-room-dialog';
 import { OnlineNotice } from './online-notice';
 import { PlayVsBotsDialog, PlayVsBotsDialogData } from './play-vs-bots-dialog';
+import { I18n } from '../i18n/i18n.service';
+import { TMsgPipe } from '../i18n/msg';
+import { TPipe } from '../i18n/t.pipe';
 import { canJoin, roomStatusLabel, roomTitle } from './room-labels';
 import { RoomsService } from './rooms.service';
 
@@ -17,36 +20,36 @@ import { RoomsService } from './rooms.service';
 // registered players, and Play vs Bots, which any signed-in player can start. The list refreshes every 5 s while this screen is open.
 @Component({
   selector: 'app-rooms-page',
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, TPipe, TMsgPipe],
   styleUrl: './online-page.css',
   template: `
     <div class="online-page">
       <mat-card class="online-card" appearance="raised">
-        <mat-card-header><mat-card-title>Rooms</mat-card-title></mat-card-header>
+        <mat-card-header><mat-card-title>{{ 'rooms.title' | t }}</mat-card-title></mat-card-header>
         <mat-card-content>
           <div class="toolbar">
             <button mat-flat-button type="button" class="create" [disabled]="!auth.isRegistered() || !rooms.list()" (click)="create()">
-              <mat-icon>add</mat-icon> Create Room
+              <mat-icon>add</mat-icon> {{ 'rooms.create' | t }}
             </button>
             @if (!auth.isRegistered()) {
-              <span class="hint host-hint">Sign in to host a room</span>
+              <span class="hint host-hint">{{ 'rooms.hostHint' | t }}</span>
             }
             <button mat-stroked-button type="button" class="play-vs-bots" [disabled]="!rooms.list()" (click)="playVsBots()">
-              <mat-icon>smart_toy</mat-icon> Play vs Bots
+              <mat-icon>smart_toy</mat-icon> {{ 'setup.mode.bots' | t }}
             </button>
             @if (auth.isRegistered()) {
-              <a mat-button class="my-games" routerLink="/my-games"><mat-icon>history</mat-icon> My Games</a>
+              <a mat-button class="my-games" routerLink="/my-games"><mat-icon>history</mat-icon> {{ 'rooms.myGames' | t }}</a>
             }
           </div>
           @if (notice(); as text) {
-            <p class="notice" role="status">{{ text }}</p>
+            <p class="notice" role="status">{{ text | tm }}</p>
           }
           @if (rooms.error(); as text) {
-            <p class="error" role="alert">{{ text }}</p>
+            <p class="error" role="alert">{{ text | tm }}</p>
           }
           @if (rooms.list(); as list) {
             @if (list.rooms.length === 0) {
-              <p class="empty">No rooms yet</p>
+              <p class="empty">{{ 'rooms.empty' | t }}</p>
             } @else {
               <ul class="room-list">
                 @for (room of list.rooms; track room.id) {
@@ -56,16 +59,16 @@ import { RoomsService } from './rooms.service';
                     <span class="count">{{ room.memberCount }} / {{ room.capacity }}</span>
                     <span class="status">{{ statusLabel(room) }}</span>
                     @if (room.youAreMember) {
-                      <button mat-stroked-button type="button" class="rejoin" (click)="rejoin(room)">Rejoin</button>
+                      <button mat-stroked-button type="button" class="rejoin" (click)="rejoin(room)">{{ 'rooms.rejoin' | t }}</button>
                     } @else {
-                      <button mat-stroked-button type="button" class="join" [disabled]="!canJoin(room)" (click)="join(room)">Join</button>
+                      <button mat-stroked-button type="button" class="join" [disabled]="!canJoin(room)" (click)="join(room)">{{ 'rooms.join' | t }}</button>
                     }
                   </li>
                 }
               </ul>
             }
           } @else if (!rooms.error()) {
-            <p class="loading">Loading rooms…</p>
+            <p class="loading">{{ 'rooms.loading' | t }}</p>
           }
         </mat-card-content>
       </mat-card>
@@ -79,9 +82,10 @@ export class RoomsPage {
   private readonly router = inject(Router);
   // Why the last Lobby closed under you, if it did.
   protected readonly notice = signal(inject(OnlineNotice).take());
-  protected readonly statusLabel = roomStatusLabel;
+  private readonly i18n = inject(I18n);
+  protected readonly statusLabel = (room: RoomListItem) => roomStatusLabel(room, this.i18n.translator);
   protected readonly canJoin = canJoin;
-  protected readonly roomTitle = roomTitle;
+  protected readonly roomTitle = (room: RoomListItem) => roomTitle(room, this.i18n.translator);
 
   constructor() {
     this.rooms.startPolling();

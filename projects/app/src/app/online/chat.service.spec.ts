@@ -3,6 +3,7 @@ import { ERROR_MESSAGES } from 'protocol';
 import { ChatService } from './chat.service';
 import { SocketService, WEB_SOCKET_FACTORY } from './socket.service';
 import { chatMessage, FakeSocket, ROOM, welcome } from './testing';
+import { english } from '../i18n/msg.testing';
 
 describe('ChatService', () => {
   let socket: FakeSocket;
@@ -65,7 +66,7 @@ describe('ChatService', () => {
     const refused = chat.send('too fast');
     socket.serverSends({ type: 'error', reqId: socket.lastSent!['reqId'] as string, code: 'chat_rate_limited', message: ERROR_MESSAGES.chat_rate_limited });
     await expect(refused).resolves.toBe(false);
-    expect(chat.error()).toBe('You are sending messages too fast. Wait a moment');
+    expect(english(chat.error())).toBe('You are sending messages too fast. Wait a moment');
     const next = chat.send('later');
     expect(chat.error()).toBeNull();
     socket.serverSends({ type: 'ack', reqId: socket.lastSent!['reqId'] as string });
@@ -74,6 +75,6 @@ describe('ChatService', () => {
 
   it("resolves false when the socket isn't open", async () => {
     await expect(chat.send('hello')).resolves.toBe(false);
-    expect(chat.error()).toBe("Can't reach the server. Check your connection and try again");
+    expect(english(chat.error())).toBe("Can't reach the server. Check your connection and try again");
   });
 });

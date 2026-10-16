@@ -13,6 +13,7 @@ import { OnlineGame } from './online-game';
 import { RemoteGameService } from './remote-game.service';
 import { SocketStatus } from './socket.service';
 import { LAST_GAME, ROOM } from './testing';
+import { msg, type Msg } from '../i18n/msg';
 
 const MIXED: RoomSnapshot = {
   ...ROOM,
@@ -29,7 +30,7 @@ function fakeLobby() {
   const room = signal<RoomSnapshot | null>(MIXED);
   const you = signal<string | null>('p-ann');
   const status = signal<SocketStatus>('open');
-  const ended = signal<string | null>(null);
+  const ended = signal<Msg | null>(null);
   const isSolo = signal(false);
   return {
     room,
@@ -37,9 +38,9 @@ function fakeLobby() {
     status,
     ended,
     isSolo,
-    notice: signal<string | null>(null),
-    error: signal<string | null>(null),
-    waitingForHost: signal<string | null>(null),
+    notice: signal<Msg | null>(null),
+    error: signal<Msg | null>(null),
+    waitingForHost: signal<Msg | null>(null),
     isHost: computed(() => room()?.hostPlayerId === you()),
     canAct: computed(() => status() === 'open' && ended() === null),
     canStart: computed(() => room()?.status === 'lobby' && (room()?.hostPlayerId === you() || isSolo())),
@@ -177,13 +178,13 @@ describe('LobbyPage', () => {
   });
 
   it('shows that the room is waiting for its host', async () => {
-    lobby.waitingForHost.set('Waiting for Ann to return…');
+    lobby.waitingForHost.set(msg('lobby.waitingForHost', { name: 'Ann' }));
     const { el } = await render();
     expect(el.querySelector('.banner.waiting')?.textContent?.trim()).toBe('Waiting for Ann to return…');
   });
 
   it('shows why the connection ended, and offers Back to Rooms', async () => {
-    lobby.ended.set('This room is open in another tab');
+    lobby.ended.set(msg('room.replaced'));
     const { el } = await render();
     expect(el.querySelector('.banner.ended')?.textContent?.trim()).toBe('This room is open in another tab');
     expect(el.querySelector('a.back')?.getAttribute('href')).toBe('/rooms');
@@ -191,8 +192,8 @@ describe('LobbyPage', () => {
   });
 
   it('shows the host-change notice and request errors', async () => {
-    lobby.notice.set('Bo is now the host');
-    lobby.error.set('Only the host can do that');
+    lobby.notice.set(msg('lobby.nowHost', { name: 'Bo' }));
+    lobby.error.set(msg('error.not_host'));
     const { el } = await render();
     expect(el.querySelector('.notice')?.textContent?.trim()).toBe('Bo is now the host');
     expect(el.querySelector('.error')?.textContent?.trim()).toBe('Only the host can do that');

@@ -2,6 +2,8 @@ import { Component, effect, ElementRef, inject, input, signal, viewChild } from 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CHAT_BODY_MAX } from 'protocol';
+import { TMsgPipe } from '../i18n/msg';
+import { TPipe } from '../i18n/t.pipe';
 import { ChatService } from './chat.service';
 
 // The room's messages and the box to write one. It reads and sends through
@@ -9,34 +11,34 @@ import { ChatService } from './chat.service';
 // the server's reason is shown when it refuses.
 @Component({
   selector: 'app-chat-panel',
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, TPipe, TMsgPipe],
   template: `
-    <ol class="messages" #list aria-live="polite" aria-label="Chat Messages">
+    <ol class="messages" #list aria-live="polite" [attr.aria-label]="'chat.messages' | t">
       @for (message of chat.messages(); track message.id) {
         <li class="message" [class.mine]="message.from.playerId === you()">
           <span class="author">{{ message.from.name }}</span>
           <span class="body">{{ message.body }}</span>
         </li>
       } @empty {
-        <li class="empty">No messages yet</li>
+        <li class="empty">{{ 'chat.empty' | t }}</li>
       }
     </ol>
     @if (chat.error(); as text) {
-      <p class="error" role="alert">{{ text }}</p>
+      <p class="error" role="alert">{{ text | tm }}</p>
     }
     <form class="composer" (submit)="submit($event)">
       <input
         class="draft"
         type="text"
         autocomplete="off"
-        aria-label="Message"
-        placeholder="Say something…"
+        [attr.aria-label]="'chat.message' | t"
+        [placeholder]="'chat.placeholder' | t"
         [attr.maxlength]="maxLength"
         [value]="draft()"
         [disabled]="!canSend()"
         (input)="onInput($event)"
       />
-      <button mat-icon-button type="submit" class="send" aria-label="Send" [disabled]="!canSend() || draft().trim() === ''">
+      <button mat-icon-button type="submit" class="send" [attr.aria-label]="'chat.send' | t" [disabled]="!canSend() || draft().trim() === ''">
         <mat-icon>send</mat-icon>
       </button>
     </form>

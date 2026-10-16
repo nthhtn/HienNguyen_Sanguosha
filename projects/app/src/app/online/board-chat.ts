@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { TPipe } from '../i18n/t.pipe';
 import { ChatPanel } from './chat-panel';
 import { ChatService } from './chat.service';
 
@@ -9,13 +10,13 @@ import { ChatService } from './chat.service';
 // covers the table. The count is presentation state, kept here.
 @Component({
   selector: 'app-board-chat',
-  imports: [MatButtonModule, MatIconModule, ChatPanel],
+  imports: [MatButtonModule, MatIconModule, ChatPanel, TPipe],
   template: `
     @if (open()) {
-      <aside class="drawer" aria-label="Chat">
+      <aside class="drawer" [attr.aria-label]="'lobby.chat' | t">
         <header>
-          <h2>Chat</h2>
-          <button mat-icon-button type="button" class="close-chat" aria-label="Close Chat" (click)="toggle()"><mat-icon>close</mat-icon></button>
+          <h2>{{ 'lobby.chat' | t }}</h2>
+          <button mat-icon-button type="button" class="close-chat" [attr.aria-label]="'chat.close' | t" (click)="toggle()"><mat-icon>close</mat-icon></button>
         </header>
         <app-chat-panel [you]="you()" [canSend]="canSend()" />
       </aside>
@@ -25,10 +26,10 @@ import { ChatService } from './chat.service';
         type="button"
         class="chat-toggle"
         aria-expanded="false"
-        [attr.aria-label]="unread() > 0 ? 'Chat, ' + unread() + ' unread' : 'Chat'"
+        [attr.aria-label]="unread() > 0 ? ('chat.unread' | t: { n: unread() }) : ('lobby.chat' | t)"
         (click)="toggle()"
       >
-        <mat-icon>chat</mat-icon> Chat
+        <mat-icon>chat</mat-icon> {{ 'lobby.chat' | t }}
         @if (unread() > 0) {
           <span class="unread">{{ unread() }}</span>
         }
