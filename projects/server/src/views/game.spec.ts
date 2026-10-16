@@ -9,7 +9,7 @@ function stateWithHiddenSkillEvent(): GameState {
   const event = { kind: 'ChoiceMadeEvent', seatId: 'seat-b', reason: { kind: 'ability', owner, abilityId: 'refusing-death' }, verb: 'use', shows: 'none' } as unknown as EngineEvent;
   return {
     seats,
-    players: [createPlayer('p1', 'seat-a', 'human'), createPlayer('p2', 'seat-b', 'bot')],
+    players: [createPlayer('p1', 'seat-a', 'human', 'P1'), createPlayer('p2', 'seat-b', 'bot', 'P2')],
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
     phase: 'Play',
     zones: [],
