@@ -1,6 +1,6 @@
-import { createRng, redactStateForSeat } from 'engine';
-import type { CardInstance, EngineEvent, GameState } from 'engine';
-import { findEventLeaks, findReshuffleLeaks, findViewLeaks } from './leaks';
+import { createRng, redactEventsForSeat, redactStateForSeat } from 'engine';
+import type { CardInstance, ContentRegistry, EngineEvent, GameState } from 'engine';
+import { findEventLeaks, findReshuffleLeaks, findSkillLeaks, findViewLeaks } from './leaks';
 
 const card = (instanceId: string, definitionId: string): CardInstance => ({ instanceId, definitionId, suit: 'spade', rank: 1 });
 
@@ -132,5 +132,38 @@ describe('findReshuffleLeaks', () => {
       log: reshuffledLog,
     } as Partial<GameState>);
     expect(findReshuffleLeaks(prev, next)).toEqual([]);
+  });
+});
+
+describe('findSkillLeaks', () => {
+  // g-c (seat-1's hidden main) has the skill 'wine', which is also a card id; g-a (seat-0's shown main) has 'shown-skill'.
+  const registry = {
+    cards: new Map([['wine', { id: 'wine' }]]),
+    generals: new Map([
+      ['g-a', { id: 'g-a', skills: [{ id: 'shown-skill' }] }],
+      ['g-b', { id: 'g-b', skills: [] }],
+      ['g-c', { id: 'g-c', skills: [{ id: 'wine' }] }],
+      ['g-d', { id: 'g-d', skills: [] }],
+    ]),
+  } as unknown as ContentRegistry;
+  const owner = { kind: 'general', seatId: 'seat-1', slot: 'main', skillId: 'wine' };
+
+  it('flags a hidden General’s skill id as a whole token anywhere in the view or the events', () => {
+    const state = table({ resolutionQueue: [{ kind: 'DyingEffect', seatId: 'seat-1', acted: ['seat-1:main:wine'] }] } as unknown as Partial<GameState>);
+    const events = [{ kind: 'ChoiceMadeEvent', seatId: 'seat-1', reason: { kind: 'ability', owner, abilityId: 'wine' } }] as unknown as EngineEvent[];
+    const leaks = findSkillLeaks(state, state, events, 'seat-0', registry);
+    expect(leaks).toEqual(expect.arrayContaining([expect.stringContaining('acted[0]'), expect.stringContaining('reason.abilityId')]));
+  });
+
+  it('passes the redacted view and events, a card named like the skill, and seats’ own or shown skills', () => {
+    const state = table({
+      resolutionQueue: [{ kind: 'DyingEffect', seatId: 'seat-1', acted: ['seat-1:main:wine', 'seat-0:main:shown-skill'], rescueCardIds: { any: ['peach'], self: ['wine'] } }],
+    } as unknown as Partial<GameState>);
+    const events = [
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-1', reason: { kind: 'ability', owner, abilityId: 'wine' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', cardInstanceId: 'card-2', definitionId: 'wine', targets: [] },
+    ] as unknown as EngineEvent[];
+    expect(findSkillLeaks(state, sentView(state, 'seat-0'), redactEventsForSeat(state, events, 'seat-0'), 'seat-0', registry)).toEqual([]);
+    expect(findSkillLeaks(state, state, events, 'seat-1', registry)).toEqual([]);
   });
 });

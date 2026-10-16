@@ -5,7 +5,7 @@ import { runGame } from './runGame';
 import { findStepLeaks } from './leaks';
 
 describe('property: no seat learns hidden information over simulated Kingdom War games', () => {
-  it('no view, log event or reshuffle leaks, at any step, for any seat', () => {
+  it('no view, log event, reshuffle or hidden skill leaks, at any step, for any seat', () => {
     const registry = buildContentRegistry();
     const maxSeats = kingdomWarMaxSeats(registry);
     const seatCounts = [...new Set([2, 4, 7, maxSeats])].filter((n) => n <= maxSeats);
@@ -19,7 +19,7 @@ describe('property: no seat learns hidden information over simulated Kingdom War
         let prev: GameState = initial;
         const record = (next: GameState) => {
           reshuffles += next.log.slice(prev.log.length).filter((e) => e.kind === 'DiscardPileReshuffledEvent').length;
-          if (failures.length < 50) for (const leak of findStepLeaks(prev, next)) failures.push(`${label} turn ${next.turn.turnNumber}: ${leak}`);
+          if (failures.length < 50) for (const leak of findStepLeaks(prev, next, registry)) failures.push(`${label} turn ${next.turn.turnNumber}: ${leak}`);
           prev = next;
         };
         record(initial);
