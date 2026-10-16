@@ -1,5 +1,5 @@
 import type { CardInstance, CardsTurnedUpEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
-import { requireZoneOfKind } from 'engine';
+import { abilityUseKey, requireZoneOfKind } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
@@ -303,6 +303,9 @@ const alliancePartners = (state: GameState, luSu: string, first: string) =>
     return id !== first && cost > 0 && cost <= cardCount(state, luSu);
   });
 
+// Undoes the use that starting Alliance counted; the reveal and the log stay.
+const refundUse = (owner: GeneralOwner): Effect => ({ kind: 'IncrementEffect', scope: 'turn', key: abilityUseKey(owner), by: -1 });
+
 // Alliance (active, once per turn): choose two other seats with different hand
 // sizes; discard as many cards as the difference; they swap hands.
 export const alliance: SkillDefinition = {
@@ -324,7 +327,11 @@ export const alliance: SkillDefinition = {
     const { owner } = step;
     if (step.step === 'second') {
       const first = picked(step)[0];
-      return [choiceOf(state, owner, { verb: 'pick', targetSeatId: first, options: seatOptions(alliancePartners(state, owner.seatId, first), (second) => [skillStep(owner, 'pay', { first, second })]) })];
+      const options = [
+        ...seatOptions(alliancePartners(state, owner.seatId, first), (second) => [skillStep(owner, 'pay', { first, second })]),
+        { id: 'cancel', shows: { kind: 'label' as const, text: 'Cancel' }, effects: [refundUse(owner)] },
+      ];
+      return [choiceOf(state, owner, { verb: 'pick', targetSeatId: first, options })];
     }
     const first = step.data?.['first'] as string;
     const second = step.data?.['second'] as string;
@@ -336,6 +343,7 @@ export const alliance: SkillDefinition = {
         selectionOf(state, owner, {
           of: 'cards', eligibleIds: ownCards(state, owner.seatId, true).map((c) => c.instanceId), min: cost, max: cost,
           then: { kind: 'skill-step', step: skillStep(owner, 'swap', { first, second }) },
+          onCancel: [refundUse(owner)],
         }),
       ];
     }
