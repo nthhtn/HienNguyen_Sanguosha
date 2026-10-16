@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { buildContentRegistry } from 'content';
 import { engineContext, openingState, replay, stateHash } from '../../game/engineGame';
-import { playBots } from '../../game/testing';
-import { GameSeat } from '../records';
+import { playBots, reorderKeys } from '../../game/testing';
+import { GameActionRecord, GameRecord, GameSeat } from '../records';
 import { Repositories } from '../repositories';
 import { createPostgresRepositories } from './postgresRepositories';
 import { createTestDatabase } from './testDatabase';
@@ -39,5 +39,20 @@ describeWithDb('Replaying a game stored in Postgres', () => {
     expect(stored).toHaveLength(moves.length);
     const replayed = replay(ctx, (await repos.games.findById(game.id))!, stored, true);
     expect(stateHash(replayed)).toBe(stateHash(state));
+  });
+});
+
+describe('Replaying a short recorded game', () => {
+  const ctx = engineContext(buildContentRegistry());
+
+  it('a plain game that touches none of the changed situations replays to identical state hashes', () => {
+    const seed = 7;
+    const seats: GameSeat[] = ['Ann', 'Bo', 'Cy', 'Di'].map((name, i) => ({ seatId: `seat-${i}`, roomPlayerId: randomUUID(), name, kind: 'bot' }));
+    const { state, moves } = playBots(ctx, openingState(ctx, seed, seats, {}), 60);
+    const rows = moves.map((move, i) => ({ seq: i + 1, seatId: move.seatId, source: 'bot' as const, action: reorderKeys(move.action), stateHash: stateHash(move.after) }));
+    const game = { seed, seats, rules: {} } as GameRecord;
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(stateHash(replay(ctx, game, rows as unknown as GameActionRecord[], true))).toBe(stateHash(state));
   });
 });
