@@ -83,9 +83,12 @@ export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, r
       return x <= 2 || spare < x ? 'draw-x' : 'draw-1';
     }
     case 'alliance': {
-      // The partner: the non-ally with the largest hand among those offered.
-      const foe = [...nonAllies].sort((a, b) => handSize(view, b) - handSize(view, a) || a.index - b.index)[0];
-      return (foe ?? seats[0])?.id ?? null;
+      // The partner, at a cost of 2 or less: the non-ally with the largest hand, else any other; else cancel.
+      const first = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId);
+      const kept = first ? seats.filter((s) => Math.abs(handSize(view, first) - handSize(view, s)) <= 2) : seats;
+      const byHand = (list: Seat[]) => [...list].sort((a, b) => handSize(view, b) - handSize(view, a) || a.index - b.index)[0];
+      const partner = byHand(kept.filter((s) => !isAlly(me, s))) ?? byHand(kept);
+      return partner?.id ?? choice.options.find((o) => o.id === 'cancel')?.id ?? null;
     }
     default:
       return null;

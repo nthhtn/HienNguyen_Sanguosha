@@ -114,3 +114,19 @@ describe('the Upheaval window', () => {
     expect(decide(open(true, true)).kind).toBe('PassAction'); // never a Sha at an ally
   });
 });
+
+describe('Alliance’s second pick', () => {
+  const cards = (p: string, n: number) => Array.from({ length: n }, (_, i) => card(`${p}${i}`, 'shan', 'heart', i + 1));
+  const second = (hands: Record<string, number>, ids: string[]) => {
+    const s = table(Object.fromEntries(Object.entries(hands).map(([id, n]) => [`${id}:hand`, cards(id, n)])), { generals: generals('lu-su'), kingdoms: { 'seat-a': 'Wu', 'seat-b': 'Wu', 'seat-c': 'Wei', 'seat-d': 'Wei' } });
+    const c = choiceOf(s, [...ids, 'cancel'], 'pick', 'alliance');
+    return { ...c, pendingChoice: { ...c.pendingChoice!, reason: { ...c.pendingChoice!.reason, targetSeatId: 'seat-b' } } } as GameState;
+  };
+  it('Alliance: the second pick keeps the cost at 2 or less', () => {
+    // first = seat-b (1 card); seat-c has 5 (cost 4), seat-d has 3 (cost 2).
+    expect(picked(decide(second({ 'seat-b': 1, 'seat-c': 5, 'seat-d': 3 }, ['seat-c', 'seat-d'])))).toBe('seat-d');
+  });
+  it('Alliance: with no partner at cost 2 or less the bot cancels', () => {
+    expect(picked(decide(second({ 'seat-b': 1, 'seat-c': 5, 'seat-d': 4 }, ['seat-c', 'seat-d'])))).toBe('cancel');
+  });
+});
