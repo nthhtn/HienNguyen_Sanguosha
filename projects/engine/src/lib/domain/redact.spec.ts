@@ -367,3 +367,33 @@ describe('redactStateForSeat: overlapping skill ids (final-fix F4)', () => {
     expect(redactStateForSeat(state, 'seat-a').pendingChoice!.id).toBe('ask-hidden-seat-b-1');
   });
 });
+
+describe('redactStateForSeat: turn flags named after a skill (final-fix F5)', () => {
+  it('masks a hidden skill’s turn flag in the ask’s options', () => {
+    const state = makeState();
+    const owner = { kind: 'general' as const, seatId: 'seat-b', slot: 'main' as const, skillId: 'decentralization' };
+    state.pendingChoice = {
+      id: 'ask-decentralization-seat-b-2', seatId: 'seat-b', reason: { kind: 'ability', owner, abilityId: 'decentralization' }, verb: 'use',
+      options: [{ id: 'use', shows: { kind: 'label', text: 'Use' }, effects: [{ kind: 'SetTurnFlagEffect', flag: 'decentralization' }, { kind: 'SetTurnFlagEffect', flag: 'skip-Play' }] }],
+    } as unknown as GameState['pendingChoice'];
+    const forA = redactStateForSeat(state, 'seat-a');
+    expect(JSON.stringify(forA)).not.toContain('decentralization');
+    expect(forA.pendingChoice!.options[0].effects).toEqual([{ kind: 'SetTurnFlagEffect', flag: 'hidden' }, { kind: 'SetTurnFlagEffect', flag: 'skip-Play' }]);
+    expect(JSON.stringify(redactStateForSeat(state, 'seat-b'))).toContain('"flag":"decentralization"');
+  });
+});
+
+describe('redactStateForSeat: a give selection’s tally key (final-fix F5)', () => {
+  it('masks a hidden skill inside the tally counter key', () => {
+    const state = makeState();
+    const owner = { kind: 'general' as const, seatId: 'seat-b', slot: 'deputy' as const, skillId: 'kindness' };
+    state.pendingSelection = {
+      id: 'sel-2', seatId: 'seat-b', reason: { kind: 'ability', owner, abilityId: 'kindness' }, of: 'cards', eligibleIds: [], min: 1, max: 2,
+      then: { kind: 'give', toSeatIds: ['seat-a'], tally: 'seat-b/deputy/kindness/given' }, onCancel: [], onSelect: [],
+    } as unknown as GameState['pendingSelection'];
+    const forA = redactStateForSeat(state, 'seat-a');
+    expect(JSON.stringify(forA)).not.toContain('kindness');
+    expect((forA.pendingSelection!.then as { tally?: string }).tally).toBe('seat-b/deputy/hidden/given');
+    expect((redactStateForSeat(state, 'seat-b').pendingSelection!.then as { tally?: string }).tally).toBe('seat-b/deputy/kindness/given');
+  });
+});

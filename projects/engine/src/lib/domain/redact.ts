@@ -114,6 +114,8 @@ function hiddenSkillIds(values: readonly unknown[], state: GameState, viewerSeat
 const SKILL_ID_KEYS = new Set(['skillId', 'abilityId', 'forAbilityId', 'conversionId']);
 // Card and General identities: never skill tokens, though a skill may share an id with a card (Dong Zhuo's Wine).
 const IDENTITY_KEYS = new Set(['definitionId', 'generalDefinitionId', 'generalId']);
+// Free strings that may hold a skill id as a token: ids, use counter keys (and a give's tally), turn flags.
+const TOKEN_KEYS = new Set(['id', 'key', 'flag', 'tally']);
 
 // One alternation per skill set, longest ids first so 'fire-attack' wins over 'fire'.
 const skillPatterns = new Map<string, RegExp>();
@@ -137,7 +139,7 @@ function maskInString(text: string, skills: ReadonlySet<string>): string {
 }
 
 // `value` with every mention of `skills` (as a skill, ability or conversion id,
-// inside an id, an `acted` ability key or a use counter key) replaced by 'hidden'.
+// inside an id, an `acted` ability key, a use counter key or a turn flag) replaced by 'hidden'.
 function maskSkills<T>(value: T, skills: ReadonlySet<string>): T {
   if (skills.size === 0) return value;
   if (Array.isArray(value)) return value.map((v) => maskSkills(v, skills)) as T;
@@ -149,7 +151,7 @@ function maskSkills<T>(value: T, skills: ReadonlySet<string>): T {
     if (typeof v === 'string') {
       if ((SKILL_ID_KEYS.has(k) && skills.has(v)) || (hiddenOwner && k === 'conversionId')) return HIDDEN_GENERAL_ID;
       if (IDENTITY_KEYS.has(k)) return v;
-      return k === 'id' || k === 'key' || k.endsWith('Id') ? maskInString(v, skills) : v;
+      return TOKEN_KEYS.has(k) || k.endsWith('Id') ? maskInString(v, skills) : v;
     }
     if (k === 'acted' && Array.isArray(v)) return v.map((x) => (typeof x === 'string' ? maskInString(x, skills) : maskSkills(x, skills)));
     return maskSkills(v, skills);
