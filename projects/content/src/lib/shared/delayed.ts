@@ -20,8 +20,15 @@ export function placeInJudgmentArea(state: GameState, cardInstanceId: string, se
 }
 
 // A delayed Tool's rule once its Wuxie check has passed: judge its seat.
-export const judgeTarget: NonNullable<CardDefinition['onTarget']> = (_state, { tool, target }) =>
-  target.kind === 'seat' ? [{ kind: 'JudgeEffect', seatId: target.seatId, reader: { kind: 'card', card: tool } }] : [];
+// Its turn can come after the Tool left the judgment area or its holder was
+// eliminated, so that is re-checked here; the cleanup is queued separately and
+// still runs.
+export const judgeTarget: NonNullable<CardDefinition['onTarget']> = (state, { tool, target }) => {
+  if (target.kind !== 'seat') return [];
+  const holder = state.seats.find((s) => s.id === target.seatId);
+  const held = judgmentZoneOf(state, target.seatId)?.cards.some((c) => tool.physical.some((p) => p.instanceId === c.instanceId));
+  return holder && !holder.eliminated && held ? [{ kind: 'JudgeEffect', seatId: target.seatId, reader: { kind: 'card', card: tool } }] : [];
+};
 
 interface SkipPhaseToolSpec {
   id: string;

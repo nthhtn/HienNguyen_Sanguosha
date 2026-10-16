@@ -1,12 +1,13 @@
 import { GameState, GameEvent, PendingChoice, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
 import { usedCardFrom, usedCardOf } from '../domain/usedCard';
+import { sameValue } from '../rules/offered';
 import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
 import { Effect, applyDying, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
-import { requireZoneOfKind } from '../cards/zones';
+import { findZoneByKind, moveCard, requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
@@ -100,8 +101,18 @@ function drain(state: GameState, ctx: EngineContext, budget: StepBudget): Resolv
     current = withWinCheck(step.state, ctx);
     events.push(...step.events);
   }
-  if (current.result) current = withQueue(current, []);
+  if (current.result) current = withQueue(sweepProcessing(current), []);
   return { state: current, events };
+}
+
+// A game that ends mid-resolution leaves its in-flight cards in `processing`;
+// they go to the discard pile, unlogged, so the final state holds no stray cards.
+// A mode without a processing zone has nothing to sweep: a no-op.
+function sweepProcessing(state: GameState): GameState {
+  const stray = findZoneByKind(state.zones, 'processing')?.cards ?? [];
+  if (stray.length === 0) return state;
+  const discardId = requireZoneOfKind(state.zones, 'discardPile').id;
+  return { ...state, zones: stray.reduce((zones, c) => moveCard(zones, c.instanceId, discardId), state.zones) };
 }
 
 // Seats still choosing have kingdom 'hidden'; reading that as a one-kingdom
@@ -574,7 +585,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
           sameAbilityOwner(a.via.owner, action.via.owner) &&
           a.pendingResponseId === action.pendingResponseId &&
           // A template: any targets within its pick.
-          (a.pickTargets ? fitsPick(a.pickTargets, action.targets) : JSON.stringify(a.targets) === JSON.stringify(action.targets))
+          (a.pickTargets ? fitsPick(a.pickTargets, action.targets) : sameValue(a.targets, action.targets))
       );
       if (!offered) throw new Error(`Seat ${action.seatId} can’t use that conversion now`);
       const owned = conversionsOf(state, action.seatId, ctx.registry).find(

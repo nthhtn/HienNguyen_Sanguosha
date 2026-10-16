@@ -72,10 +72,20 @@ Generals are secret. The state stored by the application is the **full** state;
   hidden until a General is revealed;
 - a pending selection or choice has hidden cards masked, and a *secret* choice
   hides its options from everyone but its chooser;
-- skill ids of another seat's hidden Generals are masked wherever they appear
-  in queued work;
-- the log is **not** redacted: events are written to be public (a face-down
-  card move carries no face, a revealed card is shown on purpose).
+- skill ids of another seat's hidden Generals read `'hidden'` wherever they
+  appear: in pending decisions, in queued work and in the log. One set of such
+  skills per state and viewer (from the log, the pending decisions and the
+  queue) masks them all. Besides skill, ability and conversion ids, the skill
+  is masked as a token inside decision id strings (`ask-hidden-seat-b-3`),
+  `acted` ability keys (`seat-b:main:hidden`), use counter and tally keys
+  (`seat-b/main/hidden`) and turn flags. Card and General ids are never
+  masked as tokens, so a Wine card stays Wine while Dong Zhuo's hidden Wine
+  skill is masked;
+- the log is otherwise public: events are written that way (a face-down card
+  move carries no face, a revealed card is shown on purpose), and the only
+  per-viewer change is the hidden-skill masking above.
+  `redactEventsForSeat(state, events, viewer)` masks a slice of the log with
+  the same set as `redactStateForSeat`.
 
 Bots receive the redacted state too, so they cannot cheat by construction.
 

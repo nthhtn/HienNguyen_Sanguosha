@@ -1,5 +1,5 @@
-import { isFaceUpZoneKind, redactStateForSeat } from 'engine';
-import type { CardInstance, EngineEvent, GameState } from 'engine';
+import { isFaceUpZoneKind, redactEventsForSeat, redactStateForSeat } from 'engine';
+import type { CardInstance, ContentRegistry, EngineEvent, GameState, Seat } from 'engine';
 
 const HIDDEN = 'hidden';
 
@@ -106,14 +106,84 @@ export function findReshuffleLeaks(prev: GameState, next: GameState): string[] {
     .map((id) => `reshuffled card ${id} kept the id it had in the discard pile`);
 }
 
-// Every leak one step (prev → next) causes, for every seat.
-export function findStepLeaks(prev: GameState, next: GameState): string[] {
+// The skill ids a General slot holds: its General's, any it gained, and the Form it chose.
+function slotSkillIds(seat: Seat, slot: 'main' | 'deputy', registry: ContentRegistry): string[] {
+  const general = seat.generals?.[slot];
+  if (!general) return [];
+  return [
+    ...(registry.generals.get(general.generalDefinitionId)?.skills.map((s) => s.id) ?? []),
+    ...(seat.gainedSkills ?? []).filter((g) => g.slot === slot).map((g) => g.skillId),
+    ...(seat.forms?.slot === slot && seat.forms.chosen ? [seat.forms.chosen.skillId] : []),
+  ];
+}
+
+// Skill ids `viewerSeatId` must not learn: those of other seats' face-down
+// General slots, bar any it can see anyway (its own, or a shown General's).
+export function secretSkillIds(state: GameState, viewerSeatId: string, registry: ContentRegistry): Set<string> {
+  const secret = new Set<string>();
+  const seen = new Set<string>();
+  for (const seat of state.seats) {
+    for (const slot of ['main', 'deputy'] as const) {
+      const general = seat.generals?.[slot];
+      if (!general) continue;
+      const ids = slotSkillIds(seat, slot, registry);
+      ids.forEach((id) => (seat.id === viewerSeatId || general.revealed ? seen : secret).add(id));
+    }
+  }
+  seen.forEach((id) => secret.delete(id));
+  return secret;
+}
+
+// Card and General identities, which may share an id with a skill (Dong Zhuo's Wine).
+const IDENTITY_KEYS = new Set(['definitionId', 'generalDefinitionId', 'generalId']);
+const SKILL_ID_KEYS = new Set(['skillId', 'abilityId', 'forAbilityId', 'conversionId']);
+
+function wholeToken(ids: ReadonlySet<string>): RegExp | null {
+  if (ids.size === 0) return null;
+  const alternation = [...ids].sort((a, b) => b.length - a.length).map((id) => id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  return new RegExp(`(?<![a-z0-9])(?:${alternation})(?![a-z0-9])`);
+}
+
+// Visits every string inside `value`, object keys included, with the key it sits under.
+function walkStrings(value: unknown, visit: (text: string, key: string, path: string) => void, path: string, key = ''): void {
+  if (typeof value === 'string') visit(value, key, path);
+  else if (Array.isArray(value)) value.forEach((v, i) => walkStrings(v, visit, `${path}[${i}]`, key));
+  else if (value !== null && typeof value === 'object')
+    for (const [k, v] of Object.entries(value)) {
+      visit(k, '', `${path} key ${k}`);
+      walkStrings(v, visit, `${path}.${k}`, k);
+    }
+}
+
+// Where `view` and `events` (both as sent to `viewerSeatId`) name a skill of
+// another seat's face-down General, as a whole token in any string (bar card
+// and General identities, which may share a skill's id: Dong Zhuo's Wine).
+export function findSkillLeaks(state: GameState, view: object, events: readonly EngineEvent[], viewerSeatId: string, registry: ContentRegistry): string[] {
+  const pattern = wholeToken(secretSkillIds(state, viewerSeatId, registry));
+  if (!pattern) return [];
   const leaks: string[] = [];
+  const visit = (text: string, key: string, path: string) => {
+    // A card's own id (a conversion's `as`, a rescue card) names the card, not the skill.
+    if (IDENTITY_KEYS.has(key) || (registry.cards.has(text) && !SKILL_ID_KEYS.has(key))) return;
+    const hit = text.match(pattern);
+    if (hit) leaks.push(`${viewerSeatId}: ${path} names hidden skill ${hit[0]} (${JSON.stringify(text)})`);
+  };
+  walkStrings(view, visit, 'view');
+  events.forEach((event, i) => walkStrings(event, visit, `log ${event.kind} events[${i}]`));
+  return leaks;
+}
+
+// Every leak one step (prev → next) causes, for every seat. With `registry`,
+// also every hidden skill id a seat's view or its share of the new events names.
+export function findStepLeaks(prev: GameState, next: GameState, registry?: ContentRegistry): string[] {
+  const leaks: string[] = [];
+  const events = next.log.slice(prev.log.length);
   for (const seat of next.seats) {
     const { rng, log, ...view } = redactStateForSeat(next, seat.id);
     leaks.push(...findViewLeaks(next, view, seat.id));
+    if (registry) leaks.push(...findSkillLeaks(next, view, redactEventsForSeat(next, events, seat.id), seat.id, registry));
   }
-  leaks.push(...findEventLeaks(next, next.log.slice(prev.log.length)));
+  leaks.push(...findEventLeaks(next, events));
   leaks.push(...findReshuffleLeaks(prev, next));
   return leaks;
 }

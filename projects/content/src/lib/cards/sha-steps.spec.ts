@@ -1,5 +1,5 @@
 import { advanceToDecision, resolve, usedCardOf } from 'engine';
-import type { Action, CardDefinition, CardInstance, ContentRegistry, GameModeDefinition, GameState, SkillTrigger } from 'engine';
+import type { Action, CardDefinition, CardInstance, ContentRegistry, Effect, GameModeDefinition, GameState, SkillTrigger } from 'engine';
 import { shaCard } from './sha';
 import { shanCard } from './shan';
 import { wineCard } from './wine';
@@ -65,7 +65,7 @@ beforeEach(() => {
 describe('Sha steps', () => {
   it('a Sha that hits goes through every step, in order', () => {
     const s = pass(play(table({ 'seat-a:hand': [card('s1', 'sha')] }), 's1', 'seat-b'));
-    expect(seenSteps).toEqual(['sha-use', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-after-damage']);
+    expect(seenSteps).toEqual(['sha-use', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-damaged', 'sha-after-damage']);
     expect(hp(s, 'seat-b')).toBe(3);
   });
 
@@ -93,7 +93,7 @@ describe('Sha steps', () => {
     s = respond(s, 'bs');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-c', allowedCardIds: ['shan'] });
     s = pass(s);
-    expect(seenSteps).toEqual(['sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-after-damage']);
+    expect(seenSteps).toEqual(['sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-damaged', 'sha-after-damage']);
     expect(hp(s, 'seat-c')).toBe(3);
     expect(s.turn.cardPlays?.['sha'] ?? 0).toBe(0);
   });
@@ -106,6 +106,37 @@ describe('Sha steps', () => {
       resolutionQueue: [cardStep('sha-targeted', usedCardOf(card('s1', 'sha')), 'seat-a', seat('seat-b'))],
     };
     expect(advanceToDecision(gone, ctx).state.pendingResponse).toBeNull();
+  });
+});
+
+describe('sha-after-damage', () => {
+  // Plays a Sha at seat-b under a test-only before-trigger on DamageEffect.
+  const withDamageTrigger = (effect: (damage: Effect) => Effect[]) => {
+    const trigger: SkillTrigger = { point: 'before:DamageEffect', condition: () => true, effect: (_s, e) => effect(e as Effect) };
+    const custom = { registry, mode: { ...mode, triggers: [recorder, trigger] } };
+    const s = resolve(table({ 'seat-a:hand': [card('s1', 'sha')] }), { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 's1', targets: [seat('seat-b')] }, custom).state;
+    return resolve(s, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: s.pendingResponse!.id }, custom).state;
+  };
+
+  it('runs sha-after-damage when the target took the damage', () => {
+    pass(play(table({ 'seat-a:hand': [card('s1', 'sha')] }), 's1', 'seat-b'));
+    expect(seenSteps).toContain('sha-after-damage');
+  });
+
+  it('skips sha-after-damage when the damage was cancelled', () => {
+    const s = withDamageTrigger(() => []);
+    expect(hp(s, 'seat-b')).toBe(4);
+    expect(seenSteps).not.toContain('sha-after-damage');
+  });
+
+  it('skips sha-after-damage when the damage was redirected to another seat', () => {
+    const s = withDamageTrigger((e) => {
+      const d = (e as Extract<Effect, { kind: 'DamageEffect' }>).damage;
+      return [{ ...e, damage: { ...d, target: seat('seat-c') } } as Effect];
+    });
+    expect(hp(s, 'seat-b')).toBe(4);
+    expect(hp(s, 'seat-c')).toBe(3);
+    expect(seenSteps).not.toContain('sha-after-damage');
   });
 });
 

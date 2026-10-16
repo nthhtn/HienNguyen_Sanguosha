@@ -1,4 +1,4 @@
-import { redactStateForSeat } from 'engine';
+import { redactEventsForSeat, redactStateForSeat } from 'engine';
 import type { Action, GameState } from 'engine';
 import type { GameClockView, GameUpdate, SeatView } from 'protocol';
 
@@ -27,7 +27,7 @@ export function toGameUpdate(input: GameUpdateInput): GameUpdate {
     view: toSeatView(input.state, input.seatId),
     legalActions: input.legalActions,
     logFrom: input.logFrom,
-    events: input.state.log.slice(input.logFrom),
+    events: redactEventsForSeat(input.state, input.state.log.slice(input.logFrom), input.seatId),
     clock: input.clock,
     paused: input.paused,
   };

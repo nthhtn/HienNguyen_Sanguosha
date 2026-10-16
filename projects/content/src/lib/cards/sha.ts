@@ -18,6 +18,7 @@ export interface ShaStepData {
   provided?: number;
   unblockable?: boolean;
   acted?: string[];
+  logFrom?: number; // `sha-damage` time: where in the log this Sha's damage would start
 }
 
 export const shaData = (step: CardStep) => (step.data ?? {}) as ShaStepData;
@@ -131,7 +132,14 @@ export const shaCard: CardDefinition = {
       case 'sha-hit':
         return [shaStep(step, 'sha-damage')];
       case 'sha-damage':
-        return [damageOf(step), shaStep(step, 'sha-after-damage')];
+        return [damageOf(step), shaStep(step, 'sha-damaged', { logFrom: state.log.length })];
+      case 'sha-damaged':
+        // Triggers fire on a step before it runs, so the gate is its own step:
+        // 'sha-after-damage' is only queued (and only seen by triggers) when the
+        // target took damage (not cancelled, not redirected to another seat).
+        return state.log.slice(data.logFrom ?? 0).some((e) => e.kind === 'DamageDealtEvent' && e.damage.target.kind === 'seat' && e.damage.target.seatId === step.target.seatId)
+          ? [shaStep(step, 'sha-after-damage')]
+          : [];
       case 'sha-after-damage':
         return [];
       default:

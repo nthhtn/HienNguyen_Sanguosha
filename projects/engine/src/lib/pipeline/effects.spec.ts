@@ -87,4 +87,12 @@ describe('HealEffect', () => {
     expect(state.log).toEqual([]);
     expect(events).toEqual([]);
   });
+
+  it('HealEffect does nothing on an eliminated seat', () => {
+    const dead = seatAt(0);
+    dead.seats[0].eliminated = true;
+    const { state, events } = applyEffect(dead, heal(1));
+    expect(state).toBe(dead);
+    expect(events).toEqual([]);
+  });
 });

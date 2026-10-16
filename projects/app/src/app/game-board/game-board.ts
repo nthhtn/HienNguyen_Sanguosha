@@ -5,14 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed } from 'engine';
+import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed, isSeatDying } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { RoundTable } from './round-table';
-import { SeatTile, seatIsDying } from './seat-tile';
+import { SeatTile } from './seat-tile';
 import { HandView } from './hand-view';
 import { GameOver } from './game-over';
 import { GeneralSelection } from './general-selection';
@@ -363,7 +363,7 @@ export class GameBoard {
 
   protected dyingOf(seat: Seat): boolean {
     const state = this.visibleState();
-    return !!state && seatIsDying(state, seat);
+    return !!state && isSeatDying(state, seat.id);
   }
 
   protected zoneCards(zoneId: string): CardInstance[] {
