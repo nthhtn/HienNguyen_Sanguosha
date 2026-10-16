@@ -36,6 +36,8 @@ export interface GeneralRevealedEvent {
   slot: 'main' | 'deputy';
   // Set when it was revealed to use that skill.
   forAbilityId?: string;
+  // Set when the seat's death revealed it: no reveal bonus follows.
+  onDeath?: true;
 }
 
 // A seat arranged cards from the draw pile. Counts only: the cards stay hidden.

@@ -165,9 +165,9 @@ describe('conversions', () => {
     expect(decide(guanYu([card('p', 'peach', 'heart')])).kind).toBe('EndPhaseAction');
   });
 
-  it('a hidden General’s conversion only when the bot may reveal', () => {
+  it('a hidden General is revealed first in the Play Phase, whatever the HP', () => {
     const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'filler-meng-huo', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
-    expect(decide(hidden).kind).toBe('EndPhaseAction');
+    expect(decide(hidden)).toMatchObject({ kind: 'RevealGeneralAction', slot: 'main' });
   });
 });
 

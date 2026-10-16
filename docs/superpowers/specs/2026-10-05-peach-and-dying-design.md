@@ -33,8 +33,8 @@ seat at 1 HP that takes 3 damage goes to −2.
 ### Dying
 
 1. **Entering.** When damage leaves a seat at 0 HP or below, the seat is
-   **dying**. Kingdom War's forced reveals still happen first: the main
-   general at half HP or below, the deputy at 0 or below. The seat is not
+   **dying**. (Superseded 2026-10-16: an HP drop reveals nothing; a death
+   reveals both Generals, see the reveal rules spec.) The seat is not
    eliminated yet.
 2. **The rescue round.** The living seats are asked one at a time, in turn
    order, **starting with the seat whose turn it is**.

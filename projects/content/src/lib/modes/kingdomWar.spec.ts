@@ -224,10 +224,11 @@ describe('Kingdom War forced reveal, dying and elimination', () => {
   }
   const seatB = (s: GameState) => s.seats.find((x) => x.id === 'seat-b')!;
 
-  it('force-reveals both generals and puts the seat in the dying state instead of eliminating it', () => {
+  it('reveals nothing by itself: a seat that drops below 0 HP is dying, its Generals still hidden', () => {
     const { next } = hitSeatB(10);
-    expect(seatB(next).generals!.main.revealed).toBe(true);
-    expect(seatB(next).generals!.deputy.revealed).toBe(true);
+    expect(seatB(next).generals!.main.revealed).toBe(false);
+    expect(seatB(next).generals!.deputy.revealed).toBe(false);
+    expect(next.log.some((e) => e.kind === 'GeneralRevealedEvent')).toBe(false);
     expect(seatB(next).eliminated).toBe(false);
     expect(seatB(next).combinedHp).toBeLessThan(0);
     expect(next.log.map((e) => e.kind)).toContain('SeatDyingEvent');
@@ -241,6 +242,27 @@ describe('Kingdom War forced reveal, dying and elimination', () => {
     const out = resolve(next, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: next.pendingResponse!.id }, ctx).state;
     expect(seatB(out).eliminated).toBe(true);
     expect(out.result).toEqual({ endedAt: 1, winningSeatIds: ['seat-a'], losingSeatIds: ['seat-b'] });
+  });
+
+  it('a death reveals both Generals, logged before the elimination and marked as a death reveal', () => {
+    const { next, ctx } = hitSeatB(10);
+    const out = resolve(next, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: next.pendingResponse!.id }, ctx).state;
+    expect(seatB(out).generals!.main.revealed && seatB(out).generals!.deputy.revealed).toBe(true);
+    const tail = out.log.map((e) => e.kind);
+    const revealed = out.log.filter((e) => e.kind === 'GeneralRevealedEvent');
+    expect(revealed).toEqual([
+      { kind: 'GeneralRevealedEvent', seatId: 'seat-b', slot: 'main', onDeath: true },
+      { kind: 'GeneralRevealedEvent', seatId: 'seat-b', slot: 'deputy', onDeath: true },
+    ]);
+    expect(tail.indexOf('GeneralRevealedEvent')).toBeLessThan(tail.indexOf('SeatEliminatedEvent'));
+  });
+
+  it('a death reveals only the General that is still hidden, and draws no reveal bonus for the dead', () => {
+    const { next, ctx } = hitSeatB(10);
+    const half: GameState = { ...next, seats: next.seats.map((x) => (x.id === 'seat-b' ? { ...x, generals: { ...x.generals!, main: { ...x.generals!.main, revealed: true } } } : x)), rules: { firstRevealDraw: true } };
+    const out = resolve(half, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: half.pendingResponse!.id }, ctx).state;
+    expect(out.log.filter((e) => e.kind === 'GeneralRevealedEvent')).toEqual([{ kind: 'GeneralRevealedEvent', seatId: 'seat-b', slot: 'deputy', onDeath: true }]);
+    expect(out.zones.find((z) => z.id === 'seat-b:hand')!.cards).toHaveLength(0);
   });
 
   it('asks the turn owner first; the dying seat can still save itself with its own Peach', () => {
@@ -332,10 +354,10 @@ describe('Kingdom War: losing HP', () => {
   }
   const seatB = (s: GameState) => s.seats.find((x) => x.id === 'seat-b')!;
 
-  it('at 0 HP the seat is dying, its Generals revealed, and a Peach saves it — with no damage at all (Review Focus 4)', () => {
+  it('at 0 HP the seat is dying, its Generals still hidden, and a Peach saves it — with no damage at all (Review Focus 4)', () => {
     const { next, ctx } = loseHp(4, [{ instanceId: 'pb', definitionId: 'peach', suit: 'heart', rank: 12 }]);
     expect(seatB(next).combinedHp).toBe(0);
-    expect(seatB(next).generals!.main.revealed && seatB(next).generals!.deputy.revealed).toBe(true);
+    expect(seatB(next).generals!.main.revealed || seatB(next).generals!.deputy.revealed).toBe(false);
     expect(next.log.some((e) => e.kind === 'DamageDealtEvent')).toBe(false);
     expect(next.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', reason: { kind: 'dying', seatId: 'seat-b' } });
     const saved = resolve(next, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: next.pendingResponse!.id, cardInstanceId: 'pb' }, ctx).state;
@@ -343,8 +365,9 @@ describe('Kingdom War: losing HP', () => {
     expect(seatB(saved).eliminated).toBe(false);
   });
 
-  it('above half HP nothing is revealed', () => {
-    const { next } = loseHp(1);
+  it('at half HP or below, nothing is revealed either', () => {
+    const { next } = loseHp(2);
+    expect(seatB(next).combinedHp).toBe(2);
     expect(seatB(next).generals!.main.revealed).toBe(false);
   });
 });

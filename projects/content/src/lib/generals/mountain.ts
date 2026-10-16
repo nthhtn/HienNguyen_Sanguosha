@@ -622,7 +622,7 @@ export const incarnation: SkillDefinition = {
     // Revealed for any reason but this skill: the first choice.
     on<GeneralRevealedEvent>('after:GeneralRevealedEvent', {
       condition: (state, event, owner, registry) =>
-        event.seatId === owner.seatId && event.slot === owner.slot && event.forAbilityId !== 'incarnation' && !seatOf(state, owner.seatId)?.forms?.chosen && formSkillOptions(state, owner.seatId, registry).length > 0,
+        !event.onDeath && event.seatId === owner.seatId && event.slot === owner.slot && event.forAbilityId !== 'incarnation' && !seatOf(state, owner.seatId)?.forms?.chosen && formSkillOptions(state, owner.seatId, registry).length > 0,
       effect: (_state, event, owner) => [ask(owner, [skillStep(owner, 'choose', { event })])],
     }),
   ],

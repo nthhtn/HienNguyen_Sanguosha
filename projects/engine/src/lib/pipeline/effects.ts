@@ -263,9 +263,9 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const seat = state.seats.find((s) => s.id === effect.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
       if (seat.eliminated) return { state, events: [] };
-      const seats = state.seats.map((s) => (s.id === effect.seatId ? eliminate(s) : s));
-      const event: EngineEvent = { kind: 'SeatEliminatedEvent', seatId: effect.seatId };
-      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+      const { seats, events: revealed } = eliminateIn(state.seats, seat.id);
+      const events: EngineEvent[] = [...revealed, { kind: 'SeatEliminatedEvent', seatId: effect.seatId }];
+      return { state: { ...state, seats, log: [...state.log, ...events] }, events };
     }
     case 'OpenChoiceEffect':
       return { state: { ...state, pendingChoice: effect.choice }, events: [] };
@@ -395,9 +395,11 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const maxCombinedHp = Math.max(0, seat.maxCombinedHp - effect.amount);
       const combinedHp = Math.min(seat.combinedHp, maxCombinedHp);
       const out = maxCombinedHp <= 0;
-      const seats = state.seats.map((s) => (s.id === seat.id ? (out ? eliminate({ ...s, maxCombinedHp, combinedHp }) : { ...s, maxCombinedHp, combinedHp }) : s));
+      const lowered = state.seats.map((s) => (s.id === seat.id ? { ...s, maxCombinedHp, combinedHp } : s));
+      const { seats, events: revealed } = out ? eliminateIn(lowered, seat.id) : { seats: lowered, events: [] };
       const events: EngineEvent[] = [
         { kind: 'MaxHpReducedEvent', seatId: seat.id, amount: seat.maxCombinedHp - maxCombinedHp, maxHp: maxCombinedHp },
+        ...revealed,
         ...(out ? [{ kind: 'SeatEliminatedEvent' as const, seatId: seat.id }] : []),
       ];
       return { state: { ...state, seats, log: [...state.log, ...events] }, events };
@@ -433,9 +435,23 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
   }
 }
 
-// The seat out of the game: it is no longer chained.
-function eliminate(seat: Seat): Seat {
-  return { ...withoutChain(seat, true), eliminated: true };
+// The seat out of the game: no longer chained, and both its Generals shown (a
+// death reveals them; the events are marked so no reveal bonus follows a dead
+// seat). The reveals come before its elimination in the log.
+function eliminateIn(seats: Seat[], seatId: string): { seats: Seat[]; events: EngineEvent[] } {
+  const events: EngineEvent[] = [];
+  const out = seats.map((seat) => {
+    if (seat.id !== seatId) return seat;
+    const generals = seat.generals;
+    if (generals) {
+      for (const slot of ['main', 'deputy'] as const) {
+        if (!generals[slot].revealed) events.push({ kind: 'GeneralRevealedEvent', seatId, slot, onDeath: true });
+      }
+    }
+    const shown = generals ? { generals: { main: { ...generals.main, revealed: true }, deputy: { ...generals.deputy, revealed: true } } } : {};
+    return { ...withoutChain(seat, true), ...shown, eliminated: true };
+  });
+  return { seats: out, events };
 }
 
 // `seat` unchained when `unchain` holds.
@@ -472,8 +488,8 @@ export function applyDying(state: GameState, effect: Extract<Effect, { kind: 'Dy
   const isLiving = (seatId: string) => !!state.seats.find((x) => x.id === seatId && !x.eliminated);
   const index = effect.order.findIndex((id) => isLiving(id) && (id === seat.id || holdsRescue(id)));
   if (index === -1) {
-    const seats = state.seats.map((s) => (s.id === seat.id ? eliminate(s) : s));
-    return logged({ ...state, seats }, [{ kind: 'SeatEliminatedEvent', seatId: seat.id, ...(effect.killerSeatId ? { killerSeatId: effect.killerSeatId } : {}) }]);
+    const { seats, events: revealed } = eliminateIn(state.seats, seat.id);
+    return logged({ ...state, seats }, [...revealed, { kind: 'SeatEliminatedEvent', seatId: seat.id, ...(effect.killerSeatId ? { killerSeatId: effect.killerSeatId } : {}) }]);
   }
 
   const askerId = effect.order[index];

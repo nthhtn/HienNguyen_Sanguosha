@@ -596,7 +596,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
     }
 
     case 'RevealGeneralAction': {
-      // No actor/phase guard: forced reveals (content kingdomWar) queue it as items, and player input is filtered by the server's isOfferedAction.
+      // No actor/phase guard: player input is filtered by the server's isOfferedAction, and legality offers it only at the two reveal windows.
       if (!state.seats.some((s) => s.id === action.seatId)) throw new Error(`Unknown seat: ${action.seatId}`);
       return { state: queueFront(state, [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: action.slot }]), events: [] };
     }

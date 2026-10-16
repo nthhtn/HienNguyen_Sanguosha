@@ -22,6 +22,7 @@ import { RichText } from './rich-text';
       <li><app-rich key="rules.setup.reveal3" /></li>
       <li><app-rich key="rules.setup.reveal4" /></li>
       <li><app-rich key="rules.setup.reveal5" /></li>
+      <li><app-rich key="rules.setup.reveal6" /></li>
     </ul>
     <h3>{{ 'rules.setup.killing' | t }}</h3>
     <ul>

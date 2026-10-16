@@ -228,6 +228,10 @@ function decide(
       )
     );
 
+    // Reveal a hidden General in the Play Phase: nothing else turns its compulsory skills on, and a bot has no reason to hide.
+    const reveal = legal.find((a) => a.kind === 'RevealGeneralAction');
+    if (reveal) return take(reveal);
+
     const peach = plays.find((p) => untargeted(p) && definitionIdOf(view, p.cardInstanceId) === 'peach');
     if (peach && self.combinedHp < self.maxCombinedHp && (!rules.peach || peachWorthPlaying(view, self))) return take(peach);
 
