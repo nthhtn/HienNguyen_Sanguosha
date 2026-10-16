@@ -14,6 +14,8 @@ export interface ResponseDescription {
   outcome: string;
   // The force colour of the player that outcome befalls.
   outcomeForce: Force;
+  // The No Response option's own wording, when the window has one (Instigate's Pass).
+  passLabel?: string;
 }
 
 type CardPlayed = Extract<EngineEvent, { kind: 'CardPlayedEvent' }>;
@@ -203,6 +205,7 @@ export function describeResponse(
       source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityName('instigate', localeOf(tr)) }),
       latest: null,
       prompt: tr('response.instigate.prompt', { sha, target: whom(owner.seatId) }),
+      passLabel: tr('response.instigate.pass'),
       outcome: you
         ? tr('response.instigate.outcome.you', { owner: name(owner.seatId) })
         : tr('response.instigate.outcome.other', { owner: name(owner.seatId), target: name(pending.respondingSeatId) }),

@@ -110,6 +110,13 @@ describe('describeSelection', () => {
     expect(describe2(sel)).toMatchObject({ prompt: 'Choose a Sha to play at Seat 1', confirmLabel: 'Use' });
   });
 
+  it('Alliance: its discard selection (step swap) says what to discard; another skill’s swap does not', () => {
+    const alliance = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'alliance' };
+    const make = (skillId: string, abilityId: string) => selection(abilityId, { reason: { kind: 'ability', owner: { ...alliance, skillId }, abilityId }, eligibleIds: ['s2'], min: 1, max: 1, then: { kind: 'skill-step', step: { kind: 'SkillStepEffect', owner: { ...alliance, skillId }, step: 'swap', data: {} } } });
+    expect(describe2(make('alliance', 'alliance'), [template])).toMatchObject({ prompt: 'Choose cards to discard for Alliance', confirmLabel: 'Discard' });
+    expect(describe2(make('other-skill', 'other-skill'), [template])!.prompt).not.toBe('Choose cards to discard for Alliance');
+  });
+
   it('competing: both seats are asked for a hand card to compete with', () => {
     const general = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'rouse-the-tiger' };
     for (const step of ['compete-user', 'compete-target']) {

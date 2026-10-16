@@ -127,7 +127,8 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
   });
   const then = selection.then;
   const step = then.kind === 'skill-step' || then.kind === 'card-step' ? then.step.step : null;
-  const text = (step ? stepSelectionText(step, localeOf(tr)) : null) ?? (selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId, localeOf(tr)) : null);
+  const skillId = then.kind === 'skill-step' ? then.step.owner.skillId : undefined;
+  const text = (step ? stepSelectionText(step, localeOf(tr), skillId) : null) ?? (selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId, localeOf(tr)) : null);
   const reason = selection.reason;
   return {
     title: reason.kind === 'ability' ? abilityName(reason.abilityId, localeOf(tr)) : reason.kind === 'choice' ? cardName(reason.card.as, tr) : tr('selection.title'),
