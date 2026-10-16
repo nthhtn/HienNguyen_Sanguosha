@@ -196,6 +196,20 @@ describe('Zuo Ci — Incarnation: a Form chosen at Start takes part in that Star
   });
 });
 
+describe('Zuo Ci — Incarnation: a Form chosen at End takes part in that End (S10)', () => {
+  // Diao Chan's Eclipse the Moon draws 1 at the start of its owner's End Phase.
+  it('a Form skill with an End trigger chosen at End fires exactly once at that End', () => {
+    const s = table({ drawPile: Array.from({ length: 6 }, (_, i) => card(`d${i + 1}`, 'shan', 'heart', i + 1)) }, { generals: at('seat-a', 'zuo-ci'), owner: 'seat-a', phase: 'Play' });
+    const base = { ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, forms: { slot: 'main' as const, held: ['diao-chan', 'da-qiao'] } } : x)) };
+    const before = handIds(base, 'seat-a').length;
+    let ended = h.act(h.settle(base), { kind: 'EndPhaseAction', seatId: 'seat-a' });
+    expect(askedAbout(ended)).toBe('incarnation');
+    ended = h.choose(h.use(ended), 'diao-chan/eclipse-the-moon');
+    while (ended.phase === 'End' && ended.pendingChoice) ended = h.decline(ended);
+    expect(handIds(ended, 'seat-a').length - before).toBe(1);
+  });
+});
+
 describe('Zuo Ci — Incarnation: nothing about the Forms is readable before he answers', () => {
   it('the ask other seats can see names no spare General, and neither does the secret choice for them', () => {
     const base = table({}, { generals: at('seat-a', 'zuo-ci'), owner: 'seat-d', phase: 'End' });

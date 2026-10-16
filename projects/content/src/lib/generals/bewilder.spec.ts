@@ -73,6 +73,16 @@ describe('Yu Ji — Bewilder', () => {
       expect(hp(s, 'seat-a')).toBe(4);
     });
 
+    it('Eight Trigrams worn is asked before the window, so a failed lie after declining it does not re-open the window', () => {
+      let s = h.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('x', 'peach', 'heart')], 'seat-a:equip': [card('et', 'eight-trigrams', 'spade', 2)], drawPile: [card('d1', 'shan'), card('d2', 'shan')] }, { owner: 'seat-b', generals: yuJi() }), 's1', 'seat-a');
+      expect(askedAbout(s)).toBe('eight-trigrams');
+      expect(s.pendingResponse).toBeNull(); // the window is not open yet, so Bewilder cannot be used inside it
+      s = h.decline(s);
+      s = answer(h.select(h.convert(s, 'seat-a', 'bewilder-shan'), 'x'), 'dbb');
+      expect(s.pendingResponse).toBeNull();
+      expect(hp(s, 'seat-a')).toBe(3);
+    });
+
     it('a true claim on a non-heart with no other answer resolves the guarded effect', () => {
       const s = failed([], card('x', 'shan', 'spade'));
       expect(hp(s, 'seat-b')).toBe(3);

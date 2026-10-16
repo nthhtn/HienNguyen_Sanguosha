@@ -1,3 +1,4 @@
+import { redactStateForSeat } from 'engine';
 import { askedAbout, card, handIds, harness, hp, ids, table, TableOptions } from './skills.testing';
 
 const h = harness();
@@ -155,5 +156,20 @@ describe('Lu Su — Alliance', () => {
     const s = h.choose(h.select(h.useSkill(start, 'seat-a', 'alliance'), 'seat-b'), 'cancel');
     expect(s.seats.find((x) => x.id === 'seat-a')!.generals.main.revealed).toBe(true);
     expect(uses(s)).toBe(0);
+  });
+
+  it('a hidden Lu Su cancelling at the second pick shows a bystander no hand card, before or after', () => {
+    const start = tableOf(3, 4, 1, 4, { generals: { 'seat-a': ['lu-su', 'filler-jiang-wei', false] } });
+    // Seat-d sees the hands of seats a, b and c only as hidden cards, and never the deputy.
+    const clean = (s: typeof start) => {
+      const view = redactStateForSeat(s, 'seat-d');
+      for (const id of ['seat-a', 'seat-b', 'seat-c']) expect(view.zones.find((z) => z.id === `${id}:hand`)!.cards.every((c) => c.definitionId === 'hidden')).toBe(true);
+      expect(JSON.stringify(view)).not.toContain('filler-jiang-wei');
+    };
+    const picked = h.select(h.useSkill(start, 'seat-a', 'alliance'), 'seat-b');
+    clean(picked);
+    const cancelled = h.choose(picked, 'cancel');
+    clean(cancelled);
+    expect(uses(cancelled)).toBe(0);
   });
 });
