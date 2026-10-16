@@ -30,7 +30,7 @@ import { AskDialog, AskDialogData } from './ask-dialog';
 import { SelectionDialog, SelectionDialogData } from './selection-dialog';
 import { describeArrangement, describeAsk, describeSelection } from './ability-description';
 import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
-import { avatarSkills, extraSkillsOf } from './avatar-skills';
+import { avatarReveals, avatarSkills, extraSkillsOf } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
 import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
@@ -102,6 +102,7 @@ import { TPipe } from '../i18n/t.pipe';
                       [stash]="zoneCards(seat.stash?.zoneId ?? '')"
                       [dying]="dyingOf(seat)"
                       [skills]="viewerSkills()"
+                      [reveals]="viewerReveals()"
                       (useSkill)="submit($event)"
                     />
                   </div>
@@ -355,6 +356,12 @@ export class GameBoard {
   protected readonly viewerSkills = computed(() => {
     const seat = this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId());
     return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions(), extraSkillsOf(seat, this.gameService.registry), this.i18n.translator) : [];
+  });
+
+  // The viewer's Reveal buttons for their hidden Generals, on their avatar.
+  protected readonly viewerReveals = computed(() => {
+    const seat = this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId());
+    return seat ? avatarReveals(seat.generals, this.gameService.legalActions()) : [];
   });
 
   // The viewer's force colour, which their decision dialogs are themed in.

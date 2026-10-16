@@ -165,6 +165,15 @@ describe('ActionList', () => {
     expect(buttons[0].textContent).toContain('End Phase');
   });
 
+  it('Reveal: leaves a RevealGeneralAction to the avatar', () => {
+    const fixture = TestBed.createComponent(ActionList);
+    fixture.componentRef.setInput('actions', [{ kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' }] as Action[]);
+    fixture.componentRef.setInput('state', stateWithShaInHand());
+    fixture.componentRef.setInput('registry', emptyRegistry());
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('button')).toHaveLength(0);
+  });
+
   it('renders Material buttons', () => {
     const fixture = TestBed.createComponent(ActionList);
     fixture.componentRef.setInput('actions', [{ kind: 'EndPhaseAction', seatId: 'seat-0' }]);

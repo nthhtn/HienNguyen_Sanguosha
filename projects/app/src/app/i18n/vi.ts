@@ -399,6 +399,7 @@ export const vi: Messages = {
   'general.noSkills': 'Không có kỹ năng nào.',
   'avatar.hidden': 'Ẩn',
   'avatar.hiddenOwn': '{name} (ẩn)',
+  'avatar.reveal': 'Lật Tướng',
   'avatar.revealSkill': 'Lật Tướng: {name}',
   'ui.discard': 'Bỏ bài',
   'respDialog.title': 'Cần phản hồi',

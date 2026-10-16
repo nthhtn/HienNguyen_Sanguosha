@@ -400,6 +400,7 @@ export const en = {
   'general.noSkills': 'No skills listed.',
   'avatar.hidden': 'Hidden',
   'avatar.hiddenOwn': '{name} (hidden)',
+  'avatar.reveal': 'Reveal',
   'avatar.revealSkill': 'Reveal: {name}',
   'ui.discard': 'Discard',
   'respDialog.title': 'Response Needed',
