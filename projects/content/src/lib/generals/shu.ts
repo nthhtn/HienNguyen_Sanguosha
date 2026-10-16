@@ -4,7 +4,7 @@ import type { ContentRegistry, GameState } from 'engine';
 import { colourFor } from '../shared/suits';
 import type { GeneralSkillSet } from './types';
 import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
-import { handOf } from '../shared/queries';
+import { handOf, isShaCard } from '../shared/queries';
 import { ask, draw, heal, on, otherLivingSeatIds, reasonOf, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Shu base Generals' skills (General Skills spec, "Shu"). Every skill acts
@@ -36,7 +36,7 @@ export const dragonCourage: SkillDefinition = {
   id: 'dragon-courage',
   conversions: [
     { id: 'shan-as-sha', as: 'sha', cards: 1, accepts: (c) => c.definitionId === 'shan', when: 'both' },
-    { id: 'sha-as-shan', as: 'shan', cards: 1, accepts: (c) => c.definitionId === 'sha', when: 'respond' },
+    { id: 'sha-as-shan', as: 'shan', cards: 1, accepts: (c, _state, _seatId, registry) => isShaCard(registry, c.definitionId), when: 'respond' },
   ],
 };
 

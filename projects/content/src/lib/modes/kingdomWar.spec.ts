@@ -125,7 +125,10 @@ describe('Kingdom War setup and deal', () => {
     expect(deckOf(2).filter((c) => c.startsWith('shan '))).toHaveLength(15);
     expect(deckOf(2).filter((c) => c.startsWith('peach '))).toHaveLength(8);
     expect(deckOf(2).filter((c) => c.startsWith('wuxie '))).toHaveLength(3);
-    expect(deckOf(2)).toHaveLength(118);
+    // The elemental Sha: 5 Fire Attack, 9 Lightning Attack.
+    expect(deckOf(2).filter((c) => c.startsWith('fire-attack '))).toHaveLength(5);
+    expect(deckOf(2).filter((c) => c.startsWith('lightning-attack '))).toHaveLength(9);
+    expect(deckOf(2)).toHaveLength(132);
   });
 
   it('refuses to build a deck for a card with no printings', () => {

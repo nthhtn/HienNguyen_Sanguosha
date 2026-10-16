@@ -3,6 +3,7 @@ import { ContentRegistry } from '../registry/types';
 import { lookupCard } from '../registry/lookup';
 import { livingSeatOrderFrom } from '../rules/seatOrder';
 import { answeringConversions } from '../rules/legality';
+import { answersAs } from '../domain/usedCard';
 import { ApplyResult, Effect } from './effects';
 import { queueFront, withQueue } from './queue';
 
@@ -60,7 +61,7 @@ function applyWuxieCheck(state: GameState, effect: Extract<Effect, { kind: 'Wuxi
     const seat = state.seats.find((s) => s.id === seatId);
     const hand = seat && state.zones.find((z) => z.id === seat.hand.zoneId);
     // A counter card in hand, or a conversion that makes one.
-    return !!hand?.cards.some((c) => effect.counterCardIds.includes(c.definitionId)) || answeringConversions(state, seatId, effect.counterCardIds, registry, { revealedOnly: true }).length > 0;
+    return !!hand?.cards.some((c) => answersAs(c.definitionId, effect.counterCardIds, registry)) || answeringConversions(state, seatId, effect.counterCardIds, registry, { revealedOnly: true }).length > 0;
   };
   const index = effect.order.findIndex((seatId) => isLiving(state, seatId) && holdsCounter(seatId));
   if (index === -1) return { state, events: [] };

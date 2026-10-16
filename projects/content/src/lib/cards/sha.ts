@@ -46,7 +46,7 @@ function damageOf(step: CardStep): Effect {
       source: { kind: 'seat', seatId: step.userSeatId },
       target: step.target,
       amount: 1 + (shaData(step).extra ?? 0),
-      nature: 'normal',
+      nature: step.card.nature ?? 'normal',
       cause: { ...(first ? { cardInstanceId: first } : {}), card: step.card },
     },
   };
@@ -79,71 +79,81 @@ const shaPlayable = (state: GameState, seatId: string, registry: Parameters<type
 
 // Sha: see the Sha-Equipment spec's steps. Played in the Play Phase it counts
 // toward the limit and spends Wine at once, whatever its steps bring.
-export const shaCard: CardDefinition = {
-  id: 'sha',
-  name: 'Sha',
-  category: 'basic',
-  legalPlayTargets: (state, ctx, registry) => {
-    if (!shaPlayable(state, ctx.seatId, registry)) return [];
-    return shaTargetIds(state, ctx.seatId, registry).map((seatId) => [{ kind: 'seat' as const, seatId }]);
-  },
-  // Several targets at once (stage 9 spec, "Several equal targets"): Sky
-  // Scorcher's +2 when it is the user's last hand card (for a conversion: hand
-  // cards alone, and all of them), +1 after a won Heaven's Justice. Null when
-  // only one target is allowed.
-  targetPick: (state, ctx, registry) => {
-    if (!shaPlayable(state, ctx.seatId, registry)) return null;
-    const hand = handOf(state, ctx.seatId);
-    const lastCard = ctx.via ? ctx.via.fromHandOnly && hand.length === ctx.via.cards : hand.length === 1 && hand[0].instanceId === ctx.cardInstanceId;
-    const scorcher = lastCard ? Math.max(0, ...activeAbilities(state, ctx.seatId, registry).map((a) => a.modifiers?.extraTargetsWhenLastCard?.['sha'] ?? 0)) : 0;
-    const extra = shaFlag(state, ctx.seatId, SHA_FLAGS.extraTarget) ? 1 : 0;
-    const eligibleIds = shaTargetIds(state, ctx.seatId, registry);
-    const max = Math.min(1 + scorcher + extra, eligibleIds.length);
-    return max > 1 ? { eligibleIds, min: 1, max } : null;
-  },
-  play: (state, ctx) => {
-    if (ctx.respondingTo) return []; // played as an answer (a Duel, Barbarians, Coerce): the window decides what it does
-    if (ctx.targets.length === 0) return []; // no target chosen: a no-op rather than a crash
-    const boosted = !ctx.free && !!state.turn.flags?.[WINE_FLAG];
-    const spend: Effect[] = boosted ? [{ kind: 'SetTurnFlagEffect', flag: WINE_FLAG, value: false }] : [];
-    const picked = ctx.targets.slice(1).map((t) => t.seatId);
-    return [...spend, cardStep('sha-use', ctx.card, ctx.seatId, ctx.targets[0], { extra: boosted ? 1 : 0, ...(picked.length > 0 ? { picked } : {}) })];
-  },
-  onStep: (state, step, registry) => {
-    const data = shaData(step);
-    if (step.step === 'sha-use') {
-      const extraTargets: Target[] = (data.picked ?? []).map((seatId) => ({ kind: 'seat', seatId }));
-      return shaAt(state, step.card, step.userSeatId, [step.target, ...extraTargets], data.extra ?? 0);
-    }
-    // A target gone before its turn comes is simply skipped.
-    if (!isLiving(state, step.target.seatId)) return [];
-    switch (step.step) {
-      case 'sha-targeted':
-        return [shaStep(step, 'sha-armor')];
-      case 'sha-armor':
-        // An unblockable Sha hits; otherwise the target owes 1 Shan (2 against Matchless).
-        return shaData(step).unblockable
-          ? [shaStep(step, 'sha-hit')]
-          : [shaStep(step, 'sha-shan', { needed: answersNeededAgainst(state, step.userSeatId, registry, step.target.seatId), provided: 0 })];
-      case 'sha-shan':
-        return (data.provided ?? 0) >= (data.needed ?? 1) ? [shaStep(step, 'sha-dodged')] : [shanWindow(step)];
-      case 'sha-dodged':
-        return [];
-      case 'sha-hit':
-        return [shaStep(step, 'sha-damage')];
-      case 'sha-damage':
-        return [damageOf(step), shaStep(step, 'sha-damaged', { logFrom: state.log.length })];
-      case 'sha-damaged':
-        // Triggers fire on a step before it runs, so the gate is its own step:
-        // 'sha-after-damage' is only queued (and only seen by triggers) when the
-        // target took damage (not cancelled, not redirected to another seat).
-        return state.log.slice(data.logFrom ?? 0).some((e) => e.kind === 'DamageDealtEvent' && e.damage.target.kind === 'seat' && e.damage.target.seatId === step.target.seatId)
-          ? [shaStep(step, 'sha-after-damage')]
-          : [];
-      case 'sha-after-damage':
-        return [];
-      default:
-        throw new Error(`Sha has no step ${step.step}`);
-    }
-  },
-};
+// `nature`: an elemental Sha (Fire Attack, Lightning Attack). It plays as a Sha
+// (UsedCard.as 'sha', so Sha's play and steps below run for it), carrying its
+// nature, which its damage takes (damageOf). Converted to Sha, it is plain.
+function shaDefinition(id: string, name: string, nature?: 'fire' | 'thunder'): CardDefinition {
+  return {
+    id,
+    name,
+    category: 'basic',
+    ...(nature ? { playsAs: 'sha', nature } : {}),
+    legalPlayTargets: (state, ctx, registry) => {
+      if (!shaPlayable(state, ctx.seatId, registry)) return [];
+      return shaTargetIds(state, ctx.seatId, registry).map((seatId) => [{ kind: 'seat' as const, seatId }]);
+    },
+    // Several targets at once (stage 9 spec, "Several equal targets"): Sky
+    // Scorcher's +2 when it is the user's last hand card (for a conversion: hand
+    // cards alone, and all of them), +1 after a won Heaven's Justice. Null when
+    // only one target is allowed.
+    targetPick: (state, ctx, registry) => {
+      if (!shaPlayable(state, ctx.seatId, registry)) return null;
+      const hand = handOf(state, ctx.seatId);
+      const lastCard = ctx.via ? ctx.via.fromHandOnly && hand.length === ctx.via.cards : hand.length === 1 && hand[0].instanceId === ctx.cardInstanceId;
+      const scorcher = lastCard ? Math.max(0, ...activeAbilities(state, ctx.seatId, registry).map((a) => a.modifiers?.extraTargetsWhenLastCard?.['sha'] ?? 0)) : 0;
+      const extra = shaFlag(state, ctx.seatId, SHA_FLAGS.extraTarget) ? 1 : 0;
+      const eligibleIds = shaTargetIds(state, ctx.seatId, registry);
+      const max = Math.min(1 + scorcher + extra, eligibleIds.length);
+      return max > 1 ? { eligibleIds, min: 1, max } : null;
+    },
+    play: (state, ctx) => {
+      if (ctx.respondingTo) return []; // played as an answer (a Duel, Barbarians, Coerce): the window decides what it does
+      if (ctx.targets.length === 0) return []; // no target chosen: a no-op rather than a crash
+      const boosted = !ctx.free && !!state.turn.flags?.[WINE_FLAG];
+      const spend: Effect[] = boosted ? [{ kind: 'SetTurnFlagEffect', flag: WINE_FLAG, value: false }] : [];
+      const picked = ctx.targets.slice(1).map((t) => t.seatId);
+      return [...spend, cardStep('sha-use', ctx.card, ctx.seatId, ctx.targets[0], { extra: boosted ? 1 : 0, ...(picked.length > 0 ? { picked } : {}) })];
+    },
+    onStep: (state, step, registry) => {
+      const data = shaData(step);
+      if (step.step === 'sha-use') {
+        const extraTargets: Target[] = (data.picked ?? []).map((seatId) => ({ kind: 'seat', seatId }));
+        return shaAt(state, step.card, step.userSeatId, [step.target, ...extraTargets], data.extra ?? 0);
+      }
+      // A target gone before its turn comes is simply skipped.
+      if (!isLiving(state, step.target.seatId)) return [];
+      switch (step.step) {
+        case 'sha-targeted':
+          return [shaStep(step, 'sha-armor')];
+        case 'sha-armor':
+          // An unblockable Sha hits; otherwise the target owes 1 Shan (2 against Matchless).
+          return shaData(step).unblockable
+            ? [shaStep(step, 'sha-hit')]
+            : [shaStep(step, 'sha-shan', { needed: answersNeededAgainst(state, step.userSeatId, registry, step.target.seatId), provided: 0 })];
+        case 'sha-shan':
+          return (data.provided ?? 0) >= (data.needed ?? 1) ? [shaStep(step, 'sha-dodged')] : [shanWindow(step)];
+        case 'sha-dodged':
+          return [];
+        case 'sha-hit':
+          return [shaStep(step, 'sha-damage')];
+        case 'sha-damage':
+          return [damageOf(step), shaStep(step, 'sha-damaged', { logFrom: state.log.length })];
+        case 'sha-damaged':
+          // Triggers fire on a step before it runs, so the gate is its own step:
+          // 'sha-after-damage' is only queued (and only seen by triggers) when the
+          // target took damage (not cancelled, not redirected to another seat).
+          return state.log.slice(data.logFrom ?? 0).some((e) => e.kind === 'DamageDealtEvent' && e.damage.target.kind === 'seat' && e.damage.target.seatId === step.target.seatId)
+            ? [shaStep(step, 'sha-after-damage')]
+            : [];
+        case 'sha-after-damage':
+          return [];
+        default:
+          throw new Error(`Sha has no step ${step.step}`);
+      }
+    },
+  };
+}
+
+export const shaCard = shaDefinition('sha', 'Sha');
+export const fireAttackCard = shaDefinition('fire-attack', 'Fire Attack', 'fire');
+export const lightningAttackCard = shaDefinition('lightning-attack', 'Lightning Attack', 'thunder');

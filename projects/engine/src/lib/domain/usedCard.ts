@@ -1,12 +1,30 @@
 import { CardInstance, UsedCard } from './types';
+import type { ContentRegistry } from '../registry/types';
 
 export function colourOf(card: Pick<CardInstance, 'suit'>): 'red' | 'black' {
   return card.suit === 'heart' || card.suit === 'diamond' ? 'red' : 'black';
 }
 
-// One physical card used as itself.
-export function usedCardOf(card: CardInstance): UsedCard {
-  return { as: card.definitionId, colour: colourOf(card), suit: card.suit, rank: card.rank, physical: [card] };
+// One physical card used as itself. With the registry, a card that plays as
+// another (CardDefinition.playsAs) is used as that one, with its nature.
+export function usedCardOf(card: CardInstance, registry?: ContentRegistry): UsedCard {
+  const definition = registry?.cards.get(card.definitionId);
+  return {
+    as: definition?.playsAs ?? card.definitionId,
+    colour: colourOf(card),
+    suit: card.suit,
+    rank: card.rank,
+    physical: [card],
+    ...(definition?.nature ? { nature: definition.nature } : {}),
+  };
+}
+
+// Whether a physical card of `definitionId` answers as one of `cardIds`: it is
+// one of them, or plays as one (CardDefinition.playsAs).
+export function answersAs(definitionId: string, cardIds: readonly string[], registry?: ContentRegistry): boolean {
+  if (cardIds.includes(definitionId)) return true;
+  const playsAs = registry?.cards.get(definitionId)?.playsAs;
+  return playsAs !== undefined && cardIds.includes(playsAs);
 }
 
 // Cards used together as one `as` card (Serpent Spear's 2 hand cards as a Sha):

@@ -66,6 +66,17 @@ export function shaLimit(state: GameState, seatId: string, registry: ContentRegi
   return base + (shaFlag(state, seatId, SHA_FLAGS.extraPlay) ? 1 : 0);
 }
 
+// What a physical card of `definitionId` counts as when used as itself: the
+// card it plays as (a Fire Attack is a Sha), else itself.
+export function playsAsOf(registry: ContentRegistry, definitionId: string): string {
+  return registry.cards.get(definitionId)?.playsAs ?? definitionId;
+}
+
+// Whether a physical card is a Sha: Sha itself, Fire Attack or Lightning Attack.
+export function isShaCard(registry: ContentRegistry, definitionId: string): boolean {
+  return playsAsOf(registry, definitionId) === 'sha';
+}
+
 // Every living seat other than `seatId`, as single-target lists, in seat order.
 export function otherLivingSeatTargets(state: GameState, seatId: string): Target[][] {
   return [...state.seats]

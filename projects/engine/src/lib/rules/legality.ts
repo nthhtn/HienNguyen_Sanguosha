@@ -1,5 +1,6 @@
 import { AbilityOwner, CardInstance, GameState, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
+import { answersAs } from '../domain/usedCard';
 import { ContentRegistry, Conversion, PlayOptionsContext, TargetPick } from '../registry/types';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { sameValue } from './offered';
@@ -60,7 +61,7 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     if (pending.allowedActionKinds.includes('RespondAction')) {
       const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
       for (const card of handZone?.cards ?? []) {
-        if (!pending.allowedCardIds || pending.allowedCardIds.includes(card.definitionId)) {
+        if (!pending.allowedCardIds || answersAs(card.definitionId, pending.allowedCardIds, registry)) {
           actions.push({
             kind: 'RespondAction',
             seatId,

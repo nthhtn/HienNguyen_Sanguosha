@@ -1,5 +1,5 @@
 import { GameState, GameEvent, PendingChoice, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
-import { usedCardFrom, usedCardOf } from '../domain/usedCard';
+import { answersAs, usedCardFrom, usedCardOf } from '../domain/usedCard';
 import { sameValue } from '../rules/offered';
 import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
@@ -469,7 +469,7 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
         if (!card) throw new Error(`Card ${id} is in no zone`);
         return card;
       });
-      const used = then.as ? usedCardFrom(cards, then.as, then.via) : usedCardOf(cards[0]);
+      const used = then.as ? usedCardFrom(cards, then.as, then.via) : usedCardOf(cards[0], ctx.registry);
       const respondTo = then.respondTo ? state.pendingResponse : null;
       if (then.respondTo && respondTo?.id !== then.respondTo) throw new Error(`Window ${then.respondTo} is no longer open`);
       return useCard(
@@ -531,7 +531,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!targetsAllowed(state, action.seatId, action.cardInstanceId, cardInHand.definitionId, action.targets, ctx.registry)) {
         throw new Error(`Card ${cardInHand.definitionId} cannot be played with those targets`);
       }
-      return useCard(state, action.seatId, usedCardOf(cardInHand), { targets: action.targets, counted: true }, ctx);
+      return useCard(state, action.seatId, usedCardOf(cardInHand, ctx.registry), { targets: action.targets, counted: true }, ctx);
     }
 
     case 'PassAction': {
@@ -557,10 +557,10 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!cardInHand) {
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
-      if (pending.allowedCardIds && !pending.allowedCardIds.includes(cardInHand.definitionId)) {
+      if (pending.allowedCardIds && !answersAs(cardInHand.definitionId, pending.allowedCardIds, ctx.registry)) {
         throw new Error(`Card ${cardInHand.definitionId} is not a legal response here`);
       }
-      return useCard(state, action.seatId, usedCardOf(cardInHand), { targets: [], respondTo: pending, counted: false }, ctx);
+      return useCard(state, action.seatId, usedCardOf(cardInHand, ctx.registry), { targets: [], respondTo: pending, counted: false }, ctx);
     }
 
     case 'EndPhaseAction': {

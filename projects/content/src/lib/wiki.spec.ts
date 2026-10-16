@@ -89,10 +89,10 @@ describe('wikiGenerals', () => {
 });
 
 describe('wikiCards', () => {
-  it('lists the basic cards by pack then name; the Army ones are not in the game', () => {
+  it('lists the basic cards by pack then name; all are in the game', () => {
     const basic = wikiCards('basic');
     expect(basic.map((c) => c.name)).toEqual(['Peach', 'Sha', 'Shan', 'Fire Attack', 'Lightning Attack', 'Wine']);
-    expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual(['fire-attack', 'lightning-attack']);
+    expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual([]);
   });
 
   it('records the Army basics with their spreadsheet printings', () => {

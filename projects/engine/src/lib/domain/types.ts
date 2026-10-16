@@ -282,6 +282,9 @@ export interface UsedCard {
   rank?: number;
   physical: CardInstance[];
   via?: { owner: AbilityOwner; abilityId: string; conversionId: string };
+  // The damage nature it carries: set only on a card used as itself whose
+  // definition has one (a Fire Attack is a fire Sha). A converted card has none.
+  nature?: 'fire' | 'thunder';
 }
 
 // Who reads a judgment: a card through its definition's onJudged (a delayed

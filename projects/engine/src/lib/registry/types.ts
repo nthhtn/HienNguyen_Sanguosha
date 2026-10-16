@@ -52,6 +52,12 @@ export interface CardDefinition {
   targetPick?(state: GameState, ctx: PlayOptionsContext, registry: ContentRegistry): TargetPick | null;
   // Never dealt (Blaze: made only by a skill).
   outOfDeck?: true;
+  // The card is another card in every respect when used as itself (a Fire
+  // Attack is a Sha): it is used as that id (UsedCard.as), and answers a window
+  // that asks for that id. Its own legalPlayTargets/targetPick still offer it.
+  playsAs?: string;
+  // The damage nature the card carries when used as itself (UsedCard.nature).
+  nature?: 'fire' | 'thunder';
   play(state: GameState, ctx: PlayContext, registry: ContentRegistry): unknown[];
   // Called when a seat answers a response window this card opened (see
   // PendingResponse.sourceCard), after the answering card's own effects. Its
