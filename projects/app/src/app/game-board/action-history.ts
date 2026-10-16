@@ -61,6 +61,10 @@ export function actionHistory(
   const knownFaces = new Map<string, CardInstance>();
   // The card each seat showed last, and its line (competing folds two into one).
   const lastShown = new Map<string, { card: CardInstance; line: ActionLine }>();
+  // The card each seat last put under its General (Refusing Death), for its outcome line.
+  const lastPutUnder = new Map<string, CardInstance>();
+  // The last "chose a seat" line, so a skill's own outcome line can replace it (Fantasy).
+  let lastChoseSeat: { line: ActionLine; seatId: string } | null = null;
   let swapFirst: string | null = null;
   // The latest judgment line, remembered as data so "Counts as Shan" can fold into it
   // by seat and reader id instead of by reading its text.
@@ -171,6 +175,7 @@ export function actionHistory(
         }
         // A card put under a General (Refusing Death).
         if (event.card && to?.kind === 'pile' && to.ownerSeatId) {
+          lastPutUnder.set(to.ownerSeatId, event.card);
           action(tr('history.putUnder', { seat: name(to.ownerSeatId), card: named(event.card) }), event.card);
           break;
         }
@@ -241,6 +246,7 @@ export function actionHistory(
         } else if (shows.kind === 'seat') {
           const given = lastPicked?.seatId === event.seatId ? lastPicked.count : 0;
           action(event.verb === 'give' ? tr('history.gaveCards', { chooser, cards: cards(given), target: name(shows.seatId) }) : tr('history.chose', { chooser, what: name(shows.seatId) }));
+          if (event.verb !== 'give') lastChoseSeat = { line: entries[entries.length - 1] as ActionLine, seatId: event.seatId };
         } else if (shows.kind === 'suit') {
           action(tr('history.namedSuit', { chooser, suit: suitSymbol(shows.suit) }));
         } else if (shows.kind === 'label' && reason.kind === 'ability' && reason.cardId) {
@@ -277,10 +283,13 @@ export function actionHistory(
           action(tr('history.unblockable', { owner, ability, target: name(event.targetSeatId), shan }));
         } else if (event.outcome === 'moved' && event.targetSeatId) {
           action(tr('history.movedSha', { owner, ability, target: name(event.targetSeatId), sha }));
-        } else if (event.outcome === 'stays-alive') {
-          action(tr('history.staysAlive', { owner, ability }));
-        } else if (event.outcome === 'matched') {
-          action(tr('history.rankMatched', { owner, ability }));
+        } else if (event.outcome === 'moved-damage' && event.targetSeatId) {
+          // Said in place of the owner's own "chose Seat 3" line just before it.
+          if (lastChoseSeat && entries[entries.length - 1] === lastChoseSeat.line && lastChoseSeat.seatId === event.owner.seatId) entries.pop();
+          action(tr('history.movedDamage', { owner, ability, target: name(event.targetSeatId) }));
+        } else if (event.outcome === 'stays-alive' || event.outcome === 'matched') {
+          const turned = lastPutUnder.get(event.owner.seatId);
+          action(tr(event.outcome === 'stays-alive' ? 'history.staysAlive' : 'history.rankMatched', { owner, ability, card: turned ? cardFaceLabel(turned) : tr('history.card') }));
         } else if ((event.outcome === 'claim-true' || event.outcome === 'claim-false') && event.cardId) {
           action(tr(event.outcome === 'claim-true' ? 'history.claimTrue' : 'history.claimFalse', { owner, card: cardName(event.cardId, tr) }));
         } else if (event.outcome === 'took-hand-card' && event.targetSeatId) {

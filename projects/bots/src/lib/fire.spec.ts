@@ -213,6 +213,22 @@ describe('Fire Strategy and Blaze', () => {
   });
 });
 
+describe('Blaze and Peaches', () => {
+  const blaze = (hand: ReturnType<typeof card>[]) =>
+    run(table({ 'seat-a:hand': [card('m', 'duel', 'diamond', 2)], 'seat-b:hand': hand }), [
+      { kind: 'ToolRuleEffect', tool: { as: 'blaze', colour: 'red', physical: [] }, userSeatId: 'seat-a', target: { kind: 'seat', seatId: 'seat-b' } },
+    ]);
+  it('Blaze never discards a Peach while another card is eligible', () => {
+    // The Peach is the least useful by suit/rank ordering only if the ranking let it be; it must be skipped.
+    const s = blaze([card('pe', 'peach', 'diamond', 3), card('sh', 'sha', 'diamond', 9)]);
+    expect(picked(decide(s))).not.toEqual(['pe']);
+  });
+  it('discards the Peach when it is the only eligible card', () => {
+    const s = blaze([card('pe', 'peach', 'diamond', 3)]);
+    expect(picked(decide(s))).toEqual(['pe']);
+  });
+});
+
 describe('See Through', () => {
   it('answers a harmful Tool aimed at itself with a black card', () => {
     const s = act(

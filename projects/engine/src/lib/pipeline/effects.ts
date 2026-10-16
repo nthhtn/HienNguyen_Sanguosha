@@ -1,8 +1,9 @@
-import { AbilityOwner, GeneralOwner, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GeneralOwner, GameEvent, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, recordCountsAs, requireZoneOfKind } from '../cards/zones';
 import { EngineEvent } from './events';
+import type { TriggerPoint } from '../registry/types';
 import { isFaceUpZoneKind } from '../domain/redact';
 
 export type Effect =
@@ -106,6 +107,10 @@ export type Effect =
   | { kind: 'OpenSelectionEffect'; selection: PendingSelection }
   // One step of a General's skill (SkillDefinition.onStep).
   | { kind: 'SkillStepEffect'; owner: GeneralOwner; step: string; data?: Record<string, unknown> }
+  // `owner`'s triggers at `point` for `subject`, gathered now and queued: a
+  // skill gained while that event's after-triggers resolve still takes part
+  // (Incarnation's Form chosen at Start). Logs nothing.
+  | { kind: 'FireSkillTriggersEffect'; owner: GeneralOwner; point: TriggerPoint; subject: GameEvent }
   // `seatId` uses `card` at `targets`, as a play outside any limit: a card a
   // skill makes a seat use (Sow Discord's Duel). Not counted toward limits.
   // `counted`: a play toward per-turn limits, spending Wine; `answering`: the
@@ -389,6 +394,7 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     case 'ToolResolvedEffect':
       return { state, events: [] };
     case 'SkillStepEffect':
+    case 'FireSkillTriggersEffect':
     case 'UseCardEffect':
       throw new Error(`${effect.kind} needs the registry: resolve it through the pipeline`);
     default:

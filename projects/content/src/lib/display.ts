@@ -195,20 +195,26 @@ export function choicePromptText(abilityId: string, locale = 'en'): string | nul
   return lookup(proseOf(locale)?.choicePrompt, abilityId) ?? lookup(CHOICE_PROMPT_TEXT, abilityId) ?? null;
 }
 
-// What a selection says by the step it leads to, whatever opened it:
-// competing (any skill's), and Blaze's two picks.
+// What a selection says by the step it leads to: competing and Blaze's picks
+// (any skill's), and a skill's own step keyed "skill/step".
 const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?: string }> = {
   'compete-user': { prompt: 'Choose a hand card to compete with', confirm: 'Compete' },
   'compete-target': { prompt: 'Choose a hand card to compete with', confirm: 'Compete' },
   'blaze-shown': { prompt: 'Choose a hand card to show', confirm: 'Show' },
   'blaze-hit': { prompt: 'Discard a card of the same suit to deal 1 damage', confirm: 'Discard' },
-  pay: { prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' },
+  'alliance/swap': { prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' },
   'draw-take': { prompt: 'Choose up to 2 seats to take a hand card from', confirm: 'Take' },
   'move-card': { prompt: 'Choose a seat to move a card from', confirm: 'Choose' },
 };
 
-export function stepSelectionText(step: string, locale = 'en'): { prompt: string; confirm: string; cancel?: string } | null {
-  return lookup(proseOf(locale)?.stepSelection, step) ?? lookup(STEP_SELECTION_TEXT, step) ?? null;
+// A skill's own step ("alliance/swap") is found before a step name shared by any skill.
+export function stepSelectionText(step: string, locale = 'en', skillId?: string): { prompt: string; confirm: string; cancel?: string } | null {
+  const keys = skillId ? [`${skillId}/${step}`, step] : [step];
+  for (const key of keys) {
+    const found = lookup(proseOf(locale)?.stepSelection, key) ?? lookup(STEP_SELECTION_TEXT, key);
+    if (found) return found;
+  }
+  return null;
 }
 
 // A skill's id: its English name in kebab case, apostrophes dropped

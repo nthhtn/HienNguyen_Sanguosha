@@ -99,7 +99,7 @@
     "compete-target": { "prompt": "Chọn một lá bài trên tay để đấu điểm", "confirm": "Đấu điểm" },
     "blaze-shown": { "prompt": "Chọn một lá bài trên tay để cho xem", "confirm": "Cho xem" },
     "blaze-hit": { "prompt": "Bỏ một lá cùng chất để gây 1 sát thương", "confirm": "Bỏ bài" },
-    "pay": { "prompt": "Chọn các lá bài để bỏ cho Alliance", "confirm": "Bỏ bài" },
+    "alliance/swap": { "prompt": "Chọn các lá bài để bỏ cho Alliance", "confirm": "Bỏ bài" },
     "draw-take": { "prompt": "Chọn tối đa 2 người chơi để lấy một lá bài trên tay", "confirm": "Lấy" },
     "move-card": { "prompt": "Chọn một người chơi để chuyển một lá bài từ họ", "confirm": "Chọn" }
   },

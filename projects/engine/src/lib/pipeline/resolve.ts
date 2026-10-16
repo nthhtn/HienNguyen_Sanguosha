@@ -6,7 +6,7 @@ import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
 import { Effect, applyDying, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
-import { gatherTriggeredSkills } from '../skills/triggers';
+import { GatheredTrigger, gatherTriggeredSkills } from '../skills/triggers';
 import { findZoneByKind, moveCard, requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
 import { cardsOverHandLimit } from '../rules/handLimit';
@@ -128,16 +128,42 @@ function logged(state: GameState, events: GameEvent[]): GameState {
   return { ...state, log: [...state.log, ...(events as GameState['log'])] };
 }
 
+// Using a hidden General's skill reveals it first. An ask reveals on Use, and a
+// trigger may reveal for itself; any other output of such a trigger gets the
+// reveal of the owner’s slot in front of it. No output: no reveal.
+function revealFor(gathered: GatheredTrigger, outputs: readonly unknown[]): Effect[] {
+  const owner = gathered.owner;
+  if (!gathered.needsReveal || owner?.kind !== 'general' || outputs.length === 0) return [];
+  const revealsItself = outputs.some((o) => {
+    const kind = (o as { kind?: unknown }).kind;
+    return kind === 'AskUseEffect' || kind === 'RevealGeneralEffect';
+  });
+  return revealsItself ? [] : [{ kind: 'RevealGeneralEffect', seatId: owner.seatId, slot: owner.slot, forAbilityId: owner.skillId }];
+}
+
 // Every after-trigger follow-up for `events`, in event order then trigger
 // order. All are gathered against `state`, before any of them resolves.
 function afterTriggerFollowUps(state: GameState, events: GameEvent[], ctx: EngineContext): QueueItem[] {
   const followUps: QueueItem[] = [];
   for (const event of events) {
     for (const gathered of gatherTriggeredSkills(state, ctx.registry, ctx.mode, `after:${event.kind}`, event)) {
-      followUps.push(...(gathered.trigger.effect(state, event, gathered.owner, ctx.registry) as QueueItem[]));
+      const outputs = gathered.trigger.effect(state, event, gathered.owner, ctx.registry) as QueueItem[];
+      followUps.push(...revealFor(gathered, outputs), ...outputs);
     }
   }
   return followUps;
+}
+
+// One owner's triggers at `point` for `subject`, gathered against `state` now
+// and queued at the front (FireSkillTriggersEffect). Applies and logs nothing.
+function fireSkillTriggers(state: GameState, effect: Extract<Effect, { kind: 'FireSkillTriggersEffect' }>, ctx: EngineContext): ResolveResult {
+  const followUps: QueueItem[] = [];
+  for (const gathered of gatherTriggeredSkills(state, ctx.registry, ctx.mode, effect.point, effect.subject)) {
+    if (!gathered.owner || !sameAbilityOwner(gathered.owner, effect.owner)) continue;
+    const outputs = gathered.trigger.effect(state, effect.subject, gathered.owner, ctx.registry) as QueueItem[];
+    followUps.push(...revealFor(gathered, outputs), ...outputs);
+  }
+  return { state: queueFront(state, followUps), events: [] };
 }
 
 // Logs events that happened outside applyEffect, and queues their after-trigger
@@ -200,6 +226,10 @@ function rewriteEffect(state: GameState, effect: Effect, ctx: EngineContext): { 
   for (const [index, gathered] of beforeTriggers.entries()) {
     if (index > 0 && !gathered.trigger.condition(state, current, gathered.owner, ctx.registry)) continue;
     const outputs = gathered.trigger.effect(state, current, gathered.owner, ctx.registry) as Effect[];
+    // A rewrite can't put a reveal ahead of the effect it rewrites: content must ask.
+    if (gathered.owner?.kind === 'general' && revealFor(gathered, outputs).length > 0) {
+      throw new Error(`${gathered.owner.skillId} needs a reveal but returns direct effects from a before-trigger`);
+    }
     if (outputs.length === 0) return null;
     current = outputs[0];
     after.unshift(...outputs.slice(1));
@@ -237,7 +267,9 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
         ? applyCardStep(state, current, ctx.registry)
         : current.kind === 'SkillStepEffect'
           ? applySkillStep(state, current, ctx.registry)
-          : current.kind === 'DyingEffect'
+          : current.kind === 'FireSkillTriggersEffect'
+            ? fireSkillTriggers(state, current, ctx)
+            : current.kind === 'DyingEffect'
             ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry, { revealedOnly: true }).length > 0)
             : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];

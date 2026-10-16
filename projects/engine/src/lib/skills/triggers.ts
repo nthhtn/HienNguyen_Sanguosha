@@ -6,7 +6,7 @@ import {
   TriggerOwner,
   TriggerPoint,
 } from '../registry/types';
-import { skillsInPlay } from './generalSkills';
+import { heldSkills, skillsInPlay } from './generalSkills';
 
 // A trigger paired with the General or worn card it was gathered for. `owner` is
 // undefined for mode-level triggers, which belong to the GameModeDefinition
@@ -41,13 +41,10 @@ export function gatherTriggeredSkills(
   // An eliminated seat's afterDeath skills, for its own elimination only.
   const dying = point === 'after:SeatEliminatedEvent' ? (subject as { seatId?: string }).seatId : undefined;
   const gone = dying ? state.seats.find((s) => s.id === dying && s.eliminated && s.generals && !s.silenced) : undefined;
-  for (const slot of ['main', 'deputy'] as const) {
-    const general = gone?.generals?.[slot];
-    for (const skill of general ? (registry.generals.get(general.generalDefinitionId)?.skills ?? []) : []) {
-      if (!skill.afterDeath || skill.lord) continue;
-      for (const trigger of skill.triggers ?? []) {
-        if (trigger.point === point) candidates.push({ trigger, owner: { kind: 'general', seatId: gone!.id, slot, skillId: skill.id } });
-      }
+  for (const { owner, skill } of gone ? heldSkills(state, gone.id, registry) : []) {
+    if (!skill.afterDeath || skill.lord) continue;
+    for (const trigger of skill.triggers ?? []) {
+      if (trigger.point === point) candidates.push({ trigger, owner });
     }
   }
 

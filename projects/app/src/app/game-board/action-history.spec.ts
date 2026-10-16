@@ -493,8 +493,15 @@ describe('actionHistory: the Wind skills', () => {
 
   it('Refusing Death', () => {
     expect(texts([move(sha, 'drawPile', 'seat-0:pile')])).toEqual(['Seat 0 put Sha (7 ♠) under their General']);
-    expect(texts([used('seat-0', 'refusing-death', 'stays-alive')])).toEqual(["Seat 0's Refusing Death: no match, Seat 0 stays alive"]);
-    expect(texts([used('seat-0', 'refusing-death', 'matched')])).toEqual(["Seat 0's Refusing Death: a rank matched"]);
+    const put = move(sha, 'drawPile', 'seat-0:pile');
+    expect(texts([put, used('seat-0', 'refusing-death', 'stays-alive')]).slice(0, 1)).toEqual(["Seat 0's Refusing Death: 7 ♠ (no match)"]);
+    expect(texts([put, used('seat-0', 'refusing-death', 'matched')]).slice(0, 1)).toEqual(["Seat 0's Refusing Death: 7 ♠ matched"]);
+  });
+
+  it('Fantasy says where the damage went, in place of the plain choice line', () => {
+    const chose: EngineEvent = { kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'pick', reason: { kind: 'ability', owner: general('seat-0', 'fantasy'), abilityId: 'fantasy' }, shows: { kind: 'seat', seatId: 'seat-3' } };
+    const moved: EngineEvent = { kind: 'AbilityUsedEvent', owner: general('seat-0', 'fantasy'), abilityId: 'fantasy', outcome: 'moved-damage', targetSeatId: 'seat-3' };
+    expect(texts([chose, moved])).toEqual(["Seat 0's Fantasy moved the damage to Seat 3"]);
   });
 
   it('Bewilder', () => {

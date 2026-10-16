@@ -30,8 +30,6 @@ const rows: Row[] = [
   ['more-damage', 'more-damage', false, null, "Seat 0's Axe: 1 more damage", 'Axe của Người chơi 0: thêm 1 sát thương'],
   ['unblockable', 'unblockable', true, null, "Seat 0's Axe: Seat 1 can't play a Shan", 'Axe của Người chơi 0: Người chơi 1 không thể đánh Shan'],
   ['moved', 'moved', true, null, "Seat 0's Axe moved the Sha to Seat 1", 'Axe của Người chơi 0 chuyển Sha sang Người chơi 1'],
-  ['stays-alive', 'stays-alive', false, null, "Seat 0's Axe: no match, Seat 0 stays alive", 'Axe của Người chơi 0: không trùng khớp, Người chơi 0 vẫn sống'],
-  ['matched', 'matched', false, null, "Seat 0's Axe: a rank matched", 'Axe của Người chơi 0: một điểm trùng khớp'],
   ['claim-true', 'claim-true', false, 'sha', "Seat 0's Sha was true", 'Sha của Người chơi 0 là thật'],
   ['claim-false', 'claim-false', false, 'sha', "Seat 0's Sha was a bluff", 'Sha của Người chơi 0 là nói dối'],
   ['took-hand-card', 'took-hand-card', true, null, 'Seat 0 took a hand card from Seat 1 (Axe)', 'Người chơi 0 lấy một lá bài trên tay của Người chơi 1 (Axe)'],
@@ -88,6 +86,27 @@ describe('ability outcomes in English and Vietnamese', () => {
     const log = [used('used', { abilityId: 'upheaval' })];
     expect(en_(log)).toEqual([`Seat 0 used ${upheaval}: every other seat plays a Sha or loses 1 HP`]);
     expect(vi_(log)).toEqual([`Người chơi 0 dùng ${upheaval}: mỗi người chơi khác phải đánh một Sha hoặc mất 1 Sinh lực`]);
+  });
+});
+
+describe('Refusing Death and Fantasy', () => {
+  const turned: CardInstance = { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade', rank: 7 };
+  const put: EngineEvent = { kind: 'CardMovedEvent', cardInstanceId: 'sha-1', fromZoneId: 'drawPile', toZoneId: 'seat-0:pile', card: turned };
+  const zones = [{ id: 'seat-0:pile', kind: 'pile' as const, ownerSeatId: 'seat-0', cards: [] }];
+  const of = (log: EngineEvent[], translator?: typeof tr) => actionHistory(log, zones, players, [], translator).flatMap((e) => (e.kind === 'action' ? [e.text] : [])).slice(0, 1);
+
+  it('names the turned card, then no match or a match', () => {
+    const death = (outcome: string) => [put, used(outcome, { abilityId: 'refusing-death' })];
+    expect(of(death('stays-alive'))).toEqual(["Seat 0's Refusing Death: 7 ♠ (no match)"]);
+    expect(of(death('stays-alive'), tr)).toEqual([`${abilityName('refusing-death')} của Người chơi 0: 7 ♠ (không trùng khớp)`]);
+    expect(of(death('matched'))).toEqual(["Seat 0's Refusing Death: 7 ♠ matched"]);
+    expect(of(death('matched'), tr)).toEqual([`${abilityName('refusing-death')} của Người chơi 0: 7 ♠ trùng khớp`]);
+  });
+
+  it('Fantasy moved the damage', () => {
+    const moved = [used('moved-damage', { abilityId: 'fantasy', targetSeatId: 'seat-3' })];
+    expect(of(moved)).toEqual(["Seat 0's Fantasy moved the damage to Seat 3"]);
+    expect(of(moved, tr)).toEqual([`${abilityName('fantasy')} của Người chơi 0 chuyển sát thương sang Người chơi 3`]);
   });
 });
 

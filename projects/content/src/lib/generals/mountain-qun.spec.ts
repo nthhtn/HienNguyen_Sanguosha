@@ -86,6 +86,15 @@ describe('Cai Wenji — Heartbroken', () => {
     expect(inPlay(gained, 'seat-c')).toEqual([]);
   });
 
+  it('silences the killer when Zuo Ci holds Heartbroken as his chosen Form', () => {
+    const base = table({}, { generals: { 'seat-a': ['zuo-ci', 'filler-xu-huang', true], 'seat-c': ['zhang-he', 'liu-shan', true] }, hp: { 'seat-a': 1 } });
+    const withForm = { ...base, seats: base.seats.map((x) => (x.id === 'seat-a' ? { ...x, forms: { slot: 'main' as const, held: ['cai-wenji'], chosen: { generalId: 'cai-wenji', skillId: 'heartbroken' } } } : x)) };
+    let s = hk.run(withForm, [shaDamage('seat-c', 'seat-a')]);
+    for (let i = 0; i < 6 && s.pendingResponse; i++) s = hk.pass(s);
+    expect(s.seats.find((x) => x.id === 'seat-a')!.eliminated).toBe(true);
+    expect(s.seats.find((x) => x.id === 'seat-c')!.silenced).toBe(true);
+  });
+
   it('nothing happens when she dies with no killer, or by her own hand', () => {
     expect(killed({}, null).seats.some((x) => x.silenced)).toBe(false);
     expect(killed({}, 'seat-a').seats.some((x) => x.silenced)).toBe(false);
@@ -154,6 +163,50 @@ describe('Zuo Ci — Incarnation', () => {
     expect(redactStateForSeat(shown, 'seat-a').seats[0].forms?.held).toEqual(['zhou-yu', 'da-qiao']);
     const hidden = withForms({ generals: at('seat-a', 'zuo-ci', 'filler-xu-huang', false) });
     expect(redactStateForSeat(hidden, 'seat-b').seats[0].forms).toBeUndefined();
+  });
+});
+
+describe('Zuo Ci — Incarnation: a Form chosen at Start takes part in that Start (S10)', () => {
+  // Zuo Ci holds Zhen Ji (River Goddess: a Start trigger) and Da Qiao as Forms;
+  // seat-d's End passes the turn to his Start.
+  const startWith = (forms: object) => {
+    const s = table({ drawPile: Array.from({ length: 6 }, (_, i) => card(`d${i + 1}`, 'shan', 'heart', i + 1)) }, { generals: at('seat-a', 'zuo-ci'), owner: 'seat-d', phase: 'End' });
+    return h.settle({ ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, forms: { slot: 'main' as const, held: ['zhen-ji', 'da-qiao'], ...forms } } : x)) });
+  };
+  // Answers every ask of his Start: Incarnation picks `pick` (or is declined), the rest are declined.
+  // The abilities asked about, in order, until the Start is over.
+  const askedThroughStart = (s: ReturnType<typeof table>, pick?: string) => {
+    const asked: string[] = [];
+    while (s.phase === 'Start' && s.pendingChoice) {
+      const about = askedAbout(s);
+      if (about) asked.push(about);
+      if (about === 'incarnation' && pick) s = h.choose(h.use(s), pick);
+      else s = h.decline(s);
+    }
+    return asked;
+  };
+
+  it('a Start-trigger skill chosen at Zuo Ci’s Start fires once at that Start', () => {
+    expect(askedThroughStart(startWith({}), 'zhen-ji/river-goddess')).toEqual(['incarnation', 'river-goddess']);
+  });
+
+  it('the same skill does not fire twice at a later Start', () => {
+    const asked = askedThroughStart(startWith({ chosen: { generalId: 'zhen-ji', skillId: 'river-goddess' } }));
+    expect(asked.filter((a) => a === 'river-goddess')).toHaveLength(1);
+  });
+});
+
+describe('Zuo Ci — Incarnation: a Form chosen at End takes part in that End (S10)', () => {
+  // Diao Chan's Eclipse the Moon draws 1 at the start of its owner's End Phase.
+  it('a Form skill with an End trigger chosen at End fires exactly once at that End', () => {
+    const s = table({ drawPile: Array.from({ length: 6 }, (_, i) => card(`d${i + 1}`, 'shan', 'heart', i + 1)) }, { generals: at('seat-a', 'zuo-ci'), owner: 'seat-a', phase: 'Play' });
+    const base = { ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, forms: { slot: 'main' as const, held: ['diao-chan', 'da-qiao'] } } : x)) };
+    const before = handIds(base, 'seat-a').length;
+    let ended = h.act(h.settle(base), { kind: 'EndPhaseAction', seatId: 'seat-a' });
+    expect(askedAbout(ended)).toBe('incarnation');
+    ended = h.choose(h.use(ended), 'diao-chan/eclipse-the-moon');
+    while (ended.phase === 'End' && ended.pendingChoice) ended = h.decline(ended);
+    expect(handIds(ended, 'seat-a').length - before).toBe(1);
   });
 });
 

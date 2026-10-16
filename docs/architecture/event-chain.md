@@ -380,7 +380,11 @@ A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
 `RevealGeneralEffect` (with `forAbilityId`) at the front of its Use option. A
 hidden General's conversion or active skill reveals when its first selection
 is confirmed: `PendingSelection.onSelect` resolves at the confirm, before the
-continuation. Cancel leaves the General hidden.
+continuation. Cancel leaves the General hidden. A hidden General's after-trigger
+that returns neither an ask nor a `RevealGeneralEffect` gets a `RevealGeneralEffect`
+for its slot in front of its outputs (`revealFor`; no outputs, no reveal). A hidden
+General's before-trigger that returns direct effects throws: it cannot place a
+reveal ahead of the effect it rewrites, so content must ask instead.
 
 **Active skills.** `SkillDefinition.active` gives a `UseSkillAction` in its
 owner's Play Phase while `canUse` holds and `Turn.abilityUses` is under
@@ -502,7 +506,8 @@ condition.
   returns nothing, so no trigger, modifier, active skill or conversion remains.
 - **A skill that outlives its owner.** An eliminated seat has no skills in play.
   `SkillDefinition.afterDeath` skills are gathered for their own seat's
-  `SeatEliminatedEvent` only. The killer travels on the dying round:
+  `SeatEliminatedEvent` only. They include gained skills and the chosen Form
+  (the seat's `heldSkills`), not only its printed skills. The killer travels on the dying round:
   `DyingEffect.killerSeatId` (set by the mode from the fatal damage's source) →
   `SeatEliminatedEvent.killerSeatId`.
 - **Spare Generals (Forms).** `GameState.spareGenerals` is the pool of Generals
@@ -511,6 +516,9 @@ condition.
   (`DealSpareGeneralsEffect`, which logs nothing: the log is public).
   `ChooseFormSkillEffect` sets `Seat.forms.chosen`; `skillsInPlay` then includes
   that skill under the holding slot, and content's `seatGender` follows the Form.
+  Incarnation follows the choice with `FireSkillTriggersEffect`, so the new skill's
+  after-triggers for the event that caused the choice (Start, End or the reveal)
+  fire in that event.
   Redaction hides `forms` while the holder is hidden, shows `held` as hidden
   Generals otherwise, empties the pool, and empties a `PendingChoice.secret`
   choice's options for other viewers.
@@ -557,7 +565,8 @@ condition.
 | Turning a seat face down | `TurnFaceDownEffect`; its next turn is passed (`SeatTurnedEvent`) | Entrench |
 | Ending a Play Phase already entered | the `endFlagOf('Play')` turn flag | Godspeed |
 | Cards kept under a General | the seat's `pile` zone (`pileZoneOf`) | Refusing Death |
-| A conversion decided later | `Conversion.deferred` → the skill's `deferred` step; a window it answers is set aside, then answered (`UseCardEffect.answering`) or re-opened | Bewilder |
+| A conversion decided later | `Conversion.deferred` → the skill's `deferred` step; a window it answers is set aside, then answered (`UseCardEffect.answering`) or re-opened, only if the seat still has a legal non-Pass answer (else the guarded effect resolves as a Pass) | Bewilder |
+| A skill that gains a skill mid-event, and must fire it for the event in progress | `FireSkillTriggersEffect` (one owner's triggers at a point, for a subject event, queued at the front) | Incarnation's Form choice |
 | A suit that counts as another | `AbilityModifiers.suitAs`, read through content's `suitOf` / `colourFor` | Beauty |
 
 A new card or skill should need only its own definition. If a change seems to
@@ -571,7 +580,9 @@ fits instead.
    their follow-ups are queued in order. In the example, the deputy reveal and
    the dying round were both decided before the main reveal applied. That is
    right for today's triggers, but a trigger that depends on an earlier
-   trigger's outcome for the same event won't see it.
+   trigger's outcome for the same event won't see it. The one exception is
+   `FireSkillTriggersEffect`, which gathers a newly chosen Form skill's
+   after-triggers for the event in progress.
 2. **Trigger conditions are checked when gathered.** A follow-up waits in the
    queue; its trigger's condition was checked against the state at the moment
    the event happened, not when the follow-up runs.

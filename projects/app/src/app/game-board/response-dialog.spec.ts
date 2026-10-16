@@ -10,11 +10,11 @@ const description = {
   source: 'Seat 1 played Sha against Hing', latest: null, prompt: 'Your turn to respond to Sha', outcome: 'You lose 1 HP (1 damage from Seat 1)', outcomeForce: 'Shu' as const,
 };
 
-function render(cards: ResponseDialogData['cards'], skills: ResponseDialogData['skills'] = [], startOnNoResponse = false) {
+function render(cards: ResponseDialogData['cards'], skills: ResponseDialogData['skills'] = [], startOnNoResponse = false, passLabel?: string) {
   const close = jest.fn();
   TestBed.configureTestingModule({
     providers: [
-      { provide: MAT_DIALOG_DATA, useValue: { description, cards, skills, noResponse: pass, startOnNoResponse } satisfies ResponseDialogData },
+      { provide: MAT_DIALOG_DATA, useValue: { description: passLabel ? { ...description, passLabel } : description, cards, skills, noResponse: pass, startOnNoResponse } satisfies ResponseDialogData },
       { provide: MatDialogRef, useValue: { close } },
     ],
   });
@@ -57,6 +57,12 @@ describe('ResponseDialog', () => {
     expect(el.querySelector('.card-option app-playing-card .face')!.textContent).toBe('2 ♥');
     expect(el.querySelector('.card-option input')!.getAttribute('aria-label')).toBe('Shan (2 ♥)');
     expect(el.textContent).toContain('No skills can respond');
+  });
+
+  it('Instigate: the window words its own Pass', () => {
+    const { el, confirm } = render([], [], false, 'Pass (Discard 1 Card)');
+    expect(el.querySelector('.no-response')!.textContent).toContain('Pass (Discard 1 Card)');
+    expect(confirm().textContent!.trim()).toBe('Pass (Discard 1 Card)');
   });
 
   it('starts on No Response, which is the only choice when nothing can answer', () => {

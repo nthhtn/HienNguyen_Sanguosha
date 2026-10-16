@@ -44,7 +44,7 @@ happens only because every optional trigger goes through `ask()`, which becomes
 (`afterTriggerFollowUps`, `rewriteEffect` in `pipeline/resolve.ts`) never reads
 `needsReveal`. New behaviour: when a trigger marked `needsReveal` produces
 effects that contain neither an ask nor a `RevealGeneralEffect`, the pipeline puts
-a `RevealGeneralEffect` for that skill's General in front of them. Scope: triggers
+a `RevealGeneralEffect` for that skill's General in front of them. Before-triggers cannot take the reveal (it would have to run ahead of the effect they rewrite, and the rewritten effect would be offered to the before-triggers again), so a hidden General's before-trigger that returns direct effects instead of an ask throws, as a loud content bug; every current before-trigger asks (Nirvana and Refusing Death included). Scope: triggers
 only. Active skills and conversions already add the reveal themselves
 (`pipeline/resolve.ts` ~631 and ~658-661). The General revealed is the one in the
 trigger owner's slot (`owner.slot`), which is also right for a borrowed or Form
@@ -93,20 +93,24 @@ skill on `after:PhaseChangedEvent` Start, but the after-triggers of an event are
 all gathered before any resolves, so the new skill misses them. Rule: *a Form skill
 chosen at the start of his turn takes part in that same Start, as if held from the
 beginning.* Scope: Incarnation's Form choice
-(`ChooseFormSkillEffect`) only; other mid-event skill gains are unchanged. After it
+(`ChooseFormSkillEffect`) only; other mid-event skill gains are unchanged. The
+firing follows the choice, whichever of its three triggers asked (Start, End, or the
+reveal path): the newly chosen skill's after-triggers for the event that caused the
+choice fire. The reveal path is a no-op today, since no Form skill has an
+`after:GeneralRevealedEvent` trigger. After it
 resolves, the after-triggers of that one newly chosen skill for the event being
 resolved are gathered and queued; before-triggers of that event have already
 passed and are not replayed; the previously chosen Form's triggers, if already
 gathered, are not recalled; no other skill fires twice. Spec: Zuo Ci chooses a Start-trigger skill at his own Start and
-it fires once at that Start.
+it fires once at that Start; a Form skill with an End trigger chosen at End fires once at that End.
 
 **S11. Bewilder.** Two fixes.
 - *Engine/content:* when Bewilder answers a response window and the lie fails (the
   card is discarded), the window re-opens only if the seat still has a legal answer
   other than Pass, read from the engine's own `getLegalActions` for that seat (so
-  conversions, other skills and equipment such as Eight Trigrams all count); if it
+  conversions and other skills count; equipment such as Eight Trigrams does not, because it is asked before the window opens); if it
   has none, the window resolves as no response without asking. Spec: a lie with an empty hand and no other answer does not
-  re-open the window; with Eight Trigrams worn it does.
+  re-open the window; with a real Shan in hand it does. (Eight Trigrams cannot be staged here: it is asked before the window opens, not offered inside it, so a seat wearing it has already answered or declined it when Bewilder is used; declined, a failed lie re-opens nothing, which a spec records.)
 - *Bot:* stage 8 says Yu Ji's bot *names only what the card truly is, unless it
   holds more than 4 cards, when it may bluff with its least useful card; it prefers
   true claims on hearts.* The code gates every deferred use on `hand > 4`, so the

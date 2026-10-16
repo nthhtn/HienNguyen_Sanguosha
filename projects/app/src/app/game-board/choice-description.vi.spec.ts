@@ -95,6 +95,8 @@ describe('the engine’s fixed label options', () => {
     expect(label('draw-x', 'Draw 3, Then Discard 1', trVi)).toBe('Rút 3 lá bài, rồi bỏ 1 lá');
     expect(label('draw-1', 'Draw 1, Then Discard 3', trVi)).toBe('Rút 1 lá bài, rồi bỏ 3 lá');
     expect(label('pass', 'Pass (Lose 1 HP)', trVi)).toBe('Bỏ qua (mất 1 Sinh lực)');
+    expect(label('cancel', 'Cancel', trVi)).toBe('Hủy');
+    expect(label('cancel', 'Cancel')).toBe('Cancel');
   });
 
   it('keep the engine’s English in English, for an unknown id, and when the text differs from the template', () => {

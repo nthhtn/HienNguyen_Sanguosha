@@ -306,8 +306,9 @@ describe('the Instigate window', () => {
   it('asks for a Sha at the instigator, or a card', () => {
     expect(describeResponse(state([], window), 'seat-1')).toMatchObject({
       source: 'Hing used Instigate',
-      prompt: 'Play a Sha at Hing, or discard a card?',
+      prompt: 'Use a Sha on Hing',
       outcome: 'Hing discards one of your cards',
+      passLabel: 'Pass (Discard 1 Card)',
     });
   });
 

@@ -76,7 +76,7 @@ const NO_RESPONSE = 'no-response';
 
         <mat-radio-button class="option no-response" [value]="noResponseId">
           <span class="option-body">
-            <span>{{ 'respDialog.none' | t }}</span>
+            <span>{{ data.description.passLabel ?? ('respDialog.none' | t) }}</span>
             <span class="outcome force-status" [attr.data-force]="data.description.outcomeForce">{{ 'respDialog.outcome' | t: { outcome: data.description.outcome } }}</span>
           </span>
         </mat-radio-button>
@@ -119,7 +119,7 @@ export class ResponseDialog {
   );
   protected readonly confirmLabel = computed(() => {
     const option = this.pickedOption();
-    if (!option) return this.i18n.t('respDialog.none');
+    if (!option) return this.data.description.passLabel ?? this.i18n.t('respDialog.none');
     return option.card ? this.i18n.t('label.action.respond', { card: this.name(option.card) }) : option.label;
   });
 

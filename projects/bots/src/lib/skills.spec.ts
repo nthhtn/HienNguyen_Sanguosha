@@ -1,4 +1,6 @@
 import type { CardInstance, Effect, GameState, PendingSelection } from 'engine';
+import { getLegalActions } from 'engine';
+import { conversionSpare } from './skills';
 import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
 
 describe('may-skills the bot always uses', () => {
@@ -162,5 +164,58 @@ describe('conversions', () => {
   it('a hidden General’s conversion only when the bot may reveal', () => {
     const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'filler-meng-huo', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
     expect(decide(hidden).kind).toBe('EndPhaseAction');
+  });
+});
+
+describe('Sow Revolt’s suit counts shown cards', () => {
+  it('leastShownSuit counts shown cards', () => {
+    const shown = (id: string) => ({ kind: 'CardShownEvent' as const, seatId: 'seat-b', card: card(id, 'sha', 'heart') });
+    const played = { kind: 'CardPlayedEvent' as const, seatId: 'seat-b', card: { as: 'sha', colour: 'black' as const, physical: [card('p', 'sha', 'spade')] }, targets: [] };
+    const naming: GameState = {
+      ...table(), log: [shown('a'), shown('b'), shown('c'), played],
+      pendingChoice: { id: 'n', seatId: 'seat-a', verb: 'pick', reason: { kind: 'ability', owner: general('seat-b', 'sow-revolt'), abilityId: 'sow-revolt', targetSeatId: 'seat-a' }, options: (['spade', 'heart', 'club', 'diamond'] as const).map((suit) => ({ id: suit, shows: { kind: 'suit' as const, suit }, effects: [] })) },
+    };
+    expect(picked(decide(naming))).toBe('club');
+  });
+});
+
+describe('Bewilder claims (conversionSpare)', () => {
+  const yuJi = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['yu-ji', 'filler-zuo-ci'] }, kingdoms: { 'seat-a': 'Qun' } });
+  const claim = (s: GameState, as: string) =>
+    getLegalActions(s, 'seat-a', registry).find((a) => a.kind === 'UseConversionAction' && a.via.conversionId === `bewilder-${as}`) as Extract<import('engine').Action, { kind: 'UseConversionAction' }>;
+  const filler = (n: number) => Array.from({ length: n }, (_, i) => card(`x${i}`, 'shan', 'club', i + 2));
+
+  it('a bot with 3 cards makes a true Bewilder claim', () => {
+    const s = yuJi([card('real', 'duel', 'heart', 5), ...filler(2)]);
+    expect(conversionSpare(s, s.seats[0], claim(s, 'duel'), registry)).toBe(true);
+  });
+  it('does not bluff with 3 cards', () => {
+    const s = yuJi(filler(3));
+    expect(conversionSpare(s, s.seats[0], claim(s, 'duel'), registry)).toBe(false);
+  });
+  it('may bluff with 5', () => {
+    const s = yuJi(filler(5));
+    expect(conversionSpare(s, s.seats[0], claim(s, 'duel'), registry)).toBe(true);
+  });
+});
+
+describe('fallbacks when no suitable seat is offered', () => {
+  const choice = (abilityId: string, ids: string[], opts: Parameters<typeof table>[1] = {}, extra: string[] = []): GameState => ({
+    ...table({}, opts),
+    pendingChoice: {
+      id: 'p', seatId: 'seat-a', verb: 'pick',
+      reason: { kind: 'ability', owner: general('seat-a', abilityId), abilityId },
+      options: [...ids.map((id) => ({ id, shows: { kind: 'seat' as const, seatId: id }, effects: [] })), ...extra.map((id) => ({ id, shows: { kind: 'label' as const, text: id }, effects: [] }))],
+    },
+  });
+  const allies = { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Wei' } as const };
+  it('Marriage with no ally offered cancels when it can', () => {
+    expect(picked(decide(choice('marriage', ['seat-d'], {}, ['cancel'])))).toBe('cancel');
+  });
+  it('Displace with only allies offered cancels when it can', () => {
+    expect(picked(decide(choice('displace', ['seat-b', 'seat-c'], allies, ['cancel'])))).toBe('cancel');
+  });
+  it('Displace with only allies and no cancel picks an ally rather than failing', () => {
+    expect(picked(decide(choice('displace', ['seat-b', 'seat-c'], allies)))).toMatch(/^seat-[bc]$/);
   });
 });

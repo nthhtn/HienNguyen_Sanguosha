@@ -96,6 +96,10 @@ describe('Mountain texts', () => {
     expect(selectionText('pleasure')?.cancel).toBe('Give Up');
     expect(stepSelectionText('draw-take')?.prompt).toBe('Choose up to 2 seats to take a hand card from');
     expect(stepSelectionText('move-card')?.prompt).toBe('Choose a seat to move a card from');
+    expect(stepSelectionText('swap', 'en', 'alliance')).toEqual({ prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' });
+    expect(stepSelectionText('swap', 'en', 'someone-else')).toBeNull();
+    expect(stepSelectionText('pay', 'en')).toBeNull();
+    expect(stepSelectionText('compete-user', 'en', 'rouse-the-tiger')?.confirm).toBe('Compete');
     expect(seatPickText('clever-change')).toBe('Choose a seat to move the card to');
     expect(choicePromptText('incarnation')).toBe('Choose a Form skill');
     expect(choicePromptText('stubborn')).toBe('Choose a card to give back; you take the others');

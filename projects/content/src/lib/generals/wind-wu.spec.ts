@@ -18,6 +18,7 @@ describe('Xiao Qiao — Fantasy', () => {
     expect(hp(s, 'seat-a')).toBe(4);
     expect(hp(s, 'seat-c')).toBe(3);
     expect(handIds(s, 'seat-c')).toEqual(['d1']);
+    expect(abilityLog(s).at(-1)).toMatchObject({ abilityId: 'fantasy', outcome: 'moved-damage', targetSeatId: 'seat-c' });
   });
 
   it("Beauty: her spades count as hearts for Fantasy's cost", () => {

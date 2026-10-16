@@ -254,10 +254,10 @@ describe('the Upheaval and Instigate windows, in English and Vietnamese', () => 
 
   it('Instigate: to the responder, to the instigator, and to a bystander', () => {
     expect(both((t) => describeResponse(state([], instigate), 'seat-1', undefined, t))).toMatchObject({
-      en: { source: 'Hing used Instigate', prompt: 'Play a Sha at Hing, or discard a card?', outcome: 'Hing discards one of your cards' },
-      vi: { source: 'Hing dùng Instigate', prompt: 'Đánh Sha vào Hing, hoặc bỏ một lá bài?', outcome: 'Hing bỏ một lá bài của bạn' },
+      en: { source: 'Hing used Instigate', prompt: 'Use a Sha on Hing', outcome: 'Hing discards one of your cards', passLabel: 'Pass (Discard 1 Card)' },
+      vi: { source: 'Hing dùng Instigate', prompt: 'Đánh Sha vào Hing', outcome: 'Hing bỏ một lá bài của bạn', passLabel: 'Bỏ qua (bỏ 1 lá bài)' },
     });
-    expect(both((t) => describeResponse(state([], instigate), 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Play a Sha at you, or discard a card?', vi: 'Đánh Sha vào bạn, hoặc bỏ một lá bài?' });
+    expect(both((t) => describeResponse(state([], instigate), 'seat-0', undefined, t)!.prompt)).toEqual({ en: 'Use a Sha on you', vi: 'Đánh Sha vào bạn' });
     expect(both((t) => describeResponse(state([], instigate), 'seat-2', undefined, t)!.outcome)).toEqual({ en: "Hing discards one of Seat 1's cards", vi: 'Hing bỏ một lá bài của Người chơi 1' });
   });
 });

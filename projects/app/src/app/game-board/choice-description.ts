@@ -14,6 +14,7 @@ const LABEL_OPTIONS: Record<string, { key: MessageKey; params: (numbers: string[
   'draw-1': { key: 'choice.label.draw1DiscardX', params: (n) => ({ n: n[1] }) },
   'lose-hp': { key: 'choice.label.loseHp', params: () => ({}) },
   'reduce-max-hp': { key: 'choice.label.reduceMaxHp', params: () => ({}) },
+  cancel: { key: 'selection.cancel', params: () => ({}) },
   pass: { key: 'choice.label.pass', params: () => ({}) },
   recover: { key: 'choice.label.recover', params: () => ({}) },
   draw: { key: 'choice.label.draw2', params: () => ({}) },
