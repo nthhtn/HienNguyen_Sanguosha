@@ -286,3 +286,84 @@ describe('redactStateForSeat: the log', () => {
     expect(JSON.stringify(redactStateForSeat(state, 'seat-b'))).toContain('refusing-death');
   });
 });
+
+describe('redactStateForSeat: ability keys in `acted` lists and use counters (final-fix F1, F2)', () => {
+  const owner = { kind: 'general' as const, seatId: 'seat-b', slot: 'main' as const, skillId: 'refusing-death' };
+  const dying = () => ({ kind: 'DyingEffect', seatId: 'seat-b', order: [], rescueCardIds: { any: [], self: [] }, acted: ['seat-b:main:refusing-death'] });
+  const asked = () => ({ kind: 'ChoiceMadeEvent', seatId: 'seat-b', reason: { kind: 'ability', owner, abilityId: 'refusing-death' }, verb: 'use', shows: 'none' }) as unknown as EngineEvent;
+  const views = (state: GameState) => [JSON.stringify(redactStateForSeat(state, 'seat-a')), JSON.stringify(redactStateForSeat(state, 'seat-b'))];
+
+  it('masks the ask’s options, which carry the skill’s `acted` key', () => {
+    const state = makeState();
+    state.pendingChoice = {
+      id: 'ask-refusing-death-seat-b-3', seatId: 'seat-b', reason: { kind: 'ability', owner, abilityId: 'refusing-death' }, verb: 'use',
+      options: [{ id: 'use', shows: { kind: 'label', text: 'Use' }, effects: [] }, { id: 'no', shows: { kind: 'label', text: "Don't" }, effects: [dying()] }],
+    } as unknown as GameState['pendingChoice'];
+    const [forA, forB] = views(state);
+    expect(forA).not.toContain('refusing-death');
+    expect(forA).toContain('seat-b:main:hidden');
+    expect(forB).toContain('seat-b:main:refusing-death');
+  });
+
+  it('masks a queued DyingEffect’s `acted` key after a declined ask (the log holds the choice)', () => {
+    const state = makeState();
+    state.log = [asked()];
+    state.resolutionQueue = [dying()] as unknown as GameState['resolutionQueue'];
+    const [forA, forB] = views(state);
+    expect(forA).not.toContain('refusing-death');
+    expect(forB).toContain('seat-b:main:refusing-death');
+  });
+
+  it('masks the `acted` key even when nothing else names the skill', () => {
+    const state = makeState();
+    state.resolutionQueue = [dying()] as unknown as GameState['resolutionQueue'];
+    const [forA, forB] = views(state);
+    expect(forA).not.toContain('refusing-death');
+    expect(forB).toContain('seat-b:main:refusing-death');
+  });
+
+  it('masks the use counter key in a cancellable active skill’s onSelect', () => {
+    const state = makeState();
+    const benevolence = { ...owner, skillId: 'benevolence' };
+    state.pendingSelection = {
+      id: 'sel-1', seatId: 'seat-b', reason: { kind: 'ability', owner: benevolence, abilityId: 'benevolence' }, of: 'cards', eligibleIds: [], min: 1, max: 2, then: { kind: 'discard' }, onCancel: [],
+      onSelect: [
+        { kind: 'RevealGeneralEffect', seatId: 'seat-b', slot: 'main', forAbilityId: 'benevolence' },
+        { kind: 'IncrementEffect', scope: 'turn', key: 'seat-b/main/benevolence', by: 1 },
+        { kind: 'AbilityUsedEffect', owner: benevolence, abilityId: 'benevolence', outcome: 'used' },
+      ],
+    } as unknown as GameState['pendingSelection'];
+    const [forA, forB] = views(state);
+    expect(forA).not.toContain('benevolence');
+    expect(forA).toContain('seat-b/main/hidden');
+    expect(forB).toContain('seat-b/main/benevolence');
+  });
+});
+
+describe('redactStateForSeat: card and General ids are not skill tokens (final-fix F3)', () => {
+  it('leaves another seat’s Wine card intact while hidden Dong Zhuo’s Wine skill is masked', () => {
+    const state = makeState();
+    const owner = { kind: 'general' as const, seatId: 'seat-b', slot: 'main' as const, skillId: 'wine' };
+    state.log = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-a', cardInstanceId: 'card-9', definitionId: 'wine', targets: [] },
+      { kind: 'SelectionMadeEvent', seatId: 'seat-b', reason: { kind: 'ability', owner, abilityId: 'wine' }, cancelled: true },
+    ] as unknown as EngineEvent[];
+    const log = redactStateForSeat(state, 'seat-a').log as unknown as { definitionId?: string; reason?: { abilityId: string } }[];
+    expect(log[0].definitionId).toBe('wine');
+    expect(log[1].reason!.abilityId).toBe('hidden');
+  });
+});
+
+describe('redactStateForSeat: overlapping skill ids (final-fix F4)', () => {
+  it('masks the longer of two hidden skill ids whole, not its prefix', () => {
+    const state = makeState();
+    const ownerOf = (slot: 'main' | 'deputy', skillId: string) => ({ kind: 'general' as const, seatId: 'seat-b', slot, skillId });
+    state.log = [
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-b', reason: { kind: 'ability', owner: ownerOf('main', 'fire'), abilityId: 'fire' }, verb: 'use', shows: 'none' },
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-b', reason: { kind: 'ability', owner: ownerOf('deputy', 'fire-attack'), abilityId: 'fire-attack' }, verb: 'use', shows: 'none' },
+    ] as unknown as EngineEvent[];
+    state.pendingResponse = { reason: { kind: 'ability', owner: ownerOf('main', 'fire'), abilityId: 'fire' } } as unknown as GameState['pendingResponse'];
+    state.pendingChoice = { id: 'ask-fire-attack-seat-b-1', seatId: 'seat-b', reason: { kind: 'ability', owner: ownerOf('deputy', 'fire-attack'), abilityId: 'fire-attack' }, options: [] } as unknown as GameState['pendingChoice'];
+    expect(redactStateForSeat(state, 'seat-a').pendingChoice!.id).toBe('ask-hidden-seat-b-1');
+  });
+});
