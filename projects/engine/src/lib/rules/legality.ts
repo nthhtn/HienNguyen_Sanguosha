@@ -82,9 +82,12 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     return (handZone?.cards ?? []).map((card) => ({ kind: 'DiscardCardAction' as const, seatId, cardInstanceId: card.instanceId }));
   }
 
-  // Only the Play phase waits for the turn owner; every other phase passes on its own.
+  // The Start window: reveal a hidden General, or continue into Start.
+  if (state.phase === 'Start' && state.turn.startWindow) return [{ kind: 'EndPhaseAction', seatId }, ...hiddenGeneralReveals(state, seatId)];
+
+  // Besides the Start window and a Discard over the limit (above), only the Play phase waits for the turn owner; every other phase passes on its own.
   if (state.phase !== 'Play') return [];
-  const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }];
+  const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }, ...hiddenGeneralReveals(state, seatId)];
   const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
   for (const card of handZone?.cards ?? []) {
     // Several targets allowed now: one template carrying the pick.
@@ -299,4 +302,13 @@ export function conversionActions(state: GameState, seatId: string, registry: Co
         .filter(enoughAt)
         .map((targets): UseConversion => ({ kind: 'UseConversionAction', seatId, via: via(o), targets }));
     });
+}
+
+/** One Reveal per hidden General of the seat; none when it has no Generals or all are face up. */
+export function hiddenGeneralReveals(state: GameState, seatId: string): Action[] {
+  const generals = state.seats.find((s) => s.id === seatId)?.generals;
+  if (!generals) return [];
+  return (['main', 'deputy'] as const)
+    .filter((slot) => generals[slot].revealed === false)
+    .map((slot) => ({ kind: 'RevealGeneralAction' as const, seatId, slot }));
 }

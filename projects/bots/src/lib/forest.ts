@@ -76,10 +76,11 @@ export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, r
         const ally = [...seats].filter((s) => s.id !== me.id && isAlly(me, s)).sort((a, b) => handSize(view, a) - handSize(view, b) || a.index - b.index)[0];
         return (ally ?? seats.find((s) => s.id === me.id) ?? seats[0]).id;
       }
-      // The target's pick: draw X and discard 1 for X of 2 or less, else draw 1 and discard X only with spare cards.
-      const owner = view.seats.find((s) => s.id === (choice.reason as { owner: { seatId: string } }).owner.seatId);
-      const x = owner ? owner.maxCombinedHp - owner.combinedHp : 1;
-      const spare = handCards(view, me).filter((c) => keepRank(view, registry, c.instanceId) < 3).length;
+      // The owner's mode. An ally (its hand is masked) always draws X and discards 1. Himself: the same for X of 2 or less or too few spare cards, else draw 1 and discard X.
+      const x = me.maxCombinedHp - me.combinedHp;
+      const picked = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId) ?? me;
+      if (picked.id !== me.id && isAlly(me, picked)) return 'draw-x';
+      const spare = handCards(view, picked).filter((c) => keepRank(view, registry, c.instanceId) < 3).length;
       return x <= 2 || spare < x ? 'draw-x' : 'draw-1';
     }
     case 'alliance': {

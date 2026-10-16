@@ -12,9 +12,14 @@ import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
 import { EFFECT_URLS, MUSIC_PLAYER_FACTORY } from '../music.service';
 
+// Selection through to the first Play phase: a human seat with a hidden General
+// first rests in its Start window, which Continue (EndPhaseAction) closes.
 function finishSelection(gameService: GameService): void {
   while (gameService.state()!.phase === 'GeneralSelection') {
     gameService.submit(gameService.legalActions()[0]);
+  }
+  if (gameService.state()!.turn.startWindow) {
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
   }
 }
 
@@ -110,6 +115,23 @@ describe('GameBoard', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-general-selection')).toBeNull();
     expect(el.querySelector('app-action-list')).not.toBeNull();
+  });
+
+  it('shows Continue and the enabled Reveal buttons for a viewer in their Start window', () => {
+    gameService.startGame(2, 1);
+    while (gameService.state()!.phase === 'GeneralSelection') gameService.submit(gameService.legalActions()[0]);
+    expect(gameService.state()!.turn.startWindow).toBe(true);
+    gameService.reveal(gameService.activeSeatId()!);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    const buttons = [...el.querySelectorAll('app-action-list button')].map((b) => b.textContent!.trim());
+    expect(buttons).toContain('Continue');
+    expect(buttons).not.toContain('End Phase');
+    const reveals = [...el.querySelectorAll('app-seat-avatar button.reveal')] as HTMLButtonElement[];
+    expect(reveals).toHaveLength(2);
+    expect(reveals.every((b) => !b.disabled)).toBe(true);
   });
 
   it('seats everyone at a round table from the viewer’s chair, with the viewer’s own hand below', () => {
@@ -427,6 +449,8 @@ describe('GameBoard in vs-bots mode', () => {
   it('shows whose turn and which phase above the table', () => {
     gameService.startGame(3, 1, 'vs-bots');
     gameService.submit(gameService.legalActions()[0]);
+    flushBots();
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!); // Continue past the Start window
     flushBots();
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();

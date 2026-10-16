@@ -28,16 +28,20 @@ describe('DecisionTimer', () => {
     jest.advanceTimersByTime(seconds * 1000);
     TestBed.tick();
   };
-  // Pass-and-play, seat-0 revealed, in its first Play phase.
-  const toPlayPhase = () => {
-    game.startGame(2, 1);
+  // Pass-and-play on a seed, seat-0 revealed, in its first Play phase: seat-0
+  // rests in its Start window first, and Continue closes it.
+  const toPlayPhaseOf = (seed: number) => {
+    game.startGame(2, seed);
     game.reveal(game.activeSeatId()!);
     while (game.state()!.phase === 'GeneralSelection') {
       game.submit(game.legalActions()[0]);
       game.reveal(game.activeSeatId()!);
     }
+    game.submit(game.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
+    game.reveal(game.activeSeatId()!);
     TestBed.tick();
   };
+  const toPlayPhase = () => toPlayPhaseOf(1);
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -75,16 +79,33 @@ describe('DecisionTimer', () => {
       expect(game.lastError()).toBeNull();
     });
 
+    it('times the Start window at 60 seconds across a reveal, and continues into Start at zero', () => {
+      game.startGame(2, 1);
+      game.reveal(game.activeSeatId()!);
+      while (game.state()!.phase === 'GeneralSelection') {
+        game.submit(game.legalActions()[0]);
+        game.reveal(game.activeSeatId()!);
+      }
+      TestBed.tick();
+      expect(game.state()!.phase === 'Start' && game.state()!.turn.startWindow).toBe(true);
+      expect(timer.totalSeconds()).toBe(DECISION_SECONDS.choice);
+      advance(10);
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.choice - 10);
+      const reveal = game.legalActions().find((a) => a.kind === 'RevealGeneralAction')!;
+      game.submit(reveal);
+      game.reveal(game.activeSeatId()!);
+      TestBed.tick();
+      expect(game.state()!.turn.startWindow).toBe(true);
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.choice - 10);
+      advance(DECISION_SECONDS.choice - 10);
+      expect(game.state()!.turn.startWindow).toBeFalsy();
+      expect(game.lastError()).toBeNull();
+    });
+
     it('keeps one Play-phase clock across actions, paused while a response is under way', () => {
       // A deal where seat-0 can aim a card at seat-1 in its first Play phase.
       for (let seed = 1; seed < 50; seed++) {
-        game.startGame(2, seed);
-        game.reveal(game.activeSeatId()!);
-        while (game.state()!.phase === 'GeneralSelection') {
-          game.submit(game.legalActions()[0]);
-          game.reveal(game.activeSeatId()!);
-        }
-        TestBed.tick();
+        toPlayPhaseOf(seed);
         const aimed = game.legalActions().find(
           (a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(game.state()!, a.cardInstanceId) ?? '')
         );
@@ -132,12 +153,7 @@ describe('DecisionTimer', () => {
 
     it('picks the first option when a choice times out, never ending the Play phase (Review Focus 4)', () => {
       for (let seed = 1; seed < 200; seed++) {
-        game.startGame(2, seed);
-        game.reveal(game.activeSeatId()!);
-        while (game.state()!.phase === 'GeneralSelection') {
-          game.submit(game.legalActions()[0]);
-          game.reveal(game.activeSeatId()!);
-        }
+        toPlayPhaseOf(seed);
         const grab = game.legalActions().find((a) => a.kind === 'PlayCardAction' && ['steal', 'break'].includes(cardDefinitionId(game.state()!, a.cardInstanceId) ?? ''));
         if (!grab) continue;
         game.submit(grab);
@@ -157,12 +173,7 @@ describe('DecisionTimer', () => {
     it('answers No Response when a response times out', () => {
       // Find a deal where seat-0 can aim a card at seat-1, then let seat-1's window time out.
       for (let seed = 1; seed < 50; seed++) {
-        game.startGame(2, seed);
-        game.reveal(game.activeSeatId()!);
-        while (game.state()!.phase === 'GeneralSelection') {
-          game.submit(game.legalActions()[0]);
-          game.reveal(game.activeSeatId()!);
-        }
+        toPlayPhaseOf(seed);
         const aimed = game.legalActions().find(
           (a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(game.state()!, a.cardInstanceId) ?? '')
         );

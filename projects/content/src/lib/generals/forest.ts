@@ -211,8 +211,8 @@ export const intenseEdge: SkillDefinition = {
 };
 
 // Brave Spirit (may): at the start of your Start Phase, if damaged (X = missing
-// HP), pick any seat (yourself included). It chooses: draw X then discard 1, or
-// draw 1 then discard X.
+// HP), pick any seat (yourself included), then choose: it draws X then discards
+// 1, or draws 1 then discards X (the picked seat chooses which cards to discard).
 export const braveSpirit: SkillDefinition = {
   id: 'brave-spirit',
   triggers: [
@@ -237,8 +237,7 @@ export const braveSpirit: SkillDefinition = {
       return [
         choiceOf(state, owner, {
           verb: 'pick',
-          seatId: target,
-          targetSeatId: owner.seatId,
+          targetSeatId: target,
           options: [
             { id: 'draw-x', shows: { kind: 'label', text: `Draw ${x}, Then Discard 1` }, effects: [used(owner, 'drew', target), draw(target, x), skillStep(owner, 'discard', { target, n: 1 })] },
             { id: 'draw-1', shows: { kind: 'label', text: `Draw 1, Then Discard ${x}` }, effects: [used(owner, 'drew', target), draw(target, 1), skillStep(owner, 'discard', { target, n: x })] },

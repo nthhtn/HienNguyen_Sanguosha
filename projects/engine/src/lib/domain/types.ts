@@ -43,6 +43,10 @@ export interface Turn {
   // After an extra turn (GrantExtraTurnEffect): the seat whose turn it was
   // granted from. The normal order resumes after it, not after the extra seat.
   resumeAfterSeatId?: string;
+  // As a human's turn begins while they hold a hidden General: the turn waits
+  // in Start, before the Start Phase's effects, so they may reveal first
+  // (startWindowOpens). EndPhaseAction closes it. Absent otherwise.
+  startWindow?: true;
 }
 
 export type Phase = 'GeneralSelection' | 'Start' | 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End';

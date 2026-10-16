@@ -5,7 +5,7 @@ import { Action, GeneralInstance, SeatGenerals } from 'engine';
 import { cardArtUrl, generalDisplayData, HIDDEN_GENERAL_ART_URL } from 'content';
 import { generalDisplayName } from '../labels';
 import { GeneralInfoDialog, GeneralInfoDialogData } from './general-info-dialog';
-import { AvatarSkill } from './avatar-skills';
+import { AvatarReveal, AvatarSkill } from './avatar-skills';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import { localeOf, type Translator } from '../i18n/translator';
@@ -63,10 +63,13 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance, tr: Translato
         </button>
       }
     </div>
-    @if (skills().length) {
+    @if (skills().length || reveals().length) {
       <div class="skills">
         @for (slot of slots; track slot) {
           <div class="skill-column" [attr.data-slot]="slot">
+            @if (revealOf(slot); as r) {
+              <button type="button" class="skill reveal" [disabled]="!r.action" (click)="r.action && revealGeneral.emit(r.action)">{{ 'avatar.reveal' | t }}</button>
+            }
             @for (s of skillsOf(slot); track s.skillId) {
               <button type="button" class="skill" [disabled]="!s.action" (click)="s.action && useSkill.emit(s.action)">{{ s.label }}</button>
             }
@@ -133,8 +136,15 @@ export class SeatAvatar {
   // The viewer's own active skills, as buttons under each half.
   readonly skills = input<AvatarSkill[]>([]);
   readonly useSkill = output<Action>();
+  // The viewer's own hidden Generals' Reveal buttons.
+  readonly reveals = input<AvatarReveal[]>([]);
+  readonly revealGeneral = output<Action>();
   private readonly i18n = inject(I18n);
   protected readonly slots = ['main', 'deputy'] as const;
+  protected revealOf(slot: 'main' | 'deputy'): AvatarReveal | undefined {
+    return this.reveals().find((r) => r.slot === slot);
+  }
+
   protected skillsOf(slot: 'main' | 'deputy'): AvatarSkill[] {
     return this.skills().filter((s) => s.slot === slot);
   }

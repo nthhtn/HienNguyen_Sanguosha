@@ -36,6 +36,12 @@ describe('describeDecision', () => {
     expect(describeDecision(state({}), 'seat-0', [endPhase], 'k8')?.key).toBe('play:3:seat-0');
   });
 
+  it('keeps one choice clock across the reveals of a Start window', () => {
+    const window = { turn: { turnNumber: 3, ownerSeatId: 'seat-0', startWindow: true } };
+    expect(describeDecision(state({ phase: 'Start', ...window }), 'seat-0', [endPhase], 'k7')).toEqual({ kind: 'choice', seatId: 'seat-0', key: 'start:3:seat-0' });
+    expect(describeDecision(state({ phase: 'Start', ...window }), 'seat-0', [endPhase], 'k8')?.key).toBe('start:3:seat-0');
+  });
+
   it('falls back to a response clock outside those cases', () => {
     expect(describeDecision(state({ phase: 'Start' }), 'seat-0', [endPhase], 'k7')).toEqual({ kind: 'response', seatId: 'seat-0', key: 'step:k7' });
   });

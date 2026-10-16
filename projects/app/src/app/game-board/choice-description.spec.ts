@@ -82,7 +82,7 @@ describe('describeChoice', () => {
   it('Collapse and Brave Spirit: their own words', () => {
     const labels: ChoiceOption[] = [{ id: 'a', shows: { kind: 'label', text: 'A' }, effects: [] }, { id: 'b', shows: { kind: 'label', text: 'B' }, effects: [] }];
     expect(describeChoice(state(skill('collapse', 'pick', undefined, labels)), 'seat-0')).toEqual({ title: 'Collapse', prompt: 'Choose how Collapse costs you', confirmLabel: 'Choose' });
-    expect(describeChoice(state(skill('brave-spirit', 'pick', 'seat-1', labels)), 'seat-0')).toEqual({ title: 'Brave Spirit', prompt: 'Choose how to draw and discard', confirmLabel: 'Choose' });
+    expect(describeChoice(state(skill('brave-spirit', 'pick', 'seat-1', labels)), 'seat-0')).toEqual({ title: 'Brave Spirit', prompt: 'Choose how Seat 1 draws and discards', confirmLabel: 'Choose' });
   });
 
   it('Exile, Brave Spirit and Alliance seat picks name what the seat does', () => {

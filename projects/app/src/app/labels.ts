@@ -103,7 +103,7 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
     case 'PassAction':
       return tr('label.action.pass');
     case 'EndPhaseAction':
-      return tr('label.action.endPhase');
+      return state.phase === 'Start' && state.turn.startWindow ? tr('label.action.continue') : tr('label.action.endPhase');
     case 'ChooseOptionAction':
       return tr('label.action.choose');
     case 'UseConversionAction':

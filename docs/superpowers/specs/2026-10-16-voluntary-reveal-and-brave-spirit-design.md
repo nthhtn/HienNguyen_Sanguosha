@@ -1,6 +1,6 @@
 # Voluntary Reveal and Brave Spirit — Design Spec
 
-Status: Draft for review
+Status: Approved (2026-10-16); bot rule amended after implementation review
 Date: 2026-10-16
 
 ## Purpose
@@ -113,11 +113,12 @@ draw, and the discard (by the picked seat, at most what it holds) are as before.
 example "Choose how {seat} draws", sentence case); the option labels stay as they
 are. New English and Vietnamese strings; the Vietnamese is a draft for native review.
 
-**Bots.** The decision moves to the owner's bot. The existing "target's pick"
-heuristic (`bots/src/lib/forest.ts`, `brave-spirit`) becomes the owner's rule: draw X
-then discard 1 when X is 2 or less or when the picked seat has too few spare cards
-to discard X; otherwise draw 1 then discard X. The bot already picks only an ally or
-itself, so no harmful case arises.
+**Bots.** The decision moves to the owner's bot. When the picked seat is an ally
+other than the bot, it always chooses draw X then discard 1 (it never makes an ally
+draw 1 and discard X: the bot cannot see an ally's spare cards, so the other option
+could cost the ally cards). When the bot picks itself, the earlier heuristic applies:
+draw X then discard 1 when X is 2 or less or when it has too few spare cards to
+discard X; otherwise draw 1 then discard X.
 
 ## Not in this spec
 

@@ -95,6 +95,13 @@ describe('action labels', () => {
     ['cancel', { kind: 'CancelSelectionAction', seatId: 'seat-0', selectionId: 's' }, 'Cancel', 'Hủy'],
     ['discard', { kind: 'DiscardCardAction', seatId: 'seat-0', cardInstanceId: 'card-1' }, 'Discard Sha', 'Bỏ Sha'],
   ];
+  it('labels EndPhaseAction Continue in the Start window', () => {
+    const base = state;
+    const window = { ...base, phase: 'Start' as const, turn: { ...base.turn, startWindow: true } };
+    const end: Action = { kind: 'EndPhaseAction', seatId: 'seat-0' };
+    expect(actionLabel(end, window, registry)).toBe('Continue');
+    expect(actionLabel(end, window, registry, tr)).toBe('Tiếp tục');
+  });
   it.each(rows)('%s', (_name, action, english, vietnamese) => {
     expect(label(action)).toBe(english);
     expect(label(action, tr)).toBe(vietnamese);

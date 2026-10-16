@@ -1,5 +1,5 @@
 import { Action, ContentRegistry, SeatGenerals } from 'engine';
-import { avatarSkills, extraSkillsOf } from './avatar-skills';
+import { avatarReveals, avatarSkills, extraSkillsOf } from './avatar-skills';
 
 const active = { canUse: () => true, start: () => [] };
 const registry: ContentRegistry = {
@@ -47,5 +47,19 @@ describe('avatarSkills', () => {
 
   it('none before the Generals are chosen', () => {
     expect(avatarSkills(null, registry, [])).toEqual([]);
+  });
+});
+
+describe('avatarReveals', () => {
+  const revealMain: Action = { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' };
+
+  it('Reveal: one entry per hidden slot, with the engine’s action when offered and null when not', () => {
+    expect(avatarReveals(generals(false), [revealMain])).toEqual([{ slot: 'main', action: revealMain }]);
+    expect(avatarReveals(generals(false), [])).toEqual([{ slot: 'main', action: null }]);
+  });
+
+  it('Reveal: none for a revealed slot or before the Generals are chosen', () => {
+    expect(avatarReveals(generals(true), [revealMain])).toEqual([]);
+    expect(avatarReveals(null, [revealMain])).toEqual([]);
   });
 });

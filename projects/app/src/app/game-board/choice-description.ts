@@ -91,7 +91,11 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
     const fixed = choicePromptText(choice.reason.abilityId, localeOf(tr));
     // A seat pick keeps the seat wording (Exile, Alliance); a mixed or label pick uses its own prompt.
     const onlySeats = choice.options.every((o) => o.shows.kind === 'seat');
-    if (fixed && !(onlySeats && seatPickText(choice.reason.abilityId, localeOf(tr)))) return { title, prompt: fixed, confirmLabel: tr('choice.confirm.choose') };
+    if (fixed && !(onlySeats && seatPickText(choice.reason.abilityId, localeOf(tr)))) {
+      // A fixed prompt may name the seat the skill was used on (Brave Spirit's mode).
+      const named = choice.reason.targetSeatId ? seatName(state.players, choice.reason.targetSeatId, tr) : tr('choice.aSeat');
+      return { title, prompt: fixed.replace('{target}', named), confirmLabel: tr('choice.confirm.choose') };
+    }
     const kinds = new Set(choice.options.map((o) => o.shows.kind));
     const only = kinds.size === 1 ? [...kinds][0] : null;
     // A skill's own words for its seat pick (Rouse the Tiger), its target named.

@@ -13,6 +13,24 @@ export interface AvatarSkill {
   action: UseSkill | null;
 }
 
+export interface AvatarReveal {
+  slot: 'main' | 'deputy';
+  // The engine's action while it offers the reveal; null = the button is disabled.
+  action: Extract<Action, { kind: 'RevealGeneralAction' }> | null;
+}
+
+// One Reveal button per hidden General of the viewer's own seat, enabled exactly
+// when the engine lists its RevealGeneralAction.
+export function avatarReveals(generals: SeatGenerals | null, legal: readonly Action[]): AvatarReveal[] {
+  if (!generals) return [];
+  return (['main', 'deputy'] as const)
+    .filter((slot) => !generals[slot].revealed)
+    .map((slot): AvatarReveal => ({
+      slot,
+      action: legal.find((a): a is Extract<Action, { kind: 'RevealGeneralAction' }> => a.kind === 'RevealGeneralAction' && a.slot === slot) ?? null,
+    }));
+}
+
 export interface ExtraSkill { slot: 'main' | 'deputy'; skill: SkillDefinition }
 
 // The skills a seat holds besides its Generals' printed ones: those gained for
