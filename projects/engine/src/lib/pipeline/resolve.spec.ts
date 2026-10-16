@@ -867,3 +867,54 @@ describe('resolve: UseConversionAction', () => {
     expect(() => resolve(state, action, { registry, mode: stubMode() })).not.toThrow();
   });
 });
+
+describe('resolve: game end and the processing zone', () => {
+  // Putting a card in `processing` is the effect; the win check ends the game
+  // right after it (or never, for the second mode).
+  const stray: CardDefinition = {
+    id: 'stray', name: 'Stray', category: 'basic',
+    play: () => [{ kind: 'MoveCardEffect', cardInstanceId: 'x1', toZoneId: 'processing' }],
+  };
+  const registry: ContentRegistry = { cards: new Map([['stray', stray]]), generals: new Map() };
+  const endsWhenProcessingHolds: GameModeDefinition = {
+    ...stubMode(),
+    checkWinCondition: (s) =>
+      s.zones.find((z) => z.id === 'processing')!.cards.length > 0
+        ? { endedAt: 1, winningSeatIds: ['seat-a'], losingSeatIds: ['seat-b'] }
+        : null,
+  };
+  const start = (): GameState => {
+    const s = baseState();
+    return {
+      ...s,
+      zones: [
+        ...s.zones.map((z) =>
+          z.id === 'seat-a:hand'
+            ? { ...z, cards: [
+                { instanceId: 'p1', definitionId: 'stray', suit: 'spade' as const, rank: 5 },
+                { instanceId: 'x1', definitionId: 'sha', suit: 'heart' as const, rank: 6 },
+              ] }
+            : z
+        ),
+        { id: 'processing', kind: 'processing', cards: [] },
+      ],
+    };
+  };
+  const play = (mode: GameModeDefinition) =>
+    resolve(start(), { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'p1', targets: [] }, { registry, mode }).state;
+  const ids = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
+
+  it('sweeps processing to the discard pile when the game ends mid-resolution', () => {
+    const next = play(endsWhenProcessingHolds);
+    expect(next.result).not.toBeNull();
+    expect(ids(next, 'processing')).toEqual([]);
+    expect(ids(next, 'discardPile')).toContain('x1');
+    expect(next.log.some((e) => e.kind === 'CardMovedEvent' && e.cardInstanceId === 'x1' && e.toZoneId === 'discardPile')).toBe(false);
+  });
+
+  it('leaves processing alone when the game continues', () => {
+    const next = play(stubMode());
+    expect(next.result).toBeNull();
+    expect(ids(next, 'processing')).toEqual(['x1']);
+  });
+});

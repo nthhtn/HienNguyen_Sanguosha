@@ -176,6 +176,7 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       if (effect.target.kind !== 'seat') throw new Error('HealEffect currently only supports seat targets');
       const seat = state.seats.find((s) => s.id === effect.target.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.target.seatId}`);
+      if (seat.eliminated) return { state, events: [] };
       const combinedHp = Math.min(seat.maxCombinedHp, seat.combinedHp + effect.amount);
       // Only what was actually recovered is logged; at full HP, nothing.
       const recovered = combinedHp - seat.combinedHp;
@@ -371,6 +372,7 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'ReduceMaxHpEffect': {
+      // 0 max HP is immediate death: no dying round, no rescue (official rule).
       const seat = state.seats.find((s) => s.id === effect.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
       if (seat.eliminated || effect.amount <= 0) return { state, events: [] };

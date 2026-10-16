@@ -6,6 +6,8 @@ import { starvationCard } from './starvation';
 import { wuxieCard } from './wuxie';
 import { breakCard } from './break';
 import { lightningCard } from './lightning';
+import { usedCardOf } from 'engine';
+import { judgeTarget } from '../shared/delayed';
 
 const plain = (id: string): CardDefinition => ({ id, name: id, category: 'basic', play: () => [] });
 const diLu: CardDefinition = { id: 'di-lu', name: 'Di Lu', category: 'equipment', equipSlot: 'defensiveMount', play: () => [] };
@@ -148,6 +150,25 @@ describe('the Judgment Phase', () => {
     expect(next.turn.ownerSeatId).toBe('seat-c');
     expect(next.turn.flags).toBeUndefined();
     expect(idsIn(next, 'seat-c:hand')).toHaveLength(2);
+  });
+
+  describe('a delayed Tool whose turn to be judged comes late', () => {
+    const tool = usedCardOf(card('cap', 'capture'));
+    const judge = (s: GameState) => judgeTarget(s, { tool, userSeatId: 'seat-b', target: { kind: 'seat', seatId: 'seat-b' } } as never, registry);
+
+    it('judges a delayed Tool still in the judgment area', () => {
+      expect(judge(table({ 'seat-b:judgment': [card('cap', 'capture')] }))).toHaveLength(1);
+    });
+
+    it('does not judge a delayed Tool that left the judgment area', () => {
+      expect(judge(table())).toEqual([]);
+    });
+
+    it('does not judge an eliminated holder', () => {
+      const s = table({ 'seat-b:judgment': [card('cap', 'capture')] });
+      const dead = { ...s, seats: s.seats.map((x) => (x.id === 'seat-b' ? { ...x, eliminated: true } : x)) };
+      expect(judge(dead)).toEqual([]);
+    });
   });
 
   it('does nothing for a seat with an empty judgment area', () => {

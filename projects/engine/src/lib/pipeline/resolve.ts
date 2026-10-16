@@ -7,7 +7,7 @@ import { Action, isAction } from './actions';
 import { Effect, applyDying, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
 import { gatherTriggeredSkills } from '../skills/triggers';
-import { requireZoneOfKind } from '../cards/zones';
+import { findZoneByKind, moveCard, requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
@@ -101,8 +101,17 @@ function drain(state: GameState, ctx: EngineContext, budget: StepBudget): Resolv
     current = withWinCheck(step.state, ctx);
     events.push(...step.events);
   }
-  if (current.result) current = withQueue(current, []);
+  if (current.result) current = withQueue(sweepProcessing(current), []);
   return { state: current, events };
+}
+
+// A game that ends mid-resolution leaves its in-flight cards in `processing`;
+// they go to the discard pile, unlogged, so the final state holds no stray cards.
+function sweepProcessing(state: GameState): GameState {
+  const stray = findZoneByKind(state.zones, 'processing')?.cards ?? [];
+  if (stray.length === 0) return state;
+  const discardId = requireZoneOfKind(state.zones, 'discardPile').id;
+  return { ...state, zones: stray.reduce((zones, c) => moveCard(zones, c.instanceId, discardId), state.zones) };
 }
 
 // Seats still choosing have kingdom 'hidden'; reading that as a one-kingdom
