@@ -42,7 +42,7 @@ interface StepBudget {
 }
 
 // Every phase entered by advanceToDecision is one step. One full turn is at
-// most six steps, and every turn rests in Play unless its owner is eliminated,
+// most six steps, and every turn rests in Play (after a Start window, and a Discard if over the hand limit) unless its owner is eliminated,
 // so a legitimate run stays far below this bound.
 export const MAX_AUTO_PHASE_STEPS_PER_SEAT = 6;
 
@@ -57,7 +57,7 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
 }
 
 // Drains the queue, then moves the game on through every phase that needs no
-// decision, until a player must act (Play, or Discard over the hand limit), a
+// decision, until a player must act (the Start window, Play, or Discard over the hand limit), a
 // response is pending, or the game has ended. An eliminated turn owner forfeits
 // the rest of their turn.
 export function advanceToDecision(state: GameState, ctx: EngineContext, budget: StepBudget = { used: 0 }): ResolveResult {
@@ -197,8 +197,8 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
     events.push(turnEvent);
     // A human holding a hidden General may reveal before the Start effects:
     // the turn waits in Start, and EndPhaseAction enters it (enterStartPhase).
-    if (startWindowOpens(current, turn.ownerSeatId)) {
-      return logWithTriggers({ ...current, phase: 'Start', turn: { ...turn, startWindow: true } }, events, ctx);
+    if (phase === 'Start' && skipped.length === 0 && startWindowOpens(current, turn.ownerSeatId)) {
+      return logWithTriggers({ ...current, phase, turn: { ...turn, startWindow: true } }, events, ctx);
     }
   }
   for (const skippedPhase of skipped) {
@@ -573,6 +573,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
     }
 
     case 'RevealGeneralAction': {
+      // No actor/phase guard: forced reveals (content kingdomWar) queue it as items, and player input is filtered by the server's isOfferedAction.
       if (!state.seats.some((s) => s.id === action.seatId)) throw new Error(`Unknown seat: ${action.seatId}`);
       return { state: queueFront(state, [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: action.slot }]), events: [] };
     }

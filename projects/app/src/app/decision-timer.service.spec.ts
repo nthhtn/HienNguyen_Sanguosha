@@ -79,6 +79,29 @@ describe('DecisionTimer', () => {
       expect(game.lastError()).toBeNull();
     });
 
+    it('times the Start window at 60 seconds across a reveal, and continues into Start at zero', () => {
+      game.startGame(2, 1);
+      game.reveal(game.activeSeatId()!);
+      while (game.state()!.phase === 'GeneralSelection') {
+        game.submit(game.legalActions()[0]);
+        game.reveal(game.activeSeatId()!);
+      }
+      TestBed.tick();
+      expect(game.state()!.phase === 'Start' && game.state()!.turn.startWindow).toBe(true);
+      expect(timer.totalSeconds()).toBe(DECISION_SECONDS.choice);
+      advance(10);
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.choice - 10);
+      const reveal = game.legalActions().find((a) => a.kind === 'RevealGeneralAction')!;
+      game.submit(reveal);
+      game.reveal(game.activeSeatId()!);
+      TestBed.tick();
+      expect(game.state()!.turn.startWindow).toBe(true);
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.choice - 10);
+      advance(DECISION_SECONDS.choice - 10);
+      expect(game.state()!.turn.startWindow).toBeFalsy();
+      expect(game.lastError()).toBeNull();
+    });
+
     it('keeps one Play-phase clock across actions, paused while a response is under way', () => {
       // A deal where seat-0 can aim a card at seat-1 in its first Play phase.
       for (let seed = 1; seed < 50; seed++) {

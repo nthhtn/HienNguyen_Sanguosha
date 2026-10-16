@@ -85,7 +85,7 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
   // The Start window: reveal a hidden General, or continue into Start.
   if (state.phase === 'Start' && state.turn.startWindow) return [{ kind: 'EndPhaseAction', seatId }, ...hiddenGeneralReveals(state, seatId)];
 
-  // Only the Play phase waits for the turn owner; every other phase passes on its own.
+  // Besides the Start window and a Discard over the limit (above), only the Play phase waits for the turn owner; every other phase passes on its own.
   if (state.phase !== 'Play') return [];
   const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }, ...hiddenGeneralReveals(state, seatId)];
   const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);

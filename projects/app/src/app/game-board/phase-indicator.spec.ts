@@ -43,6 +43,16 @@ describe('PhaseIndicator', () => {
     expect(text).not.toContain('End Phase');
   });
 
+  it('shows the countdown in the Start window for the viewer', () => {
+    const s = state('Start');
+    s.turn = { ...s.turn, startWindow: true };
+    const fixture = TestBed.createComponent(PhaseIndicator);
+    fixture.componentRef.setInput('state', s);
+    fixture.componentRef.setInput('viewerSeatId', 'seat-0');
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-decision-countdown')).not.toBeNull();
+  });
+
   it('leaves out (you) when it is someone else\'s turn', () => {
     expect(render(state('Play'), 'seat-1')).toBe('Seat 0 – Play Phase');
   });
