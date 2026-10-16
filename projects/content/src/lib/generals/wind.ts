@@ -1,5 +1,5 @@
 import type { AbilityUsedEvent, CardPlayedEvent, CardsTurnedUpEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
-import { drawPileTop, endFlagOf, pileZoneOf, requireZoneOfKind, skipFlagOf, usedCardFrom } from 'engine';
+import { drawPileTop, endFlagOf, getLegalActions, pileZoneOf, requireZoneOfKind, skipFlagOf, usedCardFrom } from 'engine';
 import { suitOf } from '../shared/suits';
 import { blackCards, nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
@@ -281,6 +281,21 @@ interface Claim {
   doubters: string[];
 }
 
+// What follows a claim that failed to answer its window, once the card is gone:
+// the window comes back only if the seat can still answer it; otherwise the
+// guarded effect resolves exactly as a Pass would have.
+function afterFailedClaim(state: GameState, claim: Claim, discardedId: string, registry: ContentRegistry): Effect[] {
+  const window = claim.window;
+  if (!window) return [];
+  const without: GameState = {
+    ...state,
+    zones: state.zones.map((z) => ({ ...z, cards: z.cards.filter((c) => c.instanceId !== discardedId) })),
+    pendingResponse: window,
+  };
+  const canAnswer = getLegalActions(without, window.respondingSeatId, registry).some((a) => a.kind !== 'PassAction');
+  return canAnswer ? [{ kind: 'OpenResponseEffect', pendingResponse: window }] : [window.context.effect];
+}
+
 // Bewilder (in your Play Phase, and to answer a window): you pick a hand card
 // face down and name a Basic or non-delayed Tool card you could use now. Each
 // other living seat, in turn order, believes or doubts. Then the card is shown:
@@ -340,7 +355,7 @@ export const bewilder: SkillDefinition = {
       card: usedCardFrom([picked], claim.as, { owner, abilityId: owner.skillId, conversionId: claim.conversionId }),
       targets: claim.targets, counted: !claim.window, ...(claim.window ? { answering: claim.window } : {}),
     };
-    const discard = [...discardMoves(state, [picked.instanceId]), ...reopen];
+    const discard = [...discardMoves(state, [picked.instanceId]), ...afterFailedClaim(state, claim, picked.instanceId, registry)];
     if (claim.doubters.length === 0) return [show, used(owner, 'claim-believed', undefined, claim.as), useIt];
     if (picked.definitionId !== claim.as) return [show, used(owner, 'claim-false', undefined, claim.as), ...claim.doubters.map((id) => draw(id, 1)), ...discard];
     const losses: Effect[] = claim.doubters.map((seatId) => ({ kind: 'LoseHpEffect', seatId, amount: 1, abilityId: owner.skillId }));
