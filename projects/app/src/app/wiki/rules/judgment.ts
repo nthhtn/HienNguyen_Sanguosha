@@ -1,30 +1,28 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { TPipe } from '../../i18n/t.pipe';
+import { RichText } from './rich-text';
 
 @Component({
   selector: 'app-rules-judgment',
-  imports: [RouterLink],
+  imports: [RichText, TPipe],
   styleUrl: './rules-page.css',
   template: `
-    <h2>Judgment</h2>
-    <p class="lead">Turn up the top card of the draw pile to decide an effect.</p>
+    <h2>{{ 'nav.rules.judgment' | t }}</h2>
+    <p class="lead">{{ 'rules.judgment.lead' | t }}</p>
     <ol>
-      <li>The top card of the draw pile is turned face up.</li>
-      <li>Skills that change a judgment can replace the card before it is read.</li>
-      <li>The final card is read for its suit and rank, and the effect follows.</li>
-      <li>The card goes to the discard pile.</li>
+      <li>{{ 'rules.judgment.step1' | t }}</li>
+      <li>{{ 'rules.judgment.step2' | t }}</li>
+      <li>{{ 'rules.judgment.step3' | t }}</li>
+      <li>{{ 'rules.judgment.step4' | t }}</li>
     </ol>
-    <h3>Delayed Tools</h3>
-    <p>
-      A Delayed Tool sits in a judgment area. It is judged in its holder's Judgment Phase. Wuxie can cancel it
-      when it is judged.
-    </p>
+    <h3>{{ 'rules.judgment.delayed' | t }}</h3>
+    <p><app-rich key="rules.judgment.delayedText" /></p>
     <table>
-      <tr><th>Capture</th><td>Placed on another seat. Anything but a heart means that seat skips its Play Phase.</td></tr>
-      <tr><th>Starvation</th><td>Placed on another seat at distance 1. Anything but a club means that seat skips its Draw Phase.</td></tr>
-      <tr><th>Lightning</th><td>Placed on yourself. A spade from 2 to 9 deals 3 damage to its holder. Otherwise it passes to the next seat.</td></tr>
+      <tr><th><app-rich text="{card:capture}" /></th><td>{{ 'rules.judgment.capture' | t }}</td></tr>
+      <tr><th><app-rich text="{card:starvation}" /></th><td>{{ 'rules.judgment.starvation' | t }}</td></tr>
+      <tr><th><app-rich text="{card:lightning}" /></th><td>{{ 'rules.judgment.lightning' | t }}</td></tr>
     </table>
-    <p>Read more under <a routerLink="/wiki/tools">Tools</a>.</p>
+    <p><app-rich key="rules.judgment.see" /></p>
   `,
 })
 export class RulesJudgment {}
