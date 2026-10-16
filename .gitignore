@@ -1,18 +1,32 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
-
-# Node
+# Dependencies
 /node_modules
 npm-debug.log
 yarn-error.log
 
-# IDEs and editors
+# Build output
+/dist
+/out-tsc
+/tmp
+/bazel-out
+*.tsbuildinfo
+
+# Caches and test output
+/.angular/cache
+.sass-cache/
+/coverage
+__screenshots__/
+testem.log
+*.log
+
+# Local settings and secrets (see .env.example)
+.env
+.env.*
+!.env.example
+
+# Editors and IDEs
+.vscode/
 .idea/
+.history/
 .project
 .classpath
 .c9/
@@ -20,30 +34,18 @@ yarn-error.log
 .settings/
 *.sublime-workspace
 
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/mcp.json
-.history/*
-
-# Miscellaneous
-# Local server settings (see .env.example)
-.env
-/.angular/cache
-.sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
-__screenshots__/
+# Claude Code: worktrees and local settings
+.claude/worktrees/
+.claude/settings.local.json
 
 # System files
 .DS_Store
 Thumbs.db
+
+# Misc
+/connect.lock
+/libpeerconnection.log
+/typings
 
 # Crawled content assets (copyrighted card scans, local-only -- see
 # projects/content/assets/README.md). manifest.json stays tracked.
