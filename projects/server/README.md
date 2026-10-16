@@ -8,7 +8,7 @@ Postgres through Kysely. Design: `docs/superpowers/specs/2026-10-13-backend-mult
 ```bash
 npm run db:up            # Postgres 17 in Docker (docker-compose.yml)
 cp .env.example .env     # once
-npm run server           # API on http://localhost:3000, restarts on change
+npm run server           # API on http://localhost:4201, restarts on change
 npm start                # the Angular app; /api is proxied to the server
 ```
 

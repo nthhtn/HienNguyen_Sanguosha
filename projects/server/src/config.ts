@@ -27,7 +27,7 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
   const missing = ['DATABASE_URL', 'PUBLIC_ORIGIN'].filter((name) => production && !env[name]);
   if (missing.length > 0) throw new ConfigError(`Missing required environment variables: ${missing.join(', ')}`);
 
-  const port = Number(env['PORT'] ?? '3000');
+  const port = Number(env['PORT'] ?? '4201');
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new ConfigError(`PORT must be a port number, got "${env['PORT']}"`);
 
   const publicOrigin = parseOrigin(env['PUBLIC_ORIGIN'] ?? 'http://localhost:4200');

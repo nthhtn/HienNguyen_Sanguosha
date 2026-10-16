@@ -19,12 +19,12 @@ Angular dev server reads `angular.json`, the `tsconfig` files and
 restarts the dev server when one changes ([scripts/dev-server.mjs](scripts/dev-server.mjs)).
 Extra options pass through, e.g. `npm start -- --port 4300`.
 
-`npm start` also runs the API server (`npm run server`) on port 3000, which the
+`npm start` also runs the API server (`npm run server`) on port 4201, which the
 dev server proxies `/api` to, so sign-in, rooms and online play work. The API
 reads `.env` when it exists: copy [.env.example](.env.example) to `.env` to use
 Postgres (`docker compose up -d` starts it on port 5433); without it, the API
 keeps everything in memory and forgets it on restart. If the API stops (for
-example, port 3000 is taken) the dev server keeps running and says so. Use
+example, port 4201 is taken) the dev server keeps running and says so. Use
 `npm run web` to run the dev server alone.
 
 ## Code scaffolding

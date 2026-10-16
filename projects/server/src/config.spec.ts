@@ -3,7 +3,7 @@ import { ConfigError, loadConfig } from './config';
 describe('loadConfig', () => {
   it('has dev defaults', () => {
     expect(loadConfig({})).toEqual({
-      port: 3000,
+      port: 4201,
       host: '127.0.0.1',
       databaseUrl: null,
       publicOrigin: 'http://localhost:4200',
