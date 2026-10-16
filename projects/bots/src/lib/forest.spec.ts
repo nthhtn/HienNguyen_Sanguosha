@@ -68,21 +68,28 @@ describe('choices', () => {
     expect(picked(decide(seats))).toBe('seat-c');
   });
 
-  // The mode choice is the owner's (seat-a, Sun Jian); X is his missing HP (4 max).
-  const mode = (hp: number, targetHand: ReturnType<typeof card>[] = []) =>
-    choiceOf(table({ 'seat-c:hand': targetHand }, { generals: generals('sun-jian'), hp: { 'seat-a': hp } }), ['draw-x', 'draw-1'], 'pick', 'brave-spirit', 'seat-a', 'seat-c');
+  // The mode choice is the owner's (seat-a, Sun Jian); X is his missing HP (4 max); seat-c is his ally.
+  const mode = (hp: number, target: 'seat-a' | 'seat-c', hand: ReturnType<typeof card>[] = []) =>
+    choiceOf(
+      table({ [`${target}:hand`]: hand }, { generals: generals('sun-jian'), kingdoms: { 'seat-a': 'Wu', 'seat-b': 'Wei', 'seat-c': 'Wu', 'seat-d': 'Qun' }, hp: { 'seat-a': hp } }),
+      ['draw-x', 'draw-1'], 'pick', 'brave-spirit', 'seat-a', target
+    );
   const spare = (n: number) => Array.from({ length: n }, (_, i) => card(`p${i}`, 'sha', 'club', i + 1));
 
-  it('Brave Spirit: the owner draws X and discards 1 for X of 2 or less', () => {
-    expect(picked(decide(mode(2, spare(5))))).toBe('draw-x');
+  it('Brave Spirit: an ally is always given X cards and discards 1, even with a large hand and X of 3', () => {
+    expect(picked(decide(mode(1, 'seat-c', spare(5))))).toBe('draw-x');
   });
 
-  it('Brave Spirit: the owner draws 1 and discards X when the picked seat has spare cards to discard', () => {
-    expect(picked(decide(mode(1, spare(4))))).toBe('draw-1'); // X = 3
+  it('Brave Spirit: an ally is given X cards and discards 1 for X of 2 or less', () => {
+    expect(picked(decide(mode(2, 'seat-c', spare(5))))).toBe('draw-x');
   });
 
-  it('Brave Spirit: the owner draws X and discards 1 when the picked seat has too few spare cards', () => {
-    expect(picked(decide(mode(1, spare(2))))).toBe('draw-x'); // X = 3
+  it('Brave Spirit: himself with spare cards to discard draws 1 and discards X', () => {
+    expect(picked(decide(mode(1, 'seat-a', spare(4))))).toBe('draw-1'); // X = 3
+  });
+
+  it('Brave Spirit: himself with too few spare cards draws X and discards 1', () => {
+    expect(picked(decide(mode(1, 'seat-a', spare(2))))).toBe('draw-x'); // X = 3
   });
 });
 
