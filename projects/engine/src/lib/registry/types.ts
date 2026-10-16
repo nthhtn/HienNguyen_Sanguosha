@@ -145,8 +145,8 @@ export interface SkillTrigger {
 export interface AbilityModifiers {
   // Sha plays allowed per turn: the highest wins; Infinity = no limit (Crossbow).
   shaLimit?: number;
-  // More targets for the wearer's Sha when it is its last hand card (Sky Scorcher: 2).
-  extraShaTargetsWhenLastCard?: number;
+  // More targets, by card id, for the wearer's play of that card when it is its last hand card (Sky Scorcher: { sha: 2 }).
+  extraTargetsWhenLastCard?: Record<string, number>;
   // The wearer's Sha ignores the target's armour (Black Pommel).
   ignoresArmor?: boolean;
   // Card ids that can't target the wearer (Wood Armor: Barbarians, Hail of Arrows).

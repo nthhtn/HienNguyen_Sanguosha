@@ -95,7 +95,7 @@ export const shaCard: CardDefinition = {
     if (!shaPlayable(state, ctx.seatId, registry)) return null;
     const hand = handOf(state, ctx.seatId);
     const lastCard = ctx.via ? ctx.via.fromHandOnly && hand.length === ctx.via.cards : hand.length === 1 && hand[0].instanceId === ctx.cardInstanceId;
-    const scorcher = lastCard ? Math.max(0, ...activeAbilities(state, ctx.seatId, registry).map((a) => a.modifiers?.extraShaTargetsWhenLastCard ?? 0)) : 0;
+    const scorcher = lastCard ? Math.max(0, ...activeAbilities(state, ctx.seatId, registry).map((a) => a.modifiers?.extraTargetsWhenLastCard?.['sha'] ?? 0)) : 0;
     const extra = shaFlag(state, ctx.seatId, SHA_FLAGS.extraTarget) ? 1 : 0;
     const eligibleIds = shaTargetIds(state, ctx.seatId, registry);
     const max = Math.min(1 + scorcher + extra, eligibleIds.length);

@@ -1,12 +1,12 @@
 import type { AbilityUsedEvent, CardPlayedEvent, CardsTurnedUpEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
 import { drawPileTop, endFlagOf, pileZoneOf, requireZoneOfKind, skipFlagOf, usedCardFrom } from 'engine';
-import { colourFor, suitOf } from '../shared/suits';
-import { JUDGMENT_CHANGERS, nextToChange } from '../shared/judgments';
+import { suitOf } from '../shared/suits';
+import { blackCards, nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
 import { abilityKey, actedOn, askAtStep, atStep } from '../shared/steps';
-import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, hpOf, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, hpOf, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Wind Generals' skills (stage 8 spec, "Rule text"). Every skill acts for
 // the `owner` the engine passes in: the same General can sit at two seats in
@@ -240,10 +240,6 @@ export const lightningStrike: SkillDefinition = {
       ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'normal', cause: { skillId: owner.skillId } } }]
       : [done],
 };
-
-// The black cards in a seat's hand and equipment (Dark Magic's).
-const blackCards = (state: GameState, seatId: string, registry: ContentRegistry) => ownCards(state, seatId, true).filter((c) => colourFor(state, seatId, c, registry) === 'black');
-JUDGMENT_CHANGERS.set('dark-magic', blackCards);
 
 // Dark Magic (may): when any seat's judgment card is turned up, before it takes
 // effect, you may replace it with a black card from your hand or equipment;
