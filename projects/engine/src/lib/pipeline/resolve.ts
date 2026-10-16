@@ -107,6 +107,7 @@ function drain(state: GameState, ctx: EngineContext, budget: StepBudget): Resolv
 
 // A game that ends mid-resolution leaves its in-flight cards in `processing`;
 // they go to the discard pile, unlogged, so the final state holds no stray cards.
+// A mode without a processing zone has nothing to sweep: a no-op.
 function sweepProcessing(state: GameState): GameState {
   const stray = findZoneByKind(state.zones, 'processing')?.cards ?? [];
   if (stray.length === 0) return state;

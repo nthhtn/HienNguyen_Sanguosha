@@ -134,7 +134,9 @@ The call returns. The UI shows "Waiting on Seat B", and B is offered
 
 1. `resolveAction` clears the pending response and queues the effect it was
    holding back: the `sha-hit` step, which leads to `sha-damage`, which
-   queues the `DamageEffect` and then `sha-after-damage`.
+   queues the `DamageEffect` and then `sha-damaged { logFrom }` (where the log
+   stood before the damage). `sha-damaged` queues `sha-after-damage` only if
+   the log since `logFrom` shows the target took damage.
 2. Before-triggers on `DamageEffect` run. None apply here.
 3. `applyEffect`: B's HP goes 1 → 0.
    **`DamageDealtEvent`** (A→B, 1 normal, caused by sha-1).
@@ -322,7 +324,8 @@ with `any` (Peach); only the dying seat may also use `self` (Wine).
 `CardStepEffect { step, card, userSeatId, target, data }`. Applying one calls
 the card's `onStep`, whose effects go to the front of the queue. Step names
 belong to content: Sha's are `sha-use`, `sha-targeted`, `sha-armor`,
-`sha-shan`, `sha-dodged`, `sha-hit`, `sha-damage` and `sha-after-damage`.
+`sha-shan`, `sha-dodged`, `sha-hit`, `sha-damage`, `sha-damaged` and
+`sha-after-damage`.
 
 **Abilities at a step** are `before:CardStepEffect` triggers (content's
 `atStep`). One may:
