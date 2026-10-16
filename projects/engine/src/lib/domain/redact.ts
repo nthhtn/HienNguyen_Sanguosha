@@ -52,19 +52,31 @@ function maskHiddenCards<T>(value: T, hidden: ReadonlySet<string>): T {
 // The skill ids of another seat's hidden Generals that `value` mentions (a
 // GeneralOwner whose slot is still hidden): the viewer mustn't learn them.
 function hiddenSkillIds(value: unknown, state: GameState, viewerSeatId: string, found = new Set<string>()): Set<string> {
+  const isHidden = (o: Partial<GeneralOwner> | undefined): o is GeneralOwner => {
+    if (!o || o.kind !== 'general' || typeof o.seatId !== 'string' || (o.slot !== 'main' && o.slot !== 'deputy') || typeof o.skillId !== 'string' || o.seatId === viewerSeatId) return false;
+    const general = state.seats.find((s) => s.id === o.seatId)?.generals?.[o.slot];
+    return !!general && !general.revealed;
+  };
   if (Array.isArray(value)) value.forEach((v) => hiddenSkillIds(v, state, viewerSeatId, found));
   else if (value !== null && typeof value === 'object') {
-    const v = value as Partial<GeneralOwner>;
-    if (v.kind === 'general' && typeof v.seatId === 'string' && (v.slot === 'main' || v.slot === 'deputy') && typeof v.skillId === 'string' && v.seatId !== viewerSeatId) {
-      const general = state.seats.find((s) => s.id === v.seatId)?.generals?.[v.slot];
-      if (general && !general.revealed) found.add(v.skillId);
-    }
+    if (isHidden(value as Partial<GeneralOwner>)) found.add((value as GeneralOwner).skillId);
+    // The ability and conversion beside a hidden owner equal the skill id for General skills.
+    const { owner, abilityId, conversionId } = value as { owner?: Partial<GeneralOwner>; abilityId?: unknown; conversionId?: unknown };
+    if (isHidden(owner)) for (const id of [abilityId, conversionId]) if (typeof id === 'string') found.add(id);
     Object.values(value).forEach((x) => hiddenSkillIds(x, state, viewerSeatId, found));
   }
   return found;
 }
 
 const SKILL_ID_KEYS = new Set(['skillId', 'abilityId', 'forAbilityId', 'conversionId']);
+
+// `text` with each of `skills` replaced by 'hidden' where it stands as a whole
+// token (hyphens are boundaries, so 'fire' hides in 'ask-fire-1' but not 'firewall').
+function maskInString(text: string, skills: ReadonlySet<string>): string {
+  let out = text;
+  for (const skill of skills) out = out.replace(new RegExp(`(?<![a-z0-9])${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![a-z0-9])`, 'g'), HIDDEN_GENERAL_ID);
+  return out;
+}
 
 // `value` with every mention of `skills` (as a skill, ability or conversion id) replaced by 'hidden'.
 function maskSkills<T>(value: T, skills: ReadonlySet<string>): T {
@@ -77,7 +89,11 @@ function maskSkills<T>(value: T, skills: ReadonlySet<string>): T {
   return Object.fromEntries(
     Object.entries(value).map(([k, v]) => [
       k,
-      typeof v === 'string' && ((SKILL_ID_KEYS.has(k) && skills.has(v)) || (hiddenOwner && k === 'conversionId')) ? HIDDEN_GENERAL_ID : maskSkills(v, skills),
+      typeof v === 'string' && ((SKILL_ID_KEYS.has(k) && skills.has(v)) || (hiddenOwner && k === 'conversionId'))
+        ? HIDDEN_GENERAL_ID
+        : typeof v === 'string' && (k === 'id' || k.endsWith('Id'))
+          ? maskInString(v, skills)
+          : maskSkills(v, skills),
     ])
   ) as T;
 }

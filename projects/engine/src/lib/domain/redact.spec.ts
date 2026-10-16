@@ -215,3 +215,42 @@ describe('redactStateForSeat: a hidden General’s decision seen by another seat
     expect(redactStateForSeat(state(true), 'a').pendingSelection!.reason).toEqual({ kind: 'ability', owner, abilityId: 'dragon-courage' });
   });
 });
+
+describe('redactStateForSeat: skill ids inside id strings', () => {
+  const ownerOf = (skillId: string) => ({ kind: 'general' as const, seatId: 'seat-b', slot: 'main' as const, skillId });
+  const build = (skillId: string, ids: { choice?: string; selection?: string; other?: string }, revealed = false): GameState => {
+    const state = makeState();
+    state.seats[1].generals!.main.revealed = revealed;
+    const reason = { kind: 'ability', owner: ownerOf(skillId), abilityId: skillId };
+    if (ids.choice) state.pendingChoice = { id: ids.choice, seatId: 'seat-b', reason, options: [] } as unknown as GameState['pendingChoice'];
+    if (ids.selection) state.pendingSelection = { id: ids.selection, seatId: 'seat-b', reason, of: 'cards', eligibleIds: [], min: 1, max: 1, then: { kind: 'use-card', targets: [] }, onCancel: [], onSelect: [] } as unknown as GameState['pendingSelection'];
+    if (ids.other) state.pendingArrangement = { id: ids.other, seatId: 'seat-b', cardInstanceIds: [] } as unknown as GameState['pendingArrangement'];
+    return state;
+  };
+
+  it('masks a hidden skill id inside a pending choice id', () => {
+    const view = redactStateForSeat(build('refusing-death', { choice: 'ask-refusing-death-seat-b-12' }), 'seat-a');
+    expect(view.pendingChoice!.id).toBe('ask-hidden-seat-b-12');
+  });
+
+  it('masks it inside a pending selection id', () => {
+    const view = redactStateForSeat(build('refusing-death', { selection: 'convert-refusing-death-seat-b-3' }), 'seat-a');
+    expect(view.pendingSelection!.id).toBe('convert-hidden-seat-b-3');
+  });
+
+  it('leaves the owner’s own view unchanged', () => {
+    const view = redactStateForSeat(build('refusing-death', { choice: 'ask-refusing-death-seat-b-12' }), 'seat-b');
+    expect(view.pendingChoice!.id).toBe('ask-refusing-death-seat-b-12');
+  });
+
+  it('leaves a revealed General’s skill id visible', () => {
+    const view = redactStateForSeat(build('refusing-death', { choice: 'ask-refusing-death-seat-b-12' }, true), 'seat-a');
+    expect(view.pendingChoice!.id).toBe('ask-refusing-death-seat-b-12');
+  });
+
+  it('does not rewrite a skill id inside a longer word', () => {
+    const view = redactStateForSeat(build('fire', { choice: 'ask-fire-seat-b-1', other: 'firewall-3' }), 'seat-a');
+    expect(view.pendingChoice!.id).toBe('ask-hidden-seat-b-1');
+    expect((view.pendingArrangement as unknown as { id: string }).id).toBe('firewall-3');
+  });
+});
