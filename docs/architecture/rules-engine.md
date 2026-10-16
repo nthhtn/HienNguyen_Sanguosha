@@ -160,7 +160,8 @@ A `SkillTrigger` is `{ point, condition, effect }`, where `point` is
 deterministic: the mode's triggers first, then each seat's Generals' skills in
 play (seat by seat, Main before Deputy), then worn equipment. A hidden
 General's *compulsory* skills are off; its optional skills still trigger but
-using one reveals the General first (`needsReveal`). The `owner` passed to a
+using one reveals the General first (`needsReveal`; the reveal rule is under
+"Reveal to use" in [the event chain](event-chain.md)). The `owner` passed to a
 trigger says whose skill it is, so the same General can sit at two seats.
 
 ## Decisions are data, not callbacks
