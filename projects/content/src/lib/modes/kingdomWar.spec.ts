@@ -129,7 +129,8 @@ describe('Kingdom War setup and deal', () => {
     expect(deckOf(2).filter((c) => c.startsWith('fire-attack '))).toHaveLength(5);
     expect(deckOf(2).filter((c) => c.startsWith('lightning-attack '))).toHaveLength(9);
     expect(deckOf(2).filter((c) => c.startsWith('blaze '))).toHaveLength(3); // Blaze is dealt
-    expect(deckOf(2)).toHaveLength(135);
+    expect(deckOf(2).filter((c) => c.startsWith('chains '))).toHaveLength(6); // Chains is dealt
+    expect(deckOf(2)).toHaveLength(141);
   });
 
   it('refuses to build a deck for a card with no printings', () => {

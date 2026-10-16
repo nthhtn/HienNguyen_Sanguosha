@@ -73,7 +73,7 @@ describe('Wiki pages', () => {
     await harness.navigateByUrl('/wiki/tools');
     await harness.fixture.whenStable();
     expect(el().querySelector('h2')!.textContent).toBe('Tools');
-    expect(el().querySelector('.summary')!.textContent).toContain('15 cards · 14 in the game');
+    expect(el().querySelector('.summary')!.textContent).toContain('15 cards · 15 in the game');
   });
 
   it('redirects /wiki/rules to the Overview page', async () => {

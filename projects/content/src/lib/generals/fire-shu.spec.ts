@@ -28,6 +28,39 @@ describe('Pang Tong — Shackle', () => {
   it('not offered without a club', () => {
     expect(offered(table({ 'seat-a:hand': [card('h', 'peach', 'heart')] }, { generals: at('seat-a', 'pang-tong') }), 'seat-a', 'shackle')).toBe(false);
   });
+
+  const asChains = (s: GameState) =>
+    h.legal(s, 'seat-a').flatMap((a) => (a.kind === 'UseConversionAction' && a.via.conversionId === 'shackle-chains' ? [a.targets.map((t) => (t.kind === 'seat' ? t.seatId : '?'))] : []));
+
+  it('uses a club hand card as Chains: its targets, but no Recast (Shackle recasts a club itself)', () => {
+    const s = table({ 'seat-a:hand': [card('c1', 'sha', 'club', 4), card('h', 'peach', 'heart')], drawPile: pile }, { generals: at('seat-a', 'pang-tong') });
+    const offers = asChains(s);
+    expect(offers).toContainEqual(['seat-b']);
+    expect(offers).toContainEqual(['seat-b', 'seat-c']);
+    expect(offers).not.toContainEqual([]);
+    expect(offered(s, 'seat-a', 'shackle')).toBe(true);
+    const used = h.select(h.convert(s, 'seat-a', 'shackle-chains', 'seat-b', 'seat-c'), 'c1');
+    expect(used.seats.filter((x) => x.chained).map((x) => x.id)).toEqual(['seat-b', 'seat-c']);
+    expect(ids(used, 'discardPile')).toEqual(['c1']);
+    expect(handIds(used, 'seat-a')).toEqual(['h']);
+    expect(used.log).toContainEqual(expect.objectContaining({ kind: 'CardPlayedEvent', card: expect.objectContaining({ as: 'chains' }) }));
+  });
+
+  it('no club, no Chains', () => {
+    expect(asChains(table({ 'seat-a:hand': [card('s', 'sha', 'spade', 4)] }, { generals: at('seat-a', 'pang-tong') }))).toEqual([]);
+  });
+
+  it('a hidden Pang Tong is offered both; using either reveals him', () => {
+    const s = table({ 'seat-a:hand': [card('c1', 'sha', 'club', 4)], drawPile: pile }, { generals: at('seat-a', 'pang-tong', 'filler-jiang-wei', false) });
+    expect(asChains(s)).toContainEqual(['seat-b']);
+    expect(offered(s, 'seat-a', 'shackle')).toBe(true);
+    const chainsUsed = h.select(h.convert(s, 'seat-a', 'shackle-chains', 'seat-b'), 'c1');
+    expect(chainsUsed.seats[0].generals!.main.revealed).toBe(true);
+    expect(chainsUsed.seats[1].chained).toBe(true);
+    const recast = h.select(h.useSkill(s, 'seat-a', 'shackle'), 'c1');
+    expect(recast.seats[0].generals!.main.revealed).toBe(true);
+    expect(handIds(recast, 'seat-a')).toEqual(['d1']);
+  });
 });
 
 describe('Pang Tong — Nirvana', () => {

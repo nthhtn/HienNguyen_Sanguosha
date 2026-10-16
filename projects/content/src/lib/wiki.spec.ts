@@ -157,13 +157,13 @@ describe('wikiCards', () => {
   it('lists the 15 tools, with the playable ones in the game and their printings', () => {
     const tools = wikiCards('tool');
     expect(tools).toHaveLength(15);
-    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'lightning', 'peach-garden', 'steal', 'wuxie', 'blaze', 'starvation']);
+    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'lightning', 'peach-garden', 'steal', 'wuxie', 'blaze', 'chains', 'starvation']);
     const duel = tools.find((c) => c.id === 'duel')!;
     expect(duel.count).toBe(3);
     expect(duel.printings).toEqual([{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }]);
   });
 
-  it('includes the crawled EX and Army cards; the elemental ones stay out of the game (Blaze is in, via Fire Strategy)', () => {
+  it('includes the crawled EX and Army cards; Blaze and Chains are in the game, Fire Fan is not', () => {
     const all = [...wikiCards('tool'), ...wikiCards('equipment')];
     const ids = ['blaze', 'chains', 'ancient-scimitar', 'fire-fan', 'ice-sword', 'wood-armor', 'black-shield'];
     for (const id of ids) {
@@ -171,7 +171,7 @@ describe('wikiCards', () => {
       expect(card).toBeDefined();
       expect(card.nameZh).toMatch(/[\u4e00-\u9fff]/);
     }
-    expect(['blaze', 'chains', 'fire-fan'].map((id) => all.find((c) => c.id === id)!.inGame)).toEqual([true, false, false]);
+    expect(['blaze', 'chains', 'fire-fan'].map((id) => all.find((c) => c.id === id)!.inGame)).toEqual([true, true, false]);
     expect(all.find((c) => c.id === 'chains')).toMatchObject({ count: 6, nameZh: '铁索连环' });
     expect(all.find((c) => c.id === 'ice-sword')).toMatchObject({ range: 2, subtype: 'weapon' });
     expect(all.find((c) => c.id === 'black-shield')!.printings).toEqual([{ suit: 'club', rank: 2 }]);
