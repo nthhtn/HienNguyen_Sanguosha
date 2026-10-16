@@ -1,4 +1,4 @@
-import type { CardDefinition, CardPlayedEvent, Target } from 'engine';
+import type { CardDefinition, CardPlayedEvent, ContentRegistry, GameState, PlayOptionsContext, Target } from 'engine';
 import { isChained, livingSeatOrderFrom } from 'engine';
 import { playColour, toolOnTargets } from '../shared/tools';
 import { untargetableBy } from '../shared/abilities';
@@ -11,9 +11,9 @@ const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
 // becomes unchained. Or Recast, played with no target: Chains is discarded and
 // the user draws 1 (no Wuxie check: nothing is targeted).
 //
-// Offers: [] (Recast) when the card is itself, then each seat singly, then each
-// pair once, in turn order from the user. A converted Chains (Shackle) offers
-// no Recast: the skill recasts a club itself.
+// Offers: a pick of 1 or 2 distinct seats (the Choose Targets window), and
+// beside it [] (Recast) when the card is itself. A converted Chains (Shackle,
+// `ctx.via` set) offers no Recast: the skill recasts a club itself.
 // Whether a logged play is a Chains Recast: Chains played with no target, not
 // as an answer. A Recast is instead of using the card, so skills that react to
 // a card's use (Gathering Wisdom) leave it alone.
@@ -27,22 +27,33 @@ export function isRecastPlay(as: string, targets: readonly Target[]): boolean {
   return as === 'chains' && targets.length === 0;
 }
 
+// Living seats Chains may target, in turn order from the user.
+function eligibleSeats(state: GameState, ctx: PlayOptionsContext, registry: ContentRegistry): string[] {
+  const colour = playColour(state, ctx, registry);
+  return livingSeatOrderFrom(state, ctx.seatId).filter((id) => !untargetableBy(state, id, 'chains', registry, colour));
+}
+
 export const chainsCard: CardDefinition = {
   id: 'chains',
   name: 'Chains',
   category: 'tool',
+  // The seats as single targets: what is offered when only one seat is eligible
+  // (then there is no pick), and the Recast.
   legalPlayTargets: (state, ctx, registry) => {
-    const colour = playColour(state, ctx, registry);
-    const eligible = livingSeatOrderFrom(state, ctx.seatId).filter((id) => !untargetableBy(state, id, 'chains', registry, colour));
-    const singles = eligible.map((id) => [seat(id)]);
-    const pairs = eligible.flatMap((first, i) => eligible.slice(i + 1).map((second) => [seat(first), seat(second)]));
-    const recast: Target[][] = ctx.cardInstanceId ? [[]] : [];
-    return [...recast, ...singles, ...pairs];
+    const recast: Target[][] = ctx.via ? [] : [[]];
+    return [...recast, ...eligibleSeats(state, ctx, registry).map((id) => [seat(id)])];
+  },
+  targetPick: (state, ctx, registry) => {
+    const eligibleIds = eligibleSeats(state, ctx, registry);
+    return eligibleIds.length > 1 ? { eligibleIds, min: 1, max: 2 } : null;
   },
   play: (state, ctx) => {
     if (ctx.respondingTo) return [];
     if (ctx.targets.length === 0) return [{ kind: 'DrawCardsEffect', seatId: ctx.seatId, count: 1 }];
-    return toolOnTargets(ctx.card, ctx.seatId, ctx.targets);
+    // The targets toggle in turn order from the user, whatever order they were picked in.
+    const order = livingSeatOrderFrom(state, ctx.seatId);
+    const position = (t: Target) => order.indexOf(t.kind === 'seat' ? t.seatId : '');
+    return toolOnTargets(ctx.card, ctx.seatId, [...ctx.targets].sort((a, b) => position(a) - position(b)));
   },
   onTarget: (state, { target }) => {
     if (target.kind !== 'seat' || !state.seats.some((s) => s.id === target.seatId && !s.eliminated)) return [];

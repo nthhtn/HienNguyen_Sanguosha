@@ -723,6 +723,9 @@ describe('ruleBasedPolicy: elemental Sha and Chains', () => {
     const hand = h(['c', 'chains']);
     const legal = [play('c'), play('c', 'seat-1'), play('c', 'seat-1'), end];
     expect(decide(view({ hand }), legal).action).toBe(end);
+    // As the engine offers it: a Choose Targets template and the Recast.
+    const template: Action = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c', targets: [], pickTargets: { eligibleIds: ['seat-0', 'seat-1', 'seat-2'], min: 1, max: 2 } };
+    expect(decide(view({ hand }), [template, play('c'), end]).action).toBe(end);
   });
 
   it('answers a Barbarians window or a Duel with an elemental Sha', () => {

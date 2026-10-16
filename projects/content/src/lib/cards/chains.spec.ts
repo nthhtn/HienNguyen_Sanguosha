@@ -8,8 +8,12 @@ const { legal, play, pass, respond } = harness();
 const chainsIn = (o: TableOptions = {}, more: Record<string, ReturnType<typeof card>[]> = {}) =>
   table({ 'seat-a:hand': [card('ch', 'chains', 'club', 10)], drawPile: [card('d1', 'shan', 'heart', 1), card('d2', 'shan', 'heart', 2)], ...more }, o);
 const chain = (s: GameState, ...seatIds: string[]): GameState => ({ ...s, seats: s.seats.map((x) => (seatIds.includes(x.id) ? { ...x, chained: true as const } : x)) });
-const offeredTargets = (s: GameState, cardId = 'ch') =>
-  legal(s, 'seat-a').flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === cardId ? [a.targets.map((t) => (t.kind === 'seat' ? t.seatId : '?'))] : []));
+const offers = (s: GameState, cardId = 'ch') => legal(s, 'seat-a').filter((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === cardId);
+// The seats Chains may pick (its Choose Targets template), or null without one.
+const pickOf = (s: GameState) => {
+  const template = offers(s).find((a) => a.kind === 'PlayCardAction' && a.pickTargets);
+  return template?.kind === 'PlayCardAction' ? template.pickTargets ?? null : null;
+};
 const toggles = (s: GameState) => s.log.flatMap((e) => (e.kind === 'ChainToggledEvent' ? [[e.seatId, e.chained]] : []));
 const chained = (s: GameState) => s.seats.filter((x) => isChained(s, x.id)).map((x) => x.id);
 
@@ -18,37 +22,43 @@ describe('Chains', () => {
     expect(registry.cards.get('chains')).toMatchObject({ id: 'chains', name: 'Chains', category: 'tool' });
   });
 
-  it('offers Recast, each living seat singly (the user too, at any distance), and each pair once, in turn order from the user', () => {
+  it('offers a pick of 1 or 2 living seats (the user too, at any distance, in turn order from the user) and the Recast', () => {
     const s = chainsIn({ seats: 5 });
-    expect(offeredTargets(s)).toEqual([
-      [],
-      ['seat-a'], ['seat-b'], ['seat-c'], ['seat-d'], ['seat-e'],
-      ['seat-a', 'seat-b'], ['seat-a', 'seat-c'], ['seat-a', 'seat-d'], ['seat-a', 'seat-e'],
-      ['seat-b', 'seat-c'], ['seat-b', 'seat-d'], ['seat-b', 'seat-e'],
-      ['seat-c', 'seat-d'], ['seat-c', 'seat-e'],
-      ['seat-d', 'seat-e'],
+    expect(offers(s)).toEqual([
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'ch', targets: [], pickTargets: { eligibleIds: ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'], min: 1, max: 2 } },
+      { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'ch', targets: [] },
     ]);
   });
 
-  it('never offers the same seat twice, and refuses it', () => {
+  it('accepts any 1 or 2 distinct eligible seats, and refuses the same seat twice or 3 seats', () => {
     const s = chainsIn();
-    expect(offeredTargets(s).some((t) => t.length === 2 && t[0] === t[1])).toBe(false);
+    expect(() => play(s, 'ch', 'seat-d')).not.toThrow();
+    expect(() => play(s, 'ch', 'seat-a', 'seat-d')).not.toThrow();
     expect(() => play(s, 'ch', 'seat-b', 'seat-b')).toThrow();
     expect(() => play(s, 'ch', 'seat-b', 'seat-c', 'seat-d')).toThrow();
+  });
+
+  it('with a single eligible seat: no pick, that seat alone and the Recast', () => {
+    const s = chainsIn({ seats: 2, generals: { 'seat-b': ['jia-xu', 'filler-dong-zhuo'] } });
+    expect(pickOf(s)).toBeNull();
+    expect(offers(s).map((a) => (a.kind === 'PlayCardAction' ? a.targets : null))).toEqual([[], [{ kind: 'seat', seatId: 'seat-a' }]]);
+  });
+
+  it('toggles in turn order from the user, whatever order the seats were picked in', () => {
+    const s = play(chainsIn(), 'ch', 'seat-c', 'seat-b');
+    expect(toggles(s)).toEqual([['seat-b', true], ['seat-c', true]]);
   });
 
   it('leaves out dead seats, and keeps a seat whose Generals are hidden', () => {
     const t = chainsIn({ generals: { 'seat-c': ['filler-xu-huang', 'filler-dong-zhuo', false] } });
     const s: GameState = { ...t, seats: t.seats.map((x) => (x.id === 'seat-d' ? { ...x, eliminated: true } : x)) };
-    const flat = offeredTargets(s).flat();
-    expect(flat).toContain('seat-c');
-    expect(flat).not.toContain('seat-d');
+    expect(pickOf(s)?.eligibleIds).toEqual(['seat-a', 'seat-b', 'seat-c']);
   });
 
   it('leaves out a seat that cannot be targeted by it (Curtain: a black Tool)', () => {
     const s = chainsIn({ generals: { 'seat-b': ['jia-xu', 'filler-dong-zhuo'] } });
-    expect(offeredTargets(s).flat()).not.toContain('seat-b');
-    expect(offeredTargets(s).flat()).toContain('seat-c');
+    expect(pickOf(s)?.eligibleIds).toEqual(['seat-a', 'seat-c', 'seat-d']);
+    expect(() => play(s, 'ch', 'seat-b')).toThrow();
   });
 
   it('toggles each target in turn: unchained becomes chained, chained becomes unchained', () => {

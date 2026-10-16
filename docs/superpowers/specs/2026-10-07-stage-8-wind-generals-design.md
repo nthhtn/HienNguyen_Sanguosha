@@ -1,6 +1,9 @@
 # Stage 8: The Wind Generals — Design Spec
 
 Status: Draft for review
+
+> Superseded in part: its "no elemental damage" decision is replaced by [Elemental Damage and Chains](2026-10-16-elemental-damage-and-chains-design.md) (2026-10-16).
+
 Date: 2026-10-07
 
 ## Purpose
