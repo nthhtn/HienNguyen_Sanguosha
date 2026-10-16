@@ -1,0 +1,159 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`the rules pages in English card-types keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/generals General Cards",
+    "/wiki/rules/setup Setup",
+    "/wiki/basic Basic Cards",
+    "/wiki/tools Tools",
+    "/wiki/equipment Equipment",
+    "/wiki/rules/distance Distance / Range",
+  ],
+  "text": [
+    "Card Types",
+    "General cards are kept apart from the deck; every deck card is a Basic card, a Tool or Equipment.",
+    "General Cards",
+    "Not part of the deck. Each shows a Force (Wei, Shu, Wu or Qun), an HP value and one or more skills. You are dealt 5 at Setup and choose two: a Main General and a Deputy General. They stay face down until revealed, and their HP combine into your shared HP.",
+    "Basic Cards",
+    "Sha, Shan, Peach and Wine. They attack, defend and heal. Most are played from your hand on your own Play Phase or as a response.",
+    "Tools",
+    "Played from your hand for a special effect. An Instant Tool takes effect at once; a Delayed Tool is placed in a judgment area and takes effect in a later Judgment Phase. Wuxie can cancel a Tool.",
+    "Equipment",
+    "Stays in front of you once played. Weapons set your attack range, Armor defends, and a Mount changes distance: a Plus Mount pushes you farther away, a Minus Mount brings others closer.",
+    "See Distance / Range for how Mounts and Weapons are counted.",
+  ],
+}
+`;
+
+exports[`the rules pages in English distance keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/equipment Equipment",
+  ],
+  "text": [
+    "Distance / Range",
+    "Who you can reach with a card.",
+    "Distance",
+    "Distance between two seats is the number of steps the short way around the table, counting only seats still in play. When a seat is knocked out, the seats beside it get closer. It is never below 1.",
+    "A Plus Mount on the target adds 1.",
+    "A Minus Mount on the attacker subtracts 1.",
+    "Some skills change distance too.",
+    "Range",
+    "Sha can target a seat whose distance is no more than your attack range.",
+    "Your attack range is your Weapon's range, or 1 with no Weapon.",
+    "Steal and Starvation can only target a seat at distance 1.",
+    "Tools that hit everyone, such as Barbarians and Hail of Arrows, ignore distance.",
+    "Weapons and Mounts are listed under Equipment.",
+  ],
+}
+`;
+
+exports[`the rules pages in English judgment keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/tools Tools",
+  ],
+  "text": [
+    "Judgment",
+    "Turn up the top card of the draw pile to decide an effect.",
+    "The top card of the draw pile is turned face up.",
+    "Skills that change a judgment can replace the card before it is read.",
+    "The final card is read for its suit and rank, and the effect follows.",
+    "The card goes to the discard pile.",
+    "Delayed Tools",
+    "A Delayed Tool sits in a judgment area. It is judged in its holder's Judgment Phase. Wuxie can cancel it when it is judged.",
+    "Capture",
+    "Placed on another seat. Anything but a heart means that seat skips its Play Phase.",
+    "Starvation",
+    "Placed on another seat at distance 1. Anything but a club means that seat skips its Draw Phase.",
+    "Lightning",
+    "Placed on yourself. A spade from 2 to 9 deals 3 damage to its holder. Otherwise it passes to the next seat.",
+    "Read more under Tools.",
+  ],
+}
+`;
+
+exports[`the rules pages in English overview keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/setup Setup",
+    "/wiki/rules/turn Turn Structure",
+    "/wiki/rules/card-types Card Types",
+    "/wiki/rules/distance Distance / Range",
+    "/wiki/rules/judgment Judgment",
+    "/wiki/generals Generals",
+  ],
+  "text": [
+    "Overview",
+    "What Kingdom War is and how a game is won.",
+    "Kingdom War is a game of hidden loyalties. Every player holds two secret Generals and belongs to the Force of their face-up General: Wei, Shu, Wu or Qun. Play cards, use skills and defeat the others until the seats still standing all belong to one Force.",
+    "Winning",
+    "The game ends when every seat still in play belongs to the same Force. Those seats win together.",
+    "Qun seats never win as a group: a Qun seat wins only when it is the last seat standing.",
+    "A seat that loses its last HP and is not rescued is out. It discards every card it holds.",
+    "Where to read next",
+    "Setup: how a game starts.",
+    "Turn Structure: what you do on your turn.",
+    "Card Types: Basic, Tool and Equipment cards.",
+    "Distance / Range: who you can reach.",
+    "Judgment: flipping the top card to decide an effect.",
+    "Generals: every General and skill.",
+  ],
+}
+`;
+
+exports[`the rules pages in English setup keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/turn Turn Structure",
+  ],
+  "text": [
+    "Setup",
+    "What happens before the first turn.",
+    "Every seat is dealt 5 Generals. Each set includes at least two Generals of the same Force.",
+    "Each player chooses two of their Generals: a Main General and a Deputy General. Both start face down.",
+    "HP is shared: half the sum of the two Generals' HP, rounded down. Damage and healing apply to this one pool.",
+    "The draw pile is shuffled and every seat draws 4 cards.",
+    "Revealing Generals",
+    "You can reveal a General when you need its skill or Force.",
+    "A seat's Main General is revealed when its HP drops to half its maximum or lower.",
+    "Its Deputy General is revealed when its HP drops to 0 or lower.",
+    "When you reveal your second General and the two Generals' HP added together was odd (so your HP was rounded down), you draw 1 card.",
+    "Optional, with 5 or more seats: the first seat to reveal a General draws 2 cards. This is a checkbox in Game Setup.",
+    "Killing a seat",
+    "When a seat is eliminated, the seat whose damage killed it is rewarded or penalized.",
+    "Different Force: the killer draws one card for each living seat of the dead seat's Force, counting the dead seat itself.",
+    "Same Force: the killer discards its entire hand.",
+    "A killer who has not revealed either General always counts as a different Force, even if it secretly shares the dead seat's Force.",
+    "Qun counts as one Force like the others.",
+    "Nothing happens if the death had no source, the seat killed itself, or the killer is out as well.",
+    "Next: Turn Structure.",
+  ],
+}
+`;
+
+exports[`the rules pages in English turn keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/judgment Judgment",
+  ],
+  "text": [
+    "Turn Structure",
+    "A turn has six phases, always in the same order.",
+    "Start Phase",
+    "Skills that trigger at the start of a turn resolve.",
+    "Judgment Phase",
+    "Each Delayed Tool in your judgment area is judged. See Judgment.",
+    "Draw Phase",
+    "Draw 2 cards. Some skills change this.",
+    "Play Phase",
+    "Play cards and use skills in any order. You may use one Sha per turn. End the phase when you are done.",
+    "Discard Phase",
+    "Discard down to your hand limit, which equals your current HP.",
+    "End Phase",
+    "Skills that trigger at the end of a turn resolve. Then the next living seat clockwise begins its turn.",
+    "Draw, Discard and the other phases pass by themselves. Only the Play Phase waits for you to end it. A Capture or Starvation can make you skip a phase.",
+  ],
+}
+`;

@@ -28,6 +28,15 @@ describe('parseRich', () => {
 });
 
 describe('the rules texts in both languages', () => {
+  it('no sentence holds a malformed token, in either language', () => {
+    for (const catalog of [en, vi]) {
+      for (const key of ruleKeys) {
+        const leftovers = parseRich(catalog[key]).filter((part) => part.kind === 'text' && /\[\[|\]\]|\{card:|\{force:|\|/.test(part.text));
+        expect([key, leftovers]).toEqual([key, []]);
+      }
+    }
+  });
+
   const tokens = (source: string) => parseRich(source).filter((part) => part.kind !== 'text').map((part) => (part.kind === 'link' ? `link:${part.path}` : part.kind === 'card' ? `card:${part.id}` : `force:${part.name}`));
 
   it('has the same rules keys in English and Vietnamese', () => {
