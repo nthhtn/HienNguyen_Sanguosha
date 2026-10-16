@@ -5,11 +5,11 @@ import { act, asking, card, decide, picked, registry, table, useSkill } from './
 // The Forest Generals' bot rules (stage 10 spec, "Bots").
 
 const generals = (a: string, extra: Record<string, [string, string]> = {}) => ({ 'seat-a': [a, 'filler-jiang-wei'] as [string, string], ...extra });
-const choiceOf = (s: GameState, ids: string[], verb: 'pick' | 'give' = 'pick', abilityId = 'x', ownerSeatId = 'seat-a') => ({
+const choiceOf = (s: GameState, ids: string[], verb: 'pick' | 'give' = 'pick', abilityId = 'x', ownerSeatId = 'seat-a', targetSeatId?: string) => ({
   ...s,
   pendingChoice: {
     id: 'c', seatId: 'seat-a', verb,
-    reason: { kind: 'ability' as const, owner: { kind: 'general' as const, seatId: ownerSeatId, slot: 'main' as const, skillId: abilityId }, abilityId },
+    reason: { kind: 'ability' as const, owner: { kind: 'general' as const, seatId: ownerSeatId, slot: 'main' as const, skillId: abilityId }, abilityId, ...(targetSeatId ? { targetSeatId } : {}) },
     options: ids.map((id) => ({ id, shows: id.startsWith('seat') ? { kind: 'seat' as const, seatId: id } : { kind: 'label' as const, text: id }, effects: [] })),
   },
 });
@@ -63,17 +63,26 @@ describe('choices', () => {
     expect(picked(decide(s))).toBe('seat-c');
   });
 
-  it("Brave Spirit's seat: an ally short of cards, else himself; the target's own pick: draw X for X of 2 or less", () => {
+  it("Brave Spirit's seat: an ally short of cards, else himself", () => {
     const seats = choiceOf(table({ 'seat-c:hand': [] }, { generals: generals('sun-jian'), kingdoms: { 'seat-a': 'Wu', 'seat-b': 'Wei', 'seat-c': 'Wu', 'seat-d': 'Qun' }, hp: { 'seat-a': 2 } }), ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 'pick', 'brave-spirit');
     expect(picked(decide(seats))).toBe('seat-c');
-    // The target's own pick, X = Sun Jian's missing HP (seat-b: 4 max, 2 HP, so X = 2).
-    const forced = (hp: number, hand: ReturnType<typeof card>[] = []) =>
-      choiceOf(table({ 'seat-a:hand': hand }, { generals: { 'seat-b': ['sun-jian', 'filler-jiang-wei'] }, hp: { 'seat-b': hp } }), ['draw-x', 'draw-1'], 'pick', 'brave-spirit', 'seat-b');
-    expect(picked(decide(forced(2)))).toBe('draw-x');
-    // X = 3 with 4 spare cards: draw 1, discard 3.
-    const spare = Array.from({ length: 4 }, (_, i) => card(`p${i}`, 'sha', 'club', i + 1));
-    expect(picked(decide(forced(1, spare)))).toBe('draw-1');
-    expect(picked(decide(forced(1)))).toBe('draw-x'); // nothing spare to discard
+  });
+
+  // The mode choice is the owner's (seat-a, Sun Jian); X is his missing HP (4 max).
+  const mode = (hp: number, targetHand: ReturnType<typeof card>[] = []) =>
+    choiceOf(table({ 'seat-c:hand': targetHand }, { generals: generals('sun-jian'), hp: { 'seat-a': hp } }), ['draw-x', 'draw-1'], 'pick', 'brave-spirit', 'seat-a', 'seat-c');
+  const spare = (n: number) => Array.from({ length: n }, (_, i) => card(`p${i}`, 'sha', 'club', i + 1));
+
+  it('Brave Spirit: the owner draws X and discards 1 for X of 2 or less', () => {
+    expect(picked(decide(mode(2, spare(5))))).toBe('draw-x');
+  });
+
+  it('Brave Spirit: the owner draws 1 and discards X when the picked seat has spare cards to discard', () => {
+    expect(picked(decide(mode(1, spare(4))))).toBe('draw-1'); // X = 3
+  });
+
+  it('Brave Spirit: the owner draws X and discards 1 when the picked seat has too few spare cards', () => {
+    expect(picked(decide(mode(1, spare(2))))).toBe('draw-x'); // X = 3
   });
 });
 

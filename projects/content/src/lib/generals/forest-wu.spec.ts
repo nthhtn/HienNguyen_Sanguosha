@@ -10,17 +10,24 @@ describe('Sun Jian — Brave Spirit', () => {
   const starting = (o: TableOptions = {}, extra: Record<string, ReturnType<typeof card>[]> = {}) =>
     h.settle(table({ drawPile: cards('d', 6), ...extra }, { generals: at('seat-a', 'sun-jian'), owner: 'seat-d', phase: 'End', hp: { 'seat-a': 1 }, ...o }));
 
-  it('at the start of his turn, if damaged, the seat he picks either draws X and discards 1, or draws 1 and discards X', () => {
+  it('at the start of his turn, if damaged, the seat he picks draws X and discards 1, or draws 1 and discards X, as he chooses', () => {
     let s = starting(); // X = 3
     expect(askedAbout(s)).toBe('brave-spirit');
     s = h.choose(h.use(s), 'seat-b');
-    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-b' });
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-a', reason: { targetSeatId: 'seat-b' } }); // the owner chooses the mode
     expect(s.pendingChoice!.options.map((o) => o.shows)).toEqual([{ kind: 'label', text: 'Draw 3, Then Discard 1' }, { kind: 'label', text: 'Draw 1, Then Discard 3' }]);
     s = h.choose(s, 'draw-x');
     expect(s.pendingSelection).toMatchObject({ seatId: 'seat-b', min: 1, max: 1 });
     s = h.select(s, 'd1');
     expect(handIds(s, 'seat-b')).toEqual(['d2', 'd3']);
     expect(ids(s, 'discardPile')).toEqual(['d1']);
+  });
+
+  it('he may pick himself and still chooses the mode', () => {
+    let s = h.choose(h.use(starting()), 'seat-a');
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-a', reason: { targetSeatId: 'seat-a' } });
+    s = h.choose(s, 'draw-x');
+    expect(s.pendingSelection).toMatchObject({ seatId: 'seat-a' });
   });
 
   it('the other option: draw 1, discard X (at most what the seat holds)', () => {

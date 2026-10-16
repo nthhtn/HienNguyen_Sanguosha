@@ -88,7 +88,7 @@
   "choicePrompt": {
     "upheaval": "Chọn một người chơi để đánh Sát vào, hoặc bỏ qua",
     "collapse": "Chọn cách Collapse gây tổn hại cho bạn",
-    "brave-spirit": "Chọn cách rút bài và bỏ bài",
+    "brave-spirit": "Chọn cách {target} rút bài và bỏ bài",
     "clever-change": "Chọn một lá bài để chuyển",
     "follow-the-master": "Chọn cách Follow the Master giúp bạn",
     "incarnation": "Chọn một kỹ năng Hóa thân",

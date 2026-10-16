@@ -184,7 +184,7 @@ export function seatPickText(abilityId: string, locale = 'en'): string | null {
 const CHOICE_PROMPT_TEXT: Record<string, string> = {
   upheaval: 'Choose a seat to play a Sha at, or pass',
   collapse: 'Choose how Collapse costs you',
-  'brave-spirit': 'Choose how to draw and discard',
+  'brave-spirit': 'Choose how {target} draws and discards',
   'clever-change': 'Choose a card to move',
   'follow-the-master': 'Choose how Follow the Master helps you',
   incarnation: 'Choose a Form skill',

@@ -23,6 +23,11 @@ const toolChoice = (verb: PendingChoice['verb'], targetSeatId?: string, options:
 });
 
 describe('describeChoice in Vietnamese', () => {
+  it('Brave Spirit: the owner chooses how the picked seat draws and discards', () => {
+    const labels: ChoiceOption[] = [{ id: 'a', shows: { kind: 'label', text: 'A' }, effects: [] }, { id: 'b', shows: { kind: 'label', text: 'B' }, effects: [] }];
+    expect(describeChoice(state(skill('brave-spirit', 'pick', 'seat-1', labels)), 'seat-0', makeTranslator(vi, 'vi'))).toMatchObject({ prompt: 'Chọn cách Người chơi 1 rút bài và bỏ bài' });
+  });
+
   it('a skill discarding from another seat', () => {
     expect(describeChoice(state(skill('sudden-attack', 'discard', 'seat-1')), 'seat-0', tr)).toMatchObject({ prompt: 'Chọn một lá bài của Người chơi 1 để bỏ', confirmLabel: 'Bỏ bài' });
   });
