@@ -1,6 +1,6 @@
 import type { CardInstance, ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { livingSeatOrderFrom } from 'engine';
-import { definitionIdOf, handCards, isAlly, keepRank, leastUseful } from './helpers';
+import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, isShaCard } from './helpers';
 
 // The stage 9 spec's bot rules for the Fire skills. Bots don't read content's
 // range rules, so distance is worked out here the same way: seats round the

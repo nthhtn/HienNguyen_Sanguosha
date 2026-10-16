@@ -16,7 +16,7 @@ function card(id: string, category: CardDefinition['category'], equipSlot?: Equi
 const registry: ContentRegistry = {
   generals: new Map([general('w1', 'Wei', 4), general('w2', 'Wei', 3), general('s1', 'Shu', 4), general('s2', 'Shu', 5)]),
   cards: new Map([
-    card('sha', 'basic'), card('shan', 'basic'), card('peach', 'basic'),
+    card('sha', 'basic'), ['fire-attack', { id: 'fire-attack', name: 'fire-attack', category: 'basic', playsAs: 'sha', nature: 'fire', play: () => [] }], ['lightning-attack', { id: 'lightning-attack', name: 'lightning-attack', category: 'basic', playsAs: 'sha', nature: 'thunder', play: () => [] }], card('chains', 'tool'), card('shan', 'basic'), card('peach', 'basic'),
     card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
     card('draw-two', 'tool'), card('barbarians', 'tool'), card('hail-of-arrows', 'tool'), card('peach-garden', 'tool'),
     card('steal', 'tool'), card('break', 'tool'), card('coerce', 'tool'), card('harvest', 'tool'),
@@ -703,5 +703,37 @@ describe('General selection with a value table', () => {
     const valued = createRuleBasedPolicy('t', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, { w1: 0.2 });
     expect(valued.decide(view({ phase: 'GeneralSelection' }), 'seat-0', legal, registry, null).action).toBe(legal[0]);
     expect(decide(view({ phase: 'GeneralSelection' }), legal).action).toBe(legal[1]);
+  });
+});
+
+describe('ruleBasedPolicy: elemental Sha and Chains', () => {
+  const h = (...ids: [string, string][]) => ids.map(([instanceId, definitionId]) => ({ instanceId, definitionId }));
+  const respond = (id: string): Action => ({ kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: id });
+  const pass: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' };
+
+  it.each(['fire-attack', 'lightning-attack'])('plays %s as it plays a Sha, at the lowest-HP non-ally', (id) => {
+    const hand = h(['c', id]);
+    const legal = [play('c', 'seat-1'), play('c', 'seat-2'), end];
+    const first = decide(view({ hand }), legal);
+    expect(first.action).toBe(legal[1]);
+    expect(first.memory?.shaPlayed).toBe(1);
+  });
+
+  it('never plays or recasts Chains', () => {
+    const hand = h(['c', 'chains']);
+    const legal = [play('c'), play('c', 'seat-1'), play('c', 'seat-1'), end];
+    expect(decide(view({ hand }), legal).action).toBe(end);
+  });
+
+  it('answers a Barbarians window or a Duel with an elemental Sha', () => {
+    const v = view({ pendingFor: 'seat-0', hand: h(['s', 'fire-attack']), pendingReason: { kind: 'card-effect', card: { instanceId: 'x', definitionId: 'barbarians', as: 'barbarians' } as never, userSeatId: 'seat-1' } });
+    expect(decide(v, [respond('s'), pass]).action).toEqual(respond('s'));
+  });
+
+  it('discards Chains before an elemental Sha, and an elemental Sha like a Sha', () => {
+    const pick = (hand: { instanceId: string; definitionId: string }[]) => decide(view({ phase: 'Discard', hand }), hand.map((c) => discard(c.instanceId))).action;
+    expect(pick(h(['f', 'fire-attack'], ['c', 'chains']))).toEqual(discard('c'));
+    expect(pick(h(['e', 'shan'], ['f', 'lightning-attack']))).toEqual(discard('f'));
+    expect(pick(h(['f', 'fire-attack'], ['b', 'blade']))).toEqual(discard('b'));
   });
 });

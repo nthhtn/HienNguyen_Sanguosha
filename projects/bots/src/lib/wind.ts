@@ -1,5 +1,5 @@
 import type { CardInstance, ContentRegistry, Effect, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
-import { handCards, isAlly, keepRank, leastUseful, ownCards } from './helpers';
+import { handCards, isAlly, keepRank, leastUseful, ownCards, isShaCard } from './helpers';
 import { devilCard } from './skills';
 
 // The stage 8 spec's bot rules for the Wind skills.

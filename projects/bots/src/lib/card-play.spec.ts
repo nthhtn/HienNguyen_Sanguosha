@@ -101,3 +101,12 @@ describe('discardRank', () => {
     expect(discardRank(s, registry, 'missing-instance')).toBe(0);
   });
 });
+
+describe('discardRank: elemental Sha', () => {
+  it('ranks Fire Attack and Lightning Attack as Sha, and Chains as a plain Tool', () => {
+    const rank = (id: string) => discardRank(table({ 'seat-a:hand': [card('x', id)] }), registry, 'x');
+    expect(rank('fire-attack')).toBe(4);
+    expect(rank('lightning-attack')).toBe(4);
+    expect(rank('chains')).toBe(2);
+  });
+});

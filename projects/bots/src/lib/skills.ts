@@ -1,6 +1,6 @@
 import type { Action, CardInstance, ContentRegistry, Effect, GameState, Judgment, PendingChoice, PendingSelection, Seat } from 'engine';
 import { abilityUseKey, colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
-import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards } from './helpers';
+import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards, isShaCard } from './helpers';
 import { wantsWind, windChoice, windSelection } from './wind';
 import { fireChoice, wantsFire, wantsFireActive } from './fire';
 import { forestChoice, forestSelection, wantsForest, wantsForestActive } from './forest';

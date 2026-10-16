@@ -1,7 +1,7 @@
 import type { Action, ContentRegistry, GameState, Seat } from 'engine';
 import { conversionsOf, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
-import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
+import { definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
 import { bestPair, GENERAL_VALUES } from './general-values';
@@ -20,9 +20,10 @@ type Arrange = Extract<Action, { kind: 'ArrangeCardsAction' }>;
 
 
 // Plays of `definitionId` aimed at a living non-ally, best target first.
-function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string, rank: TargetRanker): PlayCard[] {
+function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string, rank: TargetRanker, registry?: ContentRegistry): PlayCard[] {
+  const matches = (id: string | undefined) => (definitionId === 'sha' && registry ? isShaCard(registry, id) : id === definitionId);
   return plays
-    .filter((p) => p.targets.length >= 1 && p.targets[0].kind === 'seat' && definitionIdOf(view, p.cardInstanceId) === definitionId)
+    .filter((p) => p.targets.length >= 1 && p.targets[0].kind === 'seat' && matches(definitionIdOf(view, p.cardInstanceId)))
     .map((p) => ({ play: p, target: view.seats.find((s) => p.targets[0].kind === 'seat' && s.id === p.targets[0].seatId) }))
     .filter((t): t is { play: PlayCard; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
     .sort((a, b) => rank(view, self, b.target) - rank(view, self, a.target) || a.target.index - b.target.index)
@@ -316,7 +317,7 @@ function decide(
     if (lightning && self.combinedHp >= 3) return take(lightning);
 
     // Wine first when a Sha at a non-ally is legal: the Sha follows next.
-    const shaPlays = targetedPlays(view, self, plays, 'sha', rank);
+    const shaPlays = targetedPlays(view, self, plays, 'sha', rank, registry);
     const shaTarget = view.seats.find((s) => s.id === shaPlays[0]?.targets[0]?.seatId);
     const wineOk = shaPlays.length > 0 && (!rules.wine || wineWorthPlaying(shaTarget));
     const wine = untargetedOf('wine');
