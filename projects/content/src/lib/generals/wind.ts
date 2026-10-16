@@ -146,7 +146,7 @@ export const fantasy: SkillDefinition = {
     const damage = step.data?.['damage'] as DamageStep;
     if (step.step === 'discarded') return [...discardMoves(state, (step.data?.['picked'] as string[]) ?? []), skillStep(owner, 'move', { damage })];
     if (step.step === 'move') {
-      const moveTo = (seatId: string): Effect[] => [{ ...damage, damage: { ...damage.damage, target: { kind: 'seat', seatId } } }, skillStep(owner, 'draw', { seatId })];
+      const moveTo = (seatId: string): Effect[] => [used(owner, 'moved-damage', seatId), { ...damage, damage: { ...damage.damage, target: { kind: 'seat', seatId } } }, skillStep(owner, 'draw', { seatId })];
       return [choiceOf(state, owner, { verb: 'pick', options: seatOptions(otherLivingSeatIds(state, owner.seatId), moveTo) })];
     }
     // 'draw': the seat that took it draws as many cards as it is missing HP.
