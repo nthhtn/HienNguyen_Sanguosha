@@ -42,7 +42,7 @@ describe('WikiGeneralEntry', () => {
       expect(text).toContain(part);
     }
     expect(el.querySelectorAll('.hearts mat-icon')).toHaveLength(4);
-    expect(el.querySelector('app-card-art')).not.toBeNull();
+    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/card-art/generals/skins/wei/caocao.png');
     expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');
   });
 
@@ -96,6 +96,12 @@ describe('WikiCardEntry', () => {
     expect(el.textContent).toContain('Rules text not available');
     expect(el.textContent).toContain('Printings not recorded');
     expect(el.querySelector('.badge')!.textContent!.trim()).toBe('Not in the game yet');
+  });
+
+  it('shows a mount’s distance: -1 for an offensive Mount, +1 for a defensive one', () => {
+    expect(renderCard({ ...redHare, mount: 'offensive' }).querySelector('.distance')!.textContent).toContain('Distance -1');
+    expect(renderCard({ ...redHare, mount: 'defensive' }).querySelector('.distance')!.textContent).toContain('Distance +1');
+    expect(renderCard({ ...redHare, id: 'axe', subtype: 'weapon', mount: null, range: 3 }).querySelector('.distance')).toBeNull();
   });
 
   it('shows a weapon’s range', () => {

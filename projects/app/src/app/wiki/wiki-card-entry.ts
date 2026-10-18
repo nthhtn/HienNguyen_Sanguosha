@@ -12,7 +12,7 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
   imports: [CardArt, TPipe],
   template: `
     <article class="entry" [attr.data-id]="card().id">
-      <app-card-art [id]="card().id" [label]="view().name" size="large" />
+      <app-card-art [cropped]="true" [id]="card().id" [label]="view().name" size="large" />
       <div class="body">
         <header>
           <h4>
@@ -26,6 +26,9 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
         <p class="meta"><span class="expansion-tag">{{ packLabel(card().expansion) }}</span></p>
         @if (card().range !== null) {
           <p class="range">{{ 'wiki.range' | t: { n: card().range ?? 0 } }}</p>
+        }
+        @if (card().mount; as mount) {
+          <p class="distance">{{ 'card.distance' | t: { n: mount === 'offensive' ? '-1' : '+1' } }}</p>
         }
         @if (view().text; as text) {
           <p class="text">{{ text }}</p>
@@ -58,7 +61,7 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
     .badge.on { background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); border-color: var(--mat-sys-primary); }
     .meta { margin: 8px 0 0; }
     .expansion-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
-    .range { margin: 8px 0 0; font-weight: 600; }
+    .range, .distance { margin: 8px 0 0; font-weight: 600; }
     .text { margin: 8px 0; }
     .printings { margin: 8px 0; letter-spacing: 0.04em; }
     .printings.extra { margin-top: -4px; color: var(--mat-sys-on-surface-variant); }

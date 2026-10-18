@@ -57,6 +57,8 @@ export interface CardDisplayData {
   category: CardData['category'];
   subtype: NonNullable<CardData['subtype']> | null;
   range: number | null;
+  // Horses only: defensive (+1) or offensive (-1).
+  mount: 'defensive' | 'offensive' | null;
   text: string | null;
 }
 
@@ -70,6 +72,7 @@ export function cardDisplayData(id: string, locale = 'en'): CardDisplayData | nu
     category: data.category,
     subtype: data.subtype ?? null,
     range: data.range ?? null,
+    mount: data.mount ?? null,
     text: translated?.text ?? data.text ?? null,
   };
 }

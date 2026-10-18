@@ -14,9 +14,14 @@ import { TPipe } from '../i18n/t.pipe';
   imports: [CardArt, TPipe],
   template: `
     <div class="card" [class.small]="size() === 'small'" [class.large]="size() === 'large'" [attr.title]="'card.named' | t: { name: name(), face: face() }">
-      <app-card-art [size]="size()" [id]="card().definitionId" [label]="name()" />
+      <app-card-art [cropped]="true" [size]="size()" [id]="card().definitionId" [label]="name()" />
       <span class="face" [class.red]="red()">{{ face() }}</span>
-      <span class="name">{{ name() }}</span>
+      @if (showStat() && stat(); as stat) {
+        <span class="stat">{{ stat }}</span>
+      }
+      @if (showName()) {
+        <span class="name">{{ name() }}</span>
+      }
     </div>
   `,
   styles: `
@@ -34,6 +39,14 @@ import { TPipe } from '../i18n/t.pipe';
       background: rgb(0 0 0 / 68%); color: #fff; text-align: center;
       font: 600 11px/1.1 system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    /* A weapon's range or a mount's distance: the cropped art no longer shows it. */
+    .stat {
+      position: absolute; right: 2px; bottom: 19px; min-width: 14px; box-sizing: border-box; padding: 1px 3px; border-radius: 4px;
+      background: rgb(255 255 255 / 92%); color: #1b1b1b; box-shadow: 0 0 2px rgb(0 0 0 / 40%);
+      font: 700 12px/1.1 system-ui, sans-serif; text-align: center; white-space: nowrap;
+    }
+    .small .stat { right: 1px; bottom: 27px; min-width: 11px; padding: 0 2px; font-size: 9px; border-radius: 3px; }
+    .large .stat { right: 6px; bottom: 36px; min-width: 28px; padding: 3px 7px; font-size: 20px; border-radius: 6px; }
     .small .face { top: 1px; left: 1px; padding: 1px 2px; font-size: 9px; border-radius: 3px; }
     .large .face { top: 6px; left: 6px; padding: 4px 7px; font-size: 20px; border-radius: 6px; }
     .large .name { left: 0; right: 0; bottom: 0; padding: 7px 4px; font-size: 17px; border-radius: 0; }
@@ -47,12 +60,24 @@ import { TPipe } from '../i18n/t.pipe';
 export class PlayingCard {
   readonly card = input.required<CardInstance>();
   readonly size = input<'normal' | 'small' | 'large'>('normal');
+  // The name banner along the bottom; off where the name is already a heading.
+  readonly showName = input(true);
+  // The range or distance badge; off where it is written out as text.
+  readonly showStat = input(true);
 
   private readonly i18n = inject(I18n);
 
   protected readonly name = computed(
     () => cardDisplayData(this.card().definitionId, this.i18n.locale())?.name ?? cardIdDisplayName(this.card().definitionId, this.i18n.translator)
   );
+  // A weapon's attack range, or a mount's distance, as a bare number.
+  protected readonly stat = computed(() => {
+    const data = cardDisplayData(this.card().definitionId, this.i18n.locale());
+    if (!data) return null;
+    if (data.range !== null) return String(data.range);
+    if (!data.mount) return null;
+    return data.mount === 'offensive' ? '-1' : '+1';
+  });
   protected readonly face = computed(() => cardFaceLabel(this.card()));
   protected readonly red = computed(() => this.card().suit === 'heart' || this.card().suit === 'diamond');
 }

@@ -1,5 +1,5 @@
 import { Component, computed, input } from '@angular/core';
-import { cardArtUrl } from 'content';
+import { cardArtUrl, croppedCardArtUrl, generalSkinUrl } from 'content';
 
 @Component({
   selector: 'app-card-art',
@@ -58,5 +58,14 @@ export class CardArt {
   readonly label = input.required<string>();
   readonly size = input<'normal' | 'small' | 'large' | 'tiny'>('normal');
 
-  protected readonly url = computed(() => cardArtUrl(this.id()));
+  // A General shown on the Play screen uses its skin; the Wiki keeps the original art.
+  readonly skin = input(false);
+
+  // A card shown on the Play screen uses its cropped art.
+  readonly cropped = input(false);
+
+  protected readonly url = computed(() => {
+    if (this.skin()) return generalSkinUrl(this.id());
+    return this.cropped() ? croppedCardArtUrl(this.id()) : cardArtUrl(this.id());
+  });
 }

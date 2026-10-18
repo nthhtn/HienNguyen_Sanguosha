@@ -31,7 +31,7 @@ describe('ActionHistoryPanel', () => {
 
   it('shows the card when the latest action used one', () => {
     const { el } = render(history.slice(1));
-    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/card-art/cards/basic/sha.jpg');
+    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/card-art/cards/cropped/basic/sha.jpg');
   });
 
   it('says so when nothing has happened yet', () => {

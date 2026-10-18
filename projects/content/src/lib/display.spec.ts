@@ -27,12 +27,13 @@ describe('cardDisplayData', () => {
       category: 'equipment',
       subtype: 'weapon',
       range: 1,
-      text: 'Range: 1. With this equipped, a player may attack as much as desired during their turn.',
+      mount: null,
+      text: 'With this equipped, a player may attack as much as desired during their turn.',
     });
   });
 
   it('returns null text and range when the data has none', () => {
-    expect(cardDisplayData('sha')).toEqual({ name: 'Sha', category: 'basic', subtype: null, range: null, text: null });
+    expect(cardDisplayData('sha')).toEqual({ name: 'Sha', category: 'basic', subtype: null, range: null, mount: null, text: null });
   });
 
   it('returns null for an unknown id', () => {

@@ -1,4 +1,5 @@
 import manifest from '../../assets/manifest.json';
+import skins from '../../assets/generals/skins/skins.json';
 
 interface AssetManifestEntry {
   localPath: string;
@@ -9,6 +10,22 @@ const ASSET_MANIFEST: Record<string, AssetManifestEntry> = manifest;
 export function cardArtUrl(id: string): string | null {
   const entry = ASSET_MANIFEST[id];
   return entry ? `/card-art/${entry.localPath}` : null;
+}
+
+// A card's art alone, without the card frame, name or rules text: what the Play
+// screen shows, since it draws its own suit, number and name over the art.
+export function croppedCardArtUrl(id: string): string | null {
+  const entry = ASSET_MANIFEST[id];
+  return entry ? `/card-art/${entry.localPath.replace(/^cards\//, 'cards/cropped/')}` : null;
+}
+
+const GENERAL_SKINS: Record<string, string> = skins;
+
+// A General's skin: the portrait used on the Play screen. A General with no
+// skin falls back to its crawled card art (the one the Wiki always shows).
+export function generalSkinUrl(id: string): string | null {
+  const skin = GENERAL_SKINS[id];
+  return skin ? `/card-art/generals/skins/${skin}` : cardArtUrl(id);
 }
 
 // The back of a playing card, shown for a card whose face is hidden.

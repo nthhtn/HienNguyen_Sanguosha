@@ -1,4 +1,5 @@
 import { Action, ContentRegistry, Seat, SeatGenerals, SkillDefinition, findSkill } from 'engine';
+import { abilityDisplayName } from '../labels';
 import { abilityName } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
@@ -59,7 +60,7 @@ export function avatarSkills(generals: SeatGenerals | null, registry: ContentReg
       .map((skill): AvatarSkill => {
         const action =
           legal.find((a): a is UseSkill => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.slot === slot && a.owner.skillId === skill.id) ?? null;
-        const name = abilityName(skill.id, localeOf(tr));
+        const name = abilityDisplayName(skill.id, tr);
         return { slot, skillId: skill.id, label: general.revealed ? name : tr('avatar.revealSkill', { name }), action };
       });
   });

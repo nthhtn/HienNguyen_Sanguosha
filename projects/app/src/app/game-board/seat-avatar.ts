@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Action, GeneralInstance, SeatGenerals } from 'engine';
-import { cardArtUrl, generalDisplayData, HIDDEN_GENERAL_ART_URL } from 'content';
+import { generalDisplayData, HIDDEN_GENERAL_ART_URL, generalSkinUrl } from 'content';
 import { generalDisplayName } from '../labels';
 import { GeneralInfoDialog, GeneralInfoDialogData } from './general-info-dialog';
 import { AvatarReveal, AvatarSkill } from './avatar-skills';
@@ -31,7 +31,7 @@ function toHalf(slot: 'main' | 'deputy', general: GeneralInstance, tr: Translato
   }
   const name = generalDisplayData(id, localeOf(tr))?.name ?? generalDisplayName(id, tr);
   const ownHidden = !general.revealed;
-  return { slot, id, masked: false, ownHidden, url: cardArtUrl(id), caption: ownHidden ? tr('avatar.hiddenOwn', { name }) : name, name };
+  return { slot, id, masked: false, ownHidden, url: generalSkinUrl(id), caption: ownHidden ? tr('avatar.hiddenOwn', { name }) : name, name };
 }
 
 // One seat's Generals as a single split portrait: Main left, Deputy right.

@@ -23,7 +23,7 @@ export const AUTO_CLOSE_SECONDS = 15;
     <mat-dialog-content class="body">
       <section class="source">
         @if (data.generalId; as generalId) {
-          <app-card-art [id]="generalId" [label]="data.generalName" size="small" />
+          <app-card-art [skin]="true" [id]="generalId" [label]="data.generalName" size="small" />
         }
         <div class="words">
           <div class="who"><strong>{{ data.generalName }}</strong> · {{ data.abilityName }}</div>
@@ -41,7 +41,7 @@ export const AUTO_CLOSE_SECONDS = 15;
             }
             <div class="player">
               @if (side.player.generalId; as generalId) {
-                <app-card-art [id]="generalId" [label]="side.player.name" size="tiny" />
+                <app-card-art [skin]="true" [id]="generalId" [label]="side.player.name" size="tiny" />
               }
               <span class="name">{{ side.player.name }}</span>
             </div>

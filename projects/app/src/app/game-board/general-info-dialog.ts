@@ -18,7 +18,7 @@ export interface GeneralInfoDialogData {
   template: `
     <h2 mat-dialog-title>{{ name }}</h2>
     <mat-dialog-content class="content">
-      <app-card-art size="large" [id]="data.generalDefinitionId" [label]="name" />
+      <app-card-art size="large" [skin]="true" [id]="data.generalDefinitionId" [label]="name" />
       <div class="details">
         @if (display?.title; as title) {
           <div class="title">{{ title }}</div>

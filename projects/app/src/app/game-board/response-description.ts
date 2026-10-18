@@ -1,7 +1,7 @@
 import { CardInstance, Effect, EngineEvent, GameState } from 'engine';
 import { abilityName, cardDisplayData } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
-import { Force, cardFaceLabel, cardIdDisplayName, forceOf, judgmentReaderName, seatName, shownCardId, targetLabel } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, forceOf, judgmentReaderName, seatName, shownCardId, targetLabel } from '../labels';
 
 export interface ResponseDescription {
   // What started it, e.g. "Seat 1 played Duel against Hing".
@@ -189,7 +189,7 @@ export function describeResponse(
     const { owner, targetSeatId } = pending.reason;
     const you = pending.respondingSeatId === viewerSeatId;
     return {
-      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityName('upheaval', localeOf(tr)) }),
+      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityDisplayName('upheaval', tr) }),
       latest: null,
       prompt: tr('response.upheaval.prompt', { sha, target: targetSeatId ? whom(targetSeatId) : tr('response.seatYouPicked') }),
       outcome: you ? tr('response.loseOne.you') : tr('response.loseOne.other', { seat: name(pending.respondingSeatId) }),
@@ -202,7 +202,7 @@ export function describeResponse(
     const { owner } = pending.reason;
     const you = pending.respondingSeatId === viewerSeatId;
     return {
-      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityName('instigate', localeOf(tr)) }),
+      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityDisplayName('instigate', tr) }),
       latest: null,
       prompt: tr('response.instigate.prompt', { sha, target: whom(owner.seatId) }),
       passLabel: tr('response.instigate.pass'),
@@ -267,7 +267,7 @@ export function waitingLine(state: GameState, tr: Translator = englishTranslator
   if (selection) return tr('response.waiting.choose', { seat: name(selection.seatId) });
   const asking = state.pendingChoice;
   if (asking?.reason.kind === 'ability') {
-    return tr('response.waiting.ask', { seat: name(asking.seatId), what: cardName({ definitionId: asking.reason.abilityId }, tr) });
+    return tr('response.waiting.ask', { seat: name(asking.seatId), what: abilityDisplayName(asking.reason.abilityId, tr) });
   }
   const choice = state.pendingChoice;
   if (choice) return tr('response.waiting.chooseCard', { seat: name(choice.seatId) });
@@ -279,8 +279,8 @@ export function waitingLine(state: GameState, tr: Translator = englishTranslator
   if (reason?.kind === 'wuxie' || reason?.kind === 'counter-wuxie') return tr('response.waiting.ask', { seat, what: askedCardName(state, tr) });
   if (reason?.kind === 'card-effect') return tr('response.waiting.answer', { seat, card: cardName({ definitionId: shownCardId(reason.card) }, tr) });
   const sha = cardName({ definitionId: 'sha' }, tr);
-  if (reason?.kind === 'ability' && reason.abilityId === 'upheaval') return tr('response.waiting.playSha', { seat, sha, ability: abilityName('upheaval', localeOf(tr)) });
-  if (reason?.kind === 'ability' && reason.abilityId === 'instigate') return tr('response.waiting.playSha', { seat, sha, ability: abilityName('instigate', localeOf(tr)) });
+  if (reason?.kind === 'ability' && reason.abilityId === 'upheaval') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName('upheaval', tr) });
+  if (reason?.kind === 'ability' && reason.abilityId === 'instigate') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName('instigate', tr) });
   return tr('response.waiting.on', { seat });
 }
 
