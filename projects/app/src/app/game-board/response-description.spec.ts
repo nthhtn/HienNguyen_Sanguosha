@@ -24,6 +24,24 @@ const damageWindow = (id: string, responder: string, from: string, cause: string
 });
 
 describe('describeResponse', () => {
+  it('names a played Fire Attack by its own name, and says the fire damage it would deal', () => {
+    const fire: CardInstance = { instanceId: 'fa-1', definitionId: 'fire-attack', suit: 'heart', rank: 4 };
+    const used = { ...usedCardOf(fire), as: 'sha', nature: 'fire' as const };
+    const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: used, targets: [seat('seat-0')] }];
+    const window: PendingResponse = {
+      id: 'w1', respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['shan'],
+      reason: { kind: 'card-effect', card: used, userSeatId: 'seat-1' },
+      context: { effect: { kind: 'CardStepEffect', step: 'sha-hit', card: used, userSeatId: 'seat-1', target: seat('seat-0'), data: { extra: 0 } } },
+      outcome: { kind: 'DamageEffect', damage: { source: seat('seat-1'), target: seat('seat-0'), amount: 1, nature: 'fire', cause: { cardInstanceId: 'fa-1', card: used } } },
+    };
+    expect(describeResponse(state(log, window), 'seat-0')).toMatchObject({
+      source: 'Seat 1 played Fire Attack against Hing',
+      prompt: 'Your turn to respond to Fire Attack',
+      outcome: 'You lose 1 HP (1 fire damage from Seat 1)',
+    });
+    expect(waitingLine(state(log, window))).toBe('Waiting on Hing to answer Fire Attack');
+  });
+
   it('shows an Eight Trigrams judgment just before the window as the latest', () => {
     const et = usedCardOf({ instanceId: 'et', definitionId: 'eight-trigrams', suit: 'spade', rank: 2 });
     const judged: CardInstance = { instanceId: 'j', definitionId: 'peach', suit: 'club', rank: 3 };

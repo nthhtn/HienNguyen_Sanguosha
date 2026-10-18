@@ -3,7 +3,7 @@ import { drawPileTop, endFlagOf, getLegalActions, pileZoneOf, requireZoneOfKind,
 import { suitOf } from '../shared/suits';
 import { blackCards, nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
-import { attackRange, handOf, seatDistance } from '../shared/queries';
+import { attackRange, handOf, playsAsOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
 import { abilityKey, actedOn, askAtStep, atStep } from '../shared/steps';
 import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, hpOf, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
@@ -215,7 +215,8 @@ export const refusingDeath: SkillDefinition = {
 type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
 
 // Lightning Strike (may): after you play or use a Shan, you may pick any
-// living seat. It judges: on a spade it takes 2 plain damage with no source.
+// living seat. It judges: on a spade it takes 2 thunder damage with no source (so it
+// passes along a chain, as the Lightning card's strike does).
 export const lightningStrike: SkillDefinition = {
   id: 'lightning-strike',
   triggers: [
@@ -237,7 +238,7 @@ export const lightningStrike: SkillDefinition = {
   },
   onJudged: (state, { owner, seatId, judged, done }, registry) =>
     suitOf(state, seatId, judged, registry) === 'spade' && isLiving(state, seatId)
-      ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'normal', cause: { skillId: owner.skillId } } }]
+      ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'thunder', cause: { skillId: owner.skillId } } }]
       : [done],
 };
 
@@ -357,7 +358,7 @@ export const bewilder: SkillDefinition = {
     };
     const discard = [...discardMoves(state, [picked.instanceId]), ...afterFailedClaim(state, claim, picked.instanceId, registry)];
     if (claim.doubters.length === 0) return [show, used(owner, 'claim-believed', undefined, claim.as), useIt];
-    if (picked.definitionId !== claim.as) return [show, used(owner, 'claim-false', undefined, claim.as), ...claim.doubters.map((id) => draw(id, 1)), ...discard];
+    if (playsAsOf(registry, picked.definitionId) !== claim.as) return [show, used(owner, 'claim-false', undefined, claim.as), ...claim.doubters.map((id) => draw(id, 1)), ...discard];
     const losses: Effect[] = claim.doubters.map((seatId) => ({ kind: 'LoseHpEffect', seatId, amount: 1, abilityId: owner.skillId }));
     // A heart still takes effect, once the doubters' HP loss (and any dying round) is over.
     return [show, used(owner, 'claim-true', undefined, claim.as), ...losses, ...(suitOf(state, owner.seatId, picked, registry) === 'heart' ? [skillStep(owner, 'use', { claim })] : discard)];

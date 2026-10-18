@@ -244,9 +244,15 @@ export const bareTheChest: SkillDefinition = {
         state.turn.ownerSeatId === owner.seatId &&
         damage.source?.kind === 'seat' &&
         damage.source.seatId === owner.seatId &&
-        ['sha', 'duel'].includes(damage.cause?.card?.as ?? ''),
+        !damage.chained && ['sha', 'duel'].includes(damage.cause?.card?.as ?? ''),
+      // A source-side bonus: fire or thunder damage's original amount (`base`,
+      // what a chain passes on) grows too; the chained hits then carry it.
       effect: (_state, step, owner) => [
-        { ...step, damage: { ...step.damage, amount: step.damage.amount + 1 }, acted: [...(step.acted ?? []), abilityKey(owner)] },
+        {
+          ...step,
+          damage: { ...step.damage, amount: step.damage.amount + 1, ...(step.damage.base !== undefined ? { base: step.damage.base + 1 } : {}) },
+          acted: [...(step.acted ?? []), abilityKey(owner)],
+        },
         used(owner, 'more-damage', step.damage.target.seatId),
       ],
     }),

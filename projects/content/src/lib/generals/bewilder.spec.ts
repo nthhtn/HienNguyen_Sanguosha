@@ -45,6 +45,12 @@ describe('Yu Ji — Bewilder', () => {
     expect(ids(s, 'discardPile')).toEqual(['x']);
   });
 
+  it('a Fire Attack claimed as a Sha is a true claim (an elemental Sha is a Sha)', () => {
+    const s = claimSha(card('x', 'fire-attack', 'spade', 4), 'dbb');
+    expect(hp(s, 'seat-b')).toBe(3);
+    expect(abilityLog(s)).toContainEqual(expect.objectContaining({ abilityId: 'bewilder', outcome: 'claim-true' }));
+  });
+
   it('answering a window: a believed claim answers it', () => {
     let s = h.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('x', 'peach', 'heart')] }, { owner: 'seat-b', generals: yuJi() }), 's1', 'seat-a');
     s = h.select(h.convert(s, 'seat-a', 'bewilder-shan'), 'x');

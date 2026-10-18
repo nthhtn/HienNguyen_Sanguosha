@@ -123,7 +123,7 @@ step. The same pattern drives Bewilder's doubt round and Sha's dodge steps.
 
 A mode is a `GameModeDefinition`: `setup`, `checkWinCondition`, `triggers`,
 `maxSeats`. Everything specific to Kingdom War (the two Generals per seat, the
-shared HP pool, revealing at half HP, the dying round, the kill reward and
+shared HP pool, the dying round, the kill reward and
 penalty, the reveal bonuses) is a trigger or a setup step in
 [kingdomWar.ts](../../projects/content/src/lib/modes/kingdomWar.ts), not engine
 code. A second mode would be a second object of the same shape.

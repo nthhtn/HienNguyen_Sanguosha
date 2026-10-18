@@ -1,5 +1,5 @@
 import { GameState, GameEvent, PendingChoice, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
-import { usedCardFrom, usedCardOf } from '../domain/usedCard';
+import { answersAs, usedCardFrom, usedCardOf } from '../domain/usedCard';
 import { sameValue } from '../rules/offered';
 import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
@@ -21,6 +21,7 @@ import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
 import { applyCardStep } from './cardStep';
 import { applySkillStep } from './skillStep';
+import { chainWaveOrder } from '../rules/chains';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -255,7 +256,7 @@ function rewriteEffect(state: GameState, effect: Effect, ctx: EngineContext): { 
 // events' after-trigger follow-ups go to the front of the queue, ahead of
 // whatever the rewriting triggers returned after the rewrite.
 function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {
-  const rewritten = rewriteEffect(state, effect, ctx);
+  const rewritten = rewriteEffect(state, withBase(effect), ctx);
   if (rewritten === null) return { state, events: [] };
   const current = rewritten.effect;
 
@@ -286,7 +287,29 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
             ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry, { revealedOnly: true }).length > 0)
             : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
-  return { state: queueFront(applied.state, [...followUps, ...rewritten.after]), events: applied.events };
+  // A chain's wave goes last: after everything the damage's follow-ups lead to.
+  const wave = current.kind === 'DamageEffect' ? chainWave(applied.state, current, applied.events) : [];
+  return { state: queueFront(applied.state, [...followUps, ...rewritten.after, ...wave]), events: applied.events };
+}
+
+// Fire or thunder damage records its original amount before the target's own
+// before-triggers change it: a chain passes that amount on.
+function withBase(effect: Effect): Effect {
+  if (effect.kind !== 'DamageEffect' || effect.damage.nature === 'normal' || effect.damage.base !== undefined) return effect;
+  return { ...effect, damage: { ...effect.damage, base: effect.damage.amount } };
+}
+
+// The wave a damage starts: it unchained its target (fire or thunder damage
+// actually dealt to a chained seat) and was not itself passed along a chain.
+// It reaches the other living chained seats, in turn order after the target.
+function chainWave(state: GameState, effect: Extract<Effect, { kind: 'DamageEffect' }>, events: GameEvent[]): Effect[] {
+  const { damage } = effect;
+  if (damage.chained || damage.target.kind !== 'seat') return [];
+  const seatId = damage.target.seatId;
+  const unchained = (events as EngineEvent[]).some((e) => e.kind === 'ChainToggledEvent' && e.seatId === seatId && !e.chained);
+  if (!unchained) return [];
+  const remaining = chainWaveOrder(state, seatId);
+  return remaining.length > 0 ? [{ kind: 'ChainPropagationEffect', damage, remaining }] : [];
 }
 
 // Cards that just left an equip zone: each one's onUnequip runs for its former
@@ -446,7 +469,7 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
         if (!card) throw new Error(`Card ${id} is in no zone`);
         return card;
       });
-      const used = then.as ? usedCardFrom(cards, then.as, then.via) : usedCardOf(cards[0]);
+      const used = then.as ? usedCardFrom(cards, then.as, then.via) : usedCardOf(cards[0], ctx.registry);
       const respondTo = then.respondTo ? state.pendingResponse : null;
       if (then.respondTo && respondTo?.id !== then.respondTo) throw new Error(`Window ${then.respondTo} is no longer open`);
       return useCard(
@@ -508,7 +531,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!targetsAllowed(state, action.seatId, action.cardInstanceId, cardInHand.definitionId, action.targets, ctx.registry)) {
         throw new Error(`Card ${cardInHand.definitionId} cannot be played with those targets`);
       }
-      return useCard(state, action.seatId, usedCardOf(cardInHand), { targets: action.targets, counted: true }, ctx);
+      return useCard(state, action.seatId, usedCardOf(cardInHand, ctx.registry), { targets: action.targets, counted: true }, ctx);
     }
 
     case 'PassAction': {
@@ -534,10 +557,10 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!cardInHand) {
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
-      if (pending.allowedCardIds && !pending.allowedCardIds.includes(cardInHand.definitionId)) {
+      if (pending.allowedCardIds && !answersAs(cardInHand.definitionId, pending.allowedCardIds, ctx.registry)) {
         throw new Error(`Card ${cardInHand.definitionId} is not a legal response here`);
       }
-      return useCard(state, action.seatId, usedCardOf(cardInHand), { targets: [], respondTo: pending, counted: false }, ctx);
+      return useCard(state, action.seatId, usedCardOf(cardInHand, ctx.registry), { targets: [], respondTo: pending, counted: false }, ctx);
     }
 
     case 'EndPhaseAction': {
@@ -573,7 +596,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
     }
 
     case 'RevealGeneralAction': {
-      // No actor/phase guard: forced reveals (content kingdomWar) queue it as items, and player input is filtered by the server's isOfferedAction.
+      // No actor/phase guard: player input is filtered by the server's isOfferedAction, and legality offers it only at the two reveal windows.
       if (!state.seats.some((s) => s.id === action.seatId)) throw new Error(`Unknown seat: ${action.seatId}`);
       return { state: queueFront(state, [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: action.slot }]), events: [] };
     }

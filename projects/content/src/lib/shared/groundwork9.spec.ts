@@ -54,14 +54,25 @@ describe("Sha's targets in one window", () => {
 });
 
 describe('Blaze', () => {
-  it('is in the registry but never in the deck', () => {
+  it('is in the registry and dealt: its 3 printings are in the deck', () => {
     const reg = buildContentRegistry();
-    expect(reg.cards.get('blaze')?.outOfDeck).toBe(true);
+    expect(reg.cards.get('blaze')?.outOfDeck).toBeUndefined();
     const { state } = kingdomWarMode.setup(['s0', 's1'], reg, { seed: 1, counter: 0 });
-    expect(state.zones.flatMap((z) => z.cards).some((c) => c.definitionId === 'blaze')).toBe(false);
+    expect(state.zones.flatMap((z) => z.cards).filter((c) => c.definitionId === 'blaze')).toHaveLength(3);
   });
 
-  it('the target shows a hand card; a matching discard deals 1 plain damage; Cancel deals none', () => {
+  it('its damage is 1 fire damage, and a Wood Armor wearer takes 2', () => {
+    const blaze = { as: 'blaze', colour: 'red' as const, suit: 'heart' as const, rank: 4, physical: [] };
+    for (const [equip, amount] of [[[], 1], [[card('wa', 'wood-armor', 'spade', 2)], 2]] as const) {
+      let s = h.run(table({ 'seat-a:hand': [card('m', 'shan', 'spade', 2)], 'seat-b:hand': [card('t', 'sha', 'spade', 9)], 'seat-b:equip': [...equip] }), [
+        { kind: 'ToolRuleEffect', tool: blaze, userSeatId: 'seat-a', target: { kind: 'seat', seatId: 'seat-b' } },
+      ]);
+      s = h.select(h.select(s, 't'), 'm');
+      expect(s.log.find((e) => e.kind === 'DamageDealtEvent')).toMatchObject({ damage: { amount, nature: 'fire' } });
+    }
+  });
+
+  it('the target shows a hand card; a matching discard deals 1 fire damage; Cancel deals none', () => {
     const blaze = { as: 'blaze', colour: 'red' as const, suit: 'heart' as const, rank: 4, physical: [] };
     let s = h.run(table({ 'seat-a:hand': [card('m', 'shan', 'spade', 2), card('o', 'shan', 'club', 3)], 'seat-b:hand': [card('t', 'sha', 'spade', 9)] }), [
       { kind: 'ToolRuleEffect', tool: blaze, userSeatId: 'seat-a', target: { kind: 'seat', seatId: 'seat-b' } },

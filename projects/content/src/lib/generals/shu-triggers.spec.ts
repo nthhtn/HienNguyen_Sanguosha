@@ -23,6 +23,19 @@ describe('Huang Yueying — Gathering Wisdom', () => {
     const sha = h.play(table({ 'seat-a:hand': [card('s1', 'sha')] }, { generals: at('seat-a', 'huang-yueying') }), 's1', 'seat-b');
     expect(sha.pendingChoice).toBeUndefined();
   });
+
+  it('a Chains Recast is not a use: she is not asked, and draws only the Recast’s 1', () => {
+    const s = h.play(table({ 'seat-a:hand': [card('ch', 'chains', 'club', 10)], drawPile: pile(3) }, { generals: at('seat-a', 'huang-yueying') }), 'ch');
+    expect(s.pendingChoice).toBeUndefined();
+    expect(drawn(s)).toEqual([1]);
+    expect(handIds(s, 'seat-a')).toEqual(['c1']);
+  });
+
+  it('a Chains used at a target is a use: she may draw', () => {
+    const s = h.play(table({ 'seat-a:hand': [card('ch', 'chains', 'club', 10)], drawPile: pile(3) }, { generals: at('seat-a', 'huang-yueying') }), 'ch', 'seat-b');
+    expect(askedAbout(s)).toBe('gathering-wisdom');
+    expect(drawn(h.use(s))).toEqual([1]);
+  });
 });
 
 describe('Ma Chao — Iron Cavalry', () => {

@@ -38,6 +38,10 @@ describe('the Draw Phase', () => {
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha')] }), 'bare-the-chest')))).toBe('use');
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'sha')] }), 'bare-the-chest')))).toBe('decline');
   });
+
+  it('Bare the Chest counts a Fire Attack and a Lightning Attack as Sha', () => {
+    expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'fire-attack'), card('s2', 'lightning-attack')] }), 'bare-the-chest')))).toBe('use');
+  });
 });
 
 describe('Devil', () => {
@@ -161,9 +165,9 @@ describe('conversions', () => {
     expect(decide(guanYu([card('p', 'peach', 'heart')])).kind).toBe('EndPhaseAction');
   });
 
-  it('a hidden General’s conversion only when the bot may reveal', () => {
+  it('a hidden General is revealed first in the Play Phase, whatever the HP', () => {
     const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'filler-meng-huo', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
-    expect(decide(hidden).kind).toBe('EndPhaseAction');
+    expect(decide(hidden)).toMatchObject({ kind: 'RevealGeneralAction', slot: 'main' });
   });
 });
 

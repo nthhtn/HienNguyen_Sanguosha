@@ -1,6 +1,6 @@
 import type { Action, CardInstance, ContentRegistry, Effect, GameState, Judgment, PendingChoice, PendingSelection, Seat } from 'engine';
 import { abilityUseKey, colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
-import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards } from './helpers';
+import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards, isShaCard } from './helpers';
 import { wantsWind, windChoice, windSelection } from './wind';
 import { fireChoice, wantsFire, wantsFireActive } from './fire';
 import { forestChoice, forestSelection, wantsForest, wantsForestActive } from './forest';
@@ -83,7 +83,7 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     case 'raid':
       return others(view, me).filter((s) => !isAlly(me, s) && handSize(view, s) > 0).length >= 2;
     case 'bare-the-chest':
-      return handCards(view, me).filter((c) => c.definitionId === 'sha').length >= 2;
+      return handCards(view, me).filter((c) => isShaCard(registry, c.definitionId)).length >= 2;
     case 'devil': {
       const shown = declined(choice);
       return shown?.kind === 'JudgmentShownEffect' && devilCard(view, me, shown.judgment, registry) !== null;

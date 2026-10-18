@@ -91,6 +91,36 @@ describe('HandView', () => {
     expect(played).toEqual([shaAtSeat2]);
   });
 
+  it('offers Chains as a menu: Play Chains opens the Choose Targets window, Recast Chains plays at once', async () => {
+    const chains: CardInstance = { instanceId: 'c-chains', definitionId: 'chains', suit: 'club', rank: 12 };
+    const withChains = { ...state(), zones: [{ id: 'seat-0:hand', kind: 'hand' as const, ownerSeatId: 'seat-0', cards: [chains] }] };
+    const chainsRegistry: ContentRegistry = { generals: new Map(), cards: new Map([['chains', { id: 'chains', name: 'Chains', category: 'tool' as const, play: () => [] }]]) };
+    const template: Action = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c-chains', targets: [], pickTargets: { eligibleIds: ['seat-0', 'seat-1'], min: 1, max: 2 } };
+    const recast: Action = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c-chains', targets: [] };
+    fixture.componentRef.setInput('cards', [chains]);
+    fixture.componentRef.setInput('actions', [template, recast]);
+    fixture.componentRef.setInput('state', withChains);
+    fixture.componentRef.setInput('registry', chainsRegistry);
+    fixture.detectChanges();
+    playButton('c-chains').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[];
+    expect(items.map((i) => i.textContent!.trim())).toEqual(['Play Chains', 'Recast Chains']);
+    items[1].click();
+    expect(played).toEqual([recast]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    playButton('c-chains').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    ([...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[])[0].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const dialog = overlay().querySelector('app-targets-dialog') as HTMLElement;
+    expect(dialog.textContent).toContain('Choose up to 2 targets for Chains');
+  });
+
   it('still offers a menu when a targeted card has only one possible target, so the viewer confirms it', async () => {
     fixture.componentRef.setInput('actions', [shaAtSeat1, equipBow, endPhase]);
     fixture.detectChanges();

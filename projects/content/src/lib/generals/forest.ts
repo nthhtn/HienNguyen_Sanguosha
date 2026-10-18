@@ -2,7 +2,7 @@ import type { CardInstance, CardsTurnedUpEvent, ContentRegistry, DamageDealtEven
 import { abilityUseKey, requireZoneOfKind } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
-import { untargetableBy } from '../shared/abilities';
+import { isShaDamage, untargetableBy } from '../shared/abilities';
 import { competeStart, competeStep } from '../shared/compete';
 import { colourFor, suitOf } from '../shared/suits';
 import { abilityKey } from '../shared/steps';
@@ -186,7 +186,7 @@ export const intenseEdge: SkillDefinition = {
         return (
           source?.kind === 'seat' && source.seatId === owner.seatId &&
           target.kind === 'seat' && target.seatId !== owner.seatId &&
-          amount > 0 && cause?.card?.as === 'sha' &&
+          amount > 0 && isShaDamage(event.damage) &&
           isLiving(state, owner.seatId) && isLiving(state, target.seatId) &&
           handOf(state, owner.seatId).length > 0 && handOf(state, target.seatId).length > 0
         );

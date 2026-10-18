@@ -1,7 +1,7 @@
 import type { ContentRegistry, GeneralDefinition } from 'engine';
 import { generalsData } from '../../data/generals';
 import { GENERAL_SKILLS } from './generals';
-import { shaCard } from './cards/sha';
+import { fireAttackCard, lightningAttackCard, shaCard } from './cards/sha';
 import { shanCard } from './cards/shan';
 import { peachCard } from './cards/peach';
 import { wineCard } from './cards/wine';
@@ -22,6 +22,7 @@ import { greenDragonBladeCard } from './cards/equipment/green-dragon-blade';
 import { axeCard } from './cards/equipment/axe';
 import { skyScorcherCard } from './cards/equipment/sky-scorcher';
 import { blazeCard } from './cards/blaze';
+import { chainsCard } from './cards/chains';
 import { serpentSpearCard } from './cards/equipment/serpent-spear';
 import { eightTrigramsCard } from './cards/equipment/eight-trigrams';
 import { blackShieldCard } from './cards/equipment/black-shield';
@@ -52,7 +53,7 @@ function buildGenerals(): GeneralDefinition[] {
 }
 
 export function buildContentRegistry(): ContentRegistry {
-  const cards = [shaCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard, genderSwordsCard, ancientScimitarCard, iceSwordCard, longbowCard, axeCard, skyScorcherCard, serpentSpearCard, blazeCard];
+  const cards = [shaCard, fireAttackCard, lightningAttackCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard, genderSwordsCard, ancientScimitarCard, iceSwordCard, longbowCard, axeCard, skyScorcherCard, serpentSpearCard, blazeCard, chainsCard];
   const generals = buildGenerals();
   return {
     cards: new Map(cards.map((c) => [c.id, c])),

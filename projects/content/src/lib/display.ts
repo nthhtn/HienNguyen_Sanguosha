@@ -102,7 +102,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'strong-bow': 'Make your Sha unblockable for {target}',
   fantasy: 'Discard a heart card to pass the damage to another seat',
   'refusing-death': 'Turn the top card of the draw pile under your General to stay alive',
-  'lightning-strike': 'A seat of your choice judges: on a spade it takes 2 damage',
+  'lightning-strike': 'A seat of your choice judges: on a spade it takes 2 thunder damage',
   'dark-magic': "Replace {target}'s judgment card with a black card, and take the old one",
   'eternal-loyalty': 'A seat of your choice draws up to its max HP',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',

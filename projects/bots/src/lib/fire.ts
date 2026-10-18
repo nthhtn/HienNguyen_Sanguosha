@@ -1,6 +1,6 @@
 import type { CardInstance, ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { livingSeatOrderFrom } from 'engine';
-import { definitionIdOf, handCards, isAlly, keepRank, leastUseful } from './helpers';
+import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, isShaCard } from './helpers';
 
 // The stage 9 spec's bot rules for the Fire skills. Bots don't read content's
 // range rules, so distance is worked out here the same way: seats round the
@@ -70,7 +70,7 @@ export function wantsFireActive(view: GameState, me: Seat, skillId: string, regi
     case 'rouse-the-tiger':
       return highCard(view, me) && rousable(view, me, registry).length > 0;
     case 'heavens-justice':
-      return hand.filter((c) => c.definitionId === 'sha').length >= 2 && highCard(view, me) && others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) > 0);
+      return hand.filter((c) => isShaCard(registry, c.definitionId)).length >= 2 && highCard(view, me) && others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) > 0);
     default:
       return null;
   }

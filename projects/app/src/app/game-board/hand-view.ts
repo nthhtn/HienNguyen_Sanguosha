@@ -26,6 +26,10 @@ interface HandCardViewModel {
   confirmTargets: boolean;
   // A play with several equal targets (Sha with Sky Scorcher): picked in the Choose Targets window.
   template: PlayCard | null;
+  // Beside a template, the card's other plays (Chains' Recast): a menu then
+  // offers the template's window and these.
+  besideTemplate: LabeledPlay[];
+  templateLabel: string;
 }
 
 // A menu entry: the plain label, and where its targets begin when it names any.
@@ -71,7 +75,17 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
         <div class="hand-card" role="listitem" tabindex="0" [attr.data-card-id]="vm.card.instanceId">
           <app-playing-card [card]="vm.card" />
           <div class="overlay">
-            @if (vm.template) {
+            @if (vm.template && vm.besideTemplate.length > 0) {
+              <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="withPick">
+                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
+              </button>
+              <mat-menu #withPick="matMenu">
+                <button mat-menu-item type="button" (click)="pickTargets(vm)">{{ vm.templateLabel }}</button>
+                @for (choice of vm.besideTemplate; track choice.action) {
+                  <button mat-menu-item type="button" (click)="play.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
+                }
+              </mat-menu>
+            } @else if (vm.template) {
               <button mat-flat-button type="button" class="play" (click)="pickTargets(vm)">
                 <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
               </button>
@@ -181,13 +195,16 @@ export class HandView {
       const actions = this.actions()
         .filter((action) => cardInstanceIdOf(action) === card.instanceId)
         .map((action) => labeled(action, this.state(), this.registry(), this.i18n.translator));
+      const template = plays.find((p) => !!p.pickTargets) ?? null;
       return {
         card,
         name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name, this.i18n.translator),
         actions,
         pairs,
         confirmTargets: plays.length > 0 && plays.every((p) => p.targets.length > 0),
-        template: plays.find((p) => !!p.pickTargets) ?? null,
+        template,
+        besideTemplate: template ? actions.filter((a) => a.action !== template) : [],
+        templateLabel: template ? actionLabel(template, this.state(), this.registry(), this.i18n.translator) : '',
       };
     })
   );

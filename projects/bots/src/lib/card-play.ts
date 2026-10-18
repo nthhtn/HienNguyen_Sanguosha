@@ -1,5 +1,5 @@
 import type { ContentRegistry, GameState, Seat } from 'engine';
-import { definitionIdOf, handCards, isAlly } from './helpers';
+import { definitionIdOf, isShaCard, handCards, isAlly } from './helpers';
 
 // The Stage 1 card-play rules, each a switch (see the stage 1 spec). All off is the original bot.
 export interface CardPlayRules {
@@ -60,11 +60,10 @@ export function discardRank(view: GameState, registry: ContentRegistry, cardInst
     case 'shan':
     case 'wuxie':
       return 5;
-    case 'sha':
-      return 4;
     case 'wine':
       return 3;
   }
+  if (isShaCard(registry, definitionId)) return 4;
   const category = registry.cards.get(definitionId)?.category;
   return category === 'tool' ? 2 : category === 'equipment' ? 1 : 0;
 }

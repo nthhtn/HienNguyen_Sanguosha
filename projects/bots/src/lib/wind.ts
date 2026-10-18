@@ -1,5 +1,5 @@
 import type { CardInstance, ContentRegistry, Effect, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
-import { handCards, isAlly, keepRank, leastUseful, ownCards } from './helpers';
+import { handCards, isAlly, keepRank, leastUseful, ownCards, isShaCard } from './helpers';
 import { devilCard } from './skills';
 
 // The stage 8 spec's bot rules for the Wind skills.
@@ -26,7 +26,7 @@ export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, regi
       // As the Play Phase begins: a hand Equipment card for a slot already filled, and no Sha to play.
       const worn = new Set((view.zones.find((z) => z.id === me.equipped.zoneId)?.cards ?? []).map((c) => registry.cards.get(c.definitionId)?.equipSlot));
       const spare = hand.some((c) => isEquipment(registry, c) && worn.has(registry.cards.get(c.definitionId)?.equipSlot));
-      return spare && !hand.some((c) => c.definitionId === 'sha');
+      return spare && !hand.some((c) => isShaCard(registry, c.definitionId));
     }
     case 'strong-bow':
       return !!target && !isAlly(me, target);

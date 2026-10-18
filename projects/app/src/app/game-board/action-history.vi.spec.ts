@@ -148,9 +148,30 @@ describe('status and table lines in Vietnamese', () => {
     const hit = (source: ReturnType<typeof seat> | null, amount: number, nature: string): EngineEvent => ({ kind: 'DamageDealtEvent', damage: { source, target: seat('seat-0'), amount, nature } as never });
     expect(vi_([hit(seat('seat-1'), 2, 'normal')])).toEqual(['Người chơi 0 chịu 2 sát thương từ Người chơi 1']);
     expect(vi_([hit(null, 1, 'normal')])).toEqual(['Người chơi 0 chịu 1 sát thương']);
-    expect(vi_([hit(null, 3, 'thunder')])).toEqual(['Người chơi 0 chịu 3 sát thương thunder']);
-    expect(vi_([hit(seat('seat-1'), 1, 'thunder')])).toEqual(['Người chơi 0 chịu 1 sát thương thunder từ Người chơi 1']);
+    expect(vi_([hit(null, 3, 'thunder')])).toEqual(['Người chơi 0 chịu 3 sát thương sét']);
+    expect(vi_([hit(seat('seat-1'), 1, 'thunder')])).toEqual(['Người chơi 0 chịu 1 sát thương sét từ Người chơi 1']);
     expect(en_([hit(seat('seat-1'), 1, 'thunder')])).toEqual(['Seat 0 took 1 thunder damage from Seat 1']);
+    expect(vi_([hit(null, 1, 'fire')])).toEqual(['Người chơi 0 chịu 1 sát thương lửa']);
+  });
+
+  it('chain toggles, a Chains Recast and a played Fire Attack', () => {
+    const chains: CardInstance = { instanceId: 'ch-1', definitionId: 'chains', suit: 'club', rank: 12 };
+    const fire: CardInstance = { instanceId: 'fa-1', definitionId: 'fire-attack', suit: 'heart', rank: 4 };
+    expect(vi_([
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(chains), targets: [seat('seat-0'), seat('seat-1')] },
+      { kind: 'ChainToggledEvent', seatId: 'seat-0', chained: true },
+      { kind: 'ChainToggledEvent', seatId: 'seat-1', chained: false },
+      { kind: 'DamageDealtEvent', damage: { source: null, target: seat('seat-0'), amount: 1, nature: 'fire' } },
+      { kind: 'ChainToggledEvent', seatId: 'seat-0', chained: false },
+    ])).toEqual([
+      'Người chơi 0 được tháo xích',
+      'Người chơi 0 chịu 1 sát thương lửa',
+      'Người chơi 1 tự tháo xích',
+      'Người chơi 1 xích Người chơi 0',
+      'Người chơi 1 dùng Chains (Q ♣) lên Người chơi 0, Người chơi 1',
+    ]);
+    expect(vi_([{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(chains), targets: [] }])).toEqual(['Người chơi 1 đổi lại Chains (Q ♣)']);
+    expect(vi_([{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: { ...usedCardOf(fire), as: 'sha', nature: 'fire' }, targets: [seat('seat-0')] }])).toEqual(['Người chơi 1 dùng Fire Attack (4 ♥) lên Người chơi 0']);
   });
 
   it('healing, drawing, dying, saved, eliminated, generals chosen, reshuffle', () => {

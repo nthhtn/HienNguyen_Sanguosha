@@ -127,10 +127,11 @@ type Dying = Extract<Effect, { kind: 'DyingEffect' }>;
 // Club hand cards (as the seat's suits count).
 const clubsIn = (state: GameState, seatId: string, registry: ContentRegistry) => handOf(state, seatId).filter((c) => suitOf(state, seatId, c, registry) === 'club');
 
-// Shackle (active, any number of times): discard a club hand card, then draw 1
-// (Chains isn't in the game: the club is recast).
+// Shackle (conversion, play; and active, any number of times): use a club hand
+// card as Chains, or recast it: discard a club hand card, then draw 1.
 export const shackle: SkillDefinition = {
   id: 'shackle',
+  conversions: [{ id: 'shackle-chains', as: 'chains', cards: 1, accepts: (c, state, seatId, registry) => suitOf(state, seatId, c, registry) === 'club', when: 'play' }],
   active: {
     canUse: (state, { seatId }, registry) => clubsIn(state, seatId, registry).length > 0,
     start: (state, { seatId, owner }, registry) => [

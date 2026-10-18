@@ -70,6 +70,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
         @if (formName(); as form) {
           <span class="form-badge">{{ 'seat.form' | t: { form: form } }}</span>
         }
+        @if (seat().chained) {
+          <!-- Chained (Chains): fire or thunder damage to it passes along the chain. -->
+          <span class="chain-badge" [attr.title]="'seat.chainedTitle' | t">{{ 'seat.chained' | t }}</span>
+        }
         @if (seat().silenced) {
           <span class="silenced-badge">{{ 'seat.noSkills' | t }}</span>
         }
@@ -184,6 +188,8 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .generals { position: relative; }
     .generals.face-down app-seat-avatar { filter: grayscale(0.6) brightness(0.8); }
     .form-badge, .silenced-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
+    .chain-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #5a4a3a; color: #fbf7ec; border: 1px dashed #d5c8ad; }
+    .chain-badge::before { content: '⛓ '; }
     .face-down-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
     .pile { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
     .slot { position: relative; width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }

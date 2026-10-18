@@ -12,10 +12,35 @@ describe('Zhang Jiao — Lightning Strike', () => {
     return h.choose(h.use(s), 'seat-b');
   };
 
-  it('after he plays a Shan, a seat he picks judges: on a spade it takes 2 plain damage with no source', () => {
+  it('after he plays a Shan, a seat he picks judges: on a spade it takes 2 thunder damage with no source', () => {
     const s = dodged(card('j', 'sha', 'spade', 5));
     expect(hp(s, 'seat-b')).toBe(2);
-    expect(s.log.filter((e) => e.kind === 'DamageDealtEvent').at(-1)).toMatchObject({ damage: { source: null, amount: 2, nature: 'normal' } });
+    expect(s.log.filter((e) => e.kind === 'DamageDealtEvent').at(-1)).toMatchObject({ damage: { source: null, amount: 2, nature: 'thunder' } });
+  });
+
+  const chainedTable = (extra: Record<string, ReturnType<typeof card>[]> = {}, chainedIds = ['seat-b', 'seat-c']) => {
+    const base = table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('n1', 'shan')], drawPile: [card('j', 'sha', 'spade', 5)], ...extra }, { owner: 'seat-b', generals: zhangJiao('seat-a') });
+    return { ...base, seats: base.seats.map((x) => (chainedIds.includes(x.id) ? { ...x, chained: true as const } : x)) };
+  };
+  const strike = (state: ReturnType<typeof chainedTable>) => {
+    let s = h.play(state, 's1', 'seat-a');
+    s = h.respond(s, 'n1');
+    return h.choose(h.use(s), 'seat-b');
+  };
+
+  it('is thunder damage: a chained seat it strikes passes 2 thunder damage to another chained seat, and both unchain', () => {
+    const s = strike(chainedTable());
+    expect(s.log.filter((e) => e.kind === 'DamageDealtEvent')).toMatchObject([
+      { damage: { amount: 2, nature: 'thunder', target: { seatId: 'seat-b' } } },
+      { damage: { amount: 2, nature: 'thunder', target: { seatId: 'seat-c' } } },
+    ]);
+    expect(hp(s, 'seat-c')).toBe(2);
+    expect(s.seats.some((x) => x.chained)).toBe(false);
+  });
+
+  it('is thunder, not fire: a Wood Armor wearer takes 2, not 3', () => {
+    const s = strike(chainedTable({ 'seat-b:equip': [card('wa', 'wood-armor', 'spade', 2)] }, []));
+    expect(hp(s, 'seat-b')).toBe(2);
   });
 
   it('anything else does nothing', () => {

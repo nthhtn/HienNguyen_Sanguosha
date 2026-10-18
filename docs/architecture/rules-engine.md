@@ -202,8 +202,8 @@ shuffles the deck, and deals four cards. Its `triggers` carry the mode's
 rules:
 
 - the Draw Phase draw and the Judgment Phase;
-- HP at half or below reveals the Main General, at 0 or below the Deputy, and
-  at 0 or below starts the dying round;
+- HP at 0 or below starts the dying round (an HP drop reveals nothing; a death
+  reveals both Generals, in the engine's elimination step);
 - elimination discards everything the seat holds;
 - the kill reward and penalty, and the reveal bonuses.
 

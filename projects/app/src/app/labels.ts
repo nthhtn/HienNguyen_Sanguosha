@@ -1,5 +1,5 @@
-import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target, findSkill } from 'engine';
-import { abilityName, cardDisplayData, generalDisplayData } from 'content';
+import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target, UsedCard, findSkill } from 'engine';
+import { abilityName, cardDisplayData, generalDisplayData, isRecastPlay } from 'content';
 import type { MessageKey } from './i18n/messages';
 import { englishTranslator, localeOf, Translator } from './i18n/translator';
 
@@ -48,6 +48,13 @@ export function targetLabel(target: Target, players: readonly Player[] = [], tr:
   return tr(target.generalSlot === 'main' ? 'label.target.main' : 'label.target.deputy', { seat });
 }
 
+// The card a used card is named as: a single card used as itself that plays as
+// another (a Fire Attack, used as a Sha with the fire nature) by its own name,
+// otherwise the card it is used as.
+export function shownCardId(used: Pick<UsedCard, 'as' | 'physical' | 'nature' | 'via'>): string {
+  return used.nature && !used.via && used.physical.length === 1 ? used.physical[0].definitionId : used.as;
+}
+
 export function cardIdDisplayName(cardDefinitionId: string, tr: Translator = englishTranslator): string {
   if (cardDefinitionId === 'hidden') return tr('label.hiddenCard');
   const locale = localeOf(tr);
@@ -91,6 +98,8 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
       return tr(action.count === 1 ? 'label.action.draw.one' : 'label.action.draw.other', { n: action.count });
     case 'PlayCardAction': {
       const card = cardDisplayName(state, registry, action.cardInstanceId, tr);
+      const definitionId = findCardInstance(state, action.cardInstanceId)?.definitionId;
+      if (definitionId && !action.pickTargets && isRecastPlay(definitionId, action.targets)) return tr('label.action.recast', { card });
       if (action.targets.length === 0) return tr('label.action.play', { card });
       return tr('label.action.playTargeting', { card, targets: action.targets.map((t) => targetLabel(t, state.players, tr)).join(', ') });
     }
@@ -125,7 +134,9 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
 // richly: "Play Sha Targeting" + [Seat 1]. Null for an action with no seat to name.
 export function targetingParts(action: Action, state: GameState, registry: ContentRegistry, tr: Translator = englishTranslator): { prefix: string; targets: Target[] } | null {
   if ((action.kind !== 'PlayCardAction' && action.kind !== 'UseConversionAction') || action.targets.length === 0) return null;
-  return { prefix: tr('label.targetingPrefix', { label: actionLabel({ ...action, targets: [] }, state, registry, tr) }), targets: action.targets };
+  // "Play Chains", not the label of its no-target offer (its Recast).
+  const label = action.kind === 'PlayCardAction' ? tr('label.action.play', { card: cardDisplayName(state, registry, action.cardInstanceId, tr) }) : actionLabel({ ...action, targets: [] }, state, registry, tr);
+  return { prefix: tr('label.targetingPrefix', { label }), targets: action.targets };
 }
 
 // "Use 2 Cards as Sha" (a worn card's), "As Sha · Fighting Saint" (a skill's),
@@ -178,5 +189,5 @@ export function cardFaceLabel(card: Pick<CardInstance, 'suit' | 'rank'>): string
 
 // What a judgment is for: the card's name, or the skill's.
 export function judgmentReaderName(reader: JudgmentReader, tr: Translator = englishTranslator): string {
-  return abilityName(reader.kind === 'card' ? reader.card.as : reader.owner.skillId, localeOf(tr));
+  return abilityName(reader.kind === 'card' ? shownCardId(reader.card) : reader.owner.skillId, localeOf(tr));
 }

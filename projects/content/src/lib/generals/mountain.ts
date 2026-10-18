@@ -2,7 +2,7 @@ import type { CardInstance, CardMovedEvent, CardZone, ContentRegistry, Effect, G
 import { cardCountsAs, discardOwed, endFlagOf, requireZoneOfKind, skipFlagOf } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
-import { untargetableBy } from '../shared/abilities';
+import { isShaDamage, untargetableBy } from '../shared/abilities';
 import { CardStep, actedOn, atStep } from '../shared/steps';
 import { shaAt } from '../cards/sha';
 import { seatCardOptions } from '../shared/choices';
@@ -524,7 +524,7 @@ export const lament: SkillDefinition = {
   triggers: [
     on<DamageDealtEvent>('after:DamageDealtEvent', {
       condition: (state, event, owner) =>
-        event.damage.cause?.card?.as === 'sha' && event.damage.target.kind === 'seat' && event.damage.amount > 0 && isLiving(state, event.damage.target.seatId) && isLiving(state, owner.seatId) && ownedCards(state, owner.seatId).length > 0,
+        isShaDamage(event.damage) && event.damage.target.kind === 'seat' && event.damage.amount > 0 && isLiving(state, event.damage.target.seatId) && isLiving(state, owner.seatId) && ownedCards(state, owner.seatId).length > 0,
       effect: (_state, event, owner) => {
         const victim = (event.damage.target as { seatId: string }).seatId;
         const source = event.damage.source?.kind === 'seat' ? event.damage.source.seatId : undefined;
@@ -622,7 +622,7 @@ export const incarnation: SkillDefinition = {
     // Revealed for any reason but this skill: the first choice.
     on<GeneralRevealedEvent>('after:GeneralRevealedEvent', {
       condition: (state, event, owner, registry) =>
-        event.seatId === owner.seatId && event.slot === owner.slot && event.forAbilityId !== 'incarnation' && !seatOf(state, owner.seatId)?.forms?.chosen && formSkillOptions(state, owner.seatId, registry).length > 0,
+        !event.onDeath && event.seatId === owner.seatId && event.slot === owner.slot && event.forAbilityId !== 'incarnation' && !seatOf(state, owner.seatId)?.forms?.chosen && formSkillOptions(state, owner.seatId, registry).length > 0,
       effect: (_state, event, owner) => [ask(owner, [skillStep(owner, 'choose', { event })])],
     }),
   ],
