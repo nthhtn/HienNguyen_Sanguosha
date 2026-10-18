@@ -13,7 +13,7 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
   imports: [CardArt, MatIconModule, TPipe],
   template: `
     <article class="entry kingdom-{{ general().kingdom }}" [attr.data-id]="general().id">
-      <app-card-art [id]="general().id" [label]="view().name" size="large" />
+      <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
       <div class="body">
         <header>
           <h4>

@@ -168,6 +168,10 @@ describe('HandView', () => {
     expect(dialog.textContent).toContain('Weapon');
     expect(dialog.textContent).toContain('Range 1');
     expect(dialog.textContent).toContain('attack as much as desired');
+    // The name is the title and the suit/rank is on the card: neither is repeated.
+    expect(dialog.querySelector('.name')).toBeNull();
+    expect(dialog.querySelector('.stat')).toBeNull();
+    expect(dialog.querySelectorAll('.face')).toHaveLength(1);
   });
 
   it('says when a card has no rules text yet', async () => {

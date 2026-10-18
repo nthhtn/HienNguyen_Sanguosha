@@ -50,7 +50,7 @@ const STATUS_HEIGHT = 24;
             <li class="step">
               @if (line.card; as card) {
                 <button type="button" class="thumb" [attr.aria-label]="'ui.info' | t: { name: cardName(card) }" (click)="openCard(card)">
-                  <app-card-art size="tiny" [id]="card.definitionId" [label]="cardName(card)" />
+                  <app-card-art size="tiny" [cropped]="true" [id]="card.definitionId" [label]="cardName(card)" />
                 </button>
               } @else {
                 <span class="no-card" aria-hidden="true"></span>

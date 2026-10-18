@@ -54,7 +54,7 @@ interface CandidateViewModel {
           (keydown.space)="toggle(vm); $event.preventDefault()"
         >
           <div class="art">
-            <app-card-art size="large" [id]="vm.id" [label]="vm.name" />
+            <app-card-art size="large" [skin]="true" [id]="vm.id" [label]="vm.name" />
             @if (vm.role; as role) {
               <span class="role-chip" [class.deputy]="role === 'Deputy'">{{ roleName(role) }}</span>
             }

@@ -102,7 +102,7 @@ describe('SeatTile', () => {
     );
     expect(el.textContent).toContain('Shu');
     const portrait = el.querySelector('app-seat-avatar .half[data-slot="main"] img') as HTMLImageElement;
-    expect(portrait.getAttribute('src')).toBe('/card-art/generals/shu/zhao-yun.jpg');
+    expect(portrait.getAttribute('src')).toBe('/card-art/generals/skins/shu/zhaoyun.png');
   });
 
   it('shows a placeholder for a seat still choosing generals', () => {
@@ -209,7 +209,7 @@ describe('SeatTile', () => {
     expect(info.textContent).toContain('Green Dragon Blade');
     // The Info popup shows the card as in the hand, at large size.
     expect(info.querySelector('app-playing-card .card.large .face')!.textContent).toBe('5 ♠');
-    expect(info.querySelector('app-playing-card .card.large .name')!.textContent).toBe('Green Dragon Blade');
+    expect(info.querySelector('app-playing-card .card.large .name')).toBeNull();
     expect(info.textContent).toContain('Range 3');
     document.querySelector('.cdk-overlay-container')!.replaceChildren();
   });

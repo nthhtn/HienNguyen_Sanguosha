@@ -92,6 +92,12 @@ export function kingdomDisplayName(kingdom: Kingdom, tr: Translator = englishTra
   return key ? tr(key) : kingdom;
 }
 
+// An ability's name in the viewer's language. A skill of a General the viewer
+// cannot see reaches the client as 'hidden'.
+export function abilityDisplayName(abilityId: string, tr: Translator = englishTranslator): string {
+  return abilityId === 'hidden' ? tr('label.hiddenAbility') : abilityName(abilityId, localeOf(tr));
+}
+
 export function actionLabel(action: Action, state: GameState, registry: ContentRegistry, tr: Translator = englishTranslator): string {
   switch (action.kind) {
     case 'DrawCardsAction':
@@ -118,7 +124,7 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
     case 'UseConversionAction':
       return conversionLabel(action, state, registry, tr);
     case 'UseSkillAction':
-      return action.owner.kind === 'general' ? tr('label.action.useSkill', { ability: abilityName(action.owner.skillId, localeOf(tr)) }) : tr('label.action.useSkillGeneric');
+      return action.owner.kind === 'general' ? tr('label.action.useSkill', { ability: abilityDisplayName(action.owner.skillId, tr) }) : tr('label.action.useSkillGeneric');
     case 'ArrangeCardsAction':
       return tr('label.action.arrange');
     case 'SelectAction':
@@ -158,7 +164,7 @@ export function conversionLabel(
     const generalId = state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].generalDefinitionId;
     const skill = (generalId ? registry.generals.get(generalId)?.skills.find((s) => s.id === owner.skillId) : undefined) ?? findSkill(registry, owner.skillId);
     const conversion = skill?.conversions?.find((c) => c.id === action.via.conversionId);
-    if (conversion) base = tr('label.asCardVia', { card: cardName(conversion.as), ability: abilityName(owner.skillId, localeOf(tr)) });
+    if (conversion) base = tr('label.asCardVia', { card: cardName(conversion.as), ability: abilityDisplayName(owner.skillId, tr) });
   }
   return action.targets.length > 0 ? tr('label.withTargets', { base, targets: action.targets.map((t) => targetLabel(t, state.players, tr)).join(', ') }) : base;
 }
@@ -189,5 +195,5 @@ export function cardFaceLabel(card: Pick<CardInstance, 'suit' | 'rank'>): string
 
 // What a judgment is for: the card's name, or the skill's.
 export function judgmentReaderName(reader: JudgmentReader, tr: Translator = englishTranslator): string {
-  return abilityName(reader.kind === 'card' ? shownCardId(reader.card) : reader.owner.skillId, localeOf(tr));
+  return abilityDisplayName(reader.kind === 'card' ? shownCardId(reader.card) : reader.owner.skillId, tr);
 }

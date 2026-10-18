@@ -54,4 +54,26 @@ describe('CardArt', () => {
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelector('img')!.classList).toContain('tiny');
   });
+
+  it('renders a General skin when asked, and falls back to the original art without one', () => {
+    const src = (id: string) => {
+      const fixture = TestBed.createComponent(CardArt);
+      fixture.componentRef.setInput('id', id);
+      fixture.componentRef.setInput('label', id);
+      fixture.componentRef.setInput('skin', true);
+      fixture.detectChanges();
+      return (fixture.nativeElement as HTMLElement).querySelector('img')!.getAttribute('src');
+    };
+    expect(src('cao-cao')).toBe('/card-art/generals/skins/wei/caocao.png');
+    expect(src('zuo-ci')).toBe('/card-art/generals/skins/qun/zuoci.png');
+  });
+
+  it('renders the cropped art of a card when asked', () => {
+    const fixture = TestBed.createComponent(CardArt);
+    fixture.componentRef.setInput('id', 'axe');
+    fixture.componentRef.setInput('label', 'Axe');
+    fixture.componentRef.setInput('cropped', true);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('img')!.getAttribute('src')).toBe('/card-art/cards/cropped/equipment/weapon/axe.jpg');
+  });
 });

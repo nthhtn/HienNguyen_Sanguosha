@@ -118,7 +118,7 @@ describe('SeatAvatar and the skill buttons in Vietnamese', () => {
     };
     const half = (el: HTMLElement, slot: string) => el.querySelector(`.half[data-slot="${slot}"]`) as HTMLButtonElement;
     const hidden = render({ main: { generalDefinitionId: 'hidden', revealed: false }, deputy: { generalDefinitionId: 'hidden', revealed: false } });
-    expect(text(half(hidden, 'main').querySelector('.caption'))).toBe('Ẩn');
+    expect(text(half(hidden, 'main').querySelector('.caption'))).toBe('Tướng ẩn');
     expect(half(hidden, 'main').getAttribute('aria-label')).toBe('Tướng ẩn');
     const mixed = render({ main: { generalDefinitionId: 'guan-yu', revealed: false }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } });
     expect(text(half(mixed, 'main').querySelector('.caption'))).toBe('Quan Vũ (ẩn)');

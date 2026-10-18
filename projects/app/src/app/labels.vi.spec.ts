@@ -62,7 +62,7 @@ describe('hidden names, kingdoms and suits', () => {
   });
 
   it('the four forces and hidden, and a kingdom outside them prints raw', () => {
-    expect((['Wei', 'Shu', 'Wu', 'Qun', 'hidden'] as const).map((k) => kingdomDisplayName(k, tr))).toEqual(['Ngụy', 'Thục', 'Ngô', 'Quần', 'Ẩn']);
+    expect((['Wei', 'Shu', 'Wu', 'Qun', 'hidden'] as const).map((k) => kingdomDisplayName(k, tr))).toEqual(['Ngụy', 'Thục', 'Ngô', 'Quần', 'Tướng ẩn']);
     expect((['Wei', 'Shu', 'Wu', 'Qun', 'hidden'] as const).map((k) => kingdomDisplayName(k))).toEqual(['Wei', 'Shu', 'Wu', 'Qun', 'Hidden']);
     expect(kingdomDisplayName('Jin' as never, tr)).toBe('Jin');
   });

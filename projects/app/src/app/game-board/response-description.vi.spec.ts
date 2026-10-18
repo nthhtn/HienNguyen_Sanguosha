@@ -276,6 +276,14 @@ describe('waitingLine, in English and Vietnamese', () => {
       pendingChoice: { id: 'ask', seatId: 'seat-1', verb: 'use', reason: { kind: 'ability', owner, abilityId: 'axe' }, options: [] },
     };
     expect(both((t) => waitingLine(asking, t))).toEqual({ en: 'Waiting on Seat 1: Axe?', vi: 'Đang chờ Người chơi 1: Axe?' });
+    const skill: GameState = { ...asking, pendingChoice: { ...asking.pendingChoice!, reason: { kind: 'ability', owner, abilityId: 'evil-hero' } } };
+    // The skill's name is translated like any other text (the `tr` above carries no locale).
+    expect(waitingLine(skill)).toBe('Waiting on Seat 1: Evil Hero?');
+    expect(waitingLine(skill, makeTranslator(vi, 'vi'))).toBe('Đang chờ Người chơi 1: Gian hùng?');
+    // A skill of a General the viewer cannot see arrives as 'hidden'.
+    const unseen: GameState = { ...asking, pendingChoice: { ...asking.pendingChoice!, reason: { kind: 'ability', owner, abilityId: 'hidden' } } };
+    expect(waitingLine(unseen)).toBe('Waiting on Seat 1: Hidden?');
+    expect(waitingLine(unseen, makeTranslator(vi, 'vi'))).toBe('Đang chờ Người chơi 1: Tướng ẩn?');
     const choosing: GameState = {
       ...state([], null),
       pendingChoice: { id: 'c', seatId: 'seat-0', verb: 'take', options: [], reason: { kind: 'choice', card: { as: 'steal', colour: 'black', physical: [] }, userSeatId: 'seat-0' } },

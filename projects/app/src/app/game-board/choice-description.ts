@@ -1,7 +1,7 @@
 import { Action, ChoiceOption, GameState, PendingChoice, Player, Seat } from 'engine';
 import { abilityName, cardDisplayData, choicePromptText, generalDisplayData, seatPickText } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
-import { cardFaceLabel, cardIdDisplayName, forceOf, seatName, suitLabel } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, forceOf, seatName, suitLabel } from '../labels';
 import type { MessageKey } from '../i18n/messages';
 import type { ChoiceDialogOption } from './choice-dialog';
 
@@ -76,17 +76,17 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
   // A claim to believe or doubt (Bewilder).
   if (choice.reason.kind === 'ability' && choice.reason.cardId && choice.verb === 'pick') {
     const claimer = seatName(state.players, choice.reason.owner.seatId, tr);
-    return { title: abilityName(choice.reason.abilityId, localeOf(tr)), prompt: tr('choice.claim', { claimer, card: cardName(choice.reason.cardId, tr) }), confirmLabel: tr('choice.confirm.choose') };
+    return { title: abilityDisplayName(choice.reason.abilityId, tr), prompt: tr('choice.claim', { claimer, card: cardName(choice.reason.cardId, tr) }), confirmLabel: tr('choice.confirm.choose') };
   }
   // A skill's take from, or discard of, another seat's card (Feedback, Sudden Attack).
   if (choice.reason.kind === 'ability' && (choice.verb === 'take' || choice.verb === 'discard')) {
     const from = choice.reason.targetSeatId ? seatName(state.players, choice.reason.targetSeatId, tr) : null;
     const take = choice.verb === 'take';
-    return { title: abilityName(choice.reason.abilityId, localeOf(tr)), prompt: chooseCardTo(tr, choice.verb, from), confirmLabel: tr(take ? 'choice.confirm.take' : 'choice.confirm.discard') };
+    return { title: abilityDisplayName(choice.reason.abilityId, tr), prompt: chooseCardTo(tr, choice.verb, from), confirmLabel: tr(take ? 'choice.confirm.take' : 'choice.confirm.discard') };
   }
   // A skill's pick (a seat, a suit, one of several labels) or who gets given cards.
   if (choice.reason.kind === 'ability' && (choice.verb === 'pick' || choice.verb === 'give')) {
-    const title = abilityName(choice.reason.abilityId, localeOf(tr));
+    const title = abilityDisplayName(choice.reason.abilityId, tr);
     if (choice.verb === 'give') return { title, prompt: tr('choice.give'), confirmLabel: tr('choice.confirm.give') };
     const fixed = choicePromptText(choice.reason.abilityId, localeOf(tr));
     // A seat pick keeps the seat wording (Exile, Alliance); a mixed or label pick uses its own prompt.
