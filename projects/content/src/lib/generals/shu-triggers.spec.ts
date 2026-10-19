@@ -42,7 +42,7 @@ describe('Ma Chao — Iron Cavalry', () => {
   const attack = (judged: 'heart' | 'spade', more: Record<string, ReturnType<typeof card>[]> = {}) =>
     h.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('n1', 'shan')], drawPile: [card('j', 'peach', judged, 2)], ...more }, { generals: at('seat-a', 'ma-chao') }), 's1', 'seat-b');
 
-  it('after targeting a seat with a Sha, may judge: on red that seat can’t play a Shan against it', () => {
+  it('after targeting a seat with a Slash, may judge: on red that seat can’t play a Dodge against it', () => {
     let s = attack('heart');
     expect(askedAbout(s)).toBe('iron-cavalry');
     expect(s.pendingChoice?.reason).toMatchObject({ targetSeatId: 'seat-b' });
@@ -53,7 +53,7 @@ describe('Ma Chao — Iron Cavalry', () => {
     expect(ids(s, 'discardPile')).toContain('j');
   });
 
-  it('on black the Shan is asked for as normal', () => {
+  it('on black the Dodge is asked for as normal', () => {
     expect(h.use(attack('spade')).pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
   });
 
@@ -63,7 +63,7 @@ describe('Ma Chao — Iron Cavalry', () => {
     expect(hp(s, 'seat-b')).toBe(3);
   });
 
-  it('armour still applies: Black Shield stops a black Sha', () => {
+  it('armour still applies: Black Shield stops a black Slash', () => {
     const s = h.use(attack('heart', { 'seat-b:equip': [card('bs', 'black-shield', 'club', 2)] }));
     expect(hp(s, 'seat-b')).toBe(4);
   });

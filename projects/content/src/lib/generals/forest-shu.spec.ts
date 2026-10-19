@@ -91,11 +91,11 @@ describe('Zhu Rong — Giant Elephant', () => {
 });
 
 describe('Zhu Rong — Intense Edge', () => {
-  // seat-a's Sha hits seat-b, who holds no Shan.
+  // seat-a's Slash hits seat-b, who holds no Dodge.
   const hitB = (aHand: ReturnType<typeof card>[], bHand: ReturnType<typeof card>[], o: TableOptions = {}) =>
     h.pass(h.play(table({ 'seat-a:hand': [card('s1', 'sha'), ...aHand], 'seat-b:hand': bHand, 'seat-b:equip': [card('e', 'black-pommel', 'spade', 6)] }, { generals: at('seat-a', 'zhu-rong'), ...o }), 's1', 'seat-b'));
 
-  it('after her Sha damages a seat she may compete; on a win she takes one of its cards', () => {
+  it('after her Slash damages a seat she may compete; on a win she takes one of its cards', () => {
     let s = hitB([card('c9', 'sha', 'heart', 9)], [card('b5', 'sha', 'heart', 5), card('b6', 'peach', 'heart', 6)]);
     expect(askedAbout(s)).toBe('intense-edge');
     s = h.select(h.select(h.use(s), 'c9'), 'b5');
@@ -110,8 +110,8 @@ describe('Zhu Rong — Intense Edge', () => {
     expect(handIds(s, 'seat-a')).toEqual([]);
   });
 
-  it('is not offered without a hand card on both sides, or when the Sha did no damage', () => {
-    expect(askedAbout(hitB([], [card('b5', 'sha')]))).toBeNull(); // her hand is empty after the Sha
+  it('is not offered without a hand card on both sides, or when the Slash did no damage', () => {
+    expect(askedAbout(hitB([], [card('b5', 'sha')]))).toBeNull(); // her hand is empty after the Slash
     expect(askedAbout(hitB([card('c9', 'sha', 'heart', 9)], []))).toBeNull(); // its hand is empty
     const dodged = h.respond(h.play(table({ 'seat-a:hand': [card('s1', 'sha'), card('c9', 'sha', 'heart', 9)], 'seat-b:hand': [card('d', 'shan', 'heart', 2)] }, { generals: at('seat-a', 'zhu-rong') }), 's1', 'seat-b'), 'd');
     expect(askedAbout(dodged)).toBeNull();

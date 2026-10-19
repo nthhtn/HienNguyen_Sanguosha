@@ -60,3 +60,12 @@ export function buildContentRegistry(): ContentRegistry {
     generals: new Map(generals.map((g) => [g.id, g])),
   };
 }
+
+let natureRegistry: ContentRegistry | undefined;
+
+// The element an elemental card carries (Fire Attack: fire, Lightning Attack:
+// thunder), for the UI to mark it; null for any other card.
+export function cardNature(id: string): 'fire' | 'thunder' | null {
+  natureRegistry ??= buildContentRegistry();
+  return natureRegistry.cards.get(id)?.nature ?? null;
+}

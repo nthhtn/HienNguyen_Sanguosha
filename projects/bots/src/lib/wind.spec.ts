@@ -16,7 +16,7 @@ describe('Wind skills: asks', () => {
     expect(picked(decide(start(4)))).toBe('decline');
   });
 
-  it('Godspeed in the Play Phase: a spare weapon and no Sha; a Fire Attack is a Sha', () => {
+  it('Godspeed in the Play Phase: a spare weapon and no Slash; a Fire Attack is a Slash', () => {
     const play = (hand: ReturnType<typeof card>[]) => ({ ...asking(table({ 'seat-a:hand': hand, 'seat-a:equip': [card('w', 'crossbow')] }), 'godspeed'), phase: 'Play' as const });
     expect(picked(decide(play([card('x', 'axe')])))).toBe('use');
     expect(picked(decide(play([card('x', 'axe'), card('s', 'sha')])))).toBe('decline');
@@ -53,7 +53,7 @@ describe('Wind skills: picks', () => {
     for (const id of ['godspeed', 'fantasy', 'lightning-strike']) expect(picked(decide(pick(id)))).toBe('seat-c');
   });
 
-  it('Believe or Doubt: an ally believes; a non-ally doubts a Sha, Peach or Wuxie at 3 HP or more', () => {
+  it('Believe or Doubt: an ally believes; a non-ally doubts a Slash, Peach or Wuxie at 3 HP or more', () => {
     expect(picked(decide(pick('bewilder', undefined, 'sha', ['believe', 'doubt'])))).toBe('doubt');
     expect(picked(decide(pick('bewilder', undefined, 'draw-two', ['believe', 'doubt'])))).toBe('believe');
     const ally = { ...pick('bewilder', undefined, 'sha', ['believe', 'doubt']) };

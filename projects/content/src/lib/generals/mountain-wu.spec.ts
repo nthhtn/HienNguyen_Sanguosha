@@ -10,16 +10,16 @@ describe('Sun Ce — Passion', () => {
   const sha = (suit: 'heart' | 'spade', o: TableOptions = {}) =>
     table({ 'seat-a:hand': [card('s1', 'sha', suit)], drawPile: draws }, { generals: at('seat-b', 'sun-ce'), ...o });
 
-  it('being targeted by a red Sha draws 1 card', () => {
+  it('being targeted by a red Slash draws 1 card', () => {
     const s = h.play(sha('heart'), 's1', 'seat-b');
     expect(handIds(s, 'seat-b')).toEqual(['d1']);
   });
 
-  it('a black Sha draws nothing', () => {
+  it('a black Slash draws nothing', () => {
     expect(handIds(h.play(sha('spade'), 's1', 'seat-b'), 'seat-b')).toEqual([]);
   });
 
-  it('using a red Sha draws 1 card for Sun Ce, once per target', () => {
+  it('using a red Slash draws 1 card for Sun Ce, once per target', () => {
     const s = h.play(table({ 'seat-b:hand': [card('s1', 'sha', 'heart')], drawPile: draws }, { generals: at('seat-b', 'sun-ce'), owner: 'seat-b' }), 's1', 'seat-c');
     expect(handIds(s, 'seat-b')).toEqual(['d1']);
   });

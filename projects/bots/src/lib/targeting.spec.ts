@@ -38,7 +38,7 @@ describe('targetScore', () => {
     expect(score(s, 'seat-d')).toBeGreaterThan(score(s, 'seat-b'));
   });
 
-  it('counts a Sha or Tool aimed at a revealed ally as hostile, but not a response card', () => {
+  it('counts a Slash or Tool aimed at a revealed ally as hostile, but not a response card', () => {
     const base = table({}, { kingdoms: { 'seat-b': 'Wei' } }); // seat-b is seat-a's ally
     const aimedAtAlly = { ...base, log: [playedAt('seat-c', 'sha', 'seat-b')] };
     expect(score(aimedAtAlly, 'seat-c')).toBeGreaterThan(score(aimedAtAlly, 'seat-d'));

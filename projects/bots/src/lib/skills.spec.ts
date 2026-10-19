@@ -34,12 +34,12 @@ describe('the Draw Phase', () => {
     expect(picked(decide(asking(table({ 'seat-b:hand': [card('x', 'shan')] }), 'raid')))).toBe('decline');
   });
 
-  it('Bare the Chest when holding 2 or more Sha', () => {
+  it('Bare the Chest when holding 2 or more Slash', () => {
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha')] }), 'bare-the-chest')))).toBe('use');
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'sha')] }), 'bare-the-chest')))).toBe('decline');
   });
 
-  it('Bare the Chest counts a Fire Attack and a Lightning Attack as Sha', () => {
+  it('Bare the Chest counts a Fire Attack and a Lightning Attack as Slash', () => {
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'fire-attack'), card('s2', 'lightning-attack')] }), 'bare-the-chest')))).toBe('use');
   });
 });
@@ -65,7 +65,7 @@ describe('Devil', () => {
       id: 'sel', seatId: 'seat-a', reason: { kind: 'ability', owner: general('seat-a', 'devil'), abilityId: 'devil' }, of: 'cards', eligibleIds: ['p', 'k'], min: 1, max: 1,
       then: { kind: 'replace-judgment', judgment: (shown('seat-a') as Extract<Effect, { kind: 'JudgmentShownEffect' }>).judgment, owner: general('seat-a', 'devil'), abilityId: 'devil' }, onCancel: [],
     };
-    // The Shan would flip the judgment too, but it is not allowed: the Peach is the only eligible flip.
+    // The Dodge would flip the judgment too, but it is not allowed: the Peach is the only eligible flip.
     expect(picked(decide({ ...table({ 'seat-a:hand': hand }), pendingSelection: selection }))).toEqual(['p']);
   });
 
@@ -90,7 +90,7 @@ describe('active skills in the Play Phase', () => {
     expect(decide(huangGai(3)).kind).toBe('EndPhaseAction');
   });
 
-  it('Reconsider discards every hand card ranked below Shan, never a Peach or worn cards', () => {
+  it('Reconsider discards every hand card ranked below Dodge, never a Peach or worn cards', () => {
     const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart'), card('n', 'shan'), card('x', 'harvest', 'heart', 3), card('s', 'sha')], 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)] }, { generals: { 'seat-a': ['sun-quan', 'filler-sun-jian'] }, kingdoms: { 'seat-a': 'Wu' } });
     const selecting = useSkill(s, 'reconsider');
     expect(picked(decide(selecting))).toEqual(['x', 's']);
@@ -139,7 +139,7 @@ describe('Sow Discord’s picks', () => {
 });
 
 describe('Displace', () => {
-  it('with a card to spare and a non-ally to move the Sha to', () => {
+  it('with a card to spare and a non-ally to move the Slash to', () => {
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('x', 'harvest', 'heart', 3)] }), 'displace', 'seat-b')))).toBe('use');
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('p', 'peach', 'heart')] }), 'displace', 'seat-b')))).toBe('decline');
   });
@@ -159,7 +159,7 @@ describe('Sow Revolt’s suit', () => {
 });
 
 describe('conversions', () => {
-  it('Fighting Saint as a Sha when no real Sha is in hand, never spending a Peach', () => {
+  it('Fighting Saint as a Slash when no real Slash is in hand, never spending a Peach', () => {
     const guanYu = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['guan-yu', 'filler-meng-huo'] }, kingdoms: { 'seat-a': 'Shu' } });
     expect(decide(guanYu([card('h', 'shan', 'heart')]))).toMatchObject({ kind: 'UseConversionAction', via: { conversionId: 'fighting-saint' } });
     expect(decide(guanYu([card('p', 'peach', 'heart')])).kind).toBe('EndPhaseAction');

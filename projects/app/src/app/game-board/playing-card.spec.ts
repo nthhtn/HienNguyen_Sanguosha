@@ -13,7 +13,7 @@ function render(card: CardInstance, size: 'normal' | 'small' = 'normal') {
 describe('PlayingCard', () => {
   it('shows the card’s name and its suit and number', () => {
     const el = render({ instanceId: 'c1', definitionId: 'sha', suit: 'spade', rank: 7 });
-    expect(el.querySelector('.name')!.textContent).toBe('Sha');
+    expect(el.querySelector('.name')!.textContent).toBe('Slash');
     expect(el.querySelector('.face')!.textContent).toBe('7 ♠');
     expect(el.querySelector('.face')!.classList).not.toContain('red');
   });
@@ -43,6 +43,17 @@ describe('PlayingCard', () => {
     expect(render(offensive, 'small').querySelector('.stat')!.textContent).toBe('-1');
     const defensive = { instanceId: 'c6', definitionId: 'shadow-runner', suit: 'club', rank: 5 } as const;
     expect(render(defensive, 'small').querySelector('.stat')!.textContent).toBe('+1');
+  });
+
+  it('marks an elemental Sha with its element', () => {
+    const fire = render({ instanceId: 'c9', definitionId: 'fire-attack', suit: 'diamond', rank: 4 });
+    expect(fire.querySelector('.nature')!.classList).toContain('fire');
+    const thunder = render({ instanceId: 'c10', definitionId: 'lightning-attack', suit: 'spade', rank: 5 }, 'small');
+    expect(thunder.querySelector('.nature')!.classList).toContain('thunder');
+  });
+
+  it('shows no element on a plain Sha', () => {
+    expect(render({ instanceId: 'c11', definitionId: 'sha', suit: 'spade', rank: 7 }).querySelector('.nature')).toBeNull();
   });
 
   it('shows no stat on other cards', () => {

@@ -55,11 +55,11 @@ describe('the Vietnamese prose file mirrors the English tables', () => {
 
 describe('the display functions by locale', () => {
   it('English is the default and is unchanged', () => {
-    expect(abilityHint('axe')).toBe('Discard 2 cards to make your Sha hit {target}');
-    expect(abilityHint('axe', 'en')).toBe('Discard 2 cards to make your Sha hit {target}');
+    expect(abilityHint('axe')).toBe('Discard 2 cards to make your Slash hit {target}');
+    expect(abilityHint('axe', 'en')).toBe('Discard 2 cards to make your Slash hit {target}');
     expect(selectionText('bestowed-rouse')).toEqual({ prompt: 'Choose drawn cards to give away', confirm: 'Give', cancel: 'Keep the Rest' });
     expect(seatPickText('alliance')).toBe('Choose a seat to swap hands with {target}');
-    expect(choicePromptText('upheaval')).toBe('Choose a seat to play a Sha at, or pass');
+    expect(choicePromptText('upheaval')).toBe('Choose a seat to play a Slash at, or pass');
     expect(stepSelectionText('compete-user')).toEqual({ prompt: 'Choose a hand card to compete with', confirm: 'Compete' });
   });
 
@@ -72,8 +72,8 @@ describe('the display functions by locale', () => {
   });
 
   it('a locale with no prose, or an empty one, falls back to English', () => {
-    expect(abilityHint('axe', 'fr')).toBe('Discard 2 cards to make your Sha hit {target}');
-    expect(abilityHint('axe', '')).toBe('Discard 2 cards to make your Sha hit {target}');
+    expect(abilityHint('axe', 'fr')).toBe('Discard 2 cards to make your Slash hit {target}');
+    expect(abilityHint('axe', '')).toBe('Discard 2 cards to make your Slash hit {target}');
     expect(selectionText('kindness', 'fr')).toEqual({ prompt: 'Choose cards to give', confirm: 'Give' });
   });
 

@@ -1,9 +1,10 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import type { WikiGeneral } from 'content';
+import { generalDeathVoiceUrl, type WikiGeneral } from 'content';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
+import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
 import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
 
@@ -48,6 +49,14 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
             <span class="gap">{{ 'wiki.noHp' | t }}</span>
           }
         </p>
+        @if (voiceUrl(); as url) {
+          <p class="voices">
+            <span class="voices-label">{{ 'wiki.voice' | t }}</span>
+            <button type="button" class="voice" [attr.aria-label]="'wiki.playDeathVoice' | t" [attr.title]="'wiki.playDeathVoice' | t" (click)="play(url)">
+              <mat-icon>graphic_eq</mat-icon>
+            </button>
+          </p>
+        }
         <ul class="skills">
           @for (skill of general().skills; track skill.name; let i = $index) {
             <li>
@@ -68,6 +77,11 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
     </article>
   `,
   styles: `
+    .voices { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; }
+    .voices-label { font-weight: 600; }
+    .voice { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border-radius: 16px; border: none; background: none; color: var(--mat-sys-on-surface); cursor: pointer; }
+    .voice:hover, .voice:focus-visible { background: var(--mat-sys-surface-container-high); }
+    .voice mat-icon { font-size: 24px; width: 24px; height: 24px; }
     .entry { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--mat-sys-outline-variant); }
     .body { flex: 1; min-width: 0; }
     header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
@@ -95,7 +109,13 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
 })
 export class WikiGeneralEntry {
   private readonly i18n = inject(I18n);
+  private readonly effects = inject(SoundEffects);
   readonly general = input.required<WikiGeneral>();
+  // The General's recorded voice (its death cry), if it has one.
+  protected readonly voiceUrl = computed(() => generalDeathVoiceUrl(this.general().id));
+  protected play(url: string): void {
+    this.effects.previewUrl(url);
+  }
   protected readonly view = computed(() => wikiGeneralView(this.general(), this.i18n.locale()));
   protected readonly kingdomKey = computed((): MessageKey => `label.kingdom.${this.general().kingdom}`);
   protected readonly packLabel = computed(() => wikiPackLabel(this.general().expansion, this.i18n.translator));

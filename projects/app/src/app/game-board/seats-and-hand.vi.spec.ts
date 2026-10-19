@@ -153,7 +153,7 @@ describe('HandView in Vietnamese', () => {
   });
   const registry: ContentRegistry = {
     generals: new Map(),
-    cards: new Map([['sha', 'Sha'], ['crossbow', 'Crossbow'], ['peach', 'Peach']].map(([id, name]) => [id, { id, name, category: 'basic' as const, play: () => [] }])),
+    cards: new Map([['sha', 'Slash'], ['crossbow', 'Crossbow'], ['peach', 'Peach']].map(([id, name]) => [id, { id, name, category: 'basic' as const, play: () => [] }])),
   };
   const at = (card: string, ...seats: string[]): Action => ({ kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: card, targets: seats.map((seatId) => ({ kind: 'seat' as const, seatId })) });
 
@@ -224,7 +224,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
     };
     const registry: ContentRegistry = {
       cards: new Map([
-        ['sha', { id: 'sha', name: 'Sha', category: 'basic' as const, play: () => [] }],
+        ['sha', { id: 'sha', name: 'Slash', category: 'basic' as const, play: () => [] }],
         ['serpent-spear', { id: 'serpent-spear', name: 'Serpent Spear', category: 'equipment' as const, equipSlot: 'weapon' as const, play: () => [], abilities: { conversions: [{ id: 'serpent-spear', as: 'sha', cards: 2, when: 'both' as const }] } }],
       ]),
       generals: new Map(),
@@ -270,7 +270,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
 describe('the Choose Targets and General info dialogs in Vietnamese', () => {
   it('Choose Targets: title, both prompts, seat names and buttons', () => {
     const open = (min: number, max: number) => {
-      const data: TargetsDialogData = { title: 'Sha', pick: { eligibleIds: ['seat-0', 'seat-2'], min, max }, state: { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }] } as unknown as GameState };
+      const data: TargetsDialogData = { title: 'Slash', pick: { eligibleIds: ['seat-0', 'seat-2'], min, max }, state: { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }] } as unknown as GameState };
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close: () => undefined } }] });
       return TestBed.inject(I18n).setLocale('vi').then(() => {
@@ -281,11 +281,11 @@ describe('the Choose Targets and General info dialogs in Vietnamese', () => {
     };
     return open(1, 2).then(async (el) => {
       expect(text(el.querySelector('h2'))).toBe('Chọn mục tiêu');
-      expect(text(el.querySelector('p'))).toBe('Chọn tối đa 2 mục tiêu cho Sha');
+      expect(text(el.querySelector('p'))).toBe('Chọn tối đa 2 mục tiêu cho Slash');
       expect([...el.querySelectorAll('.seats button')].map((b) => text(b))).toEqual(['Hing', 'Người chơi 2']);
       expect([...el.querySelectorAll('mat-dialog-actions button')].map((b) => text(b))).toEqual(['Hủy', 'Xác nhận']);
       const exact = await open(2, 2);
-      expect(text(exact.querySelector('p'))).toBe('Chọn 2 mục tiêu cho Sha');
+      expect(text(exact.querySelector('p'))).toBe('Chọn 2 mục tiêu cho Slash');
     });
   });
 

@@ -277,8 +277,12 @@ export class GameBoard {
       untracked(() => {
         if (seen !== null && log.length > seen) {
           const fresh = log.slice(seen);
-          for (const sound of [...soundsFor(fresh), ...deathSoundsFor(fresh, state)]) this.sounds.play(sound);
-          for (const cue of voicesFor(fresh, state, this.gameService.registry)) this.sounds.playVoice(cue.gender, cue.voice);
+          for (const sound of soundsFor(fresh)) this.sounds.play(sound);
+          for (const cry of deathSoundsFor(fresh, state)) {
+            if (cry.url) this.sounds.playDeathVoice(cry.url);
+            else if (cry.effect) this.sounds.play(cry.effect);
+          }
+          for (const cue of voicesFor(fresh, state, this.gameService.registry, this.viewerSeatId())) this.sounds.playVoice(cue.gender, cue.voice);
         }
         seen = log.length;
       });

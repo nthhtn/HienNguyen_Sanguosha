@@ -81,7 +81,7 @@ describe('SeatTile', () => {
     const el = render(makeSeat(), { judgment: [{ instanceId: 'dm', definitionId: 'shan', suit: 'diamond', rank: 3 }], judgmentCountsAs: { dm: 'capture' } });
     const slot = el.querySelector('.judgment .slot') as HTMLElement;
     expect(slot.textContent).toContain('As Capture');
-    expect(slot.getAttribute('title')).toBe('Judgment Area: Shan as Capture');
+    expect(slot.getAttribute('title')).toBe('Judgment Area: Dodge as Capture');
   });
 
   it('shows the seat name, hidden kingdom and generals, HP and hand count', () => {

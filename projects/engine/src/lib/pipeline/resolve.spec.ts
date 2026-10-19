@@ -335,7 +335,7 @@ describe('resolve: Response Window pause and resume', () => {
   function registryWithShaAndShield(): ContentRegistry {
     const testShaLikeCard: CardDefinition = {
       id: 'test-sha-like-card',
-      name: 'Test Sha-like Card',
+      name: 'Test Slash-like Card',
       category: 'basic',
       play: (_state, ctx) => [
         {

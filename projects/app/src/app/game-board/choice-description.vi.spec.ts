@@ -45,7 +45,7 @@ describe('describeChoice in Vietnamese', () => {
   it('believe or doubt a claim', () => {
     const doubt = skill('bewilder', 'pick', undefined, [{ id: 'believe', shows: { kind: 'label', text: 'Believe' }, effects: [] }], 'sha');
     doubt.reason = { kind: 'ability', owner: { kind: 'general', seatId: 'seat-1', slot: 'main', skillId: 'bewilder' }, abilityId: 'bewilder', cardId: 'sha' };
-    expect(describeChoice(state(doubt), 'seat-0', tr)).toMatchObject({ prompt: 'Người chơi 1 tuyên bố có Sha. Tin hay nghi ngờ?', confirmLabel: 'Chọn' });
+    expect(describeChoice(state(doubt), 'seat-0', tr)).toMatchObject({ prompt: 'Người chơi 1 tuyên bố có Slash. Tin hay nghi ngờ?', confirmLabel: 'Chọn' });
   });
 
   it('gives cards, and picks a seat, a suit or one of several', () => {

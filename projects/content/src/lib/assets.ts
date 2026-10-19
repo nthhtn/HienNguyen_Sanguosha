@@ -28,6 +28,17 @@ export function generalSkinUrl(id: string): string | null {
   return skin ? `/card-art/generals/skins/${skin}` : cardArtUrl(id);
 }
 
+// Generals whose skin has no death voice file yet.
+const NO_DEATH_VOICE = new Set(['zuo-ci']);
+
+// A General's death voice: /audio/death/<skin file name>.ogg, named by the pinyin of the skin
+// (Cao Cao: caocao.ogg). Null for a General with no skin or no recording.
+export function generalDeathVoiceUrl(id: string): string | null {
+  const skin = GENERAL_SKINS[id];
+  if (!skin || NO_DEATH_VOICE.has(id)) return null;
+  return `/audio/death/${skin.replace(/^.*\//, '').replace(/\.[^.]+$/, '')}.ogg`;
+}
+
 // The back of a playing card, shown for a card whose face is hidden.
 export const CARD_BACK_ART_URL = '/card-art/cards/back.jpg';
 

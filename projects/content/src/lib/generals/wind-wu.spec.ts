@@ -93,7 +93,7 @@ describe('Zhou Tai — Refusing Death', () => {
 });
 
 describe('Fantasy after another before-damage skill (final review #1)', () => {
-  // Xu Chu (seat-a, Bare the Chest used) hits Xiao Qiao (seat-b) with a Sha; Bare the Chest is asked first by seat order.
+  // Xu Chu (seat-a, Bare the Chest used) hits Xiao Qiao (seat-b) with a Slash; Bare the Chest is asked first by seat order.
   const hit = () =>
     h.pass(h.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('h', 'peach', 'heart')] }, { generals: { 'seat-a': ['xu-chu', 'filler-zhang-he'], 'seat-b': ['xiao-qiao', 'filler-sun-ce'] }, flags: { 'bare-the-chest': true } }), 's1', 'seat-b'));
 

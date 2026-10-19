@@ -10,29 +10,29 @@ describe('Liu Shan — Pleasure', () => {
   const sha = (o: TableOptions = {}, extra: Record<string, ReturnType<typeof card>[]> = {}) =>
     table({ 'seat-a:hand': [card('s1', 'sha', 'spade'), card('k1', 'shan', 'heart', 2), card('t1', 'draw-two', 'club')], ...extra }, { generals: at('seat-b', 'liu-shan'), ...o });
 
-  it('a Sha used on him costs its user another Basic hand card; paying lets the Sha go on', () => {
+  it('a Slash used on him costs its user another Basic hand card; paying lets the Slash go on', () => {
     let s = h.play(sha(), 's1', 'seat-b');
     expect(s.pendingSelection).toMatchObject({ seatId: 'seat-a', of: 'cards', eligibleIds: ['k1'], min: 1, max: 1 });
     s = h.select(s, 'k1');
     expect(ids(s, 'discardPile')).toContain('k1');
-    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' }); // the Shan window
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' }); // the Dodge window
   });
 
-  it('cancelling the payment means the Sha has no effect', () => {
+  it('cancelling the payment means the Slash has no effect', () => {
     const s = h.cancel(h.play(sha(), 's1', 'seat-b'));
     expect(s.pendingResponse).toBeNull();
     expect(hp(s, 'seat-b')).toBe(4);
     expect(s.log.some((e) => e.kind === 'AbilityUsedEvent' && e.outcome === 'no-effect')).toBe(true);
   });
 
-  it('with no other Basic card the Sha has no effect at once; the Sha card itself does not count', () => {
+  it('with no other Basic card the Slash has no effect at once; the Slash card itself does not count', () => {
     const s = h.play(sha({}, { 'seat-a:hand': [card('s1', 'sha', 'spade'), card('t1', 'draw-two', 'club')] }), 's1', 'seat-b');
     expect(s.pendingSelection).toBeUndefined();
     expect(s.pendingResponse).toBeNull();
     expect(hp(s, 'seat-b')).toBe(4);
   });
 
-  it('does not touch a Sha at another seat, or a Sha used by Liu Shan', () => {
+  it('does not touch a Slash at another seat, or a Slash used by Liu Shan', () => {
     expect(h.play(sha(), 's1', 'seat-d').pendingSelection).toBeUndefined();
   });
 
@@ -99,13 +99,13 @@ describe('Jiang Wei — Instigate', () => {
   const play = (cards: Record<string, ReturnType<typeof card>[]> = {}, o: TableOptions = {}) =>
     table({ 'seat-a:hand': hand('a', 1), 'seat-b:hand': [card('bs', 'sha', 'spade'), card('bx', 'shan', 'heart', 3)], ...cards }, { generals: at('seat-a', 'jiang-wei'), ...o });
 
-  it('picks a seat with him in its Sha range; it must Sha him', () => {
+  it('picks a seat with him in its Slash range; it must Slash him', () => {
     let s = h.useSkill(play(), 'seat-a', 'instigate');
     expect(s.pendingSelection).toMatchObject({ of: 'seats', eligibleIds: ['seat-b', 'seat-d'], min: 1, max: 1 });
     s = h.select(s, 'seat-b');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['sha'] });
     s = h.respond(s, 'bs');
-    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a' }); // Jiang Wei's Shan window
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a' }); // Jiang Wei's Dodge window
   });
 
   it('if it does not, Jiang Wei discards one of its cards', () => {

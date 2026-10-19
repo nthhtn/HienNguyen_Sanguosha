@@ -13,7 +13,7 @@ describe('TargetsDialog', () => {
 
   beforeEach(() => {
     closed = [];
-    const data: TargetsDialogData = { title: 'Sha', pick: { eligibleIds: ['seat-0', 'seat-2', 'seat-3'], min: 1, max: 2 }, state };
+    const data: TargetsDialogData = { title: 'Slash', pick: { eligibleIds: ['seat-0', 'seat-2', 'seat-3'], min: 1, max: 2 }, state };
     TestBed.configureTestingModule({
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: data },
@@ -29,7 +29,7 @@ describe('TargetsDialog', () => {
 
   it('asks for up to N targets, one button per eligible seat, by name', () => {
     expect(el.querySelector('h2')!.textContent).toBe('Choose Targets');
-    expect(el.textContent).toContain('Choose up to 2 targets for Sha');
+    expect(el.textContent).toContain('Choose up to 2 targets for Slash');
     expect(buttons().map((b) => b.textContent!.trim())).toEqual(['Hing', 'Seat 2', 'Seat 3', 'Cancel', 'Confirm']);
   });
 

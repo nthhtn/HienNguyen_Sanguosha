@@ -7,7 +7,7 @@ const offered = (s: GameState, seatId: string, skillId: string) =>
   h.legal(s, seatId).some((a) => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.skillId === skillId);
 
 describe('Lu Bu — Matchless', () => {
-  it('his Sha needs two Shan; an Eight Trigrams red judgment counts as one', () => {
+  it('his Slash needs two Dodge; an Eight Trigrams red judgment counts as one', () => {
     let s = h.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('n1', 'shan')], 'seat-b:equip': [card('et', 'eight-trigrams', 'spade', 2)], drawPile: [card('j', 'peach', 'heart')] }, { generals: at('seat-a', 'lu-bu') }), 's1', 'seat-b');
     s = h.use(s); // Eight Trigrams: red
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
@@ -15,14 +15,14 @@ describe('Lu Bu — Matchless', () => {
     expect(hp(h.respond(s, 'n1'), 'seat-b')).toBe(4);
   });
 
-  it('in a Duel with him, the other seat plays two Sha each time', () => {
+  it('in a Duel with him, the other seat plays two Slash each time', () => {
     let s = h.play(table({ 'seat-a:hand': [card('du', 'duel', 'spade', 1)], 'seat-b:hand': [card('b1', 'sha')] }, { generals: at('seat-a', 'lu-bu') }), 'du', 'seat-b');
     s = h.respond(s, 'b1');
     expect(s.pendingResponse?.respondingSeatId).toBe('seat-b');
     expect(hp(h.pass(s), 'seat-b')).toBe(3);
   });
 
-  it('is off while Lu Bu is hidden: one Shan is enough', () => {
+  it('is off while Lu Bu is hidden: one Dodge is enough', () => {
     const s = h.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('n1', 'shan')] }, { generals: at('seat-a', 'lu-bu', false) }), 's1', 'seat-b');
     expect(h.respond(s, 'n1').pendingResponse).toBeNull();
   });

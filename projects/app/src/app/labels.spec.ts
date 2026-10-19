@@ -25,7 +25,7 @@ function stateWithZones(): GameState {
 
 function registryWithSha(): ContentRegistry {
   return {
-    cards: new Map([['sha', { id: 'sha', name: 'Sha', category: 'basic', play: () => [] }]]),
+    cards: new Map([['sha', { id: 'sha', name: 'Slash', category: 'basic', play: () => [] }]]),
     generals: new Map(),
   };
 }
@@ -90,8 +90,8 @@ describe('actionLabel', () => {
     const use = (targets: Target[]): Action => ({
       kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'spear' }, conversionId: 'serpent-spear' }, targets,
     });
-    expect(actionLabel(use([]), state, registry)).toBe('Use 2 Cards as Sha');
-    expect(actionLabel(use([{ kind: 'seat', seatId: 'seat-1' }]), state, registry)).toBe('Use 2 Cards as Sha Targeting Seat 1');
+    expect(actionLabel(use([]), state, registry)).toBe('Use 2 Cards as Slash');
+    expect(actionLabel(use([{ kind: 'seat', seatId: 'seat-1' }]), state, registry)).toBe('Use 2 Cards as Slash Targeting Seat 1');
   });
 
   it('labels a skill conversion as what it makes and the skill', () => {
@@ -108,8 +108,8 @@ describe('actionLabel', () => {
     const use = (targets: Target[]): Action => ({
       kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'fighting-saint' }, conversionId: 'fighting-saint' }, targets,
     });
-    expect(actionLabel(use([]), state, registry)).toBe('As Sha · Fighting Saint');
-    expect(actionLabel(use([{ kind: 'seat', seatId: 'seat-1' }]), state, registry)).toBe('As Sha · Fighting Saint Targeting Seat 1');
+    expect(actionLabel(use([]), state, registry)).toBe('As Slash · Fighting Saint');
+    expect(actionLabel(use([{ kind: 'seat', seatId: 'seat-1' }]), state, registry)).toBe('As Slash · Fighting Saint Targeting Seat 1');
   });
 
   it('labels DrawCardsAction with the count', () => {
@@ -124,7 +124,7 @@ describe('actionLabel', () => {
       cardInstanceId: 'card-1',
       targets: [],
     };
-    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Play Sha');
+    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Play Slash');
   });
 
   it('labels a targeted PlayCardAction with the target', () => {
@@ -134,7 +134,7 @@ describe('actionLabel', () => {
       cardInstanceId: 'card-1',
       targets: [{ kind: 'seat', seatId: 'seat-1' }],
     };
-    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Play Sha Targeting Seat 1');
+    expect(actionLabel(action, stateWithZones(), registryWithSha())).toBe('Play Slash Targeting Seat 1');
   });
 
   it('labels ChooseGeneralsAction with both generals and their roles', () => {
@@ -159,7 +159,7 @@ describe('actionLabel', () => {
   it('labels DiscardCardAction with the card name', () => {
     expect(
       actionLabel({ kind: 'DiscardCardAction', seatId: 'seat-0', cardInstanceId: 'card-1' }, stateWithZones(), registryWithSha())
-    ).toBe('Discard Sha');
+    ).toBe('Discard Slash');
   });
 });
 

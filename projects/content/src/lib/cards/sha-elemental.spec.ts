@@ -4,7 +4,7 @@ import { isShaCard } from '../shared/queries';
 import { isShaDamage } from '../shared/abilities';
 
 // Fire Attack and Lightning Attack (spec "Fire Attack and Lightning Attack"):
-// Sha in every respect, except that the damage has the card's nature.
+// Slash in every respect, except that the damage has the card's nature.
 const { act, legal, play, pass, respond, convert, select, use } = harness();
 const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', revealed] });
 const damages = (s: GameState) => s.log.flatMap((e) => (e.kind === 'DamageDealtEvent' ? [e.damage] : []));
@@ -14,11 +14,11 @@ const chain = (s: GameState, ...ids: string[]): GameState => ({ ...s, seats: s.s
 const respondable = (s: GameState) => legal(s, s.pendingResponse!.respondingSeatId).flatMap((a) => (a.kind === 'RespondAction' ? [a.cardInstanceId] : []));
 
 describe('Fire Attack and Lightning Attack', () => {
-  it('are Sha cards; Sha is too, nothing else is', () => {
+  it('are Slash cards; Slash is too, nothing else is', () => {
     expect(['sha', 'fire-attack', 'lightning-attack', 'shan', 'duel'].map((id) => isShaCard(registry, id))).toEqual([true, true, true, false, false]);
   });
 
-  it('a Fire Attack deals 1 fire damage when no Shan comes; it is played as a Sha carrying its nature', () => {
+  it('a Fire Attack deals 1 fire damage when no Dodge comes; it is played as a Slash carrying its nature', () => {
     const played = play(table({ 'seat-a:hand': [card('f', 'fire-attack', 'heart', 4)] }), 'f', 'seat-b');
     expect(played.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
     expect(played.turn.cardPlays).toEqual({ sha: 1 });
@@ -33,7 +33,7 @@ describe('Fire Attack and Lightning Attack', () => {
     expect(damages(s)).toMatchObject([{ amount: 1, nature: 'thunder' }]);
   });
 
-  it('a plain Sha stays plain', () => {
+  it('a plain Slash stays plain', () => {
     const s = pass(play(table({ 'seat-a:hand': [card('s', 'sha')] }), 's', 'seat-b'));
     expect(damages(s)).toMatchObject([{ nature: 'normal' }]);
     expect(damages(s)[0].cause?.card).not.toHaveProperty('nature');
@@ -43,13 +43,13 @@ describe('Fire Attack and Lightning Attack', () => {
     expect(playTargets(table({ 'seat-a:hand': [card('f', 'fire-attack', 'heart', 4)] }), 'seat-a', 'f')).toEqual(['seat-b', 'seat-d']);
   });
 
-  it('a Shan answers them and a dodged one deals nothing', () => {
+  it('a Dodge answers them and a dodged one deals nothing', () => {
     const s = respond(play(table({ 'seat-a:hand': [card('f', 'fire-attack', 'heart', 4)], 'seat-b:hand': [card('d', 'shan')] }), 'f', 'seat-b'), 'd');
     expect(hp(s, 'seat-b')).toBe(4);
     expect(damages(s)).toEqual([]);
   });
 
-  it('count toward the one Sha a turn, with any Sha', () => {
+  it('count toward the one Slash a turn, with any Slash', () => {
     const s = pass(play(table({ 'seat-a:hand': [card('f', 'fire-attack', 'heart', 4), card('l', 'lightning-attack', 'spade', 5), card('s', 'sha')] }), 'f', 'seat-b'));
     expect(playTargets(s, 'seat-a', 'l')).toEqual([]);
     expect(playTargets(s, 'seat-a', 's')).toEqual([]);
@@ -76,7 +76,7 @@ describe('Fire Attack and Lightning Attack', () => {
     expect(s.turn.flags?.['wine']).toBeFalsy();
   });
 
-  it('a Duel accepts a Fire Attack as the Sha played', () => {
+  it('a Duel accepts a Fire Attack as the Slash played', () => {
     let s = play(table({ 'seat-a:hand': [card('du', 'duel', 'spade', 1)], 'seat-b:hand': [card('f', 'fire-attack', 'heart', 4)] }), 'du', 'seat-b');
     expect(respondable(s)).toEqual(['f']);
     s = respond(s, 'f');
@@ -86,7 +86,7 @@ describe('Fire Attack and Lightning Attack', () => {
     expect(damages(s)).toMatchObject([{ nature: 'normal' }]); // a Duel's damage is plain
   });
 
-  it('Barbarians accept a Lightning Attack as the Sha played', () => {
+  it('Barbarians accept a Lightning Attack as the Slash played', () => {
     let s = play(table({ 'seat-a:hand': [card('ba', 'barbarians', 'spade', 7)], 'seat-b:hand': [card('l', 'lightning-attack', 'spade', 5)] }), 'ba');
     while (s.pendingResponse?.respondingSeatId !== 'seat-b') s = pass(s); // Wuxie windows, if any
     expect(respondable(s)).toEqual(['l']);
@@ -95,7 +95,7 @@ describe('Fire Attack and Lightning Attack', () => {
     expect(handIds(s, 'seat-b')).toEqual([]);
   });
 
-  it('Green Dragon Blade’s follow-up Sha offers a Fire Attack', () => {
+  it('Green Dragon Blade’s follow-up Slash offers a Fire Attack', () => {
     let s = play(
       table({ 'seat-a:hand': [card('s1', 'sha'), card('f', 'fire-attack', 'heart', 4)], 'seat-a:equip': [card('gdb', 'green-dragon-blade', 'spade', 5)], 'seat-b:hand': [card('d', 'shan')] }),
       's1',
@@ -109,14 +109,14 @@ describe('Fire Attack and Lightning Attack', () => {
     expect(damages(s)).toMatchObject([{ amount: 1, nature: 'fire' }]);
   });
 
-  it('a Fire Attack converted to Sha by Fighting Saint is a plain Sha', () => {
+  it('a Fire Attack converted to Slash by Fighting Saint is a plain Slash', () => {
     const s = pass(select(convert(table({ 'seat-a:hand': [card('f', 'fire-attack', 'heart', 4)] }, { generals: at('seat-a', 'guan-yu') }), 'seat-a', 'fighting-saint', 'seat-b'), 'f'));
     expect(hp(s, 'seat-b')).toBe(3);
     expect(damages(s)).toMatchObject([{ nature: 'normal' }]);
     expect(damages(s)[0].cause?.card).not.toHaveProperty('nature');
   });
 
-  it('Dragon Courage uses a Fire Attack as a Shan', () => {
+  it('Dragon Courage uses a Fire Attack as a Dodge', () => {
     let s = play(table({ 'seat-a:hand': [card('s', 'sha')], 'seat-b:hand': [card('f', 'fire-attack', 'heart', 4)] }, { generals: at('seat-b', 'zhao-yun') }), 's', 'seat-b');
     s = select(convert(s, 'seat-b', 'sha-as-shan'), 'f');
     expect(hp(s, 'seat-b')).toBe(4);
@@ -140,7 +140,7 @@ describe('Fire Attack and Lightning Attack', () => {
   });
 });
 
-describe('Wood Armor against the elemental Sha', () => {
+describe('Wood Armor against the elemental Slash', () => {
   const armor = [card('wa', 'wood-armor', 'spade', 2)];
   const attack = (id: string, definition: string, extra: Record<string, ReturnType<typeof card>[]> = {}, flags: Record<string, boolean> = {}) =>
     play(table({ 'seat-a:hand': [card(id, definition, 'heart', 4)], 'seat-b:equip': armor, ...extra }, { flags }), id, 'seat-b');
@@ -156,7 +156,7 @@ describe('Wood Armor against the elemental Sha', () => {
     expect(hp(s, 'seat-b')).toBe(3);
   });
 
-  it('still stops a plain Sha', () => {
+  it('still stops a plain Slash', () => {
     const s = attack('s', 'sha');
     expect(s.pendingResponse).toBeNull();
     expect(abilityLog(s)).toMatchObject([{ abilityId: 'wood-armor', outcome: 'no-effect' }]);
@@ -193,7 +193,7 @@ describe('fire damage along a chain', () => {
     expect([hp(s, 'seat-b'), hp(s, 'seat-c')]).toEqual([3, 2]);
   });
 
-  it('a propagated hit is not Sha damage; the original is', () => {
+  it('a propagated hit is not Slash damage; the original is', () => {
     const s = fire({});
     const [first, second] = damages(s);
     expect([isShaDamage(first), isShaDamage(second)]).toEqual([true, false]);

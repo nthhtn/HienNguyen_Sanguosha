@@ -30,13 +30,13 @@ describe("Guo Jia — Heaven's Envy", () => {
     expect(handIds(kw.use(after), 'seat-a')).toContain('j');
   });
 
-  it("works on an Eight Trigrams judgment, before the Shan it counts as", () => {
+  it("works on an Eight Trigrams judgment, before the Dodge it counts as", () => {
     let s = stub.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:equip': [card('et', 'eight-trigrams', 'spade', 2)], drawPile: [card('j', 'peach', 'heart', 3)] }, { generals: { 'seat-b': ['guo-jia', 'filler-cao-pi'] } }), 's1', 'seat-b');
     s = stub.use(s); // Eight Trigrams
     expect(askedAbout(s)).toBe('heavens-envy');
     s = stub.use(s);
     expect(handIds(s, 'seat-b')).toEqual(['j']);
-    expect(hp(s, 'seat-b')).toBe(4); // the red judgment still counted as a Shan
+    expect(hp(s, 'seat-b')).toBe(4); // the red judgment still counted as a Dodge
   });
 });
 
@@ -109,7 +109,7 @@ describe('Zhen Ji — River Goddess', () => {
 });
 
 describe('Zhen Ji — Overturned Country', () => {
-  it('uses a black hand card as a Shan', () => {
+  it('uses a black hand card as a Dodge', () => {
     let s = stub.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('k', 'wuxie', 'club', 4), card('r', 'peach', 'heart')] }, { owner: 'seat-b', generals: { 'seat-a': ['zhen-ji', 'filler-xun-yu'] } }), 's1', 'seat-a');
     s = stub.convert(s, 'seat-a', 'overturned-country');
     expect(s.pendingSelection?.eligibleIds).toEqual(['k']);

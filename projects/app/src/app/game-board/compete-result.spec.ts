@@ -30,14 +30,14 @@ describe('competeResults', () => {
       winnerName: 'Hing',
       user: { seatId: 'seat-0', name: 'Hing', generalId: 'taishi-ci', card: nine },
       target: { seatId: 'seat-1', name: 'Seat 1', generalId: null, card: seven },
-      outcome: 'Hing can play one more Sha this turn, at any distance, with one more target',
+      outcome: 'Hing can play one more Slash this turn, at any distance, with one more target',
     });
     expect(result.skillText).toBeTruthy();
   });
 
   it('a loss names the other seat as the winner and gives the loss outcome', () => {
     const [result] = competeResults(competition(false, seven, nine), 0, seats, players);
-    expect(result).toMatchObject({ won: false, tie: false, winnerName: 'Seat 1', outcome: "Hing can't play a Sha this turn" });
+    expect(result).toMatchObject({ won: false, tie: false, winnerName: 'Seat 1', outcome: "Hing can't play a Slash this turn" });
   });
 
   it('equal ranks are a tie, which the challenger loses', () => {

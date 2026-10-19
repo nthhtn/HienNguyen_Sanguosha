@@ -9,6 +9,7 @@ import { SeatTile } from './seat-tile';
 import { PlayingCard } from './playing-card';
 import { CardArt } from './card-art';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
+import { BattlefieldBackgrounds, battlefieldBackgroundCss } from '../battlefield-background.service';
 import { fitTable, seatPlacements } from './table-layout';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
@@ -32,7 +33,7 @@ const STATUS_HEIGHT = 24;
   selector: 'app-round-table',
   imports: [SeatTile, PlayingCard, CardArt, MatProgressSpinnerModule, TPipe],
   template: `
-    <div class="table" [class.crowded]="state().seats.length > 6">
+    <div class="table" [class.crowded]="state().seats.length > 6" [style.background]="background()">
       <!-- Only the latest action sequence, one step per line, each with its card. -->
       <div class="centre" [style.width.px]="fit().centreWidth" [style.top.px]="fit().centreY" [style.max-height.px]="fit().centreHeight">
         @if (turnedUp().length > 0) {
@@ -96,6 +97,7 @@ const STATUS_HEIGHT = 24;
       height: 100%;
       border-radius: 0;
       overflow: hidden;
+      /* The default look; a picture from the Battlefield menu replaces it (see background). */
       background: radial-gradient(ellipse at center, #8b7559 0%, #6d5a43 55%, #4b3e2f 100%);
       box-shadow: inset 0 0 40px rgb(0 0 0 / 45%);
     }
@@ -142,7 +144,9 @@ export class RoundTable {
   readonly botSeatIds = input<string[]>([]);
 
   private readonly i18n = inject(I18n);
+  private readonly backgrounds = inject(BattlefieldBackgrounds);
 
+  protected readonly background = computed(() => battlefieldBackgroundCss(this.backgrounds.choice()));
   protected readonly waiting = computed(() => waitingLine(this.state(), this.i18n.translator));
   protected readonly turnedUp = computed(() => this.state().zones.find((z) => z.kind === 'processing')?.cards ?? []);
 
@@ -184,6 +188,9 @@ export class RoundTable {
   }
 
   constructor() {
+    // The Battlefield menu in the toolbar is offered while a battlefield is on screen.
+    this.backgrounds.available.set(true);
+    inject(DestroyRef).onDestroy(() => this.backgrounds.available.set(false));
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(([entry]) => {

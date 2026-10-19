@@ -33,7 +33,7 @@ describe('cardDisplayData', () => {
   });
 
   it('returns null text and range when the data has none', () => {
-    expect(cardDisplayData('sha')).toEqual({ name: 'Sha', category: 'basic', subtype: null, range: null, mount: null, text: null });
+    expect(cardDisplayData('sha')).toEqual({ name: 'Slash', category: 'basic', subtype: null, range: null, mount: null, text: null });
   });
 
   it('returns null for an unknown id', () => {
@@ -42,13 +42,13 @@ describe('cardDisplayData', () => {
 });
 describe('abilityHint', () => {
   it('Eight Trigrams and Eight Arrays read in sentence case', () => {
-    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Shan');
-    expect(abilityHint('eight-arrays')).toBe('Judge: on red, it counts as a Shan');
+    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Dodge');
+    expect(abilityHint('eight-arrays')).toBe('Judge: on red, it counts as a Dodge');
   });
 
   it('says what an ability does, in the game’s own words', () => {
-    expect(abilityHint('axe')).toBe('Discard 2 cards to make your Sha hit {target}');
-    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Shan');
+    expect(abilityHint('axe')).toBe('Discard 2 cards to make your Slash hit {target}');
+    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Dodge');
     expect(abilityHint('sha')).toBeNull();
   });
 });
@@ -110,8 +110,8 @@ describe('Mountain texts', () => {
 describe('competeOutcomeText', () => {
   const names = { user: 'Seat 0', target: 'Seat 1' };
   it('says what a win and a loss lead to, naming both seats', () => {
-    expect(competeOutcomeText('heavens-justice', true, names)).toBe('Seat 0 can play one more Sha this turn, at any distance, with one more target');
-    expect(competeOutcomeText('heavens-justice', false, names)).toBe("Seat 0 can't play a Sha this turn");
+    expect(competeOutcomeText('heavens-justice', true, names)).toBe('Seat 0 can play one more Slash this turn, at any distance, with one more target');
+    expect(competeOutcomeText('heavens-justice', false, names)).toBe("Seat 0 can't play a Slash this turn");
     expect(competeOutcomeText('rouse-the-tiger', true, names)).toBe("Seat 0 will choose a seat within Seat 1's attack range; Seat 1 deals it 1 damage");
     expect(competeOutcomeText('rouse-the-tiger', false, names)).toBe('Seat 1 deals 1 damage to Seat 0');
     expect(competeOutcomeText('intense-edge', true, names)).toBe("Seat 0 will take one of Seat 1's cards");

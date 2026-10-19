@@ -58,7 +58,7 @@ export function shownCardId(used: Pick<UsedCard, 'as' | 'physical' | 'nature' | 
 export function cardIdDisplayName(cardDefinitionId: string, tr: Translator = englishTranslator): string {
   if (cardDefinitionId === 'hidden') return tr('label.hiddenCard');
   const locale = localeOf(tr);
-  return (locale === 'en' ? undefined : cardDisplayData(cardDefinitionId, locale)?.name) ?? titleCaseId(cardDefinitionId);
+  return cardDisplayData(cardDefinitionId, locale)?.name ?? titleCaseId(cardDefinitionId);
 }
 
 export function cardDefinitionId(state: GameState, cardInstanceId: string): string | undefined {

@@ -2,7 +2,7 @@ import type { CardDefinition } from 'engine';
 
 export const shanCard: CardDefinition = {
   id: 'shan',
-  name: 'Shan',
+  name: 'Dodge',
   category: 'basic',
   legalPlayTargets: () => [], // response only
   play: () => [],

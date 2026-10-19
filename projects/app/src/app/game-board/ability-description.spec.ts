@@ -34,7 +34,7 @@ describe('describeAsk', () => {
     expect(describeAsk(state({ pendingChoice: ask('axe', 'seat-1') }), 'seat-0', asked)).toEqual({
       title: 'Axe',
       prompt: 'Use Axe on Seat 1?',
-      hint: 'Discard 2 cards to make your Sha hit Seat 1',
+      hint: 'Discard 2 cards to make your Slash hit Seat 1',
       card: axe,
       generalId: null,
       useLabel: 'Use',
@@ -95,19 +95,19 @@ describe('describeSelection', () => {
   it('Axe: choose 2 cards to discard, shown face up, with Cancel', () => {
     expect(describe2(selection('axe', { eligibleIds: ['p1', 's2'] }))).toEqual({
       title: 'Axe', prompt: 'Choose 2 cards to discard', confirmLabel: 'Discard', cancelLabel: 'Cancel', min: 2, max: 2,
-      items: [{ id: 'p1', card: peach, label: 'Peach (3 ♥)' }, { id: 's2', card: sha, label: 'Sha (7 ♠)' }],
+      items: [{ id: 'p1', card: peach, label: 'Peach (3 ♥)' }, { id: 's2', card: sha, label: 'Slash (7 ♠)' }],
       template, cancel,
     });
   });
 
-  it('Serpent Spear: 2 hand cards to use as Sha', () => {
+  it('Serpent Spear: 2 hand cards to use as Slash', () => {
     const sel = selection('serpent-spear', { eligibleIds: ['p1', 's2'], then: { kind: 'use-card', as: 'sha', targets: [], counted: true } });
-    expect(describe2(sel)).toMatchObject({ title: 'Serpent Spear', prompt: 'Choose 2 hand cards to use as Sha', confirmLabel: 'Use' });
+    expect(describe2(sel)).toMatchObject({ title: 'Serpent Spear', prompt: 'Choose 2 hand cards to use as Slash', confirmLabel: 'Use' });
   });
 
-  it('Green Dragon Blade: a Sha to play at its target', () => {
+  it('Green Dragon Blade: a Slash to play at its target', () => {
     const sel = selection('green-dragon-blade', { eligibleIds: ['s2'], min: 1, max: 1, then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } });
-    expect(describe2(sel)).toMatchObject({ prompt: 'Choose a Sha to play at Seat 1', confirmLabel: 'Use' });
+    expect(describe2(sel)).toMatchObject({ prompt: 'Choose a Slash to play at Seat 1', confirmLabel: 'Use' });
   });
 
   it('Alliance: its discard selection (step swap) says what to discard; another skill’s swap does not', () => {

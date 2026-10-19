@@ -45,7 +45,7 @@ describe('Yu Ji — Bewilder', () => {
     expect(ids(s, 'discardPile')).toEqual(['x']);
   });
 
-  it('a Fire Attack claimed as a Sha is a true claim (an elemental Sha is a Sha)', () => {
+  it('a Fire Attack claimed as a Slash is a true claim (an elemental Slash is a Slash)', () => {
     const s = claimSha(card('x', 'fire-attack', 'spade', 4), 'dbb');
     expect(hp(s, 'seat-b')).toBe(3);
     expect(abilityLog(s)).toContainEqual(expect.objectContaining({ abilityId: 'bewilder', outcome: 'claim-true' }));
@@ -60,7 +60,7 @@ describe('Yu Ji — Bewilder', () => {
   });
 
   describe('a failed claim answering a window', () => {
-    // seat-b hits Yu Ji with Sha; she answers with Bewilder-Shan naming x, and the others doubt.
+    // seat-b hits Yu Ji with Slash; she answers with Bewilder-Dodge naming x, and the others doubt.
     const failed = (extraHand: ReturnType<typeof card>[], claimed: ReturnType<typeof card>) => {
       let s = h.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [claimed, ...extraHand] }, { owner: 'seat-b', generals: yuJi() }), 's1', 'seat-a');
       s = h.select(h.convert(s, 'seat-a', 'bewilder-shan'), claimed.instanceId);
@@ -114,7 +114,7 @@ describe('Yu Ji — Bewilder', () => {
 });
 
 describe('Bewilder and a target who dies doubting (final review #5)', () => {
-  it('a true heart Sha whose only target died of doubting is discarded, not played', () => {
+  it('a true heart Slash whose only target died of doubting is discarded, not played', () => {
     const kw = harness(kwMode);
     let s = kw.select(kw.convert(table({ 'seat-a:hand': [card('x', 'sha', 'heart')] }, { generals: yuJi(), hp: { 'seat-b': 1 } }), 'seat-a', 'bewilder-sha', 'seat-b'), 'x');
     s = kw.choose(s, 'doubt'); // seat-b doubts

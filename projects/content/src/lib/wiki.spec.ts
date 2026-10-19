@@ -92,7 +92,7 @@ describe('wikiGenerals', () => {
 describe('wikiCards', () => {
   it('lists the basic cards by pack then name; all are in the game', () => {
     const basic = wikiCards('basic');
-    expect(basic.map((c) => c.name)).toEqual(['Peach', 'Sha', 'Shan', 'Fire Attack', 'Lightning Attack', 'Wine']);
+    expect(basic.map((c) => c.name)).toEqual(['Dodge', 'Peach', 'Slash', 'Fire Attack', 'Lightning Attack', 'Wine']);
     expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual([]);
   });
 
@@ -206,11 +206,11 @@ describe('wiki tabs', () => {
     expect(tabs.map((t) => t.entries[0].name)).toEqual(['Cao Cao', 'Liu Bei', 'Sun Quan', 'Zhang Jiao']);
   });
 
-  it('gives each basic card its own tab, the fire and lightning Sha right after Sha', () => {
+  it('gives each basic card its own tab, the fire and lightning Slash right after Slash', () => {
     const tabs = wikiCardTabs('basic');
     expect(summary(tabs)).toEqual([
-      ['sha', 'Sha', 1], ['fire-attack', 'Fire Attack', 1], ['lightning-attack', 'Lightning Attack', 1],
-      ['shan', 'Shan', 1], ['wine', 'Wine', 1], ['peach', 'Peach', 1],
+      ['sha', 'Slash', 1], ['fire-attack', 'Fire Attack', 1], ['lightning-attack', 'Lightning Attack', 1],
+      ['shan', 'Dodge', 1], ['wine', 'Wine', 1], ['peach', 'Peach', 1],
     ]);
     expect(tabs.map((t) => t.entries[0].id)).toEqual(['sha', 'fire-attack', 'lightning-attack', 'shan', 'wine', 'peach']);
   });

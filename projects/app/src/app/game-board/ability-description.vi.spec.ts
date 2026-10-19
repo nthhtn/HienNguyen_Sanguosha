@@ -35,15 +35,15 @@ describe('describeAsk in Vietnamese', () => {
   it('names the ability and its target', () => {
     expect(describeAsk(state({ pendingChoice: ask('axe', 'seat-1') }), 'seat-0', asked, tr)).toMatchObject({
       prompt: 'Dùng Axe lên Người chơi 1?',
-      hint: 'Discard 2 cards to make your Sha hit Người chơi 1',
+      hint: 'Discard 2 cards to make your Slash hit Người chơi 1',
       useLabel: 'Dùng',
     });
   });
 
   it('asks without a target, and a hint falls back to "the target"', () => {
     const description = describeAsk(state({ pendingChoice: ask('axe') }), 'seat-0', asked, tr);
-    expect(description).toMatchObject({ prompt: 'Dùng Axe?', hint: 'Discard 2 cards to make your Sha hit mục tiêu' });
-    expect(describeAsk(state({ pendingChoice: ask('axe') }), 'seat-0', asked)).toMatchObject({ prompt: 'Use Axe?', hint: 'Discard 2 cards to make your Sha hit the target' });
+    expect(description).toMatchObject({ prompt: 'Dùng Axe?', hint: 'Discard 2 cards to make your Slash hit mục tiêu' });
+    expect(describeAsk(state({ pendingChoice: ask('axe') }), 'seat-0', asked)).toMatchObject({ prompt: 'Use Axe?', hint: 'Discard 2 cards to make your Slash hit the target' });
   });
 
   it('a hidden General’s skill asks to reveal it', () => {
@@ -82,9 +82,9 @@ describe('describeSelection in Vietnamese', () => {
   });
 
   it('use as a Tool, and play a card at a seat', () => {
-    expect(describe2(selection({ then: { kind: 'use-card', as: 'sha', targets: [], counted: true } }))).toMatchObject({ prompt: 'Chọn 2 lá bài trên tay để dùng làm Sha', confirmLabel: 'Dùng' });
-    expect(describe2(selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } }))).toMatchObject({ prompt: 'Chọn Sha để đánh vào Người chơi 1' });
-    expect(describeEn(selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } }))).toMatchObject({ prompt: 'Choose a Sha to play at Seat 1' });
+    expect(describe2(selection({ then: { kind: 'use-card', as: 'sha', targets: [], counted: true } }))).toMatchObject({ prompt: 'Chọn 2 lá bài trên tay để dùng làm Slash', confirmLabel: 'Dùng' });
+    expect(describe2(selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } }))).toMatchObject({ prompt: 'Chọn Slash để đánh vào Người chơi 1' });
+    expect(describeEn(selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [{ kind: 'seat', seatId: 'seat-1' }], counted: false, free: true } }))).toMatchObject({ prompt: 'Choose a Slash to play at Seat 1' });
   });
 
   it('give: one card, and several', () => {
@@ -94,14 +94,14 @@ describe('describeSelection in Vietnamese', () => {
 
   it('use as a Tool: one card', () => {
     const one = selection({ min: 1, max: 1, then: { kind: 'use-card', as: 'sha', targets: [], counted: true } });
-    expect(describe2(one)).toMatchObject({ prompt: 'Chọn một lá bài để dùng làm Sha' });
-    expect(describeEn(one)).toMatchObject({ prompt: 'Choose a card to use as Sha' });
+    expect(describe2(one)).toMatchObject({ prompt: 'Chọn một lá bài để dùng làm Slash' });
+    expect(describeEn(one)).toMatchObject({ prompt: 'Choose a card to use as Slash' });
   });
 
   it('play a card with no target seat', () => {
     const play = selection({ min: 1, max: 1, eligibleIds: ['s2'], then: { kind: 'use-card', targets: [], counted: false, free: true } });
-    expect(describe2(play)).toMatchObject({ prompt: 'Chọn Sha để đánh' });
-    expect(describeEn(play)).toMatchObject({ prompt: 'Choose a Sha to play' });
+    expect(describe2(play)).toMatchObject({ prompt: 'Chọn Slash để đánh' });
+    expect(describeEn(play)).toMatchObject({ prompt: 'Choose a Slash to play' });
   });
 
   it('more targets: one, and several, with the Add Targets button', () => {
@@ -134,7 +134,7 @@ describe('describeSelection in Vietnamese', () => {
   });
 
   it('labels each card of the selection by name and face', () => {
-    expect(describe2(selection({}))?.items).toEqual([{ id: 'p1', card: peach, label: 'Peach (3 ♥)' }, { id: 's2', card: sha, label: 'Sha (7 ♠)' }]);
+    expect(describe2(selection({}))?.items).toEqual([{ id: 'p1', card: peach, label: 'Peach (3 ♥)' }, { id: 's2', card: sha, label: 'Slash (7 ♠)' }]);
   });
 });
 

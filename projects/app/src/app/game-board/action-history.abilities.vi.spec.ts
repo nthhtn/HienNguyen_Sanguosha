@@ -25,13 +25,13 @@ const players = [0, 1, 2, 3].map((i) => ({ id: `p${i}`, seatId: `seat-${i}`, kin
 type Row = [name: string, outcome: string, targeted: boolean, cardId: string | null, english: string, vietnamese: string];
 const rows: Row[] = [
   ['used', 'used', false, null, 'Seat 0 used Axe', 'Người chơi 0 dùng Axe'],
-  ['no-effect', 'no-effect', true, null, "Seat 0's Axe: Seat 1's Sha has no effect", 'Axe của Người chơi 0: Sha của Người chơi 1 không có hiệu lực'],
-  ['counts-as-shan, not folded', 'counts-as-shan', false, null, "Seat 0's Axe counts as Shan", 'Axe của Người chơi 0 tính là Shan'],
+  ['no-effect', 'no-effect', true, null, "Seat 0's Axe: Seat 1's Slash has no effect", 'Axe của Người chơi 0: Slash của Người chơi 1 không có hiệu lực'],
+  ['counts-as-shan, not folded', 'counts-as-shan', false, null, "Seat 0's Axe counts as Dodge", 'Axe của Người chơi 0 tính là Dodge'],
   ['more-damage', 'more-damage', false, null, "Seat 0's Axe: 1 more damage", 'Axe của Người chơi 0: thêm 1 sát thương'],
-  ['unblockable', 'unblockable', true, null, "Seat 0's Axe: Seat 1 can't play a Shan", 'Axe của Người chơi 0: Người chơi 1 không thể đánh Shan'],
-  ['moved', 'moved', true, null, "Seat 0's Axe moved the Sha to Seat 1", 'Axe của Người chơi 0 chuyển Sha sang Người chơi 1'],
-  ['claim-true', 'claim-true', false, 'sha', "Seat 0's Sha was true", 'Sha của Người chơi 0 là thật'],
-  ['claim-false', 'claim-false', false, 'sha', "Seat 0's Sha was a bluff", 'Sha của Người chơi 0 là nói dối'],
+  ['unblockable', 'unblockable', true, null, "Seat 0's Axe: Seat 1 can't play a Dodge", 'Axe của Người chơi 0: Người chơi 1 không thể đánh Dodge'],
+  ['moved', 'moved', true, null, "Seat 0's Axe moved the Slash to Seat 1", 'Axe của Người chơi 0 chuyển Slash sang Người chơi 1'],
+  ['claim-true', 'claim-true', false, 'sha', "Seat 0's Slash was true", 'Slash của Người chơi 0 là thật'],
+  ['claim-false', 'claim-false', false, 'sha', "Seat 0's Slash was a bluff", 'Slash của Người chơi 0 là nói dối'],
   ['took-hand-card', 'took-hand-card', true, null, 'Seat 0 took a hand card from Seat 1 (Axe)', 'Người chơi 0 lấy một lá bài trên tay của Người chơi 1 (Axe)'],
   ['reborn', 'reborn', false, null, 'Seat 0 used Axe: discards every card, draws 3, recovers to 3 HP and turns face up', 'Người chơi 0 dùng Axe: bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3 và lật lại'],
   ['paid-weapon', 'paid-weapon', false, null, 'Seat 0 discarded a Weapon for Axe', 'Người chơi 0 bỏ một Vũ khí để dùng Axe'],
@@ -84,8 +84,8 @@ describe('ability outcomes in English and Vietnamese', () => {
   it('Upheaval says what every other seat must do', () => {
     const upheaval = abilityName('upheaval');
     const log = [used('used', { abilityId: 'upheaval' })];
-    expect(en_(log)).toEqual([`Seat 0 used ${upheaval}: every other seat plays a Sha or loses 1 HP`]);
-    expect(vi_(log)).toEqual([`Người chơi 0 dùng ${upheaval}: mỗi người chơi khác phải đánh một Sha hoặc mất 1 Sinh lực`]);
+    expect(en_(log)).toEqual([`Seat 0 used ${upheaval}: every other seat plays a Slash or loses 1 HP`]);
+    expect(vi_(log)).toEqual([`Người chơi 0 dùng ${upheaval}: mỗi người chơi khác phải đánh một Slash hoặc mất 1 Sinh lực`]);
   });
 });
 
@@ -133,19 +133,19 @@ describe('competing', () => {
   it('folds the two shown cards into one line, and names the winner', () => {
     const won = [...shown, used('compete-won', { targetSeatId: 'seat-1', abilityId: 'heavens-justice' })];
     expect(en_(won)).toEqual([
-      `Seat 0's ${justice}: one more Sha this turn, at any distance, with one more target`,
+      `Seat 0's ${justice}: one more Slash this turn, at any distance, with one more target`,
       'Seat 0 competed with Seat 1: 7 ♠ against Q ♥, Seat 0 won',
     ]);
     expect(vi_(won)).toEqual([
-      `${justice} của Người chơi 0: thêm một Sha trong lượt này, ở mọi khoảng cách, thêm một mục tiêu`,
+      `${justice} của Người chơi 0: thêm một Slash trong lượt này, ở mọi khoảng cách, thêm một mục tiêu`,
       'Người chơi 0 đấu điểm với Người chơi 1: 7 ♠ so với Q ♥, Người chơi 0 thắng',
     ]);
   });
 
-  it('a lost compete names the other seat as the winner, and bars the Sha', () => {
+  it('a lost compete names the other seat as the winner, and bars the Slash', () => {
     const lost = [...shown, used('compete-lost', { targetSeatId: 'seat-1', abilityId: 'heavens-justice' })];
-    expect(en_(lost)).toEqual([`Seat 0's ${justice}: no Sha this turn`, 'Seat 0 competed with Seat 1: 7 ♠ against Q ♥, Seat 1 won']);
-    expect(vi_(lost)).toEqual([`${justice} của Người chơi 0: không có Sha trong lượt này`, 'Người chơi 0 đấu điểm với Người chơi 1: 7 ♠ so với Q ♥, Người chơi 1 thắng']);
+    expect(en_(lost)).toEqual([`Seat 0's ${justice}: no Slash this turn`, 'Seat 0 competed with Seat 1: 7 ♠ against Q ♥, Seat 1 won']);
+    expect(vi_(lost)).toEqual([`${justice} của Người chơi 0: không có Slash trong lượt này`, 'Người chơi 0 đấu điểm với Người chơi 1: 7 ♠ so với Q ♥, Người chơi 1 thắng']);
   });
 
   it('with no shown cards prints no faces, and no follow-up for another skill', () => {
@@ -155,7 +155,7 @@ describe('competing', () => {
   });
 });
 
-describe('Counts as Shan folds into its judgment line', () => {
+describe('Counts as Dodge folds into its judgment line', () => {
   const judged: CardInstance = { instanceId: 'j', definitionId: 'sha', suit: 'heart', rank: 9 };
   const trigramsReader = { kind: 'card' as const, card: usedCardOf({ instanceId: 'et', definitionId: 'eight-trigrams', suit: 'spade', rank: 2 }) };
   const judgment = (seatId: string): EngineEvent => ({ kind: 'JudgmentEvent', seatId, reader: trigramsReader, card: judged });
@@ -163,8 +163,8 @@ describe('Counts as Shan folds into its judgment line', () => {
 
   it('is one line when the judgment is the last line, on the owner’s seat, from the same reader', () => {
     const log = [judgment('seat-1'), counts('seat-1', 'eight-trigrams')];
-    expect(en_(log)).toEqual(["Seat 1's Eight Trigrams judgment: 9 ♥, Counts as Shan"]);
-    expect(vi_(log)).toEqual(['Phán xét Eight Trigrams của Người chơi 1: 9 ♥, tính là Shan']);
+    expect(en_(log)).toEqual(["Seat 1's Eight Trigrams judgment: 9 ♥, Counts as Dodge"]);
+    expect(vi_(log)).toEqual(['Phán xét Eight Trigrams của Người chơi 1: 9 ♥, tính là Dodge']);
   });
 
   it('keeps the judged card on the folded line', () => {
@@ -174,19 +174,19 @@ describe('Counts as Shan folds into its judgment line', () => {
 
   it('is a separate line when another line came in between', () => {
     const log = [judgment('seat-1'), { kind: 'HealEvent', target: seat('seat-1'), amount: 1 } as EngineEvent, counts('seat-1', 'eight-trigrams')];
-    expect(en_(log)).toEqual(["Seat 1's Eight Trigrams counts as Shan", 'Seat 1 recovered 1 health', "Seat 1's Eight Trigrams judgment: 9 ♥"]);
-    expect(vi_(log)).toEqual(['Eight Trigrams của Người chơi 1 tính là Shan', 'Người chơi 1 hồi 1 Sinh lực', 'Phán xét Eight Trigrams của Người chơi 1: 9 ♥']);
+    expect(en_(log)).toEqual(["Seat 1's Eight Trigrams counts as Dodge", 'Seat 1 recovered 1 health', "Seat 1's Eight Trigrams judgment: 9 ♥"]);
+    expect(vi_(log)).toEqual(['Eight Trigrams của Người chơi 1 tính là Dodge', 'Người chơi 1 hồi 1 Sinh lực', 'Phán xét Eight Trigrams của Người chơi 1: 9 ♥']);
   });
 
   it('is a separate line for another seat, or another reader', () => {
-    expect(en_([judgment('seat-1'), counts('seat-0', 'eight-trigrams')])).toEqual(["Seat 0's Eight Trigrams counts as Shan", "Seat 1's Eight Trigrams judgment: 9 ♥"]);
-    expect(vi_([judgment('seat-1'), counts('seat-0', 'eight-trigrams')])).toEqual(['Eight Trigrams của Người chơi 0 tính là Shan', 'Phán xét Eight Trigrams của Người chơi 1: 9 ♥']);
-    expect(en_([judgment('seat-1'), counts('seat-1', 'axe')])).toEqual(["Seat 1's Axe counts as Shan", "Seat 1's Eight Trigrams judgment: 9 ♥"]);
+    expect(en_([judgment('seat-1'), counts('seat-0', 'eight-trigrams')])).toEqual(["Seat 0's Eight Trigrams counts as Dodge", "Seat 1's Eight Trigrams judgment: 9 ♥"]);
+    expect(vi_([judgment('seat-1'), counts('seat-0', 'eight-trigrams')])).toEqual(['Eight Trigrams của Người chơi 0 tính là Dodge', 'Phán xét Eight Trigrams của Người chơi 1: 9 ♥']);
+    expect(en_([judgment('seat-1'), counts('seat-1', 'axe')])).toEqual(["Seat 1's Axe counts as Dodge", "Seat 1's Eight Trigrams judgment: 9 ♥"]);
   });
 
   it('a skill’s judgment folds too', () => {
     const skill: EngineEvent = { kind: 'JudgmentEvent', seatId: 'seat-1', reader: { kind: 'skill', owner: general('seat-1', 'unyielding') }, card: judged };
     const log = [skill, counts('seat-1', 'unyielding')];
-    expect(en_(log)).toEqual(["Seat 1's Unyielding judgment: 9 ♥, Counts as Shan"]);
+    expect(en_(log)).toEqual(["Seat 1's Unyielding judgment: 9 ♥, Counts as Dodge"]);
   });
 });

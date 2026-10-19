@@ -53,7 +53,7 @@ describe('describeResponse', () => {
     expect(describeResponse(state(log, damageWindow('w1', 'seat-0', 'seat-1', 'sha-1')), 'seat-0')?.latest).toBe('Your Eight Trigrams judgment: 3 ♣');
   });
 
-  it('describes a Sha’s Shan window from its reason, and No Response from the damage it would deal', () => {
+  it('describes a Slash’s Dodge window from its reason, and No Response from the damage it would deal', () => {
     const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [seat('seat-0')] }];
     const used = usedCardOf(sha);
     const window: PendingResponse = {
@@ -63,8 +63,8 @@ describe('describeResponse', () => {
       outcome: { kind: 'DamageEffect', damage: { source: seat('seat-1'), target: seat('seat-0'), amount: 2, nature: 'normal', cause: { cardInstanceId: 'sha-1', card: used } } },
     };
     expect(describeResponse(state(log, window), 'seat-0')).toMatchObject({
-      source: 'Seat 1 played Sha against Hing',
-      prompt: 'Your turn to respond to Sha',
+      source: 'Seat 1 played Slash against Hing',
+      prompt: 'Your turn to respond to Slash',
       outcome: 'You lose 2 HP (2 damage from Seat 1)',
     });
   });
@@ -72,9 +72,9 @@ describe('describeResponse', () => {
   it('names the card that asks for a response, who played it on whom, and what No Response costs', () => {
     const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [seat('seat-0')] }];
     expect(describeResponse(state(log, damageWindow('w1', 'seat-0', 'seat-1', 'sha-1')), 'seat-0')).toEqual({
-      source: 'Seat 1 played Sha against Hing',
+      source: 'Seat 1 played Slash against Hing',
       latest: null,
-      prompt: 'Your turn to respond to Sha',
+      prompt: 'Your turn to respond to Slash',
       outcome: 'You lose 1 HP (1 damage from Seat 1)',
       outcomeForce: 'none', // seat-0 isn't seated in this fixture, so no known force
     });
@@ -87,7 +87,7 @@ describe('describeResponse', () => {
     ];
     expect(describeResponse(state(log, damageWindow('w2', 'seat-0', 'seat-1', 'duel-1', duel)), 'seat-0')).toEqual({
       source: 'Hing played Duel against Seat 1',
-      latest: 'Seat 1 answered with Sha',
+      latest: 'Seat 1 answered with Slash',
       prompt: 'Your turn to respond to Duel',
       outcome: 'You lose 1 HP (1 damage from Seat 1)',
       outcomeForce: 'none',
@@ -209,7 +209,7 @@ describe('startsOnNoResponse', () => {
 });
 
 describe('describeResponse: Coerce', () => {
-  it('asks the holder to play a Sha at the victim, or hand over the weapon', () => {
+  it('asks the holder to play a Slash at the victim, or hand over the weapon', () => {
     const coerce: CardInstance = { instanceId: 'co-1', definitionId: 'coerce', suit: 'club', rank: 12 };
     const blade: CardInstance = { instanceId: 'blade-1', definitionId: 'green-dragon-blade', suit: 'spade', rank: 5 };
     const pending: PendingResponse = {
@@ -227,7 +227,7 @@ describe('describeResponse: Coerce', () => {
     };
     expect(describeResponse(s, 'seat-0')).toMatchObject({
       source: 'Seat 1 used Coerce on you',
-      prompt: 'Play Sha at Seat 2?',
+      prompt: 'Play Slash at Seat 2?',
       outcome: 'Green Dragon Blade goes to Seat 1',
     });
   });
@@ -300,16 +300,16 @@ describe('the Upheaval window', () => {
     context: { effect: { kind: 'SkillStepEffect', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'upheaval' }, step: 'penalty', data: {} } },
   };
 
-  it('asks for a Sha at the seat picked, or 1 HP', () => {
+  it('asks for a Slash at the seat picked, or 1 HP', () => {
     expect(describeResponse(state([], window), 'seat-1')).toMatchObject({
       source: 'Hing used Upheaval',
-      prompt: 'Play a Sha at Seat 2, or lose 1 HP?',
+      prompt: 'Play a Slash at Seat 2, or lose 1 HP?',
       outcome: 'You lose 1 HP',
     });
   });
 
   it('says who is waited on', () => {
-    expect(waitingLine(state([], window))).toBe('Waiting on Seat 1 to play a Sha for Upheaval');
+    expect(waitingLine(state([], window))).toBe('Waiting on Seat 1 to play a Slash for Upheaval');
   });
 });
 
@@ -321,17 +321,17 @@ describe('the Instigate window', () => {
     context: { effect: { kind: 'SkillStepEffect', owner, step: 'penalty', data: { seatId: 'seat-1' } } },
   };
 
-  it('asks for a Sha at the instigator, or a card', () => {
+  it('asks for a Slash at the instigator, or a card', () => {
     expect(describeResponse(state([], window), 'seat-1')).toMatchObject({
       source: 'Hing used Instigate',
-      prompt: 'Use a Sha on Hing',
+      prompt: 'Use a Slash on Hing',
       outcome: 'Hing discards one of your cards',
       passLabel: 'Pass (Discard 1 Card)',
     });
   });
 
   it('says who is waited on', () => {
-    expect(waitingLine(state([], window))).toBe('Waiting on Seat 1 to play a Sha for Instigate');
+    expect(waitingLine(state([], window))).toBe('Waiting on Seat 1 to play a Slash for Instigate');
   });
 });
 

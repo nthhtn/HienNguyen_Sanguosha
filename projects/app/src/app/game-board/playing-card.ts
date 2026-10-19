@@ -1,6 +1,6 @@
 import { Component, computed, input, inject } from '@angular/core';
 import { CardInstance } from 'engine';
-import { cardDisplayData } from 'content';
+import { cardDisplayData, cardNature } from 'content';
 import { cardFaceLabel, cardIdDisplayName } from '../labels';
 import { CardArt } from './card-art';
 import { I18n } from '../i18n/i18n.service';
@@ -16,6 +16,9 @@ import { TPipe } from '../i18n/t.pipe';
     <div class="card" [class.small]="size() === 'small'" [class.large]="size() === 'large'" [attr.title]="'card.named' | t: { name: name(), face: face() }">
       <app-card-art [cropped]="true" [size]="size()" [id]="card().definitionId" [label]="name()" />
       <span class="face" [class.red]="red()">{{ face() }}</span>
+      @if (nature(); as nature) {
+        <span class="nature" [class.fire]="nature === 'fire'" [class.thunder]="nature === 'thunder'" aria-hidden="true">{{ nature === 'fire' ? '🔥' : '⚡' }}</span>
+      }
       @if (showStat() && stat(); as stat) {
         <span class="stat">{{ stat }}</span>
       }
@@ -34,6 +37,15 @@ import { TPipe } from '../i18n/t.pipe';
       font: 700 13px/1 system-ui, sans-serif; white-space: nowrap;
     }
     .face.red { color: #c62828; }
+    /* An elemental Sha: the cropped art no longer shows the frame's flame or bolt. */
+    .nature {
+      position: absolute; top: 2px; right: 2px; padding: 2px 3px; border-radius: 4px; color: #fff;
+      box-shadow: 0 0 2px rgb(0 0 0 / 40%); font: 12px/1 system-ui, sans-serif;
+    }
+    .nature.fire { background: #d84315; }
+    .nature.thunder { background: #5e35b1; }
+    .small .nature { top: 1px; right: 1px; padding: 1px 2px; font-size: 9px; border-radius: 3px; }
+    .large .nature { top: 6px; right: 6px; padding: 4px 6px; font-size: 20px; border-radius: 6px; }
     .name {
       position: absolute; left: 1px; right: 1px; bottom: 1px; padding: 3px 2px; border-radius: 0 0 3px 3px;
       background: rgb(0 0 0 / 68%); color: #fff; text-align: center;
@@ -78,6 +90,7 @@ export class PlayingCard {
     if (!data.mount) return null;
     return data.mount === 'offensive' ? '-1' : '+1';
   });
+  protected readonly nature = computed(() => cardNature(this.card().definitionId));
   protected readonly face = computed(() => cardFaceLabel(this.card()));
   protected readonly red = computed(() => this.card().suit === 'heart' || this.card().suit === 'diamond');
 }

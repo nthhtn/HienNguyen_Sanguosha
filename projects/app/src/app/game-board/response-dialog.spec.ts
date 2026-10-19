@@ -7,7 +7,7 @@ const shan: CardInstance = { instanceId: 'shan-1', definitionId: 'shan', suit: '
 const respond: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'w1', cardInstanceId: 'shan-1' };
 const pass: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'w1' };
 const description = {
-  source: 'Seat 1 played Sha against Hing', latest: null, prompt: 'Your turn to respond to Sha', outcome: 'You lose 1 HP (1 damage from Seat 1)', outcomeForce: 'Shu' as const,
+  source: 'Seat 1 played Slash against Hing', latest: null, prompt: 'Your turn to respond to Slash', outcome: 'You lose 1 HP (1 damage from Seat 1)', outcomeForce: 'Shu' as const,
 };
 
 function render(cards: ResponseDialogData['cards'], skills: ResponseDialogData['skills'] = [], startOnNoResponse = false, passLabel?: string) {
@@ -32,17 +32,17 @@ function render(cards: ResponseDialogData['cards'], skills: ResponseDialogData['
 describe('ResponseDialog', () => {
   it('a skill answer (a conversion) confirms with its own label', () => {
     const convert: Action = { kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'sp' }, conversionId: 'serpent-spear' }, targets: [], pendingResponseId: 'w1' };
-    const { el, confirm, close } = render([], [{ id: 'convert-0', action: convert, label: 'Use 2 Cards as Sha' }]);
-    expect(el.textContent).toContain('Use 2 Cards as Sha');
-    expect(confirm().textContent!.trim()).toBe('Use 2 Cards as Sha');
+    const { el, confirm, close } = render([], [{ id: 'convert-0', action: convert, label: 'Use 2 Cards as Slash' }]);
+    expect(el.textContent).toContain('Use 2 Cards as Slash');
+    expect(confirm().textContent!.trim()).toBe('Use 2 Cards as Slash');
     confirm().click();
     expect(close).toHaveBeenCalledWith(convert);
   });
 
   it('describes the source, the prompt and what No Response costs', () => {
     const { el } = render([]);
-    expect(el.querySelector('.source')!.textContent).toContain('Seat 1 played Sha against Hing');
-    expect(el.querySelector('.prompt')!.textContent).toContain('Your turn to respond to Sha');
+    expect(el.querySelector('.source')!.textContent).toContain('Seat 1 played Slash against Hing');
+    expect(el.querySelector('.prompt')!.textContent).toContain('Your turn to respond to Slash');
     expect(el.querySelector('.no-response')!.textContent).toContain('You lose 1 HP (1 damage from Seat 1)');
     // In the force colour of the player it befalls.
     expect(el.querySelector('.outcome')!.classList).toContain('force-status');
@@ -50,12 +50,12 @@ describe('ResponseDialog', () => {
   });
 
   it('lists the answering cards and an empty skills list', () => {
-    const { el } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Shan (2 ♥)' }]);
+    const { el } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }]);
     expect(el.querySelectorAll('.card-option')).toHaveLength(1);
     // The same card face as in the hand: name strip and suit-and-number badge.
-    expect(el.querySelector('.card-option app-playing-card .name')!.textContent).toBe('Shan');
+    expect(el.querySelector('.card-option app-playing-card .name')!.textContent).toBe('Dodge');
     expect(el.querySelector('.card-option app-playing-card .face')!.textContent).toBe('2 ♥');
-    expect(el.querySelector('.card-option input')!.getAttribute('aria-label')).toBe('Shan (2 ♥)');
+    expect(el.querySelector('.card-option input')!.getAttribute('aria-label')).toBe('Dodge (2 ♥)');
     expect(el.textContent).toContain('No skills can respond');
   });
 
@@ -76,16 +76,16 @@ describe('ResponseDialog', () => {
   it('starts on the first card when no skill can respond', () => {
     const shan2: CardInstance = { instanceId: 'shan-2', definitionId: 'shan', suit: 'club', rank: 5 };
     const { confirm, close } = render([
-      { id: 'shan-1', action: respond, card: shan, label: 'Shan (2 ♥)' },
-      { id: 'shan-2', action: { ...respond, cardInstanceId: 'shan-2' }, card: shan2, label: 'Shan (5 ♣)' },
+      { id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' },
+      { id: 'shan-2', action: { ...respond, cardInstanceId: 'shan-2' }, card: shan2, label: 'Dodge (5 ♣)' },
     ]);
-    expect(confirm().textContent!.trim()).toBe('Respond with Shan');
+    expect(confirm().textContent!.trim()).toBe('Respond with Dodge');
     confirm().click();
     expect(close).toHaveBeenCalledWith(respond);
   });
 
   it('starts on No Response when asked to, even with an answering card (a Wuxie question)', () => {
-    const { confirm, close } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Shan (2 ♥)' }], [], true);
+    const { confirm, close } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }], [], true);
     expect(confirm().textContent!.trim()).toBe('No Response');
     confirm().click();
     expect(close).toHaveBeenCalledWith(pass);
@@ -94,7 +94,7 @@ describe('ResponseDialog', () => {
   it('starts on the first skill when a skill can respond, ahead of any card', () => {
     const skillAction: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'w1', cardInstanceId: 'skill-proxy' };
     const { el, confirm, close } = render(
-      [{ id: 'shan-1', action: respond, card: shan, label: 'Shan (2 ♥)' }],
+      [{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }],
       [{ id: 'skill-1', action: skillAction, label: 'Eight Trigrams' }]
     );
     expect(el.querySelector('.skill-option')!.textContent).toContain('Eight Trigrams');
@@ -104,8 +104,8 @@ describe('ResponseDialog', () => {
   });
 
   it('responds with the picked card, and can switch back to No Response', () => {
-    const { confirm, pick, close } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Shan (2 ♥)' }]);
-    expect(confirm().textContent!.trim()).toBe('Respond with Shan');
+    const { confirm, pick, close } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }]);
+    expect(confirm().textContent!.trim()).toBe('Respond with Dodge');
     pick('.no-response');
     expect(confirm().textContent!.trim()).toBe('No Response');
     pick('.card-option');
@@ -114,7 +114,7 @@ describe('ResponseDialog', () => {
   });
 
   it('lists the General skills first, then the cards, then No Response', () => {
-    const { el } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Shan (2 ♥)' }]);
+    const { el } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }]);
     const order = [...el.querySelectorAll('h3, .option')].map((n) =>
       n.tagName === 'H3' ? n.textContent!.trim() : n.classList.contains('skill-option') ? 'skill' : n.classList.contains('card-option') ? 'card' : 'no-response'
     );

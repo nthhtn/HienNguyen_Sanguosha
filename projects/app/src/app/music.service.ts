@@ -16,9 +16,54 @@ export const EFFECT_URLS: Record<SoundEffect, string> = {
   'death-qun': '/audio/death_qun.ogg',
 };
 // A spoken line, voiced by the seat's gender: /audio/<gender>/<file>.
-export type Voice = 'slash' | 'dodge' | 'sos';
+export type Voice = 'slash' | 'dodge' | 'sos' | 'break' | 'chains' | 'blaze' | 'hail-of-arrows' | 'barbarians' | 'steal' | 'wuxie' | 'starvation' | 'duel' | 'fire-slash' | 'thunder-slash' | 'coerce' | 'wine' | 'harvest' | 'draw-two' | 'peach-garden' | 'capture' | 'lightning';
 export type VoiceGender = 'male' | 'female';
-export const VOICE_FILES: Record<Voice, string> = { slash: 'slash.ogg', dodge: 'dodge.ogg', sos: 'sos.ogg' };
+export const VOICE_FILES: Record<Voice, string> = {
+  slash: 'slash.ogg',
+  dodge: 'dodge.ogg',
+  sos: 'sos.ogg',
+  break: 'break.ogg',
+  chains: 'chains.ogg',
+  blaze: 'blaze.ogg',
+  'hail-of-arrows': 'hail-of-arrows.ogg',
+  barbarians: 'barbarians.ogg',
+  steal: 'steal.ogg',
+  wuxie: 'wuxie.ogg',
+  starvation: 'starvation.ogg',
+  duel: 'duel.ogg',
+  'fire-slash': 'fire_slash.ogg',
+  'thunder-slash': 'thunder_slash.ogg',
+  coerce: 'coerce.ogg',
+  wine: 'wine.ogg',
+  harvest: 'harvest.ogg',
+  'draw-two': 'draw-two.ogg',
+  'peach-garden': 'peach-garden.ogg',
+  capture: 'capture.ogg',
+  lightning: 'lightning.ogg',
+};
+// The card each line belongs to, for the Wiki's play buttons; both genders have a file for each.
+export const CARD_VOICES: Partial<Record<string, Voice>> = {
+  sha: 'slash',
+  shan: 'dodge',
+  duel: 'duel',
+  'fire-attack': 'fire-slash',
+  'lightning-attack': 'thunder-slash',
+  break: 'break',
+  chains: 'chains',
+  blaze: 'blaze',
+  'hail-of-arrows': 'hail-of-arrows',
+  barbarians: 'barbarians',
+  steal: 'steal',
+  wuxie: 'wuxie',
+  starvation: 'starvation',
+  coerce: 'coerce',
+  wine: 'wine',
+  harvest: 'harvest',
+  'draw-two': 'draw-two',
+  'peach-garden': 'peach-garden',
+  capture: 'capture',
+  lightning: 'lightning',
+};
 export const voiceUrl = (gender: VoiceGender, voice: Voice): string => `/audio/${gender}/${VOICE_FILES[voice]}`;
 // Music sits well under the event sounds so an injury or a heal always stands out.
 const MUSIC_VOLUME = 0.2;
@@ -145,8 +190,24 @@ export class SoundEffects {
     this.playUrl(voiceUrl(gender, voice));
   }
 
-  private playUrl(url: string): void {
-    if (!this.enabled()) return;
+  // A voice played on request (the Wiki's buttons): sounds whether or not the
+  // sound effects are switched on, since the switch is for the game's own sounds.
+  previewVoice(gender: VoiceGender, voice: Voice): void {
+    this.playUrl(voiceUrl(gender, voice), true);
+  }
+
+  // A General's death voice, as the seat is eliminated.
+  playDeathVoice(url: string): void {
+    this.playUrl(url);
+  }
+
+  // Any recording played on request (the Wiki's General voice), like previewVoice.
+  previewUrl(url: string): void {
+    this.playUrl(url, true);
+  }
+
+  private playUrl(url: string, always = false): void {
+    if (!always && !this.enabled()) return;
     const player = this.createPlayer(url);
     player.volume = EFFECT_VOLUME;
     // A browser that refuses (no interaction yet) just misses this one effect.

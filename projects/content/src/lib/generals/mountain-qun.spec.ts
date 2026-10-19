@@ -17,7 +17,7 @@ const shaDamage = (source: string | null, target: string, amount = 1) => ({
 });
 
 describe('Cai Wenji — Lament', () => {
-  // seat-a is Cai Wenji and holds k1; seat-c's Sha hurts seat-b; the judgment card is `top`.
+  // seat-a is Cai Wenji and holds k1; seat-c's Slash hurts seat-b; the judgment card is `top`.
   const hurt = (top: 'heart' | 'diamond' | 'club' | 'spade', cards: Record<string, ReturnType<typeof card>[]> = {}, o: TableOptions = {}) =>
     h.run(table({ 'seat-a:hand': [card('k1', 'shan', 'heart', 2)], 'seat-c:hand': [card('c1', 'shan', 'heart', 3), card('c2', 'shan', 'heart', 4), card('c3', 'shan', 'heart', 5)], drawPile: [card('j', 'shan', top, 6), card('d2', 'shan', 'heart', 7), card('d3', 'shan', 'heart', 8)], ...cards }, { generals: at('seat-a', 'cai-wenji'), ...o }), [shaDamage('seat-c', 'seat-b')]);
   const lament = (top: Parameters<typeof hurt>[0], cards?: Parameters<typeof hurt>[1], o?: TableOptions) => h.select(h.use(hurt(top, cards, o)), 'k1');
@@ -44,7 +44,7 @@ describe('Cai Wenji — Lament', () => {
     expect(lament('spade').seats.find((x) => x.id === 'seat-c')!.faceDown).toBe(true);
   });
 
-  it('works for any seat’s damage by a Sha, but not for damage from anything else; Don’t does nothing', () => {
+  it('works for any seat’s damage by a Slash, but not for damage from anything else; Don’t does nothing', () => {
     const plain = h.run(table({ 'seat-a:hand': [card('k1', 'shan')] }, { generals: at('seat-a', 'cai-wenji') }), [
       { kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-c' }, target: { kind: 'seat', seatId: 'seat-b' }, amount: 1, nature: 'normal' } },
     ]);

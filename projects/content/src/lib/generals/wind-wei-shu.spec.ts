@@ -23,7 +23,7 @@ describe('Xiahou Yuan — Godspeed', () => {
   const turnStarts = (cards: Record<string, ReturnType<typeof card>[]> = {}) =>
     h.settle(table(cards, { generals: at('seat-a', 'xiahou-yuan'), owner: 'seat-d', phase: 'End' }));
 
-  it('option 1: skips Judgment and Draw to use a Sha on any seat, ignoring distance, outside the Sha limit', () => {
+  it('option 1: skips Judgment and Draw to use a Slash on any seat, ignoring distance, outside the Slash limit', () => {
     let s = turnStarts();
     expect(askedAbout(s)).toBe('godspeed');
     s = h.use(s);
@@ -37,7 +37,7 @@ describe('Xiahou Yuan — Godspeed', () => {
     expect(s.phase).toBe('Play');
   });
 
-  it('option 2: as the Play Phase begins, skips it and discards an Equipment card to use a Sha; the turn moves on', () => {
+  it('option 2: as the Play Phase begins, skips it and discards an Equipment card to use a Slash; the turn moves on', () => {
     let s = h.settle(table({ 'seat-a:hand': [card('cb', 'crossbow', 'diamond', 1)] }, { generals: at('seat-a', 'xiahou-yuan'), phase: 'Draw' }));
     expect(askedAbout(s)).toBe('godspeed');
     s = h.use(s);
@@ -60,7 +60,7 @@ describe('Huang Zhong — Strong Bow', () => {
   const shot = (bHand: number) =>
     h.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('n1', 'shan'), ...Array.from({ length: bHand - 1 }, (_, i) => card(`b${i}`, 'peach', 'heart'))] }, { generals: at('seat-a', 'huang-zhong') }), 's1', 'seat-b');
 
-  it('when the target holds at least his HP in cards, may make the Sha unblockable', () => {
+  it('when the target holds at least his HP in cards, may make the Slash unblockable', () => {
     let s = shot(4);
     expect(askedAbout(s)).toBe('strong-bow');
     s = h.use(s);

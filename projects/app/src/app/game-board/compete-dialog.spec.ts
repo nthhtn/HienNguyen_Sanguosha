@@ -11,7 +11,7 @@ const result = (over: Partial<CompeteResult> = {}): CompeteResult => ({
   generalId: 'taishi-ci', generalName: 'Taishi Ci', force: 'Wu',
   user: { seatId: 'seat-0', name: 'Hing', generalId: 'taishi-ci', card: nine },
   target: { seatId: 'seat-1', name: 'Seat 1', generalId: null, card: seven },
-  won: true, tie: false, winnerName: 'Hing', outcome: 'Hing can play one more Sha this turn',
+  won: true, tie: false, winnerName: 'Hing', outcome: 'Hing can play one more Slash this turn',
   ...over,
 });
 
@@ -51,7 +51,7 @@ describe('CompeteDialog', () => {
     expect(sides[1].classList.contains('winner')).toBe(false);
     expect(el.querySelector('.result')!.textContent).toContain('Hing won');
     expect(el.querySelector('.result')!.textContent).toContain('9 ♠ against 7 ♥');
-    expect(el.querySelector('.outcome')!.textContent).toContain('Hing can play one more Sha this turn');
+    expect(el.querySelector('.outcome')!.textContent).toContain('Hing can play one more Slash this turn');
   });
 
   it('says a tie counts as a loss for the challenger', () => {

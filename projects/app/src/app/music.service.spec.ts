@@ -141,6 +141,8 @@ describe('SoundEffects', () => {
     effects.toggle();
     effects.playVoice('male', 'dodge');
     expect(urls).toHaveLength(2);
+    effects.previewVoice('female', 'dodge');
+    expect(urls).toEqual(['/audio/female/sos.ogg', '/audio/male/slash.ogg', '/audio/female/dodge.ogg']);
   });
 
   it('plays effects louder than the music', async () => {

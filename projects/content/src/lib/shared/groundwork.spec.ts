@@ -42,7 +42,7 @@ describe('untargetableBy', () => {
     expect(targetsOf(s, 'cp')).not.toContain('seat-b');
   });
 
-  it('with an empty hand only: Sha and Duel can’t target the seat', () => {
+  it('with an empty hand only: Slash and Duel can’t target the seat', () => {
     const empty = table({ 'seat-a:hand': [card('s1', 'sha'), card('d1', 'duel')] }, { generals: { 'seat-b': ['test-empty', 'filler-dong-zhuo'] } });
     expect(targetsOf(empty, 's1')).not.toContain('seat-b');
     expect(targetsOf(empty, 'd1')).not.toContain('seat-b');
@@ -55,7 +55,7 @@ describe('untargetableBy', () => {
 describe('doubleAnswers', () => {
   const shan = [card('n1', 'shan'), card('n2', 'shan', 'heart')];
 
-  it('a Sha needs two Shan: one is not enough', () => {
+  it('a Slash needs two Dodge: one is not enough', () => {
     let s = play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': shan }, { generals: withA('test-matchless') }), 's1', 'seat-b');
     s = respond(s, 'n1');
     expect(s.pendingResponse?.respondingSeatId).toBe('seat-b');
@@ -63,7 +63,7 @@ describe('doubleAnswers', () => {
     expect(hp(respond(s, 'n2'), 'seat-b')).toBe(4);
   });
 
-  it('in a Duel, the other seat plays two Sha each time before it turns back', () => {
+  it('in a Duel, the other seat plays two Slash each time before it turns back', () => {
     let s = play(table({ 'seat-a:hand': [card('d1', 'duel')], 'seat-b:hand': [card('b1', 'sha'), card('b2', 'sha')] }, { generals: withA('test-matchless') }), 'd1', 'seat-b');
     expect(s.pendingResponse?.respondingSeatId).toBe('seat-b');
     s = respond(s, 'b1');
@@ -74,8 +74,8 @@ describe('doubleAnswers', () => {
   });
 });
 
-describe('an unblockable Sha', () => {
-  it('goes from its armour check straight to the hit: no Shan is asked for', () => {
+describe('an unblockable Slash', () => {
+  it('goes from its armour check straight to the hit: no Dodge is asked for', () => {
     const sha = usedCardOf(card('s1', 'sha'));
     const s = run(table({ 'seat-b:hand': [card('n1', 'shan')] }), [cardStep('sha-armor', sha, 'seat-a', seat('seat-b'), { extra: 0, unblockable: true })]);
     expect(s.pendingResponse).toBeNull();
@@ -108,7 +108,7 @@ describe('Lightning', () => {
 });
 
 describe('a card that counts as a delayed Tool', () => {
-  // A diamond Shan lying in seat-a's Judgment slot as a Capture.
+  // A diamond Dodge lying in seat-a's Judgment slot as a Capture.
   const placed = (judgedSuit: 'heart' | 'club') => {
     const s = table({ 'seat-a:judgment': [card('c1', 'shan', 'diamond', 3)], drawPile: [card('j', 'sha', judgedSuit, 9), ...Array.from({ length: 4 }, (_, i) => card(`p${i}`, 'shan'))] }, { phase: 'Start' });
     return { ...s, zones: s.zones.map((z) => (z.id === 'seat-a:judgment' ? { ...z, countsAs: { c1: 'capture' } } : z)) };

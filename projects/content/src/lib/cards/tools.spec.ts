@@ -82,7 +82,7 @@ describe('Duel and Wuxie Kongjie', () => {
   const pass = (state: GameState, seatId: string) =>
     resolve(state, { kind: 'PassAction', seatId, pendingResponseId: state.pendingResponse!.id }, ctx()).state;
 
-  it('deals 1 damage from the user to a target who plays no Sha, and the Duel ends up in the discard pile', () => {
+  it('deals 1 damage from the user to a target who plays no Slash, and the Duel ends up in the discard pile', () => {
     const next = pass(duel(twoSeatState('duel')), 'seat-b');
     expect(hp(next, 'seat-b')).toBe(5);
     expect(hp(next, 'seat-a')).toBe(7);
@@ -92,14 +92,14 @@ describe('Duel and Wuxie Kongjie', () => {
     expect(discardIds(next)).toEqual(['card-1']);
   });
 
-  it('turns back to the user once the target plays a Sha: now the user must play one', () => {
+  it('turns back to the user once the target plays a Slash: now the user must play one', () => {
     const opened = duel(withHand(twoSeatState('duel'), 'seat-b', [['sha', 'b-sha-1']]));
     const answered = sha(opened, 'seat-b', 'b-sha-1');
     expect(answered.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a', allowedCardIds: ['sha'] });
     expect(hp(answered, 'seat-b')).toBe(6);
   });
 
-  it('hurts the user, from the target, when the user cannot answer the target’s Sha', () => {
+  it('hurts the user, from the target, when the user cannot answer the target’s Slash', () => {
     const answered = sha(duel(withHand(twoSeatState('duel'), 'seat-b', [['sha', 'b-sha-1']])), 'seat-b', 'b-sha-1');
     const next = pass(answered, 'seat-a');
     expect(hp(next, 'seat-a')).toBe(6);
@@ -111,7 +111,7 @@ describe('Duel and Wuxie Kongjie', () => {
     expect(discardIds(next)).toEqual(['b-sha-1', 'card-1']);
   });
 
-  it('alternates for as long as both keep playing Sha; the first to stop takes the damage', () => {
+  it('alternates for as long as both keep playing Slash; the first to stop takes the damage', () => {
     let state = withHand(withHand(twoSeatState('duel'), 'seat-b', [['sha', 'b-sha-1'], ['sha', 'b-sha-2']]), 'seat-a', [['sha', 'a-sha-1']]);
     state = duel(state);
     state = sha(state, 'seat-b', 'b-sha-1');
@@ -123,7 +123,7 @@ describe('Duel and Wuxie Kongjie', () => {
     expect(hp(state, 'seat-a')).toBe(6);
     expect(hp(state, 'seat-b')).toBe(6);
     expect(discardIds(state)).toEqual(['a-sha-1', 'b-sha-1', 'b-sha-2', 'card-1']);
-    // Shas played in a Duel are responses: they don't use up the turn's Sha play.
+    // Shas played in a Duel are responses: they don't use up the turn's Slash play.
     expect(state.turn.cardPlays?.['sha'] ?? 0).toBe(0);
   });
 
@@ -214,12 +214,12 @@ describe('Draw Two, Barbarians, Hail of Arrows, Peach Garden', () => {
     expect(handSize(answer(asked, 'c-wuxie'), 'a')).toBe(0);
   });
 
-  it('Barbarians: each other seat in turn order must play a Sha or take 1 damage from the user', () => {
+  it('Barbarians: each other seat in turn order must play a Slash or take 1 damage from the user', () => {
     let s = use(fourSeats('barbarians', { b: [['sha', 'b-sha']], c: [['sha', 'c-sha']] }));
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'b', allowedCardIds: ['sha'], reason: { kind: 'card-effect', userSeatId: 'a', card: { as: 'barbarians' } } });
     s = answer(s, 'b-sha');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'c' });
-    s = pass(s); // c keeps its Sha and takes the damage
+    s = pass(s); // c keeps its Slash and takes the damage
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'd' });
     s = pass(s);
     expect(hps(s)).toEqual([3, 3, 2, 2]);
@@ -229,7 +229,7 @@ describe('Draw Two, Barbarians, Hail of Arrows, Peach Garden', () => {
     expect(s.resolutionQueue).toBeUndefined();
   });
 
-  it('Hail of Arrows: the same, answered with a Shan', () => {
+  it('Hail of Arrows: the same, answered with a Dodge', () => {
     let s = use(fourSeats('hail-of-arrows', { c: [['shan', 'c-shan']] }));
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'b', allowedCardIds: ['shan'] });
     s = pass(s);
@@ -425,7 +425,7 @@ describe('Harvest and Coerce', () => {
     expect(aimedTargets(fourSeats('coerce'))).toEqual([]);
   });
 
-  it('Coerce: a holder who plays no Sha hands its weapon to the user', () => {
+  it('Coerce: a holder who plays no Slash hands its weapon to the user', () => {
     const s = coerce(armed({ c: [['sha', 'c-sha']] }), 'c', 'b');
     expect(s.pendingResponse).toMatchObject({
       respondingSeatId: 'c', allowedCardIds: ['sha'],
@@ -436,7 +436,7 @@ describe('Harvest and Coerce', () => {
     expect(idsIn(after, 'c:equip')).toEqual([]);
   });
 
-  it('Coerce: the holder’s Sha is answered like any Sha, and the holder keeps its weapon', () => {
+  it('Coerce: the holder’s Slash is answered like any Slash, and the holder keeps its weapon', () => {
     let s = answer(coerce(armed({ c: [['sha', 'c-sha']] }), 'c', 'b'), 'c-sha');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'b', allowedCardIds: ['shan'] });
     s = pass(s);

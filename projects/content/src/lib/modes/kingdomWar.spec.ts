@@ -121,11 +121,11 @@ describe('Kingdom War setup and deal', () => {
     expect(deckOf(2)).toEqual(printed);
     expect(deckOf(10)).toEqual(printed);
     expect(deckOf(2).filter((c) => c.startsWith('silver-lion '))).toEqual(['silver-lion club 1']);
-    // The Army and EX copies of Shan, Peach and Wuxie stay out for now.
+    // The Army and EX copies of Dodge, Peach and Wuxie stay out for now.
     expect(deckOf(2).filter((c) => c.startsWith('shan '))).toHaveLength(15);
     expect(deckOf(2).filter((c) => c.startsWith('peach '))).toHaveLength(8);
     expect(deckOf(2).filter((c) => c.startsWith('wuxie '))).toHaveLength(3);
-    // The elemental Sha: 5 Fire Attack, 9 Lightning Attack.
+    // The elemental Slash: 5 Fire Attack, 9 Lightning Attack.
     expect(deckOf(2).filter((c) => c.startsWith('fire-attack '))).toHaveLength(5);
     expect(deckOf(2).filter((c) => c.startsWith('lightning-attack '))).toHaveLength(9);
     expect(deckOf(2).filter((c) => c.startsWith('blaze '))).toHaveLength(3); // Blaze is dealt

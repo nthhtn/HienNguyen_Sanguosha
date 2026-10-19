@@ -12,7 +12,7 @@ describe('Zhang Jiao — Lightning Strike', () => {
     return h.choose(h.use(s), 'seat-b');
   };
 
-  it('after he plays a Shan, a seat he picks judges: on a spade it takes 2 thunder damage with no source', () => {
+  it('after he plays a Dodge, a seat he picks judges: on a spade it takes 2 thunder damage with no source', () => {
     const s = dodged(card('j', 'sha', 'spade', 5));
     expect(hp(s, 'seat-b')).toBe(2);
     expect(s.log.filter((e) => e.kind === 'DamageDealtEvent').at(-1)).toMatchObject({ damage: { source: null, amount: 2, nature: 'thunder' } });
@@ -74,7 +74,7 @@ describe('Zhang Jiao — Dark Magic', () => {
 });
 
 describe('Lightning Strike and Eight Trigrams (final review #2)', () => {
-  it("an Eight Trigrams red judgment counts as his Shan: Lightning Strike is asked", () => {
+  it("an Eight Trigrams red judgment counts as his Dodge: Lightning Strike is asked", () => {
     let s = h.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:equip': [card('et', 'eight-trigrams', 'spade', 2)], drawPile: [card('j', 'peach', 'heart', 3)] }, { owner: 'seat-b', generals: zhangJiao('seat-a') }), 's1', 'seat-a');
     s = h.use(s); // Eight Trigrams: red
     if (askedAbout(s) === 'dark-magic') s = h.decline(s); // his own Dark Magic, on his worn black card

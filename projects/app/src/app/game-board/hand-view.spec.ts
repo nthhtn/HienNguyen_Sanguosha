@@ -22,7 +22,7 @@ function state(): GameState {
 const registry: ContentRegistry = {
   generals: new Map(),
   cards: new Map(
-    [['sha', 'Sha'], ['crossbow', 'Crossbow'], ['peach', 'Peach']].map(([id, name]) => [
+    [['sha', 'Slash'], ['crossbow', 'Crossbow'], ['peach', 'Peach']].map(([id, name]) => [
       id,
       { id, name, category: 'basic' as const, play: () => [] },
     ])
@@ -85,7 +85,7 @@ describe('HandView', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const items = [...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[];
-    expect(items.map((i) => i.textContent!.trim())).toEqual(['Play Sha Targeting Seat 1', 'Play Sha Targeting Seat 2']);
+    expect(items.map((i) => i.textContent!.trim())).toEqual(['Play Slash Targeting Seat 1', 'Play Slash Targeting Seat 2']);
     expect(played).toEqual([]);
     items[1].click();
     expect(played).toEqual([shaAtSeat2]);
@@ -128,7 +128,7 @@ describe('HandView', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const items = [...overlay().querySelectorAll('button[mat-menu-item]')] as HTMLButtonElement[];
-    expect(items.map((i) => i.textContent!.trim())).toEqual(['Play Sha Targeting Seat 1']);
+    expect(items.map((i) => i.textContent!.trim())).toEqual(['Play Slash Targeting Seat 1']);
     expect(played).toEqual([]);
     items[0].click();
     expect(played).toEqual([shaAtSeat1]);
@@ -206,7 +206,7 @@ describe('HandView', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const dialog = overlay().querySelector('app-targets-dialog') as HTMLElement;
-    expect(dialog.textContent).toContain('Choose up to 2 targets for Sha');
+    expect(dialog.textContent).toContain('Choose up to 2 targets for Slash');
     const seatButton = (text: string) => [...dialog.querySelectorAll('button')].find((b) => b.textContent!.trim() === text) as HTMLButtonElement;
     seatButton('Seat 2').click();
     seatButton('Seat 1').click();

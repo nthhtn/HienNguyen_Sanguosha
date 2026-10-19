@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-background.service';
 import { AuthService } from './auth/auth.service';
 import { LanguageSwitcher } from './i18n/language-switcher';
 import { MusicService, SoundEffects } from './music.service';
@@ -36,6 +37,12 @@ export class App {
     { path: '/wiki/rules/distance', label: 'nav.rules.distance' },
     { path: '/wiki/rules/judgment', label: 'nav.rules.judgment' },
   ];
+
+  protected readonly backgrounds = inject(BattlefieldBackgrounds);
+  protected readonly backgroundOptions = BATTLEFIELD_BACKGROUNDS.map((value) => ({
+    value,
+    label: (value === 'default' ? 'nav.battlefield.default' : `nav.battlefield.background${value}`) as MessageKey,
+  }));
 
   private readonly router = inject(Router);
   private readonly url = toSignal(

@@ -42,7 +42,7 @@ describe('ActionList', () => {
     };
     const registry: ContentRegistry = {
       cards: new Map([
-        ['sha', { id: 'sha', name: 'Sha', category: 'basic', play: () => [] }],
+        ['sha', { id: 'sha', name: 'Slash', category: 'basic', play: () => [] }],
         ['serpent-spear', {
           id: 'serpent-spear', name: 'Serpent Spear', category: 'equipment', equipSlot: 'weapon', play: () => [],
           abilities: { conversions: [{ id: 'serpent-spear', as: 'sha', cards: 2, when: 'both' }] },
@@ -61,7 +61,7 @@ describe('ActionList', () => {
     fixture.componentInstance.actionChosen.subscribe(chosen);
 
     const el = fixture.nativeElement as HTMLElement;
-    expect([...el.querySelectorAll('button')].map((b) => b.textContent!.trim())).toEqual(['End Phase', 'Use 2 Cards as Sha']);
+    expect([...el.querySelectorAll('button')].map((b) => b.textContent!.trim())).toEqual(['End Phase', 'Use 2 Cards as Slash']);
     (el.querySelector('button.conversion') as HTMLButtonElement).click();
     fixture.detectChanges();
     const items = [...document.querySelectorAll('.mat-mdc-menu-item')] as HTMLButtonElement[];
@@ -76,7 +76,7 @@ describe('ActionList', () => {
     const registry: ContentRegistry = {
       cards: new Map([
         ['hail-of-arrows', { id: 'hail-of-arrows', name: 'Hail of Arrows', category: 'tool', play: () => [] }],
-        ['sha', { id: 'sha', name: 'Sha', category: 'basic', play: () => [] }],
+        ['sha', { id: 'sha', name: 'Slash', category: 'basic', play: () => [] }],
       ]),
       generals: new Map([['g', { id: 'g', kingdom: 'Qun', maxHp: 4, skills: [
         { id: 'random-strike', conversions: [{ id: 'random-strike', as: 'hail-of-arrows', cards: 2, sameSuit: true, when: 'play' }] },
@@ -111,7 +111,7 @@ describe('ActionList', () => {
       fixture.detectChanges();
       await fixture.whenStable();
       const dialog = document.querySelector('app-targets-dialog') as HTMLElement;
-      expect(dialog.textContent).toContain('Choose up to 2 targets for Sha');
+      expect(dialog.textContent).toContain('Choose up to 2 targets for Slash');
       const button = (text: string) => [...dialog.querySelectorAll('button')].find((b) => b.textContent!.trim() === text) as HTMLButtonElement;
       button('Seat 2').click();
       fixture.detectChanges();

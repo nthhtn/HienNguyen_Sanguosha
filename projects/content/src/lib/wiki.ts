@@ -135,11 +135,11 @@ export function generalTabs(generals: WikiGeneral[]): WikiTab<WikiGeneral>[] {
 
 export function basicTabs(cards: WikiCard[]): WikiTab<WikiCard>[] {
   return splitIntoTabs(cards, [
-    { key: 'sha', label: 'Sha', holds: (c) => c.id === 'sha' },
+    { key: 'sha', label: 'Slash', holds: (c) => c.id === 'sha' },
     // The Army expansion's fire and lightning Sha sit beside Sha.
     { key: 'fire-attack', label: 'Fire Attack', holds: (c) => c.id === 'fire-attack' },
     { key: 'lightning-attack', label: 'Lightning Attack', holds: (c) => c.id === 'lightning-attack' },
-    { key: 'shan', label: 'Shan', holds: (c) => c.id === 'shan' },
+    { key: 'shan', label: 'Dodge', holds: (c) => c.id === 'shan' },
     { key: 'wine', label: 'Wine', holds: (c) => c.id === 'wine' },
     { key: 'peach', label: 'Peach', holds: (c) => c.id === 'peach' },
   ]);

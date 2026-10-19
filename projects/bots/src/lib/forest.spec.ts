@@ -112,8 +112,8 @@ describe('active skills', () => {
 });
 
 describe('the Upheaval window', () => {
-  it('answers with a Sha when it holds one, at a non-ally; else passes', () => {
-    // Built directly: seat-b is asked to Sha seat-c.
+  it('answers with a Slash when it holds one, at a non-ally; else passes', () => {
+    // Built directly: seat-b is asked to Slash seat-c.
     const open = (hasSha: boolean, ally: boolean) => {
       const t = table({ 'seat-b:hand': hasSha ? [card('s1', 'sha')] : [] }, { kingdoms: { 'seat-a': 'Qun', 'seat-b': 'Wei', 'seat-c': ally ? 'Wei' : 'Shu', 'seat-d': 'Wu' } });
       return {
@@ -127,7 +127,7 @@ describe('the Upheaval window', () => {
     };
     expect(decide(open(true, false)).kind).toBe('RespondAction');
     expect(decide(open(false, false)).kind).toBe('PassAction');
-    expect(decide(open(true, true)).kind).toBe('PassAction'); // never a Sha at an ally
+    expect(decide(open(true, true)).kind).toBe('PassAction'); // never a Slash at an ally
   });
 });
 

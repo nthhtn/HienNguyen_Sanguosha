@@ -43,7 +43,7 @@ describe('same-suit selections (Random Strike)', () => {
 });
 
 describe('target templates (several targets in one pick)', () => {
-  // seat-a's last hand card is a Sha and it wears Sky Scorcher: one template of up to 3.
+  // seat-a's last hand card is a Slash and it wears Sky Scorcher: one template of up to 3.
   const lastSha = (o: Parameters<typeof table>[1] = {}) =>
     table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [card('sk', 'sky-scorcher', 'diamond', 12)] }, o);
 
@@ -142,13 +142,13 @@ describe('Rouse the Tiger and competing', () => {
 
 describe('Heaven’s Justice', () => {
   const taishiCi = g('seat-a', 'taishi-ci', 'filler-sun-jian');
-  it('used with 2 Sha and a card ranked 10 or more; not with 1 Sha', () => {
+  it('used with 2 Slash and a card ranked 10 or more; not with 1 Slash', () => {
     const hand = [card('s1', 'sha', 'spade', 3), card('q', 'shan', 'heart', 12)];
     expect(skillOf(decide(table({ 'seat-a:hand': [...hand, card('s2', 'sha', 'club', 4)], 'seat-b:hand': [card('b', 'shan')] }, { generals: taishiCi, kingdoms: { 'seat-a': 'Wu' } })))).toBe('heavens-justice');
     expect(skillOf(decide(table({ 'seat-a:hand': hand, 'seat-b:hand': [card('b', 'shan')] }, { generals: taishiCi, kingdoms: { 'seat-a': 'Wu' } })))).not.toBe('heavens-justice');
   });
 
-  it('counts a Fire Attack and a Lightning Attack as Sha', () => {
+  it('counts a Fire Attack and a Lightning Attack as Slash', () => {
     const hand = [card('s1', 'fire-attack', 'spade', 3), card('s2', 'lightning-attack', 'club', 4), card('q', 'shan', 'heart', 12)];
     expect(skillOf(decide(table({ 'seat-a:hand': hand, 'seat-b:hand': [card('b', 'shan')] }, { generals: taishiCi, kingdoms: { 'seat-a': 'Wu' } })))).toBe('heavens-justice');
   });
@@ -174,7 +174,7 @@ describe('Eternal Loyalty', () => {
 
 describe('Shackle', () => {
   const pangTong = g('seat-a', 'pang-tong', 'filler-jiang-wei');
-  it('recasts a club ranked below Shan, never a Peach', () => {
+  it('recasts a club ranked below Dodge, never a Peach', () => {
     let s = table({ 'seat-a:hand': [card('cp', 'peach', 'club', 3), card('cd', 'duel', 'club', 4)], drawPile: [card('d', 'shan')] }, { generals: pangTong, kingdoms: { 'seat-a': 'Shu' } });
     expect(skillOf(decide(s))).toBe('shackle');
     s = useSkill(s, 'shackle');

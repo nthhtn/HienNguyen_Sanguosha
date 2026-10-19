@@ -55,12 +55,12 @@ describe('Wine', () => {
     expect(wineOffered(once)).toBe(false);
   });
 
-  it('makes the next Sha deal 2', () => {
+  it('makes the next Slash deal 2', () => {
     const s = play(table({ 'seat-a:hand': [card('w1', 'wine'), card('s1', 'sha')] }), 'w1');
     expect(hp(pass(play(s, 's1', 'seat-b')), 'seat-b')).toBe(2);
   });
 
-  it('is spent when the Sha is played, even if it is dodged (Review Focus 3)', () => {
+  it('is spent when the Slash is played, even if it is dodged (Review Focus 3)', () => {
     const s = table({ 'seat-a:hand': [card('w1', 'wine'), card('s1', 'sha'), card('s2', 'sha')], 'seat-a:equip': [card('x', 'crossbow')], 'seat-b:hand': [card('d1', 'shan')] });
     const dodged = respond(play(play(s, 'w1'), 's1', 'seat-b'), 'd1');
     expect(hp(dodged, 'seat-b')).toBe(4);
@@ -68,7 +68,7 @@ describe('Wine', () => {
     expect(hp(pass(play(dodged, 's2', 'seat-b')), 'seat-b')).toBe(3);
   });
 
-  it('doesn’t boost a Sha played as a response, and keeps the boost for later', () => {
+  it('doesn’t boost a Slash played as a response, and keeps the boost for later', () => {
     const boosted = { ...table(), turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [], flags: { wine: true } } };
     expect(shaCard.play(boosted, { seatId: 'seat-a', cardInstanceId: 's1', card: usedCardOf(card('s1', 'sha')), targets: [], respondingTo: 'x' }, registry)).toEqual([]);
   });
@@ -80,7 +80,7 @@ describe('Wine', () => {
     expect(next.turn).not.toHaveProperty('flags');
   });
 
-  it('a boosted Sha against Silver Lion deals 1; with Black Pommel it deals 2', () => {
+  it('a boosted Slash against Silver Lion deals 1; with Black Pommel it deals 2', () => {
     const plainSha = table({ 'seat-a:hand': [card('w1', 'wine'), card('s1', 'sha')], 'seat-b:equip': [card('l', 'silver-lion')] });
     expect(hp(pass(play(play(plainSha, 'w1'), 's1', 'seat-b')), 'seat-b')).toBe(3);
     const pommel = table({ 'seat-a:hand': [card('w1', 'wine'), card('s1', 'sha')], 'seat-a:equip': [card('bp', 'black-pommel')], 'seat-b:equip': [card('l', 'silver-lion')] });
@@ -121,7 +121,7 @@ describe('previewing damage against Silver Lion', () => {
     damage: { source: { kind: 'seat' as const, seatId: 'seat-a' }, target: { kind: 'seat' as const, seatId: 'seat-b' }, amount: 2, nature: 'normal' as const, cause: { cardInstanceId: 's1', card: usedCardOf(card('s1', 'sha')) } },
   });
 
-  it('shows a Wine-boosted Sha landing as 1 on a Silver Lion wearer, and as 2 with Black Pommel', () => {
+  it('shows a Wine-boosted Slash landing as 1 on a Silver Lion wearer, and as 2 with Black Pommel', () => {
     const lion = table({ 'seat-b:equip': [card('l', 'silver-lion')] });
     const withSha = { ...lion, zones: lion.zones.map((z) => (z.id === 'discardPile' ? { ...z, cards: [card('s1', 'sha')] } : z)) };
     expect(previewEffect(withSha, boostedSha(withSha), ctx)).toMatchObject({ damage: { amount: 1 } });

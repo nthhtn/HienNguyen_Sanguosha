@@ -1,3 +1,4 @@
+import { BattlefieldBackgrounds } from './battlefield-background.service';
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
@@ -76,15 +77,29 @@ describe('App', () => {
     localStorage.clear();
   });
 
-  it('has a flag button for each language in the toolbar, before the sound buttons', async () => {
+  it('has one language button in the toolbar, before the sound buttons', async () => {
     localStorage.clear();
     const { el } = await render();
     const buttons = [...el.querySelectorAll('mat-toolbar app-language-switcher button')];
-    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['English', 'Tiếng Việt']);
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['Language']);
     const switcher = el.querySelector('app-language-switcher')!;
     const music = el.querySelector('button.music-toggle')!;
     expect(switcher.compareDocumentPosition(music) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     localStorage.clear();
+  });
+
+  it('puts Battlefield, the account, the language menu and the sound buttons on the right, in that order', async () => {
+    const { el, fixture } = await render();
+    TestBed.inject(BattlefieldBackgrounds).available.set(true);
+    fixture.detectChanges();
+    const right = ['button.nav-battlefield', 'a.sign-in, button.account', 'app-language-switcher', 'button.music-toggle', 'button.effects-toggle'].map(
+      (selector) => el.querySelector(selector)!
+    );
+    expect(el.querySelector('nav.nav .nav-battlefield')).toBeNull();
+    for (let i = 1; i < right.length; i++) {
+      expect(right[i - 1].compareDocumentPosition(right[i]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+    expect(el.querySelector('span.spacer')!.compareDocumentPosition(right[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('should render title', async () => {
@@ -103,22 +118,40 @@ describe('App', () => {
     expect(el.querySelector('button.nav-cards')!.classList).toContain('active');
   });
 
-  it('has four items in the bar: Play, Online, Cards and Rules, each with an icon', async () => {
+  it('has four items in the bar: Play Offline, Play Online, Cards and Rules, each with an icon', async () => {
     const { el } = await render();
     const items = [...el.querySelectorAll('nav.nav > a, nav.nav > button')];
     expect(items.map((i) => [i.querySelector('.label')!.textContent, i.querySelector('mat-icon')!.textContent])).toEqual([
-      ['Play', 'play_arrow'],
-      ['Online', 'public'],
+      ['Play Offline', 'play_arrow'],
+      ['Play Online', 'public'],
       ['Cards', 'swords'],
       ['Rules', 'menu_book'],
     ]);
+  });
+
+  it('has a Battlefield menu with the default look and three backgrounds, remembering the pick', async () => {
+    localStorage.removeItem('battlefield-background');
+    const { el, fixture } = await render();
+    expect(el.querySelector('button.nav-battlefield')).toBeNull();
+    TestBed.inject(BattlefieldBackgrounds).available.set(true);
+    fixture.detectChanges();
+    (el.querySelector('button.nav-battlefield') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...document.querySelectorAll('.mat-mdc-menu-panel button[mat-menu-item]')] as HTMLButtonElement[];
+    expect(items.map((b) => b.textContent!.trim())).toEqual(['Default', 'Background 1', 'Background 2', 'Background 3']);
+    expect(items[0].classList).toContain('active');
+    items[2].click();
+    expect(TestBed.inject(BattlefieldBackgrounds).choice()).toBe('2');
+    expect(localStorage.getItem('battlefield-background')).toBe('2');
+    localStorage.removeItem('battlefield-background');
   });
 
   it('links Online to /rooms, highlighted on the online screens', async () => {
     const { el, fixture } = await render('/rooms');
     const online = el.querySelector('a.nav-online') as HTMLAnchorElement;
     expect(online.getAttribute('href')).toBe('/rooms');
-    expect(online.getAttribute('aria-label')).toBe('Online');
+    expect(online.getAttribute('aria-label')).toBe('Play Online');
     expect(online.classList).toContain('active');
     expect(online.getAttribute('aria-current')).toBe('page');
     expect(el.querySelector('a.nav-play')!.classList).not.toContain('active');
@@ -193,7 +226,7 @@ describe('App', () => {
 
   it('icon buttons have accessible names (Review Focus 4)', async () => {
     const { el } = await render();
-    expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play');
+    expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play Offline');
     expect(el.querySelector('button.nav-cards')!.getAttribute('aria-label')).toBe('Cards');
     expect(el.querySelector('button.nav-rules')!.getAttribute('aria-label')).toBe('Rules');
   });

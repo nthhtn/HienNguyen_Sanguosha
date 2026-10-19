@@ -13,8 +13,8 @@ function boardLifetime() {
 }
 
 
-// Whether the state waits on the target's own answer to a damage card (a Sha's
-// Shan window or a Duel's), not on a Wuxie question or an ability's ask.
+// Whether the state waits on the target's own answer to a damage card (a Slash's
+// Dodge window or a Duel's), not on a Wuxie question or an ability's ask.
 function waitsOnDamageAnswer(state: GameState): boolean {
   const reason = state.pendingResponse?.reason;
   return !!state.pendingResponse && !state.pendingChoice && (!reason || reason.kind === 'card-effect');

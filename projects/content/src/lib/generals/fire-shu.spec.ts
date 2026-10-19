@@ -108,7 +108,7 @@ describe('Pang Tong — Nirvana', () => {
 });
 
 describe('Fire Zhuge Liang — Eight Arrays', () => {
-  // seat-b's Sha at Fire Zhuge Liang (seat-a), who holds no Shan.
+  // seat-b's Slash at Fire Zhuge Liang (seat-a), who holds no Dodge.
   const shaAtHim = (cards: Record<string, ReturnType<typeof card>[]> = {}, revealed = true) =>
     h.play(
       table({ 'seat-b:hand': [card('s1', 'sha')], drawPile: [card('j', 'peach', 'heart', 3)], ...cards }, { owner: 'seat-b', generals: at('seat-a', 'fire-zhuge-liang', 'filler-jiang-wei', revealed) }),
@@ -116,7 +116,7 @@ describe('Fire Zhuge Liang — Eight Arrays', () => {
       'seat-a'
     );
 
-  it('with no armour: asked; a red judgment counts as a Shan', () => {
+  it('with no armour: asked; a red judgment counts as a Dodge', () => {
     let s = shaAtHim();
     expect(askedAbout(s)).toBe('eight-arrays');
     s = h.use(s);
@@ -131,7 +131,7 @@ describe('Fire Zhuge Liang — Eight Arrays', () => {
     expect(s.pendingResponse?.respondingSeatId).toBe('seat-a');
   });
 
-  it('not asked against a Black Pommel Sha (Review Focus 5)', () => {
+  it('not asked against a Black Pommel Slash (Review Focus 5)', () => {
     expect(askedAbout(shaAtHim({ 'seat-b:equip': [card('bp', 'black-pommel', 'spade', 6)] }))).toBeNull();
   });
 

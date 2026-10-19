@@ -45,8 +45,8 @@ function stubMode() {
   return { id: 'stub', setup: (() => { throw new Error('unused'); }) as any, checkWinCondition: () => null, triggers: [] };
 }
 
-describe('Sha/Shan/Peach', () => {
-  it('Sha deals 1 damage when the target has no Shan to respond with, and Sha lands in the discard pile', () => {
+describe('Slash/Dodge/Peach', () => {
+  it('Slash deals 1 damage when the target has no Dodge to respond with, and Slash lands in the discard pile', () => {
     let state = twoSeatState();
     state = { ...state, zones: state.zones.map((z) => (z.id === 'seat-b:hand' ? { ...z, cards: [] } : z)) };
     const opened = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
@@ -56,7 +56,7 @@ describe('Sha/Shan/Peach', () => {
     expect(next.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId)).toEqual(['sha-1']);
   });
 
-  it('Shan prevents Sha\'s damage when played in response, and both cards land in the discard pile', () => {
+  it('Dodge prevents Slash\'s damage when played in response, and both cards land in the discard pile', () => {
     const state = twoSeatState();
     const opened = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, { registry: registry(), mode: stubMode() });
     const { state: next } = resolve(opened.state, { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: opened.state.pendingResponse!.id, cardInstanceId: 'shan-1' }, { registry: registry(), mode: stubMode() });
@@ -87,7 +87,7 @@ describe('Sha/Shan/Peach', () => {
     expect(next.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId)).toEqual(['peach-1']);
   });
 
-  it('an untargeted Sha is not a legal play, and its play() stays a defensive no-op', () => {
+  it('an untargeted Slash is not a legal play, and its play() stays a defensive no-op', () => {
     const state = twoSeatState();
     expect(() =>
       resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [] }, { registry: registry(), mode: stubMode() })

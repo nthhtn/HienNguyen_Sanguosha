@@ -148,7 +148,7 @@ describe('Reveal', () => {
 
 describe('targetsAllowed', () => {
   it('accepts targets whose keys come in another order', () => {
-    const registry: ContentRegistry = { cards: new Map([['sha', { id: 'sha', name: 'Sha', category: 'basic', play: () => [] }]]), generals: new Map() };
+    const registry: ContentRegistry = { cards: new Map([['sha', { id: 'sha', name: 'Slash', category: 'basic', play: () => [] }]]), generals: new Map() };
     expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ kind: 'seat', seatId: 'seat-b' }], registry)).toBe(true);
     expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ seatId: 'seat-b', kind: 'seat' } as Target], registry)).toBe(true);
     expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ kind: 'seat', seatId: 'seat-c' }], registry)).toBe(false);

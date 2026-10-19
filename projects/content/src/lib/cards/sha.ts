@@ -148,12 +148,12 @@ function shaDefinition(id: string, name: string, nature?: 'fire' | 'thunder'): C
         case 'sha-after-damage':
           return [];
         default:
-          throw new Error(`Sha has no step ${step.step}`);
+          throw new Error(`Slash has no step ${step.step}`);
       }
     },
   };
 }
 
-export const shaCard = shaDefinition('sha', 'Sha');
+export const shaCard = shaDefinition('sha', 'Slash');
 export const fireAttackCard = shaDefinition('fire-attack', 'Fire Attack', 'fire');
 export const lightningAttackCard = shaDefinition('lightning-attack', 'Lightning Attack', 'thunder');

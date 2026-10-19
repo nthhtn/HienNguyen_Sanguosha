@@ -2,7 +2,7 @@ import type { ContentRegistry, GameState } from 'engine';
 import { createRng } from 'engine';
 import { shaLimit } from './queries';
 
-// A General whose compulsory skill lifts the Sha limit (a Roar-like modifier).
+// A General whose compulsory skill lifts the Slash limit (a Roar-like modifier).
 const registry: ContentRegistry = {
   cards: new Map(),
   generals: new Map([

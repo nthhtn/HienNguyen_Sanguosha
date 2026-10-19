@@ -171,7 +171,7 @@ describe('GameService in vs-bots mode', () => {
     expect(service.state()!.seats[1].generals).not.toBeNull();
   });
 
-  it('hands a bot’s Sha to the human to answer', () => {
+  it('hands a bot’s Slash to the human to answer', () => {
     service.startGame(2, 1, 'vs-bots');
     let answered = false;
     for (let step = 0; step < 5000 && !service.state()!.result && !answered; step++) {

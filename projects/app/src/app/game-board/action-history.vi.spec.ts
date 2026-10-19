@@ -44,17 +44,17 @@ describe('card plays in Vietnamese', () => {
     expect(vi_([
       { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
       { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(shan), targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'sha-1' } },
-    ])).toEqual(['Người chơi 1 dùng Shan (2 ♥) chống lại Sha của Người chơi 0', 'Người chơi 0 dùng Sha (7 ♠) lên Người chơi 1']);
+    ])).toEqual(['Người chơi 1 dùng Dodge (2 ♥) chống lại Slash của Người chơi 0', 'Người chơi 0 dùng Slash (7 ♠) lên Người chơi 1']);
     expect(vi_([{ kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(lion), targets: [] }])).toEqual(['Người chơi 0 trang bị Silver Lion (A ♣)']);
     expect(vi_([{ kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(peach), targets: [] }])).toEqual(['Người chơi 0 dùng Peach (Q ♥)']);
   });
 
   it('an answer to no named seat, and an answer to a seat but no known card', () => {
     const answer = (inResponseTo: object): EngineEvent => ({ kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(shan), targets: [], inResponseTo });
-    expect(vi_([answer({ cardInstanceId: 'sha-1' })])).toEqual(['Người chơi 1 dùng Shan (2 ♥) để phản hồi']);
-    expect(en_([answer({ cardInstanceId: 'sha-1' })])).toEqual(['Seat 1 used Shan (2 ♥) in response']);
-    expect(vi_([answer({ seatId: 'seat-0' })])).toEqual(['Người chơi 1 dùng Shan (2 ♥) chống lại Người chơi 0']);
-    expect(en_([answer({ seatId: 'seat-0' })])).toEqual(['Seat 1 used Shan (2 ♥) against Seat 0']);
+    expect(vi_([answer({ cardInstanceId: 'sha-1' })])).toEqual(['Người chơi 1 dùng Dodge (2 ♥) để phản hồi']);
+    expect(en_([answer({ cardInstanceId: 'sha-1' })])).toEqual(['Seat 1 used Dodge (2 ♥) in response']);
+    expect(vi_([answer({ seatId: 'seat-0' })])).toEqual(['Người chơi 1 dùng Dodge (2 ♥) chống lại Người chơi 0']);
+    expect(en_([answer({ seatId: 'seat-0' })])).toEqual(['Seat 1 used Dodge (2 ♥) against Seat 0']);
   });
 
   it('saving a dying seat, another or oneself', () => {
@@ -93,16 +93,16 @@ describe('card plays in Vietnamese', () => {
 
 describe('moves and picks in Vietnamese', () => {
   it('a discard from hand, and a worn card discarded', () => {
-    expect(vi_([move(sha, 'seat-0:hand', 'discardPile')])).toEqual(['Người chơi 0 bỏ Sha (7 ♠)']);
+    expect(vi_([move(sha, 'seat-0:hand', 'discardPile')])).toEqual(['Người chơi 0 bỏ Slash (7 ♠)']);
     expect(vi_([move(lion, 'seat-0:equip', 'discardPile')])).toEqual(['Silver Lion của Người chơi 0 bị bỏ']);
     expect(en_([move(lion, 'seat-0:equip', 'discardPile')])).toEqual(["Seat 0's Silver Lion was discarded"]);
   });
 
   it('a worn card handed over, one put under a General, Lightning moving on', () => {
     expect(vi_([move(blade, 'seat-0:equip', 'seat-1:hand')])).toEqual(['Người chơi 1 lấy Green Dragon Blade (5 ♠) của Người chơi 0']);
-    expect(vi_([move(sha, 'drawPile', 'seat-0:pile')])).toEqual(['Người chơi 0 đặt Sha (7 ♠) dưới Tướng của mình']);
-    expect(vi_([move(sha, 'seat-0:judgment', 'seat-1:judgment')])).toEqual(['Sha (7 ♠) chuyển từ Người chơi 0 sang Người chơi 1']);
-    expect(en_([move(sha, 'seat-0:judgment', 'seat-1:judgment')])).toEqual(['Sha (7 ♠) moved on from Seat 0 to Seat 1']);
+    expect(vi_([move(sha, 'drawPile', 'seat-0:pile')])).toEqual(['Người chơi 0 đặt Slash (7 ♠) dưới Tướng của mình']);
+    expect(vi_([move(sha, 'seat-0:judgment', 'seat-1:judgment')])).toEqual(['Slash (7 ♠) chuyển từ Người chơi 0 sang Người chơi 1']);
+    expect(en_([move(sha, 'seat-0:judgment', 'seat-1:judgment')])).toEqual(['Slash (7 ♠) moved on from Seat 0 to Seat 1']);
   });
 
   it('a Tool taking a worn card, and a skill taking a hand card', () => {
@@ -125,8 +125,8 @@ describe('moves and picks in Vietnamese', () => {
     const reason = { kind: 'ability' as const, owner: general('seat-1', 'sudden-attack'), abilityId: 'sudden-attack', targetSeatId: 'seat-0' };
     const pick: EngineEvent = { kind: 'ChoiceMadeEvent', seatId: 'seat-1', verb: 'discard', reason, shows: { kind: 'hidden-hand', seatId: 'seat-0', count: 1 } };
     const known = [pick, move(sha, 'seat-0:hand', 'discardPile')];
-    expect(vi_(known)).toEqual(['Người chơi 1 bỏ Sha (7 ♠) trên tay của Người chơi 0 bằng Sudden Attack']);
-    expect(en_(known)).toEqual(["Seat 1 discarded Sha (7 ♠) from Seat 0's hand with Sudden Attack"]);
+    expect(vi_(known)).toEqual(['Người chơi 1 bỏ Slash (7 ♠) trên tay của Người chơi 0 bằng Sudden Attack']);
+    expect(en_(known)).toEqual(["Seat 1 discarded Slash (7 ♠) from Seat 0's hand with Sudden Attack"]);
     const unknown = [pick, { kind: 'CardMovedEvent' as const, cardInstanceId: 'x', fromZoneId: 'seat-0:hand', toZoneId: 'discardPile' }];
     expect(vi_(unknown)).toEqual(['Người chơi 1 bỏ một lá bài trên tay của Người chơi 0 bằng Sudden Attack']);
     expect(en_(unknown)).toEqual(["Seat 1 discarded a card from Seat 0's hand with Sudden Attack"]);
@@ -233,9 +233,9 @@ describe('choices and skills in Vietnamese', () => {
       kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'pick', shows: { kind: 'label', text },
       reason: { kind: 'ability', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', cardId: 'sha' },
     });
-    expect(vi_([answer('Doubt')])).toEqual(['Người chơi 0 nghi ngờ Sha của Người chơi 1']);
-    expect(vi_([answer('Believe')])).toEqual(['Người chơi 0 tin Sha của Người chơi 1']);
-    expect(en_([answer('Doubt')])).toEqual(["Seat 0 doubted Seat 1's Sha"]);
+    expect(vi_([answer('Doubt')])).toEqual(['Người chơi 0 nghi ngờ Slash của Người chơi 1']);
+    expect(vi_([answer('Believe')])).toEqual(['Người chơi 0 tin Slash của Người chơi 1']);
+    expect(en_([answer('Doubt')])).toEqual(["Seat 0 doubted Seat 1's Slash"]);
   });
 
   it('a list of picked seats: one, two and three', () => {
@@ -276,8 +276,8 @@ describe('choices and skills in Vietnamese', () => {
     expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: true }])).toEqual(['Người chơi 0 úp Tướng']);
     expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: false }])).toEqual(['Người chơi 0 lật lại']);
     expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: false, passedTurn: true }])).toEqual(['Người chơi 0 lật lại và bỏ lượt']);
-    expect(vi_([{ kind: 'CardShownEvent', seatId: 'seat-1', card: sha, abilityId: 'sow-revolt' }])).toEqual(['Người chơi 1 cho xem Sha (7 ♠)']);
-    expect(vi_([{ kind: 'CardsTurnedUpEvent', zoneId: 'processing', cards: [peach, sha] }])).toEqual(['Đã lật 2 lá bài: Peach (Q ♥), Sha (7 ♠)']);
+    expect(vi_([{ kind: 'CardShownEvent', seatId: 'seat-1', card: sha, abilityId: 'sow-revolt' }])).toEqual(['Người chơi 1 cho xem Slash (7 ♠)']);
+    expect(vi_([{ kind: 'CardsTurnedUpEvent', zoneId: 'processing', cards: [peach, sha] }])).toEqual(['Đã lật 2 lá bài: Peach (Q ♥), Slash (7 ♠)']);
     expect(en_([{ kind: 'CardsTurnedUpEvent', zoneId: 'processing', cards: [peach] }])).toEqual(['Turned up 1 card: Peach (Q ♥)']);
   });
 });

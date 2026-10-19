@@ -8,7 +8,7 @@ const playTargets = (s: GameState, seatId: string, cardId: string) =>
 const conversions = (s: GameState, seatId: string) => legal(s, seatId).filter((a) => a.kind === 'UseConversionAction');
 
 describe('Zhang Fei — Roar', () => {
-  it('no limit on Sha', () => {
+  it('no limit on Slash', () => {
     let s = table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha'), card('s3', 'sha')] }, { generals: at('seat-a', 'zhang-fei') });
     s = pass(play(s, 's1', 'seat-b'));
     s = pass(play(s, 's2', 'seat-b'));
@@ -31,7 +31,7 @@ describe('Zhang Fei — Roar (revealed on purpose)', () => {
 });
 
 describe('Ma Chao — Horsemanship', () => {
-  it('reaches a seat 2 away with an unarmed Sha', () => {
+  it('reaches a seat 2 away with an unarmed Slash', () => {
     const cards = { 'seat-a:hand': [card('s1', 'sha')] };
     expect(playTargets(table(cards, { generals: at('seat-a', 'ma-chao') }), 'seat-a', 's1')).toEqual(['seat-b', 'seat-c', 'seat-d']);
     expect(playTargets(table(cards, { generals: at('seat-a', 'ma-chao', false) }), 'seat-a', 's1')).toEqual(['seat-b', 'seat-d']);
@@ -39,7 +39,7 @@ describe('Ma Chao — Horsemanship', () => {
 });
 
 describe('Zhuge Liang — Empty City', () => {
-  it('with no hand cards he can’t be targeted by Sha or Duel', () => {
+  it('with no hand cards he can’t be targeted by Slash or Duel', () => {
     const attacker = { 'seat-a:hand': [card('s1', 'sha'), card('du', 'duel', 'spade', 1)] };
     const empty = table(attacker, { generals: at('seat-b', 'zhuge-liang') });
     expect(playTargets(empty, 'seat-a', 's1')).not.toContain('seat-b');
@@ -59,7 +59,7 @@ describe('Huang Yueying — Wondrous Talent', () => {
 });
 
 describe('Guan Yu — Fighting Saint', () => {
-  it('uses a red card from his hand or equipment as a Sha in his Play Phase', () => {
+  it('uses a red card from his hand or equipment as a Slash in his Play Phase', () => {
     const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart'), card('k', 'shan', 'spade')], 'seat-a:equip': [card('rh', 'red-hare', 'heart', 5)] }, { generals: at('seat-a', 'guan-yu') });
     const selecting = convert(s, 'seat-a', 'fighting-saint', 'seat-b');
     expect(selecting.pendingSelection).toMatchObject({ eligibleIds: ['p', 'rh'], min: 1, max: 1 });
@@ -81,18 +81,18 @@ describe('Guan Yu — Fighting Saint', () => {
 });
 
 describe('Zhao Yun — Dragon Courage', () => {
-  it('a Shan as a Sha in his Play Phase', () => {
+  it('a Dodge as a Slash in his Play Phase', () => {
     const s = select(convert(table({ 'seat-a:hand': [card('n', 'shan', 'diamond')] }, { generals: at('seat-a', 'zhao-yun') }), 'seat-a', 'shan-as-sha', 'seat-b'), 'n');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
   });
 
-  it('a Sha as a Shan, answering', () => {
+  it('a Slash as a Dodge, answering', () => {
     let s = play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('s2', 'sha', 'club')] }, { owner: 'seat-b', generals: at('seat-a', 'zhao-yun') }), 's1', 'seat-a');
     s = select(convert(s, 'seat-a', 'sha-as-shan'), 's2');
     expect(hp(s, 'seat-a')).toBe(4);
   });
 
-  it('hidden: Cancel leaves him hidden and the window open; confirming reveals him, then the Sha is dodged', () => {
+  it('hidden: Cancel leaves him hidden and the window open; confirming reveals him, then the Slash is dodged', () => {
     let s = play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('s2', 'sha', 'club')] }, { owner: 'seat-b', generals: at('seat-a', 'zhao-yun', false) }), 's1', 'seat-a');
     const window = s.pendingResponse!.id;
     const cancelled = cancel(convert(s, 'seat-a', 'sha-as-shan'));
@@ -113,7 +113,7 @@ describe('Fighting Saint with a worn card (final review #1)', () => {
     expect(conversions(horseOnly, 'seat-a').map((a) => a.targets[0]?.seatId)).toEqual(['seat-b', 'seat-d']);
   });
 
-  it('can’t use the Crossbow that lifts the Sha limit', () => {
+  it('can’t use the Crossbow that lifts the Slash limit', () => {
     const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart')], 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)] }, { generals: at('seat-a', 'guan-yu') });
     const afterOne = { ...s, turn: { ...s.turn, cardPlays: { sha: 1 } } };
     expect(convert(afterOne, 'seat-a', 'fighting-saint', 'seat-b').pendingSelection?.eligibleIds).toEqual(['p']);

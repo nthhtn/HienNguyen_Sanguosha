@@ -35,12 +35,12 @@ describe('actionHistory', () => {
       move(sha, 'seat-0:hand', 'discardPile'),
     ];
     expect(texts(log)).toEqual([
-      'Seat 1 used Shan (2 ♥) against Seat 0\'s Sha',
-      'Seat 0 used Sha (7 ♠) on Seat 1',
+      'Seat 1 used Dodge (2 ♥) against Seat 0\'s Slash',
+      'Seat 0 used Slash (7 ♠) on Seat 1',
     ]);
   });
 
-  it('names damage with its source, and a Duel answered with a Sha', () => {
+  it('names damage with its source, and a Duel answered with a Slash', () => {
     const log: EngineEvent[] = [
       { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(duel), targets: [seat('seat-1')] },
       { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(sha), targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'duel-1' } },
@@ -50,7 +50,7 @@ describe('actionHistory', () => {
     expect(texts(log)).toEqual([
       'Seat 0 took 3 thunder damage',
       'Seat 0 took 2 damage from Seat 1',
-      "Seat 1 used Sha (7 ♠) against Seat 0's Duel",
+      "Seat 1 used Slash (7 ♠) against Seat 0's Duel",
       'Seat 0 used Duel (A ♠) on Seat 1',
     ]);
   });
@@ -66,7 +66,7 @@ describe('actionHistory', () => {
       move(sha, 'seat-0:hand', 'discardPile'),
     ];
     expect(texts(log)).toEqual([
-      'Seat 0 discarded Sha (7 ♠)',
+      'Seat 0 discarded Slash (7 ♠)',
       'Seat 0 recovered 1 health',
       'Seat 0 used Peach (Q ♥)',
       "Seat 0's Green Dragon Blade was discarded",
@@ -108,8 +108,8 @@ describe('actionHistory', () => {
     ];
     expect(actionHistory(log, zones, players).map((e) => (e.kind === 'turn' ? `Turn ${e.turnNumber} · ${e.seatName}` : e.text))).toEqual([
       'Hing revealed their Deputy General',
-      "Seat 1 used Shan (2 ♥) against Hing's Sha",
-      'Hing used Sha (7 ♠) on Seat 1',
+      "Seat 1 used Dodge (2 ♥) against Hing's Slash",
+      'Hing used Slash (7 ♠) on Seat 1',
       'Turn 4 · Hing',
     ]);
   });
@@ -165,7 +165,7 @@ describe('actionHistory', () => {
       expect(lines([
         { kind: 'ChoiceMadeEvent', seatId: 'seat-1', reason: reason('break'), verb: 'discard', shows: { kind: 'hidden-hand', seatId: 'seat-0', count: 2 } },
         move(sha, 'seat-0:hand', 'discardPile'),
-      ])).toEqual(["Seat 1 discarded Sha (7 ♠) from Hing's hand with Break"]);
+      ])).toEqual(["Seat 1 discarded Slash (7 ♠) from Hing's hand with Break"]);
     });
 
     it('tells the Harvest: what was turned up, and who took what', () => {
@@ -176,7 +176,7 @@ describe('actionHistory', () => {
           reason: { kind: 'choice', card: { as: 'harvest', colour: 'red', physical: [] }, userSeatId: 'seat-0' },
         },
         { kind: 'CardMovedEvent', cardInstanceId: 'peach-1', fromZoneId: 'processing', toZoneId: 'seat-0:hand' },
-      ])).toEqual(['Hing took Peach (Q ♥) with Harvest', 'Turned up 2 cards: Peach (Q ♥), Sha (7 ♠)']);
+      ])).toEqual(['Hing took Peach (Q ♥) with Harvest', 'Turned up 2 cards: Peach (Q ♥), Slash (7 ♠)']);
     });
 
     it('says who took a worn card handed over (Coerce’s weapon)', () => {
@@ -220,7 +220,7 @@ describe('actionHistory', () => {
       ['Seat 1 was eliminated', 'none'],
       ['Seat 0 is dying', 'Shu'],
       ['Seat 0 took 1 damage from Seat 1', 'Shu'],
-      ['Seat 1 used Sha (7 ♠) on Seat 0', null],
+      ['Seat 1 used Slash (7 ♠) on Seat 0', null],
     ]);
   });
 
@@ -231,7 +231,7 @@ describe('actionHistory', () => {
     ], zones);
     expect(entries).toEqual([
       { kind: 'action', text: 'Seat 1 was eliminated', card: null, force: 'none' },
-      { kind: 'action', text: 'Seat 0 used Sha (7 ♠) on Seat 1', card: sha, starts: true },
+      { kind: 'action', text: 'Seat 0 used Slash (7 ♠) on Seat 1', card: sha, starts: true },
     ]);
   });
 });
@@ -253,7 +253,7 @@ describe('latestSequence', () => {
       { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
       { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(shan), targets: [], inResponseTo: { seatId: 'seat-0', cardInstanceId: 'sha-1' } },
     ];
-    expect(sequence(log)).toEqual(['Seat 0 used Sha (7 ♠) on Seat 1', "Seat 1 used Shan (2 ♥) against Seat 0's Sha"]);
+    expect(sequence(log)).toEqual(['Seat 0 used Slash (7 ♠) on Seat 1', "Seat 1 used Dodge (2 ♥) against Seat 0's Slash"]);
   });
 
   it('keeps a dying seat\'s rescue in the sequence that brought it down', () => {
@@ -266,7 +266,7 @@ describe('latestSequence', () => {
       { kind: 'SeatSavedEvent', seatId: 'seat-1' },
     ];
     expect(sequence(log)).toEqual([
-      'Seat 0 used Sha (7 ♠) on Seat 1',
+      'Seat 0 used Slash (7 ♠) on Seat 1',
       'Seat 1 took 1 damage from Seat 0',
       'Seat 1 is dying',
       'Seat 1 used Peach (Q ♥) to save themselves',
@@ -287,7 +287,7 @@ describe('latestSequence', () => {
       move(duel, 'seat-0:hand', 'discardPile'),
       move(shan, 'seat-0:hand', 'discardPile'),
     ];
-    expect(sequence(discarded)).toEqual(['Seat 0 discarded Duel (A ♠)', 'Seat 0 discarded Shan (2 ♥)']);
+    expect(sequence(discarded)).toEqual(['Seat 0 discarded Duel (A ♠)', 'Seat 0 discarded Dodge (2 ♥)']);
   });
 
   it('keeps showing the latest sequence until the next one starts', () => {
@@ -297,7 +297,7 @@ describe('latestSequence', () => {
       phase('Discard'),
       { kind: 'TurnAdvancedEvent', seatId: 'seat-1', turnNumber: 2 },
     ];
-    expect(sequence(log)).toEqual(['Seat 0 used Sha (7 ♠) on Seat 1']);
+    expect(sequence(log)).toEqual(['Seat 0 used Slash (7 ♠) on Seat 1']);
   });
 });
 
@@ -341,24 +341,24 @@ describe('equipment abilities in the history', () => {
   const h1: CardInstance = { instanceId: 'h1', definitionId: 'peach', suit: 'heart', rank: 3 };
   const c1: CardInstance = { instanceId: 'c1', definitionId: 'duel', suit: 'club', rank: 4 };
 
-  it('names a Sha made from 2 cards, and where it came from', () => {
+  it('names a Slash made from 2 cards, and where it came from', () => {
     const used = usedCardFrom([h1, c1], 'sha', { owner: owner('seat-0', 'sp'), abilityId: 'serpent-spear', conversionId: 'serpent-spear' });
-    expect(texts([{ kind: 'CardPlayedEvent', seatId: 'seat-0', card: used, targets: [seat('seat-1')] }])).toContain('Seat 0 used 2 cards as Sha (Serpent Spear) on Seat 1');
+    expect(texts([{ kind: 'CardPlayedEvent', seatId: 'seat-0', card: used, targets: [seat('seat-1')] }])).toContain('Seat 0 used 2 cards as Slash (Serpent Spear) on Seat 1');
   });
 
-  it('says when an armour stops a Sha', () => {
+  it('says when an armour stops a Slash', () => {
     expect(texts([{ kind: 'AbilityUsedEvent', owner: owner('seat-1', 'bs'), abilityId: 'black-shield', outcome: 'no-effect', targetSeatId: 'seat-0' }])).toContain(
-      "Seat 1's Black Shield: Seat 0's Sha has no effect"
+      "Seat 1's Black Shield: Seat 0's Slash has no effect"
     );
   });
 
-  it('adds "counts as Shan" to an Eight Trigrams judgment', () => {
+  it('adds "counts as Dodge" to an Eight Trigrams judgment', () => {
     const judged: CardInstance = { instanceId: 'j', definitionId: 'peach', suit: 'heart', rank: 9 };
     const log: EngineEvent[] = [
       { kind: 'JudgmentEvent', seatId: 'seat-1', reader: { kind: 'card', card: usedCardOf({ instanceId: 'et', definitionId: 'eight-trigrams', suit: 'spade', rank: 2 }) }, card: judged },
       { kind: 'AbilityUsedEvent', owner: owner('seat-1', 'et'), abilityId: 'eight-trigrams', outcome: 'counts-as-shan' },
     ];
-    expect(texts(log)).toEqual(["Seat 1's Eight Trigrams judgment: 9 ♥, Counts as Shan"]);
+    expect(texts(log)).toEqual(["Seat 1's Eight Trigrams judgment: 9 ♥, Counts as Dodge"]);
   });
 
   it('says who used an ability, on whom; a Don’t says nothing', () => {
@@ -460,20 +460,20 @@ describe('actionHistory: the base Generals’ skills', () => {
     const red: CardInstance = { instanceId: 'r', definitionId: 'peach', suit: 'heart', rank: 9 };
     const via = { owner: general('seat-0', 'fighting-saint'), abilityId: 'fighting-saint', conversionId: 'fighting-saint' };
     expect(texts([{ kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardFrom([red], 'sha', via), targets: [seat('seat-1')] }])).toEqual([
-      'Seat 0 used Peach (9 ♥) as Sha (Fighting Saint) on Seat 1',
+      'Seat 0 used Peach (9 ♥) as Slash (Fighting Saint) on Seat 1',
     ]);
   });
 
   it('says what a skill did', () => {
     expect(texts([used('seat-0', 'linked-camps', 'used')])).toEqual(['Seat 0 used Linked Camps']);
     expect(texts([used('seat-0', 'bare-the-chest', 'more-damage', 'seat-1')])).toEqual(["Seat 0's Bare the Chest: 1 more damage"]);
-    expect(texts([used('seat-0', 'iron-cavalry', 'unblockable', 'seat-1')])).toEqual(["Seat 0's Iron Cavalry: Seat 1 can't play a Shan"]);
-    expect(texts([used('seat-0', 'displace', 'moved', 'seat-1')])).toEqual(["Seat 0's Displace moved the Sha to Seat 1"]);
+    expect(texts([used('seat-0', 'iron-cavalry', 'unblockable', 'seat-1')])).toEqual(["Seat 0's Iron Cavalry: Seat 1 can't play a Dodge"]);
+    expect(texts([used('seat-0', 'displace', 'moved', 'seat-1')])).toEqual(["Seat 0's Displace moved the Slash to Seat 1"]);
     expect(texts([used('seat-0', 'raid', 'took-hand-card', 'seat-1')])).toEqual(['Seat 0 took a hand card from Seat 1 (Raid)']);
   });
 
   it('says a shown card, and a card taken with a skill', () => {
-    expect(texts([{ kind: 'CardShownEvent', seatId: 'seat-1', card: sha, abilityId: 'sow-revolt' }])).toEqual(['Seat 1 showed Sha (7 ♠)']);
+    expect(texts([{ kind: 'CardShownEvent', seatId: 'seat-1', card: sha, abilityId: 'sow-revolt' }])).toEqual(['Seat 1 showed Slash (7 ♠)']);
     const took: EngineEvent[] = [
       { kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'take', reason: { kind: 'ability', owner: general('seat-0', 'feedback'), abilityId: 'feedback', targetSeatId: 'seat-1' }, shows: { kind: 'hidden-hand', seatId: 'seat-1', count: 2 } },
       { kind: 'CardMovedEvent', cardInstanceId: 'x', fromZoneId: 'seat-1:hand', toZoneId: 'seat-0:hand' },
@@ -492,7 +492,7 @@ describe('actionHistory: the Wind skills', () => {
   });
 
   it('Refusing Death', () => {
-    expect(texts([move(sha, 'drawPile', 'seat-0:pile')])).toEqual(['Seat 0 put Sha (7 ♠) under their General']);
+    expect(texts([move(sha, 'drawPile', 'seat-0:pile')])).toEqual(['Seat 0 put Slash (7 ♠) under their General']);
     const put = move(sha, 'drawPile', 'seat-0:pile');
     expect(texts([put, used('seat-0', 'refusing-death', 'stays-alive')]).slice(0, 1)).toEqual(["Seat 0's Refusing Death: 7 ♠ (no match)"]);
     expect(texts([put, used('seat-0', 'refusing-death', 'matched')]).slice(0, 1)).toEqual(["Seat 0's Refusing Death: 7 ♠ matched"]);
@@ -509,10 +509,10 @@ describe('actionHistory: the Wind skills', () => {
       kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'pick', shows: { kind: 'label', text },
       reason: { kind: 'ability', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', cardId: 'sha' },
     });
-    expect(texts([answer('Doubt')])).toEqual(["Seat 0 doubted Seat 1's Sha"]);
-    expect(texts([answer('Believe')])).toEqual(["Seat 0 believed Seat 1's Sha"]);
-    expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-true', cardId: 'sha' }])).toEqual(["Seat 1's Sha was true"]);
-    expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-false', cardId: 'sha' }])).toEqual(["Seat 1's Sha was a bluff"]);
+    expect(texts([answer('Doubt')])).toEqual(["Seat 0 doubted Seat 1's Slash"]);
+    expect(texts([answer('Believe')])).toEqual(["Seat 0 believed Seat 1's Slash"]);
+    expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-true', cardId: 'sha' }])).toEqual(["Seat 1's Slash was true"]);
+    expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-false', cardId: 'sha' }])).toEqual(["Seat 1's Slash was a bluff"]);
     expect(texts([{ kind: 'AbilityUsedEvent', owner: general('seat-1', 'bewilder'), abilityId: 'bewilder', outcome: 'claim-believed', cardId: 'sha' }])).toEqual([]);
   });
 
@@ -532,10 +532,10 @@ describe('actionHistory: the Wind skills', () => {
 
     it("Heaven's Justice says what the win or loss means", () => {
       expect(texts(competed('heavens-justice', 'compete-won'))).toEqual([
-        "Seat 0's Heaven's Justice: one more Sha this turn, at any distance, with one more target",
+        "Seat 0's Heaven's Justice: one more Slash this turn, at any distance, with one more target",
         'Seat 0 competed with Seat 1: 9 ♠ against 7 ♥, Seat 0 won',
       ]);
-      expect(texts(competed('heavens-justice', 'compete-lost'))[0]).toBe("Seat 0's Heaven's Justice: no Sha this turn");
+      expect(texts(competed('heavens-justice', 'compete-lost'))[0]).toBe("Seat 0's Heaven's Justice: no Slash this turn");
     });
 
     it('Nirvana, Assault, Eternal Loyalty, Dueling Heroes and Sudden Attack', () => {
@@ -564,7 +564,7 @@ describe('actionHistory: the Wind skills', () => {
       expect(line('charity', 'gave', 'seat-1')).toEqual(['Seat 0 gave half of their hand to Seat 1 (Charity)']);
       expect(line('collapse', 'collapsed')).toEqual(['Seat 0 lost 1 HP to Collapse']);
       expect(line('collapse', 'collapsed-max')).toEqual(["Seat 0 reduced their max HP with Collapse"]);
-      expect(line('upheaval', 'used')).toEqual(['Seat 0 used Upheaval: every other seat plays a Sha or loses 1 HP']);
+      expect(line('upheaval', 'used')).toEqual(['Seat 0 used Upheaval: every other seat plays a Slash or loses 1 HP']);
       expect(texts([
         { kind: 'AbilityUsedEvent', owner: general('seat-0', 'alliance'), abilityId: 'alliance', outcome: 'swap-first', targetSeatId: 'seat-1' },
         { kind: 'AbilityUsedEvent', owner: general('seat-0', 'alliance'), abilityId: 'alliance', outcome: 'swapped', targetSeatId: 'seat-2' },
@@ -603,20 +603,20 @@ describe('actionHistory: the Wind skills', () => {
 });
 
 
-describe('actionHistory: elemental Sha, Chains and chain toggles', () => {
+describe('actionHistory: elemental Slash, Chains and chain toggles', () => {
   const players = [0, 1, 2].map((i) => ({ id: `p${i}`, seatId: `seat-${i}`, kind: 'human' as const, name: i === 0 ? 'Hing' : `Seat ${i}` }));
   const lines = (log: EngineEvent[]) => actionHistory(log, zones, players).flatMap((e) => (e.kind === 'action' ? [e.text] : []));
   const fire: CardInstance = { instanceId: 'fa-1', definitionId: 'fire-attack', suit: 'heart', rank: 4 };
   const chains: CardInstance = { instanceId: 'ch-1', definitionId: 'chains', suit: 'club', rank: 12 };
-  // A Fire Attack is played as a Sha with the fire nature.
+  // A Fire Attack is played as a Slash with the fire nature.
   const fireAsSha = { ...usedCardOf(fire), as: 'sha', nature: 'fire' as const };
 
-  it('names a played Fire Attack by its own name, and a Shan against it', () => {
+  it('names a played Fire Attack by its own name, and a Dodge against it', () => {
     const log: EngineEvent[] = [
       { kind: 'CardPlayedEvent', seatId: 'seat-1', card: fireAsSha, targets: [seat('seat-0')] },
       { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(shan), targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: 'fa-1' } },
     ];
-    expect(lines(log)).toEqual(["Hing used Shan (2 ♥) against Seat 1's Fire Attack", 'Seat 1 used Fire Attack (4 ♥) on Hing']);
+    expect(lines(log)).toEqual(["Hing used Dodge (2 ♥) against Seat 1's Fire Attack", 'Seat 1 used Fire Attack (4 ♥) on Hing']);
   });
 
   it('says a Chains Recast is a recast, not a use', () => {
