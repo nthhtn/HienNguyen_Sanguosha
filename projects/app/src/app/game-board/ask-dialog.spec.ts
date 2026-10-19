@@ -13,7 +13,7 @@ function render(over: Partial<AskDialogData['description']> = {}) {
       {
         provide: MAT_DIALOG_DATA,
         useValue: {
-          description: { title: 'Axe', prompt: 'Use Axe on Seat 1?', hint: 'Discard 2 cards to make your Sha hit Seat 1', card: { instanceId: 'ax', definitionId: 'axe', suit: 'diamond', rank: 5 }, generalId: null, useLabel: 'Use', use, decline, ...over },
+          description: { title: 'Axe', prompt: 'Use Axe on Seat 1?', hint: 'Discard 2 cards to make your Slash hit Seat 1', card: { instanceId: 'ax', definitionId: 'axe', suit: 'diamond', rank: 5 }, generalId: null, useLabel: 'Use', use, decline, ...over },
         } satisfies AskDialogData,
       },
       { provide: MatDialogRef, useValue: { close } },
@@ -29,7 +29,7 @@ describe('AskDialog', () => {
     const { el } = render();
     expect(el.querySelector('h2')!.textContent).toContain('Axe');
     expect(el.querySelector('.prompt')!.textContent).toContain('Use Axe on Seat 1?');
-    expect(el.querySelector('.hint')!.textContent).toContain('Discard 2 cards to make your Sha hit Seat 1');
+    expect(el.querySelector('.hint')!.textContent).toContain('Discard 2 cards to make your Slash hit Seat 1');
     expect(el.querySelector('app-playing-card')).not.toBeNull();
   });
 

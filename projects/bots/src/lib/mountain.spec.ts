@@ -46,7 +46,7 @@ describe('asks', () => {
   });
 
   it('Lament: reads the source through a reveal effect when Cai Wenji is hidden', () => {
-    // Allies seat-a (the bot, Cai Wenji hidden) and seat-b; the Sha came from seat-b onto seat-a: a club or spade must not land on an ally.
+    // Allies seat-a (the bot, Cai Wenji hidden) and seat-b; the Slash came from seat-b onto seat-a: a club or spade must not land on an ally.
     const s = asking(table({ 'seat-a:hand': cards('h', 2) }, { generals: generals('cai-wenji'), kingdoms: { ...kingdoms, 'seat-b': 'Wei' } }), 'lament', 'seat-a');
     const use = { id: 'use', shows: { kind: 'use' as const }, effects: [{ kind: 'RevealGeneralEffect' as const, seatId: 'seat-a', slot: 'main' as const }, { kind: 'SkillStepEffect' as const, owner: general('seat-a', 'lament'), step: 'pay', data: { victim: 'seat-a', source: 'seat-b' } }] };
     const hidden = { ...s, pendingChoice: { ...s.pendingChoice!, options: [use, s.pendingChoice!.options[1]] } };
@@ -82,7 +82,7 @@ describe('choices and selections', () => {
     expect(picked(decide(t({ 'seat-a': 'Wei', 'seat-b': 'Shu', 'seat-c': 'Wu', 'seat-d': 'Qun' })))).toBe('seat-c');
   });
 
-  it('Pleasure: pays with a card it can spare, else gives the Sha up', () => {
+  it('Pleasure: pays with a card it can spare, else gives the Slash up', () => {
     const t = (hand: ReturnType<typeof card>[]) => selecting(table({ 'seat-a:hand': hand }), 'pleasure', 'cards', hand.map((c) => c.instanceId), 'paid');
     expect(picked(decide(t([card('p', 'peach', 'heart')])))).toBe('CancelSelectionAction');
     const spare = decide(t([card('x', 'draw-two', 'club'), card('p', 'peach', 'heart')]));
@@ -136,7 +136,7 @@ describe('active skills', () => {
 });
 
 describe('the Instigate window', () => {
-  it('answers with a Sha when it holds one, at Jiang Wei if he is a non-ally; else passes', () => {
+  it('answers with a Slash when it holds one, at Jiang Wei if he is a non-ally; else passes', () => {
     const open = (hasSha: boolean, ally: boolean) => {
       const t = table({ 'seat-b:hand': hasSha ? [card('s1', 'sha')] : [] }, { kingdoms: { 'seat-a': ally ? 'Wei' : 'Qun', 'seat-b': 'Wei', 'seat-c': 'Shu', 'seat-d': 'Wu' } });
       return {

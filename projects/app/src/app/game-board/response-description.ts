@@ -1,7 +1,7 @@
 import { CardInstance, Effect, EngineEvent, GameState } from 'engine';
 import { abilityName, cardDisplayData } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
-import { Force, cardFaceLabel, cardIdDisplayName, forceOf, judgmentReaderName, seatName, targetLabel } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, forceOf, judgmentReaderName, seatName, shownCardId, targetLabel } from '../labels';
 
 export interface ResponseDescription {
   // What started it, e.g. "Seat 1 played Duel against Hing".
@@ -14,6 +14,8 @@ export interface ResponseDescription {
   outcome: string;
   // The force colour of the player that outcome befalls.
   outcomeForce: Force;
+  // The No Response option's own wording, when the window has one (Instigate's Pass).
+  passLabel?: string;
 }
 
 type CardPlayed = Extract<EngineEvent, { kind: 'CardPlayedEvent' }>;
@@ -60,7 +62,7 @@ function outcomeOf(effect: Effect, viewerSeatId: string, state: GameState, tr: T
   switch (effect.kind) {
     case 'DamageEffect': {
       const { target, amount, source, nature } = effect.damage;
-      const kind = nature === 'normal' ? tr('response.damage') : tr('response.natureDamage', { nature });
+      const kind = nature === 'normal' ? tr('response.damage') : tr('response.natureDamage', { nature: tr(nature === 'fire' ? 'damage.nature.fire' : 'damage.nature.thunder') });
       const detail = source
         ? tr('response.damageDetailFrom', { amount, kind, source: targetLabel(source, state.players, tr) })
         : tr('response.damageDetail', { amount, kind });
@@ -132,7 +134,7 @@ export function describeResponse(
 
   if (pending.reason?.kind === 'wuxie') {
     const { tool, toolUserSeatId, target } = pending.reason;
-    const toolName = cardName({ definitionId: tool.as }, tr);
+    const toolName = cardName({ definitionId: shownCardId(tool) }, tr);
     // A delayed Tool still lying in a judgment area is being judged there.
     const toolCardId = tool.physical[0]?.instanceId;
     const judgedOwner = state.zones.find((z) => z.kind === 'judgment' && z.cards.some((c) => c.instanceId === toolCardId))?.ownerSeatId;
@@ -174,7 +176,7 @@ export function describeResponse(
     const { card, userSeatId, victimSeatId } = pending.reason;
     const holder = pending.respondingSeatId;
     return {
-      source: tr('response.usedOn', { seat: name(userSeatId), tool: cardName({ definitionId: card.as }, tr), target: whom(holder) }),
+      source: tr('response.usedOn', { seat: name(userSeatId), tool: cardName({ definitionId: shownCardId(card) }, tr), target: whom(holder) }),
       latest: null,
       prompt: tr('response.playAt', { card: askedCardName(state, tr), target: whom(victimSeatId) }),
       outcome: outcomeOf(preview(shown) ?? shown, viewerSeatId, state, tr),
@@ -187,7 +189,7 @@ export function describeResponse(
     const { owner, targetSeatId } = pending.reason;
     const you = pending.respondingSeatId === viewerSeatId;
     return {
-      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityName('upheaval', localeOf(tr)) }),
+      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityDisplayName('upheaval', tr) }),
       latest: null,
       prompt: tr('response.upheaval.prompt', { sha, target: targetSeatId ? whom(targetSeatId) : tr('response.seatYouPicked') }),
       outcome: you ? tr('response.loseOne.you') : tr('response.loseOne.other', { seat: name(pending.respondingSeatId) }),
@@ -200,9 +202,10 @@ export function describeResponse(
     const { owner } = pending.reason;
     const you = pending.respondingSeatId === viewerSeatId;
     return {
-      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityName('instigate', localeOf(tr)) }),
+      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityDisplayName('instigate', tr) }),
       latest: null,
       prompt: tr('response.instigate.prompt', { sha, target: whom(owner.seatId) }),
+      passLabel: tr('response.instigate.pass'),
       outcome: you
         ? tr('response.instigate.outcome.you', { owner: name(owner.seatId) })
         : tr('response.instigate.outcome.other', { owner: name(owner.seatId), target: name(pending.respondingSeatId) }),
@@ -216,7 +219,7 @@ export function describeResponse(
   let source = tr('response.needed');
   let prompt = tr('response.yourTurn');
   if (played) {
-    const card = cardName({ definitionId: played.card.as }, tr);
+    const card = cardName({ definitionId: shownCardId(played.card) }, tr);
     source =
       played.targets.length > 0
         ? tr('response.playedAgainst', { seat: name(played.seatId), card, targets: played.targets.map((t) => targetLabel(t, state.players, tr)).join(', ') })
@@ -230,7 +233,7 @@ export function describeResponse(
     const event = state.log[i];
     if (event.kind !== 'CardPlayedEvent') continue;
     if (causeId && event.inResponseTo?.cardInstanceId === causeId) {
-      latest = tr('response.answeredWith', { seat: name(event.seatId), card: cardName({ definitionId: event.card.as }, tr) });
+      latest = tr('response.answeredWith', { seat: name(event.seatId), card: cardName({ definitionId: shownCardId(event.card) }, tr) });
     }
     break;
   }
@@ -264,7 +267,7 @@ export function waitingLine(state: GameState, tr: Translator = englishTranslator
   if (selection) return tr('response.waiting.choose', { seat: name(selection.seatId) });
   const asking = state.pendingChoice;
   if (asking?.reason.kind === 'ability') {
-    return tr('response.waiting.ask', { seat: name(asking.seatId), what: cardName({ definitionId: asking.reason.abilityId }, tr) });
+    return tr('response.waiting.ask', { seat: name(asking.seatId), what: abilityDisplayName(asking.reason.abilityId, tr) });
   }
   const choice = state.pendingChoice;
   if (choice) return tr('response.waiting.chooseCard', { seat: name(choice.seatId) });
@@ -274,10 +277,10 @@ export function waitingLine(state: GameState, tr: Translator = englishTranslator
   const reason = pending.reason;
   if (reason?.kind === 'dying') return tr('response.waiting.toSave', { seat, dying: name(reason.seatId) });
   if (reason?.kind === 'wuxie' || reason?.kind === 'counter-wuxie') return tr('response.waiting.ask', { seat, what: askedCardName(state, tr) });
-  if (reason?.kind === 'card-effect') return tr('response.waiting.answer', { seat, card: cardName({ definitionId: reason.card.as }, tr) });
+  if (reason?.kind === 'card-effect') return tr('response.waiting.answer', { seat, card: cardName({ definitionId: shownCardId(reason.card) }, tr) });
   const sha = cardName({ definitionId: 'sha' }, tr);
-  if (reason?.kind === 'ability' && reason.abilityId === 'upheaval') return tr('response.waiting.playSha', { seat, sha, ability: abilityName('upheaval', localeOf(tr)) });
-  if (reason?.kind === 'ability' && reason.abilityId === 'instigate') return tr('response.waiting.playSha', { seat, sha, ability: abilityName('instigate', localeOf(tr)) });
+  if (reason?.kind === 'ability' && reason.abilityId === 'upheaval') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName('upheaval', tr) });
+  if (reason?.kind === 'ability' && reason.abilityId === 'instigate') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName('instigate', tr) });
   return tr('response.waiting.on', { seat });
 }
 

@@ -36,20 +36,20 @@ describe('an ability hint', () => {
 
   it('is Vietnamese with a Vietnamese translator, with the target named', () => {
     expect(both((t) => describeAsk(state({ pendingChoice: ask('seat-1') }), 'seat-0', asked, t)!.hint)).toEqual({
-      en: 'Discard 2 cards to make your Sha hit Seat 1',
+      en: 'Discard 2 cards to make your Slash hit Seat 1',
       vi: 'Bỏ 2 lá bài để Sát của bạn trúng Người chơi 1',
     });
   });
 
   it('names "the target" in the viewer’s language when no seat is named', () => {
     expect(both((t) => describeAsk(state({ pendingChoice: ask() }), 'seat-0', asked, t)!.hint)).toEqual({
-      en: 'Discard 2 cards to make your Sha hit the target',
+      en: 'Discard 2 cards to make your Slash hit the target',
       vi: 'Bỏ 2 lá bài để Sát của bạn trúng mục tiêu',
     });
   });
 
   it('stays English when the translator has the catalog but no locale', () => {
-    expect(describeAsk(state({ pendingChoice: ask('seat-1') }), 'seat-0', asked, trCatalogOnly)!.hint).toBe('Discard 2 cards to make your Sha hit Người chơi 1');
+    expect(describeAsk(state({ pendingChoice: ask('seat-1') }), 'seat-0', asked, trCatalogOnly)!.hint).toBe('Discard 2 cards to make your Slash hit Người chơi 1');
   });
 });
 
@@ -110,7 +110,7 @@ describe('a skill’s pick prompt', () => {
 
   it('a mixed pick uses the skill’s fixed prompt', () => {
     expect(both((t) => describeChoice(state({ pendingChoice: pick('upheaval', [seatOption, labelOption]) }), 'seat-0', t)!.prompt)).toEqual({
-      en: 'Choose a seat to play a Sha at, or pass',
+      en: 'Choose a seat to play a Slash at, or pass',
       vi: 'Chọn một người chơi để đánh Sát vào, hoặc bỏ qua',
     });
   });

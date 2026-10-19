@@ -50,8 +50,8 @@ describe('App shell in Vietnamese', () => {
   it('the title, the four navigation items and their aria labels', async () => {
     const { el } = await render();
     expect(text(el.querySelector('mat-toolbar h1'))).toBe('Quốc chiến');
-    expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Chơi', 'Trực tuyến', 'Bài', 'Luật']);
-    expect([...el.querySelectorAll('nav.nav > a, nav.nav > button')].map((i) => i.getAttribute('aria-label'))).toEqual(['Chơi', 'Trực tuyến', 'Bài', 'Luật']);
+    expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Bài', 'Luật']);
+    expect([...el.querySelectorAll('nav.nav > a, nav.nav > button')].map((i) => i.getAttribute('aria-label'))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Bài', 'Luật']);
   });
 
   it('the Cards and Rules menus name their pages in Vietnamese', async () => {
@@ -106,7 +106,7 @@ describe('App shell in Vietnamese', () => {
     await TestBed.inject(I18n).setLocale('en');
     await fixture.whenStable();
     expect(text(el.querySelector('mat-toolbar h1'))).toBe('Kingdom War');
-    expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Play', 'Online', 'Cards', 'Rules']);
+    expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Play Offline', 'Play Online', 'Cards', 'Rules']);
     await TestBed.inject(I18n).setLocale('vi');
     await fixture.whenStable();
     expect(text(el.querySelector('mat-toolbar h1'))).toBe('Quốc chiến');

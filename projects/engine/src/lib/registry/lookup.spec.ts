@@ -3,7 +3,7 @@ import { ContentRegistry, ModeRegistry, CardDefinition, GeneralDefinition, GameM
 
 describe('registry lookups', () => {
   it('finds a registered card definition by id', () => {
-    const sha: CardDefinition = { id: 'sha', name: 'Sha', category: 'basic', play: () => [] };
+    const sha: CardDefinition = { id: 'sha', name: 'Slash', category: 'basic', play: () => [] };
     const registry: ContentRegistry = { cards: new Map([['sha', sha]]), generals: new Map() };
     expect(lookupCard(registry, 'sha')).toBe(sha);
   });

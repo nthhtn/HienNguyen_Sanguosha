@@ -27,6 +27,16 @@
     </mat-menu>
   </nav>
   <span class="spacer"></span>
+  @if (backgrounds.available()) {
+    <button mat-button type="button" class="nav-battlefield" [matMenuTriggerFor]="battlefieldMenu" [attr.aria-label]="'nav.battlefield' | t">
+      <mat-icon>landscape</mat-icon><span class="label">{{ 'nav.battlefield' | t }}</span>
+    </button>
+    <mat-menu #battlefieldMenu="matMenu">
+      @for (option of backgroundOptions; track option.value) {
+        <button mat-menu-item type="button" [class.active]="backgrounds.choice() === option.value" [attr.aria-current]="backgrounds.choice() === option.value ? 'true' : null" (click)="backgrounds.select(option.value)">{{ option.label | t }}</button>
+      }
+    </mat-menu>
+  }
   @if (auth.loaded()) {
     @if (auth.me(); as me) {
       <button mat-button type="button" class="account" [matMenuTriggerFor]="accountMenu" [attr.aria-label]="'nav.account' | t">

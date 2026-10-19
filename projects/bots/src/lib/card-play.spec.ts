@@ -85,7 +85,7 @@ describe('discardRank', () => {
     return discardRank(s, registry, 'x');
   };
 
-  it('orders Peach, Shan and Wuxie, Sha, Wine, other Tools, equipment, the rest', () => {
+  it('orders Peach, Dodge and Wuxie, Slash, Wine, other Tools, equipment, the rest', () => {
     expect(rankOf('peach')).toBe(6);
     expect(rankOf('shan')).toBe(5);
     expect(rankOf('wuxie')).toBe(5);
@@ -99,5 +99,14 @@ describe('discardRank', () => {
     const s = table({ 'seat-a:hand': [card('x', 'no-such-card')] });
     expect(discardRank(s, registry, 'x')).toBe(0);
     expect(discardRank(s, registry, 'missing-instance')).toBe(0);
+  });
+});
+
+describe('discardRank: elemental Slash', () => {
+  it('ranks Fire Attack and Lightning Attack as Slash, and Chains as a plain Tool', () => {
+    const rank = (id: string) => discardRank(table({ 'seat-a:hand': [card('x', id)] }), registry, 'x');
+    expect(rank('fire-attack')).toBe(4);
+    expect(rank('lightning-attack')).toBe(4);
+    expect(rank('chains')).toBe(2);
   });
 });

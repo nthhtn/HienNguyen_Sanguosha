@@ -7,7 +7,7 @@ const isStruck = (suit: string, rank: number) => suit === 'spade' && rank >= 2 &
 
 // Lightning: placed in the user's own judgment area (one per seat). Judged in
 // the holder's Judgment Phase: a spade from 2 to 9 discards Lightning, then
-// deals 3 damage to the holder, with no source. Anything else, or a
+// deals 3 thunder damage to the holder, with no source. Anything else, or a
 // Wuxie Kongjie, moves it on to the next living seat in seat order that holds
 // no Lightning; with none, it stays.
 export const lightningCard: CardDefinition = {
@@ -26,7 +26,7 @@ export const lightningCard: CardDefinition = {
     if (card) effects.push({ kind: 'MoveCardEffect', cardInstanceId: card.instanceId, toZoneId: requireZoneOfKind(state.zones, 'discardPile').id });
     effects.push({
       kind: 'DamageEffect',
-      damage: { source: null, target: { kind: 'seat', seatId }, amount: 3, nature: 'normal', cause: { ...(card ? { cardInstanceId: card.instanceId } : {}), card: tool } },
+      damage: { source: null, target: { kind: 'seat', seatId }, amount: 3, nature: 'thunder', cause: { ...(card ? { cardInstanceId: card.instanceId } : {}), card: tool } },
     });
     return effects;
   },

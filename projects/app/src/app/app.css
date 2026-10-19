@@ -53,12 +53,14 @@
   }
 }
 
+.app-bar .nav-battlefield,
 .app-bar .account,
 .app-bar .sign-in {
   --mat-button-text-label-text-color: var(--mat-sys-on-primary);
   color: var(--mat-sys-on-primary);
 }
 @media (max-width: 599px) {
+  .nav-battlefield .label,
   .account .label,
   .sign-in .label {
     display: none;

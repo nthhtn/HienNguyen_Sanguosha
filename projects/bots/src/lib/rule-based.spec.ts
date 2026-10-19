@@ -16,7 +16,7 @@ function card(id: string, category: CardDefinition['category'], equipSlot?: Equi
 const registry: ContentRegistry = {
   generals: new Map([general('w1', 'Wei', 4), general('w2', 'Wei', 3), general('s1', 'Shu', 4), general('s2', 'Shu', 5)]),
   cards: new Map([
-    card('sha', 'basic'), card('shan', 'basic'), card('peach', 'basic'),
+    card('sha', 'basic'), ['fire-attack', { id: 'fire-attack', name: 'fire-attack', category: 'basic', playsAs: 'sha', nature: 'fire', play: () => [] }], ['lightning-attack', { id: 'lightning-attack', name: 'lightning-attack', category: 'basic', playsAs: 'sha', nature: 'thunder', play: () => [] }], card('chains', 'tool'), card('shan', 'basic'), card('peach', 'basic'),
     card('duel', 'tool'), card('wuxie', 'tool'), card('blade', 'equipment', 'weapon'), card('blade-2', 'equipment', 'weapon'), card('lion', 'equipment', 'armor'),
     card('draw-two', 'tool'), card('barbarians', 'tool'), card('hail-of-arrows', 'tool'), card('peach-garden', 'tool'),
     card('steal', 'tool'), card('break', 'tool'), card('coerce', 'tool'), card('harvest', 'tool'),
@@ -122,13 +122,13 @@ describe('ruleBasedPolicy', () => {
   describe('in the Discard phase', () => {
     const hand = (...ids: [string, string][]) => ids.map(([instanceId, definitionId]) => ({ instanceId, definitionId }));
 
-    it('discards a tool before equipment, Sha, Shan or Peach', () => {
+    it('discards a tool before equipment, Slash, Dodge or Peach', () => {
       const h = hand(['p', 'peach'], ['s', 'sha'], ['d', 'duel'], ['e', 'shan'], ['b', 'blade']);
       const legal = h.map((c) => discard(c.instanceId));
       expect(decide(view({ phase: 'Discard', hand: h }), legal).action).toEqual(discard('d'));
     });
 
-    it('keeps Peach longest, then Shan, then Sha, then equipment', () => {
+    it('keeps Peach longest, then Dodge, then Slash, then equipment', () => {
       const pick = (h: { instanceId: string; definitionId: string }[]) =>
         decide(view({ phase: 'Discard', hand: h }), h.map((c) => discard(c.instanceId))).action;
       expect(pick(hand(['p', 'peach'], ['e', 'shan']))).toEqual(discard('e'));
@@ -182,7 +182,7 @@ describe('ruleBasedPolicy', () => {
     expect(ruleBasedV1Policy.decide(v, 'seat-0', legal, registry, null).action).toEqual(play('c-sha', 'seat-3'));
   });
 
-  it('plays a Sha at the lowest-HP non-ally whenever the engine offers one, never untargeted (Crossbow repeats)', () => {
+  it('plays a Slash at the lowest-HP non-ally whenever the engine offers one, never untargeted (Crossbow repeats)', () => {
     const hand = [{ instanceId: 'c-sha', definitionId: 'sha' }];
     const legal = [play('c-sha'), play('c-sha', 'seat-1'), play('c-sha', 'seat-2'), end];
     const first = decide(view({ hand }), legal);
@@ -206,7 +206,7 @@ describe('ruleBasedPolicy', () => {
     expect(decide(view({ hand, seats }), legal).action).toBe(legal[0]);
   });
 
-  it('duels a non-ally once the engine offers no Sha', () => {
+  it('duels a non-ally once the engine offers no Slash', () => {
     const hand = [{ instanceId: 'c-duel', definitionId: 'duel' }];
     const legal = [play('c-duel', 'seat-1'), end];
     expect(decide(view({ hand }), legal).action).toBe(legal[0]);
@@ -259,7 +259,7 @@ describe('ruleBasedPolicy: Tools and Wuxie Kongjie', () => {
     expect(decide(v, [respond('wx'), pass]).action).toEqual(pass);
   });
 
-  it('answers a Barbarians window with a Sha', () => {
+  it('answers a Barbarians window with a Slash', () => {
     const v = view({ pendingFor: 'seat-0', hand: [{ instanceId: 's', definitionId: 'sha' }], pendingReason: { kind: 'card-effect', card: tool('barbarians'), userSeatId: 'seat-1' } });
     expect(decide(v, [respond('s'), pass]).action).toEqual(respond('s'));
   });
@@ -371,13 +371,13 @@ describe('ruleBasedPolicy: delayed Tools', () => {
 });
 
 describe('ruleBasedPolicy: Wine', () => {
-  it('drinks Wine first when a Sha at a non-ally is legal, then plays the Sha', () => {
+  it('drinks Wine first when a Slash at a non-ally is legal, then plays the Slash', () => {
     const hand = [{ instanceId: 'w', definitionId: 'wine' }, { instanceId: 's', definitionId: 'sha' }];
     expect(decide(view({ hand }), [play('w'), play('s', 'seat-1'), end]).action).toEqual(play('w'));
     expect(decide(view({ hand: [hand[1]] }), [play('s', 'seat-1'), end]).action).toEqual(play('s', 'seat-1'));
   });
 
-  it('keeps its Wine when no Sha at a non-ally is legal', () => {
+  it('keeps its Wine when no Slash at a non-ally is legal', () => {
     const hand = [{ instanceId: 'w', definitionId: 'wine' }];
     expect(decide(view({ hand }), [play('w'), end]).action).toEqual(end);
   });
@@ -513,7 +513,7 @@ describe('Serpent Spear', () => {
     expect(ruleBasedPolicy.decide(view({ hand: withSha, equip: ['serpent-spear'], pendingFor: 'seat-0', pendingReason: barbarians }), 'seat-0', [pass, realSha, convertAnswer], registry, null).action).toEqual(realSha);
   });
 
-  it('in the Play Phase, converts only with no real Sha, at the weakest non-ally', () => {
+  it('in the Play Phase, converts only with no real Slash, at the weakest non-ally', () => {
     const cheap = [{ instanceId: 'x1', definitionId: 'duel' }, { instanceId: 'x2', definitionId: 'wuxie' }];
     const at = (seatId: string): Action => ({ kind: 'UseConversionAction', seatId: 'seat-0', via, targets: [{ kind: 'seat', seatId }] });
     expect(ruleBasedPolicy.decide(view({ hand: cheap, equip: ['serpent-spear'] }), 'seat-0', [end, at('seat-1'), at('seat-2')], registry, null).action).toEqual(at('seat-2'));
@@ -548,7 +548,7 @@ describe('reveal to use', () => {
 });
 
 describe('arranging the draw pile', () => {
-  it('keeps Peach, Shan and Sha on top and sends the rest to the bottom', () => {
+  it('keeps Peach, Dodge and Slash on top and sends the rest to the bottom', () => {
     const arrangement: PendingArrangement = {
       id: 'arr', seatId: 'seat-0', cardInstanceIds: ['a1', 'a2', 'a3', 'a4'],
       reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'astrology' }, abilityId: 'astrology' },
@@ -605,23 +605,23 @@ describe('card-play rules', () => {
     const hand = cards(['c-wine', 'wine'], ['c-sha', 'sha']);
     const seatsWith = (targetHp: number) => [seat('seat-0', 0, 'Wei', 4), seat('seat-1', 1, 'Shu', targetHp), seat('seat-2', 2, 'Wu', 8), seat('seat-3', 3, 'Qun', 8)];
 
-    it('plays Wine before a Sha at a target at 2 HP or less', () => {
+    it('plays Wine before a Slash at a target at 2 HP or less', () => {
       const legal = [play('c-wine'), play('c-sha', 'seat-1'), end];
       expect(run(only('wine'), view({ seats: seatsWith(2), hand }), legal)).toEqual(play('c-wine'));
     });
 
-    it('goes straight to the Sha at a healthier target; the old bot drinks first', () => {
+    it('goes straight to the Slash at a healthier target; the old bot drinks first', () => {
       const legal = [play('c-wine'), play('c-sha', 'seat-1'), end];
       const v = view({ seats: seatsWith(4), hand });
       expect(run(off, v, legal)).toEqual(play('c-wine'));
       expect(run(only('wine'), v, legal)).toEqual(play('c-sha', 'seat-1'));
     });
 
-    it('never drinks with no Sha to play', () => {
+    it('never drinks with no Slash to play', () => {
       expect(run(only('wine'), view({ seats: seatsWith(1), hand: cards(['c-wine', 'wine']) }), [play('c-wine'), end])).toEqual(end);
     });
 
-    it('never drinks when the only Sha target is a revealed ally', () => {
+    it('never drinks when the only Slash target is a revealed ally', () => {
       const seats = [seat('seat-0', 0, 'Wei', 4), seat('seat-1', 1, 'Wei', 1), seat('seat-2', 2, 'Wu', 8), seat('seat-3', 3, 'Qun', 8)];
       expect(run(only('wine'), view({ seats, hand }), [play('c-wine'), play('c-sha', 'seat-1'), end])).toEqual(end);
     });
@@ -703,5 +703,40 @@ describe('General selection with a value table', () => {
     const valued = createRuleBasedPolicy('t', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, { w1: 0.2 });
     expect(valued.decide(view({ phase: 'GeneralSelection' }), 'seat-0', legal, registry, null).action).toBe(legal[0]);
     expect(decide(view({ phase: 'GeneralSelection' }), legal).action).toBe(legal[1]);
+  });
+});
+
+describe('ruleBasedPolicy: elemental Slash and Chains', () => {
+  const h = (...ids: [string, string][]) => ids.map(([instanceId, definitionId]) => ({ instanceId, definitionId }));
+  const respond = (id: string): Action => ({ kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: id });
+  const pass: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' };
+
+  it.each(['fire-attack', 'lightning-attack'])('plays %s as it plays a Slash, at the lowest-HP non-ally', (id) => {
+    const hand = h(['c', id]);
+    const legal = [play('c', 'seat-1'), play('c', 'seat-2'), end];
+    const first = decide(view({ hand }), legal);
+    expect(first.action).toBe(legal[1]);
+    expect(first.memory?.shaPlayed).toBe(1);
+  });
+
+  it('never plays or recasts Chains', () => {
+    const hand = h(['c', 'chains']);
+    const legal = [play('c'), play('c', 'seat-1'), play('c', 'seat-1'), end];
+    expect(decide(view({ hand }), legal).action).toBe(end);
+    // As the engine offers it: a Choose Targets template and the Recast.
+    const template: Action = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'c', targets: [], pickTargets: { eligibleIds: ['seat-0', 'seat-1', 'seat-2'], min: 1, max: 2 } };
+    expect(decide(view({ hand }), [template, play('c'), end]).action).toBe(end);
+  });
+
+  it('answers a Barbarians window or a Duel with an elemental Slash', () => {
+    const v = view({ pendingFor: 'seat-0', hand: h(['s', 'fire-attack']), pendingReason: { kind: 'card-effect', card: { instanceId: 'x', definitionId: 'barbarians', as: 'barbarians' } as never, userSeatId: 'seat-1' } });
+    expect(decide(v, [respond('s'), pass]).action).toEqual(respond('s'));
+  });
+
+  it('discards Chains before an elemental Slash, and an elemental Slash like a Slash', () => {
+    const pick = (hand: { instanceId: string; definitionId: string }[]) => decide(view({ phase: 'Discard', hand }), hand.map((c) => discard(c.instanceId))).action;
+    expect(pick(h(['f', 'fire-attack'], ['c', 'chains']))).toEqual(discard('c'));
+    expect(pick(h(['e', 'shan'], ['f', 'lightning-attack']))).toEqual(discard('f'));
+    expect(pick(h(['f', 'fire-attack'], ['b', 'blade']))).toEqual(discard('b'));
   });
 });

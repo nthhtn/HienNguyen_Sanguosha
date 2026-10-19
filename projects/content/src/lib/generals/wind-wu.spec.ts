@@ -18,6 +18,7 @@ describe('Xiao Qiao — Fantasy', () => {
     expect(hp(s, 'seat-a')).toBe(4);
     expect(hp(s, 'seat-c')).toBe(3);
     expect(handIds(s, 'seat-c')).toEqual(['d1']);
+    expect(abilityLog(s).at(-1)).toMatchObject({ abilityId: 'fantasy', outcome: 'moved-damage', targetSeatId: 'seat-c' });
   });
 
   it("Beauty: her spades count as hearts for Fantasy's cost", () => {
@@ -92,7 +93,7 @@ describe('Zhou Tai — Refusing Death', () => {
 });
 
 describe('Fantasy after another before-damage skill (final review #1)', () => {
-  // Xu Chu (seat-a, Bare the Chest used) hits Xiao Qiao (seat-b) with a Sha; Bare the Chest is asked first by seat order.
+  // Xu Chu (seat-a, Bare the Chest used) hits Xiao Qiao (seat-b) with a Slash; Bare the Chest is asked first by seat order.
   const hit = () =>
     h.pass(h.play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('h', 'peach', 'heart')] }, { generals: { 'seat-a': ['xu-chu', 'filler-zhang-he'], 'seat-b': ['xiao-qiao', 'filler-sun-ce'] }, flags: { 'bare-the-chest': true } }), 's1', 'seat-b'));
 

@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { GameBoard } from './game-board';
+import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
 import { Action, GameState, cardsOverHandLimit, createRng } from 'engine';
 import { GeneralSelection } from './general-selection';
@@ -12,15 +13,20 @@ import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
 import { EFFECT_URLS, MUSIC_PLAYER_FACTORY } from '../music.service';
 
+// Selection through to the first Play phase: a human seat with a hidden General
+// first rests in its Start window, which Continue (EndPhaseAction) closes.
 function finishSelection(gameService: GameService): void {
   while (gameService.state()!.phase === 'GeneralSelection') {
     gameService.submit(gameService.legalActions()[0]);
   }
+  if (gameService.state()!.turn.startWindow) {
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
+  }
 }
 
 
-// Whether the state waits on the target's own answer to a damage card (a Sha's
-// Shan window or a Duel's), not on a Wuxie question or an ability's ask.
+// Whether the state waits on the target's own answer to a damage card (a Slash's
+// Dodge window or a Duel's), not on a Wuxie question or an ability's ask.
 function waitsOnDamageAnswer(state: GameState): boolean {
   const reason = state.pendingResponse?.reason;
   return !!state.pendingResponse && !state.pendingChoice && (!reason || reason.kind === 'card-effect');
@@ -48,6 +54,24 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
     expect(el.querySelector('app-action-list')).toBeNull();
     expect(el.querySelector('app-game-over')).toBeNull();
+  });
+
+  it('offers the Battlefield menu only while the battlefield is on screen', () => {
+    const backgrounds = TestBed.inject(BattlefieldBackgrounds);
+    const idle = TestBed.createComponent(GameBoard);
+    idle.detectChanges();
+    expect(backgrounds.available()).toBe(false);
+    idle.destroy();
+
+    gameService.startGame(3, 1);
+    finishSelection(gameService);
+    gameService.reveal(gameService.activeSeatId()!);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-round-table')).not.toBeNull();
+    expect(backgrounds.available()).toBe(true);
+    fixture.destroy();
+    expect(backgrounds.available()).toBe(false);
   });
 
   it('shows the reveal gate for the active seat when no seat is revealed yet', () => {
@@ -110,6 +134,23 @@ describe('GameBoard', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-general-selection')).toBeNull();
     expect(el.querySelector('app-action-list')).not.toBeNull();
+  });
+
+  it('shows Continue and the enabled Reveal buttons for a viewer in their Start window', () => {
+    gameService.startGame(2, 1);
+    while (gameService.state()!.phase === 'GeneralSelection') gameService.submit(gameService.legalActions()[0]);
+    expect(gameService.state()!.turn.startWindow).toBe(true);
+    gameService.reveal(gameService.activeSeatId()!);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    const buttons = [...el.querySelectorAll('app-action-list button')].map((b) => b.textContent!.trim());
+    expect(buttons).toContain('Continue');
+    expect(buttons).not.toContain('End Phase');
+    const reveals = [...el.querySelectorAll('app-seat-avatar button.reveal')] as HTMLButtonElement[];
+    expect(reveals).toHaveLength(2);
+    expect(reveals.every((b) => !b.disabled)).toBe(true);
   });
 
   it('seats everyone at a round table from the viewer’s chair, with the viewer’s own hand below', () => {
@@ -235,7 +276,7 @@ describe('GameBoard', () => {
   });
 
   it('opens the Response dialog for the seat that must answer, and No Response lets the effect go ahead', async () => {
-    // Find a deal where the first seat can aim a card (Sha or Duel) at the other.
+    // Find a deal where the first seat can aim a card (Slash or Duel) at the other.
     // Its play must open the target's own answer (not a Wuxie question or an ask).
     let sha: Action | undefined; // the targeted play
     for (let seed = 1; seed < 50 && !sha; seed++) {
@@ -427,6 +468,8 @@ describe('GameBoard in vs-bots mode', () => {
   it('shows whose turn and which phase above the table', () => {
     gameService.startGame(3, 1, 'vs-bots');
     gameService.submit(gameService.legalActions()[0]);
+    flushBots();
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!); // Continue past the Start window
     flushBots();
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();

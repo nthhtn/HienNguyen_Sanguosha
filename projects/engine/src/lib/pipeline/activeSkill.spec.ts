@@ -157,7 +157,7 @@ describe('counters', () => {
   });
 
   it('ownerUses counts every card the turn owner used, answers included; never another seat’s', () => {
-    const shan: CardDefinition = { id: 'shan', name: 'Shan', category: 'basic', legalPlayTargets: () => [], play: () => [] };
+    const shan: CardDefinition = { id: 'shan', name: 'Dodge', category: 'basic', legalPlayTargets: () => [], play: () => [] };
     const withShan: ContentRegistry = { ...registry, cards: new Map([...registry.cards, [shan.id, shan]]) };
     const s = table();
     s.zones = s.zones.map((z) => (z.id === 'a:hand' ? { ...z, cards: [{ ...card('s1'), definitionId: 'shan' }] } : z.id === 'b:hand' ? { ...z, cards: [{ ...card('s2'), definitionId: 'shan' }] } : z));

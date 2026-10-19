@@ -6,6 +6,8 @@ import { starvationCard } from './starvation';
 import { wuxieCard } from './wuxie';
 import { breakCard } from './break';
 import { lightningCard } from './lightning';
+import { usedCardOf } from 'engine';
+import { judgeTarget } from '../shared/delayed';
 
 const plain = (id: string): CardDefinition => ({ id, name: id, category: 'basic', play: () => [] });
 const diLu: CardDefinition = { id: 'di-lu', name: 'Di Lu', category: 'equipment', equipSlot: 'defensiveMount', play: () => [] };
@@ -150,6 +152,25 @@ describe('the Judgment Phase', () => {
     expect(idsIn(next, 'seat-c:hand')).toHaveLength(2);
   });
 
+  describe('a delayed Tool whose turn to be judged comes late', () => {
+    const tool = usedCardOf(card('cap', 'capture'));
+    const judge = (s: GameState) => judgeTarget(s, { tool, userSeatId: 'seat-b', target: { kind: 'seat', seatId: 'seat-b' } } as never, registry);
+
+    it('judges a delayed Tool still in the judgment area', () => {
+      expect(judge(table({ 'seat-b:judgment': [card('cap', 'capture')] }))).toHaveLength(1);
+    });
+
+    it('does not judge a delayed Tool that left the judgment area', () => {
+      expect(judge(table())).toEqual([]);
+    });
+
+    it('does not judge an eliminated holder', () => {
+      const s = table({ 'seat-b:judgment': [card('cap', 'capture')] });
+      const dead = { ...s, seats: s.seats.map((x) => (x.id === 'seat-b' ? { ...x, eliminated: true } : x)) };
+      expect(judge(dead)).toEqual([]);
+    });
+  });
+
   it('does nothing for a seat with an empty judgment area', () => {
     const next = run(table());
     expect(judgments(next.log)).toEqual([]);
@@ -175,10 +196,19 @@ describe('Lightning', () => {
       const next = run(table({ 'seat-b:judgment': [card('L', 'lightning', 'spade', 1)], drawPile: [card('j1', 'shan', 'spade', rank), ...filler(6)] }));
       expect(hp(next, 'seat-b')).toBe(1);
       expect(next.log.find((e) => e.kind === 'DamageDealtEvent')).toMatchObject({
-        damage: { source: null, target: { kind: 'seat', seatId: 'seat-b' }, amount: 3, nature: 'normal' },
+        damage: { source: null, target: { kind: 'seat', seatId: 'seat-b' }, amount: 3, nature: 'thunder' },
       });
       expect(idsIn(next, 'discardPile')).toEqual(expect.arrayContaining(['L', 'j1']));
     }
+  });
+
+  it('its strike is thunder damage 3 and passes along a chain to a chained seat', () => {
+    const base = table({ 'seat-b:judgment': [card('L', 'lightning', 'spade', 1)], drawPile: [card('j1', 'shan', 'spade', 5), ...filler(6)] });
+    const chained = { ...base, seats: base.seats.map((x) => (x.id === 'seat-b' || x.id === 'seat-c' ? { ...x, chained: true as const } : x)) };
+    const next = run(chained);
+    expect(next.log.filter((e) => e.kind === 'DamageDealtEvent')).toMatchObject([{ damage: { amount: 3, nature: 'thunder', target: { seatId: 'seat-b' } } }, { damage: { amount: 3, nature: 'thunder', target: { seatId: 'seat-c' } } }]);
+    expect(hp(next, 'seat-c')).toBe(1);
+    expect(next.seats.some((x) => x.chained)).toBe(false);
   });
 
   it('anything else moves it on to the next living seat that holds no Lightning', () => {

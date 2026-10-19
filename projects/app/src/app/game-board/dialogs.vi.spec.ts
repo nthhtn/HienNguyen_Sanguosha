@@ -35,14 +35,14 @@ const shan: CardInstance = { instanceId: 'shan-1', definitionId: 'shan', suit: '
 const respond: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'w1', cardInstanceId: 'shan-1' };
 const pass: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'w1' };
 const description = {
-  source: 'Seat 1 played Sha against Hing', latest: null, prompt: 'Your turn to respond to Sha', outcome: 'You lose 1 HP (1 damage from Seat 1)', outcomeForce: 'Shu' as const,
+  source: 'Seat 1 played Slash against Hing', latest: null, prompt: 'Your turn to respond to Slash', outcome: 'You lose 1 HP (1 damage from Seat 1)', outcomeForce: 'Shu' as const,
 };
 
 describe('ResponseDialog in Vietnamese', () => {
   const data = (cards: ResponseDialogData['cards'], skills: ResponseDialogData['skills'] = []): ResponseDialogData => ({ description, cards, skills, noResponse: pass });
 
   it('the title, the section headings, the options and the confirm button', async () => {
-    const { fixture, el } = await mount(ResponseDialog, data([{ id: 'shan-1', action: respond, card: shan, label: 'Shan (2 ♥)' }]));
+    const { fixture, el } = await mount(ResponseDialog, data([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }]));
     expect(text(el.querySelector('h2'))).toBe('Cần phản hồi');
     expect([...el.querySelectorAll('.options h3')].map(text)).toEqual(['Kỹ năng', 'Bài']);
     expect(el.querySelector('.options')!.getAttribute('aria-label')).toBe('Chọn cách phản hồi');
@@ -63,12 +63,12 @@ describe('ResponseDialog in Vietnamese', () => {
 
   it('a skill answer confirms with its own label', async () => {
     const convert: Action = { kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'sp' }, conversionId: 'serpent-spear' }, targets: [] };
-    const { el } = await mount(ResponseDialog, data([], [{ id: 'convert-0', action: convert, label: 'Dùng 2 lá bài làm Sha' }]));
-    expect(text(el.querySelector('button.confirm'))).toBe('Dùng 2 lá bài làm Sha');
+    const { el } = await mount(ResponseDialog, data([], [{ id: 'convert-0', action: convert, label: 'Dùng 2 lá bài làm Slash' }]));
+    expect(text(el.querySelector('button.confirm'))).toBe('Dùng 2 lá bài làm Slash');
   });
 
   it('cardLabel names a card, and a hidden card in the translator’s language', () => {
-    expect(ResponseDialog.cardLabel(shan)).toBe('Shan (2 ♥)');
+    expect(ResponseDialog.cardLabel(shan)).toBe('Dodge (2 ♥)');
     const hidden: CardInstance = { instanceId: 'h', definitionId: 'hidden', suit: 'spade', rank: 1 };
     expect(ResponseDialog.cardLabel(hidden)).toBe('Hidden Card (A ♠)');
     expect(ResponseDialog.cardLabel(hidden, makeTranslator(vi, 'vi'))).toBe('Lá bài ẩn (A ♠)');
@@ -162,7 +162,7 @@ describe('CompeteDialog and competeResults in Vietnamese', () => {
     const [hidden] = competeResults(log, 0, [seat('seat-0', 0, 'Wu', 'hidden'), seat('seat-1', 1, 'Shu', 'guan-yu')], [], tr);
     expect(hidden.generalName).toBe('Tướng ẩn');
     const [english] = competeResults(log, 0, [seat('seat-0', 0, 'Wu', 'hidden'), seat('seat-1', 1, 'Shu', 'guan-yu')], []);
-    expect(english).toMatchObject({ generalName: 'Hidden General', winnerName: 'Seat 0', outcome: 'Seat 0 can play one more Sha this turn, at any distance, with one more target' });
+    expect(english).toMatchObject({ generalName: 'Hidden General', winnerName: 'Seat 0', outcome: 'Seat 0 can play one more Slash this turn, at any distance, with one more target' });
   });
 });
 

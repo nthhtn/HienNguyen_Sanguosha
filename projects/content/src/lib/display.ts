@@ -57,6 +57,8 @@ export interface CardDisplayData {
   category: CardData['category'];
   subtype: NonNullable<CardData['subtype']> | null;
   range: number | null;
+  // Horses only: defensive (+1) or offensive (-1).
+  mount: 'defensive' | 'offensive' | null;
   text: string | null;
 }
 
@@ -70,16 +72,17 @@ export function cardDisplayData(id: string, locale = 'en'): CardDisplayData | nu
     category: data.category,
     subtype: data.subtype ?? null,
     range: data.range ?? null,
+    mount: data.mount ?? null,
     text: translated?.text ?? data.text ?? null,
   };
 }
 // What an optional ability does, for its ask, in the game's own terms.
 // '{target}' stands for the seat it is aimed at.
 const ABILITY_HINTS: Record<string, string> = {
-  'eight-trigrams': 'Judge: on red, it counts as a Shan',
+  'eight-trigrams': 'Judge: on red, it counts as a Dodge',
   'gender-swords': "{target} discards a hand card or lets you draw 1 card",
-  axe: 'Discard 2 cards to make your Sha hit {target}',
-  'green-dragon-blade': 'Play another Sha at {target}',
+  axe: 'Discard 2 cards to make your Slash hit {target}',
+  'green-dragon-blade': 'Play another Slash at {target}',
   'ice-sword': "Prevent the damage and discard 2 of {target}'s cards instead",
   longbow: "Discard one of {target}'s Mounts",
   'evil-hero': 'Take the card that damaged you into your hand',
@@ -89,24 +92,24 @@ const ABILITY_HINTS: Record<string, string> = {
   'heavens-envy': 'Take the judgment card into your hand',
   devil: "Replace {target}'s judgment card with one of your hand cards",
   'river-goddess': 'Judge: keep each black card and judge again; a red card ends it',
-  'bare-the-chest': 'Draw 1 fewer card; your Sha and Duel deal 1 more damage this turn',
+  'bare-the-chest': 'Draw 1 fewer card; your Slash and Duel deal 1 more damage this turn',
   raid: 'Instead of drawing, take a hand card from 1 or 2 other seats',
   'brave-gesture': 'Draw 1 more card',
   'gathering-wisdom': 'Draw 1 card',
-  'iron-cavalry': "Judge: on red, {target} can't play a Shan against this Sha",
+  'iron-cavalry': "Judge: on red, {target} can't play a Dodge against this Slash",
   astrology: 'Look at the top cards of the draw pile and put them back in any order',
-  displace: 'Discard 1 card to move the Sha to another seat in your attack range',
+  displace: 'Discard 1 card to move the Slash to another seat in your attack range',
   'self-restraint': 'Skip your Discard Phase',
   entrench: 'Turn face down and draw 3 cards',
-  godspeed: 'Skip phases to use a Sha on any seat, ignoring distance',
-  'strong-bow': 'Make your Sha unblockable for {target}',
+  godspeed: 'Skip phases to use a Slash on any seat, ignoring distance',
+  'strong-bow': 'Make your Slash unblockable for {target}',
   fantasy: 'Discard a heart card to pass the damage to another seat',
   'refusing-death': 'Turn the top card of the draw pile under your General to stay alive',
-  'lightning-strike': 'A seat of your choice judges: on a spade it takes 2 damage',
+  'lightning-strike': 'A seat of your choice judges: on a spade it takes 2 thunder damage',
   'dark-magic': "Replace {target}'s judgment card with a black card, and take the old one",
   'eternal-loyalty': 'A seat of your choice draws up to its max HP',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
-  'eight-arrays': 'Judge: on red, it counts as a Shan',
+  'eight-arrays': 'Judge: on red, it counts as a Dodge',
   'sudden-attack': "Discard one of {target}'s cards",
   'dueling-heroes': 'Instead of drawing, judge and take the card; cards of the other colour can be used as Duel this turn',
   'unnatural-death': "Take all of {target}'s cards into your hand",
@@ -121,7 +124,7 @@ const ABILITY_HINTS: Record<string, string> = {
   stubborn: 'Give one of the discarded cards back and take the rest',
   lament: 'Discard a card: {target} judges, and a heart, diamond, club or spade has its effect',
   incarnation: 'Choose a skill of one of your Forms',
-  instigate: 'Choose a seat to play a Sha at you, or you discard one of its cards',
+  instigate: 'Choose a seat to play a Slash at you, or you discard one of its cards',
   'direct-instruction': "Place an Equipment card from your hand in another seat's empty slot, then draw 1 card",
 };
 
@@ -153,11 +156,11 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   'brave-spirit': { prompt: 'Choose cards to discard', confirm: 'Discard' },
   charity: { prompt: 'Choose half of your hand to give away', confirm: 'Give' },
   'clever-change': { prompt: 'Choose a hand card to discard to skip the phase', confirm: 'Discard' },
-  pleasure: { prompt: 'Choose a Basic card to discard, or the Sha has no effect', confirm: 'Discard', cancel: 'Give Up' },
+  pleasure: { prompt: 'Choose a Basic card to discard, or the Slash has no effect', confirm: 'Discard', cancel: 'Give Up' },
   decentralization: { prompt: 'Choose a hand card to discard', confirm: 'Discard' },
   lament: { prompt: 'Choose cards to discard', confirm: 'Discard' },
   'direct-instruction': { prompt: 'Choose an Equipment card to place', confirm: 'Place' },
-  instigate: { prompt: 'Choose a seat to play a Sha at you', confirm: 'Choose' },
+  instigate: { prompt: 'Choose a seat to play a Slash at you', confirm: 'Choose' },
 };
 
 export function selectionText(abilityId: string, locale = 'en'): { prompt: string; confirm: string; cancel?: string } | null {
@@ -182,9 +185,9 @@ export function seatPickText(abilityId: string, locale = 'en'): string | null {
 
 // What a skill's pick says when it mixes seats and labels, or is all labels.
 const CHOICE_PROMPT_TEXT: Record<string, string> = {
-  upheaval: 'Choose a seat to play a Sha at, or pass',
+  upheaval: 'Choose a seat to play a Slash at, or pass',
   collapse: 'Choose how Collapse costs you',
-  'brave-spirit': 'Choose how to draw and discard',
+  'brave-spirit': 'Choose how {target} draws and discards',
   'clever-change': 'Choose a card to move',
   'follow-the-master': 'Choose how Follow the Master helps you',
   incarnation: 'Choose a Form skill',
@@ -195,20 +198,26 @@ export function choicePromptText(abilityId: string, locale = 'en'): string | nul
   return lookup(proseOf(locale)?.choicePrompt, abilityId) ?? lookup(CHOICE_PROMPT_TEXT, abilityId) ?? null;
 }
 
-// What a selection says by the step it leads to, whatever opened it:
-// competing (any skill's), and Blaze's two picks.
+// What a selection says by the step it leads to: competing and Blaze's picks
+// (any skill's), and a skill's own step keyed "skill/step".
 const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?: string }> = {
   'compete-user': { prompt: 'Choose a hand card to compete with', confirm: 'Compete' },
   'compete-target': { prompt: 'Choose a hand card to compete with', confirm: 'Compete' },
   'blaze-shown': { prompt: 'Choose a hand card to show', confirm: 'Show' },
   'blaze-hit': { prompt: 'Discard a card of the same suit to deal 1 damage', confirm: 'Discard' },
-  pay: { prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' },
+  'alliance/swap': { prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' },
   'draw-take': { prompt: 'Choose up to 2 seats to take a hand card from', confirm: 'Take' },
   'move-card': { prompt: 'Choose a seat to move a card from', confirm: 'Choose' },
 };
 
-export function stepSelectionText(step: string, locale = 'en'): { prompt: string; confirm: string; cancel?: string } | null {
-  return lookup(proseOf(locale)?.stepSelection, step) ?? lookup(STEP_SELECTION_TEXT, step) ?? null;
+// A skill's own step ("alliance/swap") is found before a step name shared by any skill.
+export function stepSelectionText(step: string, locale = 'en', skillId?: string): { prompt: string; confirm: string; cancel?: string } | null {
+  const keys = skillId ? [`${skillId}/${step}`, step] : [step];
+  for (const key of keys) {
+    const found = lookup(proseOf(locale)?.stepSelection, key) ?? lookup(STEP_SELECTION_TEXT, key);
+    if (found) return found;
+  }
+  return null;
 }
 
 // A skill's id: its English name in kebab case, apostrophes dropped
@@ -253,8 +262,8 @@ function skillNames(locale: string): ReadonlyMap<string, string> {
 // with `{target}`. `null` for an ability that does not compete.
 const COMPETE_OUTCOMES: Record<string, { won: string; lost: string }> = {
   'heavens-justice': {
-    won: '{user} can play one more Sha this turn, at any distance, with one more target',
-    lost: "{user} can't play a Sha this turn",
+    won: '{user} can play one more Slash this turn, at any distance, with one more target',
+    lost: "{user} can't play a Slash this turn",
   },
   'rouse-the-tiger': {
     won: "{user} will choose a seat within {target}'s attack range; {target} deals it 1 damage",

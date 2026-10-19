@@ -1,3 +1,4 @@
+import { redactStateForSeat } from 'engine';
 import { askedAbout, card, handIds, harness, hp, ids, table, TableOptions } from './skills.testing';
 
 const h = harness();
@@ -9,17 +10,24 @@ describe('Sun Jian — Brave Spirit', () => {
   const starting = (o: TableOptions = {}, extra: Record<string, ReturnType<typeof card>[]> = {}) =>
     h.settle(table({ drawPile: cards('d', 6), ...extra }, { generals: at('seat-a', 'sun-jian'), owner: 'seat-d', phase: 'End', hp: { 'seat-a': 1 }, ...o }));
 
-  it('at the start of his turn, if damaged, the seat he picks either draws X and discards 1, or draws 1 and discards X', () => {
+  it('at the start of his turn, if damaged, the seat he picks draws X and discards 1, or draws 1 and discards X, as he chooses', () => {
     let s = starting(); // X = 3
     expect(askedAbout(s)).toBe('brave-spirit');
     s = h.choose(h.use(s), 'seat-b');
-    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-b' });
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-a', reason: { targetSeatId: 'seat-b' } }); // the owner chooses the mode
     expect(s.pendingChoice!.options.map((o) => o.shows)).toEqual([{ kind: 'label', text: 'Draw 3, Then Discard 1' }, { kind: 'label', text: 'Draw 1, Then Discard 3' }]);
     s = h.choose(s, 'draw-x');
     expect(s.pendingSelection).toMatchObject({ seatId: 'seat-b', min: 1, max: 1 });
     s = h.select(s, 'd1');
     expect(handIds(s, 'seat-b')).toEqual(['d2', 'd3']);
     expect(ids(s, 'discardPile')).toEqual(['d1']);
+  });
+
+  it('he may pick himself and still chooses the mode', () => {
+    let s = h.choose(h.use(starting()), 'seat-a');
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-a', reason: { targetSeatId: 'seat-a' } });
+    s = h.choose(s, 'draw-x');
+    expect(s.pendingSelection).toMatchObject({ seatId: 'seat-a' });
   });
 
   it('the other option: draw 1, discard X (at most what the seat holds)', () => {
@@ -82,7 +90,7 @@ describe('Lu Su — Alliance', () => {
     let s = h.useSkill(tableOf(3, 4, 1), 'seat-a', 'alliance');
     expect(s.pendingSelection).toMatchObject({ of: 'seats', min: 1, max: 1 });
     s = h.select(s, 'seat-b');
-    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-c', 'seat-d']);
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-c', 'seat-d', 'cancel']);
     s = h.choose(s, 'seat-c');
     expect(s.pendingSelection).toMatchObject({ of: 'cards', min: 3, max: 3 });
     s = h.select(s, 'a1', 'a2', 'a3');
@@ -94,7 +102,7 @@ describe('Lu Su — Alliance', () => {
   it('equal hands are never offered as a pair (Review Focus 4)', () => {
     let s = h.useSkill(tableOf(3, 4, 1, 4), 'seat-a', 'alliance');
     s = h.select(s, 'seat-b');
-    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-c']); // seat-d holds 4 as well
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-c', 'cancel']); // seat-d holds 4 as well
   });
 
   it('a pair that costs more than he holds is not offered', () => {
@@ -123,5 +131,52 @@ describe('Lu Su — Alliance', () => {
   it('cancelling the first pick costs nothing', () => {
     const s = h.cancel(h.useSkill(tableOf(3, 4, 1), 'seat-a', 'alliance'));
     expect(offered(s)).toBe(true);
+  });
+
+  const key = 'seat-a/main/alliance';
+  const uses = (s: ReturnType<typeof tableOf>) => s.turn.abilityUses?.[key] ?? 0;
+
+  it('cancelling at the second pick refunds the use', () => {
+    let s = h.select(h.useSkill(tableOf(3, 4, 1), 'seat-a', 'alliance'), 'seat-b');
+    expect(uses(s)).toBe(1);
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-c', 'seat-d', 'cancel']);
+    s = h.choose(s, 'cancel');
+    expect(s.pendingChoice).toBeUndefined();
+    expect(uses(s)).toBe(0);
+    expect(offered(s)).toBe(true);
+  });
+
+  it('cancelling the discard selection refunds the use and swaps nothing', () => {
+    const start = tableOf(3, 4, 1);
+    let s = h.choose(h.select(h.useSkill(start, 'seat-a', 'alliance'), 'seat-b'), 'seat-c');
+    s = h.cancel(s);
+    expect(uses(s)).toBe(0);
+    expect(offered(s)).toBe(true);
+    expect(handIds(s, 'seat-a')).toEqual(handIds(start, 'seat-a'));
+    expect(handIds(s, 'seat-b')).toEqual(handIds(start, 'seat-b'));
+    expect(handIds(s, 'seat-c')).toEqual(handIds(start, 'seat-c'));
+  });
+
+  it('the General stays revealed after a cancel', () => {
+    const start = tableOf(3, 4, 1, 4, { generals: { 'seat-a': ['lu-su', 'filler-jiang-wei', false] } });
+    expect(start.seats.find((x) => x.id === 'seat-a')!.generals.main.revealed).toBe(false);
+    const s = h.choose(h.select(h.useSkill(start, 'seat-a', 'alliance'), 'seat-b'), 'cancel');
+    expect(s.seats.find((x) => x.id === 'seat-a')!.generals.main.revealed).toBe(true);
+    expect(uses(s)).toBe(0);
+  });
+
+  it('a hidden Lu Su cancelling at the second pick shows a bystander no hand card, before or after', () => {
+    const start = tableOf(3, 4, 1, 4, { generals: { 'seat-a': ['lu-su', 'filler-jiang-wei', false] } });
+    // Seat-d sees the hands of seats a, b and c only as hidden cards, and never the deputy.
+    const clean = (s: typeof start) => {
+      const view = redactStateForSeat(s, 'seat-d');
+      for (const id of ['seat-a', 'seat-b', 'seat-c']) expect(view.zones.find((z) => z.id === `${id}:hand`)!.cards.every((c) => c.definitionId === 'hidden')).toBe(true);
+      expect(JSON.stringify(view)).not.toContain('filler-jiang-wei');
+    };
+    const picked = h.select(h.useSkill(start, 'seat-a', 'alliance'), 'seat-b');
+    clean(picked);
+    const cancelled = h.choose(picked, 'cancel');
+    clean(cancelled);
+    expect(uses(cancelled)).toBe(0);
   });
 });

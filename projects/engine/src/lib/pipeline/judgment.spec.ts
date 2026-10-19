@@ -38,13 +38,15 @@ interface TableOptions {
   queue?: QueueItem[];
   // Cards by zone id, e.g. { drawPile: [...], 'seat-a:judgment': [...] }.
   cards?: Record<string, CardInstance[]>;
+  // Generals face up: a hidden General's optional before-trigger must ask.
+  revealed?: boolean;
 }
 
 // Seats a (turn owner) and b at 4 HP, each with a hand, equipment and judgment zone.
 function table(o: TableOptions = {}): GameState {
   const seat = (id: string, index: number) => ({
     id, index, kingdom: 'Wei' as const,
-    generals: { main: { generalDefinitionId: 'g1', revealed: false }, deputy: { generalDefinitionId: 'g2', revealed: false } },
+    generals: { main: { generalDefinitionId: 'g1', revealed: !!o.revealed }, deputy: { generalDefinitionId: 'g2', revealed: !!o.revealed } },
     combinedHp: 4, maxCombinedHp: 4,
     hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, eliminated: false,
   });
@@ -191,7 +193,7 @@ describe('judgment steps', () => {
       }],
     };
     const next = settleWith(
-      table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)], 'seat-a:hand': [card('r1', 'x', 'spade', 4), card('r2', 'x', 'heart', 5)] } }),
+      table({ queue: [judge], revealed: true, cards: { drawPile: [card('j1', 'x', 'club', 3)], 'seat-a:hand': [card('r1', 'x', 'spade', 4), card('r2', 'x', 'heart', 5)] } }),
       ctxWith([changer])
     );
     expect(next.log.filter((e) => e.kind === 'JudgmentChangedEvent')).toEqual([
@@ -220,7 +222,7 @@ describe('judgment steps', () => {
       }],
     };
     const c = ctxWith([picker]);
-    const opened = settleWith(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)], 'seat-a:hand': [card('r1', 'x', 'heart', 4)] } }), c);
+    const opened = settleWith(table({ queue: [judge], revealed: true, cards: { drawPile: [card('j1', 'x', 'club', 3)], 'seat-a:hand': [card('r1', 'x', 'heart', 4)] } }), c);
     expect(opened.pendingSelection).toMatchObject({ id: 'pick-1' });
     const next = resolve(opened, { kind: 'SelectAction', seatId: 'seat-a', selectionId: 'pick-1', ids: ['r1'] }, c).state;
     expect(next.turn.flags).toBeUndefined(); // a heart now
@@ -239,7 +241,7 @@ describe('judgment steps', () => {
         },
       }],
     };
-    const next = settleWith(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } }), ctxWith([taker]));
+    const next = settleWith(table({ queue: [judge], revealed: true, cards: { drawPile: [card('j1', 'x', 'club', 3)] } }), ctxWith([taker]));
     expect(next.turn.flags).toEqual({ skipPlay: true }); // read first, then taken
     expect(idsIn(next, 'seat-a:hand')).toEqual(['j1']);
     expect(idsIn(next, 'discardPile')).toEqual([]);

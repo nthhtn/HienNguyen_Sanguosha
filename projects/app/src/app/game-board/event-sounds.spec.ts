@@ -42,7 +42,7 @@ describe('voicesFor', () => {
   const state = { seats: [seat('s0', 'm', true), seat('s1', 'f', true), seat('s2', 'f', false)] } as unknown as GameState;
   const played = (seatId: string, as: string): EngineEvent => ({ kind: 'CardPlayedEvent', seatId, card: { as, physical: [] }, targets: [] }) as never;
 
-  it('voices a Sha, a Shan and a dying seat by the seat’s gender', () => {
+  it('voices a Slash, a Dodge and a dying seat by the seat’s gender', () => {
     expect(voicesFor([played('s0', 'sha'), played('s1', 'shan'), { kind: 'SeatDyingEvent', seatId: 's1' }], state, registry)).toEqual([
       { gender: 'male', voice: 'slash' },
       { gender: 'female', voice: 'dodge' },
@@ -55,17 +55,51 @@ describe('voicesFor', () => {
     expect(voicesFor([played('s2', 'sha')], state, registry)).toEqual([{ gender: 'male', voice: 'slash' }]);
   });
 
+  it('voices the viewer’s own seat by its face-down Main General, but other seats stay male', () => {
+    expect(voicesFor([played('s2', 'sha')], state, registry, 's2')).toEqual([{ gender: 'female', voice: 'slash' }]);
+    expect(voicesFor([played('s2', 'sha')], state, registry, 's0')).toEqual([{ gender: 'male', voice: 'slash' }]);
+    expect(voicesFor([played('s1', 'sha')], state, registry, 's1')).toEqual([{ gender: 'female', voice: 'slash' }]);
+  });
+
+  it.each(['break', 'chains', 'blaze', 'hail-of-arrows', 'barbarians', 'steal', 'wuxie', 'starvation', 'coerce', 'wine', 'harvest', 'draw-two', 'peach-garden', 'capture', 'lightning', 'duel'])('voices %s, played, as its own line', (as) => {
+    const event = { kind: 'CardPlayedEvent', seatId: 's1', card: { as, physical: [] }, targets: [{ kind: 'seat', seatId: 's0' }] } as never;
+    expect(voicesFor([event], state, registry)).toEqual([{ gender: 'female', voice: as }]);
+  });
+
+  it('keeps a Chains Recast silent', () => {
+    const recast = { kind: 'CardPlayedEvent', seatId: 's1', card: { as: 'chains', physical: [] }, targets: [] } as never;
+    expect(voicesFor([recast], state, registry)).toEqual([]);
+  });
+
+  it('voices a Fire Attack or a Lightning Attack, played as a Slash, as a slash', () => {
+    const fire = { kind: 'CardPlayedEvent', seatId: 's0', card: { as: 'sha', nature: 'fire', physical: [{ instanceId: 'f', definitionId: 'fire-attack', suit: 'heart', rank: 4 }] }, targets: [] } as never;
+    expect(voicesFor([fire], state, registry)).toEqual([{ gender: 'male', voice: 'slash' }]);
+  });
+
   it('says each line once per gender', () => {
     expect(voicesFor([played('s0', 'sha'), played('s0', 'sha')], state, registry)).toEqual([{ gender: 'male', voice: 'slash' }]);
   });
 });
 
 describe('deathSoundsFor', () => {
-  const state = { seats: [{ id: 's0', kingdom: 'Wei' }, { id: 's1', kingdom: 'Qun' }, { id: 's2', kingdom: 'Wei' }, { id: 's3', kingdom: 'hidden' }] } as unknown as GameState;
+  const main = (generalDefinitionId: string) => ({ main: { generalDefinitionId, revealed: true }, deputy: { generalDefinitionId: 'x', revealed: false } });
+  const state = {
+    seats: [
+      { id: 's0', kingdom: 'Wei', generals: main('cao-cao') },
+      { id: 's1', kingdom: 'Qun', generals: main('zuo-ci') },
+      { id: 's2', kingdom: 'Wei', generals: main('cao-cao') },
+      { id: 's3', kingdom: 'hidden', generals: main('zuo-ci') },
+      { id: 's4', kingdom: 'Wu', generals: main('da-qiao') },
+    ],
+  } as unknown as GameState;
   const out = (seatId: string): EngineEvent => ({ kind: 'SeatEliminatedEvent', seatId });
 
-  it('cries by the eliminated seat’s kingdom, once per kingdom', () => {
-    expect(deathSoundsFor([out('s0'), out('s1'), out('s2')], state)).toEqual(['death-wei', 'death-qun']);
+  it('cries with the Main General’s own voice, once per General', () => {
+    expect(deathSoundsFor([out('s0'), out('s4'), out('s2')], state)).toEqual([{ url: '/audio/death/caocao.ogg' }, { url: '/audio/death/daqiao.ogg' }]);
+  });
+
+  it('falls back to the kingdom’s cry for a General with no recording', () => {
+    expect(deathSoundsFor([out('s1')], state)).toEqual([{ effect: 'death-qun' }]);
   });
 
   it('is silent for a dying seat, and for an unrevealed kingdom', () => {

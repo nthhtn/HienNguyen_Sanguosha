@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Action, SeatGenerals } from 'engine';
 import { SeatAvatar } from './seat-avatar';
-import { AvatarSkill } from './avatar-skills';
+import { AvatarReveal, AvatarSkill } from './avatar-skills';
 
 function render(generals: SeatGenerals): HTMLElement {
   const fixture = TestBed.createComponent(SeatAvatar);
@@ -23,8 +23,8 @@ describe('SeatAvatar', () => {
     });
     const halves = [...el.querySelectorAll('.frame > .half')];
     expect(halves.map((h) => h.getAttribute('data-slot'))).toEqual(['main', 'deputy']);
-    expect(src(halves[0])).toBe('/card-art/generals/shu/guan-yu.jpg');
-    expect(src(halves[1])).toBe('/card-art/generals/shu/zhang-fei.jpg');
+    expect(src(halves[0])).toBe('/card-art/generals/skins/shu/guanyu.png');
+    expect(src(halves[1])).toBe('/card-art/generals/skins/shu/zhangfei.png');
     expect(half(el, 'main').querySelector('.caption')!.textContent!.trim()).toBe('Guan Yu');
     expect(half(el, 'deputy').querySelector('.caption')!.textContent!.trim()).toBe('Zhang Fei');
   });
@@ -36,7 +36,7 @@ describe('SeatAvatar', () => {
     });
     expect(src(half(el, 'main'))).toBe('/card-art/generals/unnamed.jpg');
     expect(half(el, 'main').querySelector('.caption')!.textContent!.trim()).toBe('Hidden');
-    expect(src(half(el, 'deputy'))).toBe('/card-art/generals/shu/zhao-yun.jpg');
+    expect(src(half(el, 'deputy'))).toBe('/card-art/generals/skins/shu/zhaoyun.png');
     expect(el.textContent).not.toContain('hidden');
   });
 
@@ -46,7 +46,7 @@ describe('SeatAvatar', () => {
       deputy: { generalDefinitionId: 'zhen-ji', revealed: true },
     });
     const main = half(el, 'main');
-    expect(src(main)).toBe('/card-art/generals/wei/cao-cao.jpg');
+    expect(src(main)).toBe('/card-art/generals/skins/wei/caocao.png');
     expect(main.classList).toContain('own-hidden');
     expect(main.querySelector('mat-icon')!.textContent!.trim()).toBe('visibility_off');
     expect(main.querySelector('.caption')!.textContent!.trim()).toBe('Cao Cao (hidden)');
@@ -77,7 +77,7 @@ describe('SeatAvatar', () => {
     expect(half(el, 'main').querySelector('img')).toBeNull();
     expect(half(el, 'main').querySelector('.placeholder')).not.toBeNull();
     expect(half(el, 'main').querySelector('.caption')!.textContent!.trim()).toBe('Hidden');
-    expect(src(half(el, 'deputy'))).toBe('/card-art/generals/shu/zhao-yun.jpg');
+    expect(src(half(el, 'deputy'))).toBe('/card-art/generals/skins/shu/zhaoyun.png');
   });
 
   it('opens the General’s info from a known half, and nothing from another seat’s hidden half (Review Focus 4)', async () => {
@@ -121,5 +121,31 @@ describe('SeatAvatar', () => {
   it('shows no skill row without skills', () => {
     const el = render({ main: { generalDefinitionId: 'guan-yu', revealed: true }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } });
     expect(el.querySelector('.skills')).toBeNull();
+  });
+
+  it('Reveal: a hidden half has a Reveal button, enabled when offered, emitting its action; a revealed half has none', () => {
+    const reveal: Action = { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' };
+    const reveals: AvatarReveal[] = [
+      { slot: 'main', action: reveal as AvatarReveal['action'] },
+      { slot: 'deputy', action: null },
+    ];
+    const fixture = TestBed.createComponent(SeatAvatar);
+    fixture.componentRef.setInput('generals', { main: { generalDefinitionId: 'sun-quan', revealed: false }, deputy: { generalDefinitionId: 'liu-bei', revealed: false } });
+    fixture.componentRef.setInput('reveals', reveals);
+    const emitted: Action[] = [];
+    fixture.componentInstance.revealGeneral.subscribe((a) => emitted.push(a));
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    const main = el.querySelector('.skill-column[data-slot="main"] button.reveal') as HTMLButtonElement;
+    const deputy = el.querySelector('.skill-column[data-slot="deputy"] button.reveal') as HTMLButtonElement;
+    expect(main.textContent!.trim()).toBe('Reveal');
+    expect(main.disabled).toBe(false);
+    expect(deputy.disabled).toBe(true);
+    main.click();
+    expect(emitted).toEqual([reveal]);
+
+    fixture.componentRef.setInput('reveals', []);
+    fixture.detectChanges();
+    expect(el.querySelector('button.reveal')).toBeNull();
   });
 });

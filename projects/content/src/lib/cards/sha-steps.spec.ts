@@ -1,5 +1,5 @@
 import { advanceToDecision, resolve, usedCardOf } from 'engine';
-import type { Action, CardDefinition, CardInstance, ContentRegistry, GameModeDefinition, GameState, SkillTrigger } from 'engine';
+import type { Action, CardDefinition, CardInstance, ContentRegistry, Effect, GameModeDefinition, GameState, SkillTrigger } from 'engine';
 import { shaCard } from './sha';
 import { shanCard } from './shan';
 import { wineCard } from './wine';
@@ -62,20 +62,20 @@ beforeEach(() => {
   seenSteps.length = 0;
 });
 
-describe('Sha steps', () => {
-  it('a Sha that hits goes through every step, in order', () => {
+describe('Slash steps', () => {
+  it('a Slash that hits goes through every step, in order', () => {
     const s = pass(play(table({ 'seat-a:hand': [card('s1', 'sha')] }), 's1', 'seat-b'));
-    expect(seenSteps).toEqual(['sha-use', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-after-damage']);
+    expect(seenSteps).toEqual(['sha-use', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-damaged', 'sha-after-damage']);
     expect(hp(s, 'seat-b')).toBe(3);
   });
 
-  it('a Shan counts toward the Shan needed, then the Sha is dodged, with no damage', () => {
+  it('a Dodge counts toward the Dodge needed, then the Slash is dodged, with no damage', () => {
     const s = respond(play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('d1', 'shan')] }), 's1', 'seat-b'), 'd1');
     expect(seenSteps).toEqual(['sha-use', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-shan', 'sha-dodged']);
     expect(hp(s, 'seat-b')).toBe(4);
   });
 
-  it('the Shan window names the Sha and its user, and shows the damage it would deal, Wine included', () => {
+  it('the Dodge window names the Slash and its user, and shows the damage it would deal, Wine included', () => {
     const s = play(table({ 'seat-a:hand': [card('s1', 'sha')] }, { wine: true }), 's1', 'seat-b');
     expect(s.pendingResponse).toMatchObject({
       respondingSeatId: 'seat-b',
@@ -87,13 +87,13 @@ describe('Sha steps', () => {
     expect(hp(pass(s), 'seat-b')).toBe(2);
   });
 
-  it('Coerce’s Sha runs on the same steps, from step 1, and isn’t counted', () => {
-    // seat-b wears a Crossbow (range 1) and holds a Sha; seat-a Coerces it at seat-c.
+  it('Coerce’s Slash runs on the same steps, from step 1, and isn’t counted', () => {
+    // seat-b wears a Crossbow (range 1) and holds a Slash; seat-a Coerces it at seat-c.
     let s = play(table({ 'seat-a:hand': [card('co', 'coerce')], 'seat-b:equip': [card('x', 'crossbow')], 'seat-b:hand': [card('bs', 'sha')] }), 'co', 'seat-b', 'seat-c');
     s = respond(s, 'bs');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-c', allowedCardIds: ['shan'] });
     s = pass(s);
-    expect(seenSteps).toEqual(['sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-after-damage']);
+    expect(seenSteps).toEqual(['sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-damaged', 'sha-after-damage']);
     expect(hp(s, 'seat-c')).toBe(3);
     expect(s.turn.cardPlays?.['sha'] ?? 0).toBe(0);
   });
@@ -109,6 +109,37 @@ describe('Sha steps', () => {
   });
 });
 
+describe('sha-after-damage', () => {
+  // Plays a Slash at seat-b under a test-only before-trigger on DamageEffect.
+  const withDamageTrigger = (effect: (damage: Effect) => Effect[]) => {
+    const trigger: SkillTrigger = { point: 'before:DamageEffect', condition: () => true, effect: (_s, e) => effect(e as Effect) };
+    const custom = { registry, mode: { ...mode, triggers: [recorder, trigger] } };
+    const s = resolve(table({ 'seat-a:hand': [card('s1', 'sha')] }), { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 's1', targets: [seat('seat-b')] }, custom).state;
+    return resolve(s, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: s.pendingResponse!.id }, custom).state;
+  };
+
+  it('runs sha-after-damage when the target took the damage', () => {
+    pass(play(table({ 'seat-a:hand': [card('s1', 'sha')] }), 's1', 'seat-b'));
+    expect(seenSteps).toContain('sha-after-damage');
+  });
+
+  it('skips sha-after-damage when the damage was cancelled', () => {
+    const s = withDamageTrigger(() => []);
+    expect(hp(s, 'seat-b')).toBe(4);
+    expect(seenSteps).not.toContain('sha-after-damage');
+  });
+
+  it('skips sha-after-damage when the damage was redirected to another seat', () => {
+    const s = withDamageTrigger((e) => {
+      const d = (e as Extract<Effect, { kind: 'DamageEffect' }>).damage;
+      return [{ ...e, damage: { ...d, target: seat('seat-c') } } as Effect];
+    });
+    expect(hp(s, 'seat-b')).toBe(4);
+    expect(hp(s, 'seat-c')).toBe(3);
+    expect(seenSteps).not.toContain('sha-after-damage');
+  });
+});
+
 describe('Hail of Arrows on steps', () => {
   it('asks each target through a hail-shan step', () => {
     const s = play(table({ 'seat-a:hand': [card('h', 'hail-of-arrows')] }), 'h');
@@ -116,7 +147,7 @@ describe('Hail of Arrows on steps', () => {
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
   });
 
-  it('opens no window once its Shan is provided', () => {
+  it('opens no window once its Dodge is provided', () => {
     const provided = cardStep('hail-shan', usedCardOf(card('h', 'hail-of-arrows')), 'seat-a', seat('seat-b'), { needed: 1, provided: 1 });
     expect(advanceToDecision({ ...table(), resolutionQueue: [provided] }, ctx).state.pendingResponse).toBeNull();
   });

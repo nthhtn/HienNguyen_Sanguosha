@@ -36,6 +36,8 @@ export interface GeneralRevealedEvent {
   slot: 'main' | 'deputy';
   // Set when it was revealed to use that skill.
   forAbilityId?: string;
+  // Set when the seat's death revealed it: no reveal bonus follows.
+  onDeath?: true;
 }
 
 // A seat arranged cards from the draw pile. Counts only: the cards stay hidden.
@@ -169,6 +171,13 @@ export interface SeatTurnedEvent {
   passedTurn?: true;
 }
 
+// A seat became chained, or unchained (Chains, or fire or thunder damage it took).
+export interface ChainToggledEvent {
+  kind: 'ChainToggledEvent';
+  seatId: string;
+  chained: boolean;
+}
+
 // A card shown to every seat (Sow Revolt's taken card): its face is public.
 export interface CardShownEvent {
   kind: 'CardShownEvent';
@@ -237,6 +246,7 @@ export type EngineEvent =
   | JudgmentChangedEvent
   | CardShownEvent
   | SeatTurnedEvent
+  | ChainToggledEvent
   | ArrangementMadeEvent
   | AbilityUsedEvent
   | SelectionMadeEvent;

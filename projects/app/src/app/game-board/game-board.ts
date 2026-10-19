@@ -5,14 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed } from 'engine';
+import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed, isSeatDying } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { RoundTable } from './round-table';
-import { SeatTile, seatIsDying } from './seat-tile';
+import { SeatTile } from './seat-tile';
 import { HandView } from './hand-view';
 import { GameOver } from './game-over';
 import { GeneralSelection } from './general-selection';
@@ -30,7 +30,7 @@ import { AskDialog, AskDialogData } from './ask-dialog';
 import { SelectionDialog, SelectionDialogData } from './selection-dialog';
 import { describeArrangement, describeAsk, describeSelection } from './ability-description';
 import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
-import { avatarSkills, extraSkillsOf } from './avatar-skills';
+import { avatarReveals, avatarSkills, extraSkillsOf } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
 import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
@@ -102,6 +102,7 @@ import { TPipe } from '../i18n/t.pipe';
                       [stash]="zoneCards(seat.stash?.zoneId ?? '')"
                       [dying]="dyingOf(seat)"
                       [skills]="viewerSkills()"
+                      [reveals]="viewerReveals()"
                       (useSkill)="submit($event)"
                     />
                   </div>
@@ -276,8 +277,12 @@ export class GameBoard {
       untracked(() => {
         if (seen !== null && log.length > seen) {
           const fresh = log.slice(seen);
-          for (const sound of [...soundsFor(fresh), ...deathSoundsFor(fresh, state)]) this.sounds.play(sound);
-          for (const cue of voicesFor(fresh, state, this.gameService.registry)) this.sounds.playVoice(cue.gender, cue.voice);
+          for (const sound of soundsFor(fresh)) this.sounds.play(sound);
+          for (const cry of deathSoundsFor(fresh, state)) {
+            if (cry.url) this.sounds.playDeathVoice(cry.url);
+            else if (cry.effect) this.sounds.play(cry.effect);
+          }
+          for (const cue of voicesFor(fresh, state, this.gameService.registry, this.viewerSeatId())) this.sounds.playVoice(cue.gender, cue.voice);
         }
         seen = log.length;
       });
@@ -357,13 +362,19 @@ export class GameBoard {
     return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions(), extraSkillsOf(seat, this.gameService.registry), this.i18n.translator) : [];
   });
 
+  // The viewer's Reveal buttons for their hidden Generals, on their avatar.
+  protected readonly viewerReveals = computed(() => {
+    const seat = this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId());
+    return seat ? avatarReveals(seat.generals, this.gameService.legalActions()) : [];
+  });
+
   // The viewer's force colour, which their decision dialogs are themed in.
   private readonly viewerForce = computed(() => forceOf(this.viewerSeat()?.kingdom));
   protected readonly viewerSeat = computed(() => this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId()) ?? null);
 
   protected dyingOf(seat: Seat): boolean {
     const state = this.visibleState();
-    return !!state && seatIsDying(state, seat);
+    return !!state && isSeatDying(state, seat.id);
   }
 
   protected zoneCards(zoneId: string): CardInstance[] {

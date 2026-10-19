@@ -1,16 +1,17 @@
 import { GameState, GameEvent, PendingChoice, PendingResponse, PendingSelection, QueueItem, Target, UsedCard } from '../domain/types';
-import { usedCardFrom, usedCardOf } from '../domain/usedCard';
+import { answersAs, usedCardFrom, usedCardOf } from '../domain/usedCard';
+import { sameValue } from '../rules/offered';
 import { validateSelection } from '../rules/selection';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { Action, isAction } from './actions';
 import { Effect, applyDying, applyEffect } from './effects';
 import { lookupCard } from '../registry/lookup';
-import { gatherTriggeredSkills } from '../skills/triggers';
-import { requireZoneOfKind } from '../cards/zones';
+import { GatheredTrigger, gatherTriggeredSkills } from '../skills/triggers';
+import { findZoneByKind, moveCard, requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
-import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer } from '../rules/phaseSequence';
+import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer, startWindowOpens } from '../rules/phaseSequence';
 import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
@@ -20,6 +21,7 @@ import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
 import { applyCardStep } from './cardStep';
 import { applySkillStep } from './skillStep';
+import { chainWaveOrder } from '../rules/chains';
 
 export interface EngineContext {
   registry: ContentRegistry;
@@ -41,7 +43,7 @@ interface StepBudget {
 }
 
 // Every phase entered by advanceToDecision is one step. One full turn is at
-// most six steps, and every turn rests in Play unless its owner is eliminated,
+// most six steps, and every turn rests in Play (after a Start window, and a Discard if over the hand limit) unless its owner is eliminated,
 // so a legitimate run stays far below this bound.
 export const MAX_AUTO_PHASE_STEPS_PER_SEAT = 6;
 
@@ -56,7 +58,7 @@ export function resolve(state: GameState, action: Action, ctx: EngineContext): R
 }
 
 // Drains the queue, then moves the game on through every phase that needs no
-// decision, until a player must act (Play, or Discard over the hand limit), a
+// decision, until a player must act (the Start window, Play, or Discard over the hand limit), a
 // response is pending, or the game has ended. An eliminated turn owner forfeits
 // the rest of their turn.
 export function advanceToDecision(state: GameState, ctx: EngineContext, budget: StepBudget = { used: 0 }): ResolveResult {
@@ -100,8 +102,18 @@ function drain(state: GameState, ctx: EngineContext, budget: StepBudget): Resolv
     current = withWinCheck(step.state, ctx);
     events.push(...step.events);
   }
-  if (current.result) current = withQueue(current, []);
+  if (current.result) current = withQueue(sweepProcessing(current), []);
   return { state: current, events };
+}
+
+// A game that ends mid-resolution leaves its in-flight cards in `processing`;
+// they go to the discard pile, unlogged, so the final state holds no stray cards.
+// A mode without a processing zone has nothing to sweep: a no-op.
+function sweepProcessing(state: GameState): GameState {
+  const stray = findZoneByKind(state.zones, 'processing')?.cards ?? [];
+  if (stray.length === 0) return state;
+  const discardId = requireZoneOfKind(state.zones, 'discardPile').id;
+  return { ...state, zones: stray.reduce((zones, c) => moveCard(zones, c.instanceId, discardId), state.zones) };
 }
 
 // Seats still choosing have kingdom 'hidden'; reading that as a one-kingdom
@@ -117,16 +129,42 @@ function logged(state: GameState, events: GameEvent[]): GameState {
   return { ...state, log: [...state.log, ...(events as GameState['log'])] };
 }
 
+// Using a hidden General's skill reveals it first. An ask reveals on Use, and a
+// trigger may reveal for itself; any other output of such a trigger gets the
+// reveal of the owner’s slot in front of it. No output: no reveal.
+function revealFor(gathered: GatheredTrigger, outputs: readonly unknown[]): Effect[] {
+  const owner = gathered.owner;
+  if (!gathered.needsReveal || owner?.kind !== 'general' || outputs.length === 0) return [];
+  const revealsItself = outputs.some((o) => {
+    const kind = (o as { kind?: unknown }).kind;
+    return kind === 'AskUseEffect' || kind === 'RevealGeneralEffect';
+  });
+  return revealsItself ? [] : [{ kind: 'RevealGeneralEffect', seatId: owner.seatId, slot: owner.slot, forAbilityId: owner.skillId }];
+}
+
 // Every after-trigger follow-up for `events`, in event order then trigger
 // order. All are gathered against `state`, before any of them resolves.
 function afterTriggerFollowUps(state: GameState, events: GameEvent[], ctx: EngineContext): QueueItem[] {
   const followUps: QueueItem[] = [];
   for (const event of events) {
     for (const gathered of gatherTriggeredSkills(state, ctx.registry, ctx.mode, `after:${event.kind}`, event)) {
-      followUps.push(...(gathered.trigger.effect(state, event, gathered.owner, ctx.registry) as QueueItem[]));
+      const outputs = gathered.trigger.effect(state, event, gathered.owner, ctx.registry) as QueueItem[];
+      followUps.push(...revealFor(gathered, outputs), ...outputs);
     }
   }
   return followUps;
+}
+
+// One owner's triggers at `point` for `subject`, gathered against `state` now
+// and queued at the front (FireSkillTriggersEffect). Applies and logs nothing.
+function fireSkillTriggers(state: GameState, effect: Extract<Effect, { kind: 'FireSkillTriggersEffect' }>, ctx: EngineContext): ResolveResult {
+  const followUps: QueueItem[] = [];
+  for (const gathered of gatherTriggeredSkills(state, ctx.registry, ctx.mode, effect.point, effect.subject)) {
+    if (!gathered.owner || !sameAbilityOwner(gathered.owner, effect.owner)) continue;
+    const outputs = gathered.trigger.effect(state, effect.subject, gathered.owner, ctx.registry) as QueueItem[];
+    followUps.push(...revealFor(gathered, outputs), ...outputs);
+  }
+  return { state: queueFront(state, followUps), events: [] };
 }
 
 // Logs events that happened outside applyEffect, and queues their after-trigger
@@ -158,6 +196,11 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   if (turn.turnNumber !== current.turn.turnNumber) {
     const turnEvent: TurnAdvancedEvent = { kind: 'TurnAdvancedEvent', seatId: turn.ownerSeatId, turnNumber: turn.turnNumber };
     events.push(turnEvent);
+    // A human holding a hidden General may reveal before the Start effects:
+    // the turn waits in Start, and EndPhaseAction enters it (enterStartPhase).
+    if (phase === 'Start' && skipped.length === 0 && startWindowOpens(current, turn.ownerSeatId)) {
+      return logWithTriggers({ ...current, phase, turn: { ...turn, startWindow: true } }, events, ctx);
+    }
   }
   for (const skippedPhase of skipped) {
     const skipEvent: PhaseSkippedEvent = { kind: 'PhaseSkippedEvent', seatId: turn.ownerSeatId, phase: skippedPhase };
@@ -169,6 +212,14 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   const entered: GameState = { ...current, phase, turn };
   const counted = phase === 'Discard' ? { ...entered, turn: { ...turn, discardsLeft: cardsOverHandLimit(entered, turn.ownerSeatId) } } : entered;
   return logWithTriggers(counted, events, ctx);
+}
+
+// Closes the Start window and enters Start: its PhaseChangedEvent is logged and
+// its triggers gathered, as enterNextPhase would have done without the window.
+function enterStartPhase(state: GameState, ctx: EngineContext): ResolveResult {
+  const { startWindow: _closed, ...turn } = state.turn;
+  const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: turn.ownerSeatId, phase: 'Start' };
+  return logWithTriggers({ ...state, turn }, [phaseEvent], ctx);
 }
 
 // `effect` as its before-triggers would rewrite it (e.g. Silver Lion's cap),
@@ -189,6 +240,10 @@ function rewriteEffect(state: GameState, effect: Effect, ctx: EngineContext): { 
   for (const [index, gathered] of beforeTriggers.entries()) {
     if (index > 0 && !gathered.trigger.condition(state, current, gathered.owner, ctx.registry)) continue;
     const outputs = gathered.trigger.effect(state, current, gathered.owner, ctx.registry) as Effect[];
+    // A rewrite can't put a reveal ahead of the effect it rewrites: content must ask.
+    if (gathered.owner?.kind === 'general' && revealFor(gathered, outputs).length > 0) {
+      throw new Error(`${gathered.owner.skillId} needs a reveal but returns direct effects from a before-trigger`);
+    }
     if (outputs.length === 0) return null;
     current = outputs[0];
     after.unshift(...outputs.slice(1));
@@ -201,7 +256,7 @@ function rewriteEffect(state: GameState, effect: Effect, ctx: EngineContext): { 
 // events' after-trigger follow-ups go to the front of the queue, ahead of
 // whatever the rewriting triggers returned after the rewrite.
 function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {
-  const rewritten = rewriteEffect(state, effect, ctx);
+  const rewritten = rewriteEffect(state, withBase(effect), ctx);
   if (rewritten === null) return { state, events: [] };
   const current = rewritten.effect;
 
@@ -226,11 +281,35 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
         ? applyCardStep(state, current, ctx.registry)
         : current.kind === 'SkillStepEffect'
           ? applySkillStep(state, current, ctx.registry)
-          : current.kind === 'DyingEffect'
+          : current.kind === 'FireSkillTriggersEffect'
+            ? fireSkillTriggers(state, current, ctx)
+            : current.kind === 'DyingEffect'
             ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry, { revealedOnly: true }).length > 0)
             : applyEffect(state, current);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
-  return { state: queueFront(applied.state, [...followUps, ...rewritten.after]), events: applied.events };
+  // A chain's wave goes last: after everything the damage's follow-ups lead to.
+  const wave = current.kind === 'DamageEffect' ? chainWave(applied.state, current, applied.events) : [];
+  return { state: queueFront(applied.state, [...followUps, ...rewritten.after, ...wave]), events: applied.events };
+}
+
+// Fire or thunder damage records its original amount before the target's own
+// before-triggers change it: a chain passes that amount on.
+function withBase(effect: Effect): Effect {
+  if (effect.kind !== 'DamageEffect' || effect.damage.nature === 'normal' || effect.damage.base !== undefined) return effect;
+  return { ...effect, damage: { ...effect.damage, base: effect.damage.amount } };
+}
+
+// The wave a damage starts: it unchained its target (fire or thunder damage
+// actually dealt to a chained seat) and was not itself passed along a chain.
+// It reaches the other living chained seats, in turn order after the target.
+function chainWave(state: GameState, effect: Extract<Effect, { kind: 'DamageEffect' }>, events: GameEvent[]): Effect[] {
+  const { damage } = effect;
+  if (damage.chained || damage.target.kind !== 'seat') return [];
+  const seatId = damage.target.seatId;
+  const unchained = (events as EngineEvent[]).some((e) => e.kind === 'ChainToggledEvent' && e.seatId === seatId && !e.chained);
+  if (!unchained) return [];
+  const remaining = chainWaveOrder(state, seatId);
+  return remaining.length > 0 ? [{ kind: 'ChainPropagationEffect', damage, remaining }] : [];
 }
 
 // Cards that just left an equip zone: each one's onUnequip runs for its former
@@ -390,7 +469,7 @@ function continueSelection(state: GameState, selection: PendingSelection, ids: s
         if (!card) throw new Error(`Card ${id} is in no zone`);
         return card;
       });
-      const used = then.as ? usedCardFrom(cards, then.as, then.via) : usedCardOf(cards[0]);
+      const used = then.as ? usedCardFrom(cards, then.as, then.via) : usedCardOf(cards[0], ctx.registry);
       const respondTo = then.respondTo ? state.pendingResponse : null;
       if (then.respondTo && respondTo?.id !== then.respondTo) throw new Error(`Window ${then.respondTo} is no longer open`);
       return useCard(
@@ -452,7 +531,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!targetsAllowed(state, action.seatId, action.cardInstanceId, cardInHand.definitionId, action.targets, ctx.registry)) {
         throw new Error(`Card ${cardInHand.definitionId} cannot be played with those targets`);
       }
-      return useCard(state, action.seatId, usedCardOf(cardInHand), { targets: action.targets, counted: true }, ctx);
+      return useCard(state, action.seatId, usedCardOf(cardInHand, ctx.registry), { targets: action.targets, counted: true }, ctx);
     }
 
     case 'PassAction': {
@@ -478,10 +557,10 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!cardInHand) {
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
-      if (pending.allowedCardIds && !pending.allowedCardIds.includes(cardInHand.definitionId)) {
+      if (pending.allowedCardIds && !answersAs(cardInHand.definitionId, pending.allowedCardIds, ctx.registry)) {
         throw new Error(`Card ${cardInHand.definitionId} is not a legal response here`);
       }
-      return useCard(state, action.seatId, usedCardOf(cardInHand), { targets: [], respondTo: pending, counted: false }, ctx);
+      return useCard(state, action.seatId, usedCardOf(cardInHand, ctx.registry), { targets: [], respondTo: pending, counted: false }, ctx);
     }
 
     case 'EndPhaseAction': {
@@ -489,6 +568,8 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (state.turn.ownerSeatId !== action.seatId) {
         throw new Error(`It is not seat ${action.seatId}'s turn`);
       }
+      // Continuing from the Start window enters Start (enterStartPhase).
+      if (state.phase === 'Start' && state.turn.startWindow) return enterStartPhase(state, ctx);
       if (state.phase !== 'Play') {
         throw new Error('EndPhaseAction is only legal in the Play phase');
       }
@@ -515,6 +596,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
     }
 
     case 'RevealGeneralAction': {
+      // No actor/phase guard: player input is filtered by the server's isOfferedAction, and legality offers it only at the two reveal windows.
       if (!state.seats.some((s) => s.id === action.seatId)) throw new Error(`Unknown seat: ${action.seatId}`);
       return { state: queueFront(state, [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: action.slot }]), events: [] };
     }
@@ -524,7 +606,12 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const { state: chosen, event } = applyGeneralChoice(state, action, ctx.registry);
       const choiceFollowUps = afterTriggerFollowUps(chosen, [event], ctx);
       if (chosen.generalSelection !== null) return { state: queueFront(chosen, choiceFollowUps), events: [event] };
-      // The last seat has chosen: turn 1 begins at Start.
+      // The last seat has chosen: turn 1 begins at Start, after its owner's
+      // Start window if one opens (as in enterNextPhase).
+      if (startWindowOpens(chosen, chosen.turn.ownerSeatId)) {
+        const waiting: GameState = { ...chosen, turn: { ...chosen.turn, startWindow: true } };
+        return { state: queueFront(waiting, choiceFollowUps), events: [event] };
+      }
       const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: chosen.turn.ownerSeatId, phase: chosen.phase };
       const entered = logged(chosen, [phaseEvent]);
       return {
@@ -574,7 +661,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
           sameAbilityOwner(a.via.owner, action.via.owner) &&
           a.pendingResponseId === action.pendingResponseId &&
           // A template: any targets within its pick.
-          (a.pickTargets ? fitsPick(a.pickTargets, action.targets) : JSON.stringify(a.targets) === JSON.stringify(action.targets))
+          (a.pickTargets ? fitsPick(a.pickTargets, action.targets) : sameValue(a.targets, action.targets))
       );
       if (!offered) throw new Error(`Seat ${action.seatId} can’t use that conversion now`);
       const owned = conversionsOf(state, action.seatId, ctx.registry).find(

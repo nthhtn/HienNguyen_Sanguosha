@@ -1,4 +1,6 @@
 import type { CardInstance, Effect, GameState, PendingSelection } from 'engine';
+import { getLegalActions } from 'engine';
+import { conversionSpare } from './skills';
 import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
 
 describe('may-skills the bot always uses', () => {
@@ -32,9 +34,13 @@ describe('the Draw Phase', () => {
     expect(picked(decide(asking(table({ 'seat-b:hand': [card('x', 'shan')] }), 'raid')))).toBe('decline');
   });
 
-  it('Bare the Chest when holding 2 or more Sha', () => {
+  it('Bare the Chest when holding 2 or more Slash', () => {
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha')] }), 'bare-the-chest')))).toBe('use');
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'sha')] }), 'bare-the-chest')))).toBe('decline');
+  });
+
+  it('Bare the Chest counts a Fire Attack and a Lightning Attack as Slash', () => {
+    expect(picked(decide(asking(table({ 'seat-a:hand': [card('s1', 'fire-attack'), card('s2', 'lightning-attack')] }), 'bare-the-chest')))).toBe('use');
   });
 });
 
@@ -59,7 +65,7 @@ describe('Devil', () => {
       id: 'sel', seatId: 'seat-a', reason: { kind: 'ability', owner: general('seat-a', 'devil'), abilityId: 'devil' }, of: 'cards', eligibleIds: ['p', 'k'], min: 1, max: 1,
       then: { kind: 'replace-judgment', judgment: (shown('seat-a') as Extract<Effect, { kind: 'JudgmentShownEffect' }>).judgment, owner: general('seat-a', 'devil'), abilityId: 'devil' }, onCancel: [],
     };
-    // The Shan would flip the judgment too, but it is not allowed: the Peach is the only eligible flip.
+    // The Dodge would flip the judgment too, but it is not allowed: the Peach is the only eligible flip.
     expect(picked(decide({ ...table({ 'seat-a:hand': hand }), pendingSelection: selection }))).toEqual(['p']);
   });
 
@@ -84,7 +90,7 @@ describe('active skills in the Play Phase', () => {
     expect(decide(huangGai(3)).kind).toBe('EndPhaseAction');
   });
 
-  it('Reconsider discards every hand card ranked below Shan, never a Peach or worn cards', () => {
+  it('Reconsider discards every hand card ranked below Dodge, never a Peach or worn cards', () => {
     const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart'), card('n', 'shan'), card('x', 'harvest', 'heart', 3), card('s', 'sha')], 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)] }, { generals: { 'seat-a': ['sun-quan', 'filler-sun-jian'] }, kingdoms: { 'seat-a': 'Wu' } });
     const selecting = useSkill(s, 'reconsider');
     expect(picked(decide(selecting))).toEqual(['x', 's']);
@@ -133,7 +139,7 @@ describe('Sow Discord’s picks', () => {
 });
 
 describe('Displace', () => {
-  it('with a card to spare and a non-ally to move the Sha to', () => {
+  it('with a card to spare and a non-ally to move the Slash to', () => {
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('x', 'harvest', 'heart', 3)] }), 'displace', 'seat-b')))).toBe('use');
     expect(picked(decide(asking(table({ 'seat-a:hand': [card('p', 'peach', 'heart')] }), 'displace', 'seat-b')))).toBe('decline');
   });
@@ -153,14 +159,67 @@ describe('Sow Revolt’s suit', () => {
 });
 
 describe('conversions', () => {
-  it('Fighting Saint as a Sha when no real Sha is in hand, never spending a Peach', () => {
+  it('Fighting Saint as a Slash when no real Slash is in hand, never spending a Peach', () => {
     const guanYu = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['guan-yu', 'filler-meng-huo'] }, kingdoms: { 'seat-a': 'Shu' } });
     expect(decide(guanYu([card('h', 'shan', 'heart')]))).toMatchObject({ kind: 'UseConversionAction', via: { conversionId: 'fighting-saint' } });
     expect(decide(guanYu([card('p', 'peach', 'heart')])).kind).toBe('EndPhaseAction');
   });
 
-  it('a hidden General’s conversion only when the bot may reveal', () => {
+  it('a hidden General is revealed first in the Play Phase, whatever the HP', () => {
     const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'filler-meng-huo', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
-    expect(decide(hidden).kind).toBe('EndPhaseAction');
+    expect(decide(hidden)).toMatchObject({ kind: 'RevealGeneralAction', slot: 'main' });
+  });
+});
+
+describe('Sow Revolt’s suit counts shown cards', () => {
+  it('leastShownSuit counts shown cards', () => {
+    const shown = (id: string) => ({ kind: 'CardShownEvent' as const, seatId: 'seat-b', card: card(id, 'sha', 'heart') });
+    const played = { kind: 'CardPlayedEvent' as const, seatId: 'seat-b', card: { as: 'sha', colour: 'black' as const, physical: [card('p', 'sha', 'spade')] }, targets: [] };
+    const naming: GameState = {
+      ...table(), log: [shown('a'), shown('b'), shown('c'), played],
+      pendingChoice: { id: 'n', seatId: 'seat-a', verb: 'pick', reason: { kind: 'ability', owner: general('seat-b', 'sow-revolt'), abilityId: 'sow-revolt', targetSeatId: 'seat-a' }, options: (['spade', 'heart', 'club', 'diamond'] as const).map((suit) => ({ id: suit, shows: { kind: 'suit' as const, suit }, effects: [] })) },
+    };
+    expect(picked(decide(naming))).toBe('club');
+  });
+});
+
+describe('Bewilder claims (conversionSpare)', () => {
+  const yuJi = (hand: CardInstance[]) => table({ 'seat-a:hand': hand }, { generals: { 'seat-a': ['yu-ji', 'filler-zuo-ci'] }, kingdoms: { 'seat-a': 'Qun' } });
+  const claim = (s: GameState, as: string) =>
+    getLegalActions(s, 'seat-a', registry).find((a) => a.kind === 'UseConversionAction' && a.via.conversionId === `bewilder-${as}`) as Extract<import('engine').Action, { kind: 'UseConversionAction' }>;
+  const filler = (n: number) => Array.from({ length: n }, (_, i) => card(`x${i}`, 'shan', 'club', i + 2));
+
+  it('a bot with 3 cards makes a true Bewilder claim', () => {
+    const s = yuJi([card('real', 'duel', 'heart', 5), ...filler(2)]);
+    expect(conversionSpare(s, s.seats[0], claim(s, 'duel'), registry)).toBe(true);
+  });
+  it('does not bluff with 3 cards', () => {
+    const s = yuJi(filler(3));
+    expect(conversionSpare(s, s.seats[0], claim(s, 'duel'), registry)).toBe(false);
+  });
+  it('may bluff with 5', () => {
+    const s = yuJi(filler(5));
+    expect(conversionSpare(s, s.seats[0], claim(s, 'duel'), registry)).toBe(true);
+  });
+});
+
+describe('fallbacks when no suitable seat is offered', () => {
+  const choice = (abilityId: string, ids: string[], opts: Parameters<typeof table>[1] = {}, extra: string[] = []): GameState => ({
+    ...table({}, opts),
+    pendingChoice: {
+      id: 'p', seatId: 'seat-a', verb: 'pick',
+      reason: { kind: 'ability', owner: general('seat-a', abilityId), abilityId },
+      options: [...ids.map((id) => ({ id, shows: { kind: 'seat' as const, seatId: id }, effects: [] })), ...extra.map((id) => ({ id, shows: { kind: 'label' as const, text: id }, effects: [] }))],
+    },
+  });
+  const allies = { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Wei' } as const };
+  it('Marriage with no ally offered cancels when it can', () => {
+    expect(picked(decide(choice('marriage', ['seat-d'], {}, ['cancel'])))).toBe('cancel');
+  });
+  it('Displace with only allies offered cancels when it can', () => {
+    expect(picked(decide(choice('displace', ['seat-b', 'seat-c'], allies, ['cancel'])))).toBe('cancel');
+  });
+  it('Displace with only allies and no cancel picks an ally rather than failing', () => {
+    expect(picked(decide(choice('displace', ['seat-b', 'seat-c'], allies)))).toMatch(/^seat-[bc]$/);
   });
 });

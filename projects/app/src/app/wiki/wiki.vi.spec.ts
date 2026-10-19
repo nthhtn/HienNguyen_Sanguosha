@@ -66,10 +66,10 @@ describe('Wiki Cards in Vietnamese', () => {
 
   it('a tab named after a card takes the card name, and an unknown tab keeps its label', () => {
     const tr = makeTranslator(vi, 'vi');
-    expect(wikiTabLabel({ key: 'sha', label: 'Sha' }, tr)).toBe('Sát');
+    expect(wikiTabLabel({ key: 'sha', label: 'Slash' }, tr)).toBe('Sát');
     expect(wikiTabLabel({ key: 'defensive-mount', label: 'Defensive Mount' }, tr)).toBe('Tọa kỵ thủ');
     expect(wikiTabLabel({ key: 'nonsense', label: 'Nonsense' }, tr)).toBe('Nonsense');
-    expect(wikiTabLabel({ key: 'sha', label: 'Sha' }, makeTranslator(vi, 'en'))).toBe('Sha');
+    expect(wikiTabLabel({ key: 'sha', label: 'Slash' }, makeTranslator(vi, 'en'))).toBe('Slash');
   });
 
   it('every tab the content library produces has a Vietnamese label', () => {

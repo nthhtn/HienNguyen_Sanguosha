@@ -1,8 +1,9 @@
-import { AbilityOwner, GeneralOwner, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GeneralOwner, GameEvent, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Seat, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
 import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, recordCountsAs, requireZoneOfKind } from '../cards/zones';
 import { EngineEvent } from './events';
+import type { TriggerPoint } from '../registry/types';
 import { isFaceUpZoneKind } from '../domain/redact';
 
 export type Effect =
@@ -106,6 +107,10 @@ export type Effect =
   | { kind: 'OpenSelectionEffect'; selection: PendingSelection }
   // One step of a General's skill (SkillDefinition.onStep).
   | { kind: 'SkillStepEffect'; owner: GeneralOwner; step: string; data?: Record<string, unknown> }
+  // `owner`'s triggers at `point` for `subject`, gathered now and queued: a
+  // skill gained while that event's after-triggers resolve still takes part
+  // (Incarnation's Form chosen at Start). Logs nothing.
+  | { kind: 'FireSkillTriggersEffect'; owner: GeneralOwner; point: TriggerPoint; subject: GameEvent }
   // `seatId` uses `card` at `targets`, as a play outside any limit: a card a
   // skill makes a seat use (Sow Discord's Duel). Not counted toward limits.
   // `counted`: a play toward per-turn limits, spending Wine; `answering`: the
@@ -115,7 +120,13 @@ export type Effect =
   | { kind: 'TurnFaceDownEffect'; seatId: string }
   | { kind: 'TurnFaceUpEffect'; seatId: string }
   // Shows a card to everyone (Sow Revolt's taken card): logs its face.
-  | { kind: 'ShowCardEffect'; seatId: string; cardInstanceId: string; abilityId?: string };
+  | { kind: 'ShowCardEffect'; seatId: string; cardInstanceId: string; abilityId?: string }
+  // Chains or unchains a living seat; logs only a change.
+  | { kind: 'SetChainedEffect'; seatId: string; chained: boolean }
+  // A chain's wave after `damage` fully resolved: the next seat of `remaining`
+  // still living and chained takes `damage` again, at its base amount, marked
+  // `chained` so it starts no wave of its own; then the rest follow.
+  | { kind: 'ChainPropagationEffect'; damage: Damage; remaining: string[] };
 
 export interface ApplyResult {
   state: GameState;
@@ -142,12 +153,17 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const seatId = effect.damage.target.seatId;
       const seat = state.seats.find((s) => s.id === seatId);
       if (!seat) throw new Error(`Unknown seat: ${seatId}`);
+      // Fire or thunder damage actually dealt to a chained seat unchains it.
+      const unchains = !!seat.chained && effect.damage.nature !== 'normal' && effect.damage.amount > 0;
       const seats = state.seats.map((s) =>
         // HP may go below 0: a big hit needs more Peaches to recover from.
-        s.id === seatId ? { ...s, combinedHp: s.combinedHp - effect.damage.amount } : s
+        s.id === seatId ? withoutChain({ ...s, combinedHp: s.combinedHp - effect.damage.amount }, unchains) : s
       );
-      const event: EngineEvent = { kind: 'DamageDealtEvent', damage: effect.damage };
-      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+      const events: EngineEvent[] = [
+        { kind: 'DamageDealtEvent', damage: effect.damage },
+        ...(unchains ? [{ kind: 'ChainToggledEvent' as const, seatId, chained: false }] : []),
+      ];
+      return { state: { ...state, seats, log: [...state.log, ...events] }, events };
     }
     case 'OpenResponseEffect':
       return { state: { ...state, pendingResponse: effect.pendingResponse }, events: [] };
@@ -176,6 +192,7 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       if (effect.target.kind !== 'seat') throw new Error('HealEffect currently only supports seat targets');
       const seat = state.seats.find((s) => s.id === effect.target.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.target.seatId}`);
+      if (seat.eliminated) return { state, events: [] };
       const combinedHp = Math.min(seat.maxCombinedHp, seat.combinedHp + effect.amount);
       // Only what was actually recovered is logged; at full HP, nothing.
       const recovered = combinedHp - seat.combinedHp;
@@ -246,9 +263,9 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const seat = state.seats.find((s) => s.id === effect.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
       if (seat.eliminated) return { state, events: [] };
-      const seats = state.seats.map((s) => (s.id === effect.seatId ? { ...s, eliminated: true } : s));
-      const event: EngineEvent = { kind: 'SeatEliminatedEvent', seatId: effect.seatId };
-      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+      const { seats, events: revealed } = eliminateIn(state.seats, seat.id);
+      const events: EngineEvent[] = [...revealed, { kind: 'SeatEliminatedEvent', seatId: effect.seatId }];
+      return { state: { ...state, seats, log: [...state.log, ...events] }, events };
     }
     case 'OpenChoiceEffect':
       return { state: { ...state, pendingChoice: effect.choice }, events: [] };
@@ -371,27 +388,77 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'ReduceMaxHpEffect': {
+      // 0 max HP is immediate death: no dying round, no rescue (official rule).
       const seat = state.seats.find((s) => s.id === effect.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
       if (seat.eliminated || effect.amount <= 0) return { state, events: [] };
       const maxCombinedHp = Math.max(0, seat.maxCombinedHp - effect.amount);
       const combinedHp = Math.min(seat.combinedHp, maxCombinedHp);
       const out = maxCombinedHp <= 0;
-      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, maxCombinedHp, combinedHp, eliminated: out } : s));
+      const lowered = state.seats.map((s) => (s.id === seat.id ? { ...s, maxCombinedHp, combinedHp } : s));
+      const { seats, events: revealed } = out ? eliminateIn(lowered, seat.id) : { seats: lowered, events: [] };
       const events: EngineEvent[] = [
         { kind: 'MaxHpReducedEvent', seatId: seat.id, amount: seat.maxCombinedHp - maxCombinedHp, maxHp: maxCombinedHp },
+        ...revealed,
         ...(out ? [{ kind: 'SeatEliminatedEvent' as const, seatId: seat.id }] : []),
       ];
       return { state: { ...state, seats, log: [...state.log, ...events] }, events };
     }
+    case 'SetChainedEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      if (seat.eliminated || !!seat.chained === effect.chained) return { state, events: [] };
+      const seats = state.seats.map((s) => (s.id === seat.id ? (effect.chained ? { ...s, chained: true as const } : withoutChain(s, true)) : s));
+      const event: EngineEvent = { kind: 'ChainToggledEvent', seatId: seat.id, chained: effect.chained };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'ChainPropagationEffect': {
+      // Each seat is checked as its turn comes: one that died or was unchained meanwhile is skipped.
+      const index = effect.remaining.findIndex((id) => state.seats.some((s) => s.id === id && !s.eliminated && !!s.chained));
+      if (index === -1) return { state, events: [] };
+      const rest = effect.remaining.slice(index + 1);
+      const base = effect.damage.base ?? effect.damage.amount;
+      const hit: Effect = {
+        kind: 'DamageEffect',
+        damage: { ...effect.damage, target: { kind: 'seat', seatId: effect.remaining[index] }, amount: base, base, chained: true },
+      };
+      return { state: queueFront(state, [hit, ...(rest.length > 0 ? [{ ...effect, remaining: rest }] : [])]), events: [] };
+    }
     case 'ToolResolvedEffect':
       return { state, events: [] };
     case 'SkillStepEffect':
+    case 'FireSkillTriggersEffect':
     case 'UseCardEffect':
       throw new Error(`${effect.kind} needs the registry: resolve it through the pipeline`);
     default:
       throw new Error(`Unhandled effect kind: ${(effect as Effect).kind}`);
   }
+}
+
+// The seat out of the game: no longer chained, and both its Generals shown (a
+// death reveals them; the events are marked so no reveal bonus follows a dead
+// seat). The reveals come before its elimination in the log.
+function eliminateIn(seats: Seat[], seatId: string): { seats: Seat[]; events: EngineEvent[] } {
+  const events: EngineEvent[] = [];
+  const out = seats.map((seat) => {
+    if (seat.id !== seatId) return seat;
+    const generals = seat.generals;
+    if (generals) {
+      for (const slot of ['main', 'deputy'] as const) {
+        if (!generals[slot].revealed) events.push({ kind: 'GeneralRevealedEvent', seatId, slot, onDeath: true });
+      }
+    }
+    const shown = generals ? { generals: { main: { ...generals.main, revealed: true }, deputy: { ...generals.deputy, revealed: true } } } : {};
+    return { ...withoutChain(seat, true), ...shown, eliminated: true };
+  });
+  return { seats: out, events };
+}
+
+// `seat` unchained when `unchain` holds.
+function withoutChain(seat: Seat, unchain: boolean): Seat {
+  if (!unchain || !seat.chained) return seat;
+  const { chained: _dropped, ...rest } = seat;
+  return rest;
 }
 
 // One step of the dying round. Saved once above 0 HP; otherwise ask the next
@@ -421,8 +488,8 @@ export function applyDying(state: GameState, effect: Extract<Effect, { kind: 'Dy
   const isLiving = (seatId: string) => !!state.seats.find((x) => x.id === seatId && !x.eliminated);
   const index = effect.order.findIndex((id) => isLiving(id) && (id === seat.id || holdsRescue(id)));
   if (index === -1) {
-    const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, eliminated: true } : s));
-    return logged({ ...state, seats }, [{ kind: 'SeatEliminatedEvent', seatId: seat.id, ...(effect.killerSeatId ? { killerSeatId: effect.killerSeatId } : {}) }]);
+    const { seats, events: revealed } = eliminateIn(state.seats, seat.id);
+    return logged({ ...state, seats }, [...revealed, { kind: 'SeatEliminatedEvent', seatId: seat.id, ...(effect.killerSeatId ? { killerSeatId: effect.killerSeatId } : {}) }]);
   }
 
   const askerId = effect.order[index];

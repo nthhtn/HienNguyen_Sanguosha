@@ -34,7 +34,7 @@ that calls the engine. It is a root-provided service that holds one game:
 
 | Signal | Meaning |
 |---|---|
-| `state` | the **full**, unredacted `GameState`. Components render from `visibleState`; they read `state` only for public facts such as player names and the log |
+| `state` | the **full**, unredacted `GameState`. Components render from `visibleState`, log included (it is redacted: another seat's hidden skills read `'hidden'`), and must not bypass it; they read `state` only for public facts such as player names |
 | `visibleState` | `redactStateForSeat(state, revealedSeat)`: what the current viewer may see |
 | `legalActions` | `getLegalActions` for the active seat, empty while a bot is to move |
 | `activeSeatId` | `getActiveSeatId(state)`: who must decide |

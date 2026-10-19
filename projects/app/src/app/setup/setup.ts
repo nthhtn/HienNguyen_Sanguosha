@@ -15,7 +15,7 @@ import { TPipe } from '../i18n/t.pipe';
   selector: 'app-setup',
   imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, TPipe],
   template: `
-    <div class="home">
+    <div class="home" style="background-image: url('/card-art/misc/landing.jpg')">
       <mat-card class="hero" appearance="raised">
         <div class="kingdoms" aria-hidden="true">
           <span class="wei"></span><span class="shu"></span><span class="wu"></span><span class="qun"></span>
@@ -107,10 +107,9 @@ import { TPipe } from '../i18n/t.pipe';
       place-items: center;
       padding: 24px 16px;
       box-sizing: border-box;
-      background:
-        radial-gradient(circle at 20% 20%, rgb(59 51 44 / 8%), transparent 45%),
-        radial-gradient(circle at 80% 80%, rgb(59 51 44 / 8%), transparent 45%),
-        var(--mat-sys-surface-container-low);
+      background-color: var(--mat-sys-surface-container-low);
+      background-size: cover;
+      background-position: center;
     }
     .hero { width: min(100%, 520px); overflow: hidden; }
     .kingdoms { display: flex; height: 6px; }

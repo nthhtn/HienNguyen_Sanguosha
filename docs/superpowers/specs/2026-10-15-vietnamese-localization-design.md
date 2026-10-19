@@ -114,9 +114,9 @@ Decided by the user (2026-10-15):
 | General and skill names | Sino-Vietnamese, from `nameZh` |
 
 Defaults proposed and accepted:
-- Forces: Ngụy, Thục, Ngô, Quần. Hidden: Ẩn.
+- Forces: Ngụy, Thục, Ngô, Quần. Hidden: Tướng ẩn.
 - Card types: Cơ bản (Basic), Cẩm nang (Tool), Trang bị (Equipment).
-  Subtypes: Vũ khí (Weapon), Giáp (Armor), Ngựa (Mount).
+  Subtypes: Vũ khí (Weapon), Giáp (Armor), Tọa kỵ (Mount).
 - Hand, Discard Pile, Draw Pile: Bài trên tay, Chồng bài bỏ, Chồng bài rút.
 - Dying: Cận kề cái chết. Reveal and Face Down: Lật Tướng, Úp.
 - Farm (Deng Ai's judged-card status): Điền (user decision, 2026-10-16).
@@ -225,7 +225,7 @@ Each phase is mergeable on its own. The app behaves as before until phase 5.
 - The six Wiki Rules pages (Overview, Card Types, Setup, Turn Structure, Distance / Range, Judgment) read in Vietnamese. Their layout stays in the components; every sentence is a `rules.<page>.*` key in `en.ts` and `vi.ts`. Page titles reuse `nav.rules.*`, phase headings reuse `phase.indicator` and `history.phase.*`.
 - A sentence can hold three tokens, shown by `wiki/rules/rich-text.ts`: `[[/wiki/rules/setup|Setup]]` (a router link whose label is in the sentence's language), `{card:sha}` (the card's name in the current language, from the content translations) and `{force:Wei}` (a Force name). Card and Force names therefore always match the Game screen and the glossary.
 - Specs: every `rules.*` key carries the same links, cards and Forces in both languages; a link's label equals the page's navigation label in each language; every card named exists and has a Vietnamese name; no English card name or term is left on a rendered Vietnamese page. The English text and links of all six pages were compared with the old templates before the change (identical).
-- Wording notes: a seat is "người chơi" in prose (lowercase), Force is "thế lực", Mount is "Tọa kỵ" (Plus Mount "Tọa kỵ thủ", Minus Mount "Tọa kỵ công"), the judgment area is "khu phán xét", the draw pile "chồng bài rút", the discard pile "chồng bài bỏ"., the shared HP pool "Tổng Sinh lực" (as on the board). The rules pages say "Tọa kỵ" for a Mount, as the equipment slots do, while the card subtype label is still "Ngựa": one of the two should be chosen when the text is reviewed. The English text and links of the six pages are pinned by a snapshot spec taken from the old templates. All draft.
+- Wording notes: a seat is "người chơi" in prose (lowercase), Force is "thế lực", Mount is "Tọa kỵ" (Plus Mount "Tọa kỵ thủ", Minus Mount "Tọa kỵ công"), the judgment area is "khu phán xét", the draw pile "chồng bài rút", the discard pile "chồng bài bỏ"., the shared HP pool "Tổng Sinh lực" (as on the board). The rules pages say "Tọa kỵ" for a Mount, as the equipment slots and the card subtype label do ("Ngựa" is no longer used). The English text and links of the six pages are pinned by a snapshot spec taken from the old templates. All draft.
 
 ## Risks
 

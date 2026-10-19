@@ -96,10 +96,12 @@ and secret choices. Two things need attention before it is a network boundary:
    harmless; on a server a client that knows the seed and counter could predict
    a reshuffle. A server must strip `rng` from every view, either inside a
    view-mapping layer or by extending the redaction.
-2. **The log is public by design, but it is not filtered.** Events are written
-   so a face-down move carries no face, but a server should test that no event
-   leaks a hidden card or General to a seat that should not see it (now
-   `projects/sim/src/leakProperty.spec.ts`).
+2. **The log is filtered per seat.** Events are written so a face-down move
+   carries no face, and the server sends each seat its share of new events
+   through `redactEventsForSeat`, which masks another seat's hidden General's
+   skill ids. `projects/sim/src/leakProperty.spec.ts` tests that no view or
+   event leaks a hidden card, General or skill id to a seat that should not
+   see it.
 3. **Card ids must not name cards.** Done in backend Stage 1: the deck names
    each card `card-<position>` after the shuffle, and a reshuffle gives every
    reshuffled card a fresh `r<counter>-<position>` id, so neither a masked

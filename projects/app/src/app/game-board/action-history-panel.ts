@@ -28,7 +28,7 @@ export interface ActionHistoryDialogData {
           @if (entry.kind === 'action') {
             <li class="entry">
               @if (entry.card; as card) {
-                <app-card-art size="tiny" [id]="card.definitionId" [label]="name(card)" />
+                <app-card-art size="tiny" [cropped]="true" [id]="card.definitionId" [label]="name(card)" />
               } @else {
                 <span class="no-card" aria-hidden="true"></span>
               }

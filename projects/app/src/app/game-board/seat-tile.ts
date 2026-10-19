@@ -1,11 +1,11 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, GameState, Seat } from 'engine';
+import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
 import { abilityName, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
 import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
 import { SeatAvatar } from './seat-avatar';
-import { AvatarSkill } from './avatar-skills';
+import { AvatarReveal, AvatarSkill } from './avatar-skills';
 import { PlayingCard } from './playing-card';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { I18n } from '../i18n/i18n.service';
@@ -45,7 +45,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
         </div>
         <div class="generals" [class.face-down]="seat().faceDown">
           @if (seat().generals; as generals) {
-            <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
+            <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" [reveals]="reveals()" (revealGeneral)="useSkill.emit($event)" />
           } @else {
             <span class="choosing">{{ 'seat.choosing' | t }}</span>
           }
@@ -69,6 +69,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
         }
         @if (formName(); as form) {
           <span class="form-badge">{{ 'seat.form' | t: { form: form } }}</span>
+        }
+        @if (seat().chained) {
+          <!-- Chained (Chains): fire or thunder damage to it passes along the chain. -->
+          <span class="chain-badge" [attr.title]="'seat.chainedTitle' | t">{{ 'seat.chained' | t }}</span>
         }
         @if (seat().silenced) {
           <span class="silenced-badge">{{ 'seat.noSkills' | t }}</span>
@@ -184,6 +188,8 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .generals { position: relative; }
     .generals.face-down app-seat-avatar { filter: grayscale(0.6) brightness(0.8); }
     .form-badge, .silenced-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
+    .chain-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #5a4a3a; color: #fbf7ec; border: 1px dashed #d5c8ad; }
+    .chain-badge::before { content: '⛓ '; }
     .face-down-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
     .pile { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
     .slot { position: relative; width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
@@ -203,6 +209,8 @@ export class SeatTile {
   // The viewer's own active skills, shown on the avatar.
   readonly skills = input<AvatarSkill[]>([]);
   readonly useSkill = output<Action>();
+  // The viewer's own Reveal buttons, shown on the avatar; they dispatch through useSkill.
+  readonly reveals = input<AvatarReveal[]>([]);
   readonly isResponding = input(false);
   readonly isViewer = input(false);
   readonly isBot = input(false);
@@ -255,13 +263,4 @@ export class SeatTile {
   protected kingdomName(kingdom: Parameters<typeof kingdomDisplayName>[0]): string {
     return kingdomDisplayName(kingdom, this.i18n.translator);
   }
-}
-
-// Whether `seat` is dying: at 0 HP or below, unless a skill keeps it alive there
-// (cards under its General, Refusing Death) and no rescue round is asking for it.
-export function seatIsDying(state: GameState, seat: Seat): boolean {
-  if (seat.eliminated || seat.combinedHp > 0) return false;
-  const rescuing = state.pendingResponse?.reason?.kind === 'dying' && state.pendingResponse.reason.seatId === seat.id;
-  const pile = seat.pile ? (state.zones.find((z) => z.id === seat.pile!.zoneId)?.cards.length ?? 0) : 0;
-  return rescuing || pile === 0;
 }

@@ -5,7 +5,7 @@ import { card, table } from './testing';
 const seatOf = (s: GameState, id: string) => s.seats.find((x) => x.id === id)!;
 const shans = (n: number) => Array.from({ length: n }, (_, i) => card(`sh${i}`, 'shan'));
 
-// A Sha's hit window on `target`: not answering leads to `amount` damage.
+// A Slash's hit window on `target`: not answering leads to `amount` damage.
 function shaWindow(s: GameState, target: string, amount = 1): GameState {
   return {
     ...s,
@@ -22,8 +22,8 @@ describe('shouldHoldShan', () => {
     const s = shaWindow(table({ 'seat-a:hand': shans(n) }, { hp: { 'seat-a': hp }, maxHp: { 'seat-a': 4 } }), 'seat-a', amount);
     return shouldHoldShan(s, seatOf(s, 'seat-a'));
   };
-  it('holds a lone Shan against a non-lethal hit at 3+ HP', () => expect(at(3, 1)).toBe(true));
-  it('answers when it holds two Shan', () => expect(at(3, 2)).toBe(false));
+  it('holds a lone Dodge against a non-lethal hit at 3+ HP', () => expect(at(3, 1)).toBe(true));
+  it('answers when it holds two Dodge', () => expect(at(3, 2)).toBe(false));
   it('answers at 2 HP or less', () => expect(at(2, 1)).toBe(false));
   it('answers a lethal hit', () => expect(at(3, 1, 3)).toBe(false));
   it('answers with no DamageEffect outcome', () => {

@@ -1,6 +1,6 @@
 import { CardInstance, EngineEvent, Player, Seat } from 'engine';
 import { abilityName, competeOutcomeText, generalDisplayData } from 'content';
-import { Force, forceOf, generalDisplayName, seatName } from '../labels';
+import { abilityDisplayName, Force, forceOf, generalDisplayName, seatName } from '../labels';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
 export interface CompetePlayer {
@@ -58,7 +58,7 @@ export function competeResults(log: readonly EngineEvent[], from: number, seats:
     const sourceGeneral = slot ? sourceSeat?.generals?.[slot].generalDefinitionId : undefined;
     const generalId = sourceGeneral && sourceGeneral !== 'hidden' ? sourceGeneral : null;
     const display = generalId ? generalDisplayData(generalId, localeOf(tr)) : null;
-    const name = abilityName(event.abilityId, localeOf(tr));
+    const name = abilityDisplayName(event.abilityId, tr);
     results.push({
       id: `compete-${index}`,
       abilityId: event.abilityId,

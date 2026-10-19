@@ -63,6 +63,12 @@ describe('SeatTile', () => {
     expect(el.querySelectorAll('[aria-label="Farms"] app-playing-card')).toHaveLength(1);
   });
 
+  it('shows a chain marker on a chained seat, and none on an unchained one', () => {
+    const marker = render(makeSeat({ chained: true })).querySelector('.chain-badge');
+    expect(marker?.textContent?.trim()).toBe('Chained');
+    expect(render(makeSeat()).querySelector('.chain-badge')).toBeNull();
+  });
+
   it('shows the chosen Form and a silenced seat', () => {
     const forms = { slot: 'main' as const, held: ['hidden'], chosen: { generalId: 'zhou-yu', skillId: 'brave-gesture' } };
     expect(render(makeSeat({ forms }), {}).querySelector('.form-badge')?.textContent?.trim()).toBe('Form: Zhou Yu (Brave Gesture)');
@@ -75,7 +81,7 @@ describe('SeatTile', () => {
     const el = render(makeSeat(), { judgment: [{ instanceId: 'dm', definitionId: 'shan', suit: 'diamond', rank: 3 }], judgmentCountsAs: { dm: 'capture' } });
     const slot = el.querySelector('.judgment .slot') as HTMLElement;
     expect(slot.textContent).toContain('As Capture');
-    expect(slot.getAttribute('title')).toBe('Judgment Area: Shan as Capture');
+    expect(slot.getAttribute('title')).toBe('Judgment Area: Dodge as Capture');
   });
 
   it('shows the seat name, hidden kingdom and generals, HP and hand count', () => {
@@ -96,7 +102,7 @@ describe('SeatTile', () => {
     );
     expect(el.textContent).toContain('Shu');
     const portrait = el.querySelector('app-seat-avatar .half[data-slot="main"] img') as HTMLImageElement;
-    expect(portrait.getAttribute('src')).toBe('/card-art/generals/shu/zhao-yun.jpg');
+    expect(portrait.getAttribute('src')).toBe('/card-art/generals/skins/shu/zhaoyun.png');
   });
 
   it('shows a placeholder for a seat still choosing generals', () => {
@@ -203,7 +209,7 @@ describe('SeatTile', () => {
     expect(info.textContent).toContain('Green Dragon Blade');
     // The Info popup shows the card as in the hand, at large size.
     expect(info.querySelector('app-playing-card .card.large .face')!.textContent).toBe('5 ♠');
-    expect(info.querySelector('app-playing-card .card.large .name')!.textContent).toBe('Green Dragon Blade');
+    expect(info.querySelector('app-playing-card .card.large .name')).toBeNull();
     expect(info.textContent).toContain('Range 3');
     document.querySelector('.cdk-overlay-container')!.replaceChildren();
   });

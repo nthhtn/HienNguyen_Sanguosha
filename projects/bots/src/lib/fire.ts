@@ -1,6 +1,6 @@
 import type { CardInstance, ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { livingSeatOrderFrom } from 'engine';
-import { handCards, isAlly, keepRank, leastUseful } from './helpers';
+import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, isShaCard } from './helpers';
 
 // The stage 9 spec's bot rules for the Fire skills. Bots don't read content's
 // range rules, so distance is worked out here the same way: seats round the
@@ -70,7 +70,7 @@ export function wantsFireActive(view: GameState, me: Seat, skillId: string, regi
     case 'rouse-the-tiger':
       return highCard(view, me) && rousable(view, me, registry).length > 0;
     case 'heavens-justice':
-      return hand.filter((c) => c.definitionId === 'sha').length >= 2 && highCard(view, me) && others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) > 0);
+      return hand.filter((c) => isShaCard(registry, c.definitionId)).length >= 2 && highCard(view, me) && others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) > 0);
     default:
       return null;
   }
@@ -105,7 +105,8 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
   }
   // Blaze: show the least useful card; discard the least useful match.
   if (then.kind === 'card-step' && (then.step.step === 'blaze-shown' || then.step.step === 'blaze-hit')) {
-    return leastUseful(view, registry, eligible).slice(0, 1);
+    const nonPeach = eligible.filter((id) => definitionIdOf(view, id) !== 'peach');
+    return leastUseful(view, registry, nonPeach.length > 0 ? nonPeach : eligible).slice(0, 1);
   }
   if (selection.reason.kind !== 'ability') return null;
   const seats = eligible.map((id) => view.seats.find((s) => s.id === id)).filter((s): s is Seat => !!s);

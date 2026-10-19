@@ -43,6 +43,10 @@ export interface Turn {
   // After an extra turn (GrantExtraTurnEffect): the seat whose turn it was
   // granted from. The normal order resumes after it, not after the extra seat.
   resumeAfterSeatId?: string;
+  // As a human's turn begins while they hold a hidden General: the turn waits
+  // in Start, before the Start Phase's effects, so they may reveal first
+  // (startWindowOpens). EndPhaseAction closes it. Absent otherwise.
+  startWindow?: true;
 }
 
 export type Phase = 'GeneralSelection' | 'Start' | 'Judgment' | 'Draw' | 'Play' | 'Discard' | 'End';
@@ -101,6 +105,9 @@ export interface Seat {
   forms?: { slot: 'main' | 'deputy'; held: string[]; chosen?: { generalId: string; skillId: string } };
   // Turned face down (Entrench): its next turn is skipped as it turns face up.
   faceDown?: true;
+  // Chained (Chains): fire or thunder damage to it is passed along the chain
+  // (see ChainPropagationEffect). Public; cleared when the seat is eliminated.
+  chained?: true;
   // Game-long marks some skills keep (none of the base Generals do yet).
   marks?: Record<string, number>;
   eliminated: boolean;
@@ -275,6 +282,9 @@ export interface UsedCard {
   rank?: number;
   physical: CardInstance[];
   via?: { owner: AbilityOwner; abilityId: string; conversionId: string };
+  // The damage nature it carries: set only on a card used as itself whose
+  // definition has one (a Fire Attack is a fire Sha). A converted card has none.
+  nature?: 'fire' | 'thunder';
 }
 
 // Who reads a judgment: a card through its definition's onJudged (a delayed
@@ -314,6 +324,12 @@ export interface Damage {
   // What caused it. `card` is the card as used (a Serpent Spear Sha has two
   // physical cards); `cardInstanceId` is its first physical card, if any.
   cause?: { cardInstanceId?: string; card?: UsedCard; skillId?: string };
+  // The amount when the damage was created, before the target's own armour and
+  // skills changed it: what a chain passes on. Stamped on fire and thunder
+  // damage as it starts to resolve, when absent.
+  base?: number;
+  // Damage passed along a chain: it never starts a wave of its own.
+  chained?: true;
 }
 
 // Optional table rules chosen when the game is created. Stored on the state so

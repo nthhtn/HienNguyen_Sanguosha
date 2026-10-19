@@ -23,8 +23,8 @@ import { TPipe } from '../i18n/t.pipe';
       @if (discardsLeft() > 0) {
         {{ ' ' }}<span class="discard">{{ 'phase.discardMore' | t: { n: discardsLeft() } }}</span>
       }
-      @if (isViewersTurn() && state().phase === 'Play' && !state().pendingResponse) {
-        <!-- At zero: End Phase. -->
+      @if (isViewersTurn() && !state().pendingResponse && (state().phase === 'Play' || (state().phase === 'Start' && state().turn.startWindow))) {
+        <!-- At zero: End Phase, or Continue in the Start window. -->
         <app-decision-countdown class="timer" />
       }
       {{ ' ' }}<span class="count draw-pile">{{ 'phase.drawPile' | t: { n: drawPileCount() } }}</span>

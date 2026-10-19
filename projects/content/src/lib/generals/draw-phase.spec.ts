@@ -7,7 +7,7 @@ const drawPhase = (generals: [string, string], cards: Record<string, ReturnType<
   kw.settle(table({ drawPile: pile, ...cards }, { phase: 'Judgment', generals: { 'seat-a': generals }, ...o }));
 
 describe('Xu Chu — Bare the Chest', () => {
-  it('draws 1 fewer; his Sha and Duel then deal 1 more damage this turn', () => {
+  it('draws 1 fewer; his Slash and Duel then deal 1 more damage this turn', () => {
     let s = drawPhase(['xu-chu', 'filler-zhang-he'], { 'seat-a:hand': [card('s1', 'sha'), card('du', 'duel', 'spade', 1)] });
     expect(askedAbout(s)).toBe('bare-the-chest');
     s = kw.use(s);
@@ -29,6 +29,24 @@ describe('Xu Chu — Bare the Chest', () => {
     let s = kw.use(drawPhase(['xu-chu', 'filler-zhang-he']));
     s = kw.run(s, [{ kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-b' }, target: { kind: 'seat', seatId: 'seat-c' }, amount: 1, nature: 'normal', cause: { card: { as: 'sha', colour: 'black', physical: [] } } } }]);
     expect(hp(s, 'seat-c')).toBe(3);
+  });
+
+  // Spec "Details of propagation": the original amount includes source-side bonuses.
+  const chainedTable = (cardId: string) => {
+    const t = table({ 'seat-a:hand': [card('s1', cardId, 'heart', 4)] }, { generals: { 'seat-a': ['xu-chu', 'filler-zhang-he'] }, flags: { 'bare-the-chest': true } });
+    return { ...t, seats: t.seats.map((x) => (x.id === 'seat-b' || x.id === 'seat-c' ? { ...x, chained: true as const } : x)) };
+  };
+
+  it('his +1 travels down a chain: a Fire Attack deals 2 to each chained seat, once each', () => {
+    const s = kw.pass(kw.play(chainedTable('fire-attack'), 's1', 'seat-b'));
+    expect([hp(s, 'seat-b'), hp(s, 'seat-c')]).toEqual([2, 2]);
+    expect(s.seats.filter((x) => x.chained)).toEqual([]);
+  });
+
+  it('a plain Slash with his +1 hits only its target, and unchains nobody', () => {
+    const s = kw.pass(kw.play(chainedTable('sha'), 's1', 'seat-b'));
+    expect([hp(s, 'seat-b'), hp(s, 'seat-c')]).toEqual([2, 4]);
+    expect(s.seats.filter((x) => x.chained).map((x) => x.id)).toEqual(['seat-b', 'seat-c']);
   });
 });
 

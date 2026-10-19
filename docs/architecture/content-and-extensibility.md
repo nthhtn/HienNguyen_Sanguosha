@@ -123,7 +123,7 @@ step. The same pattern drives Bewilder's doubt round and Sha's dodge steps.
 
 A mode is a `GameModeDefinition`: `setup`, `checkWinCondition`, `triggers`,
 `maxSeats`. Everything specific to Kingdom War (the two Generals per seat, the
-shared HP pool, revealing at half HP, the dying round, the kill reward and
+shared HP pool, the dying round, the kill reward and
 penalty, the reveal bonuses) is a trigger or a setup step in
 [kingdomWar.ts](../../projects/content/src/lib/modes/kingdomWar.ts), not engine
 code. A second mode would be a second object of the same shape.
@@ -160,7 +160,8 @@ skip the spec.
    `{ id, skills }` entry to that set's list. Registration is by that list, so
    no other file changes.
 3. Add display text in `display.ts` only where the UI needs it: the
-   `ABILITY_HINTS` line for an ask, selection prompts, and a
+   `ABILITY_HINTS` line for an ask, selection prompts (`stepSelectionText` looks up
+   `<skillId>/<step>` before a step name shared by several skills), and a
    `COMPETE_OUTCOMES` entry for a skill that competes.
 4. Add the id to the pack's id list in `generals/index.ts`.
 5. Extend that pack's simulator spec so a seeded game fires the skill (see

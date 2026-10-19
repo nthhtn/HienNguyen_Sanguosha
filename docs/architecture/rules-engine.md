@@ -72,10 +72,20 @@ Generals are secret. The state stored by the application is the **full** state;
   hidden until a General is revealed;
 - a pending selection or choice has hidden cards masked, and a *secret* choice
   hides its options from everyone but its chooser;
-- skill ids of another seat's hidden Generals are masked wherever they appear
-  in queued work;
-- the log is **not** redacted: events are written to be public (a face-down
-  card move carries no face, a revealed card is shown on purpose).
+- skill ids of another seat's hidden Generals read `'hidden'` wherever they
+  appear: in pending decisions, in queued work and in the log. One set of such
+  skills per state and viewer (from the log, the pending decisions and the
+  queue) masks them all. Besides skill, ability and conversion ids, the skill
+  is masked as a token inside decision id strings (`ask-hidden-seat-b-3`),
+  `acted` ability keys (`seat-b:main:hidden`), use counter and tally keys
+  (`seat-b/main/hidden`) and turn flags. Card and General ids are never
+  masked as tokens, so a Wine card stays Wine while Dong Zhuo's hidden Wine
+  skill is masked;
+- the log is otherwise public: events are written that way (a face-down card
+  move carries no face, a revealed card is shown on purpose), and the only
+  per-viewer change is the hidden-skill masking above.
+  `redactEventsForSeat(state, events, viewer)` masks a slice of the log with
+  the same set as `redactStateForSeat`.
 
 Bots receive the redacted state too, so they cannot cheat by construction.
 
@@ -150,7 +160,8 @@ A `SkillTrigger` is `{ point, condition, effect }`, where `point` is
 deterministic: the mode's triggers first, then each seat's Generals' skills in
 play (seat by seat, Main before Deputy), then worn equipment. A hidden
 General's *compulsory* skills are off; its optional skills still trigger but
-using one reveals the General first (`needsReveal`). The `owner` passed to a
+using one reveals the General first (`needsReveal`; the reveal rule is under
+"Reveal to use" in [the event chain](event-chain.md)). The `owner` passed to a
 trigger says whose skill it is, so the same General can sit at two seats.
 
 ## Decisions are data, not callbacks
@@ -191,8 +202,8 @@ shuffles the deck, and deals four cards. Its `triggers` carry the mode's
 rules:
 
 - the Draw Phase draw and the Judgment Phase;
-- HP at half or below reveals the Main General, at 0 or below the Deputy, and
-  at 0 or below starts the dying round;
+- HP at 0 or below starts the dying round (an HP drop reveals nothing; a death
+  reveals both Generals, in the engine's elimination step);
 - elimination discards everything the seat holds;
 - the kill reward and penalty, and the reveal bonuses.
 

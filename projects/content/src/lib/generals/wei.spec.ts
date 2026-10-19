@@ -4,7 +4,7 @@ import { askedAbout, card, handIds, harness, hp, ids, registry, seat, table, Tab
 
 const { play, pass, run, use, decline, choose, select, cancel } = harness();
 const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-zhang-he', revealed] });
-// seat-b's turn: it plays Sha s1 at seat-a, which doesn't dodge.
+// seat-b's turn: it plays Slash s1 at seat-a, which doesn't dodge.
 const shaHits = (cards: Record<string, ReturnType<typeof card>[]>, o: TableOptions) =>
   pass(play(table({ ...cards, 'seat-b:hand': [card('s1', 'sha'), ...(cards['seat-b:hand'] ?? [])] }, { owner: 'seat-b', ...o }), 's1', 'seat-a'));
 const damage = (amount: number, cause?: Extract<Effect, { kind: 'DamageEffect' }>['damage']['cause']): Effect => ({
@@ -19,7 +19,7 @@ describe('Cao Cao — Evil Hero', () => {
     expect(ids(decline(s), 'discardPile')).toEqual(['s1']);
   });
 
-  it('takes both cards of a Serpent Spear Sha', () => {
+  it('takes both cards of a Serpent Spear Slash', () => {
     const [c1, c2] = [card('c1', 'peach', 'heart'), card('c2', 'shan', 'spade')];
     const s = run(table({ discardPile: [c1, c2] }, { generals: at('seat-a', 'cao-cao') }), [damage(1, { cardInstanceId: 'c1', card: usedCardFrom([c1, c2], 'sha') })]);
     expect(handIds(use(s), 'seat-a')).toEqual(['c1', 'c2']);

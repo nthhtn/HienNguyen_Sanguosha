@@ -136,3 +136,24 @@ describe('selections', () => {
     expect(cardsIn(given, 'a:hand')).toEqual(['bolt-1', 'd1']);
   });
 });
+
+describe('onSelect opens no decision (S3)', () => {
+  it('throws when an onSelect effect opens a decision', () => {
+    const s = opened(selection({ onSelect: [{ kind: 'OpenSelectionEffect', selection: selection({ id: 'sel-2' }) }] }));
+    expect(() => select(s, ['k1', 'k2'])).toThrow('opened a decision');
+  });
+
+  it('does not throw when an onSelect reveal follow-up is only queued', () => {
+    // A reveal whose after-trigger queues an ask: the ask opens later, from the queue.
+    const owner = { kind: 'equipment' as const, seatId: 'a', cardInstanceId: 'x' };
+    const askOnReveal: GameModeDefinition = {
+      ...mode,
+      triggers: [{ point: 'after:GeneralRevealedEvent', condition: () => true, effect: () => [{ kind: 'AskUseEffect', owner, abilityId: 'x', effects: [] }] }],
+    };
+    const base = opened(selection({ onSelect: [{ kind: 'RevealGeneralEffect', seatId: 'a', slot: 'main' }] }));
+    const hidden: GameState = { ...base, seats: base.seats.map((s) => (s.id === 'a' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: false } } } : s)) };
+    const next = resolve(hidden, { kind: 'SelectAction', seatId: 'a', selectionId: 'sel-1', ids: ['k1', 'k2'] }, { registry, mode: askOnReveal }).state;
+    expect(next.seats[0].generals!.main.revealed).toBe(true);
+    expect(next.pendingChoice).toMatchObject({ seatId: 'a', verb: 'use' });
+  });
+});

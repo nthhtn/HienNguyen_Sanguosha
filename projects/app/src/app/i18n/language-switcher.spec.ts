@@ -10,48 +10,62 @@ describe('LanguageSwitcher', () => {
     const fixture = TestBed.createComponent(LanguageSwitcher);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
-    const buttons = () => [...el.querySelectorAll('button')] as HTMLButtonElement[];
-    return { fixture, el, buttons };
+    const trigger = () => el.querySelector('button.current') as HTMLButtonElement;
+    const open = async () => {
+      trigger().click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      return [...document.querySelectorAll('.mat-mdc-menu-panel button[mat-menu-item]')] as HTMLButtonElement[];
+    };
+    return { fixture, el, trigger, open };
   }
 
-  it('has one flag button per language, labelled in its own language', async () => {
-    const { buttons } = await render();
-    expect(buttons().map((b) => [b.getAttribute('aria-label'), b.getAttribute('title'), b.querySelector('img')!.getAttribute('src')])).toEqual([
+  it('shows the flag of the language in use on its button, labelled Language', async () => {
+    const { trigger } = await render();
+    expect(trigger().getAttribute('aria-label')).toBe('Language');
+    expect(trigger().getAttribute('title')).toBe('English');
+    expect(trigger().querySelector('img')!.getAttribute('src')).toBe('flags/gb.svg');
+    expect(trigger().textContent!.trim()).toBe('');
+  });
+
+  it('lists one flag per language in the menu, with no text, labelled in its own language', async () => {
+    const { open } = await render();
+    const items = await open();
+    expect(items.map((b) => [b.getAttribute('aria-label'), b.getAttribute('title'), b.querySelector('img')!.getAttribute('src')])).toEqual([
       ['English', 'English', 'flags/gb.svg'],
       ['Tiếng Việt', 'Tiếng Việt', 'flags/vn.svg'],
     ]);
-    for (const b of buttons()) expect(b.querySelector('img')!.getAttribute('alt')).toBe('');
+    for (const b of items) {
+      expect(b.querySelector('img')!.getAttribute('alt')).toBe('');
+      expect(b.textContent!.trim()).toBe('');
+    }
+    expect(items.map((b) => b.getAttribute('aria-current'))).toEqual(['true', null]);
   });
 
-  it('marks the current language as pressed', async () => {
-    const { buttons } = await render();
-    expect(buttons().map((b) => b.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
-  });
-
-  it('switches to Vietnamese, remembers it and relabels the group', async () => {
-    const { el, buttons, fixture } = await render();
-    const group = el.querySelector('[role="group"]')!;
-    expect(group.getAttribute('aria-label')).toBe('Language');
-
-    buttons()[1].click();
+  it('switches to Vietnamese, remembers it, and shows its flag and label', async () => {
+    const { trigger, open, fixture } = await render();
+    (await open())[1].click();
     await fixture.whenStable();
     await fixture.whenStable();
-
-    expect(buttons().map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
+    fixture.detectChanges();
     expect(TestBed.inject(I18n).locale()).toBe('vi');
     expect(localStorage.getItem('locale')).toBe('vi');
-    expect(group.getAttribute('aria-label')).toBe('Ngôn ngữ');
+    expect(trigger().getAttribute('aria-label')).toBe('Ngôn ngữ');
+    expect(trigger().querySelector('img')!.getAttribute('src')).toBe('flags/vn.svg');
   });
 
   it('switches back to English', async () => {
-    const { buttons, fixture } = await render();
-    buttons()[1].click();
+    const { trigger, open, fixture } = await render();
+    (await open())[1].click();
     await fixture.whenStable();
     await fixture.whenStable();
-    buttons()[0].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    (await open())[0].click();
     await fixture.whenStable();
     await fixture.whenStable();
-    expect(buttons().map((b) => b.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
+    fixture.detectChanges();
     expect(localStorage.getItem('locale')).toBe('en');
+    expect(trigger().querySelector('img')!.getAttribute('src')).toBe('flags/gb.svg');
   });
 });

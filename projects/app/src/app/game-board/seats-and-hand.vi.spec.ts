@@ -88,6 +88,7 @@ describe('SeatTile in Vietnamese', () => {
     expect(text(render(makeSeat({ generals: null as never })).el.querySelector('.choosing'))).toBe('Đang chọn Tướng…');
     expect(text(render(makeSeat({ faceDown: true })).el.querySelector('.face-down-badge'))).toBe('Úp');
     expect(text(render(makeSeat({ silenced: true })).el.querySelector('.silenced-badge'))).toBe('Mất kỹ năng');
+    expect(text(render(makeSeat({ chained: true })).el.querySelector('.chain-badge'))).toBe('Bị xích');
     const piles = render(makeSeat(), { pile: [sha], stash: [{ ...sha, instanceId: 'c-2' }] }).el;
     expect([...piles.querySelectorAll('.pile')].map((p) => p.getAttribute('aria-label'))).toEqual(['Lá bài Sang', 'Điền']);
     const form = { slot: 'main', held: [], chosen: { generalId: 'guan-yu', skillId: 'fighting-saint' } } as never;
@@ -117,7 +118,7 @@ describe('SeatAvatar and the skill buttons in Vietnamese', () => {
     };
     const half = (el: HTMLElement, slot: string) => el.querySelector(`.half[data-slot="${slot}"]`) as HTMLButtonElement;
     const hidden = render({ main: { generalDefinitionId: 'hidden', revealed: false }, deputy: { generalDefinitionId: 'hidden', revealed: false } });
-    expect(text(half(hidden, 'main').querySelector('.caption'))).toBe('Ẩn');
+    expect(text(half(hidden, 'main').querySelector('.caption'))).toBe('Tướng ẩn');
     expect(half(hidden, 'main').getAttribute('aria-label')).toBe('Tướng ẩn');
     const mixed = render({ main: { generalDefinitionId: 'guan-yu', revealed: false }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } });
     expect(text(half(mixed, 'main').querySelector('.caption'))).toBe('Quan Vũ (ẩn)');
@@ -152,7 +153,7 @@ describe('HandView in Vietnamese', () => {
   });
   const registry: ContentRegistry = {
     generals: new Map(),
-    cards: new Map([['sha', 'Sha'], ['crossbow', 'Crossbow'], ['peach', 'Peach']].map(([id, name]) => [id, { id, name, category: 'basic' as const, play: () => [] }])),
+    cards: new Map([['sha', 'Slash'], ['crossbow', 'Crossbow'], ['peach', 'Peach']].map(([id, name]) => [id, { id, name, category: 'basic' as const, play: () => [] }])),
   };
   const at = (card: string, ...seats: string[]): Action => ({ kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: card, targets: seats.map((seatId) => ({ kind: 'seat' as const, seatId })) });
 
@@ -223,7 +224,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
     };
     const registry: ContentRegistry = {
       cards: new Map([
-        ['sha', { id: 'sha', name: 'Sha', category: 'basic' as const, play: () => [] }],
+        ['sha', { id: 'sha', name: 'Slash', category: 'basic' as const, play: () => [] }],
         ['serpent-spear', { id: 'serpent-spear', name: 'Serpent Spear', category: 'equipment' as const, equipSlot: 'weapon' as const, play: () => [], abilities: { conversions: [{ id: 'serpent-spear', as: 'sha', cards: 2, when: 'both' as const }] } }],
       ]),
       generals: new Map(),
@@ -269,7 +270,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
 describe('the Choose Targets and General info dialogs in Vietnamese', () => {
   it('Choose Targets: title, both prompts, seat names and buttons', () => {
     const open = (min: number, max: number) => {
-      const data: TargetsDialogData = { title: 'Sha', pick: { eligibleIds: ['seat-0', 'seat-2'], min, max }, state: { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }] } as unknown as GameState };
+      const data: TargetsDialogData = { title: 'Slash', pick: { eligibleIds: ['seat-0', 'seat-2'], min, max }, state: { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }] } as unknown as GameState };
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close: () => undefined } }] });
       return TestBed.inject(I18n).setLocale('vi').then(() => {
@@ -280,11 +281,11 @@ describe('the Choose Targets and General info dialogs in Vietnamese', () => {
     };
     return open(1, 2).then(async (el) => {
       expect(text(el.querySelector('h2'))).toBe('Chọn mục tiêu');
-      expect(text(el.querySelector('p'))).toBe('Chọn tối đa 2 mục tiêu cho Sha');
+      expect(text(el.querySelector('p'))).toBe('Chọn tối đa 2 mục tiêu cho Slash');
       expect([...el.querySelectorAll('.seats button')].map((b) => text(b))).toEqual(['Hing', 'Người chơi 2']);
       expect([...el.querySelectorAll('mat-dialog-actions button')].map((b) => text(b))).toEqual(['Hủy', 'Xác nhận']);
       const exact = await open(2, 2);
-      expect(text(exact.querySelector('p'))).toBe('Chọn 2 mục tiêu cho Sha');
+      expect(text(exact.querySelector('p'))).toBe('Chọn 2 mục tiêu cho Slash');
     });
   });
 

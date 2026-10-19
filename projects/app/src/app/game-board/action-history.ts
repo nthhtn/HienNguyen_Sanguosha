@@ -1,7 +1,7 @@
 import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat, UsedCard } from 'engine';
-import { abilityName, cardDisplayData, generalDisplayData } from 'content';
+import { abilityName, cardDisplayData, generalDisplayData, isRecast } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
-import { Force, cardFaceLabel, cardIdDisplayName, forceOf, generalDisplayName, judgmentReaderName, seatName, suitSymbol, targetLabel } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, forceOf, generalDisplayName, judgmentReaderName, seatName, shownCardId, suitSymbol, targetLabel } from '../labels';
 import { translateLabelText } from './choice-description';
 
 export type ActionHistoryEntry =
@@ -38,10 +38,10 @@ export function actionHistory(
   // otherwise its name.
   const usedLabel = (used: UsedCard) => {
     if (used.via) {
-      const as = tr('history.via', { card: cardName(used.as, tr), ability: abilityName(used.via.abilityId, localeOf(tr)) });
+      const as = tr('history.via', { card: cardName(used.as, tr), ability: abilityDisplayName(used.via.abilityId, tr) });
       return used.physical.length === 1 ? tr('history.usedAs.card', { card: named(used.physical[0]), as }) : tr('history.usedAs.cards', { count: used.physical.length, as });
     }
-    return used.physical.length === 1 && used.physical[0].definitionId === used.as ? named(used.physical[0]) : cardName(used.as, tr);
+    return used.physical.length === 1 && used.physical[0].definitionId === shownCardId(used) ? named(used.physical[0]) : cardName(shownCardId(used), tr);
   };
   const zoneById = new Map(zones.map((z) => [z.id, z]));
   const playedCards = new Map<string, UsedCard>();
@@ -61,7 +61,15 @@ export function actionHistory(
   const knownFaces = new Map<string, CardInstance>();
   // The card each seat showed last, and its line (competing folds two into one).
   const lastShown = new Map<string, { card: CardInstance; line: ActionLine }>();
+  // The card each seat last put under its General (Refusing Death), for its outcome line.
+  const lastPutUnder = new Map<string, CardInstance>();
+  // The last "chose a seat" line, so a skill's own outcome line can replace it (Fantasy).
+  let lastChoseSeat: { line: ActionLine; seatId: string } | null = null;
   let swapFirst: string | null = null;
+  // The user of the Chains being resolved, whose toggles it says ("Seat 1 chained
+  // Hing"); cleared by damage and by the next card used on its own initiative.
+  let chainsUser: string | null = null;
+  let previous: EngineEvent | null = null;
   // The latest judgment line, remembered as data so "Counts as Shan" can fold into it
   // by seat and reader id instead of by reading its text.
   let lastJudgment: { line: ActionLine; seatId: string; readerId: string; reader: string; face: string } | null = null;
@@ -72,7 +80,7 @@ export function actionHistory(
       made.reason.kind === 'choice'
         ? tr('history.withSuffix', { tool: cardName(made.reason.card.as, tr) })
         : made.reason.kind === 'ability'
-          ? tr('history.withSuffix', { tool: abilityName(made.reason.abilityId, localeOf(tr)) })
+          ? tr('history.withSuffix', { tool: abilityDisplayName(made.reason.abilityId, tr) })
           : '';
     const chooser = name(made.seatId);
     if (made.shows.kind === 'hidden-hand') {
@@ -122,23 +130,28 @@ export function actionHistory(
         }
         const face = faceOf(used);
         const answered = event.inResponseTo;
-        if (!answered) initiative = true;
+        if (!answered) {
+          initiative = true;
+          chainsUser = used.as === 'chains' && event.targets.length > 0 ? event.seatId : null;
+        }
         const seat = name(event.seatId);
-        if (answered?.dyingSeatId) {
+        if (isRecast(event)) {
+          action(tr('history.recastCard', { seat, used: usedLabel(used) }), face);
+        } else if (answered?.dyingSeatId) {
           const saved = answered.dyingSeatId === event.seatId ? tr('history.themselves') : name(answered.dyingSeatId);
           action(tr('history.useToSave', { seat, used: usedLabel(used), saved }), face);
         } else if (answered?.counters && answered.seatId) {
-          action(tr('history.cancelCounter', { seat, owner: name(answered.seatId), card: cardName(used.as, tr), used: usedLabel(used) }), face);
+          action(tr('history.cancelCounter', { seat, owner: name(answered.seatId), card: cardName(shownCardId(used), tr), used: usedLabel(used) }), face);
         } else if (answered?.targetSeatId && answered.seatId) {
           const tool = answered.cardInstanceId ? playedCards.get(answered.cardInstanceId) : undefined;
-          const params = { seat, owner: name(answered.seatId), tool: tool ? cardName(tool.as, tr) : tr('history.aTool'), used: usedLabel(used) };
+          const params = { seat, owner: name(answered.seatId), tool: tool ? cardName(shownCardId(tool), tr) : tr('history.aTool'), used: usedLabel(used) };
           action(answered.targetSeatId === answered.seatId ? tr('history.cancelTool', params) : tr('history.cancelToolOn', { ...params, target: name(answered.targetSeatId) }), face);
         } else if (answered) {
           const answeredCard = answered.cardInstanceId ? playedCards.get(answered.cardInstanceId) : undefined;
           action(
             answered.seatId
               ? answeredCard
-                ? tr('history.usedAgainstCard', { seat, used: usedLabel(used), owner: name(answered.seatId), card: cardName(answeredCard.as, tr) })
+                ? tr('history.usedAgainstCard', { seat, used: usedLabel(used), owner: name(answered.seatId), card: cardName(shownCardId(answeredCard), tr) })
                 : tr('history.usedAgainst', { seat, used: usedLabel(used), owner: name(answered.seatId) })
               : tr('history.usedInResponse', { seat, used: usedLabel(used) }),
             face
@@ -171,6 +184,7 @@ export function actionHistory(
         }
         // A card put under a General (Refusing Death).
         if (event.card && to?.kind === 'pile' && to.ownerSeatId) {
+          lastPutUnder.set(to.ownerSeatId, event.card);
           action(tr('history.putUnder', { seat: name(to.ownerSeatId), card: named(event.card) }), event.card);
           break;
         }
@@ -185,8 +199,10 @@ export function actionHistory(
         break;
       }
       case 'DamageDealtEvent': {
+        chainsUser = null;
         const { source, target: victim, amount, nature } = event.damage;
-        const params = { target: target(victim), amount, nature, ...(source ? { source: target(source) } : {}) };
+        const word = nature === 'fire' ? tr('damage.nature.fire') : tr('damage.nature.thunder');
+        const params = { target: target(victim), amount, nature: word, ...(source ? { source: target(source) } : {}) };
         const key = nature === 'normal' ? (source ? 'history.tookDamageFrom' : 'history.tookDamage') : source ? 'history.tookNatureDamageFrom' : 'history.tookNatureDamage';
         status(victim.seatId, tr(key, params));
         break;
@@ -203,7 +219,7 @@ export function actionHistory(
         const seat = name(event.seatId);
         if (event.forAbilityId) {
           const which = generalIn(event.seatId, event.slot) ?? tr(event.slot === 'main' ? 'history.theirMain' : 'history.theirDeputy');
-          action(tr('history.revealedToUse', { seat, which, ability: abilityName(event.forAbilityId, localeOf(tr)) }));
+          action(tr('history.revealedToUse', { seat, which, ability: abilityDisplayName(event.forAbilityId, tr) }));
         } else {
           action(tr(event.slot === 'main' ? 'history.revealedMain' : 'history.revealedDeputy', { seat }));
         }
@@ -229,7 +245,7 @@ export function actionHistory(
         } else if (shows.kind === 'use' && reason.kind === 'ability') {
           // A reveal says it on its own line, next.
           if (!shows.reveals) {
-            const ability = abilityName(reason.abilityId, localeOf(tr));
+            const ability = abilityDisplayName(reason.abilityId, tr);
             action(
               reason.targetSeatId && reason.targetSeatId !== event.seatId
                 ? tr('history.usedAbilityOn', { chooser, ability, target: name(reason.targetSeatId) })
@@ -241,6 +257,7 @@ export function actionHistory(
         } else if (shows.kind === 'seat') {
           const given = lastPicked?.seatId === event.seatId ? lastPicked.count : 0;
           action(event.verb === 'give' ? tr('history.gaveCards', { chooser, cards: cards(given), target: name(shows.seatId) }) : tr('history.chose', { chooser, what: name(shows.seatId) }));
+          if (event.verb !== 'give') lastChoseSeat = { line: entries[entries.length - 1] as ActionLine, seatId: event.seatId };
         } else if (shows.kind === 'suit') {
           action(tr('history.namedSuit', { chooser, suit: suitSymbol(shows.suit) }));
         } else if (shows.kind === 'label' && reason.kind === 'ability' && reason.cardId) {
@@ -253,7 +270,7 @@ export function actionHistory(
       }
       case 'AbilityUsedEvent': {
         const owner = name(event.owner.seatId);
-        const ability = abilityName(event.abilityId, localeOf(tr));
+        const ability = abilityDisplayName(event.abilityId, tr);
         // The card names the sentences mention, looked up so they follow the locale.
         const sha = cardName('sha', tr);
         const shan = cardName('shan', tr);
@@ -277,10 +294,13 @@ export function actionHistory(
           action(tr('history.unblockable', { owner, ability, target: name(event.targetSeatId), shan }));
         } else if (event.outcome === 'moved' && event.targetSeatId) {
           action(tr('history.movedSha', { owner, ability, target: name(event.targetSeatId), sha }));
-        } else if (event.outcome === 'stays-alive') {
-          action(tr('history.staysAlive', { owner, ability }));
-        } else if (event.outcome === 'matched') {
-          action(tr('history.rankMatched', { owner, ability }));
+        } else if (event.outcome === 'moved-damage' && event.targetSeatId) {
+          // Said in place of the owner's own "chose Seat 3" line just before it.
+          if (lastChoseSeat && entries[entries.length - 1] === lastChoseSeat.line && lastChoseSeat.seatId === event.owner.seatId) entries.pop();
+          action(tr('history.movedDamage', { owner, ability, target: name(event.targetSeatId) }));
+        } else if (event.outcome === 'stays-alive' || event.outcome === 'matched') {
+          const turned = lastPutUnder.get(event.owner.seatId);
+          action(tr(event.outcome === 'stays-alive' ? 'history.staysAlive' : 'history.rankMatched', { owner, ability, card: turned ? cardFaceLabel(turned) : tr('history.card') }));
         } else if ((event.outcome === 'claim-true' || event.outcome === 'claim-false') && event.cardId) {
           action(tr(event.outcome === 'claim-true' ? 'history.claimTrue' : 'history.claimFalse', { owner, card: cardName(event.cardId, tr) }));
         } else if (event.outcome === 'took-hand-card' && event.targetSeatId) {
@@ -374,14 +394,14 @@ export function actionHistory(
         if (event.of === 'seats' && event.reason.kind === 'ability') {
           const picks = event.ids.map(name);
           const list = picks.length > 1 ? tr('history.and', { head: picks.slice(0, -1).join(', '), last: picks.at(-1) ?? '' }) : picks[0];
-          action(tr('history.pickedWith', { seat: name(event.seatId), list, ability: abilityName(event.reason.abilityId, localeOf(tr)) }));
+          action(tr('history.pickedWith', { seat: name(event.seatId), list, ability: abilityDisplayName(event.reason.abilityId, tr) }));
         }
         break;
       case 'SkillGainedEvent':
-        action(tr('history.gained', { seat: name(event.seatId), skill: abilityName(event.skillId, localeOf(tr)) }));
+        action(tr('history.gained', { seat: name(event.seatId), skill: abilityDisplayName(event.skillId, tr) }));
         break;
       case 'FormChosenEvent':
-        action(tr('history.chosenForm', { seat: name(event.seatId), skill: abilityName(event.skillId, localeOf(tr)), general: generalDisplayData(event.generalId, localeOf(tr))?.name ?? tr('history.aForm') }));
+        action(tr('history.chosenForm', { seat: name(event.seatId), skill: abilityDisplayName(event.skillId, tr), general: generalDisplayData(event.generalId, localeOf(tr))?.name ?? tr('history.aForm') }));
         break;
       case 'MaxHpReducedEvent':
         status(event.seatId, tr('history.maxHp', { seat: name(event.seatId), maxHp: event.maxHp }));
@@ -390,12 +410,12 @@ export function actionHistory(
         status(
           event.seatId,
           event.abilityId
-            ? tr('history.lostHpTo', { seat: name(event.seatId), amount: event.amount, ability: abilityName(event.abilityId, localeOf(tr)) })
+            ? tr('history.lostHpTo', { seat: name(event.seatId), amount: event.amount, ability: abilityDisplayName(event.abilityId, tr) })
             : tr('history.lostHp', { seat: name(event.seatId), amount: event.amount })
         );
         break;
       case 'JudgmentChangedEvent':
-        action(tr('history.judgmentChanged', { owner: name(event.owner.seatId), ability: abilityName(event.abilityId, localeOf(tr)), face: cardFaceLabel(event.card) }), event.card);
+        action(tr('history.judgmentChanged', { owner: name(event.owner.seatId), ability: abilityDisplayName(event.abilityId, tr), face: cardFaceLabel(event.card) }), event.card);
         break;
       case 'ArrangementMadeEvent': {
         const top = event.top > 0 ? tr('history.arrangeTop', { cards: cards(event.top) }) : '';
@@ -433,7 +453,21 @@ export function actionHistory(
       case 'DiscardPileReshuffledEvent':
         action(tr('history.reshuffled', { count: event.cardCount }));
         break;
+      case 'ChainToggledEvent': {
+        const seat = name(event.seatId);
+        // Fire or thunder damage just dealt to the seat unchained it.
+        const byDamage = previous?.kind === 'DamageDealtEvent' && previous.damage.target.seatId === event.seatId;
+        if (chainsUser && !byDamage) {
+          const own = chainsUser === event.seatId;
+          const key = event.chained ? (own ? 'history.chainedSelf' : 'history.chained') : own ? 'history.unchainedSelf' : 'history.unchained';
+          action(tr(key, { user: name(chainsUser), seat }));
+        } else {
+          action(tr(event.chained ? 'history.wasChained' : 'history.wasUnchained', { seat }));
+        }
+        break;
+      }
     }
+    previous = event;
   }
   return entries.reverse();
 }

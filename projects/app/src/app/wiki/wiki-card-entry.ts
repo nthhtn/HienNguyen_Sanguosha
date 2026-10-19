@@ -1,7 +1,10 @@
 import { Component, computed, inject, input } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import type { WikiCard } from 'content';
 import { I18n } from '../i18n/i18n.service';
+import type { MessageKey } from '../i18n/messages';
 import { TPipe } from '../i18n/t.pipe';
+import { CARD_VOICES, SoundEffects, VoiceGender } from '../music.service';
 import { CardArt } from '../game-board/card-art';
 import { printingLabel } from './printing-label';
 import { wikiCardView, wikiPackLabel } from './wiki-labels';
@@ -9,10 +12,10 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
 // One card in the Wiki: art beside its rules text, stats and printings.
 @Component({
   selector: 'app-wiki-card-entry',
-  imports: [CardArt, TPipe],
+  imports: [CardArt, MatIconModule, TPipe],
   template: `
     <article class="entry" [attr.data-id]="card().id">
-      <app-card-art [id]="card().id" [label]="view().name" size="large" />
+      <app-card-art [cropped]="true" [id]="card().id" [label]="view().name" size="large" />
       <div class="body">
         <header>
           <h4>
@@ -24,8 +27,21 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
           <span class="badge" [class.on]="card().inGame">{{ (card().inGame ? 'wiki.inGame' : 'wiki.notInGame') | t }}</span>
         </header>
         <p class="meta"><span class="expansion-tag">{{ packLabel(card().expansion) }}</span></p>
+        @if (voice(); as voice) {
+          <p class="voices">
+            <span class="voices-label">{{ 'wiki.voices' | t }}</span>
+            @for (option of voiceButtons; track option.gender) {
+              <button type="button" class="voice" [attr.data-gender]="option.gender" [attr.aria-label]="option.label | t" [attr.title]="option.label | t" (click)="play(option.gender)">
+                <mat-icon>{{ option.gender === 'male' ? 'man' : 'woman' }}</mat-icon>
+              </button>
+            }
+          </p>
+        }
         @if (card().range !== null) {
           <p class="range">{{ 'wiki.range' | t: { n: card().range ?? 0 } }}</p>
+        }
+        @if (card().mount; as mount) {
+          <p class="distance">{{ 'card.distance' | t: { n: mount === 'offensive' ? '-1' : '+1' } }}</p>
         }
         @if (view().text; as text) {
           <p class="text">{{ text }}</p>
@@ -58,7 +74,12 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
     .badge.on { background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); border-color: var(--mat-sys-primary); }
     .meta { margin: 8px 0 0; }
     .expansion-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
-    .range { margin: 8px 0 0; font-weight: 600; }
+    .voices { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; }
+    .voices-label { font-weight: 600; }
+    .voice { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border-radius: 16px; border: none; background: none; color: var(--mat-sys-on-surface); cursor: pointer; }
+    .voice:hover, .voice:focus-visible { background: var(--mat-sys-surface-container-high); }
+    .voice mat-icon { font-size: 24px; width: 24px; height: 24px; }
+    .range, .distance { margin: 8px 0 0; font-weight: 600; }
     .text { margin: 8px 0; }
     .printings { margin: 8px 0; letter-spacing: 0.04em; }
     .printings.extra { margin-top: -4px; color: var(--mat-sys-on-surface-variant); }
@@ -69,7 +90,18 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
 })
 export class WikiCardEntry {
   private readonly i18n = inject(I18n);
+  private readonly effects = inject(SoundEffects);
   readonly card = input.required<WikiCard>();
+  // The spoken line this card has, if any, in both genders.
+  protected readonly voice = computed(() => CARD_VOICES[this.card().id] ?? null);
+  protected readonly voiceButtons: { gender: VoiceGender; label: MessageKey }[] = [
+    { gender: 'male', label: 'wiki.playVoice.male' },
+    { gender: 'female', label: 'wiki.playVoice.female' },
+  ];
+  protected play(gender: VoiceGender): void {
+    const voice = this.voice();
+    if (voice) this.effects.previewVoice(gender, voice);
+  }
   protected readonly view = computed(() => wikiCardView(this.card(), this.i18n.locale()));
   // A pack with no key of its own shows its raw name.
   protected packLabel(pack: string): string {

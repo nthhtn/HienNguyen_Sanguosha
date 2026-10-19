@@ -1,15 +1,21 @@
 import type { CardInstance, ContentRegistry, Effect, GameState, GeneralOwner } from 'engine';
 import { livingSeatOrderFrom, skillsInPlay } from 'engine';
 import { handOf } from './queries';
+import { ownCards } from './skills';
+import { colourFor } from './suits';
 
 type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
+
+// The black cards in a seat's hand and equipment (Dark Magic's).
+export const blackCards = (state: GameState, seatId: string, registry: ContentRegistry) => ownCards(state, seatId, true).filter((c) => colourFor(state, seatId, c, registry) === 'black');
 
 // The skills that may replace a judgment's card, each with the cards its seat
 // may change one with (Devil: a hand card; Dark Magic, stage 8: a black hand or
 // worn card). Each holder is asked in seat order, one at a time (nextToChange).
-// A changer's own file adds it (JUDGMENT_CHANGERS.set).
+// Both are registered here, so a changer needs no General file imported first.
 export const JUDGMENT_CHANGERS: Map<string, (state: GameState, seatId: string, registry: ContentRegistry) => CardInstance[]> = new Map([
   ['devil', (state: GameState, seatId: string) => handOf(state, seatId)],
+  ['dark-magic', blackCards],
 ]);
 
 // The seats asked about changing `shown`'s card, in order: from the judged

@@ -17,7 +17,7 @@ function freeKeys(offered: Action): readonly string[] {
 }
 
 // Structural equality for plain data (what JSON carries), ignoring key order.
-function sameValue(a: unknown, b: unknown): boolean {
+export function sameValue(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (Array.isArray(a) || Array.isArray(b)) {
     return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => sameValue(x, b[i]));

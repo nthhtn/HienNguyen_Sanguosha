@@ -1,8 +1,8 @@
 import type { CardInstance, CardsTurnedUpEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
-import { requireZoneOfKind } from 'engine';
+import { abilityUseKey, requireZoneOfKind } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
-import { untargetableBy } from '../shared/abilities';
+import { isShaDamage, untargetableBy } from '../shared/abilities';
 import { competeStart, competeStep } from '../shared/compete';
 import { colourFor, suitOf } from '../shared/suits';
 import { abilityKey } from '../shared/steps';
@@ -186,7 +186,7 @@ export const intenseEdge: SkillDefinition = {
         return (
           source?.kind === 'seat' && source.seatId === owner.seatId &&
           target.kind === 'seat' && target.seatId !== owner.seatId &&
-          amount > 0 && cause?.card?.as === 'sha' &&
+          amount > 0 && isShaDamage(event.damage) &&
           isLiving(state, owner.seatId) && isLiving(state, target.seatId) &&
           handOf(state, owner.seatId).length > 0 && handOf(state, target.seatId).length > 0
         );
@@ -211,8 +211,8 @@ export const intenseEdge: SkillDefinition = {
 };
 
 // Brave Spirit (may): at the start of your Start Phase, if damaged (X = missing
-// HP), pick any seat (yourself included). It chooses: draw X then discard 1, or
-// draw 1 then discard X.
+// HP), pick any seat (yourself included), then choose: it draws X then discards
+// 1, or draws 1 then discards X (the picked seat chooses which cards to discard).
 export const braveSpirit: SkillDefinition = {
   id: 'brave-spirit',
   triggers: [
@@ -237,8 +237,7 @@ export const braveSpirit: SkillDefinition = {
       return [
         choiceOf(state, owner, {
           verb: 'pick',
-          seatId: target,
-          targetSeatId: owner.seatId,
+          targetSeatId: target,
           options: [
             { id: 'draw-x', shows: { kind: 'label', text: `Draw ${x}, Then Discard 1` }, effects: [used(owner, 'drew', target), draw(target, x), skillStep(owner, 'discard', { target, n: 1 })] },
             { id: 'draw-1', shows: { kind: 'label', text: `Draw 1, Then Discard ${x}` }, effects: [used(owner, 'drew', target), draw(target, 1), skillStep(owner, 'discard', { target, n: x })] },
@@ -303,6 +302,9 @@ const alliancePartners = (state: GameState, luSu: string, first: string) =>
     return id !== first && cost > 0 && cost <= cardCount(state, luSu);
   });
 
+// Undoes the use that starting Alliance counted; the reveal and the log stay.
+const refundUse = (owner: GeneralOwner): Effect => ({ kind: 'IncrementEffect', scope: 'turn', key: abilityUseKey(owner), by: -1 });
+
 // Alliance (active, once per turn): choose two other seats with different hand
 // sizes; discard as many cards as the difference; they swap hands.
 export const alliance: SkillDefinition = {
@@ -324,7 +326,11 @@ export const alliance: SkillDefinition = {
     const { owner } = step;
     if (step.step === 'second') {
       const first = picked(step)[0];
-      return [choiceOf(state, owner, { verb: 'pick', targetSeatId: first, options: seatOptions(alliancePartners(state, owner.seatId, first), (second) => [skillStep(owner, 'pay', { first, second })]) })];
+      const options = [
+        ...seatOptions(alliancePartners(state, owner.seatId, first), (second) => [skillStep(owner, 'pay', { first, second })]),
+        { id: 'cancel', shows: { kind: 'label' as const, text: 'Cancel' }, effects: [refundUse(owner)] },
+      ];
+      return [choiceOf(state, owner, { verb: 'pick', targetSeatId: first, options })];
     }
     const first = step.data?.['first'] as string;
     const second = step.data?.['second'] as string;
@@ -336,6 +342,7 @@ export const alliance: SkillDefinition = {
         selectionOf(state, owner, {
           of: 'cards', eligibleIds: ownCards(state, owner.seatId, true).map((c) => c.instanceId), min: cost, max: cost,
           then: { kind: 'skill-step', step: skillStep(owner, 'swap', { first, second }) },
+          onCancel: [refundUse(owner)],
         }),
       ];
     }

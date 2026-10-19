@@ -107,8 +107,8 @@ describe('RoundTable', () => {
     ];
     const el = render(state({ log }));
     expect([...el.querySelectorAll('.centre .sequence .step .text')].map((li) => li.textContent!.trim())).toEqual([
-      'Seat 1 used Sha (7 ♠) on Seat 0',
-      "Seat 0 used Shan (2 ♥) against Seat 1's Sha",
+      'Seat 1 used Slash (7 ♠) on Seat 0',
+      "Seat 0 used Dodge (2 ♥) against Seat 1's Slash",
     ]);
     // Each card sits in the step it belongs to, as a thumbnail.
     const steps = [...el.querySelectorAll('.centre .sequence .step')];
@@ -138,7 +138,7 @@ describe('RoundTable', () => {
       expect(earlier.textContent!.trim()).toMatch(/^\d+ earlier steps$/);
       const texts = [...el.querySelectorAll('.centre .sequence .step:not(.earlier) .text')].map((t) => t.textContent!.trim());
       expect(texts.at(-1)).toBe('Seat 1 lost 1 HP');
-      expect(texts[0]).not.toContain('Sha');
+      expect(texts[0]).not.toContain('Slash');
       // Every step is either shown or counted in the chip.
       expect(texts.length + Number(earlier.textContent!.match(/\d+/)![0])).toBe(41);
     });
@@ -159,7 +159,7 @@ describe('RoundTable', () => {
     TestBed.inject(ApplicationRef).tick();
     await new Promise((r) => setTimeout(r));
     TestBed.inject(ApplicationRef).tick();
-    expect(document.querySelector('.cdk-overlay-container')!.textContent).toContain('Sha');
+    expect(document.querySelector('.cdk-overlay-container')!.textContent).toContain('Slash');
     document.querySelector('.cdk-overlay-container')!.replaceChildren();
   });
 

@@ -4,7 +4,8 @@ import type { ContentRegistry, GameState } from 'engine';
 import { colourFor } from '../shared/suits';
 import type { GeneralSkillSet } from './types';
 import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
-import { handOf } from '../shared/queries';
+import { handOf, isShaCard } from '../shared/queries';
+import { isRecast } from '../cards/chains';
 import { ask, draw, heal, on, otherLivingSeatIds, reasonOf, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Shu base Generals' skills (General Skills spec, "Shu"). Every skill acts
@@ -36,19 +37,20 @@ export const dragonCourage: SkillDefinition = {
   id: 'dragon-courage',
   conversions: [
     { id: 'shan-as-sha', as: 'sha', cards: 1, accepts: (c) => c.definitionId === 'shan', when: 'both' },
-    { id: 'sha-as-shan', as: 'shan', cards: 1, accepts: (c) => c.definitionId === 'sha', when: 'respond' },
+    { id: 'sha-as-shan', as: 'shan', cards: 1, accepts: (c, _state, _seatId, registry) => isShaCard(registry, c.definitionId), when: 'respond' },
   ],
 };
 
 // Gathering Wisdom (may): when you play a non-delayed Tool (an answering Wuxie
-// included), you may draw 1 card, before the Tool takes effect.
+// included), you may draw 1 card, before the Tool takes effect. A Chains
+// Recast is not a use.
 export const gatheringWisdom: SkillDefinition = {
   id: 'gathering-wisdom',
   triggers: [
     on<CardPlayedEvent>('after:CardPlayedEvent', {
       condition: (_state, event, owner, registry) => {
         const definition = registry.cards.get(event.card.as);
-        return event.seatId === owner.seatId && definition?.category === 'tool' && !definition.delayed;
+        return event.seatId === owner.seatId && definition?.category === 'tool' && !definition.delayed && !isRecast(event);
       },
       effect: (_state, _event, owner) => [ask(owner, [draw(owner.seatId, 1)])],
     }),

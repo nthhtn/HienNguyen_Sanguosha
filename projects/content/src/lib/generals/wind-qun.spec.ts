@@ -12,10 +12,35 @@ describe('Zhang Jiao — Lightning Strike', () => {
     return h.choose(h.use(s), 'seat-b');
   };
 
-  it('after he plays a Shan, a seat he picks judges: on a spade it takes 2 plain damage with no source', () => {
+  it('after he plays a Dodge, a seat he picks judges: on a spade it takes 2 thunder damage with no source', () => {
     const s = dodged(card('j', 'sha', 'spade', 5));
     expect(hp(s, 'seat-b')).toBe(2);
-    expect(s.log.filter((e) => e.kind === 'DamageDealtEvent').at(-1)).toMatchObject({ damage: { source: null, amount: 2, nature: 'normal' } });
+    expect(s.log.filter((e) => e.kind === 'DamageDealtEvent').at(-1)).toMatchObject({ damage: { source: null, amount: 2, nature: 'thunder' } });
+  });
+
+  const chainedTable = (extra: Record<string, ReturnType<typeof card>[]> = {}, chainedIds = ['seat-b', 'seat-c']) => {
+    const base = table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('n1', 'shan')], drawPile: [card('j', 'sha', 'spade', 5)], ...extra }, { owner: 'seat-b', generals: zhangJiao('seat-a') });
+    return { ...base, seats: base.seats.map((x) => (chainedIds.includes(x.id) ? { ...x, chained: true as const } : x)) };
+  };
+  const strike = (state: ReturnType<typeof chainedTable>) => {
+    let s = h.play(state, 's1', 'seat-a');
+    s = h.respond(s, 'n1');
+    return h.choose(h.use(s), 'seat-b');
+  };
+
+  it('is thunder damage: a chained seat it strikes passes 2 thunder damage to another chained seat, and both unchain', () => {
+    const s = strike(chainedTable());
+    expect(s.log.filter((e) => e.kind === 'DamageDealtEvent')).toMatchObject([
+      { damage: { amount: 2, nature: 'thunder', target: { seatId: 'seat-b' } } },
+      { damage: { amount: 2, nature: 'thunder', target: { seatId: 'seat-c' } } },
+    ]);
+    expect(hp(s, 'seat-c')).toBe(2);
+    expect(s.seats.some((x) => x.chained)).toBe(false);
+  });
+
+  it('is thunder, not fire: a Wood Armor wearer takes 2, not 3', () => {
+    const s = strike(chainedTable({ 'seat-b:equip': [card('wa', 'wood-armor', 'spade', 2)] }, []));
+    expect(hp(s, 'seat-b')).toBe(2);
   });
 
   it('anything else does nothing', () => {
@@ -49,7 +74,7 @@ describe('Zhang Jiao — Dark Magic', () => {
 });
 
 describe('Lightning Strike and Eight Trigrams (final review #2)', () => {
-  it("an Eight Trigrams red judgment counts as his Shan: Lightning Strike is asked", () => {
+  it("an Eight Trigrams red judgment counts as his Dodge: Lightning Strike is asked", () => {
     let s = h.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:equip': [card('et', 'eight-trigrams', 'spade', 2)], drawPile: [card('j', 'peach', 'heart', 3)] }, { owner: 'seat-b', generals: zhangJiao('seat-a') }), 's1', 'seat-a');
     s = h.use(s); // Eight Trigrams: red
     if (askedAbout(s) === 'dark-magic') s = h.decline(s); // his own Dark Magic, on his worn black card

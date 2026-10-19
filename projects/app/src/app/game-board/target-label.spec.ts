@@ -28,8 +28,8 @@ describe('TargetLabel', () => {
   });
 
   it('adds the Main and Deputy General once the kingdom is revealed, in its force', () => {
-    const el = render({ prefix: 'Play Sha Targeting', targets: [{ kind: 'seat', seatId: 'seat-2' }] });
-    expect(el.textContent).toBe('Play Sha Targeting Bot Cao Cao - Sima Yi');
+    const el = render({ prefix: 'Play Slash Targeting', targets: [{ kind: 'seat', seatId: 'seat-2' }] });
+    expect(el.textContent).toBe('Play Slash Targeting Bot Cao Cao - Sima Yi');
     expect(el.querySelector('.target')!.getAttribute('data-force')).toBe('Wei');
   });
 

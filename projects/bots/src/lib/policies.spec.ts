@@ -27,7 +27,7 @@ describe('policy registry', () => {
 });
 
 describe('rule-based-v1', () => {
-  it('has the id "rule-based-v1" and aims a Sha at the weakest non-ally in reach', () => {
+  it('has the id "rule-based-v1" and aims a Slash at the weakest non-ally in reach', () => {
     expect(ruleBasedV1Policy.id).toBe('rule-based-v1');
     // seat-a (Wei) reaches seat-b and seat-d (adjacent); seat-d has the lower HP.
     const state = table({ 'seat-a:hand': [card('s1', 'sha')] }, { hp: { 'seat-b': 3, 'seat-d': 2 } });

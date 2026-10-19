@@ -1,4 +1,4 @@
-import { CARD_BACK_ART_URL, cardArtUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
+import { CARD_BACK_ART_URL, cardArtUrl, generalDeathVoiceUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /card-art/ URL for a crawled id', () => {
@@ -43,5 +43,17 @@ describe('hpIconUrls', () => {
   it('shows none at 0 HP or below', () => {
     expect(hpIconUrls(0)).toEqual([]);
     expect(hpIconUrls(-2)).toEqual([]);
+  });
+});
+
+describe('generalDeathVoiceUrl', () => {
+  it('is named by the General’s skin file', () => {
+    expect(generalDeathVoiceUrl('cao-cao')).toBe('/audio/death/caocao.ogg');
+    expect(generalDeathVoiceUrl('fire-zhuge-liang')).toBe('/audio/death/wolong.ogg');
+  });
+
+  it('is null for a General with no skin or no recording', () => {
+    expect(generalDeathVoiceUrl('does-not-exist')).toBeNull();
+    expect(generalDeathVoiceUrl('zuo-ci')).toBeNull();
   });
 });

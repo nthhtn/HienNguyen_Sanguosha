@@ -1,3 +1,4 @@
+import { cardDisplayData } from './display';
 import { GENERAL_SKILLS } from './generals';
 import { equipmentTabs, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, WikiCard } from './wiki';
 
@@ -89,10 +90,10 @@ describe('wikiGenerals', () => {
 });
 
 describe('wikiCards', () => {
-  it('lists the basic cards by pack then name; the Army ones are not in the game', () => {
+  it('lists the basic cards by pack then name; all are in the game', () => {
     const basic = wikiCards('basic');
-    expect(basic.map((c) => c.name)).toEqual(['Peach', 'Sha', 'Shan', 'Fire Attack', 'Lightning Attack', 'Wine']);
-    expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual(['fire-attack', 'lightning-attack']);
+    expect(basic.map((c) => c.name)).toEqual(['Dodge', 'Peach', 'Slash', 'Fire Attack', 'Lightning Attack', 'Wine']);
+    expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual([]);
   });
 
   it('records the Army basics with their spreadsheet printings', () => {
@@ -157,13 +158,13 @@ describe('wikiCards', () => {
   it('lists the 15 tools, with the playable ones in the game and their printings', () => {
     const tools = wikiCards('tool');
     expect(tools).toHaveLength(15);
-    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'lightning', 'peach-garden', 'steal', 'wuxie', 'blaze', 'starvation']);
+    expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'lightning', 'peach-garden', 'steal', 'wuxie', 'blaze', 'chains', 'starvation']);
     const duel = tools.find((c) => c.id === 'duel')!;
     expect(duel.count).toBe(3);
     expect(duel.printings).toEqual([{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }]);
   });
 
-  it('includes the crawled EX and Army cards; the elemental ones stay out of the game (Blaze is in, via Fire Strategy)', () => {
+  it('includes the crawled EX and Army cards; Blaze and Chains are in the game, Fire Fan is not', () => {
     const all = [...wikiCards('tool'), ...wikiCards('equipment')];
     const ids = ['blaze', 'chains', 'ancient-scimitar', 'fire-fan', 'ice-sword', 'wood-armor', 'black-shield'];
     for (const id of ids) {
@@ -171,10 +172,21 @@ describe('wikiCards', () => {
       expect(card).toBeDefined();
       expect(card.nameZh).toMatch(/[\u4e00-\u9fff]/);
     }
-    expect(['blaze', 'chains', 'fire-fan'].map((id) => all.find((c) => c.id === id)!.inGame)).toEqual([true, false, false]);
+    expect(['blaze', 'chains', 'fire-fan'].map((id) => all.find((c) => c.id === id)!.inGame)).toEqual([true, true, false]);
     expect(all.find((c) => c.id === 'chains')).toMatchObject({ count: 6, nameZh: '铁索连环' });
     expect(all.find((c) => c.id === 'ice-sword')).toMatchObject({ range: 2, subtype: 'weapon' });
     expect(all.find((c) => c.id === 'black-shield')!.printings).toEqual([{ suit: 'club', rank: 2 }]);
+  });
+
+  it('states the rules of Chains, Blaze and Wood Armor, in English and Vietnamese', () => {
+    const text = (id: string) => [...wikiCards('tool'), ...wikiCards('equipment')].find((c) => c.id === id)!.text!;
+    expect(text('chains')).toMatch(/Recast/);
+    expect(text('chains')).toMatch(/fire or thunder damage/);
+    expect(text('blaze')).toMatch(/1 fire damage/);
+    expect(text('wood-armor')).toMatch(/fire damage the wearer takes is increased by 1/i);
+    expect(cardDisplayData('chains', 'vi')!.text).toMatch(/sát thương lửa hoặc sét/);
+    expect(cardDisplayData('blaze', 'vi')!.text).toMatch(/1 sát thương lửa/);
+    expect(cardDisplayData('wood-armor', 'vi')!.text).toMatch(/sát thương lửa người mặc phải chịu tăng thêm 1/i);
   });
 
   it('lists Silver Lion as in-game armour with its single printing', () => {
@@ -194,11 +206,11 @@ describe('wiki tabs', () => {
     expect(tabs.map((t) => t.entries[0].name)).toEqual(['Cao Cao', 'Liu Bei', 'Sun Quan', 'Zhang Jiao']);
   });
 
-  it('gives each basic card its own tab, the fire and lightning Sha right after Sha', () => {
+  it('gives each basic card its own tab, the fire and lightning Slash right after Slash', () => {
     const tabs = wikiCardTabs('basic');
     expect(summary(tabs)).toEqual([
-      ['sha', 'Sha', 1], ['fire-attack', 'Fire Attack', 1], ['lightning-attack', 'Lightning Attack', 1],
-      ['shan', 'Shan', 1], ['wine', 'Wine', 1], ['peach', 'Peach', 1],
+      ['sha', 'Slash', 1], ['fire-attack', 'Fire Attack', 1], ['lightning-attack', 'Lightning Attack', 1],
+      ['shan', 'Dodge', 1], ['wine', 'Wine', 1], ['peach', 'Peach', 1],
     ]);
     expect(tabs.map((t) => t.entries[0].id)).toEqual(['sha', 'fire-attack', 'lightning-attack', 'shan', 'wine', 'peach']);
   });

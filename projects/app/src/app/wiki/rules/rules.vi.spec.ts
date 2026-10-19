@@ -145,7 +145,7 @@ describe('the rules pages in Vietnamese', () => {
     for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'judgment']) {
       TestBed.resetTestingModule();
       const { el } = await open(page);
-      expect(text(el)).not.toMatch(/\b(Sha|Shan|Peach|Wine|Wuxie|Capture|Starvation|Lightning|Barbarians|Hail of Arrows|Steal|Force|Play Phase|Main General)\b/);
+      expect(text(el)).not.toMatch(/\b(Slash|Dodge|Peach|Wine|Wuxie|Capture|Starvation|Lightning|Barbarians|Hail of Arrows|Steal|Force|Play Phase|Main General)\b/);
     }
   });
 

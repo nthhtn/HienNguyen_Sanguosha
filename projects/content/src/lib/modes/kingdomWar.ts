@@ -58,7 +58,7 @@ function dealCandidates(seatIds: string[], registry: ContentRegistry, rng: RngSt
 // with their expansion) stay out until expansions can be switched on.
 function buildDeckSpec(registry: ContentRegistry) {
   return [...registry.cards.keys()].flatMap((cardId) => {
-    // Made only by a skill (Blaze): never dealt.
+    // A card marked outOfDeck (made only by a skill) is never dealt.
     if (registry.cards.get(cardId)?.outOfDeck) return [];
     const all = Object.prototype.hasOwnProperty.call(cardsData, cardId) ? cardsData[cardId].printings ?? [] : [];
     const printings = all.filter((p) => !p.expansion);
@@ -96,29 +96,12 @@ function droppedSeatId(subject: unknown): string | null {
   return event.damage.target.kind === 'seat' ? event.damage.target.seatId : null;
 }
 
-// What happens when a seat's HP drops, by damage or by losing HP: at half its
-// max HP or below its Main General is revealed; at 0 or below its Deputy too,
-// and it is dying (the rescue round asks every living seat in turn order from
-// the turn owner).
+// What happens when a seat's HP drops, by damage or by losing HP: at 0 or below
+// it is dying (the rescue round asks every living seat in turn order from the
+// turn owner). Nothing is revealed by an HP drop; a death reveals both Generals.
 function hpDropTriggers(point: TriggerPoint): SkillTrigger[] {
   const seatOf = (state: GameState, subject: unknown) => state.seats.find((s) => s.id === droppedSeatId(subject));
   return [
-    {
-      point,
-      condition: (state, subject) => {
-        const seat = seatOf(state, subject);
-        return !!seat && !!seat.generals && !seat.generals.main.revealed && seat.combinedHp <= Math.floor(seat.maxCombinedHp / 2);
-      },
-      effect: (_state, subject) => [{ kind: 'RevealGeneralAction', seatId: droppedSeatId(subject)!, slot: 'main' as const }],
-    },
-    {
-      point,
-      condition: (state, subject) => {
-        const seat = seatOf(state, subject);
-        return !!seat && !!seat.generals && !seat.generals.deputy.revealed && seat.combinedHp <= 0;
-      },
-      effect: (_state, subject) => [{ kind: 'RevealGeneralAction', seatId: droppedSeatId(subject)!, slot: 'deputy' as const }],
-    },
     {
       point,
       condition: (state, subject) => {
@@ -156,10 +139,11 @@ const revealBonusTriggers: SkillTrigger[] = [
   // Optional rule: the first General revealed at the table draws 2 cards.
   {
     point: 'after:GeneralRevealedEvent',
-    condition: (state) =>
+    condition: (state, subject) =>
       !!state.rules?.firstRevealDraw &&
       state.seats.length >= FIRST_REVEAL_MIN_SEATS &&
-      state.log.filter((e) => e.kind === 'GeneralRevealedEvent').length === 1,
+      !(subject as GeneralRevealedEvent).onDeath &&
+      state.log.filter((e) => e.kind === 'GeneralRevealedEvent' && !e.onDeath).length === 1,
     effect: (_state, subject) => [{ kind: 'DrawCardsEffect', seatId: (subject as GeneralRevealedEvent).seatId, count: 2 }],
   },
   // A combined max HP that was rounded down (the printed sum is odd): revealing
@@ -168,6 +152,7 @@ const revealBonusTriggers: SkillTrigger[] = [
     point: 'after:GeneralRevealedEvent',
     condition: (state, subject, _owner, registry) => {
       const event = subject as GeneralRevealedEvent;
+      if (event.onDeath) return false;
       const generals = state.seats.find((s) => s.id === event.seatId)?.generals;
       if (!generals || !generals.main.revealed || !generals.deputy.revealed || !registry) return false;
       const printed = [generals.main, generals.deputy].map((g) => registry.generals.get(g.generalDefinitionId)?.maxHp ?? 0);

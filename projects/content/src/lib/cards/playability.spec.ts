@@ -71,7 +71,7 @@ describe('distance and attack range', () => {
 });
 
 describe('each card’s play rule', () => {
-  it('Sha targets only living seats within attack range, never untargeted (Review Focus 2)', () => {
+  it('Slash targets only living seats within attack range, never untargeted (Review Focus 2)', () => {
     const r = registry();
     expect(playsOf(table({ hand: ['sha'] }), r, 'sha')).toEqual([[t('seat-1')], [t('seat-4')]]);
     expect(playsOf(table({ hand: ['sha'], equip: { 'seat-0': ['green-dragon-blade'] } }), r, 'sha')).toEqual([
@@ -79,7 +79,7 @@ describe('each card’s play rule', () => {
     ]);
   });
 
-  it('Sha is not playable once this turn’s limit is used, but still answers a Duel (Review Focus 1)', () => {
+  it('Slash is not playable once this turn’s limit is used, but still answers a Duel (Review Focus 1)', () => {
     const r = registry();
     expect(playsOf(table({ hand: ['sha'], cardPlays: { sha: 1 } }), r, 'sha')).toEqual([]);
     const s: GameState = {
@@ -93,19 +93,19 @@ describe('each card’s play rule', () => {
     expect(getLegalActions(s, 'seat-0', r).some((a) => a.kind === 'RespondAction')).toBe(true);
   });
 
-  it('a second Sha in the same turn is no longer legal after the first resolves', () => {
+  it('a second Slash in the same turn is no longer legal after the first resolves', () => {
     const r = registry();
     const first = resolve(
       table({ hand: ['sha', 'sha'] }),
       { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'sha-0', targets: [t('seat-1')] },
       { registry: r, mode: kingdomWarMode }
     ).state;
-    // seat-1 has no Shan, so it passes and takes the damage; afterwards it is seat-0's Play phase again.
+    // seat-1 has no Dodge, so it passes and takes the damage; afterwards it is seat-0's Play phase again.
     const afterPass = resolve(first, { kind: 'PassAction', seatId: 'seat-1', pendingResponseId: first.pendingResponse!.id }, { registry: r, mode: kingdomWarMode }).state;
     expect(playsOf(afterPass, r, 'sha')).toEqual([]);
   });
 
-  it('Shan and Wuxie are never played proactively', () => {
+  it('Dodge and Wuxie are never played proactively', () => {
     const r = registry();
     expect(playsOf(table({ hand: ['shan'] }), r, 'shan')).toEqual([]);
     expect(playsOf(table({ hand: ['wuxie'] }), r, 'wuxie')).toEqual([]);

@@ -14,7 +14,7 @@ describe('Xu Huang — Blockade', () => {
   it('any black Basic or Equipment hand card can be used as Starvation, at distance 2', () => {
     let s = table(hand, { generals: at('seat-a', 'xu-huang') });
     s = h.convert(s, 'seat-a', 'blockade', 'seat-c');
-    expect(s.pendingSelection).toMatchObject({ of: 'cards', eligibleIds: ['c1', 'e1'] }); // not the red Shan, not the black Tool
+    expect(s.pendingSelection).toMatchObject({ of: 'cards', eligibleIds: ['c1', 'e1'] }); // not the red Dodge, not the black Tool
     s = h.select(s, 'c1');
     expect(ids(s, 'seat-c:judgment')).toEqual(['c1']);
   });

@@ -75,20 +75,20 @@ describe('horses', () => {
 });
 
 describe('Crossbow', () => {
-  it('is a range 1 weapon that lifts the Sha limit while worn', () => {
+  it('is a range 1 weapon that lifts the Slash limit while worn', () => {
     expect(crossbowCard.equipSlot).toBe('weapon');
     expect(attackRange(table({ 'seat-a:equip': [card('x', 'crossbow')] }), 'seat-a', registry)).toBe(1);
     expect(shaLimit(table({ 'seat-a:equip': [card('x', 'crossbow')] }), 'seat-a', registry)).toBe(Number.POSITIVE_INFINITY);
     expect(shaLimit(table(), 'seat-a', registry)).toBe(1);
   });
 
-  it('lets you keep playing Sha', () => {
+  it('lets you keep playing Slash', () => {
     const s = table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha')], 'seat-a:equip': [card('x', 'crossbow')] });
     const after = pass(playSha(s, 's1', 'seat-b'));
     expect(shaPlays(after).length).toBeGreaterThan(0);
   });
 
-  it('equipped after your first Sha, allows more; lost after it, the one-per-turn limit is back (Review Focus 2)', () => {
+  it('equipped after your first Slash, allows more; lost after it, the one-per-turn limit is back (Review Focus 2)', () => {
     const s = table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha'), card('x', 'crossbow')] });
     const once = pass(playSha(s, 's1', 'seat-b'));
     expect(shaPlays(once)).toEqual([]);
@@ -132,12 +132,12 @@ describe('Silver Lion', () => {
     expect(hp(run(table({ 'seat-c:equip': [lion()] }), [hit(2)]), 'seat-b')).toBe(2);
   });
 
-  it('doesn’t cap damage from a Sha whose user wears Black Pommel', () => {
+  it('doesn’t cap damage from a Slash whose user wears Black Pommel', () => {
     const s = table({ 'seat-b:equip': [lion()], 'seat-a:equip': [card('bp', 'black-pommel')], discardPile: [card('s1', 'sha')] });
     expect(hp(run(s, [hit(2, card('s1', 'sha'))]), 'seat-b')).toBe(2);
   });
 
-  it('still caps a Black Pommel wearer’s damage that isn’t from a Sha', () => {
+  it('still caps a Black Pommel wearer’s damage that isn’t from a Slash', () => {
     const s = table({ 'seat-b:equip': [lion()], 'seat-a:equip': [card('bp', 'black-pommel')], discardPile: [card('d1', 'shan')] });
     expect(hp(run(s, [hit(2, card('d1', 'shan'))]), 'seat-b')).toBe(3);
   });

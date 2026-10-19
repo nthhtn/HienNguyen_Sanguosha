@@ -27,12 +27,13 @@ describe('cardDisplayData', () => {
       category: 'equipment',
       subtype: 'weapon',
       range: 1,
-      text: 'Range: 1. With this equipped, a player may attack as much as desired during their turn.',
+      mount: null,
+      text: 'With this equipped, a player may attack as much as desired during their turn.',
     });
   });
 
   it('returns null text and range when the data has none', () => {
-    expect(cardDisplayData('sha')).toEqual({ name: 'Sha', category: 'basic', subtype: null, range: null, text: null });
+    expect(cardDisplayData('sha')).toEqual({ name: 'Slash', category: 'basic', subtype: null, range: null, mount: null, text: null });
   });
 
   it('returns null for an unknown id', () => {
@@ -41,13 +42,13 @@ describe('cardDisplayData', () => {
 });
 describe('abilityHint', () => {
   it('Eight Trigrams and Eight Arrays read in sentence case', () => {
-    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Shan');
-    expect(abilityHint('eight-arrays')).toBe('Judge: on red, it counts as a Shan');
+    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Dodge');
+    expect(abilityHint('eight-arrays')).toBe('Judge: on red, it counts as a Dodge');
   });
 
   it('says what an ability does, in the game’s own words', () => {
-    expect(abilityHint('axe')).toBe('Discard 2 cards to make your Sha hit {target}');
-    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Shan');
+    expect(abilityHint('axe')).toBe('Discard 2 cards to make your Slash hit {target}');
+    expect(abilityHint('eight-trigrams')).toBe('Judge: on red, it counts as a Dodge');
     expect(abilityHint('sha')).toBeNull();
   });
 });
@@ -96,6 +97,10 @@ describe('Mountain texts', () => {
     expect(selectionText('pleasure')?.cancel).toBe('Give Up');
     expect(stepSelectionText('draw-take')?.prompt).toBe('Choose up to 2 seats to take a hand card from');
     expect(stepSelectionText('move-card')?.prompt).toBe('Choose a seat to move a card from');
+    expect(stepSelectionText('swap', 'en', 'alliance')).toEqual({ prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' });
+    expect(stepSelectionText('swap', 'en', 'someone-else')).toBeNull();
+    expect(stepSelectionText('pay', 'en')).toBeNull();
+    expect(stepSelectionText('compete-user', 'en', 'rouse-the-tiger')?.confirm).toBe('Compete');
     expect(seatPickText('clever-change')).toBe('Choose a seat to move the card to');
     expect(choicePromptText('incarnation')).toBe('Choose a Form skill');
     expect(choicePromptText('stubborn')).toBe('Choose a card to give back; you take the others');
@@ -105,8 +110,8 @@ describe('Mountain texts', () => {
 describe('competeOutcomeText', () => {
   const names = { user: 'Seat 0', target: 'Seat 1' };
   it('says what a win and a loss lead to, naming both seats', () => {
-    expect(competeOutcomeText('heavens-justice', true, names)).toBe('Seat 0 can play one more Sha this turn, at any distance, with one more target');
-    expect(competeOutcomeText('heavens-justice', false, names)).toBe("Seat 0 can't play a Sha this turn");
+    expect(competeOutcomeText('heavens-justice', true, names)).toBe('Seat 0 can play one more Slash this turn, at any distance, with one more target');
+    expect(competeOutcomeText('heavens-justice', false, names)).toBe("Seat 0 can't play a Slash this turn");
     expect(competeOutcomeText('rouse-the-tiger', true, names)).toBe("Seat 0 will choose a seat within Seat 1's attack range; Seat 1 deals it 1 damage");
     expect(competeOutcomeText('rouse-the-tiger', false, names)).toBe('Seat 1 deals 1 damage to Seat 0');
     expect(competeOutcomeText('intense-edge', true, names)).toBe("Seat 0 will take one of Seat 1's cards");

@@ -17,7 +17,7 @@ describe('Taishi Ci — Heaven’s Justice', () => {
     expect(h.useSkill(s, 'seat-a', 'heavens-justice').pendingSelection).toMatchObject({ of: 'seats', eligibleIds: ['seat-c'] });
   });
 
-  it('a win: one more Sha this turn, at any distance, with one more target', () => {
+  it('a win: one more Slash this turn, at any distance, with one more target', () => {
     let s = table({ 'seat-a:hand': [card('k', 'shan', 'spade', 13), card('s1', 'sha'), card('s2', 'sha')], 'seat-c:hand': [card('c', 'shan', 'heart', 2)] }, { generals: taishiCi });
     s = compete(s, 'k');
     expect(abilityLog(s)).toContainEqual(expect.objectContaining({ abilityId: 'heavens-justice', outcome: 'compete-won', targetSeatId: 'seat-c' }));
@@ -25,10 +25,10 @@ describe('Taishi Ci — Heaven’s Justice', () => {
     s = h.play(s, 's1', 'seat-c');
     s = h.pass(s);
     expect(hp(s, 'seat-c')).toBe(3);
-    expect(shaPlays(s, 's2')).toHaveLength(1); // the second Sha is still playable
+    expect(shaPlays(s, 's2')).toHaveLength(1); // the second Slash is still playable
   });
 
-  it('a tie loses: no Sha this turn (Review Focus 3)', () => {
+  it('a tie loses: no Slash this turn (Review Focus 3)', () => {
     let s = table({ 'seat-a:hand': [card('k', 'shan', 'spade', 7), card('s1', 'sha')], 'seat-c:hand': [card('c', 'shan', 'heart', 7)] }, { generals: taishiCi });
     s = compete(s, 'k');
     expect(abilityLog(s)).toContainEqual(expect.objectContaining({ outcome: 'compete-lost' }));
@@ -41,7 +41,7 @@ describe('Taishi Ci — Heaven’s Justice', () => {
     expect(offered(s, 'seat-a', 'heavens-justice')).toBe(false);
   });
 
-  it('with Sky Scorcher and his last hand card a Sha: 4 targets, one Sha counted, each answers on its own (Review Focus 1)', () => {
+  it('with Sky Scorcher and his last hand card a Slash: 4 targets, one Slash counted, each answers on its own (Review Focus 1)', () => {
     let s = table(
       { 'seat-a:hand': [card('k', 'shan', 'spade', 13), card('s1', 'sha')], 'seat-a:equip': [card('sk', 'sky-scorcher', 'diamond', 12)], 'seat-c:hand': [card('c', 'shan', 'heart', 2)], 'seat-e:hand': [card('n', 'shan')] },
       { generals: taishiCi, seats: 6 }
@@ -64,12 +64,12 @@ describe('Taishi Ci — Heaven’s Justice', () => {
 describe('Pang De', () => {
   const pangDe = at('seat-a', 'pang-de', 'filler-dong-zhuo');
 
-  it('Horsemanship: 1 nearer to everyone (a Sha reaches seat-c)', () => {
+  it('Horsemanship: 1 nearer to everyone (a Slash reaches seat-c)', () => {
     const plays = shaPlays(table({ 'seat-a:hand': [card('s1', 'sha'), card('x', 'shan')] }, { generals: pangDe }), 's1');
     expect(plays.map((a) => a.targets[0].seatId)).toEqual(['seat-b', 'seat-c', 'seat-d']);
   });
 
-  it('Sudden Attack: after a seat dodges his Sha, he may discard one of its cards (its hand face down, or worn)', () => {
+  it('Sudden Attack: after a seat dodges his Slash, he may discard one of its cards (its hand face down, or worn)', () => {
     let s = table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('n', 'shan'), card('h', 'peach', 'heart')], 'seat-b:equip': [card('dh', 'di-lu', 'club', 5)] }, { generals: pangDe });
     s = h.respond(h.play(s, 's1', 'seat-b'), 'n');
     expect(askedAbout(s)).toBe('sudden-attack');

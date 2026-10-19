@@ -23,7 +23,7 @@ function stateWithZones(): GameState {
   };
 }
 function registryWithSha(): ContentRegistry {
-  return { cards: new Map([['sha', { id: 'sha', name: 'Sha', category: 'basic', play: () => [] }]]), generals: new Map() };
+  return { cards: new Map([['sha', { id: 'sha', name: 'Slash', category: 'basic', play: () => [] }]]), generals: new Map() };
 }
 const state = stateWithZones();
 const registry = registryWithSha();
@@ -62,7 +62,7 @@ describe('hidden names, kingdoms and suits', () => {
   });
 
   it('the four forces and hidden, and a kingdom outside them prints raw', () => {
-    expect((['Wei', 'Shu', 'Wu', 'Qun', 'hidden'] as const).map((k) => kingdomDisplayName(k, tr))).toEqual(['Ngụy', 'Thục', 'Ngô', 'Quần', 'Ẩn']);
+    expect((['Wei', 'Shu', 'Wu', 'Qun', 'hidden'] as const).map((k) => kingdomDisplayName(k, tr))).toEqual(['Ngụy', 'Thục', 'Ngô', 'Quần', 'Tướng ẩn']);
     expect((['Wei', 'Shu', 'Wu', 'Qun', 'hidden'] as const).map((k) => kingdomDisplayName(k))).toEqual(['Wei', 'Shu', 'Wu', 'Qun', 'Hidden']);
     expect(kingdomDisplayName('Jin' as never, tr)).toBe('Jin');
   });
@@ -78,13 +78,13 @@ describe('action labels', () => {
   const rows: Array<[string, Action, string, string]> = [
     ['draw one', { kind: 'DrawCardsAction', seatId: 'seat-0', count: 1 }, 'Draw 1 Card', 'Rút 1 lá bài'],
     ['draw two', { kind: 'DrawCardsAction', seatId: 'seat-0', count: 2 }, 'Draw 2 Cards', 'Rút 2 lá bài'],
-    ['play', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [] }, 'Play Sha', 'Đánh Sha'],
-    ['play at a seat', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }] }, 'Play Sha Targeting Hing', 'Đánh Sha nhắm vào Hing'],
-    ['play at two seats', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }, { kind: 'seat', seatId: 'seat-1' }] }, 'Play Sha Targeting Hing, Seat 1', 'Đánh Sha nhắm vào Hing, Người chơi 1'],
+    ['play', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [] }, 'Play Slash', 'Đánh Slash'],
+    ['play at a seat', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }] }, 'Play Slash Targeting Hing', 'Đánh Slash nhắm vào Hing'],
+    ['play at two seats', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }, { kind: 'seat', seatId: 'seat-1' }] }, 'Play Slash Targeting Hing, Seat 1', 'Đánh Slash nhắm vào Hing, Người chơi 1'],
     ['choose Generals', { kind: 'ChooseGeneralsAction', seatId: 'seat-0', mainId: 'cao-cao', deputyId: 'xu-chu' }, 'Choose Cao Cao (Main) and Xu Chu (Deputy)', 'Chọn Cao Cao (chính) và Xu Chu (phụ)'],
     ['reveal main', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' }, 'Reveal Main General', 'Lật Chủ tướng'],
     ['reveal deputy', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'deputy' }, 'Reveal Deputy General', 'Lật Phó tướng'],
-    ['respond', { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'card-1' }, 'Respond with Sha', 'Phản hồi bằng Sha'],
+    ['respond', { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'card-1' }, 'Respond with Slash', 'Phản hồi bằng Slash'],
     ['pass', { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' }, 'Pass', 'Bỏ qua'],
     ['end phase', { kind: 'EndPhaseAction', seatId: 'seat-0' }, 'End Phase', 'Kết thúc giai đoạn'],
     ['choose', { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'c', optionId: 'o' }, 'Choose', 'Chọn'],
@@ -93,8 +93,15 @@ describe('action labels', () => {
     ['arrange', { kind: 'ArrangeCardsAction', seatId: 'seat-0', arrangementId: 'a', top: [], bottom: [] }, 'Arrange', 'Sắp xếp'],
     ['select', { kind: 'SelectAction', seatId: 'seat-0', selectionId: 's', ids: [] }, 'Confirm', 'Xác nhận'],
     ['cancel', { kind: 'CancelSelectionAction', seatId: 'seat-0', selectionId: 's' }, 'Cancel', 'Hủy'],
-    ['discard', { kind: 'DiscardCardAction', seatId: 'seat-0', cardInstanceId: 'card-1' }, 'Discard Sha', 'Bỏ Sha'],
+    ['discard', { kind: 'DiscardCardAction', seatId: 'seat-0', cardInstanceId: 'card-1' }, 'Discard Slash', 'Bỏ Slash'],
   ];
+  it('labels EndPhaseAction Continue in the Start window', () => {
+    const base = state;
+    const window = { ...base, phase: 'Start' as const, turn: { ...base.turn, startWindow: true } };
+    const end: Action = { kind: 'EndPhaseAction', seatId: 'seat-0' };
+    expect(actionLabel(end, window, registry)).toBe('Continue');
+    expect(actionLabel(end, window, registry, tr)).toBe('Tiếp tục');
+  });
   it.each(rows)('%s', (_name, action, english, vietnamese) => {
     expect(label(action)).toBe(english);
     expect(label(action, tr)).toBe(vietnamese);
@@ -102,8 +109,8 @@ describe('action labels', () => {
 
   it('the targeting prefix is the targetless label plus Targeting, and parts agree with the full label', () => {
     const play: Action = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }] };
-    expect(targetingParts(play, state, registry)).toEqual({ prefix: 'Play Sha Targeting', targets: [{ kind: 'seat', seatId: 'seat-0' }] });
-    expect(targetingParts(play, state, registry, tr)).toEqual({ prefix: 'Đánh Sha nhắm vào', targets: [{ kind: 'seat', seatId: 'seat-0' }] });
+    expect(targetingParts(play, state, registry)).toEqual({ prefix: 'Play Slash Targeting', targets: [{ kind: 'seat', seatId: 'seat-0' }] });
+    expect(targetingParts(play, state, registry, tr)).toEqual({ prefix: 'Đánh Slash nhắm vào', targets: [{ kind: 'seat', seatId: 'seat-0' }] });
     expect(targetingParts({ ...play, targets: [] }, state, registry, tr)).toBeNull();
     expect(`${targetingParts(play, state, registry)!.prefix} Hing`).toBe(actionLabel(play, state, registry));
   });
@@ -125,11 +132,11 @@ describe('conversion labels', () => {
   });
 
   it('a worn card’s conversion, without and with targets', () => {
-    expect(conversionLabel(useSpear([]), withSpear, spearRegistry)).toBe('Use 2 Cards as Sha');
-    expect(conversionLabel(useSpear([]), withSpear, spearRegistry, tr)).toBe('Dùng 2 lá bài làm Sha');
+    expect(conversionLabel(useSpear([]), withSpear, spearRegistry)).toBe('Use 2 Cards as Slash');
+    expect(conversionLabel(useSpear([]), withSpear, spearRegistry, tr)).toBe('Dùng 2 lá bài làm Slash');
     const at = [{ kind: 'seat' as const, seatId: 'seat-1' }];
-    expect(conversionLabel(useSpear(at), withSpear, spearRegistry)).toBe('Use 2 Cards as Sha Targeting Seat 1');
-    expect(conversionLabel(useSpear(at), withSpear, spearRegistry, tr)).toBe('Dùng 2 lá bài làm Sha nhắm vào Người chơi 1');
+    expect(conversionLabel(useSpear(at), withSpear, spearRegistry)).toBe('Use 2 Cards as Slash Targeting Seat 1');
+    expect(conversionLabel(useSpear(at), withSpear, spearRegistry, tr)).toBe('Dùng 2 lá bài làm Slash nhắm vào Người chơi 1');
   });
 
   it('a conversion that cannot be found falls back to Use Cards', () => {
@@ -152,8 +159,8 @@ describe('conversion labels', () => {
     const use: Extract<Action, { kind: 'UseConversionAction' }> = {
       kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'fighting-saint' }, conversionId: 'fighting-saint' }, targets: [],
     };
-    expect(conversionLabel(use, seated, real)).toBe('As Sha · Fighting Saint');
-    expect(conversionLabel(use, seated, real, tr)).toBe('Tính là Sha · Fighting Saint');
+    expect(conversionLabel(use, seated, real)).toBe('As Slash · Fighting Saint');
+    expect(conversionLabel(use, seated, real, tr)).toBe('Tính là Slash · Fighting Saint');
   });
 });
 
@@ -177,8 +184,8 @@ describe('card names in action labels follow the translator locale', () => {
   const trVi = makeTranslator(vi, 'vi');
   it('a registry card reads in Vietnamese, and in English with no translator', () => {
     expect(registryCardName(registry, 'sha', trVi)).toBe('Sát');
-    expect(registryCardName(registry, 'sha')).toBe('Sha');
-    expect(registryCardName(registry, 'sha', tr)).toBe('Sha');
+    expect(registryCardName(registry, 'sha')).toBe('Slash');
+    expect(registryCardName(registry, 'sha', tr)).toBe('Slash');
     expect(registryCardName(registry, 'no-such-card', trVi)).toBe('no-such-card');
   });
 });
@@ -205,7 +212,7 @@ describe('Vietnamese names from ids', () => {
     expect(cardIdDisplayName('hidden', viTr)).toBe(vi['label.hiddenCard']);
   });
   it('keeps English names for the English locale', () => {
-    expect(cardIdDisplayName('sha')).toBe('Sha');
+    expect(cardIdDisplayName('sha')).toBe('Slash');
     expect(generalDisplayName('gan-ning')).toBe('Gan Ning');
   });
 });

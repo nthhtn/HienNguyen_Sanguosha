@@ -1,4 +1,5 @@
 import { Action, ContentRegistry, Seat, SeatGenerals, SkillDefinition, findSkill } from 'engine';
+import { abilityDisplayName } from '../labels';
 import { abilityName } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
@@ -11,6 +12,24 @@ export interface AvatarSkill {
   label: string;
   // The engine's action while it offers the skill; null = the button is disabled.
   action: UseSkill | null;
+}
+
+export interface AvatarReveal {
+  slot: 'main' | 'deputy';
+  // The engine's action while it offers the reveal; null = the button is disabled.
+  action: Extract<Action, { kind: 'RevealGeneralAction' }> | null;
+}
+
+// One Reveal button per hidden General of the viewer's own seat, enabled exactly
+// when the engine lists its RevealGeneralAction.
+export function avatarReveals(generals: SeatGenerals | null, legal: readonly Action[]): AvatarReveal[] {
+  if (!generals) return [];
+  return (['main', 'deputy'] as const)
+    .filter((slot) => !generals[slot].revealed)
+    .map((slot): AvatarReveal => ({
+      slot,
+      action: legal.find((a): a is Extract<Action, { kind: 'RevealGeneralAction' }> => a.kind === 'RevealGeneralAction' && a.slot === slot) ?? null,
+    }));
 }
 
 export interface ExtraSkill { slot: 'main' | 'deputy'; skill: SkillDefinition }
@@ -41,7 +60,7 @@ export function avatarSkills(generals: SeatGenerals | null, registry: ContentReg
       .map((skill): AvatarSkill => {
         const action =
           legal.find((a): a is UseSkill => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.slot === slot && a.owner.skillId === skill.id) ?? null;
-        const name = abilityName(skill.id, localeOf(tr));
+        const name = abilityDisplayName(skill.id, tr);
         return { slot, skillId: skill.id, label: general.revealed ? name : tr('avatar.revealSkill', { name }), action };
       });
   });

@@ -1,5 +1,6 @@
-import { getLegalActions, getLegalTargets } from './legality';
-import { GameState } from '../domain/types';
+import { getLegalActions, hiddenGeneralReveals, getLegalTargets, targetsAllowed } from './legality';
+import { GameState, Target } from '../domain/types';
+import { ContentRegistry } from '../registry/types';
 import { createRng } from '../rng/rng';
 
 function state(overrides: Partial<GameState> = {}): GameState {
@@ -103,5 +104,53 @@ describe('getLegalActions', () => {
 
   it('returns no actions for an unknown seat id', () => {
     expect(getLegalActions(state(), 'ghost-seat')).toEqual([]);
+  });
+});
+
+describe('Reveal', () => {
+  const reveal = (slot: 'main' | 'deputy') => ({ kind: 'RevealGeneralAction', seatId: 'seat-a', slot });
+  const withGenerals = (main: boolean, deputy: boolean) => {
+    const s = state();
+    s.seats[0].generals = { main: { generalDefinitionId: 'g1', revealed: main }, deputy: { generalDefinitionId: 'g2', revealed: deputy } };
+    return s;
+  };
+
+  it('offers a Reveal for each hidden General in the Play Phase', () => {
+    const actions = getLegalActions(state(), 'seat-a');
+    expect(actions).toContainEqual(reveal('main'));
+    expect(actions).toContainEqual(reveal('deputy'));
+    expect(hiddenGeneralReveals(state(), 'seat-a')).toEqual([reveal('main'), reveal('deputy')]);
+    expect(actions[1]).toEqual(reveal('main'));
+  });
+
+  it('offers no Reveal for a revealed General', () => {
+    const actions = getLegalActions(withGenerals(true, false), 'seat-a');
+    expect(actions).not.toContainEqual(reveal('main'));
+    expect(actions).toContainEqual(reveal('deputy'));
+    expect(hiddenGeneralReveals(withGenerals(true, true), 'seat-a')).toEqual([]);
+  });
+
+  it('offers no Reveal outside the Play Phase or to another seat', () => {
+    expect(getLegalActions(state({ phase: 'Draw' }), 'seat-a').filter((a) => a.kind === 'RevealGeneralAction')).toEqual([]);
+    expect(getLegalActions(state(), 'seat-b').filter((a) => a.kind === 'RevealGeneralAction')).toEqual([]);
+  });
+
+  it('offers no Reveal while a decision is pending', () => {
+    const pending = state({
+      pendingResponse: {
+        id: 'resp-1', respondingSeatId: 'seat-a', allowedActionKinds: ['RespondAction', 'PassAction'],
+        context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: 1 } },
+      },
+    });
+    expect(getLegalActions(pending, 'seat-a').filter((a) => a.kind === 'RevealGeneralAction')).toEqual([]);
+  });
+});
+
+describe('targetsAllowed', () => {
+  it('accepts targets whose keys come in another order', () => {
+    const registry: ContentRegistry = { cards: new Map([['sha', { id: 'sha', name: 'Slash', category: 'basic', play: () => [] }]]), generals: new Map() };
+    expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ kind: 'seat', seatId: 'seat-b' }], registry)).toBe(true);
+    expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ seatId: 'seat-b', kind: 'seat' } as Target], registry)).toBe(true);
+    expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ kind: 'seat', seatId: 'seat-c' }], registry)).toBe(false);
   });
 });

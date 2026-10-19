@@ -1,12 +1,12 @@
 import type { AbilityUsedEvent, CardPlayedEvent, CardsTurnedUpEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
-import { drawPileTop, endFlagOf, pileZoneOf, requireZoneOfKind, skipFlagOf, usedCardFrom } from 'engine';
-import { colourFor, suitOf } from '../shared/suits';
-import { JUDGMENT_CHANGERS, nextToChange } from '../shared/judgments';
+import { drawPileTop, endFlagOf, getLegalActions, pileZoneOf, requireZoneOfKind, skipFlagOf, usedCardFrom } from 'engine';
+import { suitOf } from '../shared/suits';
+import { blackCards, nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
-import { attackRange, handOf, seatDistance } from '../shared/queries';
+import { attackRange, handOf, playsAsOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
 import { abilityKey, actedOn, askAtStep, atStep } from '../shared/steps';
-import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, hpOf, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, hpOf, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Wind Generals' skills (stage 8 spec, "Rule text"). Every skill acts for
 // the `owner` the engine passes in: the same General can sit at two seats in
@@ -146,7 +146,7 @@ export const fantasy: SkillDefinition = {
     const damage = step.data?.['damage'] as DamageStep;
     if (step.step === 'discarded') return [...discardMoves(state, (step.data?.['picked'] as string[]) ?? []), skillStep(owner, 'move', { damage })];
     if (step.step === 'move') {
-      const moveTo = (seatId: string): Effect[] => [{ ...damage, damage: { ...damage.damage, target: { kind: 'seat', seatId } } }, skillStep(owner, 'draw', { seatId })];
+      const moveTo = (seatId: string): Effect[] => [used(owner, 'moved-damage', seatId), { ...damage, damage: { ...damage.damage, target: { kind: 'seat', seatId } } }, skillStep(owner, 'draw', { seatId })];
       return [choiceOf(state, owner, { verb: 'pick', options: seatOptions(otherLivingSeatIds(state, owner.seatId), moveTo) })];
     }
     // 'draw': the seat that took it draws as many cards as it is missing HP.
@@ -215,7 +215,8 @@ export const refusingDeath: SkillDefinition = {
 type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
 
 // Lightning Strike (may): after you play or use a Shan, you may pick any
-// living seat. It judges: on a spade it takes 2 plain damage with no source.
+// living seat. It judges: on a spade it takes 2 thunder damage with no source (so it
+// passes along a chain, as the Lightning card's strike does).
 export const lightningStrike: SkillDefinition = {
   id: 'lightning-strike',
   triggers: [
@@ -237,13 +238,9 @@ export const lightningStrike: SkillDefinition = {
   },
   onJudged: (state, { owner, seatId, judged, done }, registry) =>
     suitOf(state, seatId, judged, registry) === 'spade' && isLiving(state, seatId)
-      ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'normal', cause: { skillId: owner.skillId } } }]
+      ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'thunder', cause: { skillId: owner.skillId } } }]
       : [done],
 };
-
-// The black cards in a seat's hand and equipment (Dark Magic's).
-const blackCards = (state: GameState, seatId: string, registry: ContentRegistry) => ownCards(state, seatId, true).filter((c) => colourFor(state, seatId, c, registry) === 'black');
-JUDGMENT_CHANGERS.set('dark-magic', blackCards);
 
 // Dark Magic (may): when any seat's judgment card is turned up, before it takes
 // effect, you may replace it with a black card from your hand or equipment;
@@ -283,6 +280,21 @@ interface Claim {
   order: string[];
   next: number;
   doubters: string[];
+}
+
+// What follows a claim that failed to answer its window, once the card is gone:
+// the window comes back only if the seat can still answer it; otherwise the
+// guarded effect resolves exactly as a Pass would have.
+function afterFailedClaim(state: GameState, claim: Claim, discardedId: string, registry: ContentRegistry): Effect[] {
+  const window = claim.window;
+  if (!window) return [];
+  const without: GameState = {
+    ...state,
+    zones: state.zones.map((z) => ({ ...z, cards: z.cards.filter((c) => c.instanceId !== discardedId) })),
+    pendingResponse: window,
+  };
+  const canAnswer = getLegalActions(without, window.respondingSeatId, registry).some((a) => a.kind !== 'PassAction');
+  return canAnswer ? [{ kind: 'OpenResponseEffect', pendingResponse: window }] : [window.context.effect];
 }
 
 // Bewilder (in your Play Phase, and to answer a window): you pick a hand card
@@ -344,9 +356,9 @@ export const bewilder: SkillDefinition = {
       card: usedCardFrom([picked], claim.as, { owner, abilityId: owner.skillId, conversionId: claim.conversionId }),
       targets: claim.targets, counted: !claim.window, ...(claim.window ? { answering: claim.window } : {}),
     };
-    const discard = [...discardMoves(state, [picked.instanceId]), ...reopen];
+    const discard = [...discardMoves(state, [picked.instanceId]), ...afterFailedClaim(state, claim, picked.instanceId, registry)];
     if (claim.doubters.length === 0) return [show, used(owner, 'claim-believed', undefined, claim.as), useIt];
-    if (picked.definitionId !== claim.as) return [show, used(owner, 'claim-false', undefined, claim.as), ...claim.doubters.map((id) => draw(id, 1)), ...discard];
+    if (playsAsOf(registry, picked.definitionId) !== claim.as) return [show, used(owner, 'claim-false', undefined, claim.as), ...claim.doubters.map((id) => draw(id, 1)), ...discard];
     const losses: Effect[] = claim.doubters.map((seatId) => ({ kind: 'LoseHpEffect', seatId, amount: 1, abilityId: owner.skillId }));
     // A heart still takes effect, once the doubters' HP loss (and any dying round) is over.
     return [show, used(owner, 'claim-true', undefined, claim.as), ...losses, ...(suitOf(state, owner.seatId, picked, registry) === 'heart' ? [skillStep(owner, 'use', { claim })] : discard)];

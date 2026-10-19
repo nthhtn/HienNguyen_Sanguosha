@@ -28,6 +28,44 @@ describe('Pang Tong — Shackle', () => {
   it('not offered without a club', () => {
     expect(offered(table({ 'seat-a:hand': [card('h', 'peach', 'heart')] }, { generals: at('seat-a', 'pang-tong') }), 'seat-a', 'shackle')).toBe(false);
   });
+
+  const asChains = (s: GameState) => h.legal(s, 'seat-a').filter((a) => a.kind === 'UseConversionAction' && a.via.conversionId === 'shackle-chains');
+  // Shackle's Chains template, submitted at `targets` (as the Choose Targets window does).
+  const chainsAt = (s: GameState, ...targets: string[]) => {
+    const template = asChains(s).find((a) => a.kind === 'UseConversionAction' && a.pickTargets);
+    if (template?.kind !== 'UseConversionAction') throw new Error('no Chains template');
+    const { pickTargets: _pick, ...use } = template;
+    return h.act(s, { ...use, targets: targets.map((seatId) => ({ kind: 'seat' as const, seatId })) });
+  };
+
+  it('uses a club hand card as Chains: a pick of 1 or 2 seats, but no Recast (Shackle recasts a club itself)', () => {
+    const s = table({ 'seat-a:hand': [card('c1', 'sha', 'club', 4), card('h', 'peach', 'heart')], drawPile: pile }, { generals: at('seat-a', 'pang-tong') });
+    expect(asChains(s)).toEqual([
+      { kind: 'UseConversionAction', seatId: 'seat-a', via: expect.objectContaining({ conversionId: 'shackle-chains' }), targets: [], pickTargets: { eligibleIds: ['seat-a', 'seat-b', 'seat-c', 'seat-d'], min: 1, max: 2 } },
+    ]);
+    expect(offered(s, 'seat-a', 'shackle')).toBe(true);
+    const used = h.select(chainsAt(s, 'seat-b', 'seat-c'), 'c1');
+    expect(used.seats.filter((x) => x.chained).map((x) => x.id)).toEqual(['seat-b', 'seat-c']);
+    expect(ids(used, 'discardPile')).toEqual(['c1']);
+    expect(handIds(used, 'seat-a')).toEqual(['h']);
+    expect(used.log).toContainEqual(expect.objectContaining({ kind: 'CardPlayedEvent', card: expect.objectContaining({ as: 'chains' }) }));
+  });
+
+  it('no club, no Chains', () => {
+    expect(asChains(table({ 'seat-a:hand': [card('s', 'sha', 'spade', 4)] }, { generals: at('seat-a', 'pang-tong') }))).toEqual([]);
+  });
+
+  it('a hidden Pang Tong is offered both; using either reveals him', () => {
+    const s = table({ 'seat-a:hand': [card('c1', 'sha', 'club', 4)], drawPile: pile }, { generals: at('seat-a', 'pang-tong', 'filler-jiang-wei', false) });
+    expect(asChains(s)).toHaveLength(1);
+    expect(offered(s, 'seat-a', 'shackle')).toBe(true);
+    const chainsUsed = h.select(chainsAt(s, 'seat-b'), 'c1');
+    expect(chainsUsed.seats[0].generals!.main.revealed).toBe(true);
+    expect(chainsUsed.seats[1].chained).toBe(true);
+    const recast = h.select(h.useSkill(s, 'seat-a', 'shackle'), 'c1');
+    expect(recast.seats[0].generals!.main.revealed).toBe(true);
+    expect(handIds(recast, 'seat-a')).toEqual(['d1']);
+  });
 });
 
 describe('Pang Tong — Nirvana', () => {
@@ -70,7 +108,7 @@ describe('Pang Tong — Nirvana', () => {
 });
 
 describe('Fire Zhuge Liang — Eight Arrays', () => {
-  // seat-b's Sha at Fire Zhuge Liang (seat-a), who holds no Shan.
+  // seat-b's Slash at Fire Zhuge Liang (seat-a), who holds no Dodge.
   const shaAtHim = (cards: Record<string, ReturnType<typeof card>[]> = {}, revealed = true) =>
     h.play(
       table({ 'seat-b:hand': [card('s1', 'sha')], drawPile: [card('j', 'peach', 'heart', 3)], ...cards }, { owner: 'seat-b', generals: at('seat-a', 'fire-zhuge-liang', 'filler-jiang-wei', revealed) }),
@@ -78,7 +116,7 @@ describe('Fire Zhuge Liang — Eight Arrays', () => {
       'seat-a'
     );
 
-  it('with no armour: asked; a red judgment counts as a Shan', () => {
+  it('with no armour: asked; a red judgment counts as a Dodge', () => {
     let s = shaAtHim();
     expect(askedAbout(s)).toBe('eight-arrays');
     s = h.use(s);
@@ -93,7 +131,7 @@ describe('Fire Zhuge Liang — Eight Arrays', () => {
     expect(s.pendingResponse?.respondingSeatId).toBe('seat-a');
   });
 
-  it('not asked against a Black Pommel Sha (Review Focus 5)', () => {
+  it('not asked against a Black Pommel Slash (Review Focus 5)', () => {
     expect(askedAbout(shaAtHim({ 'seat-b:equip': [card('bp', 'black-pommel', 'spade', 6)] }))).toBeNull();
   });
 

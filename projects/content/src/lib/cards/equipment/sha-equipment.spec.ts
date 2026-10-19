@@ -69,7 +69,7 @@ const abilityLog = (s: GameState) => s.log.filter((e) => e.kind === 'AbilityUsed
 describe('Black Shield', () => {
   const shield = card('bs', 'black-shield', 'club', 2);
 
-  it('a black Sha has no effect on its wearer, but still counts and still spends Wine', () => {
+  it('a black Slash has no effect on its wearer, but still counts and still spends Wine', () => {
     const s = play(table({ 'seat-a:hand': [card('s1', 'sha', 'spade')], 'seat-b:equip': [shield] }, { flags: { wine: true } }), 's1', 'seat-b');
     expect(s.pendingResponse).toBeNull();
     expect(hp(s, 'seat-b')).toBe(4);
@@ -80,11 +80,11 @@ describe('Black Shield', () => {
     ]);
   });
 
-  it('a red Sha still asks for a Shan', () => {
+  it('a red Slash still asks for a Dodge', () => {
     expect(play(table({ 'seat-a:hand': [card('s1', 'sha', 'heart')], 'seat-b:equip': [shield] }), 's1', 'seat-b').pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
   });
 
-  it('a Sha with no colour still affects its wearer', () => {
+  it('a Slash with no colour still affects its wearer', () => {
     const s = run(table({ 'seat-b:equip': [shield] }), [cardStep('sha-targeted', { as: 'sha', colour: 'none', physical: [] }, 'seat-a', seat('seat-b'))]);
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
   });
@@ -98,7 +98,7 @@ describe('Black Shield', () => {
 describe('Wood Armor', () => {
   const armor = card('wa', 'wood-armor', 'spade', 2);
 
-  it('a Sha of any colour has no effect on its wearer', () => {
+  it('a Slash of any colour has no effect on its wearer', () => {
     const s = play(table({ 'seat-a:hand': [card('s1', 'sha', 'heart')], 'seat-b:equip': [armor] }), 's1', 'seat-b');
     expect(s.pendingResponse).toBeNull();
     expect(abilityLog(s)).toMatchObject([{ abilityId: 'wood-armor', outcome: 'no-effect', targetSeatId: 'seat-a' }]);
@@ -123,19 +123,19 @@ describe('Eight Trigrams', () => {
   const attack = (judged: CardInstance, more: Record<string, CardInstance[]> = {}) =>
     play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:equip': [trigrams], drawPile: [judged], ...more }), 's1', 'seat-b');
 
-  it('asks its wearer when a Shan is needed', () => {
+  it('asks its wearer when a Dodge is needed', () => {
     const s = attack(card('j', 'peach', 'heart', 9));
     expect(askedAbout(s)).toBe('eight-trigrams');
     expect(s.pendingChoice!.seatId).toBe('seat-b');
   });
 
-  it('with nothing left to judge, the Shan is asked for as normal (stage 5 follow-up)', () => {
+  it('with nothing left to judge, the Dodge is asked for as normal (stage 5 follow-up)', () => {
     const s = attack(card('j', 'peach', 'heart', 9));
     const judge = s.pendingChoice!.options.find((o) => o.id === 'use')!.effects.find((e) => e.kind === 'JudgeEffect');
     expect(judge).toMatchObject({ otherwise: [{ kind: 'CardStepEffect', step: 'sha-shan', target: { seatId: 'seat-b' } }] });
   });
 
-  it('a red judgment counts as a Shan: dodged, with no card from the hand', () => {
+  it('a red judgment counts as a Dodge: dodged, with no card from the hand', () => {
     const s = use(attack(card('j', 'peach', 'heart', 9), { 'seat-b:hand': [card('d1', 'shan')] }));
     expect(s.pendingResponse).toBeNull();
     expect(hp(s, 'seat-b')).toBe(4);
@@ -144,7 +144,7 @@ describe('Eight Trigrams', () => {
     expect(abilityLog(s)).toMatchObject([{ abilityId: 'eight-trigrams', outcome: 'counts-as-shan' }]);
   });
 
-  it('a black judgment: the Shan window opens as normal, the judged card already discarded (Review Focus 4)', () => {
+  it('a black judgment: the Dodge window opens as normal, the judged card already discarded (Review Focus 4)', () => {
     const s = use(attack(card('j', 'peach', 'club', 9)));
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
     expect(ids(s, 'discardPile')).toContain('j');
@@ -166,7 +166,7 @@ describe('Eight Trigrams', () => {
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-c' }); // seat-b is covered; on to seat-c
   });
 
-  it('is turned off against a Sha by Black Pommel, so it isn’t asked', () => {
+  it('is turned off against a Slash by Black Pommel, so it isn’t asked', () => {
     const s = play(
       table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [card('bp', 'black-pommel')], 'seat-b:equip': [trigrams], drawPile: [card('j', 'peach', 'heart', 9)] }),
       's1',
@@ -193,7 +193,7 @@ describe('Gender Swords', () => {
     expect(hidden.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
   });
 
-  it('Use: the target discards a hand card of its choice, then the Sha goes on', () => {
+  it('Use: the target discards a hand card of its choice, then the Slash goes on', () => {
     const s = use(attack({ 'seat-b:hand': [card('b1', 'peach')] }));
     expect(s.pendingChoice).toMatchObject({
       seatId: 'seat-b', verb: 'discard',
@@ -293,7 +293,7 @@ describe('Longbow', () => {
     expect(ids(s, 'seat-b:equip')).toEqual(['h1']);
   });
 
-  it('isn’t asked without a Mount, or when the Sha is dodged', () => {
+  it('isn’t asked without a Mount, or when the Slash is dodged', () => {
     expect(hitWith().pendingChoice).toBeUndefined();
     const dodged = respond(
       play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [bow], 'seat-b:hand': [card('d', 'shan')], 'seat-b:equip': [card('h1', 'di-lu')] }), 's1', 'seat-b'),
@@ -310,11 +310,11 @@ describe('Axe', () => {
       'd'
     );
 
-  it('asks when the Sha is dodged and 2 other cards can be paid', () => {
+  it('asks when the Slash is dodged and 2 other cards can be paid', () => {
     expect(askedAbout(dodgedWith())).toBe('axe');
   });
 
-  it('Use: discard 2 cards from hand or equipment (never the Axe), and the Sha hits', () => {
+  it('Use: discard 2 cards from hand or equipment (never the Axe), and the Slash hits', () => {
     let s = use(dodgedWith({ 'seat-a:equip': [axe, card('h1', 'red-hare', 'heart', 5)] }));
     expect(s.pendingSelection).toMatchObject({ seatId: 'seat-a', of: 'cards', min: 2, max: 2, eligibleIds: ['k1', 'k2', 'h1'], reason: { abilityId: 'axe', targetSeatId: 'seat-b' } });
     s = select(s, 'k1', 'h1');
@@ -327,7 +327,7 @@ describe('Axe', () => {
     expect(s.pendingChoice).toBeUndefined();
   });
 
-  it('Don’t, or cancelling the discard, leaves the Sha dodged', () => {
+  it('Don’t, or cancelling the discard, leaves the Slash dodged', () => {
     expect(hp(decline(dodgedWith()), 'seat-b')).toBe(4);
     const cancelled = cancel(use(dodgedWith()));
     expect(cancelled.pendingSelection).toBeUndefined();
@@ -350,11 +350,11 @@ describe('Green Dragon Blade', () => {
       'd'
     );
 
-  it('asks when the Sha is dodged and its user holds another Sha', () => {
+  it('asks when the Slash is dodged and its user holds another Slash', () => {
     expect(askedAbout(dodgedWith())).toBe('green-dragon-blade');
   });
 
-  it('Use: another Sha at the same target, uncounted, with Wine already spent', () => {
+  it('Use: another Slash at the same target, uncounted, with Wine already spent', () => {
     let s = use(dodgedWith({}, { flags: { wine: true } }));
     expect(s.pendingSelection).toMatchObject({ of: 'cards', eligibleIds: ['s2'], min: 1, max: 1 });
     s = select(s, 's2');
@@ -363,14 +363,14 @@ describe('Green Dragon Blade', () => {
     expect(hp(pass(s), 'seat-b')).toBe(3);
   });
 
-  it('dodged again, it asks again (while a Sha is left)', () => {
+  it('dodged again, it asks again (while a Slash is left)', () => {
     let s = select(use(dodgedWith({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha', 'heart'), card('s3', 'sha')] })), 's2');
     s = respond(s, 'd2');
     expect(askedAbout(s)).toBe('green-dragon-blade');
   });
 
   it('the follow-up gets its own armour check', () => {
-    // The first Sha is red, so Black Shield lets it through to be dodged; the black follow-up is stopped.
+    // The first Slash is red, so Black Shield lets it through to be dodged; the black follow-up is stopped.
     let s = respond(
       play(table({ 'seat-a:hand': [card('s1', 'sha', 'heart'), card('s2', 'sha', 'spade')], 'seat-a:equip': [blade], 'seat-b:hand': [card('d', 'shan')], 'seat-b:equip': [card('bs', 'black-shield', 'club', 2)] }), 's1', 'seat-b'),
       'd'
@@ -379,7 +379,7 @@ describe('Green Dragon Blade', () => {
     expect(abilityLog(s)).toMatchObject([{ abilityId: 'black-shield' }]);
   });
 
-  it('isn’t asked without another Sha', () => {
+  it('isn’t asked without another Slash', () => {
     expect(respond(play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [blade], 'seat-b:hand': [card('d', 'shan')] }), 's1', 'seat-b'), 'd').pendingChoice).toBeUndefined();
   });
 });
@@ -395,7 +395,7 @@ describe('Sky Scorcher', () => {
     ]);
   });
 
-  it('a Sha that isn’t the last hand card has one target per action', () => {
+  it('a Slash that isn’t the last hand card has one target per action', () => {
     const s = table({ 'seat-a:hand': [card('s1', 'sha'), card('k', 'peach')], 'seat-a:equip': [scorcher] });
     expect(plays(s).map((a) => (a.kind === 'PlayCardAction' ? a.targets : []))).toEqual([[seat('seat-b')], [seat('seat-c')], [seat('seat-d')]]);
   });
@@ -426,7 +426,7 @@ describe('Serpent Spear', () => {
   const conversions = (s: GameState, seatId = s.turn.ownerSeatId) => getLegalActions(s, seatId, registry).filter((a) => a.kind === 'UseConversionAction');
   const ownTurn = (s: GameState, seatId: string): GameState => ({ ...s, turn: { ...s.turn, ownerSeatId: seatId } });
 
-  it('in the Play Phase: 2 hand cards as one Sha at a target in range; it has no colour, and it counts', () => {
+  it('in the Play Phase: 2 hand cards as one Slash at a target in range; it has no colour, and it counts', () => {
     const t = table({ 'seat-a:hand': hand, 'seat-a:equip': [spear] });
     expect(conversions(t).map((a) => (a.kind === 'UseConversionAction' ? a.targets : []))).toEqual([[seat('seat-b')], [seat('seat-c')], [seat('seat-d')]]);
     let s = select(act(t, conversions(t)[0]), 'h1', 'c1');
@@ -437,7 +437,7 @@ describe('Serpent Spear', () => {
     expect(hp(s, 'seat-b')).toBe(3);
   });
 
-  it('a Sha with no colour still hits a Black Shield wearer (Review Focus 1)', () => {
+  it('a Slash with no colour still hits a Black Shield wearer (Review Focus 1)', () => {
     const t = table({ 'seat-a:hand': hand, 'seat-a:equip': [spear], 'seat-b:equip': [card('bs', 'black-shield', 'club', 2)] });
     const s = select(act(t, conversions(t)[0]), 'h1', 'c1');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });

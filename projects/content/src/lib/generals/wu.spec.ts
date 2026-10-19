@@ -57,7 +57,7 @@ describe('Lu Xun — Linked Camps', () => {
     expect(handIds(taken, 'seat-a')).toEqual(['d1']);
   });
 
-  it('only once when a Serpent Spear Sha takes his last two', () => {
+  it('only once when a Serpent Spear Slash takes his last two', () => {
     const s = h.select(h.convert(luXun([card('x1', 'shan'), card('x2', 'peach', 'heart')], {}, { 'seat-a:equip': [card('sp', 'serpent-spear', 'spade', 12)] }), 'seat-a', 'serpent-spear', 'seat-b'), 'x1', 'x2');
     expect(drawnCount(s)).toBe(1);
   });
@@ -96,7 +96,7 @@ describe('Lu Meng — Self-Restraint', () => {
     return h.act(s, { kind: 'EndPhaseAction', seatId: 'seat-a' });
   };
 
-  it('with no Sha used this turn, may skip the Discard Phase', () => {
+  it('with no Slash used this turn, may skip the Discard Phase', () => {
     const s = ending();
     expect(askedAbout(s)).toBe('self-restraint');
     const skipped = h.use(s);
@@ -105,7 +105,7 @@ describe('Lu Meng — Self-Restraint', () => {
     expect(h.legal(h.decline(s), 'seat-a').every((a) => a.kind === 'DiscardCardAction')).toBe(true);
   });
 
-  it('is not asked after any Sha this turn, answers included', () => {
+  it('is not asked after any Slash this turn, answers included', () => {
     expect(ending({ ownerUses: { sha: 1 } }).pendingChoice).toBeUndefined();
   });
 

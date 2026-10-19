@@ -16,12 +16,18 @@ export function isAlly(self: Seat, other: Seat): boolean {
   return self.kingdom !== 'Qun' && self.kingdom !== 'hidden' && other.kingdom === self.kingdom;
 }
 
+// Whether a physical card is a Sha: Sha itself, Fire Attack or Lightning Attack (read from the
+// registry's playsAs, as the bots do not depend on content).
+export function isShaCard(registry: ContentRegistry, definitionId: string | undefined): boolean {
+  return !!definitionId && (registry.cards.get(definitionId)?.playsAs ?? definitionId) === 'sha';
+}
+
 // Higher = keep longer. Peach saves a life, Shan blocks a Sha, Sha attacks.
 export function keepRank(view: GameState, registry: ContentRegistry, cardInstanceId: string): number {
   const definitionId = definitionIdOf(view, cardInstanceId);
   if (definitionId === 'peach') return 4;
   if (definitionId === 'shan') return 3;
-  if (definitionId === 'sha' || definitionId === 'wine' || definitionId === 'draw-two') return 2;
+  if (isShaCard(registry, definitionId) || definitionId === 'wine' || definitionId === 'draw-two') return 2;
   if (definitionId && registry.cards.get(definitionId)?.category === 'equipment') return 1;
   return 0;
 }

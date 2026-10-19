@@ -8,11 +8,11 @@ const offered = (s: GameState, seatId: string, skillId: string) =>
   h.legal(s, seatId).some((a) => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.skillId === skillId);
 
 describe('Da Qiao — Displace', () => {
-  // seat-b's Sha at Da Qiao (seat-a). Her neighbours are seat-b and seat-d.
+  // seat-b's Slash at Da Qiao (seat-a). Her neighbours are seat-b and seat-d.
   const shaAtHer = (cards: Record<string, ReturnType<typeof card>[]>) =>
     h.play(table({ 'seat-b:hand': [card('s1', 'sha')], ...cards }, { owner: 'seat-b', generals: at('seat-a', 'da-qiao') }), 's1', 'seat-a');
 
-  it('discards 1 card to move the Sha onto another seat in her attack range, not its user; it goes on from the armour check', () => {
+  it('discards 1 card to move the Slash onto another seat in her attack range, not its user; it goes on from the armour check', () => {
     let s = shaAtHer({ 'seat-a:hand': [card('x', 'peach', 'heart')] });
     expect(askedAbout(s)).toBe('displace');
     s = h.select(h.use(s), 'x');
@@ -31,7 +31,7 @@ describe('Da Qiao — Displace', () => {
     expect(shaAtHer(horses).pendingChoice).toBeUndefined(); // the horse is all she has: no ask
   });
 
-  it('Cancel at the discard lets the Sha go on against her', () => {
+  it('Cancel at the discard lets the Slash go on against her', () => {
     const s = h.cancel(h.use(shaAtHer({ 'seat-a:hand': [card('x', 'shan')] })));
     expect(s.pendingResponse?.respondingSeatId).toBe('seat-a');
   });
@@ -128,8 +128,8 @@ describe('Zhou Yu — Sow Revolt', () => {
 });
 
 describe('Displace after Iron Cavalry (final review #3)', () => {
-  it('the new target may still play a Shan: Iron Cavalry was about Da Qiao', () => {
-    // Ma Chao (seat-a, asked first) at Da Qiao (seat-b); Iron Cavalry judges red; Da Qiao moves the Sha to seat-c.
+  it('the new target may still play a Dodge: Iron Cavalry was about Da Qiao', () => {
+    // Ma Chao (seat-a, asked first) at Da Qiao (seat-b); Iron Cavalry judges red; Da Qiao moves the Slash to seat-c.
     let s = h.play(
       table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('x', 'peach', 'heart')], drawPile: [card('j', 'shan', 'heart', 2)] }, { generals: { 'seat-a': ['ma-chao', 'filler-meng-huo'], ...at('seat-b', 'da-qiao') } }),
       's1', 'seat-b'

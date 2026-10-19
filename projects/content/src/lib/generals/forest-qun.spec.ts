@@ -37,7 +37,7 @@ describe('Dong Zhuo — Garden of Lust', () => {
     );
   const shans = [card('d1', 'shan', 'heart', 2), card('d2', 'shan', 'heart', 3)];
 
-  it('his Sha at a female needs two Shan', () => {
+  it('his Slash at a female needs two Dodge', () => {
     let s = shaAt('seat-a', 'seat-b', { ...at('seat-a', 'dong-zhuo'), ...at('seat-b', 'diao-chan') }, shans);
     s = h.respond(s, 'd1');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
@@ -46,7 +46,7 @@ describe('Dong Zhuo — Garden of Lust', () => {
     expect(hp(s, 'seat-b')).toBe(4);
   });
 
-  it("a female's Sha at him needs two too", () => {
+  it("a female's Slash at him needs two too", () => {
     let s = shaAt('seat-b', 'seat-a', { ...at('seat-a', 'dong-zhuo'), ...at('seat-b', 'diao-chan') }, shans);
     s = h.respond(s, 'd1');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a' });
@@ -148,7 +148,7 @@ describe('Jia Xu — Upheaval', () => {
     expect(s.log.filter((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === 'upheaval' && e.outcome === 'used')).toHaveLength(1);
   });
 
-  it('a seat that plays a Sha at the seat it picked: answered like any Sha, then the next seat is asked', () => {
+  it('a seat that plays a Slash at the seat it picked: answered like any Slash, then the next seat is asked', () => {
     let s = upheaval({ 'seat-b:hand': [card('s1', 'sha')] });
     s = h.choose(s, 'seat-c');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['sha'], reason: { kind: 'ability', abilityId: 'upheaval', targetSeatId: 'seat-c' } });
@@ -160,7 +160,7 @@ describe('Jia Xu — Upheaval', () => {
     expect(s.pendingChoice).toMatchObject({ seatId: 'seat-c' });
   });
 
-  it('passing, at the pick or at the Sha window, loses 1 HP and moves on', () => {
+  it('passing, at the pick or at the Slash window, loses 1 HP and moves on', () => {
     const picked = h.choose(upheaval(), 'pass');
     expect(hp(picked, 'seat-b')).toBe(3);
     expect(picked.pendingChoice).toMatchObject({ seatId: 'seat-c' });

@@ -23,7 +23,7 @@ export interface AskDialogData {
       @if (data.description.card; as card) {
         <app-playing-card [card]="card" />
       } @else if (data.description.generalId; as generalId) {
-        <app-card-art [id]="generalId" [label]="data.description.title" size="small" />
+        <app-card-art [skin]="true" [id]="generalId" [label]="data.description.title" size="small" />
       }
       <div class="words">
         <p class="prompt">{{ data.description.prompt }}</p>

@@ -1,6 +1,6 @@
 import type { Action, CardInstance, ContentRegistry, Effect, GameState, Judgment, PendingChoice, PendingSelection, Seat } from 'engine';
 import { abilityUseKey, colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
-import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards } from './helpers';
+import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards, isShaCard } from './helpers';
 import { wantsWind, windChoice, windSelection } from './wind';
 import { fireChoice, wantsFire, wantsFireActive } from './fire';
 import { forestChoice, forestSelection, wantsForest, wantsForestActive } from './forest';
@@ -83,7 +83,7 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     case 'raid':
       return others(view, me).filter((s) => !isAlly(me, s) && handSize(view, s) > 0).length >= 2;
     case 'bare-the-chest':
-      return handCards(view, me).filter((c) => c.definitionId === 'sha').length >= 2;
+      return handCards(view, me).filter((c) => isShaCard(registry, c.definitionId)).length >= 2;
     case 'devil': {
       const shown = declined(choice);
       return shown?.kind === 'JudgmentShownEffect' && devilCard(view, me, shown.judgment, registry) !== null;
@@ -149,6 +149,7 @@ function leastShownSuit(view: GameState, seatId: string): CardInstance['suit'] {
   const seen: Record<string, number> = {};
   for (const event of view.log) {
     if (event.kind === 'CardPlayedEvent' && event.seatId === seatId) for (const c of event.card.physical) seen[c.suit] = (seen[c.suit] ?? 0) + 1;
+    if (event.kind === 'CardShownEvent' && event.seatId === seatId) seen[event.card.suit] = (seen[event.card.suit] ?? 0) + 1;
   }
   return [...SUIT_ORDER].sort((a, b) => (seen[a] ?? 0) - (seen[b] ?? 0))[0];
 }
@@ -160,18 +161,23 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
   const ally = seats.find((s) => s.id !== me.id && isAlly(me, s));
   const firstNonAlly = byLowestHp(seats.filter((s) => s.id !== me.id && !isAlly(me, s)))[0];
+  // For a harmful effect with no non-ally to aim at: the seat that is hurt least, an ally.
+  const cancelId = choice.options.find((o) => o.id === 'cancel')?.id;
+  const harmless = ally ?? seats[0];
   switch (choice.reason.abilityId) {
     case 'kindness':
     case 'bestowed-rouse':
     case 'marriage':
-      return (ally ?? seats[0])?.id ?? null;
+      // Helpful: an ally; else cancel, else the seat that gains least.
+      if (ally) return ally.id;
+      return cancelId ?? [...seats].sort((a, b) => a.maxCombinedHp - a.combinedHp - (b.maxCombinedHp - b.combinedHp))[0]?.id ?? null;
     case 'green-vesicle':
       return (seats.find((s) => s.id === me.id) ?? ally ?? seats[0])?.id ?? null;
     case 'displace':
-      return (firstNonAlly ?? seats[0])?.id ?? null;
+      return firstNonAlly?.id ?? cancelId ?? harmless?.id ?? null;
     case 'sow-discord':
       // The first pick (no target yet): a non-ally; the second: the likelier winner.
-      return (choice.reason.targetSeatId ? byHighestHp(seats)[0] : (firstNonAlly ?? seats[0]))?.id ?? null;
+      return (choice.reason.targetSeatId ? byHighestHp(seats)[0] : firstNonAlly)?.id ?? cancelId ?? harmless?.id ?? null;
     case 'sow-revolt':
       return leastShownSuit(view, choice.reason.owner.seatId);
     case 'unyielding': {
@@ -236,9 +242,12 @@ export function pickActiveSkill(view: GameState, me: Seat, legal: Action[], regi
 export function conversionSpare(view: GameState, me: Seat, action: UseConversion, registry: ContentRegistry): boolean {
   const owned = conversionsOf(view, me.id, registry).find((o) => o.conversion.id === action.via.conversionId && sameAbilityOwner(o.owner, action.via.owner));
   if (!owned || (owned.needsReveal && !mayReveal(me))) return false;
-  // A deferred claim (Bewilder): the bot bluffs only with more than 4 cards; a
-  // true claim it makes with the real card itself.
-  if (owned.conversion.deferred) return handCards(view, me).length > 4;
+  // A deferred claim (Bewilder): a true claim whenever a hand card is the named
+  // card; a bluff only with more than 4 cards.
+  if (owned.conversion.deferred) {
+    const truthful = conversionCards(view, me.id, owned.conversion, registry).some((c) => c.definitionId === owned.conversion.as);
+    return truthful || handCards(view, me).length > 4;
+  }
   const cards = leastUseful(view, registry, conversionCards(view, me.id, owned.conversion, registry).map((c) => c.instanceId)).slice(0, owned.conversion.cards);
   return cards.length === owned.conversion.cards && !cards.some((id) => definitionIdOf(view, id) === 'peach');
 }

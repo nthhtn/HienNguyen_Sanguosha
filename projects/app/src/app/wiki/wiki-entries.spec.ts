@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import type { WikiCard, WikiGeneral } from 'content';
+import { MUSIC_PLAYER_FACTORY, SoundEffects } from '../music.service';
 import { WikiCardEntry } from './wiki-card-entry';
 import { WikiGeneralEntry } from './wiki-general-entry';
 
@@ -33,6 +34,23 @@ function renderCard(card: WikiCard): HTMLElement {
 }
 
 describe('WikiGeneralEntry', () => {
+  it('has a Voice button that plays the General’s voice, even with sound effects off', () => {
+    localStorage.clear();
+    const urls: string[] = [];
+    TestBed.configureTestingModule({
+      providers: [{ provide: MUSIC_PLAYER_FACTORY, useValue: (url: string) => (urls.push(url), { loop: false, volume: 1, play: async () => undefined, pause: () => undefined }) }],
+    });
+    TestBed.inject(SoundEffects).toggle();
+    const el = renderGeneral(caoCao);
+    expect(el.querySelector('.voices-label')!.textContent).toBe('Voice:');
+    const button = el.querySelector('button.voice') as HTMLButtonElement;
+    expect(button.querySelector('mat-icon')!.textContent).toBe('graphic_eq');
+    button.click();
+    expect(urls).toEqual(['/audio/death/caocao.ogg']);
+    expect(renderGeneral({ ...caoCao, id: 'zuo-ci' }).querySelector('button.voice')).toBeNull();
+    localStorage.clear();
+  });
+
   it('shows names, title, kingdom, HP and skills', () => {
     const el = renderGeneral(caoCao);
     const text = el.textContent!;
@@ -42,7 +60,7 @@ describe('WikiGeneralEntry', () => {
       expect(text).toContain(part);
     }
     expect(el.querySelectorAll('.hearts mat-icon')).toHaveLength(4);
-    expect(el.querySelector('app-card-art')).not.toBeNull();
+    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/card-art/generals/skins/wei/caocao.png');
     expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');
   });
 
@@ -80,6 +98,26 @@ describe('WikiGeneralEntry', () => {
 });
 
 describe('WikiCardEntry', () => {
+  it('has a button per gender that plays the card’s voice, and none for a card without one', () => {
+    localStorage.clear();
+    const urls: string[] = [];
+    TestBed.configureTestingModule({
+      providers: [{ provide: MUSIC_PLAYER_FACTORY, useValue: (url: string) => (urls.push(url), { loop: false, volume: 1, play: async () => undefined, pause: () => undefined }) }],
+    });
+    const el = renderCard(duel);
+    const buttons = [...el.querySelectorAll('button.voice')] as HTMLButtonElement[];
+    expect(el.querySelector('.voices-label')!.textContent).toBe('Voices:');
+    expect(buttons.map((b) => b.querySelector('mat-icon')!.textContent)).toEqual(['man', 'woman']);
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['Play Male Voice', 'Play Female Voice']);
+    buttons.forEach((b) => b.click());
+    expect(urls).toEqual(['/audio/male/duel.ogg', '/audio/female/duel.ogg']);
+    TestBed.inject(SoundEffects).toggle();
+    buttons[0].click();
+    expect(urls).toHaveLength(3);
+    expect(renderCard(redHare).querySelector('button.voice')).toBeNull();
+    localStorage.clear();
+  });
+
   it('shows names, rules text, copies and printings', () => {
     const el = renderCard(duel);
     const text = el.textContent!;
@@ -96,6 +134,12 @@ describe('WikiCardEntry', () => {
     expect(el.textContent).toContain('Rules text not available');
     expect(el.textContent).toContain('Printings not recorded');
     expect(el.querySelector('.badge')!.textContent!.trim()).toBe('Not in the game yet');
+  });
+
+  it('shows a mount’s distance: -1 for an offensive Mount, +1 for a defensive one', () => {
+    expect(renderCard({ ...redHare, mount: 'offensive' }).querySelector('.distance')!.textContent).toContain('Distance -1');
+    expect(renderCard({ ...redHare, mount: 'defensive' }).querySelector('.distance')!.textContent).toContain('Distance +1');
+    expect(renderCard({ ...redHare, id: 'axe', subtype: 'weapon', mount: null, range: 3 }).querySelector('.distance')).toBeNull();
   });
 
   it('shows a weapon’s range', () => {

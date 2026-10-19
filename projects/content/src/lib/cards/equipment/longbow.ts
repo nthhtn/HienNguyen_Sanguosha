@@ -37,6 +37,7 @@ function discardAMount(state: GameState, step: CardStep, owner: AbilityOwner): E
 
 // Longbow: at step 6, after its user's Sha damages a seat, the user may
 // discard one of that seat's Mounts.
+// Step 6, like every follow-up a Sha queues after its damage, runs after that damage's chain wave.
 export const longbowCard = makeEquipmentCard('longbow', 'Longbow', 'weapon', cardsData['longbow'].range, {
   abilities: {
     triggers: [

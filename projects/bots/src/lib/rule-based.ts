@@ -1,7 +1,7 @@
 import type { Action, ContentRegistry, GameState, Seat } from 'engine';
 import { conversionsOf, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
-import { definitionIdOf, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
+import { definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
 import { bestPair, GENERAL_VALUES } from './general-values';
@@ -20,9 +20,10 @@ type Arrange = Extract<Action, { kind: 'ArrangeCardsAction' }>;
 
 
 // Plays of `definitionId` aimed at a living non-ally, best target first.
-function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string, rank: TargetRanker): PlayCard[] {
+function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string, rank: TargetRanker, registry: ContentRegistry): PlayCard[] {
+  const matches = (id: string | undefined) => (definitionId === 'sha' ? isShaCard(registry, id) : id === definitionId);
   return plays
-    .filter((p) => p.targets.length >= 1 && p.targets[0].kind === 'seat' && definitionIdOf(view, p.cardInstanceId) === definitionId)
+    .filter((p) => p.targets.length >= 1 && p.targets[0].kind === 'seat' && matches(definitionIdOf(view, p.cardInstanceId)))
     .map((p) => ({ play: p, target: view.seats.find((s) => p.targets[0].kind === 'seat' && s.id === p.targets[0].seatId) }))
     .filter((t): t is { play: PlayCard; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
     .sort((a, b) => rank(view, self, b.target) - rank(view, self, a.target) || a.target.index - b.target.index)
@@ -54,7 +55,7 @@ function wantsToUse(view: GameState, self: Seat, abilityId: string, targetSeatId
 
 
 // Cards worth drawing soon: kept on top when arranging the draw pile.
-const KEEP_ON_TOP = new Set(['peach', 'shan', 'sha']);
+const KEEP_ON_TOP = new Set(['peach', 'shan']);
 
 // Abilities whose card selections the bot fills rather than cancels.
 const SELECTS_FOR = new Set(['axe', 'green-dragon-blade', 'serpent-spear', ...CONVERSION_SKILLS]);
@@ -104,7 +105,7 @@ function decide(
   const arrangeTemplate = legal.find((a): a is Arrange => a.kind === 'ArrangeCardsAction');
   if (arrangeTemplate && view.pendingArrangement) {
     const ids = view.pendingArrangement.cardInstanceIds;
-    const onTop = (id: string) => KEEP_ON_TOP.has(definitionIdOf(view, id) ?? '');
+    const onTop = (id: string) => KEEP_ON_TOP.has(definitionIdOf(view, id) ?? '') || isShaCard(registry, definitionIdOf(view, id));
     return take({ ...arrangeTemplate, top: ids.filter(onTop), bottom: ids.filter((id) => !onTop(id)) });
   }
 
@@ -227,6 +228,10 @@ function decide(
       )
     );
 
+    // Reveal a hidden General in the Play Phase: nothing else turns its compulsory skills on, and a bot has no reason to hide.
+    const reveal = legal.find((a) => a.kind === 'RevealGeneralAction');
+    if (reveal) return take(reveal);
+
     const peach = plays.find((p) => untargeted(p) && definitionIdOf(view, p.cardInstanceId) === 'peach');
     if (peach && self.combinedHp < self.maxCombinedHp && (!rules.peach || peachWorthPlaying(view, self))) return take(peach);
 
@@ -270,7 +275,7 @@ function decide(
       const target = view.seats.find((s) => s.id === p.targets[0]?.seatId);
       return !!target && (view.zones.find((z) => z.id === target.equipped.zoneId)?.cards.length ?? 0) > 0;
     };
-    const [grab] = [...targetedPlays(view, self, plays, 'steal', rank), ...targetedPlays(view, self, plays, 'break', rank)].sort(
+    const [grab] = [...targetedPlays(view, self, plays, 'steal', rank, registry), ...targetedPlays(view, self, plays, 'break', rank, registry)].sort(
       (a, b) => Number(wearsEquipment(b)) - Number(wearsEquipment(a))
     );
     if (grab) return take(grab);
@@ -308,15 +313,15 @@ function decide(
     };
     const best = (candidates: PlayCard[], score: (p: PlayCard) => number) =>
       candidates.reduce<PlayCard | undefined>((top, p) => (!top || score(p) > score(top) ? p : top), undefined);
-    const capture = best(targetedPlays(view, self, plays, 'capture', rank), (p) => targetOf(p)?.combinedHp ?? 0);
+    const capture = best(targetedPlays(view, self, plays, 'capture', rank, registry), (p) => targetOf(p)?.combinedHp ?? 0);
     if (capture) return take(capture);
-    const starvation = best(targetedPlays(view, self, plays, 'starvation', rank), handSize);
+    const starvation = best(targetedPlays(view, self, plays, 'starvation', rank, registry), handSize);
     if (starvation) return take(starvation);
     const lightning = untargetedOf('lightning');
     if (lightning && self.combinedHp >= 3) return take(lightning);
 
     // Wine first when a Sha at a non-ally is legal: the Sha follows next.
-    const shaPlays = targetedPlays(view, self, plays, 'sha', rank);
+    const shaPlays = targetedPlays(view, self, plays, 'sha', rank, registry);
     const shaTarget = view.seats.find((s) => s.id === shaPlays[0]?.targets[0]?.seatId);
     const wineOk = shaPlays.length > 0 && (!rules.wine || wineWorthPlaying(shaTarget));
     const wine = untargetedOf('wine');
@@ -335,7 +340,7 @@ function decide(
       .sort((x, y) => rank(view, self, y.target) - rank(view, self, x.target) || x.target.index - y.target.index)
       .map((t) => t.a);
     if (conversion && conversionSpare(view, self, conversion, registry)) return take(conversion, 1);
-    const [duel] = targetedPlays(view, self, plays, 'duel', rank);
+    const [duel] = targetedPlays(view, self, plays, 'duel', rank, registry);
     if (duel) return take(duel);
     // Dueling Heroes: a Duel from an opposite-colour card, at the weakest non-ally.
     const [duelVia] = conversionsAs('duel').sort(byWeakest);

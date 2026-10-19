@@ -35,7 +35,7 @@ describe('describeChoice', () => {
       reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-1', slot: 'main', skillId: 'bewilder' }, abilityId: 'bewilder', cardId: 'sha' },
       options: [{ id: 'believe', shows: { kind: 'label', text: 'Believe' }, effects: [] }, { id: 'doubt', shows: { kind: 'label', text: 'Doubt' }, effects: [] }],
     };
-    expect(describeChoice(state(doubt), 'seat-0')).toEqual({ title: 'Bewilder', prompt: 'Seat 1 claims Sha. Believe or doubt?', confirmLabel: 'Choose' });
+    expect(describeChoice(state(doubt), 'seat-0')).toEqual({ title: 'Bewilder', prompt: 'Seat 1 claims Slash. Believe or doubt?', confirmLabel: 'Choose' });
   });
 
   it("a skill's take (Feedback): choose a card to take from the seat", () => {
@@ -71,18 +71,18 @@ describe('describeChoice', () => {
     expect(describeChoice(state(choice('steal', 'take', 'seat-1')), 'seat-1')).toBeNull();
     expect(describeChoice(state(), 'seat-0')).toBeNull();
   });
-  it('Upheaval: a seat to Sha, or pass', () => {
+  it('Upheaval: a seat to Slash, or pass', () => {
     const options: ChoiceOption[] = [
       { id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] },
       { id: 'pass', shows: { kind: 'label', text: 'Pass (Lose 1 HP)' }, effects: [] },
     ];
-    expect(describeChoice(state(skill('upheaval', 'pick', undefined, options)), 'seat-0')).toEqual({ title: 'Upheaval', prompt: 'Choose a seat to play a Sha at, or pass', confirmLabel: 'Choose' });
+    expect(describeChoice(state(skill('upheaval', 'pick', undefined, options)), 'seat-0')).toEqual({ title: 'Upheaval', prompt: 'Choose a seat to play a Slash at, or pass', confirmLabel: 'Choose' });
   });
 
   it('Collapse and Brave Spirit: their own words', () => {
     const labels: ChoiceOption[] = [{ id: 'a', shows: { kind: 'label', text: 'A' }, effects: [] }, { id: 'b', shows: { kind: 'label', text: 'B' }, effects: [] }];
     expect(describeChoice(state(skill('collapse', 'pick', undefined, labels)), 'seat-0')).toEqual({ title: 'Collapse', prompt: 'Choose how Collapse costs you', confirmLabel: 'Choose' });
-    expect(describeChoice(state(skill('brave-spirit', 'pick', 'seat-1', labels)), 'seat-0')).toEqual({ title: 'Brave Spirit', prompt: 'Choose how to draw and discard', confirmLabel: 'Choose' });
+    expect(describeChoice(state(skill('brave-spirit', 'pick', 'seat-1', labels)), 'seat-0')).toEqual({ title: 'Brave Spirit', prompt: 'Choose how Seat 1 draws and discards', confirmLabel: 'Choose' });
   });
 
   it('Exile, Brave Spirit and Alliance seat picks name what the seat does', () => {
