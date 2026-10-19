@@ -46,6 +46,7 @@ const TOOL_VOICES: Partial<Record<string, Voice>> = {
   'peach-garden': 'peach-garden',
   capture: 'capture',
   lightning: 'lightning',
+  duel: 'duel',
 };
 
 export interface VoiceCue {

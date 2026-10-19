@@ -61,7 +61,7 @@ describe('voicesFor', () => {
     expect(voicesFor([played('s1', 'sha')], state, registry, 's1')).toEqual([{ gender: 'female', voice: 'slash' }]);
   });
 
-  it.each(['break', 'chains', 'blaze', 'hail-of-arrows', 'barbarians', 'steal', 'wuxie', 'starvation', 'coerce', 'wine', 'harvest', 'draw-two', 'peach-garden', 'capture', 'lightning'])('voices %s, played, as its own line', (as) => {
+  it.each(['break', 'chains', 'blaze', 'hail-of-arrows', 'barbarians', 'steal', 'wuxie', 'starvation', 'coerce', 'wine', 'harvest', 'draw-two', 'peach-garden', 'capture', 'lightning', 'duel'])('voices %s, played, as its own line', (as) => {
     const event = { kind: 'CardPlayedEvent', seatId: 's1', card: { as, physical: [] }, targets: [{ kind: 'seat', seatId: 's0' }] } as never;
     expect(voicesFor([event], state, registry)).toEqual([{ gender: 'female', voice: as }]);
   });
