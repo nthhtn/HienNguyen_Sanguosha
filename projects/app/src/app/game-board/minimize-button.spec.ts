@@ -9,7 +9,7 @@ import { MinimizeButton } from './minimize-button';
 @Component({
   imports: [MinimizeButton],
   template: `
-    <div class="mat-mdc-dialog-container">
+    <div class="cdk-overlay-pane force-dialog force-dialog-Shu">
       <h2 mat-dialog-title>Response Needed</h2>
       <app-minimize-button [context]="context()" />
     </div>
@@ -49,7 +49,7 @@ describe('MinimizeButton', () => {
     const { button } = mount();
     const minimize = jest.spyOn(TestBed.inject(DecisionDock), 'minimize');
     button.click();
-    expect(minimize).toHaveBeenCalledWith(ref, 'Response Needed', 'Seat 1 used Sha');
+    expect(minimize).toHaveBeenCalledWith(ref, 'Response Needed', 'Seat 1 used Sha', 'Shu');
   });
 
   it('passes no context when it has none', () => {
@@ -58,6 +58,6 @@ describe('MinimizeButton', () => {
     fixture.detectChanges();
     const minimize = jest.spyOn(TestBed.inject(DecisionDock), 'minimize');
     button.click();
-    expect(minimize).toHaveBeenCalledWith(ref, 'Response Needed', null);
+    expect(minimize).toHaveBeenCalledWith(ref, 'Response Needed', null, 'Shu');
   });
 });

@@ -11,7 +11,8 @@ import { DecisionDock } from './decision-dock';
   imports: [DecisionCountdown, TPipe],
   template: `
     @if (dock.minimized(); as decision) {
-      <button type="button" class="banner" (click)="dock.restore()">
+      <!-- data-force: the global rules give --force and --force-text, as for the dialog itself. -->
+      <button type="button" class="banner" [attr.data-force]="decision.force" (click)="dock.restore()">
         <span class="dot" aria-hidden="true"></span>
         <span class="message">
           <strong>{{ decision.title }}</strong>
@@ -30,11 +31,12 @@ import { DecisionDock } from './decision-dock';
       background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container);
       font: var(--mat-sys-body-large); text-align: left; cursor: pointer;
     }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--mat-sys-primary); flex: none; animation: banner-pulse 1.4s ease-in-out infinite; }
+    .message strong { color: var(--force-text, var(--mat-sys-on-secondary-container)); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--force, var(--mat-sys-primary)); flex: none; animation: banner-pulse 1.4s ease-in-out infinite; }
     .message { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; }
     .context { color: var(--mat-sys-on-surface-variant); }
     .timer { display: block; width: 160px; }
-    .open { padding: 4px 12px; border-radius: 16px; background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); font: var(--mat-sys-label-large); }
+    .open { padding: 4px 12px; border-radius: 16px; background: var(--force-text, var(--mat-sys-primary)); color: var(--mat-sys-on-primary); font: var(--mat-sys-label-large); }
     @keyframes banner-pulse { 50% { opacity: 0.3; } }
     @media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
   `,

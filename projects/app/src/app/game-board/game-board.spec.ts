@@ -318,6 +318,8 @@ describe('GameBoard', () => {
       expect(pane().closest('.cdk-global-overlay-wrapper')!.previousElementSibling!.classList).toContain('cdk-overlay-backdrop');
       const banner = el.querySelector('app-decision-banner .banner') as HTMLButtonElement;
       expect(banner.textContent).toContain('Response Needed');
+      // The banner wears the colours of the force the dialog is themed in.
+      expect(`force-dialog-${banner.getAttribute('data-force') ?? 'none'}`).toBe([...pane().classList].find((c) => /^force-dialog-/.test(c)));
       banner.click();
       fixture.detectChanges();
       expect(pane().classList).not.toContain('decision-minimized');

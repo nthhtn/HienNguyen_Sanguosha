@@ -15,13 +15,18 @@ describe('DecisionDock', () => {
   it('minimizing hides the dialog and remembers its title and context', () => {
     const { ref, spies } = fakeRef();
     dock().minimize(ref, 'Response Needed', 'Seat 1 used Sha');
-    expect(dock().minimized()).toEqual({ title: 'Response Needed', context: 'Seat 1 used Sha' });
+    expect(dock().minimized()).toEqual({ title: 'Response Needed', context: 'Seat 1 used Sha', force: null });
     expect(spies.addPanelClass).toHaveBeenCalledWith('decision-minimized');
+  });
+
+  it('remembers the force the dialog was themed in', () => {
+    dock().minimize(fakeRef().ref, 'Response Needed', null, 'Shu');
+    expect(dock().minimized()?.force).toBe('Shu');
   });
 
   it('has no context unless one is given', () => {
     dock().minimize(fakeRef().ref, 'Choose a Card');
-    expect(dock().minimized()).toEqual({ title: 'Choose a Card', context: null });
+    expect(dock().minimized()).toEqual({ title: 'Choose a Card', context: null, force: null });
   });
 
   it('restoring shows the dialog again and clears the banner', () => {

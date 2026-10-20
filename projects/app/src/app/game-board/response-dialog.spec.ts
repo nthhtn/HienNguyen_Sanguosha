@@ -35,7 +35,7 @@ describe('ResponseDialog', () => {
     const { el } = render([]);
     const minimize = jest.spyOn(TestBed.inject(DecisionDock), 'minimize').mockImplementation();
     (el.querySelector('app-minimize-button button') as HTMLButtonElement).click();
-    expect(minimize).toHaveBeenCalledWith(expect.anything(), 'Response Needed', 'Seat 1 played Slash against Hing');
+    expect(minimize).toHaveBeenCalledWith(expect.anything(), 'Response Needed', 'Seat 1 played Slash against Hing', null);
   });
 
   it('keeps what was picked across a minimize and restore', () => {

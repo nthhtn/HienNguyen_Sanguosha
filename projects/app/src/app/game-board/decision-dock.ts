@@ -1,9 +1,12 @@
 import { Injectable, Signal, computed, signal } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
+import { Force } from '../labels';
 
 export interface MinimizedDecision {
   readonly title: string;
   readonly context: string | null;
+  // The force the dialog was themed in (the banner wears the same colours); null when unknown.
+  readonly force: Force | null;
 }
 
 interface Entry extends MinimizedDecision {
@@ -22,12 +25,12 @@ export class DecisionDock {
   private exposed: Element[] = [];
   readonly minimized: Signal<MinimizedDecision | null> = computed(() => {
     const entry = this.entry();
-    return entry ? { title: entry.title, context: entry.context } : null;
+    return entry ? { title: entry.title, context: entry.context, force: entry.force } : null;
   });
 
-  minimize(ref: MatDialogRef<unknown, unknown>, title: string, context: string | null = null): void {
+  minimize(ref: MatDialogRef<unknown, unknown>, title: string, context: string | null = null, force: Force | null = null): void {
     ref.addPanelClass(HIDDEN_CLASS);
-    this.entry.set({ ref, title, context });
+    this.entry.set({ ref, title, context, force });
     this.expose();
     ref.beforeClosed().subscribe(() => {
       if (this.entry()?.ref === ref) this.clear();
