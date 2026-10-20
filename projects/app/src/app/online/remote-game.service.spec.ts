@@ -163,6 +163,23 @@ describe('RemoteGameService: a settled judgment', () => {
     expect(game.botThinkingSeatId()).toBe('seat-1');
   });
 
+  it('a Close that lost a race to another Close or the clock is silent, and resyncs', async () => {
+    socket.serverSends(welcome(PLAYING, 'p-ann', settled));
+    game.closeJudgment();
+    socket.serverSends({ type: 'error', reqId: socket.lastSent!['reqId'] as string, code: 'stale', message: 'The game moved on. Try again' });
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(game.lastError()).toBeNull();
+    expect(socket.lastSent).toMatchObject({ type: 'game.resync' });
+  });
+
+  it('a refused Close for another reason is shown', async () => {
+    socket.serverSends(welcome(PLAYING, 'p-ann', settled));
+    game.closeJudgment();
+    socket.serverSends({ type: 'error', reqId: socket.lastSent!['reqId'] as string, code: 'not_your_turn', message: "It's not your turn" });
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(game.lastError()).not.toBeNull();
+  });
+
   it('does nothing without a settled judgment, or when the server offers no close', () => {
     socket.serverSends(welcome(PLAYING, 'p-ann', opening));
     expect(game.judgmentSettled()).toBe(false);

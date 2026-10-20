@@ -124,7 +124,8 @@ describe('games over the socket', () => {
     const ended = await a.client.next('room.updated', (m) => m.room.status === 'lobby' && m.room.lastGame !== null, 60_000);
     expect(ended.room.lastGame).toMatchObject({ outcome: 'finished', result: expect.objectContaining({ winningSeatIds: expect.any(Array) }) });
     expect(a.seat.resyncs + b.seat.resyncs).toBe(0);
-    expect([...a.client.received, ...b.client.received].filter((m) => m.type === 'error')).toEqual([]);
+    // Both seats answer a settled judgment at once (each may close it): the one that comes second is told the game moved on.
+    expect([...a.client.received, ...b.client.received].filter((m) => m.type === 'error' && m.code !== 'stale')).toEqual([]);
     const final = a.seat.lastUpdate!;
     expect(final.view.result).not.toBeNull();
     const actions = await ctx.repos.games.listActions(final.gameId);

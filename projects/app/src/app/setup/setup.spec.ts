@@ -105,7 +105,7 @@ describe('Setup', () => {
         const { fixture, el, gameService } = await create();
         pick(fixture, el, 5);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true });
       });
 
       it('starts a game with the rule off when unchecked', async () => {
@@ -114,14 +114,14 @@ describe('Setup', () => {
         (el.querySelector('.first-reveal input') as HTMLInputElement).click();
         fixture.detectChanges();
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: false });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: false, judgmentNotice: true });
       });
 
       it('sets no rule below 5 seats', async () => {
         const { fixture, el, gameService } = await create();
         pick(fixture, el, 4);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toBeUndefined();
+        expect(gameService.state()!.rules).not.toHaveProperty('firstRevealDraw');
       });
     });
 

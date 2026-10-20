@@ -114,7 +114,8 @@ export class GameService {
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
-      const created = createGame(kingdomWarMode, this.registry, seatIds, rngSeed, rules);
+      // Every game waits for a judgment's popup (the judgmentNotice rule) unless a rule says otherwise.
+      const created = createGame(kingdomWarMode, this.registry, seatIds, rngSeed, { ...rules, judgmentNotice: rules?.judgmentNotice ?? true });
       const players = created.players.map((p, i) => ({
         ...p,
         kind: mode === 'vs-bots' && p.seatId !== HUMAN_SEAT_ID ? ('bot' as const) : ('human' as const),

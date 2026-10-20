@@ -422,9 +422,11 @@ export class RoomService {
       room.members.map((m) => ({ id: m.id, name: m.name, kind: m.kind })),
       seed
     );
-    const state = openingState(this.ctx, seed, seats, room.record.rules);
+    // Every game waits for a judgment's popup (the judgmentNotice rule); a stored game keeps this, so it replays the same.
+    const rules = { ...room.record.rules, judgmentNotice: true };
+    const state = openingState(this.ctx, seed, seats, rules);
     const game = await this.repos.transaction(async (tx) => {
-      const created = await tx.games.create({ roomId: room.id, seed, seats, rules: room.record.rules, buildId: this.buildId, now: at });
+      const created = await tx.games.create({ roomId: room.id, seed, seats, rules, buildId: this.buildId, now: at });
       await tx.rooms.update(room.id, { status: 'playing' }, at);
       return created;
     });

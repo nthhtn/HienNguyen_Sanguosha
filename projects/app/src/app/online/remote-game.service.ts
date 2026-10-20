@@ -154,11 +154,12 @@ export class RemoteGameService implements BoardGame {
   // acts on the judgment, with `by` this seat.
   closeJudgment(): void {
     const close = this.legalActions().find((a) => a.kind === 'AcknowledgeJudgmentAction');
-    if (close) this.submit(close);
+    if (close) this.submitAll([close], true);
   }
 
   // One move: the server applies all of it or none of it.
-  submitAll(actions: Action[]): void {
+  // `quietStale`: losing a race (a Close that came second) is not worth a message; the resync follows anyway.
+  submitAll(actions: Action[], quietStale = false): void {
     const update = this._update();
     if (!update || actions.length === 0 || this._waiting()) return;
     this._waiting.set(true);
@@ -166,8 +167,9 @@ export class RemoteGameService implements BoardGame {
     this.socket
       .request({ type: 'game.submit', gameId: update.gameId, baseSeq: update.seq, actions })
       .catch((err: unknown) => {
-        this._lastError.set(errorMsg(err));
-        if (err instanceof ApiError && err.code === 'stale') this.resync();
+        const stale = err instanceof ApiError && err.code === 'stale';
+        if (!(quietStale && stale)) this._lastError.set(errorMsg(err));
+        if (stale) this.resync();
       })
       .finally(() => this._waiting.set(false));
   }
