@@ -4,6 +4,7 @@ import { Action, DECISION_SECONDS, GameState, cardsOverHandLimit } from 'engine'
 import { DecisionTimer } from './decision-timer.service';
 import { GameService } from './game.service';
 import { cardDefinitionId } from './labels';
+import { settleJudgment } from './settled-judgment.testing';
 
 // A stand-in for the board's DestroyRef, to attach and later detach.
 function boardLifetime() {
@@ -130,6 +131,19 @@ describe('DecisionTimer', () => {
         return;
       }
       throw new Error('no seed gave seat-0 a targeted play');
+    });
+
+    it('clocks a settled judgment behind the pass-and-play gate, and closes it by timeout', () => {
+      game.startGame(2, 1, 'pass-and-play', [], { judgmentNotice: true });
+      settleJudgment(game);
+      TestBed.tick();
+      expect(game.revealedSeatId()).toBeNull();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.notice);
+      advance(DECISION_SECONDS.notice - 1);
+      expect(game.judgmentSettled()).toBe(true);
+      advance(1);
+      expect(game.judgmentSettled()).toBe(false);
+      expect(game.state()!.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ seatId: 'seat-0', source: 'timeout' });
     });
 
     it('pauses behind the pass-and-play gate', () => {

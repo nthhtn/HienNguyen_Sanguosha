@@ -44,7 +44,8 @@ export class DecisionTimer {
     const state = this.game.state();
     const seatId = this.game.activeSeatId();
     if (!state || !seatId) return null;
-    if (this.game.revealedSeatId() !== seatId) return null; // behind the gate, or a bot to move
+    // Behind the gate, or a bot to move; a settled judgment is public, so it is clocked behind the gate too.
+    if (this.game.revealedSeatId() !== seatId && !state.judgmentView?.settled) return null;
     const spec = describeDecision(state, seatId, this.game.legalActions(), this.keyOf(state));
     // Keys are per game, so nothing paused in one game resumes in the next.
     return spec && { spec: { ...spec, key: `${this.game.gameNumber()}:${spec.key}` }, state };

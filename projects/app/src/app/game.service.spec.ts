@@ -1,6 +1,7 @@
 import { GameService } from './game.service';
 import { ruleBasedPolicy } from 'bots';
 import { getLegalActions } from 'engine';
+import { settleJudgment } from './settled-judgment.testing';
 
 function finishSelection(service: GameService): void {
   while (service.state()!.phase === 'GeneralSelection') {
@@ -247,3 +248,61 @@ describe('GameService in pass-and-play mode', () => {
     jest.useRealTimers();
   });
 });
+
+describe('GameService: a settled judgment', () => {
+  let service: GameService;
+  const acknowledged = () => service.state()!.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent');
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    service = new GameService();
+    service.botDelayMs = 700;
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('closeJudgment closes it as the acting seat, with by, in vs-bots', () => {
+    service.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    settleJudgment(service);
+    expect(service.judgmentSettled()).toBe(true);
+    expect(service.activeSeatId()).toBe('seat-0');
+    service.closeJudgment('seat-0');
+    expect(service.judgmentSettled()).toBe(false);
+    expect(service.state()).not.toHaveProperty('judgmentView');
+    expect(acknowledged()).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-0', by: 'seat-0', source: 'close' });
+  });
+
+  it('in pass-and-play, whoever holds the device closes it: the acting seat acts, by names the holder', () => {
+    service.startGame(3, 1, 'pass-and-play', [], { judgmentNotice: true });
+    settleJudgment(service);
+    service.closeJudgment('seat-2');
+    expect(acknowledged()).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-0', by: 'seat-2', source: 'close' });
+    expect(service.revealedSeatId()).toBeNull();
+  });
+
+  it('does nothing when nothing is settled', () => {
+    service.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    const before = service.state();
+    service.closeJudgment('seat-0');
+    expect(service.state()).toBe(before);
+    expect(service.judgmentSettled()).toBe(false);
+  });
+
+  it('with no human left, a bot closes it after the bot delay, and the UI cannot', () => {
+    service.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    settleJudgment(service, ['seat-0']);
+    expect(service.activeSeatId()).toBe('seat-1');
+    expect(service.botThinkingSeatId()).toBe('seat-1');
+    service.closeJudgment('seat-1');
+    expect(service.judgmentSettled()).toBe(true);
+    jest.advanceTimersByTime(699);
+    expect(service.judgmentSettled()).toBe(true);
+    jest.advanceTimersByTime(1);
+    expect(service.judgmentSettled()).toBe(false);
+    expect(acknowledged()).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-1', source: 'close' });
+  });
+});
+

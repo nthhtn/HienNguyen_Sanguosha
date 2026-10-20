@@ -74,6 +74,9 @@ export class GameService {
     return previewEffect(state, effect, this.ctx);
   }
 
+  // A judgment waits for an acknowledgement (the judgmentNotice rule).
+  readonly judgmentSettled: Signal<boolean> = computed(() => !!this._state()?.judgmentView?.settled);
+
   // Only the human's moves are offered to the UI; bots decide for themselves.
   readonly legalActions: Signal<Action[]> = computed(() => {
     const state = this._state();
@@ -124,6 +127,15 @@ export class GameService {
     const activeSeatId = this.activeSeatId();
     if (activeSeatId && this.botSeatIds().includes(activeSeatId)) return;
     if (this.apply(action)) this.scheduleBotIfDue();
+  }
+
+  // Closes a settled judgment, whoever holds the device: the engine has one acting seat, so it is
+  // that seat's action, `by` the seat whose player pressed Close (null: nobody to name). A bot seat's
+  // acknowledgement comes only from its own timer.
+  closeJudgment(bySeatId: string | null): void {
+    const seatId = this.activeSeatId();
+    if (!this.judgmentSettled() || !seatId || this.botSeatIds().includes(seatId)) return;
+    if (this.apply({ kind: 'AcknowledgeJudgmentAction', seatId, ...(bySeatId ? { by: bySeatId } : {}) })) this.scheduleBotIfDue();
   }
 
   // Resolves several actions as one move (e.g. a whole Discard phase): the
