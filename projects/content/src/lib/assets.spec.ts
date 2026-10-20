@@ -2,7 +2,7 @@ import { CARD_BACK_ART_URL, cardArtUrl, generalDeathVoiceUrl, HIDDEN_GENERAL_ART
 
 describe('cardArtUrl', () => {
   it('returns the /card-art/ URL for a crawled id', () => {
-    expect(cardArtUrl('cao-cao')).toBe('/card-art/generals/wei/cao-cao.jpg');
+    expect(cardArtUrl('cao-cao')).toBe('/card-art/generals/cards/wei/cao-cao.jpg');
   });
 
   it('serves Tool art from the tool folder', () => {

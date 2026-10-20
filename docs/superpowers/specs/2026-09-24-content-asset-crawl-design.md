@@ -105,7 +105,7 @@ either without a lookup table.
 
 ```ts
 interface AssetManifestEntry {
-  localPath: string;   // e.g. "generals/wei/cao-cao.jpg", relative to assets/
+  localPath: string;   // e.g. "generals/cards/wei/cao-cao.jpg", relative to assets/
   sourceUrl: string;   // the page URL the image was found on (same as data file's source.url)
   crawledAt: string;   // e.g. "2026-09-24"
   width: number;
