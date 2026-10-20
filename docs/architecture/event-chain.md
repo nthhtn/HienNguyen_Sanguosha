@@ -370,8 +370,10 @@ of different colours: none), and its physical cards.
 **Which skills count.** `skillsInPlay(state, seatId, registry)` decides, for
 triggers, conversions, active skills and content's modifiers alike:
 - a revealed General's skills all count;
-- a hidden General's compulsory skills (and their modifiers) are off; its
-  other skills count, marked `needsReveal`;
+- a hidden General's compulsory skills have their modifiers off; its other
+  skills count, marked `needsReveal`. Triggers also gather a hidden
+  compulsory skill's triggers (`skillsInPlay(…, true)`, `GatheredTrigger.compulsory`),
+  so they can ask for the reveal;
 - Lord skills never count (Kingdom War has no Lord).
 
 A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
@@ -381,10 +383,26 @@ A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
 hidden General's conversion or active skill reveals when its first selection
 is confirmed: `PendingSelection.onSelect` resolves at the confirm, before the
 continuation. Cancel leaves the General hidden. A hidden General's after-trigger
-that returns neither an ask nor a `RevealGeneralEffect` gets a `RevealGeneralEffect`
-for its slot in front of its outputs (`revealFor`; no outputs, no reveal). A hidden
-General's before-trigger that returns direct effects throws: it cannot place a
-reveal ahead of the effect it rewrites, so content must ask instead.
+that returns neither an ask nor a `RevealGeneralEffect` is wrapped in an
+`AskUseEffect` of its own (`withReveal`): Use reveals, then the outputs run; Don't
+runs nothing (no outputs, no ask). So every reveal by a condition event, in any
+phase of any turn, is the owner's decision. A hidden General's before-trigger that
+returns direct effects throws: it cannot wait for the answer ahead of the effect it
+rewrites, so content must ask instead. A hidden compulsory skill's *before*-trigger
+does not run its content: `rewriteEffect` turns the effect into an `AskUseEffect`
+(Use: reveal, then the effect runs again and the now-revealed skill rewrites it as
+usual; Don't: `UnaskedEffect { effect, declined }` runs it with the first `declined`
+before-triggers not asking, a count so a pending choice names no hidden skill).
+`previewEffect` leaves such skills out.
+
+**Reveal windows.** The only free reveal is the Start window: for a human's turn
+with a hidden General the turn waits in Start (`Turn.startWindow`) and the owner
+confirms one `ConfirmRevealsAction { seatId, slots }` (a template with `slots`
+free; none is allowed). It queues a `RevealGeneralEffect` per slot, then
+`EnterStartPhaseEffect`, which logs the Start `PhaseChangedEvent` so its triggers
+gather as usual. There is no Play Phase reveal: Roar-style content reveals on use
+(`shaPlayRevealOwner`: a Sha only a hidden compulsory `shaLimit` allows reveals that
+General when played).
 
 **Active skills.** `SkillDefinition.active` gives a `UseSkillAction` in its
 owner's Play Phase while `canUse` holds and `Turn.abilityUses` is under
@@ -495,7 +513,7 @@ condition.
 **Mountain hooks** (stage 11).
 - **Skills gained for good.** `GainSkillEffect` appends to `Seat.gainedSkills`
   (`{ slot, skillId }`); `skillsInPlay` reads them like printed skills of the
-  General in `slot` (a hidden slot still needs a reveal; compulsory ones are off).
+  General in `slot` (a hidden slot still needs a reveal; its compulsory modifiers are off).
   `skillOf` finds them too, so their steps and judgments resolve. A step for a
   skill the seat no longer holds does nothing.
 - **Awakening.** `SkillDefinition.awakening`; content's `awakeningAtTurnStart`

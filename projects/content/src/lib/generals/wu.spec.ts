@@ -89,6 +89,25 @@ describe('Sun Shangxiang — Armed Consorts', () => {
   });
 });
 
+describe('Sun Shangxiang — hidden (spec: Reveal conditions, rule 3)', () => {
+  const hiddenHer = () => table({ 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)], 'seat-a:hand': [card('is', 'ice-sword', 'spade', 2)], drawPile: pile }, { generals: { 'seat-a': ['sun-shangxiang', 'filler-sun-jian', false] } });
+
+  it('losing her equipment asks whether to reveal her; Use reveals her and she draws 2', () => {
+    const asked = h.play(hiddenHer(), 'is');
+    expect(askedAbout(asked)).toBe('armed-consorts');
+    expect(asked.seats[0].generals!.main.revealed).toBe(false);
+    const used = h.choose(asked, 'use');
+    expect(used.seats[0].generals!.main.revealed).toBe(true);
+    expect(handIds(used, 'seat-a')).toEqual(['d1', 'd2']);
+  });
+
+  it('Don’t leaves her hidden and she draws nothing', () => {
+    const declined = h.choose(h.play(hiddenHer(), 'is'), 'decline');
+    expect(declined.seats[0].generals!.main.revealed).toBe(false);
+    expect(handIds(declined, 'seat-a')).toEqual([]);
+  });
+});
+
 describe('Lu Meng — Self-Restraint', () => {
   // seat-a at 2 HP holds 4 cards: ending its Play Phase brings the Discard Phase.
   const ending = (o: TableOptions = {}) => {

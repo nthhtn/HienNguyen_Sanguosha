@@ -37,13 +37,6 @@ export function leastUseful(view: GameState, registry: ContentRegistry, ids: rea
   return [...ids].sort((a, b) => keepRank(view, registry, a) - keepRank(view, registry, b));
 }
 
-// Whether the bot will reveal a hidden General to use a skill: once its
-// kingdom is known anyway (a General already revealed), or while it holds at
-// least 4 HP.
-export function mayReveal(self: Seat): boolean {
-  return !!self.generals && (self.generals.main.revealed || self.generals.deputy.revealed || self.combinedHp >= 4);
-}
-
 // A seat's hand, as the bot's view has it (its own face up).
 export function handCards(view: GameState, seat: Seat): CardInstance[] {
   return view.zones.find((z) => z.id === seat.hand.zoneId)?.cards ?? [];

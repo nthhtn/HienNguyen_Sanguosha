@@ -135,8 +135,17 @@ describe('Fire Zhuge Liang — Eight Arrays', () => {
     expect(askedAbout(shaAtHim({ 'seat-b:equip': [card('bp', 'black-pommel', 'spade', 6)] }))).toBeNull();
   });
 
-  it('not asked while his General is hidden (a compulsory skill)', () => {
-    expect(askedAbout(shaAtHim({}, false))).toBeNull();
+  it('hidden: asked whether to reveal him; Use reveals and the judgment counts, Don’t is a plain Slash', () => {
+    const asked = shaAtHim({}, false);
+    expect(askedAbout(asked)).toBe('eight-arrays');
+    expect(asked.seats[0].generals!.main.revealed).toBe(false);
+    const used = h.use(asked);
+    expect(used.seats[0].generals!.main.revealed).toBe(true);
+    expect(hp(used, 'seat-a')).toBe(4);
+    const declined = h.choose(asked, 'decline');
+    expect(declined.seats[0].generals!.main.revealed).toBe(false);
+    expect(askedAbout(declined)).toBeNull();
+    expect(declined.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a' });
   });
 });
 

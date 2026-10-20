@@ -30,7 +30,7 @@ describe('DecisionTimer', () => {
     TestBed.tick();
   };
   // Pass-and-play on a seed, seat-0 revealed, in its first Play phase: seat-0
-  // rests in its Start window first, and Continue closes it.
+  // rests in its Start window first, and Confirm closes it.
   const toPlayPhaseOf = (seed: number) => {
     game.startGame(2, seed);
     game.reveal(game.activeSeatId()!);
@@ -38,7 +38,7 @@ describe('DecisionTimer', () => {
       game.submit(game.legalActions()[0]);
       game.reveal(game.activeSeatId()!);
     }
-    game.submit(game.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
+    game.submit(game.legalActions().find((a) => a.kind === 'ConfirmRevealsAction')!);
     game.reveal(game.activeSeatId()!);
     TestBed.tick();
   };
@@ -80,7 +80,7 @@ describe('DecisionTimer', () => {
       expect(game.lastError()).toBeNull();
     });
 
-    it('times the Start window at 60 seconds across a reveal, and continues into Start at zero', () => {
+    it('times the Start window at 60 seconds, and confirms with nothing revealed at zero', () => {
       game.startGame(2, 1);
       game.reveal(game.activeSeatId()!);
       while (game.state()!.phase === 'GeneralSelection') {
@@ -92,14 +92,9 @@ describe('DecisionTimer', () => {
       expect(timer.totalSeconds()).toBe(DECISION_SECONDS.choice);
       advance(10);
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.choice - 10);
-      const reveal = game.legalActions().find((a) => a.kind === 'RevealGeneralAction')!;
-      game.submit(reveal);
-      game.reveal(game.activeSeatId()!);
-      TestBed.tick();
-      expect(game.state()!.turn.startWindow).toBe(true);
-      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.choice - 10);
       advance(DECISION_SECONDS.choice - 10);
       expect(game.state()!.turn.startWindow).toBeFalsy();
+      expect(game.state()!.seats[0].generals!.main.revealed || game.state()!.seats[0].generals!.deputy.revealed).toBe(false);
       expect(game.lastError()).toBeNull();
     });
 

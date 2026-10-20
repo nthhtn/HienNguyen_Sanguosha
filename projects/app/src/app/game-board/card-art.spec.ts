@@ -10,7 +10,7 @@ describe('CardArt', () => {
 
     const img = (fixture.nativeElement as HTMLElement).querySelector('img');
     expect(img).not.toBeNull();
-    expect(img!.getAttribute('src')).toBe('/card-art/generals/wei/cao-cao.jpg');
+    expect(img!.getAttribute('src')).toBe('/card-art/generals/cards/wei/cao-cao.jpg');
     expect(img!.getAttribute('alt')).toBe('Cao Cao');
   });
 

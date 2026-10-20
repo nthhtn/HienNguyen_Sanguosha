@@ -28,10 +28,18 @@ describe('Meng Huo — Culprit', () => {
     ]);
   });
 
-  it('a hidden Meng Huo is hit, and the source stays the user', () => {
-    const { state, asked } = passAll(barbarians({ generals: at('seat-a', 'meng-huo', 'filler-jiang-wei', false) }));
-    expect(asked).toEqual(['seat-c', 'seat-d', 'seat-a']);
-    expect(damages(state).every((d) => d.source?.kind === 'seat' && d.source.seatId === 'seat-b')).toBe(true);
+  it('a hidden Meng Huo is asked whether to reveal him; Use skips him, Don’t leaves him hit and the source stays the user', () => {
+    // His skill answers each damage to another seat, so the first ask comes at the first of them.
+    let start = barbarians({ generals: at('seat-a', 'meng-huo', 'filler-jiang-wei', false) });
+    while (start.pendingResponse && !start.pendingChoice) start = h.pass(start);
+    expect(askedAbout(start)).toBe('culprit');
+    expect(h.choose(start, 'use').seats[0].generals!.main.revealed).toBe(true);
+    // Declining every ask leaves him hidden, hit like anyone, with the damage still the user's.
+    let s = h.choose(start, 'decline');
+    while (s.pendingResponse || s.pendingChoice) s = s.pendingChoice ? h.choose(s, 'decline') : h.pass(s);
+    expect(s.seats[0].generals!.main.revealed).toBe(false);
+    expect(damages(s).length).toBeGreaterThan(0);
+    expect(damages(s).every((d) => d.source?.kind === 'seat' && d.source.seatId === 'seat-b')).toBe(true);
   });
 
   it('his own Barbarians keeps him as the source', () => {

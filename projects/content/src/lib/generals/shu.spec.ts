@@ -1,5 +1,6 @@
 import type { GameState } from 'engine';
-import { card, handIds, harness, hp, table, TableOptions } from './skills.testing';
+import { card, handIds, harness, hp, registry, table, TableOptions } from './skills.testing';
+import { shaLimit } from '../shared/queries';
 
 const { act, legal, play, pass, respond, convert, select, cancel } = harness();
 const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', revealed] });
@@ -15,18 +16,28 @@ describe('Zhang Fei — Roar', () => {
     expect(playTargets(s, 'seat-a', 's3')).toContain('seat-b');
   });
 
-  it('is off while Zhang Fei is hidden', () => {
-    const s = pass(play(table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha')] }, { generals: at('seat-a', 'zhang-fei', false) }), 's1', 'seat-b'));
-    expect(playTargets(s, 'seat-a', 's2')).toEqual([]);
+  it('is off while Zhang Fei is hidden: the Sha limit is the revealed one', () => {
+    const s = table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha')] }, { generals: at('seat-a', 'zhang-fei', false) });
+    expect(shaLimit(s, 'seat-a', registry)).toBe(1);
   });
 });
 
-describe('Zhang Fei — Roar (revealed on purpose)', () => {
-  it('Zhang Fei: revealing him in the Play Phase turns Roar on', () => {
-    let s = pass(play(table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha'), card('s3', 'sha')] }, { generals: at('seat-a', 'zhang-fei', false) }), 's1', 'seat-b'));
-    expect(playTargets(s, 'seat-a', 's2')).toEqual([]);
-    s = act(s, { kind: 'RevealGeneralAction', seatId: 'seat-a', slot: 'main' });
+describe('Zhang Fei — Roar (revealed on use)', () => {
+  const hidden = () => table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha'), card('s3', 'sha')] }, { generals: at('seat-a', 'zhang-fei', false) });
+
+  it('the first Sha does not reveal him; a second Sha is offered and playing it does', () => {
+    let s = pass(play(hidden(), 's1', 'seat-b'));
+    expect(s.seats[0].generals!.main.revealed).toBe(false);
     expect(playTargets(s, 'seat-a', 's2')).toContain('seat-b');
+    s = pass(play(s, 's2', 'seat-b'));
+    expect(s.seats[0].generals!.main.revealed).toBe(true);
+    expect(s.log.filter((e) => e.kind === 'GeneralRevealedEvent')).toEqual([{ kind: 'GeneralRevealedEvent', seatId: 'seat-a', slot: 'main', forAbilityId: 'roar' }]);
+    // Revealed, Roar is on without another reveal.
+    expect(playTargets(s, 'seat-a', 's3')).toContain('seat-b');
+  });
+
+  it('offers no reveal by itself: nothing but a play reveals him', () => {
+    expect(legal(hidden(), 'seat-a').some((a) => a.kind === 'ConfirmRevealsAction')).toBe(false);
   });
 });
 

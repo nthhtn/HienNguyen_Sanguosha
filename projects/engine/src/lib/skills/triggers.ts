@@ -14,8 +14,11 @@ import { heldSkills, skillsInPlay } from './generalSkills';
 export interface GatheredTrigger {
   trigger: SkillTrigger;
   owner?: TriggerOwner;
-  // A hidden General's skill: using it reveals the General first.
+  // A hidden General's skill: using it reveals the General first. Its trigger is
+  // asked, never applied on its own (revealFor).
   needsReveal?: boolean;
+  // A hidden General's compulsory skill: a before-trigger of it asks for the reveal first (rewriteEffect).
+  compulsory?: true;
 }
 
 export function gatherTriggeredSkills(
@@ -31,9 +34,9 @@ export function gatherTriggeredSkills(
 
   // Generals' skills in play, seat by seat (see skillsInPlay).
   for (const seat of state.seats) {
-    for (const { owner, skill, needsReveal } of skillsInPlay(state, seat.id, registry)) {
+    for (const { owner, skill, needsReveal } of skillsInPlay(state, seat.id, registry, true)) {
       for (const trigger of skill.triggers ?? []) {
-        if (trigger.point === point) candidates.push({ trigger, owner, ...(needsReveal ? { needsReveal } : {}) });
+        if (trigger.point === point) candidates.push({ trigger, owner, ...(needsReveal ? { needsReveal } : {}), ...(needsReveal && skill.compulsory ? { compulsory: true as const } : {}) });
       }
     }
   }

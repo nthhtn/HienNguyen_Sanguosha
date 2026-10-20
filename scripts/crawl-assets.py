@@ -98,6 +98,9 @@ def iter_data_items():
     for json_path in sorted(DATA_ROOT.rglob("*.json")):
         item_id = json_path.stem
         rel_dir = json_path.parent.relative_to(DATA_ROOT)
+        # General card scans live under generals/cards/<kingdom>, beside generals/skins.
+        if rel_dir.parts[:1] == ("generals",):
+            rel_dir = Path("generals", "cards", *rel_dir.parts[1:])
         with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
         source_url = data.get("source", {}).get("url")

@@ -49,6 +49,21 @@ describe('skills in play', () => {
     ]);
   });
 
+  it('with hidden compulsory skills asked for: they are in play, marked, in skill order', () => {
+    expect(skillsInPlay(table(false, false), 'a', registry, true).map((s) => [s.owner.skillId, s.needsReveal])).toEqual([
+      ['iron', true],
+      ['hint', true],
+      ['forge', true],
+    ]);
+  });
+
+  it('a hidden compulsory skill’s before-triggers are gathered, marked compulsory (rewriteEffect asks for them)', () => {
+    const before: SkillDefinition = { id: 'guard', compulsory: true, triggers: [{ point: 'before:X', condition: () => true, effect: () => [] }] };
+    const withGuard: ContentRegistry = { ...registry, generals: new Map([['smith', { id: 'smith', kingdom: 'Wei', maxHp: 4, skills: [before] }], ['seer', { id: 'seer', kingdom: 'Wei', maxHp: 3, skills: [] }]]) };
+    expect(gatherTriggeredSkills(table(false, true), withGuard, mode, 'before:X', {}).map((g) => [g.needsReveal, g.compulsory])).toEqual([[true, true]]);
+    expect(gatherTriggeredSkills(table(true, true), withGuard, mode, 'before:X', {}).map((g) => [g.needsReveal, g.compulsory])).toEqual([[undefined, undefined]]);
+  });
+
   it('a Lord skill is never in play, and an eliminated seat has none', () => {
     expect(skillsInPlay(table(true, true), 'a', registry).some((s) => s.skill.lord)).toBe(false);
     expect(skillsInPlay(table(true, true, true), 'a', registry)).toEqual([]);
@@ -60,8 +75,9 @@ describe('skills in play', () => {
   });
 
   it('gathers triggers from skills in play only, marking those that need a reveal', () => {
+    // A hidden General's compulsory skill is gathered too (to ask for its reveal), though its modifiers stay off.
     const hidden = gatherTriggeredSkills(table(false, true), registry, mode, 'after:X', {});
-    expect(hidden.map((g) => [g.owner, g.needsReveal])).toEqual([[owner('main', 'hint'), true]]);
+    expect(hidden.map((g) => [g.owner, g.needsReveal])).toEqual([[owner('main', 'iron'), true], [owner('main', 'hint'), true]]);
     const shown = gatherTriggeredSkills(table(true, true), registry, mode, 'after:X', {});
     expect(shown.map((g) => [g.owner, g.needsReveal])).toEqual([[owner('main', 'iron'), undefined], [owner('main', 'hint'), undefined]]);
   });

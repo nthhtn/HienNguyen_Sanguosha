@@ -18,7 +18,7 @@ import { GameOver } from './game-over';
 import { GeneralSelection } from './general-selection';
 import { PhaseIndicator } from './phase-indicator';
 import { DiscardPile } from './discard-pile';
-import { conversionLabel, forceOf, seatName } from '../labels';
+import { conversionLabel, forceOf, generalDisplayName, seatName } from '../labels';
 import { discardHistory } from './discard-history';
 import { ActionHistoryPanel } from './action-history-panel';
 import { actionHistory } from './action-history';
@@ -30,13 +30,14 @@ import { AskDialog, AskDialogData } from './ask-dialog';
 import { SelectionDialog, SelectionDialogData } from './selection-dialog';
 import { describeArrangement, describeAsk, describeSelection } from './ability-description';
 import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
-import { avatarReveals, avatarSkills, extraSkillsOf } from './avatar-skills';
+import { avatarSkills, extraSkillsOf } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
 import { DecisionBanner } from './decision-banner';
 import { DecisionDock } from './decision-dock';
 import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
 import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
+import { StartRevealDialog, StartRevealDialogData } from './start-reveal-dialog';
 import { judgmentDescription } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
@@ -108,7 +109,6 @@ import { TPipe } from '../i18n/t.pipe';
                       [stash]="zoneCards(seat.stash?.zoneId ?? '')"
                       [dying]="dyingOf(seat)"
                       [skills]="viewerSkills()"
-                      [reveals]="viewerReveals()"
                       (useSkill)="submit($event)"
                     />
                   </div>
@@ -218,6 +218,7 @@ export class GameBoard {
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
   private judgmentDialog: MatDialogRef<JudgmentDialog> | null = null;
+  private startRevealDialog: MatDialogRef<StartRevealDialog, Array<'main' | 'deputy'>> | null = null;
   private choiceDialog: MatDialogRef<unknown, Action> | null = null;
   private selectionDialog: MatDialogRef<SelectionDialog, Action> | null = null;
   // The selection whose dialog is showing, so each opens only once.
@@ -257,6 +258,14 @@ export class GameBoard {
     if (!visible || !pending || pending.respondingSeatId !== this.viewerSeatId()) return null;
     const legal = this.gameService.legalActions();
     return legal.some((a) => a.kind === 'PassAction' || a.kind === 'RespondAction') ? pending.id : null;
+  });
+
+  // The turn whose Start window the viewer owes a Confirm for, while the board is on screen and the
+  // engine offers it: the popup that picks which hidden Generals to reveal.
+  protected readonly startRevealDue = computed(() => {
+    const visible = this.visibleState();
+    if (!visible || visible.phase !== 'Start' || !visible.turn.startWindow || visible.turn.ownerSeatId !== this.viewerSeatId()) return null;
+    return this.gameService.legalActions().some((a) => a.kind === 'ConfirmRevealsAction') ? visible.turn.turnNumber : null;
   });
 
   // How many cards the viewer must discard now: non-zero only in their own
@@ -329,6 +338,10 @@ export class GameBoard {
       });
     });
     effect(() => {
+      const turn = this.startRevealDue();
+      untracked(() => (turn === null ? this.closeDialog(this.startRevealDialog) : this.openStartRevealDialog()));
+    });
+    effect(() => {
       const count = this.discardsDue();
       untracked(() => {
         // Timed out (or otherwise settled): the open dialog has nothing left to ask.
@@ -396,12 +409,6 @@ export class GameBoard {
   protected readonly viewerSkills = computed(() => {
     const seat = this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId());
     return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions(), extraSkillsOf(seat, this.gameService.registry), this.i18n.translator) : [];
-  });
-
-  // The viewer's Reveal buttons for their hidden Generals, on their avatar.
-  protected readonly viewerReveals = computed(() => {
-    const seat = this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId());
-    return seat ? avatarReveals(seat.generals, this.gameService.legalActions()) : [];
   });
 
   // The viewer's force colour, which their decision dialogs are themed in.
@@ -495,6 +502,29 @@ export class GameBoard {
       const legal = this.gameService.legalActions().filter((a): a is DiscardCardAction => a.kind === 'DiscardCardAction');
       const actions = (ids ?? []).map((id) => legal.find((a) => a.cardInstanceId === id)).filter((a): a is DiscardCardAction => !!a);
       if (actions.length > 0) this.gameService.submitAll(actions);
+    });
+  }
+
+  // The start of the viewer's turn: tick the hidden Generals to reveal, Confirm. The engine's one
+  // ConfirmRevealsAction template is submitted with the ticked slots.
+  private openStartRevealDialog(): void {
+    const seat = this.viewerSeat();
+    const template = this.gameService.legalActions().find((a): a is Extract<Action, { kind: 'ConfirmRevealsAction' }> => a.kind === 'ConfirmRevealsAction');
+    if (this.startRevealDialog || !seat?.generals || !template) return;
+    const tr = this.i18n.translator;
+    const generals = seat.generals;
+    const options = (['main', 'deputy'] as const)
+      .filter((slot) => !generals[slot].revealed)
+      .map((slot) => ({ slot, slotLabel: tr(slot === 'main' ? 'startReveal.main' : 'startReveal.deputy'), name: generalDisplayName(generals[slot].generalDefinitionId, tr) }));
+    const ref = openForceDialog<StartRevealDialog, StartRevealDialogData, Array<'main' | 'deputy'>>(this.dialog, StartRevealDialog, this.viewerForce(), {
+      data: { options },
+      width: 'min(92vw, 480px)',
+      disableClose: true,
+    });
+    this.startRevealDialog = ref;
+    ref.beforeClosed().subscribe((slots) => {
+      this.startRevealDialog = null;
+      if (slots) this.submit({ ...template, slots });
     });
   }
 

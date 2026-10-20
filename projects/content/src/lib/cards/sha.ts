@@ -1,6 +1,6 @@
 import type { CardDefinition, Effect, GameState, Target, UsedCard } from 'engine';
 import { livingSeatOrderFrom, usedCardKey } from 'engine';
-import { handOf, SHA_FLAGS, shaFlag, shaLimit } from '../shared/queries';
+import { handOf, SHA_FLAGS, shaFlag, shaLimit, shaPlayRevealOwner } from '../shared/queries';
 import { shaTargetIds } from '../shared/shaRules';
 import { activeAbilities } from '../shared/abilities';
 import { CardStep, cardStep } from '../shared/steps';
@@ -72,10 +72,10 @@ function shanWindow(step: CardStep): Effect {
 
 const isLiving = (state: GameState, seatId: string) => state.seats.some((s) => s.id === seatId && !s.eliminated);
 
-// Whether `seatId` may play a Sha now: under its limit, and not barred this
-// turn (a lost Heaven's Justice).
+// Whether `seatId` may play a Sha now: under its limit (a hidden General's Roar counts: playing the Sha
+// reveals it), and not barred this turn (a lost Heaven's Justice).
 const shaPlayable = (state: GameState, seatId: string, registry: Parameters<typeof shaLimit>[2]) =>
-  !shaFlag(state, seatId, SHA_FLAGS.none) && (state.turn.cardPlays?.['sha'] ?? 0) < shaLimit(state, seatId, registry);
+  !shaFlag(state, seatId, SHA_FLAGS.none) && (state.turn.cardPlays?.['sha'] ?? 0) < shaLimit(state, seatId, registry, true);
 
 // Sha: see the Sha-Equipment spec's steps. Played in the Play Phase it counts
 // toward the limit and spends Wine at once, whatever its steps bring.
@@ -106,13 +106,16 @@ function shaDefinition(id: string, name: string, nature?: 'fire' | 'thunder'): C
       const max = Math.min(1 + scorcher + extra, eligibleIds.length);
       return max > 1 ? { eligibleIds, min: 1, max } : null;
     },
-    play: (state, ctx) => {
+    play: (state, ctx, registry) => {
       if (ctx.respondingTo) return []; // played as an answer (a Duel, Barbarians, Coerce): the window decides what it does
       if (ctx.targets.length === 0) return []; // no target chosen: a no-op rather than a crash
+      // A Sha only a hidden General's compulsory skill allows reveals that General first (Roar).
+      const owner = ctx.free ? null : shaPlayRevealOwner(state, ctx.seatId, registry);
+      const reveal: Effect[] = owner ? [{ kind: 'RevealGeneralEffect', seatId: owner.seatId, slot: owner.slot, forAbilityId: owner.skillId }] : [];
       const boosted = !ctx.free && !!state.turn.flags?.[WINE_FLAG];
       const spend: Effect[] = boosted ? [{ kind: 'SetTurnFlagEffect', flag: WINE_FLAG, value: false }] : [];
       const picked = ctx.targets.slice(1).map((t) => t.seatId);
-      return [...spend, cardStep('sha-use', ctx.card, ctx.seatId, ctx.targets[0], { extra: boosted ? 1 : 0, ...(picked.length > 0 ? { picked } : {}) })];
+      return [...reveal, ...spend, cardStep('sha-use', ctx.card, ctx.seatId, ctx.targets[0], { extra: boosted ? 1 : 0, ...(picked.length > 0 ? { picked } : {}) })];
     },
     onStep: (state, step, registry) => {
       const data = shaData(step);

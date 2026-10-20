@@ -3,6 +3,8 @@
 Status: Approved (2026-10-16); bot rule amended after implementation review
 Date: 2026-10-16
 
+> **Superseded in part (2026-10-20):** The voluntary reveal (Play Phase button, Start window buttons) is superseded by `2026-10-20-reveal-conditions-design.md`; Brave Spirit stands.
+
 ## Purpose
 
 Fix three play-test findings:

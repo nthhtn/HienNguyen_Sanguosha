@@ -151,9 +151,8 @@ describe('actionLabel', () => {
     );
   });
 
-  it('labels EndPhaseAction Continue in the Start window', () => {
-    const state = { ...stateWithZones(), phase: 'Start' as const, turn: { ...stateWithZones().turn, startWindow: true } };
-    expect(actionLabel({ kind: 'EndPhaseAction', seatId: 'seat-0' }, state, registryWithSha())).toBe('Continue');
+  it('labels ConfirmRevealsAction Confirm', () => {
+    expect(actionLabel({ kind: 'ConfirmRevealsAction', seatId: 'seat-0', slots: [] }, stateWithZones(), registryWithSha())).toBe('Confirm');
   });
 
   it('labels DiscardCardAction with the card name', () => {

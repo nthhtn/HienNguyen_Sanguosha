@@ -96,7 +96,7 @@ describe('GameService', () => {
     expect(service.state()!.phase).toBe('Start');
     expect(service.state()!.turn.startWindow).toBe(true);
     expect(service.activeSeatId()).toBe('seat-0');
-    service.submit(service.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
+    service.submit(service.legalActions().find((a) => a.kind === 'ConfirmRevealsAction')!);
     const state = service.state()!;
     expect(state.phase).toBe('Play');
     expect(state.seats.every((s) => s.generals !== null)).toBe(true);

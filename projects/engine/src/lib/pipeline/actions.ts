@@ -5,7 +5,8 @@ export type Action =
   | { kind: 'DrawCardsAction'; seatId: string; count: number }
   // `pickTargets`: on an offered template, pick the targets, then submit with them.
   | { kind: 'PlayCardAction'; seatId: string; cardInstanceId: string; targets: Target[]; pickTargets?: TargetPick }
-  | { kind: 'RevealGeneralAction'; seatId: string; slot: 'main' | 'deputy' }
+  // Closes the Start window: reveals the picked hidden Generals, then enters Start. Offered as a template with `slots` free (empty: reveal none).
+  | { kind: 'ConfirmRevealsAction'; seatId: string; slots: Array<'main' | 'deputy'> }
   | { kind: 'ChooseGeneralsAction'; seatId: string; mainId: string; deputyId: string }
   | { kind: 'RespondAction'; seatId: string; pendingResponseId: string; cardInstanceId: string }
   | { kind: 'PassAction'; seatId: string; pendingResponseId: string }
@@ -30,7 +31,7 @@ export type Action =
 export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'DrawCardsAction',
   'PlayCardAction',
-  'RevealGeneralAction',
+  'ConfirmRevealsAction',
   'ChooseGeneralsAction',
   'RespondAction',
   'PassAction',

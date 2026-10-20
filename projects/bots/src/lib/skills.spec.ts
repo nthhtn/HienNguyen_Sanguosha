@@ -14,6 +14,12 @@ describe('may-skills the bot always uses', () => {
   });
 });
 
+describe('a compulsory skill’s ask', () => {
+  it('is only about revealing: the bot says Use', () => {
+    expect(picked(decide(asking(table(), 'armed-consorts')))).toBe('use');
+  });
+});
+
 describe('Unyielding', () => {
   it('only against a non-ally; the target discards 2 with more than 3 hand cards, else takes the damage above 1 HP', () => {
     expect(picked(decide(asking(table(), 'unyielding', 'seat-b')))).toBe('use');
@@ -165,9 +171,9 @@ describe('conversions', () => {
     expect(decide(guanYu([card('p', 'peach', 'heart')])).kind).toBe('EndPhaseAction');
   });
 
-  it('a hidden General is revealed first in the Play Phase, whatever the HP', () => {
+  it('a hidden General is revealed by using its conversion, whatever the HP', () => {
     const hidden = table({ 'seat-a:hand': [card('h', 'shan', 'heart')] }, { generals: { 'seat-a': ['guan-yu', 'filler-meng-huo', false] }, kingdoms: { 'seat-a': 'Shu' }, hp: { 'seat-a': 3 } });
-    expect(decide(hidden)).toMatchObject({ kind: 'RevealGeneralAction', slot: 'main' });
+    expect(decide(hidden)).toMatchObject({ kind: 'UseConversionAction', via: { conversionId: 'fighting-saint' } });
   });
 });
 

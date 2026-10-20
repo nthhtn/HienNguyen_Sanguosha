@@ -33,7 +33,7 @@ function isCardAction(action: Action): boolean {
     action.kind === 'CancelSelectionAction' ||
     action.kind === 'UseConversionAction' ||
     action.kind === 'UseSkillAction' ||
-    action.kind === 'RevealGeneralAction' ||
+    action.kind === 'ConfirmRevealsAction' ||
     action.kind === 'ArrangeCardsAction'
   );
 }

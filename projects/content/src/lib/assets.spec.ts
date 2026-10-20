@@ -2,7 +2,7 @@ import { CARD_BACK_ART_URL, cardArtUrl, generalDeathVoiceUrl, HIDDEN_GENERAL_ART
 
 describe('cardArtUrl', () => {
   it('returns the /card-art/ URL for a crawled id', () => {
-    expect(cardArtUrl('cao-cao')).toBe('/card-art/generals/wei/cao-cao.jpg');
+    expect(cardArtUrl('cao-cao')).toBe('/card-art/generals/cards/wei/cao-cao.jpg');
   });
 
   it('serves Tool art from the tool folder', () => {
@@ -26,13 +26,13 @@ describe('CARD_BACK_ART_URL', () => {
 
 describe('HIDDEN_GENERAL_ART_URL', () => {
   it('points at the General card back that ships with the content assets', () => {
-    expect(HIDDEN_GENERAL_ART_URL).toBe('/card-art/generals/unnamed.jpg');
+    expect(HIDDEN_GENERAL_ART_URL).toBe('/card-art/generals/hidden.jpg');
   });
 });
 
 describe('hpIconUrls', () => {
-  const icon = (n: number) => `/card-art/misc/hp${n}.png`;
-  it('shows one icon per HP, from hp1 up to the current HP', () => {
+  const icon = (n: number) => `/card-art/misc/hp/${n}.png`;
+  it('shows one icon per HP, from 1 up to the current HP', () => {
     expect(hpIconUrls(1)).toEqual([icon(1)]);
     expect(hpIconUrls(2)).toEqual([icon(1), icon(2)]);
     expect(hpIconUrls(4)).toEqual([1, 2, 3, 4].map(icon));

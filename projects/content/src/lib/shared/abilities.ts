@@ -18,6 +18,12 @@ export function activeAbilities(state: GameState, seatId: string, registry: Cont
   ];
 }
 
+// The hidden Generals' compulsory skills of a seat (not active: their modifiers are off until
+// the General is revealed). Reveal-on-use asks which of them a play depends on.
+export function hiddenCompulsorySkills(state: GameState, seatId: string, registry: ContentRegistry) {
+  return skillsInPlay(state, seatId, registry, true).filter((s) => s.needsReveal && s.skill.compulsory);
+}
+
 // Whether `damage` is a Sha's own: a Sha (of any nature) dealt it, and it is not
 // a hit passed along a chain. A propagated hit is no Sha damage: skills and
 // weapons that key on a Sha's damage (Black Pommel, Intense Edge, Lament) skip it.

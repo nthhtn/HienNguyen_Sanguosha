@@ -88,12 +88,12 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     return (handZone?.cards ?? []).map((card) => ({ kind: 'DiscardCardAction' as const, seatId, cardInstanceId: card.instanceId }));
   }
 
-  // The Start window: reveal a hidden General, or continue into Start.
-  if (state.phase === 'Start' && state.turn.startWindow) return [{ kind: 'EndPhaseAction', seatId }, ...hiddenGeneralReveals(state, seatId)];
+  // The Start window: confirm which hidden Generals to reveal (none is allowed), then Start begins.
+  if (state.phase === 'Start' && state.turn.startWindow) return [{ kind: 'ConfirmRevealsAction', seatId, slots: [] }];
 
   // Besides the Start window and a Discard over the limit (above), only the Play phase waits for the turn owner; every other phase passes on its own.
   if (state.phase !== 'Play') return [];
-  const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }, ...hiddenGeneralReveals(state, seatId)];
+  const actions: Action[] = [{ kind: 'EndPhaseAction', seatId }];
   const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
   for (const card of handZone?.cards ?? []) {
     // Several targets allowed now: one template carrying the pick, and the
@@ -323,11 +323,9 @@ export function conversionActions(state: GameState, seatId: string, registry: Co
     });
 }
 
-/** One Reveal per hidden General of the seat; none when it has no Generals or all are face up. */
-export function hiddenGeneralReveals(state: GameState, seatId: string): Action[] {
+/** The hidden Generals of the seat, Main first: what the Start window offers to reveal. */
+export function hiddenSlots(state: GameState, seatId: string): Array<'main' | 'deputy'> {
   const generals = state.seats.find((s) => s.id === seatId)?.generals;
   if (!generals) return [];
-  return (['main', 'deputy'] as const)
-    .filter((slot) => generals[slot].revealed === false)
-    .map((slot) => ({ kind: 'RevealGeneralAction' as const, seatId, slot }));
+  return (['main', 'deputy'] as const).filter((slot) => generals[slot].revealed === false);
 }
