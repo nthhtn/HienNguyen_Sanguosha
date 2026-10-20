@@ -102,7 +102,11 @@ function drain(state: GameState, ctx: EngineContext, budget: StepBudget): Resolv
     current = withWinCheck(step.state, ctx);
     events.push(...step.events);
   }
-  if (current.result) current = withQueue(sweepProcessing(current), []);
+  if (current.result) {
+    // The game is over: no judgment is on show any more (its card was just swept).
+    const { judgmentView: _over, ...ended } = withQueue(sweepProcessing(current), []);
+    current = ended;
+  }
   return { state: current, events };
 }
 

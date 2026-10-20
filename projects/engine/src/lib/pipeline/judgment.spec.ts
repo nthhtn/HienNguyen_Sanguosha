@@ -396,4 +396,12 @@ describe('judgment notice', () => {
     expect(state.log.filter((e) => e.kind === 'PhaseSkippedEvent')).toEqual([{ kind: 'PhaseSkippedEvent', seatId: 'seat-a', phase: 'Play' }]);
     expect(state.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ source: 'timeout' });
   });
+
+  it('a game that ends mid-judgment leaves no view behind', () => {
+    const endsOnJudgment = { ...ctx, mode: { ...mode, checkWinCondition: (state: GameState) => (state.judgmentView ? { winners: [] } : null) } as GameModeDefinition };
+    const ended = advanceToDecision(withRule(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } })), endsOnJudgment).state;
+    expect(ended.result).not.toBeNull();
+    expect(ended).not.toHaveProperty('judgmentView');
+    expect(idsIn(ended, 'processing')).toEqual([]);
+  });
 });
