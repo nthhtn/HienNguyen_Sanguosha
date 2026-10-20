@@ -4,6 +4,7 @@ import { createRng } from '../rng/rng';
 import { CardInstance, GameState, GeneralOwner, Judgment, Phase, QueueItem } from '../domain/types';
 import { CardDefinition, ContentRegistry, GameModeDefinition, SkillDefinition } from '../registry/types';
 import { skipFlagOf } from '../rules/phaseSequence';
+import { decisionPending } from '../rules/activeSeat';
 import { usedCardOf } from '../domain/usedCard';
 import { EngineEvent } from './events';
 
@@ -275,5 +276,60 @@ describe('DelayedCleanupEffect', () => {
     const b1 = card('b1', 'beacon');
     const next = settle(table({ queue: [{ kind: 'DelayedCleanupEffect', tool: usedCardOf(b1), ownerSeatId: 'seat-a' }], cards: { 'seat-a:judgment': [b1] } }));
     expect(idsIn(next, 'seat-a:hand')).toEqual(['b1']);
+  });
+});
+
+describe('judgment notice', () => {
+  const reader = { kind: 'card' as const, card: usedCardOf(card('o1', 'omen')) };
+  const judge: Effect = { kind: 'JudgeEffect', seatId: 'seat-a', reader };
+  const withRule = (s: GameState): GameState => ({ ...s, rules: { judgmentNotice: true } });
+  // A seat-a skill that swaps in the first card of its hand, each time it is asked.
+  const changer: SkillDefinition = {
+    id: 'changer',
+    triggers: [{
+      point: 'before:JudgmentShownEffect',
+      condition: (state) => idsIn(state, 'seat-a:hand').length > 0,
+      effect: (state, subject, o) => [{ kind: 'ReplaceJudgmentEffect', judgment: (subject as Shown).judgment, withCardInstanceId: idsIn(state, 'seat-a:hand')[0], owner: o!, abilityId: 'changer' }],
+    }],
+  };
+
+  it('rule on: the card turned up is a settled view and nothing is resolved', () => {
+    const heart = card('j1', 'x', 'heart', 3);
+    const next = settle(withRule(table({ queue: [judge], cards: { drawPile: [heart] } })));
+    expect(next.judgmentView).toEqual({ seatId: 'seat-a', reader, card: heart, changes: [], settled: true });
+    expect(decisionPending(next)).toBe(true);
+    expect(next.turn.flags).toBeUndefined();
+    expect(idsIn(next, 'processing')).toEqual(['j1']);
+  });
+
+  it('rule on: a club that would skip Play is not resolved until acknowledged', () => {
+    const next = settle(withRule(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } })));
+    expect(next.turn.flags).toBeUndefined();
+    expect(next.judgmentView?.settled).toBe(true);
+  });
+
+  it('rule on: two replacements are listed in order and the card is the latest', () => {
+    const c = ctxWith([changer]);
+    const next = settleWith(
+      withRule(table({ queue: [judge], revealed: true, cards: { drawPile: [card('j1', 'x', 'club', 3)], 'seat-a:hand': [card('r1', 'x', 'spade', 4), card('r2', 'x', 'heart', 5)] } })),
+      c
+    );
+    const view = next.judgmentView!;
+    expect(view.settled).toBe(true);
+    expect(view.changes.map((ch) => ch.abilityId)).toEqual(['changer', 'changer']);
+    expect(view.changes.map((ch) => [ch.card.instanceId, ch.replaced.instanceId])).toEqual([['r1', 'j1'], ['r2', 'r1']]);
+    expect(view.card.instanceId).toBe('r2');
+  });
+
+  it('rule off: no view is ever created and the judgment resolves as before', () => {
+    const next = settle(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } }));
+    expect(next).not.toHaveProperty('judgmentView');
+    expect(next.turn.flags).toEqual({ skipPlay: true });
+  });
+
+  it('rule on: with no card left to judge there is no view', () => {
+    const next = settle(withRule(table({ queue: [{ ...judge, otherwise: [{ kind: 'SetTurnFlagEffect', flag: 'nothingJudged' }] } as Effect] })));
+    expect(next).not.toHaveProperty('judgmentView');
+    expect(next.turn.flags).toEqual({ nothingJudged: true });
   });
 });

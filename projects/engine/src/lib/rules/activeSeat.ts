@@ -20,7 +20,7 @@ export function getActiveSeatId(state: GameState): string | null {
 }
 
 // Whether a seat owes a decision that pauses the queue: a response, a choice,
-// a selection or an arrangement.
+// a selection, an arrangement or a judgment waiting to be acknowledged.
 export function decisionPending(state: GameState): boolean {
-  return !!state.pendingResponse || !!state.pendingChoice || !!state.pendingSelection || !!state.pendingArrangement;
+  return !!state.judgmentView?.settled || !!state.pendingResponse || !!state.pendingChoice || !!state.pendingSelection || !!state.pendingArrangement;
 }

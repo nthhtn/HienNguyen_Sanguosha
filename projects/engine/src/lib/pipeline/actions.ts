@@ -22,7 +22,10 @@ export type Action =
   | { kind: 'UseSkillAction'; seatId: string; owner: AbilityOwner }
   // Fills the pending arrangement: `top` (top card first) and `bottom` (in the
   // order they go under the pile). Offered as a template with both empty.
-  | { kind: 'ArrangeCardsAction'; seatId: string; arrangementId: string; top: string[]; bottom: string[] };
+  | { kind: 'ArrangeCardsAction'; seatId: string; arrangementId: string; top: string[]; bottom: string[] }
+  // Closes the settled judgment (judgmentNotice rule). `seatId` is the acting seat; `by` the seat
+  // whose player pressed Close; `timeout` when the notice clock ran out.
+  | { kind: 'AcknowledgeJudgmentAction'; seatId: string; by?: string; timeout?: true };
 
 export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'DrawCardsAction',
@@ -39,6 +42,7 @@ export const ACTION_KINDS: ReadonlySet<Action['kind']> = new Set([
   'UseConversionAction',
   'UseSkillAction',
   'ArrangeCardsAction',
+  'AcknowledgeJudgmentAction',
 ]);
 
 export function isAction(value: { kind: string }): value is Action {
