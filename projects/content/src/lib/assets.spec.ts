@@ -26,7 +26,7 @@ describe('CARD_BACK_ART_URL', () => {
 
 describe('HIDDEN_GENERAL_ART_URL', () => {
   it('points at the General card back that ships with the content assets', () => {
-    expect(HIDDEN_GENERAL_ART_URL).toBe('/card-art/generals/unnamed.jpg');
+    expect(HIDDEN_GENERAL_ART_URL).toBe('/card-art/generals/hidden.jpg');
   });
 });
 

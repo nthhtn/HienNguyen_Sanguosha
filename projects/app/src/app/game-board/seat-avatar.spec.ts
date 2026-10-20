@@ -34,7 +34,7 @@ describe('SeatAvatar', () => {
       main: { generalDefinitionId: 'hidden', revealed: false },
       deputy: { generalDefinitionId: 'zhao-yun', revealed: true },
     });
-    expect(src(half(el, 'main'))).toBe('/card-art/generals/unnamed.jpg');
+    expect(src(half(el, 'main'))).toBe('/card-art/generals/hidden.jpg');
     expect(half(el, 'main').querySelector('.caption')!.textContent!.trim()).toBe('Hidden');
     expect(src(half(el, 'deputy'))).toBe('/card-art/generals/skins/shu/zhaoyun.png');
     expect(el.textContent).not.toContain('hidden');

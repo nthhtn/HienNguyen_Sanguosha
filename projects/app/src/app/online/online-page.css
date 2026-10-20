@@ -6,7 +6,7 @@
   place-items: start center;
   padding: 24px 16px;
   box-sizing: border-box;
-  background: var(--mat-sys-surface-container-low);
+  background: var(--mat-sys-surface-container-low) url('/card-art/misc/landing.jpg') center / cover no-repeat;
 }
 .online-card {
   width: min(100%, 640px);

@@ -6,7 +6,7 @@
   place-items: center;
   padding: 24px 16px;
   box-sizing: border-box;
-  background: var(--mat-sys-surface-container-low);
+  background: var(--mat-sys-surface-container-low) url('/card-art/misc/landing.jpg') center / cover no-repeat;
 }
 .auth-card {
   width: min(100%, 420px);

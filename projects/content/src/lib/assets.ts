@@ -44,7 +44,7 @@ export const CARD_BACK_ART_URL = '/card-art/cards/back.jpg';
 
 // The face-down General card, shown for a General another seat hasn't revealed.
 // Not in the manifest (it isn't a crawled item), but it ships with the assets.
-export const HIDDEN_GENERAL_ART_URL = '/card-art/generals/unnamed.jpg';
+export const HIDDEN_GENERAL_ART_URL = '/card-art/generals/hidden.jpg';
 
 // The highest HP with its own icon (misc/hp1.png … hp4.png).
 const MAX_HP_ICONS = 4;
