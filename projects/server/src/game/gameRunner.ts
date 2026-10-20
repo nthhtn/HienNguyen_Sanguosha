@@ -262,7 +262,7 @@ export class GameRunner {
     }
     const decision = describeDecision(this.state, seatId, getLegalActions(this.state, seatId, this.ctx.registry), String(this.seq));
     const generation = this.generation;
-    if (this.isBotPlayed(seatId)) {
+    if (this.isBotPlayed(seatId) && !this.closedByClock()) {
       // A human's Play phase clock waits while a bot responds.
       this.clock = switchClock(this.clock, null, now);
       if (this.paused) return;
@@ -277,6 +277,17 @@ export class GameRunner {
     this.cancelTimer = this.host.schedule(Math.max(0, running.endsAt - now), () => this.timeout(generation));
   }
 
+  // Whether a person is playing some seat: a living human seat that no bot is playing.
+  private personControlled(): boolean {
+    return this.record.seats.some((s) => s.kind === 'human' && !this.isBotPlayed(s.seatId) && !this.state.seats.find((x) => x.id === s.seatId)?.eliminated);
+  }
+
+  // A settled judgment while a person is playing is closed by the clock (or a person), never by a
+  // bot, even when the seat that acts on it is one a bot is playing.
+  private closedByClock(): boolean {
+    return !!this.state.judgmentView?.settled && this.personControlled();
+  }
+
   private cancel(): void {
     this.generation += 1;
     this.cancelTimer?.();
@@ -287,7 +298,7 @@ export class GameRunner {
   private async botMove(generation: number): Promise<void> {
     if (this.stopped || generation !== this.generation) return;
     const seatId = getActiveSeatId(this.state);
-    if (!seatId || !this.isBotPlayed(seatId)) return this.reschedule();
+    if (!seatId || !this.isBotPlayed(seatId) || this.closedByClock()) return this.reschedule();
     let action: Action;
     let memory: BotTurnMemory;
     let steps: GameState[];
@@ -308,7 +319,7 @@ export class GameRunner {
   private async timeout(generation: number): Promise<void> {
     if (this.stopped || generation !== this.generation) return;
     const seatId = getActiveSeatId(this.state);
-    if (!seatId || this.isBotPlayed(seatId)) return this.reschedule();
+    if (!seatId || (this.isBotPlayed(seatId) && !this.closedByClock())) return this.reschedule();
     this.clock = expireClock(this.clock);
     let actions: Action[];
     let steps: GameState[];
@@ -324,6 +335,8 @@ export class GameRunner {
     // goes to the bot before the next decision is scheduled, so that decision
     // is already the bot's.
     const stored = () => {
+      // A judgment closing itself asks nothing of the player: it is not a missed decision.
+      if (actions.some((a) => a.kind === 'AcknowledgeJudgmentAction')) return;
       const inARow = playerId !== null && this.away.has(playerId) ? (this.timeouts.get(seatId) ?? 0) + 1 : 0;
       this.timeouts.set(seatId, inARow);
       takeOver = !this.options.solo && inARow >= TAKEOVER_TIMEOUTS;
