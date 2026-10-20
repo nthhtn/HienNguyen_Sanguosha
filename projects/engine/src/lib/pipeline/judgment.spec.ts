@@ -332,4 +332,40 @@ describe('judgment notice', () => {
     expect(next).not.toHaveProperty('judgmentView');
     expect(next.turn.flags).toEqual({ nothingJudged: true });
   });
+
+  describe('acknowledging', () => {
+    const settledClub = () => settle(withRule(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3), card('j2', 'x', 'spade', 9)] } })));
+
+    it('resolves the judgment: the reader acts, the view is cleared, the event is logged', () => {
+      const next = resolve(settledClub(), { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a', by: 'seat-b' }, ctx).state;
+      expect(next.turn.flags).toEqual({ skipPlay: true });
+      expect(next).not.toHaveProperty('judgmentView');
+      expect(idsIn(next, 'discardPile')).toEqual(['j1']);
+      expect(next.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-a', by: 'seat-b', source: 'close' });
+      // The acknowledgement comes before what the reader does.
+      expect(next.log.map((e) => e.kind)).toEqual(['JudgmentEvent', 'JudgmentAcknowledgedEvent', 'CardMovedEvent']);
+    });
+
+    it('a timeout acknowledgement is logged as a timeout without by', () => {
+      const next = resolve(settledClub(), { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a', timeout: true }, ctx).state;
+      const event = next.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent');
+      expect(event).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-a', source: 'timeout' });
+      expect(event).not.toHaveProperty('by');
+    });
+
+    it('throws when nothing is settled, when the view is unsettled, and on a second acknowledgement', () => {
+      const ack = { kind: 'AcknowledgeJudgmentAction' as const, seatId: 'seat-a' };
+      expect(() => resolve(table(), ack, ctx)).toThrow('No settled judgment to acknowledge');
+      const unsettled: GameState = { ...table(), judgmentView: { seatId: 'seat-a', reader, card: card('j1'), changes: [], settled: false } };
+      expect(() => resolve(unsettled, ack, ctx)).toThrow('No settled judgment to acknowledge');
+      const once = resolve(settledClub(), ack, ctx).state;
+      expect(() => resolve(once, ack, ctx)).toThrow('No settled judgment to acknowledge');
+    });
+
+    it('a second judgment after the first is closed gets a fresh view', () => {
+      const closed = resolve(withRule(settledClub()), { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a' }, ctx).state;
+      const second = settle({ ...closed, resolutionQueue: [judge] });
+      expect(second.judgmentView).toEqual({ seatId: 'seat-a', reader, card: card('j2', 'x', 'spade', 9), changes: [], settled: true });
+    });
+  });
 });

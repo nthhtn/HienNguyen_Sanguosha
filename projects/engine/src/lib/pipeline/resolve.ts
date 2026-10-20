@@ -759,6 +759,15 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       return { state: queueFront(cleared, selection.onCancel), events: [] };
     }
 
+    case 'AcknowledgeJudgmentAction': {
+      const view = state.judgmentView;
+      if (!view?.settled) throw new Error('No settled judgment to acknowledge');
+      const { judgmentView: _closed, ...rest } = state;
+      const acknowledged: EngineEvent = { kind: 'JudgmentAcknowledgedEvent', seatId: action.seatId, ...(action.by ? { by: action.by } : {}), source: action.timeout ? 'timeout' : 'close' };
+      const judgment = { seatId: view.seatId, reader: view.reader, card: view.card, ...(view.data ? { data: view.data } : {}) };
+      return { state: queueFront({ ...rest, log: [...rest.log, acknowledged] }, [{ kind: 'JudgmentResolveEffect', judgment }]), events: [acknowledged] };
+    }
+
     default:
       throw new Error(`Action kind not yet handled by resolve(): ${(action as Action).kind}`);
   }
