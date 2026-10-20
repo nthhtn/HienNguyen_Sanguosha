@@ -126,7 +126,7 @@ import { TPipe } from '../i18n/t.pipe';
                   </div>
                   <app-action-list
                     class="actions"
-                    [actions]="gameService.legalActions()"
+                    [actions]="boardActions()"
                     [state]="visible"
                     [registry]="gameService.registry"
                     (actionChosen)="submit($event)"
@@ -377,6 +377,9 @@ export class GameBoard {
     const state = this.gameService.publicState();
     return state ? judgmentDescription(state, this.gameService.registry, this.i18n.translator) : null;
   });
+
+  // What the board's action list offers: the acknowledgement of a judgment is the popup's, not a button on the board.
+  protected readonly boardActions = computed(() => this.gameService.legalActions().filter((a) => a.kind !== 'AcknowledgeJudgmentAction'));
 
   protected readonly viewerSeatId = computed(() => this.gameService.humanSeatId() ?? this.activeSeatId());
 

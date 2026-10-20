@@ -761,6 +761,14 @@ describe('GameBoard: the judgment popup', () => {
     expect(popups()).toHaveLength(0);
   });
 
+  it('the action list of the board does not offer the close, which belongs to the popup', async () => {
+    const fixture = start('vs-bots');
+    await settle(fixture);
+    const list = (fixture.nativeElement as HTMLElement).querySelector('app-action-list')!;
+    expect(gameService.legalActions().some((a) => a.kind === 'AcknowledgeJudgmentAction')).toBe(true);
+    expect([...list.querySelectorAll('button')].map((b) => b.textContent!.trim())).not.toContain('Close');
+  });
+
   it('Close in the popup acknowledges the judgment', async () => {
     const fixture = start('vs-bots');
     await settle(fixture);
