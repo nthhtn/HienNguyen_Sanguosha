@@ -82,6 +82,26 @@ describe('checkInvariants', () => {
   });
 });
 
+describe('judgment notice invariants', () => {
+  const view = (settled: boolean): GameState['judgmentView'] => ({
+    seatId: 'seat-a', reader: { kind: 'card', card: {} as never }, card: card('j1'), changes: [], settled,
+  });
+
+  it('allows a settled judgment that a living seat can acknowledge', () => {
+    expect(checkInvariants(baseState({ judgmentView: view(true) }))).toEqual([]);
+  });
+
+  it('flags a settled judgment with no seat able to acknowledge it', () => {
+    const state = baseState({ judgmentView: view(true) });
+    const nobody = { ...state, seats: state.seats.map((s) => ({ ...s, eliminated: true })) };
+    expect(checkInvariants(nobody)).toContain('A settled judgment has no seat able to acknowledge it');
+  });
+
+  it('flags a finished game that still shows a judgment', () => {
+    expect(checkInvariants(baseState({ judgmentView: view(false), result: { endedAt: 1, winningKingdom: 'Wei', winningSeatIds: ['seat-a'], losingSeatIds: [] } as never }))).toContain('A finished game still has a judgment view');
+  });
+});
+
 describe('general-selection invariants', () => {
   const secondSeat = (generals: GameState['seats'][number]['generals']): GameState['seats'][number] => ({
     id: 'seat-b', index: 1, kingdom: 'Wei', generals,

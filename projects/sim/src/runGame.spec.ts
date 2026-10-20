@@ -46,6 +46,19 @@ describe('runGame with a policy per seat', () => {
   });
 });
 
+describe('runGame with the judgment notice', () => {
+  const registry = buildContentRegistry();
+
+  it.each<BotKind>(['random', 'rule-based'])('%s bots finish games with judgmentNotice on, over 10 seeds, leaving no judgment view', (kind) => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const initialState = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], seed, { judgmentNotice: true });
+      const { finalState } = runGame(initialState, { registry, mode: kingdomWarMode }, seed, 20000, kind);
+      expect({ seed, finished: finalState.result !== null }).toEqual({ seed, finished: true });
+      expect(finalState).not.toHaveProperty('judgmentView');
+    }
+  });
+});
+
 describe('parseBotKind', () => {
   it('accepts every bot kind', () => {
     expect(parseBotKind('random')).toBe('random');

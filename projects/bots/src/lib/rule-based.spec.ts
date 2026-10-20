@@ -88,6 +88,11 @@ describe('ruleBasedPolicy', () => {
     expect(ruleBasedPolicy.id).toBe('rule-based');
   });
 
+  it('with only an acknowledgement of a settled judgment offered, takes it', () => {
+    const acknowledge: Action = { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' };
+    expect(decide(view(), [acknowledge]).action).toBe(acknowledge);
+  });
+
   it('throws when there is no legal action', () => {
     expect(() => decide(view(), [])).toThrow(/no legal action/);
   });
