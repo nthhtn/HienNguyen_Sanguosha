@@ -36,6 +36,8 @@ import { DecisionBanner } from './decision-banner';
 import { DecisionDock } from './decision-dock';
 import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
+import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
+import { judgmentDescription } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
@@ -215,6 +217,7 @@ export class GameBoard {
   private readonly injector = inject(Injector);
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
+  private judgmentDialog: MatDialogRef<JudgmentDialog> | null = null;
   private choiceDialog: MatDialogRef<unknown, Action> | null = null;
   private selectionDialog: MatDialogRef<SelectionDialog, Action> | null = null;
   // The selection whose dialog is showing, so each opens only once.
@@ -283,6 +286,11 @@ export class GameBoard {
         if (next !== locale) this.rebuildMinimizedDecision();
         locale = next;
       });
+    });
+    // A judgment on show: its popup is open while the judgment is, whatever the gate or the viewer's seat.
+    effect(() => {
+      const on = this.judgmentView() !== null;
+      untracked(() => (on ? this.openJudgmentDialog() : this.closeDialog(this.judgmentDialog)));
     });
     // Event sounds (soundsFor) for whatever the log gained since the last look.
     // The first look, and a new game's shorter log, only set the baseline, so
@@ -363,6 +371,13 @@ export class GameBoard {
   protected readonly lastError = this.gameService.lastError;
 
   // Whose chair the table is seen from: the human in vs-bots, else the revealed active seat.
+  // The judgment on show, read off the table's public view: it is for every seat, so the pass-and-play
+  // gate does not hide it. Null when there is none.
+  private readonly judgmentView = computed(() => {
+    const state = this.gameService.publicState();
+    return state ? judgmentDescription(state, this.gameService.registry, this.i18n.translator) : null;
+  });
+
   protected readonly viewerSeatId = computed(() => this.gameService.humanSeatId() ?? this.activeSeatId());
 
   // The revealed seat's own hand, shown full-size below the table.
@@ -480,6 +495,21 @@ export class GameBoard {
     });
   }
 
+  // Opens the judgment popup. It reads the description live, so a replacement or a language switch
+  // updates it in place; Close is the viewer's, whoever holds the device.
+  private openJudgmentDialog(): void {
+    const description = this.judgmentView();
+    if (this.judgmentDialog || !description) return;
+    const data: JudgmentDialogData = {
+      description: this.judgmentView,
+      canClose: this.gameService.canCloseJudgment,
+      close: () => this.gameService.closeJudgment(this.gameService.humanSeatId() ?? this.gameService.revealedSeatId()),
+    };
+    const ref = openForceDialog<JudgmentDialog, JudgmentDialogData>(this.dialog, JudgmentDialog, description.force, { data, width: 'min(92vw, 560px)', disableClose: true });
+    this.judgmentDialog = ref;
+    ref.beforeClosed().subscribe(() => (this.judgmentDialog = null));
+  }
+
   // Closes the minimized decision dialog and opens its pending decision again in the current
   // language, minimized again once it has opened.
   private rebuildMinimizedDecision(): void {
@@ -488,6 +518,7 @@ export class GameBoard {
     old.afterClosed().subscribe(() => {
       const count = this.discardsDue();
       if (count > 0) this.openDiscardDialog(count);
+      if (this.judgmentView()) this.openJudgmentDialog();
       for (const [id, open] of [
         [this.responseDue(), (i: string) => this.openResponseDialog(i)],
         [this.selectionDue(), (i: string) => this.openSelectionDialog(i)],
