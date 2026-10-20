@@ -5,7 +5,7 @@ import { DecisionDock } from './decision-dock';
 
 function fakeRef() {
   const closed = new Subject<void>();
-  const ref = { addPanelClass: jest.fn(), removePanelClass: jest.fn(), beforeClosed: () => closed.asObservable() };
+  const ref = { addPanelClass: jest.fn(), removePanelClass: jest.fn(), close: jest.fn(), beforeClosed: () => closed.asObservable() };
   return { ref: ref as unknown as MatDialogRef<unknown, unknown>, closed, spies: ref };
 }
 
@@ -51,5 +51,44 @@ describe('DecisionDock', () => {
   it('restoring with nothing minimized does nothing', () => {
     expect(() => dock().restore()).not.toThrow();
     expect(dock().minimized()).toBeNull();
+  });
+
+  it('dismissing closes the minimized dialog and clears the banner', () => {
+    const { ref, spies } = fakeRef();
+    dock().minimize(ref, 'Response Needed');
+    dock().dismiss();
+    expect(spies.close).toHaveBeenCalled();
+    expect(dock().minimized()).toBeNull();
+  });
+
+  it('dismissing with nothing minimized does nothing', () => {
+    expect(() => dock().dismiss()).not.toThrow();
+  });
+
+  describe('assistive technology', () => {
+    // MatDialog marks everything outside the overlay container aria-hidden while a dialog is open.
+    let app: HTMLElement;
+    let overlay: HTMLElement;
+    beforeEach(() => {
+      app = document.createElement('div');
+      app.setAttribute('aria-hidden', 'true');
+      overlay = document.createElement('div');
+      overlay.className = 'cdk-overlay-container';
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.append(app, overlay);
+    });
+    afterEach(() => { app.remove(); overlay.remove(); });
+
+    it('minimizing exposes the board and banner again, and restoring hides them again', () => {
+      dock().minimize(fakeRef().ref, 'Response Needed');
+      expect(app.hasAttribute('aria-hidden')).toBe(false);
+      dock().restore();
+      expect(app.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('leaves the overlay container alone', () => {
+      dock().minimize(fakeRef().ref, 'Response Needed');
+      expect(overlay.getAttribute('aria-hidden')).toBe('true');
+    });
   });
 });

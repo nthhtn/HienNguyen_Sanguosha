@@ -17,6 +17,9 @@ interface Entry extends MinimizedDecision {
 @Injectable({ providedIn: 'root' })
 export class DecisionDock {
   private readonly entry = signal<Entry | null>(null);
+  // What MatDialog hid from assistive technology (everything outside its overlay container) that
+  // we exposed again while the dialog is hidden, so the board and the banner can be read.
+  private exposed: Element[] = [];
   readonly minimized: Signal<MinimizedDecision | null> = computed(() => {
     const entry = this.entry();
     return entry ? { title: entry.title, context: entry.context } : null;
@@ -25,8 +28,9 @@ export class DecisionDock {
   minimize(ref: MatDialogRef<unknown, unknown>, title: string, context: string | null = null): void {
     ref.addPanelClass(HIDDEN_CLASS);
     this.entry.set({ ref, title, context });
+    this.expose();
     ref.beforeClosed().subscribe(() => {
-      if (this.entry()?.ref === ref) this.entry.set(null);
+      if (this.entry()?.ref === ref) this.clear();
     });
   }
 
@@ -34,7 +38,26 @@ export class DecisionDock {
     const entry = this.entry();
     if (!entry) return;
     entry.ref.removePanelClass(HIDDEN_CLASS);
+    for (const element of this.exposed) element.setAttribute('aria-hidden', 'true');
+    this.clear();
+  }
+
+  // Closes the minimized dialog without an answer: the board is going away.
+  dismiss(): void {
+    const entry = this.entry();
+    if (!entry) return;
+    this.clear();
+    entry.ref.close();
+  }
+
+  private clear(): void {
     this.entry.set(null);
+    this.exposed = [];
+  }
+
+  private expose(): void {
+    this.exposed = Array.from(document.body.children).filter((el) => el.getAttribute('aria-hidden') === 'true' && !el.classList.contains('cdk-overlay-container'));
+    for (const element of this.exposed) element.removeAttribute('aria-hidden');
   }
 }
 

@@ -2,9 +2,10 @@ import { pickRandomAction, ruleBasedPolicy } from 'bots';
 import { Router } from '@angular/router';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogState } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
+import { DecisionDock } from './decision-dock';
 import { GameBoard } from './game-board';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
@@ -329,6 +330,17 @@ describe('GameBoard', () => {
       TestBed.inject(MatDialog).open(InfoProbe);
       expect(el.querySelector('app-decision-banner .banner')).not.toBeNull();
       expect(document.querySelector('.decision-minimized')).not.toBeNull();
+    });
+
+    it('leaving the game while minimized closes the hidden dialog and clears the banner', async () => {
+      const { fixture } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      const dialog = TestBed.inject(MatDialog);
+      fixture.destroy();
+      expect(TestBed.inject(DecisionDock).minimized()).toBeNull();
+      // Closing (the exit animation still runs), no longer open.
+      expect(dialog.openDialogs.every((d) => d.getState() !== MatDialogState.OPEN)).toBe(true);
     });
 
     it('the banner goes when the decision settles while minimized', async () => {

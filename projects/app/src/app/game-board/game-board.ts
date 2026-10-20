@@ -33,6 +33,7 @@ import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
 import { avatarReveals, avatarSkills, extraSkillsOf } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
 import { DecisionBanner } from './decision-banner';
+import { DecisionDock } from './decision-dock';
 import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
 import { CompeteResult, competeResults } from './compete-result';
@@ -269,6 +270,9 @@ export class GameBoard {
     // The win track while the game is won; back to the background track on leaving.
     effect(() => this.music.setTrack(this.visibleState()?.result ? 'win' : 'background'));
     inject(DestroyRef).onDestroy(() => this.music.setTrack('background'));
+    // Leaving the board with a decision hidden: nothing else would ever close that dialog.
+    const dock = inject(DecisionDock);
+    inject(DestroyRef).onDestroy(() => dock.dismiss());
     // Event sounds (soundsFor) for whatever the log gained since the last look.
     // The first look, and a new game's shorter log, only set the baseline, so
     // joining mid-game is silent.
