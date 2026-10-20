@@ -59,6 +59,10 @@ export const gatheringWisdom: SkillDefinition = {
 
 // Iron Cavalry (may): after you target a seat with a Sha, you may judge. On
 // red, that seat can't play a Shan against this Sha (Eight Trigrams included).
+// A red judgment (as the owner counts suits) makes the Sha unblockable.
+export const ironCavalryOutcome = (state: GameState, ownerSeatId: string, judged: CardInstance, registry: ContentRegistry): 'unblockable' | 'none' =>
+  colourFor(state, ownerSeatId, judged, registry) === 'red' ? 'unblockable' : 'none';
+
 export const ironCavalry: SkillDefinition = {
   id: 'iron-cavalry',
   triggers: [
@@ -73,7 +77,7 @@ export const ironCavalry: SkillDefinition = {
   ],
   onJudged: (state, { owner, judged, data, done }, registry) => {
     const step = data?.['step'] as CardStep;
-    if (colourFor(state, owner.seatId, judged, registry) !== 'red') return [done, step];
+    if (ironCavalryOutcome(state, owner.seatId, judged, registry) !== 'unblockable') return [done, step];
     return [done, used(owner, 'unblockable', step.target.seatId), { ...step, data: { ...step.data, unblockable: true } }];
   },
 };

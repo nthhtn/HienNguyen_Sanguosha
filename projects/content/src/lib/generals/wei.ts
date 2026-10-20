@@ -1,4 +1,4 @@
-import type { CardInstance, DamageDealtEvent, Effect, GameState, PhaseChangedEvent, SkillDefinition } from 'engine';
+import type { CardInstance, ContentRegistry, DamageDealtEvent, Effect, GameState, PhaseChangedEvent, SkillDefinition } from 'engine';
 import { livingSeatOrderFrom, requireZoneOfKind } from 'engine';
 import { abilityKey } from '../shared/steps';
 import { nextToChange } from '../shared/judgments';
@@ -77,6 +77,16 @@ export const feedback: SkillDefinition = {
 // Unyielding (may): after another seat damages you, you may judge. If the card
 // isn't a heart, that seat discards 2 hand cards or takes 1 damage from you;
 // with fewer than 2 hand cards it must take the damage.
+// What the damage source owes: 2 discards or 1 damage, and just the damage with fewer than 2 hand cards.
+const unyieldingCost = (state: GameState, sourceSeatId: string): 'discard-or-damage' | 'damage' => (handOf(state, sourceSeatId).length < 2 ? 'damage' : 'discard-or-damage');
+
+// What a judged card does to the damage source: nothing on a heart (as the owner counts suits) or when
+// it is gone; else its cost.
+export function unyieldingOutcome(state: GameState, ownerSeatId: string, judged: CardInstance, sourceSeatId: string, registry: ContentRegistry): 'spared' | 'discard-or-damage' | 'damage' {
+  if (suitOf(state, ownerSeatId, judged, registry) === 'heart' || !isLiving(state, sourceSeatId)) return 'spared';
+  return unyieldingCost(state, sourceSeatId);
+}
+
 export const unyielding: SkillDefinition = {
   id: 'unyielding',
   triggers: [
@@ -91,7 +101,7 @@ export const unyielding: SkillDefinition = {
   // The judged card goes to the discard pile first; then the outcome.
   onJudged: (state, { owner, judged, data, done }, registry) => {
     const sourceSeatId = data?.['sourceSeatId'] as string;
-    if (suitOf(state, owner.seatId, judged, registry) === 'heart' || !isLiving(state, sourceSeatId)) return [done];
+    if (unyieldingOutcome(state, owner.seatId, judged, sourceSeatId, registry) === 'spared') return [done];
     return [done, skillStep(owner, 'outcome', { sourceSeatId })];
   },
   onStep: (state, step) => {
@@ -100,7 +110,7 @@ export const unyielding: SkillDefinition = {
     if (!isLiving(state, sourceSeatId)) return [];
     const damage = skillDamage(owner, sourceSeatId);
     const hand = handOf(state, sourceSeatId);
-    if (hand.length < 2) return [damage];
+    if (unyieldingCost(state, sourceSeatId) === 'damage') return [damage];
     const discard = selectionOf(state, owner, {
       seatId: sourceSeatId, targetSeatId: sourceSeatId, of: 'cards', eligibleIds: hand.map((c) => c.instanceId), min: 2, max: 2, then: { kind: 'discard' },
     });
@@ -202,6 +212,10 @@ export const overturnedCountry: SkillDefinition = {
 // The ask that starts one River Goddess judgment.
 const riverGoddessAsk = (owner: Parameters<typeof ask>[0]): Effect => ask(owner, [{ kind: 'JudgeEffect', seatId: owner.seatId, reader: { kind: 'skill', owner } }]);
 
+// Black goes to the owner's hand and judges again; the first red card (or an owner who is gone) ends it.
+export const riverGoddessOutcome = (state: GameState, ownerSeatId: string, judged: CardInstance, registry: ContentRegistry): 'again' | 'ends' =>
+  colourFor(state, ownerSeatId, judged, registry) === 'red' || !isLiving(state, ownerSeatId) ? 'ends' : 'again';
+
 // River Goddess (may): in your Start Phase you may judge again and again: each
 // black card goes into your hand and you may judge again; the first red card
 // is discarded, and that ends it.
@@ -214,7 +228,7 @@ export const riverGoddess: SkillDefinition = {
     }),
   ],
   onJudged: (state, { owner, judged, done }, registry) => {
-    if (colourFor(state, owner.seatId, judged, registry) === 'red' || !isLiving(state, owner.seatId)) return [done];
+    if (riverGoddessOutcome(state, owner.seatId, judged, registry) === 'ends') return [done];
     const keep: Effect = { kind: 'MoveCardEffect', cardInstanceId: judged.instanceId, toZoneId: handZoneId(state, owner.seatId), onlyFrom: requireZoneOfKind(state.zones, 'processing').id };
     return [keep, done, riverGoddessAsk(owner)];
   },

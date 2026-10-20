@@ -3,6 +3,11 @@ import { captureOutcome } from './cards/capture';
 import { eightTrigramsOutcome } from './cards/equipment/eight-trigrams';
 import { lightningOutcome } from './cards/lightning';
 import { starvationOutcome } from './cards/starvation';
+import { duelingHeroesOutcome } from './generals/fire';
+import { lamentOutcome, militaryFarmOutcome } from './generals/mountain';
+import { ironCavalryOutcome } from './generals/shu';
+import { lightningStrikeOutcome } from './generals/wind';
+import { riverGoddessOutcome, unyieldingOutcome } from './generals/wei';
 
 // What a settled judgment will do to the table, in outcome keys that `judgmentOutcomeText`
 // (display.ts) has text for. Every decision is the reader's own: the function its `onJudged`
@@ -32,6 +37,21 @@ const READERS: Record<string, Decide> = {
   'eight-trigrams': (state, view, registry) => ({ key: eightTrigramsOutcome(state, view.seatId, view.card, registry) }),
   // The skill has the card's ability.
   'eight-arrays': (state, view, registry) => ({ key: eightTrigramsOutcome(state, view.seatId, view.card, registry) }),
+  // The judged seat is the skill's owner; the damage source rides in the judgment's data.
+  unyielding: (state, view, registry) => {
+    const source = view.data?.['sourceSeatId'] as string;
+    return { key: unyieldingOutcome(state, view.seatId, view.card, source, registry), source };
+  },
+  'river-goddess': (state, view, registry) => ({ key: riverGoddessOutcome(state, view.seatId, view.card, registry) }),
+  'iron-cavalry': (state, view, registry) => ({ key: ironCavalryOutcome(state, view.seatId, view.card, registry) }),
+  'lightning-strike': (state, view, registry) => ({ key: lightningStrikeOutcome(state, view.seatId, view.card, registry) }),
+  'dueling-heroes': (state, view, registry) => ({ key: duelingHeroesOutcome(state, view.seatId, view.card, registry) }),
+  'military-farm': (state, view, registry) => ({ key: militaryFarmOutcome(state, view.seatId, view.card, registry) }),
+  // The judged seat is the victim; the damage source rides in the judgment's data.
+  lament: (state, view, registry) => {
+    const source = view.data?.['source'] as string | undefined;
+    return { key: lamentOutcome(state, view.seatId, source, view.card, registry), source: source ?? null };
+  },
 };
 
 // null when the reader has no entry.

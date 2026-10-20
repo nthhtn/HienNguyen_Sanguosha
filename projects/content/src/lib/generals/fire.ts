@@ -265,6 +265,10 @@ const judgedColour = (state: GameState, seatId: string): 'red' | 'black' | null 
 // Dueling Heroes (may): at your Draw Phase, instead of drawing, judge and take
 // the judgment card. For the rest of the turn, a hand card of the other colour
 // may be played as Duel.
+// The judged card's colour (as the owner counts suits): the other colour may be played as Duel.
+export const duelingHeroesOutcome = (state: GameState, ownerSeatId: string, judged: CardInstance, registry: ContentRegistry): 'red' | 'black' =>
+  colourFor(state, ownerSeatId, judged, registry) === 'red' ? 'red' : 'black';
+
 export const duelingHeroes: SkillDefinition = {
   id: 'dueling-heroes',
   triggers: [
@@ -274,7 +278,7 @@ export const duelingHeroes: SkillDefinition = {
     }),
   ],
   onJudged: (state, { owner, judged, done }, registry) => {
-    const colour = colourFor(state, owner.seatId, judged, registry) === 'red' ? 'red' : 'black';
+    const colour = duelingHeroesOutcome(state, owner.seatId, judged, registry);
     const keep: Effect = { kind: 'MoveCardEffect', cardInstanceId: judged.instanceId, toZoneId: handZoneId(state, owner.seatId), onlyFrom: requireZoneOfKind(state.zones, 'processing').id };
     return [keep, done, used(owner, `judged-${colour}`), { kind: 'SetTurnFlagEffect', flag: DUEL_FLAG[colour] }];
   },

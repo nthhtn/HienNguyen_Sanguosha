@@ -174,6 +174,10 @@ export const cleverChange: SkillDefinition = {
 // Military Farm (may): when you lose a card from hand or equipment outside your
 // own turn, you may judge. A card that is not a heart becomes a Farm in your
 // stash. Each Farm is a −1 horse for your distance to others.
+// A heart (as the owner counts suits), or an owner who is gone, is discarded; any other card is stashed.
+export const militaryFarmOutcome = (state: GameState, ownerSeatId: string, judged: CardInstance, registry: ContentRegistry): 'farm' | 'discard' =>
+  !isLiving(state, ownerSeatId) || suitOf(state, ownerSeatId, judged, registry) === 'heart' ? 'discard' : 'farm';
+
 export const militaryFarm: SkillDefinition = {
   id: 'military-farm',
   modifiers: { distanceToOthersFrom: (state, seatId) => -farmCount(state, seatId) },
@@ -190,7 +194,7 @@ export const militaryFarm: SkillDefinition = {
   ],
   // A heart is discarded as usual; any other card goes to the stash first.
   onJudged: (state, { owner, judged, done }, registry) => {
-    if (!isLiving(state, owner.seatId) || suitOf(state, owner.seatId, judged, registry) === 'heart') return [done];
+    if (militaryFarmOutcome(state, owner.seatId, judged, registry) === 'discard') return [done];
     return [stashMove(state, owner.seatId, judged.instanceId, requireZoneOfKind(state.zones, 'processing').id), used(owner, 'farmed'), done];
   },
 };
@@ -519,6 +523,21 @@ const ownedCards = (state: GameState, seatId: string) => [...handOf(state, seatI
 // Lament (may): whenever any seat takes damage from a Sha, discard a card; the
 // victim then judges: heart it recovers 1 HP, diamond it draws 2, club the
 // source discards 2 cards, spade the source turns over.
+// What a judged card does, by its suit as the victim counts it: heart heals the victim, diamond has
+// it draw 2; club has the damage source discard up to 2 cards, spade turns it face down (or up when
+// it is down). Nothing without a living source, or a club source with no cards.
+export function lamentOutcome(state: GameState, victimSeatId: string, sourceSeatId: string | undefined, judged: CardInstance, registry: ContentRegistry): 'heal' | 'draw' | 'discard2' | 'discard1' | 'face-down' | 'face-up' | 'none' {
+  const suit = suitOf(state, victimSeatId, judged, registry);
+  if (suit === 'heart') return 'heal';
+  if (suit === 'diamond') return 'draw';
+  if (!sourceSeatId || !isLiving(state, sourceSeatId)) return 'none';
+  if (suit === 'club') {
+    const count = Math.min(2, ownedCards(state, sourceSeatId).length);
+    return count === 2 ? 'discard2' : count === 1 ? 'discard1' : 'none';
+  }
+  return seatOf(state, sourceSeatId)?.faceDown ? 'face-up' : 'face-down';
+}
+
 export const lament: SkillDefinition = {
   id: 'lament',
   triggers: [
@@ -559,12 +578,21 @@ export const lament: SkillDefinition = {
   onJudged: (state, { owner, judged, data, done }, registry) => {
     const victim = data?.['victim'] as string;
     const source = data?.['source'] as string | undefined;
-    const suit = suitOf(state, victim, judged, registry);
-    if (suit === 'heart') return [done, heal(victim, 1)];
-    if (suit === 'diamond') return [done, draw(victim, 2)];
-    if (!source || !isLiving(state, source)) return [done];
-    if (suit === 'club') return [done, skillStep(owner, 'club', { source })];
-    return [done, seatOf(state, source)?.faceDown ? { kind: 'TurnFaceUpEffect', seatId: source } : { kind: 'TurnFaceDownEffect', seatId: source }];
+    switch (lamentOutcome(state, victim, source, judged, registry)) {
+      case 'heal':
+        return [done, heal(victim, 1)];
+      case 'draw':
+        return [done, draw(victim, 2)];
+      case 'discard2':
+      case 'discard1':
+        return [done, skillStep(owner, 'club', { source: source! })];
+      case 'face-down':
+        return [done, { kind: 'TurnFaceDownEffect', seatId: source! }];
+      case 'face-up':
+        return [done, { kind: 'TurnFaceUpEffect', seatId: source! }];
+      case 'none':
+        return [done];
+    }
   },
 };
 

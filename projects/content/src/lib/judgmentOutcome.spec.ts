@@ -2,6 +2,12 @@ import { usedCardOf, skipFlagOf } from 'engine';
 import type { CardInstance, Effect, GameState, JudgmentReader, JudgmentView } from 'engine';
 import { card, registry, table } from './generals/skills.testing';
 import { judgmentOutcome, judgmentReaderId } from './judgmentOutcome';
+import { unyielding, riverGoddess } from './generals/wei';
+import { ironCavalry } from './generals/shu';
+import { lightningStrike } from './generals/wind';
+import { duelingHeroes } from './generals/fire';
+import { militaryFarm, lament } from './generals/mountain';
+import type { GeneralOwner, SkillDefinition } from 'engine';
 
 const SUITS: CardInstance['suit'][] = ['spade', 'heart', 'club', 'diamond'];
 const done: Effect = { kind: 'JudgmentDoneEffect', judgment: undefined as never };
@@ -101,5 +107,191 @@ describe('judgmentOutcome: Eight Trigrams and Eight Arrays', () => {
     expect(asSkill).toMatchObject({ readerId: 'eight-arrays', key: asCard!.key });
     const effects = readCard(table({ 'seat-a:equip': [card('et', 'eight-trigrams')] }), 'eight-trigrams', 'seat-a', judged, data);
     expect(kinds(effects).includes('AbilityUsedEffect')).toBe(red);
+  });
+});
+
+// What a skill's own onJudged does with the card.
+const readSkill = (skill: SkillDefinition, state: GameState, owner: GeneralOwner, seatId: string, judged: CardInstance, data?: Record<string, unknown>) =>
+  skill.onJudged!(state, { owner, seatId, judged, ...(data ? { data } : {}), done }, registry) as Effect[];
+const ownerOf = (skillId: string, seatId = 'seat-a'): GeneralOwner => ({ kind: 'general', seatId, slot: 'main', skillId });
+const eliminate = (state: GameState, seatId: string): GameState => ({ ...state, seats: state.seats.map((s) => (s.id === seatId ? { ...s, eliminated: true } : s)) });
+const handOf = (n: number, seatId: string) => ({ [`${seatId}:hand`]: Array.from({ length: n }, (_, i) => card(`${seatId}-h${i}`, 'sha', 'spade', 3)) });
+
+describe('judgmentOutcome: Unyielding', () => {
+  const owner = ownerOf('unyielding');
+  const data = { sourceSeatId: 'seat-b' };
+  const run = (state: GameState, suit: CardInstance['suit']) => {
+    const judged = card('j', 'x', suit, 5);
+    return { outcome: outcome(state, view(skillReader('unyielding'), 'seat-a', judged, data)), effects: readSkill(unyielding, state, owner, 'seat-a', judged, data) };
+  };
+  const step = { kind: 'SkillStepEffect', owner, step: 'outcome', data } as unknown as Extract<Effect, { kind: 'SkillStepEffect' }>;
+
+  it('a heart spares the damage source', () => {
+    const { outcome: o, effects } = run(table(handOf(3, 'seat-b')), 'heart');
+    expect(o).toEqual({ readerId: 'unyielding', key: 'spared', seats: { seat: 'seat-a', owner: 'seat-a', source: 'seat-b' } });
+    expect(kinds(effects)).toEqual(['JudgmentDoneEffect']);
+  });
+
+  it('a dead damage source is spared whatever the card', () => {
+    const { outcome: o, effects } = run(eliminate(table(handOf(3, 'seat-b')), 'seat-b'), 'club');
+    expect(o?.key).toBe('spared');
+    expect(kinds(effects)).toEqual(['JudgmentDoneEffect']);
+  });
+
+  it.each([[2, 'discard-or-damage'], [5, 'discard-or-damage'], [1, 'damage'], [0, 'damage']])('a non-heart with %i hand cards: %s', (cards, key) => {
+    const state = table(handOf(cards, 'seat-b'));
+    const { outcome: o, effects } = run(state, 'club');
+    expect(o?.key).toBe(key);
+    expect(kinds(effects)).toEqual(['JudgmentDoneEffect', 'SkillStepEffect']);
+    const next = unyielding.onStep!(state, step, registry) as Effect[];
+    if (key === 'damage') expect(kinds(next)).toEqual(['DamageEffect']);
+    else expect(kinds(next)).not.toEqual(['DamageEffect']);
+  });
+});
+
+describe('judgmentOutcome: River Goddess', () => {
+  const owner = ownerOf('river-goddess');
+  const run = (state: GameState, suit: CardInstance['suit']) => {
+    const judged = card('j', 'x', suit, 5);
+    return { outcome: outcome(state, view(skillReader('river-goddess'), 'seat-a', judged)), effects: readSkill(riverGoddess, state, owner, 'seat-a', judged) };
+  };
+
+  it.each(SUITS)('a %s: the key matches what the skill does', (suit) => {
+    const { outcome: o, effects } = run(table(), suit);
+    const red = suit === 'heart' || suit === 'diamond';
+    expect(o).toEqual({ readerId: 'river-goddess', key: red ? 'ends' : 'again', seats: { seat: 'seat-a', owner: 'seat-a', source: null } });
+    expect(kinds(effects)).toEqual(red ? ['JudgmentDoneEffect'] : ['MoveCardEffect', 'JudgmentDoneEffect', 'AskUseEffect']);
+  });
+
+  it('ends when the judged owner is no longer living, even on black', () => {
+    const { outcome: o, effects } = run(eliminate(table(), 'seat-a'), 'club');
+    expect(o?.key).toBe('ends');
+    expect(kinds(effects)).toEqual(['JudgmentDoneEffect']);
+  });
+});
+
+describe('judgmentOutcome: Iron Cavalry', () => {
+  const owner = ownerOf('iron-cavalry');
+  const step = { kind: 'CardStepEffect', step: 'sha-targeted', target: { kind: 'seat', seatId: 'seat-b' }, data: {} };
+
+  it.each(SUITS)('a %s: red makes the Slash unblockable', (suit) => {
+    const judged = card('j', 'x', suit, 5);
+    const red = suit === 'heart' || suit === 'diamond';
+    const o = outcome(table(), view(skillReader('iron-cavalry'), 'seat-a', judged, { step }));
+    expect(o).toEqual({ readerId: 'iron-cavalry', key: red ? 'unblockable' : 'none', seats: { seat: 'seat-a', owner: 'seat-a', source: null } });
+    const effects = readSkill(ironCavalry, table(), owner, 'seat-a', judged, { step });
+    expect(kinds(effects).includes('AbilityUsedEffect')).toBe(red);
+  });
+});
+
+describe('judgmentOutcome: Lightning Strike', () => {
+  const owner = ownerOf('lightning-strike');
+  // The judged seat is the one the owner picked.
+  const run = (state: GameState, suit: CardInstance['suit']) => {
+    const judged = card('j', 'x', suit, 5);
+    return { outcome: outcome(state, view(skillReader('lightning-strike'), 'seat-c', judged)), effects: readSkill(lightningStrike, state, owner, 'seat-c', judged) };
+  };
+
+  it.each(SUITS)('a %s: only a spade strikes', (suit) => {
+    const { outcome: o, effects } = run(table(), suit);
+    expect(o).toEqual({ readerId: 'lightning-strike', key: suit === 'spade' ? 'damage' : 'none', seats: { seat: 'seat-c', owner: 'seat-a', source: null } });
+    const damage = effects.find((e) => e.kind === 'DamageEffect');
+    if (suit === 'spade') expect(damage).toMatchObject({ damage: { amount: 2, nature: 'thunder', target: { kind: 'seat', seatId: 'seat-c' } } });
+    else expect(damage).toBeUndefined();
+  });
+
+  it('a judged seat that died does nothing', () => {
+    const { outcome: o, effects } = run(eliminate(table(), 'seat-c'), 'spade');
+    expect(o?.key).toBe('none');
+    expect(effects.find((e) => e.kind === 'DamageEffect')).toBeUndefined();
+  });
+});
+
+describe('judgmentOutcome: Dueling Heroes', () => {
+  const owner = ownerOf('dueling-heroes');
+
+  it.each(SUITS)('a %s: the judged colour is the key and the turn flag', (suit) => {
+    const judged = card('j', 'x', suit, 5);
+    const colour = suit === 'heart' || suit === 'diamond' ? 'red' : 'black';
+    expect(outcome(table(), view(skillReader('dueling-heroes'), 'seat-a', judged))).toEqual({ readerId: 'dueling-heroes', key: colour, seats: { seat: 'seat-a', owner: 'seat-a', source: null } });
+    const effects = readSkill(duelingHeroes, table(), owner, 'seat-a', judged);
+    expect(effects.find((e) => e.kind === 'SetTurnFlagEffect')).toMatchObject({ flag: `dueling-heroes-${colour}` });
+  });
+});
+
+describe('judgmentOutcome: Military Farm', () => {
+  const owner = ownerOf('military-farm');
+  const run = (state: GameState, suit: CardInstance['suit']) => {
+    const judged = card('j', 'x', suit, 5);
+    return { outcome: outcome(state, view(skillReader('military-farm'), 'seat-a', judged)), effects: readSkill(militaryFarm, state, owner, 'seat-a', judged) };
+  };
+
+  it.each(SUITS)('a %s: only a heart is discarded', (suit) => {
+    const { outcome: o, effects } = run(table(), suit);
+    expect(o).toEqual({ readerId: 'military-farm', key: suit === 'heart' ? 'discard' : 'farm', seats: { seat: 'seat-a', owner: 'seat-a', source: null } });
+    expect(kinds(effects).includes('AbilityUsedEffect')).toBe(suit !== 'heart');
+  });
+
+  it('a dead owner discards', () => {
+    const { outcome: o, effects } = run(eliminate(table(), 'seat-a'), 'club');
+    expect(o?.key).toBe('discard');
+    expect(kinds(effects)).toEqual(['JudgmentDoneEffect']);
+  });
+});
+
+describe('judgmentOutcome: Lament', () => {
+  const owner = ownerOf('lament');
+  const data = { victim: 'seat-b', source: 'seat-c' };
+  const run = (state: GameState, suit: CardInstance['suit'], withData: Record<string, unknown> | undefined = data) => {
+    const judged = card('j', 'x', suit, 5);
+    return { outcome: outcome(state, view(skillReader('lament'), 'seat-b', judged, withData)), effects: readSkill(lament, state, owner, 'seat-b', judged, withData) };
+  };
+  const clubStep = { kind: 'SkillStepEffect', owner, step: 'club', data: { source: 'seat-c' } } as unknown as Extract<Effect, { kind: 'SkillStepEffect' }>;
+  const faceDown = (state: GameState, seatId: string): GameState => ({ ...state, seats: state.seats.map((s) => (s.id === seatId ? { ...s, faceDown: true } : s)) });
+
+  it('a heart heals the victim, a diamond draws 2, whoever the source is', () => {
+    const heart = run(table(), 'heart');
+    expect(heart.outcome).toEqual({ readerId: 'lament', key: 'heal', seats: { seat: 'seat-b', owner: 'seat-a', source: 'seat-c' } });
+    expect(heart.effects.map((e) => e.kind)).toEqual(['JudgmentDoneEffect', 'HealEffect']);
+    const diamond = run(table(), 'diamond', { victim: 'seat-b' });
+    expect(diamond.outcome?.key).toBe('draw');
+    expect(diamond.effects.map((e) => e.kind)).toEqual(['JudgmentDoneEffect', 'DrawCardsEffect']);
+  });
+
+  it.each([[3, 'discard2', '"min":2'], [2, 'discard2', '"min":2'], [1, 'discard1', '"min":1']])('a club with %i cards held by the source: %s', (cards, key, min) => {
+    const state = table(handOf(cards, 'seat-c'));
+    expect(run(state, 'club').outcome?.key).toBe(key);
+    expect(JSON.stringify(lament.onStep!(state, clubStep, registry))).toContain(min);
+  });
+
+  it('a club with a source holding nothing does nothing', () => {
+    const state = table();
+    expect(run(state, 'club').outcome?.key).toBe('none');
+    expect(lament.onStep!(state, clubStep, registry)).toEqual([]);
+  });
+
+  it.each(['club', 'spade'] as const)('a %s with no source, or a dead one, does nothing', (suit) => {
+    for (const [state, withData] of [[table(handOf(3, 'seat-c')), { victim: 'seat-b' }], [eliminate(table(handOf(3, 'seat-c')), 'seat-c'), data]] as const) {
+      const { outcome: o, effects } = run(state, suit, withData);
+      expect(o?.key).toBe('none');
+      expect(kinds(effects)).toEqual(['JudgmentDoneEffect']);
+    }
+  });
+
+  it('a spade turns the source face down, or face up when it already is down', () => {
+    const up = run(table(), 'spade');
+    expect(up.outcome?.key).toBe('face-down');
+    expect(up.effects.map((e) => e.kind)).toEqual(['JudgmentDoneEffect', 'TurnFaceDownEffect']);
+    const down = run(faceDown(table(), 'seat-c'), 'spade');
+    expect(down.outcome?.key).toBe('face-up');
+    expect(down.effects.map((e) => e.kind)).toEqual(['JudgmentDoneEffect', 'TurnFaceUpEffect']);
+  });
+
+  it('reads the suit as the victim counts it', () => {
+    registry.generals.set('test-beauty', { id: 'test-beauty', kingdom: 'Wu', maxHp: 3, skills: [{ id: 'test-beauty', compulsory: true, modifiers: { suitAs: { spade: 'heart' } } }] });
+    const state = table({}, { generals: { 'seat-b': ['test-beauty', 'filler-dong-zhuo', true] } });
+    const { outcome: o, effects } = run(state, 'spade');
+    expect(o?.key).toBe('heal');
+    expect(effects.map((e) => e.kind)).toEqual(['JudgmentDoneEffect', 'HealEffect']);
   });
 });
