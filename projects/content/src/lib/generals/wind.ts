@@ -1,4 +1,4 @@
-import type { AbilityUsedEvent, CardPlayedEvent, CardsTurnedUpEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
+import type { AbilityUsedEvent, CardInstance, CardPlayedEvent, CardsTurnedUpEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
 import { drawPileTop, endFlagOf, getLegalActions, pileZoneOf, requireZoneOfKind, skipFlagOf, usedCardFrom } from 'engine';
 import { suitOf } from '../shared/suits';
 import { blackCards, nextToChange } from '../shared/judgments';
@@ -217,6 +217,10 @@ type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
 // Lightning Strike (may): after you play or use a Shan, you may pick any
 // living seat. It judges: on a spade it takes 2 thunder damage with no source (so it
 // passes along a chain, as the Lightning card's strike does).
+// A spade on a seat that is still living deals it 2 thunder damage (as that seat counts suits).
+export const lightningStrikeOutcome = (state: GameState, seatId: string, judged: CardInstance, registry: ContentRegistry): 'damage' | 'none' =>
+  suitOf(state, seatId, judged, registry) === 'spade' && isLiving(state, seatId) ? 'damage' : 'none';
+
 export const lightningStrike: SkillDefinition = {
   id: 'lightning-strike',
   triggers: [
@@ -237,7 +241,7 @@ export const lightningStrike: SkillDefinition = {
     return [choiceOf(state, owner, { verb: 'pick', options: seatOptions(living, judge) })];
   },
   onJudged: (state, { owner, seatId, judged, done }, registry) =>
-    suitOf(state, seatId, judged, registry) === 'spade' && isLiving(state, seatId)
+    lightningStrikeOutcome(state, seatId, judged, registry) === 'damage'
       ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'thunder', cause: { skillId: owner.skillId } } }]
       : [done],
 };

@@ -7,6 +7,7 @@ import { Action, CardInstance } from 'engine';
 import { cardFaceLabel, cardIdDisplayName } from '../labels';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
+import { MinimizeButton } from './minimize-button';
 import { ResponseDescription } from './response-description';
 import { TPipe } from '../i18n/t.pipe';
 import { I18n } from '../i18n/i18n.service';
@@ -38,9 +39,12 @@ const NO_RESPONSE = 'no-response';
 // Closes only through that button, with the chosen engine action.
 @Component({
   selector: 'app-response-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, MatRadioModule, PlayingCard, DecisionCountdown, TPipe],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, MatRadioModule, PlayingCard, DecisionCountdown, MinimizeButton, TPipe],
   template: `
-    <h2 mat-dialog-title>{{ 'respDialog.title' | t }}</h2>
+    <div class="title-row">
+      <h2 mat-dialog-title>{{ 'respDialog.title' | t }}</h2>
+      <app-minimize-button [context]="data.description.source" />
+    </div>
     <mat-dialog-content>
       <div class="description">
         <p class="source">{{ data.description.source }}</p>

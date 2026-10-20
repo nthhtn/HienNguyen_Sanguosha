@@ -291,6 +291,26 @@ export interface UsedCard {
 // Tool; a worn card such as Eight Trigrams), or a General's skill through its own.
 export type JudgmentReader = { kind: 'card'; card: UsedCard } | { kind: 'skill'; owner: GeneralOwner };
 
+// A card a skill put in place of a judgment's card.
+export interface JudgmentChange {
+  owner: AbilityOwner;
+  abilityId: string;
+  card: CardInstance;
+  replaced: CardInstance;
+}
+
+// A judgment the table can see (the judgmentNotice rule): from the card turned up
+// until it is acknowledged. `settled`: no skill can change the card any more, and
+// the game waits for the acknowledgement.
+export interface JudgmentView {
+  seatId: string;
+  reader: JudgmentReader;
+  card: CardInstance;
+  data?: Record<string, unknown>;
+  changes: JudgmentChange[];
+  settled: boolean;
+}
+
 // A judgment under way: whose it is, who reads it, what the reader passed
 // along, and the card turned up (the latest, once a skill has replaced it).
 export interface Judgment {
@@ -337,6 +357,9 @@ export interface Damage {
 export interface GameRules {
   // With 5 or more seats, the first seat to reveal a General draws 2 cards.
   firstRevealDraw?: boolean;
+  // After a judgment's card is final, the game waits for an acknowledgement (or the
+  // notice clock) before the reader acts: the judgment popup's pause. Absent: no wait.
+  judgmentNotice?: boolean;
 }
 
 export interface GameState {
@@ -356,6 +379,8 @@ export interface GameState {
   pendingSelection?: PendingSelection;
   // The cards a seat owes an arrangement of, if any. Absent (never null) when none.
   pendingArrangement?: PendingArrangement;
+  // The judgment on show, if any (judgmentNotice rule). Absent (never null) when none.
+  judgmentView?: JudgmentView;
   log: EngineEvent[];
   rng: RngState;
   result: GameResult | null;

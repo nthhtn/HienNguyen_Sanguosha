@@ -74,6 +74,22 @@ export class GameService {
     return previewEffect(state, effect, this.ctx);
   }
 
+  // The table's view of the game: every hand and unrevealed General masked, whoever holds the device.
+  // What a public popup may read (the judgment popup); null without a game.
+  readonly publicState: Signal<GameState | null> = computed(() => {
+    const state = this._state();
+    return state ? redactStateForSeat(state, '') : null;
+  });
+
+  // A judgment waits for an acknowledgement (the judgmentNotice rule).
+  readonly judgmentSettled: Signal<boolean> = computed(() => !!this._state()?.judgmentView?.settled);
+
+  // Whether the viewer can close the settled judgment: someone other than a bot acts on it.
+  readonly canCloseJudgment: Signal<boolean> = computed(() => {
+    const seatId = this.activeSeatId();
+    return this.judgmentSettled() && !!seatId && !this.botSeatIds().includes(seatId);
+  });
+
   // Only the human's moves are offered to the UI; bots decide for themselves.
   readonly legalActions: Signal<Action[]> = computed(() => {
     const state = this._state();
@@ -98,7 +114,8 @@ export class GameService {
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
-      const created = createGame(kingdomWarMode, this.registry, seatIds, rngSeed, rules);
+      // Every game waits for a judgment's popup (the judgmentNotice rule) unless a rule says otherwise.
+      const created = createGame(kingdomWarMode, this.registry, seatIds, rngSeed, { ...rules, judgmentNotice: rules?.judgmentNotice ?? true });
       const players = created.players.map((p, i) => ({
         ...p,
         kind: mode === 'vs-bots' && p.seatId !== HUMAN_SEAT_ID ? ('bot' as const) : ('human' as const),
@@ -124,6 +141,15 @@ export class GameService {
     const activeSeatId = this.activeSeatId();
     if (activeSeatId && this.botSeatIds().includes(activeSeatId)) return;
     if (this.apply(action)) this.scheduleBotIfDue();
+  }
+
+  // Closes a settled judgment, whoever holds the device: the engine has one acting seat, so it is
+  // that seat's action, `by` the seat whose player pressed Close (null: nobody to name). A bot seat's
+  // acknowledgement comes only from its own timer.
+  closeJudgment(bySeatId: string | null): void {
+    const seatId = this.activeSeatId();
+    if (!this.judgmentSettled() || !seatId || this.botSeatIds().includes(seatId)) return;
+    if (this.apply({ kind: 'AcknowledgeJudgmentAction', seatId, ...(bySeatId ? { by: bySeatId } : {}) })) this.scheduleBotIfDue();
   }
 
   // Resolves several actions as one move (e.g. a whole Discard phase): the

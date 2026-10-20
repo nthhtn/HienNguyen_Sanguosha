@@ -116,5 +116,62 @@
       "won": "{user} sẽ lấy một lá bài của {target}",
       "lost": "Không có gì xảy ra"
     }
+  },
+  "judgmentOutcomes": {
+    "lightning": {
+      "struck": "{seat} chịu 3 sát thương sét",
+      "moves": "Thiểm Điện chuyển sang người chơi kế tiếp",
+      "stays": "Thiểm Điện ở lại chỗ cũ"
+    },
+    "capture": {
+      "skip": "{seat} bỏ qua giai đoạn ra bài",
+      "spared": "Không có gì xảy ra"
+    },
+    "starvation": {
+      "skip": "{seat} bỏ qua giai đoạn rút bài",
+      "spared": "Không có gì xảy ra"
+    },
+    "eight-trigrams": {
+      "shan": "{seat} được tính là đã đánh Thiểm",
+      "none": "Không có gì xảy ra"
+    },
+    "eight-arrays": {
+      "shan": "{seat} được tính là đã đánh Thiểm",
+      "none": "Không có gì xảy ra"
+    },
+    "unyielding": {
+      "discard-or-damage": "{source} bỏ 2 lá bài hoặc chịu 1 sát thương",
+      "damage": "{source} chịu 1 sát thương",
+      "spared": "Không có gì xảy ra"
+    },
+    "river-goddess": {
+      "again": "{owner} nhận lá bài và phán xét lại",
+      "ends": "Lá bài bị bỏ và việc phán xét kết thúc"
+    },
+    "iron-cavalry": {
+      "unblockable": "Sát không thể bị né",
+      "none": "Không có gì xảy ra"
+    },
+    "lightning-strike": {
+      "damage": "{seat} chịu 2 sát thương sét",
+      "none": "Không có gì xảy ra"
+    },
+    "dueling-heroes": {
+      "red": "{owner} nhận lá bài và có thể đánh bài đen trên tay làm Quyết Đấu trong lượt này",
+      "black": "{owner} nhận lá bài và có thể đánh bài đỏ trên tay làm Quyết Đấu trong lượt này"
+    },
+    "military-farm": {
+      "farm": "{owner} cất lá bài làm Điền",
+      "discard": "Lá bài bị bỏ"
+    },
+    "lament": {
+      "heal": "{seat} hồi 1 Sinh lực",
+      "draw": "{seat} rút 2 lá bài",
+      "discard2": "{source} bỏ 2 lá bài",
+      "discard1": "{source} bỏ 1 lá bài",
+      "face-down": "{source} úp mặt",
+      "face-up": "{source} lật mặt",
+      "none": "Không có gì xảy ra"
+    }
   }
 }

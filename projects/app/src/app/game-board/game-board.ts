@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, effect, inject, untracked } from '@angular/core';
+import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, untracked } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -32,8 +32,12 @@ import { describeArrangement, describeAsk, describeSelection } from './ability-d
 import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
 import { avatarReveals, avatarSkills, extraSkillsOf } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
+import { DecisionBanner } from './decision-banner';
+import { DecisionDock } from './decision-dock';
 import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
+import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
+import { judgmentDescription } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
@@ -44,7 +48,7 @@ import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-game-board',
-  imports: [TPipe, TMsgPipe, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -57,6 +61,8 @@ import { TPipe } from '../i18n/t.pipe';
         <button mat-button type="button" (click)="dismissError()">{{ 'ui.dismiss' | t }}</button>
       </div>
     }
+
+    <app-decision-banner />
 
     @if (gameService.state(); as state) {
       @if (state.result; as result) {
@@ -120,7 +126,7 @@ import { TPipe } from '../i18n/t.pipe';
                   </div>
                   <app-action-list
                     class="actions"
-                    [actions]="gameService.legalActions()"
+                    [actions]="boardActions()"
                     [state]="visible"
                     [registry]="gameService.registry"
                     (actionChosen)="submit($event)"
@@ -207,8 +213,11 @@ export class GameBoard {
   private readonly music = inject(MusicService);
   private readonly sounds = inject(SoundEffects);
   private readonly i18n = inject(I18n);
+  private readonly dock = inject(DecisionDock);
+  private readonly injector = inject(Injector);
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
+  private judgmentDialog: MatDialogRef<JudgmentDialog> | null = null;
   private choiceDialog: MatDialogRef<unknown, Action> | null = null;
   private selectionDialog: MatDialogRef<SelectionDialog, Action> | null = null;
   // The selection whose dialog is showing, so each opens only once.
@@ -266,6 +275,23 @@ export class GameBoard {
     // The win track while the game is won; back to the background track on leaving.
     effect(() => this.music.setTrack(this.visibleState()?.result ? 'win' : 'background'));
     inject(DestroyRef).onDestroy(() => this.music.setTrack('background'));
+    // Leaving the board with a decision hidden: nothing else would ever close that dialog.
+    inject(DestroyRef).onDestroy(() => this.dock.dismiss());
+    // A decision's text is built when its dialog opens, so a language switch while one is
+    // minimized (the one time the toolbar is reachable) rebuilds it, still minimized.
+    let locale = this.i18n.locale();
+    effect(() => {
+      const next = this.i18n.locale();
+      untracked(() => {
+        if (next !== locale) this.rebuildMinimizedDecision();
+        locale = next;
+      });
+    });
+    // A judgment on show: its popup is open while the judgment is, whatever the gate or the viewer's seat.
+    effect(() => {
+      const on = this.judgmentView() !== null;
+      untracked(() => (on ? this.openJudgmentDialog() : this.closeDialog(this.judgmentDialog)));
+    });
     // Event sounds (soundsFor) for whatever the log gained since the last look.
     // The first look, and a new game's shorter log, only set the baseline, so
     // joining mid-game is silent.
@@ -345,6 +371,16 @@ export class GameBoard {
   protected readonly lastError = this.gameService.lastError;
 
   // Whose chair the table is seen from: the human in vs-bots, else the revealed active seat.
+  // The judgment on show, read off the table's public view: it is for every seat, so the pass-and-play
+  // gate does not hide it. Null when there is none.
+  private readonly judgmentView = computed(() => {
+    const state = this.gameService.publicState();
+    return state ? judgmentDescription(state, this.gameService.registry, this.i18n.translator) : null;
+  });
+
+  // What the board's action list offers: the acknowledgement of a judgment is the popup's, not a button on the board.
+  protected readonly boardActions = computed(() => this.gameService.legalActions().filter((a) => a.kind !== 'AcknowledgeJudgmentAction'));
+
   protected readonly viewerSeatId = computed(() => this.gameService.humanSeatId() ?? this.activeSeatId());
 
   // The revealed seat's own hand, shown full-size below the table.
@@ -434,7 +470,8 @@ export class GameBoard {
   // The text that describes a decision (its prompt, option labels and the Compete result's
   // names) is built when the dialog opens, in the language then on: the open* methods run
   // untracked. A dialog's own fixed words do follow a switch, but dialogs are modal, so the
-  // toolbar cannot be reached while one is open.
+  // toolbar cannot be reached while one is open, except while one is minimized: then the
+  // decision is rebuilt (rebuildMinimizedDecision).
   // The Discard phase in one step: the dialog returns exactly `count` cards,
   // each submitted as the engine's own legal DiscardCardAction.
   private openDiscardDialog(count: number): void {
@@ -458,6 +495,47 @@ export class GameBoard {
       const legal = this.gameService.legalActions().filter((a): a is DiscardCardAction => a.kind === 'DiscardCardAction');
       const actions = (ids ?? []).map((id) => legal.find((a) => a.cardInstanceId === id)).filter((a): a is DiscardCardAction => !!a);
       if (actions.length > 0) this.gameService.submitAll(actions);
+    });
+  }
+
+  // Opens the judgment popup. It reads the description live, so a replacement or a language switch
+  // updates it in place; Close is the viewer's, whoever holds the device.
+  private openJudgmentDialog(): void {
+    const description = this.judgmentView();
+    if (this.judgmentDialog || !description) return;
+    const data: JudgmentDialogData = {
+      description: this.judgmentView,
+      canClose: this.gameService.canCloseJudgment,
+      close: () => this.gameService.closeJudgment(this.gameService.humanSeatId() ?? this.gameService.revealedSeatId()),
+    };
+    const ref = openForceDialog<JudgmentDialog, JudgmentDialogData>(this.dialog, JudgmentDialog, description.force, { data, width: 'min(92vw, 560px)', disableClose: true });
+    this.judgmentDialog = ref;
+    ref.beforeClosed().subscribe(() => (this.judgmentDialog = null));
+  }
+
+  // Closes the minimized decision dialog and opens its pending decision again in the current
+  // language, minimized again once it has opened.
+  private rebuildMinimizedDecision(): void {
+    const old = this.dock.dismiss();
+    if (!old) return;
+    old.afterClosed().subscribe(() => {
+      const count = this.discardsDue();
+      if (count > 0) this.openDiscardDialog(count);
+      if (this.judgmentView()) this.openJudgmentDialog();
+      for (const [id, open] of [
+        [this.responseDue(), (i: string) => this.openResponseDialog(i)],
+        [this.selectionDue(), (i: string) => this.openSelectionDialog(i)],
+        [this.arrangementDue(), (i: string) => this.openArrangeDialog(i)],
+        [this.choiceDue(), (i: string) => this.openChoiceDialog(i)],
+      ] as const) {
+        if (id) open(id);
+      }
+      const fresh = this.dialog.openDialogs.at(-1);
+      if (!fresh) return;
+      // Hidden from the moment it exists, so it never flashes; registered with the dock (title,
+      // banner) as soon as its content has rendered, through its own View Board button.
+      fresh.addPanelClass('decision-minimized');
+      afterNextRender(() => (document.getElementById(fresh.id)?.querySelector('button.minimize') as HTMLButtonElement | null)?.click(), { injector: this.injector });
     });
   }
 

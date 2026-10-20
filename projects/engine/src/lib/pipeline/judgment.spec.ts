@@ -4,6 +4,9 @@ import { createRng } from '../rng/rng';
 import { CardInstance, GameState, GeneralOwner, Judgment, Phase, QueueItem } from '../domain/types';
 import { CardDefinition, ContentRegistry, GameModeDefinition, SkillDefinition } from '../registry/types';
 import { skipFlagOf } from '../rules/phaseSequence';
+import { decisionPending, getActiveSeatId } from '../rules/activeSeat';
+import { getLegalActions } from '../rules/legality';
+import { defaultActionsFor } from '../rules/defaultActions';
 import { usedCardOf } from '../domain/usedCard';
 import { EngineEvent } from './events';
 
@@ -275,5 +278,130 @@ describe('DelayedCleanupEffect', () => {
     const b1 = card('b1', 'beacon');
     const next = settle(table({ queue: [{ kind: 'DelayedCleanupEffect', tool: usedCardOf(b1), ownerSeatId: 'seat-a' }], cards: { 'seat-a:judgment': [b1] } }));
     expect(idsIn(next, 'seat-a:hand')).toEqual(['b1']);
+  });
+});
+
+describe('judgment notice', () => {
+  const reader = { kind: 'card' as const, card: usedCardOf(card('o1', 'omen')) };
+  const judge: Effect = { kind: 'JudgeEffect', seatId: 'seat-a', reader };
+  const withRule = (s: GameState): GameState => ({ ...s, rules: { judgmentNotice: true } });
+  // A seat-a skill that swaps in the first card of its hand, each time it is asked.
+  const changer: SkillDefinition = {
+    id: 'changer',
+    triggers: [{
+      point: 'before:JudgmentShownEffect',
+      condition: (state) => idsIn(state, 'seat-a:hand').length > 0,
+      effect: (state, subject, o) => [{ kind: 'ReplaceJudgmentEffect', judgment: (subject as Shown).judgment, withCardInstanceId: idsIn(state, 'seat-a:hand')[0], owner: o!, abilityId: 'changer' }],
+    }],
+  };
+
+  it('rule on: the card turned up is a settled view and nothing is resolved', () => {
+    const heart = card('j1', 'x', 'heart', 3);
+    const next = settle(withRule(table({ queue: [judge], cards: { drawPile: [heart] } })));
+    expect(next.judgmentView).toEqual({ seatId: 'seat-a', reader, card: heart, changes: [], settled: true });
+    expect(decisionPending(next)).toBe(true);
+    expect(next.turn.flags).toBeUndefined();
+    expect(idsIn(next, 'processing')).toEqual(['j1']);
+  });
+
+  it('rule on: a club that would skip Play is not resolved until acknowledged', () => {
+    const next = settle(withRule(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } })));
+    expect(next.turn.flags).toBeUndefined();
+    expect(next.judgmentView?.settled).toBe(true);
+  });
+
+  it('rule on: two replacements are listed in order and the card is the latest', () => {
+    const c = ctxWith([changer]);
+    const next = settleWith(
+      withRule(table({ queue: [judge], revealed: true, cards: { drawPile: [card('j1', 'x', 'club', 3)], 'seat-a:hand': [card('r1', 'x', 'spade', 4), card('r2', 'x', 'heart', 5)] } })),
+      c
+    );
+    const view = next.judgmentView!;
+    expect(view.settled).toBe(true);
+    expect(view.changes.map((ch) => ch.abilityId)).toEqual(['changer', 'changer']);
+    expect(view.changes.map((ch) => [ch.card.instanceId, ch.replaced.instanceId])).toEqual([['r1', 'j1'], ['r2', 'r1']]);
+    expect(view.card.instanceId).toBe('r2');
+  });
+
+  it('rule off: no view is ever created and the judgment resolves as before', () => {
+    const next = settle(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } }));
+    expect(next).not.toHaveProperty('judgmentView');
+    expect(next.turn.flags).toEqual({ skipPlay: true });
+  });
+
+  it('rule on: with no card left to judge there is no view', () => {
+    const next = settle(withRule(table({ queue: [{ ...judge, otherwise: [{ kind: 'SetTurnFlagEffect', flag: 'nothingJudged' }] } as Effect] })));
+    expect(next).not.toHaveProperty('judgmentView');
+    expect(next.turn.flags).toEqual({ nothingJudged: true });
+  });
+
+  describe('acknowledging', () => {
+    const settledClub = () => settle(withRule(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3), card('j2', 'x', 'spade', 9)] } })));
+
+    it('resolves the judgment: the reader acts, the view is cleared, the event is logged', () => {
+      const next = resolve(settledClub(), { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a', by: 'seat-b' }, ctx).state;
+      expect(next.turn.flags).toEqual({ skipPlay: true });
+      expect(next).not.toHaveProperty('judgmentView');
+      expect(idsIn(next, 'discardPile')).toEqual(['j1']);
+      expect(next.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-a', by: 'seat-b', source: 'close' });
+      // The acknowledgement comes before what the reader does.
+      expect(next.log.map((e) => e.kind)).toEqual(['JudgmentEvent', 'JudgmentAcknowledgedEvent', 'CardMovedEvent']);
+    });
+
+    it('a timeout acknowledgement is logged as a timeout without by', () => {
+      const next = resolve(settledClub(), { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a', timeout: true }, ctx).state;
+      const event = next.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent');
+      expect(event).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-a', source: 'timeout' });
+      expect(event).not.toHaveProperty('by');
+    });
+
+    it('throws when nothing is settled, when the view is unsettled, and on a second acknowledgement', () => {
+      const ack = { kind: 'AcknowledgeJudgmentAction' as const, seatId: 'seat-a' };
+      expect(() => resolve(table(), ack, ctx)).toThrow('No settled judgment to acknowledge');
+      const unsettled: GameState = { ...table(), judgmentView: { seatId: 'seat-a', reader, card: card('j1'), changes: [], settled: false } };
+      expect(() => resolve(unsettled, ack, ctx)).toThrow('No settled judgment to acknowledge');
+      const once = resolve(settledClub(), ack, ctx).state;
+      expect(() => resolve(once, ack, ctx)).toThrow('No settled judgment to acknowledge');
+    });
+
+    it('a second judgment after the first is closed gets a fresh view', () => {
+      const closed = resolve(withRule(settledClub()), { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a' }, ctx).state;
+      const second = settle({ ...closed, resolutionQueue: [judge] });
+      expect(second.judgmentView).toEqual({ seatId: 'seat-a', reader, card: card('j2', 'x', 'spade', 9), changes: [], settled: true });
+    });
+  });
+
+  it('a settled judgment survives a JSON round trip and still resolves', () => {
+    const settled = settle(withRule(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } })));
+    const revived = JSON.parse(JSON.stringify(settled)) as GameState;
+    const ack = { kind: 'AcknowledgeJudgmentAction' as const, seatId: 'seat-a' };
+    expect(resolve(revived, ack, ctx).state).toEqual(resolve(settled, ack, ctx).state);
+  });
+
+  it('a whole turn runs through the legal action and the clock default, and never stalls', () => {
+    const filler = Array.from({ length: 6 }, (_, k) => card(`f${k}`, 'x', 'heart', 2));
+    let state = settle(withRule(table({ phase: 'Judgment', queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3), ...filler] } })));
+    let acknowledged = 0;
+    for (let step = 0; step < 20 && !(state.turn.ownerSeatId === 'seat-b' && state.phase === 'Play'); step++) {
+      const seatId = getActiveSeatId(state)!;
+      const legal = getLegalActions(state, seatId);
+      expect(legal.length).toBeGreaterThan(0);
+      for (const action of defaultActionsFor(state, legal)) {
+        if (action.kind === 'AcknowledgeJudgmentAction') acknowledged++;
+        state = resolve(state, action, ctx).state;
+      }
+    }
+    expect(acknowledged).toBe(1);
+    expect(state.turn.ownerSeatId).toBe('seat-b');
+    expect(state.log.filter((e) => e.kind === 'PhaseSkippedEvent')).toEqual([{ kind: 'PhaseSkippedEvent', seatId: 'seat-a', phase: 'Play' }]);
+    expect(state.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ source: 'timeout' });
+  });
+
+  it('a game that ends mid-judgment leaves no view behind', () => {
+    const endsOnJudgment = { ...ctx, mode: { ...mode, checkWinCondition: (state: GameState) => (state.judgmentView ? { winners: [] } : null) } as GameModeDefinition };
+    const ended = advanceToDecision(withRule(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } })), endsOnJudgment).state;
+    expect(ended.result).not.toBeNull();
+    expect(ended).not.toHaveProperty('judgmentView');
+    expect(idsIn(ended, 'processing')).toEqual([]);
   });
 });

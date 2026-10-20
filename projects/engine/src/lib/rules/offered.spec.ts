@@ -51,4 +51,20 @@ describe('isOfferedAction', () => {
     expect(isOfferedAction({ ...template, targets: [{ kind: 'seat', seatId: 'seat-1' }] }, [template])).toBe(true);
     expect(isOfferedAction({ ...use, cardInstanceId: 'card-5', targets: [{ kind: 'seat', seatId: 'seat-2' }] }, [template])).toBe(false);
   });
+
+  describe('an acknowledgement of a settled judgment', () => {
+    const acknowledge: Action = { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a' };
+
+    it('may carry by, the seat whose player pressed Close', () => {
+      expect(isOfferedAction({ ...acknowledge, by: 'seat-b' } as Action, [acknowledge])).toBe(true);
+    });
+
+    it('is refused for another seat than the offered one', () => {
+      expect(isOfferedAction({ kind: 'AcknowledgeJudgmentAction', seatId: 'seat-b' }, [acknowledge])).toBe(false);
+    });
+
+    it('is the only action where by is free', () => {
+      expect(isOfferedAction({ ...endPhase, by: 'seat-1' } as Action, [endPhase])).toBe(false);
+    });
+  });
 });

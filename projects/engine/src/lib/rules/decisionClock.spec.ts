@@ -1,6 +1,6 @@
 import { Action } from '../pipeline/actions';
 import { GameState } from '../domain/types';
-import { DecisionSpec, EMPTY_CLOCK, clockRemainingMs, describeDecision, expireClock, switchClock } from './decisionClock';
+import { DECISION_SECONDS, DecisionSpec, EMPTY_CLOCK, clockRemainingMs, describeDecision, expireClock, switchClock } from './decisionClock';
 
 const state = (fields: object): GameState =>
   ({ phase: 'Play', turn: { turnNumber: 3, ownerSeatId: 'seat-0' }, result: null, pendingResponse: null, ...fields }) as unknown as GameState;
@@ -88,5 +88,19 @@ describe('switchClock', () => {
     const expired = expireClock(switchClock(EMPTY_CLOCK, response, 0));
     expect(expired.running).toBeNull();
     expect(expired.paused).toEqual({});
+  });
+});
+
+describe('a settled judgment', () => {
+  const ack: Action = { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' };
+  const settled = state({ judgmentView: { settled: true }, phase: 'Play' });
+
+  it('is a notice decision of 10 seconds', () => {
+    expect(describeDecision(settled, 'seat-0', [ack], 'k')).toEqual({ kind: 'notice', seatId: 'seat-0', key: 'step:k' });
+    expect(DECISION_SECONDS.notice).toBe(10);
+  });
+
+  it('gets its own clock for each judgment', () => {
+    expect(describeDecision(settled, 'seat-0', [ack], 'k1')!.key).not.toBe(describeDecision(settled, 'seat-0', [ack], 'k2')!.key);
   });
 });

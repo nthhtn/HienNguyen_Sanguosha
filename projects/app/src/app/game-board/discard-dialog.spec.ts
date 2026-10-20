@@ -27,6 +27,11 @@ function render(count: number) {
 }
 
 describe('DiscardDialog', () => {
+  it('has a View Board button to minimize it', () => {
+    const { el } = render(1);
+    expect(el.querySelector('app-minimize-button')).not.toBeNull();
+  });
+
   it('lists every hand card and says how many must go', () => {
     const { el } = render(2);
     expect(el.querySelectorAll('button.card')).toHaveLength(3);

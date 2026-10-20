@@ -55,3 +55,10 @@ describe('defaultActionsFor', () => {
     expect(defaultActionsFor(state(), [play, end])).toEqual([end]);
   });
 });
+
+describe('defaultActionsFor a settled judgment', () => {
+  it('is a timeout acknowledgement', () => {
+    const ack: Action = { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' };
+    expect(defaultActionsFor(state({ judgmentView: { settled: true } }), [ack])).toEqual([{ ...ack, timeout: true }]);
+  });
+});

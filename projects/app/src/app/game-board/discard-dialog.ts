@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CardInstance } from 'engine';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
+import { MinimizeButton } from './minimize-button';
 import { TPipe } from '../i18n/t.pipe';
 
 export interface DiscardDialogData {
@@ -20,9 +21,12 @@ export interface DiscardDialogData {
 // Closes only through Discard, with the ticked instance ids, in hand order.
 @Component({
   selector: 'app-discard-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, PlayingCard, DecisionCountdown, TPipe],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, PlayingCard, DecisionCountdown, MinimizeButton, TPipe],
   template: `
-    <h2 mat-dialog-title>{{ (data.count === 1 ? 'discardDialog.title.one' : 'discardDialog.title.other') | t: { n: data.count } }}</h2>
+    <div class="title-row">
+      <h2 mat-dialog-title>{{ (data.count === 1 ? 'discardDialog.title.one' : 'discardDialog.title.other') | t: { n: data.count } }}</h2>
+      <app-minimize-button />
+    </div>
     <mat-dialog-content>
       <p class="hint">{{ 'discardDialog.hint' | t: { count: data.count, chosen: chosen().size } }}</p>
       <ul class="hand">

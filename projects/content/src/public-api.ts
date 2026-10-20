@@ -5,6 +5,7 @@ export * from './lib/registry';
 export * from './lib/modes/kingdomWar';
 export * from './lib/assets';
 export * from './lib/display';
+export * from './lib/judgmentOutcome';
 export { seatGender } from './lib/shared/gender';
 export { equipSlotOf } from './lib/cards/equipment';
 export { isRecast, isRecastPlay } from './lib/cards/chains';

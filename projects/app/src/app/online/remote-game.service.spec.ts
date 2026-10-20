@@ -111,6 +111,89 @@ describe('RemoteGameService', () => {
   });
 });
 
+describe('RemoteGameService: a settled judgment', () => {
+  let socket: FakeSocket;
+  let game: RemoteGameService;
+  const [opening] = gameUpdates();
+  const judged = { instanceId: 'j1', definitionId: 'sha', suit: 'heart' as const, rank: 5 };
+  const settled: GameUpdate = {
+    ...opening,
+    view: { ...opening.view, judgmentView: { seatId: 'seat-1', reader: { kind: 'card', card: { as: 'lightning', physical: [], colour: 'black', suit: 'spade', rank: 1 } as never }, card: judged, changes: [], settled: true } },
+    legalActions: [{ kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' }],
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [SocketService, RemoteGameService, RemoteDecisionClock, { provide: WEB_SOCKET_FACTORY, useValue: (url: string) => (socket = new FakeSocket(url)) }],
+    });
+    game = TestBed.inject(RemoteGameService);
+    TestBed.inject(SocketService).connect(ROOM.id);
+    socket.serverOpens();
+  });
+
+  it("closeJudgment submits the offered acknowledgement for the member's own seat, with the update's seq", () => {
+    socket.serverSends(welcome(PLAYING, 'p-ann', settled));
+    expect(game.judgmentSettled()).toBe(true);
+    game.closeJudgment();
+    expect(socket.lastSent).toEqual({ type: 'game.submit', gameId: GAME_ID, baseSeq: 0, actions: [{ kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' }], reqId: expect.any(String) });
+  });
+
+  it('canCloseJudgment follows the server’s offer', () => {
+    socket.serverSends(welcome(PLAYING, 'p-ann', settled));
+    expect(game.canCloseJudgment()).toBe(true);
+    socket.serverSends({ type: 'game.update', game: { ...settled, seq: 1, logFrom: opening.events.length, events: [], legalActions: [] } });
+    expect(game.canCloseJudgment()).toBe(false);
+  });
+
+  it('publicState is the state the server sent', () => {
+    socket.serverSends(welcome(PLAYING, 'p-ann', settled));
+    expect(game.publicState()).toBe(game.state());
+  });
+
+  it('a notice clock on a bot seat that a person is closing is not "thinking"', () => {
+    const takenOver: RoomSnapshot = { ...PLAYING, members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, botControlled: true } : m)) };
+    socket.serverSends(welcome(takenOver, 'p-ann', { ...settled, clock: { seatId: 'seat-1', kind: 'notice', endsAt: 10_000, totalSeconds: 10, serverNow: 0 } }));
+    expect(game.botSeatIds()).toContain('seat-1');
+    expect(game.botThinkingSeatId()).toBeNull();
+  });
+
+  it("a bot's own notice clock is \"thinking\"", () => {
+    const takenOver: RoomSnapshot = { ...PLAYING, members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, botControlled: true } : m)) };
+    socket.serverSends(welcome(takenOver, 'p-ann', { ...settled, clock: { seatId: 'seat-1', kind: 'notice', endsAt: 1_500, totalSeconds: 1.5, serverNow: 0, bot: true } }));
+    expect(game.botThinkingSeatId()).toBe('seat-1');
+  });
+
+  it('a Close that lost a race to another Close or the clock is silent, and resyncs', async () => {
+    socket.serverSends(welcome(PLAYING, 'p-ann', settled));
+    game.closeJudgment();
+    socket.serverSends({ type: 'error', reqId: socket.lastSent!['reqId'] as string, code: 'stale', message: 'The game moved on. Try again' });
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(game.lastError()).toBeNull();
+    expect(socket.lastSent).toMatchObject({ type: 'game.resync' });
+  });
+
+  it('a refused Close for another reason is shown', async () => {
+    socket.serverSends(welcome(PLAYING, 'p-ann', settled));
+    game.closeJudgment();
+    socket.serverSends({ type: 'error', reqId: socket.lastSent!['reqId'] as string, code: 'not_your_turn', message: "It's not your turn" });
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(game.lastError()).not.toBeNull();
+  });
+
+  it('does nothing without a settled judgment, or when the server offers no close', () => {
+    socket.serverSends(welcome(PLAYING, 'p-ann', opening));
+    expect(game.judgmentSettled()).toBe(false);
+    const before = socket.lastSent;
+    game.closeJudgment();
+    expect(socket.lastSent).toBe(before);
+    socket.serverSends({ type: 'game.update', game: { ...settled, seq: 1, logFrom: opening.events.length, events: [], legalActions: [] } });
+    expect(game.judgmentSettled()).toBe(true);
+    const sent = socket.lastSent;
+    game.closeJudgment();
+    expect(socket.lastSent).toBe(sent);
+  });
+});
+
 describe('RemoteDecisionClock', () => {
   let socket: FakeSocket;
   const [opening, afterMove] = gameUpdates();
@@ -138,3 +221,45 @@ describe('RemoteDecisionClock', () => {
     expect(clock.totalSeconds()).toBeNull();
   });
 });
+
+describe('RemoteDecisionClock: a notice clock', () => {
+  let socket: FakeSocket;
+  const [opening] = gameUpdates();
+
+  afterEach(() => jest.useRealTimers());
+
+  it("shows a settled judgment's countdown to every player, whichever seat the clock is on", () => {
+    jest.useFakeTimers({ now: 1_000_000 });
+    TestBed.configureTestingModule({
+      providers: [SocketService, RemoteGameService, RemoteDecisionClock, { provide: WEB_SOCKET_FACTORY, useValue: (url: string) => (socket = new FakeSocket(url)) }],
+    });
+    const clock = TestBed.inject(RemoteDecisionClock);
+    TestBed.inject(SocketService).connect(ROOM.id);
+    socket.serverOpens();
+    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-1', kind: 'notice', endsAt: 5_010_000, totalSeconds: 10, serverNow: 5_000_000 } }));
+    TestBed.tick();
+    expect(clock.secondsLeft()).toBe(10);
+    expect(clock.totalSeconds()).toBe(10);
+  });
+});
+
+describe('RemoteDecisionClock: a notice clock of a bot', () => {
+  let socket: FakeSocket;
+  const [opening] = gameUpdates();
+
+  afterEach(() => jest.useRealTimers());
+
+  it('shows no countdown', () => {
+    jest.useFakeTimers({ now: 1_000_000 });
+    TestBed.configureTestingModule({
+      providers: [SocketService, RemoteGameService, RemoteDecisionClock, { provide: WEB_SOCKET_FACTORY, useValue: (url: string) => (socket = new FakeSocket(url)) }],
+    });
+    const clock = TestBed.inject(RemoteDecisionClock);
+    TestBed.inject(SocketService).connect(ROOM.id);
+    socket.serverOpens();
+    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-1', kind: 'notice', endsAt: 5_001_500, totalSeconds: 1.5, serverNow: 5_000_000, bot: true } }));
+    TestBed.tick();
+    expect(clock.secondsLeft()).toBeNull();
+  });
+});
+

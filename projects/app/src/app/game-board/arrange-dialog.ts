@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { Action, CardInstance } from 'engine';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
+import { MinimizeButton } from './minimize-button';
 import { ArrangeDescription } from './ability-description';
 import { cardFaceLabel } from '../labels';
 import { TPipe } from '../i18n/t.pipe';
@@ -27,9 +28,12 @@ interface Placed {
 // engine's own ArrangeCardsAction filled in.
 @Component({
   selector: 'app-arrange-dialog',
-  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown, CdkDropList, CdkDrag, TPipe],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown, MinimizeButton, CdkDropList, CdkDrag, TPipe],
   template: `
-    <h2 mat-dialog-title>{{ data.description.title }}</h2>
+    <div class="title-row">
+      <h2 mat-dialog-title>{{ data.description.title }}</h2>
+      <app-minimize-button />
+    </div>
     <mat-dialog-content>
       <p class="prompt">{{ data.description.prompt }}</p>
       <ol class="row" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">

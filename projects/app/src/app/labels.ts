@@ -131,6 +131,8 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
       return tr('label.action.confirm');
     case 'CancelSelectionAction':
       return tr('label.action.cancel');
+    case 'AcknowledgeJudgmentAction':
+      return tr('ui.close');
     case 'DiscardCardAction':
       return tr('label.action.discard', { card: cardDisplayName(state, registry, action.cardInstanceId, tr) });
   }

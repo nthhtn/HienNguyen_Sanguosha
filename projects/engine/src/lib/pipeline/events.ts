@@ -162,6 +162,14 @@ export interface JudgmentEvent {
   card: CardInstance;
 }
 
+// The settled judgment was closed: by a player (`by`, the seat they play) or the clock.
+export interface JudgmentAcknowledgedEvent {
+  kind: 'JudgmentAcknowledgedEvent';
+  seatId: string;
+  by?: string;
+  source: 'close' | 'timeout';
+}
+
 // A seat turned face down, or face up again; `passedTurn`: it turned face up
 // instead of taking its turn.
 export interface SeatTurnedEvent {
@@ -244,6 +252,7 @@ export type EngineEvent =
   | CardsTurnedUpEvent
   | JudgmentEvent
   | JudgmentChangedEvent
+  | JudgmentAcknowledgedEvent
   | CardShownEvent
   | SeatTurnedEvent
   | ChainToggledEvent

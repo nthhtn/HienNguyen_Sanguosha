@@ -154,3 +154,23 @@ describe('targetsAllowed', () => {
     expect(targetsAllowed(state(), 'seat-a', 'c1', 'sha', [{ kind: 'seat', seatId: 'seat-c' }], registry)).toBe(false);
   });
 });
+
+describe('getLegalActions with a settled judgment', () => {
+  const settled = (over: Partial<GameState> = {}) =>
+    state({
+      judgmentView: { seatId: 'seat-a', reader: { kind: 'card', card: {} as never }, card: { instanceId: 'j', definitionId: 'x', suit: 'club', rank: 3 }, changes: [], settled: true },
+      players: [{ id: 'p-b', seatId: 'seat-b', kind: 'human', name: 'B' }],
+      ...over,
+    });
+
+  it('only the active seat is offered the acknowledgement', () => {
+    expect(getLegalActions(settled(), 'seat-b')).toEqual([{ kind: 'AcknowledgeJudgmentAction', seatId: 'seat-b' }]);
+    expect(getLegalActions(settled(), 'seat-a')).toEqual([]);
+    expect(getLegalActions(settled(), 'seat-c')).toEqual([]);
+  });
+
+  it('nothing else is offered while a judgment waits, not even to the turn owner in the Play phase', () => {
+    const offered = getLegalActions(settled({ players: [{ id: 'p-a', seatId: 'seat-a', kind: 'human', name: 'A' }] }), 'seat-a');
+    expect(offered.map((a) => a.kind)).toEqual(['AcknowledgeJudgmentAction']);
+  });
+});

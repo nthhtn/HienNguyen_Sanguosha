@@ -2,7 +2,7 @@ import { computed, DestroyRef, effect, inject, Injectable, Signal, signal } from
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { buildContentRegistry, kingdomWarMode } from 'content';
 import { getActiveSeatId, previewEffect } from 'engine';
-import type { Action, ContentRegistry, Effect, EngineContext, EngineEvent, GameState } from 'engine';
+import type { Action, ContentRegistry, Effect, EngineContext, DecisionKind, EngineEvent, GameState } from 'engine';
 import type { GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
 import { ApiError, errorMsg } from '../auth/auth.service';
 import type { Msg } from '../i18n/msg';
@@ -18,6 +18,10 @@ export type BoardGame = Pick<
   | 'mode'
   | 'state'
   | 'visibleState'
+  | 'publicState'
+  | 'canCloseJudgment'
+  | 'judgmentSettled'
+  | 'closeJudgment'
   | 'humanSeatId'
   | 'revealedSeatId'
   | 'activeSeatId'
@@ -35,8 +39,11 @@ export type BoardGame = Pick<
 // The running clock, moved onto this device's time.
 export interface LocalClock {
   seatId: string;
+  kind: DecisionKind;
   endsAt: number;
   totalSeconds: number;
+  // A bot's move delay, not a clock a person acts on.
+  bot: boolean;
 }
 
 // The seed stays on the server. Nothing on the client draws from this.
@@ -83,6 +90,15 @@ export class RemoteGameService implements BoardGame {
   // The server's offer, while the socket is up and no move is waiting for its answer.
   readonly legalActions: Signal<Action[]> = computed(() => (this.socket.status() === 'open' && !this._waiting() ? (this._update()?.legalActions ?? []) : []));
 
+  // A judgment waits for an acknowledgement (the judgmentNotice rule).
+  readonly judgmentSettled: Signal<boolean> = computed(() => !!this._state()?.judgmentView?.settled);
+
+  // What a public popup may read: the member's own view, which already hides what it must.
+  readonly publicState: Signal<GameState | null> = this._state.asReadonly();
+
+  // The server offers the close to every seat a person plays.
+  readonly canCloseJudgment: Signal<boolean> = computed(() => this.legalActions().some((a) => a.kind === 'AcknowledgeJudgmentAction'));
+
   // Bot seats, and human seats a bot plays for now.
   readonly botSeatIds: Signal<string[]> = computed(() => {
     const bots = new Set(this._state()?.players.filter((p) => p.kind === 'bot').map((p) => p.seatId) ?? []);
@@ -93,7 +109,8 @@ export class RemoteGameService implements BoardGame {
   // A clock on a bot-played seat is that bot about to move.
   readonly botThinkingSeatId: Signal<string | null> = computed(() => {
     const clock = this._clock();
-    return clock && this.botSeatIds().includes(clock.seatId) ? clock.seatId : null;
+    // A settled judgment's clock on a bot-played seat is a person's to close, unless it is the bot's own move delay.
+    return clock && this.botSeatIds().includes(clock.seatId) && (clock.kind !== 'notice' || clock.bot) ? clock.seatId : null;
   });
 
   // How the last game ended, until the player dismisses it. It comes from
@@ -133,8 +150,16 @@ export class RemoteGameService implements BoardGame {
     this.submitAll([action]);
   }
 
+  // Closes a settled judgment with the close the server offers this seat: it acts for the seat that
+  // acts on the judgment, with `by` this seat.
+  closeJudgment(): void {
+    const close = this.legalActions().find((a) => a.kind === 'AcknowledgeJudgmentAction');
+    if (close) this.submitAll([close], true);
+  }
+
   // One move: the server applies all of it or none of it.
-  submitAll(actions: Action[]): void {
+  // `quietStale`: losing a race (a Close that came second) is not worth a message; the resync follows anyway.
+  submitAll(actions: Action[], quietStale = false): void {
     const update = this._update();
     if (!update || actions.length === 0 || this._waiting()) return;
     this._waiting.set(true);
@@ -142,8 +167,9 @@ export class RemoteGameService implements BoardGame {
     this.socket
       .request({ type: 'game.submit', gameId: update.gameId, baseSeq: update.seq, actions })
       .catch((err: unknown) => {
-        this._lastError.set(errorMsg(err));
-        if (err instanceof ApiError && err.code === 'stale') this.resync();
+        const stale = err instanceof ApiError && err.code === 'stale';
+        if (!(quietStale && stale)) this._lastError.set(errorMsg(err));
+        if (stale) this.resync();
       })
       .finally(() => this._waiting.set(false));
   }
@@ -184,7 +210,7 @@ export class RemoteGameService implements BoardGame {
     this._update.set(update);
     this._state.set({ ...update.view, log: this.log, rng: NO_RNG });
     const clock = update.clock;
-    this._clock.set(clock && { seatId: clock.seatId, endsAt: Date.now() + (clock.endsAt - clock.serverNow), totalSeconds: clock.totalSeconds });
+    this._clock.set(clock && { seatId: clock.seatId, kind: clock.kind, bot: clock.bot === true, endsAt: Date.now() + (clock.endsAt - clock.serverNow), totalSeconds: clock.totalSeconds });
   }
 
   private clear(): void {
@@ -208,7 +234,8 @@ export class RemoteDecisionClock implements Pick<DecisionTimer, 'secondsLeft' | 
   private readonly now = signal(Date.now());
   private readonly own = computed(() => {
     const clock = this.game.clock();
-    return clock && clock.seatId === this.game.humanSeatId() && !this.game.paused() ? clock : null;
+    // A settled judgment's countdown is for everyone, whichever seat the clock is on.
+    return clock && (clock.seatId === this.game.humanSeatId() || (clock.kind === 'notice' && !clock.bot)) && !this.game.paused() ? clock : null;
   });
 
   readonly secondsLeft: Signal<number | null> = computed(() => {

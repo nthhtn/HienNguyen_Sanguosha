@@ -397,3 +397,23 @@ describe('redactStateForSeat: a give selection’s tally key (final-fix F5)', ()
     expect((redactStateForSeat(state, 'seat-b').pendingSelection!.then as { tally?: string }).tally).toBe('seat-b/deputy/kindness/given');
   });
 });
+
+describe('redactStateForSeat: a judgment on show', () => {
+  const owner = { kind: 'general' as const, seatId: 'seat-b', slot: 'main' as const, skillId: 'refusing-death' };
+  const judged = { instanceId: 'j1', definitionId: 'x', suit: 'club' as const, rank: 3 };
+  const withView = (): GameState => ({
+    ...makeState(),
+    judgmentView: { seatId: 'seat-a', reader: { kind: 'skill', owner }, card: judged, changes: [{ owner, abilityId: 'refusing-death', card: judged, replaced: { ...judged, instanceId: 'j0' } }], settled: true },
+  });
+
+  it('does not reveal another seat’s hidden skill through the reader or a change', () => {
+    const forA = redactStateForSeat(withView(), 'seat-a');
+    expect(JSON.stringify(forA.judgmentView)).not.toContain('refusing-death');
+    expect(forA.judgmentView).toMatchObject({ settled: true, card: judged });
+  });
+
+  it('shows the owner their own skill', () => {
+    expect(JSON.stringify(redactStateForSeat(withView(), 'seat-b').judgmentView)).toContain('refusing-death');
+  });
+});
+

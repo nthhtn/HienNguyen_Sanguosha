@@ -1,9 +1,15 @@
 import { pickRandomAction, ruleBasedPolicy } from 'bots';
 import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogState } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
+import { I18n } from '../i18n/i18n.service';
+import { DecisionDock } from './decision-dock';
+import { JudgmentDialog } from './judgment-dialog';
+import { settleJudgment } from '../settled-judgment.testing';
+import { cardIdDisplayName } from '../labels';
 import { GameBoard } from './game-board';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
@@ -12,6 +18,9 @@ import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
 import { EFFECT_URLS, MUSIC_PLAYER_FACTORY } from '../music.service';
+
+@Component({ template: 'info' })
+class InfoProbe {}
 
 // Selection through to the first Play phase: a human seat with a hidden General
 // first rests in its Start window, which Continue (EndPhaseAction) closes.
@@ -273,6 +282,126 @@ describe('GameBoard', () => {
     expect(cardsOverHandLimit(gameService.state()!, seatId)).toBe(0);
     expect(gameService.state()!.turn.ownerSeatId).not.toBe(seatId);
     overlay.replaceChildren();
+  });
+
+  // A two-seat deal where the first seat's aimed Slash or Duel waits on the other seat's answer, with that seat revealed.
+  function dealResponse(): void {
+    for (let seed = 1; seed < 50; seed++) {
+      gameService.startGame(2, seed);
+      finishSelection(gameService);
+      gameService.reveal(gameService.activeSeatId()!);
+      const aimed = gameService.legalActions().find(
+        (a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(gameService.state()!, a.cardInstanceId) ?? '')
+      );
+      if (!aimed) continue;
+      gameService.submit(aimed);
+      if (waitsOnDamageAnswer(gameService.state()!)) break;
+    }
+    gameService.reveal(gameService.activeSeatId()!);
+  }
+
+  describe('minimizing a decision dialog', () => {
+    async function openResponse() {
+      dealResponse();
+      const fixture = TestBed.createComponent(GameBoard);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const pane = () => document.querySelector('.cdk-overlay-pane') as HTMLElement;
+      const el = fixture.nativeElement as HTMLElement;
+      return { fixture, el, pane };
+    }
+
+    it('View Board hides the dialog and shows a banner; clicking the banner brings the dialog back', async () => {
+      const { fixture, el, pane } = await openResponse();
+      expect(el.querySelector('app-decision-banner .banner')).toBeNull();
+      (pane().querySelector('button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(pane().classList).toContain('decision-minimized');
+      // styles.scss hides the backdrop through its sibling wrapper, so the backdrop must come right before it.
+      expect(pane().closest('.cdk-global-overlay-wrapper')!.previousElementSibling!.classList).toContain('cdk-overlay-backdrop');
+      const banner = el.querySelector('app-decision-banner .banner') as HTMLButtonElement;
+      expect(banner.textContent).toContain('Response Needed');
+      // The banner wears the colours of the force the dialog is themed in.
+      expect(`force-dialog-${banner.getAttribute('data-force') ?? 'none'}`).toBe([...pane().classList].find((c) => /^force-dialog-/.test(c)));
+      banner.click();
+      fixture.detectChanges();
+      expect(pane().classList).not.toContain('decision-minimized');
+      expect(el.querySelector('app-decision-banner .banner')).toBeNull();
+    });
+
+    it('an info dialog opened while minimized leaves the decision minimized', async () => {
+      const { fixture, el } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      TestBed.inject(MatDialog).open(InfoProbe);
+      expect(el.querySelector('app-decision-banner .banner')).not.toBeNull();
+      expect(document.querySelector('.decision-minimized')).not.toBeNull();
+    });
+
+    it('leaving the game while minimized closes the hidden dialog and clears the banner', async () => {
+      const { fixture } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      const dialog = TestBed.inject(MatDialog);
+      fixture.destroy();
+      expect(TestBed.inject(DecisionDock).minimized()).toBeNull();
+      // Closing (the exit animation still runs), no longer open.
+      expect(dialog.openDialogs.every((d) => d.getState() !== MatDialogState.OPEN)).toBe(true);
+    });
+
+    it('switching language while minimized rebuilds the decision in that language and keeps it minimized', async () => {
+      localStorage.clear();
+      const { fixture, el } = await openResponse();
+      const englishSource = document.querySelector('.cdk-overlay-pane .source')!.textContent;
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await TestBed.inject(I18n).setLocale('vi');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 400)); // the old dialog's exit, the new one's entrance
+      fixture.detectChanges();
+      expect(el.querySelector('app-decision-banner .banner')!.textContent).toContain('Cần phản hồi');
+      const panes = document.querySelectorAll('.cdk-overlay-pane');
+      expect(panes).toHaveLength(1);
+      expect(panes[0].classList).toContain('decision-minimized');
+      expect(panes[0].querySelector('.source')!.textContent).not.toBe(englishSource);
+      localStorage.clear();
+    });
+
+    it('the rebuilt decision is never shown, not even for a moment', async () => {
+      localStorage.clear();
+      const { fixture } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      // Every popup that appears from now on, and whether it was already hidden when it did.
+      const seen: boolean[] = [];
+      const observer = new MutationObserver((records) => {
+        for (const node of records.flatMap((r) => [...r.addedNodes])) {
+          const pane = node instanceof HTMLElement ? (node.matches('.cdk-overlay-pane') ? node : node.querySelector('.cdk-overlay-pane')) : null;
+          if (pane) seen.push(pane.classList.contains('decision-minimized'));
+        }
+      });
+      observer.observe(document.querySelector('.cdk-overlay-container')!, { childList: true, subtree: true });
+      await TestBed.inject(I18n).setLocale('vi');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      observer.disconnect();
+      expect(seen.length).toBeGreaterThan(0);
+      expect(seen.every(Boolean)).toBe(true);
+      localStorage.clear();
+    });
+
+    it('the banner goes when the decision settles while minimized', async () => {
+      const { fixture, el } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      gameService.submit(gameService.legalActions().find((a) => a.kind === 'PassAction')!);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(el.querySelector('app-decision-banner .banner')).toBeNull();
+    });
   });
 
   it('opens the Response dialog for the seat that must answer, and No Response lets the effect go ahead', async () => {
@@ -589,5 +718,152 @@ describe('GameBoard event sounds', () => {
       expect(popups()).toHaveLength(1);
       expect(popups()[0]).not.toBe(first);
     });
+  });
+});
+
+describe('GameBoard: the judgment popup', () => {
+  let gameService: GameService;
+  const overlayText = () => (document.querySelector('.cdk-overlay-container') as HTMLElement).textContent!;
+  const popups = () => TestBed.inject(MatDialog).openDialogs.filter((d) => d.componentInstance instanceof JudgmentDialog && d.getState() === MatDialogState.OPEN);
+  const settle = async (fixture: ReturnType<typeof TestBed.createComponent<GameBoard>>) => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  };
+  const start = (mode: 'vs-bots' | 'pass-and-play', eliminated: string[] = []) => {
+    gameService.startGame(3, 1, mode, [], { judgmentNotice: true });
+    settleJudgment(gameService, eliminated);
+    return TestBed.createComponent(GameBoard);
+  };
+
+  beforeEach(async () => {
+    localStorage.clear();
+    await TestBed.configureTestingModule({
+      imports: [GameBoard],
+      providers: [provideRouter([{ path: 'setup', children: [] }])],
+    }).compileComponents();
+    gameService = TestBed.inject(GameService);
+    gameService.botDelayMs = 1_000_000;
+  });
+
+  afterEach(() => {
+    TestBed.inject(MatDialog).closeAll();
+    localStorage.clear();
+  });
+
+  it('opens the popup while a judgment is on show, and closes it when it is acknowledged', async () => {
+    const fixture = start('vs-bots');
+    await settle(fixture);
+    expect(popups()).toHaveLength(1);
+    expect(overlayText()).toContain('Judgment');
+    gameService.closeJudgment('seat-0');
+    await settle(fixture);
+    expect(popups()).toHaveLength(0);
+  });
+
+  it('the action list of the board does not offer the close, which belongs to the popup', async () => {
+    const fixture = start('vs-bots');
+    await settle(fixture);
+    const list = (fixture.nativeElement as HTMLElement).querySelector('app-action-list')!;
+    expect(gameService.legalActions().some((a) => a.kind === 'AcknowledgeJudgmentAction')).toBe(true);
+    expect([...list.querySelectorAll('button')].map((b) => b.textContent!.trim())).not.toContain('Close');
+  });
+
+  it('Close in the popup acknowledges the judgment', async () => {
+    const fixture = start('vs-bots');
+    await settle(fixture);
+    (document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement).click();
+    await settle(fixture);
+    expect(gameService.judgmentSettled()).toBe(false);
+    expect(gameService.state()!.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ seatId: 'seat-0', by: 'seat-0', source: 'close' });
+  });
+
+  it('in Pass and Play the popup opens over the gate, and Close works from there', async () => {
+    const fixture = start('pass-and-play');
+    await settle(fixture);
+    expect(gameService.revealedSeatId()).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-reveal-gate-overlay')).not.toBeNull();
+    expect(popups()).toHaveLength(1);
+    (document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement).click();
+    await settle(fixture);
+    expect(gameService.judgmentSettled()).toBe(false);
+  });
+
+  it('shows no hand card of any seat', async () => {
+    const fixture = start('pass-and-play');
+    await settle(fixture);
+    const state = gameService.state()!;
+    const hidden = state.zones.filter((z) => z.kind === 'hand').flatMap((z) => z.cards).map((c) => cardIdDisplayName(c.definitionId)).filter((n) => n !== cardIdDisplayName('sha') && n !== 'Lightning');
+    expect(hidden.length).toBeGreaterThan(0);
+    for (const name of new Set(hidden)) expect(overlayText()).not.toContain(name);
+  });
+
+  it('minimizing it shows the banner titled Judgment; clicking the banner restores it', async () => {
+    const fixture = start('vs-bots');
+    await settle(fixture);
+    (document.querySelector('.cdk-overlay-container button.minimize') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    const pane = document.querySelector('.cdk-overlay-pane') as HTMLElement;
+    expect(pane.classList).toContain('decision-minimized');
+    const banner = (fixture.nativeElement as HTMLElement).querySelector('app-decision-banner .banner') as HTMLButtonElement;
+    expect(banner.textContent).toContain('Judgment');
+    banner.click();
+    fixture.detectChanges();
+    expect(pane.classList).not.toContain('decision-minimized');
+  });
+
+  it('updates the same popup in place when the judgment changes', async () => {
+    const fixture = start('vs-bots');
+    await settle(fixture);
+    const [first] = popups();
+    const inner = gameService as unknown as { _state: { update(f: (s: GameState) => GameState): void } };
+    const swap = { instanceId: 'swap-1', definitionId: 'shan', suit: 'spade' as const, rank: 13 };
+    inner._state.update((s) => ({
+      ...s,
+      judgmentView: { ...s.judgmentView!, card: swap, settled: false, changes: [{ owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'unyielding' }, abilityId: 'unyielding', card: swap, replaced: s.judgmentView!.card }] },
+    }));
+    await settle(fixture);
+    expect(popups()).toEqual([first]);
+    expect(overlayText()).toContain('replaced');
+    expect(overlayText()).toContain('Waiting for');
+    expect(document.querySelector('.cdk-overlay-container button.close')).toBeNull();
+  });
+
+  it('a second judgment after the first is closed gets a new popup', async () => {
+    const fixture = start('vs-bots');
+    await settle(fixture);
+    const [first] = popups();
+    gameService.closeJudgment('seat-0');
+    await settle(fixture);
+    settleJudgment(gameService);
+    await settle(fixture);
+    expect(popups()).toHaveLength(1);
+    expect(popups()[0]).not.toBe(first);
+  });
+
+  it('a viewer who cannot close sees the popup without a Close button', async () => {
+    const fixture = start('vs-bots', ['seat-0']);
+    await settle(fixture);
+    expect(popups()).toHaveLength(1);
+    expect(document.querySelector('.cdk-overlay-container button.close')).toBeNull();
+    expect(document.querySelector('.cdk-overlay-container app-decision-countdown')).not.toBeNull();
+  });
+
+  it('switching language updates the open popup, and a minimized one including its banner', async () => {
+    const fixture = start('vs-bots');
+    await settle(fixture);
+    expect(overlayText()).toContain('Consequence');
+    await TestBed.inject(I18n).setLocale('vi');
+    await settle(fixture);
+    expect(overlayText()).toContain('Phán xét');
+    expect(overlayText()).not.toContain('Consequence');
+    (document.querySelector('.cdk-overlay-container button.minimize') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await TestBed.inject(I18n).setLocale('en');
+    await settle(fixture);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-decision-banner .banner')!.textContent).toContain('Judgment');
+    expect(popups()).toHaveLength(1);
   });
 });

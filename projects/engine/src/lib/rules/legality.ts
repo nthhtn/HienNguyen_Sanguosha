@@ -29,6 +29,11 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     return getLegalGeneralChoices(state, seatId, registry);
   }
 
+  // A judgment waiting to be acknowledged: one action, for the seat that acts on it.
+  if (state.judgmentView?.settled) {
+    return getActiveSeatId(state) === seatId ? [{ kind: 'AcknowledgeJudgmentAction', seatId }] : [];
+  }
+
   if (state.pendingChoice) {
     const choice = state.pendingChoice;
     if (choice.seatId !== seatId) return [];

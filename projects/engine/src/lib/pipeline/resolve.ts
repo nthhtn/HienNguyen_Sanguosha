@@ -102,7 +102,11 @@ function drain(state: GameState, ctx: EngineContext, budget: StepBudget): Resolv
     current = withWinCheck(step.state, ctx);
     events.push(...step.events);
   }
-  if (current.result) current = withQueue(sweepProcessing(current), []);
+  if (current.result) {
+    // The game is over: no judgment is on show any more (its card was just swept).
+    const { judgmentView: _over, ...ended } = withQueue(sweepProcessing(current), []);
+    current = ended;
+  }
   return { state: current, events };
 }
 
@@ -757,6 +761,15 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!selection.onCancel) throw new Error(`Selection ${selection.id} can’t be cancelled`);
       const { pendingSelection: _done, ...cleared } = state;
       return { state: queueFront(cleared, selection.onCancel), events: [] };
+    }
+
+    case 'AcknowledgeJudgmentAction': {
+      const view = state.judgmentView;
+      if (!view?.settled) throw new Error('No settled judgment to acknowledge');
+      const { judgmentView: _closed, ...rest } = state;
+      const acknowledged: EngineEvent = { kind: 'JudgmentAcknowledgedEvent', seatId: action.seatId, ...(action.by ? { by: action.by } : {}), source: action.timeout ? 'timeout' : 'close' };
+      const judgment = { seatId: view.seatId, reader: view.reader, card: view.card, ...(view.data ? { data: view.data } : {}) };
+      return { state: queueFront({ ...rest, log: [...rest.log, acknowledged] }, [{ kind: 'JudgmentResolveEffect', judgment }]), events: [acknowledged] };
     }
 
     default:

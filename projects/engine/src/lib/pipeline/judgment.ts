@@ -50,10 +50,13 @@ export function applyJudgmentStepEffect(state: GameState, effect: JudgmentStepEf
         { kind: 'JudgmentEvent', seatId: effect.seatId, reader: effect.reader, card: judged },
       ];
       const judgment: Judgment = { seatId: effect.seatId, reader: effect.reader, card: judged, ...(effect.data ? { data: effect.data } : {}) };
-      return { state: queueFront({ ...state, zones, rng, log: [...state.log, ...events] }, [{ kind: 'JudgmentShownEffect', judgment }]), events };
+      const view: Partial<GameState> = state.rules?.judgmentNotice ? { judgmentView: { ...judgment, changes: [], settled: false } } : {};
+      return { state: queueFront({ ...state, ...view, zones, rng, log: [...state.log, ...events] }, [{ kind: 'JudgmentShownEffect', judgment }]), events };
     }
     case 'JudgmentShownEffect':
-      // Every skill that changes judgments has had its say: the card stands.
+      // Every skill that changes judgments has had its say: the card stands. With the
+      // judgmentNotice rule the game now waits; acknowledging it resolves the judgment.
+      if (state.judgmentView) return { state: { ...state, judgmentView: { ...state.judgmentView, settled: true } }, events: [] };
       return { state: queueFront(state, [{ kind: 'JudgmentResolveEffect', judgment: effect.judgment }]), events: [] };
     case 'JudgmentResolveEffect': {
       const done: Effect = { kind: 'JudgmentDoneEffect', judgment: effect.judgment };
@@ -71,7 +74,9 @@ export function applyJudgmentStepEffect(state: GameState, effect: JudgmentStepEf
       const into = applyEffect(out.state, { kind: 'MoveCardEffect', cardInstanceId: effect.withCardInstanceId, toZoneId: processing.id });
       const card = requireZoneOfKind(into.state.zones, 'processing').cards.find((c) => c.instanceId === effect.withCardInstanceId)!;
       const changed: EngineEvent = { kind: 'JudgmentChangedEvent', owner: effect.owner, abilityId: effect.abilityId, judgedSeatId: effect.judgment.seatId, card, replaced: old };
-      const next: GameState = { ...into.state, log: [...into.state.log, changed] };
+      const view = into.state.judgmentView;
+      const viewed: Partial<GameState> = view ? { judgmentView: { ...view, card, changes: [...view.changes, { owner: effect.owner, abilityId: effect.abilityId, card, replaced: old }] } } : {};
+      const next: GameState = { ...into.state, ...viewed, log: [...into.state.log, changed] };
       // Shown again: the other changers get their say on the new card.
       const shown: Effect = { kind: 'JudgmentShownEffect', judgment: { ...effect.judgment, card }, changedBy: effect.owner.seatId };
       return { state: queueFront(next, [shown]), events: [...out.events, ...into.events, changed] };

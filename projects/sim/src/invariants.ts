@@ -1,4 +1,4 @@
-import { decisionPending as isDecisionPending, phaseWaitsForPlayer } from 'engine';
+import { decisionPending as isDecisionPending, getActiveSeatId, getLegalActions, phaseWaitsForPlayer } from 'engine';
 import type { ContentRegistry, GameState } from 'engine';
 
 // Whether a skill kept `seatId` alive below 1 HP since its HP last dropped
@@ -21,6 +21,19 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
     const rescuePending = state.pendingResponse?.reason?.kind === 'dying' && state.pendingResponse.reason.seatId === seat.id;
     if (!seat.eliminated && seat.combinedHp <= 0 && !rescuePending && !keptAlive(state, seat.id)) {
       violations.push(`Seat ${seat.id} is living at ${seat.combinedHp} HP with no rescue round pending`);
+    }
+  }
+
+  // A judgment on show (the judgmentNotice rule): gone when the game is over, and while it waits for an
+  // acknowledgement some living seat can give it.
+  if (state.judgmentView) {
+    if (state.result) {
+      violations.push('A finished game still has a judgment view');
+    } else if (state.judgmentView.settled) {
+      const acting = getActiveSeatId(state);
+      if (!acting || !getLegalActions(state, acting, registry).some((a) => a.kind === 'AcknowledgeJudgmentAction')) {
+        violations.push('A settled judgment has no seat able to acknowledge it');
+      }
     }
   }
 

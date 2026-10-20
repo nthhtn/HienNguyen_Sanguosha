@@ -1,8 +1,8 @@
 import { ruleBasedPolicy } from 'bots';
 import type { BotPolicy } from 'bots';
 import { buildContentRegistry } from 'content';
-import { defaultActionsFor, getActiveSeatId, getLegalActions } from 'engine';
-import type { Action } from 'engine';
+import { defaultActionsFor, getActiveSeatId, getLegalActions, usedCardOf } from 'engine';
+import type { Action, GameState } from 'engine';
 import type { MemberKind } from 'protocol';
 import { GameRecord, GameSeat } from '../persistence/records';
 import { NewGameAction } from '../persistence/repositories';
@@ -134,7 +134,7 @@ describe('GameRunner', () => {
   it("moves a bot seat after the bot delay, and shows the bot's timer as its clock", async () => {
     const { runner, host, scheduler, legal } = setup();
     await runner.submit('p0', GAME_ID, 0, [legal()[0]]);
-    expect(runner.updateFor('p0', 0)!.clock).toEqual({ seatId: 'seat-1', kind: 'selection', endsAt: T0 + BOT_DELAY_MS, totalSeconds: BOT_DELAY_MS / 1000, serverNow: T0 });
+    expect(runner.updateFor('p0', 0)!.clock).toEqual({ seatId: 'seat-1', kind: 'selection', endsAt: T0 + BOT_DELAY_MS, totalSeconds: BOT_DELAY_MS / 1000, serverNow: T0, bot: true });
     await scheduler.advance(BOT_DELAY_MS - 1);
     expect(host.stored).toHaveLength(1);
     await scheduler.advance(1);
@@ -306,3 +306,192 @@ describe('GameRunner', () => {
     expect(host.seatsChangedCount).toBe(0);
   });
 });
+
+// A settled judgment (the judgmentNotice rule): the runner is moved into a state that waits for the acknowledgement,
+// as if a judgment had just turned its card up. The runner's own fields are set directly: reaching one by play would
+// take a game of luck.
+function settle(runner: GameRunner): void {
+  const judged = { instanceId: 'judged-1', definitionId: 'sha', suit: 'heart' as const, rank: 5 };
+  const lightning = { instanceId: 'lightning-1', definitionId: 'lightning', suit: 'spade' as const, rank: 1 };
+  const base = runner.state;
+  const generalIds = [...registry.generals.keys()];
+  const state: GameState = {
+    ...base,
+    phase: 'Play',
+    generalSelection: null,
+    // Revealed seats of different kingdoms, so the game goes on after the judgment.
+    seats: base.seats.map((seat, i) => ({
+      ...seat,
+      kingdom: (['Wei', 'Shu', 'Wu', 'Qun'] as const)[i % 4],
+      generals: { main: { generalDefinitionId: generalIds[2 * i], revealed: true }, deputy: { generalDefinitionId: generalIds[2 * i + 1], revealed: true } },
+    })),
+    rules: { judgmentNotice: true },
+    zones: base.zones.map((z) => (z.kind === 'processing' ? { ...z, cards: [judged] } : z)),
+    judgmentView: { seatId: 'seat-0', reader: { kind: 'card', card: usedCardOf(lightning) }, card: judged, changes: [], settled: true },
+  };
+  const inner = runner as unknown as { state: GameState; reschedule(): void };
+  inner.state = state;
+  inner.reschedule();
+}
+
+describe('GameRunner: a settled judgment', () => {
+  const ack = (seatId: string, extra: object = {}) => ({ kind: 'AcknowledgeJudgmentAction', seatId, ...extra });
+
+  it('runs the 10 second notice clock while a person plays, and acknowledges by timeout', async () => {
+    const { runner, host, scheduler } = setup();
+    settle(runner);
+    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 10 });
+    await scheduler.advance(9_999);
+    expect(host.stored).toHaveLength(0);
+    await scheduler.advance(1);
+    expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) })]);
+    expect(runner.state).not.toHaveProperty('judgmentView');
+  });
+
+  it("flags a bot's move timer as a bot's in the clock, and a person's clock not", () => {
+    const bots = setup({ kinds: ['bot', 'bot'], connected: [] });
+    settle(bots.runner);
+    expect(bots.runner.updateFor('p0', 0)!.clock).toMatchObject({ kind: 'notice', bot: true });
+    const person = setup();
+    settle(person.runner);
+    const clock = person.runner.updateFor('p0', 0)!.clock!;
+    expect(clock).toMatchObject({ kind: 'notice' });
+    expect(clock).not.toHaveProperty('bot');
+  });
+
+  it('is not closed by a bot while another human plays, though the first human is bot-played', async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['human', 'human'], connected: ['p0', 'p1'] });
+    runner.disconnected('p0');
+    await scheduler.advance(TAKEOVER_AWAY_MS);
+    runner.tick();
+    expect(runner.botControlled('p0')).toBe(true);
+    const before = host.stored.length;
+    settle(runner);
+    expect(runner.updateFor('p1', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 10 });
+    await scheduler.advance(BOT_DELAY_MS * 2);
+    expect(host.stored).toHaveLength(before);
+    await scheduler.advance(10_000);
+    expect(host.stored[before]).toMatchObject({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) });
+  });
+
+  it('a notice timeout does not count towards takeover', async () => {
+    const { runner, host, scheduler } = setup({ connected: [] });
+    for (let i = 0; i < 3; i++) {
+      settle(runner);
+      const before = host.stored.length;
+      await scheduler.advance(10_000);
+      expect(host.stored[before]).toMatchObject({ source: 'timeout', action: ack('seat-0', { timeout: true }) });
+    }
+    expect(runner.botControlled('p0')).toBe(false);
+    expect(host.seatsChangedCount).toBe(0);
+  });
+
+  it('with every human away but not yet taken over, the clock still closes it', async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['human', 'human'], connected: [] });
+    settle(runner);
+    await scheduler.advance(10_000);
+    expect(host.stored[0]).toMatchObject({ source: 'timeout', action: ack('seat-0', { timeout: true }) });
+    expect(runner.botControlled('p0') || runner.botControlled('p1')).toBe(false);
+  });
+
+  it('with no person playing, a bot closes it after the bot delay', async () => {
+    const { runner, host, scheduler } = setup({ connected: [] });
+    runner.disconnected('p0');
+    await scheduler.advance(TAKEOVER_AWAY_MS);
+    runner.tick();
+    expect(runner.botControlled('p0')).toBe(true);
+    const before = host.stored.length;
+    settle(runner);
+    await scheduler.advance(BOT_DELAY_MS);
+    expect(host.stored[before]).toMatchObject({ seatId: 'seat-0', source: 'takeover', action: ack('seat-0') });
+    expect(runner.state).not.toHaveProperty('judgmentView');
+  });
+
+  it('a game of bots only closes it after the bot delay', async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['bot', 'bot'], connected: [] });
+    settle(runner);
+    await scheduler.advance(BOT_DELAY_MS);
+    expect(host.stored[host.stored.length - 1]).toMatchObject({ seatId: 'seat-0', source: 'bot', action: ack('seat-0') });
+  });
+});
+
+describe('GameRunner: closing a settled judgment', () => {
+  const close = (seatId: string) => ({ kind: 'AcknowledgeJudgmentAction', seatId }) as Action;
+  const twoHumans = () => setup({ kinds: ['human', 'human'], connected: ['p0', 'p1'] });
+
+  it('any person-controlled seat can close it, as the acting seat, with by', async () => {
+    const { runner, host } = twoHumans();
+    settle(runner);
+    await runner.submit('p1', GAME_ID, 0, [close('seat-1')]);
+    expect(host.stored).toEqual([
+      expect.objectContaining({ seq: 1, seatId: 'seat-1', source: 'human', action: { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0', by: 'seat-1' }, stateHash: stateHash(runner.state) }),
+    ]);
+    expect(runner.state).not.toHaveProperty('judgmentView');
+    expect(runner.state.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-0', by: 'seat-1', source: 'close' });
+  });
+
+  it('the acting seat closing it records itself as by', async () => {
+    const { runner, host } = twoHumans();
+    settle(runner);
+    await runner.submit('p0', GAME_ID, 0, [close('seat-0')]);
+    expect(host.stored[0]).toMatchObject({ seatId: 'seat-0', action: { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0', by: 'seat-0' } });
+  });
+
+  it('ignores a seatId or by the client made up', async () => {
+    const { runner, host } = twoHumans();
+    settle(runner);
+    await runner.submit('p1', GAME_ID, 0, [{ ...close('seat-0'), by: 'seat-0' } as Action]);
+    expect(host.stored[0]).toMatchObject({ seatId: 'seat-1', action: { seatId: 'seat-0', by: 'seat-1' } });
+  });
+
+  it('offers the close to every person-controlled seat, and to no bot seat', () => {
+    const { runner } = setup({ kinds: ['human', 'human', 'bot'], connected: ['p0', 'p1'] });
+    settle(runner);
+    expect(runner.updateFor('p0', 0)!.legalActions).toEqual([close('seat-0')]);
+    expect(runner.updateFor('p1', 0)!.legalActions).toEqual([close('seat-1')]);
+    expect(runner.updateFor('p2', 0)!.legalActions).toEqual([]);
+  });
+
+  it('refuses a bot-played seat, an eliminated seat, a wrong kind and extra actions', async () => {
+    const { runner, host, scheduler } = twoHumans();
+    runner.disconnected('p0');
+    await scheduler.advance(TAKEOVER_AWAY_MS);
+    runner.tick();
+    const before = host.stored.length;
+    settle(runner);
+    expect(runner.updateFor('p0', 0)!.legalActions).toEqual([]);
+    await expect(runner.submit('p0', GAME_ID, runner.seq, [close('seat-0')])).rejects.toEqual(code('not_your_turn'));
+    await expect(runner.submit('p1', GAME_ID, runner.seq, [{ kind: 'EndPhaseAction', seatId: 'seat-1' }])).rejects.toEqual(code('not_your_turn'));
+    await expect(runner.submit('p1', GAME_ID, runner.seq, [close('seat-1'), close('seat-1')])).rejects.toEqual(code('not_your_turn'));
+    const inner = runner as unknown as { state: GameState };
+    inner.state = { ...runner.state, seats: runner.state.seats.map((s) => (s.id === 'seat-1' ? { ...s, eliminated: true } : s)) };
+    await expect(runner.submit('p1', GAME_ID, runner.seq, [close('seat-1')])).rejects.toEqual(code('not_your_turn'));
+    expect(runner.updateFor('p1', 0)!.legalActions).toEqual([]);
+    expect(host.stored).toHaveLength(before);
+  });
+
+  it('refuses a stale baseSeq', async () => {
+    const { runner } = twoHumans();
+    settle(runner);
+    await expect(runner.submit('p1', GAME_ID, 5, [close('seat-1')])).rejects.toEqual(code('stale'));
+  });
+
+  it('a second close is refused, never a second acknowledgement', async () => {
+    const { runner, host } = twoHumans();
+    settle(runner);
+    await runner.submit('p1', GAME_ID, 0, [close('seat-1')]);
+    await expect(runner.submit('p0', GAME_ID, 0, [close('seat-0')])).rejects.toEqual(code('stale'));
+    await expect(runner.submit('p0', GAME_ID, runner.seq, [close('seat-0')])).rejects.toEqual(expect.objectContaining({ code: expect.stringMatching(/not_your_turn|illegal_action/) }));
+    expect(host.stored.filter((a) => a.action.kind === 'AcknowledgeJudgmentAction')).toHaveLength(1);
+  });
+
+  it('a close that loses the race to the timeout is stale', async () => {
+    const { runner, host, scheduler } = twoHumans();
+    settle(runner);
+    const seq = runner.seq;
+    await scheduler.advance(10_000);
+    expect(host.stored[0]).toMatchObject({ source: 'timeout' });
+    await expect(runner.submit('p1', GAME_ID, seq, [close('seat-1')])).rejects.toEqual(code('stale'));
+  });
+});
+

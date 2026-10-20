@@ -85,6 +85,15 @@ describe('RoomService games', () => {
     expect(game.seats.map((s) => s.name).sort()).toEqual(['Ann', 'Bo']);
   });
 
+  it('stores the judgment notice on every started game, while the room rules stay as chosen', async () => {
+    const { repos, pair, start } = await setup();
+    const { roomId, a } = await pair();
+    await start(a, roomId);
+    const [game] = await repos.games.listRunning();
+    expect(game.rules).toEqual({ judgmentNotice: true });
+    expect(a.connection.room!.rules).toEqual({});
+  });
+
   it('refuses Start Game from a member who is not the host, and while a game runs', async () => {
     const { pair, start } = await setup();
     const { roomId, a, b } = await pair();

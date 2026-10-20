@@ -7,6 +7,8 @@ export const DECISION_SECONDS = {
   choice: 60,
   discard: 60,
   selection: 300,
+  // A settled judgment, for anyone to read and close.
+  notice: 10,
   // One budget for a whole Play phase, paused while a response is under way.
   play: 300,
 } as const;
@@ -27,6 +29,7 @@ export interface DecisionSpec {
 export function describeDecision(state: GameState, seatId: string, legal: readonly Action[], stepKey: string): DecisionSpec | null {
   if (state.result || legal.length === 0) return null;
   const step = (kind: DecisionKind): DecisionSpec => ({ kind, seatId, key: `step:${stepKey}` });
+  if (state.judgmentView?.settled) return step('notice');
   if (state.pendingChoice || state.pendingSelection || state.pendingArrangement) return step('choice');
   if (state.pendingResponse) return step('response');
   if (state.phase === 'GeneralSelection') return { kind: 'selection', seatId, key: `selection:${seatId}` };

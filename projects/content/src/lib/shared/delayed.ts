@@ -1,4 +1,4 @@
-import type { CardDefinition, CardInstance, Effect, GameState, Phase, PhaseChangedEvent, SkillTrigger } from 'engine';
+import type { CardDefinition, CardInstance, ContentRegistry, Effect, GameState, Phase, PhaseChangedEvent, SkillTrigger } from 'engine';
 import { cardCountsAs, judgmentZoneOf, skipFlagOf, usedCardFrom, usedCardOf } from 'engine';
 import { rangeBonusFor, toolsIgnoreDistance, untargetableBy } from './abilities';
 import { suitOf } from './suits';
@@ -40,6 +40,12 @@ interface SkipPhaseToolSpec {
   maxDistance?: number;
 }
 
+// What a judged card does to a skip-phase Tool: anything but a `spares` card (as the judged
+// seat counts suits) skips the phase.
+export function skipPhaseOutcome(state: GameState, seatId: string, judged: CardInstance, spares: CardInstance['suit'], registry: ContentRegistry): 'skip' | 'spared' {
+  return suitOf(state, seatId, judged, registry) === spares ? 'spared' : 'skip';
+}
+
 // Capture and Starvation: placed on another living seat (within `maxDistance`
 // when set) that doesn't already hold one. Judged in that seat's Judgment
 // Phase: anything but a `spares` card skips `skips` this turn. Then discarded
@@ -65,7 +71,7 @@ export function skipPhaseTool({ id, name, skips, spares, maxDistance }: SkipPhas
       return ctx.respondingTo || target?.kind !== 'seat' ? [] : placeInJudgmentArea(state, ctx.cardInstanceId, target.seatId, ctx.card.as);
     },
     onTarget: judgeTarget,
-    onJudged: (state, { judged, seatId }, registry) => (suitOf(state, seatId, judged, registry) === spares ? [] : [{ kind: 'SetTurnFlagEffect', flag: skipFlagOf(skips) }]),
+    onJudged: (state, { judged, seatId }, registry) => (skipPhaseOutcome(state, seatId, judged, spares, registry) === 'spared' ? [] : [{ kind: 'SetTurnFlagEffect', flag: skipFlagOf(skips) }]),
   };
 }
 
