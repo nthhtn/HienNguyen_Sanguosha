@@ -132,6 +132,21 @@ describe('engineGame', () => {
       }
     });
 
+    it('rebuilds a game played with the judgment notice, acknowledgements included', () => {
+      const seats4: GameSeat[] = ['Ann', 'Bo', 'Cy', 'Di'].map((name, i) => ({ seatId: `seat-${i}`, roomPlayerId: `p-${name}`, name, kind: 'bot' }));
+      let acknowledgements = 0;
+      for (const seed of [1, 2, 3, 4, 5, 6]) {
+        const rules = { judgmentNotice: true };
+        const { state, moves } = botMoves(openingState(ctx, seed, seats4, rules), 600);
+        acknowledgements += moves.filter((m) => m.action.kind === 'AcknowledgeJudgmentAction').length;
+        const game = { ...record(), seed, seats: seats4, rules };
+        const readBack = stored(moves).map((row) => ({ ...row, action: reorderKeys(row.action) }));
+        expect(stateHash(replay(ctx, game, readBack, true))).toBe(stateHash(state));
+        expect(state.judgmentView?.settled === true && !state.result).toBe(false);
+      }
+      expect(acknowledgements).toBeGreaterThan(0);
+    });
+
     it('throws on a hash that differs when checking, and trusts it when not', () => {
       const { moves } = botMoves(openingState(ctx, SEED, SEATS, {}), 10);
       const actions = stored(moves);

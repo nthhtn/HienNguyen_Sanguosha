@@ -403,3 +403,84 @@ describe('GameRunner: a settled judgment', () => {
     expect(host.stored[host.stored.length - 1]).toMatchObject({ seatId: 'seat-0', source: 'bot', action: ack('seat-0') });
   });
 });
+
+describe('GameRunner: closing a settled judgment', () => {
+  const close = (seatId: string) => ({ kind: 'AcknowledgeJudgmentAction', seatId }) as Action;
+  const twoHumans = () => setup({ kinds: ['human', 'human'], connected: ['p0', 'p1'] });
+
+  it('any person-controlled seat can close it, as the acting seat, with by', async () => {
+    const { runner, host } = twoHumans();
+    settle(runner);
+    await runner.submit('p1', GAME_ID, 0, [close('seat-1')]);
+    expect(host.stored).toEqual([
+      expect.objectContaining({ seq: 1, seatId: 'seat-1', source: 'human', action: { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0', by: 'seat-1' }, stateHash: stateHash(runner.state) }),
+    ]);
+    expect(runner.state).not.toHaveProperty('judgmentView');
+    expect(runner.state.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-0', by: 'seat-1', source: 'close' });
+  });
+
+  it('the acting seat closing it records itself as by', async () => {
+    const { runner, host } = twoHumans();
+    settle(runner);
+    await runner.submit('p0', GAME_ID, 0, [close('seat-0')]);
+    expect(host.stored[0]).toMatchObject({ seatId: 'seat-0', action: { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0', by: 'seat-0' } });
+  });
+
+  it('ignores a seatId or by the client made up', async () => {
+    const { runner, host } = twoHumans();
+    settle(runner);
+    await runner.submit('p1', GAME_ID, 0, [{ ...close('seat-0'), by: 'seat-0' } as Action]);
+    expect(host.stored[0]).toMatchObject({ seatId: 'seat-1', action: { seatId: 'seat-0', by: 'seat-1' } });
+  });
+
+  it('offers the close to every person-controlled seat, and to no bot seat', () => {
+    const { runner } = setup({ kinds: ['human', 'human', 'bot'], connected: ['p0', 'p1'] });
+    settle(runner);
+    expect(runner.updateFor('p0', 0)!.legalActions).toEqual([close('seat-0')]);
+    expect(runner.updateFor('p1', 0)!.legalActions).toEqual([close('seat-1')]);
+    expect(runner.updateFor('p2', 0)!.legalActions).toEqual([]);
+  });
+
+  it('refuses a bot-played seat, an eliminated seat, a wrong kind and extra actions', async () => {
+    const { runner, host, scheduler } = twoHumans();
+    runner.disconnected('p0');
+    await scheduler.advance(TAKEOVER_AWAY_MS);
+    runner.tick();
+    const before = host.stored.length;
+    settle(runner);
+    expect(runner.updateFor('p0', 0)!.legalActions).toEqual([]);
+    await expect(runner.submit('p0', GAME_ID, runner.seq, [close('seat-0')])).rejects.toEqual(code('not_your_turn'));
+    await expect(runner.submit('p1', GAME_ID, runner.seq, [{ kind: 'EndPhaseAction', seatId: 'seat-1' }])).rejects.toEqual(code('not_your_turn'));
+    await expect(runner.submit('p1', GAME_ID, runner.seq, [close('seat-1'), close('seat-1')])).rejects.toEqual(code('not_your_turn'));
+    const inner = runner as unknown as { state: GameState };
+    inner.state = { ...runner.state, seats: runner.state.seats.map((s) => (s.id === 'seat-1' ? { ...s, eliminated: true } : s)) };
+    await expect(runner.submit('p1', GAME_ID, runner.seq, [close('seat-1')])).rejects.toEqual(code('not_your_turn'));
+    expect(runner.updateFor('p1', 0)!.legalActions).toEqual([]);
+    expect(host.stored).toHaveLength(before);
+  });
+
+  it('refuses a stale baseSeq', async () => {
+    const { runner } = twoHumans();
+    settle(runner);
+    await expect(runner.submit('p1', GAME_ID, 5, [close('seat-1')])).rejects.toEqual(code('stale'));
+  });
+
+  it('a second close is refused, never a second acknowledgement', async () => {
+    const { runner, host } = twoHumans();
+    settle(runner);
+    await runner.submit('p1', GAME_ID, 0, [close('seat-1')]);
+    await expect(runner.submit('p0', GAME_ID, 0, [close('seat-0')])).rejects.toEqual(code('stale'));
+    await expect(runner.submit('p0', GAME_ID, runner.seq, [close('seat-0')])).rejects.toEqual(expect.objectContaining({ code: expect.stringMatching(/not_your_turn|illegal_action/) }));
+    expect(host.stored.filter((a) => a.action.kind === 'AcknowledgeJudgmentAction')).toHaveLength(1);
+  });
+
+  it('a close that loses the race to the timeout is stale', async () => {
+    const { runner, host, scheduler } = twoHumans();
+    settle(runner);
+    const seq = runner.seq;
+    await scheduler.advance(10_000);
+    expect(host.stored[0]).toMatchObject({ source: 'timeout' });
+    await expect(runner.submit('p1', GAME_ID, seq, [close('seat-1')])).rejects.toEqual(code('stale'));
+  });
+});
+
