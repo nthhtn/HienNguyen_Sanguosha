@@ -207,7 +207,7 @@ function hiddenSkillsFor(state: GameState, viewerSeatId: string, extra: readonly
   const anyHidden = state.seats.some((s) => s.id !== viewerSeatId && !!s.generals && !(s.generals.main.revealed && s.generals.deputy.revealed));
   if (!anyHidden) return new Set();
   return hiddenSkillIds(
-    [...state.log, state.pendingResponse, state.pendingChoice, state.pendingSelection, state.pendingArrangement, state.resolutionQueue, ...extra],
+    [...state.log, state.pendingResponse, state.pendingChoice, state.pendingSelection, state.pendingArrangement, state.judgmentView, state.resolutionQueue, ...extra],
     state,
     viewerSeatId
   );
@@ -252,6 +252,7 @@ export function redactStateForSeat(state: GameState, viewerSeatId: string): Game
     ...(state.pendingChoice ? { pendingChoice: maskSkills(maskHiddenCards(hideSecret(state.pendingChoice), hidden), skills) } : {}),
     ...(state.pendingSelection ? { pendingSelection: maskSkills(redactPendingSelection(state.pendingSelection, hidden), skills) } : {}),
     ...(state.pendingArrangement ? { pendingArrangement: maskSkills(state.pendingArrangement, skills) } : {}),
+    ...(state.judgmentView ? { judgmentView: maskSkills(state.judgmentView, skills) } : {}),
     ...(state.resolutionQueue ? { resolutionQueue: maskSkills(maskHiddenCards(state.resolutionQueue, hidden), skills) } : {}),
   };
 }

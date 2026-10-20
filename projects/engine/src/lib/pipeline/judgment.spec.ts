@@ -4,7 +4,9 @@ import { createRng } from '../rng/rng';
 import { CardInstance, GameState, GeneralOwner, Judgment, Phase, QueueItem } from '../domain/types';
 import { CardDefinition, ContentRegistry, GameModeDefinition, SkillDefinition } from '../registry/types';
 import { skipFlagOf } from '../rules/phaseSequence';
-import { decisionPending } from '../rules/activeSeat';
+import { decisionPending, getActiveSeatId } from '../rules/activeSeat';
+import { getLegalActions } from '../rules/legality';
+import { defaultActionsFor } from '../rules/defaultActions';
 import { usedCardOf } from '../domain/usedCard';
 import { EngineEvent } from './events';
 
@@ -367,5 +369,31 @@ describe('judgment notice', () => {
       const second = settle({ ...closed, resolutionQueue: [judge] });
       expect(second.judgmentView).toEqual({ seatId: 'seat-a', reader, card: card('j2', 'x', 'spade', 9), changes: [], settled: true });
     });
+  });
+
+  it('a settled judgment survives a JSON round trip and still resolves', () => {
+    const settled = settle(withRule(table({ queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3)] } })));
+    const revived = JSON.parse(JSON.stringify(settled)) as GameState;
+    const ack = { kind: 'AcknowledgeJudgmentAction' as const, seatId: 'seat-a' };
+    expect(resolve(revived, ack, ctx).state).toEqual(resolve(settled, ack, ctx).state);
+  });
+
+  it('a whole turn runs through the legal action and the clock default, and never stalls', () => {
+    const filler = Array.from({ length: 6 }, (_, k) => card(`f${k}`, 'x', 'heart', 2));
+    let state = settle(withRule(table({ phase: 'Judgment', queue: [judge], cards: { drawPile: [card('j1', 'x', 'club', 3), ...filler] } })));
+    let acknowledged = 0;
+    for (let step = 0; step < 20 && !(state.turn.ownerSeatId === 'seat-b' && state.phase === 'Play'); step++) {
+      const seatId = getActiveSeatId(state)!;
+      const legal = getLegalActions(state, seatId);
+      expect(legal.length).toBeGreaterThan(0);
+      for (const action of defaultActionsFor(state, legal)) {
+        if (action.kind === 'AcknowledgeJudgmentAction') acknowledged++;
+        state = resolve(state, action, ctx).state;
+      }
+    }
+    expect(acknowledged).toBe(1);
+    expect(state.turn.ownerSeatId).toBe('seat-b');
+    expect(state.log.filter((e) => e.kind === 'PhaseSkippedEvent')).toEqual([{ kind: 'PhaseSkippedEvent', seatId: 'seat-a', phase: 'Play' }]);
+    expect(state.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ source: 'timeout' });
   });
 });
