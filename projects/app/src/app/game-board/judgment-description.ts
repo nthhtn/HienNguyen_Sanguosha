@@ -1,0 +1,84 @@
+import type { CardInstance, ContentRegistry, GameState } from 'engine';
+import { generalDisplayData, judgmentOutcome, judgmentOutcomeText } from 'content';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, forceOf, generalDisplayName, seatName, shownCardId } from '../labels';
+import { Translator, localeOf } from '../i18n/translator';
+
+export type JudgmentSource =
+  | { kind: 'skill'; generalId: string | null; generalName: string; abilityName: string; skillText: string | null }
+  | { kind: 'card'; cardName: string; seatName: string };
+
+// Everything the judgment popup shows, read off the table's public state.
+export interface JudgmentDescription {
+  // The skill owner's seat force; for a card, the judged seat's; neutral when that seat has shown no General.
+  force: Force;
+  source: JudgmentSource;
+  judgedSeatName: string;
+  // As it stands now, after any replacements.
+  card: CardInstance;
+  // One line per replacement, oldest first.
+  changes: { text: string; card: CardInstance }[];
+  // No skill can change the card any more: the game waits for the acknowledgement.
+  settled: boolean;
+  // What the final card will do; only once settled, and only for a reader content has text for.
+  outcome: string | null;
+  // While not settled: who is deciding, or a general line.
+  waiting: string | null;
+}
+
+// The judgment on show, or null. `state` should be the public view: a hidden General or hand stays hidden.
+export function judgmentDescription(state: GameState, registry: ContentRegistry, tr: Translator): JudgmentDescription | null {
+  const view = state.judgmentView;
+  if (!view) return null;
+  const name = (seatId: string) => seatName(state.players, seatId, tr);
+  const seatOf = (seatId: string) => state.seats.find((s) => s.id === seatId);
+  const reader = view.reader;
+
+  let source: JudgmentSource;
+  let force: Force;
+  if (reader.kind === 'skill') {
+    const owner = reader.owner;
+    const sourceSeat = seatOf(owner.seatId);
+    const shown = sourceSeat?.generals?.[owner.slot].generalDefinitionId;
+    const generalId = shown && shown !== 'hidden' ? shown : null;
+    const display = generalId ? generalDisplayData(generalId, localeOf(tr)) : null;
+    const abilityName = abilityDisplayName(owner.skillId, tr);
+    source = {
+      kind: 'skill',
+      generalId,
+      generalName: generalId ? (display?.name ?? generalDisplayName(generalId, tr)) : generalDisplayName('hidden', tr),
+      abilityName,
+      skillText: display?.skills.find((s) => s.name === abilityName)?.text ?? null,
+    };
+    force = forceOf(sourceSeat?.kingdom);
+  } else {
+    source = { kind: 'card', cardName: cardIdDisplayName(shownCardId(reader.card), tr), seatName: name(view.seatId) };
+    force = forceOf(seatOf(view.seatId)?.kingdom);
+  }
+
+  const changes = view.changes.map((change) => ({
+    text: tr('judgment.changed', {
+      owner: name(change.owner.seatId),
+      ability: abilityDisplayName(change.abilityId, tr),
+      old: cardFaceLabel(change.replaced),
+      new: cardFaceLabel(change.card),
+    }),
+    card: change.card,
+  }));
+
+  let outcome: string | null = null;
+  if (view.settled) {
+    const result = judgmentOutcome(state, view, registry);
+    if (result) {
+      const owner = name(result.seats.owner);
+      outcome = judgmentOutcomeText(result.readerId, result.key, { seat: name(result.seats.seat), owner, source: result.seats.source ? name(result.seats.source) : owner }, localeOf(tr));
+    }
+  }
+
+  let waiting: string | null = null;
+  if (!view.settled) {
+    const deciding = state.pendingChoice?.seatId ?? state.pendingSelection?.seatId;
+    waiting = deciding ? tr('judgment.waiting.seat', { seat: name(deciding) }) : tr('judgment.waiting');
+  }
+
+  return { force, source, judgedSeatName: name(view.seatId), card: view.card, changes, settled: view.settled, outcome, waiting };
+}
