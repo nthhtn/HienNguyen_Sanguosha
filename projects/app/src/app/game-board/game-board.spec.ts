@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogState } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
+import { I18n } from '../i18n/i18n.service';
 import { DecisionDock } from './decision-dock';
 import { GameBoard } from './game-board';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
@@ -341,6 +342,25 @@ describe('GameBoard', () => {
       expect(TestBed.inject(DecisionDock).minimized()).toBeNull();
       // Closing (the exit animation still runs), no longer open.
       expect(dialog.openDialogs.every((d) => d.getState() !== MatDialogState.OPEN)).toBe(true);
+    });
+
+    it('switching language while minimized rebuilds the decision in that language and keeps it minimized', async () => {
+      localStorage.clear();
+      const { fixture, el } = await openResponse();
+      const englishSource = document.querySelector('.cdk-overlay-pane .source')!.textContent;
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await TestBed.inject(I18n).setLocale('vi');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 400)); // the old dialog's exit, the new one's entrance
+      fixture.detectChanges();
+      expect(el.querySelector('app-decision-banner .banner')!.textContent).toContain('Cần phản hồi');
+      const panes = document.querySelectorAll('.cdk-overlay-pane');
+      expect(panes).toHaveLength(1);
+      expect(panes[0].classList).toContain('decision-minimized');
+      expect(panes[0].querySelector('.source')!.textContent).not.toBe(englishSource);
+      localStorage.clear();
     });
 
     it('the banner goes when the decision settles while minimized', async () => {

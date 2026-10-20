@@ -211,6 +211,7 @@ export class GameBoard {
   private readonly music = inject(MusicService);
   private readonly sounds = inject(SoundEffects);
   private readonly i18n = inject(I18n);
+  private readonly dock = inject(DecisionDock);
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
   private choiceDialog: MatDialogRef<unknown, Action> | null = null;
@@ -271,8 +272,17 @@ export class GameBoard {
     effect(() => this.music.setTrack(this.visibleState()?.result ? 'win' : 'background'));
     inject(DestroyRef).onDestroy(() => this.music.setTrack('background'));
     // Leaving the board with a decision hidden: nothing else would ever close that dialog.
-    const dock = inject(DecisionDock);
-    inject(DestroyRef).onDestroy(() => dock.dismiss());
+    inject(DestroyRef).onDestroy(() => this.dock.dismiss());
+    // A decision's text is built when its dialog opens, so a language switch while one is
+    // minimized (the one time the toolbar is reachable) rebuilds it, still minimized.
+    let locale = this.i18n.locale();
+    effect(() => {
+      const next = this.i18n.locale();
+      untracked(() => {
+        if (next !== locale) this.rebuildMinimizedDecision();
+        locale = next;
+      });
+    });
     // Event sounds (soundsFor) for whatever the log gained since the last look.
     // The first look, and a new game's shorter log, only set the baseline, so
     // joining mid-game is silent.
@@ -441,7 +451,8 @@ export class GameBoard {
   // The text that describes a decision (its prompt, option labels and the Compete result's
   // names) is built when the dialog opens, in the language then on: the open* methods run
   // untracked. A dialog's own fixed words do follow a switch, but dialogs are modal, so the
-  // toolbar cannot be reached while one is open.
+  // toolbar cannot be reached while one is open, except while one is minimized: then the
+  // decision is rebuilt (rebuildMinimizedDecision).
   // The Discard phase in one step: the dialog returns exactly `count` cards,
   // each submitted as the engine's own legal DiscardCardAction.
   private openDiscardDialog(count: number): void {
@@ -465,6 +476,27 @@ export class GameBoard {
       const legal = this.gameService.legalActions().filter((a): a is DiscardCardAction => a.kind === 'DiscardCardAction');
       const actions = (ids ?? []).map((id) => legal.find((a) => a.cardInstanceId === id)).filter((a): a is DiscardCardAction => !!a);
       if (actions.length > 0) this.gameService.submitAll(actions);
+    });
+  }
+
+  // Closes the minimized decision dialog and opens its pending decision again in the current
+  // language, minimized again once it has opened.
+  private rebuildMinimizedDecision(): void {
+    const old = this.dock.dismiss();
+    if (!old) return;
+    old.afterClosed().subscribe(() => {
+      const count = this.discardsDue();
+      if (count > 0) this.openDiscardDialog(count);
+      for (const [id, open] of [
+        [this.responseDue(), (i: string) => this.openResponseDialog(i)],
+        [this.selectionDue(), (i: string) => this.openSelectionDialog(i)],
+        [this.arrangementDue(), (i: string) => this.openArrangeDialog(i)],
+        [this.choiceDue(), (i: string) => this.openChoiceDialog(i)],
+      ] as const) {
+        if (id) open(id);
+      }
+      const fresh = this.dialog.openDialogs.at(-1);
+      fresh?.afterOpened().subscribe(() => (document.getElementById(fresh.id)?.querySelector('button.minimize') as HTMLButtonElement | null)?.click());
     });
   }
 

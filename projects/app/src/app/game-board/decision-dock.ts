@@ -42,12 +42,14 @@ export class DecisionDock {
     this.clear();
   }
 
-  // Closes the minimized dialog without an answer: the board is going away.
-  dismiss(): void {
+  // Closes the minimized dialog without an answer (the board is going away, or the dialog is
+  // being rebuilt); returns it, or null when nothing was minimized.
+  dismiss(): MatDialogRef<unknown, unknown> | null {
     const entry = this.entry();
-    if (!entry) return;
+    if (!entry) return null;
     this.clear();
     entry.ref.close();
+    return entry.ref;
   }
 
   private clear(): void {
