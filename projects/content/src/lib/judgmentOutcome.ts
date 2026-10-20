@@ -54,6 +54,9 @@ const READERS: Record<string, Decide> = {
   },
 };
 
+// The ids of every reader with an outcome (for the coverage spec).
+export const judgmentReaderIds = (): string[] => Object.keys(READERS);
+
 // null when the reader has no entry.
 export function judgmentOutcome(state: GameState, view: JudgmentView, registry: ContentRegistry): JudgmentOutcome | null {
   const readerId = judgmentReaderId(view.reader);

@@ -1,7 +1,8 @@
 import { usedCardOf, skipFlagOf } from 'engine';
 import type { CardInstance, Effect, GameState, JudgmentReader, JudgmentView } from 'engine';
 import { card, registry, table } from './generals/skills.testing';
-import { judgmentOutcome, judgmentReaderId } from './judgmentOutcome';
+import { judgmentOutcome, judgmentReaderId, judgmentReaderIds } from './judgmentOutcome';
+import { ENGLISH_PROSE, judgmentOutcomeText } from './display';
 import { unyielding, riverGoddess } from './generals/wei';
 import { ironCavalry } from './generals/shu';
 import { lightningStrike } from './generals/wind';
@@ -293,5 +294,52 @@ describe('judgmentOutcome: Lament', () => {
     const { outcome: o, effects } = run(state, 'spade');
     expect(o?.key).toBe('heal');
     expect(effects.map((e) => e.kind)).toEqual(['JudgmentDoneEffect', 'HealEffect']);
+  });
+});
+
+describe('every judging reader has outcome text', () => {
+  // The keys each reader's decision function can return (see the describes above).
+  const KEYS: Record<string, string[]> = {
+    lightning: ['struck', 'moves', 'stays'],
+    capture: ['skip', 'spared'],
+    starvation: ['skip', 'spared'],
+    'eight-trigrams': ['shan', 'none'],
+    'eight-arrays': ['shan', 'none'],
+    unyielding: ['discard-or-damage', 'damage', 'spared'],
+    'river-goddess': ['again', 'ends'],
+    'iron-cavalry': ['unblockable', 'none'],
+    'lightning-strike': ['damage', 'none'],
+    'dueling-heroes': ['red', 'black'],
+    'military-farm': ['farm', 'discard'],
+    lament: ['heal', 'draw', 'discard2', 'discard1', 'face-down', 'face-up', 'none'],
+  };
+  const names = { seat: 'A', owner: 'B', source: 'C' };
+
+  it('every card and General skill with onJudged has an outcome entry', () => {
+    const judging = [
+      ...[...registry.cards.values()].filter((c) => c.onJudged).map((c) => c.id),
+      ...[...registry.generals.values()].flatMap((g) => g.skills.filter((sk) => sk.onJudged).map((sk) => sk.id)),
+    ];
+    expect(judging.length).toBeGreaterThan(0);
+    const missing = [...new Set(judging)].filter((id) => !judgmentReaderIds().includes(id));
+    expect(missing).toEqual([]);
+  });
+
+  it('the dispatch table, the key list and the English text cover exactly the same readers and keys', () => {
+    expect(judgmentReaderIds().sort()).toEqual(Object.keys(KEYS).sort());
+    expect(Object.keys(ENGLISH_PROSE.judgmentOutcomes).sort()).toEqual(Object.keys(KEYS).sort());
+    for (const [readerId, keys] of Object.entries(KEYS)) {
+      expect({ readerId, keys: Object.keys(ENGLISH_PROSE.judgmentOutcomes[readerId]).sort() }).toEqual({ readerId, keys: [...keys].sort() });
+    }
+  });
+
+  it('every key has text in English and in Vietnamese', () => {
+    for (const [readerId, keys] of Object.entries(KEYS)) {
+      for (const key of keys) {
+        for (const locale of ['en', 'vi']) {
+          expect({ readerId, key, locale, text: judgmentOutcomeText(readerId, key, names, locale) }).toEqual({ readerId, key, locale, text: expect.stringMatching(/\S/) });
+        }
+      }
+    }
   });
 });
