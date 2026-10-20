@@ -134,7 +134,7 @@ describe('GameRunner', () => {
   it("moves a bot seat after the bot delay, and shows the bot's timer as its clock", async () => {
     const { runner, host, scheduler, legal } = setup();
     await runner.submit('p0', GAME_ID, 0, [legal()[0]]);
-    expect(runner.updateFor('p0', 0)!.clock).toEqual({ seatId: 'seat-1', kind: 'selection', endsAt: T0 + BOT_DELAY_MS, totalSeconds: BOT_DELAY_MS / 1000, serverNow: T0 });
+    expect(runner.updateFor('p0', 0)!.clock).toEqual({ seatId: 'seat-1', kind: 'selection', endsAt: T0 + BOT_DELAY_MS, totalSeconds: BOT_DELAY_MS / 1000, serverNow: T0, bot: true });
     await scheduler.advance(BOT_DELAY_MS - 1);
     expect(host.stored).toHaveLength(1);
     await scheduler.advance(1);
@@ -346,6 +346,17 @@ describe('GameRunner: a settled judgment', () => {
     await scheduler.advance(1);
     expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) })]);
     expect(runner.state).not.toHaveProperty('judgmentView');
+  });
+
+  it("flags a bot's move timer as a bot's in the clock, and a person's clock not", () => {
+    const bots = setup({ kinds: ['bot', 'bot'], connected: [] });
+    settle(bots.runner);
+    expect(bots.runner.updateFor('p0', 0)!.clock).toMatchObject({ kind: 'notice', bot: true });
+    const person = setup();
+    settle(person.runner);
+    const clock = person.runner.updateFor('p0', 0)!.clock!;
+    expect(clock).toMatchObject({ kind: 'notice' });
+    expect(clock).not.toHaveProperty('bot');
   });
 
   it('is not closed by a bot while another human plays, though the first human is bot-played', async () => {

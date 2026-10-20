@@ -283,6 +283,35 @@ describe('GameService: a settled judgment', () => {
     expect(service.revealedSeatId()).toBeNull();
   });
 
+  it('publicState masks every hand and unrevealed General, even the acting seat’s', () => {
+    service.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    settleJudgment(service);
+    const raw = service.state()!;
+    const publicView = service.publicState()!;
+    const handOf = (state: typeof raw, seatId: string) => state.zones.find((z) => z.id === `${seatId}:hand`)!.cards;
+    expect(handOf(raw, 'seat-0').length).toBeGreaterThan(0);
+    expect(handOf(publicView, 'seat-0').every((c) => c.definitionId === 'hidden')).toBe(true);
+    expect(handOf(publicView, 'seat-0')).toHaveLength(handOf(raw, 'seat-0').length);
+    expect(publicView.judgmentView).toBeDefined();
+  });
+
+  it('publicState is null without a game', () => {
+    expect(new GameService().publicState()).toBeNull();
+  });
+
+  it('canCloseJudgment is true for the human and in Pass and Play, false when a bot acts or nothing is settled', () => {
+    service.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    expect(service.canCloseJudgment()).toBe(false);
+    settleJudgment(service);
+    expect(service.canCloseJudgment()).toBe(true);
+    service.startGame(3, 1, 'pass-and-play', [], { judgmentNotice: true });
+    settleJudgment(service);
+    expect(service.canCloseJudgment()).toBe(true);
+    service.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    settleJudgment(service, ['seat-0']);
+    expect(service.canCloseJudgment()).toBe(false);
+  });
+
   it('does nothing when nothing is settled', () => {
     service.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
     const before = service.state();

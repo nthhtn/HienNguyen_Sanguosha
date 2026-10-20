@@ -74,8 +74,21 @@ export class GameService {
     return previewEffect(state, effect, this.ctx);
   }
 
+  // The table's view of the game: every hand and unrevealed General masked, whoever holds the device.
+  // What a public popup may read (the judgment popup); null without a game.
+  readonly publicState: Signal<GameState | null> = computed(() => {
+    const state = this._state();
+    return state ? redactStateForSeat(state, '') : null;
+  });
+
   // A judgment waits for an acknowledgement (the judgmentNotice rule).
   readonly judgmentSettled: Signal<boolean> = computed(() => !!this._state()?.judgmentView?.settled);
+
+  // Whether the viewer can close the settled judgment: someone other than a bot acts on it.
+  readonly canCloseJudgment: Signal<boolean> = computed(() => {
+    const seatId = this.activeSeatId();
+    return this.judgmentSettled() && !!seatId && !this.botSeatIds().includes(seatId);
+  });
 
   // Only the human's moves are offered to the UI; bots decide for themselves.
   readonly legalActions: Signal<Action[]> = computed(() => {

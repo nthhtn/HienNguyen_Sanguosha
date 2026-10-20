@@ -18,6 +18,10 @@ export type BoardGame = Pick<
   | 'mode'
   | 'state'
   | 'visibleState'
+  | 'publicState'
+  | 'canCloseJudgment'
+  | 'judgmentSettled'
+  | 'closeJudgment'
   | 'humanSeatId'
   | 'revealedSeatId'
   | 'activeSeatId'
@@ -38,6 +42,8 @@ export interface LocalClock {
   kind: DecisionKind;
   endsAt: number;
   totalSeconds: number;
+  // A bot's move delay, not a clock a person acts on.
+  bot: boolean;
 }
 
 // The seed stays on the server. Nothing on the client draws from this.
@@ -87,6 +93,12 @@ export class RemoteGameService implements BoardGame {
   // A judgment waits for an acknowledgement (the judgmentNotice rule).
   readonly judgmentSettled: Signal<boolean> = computed(() => !!this._state()?.judgmentView?.settled);
 
+  // What a public popup may read: the member's own view, which already hides what it must.
+  readonly publicState: Signal<GameState | null> = this._state.asReadonly();
+
+  // The server offers the close to every seat a person plays.
+  readonly canCloseJudgment: Signal<boolean> = computed(() => this.legalActions().some((a) => a.kind === 'AcknowledgeJudgmentAction'));
+
   // Bot seats, and human seats a bot plays for now.
   readonly botSeatIds: Signal<string[]> = computed(() => {
     const bots = new Set(this._state()?.players.filter((p) => p.kind === 'bot').map((p) => p.seatId) ?? []);
@@ -97,7 +109,8 @@ export class RemoteGameService implements BoardGame {
   // A clock on a bot-played seat is that bot about to move.
   readonly botThinkingSeatId: Signal<string | null> = computed(() => {
     const clock = this._clock();
-    return clock && this.botSeatIds().includes(clock.seatId) ? clock.seatId : null;
+    // A settled judgment's clock on a bot-played seat is a person's to close, unless it is the bot's own move delay.
+    return clock && this.botSeatIds().includes(clock.seatId) && (clock.kind !== 'notice' || clock.bot) ? clock.seatId : null;
   });
 
   // How the last game ended, until the player dismisses it. It comes from
@@ -195,7 +208,7 @@ export class RemoteGameService implements BoardGame {
     this._update.set(update);
     this._state.set({ ...update.view, log: this.log, rng: NO_RNG });
     const clock = update.clock;
-    this._clock.set(clock && { seatId: clock.seatId, kind: clock.kind, endsAt: Date.now() + (clock.endsAt - clock.serverNow), totalSeconds: clock.totalSeconds });
+    this._clock.set(clock && { seatId: clock.seatId, kind: clock.kind, bot: clock.bot === true, endsAt: Date.now() + (clock.endsAt - clock.serverNow), totalSeconds: clock.totalSeconds });
   }
 
   private clear(): void {
@@ -220,7 +233,7 @@ export class RemoteDecisionClock implements Pick<DecisionTimer, 'secondsLeft' | 
   private readonly own = computed(() => {
     const clock = this.game.clock();
     // A settled judgment's countdown is for everyone, whichever seat the clock is on.
-    return clock && (clock.seatId === this.game.humanSeatId() || clock.kind === 'notice') && !this.game.paused() ? clock : null;
+    return clock && (clock.seatId === this.game.humanSeatId() || (clock.kind === 'notice' && !clock.bot)) && !this.game.paused() ? clock : null;
   });
 
   readonly secondsLeft: Signal<number | null> = computed(() => {

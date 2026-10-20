@@ -378,7 +378,7 @@ export class GameRunner {
   private clockView(): GameClockView | null {
     const now = this.host.now();
     const timer = this.timer;
-    if (timer?.kind === 'bot') return { seatId: timer.seatId, kind: timer.decision, endsAt: timer.endsAt, totalSeconds: this.options.botDelayMs / 1000, serverNow: now };
+    if (timer?.kind === 'bot') return { seatId: timer.seatId, kind: timer.decision, endsAt: timer.endsAt, totalSeconds: this.options.botDelayMs / 1000, serverNow: now, bot: true };
     const running = this.clock.running;
     if (timer?.kind !== 'clock' || !running) return null;
     return { seatId: running.decision.seatId, kind: running.decision.kind, endsAt: running.endsAt, totalSeconds: running.totalMs / 1000, serverNow: now };

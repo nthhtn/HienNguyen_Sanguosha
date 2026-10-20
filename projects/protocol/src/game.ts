@@ -19,6 +19,8 @@ export interface GameClockView {
   endsAt: number;
   totalSeconds: number;
   serverNow: number;
+  // Set when this is a bot's move delay, not a decision clock a person can act on.
+  bot?: true;
 }
 
 export interface GameUpdate {
