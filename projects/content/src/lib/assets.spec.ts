@@ -31,8 +31,8 @@ describe('HIDDEN_GENERAL_ART_URL', () => {
 });
 
 describe('hpIconUrls', () => {
-  const icon = (n: number) => `/card-art/misc/hp${n}.png`;
-  it('shows one icon per HP, from hp1 up to the current HP', () => {
+  const icon = (n: number) => `/card-art/misc/hp/${n}.png`;
+  it('shows one icon per HP, from 1 up to the current HP', () => {
     expect(hpIconUrls(1)).toEqual([icon(1)]);
     expect(hpIconUrls(2)).toEqual([icon(1), icon(2)]);
     expect(hpIconUrls(4)).toEqual([1, 2, 3, 4].map(icon));

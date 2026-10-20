@@ -170,9 +170,9 @@ describe('SeatTile', () => {
     expect(render(makeSeat({ eliminated: true })).querySelector('.judgment .slot')).not.toBeNull();
   });
 
-  it('shows one HP icon per HP, hp1 up to the seat’s current HP, next to its HP text', () => {
+  it('shows one HP icon per HP, icon 1 up to the seat’s current HP, next to its HP text', () => {
     const imgs = Array.from(render(makeSeat({ combinedHp: 3 })).querySelectorAll('.stats img.hp-icon')) as HTMLImageElement[];
-    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['/card-art/misc/hp1.png', '/card-art/misc/hp2.png', '/card-art/misc/hp3.png']);
+    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['/card-art/misc/hp/1.png', '/card-art/misc/hp/2.png', '/card-art/misc/hp/3.png']);
     expect(imgs.every((i) => i.getAttribute('alt') === '')).toBe(true);
   });
 
