@@ -363,6 +363,30 @@ describe('GameBoard', () => {
       localStorage.clear();
     });
 
+    it('the rebuilt decision is never shown, not even for a moment', async () => {
+      localStorage.clear();
+      const { fixture } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      // Every popup that appears from now on, and whether it was already hidden when it did.
+      const seen: boolean[] = [];
+      const observer = new MutationObserver((records) => {
+        for (const node of records.flatMap((r) => [...r.addedNodes])) {
+          const pane = node instanceof HTMLElement ? (node.matches('.cdk-overlay-pane') ? node : node.querySelector('.cdk-overlay-pane')) : null;
+          if (pane) seen.push(pane.classList.contains('decision-minimized'));
+        }
+      });
+      observer.observe(document.querySelector('.cdk-overlay-container')!, { childList: true, subtree: true });
+      await TestBed.inject(I18n).setLocale('vi');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      observer.disconnect();
+      expect(seen.length).toBeGreaterThan(0);
+      expect(seen.every(Boolean)).toBe(true);
+      localStorage.clear();
+    });
+
     it('the banner goes when the decision settles while minimized', async () => {
       const { fixture, el } = await openResponse();
       (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();

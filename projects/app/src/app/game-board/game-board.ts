@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, effect, inject, untracked } from '@angular/core';
+import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, untracked } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -212,6 +212,7 @@ export class GameBoard {
   private readonly sounds = inject(SoundEffects);
   private readonly i18n = inject(I18n);
   private readonly dock = inject(DecisionDock);
+  private readonly injector = inject(Injector);
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
   private choiceDialog: MatDialogRef<unknown, Action> | null = null;
@@ -496,7 +497,11 @@ export class GameBoard {
         if (id) open(id);
       }
       const fresh = this.dialog.openDialogs.at(-1);
-      fresh?.afterOpened().subscribe(() => (document.getElementById(fresh.id)?.querySelector('button.minimize') as HTMLButtonElement | null)?.click());
+      if (!fresh) return;
+      // Hidden from the moment it exists, so it never flashes; registered with the dock (title,
+      // banner) as soon as its content has rendered, through its own View Board button.
+      fresh.addPanelClass('decision-minimized');
+      afterNextRender(() => (document.getElementById(fresh.id)?.querySelector('button.minimize') as HTMLButtonElement | null)?.click(), { injector: this.injector });
     });
   }
 
