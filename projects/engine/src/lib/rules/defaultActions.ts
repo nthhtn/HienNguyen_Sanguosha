@@ -7,6 +7,9 @@ import { discardOwed } from './phaseSequence';
 // first option of a choice, No Response, the first General pair, the first
 // discards, else End Phase. Several actions for a discard: submit them as one.
 export function defaultActionsFor(state: GameState, legal: readonly Action[]): Action[] {
+  // A settled judgment: the clock closes it.
+  const acknowledge = legal.find((a) => a.kind === 'AcknowledgeJudgmentAction');
+  if (acknowledge) return [{ ...acknowledge, timeout: true }];
   const arrange = legal.find((a): a is Extract<Action, { kind: 'ArrangeCardsAction' }> => a.kind === 'ArrangeCardsAction');
   if (arrange && state.pendingArrangement) return [{ ...arrange, top: [...state.pendingArrangement.cardInstanceIds], bottom: [] }];
   // A selection: Cancel when it may be, else the first eligible picks.

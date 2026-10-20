@@ -55,3 +55,32 @@ describe('getActiveSeatId', () => {
     expect(getActiveSeatId(afterA)).toBe('seat-b');
   });
 });
+
+describe('getActiveSeatId with a settled judgment', () => {
+  const player = (seatId: string, kind: 'human' | 'bot') => ({ id: `p-${seatId}`, seatId, kind, name: seatId });
+  const view = (seatId = 'seat-a', settled = true): GameState['judgmentView'] => ({ seatId, reader: { kind: 'card', card: {} as never }, card: { instanceId: 'j', definitionId: 'x', suit: 'club', rank: 3 }, changes: [], settled });
+  const three = (over: Partial<GameState> = {}) => state({ seats: [seat('seat-a', 0), seat('seat-b', 1), seat('seat-c', 2)], ...over });
+
+  it('is the first living human', () => {
+    const s = three({ judgmentView: view(), players: [player('seat-a', 'bot'), player('seat-b', 'human'), player('seat-c', 'human')] });
+    expect(getActiveSeatId(s)).toBe('seat-b');
+  });
+
+  it('falls back to the judged seat when there is no human', () => {
+    const s = three({ judgmentView: view('seat-c'), players: [player('seat-a', 'bot'), player('seat-b', 'bot'), player('seat-c', 'bot')] });
+    expect(getActiveSeatId(s)).toBe('seat-c');
+  });
+
+  it('falls back to the first living seat when the judged seat and every human are eliminated', () => {
+    const s = three({
+      seats: [seat('seat-a', 0), seat('seat-b', 1, true), seat('seat-c', 2, true)],
+      judgmentView: view('seat-c'),
+      players: [player('seat-a', 'bot'), player('seat-b', 'human'), player('seat-c', 'bot')],
+    });
+    expect(getActiveSeatId(s)).toBe('seat-a');
+  });
+
+  it('an unsettled view changes nothing', () => {
+    expect(getActiveSeatId(three({ judgmentView: view('seat-c', false), players: [player('seat-b', 'human')] }))).toBe('seat-a');
+  });
+});
