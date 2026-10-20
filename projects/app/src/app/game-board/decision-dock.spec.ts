@@ -44,13 +44,44 @@ describe('DecisionDock', () => {
     expect(dock().minimized()).toBeNull();
   });
 
-  it('a later minimize replaces the entry and the earlier dialog closing keeps it', () => {
+  it('the banner shows the latest minimized dialog, and the earlier one closing keeps it', () => {
     const a = fakeRef();
     const b = fakeRef();
     dock().minimize(a.ref, 'Response Needed');
     dock().minimize(b.ref, 'Choose a Card');
     a.closed.next();
     expect(dock().minimized()?.title).toBe('Choose a Card');
+  });
+
+  it('restoring the latest brings the earlier hidden dialog back to the banner', () => {
+    const a = fakeRef();
+    const b = fakeRef();
+    dock().minimize(a.ref, 'Response Needed');
+    dock().minimize(b.ref, 'Judgment');
+    dock().restore();
+    expect(b.spies.removePanelClass).toHaveBeenCalledWith('decision-minimized');
+    expect(a.spies.removePanelClass).not.toHaveBeenCalled();
+    expect(dock().minimized()?.title).toBe('Response Needed');
+  });
+
+  it('the latest closing leaves the earlier hidden dialog on the banner', () => {
+    const a = fakeRef();
+    const b = fakeRef();
+    dock().minimize(a.ref, 'Judgment');
+    dock().minimize(b.ref, 'Choose a Card');
+    b.closed.next();
+    expect(dock().minimized()?.title).toBe('Judgment');
+  });
+
+  it('dismissing closes every minimized dialog', () => {
+    const a = fakeRef();
+    const b = fakeRef();
+    dock().minimize(a.ref, 'Judgment');
+    dock().minimize(b.ref, 'Choose a Card');
+    dock().dismiss();
+    expect(a.spies.close).toHaveBeenCalled();
+    expect(b.spies.close).toHaveBeenCalled();
+    expect(dock().minimized()).toBeNull();
   });
 
   it('restoring with nothing minimized does nothing', () => {
