@@ -165,9 +165,9 @@ describe('ActionList', () => {
     expect(buttons[0].textContent).toContain('End Phase');
   });
 
-  it('Reveal: leaves a RevealGeneralAction to the avatar', () => {
+  it('Reveal: leaves a ConfirmRevealsAction to the Start popup', () => {
     const fixture = TestBed.createComponent(ActionList);
-    fixture.componentRef.setInput('actions', [{ kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' }] as Action[]);
+    fixture.componentRef.setInput('actions', [{ kind: 'ConfirmRevealsAction', seatId: 'seat-0', slots: [] }] as Action[]);
     fixture.componentRef.setInput('state', stateWithShaInHand());
     fixture.componentRef.setInput('registry', emptyRegistry());
     fixture.detectChanges();

@@ -1,4 +1,4 @@
-import { getLegalActions, hiddenGeneralReveals, getLegalTargets, targetsAllowed } from './legality';
+import { getLegalActions, hiddenSlots, getLegalTargets, targetsAllowed } from './legality';
 import { GameState, Target } from '../domain/types';
 import { ContentRegistry } from '../registry/types';
 import { createRng } from '../rng/rng';
@@ -107,32 +107,29 @@ describe('getLegalActions', () => {
   });
 });
 
-describe('Reveal', () => {
-  const reveal = (slot: 'main' | 'deputy') => ({ kind: 'RevealGeneralAction', seatId: 'seat-a', slot });
+describe('Reveal (spec: Reveal conditions)', () => {
   const withGenerals = (main: boolean, deputy: boolean) => {
     const s = state();
     s.seats[0].generals = { main: { generalDefinitionId: 'g1', revealed: main }, deputy: { generalDefinitionId: 'g2', revealed: deputy } };
     return s;
   };
+  const confirm = (slots: Array<'main' | 'deputy'> = []) => ({ kind: 'ConfirmRevealsAction', seatId: 'seat-a', slots });
 
-  it('offers a Reveal for each hidden General in the Play Phase', () => {
-    const actions = getLegalActions(state(), 'seat-a');
-    expect(actions).toContainEqual(reveal('main'));
-    expect(actions).toContainEqual(reveal('deputy'));
-    expect(hiddenGeneralReveals(state(), 'seat-a')).toEqual([reveal('main'), reveal('deputy')]);
-    expect(actions[1]).toEqual(reveal('main'));
+  it('offers no Reveal in the Play Phase, however many Generals are hidden', () => {
+    expect(getLegalActions(state(), 'seat-a').filter((a) => a.kind === 'ConfirmRevealsAction')).toEqual([]);
+    expect(getLegalActions(withGenerals(false, false), 'seat-a')).toEqual(expect.not.arrayContaining([confirm()]));
   });
 
-  it('offers no Reveal for a revealed General', () => {
-    const actions = getLegalActions(withGenerals(true, false), 'seat-a');
-    expect(actions).not.toContainEqual(reveal('main'));
-    expect(actions).toContainEqual(reveal('deputy'));
-    expect(hiddenGeneralReveals(withGenerals(true, true), 'seat-a')).toEqual([]);
+  it('lists the hidden slots, Main first', () => {
+    expect(hiddenSlots(state(), 'seat-a')).toEqual(['main', 'deputy']);
+    expect(hiddenSlots(withGenerals(true, false), 'seat-a')).toEqual(['deputy']);
+    expect(hiddenSlots(withGenerals(true, true), 'seat-a')).toEqual([]);
   });
 
-  it('offers no Reveal outside the Play Phase or to another seat', () => {
-    expect(getLegalActions(state({ phase: 'Draw' }), 'seat-a').filter((a) => a.kind === 'RevealGeneralAction')).toEqual([]);
-    expect(getLegalActions(state(), 'seat-b').filter((a) => a.kind === 'RevealGeneralAction')).toEqual([]);
+  it('offers the Start window one template to confirm with', () => {
+    const waiting = state({ phase: 'Start', turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [], startWindow: true } });
+    expect(getLegalActions(waiting, 'seat-a')).toEqual([confirm()]);
+    expect(getLegalActions(waiting, 'seat-b')).toEqual([]);
   });
 
   it('offers no Reveal while a decision is pending', () => {
@@ -142,7 +139,7 @@ describe('Reveal', () => {
         context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: 1 } },
       },
     });
-    expect(getLegalActions(pending, 'seat-a').filter((a) => a.kind === 'RevealGeneralAction')).toEqual([]);
+    expect(getLegalActions(pending, 'seat-a').filter((a) => a.kind === 'ConfirmRevealsAction')).toEqual([]);
   });
 });
 

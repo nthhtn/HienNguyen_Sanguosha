@@ -8,6 +8,8 @@ function freeKeys(offered: Action): readonly string[] {
       return ['ids'];
     case 'ArrangeCardsAction':
       return ['top', 'bottom'];
+    case 'ConfirmRevealsAction':
+      return ['slots'];
     case 'AcknowledgeJudgmentAction':
       // The seat whose player pressed Close, when it is not the acting seat.
       return ['by'];

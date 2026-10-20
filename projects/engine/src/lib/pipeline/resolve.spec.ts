@@ -573,8 +573,8 @@ describe('resolve: step budget', () => {
           ? {
               ...seat,
               generals: {
-                main: { generalDefinitionId: 'heal-to-damage-general', revealed: false },
-                deputy: { generalDefinitionId: 'damage-to-heal-general', revealed: false },
+                main: { generalDefinitionId: 'heal-to-damage-general', revealed: true },
+                deputy: { generalDefinitionId: 'damage-to-heal-general', revealed: true },
               },
             }
           : seat
@@ -830,17 +830,17 @@ describe('resolve: EndPhaseAction', () => {
   });
 });
 
-describe('RevealGeneralAction on a seat with no generals yet', () => {
+describe('ConfirmRevealsAction outside the Start window', () => {
   it('throws a clear error', () => {
     const state = baseState();
     const unchosen = { ...state, seats: state.seats.map((s, i) => (i === 0 ? { ...s, generals: null } : s)) };
     expect(() =>
       resolve(
         unchosen,
-        { kind: 'RevealGeneralAction', seatId: unchosen.seats[0].id, slot: 'main' },
+        { kind: 'ConfirmRevealsAction', seatId: unchosen.seats[0].id, slots: ['main'] },
         { registry: emptyRegistry(), mode: stubMode() }
       )
-    ).toThrow(/has not chosen its generals/);
+    ).toThrow(/Start window/);
   });
 });
 

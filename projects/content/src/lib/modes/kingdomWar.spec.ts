@@ -412,7 +412,8 @@ describe('Kingdom War: the dying round knows how far below 1 HP a drop went', ()
 describe('Kingdom War reveal bonuses', () => {
   const makeTable = table;
   const h = harness(kwMode);
-  const reveal = (s: GameState, seatId: string, slot: 'main' | 'deputy') => h.settle(h.act(s, { kind: 'RevealGeneralAction', seatId, slot }));
+  // Revealed the way a skill's use does it (the effect), since no action reveals a General by itself any more.
+  const reveal = (s: GameState, seatId: string, slot: 'main' | 'deputy') => h.run(s, [{ kind: 'RevealGeneralEffect', seatId, slot }]);
   const handSize = (s: GameState, seatId: string) => s.zones.find((z) => z.id === `${seatId}:hand`)!.cards.length;
   const deck = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => card(id, 'sha'));
   // Both Generals hidden on every seat; Xu Huang (4) + Dong Zhuo (4) is even, Xu Huang (4) + Jia Xu (3) is odd.

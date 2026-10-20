@@ -23,13 +23,13 @@ import { EFFECT_URLS, MUSIC_PLAYER_FACTORY } from '../music.service';
 class InfoProbe {}
 
 // Selection through to the first Play phase: a human seat with a hidden General
-// first rests in its Start window, which Continue (EndPhaseAction) closes.
+// first rests in its Start window, which Confirm (ConfirmRevealsAction) closes.
 function finishSelection(gameService: GameService): void {
   while (gameService.state()!.phase === 'GeneralSelection') {
     gameService.submit(gameService.legalActions()[0]);
   }
   if (gameService.state()!.turn.startWindow) {
-    gameService.submit(gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!);
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'ConfirmRevealsAction')!);
   }
 }
 
@@ -145,21 +145,60 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-action-list')).not.toBeNull();
   });
 
-  it('shows Continue and the enabled Reveal buttons for a viewer in their Start window', () => {
+  it('opens the Start popup listing the hidden Generals; Confirm reveals the ticked ones and starts the turn', async () => {
     gameService.startGame(2, 1);
     while (gameService.state()!.phase === 'GeneralSelection') gameService.submit(gameService.legalActions()[0]);
     expect(gameService.state()!.turn.startWindow).toBe(true);
-    gameService.reveal(gameService.activeSeatId()!);
+    const seatId = gameService.activeSeatId()!;
+    gameService.reveal(seatId);
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();
+    await fixture.whenStable();
 
     const el = fixture.nativeElement as HTMLElement;
+    // No Reveal buttons on the avatar and no Continue / End Phase buttons: the popup is the only way.
+    expect(el.querySelectorAll('app-seat-avatar button.reveal')).toHaveLength(0);
     const buttons = [...el.querySelectorAll('app-action-list button')].map((b) => b.textContent!.trim());
-    expect(buttons).toContain('Continue');
+    expect(buttons).not.toContain('Continue');
     expect(buttons).not.toContain('End Phase');
-    const reveals = [...el.querySelectorAll('app-seat-avatar button.reveal')] as HTMLButtonElement[];
-    expect(reveals).toHaveLength(2);
-    expect(reveals.every((b) => !b.disabled)).toBe(true);
+    const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
+    const dialog = overlay.querySelector('app-start-reveal-dialog')!;
+    expect(dialog).not.toBeNull();
+    expect(dialog.querySelector('h2')!.textContent).toContain('Reveal Generals');
+    const rows = [...dialog.querySelectorAll('button.general')] as HTMLButtonElement[];
+    expect(rows.map((r) => r.getAttribute('data-slot'))).toEqual(['main', 'deputy']);
+
+    rows[1].click();
+    fixture.detectChanges();
+    (dialog.querySelector('button.confirm') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const seat = gameService.state()!.seats.find((x) => x.id === seatId)!;
+    expect(gameService.lastError()).toBeNull();
+    expect(gameService.state()!.turn.startWindow).toBeFalsy();
+    expect(seat.generals!.main.revealed).toBe(false);
+    expect(seat.generals!.deputy.revealed).toBe(true);
+    overlay.replaceChildren();
+  });
+
+  it('Confirm with nothing ticked starts the turn with every General still hidden', async () => {
+    gameService.startGame(2, 1);
+    while (gameService.state()!.phase === 'GeneralSelection') gameService.submit(gameService.legalActions()[0]);
+    const seatId = gameService.activeSeatId()!;
+    gameService.reveal(seatId);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
+    (overlay.querySelector('app-start-reveal-dialog button.confirm') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const seat = gameService.state()!.seats.find((x) => x.id === seatId)!;
+    expect(gameService.state()!.turn.startWindow).toBeFalsy();
+    expect(gameService.state()!.phase).toBe('Play');
+    expect(seat.generals!.main.revealed || seat.generals!.deputy.revealed).toBe(false);
+    overlay.replaceChildren();
   });
 
   it('seats everyone at a round table from the viewer’s chair, with the viewer’s own hand below', () => {
@@ -575,12 +614,12 @@ describe('GameBoard in vs-bots mode', () => {
     gameService.startGame(3, 1, 'vs-bots');
     gameService.submit(gameService.legalActions()[0]);
     flushBots(); // through selection and any bot turns, to the human's first move
-    const humanMove = gameService.legalActions().find((a) => a.kind === 'EndPhaseAction');
+    const humanMove = gameService.legalActions().find((a) => a.kind === 'ConfirmRevealsAction' || a.kind === 'EndPhaseAction');
     expect(humanMove).toBeDefined();
     // Advance the human to the end of their turn, so a bot is next.
     for (let i = 0; i < 10 && !gameService.botThinkingSeatId() && !gameService.state()!.result; i++) {
       const legal = gameService.legalActions();
-      gameService.submit(legal.find((a) => a.kind === 'EndPhaseAction' || a.kind === 'PassAction') ?? legal[0]);
+      gameService.submit(legal.find((a) => a.kind === 'ConfirmRevealsAction' || a.kind === 'EndPhaseAction' || a.kind === 'PassAction') ?? legal[0]);
     }
     expect(gameService.botThinkingSeatId()).not.toBeNull();
     const fixture = TestBed.createComponent(GameBoard);
@@ -598,7 +637,7 @@ describe('GameBoard in vs-bots mode', () => {
     gameService.startGame(3, 1, 'vs-bots');
     gameService.submit(gameService.legalActions()[0]);
     flushBots();
-    gameService.submit(gameService.legalActions().find((a) => a.kind === 'EndPhaseAction')!); // Continue past the Start window
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'ConfirmRevealsAction')!); // Confirm past the Start window
     flushBots();
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();

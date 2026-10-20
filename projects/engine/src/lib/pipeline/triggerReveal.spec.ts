@@ -55,15 +55,32 @@ const kinds = (s: GameState) => s.log.map((e) => e.kind);
 describe('a hidden General’s triggers reveal it (S1)', () => {
   beforeEach(() => { trigger = afterDraw; });
 
-  it('reveals a hidden General before a non-ask after-trigger fires', () => {
+  it('asks before a non-ask after-trigger of a hidden General; Use reveals it, then the effects run', () => {
     output = () => [aDraws];
     const s = table();
-    expect(s.seats[0].generals!.deputy.revealed).toBe(true);
-    expect(s.log).toEqual([
-      { kind: 'CardsDrawnEvent', seatId: 'b', cardInstanceIds: ['d1'] },
-      { kind: 'GeneralRevealedEvent', seatId: 'a', slot: 'deputy', forAbilityId: 'hint' },
-      { kind: 'CardsDrawnEvent', seatId: 'a', cardInstanceIds: ['d2'] },
-    ]);
+    expect(s.seats[0].generals!.deputy.revealed).toBe(false);
+    expect(s.pendingChoice).toMatchObject({ seatId: 'a', verb: 'use', reason: { kind: 'ability', abilityId: 'hint' } });
+    expect(s.pendingChoice!.options[0].shows).toEqual({ kind: 'use', reveals: 'deputy' });
+    const used = resolve(s, { kind: 'ChooseOptionAction', seatId: 'a', choiceId: s.pendingChoice!.id, optionId: 'use' }, ctx).state;
+    expect(used.seats[0].generals!.deputy.revealed).toBe(true);
+    expect(kinds(used)).toEqual(['CardsDrawnEvent', 'ChoiceMadeEvent', 'GeneralRevealedEvent', 'CardsDrawnEvent']);
+    expect(used.log[2]).toEqual({ kind: 'GeneralRevealedEvent', seatId: 'a', slot: 'deputy', forAbilityId: 'hint' });
+  });
+
+  it('Don’t leaves the General hidden and nothing happens', () => {
+    output = () => [aDraws];
+    const s = table();
+    const declined = resolve(s, { kind: 'ChooseOptionAction', seatId: 'a', choiceId: s.pendingChoice!.id, optionId: 'decline' }, ctx).state;
+    expect(declined.seats[0].generals!.deputy.revealed).toBe(false);
+    expect(kinds(declined)).toEqual(['CardsDrawnEvent', 'ChoiceMadeEvent']);
+  });
+
+  it('a hidden compulsory skill is asked the same way', () => {
+    output = () => [aDraws];
+    const compulsory: SkillDefinition = { id: 'must', compulsory: true, triggers: [{ ...afterDraw }] };
+    const reg: ContentRegistry = { ...registry, generals: new Map([...registry.generals, ['seer', { id: 'seer', kingdom: 'Wei', maxHp: 4, skills: [compulsory] }]]) };
+    const s = advanceToDecision({ ...table(), pendingChoice: undefined, resolutionQueue: [bDraws] } as GameState, { registry: reg, mode }).state;
+    expect(s.pendingChoice).toMatchObject({ verb: 'use', reason: { abilityId: 'must' } });
   });
 
   it('does not reveal twice for an ask-based trigger', () => {

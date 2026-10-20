@@ -33,7 +33,7 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
   if (state.pendingChoice || state.pendingSelection || state.pendingArrangement) return step('choice');
   if (state.pendingResponse) return step('response');
   if (state.phase === 'GeneralSelection') return { kind: 'selection', seatId, key: `selection:${seatId}` };
-  // The Start window keeps one clock across its reveals; at zero: Continue.
+  // The Start window has one clock; at zero it confirms with nothing revealed.
   if (state.phase === 'Start' && state.turn.startWindow) return { kind: 'choice', seatId, key: `start:${state.turn.turnNumber}:${state.turn.ownerSeatId}` };
   if (legal.some((a) => a.kind === 'DiscardCardAction')) return step('discard');
   if (state.phase === 'Play') return { kind: 'play', seatId, key: `play:${state.turn.turnNumber}:${state.turn.ownerSeatId}` };

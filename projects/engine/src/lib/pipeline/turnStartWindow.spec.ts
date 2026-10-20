@@ -1,5 +1,6 @@
 import { resolve } from './resolve';
 import { getLegalActions } from '../rules/legality';
+import { isOfferedAction } from '../rules/offered';
 import { phaseWaitsForPlayer, startWindowOpens } from '../rules/phaseSequence';
 import { createRng } from '../rng/rng';
 import { CardInstance, GameState, GeneralOwner, Player, Seat } from '../domain/types';
@@ -7,11 +8,11 @@ import { ContentRegistry, GameModeDefinition, SkillDefinition } from '../registr
 import { Action } from './actions';
 import { EngineEvent, PhaseChangedEvent } from './events';
 
-// Rule (spec, Voluntary reveal (a)): as a human's turn begins, while they hold a
-// hidden General, the engine waits before the Start Phase's effects. The owner
-// may reveal hidden Generals one by one, then continue (EndPhaseAction), which
-// logs the Start event and gathers its triggers. Bots and seats with nothing
-// hidden never wait.
+// Rule (spec, Reveal conditions, rule 1): as a human's turn begins, while they
+// hold a hidden General, the engine waits before the Start Phase's effects. The
+// owner confirms which hidden Generals to reveal (none is allowed) in one
+// ConfirmRevealsAction, which reveals them, then logs the Start event and gathers
+// its triggers. Bots and seats with nothing hidden never wait.
 
 // 'herald' holds 'omen': as its seat's Start Phase begins, it draws 1.
 const omen: SkillDefinition = {
@@ -88,8 +89,8 @@ function table(b: SeatOptions = {}, c?: SeatOptions): GameState {
 
 // Seat a's turn ends (it is resting in Discard, within its limit, so it passes End).
 const endTurnOfA = (s: GameState) => resolve({ ...s, phase: 'Play' }, { kind: 'EndPhaseAction', seatId: 'a' }, ctx).state;
-const continueAs = (s: GameState, seatId = 'b') => resolve(s, { kind: 'EndPhaseAction', seatId }, ctx).state;
-const reveal = (s: GameState, slot: 'main' | 'deputy', seatId = 'b') => resolve(s, { kind: 'RevealGeneralAction', seatId, slot }, ctx).state;
+const confirm = (s: GameState, slots: Array<'main' | 'deputy'>, seatId = 'b') => resolve(s, { kind: 'ConfirmRevealsAction', seatId, slots }, ctx).state;
+const continueAs = (s: GameState, seatId = 'b') => confirm(s, [], seatId);
 const startsOf = (s: GameState, seatId: string) =>
   (s.log as EngineEvent[]).filter((e) => e.kind === 'PhaseChangedEvent' && e.phase === 'Start' && e.seatId === seatId);
 const kindsOf = (s: GameState) => (s.log as EngineEvent[]).map((e) => e.kind);
@@ -103,11 +104,7 @@ describe('the Start window as a turn begins', () => {
     expect(startsOf(s, 'b')).toEqual([]);
     expect(kindsOf(s)[kindsOf(s).length - 1]).toBe('TurnAdvancedEvent');
     expect(phaseWaitsForPlayer(s)).toBe(true);
-    const expected: Action[] = [
-      { kind: 'EndPhaseAction', seatId: 'b' },
-      { kind: 'RevealGeneralAction', seatId: 'b', slot: 'main' },
-      { kind: 'RevealGeneralAction', seatId: 'b', slot: 'deputy' },
-    ];
+    const expected: Action[] = [{ kind: 'ConfirmRevealsAction', seatId: 'b', slots: [] }];
     expect(getLegalActions(s, 'b', registry)).toEqual(expected);
     expect(getLegalActions(s, 'a', registry)).toEqual([]);
   });
@@ -126,17 +123,10 @@ describe('the Start window as a turn begins', () => {
 
   it('a General revealed in the window fires its Start trigger in that Start', () => {
     const waiting = endTurnOfA(table({ deputy: { id: 'herald', revealed: false } }));
-    const revealed = reveal(waiting, 'deputy');
-    expect(revealed.seats[1].generals!.deputy.revealed).toBe(true);
-    // Still waiting: the owner may reveal the other General or continue.
-    expect(revealed.phase).toBe('Start');
-    expect(revealed.turn.startWindow).toBe(true);
-    expect(startsOf(revealed, 'b')).toEqual([]);
-    expect(getLegalActions(revealed, 'b', registry)).toEqual([
-      { kind: 'EndPhaseAction', seatId: 'b' },
-      { kind: 'RevealGeneralAction', seatId: 'b', slot: 'main' },
-    ]);
-    const s = continueAs(revealed);
+    const s = confirm(waiting, ['deputy']);
+    expect(s.seats[1].generals!.deputy.revealed).toBe(true);
+    expect(s.seats[1].generals!.main.revealed).toBe(false);
+    expect(s.turn.startWindow).toBeUndefined();
     const log = s.log as EngineEvent[];
     const revealAt = log.findIndex((e) => e.kind === 'GeneralRevealedEvent' && e.seatId === 'b');
     const startAt = log.findIndex((e) => e.kind === 'PhaseChangedEvent' && e.phase === 'Start' && e.seatId === 'b');
@@ -149,13 +139,33 @@ describe('the Start window as a turn begins', () => {
   });
 
   it('both Generals can be revealed in one window', () => {
-    const s = reveal(reveal(endTurnOfA(table()), 'main'), 'deputy');
+    const s = confirm(endTurnOfA(table()), ['main', 'deputy']);
     expect(s.seats[1].generals!.main.revealed).toBe(true);
     expect(s.seats[1].generals!.deputy.revealed).toBe(true);
-    expect(s.phase).toBe('Start');
-    expect(s.turn.startWindow).toBe(true);
-    expect(getLegalActions(s, 'b', registry)).toEqual([{ kind: 'EndPhaseAction', seatId: 'b' }]);
-    expect(continueAs(s).phase).toBe('Play');
+    expect(s.phase).toBe('Play');
+    expect(s.turn.startWindow).toBeUndefined();
+  });
+
+  it('confirming with nothing picked reveals nothing and starts the turn', () => {
+    const s = continueAs(endTurnOfA(table()));
+    expect(s.seats[1].generals!.main.revealed).toBe(false);
+    expect(s.seats[1].generals!.deputy.revealed).toBe(false);
+    expect(startsOf(s, 'b')).toHaveLength(1);
+    expect(s.phase).toBe('Play');
+  });
+
+  it('rejects a slot that is already revealed, repeated, or outside the window', () => {
+    const waiting = endTurnOfA(table({ main: { id: 'plain', revealed: true } }));
+    expect(() => confirm(waiting, ['main'])).toThrow(/cannot reveal/);
+    const both = endTurnOfA(table());
+    expect(() => confirm(both, ['deputy', 'deputy'])).toThrow(/cannot reveal/);
+    expect(() => confirm(endTurnOfA(table({ kind: 'bot' })), ['main'])).toThrow(/Start window/);
+  });
+
+  it('offers only the slots still hidden through the template, with slots free', () => {
+    const waiting = endTurnOfA(table());
+    expect(isOfferedAction({ kind: 'ConfirmRevealsAction', seatId: 'b', slots: ['main', 'deputy'] }, getLegalActions(waiting, 'b', registry))).toBe(true);
+    expect(isOfferedAction({ kind: 'EndPhaseAction', seatId: 'b' }, getLegalActions(waiting, 'b', registry))).toBe(false);
   });
 
   it('a bot seat never waits', () => {
@@ -220,13 +230,8 @@ describe('the Start window on the first turn', () => {
     expect(s.phase).toBe('Start');
     expect(s.turn.startWindow).toBe(true);
     expect(startsOf(s, 'a')).toEqual([]);
-    expect(getLegalActions(s, 'a', registry)).toEqual([
-      { kind: 'EndPhaseAction', seatId: 'a' },
-      { kind: 'RevealGeneralAction', seatId: 'a', slot: 'main' },
-      { kind: 'RevealGeneralAction', seatId: 'a', slot: 'deputy' },
-    ]);
-    const revealed = reveal(s, 'main', 'a');
-    const on = continueAs(revealed, 'a');
+    expect(getLegalActions(s, 'a', registry)).toEqual([{ kind: 'ConfirmRevealsAction', seatId: 'a', slots: [] }]);
+    const on = confirm(s, ['main'], 'a');
     expect(startsOf(on, 'a')).toHaveLength(1);
     expect(on.phase).toBe('Play');
     // herald's omen drew 1 at Start, then Draw drew 2.
@@ -246,7 +251,9 @@ describe('the Start window on the first turn', () => {
     };
     const afterA = resolve(selecting, { kind: 'ChooseGeneralsAction', seatId: 'a', mainId: 'herald', deputyId: 'plain' }, ctx).state;
     const s = resolve(afterA, { kind: 'ChooseGeneralsAction', seatId: 'b', mainId: 'plain', deputyId: 'herald' }, ctx).state;
-    expect(s.phase).toBe('Play');
+    // The bot's hidden herald asks before its omen fires; the Start event is logged and no window waited.
     expect(startsOf(s, 'a')).toHaveLength(1);
+    expect(s.turn.startWindow).toBeUndefined();
+    expect(s.pendingChoice).toMatchObject({ seatId: 'a', reason: { abilityId: 'omen' } });
   });
 });

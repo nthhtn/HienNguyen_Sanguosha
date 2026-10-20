@@ -17,14 +17,16 @@ const SLOTS = ['main', 'deputy'] as const;
 // off (its modifiers with them); its other skills are offered, but using one
 // reveals it. Lord skills never are: Kingdom War has no Lord. An eliminated
 // seat has none.
-export function skillsInPlay(state: GameState, seatId: string, registry: ContentRegistry): SkillInPlay[] {
+// `withHiddenCompulsory`: also a hidden General's compulsory skills (needsReveal), for the triggers that ask
+// to reveal it (gatherTriggeredSkills); their modifiers stay off, so queries leave this out.
+export function skillsInPlay(state: GameState, seatId: string, registry: ContentRegistry, withHiddenCompulsory = false): SkillInPlay[] {
   const seat = state.seats.find((s) => s.id === seatId);
   if (!seat || seat.eliminated || !seat.generals || seat.silenced) return [];
   const found: SkillInPlay[] = [];
   // `unique`: a gained or borrowed skill the seat already holds on its other General adds nothing.
   const add = (slot: 'main' | 'deputy', skill: SkillDefinition | undefined, unique = false) => {
     const general = seat.generals![slot];
-    if (!skill || skill.lord || (!general.revealed && skill.compulsory)) return;
+    if (!skill || skill.lord || (!general.revealed && skill.compulsory && !withHiddenCompulsory)) return;
     if (found.some((f) => f.skill.id === skill.id && (unique || f.owner.slot === slot))) return;
     found.push({ owner: { kind: 'general', seatId, slot, skillId: skill.id }, skill, needsReveal: !general.revealed });
   };

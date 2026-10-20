@@ -1,7 +1,7 @@
 import type { Action, ContentRegistry, GameState, Seat } from 'engine';
-import { conversionsOf, sameAbilityOwner } from 'engine';
+import { conversionsOf, findSkill, sameAbilityOwner } from 'engine';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
-import { definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, mayReveal, TargetRanker, weakestFirst } from './helpers';
+import { definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, TargetRanker, weakestFirst } from './helpers';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
 import { bestPair, GENERAL_VALUES } from './general-values';
@@ -139,10 +139,10 @@ function decide(
   const choiceActions = legal.filter((a): a is ChooseOption => a.kind === 'ChooseOptionAction');
   if (choiceNow && me && choiceActions.length > 0) {
     if (choiceNow.reason.kind === 'ability' && choiceNow.verb === 'use') {
-      const use = choiceNow.options.find((o) => o.id === 'use')?.shows;
-      const reveals = use?.kind === 'use' && !!use.reveals;
       const skillWants = wantsSkill(view, me, choiceNow, registry);
-      const wants = (skillWants ?? wantsToUse(view, me, choiceNow.reason.abilityId, choiceNow.reason.targetSeatId)) && (!reveals || mayReveal(me));
+      // A compulsory skill's ask is only about revealing, and a bot has no reason to hide: it says Use.
+      const compulsory = findSkill(registry, choiceNow.reason.abilityId)?.compulsory === true;
+      const wants = compulsory || (skillWants ?? wantsToUse(view, me, choiceNow.reason.abilityId, choiceNow.reason.targetSeatId));
       const pick = choiceActions.find((a) => a.optionId === (wants ? 'use' : 'decline'));
       if (pick) return take(pick);
     }
@@ -227,10 +227,6 @@ function decide(
         (c) => registry.cards.get(c.definitionId)?.equipSlot
       )
     );
-
-    // Reveal a hidden General in the Play Phase: nothing else turns its compulsory skills on, and a bot has no reason to hide.
-    const reveal = legal.find((a) => a.kind === 'RevealGeneralAction');
-    if (reveal) return take(reveal);
 
     const peach = plays.find((p) => untargeted(p) && definitionIdOf(view, p.cardInstanceId) === 'peach');
     if (peach && self.combinedHp < self.maxCombinedHp && (!rules.peach || peachWorthPlaying(view, self))) return take(peach);

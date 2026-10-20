@@ -1,6 +1,6 @@
 import type { Action, CardInstance, ContentRegistry, Effect, GameState, Judgment, PendingChoice, PendingSelection, Seat } from 'engine';
 import { abilityUseKey, colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
-import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, mayReveal, ownCards, isShaCard } from './helpers';
+import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, ownCards, isShaCard } from './helpers';
 import { wantsWind, windChoice, windSelection } from './wind';
 import { fireChoice, wantsFire, wantsFireActive } from './fire';
 import { forestChoice, forestSelection, wantsForest, wantsForestActive } from './forest';
@@ -224,24 +224,23 @@ const ACTIVE_ORDER = {
   late: ['sow-revolt', 'sow-discord', 'kindness', 'assault', 'upheaval', 'instigate', 'direct-instruction'],
 } as const;
 
-// The active skill to use now from `group`, if any: offered, wanted, and its
-// General revealed or the bot willing to reveal it.
+// The active skill to use now from `group`, if any: offered and wanted (using it
+// reveals its General: a bot has no reason to hide).
 export function pickActiveSkill(view: GameState, me: Seat, legal: Action[], registry: ContentRegistry, group: 'early' | 'late'): UseSkill | undefined {
   const offered = legal.filter((a): a is UseSkill => a.kind === 'UseSkillAction' && a.owner.kind === 'general');
   for (const skillId of ACTIVE_ORDER[group]) {
     const action = offered.find((a) => a.owner.kind === 'general' && a.owner.skillId === skillId);
     if (!action || action.owner.kind !== 'general') continue;
-    const revealed = !!me.generals?.[action.owner.slot].revealed;
-    if ((revealed || mayReveal(me)) && wantsActive(view, me, skillId, registry)) return action;
+    if (wantsActive(view, me, skillId, registry)) return action;
   }
   return undefined;
 }
 
-// Whether a conversion is worth it: the bot may reveal its General if needed,
-// and the least useful cards it would take hold no Peach.
+// Whether a conversion is worth it: the least useful cards it would take hold no
+// Peach (using it reveals its General: a bot has no reason to hide).
 export function conversionSpare(view: GameState, me: Seat, action: UseConversion, registry: ContentRegistry): boolean {
   const owned = conversionsOf(view, me.id, registry).find((o) => o.conversion.id === action.via.conversionId && sameAbilityOwner(o.owner, action.via.owner));
-  if (!owned || (owned.needsReveal && !mayReveal(me))) return false;
+  if (!owned) return false;
   // A deferred claim (Bewilder): a true claim whenever a hand card is the named
   // card; a bluff only with more than 4 cards.
   if (owned.conversion.deferred) {

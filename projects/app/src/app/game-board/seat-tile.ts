@@ -5,7 +5,7 @@ import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
 import { abilityName, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
 import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
 import { SeatAvatar } from './seat-avatar';
-import { AvatarReveal, AvatarSkill } from './avatar-skills';
+import { AvatarSkill } from './avatar-skills';
 import { PlayingCard } from './playing-card';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { I18n } from '../i18n/i18n.service';
@@ -45,7 +45,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
         </div>
         <div class="generals" [class.face-down]="seat().faceDown">
           @if (seat().generals; as generals) {
-            <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" [reveals]="reveals()" (revealGeneral)="useSkill.emit($event)" />
+            <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
           } @else {
             <span class="choosing">{{ 'seat.choosing' | t }}</span>
           }
@@ -209,8 +209,6 @@ export class SeatTile {
   // The viewer's own active skills, shown on the avatar.
   readonly skills = input<AvatarSkill[]>([]);
   readonly useSkill = output<Action>();
-  // The viewer's own Reveal buttons, shown on the avatar; they dispatch through useSkill.
-  readonly reveals = input<AvatarReveal[]>([]);
   readonly isResponding = input(false);
   readonly isViewer = input(false);
   readonly isBot = input(false);

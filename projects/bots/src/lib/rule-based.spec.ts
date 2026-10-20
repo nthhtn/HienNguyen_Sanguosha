@@ -542,14 +542,10 @@ describe('reveal to use', () => {
     expect(answer(seat('seat-0', 0, 'Wei', 4))).toBe('use');
   });
 
-  it('keeps hidden below 4 HP while both Generals are hidden', () => {
-    expect(answer(seat('seat-0', 0, 'Wei', 3))).toBe('decline');
+  it('reveals to use a skill it wants, whatever its HP (a bot has no reason to hide)', () => {
+    expect(answer(seat('seat-0', 0, 'Wei', 3))).toBe('use');
   });
 
-  it('reveals below 4 HP once its kingdom is known (a General already revealed)', () => {
-    const shown = seat('seat-0', 0, 'Wei', 3);
-    expect(answer({ ...shown, generals: { ...shown.generals!, deputy: { ...shown.generals!.deputy, revealed: true } } })).toBe('use');
-  });
 });
 
 describe('arranging the draw pile', () => {

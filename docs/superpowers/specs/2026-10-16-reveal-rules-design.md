@@ -3,6 +3,8 @@
 Status: Approved by the user's list of four scenarios (2026-10-16)
 Date: 2026-10-16
 
+> **Superseded in part (2026-10-20):** Rule 2 (the Play Phase Reveal button) and the Start window's per-General buttons are superseded by `2026-10-20-reveal-conditions-design.md`.
+
 ## Purpose
 
 A play-test question: is a General revealed automatically when its seat loses

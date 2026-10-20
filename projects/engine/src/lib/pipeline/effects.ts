@@ -111,6 +111,12 @@ export type Effect =
   // skill gained while that event's after-triggers resolve still takes part
   // (Incarnation's Form chosen at Start). Logs nothing.
   | { kind: 'FireSkillTriggersEffect'; owner: GeneralOwner; point: TriggerPoint; subject: GameEvent }
+  // Closes the Start window and enters Start (queued behind the reveals the window confirmed).
+  | { kind: 'EnterStartPhaseEffect' }
+  // `effect` resolved again with the hidden compulsory skills among its first `declined` before-triggers
+  // (gather order) not asking to be revealed: the owner declined them, so asking again would never end.
+  // A count, not skill ids: the effect sits in a pending choice other seats can see.
+  | { kind: 'UnaskedEffect'; effect: Effect; declined: number }
   // `seatId` uses `card` at `targets`, as a play outside any limit: a card a
   // skill makes a seat use (Sow Discord's Duel). Not counted toward limits.
   // `counted`: a play toward per-turn limits, spending Wine; `answering`: the
@@ -428,6 +434,8 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       return { state, events: [] };
     case 'SkillStepEffect':
     case 'FireSkillTriggersEffect':
+    case 'EnterStartPhaseEffect':
+    case 'UnaskedEffect':
     case 'UseCardEffect':
       throw new Error(`${effect.kind} needs the registry: resolve it through the pipeline`);
     default:

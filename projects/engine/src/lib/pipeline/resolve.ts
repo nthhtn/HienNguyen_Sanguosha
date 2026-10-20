@@ -12,7 +12,7 @@ import { decisionPending } from '../rules/activeSeat';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer, startWindowOpens } from '../rules/phaseSequence';
-import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
+import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, hiddenSlots, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { ArrangementMadeEvent, CardPlayedEvent, SeatTurnedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
@@ -133,17 +133,18 @@ function logged(state: GameState, events: GameEvent[]): GameState {
   return { ...state, log: [...state.log, ...(events as GameState['log'])] };
 }
 
-// Using a hidden General's skill reveals it first. An ask reveals on Use, and a
-// trigger may reveal for itself; any other output of such a trigger gets the
-// reveal of the owner’s slot in front of it. No output: no reveal.
-function revealFor(gathered: GatheredTrigger, outputs: readonly unknown[]): Effect[] {
+// Using a hidden General's skill reveals it first, and the owner is asked: an
+// ask reveals on Use, and a trigger may reveal for itself. Any other output of
+// such a trigger is wrapped in an ask of its own (Use reveals, then the output
+// runs; Don't runs nothing). No output: nothing to ask.
+function withReveal(gathered: GatheredTrigger, outputs: readonly unknown[]): QueueItem[] {
   const owner = gathered.owner;
-  if (!gathered.needsReveal || owner?.kind !== 'general' || outputs.length === 0) return [];
-  const revealsItself = outputs.some((o) => {
+  if (!gathered.needsReveal || owner?.kind !== 'general' || outputs.length === 0) return outputs as QueueItem[];
+  const asksItself = outputs.some((o) => {
     const kind = (o as { kind?: unknown }).kind;
     return kind === 'AskUseEffect' || kind === 'RevealGeneralEffect';
   });
-  return revealsItself ? [] : [{ kind: 'RevealGeneralEffect', seatId: owner.seatId, slot: owner.slot, forAbilityId: owner.skillId }];
+  return asksItself ? (outputs as QueueItem[]) : [{ kind: 'AskUseEffect', owner, abilityId: owner.skillId, effects: outputs as Effect[] }];
 }
 
 // Every after-trigger follow-up for `events`, in event order then trigger
@@ -153,7 +154,7 @@ function afterTriggerFollowUps(state: GameState, events: GameEvent[], ctx: Engin
   for (const event of events) {
     for (const gathered of gatherTriggeredSkills(state, ctx.registry, ctx.mode, `after:${event.kind}`, event)) {
       const outputs = gathered.trigger.effect(state, event, gathered.owner, ctx.registry) as QueueItem[];
-      followUps.push(...revealFor(gathered, outputs), ...outputs);
+      followUps.push(...withReveal(gathered, outputs));
     }
   }
   return followUps;
@@ -166,7 +167,7 @@ function fireSkillTriggers(state: GameState, effect: Extract<Effect, { kind: 'Fi
   for (const gathered of gatherTriggeredSkills(state, ctx.registry, ctx.mode, effect.point, effect.subject)) {
     if (!gathered.owner || !sameAbilityOwner(gathered.owner, effect.owner)) continue;
     const outputs = gathered.trigger.effect(state, effect.subject, gathered.owner, ctx.registry) as QueueItem[];
-    followUps.push(...revealFor(gathered, outputs), ...outputs);
+    followUps.push(...withReveal(gathered, outputs));
   }
   return { state: queueFront(state, followUps), events: [] };
 }
@@ -218,12 +219,13 @@ function enterNextPhase(state: GameState, ctx: EngineContext): ResolveResult {
   return logWithTriggers(counted, events, ctx);
 }
 
-// Closes the Start window and enters Start: its PhaseChangedEvent is logged and
-// its triggers gathered, as enterNextPhase would have done without the window.
-function enterStartPhase(state: GameState, ctx: EngineContext): ResolveResult {
+// Closes the Start window and enters Start: its PhaseChangedEvent is logged, and
+// its triggers are gathered by the caller (EnterStartPhaseEffect resolves like
+// any effect), as enterNextPhase would have done without the window.
+function enterStartPhase(state: GameState): ResolveResult {
   const { startWindow: _closed, ...turn } = state.turn;
   const phaseEvent: PhaseChangedEvent = { kind: 'PhaseChangedEvent', seatId: turn.ownerSeatId, phase: 'Start' };
-  return logWithTriggers({ ...state, turn }, [phaseEvent], ctx);
+  return { state: logged({ ...state, turn }, [phaseEvent]), events: [phaseEvent] };
 }
 
 // `effect` as its before-triggers would rewrite it (e.g. Silver Lion's cap),
@@ -232,20 +234,34 @@ function enterStartPhase(state: GameState, ctx: EngineContext): ResolveResult {
 // again against the effect as rewritten so far. A rewrite into another kind of
 // effect (an ask) ends it: the rest get their say when the effect comes back.
 export function previewEffect(state: GameState, effect: Effect, ctx: EngineContext): Effect | null {
-  return rewriteEffect(state, effect, ctx)?.effect ?? null;
+  return rewriteEffect(state, effect, ctx, null)?.effect ?? null;
 }
 
 // The before-triggers' say: the effect as it will apply (null: cancelled),
 // and what any trigger returned after its first output, to run after it.
-function rewriteEffect(state: GameState, effect: Effect, ctx: EngineContext): { effect: Effect; after: Effect[] } | null {
+// A hidden General's compulsory skill whose condition holds asks its owner to reveal it first: Use
+// reveals and runs the effect again (the skill is then revealed and rewrites it as usual), Don't runs it
+// unrewritten by that skill (UnaskedEffect). `asks` null (a preview): such skills are left out.
+function rewriteEffect(state: GameState, effect: Effect, ctx: EngineContext, asks: { declined: number } | null = { declined: 0 }): { effect: Effect; after: Effect[] } | null {
   const beforeTriggers = gatherTriggeredSkills(state, ctx.registry, ctx.mode, `before:${effect.kind}`, effect);
   let current: Effect = effect;
   const after: Effect[] = [];
   for (const [index, gathered] of beforeTriggers.entries()) {
     if (index > 0 && !gathered.trigger.condition(state, current, gathered.owner, ctx.registry)) continue;
+    if (gathered.compulsory && gathered.owner?.kind === 'general') {
+      if (!asks || index < asks.declined) continue;
+      const ask: Effect = {
+        kind: 'AskUseEffect',
+        owner: gathered.owner,
+        abilityId: gathered.owner.skillId,
+        effects: [current],
+        otherwise: [{ kind: 'UnaskedEffect', effect: current, declined: index + 1 }],
+      };
+      return { effect: ask, after };
+    }
     const outputs = gathered.trigger.effect(state, current, gathered.owner, ctx.registry) as Effect[];
     // A rewrite can't put a reveal ahead of the effect it rewrites: content must ask.
-    if (gathered.owner?.kind === 'general' && revealFor(gathered, outputs).length > 0) {
+    if (gathered.owner?.kind === 'general' && gathered.needsReveal && outputs.length > 0 && !outputs.some((o) => o.kind === 'AskUseEffect' || o.kind === 'RevealGeneralEffect')) {
       throw new Error(`${gathered.owner.skillId} needs a reveal but returns direct effects from a before-trigger`);
     }
     if (outputs.length === 0) return null;
@@ -259,8 +275,9 @@ function rewriteEffect(state: GameState, effect: Effect, ctx: EngineContext): { 
 // One effect: before-triggers may rewrite or cancel it, then it applies and its
 // events' after-trigger follow-ups go to the front of the queue, ahead of
 // whatever the rewriting triggers returned after the rewrite.
-function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): ResolveResult {
-  const rewritten = rewriteEffect(state, withBase(effect), ctx);
+function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext, declined = 0): ResolveResult {
+  if (effect.kind === 'UnaskedEffect') return resolveEffect(state, effect.effect, ctx, effect.declined);
+  const rewritten = rewriteEffect(state, withBase(effect), ctx, { declined });
   if (rewritten === null) return { state, events: [] };
   const current = rewritten.effect;
 
@@ -287,6 +304,8 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext): Re
           ? applySkillStep(state, current, ctx.registry)
           : current.kind === 'FireSkillTriggersEffect'
             ? fireSkillTriggers(state, current, ctx)
+            : current.kind === 'EnterStartPhaseEffect'
+            ? enterStartPhase(state)
             : current.kind === 'DyingEffect'
             ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry, { revealedOnly: true }).length > 0)
             : applyEffect(state, current);
@@ -572,8 +591,6 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (state.turn.ownerSeatId !== action.seatId) {
         throw new Error(`It is not seat ${action.seatId}'s turn`);
       }
-      // Continuing from the Start window enters Start (enterStartPhase).
-      if (state.phase === 'Start' && state.turn.startWindow) return enterStartPhase(state, ctx);
       if (state.phase !== 'Play') {
         throw new Error('EndPhaseAction is only legal in the Play phase');
       }
@@ -599,10 +616,15 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       return { state: queueFront(owing, [{ kind: 'MoveCardEffect', cardInstanceId: action.cardInstanceId, toZoneId: discardPile.id }]), events: [] };
     }
 
-    case 'RevealGeneralAction': {
-      // No actor/phase guard: player input is filtered by the server's isOfferedAction, and legality offers it only at the two reveal windows.
-      if (!state.seats.some((s) => s.id === action.seatId)) throw new Error(`Unknown seat: ${action.seatId}`);
-      return { state: queueFront(state, [{ kind: 'RevealGeneralEffect', seatId: action.seatId, slot: action.slot }]), events: [] };
+    case 'ConfirmRevealsAction': {
+      const seat = state.seats.find((s) => s.id === action.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
+      if (state.phase !== 'Start' || !state.turn.startWindow || state.turn.ownerSeatId !== action.seatId) throw new Error('Generals can only be revealed in the Start window of your turn');
+      const hidden = hiddenSlots(state, action.seatId);
+      if (new Set(action.slots).size !== action.slots.length || action.slots.some((slot) => !hidden.includes(slot))) throw new Error(`Seat ${action.seatId} cannot reveal ${action.slots.join(', ')}`);
+      // The reveals first, then Start (so a revealed General takes part in it).
+      const reveals = action.slots.map((slot): Effect => ({ kind: 'RevealGeneralEffect', seatId: action.seatId, slot }));
+      return { state: queueFront(state, [...reveals, { kind: 'EnterStartPhaseEffect' }]), events: [] };
     }
 
     case 'ChooseGeneralsAction': {

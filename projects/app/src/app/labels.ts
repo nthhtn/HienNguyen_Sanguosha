@@ -111,14 +111,14 @@ export function actionLabel(action: Action, state: GameState, registry: ContentR
     }
     case 'ChooseGeneralsAction':
       return tr('label.action.chooseGenerals', { main: generalDisplayName(action.mainId, tr), deputy: generalDisplayName(action.deputyId, tr) });
-    case 'RevealGeneralAction':
-      return tr(action.slot === 'main' ? 'label.action.revealMain' : 'label.action.revealDeputy');
+    case 'ConfirmRevealsAction':
+      return tr('label.action.confirm');
     case 'RespondAction':
       return tr('label.action.respond', { card: cardDisplayName(state, registry, action.cardInstanceId, tr) });
     case 'PassAction':
       return tr('label.action.pass');
     case 'EndPhaseAction':
-      return state.phase === 'Start' && state.turn.startWindow ? tr('label.action.continue') : tr('label.action.endPhase');
+      return tr('label.action.endPhase');
     case 'ChooseOptionAction':
       return tr('label.action.choose');
     case 'UseConversionAction':

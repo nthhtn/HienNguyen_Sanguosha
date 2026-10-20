@@ -1,5 +1,5 @@
-import type { CardInstance, ContentRegistry, EquipSlot, GameState, Target } from 'engine';
-import { activeAbilities } from './abilities';
+import type { CardInstance, ContentRegistry, EquipSlot, GameState, GeneralOwner, Target } from 'engine';
+import { activeAbilities, hiddenCompulsorySkills } from './abilities';
 
 // Seat-to-seat distance measured around the table over living seats only.
 // Returns Infinity when either seat is missing from the living set (an
@@ -61,9 +61,19 @@ export function shaFlag(state: GameState, seatId: string, flag: string): boolean
 
 // Sha plays allowed per turn: the highest any active ability allows, else 1;
 // one more after a won Heaven's Justice (SHA_FLAGS.extraPlay).
-export function shaLimit(state: GameState, seatId: string, registry: ContentRegistry): number {
-  const base = Math.max(1, ...activeAbilities(state, seatId, registry).map((a) => a.modifiers?.shaLimit ?? 1));
+export function shaLimit(state: GameState, seatId: string, registry: ContentRegistry, withHidden = false): number {
+  const hidden = withHidden ? hiddenCompulsorySkills(state, seatId, registry).map((s) => s.skill) : [];
+  const base = Math.max(1, ...[...activeAbilities(state, seatId, registry), ...hidden].map((a) => a.modifiers?.shaLimit ?? 1));
   return base + (shaFlag(state, seatId, SHA_FLAGS.extraPlay) ? 1 : 0);
+}
+
+// The hidden General a Sha play now depends on: it is beyond the limit of the revealed abilities but
+// within what a hidden compulsory skill allows (Roar). Playing it reveals that General. Null: no reveal.
+export function shaPlayRevealOwner(state: GameState, seatId: string, registry: ContentRegistry): GeneralOwner | null {
+  const played = state.turn.cardPlays?.['sha'] ?? 0;
+  if (played < shaLimit(state, seatId, registry)) return null;
+  const needed = hiddenCompulsorySkills(state, seatId, registry).find((s) => played < Math.max(1, s.skill.modifiers?.shaLimit ?? 1) + (shaFlag(state, seatId, SHA_FLAGS.extraPlay) ? 1 : 0));
+  return needed && needed.owner.kind === 'general' ? needed.owner : null;
 }
 
 // What a physical card of `definitionId` counts as when used as itself: the

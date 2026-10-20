@@ -73,9 +73,19 @@ describe('Dong Zhuo — Collapse', () => {
     expect(s.seats[0]).toMatchObject({ combinedHp: 4, maxCombinedHp: 4 });
   });
 
-  it('a tie in HP, or a hidden Dong Zhuo, does nothing', () => {
+  it('a tie in HP does nothing', () => {
     expect(askedAbout(ending(big({ hp: { 'seat-a': 5, 'seat-b': 5 } })))).toBeNull();
-    expect(askedAbout(ending(big({ generals: at('seat-a', 'dong-zhuo', 'filler-jiang-wei', false) })))).toBeNull();
+  });
+
+  it('a hidden Dong Zhuo is asked whether to reveal him; Use reveals, Don’t changes nothing', () => {
+    const asked = ending(big({ generals: at('seat-a', 'dong-zhuo', 'filler-jiang-wei', false) }));
+    expect(askedAbout(asked)).toBe('collapse');
+    expect(asked.pendingChoice!.options.map((o) => o.id)).toEqual(['use', 'decline']);
+    expect(h.choose(asked, 'decline').seats[0]).toMatchObject({ combinedHp: 5, maxCombinedHp: 5 });
+    expect(h.choose(asked, 'decline').seats[0].generals!.main.revealed).toBe(false);
+    const used = h.choose(asked, 'use');
+    expect(used.seats[0].generals!.main.revealed).toBe(true);
+    expect(askedAbout(used)).toBe('collapse');
   });
 });
 
@@ -126,14 +136,19 @@ describe('Jia Xu — Curtain', () => {
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a' }); // the Duel went ahead
   });
 
-  it('a hidden Jia Xu is hit', () => {
-    let s = h.play(table({ 'seat-b:hand': [card('bb', 'barbarians', 'spade', 7)] }, { owner: 'seat-b', generals: at('seat-a', 'jia-xu', 'filler-jiang-wei', false) }), 'bb');
+  it('a hidden Jia Xu is asked whether to reveal him; Use skips him, Don’t leaves him hit', () => {
+    let start = h.play(table({ 'seat-b:hand': [card('bb', 'barbarians', 'spade', 7)] }, { owner: 'seat-b', generals: at('seat-a', 'jia-xu', 'filler-jiang-wei', false) }), 'bb');
+    while (start.pendingResponse && !start.pendingChoice) start = h.pass(start);
+    expect(askedAbout(start)).toBe('curtain');
+    expect(h.choose(start, 'use').seats[0].generals!.main.revealed).toBe(true);
+    let s = h.choose(start, 'decline');
+    expect(s.seats[0].generals!.main.revealed).toBe(false);
     const asked: string[] = [];
     while (s.pendingResponse) {
       asked.push(s.pendingResponse.respondingSeatId);
       s = h.pass(s);
     }
-    expect(asked).toEqual(['seat-c', 'seat-d', 'seat-a']);
+    expect(asked).toEqual(['seat-a']);
   });
 });
 

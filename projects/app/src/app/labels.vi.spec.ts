@@ -82,8 +82,7 @@ describe('action labels', () => {
     ['play at a seat', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }] }, 'Play Slash Targeting Hing', 'Đánh Slash nhắm vào Hing'],
     ['play at two seats', { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'card-1', targets: [{ kind: 'seat', seatId: 'seat-0' }, { kind: 'seat', seatId: 'seat-1' }] }, 'Play Slash Targeting Hing, Seat 1', 'Đánh Slash nhắm vào Hing, Người chơi 1'],
     ['choose Generals', { kind: 'ChooseGeneralsAction', seatId: 'seat-0', mainId: 'cao-cao', deputyId: 'xu-chu' }, 'Choose Cao Cao (Main) and Xu Chu (Deputy)', 'Chọn Cao Cao (chính) và Xu Chu (phụ)'],
-    ['reveal main', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' }, 'Reveal Main General', 'Lật Chủ tướng'],
-    ['reveal deputy', { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'deputy' }, 'Reveal Deputy General', 'Lật Phó tướng'],
+    ['confirm reveals', { kind: 'ConfirmRevealsAction', seatId: 'seat-0', slots: [] }, 'Confirm', 'Xác nhận'],
     ['respond', { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'r1', cardInstanceId: 'card-1' }, 'Respond with Slash', 'Phản hồi bằng Slash'],
     ['pass', { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'r1' }, 'Pass', 'Bỏ qua'],
     ['end phase', { kind: 'EndPhaseAction', seatId: 'seat-0' }, 'End Phase', 'Kết thúc giai đoạn'],
@@ -95,13 +94,6 @@ describe('action labels', () => {
     ['cancel', { kind: 'CancelSelectionAction', seatId: 'seat-0', selectionId: 's' }, 'Cancel', 'Hủy'],
     ['discard', { kind: 'DiscardCardAction', seatId: 'seat-0', cardInstanceId: 'card-1' }, 'Discard Slash', 'Bỏ Slash'],
   ];
-  it('labels EndPhaseAction Continue in the Start window', () => {
-    const base = state;
-    const window = { ...base, phase: 'Start' as const, turn: { ...base.turn, startWindow: true } };
-    const end: Action = { kind: 'EndPhaseAction', seatId: 'seat-0' };
-    expect(actionLabel(end, window, registry)).toBe('Continue');
-    expect(actionLabel(end, window, registry, tr)).toBe('Tiếp tục');
-  });
   it.each(rows)('%s', (_name, action, english, vietnamese) => {
     expect(label(action)).toBe(english);
     expect(label(action, tr)).toBe(vietnamese);
