@@ -1,5 +1,6 @@
 import { pickRandomAction, ruleBasedPolicy } from 'bots';
 import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
@@ -12,6 +13,9 @@ import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
 import { EFFECT_URLS, MUSIC_PLAYER_FACTORY } from '../music.service';
+
+@Component({ template: 'info' })
+class InfoProbe {}
 
 // Selection through to the first Play phase: a human seat with a hidden General
 // first rests in its Start window, which Continue (EndPhaseAction) closes.
@@ -273,6 +277,70 @@ describe('GameBoard', () => {
     expect(cardsOverHandLimit(gameService.state()!, seatId)).toBe(0);
     expect(gameService.state()!.turn.ownerSeatId).not.toBe(seatId);
     overlay.replaceChildren();
+  });
+
+  // A two-seat deal where the first seat's aimed Slash or Duel waits on the other seat's answer, with that seat revealed.
+  function dealResponse(): void {
+    for (let seed = 1; seed < 50; seed++) {
+      gameService.startGame(2, seed);
+      finishSelection(gameService);
+      gameService.reveal(gameService.activeSeatId()!);
+      const aimed = gameService.legalActions().find(
+        (a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(gameService.state()!, a.cardInstanceId) ?? '')
+      );
+      if (!aimed) continue;
+      gameService.submit(aimed);
+      if (waitsOnDamageAnswer(gameService.state()!)) break;
+    }
+    gameService.reveal(gameService.activeSeatId()!);
+  }
+
+  describe('minimizing a decision dialog', () => {
+    async function openResponse() {
+      dealResponse();
+      const fixture = TestBed.createComponent(GameBoard);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const pane = () => document.querySelector('.cdk-overlay-pane') as HTMLElement;
+      const el = fixture.nativeElement as HTMLElement;
+      return { fixture, el, pane };
+    }
+
+    it('View Board hides the dialog and shows a banner; clicking the banner brings the dialog back', async () => {
+      const { fixture, el, pane } = await openResponse();
+      expect(el.querySelector('app-decision-banner .banner')).toBeNull();
+      (pane().querySelector('button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(pane().classList).toContain('decision-minimized');
+      // styles.scss hides the backdrop through its sibling wrapper, so the backdrop must come right before it.
+      expect(pane().closest('.cdk-global-overlay-wrapper')!.previousElementSibling!.classList).toContain('cdk-overlay-backdrop');
+      const banner = el.querySelector('app-decision-banner .banner') as HTMLButtonElement;
+      expect(banner.textContent).toContain('Response Needed');
+      banner.click();
+      fixture.detectChanges();
+      expect(pane().classList).not.toContain('decision-minimized');
+      expect(el.querySelector('app-decision-banner .banner')).toBeNull();
+    });
+
+    it('an info dialog opened while minimized leaves the decision minimized', async () => {
+      const { fixture, el } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      TestBed.inject(MatDialog).open(InfoProbe);
+      expect(el.querySelector('app-decision-banner .banner')).not.toBeNull();
+      expect(document.querySelector('.decision-minimized')).not.toBeNull();
+    });
+
+    it('the banner goes when the decision settles while minimized', async () => {
+      const { fixture, el } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      gameService.submit(gameService.legalActions().find((a) => a.kind === 'PassAction')!);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(el.querySelector('app-decision-banner .banner')).toBeNull();
+    });
   });
 
   it('opens the Response dialog for the seat that must answer, and No Response lets the effect go ahead', async () => {

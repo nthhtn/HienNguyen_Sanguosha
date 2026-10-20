@@ -32,6 +32,7 @@ import { describeArrangement, describeAsk, describeSelection } from './ability-d
 import { ArrangeDialog, ArrangeDialogData } from './arrange-dialog';
 import { avatarReveals, avatarSkills, extraSkillsOf } from './avatar-skills';
 import { choiceDialogOptions, describeChoice } from './choice-description';
+import { DecisionBanner } from './decision-banner';
 import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
 import { CompeteResult, competeResults } from './compete-result';
@@ -44,7 +45,7 @@ import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-game-board',
-  imports: [TPipe, TMsgPipe, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -57,6 +58,8 @@ import { TPipe } from '../i18n/t.pipe';
         <button mat-button type="button" (click)="dismissError()">{{ 'ui.dismiss' | t }}</button>
       </div>
     }
+
+    <app-decision-banner />
 
     @if (gameService.state(); as state) {
       @if (state.result; as result) {

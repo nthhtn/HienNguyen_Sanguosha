@@ -5,7 +5,7 @@ import { DecisionDock } from './decision-dock';
 
 function fakeRef() {
   const closed = new Subject<void>();
-  const ref = { addPanelClass: jest.fn(), removePanelClass: jest.fn(), afterClosed: () => closed.asObservable() };
+  const ref = { addPanelClass: jest.fn(), removePanelClass: jest.fn(), beforeClosed: () => closed.asObservable() };
   return { ref: ref as unknown as MatDialogRef<unknown, unknown>, closed, spies: ref };
 }
 

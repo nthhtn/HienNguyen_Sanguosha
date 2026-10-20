@@ -12,7 +12,8 @@ interface Entry extends MinimizedDecision {
 
 // The decision dialog the player has hidden to look at the board. Presentation state
 // only: the dialog stays open (hidden by a panel class, see styles.scss), so what the
-// player picked survives, and it closes through the usual paths when the decision settles.
+// player picked survives, and it closes through the usual paths when the decision settles
+// (the banner goes as soon as it starts closing, not after the close animation).
 @Injectable({ providedIn: 'root' })
 export class DecisionDock {
   private readonly entry = signal<Entry | null>(null);
@@ -24,7 +25,7 @@ export class DecisionDock {
   minimize(ref: MatDialogRef<unknown, unknown>, title: string, context: string | null = null): void {
     ref.addPanelClass(HIDDEN_CLASS);
     this.entry.set({ ref, title, context });
-    ref.afterClosed().subscribe(() => {
+    ref.beforeClosed().subscribe(() => {
       if (this.entry()?.ref === ref) this.entry.set(null);
     });
   }

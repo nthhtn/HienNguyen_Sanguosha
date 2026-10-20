@@ -19,7 +19,7 @@ class Host {
   context = signal<string | null>('Seat 1 used Sha');
 }
 
-const ref = { addPanelClass: jest.fn(), removePanelClass: jest.fn(), afterClosed: () => ({ subscribe: jest.fn() }) };
+const ref = { addPanelClass: jest.fn(), removePanelClass: jest.fn(), beforeClosed: () => ({ subscribe: jest.fn() }) };
 
 function mount() {
   TestBed.configureTestingModule({ providers: [{ provide: MatDialogRef, useValue: ref }] });

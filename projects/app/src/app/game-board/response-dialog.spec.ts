@@ -42,7 +42,7 @@ describe('ResponseDialog', () => {
     const { el, confirm, pick, close } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }], [], true);
     pick('.card-option');
     const dock = TestBed.inject(DecisionDock);
-    const ref = { addPanelClass: jest.fn(), removePanelClass: jest.fn(), afterClosed: () => ({ subscribe: jest.fn() }) };
+    const ref = { addPanelClass: jest.fn(), removePanelClass: jest.fn(), beforeClosed: () => ({ subscribe: jest.fn() }) };
     dock.minimize(ref as never, 'Response Needed');
     dock.restore();
     expect((el.querySelector('.card-option input') as HTMLInputElement).checked).toBe(true);
