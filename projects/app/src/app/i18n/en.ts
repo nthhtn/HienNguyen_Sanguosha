@@ -418,6 +418,8 @@ export const en = {
   'avatar.reveal': 'Reveal',
   'avatar.revealSkill': 'Reveal: {name}',
   'ui.discard': 'Discard',
+  'decision.viewBoard': 'View Board',
+  'decision.open': 'Open',
   'respDialog.title': 'Response Needed',
   'respDialog.choose': 'Choose a response',
   'respDialog.skills': 'Skills',

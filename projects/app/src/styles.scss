@@ -95,3 +95,10 @@ body {
 // Text about a player's status (HP lost, dying, eliminated…), in that player's
 // force colour: <span class="force-status" data-force="Wei">…</span>.
 .force-status { font-weight: 600; color: var(--force-text, var(--force-none-text)); }
+
+// A decision dialog the player has minimized to look at the board (DecisionDock):
+// hidden, with its backdrop, but still open so its state is kept.
+.cdk-global-overlay-wrapper:has(.decision-minimized),
+.cdk-overlay-backdrop:has(+ .cdk-global-overlay-wrapper .decision-minimized) {
+  display: none;
+}
