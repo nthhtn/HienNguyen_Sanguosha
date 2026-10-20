@@ -1,5 +1,6 @@
 import { buildContentRegistry } from 'content';
 import { redactStateForSeat, usedCardOf } from 'engine';
+import type { JudgmentDescription } from './judgment-description';
 import type { CardInstance, GameState, GeneralOwner, JudgmentChange, JudgmentReader, JudgmentView, Seat } from 'engine';
 
 export const registry = buildContentRegistry();
@@ -39,3 +40,18 @@ export const view = (reader: JudgmentReader, seatId: string, judged: CardInstanc
 
 export const publicOf = (state: GameState): GameState => redactStateForSeat(state, '');
 export type { JudgmentChange };
+
+export const seven: CardInstance = { instanceId: 'c7', definitionId: 'sha', suit: 'heart', rank: 7 };
+export const king: CardInstance = { instanceId: 'ck', definitionId: 'sha', suit: 'spade', rank: 13 };
+
+export const skillDescription = (over: Partial<JudgmentDescription> = {}): JudgmentDescription => ({
+  force: 'Wei',
+  source: { kind: 'skill', generalId: 'xiahou-dun', generalName: 'Xiahou Dun', abilityName: 'Unyielding', skillText: 'After you take damage, judge.' },
+  judgedSeatName: 'Hing',
+  card: seven,
+  changes: [],
+  settled: true,
+  outcome: 'Bo discards 2 cards or takes 1 damage',
+  waiting: null,
+  ...over,
+});
