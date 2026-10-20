@@ -26,6 +26,11 @@ function render() {
 }
 
 describe('ArrangeDialog', () => {
+  it('has a View Board button to minimize it', () => {
+    const { el } = render();
+    expect(el.querySelector('app-minimize-button')).not.toBeNull();
+  });
+
   it('starts with every card on top, in order', () => {
     const { el, close, click, arrangedChanged } = render();
     expect([...el.querySelectorAll('.item')].map((i) => i.getAttribute('data-card-id'))).toEqual(['t1', 't2', 't3']);

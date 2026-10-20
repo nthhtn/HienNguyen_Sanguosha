@@ -417,6 +417,8 @@ export const vi: Messages = {
   'avatar.reveal': 'Lật Tướng',
   'avatar.revealSkill': 'Lật Tướng: {name}',
   'ui.discard': 'Bỏ bài',
+  'decision.viewBoard': 'Xem bàn',
+  'decision.open': 'Mở',
   'respDialog.title': 'Cần phản hồi',
   'respDialog.choose': 'Chọn cách phản hồi',
   'respDialog.skills': 'Kỹ năng',

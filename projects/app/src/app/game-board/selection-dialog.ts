@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { Action } from 'engine';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
+import { MinimizeButton } from './minimize-button';
 import { SelectionDescription } from './ability-description';
 
 export interface SelectionDialogData {
@@ -16,9 +17,12 @@ export interface SelectionDialogData {
 // targets). Confirms between min and max picks; Cancel when it may be.
 @Component({
   selector: 'app-selection-dialog',
-  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown, MinimizeButton],
   template: `
-    <h2 mat-dialog-title>{{ d.title }}</h2>
+    <div class="title-row">
+      <h2 mat-dialog-title>{{ d.title }}</h2>
+      <app-minimize-button />
+    </div>
     <mat-dialog-content>
       <p class="prompt">{{ d.prompt }}</p>
       <ul class="items">

@@ -1,9 +1,12 @@
 import { pickRandomAction, ruleBasedPolicy } from 'bots';
 import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogState } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
+import { I18n } from '../i18n/i18n.service';
+import { DecisionDock } from './decision-dock';
 import { GameBoard } from './game-board';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
@@ -12,6 +15,9 @@ import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
 import { EFFECT_URLS, MUSIC_PLAYER_FACTORY } from '../music.service';
+
+@Component({ template: 'info' })
+class InfoProbe {}
 
 // Selection through to the first Play phase: a human seat with a hidden General
 // first rests in its Start window, which Continue (EndPhaseAction) closes.
@@ -273,6 +279,126 @@ describe('GameBoard', () => {
     expect(cardsOverHandLimit(gameService.state()!, seatId)).toBe(0);
     expect(gameService.state()!.turn.ownerSeatId).not.toBe(seatId);
     overlay.replaceChildren();
+  });
+
+  // A two-seat deal where the first seat's aimed Slash or Duel waits on the other seat's answer, with that seat revealed.
+  function dealResponse(): void {
+    for (let seed = 1; seed < 50; seed++) {
+      gameService.startGame(2, seed);
+      finishSelection(gameService);
+      gameService.reveal(gameService.activeSeatId()!);
+      const aimed = gameService.legalActions().find(
+        (a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(gameService.state()!, a.cardInstanceId) ?? '')
+      );
+      if (!aimed) continue;
+      gameService.submit(aimed);
+      if (waitsOnDamageAnswer(gameService.state()!)) break;
+    }
+    gameService.reveal(gameService.activeSeatId()!);
+  }
+
+  describe('minimizing a decision dialog', () => {
+    async function openResponse() {
+      dealResponse();
+      const fixture = TestBed.createComponent(GameBoard);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const pane = () => document.querySelector('.cdk-overlay-pane') as HTMLElement;
+      const el = fixture.nativeElement as HTMLElement;
+      return { fixture, el, pane };
+    }
+
+    it('View Board hides the dialog and shows a banner; clicking the banner brings the dialog back', async () => {
+      const { fixture, el, pane } = await openResponse();
+      expect(el.querySelector('app-decision-banner .banner')).toBeNull();
+      (pane().querySelector('button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(pane().classList).toContain('decision-minimized');
+      // styles.scss hides the backdrop through its sibling wrapper, so the backdrop must come right before it.
+      expect(pane().closest('.cdk-global-overlay-wrapper')!.previousElementSibling!.classList).toContain('cdk-overlay-backdrop');
+      const banner = el.querySelector('app-decision-banner .banner') as HTMLButtonElement;
+      expect(banner.textContent).toContain('Response Needed');
+      // The banner wears the colours of the force the dialog is themed in.
+      expect(`force-dialog-${banner.getAttribute('data-force') ?? 'none'}`).toBe([...pane().classList].find((c) => /^force-dialog-/.test(c)));
+      banner.click();
+      fixture.detectChanges();
+      expect(pane().classList).not.toContain('decision-minimized');
+      expect(el.querySelector('app-decision-banner .banner')).toBeNull();
+    });
+
+    it('an info dialog opened while minimized leaves the decision minimized', async () => {
+      const { fixture, el } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      TestBed.inject(MatDialog).open(InfoProbe);
+      expect(el.querySelector('app-decision-banner .banner')).not.toBeNull();
+      expect(document.querySelector('.decision-minimized')).not.toBeNull();
+    });
+
+    it('leaving the game while minimized closes the hidden dialog and clears the banner', async () => {
+      const { fixture } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      const dialog = TestBed.inject(MatDialog);
+      fixture.destroy();
+      expect(TestBed.inject(DecisionDock).minimized()).toBeNull();
+      // Closing (the exit animation still runs), no longer open.
+      expect(dialog.openDialogs.every((d) => d.getState() !== MatDialogState.OPEN)).toBe(true);
+    });
+
+    it('switching language while minimized rebuilds the decision in that language and keeps it minimized', async () => {
+      localStorage.clear();
+      const { fixture, el } = await openResponse();
+      const englishSource = document.querySelector('.cdk-overlay-pane .source')!.textContent;
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await TestBed.inject(I18n).setLocale('vi');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 400)); // the old dialog's exit, the new one's entrance
+      fixture.detectChanges();
+      expect(el.querySelector('app-decision-banner .banner')!.textContent).toContain('Cần phản hồi');
+      const panes = document.querySelectorAll('.cdk-overlay-pane');
+      expect(panes).toHaveLength(1);
+      expect(panes[0].classList).toContain('decision-minimized');
+      expect(panes[0].querySelector('.source')!.textContent).not.toBe(englishSource);
+      localStorage.clear();
+    });
+
+    it('the rebuilt decision is never shown, not even for a moment', async () => {
+      localStorage.clear();
+      const { fixture } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      // Every popup that appears from now on, and whether it was already hidden when it did.
+      const seen: boolean[] = [];
+      const observer = new MutationObserver((records) => {
+        for (const node of records.flatMap((r) => [...r.addedNodes])) {
+          const pane = node instanceof HTMLElement ? (node.matches('.cdk-overlay-pane') ? node : node.querySelector('.cdk-overlay-pane')) : null;
+          if (pane) seen.push(pane.classList.contains('decision-minimized'));
+        }
+      });
+      observer.observe(document.querySelector('.cdk-overlay-container')!, { childList: true, subtree: true });
+      await TestBed.inject(I18n).setLocale('vi');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      observer.disconnect();
+      expect(seen.length).toBeGreaterThan(0);
+      expect(seen.every(Boolean)).toBe(true);
+      localStorage.clear();
+    });
+
+    it('the banner goes when the decision settles while minimized', async () => {
+      const { fixture, el } = await openResponse();
+      (document.querySelector('.cdk-overlay-pane button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      gameService.submit(gameService.legalActions().find((a) => a.kind === 'PassAction')!);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(el.querySelector('app-decision-banner .banner')).toBeNull();
+    });
   });
 
   it('opens the Response dialog for the seat that must answer, and No Response lets the effect go ahead', async () => {

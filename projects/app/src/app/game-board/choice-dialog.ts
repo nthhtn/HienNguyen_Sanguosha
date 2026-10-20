@@ -5,6 +5,7 @@ import { Action, CardInstance } from 'engine';
 import { CARD_BACK_ART_URL } from 'content';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
+import { MinimizeButton } from './minimize-button';
 import { ChoiceDescription } from './choice-description';
 import { Force } from '../labels';
 
@@ -33,9 +34,12 @@ export interface ChoiceDialogData {
 // Closes only through that button, with the engine's own ChooseOptionAction.
 @Component({
   selector: 'app-choice-dialog',
-  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown, MinimizeButton],
   template: `
-    <h2 mat-dialog-title>{{ data.description.title }}</h2>
+    <div class="title-row">
+      <h2 mat-dialog-title>{{ data.description.title }}</h2>
+      <app-minimize-button />
+    </div>
     <mat-dialog-content>
       <p class="prompt">{{ data.description.prompt }}</p>
       <ul class="options">

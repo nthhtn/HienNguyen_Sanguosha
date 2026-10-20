@@ -25,6 +25,11 @@ function render() {
 }
 
 describe('ChoiceDialog', () => {
+  it('has a View Board button to minimize it', () => {
+    const { el } = render();
+    expect(el.querySelector('app-minimize-button')).not.toBeNull();
+  });
+
   it('shows the Tool, the prompt, each hand card face down, and each face-up card', () => {
     const { el } = render();
     expect(el.querySelector('h2')!.textContent).toContain('Steal');

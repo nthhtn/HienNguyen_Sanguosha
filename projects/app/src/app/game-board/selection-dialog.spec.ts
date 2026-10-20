@@ -32,6 +32,11 @@ function render(over: Partial<SelectionDescription> = {}) {
 }
 
 describe('SelectionDialog', () => {
+  it('has a View Board button to minimize it', () => {
+    const { el } = render();
+    expect(el.querySelector('app-minimize-button')).not.toBeNull();
+  });
+
   it('confirms only once between min and max are picked, with the picked ids', () => {
     const { el, click, close } = render();
     const confirm = () => el.querySelector('button.confirm') as HTMLButtonElement;
