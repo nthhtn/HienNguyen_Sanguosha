@@ -1,5 +1,5 @@
 import viProse from '../../data/locales/vi/prose.json';
-import { ENGLISH_PROSE, abilityHint, choicePromptText, competeOutcomeText, seatPickText, selectionText, stepSelectionText } from './display';
+import { ENGLISH_PROSE, abilityHint, choicePromptText, competeOutcomeText, judgmentOutcomeText, seatPickText, selectionText, stepSelectionText } from './display';
 
 const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 const ids = (table: object) => Object.keys(table).sort();
@@ -37,6 +37,18 @@ describe('the Vietnamese prose file mirrors the English tables', () => {
       const english = ENGLISH_PROSE.competeOutcomes[id];
       const vietnamese = viProse.competeOutcomes[id as keyof typeof viProse.competeOutcomes];
       expect({ id, won: placeholders(vietnamese.won), lost: placeholders(vietnamese.lost) }).toEqual({ id, won: placeholders(english.won), lost: placeholders(english.lost) });
+    }
+  });
+
+  it('has exactly the English keys and placeholders in every judgment outcome', () => {
+    for (const readerId of Object.keys(ENGLISH_PROSE.judgmentOutcomes)) {
+      const english: Record<string, string> = ENGLISH_PROSE.judgmentOutcomes[readerId];
+      const vietnamese: Record<string, string> = (viProse.judgmentOutcomes as Record<string, Record<string, string>>)[readerId];
+      expect({ readerId, keys: ids(vietnamese) }).toEqual({ readerId, keys: ids(english) });
+      for (const key of Object.keys(english)) {
+        expect({ readerId, key, placeholders: placeholders(vietnamese[key]) }).toEqual({ readerId, key, placeholders: placeholders(english[key]) });
+        expect({ readerId, key, empty: vietnamese[key].trim() === '' }).toEqual({ readerId, key, empty: false });
+      }
     }
   });
 
@@ -96,5 +108,28 @@ describe('the display functions by locale', () => {
     expect(competeOutcomeText('rouse-the-tiger', false, names, 'vi')).toBe('Seat 1 gây 1 sát thương cho Hing');
     expect(competeOutcomeText('intense-edge', false, names, 'vi')).toBe('Không có gì xảy ra');
     expect(competeOutcomeText('heavens-justice', false, names, 'vi')).toBe('Hing không thể đánh Sát trong lượt này');
+  });
+});
+
+describe('judgmentOutcomeText', () => {
+  const names = { seat: 'Hing', owner: 'Hing', source: 'Seat 1' };
+
+  it('replaces every placeholder, in both languages', () => {
+    expect(judgmentOutcomeText('lightning', 'struck', names)).toBe('Hing takes 3 thunder damage');
+    expect(judgmentOutcomeText('lament', 'discard1', { seat: 'A', owner: 'B', source: 'Seat 1' })).toBe('Seat 1 discards 1 card');
+    expect(judgmentOutcomeText('dueling-heroes', 'red', names)).toBe('Hing takes the card and may play black hand cards as Duel this turn');
+    for (const [readerId, key] of [['lightning', 'struck'], ['lament', 'discard1'], ['river-goddess', 'again']] as const) {
+      const vi = judgmentOutcomeText(readerId, key, { seat: 'Hing', owner: 'Hing', source: 'Seat 1' }, 'vi')!;
+      expect(vi).not.toContain('{');
+      expect(vi).toMatch(/Hing|Seat 1/);
+    }
+  });
+
+  it('gives null for an id or key that is not an entry, never an inherited value', () => {
+    for (const locale of ['en', 'vi']) {
+      for (const [readerId, key] of [['constructor', 'x'], ['lightning', '__proto__'], ['nope', 'struck'], ['lightning', 'nope'], ['__proto__', 'struck']]) {
+        expect({ locale, readerId, key, text: judgmentOutcomeText(readerId, key, names, locale) }).toEqual({ locale, readerId, key, text: null });
+      }
+    }
   });
 });

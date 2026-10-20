@@ -280,6 +280,54 @@ export function competeOutcomeText(abilityId: string, won: boolean, names: { use
   return outcome ? (won ? outcome.won : outcome.lost).replaceAll('{user}', names.user).replaceAll('{target}', names.target) : null;
 }
 
+// What a judgment's final card will do, for the skill or card that required it: by reader id
+// (a card's id, or a skill's id), then outcome key. `{seat}` is the judged seat, `{owner}` the
+// owner of the reader, `{source}` a third seat it acts on (a damage source).
+const JUDGMENT_OUTCOMES: Record<string, Record<string, string>> = {
+  lightning: {
+    struck: '{seat} takes 3 thunder damage',
+    moves: 'Lightning moves to the next seat',
+    stays: 'Lightning stays where it is',
+  },
+  capture: { skip: '{seat} skips the Play Phase', spared: 'Nothing happens' },
+  starvation: { skip: '{seat} skips the Draw Phase', spared: 'Nothing happens' },
+  'eight-trigrams': { shan: '{seat} counts as having played a Shan', none: 'Nothing happens' },
+  'eight-arrays': { shan: '{seat} counts as having played a Shan', none: 'Nothing happens' },
+  unyielding: {
+    'discard-or-damage': '{source} discards 2 cards or takes 1 damage',
+    damage: '{source} takes 1 damage',
+    spared: 'Nothing happens',
+  },
+  'river-goddess': { again: '{owner} takes the card and judges again', ends: 'The card is discarded and the judging ends' },
+  'iron-cavalry': { unblockable: 'The Slash cannot be dodged', none: 'Nothing happens' },
+  'lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
+  'dueling-heroes': {
+    red: '{owner} takes the card and may play black hand cards as Duel this turn',
+    black: '{owner} takes the card and may play red hand cards as Duel this turn',
+  },
+  'military-farm': { farm: '{owner} stashes the card as a Farm', discard: 'The card is discarded' },
+  lament: {
+    heal: '{seat} heals 1 HP',
+    draw: '{seat} draws 2 cards',
+    discard2: '{source} discards 2 cards',
+    discard1: '{source} discards 1 card',
+    'face-down': '{source} turns face down',
+    'face-up': '{source} turns face up',
+    none: 'Nothing happens',
+  },
+};
+
+export interface JudgmentOutcomeNames {
+  seat: string;
+  owner: string;
+  source: string;
+}
+
+export function judgmentOutcomeText(readerId: string, key: string, names: JudgmentOutcomeNames, locale = 'en'): string | null {
+  const text = lookup(lookup(proseOf(locale)?.judgmentOutcomes, readerId), key) ?? lookup(lookup(JUDGMENT_OUTCOMES, readerId), key);
+  return text === undefined ? null : text.replaceAll('{seat}', names.seat).replaceAll('{owner}', names.owner).replaceAll('{source}', names.source);
+}
+
 // The English prose tables, for the parity spec and for translation tools: every
 // other language's prose file must cover exactly these ids.
 export const ENGLISH_PROSE = {
@@ -289,6 +337,7 @@ export const ENGLISH_PROSE = {
   choicePrompt: CHOICE_PROMPT_TEXT,
   stepSelection: STEP_SELECTION_TEXT,
   competeOutcomes: COMPETE_OUTCOMES,
+  judgmentOutcomes: JUDGMENT_OUTCOMES,
 };
 
 // One language's prose, shaped like the English tables above.
@@ -304,6 +353,7 @@ interface Prose {
   choicePrompt: Record<string, string>;
   stepSelection: Record<string, ProseText>;
   competeOutcomes: Record<string, { won: string; lost: string }>;
+  judgmentOutcomes: Record<string, Record<string, string>>;
 }
 
 // Languages other than English that have prose; any other locale reads English.
