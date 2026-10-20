@@ -38,6 +38,11 @@ export function eightTrigramsTrigger(
   });
 }
 
+// What its judgment gives: one more Shan on red, nothing on black (as the owner counts suits).
+export function eightTrigramsOutcome(state: GameState, ownerSeatId: string, judged: CardInstance, registry: ContentRegistry): 'shan' | 'none' {
+  return colourFor(state, ownerSeatId, judged, registry) === 'red' ? 'shan' : 'none';
+}
+
 // Reading its judgment: the judged card goes to the discard pile first
 // (`done`), so it doesn't lie in processing while the Shan window waits. Then
 // the step goes on: with one more Shan provided on red.
@@ -51,7 +56,7 @@ export function eightTrigramsJudged(
   registry: ContentRegistry
 ): Effect[] {
   const step = data?.['step'] as CardStep;
-  if (colourFor(state, owner.seatId, judged, registry) === 'black') return [done, step];
+  if (eightTrigramsOutcome(state, owner.seatId, judged, registry) === 'none') return [done, step];
   const { provided = 0 } = (step.data ?? {}) as ShanData;
   return [done, { kind: 'AbilityUsedEffect', owner, abilityId, outcome: 'counts-as-shan' }, { ...step, data: { ...step.data, provided: provided + 1 } }];
 }
