@@ -25,6 +25,11 @@ function render(over: Partial<AskDialogData['description']> = {}) {
 }
 
 describe('AskDialog', () => {
+  it('has a View Board button to minimize it', () => {
+    const { el } = render();
+    expect(el.querySelector('app-minimize-button')).not.toBeNull();
+  });
+
   it('shows the ability, the question, what it does, and the worn card', () => {
     const { el } = render();
     expect(el.querySelector('h2')!.textContent).toContain('Axe');

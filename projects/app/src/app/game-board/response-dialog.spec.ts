@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Action, CardInstance } from 'engine';
+import { DecisionDock } from './decision-dock';
 import { ResponseDialog, ResponseDialogData } from './response-dialog';
 
 const shan: CardInstance = { instanceId: 'shan-1', definitionId: 'shan', suit: 'heart', rank: 2 };
@@ -30,6 +31,25 @@ function render(cards: ResponseDialogData['cards'], skills: ResponseDialogData['
 }
 
 describe('ResponseDialog', () => {
+  it('has a View Board button that minimizes it with the source as context', () => {
+    const { el } = render([]);
+    const minimize = jest.spyOn(TestBed.inject(DecisionDock), 'minimize').mockImplementation();
+    (el.querySelector('app-minimize-button button') as HTMLButtonElement).click();
+    expect(minimize).toHaveBeenCalledWith(expect.anything(), 'Response Needed', 'Seat 1 played Slash against Hing');
+  });
+
+  it('keeps what was picked across a minimize and restore', () => {
+    const { el, confirm, pick, close } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }], [], true);
+    pick('.card-option');
+    const dock = TestBed.inject(DecisionDock);
+    const ref = { addPanelClass: jest.fn(), removePanelClass: jest.fn(), afterClosed: () => ({ subscribe: jest.fn() }) };
+    dock.minimize(ref as never, 'Response Needed');
+    dock.restore();
+    expect((el.querySelector('.card-option input') as HTMLInputElement).checked).toBe(true);
+    confirm().click();
+    expect(close).toHaveBeenCalledWith(respond);
+  });
+
   it('a skill answer (a conversion) confirms with its own label', () => {
     const convert: Action = { kind: 'UseConversionAction', seatId: 'seat-0', via: { owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'sp' }, conversionId: 'serpent-spear' }, targets: [], pendingResponseId: 'w1' };
     const { el, confirm, close } = render([], [{ id: 'convert-0', action: convert, label: 'Use 2 Cards as Slash' }]);

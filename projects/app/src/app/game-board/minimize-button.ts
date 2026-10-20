@@ -18,8 +18,8 @@ export class MinimizeButton {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   protected minimize(): void {
-    const container = this.host.nativeElement.closest('.mat-mdc-dialog-container');
-    const title = container?.querySelector('[mat-dialog-title]')?.textContent?.trim() ?? '';
+    // The title sits beside this button, in the dialog's title row.
+    const title = this.host.nativeElement.parentElement?.querySelector('[mat-dialog-title]')?.textContent?.trim() ?? '';
     this.dock.minimize(this.ref, title, this.context());
   }
 }

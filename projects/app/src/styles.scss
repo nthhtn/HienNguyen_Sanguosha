@@ -102,3 +102,12 @@ body {
 .cdk-overlay-backdrop:has(+ .cdk-global-overlay-wrapper .decision-minimized) {
   display: none;
 }
+
+// A decision dialog's title row: the title, and View Board at its end.
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-right: 16px;
+}
