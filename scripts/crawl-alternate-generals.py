@@ -260,3 +260,113 @@ def general_id(slug, default_id):
     """A matched General takes Default's id; otherwise the page slug, minus a
     trailing "-lady-xxx"."""
     return default_id or re.sub(r"-lady-[a-z]+$", "", slug)
+
+
+# ------------------------------------------------------------------- records
+
+FORCE_ANCHOR = {force: anchor for anchor, force in ANCHOR_FORCE.items()}
+
+
+def build_record(entry, parsed, default, today):
+    """One General's JSON record. HP and gender come only from a matched Default
+    General (hpFrom says so); an unmatched General has neither."""
+    default_id, _ = match_default(parsed, default)
+    matched = default[default_id] if default_id else None
+    rec = {"id": general_id(entry["slug"], default_id), "name": parsed["name"]}
+    name_zh = parsed["nameZh"] or (matched or {}).get("nameZh")
+    if name_zh:
+        rec["nameZh"] = name_zh
+    rec["force"] = entry["force"]
+    if parsed["title"]:
+        rec["title"] = parsed["title"]
+    if matched:
+        rec["maxHp"] = matched["maxHp"]
+        rec["gender"] = matched["gender"]
+        rec["hpFrom"] = "default"
+    rec["skills"] = parsed["skills"]
+    rec["synergisticPartners"] = parsed["synergisticPartners"]
+    rec["differenceFromNormal"] = parsed["differenceFromNormal"]
+    rec["source"] = {"url": entry["url"], "listedUnder": FORCE_ANCHOR[entry["force"]], "crawledAt": today}
+    return rec
+
+
+# ------------------------------------------------------------------ fetching
+
+def fetch_page(url, cache, pause=1.0):
+    """The page at url, from the cache folder when it is there, else downloaded
+    (then cached, then a pause so the blog is not hammered)."""
+    cached = Path(cache) / url.rstrip("/").rsplit("/", 1)[-1] if cache else None
+    if cached and cached.exists():
+        return cached.read_text(encoding="utf-8")
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (sanguosha-crawler)"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:  # follows redirects
+            if resp.status != 200:
+                raise GeneralError(f"HTTP {resp.status}")
+            text = resp.read().decode("utf-8", "replace")
+    except (urllib.error.URLError, OSError) as err:
+        raise GeneralError(f"could not fetch {url}: {err}") from err
+    if cached:
+        cached.parent.mkdir(parents=True, exist_ok=True)
+        cached.write_text(text, encoding="utf-8")
+    time.sleep(pause)
+    return text
+
+
+# ---------------------------------------------------------------------- main
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--file", help="parse this saved copy of the index instead of fetching it")
+    ap.add_argument("--pages", help="read the General pages (<slug>.html) from this folder instead of fetching them")
+    ap.add_argument("--out", default=str(OUT_DIR), help="output folder")
+    ap.add_argument("--no-cache", action="store_true", help="do not read or write the page cache")
+    ap.add_argument("--pause", type=float, default=1.0, help="seconds to wait after each download")
+    args = ap.parse_args(argv)
+
+    cache = None if args.no_cache else CACHE_DIR
+    try:
+        index_html = Path(args.file).read_text(encoding="utf-8-sig") if args.file else fetch_page(URL, cache, args.pause)
+        entries = parse_index(index_html)
+    except GeneralError as err:
+        print(f"PROBLEM: the index could not be read: {err}", file=sys.stderr)
+        return 1
+
+    default = load_default_generals()
+    today = datetime.date.today().isoformat()
+    records, unparsed, seen = [], [], set()
+    for entry in entries:
+        try:
+            if args.pages:
+                page = Path(args.pages) / f"{entry['slug']}.html"
+                if not page.exists():
+                    raise GeneralError(f"no saved page {page.name}")
+                html = page.read_text(encoding="utf-8")
+            else:
+                html = fetch_page(entry["url"], cache, args.pause)
+            parsed = parse_general(html)
+            rec = build_record(entry, parsed, default, today)
+            if rec["id"] in seen:
+                raise GeneralError(f"id {rec['id']} is already used by another General")
+        except GeneralError as err:
+            unparsed.append({"slug": entry["slug"], "force": entry["force"], "reason": str(err)})
+            continue
+        seen.add(rec["id"])
+        records.append((entry, parsed, rec))
+
+    out = Path(args.out) / "generals"
+    for old in glob.glob(str(out / "*" / "*.json")):
+        Path(old).unlink()
+    for _, _, rec in records:
+        path = out / rec["force"] / f"{rec['id']}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(rec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    print(f"{len(records)} Generals of {len(entries)} listed -> {out}")
+    for u in unparsed:
+        print(f"SKIPPED {u['slug']}: {u['reason']}", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

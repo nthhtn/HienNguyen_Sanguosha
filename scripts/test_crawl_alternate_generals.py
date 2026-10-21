@@ -1,6 +1,8 @@
 """Tests for crawl-alternate-generals.py against small saved excerpts of the blog.
 Run: python3 -m unittest discover -s scripts -p 'test_*.py'"""
 import importlib.util
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -161,6 +163,101 @@ class MatchDefault(unittest.TestCase):
         self.assertEqual(len(default), 57)
         self.assertEqual(default["cao-cao"]["force"], "wei")
         self.assertEqual(default["cao-cao"]["maxHp"], 4)
+
+
+class BuildRecord(unittest.TestCase):
+    ENTRY = {"force": "shu", "url": "http://x/2012/08/liu-bei.html", "slug": "liu-bei"}
+
+    def test_record_copies_hp_and_gender_from_default(self):
+        parsed_page = crawl.parse_general(fixture("kw-general-liu-bei.html"))
+        rec = crawl.build_record(self.ENTRY, parsed_page, DEFAULT, "2026-10-21")
+        self.assertEqual((rec["id"], rec["force"]), ("liu-bei", "shu"))
+        self.assertEqual((rec["maxHp"], rec["gender"], rec["hpFrom"]), (4, "male", "default"))
+        self.assertEqual(rec["source"], {"url": self.ENTRY["url"], "listedUnder": "shu", "crawledAt": "2026-10-21"})
+
+    def test_unmatched_record_has_no_hp_or_gender_keys(self):
+        page = crawl.parse_general(fixture("kw-general-liu-bei.html"))
+        page.update(name="Nobody", nameZh="无人")
+        rec = crawl.build_record({**self.ENTRY, "slug": "gan-fu-ren-lady-gan"}, page, DEFAULT, "2026-10-21")
+        self.assertEqual(rec["id"], "gan-fu-ren")
+        for key in ("maxHp", "gender", "hpFrom"):
+            self.assertNotIn(key, rec)
+        self.assertEqual(rec["nameZh"], "无人")
+
+    def test_nameZh_falls_back_to_the_matched_default_general(self):
+        page = crawl.parse_general(fixture("kw-general-liu-bei.html"))
+        page["nameZh"] = None
+        self.assertEqual(crawl.build_record(self.ENTRY, page, DEFAULT, "d")["nameZh"], "刘备")
+
+    def test_heroes_force_is_recorded_as_listed_under_heroes(self):
+        page = crawl.parse_general(fixture("kw-general-liu-bei.html"))
+        rec = crawl.build_record({**self.ENTRY, "force": "qun"}, page, DEFAULT, "d")
+        self.assertEqual((rec["force"], rec["source"]["listedUnder"]), ("qun", "heroes"))
+
+    def test_record_key_order_is_stable(self):
+        rec = crawl.build_record(self.ENTRY, crawl.parse_general(fixture("kw-general-liu-bei.html")), DEFAULT, "d")
+        self.assertEqual(list(rec), [
+            "id", "name", "nameZh", "force", "title", "maxHp", "gender", "hpFrom",
+            "skills", "synergisticPartners", "differenceFromNormal", "source"])
+
+
+class FetchPage(unittest.TestCase):
+    def test_cache_is_read_first(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "liu-bei.html").write_text("cached", encoding="utf-8")
+            self.assertEqual(crawl.fetch_page("http://127.0.0.1:1/2012/liu-bei.html", Path(tmp), pause=0), "cached")
+
+    def test_a_network_error_is_a_general_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(crawl.GeneralError):
+                crawl.fetch_page("http://127.0.0.1:1/2012/missing.html", Path(tmp), pause=0)
+
+
+class Main(unittest.TestCase):
+    INDEX = (
+        "<html><body><div class='post-body entry-content'>"
+        '<a name="shu"></a>'
+        '<a href="http://x/2012/08/liu-bei.html"><img src="a.jpg"/></a>'
+        '<a href="http://x/2012/08/liu-shan.html"><img src="a.jpg"/></a>'
+        '<a name="wei"></a>'
+        '<a href="http://x/2012/08/sima-yi.html"><img src="a.jpg"/></a>'
+        '<a href="http://x/2012/08/ghost.html"><img src="a.jpg"/></a>'
+        "<div class='post-share-buttons'></div></div></body></html>"
+    )
+
+    def run_main(self, tmp):
+        tmp = Path(tmp)
+        (tmp / "index.html").write_text(self.INDEX, encoding="utf-8")
+        pages = tmp / "pages"
+        pages.mkdir(exist_ok=True)
+        for slug, fx in (("liu-bei", "liu-bei"), ("liu-shan", "multi-skill"), ("sima-yi", "odd")):
+            (pages / f"{slug}.html").write_text(fixture(f"kw-general-{fx}.html"), encoding="utf-8")
+        out = tmp / "out"
+        code = crawl.main(["--file", str(tmp / "index.html"), "--pages", str(pages), "--out", str(out)])
+        return code, out
+
+    def test_main_writes_files_by_force_from_saved_pages(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, out = self.run_main(tmp)
+            self.assertEqual(code, 0)
+            rec = json.loads((out / "generals/shu/liu-bei.json").read_text(encoding="utf-8"))
+            self.assertEqual(rec["name"], "Liu Bei")
+            self.assertTrue((out / "generals/shu/liu-shan.json").exists())
+            self.assertTrue((out / "generals/wei/sima-yi.json").exists())
+
+    def test_one_unreadable_page_is_skipped_and_run_exits_zero(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, out = self.run_main(tmp)
+            self.assertEqual(code, 0)
+            self.assertFalse(list(out.glob("generals/*/ghost.json")))
+            self.assertEqual(len(list(out.glob("generals/*/*.json"))), 3)
+
+    def test_rerun_is_byte_identical(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            _, out = self.run_main(tmp)
+            first = {p: p.read_bytes() for p in sorted(out.glob("generals/*/*.json"))}
+            self.run_main(tmp)
+            self.assertEqual(first, {p: p.read_bytes() for p in sorted(out.glob("generals/*/*.json"))})
 
 
 if __name__ == "__main__":
