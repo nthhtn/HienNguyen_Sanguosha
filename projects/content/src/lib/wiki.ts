@@ -7,13 +7,37 @@ import { buildContentRegistry } from './registry';
 const PACK_ORDER = ['Base', 'EX', 'Army', 'Wind', 'Fire', 'Forest', 'Mountain'] as const;
 export type WikiPack = (typeof PACK_ORDER)[number];
 
+// Whether a skill works in the game: the game has code for it, it is a Lord skill
+// (inactive in Kingdom War), or the data has it but the game does not yet.
+export type SkillStatus = 'working' | 'lord' | 'missing';
+
 export interface WikiSkill {
   name: string;
   nameZh: string | null;
   text: string;
   // A Lord skill: not used in Kingdom War.
   lord: boolean;
+  status: SkillStatus;
 }
+
+// The id the game's code gives a skill: its name in lower case, apostrophes
+// dropped, every other run of non-letters and digits one hyphen.
+export function skillIdFromName(name: string): string {
+  return name.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+export function skillStatus(skill: { name: string; lord: boolean }, codedSkillIds: ReadonlySet<string>): SkillStatus {
+  if (skill.lord) return 'lord';
+  return codedSkillIds.has(skillIdFromName(skill.name)) ? 'working' : 'missing';
+}
+
+// A General's skills are in the game when it has skill code and none of its skills lacks it.
+export function generalSkillsInGame(hasCode: boolean, skills: { status: SkillStatus }[]): boolean {
+  return hasCode && skills.every((s) => s.status !== 'missing');
+}
+
+// Every skill id the game has code for, across all Generals.
+const CODED_SKILL_IDS: ReadonlySet<string> = new Set([...GENERAL_SKILLS.values()].flatMap((skills) => skills.map((skill) => skill.id)));
 
 // One general as the Wiki shows it: everything the data file knows, plus
 // whether its skills are coded. Missing optional fields are null, never guessed.
@@ -61,7 +85,9 @@ const lordsFirst = (a: Parameters<typeof lordRank>[0], b: Parameters<typeof lord
 
 export function wikiGenerals(): WikiGeneral[] {
   return Object.entries(generalsData)
-    .map(([id, data]) => ({
+    .map(([id, data]) => {
+      const skills = data.skills.map((s) => ({ name: s.name, nameZh: s.nameZh || null, text: s.text, lord: !!s.lord, status: skillStatus({ name: s.name, lord: !!s.lord }, CODED_SKILL_IDS) }));
+      return {
       id,
       name: data.name,
       nameZh: data.nameZh ?? null,
@@ -70,10 +96,11 @@ export function wikiGenerals(): WikiGeneral[] {
       kingdom: data.kingdom,
       maxHp: data.maxHp,
       gender: data.gender,
-      skills: data.skills.map((s) => ({ name: s.name, nameZh: s.nameZh || null, text: s.text, lord: !!s.lord })),
-      skillsInGame: GENERAL_SKILLS.has(id),
+      skills,
+      skillsInGame: generalSkillsInGame(GENERAL_SKILLS.has(id), skills),
       expansion: (data.source.expansion ?? 'Base') as WikiGeneral['expansion'],
-    }))
+      };
+    })
     .sort((a, b) => KINGDOM_ORDER.indexOf(a.kingdom) - KINGDOM_ORDER.indexOf(b.kingdom) || lordsFirst(a, b) || byPack(a, b) || byName(a, b));
 }
 
