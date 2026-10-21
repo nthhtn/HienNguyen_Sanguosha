@@ -21,10 +21,12 @@ Usage:
 import argparse
 import datetime
 import glob
+import html as htmllib
 import json
 import re
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 from html.parser import HTMLParser
@@ -55,6 +57,7 @@ def post_body(html):
     start = html.find(POST_BODY_START)
     if start < 0:
         raise GeneralError("no post body")
+    start = html.find(">", start) + 1
     end = html.find(POST_BODY_END, start)
     return html[start:end if end >= 0 else len(html)]
 
@@ -87,3 +90,122 @@ def parse_index(html):
     p = IndexParser()
     p.feed(post_body(html))
     return p.entries
+
+
+# ------------------------------------------------------------- General pages
+
+CJK = re.compile(r"[\u4e00-\u9fff]+")
+QUOTES = "\"'\u201c\u201d\u2018\u2019 "
+LABEL = re.compile(
+    r"^(translated description|who is he|who is she|who are they|character ability(?: *\d+)?|"
+    r"synergistic partners|difference from normal sanguosha|ability's relation to story|trivia)"
+    r" *:(.*)$",
+    re.I,
+)
+
+
+class LineParser(HTMLParser):
+    """The post body as text lines: <br> and block ends break a line."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.lines = [""]
+        self.skip = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style"):
+            self.skip += 1
+        elif tag == "br":
+            self.lines.append("")
+
+    def handle_endtag(self, tag):
+        if tag in ("script", "style"):
+            self.skip -= 1
+        elif tag in ("div", "p", "li", "h1", "h2", "h3"):
+            self.lines.append("")
+
+    def handle_data(self, data):
+        if not self.skip:
+            self.lines[-1] += data
+
+
+def body_lines(html):
+    p = LineParser()
+    p.feed(post_body(html))
+    return [" ".join(l.replace("\xa0", " ").split()) for l in p.lines if l.strip()]
+
+
+def strip_diacritics(text):
+    decomposed = unicodedata.normalize("NFKD", text)
+    return "".join(c for c in decomposed if not unicodedata.combining(c))
+
+
+def page_names(html):
+    """(name, nameZh) from the page title, e.g. "Liú Bèi 刘备 ~ 三国杀! ..."."""
+    m = re.search(r"<title>(.*?)</title>", html, re.S)
+    if not m:
+        raise GeneralError("no page title")
+    head = htmllib.unescape(m.group(1)).split("~")[0]
+    name_zh = "".join(CJK.findall(head))
+    name = " ".join(strip_diacritics(CJK.sub(" ", head)).split()).strip("& ")
+    if not name:
+        raise GeneralError("no English name in the page title")
+    return name, name_zh or None
+
+
+def parse_skill(rest, lines):
+    tag = re.search(r"\[([^\]]+)\]", rest)
+    if tag:
+        rest = rest.replace(tag.group(0), "")
+    rest = rest.strip(QUOTES)
+    zh = CJK.search(rest)
+    name = (rest[: zh.start()] if zh else rest.split("(")[0]).strip(QUOTES + "(")
+    if not name or not lines:
+        raise GeneralError(f"a skill label without a name or text: {rest!r}")
+    skill = {"name": name}
+    if zh:
+        skill["nameZh"] = zh.group(0)
+    skill["text"] = "\n".join(lines)
+    if tag:
+        skill["tag"] = tag.group(1).strip()
+    return skill
+
+
+def parse_general(html):
+    """A General page: name, nameZh, title, skills, synergisticPartners,
+    differenceFromNormal. Raises GeneralError when no skill can be read."""
+    name, name_zh = page_names(html)
+    sections = []  # (label, rest-of-line, following lines)
+    for line in body_lines(html):
+        m = LABEL.match(line)
+        if m:
+            sections.append((" ".join(m.group(1).lower().split()), m.group(2).strip(), []))
+        elif sections:
+            sections[-1][2].append(line)
+
+    skills = [parse_skill(rest, lines) for label, rest, lines in sections if label.startswith("character ability")]
+    if not skills:
+        raise GeneralError("no Character ability on the page")
+
+    def section(label):
+        for lab, rest, lines in sections:
+            if lab == label:
+                return ([rest] if rest else []) + lines
+        return None
+
+    desc = section("translated description")
+    title = None
+    if desc:
+        head = CJK.split(desc[0])[0]
+        title = head.strip(QUOTES + "(") or None
+    partners = section("synergistic partners") or []
+    partners = [p for p in partners if p.strip(" .").lower() not in ("nil", "none", "-")]
+    difference = section("difference from normal sanguosha")
+    return {
+        "name": name,
+        "nameZh": name_zh,
+        "title": title,
+        "skills": skills,
+        "synergisticPartners": partners,
+        "differenceFromNormal": "\n".join(difference) if difference else None,
+    }
