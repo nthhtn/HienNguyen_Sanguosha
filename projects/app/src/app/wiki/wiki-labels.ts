@@ -1,4 +1,4 @@
-import { cardDisplayData, generalDisplayData } from 'content';
+import { alternateCardTranslation, cardDisplayData, generalDisplayData } from 'content';
 import type { WikiCard, WikiGeneral, WikiTab } from 'content';
 import type { MessageKey } from '../i18n/messages';
 import { DEFAULT_LOCALE } from '../i18n/locales';
@@ -34,7 +34,7 @@ export function wikiTabLabel(tab: Pick<WikiTab<unknown>, 'key' | 'label'>, tr: T
 }
 
 export function wikiCardView(card: WikiCard, locale: string): { name: string; text: string | null } {
-  const display = locale === DEFAULT_LOCALE ? null : cardDisplayData(card.id, locale);
+  const display = locale === DEFAULT_LOCALE ? null : (cardDisplayData(card.id, locale) ?? alternateCardTranslation(card.id, locale));
   return { name: display?.name ?? card.name, text: display?.text ?? card.text };
 }
 

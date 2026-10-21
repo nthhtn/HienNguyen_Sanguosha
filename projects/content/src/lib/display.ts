@@ -1,6 +1,7 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 import viCards from '../../data/locales/vi/cards.json';
+import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
 import viGenerals from '../../data/locales/vi/generals.json';
 import viProse from '../../data/locales/vi/prose.json';
 
@@ -17,6 +18,12 @@ export interface CardTranslation {
 }
 const GENERAL_TEXT: Record<string, Record<string, GeneralTranslation>> = { vi: viGenerals };
 const CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viCards };
+
+// Names and text of cards only the Alternate deck has, by card id; a card Default also has is in CARD_TEXT.
+const ALTERNATE_CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viAlternateCards };
+export function alternateCardTranslation(id: string, locale: string): CardTranslation | null {
+  return lookup(ALTERNATE_CARD_TEXT, locale)?.[id] ?? null;
+}
 
 // Every General and card id, from the English data (the ids a translation has to cover).
 export const generalIds = (): string[] => Object.keys(generalsData);

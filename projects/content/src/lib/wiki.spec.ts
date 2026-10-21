@@ -312,7 +312,7 @@ describe('Alternate wikiCards', () => {
 
   it('marks every card with its deck, and only Alternate cards lack a pack', () => {
     expect(all('alternate').every((c) => c.deck === 'alternate' && c.expansion === null)).toBe(true);
-    expect(all('default').every((c) => c.deck === 'default' && c.expansion !== null && c.printedZh === null)).toBe(true);
+    expect(all('default').every((c) => c.deck === 'default' && c.expansion !== null)).toBe(true);
   });
 
   it('shows the Alternate copies, not Default’s', () => {
@@ -321,23 +321,26 @@ describe('Alternate wikiCards', () => {
     expect(byId(wikiCards('basic', 'alternate'), 'sha').printings).toHaveLength(21);
   });
 
-  it('takes the English name and text from Default when the card exists there, and the Chinese text from the crawl', () => {
+  it('takes the English name and text from Default when the card exists there', () => {
     const pommel = byId(wikiCards('equipment', 'alternate'), 'black-pommel');
     expect(pommel).toMatchObject({ name: 'Black Pommel', nameZh: '青釭剑', range: 2, subtype: 'weapon', category: 'equipment' });
     expect(pommel.text).toBe(byId(wikiCards('equipment'), 'black-pommel').text);
-    expect(pommel.printedZh).toContain('无视其防具');
   });
 
-  it('has no printed text for Slash, and keeps Default’s English text beside it', () => {
+  it('keeps Default’s English text for Slash', () => {
     const sha = byId(wikiCards('basic', 'alternate'), 'sha');
-    expect(sha.printedZh).toBeNull();
     expect(sha.text).toBe(byId(wikiCards('basic'), 'sha').text);
   });
 
-  it('names a card Default lacks from ids.json, with no English text', () => {
+  it('names a card Default lacks from ids.json and gives it its English text from texts.en.json', () => {
     const wuxieGuo = byId(wikiCards('tool', 'alternate'), 'wuxie-guo');
-    expect(wuxieGuo).toMatchObject({ name: 'Wuxie Kingdom', text: null, inGame: false });
-    expect(wuxieGuo.printedZh).toBeTruthy();
+    expect(wuxieGuo).toMatchObject({ name: 'Wuxie Kingdom', inGame: false });
+    expect(wuxieGuo.text).toContain('Kingdom');
+    expect(byId(wikiCards('tool', 'alternate'), 'ally-far-attack-near').name).toBe('Ally Far Attack Near');
+    for (const id of ['amass', 'ascertain', 'ally-far-attack-near']) expect(byId(wikiCards('tool', 'alternate'), id).text).toBeTruthy();
+    const weapons = wikiCards('equipment', 'alternate');
+    expect(byId(weapons, 'wu-six-swords')).toMatchObject({ name: 'Six Swords of Wu', range: 2 });
+    for (const id of ['wu-six-swords', 'trident-glaive']) expect(byId(weapons, id).text).toBeTruthy();
   });
 
   it('is in the game only when the game has behaviour for the card: seven are not', () => {

@@ -12,11 +12,11 @@ const caoCao: WikiGeneral = {
 const duel: WikiCard = {
   id: 'duel', name: 'Duel', nameZh: '决斗', category: 'tool', subtype: null, text: 'A player can target anyone with this card.',
   range: null, count: 3, printings: [{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }],
-  mount: null, delayed: false, expansion: 'Base', inGame: true, deck: 'default', printedZh: null,
+  mount: null, delayed: false, expansion: 'Base', inGame: true, deck: 'default',
 };
 const redHare: WikiCard = {
   id: 'red-hare', name: 'Red Hare', nameZh: '赤兔', category: 'equipment', subtype: 'horse', text: null,
-  range: null, count: null, printings: [], mount: 'offensive', delayed: false, expansion: 'Base', inGame: false, deck: 'default', printedZh: null,
+  range: null, count: null, printings: [], mount: 'offensive', delayed: false, expansion: 'Base', inGame: false, deck: 'default',
 };
 
 function renderGeneral(general: WikiGeneral): HTMLElement {
@@ -166,37 +166,29 @@ describe('WikiCardEntry in the Alternate deck', () => {
   const pommel: WikiCard = {
     id: 'black-pommel', name: 'Black Pommel', nameZh: '青釭剑', category: 'equipment', subtype: 'weapon', text: 'English rules of Default.',
     range: 2, count: 1, printings: [{ suit: 'spade', rank: 6 }], mount: null, delayed: false, expansion: null, inGame: true,
-    deck: 'alternate', printedZh: '攻击范围：2\n锁定技，无视其防具。',
+    deck: 'alternate',
   };
 
-  it('shows the Chinese printed text and Default’s text under their own labels, with no pack tag', () => {
+  it('shows the card’s text with no label and no pack tag', () => {
     const el = renderCard(pommel);
-    expect(el.querySelector('.printed .label')!.textContent!.trim()).toBe('Chinese Printed Text');
-    expect(el.querySelector('.printed')!.textContent).toContain('锁定技，无视其防具');
-    expect(el.querySelector('.default-text .label')!.textContent!.trim()).toBe('Default Text');
-    expect(el.querySelector('.default-text')!.textContent).toContain('English rules of Default.');
+    expect(el.querySelector('.text')!.textContent!.trim()).toBe('English rules of Default.');
+    expect(el.querySelector('.label')).toBeNull();
     expect(el.querySelector('.expansion-tag')).toBeNull();
     expect(el.textContent).toContain('1 copies');
   });
 
-  it('says the rules text is not available, never a blank, and keeps Default’s text', () => {
-    const el = renderCard({ ...pommel, id: 'sha', name: 'Slash', printedZh: null });
-    expect(el.querySelector('.printed')).toBeNull();
+  it('says the rules text is not available, never a blank, when there is none', () => {
+    const el = renderCard({ ...pommel, id: 'sha', name: 'Slash', text: null });
     expect(el.querySelector('.gap')!.textContent!.trim()).toBe('Rules text not available');
-    expect(el.querySelector('.default-text')!.textContent).toContain('English rules of Default.');
   });
 
-  it('renders a card Default lacks: no Default text, not in the game, and no art', () => {
-    const el = renderCard({ ...pommel, id: 'wuxie-guo', name: 'Wuxie Kingdom', text: null, inGame: false });
-    expect(el.querySelector('.default-text')).toBeNull();
+  it('renders a card Default lacks: not in the game, and no art', () => {
+    const el = renderCard({ ...pommel, id: 'wuxie-guo', name: 'Wuxie Kingdom', inGame: false });
     expect(el.querySelector('.badge')!.textContent!.trim()).toBe('Not in the game yet');
-    expect(el.querySelector('.printed')).not.toBeNull();
   });
 
-  it('leaves a Default card as it was: no Chinese printed text label, pack tag present', () => {
+  it('leaves a Default card as it was: pack tag present', () => {
     const el = renderCard(duel);
-    expect(el.querySelector('.printed')).toBeNull();
-    expect(el.querySelector('.default-text')).toBeNull();
     expect(el.querySelector('.expansion-tag')).not.toBeNull();
   });
 });

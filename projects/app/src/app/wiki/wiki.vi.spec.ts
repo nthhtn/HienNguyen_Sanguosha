@@ -47,15 +47,16 @@ describe('Wiki Cards in Vietnamese', () => {
     expect(states).toEqual(['Đang hoạt động', 'Không dùng trong Quốc chiến']);
   });
 
-  it('the Alternate card labels read in Vietnamese', async () => {
+  it('the Alternate labels read in Vietnamese', async () => {
     const tools = await open('/wiki/alternate/tools');
     expect(text(tools.querySelector('.deck-line'))).toBe('Bộ bài: Thay thế');
     const wuxieGuo = entry(tools, 'wuxie-guo');
-    expect(text(wuxieGuo.querySelector('.printed .label'))).toBe('Văn bản gốc tiếng Trung');
     expect(text(wuxieGuo.querySelector('.badge'))).toBe('Chưa có trong trò chơi');
-    const duel = entry(tools, 'duel');
-    expect(text(duel.querySelector('.default-text .label'))).toBe('Văn bản của bộ Mặc định');
-    expect(text(duel.querySelector('.printed'))).toContain('出牌阶段');
+  });
+
+  it('the Alternate-only weapons read in Vietnamese', async () => {
+    const equipment = await open('/wiki/alternate/equipment');
+    expect(['trident-glaive', 'wu-six-swords'].map((id) => text(entry(equipment, id).querySelector('.name')))).toEqual(['Tam Tiêm Lưỡng Nhận Đao', 'Ngô Lục Kiếm']);
   });
 
   it('the Alternate Basic page says Slash’s rules text is not available', async () => {

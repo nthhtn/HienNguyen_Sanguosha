@@ -540,8 +540,6 @@ export const en = {
   'wiki.noHp': 'HP not recorded',
   'wiki.lordNote': 'Not used in Kingdom War',
   'wiki.skillStatus.working': 'Working',
-  'wiki.printedZh': 'Chinese Printed Text',
-  'wiki.defaultText': 'Default Text',
   'wiki.noSkills': 'No skills',
   'wiki.pack.Base': 'Base',
   'wiki.pack.EX': 'EX',

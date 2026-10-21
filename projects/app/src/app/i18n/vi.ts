@@ -539,8 +539,6 @@ export const vi: Messages = {
   'wiki.noHp': 'Chưa ghi nhận Sinh lực',
   'wiki.lordNote': 'Không dùng trong Quốc chiến',
   'wiki.skillStatus.working': 'Đang hoạt động',
-  'wiki.printedZh': 'Văn bản gốc tiếng Trung',
-  'wiki.defaultText': 'Văn bản của bộ Mặc định',
   'wiki.noSkills': 'Không có kỹ năng',
   'wiki.pack.Base': 'Tiêu chuẩn',
   'wiki.pack.EX': 'EX',
