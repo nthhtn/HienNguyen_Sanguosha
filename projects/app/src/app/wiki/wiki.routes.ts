@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 
 const generals = () => import('./wiki-generals').then((m) => m.WikiGenerals);
+const alternateGenerals = () => import('./wiki-alternate-generals').then((m) => m.WikiAlternateGenerals);
 const cards = () => import('./wiki-cards').then((m) => m.WikiCards);
 
 // Each deck has its own set of pages; the deck comes from the parent route's
 // data. The three card pages share one component, and each route names its
-// category. Alternate has no Generals page yet, so its address goes to Default's.
+// category. Alternate's Generals page is its own component.
 export const WIKI_ROUTES: Routes = [
   {
     path: 'default',
@@ -21,7 +22,7 @@ export const WIKI_ROUTES: Routes = [
     path: 'alternate',
     data: { deck: 'alternate' },
     children: [
-      { path: 'generals', redirectTo: '/wiki/default/generals' },
+      { path: 'generals', loadComponent: alternateGenerals },
       { path: 'basic', loadComponent: cards, data: { category: 'basic' } },
       { path: 'equipment', loadComponent: cards, data: { category: 'equipment' } },
       { path: 'tools', loadComponent: cards, data: { category: 'tool' } },

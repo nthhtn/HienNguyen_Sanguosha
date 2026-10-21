@@ -1,0 +1,32 @@
+{
+  "id": "zhou-yu",
+  "name": "Zhou Yu",
+  "nameZh": "周瑜",
+  "force": "wu",
+  "title": "Commander-in-Chief",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Heroic Demeanor",
+      "nameZh": "英姿",
+      "text": "When you draw cards during your drawing phase, you can draw one additional card."
+    },
+    {
+      "name": "Sow Dissension",
+      "nameZh": "反间",
+      "text": "During your action phase, you can choose another player to pick a suit. This player then acquires one of your on-hand cards and reveals it to everyone. If the suit of the acquired card is different from the suit he/she had chosen, you cause 1 unit of damage to that player. Limited to once per phase."
+    }
+  ],
+  "synergisticPartners": [
+    "Huang Gai (\"Trojan Flesh\" ploy partner)",
+    "Xiao Qiao (Wife)"
+  ],
+  "differenceFromNormal": "“Sow Dissension” has been changed such that the victim acquires the on-hand card before receiving damage. Zhou Yu cannot get back the card if he kills another player by “Sow Dissension”.\nBut the really obvious difference is Zhou Yu's unbelievably hideous portrait. What in the world were they thinking?!?!",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/zhou-yu.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

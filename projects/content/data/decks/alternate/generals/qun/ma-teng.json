@@ -1,0 +1,31 @@
+{
+  "id": "ma-teng",
+  "name": "Ma Teng",
+  "nameZh": "马腾",
+  "force": "qun",
+  "title": "Galloping through the Western Border",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "manual",
+  "skills": [
+    {
+      "name": "Horsemanship",
+      "nameZh": "马术",
+      "text": "Your physical distance to other players is reduced by 1.",
+      "tag": "Enforced ability"
+    },
+    {
+      "name": "Call of Valour",
+      "nameZh": "雄异",
+      "text": "During your action phase, you can let every players of the same Kingdom as you draw three cards each. If your Kingdom has the least (or amongst the least) number of players among all the Kingdoms in play, you regain 1 unit of health.",
+      "tag": "Single-use ability"
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "He is a brand new character specially created for Kingdom Wars.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/ma-teng.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

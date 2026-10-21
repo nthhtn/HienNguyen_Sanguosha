@@ -1,0 +1,27 @@
+{
+  "id": "cao-cao",
+  "name": "Cao Cao",
+  "nameZh": "曹操",
+  "force": "wei",
+  "title": "The Militant Emperor of Wei",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Villainous Hero",
+      "nameZh": "奸雄",
+      "text": "Every instance after you suffer damage, you can acquire the card that inflicted damage on you."
+    }
+  ],
+  "synergisticPartners": [
+    "Dian Wei 典韦 (Bodyguard)",
+    "Xu Chu 许褚 (Bodyguard)"
+  ],
+  "differenceFromNormal": "The term “immediately” is removed to clarify the timing of activating “Villainous Hero”. The Ruler Ability is removed.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/cao-cao.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

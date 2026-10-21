@@ -1,0 +1,29 @@
+{
+  "id": "ding-feng",
+  "name": "Ding Feng",
+  "nameZh": "丁奉",
+  "force": "wu",
+  "title": "The Essential Minister that Purged the King’s Court",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "manual",
+  "skills": [
+    {
+      "name": "Close Combat",
+      "nameZh": "短兵",
+      "text": "Whenever you use an ATTACK 杀, you can pick one additional player within your physical distance of 1 as the target of the ATTACK."
+    },
+    {
+      "name": "Swift and Deadly",
+      "nameZh": "奋迅",
+      "text": "During your action phase, you can discard a card and select a player. The physical distance between you and that player is viewed as 1 till the end of your turn. Limited to once per phase."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "He is a brand new character specially created for Kingdom Wars.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/ding-feng.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

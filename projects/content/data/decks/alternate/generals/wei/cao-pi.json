@@ -1,0 +1,31 @@
+{
+  "id": "cao-pi",
+  "name": "Cao Pi",
+  "nameZh": "曹丕",
+  "force": "wei",
+  "title": "The Successor of the Domineer",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Scavenge",
+      "nameZh": "行殇",
+      "text": "You can acquire all the cards of players that died."
+    },
+    {
+      "name": "Banish",
+      "nameZh": "放逐",
+      "text": "Every instance after you suffer damage, you can make another player draw X cards (X being the units of health you have lost thus far), then that player stacks/unstacks his/her character cards."
+    }
+  ],
+  "synergisticPartners": [
+    "Zhen Ji (Lady Zhen) 甄姬 (Wife)"
+  ],
+  "differenceFromNormal": "The term “immediately” is removed to clarify the timing of activating “Scavenge”. The ability description of “Banish” has been changed from “flip his/her character card” to “stack/unstack your character card”. The Ruler Ability is removed.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/cao-pi.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

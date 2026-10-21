@@ -1,0 +1,29 @@
+{
+  "id": "zhang-zhao-and-zhang-hong",
+  "name": "Zhang Zhao & Zhang Hong",
+  "nameZh": "张昭张纮",
+  "force": "wu",
+  "title": "Talents to administrate Heaven and Earth",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Blunt advice",
+      "nameZh": "直谏",
+      "text": "During your action phase, you can place an on-hand equipment card into the equipped item area of another player, and then you draw a card."
+    },
+    {
+      "name": "Stabilization",
+      "nameZh": "固政",
+      "text": "At the end of other players’ discard phase, you can return a card that was discarded in this phase from the discard pile to that player. If you do so, you can acquire all other cards discarded in this player's discard phase from the discard pile."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/zhang-zhao-zhang-hong.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

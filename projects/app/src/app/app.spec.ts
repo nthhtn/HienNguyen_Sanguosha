@@ -192,18 +192,16 @@ describe('App', () => {
     expect(items.every((a) => !a.querySelector('mat-icon'))).toBe(true);
   });
 
-  it('has an Alternate menu whose Generals item is shown but disabled', async () => {
+  it('has an Alternate menu with four enabled links, Generals first', async () => {
     const { el, fixture } = await render();
     (el.querySelector('nav.nav button.nav-alternate') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
     const items = [...document.querySelectorAll('.mat-mdc-menu-panel [mat-menu-item]')] as HTMLElement[];
     expect(items.map((i) => i.textContent!.trim())).toEqual(['Generals', 'Basic Cards', 'Equipment', 'Tools']);
-    const [generals, ...pages] = items;
-    expect(generals.tagName).toBe('BUTTON');
-    expect((generals as HTMLButtonElement).disabled).toBe(true);
-    expect(generals.getAttribute('href')).toBeNull();
-    expect(pages.map((a) => a.getAttribute('href'))).toEqual(['/wiki/alternate/basic', '/wiki/alternate/equipment', '/wiki/alternate/tools']);
+    expect(items.map((a) => a.tagName)).toEqual(['A', 'A', 'A', 'A']);
+    expect(items.map((a) => a.getAttribute('href'))).toEqual(['/wiki/alternate/generals', '/wiki/alternate/basic', '/wiki/alternate/equipment', '/wiki/alternate/tools']);
+    expect(items.some((a) => a.hasAttribute('disabled') || a.getAttribute('aria-disabled') === 'true')).toBe(false);
   });
 
   it('has a Rules menu with the six rules pages, highlighted on any of them', async () => {

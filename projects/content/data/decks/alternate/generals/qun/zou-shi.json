@@ -1,0 +1,29 @@
+{
+  "id": "zou-shi",
+  "name": "Zou Shi (Lady Zou)",
+  "nameZh": "邹氏",
+  "force": "qun",
+  "title": "Enticement of the Succubus",
+  "maxHp": 3,
+  "gender": "female",
+  "hpFrom": "manual",
+  "skills": [
+    {
+      "name": "Femme Fatale",
+      "nameZh": "祸水",
+      "text": "During the action phase, you can expose this character card. Within your turns, if this character card is exposed, other players cannot expose their character cards."
+    },
+    {
+      "name": "Impetus for Conflicts",
+      "nameZh": "倾城",
+      "text": "During the action phase, you can discard an equipment card and select another player that has both character cards already exposed. You then choose one of that player's character cards and \"hide\" it (flip it over such that it is in the hidden state)."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "She is a brand new character specially created for Kingdom Wars.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/zou-shi-lady-zou.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

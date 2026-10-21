@@ -1,0 +1,32 @@
+{
+  "id": "zhuge-liang",
+  "name": "Elder Zhuge Liang",
+  "nameZh": "暮年诸葛亮",
+  "force": "shu",
+  "title": "The Prime Minister who has Passed his Prime",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Star Gazing",
+      "nameZh": "观星",
+      "text": "At the beginning phase of your turn, you can view X cards from the top of the deck (X being the number of players still alive in the game, and cannot exceed 5). Place any number of these cards, in any order, on the top of the deck . Place the remaining cards, in any order, at the bottom of the deck ."
+    },
+    {
+      "name": "Empty City",
+      "nameZh": "空城",
+      "text": "An ATTACK 杀 or DUEL 决斗 will be cancelled if you have become the target and you have no cards on-hand.",
+      "tag": "Enforced Ability"
+    }
+  ],
+  "synergisticPartners": [
+    "Huang Yueying 黄月英 (Wife)"
+  ],
+  "differenceFromNormal": "The ability description for \"Empty City\" has been changed from “cannot become the target of... ” to “... will be cancelled”. What this means is that you can now target Zhuge Liang and use ATTACK or DUEL on him even if he has no on-hand cards. The ATTACK or DUEL card is simply wasted and has no effect on him. One advantage of this you have one more way to reduce your on-hand cards, especially when you cannot discard anymore cards in your discard phase. This is good in scenarios such as bringing your on-hand cards low enough to avoid Huang Zhong 黄忠's ability, etc. There are many ways to use this to your advantage. Get creative!",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/08/elder-zhuge-liang.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

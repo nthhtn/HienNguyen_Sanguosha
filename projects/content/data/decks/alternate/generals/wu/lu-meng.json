@@ -1,0 +1,24 @@
+{
+  "id": "lu-meng",
+  "name": "Lu Meng",
+  "nameZh": "吕蒙",
+  "force": "wu",
+  "title": "Crossing the River in White Robes",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Self-Mastery",
+      "nameZh": "克己",
+      "text": "If you have not used or played ATTACK 杀 in your action phase, you can skip your discard phase for this turn."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/lu-meng.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

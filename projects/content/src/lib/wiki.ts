@@ -41,7 +41,7 @@ export function generalSkillsInGame(hasCode: boolean, skills: { status: SkillSta
 }
 
 // Every skill id the game has code for, across all Generals.
-const CODED_SKILL_IDS: ReadonlySet<string> = new Set([...GENERAL_SKILLS.values()].flatMap((skills) => skills.map((skill) => skill.id)));
+export const CODED_SKILL_IDS: ReadonlySet<string> = new Set([...GENERAL_SKILLS.values()].flatMap((skills) => skills.map((skill) => skill.id)));
 
 // One general as the Wiki shows it: everything the data file knows, plus
 // whether its skills are coded. Missing optional fields are null, never guessed.
@@ -188,7 +188,7 @@ export interface WikiTab<T> {
   entries: T[];
 }
 
-interface TabRule<T> {
+export interface TabRule<T> {
   key: string;
   label: string;
   holds: (entry: T) => boolean;
@@ -197,7 +197,7 @@ interface TabRule<T> {
 
 // Splits entries into the given tabs, in order. Anything no tab claims goes in a
 // trailing "Other" tab, so new data is never silently dropped.
-function splitIntoTabs<T>(entries: T[], rules: TabRule<T>[]): WikiTab<T>[] {
+export function splitIntoTabs<T>(entries: T[], rules: TabRule<T>[]): WikiTab<T>[] {
   const tabs = rules
     .map((rule) => ({ key: rule.key, label: rule.label, entries: entries.filter(rule.holds), optional: rule.optional }))
     .filter((tab) => !tab.optional || tab.entries.length > 0)

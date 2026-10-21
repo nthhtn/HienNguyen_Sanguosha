@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import type { WikiCard, WikiGeneral } from 'content';
+import type { WikiAlternateGeneral, WikiCard, WikiGeneral } from 'content';
 import { MUSIC_PLAYER_FACTORY, SoundEffects } from '../music.service';
 import { WikiCardEntry } from './wiki-card-entry';
 import { WikiGeneralEntry } from './wiki-general-entry';
+import { WikiAlternateGeneralEntry } from './wiki-alternate-general-entry';
+import { I18n } from '../i18n/i18n.service';
 
 const caoCao: WikiGeneral = {
   id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'Martial Emperor of Wei', titleZh: '魏武帝',
@@ -136,11 +138,18 @@ describe('WikiCardEntry', () => {
     const el = renderCard(duel);
     const text = el.textContent!;
     expect(el.querySelector('h4 .name')!.textContent).toBe('Duel');
-    for (const part of ['决斗', 'A player can target anyone with this card.', '3 copies', '♠A ♣A ♦A']) {
+    for (const part of ['决斗', 'A player can target anyone with this card.', '3 copies: ♠A ♣A ♦A']) {
       expect(text).toContain(part);
     }
     expect(el.querySelector('.badge')!.textContent!.trim()).toBe('In the game');
     expect(el.querySelector('.badge')!.classList).toContain('on');
+  });
+
+  it('shows each copy in its suit colour: red for hearts and diamonds, the text colour for spades and clubs', () => {
+    const hearts: WikiCard = { ...duel, printings: [{ suit: 'heart', rank: 10 }, { suit: 'spade', rank: 7 }, { suit: 'diamond', rank: 12 }, { suit: 'club', rank: 2 }] };
+    const copies = [...renderCard(hearts).querySelectorAll('.printings .printing')];
+    expect(copies.map((c) => c.textContent!.trim())).toEqual(['♥10', '♠7', '♦Q', '♣2']);
+    expect(copies.map((c) => c.classList.contains('red'))).toEqual([true, false, true, false]);
   });
 
   it('shows gap texts instead of blanks (Review Focus 2)', () => {
@@ -192,3 +201,78 @@ describe('WikiCardEntry in the Alternate deck', () => {
     expect(el.querySelector('.expansion-tag')).not.toBeNull();
   });
 });
+
+
+describe('WikiAlternateGeneralEntry', () => {
+  const alternateCaoCao: WikiAlternateGeneral = {
+    id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'The Militant Emperor of Wei',
+    kingdom: 'Wei', maxHp: 4, gender: 'male', skillsRunAsDefault: true,
+    skills: [{ name: 'Villainous Hero', nameZh: '奸雄', text: 'Every instance after you suffer damage, you can acquire the card.', status: 'worksAsDefault' }],
+    partners: ['Dian Wei 典韦 (Bodyguard)'],
+    differenceNote: 'The Ruler Ability is removed.',
+  };
+
+  function render(general: WikiAlternateGeneral): HTMLElement {
+    const fixture = TestBed.createComponent(WikiAlternateGeneralEntry);
+    fixture.componentRef.setInput('general', general);
+    fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  it('shows names, title, kingdom, HP and gender, and nothing from a pack or a voice', () => {
+    const el = render(alternateCaoCao);
+    expect(el.querySelector('article.entry')!.getAttribute('data-id')).toBe('cao-cao');
+    expect(el.querySelector('h4 .name')!.textContent).toBe('Cao Cao');
+    for (const part of ['曹操', 'The Militant Emperor of Wei', 'Wei', 'Villainous Hero', '奸雄']) expect(el.textContent).toContain(part);
+    expect(el.querySelectorAll('.hearts mat-icon')).toHaveLength(4);
+    expect(el.querySelector('.gender-tag')!.textContent!.trim()).toBe('Male');
+    expect(el.querySelector('.expansion-tag')).toBeNull();
+    expect(el.querySelector('button.voice')).toBeNull();
+    expect(el.querySelector('.badge')).toBeNull();
+  });
+
+  it('tags each skill Works as Default or Not in the game yet, never Working', () => {
+    const general: WikiAlternateGeneral = {
+      ...alternateCaoCao,
+      skills: [
+        { name: 'A', nameZh: null, text: 'a', status: 'worksAsDefault' },
+        { name: 'B', nameZh: null, text: 'b', status: 'missing' },
+      ],
+    };
+    const tags = [...render(general).querySelectorAll('.skill-status')].map((s) => [s.getAttribute('data-status'), s.textContent!.trim()]);
+    expect(tags).toEqual([['worksAsDefault', 'Works as Default'], ['missing', 'Not in the game yet']]);
+    expect(render(general).textContent).not.toContain('Working');
+  });
+
+  it('shows the Synergistic Partners and the Difference note, and hides them when empty', () => {
+    const el = render(alternateCaoCao);
+    expect(text(el.querySelector('.partners'))).toContain('Synergistic Partners');
+    expect(text(el.querySelector('.partners'))).toContain('Dian Wei 典韦 (Bodyguard)');
+    expect(text(el.querySelector('.difference'))).toContain('The Ruler Ability is removed.');
+    const bare = render({ ...alternateCaoCao, partners: [], differenceNote: null });
+    expect(bare.querySelector('.partners')).toBeNull();
+    expect(bare.querySelector('.difference')).toBeNull();
+  });
+
+  it('shows the placeholder, not a broken image, for a General with no art', () => {
+    const el = render({ ...alternateCaoCao, id: 'ding-feng', name: 'Ding Feng' });
+    expect(el.querySelector('app-card-art img')).toBeNull();
+    expect(el.querySelector('.card-art-placeholder')!.textContent).toContain('Ding Feng');
+  });
+
+  it('shows the Vietnamese draft in Vietnamese', async () => {
+    localStorage.clear();
+    TestBed.configureTestingModule({});
+    await TestBed.inject(I18n).setLocale('vi');
+    const el = render(alternateCaoCao);
+    expect(el.querySelector('h4 .name')!.textContent).toBe('Tào Tháo');
+    expect(text(el)).toContain('Gian hùng');
+    expect(text(el.querySelector('.skills'))).toContain('Mỗi khi bạn bị sát thương');
+    expect(text(el.querySelector('.partners'))).toContain('Điển Vi (Hộ vệ)');
+    localStorage.clear();
+  });
+});
+
+function text(el: Element | null): string {
+  return el!.textContent!.replace(/\s+/g, ' ').trim();
+}

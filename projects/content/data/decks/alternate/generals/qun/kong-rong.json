@@ -1,0 +1,29 @@
+{
+  "id": "kong-rong",
+  "name": "Kong Rong",
+  "nameZh": "孔融",
+  "force": "qun",
+  "title": "Stern and Just",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "manual",
+  "skills": [
+    {
+      "name": "Celebrity",
+      "nameZh": "名士",
+      "text": "Whenever you receive damage, if the source of damage has hidden character cards, the damage is reduced by -1."
+    },
+    {
+      "name": "Comity",
+      "nameZh": "礼让",
+      "text": "When your cards are discarded into the discard pile, you can give those cards to another player."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "He is a brand new character specially created for Kingdom Wars. He does seem like an interesting character doesn't he?",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/08/kong-rong.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

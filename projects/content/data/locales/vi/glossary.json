@@ -1,7 +1,7 @@
 [
   { "en": "judg(e)?ment", "vi": "phán xét" },
   { "en": "\\bpeach\\b", "vi": "Đào" },
-  { "en": "\\bduel", "vi": "[Qq]uyết [Đđ]ấu", "note": "lower case for the verb, capitalised for the card" },
+  { "en": "(?<!points )\\bduel", "vi": "[Qq]uyết [Đđ]ấu", "note": "lower case for the verb, capitalised for the card; a Points Duel is đấu điểm, not the card" },
   { "en": "\\b(health|HP)\\b", "vi": "Sinh lực" },
   { "en": "\\bdiscard", "vi": "(?<![\\p{L}])bỏ(?! qua)(?![\\p{L}])", "note": "bỏ qua means skip" },
   { "en": "\\bdelay(ed)? tool", "vi": "trì hoãn" },

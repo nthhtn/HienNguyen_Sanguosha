@@ -6,7 +6,7 @@ import type { MessageKey } from '../i18n/messages';
 import { TPipe } from '../i18n/t.pipe';
 import { CARD_VOICES, SoundEffects, VoiceGender } from '../music.service';
 import { CardArt } from '../game-board/card-art';
-import { printingLabel } from './printing-label';
+import { printingIsRed, printingLabel } from './printing-label';
 import { wikiCardView, wikiPackLabel } from './wiki-labels';
 
 // One card in the Wiki: art beside its rules text, stats and printings.
@@ -52,12 +52,12 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
         }
         @if (card().printings.length > 0) {
           @if (own().length > 0) {
-            <p class="printings">{{ 'wiki.copies' | t: { n: own().length, list: labels(own()) } }}</p>
+            <p class="printings">{{ 'wiki.copies' | t: { n: own().length } }} @for (p of own(); track $index) {<span class="printing" [class.red]="isRed(p)">{{ label(p) }}</span>{{ ' ' }}}</p>
           }
           <!-- Extra copies other expansions add, one line each. -->
           @for (group of extras(); track group.expansion) {
             <p class="printings extra" [attr.data-expansion]="group.expansion">
-              <span class="expansion">{{ packLabel(group.expansion) }}</span> {{ 'wiki.extraCopies' | t: { n: group.printings.length, list: labels(group.printings) } }}
+              <span class="expansion">{{ packLabel(group.expansion) }}</span> {{ 'wiki.extraCopies' | t: { n: group.printings.length } }} @for (p of group.printings; track $index) {<span class="printing" [class.red]="isRed(p)">{{ label(p) }}</span>{{ ' ' }}}
             </p>
           }
         } @else {
@@ -85,6 +85,7 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
     .text { margin: 8px 0; }
     .label { margin-right: 4px; font-weight: 600; }
     .printings { margin: 8px 0; letter-spacing: 0.04em; }
+    .printing.red { color: #c62828; }
     .printings.extra { margin-top: -4px; color: var(--mat-sys-on-surface-variant); }
     .expansion { padding: 0 6px; border-radius: 6px; background: var(--mat-sys-surface-container-high); font: var(--mat-sys-label-medium); letter-spacing: 0; }
     .gap { margin: 8px 0; color: var(--mat-sys-on-surface-variant); font-style: italic; }
@@ -119,7 +120,6 @@ export class WikiCardEntry {
     }
     return [...groups].map(([expansion, printings]) => ({ expansion, printings }));
   });
-  protected labels(printings: WikiCard['printings']): string {
-    return printings.map(printingLabel).join(' ');
-  }
+  protected label = printingLabel;
+  protected isRed = printingIsRed;
 }

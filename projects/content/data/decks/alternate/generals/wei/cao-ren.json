@@ -1,0 +1,24 @@
+{
+  "id": "cao-ren",
+  "name": "Cao Ren",
+  "nameZh": "曹仁",
+  "force": "wei",
+  "title": "The Great General",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Entrenched",
+      "nameZh": "据守",
+      "text": "At the end phase of your turn, you can draw three cards, then you stack your character cards."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "The ability description of “Entrenched” has been changed from “flip your character card” to “stack your character cards” to reflect the new execution for \"skip a turn\". Essentially, the ability works the same way.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/cao-ren.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

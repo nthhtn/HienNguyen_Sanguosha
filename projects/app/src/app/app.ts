@@ -24,7 +24,7 @@ import { TPipe } from './i18n/t.pipe';
 export class App {
   private readonly i18n = inject(I18n);
   protected readonly title = computed(() => this.i18n.t('app.title'));
-  // One menu per deck. Alternate has no Generals yet, so its item is shown but disabled.
+  // One menu per deck. A page that does not exist yet can be listed with `disabled: true`.
   protected readonly deckMenus: { deck: DeckId; label: MessageKey; icon: string; fontSet?: string; pages: { path: string; label: MessageKey; disabled?: boolean }[] }[] = [
     {
       deck: 'default',
@@ -43,7 +43,7 @@ export class App {
       label: 'setup.deck.alternate',
       icon: 'shuffle',
       pages: [
-        { path: '/wiki/alternate/generals', label: 'nav.cards.generals', disabled: true },
+        { path: '/wiki/alternate/generals', label: 'nav.cards.generals' },
         { path: '/wiki/alternate/basic', label: 'nav.cards.basic' },
         { path: '/wiki/alternate/equipment', label: 'nav.cards.equipment' },
         { path: '/wiki/alternate/tools', label: 'nav.cards.tools' },
