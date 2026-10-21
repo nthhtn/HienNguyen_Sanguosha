@@ -48,6 +48,38 @@ describe('Wiki pages', () => {
     expect(el().querySelectorAll('app-wiki-general-entry')).toHaveLength(15);
   });
 
+  it.each([
+    ['/wiki/default/generals', 'Deck: Default'],
+    ['/wiki/default/tools', 'Deck: Default'],
+    ['/wiki/alternate/tools', 'Deck: Alternate'],
+  ])('names the deck on %s', async (path, line) => {
+    const { el } = await open(path);
+    expect(el().querySelector('.deck-line')!.textContent!.trim()).toBe(line);
+  });
+
+  it('lists the six Alternate basic cards with their own copies', async () => {
+    const { el } = await open('/wiki/alternate/basic');
+    expect(el().querySelector('mat-tab-group')).toBeNull();
+    expect(entryIds(el())).toEqual(['sha', 'fire-attack', 'lightning-attack', 'shan', 'wine', 'peach']);
+    expect(el().querySelector('.summary')!.textContent).toBe('6 cards · 6 in the game');
+    expect(el().querySelector('article.entry[data-id="sha"] .printings')!.textContent).toContain('21 copies');
+    expect(el().querySelectorAll('.expansion-tag')).toHaveLength(0);
+  });
+
+  it('splits Alternate equipment into four tabs with nothing left over, and counts what the game cannot play', async () => {
+    const { el } = await open('/wiki/alternate/equipment');
+    expect(tabLabels(el())).toEqual(['Weapons (10)', 'Armors (4)', 'Defensive Mount (3)', 'Offensive Mount (3)']);
+    expect(el().querySelector('.summary')!.textContent).toBe('20 cards · 17 in the game');
+  });
+
+  it('lists the 19 Alternate tools, with Wuxie Kingdom marked not in the game', async () => {
+    const { el } = await open('/wiki/alternate/tools');
+    expect(tabLabels(el())).toEqual(['Instant (16)', 'Delayed (3)']);
+    expect(el().querySelector('.summary')!.textContent).toBe('19 cards · 15 in the game');
+    const badge = el().querySelector('article.entry[data-id="wuxie-guo"] .badge')!;
+    expect(badge.textContent!.trim()).toBe('Not in the game yet');
+  });
+
   it('lists all six basic cards together, with no tabs', async () => {
     const { el } = await open('/wiki/basic');
     expect(el().querySelector('mat-tab-group')).toBeNull();

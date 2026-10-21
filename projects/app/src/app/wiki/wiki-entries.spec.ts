@@ -7,16 +7,16 @@ import { WikiGeneralEntry } from './wiki-general-entry';
 const caoCao: WikiGeneral = {
   id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'Martial Emperor of Wei', titleZh: '魏武帝',
   kingdom: 'Wei', maxHp: 4, skillsInGame: false, expansion: 'Base', gender: 'male',
-  skills: [{ name: 'Evil Hero', nameZh: '奸雄', text: 'When Cao Cao is damaged by a card, he can put it into his hand.', lord: false }],
+  skills: [{ name: 'Evil Hero', nameZh: '奸雄', text: 'When Cao Cao is damaged by a card, he can put it into his hand.', lord: false, status: 'working' }],
 };
 const duel: WikiCard = {
   id: 'duel', name: 'Duel', nameZh: '决斗', category: 'tool', subtype: null, text: 'A player can target anyone with this card.',
   range: null, count: 3, printings: [{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }],
-  mount: null, delayed: false, expansion: 'Base', inGame: true,
+  mount: null, delayed: false, expansion: 'Base', inGame: true, deck: 'default', printedZh: null,
 };
 const redHare: WikiCard = {
   id: 'red-hare', name: 'Red Hare', nameZh: '赤兔', category: 'equipment', subtype: 'horse', text: null,
-  range: null, count: null, printings: [], mount: 'offensive', delayed: false, expansion: 'Base', inGame: false,
+  range: null, count: null, printings: [], mount: 'offensive', delayed: false, expansion: 'Base', inGame: false, deck: 'default', printedZh: null,
 };
 
 function renderGeneral(general: WikiGeneral): HTMLElement {
@@ -85,15 +85,29 @@ describe('WikiGeneralEntry', () => {
     const liuBei: WikiGeneral = {
       ...caoCao, id: 'liu-bei', name: 'Liu Bei', kingdom: 'Shu',
       skills: [
-        { name: 'Kindness', nameZh: null, text: 'Give cards away.', lord: false },
-        { name: 'Fierce General', nameZh: null, text: 'King Ability.', lord: true },
+        { name: 'Kindness', nameZh: null, text: 'Give cards away.', lord: false, status: 'working' },
+        { name: 'Fierce General', nameZh: null, text: 'King Ability.', lord: true, status: 'lord' },
       ],
     };
     const el = renderGeneral(liuBei);
     expect(el.querySelector('.gender-tag')!.textContent!.trim()).toBe('Male');
-    const notes = el.querySelectorAll('.lord-note');
-    expect(notes).toHaveLength(1);
-    expect(notes[0].textContent!.trim()).toBe('Not used in Kingdom War');
+    expect(el.querySelector('.lord-note')).toBeNull();
+    const lord = el.querySelectorAll('.skill-status[data-status="lord"]');
+    expect(lord).toHaveLength(1);
+    expect(lord[0].textContent!.trim()).toBe('Not used in Kingdom War');
+  });
+
+  it('shows each skill’s state: Working, Not used in Kingdom War, or Not in the game yet', () => {
+    const general: WikiGeneral = {
+      ...caoCao,
+      skills: [
+        { name: 'Evil Hero', nameZh: null, text: 'a', lord: false, status: 'working' },
+        { name: 'Escort', nameZh: null, text: 'b', lord: true, status: 'lord' },
+        { name: 'Ghost Skill', nameZh: null, text: 'c', lord: false, status: 'missing' },
+      ],
+    };
+    const states = [...renderGeneral(general).querySelectorAll('.skill-status')].map((s) => [s.getAttribute('data-status'), s.textContent!.trim()]);
+    expect(states).toEqual([['working', 'Working'], ['lord', 'Not used in Kingdom War'], ['missing', 'Not in the game yet']]);
   });
 });
 
@@ -145,5 +159,44 @@ describe('WikiCardEntry', () => {
   it('shows a weapon’s range', () => {
     const el = renderCard({ ...redHare, id: 'axe', name: 'Axe', subtype: 'weapon', range: 3, text: 'Hit anyway.' });
     expect(el.querySelector('.range')!.textContent).toContain('Range 3');
+  });
+});
+
+describe('WikiCardEntry in the Alternate deck', () => {
+  const pommel: WikiCard = {
+    id: 'black-pommel', name: 'Black Pommel', nameZh: '青釭剑', category: 'equipment', subtype: 'weapon', text: 'English rules of Default.',
+    range: 2, count: 1, printings: [{ suit: 'spade', rank: 6 }], mount: null, delayed: false, expansion: null, inGame: true,
+    deck: 'alternate', printedZh: '攻击范围：2\n锁定技，无视其防具。',
+  };
+
+  it('shows the Chinese printed text and Default’s text under their own labels, with no pack tag', () => {
+    const el = renderCard(pommel);
+    expect(el.querySelector('.printed .label')!.textContent!.trim()).toBe('Chinese Printed Text');
+    expect(el.querySelector('.printed')!.textContent).toContain('锁定技，无视其防具');
+    expect(el.querySelector('.default-text .label')!.textContent!.trim()).toBe('Default Text');
+    expect(el.querySelector('.default-text')!.textContent).toContain('English rules of Default.');
+    expect(el.querySelector('.expansion-tag')).toBeNull();
+    expect(el.textContent).toContain('1 copies');
+  });
+
+  it('says there is no printed text, never a blank, and keeps Default’s text', () => {
+    const el = renderCard({ ...pommel, id: 'sha', name: 'Slash', printedZh: null });
+    expect(el.querySelector('.printed')).toBeNull();
+    expect(el.querySelector('.gap')!.textContent!.trim()).toBe('No printed text');
+    expect(el.querySelector('.default-text')!.textContent).toContain('English rules of Default.');
+  });
+
+  it('renders a card Default lacks: no Default text, not in the game, and no art', () => {
+    const el = renderCard({ ...pommel, id: 'wuxie-guo', name: 'Wuxie Kingdom', text: null, inGame: false });
+    expect(el.querySelector('.default-text')).toBeNull();
+    expect(el.querySelector('.badge')!.textContent!.trim()).toBe('Not in the game yet');
+    expect(el.querySelector('.printed')).not.toBeNull();
+  });
+
+  it('leaves a Default card as it was: no Chinese printed text label, pack tag present', () => {
+    const el = renderCard(duel);
+    expect(el.querySelector('.printed')).toBeNull();
+    expect(el.querySelector('.default-text')).toBeNull();
+    expect(el.querySelector('.expansion-tag')).not.toBeNull();
   });
 });

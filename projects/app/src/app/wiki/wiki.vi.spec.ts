@@ -40,6 +40,29 @@ describe('Wiki Cards in Vietnamese', () => {
     expect(text(caoCao)).not.toContain('Cao Cao ');
   });
 
+  it('the deck line and the skill states read in Vietnamese', async () => {
+    const generals = await open('/wiki/default/generals');
+    expect(text(generals.querySelector('.deck-line'))).toBe('Bộ bài: Mặc định');
+    const states = [...entry(generals, 'cao-cao').querySelectorAll('.skill-status')].map((s) => text(s));
+    expect(states).toEqual(['Đang hoạt động', 'Không dùng trong Quốc chiến']);
+  });
+
+  it('the Alternate card labels read in Vietnamese', async () => {
+    const tools = await open('/wiki/alternate/tools');
+    expect(text(tools.querySelector('.deck-line'))).toBe('Bộ bài: Thay thế');
+    const wuxieGuo = entry(tools, 'wuxie-guo');
+    expect(text(wuxieGuo.querySelector('.printed .label'))).toBe('Văn bản gốc tiếng Trung');
+    expect(text(wuxieGuo.querySelector('.badge'))).toBe('Chưa có trong trò chơi');
+    const duel = entry(tools, 'duel');
+    expect(text(duel.querySelector('.default-text .label'))).toBe('Văn bản của bộ Mặc định');
+    expect(text(duel.querySelector('.printed'))).toContain('出牌阶段');
+  });
+
+  it('the Alternate Basic page says Slash has no printed text', async () => {
+    const el = await open('/wiki/alternate/basic');
+    expect(text(entry(el, 'sha').querySelector('.gap'))).toBe('Không có văn bản in');
+  });
+
   it('a Basic Cards page: heading, summary and a card in Vietnamese', async () => {
     const el = await open('/wiki/basic');
     expect(text(el.querySelector('h2'))).toBe('Bài cơ bản');
