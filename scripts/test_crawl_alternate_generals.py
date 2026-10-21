@@ -252,12 +252,119 @@ class Main(unittest.TestCase):
             self.assertFalse(list(out.glob("generals/*/ghost.json")))
             self.assertEqual(len(list(out.glob("generals/*/*.json"))), 3)
 
+    def test_main_adds_the_generals_block_and_keeps_the_card_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "out"
+            out.mkdir()
+            cards = "# Alternate vs Default\n\n## Identical (3)\n\n"
+            (out / "diff-vs-default.md").write_text(cards, encoding="utf-8")
+            self.run_main(tmp)
+            report = (out / "diff-vs-default.md").read_text(encoding="utf-8")
+            self.assertTrue(report.startswith(cards + "<!-- generals:start -->"))
+            self.assertIn("- ghost (wei): no saved page ghost.html", report)
+            self.run_main(tmp)
+            self.assertEqual(report, (out / "diff-vs-default.md").read_text(encoding="utf-8"))
+
     def test_rerun_is_byte_identical(self):
         with tempfile.TemporaryDirectory() as tmp:
             _, out = self.run_main(tmp)
             first = {p: p.read_bytes() for p in sorted(out.glob("generals/*/*.json"))}
             self.run_main(tmp)
             self.assertEqual(first, {p: p.read_bytes() for p in sorted(out.glob("generals/*/*.json"))})
+
+
+def skill(name, zh, text):
+    return {"name": name, "nameZh": zh, "text": text}
+
+
+REPORT_DEFAULT = {
+    "liu-bei": {"name": "Liu Bei", "nameZh": "刘备", "force": "shu",
+                "skills": [skill("Benevolence", "仁德", "Give cards; regain 1 HP at two."),
+                           {**skill("Rouse", "激将", "Ruler skill."), "lord": True}]},
+    "cao-cao": {"name": "Cao Cao", "nameZh": "曹操", "force": "wei",
+                "skills": [skill("Evil Hero", "奸雄", "Take the card that damaged him.")]},
+    "dong-zhuo": {"name": "Dong Zhuo", "nameZh": "董卓", "force": "qun", "skills": []},
+}
+
+
+def rec(id_, name, zh, force, skills, hp_from="default"):
+    r = {"id": id_, "name": name, "nameZh": zh, "force": force, "skills": skills}
+    if hp_from:
+        r["hpFrom"] = hp_from
+    return r
+
+
+class Report(unittest.TestCase):
+    def report(self, records, matches, unparsed=()):
+        return crawl.generals_report(records, matches, REPORT_DEFAULT, list(unparsed))
+
+    def liu_bei(self, text="Give cards; regain 1 HP at three.", force="shu"):
+        return rec("liu-bei", "Liu Bei", "刘备", force, [skill("Benevolence", "仁德", text)])
+
+    def test_normalise_unifies_quotes_dashes_and_space(self):
+        self.assertEqual(crawl.normalise_text("  \u201cA\u201d  \u2014 it\u2019s\n b "), "\"A\" - it's b")
+
+    def test_block_is_marked(self):
+        block = self.report([], {})
+        self.assertTrue(block.startswith("<!-- generals:start -->"))
+        self.assertTrue(block.rstrip().endswith("<!-- generals:end -->"))
+
+    def test_report_lists_only_in_each_side(self):
+        ding = rec("ding-feng", "Ding Feng", "丁奉", "wu", [], hp_from=None)
+        block = self.report([self.liu_bei(), ding], {"liu-bei": ("liu-bei", "nameZh"), "ding-feng": (None, None)})
+        self.assertIn("## Only in Alternate (1)", block)
+        self.assertIn("- Ding Feng (丁奉), wu", block)
+        self.assertIn("## Only in Default (2)", block)
+        self.assertIn("- Cao Cao (曹操), wei", block)
+        self.assertIn("- Dong Zhuo (董卓), qun", block)
+
+    def test_report_force_differs(self):
+        block = self.report([self.liu_bei(force="wei")], {"liu-bei": ("liu-bei", "nameZh")})
+        self.assertIn("## Force differs (1)", block)
+        self.assertIn("- Liu Bei: Alternate wei, Default shu", block)
+
+    def test_report_skill_text_difference_after_normalisation_only(self):
+        same = self.liu_bei("Give cards;  regain 1 HP at two.")  # whitespace only
+        block = self.report([same], {"liu-bei": ("liu-bei", "nameZh")})
+        self.assertNotIn("text differs", block)
+        real = self.liu_bei()
+        block = self.report([real], {"liu-bei": ("liu-bei", "nameZh")})
+        self.assertIn("Benevolence", block)
+        self.assertIn("text differs", block)
+        self.assertIn("regain 1 HP at three", block)
+        self.assertIn("only in Default: Rouse", block)
+
+    def test_report_skill_present_on_one_side_only(self):
+        extra = rec("liu-bei", "Liu Bei", "刘备", "shu",
+                    [skill("Benevolence", "仁德", "Give cards; regain 1 HP at two."), skill("New", "新", "x")])
+        block = self.report([extra], {"liu-bei": ("liu-bei", "nameZh")})
+        self.assertIn("only in Alternate: New", block)
+
+    def test_report_lists_fallback_matches(self):
+        block = self.report([self.liu_bei()], {"liu-bei": ("liu-bei", "name")})
+        self.assertIn("## Matched by English name (1)", block)
+        self.assertIn("- Liu Bei -> liu-bei", block)
+
+    def test_report_lists_missing_hp(self):
+        ding = rec("ding-feng", "Ding Feng", "丁奉", "wu", [], hp_from=None)
+        block = self.report([ding], {"ding-feng": (None, None)})
+        self.assertIn("## Missing HP and gender (1)", block)
+        self.assertIn("- Ding Feng (丁奉)", block)
+
+    def test_report_lists_unparsed_with_reason(self):
+        block = self.report([], {}, [{"slug": "ghost", "force": "wei", "reason": "no Character ability on the page"}])
+        self.assertIn("## Unparsed pages (1)", block)
+        self.assertIn("- ghost (wei): no Character ability on the page", block)
+
+    def test_splice_replaces_block_and_keeps_the_rest(self):
+        old = "# Cards\n\nbody\n\n<!-- generals:start -->\nold\n<!-- generals:end -->\n"
+        new = "<!-- generals:start -->\nnew\n<!-- generals:end -->\n"
+        self.assertEqual(crawl.splice_report(old, new), "# Cards\n\nbody\n\n" + new)
+
+    def test_splice_appends_when_absent(self):
+        new = "<!-- generals:start -->\nnew\n<!-- generals:end -->\n"
+        self.assertEqual(crawl.splice_report("# Cards\n\nbody\n", new), "# Cards\n\nbody\n\n" + new)
+        self.assertEqual(crawl.splice_report("", new), new)
 
 
 if __name__ == "__main__":

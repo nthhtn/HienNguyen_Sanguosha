@@ -117,5 +117,19 @@ class DeckEntries(unittest.TestCase):
             crawl.deck_entries(self.CARDS, {})
 
 
+class KeepGeneralsBlock(unittest.TestCase):
+    BLOCK = "<!-- generals:start -->\n# Generals\n<!-- generals:end -->\n"
+
+    def test_card_report_rewrite_preserves_generals_block(self):
+        existing = "# Alternate vs Default\n\nold cards\n\n" + self.BLOCK
+        self.assertEqual(
+            crawl.keep_generals_block("# Alternate vs Default\n\nnew cards\n", existing),
+            "# Alternate vs Default\n\nnew cards\n\n" + self.BLOCK)
+
+    def test_no_block_leaves_the_report_unchanged(self):
+        self.assertEqual(crawl.keep_generals_block("new cards\n", "old cards\n"), "new cards\n")
+        self.assertEqual(crawl.keep_generals_block("new cards\n", ""), "new cards\n")
+
+
 if __name__ == "__main__":
     unittest.main()

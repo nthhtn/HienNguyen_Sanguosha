@@ -351,6 +351,16 @@ def diff_report(cards, default):
     return "\n".join(lines) + "\n"
 
 
+GENERALS_BLOCK = re.compile(r"<!-- generals:start -->.*?<!-- generals:end -->\n?", re.S)
+
+
+def keep_generals_block(report, existing):
+    """The card report, followed by the Generals block that crawl-alternate-generals.py
+    put in the existing file (if any), so rewriting the cards never drops it."""
+    block = GENERALS_BLOCK.search(existing)
+    return report.rstrip("\n") + "\n\n" + block.group(0) if block else report
+
+
 # ---------------------------------------------------------------------- main
 
 def fetch():
@@ -415,7 +425,9 @@ def main(argv=None):
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (out / "texts.zh.json").write_text(
         json.dumps({c["nameZh"]: c["text"] for c in cards if c["text"]}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    (out / "diff-vs-default.md").write_text(diff_report(cards, default), encoding="utf-8")
+    report_path = out / "diff-vs-default.md"
+    existing = report_path.read_text(encoding="utf-8") if report_path.exists() else ""
+    report_path.write_text(keep_generals_block(diff_report(cards, default), existing), encoding="utf-8")
 
     by_cat = collections.Counter(c["category"] for c in cards)
     print(f"{len(cards)} cards, {total} printings ({dict(by_cat)}) -> {out}")
