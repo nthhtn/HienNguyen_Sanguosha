@@ -28,13 +28,12 @@ describe('Wiki pages', () => {
     ['/wiki/basic', '/wiki/default/basic'],
     ['/wiki/equipment', '/wiki/default/equipment'],
     ['/wiki/tools', '/wiki/default/tools'],
-    ['/wiki/alternate/generals', '/wiki/default/generals'],
   ])('sends %s to %s', async (from, to) => {
     const { router } = await open(from);
     expect(router.url).toBe(to);
   });
 
-  it.each(['/wiki/alternate/basic', '/wiki/alternate/equipment', '/wiki/alternate/tools', '/wiki/default/generals', '/wiki/default/tools'])('keeps %s where it is', async (path) => {
+  it.each(['/wiki/alternate/generals', '/wiki/alternate/basic', '/wiki/alternate/equipment', '/wiki/alternate/tools', '/wiki/default/generals', '/wiki/default/tools'])('keeps %s where it is', async (path) => {
     const { router } = await open(path);
     expect(router.url).toBe(path);
   });
