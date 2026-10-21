@@ -71,3 +71,13 @@ describe('parseBotKind', () => {
     expect(() => parseBotKind('smart')).toThrow(/Unknown bot "smart".*random, rule-based, rule-based-v1/);
   });
 });
+
+describe('runGame with the Alternate deck', () => {
+  it('plays a four-seat game to a result with rule-based bots', () => {
+    const registry = buildContentRegistry();
+    const initialState = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], 123, { deck: 'alternate' });
+    const { finalState } = runGame(initialState, { registry, mode: kingdomWarMode }, 456, 20000, 'rule-based');
+    expect(finalState.rules?.deck).toBe('alternate');
+    expect(finalState.result).not.toBeNull();
+  });
+});

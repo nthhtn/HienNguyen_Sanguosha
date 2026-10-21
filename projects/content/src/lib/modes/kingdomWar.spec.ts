@@ -108,6 +108,42 @@ describe('Kingdom War setup and deal', () => {
     expect(state.players.map((p) => [p.seatId, p.name])).toEqual([['a', 'Seat 0'], ['b', 'Seat 1'], ['c', 'Seat 2']]);
   });
 
+  describe('the deck rule', () => {
+    const seats = ['seat-0', 'seat-1', 'seat-2', 'seat-3'];
+    const dealt = (rules?: { deck?: string }) =>
+      createGame(kingdomWarMode, registry, seats, 1, rules)
+        .zones.flatMap((z) => z.cards)
+        .map((c) => `${c.definitionId} ${c.suit} ${c.rank}`)
+        .sort();
+
+    it('deals the same cards with no deck, with {}, and with Default', () => {
+      expect(dealt({})).toEqual(dealt());
+      expect(dealt({ deck: 'default' })).toEqual(dealt());
+      expect(dealt()).toHaveLength(141);
+    });
+
+    it('deals the Alternate deck without the cards the game cannot play yet', () => {
+      const cards = dealt({ deck: 'alternate' });
+      expect(cards).toHaveLength(98);
+      for (const id of ['wuxie-guo', 'amass', 'ascertain', 'ally-far-attack-near', 'wu-six-swords', 'trident-glaive', 'fire-fan']) {
+        expect(cards.filter((c) => c.startsWith(`${id} `))).toEqual([]);
+      }
+      expect(cards.filter((c) => c.startsWith('sha '))).toHaveLength(21);
+      expect(cards.filter((c) => c.startsWith('shan '))).toHaveLength(14);
+      expect(cards.filter((c) => c.startsWith('peach '))).toHaveLength(8);
+    });
+
+    it('refuses a deck it does not know', () => {
+      expect(() => dealt({ deck: 'bogus' })).toThrow('Unknown deck "bogus"');
+    });
+
+    it('keeps the deck in the saved state', () => {
+      const state = createGame(kingdomWarMode, registry, seats, 1, { deck: 'alternate' });
+      expect(state.rules?.deck).toBe('alternate');
+      expect(JSON.parse(JSON.stringify(state)).rules.deck).toBe('alternate');
+    });
+  });
+
   it('builds the deck from exactly each card’s printings, at every table size', () => {
     const deckOf = (n: number) =>
       createGame(kingdomWarMode, registry, Array.from({ length: n }, (_, i) => `seat-${i}`), 1)

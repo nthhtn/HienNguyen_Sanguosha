@@ -23,7 +23,7 @@
 
 - **A game or room saved before this change (no `deck` in its rules):** deals Default, unchanged. Test in Task 2.
 - **An unknown deck id reaches the engine** (tampered client): `createGame` throws `Unknown deck "x"`; the server's schema refuses it before that. Tests in Tasks 2 and 3.
-- **Alternate lists cards the game cannot play yet** (6 cards, 9 printings): none of them appear in the draw pile, and a whole bot game finishes. Test in Task 2.
+- **Alternate lists cards the game cannot play yet** (7 cards, 10 printings): none of them appear in the draw pile, and a whole bot game finishes. Test in Task 2.
 - **Host changes the seat count below 5 in the lobby:** the deck is kept (only First Reveal Bonus is dropped). Test in Task 3.
 - **A non-host in the lobby:** sees the deck but cannot change it. Test in Task 5.
 
@@ -71,8 +71,8 @@
 - Produces: `GameRules.deck?: string` with a comment (the distribution the draw pile is dealt from; absent means Default).
 - `deckFor('default')` is built from `cardsData`: one entry per card id with that card's printings that carry no `expansion` tag. `deckFor('alternate')` is `data/decks/alternate/deck.json`.
 
-- [ ] **Step 1: Failing tests** in `decks.spec.ts`: `deckFor(undefined)` equals `deckFor('default')`; `deckFor('nope')` throws `Unknown deck "nope"`; Default has an entry for every card in `buildContentRegistry()` that is not `outOfDeck`; `undealtCardIds(deckFor('alternate'), registry)` equals exactly `['wuxie-guo','amass','ascertain','ally-far-attack-near','wu-six-swords','trident-glaive']` (sorted compare); every Alternate entry's printings are valid suits and ranks 1-13.
-- [ ] **Step 2: Failing tests** in `kingdomWar.spec.ts`: (a) the existing 141-card test still passes untouched, and a game created with `rules: {}` and one with `{ deck: 'default' }` deal the same cards; (b) `createGame(kingdomWarMode, registry, seats, 1, { deck: 'alternate' })` deals exactly 99 cards, none of them one of the six undealt ids, with 21 `sha`, 14 `shan`, 8 `peach`; (c) `{ deck: 'bogus' }` throws `Unknown deck "bogus"`; (d) the state's `rules.deck` is `'alternate'` and the state survives `JSON.parse(JSON.stringify(state))`.
+- [ ] **Step 1: Failing tests** in `decks.spec.ts`: `deckFor(undefined)` equals `deckFor('default')`; `deckFor('nope')` throws `Unknown deck "nope"`; Default has an entry for every card in `buildContentRegistry()` that is not `outOfDeck`; `undealtCardIds(deckFor('alternate'), registry)` equals exactly `['wuxie-guo','amass','ascertain','ally-far-attack-near','wu-six-swords','trident-glaive','fire-fan']` (Fire Fan has data but no definition: elemental cards stay out) (sorted compare); every Alternate entry's printings are valid suits and ranks 1-13.
+- [ ] **Step 2: Failing tests** in `kingdomWar.spec.ts`: (a) the existing 141-card test still passes untouched, and a game created with `rules: {}` and one with `{ deck: 'default' }` deal the same cards; (b) `createGame(kingdomWarMode, registry, seats, 1, { deck: 'alternate' })` deals exactly 98 cards, none of them one of the seven undealt ids, with 21 `sha`, 14 `shan`, 8 `peach`; (c) `{ deck: 'bogus' }` throws `Unknown deck "bogus"`; (d) the state's `rules.deck` is `'alternate'` and the state survives `JSON.parse(JSON.stringify(state))`.
 - [ ] **Step 3:** Run `npx jest projects/content`; expect these to fail.
 - [ ] **Step 4:** Implement `decks.ts`; change `buildDeckSpec(registry, deck: DeckDefinition)` to deal each entry whose card is in the registry and not `outOfDeck`, keeping the old guard: an entry with zero printings for a registry card throws `Card "<id>" has no printings in the data, so it cannot be put in the deck`. `setup` calls `deckFor(rules?.deck)`. Add the `GameRules.deck` field.
 - [ ] **Step 5:** In `projects/sim/src/runGame.spec.ts` add a test: a 4-seat game with `{ deck: 'alternate' }` and rule-based bots runs to a non-null `result`.
@@ -132,7 +132,7 @@
 - [ ] **Step 2:** Run `npx jest projects/app/src/app/online`; expect failures.
 - [ ] **Step 3:** Implement the three screens; update any existing summary expectations to include the deck part.
 - [ ] **Step 4:** Run `npx jest` for the whole workspace and `npm run typecheck:server`; all pass (report any failure that existed before this branch separately; the notes record a known `game-board.spec.ts` type error).
-- [ ] **Step 5:** Start the app (`npm start`), open Setup, choose Alternate, start a Pass and Play game and confirm the draw pile count is 99 and no card named Wu Six Swords, Trident Glaive, Amass, Ascertain, Ally Far Attack Near, or Wuxie Kingdom can appear. Say what was and was not checked in a browser.
+- [ ] **Step 5:** Start the app (`npm start`), open Setup, choose Alternate, start a Pass and Play game and confirm the draw pile count is 98 and no card named Wu Six Swords, Trident Glaive, Amass, Ascertain, Ally Far Attack Near, Wuxie Kingdom, or Fire Fan can appear. Say what was and was not checked in a browser.
 - [ ] **Step 6: Commit** `feat(app): deck radio group in the online screens`.
 
 ---
