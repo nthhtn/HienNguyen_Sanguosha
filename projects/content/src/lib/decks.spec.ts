@@ -30,8 +30,8 @@ describe('decks', () => {
     expect(missing).toEqual([]);
   });
 
-  it('names the Alternate cards the game cannot play yet', () => {
-    expect(undealtCardIds(deckFor('alternate'), registry)).toEqual(['fire-fan']);
+  it('leaves no Alternate card the game cannot play', () => {
+    expect(undealtCardIds(deckFor('alternate'), registry)).toEqual([]);
   });
 
   it('prints only real suits and ranks in the Alternate deck', () => {

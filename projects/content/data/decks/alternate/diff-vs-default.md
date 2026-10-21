@@ -19,7 +19,7 @@ Effect text is not compared yet (Default's is English, Alternate's is Chinese).
 - Green Dragon Blade (青龙偃月刀), 1 card
 - Sky Scorcher (方天画戟), 1 card
 
-## Different copies, suits, ranks, range or mount (22)
+## Different copies, suits, ranks, range or mount (21)
 
 - **杀** / Slash
   - copies/suits/ranks: Alternate 21 (♠5 ♠7 ♠8×2 ♠9 ♠10 ♠J ♥10 ♥Q ♣2 ♣3 ♣4 ♣5 ♣8 ♣9 ♣10 ♣J×2 ♦10 ♦J ♦Q), Default 30 (♠7 ♠8×2 ♠9×2 ♠10×2 ♥10×2 ♥J ♣2 ♣3 ♣4 ♣5 ♣6 ♣7 ♣8×2 ♣9×2 ♣10×2 ♣J×2 ♦6 ♦7 ♦8 ♦9 ♦10 ♦K)
@@ -59,12 +59,10 @@ Effect text is not compared yet (Default's is English, Alternate's is Chinese).
   - copies/suits/ranks: Alternate 2 (♥2 ♥3), Default 3 (♥2 ♥3 ♦Q)
 - **诸葛连弩** / Crossbow
   - copies/suits/ranks: Alternate 1 (♦A), Default 2 (♣A ♦A)
-- **朱雀羽扇** / Fire Fan
-  - copies/suits/ranks: Alternate 1 (♦A), Default 0 ()
 - **八卦阵** / Eight Trigrams
   - copies/suits/ranks: Alternate 1 (♠2), Default 2 (♠2 ♣2)
 - **藤甲** / Wood Armor
   - copies/suits/ranks: Alternate 1 (♠2), Default 2 (♠2 ♣2)
 
-## Identical (17)
+## Identical (18)
 
