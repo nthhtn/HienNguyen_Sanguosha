@@ -628,6 +628,24 @@ describe('actionHistory: elemental Slash, Chains and chain toggles', () => {
     expect(lines(log)).toEqual(['Seat 1 drew 1 card', 'Seat 1 recast Chains (Q ♣)']);
   });
 
+  it('says an Ascertain Recast is a recast, and an Ascertain look only that it was used (Review Focus 3)', () => {
+    const ascertain = { instanceId: 'as-1', definitionId: 'ascertain', suit: 'club' as const, rank: 3 };
+    const recast: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(ascertain), targets: [] },
+      move(ascertain, 'seat-1:hand', 'discardPile'),
+      { kind: 'CardsDrawnEvent', seatId: 'seat-1', cardInstanceIds: ['x'] },
+    ];
+    expect(lines(recast)).toEqual(['Seat 1 drew 1 card', 'Seat 1 recast Ascertain (3 ♣)']);
+    const reason = { kind: 'choice' as const, card: usedCardOf(ascertain), userSeatId: 'seat-1', targetSeatId: 'seat-0' };
+    const looked: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(ascertain), targets: [seat('seat-0')] },
+      move(ascertain, 'seat-1:hand', 'discardPile'),
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-1', verb: 'pick', reason, shows: { kind: 'label', text: '' }, secret: true },
+      { kind: 'ChoiceMadeEvent', seatId: 'seat-1', verb: 'pick', reason, shows: { kind: 'label', text: '' }, secret: true },
+    ];
+    expect(lines(looked)).toEqual(['Seat 1 used Ascertain (3 ♣) on Hing']);
+  });
+
   it('one line per chain toggle, by the Chains user, and a seat unchained by its damage', () => {
     const log: EngineEvent[] = [
       { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(chains), targets: [seat('seat-0'), seat('seat-1')] },

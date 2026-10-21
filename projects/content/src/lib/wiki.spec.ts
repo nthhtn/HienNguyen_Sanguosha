@@ -343,9 +343,9 @@ describe('Alternate wikiCards', () => {
     for (const id of ['wu-six-swords', 'trident-glaive']) expect(byId(weapons, id).text).toBeTruthy();
   });
 
-  it('is in the game only when the game has behaviour for the card: two are not', () => {
+  it('is in the game only when the game has behaviour for the card: Fire Fan is not', () => {
     const notInGame = all('alternate').filter((c) => !c.inGame).map((c) => c.id).sort();
-    expect(notInGame).toEqual(['ascertain', 'fire-fan']);
+    expect(notInGame).toEqual(['fire-fan']);
   });
 
   it('shows mounts as Default does', () => {

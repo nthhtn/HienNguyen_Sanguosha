@@ -164,3 +164,30 @@ describe('describeChoice for a skill’s pick or give', () => {
     ]);
   });
 });
+
+describe('Ascertain’s secret look', () => {
+  const look = (options: ChoiceOption[]): PendingChoice => ({
+    id: 'a', seatId: 'seat-0', verb: 'pick', secret: true, options,
+    reason: { kind: 'choice', card: { as: 'ascertain', colour: 'black', physical: [] }, userSeatId: 'seat-0', targetSeatId: 'seat-1' },
+  });
+  const label = (id: string, text: string): ChoiceOption => ({ id, shows: { kind: 'label', text }, effects: [] });
+  const peach = { instanceId: 'b1', definitionId: 'peach', suit: 'heart' as const, rank: 4 };
+  const done = label('done', 'Done');
+
+  it('asks what to look at, then says what is shown', () => {
+    const titled = (c: PendingChoice) => describeChoice(state(c), 'seat-0');
+    expect(titled(look([label('main', 'Main General'), label('hand', 'Hand Cards')]))).toEqual({ title: 'Ascertain', prompt: "Choose which of Seat 1's cards to look at", confirmLabel: 'Choose' });
+    expect(titled(look([{ id: 'b1', shows: { kind: 'card', card: peach }, effects: [] }, done]))!.prompt).toBe("These are Seat 1's hand cards");
+    expect(titled(look([done]))!.prompt).toBe('Seat 1 has no hand cards');
+    expect(titled(look([{ id: 'general', shows: { kind: 'general', generalId: 'cao-cao' }, effects: [] }, done]))!.prompt).toBe("This is Seat 1's hidden General");
+  });
+
+  it('labels the options, and shows a General by name with its art', () => {
+    expect(choiceOptionLabel({ kind: 'general', generalId: 'cao-cao' }, players)).toBe('Cao Cao');
+    const options = look([label('main', 'Main General'), label('deputy', 'Deputy General'), label('hand', 'Hand Cards'), { id: 'general', shows: { kind: 'general', generalId: 'cao-cao' }, effects: [] }, done]).options;
+    const legal: Action[] = options.map((o) => ({ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'a', optionId: o.id }));
+    const shown = choiceDialogOptions(options, legal, players);
+    expect(shown.map((o) => o.label)).toEqual(['Main General', 'Deputy General', 'Hand Cards', 'Cao Cao', 'Done']);
+    expect(shown[3].generalId).toBe('cao-cao');
+  });
+});
