@@ -62,10 +62,24 @@ describe('Six Swords of Wu', () => {
     expect(range(s, 'seat-c')).toBe(1);
   });
 
-  it('stops when the sword is in the discard pile', () => {
-    const s = table(['Wu', 'Wu', 'Wei', 'Qun']);
-    expect(range(s, 'seat-b')).toBe(1);
-    expect(range(s, 'seat-a')).toBe(1);
+  it('stops at once when the sword moves to the discard pile', () => {
+    const worn = table(['Wu', 'Wu', 'Wei', 'Qun'], { 'seat-a': [sword] });
+    expect(range(worn, 'seat-b')).toBe(2);
+    expect(range(worn, 'seat-a')).toBe(3);
+    const discarded: GameState = {
+      ...worn,
+      zones: worn.zones.map((z) =>
+        z.id === 'seat-a:equip' ? { ...z, cards: [] } : z.id === 'discardPile' ? { ...z, cards: [sword] } : z
+      ),
+    };
+    expect(range(discarded, 'seat-b')).toBe(1);
+    expect(range(discarded, 'seat-a')).toBe(1);
+  });
+
+  it('gives nothing while its owner is eliminated', () => {
+    const s = table(['Wu', 'Wu', 'Wei', 'Qun'], { 'seat-a': [sword] });
+    const dead: GameState = { ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, eliminated: true } : x)) };
+    expect(range(dead, 'seat-b')).toBe(1);
   });
 
   it('adds to a mate weapon', () => {
