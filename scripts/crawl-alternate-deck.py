@@ -6,6 +6,8 @@ Reads the page's card table (#cardtable), keeps only the printings of one
 edition (default: 国战, the Kingdom War base set, 108 cards), and writes into
 projects/content/data/decks/alternate/:
 
+  deck.json          what the engine reads: each card's id and its printings
+  ids.json           (hand-kept, not written) ids for cards Default does not have
   cards.json         identity, category, printings, range/mount, Default match
   texts.zh.json      the printed effect text, by Chinese name
   diff-vs-default.md what differs from the Default deck (listed, not resolved)
@@ -277,6 +279,18 @@ def default_id_for(name_zh, default):
     return matches[0] if matches else None
 
 
+def deck_entries(cards, ids):
+    """The deck's entries, in page order: each card's engine id (Default's id when it
+    has the card, else the hand-kept ids.json entry) and its printings."""
+    entries = []
+    for c in cards:
+        card_id = c["defaultCardId"] or (ids.get(c["nameZh"]) or {}).get("id")
+        if not card_id:
+            raise CardError(f"{c['nameZh']} has no card id: Default lacks it and ids.json has no entry")
+        entries.append({"cardId": card_id, "printings": c["printings"]})
+    return entries
+
+
 def tally(printings):
     return collections.Counter((p["suit"], p["rank"]) for p in printings)
 
@@ -365,6 +379,15 @@ def main(argv=None):
             c["defaultCardId"] = None
         c["count"] = len(c["printings"])
 
+    ids_path = Path(args.out) / "ids.json"
+    ids = json.loads(ids_path.read_text(encoding="utf-8")) if ids_path.exists() else {}
+    for c in cards:
+        c["cardId"] = c["defaultCardId"] or (ids.get(c["nameZh"]) or {}).get("id")
+    unmapped = [c for c in cards if not c["cardId"]]
+    for c in unmapped:
+        skipped.append({"nameZh": c["nameZh"], "reason": "no card id: Default lacks it and ids.json has no entry"})
+    cards = [c for c in cards if c["cardId"]]
+
     total = sum(c["count"] for c in cards)
     expected = EXPECTED_TOTAL.get(args.edition)
     if expected is not None and total != expected:
@@ -376,7 +399,7 @@ def main(argv=None):
     out.mkdir(parents=True, exist_ok=True)
     today = datetime.date.today().isoformat()
     cards_out = [
-        {k: c[k] for k in ("nameZh", "category", "subtype", "count", "defaultCardId", "range", "mount", "printings") if k in c}
+        {k: c[k] for k in ("nameZh", "category", "subtype", "count", "cardId", "defaultCardId", "range", "mount", "printings") if k in c}
         for c in cards
     ]
     (out / "cards.json").write_text(json.dumps({
@@ -385,6 +408,10 @@ def main(argv=None):
         "source": {"url": URL, "site": SITE, "pageUpdated": PAGE_UPDATED, "crawledAt": today},
         "total": total,
         "cards": cards_out,
+    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (out / "deck.json").write_text(json.dumps({
+        "id": "alternate",
+        "entries": deck_entries(cards, ids),
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (out / "texts.zh.json").write_text(
         json.dumps({c["nameZh"]: c["text"] for c in cards if c["text"]}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

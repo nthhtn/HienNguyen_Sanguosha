@@ -13,6 +13,7 @@
       "nameZh": "杀",
       "category": "basic",
       "count": 21,
+      "cardId": "sha",
       "defaultCardId": "sha",
       "printings": [
         {
@@ -105,6 +106,7 @@
       "nameZh": "火杀",
       "category": "basic",
       "count": 3,
+      "cardId": "fire-attack",
       "defaultCardId": "fire-attack",
       "printings": [
         {
@@ -125,6 +127,7 @@
       "nameZh": "雷杀",
       "category": "basic",
       "count": 5,
+      "cardId": "lightning-attack",
       "defaultCardId": "lightning-attack",
       "printings": [
         {
@@ -153,6 +156,7 @@
       "nameZh": "闪",
       "category": "basic",
       "count": 14,
+      "cardId": "shan",
       "defaultCardId": "shan",
       "printings": [
         {
@@ -217,6 +221,7 @@
       "nameZh": "桃",
       "category": "basic",
       "count": 8,
+      "cardId": "peach",
       "defaultCardId": "peach",
       "printings": [
         {
@@ -257,6 +262,7 @@
       "nameZh": "酒",
       "category": "basic",
       "count": 3,
+      "cardId": "wine",
       "defaultCardId": "wine",
       "printings": [
         {
@@ -277,6 +283,7 @@
       "nameZh": "闪电",
       "category": "tool",
       "count": 1,
+      "cardId": "lightning",
       "defaultCardId": "lightning",
       "printings": [
         {
@@ -289,6 +296,7 @@
       "nameZh": "乐不思蜀",
       "category": "tool",
       "count": 2,
+      "cardId": "capture",
       "defaultCardId": "capture",
       "printings": [
         {
@@ -305,6 +313,7 @@
       "nameZh": "兵粮寸断",
       "category": "tool",
       "count": 2,
+      "cardId": "starvation",
       "defaultCardId": "starvation",
       "printings": [
         {
@@ -321,6 +330,7 @@
       "nameZh": "过河拆桥",
       "category": "tool",
       "count": 3,
+      "cardId": "break",
       "defaultCardId": "break",
       "printings": [
         {
@@ -341,6 +351,7 @@
       "nameZh": "顺手牵羊",
       "category": "tool",
       "count": 3,
+      "cardId": "steal",
       "defaultCardId": "steal",
       "printings": [
         {
@@ -361,6 +372,7 @@
       "nameZh": "决斗",
       "category": "tool",
       "count": 2,
+      "cardId": "duel",
       "defaultCardId": "duel",
       "printings": [
         {
@@ -377,6 +389,7 @@
       "nameZh": "借刀杀人",
       "category": "tool",
       "count": 1,
+      "cardId": "coerce",
       "defaultCardId": "coerce",
       "printings": [
         {
@@ -389,6 +402,7 @@
       "nameZh": "无中生有",
       "category": "tool",
       "count": 2,
+      "cardId": "draw-two",
       "defaultCardId": "draw-two",
       "printings": [
         {
@@ -405,6 +419,7 @@
       "nameZh": "无懈可击",
       "category": "tool",
       "count": 1,
+      "cardId": "wuxie",
       "defaultCardId": "wuxie",
       "printings": [
         {
@@ -417,6 +432,7 @@
       "nameZh": "无懈可击•国",
       "category": "tool",
       "count": 2,
+      "cardId": "wuxie-guo",
       "defaultCardId": null,
       "printings": [
         {
@@ -433,6 +449,7 @@
       "nameZh": "万箭齐发",
       "category": "tool",
       "count": 1,
+      "cardId": "hail-of-arrows",
       "defaultCardId": "hail-of-arrows",
       "printings": [
         {
@@ -445,6 +462,7 @@
       "nameZh": "南蛮入侵",
       "category": "tool",
       "count": 2,
+      "cardId": "barbarians",
       "defaultCardId": "barbarians",
       "printings": [
         {
@@ -461,6 +479,7 @@
       "nameZh": "桃园结义",
       "category": "tool",
       "count": 1,
+      "cardId": "peach-garden",
       "defaultCardId": "peach-garden",
       "printings": [
         {
@@ -473,6 +492,7 @@
       "nameZh": "五谷丰登",
       "category": "tool",
       "count": 1,
+      "cardId": "harvest",
       "defaultCardId": "harvest",
       "printings": [
         {
@@ -485,6 +505,7 @@
       "nameZh": "铁索连环",
       "category": "tool",
       "count": 3,
+      "cardId": "chains",
       "defaultCardId": "chains",
       "printings": [
         {
@@ -505,6 +526,7 @@
       "nameZh": "火攻",
       "category": "tool",
       "count": 2,
+      "cardId": "blaze",
       "defaultCardId": "blaze",
       "printings": [
         {
@@ -521,6 +543,7 @@
       "nameZh": "以逸待劳",
       "category": "tool",
       "count": 2,
+      "cardId": "amass",
       "defaultCardId": null,
       "printings": [
         {
@@ -537,6 +560,7 @@
       "nameZh": "知己知彼",
       "category": "tool",
       "count": 2,
+      "cardId": "ascertain",
       "defaultCardId": null,
       "printings": [
         {
@@ -553,6 +577,7 @@
       "nameZh": "远交近攻",
       "category": "tool",
       "count": 1,
+      "cardId": "ally-far-attack-near",
       "defaultCardId": null,
       "printings": [
         {
@@ -566,6 +591,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "crossbow",
       "defaultCardId": "crossbow",
       "range": 1,
       "printings": [
@@ -580,6 +606,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "black-pommel",
       "defaultCardId": "black-pommel",
       "range": 2,
       "printings": [
@@ -594,6 +621,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "gender-swords",
       "defaultCardId": "gender-swords",
       "range": 2,
       "printings": [
@@ -608,6 +636,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "ice-sword",
       "defaultCardId": "ice-sword",
       "range": 2,
       "printings": [
@@ -622,6 +651,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "wu-six-swords",
       "defaultCardId": null,
       "range": 2,
       "printings": [
@@ -636,6 +666,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "trident-glaive",
       "defaultCardId": null,
       "range": 3,
       "printings": [
@@ -650,6 +681,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "axe",
       "defaultCardId": "axe",
       "range": 3,
       "printings": [
@@ -664,6 +696,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "serpent-spear",
       "defaultCardId": "serpent-spear",
       "range": 3,
       "printings": [
@@ -678,6 +711,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "fire-fan",
       "defaultCardId": "fire-fan",
       "range": 4,
       "printings": [
@@ -692,6 +726,7 @@
       "category": "equipment",
       "subtype": "weapon",
       "count": 1,
+      "cardId": "longbow",
       "defaultCardId": "longbow",
       "range": 5,
       "printings": [
@@ -706,6 +741,7 @@
       "category": "equipment",
       "subtype": "armor",
       "count": 1,
+      "cardId": "eight-trigrams",
       "defaultCardId": "eight-trigrams",
       "printings": [
         {
@@ -719,6 +755,7 @@
       "category": "equipment",
       "subtype": "armor",
       "count": 1,
+      "cardId": "black-shield",
       "defaultCardId": "black-shield",
       "printings": [
         {
@@ -732,6 +769,7 @@
       "category": "equipment",
       "subtype": "armor",
       "count": 1,
+      "cardId": "silver-lion",
       "defaultCardId": "silver-lion",
       "printings": [
         {
@@ -745,6 +783,7 @@
       "category": "equipment",
       "subtype": "armor",
       "count": 1,
+      "cardId": "wood-armor",
       "defaultCardId": "wood-armor",
       "printings": [
         {
@@ -758,6 +797,7 @@
       "category": "equipment",
       "subtype": "mount",
       "count": 1,
+      "cardId": "shadow-runner",
       "defaultCardId": "shadow-runner",
       "mount": "defensive",
       "printings": [
@@ -772,6 +812,7 @@
       "category": "equipment",
       "subtype": "mount",
       "count": 1,
+      "cardId": "storm-runner",
       "defaultCardId": "storm-runner",
       "mount": "defensive",
       "printings": [
@@ -786,6 +827,7 @@
       "category": "equipment",
       "subtype": "mount",
       "count": 1,
+      "cardId": "di-lu",
       "defaultCardId": "di-lu",
       "mount": "defensive",
       "printings": [
@@ -800,6 +842,7 @@
       "category": "equipment",
       "subtype": "mount",
       "count": 1,
+      "cardId": "da-yuan",
       "defaultCardId": "da-yuan",
       "mount": "offensive",
       "printings": [
@@ -814,6 +857,7 @@
       "category": "equipment",
       "subtype": "mount",
       "count": 1,
+      "cardId": "red-hare",
       "defaultCardId": "red-hare",
       "mount": "offensive",
       "printings": [
@@ -828,6 +872,7 @@
       "category": "equipment",
       "subtype": "mount",
       "count": 1,
+      "cardId": "zi-xing",
       "defaultCardId": "zi-xing",
       "mount": "offensive",
       "printings": [

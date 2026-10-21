@@ -215,6 +215,25 @@ engine knows nothing of Alternate yet.
   does not guess.
 - Mounts use Default's field: `"mount": "offensive" | "defensive"`.
 
+## Deck structure (engine reuse)
+
+A card is its behaviour (a definition in the content registry, by id) plus its
+data (name, text, range, mount). A **deck** is only a distribution:
+`{ id, entries: [{ cardId, printings: [{ suit, rank }] }] }`. It holds no text,
+range or behaviour.
+
+- Default's deck is built from the existing card data; nothing is migrated.
+- Alternate's deck is `data/decks/alternate/deck.json`, written by the crawler.
+- `data/decks/alternate/ids.json` is the one hand-kept file: the id and English
+  name for each card Default does not have (`{ "<nameZh>": { "id", "name" } }`).
+  The crawler fails on a card that has neither a Default match nor an entry.
+- The game picks a deck with `GameRules.deck` (absent means Default). An entry
+  whose card has no definition yet is left out of the deal.
+- A card whose effect differs between decks gets its own id and behaviour (for
+  example `wuxie-guo`); no behaviour ever checks which deck it is in.
+- Adding a card to Alternate: (1) an `ids.json` line, (2) the card's data file,
+  (3) its behaviour file plus one registry line.
+
 ## Left to the builder
 
 File and folder names, the exact JSON shape beyond the fields above, how

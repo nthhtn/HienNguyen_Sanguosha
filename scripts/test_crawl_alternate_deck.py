@@ -93,5 +93,29 @@ class SkipsWhatItCannotRead(unittest.TestCase):
         self.assertEqual([s["nameZh"] for s in skipped], ["闪"])
 
 
+class DeckEntries(unittest.TestCase):
+    CARDS = [
+        {"nameZh": "青釭剑", "defaultCardId": "black-pommel", "printings": [{"rank": 6, "suit": "spade"}]},
+        {"nameZh": "吴六剑", "defaultCardId": None, "printings": [{"rank": 6, "suit": "diamond"}]},
+    ]
+    IDS = {"吴六剑": {"id": "wu-six-swords", "name": "Wu Six Swords"}}
+
+    def test_a_matched_card_uses_its_default_id(self):
+        entries = crawl.deck_entries(self.CARDS, self.IDS)
+        self.assertEqual(entries[0]["cardId"], "black-pommel")
+
+    def test_a_card_default_lacks_uses_its_ids_json_id(self):
+        entries = crawl.deck_entries(self.CARDS, self.IDS)
+        self.assertEqual(entries[1]["cardId"], "wu-six-swords")
+
+    def test_entries_carry_exactly_the_printings(self):
+        entries = crawl.deck_entries(self.CARDS, self.IDS)
+        self.assertEqual(entries[1], {"cardId": "wu-six-swords", "printings": [{"rank": 6, "suit": "diamond"}]})
+
+    def test_a_card_with_no_id_anywhere_is_an_error_naming_it(self):
+        with self.assertRaisesRegex(crawl.CardError, "吴六剑"):
+            crawl.deck_entries(self.CARDS, {})
+
+
 if __name__ == "__main__":
     unittest.main()
