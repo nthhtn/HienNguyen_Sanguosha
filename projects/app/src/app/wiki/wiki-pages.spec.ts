@@ -75,7 +75,7 @@ describe('Wiki pages', () => {
   it('lists the 19 Alternate tools, with Ascertain marked not in the game', async () => {
     const { el } = await open('/wiki/alternate/tools');
     expect(tabLabels(el())).toEqual(['Instant (16)', 'Delayed (3)']);
-    expect(el().querySelector('.summary')!.textContent).toBe('19 cards · 17 in the game');
+    expect(el().querySelector('.summary')!.textContent).toBe('19 cards · 18 in the game');
     expect(el().querySelector('article.entry[data-id="wuxie-guo"] .badge')!.textContent!.trim()).toBe('In the game');
     const badge = el().querySelector('article.entry[data-id="ascertain"] .badge')!;
     expect(badge.textContent!.trim()).toBe('Not in the game yet');
