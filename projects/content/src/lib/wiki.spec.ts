@@ -299,3 +299,60 @@ describe('skill status', () => {
     expect(skills.every((s) => (s.status === 'lord') === s.lord)).toBe(true);
   });
 });
+
+describe('Alternate wikiCards', () => {
+  const byId = (cards: WikiCard[], id: string) => cards.find((c) => c.id === id)!;
+  const all = (deck: 'default' | 'alternate') => (['basic', 'tool', 'equipment'] as const).flatMap((c) => wikiCards(c, deck));
+
+  it('lists the Alternate deck’s cards by category', () => {
+    expect(wikiCards('basic', 'alternate')).toHaveLength(6);
+    expect(wikiCards('tool', 'alternate')).toHaveLength(19);
+    expect(wikiCards('equipment', 'alternate')).toHaveLength(20);
+  });
+
+  it('marks every card with its deck, and only Alternate cards lack a pack', () => {
+    expect(all('alternate').every((c) => c.deck === 'alternate' && c.expansion === null)).toBe(true);
+    expect(all('default').every((c) => c.deck === 'default' && c.expansion !== null && c.printedZh === null)).toBe(true);
+  });
+
+  it('shows the Alternate copies, not Default’s', () => {
+    expect(byId(wikiCards('basic', 'alternate'), 'sha').count).toBe(21);
+    expect(byId(wikiCards('basic'), 'sha').count).toBe(30);
+    expect(byId(wikiCards('basic', 'alternate'), 'sha').printings).toHaveLength(21);
+  });
+
+  it('takes the English name and text from Default when the card exists there, and the Chinese text from the crawl', () => {
+    const pommel = byId(wikiCards('equipment', 'alternate'), 'black-pommel');
+    expect(pommel).toMatchObject({ name: 'Black Pommel', nameZh: '青釭剑', range: 2, subtype: 'weapon', category: 'equipment' });
+    expect(pommel.text).toBe(byId(wikiCards('equipment'), 'black-pommel').text);
+    expect(pommel.printedZh).toContain('无视其防具');
+  });
+
+  it('has no printed text for Slash, and keeps Default’s English text beside it', () => {
+    const sha = byId(wikiCards('basic', 'alternate'), 'sha');
+    expect(sha.printedZh).toBeNull();
+    expect(sha.text).toBe(byId(wikiCards('basic'), 'sha').text);
+  });
+
+  it('names a card Default lacks from ids.json, with no English text', () => {
+    const wuxieGuo = byId(wikiCards('tool', 'alternate'), 'wuxie-guo');
+    expect(wuxieGuo).toMatchObject({ name: 'Wuxie Kingdom', text: null, inGame: false });
+    expect(wuxieGuo.printedZh).toBeTruthy();
+  });
+
+  it('is in the game only when the game has behaviour for the card: seven are not', () => {
+    const notInGame = all('alternate').filter((c) => !c.inGame).map((c) => c.id).sort();
+    expect(notInGame).toEqual(['ally-far-attack-near', 'amass', 'ascertain', 'fire-fan', 'trident-glaive', 'wu-six-swords', 'wuxie-guo']);
+  });
+
+  it('shows mounts as Default does', () => {
+    expect(byId(wikiCards('equipment', 'alternate'), 'red-hare')).toMatchObject({ subtype: 'horse', mount: 'offensive' });
+  });
+
+  it('splits the Alternate equipment and tools into tabs with nothing left over', () => {
+    expect(wikiCardTabs('equipment', 'alternate').map((t) => t.key)).not.toContain('other');
+    const tools = wikiCardTabs('tool', 'alternate');
+    expect(tools.map((t) => t.key)).toEqual(['instant', 'delayed']);
+    expect(tools[1].entries.map((c) => c.id).sort()).toEqual(['capture', 'lightning', 'starvation']);
+  });
+});

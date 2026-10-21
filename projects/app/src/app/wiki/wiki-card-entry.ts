@@ -26,7 +26,9 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
           </h4>
           <span class="badge" [class.on]="card().inGame">{{ (card().inGame ? 'wiki.inGame' : 'wiki.notInGame') | t }}</span>
         </header>
-        <p class="meta"><span class="expansion-tag">{{ packLabel(card().expansion) }}</span></p>
+        @if (card().expansion; as pack) {
+          <p class="meta"><span class="expansion-tag">{{ packLabel(pack) }}</span></p>
+        }
         @if (voice(); as voice) {
           <p class="voices">
             <span class="voices-label">{{ 'wiki.voices' | t }}</span>
