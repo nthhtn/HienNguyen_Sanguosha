@@ -68,6 +68,12 @@ describe('Ally Far Attack Near', () => {
     expect(targetsOf(table(['hidden', 'hidden', 'hidden', 'hidden'], { 'seat-a:hand': [af] }))).toEqual([]);
   });
 
+  it('never targets an eliminated seat', () => {
+    const s0 = table(['Wei', 'Shu', 'Qun', 'hidden'], { 'seat-a:hand': [af] });
+    const s = { ...s0, seats: s0.seats.map((x) => (x.id === 'seat-b' ? { ...x, eliminated: true } : x)) };
+    expect(targetsOf(s)).toEqual([['seat-c']]);
+  });
+
   it('the target draws 1 then the user draws 3', () => {
     const s = play(table(['Wei', 'Shu', 'Wei', 'Qun'], { 'seat-a:hand': [af] }), 'seat-b');
     expect(hand(s, 'seat-b')).toEqual(['p0']);
