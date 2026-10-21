@@ -215,6 +215,44 @@ class BuildRecord(unittest.TestCase):
             "skills", "synergisticPartners", "differenceFromNormal", "source"])
 
 
+class ManualAnswers(unittest.TestCase):
+    """generals-manual.json: hand-kept answers for Generals Default lacks, by blog slug."""
+
+    def page(self, name, zh):
+        page = crawl.parse_general(fixture("kw-general-liu-bei.html"))
+        page.update(name=name, nameZh=zh)
+        return page
+
+    def test_manual_values_fill_hp_gender_and_force(self):
+        manual = {"ding-feng": {"force": "wu", "maxHp": 4, "gender": "male"}}
+        entry = {"force": "wei", "url": "u", "slug": "ding-feng"}
+        rec = crawl.build_record(entry, self.page("Ding Feng", "丁奉"), DEFAULT, "d", manual)
+        self.assertEqual((rec["force"], rec["maxHp"], rec["gender"], rec["hpFrom"]), ("wu", 4, "male", "manual"))
+
+    def test_manual_default_id_picks_the_counterpart(self):
+        manual = {"elder-zhuge-liang": {"defaultId": "zhuge-liang"}}
+        entry = {"force": "shu", "url": "u", "slug": "elder-zhuge-liang"}
+        rec = crawl.build_record(entry, self.page("Elder Zhuge Liang", "暮年诸葛亮"), DEFAULT, "d", manual)
+        self.assertEqual((rec["id"], rec["maxHp"], rec["hpFrom"]), ("zhuge-liang", 3, "default"))
+        self.assertEqual(crawl.resolve_match(entry, self.page("Elder Zhuge Liang", "暮年诸葛亮"), DEFAULT, manual),
+                         ("zhuge-liang", "manual"))
+
+    def test_manual_default_id_that_does_not_exist_is_an_error(self):
+        entry = {"force": "shu", "url": "u", "slug": "x"}
+        with self.assertRaises(crawl.GeneralError):
+            crawl.build_record(entry, self.page("X", None), DEFAULT, "d", {"x": {"defaultId": "nope"}})
+
+    def test_main_reads_generals_manual_json_from_the_output_folder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "out"
+            out.mkdir()
+            (out / "generals-manual.json").write_text(
+                json.dumps({"sima-yi": {"maxHp": 7, "gender": "male"}}), encoding="utf-8")
+            Main().run_main(tmp)
+            rec = json.loads((out / "generals/wei/sima-yi.json").read_text(encoding="utf-8"))
+            self.assertEqual((rec["maxHp"], rec["hpFrom"]), (7, "manual"))
+
+
 class FetchPage(unittest.TestCase):
     def test_cache_is_read_first(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,9 +1,12 @@
 {
-  "id": "elder-zhuge-liang",
+  "id": "zhuge-liang",
   "name": "Elder Zhuge Liang",
   "nameZh": "暮年诸葛亮",
   "force": "shu",
   "title": "The Prime Minister who has Passed his Prime",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "default",
   "skills": [
     {
       "name": "Star Gazing",

@@ -4,6 +4,9 @@
   "nameZh": "田丰",
   "force": "qun",
   "title": "The Precious Talent of Hebei",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Deathly Counsel",

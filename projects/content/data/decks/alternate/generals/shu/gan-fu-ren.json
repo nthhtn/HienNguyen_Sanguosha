@@ -4,6 +4,9 @@
   "nameZh": "甘夫人",
   "force": "shu",
   "title": "The Empress of Shining Accomplishments",
+  "maxHp": 3,
+  "gender": "female",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Prudence",

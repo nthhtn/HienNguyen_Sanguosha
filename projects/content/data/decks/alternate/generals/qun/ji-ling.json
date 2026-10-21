@@ -4,6 +4,9 @@
   "nameZh": "纪灵",
   "force": "qun",
   "title": "Chief of Zhongjia",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Double Edged",

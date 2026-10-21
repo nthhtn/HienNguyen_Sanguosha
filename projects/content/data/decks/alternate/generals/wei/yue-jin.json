@@ -4,6 +4,9 @@
   "nameZh": "乐进",
   "force": "wei",
   "title": "Determined to Overcome",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Dauntless",

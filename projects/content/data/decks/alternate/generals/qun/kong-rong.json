@@ -4,6 +4,9 @@
   "nameZh": "孔融",
   "force": "qun",
   "title": "Stern and Just",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Celebrity",

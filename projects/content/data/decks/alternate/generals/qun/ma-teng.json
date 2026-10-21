@@ -4,6 +4,9 @@
   "nameZh": "马腾",
   "force": "qun",
   "title": "Galloping through the Western Border",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Horsemanship",

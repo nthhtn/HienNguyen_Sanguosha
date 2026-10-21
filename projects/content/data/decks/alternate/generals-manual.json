@@ -1,0 +1,13 @@
+{
+  "elder-zhuge-liang": { "defaultId": "zhuge-liang" },
+  "younger-zhuge-liang": { "defaultId": "fire-zhuge-liang" },
+  "gan-fu-ren-lady-gan": { "force": "shu", "maxHp": 3, "gender": "female" },
+  "yue-jin": { "force": "wei", "maxHp": 4, "gender": "male" },
+  "ding-feng": { "force": "wu", "maxHp": 4, "gender": "male" },
+  "ji-ling": { "force": "qun", "maxHp": 4, "gender": "male" },
+  "kong-rong": { "force": "qun", "maxHp": 3, "gender": "male" },
+  "ma-teng": { "force": "qun", "maxHp": 4, "gender": "male" },
+  "pan-feng": { "force": "qun", "maxHp": 4, "gender": "male" },
+  "tian-feng": { "force": "qun", "maxHp": 3, "gender": "male" },
+  "zou-shi-lady-zou": { "force": "qun", "maxHp": 3, "gender": "female" }
+}

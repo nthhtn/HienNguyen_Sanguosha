@@ -4,6 +4,9 @@
   "nameZh": "邹氏",
   "force": "qun",
   "title": "Enticement of the Succubus",
+  "maxHp": 3,
+  "gender": "female",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Femme Fatale",

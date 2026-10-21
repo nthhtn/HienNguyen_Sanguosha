@@ -4,6 +4,9 @@
   "nameZh": "丁奉",
   "force": "wu",
   "title": "The Essential Minister that Purged the King’s Court",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Close Combat",

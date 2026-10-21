@@ -6,6 +6,8 @@ See docs/superpowers/specs/2026-10-21-alternate-generals-crawl-design.md.
 Writes into projects/content/data/decks/alternate/:
 
   generals/<force>/<id>.json   one record per General (skills, partners, source)
+  generals-manual.json         (hand-kept, not written) by blog slug: a Default counterpart
+                               ("defaultId") or the Kingdom, HP and gender the pages lack
   diff-vs-default.md           a marked Generals block is added to the card report
 
 HP and gender are not on the pages: they are copied from Default's General when
@@ -275,19 +277,36 @@ def general_id(slug, default_id):
 FORCE_ANCHOR = {force: anchor for anchor, force in ANCHOR_FORCE.items()}
 
 
-def build_record(entry, parsed, default, today):
-    """One General's JSON record. HP and gender come only from a matched Default
-    General (hpFrom says so); an unmatched General has neither."""
-    default_id, _ = match_default(parsed, default)
+def resolve_match(entry, parsed, default, manual=None):
+    """match_default, unless generals-manual.json names the Default counterpart
+    ("defaultId") for this blog slug: then (that id, "manual")."""
+    wanted = (manual or {}).get(entry["slug"], {}).get("defaultId")
+    if wanted:
+        if wanted not in default:
+            raise GeneralError(f"generals-manual.json names Default General {wanted!r}, which does not exist")
+        return wanted, "manual"
+    return match_default(parsed, default)
+
+
+def build_record(entry, parsed, default, today, manual=None):
+    """One General's JSON record. HP and gender come from a matched Default General
+    (hpFrom "default") or from generals-manual.json (hpFrom "manual", which wins when
+    both exist); a General with neither has no HP or gender."""
+    default_id, _ = resolve_match(entry, parsed, default, manual)
     matched = default[default_id] if default_id else None
+    own = (manual or {}).get(entry["slug"], {})
     rec = {"id": general_id(entry["slug"], default_id), "name": parsed["name"]}
     name_zh = parsed["nameZh"] or (matched or {}).get("nameZh")
     if name_zh:
         rec["nameZh"] = name_zh
-    rec["force"] = entry["force"]
+    rec["force"] = own.get("force", entry["force"])
     if parsed["title"]:
         rec["title"] = parsed["title"]
-    if matched:
+    if "maxHp" in own and "gender" in own:
+        rec["maxHp"] = own["maxHp"]
+        rec["gender"] = own["gender"]
+        rec["hpFrom"] = "manual"
+    elif matched:
         rec["maxHp"] = matched["maxHp"]
         rec["gender"] = matched["gender"]
         rec["hpFrom"] = "default"
@@ -441,6 +460,8 @@ def main(argv=None):
         return 1
 
     default = load_default_generals()
+    manual_path = Path(args.out) / "generals-manual.json"
+    manual = json.loads(manual_path.read_text(encoding="utf-8")) if manual_path.exists() else {}
     today = datetime.date.today().isoformat()
     records, unparsed, seen = [], [], set()
     for entry in entries:
@@ -453,7 +474,7 @@ def main(argv=None):
             else:
                 html = fetch_page(entry["url"], cache, args.pause)
             parsed = parse_general(html)
-            rec = build_record(entry, parsed, default, today)
+            rec = build_record(entry, parsed, default, today, manual)
             if rec["id"] in seen:
                 raise GeneralError(f"id {rec['id']} is already used by another General")
         except GeneralError as err:
@@ -477,7 +498,7 @@ def main(argv=None):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(rec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    matches = {rec["id"]: match_default(parsed, default) for _, parsed, rec in records}
+    matches = {rec["id"]: resolve_match(entry, parsed, default, manual) for entry, parsed, rec in records}
     block = generals_report([rec for _, _, rec in records], matches, default, unparsed)
     report_path = Path(args.out) / "diff-vs-default.md"
     existing = report_path.read_text(encoding="utf-8") if report_path.exists() else ""

@@ -4,6 +4,9 @@
   "nameZh": "潘凤",
   "force": "qun",
   "title": "The Superior General of the Coalition",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Insanity Axe",

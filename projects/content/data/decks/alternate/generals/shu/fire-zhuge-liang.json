@@ -1,9 +1,12 @@
 {
-  "id": "younger-zhuge-liang",
+  "id": "fire-zhuge-liang",
   "name": "Younger Zhuge Liang",
   "nameZh": "卧龙诸葛亮",
   "force": "shu",
   "title": "Hidden dragon",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "default",
   "skills": [
     {
       "name": "Eight Trigrams",
