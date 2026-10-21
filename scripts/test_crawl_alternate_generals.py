@@ -105,5 +105,63 @@ class ParseGeneral(unittest.TestCase):
         self.assertEqual(crawl.parse_general(page)["synergisticPartners"], [])
 
 
+DEFAULT = {
+    "liu-bei": {"name": "Liu Bei", "nameZh": "刘备", "maxHp": 4, "gender": "male", "force": "shu"},
+    "zhuge-liang": {"name": "Zhuge Liang", "nameZh": "诸葛亮", "maxHp": 3, "gender": "male", "force": "shu"},
+    "fire-zhuge-liang": {"name": "Zhuge Liang", "nameZh": "诸葛亮", "maxHp": 3, "gender": "male", "force": "shu"},
+    "xiahou-dun": {"name": "Xiahou Dun", "nameZh": "夏侯敦", "maxHp": 4, "gender": "male", "force": "wei"},
+    "cai-wenji": {"name": "Cai Wenji", "nameZh": "蔡文姬", "maxHp": 3, "gender": "female", "force": "qun"},
+    "yan-liang-and-wen-chou": {"name": "Yan Liang and Wen Chou", "nameZh": "颜良 & 文丑", "maxHp": 4, "gender": "male", "force": "qun"},
+    "lu-meng": {"name": "Lu Meng", "nameZh": None, "maxHp": 4, "gender": "male", "force": "wu"},
+    "sun-quan-a": {"name": "Sun Quan", "nameZh": "孙权", "maxHp": 4, "gender": "male", "force": "wu"},
+    "sun-quan-b": {"name": "Sun Quan", "nameZh": "孙权", "maxHp": 4, "gender": "male", "force": "wu"},
+}
+
+
+def parsed(name, name_zh):
+    return {"name": name, "nameZh": name_zh}
+
+
+class MatchDefault(unittest.TestCase):
+    def test_nameZh_match_is_trusted(self):
+        self.assertEqual(crawl.match_default(parsed("Liu Bei", "刘备"), DEFAULT), ("liu-bei", "nameZh"))
+        self.assertEqual(crawl.match_default(parsed("Someone Else", "刘备"), DEFAULT), ("liu-bei", "nameZh"))
+
+    def test_name_fallback_with_one_candidate_matches(self):
+        self.assertEqual(crawl.match_default(parsed("Xiahou Dun", "夏侯惇"), DEFAULT), ("xiahou-dun", "name"))
+        self.assertEqual(crawl.match_default(parsed("Cai Wen Ji (Lady Cai)", "蔡文姬"), DEFAULT), ("cai-wenji", "nameZh"))
+        self.assertEqual(crawl.match_default(parsed("Cai Wen Ji (Lady Cai)", None), DEFAULT), ("cai-wenji", "name"))
+        self.assertEqual(crawl.match_default(parsed("Lu Meng", "吕蒙"), DEFAULT), ("lu-meng", "name"))
+        self.assertEqual(
+            crawl.match_default(parsed("Yan Liang & Wen Chou", None), DEFAULT), ("yan-liang-and-wen-chou", "name"))
+
+    def test_nameZh_ignores_spaces_and_ampersands(self):
+        self.assertEqual(
+            crawl.match_default(parsed("Yan Liang & Wen Chou", "颜良文丑"), DEFAULT), ("yan-liang-and-wen-chou", "nameZh"))
+
+    def test_name_fallback_with_two_candidates_matches_nothing(self):
+        self.assertEqual(crawl.match_default(parsed("Zhuge Liang", None), DEFAULT), (None, None))
+        self.assertEqual(crawl.match_default(parsed("Sun Quan", None), DEFAULT), (None, None))
+
+    def test_unmatched_returns_none(self):
+        self.assertEqual(crawl.match_default(parsed("Ding Feng", "丁奉"), DEFAULT), (None, None))
+
+    def test_id_is_default_id_when_matched(self):
+        self.assertEqual(crawl.general_id("liu-bei", "liu-bei"), "liu-bei")
+        self.assertEqual(crawl.general_id("cai-wen-ji-lady-cai", "cai-wenji"), "cai-wenji")
+
+    def test_id_from_slug_drops_lady_suffix(self):
+        self.assertEqual(crawl.general_id("gan-fu-ren-lady-gan", None), "gan-fu-ren")
+
+    def test_id_from_slug_keeps_other_slugs(self):
+        self.assertEqual(crawl.general_id("yan-liang-wen-chou", None), "yan-liang-wen-chou")
+
+    def test_real_default_loads_57_generals(self):
+        default = crawl.load_default_generals()
+        self.assertEqual(len(default), 57)
+        self.assertEqual(default["cao-cao"]["force"], "wei")
+        self.assertEqual(default["cao-cao"]["maxHp"], 4)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -209,3 +209,54 @@ def parse_general(html):
         "synergisticPartners": partners,
         "differenceFromNormal": "\n".join(difference) if difference else None,
     }
+
+
+# ------------------------------------------------------------ Default's data
+
+def load_default_generals(root=DEFAULT_GENERALS):
+    """Default's Generals keyed by id (file stem): the file's JSON plus its force (folder)."""
+    default = {}
+    for path in sorted(glob.glob(str(Path(root) / "*" / "*.json"))):
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        data["force"] = Path(path).parent.name
+        default[Path(path).stem] = data
+    return default
+
+
+def zh_key(name_zh):
+    return "".join(CJK.findall(name_zh or ""))
+
+
+def name_keys(name):
+    """The English-name keys to try, most specific first: letters only, "&" read as
+    "and"; then again with a parenthetical such as "(Lady Gan)" removed."""
+    def key(text):
+        text = strip_diacritics(text.lower().replace("&", " and "))
+        return re.sub(r"[^a-z]", "", text)
+    plain = key(name)
+    bare = key(re.sub(r"\([^)]*\)", " ", name))
+    return [plain] if plain == bare else [plain, bare]
+
+
+def match_default(parsed, default):
+    """(default id, how) for a parsed General: "nameZh" when exactly one Default
+    General has the same Chinese name, else "name" when exactly one has the same
+    English name, else (None, None). Several candidates never match."""
+    zh = zh_key(parsed.get("nameZh"))
+    if zh:
+        hits = [i for i, d in default.items() if zh_key(d.get("nameZh")) == zh]
+        if len(hits) == 1:
+            return hits[0], "nameZh"
+    for key in name_keys(parsed["name"]):
+        hits = [i for i, d in default.items() if key in name_keys(d["name"])]
+        if len(hits) == 1:
+            return hits[0], "name"
+        if hits:
+            break
+    return None, None
+
+
+def general_id(slug, default_id):
+    """A matched General takes Default's id; otherwise the page slug, minus a
+    trailing "-lady-xxx"."""
+    return default_id or re.sub(r"-lady-[a-z]+$", "", slug)
