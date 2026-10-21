@@ -392,4 +392,16 @@ export interface GameState {
   // General ids nobody was dealt, in order: where spare Generals come from.
   // Hidden from every viewer.
   spareGenerals?: string[];
+  // Tools cancelled for a whole Kingdom (Wuxie Kingdom) while they resolve:
+  // a later target whose live Kingdom matches is skipped. Absent (never []) when none.
+  toolCancellations?: ToolCancellation[];
+}
+
+// `toolKey` (toolKeyOf) is cancelled for every later target of `kingdom`.
+// `targetSeatId`: the target the cancel was played about; if the Tool still
+// takes effect there (the cancel was itself countered), the record goes.
+export interface ToolCancellation {
+  toolKey: string;
+  kingdom: Exclude<Kingdom, 'hidden'>;
+  targetSeatId: string;
 }

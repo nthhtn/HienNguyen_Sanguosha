@@ -10,6 +10,9 @@ export interface PlayContext {
   card: UsedCard;
   targets: Target[];
   respondingTo?: string;
+  // The window being answered (state.pendingResponse is already cleared when
+  // play() runs), so an answer can read what it answers.
+  answering?: PendingResponse;
   // Played by an ability, outside the Play Phase's limits (Green Dragon
   // Blade's follow-up Sha): it never counts toward a limit or spends Wine.
   free?: boolean;
@@ -59,6 +62,10 @@ export interface CardDefinition {
   // The damage nature the card carries when used as itself (UsedCard.nature).
   nature?: 'fire' | 'thunder';
   play(state: GameState, ctx: PlayContext, registry: ContentRegistry): unknown[];
+  // When present, the card (in hand, or made by a conversion) answers a window
+  // that allows it only while this holds (Wuxie Kingdom: not against a seat
+  // with both Generals hidden). Also decides who is asked in a Wuxie check.
+  answerCondition?(state: GameState, pending: PendingResponse, seatId: string, registry: ContentRegistry): boolean;
   // Called when a seat answers a response window this card opened (see
   // PendingResponse.sourceCard), after the answering card's own effects. Its
   // effects replace the default of simply cancelling the pending effect, e.g.

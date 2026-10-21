@@ -46,3 +46,9 @@ export function usedCardFrom(cards: CardInstance[], as: string, via?: UsedCard['
 export function usedCardKey(card: UsedCard): string {
   return card.physical.map((c) => c.instanceId).join('+') || 'virtual';
 }
+
+// One use of a Tool, for Kingdom cancels (GameState.toolCancellations): what
+// it is used as and its first physical card ('virtual' for none).
+export function toolKeyOf(tool: UsedCard): string {
+  return `${tool.as}-${tool.physical[0]?.instanceId ?? 'virtual'}`;
+}

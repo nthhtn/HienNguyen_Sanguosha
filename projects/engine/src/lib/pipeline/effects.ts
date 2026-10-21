@@ -1,5 +1,6 @@
-import { AbilityOwner, GeneralOwner, GameEvent, GameState, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Seat, Target, UsedCard, WuxieSubject } from '../domain/types';
+import { AbilityOwner, GeneralOwner, GameEvent, GameState, Kingdom, ToolCancellation, Damage, Judgment, JudgmentReader, PendingArrangement, PendingChoice, PendingResponse, PendingSelection, Seat, Target, UsedCard, WuxieSubject } from '../domain/types';
 import { queueFront } from './queue';
+import { toolKeyOf } from '../domain/usedCard';
 import { nextInt } from '../rng/rng';
 import { drawTop, moveCard, recordCountsAs, requireZoneOfKind } from '../cards/zones';
 import { EngineEvent } from './events';
@@ -61,6 +62,10 @@ export type Effect =
   | { kind: 'WuxieCheckEffect'; subject: WuxieSubject; order: string[]; counterCardIds: string[] }
   // Removes the next queued item: a counter card's way of cancelling what it guards.
   | { kind: 'SkipNextEffect' }
+  // Wuxie Kingdom: `tool` is cancelled for every later target whose Kingdom is
+  // `kingdom` (read live as each comes). `targetSeatId` is the target it was
+  // played about, whose own cancel goes through the usual counter check.
+  | { kind: 'CancelToolForKingdomEffect'; tool: UsedCard; kingdom: Exclude<Kingdom, 'hidden'>; targetSeatId: string }
   // Asks `choice.seatId` to pick one option; the queue waits for the pick.
   | { kind: 'OpenChoiceEffect'; choice: PendingChoice }
   // Moves a random card (seeded) of `fromZoneId` to `toZoneId`: a pick from a
@@ -430,8 +435,12 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       };
       return { state: queueFront(state, [hit, ...(rest.length > 0 ? [{ ...effect, remaining: rest }] : [])]), events: [] };
     }
-    case 'ToolResolvedEffect':
-      return { state, events: [] };
+    case 'ToolResolvedEffect': {
+      // Its Kingdom cancels end with it.
+      const key = toolKeyOf(effect.tool);
+      const left = (state.toolCancellations ?? []).filter((c) => c.toolKey !== key);
+      return { state: withToolCancellations(state, left), events: [] };
+    }
     case 'SkillStepEffect':
     case 'FireSkillTriggersEffect':
     case 'EnterStartPhaseEffect':
@@ -516,4 +525,12 @@ export function applyDying(state: GameState, effect: Extract<Effect, { kind: 'Dy
     ],
   };
   return logged({ ...state, pendingResponse });
+}
+
+// Sets the Kingdom cancels; none is stored as no field at all.
+export function withToolCancellations(state: GameState, cancellations: ToolCancellation[]): GameState {
+  if (cancellations.length > 0) return { ...state, toolCancellations: cancellations };
+  if (state.toolCancellations === undefined) return state;
+  const { toolCancellations: _dropped, ...rest } = state;
+  return rest;
 }

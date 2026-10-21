@@ -49,6 +49,15 @@ function lastPlayOf(log: EngineEvent[], instanceId: string): CardPlayed | undefi
   return undefined;
 }
 
+// The last card `seatId` answered a window with.
+function lastAnswerBy(log: EngineEvent[], seatId: string): CardPlayed | undefined {
+  for (let i = log.length - 1; i >= 0; i--) {
+    const event = log[i];
+    if (event.kind === 'CardPlayedEvent' && event.seatId === seatId && event.inResponseTo) return event;
+  }
+  return undefined;
+}
+
 // The seat a held-back effect would befall.
 function affectedSeatOf(effect: Effect): string | undefined {
   if (effect.kind === 'DamageEffect') return effect.damage.target.seatId;
@@ -162,11 +171,14 @@ export function describeResponse(
 
   if (pending.reason?.kind === 'counter-wuxie') {
     const { wuxieSeatId } = pending.reason;
-    const counter = askedCardName(state, tr);
+    const asked = askedCardName(state, tr);
+    // The counter card that seat answered with (Wuxie, or Wuxie Kingdom), else the asked one.
+    const answered = lastAnswerBy(state.log, wuxieSeatId);
+    const counter = answered ? cardName({ definitionId: shownCardId(answered.card) }, tr) : asked;
     return {
       source: tr('response.played', { seat: name(wuxieSeatId), card: counter }),
       latest: null,
-      prompt: tr('response.cancelIt', { card: counter }),
+      prompt: tr('response.cancelIt', { card: asked }),
       outcome: tr('response.stands', { seat: name(wuxieSeatId), card: counter }),
       outcomeForce: forceOf(state.seats.find((s) => s.id === wuxieSeatId)?.kingdom),
     };

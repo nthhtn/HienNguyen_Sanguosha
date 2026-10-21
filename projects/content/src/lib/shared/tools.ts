@@ -2,8 +2,8 @@ import type { ContentRegistry, Effect, GameState, Target, UsedCard } from 'engin
 import { livingSeatOrderFrom } from 'engine';
 import { colourFor } from './suits';
 
-// The cards that cancel a Tool in a Wuxie check.
-export const COUNTER_CARD_IDS = ['wuxie'];
+// The cards that cancel a Tool in a Wuxie check (Wuxie Kingdom only where its own answerCondition allows).
+export const COUNTER_CARD_IDS = ['wuxie', 'wuxie-guo'];
 
 // One ToolOnTargetEffect per target, in the order given, for `tool` (the Tool
 // card as `userSeatId` uses it: itself, a conversion's card, or a skill's card

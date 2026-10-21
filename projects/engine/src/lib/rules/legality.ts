@@ -1,4 +1,4 @@
-import { AbilityOwner, CardInstance, GameState, Target } from '../domain/types';
+import { AbilityOwner, CardInstance, GameState, PendingResponse, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
 import { answersAs } from '../domain/usedCard';
 import { ContentRegistry, Conversion, PlayOptionsContext, TargetPick } from '../registry/types';
@@ -66,7 +66,7 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
     if (pending.allowedActionKinds.includes('RespondAction')) {
       const handZone = state.zones.find((z) => z.id === actingSeat.hand.zoneId);
       for (const card of handZone?.cards ?? []) {
-        if (!pending.allowedCardIds || answersAs(card.definitionId, pending.allowedCardIds, registry)) {
+        if ((!pending.allowedCardIds || answersAs(card.definitionId, pending.allowedCardIds, registry)) && answerConditionMet(state, pending, seatId, card.definitionId, registry)) {
           actions.push({
             kind: 'RespondAction',
             seatId,
@@ -299,7 +299,7 @@ export function conversionActions(state: GameState, seatId: string, registry: Co
   const pending = state.pendingResponse;
   if (pending) {
     if (pending.respondingSeatId !== seatId || !pending.allowedActionKinds.includes('RespondAction')) return [];
-    return answeringConversions(state, seatId, pending.allowedCardIds, registry).map((o): UseConversion => ({
+    return answeringConversions(state, seatId, pending.allowedCardIds, registry).filter((o) => answerConditionMet(state, pending, seatId, o.conversion.as, registry)).map((o): UseConversion => ({
       kind: 'UseConversionAction', seatId, via: via(o), targets: [], pendingResponseId: pending.id,
     }));
   }
@@ -328,4 +328,14 @@ export function hiddenSlots(state: GameState, seatId: string): Array<'main' | 'd
   const generals = state.seats.find((s) => s.id === seatId)?.generals;
   if (!generals) return [];
   return (['main', 'deputy'] as const).filter((slot) => generals[slot].revealed === false);
+}
+
+// Whether a card of `definitionId` (or what it plays as) may answer `pending`
+// for `seatId` under its own answerCondition, if it has one. Without the
+// registry no condition is known, so any card allowed by id may answer.
+export function answerConditionMet(state: GameState, pending: PendingResponse, seatId: string, definitionId: string, registry?: ContentRegistry): boolean {
+  const definition = registry?.cards.get(definitionId);
+  if (definition?.answerCondition && !definition.answerCondition(state, pending, seatId, registry!)) return false;
+  const playsAs = definition?.playsAs ? registry!.cards.get(definition.playsAs) : undefined;
+  return !playsAs?.answerCondition || playsAs.answerCondition(state, pending, seatId, registry!);
 }

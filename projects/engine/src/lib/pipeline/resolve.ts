@@ -12,7 +12,7 @@ import { decisionPending } from '../rules/activeSeat';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer, startWindowOpens } from '../rules/phaseSequence';
-import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, hiddenSlots, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
+import { activeSkillActions, answerConditionMet, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, hiddenSlots, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { ArrangementMadeEvent, CardPlayedEvent, SeatTurnedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
@@ -408,7 +408,7 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
       cardInstanceId,
       card: used,
       targets: options.targets,
-      ...(pending ? { respondingTo: pending.id } : {}),
+      ...(pending ? { respondingTo: pending.id, answering: pending } : {}),
       ...(options.free ? { free: true } : {}),
     },
     ctx.registry
@@ -580,7 +580,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!cardInHand) {
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
-      if (pending.allowedCardIds && !answersAs(cardInHand.definitionId, pending.allowedCardIds, ctx.registry)) {
+      if ((pending.allowedCardIds && !answersAs(cardInHand.definitionId, pending.allowedCardIds, ctx.registry)) || !answerConditionMet(state, pending, action.seatId, cardInHand.definitionId, ctx.registry)) {
         throw new Error(`Card ${cardInHand.definitionId} is not a legal response here`);
       }
       return useCard(state, action.seatId, usedCardOf(cardInHand, ctx.registry), { targets: [], respondTo: pending, counted: false }, ctx);

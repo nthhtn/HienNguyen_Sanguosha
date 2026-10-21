@@ -334,7 +334,7 @@ describe('Alternate wikiCards', () => {
 
   it('names a card Default lacks from ids.json and gives it its English text from texts.en.json', () => {
     const wuxieGuo = byId(wikiCards('tool', 'alternate'), 'wuxie-guo');
-    expect(wuxieGuo).toMatchObject({ name: 'Wuxie Kingdom', inGame: false });
+    expect(wuxieGuo).toMatchObject({ name: 'Wuxie Kingdom', inGame: true });
     expect(wuxieGuo.text).toContain('Kingdom');
     expect(byId(wikiCards('tool', 'alternate'), 'ally-far-attack-near').name).toBe('Ally Far Attack Near');
     for (const id of ['amass', 'ascertain', 'ally-far-attack-near']) expect(byId(wikiCards('tool', 'alternate'), id).text).toBeTruthy();
@@ -343,9 +343,9 @@ describe('Alternate wikiCards', () => {
     for (const id of ['wu-six-swords', 'trident-glaive']) expect(byId(weapons, id).text).toBeTruthy();
   });
 
-  it('is in the game only when the game has behaviour for the card: five are not', () => {
+  it('is in the game only when the game has behaviour for the card: four are not', () => {
     const notInGame = all('alternate').filter((c) => !c.inGame).map((c) => c.id).sort();
-    expect(notInGame).toEqual(['ally-far-attack-near', 'amass', 'ascertain', 'fire-fan', 'wuxie-guo']);
+    expect(notInGame).toEqual(['ally-far-attack-near', 'amass', 'ascertain', 'fire-fan']);
   });
 
   it('shows mounts as Default does', () => {
