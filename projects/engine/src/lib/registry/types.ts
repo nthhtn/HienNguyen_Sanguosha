@@ -159,6 +159,8 @@ export interface AbilityModifiers {
   untargetableBy?: string[];
   // Added to the owner's distance to every other seat (Horsemanship: -1); never below 1.
   distanceToOthers?: number;
+  // The bonus this ability's owner gives to `seatId`'s attack range (Six Swords of Wu: +1 to the owner's Kingdom).
+  attackRangeBonusTo?(state: GameState, ownerSeatId: string, seatId: string): number;
   // The owner's Tools ignore distance (Wondrous Talent: Steal, Starvation).
   toolsIgnoreDistance?: boolean;
   // Card ids that can't target the owner while its hand is empty (Empty City: Sha, Duel).

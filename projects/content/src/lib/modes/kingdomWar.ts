@@ -16,6 +16,7 @@ import type {
   RngState,
 } from 'engine';
 import { buildDeck, drawTop, shuffle } from 'engine';
+import { alternateCardData } from '../alternateCards';
 import { deckFor } from '../decks';
 import type { DeckDefinition } from '../decks';
 import { judgmentPhaseTrigger } from '../shared/delayed';
@@ -66,6 +67,8 @@ function buildDeckSpec(registry: ContentRegistry, deck: DeckDefinition) {
     const entry = entries.get(cardId);
     // The Default deck holds every playable card; other decks may hold fewer.
     if (!entry && deck.id !== 'default') return [];
+    // A card only the Alternate deck has is no part of Default.
+    if (!entry && alternateCardData(cardId)) return [];
     // A card with no printings would silently never be dealt.
     if (!entry || entry.printings.length === 0) throw new Error(`Card "${cardId}" has no printings in the data, so it cannot be put in the deck`);
     return entry.printings.map(({ suit, rank }) => ({ definitionId: cardId, suit, rank }));

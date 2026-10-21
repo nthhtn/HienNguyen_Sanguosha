@@ -124,8 +124,9 @@ describe('Kingdom War setup and deal', () => {
 
     it('deals the Alternate deck without the cards the game cannot play yet', () => {
       const cards = dealt({ deck: 'alternate' });
-      expect(cards).toHaveLength(98);
-      for (const id of ['wuxie-guo', 'amass', 'ascertain', 'ally-far-attack-near', 'wu-six-swords', 'trident-glaive', 'fire-fan']) {
+      expect(cards.filter((c) => c.startsWith('wu-six-swords '))).toHaveLength(1);
+      expect(cards).toHaveLength(99);
+      for (const id of ['wuxie-guo', 'amass', 'ascertain', 'ally-far-attack-near', 'trident-glaive', 'fire-fan']) {
         expect(cards.filter((c) => c.startsWith(`${id} `))).toEqual([]);
       }
       expect(cards.filter((c) => c.startsWith('sha '))).toHaveLength(21);
@@ -151,7 +152,7 @@ describe('Kingdom War setup and deal', () => {
         .map((c) => `${c.definitionId} ${c.suit} ${c.rank}`)
         .sort();
     const printed = [...registry.cards.keys()]
-      .filter((id) => !registry.cards.get(id)!.outOfDeck)
+      .filter((id) => !registry.cards.get(id)!.outOfDeck && cardsData[id])
       .flatMap((id) => cardsData[id].printings!.filter((p) => !p.expansion).map((p) => `${id} ${p.suit} ${p.rank}`))
       .sort();
     expect(deckOf(2)).toEqual(printed);

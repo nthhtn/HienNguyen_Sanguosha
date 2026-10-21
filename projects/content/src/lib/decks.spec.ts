@@ -1,4 +1,5 @@
 import { buildContentRegistry } from './registry';
+import { alternateCardData } from './alternateCards';
 import { DECK_IDS, deckFor, deckIdOf, undealtCardIds } from './decks';
 
 describe('decks', () => {
@@ -25,13 +26,13 @@ describe('decks', () => {
 
   it('lists every playable registry card in the Default deck', () => {
     const listed = new Set(deckFor('default').entries.map((e) => e.cardId));
-    const missing = [...registry.cards.values()].filter((c) => !c.outOfDeck && !listed.has(c.id)).map((c) => c.id);
+    const missing = [...registry.cards.values()].filter((c) => !c.outOfDeck && !alternateCardData(c.id) && !listed.has(c.id)).map((c) => c.id);
     expect(missing).toEqual([]);
   });
 
   it('names the Alternate cards the game cannot play yet', () => {
     expect(undealtCardIds(deckFor('alternate'), registry).sort()).toEqual(
-      ['ally-far-attack-near', 'amass', 'ascertain', 'fire-fan', 'trident-glaive', 'wu-six-swords', 'wuxie-guo'].sort()
+      ['ally-far-attack-near', 'amass', 'ascertain', 'fire-fan', 'trident-glaive', 'wuxie-guo'].sort()
     );
   });
 

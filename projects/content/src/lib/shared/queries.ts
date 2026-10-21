@@ -42,7 +42,12 @@ export function seatDistance(state: GameState, fromSeatId: string, toSeatId: str
 
 // How far the seat can attack: its weapon's reach, or 1 unarmed.
 export function attackRange(state: GameState, seatId: string, registry: ContentRegistry): number {
-  return equippedSlot(state, seatId, 'weapon', registry)?.weaponRange ?? 1;
+  const base = equippedSlot(state, seatId, 'weapon', registry)?.weaponRange ?? 1;
+  // Auras: every living seat's abilities may add to this seat's range.
+  const bonus = state.seats
+    .filter((owner) => !owner.eliminated)
+    .reduce((sum, owner) => sum + activeAbilities(state, owner.id, registry).reduce((n, a) => n + (a.modifiers?.attackRangeBonusTo?.(state, owner.id, seatId) ?? 0), 0), 0);
+  return base + bonus;
 }
 
 // Turn flags that change the turn owner's Sha for the rest of the turn (set by
