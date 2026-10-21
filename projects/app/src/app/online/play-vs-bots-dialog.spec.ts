@@ -28,6 +28,13 @@ describe('PlayVsBotsDialog', () => {
     return { fixture, component: fixture.componentInstance, el: fixture.nativeElement as HTMLElement };
   }
 
+
+  const pickAlternate = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+    const radio = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent!.trim() === 'Alternate')!;
+    (radio.querySelector('input') as HTMLInputElement).click();
+    fixture.detectChanges();
+  };
+
   beforeEach(() => {
     rooms.createSolo.mockReset();
     rooms.refresh.mockReset().mockResolvedValue(undefined);
@@ -93,5 +100,14 @@ describe('PlayVsBotsDialog', () => {
     await component.submit();
     expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: {}, replace: true });
     expect(dialogRef.close).toHaveBeenLastCalledWith('r-new');
+  });
+
+  it('offers the deck and sends the chosen one', async () => {
+    rooms.createSolo.mockResolvedValue('r-solo');
+    const { fixture, component, el } = await create();
+    expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Default', 'Alternate']);
+    pickAlternate(fixture, el);
+    await component.submit();
+    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: { deck: 'alternate' } });
   });
 });

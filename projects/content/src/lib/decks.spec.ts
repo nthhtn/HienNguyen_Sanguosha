@@ -1,5 +1,5 @@
 import { buildContentRegistry } from './registry';
-import { DECK_IDS, deckFor, undealtCardIds } from './decks';
+import { DECK_IDS, deckFor, deckIdOf, undealtCardIds } from './decks';
 
 describe('decks', () => {
   const registry = buildContentRegistry();
@@ -10,6 +10,13 @@ describe('decks', () => {
 
   it('treats no deck as Default', () => {
     expect(deckFor(undefined)).toEqual(deckFor('default'));
+  });
+
+  it('reads a deck id from loosely typed rules, falling back to Default', () => {
+    expect(deckIdOf('alternate')).toBe('alternate');
+    expect(deckIdOf('default')).toBe('default');
+    expect(deckIdOf(undefined)).toBe('default');
+    expect(deckIdOf('bogus')).toBe('default');
   });
 
   it('refuses a deck it does not know', () => {

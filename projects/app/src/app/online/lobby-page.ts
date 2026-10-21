@@ -6,6 +6,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { deckIdOf } from 'content';
+import type { RoomRules, RoomSnapshot } from 'protocol';
+import type { DeckId } from 'content';
+import { DeckPicker } from '../deck-picker';
 import { I18n } from '../i18n/i18n.service';
 import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
@@ -21,7 +25,7 @@ import { SocketService } from './socket.service';
 // A room over its socket: the lobby (members, host controls, Start Game, Leave Room), the board while a game runs, and how the last game ended.
 @Component({
   selector: 'app-lobby-page',
-  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat, TPipe, TMsgPipe],
+  imports: [DeckPicker, RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat, TPipe, TMsgPipe],
   providers: [SocketService, LobbyService, ChatService, RemoteGameService, RemoteDecisionClock],
   styleUrl: './online-page.css',
   template: `
@@ -95,6 +99,7 @@ import { SocketService } from './socket.service';
                         }
                       </mat-button-toggle-group>
                     </div>
+                    <app-deck-picker [value]="deckOf(room.rules.deck)" [disabled]="!lobby.canAct()" (valueChange)="setDeck($event)" />
                     @if (room.seatCount >= firstRevealMinSeats) {
                       <mat-checkbox class="first-reveal" [disabled]="!lobby.canAct()" [checked]="!!room.rules.firstRevealDraw" (change)="setFirstReveal($event.checked)">
                         {{ 'setup.firstReveal' | t }}
@@ -181,6 +186,7 @@ export class LobbyPage {
   protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
   private readonly seats = viewChild(MatButtonToggleGroup);
   private readonly firstReveal = viewChild(MatCheckbox);
+  private readonly deckPicker = viewChild(DeckPicker);
 
   // From the member count (the server refuses fewer seats) up to the limit.
   protected readonly seatOptions = computed(() => {
@@ -202,7 +208,8 @@ export class LobbyPage {
   protected readonly rulesSummary = computed(() => {
     const room = this.lobby.room();
     if (!room) return '';
-    const seats = this.i18n.t('lobby.seats', { n: room.seatCount });
+    const deck = this.i18n.t(room.rules.deck === 'alternate' ? 'setup.deck.alternate' : 'setup.deck.default');
+    const seats = `${this.i18n.t('lobby.seats', { n: room.seatCount })} · ${this.i18n.t('lobby.deckSummary', { deck })}`;
     if (room.seatCount < FIRST_REVEAL_MIN_SEATS) return seats;
     return this.i18n.t('lobby.rulesSummary', { seats, state: this.i18n.t(room.rules.firstRevealDraw ? 'lobby.on' : 'lobby.off') });
   });
@@ -211,14 +218,27 @@ export class LobbyPage {
     this.lobby.open(inject(ActivatedRoute).snapshot.paramMap.get('id') ?? '');
   }
 
+  protected readonly deckOf = deckIdOf;
+
   protected setSeats(seatCount: number): void {
     const room = this.lobby.room();
-    if (room) void this.lobby.setRules(seatCount, room.rules).then((ok) => ok || this.restoreControls());
+    if (room) void this.lobby.setRules(seatCount, this.rulesOf(room)).then((ok) => ok || this.restoreControls());
   }
 
   protected setFirstReveal(on: boolean): void {
     const room = this.lobby.room();
-    if (room) void this.lobby.setRules(room.seatCount, { ...room.rules, firstRevealDraw: on }).then((ok) => ok || this.restoreControls());
+    if (room) void this.lobby.setRules(room.seatCount, { ...this.rulesOf(room), firstRevealDraw: on }).then((ok) => ok || this.restoreControls());
+  }
+
+  protected setDeck(deck: DeckId): void {
+    const room = this.lobby.room();
+    if (room) void this.lobby.setRules(room.seatCount, { ...this.rulesOf(room), deck }).then((ok) => ok || this.restoreControls());
+  }
+
+  // The rules the host can change, in the shape the server takes them.
+  private rulesOf(room: RoomSnapshot): RoomRules {
+    const { firstRevealDraw, deck } = room.rules;
+    return { ...(firstRevealDraw === undefined ? {} : { firstRevealDraw }), ...(deck === undefined ? {} : { deck: deckIdOf(deck) }) };
   }
 
   // A refused change leaves the snapshot as it was, so the bindings never
@@ -230,5 +250,6 @@ export class LobbyPage {
     if (seats) seats.value = room.seatCount;
     const firstReveal = this.firstReveal();
     if (firstReveal) firstReveal.checked = !!room.rules.firstRevealDraw;
+    this.deckPicker()?.value.set(deckIdOf(room.rules.deck));
   }
 }

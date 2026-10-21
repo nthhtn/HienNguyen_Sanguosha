@@ -37,6 +37,12 @@ const DECKS: Record<DeckId, () => DeckDefinition> = {
   alternate: () => alternateDeck as DeckDefinition,
 };
 
+// The deck id in rules, which the engine types as a plain string; anything that
+// is not a known deck reads as Default.
+export function deckIdOf(id: string | undefined): DeckId {
+  return (DECK_IDS as readonly string[]).includes(id ?? '') ? (id as DeckId) : 'default';
+}
+
 // No deck chosen means Default; a deck the game does not know is an error.
 export function deckFor(deckId: string | undefined): DeckDefinition {
   const id = deckId ?? 'default';

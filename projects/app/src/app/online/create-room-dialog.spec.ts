@@ -22,6 +22,13 @@ describe('CreateRoomDialog', () => {
     return { fixture, component: fixture.componentInstance, el: fixture.nativeElement as HTMLElement };
   }
 
+
+  const pickAlternate = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+    const radio = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent!.trim() === 'Alternate')!;
+    (radio.querySelector('input') as HTMLInputElement).click();
+    fixture.detectChanges();
+  };
+
   beforeEach(() => {
     rooms.create.mockReset();
     dialogRef.close.mockReset();
@@ -66,5 +73,25 @@ describe('CreateRoomDialog', () => {
     fixture.detectChanges();
     expect(dialogRef.close).not.toHaveBeenCalled();
     expect(el.querySelector('.error')?.textContent).toContain("You're already in another room. Leave it first");
+  });
+
+  it('offers the deck at every seat count, with Default chosen', async () => {
+    const { fixture, component, el } = await create();
+    expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Default', 'Alternate']);
+    component.seatCount.set(6);
+    fixture.detectChanges();
+    expect(el.querySelectorAll('.deck mat-radio-button')).toHaveLength(2);
+  });
+
+  it('sends the chosen deck, beside First Reveal Bonus from 5 seats', async () => {
+    rooms.create.mockResolvedValue('r-new');
+    const { fixture, component, el } = await create();
+    pickAlternate(fixture, el);
+    await component.submit();
+    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 4, rules: { deck: 'alternate' }, displayName: 'Ann' });
+    component.seatCount.set(6);
+    component.firstRevealDraw.set(false);
+    await component.submit();
+    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 6, rules: { deck: 'alternate', firstRevealDraw: false }, displayName: 'Ann' });
   });
 });

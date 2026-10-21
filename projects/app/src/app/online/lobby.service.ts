@@ -1,7 +1,7 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import type { ErrorMessage, RoomRequest, RoomSnapshot, ServerMessage } from 'protocol';
+import type { ErrorMessage, RoomRequest, RoomRules, RoomSnapshot, ServerMessage } from 'protocol';
 import { ApiError, errorMsg } from '../auth/auth.service';
 import { msg, type Msg } from '../i18n/msg';
 import type { MessageKey } from '../i18n/messages';
@@ -74,7 +74,7 @@ export class LobbyService {
     return this.run({ type: 'lobby.makeHost', playerId });
   }
 
-  setRules(seatCount: number, rules: RoomSnapshot['rules']): Promise<boolean> {
+  setRules(seatCount: number, rules: RoomRules): Promise<boolean> {
     return this.run({ type: 'lobby.setRules', seatCount, rules });
   }
 
