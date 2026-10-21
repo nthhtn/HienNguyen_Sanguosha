@@ -3,6 +3,11 @@ import type { GameRules } from 'engine';
 import type { LastGame } from './game';
 import type { CreateRoomBodySchema, JoinRoomBodySchema } from './schemas/rooms';
 
+// The card distributions a room can be dealt from. The content package holds the
+// same list; the server has a test that the two agree.
+export const DECK_IDS = ['default', 'alternate'] as const;
+export type DeckId = (typeof DECK_IDS)[number];
+
 export type RoomVisibility = 'open' | 'solo';
 export type RoomStatus = 'lobby' | 'playing' | 'closed';
 export type MemberKind = 'human' | 'bot';
