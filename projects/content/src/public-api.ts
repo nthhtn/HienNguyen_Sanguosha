@@ -6,6 +6,8 @@ export * from './lib/modes/kingdomWar';
 export * from './lib/decks';
 export * from './lib/assets';
 export * from './lib/alternateCards';
+export * from './lib/alternateGenerals';
+export * from './lib/wikiAlternateGenerals';
 export * from './lib/display';
 export * from './lib/judgmentOutcome';
 export { seatGender } from './lib/shared/gender';
