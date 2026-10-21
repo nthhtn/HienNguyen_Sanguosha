@@ -34,6 +34,7 @@ export const ascertainCard: CardDefinition = {
   id: 'ascertain',
   name: 'Ascertain',
   category: 'tool',
+  recastable: true,
   legalPlayTargets: (state, ctx, registry) => {
     const recast = ctx.via ? [] : [[]];
     const colour = playColour(state, ctx, registry);

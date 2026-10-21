@@ -61,6 +61,8 @@ export interface CardDefinition {
   playsAs?: string;
   // The damage nature the card carries when used as itself (UsedCard.nature).
   nature?: 'fire' | 'thunder';
+  // Played with no target, the card is a Recast: discarded, and its user draws 1 (Chains, Ascertain).
+  recastable?: true;
   play(state: GameState, ctx: PlayContext, registry: ContentRegistry): unknown[];
   // When present, the card (in hand, or made by a conversion) answers a window
   // that allows it only while this holds (Wuxie Kingdom: not against a seat

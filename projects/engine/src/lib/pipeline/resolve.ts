@@ -282,6 +282,7 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext, dec
   const current = rewritten.effect;
 
   // A card used by an effect goes through useCard, which logs and queues its own follow-ups.
+  // A skill-driven `answering` use skips the card's answerCondition (nothing uses that path today).
   if (current.kind === 'UseCardEffect') {
     const counted = !!current.counted;
     const used = useCard(

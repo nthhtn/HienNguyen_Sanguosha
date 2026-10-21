@@ -165,9 +165,20 @@ describe('describeChoice for a skill’s pick or give', () => {
   });
 });
 
+describe('Trident Glaive’s seat pick', () => {
+  it('asks to choose a seat, with a Choose button, not a card to discard', () => {
+    const glaive: PendingChoice = {
+      id: 'trident-glaive-seat-0-3', seatId: 'seat-0', verb: 'pick', options: [{ id: 'seat-2', shows: { kind: 'seat', seatId: 'seat-2' }, effects: [] }],
+      reason: { kind: 'ability', owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'tg' }, abilityId: 'trident-glaive', targetSeatId: 'seat-1' },
+    };
+    expect(describeChoice(state(glaive), 'seat-0')).toEqual({ title: 'Trident Glaive', prompt: 'Choose a seat', confirmLabel: 'Choose' });
+  });
+});
+
 describe('Ascertain’s secret look', () => {
+  let stageId = 'ascertain-pick-b1-seat-1-0';
   const look = (options: ChoiceOption[]): PendingChoice => ({
-    id: 'a', seatId: 'seat-0', verb: 'pick', secret: true, options,
+    id: stageId, seatId: 'seat-0', verb: 'pick', secret: true, options,
     reason: { kind: 'choice', card: { as: 'ascertain', colour: 'black', physical: [] }, userSeatId: 'seat-0', targetSeatId: 'seat-1' },
   });
   const label = (id: string, text: string): ChoiceOption => ({ id, shows: { kind: 'label', text }, effects: [] });
@@ -180,6 +191,13 @@ describe('Ascertain’s secret look', () => {
     expect(titled(look([{ id: 'b1', shows: { kind: 'card', card: peach }, effects: [] }, done]))!.prompt).toBe("These are Seat 1's hand cards");
     expect(titled(look([done]))!.prompt).toBe('Seat 1 has no hand cards');
     expect(titled(look([{ id: 'general', shows: { kind: 'general', generalId: 'cao-cao' }, effects: [] }, done]))!.prompt).toBe("This is Seat 1's hidden General");
+  });
+
+  it('closes the look stage with Done, and the pick stage with Choose', () => {
+    stageId = 'ascertain-look-b1-seat-1-1';
+    expect(describeChoice(state(look([done])), 'seat-0')!.confirmLabel).toBe('Done');
+    stageId = 'ascertain-pick-b1-seat-1-0';
+    expect(describeChoice(state(look([label('main', 'Main General'), label('hand', 'Hand Cards')])), 'seat-0')!.confirmLabel).toBe('Choose');
   });
 
   it('labels the options, and shows a General by name with its art', () => {

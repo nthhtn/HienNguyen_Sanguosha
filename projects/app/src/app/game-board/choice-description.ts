@@ -129,7 +129,9 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
         : choice.options.every((o) => o.id === 'done')
           ? tr('choice.look.emptyHand', { seat })
           : tr('choice.look.pick', { seat });
-    return { title: cardName(card.as, tr), prompt, confirmLabel: tr('choice.confirm.choose') };
+    // Its second stage (the choice id `ascertain-look-…`) only shows what was picked, closed with Done.
+    const looking = choice.id.startsWith('ascertain-look-');
+    return { title: cardName(card.as, tr), prompt, confirmLabel: tr(looking ? 'choice.label.done' : 'choice.confirm.choose') };
   }
   // Choosing among your own cards (Gender Swords): discard one, or let the user draw.
   if (targetSeatId === viewerSeatId && choice.options.some((o) => o.shows.kind === 'decline')) {

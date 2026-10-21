@@ -92,6 +92,11 @@ describe('describeSelection', () => {
     expect(describe2(sel)).toMatchObject({ title: 'Bestowed Rouse', prompt: 'Choose drawn cards to give away', confirmLabel: 'Give', cancelLabel: 'Keep the Rest' });
   });
 
+  it('Amass: the discard window is titled with the card, not the generic Choose', () => {
+    const sel = selection('amass', { reason: { kind: 'card-effect', card: { as: 'amass', colour: 'black', physical: [] }, userSeatId: 'seat-0' } });
+    expect(describe2(sel)!.title).toBe('Amass');
+  });
+
   it('Axe: choose 2 cards to discard, shown face up, with Cancel', () => {
     expect(describe2(selection('axe', { eligibleIds: ['p1', 's2'] }))).toEqual({
       title: 'Axe', prompt: 'Choose 2 cards to discard', confirmLabel: 'Discard', cancelLabel: 'Cancel', min: 2, max: 2,

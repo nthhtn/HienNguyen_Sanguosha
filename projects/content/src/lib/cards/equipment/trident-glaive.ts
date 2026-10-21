@@ -45,7 +45,7 @@ export const tridentGlaiveCard = makeEquipmentCard('trident-glaive', 'Trident Gl
               choice: {
                 id: `trident-glaive-${owner!.seatId}-${state.log.length}`,
                 seatId: owner!.seatId,
-                reason: { kind: 'choice', card: used, userSeatId: owner!.seatId, targetSeatId },
+                reason: { kind: 'ability', owner: owner!, abilityId: 'trident-glaive', targetSeatId },
                 verb: 'pick',
                 options: seatOptions(neighboursOf(state, targetSeatId, registry!), (id) => [
                   {

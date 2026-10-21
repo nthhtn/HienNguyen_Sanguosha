@@ -148,3 +148,13 @@ describe('Ascertain’s secret look in Vietnamese', () => {
     expect(describeChoice(state(look([{ id: 'general', shows: { kind: 'general', generalId: 'cao-cao' }, effects: [] }, label('done', 'Done')])), 'seat-0', viTr)!.prompt).toBe('Đây là Tướng úp của Người chơi 1');
   });
 });
+
+describe('Trident Glaive’s seat pick in Vietnamese', () => {
+  it('asks to choose a seat, with a Choose button', () => {
+    const glaive: PendingChoice = {
+      id: 'tg', seatId: 'seat-0', verb: 'pick', options: [seatOption],
+      reason: { kind: 'ability', owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'tg' }, abilityId: 'trident-glaive', targetSeatId: 'seat-1' },
+    };
+    expect(describeChoice(state(glaive), 'seat-0', makeTranslator(vi, 'vi'))).toMatchObject({ prompt: 'Chọn một người chơi', confirmLabel: 'Chọn' });
+  });
+});

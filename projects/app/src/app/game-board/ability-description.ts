@@ -131,7 +131,7 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
   const text = (step ? stepSelectionText(step, localeOf(tr), skillId) : null) ?? (selection.reason.kind === 'ability' ? selectionText(selection.reason.abilityId, localeOf(tr)) : null);
   const reason = selection.reason;
   return {
-    title: reason.kind === 'ability' ? abilityDisplayName(reason.abilityId, tr) : reason.kind === 'choice' ? cardName(reason.card.as, tr) : tr('selection.title'),
+    title: reason.kind === 'ability' ? abilityDisplayName(reason.abilityId, tr) : reason.kind === 'choice' || reason.kind === 'card-effect' ? cardName(reason.card.as, tr) : tr('selection.title'),
     prompt: text?.prompt ?? selectionPrompt(state, selection, items, tr),
     confirmLabel: text?.confirm ?? tr(CONFIRM_KEYS[selection.then.kind]),
     cancelLabel: text?.cancel ?? tr('selection.cancel'),

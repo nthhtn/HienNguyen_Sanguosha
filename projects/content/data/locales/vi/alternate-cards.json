@@ -1,7 +1,7 @@
 {
   "wuxie-guo": {
     "name": "Vô Giải Khả Kích - Quốc",
-    "text": "Trước khi một Cẩm nang có hiệu lực với một người chơi, vô hiệu hóa hiệu ứng của nó với mọi người chơi cùng thế lực với người đó; hoặc vô hiệu hóa hiệu ứng của một Vô Giải Khả Kích khác."
+    "text": "Trước khi một Cẩm nang có hiệu lực với một người chơi có Tướng đã lật ngửa, vô hiệu hóa hiệu ứng của nó với mọi người chơi cùng thế lực với người đó; hoặc vô hiệu hóa hiệu ứng của một Vô Giải Khả Kích khác."
   },
   "amass": {
     "name": "Dĩ Dật Đãi Lao",
@@ -21,6 +21,6 @@
   },
   "wu-six-swords": {
     "name": "Ngô Lục Kiếm",
-    "text": "Kỹ năng khóa: tầm đánh của mọi người chơi khác cùng thế lực với bạn tăng thêm 1."
+    "text": "Kỹ năng khóa: tầm đánh của bạn và mọi người chơi khác cùng thế lực với bạn tăng thêm 1."
   }
 }

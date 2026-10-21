@@ -71,6 +71,12 @@ let natureRegistry: ContentRegistry | undefined;
 
 // The element an elemental card carries (Fire Attack: fire, Lightning Attack:
 // thunder), for the UI to mark it; null for any other card.
+// Whether the card may be Recast (CardDefinition.recastable), for the app's labels, which hold no registry.
+export function isRecastable(id: string): boolean {
+  natureRegistry ??= buildContentRegistry();
+  return natureRegistry.cards.get(id)?.recastable === true;
+}
+
 export function cardNature(id: string): 'fire' | 'thunder' | null {
   natureRegistry ??= buildContentRegistry();
   return natureRegistry.cards.get(id)?.nature ?? null;

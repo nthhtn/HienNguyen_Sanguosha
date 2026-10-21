@@ -48,7 +48,9 @@ export function usedCardKey(card: UsedCard): string {
 }
 
 // One use of a Tool, for Kingdom cancels (GameState.toolCancellations): what
-// it is used as and its first physical card ('virtual' for none).
+// it is used as and its first physical card ('virtual' for none). Tools with
+// no physical card share one key per `as`, so two nested virtual multi-target
+// Tools of the same `as` would share Kingdom cancels (cannot occur with today's content).
 export function toolKeyOf(tool: UsedCard): string {
   return `${tool.as}-${tool.physical[0]?.instanceId ?? 'virtual'}`;
 }

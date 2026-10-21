@@ -38,6 +38,7 @@ const TOOL_VOICES: Partial<Record<string, Voice>> = {
   barbarians: 'barbarians',
   steal: 'steal',
   wuxie: 'wuxie',
+  'wuxie-guo': 'wuxie',
   starvation: 'starvation',
   coerce: 'coerce',
   wine: 'wine',

@@ -154,6 +154,15 @@ describe('describeResponse: Wuxie Kongjie checks', () => {
     });
   });
 
+  it('asks for the Wuxie Kingdom a seat holds when it holds no plain Wuxie', () => {
+    const guo: CardInstance = { instanceId: 'guo-2', definitionId: 'wuxie-guo', suit: 'club', rank: 13 };
+    const plain: CardInstance = { instanceId: 'wx-1', definitionId: 'wuxie', suit: 'spade', rank: 11 };
+    const pending = { ...wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat('seat-0') }), allowedCardIds: ['wuxie', 'wuxie-guo'] };
+    const held = (cards: CardInstance[]): GameState => ({ ...state([], pending), zones: [{ id: 'seat-0:hand', kind: 'hand', ownerSeatId: 'seat-0', cards }] });
+    expect(describeResponse(held([guo]), 'seat-0')!.prompt).toBe('Play Wuxie Kingdom to cancel it?');
+    expect(describeResponse(held([plain, guo]), 'seat-0')!.prompt).toBe('Play Wuxie to cancel it?');
+  });
+
   it('names the counter card the seat actually played, such as Wuxie Kingdom', () => {
     const guo: CardInstance = { instanceId: 'guo-1', definitionId: 'wuxie-guo', suit: 'club', rank: 13 };
     const log: EngineEvent[] = [{ kind: 'CardPlayedEvent', seatId: 'seat-2', card: usedCardOf(guo), targets: [], inResponseTo: { seatId: 'seat-1', targetSeatId: 'seat-0' } }];

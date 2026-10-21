@@ -2,6 +2,11 @@ import { GENERAL_SKILLS } from './generals';
 import { buildContentRegistry } from './registry';
 
 describe('buildContentRegistry', () => {
+  it('flags exactly Chains and Ascertain as recastable', () => {
+    const registry = buildContentRegistry();
+    expect([...registry.cards.values()].filter((c) => c.recastable).map((c) => c.id).sort()).toEqual(['ascertain', 'chains']);
+  });
+
   it('registers the fifteen playable cards', () => {
     const registry = buildContentRegistry();
     expect([...registry.cards.keys()].sort()).toEqual(
