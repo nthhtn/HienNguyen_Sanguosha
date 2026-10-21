@@ -1,5 +1,6 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
+import { alternateCardData } from './alternateCards';
 import viCards from '../../data/locales/vi/cards.json';
 import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
 import viGenerals from '../../data/locales/vi/generals.json';
@@ -71,7 +72,7 @@ export interface CardDisplayData {
 
 // Presentation-facing view of a card's data file (rules text etc.).
 export function cardDisplayData(id: string, locale = 'en'): CardDisplayData | null {
-  if (!Object.prototype.hasOwnProperty.call(cardsData, id)) return null;
+  if (!Object.prototype.hasOwnProperty.call(cardsData, id)) return alternateDisplayData(id, locale);
   const data = cardsData[id];
   const translated = lookup(cardTranslations(locale), id);
   return {
@@ -83,6 +84,20 @@ export function cardDisplayData(id: string, locale = 'en'): CardDisplayData | nu
     text: translated?.text ?? data.text ?? null,
   };
 }
+function alternateDisplayData(id: string, locale: string): CardDisplayData | null {
+  const data = alternateCardData(id);
+  if (!data) return null;
+  const translated = alternateCardTranslation(id, locale);
+  return {
+    name: translated?.name ?? data.name,
+    category: data.category,
+    subtype: data.subtype,
+    range: data.range,
+    mount: null,
+    text: translated?.text ?? data.text,
+  };
+}
+
 // What an optional ability does, for its ask, in the game's own terms.
 // '{target}' stands for the seat it is aimed at.
 const ABILITY_HINTS: Record<string, string> = {

@@ -1,4 +1,5 @@
 import { abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, generalDisplayData, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
+import { alternateCardIds } from './alternateCards';
 
 describe('generalDisplayData', () => {
   it('returns name, title and skill name/text for a known general', () => {
@@ -119,5 +120,33 @@ describe('competeOutcomeText', () => {
   });
   it('has nothing to say for an ability that does not compete', () => {
     expect(competeOutcomeText('sha', true, names)).toBeNull();
+  });
+});
+
+describe('Alternate-only cards', () => {
+  it('lists the six ids', () => {
+    expect([...alternateCardIds()].sort()).toEqual(['ally-far-attack-near', 'amass', 'ascertain', 'trident-glaive', 'wu-six-swords', 'wuxie-guo']);
+  });
+
+  it('shows English name and text', () => {
+    const amass = cardDisplayData('amass')!;
+    expect(amass.name).toBe('Amass');
+    expect(amass.text).toBeTruthy();
+    expect(cardDisplayData('wuxie-guo')!.name).toBe('Wuxie Kingdom');
+  });
+
+  it('shows Vietnamese', () => {
+    expect(cardDisplayData('wu-six-swords', 'vi')!.name).toBe('Ngô Lục Kiếm');
+  });
+
+  it('knows a weapon range', () => {
+    const glaive = cardDisplayData('trident-glaive')!;
+    expect(glaive.range).toBe(3);
+    expect(glaive.subtype).toBe('weapon');
+    expect(glaive.category).toBe('equipment');
+  });
+
+  it('is null for an unknown id', () => {
+    expect(cardDisplayData('nope')).toBeNull();
   });
 });
