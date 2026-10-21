@@ -6,6 +6,7 @@ See docs/superpowers/specs/2026-10-21-alternate-generals-crawl-design.md.
 Writes into projects/content/data/decks/alternate/:
 
   generals/<force>/<id>.json   one record per General (skills, partners, source)
+  generals.json                {"generals": [...]}: the same records in index order, for the content package
   generals-manual.json         (hand-kept, not written) by blog slug: a Default counterpart
                                ("defaultId") or the Kingdom, HP and gender the pages lack
   diff-vs-default.md           a marked Generals block is added to the card report
@@ -497,6 +498,9 @@ def main(argv=None):
         path = out / rec["force"] / f"{rec['id']}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(rec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    aggregate = {"generals": [rec for _, _, rec in records]}
+    (Path(args.out) / "generals.json").write_text(json.dumps(aggregate, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     matches = {rec["id"]: resolve_match(entry, parsed, default, manual) for entry, parsed, rec in records}
     block = generals_report([rec for _, _, rec in records], matches, default, unparsed)

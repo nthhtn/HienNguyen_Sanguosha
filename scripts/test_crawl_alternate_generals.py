@@ -338,12 +338,23 @@ class Main(unittest.TestCase):
             self.run_main(tmp)
             self.assertEqual(report, (out / "diff-vs-default.md").read_text(encoding="utf-8"))
 
-    def test_rerun_is_byte_identical(self):
+    def test_main_writes_an_aggregate_in_index_order(self):
         with tempfile.TemporaryDirectory() as tmp:
             _, out = self.run_main(tmp)
-            first = {p: p.read_bytes() for p in sorted(out.glob("generals/*/*.json"))}
+            aggregate = json.loads((out / "generals.json").read_text(encoding="utf-8"))
+            self.assertEqual([g["id"] for g in aggregate["generals"]], ["liu-bei", "liu-shan", "sima-yi"])
+            for g in aggregate["generals"]:
+                single = json.loads((out / f"generals/{g['force']}/{g['id']}.json").read_text(encoding="utf-8"))
+                self.assertEqual(g, single)
+
+    def test_rerun_is_byte_identical(self):
+        def snapshot(out):
+            return {p: p.read_bytes() for p in sorted([*out.glob("generals/*/*.json"), out / "generals.json"])}
+        with tempfile.TemporaryDirectory() as tmp:
+            _, out = self.run_main(tmp)
+            first = snapshot(out)
             self.run_main(tmp)
-            self.assertEqual(first, {p: p.read_bytes() for p in sorted(out.glob("generals/*/*.json"))})
+            self.assertEqual(first, snapshot(out))
 
 
 def skill(name, zh, text):
