@@ -50,8 +50,8 @@ describe('Wiki Cards in Vietnamese', () => {
   it('the Alternate labels read in Vietnamese', async () => {
     const tools = await open('/wiki/alternate/tools');
     expect(text(tools.querySelector('.deck-line'))).toBe('Bộ bài: Thay thế');
-    const amass = entry(tools, 'amass');
-    expect(text(amass.querySelector('.badge'))).toBe('Chưa có trong trò chơi');
+    const ascertain = entry(tools, 'ascertain');
+    expect(text(ascertain.querySelector('.badge'))).toBe('Chưa có trong trò chơi');
   });
 
   it('the Alternate-only weapons read in Vietnamese', async () => {

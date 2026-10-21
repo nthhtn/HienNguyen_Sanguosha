@@ -127,8 +127,9 @@ describe('Kingdom War setup and deal', () => {
       expect(cards.filter((c) => c.startsWith('wu-six-swords '))).toHaveLength(1);
       expect(cards.filter((c) => c.startsWith('trident-glaive '))).toHaveLength(1);
       expect(cards.filter((c) => c.startsWith('wuxie-guo '))).toHaveLength(2);
-      expect(cards).toHaveLength(102);
-      for (const id of ['amass', 'ascertain', 'ally-far-attack-near', 'fire-fan']) {
+      expect(cards).toHaveLength(104);
+      expect(cards.filter((c) => c.startsWith('amass '))).toHaveLength(2);
+      for (const id of ['ascertain', 'ally-far-attack-near', 'fire-fan']) {
         expect(cards.filter((c) => c.startsWith(`${id} `))).toEqual([]);
       }
       expect(cards.filter((c) => c.startsWith('sha '))).toHaveLength(21);
