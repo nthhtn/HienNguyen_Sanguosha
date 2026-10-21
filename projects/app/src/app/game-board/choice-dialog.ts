@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { Action, CardInstance } from 'engine';
 import { CARD_BACK_ART_URL } from 'content';
 import { PlayingCard } from './playing-card';
+import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
 import { MinimizeButton } from './minimize-button';
 import { ChoiceDescription } from './choice-description';
@@ -20,6 +21,8 @@ export interface ChoiceDialogOption {
   force?: Force;
   // A suit to name.
   suit?: CardInstance['suit'];
+  // A General's card, shown with its art (a secret look at a hidden General).
+  generalId?: string;
 }
 
 export interface ChoiceDialogData {
@@ -34,7 +37,7 @@ export interface ChoiceDialogData {
 // Closes only through that button, with the engine's own ChooseOptionAction.
 @Component({
   selector: 'app-choice-dialog',
-  imports: [MatDialogModule, MatButtonModule, PlayingCard, DecisionCountdown, MinimizeButton],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard, CardArt, DecisionCountdown, MinimizeButton],
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ data.description.title }}</h2>
@@ -60,6 +63,8 @@ export interface ChoiceDialogData {
                 <app-playing-card [card]="card" />
               } @else if (option.faceDown) {
                 <img class="card-back" [src]="cardBackUrl" alt="" />
+              } @else if (option.generalId; as generalId) {
+                <app-card-art [skin]="true" [id]="generalId" [label]="option.label" />
               }
               @if (option.force) {
                 <span class="swatch" aria-hidden="true"></span>

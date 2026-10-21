@@ -1,0 +1,26 @@
+{
+  "wuxie-guo": {
+    "name": "Vô Giải Khả Kích - Quốc",
+    "text": "Trước khi một Cẩm nang có hiệu lực với một người chơi có Tướng đã lật ngửa, vô hiệu hóa hiệu ứng của nó với mọi người chơi cùng thế lực với người đó; hoặc vô hiệu hóa hiệu ứng của một Vô Giải Khả Kích khác."
+  },
+  "amass": {
+    "name": "Dĩ Dật Đãi Lao",
+    "text": "Giai đoạn ra bài: dùng cho bản thân và mọi người chơi khác cùng thế lực. Mỗi mục tiêu rút hai lá bài rồi bỏ hai lá bài (trên tay hoặc đang trang bị), bắt đầu từ bạn và lần lượt theo thứ tự lượt."
+  },
+  "ascertain": {
+    "name": "Tri Kỷ Tri Bỉ",
+    "text": "Giai đoạn ra bài: dùng cho một người chơi khác. Chọn một: xem một lá Tướng úp của họ, hoặc xem toàn bộ bài trên tay của họ. Nếu cả hai lá Tướng của họ đều đã lật ngửa, bạn chỉ có thể xem bài trên tay. Đổi lại: thay vì dùng, đưa lá bài này vào chồng bài bỏ và rút một lá bài; việc này không tính là dùng hay bỏ lá bài."
+  },
+  "ally-far-attack-near": {
+    "name": "Viễn Giao Cận Công",
+    "text": "Giai đoạn ra bài: dùng cho một người chơi thuộc thế lực khác có Tướng đã lật ngửa. Người chơi đó rút một lá bài, sau đó bạn rút ba lá bài."
+  },
+  "trident-glaive": {
+    "name": "Tam Tiêm Lưỡng Nhận Đao",
+    "text": "Sau khi Sát của bạn gây sát thương cho một mục tiêu, bạn có thể bỏ một lá bài trên tay và chọn một người chơi khác ở khoảng cách 1 với mục tiêu đó. Người chơi đó chịu 1 sát thương. Nếu bạn ở khoảng cách 1 với mục tiêu, bạn có thể chọn chính mình."
+  },
+  "wu-six-swords": {
+    "name": "Ngô Lục Kiếm",
+    "text": "Kỹ năng khóa: tầm đánh của bạn và mọi người chơi khác cùng thế lực với bạn tăng thêm 1."
+  }
+}

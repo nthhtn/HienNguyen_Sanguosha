@@ -7,6 +7,10 @@ import { peachCard } from './cards/peach';
 import { wineCard } from './cards/wine';
 import { duelCard } from './cards/duel';
 import { wuxieCard } from './cards/wuxie';
+import { wuxieGuoCard } from './cards/wuxie-guo';
+import { amassCard } from './cards/amass';
+import { allyFarAttackNearCard } from './cards/ally-far-attack-near';
+import { ascertainCard } from './cards/ascertain';
 import { drawTwoCard } from './cards/draw-two';
 import { barbariansCard, hailOfArrowsCard } from './cards/mass-attack';
 import { peachGardenCard } from './cards/peach-garden';
@@ -30,6 +34,8 @@ import { woodArmorCard } from './cards/equipment/wood-armor';
 import { genderSwordsCard } from './cards/equipment/gender-swords';
 import { ancientScimitarCard } from './cards/equipment/ancient-scimitar';
 import { iceSwordCard } from './cards/equipment/ice-sword';
+import { wuSixSwordsCard } from './cards/equipment/wu-six-swords';
+import { tridentGlaiveCard } from './cards/equipment/trident-glaive';
 import { longbowCard } from './cards/equipment/longbow';
 
 function buildGenerals(): GeneralDefinition[] {
@@ -53,7 +59,7 @@ function buildGenerals(): GeneralDefinition[] {
 }
 
 export function buildContentRegistry(): ContentRegistry {
-  const cards = [shaCard, fireAttackCard, lightningAttackCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard, genderSwordsCard, ancientScimitarCard, iceSwordCard, longbowCard, axeCard, skyScorcherCard, serpentSpearCard, blazeCard, chainsCard];
+  const cards = [shaCard, fireAttackCard, lightningAttackCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard, genderSwordsCard, ancientScimitarCard, iceSwordCard, longbowCard, axeCard, skyScorcherCard, serpentSpearCard, blazeCard, chainsCard, wuSixSwordsCard, tridentGlaiveCard, wuxieGuoCard, amassCard, allyFarAttackNearCard, ascertainCard];
   const generals = buildGenerals();
   return {
     cards: new Map(cards.map((c) => [c.id, c])),
@@ -65,6 +71,12 @@ let natureRegistry: ContentRegistry | undefined;
 
 // The element an elemental card carries (Fire Attack: fire, Lightning Attack:
 // thunder), for the UI to mark it; null for any other card.
+// Whether the card may be Recast (CardDefinition.recastable), for the app's labels, which hold no registry.
+export function isRecastable(id: string): boolean {
+  natureRegistry ??= buildContentRegistry();
+  return natureRegistry.cards.get(id)?.recastable === true;
+}
+
 export function cardNature(id: string): 'fire' | 'thunder' | null {
   natureRegistry ??= buildContentRegistry();
   return natureRegistry.cards.get(id)?.nature ?? null;

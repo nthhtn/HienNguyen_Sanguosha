@@ -45,22 +45,10 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
         @if (card().mount; as mount) {
           <p class="distance">{{ 'card.distance' | t: { n: mount === 'offensive' ? '-1' : '+1' } }}</p>
         }
-        @if (card().deck === 'alternate') {
-          <!-- An Alternate card: the Chinese text as crawled, and Default's English text when the card exists there. -->
-          @if (card().printedZh; as printed) {
-            <p class="printed"><span class="label">{{ 'wiki.printedZh' | t }}</span> {{ printed }}</p>
-          } @else {
-            <p class="gap">{{ 'wiki.noText' | t }}</p>
-          }
-          @if (view().text; as text) {
-            <p class="text default-text"><span class="label">{{ 'wiki.defaultText' | t }}</span> {{ text }}</p>
-          }
+        @if (view().text; as text) {
+          <p class="text">{{ text }}</p>
         } @else {
-          @if (view().text; as text) {
-            <p class="text">{{ text }}</p>
-          } @else {
-            <p class="gap">{{ 'wiki.noText' | t }}</p>
-          }
+          <p class="gap">{{ 'wiki.noText' | t }}</p>
         }
         @if (card().printings.length > 0) {
           @if (own().length > 0) {
@@ -95,7 +83,6 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
     .voice mat-icon { font-size: 24px; width: 24px; height: 24px; }
     .range, .distance { margin: 8px 0 0; font-weight: 600; }
     .text { margin: 8px 0; }
-    .printed { margin: 8px 0; white-space: pre-line; }
     .label { margin-right: 4px; font-weight: 600; }
     .printings { margin: 8px 0; letter-spacing: 0.04em; }
     .printings.extra { margin-top: -4px; color: var(--mat-sys-on-surface-variant); }

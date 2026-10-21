@@ -24,10 +24,15 @@ function cardName(card: Pick<CardInstance, 'definitionId'>, tr: Translator): str
   return cardDisplayData(card.definitionId, localeOf(tr))?.name ?? cardIdDisplayName(card.definitionId, tr);
 }
 
-// The card a window asks for, by name ("Wuxie Kongjie"), when it names one.
-function askedCardName(state: GameState, tr: Translator): string {
-  const id = state.pendingResponse?.allowedCardIds?.[0];
-  return id ? cardName({ definitionId: id }, tr) : tr('response.anyCard');
+// The card a window asks for, by name ("Wuxie Kongjie"), when it names one. When
+// the viewer is the seat asked and holds one of the allowed cards, that card
+// is the one named (a seat with only Wuxie Kingdom is asked for it, not for Wuxie).
+function askedCardName(state: GameState, tr: Translator, viewerSeatId?: string): string {
+  const pending = state.pendingResponse;
+  const allowed = pending?.allowedCardIds;
+  if (!allowed?.length) return tr('response.anyCard');
+  const hand = viewerSeatId && viewerSeatId === pending?.respondingSeatId ? (state.zones.find((z) => z.kind === 'hand' && z.ownerSeatId === viewerSeatId)?.cards ?? []) : [];
+  return cardName({ definitionId: allowed.find((id) => hand.some((c) => c.definitionId === id)) ?? allowed[0] }, tr);
 }
 
 // The card whose effect the window holds back: the window's own source card,
@@ -45,6 +50,15 @@ function lastPlayOf(log: EngineEvent[], instanceId: string): CardPlayed | undefi
   for (let i = log.length - 1; i >= 0; i--) {
     const event = log[i];
     if (event.kind === 'CardPlayedEvent' && event.card.physical.some((c) => c.instanceId === instanceId)) return event;
+  }
+  return undefined;
+}
+
+// The last card `seatId` answered a window with.
+function lastAnswerBy(log: EngineEvent[], seatId: string): CardPlayed | undefined {
+  for (let i = log.length - 1; i >= 0; i--) {
+    const event = log[i];
+    if (event.kind === 'CardPlayedEvent' && event.seatId === seatId && event.inResponseTo) return event;
   }
   return undefined;
 }
@@ -143,7 +157,7 @@ export function describeResponse(
       return {
         source: you ? tr('response.judge.source.you', { tool: toolName }) : tr('response.judge.source.other', { seat: name(judgedOwner), tool: toolName }),
         latest: null,
-        prompt: tr('response.cancelIt', { card: askedCardName(state, tr) }),
+        prompt: tr('response.cancelIt', { card: askedCardName(state, tr, viewerSeatId) }),
         outcome: you ? tr('response.judge.outcome.you', { tool: toolName }) : tr('response.judge.outcome.other', { seat: name(judgedOwner), tool: toolName }),
         outcomeForce: forceOf(state.seats.find((s) => s.id === judgedOwner)?.kingdom),
       };
@@ -154,7 +168,7 @@ export function describeResponse(
     return {
       source: aimedAt ? tr('response.usedOn', { seat: name(toolUserSeatId), tool: toolName, target: whom(aimedAt) }) : tr('response.used', { seat: name(toolUserSeatId), tool: toolName }),
       latest: null,
-      prompt: tr('response.cancelIt', { card: askedCardName(state, tr) }),
+      prompt: tr('response.cancelIt', { card: askedCardName(state, tr, viewerSeatId) }),
       outcome: aimedAt ? tr('response.takesEffectOn', { tool: toolName, target: whom(aimedAt) }) : tr('response.takesEffect', { tool: toolName }),
       outcomeForce: forceOf(state.seats.find((s) => s.id === targetId)?.kingdom),
     };
@@ -162,11 +176,14 @@ export function describeResponse(
 
   if (pending.reason?.kind === 'counter-wuxie') {
     const { wuxieSeatId } = pending.reason;
-    const counter = askedCardName(state, tr);
+    const asked = askedCardName(state, tr, viewerSeatId);
+    // The counter card that seat answered with (Wuxie, or Wuxie Kingdom), else the asked one.
+    const answered = lastAnswerBy(state.log, wuxieSeatId);
+    const counter = answered ? cardName({ definitionId: shownCardId(answered.card) }, tr) : asked;
     return {
       source: tr('response.played', { seat: name(wuxieSeatId), card: counter }),
       latest: null,
-      prompt: tr('response.cancelIt', { card: counter }),
+      prompt: tr('response.cancelIt', { card: asked }),
       outcome: tr('response.stands', { seat: name(wuxieSeatId), card: counter }),
       outcomeForce: forceOf(state.seats.find((s) => s.id === wuxieSeatId)?.kingdom),
     };

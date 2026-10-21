@@ -65,7 +65,9 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
                 <span class="zh">{{ zh }}</span>
               }
               <span class="skill-text">{{ view().skills[i].text }}</span>
-              <span class="skill-status" [attr.data-status]="skill.status">{{ statusLabels[skill.status] | t }}</span>
+              @if (skill.status !== 'working') {
+                <span class="skill-status" [attr.data-status]="skill.status">{{ statusLabels[skill.status] | t }}</span>
+              }
             </li>
           } @empty {
             <li class="gap">{{ 'wiki.noSkills' | t }}</li>
@@ -96,7 +98,6 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
     .expansion-tag, .gender-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
     .skill-status { display: block; width: fit-content; margin-top: 2px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); }
-    .skill-status[data-status='working'] { border-color: var(--mat-sys-primary); color: var(--mat-sys-primary); }
     .hearts { display: inline-flex; color: #d84a3f; }
     .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .skills { margin: 0; padding-left: 18px; }

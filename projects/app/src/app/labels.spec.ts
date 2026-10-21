@@ -191,3 +191,13 @@ describe('judgmentReaderName', () => {
     expect(judgmentReaderName({ kind: 'skill', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'unyielding' } })).toBe('Unyielding');
   });
 });
+
+describe('actionLabel for a Recast', () => {
+  it('labels Ascertain played with no target as a Recast, and at a seat as a use', () => {
+    const base = stateWithZones();
+    const state: GameState = { ...base, zones: [{ ...base.zones[0], cards: [{ instanceId: 'as-1', definitionId: 'ascertain', suit: 'club', rank: 3 }] }] };
+    const registry = buildContentRegistry();
+    expect(actionLabel({ kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'as-1', targets: [] }, state, registry)).toBe('Recast Ascertain');
+    expect(actionLabel({ kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'as-1', targets: [{ kind: 'seat', seatId: 'seat-1' }] }, state, registry)).toBe('Play Ascertain Targeting Seat 1');
+  });
+});

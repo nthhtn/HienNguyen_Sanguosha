@@ -2,10 +2,15 @@ import { GENERAL_SKILLS } from './generals';
 import { buildContentRegistry } from './registry';
 
 describe('buildContentRegistry', () => {
+  it('flags exactly Chains and Ascertain as recastable', () => {
+    const registry = buildContentRegistry();
+    expect([...registry.cards.values()].filter((c) => c.recastable).map((c) => c.id).sort()).toEqual(['ascertain', 'chains']);
+  });
+
   it('registers the fifteen playable cards', () => {
     const registry = buildContentRegistry();
     expect([...registry.cards.keys()].sort()).toEqual(
-      ['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'green-dragon-blade', 'hail-of-arrows', 'harvest', 'lightning', 'peach', 'peach-garden', 'sha', 'shan', 'silver-lion', 'starvation', 'steal', 'wuxie', 'wine', 'black-pommel', 'crossbow', 'da-yuan', 'di-lu', 'hua-liu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'eight-trigrams', 'black-shield', 'wood-armor', 'gender-swords', 'ancient-scimitar', 'ice-sword', 'longbow', 'axe', 'sky-scorcher', 'serpent-spear', 'blaze', 'fire-attack', 'lightning-attack', 'chains'].sort()
+      ['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'green-dragon-blade', 'hail-of-arrows', 'harvest', 'lightning', 'peach', 'peach-garden', 'sha', 'shan', 'silver-lion', 'starvation', 'steal', 'wuxie', 'wine', 'black-pommel', 'crossbow', 'da-yuan', 'di-lu', 'hua-liu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'eight-trigrams', 'black-shield', 'wood-armor', 'gender-swords', 'ancient-scimitar', 'ice-sword', 'longbow', 'axe', 'sky-scorcher', 'serpent-spear', 'blaze', 'fire-attack', 'lightning-attack', 'chains', 'wu-six-swords', 'trident-glaive', 'wuxie-guo', 'amass', 'ally-far-attack-near', 'ascertain'].sort()
     );
   });
 

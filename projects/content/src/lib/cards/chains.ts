@@ -1,6 +1,7 @@
-import type { CardDefinition, CardPlayedEvent, ContentRegistry, GameState, PlayOptionsContext, Target } from 'engine';
+import type { CardDefinition, CardPlayedEvent, ContentRegistry, Effect, GameState, PlayOptionsContext, Target } from 'engine';
 import { isChained, livingSeatOrderFrom } from 'engine';
 import { playColour, toolOnTargets } from '../shared/tools';
+import { isRecastable } from '../registry';
 import { untargetableBy } from '../shared/abilities';
 
 const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
@@ -14,17 +15,23 @@ const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
 // Offers: a pick of 1 or 2 distinct seats (the Choose Targets window), and
 // beside it [] (Recast) when the card is itself. A converted Chains (Shackle,
 // `ctx.via` set) offers no Recast: the skill recasts a club itself.
-// Whether a logged play is a Chains Recast: Chains played with no target, not
-// as an answer. A Recast is instead of using the card, so skills that react to
-// a card's use (Gathering Wisdom) leave it alone.
+// Whether a logged play is a Recast (Chains, Ascertain): the card played with
+// no target, not as an answer. A Recast is instead of using the card, and is
+// not discarding it, so skills that react to a card's use (Gathering Wisdom)
+// or to a discard leave it alone.
 export function isRecast(event: CardPlayedEvent): boolean {
   return isRecastPlay(event.card.as, event.targets) && !event.inResponseTo;
 }
 
-// Whether playing a card as `as` at `targets` is a Chains Recast (the offer
-// with no target), for labelling the offer before it is played.
+// Whether playing a card as `as` at `targets` is a Recast (the offer with no
+// target), for labelling the offer before it is played.
 export function isRecastPlay(as: string, targets: readonly Target[]): boolean {
-  return as === 'chains' && targets.length === 0;
+  return isRecastable(as) && targets.length === 0;
+}
+
+// What a Recast does: its user draws 1 (the engine puts the card itself into the discard pile).
+export function recastEffects(seatId: string): Effect[] {
+  return [{ kind: 'DrawCardsEffect', seatId, count: 1 }];
 }
 
 // Living seats Chains may target, in turn order from the user.
@@ -37,6 +44,7 @@ export const chainsCard: CardDefinition = {
   id: 'chains',
   name: 'Chains',
   category: 'tool',
+  recastable: true,
   // The seats as single targets: what is offered when only one seat is eligible
   // (then there is no pick), and the Recast.
   legalPlayTargets: (state, ctx, registry) => {
@@ -49,7 +57,7 @@ export const chainsCard: CardDefinition = {
   },
   play: (state, ctx) => {
     if (ctx.respondingTo) return [];
-    if (ctx.targets.length === 0) return [{ kind: 'DrawCardsEffect', seatId: ctx.seatId, count: 1 }];
+    if (ctx.targets.length === 0) return recastEffects(ctx.seatId);
     // The targets toggle in turn order from the user, whatever order they were picked in.
     const order = livingSeatOrderFrom(state, ctx.seatId);
     const position = (t: Target) => order.indexOf(t.kind === 'seat' ? t.seatId : '');

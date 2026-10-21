@@ -130,3 +130,31 @@ describe('the Action History wording of a label the engine sent', () => {
     expect(translateLabelText('Something else', trVi)).toBe('Something else');
   });
 });
+
+describe('Ascertain’s secret look in Vietnamese', () => {
+  const viTr = makeTranslator(vi, 'vi');
+  const label = (id: string, text: string): ChoiceOption => ({ id, shows: { kind: 'label', text }, effects: [] });
+  const look = (options: ChoiceOption[]): PendingChoice => ({
+    id: 'a', seatId: 'seat-0', verb: 'pick', secret: true, options,
+    reason: { kind: 'choice', card: { as: 'ascertain', colour: 'black', physical: [] }, userSeatId: 'seat-0', targetSeatId: 'seat-1' },
+  });
+
+  it('names the card, asks what to look at and labels the options', () => {
+    const pick = look([label('main', 'Main General'), label('deputy', 'Deputy General'), label('hand', 'Hand Cards')]);
+    expect(describeChoice(state(pick), 'seat-0', viTr)).toEqual({ title: 'Tri Kỷ Tri Bỉ', prompt: 'Chọn lá bài của Người chơi 1 để xem', confirmLabel: 'Chọn' });
+    expect(pick.options.map((o) => choiceOptionLabel(o.shows, players, undefined, viTr, o.id))).toEqual(['Chủ tướng', 'Phó tướng', 'Bài trên tay']);
+    expect(choiceOptionLabel({ kind: 'label', text: 'Done' }, players, undefined, viTr, 'done')).toBe('Xong');
+    expect(choiceOptionLabel({ kind: 'general', generalId: 'cao-cao' }, players, undefined, viTr)).toBe('Tào Tháo');
+    expect(describeChoice(state(look([{ id: 'general', shows: { kind: 'general', generalId: 'cao-cao' }, effects: [] }, label('done', 'Done')])), 'seat-0', viTr)!.prompt).toBe('Đây là Tướng úp của Người chơi 1');
+  });
+});
+
+describe('Trident Glaive’s seat pick in Vietnamese', () => {
+  it('asks to choose a seat, with a Choose button', () => {
+    const glaive: PendingChoice = {
+      id: 'tg', seatId: 'seat-0', verb: 'pick', options: [seatOption],
+      reason: { kind: 'ability', owner: { kind: 'equipment', seatId: 'seat-0', cardInstanceId: 'tg' }, abilityId: 'trident-glaive', targetSeatId: 'seat-1' },
+    };
+    expect(describeChoice(state(glaive), 'seat-0', makeTranslator(vi, 'vi'))).toMatchObject({ prompt: 'Chọn một người chơi', confirmLabel: 'Chọn' });
+  });
+});

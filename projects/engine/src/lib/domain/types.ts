@@ -177,7 +177,9 @@ export interface PendingChoice {
   // gets the cards.
   verb: 'take' | 'discard' | 'use' | 'pick' | 'give';
   options: ChoiceOption[];
-  // Only the choosing seat sees the options (Incarnation's Forms).
+  // Only the choosing seat sees the options (Incarnation's Forms, Ascertain's
+  // look): every other seat sees none, and the log never says which was picked.
+  // The chooser sees the cards they show, though their zone is hidden.
   secret?: true;
 }
 
@@ -189,6 +191,7 @@ export interface ChoiceOption {
   // `reveals`: Use reveals that hidden General first.
   // A seat (Raid's targets, who gets given cards), a suit to name, or a label
   // (Done, an Unyielding outcome).
+  // A General's card (a look at a hidden General, only in a `secret` choice).
   shows:
     | { kind: 'card'; card: CardInstance }
     | { kind: 'hidden-hand'; seatId: string; count: number }
@@ -196,7 +199,8 @@ export interface ChoiceOption {
     | { kind: 'decline' }
     | { kind: 'seat'; seatId: string }
     | { kind: 'suit'; suit: CardInstance['suit'] }
-    | { kind: 'label'; text: string };
+    | { kind: 'label'; text: string }
+    | { kind: 'general'; generalId: string };
   // Queued at the front when picked.
   effects: Effect[];
 }
@@ -392,4 +396,16 @@ export interface GameState {
   // General ids nobody was dealt, in order: where spare Generals come from.
   // Hidden from every viewer.
   spareGenerals?: string[];
+  // Tools cancelled for a whole Kingdom (Wuxie Kingdom) while they resolve:
+  // a later target whose live Kingdom matches is skipped. Absent (never []) when none.
+  toolCancellations?: ToolCancellation[];
+}
+
+// `toolKey` (toolKeyOf) is cancelled for every later target of `kingdom`.
+// `targetSeatId`: the target the cancel was played about; if the Tool still
+// takes effect there (the cancel was itself countered), the record goes.
+export interface ToolCancellation {
+  toolKey: string;
+  kingdom: Exclude<Kingdom, 'hidden'>;
+  targetSeatId: string;
 }

@@ -4,7 +4,7 @@ import { GENERAL_SKILLS } from './generals';
 import { buildContentRegistry } from './registry';
 import type { DeckId } from './decks';
 import alternateCards from '../../data/decks/alternate/cards.json';
-import alternateTexts from '../../data/decks/alternate/texts.zh.json';
+import alternateEnglish from '../../data/decks/alternate/texts.en.json';
 import alternateIds from '../../data/decks/alternate/ids.json';
 
 // Every pack, in the order the Wiki lists them.
@@ -78,9 +78,6 @@ export interface WikiCard {
   // Whether the game has behaviour for the card (in the Alternate deck, the same test).
   inGame: boolean;
   deck: DeckId;
-  // An Alternate card's printed text, in Chinese, as crawled; null on Default cards
-  // and where the source page prints none.
-  printedZh: string | null;
 }
 
 const KINGDOM_ORDER: readonly WikiGeneral['kingdom'][] = ['Wei', 'Shu', 'Wu', 'Qun'];
@@ -131,10 +128,10 @@ interface AlternateCardData {
 }
 
 // The Alternate deck's cards. A card Default also has takes its English name and
-// text from Default's data; a card it lacks takes its name from ids.json.
+// text from Default's data; a card it lacks takes its name from ids.json and its text from texts.en.json.
 function alternateWikiCards(category: WikiCard['category']): WikiCard[] {
   const registry = buildContentRegistry();
-  const texts = alternateTexts as Record<string, string>;
+  const english = alternateEnglish as Record<string, string>;
   const ids = alternateIds as Record<string, { id: string; name: string }>;
   const subtypeRank = (c: WikiCard) => (c.subtype === null ? -1 : SUBTYPE_ORDER.indexOf(c.subtype));
   return (alternateCards.cards as AlternateCardData[])
@@ -147,7 +144,7 @@ function alternateWikiCards(category: WikiCard['category']): WikiCard[] {
         nameZh: card.nameZh,
         category: card.category,
         subtype: card.subtype === undefined ? null : card.subtype === 'mount' ? 'horse' : card.subtype,
-        text: fromDefault?.text ?? null,
+        text: fromDefault?.text ?? english[card.nameZh] ?? null,
         range: card.range ?? null,
         count: card.count,
         printings: card.printings,
@@ -156,7 +153,6 @@ function alternateWikiCards(category: WikiCard['category']): WikiCard[] {
         expansion: null,
         inGame: registry.cards.has(card.cardId),
         deck: 'alternate',
-        printedZh: texts[card.nameZh] ?? null,
       };
     })
     .sort((a, b) => subtypeRank(a) - subtypeRank(b) || byName(a, b));
@@ -182,7 +178,6 @@ function defaultWikiCards(category: WikiCard['category']): WikiCard[] {
       expansion: (data.source.expansion ?? 'Base') as NonNullable<WikiCard['expansion']>,
       inGame: registry.cards.has(id),
       deck: 'default' as const,
-      printedZh: null,
     }))
     .sort((a, b) => subtypeRank(a) - subtypeRank(b) || byPack(a, b) || byName(a, b));
 }

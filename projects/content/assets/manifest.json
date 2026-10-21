@@ -1,10 +1,31 @@
 {
+  "ally-far-attack-near": {
+    "crawledAt": "2026-10-21",
+    "height": 1000,
+    "localPath": "cards/tool/ally-far-attack-near.jpg",
+    "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/alliance-yuan-jiao-jin-gong.html",
+    "width": 704
+  },
+  "amass": {
+    "crawledAt": "2026-10-21",
+    "height": 1000,
+    "localPath": "cards/tool/amass.jpg",
+    "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/amass-yi-yi-dai-lao.html",
+    "width": 704
+  },
   "ancient-scimitar": {
     "crawledAt": "2026-10-05",
     "height": 656,
     "localPath": "cards/equipment/weapon/ancient-scimitar.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/ancient-scimitar",
     "width": 448
+  },
+  "ascertain": {
+    "crawledAt": "2026-10-21",
+    "height": 1000,
+    "localPath": "cards/tool/ascertain.jpg",
+    "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/ascertain-zhi-ji-zhi-bi.html",
+    "width": 704
   },
   "axe": {
     "crawledAt": "2026-09-24",
@@ -518,6 +539,13 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/fire/fire-taishi-ci",
     "width": 660
   },
+  "trident-glaive": {
+    "crawledAt": "2026-10-21",
+    "height": 1000,
+    "localPath": "cards/equipment/weapon/trident-glaive.jpg",
+    "sourceUrl": "http://sanguoshaenglish.blogspot.sg/2012/09/trident-glaive-san-jian-liang-ren-dao.html",
+    "width": 704
+  },
   "wei-yan": {
     "crawledAt": "2026-10-02",
     "height": 966,
@@ -539,12 +567,26 @@
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wood-armor",
     "width": 666
   },
+  "wu-six-swords": {
+    "crawledAt": "2026-10-21",
+    "height": 1000,
+    "localPath": "cards/equipment/weapon/wu-six-swords.jpg",
+    "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/six-swords-of-wu-wu-liu-jian.html",
+    "width": 704
+  },
   "wuxie": {
     "crawledAt": "2026-09-24",
     "height": 963,
     "localPath": "cards/tool/wuxie.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/negate",
     "width": 658
+  },
+  "wuxie-guo": {
+    "crawledAt": "2026-10-21",
+    "height": 1000,
+    "localPath": "cards/tool/wuxie-guo.jpg",
+    "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/negate-kingdom-wu-xie-ke-ji.html",
+    "width": 704
   },
   "xiahou-dun": {
     "crawledAt": "2026-09-24",

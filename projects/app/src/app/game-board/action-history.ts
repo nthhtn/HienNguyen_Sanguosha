@@ -238,6 +238,8 @@ export function actionHistory(
         action(tr('history.generalsChosen', { seat: name(event.seatId) }));
         break;
       case 'ChoiceMadeEvent': {
+        // A secret pick (Ascertain's look, a Form's skill) is told by what follows, or not at all.
+        if (event.secret) break;
         const { reason, shows } = event;
         const chooser = name(event.seatId);
         if (shows.kind === 'card' || shows.kind === 'hidden-hand') {

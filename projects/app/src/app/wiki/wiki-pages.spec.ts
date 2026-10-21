@@ -69,15 +69,15 @@ describe('Wiki pages', () => {
   it('splits Alternate equipment into four tabs with nothing left over, and counts what the game cannot play', async () => {
     const { el } = await open('/wiki/alternate/equipment');
     expect(tabLabels(el())).toEqual(['Weapons (10)', 'Armors (4)', 'Defensive Mount (3)', 'Offensive Mount (3)']);
-    expect(el().querySelector('.summary')!.textContent).toBe('20 cards · 17 in the game');
+    expect(el().querySelector('.summary')!.textContent).toBe('20 cards · 19 in the game');
   });
 
-  it('lists the 19 Alternate tools, with Wuxie Kingdom marked not in the game', async () => {
+  it('lists the 19 Alternate tools, all in the game', async () => {
     const { el } = await open('/wiki/alternate/tools');
     expect(tabLabels(el())).toEqual(['Instant (16)', 'Delayed (3)']);
-    expect(el().querySelector('.summary')!.textContent).toBe('19 cards · 15 in the game');
-    const badge = el().querySelector('article.entry[data-id="wuxie-guo"] .badge')!;
-    expect(badge.textContent!.trim()).toBe('Not in the game yet');
+    expect(el().querySelector('.summary')!.textContent).toBe('19 cards · 19 in the game');
+    expect(el().querySelector('article.entry[data-id="wuxie-guo"] .badge')!.textContent!.trim()).toBe('In the game');
+    expect(el().querySelector('article.entry[data-id="ascertain"] .badge')!.textContent!.trim()).toBe('In the game');
   });
 
   it('lists all six basic cards together, with no tabs', async () => {

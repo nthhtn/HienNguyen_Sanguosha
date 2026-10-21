@@ -1,7 +1,7 @@
 import { Action, ChoiceOption, GameState, PendingChoice, Player, Seat } from 'engine';
 import { abilityName, cardDisplayData, choicePromptText, generalDisplayData, seatPickText } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
-import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, forceOf, seatName, suitLabel } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, forceOf, generalDisplayName, seatName, suitLabel } from '../labels';
 import type { MessageKey } from '../i18n/messages';
 import type { ChoiceDialogOption } from './choice-dialog';
 
@@ -35,8 +35,19 @@ export function translateLabelText(text: string, tr: Translator): string {
   return text;
 }
 
+// The labels of a Tool's secret look (Ascertain), by option id; as LABEL_OPTIONS, only when the
+// engine's English text is the one expected.
+const LOOK_LABELS: Record<string, MessageKey> = {
+  main: 'choice.label.mainGeneral',
+  deputy: 'choice.label.deputyGeneral',
+  hand: 'choice.label.handCards',
+  done: 'choice.label.done',
+};
+
 function labelOptionText(optionId: string | undefined, text: string, tr: Translator): string {
   if (!optionId) return text;
+  const look = Object.prototype.hasOwnProperty.call(LOOK_LABELS, optionId) ? LOOK_LABELS[optionId] : undefined;
+  if (look && englishTranslator(look) === text) return tr(look);
   const form = optionId.split('/');
   if (form.length === 2) {
     // Zuo Ci's pick of a Form's skill: "Skill (General)".
@@ -107,6 +118,21 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
   }
   if (choice.reason.kind !== 'choice') return null;
   const { card, targetSeatId } = choice.reason;
+  // A Tool's secret look at another seat (Ascertain): what to look at, then the cards or the General shown.
+  if (choice.verb === 'pick' && choice.secret && targetSeatId) {
+    const seat = seatName(state.players, targetSeatId, tr);
+    const shows = choice.options.map((o) => o.shows.kind);
+    const prompt = shows.includes('general')
+      ? tr('choice.look.general', { seat })
+      : shows.includes('card')
+        ? tr('choice.look.hand', { seat })
+        : choice.options.every((o) => o.id === 'done')
+          ? tr('choice.look.emptyHand', { seat })
+          : tr('choice.look.pick', { seat });
+    // Its second stage (the choice id `ascertain-look-…`) only shows what was picked, closed with Done.
+    const looking = choice.id.startsWith('ascertain-look-');
+    return { title: cardName(card.as, tr), prompt, confirmLabel: tr(looking ? 'choice.label.done' : 'choice.confirm.choose') };
+  }
   // Choosing among your own cards (Gender Swords): discard one, or let the user draw.
   if (targetSeatId === viewerSeatId && choice.options.some((o) => o.shows.kind === 'decline')) {
     const user = seatName(state.players, choice.reason.userSeatId, tr);
@@ -127,6 +153,7 @@ export function choiceOptionLabel(shows: ChoiceOption['shows'], players: readonl
   if (shows.kind === 'label') return labelOptionText(optionId, shows.text, tr);
   if (shows.kind === 'use') return tr('choice.option.use');
   if (shows.kind === 'decline') return declineLabel ?? tr('choice.option.decline');
+  if (shows.kind === 'general') return generalDisplayData(shows.generalId, localeOf(tr))?.name ?? generalDisplayName(shows.generalId, tr);
   if (shows.kind === 'hidden-hand') {
     return tr(shows.count === 1 ? 'choice.option.hand.one' : 'choice.option.hand.other', { seat: seatName(players, shows.seatId, tr), count: shows.count });
   }
@@ -159,6 +186,7 @@ export function choiceDialogOptions(
       return [{ id: option.id, action, label, force: forceOf(seats.find((s) => s.id === seatId)?.kingdom) }];
     }
     if (option.shows.kind === 'suit') return [{ id: option.id, action, label, suit: option.shows.suit }];
+    if (option.shows.kind === 'general') return [{ id: option.id, action, label, generalId: option.shows.generalId }];
     return [{ id: option.id, action, label }];
   });
 }

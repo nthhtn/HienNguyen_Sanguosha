@@ -1,9 +1,9 @@
-import { ENGLISH_PROSE, cardIds, generalIds } from 'content';
+import { ENGLISH_PROSE, alternateCardIds, cardIds, generalIds } from 'content';
 import review from '../../../../content/data/locales/vi/review.json';
 import { en } from './en';
 import { reviewStatus, reviewUniverse, ReviewLists } from './review';
 
-const universe = reviewUniverse(en, generalIds(), cardIds(), ENGLISH_PROSE);
+const universe = reviewUniverse(en, generalIds(), [...cardIds(), ...alternateCardIds()], ENGLISH_PROSE);
 
 describe('reviewStatus', () => {
   it('counts the reviewed ids of each category and lists the rest', () => {
@@ -24,6 +24,13 @@ describe('the Vietnamese review file', () => {
   it('reports a prose table that no longer exists', () => {
     const result = reviewStatus({ ui: [], generals: [], cards: [], prose: { gone: ['a'] } }, { ui: [], generals: [], cards: [], prose: {} });
     expect(result.find((r) => r.category === 'Prose: gone')!.unknown).toEqual(['a']);
+  });
+
+  it('counts the Alternate-only cards, so they can be listed as reviewed', () => {
+    const cards = reviewStatus({ ...review, cards: [...review.cards, 'wu-six-swords'] }, universe).find((r) => r.category === 'Cards (name and text)')!;
+    expect(cards.unknown).toEqual([]);
+    expect(cards.unreviewed).toEqual(expect.arrayContaining(['wuxie-guo', 'amass', 'ascertain', 'ally-far-attack-near', 'trident-glaive']));
+    expect(cards.total).toBe(cardIds().length + alternateCardIds().length);
   });
 
   it('lists only ids that exist', () => {

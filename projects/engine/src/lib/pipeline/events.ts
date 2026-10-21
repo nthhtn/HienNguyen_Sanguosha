@@ -145,13 +145,16 @@ export interface CardsTurnedUpEvent {
 }
 
 // A seat picked an option of a pending choice. `shows` is what the option
-// showed, so a pick from a hidden hand never names the card.
+// showed, so a pick from a hidden hand never names the card. A `secret`
+// choice's pick is logged with `secret` and an empty label: the log never says
+// what was picked (its effects' own events tell what follows).
 export interface ChoiceMadeEvent {
   kind: 'ChoiceMadeEvent';
   seatId: string;
   reason: DecisionReason;
   verb: PendingChoice['verb'];
   shows: ChoiceOption['shows'];
+  secret?: true;
 }
 
 // A card turned up for `seatId`'s judgment, for `reader`.

@@ -130,7 +130,7 @@ describe('Duel and Wuxie Kongjie', () => {
   it('can be cancelled by any Wuxie Kongjie holder before its first window, never by the window itself', () => {
     // The user (seat-a) may cancel its own Duel too: its Wuxie check asks seat-a first.
     const asked = duel(withHand(withHand(twoSeatState('duel'), 'seat-b', [['sha', 'b-sha-1']]), 'seat-a', [['wuxie', 'a-wuxie']]));
-    expect(asked.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a', reason: { kind: 'wuxie' }, allowedCardIds: ['wuxie'] });
+    expect(asked.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a', reason: { kind: 'wuxie' }, allowedCardIds: ['wuxie', 'wuxie-guo'] });
     const cancelled = sha(asked, 'seat-a', 'a-wuxie');
     expect(cancelled.pendingResponse).toBeNull();
     expect(hp(cancelled, 'seat-b')).toBe(6);

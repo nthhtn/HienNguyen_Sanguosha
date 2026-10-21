@@ -1,6 +1,8 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
+import { alternateCardData } from './alternateCards';
 import viCards from '../../data/locales/vi/cards.json';
+import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
 import viGenerals from '../../data/locales/vi/generals.json';
 import viProse from '../../data/locales/vi/prose.json';
 
@@ -17,6 +19,12 @@ export interface CardTranslation {
 }
 const GENERAL_TEXT: Record<string, Record<string, GeneralTranslation>> = { vi: viGenerals };
 const CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viCards };
+
+// Names and text of cards only the Alternate deck has, by card id; a card Default also has is in CARD_TEXT.
+const ALTERNATE_CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viAlternateCards };
+export function alternateCardTranslation(id: string, locale: string): CardTranslation | null {
+  return lookup(ALTERNATE_CARD_TEXT, locale)?.[id] ?? null;
+}
 
 // Every General and card id, from the English data (the ids a translation has to cover).
 export const generalIds = (): string[] => Object.keys(generalsData);
@@ -64,7 +72,7 @@ export interface CardDisplayData {
 
 // Presentation-facing view of a card's data file (rules text etc.).
 export function cardDisplayData(id: string, locale = 'en'): CardDisplayData | null {
-  if (!Object.prototype.hasOwnProperty.call(cardsData, id)) return null;
+  if (!Object.prototype.hasOwnProperty.call(cardsData, id)) return alternateDisplayData(id, locale);
   const data = cardsData[id];
   const translated = lookup(cardTranslations(locale), id);
   return {
@@ -76,6 +84,20 @@ export function cardDisplayData(id: string, locale = 'en'): CardDisplayData | nu
     text: translated?.text ?? data.text ?? null,
   };
 }
+function alternateDisplayData(id: string, locale: string): CardDisplayData | null {
+  const data = alternateCardData(id);
+  if (!data) return null;
+  const translated = alternateCardTranslation(id, locale);
+  return {
+    name: translated?.name ?? data.name,
+    category: data.category,
+    subtype: data.subtype,
+    range: data.range,
+    mount: null,
+    text: translated?.text ?? data.text,
+  };
+}
+
 // What an optional ability does, for its ask, in the game's own terms.
 // '{target}' stands for the seat it is aimed at.
 const ABILITY_HINTS: Record<string, string> = {

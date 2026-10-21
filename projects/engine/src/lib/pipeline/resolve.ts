@@ -12,7 +12,7 @@ import { decisionPending } from '../rules/activeSeat';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer, startWindowOpens } from '../rules/phaseSequence';
-import { activeSkillActions, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, hiddenSlots, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
+import { activeSkillActions, answerConditionMet, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, hiddenSlots, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { ArrangementMadeEvent, CardPlayedEvent, SeatTurnedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
@@ -282,6 +282,7 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext, dec
   const current = rewritten.effect;
 
   // A card used by an effect goes through useCard, which logs and queues its own follow-ups.
+  // A skill-driven `answering` use skips the card's answerCondition (nothing uses that path today).
   if (current.kind === 'UseCardEffect') {
     const counted = !!current.counted;
     const used = useCard(
@@ -408,7 +409,7 @@ function useCard(state: GameState, seatId: string, used: UsedCard, options: UseO
       cardInstanceId,
       card: used,
       targets: options.targets,
-      ...(pending ? { respondingTo: pending.id } : {}),
+      ...(pending ? { respondingTo: pending.id, answering: pending } : {}),
       ...(options.free ? { free: true } : {}),
     },
     ctx.registry
@@ -580,7 +581,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!cardInHand) {
         throw new Error(`Seat ${action.seatId} does not hold card ${action.cardInstanceId}`);
       }
-      if (pending.allowedCardIds && !answersAs(cardInHand.definitionId, pending.allowedCardIds, ctx.registry)) {
+      if ((pending.allowedCardIds && !answersAs(cardInHand.definitionId, pending.allowedCardIds, ctx.registry)) || !answerConditionMet(state, pending, action.seatId, cardInHand.definitionId, ctx.registry)) {
         throw new Error(`Card ${cardInHand.definitionId} is not a legal response here`);
       }
       return useCard(state, action.seatId, usedCardOf(cardInHand, ctx.registry), { targets: [], respondTo: pending, counted: false }, ctx);
@@ -653,7 +654,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const option = choice.options.find((o) => o.id === action.optionId);
       if (!option) throw new Error(`Choice ${action.choiceId} has no option ${action.optionId}`);
       const { pendingChoice: _settled, ...cleared } = state;
-      const event: ChoiceMadeEvent = { kind: 'ChoiceMadeEvent', seatId: action.seatId, reason: choice.reason, verb: choice.verb, shows: option.shows };
+      const event: ChoiceMadeEvent = choice.secret
+        ? { kind: 'ChoiceMadeEvent', seatId: action.seatId, reason: choice.reason, verb: choice.verb, shows: { kind: 'label', text: '' }, secret: true }
+        : { kind: 'ChoiceMadeEvent', seatId: action.seatId, reason: choice.reason, verb: choice.verb, shows: option.shows };
       const made = logged(cleared, [event]);
       return { state: queueFront(made, [...afterTriggerFollowUps(made, [event], ctx), ...option.effects]), events: [event] };
     }
