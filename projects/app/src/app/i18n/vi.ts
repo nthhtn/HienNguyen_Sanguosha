@@ -471,7 +471,6 @@ export const vi: Messages = {
   'nav.battlefield.background3': 'Nền 3',
   'nav.play': 'Chơi ngoại tuyến',
   'nav.online': 'Chơi trực tuyến',
-  'nav.cards': 'Bài',
   'nav.rules': 'Luật',
   'nav.cards.generals': 'Tướng',
   'nav.cards.basic': 'Bài cơ bản',

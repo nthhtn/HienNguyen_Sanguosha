@@ -8,15 +8,20 @@
     <a mat-button class="nav-online" routerLink="/rooms" [class.active]="onlineActive()" [attr.aria-current]="onlineActive() ? 'page' : null" [attr.aria-label]="'nav.online' | t">
       <mat-icon>public</mat-icon><span class="label">{{ 'nav.online' | t }}</span>
     </a>
-    <button mat-button type="button" class="nav-cards" [matMenuTriggerFor]="cardsMenu" [class.active]="cardsActive()" [attr.aria-label]="'nav.cards' | t">
-      <!-- "swords" only exists in Material Symbols, not the legacy Material Icons font. -->
-      <mat-icon fontSet="material-symbols-outlined">swords</mat-icon><span class="label">{{ 'nav.cards' | t }}</span>
-    </button>
-    <mat-menu #cardsMenu="matMenu">
-      @for (page of cardPages; track page.path) {
-        <a mat-menu-item [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label | t }}</a>
-      }
-    </mat-menu>
+    @for (menu of deckMenus; track menu.deck) {
+      <button mat-button type="button" [class]="'nav-' + menu.deck" [matMenuTriggerFor]="deckMenu" [class.active]="deckActive(menu.deck)" [attr.aria-label]="menu.label | t">
+        <mat-icon [fontSet]="menu.fontSet ?? ''">{{ menu.icon }}</mat-icon><span class="label">{{ menu.label | t }}</span>
+      </button>
+      <mat-menu #deckMenu="matMenu">
+        @for (page of menu.pages; track page.path) {
+          @if (page.disabled) {
+            <button mat-menu-item type="button" [disabled]="true">{{ page.label | t }}</button>
+          } @else {
+            <a mat-menu-item [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label | t }}</a>
+          }
+        }
+      </mat-menu>
+    }
     <button mat-button type="button" class="nav-rules" [matMenuTriggerFor]="rulesMenu" [class.active]="rulesActive()" [attr.aria-label]="'nav.rules' | t">
       <mat-icon>menu_book</mat-icon><span class="label">{{ 'nav.rules' | t }}</span>
     </button>

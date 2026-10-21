@@ -17,9 +17,26 @@ const selectedTab = (el: HTMLElement) => el.querySelector('[role="tab"][aria-sel
 const entryIds = (el: HTMLElement) => [...el.querySelectorAll('article.entry')].map((a) => a.getAttribute('data-id'));
 
 describe('Wiki pages', () => {
-  it('redirects /wiki to the Generals page', async () => {
+  it('redirects /wiki to the Default Generals page', async () => {
     const { router } = await open('/wiki');
-    expect(router.url).toBe('/wiki/generals');
+    expect(router.url).toBe('/wiki/default/generals');
+  });
+
+  it.each([
+    ['/wiki/generals', '/wiki/default/generals'],
+    ['/wiki/generals?tab=wu', '/wiki/default/generals?tab=wu'],
+    ['/wiki/basic', '/wiki/default/basic'],
+    ['/wiki/equipment', '/wiki/default/equipment'],
+    ['/wiki/tools', '/wiki/default/tools'],
+    ['/wiki/alternate/generals', '/wiki/default/generals'],
+  ])('sends %s to %s', async (from, to) => {
+    const { router } = await open(from);
+    expect(router.url).toBe(to);
+  });
+
+  it.each(['/wiki/alternate/basic', '/wiki/alternate/equipment', '/wiki/alternate/tools', '/wiki/default/generals', '/wiki/default/tools'])('keeps %s where it is', async (path) => {
+    const { router } = await open(path);
+    expect(router.url).toBe(path);
   });
 
   it('shows Generals in Wei, Shu, Wu and Qun tabs, opening on Wei', async () => {
@@ -63,7 +80,7 @@ describe('Wiki pages', () => {
     (el().querySelectorAll('[role="tab"]')[1] as HTMLElement).click();
     await harness.fixture.whenStable();
     harness.fixture.detectChanges();
-    expect(router.url).toBe('/wiki/tools?tab=delayed');
+    expect(router.url).toBe('/wiki/default/tools?tab=delayed');
     expect(entryIds(el())).toEqual(['capture', 'lightning', 'starvation']);
   });
 
