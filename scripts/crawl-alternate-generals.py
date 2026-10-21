@@ -59,7 +59,9 @@ def post_body(html):
         raise GeneralError("no post body")
     start = html.find(">", start) + 1
     end = html.find(POST_BODY_END, start)
-    return html[start:end if end >= 0 else len(html)]
+    if end < 0:
+        raise GeneralError("no end of the post body, so the comments cannot be told apart")
+    return html[start:end]
 
 
 class IndexParser(HTMLParser):
@@ -102,6 +104,10 @@ LABEL = re.compile(
     r" *:(.*)$",
     re.I,
 )
+
+
+# A line that looks like an ability label but is not one we know: refused, never merged into a skill.
+ODD_ABILITY_LABEL = re.compile(r"^[^:]{0,40}\babilit(?:y|ies)\b[^:]{0,20}:", re.I)
 
 
 class LineParser(HTMLParser):
@@ -181,6 +187,8 @@ def parse_general(html):
         if m:
             sections.append((" ".join(m.group(1).lower().split()), m.group(2).strip(), []))
         elif sections:
+            if ODD_ABILITY_LABEL.match(line):
+                raise GeneralError(f"unrecognised ability label: {line[:60]!r}")
             sections[-1][2].append(line)
 
     skills = [parse_skill(rest, lines) for label, rest, lines in sections if label.startswith("character ability")]
@@ -453,6 +461,13 @@ def main(argv=None):
             continue
         seen.add(rec["id"])
         records.append((entry, parsed, rec))
+
+    if not records:
+        print(f"PROBLEM: no General could be read ({len(entries)} listed, {len(unparsed)} unparsed); nothing written",
+              file=sys.stderr)
+        for u in unparsed[:5]:
+            print(f"  {u['slug']}: {u['reason']}", file=sys.stderr)
+        return 1
 
     out = Path(args.out) / "generals"
     for old in glob.glob(str(out / "*" / "*.json")):

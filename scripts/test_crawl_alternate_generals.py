@@ -94,16 +94,30 @@ class ParseGeneral(unittest.TestCase):
     def test_names_unescape_entities_and_drop_a_dangling_ampersand(self):
         def page(title):
             return (f"<html><head><title>{title} ~ x</title></head><body><div class='post-body entry-content'>"
-                    "<b>Character ability: \"Dual Heroes 双雄 (a b)\"</b><br />Text.</div></body></html>")
+                    "<b>Character ability: \"Dual Heroes 双雄 (a b)\"</b><br />Text.<div class='post-share-buttons'></div></div></body></html>")
         pair = crawl.parse_general(page("Yán Liáng &amp; Wén Chǒu 颜良文丑"))
         self.assertEqual((pair["name"], pair["nameZh"]), ("Yan Liang & Wen Chou", "颜良文丑"))
         trio = crawl.parse_general(page("Zhāng Zhāo &amp; Zhāng Hóng &amp; 张昭张纮"))
         self.assertEqual(trio["name"], "Zhang Zhao & Zhang Hong")
 
+    def test_a_page_without_the_end_of_post_marker_is_refused(self):
+        page = ("<html><head><title>Nobody 无 ~ x</title></head><body><div class='post-body entry-content'>"
+                "<b>Character ability: \"Real 真 (z)\"</b><br />Text.</div>"
+                "<div class='comments'><b>Character ability:</b> \"Fake 假 (j)\"<br />junk</div></body></html>")
+        with self.assertRaisesRegex(crawl.GeneralError, "end of the post"):
+            crawl.parse_general(page)
+
+    def test_an_unrecognised_ability_label_is_refused_not_merged(self):
+        page = ("<html><head><title>Nobody 无 ~ x</title></head><body><div class='post-body entry-content'>"
+                "<b>Character ability: \"A 甲 (a)\"</b><br />Text A.<br />"
+                "<b>Second ability: \"B 乙 (b)\"</b><br />Text B.<div class='post-share-buttons'></div></div></body></html>")
+        with self.assertRaisesRegex(crawl.GeneralError, "ability label"):
+            crawl.parse_general(page)
+
     def test_partners_nil_is_empty(self):
         page = ("<html><head><title>Zhāng Liáo 张辽 ~ x</title></head><body><div class='post-body entry-content'>"
                 "<b>Character ability: \"Sudden Strike 突击 (tū jī)\"</b><br />Text.<br /><br />"
-                "<b>Synergistic Partners:</b><br />Nil.<br /></div></body></html>")
+                "<b>Synergistic Partners:</b><br />Nil.<br /><div class='post-share-buttons'></div></div></body></html>")
         self.assertEqual(crawl.parse_general(page)["synergisticPartners"], [])
 
 
@@ -244,6 +258,27 @@ class Main(unittest.TestCase):
             self.assertEqual(rec["name"], "Liu Bei")
             self.assertTrue((out / "generals/shu/liu-shan.json").exists())
             self.assertTrue((out / "generals/wei/sima-yi.json").exists())
+
+    def test_an_index_with_no_generals_fails_and_keeps_the_existing_data(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            _, out = self.run_main(tmp)
+            before = {p: p.read_bytes() for p in out.glob("generals/*/*.json")}
+            (Path(tmp) / "index.html").write_text(
+                "<html><div class='post-body entry-content'><a name=\"Shu\"></a><div class='post-share-buttons'></div></html>",
+                encoding="utf-8")
+            code = crawl.main(["--file", str(Path(tmp) / "index.html"), "--pages", str(Path(tmp) / "pages"), "--out", str(out)])
+            self.assertEqual(code, 1)
+            self.assertEqual(before, {p: p.read_bytes() for p in out.glob("generals/*/*.json")})
+
+    def test_every_page_unreadable_fails_and_keeps_the_existing_data(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            _, out = self.run_main(tmp)
+            before = {p: p.read_bytes() for p in out.glob("generals/*/*.json")}
+            empty = Path(tmp) / "no-pages"
+            empty.mkdir()
+            code = crawl.main(["--file", str(Path(tmp) / "index.html"), "--pages", str(empty), "--out", str(out)])
+            self.assertEqual(code, 1)
+            self.assertEqual(before, {p: p.read_bytes() for p in out.glob("generals/*/*.json")})
 
     def test_one_unreadable_page_is_skipped_and_run_exits_zero(self):
         with tempfile.TemporaryDirectory() as tmp:
