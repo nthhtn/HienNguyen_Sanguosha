@@ -69,7 +69,7 @@ describe('Wiki pages', () => {
   it('splits Alternate equipment into four tabs with nothing left over, and counts what the game cannot play', async () => {
     const { el } = await open('/wiki/alternate/equipment');
     expect(tabLabels(el())).toEqual(['Weapons (10)', 'Armors (4)', 'Defensive Mount (3)', 'Offensive Mount (3)']);
-    expect(el().querySelector('.summary')!.textContent).toBe('20 cards · 18 in the game');
+    expect(el().querySelector('.summary')!.textContent).toBe('20 cards · 19 in the game');
   });
 
   it('lists the 19 Alternate tools, with Wuxie Kingdom marked not in the game', async () => {

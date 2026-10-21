@@ -32,7 +32,7 @@ describe('decks', () => {
 
   it('names the Alternate cards the game cannot play yet', () => {
     expect(undealtCardIds(deckFor('alternate'), registry).sort()).toEqual(
-      ['ally-far-attack-near', 'amass', 'ascertain', 'fire-fan', 'trident-glaive', 'wuxie-guo'].sort()
+      ['ally-far-attack-near', 'amass', 'ascertain', 'fire-fan', 'wuxie-guo'].sort()
     );
   });
 
