@@ -146,7 +146,7 @@ describe('wikiCards', () => {
     expect(equipment.map((c) => c.subtype)).toEqual([...Array(11).fill('weapon'), ...Array(4).fill('armor'), ...Array(7).fill('horse')]);
     expect(equipment.slice(7, 11).map((c) => [c.name, c.expansion])).toEqual([['Sky Scorcher', 'Base'], ['Ice Sword', 'EX'], ['Ancient Scimitar', 'Army'], ['Fire Fan', 'Army']]);
     expect(equipment.slice(11, 15).map((c) => c.id)).toEqual(['eight-trigrams', 'black-shield', 'silver-lion', 'wood-armor']);
-    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['axe', 'black-pommel', 'crossbow', 'gender-swords', 'green-dragon-blade', 'longbow', 'serpent-spear', 'sky-scorcher', 'ice-sword', 'ancient-scimitar', 'eight-trigrams', 'black-shield', 'silver-lion', 'wood-armor', 'da-yuan', 'di-lu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'hua-liu']);
+    expect(equipment.filter((c) => c.inGame).map((c) => c.id)).toEqual(['axe', 'black-pommel', 'crossbow', 'gender-swords', 'green-dragon-blade', 'longbow', 'serpent-spear', 'sky-scorcher', 'ice-sword', 'ancient-scimitar', 'fire-fan', 'eight-trigrams', 'black-shield', 'silver-lion', 'wood-armor', 'da-yuan', 'di-lu', 'red-hare', 'shadow-runner', 'storm-runner', 'zi-xing', 'hua-liu']);
   });
 
   it('reports data gaps as null or empty, never guessed (Review Focus 2)', () => {
@@ -164,7 +164,7 @@ describe('wikiCards', () => {
     expect(duel.printings).toEqual([{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }]);
   });
 
-  it('includes the crawled EX and Army cards; Blaze and Chains are in the game, Fire Fan is not', () => {
+  it('includes the crawled EX and Army cards; Blaze, Chains and Fire Fan are in the game', () => {
     const all = [...wikiCards('tool'), ...wikiCards('equipment')];
     const ids = ['blaze', 'chains', 'ancient-scimitar', 'fire-fan', 'ice-sword', 'wood-armor', 'black-shield'];
     for (const id of ids) {
@@ -172,7 +172,7 @@ describe('wikiCards', () => {
       expect(card).toBeDefined();
       expect(card.nameZh).toMatch(/[\u4e00-\u9fff]/);
     }
-    expect(['blaze', 'chains', 'fire-fan'].map((id) => all.find((c) => c.id === id)!.inGame)).toEqual([true, true, false]);
+    expect(['blaze', 'chains', 'fire-fan'].map((id) => all.find((c) => c.id === id)!.inGame)).toEqual([true, true, true]);
     expect(all.find((c) => c.id === 'chains')).toMatchObject({ count: 6, nameZh: '铁索连环' });
     expect(all.find((c) => c.id === 'ice-sword')).toMatchObject({ range: 2, subtype: 'weapon' });
     expect(all.find((c) => c.id === 'black-shield')!.printings).toEqual([{ suit: 'club', rank: 2 }]);
@@ -343,9 +343,9 @@ describe('Alternate wikiCards', () => {
     for (const id of ['wu-six-swords', 'trident-glaive']) expect(byId(weapons, id).text).toBeTruthy();
   });
 
-  it('is in the game only when the game has behaviour for the card: Fire Fan is not', () => {
+  it('has every card in the game: none is missing behaviour', () => {
     const notInGame = all('alternate').filter((c) => !c.inGame).map((c) => c.id).sort();
-    expect(notInGame).toEqual(['fire-fan']);
+    expect(notInGame).toEqual([]);
   });
 
   it('shows mounts as Default does', () => {

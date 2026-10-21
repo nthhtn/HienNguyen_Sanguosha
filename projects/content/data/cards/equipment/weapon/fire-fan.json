@@ -1,12 +1,19 @@
 {
   "name": "Fire Fan",
   "nameZh": "朱雀羽扇",
+  "printings": [
+    {
+      "rank": 1,
+      "suit": "diamond"
+    }
+  ],
   "range": 4,
   "source": {
     "crawledAt": "2026-10-05",
     "expansion": "Army",
     "site": "English Sanguosha (Jason Keeney and Scott Maresh)",
-    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/fire-fan"
+    "url": "https://sites.google.com/site/englishsanguosha/expansions/original/army/fire-fan",
+    "printingsFrom": "Alternate deck (diamond Ace), added to Default by the user 2026-10-21"
   },
   "text": "When a non-elemental attack is used, it can change to a fire attack."
 }

@@ -34,6 +34,7 @@ import { woodArmorCard } from './cards/equipment/wood-armor';
 import { genderSwordsCard } from './cards/equipment/gender-swords';
 import { ancientScimitarCard } from './cards/equipment/ancient-scimitar';
 import { iceSwordCard } from './cards/equipment/ice-sword';
+import { fireFanCard } from './cards/equipment/fire-fan';
 import { wuSixSwordsCard } from './cards/equipment/wu-six-swords';
 import { tridentGlaiveCard } from './cards/equipment/trident-glaive';
 import { longbowCard } from './cards/equipment/longbow';
@@ -59,7 +60,7 @@ function buildGenerals(): GeneralDefinition[] {
 }
 
 export function buildContentRegistry(): ContentRegistry {
-  const cards = [shaCard, fireAttackCard, lightningAttackCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard, genderSwordsCard, ancientScimitarCard, iceSwordCard, longbowCard, axeCard, skyScorcherCard, serpentSpearCard, blazeCard, chainsCard, wuSixSwordsCard, tridentGlaiveCard, wuxieGuoCard, amassCard, allyFarAttackNearCard, ascertainCard];
+  const cards = [shaCard, fireAttackCard, lightningAttackCard, shanCard, peachCard, wineCard, duelCard, wuxieCard, drawTwoCard, barbariansCard, hailOfArrowsCard, peachGardenCard, stealCard, breakCard, harvestCard, coerceCard, captureCard, starvationCard, lightningCard, silverLionCard, greenDragonBladeCard, ...horseCards, crossbowCard, blackPommelCard, eightTrigramsCard, blackShieldCard, woodArmorCard, genderSwordsCard, ancientScimitarCard, iceSwordCard, fireFanCard, longbowCard, axeCard, skyScorcherCard, serpentSpearCard, blazeCard, chainsCard, wuSixSwordsCard, tridentGlaiveCard, wuxieGuoCard, amassCard, allyFarAttackNearCard, ascertainCard];
   const generals = buildGenerals();
   return {
     cards: new Map(cards.map((c) => [c.id, c])),

@@ -57,8 +57,7 @@ describe('Wiki Cards in Vietnamese', () => {
   it('the Alternate-only weapons read in Vietnamese', async () => {
     const equipment = await open('/wiki/alternate/equipment');
     expect(['trident-glaive', 'wu-six-swords'].map((id) => text(entry(equipment, id).querySelector('.name')))).toEqual(['Tam Tiêm Lưỡng Nhận Đao', 'Ngô Lục Kiếm']);
-    // Fire Fan is the one Alternate card still not in the game.
-    expect(text(entry(equipment, 'fire-fan').querySelector('.badge'))).toBe('Chưa có trong trò chơi');
+    expect(text(entry(equipment, 'fire-fan').querySelector('.badge'))).toBe('Đã có trong trò chơi');
   });
 
   it('the Alternate Basic page says Slash’s rules text is not available', async () => {

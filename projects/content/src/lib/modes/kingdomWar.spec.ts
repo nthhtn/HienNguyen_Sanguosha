@@ -119,19 +119,19 @@ describe('Kingdom War setup and deal', () => {
     it('deals the same cards with no deck, with {}, and with Default', () => {
       expect(dealt({})).toEqual(dealt());
       expect(dealt({ deck: 'default' })).toEqual(dealt());
-      expect(dealt()).toHaveLength(141);
+      expect(dealt()).toHaveLength(142);
     });
 
-    it('deals the Alternate deck without the cards the game cannot play yet', () => {
+    it('deals the whole Alternate deck', () => {
       const cards = dealt({ deck: 'alternate' });
       expect(cards.filter((c) => c.startsWith('wu-six-swords '))).toHaveLength(1);
       expect(cards.filter((c) => c.startsWith('trident-glaive '))).toHaveLength(1);
       expect(cards.filter((c) => c.startsWith('wuxie-guo '))).toHaveLength(2);
-      expect(cards).toHaveLength(107);
+      expect(cards).toHaveLength(108);
       expect(cards.filter((c) => c.startsWith('amass '))).toHaveLength(2);
       expect(cards.filter((c) => c.startsWith('ally-far-attack-near '))).toHaveLength(1);
       expect(cards.filter((c) => c.startsWith('ascertain '))).toHaveLength(2);
-      expect(cards.filter((c) => c.startsWith('fire-fan '))).toEqual([]);
+      expect(cards.filter((c) => c.startsWith('fire-fan '))).toHaveLength(1);
       expect(cards.filter((c) => c.startsWith('sha '))).toHaveLength(21);
       expect(cards.filter((c) => c.startsWith('shan '))).toHaveLength(14);
       expect(cards.filter((c) => c.startsWith('peach '))).toHaveLength(8);
@@ -170,7 +170,7 @@ describe('Kingdom War setup and deal', () => {
     expect(deckOf(2).filter((c) => c.startsWith('lightning-attack '))).toHaveLength(9);
     expect(deckOf(2).filter((c) => c.startsWith('blaze '))).toHaveLength(3); // Blaze is dealt
     expect(deckOf(2).filter((c) => c.startsWith('chains '))).toHaveLength(6); // Chains is dealt
-    expect(deckOf(2)).toHaveLength(141);
+    expect(deckOf(2)).toHaveLength(142);
   });
 
   it('refuses to build a deck for a card with no printings', () => {
