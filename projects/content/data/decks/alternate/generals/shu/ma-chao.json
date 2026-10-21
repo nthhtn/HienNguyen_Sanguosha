@@ -1,0 +1,30 @@
+{
+  "id": "ma-chao",
+  "name": "Ma Chao",
+  "nameZh": "马超",
+  "force": "shu",
+  "title": "Lone Horseman that Outmatches a Thousand Troops",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Horsemanship",
+      "nameZh": "马术",
+      "text": "Your distance and range when calculated to other players is always -1.",
+      "tag": "Enforced ability"
+    },
+    {
+      "name": "Iron Calvary",
+      "nameZh": "铁骑",
+      "text": "After selecting a player as the target of your ATTACK 杀, you can make a judgement. If the result is red-suited, the target cannot respond to this ATTACK with DODGE 闪."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "The ability description of “Iron Calvary” has been changed from “cannot be evaded” to “cannot respond with DODGE.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/ma-chao.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

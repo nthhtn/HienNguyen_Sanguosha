@@ -1,0 +1,24 @@
+{
+  "id": "zhang-he",
+  "name": "Zhang He",
+  "nameZh": "张郃",
+  "force": "wei",
+  "title": "The Military Clairvoyant",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Flexibility",
+      "nameZh": "巧变",
+      "text": "You can discard an on-hand card to skip one of your phases (except your beginning phase and your end phase).\nIf you skip your drawing phase, you acquire an on-hand card from each of a maximum of two players.\nIf you skip your action phase, you can relocate a card from any player's equipment area/pending area to a corresponding area of another player."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "Minor changes in the description for \"relocating cards\" in his ability. It used to say relocate to a \"reasonable area\", and it now says \"corresponding area\".",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/zhang-he.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

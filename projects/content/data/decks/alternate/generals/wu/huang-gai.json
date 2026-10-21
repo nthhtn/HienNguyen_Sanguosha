@@ -1,0 +1,26 @@
+{
+  "id": "huang-gai",
+  "name": "Huang Gai",
+  "nameZh": "黄盖",
+  "force": "wu",
+  "title": "Sacrificing Flesh for his Kingdom",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Trojan Flesh",
+      "nameZh": "苦肉",
+      "text": "During your action phase, you can lose 1 unit of health, and then draw two cards."
+    }
+  ],
+  "synergisticPartners": [
+    "Zhou Yu 周瑜 (\"Trojan Flesh\" ploy partner)"
+  ],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/huang-gai.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

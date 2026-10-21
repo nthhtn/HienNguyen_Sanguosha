@@ -1,0 +1,21 @@
+{
+  "id": "yue-jin",
+  "name": "Yue Jin",
+  "nameZh": "乐进",
+  "force": "wei",
+  "title": "Determined to Overcome",
+  "skills": [
+    {
+      "name": "Dauntless",
+      "nameZh": "骁果",
+      "text": "At the ending phase of another player's turn, you can discard a basic card. If you do so, that player needs to discard an equipment card, or else you inflict 1 unit of damage to that player."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "This is a brand new character specifically created for Kingdom Wars.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/yue-jin.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

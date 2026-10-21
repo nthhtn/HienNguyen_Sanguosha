@@ -1,0 +1,26 @@
+{
+  "id": "sun-quan",
+  "name": "Sun Quan",
+  "nameZh": "孙权",
+  "force": "wu",
+  "title": "The Young and Virtuous Ruler",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Balance of Power",
+      "nameZh": "制衡",
+      "text": "During your action phase, you can discard up to X cards (X being your maximum health units), then draw the same number of cards. Limited to once per phase."
+    }
+  ],
+  "synergisticPartners": [
+    "Zhou Tai 周泰 (Rescued by)"
+  ],
+  "differenceFromNormal": "“Balance of Power” has been weakened. In a single action phase, he can only discard and draw X cards at most, X being his maximum health. His Ruler Ability is removed.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/sun-quan.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

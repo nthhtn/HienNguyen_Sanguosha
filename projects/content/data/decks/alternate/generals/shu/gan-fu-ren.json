@@ -1,0 +1,28 @@
+{
+  "id": "gan-fu-ren",
+  "name": "Gan Fu Ren (Lady Gan)",
+  "nameZh": "甘夫人",
+  "force": "shu",
+  "title": "The Empress of Shining Accomplishments",
+  "skills": [
+    {
+      "name": "Prudence",
+      "nameZh": "淑慎",
+      "text": "Whenever you regain 1 unit of health, you can let another player of your Kingdom to draw 1 card.\n(Note: I use \"Kingdom\" here instead of allegiance. This is because if you are an \"Ambitionist 野心家\", you are your own kingdom, even though you have other players with the same allegiance as you.)"
+    },
+    {
+      "name": "Divine Wisdom",
+      "nameZh": "神智",
+      "text": "At the beginning of your turn, you can discard all your on-hand cards. If by doing so, the number of your discarded cards is not smaller than X, you regain 1 unit of health (X equals to your current health)."
+    }
+  ],
+  "synergisticPartners": [
+    "Liu Bei 刘备 (Husband)"
+  ],
+  "differenceFromNormal": "She is a brand new character specially created for Kingdom Wars. The initial criticism we had was what a retarded ability she has to give up all her cards. Well, not quite as retarded. She is definitely a support role and can be pretty hard-to-kill. Come on, she only needs to discard ONE card at the start of her turn if she only has 1 unit of health. Then she starts her turn with 2 units of life AND can ask someone else to draw a card. She's much more fun than Zhou Tai 周泰!",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/08/gan-fu-ren-lady-gan.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

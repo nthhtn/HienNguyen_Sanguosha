@@ -315,8 +315,8 @@ class Report(unittest.TestCase):
         self.assertIn("## Only in Alternate (1)", block)
         self.assertIn("- Ding Feng (丁奉), wu", block)
         self.assertIn("## Only in Default (2)", block)
-        self.assertIn("- Cao Cao (曹操), wei", block)
-        self.assertIn("- Dong Zhuo (董卓), qun", block)
+        self.assertIn("- Cao Cao (曹操), wei [cao-cao]", block)
+        self.assertIn("- Dong Zhuo (董卓), qun [dong-zhuo]", block)
 
     def test_report_force_differs(self):
         block = self.report([self.liu_bei(force="wei")], {"liu-bei": ("liu-bei", "nameZh")})
@@ -330,6 +330,7 @@ class Report(unittest.TestCase):
         real = self.liu_bei()
         block = self.report([real], {"liu-bei": ("liu-bei", "nameZh")})
         self.assertIn("Benevolence", block)
+        self.assertIn("## Skills differ (1)", block)  # Generals, not lines
         self.assertIn("text differs", block)
         self.assertIn("regain 1 HP at three", block)
         self.assertIn("only in Default: Rouse", block)

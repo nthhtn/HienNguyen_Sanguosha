@@ -1,0 +1,27 @@
+{
+  "id": "tian-feng",
+  "name": "Tian Feng",
+  "nameZh": "田丰",
+  "force": "qun",
+  "title": "The Precious Talent of Hebei",
+  "skills": [
+    {
+      "name": "Deathly Counsel",
+      "nameZh": "死谏",
+      "text": "When you lose your last on-hand card, you can discard 1 card from another player."
+    },
+    {
+      "name": "With the Tide",
+      "nameZh": "随势",
+      "text": "When another player goes into brink of death, if the source of damage that caused it is from the same Kingdom as you are, draw 1 card from the deck. When a player from the same Kingdom as you dies, you lose 1 unit of health.",
+      "tag": "Enforced ability"
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "He is a brand new character specially created for Kingdom Wars.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/tian-feng.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

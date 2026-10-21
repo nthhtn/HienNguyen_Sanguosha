@@ -1,0 +1,26 @@
+{
+  "id": "xiahou-dun",
+  "name": "Xiahou Dun",
+  "nameZh": "夏侯惇",
+  "force": "wei",
+  "title": "One-eyed Demon",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "An Eye for an Eye",
+      "nameZh": "刚烈",
+      "text": "Every instance after you suffer damage, you can flip a judgement card. If the judgment result is not hearts, the source of damage needs to choose between 1 of 2 options:\n1. Discard two on-hand cards of his/her choice\n2. Receive 1 unit of damage inflicted by you."
+    }
+  ],
+  "synergisticPartners": [
+    "Xiahou Yuan 夏侯淵 (Cousin)"
+  ],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/xiahou-dun.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

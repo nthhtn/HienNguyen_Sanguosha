@@ -1,0 +1,33 @@
+{
+  "id": "huang-yueying",
+  "name": "Huang Yueying",
+  "nameZh": "黄月英",
+  "force": "shu",
+  "title": "The Veiled Heroine",
+  "maxHp": 3,
+  "gender": "female",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Assembling Wisdom",
+      "nameZh": "集智",
+      "text": "When you use a non-time-delay tool card that is not converted from other cards, you can draw a card."
+    },
+    {
+      "name": "Genius",
+      "nameZh": "奇才",
+      "text": "There is no distance restriction on tool cards used by you.",
+      "tag": "Enforced Ability"
+    }
+  ],
+  "synergisticPartners": [
+    "Elder Zhuge Liang 暮年诸葛亮 (Husband)",
+    "Younger Zhuge Liang 卧龙诸葛亮 (Husband)"
+  ],
+  "differenceFromNormal": "“Assembling Wisdom” can only be activated if a non-converted, non-time-delay tool card is used. She cannot draw cards by activating Younger Zhuge Liang's abilities like “Arson 火计”, “Scient 看破” and “Shackle 连环”.\nTo make this more clear, Huang Yueying can only draw 1 card with her ability if she uses the actual tool card. Eg: If she is partnered with Pang Tong and uses the card \"IRON SHACKLES 铁锁链环\", she can draw 1 card. But if she uses any other card with the suit of clubs as IRON SHACKLES (Pang Tong's ability), she cannot draw a card.\n“Genius” becomes enforced in SGS-KW.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/huang-yueying.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

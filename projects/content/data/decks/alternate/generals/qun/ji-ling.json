@@ -1,0 +1,21 @@
+{
+  "id": "ji-ling",
+  "name": "Ji Ling",
+  "nameZh": "纪灵",
+  "force": "qun",
+  "title": "Chief of Zhongjia",
+  "skills": [
+    {
+      "name": "Double Edged",
+      "nameZh": "双刃",
+      "text": "At the beginning of your action phase, you can conduct Points Duel with another player. If you win, it is viewed as you using an ATTACK 杀 on that player or on another player from the victim's Kingdom (this ATTACK will not be considered in calculating the number of ATTACK cards used in your action phase). If you do not win, you action phase is ended."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "He is a brand new character specially created for Kingdom Wars.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/ji-ling.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "guan-yu",
+  "name": "Guan Yu",
+  "nameZh": "关羽",
+  "force": "shu",
+  "title": "The Bearded Gentleman",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Warrior Saint",
+      "nameZh": "武圣",
+      "text": "You can use or play a red-suited card as ATTACK 杀."
+    }
+  ],
+  "synergisticPartners": [
+    "Liu Bei 刘备 (Sworn Brother)"
+  ],
+  "differenceFromNormal": "Guan Yu has 2.5 units of maximum health instead of 2, differentiating him from other characters with 4 units of maximum health in normal SGS. Another character with this additional health is Lu Bu 吕布. Some joke that they eat their horse, RED HARE 赤兔, to gain an addition 0.5 units of maximum health.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/guan-yu.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

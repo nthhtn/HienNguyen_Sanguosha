@@ -1,0 +1,27 @@
+{
+  "id": "lu-bu",
+  "name": "Lu Bu",
+  "nameZh": "吕布",
+  "force": "qun",
+  "title": "Ultimate Combat Skills - Personified",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Without Equal",
+      "nameZh": "无双",
+      "text": "After selecting a player as the target of your ATTACK 杀, the target of your ATTACK need to use two DODGE 闪 successively to neutralize your ATTACK. During a DUEL 决斗, your opponent needs to play two ATTACKS successively each time.",
+      "tag": "Enforced ability"
+    }
+  ],
+  "synergisticPartners": [
+    "Diao Chan (Puppet Master)"
+  ],
+  "differenceFromNormal": "Lu Bu has 2.5 units of maximum health instead of 2, differentiating him from other characters with 4 units of maximum health in normal SGS. Another character with this additional health is Guan Yu 关羽. Some joke that they eat their horse, RED HARE 赤兔, to gain an addition 0.5 units of maximum health.\nThe description of “Without Equal” is slightly changed to clarify the timing of activation.\nIn general, Lu Bu is unchanged from the original SGS.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/lu-bu.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

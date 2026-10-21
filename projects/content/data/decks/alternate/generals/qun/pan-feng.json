@@ -1,0 +1,21 @@
+{
+  "id": "pan-feng",
+  "name": "Pan Feng",
+  "nameZh": "潘凤",
+  "force": "qun",
+  "title": "The Superior General of the Coalition",
+  "skills": [
+    {
+      "name": "Insanity Axe",
+      "nameZh": "狂斧",
+      "text": "Every instance after your ATTACK 杀 inflicts damage to your victim, you can select a card in the equipped item area of your victim and relocate it to your equipped item area, or discard it."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "He is a brand new character specially created for Kingdom Wars.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/pan-feng.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

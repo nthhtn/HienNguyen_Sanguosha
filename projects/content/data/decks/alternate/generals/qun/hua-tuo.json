@@ -1,0 +1,29 @@
+{
+  "id": "hua-tuo",
+  "name": "Hua Tuo",
+  "nameZh": "华佗",
+  "force": "qun",
+  "title": "The Miracle Physician",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "First Aid",
+      "nameZh": "急救",
+      "text": "Outside of your turn, you can use a red-suited card as PEACH 桃."
+    },
+    {
+      "name": "Green Salve",
+      "nameZh": "青囊",
+      "text": "During your action phase, you can discard an on-hand card to cause a player to regain 1 unit of health. Limited to once per phase."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/hua-tuo.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

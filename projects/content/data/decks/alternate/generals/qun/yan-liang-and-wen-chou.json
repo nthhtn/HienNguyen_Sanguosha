@@ -1,0 +1,26 @@
+{
+  "id": "yan-liang-and-wen-chou",
+  "name": "Yan Liang & Wen Chou",
+  "nameZh": "颜良文丑",
+  "force": "qun",
+  "title": "Tiger & Wolf Brothers",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "default",
+  "skills": [
+    {
+      "name": "Dual Heroes",
+      "nameZh": "双雄",
+      "text": "During your draw phase, you can forfeit drawing cards from the deck and make a judgement instead. You acquire this judgement card, and you can use an on-hand card with the different colour of the judgement card as DUEL决斗 in this turn."
+    }
+  ],
+  "synergisticPartners": [
+    "Yuan Shao 袁绍 (Lord)"
+  ],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/yan-liang-wen-chou.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}
