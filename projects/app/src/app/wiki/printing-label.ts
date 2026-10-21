@@ -12,3 +12,8 @@ const FACE_RANK: Record<number, string> = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
 export function printingLabel(printing: WikiCard['printings'][number]): string {
   return `${SUIT_SYMBOL[printing.suit]}${FACE_RANK[printing.rank] ?? printing.rank}`;
 }
+
+// Hearts and diamonds print in red, spades and clubs in black.
+export function printingIsRed(printing: WikiCard['printings'][number]): boolean {
+  return printing.suit === 'heart' || printing.suit === 'diamond';
+}

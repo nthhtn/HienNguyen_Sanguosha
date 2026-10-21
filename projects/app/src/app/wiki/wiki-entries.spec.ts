@@ -138,11 +138,18 @@ describe('WikiCardEntry', () => {
     const el = renderCard(duel);
     const text = el.textContent!;
     expect(el.querySelector('h4 .name')!.textContent).toBe('Duel');
-    for (const part of ['决斗', 'A player can target anyone with this card.', '3 copies', '♠A ♣A ♦A']) {
+    for (const part of ['决斗', 'A player can target anyone with this card.', '3 copies: ♠A ♣A ♦A']) {
       expect(text).toContain(part);
     }
     expect(el.querySelector('.badge')!.textContent!.trim()).toBe('In the game');
     expect(el.querySelector('.badge')!.classList).toContain('on');
+  });
+
+  it('shows each copy in its suit colour: red for hearts and diamonds, the text colour for spades and clubs', () => {
+    const hearts: WikiCard = { ...duel, printings: [{ suit: 'heart', rank: 10 }, { suit: 'spade', rank: 7 }, { suit: 'diamond', rank: 12 }, { suit: 'club', rank: 2 }] };
+    const copies = [...renderCard(hearts).querySelectorAll('.printings .printing')];
+    expect(copies.map((c) => c.textContent!.trim())).toEqual(['♥10', '♠7', '♦Q', '♣2']);
+    expect(copies.map((c) => c.classList.contains('red'))).toEqual([true, false, true, false]);
   });
 
   it('shows gap texts instead of blanks (Review Focus 2)', () => {
