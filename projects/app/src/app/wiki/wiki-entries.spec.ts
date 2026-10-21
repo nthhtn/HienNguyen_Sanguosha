@@ -97,7 +97,7 @@ describe('WikiGeneralEntry', () => {
     expect(lord[0].textContent!.trim()).toBe('Not used in Kingdom War');
   });
 
-  it('shows each skill’s state: Working, Not used in Kingdom War, or Not in the game yet', () => {
+  it('labels only the skills that do not work: Not used in Kingdom War, or Not in the game yet; a working skill has no label', () => {
     const general: WikiGeneral = {
       ...caoCao,
       skills: [
@@ -107,7 +107,7 @@ describe('WikiGeneralEntry', () => {
       ],
     };
     const states = [...renderGeneral(general).querySelectorAll('.skill-status')].map((s) => [s.getAttribute('data-status'), s.textContent!.trim()]);
-    expect(states).toEqual([['working', 'Working'], ['lord', 'Not used in Kingdom War'], ['missing', 'Not in the game yet']]);
+    expect(states).toEqual([['lord', 'Not used in Kingdom War'], ['missing', 'Not in the game yet']]);
   });
 });
 
