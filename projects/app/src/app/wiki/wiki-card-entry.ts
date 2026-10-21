@@ -50,7 +50,7 @@ import { wikiCardView, wikiPackLabel } from './wiki-labels';
           @if (card().printedZh; as printed) {
             <p class="printed"><span class="label">{{ 'wiki.printedZh' | t }}</span> {{ printed }}</p>
           } @else {
-            <p class="gap">{{ 'wiki.noPrintedText' | t }}</p>
+            <p class="gap">{{ 'wiki.noText' | t }}</p>
           }
           @if (view().text; as text) {
             <p class="text default-text"><span class="label">{{ 'wiki.defaultText' | t }}</span> {{ text }}</p>

@@ -542,7 +542,6 @@ export const en = {
   'wiki.skillStatus.working': 'Working',
   'wiki.printedZh': 'Chinese Printed Text',
   'wiki.defaultText': 'Default Text',
-  'wiki.noPrintedText': 'No printed text',
   'wiki.noSkills': 'No skills',
   'wiki.pack.Base': 'Base',
   'wiki.pack.EX': 'EX',

@@ -541,7 +541,6 @@ export const vi: Messages = {
   'wiki.skillStatus.working': 'Đang hoạt động',
   'wiki.printedZh': 'Văn bản gốc tiếng Trung',
   'wiki.defaultText': 'Văn bản của bộ Mặc định',
-  'wiki.noPrintedText': 'Không có văn bản in',
   'wiki.noSkills': 'Không có kỹ năng',
   'wiki.pack.Base': 'Tiêu chuẩn',
   'wiki.pack.EX': 'EX',

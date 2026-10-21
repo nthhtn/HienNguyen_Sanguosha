@@ -82,7 +82,7 @@ Each Alternate card page lists the Alternate deck's cards of that category
 - Whether it works in the game **in the Alternate deck**: In game when the
   game has behaviour for the card, otherwise Not in game yet (today: Fire Fan
   and the six new cards, 7 in all). Slash, Fire Attack and Lightning Attack
-  have no printed text on the source page; show that plainly, not an empty box.
+  have no printed text on the source page; show the Default Wiki's existing "Rules text not available" line (decided by the user), not an empty box.
 
 ### Default Wiki cards
 
@@ -124,7 +124,7 @@ the status comes from the content package, the components only show it).
   Generals.
 - Approved on 2026-10-21: the Rules menu stays shared, old addresses redirect
   to Default, the Chinese-plus-Default-text display for Alternate cards, the
-  "no printed text" wording, and the three skill states with name matching.
+  "Rules text not available" wording for a card with no printed text, and the three skill states with name matching.
 - Every entry must show whether it already works in the game, including each
   skill.
 
@@ -161,10 +161,10 @@ the status comes from the content package, the components only show it).
   as Default's existing Wiki tests pass unchanged.
 - **Chinese text source:** `texts.zh.json`, keyed by Chinese name, one text per
   card (not per printing). Slash, Fire Attack and Lightning Attack have no key
-  at all (not an empty string); the page shows "no printed text" for them.
+  at all (not an empty string); the page shows "Rules text not available" for them, as on Default.
 - **Catalogs:** the Chinese card text is content data and stays out of the
   i18n catalogs. Only the labels (buttons, badges, "Chinese printed text",
-  "Default text", "no printed text") get catalog keys, in both languages.
+  "Default text") get catalog keys; the no-text line reuses the existing `wiki.noText`, in both languages.
 - **Redirects:** router redirects, not component navigation; keep Angular's
   default handling of query strings.
 

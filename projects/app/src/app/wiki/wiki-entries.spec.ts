@@ -179,10 +179,10 @@ describe('WikiCardEntry in the Alternate deck', () => {
     expect(el.textContent).toContain('1 copies');
   });
 
-  it('says there is no printed text, never a blank, and keeps Default’s text', () => {
+  it('says the rules text is not available, never a blank, and keeps Default’s text', () => {
     const el = renderCard({ ...pommel, id: 'sha', name: 'Slash', printedZh: null });
     expect(el.querySelector('.printed')).toBeNull();
-    expect(el.querySelector('.gap')!.textContent!.trim()).toBe('No printed text');
+    expect(el.querySelector('.gap')!.textContent!.trim()).toBe('Rules text not available');
     expect(el.querySelector('.default-text')!.textContent).toContain('English rules of Default.');
   });
 

@@ -58,9 +58,9 @@ describe('Wiki Cards in Vietnamese', () => {
     expect(text(duel.querySelector('.printed'))).toContain('出牌阶段');
   });
 
-  it('the Alternate Basic page says Slash has no printed text', async () => {
+  it('the Alternate Basic page says Slash’s rules text is not available', async () => {
     const el = await open('/wiki/alternate/basic');
-    expect(text(entry(el, 'sha').querySelector('.gap'))).toBe('Không có văn bản in');
+    expect(text(entry(el, 'sha').querySelector('.gap'))).toBe('Chưa có nội dung luật');
   });
 
   it('a Basic Cards page: heading, summary and a card in Vietnamese', async () => {
