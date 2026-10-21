@@ -4,6 +4,8 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import type { DeckId } from 'content';
+import { DeckPicker } from '../deck-picker';
 import type { SeatLimits } from 'protocol';
 import { ApiError, errorMsg } from '../auth/auth.service';
 import { TMsgPipe, type Msg } from '../i18n/msg';
@@ -21,7 +23,7 @@ export interface PlayVsBotsDialogData {
 // the room to open.
 @Component({
   selector: 'app-play-vs-bots-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, TPipe, TMsgPipe],
+  imports: [DeckPicker, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, TPipe, TMsgPipe],
   template: `
     <h2 mat-dialog-title>{{ 'setup.mode.bots' | t }}</h2>
     <mat-dialog-content>
@@ -43,6 +45,7 @@ export interface PlayVsBotsDialogData {
               }
             </mat-button-toggle-group>
           </div>
+          <app-deck-picker [(value)]="deck" />
           @if (seatCount() >= firstRevealMinSeats) {
             <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
             <p class="hint">{{ 'setup.firstReveal.hint' | t }}</p>
@@ -79,6 +82,7 @@ export class PlayVsBotsDialog {
 
   readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
   readonly firstRevealDraw = signal(true);
+  readonly deck = signal<DeckId>('default');
   readonly startingNew = signal(false);
   readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);
@@ -100,7 +104,10 @@ export class PlayVsBotsDialog {
     try {
       const id = await this.rooms.createSolo({
         seatCount,
-        rules: seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {},
+        rules: {
+          ...(this.deck() !== 'default' ? { deck: this.deck() } : {}),
+          ...(seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {}),
+        },
         ...(this.existingRoomId() ? { replace: true } : {}),
       });
       this.dialogRef.close(id);

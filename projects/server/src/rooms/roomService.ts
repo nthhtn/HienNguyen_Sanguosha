@@ -73,10 +73,14 @@ async function storePendingEnd(tx: Repositories, end: PendingEnd | null, at: Dat
   if (end) await tx.games.update(end.game.id, { status: end.outcome === 'finished' ? 'finished' : 'broken', result: end.result, finishedAt: at });
 }
 
-// The rules the engine reads. Unknown keys never get stored, and First Reveal
-// Bonus is dropped below the seat count where it applies.
+// The rules the engine reads. Unknown keys never get stored, First Reveal
+// Bonus is dropped below the seat count where it applies, and the Default deck
+// is stored as no deck at all.
 function rulesFrom(rules: GameRules, seatCount: number): GameRules {
-  return rules.firstRevealDraw === undefined || seatCount < FIRST_REVEAL_MIN_SEATS ? {} : { firstRevealDraw: rules.firstRevealDraw };
+  return {
+    ...(rules.firstRevealDraw === undefined || seatCount < FIRST_REVEAL_MIN_SEATS ? {} : { firstRevealDraw: rules.firstRevealDraw }),
+    ...(rules.deck === undefined || rules.deck === 'default' ? {} : { deck: rules.deck }),
+  };
 }
 
 function requireName(raw: string): string {

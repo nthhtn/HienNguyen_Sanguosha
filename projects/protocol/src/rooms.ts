@@ -1,13 +1,20 @@
 import type { Static } from '@sinclair/typebox';
 import type { GameRules } from 'engine';
 import type { LastGame } from './game';
-import type { CreateRoomBodySchema, JoinRoomBodySchema } from './schemas/rooms';
+import type { CreateRoomBodySchema, JoinRoomBodySchema, RoomRulesSchema } from './schemas/rooms';
+
+// The card distributions a room can be dealt from. The content package holds the
+// same list; the server has a test that the two agree.
+export const DECK_IDS = ['default', 'alternate'] as const;
+export type DeckId = (typeof DECK_IDS)[number];
 
 export type RoomVisibility = 'open' | 'solo';
 export type RoomStatus = 'lobby' | 'playing' | 'closed';
 export type MemberKind = 'human' | 'bot';
 
 export type CreateRoomBody = Static<typeof CreateRoomBodySchema>;
+// The rules a host can change, as the server takes them.
+export type RoomRules = Static<typeof RoomRulesSchema>;
 export type JoinRoomBody = Static<typeof JoinRoomBodySchema>;
 
 // How many seats a room may have. The server decides; clients only offer it.

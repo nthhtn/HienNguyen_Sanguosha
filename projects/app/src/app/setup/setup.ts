@@ -8,12 +8,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import type { DeckId } from 'content';
+import { DeckPicker } from '../deck-picker';
 import { GameMode, GameService } from '../game.service';
 import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-setup',
-  imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, TPipe],
+  imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, DeckPicker, TPipe],
   template: `
     <div class="home" style="background-image: url('/card-art/misc/landing.jpg')">
       <mat-card class="hero" appearance="raised">
@@ -65,6 +67,8 @@ import { TPipe } from '../i18n/t.pipe';
               }
             </mat-button-toggle-group>
           </div>
+
+          <app-deck-picker [(value)]="deck" />
 
           @if (showFirstReveal()) {
             <div class="field">
@@ -141,6 +145,7 @@ export class Setup {
   readonly mode = signal<GameMode>('vs-bots');
   readonly seatCount = signal(4);
   readonly firstRevealDraw = signal(true);
+  readonly deck = signal<DeckId>('default');
   // The rule needs a big table, so the option only appears there.
   protected readonly showFirstReveal = computed(() => this.seatCount() >= FIRST_REVEAL_MIN_SEATS);
   // Typed names by seat index; blanks fall back to "Seat N".
@@ -158,7 +163,11 @@ export class Setup {
 
   startGame(): void {
     const clamped = Math.min(this.maxSeats, Math.max(2, this.seatCount() || 2));
-    this.gameService.startGame(clamped, undefined, this.mode(), this.nameSlots().map((i) => this.names()[i] ?? ''), clamped >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : undefined);
+    const rules = {
+      ...(this.deck() !== 'default' ? { deck: this.deck() } : {}),
+      ...(clamped >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {}),
+    };
+    this.gameService.startGame(clamped, undefined, this.mode(), this.nameSlots().map((i) => this.names()[i] ?? ''), Object.keys(rules).length > 0 ? rules : undefined);
     this.router.navigateByUrl('/game');
   }
 }

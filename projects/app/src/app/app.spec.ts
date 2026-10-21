@@ -36,7 +36,8 @@ describe('App', () => {
           { path: 'my-games', children: [] },
           { path: 'sign-in', children: [] },
           { path: 'sign-up', children: [] },
-          { path: 'wiki/:page', children: [] },
+          { path: 'wiki/default/:page', children: [] },
+          { path: 'wiki/alternate/:page', children: [] },
           { path: 'wiki/rules/:page', children: [] },
         ]),
       ],
@@ -112,19 +113,25 @@ describe('App', () => {
     const play = el.querySelector('a.nav-play') as HTMLAnchorElement;
     expect(play.getAttribute('href')).toBe('/play');
     expect(play.classList).toContain('active');
-    await TestBed.inject(Router).navigateByUrl('/wiki/generals');
+    await TestBed.inject(Router).navigateByUrl('/wiki/default/generals');
     fixture.detectChanges();
     expect(play.classList).not.toContain('active');
-    expect(el.querySelector('button.nav-cards')!.classList).toContain('active');
+    expect(el.querySelector('button.nav-default')!.classList).toContain('active');
+    expect(el.querySelector('button.nav-alternate')!.classList).not.toContain('active');
+    await TestBed.inject(Router).navigateByUrl('/wiki/alternate/tools');
+    fixture.detectChanges();
+    expect(el.querySelector('button.nav-default')!.classList).not.toContain('active');
+    expect(el.querySelector('button.nav-alternate')!.classList).toContain('active');
   });
 
-  it('has four items in the bar: Play Offline, Play Online, Cards and Rules, each with an icon', async () => {
+  it('has five items in the bar: Play Offline, Play Online, Default, Alternate and Rules, each with an icon', async () => {
     const { el } = await render();
     const items = [...el.querySelectorAll('nav.nav > a, nav.nav > button')];
     expect(items.map((i) => [i.querySelector('.label')!.textContent, i.querySelector('mat-icon')!.textContent])).toEqual([
       ['Play Offline', 'play_arrow'],
       ['Play Online', 'public'],
-      ['Cards', 'swords'],
+      ['Default', 'swords'],
+      ['Alternate', 'shuffle'],
       ['Rules', 'menu_book'],
     ]);
   });
@@ -165,19 +172,38 @@ describe('App', () => {
     expect(el.querySelector('a.nav-online')!.classList).toContain('active');
   });
 
-  it('has a Cards menu with four options and no icons', async () => {
+  it('has no single Cards button any more', async () => {
+    const { el } = await render();
+    expect(el.querySelector('button.nav-cards')).toBeNull();
+  });
+
+  it('has a Default menu with four options and no icons', async () => {
     const { el, fixture } = await render();
-    (el.querySelector('nav.nav button.nav-cards') as HTMLButtonElement).click();
+    (el.querySelector('nav.nav button.nav-default') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
     const items = [...document.querySelectorAll('.mat-mdc-menu-panel a[mat-menu-item]')] as HTMLAnchorElement[];
     expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
-      ['Generals', '/wiki/generals'],
-      ['Basic Cards', '/wiki/basic'],
-      ['Equipment', '/wiki/equipment'],
-      ['Tools', '/wiki/tools'],
+      ['Generals', '/wiki/default/generals'],
+      ['Basic Cards', '/wiki/default/basic'],
+      ['Equipment', '/wiki/default/equipment'],
+      ['Tools', '/wiki/default/tools'],
     ]);
     expect(items.every((a) => !a.querySelector('mat-icon'))).toBe(true);
+  });
+
+  it('has an Alternate menu whose Generals item is shown but disabled', async () => {
+    const { el, fixture } = await render();
+    (el.querySelector('nav.nav button.nav-alternate') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...document.querySelectorAll('.mat-mdc-menu-panel [mat-menu-item]')] as HTMLElement[];
+    expect(items.map((i) => i.textContent!.trim())).toEqual(['Generals', 'Basic Cards', 'Equipment', 'Tools']);
+    const [generals, ...pages] = items;
+    expect(generals.tagName).toBe('BUTTON');
+    expect((generals as HTMLButtonElement).disabled).toBe(true);
+    expect(generals.getAttribute('href')).toBeNull();
+    expect(pages.map((a) => a.getAttribute('href'))).toEqual(['/wiki/alternate/basic', '/wiki/alternate/equipment', '/wiki/alternate/tools']);
   });
 
   it('has a Rules menu with the six rules pages, highlighted on any of them', async () => {
@@ -214,10 +240,10 @@ describe('App', () => {
   it('marks the current page for screen readers', async () => {
     const { el, fixture } = await render('/setup');
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBe('page');
-    await TestBed.inject(Router).navigateByUrl('/wiki/basic');
+    await TestBed.inject(Router).navigateByUrl('/wiki/default/basic');
     fixture.detectChanges();
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBeNull();
-    (el.querySelector('nav.nav button.nav-cards') as HTMLButtonElement).click();
+    (el.querySelector('nav.nav button.nav-default') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
     const current = [...document.querySelectorAll('.mat-mdc-menu-panel a[aria-current="page"]')];
@@ -227,7 +253,8 @@ describe('App', () => {
   it('icon buttons have accessible names (Review Focus 4)', async () => {
     const { el } = await render();
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play Offline');
-    expect(el.querySelector('button.nav-cards')!.getAttribute('aria-label')).toBe('Cards');
+    expect(el.querySelector('button.nav-default')!.getAttribute('aria-label')).toBe('Default');
+    expect(el.querySelector('button.nav-alternate')!.getAttribute('aria-label')).toBe('Alternate');
     expect(el.querySelector('button.nav-rules')!.getAttribute('aria-label')).toBe('Rules');
   });
 
@@ -252,7 +279,7 @@ describe('App', () => {
 
   it("shows the signed-in user's name, and Sign Out signs out and goes to Setup", async () => {
     me.set({ id: 'u1', kind: 'registered', displayName: 'Ann', email: 'ann@example.com' });
-    const { fixture, el } = await render('/wiki/generals');
+    const { fixture, el } = await render('/wiki/default/generals');
     const account = el.querySelector('button.account') as HTMLButtonElement;
     expect(account.textContent).toContain('Ann');
     account.click();

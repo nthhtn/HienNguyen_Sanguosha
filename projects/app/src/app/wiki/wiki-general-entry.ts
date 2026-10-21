@@ -65,9 +65,7 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
                 <span class="zh">{{ zh }}</span>
               }
               <span class="skill-text">{{ view().skills[i].text }}</span>
-              @if (skill.lord) {
-                <span class="lord-note">{{ 'wiki.lordNote' | t }}</span>
-              }
+              <span class="skill-status" [attr.data-status]="skill.status">{{ statusLabels[skill.status] | t }}</span>
             </li>
           } @empty {
             <li class="gap">{{ 'wiki.noSkills' | t }}</li>
@@ -97,7 +95,8 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
     .kingdom-Qun { --kingdom: #8a7f8c; }
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
     .expansion-tag, .gender-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
-    .lord-note { display: block; font: var(--mat-sys-body-small); font-style: italic; color: var(--mat-sys-on-surface-variant); }
+    .skill-status { display: block; width: fit-content; margin-top: 2px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); }
+    .skill-status[data-status='working'] { border-color: var(--mat-sys-primary); color: var(--mat-sys-primary); }
     .hearts { display: inline-flex; color: #d84a3f; }
     .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .skills { margin: 0; padding-left: 18px; }
@@ -111,6 +110,12 @@ export class WikiGeneralEntry {
   private readonly i18n = inject(I18n);
   private readonly effects = inject(SoundEffects);
   readonly general = input.required<WikiGeneral>();
+  // The words for a skill's state. A Lord skill and a skill the game lacks reuse the Wiki's existing lines.
+  protected readonly statusLabels: Record<WikiGeneral['skills'][number]['status'], MessageKey> = {
+    working: 'wiki.skillStatus.working',
+    lord: 'wiki.lordNote',
+    missing: 'wiki.notInGame',
+  };
   // The General's recorded voice (its death cry), if it has one.
   protected readonly voiceUrl = computed(() => generalDeathVoiceUrl(this.general().id));
   protected play(url: string): void {

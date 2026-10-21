@@ -17,6 +17,13 @@ describe('room schemas', () => {
     expect(Value.Check(RoomRulesSchema, { firstRevealDraw: 'yes' })).toBe(false);
   });
 
+  it('accepts the known decks and refuses any other', () => {
+    expect(Value.Check(RoomRulesSchema, { deck: 'alternate' })).toBe(true);
+    expect(Value.Check(RoomRulesSchema, { deck: 'default', firstRevealDraw: true })).toBe(true);
+    expect(Value.Check(RoomRulesSchema, { deck: 'bogus' })).toBe(false);
+    expect(Value.Check(RoomRulesSchema, { deck: 1 })).toBe(false);
+  });
+
   it('requires a display name to join', () => {
     expect(Value.Check(JoinRoomBodySchema, {})).toBe(false);
     expect(Value.Check(JoinRoomBodySchema, { displayName: 'Bo' })).toBe(true);

@@ -1,6 +1,6 @@
 import { cardDisplayData } from './display';
 import { GENERAL_SKILLS } from './generals';
-import { equipmentTabs, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, WikiCard } from './wiki';
+import { equipmentTabs, generalSkillsInGame, skillIdFromName, skillStatus, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, WikiCard } from './wiki';
 
 describe('wikiGenerals', () => {
   const generals = wikiGenerals();
@@ -76,7 +76,7 @@ describe('wikiGenerals', () => {
     const xiahouYuan = generals.find((g) => g.id === 'xiahou-yuan')!;
     expect(xiahouYuan).toMatchObject({ name: 'Xiahou Yuan', nameZh: '夏侯渊', title: 'Running Cheetah', titleZh: '急行的猎豹', maxHp: 4 });
     expect(xiahouYuan.skills).toEqual([{
-      name: 'Godspeed', nameZh: '神速', lord: false,
+      name: 'Godspeed', nameZh: '神速', lord: false, status: 'working',
       text: 'During his turn, Xiahou Yuan can exercise either or both of the following options to attack any character regardless of their distance from him: Skip his judgment and drawing phases. Skip his action phase and discard any equipment card.',
     }]);
   });
@@ -256,5 +256,103 @@ describe('wiki Generals: gender and Lord skills', () => {
     expect(general('liu-bei').skills.map((s) => [s.name, s.lord])).toEqual([['Kindness', false], ['Fierce General', true]]);
     const lords = wikiGenerals().flatMap((g) => g.skills.filter((s) => s.lord).map((s) => s.name)).sort();
     expect(lords).toEqual(['Amber Sky', 'Bloodline', 'Escort', 'Exaltation', 'Fierce General', 'Rescued', 'Seem Foolish', 'Takeover', 'Violent Tyrant']);
+  });
+});
+
+describe('skill status', () => {
+  it('turns a skill name into the id its code uses', () => {
+    expect(skillIdFromName('Evil Hero')).toBe('evil-hero');
+    expect(skillIdFromName("Heaven's Envy")).toBe('heavens-envy');
+    expect(skillIdFromName('  Sky -- Scorcher! ')).toBe('sky-scorcher');
+  });
+
+  it('is working when the game has code for it, whatever the case or apostrophes', () => {
+    const coded = new Set(['evil-hero', 'heavens-envy']);
+    expect(skillStatus({ name: 'Evil Hero', lord: false }, coded)).toBe('working');
+    expect(skillStatus({ name: "Heaven's Envy", lord: false }, coded)).toBe('working');
+  });
+
+  it('is not in the game yet when there is no code for it', () => {
+    expect(skillStatus({ name: 'Evil Hero', lord: false }, new Set())).toBe('missing');
+  });
+
+  it('is a Lord skill, not used in Kingdom War, whether or not it has code', () => {
+    expect(skillStatus({ name: 'Escort', lord: true }, new Set())).toBe('lord');
+    expect(skillStatus({ name: 'Escort', lord: true }, new Set(['escort']))).toBe('lord');
+  });
+
+  it('puts a General’s skills in the game only when it has code and none of its skills is missing', () => {
+    expect(generalSkillsInGame(true, [{ status: 'working' }, { status: 'lord' }])).toBe(true);
+    expect(generalSkillsInGame(true, [{ status: 'working' }, { status: 'missing' }])).toBe(false);
+    expect(generalSkillsInGame(false, [])).toBe(false);
+  });
+
+  it('finds code for every skill of every General in the data, so none reads as not in the game by accident', () => {
+    const missing = wikiGenerals().flatMap((g) => g.skills.filter((s) => s.status === 'missing').map((s) => `${g.id}: ${s.name}`));
+    expect(missing).toEqual([]);
+  });
+
+  it('counts the skills: 91 working and 9 Lord', () => {
+    const skills = wikiGenerals().flatMap((g) => g.skills);
+    expect(skills.filter((s) => s.status === 'working')).toHaveLength(91);
+    expect(skills.filter((s) => s.status === 'lord')).toHaveLength(9);
+    expect(skills.every((s) => (s.status === 'lord') === s.lord)).toBe(true);
+  });
+});
+
+describe('Alternate wikiCards', () => {
+  const byId = (cards: WikiCard[], id: string) => cards.find((c) => c.id === id)!;
+  const all = (deck: 'default' | 'alternate') => (['basic', 'tool', 'equipment'] as const).flatMap((c) => wikiCards(c, deck));
+
+  it('lists the Alternate deck’s cards by category', () => {
+    expect(wikiCards('basic', 'alternate')).toHaveLength(6);
+    expect(wikiCards('tool', 'alternate')).toHaveLength(19);
+    expect(wikiCards('equipment', 'alternate')).toHaveLength(20);
+  });
+
+  it('marks every card with its deck, and only Alternate cards lack a pack', () => {
+    expect(all('alternate').every((c) => c.deck === 'alternate' && c.expansion === null)).toBe(true);
+    expect(all('default').every((c) => c.deck === 'default' && c.expansion !== null && c.printedZh === null)).toBe(true);
+  });
+
+  it('shows the Alternate copies, not Default’s', () => {
+    expect(byId(wikiCards('basic', 'alternate'), 'sha').count).toBe(21);
+    expect(byId(wikiCards('basic'), 'sha').count).toBe(30);
+    expect(byId(wikiCards('basic', 'alternate'), 'sha').printings).toHaveLength(21);
+  });
+
+  it('takes the English name and text from Default when the card exists there, and the Chinese text from the crawl', () => {
+    const pommel = byId(wikiCards('equipment', 'alternate'), 'black-pommel');
+    expect(pommel).toMatchObject({ name: 'Black Pommel', nameZh: '青釭剑', range: 2, subtype: 'weapon', category: 'equipment' });
+    expect(pommel.text).toBe(byId(wikiCards('equipment'), 'black-pommel').text);
+    expect(pommel.printedZh).toContain('无视其防具');
+  });
+
+  it('has no printed text for Slash, and keeps Default’s English text beside it', () => {
+    const sha = byId(wikiCards('basic', 'alternate'), 'sha');
+    expect(sha.printedZh).toBeNull();
+    expect(sha.text).toBe(byId(wikiCards('basic'), 'sha').text);
+  });
+
+  it('names a card Default lacks from ids.json, with no English text', () => {
+    const wuxieGuo = byId(wikiCards('tool', 'alternate'), 'wuxie-guo');
+    expect(wuxieGuo).toMatchObject({ name: 'Wuxie Kingdom', text: null, inGame: false });
+    expect(wuxieGuo.printedZh).toBeTruthy();
+  });
+
+  it('is in the game only when the game has behaviour for the card: seven are not', () => {
+    const notInGame = all('alternate').filter((c) => !c.inGame).map((c) => c.id).sort();
+    expect(notInGame).toEqual(['ally-far-attack-near', 'amass', 'ascertain', 'fire-fan', 'trident-glaive', 'wu-six-swords', 'wuxie-guo']);
+  });
+
+  it('shows mounts as Default does', () => {
+    expect(byId(wikiCards('equipment', 'alternate'), 'red-hare')).toMatchObject({ subtype: 'horse', mount: 'offensive' });
+  });
+
+  it('splits the Alternate equipment and tools into tabs with nothing left over', () => {
+    expect(wikiCardTabs('equipment', 'alternate').map((t) => t.key)).not.toContain('other');
+    const tools = wikiCardTabs('tool', 'alternate');
+    expect(tools.map((t) => t.key)).toEqual(['instant', 'delayed']);
+    expect(tools[1].entries.map((c) => c.id).sort()).toEqual(['capture', 'lightning', 'starvation']);
   });
 });

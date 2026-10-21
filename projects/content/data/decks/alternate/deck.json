@@ -1,0 +1,662 @@
+{
+  "id": "alternate",
+  "entries": [
+    {
+      "cardId": "sha",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "spade"
+        },
+        {
+          "rank": 7,
+          "suit": "spade"
+        },
+        {
+          "rank": 8,
+          "suit": "spade"
+        },
+        {
+          "rank": 8,
+          "suit": "spade"
+        },
+        {
+          "rank": 9,
+          "suit": "spade"
+        },
+        {
+          "rank": 10,
+          "suit": "spade"
+        },
+        {
+          "rank": 11,
+          "suit": "spade"
+        },
+        {
+          "rank": 2,
+          "suit": "club"
+        },
+        {
+          "rank": 3,
+          "suit": "club"
+        },
+        {
+          "rank": 4,
+          "suit": "club"
+        },
+        {
+          "rank": 5,
+          "suit": "club"
+        },
+        {
+          "rank": 8,
+          "suit": "club"
+        },
+        {
+          "rank": 9,
+          "suit": "club"
+        },
+        {
+          "rank": 10,
+          "suit": "club"
+        },
+        {
+          "rank": 11,
+          "suit": "club"
+        },
+        {
+          "rank": 11,
+          "suit": "club"
+        },
+        {
+          "rank": 10,
+          "suit": "heart"
+        },
+        {
+          "rank": 12,
+          "suit": "heart"
+        },
+        {
+          "rank": 10,
+          "suit": "diamond"
+        },
+        {
+          "rank": 11,
+          "suit": "diamond"
+        },
+        {
+          "rank": 12,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "fire-attack",
+      "printings": [
+        {
+          "rank": 4,
+          "suit": "heart"
+        },
+        {
+          "rank": 4,
+          "suit": "diamond"
+        },
+        {
+          "rank": 5,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "lightning-attack",
+      "printings": [
+        {
+          "rank": 6,
+          "suit": "spade"
+        },
+        {
+          "rank": 7,
+          "suit": "spade"
+        },
+        {
+          "rank": 6,
+          "suit": "club"
+        },
+        {
+          "rank": 7,
+          "suit": "club"
+        },
+        {
+          "rank": 8,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "shan",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "heart"
+        },
+        {
+          "rank": 11,
+          "suit": "heart"
+        },
+        {
+          "rank": 13,
+          "suit": "heart"
+        },
+        {
+          "rank": 2,
+          "suit": "diamond"
+        },
+        {
+          "rank": 3,
+          "suit": "diamond"
+        },
+        {
+          "rank": 6,
+          "suit": "diamond"
+        },
+        {
+          "rank": 7,
+          "suit": "diamond"
+        },
+        {
+          "rank": 7,
+          "suit": "diamond"
+        },
+        {
+          "rank": 8,
+          "suit": "diamond"
+        },
+        {
+          "rank": 8,
+          "suit": "diamond"
+        },
+        {
+          "rank": 9,
+          "suit": "diamond"
+        },
+        {
+          "rank": 10,
+          "suit": "diamond"
+        },
+        {
+          "rank": 11,
+          "suit": "diamond"
+        },
+        {
+          "rank": 13,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "peach",
+      "printings": [
+        {
+          "rank": 4,
+          "suit": "heart"
+        },
+        {
+          "rank": 6,
+          "suit": "heart"
+        },
+        {
+          "rank": 7,
+          "suit": "heart"
+        },
+        {
+          "rank": 8,
+          "suit": "heart"
+        },
+        {
+          "rank": 9,
+          "suit": "heart"
+        },
+        {
+          "rank": 10,
+          "suit": "heart"
+        },
+        {
+          "rank": 12,
+          "suit": "heart"
+        },
+        {
+          "rank": 2,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "wine",
+      "printings": [
+        {
+          "rank": 9,
+          "suit": "spade"
+        },
+        {
+          "rank": 9,
+          "suit": "club"
+        },
+        {
+          "rank": 9,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "lightning",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "capture",
+      "printings": [
+        {
+          "rank": 6,
+          "suit": "club"
+        },
+        {
+          "rank": 6,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "starvation",
+      "printings": [
+        {
+          "rank": 10,
+          "suit": "spade"
+        },
+        {
+          "rank": 10,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "break",
+      "printings": [
+        {
+          "rank": 3,
+          "suit": "spade"
+        },
+        {
+          "rank": 4,
+          "suit": "spade"
+        },
+        {
+          "rank": 12,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "steal",
+      "printings": [
+        {
+          "rank": 3,
+          "suit": "spade"
+        },
+        {
+          "rank": 4,
+          "suit": "spade"
+        },
+        {
+          "rank": 3,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "duel",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "spade"
+        },
+        {
+          "rank": 1,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "coerce",
+      "printings": [
+        {
+          "rank": 12,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "draw-two",
+      "printings": [
+        {
+          "rank": 7,
+          "suit": "heart"
+        },
+        {
+          "rank": 8,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "wuxie",
+      "printings": [
+        {
+          "rank": 11,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "wuxie-guo",
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "club"
+        },
+        {
+          "rank": 12,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "hail-of-arrows",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "barbarians",
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "spade"
+        },
+        {
+          "rank": 7,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "peach-garden",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "harvest",
+      "printings": [
+        {
+          "rank": 3,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "chains",
+      "printings": [
+        {
+          "rank": 12,
+          "suit": "spade"
+        },
+        {
+          "rank": 12,
+          "suit": "club"
+        },
+        {
+          "rank": 13,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "blaze",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "heart"
+        },
+        {
+          "rank": 3,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "amass",
+      "printings": [
+        {
+          "rank": 11,
+          "suit": "heart"
+        },
+        {
+          "rank": 4,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "ascertain",
+      "printings": [
+        {
+          "rank": 3,
+          "suit": "club"
+        },
+        {
+          "rank": 4,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "ally-far-attack-near",
+      "printings": [
+        {
+          "rank": 9,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "crossbow",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "black-pommel",
+      "printings": [
+        {
+          "rank": 6,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "gender-swords",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "ice-sword",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "wu-six-swords",
+      "printings": [
+        {
+          "rank": 6,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "trident-glaive",
+      "printings": [
+        {
+          "rank": 12,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "axe",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "serpent-spear",
+      "printings": [
+        {
+          "rank": 12,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "fire-fan",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "cardId": "longbow",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "eight-trigrams",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "black-shield",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "silver-lion",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "wood-armor",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "shadow-runner",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "storm-runner",
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "di-lu",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "cardId": "da-yuan",
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "cardId": "red-hare",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "cardId": "zi-xing",
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "diamond"
+        }
+      ]
+    }
+  ]
+}

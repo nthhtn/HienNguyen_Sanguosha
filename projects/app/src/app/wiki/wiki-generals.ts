@@ -12,6 +12,7 @@ import { wikiTabLabel } from './wiki-labels';
   imports: [MatTabsModule, WikiGeneralEntry, TPipe],
   template: `
     <h2>{{ 'wiki.page.generals' | t }}</h2>
+    <p class="deck-line">{{ 'lobby.deckSummary' | t: { deck: 'setup.deck.default' | t } }}</p>
     <p class="summary">{{ 'wiki.generals.summary' | t: { count: generals.length, withSkills } }}</p>
     <mat-tab-group
       [selectedIndex]="tab.selectedIndex()"
@@ -34,7 +35,7 @@ import { wikiTabLabel } from './wiki-labels';
   `,
   styles: `
     :host { display: block; max-width: 960px; margin: 0 auto; }
-    .summary, .empty { color: var(--mat-sys-on-surface-variant); }
+    .summary, .empty, .deck-line { color: var(--mat-sys-on-surface-variant); }
   `,
 })
 export class WikiGenerals {

@@ -3,6 +3,7 @@
  */
 export * from './lib/registry';
 export * from './lib/modes/kingdomWar';
+export * from './lib/decks';
 export * from './lib/assets';
 export * from './lib/display';
 export * from './lib/judgmentOutcome';

@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { DECK_IDS as CONTENT_DECK_IDS } from 'content';
+import { DECK_IDS as PROTOCOL_DECK_IDS } from 'protocol';
 import type { RoomSnapshot } from 'protocol';
 import { createMemoryRepositories } from '../persistence/memory/memoryRepositories';
 import { UserRecord } from '../persistence/records';
@@ -70,6 +72,18 @@ describe('RoomService', () => {
       };
       expect(await rulesOf('Ann', 3)).toEqual({});
       expect(await rulesOf('Bo', 5)).toEqual({ firstRevealDraw: true });
+    });
+
+    it('keeps the deck at any seat count, and stores nothing for Default', async () => {
+      const { rooms, registered } = await setup();
+      const rulesOf = async (name: string, seatCount: number, deck: 'default' | 'alternate') => {
+        const user = await registered(name);
+        const id = await rooms.create(user, { seatCount, rules: { deck }, displayName: name });
+        return rooms.snapshot(user, id).rules;
+      };
+      expect(await rulesOf('Ann', 3, 'alternate')).toEqual({ deck: 'alternate' });
+      expect(await rulesOf('Bo', 5, 'alternate')).toEqual({ deck: 'alternate' });
+      expect(await rulesOf('Cy', 3, 'default')).toEqual({});
     });
 
     it('stores the room with its host', async () => {
@@ -287,6 +301,16 @@ describe('RoomService', () => {
       expect(host.connection.room?.rules).toEqual({ firstRevealDraw: true });
       await run({ type: 'lobby.setRules', seatCount: 4, rules: { firstRevealDraw: true } });
       expect(host.connection.room).toMatchObject({ seatCount: 4, rules: {} });
+      expect(host.connection.room?.rules).toEqual({});
+    });
+
+    it('keeps the deck when the seat count drops below the First Reveal Bonus minimum', async () => {
+      const { run, host } = await lobby();
+      await run({ type: 'lobby.setRules', seatCount: 5, rules: { firstRevealDraw: true, deck: 'alternate' } });
+      expect(host.connection.room?.rules).toEqual({ firstRevealDraw: true, deck: 'alternate' });
+      await run({ type: 'lobby.setRules', seatCount: 4, rules: { firstRevealDraw: true, deck: 'alternate' } });
+      expect(host.connection.room?.rules).toEqual({ deck: 'alternate' });
+      await run({ type: 'lobby.setRules', seatCount: 4, rules: { deck: 'default' } });
       expect(host.connection.room?.rules).toEqual({});
     });
 
@@ -552,5 +576,11 @@ describe('RoomService', () => {
 
       expect((await repos.rooms.listLive()).find((entry) => entry.room.id === room.id)).toBeUndefined();
     });
+  });
+});
+
+describe('deck ids', () => {
+  it('are the same in the protocol and in the content', () => {
+    expect([...PROTOCOL_DECK_IDS]).toEqual([...CONTENT_DECK_IDS]);
   });
 });

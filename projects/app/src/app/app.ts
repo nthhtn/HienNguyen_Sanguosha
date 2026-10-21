@@ -12,6 +12,7 @@ import { LanguageSwitcher } from './i18n/language-switcher';
 import { MusicService, SoundEffects } from './music.service';
 import { I18n } from './i18n/i18n.service';
 import type { MessageKey } from './i18n/messages';
+import type { DeckId } from 'content';
 import { TPipe } from './i18n/t.pipe';
 
 @Component({
@@ -23,11 +24,31 @@ import { TPipe } from './i18n/t.pipe';
 export class App {
   private readonly i18n = inject(I18n);
   protected readonly title = computed(() => this.i18n.t('app.title'));
-  protected readonly cardPages: { path: string; label: MessageKey }[] = [
-    { path: '/wiki/generals', label: 'nav.cards.generals' },
-    { path: '/wiki/basic', label: 'nav.cards.basic' },
-    { path: '/wiki/equipment', label: 'nav.cards.equipment' },
-    { path: '/wiki/tools', label: 'nav.cards.tools' },
+  // One menu per deck. Alternate has no Generals yet, so its item is shown but disabled.
+  protected readonly deckMenus: { deck: DeckId; label: MessageKey; icon: string; fontSet?: string; pages: { path: string; label: MessageKey; disabled?: boolean }[] }[] = [
+    {
+      deck: 'default',
+      label: 'setup.deck.default',
+      icon: 'swords', // "swords" only exists in Material Symbols, not the legacy Material Icons font.
+      fontSet: 'material-symbols-outlined',
+      pages: [
+        { path: '/wiki/default/generals', label: 'nav.cards.generals' },
+        { path: '/wiki/default/basic', label: 'nav.cards.basic' },
+        { path: '/wiki/default/equipment', label: 'nav.cards.equipment' },
+        { path: '/wiki/default/tools', label: 'nav.cards.tools' },
+      ],
+    },
+    {
+      deck: 'alternate',
+      label: 'setup.deck.alternate',
+      icon: 'shuffle',
+      pages: [
+        { path: '/wiki/alternate/generals', label: 'nav.cards.generals', disabled: true },
+        { path: '/wiki/alternate/basic', label: 'nav.cards.basic' },
+        { path: '/wiki/alternate/equipment', label: 'nav.cards.equipment' },
+        { path: '/wiki/alternate/tools', label: 'nav.cards.tools' },
+      ],
+    },
   ];
   protected readonly rulesPages: { path: string; label: MessageKey }[] = [
     { path: '/wiki/rules/overview', label: 'nav.rules.overview' },
@@ -55,7 +76,9 @@ export class App {
   protected readonly playActive = computed(() => /^\/(setup|game)(\/|$|\?)/.test(this.url()));
   protected readonly onlineActive = computed(() => /^\/(rooms|my-games)(\/|$|\?)/.test(this.url()));
 
-  protected readonly cardsActive = computed(() => /^\/wiki\/(generals|basic|equipment|tools)(\/|$|\?)/.test(this.url()));
+  protected deckActive(deck: DeckId): boolean {
+    return new RegExp(`^/wiki/${deck}(/|$|\\?)`).test(this.url());
+  }
   protected readonly rulesActive = computed(() => /^\/wiki\/rules(\/|$|\?)/.test(this.url()));
 
   protected readonly music = inject(MusicService);

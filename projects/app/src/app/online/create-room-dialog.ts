@@ -6,6 +6,8 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import type { DeckId } from 'content';
+import { DeckPicker } from '../deck-picker';
 import { DISPLAY_NAME_MAX } from 'protocol';
 import type { SeatLimits } from 'protocol';
 import { errorMsg } from '../auth/auth.service';
@@ -22,7 +24,7 @@ export interface CreateRoomDialogData {
 // with the new room's id.
 @Component({
   selector: 'app-create-room-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatFormFieldModule, MatInputModule, TPipe, TMsgPipe],
+  imports: [DeckPicker, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatFormFieldModule, MatInputModule, TPipe, TMsgPipe],
   template: `
     <h2 mat-dialog-title>{{ 'rooms.create' | t }}</h2>
     <mat-dialog-content>
@@ -45,6 +47,7 @@ export interface CreateRoomDialogData {
             }
           </mat-button-toggle-group>
         </div>
+        <app-deck-picker [(value)]="deck" />
         @if (seatCount() >= firstRevealMinSeats) {
           <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
           <p class="hint">{{ 'setup.firstReveal.hint' | t }}</p>
@@ -78,6 +81,7 @@ export class CreateRoomDialog {
   readonly displayName = signal(this.data.displayName);
   readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
   readonly firstRevealDraw = signal(true);
+  readonly deck = signal<DeckId>('default');
   readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);
   protected readonly canSubmit = computed(() => this.displayName().trim() !== '');
@@ -90,7 +94,10 @@ export class CreateRoomDialog {
     try {
       const id = await this.rooms.create({
         seatCount,
-        rules: seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {},
+        rules: {
+          ...(this.deck() !== 'default' ? { deck: this.deck() } : {}),
+          ...(seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {}),
+        },
         displayName: this.displayName(),
       });
       this.dialogRef.close(id);

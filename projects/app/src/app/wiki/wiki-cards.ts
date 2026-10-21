@@ -5,6 +5,7 @@ import type { MessageKey } from '../i18n/messages';
 import { ActivatedRoute } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
 import { wikiCardTabs, wikiCards, WikiCard } from 'content';
+import type { DeckId } from 'content';
 import { WikiCardEntry } from './wiki-card-entry';
 import { tabQueryParam } from './tab-param';
 import { wikiTabLabel } from './wiki-labels';
@@ -18,6 +19,7 @@ const PAGE_TITLES: Record<WikiCard['category'], MessageKey> = { basic: 'wiki.pag
   imports: [MatTabsModule, WikiCardEntry, TPipe],
   template: `
     <h2>{{ title | t }}</h2>
+    <p class="deck-line">{{ 'lobby.deckSummary' | t: { deck: deckName | t } }}</p>
     <p class="summary">{{ 'wiki.cards.summary' | t: { count: cards.length, inGame } }}</p>
     @if (flat) {
       @for (card of ordered; track card.id) {
@@ -46,20 +48,23 @@ const PAGE_TITLES: Record<WikiCard['category'], MessageKey> = { basic: 'wiki.pag
   `,
   styles: `
     :host { display: block; max-width: 960px; margin: 0 auto; }
-    .summary, .empty { color: var(--mat-sys-on-surface-variant); }
+    .summary, .empty, .deck-line { color: var(--mat-sys-on-surface-variant); }
   `,
 })
 export class WikiCards {
   private readonly i18n = inject(I18n);
   private readonly category = inject(ActivatedRoute).snapshot.data['category'] as WikiCard['category'];
+  // The deck comes from the route's data; Default when a route names none.
+  private readonly deck = (inject(ActivatedRoute).snapshot.data['deck'] ?? 'default') as DeckId;
   protected readonly title = PAGE_TITLES[this.category];
-  protected readonly cards = wikiCards(this.category);
+  protected readonly deckName: MessageKey = this.deck === 'alternate' ? 'setup.deck.alternate' : 'setup.deck.default';
+  protected readonly cards = wikiCards(this.category, this.deck);
   // The list in the order the cards are meant to read.
-  protected readonly ordered = this.category === 'basic' ? wikiCardTabs('basic').flatMap((t) => t.entries) : this.cards;
+  protected readonly ordered = this.category === 'basic' ? wikiCardTabs('basic', this.deck).flatMap((t) => t.entries) : this.cards;
   protected readonly inGame = this.cards.filter((c) => c.inGame).length;
   // Basic Cards are only six: one list, no tabs.
   protected readonly flat = this.category === 'basic';
-  protected readonly tabs = this.flat ? [] : wikiCardTabs(this.category);
+  protected readonly tabs = this.flat ? [] : wikiCardTabs(this.category, this.deck);
   protected readonly tab = tabQueryParam(this.tabs.map((t) => t.key));
 
   protected tabLabel(t: { key: string; label: string }): string {

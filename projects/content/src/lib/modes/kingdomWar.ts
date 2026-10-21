@@ -16,7 +16,8 @@ import type {
   RngState,
 } from 'engine';
 import { buildDeck, drawTop, shuffle } from 'engine';
-import { cardsData } from '../../../data/cards';
+import { deckFor } from '../decks';
+import type { DeckDefinition } from '../decks';
 import { judgmentPhaseTrigger } from '../shared/delayed';
 import { peachLockedTo } from '../shared/abilities';
 
@@ -52,19 +53,22 @@ function dealCandidates(seatIds: string[], registry: ContentRegistry, rng: RngSt
   return { candidates, spare, rng: afterShuffle };
 }
 
-// Exactly one card per printing in the data, at every table size: the deck
-// holds each card's printed quantity. Big tables lean on the reshuffle.
-// Only a card's own printings: the extra copies other expansions add (tagged
-// with their expansion) stay out until expansions can be switched on.
-function buildDeckSpec(registry: ContentRegistry) {
+// Exactly one card per printing in the chosen deck, at every table size: the
+// deck holds each card's printed quantity. Big tables lean on the reshuffle.
+// A card the registry has no definition for yet is left out of the deal.
+// Cards go in registry order, so a deck's order (and with it a seeded shuffle)
+// does not depend on how its data file is ordered.
+function buildDeckSpec(registry: ContentRegistry, deck: DeckDefinition) {
+  const entries = new Map(deck.entries.map((e) => [e.cardId, e]));
   return [...registry.cards.keys()].flatMap((cardId) => {
     // A card marked outOfDeck (made only by a skill) is never dealt.
     if (registry.cards.get(cardId)?.outOfDeck) return [];
-    const all = Object.prototype.hasOwnProperty.call(cardsData, cardId) ? cardsData[cardId].printings ?? [] : [];
-    const printings = all.filter((p) => !p.expansion);
+    const entry = entries.get(cardId);
+    // The Default deck holds every playable card; other decks may hold fewer.
+    if (!entry && deck.id !== 'default') return [];
     // A card with no printings would silently never be dealt.
-    if (printings.length === 0) throw new Error(`Card "${cardId}" has no printings in the data, so it cannot be put in the deck`);
-    return printings.map(({ suit, rank }) => ({ definitionId: cardId, suit, rank }));
+    if (!entry || entry.printings.length === 0) throw new Error(`Card "${cardId}" has no printings in the data, so it cannot be put in the deck`);
+    return entry.printings.map(({ suit, rank }) => ({ definitionId: cardId, suit, rank }));
   });
 }
 
@@ -189,7 +193,7 @@ export const kingdomWarMode: GameModeDefinition = {
       eliminated: false,
     }));
 
-    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry), afterDeal);
+    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry, deckFor(rules?.deck)), afterDeal);
     let zones: CardZone[] = [
       { id: 'drawPile', kind: 'drawPile' as const, cards },
       { id: 'discardPile', kind: 'discardPile' as const, cards: [] },

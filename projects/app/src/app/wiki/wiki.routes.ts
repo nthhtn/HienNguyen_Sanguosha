@@ -1,11 +1,37 @@
 import { Routes } from '@angular/router';
 
-// The three card pages share one component; each route names its category.
+const generals = () => import('./wiki-generals').then((m) => m.WikiGenerals);
+const cards = () => import('./wiki-cards').then((m) => m.WikiCards);
+
+// Each deck has its own set of pages; the deck comes from the parent route's
+// data. The three card pages share one component, and each route names its
+// category. Alternate has no Generals page yet, so its address goes to Default's.
 export const WIKI_ROUTES: Routes = [
-  { path: 'generals', loadComponent: () => import('./wiki-generals').then((m) => m.WikiGenerals) },
-  { path: 'basic', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'basic' } },
-  { path: 'equipment', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'equipment' } },
-  { path: 'tools', loadComponent: () => import('./wiki-cards').then((m) => m.WikiCards), data: { category: 'tool' } },
+  {
+    path: 'default',
+    data: { deck: 'default' },
+    children: [
+      { path: 'generals', loadComponent: generals },
+      { path: 'basic', loadComponent: cards, data: { category: 'basic' } },
+      { path: 'equipment', loadComponent: cards, data: { category: 'equipment' } },
+      { path: 'tools', loadComponent: cards, data: { category: 'tool' } },
+    ],
+  },
+  {
+    path: 'alternate',
+    data: { deck: 'alternate' },
+    children: [
+      { path: 'generals', redirectTo: '/wiki/default/generals' },
+      { path: 'basic', loadComponent: cards, data: { category: 'basic' } },
+      { path: 'equipment', loadComponent: cards, data: { category: 'equipment' } },
+      { path: 'tools', loadComponent: cards, data: { category: 'tool' } },
+    ],
+  },
+  // The addresses from before the decks had their own pages still work.
+  { path: 'generals', redirectTo: 'default/generals', pathMatch: 'full' },
+  { path: 'basic', redirectTo: 'default/basic', pathMatch: 'full' },
+  { path: 'equipment', redirectTo: 'default/equipment', pathMatch: 'full' },
+  { path: 'tools', redirectTo: 'default/tools', pathMatch: 'full' },
   { path: 'rules', redirectTo: 'rules/overview', pathMatch: 'full' },
   { path: 'rules/overview', loadComponent: () => import('./rules/overview').then((m) => m.RulesOverview) },
   { path: 'rules/card-types', loadComponent: () => import('./rules/card-types').then((m) => m.RulesCardTypes) },
@@ -13,5 +39,5 @@ export const WIKI_ROUTES: Routes = [
   { path: 'rules/turn', loadComponent: () => import('./rules/turn').then((m) => m.RulesTurn) },
   { path: 'rules/distance', loadComponent: () => import('./rules/distance').then((m) => m.RulesDistance) },
   { path: 'rules/judgment', loadComponent: () => import('./rules/judgment').then((m) => m.RulesJudgment) },
-  { path: '', redirectTo: 'generals', pathMatch: 'full' },
+  { path: '', redirectTo: 'default/generals', pathMatch: 'full' },
 ];

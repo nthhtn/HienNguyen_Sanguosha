@@ -86,6 +86,52 @@ describe('Setup', () => {
       expect(gameService.state()!.seats).toHaveLength(3);
     });
 
+    describe('deck', () => {
+      const pickAlternate = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+        const radios = [...el.querySelectorAll('.deck mat-radio-button')];
+        (radios.find((r) => r.textContent!.trim() === 'Alternate')!.querySelector('input') as HTMLInputElement).click();
+        fixture.detectChanges();
+      };
+      const pickSeats = (fixture: { detectChanges(): void }, el: HTMLElement, n: number) => {
+        ([...el.querySelectorAll('.seats mat-button-toggle button')].find((b) => b.textContent!.trim() === String(n)) as HTMLButtonElement).click();
+        fixture.detectChanges();
+      };
+
+      it('offers the deck at every seat count and in both modes', async () => {
+        const { fixture, el } = await create();
+        for (const n of [2, 4, 5]) {
+          pickSeats(fixture, el, n);
+          expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Default', 'Alternate']);
+        }
+        fixture.componentInstance.mode.set('pass-and-play');
+        fixture.detectChanges();
+        expect(el.querySelectorAll('.deck mat-radio-button')).toHaveLength(2);
+      });
+
+      it('sets no deck rule for Default', async () => {
+        const { fixture, el, gameService } = await create();
+        pickSeats(fixture, el, 4);
+        (el.querySelector('button.start') as HTMLButtonElement).click();
+        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
+      });
+
+      it('starts the game with the Alternate deck below 5 seats', async () => {
+        const { fixture, el, gameService } = await create();
+        pickSeats(fixture, el, 4);
+        pickAlternate(fixture, el);
+        (el.querySelector('button.start') as HTMLButtonElement).click();
+        expect(gameService.state()!.rules).toEqual({ deck: 'alternate', judgmentNotice: true });
+      });
+
+      it('sends the deck beside First Reveal Bonus at 5 seats', async () => {
+        const { fixture, el, gameService } = await create();
+        pickSeats(fixture, el, 5);
+        pickAlternate(fixture, el);
+        (el.querySelector('button.start') as HTMLButtonElement).click();
+        expect(gameService.state()!.rules).toEqual({ deck: 'alternate', firstRevealDraw: true, judgmentNotice: true });
+      });
+    });
+
     describe('first reveal bonus', () => {
       const pick = (fixture: { detectChanges(): void }, el: HTMLElement, n: number) => {
         ([...el.querySelectorAll('.seats mat-button-toggle button')].find((b) => b.textContent!.trim() === String(n)) as HTMLButtonElement).click();
