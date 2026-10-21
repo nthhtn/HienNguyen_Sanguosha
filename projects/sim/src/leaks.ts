@@ -48,6 +48,18 @@ function walk(value: unknown, visit: (v: unknown, path: string) => void, path: s
   else if (value !== null && typeof value === 'object') for (const [k, v] of Object.entries(value)) walk(v, visit, `${path}.${k}`);
 }
 
+// What the viewer's own secret pending choice shows it (Ascertain's look at
+// another seat's hand or hidden General): it may see those there, and only there.
+function ownSecretLook(state: GameState, viewerSeatId: string): { cards: Set<string>; generals: Set<string> } {
+  const choice = state.pendingChoice;
+  const own = !!choice?.secret && choice.seatId === viewerSeatId;
+  const shows = own ? choice!.options.map((o) => o.shows) : [];
+  return {
+    cards: new Set(shows.flatMap((s) => (s.kind === 'card' ? [s.card.instanceId] : []))),
+    generals: new Set(shows.flatMap((s) => (s.kind === 'general' ? [s.generalId] : []))),
+  };
+}
+
 // What `view` (as sent to `viewerSeatId`) gives away that it must not.
 export function findViewLeaks(state: GameState, view: object, viewerSeatId: string): string[] {
   const leaks: string[] = [];
@@ -55,13 +67,15 @@ export function findViewLeaks(state: GameState, view: object, viewerSeatId: stri
   if ('log' in view) leaks.push(`${viewerSeatId}: the view carries the log, which is sent separately`);
   const generals = secretGeneralIds(state, viewerSeatId);
   const cards = hiddenCards(state, viewerSeatId);
+  const look = ownSecretLook(state, viewerSeatId);
   walk(
     view,
     (v, path) => {
-      if (typeof v === 'string' && generals.has(v)) leaks.push(`${viewerSeatId}: ${path} names hidden General ${v}`);
+      const inLook = path.startsWith('view.pendingChoice.');
+      if (typeof v === 'string' && generals.has(v) && !(inLook && look.generals.has(v))) leaks.push(`${viewerSeatId}: ${path} names hidden General ${v}`);
       if (!isCardInstance(v)) return;
       const real = cards.get(v.instanceId);
-      if (!real) return;
+      if (!real || (inLook && look.cards.has(v.instanceId))) return;
       if (v.definitionId !== HIDDEN) leaks.push(`${viewerSeatId}: ${path} shows hidden card ${v.instanceId} as ${v.definitionId}`);
       if (v.rank !== 0) leaks.push(`${viewerSeatId}: ${path} shows hidden card ${v.instanceId}'s rank ${v.rank}`);
       if (v.instanceId.includes(real.definitionId)) leaks.push(`${viewerSeatId}: ${path} hidden card id ${v.instanceId} names its card ${real.definitionId}`);

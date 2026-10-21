@@ -50,6 +50,30 @@ function maskHiddenCards<T>(value: T, hidden: ReadonlySet<string>): T {
   return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, maskHiddenCards(v, hidden)])) as T;
 }
 
+function isSecretChoice(value: object): value is PendingChoice {
+  const v = value as Partial<PendingChoice>;
+  return v.secret === true && typeof v.seatId === 'string' && Array.isArray(v.options);
+}
+
+// `value` with every secret choice inside it (pending, or queued in an
+// OpenChoiceEffect) that is not `viewerSeatId`'s emptied of its options: only
+// the chooser learns what it offers and shows.
+function hideOthersSecretChoices<T>(value: T, viewerSeatId: string): T {
+  if (Array.isArray(value)) return value.map((v) => hideOthersSecretChoices(v, viewerSeatId)) as T;
+  if (value === null || typeof value !== 'object') return value;
+  if (isSecretChoice(value) && value.seatId !== viewerSeatId) return { ...value, options: [] } as T;
+  return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, hideOthersSecretChoices(v, viewerSeatId)])) as T;
+}
+
+// The hidden cards a pending choice may show its viewer: none, unless it is the
+// viewer's own secret choice (Ascertain's look at another seat's hand), whose
+// shown cards it sees there, and only there.
+function hiddenInChoice(choice: PendingChoice, viewerSeatId: string, hidden: ReadonlySet<string>): ReadonlySet<string> {
+  if (!choice.secret || choice.seatId !== viewerSeatId) return hidden;
+  const shown = new Set(choice.options.flatMap((o) => (o.shows.kind === 'card' ? [o.shows.card.instanceId] : [])));
+  return new Set([...hidden].filter((id) => !shown.has(id)));
+}
+
 // A General's skill owner as `value` mentions it, with the ids that stand for
 // the skill beside it (the ability and conversion equal the skill id for General skills).
 interface OwnerMention {
@@ -240,7 +264,7 @@ export function redactStateForSeat(state: GameState, viewerSeatId: string): Game
   const shown = shownToViewer(state, viewerSeatId);
   const hidden = hiddenInstanceIds(state, viewerSeatId, shown);
   const skills = hiddenSkillsFor(state, viewerSeatId);
-  const hideSecret = (choice: PendingChoice): PendingChoice => (choice.secret && choice.seatId !== viewerSeatId ? { ...choice, options: [] } : choice);
+  const hideSecrets = <T>(value: T): T => hideOthersSecretChoices(value, viewerSeatId);
   return {
     ...state,
     ...(state.spareGenerals ? { spareGenerals: [] } : {}),
@@ -248,11 +272,13 @@ export function redactStateForSeat(state: GameState, viewerSeatId: string): Game
     seats: state.seats.map((seat) => redactSeat(seat, viewerSeatId)),
     zones: state.zones.map((zone) => redactZone(zone, viewerSeatId, shown)),
     generalSelection: redactSelection(state.generalSelection, viewerSeatId),
-    pendingResponse: maskSkills(maskHiddenCards(state.pendingResponse, hidden), skills),
-    ...(state.pendingChoice ? { pendingChoice: maskSkills(maskHiddenCards(hideSecret(state.pendingChoice), hidden), skills) } : {}),
-    ...(state.pendingSelection ? { pendingSelection: maskSkills(redactPendingSelection(state.pendingSelection, hidden), skills) } : {}),
+    pendingResponse: maskSkills(maskHiddenCards(hideSecrets(state.pendingResponse), hidden), skills),
+    ...(state.pendingChoice
+      ? { pendingChoice: maskSkills(maskHiddenCards(hideSecrets(state.pendingChoice), hiddenInChoice(state.pendingChoice, viewerSeatId, hidden)), skills) }
+      : {}),
+    ...(state.pendingSelection ? { pendingSelection: maskSkills(redactPendingSelection(hideSecrets(state.pendingSelection), hidden), skills) } : {}),
     ...(state.pendingArrangement ? { pendingArrangement: maskSkills(state.pendingArrangement, skills) } : {}),
     ...(state.judgmentView ? { judgmentView: maskSkills(state.judgmentView, skills) } : {}),
-    ...(state.resolutionQueue ? { resolutionQueue: maskSkills(maskHiddenCards(state.resolutionQueue, hidden), skills) } : {}),
+    ...(state.resolutionQueue ? { resolutionQueue: maskSkills(maskHiddenCards(hideSecrets(state.resolutionQueue), hidden), skills) } : {}),
   };
 }

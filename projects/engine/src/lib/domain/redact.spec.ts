@@ -1,7 +1,7 @@
 import { redactEventsForSeat, redactStateForSeat } from './redact';
 import type { EngineEvent } from '../pipeline/events';
 import { createSeat, createPlayer } from './factories';
-import { GameState, CardZone } from './types';
+import { GameState, CardZone, ChoiceOption, PendingChoice } from './types';
 
 function makeZones(): CardZone[] {
   return [
@@ -417,3 +417,54 @@ describe('redactStateForSeat: a judgment on show', () => {
   });
 });
 
+
+describe('redactStateForSeat: a secret look at another seat’s hand and hidden General (Review Focus 3)', () => {
+  const peach = { instanceId: 'b-1', definitionId: 'peach', suit: 'heart' as const, rank: 3 };
+  const duel = { instanceId: 'b-2', definitionId: 'duel', suit: 'club' as const, rank: 9 };
+  const used = { as: 'mystery', colour: 'black' as const, physical: [] };
+  const look = (seatId: string, shows: ChoiceOption['shows'][]): PendingChoice => ({
+    id: 'look', seatId, verb: 'pick', secret: true, reason: { kind: 'choice', card: used, userSeatId: 'seat-a', targetSeatId: 'seat-b' },
+    options: [...shows.map((s, i) => ({ id: `o${i}`, shows: s, effects: [] })), { id: 'done', shows: { kind: 'label', text: 'Done' }, effects: [] }],
+  });
+  const withC = (state: GameState): GameState => ({
+    ...state,
+    seats: [...state.seats, createSeat('seat-c', 2, 'Wu', 'general-c', 'general-d', () => 4)],
+    zones: [...state.zones.filter((z) => z.id !== 'hand-b'), { id: 'hand-b', kind: 'hand', ownerSeatId: 'seat-b', cards: [peach, duel] }, { id: 'hand-c', kind: 'hand', ownerSeatId: 'seat-c', cards: [] }],
+  });
+  const lookState = withC({
+    ...makeState(),
+    pendingChoice: look('seat-a', [{ kind: 'card', card: peach }, { kind: 'card', card: duel }, { kind: 'general', generalId: 'general-w' }]),
+  });
+
+  it('shows its chooser the real cards and the General', () => {
+    const forA = redactStateForSeat(lookState, 'seat-a');
+    expect(forA.pendingChoice!.options.map((o) => o.shows)).toEqual([
+      { kind: 'card', card: peach },
+      { kind: 'card', card: duel },
+      { kind: 'general', generalId: 'general-w' },
+      { kind: 'label', text: 'Done' },
+    ]);
+    // The hand itself stays masked: only the look shows the cards.
+    expect(forA.zones.find((z) => z.id === 'hand-b')!.cards.map((c) => c.definitionId)).toEqual(['hidden', 'hidden']);
+  });
+
+  it('shows every other seat none of it, the looked-at seat included', () => {
+    for (const viewer of ['seat-b', 'seat-c']) {
+      const view = redactStateForSeat(lookState, viewer);
+      expect(view.pendingChoice!.options).toEqual([]);
+      expect(JSON.stringify(view.pendingChoice)).not.toContain('Done');
+    }
+    // seat-b knows its own Generals and hand; seat-c learns none of them anywhere in its view.
+    const forC = JSON.stringify(redactStateForSeat(lookState, 'seat-c'));
+    expect(forC).not.toContain('general-w');
+    expect(forC).not.toContain('"peach"');
+    expect(forC).not.toContain('"duel"');
+  });
+
+  it('hides a queued secret choice from other seats too', () => {
+    const queued: GameState = { ...lookState, pendingChoice: undefined, resolutionQueue: [{ kind: 'OpenChoiceEffect', choice: look('seat-a', [{ kind: 'general', generalId: 'general-w' }]) }] };
+    const forC = redactStateForSeat(queued, 'seat-c');
+    expect(JSON.stringify(forC)).not.toContain('general-w');
+    expect(JSON.stringify(redactStateForSeat(queued, 'seat-a'))).toContain('general-w');
+  });
+});

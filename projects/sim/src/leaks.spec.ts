@@ -76,6 +76,20 @@ describe('findViewLeaks', () => {
     );
   });
 
+  it("does not report another seat's hand card or hidden General in the viewer's own secret look, but does elsewhere", () => {
+    const look = {
+      id: 'look', seatId: 'seat-0', verb: 'pick', secret: true, reason: { kind: 'choice' },
+      options: [{ id: 'card-4', shows: { kind: 'card', card: card('card-4', 'duel') }, effects: [] }, { id: 'general', shows: { kind: 'general', generalId: 'g-c' }, effects: [] }],
+    };
+    const state = table({ pendingChoice: look } as unknown as Partial<GameState>);
+    expect(findViewLeaks(state, sentView(state, 'seat-0'), 'seat-0')).toEqual([]);
+    // The same card shown face up in its hand is still a leak.
+    expect(findViewLeaks(state, { ...sentView(state, 'seat-0'), zones: state.zones }, 'seat-0')).toEqual(expect.arrayContaining([expect.stringContaining('card-4 as duel')]));
+    // Another seat sees none of it.
+    expect(findViewLeaks(state, sentView(state, 'seat-1'), 'seat-1')).toEqual([]);
+    expect((sentView(state, 'seat-1') as GameState).pendingChoice!.options).toEqual([]);
+  });
+
   it('does not report draw-pile cards the viewer is arranging', () => {
     const state = table({
       pendingArrangement: { id: 'arr', seatId: 'seat-0', cardInstanceIds: ['card-0'], reason: { kind: 'decline' } },

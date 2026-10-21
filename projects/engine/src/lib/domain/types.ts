@@ -177,7 +177,9 @@ export interface PendingChoice {
   // gets the cards.
   verb: 'take' | 'discard' | 'use' | 'pick' | 'give';
   options: ChoiceOption[];
-  // Only the choosing seat sees the options (Incarnation's Forms).
+  // Only the choosing seat sees the options (Incarnation's Forms, Ascertain's
+  // look): every other seat sees none, and the log never says which was picked.
+  // The chooser sees the cards they show, though their zone is hidden.
   secret?: true;
 }
 
@@ -189,6 +191,7 @@ export interface ChoiceOption {
   // `reveals`: Use reveals that hidden General first.
   // A seat (Raid's targets, who gets given cards), a suit to name, or a label
   // (Done, an Unyielding outcome).
+  // A General's card (a look at a hidden General, only in a `secret` choice).
   shows:
     | { kind: 'card'; card: CardInstance }
     | { kind: 'hidden-hand'; seatId: string; count: number }
@@ -196,7 +199,8 @@ export interface ChoiceOption {
     | { kind: 'decline' }
     | { kind: 'seat'; seatId: string }
     | { kind: 'suit'; suit: CardInstance['suit'] }
-    | { kind: 'label'; text: string };
+    | { kind: 'label'; text: string }
+    | { kind: 'general'; generalId: string };
   // Queued at the front when picked.
   effects: Effect[];
 }

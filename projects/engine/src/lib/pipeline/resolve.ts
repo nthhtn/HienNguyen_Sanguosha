@@ -653,7 +653,9 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const option = choice.options.find((o) => o.id === action.optionId);
       if (!option) throw new Error(`Choice ${action.choiceId} has no option ${action.optionId}`);
       const { pendingChoice: _settled, ...cleared } = state;
-      const event: ChoiceMadeEvent = { kind: 'ChoiceMadeEvent', seatId: action.seatId, reason: choice.reason, verb: choice.verb, shows: option.shows };
+      const event: ChoiceMadeEvent = choice.secret
+        ? { kind: 'ChoiceMadeEvent', seatId: action.seatId, reason: choice.reason, verb: choice.verb, shows: { kind: 'label', text: '' }, secret: true }
+        : { kind: 'ChoiceMadeEvent', seatId: action.seatId, reason: choice.reason, verb: choice.verb, shows: option.shows };
       const made = logged(cleared, [event]);
       return { state: queueFront(made, [...afterTriggerFollowUps(made, [event], ctx), ...option.effects]), events: [event] };
     }
