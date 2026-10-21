@@ -256,6 +256,14 @@ describe('a Kingdom cancel (CancelToolForKingdomEffect)', () => {
     expect(hp(s)).toEqual({ a: 2, b: 3, c: 2, d: 3 });
   });
 
+  it('still affects a hidden-General target after the cancelled one, while a later seat of that Kingdom is skipped (Review Focus 1)', () => {
+    // Order b (Wei), c (hidden), d (Wei): the Kingdom cancel on b skips d but not c.
+    const s = answer(play(kingdoms({ b: 'Wei', c: 'hidden', d: 'Wei' }, { a: ['kcounter'] })), 'kcounter');
+    expect(s.pendingResponse).toBeNull();
+    expect(s.seats.find((x) => x.id === 'c')!.kingdom).toBe('hidden');
+    expect(hp(s)).toEqual({ a: 2, b: 2, c: 3, d: 2 });
+  });
+
   it('reads the Kingdom live: a seat that reveals as the cancelled Kingdom before its turn is skipped too (Decided)', () => {
     let s = play(kingdoms({ b: 'Wei', c: 'hidden', d: 'Qun' }, { a: ['kcounter'], d: ['counter'] }));
     s = answer(s, 'kcounter'); // Wei cancelled; d is asked whether to counter it

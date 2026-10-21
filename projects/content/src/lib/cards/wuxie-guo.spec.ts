@@ -92,6 +92,14 @@ describe('Wuxie Kingdom', () => {
     expect(s.toolCancellations ?? []).toEqual([]);
   });
 
+  it('still affects a later target whose Generals are both hidden (Review Focus 1)', () => {
+    // Order a (Wei), b (hidden), c (Wei), d (Qun): cancelling Wei on a skips c, not hidden b.
+    let s = play(table({ a: 'Wei', b: 'hidden', c: 'Wei', d: 'Qun' }, { b: ['wuxie-guo'] }));
+    s = answer(s, 'wuxie-guo');
+    expect(s.pendingResponse).toBeNull();
+    expect(hp(s)).toEqual({ a: 2, b: 3, c: 2, d: 3 });
+  });
+
   it('is answered by a Wuxie, which keeps the Tool for the whole Kingdom', () => {
     let s = play(table(allWei, { b: ['wuxie-guo'], c: ['wuxie'] }));
     s = answer(s, 'wuxie-guo');
