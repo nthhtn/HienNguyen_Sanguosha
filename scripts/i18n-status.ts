@@ -1,12 +1,13 @@
 // How much of the Vietnamese text a native speaker has reviewed.
 //   npm run i18n:status            counts per category
 //   npm run i18n:status -- --list  also lists the entries still in draft
-import { ENGLISH_PROSE, alternateCardIds, cardIds, generalIds } from 'content';
+import { ENGLISH_PROSE, alternateCardIds, alternateGeneralIds, cardIds, generalIds } from 'content';
 import review from '../projects/content/data/locales/vi/review.json';
 import { en } from '../projects/app/src/app/i18n/en';
 import { reviewStatus, reviewUniverse } from '../projects/app/src/app/i18n/review';
 
-const universe = reviewUniverse(en, generalIds(), [...cardIds(), ...alternateCardIds()], ENGLISH_PROSE);
+// Alternate Generals share ids with Default's, so theirs are listed as `alternate:<id>`.
+const universe = reviewUniverse(en, [...generalIds(), ...alternateGeneralIds().map((id) => `alternate:${id}`)], [...cardIds(), ...alternateCardIds()], ENGLISH_PROSE);
 const list = process.argv.includes('--list');
 const statuses = reviewStatus(review, universe);
 

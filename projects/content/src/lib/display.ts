@@ -1,9 +1,11 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 import { alternateCardData } from './alternateCards';
+import { alternateGeneralRecords } from './alternateGenerals';
 import viCards from '../../data/locales/vi/cards.json';
 import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
 import viGenerals from '../../data/locales/vi/generals.json';
+import viAlternateGenerals from '../../data/locales/vi/alternate-generals.json';
 import viProse from '../../data/locales/vi/prose.json';
 
 // One language's names and rules text, keyed by the same ids as the English data. A missing
@@ -24,6 +26,48 @@ const CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viCards
 const ALTERNATE_CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viAlternateCards };
 export function alternateCardTranslation(id: string, locale: string): CardTranslation | null {
   return lookup(ALTERNATE_CARD_TEXT, locale)?.[id] ?? null;
+}
+
+// The Alternate deck's Generals, by their id (which is Default's id when Default has the General, so the
+// two tables never mix: an Alternate entry always reads its own file). Everything a translation can hold
+// is optional, so a language can be filled in piece by piece.
+export interface AlternateGeneralTranslation {
+  name: string;
+  title?: string;
+  // Keyed by the skill id of the Alternate English skill name (skillIdOf).
+  skills?: Record<string, { name: string; text?: string }>;
+  differenceNote?: string;
+  // Each Synergistic Partners entry translated whole, in the English list's order.
+  partners?: string[];
+}
+const ALTERNATE_GENERAL_TEXT: Record<string, Record<string, AlternateGeneralTranslation>> = { vi: viAlternateGenerals };
+export function alternateGeneralTranslations(locale: string): Record<string, AlternateGeneralTranslation> {
+  return lookup(ALTERNATE_GENERAL_TEXT, locale) ?? {};
+}
+
+export interface AlternateGeneralDisplayData {
+  name: string;
+  title: string | null;
+  skills: { name: string; text: string }[];
+  differenceNote: string | null;
+  partners: string[];
+}
+
+export function alternateGeneralDisplayData(id: string, locale = 'en'): AlternateGeneralDisplayData | null {
+  const record = alternateGeneralRecords().find((g) => g.id === id);
+  if (!record) return null;
+  const translated = lookup(alternateGeneralTranslations(locale), id);
+  const partners = translated?.partners;
+  return {
+    name: translated?.name ?? record.name,
+    title: translated?.title ?? record.title ?? null,
+    skills: record.skills.map(({ name, text }) => {
+      const skill = lookup(translated?.skills, skillIdOf(name));
+      return { name: skill?.name ?? name, text: skill?.text ?? text };
+    }),
+    differenceNote: translated?.differenceNote ?? record.differenceFromNormal,
+    partners: partners && partners.length === record.synergisticPartners.length ? partners : record.synergisticPartners,
+  };
 }
 
 // Every General and card id, from the English data (the ids a translation has to cover).

@@ -1,0 +1,927 @@
+{
+  "cao-cao": {
+    "name": "Tào Tháo",
+    "title": "Ngụy Võ Đế",
+    "skills": {
+      "villainous-hero": {
+        "name": "Gian hùng",
+        "text": "Mỗi khi bạn bị sát thương, bạn có thể lấy lá bài đã gây sát thương cho bạn."
+      }
+    },
+    "differenceNote": "Bỏ từ “lập tức” để làm rõ thời điểm kích hoạt “Gian hùng”. Kỹ năng Chủ công bị loại bỏ.",
+    "partners": [
+      "Điển Vi (Hộ vệ)",
+      "Hứa Chử (Hộ vệ)"
+    ]
+  },
+  "cao-pi": {
+    "name": "Tào Phi",
+    "title": "Người kế thừa bá nghiệp",
+    "skills": {
+      "scavenge": {
+        "name": "Hành thương",
+        "text": "Bạn có thể lấy toàn bộ bài của những người chơi đã chết."
+      },
+      "banish": {
+        "name": "Phóng trục",
+        "text": "Mỗi khi bạn bị sát thương, bạn có thể chọn một người chơi khác rút X lá bài (X là số Sinh lực bạn đã mất), rồi người đó lật mặt."
+      }
+    },
+    "differenceNote": "Bỏ từ “lập tức” để làm rõ thời điểm kích hoạt “Hành thương”. Mô tả “Phóng trục” đổi từ “lật mặt Tướng của họ” sang “úp/lật Tướng của bạn”. Kỹ năng Chủ công bị loại bỏ.",
+    "partners": [
+      "Chân Cơ (Vợ)"
+    ]
+  },
+  "cao-ren": {
+    "name": "Tào Nhân",
+    "title": "Đại tướng quân",
+    "skills": {
+      "entrenched": {
+        "name": "Cứ thủ",
+        "text": "Vào giai đoạn kết thúc lượt của bạn, bạn có thể rút ba lá bài, rồi lật mặt."
+      }
+    },
+    "differenceNote": "Mô tả “Cứ thủ” đổi từ “lật Tướng của bạn” sang “úp Tướng của bạn” để phản ánh cách thực hiện mới của việc bỏ qua lượt. Về cơ bản kỹ năng hoạt động như cũ.",
+    "partners": []
+  },
+  "dian-wei": {
+    "name": "Điển Vi",
+    "title": "Cổ chi Ác Lai",
+    "skills": {
+      "ferocious-assault": {
+        "name": "Cường tập",
+        "text": "Trong giai đoạn ra bài, bạn có thể mất 1 Sinh lực hoặc bỏ một lá vũ khí để gây 1 sát thương cho một người chơi khác trong tầm tấn công của bạn. Mỗi giai đoạn chỉ một lần."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Tào Tháo (Chủ công)"
+    ]
+  },
+  "guo-jia": {
+    "name": "Quách Gia",
+    "title": "Tảo chung tiên tri",
+    "skills": {
+      "envy-of-heaven": {
+        "name": "Thiên đố",
+        "text": "Sau khi lá phán xét của bạn có hiệu lực, bạn có thể lấy lá phán xét đó."
+      },
+      "bequeathed-strategy": {
+        "name": "Di kế",
+        "text": "Sau mỗi 1 sát thương bạn phải chịu, bạn có thể xem hai lá trên cùng của chồng bài rút, đưa một lá cho một người chơi, rồi đưa lá còn lại cho một người chơi."
+      }
+    },
+    "differenceNote": "Bỏ từ “lập tức” để làm rõ thời điểm kích hoạt “Thiên đố”. Mô tả “Di kế” đổi từ “rút rồi đưa” sang “xem rồi đưa”.",
+    "partners": []
+  },
+  "sima-yi": {
+    "name": "Tư Mã Ý",
+    "title": "Lang cố chi quỷ",
+    "skills": {
+      "retaliation": {
+        "name": "Phản quỹ",
+        "text": "Mỗi khi bạn bị sát thương, bạn có thể lấy một lá bài của người đã gây sát thương."
+      },
+      "demonic-talent": {
+        "name": "Quỷ tài",
+        "text": "Trước khi lá phán xét của một người chơi có hiệu lực, bạn có thể đánh một lá bài trên tay để thay thế nó."
+      }
+    },
+    "differenceNote": "Bỏ từ “lập tức” để làm rõ thời điểm kích hoạt “Phản quỹ”.",
+    "partners": []
+  },
+  "xiahou-dun": {
+    "name": "Hạ Hầu Đôn",
+    "title": "La sát độc nhãn",
+    "skills": {
+      "an-eye-for-an-eye": {
+        "name": "Cương liệt",
+        "text": "Mỗi khi bạn bị sát thương, bạn có thể phán xét. Nếu kết quả không phải cơ, người đã gây sát thương phải chọn một trong hai:\n1. Họ bỏ hai lá bài trên tay do họ chọn\n2. Họ chịu 1 sát thương do bạn gây ra."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Hạ Hầu Uyên (Anh em họ)"
+    ]
+  },
+  "xiahou-yuan": {
+    "name": "Hạ Hầu Uyên",
+    "title": "Liệp báo cấp hành",
+    "skills": {
+      "godspeed": {
+        "name": "Thần tốc",
+        "text": "Bạn có thể chọn một hoặc cả hai lựa chọn sau:\n1. Bỏ qua giai đoạn phán xét và giai đoạn rút bài.\n2. Bỏ qua giai đoạn ra bài và bỏ một lá trang bị.\nMỗi lần bạn chọn một lựa chọn, coi như bạn dùng một lá Sát với một người chơi khác."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Hạ Hầu Đôn (Anh em họ)"
+    ]
+  },
+  "xu-chu": {
+    "name": "Hứa Chử",
+    "title": "Hổ si",
+    "skills": {
+      "bare-chested": {
+        "name": "Khỏa y",
+        "text": "Trong giai đoạn rút bài, bạn có thể rút ít hơn một lá bài để sát thương do Sát và Quyết Đấu của bạn gây ra (khi bạn là nguồn gây sát thương) tăng thêm 1. Hiệu lực kéo dài đến hết lượt của bạn."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Tào Tháo (Chủ công)"
+    ]
+  },
+  "xu-huang": {
+    "name": "Từ Hoảng",
+    "title": "Phong thái Chu Á Phu",
+    "skills": {
+      "blockade": {
+        "name": "Đoạn lương",
+        "text": "Bạn có thể dùng một lá bài cơ bản hoặc trang bị màu đen làm Binh Lương Thốn Đoạn. Bạn có thể dùng Binh Lương Thốn Đoạn với người chơi khác trong khoảng cách thực tế 2."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": []
+  },
+  "xun-yu": {
+    "name": "Tuân Úc",
+    "title": "Vương tá chi tài",
+    "skills": {
+      "rouse-the-tiger": {
+        "name": "Khu hổ",
+        "text": "Trong giai đoạn ra bài, bạn có thể đấu điểm với một người chơi có nhiều Sinh lực hơn bạn. Nếu bạn thắng, người đó gây 1 sát thương cho một người chơi khác trong tầm tấn công của họ mà bạn chọn. Nếu bạn thua, người đó gây 1 sát thương cho bạn."
+      },
+      "eternal-loyalty": {
+        "name": "Tiết mệnh",
+        "text": "Sau mỗi 1 sát thương bạn phải chịu, bạn có thể chọn một người chơi để bổ sung bài trên tay sao cho số bài trên tay bằng Sinh lực tối đa của họ. (Bổ sung tối đa 5 lá bài)"
+      }
+    },
+    "differenceNote": "Việc bổ sung bài của “Tiết mệnh” được giới hạn tối đa 5 lá.",
+    "partners": []
+  },
+  "yue-jin": {
+    "name": "Nhạc Tiến",
+    "title": "Quyết chí vượt khó",
+    "skills": {
+      "dauntless": {
+        "name": "Kiêu quả",
+        "text": "Vào giai đoạn kết thúc lượt của một người chơi khác, bạn có thể bỏ một lá bài cơ bản. Nếu làm vậy, người đó phải bỏ một lá trang bị, nếu không bạn gây 1 sát thương cho người đó."
+      }
+    },
+    "differenceNote": "Đây là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "partners": []
+  },
+  "zhang-he": {
+    "name": "Trương Cáp",
+    "title": "Liệu địch cơ tiên",
+    "skills": {
+      "flexibility": {
+        "name": "Xảo biến",
+        "text": "Bạn có thể bỏ một lá bài trên tay để bỏ qua một giai đoạn của bạn (trừ giai đoạn bắt đầu và giai đoạn kết thúc).\nNếu bạn bỏ qua giai đoạn rút bài, bạn lấy một lá bài trên tay của mỗi người trong tối đa hai người chơi.\nNếu bạn bỏ qua giai đoạn ra bài, bạn có thể chuyển một lá bài từ khu trang bị hoặc khu chờ của bất kỳ người chơi nào sang khu tương ứng của người chơi khác."
+      }
+    },
+    "differenceNote": "Thay đổi nhỏ trong mô tả việc chuyển bài của kỹ năng: trước đây ghi chuyển sang “khu hợp lý”, nay ghi “khu tương ứng”.",
+    "partners": []
+  },
+  "zhang-liao": {
+    "name": "Trương Liêu",
+    "title": "Tiền tướng quân",
+    "skills": {
+      "sudden-strike": {
+        "name": "Đột kích",
+        "text": "Trong giai đoạn rút bài, bạn có thể từ bỏ việc rút bài từ chồng bài. Thay vào đó, bạn lấy một lá bài trên tay của mỗi người trong một đến hai người chơi khác."
+      }
+    },
+    "differenceNote": "Làm rõ mô tả đôi chút, không ảnh hưởng đến cách chơi thông thường.",
+    "partners": []
+  },
+  "zhen-ji": {
+    "name": "Chân Cơ",
+    "title": "Bạc hạnh mỹ nhân",
+    "skills": {
+      "stunning-beauty": {
+        "name": "Khuynh quốc",
+        "text": "Bạn có thể dùng hoặc đánh một lá bài đen trên tay làm Thiểm."
+      },
+      "goddess-luo": {
+        "name": "Lạc thần",
+        "text": "Vào đầu lượt của bạn, bạn có thể phán xét. Nếu kết quả màu đen, bạn có thể phán xét tiếp, cho đến khi ra lá đỏ. Sau đó, bạn lấy tất cả các lá phán xét màu đen."
+      }
+    },
+    "differenceNote": "“Lạc thần” đã được thay đổi. Bạn không thể lấy các lá đen cho đến khi quá trình kết thúc. Điều này nhằm tránh lỗi nếu một người chơi chọn Chân Cơ và Tư Mã Ý làm một cặp.",
+    "partners": [
+      "Tào Phi (Chồng)"
+    ]
+  },
+  "liu-bei": {
+    "name": "Lưu Bị",
+    "title": "Kiêu hùng thời loạn",
+    "skills": {
+      "benevolence": {
+        "name": "Nhân đức",
+        "text": "Trong giai đoạn ra bài, bạn có thể đưa số bài trên tay tùy ý cho một người chơi khác. Nếu bạn đưa đi từ ba lá bài trên tay trở lên trong một giai đoạn, bạn hồi 1 Sinh lực."
+      }
+    },
+    "differenceNote": "“Nhân đức” bị làm yếu đi. Bạn chỉ hồi Sinh lực khi đưa đi từ ba lá bài trên tay trở lên trong một giai đoạn, thay vì hai lá như Tam Quốc Sát thông thường.\nKỹ năng Chủ công của ông cũng bị loại bỏ.",
+    "partners": [
+      "Quan Vũ (Anh em kết nghĩa)",
+      "Trương Phi (Anh em kết nghĩa)",
+      "Cam Phu Nhân (Vợ)"
+    ]
+  },
+  "zhuge-liang": {
+    "name": "Gia Cát Lượng (mộ niên)",
+    "title": "Trì mộ thừa tướng",
+    "skills": {
+      "star-gazing": {
+        "name": "Quan tinh",
+        "text": "Vào giai đoạn bắt đầu lượt của bạn, bạn có thể xem X lá trên cùng của chồng bài rút (X là số người chơi còn sống trong ván, tối đa 5). Đặt số bài tùy ý trong số đó lên đầu chồng bài theo thứ tự tùy ý. Đặt các lá còn lại xuống đáy chồng bài theo thứ tự tùy ý."
+      },
+      "empty-city": {
+        "name": "Không thành",
+        "text": "Nếu bạn là mục tiêu của Sát hoặc Quyết Đấu mà bạn không còn bài trên tay, Sát hoặc Quyết Đấu đó bị hủy."
+      }
+    },
+    "differenceNote": "Mô tả kỹ năng “Không thành” đổi từ “không thể trở thành mục tiêu của...” sang “... sẽ bị hủy”. Nghĩa là nay bạn có thể nhắm vào Gia Cát Lượng và dùng Sát hoặc Quyết Đấu với ông dù ông không còn bài trên tay; lá Sát hoặc Quyết Đấu đó bị bỏ phí và không có hiệu lực với ông. Một lợi thế là bạn có thêm một cách để giảm bài trên tay, nhất là khi không thể bỏ thêm bài trong giai đoạn bỏ bài. Điều này hữu ích khi cần giảm bài trên tay xuống đủ thấp để tránh kỹ năng của Hoàng Trung, v.v. Có nhiều cách tận dụng, hãy sáng tạo!",
+    "partners": [
+      "Hoàng Nguyệt Anh (Vợ)"
+    ]
+  },
+  "fire-zhuge-liang": {
+    "name": "Gia Cát Lượng (Ngọa Long)",
+    "title": "Ngọa Long",
+    "skills": {
+      "eight-trigrams": {
+        "name": "Bát trận",
+        "text": "Nếu khu trang bị của bạn không có lá giáp nào, coi như bạn đang trang bị Bát Quái Trận."
+      },
+      "arson": {
+        "name": "Hỏa kế",
+        "text": "Trong giai đoạn ra bài, bạn có thể dùng một lá bài đỏ trên tay làm Hỏa Công."
+      },
+      "scient": {
+        "name": "Khán phá",
+        "text": "Bạn có thể dùng một lá bài đen trên tay làm Vô Giải Khả Kích."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Hoàng Nguyệt Anh (Vợ)",
+      "Bàng Thống (Cặp “Long–Phượng”, bạn thân)"
+    ]
+  },
+  "guan-yu": {
+    "name": "Quan Vũ",
+    "title": "Mỹ Tu Công",
+    "skills": {
+      "warrior-saint": {
+        "name": "Võ thánh",
+        "text": "Bạn có thể dùng hoặc đánh một lá bài đỏ làm Sát."
+      }
+    },
+    "differenceNote": "Quan Vũ có 2,5 đơn vị Sinh lực tối đa thay vì 2, khác với các Tướng có 4 Sinh lực tối đa trong Tam Quốc Sát thông thường. Một Tướng khác có thêm Sinh lực này là Lã Bố. Có người đùa rằng họ “ăn” ngựa Xích Thố của mình để được thêm 0,5 Sinh lực tối đa.",
+    "partners": [
+      "Lưu Bị (Anh em kết nghĩa)"
+    ]
+  },
+  "zhang-fei": {
+    "name": "Trương Phi",
+    "title": "Vạn phu bất đương",
+    "skills": {
+      "berserk": {
+        "name": "Bào hao",
+        "text": "Trong giai đoạn ra bài, bạn có thể dùng số lá Sát tùy ý."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Lưu Bị (Anh em kết nghĩa)"
+    ]
+  },
+  "huang-yueying": {
+    "name": "Hoàng Nguyệt Anh",
+    "title": "Quy ẩn kiệt nữ",
+    "skills": {
+      "assembling-wisdom": {
+        "name": "Tập trí",
+        "text": "Khi bạn dùng một Cẩm nang không trì hoãn mà không phải chuyển hóa từ bài khác, bạn có thể rút một lá bài."
+      },
+      "genius": {
+        "name": "Kỳ tài",
+        "text": "Các Cẩm nang bạn dùng không bị giới hạn khoảng cách."
+      }
+    },
+    "differenceNote": "“Tập trí” chỉ kích hoạt khi dùng một Cẩm nang không trì hoãn và không phải bài chuyển hóa. Bà không thể rút bài khi kích hoạt các kỹ năng của Gia Cát Lượng (Ngọa Long) như “Hỏa kế”, “Khán phá” và “Liên hoàn”.\nĐể rõ hơn, Hoàng Nguyệt Anh chỉ rút 1 lá bằng kỹ năng này nếu dùng đúng lá Cẩm nang thật. Ví dụ: nếu bà kết đôi với Bàng Thống và dùng lá “Thiết Tỏa Liên Hoàn”, bà rút 1 lá. Nhưng nếu bà dùng một lá chuồn khác làm Thiết Tỏa Liên Hoàn (kỹ năng của Bàng Thống), bà không được rút bài.\n“Kỳ tài” trở thành kỹ năng bắt buộc trong Quốc chiến.",
+    "partners": [
+      "Gia Cát Lượng (mộ niên) (Chồng)",
+      "Gia Cát Lượng (Ngọa Long) (Chồng)"
+    ]
+  },
+  "gan-fu-ren": {
+    "name": "Cam Phu Nhân",
+    "title": "Hoàng hậu của công đức rạng ngời",
+    "skills": {
+      "prudence": {
+        "name": "Thục thận",
+        "text": "Mỗi khi bạn hồi 1 Sinh lực, bạn có thể cho một người chơi khác cùng thế lực rút 1 lá bài.\n(Lưu ý: ở đây dùng “thế lực” thay cho “phe”. Lý do là nếu bạn là “Dã tâm gia”, bạn là một thế lực riêng, dù có người chơi khác cùng phe với bạn.)"
+      },
+      "divine-wisdom": {
+        "name": "Thần trí",
+        "text": "Vào đầu lượt của bạn, bạn có thể bỏ toàn bộ bài trên tay. Nếu làm vậy mà số bài bạn đã bỏ không nhỏ hơn X, bạn hồi 1 Sinh lực (X bằng Sinh lực hiện tại của bạn)."
+      }
+    },
+    "differenceNote": "Bà là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến. Ban đầu chúng tôi chê kỹ năng bỏ hết bài của bà thật ngớ ngẩn. Nhưng không hẳn vậy. Bà chắc chắn là vai trò hỗ trợ và khá khó bị hạ. Thử nghĩ xem, nếu chỉ còn 1 Sinh lực, bà chỉ cần bỏ MỘT lá bài ở đầu lượt. Khi đó bà bắt đầu lượt với 2 Sinh lực VÀ còn có thể nhờ người khác rút một lá bài. Bà vui hơn Chu Thái nhiều!",
+    "partners": [
+      "Lưu Bị (Chồng)"
+    ]
+  },
+  "huang-zhong": {
+    "name": "Hoàng Trung",
+    "title": "Lão đương ích tráng",
+    "skills": {
+      "fearsome-archer": {
+        "name": "Liệt cung",
+        "text": "Sau khi chọn một người chơi làm mục tiêu của Sát trong giai đoạn ra bài, bạn có thể không cho lá Sát này bị đáp lại bằng Thiểm trong các trường hợp sau:\n1. Số bài trên tay của mục tiêu lớn hơn hoặc bằng Sinh lực hiện tại của bạn.\n2. Số bài trên tay của mục tiêu nhỏ hơn hoặc bằng tầm tấn công của bạn."
+      }
+    },
+    "differenceNote": "Mô tả kỹ năng được chỉnh nhẹ để làm rõ thời điểm kích hoạt “Liệt cung”. Nếu không quá câu nệ từng chữ thì kỹ năng về cơ bản giống nhau.",
+    "partners": [
+      "Ngụy Diên (Đồng nghiệp từ thời phục vụ Hàn Huyền)"
+    ]
+  },
+  "liu-shan": {
+    "name": "Lưu Thiện",
+    "title": "Vô vi chân mệnh chủ",
+    "skills": {
+      "relish": {
+        "name": "Hưởng lạc",
+        "text": "Khi người chơi khác chọn bạn làm mục tiêu của Sát, họ phải bỏ một lá bài cơ bản, nếu không lá Sát đó không có hiệu lực với bạn."
+      },
+      "devolution": {
+        "name": "Phóng quyền",
+        "text": "Bạn có thể bỏ qua giai đoạn ra bài, rồi bỏ một lá bài trên tay vào cuối lượt của bạn để cho một người chơi khác một lượt thêm."
+      }
+    },
+    "differenceNote": "Kỹ năng Chủ công bị loại bỏ.",
+    "partners": [
+      "Triệu Vân (Người đã cứu ông)"
+    ]
+  },
+  "ma-chao": {
+    "name": "Mã Siêu",
+    "title": "Nhất kỵ đương thiên",
+    "skills": {
+      "horsemanship": {
+        "name": "Mã thuật",
+        "text": "Khoảng cách và tầm tấn công của bạn khi tính đến người chơi khác luôn là -1."
+      },
+      "iron-calvary": {
+        "name": "Thiết kỵ",
+        "text": "Sau khi chọn một người chơi làm mục tiêu của Sát, bạn có thể phán xét. Nếu kết quả màu đỏ, mục tiêu không thể đáp lại lá Sát này bằng Thiểm."
+      }
+    },
+    "differenceNote": "Mô tả “Thiết kỵ” đổi từ “không thể né” sang “không thể đáp lại bằng Thiểm”.",
+    "partners": []
+  },
+  "meng-huo": {
+    "name": "Mạnh Hoạch",
+    "title": "Nam Man vương",
+    "skills": {
+      "the-smoking-gun": {
+        "name": "Họa thủ",
+        "text": "Nam Man Xâm Nhập không có hiệu lực với bạn. Bạn là nguồn gây sát thương do Nam Man Xâm Nhập gây ra."
+      },
+      "arise-again": {
+        "name": "Tái khởi",
+        "text": "Trong giai đoạn rút bài, nếu Sinh lực của bạn chưa đầy, bạn có thể từ bỏ việc rút bài từ chồng bài; thay vào đó, bạn lật X lá trên cùng của chồng bài (X là số Sinh lực bạn đã mất). Với mỗi lá cơ được lật, bạn hồi 1 Sinh lực, rồi bỏ các lá đó và lấy các lá còn lại."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Chúc Dung (Vợ)"
+    ]
+  },
+  "pang-tong": {
+    "name": "Bàng Thống",
+    "title": "Phượng Sồ",
+    "skills": {
+      "shackle": {
+        "name": "Liên hoàn",
+        "text": "Trong giai đoạn ra bài, bạn có thể dùng một lá bài chuồn trên tay làm Thiết Tỏa Liên Hoàn, hoặc để rút lại 1 lá bài."
+      },
+      "resurrection": {
+        "name": "Niết bàn",
+        "text": "Khi bạn cận kề cái chết, bạn có thể bỏ toàn bộ bài của mình (trên tay và trang bị) cùng mọi lá bài trong khu chờ, rồi lật lại mặt Tướng và gỡ xích, rút ba lá bài và hồi Sinh lực lên 3."
+      }
+    },
+    "differenceNote": "“Liên hoàn” không thay đổi. Bạn vẫn có thể dùng số lá bài chuồn tùy ý làm Thiết Tỏa Liên Hoàn.\nMô tả “Niết bàn” được thay đổi: bạn có thể gỡ úp Tướng khi hồi sinh.",
+    "partners": [
+      "Gia Cát Lượng (Ngọa Long) (Cặp “Long–Phượng”, bạn thân)"
+    ]
+  },
+  "wei-yan": {
+    "name": "Ngụy Diên",
+    "title": "Thị huyết độc lang",
+    "skills": {
+      "insanity-streak": {
+        "name": "Cuồng cốt",
+        "text": "Sau khi bạn gây 1 sát thương cho một người chơi trong khoảng cách thực tế 1, bạn hồi 1 Sinh lực."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Hoàng Trung (Đồng nghiệp từ thời phục vụ Hàn Huyền)"
+    ]
+  },
+  "zhao-yun": {
+    "name": "Triệu Vân",
+    "title": "Thiếu niên tướng quân",
+    "skills": {
+      "dragon-heart": {
+        "name": "Long đảm",
+        "text": "Bạn có thể dùng hoặc đánh Sát của mình làm Thiểm, và ngược lại."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Lưu Thiện (Được cứu trong trận Trường Bản)"
+    ]
+  },
+  "zhu-rong": {
+    "name": "Chúc Dung",
+    "title": "Nữ vương hoang dã",
+    "skills": {
+      "giant-elephant": {
+        "name": "Cự tượng",
+        "text": "Nam Man Xâm Nhập không có hiệu lực với bạn. Khi một lá Nam Man Xâm Nhập do người chơi khác dùng được đặt vào chồng bài bỏ sau khi mọi sát thương đã được giải quyết, bạn lấy lá đó."
+      },
+      "fearsome-blade": {
+        "name": "Liệt nhận",
+        "text": "Mỗi khi bạn gây sát thương cho mục tiêu bằng Sát, bạn có thể đấu điểm với người chơi đó. Nếu bạn thắng, bạn lấy một lá bài của người đó."
+      }
+    },
+    "differenceNote": "Bà không thể kích hoạt “Liệt nhận” nếu gây sát thương cho một người chơi không phải mục tiêu của mình. Nghĩa là bà không thể đấu điểm với người chơi bị sát thương do hiệu ứng xích, chẳng hạn.",
+    "partners": [
+      "Mạnh Hoạch (Chồng)"
+    ]
+  },
+  "sun-quan": {
+    "name": "Tôn Quyền",
+    "title": "Hiền quân trẻ tuổi",
+    "skills": {
+      "balance-of-power": {
+        "name": "Chế hành",
+        "text": "Trong giai đoạn ra bài, bạn có thể bỏ tối đa X lá bài (X là Sinh lực tối đa của bạn), rồi rút cùng số lá bài. Mỗi giai đoạn chỉ một lần."
+      }
+    },
+    "differenceNote": "“Chế hành” bị làm yếu đi. Trong một giai đoạn ra bài, ông chỉ có thể bỏ và rút tối đa X lá bài, X là Sinh lực tối đa của ông. Kỹ năng Chủ công của ông bị loại bỏ.",
+    "partners": [
+      "Chu Thái (Người đã cứu ông)"
+    ]
+  },
+  "da-qiao": {
+    "name": "Đại Kiều",
+    "title": "Căng trì chi hoa",
+    "skills": {
+      "national-beauty": {
+        "name": "Quốc sắc",
+        "text": "Trong giai đoạn ra bài, bạn có thể dùng một lá bài rô làm Lạc Bất Tư Thục."
+      },
+      "displacement": {
+        "name": "Lưu ly",
+        "text": "Khi bạn trở thành mục tiêu của Sát, bạn có thể bỏ một lá bài trên tay để chuyển lá Sát này sang một người chơi khác trong tầm tấn công của bạn. Người nhận không thể là người đã dùng Sát."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Tiểu Kiều (Chị em)"
+    ]
+  },
+  "ding-feng": {
+    "name": "Đinh Phụng",
+    "title": "Trọng thần dẹp loạn triều đình",
+    "skills": {
+      "close-combat": {
+        "name": "Đoản binh",
+        "text": "Mỗi khi bạn dùng Sát, bạn có thể chọn thêm một người chơi trong khoảng cách thực tế 1 của bạn làm mục tiêu của lá Sát đó."
+      },
+      "swift-and-deadly": {
+        "name": "Phấn tấn",
+        "text": "Trong giai đoạn ra bài, bạn có thể bỏ một lá bài và chọn một người chơi. Khoảng cách thực tế giữa bạn và người đó được coi là 1 cho đến hết lượt của bạn. Mỗi giai đoạn chỉ một lần."
+      }
+    },
+    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "partners": []
+  },
+  "gan-ning": {
+    "name": "Cam Ninh",
+    "title": "Cẩm phàm du hiệp",
+    "skills": {
+      "surprise-raid": {
+        "name": "Kỳ tập",
+        "text": "Trong giai đoạn ra bài, bạn có thể dùng một lá bài đen làm Quá Hà Sách Kiều."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": []
+  },
+  "huang-gai": {
+    "name": "Hoàng Cái",
+    "title": "Khinh thân vị quốc",
+    "skills": {
+      "trojan-flesh": {
+        "name": "Khổ nhục",
+        "text": "Trong giai đoạn ra bài, bạn có thể mất 1 Sinh lực, rồi rút hai lá bài."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Chu Du (Đối tác trong kế “Khổ nhục”)"
+    ]
+  },
+  "lu-meng": {
+    "name": "Lã Mông",
+    "title": "Bạch y độ giang",
+    "skills": {
+      "self-mastery": {
+        "name": "Khắc kỷ",
+        "text": "Nếu bạn không dùng hay đánh Sát trong giai đoạn ra bài, bạn có thể bỏ qua giai đoạn bỏ bài của lượt này."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": []
+  },
+  "lu-su": {
+    "name": "Lỗ Túc",
+    "title": "Nhà ngoại giao phá cách",
+    "skills": {
+      "altruism": {
+        "name": "Hiếu thí",
+        "text": "Khi bạn rút bài trong giai đoạn rút bài, bạn có thể rút thêm hai lá bài. Nếu vì vậy bạn có hơn năm lá bài trên tay, bạn phải đưa một nửa số bài trên tay (làm tròn xuống) cho người chơi khác có ít bài trên tay nhất."
+      },
+      "alliance": {
+        "name": "Đế minh",
+        "text": "Trong giai đoạn ra bài, bạn có thể chọn 2 người chơi (không phải bạn) và bỏ số lá bài bằng chênh lệch số bài trên tay giữa 2 người đó. Sau đó hoán đổi toàn bộ bài trên tay của họ. Mỗi giai đoạn chỉ một lần."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": []
+  },
+  "lu-xun": {
+    "name": "Lục Tốn",
+    "title": "Cột trụ chống trời",
+    "skills": {
+      "humility": {
+        "name": "Khiêm tốn",
+        "text": "Khi bạn trở thành mục tiêu của Thuận Thủ Khiên Dương hoặc Lạc Bất Tư Thục, các lá bài này vô hiệu."
+      },
+      "scrutinize": {
+        "name": "Độ thế",
+        "text": "Trong giai đoạn ra bài, bạn có thể dùng một lá bài đỏ trên tay làm Dĩ Dật Đãi Lao."
+      }
+    },
+    "differenceNote": "Mô tả “Khiêm tốn” đổi từ “không thể trở thành mục tiêu của...” sang “... các lá bài vô hiệu”. Kỹ năng đặc trưng “Liên doanh” được thay bằng “Độ thế”, biến Lục Tốn từ một Tướng độc lập cao thành một Tướng hỗ trợ.",
+    "partners": []
+  },
+  "sun-jian": {
+    "name": "Tôn Kiên",
+    "title": "Vũ Liệt Đế",
+    "skills": {
+      "heroic-spirit": {
+        "name": "Anh hồn",
+        "text": "Vào giai đoạn bắt đầu của bạn, nếu Sinh lực của bạn chưa đầy, bạn có thể chọn một trong hai lựa chọn:\n1. Chọn một người chơi khác rút X lá bài, rồi bỏ 1 lá bài.\n2. Chọn một người chơi khác rút 1 lá bài, rồi bỏ X lá bài.\n(X là số Sinh lực bạn đã mất)."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": []
+  },
+  "taishi-ci": {
+    "name": "Thái Sử Từ",
+    "title": "Vạn liệt chi sĩ",
+    "skills": {
+      "justice-of-heaven": {
+        "name": "Thiên nghĩa",
+        "text": "Trong giai đoạn ra bài, bạn có thể đấu điểm với một người chơi khác. Nếu bạn thắng, bạn có tất cả các hiệu lực sau cho đến hết lượt của bạn.\n1. Sát của bạn không bị giới hạn tầm,\n2. Bạn có thể dùng thêm một lá Sát,\n3. Bạn có thể chọn thêm một người chơi làm mục tiêu khi dùng Sát.\nNếu bạn thua, bạn không thể dùng Sát cho đến hết lượt. Mỗi giai đoạn chỉ một lần."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": []
+  },
+  "sun-shangxiang": {
+    "name": "Tôn Thượng Hương",
+    "title": "Cung yêu cơ",
+    "skills": {
+      "marriage": {
+        "name": "Kết nhân",
+        "text": "Trong giai đoạn ra bài, bạn có thể bỏ hai lá bài trên tay và chọn một người chơi khác (tính Tướng ghép là nam) có Sinh lực chưa đầy. Người đó và bạn mỗi người hồi 1 Sinh lực. Mỗi giai đoạn chỉ một lần."
+      },
+      "warrior-lady": {
+        "name": "Kiêu cơ",
+        "text": "Mỗi lần bạn mất các lá trang bị trong khu trang bị, bạn có thể rút hai lá bài."
+      }
+    },
+    "differenceNote": "Mô tả “Kết nhân” đã được thay đổi. Bạn không thể kết nhân với chính mình dù Chủ tướng của bạn là nam. “Kiêu cơ” bị làm yếu đi. Mô tả đổi từ “Mỗi khi bạn mất một lá trang bị” sang “Mỗi lần bạn mất các lá trang bị”. Nghĩa là Tôn Thượng Hương chỉ rút hai lá khi nhiều trang bị bị bỏ cùng lúc, ví dụ bỏ hai trang bị đang mang để kích hoạt Quán Thạch Phủ.",
+    "partners": []
+  },
+  "xiao-qiao": {
+    "name": "Tiểu Kiều",
+    "title": "Kiểu tình chi hoa",
+    "skills": {
+      "heavenly-scent": {
+        "name": "Thiên hương",
+        "text": "Mỗi lần bạn nhận sát thương, bạn có thể bỏ một lá cơ trên tay để chuyển sát thương sang một người chơi khác, rồi người đó rút X lá bài (X là số Sinh lực người đó đã mất)."
+      },
+      "rosy-cheeks": {
+        "name": "Hồng nhan",
+        "text": "Các lá bích của bạn được coi là lá cơ."
+      }
+    },
+    "differenceNote": "Đáng tiếc, vì là vợ của Chu Du nên bà cũng chịu số phận chân dung bị làm xấu thảm hại. Ngoài ra bà không thay đổi.",
+    "partners": [
+      "Chu Du (Chồng)",
+      "Đại Kiều (Chị em)"
+    ]
+  },
+  "zhang-zhao-and-zhang-hong": {
+    "name": "Trương Chiêu & Trương Hoành",
+    "title": "Kinh thiên vĩ địa",
+    "skills": {
+      "blunt-advice": {
+        "name": "Trực gián",
+        "text": "Trong giai đoạn ra bài, bạn có thể đặt một lá trang bị trên tay vào khu trang bị của một người chơi khác, rồi bạn rút một lá bài."
+      },
+      "stabilization": {
+        "name": "Cố chính",
+        "text": "Vào cuối giai đoạn bỏ bài của người chơi khác, bạn có thể trả lại cho người đó một lá bài đã bị bỏ trong giai đoạn này từ chồng bài bỏ. Nếu làm vậy, bạn có thể lấy tất cả các lá bài khác đã bị bỏ trong giai đoạn bỏ bài của người đó từ chồng bài bỏ."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": []
+  },
+  "zhou-tai": {
+    "name": "Chu Thái",
+    "title": "Lịch chiến chi khu",
+    "skills": {
+      "refuting-death": {
+        "name": "Bất khuất",
+        "text": "Mỗi khi Sinh lực của bạn bị giảm 1 trong khi Sinh lực hiện tại của bạn là 0, bạn có thể lật một lá từ đầu chồng bài rút và đặt lên Tướng của bạn. Chừng nào các lá này chưa có hai lá cùng số (từ A đến K) thì bạn không chết. Nếu lật được một lá cùng số với một lá đã có, bạn rơi vào trạng thái cận kề cái chết."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Tôn Quyền (Chủ công)"
+    ]
+  },
+  "zhou-yu": {
+    "name": "Chu Du",
+    "title": "Đại đô đốc",
+    "skills": {
+      "heroic-demeanor": {
+        "name": "Anh tư",
+        "text": "Khi bạn rút bài trong giai đoạn rút bài, bạn có thể rút thêm một lá bài."
+      },
+      "sow-dissension": {
+        "name": "Phản gián",
+        "text": "Trong giai đoạn ra bài, bạn có thể chọn một người chơi khác chọn một chất. Người này sau đó lấy một lá bài trên tay của bạn và cho mọi người xem. Nếu chất của lá bài vừa lấy khác chất họ đã chọn, bạn gây 1 sát thương cho người đó. Mỗi giai đoạn chỉ một lần."
+      }
+    },
+    "differenceNote": "“Phản gián” được thay đổi để nạn nhân lấy lá bài trên tay trước khi nhận sát thương. Chu Du không thể lấy lại lá bài nếu giết một người chơi bằng “Phản gián”.\nNhưng khác biệt rõ ràng nhất là chân dung xấu không thể tin nổi của Chu Du. Họ nghĩ gì vậy trời?!?!",
+    "partners": [
+      "Hoàng Cái (Đối tác trong kế “Khổ nhục”)",
+      "Tiểu Kiều (Vợ)"
+    ]
+  },
+  "yuan-shao": {
+    "name": "Viên Thiệu",
+    "title": "Cao quý danh môn",
+    "skills": {
+      "barrage": {
+        "name": "Loạn kích",
+        "text": "Trong giai đoạn ra bài, bạn có thể dùng hai lá bài trên tay cùng chất làm Vạn Tiễn Tề Phát."
+      }
+    },
+    "differenceNote": "Kỹ năng Chủ công bị loại bỏ. Ngoài ra ông giống hệt Tam Quốc Sát thông thường.",
+    "partners": [
+      "Nhan Lương & Văn Xú (Tướng được tin cậy nhất)"
+    ]
+  },
+  "zhang-jiao": {
+    "name": "Trương Giác",
+    "title": "Thiên Công tướng quân",
+    "skills": {
+      "lightning-strike": {
+        "name": "Lôi kích",
+        "text": "Mỗi khi bạn dùng hoặc đánh một lá Thiểm, bạn có thể chọn một người chơi khác phán xét. Nếu kết quả là lá bích, bạn gây 2 sát thương sét cho người đó."
+      },
+      "dark-sorcery": {
+        "name": "Quỷ đạo",
+        "text": "Trước khi lá phán xét của một người chơi có hiệu lực, bạn có thể hoán đổi lá phán xét đó với một lá bài đen."
+      }
+    },
+    "differenceNote": "Kỹ năng Chủ công bị loại bỏ. Ngoài ra Trương Giác không thay đổi!",
+    "partners": []
+  },
+  "lu-bu": {
+    "name": "Lã Bố",
+    "title": "Hóa thân của võ",
+    "skills": {
+      "without-equal": {
+        "name": "Vô song",
+        "text": "Sau khi chọn một người chơi làm mục tiêu của Sát, mục tiêu của bạn cần dùng liên tiếp hai lá Thiểm để vô hiệu lá Sát. Trong Quyết Đấu, đối thủ của bạn cần đánh liên tiếp hai lá Sát mỗi lần."
+      }
+    },
+    "differenceNote": "Lã Bố có 2,5 đơn vị Sinh lực tối đa thay vì 2, khác với các Tướng có 4 Sinh lực tối đa trong Tam Quốc Sát thông thường. Một Tướng khác có thêm Sinh lực này là Quan Vũ. Có người đùa rằng họ “ăn” ngựa Xích Thố của mình để được thêm 0,5 Sinh lực tối đa.\nMô tả “Vô song” được chỉnh nhẹ để làm rõ thời điểm kích hoạt.\nNhìn chung Lã Bố không khác Tam Quốc Sát gốc.",
+    "partners": [
+      "Điêu Thuyền (Người giật dây)"
+    ]
+  },
+  "diao-chan": {
+    "name": "Điêu Thuyền",
+    "title": "Tuyệt thế vũ cơ",
+    "skills": {
+      "seed-of-animosity": {
+        "name": "Ly gián",
+        "text": "Trong giai đoạn ra bài, bạn có thể bỏ một lá bài và chọn hai người chơi nam khác. Khi đó coi như một trong hai người dùng Quyết Đấu với người kia. Quyết Đấu này không thể bị đáp lại bằng Vô Giải Khả Kích. Mỗi giai đoạn chỉ một lần."
+      },
+      "envious-moon": {
+        "name": "Bế nguyệt",
+        "text": "Vào giai đoạn kết thúc của bạn, bạn có thể rút một lá bài."
+      }
+    },
+    "differenceNote": "Mô tả “Ly gián” được sửa để bạn không thể dùng lên chính mình dù Chủ tướng của bạn là nam. Lưu ý giới tính của các nạn nhân dựa trên Chủ tướng nếu cả hai đã lật ngửa, hoặc dựa trên Tướng duy nhất đã lật ngửa. Ngoài ra nhân vật này không đổi so với Tam Quốc Sát.",
+    "partners": [
+      "Lã Bố (Con rối)"
+    ]
+  },
+  "cai-wenji": {
+    "name": "Thái Văn Cơ",
+    "title": "Dị hương cô nữ",
+    "skills": {
+      "dirge": {
+        "name": "Bi ca",
+        "text": "Mỗi khi một người chơi bị Sát gây sát thương, bạn có thể bỏ một lá bài và cho người đó phán xét. Nếu kết quả là:\nCơ: nạn nhân hồi 1 Sinh lực.\nRô: nạn nhân rút hai lá bài.\nChuồn: người tấn công bỏ hai lá bài.\nBích: người tấn công lật mặt."
+      },
+      "sorrow": {
+        "name": "Đoạn trường",
+        "text": "Khi bạn chết, người giết bạn mất toàn bộ kỹ năng của một trong các Tướng của người đó."
+      }
+    },
+    "differenceNote": "“Đoạn trường” được thay đổi để kẻ giết chỉ mất kỹ năng của một Tướng của mình.",
+    "partners": []
+  },
+  "hua-tuo": {
+    "name": "Hoa Đà",
+    "title": "Thần y",
+    "skills": {
+      "first-aid": {
+        "name": "Cấp cứu",
+        "text": "Ngoài lượt của bạn, bạn có thể dùng một lá bài đỏ làm Đào."
+      },
+      "green-salve": {
+        "name": "Thanh nang",
+        "text": "Trong giai đoạn ra bài, bạn có thể bỏ một lá bài trên tay để một người chơi hồi 1 Sinh lực. Mỗi giai đoạn chỉ một lần."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": []
+  },
+  "jia-xu": {
+    "name": "Giả Hủ",
+    "title": "Lãnh khốc độc sĩ",
+    "skills": {
+      "unmitigated-murder": {
+        "name": "Hoàn sát",
+        "text": "Trong lượt của bạn, chỉ bạn và những người chơi đang cận kề cái chết mới được dùng Đào."
+      },
+      "descend-into-chaos": {
+        "name": "Loạn vũ",
+        "text": "Trong giai đoạn ra bài, bạn có thể buộc mọi người chơi khác chọn một trong hai:\n1. Dùng Sát với người chơi gần họ nhất\n2. Mất 1 Sinh lực."
+      },
+      "behind-the-curtain": {
+        "name": "Duy mạc",
+        "text": "Mọi Cẩm nang màu đen nhắm vào bạn đều bị hủy."
+      }
+    },
+    "differenceNote": "Mô tả “Duy mạc” đổi từ “không có hiệu lực” sang “bị hủy”. Thực chất nhân vật không đổi ngoài cách diễn đạt này.",
+    "partners": []
+  },
+  "ji-ling": {
+    "name": "Kỷ Linh",
+    "title": "Thủ lĩnh Trọng Gia",
+    "skills": {
+      "double-edged": {
+        "name": "Song nhận",
+        "text": "Vào đầu giai đoạn ra bài, bạn có thể đấu điểm với một người chơi khác. Nếu bạn thắng, coi như bạn dùng một lá Sát với người đó hoặc với một người chơi khác cùng thế lực với nạn nhân (lá Sát này không được tính vào số lá Sát đã dùng trong giai đoạn ra bài). Nếu bạn không thắng, giai đoạn ra bài của bạn kết thúc."
+      }
+    },
+    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "partners": []
+  },
+  "kong-rong": {
+    "name": "Khổng Dung",
+    "title": "Nghiêm chính công minh",
+    "skills": {
+      "celebrity": {
+        "name": "Danh sĩ",
+        "text": "Mỗi khi bạn nhận sát thương, nếu nguồn gây sát thương có Tướng ẩn, sát thương đó giảm 1."
+      },
+      "comity": {
+        "name": "Lễ nhượng",
+        "text": "Khi các lá bài của bạn bị bỏ vào chồng bài bỏ, bạn có thể đưa các lá đó cho một người chơi khác."
+      }
+    },
+    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến. Trông ông cũng khá thú vị đấy chứ?",
+    "partners": []
+  },
+  "ma-teng": {
+    "name": "Mã Đằng",
+    "title": "Phi nước đại nơi biên giới phía Tây",
+    "skills": {
+      "horsemanship": {
+        "name": "Mã thuật",
+        "text": "Khoảng cách thực tế của bạn đến người chơi khác giảm 1."
+      },
+      "call-of-valour": {
+        "name": "Hùng dị",
+        "text": "Trong giai đoạn ra bài, bạn có thể cho mọi người chơi cùng thế lực với bạn mỗi người rút ba lá bài. Nếu thế lực của bạn có số người chơi ít nhất (hoặc thuộc nhóm ít nhất) trong các thế lực đang chơi, bạn hồi 1 Sinh lực."
+      }
+    },
+    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "partners": []
+  },
+  "pan-feng": {
+    "name": "Phan Phụng",
+    "title": "Thượng tướng của liên quân",
+    "skills": {
+      "insanity-axe": {
+        "name": "Cuồng phủ",
+        "text": "Mỗi lần Sát của bạn gây sát thương cho nạn nhân, bạn có thể chọn một lá trong khu trang bị của nạn nhân rồi chuyển nó sang khu trang bị của bạn, hoặc bỏ nó."
+      }
+    },
+    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "partners": []
+  },
+  "pang-de": {
+    "name": "Bàng Đức",
+    "title": "Nhân mã nhất thể",
+    "skills": {
+      "horsemanship": {
+        "name": "Mã thuật",
+        "text": "Khoảng cách của bạn tính đến người chơi khác giảm 1."
+      },
+      "fearsome-advance": {
+        "name": "Mãnh tiến",
+        "text": "Mỗi khi Sát của bạn bị Thiểm của mục tiêu vô hiệu, bạn có thể bỏ một lá bài của mục tiêu."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": []
+  },
+  "tian-feng": {
+    "name": "Điền Phong",
+    "title": "Nhân tài quý của Hà Bắc",
+    "skills": {
+      "deathly-counsel": {
+        "name": "Tử gián",
+        "text": "Khi bạn mất lá bài trên tay cuối cùng, bạn có thể bỏ 1 lá bài của một người chơi khác."
+      },
+      "with-the-tide": {
+        "name": "Tùy thế",
+        "text": "Khi một người chơi khác rơi vào cận kề cái chết, nếu nguồn gây ra điều đó cùng thế lực với bạn, bạn rút 1 lá từ chồng bài rút. Khi một người chơi cùng thế lực với bạn chết, bạn mất 1 Sinh lực."
+      }
+    },
+    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "partners": []
+  },
+  "yan-liang-and-wen-chou": {
+    "name": "Nhan Lương & Văn Xú",
+    "title": "Hổ lang huynh đệ",
+    "skills": {
+      "dual-heroes": {
+        "name": "Song hùng",
+        "text": "Trong giai đoạn rút bài, bạn có thể từ bỏ việc rút bài từ chồng bài và phán xét thay vào đó. Bạn lấy lá phán xét này, và trong lượt này bạn có thể dùng một lá bài trên tay khác màu với lá phán xét làm Quyết Đấu."
+      }
+    },
+    "differenceNote": "Không có.",
+    "partners": [
+      "Viên Thiệu (Chủ công)"
+    ]
+  },
+  "zou-shi": {
+    "name": "Trâu Thị",
+    "title": "Sức quyến rũ của yêu cơ",
+    "skills": {
+      "femme-fatale": {
+        "name": "Họa thủy",
+        "text": "Trong giai đoạn ra bài, bạn có thể lật ngửa Tướng này. Trong lượt của bạn, nếu Tướng này đã lật ngửa, người chơi khác không thể lật ngửa Tướng của họ."
+      },
+      "impetus-for-conflicts": {
+        "name": "Khuynh thành",
+        "text": "Trong giai đoạn ra bài, bạn có thể bỏ một lá trang bị và chọn một người chơi khác đã lật ngửa cả hai Tướng. Sau đó bạn chọn một trong các Tướng của người đó và “ẩn” nó (úp lại về trạng thái ẩn)."
+      }
+    },
+    "differenceNote": "Bà là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "partners": []
+  }
+}
