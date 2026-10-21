@@ -1,0 +1,841 @@
+{
+  "deck": "alternate",
+  "edition": "guozhan",
+  "source": {
+    "url": "https://zhangshenxing.github.io/LTKGeneralList",
+    "site": "LTK general list (zhangshenxing)",
+    "pageUpdated": "2020/10/21",
+    "crawledAt": "2026-10-21"
+  },
+  "total": 108,
+  "cards": [
+    {
+      "nameZh": "杀",
+      "category": "basic",
+      "count": 21,
+      "defaultCardId": "sha",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "spade"
+        },
+        {
+          "rank": 7,
+          "suit": "spade"
+        },
+        {
+          "rank": 8,
+          "suit": "spade"
+        },
+        {
+          "rank": 8,
+          "suit": "spade"
+        },
+        {
+          "rank": 9,
+          "suit": "spade"
+        },
+        {
+          "rank": 10,
+          "suit": "spade"
+        },
+        {
+          "rank": 11,
+          "suit": "spade"
+        },
+        {
+          "rank": 2,
+          "suit": "club"
+        },
+        {
+          "rank": 3,
+          "suit": "club"
+        },
+        {
+          "rank": 4,
+          "suit": "club"
+        },
+        {
+          "rank": 5,
+          "suit": "club"
+        },
+        {
+          "rank": 8,
+          "suit": "club"
+        },
+        {
+          "rank": 9,
+          "suit": "club"
+        },
+        {
+          "rank": 10,
+          "suit": "club"
+        },
+        {
+          "rank": 11,
+          "suit": "club"
+        },
+        {
+          "rank": 11,
+          "suit": "club"
+        },
+        {
+          "rank": 10,
+          "suit": "heart"
+        },
+        {
+          "rank": 12,
+          "suit": "heart"
+        },
+        {
+          "rank": 10,
+          "suit": "diamond"
+        },
+        {
+          "rank": 11,
+          "suit": "diamond"
+        },
+        {
+          "rank": 12,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "火杀",
+      "category": "basic",
+      "count": 3,
+      "defaultCardId": "fire-attack",
+      "printings": [
+        {
+          "rank": 4,
+          "suit": "heart"
+        },
+        {
+          "rank": 4,
+          "suit": "diamond"
+        },
+        {
+          "rank": 5,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "雷杀",
+      "category": "basic",
+      "count": 5,
+      "defaultCardId": "lightning-attack",
+      "printings": [
+        {
+          "rank": 6,
+          "suit": "spade"
+        },
+        {
+          "rank": 7,
+          "suit": "spade"
+        },
+        {
+          "rank": 6,
+          "suit": "club"
+        },
+        {
+          "rank": 7,
+          "suit": "club"
+        },
+        {
+          "rank": 8,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "闪",
+      "category": "basic",
+      "count": 14,
+      "defaultCardId": "shan",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "heart"
+        },
+        {
+          "rank": 11,
+          "suit": "heart"
+        },
+        {
+          "rank": 13,
+          "suit": "heart"
+        },
+        {
+          "rank": 2,
+          "suit": "diamond"
+        },
+        {
+          "rank": 3,
+          "suit": "diamond"
+        },
+        {
+          "rank": 6,
+          "suit": "diamond"
+        },
+        {
+          "rank": 7,
+          "suit": "diamond"
+        },
+        {
+          "rank": 7,
+          "suit": "diamond"
+        },
+        {
+          "rank": 8,
+          "suit": "diamond"
+        },
+        {
+          "rank": 8,
+          "suit": "diamond"
+        },
+        {
+          "rank": 9,
+          "suit": "diamond"
+        },
+        {
+          "rank": 10,
+          "suit": "diamond"
+        },
+        {
+          "rank": 11,
+          "suit": "diamond"
+        },
+        {
+          "rank": 13,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "桃",
+      "category": "basic",
+      "count": 8,
+      "defaultCardId": "peach",
+      "printings": [
+        {
+          "rank": 4,
+          "suit": "heart"
+        },
+        {
+          "rank": 6,
+          "suit": "heart"
+        },
+        {
+          "rank": 7,
+          "suit": "heart"
+        },
+        {
+          "rank": 8,
+          "suit": "heart"
+        },
+        {
+          "rank": 9,
+          "suit": "heart"
+        },
+        {
+          "rank": 10,
+          "suit": "heart"
+        },
+        {
+          "rank": 12,
+          "suit": "heart"
+        },
+        {
+          "rank": 2,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "酒",
+      "category": "basic",
+      "count": 3,
+      "defaultCardId": "wine",
+      "printings": [
+        {
+          "rank": 9,
+          "suit": "spade"
+        },
+        {
+          "rank": 9,
+          "suit": "club"
+        },
+        {
+          "rank": 9,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "闪电",
+      "category": "tool",
+      "count": 1,
+      "defaultCardId": "lightning",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "乐不思蜀",
+      "category": "tool",
+      "count": 2,
+      "defaultCardId": "capture",
+      "printings": [
+        {
+          "rank": 6,
+          "suit": "club"
+        },
+        {
+          "rank": 6,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "兵粮寸断",
+      "category": "tool",
+      "count": 2,
+      "defaultCardId": "starvation",
+      "printings": [
+        {
+          "rank": 10,
+          "suit": "spade"
+        },
+        {
+          "rank": 10,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "过河拆桥",
+      "category": "tool",
+      "count": 3,
+      "defaultCardId": "break",
+      "printings": [
+        {
+          "rank": 3,
+          "suit": "spade"
+        },
+        {
+          "rank": 4,
+          "suit": "spade"
+        },
+        {
+          "rank": 12,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "顺手牵羊",
+      "category": "tool",
+      "count": 3,
+      "defaultCardId": "steal",
+      "printings": [
+        {
+          "rank": 3,
+          "suit": "spade"
+        },
+        {
+          "rank": 4,
+          "suit": "spade"
+        },
+        {
+          "rank": 3,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "决斗",
+      "category": "tool",
+      "count": 2,
+      "defaultCardId": "duel",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "spade"
+        },
+        {
+          "rank": 1,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "借刀杀人",
+      "category": "tool",
+      "count": 1,
+      "defaultCardId": "coerce",
+      "printings": [
+        {
+          "rank": 12,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "无中生有",
+      "category": "tool",
+      "count": 2,
+      "defaultCardId": "draw-two",
+      "printings": [
+        {
+          "rank": 7,
+          "suit": "heart"
+        },
+        {
+          "rank": 8,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "无懈可击",
+      "category": "tool",
+      "count": 1,
+      "defaultCardId": "wuxie",
+      "printings": [
+        {
+          "rank": 11,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "无懈可击•国",
+      "category": "tool",
+      "count": 2,
+      "defaultCardId": null,
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "club"
+        },
+        {
+          "rank": 12,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "万箭齐发",
+      "category": "tool",
+      "count": 1,
+      "defaultCardId": "hail-of-arrows",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "南蛮入侵",
+      "category": "tool",
+      "count": 2,
+      "defaultCardId": "barbarians",
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "spade"
+        },
+        {
+          "rank": 7,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "桃园结义",
+      "category": "tool",
+      "count": 1,
+      "defaultCardId": "peach-garden",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "五谷丰登",
+      "category": "tool",
+      "count": 1,
+      "defaultCardId": "harvest",
+      "printings": [
+        {
+          "rank": 3,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "铁索连环",
+      "category": "tool",
+      "count": 3,
+      "defaultCardId": "chains",
+      "printings": [
+        {
+          "rank": 12,
+          "suit": "spade"
+        },
+        {
+          "rank": 12,
+          "suit": "club"
+        },
+        {
+          "rank": 13,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "火攻",
+      "category": "tool",
+      "count": 2,
+      "defaultCardId": "blaze",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "heart"
+        },
+        {
+          "rank": 3,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "以逸待劳",
+      "category": "tool",
+      "count": 2,
+      "defaultCardId": null,
+      "printings": [
+        {
+          "rank": 11,
+          "suit": "heart"
+        },
+        {
+          "rank": 4,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "知己知彼",
+      "category": "tool",
+      "count": 2,
+      "defaultCardId": null,
+      "printings": [
+        {
+          "rank": 3,
+          "suit": "club"
+        },
+        {
+          "rank": 4,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "远交近攻",
+      "category": "tool",
+      "count": 1,
+      "defaultCardId": null,
+      "printings": [
+        {
+          "rank": 9,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "诸葛连弩",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": "crossbow",
+      "range": 1,
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "青釭剑",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": "black-pommel",
+      "range": 2,
+      "printings": [
+        {
+          "rank": 6,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "雌雄双股剑",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": "gender-swords",
+      "range": 2,
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "寒冰剑",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": "ice-sword",
+      "range": 2,
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "吴六剑",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": null,
+      "range": 2,
+      "printings": [
+        {
+          "rank": 6,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "三尖两刃刀",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": null,
+      "range": 3,
+      "printings": [
+        {
+          "rank": 12,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "贯石斧",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": "axe",
+      "range": 3,
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "丈八蛇矛",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": "serpent-spear",
+      "range": 3,
+      "printings": [
+        {
+          "rank": 12,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "朱雀羽扇",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": "fire-fan",
+      "range": 4,
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "diamond"
+        }
+      ]
+    },
+    {
+      "nameZh": "麒麟弓",
+      "category": "equipment",
+      "subtype": "weapon",
+      "count": 1,
+      "defaultCardId": "longbow",
+      "range": 5,
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "八卦阵",
+      "category": "equipment",
+      "subtype": "armor",
+      "count": 1,
+      "defaultCardId": "eight-trigrams",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "仁王盾",
+      "category": "equipment",
+      "subtype": "armor",
+      "count": 1,
+      "defaultCardId": "black-shield",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "白银狮子",
+      "category": "equipment",
+      "subtype": "armor",
+      "count": 1,
+      "defaultCardId": "silver-lion",
+      "printings": [
+        {
+          "rank": 1,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "藤甲",
+      "category": "equipment",
+      "subtype": "armor",
+      "count": 1,
+      "defaultCardId": "wood-armor",
+      "printings": [
+        {
+          "rank": 2,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "绝影",
+      "category": "equipment",
+      "subtype": "mount",
+      "count": 1,
+      "defaultCardId": "shadow-runner",
+      "mount": "defensive",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "爪黄飞电",
+      "category": "equipment",
+      "subtype": "mount",
+      "count": 1,
+      "defaultCardId": "storm-runner",
+      "mount": "defensive",
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "的卢",
+      "category": "equipment",
+      "subtype": "mount",
+      "count": 1,
+      "defaultCardId": "di-lu",
+      "mount": "defensive",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "club"
+        }
+      ]
+    },
+    {
+      "nameZh": "大宛",
+      "category": "equipment",
+      "subtype": "mount",
+      "count": 1,
+      "defaultCardId": "da-yuan",
+      "mount": "offensive",
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "spade"
+        }
+      ]
+    },
+    {
+      "nameZh": "赤兔",
+      "category": "equipment",
+      "subtype": "mount",
+      "count": 1,
+      "defaultCardId": "red-hare",
+      "mount": "offensive",
+      "printings": [
+        {
+          "rank": 5,
+          "suit": "heart"
+        }
+      ]
+    },
+    {
+      "nameZh": "紫骍",
+      "category": "equipment",
+      "subtype": "mount",
+      "count": 1,
+      "defaultCardId": "zi-xing",
+      "mount": "offensive",
+      "printings": [
+        {
+          "rank": 13,
+          "suit": "diamond"
+        }
+      ]
+    }
+  ]
+}
