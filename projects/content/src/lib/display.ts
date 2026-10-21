@@ -73,6 +73,9 @@ export function alternateGeneralDisplayData(id: string, locale = 'en'): Alternat
 // Every General and card id, from the English data (the ids a translation has to cover).
 export const generalIds = (): string[] => Object.keys(generalsData);
 export const cardIds = (): string[] => Object.keys(cardsData);
+// The ids the Vietnamese review file can list for Generals: Default's, then the Alternate deck's written
+// `alternate:<id>` (their ids overlap Default's, so they need the prefix).
+export const reviewGeneralIds = (): string[] => [...generalIds(), ...alternateGeneralRecords().map((g) => `alternate:${g.id}`)];
 
 // The translations of a language, exported for the parity spec.
 export function generalTranslations(locale: string): Record<string, GeneralTranslation> {

@@ -1,9 +1,9 @@
-import { ENGLISH_PROSE, alternateCardIds, cardIds, generalIds } from 'content';
+import { ENGLISH_PROSE, alternateCardIds, alternateGeneralIds, cardIds, generalIds, reviewGeneralIds } from 'content';
 import review from '../../../../content/data/locales/vi/review.json';
 import { en } from './en';
 import { reviewStatus, reviewUniverse, ReviewLists } from './review';
 
-const universe = reviewUniverse(en, generalIds(), [...cardIds(), ...alternateCardIds()], ENGLISH_PROSE);
+const universe = reviewUniverse(en, reviewGeneralIds(), [...cardIds(), ...alternateCardIds()], ENGLISH_PROSE);
 
 describe('reviewStatus', () => {
   it('counts the reviewed ids of each category and lists the rest', () => {
@@ -31,6 +31,14 @@ describe('the Vietnamese review file', () => {
     expect(cards.unknown).toEqual([]);
     expect(cards.unreviewed).toEqual(expect.arrayContaining(['wuxie-guo', 'amass', 'ascertain', 'ally-far-attack-near', 'trident-glaive']));
     expect(cards.total).toBe(cardIds().length + alternateCardIds().length);
+  });
+
+  it('counts the Alternate Generals as alternate:<id>, so they can be listed as reviewed', () => {
+    const generals = reviewStatus({ ...review, generals: [...review.generals, 'alternate:cao-cao'] }, universe).find((r) => r.category === 'Generals (name, title and skills)')!;
+    expect(generals.unknown).toEqual([]);
+    expect(generals.unreviewed).toContain('alternate:ding-feng');
+    expect(generals.unreviewed).toContain('cao-cao');
+    expect(generals.total).toBe(generalIds().length + alternateGeneralIds().length);
   });
 
   it('lists only ids that exist', () => {
