@@ -120,3 +120,50 @@ describe('Alternate Sun Shangxiang, Warrior Lady', () => {
     expect(handIds(h.use(second), 'seat-a')).toEqual(['d1', 'd2', 'd3', 'd4']);
   });
 });
+
+describe('Alternate Lu Xun, Humility', () => {
+  const id = 'alternate:humility';
+  const zone = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
+  const targets = (s: GameState, cardId: string) =>
+    h.legal(s, s.turn.ownerSeatId).flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === cardId ? [a.targets[0]?.seatId] : []));
+  // Seat-a holds Steal and Capture; seat-c holds a Wuxie; seat-b is Lu Xun with a card in hand.
+  const tools = (general: string) =>
+    table(
+      { 'seat-a:hand': [card('st', 'steal', 'spade', 3), card('cp', 'capture', 'spade', 6)], 'seat-b:hand': [card('x', 'peach', 'heart')], 'seat-c:hand': [card('wx', 'wuxie', 'spade')] },
+      { generals: at('seat-b', general) }
+    );
+  const noEffect = (s: GameState, cardId: string) =>
+    s.log.filter((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === id && e.outcome === 'no-effect' && e.targetSeatId === 'seat-a' && e.cardId === cardId);
+
+  it('Default Lu Xun cannot be chosen by Steal or Capture', () => {
+    expect(targets(tools('lu-xun'), 'st')).not.toContain('seat-b');
+    expect(targets(tools('lu-xun'), 'cp')).not.toContain('seat-b');
+  });
+
+  it('can be chosen by Steal, which is cancelled: no Wuxie asked for, nothing taken', () => {
+    const t = tools('alternate:lu-xun');
+    expect(targets(t, 'st')).toContain('seat-b');
+    const s = h.play(t, 'st', 'seat-b');
+    expect(s.pendingResponse).toBeNull();
+    expect(s.pendingChoice ?? null).toBeNull();
+    expect(handIds(s, 'seat-b')).toEqual(['x']);
+    expect(handIds(s, 'seat-a')).toEqual(['cp']);
+    expect(zone(s, 'discardPile')).toContain('st');
+    expect(noEffect(s, 'steal')).toHaveLength(1);
+  });
+
+  it('can be chosen by Capture, which is cancelled: no delayed card is placed, it is discarded', () => {
+    const t = tools('alternate:lu-xun');
+    expect(targets(t, 'cp')).toContain('seat-b');
+    const s = h.play(t, 'cp', 'seat-b');
+    expect(zone(s, 'seat-b:judgment')).toEqual([]);
+    expect(zone(s, 'discardPile')).toContain('cp');
+    expect(handIds(s, 'seat-a')).toEqual(['st']);
+    expect(noEffect(s, 'capture')).toHaveLength(1);
+  });
+
+  it('Steal and Capture on another seat still work', () => {
+    const t = tools('alternate:lu-xun');
+    expect(zone(h.play(t, 'cp', 'seat-d'), 'seat-d:judgment')).toEqual(['cp']);
+  });
+});

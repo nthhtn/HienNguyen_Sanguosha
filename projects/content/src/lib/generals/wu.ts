@@ -7,6 +7,7 @@ import { untargetableBy } from '../shared/abilities';
 import { seatGender } from '../shared/gender';
 import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
 import { shaStep } from '../cards/sha';
+import { cancelsCardsOnOwner, SHA_AIMED_STEP } from '../shared/cancel';
 import {
   ask, atDrawPhase, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, isHurt, isLiving, lastMoveBetween, on,
   otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillDamage, skillStep, used,
@@ -35,8 +36,15 @@ export const surprise: SkillDefinition = {
   conversions: [{ id: 'surprise', as: 'break', cards: 1, from: 'hand-and-equipment', accepts: black, when: 'play' }],
 };
 
-// Humility (compulsory): Steal and Capture can't target you.
-export const humility: SkillDefinition = { id: 'humility', compulsory: true, modifiers: { untargetableBy: ['steal', 'capture'] } };
+// Humility (compulsory): Steal and Capture can't target you. `cancels` (Alternate): they can, and are
+// cancelled for you instead (used, but with no effect on you; a Capture is not placed).
+const HUMILITY_CARDS = ['steal', 'capture'];
+export function makeHumility(cancels: boolean): SkillDefinition {
+  return cancels
+    ? { id: 'humility', compulsory: true, triggers: cancelsCardsOnOwner((_state, card) => HUMILITY_CARDS.includes(card.as)) }
+    : { id: 'humility', compulsory: true, modifiers: { untargetableBy: HUMILITY_CARDS } };
+}
+export const humility = makeHumility(false);
 
 // Linked Camps (compulsory): whenever you lose your last hand card, however it
 // happens, you draw 1.
@@ -156,9 +164,10 @@ export const displace: SkillDefinition = {
     if (s.step === 'discarded') return [...discardMoves(state, (s.data?.['picked'] as string[]) ?? []), skillStep(s.owner, 'move', { step })];
     const targets = displaceTargets(state, step, s.owner.seatId, registry);
     if (targets.length === 0) return [step];
-    // On from the armour check at the new seat. Iron Cavalry's red judgment was about Da Qiao, so it doesn't follow the Sha.
+    // Aimed at the new seat (a skill there may cancel it), then on from the armour check. Iron Cavalry's
+    // red judgment was about Da Qiao, so it doesn't follow the Sha.
     const moved = (seatId: string) => {
-      const next = shaStep(step, 'sha-armor');
+      const next = shaStep(step, SHA_AIMED_STEP, { then: 'sha-armor' });
       const { unblockable: _ironCavalry, ...data } = next.data ?? {};
       return { ...next, target: { kind: 'seat' as const, seatId }, data };
     };

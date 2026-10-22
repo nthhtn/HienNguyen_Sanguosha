@@ -1,5 +1,5 @@
 import type { SkillDefinition } from 'engine';
-import { makeArmedConsorts, makeReconsider } from './wu';
+import { makeArmedConsorts, makeHumility, makeReconsider } from './wu';
 
 // Alternate Wu skills whose rules differ from Default's, by General id then the Chinese skill name.
 // Each variant's id is `alternate:` plus the id of the Alternate English skill name.
@@ -15,4 +15,6 @@ export const ALTERNATE_WU_VARIANTS: Readonly<Record<string, Readonly<Record<stri
   'sun-shangxiang': {
     枭姬: { ...makeArmedConsorts('per-instance-may'), id: 'alternate:warrior-lady' },
   },
+  // Humility: he can be chosen by Steal and Capture, which are cancelled for him (Default: can't be chosen).
+  'lu-xun': { 谦逊: { ...makeHumility(true), id: 'alternate:humility' } },
 };

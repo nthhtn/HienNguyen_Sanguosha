@@ -24,6 +24,9 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:warrior-lady': 'armed-consorts',
   'alternate:seed-of-animosity': 'sow-discord',
   'alternate:envious-moon': 'eclipse-the-moon',
+  'alternate:empty-city': 'empty-city',
+  'alternate:humility': 'humility',
+  'alternate:behind-the-curtain': 'curtain',
 };
 
 // Variants with no Default counterpart, which therefore have no base entry (and need their own texts and bot support).

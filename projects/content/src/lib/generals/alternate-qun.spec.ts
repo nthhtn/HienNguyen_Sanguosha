@@ -67,3 +67,45 @@ describe('Alternate Diao Chan, Envious Moon', () => {
     expect(handIds(s, 'seat-a')).toEqual(['d1']);
   });
 });
+
+describe('Alternate Jia Xu, Behind the Curtain', () => {
+  const id = 'alternate:behind-the-curtain';
+  const zone = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
+  const aimed = (s: GameState) =>
+    h.legal(s, 'seat-b').flatMap((a) => (a.kind === 'PlayCardAction' && a.targets[0]?.seatId === 'seat-a' ? [a.cardInstanceId] : []));
+  // Seat-b's turn: a black and a red Duel and a black Capture; seat-c holds a Wuxie; seat-a is Jia Xu.
+  const tools = (general: string) =>
+    table(
+      {
+        'seat-b:hand': [card('bl', 'duel', 'spade', 5), card('rd', 'duel', 'heart', 5), card('bc', 'capture', 'club', 6)],
+        'seat-c:hand': [card('wx', 'wuxie', 'spade')],
+      },
+      { owner: 'seat-b', generals: at('seat-a', general) }
+    );
+  const noEffect = (s: GameState, cardId: string) =>
+    s.log.filter((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === id && e.outcome === 'no-effect' && e.targetSeatId === 'seat-b' && e.cardId === cardId);
+
+  it('can be chosen by black Tools (Default: only by red ones)', () => {
+    expect(aimed(tools('jia-xu'))).toEqual(['rd']);
+    expect(aimed(tools('alternate:jia-xu'))).toEqual(['bl', 'rd', 'bc']);
+  });
+
+  it('a black Duel at him is cancelled: no Wuxie asked for, no one damaged', () => {
+    const s = h.play(tools('alternate:jia-xu'), 'bl', 'seat-a');
+    expect(s.pendingResponse).toBeNull();
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(hp(s, 'seat-b')).toBe(4);
+    expect(noEffect(s, 'duel')).toHaveLength(1);
+  });
+
+  it('a black Capture at him is cancelled: not placed, discarded', () => {
+    const s = h.play(tools('alternate:jia-xu'), 'bc', 'seat-a');
+    expect(zone(s, 'seat-a:judgment')).toEqual([]);
+    expect(zone(s, 'discardPile')).toContain('bc');
+    expect(noEffect(s, 'capture')).toHaveLength(1);
+  });
+
+  it('a red Duel at him goes ahead', () => {
+    expect(h.play(tools('alternate:jia-xu'), 'rd', 'seat-a').pendingResponse?.reason).toMatchObject({ kind: 'wuxie' });
+  });
+});

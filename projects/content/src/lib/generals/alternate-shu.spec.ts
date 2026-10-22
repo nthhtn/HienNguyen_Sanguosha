@@ -149,3 +149,83 @@ describe('Alternate Huang Yueying, Assembling Wisdom', () => {
     expect(ranged('alternate:huang-yueying')).toBe(true);
   });
 });
+
+describe('Alternate Zhuge Liang, Empty City', () => {
+  const id = 'alternate:empty-city';
+  const targets = (s: GameState, cardId: string) =>
+    h.legal(s, s.turn.ownerSeatId).flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === cardId ? [a.targets[0]?.seatId] : []));
+  // Seat-a holds two Slashes and a Duel; seat-c holds a Wuxie; seat-b is Zhuge Liang, with `held` in hand.
+  const attack = (general: string, held: ReturnType<typeof card>[] = [], more: Record<string, ReturnType<typeof card>[]> = {}) =>
+    table(
+      { 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha'), card('du', 'duel', 'spade', 1)], 'seat-c:hand': [card('wx', 'wuxie', 'spade')], 'seat-b:hand': held, ...more },
+      { generals: at('seat-b', general) }
+    );
+  const noEffect = (s: GameState, cardId: string) =>
+    s.log.filter((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === id && e.outcome === 'no-effect' && e.targetSeatId === 'seat-a' && e.cardId === cardId);
+
+  it('with no hand cards he can be chosen for a Slash, which is cancelled yet counts toward the Slash limit', () => {
+    expect(targets(attack('zhuge-liang'), 's1')).not.toContain('seat-b'); // Default: not even offered
+    const t = attack('alternate:zhuge-liang');
+    expect(targets(t, 's1')).toContain('seat-b');
+    const s = h.play(t, 's1', 'seat-b');
+    expect(s.pendingResponse).toBeNull(); // no Shan asked for
+    expect(hp(s, 'seat-b')).toBe(4);
+    expect(noEffect(s, 'sha')).toHaveLength(1);
+    expect(s.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId)).toContain('s1');
+    expect(targets(s, 's2')).toEqual([]); // the Slash was used
+  });
+
+  it('a Duel at him is wasted: no Wuxie is asked for and no one is damaged', () => {
+    expect(targets(attack('zhuge-liang'), 'du')).not.toContain('seat-b');
+    const s = h.play(attack('alternate:zhuge-liang'), 'du', 'seat-b');
+    expect(s.pendingResponse).toBeNull();
+    expect(hp(s, 'seat-b')).toBe(4);
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(noEffect(s, 'duel')).toHaveLength(1);
+  });
+
+  it('with a hand card he is hit normally, as Default', () => {
+    for (const general of ['alternate:zhuge-liang', 'zhuge-liang']) {
+      const sha = h.play(attack(general, [card('x', 'peach', 'heart')]), 's1', 'seat-b');
+      expect(sha.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
+      expect(hp(h.pass(sha), 'seat-b')).toBe(3);
+      const duel = h.play(attack(general, [card('x', 'peach', 'heart')]), 'du', 'seat-b');
+      expect(duel.pendingResponse?.reason).toMatchObject({ kind: 'wuxie' });
+    }
+  });
+
+  it('a cancelled Slash is no hit for its user’s Slash-on-target skills (Iron Cavalry)', () => {
+    const cavalry = (held: ReturnType<typeof card>[]) =>
+      table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': held }, { generals: { ...at('seat-a', 'ma-chao'), ...at('seat-b', 'alternate:zhuge-liang') } });
+    const empty = h.play(cavalry([]), 's1', 'seat-b');
+    expect(askedAbout(empty)).toBeNull();
+    expect(empty.pendingResponse).toBeNull();
+    expect(hp(empty, 'seat-b')).toBe(4);
+    expect(askedAbout(h.play(cavalry([card('x', 'peach', 'heart')]), 's1', 'seat-b'))).toBe('iron-cavalry');
+  });
+
+  it('a Slash moved onto him (Displace) is cancelled too', () => {
+    const displaced = (general: string) =>
+      table(
+        { 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('k', 'shan', 'heart')] },
+        { generals: { ...at('seat-b', 'da-qiao'), ...at('seat-c', general) } }
+      );
+    // Default: no seat to move it to, so Da Qiao isn't asked.
+    expect(askedAbout(h.play(displaced('zhuge-liang'), 's1', 'seat-b'))).toBeNull();
+    let s = h.play(displaced('alternate:zhuge-liang'), 's1', 'seat-b');
+    expect(askedAbout(s)).toBe('displace');
+    s = h.choose(h.select(h.use(s), 'k'), 'seat-c');
+    expect(s.pendingResponse).toBeNull();
+    expect(hp(s, 'seat-c')).toBe(4);
+    expect(s.log.some((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === id && e.outcome === 'no-effect')).toBe(true);
+  });
+
+  it('hidden, he is asked whether to reveal him to cancel the Slash', () => {
+    const s = h.play(table({ 'seat-a:hand': [card('s1', 'sha')] }, { generals: { 'seat-b': ['alternate:zhuge-liang', 'filler-meng-huo', false] } }), 's1', 'seat-b');
+    expect(askedAbout(s)).toBe(id);
+    const used = h.use(s);
+    expect(used.seats[1].generals!.main.revealed).toBe(true);
+    expect(used.pendingResponse).toBeNull();
+    expect(h.decline(s).pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
+  });
+});

@@ -4,6 +4,7 @@ import { rangeBonusFor, toolsIgnoreDistance, untargetableBy } from './abilities'
 import { suitOf } from './suits';
 import { otherLivingSeatTargets, seatDistance } from './queries';
 import { COUNTER_CARD_IDS, playColour } from './tools';
+import { DELAYED_PLACE_STEP } from './cancel';
 
 // Whether `seatId`'s judgment area already holds a `definitionId` (or a card placed as one).
 export function holdsDelayed(state: GameState, seatId: string, definitionId: string): boolean {
@@ -66,9 +67,15 @@ export function skipPhaseTool({ id, name, skips, spares, maxDistance }: SkipPhas
             toolsIgnoreDistance(state, ctx.seatId, registry) ||
             seatDistance(state, ctx.seatId, target.seatId, registry) <= maxDistance + rangeBonusFor(state, ctx.seatId, id, registry))
       ),
-    play: (state, ctx) => {
+    // Placed at its own step, where a skill may cancel it for the target (shared/cancel.ts).
+    play: (_state, ctx) => {
       const [target] = ctx.targets;
-      return ctx.respondingTo || target?.kind !== 'seat' ? [] : placeInJudgmentArea(state, ctx.cardInstanceId, target.seatId, ctx.card.as);
+      return ctx.respondingTo || target?.kind !== 'seat' ? [] : [{ kind: 'CardStepEffect', step: DELAYED_PLACE_STEP, card: ctx.card, userSeatId: ctx.seatId, target }];
+    },
+    onStep: (state, step) => {
+      if (step.step !== DELAYED_PLACE_STEP) throw new Error(`${id} has no step ${step.step}`);
+      const card = step.card.physical[0];
+      return card && step.target.kind === 'seat' ? placeInJudgmentArea(state, card.instanceId, step.target.seatId, step.card.as) : [];
     },
     onTarget: judgeTarget,
     onJudged: (state, { judged, seatId }, registry) => (skipPhaseOutcome(state, seatId, judged, spares, registry) === 'spared' ? [] : [{ kind: 'SetTurnFlagEffect', flag: skipFlagOf(skips) }]),

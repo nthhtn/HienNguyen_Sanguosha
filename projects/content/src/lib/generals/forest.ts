@@ -3,6 +3,7 @@ import { abilityUseKey, requireZoneOfKind } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
 import { isShaDamage, untargetableBy } from '../shared/abilities';
+import { cancelsCardsOnOwner } from '../shared/cancel';
 import { competeStart, competeStep } from '../shared/compete';
 import { colourFor, suitOf } from '../shared/suits';
 import { abilityKey } from '../shared/steps';
@@ -395,25 +396,35 @@ export const collapse: SkillDefinition = {
 // Peach. Kingdom War's dying round reads this when it lists who is asked.
 export const completeKill: SkillDefinition = { id: 'complete-kill', compulsory: true, modifiers: { peachOnlyOwnerAndDying: true } };
 
+// The colour `card` is used as by `userSeatId` (Beauty included), as the seat lists read it.
+const usedColour = (state: GameState, userSeatId: string, card: UsedCard, registry: ContentRegistry) => {
+  const first = card.physical[0];
+  return first ? colourFor(state, userSeatId, first, registry) : card.colour;
+};
+const isBlackTool = (state: GameState, card: UsedCard, userSeatId: string, registry: ContentRegistry) =>
+  registry.cards.get(card.as)?.category === 'tool' && usedColour(state, userSeatId, card, registry) === 'black';
+
 // Curtain (compulsory): black Tools can't target you. The modifier keeps them
 // off the seat lists; this trigger cancels any that still name you (an area
 // Tool, a conversion). Your own delayed Tools, judged on you, are not "aimed".
-export const curtain: SkillDefinition = {
-  id: 'curtain',
-  compulsory: true,
-  modifiers: { untargetableByBlackTools: true },
-  triggers: [
-    on<ToolOnTarget>('before:ToolOnTargetEffect', {
-      // The colour the user's own suits make it (Beauty), as the seat lists read it.
-      condition: (state, effect, owner, registry) => {
-        if (effect.target.kind !== 'seat' || effect.target.seatId !== owner.seatId || effect.userSeatId === owner.seatId) return false;
-        const first = effect.tool.physical[0];
-        return (first ? colourFor(state, effect.userSeatId, first, registry) : effect.tool.colour) === 'black';
-      },
-      effect: () => [],
-    }),
-  ],
-};
+// `cancels` (Alternate, Behind the Curtain): no modifier; they can target you and are cancelled for you
+// instead (used, but with no effect on you; a delayed one is not placed).
+export function makeCurtain(cancels: boolean): SkillDefinition {
+  if (cancels) return { id: 'curtain', compulsory: true, triggers: cancelsCardsOnOwner((state, card, userSeatId, _owner, registry) => isBlackTool(state, card, userSeatId, registry)) };
+  return {
+    id: 'curtain',
+    compulsory: true,
+    modifiers: { untargetableByBlackTools: true },
+    triggers: [
+      on<ToolOnTarget>('before:ToolOnTargetEffect', {
+        condition: (state, effect, owner, registry) =>
+          effect.target.kind === 'seat' && effect.target.seatId === owner.seatId && effect.userSeatId !== owner.seatId && usedColour(state, effect.userSeatId, effect.tool, registry) === 'black',
+        effect: () => [],
+      }),
+    ],
+  };
+}
+export const curtain = makeCurtain(false);
 
 // The seat mark that records Upheaval's one use.
 const UPHEAVAL_MARK = 'upheaval-used';

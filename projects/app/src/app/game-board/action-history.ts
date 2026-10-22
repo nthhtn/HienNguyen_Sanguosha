@@ -280,7 +280,8 @@ export function actionHistory(
         if (event.outcome === 'used') {
           action(event.abilityId === 'upheaval' ? tr('history.upheaval', { owner, ability, sha }) : tr('history.abilityUsed', { owner, ability }));
         } else if (event.outcome === 'no-effect' && event.targetSeatId) {
-          action(tr('history.noEffect', { owner, ability, target: name(event.targetSeatId), sha }));
+          // The card it stopped: named on the event (a cancelled card), else a Slash (armour).
+          action(tr('history.noEffect', { owner, ability, target: name(event.targetSeatId), sha: event.cardId ? cardName(event.cardId, tr) : sha }));
         } else if (event.outcome === 'counts-as-shan') {
           // Said on its judgment's line when that is still the last line: the
           // same judged seat and reader, matched on ids, never on the text.

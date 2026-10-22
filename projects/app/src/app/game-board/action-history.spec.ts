@@ -352,6 +352,16 @@ describe('equipment abilities in the history', () => {
     );
   });
 
+  it('names the card a skill cancelled (Alternate Humility, Behind the Curtain)', () => {
+    const general = (skillId: string) => ({ kind: 'general' as const, seatId: 'seat-1', slot: 'main' as const, skillId });
+    for (const [skillId, cardId, text] of [
+      ['alternate:humility', 'steal', "Seat 1's Humility: Seat 0's Steal has no effect"],
+      ['alternate:behind-the-curtain', 'duel', "Seat 1's Behind the Curtain: Seat 0's Duel has no effect"],
+    ]) {
+      expect(texts([{ kind: 'AbilityUsedEvent', owner: general(skillId), abilityId: skillId, outcome: 'no-effect', targetSeatId: 'seat-0', cardId }])).toContain(text);
+    }
+  });
+
   it('adds "counts as Dodge" to an Eight Trigrams judgment', () => {
     const judged: CardInstance = { instanceId: 'j', definitionId: 'peach', suit: 'heart', rank: 9 };
     const log: EngineEvent[] = [

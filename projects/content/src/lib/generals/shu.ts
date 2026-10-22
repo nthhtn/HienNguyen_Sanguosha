@@ -6,6 +6,7 @@ import type { GeneralSkillSet } from './types';
 import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
 import { handOf, isShaCard } from '../shared/queries';
 import { isRecast } from '../cards/chains';
+import { cancelsCardsOnOwner } from '../shared/cancel';
 import { ask, draw, heal, on, otherLivingSeatIds, reasonOf, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Shu base Generals' skills (General Skills spec, "Shu"). Every skill acts
@@ -19,8 +20,19 @@ export const roar: SkillDefinition = { id: 'roar', compulsory: true, modifiers: 
 // Horsemanship (compulsory): your distance to every other seat is 1 smaller, never below 1.
 export const horsemanship: SkillDefinition = { id: 'horsemanship', compulsory: true, modifiers: { distanceToOthers: -1 } };
 
-// Empty City (compulsory): while you have no hand cards, Sha and Duel can't target you.
-export const emptyCity: SkillDefinition = { id: 'empty-city', compulsory: true, modifiers: { untargetableWithEmptyHandBy: ['sha', 'duel'] } };
+// Empty City (compulsory): while you have no hand cards, Sha and Duel can't target you. `cancels`
+// (Alternate): they can, and are cancelled for you instead (used, but with no effect on you).
+const EMPTY_CITY_CARDS = ['sha', 'duel'];
+export function makeEmptyCity(cancels: boolean): SkillDefinition {
+  return cancels
+    ? {
+        id: 'empty-city',
+        compulsory: true,
+        triggers: cancelsCardsOnOwner((state, card, _userSeatId, ownerSeatId) => EMPTY_CITY_CARDS.includes(card.as) && handOf(state, ownerSeatId).length === 0),
+      }
+    : { id: 'empty-city', compulsory: true, modifiers: { untargetableWithEmptyHandBy: EMPTY_CITY_CARDS } };
+}
+export const emptyCity = makeEmptyCity(false);
 
 // Wondrous Talent (compulsory): your Tools ignore distance (Steal, Starvation).
 export const wondrousTalent: SkillDefinition = { id: 'wondrous-talent', compulsory: true, modifiers: { toolsIgnoreDistance: true } };
