@@ -279,6 +279,7 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
   stubborn: 'Choose a card to give back; you take the others',
   'alternate:stabilization': 'Choose a card to give back; you take the others, if there are any',
   'alternate:bequeathed-strategy': 'Choose a card to give first; the other is given next',
+  'alternate:sorrow': "Choose which of {target}'s Generals loses its skills",
 };
 
 export function choicePromptText(abilityId: string, locale = 'en'): string | null {

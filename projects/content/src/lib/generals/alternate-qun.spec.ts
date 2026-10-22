@@ -1,5 +1,8 @@
 import type { GameState } from 'engine';
-import { askedAbout, card, handIds, harness, hp, table, TableOptions } from './skills.testing';
+import { getActiveSeatId, redactStateForSeat, skillsInPlay } from 'engine';
+import { askedAbout, card, handIds, harness, hp, kwMode, registry, table, TableOptions } from './skills.testing';
+import { readyAlternateSkills } from '../alternateSkills';
+import { alternateGeneralRecords } from '../alternateGenerals';
 
 const h = harness();
 const at = (seatId: string, general: string): TableOptions['generals'] => ({ [seatId]: [general, 'filler-jia-xu', true] });
@@ -107,5 +110,105 @@ describe('Alternate Jia Xu, Behind the Curtain', () => {
 
   it('a red Duel at him goes ahead', () => {
     expect(h.play(tools('alternate:jia-xu'), 'rd', 'seat-a').pendingResponse?.reason).toMatchObject({ kind: 'wuxie' });
+  });
+});
+
+describe('Alternate Cai Wenji, Sorrow', () => {
+  const hk = harness(kwMode);
+  const shaDamage = (source: string | null) => ({
+    kind: 'DamageEffect' as const,
+    damage: {
+      source: source ? { kind: 'seat' as const, seatId: source } : null, target: { kind: 'seat' as const, seatId: 'seat-a' }, amount: 1, nature: 'normal' as const,
+      cause: { card: { as: 'sha', colour: 'black' as const, physical: [card('sx', 'sha')] } },
+    },
+  });
+  // seat-a is Cai Wenji at 1 HP; `source`'s Slash kills her. The killer seat-c is Zhang He (Main) and Liu Shan (Deputy).
+  const killed = (cai: string, o: { source?: string | null; revealed?: boolean; patch?: (s: GameState) => GameState } = {}) => {
+    const base = table({}, {
+      generals: { 'seat-a': [cai, 'filler-xu-huang', true], 'seat-c': ['zhang-he', 'liu-shan', o.revealed ?? true] },
+      hp: { 'seat-a': 1 }, kingdoms: { 'seat-a': 'Qun' },
+    });
+    let s = hk.run((o.patch ?? ((x) => x))(base), [shaDamage(o.source === undefined ? 'seat-c' : o.source)]);
+    for (let i = 0; i < 6 && s.pendingResponse; i++) s = hk.pass(s);
+    return s;
+  };
+  const slots = (s: GameState, seatId = 'seat-c') => skillsInPlay(s, seatId, registry, true).map((x) => `${x.owner.slot}:${x.skill.id}`);
+  const seat = (s: GameState, id: string) => s.seats.find((x) => x.id === id)!;
+  const before = slots(table({}, { generals: { 'seat-c': ['zhang-he', 'liu-shan', true] } }));
+
+  it('her player, though out, chooses Main or Deputy of the killer, secretly; the killer is asked nothing', () => {
+    const s = killed('alternate:cai-wenji');
+    expect(seat(s, 'seat-a').eliminated).toBe(true);
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-a', secret: true, reason: { kind: 'ability', abilityId: 'alternate:sorrow', targetSeatId: 'seat-c' } });
+    expect(s.pendingChoice!.options.map((o) => [o.id, o.shows])).toEqual([
+      ['main', { kind: 'label', text: 'Main General' }],
+      ['deputy', { kind: 'label', text: 'Deputy General' }],
+    ]);
+    expect(getActiveSeatId(s)).toBe('seat-a');
+    expect(hk.legal(s, 'seat-a').map((a) => a.kind)).toEqual(['ChooseOptionAction', 'ChooseOptionAction']);
+    expect(hk.legal(s, 'seat-c')).toEqual([]);
+    expect(seat(s, 'seat-c').silencedSlots).toBeUndefined();
+  });
+
+  it('picking Main removes the killer’s Main skills for good; the Deputy’s still work', () => {
+    expect(before.some((x) => x.startsWith('main:'))).toBe(true);
+    expect(before.some((x) => x.startsWith('deputy:'))).toBe(true);
+    const s = hk.choose(killed('alternate:cai-wenji'), 'main');
+    expect(seat(s, 'seat-c').silencedSlots).toEqual(['main']);
+    expect(seat(s, 'seat-c').silenced).toBeUndefined();
+    expect(slots(s)).toEqual(before.filter((x) => x.startsWith('deputy:')));
+    expect(s.log).toContainEqual({ kind: 'SeatSilencedEvent', seatId: 'seat-c', slot: 'main' });
+    expect(s.log).toContainEqual(expect.objectContaining({ kind: 'AbilityUsedEvent', outcome: 'silenced-main', targetSeatId: 'seat-c' }));
+  });
+
+  it('picking Deputy removes the Deputy’s skills; the Main’s still work', () => {
+    const s = hk.choose(killed('alternate:cai-wenji'), 'deputy');
+    expect(seat(s, 'seat-c').silencedSlots).toEqual(['deputy']);
+    expect(slots(s)).toEqual(before.filter((x) => x.startsWith('main:')));
+  });
+
+  it('Default Cai Wenji, in the same scene, asks nothing and silences the whole seat', () => {
+    const s = killed('cai-wenji');
+    expect(s.pendingChoice).toBeUndefined();
+    expect(seat(s, 'seat-c').silenced).toBe(true);
+    expect(seat(s, 'seat-c').silencedSlots).toBeUndefined();
+    expect(slots(s)).toEqual([]);
+  });
+
+  it('with both of the killer’s Generals hidden, the choice names neither and reveals nothing', () => {
+    const asked = killed('alternate:cai-wenji', { revealed: false });
+    expect(asked.pendingChoice!.options.map((o) => o.id)).toEqual(['main', 'deputy']);
+    const names = /zhang-he|liu-shan/;
+    expect(JSON.stringify(asked.pendingChoice)).not.toMatch(names);
+    expect(JSON.stringify(redactStateForSeat(asked, 'seat-a').pendingChoice)).not.toMatch(names);
+    for (const viewer of ['seat-b', 'seat-c']) expect(redactStateForSeat(asked, viewer).pendingChoice!.options).toEqual([]);
+    const s = hk.choose(asked, 'deputy');
+    expect(seat(s, 'seat-c').generals!.main.revealed).toBe(false);
+    expect(seat(s, 'seat-c').generals!.deputy.revealed).toBe(false);
+    expect(s.log.some((e) => e.kind === 'GeneralRevealedEvent' && e.seatId === 'seat-c')).toBe(false);
+    expect(s.log.find((e) => e.kind === 'ChoiceMadeEvent' && e.seatId === 'seat-a')).toMatchObject({ secret: true });
+    for (const viewer of ['seat-b', 'seat-d']) expect(JSON.stringify(redactStateForSeat(s, viewer))).not.toMatch(names);
+    // The hidden Deputy's skills are no longer offered (nor would they reveal it); the Main's are.
+    expect(slots(s).every((x) => x.startsWith('main:'))).toBe(true);
+    expect(slots(s).length).toBeGreaterThan(0);
+  });
+
+  it('no killer, her own hand, or a killer already out: no choice and no silencing', () => {
+    const quiet = (s: GameState) => {
+      expect(s.pendingChoice).toBeUndefined();
+      expect(s.seats.some((x) => x.silenced || x.silencedSlots)).toBe(false);
+    };
+    quiet(killed('alternate:cai-wenji', { source: null }));
+    quiet(killed('alternate:cai-wenji', { source: 'seat-a' }));
+    quiet(killed('alternate:cai-wenji', { patch: (b) => ({ ...b, seats: b.seats.map((x) => (x.id === 'seat-c' ? { ...x, eliminated: true } : x)) }) }));
+  });
+
+  it('a killer that already lost one General’s skills is offered only the other', () => {
+    const s = killed('alternate:cai-wenji', { patch: (b) => ({ ...b, seats: b.seats.map((x) => (x.id === 'seat-c' ? { ...x, silencedSlots: ['main' as const] } : x)) }) });
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['deputy']);
+  });
+
+  it('Dirge is Default’s Lament', () => {
+    expect(readyAlternateSkills(alternateGeneralRecords().find((g) => g.id === 'cai-wenji')!).map((x) => x.id)).toEqual(['lament', 'alternate:sorrow']);
   });
 });

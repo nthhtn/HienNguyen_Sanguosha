@@ -13,6 +13,8 @@ export const isNilNote = (note: string | null): boolean =>
 export const CLEARED_WORDING: Readonly<Record<string, readonly string[]>> = {
   // Genius is unchanged from Default's.
   'huang-yueying': ['奇才'],
+  // Dirge is unchanged from Default's Lament.
+  'cai-wenji': ['悲歌'],
 };
 
 // The Default SkillDefinition this Alternate skill runs as, or undefined when it is not ready.

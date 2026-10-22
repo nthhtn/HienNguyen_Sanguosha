@@ -76,6 +76,13 @@ describe('SeatTile', () => {
     expect(render(makeSeat(), {}).querySelector('.silenced-badge')).toBeNull();
   });
 
+  it('shows which General lost its skills (Alternate Sorrow); the whole-seat badge stays as it was', () => {
+    const badges = (el: HTMLElement) => [...el.querySelectorAll('.silenced-badge')].map((b) => b.textContent?.trim());
+    expect(badges(render(makeSeat({ silencedSlots: ['deputy'] }), {}))).toEqual(['Deputy General: No Skills']);
+    expect(badges(render(makeSeat({ silencedSlots: ['main'] }), {}))).toEqual(['Main General: No Skills']);
+    expect(badges(render(makeSeat({ silenced: true }), {}))).toEqual(['No Skills']);
+  });
+
 
   it('names a Judgment slot card placed as another card', () => {
     const el = render(makeSeat(), { judgment: [{ instanceId: 'dm', definitionId: 'shan', suit: 'diamond', rank: 3 }], judgmentCountsAs: { dm: 'capture' } });

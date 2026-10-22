@@ -97,6 +97,9 @@ export interface Seat {
   stash?: CardZoneRef;
   // Lost every skill for the rest of the game (Heartbroken).
   silenced?: true;
+  // The Generals whose skills alone are lost for the rest of the game (Alternate Sorrow): printed,
+  // gained under that slot and a Form it chose. The other General keeps its skills. Public.
+  silencedSlots?: ('main' | 'deputy')[];
   // Skills gained for the rest of the game. `slot` is the General that gained
   // them: its reveal state governs their use.
   gainedSkills?: { slot: 'main' | 'deputy'; skillId: string }[];

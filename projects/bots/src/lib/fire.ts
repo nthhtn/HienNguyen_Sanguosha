@@ -1,6 +1,6 @@
 import { baseSkillId } from 'content';
 import type { CardInstance, ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
-import { livingSeatOrderFrom } from 'engine';
+import { livingSeatOrderFrom, slotSilenced } from 'engine';
 import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, isShaCard } from './helpers';
 
 // The stage 9 spec's bot rules for the Fire skills. Bots don't read content's
@@ -21,9 +21,10 @@ const worn = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === se
 const rides = (view: GameState, seat: Seat, registry: ContentRegistry, slot: 'defensiveMount' | 'offensiveMount') =>
   worn(view, seat).some((c) => registry.cards.get(c.definitionId)?.equipSlot === slot);
 
-// `from`'s revealed Generals' distance modifiers (Horsemanship: -1).
+// `from`'s revealed Generals' distance modifiers (Horsemanship: -1); none from a General that lost its skills.
 const skillDistance = (from: Seat, registry: ContentRegistry) =>
   (['main', 'deputy'] as const)
+    .filter((slot) => !slotSilenced(from, slot))
     .map((slot) => from.generals?.[slot])
     .filter((g) => !!g?.revealed)
     .flatMap((g) => registry.generals.get(g!.generalDefinitionId)?.skills ?? [])

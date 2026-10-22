@@ -100,7 +100,8 @@
     "incarnation": "Chọn một kỹ năng Hóa thân",
     "stubborn": "Chọn một lá bài để trả lại; bạn lấy các lá còn lại",
     "alternate:stabilization": "Chọn một lá bài để trả lại; bạn lấy các lá còn lại, nếu có",
-    "alternate:bequeathed-strategy": "Chọn một lá bài để đưa trước; lá còn lại được đưa sau"
+    "alternate:bequeathed-strategy": "Chọn một lá bài để đưa trước; lá còn lại được đưa sau",
+    "alternate:sorrow": "Chọn Tướng của {target} sẽ mất kỹ năng"
   },
   "stepSelection": {
     "compete-user": { "prompt": "Chọn một lá bài trên tay để đấu điểm", "confirm": "Đấu điểm" },

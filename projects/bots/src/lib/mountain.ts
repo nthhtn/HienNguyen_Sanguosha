@@ -1,6 +1,6 @@
 import { baseSkillId } from 'content';
 import type { ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
-import { cardCountsAs } from 'engine';
+import { cardCountsAs, skillsInPlay } from 'engine';
 import { handCards, isAlly, keepRank, leastUseful } from './helpers';
 
 // The stage 11 spec's bot rules for the Mountain skills.
@@ -99,6 +99,12 @@ export function mountainChoice(view: GameState, me: Seat, choice: PendingChoice,
   const seats = seatsOf(view, choice);
   const ally = seats.find((s) => s.id !== me.id && isAlly(me, s));
   switch (baseSkillId(choice.reason.abilityId)) {
+    // Alternate Sorrow (Heartbroken's variant): the killer's General with more skills it can see, Main on a tie.
+    case 'heartbroken': {
+      const killer = choice.reason.targetSeatId;
+      const count = (slot: string) => (killer ? skillsInPlay(view, killer, registry, true).filter((x) => x.owner.slot === slot).length : 0);
+      return choice.options.reduce<string | null>((best, o) => (best === null || count(o.id) > count(best) ? o.id : best), null);
+    }
     case 'follow-the-master':
       return choice.options.some((o) => o.id === 'recover') ? 'recover' : null;
     case 'incarnation': {

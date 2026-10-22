@@ -50,8 +50,11 @@ describe('readyAlternateSkills', () => {
       for (const s of readyAlternateSkills(g)) expect(s.lord).not.toBe(true);
     }
   });
-  it('clears exactly Huang Yueying’s Genius', () => {
-    expect(CLEARED_WORDING).toEqual({ 'huang-yueying': ['奇才'] });
+  it('clears Huang Yueying’s Genius', () => {
+    expect(CLEARED_WORDING['huang-yueying']).toEqual(['奇才']);
+  });
+  it('clears Cai Wenji’s Dirge (unchanged from Lament)', () => {
+    expect(CLEARED_WORDING['cai-wenji']).toEqual(['悲歌']);
   });
   it('clears wording only for skills the Alternate records have', () => {
     for (const [id, names] of Object.entries(CLEARED_WORDING)) {

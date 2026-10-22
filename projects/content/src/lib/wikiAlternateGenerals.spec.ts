@@ -26,6 +26,11 @@ describe('alternateSkillStatus', () => {
     expect(alternateSkillStatus(record('lu-xun'), skillOf('lu-xun', 'Scrutinize'))).toBe('worksAsAlternate');
   });
 
+  it('works as Alternate for Cai Wenji’s Sorrow, and as Default for her Dirge', () => {
+    expect(alternateSkillStatus(record('cai-wenji'), skillOf('cai-wenji', 'Sorrow'))).toBe('worksAsAlternate');
+    expect(alternateSkillStatus(record('cai-wenji'), skillOf('cai-wenji', 'Dirge'))).toBe('worksAsDefault');
+  });
+
   it('works as Alternate for Zhen Ji’s Goddess Luo', () => {
     expect(alternateSkillStatus(record('zhen-ji'), skillOf('zhen-ji', 'Goddess Luo'))).toBe('worksAsAlternate');
   });
@@ -77,7 +82,7 @@ describe('wikiAlternateGenerals', () => {
   it('pins exactly which Alternate skills the game plays (those of Generals whose difference note is nil)', () => {
     const working = generals.flatMap((g) => g.skills.filter((s) => s.status === 'worksAsDefault').map((s) => `${g.id}/${s.name}`)).sort();
     expect(working).toEqual([
-      'da-qiao/Displacement', 'da-qiao/National Beauty', 'dian-wei/Ferocious Assault',
+      'cai-wenji/Dirge', 'da-qiao/Displacement', 'da-qiao/National Beauty', 'dian-wei/Ferocious Assault',
       'fire-zhuge-liang/Arson', 'fire-zhuge-liang/Eight Trigrams', 'fire-zhuge-liang/Scient',
       'gan-ning/Surprise Raid', 'hua-tuo/First Aid', 'hua-tuo/Green Salve', 'huang-gai/Trojan Flesh', 'huang-yueying/Genius',
       'lu-meng/Self-Mastery', 'lu-su/Alliance', 'lu-su/Altruism', 'meng-huo/Arise Again', 'meng-huo/The Smoking Gun',

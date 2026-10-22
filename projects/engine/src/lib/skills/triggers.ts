@@ -6,7 +6,7 @@ import {
   TriggerOwner,
   TriggerPoint,
 } from '../registry/types';
-import { heldSkills, skillsInPlay } from './generalSkills';
+import { heldSkills, skillsInPlay, slotSilenced } from './generalSkills';
 
 // A trigger paired with the General or worn card it was gathered for. `owner` is
 // undefined for mode-level triggers, which belong to the GameModeDefinition
@@ -45,7 +45,8 @@ export function gatherTriggeredSkills(
   const dying = point === 'after:SeatEliminatedEvent' ? (subject as { seatId?: string }).seatId : undefined;
   const gone = dying ? state.seats.find((s) => s.id === dying && s.eliminated && s.generals && !s.silenced) : undefined;
   for (const { owner, skill } of gone ? heldSkills(state, gone.id, registry) : []) {
-    if (!skill.afterDeath || skill.lord) continue;
+    // A General that lost its skills (Alternate Sorrow) has none to act with after death either.
+    if (!skill.afterDeath || skill.lord || slotSilenced(gone!, owner.slot)) continue;
     for (const trigger of skill.triggers ?? []) {
       if (trigger.point === point) candidates.push({ trigger, owner });
     }

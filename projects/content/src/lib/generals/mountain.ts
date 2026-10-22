@@ -599,6 +599,10 @@ export const lament: SkillDefinition = {
   },
 };
 
+// Whether `owner`'s seat was just eliminated by another seat that is still in the game (Heartbroken, Alternate Sorrow).
+export const killedByLivingOther = (state: GameState, event: SeatEliminatedEvent, owner: GeneralOwner): boolean =>
+  event.seatId === owner.seatId && !!event.killerSeatId && event.killerSeatId !== owner.seatId && isLiving(state, event.killerSeatId);
+
 // Heartbroken (compulsory): when a seat kills her, that seat loses all its
 // skills for the rest of the game. She is out when it acts (afterDeath).
 export const heartbroken: SkillDefinition = {
@@ -607,8 +611,7 @@ export const heartbroken: SkillDefinition = {
   afterDeath: true,
   triggers: [
     on<SeatEliminatedEvent>('after:SeatEliminatedEvent', {
-      condition: (state, event, owner) =>
-        event.seatId === owner.seatId && !!event.killerSeatId && event.killerSeatId !== owner.seatId && isLiving(state, event.killerSeatId),
+      condition: killedByLivingOther,
       effect: (_state, event, owner) => [used(owner, 'silenced', event.killerSeatId), { kind: 'SilenceSeatEffect', seatId: event.killerSeatId! }],
     }),
   ],
