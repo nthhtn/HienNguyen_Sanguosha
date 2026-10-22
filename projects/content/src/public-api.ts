@@ -17,7 +17,7 @@ export {
 export type {
   AlternateGeneralDisplayData, AlternateGeneralTranslation, CardDisplayData, CardTranslation, GeneralDisplayData, GeneralTranslation, JudgmentOutcomeNames,
 } from './lib/display';
-export { baseSkillId } from './lib/alternateVariants';
+export { baseSkillId } from './lib/alternateBase';
 export * from './lib/generalDisplay';
 export * from './lib/judgmentOutcome';
 export { seatGender } from './lib/shared/gender';

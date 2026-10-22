@@ -1,6 +1,7 @@
 import { alternateGeneralRecords } from './alternateGenerals';
 import { generalsData } from '../../data/generals';
-import { ALTERNATE_VARIANTS, ALTERNATE_VARIANT_BASE, VARIANTS_WITHOUT_BASE, baseSkillId, lookupWithBase } from './alternateVariants';
+import { ALTERNATE_VARIANTS } from './alternateVariants';
+import { ALTERNATE_VARIANT_BASE, VARIANTS_WITHOUT_BASE, baseSkillId, lookupWithBase } from './alternateBase';
 import { GENERAL_SKILLS } from './generals';
 import { skillIdOf } from './skillId';
 

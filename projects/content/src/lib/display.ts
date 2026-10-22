@@ -3,7 +3,7 @@ import { generalsData } from '../../data/generals';
 import { alternateCardData } from './alternateCards';
 import { alternateGeneralRecords } from './alternateGenerals';
 import { skillIdOf } from './skillId';
-import { baseSkillId, lookupWithBase } from './alternateVariants';
+import { baseSkillId, lookupWithBase } from './alternateBase';
 import { alternateGeneralId, baseGeneralId, isAlternateGeneralId } from './generalIds';
 import viCards from '../../data/locales/vi/cards.json';
 import viAlternateCards from '../../data/locales/vi/alternate-cards.json';

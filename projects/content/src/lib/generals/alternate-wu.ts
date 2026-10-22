@@ -1,5 +1,5 @@
 import type { SkillDefinition } from 'engine';
-import { makeStubborn } from './stubborn';
+import { makeStubborn } from './mountain';
 import { makeArmedConsorts, makeHumility, makeReconsider } from './wu';
 
 // Alternate Wu skills whose rules differ from Default's, by General id then the Chinese skill name.
