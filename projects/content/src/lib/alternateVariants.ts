@@ -19,6 +19,7 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:eternal-loyalty': 'eternal-loyalty',
   'alternate:assembling-wisdom': 'gathering-wisdom',
   'alternate:fearsome-blade': 'intense-edge',
+  'alternate:warrior-lady': 'armed-consorts',
 };
 
 // Variants with no Default counterpart, which therefore have no base entry (and need their own texts and bot support).

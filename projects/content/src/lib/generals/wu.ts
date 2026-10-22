@@ -52,18 +52,45 @@ export const linkedCamps: SkillDefinition = {
   ],
 };
 
-// Armed Consorts (compulsory): each time a card leaves your equipment (replaced,
-// taken, discarded, or used through a conversion), you draw 2.
-export const armedConsorts: SkillDefinition = {
+// Whether `event` is the last of its instance: one effect resolution that moves one or more cards out of
+// `owner`'s equipment. The engine gives events no resolution id, so an instance is a run of moves that
+// resolve back to back: a later leaving move already in the log (one effect moving several cards, such
+// as a seat's whole equipment area) or queued right behind this one (one discard of several picked
+// cards, such as the Axe's two, queues its moves in a row) belongs to the same instance. Only the last
+// move of the run is the instance's trigger, so the skill is asked once per instance.
+function lastOfInstance(state: GameState, event: CardMovedEvent, ownerSeatId: string): boolean {
+  const equip = equipZoneId(state, ownerSeatId);
+  const leaves = (e: CardMovedEvent) => e.fromZoneId === equip && e.toZoneId !== equip;
+  const at = state.log.lastIndexOf(event);
+  const laterInLog = at >= 0 && state.log.slice(at + 1).some((e) => e.kind === 'CardMovedEvent' && leaves(e));
+  if (laterInLog) return false;
+  const inEquip = state.zones.find((z) => z.id === equip)?.cards ?? [];
+  for (const item of state.resolutionQueue ?? []) {
+    if (item.kind !== 'MoveCardEffect') break;
+    if (item.toZoneId !== equip && inEquip.some((c) => c.instanceId === item.cardInstanceId)) return false;
+  }
+  return true;
+}
+
+// Armed Consorts. 'per-card-compulsory' (Default, compulsory): each time a card leaves your equipment
+// (replaced, taken, discarded, or used through a conversion), you draw 2. 'per-instance-may'
+// (Alternate Warrior Lady, may): once per instance of cards leaving your equipment (see lastOfInstance),
+// you may draw 2, asked each time.
+export const makeArmedConsorts = (mode: 'per-card-compulsory' | 'per-instance-may'): SkillDefinition => ({
   id: 'armed-consorts',
-  compulsory: true,
+  ...(mode === 'per-card-compulsory' ? { compulsory: true } : {}),
   triggers: [
     on<CardMovedEvent>('after:CardMovedEvent', {
-      condition: (state, event, owner) => event.fromZoneId === equipZoneId(state, owner.seatId) && event.toZoneId !== event.fromZoneId,
-      effect: (_state, _event, owner) => [used(owner), draw(owner.seatId, 2)],
+      condition: (state, event, owner) =>
+        event.fromZoneId === equipZoneId(state, owner.seatId) &&
+        event.toZoneId !== event.fromZoneId &&
+        (mode === 'per-card-compulsory' || lastOfInstance(state, event, owner.seatId)),
+      effect: (_state, _event, owner) =>
+        mode === 'per-card-compulsory' ? [used(owner), draw(owner.seatId, 2)] : [ask(owner, [used(owner), draw(owner.seatId, 2)])],
     }),
   ],
-};
+});
+export const armedConsorts: SkillDefinition = makeArmedConsorts('per-card-compulsory');
 
 // Self-Restraint (may): if you played or used no Sha this turn, answers
 // included, you may skip your Discard Phase. Asked as it begins, and only when

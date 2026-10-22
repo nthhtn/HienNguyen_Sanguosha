@@ -78,6 +78,7 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     case 'river-goddess':
     case 'iron-cavalry':
     case 'astrology':
+    case 'armed-consorts':
       return true;
     case 'unyielding':
       return !!target && !isAlly(me, target);

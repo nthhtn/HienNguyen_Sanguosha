@@ -18,6 +18,10 @@ describe('a compulsory skill’s ask', () => {
   it('is only about revealing: the bot says Use', () => {
     expect(picked(decide(asking(table(), 'armed-consorts')))).toBe('use');
   });
+
+  it('Alternate Warrior Lady, a may ask, gets the same legal answer', () => {
+    expect(picked(decide(asking(table(), 'alternate:warrior-lady')))).toBe('use');
+  });
 });
 
 describe('Unyielding', () => {
