@@ -30,6 +30,15 @@ describe('generalDisplayData', () => {
     expect(generalDisplayData('alternate:guan-yu', 'vi')?.name).toBe(viAlternateGenerals['guan-yu'].name);
   });
 
+  it('marks an Alternate skill as in the game only when the registry plays it', () => {
+    expect(generalDisplayData('alternate:zhang-fei')?.skills.find((s) => s.name === 'Berserk')?.inGame).toBe(true);
+    expect(generalDisplayData('alternate:guan-yu')?.skills.find((s) => s.name === 'Warrior Saint')?.inGame).toBe(false);
+  });
+
+  it('leaves Default skills unmarked as not in the game', () => {
+    expect(generalDisplayData('guan-yu')?.skills.every((s) => s.inGame !== false)).toBe(true);
+  });
+
   it('returns null for an unknown Alternate id', () => {
     expect(generalDisplayData('alternate:nobody')).toBeNull();
   });

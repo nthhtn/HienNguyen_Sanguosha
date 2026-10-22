@@ -77,7 +77,8 @@ interface CandidateViewModel {
             </div>
             <ul class="skills">
               @for (skill of vm.display?.skills ?? []; track skill.name) {
-                <li><strong>{{ skill.name }}</strong> {{ skill.text }}</li>
+                <li [class.not-in-game]="skill.inGame === false"><strong>{{ skill.name }}</strong> {{ skill.text }}
+                  @if (skill.inGame === false) { <em class="not-in-game-hint">{{ 'wiki.notInGame' | t }}</em> }</li>
               }
             </ul>
           </mat-card-content>
@@ -166,6 +167,7 @@ interface CandidateViewModel {
     .hp-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     .skills { padding-left: 1.1em; margin: 4px 0 0; font: var(--mat-sys-body-small); }
     .skills li { margin-bottom: 4px; }
+    .skills li.not-in-game { opacity: 0.6; }
     .bar {
       flex: none;
       display: flex; flex-direction: row; align-items: center; gap: 16px; flex-wrap: wrap;

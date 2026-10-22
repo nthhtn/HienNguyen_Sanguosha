@@ -2,6 +2,7 @@ import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 import { alternateCardData } from './alternateCards';
 import { alternateGeneralRecords } from './alternateGenerals';
+import { defaultSkillFor } from './alternateSkills';
 import { alternateGeneralId, baseGeneralId, isAlternateGeneralId } from './generalIds';
 import viCards from '../../data/locales/vi/cards.json';
 import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
@@ -89,7 +90,8 @@ export function cardTranslations(locale: string): Record<string, CardTranslation
 export interface GeneralDisplayData {
   name: string;
   title: string | null;
-  skills: { name: string; text: string }[];
+  // inGame is set for Alternate skills only: false when the game does not play this skill yet. Absent means in the game.
+  skills: { name: string; text: string; inGame?: boolean }[];
 }
 
 // Presentation-facing view of a general's data file, so UI code never imports
@@ -97,7 +99,17 @@ export interface GeneralDisplayData {
 export function generalDisplayData(id: string, locale = 'en'): GeneralDisplayData | null {
   if (isAlternateGeneralId(id)) {
     const alternate = alternateGeneralDisplayData(baseGeneralId(id), locale);
-    return alternate && { name: alternate.name, title: alternate.title, skills: alternate.skills };
+    const record = alternateGeneralRecords().find((g) => g.id === baseGeneralId(id));
+    if (!alternate || !record) return null;
+    return {
+      name: alternate.name,
+      title: alternate.title,
+      // TODO(slice 2): an Alternate skill is in the game exactly when Default's skill is reused (defaultSkillFor).
+      // Once Alternate variants exist, switch this to ask the registry whether the General has the skill.
+      // alternateSkills.ts imports this file and the General skills import it too; the cycle is safe because
+      // every use is inside a function, never at load time.
+      skills: alternate.skills.map((s, i) => ({ ...s, inGame: defaultSkillFor(record, record.skills[i]) !== undefined })),
+    };
   }
   if (!Object.prototype.hasOwnProperty.call(generalsData, id)) return null;
   const data = generalsData[id];
