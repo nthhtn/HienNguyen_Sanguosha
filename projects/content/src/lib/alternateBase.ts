@@ -19,7 +19,10 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
 };
 
 // Variants with no Default counterpart, which therefore have no base entry (and need their own texts and bot support).
-export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>();
+export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>([
+  // Lu Xun's Scrutinize: a conversion into Amass; Default has no skill like it.
+  'alternate:scrutinize',
+]);
 
 // The Default skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.
 export const baseSkillId = (skillId: string): string =>

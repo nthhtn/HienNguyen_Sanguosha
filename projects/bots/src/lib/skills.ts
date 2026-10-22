@@ -260,5 +260,6 @@ export function conversionSpare(view: GameState, me: Seat, action: UseConversion
   return cards.length === owned.conversion.cards && !cards.some((id) => definitionIdOf(view, id) === 'peach');
 }
 
-// The conversion abilities whose card selection the bot fills (least useful first).
-export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes', 'blockade', 'wine', 'strategic-pass']);
+// The conversion abilities whose card selection the bot fills (least useful first). A variant with a Default base is
+// covered by it; 'alternate:scrutinize' has none and is listed here (the bot never starts it: it does not play Amass yet).
+export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['alternate:scrutinize', 'fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes', 'blockade', 'wine', 'strategic-pass']);

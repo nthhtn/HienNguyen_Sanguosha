@@ -21,6 +21,11 @@ describe('alternateSkillStatus', () => {
     expect(alternateSkillStatus(record('zhang-zhao-and-zhang-hong'), skillOf('zhang-zhao-and-zhang-hong', 'Stabilization'))).toBe('worksAsAlternate');
   });
 
+  it('works as Alternate for both of Lu Xun’s skills: Humility and Scrutinize', () => {
+    expect(alternateSkillStatus(record('lu-xun'), skillOf('lu-xun', 'Humility'))).toBe('worksAsAlternate');
+    expect(alternateSkillStatus(record('lu-xun'), skillOf('lu-xun', 'Scrutinize'))).toBe('worksAsAlternate');
+  });
+
   it('is not missing exactly when the matching alternate: General has that skill in the registry', () => {
     const registry = buildContentRegistry();
     for (const rec of alternateGeneralRecords()) {

@@ -1,4 +1,5 @@
 import type { GameState } from 'engine';
+import { buildContentRegistry } from '../registry';
 import { askedAbout, card, handIds, harness, table, TableOptions } from './skills.testing';
 
 const h = harness();
@@ -200,5 +201,56 @@ describe('Alternate Zhang Zhao and Zhang Hong, Stabilization', () => {
   it('Default Zhang Zhao is not asked at 1 discarded card, but is at 2', () => {
     expect(askedAbout(phase('zhang-zhao-and-zhang-hong', 1))).toBeNull();
     expect(askedAbout(phase('zhang-zhao-and-zhang-hong', 2))).toBe('stubborn');
+  });
+});
+
+describe('Alternate Lu Xun, Scrutinize', () => {
+  const id = 'scrutinize-amass';
+  const zone = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
+  const pile12 = Array.from({ length: 12 }, (_, i) => card(`p${i}`, 'shan', 'club', i + 1));
+  const tableFor = (general: string, hand = [card('r1', 'shan', 'heart', 3), card('r2', 'peach', 'diamond', 4), card('b1', 'shan', 'spade', 5)], more: Record<string, ReturnType<typeof card>[]> = {}) =>
+    table({ 'seat-a:hand': hand, drawPile: pile12, ...more }, { generals: at('seat-a', general), kingdoms: { 'seat-a': 'Wu', 'seat-b': 'Shu', 'seat-c': 'Wu', 'seat-d': 'Qun' } });
+  const converts = (s: GameState) => h.legal(s, 'seat-a').some((a) => a.kind === 'UseConversionAction' && a.via.conversionId === id);
+
+  it('Default Lu Xun has no such conversion; Alternate Lu Xun has it', () => {
+    expect(converts(tableFor('lu-xun'))).toBe(false);
+    expect(converts(tableFor('alternate:lu-xun'))).toBe(true);
+  });
+
+  it('offers only red hand cards, as an Amass resolving for Kingdom members', () => {
+    let s = h.convert(tableFor('alternate:lu-xun', undefined, { 'seat-c:hand': [card('c1', 'peach', 'heart')] }), 'seat-a', id);
+    expect(s.pendingSelection?.eligibleIds).toEqual(['r1', 'r2']);
+    s = h.select(s, 'r1');
+    expect(s.pendingSelection).toMatchObject({ seatId: 'seat-a', min: 2, max: 2 });
+    expect(handIds(s, 'seat-a')).toHaveLength(4);
+    s = h.select(s, 'p0', 'p1');
+    expect(s.pendingSelection).toMatchObject({ seatId: 'seat-c', min: 2, max: 2 });
+    expect(handIds(s, 'seat-c')).toHaveLength(3);
+    s = h.select(s, 'c1', 'p2');
+    expect(handIds(s, 'seat-b')).toEqual([]);
+    expect(s.pendingSelection ?? null).toBeNull();
+    expect(zone(s, 'discardPile')).toContain('r1');
+  });
+
+  it('does not take equipment, and is not offered with only black cards', () => {
+    const s = tableFor('alternate:lu-xun', [card('b1', 'shan', 'spade')], { 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)] });
+    expect(converts(s)).toBe(false);
+  });
+
+  it('can be done twice in a turn', () => {
+    let s = h.convert(tableFor('alternate:lu-xun'), 'seat-a', id);
+    s = h.select(h.select(h.select(s, 'r1'), 'p0', 'p1'), 'p2', 'p3');
+    expect(converts(s)).toBe(true);
+  });
+
+  it('a Wuxie from another seat cancels the Amass for one target', () => {
+    let s = h.select(h.convert(tableFor('alternate:lu-xun', undefined, { 'seat-b:hand': [card('wx', 'wuxie', 'spade')] }), 'seat-a', id), 'r1');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', reason: { kind: 'wuxie' } });
+  });
+
+  it('is its own skill on the Alternate General, in place of Linked Camps', () => {
+    const skills = buildContentRegistry().generals.get('alternate:lu-xun')!.skills.map((x) => x.id);
+    expect(skills).toContain('alternate:scrutinize');
+    expect(skills).not.toContain('linked-camps');
   });
 });
