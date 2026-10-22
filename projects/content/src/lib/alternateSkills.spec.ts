@@ -49,6 +49,9 @@ describe('readyAlternateSkills', () => {
       for (const s of readyAlternateSkills(g)) expect(s.lord).not.toBe(true);
     }
   });
+  it('clears exactly Huang Yueying’s Genius', () => {
+    expect(CLEARED_WORDING).toEqual({ 'huang-yueying': ['奇才'] });
+  });
   it('clears wording only for skills the Alternate records have', () => {
     for (const [id, names] of Object.entries(CLEARED_WORDING)) {
       const rec = alternateGeneralRecords().find((g) => g.id === id);

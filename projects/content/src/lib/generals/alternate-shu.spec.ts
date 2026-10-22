@@ -102,3 +102,50 @@ describe('Alternate Zhu Rong, Fearsome Blade', () => {
     expect(askedAbout(hitB('zhu-rong'))).toBe('intense-edge');
   });
 });
+
+describe('Alternate Huang Yueying, Assembling Wisdom', () => {
+  const id = 'alternate:assembling-wisdom';
+  const pile = Array.from({ length: 4 }, (_, i) => card(`p${i + 1}`, 'shan', 'heart', i + 1));
+  const drawn = (s: GameState) => s.log.flatMap((e) => (e.kind === 'CardsDrawnEvent' ? [e.cardInstanceIds.length] : []));
+  // Pang Tong is the Deputy so Shackle can convert a club into Chains.
+  const yueying = (general: string, hands: Record<string, ReturnType<typeof card>[]>, owner?: string) =>
+    table({ ...hands, drawPile: pile }, { ...(owner ? { owner } : {}), generals: { 'seat-a': [general, 'pang-tong', true] } });
+  const asChains = (s: GameState) => {
+    const t = h.legal(s, 'seat-a').find((a) => a.kind === 'UseConversionAction' && a.via.conversionId === 'shackle-chains' && a.pickTargets);
+    if (t?.kind !== 'UseConversionAction') throw new Error('no Chains template');
+    const { pickTargets: _pick, ...use } = t;
+    return h.select(h.act(s, { ...use, targets: [{ kind: 'seat' as const, seatId: 'seat-b' }] }), 'c1');
+  };
+  const chains = (general: string) => asChains(yueying(general, { 'seat-a:hand': [card('c1', 'sha', 'club', 4)] }));
+
+  it('a real Draw Two asks, and drawing takes 1 more', () => {
+    const s = h.play(yueying('alternate:huang-yueying', { 'seat-a:hand': [card('dt', 'draw-two', 'heart', 7)] }), 'dt');
+    expect(askedAbout(s)).toBe(id);
+    expect(drawn(h.use(s))).toEqual([1, 2]);
+  });
+
+  it('Chains converted from a club by Shackle does not draw; Default Huang Yueying is asked', () => {
+    const alt = chains('alternate:huang-yueying');
+    expect(alt.pendingChoice).toBeUndefined();
+    expect(drawn(alt)).toEqual([]);
+    expect(askedAbout(chains('huang-yueying'))).toBe('gathering-wisdom');
+  });
+
+  it('a real Wuxie she plays still draws', () => {
+    let s = h.play(yueying('alternate:huang-yueying', { 'seat-b:hand': [card('st', 'steal', 'spade', 3)], 'seat-a:hand': [card('wx', 'wuxie', 'spade', 11)] }, 'seat-b'), 'st', 'seat-a');
+    s = h.respond(s, 'wx');
+    expect(askedAbout(s)).toBe(id);
+  });
+
+  it('a Chains Recast does not draw', () => {
+    const s = h.play(yueying('alternate:huang-yueying', { 'seat-a:hand': [card('ch', 'chains', 'club', 10)] }), 'ch');
+    expect(s.pendingChoice).toBeUndefined();
+    expect(drawn(s)).toEqual([1]);
+  });
+
+  it('Genius resolves to Default wondrous-talent: a Tool beyond distance', () => {
+    const ranged = (general: string) => h.legal(yueying(general, { 'seat-a:hand': [card('st', 'steal', 'spade', 3)], 'seat-c:hand': [card('x', 'shan')] }), 'seat-a').some((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === 'st' && a.targets.some((t) => t.kind === 'seat' && t.seatId === 'seat-c'));
+    expect(ranged('huang-yueying')).toBe(true);
+    expect(ranged('alternate:huang-yueying')).toBe(true);
+  });
+});

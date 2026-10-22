@@ -70,7 +70,7 @@ describe('wikiAlternateGenerals', () => {
     expect(working).toEqual([
       'da-qiao/Displacement', 'da-qiao/National Beauty', 'dian-wei/Ferocious Assault',
       'fire-zhuge-liang/Arson', 'fire-zhuge-liang/Eight Trigrams', 'fire-zhuge-liang/Scient',
-      'gan-ning/Surprise Raid', 'hua-tuo/First Aid', 'hua-tuo/Green Salve', 'huang-gai/Trojan Flesh',
+      'gan-ning/Surprise Raid', 'hua-tuo/First Aid', 'hua-tuo/Green Salve', 'huang-gai/Trojan Flesh', 'huang-yueying/Genius',
       'lu-meng/Self-Mastery', 'lu-su/Alliance', 'lu-su/Altruism', 'meng-huo/Arise Again', 'meng-huo/The Smoking Gun',
       'pang-de/Fearsome Advance', 'pang-de/Horsemanship', 'sun-jian/Heroic Spirit', 'taishi-ci/Justice of Heaven',
       'wei-yan/Insanity Streak', 'xiahou-dun/An Eye for an Eye', 'xiahou-yuan/Godspeed', 'xu-chu/Bare-Chested',

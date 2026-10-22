@@ -1,4 +1,4 @@
-import type { CardInstance, CardPlayedEvent, GeneralOwner, PhaseChangedEvent, SkillDefinition } from 'engine';
+import type { CardInstance, CardPlayedEvent, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
 import { abilityUseKey, drawPileTop } from 'engine';
 import type { ContentRegistry, GameState } from 'engine';
 import { colourFor } from '../shared/suits';
@@ -43,19 +43,25 @@ export const dragonCourage: SkillDefinition = {
 
 // Gathering Wisdom (may): when you play a non-delayed Tool (an answering Wuxie
 // included), you may draw 1 card, before the Tool takes effect. A Chains
-// Recast is not a use.
-export const gatheringWisdom: SkillDefinition = {
+// Recast is not a use. Alternate (allowConverted false) also skips a Tool that
+// was converted from other cards (a conversion `via`, or a physical card that
+// is not the Tool itself).
+const isConverted = (card: UsedCard): boolean => !!card.via || card.physical.some((p) => p.definitionId !== card.as);
+
+export const makeGatheringWisdom = (allowConverted = true): SkillDefinition => ({
   id: 'gathering-wisdom',
   triggers: [
     on<CardPlayedEvent>('after:CardPlayedEvent', {
       condition: (_state, event, owner, registry) => {
         const definition = registry.cards.get(event.card.as);
-        return event.seatId === owner.seatId && definition?.category === 'tool' && !definition.delayed && !isRecast(event);
+        return event.seatId === owner.seatId && definition?.category === 'tool' && !definition.delayed && !isRecast(event) && (allowConverted || !isConverted(event.card));
       },
       effect: (_state, _event, owner) => [ask(owner, [draw(owner.seatId, 1)])],
     }),
   ],
-};
+});
+
+export const gatheringWisdom: SkillDefinition = makeGatheringWisdom(true);
 
 // Iron Cavalry (may): after you target a seat with a Sha, you may judge. On
 // red, that seat can't play a Shan against this Sha (Eight Trigrams included).

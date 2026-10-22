@@ -17,6 +17,7 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:benevolence': 'kindness',
   'alternate:balance-of-power': 'reconsider',
   'alternate:eternal-loyalty': 'eternal-loyalty',
+  'alternate:assembling-wisdom': 'gathering-wisdom',
   'alternate:fearsome-blade': 'intense-edge',
 };
 

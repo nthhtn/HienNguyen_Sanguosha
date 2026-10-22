@@ -10,7 +10,10 @@ export const isNilNote = (note: string | null): boolean =>
   note !== null && note.trim().toLowerCase().replace(/\.$/, '') === 'nil';
 
 // General id to the Alternate skills (by Chinese name) cleared as wording-only differences.
-export const CLEARED_WORDING: Readonly<Record<string, readonly string[]>> = {};
+export const CLEARED_WORDING: Readonly<Record<string, readonly string[]>> = {
+  // Genius is unchanged from Default's.
+  'huang-yueying': ['奇才'],
+};
 
 // The Default SkillDefinition this Alternate skill runs as, or undefined when it is not ready.
 // Matches by Chinese name only; Lord skills are never matched.
