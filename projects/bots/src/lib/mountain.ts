@@ -1,3 +1,4 @@
+import { baseSkillId } from 'content';
 import type { ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { cardCountsAs } from 'engine';
 import { handCards, isAlly, keepRank, leastUseful } from './helpers';
@@ -53,7 +54,7 @@ function lamentSource(choice: PendingChoice): string | undefined {
 export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): boolean | null {
   const reason = choice.reason;
   if (reason.kind !== 'ability') return null;
-  switch (reason.abilityId) {
+  switch (baseSkillId(reason.abilityId)) {
     case 'military-farm':
     case 'incarnation':
     case 'stubborn':
@@ -78,7 +79,7 @@ export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, 
 }
 
 export function wantsMountainActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry): boolean | null {
-  switch (skillId) {
+  switch (baseSkillId(skillId)) {
     case 'instigate':
       return others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) <= 1);
     case 'direct-instruction': {
@@ -97,13 +98,13 @@ export function mountainChoice(view: GameState, me: Seat, choice: PendingChoice,
   if (choice.reason.kind !== 'ability') return null;
   const seats = seatsOf(view, choice);
   const ally = seats.find((s) => s.id !== me.id && isAlly(me, s));
-  switch (choice.reason.abilityId) {
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'follow-the-master':
       return choice.options.some((o) => o.id === 'recover') ? 'recover' : null;
     case 'incarnation': {
       const skillOf = (id: string) => id.split('/')[1];
-      const best = FORM_PREFERENCE.find((skill) => choice.options.some((o) => skillOf(o.id) === skill));
-      return (choice.options.find((o) => skillOf(o.id) === best) ?? choice.options[0])?.id ?? null;
+      const best = FORM_PREFERENCE.find((skill) => choice.options.some((o) => baseSkillId(skillOf(o.id)) === skill));
+      return (choice.options.find((o) => baseSkillId(skillOf(o.id)) === best) ?? choice.options[0])?.id ?? null;
     }
     case 'decentralization': {
       const allies = seats.filter((s) => s.id !== me.id && isAlly(me, s)).sort((a, b) => handSize(view, b) - handSize(view, a) || a.index - b.index);
@@ -138,7 +139,7 @@ export function mountainSelection(view: GameState, me: Seat, selection: PendingS
       .map((id) => view.seats.find((s) => s.id === id)!)
       .filter((s) => !!s && pick(s))
       .sort((a, b) => (order === 'most' ? handSize(view, b) - handSize(view, a) : handSize(view, a) - handSize(view, b)) || a.index - b.index);
-  switch (selection.reason.abilityId) {
+  switch (baseSkillId(selection.reason.abilityId)) {
     case 'clever-change': {
       if (selection.of === 'cards') return leastUseful(view, registry, eligible).slice(0, 1);
       if (step === 'draw-take') {

@@ -1,3 +1,4 @@
+import { baseSkillId } from 'content';
 import type { CardInstance, ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { livingSeatOrderFrom } from 'engine';
 import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, isShaCard } from './helpers';
@@ -62,7 +63,7 @@ const spareClubs = (view: GameState, me: Seat, registry: ContentRegistry, ids = 
 
 export function wantsFireActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry): boolean | null {
   const hand = handCards(view, me);
-  switch (skillId) {
+  switch (baseSkillId(skillId)) {
     case 'shackle':
       return spareClubs(view, me, registry).length > 0;
     case 'assault':
@@ -79,7 +80,7 @@ export function wantsFireActive(view: GameState, me: Seat, skillId: string, regi
 export function wantsFire(view: GameState, me: Seat, choice: PendingChoice): boolean | null {
   if (choice.reason.kind !== 'ability') return null;
   const target = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId);
-  switch (choice.reason.abilityId) {
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'nirvana':
     case 'eight-arrays':
     case 'eternal-loyalty':
@@ -110,7 +111,7 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
   }
   if (selection.reason.kind !== 'ability') return null;
   const seats = eligible.map((id) => view.seats.find((s) => s.id === id)).filter((s): s is Seat => !!s);
-  switch (selection.reason.abilityId) {
+  switch (baseSkillId(selection.reason.abilityId)) {
     case 'rouse-the-tiger': {
       const pick = weakest(rousable(view, me, registry).filter((s) => eligible.includes(s.id)));
       return pick ? [pick.id] : 'cancel';
@@ -136,7 +137,7 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
 export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
-  switch (choice.reason.abilityId) {
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'assault':
       return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'rouse-the-tiger':

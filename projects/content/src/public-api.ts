@@ -9,7 +9,15 @@ export * from './lib/alternateCards';
 export * from './lib/alternateGenerals';
 export * from './lib/generalIds';
 export * from './lib/wikiAlternateGenerals';
-export * from './lib/display';
+export {
+  abilityHint, abilityName, alternateCardTranslation, alternateGeneralDisplayData, alternateGeneralTranslations, cardDisplayData, cardIds,
+  cardTranslations, choicePromptText, competeOutcomeText, ENGLISH_PROSE, generalIds, generalTranslations, judgmentOutcomeText,
+  reviewGeneralIds, seatPickText, selectionText, skillIdOf, stepSelectionText,
+} from './lib/display';
+export type {
+  AlternateGeneralDisplayData, AlternateGeneralTranslation, CardDisplayData, CardTranslation, GeneralDisplayData, GeneralTranslation, JudgmentOutcomeNames,
+} from './lib/display';
+export { baseSkillId } from './lib/alternateVariants';
 export * from './lib/generalDisplay';
 export * from './lib/judgmentOutcome';
 export { seatGender } from './lib/shared/gender';

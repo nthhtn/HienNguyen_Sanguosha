@@ -28,6 +28,10 @@ export function defaultSkillFor(record: AlternateGeneralRecord, skill: Alternate
 const alternateVariantSkillFor = (record: AlternateGeneralRecord, skill: AlternateGeneralSkillRecord): SkillDefinition | undefined =>
   skill.nameZh ? ALTERNATE_VARIANTS[record.id]?.[skill.nameZh] : undefined;
 
+// Whether this Alternate skill has a variant of its own (its rules differ from Default's).
+export const hasAlternateVariant = (record: AlternateGeneralRecord, skill: AlternateGeneralSkillRecord): boolean =>
+  alternateVariantSkillFor(record, skill) !== undefined;
+
 // The SkillDefinition the game plays for this Alternate skill: its variant, else Default's skill when the rules are the same.
 export const alternateSkillFor = (record: AlternateGeneralRecord, skill: AlternateGeneralSkillRecord): SkillDefinition | undefined =>
   alternateVariantSkillFor(record, skill) ?? defaultSkillFor(record, skill);

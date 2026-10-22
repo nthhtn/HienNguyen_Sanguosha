@@ -229,3 +229,24 @@ describe('fallbacks when no suitable seat is offered', () => {
     expect(picked(decide(choice('displace', ['seat-b', 'seat-c'], allies)))).toMatch(/^seat-[bc]$/);
   });
 });
+
+describe('an Alternate variant is used like its base', () => {
+  const seatWith = (generalId: string, n: number) => table(
+    { 'seat-a:hand': Array.from({ length: n }, (_, i) => card(`k${i}`, 'shan')) },
+    { generals: { 'seat-a': [generalId, 'filler-meng-huo'], 'seat-b': ['filler-jiang-wei', 'filler-liu-shan'] }, kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Shu' } },
+  );
+
+  it.each([5, 1])('Alternate Liu Bei with %i cards decides as Liu Bei does', (n) => {
+    const base = decide(seatWith('liu-bei', n));
+    const alt = decide(seatWith('alternate:liu-bei', n));
+    expect(alt.kind).toBe(base.kind);
+    if (n === 5) expect(alt).toMatchObject({ kind: 'UseSkillAction', owner: { skillId: 'alternate:benevolence' } });
+  });
+
+  it('gives the cards to an ally like Kindness', () => {
+    const selecting = useSkill(seatWith('alternate:liu-bei', 5), 'alternate:benevolence');
+    expect(picked(decide(selecting))).toHaveLength(2);
+    const giving = act(selecting, decide(selecting));
+    expect(picked(decide(giving))).toBe('seat-b');
+  });
+});

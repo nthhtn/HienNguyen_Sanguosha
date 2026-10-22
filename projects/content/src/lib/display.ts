@@ -3,6 +3,7 @@ import { generalsData } from '../../data/generals';
 import { alternateCardData } from './alternateCards';
 import { alternateGeneralRecords } from './alternateGenerals';
 import { skillIdOf } from './skillId';
+import { baseSkillId, lookupWithBase } from './alternateVariants';
 import { alternateGeneralId, baseGeneralId, isAlternateGeneralId } from './generalIds';
 import viCards from '../../data/locales/vi/cards.json';
 import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
@@ -207,7 +208,7 @@ const ABILITY_HINTS: Record<string, string> = {
 };
 
 export function abilityHint(abilityId: string, locale = 'en'): string | null {
-  return lookup(proseOf(locale)?.hints, abilityId) ?? lookup(ABILITY_HINTS, abilityId) ?? null;
+  return lookupWithBase(proseOf(locale)?.hints, abilityId) ?? lookupWithBase(ABILITY_HINTS, abilityId) ?? null;
 }
 
 // What a skill's selection says: its prompt, its confirm button and, when
@@ -242,7 +243,7 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
 };
 
 export function selectionText(abilityId: string, locale = 'en'): { prompt: string; confirm: string; cancel?: string } | null {
-  return lookup(proseOf(locale)?.selection, abilityId) ?? lookup(SELECTION_TEXT, abilityId) ?? null;
+  return lookupWithBase(proseOf(locale)?.selection, abilityId) ?? lookupWithBase(SELECTION_TEXT, abilityId) ?? null;
 }
 
 // What a skill's seat pick asks, when "Choose a seat" says too little.
@@ -258,7 +259,7 @@ const SEAT_PICK_TEXT: Record<string, string> = {
 };
 
 export function seatPickText(abilityId: string, locale = 'en'): string | null {
-  return lookup(proseOf(locale)?.seatPick, abilityId) ?? lookup(SEAT_PICK_TEXT, abilityId) ?? null;
+  return lookupWithBase(proseOf(locale)?.seatPick, abilityId) ?? lookupWithBase(SEAT_PICK_TEXT, abilityId) ?? null;
 }
 
 // What a skill's pick says when it mixes seats and labels, or is all labels.
@@ -273,7 +274,7 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
 };
 
 export function choicePromptText(abilityId: string, locale = 'en'): string | null {
-  return lookup(proseOf(locale)?.choicePrompt, abilityId) ?? lookup(CHOICE_PROMPT_TEXT, abilityId) ?? null;
+  return lookupWithBase(proseOf(locale)?.choicePrompt, abilityId) ?? lookupWithBase(CHOICE_PROMPT_TEXT, abilityId) ?? null;
 }
 
 // What a selection says by the step it leads to: competing and Blaze's picks
@@ -290,7 +291,7 @@ const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; can
 
 // A skill's own step ("alliance/swap") is found before a step name shared by any skill.
 export function stepSelectionText(step: string, locale = 'en', skillId?: string): { prompt: string; confirm: string; cancel?: string } | null {
-  const keys = skillId ? [`${skillId}/${step}`, step] : [step];
+  const keys = skillId ? [...new Set([skillId, baseSkillId(skillId)])].map((id) => `${id}/${step}`).concat(step) : [step];
   for (const key of keys) {
     const found = lookup(proseOf(locale)?.stepSelection, key) ?? lookup(STEP_SELECTION_TEXT, key);
     if (found) return found;

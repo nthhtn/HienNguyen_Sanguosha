@@ -1,6 +1,7 @@
 import { alternateGeneralRecords } from './alternateGenerals';
 import { generalsData } from '../../data/generals';
-import { ALTERNATE_VARIANTS } from './alternateVariants';
+import { ALTERNATE_VARIANTS, ALTERNATE_VARIANT_BASE, baseSkillId, lookupWithBase } from './alternateVariants';
+import { GENERAL_SKILLS } from './generals';
 import { skillIdOf } from './skillId';
 
 const records = alternateGeneralRecords();
@@ -32,5 +33,34 @@ describe('ALTERNATE_VARIANTS', () => {
     const ids = entries.map((e) => e.variant.id);
     for (const id of ids) expect(defaultIds.has(id)).toBe(false);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe('ALTERNATE_VARIANT_BASE', () => {
+  it('maps each variant to an existing Default skill id, and only variants', () => {
+    const variantIds = new Set(entries.map((e) => e.variant.id));
+    const defaultIds = new Set([...GENERAL_SKILLS.values()].flatMap((defs) => defs.map((d) => d.id)));
+    for (const [variantId, base] of Object.entries(ALTERNATE_VARIANT_BASE)) {
+      expect(variantId.startsWith('alternate:')).toBe(true);
+      expect(variantIds.has(variantId)).toBe(true);
+      expect(defaultIds.has(base)).toBe(true);
+    }
+  });
+});
+
+describe('baseSkillId', () => {
+  it('is the Default id of a variant, else the id itself', () => {
+    expect(baseSkillId('kindness')).toBe('kindness');
+    expect(baseSkillId('alternate:benevolence')).toBe('kindness');
+    expect(baseSkillId('constructor')).toBe('constructor');
+  });
+});
+
+describe('lookupWithBase', () => {
+  it('finds the id first, then its base, and ignores inherited keys', () => {
+    expect(lookupWithBase({ kindness: 'base' }, 'alternate:benevolence')).toBe('base');
+    expect(lookupWithBase({ kindness: 'base', 'alternate:benevolence': 'own' }, 'alternate:benevolence')).toBe('own');
+    expect(lookupWithBase({ kindness: 'base' }, 'sha')).toBeUndefined();
+    expect(lookupWithBase({}, 'constructor')).toBeUndefined();
   });
 });

@@ -1,3 +1,4 @@
+import { baseSkillId } from 'content';
 import type { ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { livingSeatOrderFrom } from 'engine';
 import { handCards, isAlly, keepRank } from './helpers';
@@ -22,7 +23,7 @@ const alliancePairs = (view: GameState, me: Seat) =>
 
 export function wantsForest(view: GameState, me: Seat, choice: PendingChoice): boolean | null {
   if (choice.reason.kind !== 'ability') return null;
-  switch (choice.reason.abilityId) {
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'unnatural-death':
     case 'brave-spirit':
     case 'exile':
@@ -39,7 +40,7 @@ export function wantsForest(view: GameState, me: Seat, choice: PendingChoice): b
 }
 
 export function wantsForestActive(view: GameState, me: Seat, skillId: string): boolean | null {
-  switch (skillId) {
+  switch (baseSkillId(skillId)) {
     case 'alliance':
       return alliancePairs(view, me).length > 0;
     case 'upheaval':
@@ -53,7 +54,7 @@ export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, r
   if (choice.reason.kind !== 'ability') return null;
   const seats = seatsOf(view, choice);
   const nonAllies = seats.filter((s) => s.id !== me.id && !isAlly(me, s));
-  switch (choice.reason.abilityId) {
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'exile': {
       // A non-ally with the fewest hand cards; else a face-down ally; else the first.
       const foe = [...nonAllies].sort((a, b) => handSize(view, a) - handSize(view, b) || a.index - b.index)[0];

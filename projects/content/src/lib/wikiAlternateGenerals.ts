@@ -1,6 +1,5 @@
 import { alternateGeneralRecords, type AlternateGeneralRecord, type AlternateGeneralSkillRecord } from './alternateGenerals';
-import { alternateSkillFor } from './alternateSkills';
-import { ALTERNATE_VARIANTS } from './alternateVariants';
+import { alternateSkillFor, hasAlternateVariant } from './alternateSkills';
 import { splitIntoTabs, type WikiTab } from './wiki';
 
 // Whether the game can play an Alternate skill: as its own variant ("worksAsAlternate"), as Default's
@@ -31,7 +30,7 @@ export interface WikiAlternateGeneral {
 
 export function alternateSkillStatus(record: AlternateGeneralRecord, skill: AlternateGeneralSkillRecord): AlternateSkillStatus {
   if (!alternateSkillFor(record, skill)) return 'missing';
-  return skill.nameZh && ALTERNATE_VARIANTS[record.id]?.[skill.nameZh] ? 'worksAsAlternate' : 'worksAsDefault';
+  return hasAlternateVariant(record, skill) ? 'worksAsAlternate' : 'worksAsDefault';
 }
 
 const KINGDOMS: Record<AlternateGeneralRecord['force'], WikiAlternateGeneral['kingdom']> = { wei: 'Wei', shu: 'Shu', wu: 'Wu', qun: 'Qun' };

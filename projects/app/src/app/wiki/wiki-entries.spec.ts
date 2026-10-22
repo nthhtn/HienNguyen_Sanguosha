@@ -237,10 +237,11 @@ describe('WikiAlternateGeneralEntry', () => {
       skills: [
         { name: 'A', nameZh: null, text: 'a', status: 'worksAsDefault' },
         { name: 'B', nameZh: null, text: 'b', status: 'missing' },
+        { name: 'C', nameZh: null, text: 'c', status: 'worksAsAlternate' },
       ],
     };
     const tags = [...render(general).querySelectorAll('.skill-status')].map((s) => [s.getAttribute('data-status'), s.textContent!.trim()]);
-    expect(tags).toEqual([['worksAsDefault', 'Works as Default'], ['missing', 'Not in the game yet']]);
+    expect(tags).toEqual([['worksAsDefault', 'Works as Default'], ['missing', 'Not in the game yet'], ['worksAsAlternate', 'Works as in Alternate']]);
     expect(render(general).textContent).not.toContain('Working');
   });
 

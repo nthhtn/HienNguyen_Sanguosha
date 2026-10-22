@@ -1,3 +1,4 @@
+import { baseSkillId } from 'content';
 import type { CardInstance, ContentRegistry, Effect, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { handCards, isAlly, keepRank, leastUseful, ownCards, isShaCard } from './helpers';
 import { devilCard } from './skills';
@@ -15,7 +16,7 @@ export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, regi
   if (choice.reason.kind !== 'ability') return null;
   const target = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId);
   const hand = handCards(view, me);
-  switch (choice.reason.abilityId) {
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'entrench':
       return hand.length <= 2 && me.combinedHp >= 3 && !others(view, me).some((s) => isAlly(me, s) && hurt(s));
     case 'godspeed': {
@@ -51,7 +52,7 @@ export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, regi
 export function windSelection(view: GameState, me: Seat, selection: PendingSelection, registry: ContentRegistry): string[] | 'cancel' | null {
   if (selection.reason.kind !== 'ability') return null;
   const eligible = selection.eligibleIds;
-  switch (selection.reason.abilityId) {
+  switch (baseSkillId(selection.reason.abilityId)) {
     case 'godspeed':
     case 'refusing-death':
       return leastUseful(view, registry, eligible).slice(0, 1);
@@ -72,7 +73,7 @@ export function windChoice(view: GameState, me: Seat, choice: PendingChoice): st
   if (choice.reason.kind !== 'ability') return null;
   const reason = choice.reason;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
-  switch (reason.abilityId) {
+  switch (baseSkillId(reason.abilityId)) {
     case 'godspeed':
     case 'fantasy':
     case 'lightning-strike':

@@ -2,7 +2,7 @@ import { alternateGeneralRecords } from './alternateGenerals';
 import { generalsData } from '../../data/generals';
 import { GENERAL_SKILLS } from './generals';
 import { skillIdOf } from './skillId';
-import { isNilNote, readyAlternateSkills, CLEARED_WORDING } from './alternateSkills';
+import { hasAlternateVariant, isNilNote, readyAlternateSkills, CLEARED_WORDING } from './alternateSkills';
 
 const record = (id: string) => {
   const r = alternateGeneralRecords().find((g) => g.id === id);
@@ -55,5 +55,13 @@ describe('readyAlternateSkills', () => {
       expect(rec).toBeDefined();
       for (const nameZh of names) expect(rec!.skills.some((s) => s.nameZh === nameZh)).toBe(true);
     }
+  });
+});
+
+describe('hasAlternateVariant', () => {
+  it('is true for Liu Bei’s Benevolence and false for Zhang Fei’s Roar', () => {
+    const skill = (id: string, zh: string) => record(id).skills.find((s) => s.nameZh === zh)!;
+    expect(hasAlternateVariant(record('liu-bei'), skill('liu-bei', '仁德'))).toBe(true);
+    expect(hasAlternateVariant(record('zhang-fei'), skill('zhang-fei', '咆哮'))).toBe(false);
   });
 });

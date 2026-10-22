@@ -184,3 +184,14 @@ describe('Alternate-only cards', () => {
     expect(cardDisplayData('nope')).toBeNull();
   });
 });
+
+describe('variant skill texts', () => {
+  it.each(['en', 'vi'])('a variant shows its base skill’s texts in %s', (locale) => {
+    expect(selectionText('alternate:benevolence', locale)).toEqual(selectionText('kindness', locale));
+    expect(selectionText('alternate:benevolence', locale)).not.toBeNull();
+    expect(abilityHint('alternate:benevolence', locale)).toEqual(abilityHint('kindness', locale));
+    expect(seatPickText('alternate:benevolence', locale)).toEqual(seatPickText('kindness', locale));
+    expect(choicePromptText('alternate:benevolence', locale)).toEqual(choicePromptText('kindness', locale));
+    expect(stepSelectionText('compete-user', locale, 'alternate:benevolence')).toEqual(stepSelectionText('compete-user', locale));
+  });
+});
