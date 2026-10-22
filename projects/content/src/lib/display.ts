@@ -2,7 +2,7 @@ import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 import { alternateCardData } from './alternateCards';
 import { alternateGeneralRecords } from './alternateGenerals';
-import { defaultSkillFor } from './alternateSkills';
+import { skillIdOf } from './skillId';
 import { alternateGeneralId, baseGeneralId, isAlternateGeneralId } from './generalIds';
 import viCards from '../../data/locales/vi/cards.json';
 import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
@@ -95,21 +95,13 @@ export interface GeneralDisplayData {
 }
 
 // Presentation-facing view of a general's data file, so UI code never imports
-// raw content JSON.
-export function generalDisplayData(id: string, locale = 'en'): GeneralDisplayData | null {
+// raw content JSON. `inGame` is added by generalDisplayData (generalDisplay.ts), which needs the skill
+// registry; this file must not import it, since the General skills import this file.
+export function generalTextData(id: string, locale = 'en'): GeneralDisplayData | null {
   if (isAlternateGeneralId(id)) {
     const alternate = alternateGeneralDisplayData(baseGeneralId(id), locale);
-    const record = alternateGeneralRecords().find((g) => g.id === baseGeneralId(id));
-    if (!alternate || !record) return null;
-    return {
-      name: alternate.name,
-      title: alternate.title,
-      // TODO(slice 2): an Alternate skill is in the game exactly when Default's skill is reused (defaultSkillFor).
-      // Once Alternate variants exist, switch this to ask the registry whether the General has the skill.
-      // alternateSkills.ts imports this file and the General skills import it too; the cycle is safe because
-      // every use is inside a function, never at load time.
-      skills: alternate.skills.map((s, i) => ({ ...s, inGame: defaultSkillFor(record, record.skills[i]) !== undefined })),
-    };
+    if (!alternate) return null;
+    return { name: alternate.name, title: alternate.title, skills: alternate.skills };
   }
   if (!Object.prototype.hasOwnProperty.call(generalsData, id)) return null;
   const data = generalsData[id];
@@ -306,25 +298,35 @@ export function stepSelectionText(step: string, locale = 'en', skillId?: string)
   return null;
 }
 
-// A skill's id: its English name in kebab case, apostrophes dropped
-// ("Heaven's Envy" → "heavens-envy"). Stage 7's skills use these ids.
-export function skillIdOf(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+export { skillIdOf };
 
 const SKILL_NAMES: ReadonlyMap<string, string> = new Map(
   Object.values(generalsData).flatMap((g) => g.skills.map((s): [string, string] => [skillIdOf(s.name), s.name]))
 );
+
+// An Alternate skill's name by its `alternate:` skill id, in a language: the Alternate record's English
+// name, or its translation.
+const ALTERNATE_SKILL_NAMES_BY_LOCALE = new Map<string, ReadonlyMap<string, string>>();
+function alternateSkillNames(locale: string): ReadonlyMap<string, string> {
+  let names = ALTERNATE_SKILL_NAMES_BY_LOCALE.get(locale);
+  if (!names) {
+    const translations = alternateGeneralTranslations(locale);
+    names = new Map(alternateGeneralRecords().flatMap((rec) => rec.skills.map((s): [string, string] => {
+      const id = skillIdOf(s.name);
+      return [`alternate:${id}`, translations[rec.id]?.skills?.[id]?.name ?? s.name];
+    })));
+    ALTERNATE_SKILL_NAMES_BY_LOCALE.set(locale, names);
+  }
+  return names;
+}
 
 const titleCase = (id: string) => id.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
 // The name of an ability, for any text: a worn card's name, else a skill's
 // name from the General data, else its id in Title Case.
 export function abilityName(abilityId: string, locale = 'en'): string {
+  const alternate = alternateSkillNames(locale).get(abilityId);
+  if (alternate) return alternate;
   const card = cardDisplayData(abilityId, locale);
   // A General's skill can share an id with a card (Dong Zhuo's Wine skill and the Wine card): a
   // worn card is an ability only through its Equipment, so a skill of that id wins otherwise.

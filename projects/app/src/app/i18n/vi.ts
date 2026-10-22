@@ -548,6 +548,7 @@ export const vi: Messages = {
   'wiki.lordNote': 'Không dùng trong Quốc chiến',
   'wiki.skillStatus.working': 'Đang hoạt động',
   'wiki.skillStatus.worksAsDefault': 'Chạy theo bản Mặc định',
+  'wiki.skillStatus.worksAsAlternate': 'Chạy theo bản Thay thế',
   'wiki.partners': 'Đối tác phối hợp',
   'wiki.differenceNote': 'Khác biệt so với bản gốc',
   'wiki.alternateGenerals.summary': '{count} Tướng · {withDefault} có mọi kỹ năng chạy theo bản Mặc định',

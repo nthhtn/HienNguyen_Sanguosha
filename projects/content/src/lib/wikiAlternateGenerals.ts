@@ -1,10 +1,11 @@
 import { alternateGeneralRecords, type AlternateGeneralRecord, type AlternateGeneralSkillRecord } from './alternateGenerals';
-import { defaultSkillFor } from './alternateSkills';
+import { alternateSkillFor } from './alternateSkills';
+import { ALTERNATE_VARIANTS } from './alternateVariants';
 import { splitIntoTabs, type WikiTab } from './wiki';
 
-// Whether the game can play an Alternate skill. It plays Default's version, not the Alternate
-// wording, so the state is not "working": it says the game runs the Default counterpart.
-export type AlternateSkillStatus = 'worksAsDefault' | 'missing';
+// Whether the game can play an Alternate skill: as its own variant ("worksAsAlternate"), as Default's
+// version when the rules are the same ("worksAsDefault"), or not yet ("missing").
+export type AlternateSkillStatus = 'worksAsDefault' | 'worksAsAlternate' | 'missing';
 
 export interface WikiAlternateSkill {
   name: string;
@@ -28,9 +29,9 @@ export interface WikiAlternateGeneral {
   skillsRunAsDefault: boolean;
 }
 
-// An Alternate skill works as Default exactly when the game plays it: defaultSkillFor finds Default's skill.
 export function alternateSkillStatus(record: AlternateGeneralRecord, skill: AlternateGeneralSkillRecord): AlternateSkillStatus {
-  return defaultSkillFor(record, skill) ? 'worksAsDefault' : 'missing';
+  if (!alternateSkillFor(record, skill)) return 'missing';
+  return skill.nameZh && ALTERNATE_VARIANTS[record.id]?.[skill.nameZh] ? 'worksAsAlternate' : 'worksAsDefault';
 }
 
 const KINGDOMS: Record<AlternateGeneralRecord['force'], WikiAlternateGeneral['kingdom']> = { wei: 'Wei', shu: 'Shu', wu: 'Wu', qun: 'Qun' };

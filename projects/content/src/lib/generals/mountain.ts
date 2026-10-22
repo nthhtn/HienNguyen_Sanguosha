@@ -11,7 +11,7 @@ import { suitOf } from '../shared/suits';
 import { awakeningAtTurnStart, isAwakened } from '../shared/awaken';
 import { farmCount, stashMove } from '../shared/farm';
 import { formSkillOptions } from '../shared/forms';
-import { abilityName, generalDisplayData } from '../display';
+import { abilityName, generalTextData } from '../display';
 import {
   ask, atDrawPhase, choiceOf, discardMoves, draw, handZoneId, heal, hpOf, isHurt, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used,
 } from '../shared/skills';
@@ -624,7 +624,7 @@ function chooseForm(state: GameState, owner: GeneralOwner, registry: ContentRegi
     secret: true,
     options: formSkillOptions(state, owner.seatId, registry).map(({ generalId, skillId }) => ({
       id: `${generalId}/${skillId}`,
-      shows: { kind: 'label' as const, text: `${abilityName(skillId)} (${generalDisplayData(generalId)?.name ?? generalId})` },
+      shows: { kind: 'label' as const, text: `${abilityName(skillId)} (${generalTextData(generalId)?.name ?? generalId})` },
       effects: [
         { kind: 'ChooseFormSkillEffect' as const, seatId: owner.seatId, generalId, skillId },
         used(owner, 'incarnated'),

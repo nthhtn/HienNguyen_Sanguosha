@@ -1,7 +1,7 @@
 import { alternateGeneralRecords } from './alternateGenerals';
 import { generalsData } from '../../data/generals';
 import { GENERAL_SKILLS } from './generals';
-import { skillIdOf } from './display';
+import { skillIdOf } from './skillId';
 import { isNilNote, readyAlternateSkills, CLEARED_WORDING } from './alternateSkills';
 
 const record = (id: string) => {
@@ -27,8 +27,8 @@ describe('readyAlternateSkills', () => {
     expect(readyIds('zhang-fei')).toEqual(['roar']);
     expect(readyAlternateSkills(record('zhang-fei'))[0]).toBe(GENERAL_SKILLS.get('zhang-fei')![0]);
   });
-  it('runs nothing for Liu Bei (changed note)', () => {
-    expect(readyIds('liu-bei')).toEqual([]);
+  it('runs Liu Bei as the Alternate Benevolence variant', () => {
+    expect(readyIds('liu-bei')).toEqual(['alternate:benevolence']);
   });
   it('matches by Chinese name: Zhang Zhao and Zhang Hong get Direct Instruction but not Stubborn', () => {
     const data = generalsData['zhang-zhao-and-zhang-hong'];
@@ -49,7 +49,11 @@ describe('readyAlternateSkills', () => {
       for (const s of readyAlternateSkills(g)) expect(s.lord).not.toBe(true);
     }
   });
-  it('starts with no cleared wording', () => {
-    expect(CLEARED_WORDING).toEqual({});
+  it('clears wording only for skills the Alternate records have', () => {
+    for (const [id, names] of Object.entries(CLEARED_WORDING)) {
+      const rec = alternateGeneralRecords().find((g) => g.id === id);
+      expect(rec).toBeDefined();
+      for (const nameZh of names) expect(rec!.skills.some((s) => s.nameZh === nameZh)).toBe(true);
+    }
   });
 });

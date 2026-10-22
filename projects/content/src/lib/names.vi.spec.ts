@@ -1,4 +1,5 @@
-import { abilityName, cardDisplayData, cardTranslations, generalDisplayData, generalTranslations, skillIdOf } from './display';
+import { abilityName, cardDisplayData, cardTranslations, generalTranslations, skillIdOf } from './display';
+import { generalDisplayData } from './generalDisplay';
 import { cardsData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 

@@ -1,7 +1,6 @@
 import type { CardDefinition, CardPlayedEvent, ContentRegistry, Effect, GameState, PlayOptionsContext, Target } from 'engine';
 import { isChained, livingSeatOrderFrom } from 'engine';
 import { playColour, toolOnTargets } from '../shared/tools';
-import { isRecastable } from '../registry';
 import { untargetableBy } from '../shared/abilities';
 
 const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
@@ -23,10 +22,15 @@ export function isRecast(event: CardPlayedEvent): boolean {
   return isRecastPlay(event.card.as, event.targets) && !event.inResponseTo;
 }
 
+// The cards that may be Recast (the ones whose definition says `recastable`; registry.spec checks the two
+// agree). A plain list rather than a registry lookup: this file must not import the registry, which
+// imports every General's skills, which import this file.
+const RECASTABLE_CARD_IDS: ReadonlySet<string> = new Set(['chains', 'ascertain']);
+
 // Whether playing a card as `as` at `targets` is a Recast (the offer with no
 // target), for labelling the offer before it is played.
 export function isRecastPlay(as: string, targets: readonly Target[]): boolean {
-  return isRecastable(as) && targets.length === 0;
+  return RECASTABLE_CARD_IDS.has(as) && targets.length === 0;
 }
 
 // What a Recast does: its user draws 1 (the engine puts the card itself into the discard pile).

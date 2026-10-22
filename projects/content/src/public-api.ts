@@ -10,6 +10,7 @@ export * from './lib/alternateGenerals';
 export * from './lib/generalIds';
 export * from './lib/wikiAlternateGenerals';
 export * from './lib/display';
+export * from './lib/generalDisplay';
 export * from './lib/judgmentOutcome';
 export { seatGender } from './lib/shared/gender';
 export { equipSlotOf } from './lib/cards/equipment';

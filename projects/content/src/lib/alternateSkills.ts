@@ -2,7 +2,8 @@ import type { SkillDefinition } from 'engine';
 import { generalsData } from '../../data/generals';
 import type { AlternateGeneralRecord, AlternateGeneralSkillRecord } from './alternateGenerals';
 import { GENERAL_SKILLS } from './generals';
-import { skillIdOf } from './display';
+import { skillIdOf } from './skillId';
+import { ALTERNATE_VARIANTS } from './alternateVariants';
 
 // A difference note that says the Alternate General is the same as Default's.
 export const isNilNote = (note: string | null): boolean =>
@@ -23,5 +24,13 @@ export function defaultSkillFor(record: AlternateGeneralRecord, skill: Alternate
   return GENERAL_SKILLS.get(record.id)?.find((d) => d.id === id);
 }
 
+// A registered variant for this Alternate skill, else undefined.
+const alternateVariantSkillFor = (record: AlternateGeneralRecord, skill: AlternateGeneralSkillRecord): SkillDefinition | undefined =>
+  skill.nameZh ? ALTERNATE_VARIANTS[record.id]?.[skill.nameZh] : undefined;
+
+// The SkillDefinition the game plays for this Alternate skill: its variant, else Default's skill when the rules are the same.
+export const alternateSkillFor = (record: AlternateGeneralRecord, skill: AlternateGeneralSkillRecord): SkillDefinition | undefined =>
+  alternateVariantSkillFor(record, skill) ?? defaultSkillFor(record, skill);
+
 export const readyAlternateSkills = (record: AlternateGeneralRecord): SkillDefinition[] =>
-  record.skills.flatMap((s) => defaultSkillFor(record, s) ?? []);
+  record.skills.flatMap((s) => alternateSkillFor(record, s) ?? []);

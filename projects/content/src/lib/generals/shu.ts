@@ -109,8 +109,9 @@ const healedKey = (owner: GeneralOwner) => `${abilityUseKey(owner)}/healed`;
 
 // Kindness (active, any number of times): in your Play Phase you may give any
 // of your hand cards to another seat. Once per turn, when the total given this
-// turn first reaches 2 or more, you recover 1 HP.
-export const kindness: SkillDefinition = {
+// turn first reaches `threshold` or more, you recover 1 HP. Default's threshold is 2;
+// the Alternate Benevolence variant uses 3.
+export const makeKindness = (threshold: number): SkillDefinition => ({
   id: 'kindness',
   active: {
     canUse: (state, { seatId }) => handOf(state, seatId).length > 0 && otherLivingSeatIds(state, seatId).length > 0,
@@ -127,10 +128,12 @@ export const kindness: SkillDefinition = {
   },
   onStep: (state, step) => {
     const uses = state.turn.abilityUses ?? {};
-    if ((uses[givenKey(step.owner)] ?? 0) < 2 || uses[healedKey(step.owner)]) return [];
+    if ((uses[givenKey(step.owner)] ?? 0) < threshold || uses[healedKey(step.owner)]) return [];
     return [{ kind: 'IncrementEffect', scope: 'turn', key: healedKey(step.owner), by: 1 }, heal(step.owner.seatId)];
   },
-};
+});
+
+export const kindness: SkillDefinition = makeKindness(2);
 
 // Fierce General: a Lord skill, inactive in Kingdom War.
 export const fierceGeneral: SkillDefinition = { id: 'fierce-general', lord: true };

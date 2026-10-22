@@ -549,6 +549,7 @@ export const en = {
   'wiki.lordNote': 'Not used in Kingdom War',
   'wiki.skillStatus.working': 'Working',
   'wiki.skillStatus.worksAsDefault': 'Works as Default',
+  'wiki.skillStatus.worksAsAlternate': 'Works as in Alternate',
   'wiki.partners': 'Synergistic Partners',
   'wiki.differenceNote': 'Difference From the Standard Game',
   'wiki.alternateGenerals.summary': "{count} Generals · {withDefault} with every skill running Default's version",

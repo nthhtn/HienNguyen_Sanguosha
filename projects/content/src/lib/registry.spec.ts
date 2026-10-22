@@ -4,6 +4,7 @@ import { alternateGeneralRecords } from './alternateGenerals';
 import { readyAlternateSkills } from './alternateSkills';
 import { alternateGeneralId, isAlternateGeneralId } from './generalIds';
 import { buildContentRegistry } from './registry';
+import { isRecastPlay } from './cards/chains';
 
 const defaultGenerals = () => [...buildContentRegistry().generals.values()].filter((g) => !isAlternateGeneralId(g.id));
 
@@ -87,7 +88,7 @@ describe('buildContentRegistry', () => {
 
     it('gives ready skills only', () => {
       expect(registry.generals.get('alternate:zhang-fei')!.skills.map((s) => s.id)).toEqual(['roar']);
-      expect(registry.generals.get('alternate:liu-bei')!.skills).toEqual([]);
+      expect(registry.generals.get('alternate:liu-bei')!.skills.map((s) => s.id)).toEqual(['alternate:benevolence']);
       for (const rec of alternateGeneralRecords()) {
         const ready = readyAlternateSkills(rec).map((s) => s.id);
         expect(registry.generals.get(alternateGeneralId(rec.id))!.skills.map((s) => s.id)).toEqual(ready);
@@ -104,5 +105,11 @@ describe('buildContentRegistry', () => {
     it('looks up a vanilla Alternate General', () => {
       expect(lookupGeneral(registry, 'alternate:zou-shi').skills).toEqual([]);
     });
+  });
+});
+
+describe('Recast list', () => {
+  it('agrees with the cards that are recastable', () => {
+    for (const [id, def] of buildContentRegistry().cards) expect(isRecastPlay(id, [])).toBe(def.recastable === true);
   });
 });

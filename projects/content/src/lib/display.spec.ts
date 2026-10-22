@@ -1,4 +1,5 @@
-import { abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, generalDisplayData, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
+import { abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
+import { generalDisplayData } from './generalDisplay';
 import { alternateCardIds } from './alternateCards';
 import viAlternateGenerals from '../../data/locales/vi/alternate-generals.json';
 
@@ -41,6 +42,16 @@ describe('generalDisplayData', () => {
 
   it('returns null for an unknown Alternate id', () => {
     expect(generalDisplayData('alternate:nobody')).toBeNull();
+  });
+});
+
+describe('abilityName for Alternate skills', () => {
+  it('names an alternate: skill by the Alternate record, in each language', () => {
+    expect(abilityName('alternate:benevolence')).toBe('Benevolence');
+    expect(abilityName('alternate:benevolence', 'vi')).toBe(viAlternateGenerals['liu-bei'].skills!['benevolence'].name);
+  });
+  it('still names Default Kindness', () => {
+    expect(abilityName('kindness')).toBe('Kindness');
   });
 });
 

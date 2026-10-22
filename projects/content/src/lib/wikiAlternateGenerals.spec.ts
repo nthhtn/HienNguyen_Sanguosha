@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { buildContentRegistry } from './registry';
-import { defaultSkillFor } from './alternateSkills';
+import { alternateSkillFor } from './alternateSkills';
 import { alternateGeneralIds, alternateGeneralRecords } from './alternateGenerals';
 import { alternateSkillStatus, wikiAlternateGeneralTabs, wikiAlternateGenerals } from './wikiAlternateGenerals';
 
@@ -13,21 +13,21 @@ describe('alternateSkillStatus', () => {
     expect(alternateSkillStatus(record('zhang-fei'), record('zhang-fei').skills[0])).toBe('worksAsDefault');
   });
 
-  it('is missing for Liu Bei’s Benevolence, whose difference note is not nil', () => {
-    expect(alternateSkillStatus(record('liu-bei'), record('liu-bei').skills[0])).toBe('missing');
+  it('works as Alternate for Liu Bei’s Benevolence, which has a variant', () => {
+    expect(alternateSkillStatus(record('liu-bei'), record('liu-bei').skills[0])).toBe('worksAsAlternate');
   });
 
   it('is missing for Zhang Zhao’s Stabilization, which has no Default counterpart', () => {
     expect(alternateSkillStatus(record('zhang-zhao-and-zhang-hong'), skillOf('zhang-zhao-and-zhang-hong', 'Stabilization'))).toBe('missing');
   });
 
-  it('is worksAsDefault exactly when the matching alternate: General has that skill in the registry', () => {
+  it('is not missing exactly when the matching alternate: General has that skill in the registry', () => {
     const registry = buildContentRegistry();
     for (const rec of alternateGeneralRecords()) {
       const registered = registry.generals.get(`alternate:${rec.id}`)!.skills.map((s) => s.id);
       for (const skill of rec.skills) {
-        const def = defaultSkillFor(rec, skill);
-        expect(alternateSkillStatus(rec, skill) === 'worksAsDefault').toBe(def !== undefined);
+        const def = alternateSkillFor(rec, skill);
+        expect(alternateSkillStatus(rec, skill) !== 'missing').toBe(def !== undefined);
         if (def) expect(registered).toContain(def.id);
       }
     }
