@@ -29,6 +29,7 @@
     "lightning-strike": "Một người chơi bạn chọn phán xét: nếu là lá bích, chịu 2 sát thương sét",
     "dark-magic": "Thay lá phán xét của {target} bằng một lá đen, và lấy lá cũ",
     "eternal-loyalty": "Một người chơi bạn chọn rút bài đến Sinh lực tối đa",
+    "alternate:eternal-loyalty": "Một người chơi bạn chọn rút bài đến Sinh lực tối đa, nhưng không quá 5 lá",
     "nirvana": "Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3 và lật lại",
     "eight-arrays": "Phán xét: nếu là lá đỏ, nó tính là một Thiểm",
     "sudden-attack": "Bỏ một lá bài của {target}",

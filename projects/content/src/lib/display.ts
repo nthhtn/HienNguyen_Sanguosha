@@ -187,6 +187,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'lightning-strike': 'A seat of your choice judges: on a spade it takes 2 thunder damage',
   'dark-magic': "Replace {target}'s judgment card with a black card, and take the old one",
   'eternal-loyalty': 'A seat of your choice draws up to its max HP',
+  'alternate:eternal-loyalty': 'A seat of your choice draws up to its max HP, but never above 5 cards',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',
   'sudden-attack': "Discard one of {target}'s cards",

@@ -99,8 +99,9 @@ export const rouseTheTiger: SkillDefinition = {
 const loyaltyAsk = (owner: GeneralOwner, left: number): Effect => ask(owner, [skillStep(owner, 'pick', { left })], left > 1 ? [loyaltyAsk(owner, left - 1)] : []);
 
 // Eternal Loyalty (may, per point of damage you take): pick any living seat,
-// you included; it draws until it holds as many hand cards as its max HP.
-export const eternalLoyalty: SkillDefinition = {
+// you included; it draws until it holds as many hand cards as its max HP. Default
+// has no cap; the Alternate variant never raises the hand above `handCap`.
+export const makeEternalLoyalty = (handCap = Infinity): SkillDefinition => ({
   id: 'eternal-loyalty',
   triggers: [
     on<DamageDealtEvent>('after:DamageDealtEvent', {
@@ -115,12 +116,14 @@ export const eternalLoyalty: SkillDefinition = {
     const living = [...state.seats].filter((s) => !s.eliminated).sort((a, b) => a.index - b.index);
     const drawUp = (id: string): Effect[] => {
       const seat = state.seats.find((s) => s.id === id)!;
-      const short = Math.max(0, seat.maxCombinedHp - handOf(state, id).length);
+      const short = Math.max(0, Math.min(seat.maxCombinedHp, handCap) - handOf(state, id).length);
       return [used(owner, 'drew-up', id), ...(short > 0 ? [draw(id, short)] : []), ...(left > 1 ? [loyaltyAsk(owner, left - 1)] : [])];
     };
     return [choiceOf(state, owner, { verb: 'pick', options: seatOptions(living.map((s) => s.id), drawUp) })];
   },
-};
+});
+
+export const eternalLoyalty: SkillDefinition = makeEternalLoyalty();
 
 type Dying = Extract<Effect, { kind: 'DyingEffect' }>;
 
