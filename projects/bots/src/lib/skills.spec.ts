@@ -22,6 +22,10 @@ describe('a compulsory skill’s ask', () => {
   it('Alternate Warrior Lady, a may ask, gets the same legal answer', () => {
     expect(picked(decide(asking(table(), 'alternate:warrior-lady')))).toBe('use');
   });
+
+  it('Alternate Envious Moon draws, as Default does', () => {
+    expect(picked(decide(asking(table(), 'alternate:envious-moon')))).toBe('use');
+  });
 });
 
 describe('Unyielding', () => {

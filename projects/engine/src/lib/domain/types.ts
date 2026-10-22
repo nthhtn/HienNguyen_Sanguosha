@@ -289,6 +289,8 @@ export interface UsedCard {
   // The damage nature it carries: set only on a card used as itself whose
   // definition has one (a Fire Attack is a fire Sha). A converted card has none.
   nature?: 'fire' | 'thunder';
+  // No Wuxie or Wuxie Kingdom check is made for this Tool use (Alternate Seed of Animosity's Duel).
+  noWuxie?: true;
 }
 
 // Who reads a judgment: a card through its definition's onJudged (a delayed

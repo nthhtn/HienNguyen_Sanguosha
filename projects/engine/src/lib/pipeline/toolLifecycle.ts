@@ -87,6 +87,8 @@ function subjectKey(subject: WuxieSubject): string {
 
 function applyWuxieCheck(state: GameState, effect: Extract<Effect, { kind: 'WuxieCheckEffect' }>, registry: ContentRegistry): ApplyResult {
   const subject = effect.subject;
+  // A Tool use marked noWuxie is never checked (a counter card is always checkable).
+  if (subject.kind === 'tool' && subject.tool.noWuxie) return { state, events: [] };
   const reason: DecisionReason =
     subject.kind === 'tool'
       ? { kind: 'wuxie', tool: subject.tool, toolUserSeatId: subject.userSeatId, target: subject.target }

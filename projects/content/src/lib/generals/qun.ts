@@ -5,7 +5,7 @@ import type { GeneralSkillSet } from './types';
 import { handOf } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
 import { seatGender } from '../shared/gender';
-import { choiceOf, discardMoves, draw, heal, isHurt, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, discardMoves, draw, heal, isHurt, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Qun base Generals' skills (General Skills spec, "Qun"). Every skill acts
 // for the `owner` the engine passes in, never by searching for its General.
@@ -55,12 +55,13 @@ const challengeable = (state: GameState, seatId: string, registry: ContentRegist
   males(state, seatId, registry).filter((id) => !untargetableBy(state, id, 'duel', registry) && males(state, seatId, registry, [id]).length > 0);
 
 // The Duel Sow Discord makes: no physical card.
-const SOW_DISCORD_DUEL: UsedCard = { as: 'duel', colour: 'none', physical: [] };
+const sowDiscordDuel = (wuxieable: boolean): UsedCard => ({ as: 'duel', colour: 'none', physical: [], ...(wuxieable ? {} : { noWuxie: true as const }) });
 
 // Sow Discord (active, once per turn): discard 1 card and choose two other male
 // seats, in order. The second uses a Duel on the first, as if it had played
-// one (the usual Wuxie check and Duel rules).
-export const sowDiscord: SkillDefinition = {
+// one. `wuxieable`: Default's Duel gets the usual Wuxie check; Alternate Seed of
+// Animosity's cannot be answered by Wuxie or Wuxie Kingdom.
+export const makeSowDiscord = (wuxieable: boolean): SkillDefinition => ({
   id: 'sow-discord',
   active: {
     usesPerTurn: 1,
@@ -83,24 +84,27 @@ export const sowDiscord: SkillDefinition = {
         const first = step.data?.['first'] as string;
         const seconds = males(state, owner.seatId, registry, [first]);
         if (!isLiving(state, first) || seconds.length === 0) return [];
-        const duelFrom = (id: string) => [{ kind: 'UseCardEffect' as const, seatId: id, card: SOW_DISCORD_DUEL, targets: [{ kind: 'seat' as const, seatId: first }] }];
+        const duelFrom = (id: string) => [{ kind: 'UseCardEffect' as const, seatId: id, card: sowDiscordDuel(wuxieable), targets: [{ kind: 'seat' as const, seatId: first }] }];
         return [choiceOf(state, owner, { verb: 'pick', targetSeatId: first, options: seatOptions(seconds, duelFrom) })];
       }
     }
   },
-};
+});
+export const sowDiscord: SkillDefinition = makeSowDiscord(true);
 
-// Eclipse the Moon (compulsory): at the start of your End Phase, you draw 1.
-export const eclipseTheMoon: SkillDefinition = {
+// Eclipse the Moon: at the start of your End Phase, you draw 1. Default is
+// compulsory; `optional` (Alternate Envious Moon) asks first.
+export const makeEclipseTheMoon = (optional: boolean): SkillDefinition => ({
   id: 'eclipse-the-moon',
-  compulsory: true,
+  ...(optional ? {} : { compulsory: true }),
   triggers: [
     on<PhaseChangedEvent>('after:PhaseChangedEvent', {
       condition: (_state, event, owner) => event.phase === 'End' && event.seatId === owner.seatId,
-      effect: (_state, _event, owner) => [used(owner), draw(owner.seatId, 1)],
+      effect: (_state, _event, owner) => (optional ? [ask(owner, [used(owner), draw(owner.seatId, 1)])] : [used(owner), draw(owner.seatId, 1)]),
     }),
   ],
-};
+});
+export const eclipseTheMoon: SkillDefinition = makeEclipseTheMoon(false);
 
 export const QUN_GENERALS: GeneralSkillSet[] = [
   { id: 'diao-chan', skills: [sowDiscord, eclipseTheMoon] },
