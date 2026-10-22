@@ -167,3 +167,38 @@ describe('Alternate Lu Xun, Humility', () => {
     expect(zone(h.play(t, 'cp', 'seat-d'), 'seat-d:judgment')).toEqual(['cp']);
   });
 });
+
+describe('Alternate Zhang Zhao and Zhang Hong, Stabilization', () => {
+  // seat-b's Discard Phase with `count` cards discarded; seat-a is the General under test.
+  const phase = (general: string, count: number) => {
+    const cards = Array.from({ length: 4 + count }, (_, i) => card(`k${i + 1}`, 'shan', 'heart', i + 1));
+    const s = h.act(table({ 'seat-b:hand': cards }, { generals: at('seat-a', general), owner: 'seat-b' }), { kind: 'EndPhaseAction', seatId: 'seat-b' });
+    return Array.from({ length: count }, (_, i) => `k${i + 1}`).reduce((acc, cid) => h.act(acc, { kind: 'DiscardCardAction', seatId: 'seat-b', cardInstanceId: cid }), s);
+  };
+  const alt = 'alternate:zhang-zhao-and-zhang-hong';
+
+  it('with exactly 1 discarded card is asked, gives it back and takes nothing', () => {
+    let s = phase(alt, 1);
+    expect(askedAbout(s)).toBe('alternate:stabilization');
+    s = h.choose(h.use(s), 'k1');
+    expect(handIds(s, 'seat-b')).toContain('k1');
+    expect(handIds(s, 'seat-a')).toEqual([]);
+  });
+
+  it('with 3 discarded gives 1 back and takes the other 2', () => {
+    const s = h.choose(h.use(phase(alt, 3)), 'k2');
+    expect(handIds(s, 'seat-b')).toContain('k2');
+    expect(handIds(s, 'seat-a')).toEqual(['k1', 'k3']);
+  });
+
+  it('is not asked when nothing was discarded', () => {
+    const cards = Array.from({ length: 3 }, (_, i) => card(`k${i + 1}`, 'shan', 'heart', i + 1));
+    const s = h.act(table({ 'seat-b:hand': cards }, { generals: at('seat-a', alt), owner: 'seat-b' }), { kind: 'EndPhaseAction', seatId: 'seat-b' });
+    expect(askedAbout(s)).toBeNull();
+  });
+
+  it('Default Zhang Zhao is not asked at 1 discarded card, but is at 2', () => {
+    expect(askedAbout(phase('zhang-zhao-and-zhang-hong', 1))).toBeNull();
+    expect(askedAbout(phase('zhang-zhao-and-zhang-hong', 2))).toBe('stubborn');
+  });
+});

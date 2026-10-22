@@ -1,4 +1,5 @@
 import type { SkillDefinition } from 'engine';
+import { makeStubborn } from './stubborn';
 import { makeArmedConsorts, makeHumility, makeReconsider } from './wu';
 
 // Alternate Wu skills whose rules differ from Default's, by General id then the Chinese skill name.
@@ -17,4 +18,6 @@ export const ALTERNATE_WU_VARIANTS: Readonly<Record<string, Readonly<Record<stri
   },
   // Humility: he can be chosen by Steal and Capture, which are cancelled for him (Default: can't be chosen).
   'lu-xun': { 谦逊: { ...makeHumility(true), id: 'alternate:humility' } },
+  // Stabilization: works with exactly 1 discarded card too (Default: 2 or more).
+  'zhang-zhao-and-zhang-hong': { 固政: { ...makeStubborn(1), id: 'alternate:stabilization' } },
 };

@@ -17,8 +17,8 @@ describe('alternateSkillStatus', () => {
     expect(alternateSkillStatus(record('liu-bei'), record('liu-bei').skills[0])).toBe('worksAsAlternate');
   });
 
-  it('is missing for Zhang Zhao’s Stabilization, which has no Default counterpart', () => {
-    expect(alternateSkillStatus(record('zhang-zhao-and-zhang-hong'), skillOf('zhang-zhao-and-zhang-hong', 'Stabilization'))).toBe('missing');
+  it('works as Alternate for Zhang Zhao’s Stabilization, which has a variant', () => {
+    expect(alternateSkillStatus(record('zhang-zhao-and-zhang-hong'), skillOf('zhang-zhao-and-zhang-hong', 'Stabilization'))).toBe('worksAsAlternate');
   });
 
   it('is not missing exactly when the matching alternate: General has that skill in the registry', () => {

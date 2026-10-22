@@ -25,6 +25,7 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:seed-of-animosity': 'sow-discord',
   'alternate:envious-moon': 'eclipse-the-moon',
   'alternate:empty-city': 'empty-city',
+  'alternate:stabilization': 'stubborn',
   'alternate:humility': 'humility',
   'alternate:behind-the-curtain': 'curtain',
   // Bots only: it asks like Bestowed Rouse; its own prompts and hints are in display.ts.

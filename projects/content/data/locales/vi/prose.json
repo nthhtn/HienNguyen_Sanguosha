@@ -46,6 +46,7 @@
     "military-farm": "Phán xét: lá không phải cơ trở thành Điền dưới Tướng của bạn",
     "decentralization": "Bỏ qua giai đoạn ra bài; cuối lượt của bạn, một người chơi khác có thêm một lượt",
     "stubborn": "Trả lại một trong các lá bài đã bỏ và lấy phần còn lại",
+    "alternate:stabilization": "Trả lại một trong các lá bài đã bỏ và lấy phần còn lại, nếu có",
     "lament": "Bỏ một lá bài: {target} phán xét, và lá cơ, rô, chuồn hoặc bích có hiệu lực tương ứng",
     "incarnation": "Chọn một kỹ năng của một Hóa thân của bạn",
     "instigate": "Chọn một người chơi đánh Sát vào bạn, hoặc bạn bỏ một lá bài của họ",
@@ -97,6 +98,7 @@
     "follow-the-master": "Chọn cách Follow the Master giúp bạn",
     "incarnation": "Chọn một kỹ năng Hóa thân",
     "stubborn": "Chọn một lá bài để trả lại; bạn lấy các lá còn lại",
+    "alternate:stabilization": "Chọn một lá bài để trả lại; bạn lấy các lá còn lại, nếu có",
     "alternate:bequeathed-strategy": "Chọn một lá bài để đưa trước; lá còn lại được đưa sau"
   },
   "stepSelection": {

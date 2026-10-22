@@ -30,12 +30,13 @@ describe('readyAlternateSkills', () => {
   it('runs Liu Bei as the Alternate Benevolence variant', () => {
     expect(readyIds('liu-bei')).toEqual(['alternate:benevolence']);
   });
-  it('matches by Chinese name: Zhang Zhao and Zhang Hong get Direct Instruction but not Stubborn', () => {
+  it('matches by Chinese name: Zhang Zhao and Zhang Hong get Direct Instruction and Stabilization but not Stubborn', () => {
     const data = generalsData['zhang-zhao-and-zhang-hong'];
     const direct = skillIdOf(data.skills.find((s) => s.nameZh === '直谏')!.name);
     const stubborn = skillIdOf(data.skills.find((s) => s.nameZh === '固执')!.name);
     const ids = readyIds('zhang-zhao-and-zhang-hong');
     expect(ids).toContain(direct);
+    expect(ids).toContain('alternate:stabilization');
     expect(ids).not.toContain(stubborn);
   });
   it('runs nothing for Generals missing from Default, without throwing', () => {

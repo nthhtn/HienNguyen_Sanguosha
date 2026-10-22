@@ -204,6 +204,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'military-farm': 'Judge: a card that is not a heart becomes a Farm under your General',
   decentralization: 'Skip your Play Phase; at the end of your turn another seat takes an extra turn',
   stubborn: 'Give one of the discarded cards back and take the rest',
+  'alternate:stabilization': 'Give one of the discarded cards back and take the rest, if there are any',
   lament: 'Discard a card: {target} judges, and a heart, diamond, club or spade has its effect',
   incarnation: 'Choose a skill of one of your Forms',
   instigate: 'Choose a seat to play a Slash at you, or you discard one of its cards',
@@ -275,6 +276,7 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
   'follow-the-master': 'Choose how Follow the Master helps you',
   incarnation: 'Choose a Form skill',
   stubborn: 'Choose a card to give back; you take the others',
+  'alternate:stabilization': 'Choose a card to give back; you take the others, if there are any',
   'alternate:bequeathed-strategy': 'Choose a card to give first; the other is given next',
 };
 
