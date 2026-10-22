@@ -1,6 +1,6 @@
-import { generalsData, type GeneralData } from '../../data/generals';
-import { alternateGeneralRecords, type AlternateGeneralRecord } from './alternateGenerals';
-import { CODED_SKILL_IDS, skillIdFromName, splitIntoTabs, type WikiTab } from './wiki';
+import { alternateGeneralRecords, type AlternateGeneralRecord, type AlternateGeneralSkillRecord } from './alternateGenerals';
+import { defaultSkillFor } from './alternateSkills';
+import { splitIntoTabs, type WikiTab } from './wiki';
 
 // Whether the game can play an Alternate skill. It plays Default's version, not the Alternate
 // wording, so the state is not "working": it says the game runs the Default counterpart.
@@ -28,17 +28,9 @@ export interface WikiAlternateGeneral {
   skillsRunAsDefault: boolean;
 }
 
-// An Alternate skill works as Default when the General's Default counterpart has a skill that is not
-// a Lord skill, matches it (by Chinese name when both have one, else by name), and has code.
-export function alternateSkillStatus(
-  skill: { name: string; nameZh: string | null },
-  counterpart: GeneralData | undefined,
-  coded: ReadonlySet<string> = CODED_SKILL_IDS,
-): AlternateSkillStatus {
-  const match = counterpart?.skills.find(
-    (d) => !d.lord && ((!!skill.nameZh && !!d.nameZh && skill.nameZh === d.nameZh) || skillIdFromName(skill.name) === skillIdFromName(d.name)),
-  );
-  return match && coded.has(skillIdFromName(match.name)) ? 'worksAsDefault' : 'missing';
+// An Alternate skill works as Default exactly when the game plays it: defaultSkillFor finds Default's skill.
+export function alternateSkillStatus(record: AlternateGeneralRecord, skill: AlternateGeneralSkillRecord): AlternateSkillStatus {
+  return defaultSkillFor(record, skill) ? 'worksAsDefault' : 'missing';
 }
 
 const KINGDOMS: Record<AlternateGeneralRecord['force'], WikiAlternateGeneral['kingdom']> = { wei: 'Wei', shu: 'Shu', wu: 'Wu', qun: 'Qun' };
@@ -47,11 +39,7 @@ const KINGDOM_ORDER: readonly WikiAlternateGeneral['kingdom'][] = ['Wei', 'Shu',
 export function wikiAlternateGenerals(): WikiAlternateGeneral[] {
   return alternateGeneralRecords()
     .map((rec): WikiAlternateGeneral => {
-      const counterpart = Object.prototype.hasOwnProperty.call(generalsData, rec.id) ? generalsData[rec.id] : undefined;
-      const skills = rec.skills.map((s) => {
-        const nameZh = s.nameZh ?? null;
-        return { name: s.name, nameZh, text: s.text, status: alternateSkillStatus({ name: s.name, nameZh }, counterpart) };
-      });
+      const skills = rec.skills.map((s) => ({ name: s.name, nameZh: s.nameZh ?? null, text: s.text, status: alternateSkillStatus(rec, s) }));
       return {
         id: rec.id,
         name: rec.name,
