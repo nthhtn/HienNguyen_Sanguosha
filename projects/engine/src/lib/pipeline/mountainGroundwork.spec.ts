@@ -303,5 +303,13 @@ describe('a choice left to an eliminated seat (an afterDeath skill asks its play
     expect(getActiveSeatId(selecting as GameState)).toBeNull();
     expect(getLegalActions(selecting as GameState, 'b', registry)).toEqual([]);
     expect(getLegalActions({ ...dead, turn: { ...dead.turn, ownerSeatId: 'b' } }, 'b', registry)).toEqual([]);
+    const responding = { ...dead, pendingResponse: { id: 'r1', respondingSeatId: 'b', allowedActionKinds: ['PassAction'], context: { effect: { kind: 'SkipNextEffect' as const } } } } as GameState;
+    expect([getActiveSeatId(responding), getLegalActions(responding, 'b', registry)]).toEqual([null, []]);
+  });
+
+  it('a choice an eliminated seat is named in, opened by another seat’s skill, waits for no one', () => {
+    const others = { ...dead, pendingChoice: { ...choice('b'), reason: { kind: 'ability' as const, owner: { ...owner, seatId: 'a' }, abilityId: 'parting' } } };
+    expect(getActiveSeatId(others)).toBeNull();
+    expect(getLegalActions(others, 'b', registry)).toEqual([]);
   });
 });

@@ -4,7 +4,7 @@ import { answersAs } from '../domain/usedCard';
 import { ContentRegistry, Conversion, PlayOptionsContext, TargetPick } from '../registry/types';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { sameValue } from './offered';
-import { decisionPending, getActiveSeatId } from './activeSeat';
+import { decisionPending, getActiveSeatId, ownSkillChoice } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
 import { discardOwed } from './phaseSequence';
 
@@ -23,10 +23,13 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
 
   // An unknown or eliminated seat can never act, whether or not it happens to
   // be named as the turn owner or as a pending response's responder; but an
-  // eliminated seat makes a choice left to it (an afterDeath skill asks its player).
+  // eliminated seat makes a choice its own skill opened (ownSkillChoice: an afterDeath skill asks its player).
   const actingSeat = state.seats.find((s) => s.id === seatId);
   if (!actingSeat) return [];
-  if (actingSeat.eliminated) return state.pendingChoice?.seatId === seatId && !state.judgmentView?.settled && state.phase !== 'GeneralSelection' ? chooseOptions(state.pendingChoice, seatId) : [];
+  if (actingSeat.eliminated) {
+    const choice = state.pendingChoice;
+    return choice?.seatId === seatId && ownSkillChoice(choice) && !state.judgmentView?.settled && state.phase !== 'GeneralSelection' ? chooseOptions(choice, seatId) : [];
+  }
 
   if (state.phase === 'GeneralSelection') {
     if (getActiveSeatId(state) !== seatId) return [];
