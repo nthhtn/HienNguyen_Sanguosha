@@ -2,7 +2,7 @@ import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 import { alternateCardData } from './alternateCards';
 import { alternateGeneralRecords } from './alternateGenerals';
-import { alternateGeneralId } from './generalIds';
+import { alternateGeneralId, baseGeneralId, isAlternateGeneralId } from './generalIds';
 import viCards from '../../data/locales/vi/cards.json';
 import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
 import viGenerals from '../../data/locales/vi/generals.json';
@@ -95,6 +95,10 @@ export interface GeneralDisplayData {
 // Presentation-facing view of a general's data file, so UI code never imports
 // raw content JSON.
 export function generalDisplayData(id: string, locale = 'en'): GeneralDisplayData | null {
+  if (isAlternateGeneralId(id)) {
+    const alternate = alternateGeneralDisplayData(baseGeneralId(id), locale);
+    return alternate && { name: alternate.name, title: alternate.title, skills: alternate.skills };
+  }
   if (!Object.prototype.hasOwnProperty.call(generalsData, id)) return null;
   const data = generalsData[id];
   const translated = lookup(generalTranslations(locale), id);

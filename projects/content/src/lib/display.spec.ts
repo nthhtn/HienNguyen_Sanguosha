@@ -1,5 +1,6 @@
 import { abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, generalDisplayData, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
 import { alternateCardIds } from './alternateCards';
+import viAlternateGenerals from '../../data/locales/vi/alternate-generals.json';
 
 describe('generalDisplayData', () => {
   it('returns name, title and skill name/text for a known general', () => {
@@ -18,6 +19,19 @@ describe('generalDisplayData', () => {
 
   it('returns null for an unknown id', () => {
     expect(generalDisplayData('no-such-general')).toBeNull();
+  });
+
+  it("reads an Alternate General's own name and skills", () => {
+    expect(generalDisplayData('alternate:guan-yu')?.skills[0].name).toBe('Warrior Saint');
+    expect(generalDisplayData('guan-yu')?.skills[0].name).toBe('Fighting Saint');
+  });
+
+  it('translates an Alternate General', () => {
+    expect(generalDisplayData('alternate:guan-yu', 'vi')?.name).toBe(viAlternateGenerals['guan-yu'].name);
+  });
+
+  it('returns null for an unknown Alternate id', () => {
+    expect(generalDisplayData('alternate:nobody')).toBeNull();
   });
 });
 
