@@ -261,7 +261,7 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   'clever-change': 'Choose a seat to move the card to',
   decentralization: 'Choose a seat to take an extra turn',
   'direct-instruction': 'Choose a seat to place the card in',
-  'alternate:bequeathed-strategy': 'Choose a seat to give the card to',
+  'alternate:bequeathed-strategy': 'Choose a seat to give {card} to',
 };
 
 export function seatPickText(abilityId: string, locale = 'en'): string | null {

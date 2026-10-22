@@ -100,6 +100,11 @@ describe('describeChoice', () => {
     expect(describeChoice(state(skill('brave-spirit', 'pick', undefined, seats)), 'seat-0')!.prompt).toBe('Choose a seat to draw and discard cards');
     expect(describeChoice(state(skill('alliance', 'pick', 'seat-1', seats)), 'seat-0')!.prompt).toBe('Choose a seat to swap hands with Seat 1');
   });
+
+  it('names the card being given, with its face', () => {
+    const card = { instanceId: 'c1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
+    const seats: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [], card }];
+    expect(describeChoice(state(skill('alternate:bequeathed-strategy', 'pick', undefined, seats)), 'seat-0')!.prompt).toBe('Choose a seat to give Slash (7 ♠) to');
 });
 
 describe('choiceOptionLabel', () => {

@@ -67,10 +67,10 @@ function hideOthersSecretChoices<T>(value: T, viewerSeatId: string): T {
 
 // The hidden cards a pending choice may show its viewer: none, unless it is the
 // viewer's own secret choice (Ascertain's look at another seat's hand), whose
-// shown cards it sees there, and only there.
+// shown cards (or an option's `card`) it sees there, and only there.
 function hiddenInChoice(choice: PendingChoice, viewerSeatId: string, hidden: ReadonlySet<string>): ReadonlySet<string> {
   if (!choice.secret || choice.seatId !== viewerSeatId) return hidden;
-  const shown = new Set(choice.options.flatMap((o) => (o.shows.kind === 'card' ? [o.shows.card.instanceId] : [])));
+  const shown = new Set(choice.options.flatMap((o) => [...(o.shows.kind === 'card' ? [o.shows.card.instanceId] : []), ...(o.card ? [o.card.instanceId] : [])]));
   return new Set([...hidden].filter((id) => !shown.has(id)));
 }
 

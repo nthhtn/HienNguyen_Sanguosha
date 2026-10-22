@@ -39,8 +39,11 @@ describe('Alternate Bequeathed Strategy', () => {
     expect(picked(decide(asking(table(), id)))).toBe('use');
     expect(picked(decide(picking([{ id: 'c1', shows: { kind: 'card', card: card('c1', 'shan') }, effects: [] }, { id: 'c2', shows: { kind: 'card', card: card('c2', 'sha') }, effects: [] }])))).toBe('c1');
     const seats = ['seat-a', 'seat-b', 'seat-c', 'seat-d'].map((seatId) => ({ id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [] }));
-    const to = picked(decide(picking(seats)));
-    expect(['seat-a', 'seat-b', 'seat-c', 'seat-d']).toContain(to);
+    // No ally known: it keeps the card (its own seat).
+    expect(picked(decide(picking(seats)))).toBe('seat-a');
+    // An ally (same kingdom as the bot, seat-c): the card goes to that exact seat.
+    const allied = { ...table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-c': 'Wei' } }), pendingChoice: picking(seats).pendingChoice };
+    expect(picked(decide(allied))).toBe('seat-c');
   });
 });
 

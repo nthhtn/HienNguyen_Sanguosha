@@ -19,6 +19,7 @@ export const vi: Messages = {
   'choice.confirm.give': 'Đưa',
   'choice.confirm.choose': 'Chọn',
   'choice.give': 'Chọn người nhận các lá bài',
+  'choice.aCard': 'một lá bài',
   'choice.aSeat': 'một người chơi',
   'choice.pick.seat': 'Chọn một người chơi',
   'choice.pick.suit': 'Gọi tên một chất',

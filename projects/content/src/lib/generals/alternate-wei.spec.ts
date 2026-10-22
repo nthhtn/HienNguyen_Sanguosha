@@ -120,7 +120,10 @@ describe('Alternate Guo Jia, Bequeathed Strategy', () => {
   it('the log says only that he used it', () => {
     const s = h.choose(h.choose(h.choose(h.use(h.run(guoJia('alternate:guo-jia'), dmg(1))), 'p0'), 'seat-b'), 'seat-c');
     expect(abilityLog(s)).toHaveLength(1);
-    expect(s.log.filter((e) => e.kind === 'ChoiceMadeEvent' && e.reason.kind === 'ability' && e.reason.abilityId === id && e.shows.kind !== 'use').every((e) => e.kind === 'ChoiceMadeEvent' && e.secret)).toBe(true);
+    const picks = s.log.filter((e) => e.kind === 'ChoiceMadeEvent' && e.reason.kind === 'ability' && e.reason.abilityId === id && e.shows.kind !== 'use');
+    expect(picks).toHaveLength(3);
+    expect(picks.every((e) => e.kind === 'ChoiceMadeEvent' && e.secret)).toBe(true);
+    expect(JSON.stringify(picks)).not.toContain('"definitionId":"shan"');
   });
 
   it('only he sees the cards: another seat\'s view shows no options and the pile stays masked', () => {
@@ -130,6 +133,37 @@ describe('Alternate Guo Jia, Bequeathed Strategy', () => {
     const other = redactStateForSeat(s, 'seat-b');
     expect(other.pendingChoice!.options).toEqual([]);
     expect(JSON.stringify(other)).not.toContain('"definitionId":"shan"');
+  });
+
+  // The card each seat option carries: its id and its face (definitionId), or null.
+  const carried = (s: GameState) => s.pendingChoice!.options.map((o) => (o.card ? { id: o.card.instanceId, face: o.card.definitionId } : null));
+
+  it('the first recipient prompt shows Guo Jia the card he is giving, and the other seats nothing', () => {
+    const s = h.choose(h.use(h.run(guoJia('alternate:guo-jia'), dmg(1))), 'p1');
+    const mine = redactStateForSeat(s, 'seat-a').pendingChoice!;
+    expect(mine.options.map((o) => o.id)).toEqual(['seat-a', 'seat-b', 'seat-c', 'seat-d']);
+    expect(mine.options.every((o) => o.card?.instanceId === 'p1' && o.card.definitionId === 'shan' && o.card.rank === 2)).toBe(true);
+    for (const other of ['seat-b', 'seat-c', 'seat-d']) {
+      const seen = redactStateForSeat(s, other).pendingChoice!;
+      expect(seen.options).toEqual([]);
+      expect(seen.options.some((o) => o.card)).toBe(false);
+      expect(redactStateForSeat(s, other).pendingChoice).not.toHaveProperty('card');
+    }
+  });
+
+  it('the rest card\'s recipient prompt shows only Guo Jia the other card', () => {
+    const s = h.choose(h.choose(h.use(h.run(guoJia('alternate:guo-jia'), dmg(1))), 'p1'), 'seat-b');
+    expect(carried(s).every((c) => c?.id === 'p0' && c.face === 'shan')).toBe(true);
+    const mine = redactStateForSeat(s, 'seat-a').pendingChoice!;
+    expect(mine.options.every((o) => o.card?.instanceId === 'p0' && o.card.definitionId === 'shan')).toBe(true);
+    const seen = redactStateForSeat(s, 'seat-b').pendingChoice!;
+    expect(seen.options).toEqual([]);
+    expect(JSON.stringify(seen)).not.toContain('p0');
+  });
+
+  it('with 1 card in the pile its recipient prompt shows him that card', () => {
+    const s = h.use(h.run(guoJia('alternate:guo-jia', [top[0]]), dmg(1)));
+    expect(redactStateForSeat(s, 'seat-a').pendingChoice!.options.every((o) => o.card?.instanceId === 'p0' && o.card.definitionId === 'shan')).toBe(true);
   });
 
   it('Default Guo Jia still draws 2 in the same scenario', () => {

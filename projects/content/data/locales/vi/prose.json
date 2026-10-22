@@ -89,7 +89,7 @@
     "clever-change": "Chọn một người chơi để chuyển lá bài tới",
     "decentralization": "Chọn một người chơi để có thêm một lượt",
     "direct-instruction": "Chọn một người chơi để đặt lá bài vào",
-    "alternate:bequeathed-strategy": "Chọn một người chơi để đưa lá bài"
+    "alternate:bequeathed-strategy": "Chọn một người chơi để đưa {card}"
   },
   "choicePrompt": {
     "upheaval": "Chọn một người chơi để đánh Sát vào, hoặc bỏ qua",

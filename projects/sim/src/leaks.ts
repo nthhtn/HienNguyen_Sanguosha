@@ -53,7 +53,7 @@ function walk(value: unknown, visit: (v: unknown, path: string) => void, path: s
 function ownSecretLook(state: GameState, viewerSeatId: string): { cards: Set<string>; generals: Set<string> } {
   const choice = state.pendingChoice;
   const own = !!choice?.secret && choice.seatId === viewerSeatId;
-  const shows = own ? choice!.options.map((o) => o.shows) : [];
+  const shows = own ? choice!.options.flatMap((o) => (o.card ? [o.shows, { kind: 'card' as const, card: o.card }] : [o.shows])) : [];
   return {
     cards: new Set(shows.flatMap((s) => (s.kind === 'card' ? [s.card.instanceId] : []))),
     generals: new Set(shows.flatMap((s) => (s.kind === 'general' ? [s.generalId] : []))),

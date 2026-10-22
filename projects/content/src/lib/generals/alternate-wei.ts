@@ -1,4 +1,4 @@
-import type { ChoiceOption, DamageDealtEvent, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition } from 'engine';
+import type { CardInstance, ChoiceOption, DamageDealtEvent, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition } from 'engine';
 import { requireZoneOfKind } from 'engine';
 import { makeEternalLoyalty } from './fire';
 import { riverGoddessOutcome } from './wei';
@@ -13,12 +13,14 @@ const BEQUEATHED_ID = 'alternate:bequeathed-strategy';
 const topOfPile = (state: GameState, count: number) => requireZoneOfKind(state.zones, 'drawPile').cards.slice(0, count);
 
 // Who gets `cardId`: each living seat; giving it queues the card's move, then `after`.
-function giveTo(state: GameState, owner: GeneralOwner, cardId: string, after: Effect[]): Effect {
+function giveTo(state: GameState, owner: GeneralOwner, card: CardInstance, after: Effect[]): Effect {
+  const cardId = card.instanceId;
   const living = state.seats.filter((s) => !s.eliminated).map((s) => s.id);
   return choiceOf(state, owner, {
     verb: 'pick',
     secret: true,
-    options: seatOptions(living, (seatId) => [{ kind: 'MoveCardEffect', cardInstanceId: cardId, toZoneId: handZoneId(state, seatId), onlyFrom: requireZoneOfKind(state.zones, 'drawPile').id }, ...after]),
+    // Each option carries the card, so only he (the chooser) sees which card he is giving.
+    options: seatOptions(living, (seatId) => [{ kind: 'MoveCardEffect', cardInstanceId: cardId, toZoneId: handZoneId(state, seatId), onlyFrom: requireZoneOfKind(state.zones, 'drawPile').id }, ...after]).map((o) => ({ ...o, card })),
   });
 }
 
@@ -35,16 +37,16 @@ const bequeathedStrategy: SkillDefinition = {
     const { owner } = step;
     if (!isLiving(state, owner.seatId)) return [];
     if (step.step === 'rest') {
-      const rest = step.data?.['card'] as string;
-      return requireZoneOfKind(state.zones, 'drawPile').cards.some((c) => c.instanceId === rest) ? [giveTo(state, owner, rest, [])] : [];
+      const rest = requireZoneOfKind(state.zones, 'drawPile').cards.find((c) => c.instanceId === step.data?.['card']);
+      return rest ? [giveTo(state, owner, rest, [])] : [];
     }
     const [first, second] = topOfPile(state, 2);
     if (!first) return [];
-    if (!second) return [giveTo(state, owner, first.instanceId, [])];
+    if (!second) return [giveTo(state, owner, first, [])];
     const options: ChoiceOption[] = [first, second].map((c, i) => ({
       id: c.instanceId,
       shows: { kind: 'card', card: c },
-      effects: [giveTo(state, owner, c.instanceId, [skillStep(owner, 'rest', { card: [first, second][1 - i].instanceId })])],
+      effects: [giveTo(state, owner, c, [skillStep(owner, 'rest', { card: [first, second][1 - i].instanceId })])],
     }));
     return [choiceOf(state, owner, { verb: 'pick', secret: true, options })];
   },

@@ -204,6 +204,9 @@ export interface ChoiceOption {
     | { kind: 'suit'; suit: CardInstance['suit'] }
     | { kind: 'label'; text: string }
     | { kind: 'general'; generalId: string };
+  // A card shown beside the option (Bequeathed Strategy: the card a seat option would give). Only in a
+  // `secret` choice: the chooser sees it though its zone is hidden; every other seat's view has no options.
+  card?: CardInstance;
   // Queued at the front when picked.
   effects: Effect[];
 }

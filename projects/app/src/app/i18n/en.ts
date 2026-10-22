@@ -20,6 +20,7 @@ export const en = {
   'choice.confirm.give': 'Give',
   'choice.confirm.choose': 'Choose',
   'choice.give': 'Choose who gets the cards',
+  'choice.aCard': 'a card',
   'choice.aSeat': 'a seat',
   'choice.pick.seat': 'Choose a seat',
   'choice.pick.suit': 'Name a suit',
