@@ -13,6 +13,8 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:empty-city': 'empty-city',
   'alternate:stabilization': 'stubborn',
   'alternate:humility': 'humility',
+  // Bots (always judge again) and the Devil bot's reading of a black card as good for her; its own hint and outcome texts are in display.ts.
+  'alternate:goddess-luo': 'river-goddess',
   'alternate:behind-the-curtain': 'curtain',
   // Bots only: it asks like Bestowed Rouse; its own prompts and hints are in display.ts.
   'alternate:bequeathed-strategy': 'bestowed-rouse',

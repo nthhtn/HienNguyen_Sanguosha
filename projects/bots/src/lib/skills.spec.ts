@@ -4,7 +4,7 @@ import { conversionSpare } from './skills';
 import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
 
 describe('may-skills the bot always uses', () => {
-  it.each(['evil-hero', 'feedback', 'heavens-envy', 'bestowed-rouse', 'gathering-wisdom', 'brave-gesture', 'self-restraint', 'river-goddess', 'iron-cavalry', 'astrology'])('%s', (skillId) => {
+  it.each(['evil-hero', 'feedback', 'heavens-envy', 'bestowed-rouse', 'gathering-wisdom', 'brave-gesture', 'self-restraint', 'river-goddess', 'alternate:goddess-luo', 'iron-cavalry', 'astrology'])('%s', (skillId) => {
     expect(picked(decide(asking(table(), skillId)))).toBe('use');
   });
 

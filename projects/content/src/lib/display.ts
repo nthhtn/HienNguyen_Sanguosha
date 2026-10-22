@@ -171,6 +171,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'heavens-envy': 'Take the judgment card into your hand',
   devil: "Replace {target}'s judgment card with one of your hand cards",
   'river-goddess': 'Judge: keep each black card and judge again; a red card ends it',
+  'alternate:goddess-luo': 'Judge: set each black card aside and judge again or stop; a red card ends it, then take the black cards',
   'bare-the-chest': 'Draw 1 fewer card; your Slash and Duel deal 1 more damage this turn',
   raid: 'Instead of drawing, take a hand card from 1 or 2 other seats',
   'brave-gesture': 'Draw 1 more card',
@@ -395,6 +396,10 @@ const JUDGMENT_OUTCOMES: Record<string, Record<string, string>> = {
     spared: 'Nothing happens',
   },
   'river-goddess': { again: '{owner} takes the card and judges again', ends: 'The card is discarded and the judging ends' },
+  'alternate:goddess-luo': {
+    again: '{owner} sets the card aside and may judge again',
+    ends: 'The card is discarded and the judging ends; {owner} takes any cards set aside',
+  },
   'iron-cavalry': { unblockable: 'The Slash cannot be dodged', none: 'Nothing happens' },
   'lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
   'dueling-heroes': {

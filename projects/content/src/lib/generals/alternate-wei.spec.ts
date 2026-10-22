@@ -1,6 +1,6 @@
-import type { GameState } from 'engine';
+import type { GameState, GeneralOwner } from 'engine';
 import { redactStateForSeat } from 'engine';
-import { abilityLog, askedAbout, card, handIds, harness, ids, table, TableOptions } from './skills.testing';
+import { abilityLog, askedAbout, card, handIds, harness, ids, kwMode, table, TableOptions } from './skills.testing';
 
 const h = harness();
 const at = (seatId: string, general: string): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', true] });
@@ -136,5 +136,111 @@ describe('Alternate Guo Jia, Bequeathed Strategy', () => {
     let s = h.use(h.run(guoJia('guo-jia'), dmg(1)));
     expect(handIds(s, 'seat-a')).toEqual(['p0', 'p1']);
     expect(askedAbout(s)).toBe('bestowed-rouse');
+  });
+});
+
+describe('Alternate Zhen Ji, Goddess Luo', () => {
+  const id = 'alternate:goddess-luo';
+  const stub = harness();
+  const kw = harness(kwMode);
+  type H = ReturnType<typeof harness>;
+  // seat-d's turn ends; seat-a's starts, with `general` beside `partner`.
+  const startOfTurn = (general: string, drawPile: ReturnType<typeof card>[], o: { partner?: string; hand?: ReturnType<typeof card>[]; hp?: number; with?: H } = {}) =>
+    (o.with ?? stub).settle(
+      table({ drawPile, 'seat-a:hand': o.hand ?? [] }, { generals: { 'seat-a': [general, o.partner ?? 'filler-xun-yu'] }, owner: 'seat-d', phase: 'End', hp: { 'seat-a': o.hp ?? 4 } })
+    );
+  const b1 = card('b1', 'sha', 'spade', 3);
+  const b2 = card('b2', 'shan', 'club', 4);
+  const r1 = card('r1', 'peach', 'heart', 5);
+  const rest = [card('x1', 'shan', 'diamond', 6), card('x2', 'shan', 'diamond', 7), card('x3', 'shan', 'diamond', 8)];
+  // The pending ask rebuilt as an effect, so a death can be queued before it (she dies between judgments).
+  const pendingAsk = (s: GameState) => {
+    const choice = s.pendingChoice!;
+    const reason = choice.reason as Extract<typeof choice.reason, { kind: 'ability' }>;
+    const effects = (optionId: string) => choice.options.find((o) => o.id === optionId)!.effects;
+    return { kind: 'AskUseEffect' as const, owner: reason.owner as GeneralOwner, abilityId: reason.abilityId, effects: effects('use'), otherwise: effects('decline') };
+  };
+
+  it('two black cards then a red: the blacks wait off her hand, then she acquires both; the red is discarded', () => {
+    let s = startOfTurn('alternate:zhen-ji', [b1, b2, r1, ...rest]);
+    expect(askedAbout(s)).toBe(id);
+    s = stub.use(s);
+    expect(askedAbout(s)).toBe(id);
+    expect(handIds(s, 'seat-a')).toEqual([]);
+    expect(ids(s, 'seat-a:stash')).toEqual(['b1']);
+    s = stub.use(s);
+    expect(handIds(s, 'seat-a')).toEqual([]);
+    s = stub.use(s);
+    expect(handIds(s, 'seat-a')).toEqual(['b1', 'b2']);
+    expect(ids(s, 'discardPile')).toEqual(['r1']);
+    expect(ids(s, 'seat-a:stash')).toEqual([]);
+    expect(ids(s, 'processing')).toEqual([]);
+    expect(s.pendingChoice).toBeUndefined();
+  });
+
+  it('Default Zhen Ji takes each black card at once in the same scenario', () => {
+    let s = stub.use(startOfTurn('zhen-ji', [b1, b2, r1, ...rest]));
+    expect(handIds(s, 'seat-a')).toEqual(['b1']);
+    s = stub.use(stub.use(s));
+    expect(handIds(s, 'seat-a')).toEqual(['b1', 'b2']);
+    expect(ids(s, 'discardPile')).toEqual(['r1']);
+  });
+
+  it('stopping after one black card acquires that one', () => {
+    const s = stub.decline(stub.use(startOfTurn('alternate:zhen-ji', [b1, b2, r1, ...rest])));
+    expect(handIds(s, 'seat-a')).toEqual(['b1']);
+    expect(ids(s, 'seat-a:stash')).toEqual([]);
+    expect(ids(s, 'drawPile')[0]).toBe('b2');
+    expect(s.pendingChoice).toBeUndefined();
+  });
+
+  it('declining at the first ask does nothing', () => {
+    const s = stub.decline(startOfTurn('alternate:zhen-ji', [b1, b2, r1, ...rest]));
+    expect(handIds(s, 'seat-a')).toEqual([]);
+    expect(ids(s, 'drawPile')[0]).toBe('b1');
+    expect(s.log.some((e) => e.kind === 'JudgmentEvent')).toBe(false);
+  });
+
+  it('with no card left to judge, the process ends and she acquires what she holds', () => {
+    const s = stub.use(stub.use(startOfTurn('alternate:zhen-ji', [b1])));
+    expect(handIds(s, 'seat-a')).toEqual(['b1']);
+    expect(s.pendingChoice).toBeUndefined();
+  });
+
+  it('a Sima Yi partner cannot replace her next judgment with a held black card (Default can)', () => {
+    const h = card('h', 'peach', 'heart', 9);
+    // Use, decline Devil on b1, judge again: Devil asks on b2; Use opens the hand-card pick.
+    const devilPick = (general: string) => {
+      let s = startOfTurn(general, [b1, b2, r1, ...rest], { partner: 'sima-yi', hand: [h] });
+      s = stub.use(s);
+      expect(askedAbout(s)).toBe('devil');
+      s = stub.use(stub.decline(s));
+      expect(askedAbout(s)).toBe('devil');
+      return stub.use(s).pendingSelection?.eligibleIds;
+    };
+    expect(devilPick('alternate:zhen-ji')).toEqual(['h']);
+    expect(devilPick('zhen-ji')).toEqual(['h', 'b1']);
+  });
+
+  it('if she dies between judgments, the held cards go to the discard pile (Kingdom War elimination)', () => {
+    const lethal = { kind: 'DamageEffect' as const, damage: { source: null, target: { kind: 'seat' as const, seatId: 'seat-a' }, amount: 1, nature: 'normal' as const, cause: {} } };
+    const before = kw.use(startOfTurn('alternate:zhen-ji', [b1, b2, r1, ...rest], { hp: 1, with: kw }));
+    expect(ids(before, 'seat-a:stash')).toEqual(['b1']);
+    let s = kw.run({ ...before, pendingChoice: undefined }, [lethal, pendingAsk(before)]);
+    while (s.pendingResponse) s = kw.pass(s);
+    expect(s.seats.find((x) => x.id === 'seat-a')!.eliminated).toBe(true);
+    expect(ids(s, 'discardPile')).toContain('b1');
+    expect(handIds(s, 'seat-a')).toEqual([]);
+    // Default: the black card was already in her hand.
+    expect(handIds(kw.use(startOfTurn('zhen-ji', [b1, b2, r1, ...rest], { hp: 1, with: kw })), 'seat-a')).toEqual(['b1']);
+  });
+
+  it('if she is out when the process ends, the held cards go to the discard pile, not her hand', () => {
+    const before = stub.use(startOfTurn('alternate:zhen-ji', [b1, b2, r1, ...rest]));
+    const out = { ...before, pendingChoice: undefined, seats: before.seats.map((x) => (x.id === 'seat-a' ? { ...x, eliminated: true as const } : x)) };
+    const s = stub.run(out, [pendingAsk(before)]);
+    expect(ids(s, 'discardPile')).toEqual(['b1']);
+    expect(handIds(s, 'seat-a')).toEqual([]);
+    expect(ids(s, 'seat-a:stash')).toEqual([]);
   });
 });

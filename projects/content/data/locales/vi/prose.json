@@ -13,6 +13,7 @@
     "heavens-envy": "Lấy lá phán xét vào tay",
     "devil": "Thay lá phán xét của {target} bằng một lá bài trên tay bạn",
     "river-goddess": "Phán xét: giữ mỗi lá đen và phán xét lại; gặp lá đỏ thì dừng",
+    "alternate:goddess-luo": "Phán xét: để riêng mỗi lá đen rồi phán xét lại hoặc dừng; gặp lá đỏ thì dừng, rồi nhận các lá đen",
     "bare-the-chest": "Rút ít hơn 1 lá bài; Sát và Quyết Đấu của bạn gây thêm 1 sát thương trong lượt này",
     "raid": "Thay vì rút bài, lấy một lá bài trên tay của 1 hoặc 2 người chơi khác",
     "brave-gesture": "Rút thêm 1 lá bài",
@@ -154,6 +155,10 @@
     "river-goddess": {
       "again": "{owner} nhận lá bài và phán xét lại",
       "ends": "Lá bài bị bỏ và việc phán xét kết thúc"
+    },
+    "alternate:goddess-luo": {
+      "again": "{owner} để riêng lá bài và có thể phán xét lại",
+      "ends": "Lá bài bị bỏ và việc phán xét kết thúc; {owner} nhận các lá đã để riêng"
     },
     "iron-cavalry": {
       "unblockable": "Sát không thể bị né",

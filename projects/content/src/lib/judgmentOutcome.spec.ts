@@ -9,6 +9,7 @@ import { lightningStrike } from './generals/wind';
 import { duelingHeroes } from './generals/fire';
 import { militaryFarm, lament } from './generals/mountain';
 import type { GeneralOwner, SkillDefinition } from 'engine';
+import { ALTERNATE_VARIANTS } from './alternateVariants';
 
 const SUITS: CardInstance['suit'][] = ['spade', 'heart', 'club', 'diamond'];
 const done: Effect = { kind: 'JudgmentDoneEffect', judgment: undefined as never };
@@ -171,6 +172,29 @@ describe('judgmentOutcome: River Goddess', () => {
   });
 });
 
+describe('judgmentOutcome: Alternate Goddess Luo', () => {
+  const owner = ownerOf('alternate:goddess-luo');
+  const goddessLuo = ALTERNATE_VARIANTS['zhen-ji']['洛神'];
+  const run = (state: GameState, suit: CardInstance['suit']) => {
+    const judged = card('j', 'x', suit, 5);
+    return { outcome: outcome(state, view(skillReader('alternate:goddess-luo'), 'seat-a', judged)), effects: readSkill(goddessLuo, state, owner, 'seat-a', judged) };
+  };
+
+  it.each(SUITS)('a %s: the key matches what the skill does', (suit) => {
+    const { outcome: o, effects } = run(table(), suit);
+    const red = suit === 'heart' || suit === 'diamond';
+    expect(o).toEqual({ readerId: 'alternate:goddess-luo', key: red ? 'ends' : 'again', seats: { seat: 'seat-a', owner: 'seat-a', source: null } });
+    // Black: set aside in her stash, then asked to go on; red: discarded, then the held cards are acquired.
+    expect(kinds(effects)).toEqual(red ? ['JudgmentDoneEffect', 'SkillStepEffect'] : ['MoveCardEffect', 'JudgmentDoneEffect', 'AskUseEffect']);
+  });
+
+  it('ends when the judged owner is no longer living, even on black', () => {
+    const { outcome: o, effects } = run(eliminate(table(), 'seat-a'), 'club');
+    expect(o?.key).toBe('ends');
+    expect(kinds(effects)).toEqual(['JudgmentDoneEffect', 'SkillStepEffect']);
+  });
+});
+
 describe('judgmentOutcome: Iron Cavalry', () => {
   const owner = ownerOf('iron-cavalry');
   const step = { kind: 'CardStepEffect', step: 'sha-targeted', target: { kind: 'seat', seatId: 'seat-b' }, data: {} };
@@ -307,6 +331,7 @@ describe('every judging reader has outcome text', () => {
     'eight-arrays': ['shan', 'none'],
     unyielding: ['discard-or-damage', 'damage', 'spared'],
     'river-goddess': ['again', 'ends'],
+    'alternate:goddess-luo': ['again', 'ends'],
     'iron-cavalry': ['unblockable', 'none'],
     'lightning-strike': ['damage', 'none'],
     'dueling-heroes': ['red', 'black'],

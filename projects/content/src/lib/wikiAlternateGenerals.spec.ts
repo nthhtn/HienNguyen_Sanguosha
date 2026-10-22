@@ -26,6 +26,10 @@ describe('alternateSkillStatus', () => {
     expect(alternateSkillStatus(record('lu-xun'), skillOf('lu-xun', 'Scrutinize'))).toBe('worksAsAlternate');
   });
 
+  it('works as Alternate for Zhen Ji’s Goddess Luo', () => {
+    expect(alternateSkillStatus(record('zhen-ji'), skillOf('zhen-ji', 'Goddess Luo'))).toBe('worksAsAlternate');
+  });
+
   it('is not missing exactly when the matching alternate: General has that skill in the registry', () => {
     const registry = buildContentRegistry();
     for (const rec of alternateGeneralRecords()) {
