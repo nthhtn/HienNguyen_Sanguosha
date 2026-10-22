@@ -189,6 +189,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'dark-magic': "Replace {target}'s judgment card with a black card, and take the old one",
   'eternal-loyalty': 'A seat of your choice draws up to its max HP',
   'alternate:eternal-loyalty': 'A seat of your choice draws up to its max HP, but never above 5 cards',
+  'alternate:bequeathed-strategy': 'Look at the top 2 cards of the draw pile, then give one to any player and the other to any player',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',
   'sudden-attack': "Discard one of {target}'s cards",
@@ -258,6 +259,7 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   'clever-change': 'Choose a seat to move the card to',
   decentralization: 'Choose a seat to take an extra turn',
   'direct-instruction': 'Choose a seat to place the card in',
+  'alternate:bequeathed-strategy': 'Choose a seat to give the card to',
 };
 
 export function seatPickText(abilityId: string, locale = 'en'): string | null {
@@ -273,6 +275,7 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
   'follow-the-master': 'Choose how Follow the Master helps you',
   incarnation: 'Choose a Form skill',
   stubborn: 'Choose a card to give back; you take the others',
+  'alternate:bequeathed-strategy': 'Choose a card to give first; the other is given next',
 };
 
 export function choicePromptText(abilityId: string, locale = 'en'): string | null {

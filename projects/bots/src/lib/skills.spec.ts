@@ -1,4 +1,4 @@
-import type { CardInstance, Effect, GameState, PendingSelection } from 'engine';
+import type { CardInstance, Effect, GameState, PendingChoice, PendingSelection } from 'engine';
 import { getLegalActions } from 'engine';
 import { conversionSpare } from './skills';
 import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
@@ -25,6 +25,22 @@ describe('a compulsory skill’s ask', () => {
 
   it('Alternate Envious Moon draws, as Default does', () => {
     expect(picked(decide(asking(table(), 'alternate:envious-moon')))).toBe('use');
+  });
+});
+
+describe('Alternate Bequeathed Strategy', () => {
+  const id = 'alternate:bequeathed-strategy';
+  const picking = (options: PendingChoice['options']): GameState => ({
+    ...table(),
+    pendingChoice: { id: 'pick', seatId: 'seat-a', verb: 'pick', secret: true, reason: { kind: 'ability', owner: general('seat-a', id), abilityId: id }, options },
+  });
+
+  it('uses the ask, picks a seen card, then gives it to an ally, else keeps it', () => {
+    expect(picked(decide(asking(table(), id)))).toBe('use');
+    expect(picked(decide(picking([{ id: 'c1', shows: { kind: 'card', card: card('c1', 'shan') }, effects: [] }, { id: 'c2', shows: { kind: 'card', card: card('c2', 'sha') }, effects: [] }])))).toBe('c1');
+    const seats = ['seat-a', 'seat-b', 'seat-c', 'seat-d'].map((seatId) => ({ id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [] }));
+    const to = picked(decide(picking(seats)));
+    expect(['seat-a', 'seat-b', 'seat-c', 'seat-d']).toContain(to);
   });
 });
 

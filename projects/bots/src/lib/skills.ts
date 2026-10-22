@@ -169,6 +169,8 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
   // For a harmful effect with no non-ally to aim at: the seat that is hurt least, an ally.
   const cancelId = choice.options.find((o) => o.id === 'cancel')?.id;
   const harmless = ally ?? seats[0];
+  // Bequeathed Strategy: the cards are seen, not drawn. Of the two, the first is given first; a card goes to an ally, else the bot keeps it.
+  if (choice.reason.abilityId === 'alternate:bequeathed-strategy') return seats.length === 0 ? (choice.options[0]?.id ?? null) : (ally ?? me).id;
   switch (baseSkillId(choice.reason.abilityId)) {
     case 'kindness':
     case 'bestowed-rouse':

@@ -27,6 +27,8 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:empty-city': 'empty-city',
   'alternate:humility': 'humility',
   'alternate:behind-the-curtain': 'curtain',
+  // Bots only: it asks like Bestowed Rouse; its own prompts and hints are in display.ts.
+  'alternate:bequeathed-strategy': 'bestowed-rouse',
 };
 
 // Variants with no Default counterpart, which therefore have no base entry (and need their own texts and bot support).
