@@ -40,9 +40,9 @@ const NO_DEATH_VOICE = new Set(['zuo-ci']);
 // A General's death voice: /audio/death/<skin file name>.ogg, named by the pinyin of the skin
 // (Cao Cao: caocao.ogg). Null for a General with no skin or no recording.
 export function generalDeathVoiceUrl(id: string): string | null {
-  id = baseGeneralId(id);
-  const skin = GENERAL_SKINS[id];
-  if (!skin || NO_DEATH_VOICE.has(id)) return null;
+  const base = baseGeneralId(id);
+  const skin = GENERAL_SKINS[base];
+  if (!skin || NO_DEATH_VOICE.has(base)) return null;
   return `/audio/death/${skin.replace(/^.*\//, '').replace(/\.[^.]+$/, '')}.ogg`;
 }
 

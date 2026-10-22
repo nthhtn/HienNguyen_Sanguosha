@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
 import { generalsData } from '../../data/generals';
 import { alternateGeneralIds } from './alternateGenerals';
 import { alternateGeneralId } from './generalIds';
@@ -77,5 +79,16 @@ describe('Alternate General art', () => {
     }
     expect(generalSkinUrl('alternate:zou-shi')).toBe(GENERAL_PLACEHOLDER_ART_URL);
     expect(generalSkinUrl('alternate:nobody')).toBe(GENERAL_PLACEHOLDER_ART_URL);
+  });
+});
+
+describe('placeholder portrait shipping', () => {
+  it('exists and is copied to card-art by the app build assets', () => {
+    const root = join(__dirname, '../../../..');
+    expect(existsSync(join(root, 'projects/content/assets/generals/placeholder.svg'))).toBe(true);
+    const angular = JSON.parse(readFileSync(join(root, 'angular.json'), 'utf8'));
+    const assets: { glob: string; input: string; output?: string }[] = angular.projects.app.architect.build.options.assets;
+    const url = GENERAL_PLACEHOLDER_ART_URL.replace('/card-art/', '');
+    expect(assets.some((a) => a.input === 'projects/content/assets' && a.output === 'card-art' && a.glob === url)).toBe(true);
   });
 });
