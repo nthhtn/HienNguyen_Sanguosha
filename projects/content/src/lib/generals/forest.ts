@@ -177,7 +177,8 @@ export const giantElephant: SkillDefinition = {
 
 // Intense Edge (may): when your Sha damages another seat, compete with it; on a
 // win take one of its cards (a hidden hand card, or a worn or Judgment card).
-export const intenseEdge: SkillDefinition = {
+// With `requireTarget` (Alternate), the damaged seat must be one the Slash was aimed at.
+export const makeIntenseEdge = (requireTarget = false): SkillDefinition => ({
   id: 'intense-edge',
   triggers: [
     on<DamageDealtEvent>('after:DamageDealtEvent', {
@@ -187,6 +188,7 @@ export const intenseEdge: SkillDefinition = {
           source?.kind === 'seat' && source.seatId === owner.seatId &&
           target.kind === 'seat' && target.seatId !== owner.seatId &&
           amount > 0 && isShaDamage(event.damage) &&
+          (!requireTarget || cause?.aimedAt === target.seatId) &&
           isLiving(state, owner.seatId) && isLiving(state, target.seatId) &&
           handOf(state, owner.seatId).length > 0 && handOf(state, target.seatId).length > 0
         );
@@ -208,7 +210,8 @@ export const intenseEdge: SkillDefinition = {
     const options = seatCardOptions(state, target, handZoneId(state, owner.seatId));
     return options.length > 0 ? [choiceOf(state, owner, { verb: 'take', targetSeatId: target, options })] : [];
   },
-};
+});
+export const intenseEdge: SkillDefinition = makeIntenseEdge();
 
 // Brave Spirit (may): at the start of your Start Phase, if damaged (X = missing
 // HP), pick any seat (yourself included), then choose: it draws X then discards

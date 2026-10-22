@@ -17,6 +17,7 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:benevolence': 'kindness',
   'alternate:balance-of-power': 'reconsider',
   'alternate:eternal-loyalty': 'eternal-loyalty',
+  'alternate:fearsome-blade': 'intense-edge',
 };
 
 // Variants with no Default counterpart, which therefore have no base entry (and need their own texts and bot support).

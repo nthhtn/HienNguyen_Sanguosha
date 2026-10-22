@@ -1,5 +1,5 @@
 import type { GameState } from 'engine';
-import { card, handIds, harness, hp, table, TableOptions } from './skills.testing';
+import { askedAbout, card, handIds, harness, hp, table, TableOptions } from './skills.testing';
 
 const h = harness();
 const at = (seatId: string, general: string): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', true] });
@@ -43,5 +43,38 @@ describe('Alternate Liu Bei, Benevolence', () => {
   it('is not an Alternate rule for a Default Liu Bei, who still heals at 2', () => {
     const s = give(liuBei('liu-bei'), 'kindness', 'seat-b', 'k1', 'k2');
     expect(hp(s, 'seat-a')).toBe(3);
+  });
+});
+
+describe('Alternate Zhu Rong, Fearsome Blade', () => {
+  const rong = (general: string, sha = 'sha', chained: string[] = []) => {
+    const t = table(
+      { 'seat-a:hand': [card('s1', sha), card('c9', 'sha', 'heart', 9)], 'seat-b:hand': [card('b5', 'sha', 'heart', 5)], 'seat-c:hand': [card('d5', 'sha', 'heart', 5)] },
+      { generals: at('seat-a', general) },
+    );
+    return { ...t, seats: t.seats.map((x) => (chained.includes(x.id) ? { ...x, chained: true as const } : x)) };
+  };
+  const hitB = (general: string, sha?: string, chained?: string[]) => h.pass(h.play(rong(general, sha, chained), 's1', 'seat-b'));
+  it('her Slash damaging its target offers the compete', () => {
+    expect(askedAbout(hitB('alternate:zhu-rong'))).toBe('alternate:fearsome-blade');
+  });
+
+  it('damage that reaches another seat through a chain does not offer it', () => {
+    const first = hitB('alternate:zhu-rong', 'fire-attack', ['seat-b', 'seat-c']);
+    expect(askedAbout(first)).toBe('alternate:fearsome-blade'); // for seat-b, the seat aimed at
+    expect(first.pendingChoice).toMatchObject({ seatId: 'seat-a' });
+    const s = h.decline(first);
+    expect(hp(s, 'seat-c')).toBeLessThan(4);
+    expect(s.log.filter((e) => e.kind === 'DamageDealtEvent')).toHaveLength(2);
+    expect(askedAbout(s)).toBeNull();
+  });
+
+  it('records the seat the Slash was aimed at on the damage it deals', () => {
+    const s = hitB('alternate:zhu-rong');
+    expect(s.log.find((e) => e.kind === 'DamageDealtEvent')).toMatchObject({ damage: { cause: { aimedAt: 'seat-b' } } });
+  });
+
+  it('Default Zhu Rong keeps her own id and still competes', () => {
+    expect(askedAbout(hitB('zhu-rong'))).toBe('intense-edge');
   });
 });

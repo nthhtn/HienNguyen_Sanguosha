@@ -346,8 +346,10 @@ export interface Damage {
   amount: number;
   nature: 'normal' | 'fire' | 'thunder';
   // What caused it. `card` is the card as used (a Serpent Spear Sha has two
-  // physical cards); `cardInstanceId` is its first physical card, if any.
-  cause?: { cardInstanceId?: string; card?: UsedCard; skillId?: string };
+  // physical cards); `cardInstanceId` is its first physical card, if any;
+  // `aimedAt` is the seat a Sha was aimed at (it stays when the damage reaches
+  // another seat, through a chain or a redirect).
+  cause?: { cardInstanceId?: string; card?: UsedCard; skillId?: string; aimedAt?: string };
   // The amount when the damage was created, before the target's own armour and
   // skills changed it: what a chain passes on. Stamped on fire and thunder
   // damage as it starts to resolve, when absent.

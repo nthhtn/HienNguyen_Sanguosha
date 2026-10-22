@@ -194,4 +194,12 @@ describe('variant skill texts', () => {
     expect(choicePromptText('alternate:benevolence', locale)).toEqual(choicePromptText('kindness', locale));
     expect(stepSelectionText('compete-user', locale, 'alternate:benevolence')).toEqual(stepSelectionText('compete-user', locale));
   });
+
+  it.each(['en', 'vi'])('a variant shows its base skill’s Compete outcome in %s', (locale) => {
+    const names = { user: 'A', target: 'B' };
+    for (const won of [true, false]) {
+      expect(competeOutcomeText('alternate:fearsome-blade', won, names, locale)).toEqual(competeOutcomeText('intense-edge', won, names, locale));
+    }
+    expect(competeOutcomeText('alternate:fearsome-blade', true, names, locale)).not.toBeNull();
+  });
 });

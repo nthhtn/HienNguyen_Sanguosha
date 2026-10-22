@@ -47,7 +47,7 @@ function damageOf(step: CardStep): Effect {
       target: step.target,
       amount: 1 + (shaData(step).extra ?? 0),
       nature: step.card.nature ?? 'normal',
-      cause: { ...(first ? { cardInstanceId: first } : {}), card: step.card },
+      cause: { ...(first ? { cardInstanceId: first } : {}), card: step.card, aimedAt: step.target.seatId },
     },
   };
 }

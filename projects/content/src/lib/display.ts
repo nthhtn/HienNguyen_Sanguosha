@@ -366,7 +366,7 @@ const COMPETE_OUTCOMES: Record<string, { won: string; lost: string }> = {
 };
 
 export function competeOutcomeText(abilityId: string, won: boolean, names: { user: string; target: string }, locale = 'en'): string | null {
-  const outcome = lookup(proseOf(locale)?.competeOutcomes, abilityId) ?? lookup(COMPETE_OUTCOMES, abilityId);
+  const outcome = lookupWithBase(proseOf(locale)?.competeOutcomes, abilityId) ?? lookupWithBase(COMPETE_OUTCOMES, abilityId);
   return outcome ? (won ? outcome.won : outcome.lost).replaceAll('{user}', names.user).replaceAll('{target}', names.target) : null;
 }
 
