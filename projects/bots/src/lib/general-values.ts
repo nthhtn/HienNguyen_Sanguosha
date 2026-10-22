@@ -1,3 +1,4 @@
+import { baseGeneralId } from 'content';
 import type { Action, ContentRegistry } from 'engine';
 
 type Choice = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -10,7 +11,7 @@ export { GENERAL_VALUES } from './general-values.data';
 
 export function pairScore(values: Readonly<Record<string, number>>, registry: ContentRegistry, choice: Choice): number {
   const hp = (id: string) => registry.generals.get(id)?.maxHp ?? 0;
-  return (values[choice.mainId] ?? 0) + (values[choice.deputyId] ?? 0) + HP_TIEBREAK * (hp(choice.mainId) + hp(choice.deputyId));
+  return (values[baseGeneralId(choice.mainId)] ?? 0) + (values[baseGeneralId(choice.deputyId)] ?? 0) + HP_TIEBREAK * (hp(choice.mainId) + hp(choice.deputyId));
 }
 
 // The highest-scoring choice; the first one on a tie.
