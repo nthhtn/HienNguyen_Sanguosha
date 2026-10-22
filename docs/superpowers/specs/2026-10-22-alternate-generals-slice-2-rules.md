@@ -96,3 +96,5 @@ against Zhuge Liang while he has no hand cards. Humility: Steal and Capture. Beh
 the black Tools it covers today. The card still counts as used (for example a cancelled Slash still
 counts toward the once-per-turn limit) — my call, as a use happens before it is cancelled.
 These three are real changes and belong to slice 2, not slice 4.
+
+Implementation note (Task 8): Empty City reads Zhuge Liang's hand when the Slash or Duel is aimed at him; the card is then cancelled for him. A hidden Alternate owner of these skills is asked whether to reveal, as Default's Behind the Curtain is.
