@@ -152,22 +152,25 @@ export const batteredBody: SkillDefinition = {
 };
 
 // Reconsider (active, once per turn): discard any number of cards (at least 1)
-// from your hand or equipment, then draw that many.
-export const reconsider: SkillDefinition = {
+// from your hand or equipment, then draw that many. Default has no limit; the
+// Alternate Balance of Power variant caps the cards discarded at `limit(state, seatId)`.
+export const makeReconsider = (limit?: (state: GameState, seatId: string) => number): SkillDefinition => ({
   id: 'reconsider',
   active: {
     usesPerTurn: 1,
     canUse: (state, { seatId }) => ownCards(state, seatId, true).length > 0,
     start: (state, { seatId, owner }) => {
       const cards = ownCards(state, seatId, true).map((c) => c.instanceId);
-      return [selectionOf(state, owner, { of: 'cards', eligibleIds: cards, min: 1, max: cards.length, then: { kind: 'skill-step', step: skillStep(owner, 'discarded') }, onCancel: [] })];
+      return [selectionOf(state, owner, { of: 'cards', eligibleIds: cards, min: 1, max: limit ? Math.min(cards.length, limit(state, seatId)) : cards.length, then: { kind: 'skill-step', step: skillStep(owner, 'discarded') }, onCancel: [] })];
     },
   },
   onStep: (state, step) => {
     const picked = (step.data?.['picked'] as string[]) ?? [];
     return [...discardMoves(state, picked), draw(step.owner.seatId, picked.length)];
   },
-};
+});
+
+export const reconsider: SkillDefinition = makeReconsider();
 
 // Rescued: a Lord skill, inactive in Kingdom War.
 export const rescued: SkillDefinition = { id: 'rescued', lord: true };

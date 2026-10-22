@@ -1,6 +1,6 @@
 import { alternateGeneralRecords } from './alternateGenerals';
 import { generalsData } from '../../data/generals';
-import { ALTERNATE_VARIANTS, ALTERNATE_VARIANT_BASE, baseSkillId, lookupWithBase } from './alternateVariants';
+import { ALTERNATE_VARIANTS, ALTERNATE_VARIANT_BASE, VARIANTS_WITHOUT_BASE, baseSkillId, lookupWithBase } from './alternateVariants';
 import { GENERAL_SKILLS } from './generals';
 import { skillIdOf } from './skillId';
 
@@ -44,6 +44,14 @@ describe('ALTERNATE_VARIANT_BASE', () => {
       expect(variantId.startsWith('alternate:')).toBe(true);
       expect(variantIds.has(variantId)).toBe(true);
       expect(defaultIds.has(base)).toBe(true);
+    }
+  });
+});
+
+describe('variant bases', () => {
+  it('every variant has an ALTERNATE_VARIANT_BASE entry unless in the exported VARIANTS_WITHOUT_BASE set', () => {
+    for (const { variant } of entries) {
+      expect(variant.id in ALTERNATE_VARIANT_BASE || VARIANTS_WITHOUT_BASE.has(variant.id)).toBe(true);
     }
   });
 });

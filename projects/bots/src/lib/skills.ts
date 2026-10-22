@@ -120,7 +120,8 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
     }
     case 'reconsider': {
       const below = eligible.filter((id) => hand.has(id) && keepRank(view, registry, id) < 3);
-      return below.length > 0 ? below : 'cancel';
+      // Balance of Power caps the pick at `max`: the least useful of the spare cards first.
+      return below.length > 0 ? leastUseful(view, registry, below).slice(0, selection.max) : 'cancel';
     }
     case 'marriage':
     case 'green-vesicle':
