@@ -67,3 +67,32 @@ Seed of Animosity: discard a card and choose two other male seats; it is as if o
 the other. This Duel cannot be answered by Wuxie or Wuxie Kingdom (Default allows the usual Wuxie
 check). Limited to once per phase; gender is read as for Marriage.
 Envious Moon: at her End Phase she may draw 1 card, asked whether to draw (Default is compulsory).
+
+## Batch 3 (confirmed 2026-10-22)
+
+### Lu Xun, Scrutinize (度勢), replacing Linked Camps
+Play Phase: he may use a red hand card as Amass (a conversion, no per-turn limit). All Amass
+rules apply unchanged (Kingdom members, draw 2 then discard 2 each, a Wuxie per target).
+
+### Zhang Zhao and Zhang Hong, Stabilization (固政), replacing Stubborn
+At the end of another seat's Discard Phase, they may give one of the cards that seat discarded
+that phase back to it from the discard pile; if they do, they acquire all the other cards it
+discarded that phase. It works with exactly 1 discarded card (they give it back and acquire
+nothing). Default needs 2 or more.
+
+### Guo Jia, Bequeathed Strategy (遗计)
+After each point of damage he suffers he may look at the top 2 cards of the draw pile (he does not
+draw them), give one to a player, then give the remaining one to a player. Each recipient may be
+any player, including Guo Jia himself and the same player twice. Only he sees the cards.
+
+### Zhang Liao, Sudden Strike (突击)
+Same as Raid (take one hand card at random from each of one to two other seats in place of
+drawing). Moves to slice 4, check only.
+
+### Zhuge Liang's Empty City (空城), Lu Xun's Humility (谦逊), Jia Xu's Behind the Curtain (帷幕)
+Today these seats cannot be chosen as a target. In Alternate they can be chosen, and the card is
+cancelled for them (it has no effect on that seat and is wasted). Empty City: Slash and Duel
+against Zhuge Liang while he has no hand cards. Humility: Steal and Capture. Behind the Curtain:
+the black Tools it covers today. The card still counts as used (for example a cancelled Slash still
+counts toward the once-per-turn limit) — my call, as a use happens before it is cancelled.
+These three are real changes and belong to slice 2, not slice 4.
