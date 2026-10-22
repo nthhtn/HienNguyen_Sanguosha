@@ -2,6 +2,7 @@ import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 import { alternateCardData } from './alternateCards';
 import { alternateGeneralRecords } from './alternateGenerals';
+import { alternateGeneralId } from './generalIds';
 import viCards from '../../data/locales/vi/cards.json';
 import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
 import viGenerals from '../../data/locales/vi/generals.json';
@@ -75,7 +76,7 @@ export const generalIds = (): string[] => Object.keys(generalsData);
 export const cardIds = (): string[] => Object.keys(cardsData);
 // The ids the Vietnamese review file can list for Generals: Default's, then the Alternate deck's written
 // `alternate:<id>` (their ids overlap Default's, so they need the prefix).
-export const reviewGeneralIds = (): string[] => [...generalIds(), ...alternateGeneralRecords().map((g) => `alternate:${g.id}`)];
+export const reviewGeneralIds = (): string[] => [...generalIds(), ...alternateGeneralRecords().map((g) => alternateGeneralId(g.id))];
 
 // The translations of a language, exported for the parity spec.
 export function generalTranslations(locale: string): Record<string, GeneralTranslation> {

@@ -7,6 +7,7 @@ export * from './lib/decks';
 export * from './lib/assets';
 export * from './lib/alternateCards';
 export * from './lib/alternateGenerals';
+export * from './lib/generalIds';
 export * from './lib/wikiAlternateGenerals';
 export * from './lib/display';
 export * from './lib/judgmentOutcome';
