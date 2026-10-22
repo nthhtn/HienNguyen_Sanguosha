@@ -100,3 +100,5 @@ These three are real changes and belong to slice 2, not slice 4.
 Implementation note (Task 8): Empty City reads Zhuge Liang's hand when the Slash or Duel is aimed at him; the card is then cancelled for him. A hidden Alternate owner of these skills is asked whether to reveal, as Default's Behind the Curtain is.
 
 Implementation note (Task 9): Bequeathed Strategy reads the top 2 cards of the draw pile as they are; it does not reshuffle the discard pile to make up 2. With 1 card he gives that one; with 0 nothing happens.
+
+Implementation note (Task 13): Sorrow's choice is only between the killer's Generals whose skills are still active. If one of the killer's Generals is already silenced, only the other is offered; if both are (or the whole seat is silenced), Sorrow asks nothing. Which slot lost its skills is public; which General it is stays hidden.
