@@ -59,7 +59,8 @@ describe('Alternate Zhu Rong, Fearsome Blade', () => {
     expect(askedAbout(hitB('alternate:zhu-rong'))).toBe('alternate:fearsome-blade');
   });
 
-  it('damage that reaches another seat through a chain does not offer it', () => {
+  // Default behaves the same here: chained damage is never Slash damage. This does not show the variant's difference.
+  it('chained damage reaching another seat is not offered the compete', () => {
     const first = hitB('alternate:zhu-rong', 'fire-attack', ['seat-b', 'seat-c']);
     expect(askedAbout(first)).toBe('alternate:fearsome-blade'); // for seat-b, the seat aimed at
     expect(first.pendingChoice).toMatchObject({ seatId: 'seat-a' });
@@ -72,6 +73,29 @@ describe('Alternate Zhu Rong, Fearsome Blade', () => {
   it('records the seat the Slash was aimed at on the damage it deals', () => {
     const s = hitB('alternate:zhu-rong');
     expect(s.log.find((e) => e.kind === 'DamageDealtEvent')).toMatchObject({ damage: { cause: { aimedAt: 'seat-b' } } });
+  });
+
+  // Non-chained Slash damage on seat-c, from a Slash aimed elsewhere (a redirect): where the variant differs from Default.
+  const strikeC = (general: string, aimedAt?: string) => {
+    const sha = card('s1', 'sha');
+    const used = { as: 'sha', colour: 'black' as const, physical: [{ definitionId: 'sha', instanceId: 's1', suit: 'spade' as const, rank: 7 }] };
+    return h.run(rong(general), [
+      { kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-a' }, target: { kind: 'seat', seatId: 'seat-c' }, amount: 1, nature: 'normal', cause: { card: used, cardInstanceId: sha.instanceId, ...(aimedAt ? { aimedAt } : {}) } } },
+    ]);
+  };
+
+  it('is not offered for damage on a seat the Slash was not aimed at; Default is', () => {
+    expect(askedAbout(strikeC('alternate:zhu-rong', 'seat-b'))).toBeNull();
+    expect(askedAbout(strikeC('zhu-rong', 'seat-b'))).toBe('intense-edge');
+  });
+
+  it('is not offered when the cause records no aimed seat; Default is', () => {
+    expect(askedAbout(strikeC('alternate:zhu-rong'))).toBeNull();
+    expect(askedAbout(strikeC('zhu-rong'))).toBe('intense-edge');
+  });
+
+  it('is offered for damage on the seat the Slash was aimed at', () => {
+    expect(askedAbout(strikeC('alternate:zhu-rong', 'seat-c'))).toBe('alternate:fearsome-blade');
   });
 
   it('Default Zhu Rong keeps her own id and still competes', () => {
