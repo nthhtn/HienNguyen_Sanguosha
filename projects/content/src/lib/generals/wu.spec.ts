@@ -62,6 +62,13 @@ describe('Lu Xun — Linked Camps', () => {
     expect(drawnCount(s)).toBe(1);
   });
 
+  it('only once when one effect discards his whole hand (the kill penalty)', () => {
+    const s = h.run(luXun([card('x1', 'shan'), card('x2', 'shan'), card('x3', 'shan')]), [{ kind: 'DiscardZoneEffect', zoneId: 'seat-a:hand' }]);
+    expect(handIds(s, 'seat-a')).toEqual(['d1']);
+    expect(drawnCount(s)).toBe(1);
+    expect(abilityLog(s)).toEqual([expect.objectContaining({ abilityId: 'linked-camps', outcome: 'used' })]);
+  });
+
   it('not while a card is left, and not while he is hidden', () => {
     expect(handIds(h.play(luXun([card('s1', 'sha'), card('x', 'shan')]), 's1', 'seat-b'), 'seat-a')).toEqual(['x']);
     expect(handIds(h.play(luXun([card('s1', 'sha')], { generals: at('seat-a', 'lu-xun', 'filler-sun-jian', false) }), 's1', 'seat-b'), 'seat-a')).toEqual([]);

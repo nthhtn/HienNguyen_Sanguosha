@@ -4,6 +4,8 @@ import { ALTERNATE_VARIANTS } from './alternateVariants';
 import { ALTERNATE_VARIANT_BASE, VARIANTS_WITHOUT_BASE, baseSkillId, lookupWithBase } from './alternateBase';
 import { GENERAL_SKILLS } from './generals';
 import { skillIdOf } from './skillId';
+import { abilityName } from './display';
+import review from '../../data/locales/vi/review.json';
 
 const records = alternateGeneralRecords();
 const entries = Object.entries(ALTERNATE_VARIANTS).flatMap(([generalId, bySkill]) =>
@@ -71,5 +73,41 @@ describe('lookupWithBase', () => {
     expect(lookupWithBase({ kindness: 'base', 'alternate:benevolence': 'own' }, 'alternate:benevolence')).toBe('own');
     expect(lookupWithBase({ kindness: 'base' }, 'sha')).toBeUndefined();
     expect(lookupWithBase({}, 'constructor')).toBeUndefined();
+  });
+});
+
+describe('the fifteen skills of the nine slice 3 Generals', () => {
+  const NEW = ['gan-fu-ren', 'yue-jin', 'ding-feng', 'pan-feng', 'tian-feng', 'kong-rong', 'ma-teng', 'ji-ling', 'zou-shi'];
+  const newEntries = entries.filter((e) => NEW.includes(e.generalId));
+
+  it('has exactly these variant ids', () => {
+    expect(newEntries.map((e) => e.variant.id).sort()).toEqual([
+      'alternate:call-of-valour', 'alternate:celebrity', 'alternate:close-combat', 'alternate:comity', 'alternate:dauntless',
+      'alternate:deathly-counsel', 'alternate:divine-wisdom', 'alternate:double-edged', 'alternate:femme-fatale',
+      'alternate:horsemanship', 'alternate:impetus-for-conflicts', 'alternate:insanity-axe', 'alternate:prudence',
+      'alternate:swift-and-deadly', 'alternate:with-the-tide',
+    ]);
+  });
+
+  it('gives each an English and a Vietnamese name, not the id fallback', () => {
+    for (const { variant } of newEntries) {
+      const en = abilityName(variant.id, 'en');
+      const vi = abilityName(variant.id, 'vi');
+      expect(en).not.toMatch(/^alternate:/);
+      expect(vi).not.toMatch(/^alternate:/);
+      expect(en.length).toBeGreaterThan(0);
+      expect(vi).not.toBe(en);
+    }
+  });
+
+  it('names Ma Teng’s Horsemanship apart from Default’s id', () => {
+    expect(ALTERNATE_VARIANTS['ma-teng']['马术']?.id).toBe('alternate:horsemanship');
+    expect(abilityName('alternate:horsemanship')).toBe('Horsemanship');
+  });
+
+  it('leaves their Vietnamese text in draft: no review entry names any of them', () => {
+    const reviewed = JSON.stringify(review);
+    for (const { variant } of newEntries) expect(reviewed).not.toContain(variant.id);
+    for (const id of NEW) expect(reviewed).not.toContain(id);
   });
 });

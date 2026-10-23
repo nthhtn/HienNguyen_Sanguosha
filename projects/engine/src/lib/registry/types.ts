@@ -36,6 +36,9 @@ export interface TargetPick {
   eligibleIds: string[];
   min: number;
   max: number;
+  // At most `max` of the picked seats may come from `ids` (Close Combat: the first target may be at any
+  // distance in range, but each extra one it adds must be near).
+  capped?: { ids: string[]; max: number };
 }
 
 export interface CardDefinition {
@@ -162,6 +165,8 @@ export interface AbilityModifiers {
   shaLimit?: number;
   // More targets, by card id, for the wearer's play of that card when it is its last hand card (Sky Scorcher: { sha: 2 }).
   extraTargetsWhenLastCard?: Record<string, number>;
+  // More targets for the owner's Sha, each one near the owner (Close Combat: 1). See `targetPick` in the Sha card.
+  extraShaTargets?: number;
   // The wearer's Sha ignores the target's armour (Black Pommel).
   ignoresArmor?: boolean;
   // Card ids that can't target the wearer (Wood Armor: Barbarians, Hail of Arrows).
@@ -264,6 +269,9 @@ export interface SkillDefinition extends Abilities {
   // Its triggers are also gathered for its own seat's elimination, though an
   // eliminated seat has no skills in play (Heartbroken).
   afterDeath?: true;
+  // While revealed, in its owner's turn: no other seat may reveal a General by
+  // choice or by an ask (revealBlockedFor). A death's reveal still happens.
+  blocksOtherReveals?: true;
   // Spare Generals dealt to its owner's seat when Generals are chosen.
   spareGenerals?: number;
   active?: ActiveSkill;

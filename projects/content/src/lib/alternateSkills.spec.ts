@@ -39,11 +39,20 @@ describe('readyAlternateSkills', () => {
     expect(ids).toContain('alternate:stabilization');
     expect(ids).not.toContain(stubborn);
   });
-  it('runs nothing for Generals missing from Default, without throwing', () => {
+  it('runs only their own Alternate variants for Generals missing from Default (none yet for most), without throwing', () => {
     const missing = alternateGeneralRecords().filter((g) => !generalsData[g.id]);
     expect(missing.length).toBeGreaterThanOrEqual(9);
     expect(missing.map((g) => g.id)).toContain('gan-fu-ren');
-    for (const g of missing) expect(readyAlternateSkills(g)).toEqual([]);
+    for (const g of missing) for (const skill of readyAlternateSkills(g)) expect(skill.id.startsWith('alternate:')).toBe(true);
+    expect(readyIds('gan-fu-ren')).toEqual(['alternate:prudence', 'alternate:divine-wisdom']);
+    expect(readyIds('yue-jin')).toEqual(['alternate:dauntless']);
+    expect(readyIds('pan-feng')).toEqual(['alternate:insanity-axe']);
+    expect(readyIds('tian-feng')).toEqual(['alternate:deathly-counsel', 'alternate:with-the-tide']);
+    expect(readyIds('kong-rong')).toEqual(['alternate:celebrity', 'alternate:comity']);
+    expect(readyIds('ji-ling')).toEqual(['alternate:double-edged']);
+    expect(readyIds('ma-teng')).toEqual(['alternate:horsemanship', 'alternate:call-of-valour']);
+    expect(readyIds('zou-shi')).toEqual(['alternate:femme-fatale', 'alternate:impetus-for-conflicts']);
+    expect(readyIds('ding-feng')).toEqual(['alternate:close-combat', 'alternate:swift-and-deadly']);
   });
   it('never runs a Lord skill', () => {
     for (const g of alternateGeneralRecords()) {

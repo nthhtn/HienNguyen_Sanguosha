@@ -22,6 +22,8 @@ const LABEL_OPTIONS: Record<string, { key: MessageKey; params: (numbers: string[
   doubt: { key: 'choice.label.doubt', params: () => ({}) },
   discard: { key: 'choice.label.discard2', params: () => ({}) },
   damage: { key: 'choice.label.damage1', params: () => ({}) },
+  'move-card': { key: 'choice.label.moveToEquipment', params: () => ({}) },
+  'discard-card': { key: 'choice.label.discardIt', params: () => ({}) },
 };
 
 // The language's wording of a label the engine sent, found from its English text alone (the

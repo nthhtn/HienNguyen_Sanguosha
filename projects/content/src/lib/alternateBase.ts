@@ -20,12 +20,37 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:sorrow': 'heartbroken',
   // Bots only: it asks like Bestowed Rouse; its own prompts and hints are in display.ts.
   'alternate:bequeathed-strategy': 'bestowed-rouse',
+  // Ma Teng's Horsemanship is Ma Chao's: same texts and modifier.
+  'alternate:horsemanship': 'horsemanship',
 };
 
 // Variants with no Default counterpart, which therefore have no base entry (and need their own texts and bot support).
 export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>([
   // Lu Xun's Scrutinize: a conversion into Amass; Default has no skill like it.
   'alternate:scrutinize',
+  // Gan Fu Ren is new in Alternate: both her skills have no Default counterpart.
+  'alternate:prudence',
+  'alternate:divine-wisdom',
+  // Yue Jin is new in Alternate: Dauntless has no Default counterpart.
+  'alternate:dauntless',
+  // Ding Feng is new in Alternate: both his skills have no Default counterpart.
+  'alternate:close-combat',
+  'alternate:swift-and-deadly',
+  // Pan Feng is new in Alternate: Insanity Axe has no Default counterpart.
+  'alternate:insanity-axe',
+  // Tian Feng is new in Alternate: both his skills have no Default counterpart.
+  'alternate:deathly-counsel',
+  'alternate:with-the-tide',
+  // Kong Rong is new in Alternate: both his skills have no Default counterpart.
+  'alternate:celebrity',
+  'alternate:comity',
+  // Ma Teng is new in Alternate: Call of Valour has no Default counterpart.
+  'alternate:call-of-valour',
+  // Ji Ling is new in Alternate: Double Edged has no Default counterpart.
+  'alternate:double-edged',
+  // Zou Shi is new in Alternate: both her skills have no Default counterpart.
+  'alternate:femme-fatale',
+  'alternate:impetus-for-conflicts',
 ]);
 
 // The Default skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.

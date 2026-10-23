@@ -1,6 +1,6 @@
 import type { GameState, GeneralOwner } from 'engine';
 import { redactStateForSeat } from 'engine';
-import { abilityLog, askedAbout, card, handIds, harness, ids, kwMode, table, TableOptions } from './skills.testing';
+import { abilityLog, askedAbout, card, handIds, harness, hp, ids, kwMode, table, TableOptions } from './skills.testing';
 
 const h = harness();
 const at = (seatId: string, general: string): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', true] });
@@ -276,5 +276,75 @@ describe('Alternate Zhen Ji, Goddess Luo', () => {
     expect(ids(s, 'discardPile')).toEqual(['b1']);
     expect(handIds(s, 'seat-a')).toEqual([]);
     expect(ids(s, 'seat-a:stash')).toEqual([]);
+  });
+});
+
+describe('Alternate Yue Jin, Dauntless', () => {
+  const id = 'alternate:dauntless';
+  // Yue Jin is seat-a; the turn is seat-b's, in its Play Phase: ending it reaches the End Phase.
+  const endTurn = (s: GameState) => h.act(s, { kind: 'EndPhaseAction', seatId: s.turn.ownerSeatId });
+  const yue = (o: { hand?: ReturnType<typeof card>[]; victimHand?: ReturnType<typeof card>[]; victimEquip?: ReturnType<typeof card>[]; owner?: string; hp?: number } = {}) =>
+    table(
+      { 'seat-a:hand': o.hand ?? [card('b1', 'shan', 'heart'), card('t1', 'dismantle', 'spade')], 'seat-b:hand': o.victimHand ?? [], 'seat-b:equip': o.victimEquip ?? [] },
+      { generals: at('seat-a', 'alternate:yue-jin'), phase: 'Play', owner: o.owner ?? 'seat-b', hp: { 'seat-b': o.hp ?? 4 } }
+    );
+  const pickBasic = (s: GameState) => h.select(h.use(endTurn(s)), 'b1');
+  const sword = card('e1', 'crossbow', 'diamond', 1);
+  const horse = card('e2', 'ice-sword', 'spade', 2);
+
+  it('is asked in another seat’s End Phase, and only while she holds a Basic hand card', () => {
+    expect(askedAbout(endTurn(yue()))).toBe(id);
+    expect(askedAbout(endTurn(yue({ hand: [card('t1', 'dismantle', 'spade')] })))).toBeNull();
+    expect(askedAbout(endTurn(yue({ hand: [] })))).toBeNull();
+  });
+
+  it('is not asked in her own End Phase', () => {
+    expect(askedAbout(endTurn(yue({ owner: 'seat-a' })))).toBeNull();
+  });
+
+  it('declining does nothing', () => {
+    const s = h.decline(endTurn(yue()));
+    expect(hp(s, 'seat-b')).toBe(4);
+    expect(handIds(s, 'seat-a')).toHaveLength(2);
+  });
+
+  it('only a Basic card of her hand can be discarded', () => {
+    const s = h.use(endTurn(yue()));
+    expect(s.pendingSelection!.eligibleIds).toEqual(['b1']);
+  });
+
+  it('a victim with no Equipment card takes 1 damage from her, without a choice', () => {
+    const s = pickBasic(yue({ victimHand: [card('v1', 'shan', 'heart')] }));
+    expect(ids(s, 'discardPile')).toContain('b1');
+    expect(hp(s, 'seat-b')).toBe(3);
+    expect(s.pendingSelection).toBeFalsy();
+    expect(s.log.some((e) => e.kind === 'DamageDealtEvent' && e.damage.source?.kind === 'seat' && e.damage.source.seatId === 'seat-a')).toBe(true);
+  });
+
+  it('the victim may discard an Equipment card from hand, taking no damage', () => {
+    let s = pickBasic(yue({ victimHand: [card('v1', 'shan', 'heart'), horse], victimEquip: [sword] }));
+    expect(s.pendingSelection).toMatchObject({ seatId: 'seat-b', eligibleIds: ['e2', 'e1'] });
+    s = h.select(s, 'e2');
+    expect(ids(s, 'discardPile')).toContain('e2');
+    expect(hp(s, 'seat-b')).toBe(4);
+  });
+
+  it('the victim may discard a worn Equipment card, taking no damage', () => {
+    const s = h.select(pickBasic(yue({ victimEquip: [sword] })), 'e1');
+    expect(ids(s, 'discardPile')).toContain('e1');
+    expect(ids(s, 'seat-b:equip')).toEqual([]);
+    expect(hp(s, 'seat-b')).toBe(4);
+  });
+
+  it('the victim declining takes 1 damage and keeps the card', () => {
+    const s = h.cancel(pickBasic(yue({ victimEquip: [sword] })));
+    expect(hp(s, 'seat-b')).toBe(3);
+    expect(ids(s, 'seat-b:equip')).toEqual(['e1']);
+  });
+
+  it('a hidden Yue Jin is asked too (using the skill reveals her)', () => {
+    const t = yue();
+    const hidden = { ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, generals: { main: { ...x.generals!.main, revealed: false }, deputy: { ...x.generals!.deputy, revealed: false } } } : x)) };
+    expect(askedAbout(endTurn(hidden))).toBe(id);
   });
 });

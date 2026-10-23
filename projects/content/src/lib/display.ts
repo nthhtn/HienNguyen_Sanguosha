@@ -192,6 +192,20 @@ const ABILITY_HINTS: Record<string, string> = {
   'eternal-loyalty': 'A seat of your choice draws up to its max HP',
   'alternate:eternal-loyalty': 'A seat of your choice draws up to its max HP, but never above 5 cards',
   'alternate:bequeathed-strategy': 'Look at the top 2 cards of the draw pile, then give one to any player and the other to any player',
+  'alternate:prudence': 'Another seat of your Kingdom draws 1 card',
+  'alternate:divine-wisdom': 'Discard all your hand cards; if you discard at least as many as your HP, recover 1 HP',
+  'alternate:call-of-valour': 'Every seat of your Kingdom draws 3 cards; if your Kingdom has the fewest seats, recover 1 HP',
+  'alternate:close-combat': 'When you use Sha, you can add one more target within distance 1 of you and in your attack range',
+  'alternate:swift-and-deadly': 'Discard a card and choose a seat; your distance to it counts as 1 until the end of the turn',
+  'alternate:deathly-counsel': 'Discard a card from the hand or equipment area of another seat',
+  'alternate:with-the-tide': 'Draw 1 card when a seat of your Kingdom brings another seat to dying; lose 1 HP when another seat of your Kingdom dies',
+  'alternate:celebrity': 'Damage to you from a seat with a hidden General is reduced by 1',
+  'alternate:comity': 'When cards you discard or lose from your hand or equipment area would go to the discard pile, give them to another seat instead',
+  'alternate:double-edged': 'Compete with another seat; if you win, use Sha on the loser or a seat of its Kingdom, ignoring distance; if not, your Play Phase ends',
+  'alternate:insanity-axe': 'After your Sha damages {target}, move a card of its equipment area into yours, or discard it',
+  'alternate:dauntless': 'Discard a Basic card from your hand; {target} then discards an Equipment card or takes 1 damage from you',
+  'alternate:femme-fatale': 'Reveal this General; while it is revealed, other seats cannot reveal Generals in your turn',
+  'alternate:impetus-for-conflicts': 'Discard an Equipment card to hide a General of a seat whose Generals are both revealed',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',
   'sudden-attack': "Discard one of {target}'s cards",
@@ -237,6 +251,7 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   assault: { prompt: 'Choose a Weapon to discard, or none to lose 1 HP', confirm: 'Confirm' },
   'rouse-the-tiger': { prompt: 'Choose a seat with more HP to compete with', confirm: 'Choose' },
   'heavens-justice': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
+  'alternate:double-edged': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
   alliance: { prompt: 'Choose a seat to swap hands', confirm: 'Choose' },
   'brave-spirit': { prompt: 'Choose cards to discard', confirm: 'Discard' },
   charity: { prompt: 'Choose half of your hand to give away', confirm: 'Give' },
@@ -263,6 +278,11 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   decentralization: 'Choose a seat to take an extra turn',
   'direct-instruction': 'Choose a seat to place the card in',
   'alternate:bequeathed-strategy': 'Choose a seat to give {card} to',
+  'alternate:prudence': 'Choose a seat of your Kingdom to draw 1 card',
+  'alternate:deathly-counsel': 'Choose a seat to discard a card from',
+  'alternate:comity': 'Choose a seat to give the cards to',
+  'alternate:double-edged': 'Choose {target} or a seat of its Kingdom to use Sha on',
+  'alternate:swift-and-deadly': 'Choose a seat to be at distance 1 from you until the end of the turn',
 };
 
 export function seatPickText(abilityId: string, locale = 'en'): string | null {
@@ -281,6 +301,7 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
   'alternate:stabilization': 'Choose a card to give back; you take the others, if there are any',
   'alternate:bequeathed-strategy': 'Choose a card to give first; the other is given next',
   'alternate:sorrow': "Choose which of {target}'s Generals loses its skills",
+  'alternate:impetus-for-conflicts': "Choose which of {target}'s Generals to hide",
 };
 
 export function choicePromptText(abilityId: string, locale = 'en'): string | null {
@@ -297,6 +318,11 @@ const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; can
   'alliance/swap': { prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' },
   'draw-take': { prompt: 'Choose up to 2 seats to take a hand card from', confirm: 'Take' },
   'move-card': { prompt: 'Choose a seat to move a card from', confirm: 'Choose' },
+  'alternate:swift-and-deadly/discarded': { prompt: 'Choose a card to discard', confirm: 'Discard' },
+  'alternate:dauntless/discarded': { prompt: 'Choose a Basic card from your hand to discard', confirm: 'Discard' },
+  'alternate:impetus-for-conflicts/discarded': { prompt: 'Choose an Equipment card to discard', confirm: 'Discard' },
+  'alternate:impetus-for-conflicts/chosen': { prompt: 'Choose a seat whose Generals are both revealed', confirm: 'Choose' },
+  'alternate:dauntless/paid': { prompt: 'Choose an Equipment card to discard, or take 1 damage', confirm: 'Discard', cancel: 'Take the Damage' },
 };
 
 // A skill's own step ("alliance/swap") is found before a step name shared by any skill.
@@ -371,6 +397,10 @@ const COMPETE_OUTCOMES: Record<string, { won: string; lost: string }> = {
   'intense-edge': {
     won: "{user} will take one of {target}'s cards",
     lost: 'Nothing happens',
+  },
+  'alternate:double-edged': {
+    won: '{user} will use Sha on {target} or a seat of its Kingdom',
+    lost: "{user}'s Play Phase ends",
   },
 };
 

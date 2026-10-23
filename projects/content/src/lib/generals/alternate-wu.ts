@@ -2,6 +2,40 @@ import type { SkillDefinition } from 'engine';
 import { colourFor } from '../shared/suits';
 import { makeStubborn } from './mountain';
 import { makeArmedConsorts, makeHumility, makeReconsider } from './wu';
+import { distanceOneFlag } from '../shared/queries';
+import { discardMoves, isLiving, otherLivingSeatIds, ownCards, selectionOf, skillStep, used } from '../shared/skills';
+
+// Close Combat (may): when he uses a Sha he may add one more target, who must be within physical distance 1
+// of him and a legal Sha target (so within his attack range, weapon included). The Sha's target pick reads
+// the modifier; he picks one or two targets.
+const closeCombat: SkillDefinition = { id: 'alternate:close-combat', modifiers: { extraShaTargets: 1 } };
+
+// Swift and Deadly (active, once per Play Phase): he discards a card from his hand or equipment area and
+// picks another living seat; his distance to that seat counts as 1 until the end of the turn. Only his
+// distance to it changes. Nothing is discarded unless a seat is picked.
+const swiftAndDeadly: SkillDefinition = {
+  id: 'alternate:swift-and-deadly',
+  active: {
+    usesPerTurn: 1,
+    canUse: (state, { seatId }) => ownCards(state, seatId, true).length > 0 && otherLivingSeatIds(state, seatId).length > 0,
+    start: (state, { seatId, owner }) => [
+      selectionOf(state, owner, { of: 'cards', eligibleIds: ownCards(state, seatId, true).map((c) => c.instanceId), min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'discarded') }, onCancel: [] }),
+    ],
+  },
+  onStep: (state, step) => {
+    const { owner } = step;
+    const data = step.data ?? {};
+    const seats = otherLivingSeatIds(state, owner.seatId);
+    if (step.step === 'discarded') {
+      const card = (data['picked'] as string[])[0];
+      return seats.length === 0 ? [] : [selectionOf(state, owner, { of: 'seats', eligibleIds: seats, min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'chosen', { card }) }, onCancel: [] })];
+    }
+    const target = (data['picked'] as string[])[0];
+    const card = data['card'] as string;
+    if (!isLiving(state, target) || !ownCards(state, owner.seatId, true).some((c) => c.instanceId === card)) return [];
+    return [...discardMoves(state, [card]), { kind: 'SetTurnFlagEffect', flag: distanceOneFlag(owner.seatId, target) }, used(owner, 'used', target)];
+  },
+};
 
 // Alternate Wu skills whose rules differ from Default's, by General id then the Chinese skill name.
 // Each variant's id is `alternate:` plus the id of the Alternate English skill name.
@@ -31,4 +65,6 @@ export const ALTERNATE_WU_VARIANTS: Readonly<Record<string, Readonly<Record<stri
   },
   // Stabilization: works with exactly 1 discarded card too (Default: 2 or more).
   'zhang-zhao-and-zhang-hong': { 固政: { ...makeStubborn(1), id: 'alternate:stabilization' } },
+  // Close Combat and Swift and Deadly: Ding Feng is new to Alternate (Default has no such General).
+  'ding-feng': { 短兵: closeCombat, 奋迅: swiftAndDeadly },
 };

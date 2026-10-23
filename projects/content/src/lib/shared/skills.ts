@@ -12,6 +12,17 @@ import { handOf } from './queries';
 export type SkillStep = Extract<Effect, { kind: 'SkillStepEffect' }>;
 type DrawPhase = Extract<Effect, { kind: 'DrawPhaseEffect' }>;
 
+// One effect can move several cards in one step (DiscardZoneEffect, the kill penalty), and every move's
+// after-triggers are gathered against the state after all of them. A skill that must act once per loss
+// asks only on the last card move logged: an event that is not it stands down.
+export function isLastMoveOfStep(state: GameState, event: CardMovedEvent): boolean {
+  for (let i = state.log.length - 1; i >= 0; i--) {
+    const entry = state.log[i];
+    if (entry.kind === 'CardMovedEvent') return entry.cardInstanceId === event.cardInstanceId;
+  }
+  return false;
+}
+
 // A step of `owner`'s skill (SkillDefinition.onStep), carrying `data`.
 export function skillStep(owner: GeneralOwner, step: string, data: Record<string, unknown> = {}): SkillStep {
   return { kind: 'SkillStepEffect', owner, step, data };

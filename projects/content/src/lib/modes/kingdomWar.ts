@@ -148,6 +148,27 @@ function hpDropTriggers(point: TriggerPoint): SkillTrigger[] {
 // The first-reveal rule needs a table of at least this many seats.
 export const FIRST_REVEAL_MIN_SEATS = 5;
 
+// Whether the reveal just logged is the first time both of `seatId`'s Generals
+// stand revealed: a General hidden and revealed again (GeneralHiddenEvent) pays
+// no second bonus. With no General of the seat ever hidden, that is every reveal
+// that leaves both revealed (as before hiding existed, built states included).
+// The replay assumes every hide logs a GeneralHiddenEvent and every reveal a GeneralRevealedEvent.
+function firstTimeBothRevealed(state: GameState, seatId: string): boolean {
+  const ofSeat = state.log.filter((e) => (e.kind === 'GeneralRevealedEvent' || e.kind === 'GeneralHiddenEvent') && e.seatId === seatId);
+  if (!ofSeat.some((e) => e.kind === 'GeneralHiddenEvent')) return true;
+  const shown = new Set<string>();
+  let times = 0;
+  for (const e of ofSeat) {
+    if (e.kind === 'GeneralHiddenEvent') {
+      shown.delete(e.slot);
+    } else if (e.kind === 'GeneralRevealedEvent' && !shown.has(e.slot)) {
+      shown.add(e.slot);
+      if (shown.size === 2 && !e.onDeath) times++;
+    }
+  }
+  return times === 1;
+}
+
 // Common table rules on revealing Generals. Both fire after the reveal is logged.
 const revealBonusTriggers: SkillTrigger[] = [
   // Optional rule: the first General revealed at the table draws 2 cards.
@@ -169,6 +190,7 @@ const revealBonusTriggers: SkillTrigger[] = [
       if (event.onDeath) return false;
       const generals = state.seats.find((s) => s.id === event.seatId)?.generals;
       if (!generals || !generals.main.revealed || !generals.deputy.revealed || !registry) return false;
+      if (!firstTimeBothRevealed(state, event.seatId)) return false;
       const printed = [generals.main, generals.deputy].map((g) => registry.generals.get(g.generalDefinitionId)?.maxHp ?? 0);
       return (printed[0] + printed[1]) % 2 === 1;
     },
@@ -284,7 +306,8 @@ export const kingdomWarMode: GameModeDefinition = {
     // Kill reward and penalty: the seat whose damage killed another. Another
     // Kingdom (a killer with no revealed General always counts as one) draws one
     // card per living seat of the dead seat's Kingdom, the dead seat included;
-    // the same Kingdom discards its whole hand. Qun is one Kingdom like the rest.
+    // the same Kingdom discards its whole hand. Qun is one Kingdom like the rest. Only exposed seats count
+    // (a face-down seat of the Kingdom does not; the dead seat was shown by its death).
     {
       point: 'after:SeatEliminatedEvent',
       condition: (state, subject) => {
@@ -297,7 +320,8 @@ export const kingdomWarMode: GameModeDefinition = {
         const killer = state.seats.find((s) => s.id === killerSeatId)!;
         const revealedAny = !!killer.generals && (killer.generals.main.revealed || killer.generals.deputy.revealed);
         if (revealedAny && killer.kingdom === dead.kingdom) return [{ kind: 'DiscardZoneEffect', zoneId: killer.hand.zoneId }];
-        const count = state.seats.filter((s) => s.kingdom === dead.kingdom && (!s.eliminated || s.id === dead.id)).length;
+        const exposed = (s: Seat) => !!s.generals && (s.generals.main.revealed || s.generals.deputy.revealed);
+        const count = state.seats.filter((s) => s.kingdom === dead.kingdom && (s.id === dead.id || (!s.eliminated && exposed(s)))).length;
         return [{ kind: 'DrawCardsEffect', seatId: killer.id, count }];
       },
     },

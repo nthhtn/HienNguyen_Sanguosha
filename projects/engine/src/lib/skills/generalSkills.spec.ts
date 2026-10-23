@@ -1,7 +1,7 @@
 import { GameState, Seat } from '../domain/types';
 import { createRng } from '../rng/rng';
 import { ContentRegistry, GameModeDefinition, SkillDefinition, SkillTrigger } from '../registry/types';
-import { skillOf, skillsInPlay } from './generalSkills';
+import { revealBlockedFor, skillOf, skillsInPlay } from './generalSkills';
 import { gatherTriggeredSkills } from './triggers';
 import { conversionsOf } from '../rules/legality';
 
@@ -87,5 +87,56 @@ describe('skills in play', () => {
       { owner: owner('deputy', 'forge'), abilityId: 'forge', conversion: forge.conversions![0], needsReveal: true },
     ]);
     expect(conversionsOf(table(true, true), 'a', registry)[0]).not.toHaveProperty('needsReveal');
+  });
+});
+
+describe('a skill that blocks other seats’ reveals', () => {
+  const femme: SkillDefinition = { id: 'femme', blocksOtherReveals: true };
+  const blocking: ContentRegistry = { ...registry, generals: new Map([...registry.generals, ['siren', { id: 'siren', kingdom: 'Qun', maxHp: 3, skills: [femme] }]]) };
+  // Seat z holds Siren (Main); seat a holds Smith and Seer, both hidden unless said.
+  function room(o: { owner?: string; sirenRevealed?: boolean; aRevealed?: boolean } = {}): GameState {
+    const base = table(!!o.aRevealed, false);
+    const z: Seat = {
+      id: 'z', index: 1, kingdom: 'Qun', combinedHp: 3, maxCombinedHp: 3, eliminated: false,
+      generals: { main: { generalDefinitionId: 'siren', revealed: o.sirenRevealed ?? true }, deputy: { generalDefinitionId: 'seer', revealed: false } },
+      hand: { zoneId: 'z:hand' }, equipped: { zoneId: 'z:equip' }, judgment: { zoneId: 'z:judgment' },
+    };
+    return {
+      ...base, seats: [...base.seats, z], turn: { ...base.turn, ownerSeatId: o.owner ?? 'z' },
+      zones: [...base.zones, { id: 'z:hand', kind: 'hand', ownerSeatId: 'z', cards: [] }, { id: 'z:equip', kind: 'equip', ownerSeatId: 'z', cards: [] }],
+    };
+  }
+
+  it('blocks another seat during the holder’s turn while the holder’s General is revealed', () => {
+    expect(revealBlockedFor(room(), 'a', blocking)).toBe(true);
+  });
+
+  it('never blocks the holder itself', () => {
+    expect(revealBlockedFor(room(), 'z', blocking)).toBe(false);
+  });
+
+  it('does nothing while the holder’s General is hidden', () => {
+    expect(revealBlockedFor(room({ sirenRevealed: false }), 'a', blocking)).toBe(false);
+  });
+
+  it('does nothing in another seat’s turn', () => {
+    expect(revealBlockedFor(room({ owner: 'a' }), 'a', blocking)).toBe(false);
+  });
+
+  it('does nothing while the holder’s General has lost its skills', () => {
+    const s = room();
+    expect(revealBlockedFor({ ...s, seats: s.seats.map((x) => (x.id === 'z' ? { ...x, silencedSlots: ['main' as const] } : x)) }, 'a', blocking)).toBe(false);
+  });
+
+  it('a blocked seat’s hidden Generals offer nothing: no skill, conversion or trigger that would reveal', () => {
+    const s = room();
+    expect(skillsInPlay(s, 'a', blocking)).toEqual([]);
+    expect(skillsInPlay(s, 'a', blocking, true)).toEqual([]);
+    expect(conversionsOf(s, 'a', blocking)).toEqual([]);
+    expect(gatherTriggeredSkills(s, blocking, mode, 'after:X', {}).filter((g) => g.owner?.seatId === 'a')).toEqual([]);
+  });
+
+  it('a blocked seat’s revealed Generals keep their skills', () => {
+    expect(skillsInPlay(room({ aRevealed: true }), 'a', blocking).map((x) => x.owner.skillId)).toEqual(['iron', 'hint']);
   });
 });

@@ -1,4 +1,4 @@
-import { getLegalActions, hiddenSlots, getLegalTargets, targetsAllowed } from './legality';
+import { fitsPick, getLegalActions, hiddenSlots, getLegalTargets, pickAllows, targetsAllowed } from './legality';
 import { GameState, Target } from '../domain/types';
 import { ContentRegistry } from '../registry/types';
 import { createRng } from '../rng/rng';
@@ -169,5 +169,20 @@ describe('getLegalActions with a settled judgment', () => {
   it('nothing else is offered while a judgment waits, not even to the turn owner in the Play phase', () => {
     const offered = getLegalActions(settled({ players: [{ id: 'p-a', seatId: 'seat-a', kind: 'human', name: 'A' }] }), 'seat-a');
     expect(offered.map((a) => a.kind)).toEqual(['AcknowledgeJudgmentAction']);
+  });
+});
+
+describe('a target pick with a cap on some seats', () => {
+  const pick = { eligibleIds: ['a', 'b', 'c', 'd'], min: 1, max: 2, capped: { ids: ['c', 'd'], max: 1 } };
+  const seats = (...ids: string[]) => ids.map((seatId) => ({ kind: 'seat' as const, seatId }));
+  it('fits only while at most `max` of the capped seats are picked', () => {
+    expect(fitsPick(pick, seats('c', 'a'))).toBe(true);
+    expect(fitsPick(pick, seats('c', 'd'))).toBe(false);
+  });
+  it('allows a seat to join only if the pick still fits', () => {
+    expect(pickAllows(pick, ['c'], 'd')).toBe(false);
+    expect(pickAllows(pick, ['c'], 'a')).toBe(true);
+    expect(pickAllows(pick, ['a', 'b'], 'c')).toBe(false); // already at max
+    expect(pickAllows(pick, ['a'], 'a')).toBe(false); // already picked
   });
 });

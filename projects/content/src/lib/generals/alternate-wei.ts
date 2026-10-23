@@ -1,9 +1,10 @@
-import type { CardInstance, ChoiceOption, DamageDealtEvent, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition } from 'engine';
+import type { CardInstance, ChoiceOption, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition } from 'engine';
 import { requireZoneOfKind } from 'engine';
 import { makeEternalLoyalty } from './fire';
 import { riverGoddessOutcome } from './wei';
 import { stashMove, stashZoneOf } from '../shared/farm';
-import { ask, choiceOf, handZoneId, isLiving, on, seatOptions, skillStep, used } from '../shared/skills';
+import { handOf } from '../shared/queries';
+import { ask, choiceOf, discardMoves, handZoneId, isLiving, on, ownCards, seatOptions, selectionOf, skillDamage, skillStep, used } from '../shared/skills';
 
 // Bequeathed Strategy (may): after each 1 damage he suffers he may look at the top 2 cards of the draw
 // pile (he does not draw them), give one to any player (himself included), then give the remaining one
@@ -98,6 +99,44 @@ const goddessLuo: SkillDefinition = {
   },
 };
 
+// Dauntless (may): at the end of another seat's turn she may discard a Basic card from her hand. That
+// seat then discards an Equipment card from its hand or equipment area, or takes 1 damage from her. A
+// seat with no Equipment card takes the damage without a choice. With no Basic hand card she is not asked.
+const DAUNTLESS_ID = 'alternate:dauntless';
+const basicsOf = (state: GameState, seatId: string, registry: ContentRegistry) => handOf(state, seatId).filter((c) => registry.cards.get(c.definitionId)?.category === 'basic');
+const equipmentOf = (state: GameState, seatId: string, registry: ContentRegistry) => ownCards(state, seatId, true).filter((c) => registry.cards.get(c.definitionId)?.category === 'equipment');
+
+const dauntless: SkillDefinition = {
+  id: DAUNTLESS_ID,
+  triggers: [
+    on<PhaseChangedEvent>('after:PhaseChangedEvent', {
+      condition: (state, event, owner, registry) =>
+        event.phase === 'End' && event.seatId !== owner.seatId && state.turn.ownerSeatId === event.seatId && isLiving(state, event.seatId) && isLiving(state, owner.seatId) && basicsOf(state, owner.seatId, registry).length > 0,
+      effect: (_state, event, owner) => [ask(owner, [skillStep(owner, 'discard', { victim: event.seatId })], [], event.seatId)],
+    }),
+  ],
+  onStep: (state, step, registry) => {
+    const { owner } = step;
+    const victim = step.data?.['victim'] as string;
+    // 'paid': the victim's chosen Equipment card goes.
+    if (step.step === 'paid') return discardMoves(state, (step.data?.['picked'] as string[]) ?? []);
+    if (step.step === 'discard') {
+      const eligible = basicsOf(state, owner.seatId, registry).map((c) => c.instanceId);
+      if (!isLiving(state, owner.seatId) || !isLiving(state, victim) || eligible.length === 0) return [];
+      return [selectionOf(state, owner, { of: 'cards', eligibleIds: eligible, min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'discarded', { victim }) }, onCancel: [], targetSeatId: victim })];
+    }
+    // 'discarded': her card goes; then the victim discards an Equipment card or takes the damage.
+    const mine = (step.data?.['picked'] as string[]) ?? [];
+    const hit = skillDamage(owner, victim);
+    if (!isLiving(state, victim)) return [used(owner, 'used', victim), ...discardMoves(state, mine)];
+    const gear = equipmentOf(state, victim, registry).map((c) => c.instanceId);
+    const then = gear.length === 0
+      ? [hit]
+      : [selectionOf(state, owner, { of: 'cards', eligibleIds: gear, min: 1, max: 1, seatId: victim, targetSeatId: victim, then: { kind: 'skill-step', step: skillStep(owner, 'paid', { victim }) }, onCancel: [hit] })];
+    return [used(owner, 'used', victim), ...discardMoves(state, mine), ...then];
+  },
+};
+
 // Alternate Wei skills whose rules differ from Default's, by General id then the Chinese skill name.
 // Each variant's id is `alternate:` plus the id of the Alternate English skill name.
 export const ALTERNATE_WEI_VARIANTS: Readonly<Record<string, Readonly<Record<string, SkillDefinition>>>> = {
@@ -107,4 +146,6 @@ export const ALTERNATE_WEI_VARIANTS: Readonly<Record<string, Readonly<Record<str
   'guo-jia': { 遗计: bequeathedStrategy },
   // Goddess Luo: the black cards wait out of play until the judging ends (Default: each to her hand at once).
   'zhen-ji': { 洛神: goddessLuo },
+  // Dauntless: Yue Jin is new to Alternate (Default has no such General).
+  'yue-jin': { 骁果: dauntless },
 };

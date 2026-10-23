@@ -4,6 +4,8 @@ import { createRng } from '../rng/rng';
 import { CardInstance, GameState, GeneralOwner, PendingSelection } from '../domain/types';
 import { CardDefinition, ContentRegistry, GameModeDefinition, SkillDefinition } from '../registry/types';
 import { getLegalActions } from '../rules/legality';
+import { skillsInPlay } from '../skills/generalSkills';
+import { redactStateForSeat } from '../domain/redact';
 
 // Bolt: no target; played, its user draws 1.
 const bolt: CardDefinition = { id: 'bolt', name: 'Bolt', category: 'basic', legalPlayTargets: () => [[]], play: (_s, ctx) => [{ kind: 'DrawCardsEffect', seatId: ctx.seatId, count: 1 }] };
@@ -112,5 +114,85 @@ describe('onSelect', () => {
     const s = table([{ kind: 'OpenSelectionEffect', selection }]);
     const next = resolve(s, { kind: 'SelectAction', seatId: 'a', selectionId: 'sel', ids: ['k1'] }, ctx).state;
     expect(kinds(next)).toEqual(['SelectionMadeEvent', 'CardsDrawnEvent', 'CardMovedEvent']);
+  });
+});
+
+describe('hiding a General', () => {
+  // Smith with a compulsory skill too, to see it go off once hidden.
+  const iron: SkillDefinition = { id: 'iron', compulsory: true, modifiers: { shaLimit: 2 } };
+  const withIron: ContentRegistry = { ...registry, generals: new Map([...registry.generals, ['smith', { id: 'smith', kingdom: 'Wei', maxHp: 4, skills: [forge, iron] }]]) };
+  const hide = (slot: 'main' | 'deputy', revealed = true): GameState => table([{ kind: 'HideGeneralEffect', seatId: 'a', slot }], revealed);
+
+  it('hides that General only, and logs it', () => {
+    const s = hide('main');
+    expect(s.seats[0].generals!.main.revealed).toBe(false);
+    expect(s.seats[0].generals!.deputy.revealed).toBe(true);
+    expect(s.log).toEqual([{ kind: 'GeneralHiddenEvent', seatId: 'a', slot: 'main' }]);
+  });
+
+  it('its skills need a reveal again, and its compulsory skills go off', () => {
+    const s = hide('main');
+    expect(skillsInPlay(s, 'a', withIron).map((x) => [x.owner.skillId, x.needsReveal])).toEqual([
+      ['forge', true],
+      ['hint', false],
+    ]);
+  });
+
+  it('hiding a hidden General changes nothing and logs nothing', () => {
+    const s = hide('main', false);
+    expect(s.seats[0].generals!.main.revealed).toBe(false);
+    expect(s.log).toEqual([]);
+  });
+
+  it('another seat’s view shows the General as hidden again', () => {
+    const view = redactStateForSeat(hide('main'), 'b');
+    expect(view.seats[0].generals!.main.generalDefinitionId).toBe('hidden');
+    expect(view.seats[0].generals!.deputy.generalDefinitionId).toBe('seer');
+    expect(view.seats[0].kingdom).toBe('Wei');
+  });
+
+  it('a hidden General can be revealed again', () => {
+    const again = table([{ kind: 'HideGeneralEffect', seatId: 'a', slot: 'main' }, { kind: 'RevealGeneralEffect', seatId: 'a', slot: 'main' }], true);
+    expect(again.seats[0].generals!.main.revealed).toBe(true);
+    expect(kinds(again)).toEqual(['GeneralHiddenEvent', 'GeneralRevealedEvent']);
+  });
+});
+
+describe('reveals blocked during another seat’s turn', () => {
+  const femme: SkillDefinition = { id: 'femme', blocksOtherReveals: true };
+  const blocking: ContentRegistry = { ...registry, generals: new Map([...registry.generals, ['siren', { id: 'siren', kingdom: 'Qun', maxHp: 3, skills: [femme] }]]) };
+  const bctx = { registry: blocking, mode };
+  // Seat b holds Siren (revealed unless said) and it is b's turn; seat a's Generals are hidden.
+  const blocked = (sirenRevealed = true, extra: Partial<GameState> = {}): GameState => {
+    const s = table();
+    return {
+      ...s,
+      seats: s.seats.map((x) => (x.id === 'b' ? { ...x, generals: { main: { generalDefinitionId: 'siren', revealed: sirenRevealed }, deputy: { generalDefinitionId: 'seer', revealed: false } } } : x)),
+      turn: { ...s.turn, ownerSeatId: 'b' },
+      ...extra,
+    };
+  };
+  const answering: Partial<GameState> = {
+    pendingResponse: { id: 'w', respondingSeatId: 'a', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['bolt'], context: { effect: { kind: 'DrawCardsEffect', seatId: 'b', count: 1 } } },
+  };
+
+  it('a hidden General’s conversion is not offered to answer', () => {
+    const offered = (s: GameState) => getLegalActions(s, 'a', blocking).filter((a) => a.kind === 'UseConversionAction');
+    expect(offered(blocked(false, answering))).toHaveLength(1);
+    expect(offered(blocked(true, answering))).toEqual([]);
+  });
+
+  it('an ask that would reveal is skipped: what happens otherwise goes ahead', () => {
+    const skipped: Effect = { ...ask, otherwise: [{ kind: 'DrawCardsEffect', seatId: 'b', count: 1 }] };
+    const s = advanceToDecision(blocked(true, { resolutionQueue: [skipped] }), bctx).state;
+    expect(s.pendingChoice).toBeFalsy();
+    expect(s.seats[0].generals!.deputy.revealed).toBe(false);
+    expect(kinds(s)).toEqual(['CardsDrawnEvent']);
+    expect(s.log[0]).toMatchObject({ seatId: 'b' });
+  });
+
+  it('a Start-window reveal by the blocked seat throws', () => {
+    const s = blocked(true, { phase: 'Start', turn: { turnNumber: 1, ownerSeatId: 'b', extraTurnStack: [], startWindow: true } });
+    expect(() => resolve(s, { kind: 'ConfirmRevealsAction', seatId: 'a', slots: ['main'] }, bctx)).toThrow();
   });
 });

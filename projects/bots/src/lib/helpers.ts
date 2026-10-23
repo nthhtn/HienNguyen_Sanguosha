@@ -1,3 +1,4 @@
+import { pickAllows } from 'engine';
 import type { CardInstance, ContentRegistry, GameState, PendingSelection, Seat, Target, TargetPick } from 'engine';
 
 // What the rule-based bot knows about cards and seats, shared by its rules.
@@ -75,8 +76,11 @@ export function fillPick<A extends { targets: Target[]; pickTargets?: TargetPick
   const seats = pick.eligibleIds
     .map((id) => view.seats.find((s) => s.id === id))
     .filter((s): s is Seat => !!s && !isAlly(me, s))
-    .sort((a, b) => rank(view, me, b) - rank(view, me, a) || a.index - b.index)
-    .slice(0, pick.max);
+    .sort((a, b) => rank(view, me, b) - rank(view, me, a) || a.index - b.index);
+  // Best first, each one only while the pick still allows it (a cap on some seats).
+  const chosen: Seat[] = [];
+  for (const s of seats) if (pickAllows(pick, chosen.map((c) => c.id), s.id)) chosen.push(s);
+  seats.splice(0, seats.length, ...chosen);
   if (seats.length < Math.max(1, pick.min)) return null;
   const { pickTargets: _pick, ...rest } = action;
   return { ...rest, targets: seats.map((s) => ({ kind: 'seat' as const, seatId: s.id })) } as A;

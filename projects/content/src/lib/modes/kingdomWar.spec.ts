@@ -486,8 +486,8 @@ describe('Kingdom War reveal bonuses', () => {
   const handSize = (s: GameState, seatId: string) => s.zones.find((z) => z.id === `${seatId}:hand`)!.cards.length;
   const deck = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => card(id, 'sha'));
   // Both Generals hidden on every seat; Xu Huang (4) + Dong Zhuo (4) is even, Xu Huang (4) + Jia Xu (3) is odd.
-  const hidden = { generals: Object.fromEntries(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'].map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]])) };
-  const oddPair = (id: string) => ({ [id]: ['filler-xu-huang', 'filler-jia-xu', false] });
+  const hidden = { generals: Object.fromEntries(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'].map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false] as [string, string, boolean]])) };
+  const oddPair = (id: string): Record<string, [string, string, boolean]> => ({ [id]: ['filler-xu-huang', 'filler-jia-xu', false] });
 
   it('the first seat to reveal a General draws 2 when the option is on at 5 seats', () => {
     const s = { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: true } };
@@ -529,6 +529,28 @@ describe('Kingdom War reveal bonuses', () => {
     expect(handSize(reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy'), 'seat-b')).toBe(0);
   });
 
+  it('a General hidden and revealed again draws no second bonus', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: { ...hidden.generals, ...oddPair('seat-b') } });
+    const both = reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy');
+    expect(handSize(both, 'seat-b')).toBe(1);
+    const again = reveal(h.run(both, [{ kind: 'HideGeneralEffect', seatId: 'seat-b', slot: 'main' }]), 'seat-b', 'main');
+    expect(again.seats.find((x) => x.id === 'seat-b')!.generals!.main.revealed).toBe(true);
+    expect(handSize(again, 'seat-b')).toBe(1);
+  });
+
+  it('a General hidden before the second was ever revealed: the bonus still comes once', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: { ...hidden.generals, ...oddPair('seat-b') } });
+    const hiddenAgain = h.run(reveal(s, 'seat-b', 'main'), [{ kind: 'HideGeneralEffect', seatId: 'seat-b', slot: 'main' }]);
+    const both = reveal(reveal(hiddenAgain, 'seat-b', 'deputy'), 'seat-b', 'main');
+    expect(handSize(both, 'seat-b')).toBe(1);
+  });
+
+  it('a re-revealed General is never the table’s first reveal', () => {
+    const s = { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: true } };
+    const again = reveal(h.run(reveal(s, 'seat-b', 'main'), [{ kind: 'HideGeneralEffect', seatId: 'seat-b', slot: 'main' }]), 'seat-b', 'main');
+    expect(handSize(again, 'seat-b')).toBe(2);
+  });
+
   it('both bonuses stack for the first revealer', () => {
     const s = { ...makeTable({ drawPile: deck }, { seats: 5, generals: { ...hidden.generals, ...oddPair('seat-b') } }), rules: { firstRevealDraw: true } };
     expect(handSize(reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy'), 'seat-b')).toBe(3);
@@ -566,6 +588,11 @@ describe('Kingdom War kill reward and penalty', () => {
     expect(handOf(out, 'seat-a')).toHaveLength(2 + 3);
   });
 
+  it('counts only exposed seats of that Kingdom: a face-down seat is not counted', () => {
+    // Seat-b (dead, revealed by its death), seat-c and seat-d are Shu; seat-d is face-down: 2 cards, not 3.
+    expect(handOf(kill('seat-a', { hidden: ['seat-d'] }), 'seat-a')).toHaveLength(2 + 2);
+  });
+
   it('counts only living seats of that Kingdom besides the dead one', () => {
     expect(handOf(kill('seat-a', { eliminated: ['seat-d'] }), 'seat-a')).toHaveLength(2 + 2);
   });
@@ -583,8 +610,9 @@ describe('Kingdom War kill reward and penalty', () => {
   });
 
   it('rewards a killer with no revealed General even when it shares the Kingdom', () => {
+    // Shu: seat-b (dead, shown by its death), seat-c (the face-down killer, not counted) and seat-d: 2 cards.
     const out = kill('seat-c', { hidden: ['seat-c'] });
-    expect(handOf(out, 'seat-c')).toHaveLength(1 + 3);
+    expect(handOf(out, 'seat-c')).toHaveLength(1 + 2);
   });
 
   it('does nothing without a killer', () => {
