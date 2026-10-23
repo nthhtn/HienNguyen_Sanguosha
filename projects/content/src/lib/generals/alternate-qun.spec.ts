@@ -1203,3 +1203,59 @@ describe('Alternate Zou Shi, Impetus for Conflicts', () => {
     expect(registry.generals.get('alternate:zou-shi')!.skills.map((x) => x.id)).toEqual(['alternate:femme-fatale', id]);
   });
 });
+
+describe('Alternate Jia Xu, Descend into Chaos', () => {
+  const id = 'alternate:descend-into-chaos';
+  const mount = [...registry.cards.values()].find((c) => c.equipSlot === 'defensiveMount')!.id;
+  const start = (general: string, skillId: string, cards: Parameters<typeof table>[0] = {}, o: TableOptions = {}) =>
+    h.useSkill(table(cards, { generals: at('seat-a', general), ...o }), 'seat-a', skillId);
+  const optionsOfB = (s: GameState) => s.pendingChoice!.options.map((o) => o.id);
+  // Five seats; seat-b wears a Trident Glaive (range 3): seat-c and seat-a are at distance 1, seat-d and seat-e at 2.
+  const five = { 'seat-b:equip': [card('tg', 'trident-glaive')] };
+
+  it('offers only the nearest seats, however far the attack range reaches, and a tie offers both', () => {
+    const s = start('alternate:jia-xu', id, five, { seats: 5 });
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-b' });
+    expect(optionsOfB(s)).toEqual(['seat-c', 'seat-a', 'pass']);
+    expect(s.seats[0].marks).toEqual({ 'upheaval-used': 1 });
+  });
+
+  it('Default Jia Xu offers every seat in range on the same table', () => {
+    const s = start('jia-xu', 'upheaval', five, { seats: 5 });
+    expect(optionsOfB(s)).toEqual(['seat-c', 'seat-d', 'seat-e', 'seat-a', 'pass']);
+  });
+
+  it('opens the pick even when only one seat is nearest', () => {
+    const s = start('alternate:jia-xu', id, {}, { seats: 2 });
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-b' });
+    expect(optionsOfB(s)).toEqual(['seat-a', 'pass']);
+  });
+
+  it('skips a nearest seat a Sha cannot target (empty-handed Default Zhuge Liang) for the next nearest', () => {
+    // seat-a rides a defensive mount (distance 2 from seat-b); seat-c is the one nearest seat, but untargetable.
+    const s = start('alternate:jia-xu', id, { 'seat-a:equip': [card('m', mount)] }, { generals: { ...at('seat-a', 'alternate:jia-xu'), 'seat-c': ['zhuge-liang', 'filler-jia-xu', true] } });
+    expect(optionsOfB(s)).toEqual(['seat-d', 'seat-a', 'pass']);
+  });
+
+  it('a seat whose nearest seat is beyond its attack range may still pick it, and a Sha at it is played as any Sha', () => {
+    // Four seats; seat-a and seat-c ride defensive mounts, so every other seat is at distance 2: all three tie, none within range 1.
+    let s = start('alternate:jia-xu', id, { 'seat-a:equip': [card('m1', mount)], 'seat-c:equip': [card('m2', mount)], 'seat-b:hand': [card('s1', 'sha')] });
+    expect(optionsOfB(s)).toEqual(['seat-c', 'seat-d', 'seat-a', 'pass']);
+    s = h.respond(h.choose(s, 'seat-c'), 's1');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-c', allowedCardIds: ['shan'] });
+  });
+
+  it('passing loses 1 HP and moves on; it is once per game', () => {
+    const s = h.choose(start('alternate:jia-xu', id), 'pass');
+    expect(hp(s, 'seat-b')).toBe(3);
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-c' });
+    const t = table({}, { generals: at('seat-a', 'alternate:jia-xu') });
+    const used = { ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, marks: { 'upheaval-used': 1 } } : x)) };
+    expect(offered(t, 'seat-a', id)).toBe(true);
+    expect(offered(used, 'seat-a', id)).toBe(false);
+  });
+
+  it('is what Alternate Jia Xu plays for 乱武', () => {
+    expect(readyAlternateSkills(alternateGeneralRecords().find((g) => g.id === 'jia-xu')!).map((x) => x.id)).toContain(id);
+  });
+});

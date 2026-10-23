@@ -85,6 +85,12 @@ describe('the display functions by locale', () => {
     expect(stepSelectionText('compete-user', 'vi')).toEqual({ prompt: 'Chọn một lá bài trên tay để đấu điểm', confirm: 'Đấu điểm' });
   });
 
+  it('the Alternate variants show the same prompts as their Default skill', () => {
+    for (const locale of ['en', 'vi']) {
+      expect(choicePromptText('alternate:descend-into-chaos', locale)).toBe(choicePromptText('upheaval', locale));
+    }
+  });
+
   it('a locale with no prose, or an empty one, falls back to English', () => {
     expect(abilityHint('axe', 'fr')).toBe('Discard 2 cards to make your Slash hit {target}');
     expect(abilityHint('axe', '')).toBe('Discard 2 cards to make your Slash hit {target}');
