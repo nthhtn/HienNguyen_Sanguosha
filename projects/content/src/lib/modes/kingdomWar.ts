@@ -306,7 +306,8 @@ export const kingdomWarMode: GameModeDefinition = {
     // Kill reward and penalty: the seat whose damage killed another. Another
     // Kingdom (a killer with no revealed General always counts as one) draws one
     // card per living seat of the dead seat's Kingdom, the dead seat included;
-    // the same Kingdom discards its whole hand. Qun is one Kingdom like the rest.
+    // the same Kingdom discards its whole hand. Qun is one Kingdom like the rest. Only exposed seats count
+    // (a face-down seat of the Kingdom does not; the dead seat was shown by its death).
     {
       point: 'after:SeatEliminatedEvent',
       condition: (state, subject) => {
@@ -319,7 +320,8 @@ export const kingdomWarMode: GameModeDefinition = {
         const killer = state.seats.find((s) => s.id === killerSeatId)!;
         const revealedAny = !!killer.generals && (killer.generals.main.revealed || killer.generals.deputy.revealed);
         if (revealedAny && killer.kingdom === dead.kingdom) return [{ kind: 'DiscardZoneEffect', zoneId: killer.hand.zoneId }];
-        const count = state.seats.filter((s) => s.kingdom === dead.kingdom && (!s.eliminated || s.id === dead.id)).length;
+        const exposed = (s: Seat) => !!s.generals && (s.generals.main.revealed || s.generals.deputy.revealed);
+        const count = state.seats.filter((s) => s.kingdom === dead.kingdom && (s.id === dead.id || (!s.eliminated && exposed(s)))).length;
         return [{ kind: 'DrawCardsEffect', seatId: killer.id, count }];
       },
     },

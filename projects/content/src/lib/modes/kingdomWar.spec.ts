@@ -588,6 +588,11 @@ describe('Kingdom War kill reward and penalty', () => {
     expect(handOf(out, 'seat-a')).toHaveLength(2 + 3);
   });
 
+  it('counts only exposed seats of that Kingdom: a face-down seat is not counted', () => {
+    // Seat-b (dead, revealed by its death), seat-c and seat-d are Shu; seat-d is face-down: 2 cards, not 3.
+    expect(handOf(kill('seat-a', { hidden: ['seat-d'] }), 'seat-a')).toHaveLength(2 + 2);
+  });
+
   it('counts only living seats of that Kingdom besides the dead one', () => {
     expect(handOf(kill('seat-a', { eliminated: ['seat-d'] }), 'seat-a')).toHaveLength(2 + 2);
   });
@@ -605,8 +610,9 @@ describe('Kingdom War kill reward and penalty', () => {
   });
 
   it('rewards a killer with no revealed General even when it shares the Kingdom', () => {
+    // Shu: seat-b (dead, shown by its death), seat-c (the face-down killer, not counted) and seat-d: 2 cards.
     const out = kill('seat-c', { hidden: ['seat-c'] });
-    expect(handOf(out, 'seat-c')).toHaveLength(1 + 3);
+    expect(handOf(out, 'seat-c')).toHaveLength(1 + 2);
   });
 
   it('does nothing without a killer', () => {

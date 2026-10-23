@@ -605,6 +605,16 @@ describe('Alternate Tian Feng, With the Tide', () => {
     expect(done.pendingResponse?.reason).toMatchObject({ kind: 'dying', seatId: 'seat-b' });
   });
 
+  it('a hidden Tian Feng who is himself the source is of his own Kingdom: asked to reveal, then draws', () => {
+    const t = setup({ generals: { 'seat-a': ['alternate:tian-feng', 'filler-jia-xu', false] } });
+    const at = hk.run(t, [hit('seat-a', 'seat-b')]);
+    expect(askedAbout(at)).toBe(id);
+    expect(at.seats[0].generals!.main.revealed).toBe(false);
+    const done = hk.use(at);
+    expect(done.seats[0].generals!.main.revealed).toBe(true);
+    expect(handIds(done, 'seat-a')).toEqual(['d1']);
+  });
+
   it('a hidden Tian Feng declining stays hidden, draws nothing, and the dying round goes on', () => {
     const t = setup({ generals: { 'seat-a': ['alternate:tian-feng', 'filler-jia-xu', false] } });
     const done = hk.decline(hk.run(t, [hit('seat-c', 'seat-b')]));

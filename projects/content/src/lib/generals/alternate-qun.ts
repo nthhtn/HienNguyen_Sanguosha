@@ -168,7 +168,8 @@ const deathlyCounsel: SkillDefinition = {
 
 // With the Tide (compulsory): when another seat enters dying and the damage source is a seat of his
 // Kingdom (himself included), he draws 1. When another seat of his Kingdom dies, he loses 1 HP. Kingdoms
-// are exposed ones (a source with both Generals hidden is in none; a death reveals the seat first).
+// are exposed ones (a source with both Generals hidden is in none, unless it is he himself, who reveals on
+// use; a death reveals the seat first).
 // His own Kingdom is the seat's, else his General's (a hidden General's compulsory skill asks to reveal).
 // The draw comes as the seat enters dying, ahead of the rescue asks (a drawn Peach can save it): a
 // before-trigger on the entering DyingEffect, once per entry (`acted`), that draws and lets it go on.
@@ -183,7 +184,7 @@ const withTheTide: SkillDefinition = {
         const seat = state.seats.find((s) => s.id === dying.seatId);
         if (!seat || seat.eliminated || seat.combinedHp > 0) return false;
         const own = ownKingdom(state, owner, registry);
-        return !!own && isLiving(state, owner.seatId) && exposedKingdom(state, dying.killerSeatId) === own;
+        return !!own && isLiving(state, owner.seatId) && (dying.killerSeatId === owner.seatId || exposedKingdom(state, dying.killerSeatId) === own);
       },
       effect: (_state, dying, owner) => [used(owner), draw(owner.seatId, 1), { ...dying, acted: [...(dying.acted ?? []), abilityKey(owner)] }],
     }),
