@@ -47,6 +47,8 @@ const READERS: Record<string, Decide> = {
   'alternate:goddess-luo': (state, view, registry) => ({ key: riverGoddessOutcome(state, view.seatId, view.card, registry) }),
   'iron-cavalry': (state, view, registry) => ({ key: ironCavalryOutcome(state, view.seatId, view.card, registry) }),
   'lightning-strike': (state, view, registry) => ({ key: lightningStrikeOutcome(state, view.seatId, view.card, registry) }),
+  // Alternate Lightning Strike judges and strikes as Default's; only who he may pick differs.
+  'alternate:lightning-strike': (state, view, registry) => ({ key: lightningStrikeOutcome(state, view.seatId, view.card, registry) }),
   'dueling-heroes': (state, view, registry) => ({ key: duelingHeroesOutcome(state, view.seatId, view.card, registry) }),
   'military-farm': (state, view, registry) => ({ key: militaryFarmOutcome(state, view.seatId, view.card, registry) }),
   // The judged seat is the victim; the damage source rides in the judgment's data.

@@ -334,6 +334,7 @@ describe('every judging reader has outcome text', () => {
     'alternate:goddess-luo': ['again', 'ends'],
     'iron-cavalry': ['unblockable', 'none'],
     'lightning-strike': ['damage', 'none'],
+    'alternate:lightning-strike': ['damage', 'none'],
     'dueling-heroes': ['red', 'black'],
     'military-farm': ['farm', 'discard'],
     lament: ['heal', 'draw', 'discard2', 'discard1', 'face-down', 'face-up', 'none'],

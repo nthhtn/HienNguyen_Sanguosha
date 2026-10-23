@@ -200,6 +200,10 @@
       "damage": "{seat} chịu 2 sát thương sét",
       "none": "Không có gì xảy ra"
     },
+    "alternate:lightning-strike": {
+      "damage": "{seat} chịu 2 sát thương sét",
+      "none": "Không có gì xảy ra"
+    },
     "dueling-heroes": {
       "red": "{owner} nhận lá bài và có thể đánh bài đen trên tay làm Quyết Đấu trong lượt này",
       "black": "{owner} nhận lá bài và có thể đánh bài đỏ trên tay làm Quyết Đấu trong lượt này"

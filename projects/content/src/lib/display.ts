@@ -434,6 +434,7 @@ const JUDGMENT_OUTCOMES: Record<string, Record<string, string>> = {
   },
   'iron-cavalry': { unblockable: 'The Slash cannot be dodged', none: 'Nothing happens' },
   'lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
+  'alternate:lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
   'dueling-heroes': {
     red: '{owner} takes the card and may play black hand cards as Duel this turn',
     black: '{owner} takes the card and may play red hand cards as Duel this turn',
