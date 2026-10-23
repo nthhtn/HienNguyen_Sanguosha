@@ -20,6 +20,7 @@
 - Anything optional stays a "may" skill, asked each time.
 - UI text follows the casing rules in `CLAUDE.md`; any new Vietnamese text starts as draft (`npm run i18n:status`).
 - Each task carries its own tests and a check that the Default counterpart is unchanged.
+- Prompts and hints are keyed by skill id (`choicePromptText('upheaval')`, `abilityHint('alternate:warrior-lady')` in `prose.vi.spec.ts`): every variant must show the same prompts and hints as its Default skill, in English and Vietnamese (draft), with a spec each.
 
 ## Review Focus
 
@@ -57,15 +58,15 @@
 ### Task 2: Alternate Descend into Chaos (nearest seat)
 
 **Files:**
-- Modify: `projects/content/src/lib/generals/forest.ts` (`upheaval` becomes a factory), `projects/content/src/lib/generals/alternate-<force>.ts` (register the variant in the file of Jia Xu's Alternate force (check `force` in the record))
-- Test: `projects/content/src/lib/generals/alternate-<force>.spec.ts`, the existing Upheaval specs (Default guard; find them with `grep -rn upheaval projects/content/src --include=*.spec.ts`)
+- Modify: `projects/content/src/lib/generals/forest.ts` (`upheaval` becomes a factory), `projects/content/src/lib/generals/alternate-qun.ts` (register the variant; Jia Xu is Qun)
+- Test: `projects/content/src/lib/generals/alternate-qun.spec.ts`, `forest-qun.spec.ts` (the existing Upheaval specs, the Default guard), `prose.vi.spec.ts`
 
 **Interfaces:**
 - Consumes: `shaReach`, `seatDistance`, `untargetableBy` (already in `forest.ts`).
 - Produces: `makeUpheaval(nearestOnly: boolean): SkillDefinition` in `forest.ts`; `upheaval = makeUpheaval(false)` (id `upheaval` unchanged, behavior unchanged); the variant is `{ ...makeUpheaval(true), id: 'alternate:descend-into-chaos' }` registered under `jia-xu`, 乱武. With `nearestOnly`, the seats offered are `nearestShaTargets(state, seatId, registry): string[]`: the other living seats a Sha may target whose `seatDistance` from `seatId` equals the minimum among those; attack range is ignored.
 
-- [ ] **Step 1: Write the failing tests** (Alternate Jia Xu; rules: nearest seat, ties legal, popup always, Pass loses 1 HP): (a) other seats at distances 1, 2, 2 from a seat: its pick offers only the distance-1 seat plus Pass; (b) a tie at distance 1: both offered; (c) exactly one nearest: the choice request still opens (not auto-resolved); (d) the nearest seat cannot be targeted by Sha (Default Zhuge Liang with no hand): the next nearest targetable seat is offered; (e) the nearest seat is outside the picker's attack range and may still be picked. `alternateSkills.spec.ts`: `readyAlternateSkills(jia-xu)` contains `alternate:descend-into-chaos`. Default guard: the existing Default specs, unchanged, stay green; add one asserting a Default Jia Xu still offers every seat in attack range.
-- [ ] **Step 2: Run** `npx jest projects/content/src/lib/generals/alternate-<force>.spec.ts`; confirm FAIL.
+- [ ] **Step 1: Write the failing tests** (Alternate Jia Xu; rules: nearest seat, ties legal, popup always, Pass loses 1 HP): (a) other seats at distances 1, 2, 2 from a seat: its pick offers only the distance-1 seat plus Pass; (b) a tie at distance 1: both offered; (c) exactly one nearest: the choice request still opens (not auto-resolved); (d) the nearest seat cannot be targeted by Sha (Default Zhuge Liang with no hand): the next nearest targetable seat is offered; (e) the nearest seat is outside the picker's attack range and may still be picked. `alternateSkills.spec.ts`: `readyAlternateSkills(jia-xu)` contains `alternate:descend-into-chaos`. `prose.vi.spec.ts`: `choicePromptText('alternate:descend-into-chaos')` equals `choicePromptText('upheaval')` in `en` and `vi`. Default guard: the existing Default specs, unchanged, stay green; add one asserting a Default Jia Xu still offers every seat in attack range.
+- [ ] **Step 2: Run** `npx jest projects/content/src/lib/generals/alternate-qun.spec.ts`; confirm FAIL.
 - [ ] **Step 3: Implement** the factory: only the seat list in the `'next'` step differs; the no-target case still loses 1 HP.
 - [ ] **Step 4: Run** `npm test`; expect PASS.
 - [ ] **Step 5: Commit** `feat(content): Alternate Descend into Chaos targets the nearest seat`.
@@ -79,7 +80,7 @@
 **Interfaces:**
 - Produces: `makeLightningStrike(allowSelf: boolean): SkillDefinition` in `wind.ts`; `lightningStrike = makeLightningStrike(true)` (id unchanged, `lightning-strike`); the variant is `{ ...makeLightningStrike(false), id: 'alternate:lightning-strike' }` registered under `zhang-jiao`, 雷击, in `alternate-qun.ts` and merged into `ALTERNATE_VARIANTS`.
 
-- [ ] **Step 1: Write the failing tests** (`table` harness): Alternate Zhang Jiao plays a Shan: the pick lists every living seat except his own; a spade on the picked seat deals 2 thunder damage with no source; a non-spade does nothing. `alternateSkills.spec.ts`: `readyAlternateSkills(zhang-jiao)` contains `alternate:lightning-strike` and still `dark-magic` (鬼道). Default guard: the existing Default spec that picks himself stays green.
+- [ ] **Step 1: Write the failing tests** (`table` harness): Alternate Zhang Jiao plays a Shan: the pick lists every living seat except his own; a spade on the picked seat deals 2 thunder damage with no source; a non-spade does nothing. `alternateSkills.spec.ts`: `readyAlternateSkills(zhang-jiao)` contains `alternate:lightning-strike` and still `dark-magic` (鬼道). `prose.vi.spec.ts`: the variant's hints and prompts equal `lightning-strike`'s in `en` and `vi`. Default guard: the existing Default spec that picks himself stays green.
 - [ ] **Step 2: Run** `npx jest projects/content/src/lib/generals/alternate-qun.spec.ts`; confirm FAIL.
 - [ ] **Step 3: Implement** the factory: only the list of seats in the `'pick'` step differs (`living` filtered to exclude the owner when `allowSelf` is false); everything else is shared.
 - [ ] **Step 4: Run** `npm test`; expect PASS.
@@ -88,14 +89,14 @@
 ### Task 4: Alternate Resurrection (also clears Chained)
 
 **Files:**
-- Modify: `projects/content/src/lib/generals/fire.ts` (`nirvana` becomes a factory), `projects/content/src/lib/generals/alternate-shu.ts` (register the variant; Pang Tong is a Shu General in the Alternate record, check `forceOf`)
+- Modify: `projects/content/src/lib/generals/fire.ts` (`nirvana` becomes a factory), `projects/content/src/lib/generals/alternate-shu.ts` (register the variant; Pang Tong is Shu)
 - Test: `projects/content/src/lib/generals/alternate-shu.spec.ts`, `fire-shu.spec.ts` (Default guard)
 
 **Interfaces:**
-- Consumes: the engine's way of clearing a seat's Chained state (find the effect `ChainEffect`/`UnchainEffect` in `projects/engine/src/lib/effects` with `grep -rn "chained" projects/engine/src`; if none exists as a standalone effect, add `SetChainedEffect { seatId, chained: boolean }` to the engine and its resolver, with a spec).
+- Consumes: the engine's existing `{ kind: 'SetChainedEffect', seatId, chained: false }` (no engine change needed).
 - Produces: `makeNirvana(clearChained: boolean): SkillDefinition` in `fire.ts`; `nirvana = makeNirvana(false)` (id `nirvana` unchanged); the variant is `{ ...makeNirvana(true), id: 'alternate:resurrection' }`, registered under `pang-tong`, 涅槃.
 
-- [ ] **Step 1: Write the failing tests:** a Chained, face-down Alternate Pang Tong at 0 HP with hand, equipment and judgment cards, uses Resurrection: all cards discarded, 3 cards drawn, 3 HP (at most max), face up, not Chained, no dying round, mark set; a second brush with death does not offer it again. A Default Pang Tong in the same state stays Chained (existing Default specs must stay green). `readyAlternateSkills(pang-tong)` is `['shackle', 'alternate:resurrection']` (Default's Shackle id from `fire.ts`).
+- [ ] **Step 1: Write the failing tests:** a Chained, face-down Alternate Pang Tong at 0 HP with hand, equipment and judgment cards, uses Resurrection: all cards discarded, 3 cards drawn, 3 HP (at most max), face up, not Chained, no dying round, mark set; a second brush with death does not offer it again. A Default Pang Tong in the same state stays Chained (existing Default specs must stay green). `readyAlternateSkills(pang-tong)` is `['shackle', 'alternate:resurrection']` (Default's Shackle id from `fire.ts`). `prose.vi.spec.ts`: the variant's hints and prompts equal `nirvana`'s in `en` and `vi`.
 - [ ] **Step 2: Run** `npx jest projects/content/src/lib/generals/alternate-shu.spec.ts`; confirm FAIL.
 - [ ] **Step 3: Implement** the factory: when `clearChained`, the `'reborn'` step also emits the unchain effect.
 - [ ] **Step 4: Run** `npm test`; expect PASS, including the sim leak checks.
