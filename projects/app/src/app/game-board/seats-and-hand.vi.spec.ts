@@ -90,7 +90,7 @@ describe('SeatTile in Vietnamese', () => {
     expect(text(render(makeSeat({ silenced: true })).el.querySelector('.silenced-badge'))).toBe('Mất kỹ năng');
     expect(text(render(makeSeat({ chained: true })).el.querySelector('.chain-badge'))).toBe('Bị xích');
     const piles = render(makeSeat(), { pile: [sha], stash: [{ ...sha, instanceId: 'c-2' }] }).el;
-    expect([...piles.querySelectorAll('.pile')].map((p) => p.getAttribute('aria-label'))).toEqual(['Lá bài Sang', 'Điền']);
+    expect([...piles.querySelectorAll('.pile')].map((p) => p.getAttribute('aria-label'))).toEqual(['Lá bài Sang', 'Bài để riêng']);
     const form = { slot: 'main', held: [], chosen: { generalId: 'guan-yu', skillId: 'fighting-saint' } } as never;
     expect(text(render(makeSeat({ forms: form })).el.querySelector('.form-badge'))).toBe('Hóa thân: Quan Vũ (Võ thánh)');
   });

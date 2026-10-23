@@ -373,7 +373,7 @@ export const en = {
   'seat.choosing': 'Choosing Generals…',
   'seat.faceDown': 'Face Down',
   'seat.underGeneral': 'Under General',
-  'seat.farms': 'Farms',
+  'seat.farms': 'Set Aside Cards',
   'seat.form': 'Form: {form}',
   'seat.formName': '{general} ({skill})',
   'seat.formFallback': 'Form',

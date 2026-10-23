@@ -372,7 +372,7 @@ export const vi: Messages = {
   'seat.choosing': 'Đang chọn Tướng…',
   'seat.faceDown': 'Úp',
   'seat.underGeneral': 'Lá bài Sang',
-  'seat.farms': 'Điền',
+  'seat.farms': 'Bài để riêng',
   'seat.form': 'Hóa thân: {form}',
   'seat.formName': '{general} ({skill})',
   'seat.formFallback': 'Hóa thân',

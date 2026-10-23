@@ -60,7 +60,7 @@ describe('SeatTile', () => {
 
   it('shows the Farms under the General, face up', () => {
     const el = render(makeSeat(), { stash: [{ instanceId: 'f1', definitionId: 'shan', suit: 'spade', rank: 3 }] });
-    expect(el.querySelectorAll('[aria-label="Farms"] app-playing-card')).toHaveLength(1);
+    expect(el.querySelectorAll('[aria-label="Set Aside Cards"] app-playing-card')).toHaveLength(1);
   });
 
   it('shows a chain marker on a chained seat, and none on an unchained one', () => {

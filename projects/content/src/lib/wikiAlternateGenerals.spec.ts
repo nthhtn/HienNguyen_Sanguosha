@@ -119,3 +119,18 @@ describe('wikiAlternateGeneralTabs', () => {
     expect(tabs.map((t) => t.entries.length)).toEqual([15, 15, 15, 15]);
   });
 });
+
+describe('slice 2 variant Generals', () => {
+  const SLICE_2 = ['liu-bei', 'sun-quan', 'xun-yu', 'zhu-rong', 'huang-yueying', 'sun-shangxiang', 'diao-chan', 'zhuge-liang', 'lu-xun', 'jia-xu', 'guo-jia', 'zhang-zhao-and-zhang-hong', 'zhen-ji', 'cai-wenji'];
+
+  it('leaves only the skills deferred to slice 4 reading missing', () => {
+    const missing = wikiAlternateGenerals()
+      .filter((g) => SLICE_2.includes(g.id))
+      .flatMap((g) => g.skills.filter((s) => s.status === 'missing').map((s) => `${g.id}/${s.name}`))
+      .sort();
+    expect(missing).toEqual([
+      'guo-jia/Envy of Heaven', 'jia-xu/Descend into Chaos', 'jia-xu/Unmitigated Murder', 'sun-shangxiang/Marriage',
+      'xun-yu/Rouse the Tiger', 'zhen-ji/Stunning Beauty', 'zhu-rong/Giant Elephant', 'zhuge-liang/Star Gazing',
+    ]);
+  });
+});
