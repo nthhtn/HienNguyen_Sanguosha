@@ -73,7 +73,7 @@
 ### Task 3: Alternate Lightning Strike (another player only)
 
 **Files:**
-- Modify: `projects/content/src/lib/generals/wind.ts` (`lightningStrike` becomes a factory), `projects/content/src/lib/generals/alternate-<force>.ts` (register the variant)
+- Modify: `projects/content/src/lib/generals/wind.ts` (`lightningStrike` becomes a factory), `projects/content/src/lib/generals/alternate-qun.ts` (register the variant)
 - Test: `projects/content/src/lib/generals/alternate-qun.spec.ts`, `wind-qun.spec.ts` (Default guard)
 
 **Interfaces:**
