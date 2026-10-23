@@ -40,7 +40,7 @@
 **Interfaces:**
 - Consumes: `CLEARED_WORDING: Record<string, readonly string[]>` (General id to Alternate skill Chinese names), `defaultSkillFor(record, skill)` (slice 1).
 - Produces:
-  - `CLEARED_WORDING` gains every skill in the "Cleared as the Default skill" list of the rules file, keyed by General id. Descend into Chaos (`jia-xu`, 乱武) is added in Task 2, not here.
+  - `CLEARED_WORDING` gains every skill in the "Cleared as the Default skill" list of the rules file, keyed by General id. Descend into Chaos is a variant (Task 2), not cleared here.
   - `DEFAULT_SKILL_ZH: Readonly<Record<string, Readonly<Record<string, string>>>>`: General id, then Alternate Chinese name, to the Default Chinese name when they differ. Only `{ 'zhang-liao': { '突击': '突袭' } }`. `defaultSkillFor` looks the Default skill up by `DEFAULT_SKILL_ZH[id]?.[skill.nameZh] ?? skill.nameZh`.
 
 - [ ] **Step 1: Write the failing tests.** `alternateAudit.spec.ts`:
@@ -57,7 +57,7 @@
 ### Task 2: Alternate Descend into Chaos (nearest seat)
 
 **Files:**
-- Modify: `projects/content/src/lib/generals/forest.ts` (`upheaval` becomes a factory), `projects/content/src/lib/generals/alternate-qun.ts` (Jia Xu is Qun; register the variant)
+- Modify: `projects/content/src/lib/generals/forest.ts` (`upheaval` becomes a factory), `projects/content/src/lib/generals/alternate-<force>.ts` (register the variant in the file of Jia Xu's Alternate force (check `force` in the record))
 - Test: `projects/content/src/lib/generals/alternate-qun.spec.ts`, the existing Upheaval specs (Default guard; find them with `grep -rn upheaval projects/content/src --include=*.spec.ts`)
 
 **Interfaces:**
@@ -65,7 +65,7 @@
 - Produces: `makeUpheaval(nearestOnly: boolean): SkillDefinition` in `forest.ts`; `upheaval = makeUpheaval(false)` (id `upheaval` unchanged, behavior unchanged); the variant is `{ ...makeUpheaval(true), id: 'alternate:descend-into-chaos' }` registered under `jia-xu`, 乱武. With `nearestOnly`, the seats offered are `nearestShaTargets(state, seatId, registry): string[]`: the other living seats a Sha may target whose `seatDistance` from `seatId` equals the minimum among those; attack range is ignored.
 
 - [ ] **Step 1: Write the failing tests** (Alternate Jia Xu; rules: nearest seat, ties legal, popup always, Pass loses 1 HP): (a) other seats at distances 1, 2, 2 from a seat: its pick offers only the distance-1 seat plus Pass; (b) a tie at distance 1: both offered; (c) exactly one nearest: the choice request still opens (not auto-resolved); (d) the nearest seat cannot be targeted by Sha (Default Zhuge Liang with no hand): the next nearest targetable seat is offered; (e) the nearest seat is outside the picker's attack range and may still be picked. `alternateSkills.spec.ts`: `readyAlternateSkills(jia-xu)` contains `alternate:descend-into-chaos`. Default guard: the existing Default specs, unchanged, stay green; add one asserting a Default Jia Xu still offers every seat in attack range.
-- [ ] **Step 2: Run** `npx jest projects/content/src/lib/generals/alternate-qun.spec.ts`; confirm FAIL.
+- [ ] **Step 2: Run** `npx jest projects/content/src/lib/generals/alternate-<force>.spec.ts`; confirm FAIL.
 - [ ] **Step 3: Implement** the factory: only the seat list in the `'next'` step differs; the no-target case still loses 1 HP.
 - [ ] **Step 4: Run** `npm test`; expect PASS.
 - [ ] **Step 5: Commit** `feat(content): Alternate Descend into Chaos targets the nearest seat`.
@@ -73,7 +73,7 @@
 ### Task 3: Alternate Lightning Strike (another player only)
 
 **Files:**
-- Modify: `projects/content/src/lib/generals/wind.ts` (`lightningStrike` becomes a factory), `projects/content/src/lib/generals/alternate-qun.ts` (register the variant)
+- Modify: `projects/content/src/lib/generals/wind.ts` (`lightningStrike` becomes a factory), `projects/content/src/lib/generals/alternate-<force>.ts` (register the variant)
 - Test: `projects/content/src/lib/generals/alternate-qun.spec.ts`, `wind-qun.spec.ts` (Default guard)
 
 **Interfaces:**
