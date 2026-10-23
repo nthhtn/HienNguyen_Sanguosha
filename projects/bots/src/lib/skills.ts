@@ -87,6 +87,9 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
       const cards = handSize(view, me);
       return (hurt(me) && cards >= me.combinedHp) || cards <= 1;
     }
+    // Dauntless: only against a non-ally, and only with a Basic card to spare.
+    case 'alternate:dauntless':
+      return !!target && !isAlly(me, target) && handCards(view, me).some((c) => registry.cards.get(c.definitionId)?.category === 'basic' && keepRank(view, registry, c.instanceId) < 3);
     case 'unyielding':
       return !!target && !isAlly(me, target);
     case 'raid':
@@ -119,6 +122,13 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
     case 'displace': {
       const spare = leastUseful(view, registry, eligible).filter((id) => keepRank(view, registry, id) < 3);
       return spare.length > 0 ? [spare[0]] : 'cancel';
+    }
+    // Dauntless: her own pick is the least useful Basic card; as the victim, discard the least useful Equipment card when it is spare or HP is 1, else take the damage.
+    case 'alternate:dauntless': {
+      const step = selection.then.kind === 'skill-step' ? selection.then.step.step : '';
+      const least = leastUseful(view, registry, eligible)[0];
+      if (step === 'discarded') return [least];
+      return me.combinedHp <= 1 || keepRank(view, registry, least) < 3 ? [least] : 'cancel';
     }
     case 'kindness': {
       // The thresholds below are Default's (2); a variant with another number (Benevolence: 3) is played legally, not optimally.

@@ -296,3 +296,27 @@ describe('an Alternate variant is used like its base', () => {
     expect(picked(decide(giving))).toBe('seat-b');
   });
 });
+
+describe('Alternate Yue Jin, Dauntless', () => {
+  const id = 'alternate:dauntless';
+  const sel = (step: string, eligibleIds: string[], seatId = 'seat-a'): PendingSelection => ({
+    id: 'sel', seatId, reason: { kind: 'ability', owner: general('seat-b', id), abilityId: id }, of: 'cards', eligibleIds, min: 1, max: 1,
+    then: { kind: 'skill-step', step: { kind: 'SkillStepEffect', owner: general('seat-b', id), step, data: { victim: 'seat-a' } } }, onCancel: [],
+  });
+  const ask = (kingdoms: Record<string, 'Wei' | 'Shu' | 'Wu' | 'Qun'>, hand: CardInstance[]) =>
+    ({ ...asking(table({ 'seat-a:hand': hand }, { kingdoms }), id, 'seat-b') });
+
+  it('is used against a non-ally while a Basic card is spare (below Dodge), else declined', () => {
+    expect(picked(decide(ask({ 'seat-a': 'Wei', 'seat-b': 'Shu' }, [card('b1', 'sha')])))).toBe('use');
+    expect(picked(decide(ask({ 'seat-a': 'Wei', 'seat-b': 'Wei' }, [card('b1', 'sha')])))).toBe('decline');
+    expect(picked(decide(ask({ 'seat-a': 'Wei', 'seat-b': 'Shu' }, [card('b1', 'shan')])))).toBe('decline');
+    expect(picked(decide(ask({ 'seat-a': 'Wei', 'seat-b': 'Shu' }, [card('t1', 'dismantle')])))).toBe('decline');
+  });
+
+  it('discards a card of her own pick; as the victim discards a spare Equipment card or takes the damage', () => {
+    const s = table({ 'seat-a:hand': [card('b1', 'shan'), card('b2', 'sha')], 'seat-a:equip': [card('e1', 'crossbow')] });
+    expect(decide({ ...s, pendingSelection: sel('discarded', ['b1', 'b2']) })).toMatchObject({ kind: 'SelectAction', ids: [expect.stringMatching(/^b[12]$/)] });
+    const low = { ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, combinedHp: 1 } : x)), pendingSelection: sel('paid', ['e1']) };
+    expect(decide(low)).toMatchObject({ kind: 'SelectAction', ids: ['e1'] });
+  });
+});

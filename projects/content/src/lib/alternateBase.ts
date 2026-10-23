@@ -29,6 +29,8 @@ export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>([
   // Gan Fu Ren is new in Alternate: both her skills have no Default counterpart.
   'alternate:prudence',
   'alternate:divine-wisdom',
+  // Yue Jin is new in Alternate: Dauntless has no Default counterpart.
+  'alternate:dauntless',
 ]);
 
 // The Default skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.

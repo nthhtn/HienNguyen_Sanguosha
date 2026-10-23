@@ -73,7 +73,7 @@ describe('wikiAlternateGenerals', () => {
   });
 
   it('marks every skill of a General with no Default counterpart as not in game, until its task lands', () => {
-    for (const id of ['yue-jin', 'ding-feng', 'ji-ling', 'kong-rong', 'ma-teng', 'pan-feng', 'tian-feng', 'zou-shi']) {
+    for (const id of ['ding-feng', 'ji-ling', 'kong-rong', 'ma-teng', 'pan-feng', 'tian-feng', 'zou-shi']) {
       expect(byId(id).skills.map((s) => s.status)).toEqual(byId(id).skills.map(() => 'missing'));
       expect(byId(id).skillsRunAsDefault).toBe(false);
     }
@@ -82,6 +82,10 @@ describe('wikiAlternateGenerals', () => {
   it('plays both of Gan Fu Ren’s skills, as Alternate variants of their own', () => {
     expect(byId('gan-fu-ren').skills.map((s) => s.status)).not.toContain('missing');
     expect(byId('gan-fu-ren').skills.map((s) => s.status)).toEqual(['worksAsAlternate', 'worksAsAlternate']);
+  });
+
+  it('plays Yue Jin’s skill, as an Alternate variant of its own', () => {
+    expect(byId('yue-jin').skills.map((s) => s.status)).toEqual(['worksAsAlternate']);
   });
 
   it('pins exactly which Alternate skills the game plays (those of Generals whose difference note is nil)', () => {

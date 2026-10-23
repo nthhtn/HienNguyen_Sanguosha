@@ -35,6 +35,7 @@
     "alternate:eternal-loyalty": "Một người chơi bạn chọn rút bài đến Sinh lực tối đa, nhưng không quá 5 lá",
     "alternate:bequeathed-strategy": "Xem 2 lá trên cùng của chồng bài rút, rồi đưa một lá cho một người chơi và lá còn lại cho một người chơi",
     "alternate:prudence": "Một người chơi khác cùng thế lực rút 1 lá bài",
+    "alternate:dauntless": "Bỏ một lá bài Cơ bản trên tay; {target} bỏ một lá Trang bị hoặc chịu 1 sát thương từ bạn",
     "alternate:divine-wisdom": "Bỏ toàn bộ bài trên tay; nếu số bài bỏ không nhỏ hơn Sinh lực hiện tại, hồi 1 Sinh lực",
     "nirvana": "Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3 và lật lại",
     "eight-arrays": "Phán xét: nếu là lá đỏ, nó tính là một Thiểm",
@@ -112,6 +113,8 @@
     "compete-target": { "prompt": "Chọn một lá bài trên tay để đấu điểm", "confirm": "Đấu điểm" },
     "blaze-shown": { "prompt": "Chọn một lá bài trên tay để cho xem", "confirm": "Cho xem" },
     "blaze-hit": { "prompt": "Bỏ một lá cùng chất để gây 1 sát thương", "confirm": "Bỏ bài" },
+    "alternate:dauntless/discarded": { "prompt": "Chọn một lá bài Cơ bản trên tay để bỏ", "confirm": "Bỏ bài" },
+    "alternate:dauntless/paid": { "prompt": "Chọn một lá Trang bị để bỏ, hoặc chịu 1 sát thương", "confirm": "Bỏ bài", "cancel": "Chịu sát thương" },
     "alliance/swap": { "prompt": "Chọn các lá bài để bỏ cho Alliance", "confirm": "Bỏ bài" },
     "draw-take": { "prompt": "Chọn tối đa 2 người chơi để lấy một lá bài trên tay", "confirm": "Lấy" },
     "move-card": { "prompt": "Chọn một người chơi để chuyển một lá bài từ họ", "confirm": "Chọn" }
