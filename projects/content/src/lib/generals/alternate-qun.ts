@@ -11,7 +11,7 @@ import { makeCurtain } from './forest';
 import { makeEclipseTheMoon, makeSowDiscord } from './qun';
 import { horsemanship } from './shu';
 import { killedByLivingOther } from './mountain';
-import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, isLastMoveOfStep, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
 
 // Sorrow (compulsory): when a seat kills her, her player (she is out: afterDeath) chooses the killer's
 // Main or Deputy General, and that General loses all its skills for the rest of the game; the other
@@ -130,13 +130,6 @@ const insanityAxe: SkillDefinition = {
       }),
     ];
   },
-};
-
-// One effect can move several cards in one step (DiscardZoneEffect), and every move's after-triggers are
-// gathered against the state after all of them: only the last move of the step (the log's last event) counts.
-const isLastMoveOfStep = (state: GameState, event: CardMovedEvent): boolean => {
-  const last = state.log.at(-1);
-  return last?.kind === 'CardMovedEvent' && last.cardInstanceId === event.cardInstanceId;
 };
 
 // Deathly Counsel (may): whenever he loses his last hand card, however it happens, he may discard 1

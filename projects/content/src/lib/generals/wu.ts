@@ -9,7 +9,7 @@ import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
 import { shaStep } from '../cards/sha';
 import { cancelsCardsOnOwner, SHA_AIMED_STEP } from '../shared/cancel';
 import {
-  ask, atDrawPhase, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, isHurt, isLiving, lastMoveBetween, on,
+  ask, atDrawPhase, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, isHurt, isLastMoveOfStep, isLiving, lastMoveBetween, on,
   otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillDamage, skillStep, used,
 } from '../shared/skills';
 
@@ -47,14 +47,14 @@ export function makeHumility(cancels: boolean): SkillDefinition {
 export const humility = makeHumility(false);
 
 // Linked Camps (compulsory): whenever you lose your last hand card, however it
-// happens, you draw 1.
+// happens, you draw 1. A whole hand lost in one step (the kill penalty) is one loss: one draw.
 export const linkedCamps: SkillDefinition = {
   id: 'linked-camps',
   compulsory: true,
   triggers: [
     on<CardMovedEvent>('after:CardMovedEvent', {
       condition: (state, event, owner) =>
-        event.fromZoneId === handZoneId(state, owner.seatId) && event.toZoneId !== event.fromZoneId && handOf(state, owner.seatId).length === 0,
+        event.fromZoneId === handZoneId(state, owner.seatId) && event.toZoneId !== event.fromZoneId && handOf(state, owner.seatId).length === 0 && isLastMoveOfStep(state, event),
       effect: (_state, _event, owner) => [used(owner), draw(owner.seatId, 1)],
     }),
   ],
