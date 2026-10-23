@@ -1,7 +1,7 @@
 import type { ContentRegistry, GameState, GeneralOwner, HealEvent, PhaseChangedEvent, SkillDefinition } from 'engine';
 import { makeIntenseEdge } from './forest';
 import { makeEmptyCity, makeGatheringWisdom, makeKindness } from './shu';
-import { exposedKingdom } from '../shared/kingdom';
+import { exposedKingdom, ownKingdom } from '../shared/kingdom';
 import { handOf } from '../shared/queries';
 import { ask, choiceOf, discardMoves, draw, heal, hpOf, isLiving, on, seatOptions, skillStep, used } from '../shared/skills';
 
@@ -11,10 +11,8 @@ import { ask, choiceOf, discardMoves, draw, heal, hpOf, isLiving, on, seatOption
 // A hidden General's skill reveals it on Use, so her Kingdom for the ask is her true one: the seat's own
 // once it has one, else her General's. The picks are other living seats exposed in that Kingdom.
 function kingdomMates(state: GameState, owner: GeneralOwner, registry: ContentRegistry): string[] {
-  const seat = state.seats.find((x) => x.id === owner.seatId);
-  if (!seat?.generals) return [];
-  const own = seat.kingdom !== 'hidden' ? seat.kingdom : registry.generals.get(seat.generals[owner.slot].generalDefinitionId)?.kingdom;
-  if (!own || own === 'hidden') return [];
+  const own = ownKingdom(state, owner, registry);
+  if (!own) return [];
   return state.seats.filter((x) => x.id !== owner.seatId && !x.eliminated && exposedKingdom(state, x.id) === own).map((x) => x.id);
 }
 
@@ -57,11 +55,11 @@ const divineWisdom: SkillDefinition = {
 export const ALTERNATE_SHU_VARIANTS: Readonly<Record<string, Readonly<Record<string, SkillDefinition>>>> = {
   // Benevolence: heals at 3 cards given in the turn (Default: 2).
   'liu-bei': { 仁德: { ...makeKindness(3), id: 'alternate:benevolence' } },
-  // Fearsome Blade: only when the damaged seat is one the Slash was aimed at.
-  // Assembling Wisdom: no draw for a Tool converted from other cards. Genius is unchanged (cleared wording).
   // Prudence, Divine Wisdom: Gan Fu Ren is new to Alternate (Default has no such General).
   'gan-fu-ren': { 淑慎: prudence, 神智: divineWisdom },
+  // Assembling Wisdom: no draw for a Tool converted from other cards. Genius is unchanged (cleared wording).
   'huang-yueying': { 集智: { ...makeGatheringWisdom(false), id: 'alternate:assembling-wisdom' } },
+  // Fearsome Blade: only when the damaged seat is one the Slash was aimed at.
   'zhu-rong': { 烈刃: { ...makeIntenseEdge(true), id: 'alternate:fearsome-blade' } },
   // Empty City: with no hand cards he can be chosen by Slash and Duel, which are cancelled for him (Default: can't be chosen).
   'zhuge-liang': { 空城: { ...makeEmptyCity(true), id: 'alternate:empty-city' } },

@@ -152,6 +152,7 @@ export const FIRST_REVEAL_MIN_SEATS = 5;
 // stand revealed: a General hidden and revealed again (GeneralHiddenEvent) pays
 // no second bonus. With no General of the seat ever hidden, that is every reveal
 // that leaves both revealed (as before hiding existed, built states included).
+// The replay assumes every hide logs a GeneralHiddenEvent and every reveal a GeneralRevealedEvent.
 function firstTimeBothRevealed(state: GameState, seatId: string): boolean {
   const ofSeat = state.log.filter((e) => (e.kind === 'GeneralRevealedEvent' || e.kind === 'GeneralHiddenEvent') && e.seatId === seatId);
   if (!ofSeat.some((e) => e.kind === 'GeneralHiddenEvent')) return true;
