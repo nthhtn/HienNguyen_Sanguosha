@@ -103,20 +103,37 @@ describe('simulation: Alternate deck games with bots', () => {
   // The 9 Generals slice 3 adds, each seated as Main with a same-kingdom partner.
   const NEW_GENERALS = ['gan-fu-ren', 'yue-jin', 'ding-feng', 'pan-feng', 'tian-feng', 'kong-rong', 'ma-teng', 'ji-ling', 'zou-shi'];
 
-  it('plays each new General as Main to a result, with no engine error, no leak and no broken invariant', () => {
+  // Skills the bots never reach (or cannot reach within MAX_SEEDS games). Exact: if the bots start using one, the spec says to drop it here.
+  // Impetus for Conflicts hides a General, which no bot policy chooses (Femme Fatale, which only exposes Zou Shi, is reached): the scripted spec below covers it.
+  // Close Combat and Horsemanship are passive modifiers: they leave no log trace, so firedSkills cannot see them; their own specs cover them.
+  const EXEMPT: Record<string, string[]> = {
+    'ding-feng': ['alternate:close-combat'],
+    'ma-teng': ['alternate:horsemanship'],
+    'zou-shi': ['alternate:impetus-for-conflicts'],
+  };
+  const MAX_SEEDS = 20;
+
+  it('plays each new General as Main to a result, with no engine error, no leak and no broken invariant, and its skills fire', () => {
     const registry = buildContentRegistry();
     const ctx = { registry, mode: kingdomWarMode };
     const pool = [...registry.generals.keys()].filter((id) => id.startsWith('alternate:'));
     const failures: string[] = [];
+    const neverFired: Record<string, string[]> = {};
+    const rows: string[] = [];
     for (const name of NEW_GENERALS) {
       const generalId = `alternate:${name}`;
       expect(registry.generals.get(generalId)).toBeDefined();
-      for (let seed = 1; seed <= 4; seed++) {
+      const skillIds = registry.generals.get(generalId)!.skills.map((x) => x.id);
+      const fired = new Set<string>();
+      let games = 0;
+      // At least 4 games; more (up to MAX_SEEDS) until every reachable skill has fired.
+      for (let seed = 1; seed <= MAX_SEEDS && (seed <= 4 || skillIds.some((id) => !fired.has(id) && !(EXEMPT[name] ?? []).includes(id))); seed++) {
+        games++;
         const base = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed * 17 + 3, { deck: 'alternate' });
         const initial = withForcedPairing(base, 'seat-0', [generalId, partnerOf(generalId, registry, pool)]);
         let prev: GameState = initial;
         const record = (next: GameState) => {
-          if (failures.length < 30) for (const leak of findStepLeaks(prev, next, registry)) failures.push(`${name} seed ${seed}: ${leak}`);
+          for (const leak of findStepLeaks(prev, next, registry)) failures.push(`${name} seed ${seed}: ${leak}`);
           prev = next;
         };
         try {
@@ -124,13 +141,19 @@ describe('simulation: Alternate deck games with bots', () => {
           if (!finalState.result) failures.push(`${name} seed ${seed}: no result`);
           const violations = checkInvariants(finalState, registry);
           if (violations.length > 0) failures.push(`${name} seed ${seed}: ${violations.join('; ')}`);
+          firedSkills(finalState, 'seat-0').forEach((id) => fired.add(id));
         } catch (e) {
           failures.push(`${name} seed ${seed}: engine error ${(e as Error).message}`);
         }
       }
+      neverFired[name] = skillIds.filter((id) => !fired.has(id));
+      rows.push(`${name} (${games} games): fired ${skillIds.filter((id) => fired.has(id)).join(', ') || '-'}; never ${neverFired[name].join(', ') || '-'}`);
     }
+    if (process.env['SIM_VERBOSE']) process.stdout.write(`\nnew General skill usage:\n${rows.join('\n')}\n`);
     expect(failures).toEqual([]);
-  }, 900_000);
+    // Exact: the skills that never fired are exactly the exempt ones.
+    expect(Object.fromEntries(Object.entries(neverFired).filter(([, ids]) => ids.length > 0))).toEqual(EXEMPT);
+  }, 1_800_000);
 
   // The bots never use Zou Shi's skills, so GeneralHiddenEvent never shows in a bot-driven game: script it.
   it('scripted: Femme Fatale then Impetus for Conflicts hide a General with no leak to any viewer', () => {
@@ -207,6 +230,9 @@ describe('simulation: Alternate deck games with bots', () => {
       for (const id of hiddenSkills) expect(text).not.toMatch(new RegExp(`(?<![a-z0-9-])${id}(?![a-z0-9-])`));
       expect(view.seats.find((x) => x.id === target)!.generals!.main).toEqual({ generalDefinitionId: 'hidden', revealed: false });
     }
+    // The owner of the hidden-again General still sees it, and its own view still names the skills.
+    const ownView = JSON.stringify(redactStateForSeat(state, target).seats.find((x) => x.id === target)!.generals);
+    expect(ownView).toContain(targetGenerals.main);
     // The still-exposed Deputy stays visible.
     expect(JSON.stringify(redactStateForSeat(state, 'seat-2').seats)).toContain(targetGenerals.deputy);
   }, 120_000);
