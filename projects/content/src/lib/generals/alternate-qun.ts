@@ -1,13 +1,14 @@
 import type { CardInstance, CardMovedEvent, DamageDealtEvent, Effect, GameState, SeatDyingEvent, SeatEliminatedEvent, SkillDefinition } from 'engine';
 import { discardOwed, requireZoneOfKind, slotSilenced } from 'engine';
 import { seatCardOptions } from '../shared/choices';
-import { exposedKingdom, ownKingdom } from '../shared/kingdom';
+import { exposedKingdom, exposedKingdomCounts, ownKingdom, sameKingdomSeatIds } from '../shared/kingdom';
 import { abilityKey } from '../shared/steps';
 import { handOf } from '../shared/queries';
 import { equipSlotOf } from '../cards/equipment';
 import { isShaDamage } from '../shared/abilities';
 import { makeCurtain } from './forest';
 import { makeEclipseTheMoon, makeSowDiscord } from './qun';
+import { horsemanship } from './shu';
 import { killedByLivingOther } from './mountain';
 import { ask, choiceOf, draw, equipZoneId, handZoneId, isLiving, on, otherLivingSeatIds, seatOptions, skillStep, used } from '../shared/skills';
 
@@ -260,6 +261,39 @@ const comity: SkillDefinition = {
   },
 };
 
+// The seat mark that records Call of Valour's one use.
+const CALL_OF_VALOUR_MARK = 'call-of-valour-used';
+
+// Call of Valour (active, Play Phase, once per game): every living exposed seat of his Kingdom, himself
+// first, draws 3. Then, if his Kingdom has the fewest exposed seats of the Kingdoms in play (a tie
+// included), he regains 1 HP (nothing at full HP). His Kingdom is his own once the skill has revealed him.
+const callOfValour: SkillDefinition = {
+  id: 'alternate:call-of-valour',
+  limited: true,
+  active: {
+    canUse: (state, { seatId }, registry) =>
+      isLiving(state, seatId) && !state.seats.find((s) => s.id === seatId)?.marks?.[CALL_OF_VALOUR_MARK] &&
+      !!ownKingdom(state, { kind: 'general', seatId, slot: 'main', skillId: 'alternate:call-of-valour' }, registry),
+    start: (_state, { seatId, owner }) => [
+      { kind: 'IncrementEffect', scope: 'seat', seatId, key: CALL_OF_VALOUR_MARK, by: 1 },
+      skillStep(owner, 'resolve'),
+    ],
+  },
+  onStep: (state, step, registry) => {
+    const { owner } = step;
+    const own = isLiving(state, owner.seatId) ? ownKingdom(state, owner, registry) : null;
+    if (!own) return [];
+    const counts = exposedKingdomCounts(state);
+    const smallest = (counts.get(own) ?? 0) <= Math.min(...counts.values());
+    const seat = state.seats.find((s) => s.id === owner.seatId)!;
+    return [
+      used(owner),
+      ...sameKingdomSeatIds(state, owner.seatId).map((seatId) => draw(seatId, 3)),
+      ...(smallest && seat.combinedHp < seat.maxCombinedHp ? [{ kind: 'HealEffect' as const, target: { kind: 'seat' as const, seatId: owner.seatId }, amount: 1 }] : []),
+    ];
+  },
+};
+
 // Alternate Qun skills whose rules differ from Default's, by General id then the Chinese skill name.
 // Each variant's id is `alternate:` plus the id of the Alternate English skill name.
 export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<string, SkillDefinition>>>> = {
@@ -277,6 +311,8 @@ export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<str
   'tian-feng': { 死谏: deathlyCounsel, 随势: withTheTide },
   // Celebrity, Comity: Kong Rong is new to Alternate (Default has no such General).
   'kong-rong': { 名士: celebrity, 礼让: comity },
+  // Horsemanship, Call of Valour: Ma Teng is new to Alternate (Default has no such General); his Horsemanship is Ma Chao's.
+  'ma-teng': { 马术: { ...horsemanship, id: 'alternate:horsemanship' }, 雄异: callOfValour },
   // Behind the Curtain: he can be chosen by black Tools, which are cancelled for him (Default: can't be chosen).
   'jia-xu': { 帷幕: { ...makeCurtain(true), id: 'alternate:behind-the-curtain' } },
 };

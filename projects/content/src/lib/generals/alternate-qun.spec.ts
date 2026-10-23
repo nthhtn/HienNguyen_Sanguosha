@@ -1,5 +1,6 @@
 import type { GameState, QueueItem } from 'engine';
 import { getActiveSeatId, redactStateForSeat, skillsInPlay } from 'engine';
+import { seatDistance } from '../shared/queries';
 import { askedAbout, card, handIds, harness, hp, kwMode, registry, table, TableOptions } from './skills.testing';
 import { readyAlternateSkills } from '../alternateSkills';
 import { alternateGeneralRecords } from '../alternateGenerals';
@@ -700,5 +701,60 @@ describe('Alternate Kong Rong, Comity', () => {
     const s = h.run(t, [{ kind: 'MoveCardEffect', cardInstanceId: 'x1', toZoneId: 'discardPile' }]);
     expect(askedAbout(s)).toBe(id);
     expect(h.use(s).seats[0].generals!.main.revealed).toBe(true);
+  });
+});
+
+describe('Alternate Ma Teng', () => {
+  const horse = 'alternate:horsemanship';
+  const id = 'alternate:call-of-valour';
+  const six = (o: TableOptions = {}, cards: Record<string, ReturnType<typeof card>[]> = {}) =>
+    table({ drawPile: Array.from({ length: 30 }, (_, i) => card(`d${i}`, 'shan')), ...cards }, { seats: 6, generals: at('seat-a', 'alternate:ma-teng'), ...o });
+  const hands = (s: GameState) => Object.fromEntries(s.seats.map((x) => [x.id, handIds(s, x.id).length]));
+
+  it('Horsemanship: his distance to others is 1 less, never below 1', () => {
+    const s = six();
+    expect(skillsInPlay(s, 'seat-a', registry, true).map((x) => x.skill.id)).toContain(horse);
+    expect(seatDistance(s, 'seat-a', 'seat-b', registry)).toBe(1);
+    expect(seatDistance(s, 'seat-a', 'seat-d', registry)).toBe(2);
+    expect(seatDistance(s, 'seat-d', 'seat-a', registry)).toBe(3);
+  });
+
+  it('Call of Valour: every exposed seat of his Kingdom draws 3; a hidden seat does not', () => {
+    const kingdoms = { 'seat-a': 'Qun', 'seat-b': 'Qun', 'seat-c': 'Qun', 'seat-d': 'Qun', 'seat-e': 'Wei', 'seat-f': 'Shu' } as const;
+    const s = h.useSkill(six({ kingdoms, generals: { ...at('seat-a', 'alternate:ma-teng'), 'seat-d': ['filler-xu-huang', 'filler-dong-zhuo', false] } }), 'seat-a', id);
+    expect(hands(s)).toEqual({ 'seat-a': 3, 'seat-b': 3, 'seat-c': 3, 'seat-d': 0, 'seat-e': 0, 'seat-f': 0 });
+    expect(handIds(s, 'seat-a')).toEqual(['d0', 'd1', 'd2']);
+  });
+
+  const healed = (kingdoms: NonNullable<TableOptions['kingdoms']>, hp = 3) => hp_(h.useSkill(six({ kingdoms, hp: { 'seat-a': hp } }), 'seat-a', id));
+  const hp_ = (s: GameState) => hp(s, 'seat-a');
+  const qun = (n: number) => Object.fromEntries(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'].map((x, i) => [x, i < n ? 'Qun' : i < n + 2 ? 'Wei' : 'Shu'])) as NonNullable<TableOptions['kingdoms']>;
+
+  it('heals 1 when his Kingdom is the smallest, a tie included; not when larger', () => {
+    expect(healed({ ...qun(1), 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Shu', 'seat-e': 'Shu', 'seat-f': 'Shu' })).toBe(4);
+    expect(healed({ ...qun(2), 'seat-c': 'Wei', 'seat-d': 'Wei', 'seat-e': 'Shu', 'seat-f': 'Shu' })).toBe(4);
+    expect(healed({ ...qun(3), 'seat-d': 'Wei', 'seat-e': 'Wei', 'seat-f': 'Shu' })).toBe(3);
+  });
+
+  it('at full HP healing does nothing and does not error', () => {
+    const s = h.useSkill(six({ kingdoms: qun(1) }), 'seat-a', id);
+    expect(hp_(s)).toBe(4);
+    expect(handIds(s, 'seat-a')).toHaveLength(3);
+  });
+
+  it('is once per game, including on a later turn, and only in the Play Phase', () => {
+    const s = h.useSkill(six({ kingdoms: qun(1) }), 'seat-a', id);
+    expect(offered(s, 'seat-a', id)).toBe(false);
+    expect(offered({ ...s, turn: { ...s.turn, turnNumber: 9 } }, 'seat-a', id)).toBe(false);
+    expect(offered(six({ phase: 'Draw' }), 'seat-a', id)).toBe(false);
+    expect(offered(six({ owner: 'seat-b' }), 'seat-a', id)).toBe(false);
+    expect(offered(six(), 'seat-a', id)).toBe(true);
+  });
+
+  it('a hidden Ma Teng may use it, which reveals him, and counts as his Kingdom', () => {
+    const t = six({ kingdoms: { 'seat-a': 'hidden' as never, 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Shu', 'seat-e': 'Shu', 'seat-f': 'Shu' }, generals: { 'seat-a': ['alternate:ma-teng', 'filler-jia-xu', false] } });
+    const s = h.useSkill(t, 'seat-a', id);
+    expect(s.seats[0].generals!.main.revealed).toBe(true);
+    expect(handIds(s, 'seat-a')).toHaveLength(3);
   });
 });

@@ -266,6 +266,9 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
       const sha = hand.find((c) => isShaCard(registry, c.definitionId));
       return !!sha && farFoes(view, me).length > 0 && ownCards(view, me).some((c) => c.instanceId !== sha.instanceId && keepRank(view, registry, c.instanceId) < 3);
     }
+    // Call of Valour: once per game, so only when it pays: he is hurt, or an ally of his Kingdom draws too. (Its own Kingdom is a bot's seat's.)
+    case 'alternate:call-of-valour':
+      return hurt(me) || allies.length > 0;
     case 'green-vesicle':
       return spare.length > 0 && (hurt(me) || allies.some(hurt));
     case 'marriage':
@@ -289,7 +292,7 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
 
 const ACTIVE_ORDER = {
   early: ['battered-body', 'alternate:swift-and-deadly', 'reconsider', 'green-vesicle', 'marriage', 'shackle', 'heavens-justice', 'rouse-the-tiger', 'alliance'],
-  late: ['sow-revolt', 'sow-discord', 'kindness', 'assault', 'upheaval', 'instigate', 'direct-instruction'],
+  late: ['sow-revolt', 'sow-discord', 'kindness', 'assault', 'upheaval', 'instigate', 'direct-instruction', 'alternate:call-of-valour'],
 } as const;
 
 // The active skill to use now from `group`, if any: offered and wanted (using it

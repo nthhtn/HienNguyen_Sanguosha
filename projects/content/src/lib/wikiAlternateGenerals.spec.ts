@@ -73,7 +73,7 @@ describe('wikiAlternateGenerals', () => {
   });
 
   it('marks every skill of a General with no Default counterpart as not in game, until its task lands', () => {
-    for (const id of ['ji-ling', 'ma-teng', 'zou-shi']) {
+    for (const id of ['ji-ling', 'zou-shi']) {
       expect(byId(id).skills.map((s) => s.status)).toEqual(byId(id).skills.map(() => 'missing'));
       expect(byId(id).skillsRunAsDefault).toBe(false);
     }
@@ -94,6 +94,10 @@ describe('wikiAlternateGenerals', () => {
 
   it('plays Kong Rong’s skills, as Alternate variants of their own', () => {
     expect(byId('kong-rong').skills.map((s) => s.status)).toEqual(['worksAsAlternate', 'worksAsAlternate']);
+  });
+
+  it('plays Ma Teng’s skills, as Alternate variants of their own', () => {
+    expect(byId('ma-teng').skills.map((s) => s.status)).toEqual(['worksAsAlternate', 'worksAsAlternate']);
   });
 
   it('plays Pan Feng’s skill, as an Alternate variant of its own', () => {

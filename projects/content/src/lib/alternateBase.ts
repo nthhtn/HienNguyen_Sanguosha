@@ -20,6 +20,8 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:sorrow': 'heartbroken',
   // Bots only: it asks like Bestowed Rouse; its own prompts and hints are in display.ts.
   'alternate:bequeathed-strategy': 'bestowed-rouse',
+  // Ma Teng's Horsemanship is Ma Chao's: same texts and modifier.
+  'alternate:horsemanship': 'horsemanship',
 };
 
 // Variants with no Default counterpart, which therefore have no base entry (and need their own texts and bot support).
@@ -42,6 +44,8 @@ export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>([
   // Kong Rong is new in Alternate: both his skills have no Default counterpart.
   'alternate:celebrity',
   'alternate:comity',
+  // Ma Teng is new in Alternate: Call of Valour has no Default counterpart.
+  'alternate:call-of-valour',
 ]);
 
 // The Default skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.

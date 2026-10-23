@@ -420,3 +420,19 @@ describe('Alternate Kong Rong, Comity', () => {
     expect(picked(decide(ask))).toBe('seat-c');
   });
 });
+
+describe('Alternate Ma Teng, Call of Valour', () => {
+  const id = 'alternate:call-of-valour';
+  const pick = (s: GameState) => pickActiveSkill(s, s.seats[0], getLegalActions(s, 'seat-a', registry), registry, 'late');
+
+  it('is used once, in the Play Phase, and not again', () => {
+    const s = table({}, { hp: { 'seat-a': 3 }, generals: { 'seat-a': ['alternate:ma-teng', 'filler-meng-huo', true] } });
+    const action = pick(s);
+    expect(action).toMatchObject({ owner: { skillId: id } });
+    expect(pick(act(s, action!))).toBeUndefined();
+  });
+
+  it('is kept for later at full HP with no ally of his Kingdom', () => {
+    expect(pick(table({}, { generals: { 'seat-a': ['alternate:ma-teng', 'filler-meng-huo', true] } }))).toBeUndefined();
+  });
+});

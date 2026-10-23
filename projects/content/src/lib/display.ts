@@ -194,6 +194,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'alternate:bequeathed-strategy': 'Look at the top 2 cards of the draw pile, then give one to any player and the other to any player',
   'alternate:prudence': 'Another seat of your Kingdom draws 1 card',
   'alternate:divine-wisdom': 'Discard all your hand cards; if you discard at least as many as your HP, recover 1 HP',
+  'alternate:call-of-valour': 'Every seat of your Kingdom draws 3 cards; if your Kingdom has the fewest seats, recover 1 HP',
   'alternate:close-combat': 'When you use Sha, you can add one more target within distance 1 of you and in your attack range',
   'alternate:swift-and-deadly': 'Discard a card and choose a seat; your distance to it counts as 1 until the end of the turn',
   'alternate:deathly-counsel': 'Discard a card from the hand or equipment area of another seat',
