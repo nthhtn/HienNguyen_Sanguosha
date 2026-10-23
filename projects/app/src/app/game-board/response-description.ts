@@ -1,5 +1,5 @@
 import { CardInstance, Effect, EngineEvent, GameState } from 'engine';
-import { abilityName, cardDisplayData } from 'content';
+import { abilityName, baseSkillId, cardDisplayData } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, forceOf, judgmentReaderName, seatName, shownCardId, targetLabel } from '../labels';
 
@@ -202,11 +202,11 @@ export function describeResponse(
   }
 
   // Upheaval: play a Sha at the seat this seat picked, or lose 1 HP.
-  if (pending.reason?.kind === 'ability' && pending.reason.abilityId === 'upheaval') {
+  if (pending.reason?.kind === 'ability' && baseSkillId(pending.reason.abilityId) === 'upheaval') {
     const { owner, targetSeatId } = pending.reason;
     const you = pending.respondingSeatId === viewerSeatId;
     return {
-      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityDisplayName('upheaval', tr) }),
+      source: tr('response.usedAbility', { seat: name(owner.seatId), ability: abilityDisplayName(pending.reason.abilityId, tr) }),
       latest: null,
       prompt: tr('response.upheaval.prompt', { sha, target: targetSeatId ? whom(targetSeatId) : tr('response.seatYouPicked') }),
       outcome: you ? tr('response.loseOne.you') : tr('response.loseOne.other', { seat: name(pending.respondingSeatId) }),
@@ -296,7 +296,7 @@ export function waitingLine(state: GameState, tr: Translator = englishTranslator
   if (reason?.kind === 'wuxie' || reason?.kind === 'counter-wuxie') return tr('response.waiting.ask', { seat, what: askedCardName(state, tr) });
   if (reason?.kind === 'card-effect') return tr('response.waiting.answer', { seat, card: cardName({ definitionId: shownCardId(reason.card) }, tr) });
   const sha = cardName({ definitionId: 'sha' }, tr);
-  if (reason?.kind === 'ability' && reason.abilityId === 'upheaval') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName('upheaval', tr) });
+  if (reason?.kind === 'ability' && reason.abilityId === 'upheaval') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName(pending.reason.abilityId, tr) });
   if (reason?.kind === 'ability' && reason.abilityId === 'instigate') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName('instigate', tr) });
   return tr('response.waiting.on', { seat });
 }

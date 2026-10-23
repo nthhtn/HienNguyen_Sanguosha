@@ -114,13 +114,13 @@ describe('active skills', () => {
 describe('the Upheaval window', () => {
   it('answers with a Slash when it holds one, at a non-ally; else passes', () => {
     // Built directly: seat-b is asked to Slash seat-c.
-    const open = (hasSha: boolean, ally: boolean) => {
+    const open = (hasSha: boolean, ally: boolean, abilityId = 'upheaval') => {
       const t = table({ 'seat-b:hand': hasSha ? [card('s1', 'sha')] : [] }, { kingdoms: { 'seat-a': 'Qun', 'seat-b': 'Wei', 'seat-c': ally ? 'Wei' : 'Shu', 'seat-d': 'Wu' } });
       return {
         ...t,
         pendingResponse: {
           id: 'w', respondingSeatId: 'seat-b', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
-          reason: { kind: 'ability' as const, owner: { kind: 'general' as const, seatId: 'seat-a', slot: 'main' as const, skillId: 'upheaval' }, abilityId: 'upheaval', targetSeatId: 'seat-c' },
+          reason: { kind: 'ability' as const, owner: { kind: 'general' as const, seatId: 'seat-a', slot: 'main' as const, skillId: abilityId }, abilityId, targetSeatId: 'seat-c' },
           context: { effect: { kind: 'LoseHpEffect' as const, seatId: 'seat-b', amount: 1 } },
         },
       };
@@ -128,6 +128,9 @@ describe('the Upheaval window', () => {
     expect(decide(open(true, false)).kind).toBe('RespondAction');
     expect(decide(open(false, false)).kind).toBe('PassAction');
     expect(decide(open(true, true)).kind).toBe('PassAction'); // never a Slash at an ally
+    // Alternate Descend into Chaos plays the same.
+    expect(decide(open(true, false, 'alternate:descend-into-chaos')).kind).toBe('RespondAction');
+    expect(decide(open(true, true, 'alternate:descend-into-chaos')).kind).toBe('PassAction');
   });
 });
 
