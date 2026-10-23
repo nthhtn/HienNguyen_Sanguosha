@@ -491,7 +491,7 @@ export function applyDying(state: GameState, effect: Extract<Effect, { kind: 'Dy
   const seat = state.seats.find((s) => s.id === effect.seatId);
   if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
   if (seat.eliminated) return { state, events: [] };
-  const events: EngineEvent[] = effect.entering && seat.combinedHp <= 0 ? [{ kind: 'SeatDyingEvent', seatId: seat.id }] : [];
+  const events: EngineEvent[] = effect.entering && seat.combinedHp <= 0 ? [{ kind: 'SeatDyingEvent', seatId: seat.id, ...(effect.killerSeatId ? { killerSeatId: effect.killerSeatId } : {}) }] : [];
   const logged = (next: GameState, more: EngineEvent[] = []): ApplyResult => ({
     state: { ...next, log: [...next.log, ...events, ...more] },
     events: [...events, ...more],

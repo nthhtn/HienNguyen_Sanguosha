@@ -99,6 +99,8 @@ export interface DiscardPileReshuffledEvent {
 export interface SeatDyingEvent {
   kind: 'SeatDyingEvent';
   seatId: string;
+  // The seat whose damage brought it down, if any.
+  killerSeatId?: string;
 }
 
 // A dying seat is back above 0 HP.

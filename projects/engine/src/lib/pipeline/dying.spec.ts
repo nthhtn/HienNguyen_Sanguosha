@@ -60,6 +60,11 @@ describe('damage below zero', () => {
 });
 
 describe('the dying round', () => {
+  it('names the damage source on the dying event when the effect carries one', () => {
+    const s = applyEffect(state(0), { kind: 'DyingEffect', seatId: 'seat-c', order: ORDER, rescueCardIds: { any: ['peach'], self: ['wine'] }, entering: true, killerSeatId: 'seat-a' }).state;
+    expect(s.log).toEqual([{ kind: 'SeatDyingEvent', seatId: 'seat-c', killerSeatId: 'seat-a' }]);
+  });
+
   it('logs the seat as dying and asks it first when no one else holds a Peach', () => {
     const s = dying(state(0));
     expect(s.log).toEqual([{ kind: 'SeatDyingEvent', seatId: 'seat-c' }]);
