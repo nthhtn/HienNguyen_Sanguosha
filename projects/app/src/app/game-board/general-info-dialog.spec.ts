@@ -2,6 +2,20 @@ import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { GeneralInfoDialog } from './general-info-dialog';
 
+// Every Alternate skill is registered after slice 4, so the registry has no General left that reads "not in the game yet":
+// this one is pretended, to test how the UI shows the flag.
+jest.mock('content', () => {
+  const actual = jest.requireActual('content');
+  return {
+    ...actual,
+    generalDisplayData: (id: string, locale?: string) => {
+      const data = actual.generalDisplayData(id, locale);
+      return id === 'alternate:guan-yu' && data ? { ...data, skills: data.skills.map((s: object) => ({ ...s, inGame: false })) } : data;
+    },
+  };
+});
+
+
 function render(generalDefinitionId: string): HTMLElement {
   TestBed.configureTestingModule({
     imports: [GeneralInfoDialog],
