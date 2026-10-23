@@ -58,7 +58,7 @@
 
 **Files:**
 - Modify: `projects/content/src/lib/generals/forest.ts` (`upheaval` becomes a factory), `projects/content/src/lib/generals/alternate-<force>.ts` (register the variant in the file of Jia Xu's Alternate force (check `force` in the record))
-- Test: `projects/content/src/lib/generals/alternate-qun.spec.ts`, the existing Upheaval specs (Default guard; find them with `grep -rn upheaval projects/content/src --include=*.spec.ts`)
+- Test: `projects/content/src/lib/generals/alternate-<force>.spec.ts`, the existing Upheaval specs (Default guard; find them with `grep -rn upheaval projects/content/src --include=*.spec.ts`)
 
 **Interfaces:**
 - Consumes: `shaReach`, `seatDistance`, `untargetableBy` (already in `forest.ts`).
