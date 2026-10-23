@@ -1,4 +1,4 @@
-import type { CardInstance, CardMovedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, PhaseChangedEvent, SeatDyingEvent, SeatEliminatedEvent, SkillDefinition, UsedCard } from 'engine';
+import type { CardInstance, CardMovedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, PhaseChangedEvent, SeatEliminatedEvent, SkillDefinition, UsedCard } from 'engine';
 import { discardOwed, endFlagOf, requireZoneOfKind, slotSilenced } from 'engine';
 import { seatCardOptions } from '../shared/choices';
 import { exposedKingdom, exposedKingdomCounts, ownKingdom, sameKingdomSeatIds } from '../shared/kingdom';
@@ -49,7 +49,16 @@ const sorrow: SkillDefinition = {
 // Duel or a skill), once per damage he may pick a card in that seat's equipment area and either move it into
 // his own equipment area or discard it. If his matching slot is full, a move replaces it: his old card there
 // is discarded first. Asked only while the seat is still living and wears a card.
+// A hidden Pan Feng's trigger is wrapped in the engine's reveal ask (withReveal), which then is the one
+// ask: its Use reveals her and goes straight to the pick (`revealAsked`). That ask is queued behind any
+// dying round too; a before-trigger drops it if by then the victim is out or wears nothing, so she is
+// never asked to reveal for nothing.
 const wornOf = (state: GameState, seatId: string): CardInstance[] => state.zones.find((z) => z.id === equipZoneId(state, seatId))?.cards ?? [];
+const axeVictimValid = (state: GameState, victim: string): boolean => isLiving(state, victim) && wornOf(state, victim).length > 0;
+type AskStep = Extract<Effect, { kind: 'AskUseEffect' }>;
+type SkillStep = Extract<Effect, { kind: 'SkillStepEffect' }>;
+const generalHidden = (state: GameState, owner: GeneralOwner): boolean =>
+  !state.seats.find((s) => s.id === owner.seatId)?.generals?.[owner.slot].revealed;
 
 const insanityAxe: SkillDefinition = {
   id: 'alternate:insanity-axe',
@@ -62,10 +71,19 @@ const insanityAxe: SkillDefinition = {
         damage.target.kind === 'seat' && damage.target.seatId !== owner.seatId &&
         isLiving(state, owner.seatId) && isLiving(state, damage.target.seatId) && wornOf(state, damage.target.seatId).length > 0;
       },
-      effect: (_state, event, owner) => {
+      effect: (state, event, owner) => {
         const victim = (event.damage.target as { seatId: string }).seatId;
-        return [skillStep(owner, 'ask', { victim })];
+        return [skillStep(owner, 'ask', { victim, ...(generalHidden(state, owner) ? { revealAsked: true } : {}) })];
       },
+    }),
+    // The reveal ask wrapping a hidden Pan Feng's step: dropped when the victim no longer qualifies.
+    on<AskStep>('before:AskUseEffect', {
+      condition: (state, ask, owner) => {
+        if (ask.owner.kind !== 'general' || ask.owner.seatId !== owner.seatId || ask.owner.slot !== owner.slot || ask.abilityId !== owner.skillId) return false;
+        const step = ask.effects.find((e): e is SkillStep => e.kind === 'SkillStepEffect' && e.step === 'ask');
+        return !!step && !axeVictimValid(state, step.data?.['victim'] as string);
+      },
+      effect: () => [],
     }),
   ],
   // 'pick': which of the victim's worn cards; 'handle': move it or discard it.
@@ -74,10 +92,15 @@ const insanityAxe: SkillDefinition = {
     const victim = step.data?.['victim'] as string;
     if (!isLiving(state, owner.seatId)) return [];
     // 'ask': runs once the damage and any dying round are over; a victim that died (its cards gone) is not asked.
-    if (step.step === 'ask') return isLiving(state, victim) && wornOf(state, victim).length > 0 ? [ask(owner, [skillStep(owner, 'pick', { victim })], [], victim)] : [];
+    // After the reveal ask (`revealAsked`) she has already said Use: straight to the pick.
+    if (step.step === 'ask') {
+      if (!axeVictimValid(state, victim)) return [];
+      const pick = skillStep(owner, 'pick', { victim });
+      return step.data?.['revealAsked'] ? [pick] : [ask(owner, [pick], [], victim)];
+    }
     if (step.step === 'pick') {
       const worn = wornOf(state, victim);
-      if (!isLiving(state, victim) || worn.length === 0) return [];
+      if (!axeVictimValid(state, victim)) return [];
       return [
         choiceOf(state, owner, {
           verb: 'pick',
@@ -109,9 +132,16 @@ const insanityAxe: SkillDefinition = {
   },
 };
 
+// One effect can move several cards in one step (DiscardZoneEffect), and every move's after-triggers are
+// gathered against the state after all of them: only the last move of the step (the log's last event) counts.
+const isLastMoveOfStep = (state: GameState, event: CardMovedEvent): boolean => {
+  const last = state.log.at(-1);
+  return last?.kind === 'CardMovedEvent' && last.cardInstanceId === event.cardInstanceId;
+};
+
 // Deathly Counsel (may): whenever he loses his last hand card, however it happens, he may discard 1
 // card of another seat, from its hand or equipment area (not its judgment area). Not asked when no other
-// living seat has such a card.
+// living seat has such a card. Once per loss: a whole hand taken in one step asks once (isLastMoveOfStep).
 const discardableSeats = (state: GameState, seatId: string): string[] =>
   otherLivingSeatIds(state, seatId).filter((id) => seatCardOptions(state, id, '', { judgment: false }).length > 0);
 
@@ -121,7 +151,7 @@ const deathlyCounsel: SkillDefinition = {
     on<CardMovedEvent>('after:CardMovedEvent', {
       condition: (state, event, owner) =>
         event.fromZoneId === handZoneId(state, owner.seatId) && event.toZoneId !== event.fromZoneId && handOf(state, owner.seatId).length === 0 &&
-        isLiving(state, owner.seatId) && discardableSeats(state, owner.seatId).length > 0,
+        isLastMoveOfStep(state, event) && isLiving(state, owner.seatId) && discardableSeats(state, owner.seatId).length > 0,
       effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'pick')])],
     }),
   ],
@@ -147,16 +177,22 @@ const deathlyCounsel: SkillDefinition = {
 // Kingdom (himself included), he draws 1. When another seat of his Kingdom dies, he loses 1 HP. Kingdoms
 // are exposed ones (a source with both Generals hidden is in none; a death reveals the seat first).
 // His own Kingdom is the seat's, else his General's (a hidden General's compulsory skill asks to reveal).
+// The draw comes as the seat enters dying, ahead of the rescue asks (a drawn Peach can save it): a
+// before-trigger on the entering DyingEffect, once per entry (`acted`), that draws and lets it go on.
+type Dying = Extract<Effect, { kind: 'DyingEffect' }>;
 const withTheTide: SkillDefinition = {
   id: 'alternate:with-the-tide',
   compulsory: true,
   triggers: [
-    on<SeatDyingEvent>('after:SeatDyingEvent', {
-      condition: (state, event, owner, registry) => {
+    on<Dying>('before:DyingEffect', {
+      condition: (state, dying, owner, registry) => {
+        if (dying.entering !== true || dying.seatId === owner.seatId || !dying.killerSeatId || (dying.acted ?? []).includes(abilityKey(owner))) return false;
+        const seat = state.seats.find((s) => s.id === dying.seatId);
+        if (!seat || seat.eliminated || seat.combinedHp > 0) return false;
         const own = ownKingdom(state, owner, registry);
-        return !!own && isLiving(state, owner.seatId) && event.seatId !== owner.seatId && !!event.killerSeatId && exposedKingdom(state, event.killerSeatId) === own;
+        return !!own && isLiving(state, owner.seatId) && exposedKingdom(state, dying.killerSeatId) === own;
       },
-      effect: (_state, _event, owner) => [used(owner), draw(owner.seatId, 1)],
+      effect: (_state, dying, owner) => [used(owner), draw(owner.seatId, 1), { ...dying, acted: [...(dying.acted ?? []), abilityKey(owner)] }],
     }),
     on<SeatEliminatedEvent>('after:SeatEliminatedEvent', {
       condition: (state, event, owner, registry) => {
@@ -231,8 +267,7 @@ const comity: SkillDefinition = {
         const pileId = requireZoneOfKind(state.zones, 'discardPile').id;
         if (!isOwnDiscard(event, state, owner.seatId, pileId) || !isLiving(state, owner.seatId) || otherLivingSeatIds(state, owner.seatId).length === 0) return false;
         // One effect can move several cards in one step (DiscardZoneEffect): only its last event asks.
-        const last = state.log.at(-1);
-        if (last?.kind !== 'CardMovedEvent' || last.cardInstanceId !== event.cardInstanceId) return false;
+        if (!isLastMoveOfStep(state, event)) return false;
         // The run goes on while the next effect in the queue is another such discard.
         const next = state.resolutionQueue?.[0] as MoveStep | undefined;
         if (next?.kind === 'MoveCardEffect' && next.toZoneId === pileId && ownCardZones(state, owner.seatId).some((z) => state.zones.find((x) => x.id === z)?.cards.some((c) => c.instanceId === next.cardInstanceId))) return false;

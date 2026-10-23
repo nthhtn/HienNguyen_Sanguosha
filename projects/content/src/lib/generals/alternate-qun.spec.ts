@@ -352,10 +352,43 @@ describe('Alternate Pan Feng, Insanity Axe', () => {
     expect(askedAbout(h.decline(s))).toBeNull();
   });
 
-  it('a hidden Pan Feng is asked, and using it reveals her', () => {
+  it('a hidden Pan Feng is asked once: using it reveals her and goes straight to the pick', () => {
     const s = strike([crossbow], [], 'alternate:pan-feng', false);
     expect(askedAbout(s)).toBe(id);
-    expect(seatOf(h.use(s), 'seat-a').generals!.main.revealed).toBe(true);
+    const used = h.use(s);
+    expect(seatOf(used, 'seat-a').generals!.main.revealed).toBe(true);
+    expect(used.pendingChoice).toMatchObject({ verb: 'pick', reason: { targetSeatId: 'seat-b' } });
+    expect(used.pendingChoice!.options.map((o) => o.id)).toEqual(['cb']);
+    const done = h.choose(h.choose(used, 'cb'), 'move-card');
+    expect(zone(done, 'seat-a:equip')).toEqual(['cb']);
+    expect(done.pendingChoice ?? null).toBeNull();
+  });
+
+  it('a hidden Pan Feng declining stays hidden and changes nothing', () => {
+    const done = h.decline(strike([crossbow], [], 'alternate:pan-feng', false));
+    expect(seatOf(done, 'seat-a').generals!.main.revealed).toBe(false);
+    expect(zone(done, 'seat-b:equip')).toEqual(['cb']);
+    expect(done.pendingChoice ?? null).toBeNull();
+  });
+
+  it('a hidden Pan Feng whose victim dies in its dying round is not asked, and stays hidden', () => {
+    const t = table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-b:equip': [crossbow] }, { generals: { 'seat-a': ['alternate:pan-feng', 'filler-jia-xu', false] }, hp: { 'seat-b': 1 } });
+    const s = finish(hk.pass(hk.play(t, 's1', 'seat-b')));
+    expect(seatOf(s, 'seat-b').eliminated).toBe(true);
+    expect(askedAbout(s)).toBeNull();
+    expect(seatOf(s, 'seat-a').generals!.main.revealed).toBe(false);
+  });
+
+  it('a hidden Pan Feng whose victim is saved is asked once, after the dying round', () => {
+    const t = table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-b:equip': [crossbow], 'seat-b:hand': [card('pc', 'peach', 'heart', 3)] }, { generals: { 'seat-a': ['alternate:pan-feng', 'filler-jia-xu', false] }, hp: { 'seat-b': 1 } });
+    const dyingNow = hk.pass(hk.play(t, 's1', 'seat-b'));
+    expect(askedAbout(dyingNow)).toBeNull();
+    const asked = hk.respond(dyingNow, 'pc');
+    expect(askedAbout(asked)).toBe(id);
+    const used = hk.use(asked);
+    expect(seatOf(used, 'seat-a').generals!.main.revealed).toBe(true);
+    expect(used.pendingChoice).toMatchObject({ verb: 'pick', reason: { targetSeatId: 'seat-b' } });
+    expect(used.pendingChoice!.options.map((o) => o.id)).toEqual(['cb']);
   });
 
   it('a Default General has no such skill', () => {
@@ -416,6 +449,32 @@ describe('Alternate Tian Feng, Deathly Counsel', () => {
     expect(used.seats.find((x) => x.id === 'seat-a')!.generals!.main.revealed).toBe(true);
   });
 
+  // One effect can take the whole hand in one step (the kill penalty's DiscardZoneEffect): one ask.
+  const wholeHand = () =>
+    h.run(
+      table(
+        { 'seat-a:hand': [card('x1', 'shan'), card('x2', 'shan'), card('x3', 'shan')], 'seat-b:hand': [card('b1', 'sha')], 'seat-c:hand': [card('c1', 'sha')], 'seat-d:hand': [card('d1', 'sha')] },
+        { generals: at('seat-a', 'alternate:tian-feng') }
+      ),
+      [{ kind: 'DiscardZoneEffect', zoneId: 'seat-a:hand' }]
+    );
+
+  it('asks once when one effect discards his whole hand; declining ends it', () => {
+    const s = wholeHand();
+    expect(askedAbout(s)).toBe(id);
+    const done = h.decline(s);
+    expect(askedAbout(done)).toBeNull();
+    expect(done.pendingChoice ?? null).toBeNull();
+    expect(['seat-b', 'seat-c', 'seat-d'].map((x) => zone(done, `${x}:hand`).length)).toEqual([1, 1, 1]);
+  });
+
+  it('asks once when one effect discards his whole hand; using it discards one card only', () => {
+    const done = h.choose(h.choose(h.use(wholeHand()), 'seat-b'), 'hand');
+    expect(askedAbout(done)).toBeNull();
+    expect(done.pendingChoice ?? null).toBeNull();
+    expect(['seat-b', 'seat-c', 'seat-d'].map((x) => zone(done, `${x}:hand`).length)).toEqual([0, 1, 1]);
+  });
+
   it('is asked when the last card is played (a Sha)', () => {
     const t = table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-c:hand': [card('c1', 'sha')] }, { generals: at('seat-a', 'alternate:tian-feng') });
     const s = h.play(t, 's1', 'seat-b');
@@ -439,15 +498,24 @@ describe('Alternate Tian Feng, With the Tide', () => {
     return s;
   };
   const dyingFrom = (source: string, target: string, o: TableOptions = {}) => hk.run(setup(o), [hit(source, target)]);
-  // The draw is a triggered effect queued behind the dying round, so it lands when the round is over.
+  // The draw comes as the seat enters dying, before anyone is asked to rescue it.
   // (Kingdom War's own kill reward gives the killer 3 more.)
   const drewD1 = (s: GameState) => handIds(settle(s), 'seat-a').length === 1;
 
-  it('a seat of his Kingdom brings another seat to dying: he draws 1', () => {
+  it('a seat of his Kingdom brings another seat to dying: he draws 1 before any rescue ask', () => {
     const s = dyingFrom('seat-c', 'seat-b');
     expect(s.pendingResponse?.reason).toMatchObject({ kind: 'dying', seatId: 'seat-b' });
-    expect(handIds(s, 'seat-a')).toEqual([]);
+    expect(handIds(s, 'seat-a')).toEqual(['d1']);
     expect(drewD1(s)).toBe(true);
+  });
+
+  it('the card he draws can be the Peach he rescues with', () => {
+    const s = hk.run(setup({}, { drawPile: [card('pc', 'peach', 'heart', 3)] }), [hit('seat-c', 'seat-b')]);
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a', reason: { kind: 'dying', seatId: 'seat-b' } });
+    expect(handIds(s, 'seat-a')).toEqual(['pc']);
+    const saved = hk.respond(s, 'pc');
+    expect(hp(saved, 'seat-b')).toBe(1);
+    expect(saved.seats.find((x) => x.id === 'seat-b')!.eliminated).toBeFalsy();
   });
 
   it('himself bringing another seat to dying also draws', () => {
@@ -457,7 +525,22 @@ describe('Alternate Tian Feng, With the Tide', () => {
   });
 
   it('draws even when the dying seat is an ally of his Kingdom', () => {
-    expect(drewD1(dyingFrom('seat-a', 'seat-c'))).toBe(true);
+    // Checked as the dying round opens: if the ally dies, Kingdom War's penalty for killing one's own
+    // Kingdom then discards his whole hand, the drawn card included.
+    const s = dyingFrom('seat-a', 'seat-c');
+    expect(s.pendingResponse?.reason).toMatchObject({ kind: 'dying', seatId: 'seat-c' });
+    expect(handIds(s, 'seat-a')).toEqual(['d1']);
+  });
+
+  it('killing an ally of his Kingdom discards his whole hand in one step: Deathly Counsel asks once', () => {
+    let s = hk.run(setup({}, { 'seat-a:hand': [card('x1', 'shan'), card('x2', 'shan')], 'seat-b:hand': [card('b1', 'sha')] }), [hit('seat-a', 'seat-c')]);
+    while (s.pendingResponse) s = hk.pass(s);
+    expect(s.seats.find((x) => x.id === 'seat-c')!.eliminated).toBe(true);
+    expect(handIds(s, 'seat-a')).toEqual([]);
+    expect(askedAbout(s)).toBe('alternate:deathly-counsel');
+    const done = hk.decline(s);
+    expect(askedAbout(done)).toBeNull();
+    expect(handIds(done, 'seat-b')).toEqual(['b1']);
   });
 
   it('damage from another Kingdom does not draw', () => {
@@ -509,19 +592,25 @@ describe('Alternate Tian Feng, With the Tide', () => {
     expect(hp(s, 'seat-a')).toBe(3);
   });
 
-  it('a hidden Tian Feng: pins how the engine treats his compulsory trigger', () => {
+  it('a hidden Tian Feng is asked only to reveal, before the rescue asks; using it reveals him and he draws', () => {
     const t = setup({ generals: { 'seat-a': ['alternate:tian-feng', 'filler-jia-xu', false] } });
-    const s = hk.run(t, [hit('seat-c', 'seat-b')]);
-    // Hidden compulsory after-triggers are asked (revealFor) before applying; or never applied.
-    // The ask comes once the dying round is over (the trigger queues behind it), and only to reveal him.
-    let at = s;
-    while (at.pendingResponse) at = hk.pass(at);
+    const at = hk.run(t, [hit('seat-c', 'seat-b')]);
     expect(askedAbout(at)).toBe(id);
+    expect(at.pendingResponse ?? null).toBeNull();
     expect(at.seats[0].generals!.main.revealed).toBe(false);
     expect(handIds(at, 'seat-a')).toEqual([]);
     const done = hk.use(at);
     expect(done.seats[0].generals!.main.revealed).toBe(true);
-    expect(handIds(done, 'seat-a')).toHaveLength(1);
+    expect(handIds(done, 'seat-a')).toEqual(['d1']);
+    expect(done.pendingResponse?.reason).toMatchObject({ kind: 'dying', seatId: 'seat-b' });
+  });
+
+  it('a hidden Tian Feng declining stays hidden, draws nothing, and the dying round goes on', () => {
+    const t = setup({ generals: { 'seat-a': ['alternate:tian-feng', 'filler-jia-xu', false] } });
+    const done = hk.decline(hk.run(t, [hit('seat-c', 'seat-b')]));
+    expect(done.seats[0].generals!.main.revealed).toBe(false);
+    expect(handIds(done, 'seat-a')).toEqual([]);
+    expect(done.pendingResponse?.reason).toMatchObject({ kind: 'dying', seatId: 'seat-b' });
   });
 });
 
@@ -1092,7 +1181,7 @@ describe('Alternate Zou Shi, Impetus for Conflicts', () => {
     expect(seatOf(shown, 'seat-c').generals!.main.revealed).toBe(true);
   });
 
-  it('a hidden General’s pending ask is skipped without an engine error, and its skill does nothing', () => {
+  it('during her turn, an ask already queued for a General she hid is skipped by the reveal block (no engine error, the skill does nothing)', () => {
     const s = hide(scene(), 'e1', 'seat-b', 'main');
     const owner = { kind: 'general' as const, seatId: 'seat-b', slot: 'main' as const, skillId: 'roar' };
     const next = h.run(s, [{ kind: 'AskUseEffect', owner, abilityId: 'roar', effects: [{ kind: 'DrawCardsEffect', seatId: 'seat-b', count: 5 }] }]);
