@@ -183,18 +183,21 @@ const celebrity: SkillDefinition = {
         const source = state.seats.find((s) => s.id === seatId);
         return !!source?.generals && !(source.generals.main.revealed && source.generals.deputy.revealed);
       },
-      effect: (_state, step, owner) => [
-        { ...step, damage: { ...step.damage, amount: Math.max(0, step.damage.amount - 1) }, acted: [...(step.acted ?? []), abilityKey(owner)] },
-        used(owner, 'used', (step.damage.source as { seatId: string }).seatId),
-      ],
+      // Reduced to 0 there is no damage at all: the step is dropped (no DamageDealtEvent, no after-damage
+      // trigger, no chain), only the log line stays.
+      effect: (_state, step, owner) => {
+        const log = used(owner, 'used', (step.damage.source as { seatId: string }).seatId);
+        const amount = step.damage.amount - 1;
+        return amount <= 0 ? [log] : [{ ...step, damage: { ...step.damage, amount }, acted: [...(step.acted ?? []), abilityKey(owner)] }, log];
+      },
     }),
   ],
 };
 
 // Comity (may): cards he discards or loses from his hand or equipment area on their way to the discard
 // pile may be given to another living seat instead, who takes them into hand. One ask per instance (one
-// effect, or one Discard Phase, however many cards). Cards he used reach the pile from the processing
-// area, so they are not covered. The cards are given back from the pile right after the last move of
+// effect, or one Discard Phase, however many cards). Cards he used go from his hand to the pile at once,
+// behind their CardPlayedEvent, and are left out (see discardedRun). The cards are given back from the pile right after the last move of
 // the run (`onlyFrom` leaves any card that has since gone elsewhere alone), so no discard path needs to
 // know about the skill: the Discard Phase, a skill cost, Dismantle, a replaced Equipment card.
 type MoveStep = Extract<Effect, { kind: 'MoveCardEffect' }>;
@@ -225,6 +228,9 @@ const comity: SkillDefinition = {
       condition: (state, event, owner) => {
         const pileId = requireZoneOfKind(state.zones, 'discardPile').id;
         if (!isOwnDiscard(event, state, owner.seatId, pileId) || !isLiving(state, owner.seatId) || otherLivingSeatIds(state, owner.seatId).length === 0) return false;
+        // One effect can move several cards in one step (DiscardZoneEffect): only its last event asks.
+        const last = state.log.at(-1);
+        if (last?.kind !== 'CardMovedEvent' || last.cardInstanceId !== event.cardInstanceId) return false;
         // The run goes on while the next effect in the queue is another such discard.
         const next = state.resolutionQueue?.[0] as MoveStep | undefined;
         if (next?.kind === 'MoveCardEffect' && next.toZoneId === pileId && ownCardZones(state, owner.seatId).some((z) => state.zones.find((x) => x.id === z)?.cards.some((c) => c.instanceId === next.cardInstanceId))) return false;

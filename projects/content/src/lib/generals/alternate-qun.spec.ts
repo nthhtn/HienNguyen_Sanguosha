@@ -544,6 +544,33 @@ describe('Alternate Kong Rong, Celebrity', () => {
     const s = hk.run(setup(), [hit('seat-b', 'seat-a', 1)]);
     expect(hp(s, 'seat-a')).toBe(4);
     expect(s.pendingChoice ?? null).toBeNull();
+    expect(s.log.some((e) => e.kind === 'DamageDealtEvent')).toBe(false);
+  });
+
+  it('a reduction from 2 to 1 still deals 1 damage', () => {
+    const s = hk.run(setup(), [hit('seat-b', 'seat-a', 2)]);
+    expect(s.log.filter((e) => e.kind === 'DamageDealtEvent')).toMatchObject([{ damage: { amount: 1 } }]);
+  });
+
+  it('a chained hit reduced to 0 does not pass along the chain', () => {
+    const t = setup();
+    const chained = { ...t, seats: t.seats.map((x) => (x.id === 'seat-a' || x.id === 'seat-c' ? { ...x, chained: true as const } : x)) };
+    const fire = { ...hit('seat-b', 'seat-a', 1), damage: { ...(hit('seat-b', 'seat-a', 1) as { damage: object }).damage, nature: 'fire' as const } } as QueueItem;
+    const s = hk.run(chained, [fire]);
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(hp(s, 'seat-c')).toBe(4);
+    expect(s.log.some((e) => e.kind === 'DamageDealtEvent')).toBe(false);
+  });
+
+  it('a Sha reduced to 0 does not trigger Pan Feng’s Insanity Axe', () => {
+    const t = table(
+      { 'seat-b:hand': [card('s1', 'sha', 'heart', 7)], 'seat-a:equip': [card('e1', 'crossbow', 'club', 1)] },
+      { generals: { 'seat-a': ['alternate:kong-rong', 'filler-jia-xu', true], 'seat-b': ['alternate:pan-feng', 'filler-dong-zhuo', true] }, owner: 'seat-b' }
+    );
+    const hidden = { ...t, seats: t.seats.map((x) => (x.id === 'seat-b' ? { ...x, generals: { main: x.generals!.main, deputy: { ...x.generals!.deputy, revealed: false } } } : x)) };
+    const s = hk.pass(hk.play(hidden, 's1', 'seat-a'));
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(askedAbout(s)).toBeNull();
   });
 
   it('leaves damage from a fully revealed seat unchanged', () => {
@@ -615,12 +642,32 @@ describe('Alternate Kong Rong, Comity', () => {
     const t = kong({ 'seat-a:equip': [card('e1', 'crossbow', 'club', 1)], 'seat-b:hand': [card('t1', 'break', 'spade')] }, { owner: 'seat-b' });
     let s = h.play(t, 't1', 'seat-a');
     while (s.pendingResponse) s = h.pass(s);
-    if (s.pendingChoice && askedAbout(s) !== id) s = h.choose(s, 'e1');
+    expect(s.pendingChoice!.seatId).toBe('seat-b');
+    s = h.choose(s, 'e1');
     expect(askedAbout(s)).toBe(id);
     s = h.choose(h.use(s), 'seat-d');
     expect(zone(s, 'seat-d:hand')).toEqual(['e1']);
     expect(zone(s, 'discardPile')).toContain('t1');
     expect(zone(s, 'discardPile')).not.toContain('e1');
+  });
+
+  it('asks when a worn card is replaced by new Equipment, and giving it puts it in the seat’s hand', () => {
+    const t = kong({ 'seat-a:equip': [card('e1', 'crossbow', 'club', 1)], 'seat-a:hand': [card('e2', 'ice-sword', 'spade', 2)] });
+    const s = h.play(t, 'e2');
+    expect(askedAbout(s)).toBe(id);
+    const done = h.choose(h.use(s), 'seat-c');
+    expect(zone(done, 'seat-c:hand')).toEqual(['e1']);
+    expect(zone(done, 'seat-a:equip')).toEqual(['e2']);
+  });
+
+  it('asks only once when one effect discards the whole hand', () => {
+    const run = () => h.run(kong({ 'seat-a:hand': five.slice(0, 3) }), [{ kind: 'DiscardZoneEffect', zoneId: 'seat-a:hand' }]);
+    const declined = h.decline(run());
+    expect(askedAbout(declined)).toBeNull();
+    expect(zone(declined, 'discardPile')).toEqual(['x1', 'x2', 'x3']);
+    const given = h.choose(h.use(run()), 'seat-b');
+    expect(askedAbout(given)).toBeNull();
+    expect(zone(given, 'seat-b:hand')).toEqual(['x1', 'x2', 'x3']);
   });
 
   it('asks once for a skill-cost discard of several cards', () => {
