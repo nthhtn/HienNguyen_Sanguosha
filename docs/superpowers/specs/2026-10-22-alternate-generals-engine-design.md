@@ -121,6 +121,8 @@ as Default's), or a real timing difference (it moves to slice 2's list, which by
 the 22 "Nil" Generals and the "immediately removed" notes. Output: a list of what
 was checked and what it was decided as, in the plan.
 
+**Done (2026-10-23):** 29 skills cleared as Default's, 3 variants added (Descend into Chaos, Lightning Strike, Resurrection); all 60 Generals now play their Alternate skills. The audit list is in `2026-10-23-alternate-generals-slice-4-rules.md`.
+
 Slice 4 also owns these skills of Generals finished in slice 2, which have no difference note of their
 own and must be checked as unchanged before they are cleared: Zhuge Liang's Star Gazing (观星), Xun
 Yu's Rouse the Tiger (驱虎), Zhu Rong's Giant Elephant (巨象), Zhen Ji's Stunning Beauty (倾国), Jia

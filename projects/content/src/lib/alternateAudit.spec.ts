@@ -1,7 +1,8 @@
 import { alternateGeneralRecords } from './alternateGenerals';
 import { generalsData } from '../../data/generals';
 import { GENERAL_SKILLS } from './generals';
-import { alternateSkillFor, isNilNote } from './alternateSkills';
+import { alternateSkillFor, hasAlternateVariant, isNilNote, readyAlternateSkills } from './alternateSkills';
+import { generalDisplayData } from './generalDisplay';
 
 const record = (id: string) => {
   const r = alternateGeneralRecords().find((g) => g.id === id);
@@ -75,5 +76,28 @@ describe('the Nil Generals', () => {
     expect(d).toBeDefined();
     expect(r.skills.map((s) => s.nameZh)).toEqual(d.skills.filter((s) => !s.lord).map((s) => s.nameZh));
     if (r.hpFrom === 'default') expect(r.maxHp).toBe(d.maxHp);
+  });
+});
+
+describe('the whole Alternate deck', () => {
+  it('has a ready skill for every skill of all 60 Generals', () => {
+    const records = alternateGeneralRecords();
+    expect(records).toHaveLength(60);
+    const unresolved = records.flatMap((r) => r.skills.filter((s) => alternateSkillFor(r, s) === undefined).map((s) => `${r.id}/${s.name}`));
+    expect(unresolved).toEqual([]);
+    for (const r of records) expect(readyAlternateSkills(r)).toHaveLength(r.skills.length);
+  });
+
+  it('shows every skill of every General as in the game', () => {
+    for (const r of alternateGeneralRecords()) {
+      expect({ id: r.id, inGame: generalDisplayData(`alternate:${r.id}`)!.skills.map((s) => s.inGame) }).toEqual({ id: r.id, inGame: r.skills.map(() => true) });
+    }
+  });
+
+  it('keeps a variant for no skill the audit read as wording-only', () => {
+    for (const [id, names] of Object.entries(WORDING_ONLY)) {
+      const r = record(id);
+      for (const zh of names) expect({ id, zh, variant: hasAlternateVariant(r, r.skills.find((x) => x.nameZh === zh)!) }).toEqual({ id, zh, variant: false });
+    }
   });
 });
