@@ -148,6 +148,26 @@ function hpDropTriggers(point: TriggerPoint): SkillTrigger[] {
 // The first-reveal rule needs a table of at least this many seats.
 export const FIRST_REVEAL_MIN_SEATS = 5;
 
+// Whether the reveal just logged is the first time both of `seatId`'s Generals
+// stand revealed: a General hidden and revealed again (GeneralHiddenEvent) pays
+// no second bonus. With no General of the seat ever hidden, that is every reveal
+// that leaves both revealed (as before hiding existed, built states included).
+function firstTimeBothRevealed(state: GameState, seatId: string): boolean {
+  const ofSeat = state.log.filter((e) => (e.kind === 'GeneralRevealedEvent' || e.kind === 'GeneralHiddenEvent') && e.seatId === seatId);
+  if (!ofSeat.some((e) => e.kind === 'GeneralHiddenEvent')) return true;
+  const shown = new Set<string>();
+  let times = 0;
+  for (const e of ofSeat) {
+    if (e.kind === 'GeneralHiddenEvent') {
+      shown.delete(e.slot);
+    } else if (e.kind === 'GeneralRevealedEvent' && !shown.has(e.slot)) {
+      shown.add(e.slot);
+      if (shown.size === 2 && !e.onDeath) times++;
+    }
+  }
+  return times === 1;
+}
+
 // Common table rules on revealing Generals. Both fire after the reveal is logged.
 const revealBonusTriggers: SkillTrigger[] = [
   // Optional rule: the first General revealed at the table draws 2 cards.
@@ -169,6 +189,7 @@ const revealBonusTriggers: SkillTrigger[] = [
       if (event.onDeath) return false;
       const generals = state.seats.find((s) => s.id === event.seatId)?.generals;
       if (!generals || !generals.main.revealed || !generals.deputy.revealed || !registry) return false;
+      if (!firstTimeBothRevealed(state, event.seatId)) return false;
       const printed = [generals.main, generals.deputy].map((g) => registry.generals.get(g.generalDefinitionId)?.maxHp ?? 0);
       return (printed[0] + printed[1]) % 2 === 1;
     },

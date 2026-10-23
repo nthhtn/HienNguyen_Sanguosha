@@ -264,6 +264,9 @@ export interface SkillDefinition extends Abilities {
   // Its triggers are also gathered for its own seat's elimination, though an
   // eliminated seat has no skills in play (Heartbroken).
   afterDeath?: true;
+  // While revealed, in its owner's turn: no other seat may reveal a General by
+  // choice or by an ask (revealBlockedFor). A death's reveal still happens.
+  blocksOtherReveals?: true;
   // Spare Generals dealt to its owner's seat when Generals are chosen.
   spareGenerals?: number;
   active?: ActiveSkill;

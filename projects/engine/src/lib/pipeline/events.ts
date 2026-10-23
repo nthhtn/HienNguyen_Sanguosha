@@ -40,6 +40,14 @@ export interface GeneralRevealedEvent {
   onDeath?: true;
 }
 
+// A revealed General was turned face down again (Impetus for Conflicts). Its
+// skills need a reveal again; normal reveal conditions apply.
+export interface GeneralHiddenEvent {
+  kind: 'GeneralHiddenEvent';
+  seatId: string;
+  slot: 'main' | 'deputy';
+}
+
 // A seat arranged cards from the draw pile. Counts only: the cards stay hidden.
 export interface ArrangementMadeEvent {
   kind: 'ArrangementMadeEvent';
@@ -241,6 +249,7 @@ export type EngineEvent =
   | PhaseSkippedEvent
   | TurnAdvancedEvent
   | GeneralRevealedEvent
+  | GeneralHiddenEvent
   | HealEvent
   | CardMovedEvent
   | CardPlayedEvent

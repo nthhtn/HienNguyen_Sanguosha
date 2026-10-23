@@ -22,17 +22,22 @@ export function slotSilenced(seat: Pick<Seat, 'silenced' | 'silencedSlots'>, slo
 // order. All of a revealed General's. A hidden General's compulsory skills are
 // off (its modifiers with them); its other skills are offered, but using one
 // reveals it. Lord skills never are: Kingdom War has no Lord. An eliminated
-// seat has none, nor a silenced General (slotSilenced), hidden or not.
+// seat has none, nor a silenced General (slotSilenced), hidden or not. While
+// another seat's skill blocks its reveals (revealBlockedFor), a hidden General
+// offers nothing at all: no skill of it can be used, asked or fired.
 // `withHiddenCompulsory`: also a hidden General's compulsory skills (needsReveal), for the triggers that ask
 // to reveal it (gatherTriggeredSkills); their modifiers stay off, so queries leave this out.
 export function skillsInPlay(state: GameState, seatId: string, registry: ContentRegistry, withHiddenCompulsory = false): SkillInPlay[] {
   const seat = state.seats.find((s) => s.id === seatId);
   if (!seat || seat.eliminated || !seat.generals || seat.silenced) return [];
   const found: SkillInPlay[] = [];
+  let blockedMemo: boolean | undefined;
+  const blocked = () => (blockedMemo ??= revealBlockedFor(state, seatId, registry));
   // `unique`: a gained or borrowed skill the seat already holds on its other General adds nothing.
   const add = (slot: 'main' | 'deputy', skill: SkillDefinition | undefined, unique = false) => {
     const general = seat.generals![slot];
     if (!skill || skill.lord || slotSilenced(seat, slot) || (!general.revealed && skill.compulsory && !withHiddenCompulsory)) return;
+    if (!general.revealed && blocked()) return;
     if (found.some((f) => f.skill.id === skill.id && (unique || f.owner.slot === slot))) return;
     found.push({ owner: { kind: 'general', seatId, slot, skillId: skill.id }, skill, needsReveal: !general.revealed });
   };
@@ -46,6 +51,20 @@ export function skillsInPlay(state: GameState, seatId: string, registry: Content
     add(seat.forms.slot, registry.generals.get(generalId)?.skills.find((s) => s.id === skillId), true);
   }
   return found;
+}
+
+// Whether `seatId` may not reveal a General now: it is another seat's turn, and
+// the turn owner holds a skill with blocksOtherReveals on a revealed General
+// whose skills it still has (Femme Fatale). Every reveal by choice or by an ask
+// consults this; a death's reveal never does.
+export function revealBlockedFor(state: GameState, seatId: string, registry: ContentRegistry): boolean {
+  const ownerId = state.turn.ownerSeatId;
+  if (ownerId === seatId) return false;
+  const owner = state.seats.find((s) => s.id === ownerId);
+  if (!owner?.generals || owner.eliminated || owner.silenced) return false;
+  return heldSkills(state, ownerId, registry).some(
+    ({ owner: held, skill }) => !!skill.blocksOtherReveals && !skill.lord && owner.generals![held.slot].revealed && !slotSilenced(owner, held.slot)
+  );
 }
 
 // Every skill `seatId` holds, whether or not it is in play: printed skills of both Generals,

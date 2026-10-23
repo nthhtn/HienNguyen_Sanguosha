@@ -13,7 +13,7 @@ import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer, startWindowOpens } from '../rules/phaseSequence';
 import { activeSkillActions, answerConditionMet, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, hiddenSlots, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
-import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
+import { abilityUseKey, revealBlockedFor, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
 import { ArrangementMadeEvent, CardPlayedEvent, SeatTurnedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
@@ -281,6 +281,12 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext, dec
   if (rewritten === null) return { state, events: [] };
   const current = rewritten.effect;
 
+  // An ask that would reveal a hidden General its seat may not reveal now
+  // (revealBlockedFor) is not asked: what happens otherwise goes ahead.
+  if (current.kind === 'AskUseEffect' && askRevealBlocked(state, current, ctx)) {
+    return { state: queueFront(state, [...(current.otherwise ?? []), ...rewritten.after]), events: [] };
+  }
+
   // A card used by an effect goes through useCard, which logs and queues its own follow-ups.
   // A skill-driven `answering` use skips the card's answerCondition (nothing uses that path today).
   if (current.kind === 'UseCardEffect') {
@@ -314,6 +320,13 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext, dec
   // A chain's wave goes last: after everything the damage's follow-ups lead to.
   const wave = current.kind === 'DamageEffect' ? chainWave(applied.state, current, applied.events) : [];
   return { state: queueFront(applied.state, [...followUps, ...rewritten.after, ...wave]), events: applied.events };
+}
+
+function askRevealBlocked(state: GameState, ask: Extract<Effect, { kind: 'AskUseEffect' }>, ctx: EngineContext): boolean {
+  if (ask.owner.kind !== 'general') return false;
+  const seat = state.seats.find((s) => s.id === ask.owner.seatId);
+  if (!seat?.generals || seat.eliminated || seat.generals[ask.owner.slot].revealed) return false;
+  return revealBlockedFor(state, seat.id, ctx.registry);
 }
 
 // Fire or thunder damage records its original amount before the target's own
@@ -621,6 +634,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       const seat = state.seats.find((s) => s.id === action.seatId);
       if (!seat) throw new Error(`Unknown seat: ${action.seatId}`);
       if (state.phase !== 'Start' || !state.turn.startWindow || state.turn.ownerSeatId !== action.seatId) throw new Error('Generals can only be revealed in the Start window of your turn');
+      if (action.slots.length > 0 && revealBlockedFor(state, action.seatId, ctx.registry)) throw new Error(`Seat ${action.seatId} cannot reveal a General now`);
       const hidden = hiddenSlots(state, action.seatId);
       if (new Set(action.slots).size !== action.slots.length || action.slots.some((slot) => !hidden.includes(slot))) throw new Error(`Seat ${action.seatId} cannot reveal ${action.slots.join(', ')}`);
       // The reveals first, then Start (so a revealed General takes part in it).

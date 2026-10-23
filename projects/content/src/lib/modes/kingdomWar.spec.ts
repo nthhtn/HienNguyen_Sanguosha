@@ -529,6 +529,28 @@ describe('Kingdom War reveal bonuses', () => {
     expect(handSize(reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy'), 'seat-b')).toBe(0);
   });
 
+  it('a General hidden and revealed again draws no second bonus', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: { ...hidden.generals, ...oddPair('seat-b') } });
+    const both = reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy');
+    expect(handSize(both, 'seat-b')).toBe(1);
+    const again = reveal(h.run(both, [{ kind: 'HideGeneralEffect', seatId: 'seat-b', slot: 'main' }]), 'seat-b', 'main');
+    expect(again.seats.find((x) => x.id === 'seat-b')!.generals!.main.revealed).toBe(true);
+    expect(handSize(again, 'seat-b')).toBe(1);
+  });
+
+  it('a General hidden before the second was ever revealed: the bonus still comes once', () => {
+    const s = makeTable({ drawPile: deck }, { seats: 4, generals: { ...hidden.generals, ...oddPair('seat-b') } });
+    const hiddenAgain = h.run(reveal(s, 'seat-b', 'main'), [{ kind: 'HideGeneralEffect', seatId: 'seat-b', slot: 'main' }]);
+    const both = reveal(reveal(hiddenAgain, 'seat-b', 'deputy'), 'seat-b', 'main');
+    expect(handSize(both, 'seat-b')).toBe(1);
+  });
+
+  it('a re-revealed General is never the table’s first reveal', () => {
+    const s = { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: true } };
+    const again = reveal(h.run(reveal(s, 'seat-b', 'main'), [{ kind: 'HideGeneralEffect', seatId: 'seat-b', slot: 'main' }]), 'seat-b', 'main');
+    expect(handSize(again, 'seat-b')).toBe(2);
+  });
+
   it('both bonuses stack for the first revealer', () => {
     const s = { ...makeTable({ drawPile: deck }, { seats: 5, generals: { ...hidden.generals, ...oddPair('seat-b') } }), rules: { firstRevealDraw: true } };
     expect(handSize(reveal(reveal(s, 'seat-b', 'main'), 'seat-b', 'deputy'), 'seat-b')).toBe(3);

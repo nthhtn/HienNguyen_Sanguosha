@@ -25,6 +25,8 @@ export type Effect =
   | { kind: 'IncrementEffect'; scope: 'turn' | 'seat'; key: string; by: number; seatId?: string }
   // `forAbilityId`: revealed to use that skill (the history names it).
   | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy'; forAbilityId?: string }
+  // Turns a revealed General face down again (no-op when it already is).
+  | { kind: 'HideGeneralEffect'; seatId: string; slot: 'main' | 'deputy' }
   | { kind: 'HealEffect'; target: Target; amount: number }
   // `onlyFrom`: move it only if it is still in that zone (a judged card a
   // reader already moved on).
@@ -198,6 +200,18 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
         slot: effect.slot,
         ...(effect.forAbilityId ? { forAbilityId: effect.forAbilityId } : {}),
       };
+      return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'HideGeneralEffect': {
+      const seat = state.seats.find((s) => s.id === effect.seatId);
+      if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
+      const generals = seat.generals;
+      if (!generals) throw new Error(`Seat ${effect.seatId} has not chosen its generals yet`);
+      if (!generals[effect.slot].revealed) return { state, events: [] };
+      const seats = state.seats.map((s) =>
+        s.id === effect.seatId ? { ...s, generals: { ...generals, [effect.slot]: { ...generals[effect.slot], revealed: false } } } : s
+      );
+      const event: EngineEvent = { kind: 'GeneralHiddenEvent', seatId: effect.seatId, slot: effect.slot };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'HealEffect': {
