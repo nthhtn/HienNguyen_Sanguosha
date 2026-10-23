@@ -100,6 +100,9 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
       return !!target && !isAlly(me, target) && handCards(view, me).some((c) => registry.cards.get(c.definitionId)?.category === 'basic' && keepRank(view, registry, c.instanceId) < 3);
     case 'unyielding':
       return !!target && !isAlly(me, target);
+    // Insanity Axe: only against a non-ally (the seat the Sha hit).
+    case 'alternate:insanity-axe':
+      return !!target && !isAlly(me, target);
     case 'raid':
       return others(view, me).filter((s) => !isAlly(me, s) && handSize(view, s) > 0).length >= 2;
     case 'bare-the-chest':
@@ -206,6 +209,12 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
     // Prudence: a seat of her Kingdom draws; an ally, else the first seat offered.
     case 'alternate:prudence':
       return harmless?.id ?? null;
+    // Insanity Axe: the victim's first worn card; then move it when that replaces nothing of hers, else discard it.
+    case 'alternate:insanity-axe': {
+      const move = choice.options.find((o) => o.id === 'move-card');
+      if (!move) return choice.options[0]?.id ?? null;
+      return move.effects.filter((e) => e.kind === 'MoveCardEffect').length > 1 ? 'discard-card' : 'move-card';
+    }
     case 'kindness':
     case 'bestowed-rouse':
     case 'marriage':

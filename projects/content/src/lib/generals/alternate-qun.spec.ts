@@ -212,3 +212,94 @@ describe('Alternate Cai Wenji, Sorrow', () => {
     expect(readyAlternateSkills(alternateGeneralRecords().find((g) => g.id === 'cai-wenji')!).map((x) => x.id)).toEqual(['lament', 'alternate:sorrow']);
   });
 });
+
+describe('Alternate Pan Feng, Insanity Axe', () => {
+  const id = 'alternate:insanity-axe';
+  const zone = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
+  // seat-a (Pan Feng) plays Sha s1 at seat-b, who has no Dodge; seat-b wears `worn`, seat-a `own`.
+  const strike = (worn: ReturnType<typeof card>[], own: ReturnType<typeof card>[] = [], general = 'alternate:pan-feng') =>
+    h.pass(h.play(table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-a:equip': own, 'seat-b:equip': worn }, { generals: at('seat-a', general) }), 's1', 'seat-b'));
+  const crossbow = card('cb', 'crossbow', 'club', 1);
+  const armor = card('bs', 'black-shield', 'spade', 2);
+  const labelOf = (s: GameState, optionId: string) => s.pendingChoice!.options.find((o) => o.id === optionId)?.shows;
+
+  it('is asked after her Sha damages a seat wearing a card, and declining changes nothing', () => {
+    const s = strike([crossbow]);
+    expect(askedAbout(s)).toBe(id);
+    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-a' });
+    const done = h.decline(s);
+    expect(zone(done, 'seat-b:equip')).toEqual(['cb']);
+    expect(zone(done, 'seat-a:equip')).toEqual([]);
+  });
+
+  it('moves the picked card into her empty slot', () => {
+    let s = h.choose(h.use(strike([crossbow, armor])), 'cb');
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['move-card', 'discard-card']);
+    expect(labelOf(s, 'move-card')).toMatchObject({ kind: 'label' });
+    s = h.choose(s, 'move-card');
+    expect(zone(s, 'seat-a:equip')).toEqual(['cb']);
+    expect(zone(s, 'seat-b:equip')).toEqual(['bs']);
+    expect(s.pendingChoice ?? null).toBeNull();
+  });
+
+  it('can instead discard the picked card', () => {
+    const s = h.choose(h.choose(h.use(strike([crossbow, armor])), 'bs'), 'discard-card');
+    expect(zone(s, 'seat-b:equip')).toEqual(['cb']);
+    expect(zone(s, 'seat-a:equip')).toEqual([]);
+    expect(zone(s, 'discardPile')).toContain('bs');
+  });
+
+  it('with her slot full, a move replaces it: her old card goes to the discard pile', () => {
+    const old = card('ss', 'serpent-spear', 'spade', 12);
+    const s = h.choose(h.choose(h.use(strike([crossbow], [old])), 'cb'), 'move-card');
+    expect(zone(s, 'seat-a:equip')).toEqual(['cb']);
+    expect(zone(s, 'discardPile')).toContain('ss');
+    expect(zone(s, 'seat-b:equip')).toEqual([]);
+  });
+
+  it('only replaces a card in the matching slot', () => {
+    const old = card('ss', 'serpent-spear', 'spade', 12);
+    const s = h.choose(h.choose(h.use(strike([armor], [old])), 'bs'), 'move-card');
+    expect(zone(s, 'seat-a:equip').sort()).toEqual(['bs', 'ss']);
+    expect(zone(s, 'discardPile')).not.toContain('ss');
+  });
+
+  it('is not asked when the victim wears nothing', () => {
+    expect(askedAbout(strike([]))).toBeNull();
+  });
+
+  it('is not asked for damage that is not from a Sha (a Duel)', () => {
+    const t = table({ 'seat-a:hand': [card('du', 'duel')], 'seat-b:equip': [crossbow] }, { generals: at('seat-a', 'alternate:pan-feng') });
+    const s = h.pass(h.play(t, 'du', 'seat-b'));
+    expect(hp(s, 'seat-b')).toBe(3);
+    expect(askedAbout(s)).toBeNull();
+  });
+
+  it('is not asked for damage from a skill', () => {
+    const t = table({ 'seat-b:equip': [crossbow] }, { generals: at('seat-a', 'alternate:pan-feng') });
+    const s = h.run(t, [{ kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-a' }, target: { kind: 'seat', seatId: 'seat-b' }, amount: 1, nature: 'normal', cause: { skillId: 'x' } } }]);
+    expect(askedAbout(s)).toBeNull();
+  });
+
+  it('is not asked when another seat’s Sha does the damage', () => {
+    const t = table({ 'seat-c:hand': [card('s1', 'sha', 'heart', 7)], 'seat-b:equip': [crossbow] }, { generals: at('seat-a', 'alternate:pan-feng'), owner: 'seat-c' });
+    expect(askedAbout(h.pass(h.play(t, 's1', 'seat-b')))).toBeNull();
+  });
+
+  // The damage a Sha passes along a chain is its own damage event, marked chained: never Sha damage.
+  it('is not asked for damage a Sha’s hit passes along a chain', () => {
+    const t = table({ 'seat-c:equip': [crossbow] }, { generals: at('seat-a', 'alternate:pan-feng') });
+    const used = { as: 'sha', colour: 'black' as const, physical: [{ definitionId: 'sha', instanceId: 's1', suit: 'spade' as const, rank: 7 }] };
+    const s = h.run(t, [{ kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-a' }, target: { kind: 'seat', seatId: 'seat-c' }, amount: 1, nature: 'normal', chained: true, cause: { card: used, cardInstanceId: 's1', aimedAt: 'seat-b' } } }]);
+    expect(askedAbout(s)).toBeNull();
+  });
+
+  it('is not asked when the Sha leaves the victim dying', () => {
+    const t = table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-b:equip': [crossbow] }, { generals: at('seat-a', 'alternate:pan-feng'), hp: { 'seat-b': 1 } });
+    expect(askedAbout(h.pass(h.play(t, 's1', 'seat-b')))).toBeNull();
+  });
+
+  it('a Default General has no such skill', () => {
+    expect(askedAbout(strike([crossbow], [], 'filler-xu-huang'))).toBeNull();
+  });
+});

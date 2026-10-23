@@ -37,6 +37,7 @@
     "alternate:prudence": "Một người chơi khác cùng thế lực rút 1 lá bài",
     "alternate:close-combat": "Khi bạn dùng Sát, bạn có thể thêm một mục tiêu trong khoảng cách 1 với bạn và trong tầm đánh của bạn",
     "alternate:swift-and-deadly": "Bỏ một lá bài và chọn một người chơi; khoảng cách của bạn tới họ tính là 1 đến hết lượt",
+    "alternate:insanity-axe": "Sau khi Sát của bạn gây sát thương cho {target}, chuyển một lá trong khu trang bị của họ sang khu trang bị của bạn, hoặc bỏ nó",
     "alternate:dauntless": "Bỏ một lá bài Cơ bản trên tay; {target} bỏ một lá Trang bị hoặc chịu 1 sát thương từ bạn",
     "alternate:divine-wisdom": "Bỏ toàn bộ bài trên tay; nếu số bài bỏ không nhỏ hơn Sinh lực hiện tại, hồi 1 Sinh lực",
     "nirvana": "Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3 và lật lại",

@@ -46,6 +46,7 @@ describe('readyAlternateSkills', () => {
     for (const g of missing) for (const skill of readyAlternateSkills(g)) expect(skill.id.startsWith('alternate:')).toBe(true);
     expect(readyIds('gan-fu-ren')).toEqual(['alternate:prudence', 'alternate:divine-wisdom']);
     expect(readyIds('yue-jin')).toEqual(['alternate:dauntless']);
+    expect(readyIds('pan-feng')).toEqual(['alternate:insanity-axe']);
     expect(readyIds('ding-feng')).toEqual(['alternate:close-combat', 'alternate:swift-and-deadly']);
   });
   it('never runs a Lord skill', () => {

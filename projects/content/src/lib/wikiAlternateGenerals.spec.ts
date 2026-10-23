@@ -73,7 +73,7 @@ describe('wikiAlternateGenerals', () => {
   });
 
   it('marks every skill of a General with no Default counterpart as not in game, until its task lands', () => {
-    for (const id of ['ji-ling', 'kong-rong', 'ma-teng', 'pan-feng', 'tian-feng', 'zou-shi']) {
+    for (const id of ['ji-ling', 'kong-rong', 'ma-teng', 'tian-feng', 'zou-shi']) {
       expect(byId(id).skills.map((s) => s.status)).toEqual(byId(id).skills.map(() => 'missing'));
       expect(byId(id).skillsRunAsDefault).toBe(false);
     }
@@ -86,6 +86,10 @@ describe('wikiAlternateGenerals', () => {
 
   it('plays both of Ding Feng’s skills, as Alternate variants of their own', () => {
     expect(byId('ding-feng').skills.map((s) => s.status)).toEqual(['worksAsAlternate', 'worksAsAlternate']);
+  });
+
+  it('plays Pan Feng’s skill, as an Alternate variant of its own', () => {
+    expect(byId('pan-feng').skills.map((s) => s.status)).toEqual(['worksAsAlternate']);
   });
 
   it('plays Yue Jin’s skill, as an Alternate variant of its own', () => {

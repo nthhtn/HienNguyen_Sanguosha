@@ -196,6 +196,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'alternate:divine-wisdom': 'Discard all your hand cards; if you discard at least as many as your HP, recover 1 HP',
   'alternate:close-combat': 'When you use Sha, you can add one more target within distance 1 of you and in your attack range',
   'alternate:swift-and-deadly': 'Discard a card and choose a seat; your distance to it counts as 1 until the end of the turn',
+  'alternate:insanity-axe': 'After your Sha damages {target}, move a card of its equipment area into yours, or discard it',
   'alternate:dauntless': 'Discard a Basic card from your hand; {target} then discards an Equipment card or takes 1 damage from you',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',

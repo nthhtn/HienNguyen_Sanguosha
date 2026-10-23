@@ -39,6 +39,8 @@ export const en = {
   'choice.label.doubt': 'Doubt',
   'choice.label.discard2': 'Discard 2 Hand Cards',
   'choice.label.damage1': 'Take 1 Damage',
+  'choice.label.moveToEquipment': 'Move It to Your Equipment Area',
+  'choice.label.discardIt': 'Discard It',
   'choice.label.form': '{skill} ({general})',
   'choice.label.mainGeneral': 'Main General',
   'choice.label.deputyGeneral': 'Deputy General',

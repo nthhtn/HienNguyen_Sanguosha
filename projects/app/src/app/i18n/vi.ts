@@ -38,6 +38,8 @@ export const vi: Messages = {
   'choice.label.doubt': 'Nghi ngờ',
   'choice.label.discard2': 'Bỏ 2 lá bài trên tay',
   'choice.label.damage1': 'Chịu 1 sát thương',
+  'choice.label.moveToEquipment': 'Chuyển sang khu trang bị của bạn',
+  'choice.label.discardIt': 'Bỏ lá đó',
   'choice.label.form': '{skill} ({general})',
   'choice.label.mainGeneral': 'Chủ tướng',
   'choice.label.deputyGeneral': 'Phó tướng',

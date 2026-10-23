@@ -103,6 +103,32 @@ describe('Alternate Gan Fu Ren', () => {
   });
 });
 
+describe('Alternate Pan Feng, Insanity Axe', () => {
+  const id = 'alternate:insanity-axe';
+  it('is used against a non-ally only', () => {
+    expect(picked(decide(asking(table(), id, 'seat-b')))).toBe('use');
+    expect(picked(decide(asking(table({}, { kingdoms: { 'seat-b': 'Wei' } }), id, 'seat-b')))).toBe('decline');
+  });
+
+  const pick = (options: PendingChoice['options']): GameState => ({
+    ...table(),
+    pendingChoice: { id: 'pick', seatId: 'seat-a', verb: 'pick', reason: { kind: 'ability', owner: general('seat-a', id), abilityId: id, targetSeatId: 'seat-b' }, options },
+  });
+  const moves = (n: number): Effect[] => Array.from({ length: n }, (_, i) => ({ kind: 'MoveCardEffect', cardInstanceId: `c${i}`, toZoneId: 'z' }));
+  const label = (optionId: string, effects: Effect[]) => ({ id: optionId, shows: { kind: 'label' as const, text: optionId }, effects });
+
+  it('moves the card when that replaces nothing, discards it when it would replace a card', () => {
+    expect(picked(decide(pick([label('move-card', moves(1)), label('discard-card', moves(1))])))).toBe('move-card');
+    expect(picked(decide(pick([label('move-card', moves(2)), label('discard-card', moves(1))])))).toBe('discard-card');
+  });
+
+  it('picks the first worn card', () => {
+    const cards = [card('e1', 'crossbow'), card('e2', 'black-shield')];
+    const options = cards.map((c) => ({ id: c.instanceId, shows: { kind: 'card' as const, card: c }, effects: [] }));
+    expect(picked(decide(pick(options)))).toBe('e1');
+  });
+});
+
 describe('Unyielding', () => {
   it('only against a non-ally; the target discards 2 with more than 3 hand cards, else takes the damage above 1 HP', () => {
     expect(picked(decide(asking(table(), 'unyielding', 'seat-b')))).toBe('use');
