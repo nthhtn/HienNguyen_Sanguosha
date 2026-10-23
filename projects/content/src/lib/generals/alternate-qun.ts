@@ -1,11 +1,14 @@
-import type { CardInstance, DamageDealtEvent, Effect, GameState, SeatEliminatedEvent, SkillDefinition } from 'engine';
+import type { CardInstance, CardMovedEvent, DamageDealtEvent, Effect, GameState, SeatDyingEvent, SeatEliminatedEvent, SkillDefinition } from 'engine';
 import { requireZoneOfKind, slotSilenced } from 'engine';
+import { seatCardOptions } from '../shared/choices';
+import { exposedKingdom, ownKingdom } from '../shared/kingdom';
+import { handOf } from '../shared/queries';
 import { equipSlotOf } from '../cards/equipment';
 import { isShaDamage } from '../shared/abilities';
 import { makeCurtain } from './forest';
 import { makeEclipseTheMoon, makeSowDiscord } from './qun';
 import { killedByLivingOther } from './mountain';
-import { ask, choiceOf, equipZoneId, isLiving, on, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, draw, equipZoneId, handZoneId, isLiving, on, otherLivingSeatIds, seatOptions, skillStep, used } from '../shared/skills';
 
 // Sorrow (compulsory): when a seat kills her, her player (she is out: afterDeath) chooses the killer's
 // Main or Deputy General, and that General loses all its skills for the rest of the game; the other
@@ -103,6 +106,65 @@ const insanityAxe: SkillDefinition = {
   },
 };
 
+// Deathly Counsel (may): whenever he loses his last hand card, however it happens, he may discard 1
+// card of another seat, from its hand or equipment area (not its judgment area). Not asked when no other
+// living seat has such a card.
+const discardableSeats = (state: GameState, seatId: string): string[] =>
+  otherLivingSeatIds(state, seatId).filter((id) => seatCardOptions(state, id, '', { judgment: false }).length > 0);
+
+const deathlyCounsel: SkillDefinition = {
+  id: 'alternate:deathly-counsel',
+  triggers: [
+    on<CardMovedEvent>('after:CardMovedEvent', {
+      condition: (state, event, owner) =>
+        event.fromZoneId === handZoneId(state, owner.seatId) && event.toZoneId !== event.fromZoneId && handOf(state, owner.seatId).length === 0 &&
+        isLiving(state, owner.seatId) && discardableSeats(state, owner.seatId).length > 0,
+      effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'pick')])],
+    }),
+  ],
+  // 'pick': which seat; 'card': which of its cards.
+  onStep: (state, step) => {
+    const { owner } = step;
+    if (!isLiving(state, owner.seatId)) return [];
+    if (step.step === 'pick') {
+      const seats = discardableSeats(state, owner.seatId);
+      return seats.length === 0 ? [] : [choiceOf(state, owner, { verb: 'pick', options: seatOptions(seats, (seatId) => [skillStep(owner, 'card', { seatId })]) })];
+    }
+    const seatId = step.data?.['seatId'] as string;
+    if (!isLiving(state, seatId)) return [];
+    const options = seatCardOptions(state, seatId, requireZoneOfKind(state.zones, 'discardPile').id, { judgment: false });
+    if (options.length === 0) return [];
+    return [
+      choiceOf(state, owner, { verb: 'discard', targetSeatId: seatId, options: options.map((o) => ({ ...o, effects: [used(owner, 'used', seatId), ...o.effects] })) }),
+    ];
+  },
+};
+
+// With the Tide (compulsory): when another seat enters dying and the damage source is a seat of his
+// Kingdom (himself included), he draws 1. When another seat of his Kingdom dies, he loses 1 HP. Kingdoms
+// are exposed ones (a source with both Generals hidden is in none; a death reveals the seat first).
+// His own Kingdom is the seat's, else his General's (a hidden General's compulsory skill asks to reveal).
+const withTheTide: SkillDefinition = {
+  id: 'alternate:with-the-tide',
+  compulsory: true,
+  triggers: [
+    on<SeatDyingEvent>('after:SeatDyingEvent', {
+      condition: (state, event, owner, registry) => {
+        const own = ownKingdom(state, owner, registry);
+        return !!own && isLiving(state, owner.seatId) && event.seatId !== owner.seatId && !!event.killerSeatId && exposedKingdom(state, event.killerSeatId) === own;
+      },
+      effect: (_state, _event, owner) => [used(owner), draw(owner.seatId, 1)],
+    }),
+    on<SeatEliminatedEvent>('after:SeatEliminatedEvent', {
+      condition: (state, event, owner, registry) => {
+        const own = ownKingdom(state, owner, registry);
+        return !!own && isLiving(state, owner.seatId) && event.seatId !== owner.seatId && exposedKingdom(state, event.seatId) === own;
+      },
+      effect: (_state, _event, owner) => [used(owner), { kind: 'LoseHpEffect', seatId: owner.seatId, amount: 1, abilityId: owner.skillId }],
+    }),
+  ],
+};
+
 // Alternate Qun skills whose rules differ from Default's, by General id then the Chinese skill name.
 // Each variant's id is `alternate:` plus the id of the Alternate English skill name.
 export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<string, SkillDefinition>>>> = {
@@ -116,6 +178,8 @@ export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<str
   'cai-wenji': { 断肠: sorrow },
   // Insanity Axe: Pan Feng is new to Alternate (Default has no such General).
   'pan-feng': { 狂斧: insanityAxe },
+  // Deathly Counsel, With the Tide: Tian Feng is new to Alternate (Default has no such General).
+  'tian-feng': { 死谏: deathlyCounsel, 随势: withTheTide },
   // Behind the Curtain: he can be chosen by black Tools, which are cancelled for him (Default: can't be chosen).
   'jia-xu': { 帷幕: { ...makeCurtain(true), id: 'alternate:behind-the-curtain' } },
 };

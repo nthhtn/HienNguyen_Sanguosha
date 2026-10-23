@@ -1,5 +1,5 @@
 import { livingSeatOrderFrom } from 'engine';
-import type { GameState, Kingdom } from 'engine';
+import type { ContentRegistry, GameState, GeneralOwner, Kingdom } from 'engine';
 
 /** The seat's exposed Kingdom, or null while it has none: hidden, or no General revealed yet. Read live from the Seat. */
 export function exposedKingdom(state: GameState, seatId: string): Exclude<Kingdom, 'hidden'> | null {
@@ -25,4 +25,12 @@ export function exposedKingdomCounts(state: GameState): Map<string, number> {
     if (kingdom !== null) counts.set(kingdom, (counts.get(kingdom) ?? 0) + 1);
   }
   return counts;
+}
+
+/** The Kingdom a General's own skill reads for its owner: the seat's own once it has one, else the slot General's (a hidden General's skill reveals it on use). */
+export function ownKingdom(state: GameState, owner: GeneralOwner, registry: ContentRegistry): Exclude<Kingdom, 'hidden'> | null {
+  const seat = state.seats.find((x) => x.id === owner.seatId);
+  if (!seat?.generals) return null;
+  const own = seat.kingdom !== 'hidden' ? seat.kingdom : registry.generals.get(seat.generals[owner.slot].generalDefinitionId)?.kingdom;
+  return !own || own === 'hidden' ? null : own;
 }

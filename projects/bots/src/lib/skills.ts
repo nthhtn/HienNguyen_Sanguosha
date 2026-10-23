@@ -100,6 +100,9 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
       return !!target && !isAlly(me, target) && handCards(view, me).some((c) => registry.cards.get(c.definitionId)?.category === 'basic' && keepRank(view, registry, c.instanceId) < 3);
     case 'unyielding':
       return !!target && !isAlly(me, target);
+    // Deathly Counsel: only when a non-ally has a hand or equipment card to lose.
+    case 'alternate:deathly-counsel':
+      return others(view, me).some((s) => !isAlly(me, s) && [s.hand.zoneId, s.equipped.zoneId].some((id) => (view.zones.find((z) => z.id === id)?.cards.length ?? 0) > 0));
     // Insanity Axe: only against a non-ally (the seat the Sha hit).
     case 'alternate:insanity-axe':
       return !!target && !isAlly(me, target);
@@ -209,6 +212,9 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
     // Prudence: a seat of her Kingdom draws; an ally, else the first seat offered.
     case 'alternate:prudence':
       return harmless?.id ?? null;
+    // Deathly Counsel: a non-ally to discard from (the seat pick), then its first offered card.
+    case 'alternate:deathly-counsel':
+      return seats.length > 0 ? (firstNonAlly ?? seats[0]).id : (choice.options[0]?.id ?? null);
     // Insanity Axe: the victim's first worn card; then move it when that replaces nothing of hers, else discard it.
     case 'alternate:insanity-axe': {
       const move = choice.options.find((o) => o.id === 'move-card');

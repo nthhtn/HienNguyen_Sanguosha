@@ -383,3 +383,25 @@ describe('Alternate Yue Jin, Dauntless', () => {
     expect(decide(low)).toMatchObject({ kind: 'SelectAction', ids: ['e1'] });
   });
 });
+
+describe('Alternate Tian Feng, Deathly Counsel', () => {
+  const id = 'alternate:deathly-counsel';
+  it('is used only when a non-ally has a hand or equipment card', () => {
+    const foes = { kingdoms: { 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Wei' } } as const;
+    expect(picked(decide(asking(table({ 'seat-b:hand': [card('b1', 'sha')] }, { kingdoms: { 'seat-a': 'Qun' } }), id)))).toBe('use');
+    expect(picked(decide(asking(table({ 'seat-b:equip': [card('cb', 'crossbow')] }, { kingdoms: { 'seat-a': 'Qun' } }), id)))).toBe('use');
+    expect(picked(decide(asking(table({}, foes), id)))).toBe('decline');
+    // Only an ally has cards: declines.
+    const allied = table({ 'seat-b:hand': [card('b1', 'sha')] }, { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Shu', 'seat-d': 'Wu' } });
+    expect(picked(decide(asking(allied, id)))).toBe('decline');
+  });
+
+  it('picks a non-ally seat, then its first offered card', () => {
+    const seats = ['seat-b', 'seat-c'].map((seatId) => ({ id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [] }));
+    const base = table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Shu' } });
+    const ask = (options: PendingChoice['options']): GameState => ({ ...base, pendingChoice: { id: 'p', seatId: 'seat-a', verb: 'pick', reason: { kind: 'ability', owner: general('seat-a', id), abilityId: id }, options } });
+    expect(picked(decide(ask(seats)))).toBe('seat-c');
+    const cards = [card('e1', 'crossbow'), card('e2', 'black-shield')].map((c) => ({ id: c.instanceId, shows: { kind: 'card' as const, card: c }, effects: [] }));
+    expect(picked(decide(ask(cards)))).toBe('e1');
+  });
+});

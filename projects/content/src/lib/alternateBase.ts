@@ -36,6 +36,9 @@ export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>([
   'alternate:swift-and-deadly',
   // Pan Feng is new in Alternate: Insanity Axe has no Default counterpart.
   'alternate:insanity-axe',
+  // Tian Feng is new in Alternate: both his skills have no Default counterpart.
+  'alternate:deathly-counsel',
+  'alternate:with-the-tide',
 ]);
 
 // The Default skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.
