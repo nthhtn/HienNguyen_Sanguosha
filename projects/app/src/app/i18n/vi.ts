@@ -139,6 +139,8 @@ export const vi: Messages = {
   'history.revealedMain': '{seat} lật Chủ tướng của mình',
   'history.revealedDeputy': '{seat} lật Phó tướng của mình',
   'history.revealedToUse': '{seat} lật {which} để dùng {ability}',
+  'history.hiddenMain': 'Chủ tướng của {seat} bị úp lại',
+  'history.hiddenDeputy': 'Phó tướng của {seat} bị úp lại',
   'history.dying': '{seat} cận kề cái chết',
   'history.saved': '{seat} đã được cứu',
   'history.eliminated': '{seat} bị loại',

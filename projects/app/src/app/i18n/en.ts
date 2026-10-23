@@ -140,6 +140,8 @@ export const en = {
   'history.revealedMain': '{seat} revealed their Main General',
   'history.revealedDeputy': '{seat} revealed their Deputy General',
   'history.revealedToUse': '{seat} revealed {which} to use {ability}',
+  'history.hiddenMain': "{seat}'s Main General was hidden",
+  'history.hiddenDeputy': "{seat}'s Deputy General was hidden",
   'history.dying': '{seat} is dying',
   'history.saved': '{seat} was saved',
   'history.eliminated': '{seat} was eliminated',

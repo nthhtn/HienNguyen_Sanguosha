@@ -196,6 +196,10 @@ describe('status and table lines in Vietnamese', () => {
     expect(vi_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-0', slot: 'main', forAbilityId: 'fighting-saint' }])).toEqual(['Người chơi 0 lật Guan Yu để dùng Fighting Saint']);
     expect(vi_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-1', slot: 'main', forAbilityId: 'fighting-saint' }])).toEqual(['Người chơi 1 lật Chủ tướng của mình để dùng Fighting Saint']);
     expect(en_([{ kind: 'GeneralRevealedEvent', seatId: 'seat-1', slot: 'deputy', forAbilityId: 'fighting-saint' }])).toEqual(['Seat 1 revealed their Deputy General to use Fighting Saint']);
+    expect(vi_([{ kind: 'GeneralHiddenEvent', seatId: 'seat-0', slot: 'main' }])).toEqual(['Chủ tướng của Người chơi 0 bị úp lại']);
+    expect(vi_([{ kind: 'GeneralHiddenEvent', seatId: 'seat-0', slot: 'deputy' }])).toEqual(['Phó tướng của Người chơi 0 bị úp lại']);
+    expect(en_([{ kind: 'GeneralHiddenEvent', seatId: 'seat-1', slot: 'main' }])).toEqual(["Seat 1's Main General was hidden"]);
+    expect(en_([{ kind: 'GeneralHiddenEvent', seatId: 'seat-1', slot: 'deputy' }])).toEqual(["Seat 1's Deputy General was hidden"]);
   });
 
   it('skipped phases, including the raw GeneralSelection id', () => {

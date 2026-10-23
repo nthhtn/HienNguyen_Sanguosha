@@ -225,6 +225,9 @@ export function actionHistory(
         }
         break;
       }
+      case 'GeneralHiddenEvent':
+        action(tr(event.slot === 'main' ? 'history.hiddenMain' : 'history.hiddenDeputy', { seat: name(event.seatId) }));
+        break;
       case 'SeatDyingEvent':
         status(event.seatId, tr('history.dying', { seat: name(event.seatId) }));
         break;
