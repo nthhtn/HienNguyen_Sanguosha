@@ -296,7 +296,7 @@ export function waitingLine(state: GameState, tr: Translator = englishTranslator
   if (reason?.kind === 'wuxie' || reason?.kind === 'counter-wuxie') return tr('response.waiting.ask', { seat, what: askedCardName(state, tr) });
   if (reason?.kind === 'card-effect') return tr('response.waiting.answer', { seat, card: cardName({ definitionId: shownCardId(reason.card) }, tr) });
   const sha = cardName({ definitionId: 'sha' }, tr);
-  if (reason?.kind === 'ability' && reason.abilityId === 'upheaval') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName(pending.reason.abilityId, tr) });
+  if (reason?.kind === 'ability' && baseSkillId(reason.abilityId) === 'upheaval') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName(reason.abilityId, tr) });
   if (reason?.kind === 'ability' && reason.abilityId === 'instigate') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName('instigate', tr) });
   return tr('response.waiting.on', { seat });
 }
