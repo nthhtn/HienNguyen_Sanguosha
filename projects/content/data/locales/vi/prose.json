@@ -39,6 +39,8 @@
     "alternate:swift-and-deadly": "Bỏ một lá bài và chọn một người chơi; khoảng cách của bạn tới họ tính là 1 đến hết lượt",
     "alternate:deathly-counsel": "Bỏ một lá bài trên tay hoặc trong khu trang bị của một người chơi khác",
     "alternate:with-the-tide": "Rút 1 lá bài khi một người chơi cùng thế lực khiến người chơi khác lâm nguy; mất 1 Sinh lực khi người chơi khác cùng thế lực chết",
+    "alternate:celebrity": "Sát thương bạn nhận từ người chơi có Tướng chưa lật bị giảm 1",
+    "alternate:comity": "Khi bài bạn bỏ hoặc mất từ tay hoặc khu trang bị sắp vào chồng bài bỏ, đưa chúng cho một người chơi khác",
     "alternate:insanity-axe": "Sau khi Sát của bạn gây sát thương cho {target}, chuyển một lá trong khu trang bị của họ sang khu trang bị của bạn, hoặc bỏ nó",
     "alternate:dauntless": "Bỏ một lá bài Cơ bản trên tay; {target} bỏ một lá Trang bị hoặc chịu 1 sát thương từ bạn",
     "alternate:divine-wisdom": "Bỏ toàn bộ bài trên tay; nếu số bài bỏ không nhỏ hơn Sinh lực hiện tại, hồi 1 Sinh lực",
@@ -100,6 +102,7 @@
     "direct-instruction": "Chọn một người chơi để đặt lá bài vào",
     "alternate:bequeathed-strategy": "Chọn một người chơi để đưa {card}",
     "alternate:deathly-counsel": "Chọn một người chơi để bỏ một lá bài của họ",
+    "alternate:comity": "Chọn một người chơi để đưa các lá bài",
     "alternate:prudence": "Chọn một người chơi cùng thế lực để rút 1 lá bài",
     "alternate:swift-and-deadly": "Chọn một người chơi để ở khoảng cách 1 với bạn đến hết lượt"
   },

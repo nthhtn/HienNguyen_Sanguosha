@@ -523,3 +523,135 @@ describe('Alternate Tian Feng, With the Tide', () => {
     expect(handIds(done, 'seat-a')).toHaveLength(1);
   });
 });
+
+describe('Alternate Kong Rong, Celebrity', () => {
+  const hk = harness(kwMode);
+  const hit = (source: string | null, target = 'seat-a', amount = 2): QueueItem => ({
+    kind: 'DamageEffect',
+    damage: { source: source ? { kind: 'seat' as const, seatId: source } : null, target: { kind: 'seat', seatId: target }, amount, nature: 'normal', cause: { skillId: 'x' } },
+  });
+  // Seat-a is Kong Rong; seat-b's Main is revealed, its Deputy is hidden unless told otherwise.
+  const setup = (o: { revealed?: boolean; ownRevealed?: boolean; hp?: number } = {}) => {
+    const t = table({ drawPile: [card('d1', 'shan')] }, { generals: { 'seat-a': ['alternate:kong-rong', 'filler-jia-xu', o.ownRevealed ?? true] }, hp: { 'seat-a': o.hp ?? 4 }, maxHp: { 'seat-a': 4 } });
+    return { ...t, seats: t.seats.map((x) => (x.id === 'seat-b' ? { ...x, generals: { main: x.generals!.main, deputy: { ...x.generals!.deputy, revealed: o.revealed ?? false } } } : x)) };
+  };
+
+  it('reduces damage by 1 when the source has a hidden General', () => {
+    expect(hp(hk.run(setup(), [hit('seat-b', 'seat-a', 2)]), 'seat-a')).toBe(3);
+  });
+
+  it('reduces 1 damage to 0', () => {
+    const s = hk.run(setup(), [hit('seat-b', 'seat-a', 1)]);
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(s.pendingChoice ?? null).toBeNull();
+  });
+
+  it('leaves damage from a fully revealed seat unchanged', () => {
+    expect(hp(hk.run(setup({ revealed: true }), [hit('seat-b', 'seat-a', 2)]), 'seat-a')).toBe(2);
+  });
+
+  it('leaves damage with no source unchanged', () => {
+    expect(hp(hk.run(setup(), [hit(null, 'seat-a', 2)]), 'seat-a')).toBe(2);
+  });
+
+  it('does not reduce damage to other seats, and the source seat’s own hidden state is irrelevant', () => {
+    expect(hp(hk.run(setup(), [hit('seat-b', 'seat-c', 2)]), 'seat-c')).toBe(2);
+    // Kong Rong damaging himself while he is the one hidden: his source is revealed, so no change.
+    expect(hp(hk.run(setup({ revealed: true }), [hit('seat-a', 'seat-a', 2)]), 'seat-a')).toBe(2);
+  });
+
+  it('a Sha from a seat with a hidden General deals 1 less', () => {
+    const t = { ...setup(), turn: { ...setup().turn, ownerSeatId: 'seat-b' } };
+    const s = hk.play({ ...t, zones: t.zones.map((z) => (z.id === 'seat-b:hand' ? { ...z, cards: [card('s1', 'sha', 'heart', 7)] } : z)) }, 's1', 'seat-a');
+    expect(hp(hk.pass(s), 'seat-a')).toBe(4);
+  });
+
+  it('a hidden Kong Rong is asked to reveal; using it reveals him and reduces the damage', () => {
+    const s = hk.run(setup({ ownRevealed: false }), [hit('seat-b', 'seat-a', 2)]);
+    expect(askedAbout(s)).toBe('alternate:celebrity');
+    const done = hk.use(s);
+    expect(done.seats[0].generals!.main.revealed).toBe(true);
+    expect(hp(done, 'seat-a')).toBe(3);
+  });
+});
+
+describe('Alternate Kong Rong, Comity', () => {
+  const id = 'alternate:comity';
+  const zone = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
+  const kong = (cards: Record<string, ReturnType<typeof card>[]>, o: TableOptions = {}) =>
+    table(cards, { generals: { 'seat-a': ['alternate:kong-rong', 'filler-jia-xu', true] }, ...o });
+  const discard = (s: GameState, cardInstanceId: string) => h.act(s, { kind: 'DiscardCardAction', seatId: 'seat-a', cardInstanceId });
+  const five = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6'].map((n) => card(n, 'shan', 'heart'));
+
+  it('asks once for a Discard Phase discard of 2 cards, and giving puts both in the chosen seat’s hand', () => {
+    let s = discard(kong({ 'seat-a:hand': five }, { phase: 'Discard' }), 'x1');
+    expect(askedAbout(s)).toBeNull();
+    s = discard(s, 'x2');
+    expect(askedAbout(s)).toBe(id);
+    s = h.choose(h.use(s), 'seat-c');
+    expect(zone(s, 'seat-c:hand')).toEqual(['x1', 'x2']);
+    expect(zone(s, 'discardPile')).toEqual([]);
+    expect(zone(s, 'seat-a:hand')).toHaveLength(4);
+    expect(s.pendingChoice ?? null).toBeNull();
+  });
+
+  it('declining leaves them in the discard pile', () => {
+    const s = h.decline(discard(discard(kong({ 'seat-a:hand': five }, { phase: 'Discard' }), 'x1'), 'x2'));
+    expect(zone(s, 'discardPile')).toEqual(['x1', 'x2']);
+    expect(zone(s, 'seat-c:hand')).toEqual([]);
+  });
+
+  it('does not offer himself as the receiver', () => {
+    const s = h.use(discard(discard(kong({ 'seat-a:hand': five }, { phase: 'Discard' }), 'x1'), 'x2'));
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-b', 'seat-c', 'seat-d']);
+  });
+
+  it('a Sha he plays is not asked', () => {
+    const s = h.play(kong({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)] }), 's1', 'seat-b');
+    expect(askedAbout(s.pendingResponse ? h.pass(s) : s)).toBeNull();
+  });
+
+  it('asks when a worn card is lost to Dismantle, and giving it puts it in the seat’s hand', () => {
+    const t = kong({ 'seat-a:equip': [card('e1', 'crossbow', 'club', 1)], 'seat-b:hand': [card('t1', 'break', 'spade')] }, { owner: 'seat-b' });
+    let s = h.play(t, 't1', 'seat-a');
+    while (s.pendingResponse) s = h.pass(s);
+    if (s.pendingChoice && askedAbout(s) !== id) s = h.choose(s, 'e1');
+    expect(askedAbout(s)).toBe(id);
+    s = h.choose(h.use(s), 'seat-d');
+    expect(zone(s, 'seat-d:hand')).toEqual(['e1']);
+    expect(zone(s, 'discardPile')).toContain('t1');
+    expect(zone(s, 'discardPile')).not.toContain('e1');
+  });
+
+  it('asks once for a skill-cost discard of several cards', () => {
+    const s = h.run(kong({ 'seat-a:hand': five }), [
+      { kind: 'MoveCardEffect', cardInstanceId: 'x1', toZoneId: 'discardPile' },
+      { kind: 'MoveCardEffect', cardInstanceId: 'x2', toZoneId: 'discardPile' },
+      { kind: 'MoveCardEffect', cardInstanceId: 'x3', toZoneId: 'discardPile' },
+    ]);
+    expect(askedAbout(s)).toBe(id);
+    const done = h.choose(h.use(s), 'seat-b');
+    expect(zone(done, 'seat-b:hand')).toEqual(['x1', 'x2', 'x3']);
+    expect(done.pendingChoice ?? null).toBeNull();
+  });
+
+  it('is not asked for cards another seat discards', () => {
+    const s = h.run(kong({ 'seat-b:hand': five }), [{ kind: 'MoveCardEffect', cardInstanceId: 'x1', toZoneId: 'discardPile' }]);
+    expect(askedAbout(s)).toBeNull();
+  });
+
+  it('with every other seat dead, nothing is asked', () => {
+    const t = kong({ 'seat-a:hand': five });
+    const dead = { ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? x : { ...x, eliminated: true })) };
+    const s = h.run(dead, [{ kind: 'MoveCardEffect', cardInstanceId: 'x1', toZoneId: 'discardPile' }]);
+    expect(askedAbout(s)).toBeNull();
+    expect(zone(s, 'discardPile')).toEqual(['x1']);
+  });
+
+  it('a hidden Kong Rong is asked too, and using it reveals him', () => {
+    const t = table({ 'seat-a:hand': five }, { generals: { 'seat-a': ['alternate:kong-rong', 'filler-jia-xu', false] } });
+    const s = h.run(t, [{ kind: 'MoveCardEffect', cardInstanceId: 'x1', toZoneId: 'discardPile' }]);
+    expect(askedAbout(s)).toBe(id);
+    expect(h.use(s).seats[0].generals!.main.revealed).toBe(true);
+  });
+});

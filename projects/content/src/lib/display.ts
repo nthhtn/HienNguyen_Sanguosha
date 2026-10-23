@@ -198,6 +198,8 @@ const ABILITY_HINTS: Record<string, string> = {
   'alternate:swift-and-deadly': 'Discard a card and choose a seat; your distance to it counts as 1 until the end of the turn',
   'alternate:deathly-counsel': 'Discard a card from the hand or equipment area of another seat',
   'alternate:with-the-tide': 'Draw 1 card when a seat of your Kingdom brings another seat to dying; lose 1 HP when another seat of your Kingdom dies',
+  'alternate:celebrity': 'Damage to you from a seat with a hidden General is reduced by 1',
+  'alternate:comity': 'When cards you discard or lose from your hand or equipment area would go to the discard pile, give them to another seat instead',
   'alternate:insanity-axe': 'After your Sha damages {target}, move a card of its equipment area into yours, or discard it',
   'alternate:dauntless': 'Discard a Basic card from your hand; {target} then discards an Equipment card or takes 1 damage from you',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
@@ -273,6 +275,7 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   'alternate:bequeathed-strategy': 'Choose a seat to give {card} to',
   'alternate:prudence': 'Choose a seat of your Kingdom to draw 1 card',
   'alternate:deathly-counsel': 'Choose a seat to discard a card from',
+  'alternate:comity': 'Choose a seat to give the cards to',
   'alternate:swift-and-deadly': 'Choose a seat to be at distance 1 from you until the end of the turn',
 };
 

@@ -405,3 +405,18 @@ describe('Alternate Tian Feng, Deathly Counsel', () => {
     expect(picked(decide(ask(cards)))).toBe('e1');
   });
 });
+
+describe('Alternate Kong Rong, Comity', () => {
+  const id = 'alternate:comity';
+  it('is used only when an ally is alive to take the cards', () => {
+    expect(picked(decide(asking(table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Shu', 'seat-d': 'Wu' } }), id)))).toBe('use');
+    expect(picked(decide(asking(table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Shu', 'seat-c': 'Shu', 'seat-d': 'Wu' } }), id)))).toBe('decline');
+  });
+
+  it('gives the cards to an ally', () => {
+    const seats = ['seat-b', 'seat-c'].map((seatId) => ({ id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [] }));
+    const base = table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Shu', 'seat-c': 'Wei' } });
+    const ask: GameState = { ...base, pendingChoice: { id: 'p', seatId: 'seat-a', verb: 'give', reason: { kind: 'ability', owner: general('seat-a', id), abilityId: id }, options: seats } };
+    expect(picked(decide(ask))).toBe('seat-c');
+  });
+});

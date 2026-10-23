@@ -48,6 +48,7 @@ describe('readyAlternateSkills', () => {
     expect(readyIds('yue-jin')).toEqual(['alternate:dauntless']);
     expect(readyIds('pan-feng')).toEqual(['alternate:insanity-axe']);
     expect(readyIds('tian-feng')).toEqual(['alternate:deathly-counsel', 'alternate:with-the-tide']);
+    expect(readyIds('kong-rong')).toEqual(['alternate:celebrity', 'alternate:comity']);
     expect(readyIds('ding-feng')).toEqual(['alternate:close-combat', 'alternate:swift-and-deadly']);
   });
   it('never runs a Lord skill', () => {
