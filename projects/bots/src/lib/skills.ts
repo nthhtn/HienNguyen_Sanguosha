@@ -80,7 +80,13 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     case 'astrology':
     case 'armed-consorts':
     case 'eclipse-the-moon':
+    case 'alternate:prudence':
       return true;
+    // Divine Wisdom: only when the discard heals her (as many cards as her HP while hurt), or costs next to nothing (at most 1 card).
+    case 'alternate:divine-wisdom': {
+      const cards = handSize(view, me);
+      return (hurt(me) && cards >= me.combinedHp) || cards <= 1;
+    }
     case 'unyielding':
       return !!target && !isAlly(me, target);
     case 'raid':
@@ -172,6 +178,9 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
   // Bequeathed Strategy: the cards are seen, not drawn. Of the two, the first is given first; a card goes to an ally, else the bot keeps it.
   if (choice.reason.abilityId === 'alternate:bequeathed-strategy') return seats.length === 0 ? (choice.options[0]?.id ?? null) : (ally ?? me).id;
   switch (baseSkillId(choice.reason.abilityId)) {
+    // Prudence: a seat of her Kingdom draws; an ally, else the first seat offered.
+    case 'alternate:prudence':
+      return harmless?.id ?? null;
     case 'kindness':
     case 'bestowed-rouse':
     case 'marriage':

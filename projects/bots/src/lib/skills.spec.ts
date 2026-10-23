@@ -47,6 +47,25 @@ describe('Alternate Bequeathed Strategy', () => {
   });
 });
 
+describe('Alternate Gan Fu Ren', () => {
+  it('Prudence is always used, and the card goes to an ally of her Kingdom', () => {
+    expect(picked(decide(asking(table(), 'alternate:prudence')))).toBe('use');
+    const options = ['seat-b', 'seat-c'].map((seatId) => ({ id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [] }));
+    const s = table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-c': 'Wei' } });
+    const pick = { ...s, pendingChoice: { id: 'pick', seatId: 'seat-a', verb: 'pick' as const, reason: { kind: 'ability' as const, owner: general('seat-a', 'alternate:prudence'), abilityId: 'alternate:prudence' }, options } };
+    expect(picked(decide(pick))).toBe('seat-c');
+  });
+
+  it('Divine Wisdom is used when the discard heals her, or costs at most 1 card, else declined', () => {
+    const hand = (n: number) => Array.from({ length: n }, (_, i) => card(`h${i}`, 'shan'));
+    const id = 'alternate:divine-wisdom';
+    expect(picked(decide(asking(table({ 'seat-a:hand': hand(3) }, { hp: { 'seat-a': 3 } }), id)))).toBe('use');
+    expect(picked(decide(asking(table({ 'seat-a:hand': hand(2) }, { hp: { 'seat-a': 3 } }), id)))).toBe('decline');
+    expect(picked(decide(asking(table({ 'seat-a:hand': hand(1) }, { hp: { 'seat-a': 3 } }), id)))).toBe('use');
+    expect(picked(decide(asking(table({ 'seat-a:hand': hand(5) }), id)))).toBe('decline');
+  });
+});
+
 describe('Unyielding', () => {
   it('only against a non-ally; the target discards 2 with more than 3 hand cards, else takes the damage above 1 HP', () => {
     expect(picked(decide(asking(table(), 'unyielding', 'seat-b')))).toBe('use');

@@ -229,3 +229,76 @@ describe('Alternate Zhuge Liang, Empty City', () => {
     expect(h.decline(s).pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
   });
 });
+
+describe('Alternate Gan Fu Ren', () => {
+  const gan = (o: { hp?: number; hand?: ReturnType<typeof card>[]; kingdoms?: TableOptions['kingdoms']; hidden?: string[]; phase?: 'Play' | 'End'; owner?: string } = {}) => {
+    const t = table(
+      { drawPile: ['d1', 'd2', 'd3', 'd4'].map((id) => card(id, 'shan')), 'seat-a:hand': o.hand ?? [] },
+      { generals: at('seat-a', 'alternate:gan-fu-ren'), hp: { 'seat-a': o.hp ?? 1 }, kingdoms: o.kingdoms ?? { 'seat-a': 'Shu', 'seat-b': 'Shu', 'seat-c': 'Shu', 'seat-d': 'Wei' }, phase: o.phase, owner: o.owner }
+    );
+    const hide = new Set(o.hidden ?? []);
+    return { ...t, seats: t.seats.map((x) => (hide.has(x.id) ? { ...x, generals: { main: { ...x.generals!.main, revealed: false }, deputy: { ...x.generals!.deputy, revealed: false } } } : x)) };
+  };
+  const healOf = (s: GameState, amount: number) => h.run(s, [{ kind: 'HealEffect' as const, target: { kind: 'seat' as const, seatId: 'seat-a' }, amount }]);
+
+  describe('Prudence', () => {
+    const id = 'alternate:prudence';
+    it('is asked once per point regained, each time picking a seat of her Kingdom other than her', () => {
+      let s = healOf(gan(), 2);
+      expect(askedAbout(s)).toBe(id);
+      s = h.use(s);
+      expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-b', 'seat-c']);
+      s = h.choose(s, 'seat-b');
+      expect(handIds(s, 'seat-b')).toHaveLength(1);
+      expect(askedAbout(s)).toBe(id);
+      s = h.choose(h.use(s), 'seat-c');
+      expect(handIds(s, 'seat-c')).toHaveLength(1);
+      expect(s.pendingChoice).toBeFalsy();
+    });
+
+    it('declining draws nothing', () => {
+      const s = h.decline(healOf(gan(), 1));
+      expect(handIds(s, 'seat-b')).toEqual([]);
+      expect(s.pendingChoice).toBeFalsy();
+    });
+
+    it('never offers a seat with both Generals hidden', () => {
+      const s = h.use(healOf(gan({ hidden: ['seat-b'] }), 1));
+      expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-c']);
+    });
+
+    it('asks nothing with no one to pick', () => {
+      expect(askedAbout(healOf(gan({ kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Wei', 'seat-c': 'Wu', 'seat-d': 'Qun' } }), 1))).toBeNull();
+      expect(askedAbout(healOf(gan({ hidden: ['seat-b', 'seat-c'] }), 1))).toBeNull();
+    });
+  });
+
+  describe('Divine Wisdom', () => {
+    const id = 'alternate:divine-wisdom';
+    const startOfTurn = (hand: ReturnType<typeof card>[], hp: number) => h.settle(gan({ hand, hp, phase: 'End', owner: 'seat-d' }));
+    const cards = (n: number) => Array.from({ length: n }, (_, i) => card(`k${i}`, 'shan', 'spade'));
+
+    it('3 cards at HP 3: discards all and heals 1', () => {
+      let s = startOfTurn(cards(3), 3);
+      expect(askedAbout(s)).toBe(id);
+      s = h.use(s);
+      expect(handIds(s, 'seat-a')).toEqual([]);
+      expect(hp(s, 'seat-a')).toBe(4);
+    });
+
+    it('2 cards at HP 3: discards both and does not heal', () => {
+      const s = h.use(startOfTurn(cards(2), 3));
+      expect(handIds(s, 'seat-a')).toEqual([]);
+      expect(hp(s, 'seat-a')).toBe(3);
+    });
+
+    it('declining keeps the hand', () => {
+      const s = h.decline(startOfTurn(cards(3), 3));
+      expect(handIds(s, 'seat-a')).toHaveLength(3);
+    });
+
+    it('an empty hand is not asked', () => {
+      expect(askedAbout(startOfTurn([], 3))).not.toBe(id);
+    });
+  });
+});

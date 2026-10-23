@@ -192,6 +192,8 @@ const ABILITY_HINTS: Record<string, string> = {
   'eternal-loyalty': 'A seat of your choice draws up to its max HP',
   'alternate:eternal-loyalty': 'A seat of your choice draws up to its max HP, but never above 5 cards',
   'alternate:bequeathed-strategy': 'Look at the top 2 cards of the draw pile, then give one to any player and the other to any player',
+  'alternate:prudence': 'Another seat of your Kingdom draws 1 card',
+  'alternate:divine-wisdom': 'Discard all your hand cards; if you discard at least as many as your HP, recover 1 HP',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',
   'sudden-attack': "Discard one of {target}'s cards",
@@ -263,6 +265,7 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   decentralization: 'Choose a seat to take an extra turn',
   'direct-instruction': 'Choose a seat to place the card in',
   'alternate:bequeathed-strategy': 'Choose a seat to give {card} to',
+  'alternate:prudence': 'Choose a seat of your Kingdom to draw 1 card',
 };
 
 export function seatPickText(abilityId: string, locale = 'en'): string | null {

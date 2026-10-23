@@ -26,6 +26,9 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
 export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>([
   // Lu Xun's Scrutinize: a conversion into Amass; Default has no skill like it.
   'alternate:scrutinize',
+  // Gan Fu Ren is new in Alternate: both her skills have no Default counterpart.
+  'alternate:prudence',
+  'alternate:divine-wisdom',
 ]);
 
 // The Default skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.
