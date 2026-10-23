@@ -85,11 +85,26 @@ describe('describeChoice', () => {
     expect(describeChoice(state(skill('brave-spirit', 'pick', 'seat-1', labels)), 'seat-0')).toEqual({ title: 'Brave Spirit', prompt: 'Choose how Seat 1 draws and discards', confirmLabel: 'Choose' });
   });
 
+  it('Alternate Sorrow: which of the killer’s Generals, offered as Main and Deputy, never by name', () => {
+    const slots: ChoiceOption[] = [
+      { id: 'main', shows: { kind: 'label', text: 'Main General' }, effects: [] },
+      { id: 'deputy', shows: { kind: 'label', text: 'Deputy General' }, effects: [] },
+    ];
+    expect(describeChoice(state(skill('alternate:sorrow', 'pick', 'seat-1', slots)), 'seat-0')).toEqual({ title: 'Sorrow', prompt: "Choose which of Seat 1's Generals loses its skills", confirmLabel: 'Choose' });
+    expect(slots.map((o) => choiceOptionLabel(o.shows, players, undefined, undefined, o.id))).toEqual(['Main General', 'Deputy General']);
+  });
+
   it('Exile, Brave Spirit and Alliance seat picks name what the seat does', () => {
     const seats: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }];
     expect(describeChoice(state(skill('exile', 'pick', undefined, seats)), 'seat-0')!.prompt).toBe('Choose a seat to turn over');
     expect(describeChoice(state(skill('brave-spirit', 'pick', undefined, seats)), 'seat-0')!.prompt).toBe('Choose a seat to draw and discard cards');
     expect(describeChoice(state(skill('alliance', 'pick', 'seat-1', seats)), 'seat-0')!.prompt).toBe('Choose a seat to swap hands with Seat 1');
+  });
+
+  it('names the card being given, with its face', () => {
+    const card = { instanceId: 'c1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
+    const seats: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [], card }];
+    expect(describeChoice(state(skill('alternate:bequeathed-strategy', 'pick', undefined, seats)), 'seat-0')!.prompt).toBe('Choose a seat to give Slash (7 ♠) to');
   });
 });
 

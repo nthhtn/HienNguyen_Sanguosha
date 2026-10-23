@@ -112,7 +112,10 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
     // A skill's own words for its seat pick (Rouse the Tiger), its target named.
     const own = seatPickText(choice.reason.abilityId, localeOf(tr));
     const target = choice.reason.targetSeatId;
-    const seatPrompt = own ? own.replace('{target}', target ? seatName(state.players, target, tr) : tr('choice.aSeat')) : tr('choice.pick.seat');
+    // A card the options carry (Bequeathed Strategy: the card being given) is named with its face.
+    const carried = choice.options.find((o) => o.card)?.card;
+    const cardText = carried ? `${cardName(carried.definitionId, tr)} (${cardFaceLabel(carried)})` : tr('choice.aCard');
+    const seatPrompt = own ? own.replace('{target}', target ? seatName(state.players, target, tr) : tr('choice.aSeat')).replace('{card}', cardText) : tr('choice.pick.seat');
     const prompt = only === 'seat' ? seatPrompt : only === 'suit' ? tr('choice.pick.suit') : tr('choice.pick.one');
     return { title, prompt, confirmLabel: tr('choice.confirm.choose') };
   }

@@ -2,6 +2,9 @@ import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 import { alternateCardData } from './alternateCards';
 import { alternateGeneralRecords } from './alternateGenerals';
+import { skillIdOf } from './skillId';
+import { baseSkillId, lookupWithBase } from './alternateBase';
+import { alternateGeneralId, baseGeneralId, isAlternateGeneralId } from './generalIds';
 import viCards from '../../data/locales/vi/cards.json';
 import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
 import viGenerals from '../../data/locales/vi/generals.json';
@@ -75,7 +78,7 @@ export const generalIds = (): string[] => Object.keys(generalsData);
 export const cardIds = (): string[] => Object.keys(cardsData);
 // The ids the Vietnamese review file can list for Generals: Default's, then the Alternate deck's written
 // `alternate:<id>` (their ids overlap Default's, so they need the prefix).
-export const reviewGeneralIds = (): string[] => [...generalIds(), ...alternateGeneralRecords().map((g) => `alternate:${g.id}`)];
+export const reviewGeneralIds = (): string[] => [...generalIds(), ...alternateGeneralRecords().map((g) => alternateGeneralId(g.id))];
 
 // The translations of a language, exported for the parity spec.
 export function generalTranslations(locale: string): Record<string, GeneralTranslation> {
@@ -88,12 +91,19 @@ export function cardTranslations(locale: string): Record<string, CardTranslation
 export interface GeneralDisplayData {
   name: string;
   title: string | null;
-  skills: { name: string; text: string }[];
+  // inGame is set for Alternate skills only: false when the game does not play this skill yet. Absent means in the game.
+  skills: { name: string; text: string; inGame?: boolean }[];
 }
 
 // Presentation-facing view of a general's data file, so UI code never imports
-// raw content JSON.
-export function generalDisplayData(id: string, locale = 'en'): GeneralDisplayData | null {
+// raw content JSON. `inGame` is added by generalDisplayData (generalDisplay.ts), which needs the skill
+// registry; this file must not import it, since the General skills import this file.
+export function generalTextData(id: string, locale = 'en'): GeneralDisplayData | null {
+  if (isAlternateGeneralId(id)) {
+    const alternate = alternateGeneralDisplayData(baseGeneralId(id), locale);
+    if (!alternate) return null;
+    return { name: alternate.name, title: alternate.title, skills: alternate.skills };
+  }
   if (!Object.prototype.hasOwnProperty.call(generalsData, id)) return null;
   const data = generalsData[id];
   const translated = lookup(generalTranslations(locale), id);
@@ -161,10 +171,13 @@ const ABILITY_HINTS: Record<string, string> = {
   'heavens-envy': 'Take the judgment card into your hand',
   devil: "Replace {target}'s judgment card with one of your hand cards",
   'river-goddess': 'Judge: keep each black card and judge again; a red card ends it',
+  'alternate:goddess-luo': 'Judge: set each black card aside and judge again or stop; a red card ends it, then take the black cards',
   'bare-the-chest': 'Draw 1 fewer card; your Slash and Duel deal 1 more damage this turn',
   raid: 'Instead of drawing, take a hand card from 1 or 2 other seats',
   'brave-gesture': 'Draw 1 more card',
   'gathering-wisdom': 'Draw 1 card',
+  'alternate:envious-moon': 'Draw 1 card',
+  'alternate:warrior-lady': 'Draw 2 cards',
   'iron-cavalry': "Judge: on red, {target} can't play a Dodge against this Slash",
   astrology: 'Look at the top cards of the draw pile and put them back in any order',
   displace: 'Discard 1 card to move the Slash to another seat in your attack range',
@@ -177,6 +190,8 @@ const ABILITY_HINTS: Record<string, string> = {
   'lightning-strike': 'A seat of your choice judges: on a spade it takes 2 thunder damage',
   'dark-magic': "Replace {target}'s judgment card with a black card, and take the old one",
   'eternal-loyalty': 'A seat of your choice draws up to its max HP',
+  'alternate:eternal-loyalty': 'A seat of your choice draws up to its max HP, but never above 5 cards',
+  'alternate:bequeathed-strategy': 'Look at the top 2 cards of the draw pile, then give one to any player and the other to any player',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',
   'sudden-attack': "Discard one of {target}'s cards",
@@ -191,6 +206,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'military-farm': 'Judge: a card that is not a heart becomes a Farm under your General',
   decentralization: 'Skip your Play Phase; at the end of your turn another seat takes an extra turn',
   stubborn: 'Give one of the discarded cards back and take the rest',
+  'alternate:stabilization': 'Give one of the discarded cards back and take the rest, if there are any',
   lament: 'Discard a card: {target} judges, and a heart, diamond, club or spade has its effect',
   incarnation: 'Choose a skill of one of your Forms',
   instigate: 'Choose a seat to play a Slash at you, or you discard one of its cards',
@@ -198,7 +214,7 @@ const ABILITY_HINTS: Record<string, string> = {
 };
 
 export function abilityHint(abilityId: string, locale = 'en'): string | null {
-  return lookup(proseOf(locale)?.hints, abilityId) ?? lookup(ABILITY_HINTS, abilityId) ?? null;
+  return lookupWithBase(proseOf(locale)?.hints, abilityId) ?? lookupWithBase(ABILITY_HINTS, abilityId) ?? null;
 }
 
 // What a skill's selection says: its prompt, its confirm button and, when
@@ -233,7 +249,7 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
 };
 
 export function selectionText(abilityId: string, locale = 'en'): { prompt: string; confirm: string; cancel?: string } | null {
-  return lookup(proseOf(locale)?.selection, abilityId) ?? lookup(SELECTION_TEXT, abilityId) ?? null;
+  return lookupWithBase(proseOf(locale)?.selection, abilityId) ?? lookupWithBase(SELECTION_TEXT, abilityId) ?? null;
 }
 
 // What a skill's seat pick asks, when "Choose a seat" says too little.
@@ -246,10 +262,11 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   'clever-change': 'Choose a seat to move the card to',
   decentralization: 'Choose a seat to take an extra turn',
   'direct-instruction': 'Choose a seat to place the card in',
+  'alternate:bequeathed-strategy': 'Choose a seat to give {card} to',
 };
 
 export function seatPickText(abilityId: string, locale = 'en'): string | null {
-  return lookup(proseOf(locale)?.seatPick, abilityId) ?? lookup(SEAT_PICK_TEXT, abilityId) ?? null;
+  return lookupWithBase(proseOf(locale)?.seatPick, abilityId) ?? lookupWithBase(SEAT_PICK_TEXT, abilityId) ?? null;
 }
 
 // What a skill's pick says when it mixes seats and labels, or is all labels.
@@ -261,10 +278,13 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
   'follow-the-master': 'Choose how Follow the Master helps you',
   incarnation: 'Choose a Form skill',
   stubborn: 'Choose a card to give back; you take the others',
+  'alternate:stabilization': 'Choose a card to give back; you take the others, if there are any',
+  'alternate:bequeathed-strategy': 'Choose a card to give first; the other is given next',
+  'alternate:sorrow': "Choose which of {target}'s Generals loses its skills",
 };
 
 export function choicePromptText(abilityId: string, locale = 'en'): string | null {
-  return lookup(proseOf(locale)?.choicePrompt, abilityId) ?? lookup(CHOICE_PROMPT_TEXT, abilityId) ?? null;
+  return lookupWithBase(proseOf(locale)?.choicePrompt, abilityId) ?? lookupWithBase(CHOICE_PROMPT_TEXT, abilityId) ?? null;
 }
 
 // What a selection says by the step it leads to: competing and Blaze's picks
@@ -281,7 +301,7 @@ const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; can
 
 // A skill's own step ("alliance/swap") is found before a step name shared by any skill.
 export function stepSelectionText(step: string, locale = 'en', skillId?: string): { prompt: string; confirm: string; cancel?: string } | null {
-  const keys = skillId ? [`${skillId}/${step}`, step] : [step];
+  const keys = skillId ? [...new Set([skillId, baseSkillId(skillId)])].map((id) => `${id}/${step}`).concat(step) : [step];
   for (const key of keys) {
     const found = lookup(proseOf(locale)?.stepSelection, key) ?? lookup(STEP_SELECTION_TEXT, key);
     if (found) return found;
@@ -289,25 +309,35 @@ export function stepSelectionText(step: string, locale = 'en', skillId?: string)
   return null;
 }
 
-// A skill's id: its English name in kebab case, apostrophes dropped
-// ("Heaven's Envy" → "heavens-envy"). Stage 7's skills use these ids.
-export function skillIdOf(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+export { skillIdOf };
 
 const SKILL_NAMES: ReadonlyMap<string, string> = new Map(
   Object.values(generalsData).flatMap((g) => g.skills.map((s): [string, string] => [skillIdOf(s.name), s.name]))
 );
+
+// An Alternate skill's name by its `alternate:` skill id, in a language: the Alternate record's English
+// name, or its translation.
+const ALTERNATE_SKILL_NAMES_BY_LOCALE = new Map<string, ReadonlyMap<string, string>>();
+function alternateSkillNames(locale: string): ReadonlyMap<string, string> {
+  let names = ALTERNATE_SKILL_NAMES_BY_LOCALE.get(locale);
+  if (!names) {
+    const translations = alternateGeneralTranslations(locale);
+    names = new Map(alternateGeneralRecords().flatMap((rec) => rec.skills.map((s): [string, string] => {
+      const id = skillIdOf(s.name);
+      return [`alternate:${id}`, translations[rec.id]?.skills?.[id]?.name ?? s.name];
+    })));
+    ALTERNATE_SKILL_NAMES_BY_LOCALE.set(locale, names);
+  }
+  return names;
+}
 
 const titleCase = (id: string) => id.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
 // The name of an ability, for any text: a worn card's name, else a skill's
 // name from the General data, else its id in Title Case.
 export function abilityName(abilityId: string, locale = 'en'): string {
+  const alternate = alternateSkillNames(locale).get(abilityId);
+  if (alternate) return alternate;
   const card = cardDisplayData(abilityId, locale);
   // A General's skill can share an id with a card (Dong Zhuo's Wine skill and the Wine card): a
   // worn card is an ability only through its Equipment, so a skill of that id wins otherwise.
@@ -345,7 +375,7 @@ const COMPETE_OUTCOMES: Record<string, { won: string; lost: string }> = {
 };
 
 export function competeOutcomeText(abilityId: string, won: boolean, names: { user: string; target: string }, locale = 'en'): string | null {
-  const outcome = lookup(proseOf(locale)?.competeOutcomes, abilityId) ?? lookup(COMPETE_OUTCOMES, abilityId);
+  const outcome = lookupWithBase(proseOf(locale)?.competeOutcomes, abilityId) ?? lookupWithBase(COMPETE_OUTCOMES, abilityId);
   return outcome ? (won ? outcome.won : outcome.lost).replaceAll('{user}', names.user).replaceAll('{target}', names.target) : null;
 }
 
@@ -368,6 +398,10 @@ const JUDGMENT_OUTCOMES: Record<string, Record<string, string>> = {
     spared: 'Nothing happens',
   },
   'river-goddess': { again: '{owner} takes the card and judges again', ends: 'The card is discarded and the judging ends' },
+  'alternate:goddess-luo': {
+    again: '{owner} sets the card aside and may judge again',
+    ends: 'The card is discarded and the judging ends; {owner} takes any cards set aside',
+  },
   'iron-cavalry': { unblockable: 'The Slash cannot be dodged', none: 'Nothing happens' },
   'lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
   'dueling-heroes': {

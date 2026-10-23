@@ -1,5 +1,5 @@
 import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target, UsedCard, findSkill } from 'engine';
-import { abilityName, cardDisplayData, generalDisplayData, isRecastPlay } from 'content';
+import { abilityName, baseGeneralId, cardDisplayData, generalDisplayData, isAlternateGeneralId, isRecastPlay } from 'content';
 import type { MessageKey } from './i18n/messages';
 import { englishTranslator, localeOf, Translator } from './i18n/translator';
 
@@ -68,7 +68,9 @@ export function cardDefinitionId(state: GameState, cardInstanceId: string): stri
 export function generalDisplayName(generalDefinitionId: string, tr: Translator = englishTranslator): string {
   if (generalDefinitionId === 'hidden') return tr('label.hiddenGeneral');
   const locale = localeOf(tr);
-  return (locale === 'en' ? undefined : generalDisplayData(generalDefinitionId, locale)?.name) ?? titleCaseId(generalDefinitionId);
+  // An Alternate id is never shown as it is: its own name, else its Default id's Title Case.
+  const alternate = isAlternateGeneralId(generalDefinitionId);
+  return (locale === 'en' && !alternate ? undefined : generalDisplayData(generalDefinitionId, locale)?.name) ?? titleCaseId(baseGeneralId(generalDefinitionId));
 }
 
 // The force colour a seat is shown in: its kingdom once known, else 'none'

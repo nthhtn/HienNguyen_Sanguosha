@@ -53,7 +53,8 @@ class FakeHost implements RunnerHost {
 }
 
 // Seat i is played by member `p${i}`. Every human in `connected` starts connected.
-function setup(options: { kinds?: MemberKind[]; solo?: boolean; connected?: string[]; policy?: BotPolicy } = {}) {
+// `state` replaces the opening state; members in `left` have left the room (a bot plays their seat).
+function setup(options: { kinds?: MemberKind[]; solo?: boolean; connected?: string[]; policy?: BotPolicy; state?: (opening: GameState) => GameState; left?: string[] } = {}) {
   const kinds = options.kinds ?? ['human', 'bot'];
   const seats: GameSeat[] = kinds.map((kind, i) => ({ seatId: `seat-${i}`, roomPlayerId: `p${i}`, name: kind === 'bot' ? `Bot ${i}` : `Player ${i}`, kind }));
   const record: GameRecord = {
@@ -73,10 +74,10 @@ function setup(options: { kinds?: MemberKind[]; solo?: boolean; connected?: stri
   const runner = new GameRunner(
     {
       record,
-      state: openingState(ctx, SEED, seats, {}),
+      state: (options.state ?? ((x) => x))(openingState(ctx, SEED, seats, {})),
       seq: 0,
       connected: new Set(options.connected ?? ['p0']),
-      present: new Set(seats.map((s) => s.roomPlayerId)),
+      present: new Set(seats.map((s) => s.roomPlayerId).filter((id) => !(options.left ?? []).includes(id))),
     },
     ctx,
     host,
@@ -495,3 +496,73 @@ describe('GameRunner: closing a settled judgment', () => {
   });
 });
 
+// Alternate Sorrow: the dead Cai Wenji's player (seat-0, eliminated) picks which of the killer seat-1's
+// Generals loses its skills. The first time online that the acting seat is an eliminated one.
+describe('a choice owned by an eliminated human seat', () => {
+  const afterDeath = (opening: GameState): GameState => {
+    const generals: Record<string, [string, string]> = { 'seat-0': ['alternate:cai-wenji', 'alternate:diao-chan'], 'seat-1': ['zhang-he', 'liu-shan'], 'seat-2': ['alternate:jia-xu', 'alternate:zhen-ji'] };
+    const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'alternate:sorrow' };
+    return {
+      ...opening,
+      phase: 'Play',
+      generalSelection: null,
+      turn: { ...opening.turn, ownerSeatId: 'seat-1' },
+      seats: opening.seats.map((seat) => ({
+        ...seat,
+        kingdom: seat.id === 'seat-1' ? 'Wei' : 'Qun',
+        generals: { main: { generalDefinitionId: generals[seat.id][0], revealed: true }, deputy: { generalDefinitionId: generals[seat.id][1], revealed: true } },
+        ...(seat.id === 'seat-0' ? { eliminated: true, combinedHp: 0 } : {}),
+      })),
+      pendingChoice: {
+        id: 'sorrow-1', seatId: 'seat-0', verb: 'pick', secret: true,
+        reason: { kind: 'ability', owner, abilityId: owner.skillId, targetSeatId: 'seat-1' },
+        options: (['main', 'deputy'] as const).map((slot) => ({
+          id: slot,
+          shows: { kind: 'label' as const, text: slot === 'main' ? 'Main General' : 'Deputy General' },
+          effects: [{ kind: 'SilenceSeatEffect' as const, seatId: 'seat-1', slot }],
+        })),
+      },
+    };
+  };
+  const dead = (options: Parameters<typeof setup>[0] = {}) => setup({ kinds: ['human', 'human', 'bot'], connected: ['p0', 'p1'], state: afterDeath, ...options });
+  const silenced = (runner: GameRunner) => runner.state.seats.find((s) => s.id === 'seat-1')!.silencedSlots;
+
+  it('offers the dead player the Main General and Deputy General options, and no one else anything', () => {
+    const { runner } = dead();
+    expect(getActiveSeatId(runner.state)).toBe('seat-0');
+    expect(runner.updateFor('p0', 0)!.legalActions).toEqual([
+      { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'sorrow-1', optionId: 'main' },
+      { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'sorrow-1', optionId: 'deputy' },
+    ]);
+    expect(runner.updateFor('p1', 0)!.legalActions).toEqual([]);
+    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'choice' });
+  });
+
+  it('accepts their pick, and the game moves on to the turn owner', async () => {
+    const { runner, host, legal } = dead();
+    const deputy = legal().find((a) => a.kind === 'ChooseOptionAction' && a.optionId === 'deputy')!;
+    await runner.submit('p0', GAME_ID, 0, [deputy]);
+    expect(runner.seq).toBe(1);
+    expect(host.stored[0]).toMatchObject({ seatId: 'seat-0', source: 'human', action: deputy });
+    expect(runner.state.pendingChoice).toBeUndefined();
+    expect(silenced(runner)).toEqual(['deputy']);
+    expect(getActiveSeatId(runner.state)).toBe('seat-1');
+  });
+
+  it('a clock timeout picks the default option', async () => {
+    const { runner, host, scheduler } = dead();
+    await scheduler.advance(300_000);
+    expect(host.stored[0]).toMatchObject({ seatId: 'seat-0', source: 'timeout', action: { optionId: 'main' } });
+    expect(silenced(runner)).toEqual(['main']);
+    expect(host.broken).toBeNull();
+  });
+
+  it('a bot picks for a dead player who left the room', async () => {
+    const { runner, host, scheduler } = dead({ connected: ['p1'], left: ['p0'] });
+    expect(runner.isBotPlayed('seat-0')).toBe(true);
+    await scheduler.advance(BOT_DELAY_MS);
+    expect(host.stored[0]).toMatchObject({ seatId: 'seat-0', source: 'takeover', action: { kind: 'ChooseOptionAction', choiceId: 'sorrow-1' } });
+    expect(silenced(runner)).toHaveLength(1);
+    expect(host.broken).toBeNull();
+  });
+});

@@ -1,4 +1,4 @@
-import type { CardInstance, CardPlayedEvent, GeneralOwner, PhaseChangedEvent, SkillDefinition } from 'engine';
+import type { CardInstance, CardPlayedEvent, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard } from 'engine';
 import { abilityUseKey, drawPileTop } from 'engine';
 import type { ContentRegistry, GameState } from 'engine';
 import { colourFor } from '../shared/suits';
@@ -6,6 +6,7 @@ import type { GeneralSkillSet } from './types';
 import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
 import { handOf, isShaCard } from '../shared/queries';
 import { isRecast } from '../cards/chains';
+import { cancelsCardsOnOwner } from '../shared/cancel';
 import { ask, draw, heal, on, otherLivingSeatIds, reasonOf, selectionOf, skillStep, used } from '../shared/skills';
 
 // The Shu base Generals' skills (General Skills spec, "Shu"). Every skill acts
@@ -19,8 +20,19 @@ export const roar: SkillDefinition = { id: 'roar', compulsory: true, modifiers: 
 // Horsemanship (compulsory): your distance to every other seat is 1 smaller, never below 1.
 export const horsemanship: SkillDefinition = { id: 'horsemanship', compulsory: true, modifiers: { distanceToOthers: -1 } };
 
-// Empty City (compulsory): while you have no hand cards, Sha and Duel can't target you.
-export const emptyCity: SkillDefinition = { id: 'empty-city', compulsory: true, modifiers: { untargetableWithEmptyHandBy: ['sha', 'duel'] } };
+// Empty City (compulsory): while you have no hand cards, Sha and Duel can't target you. `cancels`
+// (Alternate): they can, and are cancelled for you instead (used, but with no effect on you).
+const EMPTY_CITY_CARDS = ['sha', 'duel'];
+export function makeEmptyCity(cancels: boolean): SkillDefinition {
+  return cancels
+    ? {
+        id: 'empty-city',
+        compulsory: true,
+        triggers: cancelsCardsOnOwner((state, card, _userSeatId, ownerSeatId) => EMPTY_CITY_CARDS.includes(card.as) && handOf(state, ownerSeatId).length === 0),
+      }
+    : { id: 'empty-city', compulsory: true, modifiers: { untargetableWithEmptyHandBy: EMPTY_CITY_CARDS } };
+}
+export const emptyCity = makeEmptyCity(false);
 
 // Wondrous Talent (compulsory): your Tools ignore distance (Steal, Starvation).
 export const wondrousTalent: SkillDefinition = { id: 'wondrous-talent', compulsory: true, modifiers: { toolsIgnoreDistance: true } };
@@ -43,19 +55,25 @@ export const dragonCourage: SkillDefinition = {
 
 // Gathering Wisdom (may): when you play a non-delayed Tool (an answering Wuxie
 // included), you may draw 1 card, before the Tool takes effect. A Chains
-// Recast is not a use.
-export const gatheringWisdom: SkillDefinition = {
+// Recast is not a use. Alternate (allowConverted false) also skips a Tool that
+// was converted from other cards (a conversion `via`, or a physical card that
+// is not the Tool itself).
+const isConverted = (card: UsedCard): boolean => !!card.via || card.physical.some((p) => p.definitionId !== card.as);
+
+export const makeGatheringWisdom = (allowConverted = true): SkillDefinition => ({
   id: 'gathering-wisdom',
   triggers: [
     on<CardPlayedEvent>('after:CardPlayedEvent', {
       condition: (_state, event, owner, registry) => {
         const definition = registry.cards.get(event.card.as);
-        return event.seatId === owner.seatId && definition?.category === 'tool' && !definition.delayed && !isRecast(event);
+        return event.seatId === owner.seatId && definition?.category === 'tool' && !definition.delayed && !isRecast(event) && (allowConverted || !isConverted(event.card));
       },
       effect: (_state, _event, owner) => [ask(owner, [draw(owner.seatId, 1)])],
     }),
   ],
-};
+});
+
+export const gatheringWisdom: SkillDefinition = makeGatheringWisdom(true);
 
 // Iron Cavalry (may): after you target a seat with a Sha, you may judge. On
 // red, that seat can't play a Shan against this Sha (Eight Trigrams included).
@@ -109,8 +127,9 @@ const healedKey = (owner: GeneralOwner) => `${abilityUseKey(owner)}/healed`;
 
 // Kindness (active, any number of times): in your Play Phase you may give any
 // of your hand cards to another seat. Once per turn, when the total given this
-// turn first reaches 2 or more, you recover 1 HP.
-export const kindness: SkillDefinition = {
+// turn first reaches `threshold` or more, you recover 1 HP. Default's threshold is 2;
+// the Alternate Benevolence variant uses 3.
+export const makeKindness = (threshold: number): SkillDefinition => ({
   id: 'kindness',
   active: {
     canUse: (state, { seatId }) => handOf(state, seatId).length > 0 && otherLivingSeatIds(state, seatId).length > 0,
@@ -127,10 +146,12 @@ export const kindness: SkillDefinition = {
   },
   onStep: (state, step) => {
     const uses = state.turn.abilityUses ?? {};
-    if ((uses[givenKey(step.owner)] ?? 0) < 2 || uses[healedKey(step.owner)]) return [];
+    if ((uses[givenKey(step.owner)] ?? 0) < threshold || uses[healedKey(step.owner)]) return [];
     return [{ kind: 'IncrementEffect', scope: 'turn', key: healedKey(step.owner), by: 1 }, heal(step.owner.seatId)];
   },
-};
+});
+
+export const kindness: SkillDefinition = makeKindness(2);
 
 // Fierce General: a Lord skill, inactive in Kingdom War.
 export const fierceGeneral: SkillDefinition = { id: 'fierce-general', lord: true };

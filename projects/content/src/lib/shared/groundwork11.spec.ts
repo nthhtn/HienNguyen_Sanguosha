@@ -88,7 +88,7 @@ describe('Kingdom War setup', () => {
     expect(game.zones.filter((z) => z.id.endsWith(':stash'))).toHaveLength(3);
     const dealt = Object.values(game.generalSelection!.candidates).flat();
     // (a General that deals spare Generals is never one of them)
-    const undealt = [...real.generals.keys()].filter((id) => !dealt.includes(id) && !real.generals.get(id)!.skills.some((s) => s.spareGenerals)).sort();
+    const undealt = [...real.generals.keys()].filter((id) => !id.startsWith('alternate:') && !dealt.includes(id) && !real.generals.get(id)!.skills.some((s) => s.spareGenerals)).sort();
     expect([...game.spareGenerals!].sort()).toEqual(undealt);
     expect(new Set(game.spareGenerals).size).toBe(game.spareGenerals!.length);
   });

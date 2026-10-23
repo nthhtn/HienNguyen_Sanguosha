@@ -1,6 +1,6 @@
 import { withFillers } from '../generals/fillers.testing';
 import { table, kwMode, harness, card } from '../generals/skills.testing';
-import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT, MAX_KINGDOM_WAR_SEATS } from './kingdomWar';
+import { kingdomWarMode, kingdomWarMaxSeats, generalPool, GENERALS_PER_SEAT, MAX_KINGDOM_WAR_SEATS } from './kingdomWar';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
 import type { GameState, CardDefinition, CardInstance, ContentRegistry, Effect } from 'engine';
@@ -139,6 +139,35 @@ describe('Kingdom War setup and deal', () => {
 
     it('refuses a deck it does not know', () => {
       expect(() => dealt({ deck: 'bogus' })).toThrow('Unknown deck "bogus"');
+    });
+
+    describe('the General pool', () => {
+      const full = withFillers(buildContentRegistry());
+      const dealtGenerals = (rules?: { deck?: string }) => {
+        const state = createGame(kingdomWarMode, full, seats, 7, rules);
+        return [...Object.values(state.generalSelection!.candidates).flat(), ...state.spareGenerals!];
+      };
+
+      it('deals only Alternate Generals from the Alternate deck', () => {
+        const ids = dealtGenerals({ deck: 'alternate' });
+        expect(ids.length).toBeGreaterThan(0);
+        expect(ids.every((id) => id.startsWith('alternate:'))).toBe(true);
+      });
+
+      it('deals no Alternate General from Default, given or not', () => {
+        expect(dealtGenerals().some((id) => id.startsWith('alternate:'))).toBe(false);
+        expect(dealtGenerals({ deck: 'default' }).some((id) => id.startsWith('alternate:'))).toBe(false);
+      });
+
+      it('sizes the pool and the seat limit by deck', () => {
+        expect(generalPool(full, 'alternate')).toHaveLength(60);
+        expect(kingdomWarMaxSeats(full, 'alternate')).toBe(10);
+      });
+
+      it('Default deal for seed 42 is unchanged', () => {
+        const state = createGame(kingdomWarMode, full, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 42);
+        expect(state.generalSelection!.candidates).toEqual({"seat-a":["deng-ai","zhang-zhao-and-zhang-hong","filler-jiang-wei","filler-deng-ai","zhang-he"],"seat-b":["da-qiao","sun-jian","zhou-tai","xun-yu","zhuge-liang"],"seat-c":["hua-tuo","taishi-ci","liu-shan","yan-liang-and-wen-chou","zuo-ci"],"seat-d":["huang-gai","fire-zhuge-liang","xiao-qiao","zhu-rong","lu-su"]});
+      });
     });
 
     it('keeps the deck in the saved state', () => {

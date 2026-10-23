@@ -1,10 +1,10 @@
-import { AbilityOwner, CardInstance, GameState, PendingResponse, Target } from '../domain/types';
+import { AbilityOwner, CardInstance, GameState, PendingChoice, PendingResponse, Target } from '../domain/types';
 import { Action } from '../pipeline/actions';
 import { answersAs } from '../domain/usedCard';
 import { ContentRegistry, Conversion, PlayOptionsContext, TargetPick } from '../registry/types';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { sameValue } from './offered';
-import { decisionPending, getActiveSeatId } from './activeSeat';
+import { decisionPending, getActiveSeatId, ownSkillChoice } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
 import { discardOwed } from './phaseSequence';
 
@@ -14,13 +14,22 @@ export function getLegalTargets(state: GameState, seatId: string): Target[] {
     .map((s) => ({ kind: 'seat', seatId: s.id }));
 }
 
+function chooseOptions(choice: PendingChoice, seatId: string): Action[] {
+  return choice.options.map((o) => ({ kind: 'ChooseOptionAction' as const, seatId, choiceId: choice.id, optionId: o.id }));
+}
+
 export function getLegalActions(state: GameState, seatId: string, registry?: ContentRegistry): Action[] {
   if (state.result) return [];
 
   // An unknown or eliminated seat can never act, whether or not it happens to
-  // be named as the turn owner or as a pending response's responder.
+  // be named as the turn owner or as a pending response's responder; but an
+  // eliminated seat makes a choice its own skill opened (ownSkillChoice: an afterDeath skill asks its player).
   const actingSeat = state.seats.find((s) => s.id === seatId);
-  if (!actingSeat || actingSeat.eliminated) return [];
+  if (!actingSeat) return [];
+  if (actingSeat.eliminated) {
+    const choice = state.pendingChoice;
+    return choice?.seatId === seatId && ownSkillChoice(choice) && !state.judgmentView?.settled && state.phase !== 'GeneralSelection' ? chooseOptions(choice, seatId) : [];
+  }
 
   if (state.phase === 'GeneralSelection') {
     if (getActiveSeatId(state) !== seatId) return [];
@@ -37,7 +46,7 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
   if (state.pendingChoice) {
     const choice = state.pendingChoice;
     if (choice.seatId !== seatId) return [];
-    return choice.options.map((o) => ({ kind: 'ChooseOptionAction' as const, seatId, choiceId: choice.id, optionId: o.id }));
+    return chooseOptions(choice, seatId);
   }
 
   if (state.pendingSelection) {

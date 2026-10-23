@@ -1,8 +1,9 @@
 import type { ContentRegistry, GameState } from 'engine';
+import { slotSilenced } from 'engine';
 
 // A seat's gender: its Main General's while the Main is revealed, else its
 // Deputy's while that is revealed, else none (both hidden); a chosen Form's
-// (Incarnation) replaces that of the General holding it.
+// (Incarnation) replaces that of the General holding it, unless that General lost its skills.
 export function seatGender(state: GameState, seatId: string, registry: ContentRegistry): 'male' | 'female' | null {
   const seat = state.seats.find((s) => s.id === seatId);
   const generals = seat?.generals;
@@ -10,6 +11,6 @@ export function seatGender(state: GameState, seatId: string, registry: ContentRe
   const slot = generals.main.revealed ? 'main' : generals.deputy.revealed ? 'deputy' : null;
   if (!slot) return null;
   // A Form chosen by the shown General's slot lends its gender (Incarnation).
-  if (seat.forms?.chosen && seat.forms.slot === slot && !seat.silenced) return registry.generals.get(seat.forms.chosen.generalId)?.gender ?? null;
+  if (seat.forms?.chosen && seat.forms.slot === slot && !slotSilenced(seat, slot)) return registry.generals.get(seat.forms.chosen.generalId)?.gender ?? null;
   return registry.generals.get(generals[slot].generalDefinitionId)?.gender ?? null;
 }

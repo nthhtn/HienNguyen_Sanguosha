@@ -65,6 +65,8 @@ const rows: Row[] = [
   ['gave-back', 'gave-back', true, null, 'Seat 0 gave a discarded card back to Seat 1 and took the rest (Axe)', 'Người chơi 0 trả lại một lá bài đã bỏ cho Người chơi 1 và lấy phần còn lại (Axe)'],
   ['lamented', 'lamented', true, null, "Seat 0's Axe: Seat 1 judges", 'Axe của Người chơi 0: Người chơi 1 phán xét'],
   ['silenced', 'silenced', true, null, 'Seat 1 loses all skills (Axe)', 'Người chơi 1 mất mọi kỹ năng (Axe)'],
+  ['silenced-main', 'silenced-main', true, null, "Seat 1's Main General loses all skills (Axe)", 'Chủ tướng của Người chơi 1 mất mọi kỹ năng (Axe)'],
+  ['silenced-deputy', 'silenced-deputy', true, null, "Seat 1's Deputy General loses all skills (Axe)", 'Phó tướng của Người chơi 1 mất mọi kỹ năng (Axe)'],
   ['new-form', 'new-form', false, null, 'Seat 0 gained a Form (Axe)', 'Người chơi 0 nhận một Hóa thân (Axe)'],
 ];
 
@@ -76,7 +78,7 @@ describe('ability outcomes in English and Vietnamese', () => {
   });
 
   it('an outcome that needs a target prints nothing without one', () => {
-    for (const outcome of ['no-effect', 'unblockable', 'moved', 'took-hand-card', 'struck', 'took-cards', 'gave', 'paid', 'silenced']) {
+    for (const outcome of ['no-effect', 'unblockable', 'moved', 'took-hand-card', 'struck', 'took-cards', 'gave', 'paid', 'silenced', 'silenced-main', 'silenced-deputy']) {
       expect({ outcome, lines: en_([used(outcome)]) }).toEqual({ outcome, lines: [] });
     }
   });

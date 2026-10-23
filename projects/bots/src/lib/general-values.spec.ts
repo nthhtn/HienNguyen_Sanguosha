@@ -18,6 +18,17 @@ describe('pairScore', () => {
   });
 });
 
+describe('pairScore with Alternate ids', () => {
+  it('scores an Alternate pair as its Default pair, apart from the registry HP tiebreak', () => {
+    const values = { 'cao-cao': 0.3, 'zhang-liao': 0.1 };
+    const alt = pairScore(values, registry, choose('alternate:cao-cao', 'alternate:zhang-liao'));
+    const def = pairScore(values, registry, choose('cao-cao', 'zhang-liao'));
+    const hp = (id: string) => registry.generals.get(id)?.maxHp ?? 0;
+    expect(alt - HP_TIEBREAK * (hp('alternate:cao-cao') + hp('alternate:zhang-liao'))).toBeCloseTo(0.4, 10);
+    expect(def - HP_TIEBREAK * (hp('cao-cao') + hp('zhang-liao'))).toBeCloseTo(0.4, 10);
+  });
+});
+
 describe('bestPair', () => {
   it('prefers a higher-valued pair over a higher-HP pair', () => {
     expect(bigA.maxHp + bigB.maxHp).toBeGreaterThan(small.maxHp + smaller.maxHp);

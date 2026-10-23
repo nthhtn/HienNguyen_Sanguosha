@@ -65,13 +65,13 @@ beforeEach(() => {
 describe('Slash steps', () => {
   it('a Slash that hits goes through every step, in order', () => {
     const s = pass(play(table({ 'seat-a:hand': [card('s1', 'sha')] }), 's1', 'seat-b'));
-    expect(seenSteps).toEqual(['sha-use', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-damaged', 'sha-after-damage']);
+    expect(seenSteps).toEqual(['sha-use', 'sha-aimed', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-damaged', 'sha-after-damage']);
     expect(hp(s, 'seat-b')).toBe(3);
   });
 
   it('a Dodge counts toward the Dodge needed, then the Slash is dodged, with no damage', () => {
     const s = respond(play(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('d1', 'shan')] }), 's1', 'seat-b'), 'd1');
-    expect(seenSteps).toEqual(['sha-use', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-shan', 'sha-dodged']);
+    expect(seenSteps).toEqual(['sha-use', 'sha-aimed', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-shan', 'sha-dodged']);
     expect(hp(s, 'seat-b')).toBe(4);
   });
 
@@ -93,7 +93,7 @@ describe('Slash steps', () => {
     s = respond(s, 'bs');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-c', allowedCardIds: ['shan'] });
     s = pass(s);
-    expect(seenSteps).toEqual(['sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-damaged', 'sha-after-damage']);
+    expect(seenSteps).toEqual(['sha-aimed', 'sha-targeted', 'sha-armor', 'sha-shan', 'sha-hit', 'sha-damage', 'sha-damaged', 'sha-after-damage']);
     expect(hp(s, 'seat-c')).toBe(3);
     expect(s.turn.cardPlays?.['sha'] ?? 0).toBe(0);
   });

@@ -1,5 +1,6 @@
+import { baseSkillId } from 'content';
 import type { CardInstance, ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
-import { livingSeatOrderFrom } from 'engine';
+import { livingSeatOrderFrom, slotSilenced } from 'engine';
 import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, isShaCard } from './helpers';
 
 // The stage 9 spec's bot rules for the Fire skills. Bots don't read content's
@@ -20,9 +21,10 @@ const worn = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === se
 const rides = (view: GameState, seat: Seat, registry: ContentRegistry, slot: 'defensiveMount' | 'offensiveMount') =>
   worn(view, seat).some((c) => registry.cards.get(c.definitionId)?.equipSlot === slot);
 
-// `from`'s revealed Generals' distance modifiers (Horsemanship: -1).
+// `from`'s revealed Generals' distance modifiers (Horsemanship: -1); none from a General that lost its skills.
 const skillDistance = (from: Seat, registry: ContentRegistry) =>
   (['main', 'deputy'] as const)
+    .filter((slot) => !slotSilenced(from, slot))
     .map((slot) => from.generals?.[slot])
     .filter((g) => !!g?.revealed)
     .flatMap((g) => registry.generals.get(g!.generalDefinitionId)?.skills ?? [])
@@ -62,7 +64,7 @@ const spareClubs = (view: GameState, me: Seat, registry: ContentRegistry, ids = 
 
 export function wantsFireActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry): boolean | null {
   const hand = handCards(view, me);
-  switch (skillId) {
+  switch (baseSkillId(skillId)) {
     case 'shackle':
       return spareClubs(view, me, registry).length > 0;
     case 'assault':
@@ -79,7 +81,7 @@ export function wantsFireActive(view: GameState, me: Seat, skillId: string, regi
 export function wantsFire(view: GameState, me: Seat, choice: PendingChoice): boolean | null {
   if (choice.reason.kind !== 'ability') return null;
   const target = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId);
-  switch (choice.reason.abilityId) {
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'nirvana':
     case 'eight-arrays':
     case 'eternal-loyalty':
@@ -110,7 +112,7 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
   }
   if (selection.reason.kind !== 'ability') return null;
   const seats = eligible.map((id) => view.seats.find((s) => s.id === id)).filter((s): s is Seat => !!s);
-  switch (selection.reason.abilityId) {
+  switch (baseSkillId(selection.reason.abilityId)) {
     case 'rouse-the-tiger': {
       const pick = weakest(rousable(view, me, registry).filter((s) => eligible.includes(s.id)));
       return pick ? [pick.id] : 'cancel';
@@ -136,13 +138,15 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
 export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
-  switch (choice.reason.abilityId) {
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'assault':
       return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'rouse-the-tiger':
       return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'eternal-loyalty': {
-      const short = (s: Seat) => s.maxCombinedHp - handSize(view, s);
+      // Alternate Eternal Loyalty stops at 5 cards, so a seat is only short up to that cap.
+      const cap = choice.reason.kind === 'ability' && choice.reason.abilityId === 'alternate:eternal-loyalty' ? 5 : Infinity;
+      const short = (s: Seat) => Math.min(s.maxCombinedHp, cap) - handSize(view, s);
       const ally = seats.filter((s) => s.id !== me.id && isAlly(me, s)).sort((a, b) => short(b) - short(a))[0];
       return (ally && short(ally) > short(me) ? ally : me).id;
     }

@@ -1,4 +1,5 @@
 import manifest from '../../assets/manifest.json';
+import { baseGeneralId, isAlternateGeneralId } from './generalIds';
 import skins from '../../assets/generals/skins/skins.json';
 
 interface AssetManifestEntry {
@@ -23,7 +24,12 @@ const GENERAL_SKINS: Record<string, string> = skins;
 
 // A General's skin: the portrait used on the Play screen. A General with no
 // skin falls back to its crawled card art (the one the Wiki always shows).
+// An Alternate General uses its base General's art; one with none (the new Generals) gets the placeholder.
 export function generalSkinUrl(id: string): string | null {
+  if (isAlternateGeneralId(id)) {
+    const base = baseGeneralId(id);
+    return generalSkinUrl(base) ?? GENERAL_PLACEHOLDER_ART_URL;
+  }
   const skin = GENERAL_SKINS[id];
   return skin ? `/card-art/generals/skins/${skin}` : cardArtUrl(id);
 }
@@ -34,8 +40,9 @@ const NO_DEATH_VOICE = new Set(['zuo-ci']);
 // A General's death voice: /audio/death/<skin file name>.ogg, named by the pinyin of the skin
 // (Cao Cao: caocao.ogg). Null for a General with no skin or no recording.
 export function generalDeathVoiceUrl(id: string): string | null {
-  const skin = GENERAL_SKINS[id];
-  if (!skin || NO_DEATH_VOICE.has(id)) return null;
+  const base = baseGeneralId(id);
+  const skin = GENERAL_SKINS[base];
+  if (!skin || NO_DEATH_VOICE.has(base)) return null;
   return `/audio/death/${skin.replace(/^.*\//, '').replace(/\.[^.]+$/, '')}.ogg`;
 }
 
@@ -45,6 +52,9 @@ export const CARD_BACK_ART_URL = '/card-art/cards/back.jpg';
 // The face-down General card, shown for a General another seat hasn't revealed.
 // Not in the manifest (it isn't a crawled item), but it ships with the assets.
 export const HIDDEN_GENERAL_ART_URL = '/card-art/generals/hidden.jpg';
+
+// The portrait for a General with no skin or card art of its own. Ships with the assets, like the above.
+export const GENERAL_PLACEHOLDER_ART_URL = '/card-art/generals/placeholder.svg';
 
 // The highest HP with its own icon (misc/hp/1.png … 4.png).
 const MAX_HP_ICONS = 4;

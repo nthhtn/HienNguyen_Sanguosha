@@ -4,6 +4,7 @@ import { handOf, SHA_FLAGS, shaFlag, shaLimit, shaPlayRevealOwner } from '../sha
 import { shaTargetIds } from '../shared/shaRules';
 import { activeAbilities } from '../shared/abilities';
 import { CardStep, cardStep } from '../shared/steps';
+import { SHA_AIMED_STEP } from '../shared/cancel';
 import { answersNeededAgainst } from '../shared/abilities';
 import { WINE_FLAG } from './wine';
 
@@ -19,6 +20,7 @@ export interface ShaStepData {
   unblockable?: boolean;
   acted?: string[];
   logFrom?: number; // `sha-damage` time: where in the log this Sha's damage would start
+  then?: string; // `sha-aimed`: the step it goes on to (default 'sha-targeted'; a moved Sha's 'sha-armor')
 }
 
 export const shaData = (step: CardStep) => (step.data ?? {}) as ShaStepData;
@@ -30,12 +32,12 @@ export function shaStep(from: CardStep, step: string, more: ShaStepData = {}): C
   return cardStep(step, from.card, from.userSeatId, from.target, { extra, ...(unblockable ? { unblockable } : {}), ...more });
 }
 
-// A Sha's steps from step 1 at each target, in seat order from its user.
+// A Sha's steps from where it is aimed at each target, in seat order from its user.
 export function shaAt(state: GameState, card: UsedCard, userSeatId: string, targets: Target[], extra = 0): Effect[] {
   const order = livingSeatOrderFrom(state, userSeatId);
   return [...targets]
     .sort((a, b) => order.indexOf(a.seatId) - order.indexOf(b.seatId))
-    .map((target) => cardStep('sha-targeted', card, userSeatId, target, { extra }));
+    .map((target) => cardStep(SHA_AIMED_STEP, card, userSeatId, target, { extra }));
 }
 
 function damageOf(step: CardStep): Effect {
@@ -47,7 +49,7 @@ function damageOf(step: CardStep): Effect {
       target: step.target,
       amount: 1 + (shaData(step).extra ?? 0),
       nature: step.card.nature ?? 'normal',
-      cause: { ...(first ? { cardInstanceId: first } : {}), card: step.card },
+      cause: { ...(first ? { cardInstanceId: first } : {}), card: step.card, aimedAt: step.target.seatId },
     },
   };
 }
@@ -126,6 +128,9 @@ function shaDefinition(id: string, name: string, nature?: 'fire' | 'thunder'): C
       // A target gone before its turn comes is simply skipped.
       if (!isLiving(state, step.target.seatId)) return [];
       switch (step.step) {
+        case SHA_AIMED_STEP:
+          // Aimed at the target: a skill that cancels the Sha for its seat stops it here (shared/cancel.ts).
+          return [shaStep(step, data.then ?? 'sha-targeted')];
         case 'sha-targeted':
           return [shaStep(step, 'sha-armor')];
         case 'sha-armor':

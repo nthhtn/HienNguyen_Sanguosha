@@ -11,7 +11,7 @@ import { suitOf } from '../shared/suits';
 import { awakeningAtTurnStart, isAwakened } from '../shared/awaken';
 import { farmCount, stashMove } from '../shared/farm';
 import { formSkillOptions } from '../shared/forms';
-import { abilityName, generalDisplayData } from '../display';
+import { abilityName, generalTextData } from '../display';
 import {
   ask, atDrawPhase, choiceOf, discardMoves, draw, handZoneId, heal, hpOf, isHurt, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used,
 } from '../shared/skills';
@@ -484,14 +484,15 @@ function discardedInDiscardPhase(state: GameState, seatId: string): string[] {
 }
 
 // Stubborn (may): at the end of another seat's Discard Phase, if it discarded
-// 2 or more cards, give one of them back to it and take the others.
-export const stubborn: SkillDefinition = {
+// `minDiscarded` or more cards, give one of them back to it and take the others.
+// Default needs 2; Alternate's Stabilization works with 1 (nothing is taken then).
+export const makeStubborn = (minDiscarded: number): SkillDefinition => ({
   id: 'stubborn',
   triggers: [
     on<PhaseChangedEvent>('after:PhaseChangedEvent', {
       condition: (state, event, owner) =>
         event.phase === 'End' && event.seatId !== owner.seatId && state.turn.ownerSeatId === event.seatId && isLiving(state, event.seatId) && isLiving(state, owner.seatId) &&
-        discardedInDiscardPhase(state, event.seatId).length >= 2,
+        discardedInDiscardPhase(state, event.seatId).length >= minDiscarded,
       effect: (state, event, owner) => [ask(owner, [skillStep(owner, 'give', { seat: event.seatId, cards: discardedInDiscardPhase(state, event.seatId) })], [], event.seatId)],
     }),
   ],
@@ -500,7 +501,7 @@ export const stubborn: SkillDefinition = {
     const seat = step.data?.['seat'] as string;
     const discardPile = requireZoneOfKind(state.zones, 'discardPile');
     const cards = ((step.data?.['cards'] as string[] | undefined) ?? []).flatMap((id) => discardPile.cards.filter((c) => c.instanceId === id));
-    if (cards.length < 2 || !isLiving(state, seat) || !isLiving(state, owner.seatId)) return [];
+    if (cards.length < minDiscarded || !isLiving(state, seat) || !isLiving(state, owner.seatId)) return [];
     const move = (id: string, to: string): Effect => ({ kind: 'MoveCardEffect', cardInstanceId: id, toZoneId: handZoneId(state, to), onlyFrom: discardPile.id });
     return [
       choiceOf(state, owner, {
@@ -514,7 +515,9 @@ export const stubborn: SkillDefinition = {
       }),
     ];
   },
-};
+});
+
+export const stubborn: SkillDefinition = makeStubborn(2);
 
 // ── Cai Wenji ──────────────────────────────────────────────────────────────
 
@@ -596,6 +599,10 @@ export const lament: SkillDefinition = {
   },
 };
 
+// Whether `owner`'s seat was just eliminated by another seat that is still in the game (Heartbroken, Alternate Sorrow).
+export const killedByLivingOther = (state: GameState, event: SeatEliminatedEvent, owner: GeneralOwner): boolean =>
+  event.seatId === owner.seatId && !!event.killerSeatId && event.killerSeatId !== owner.seatId && isLiving(state, event.killerSeatId);
+
 // Heartbroken (compulsory): when a seat kills her, that seat loses all its
 // skills for the rest of the game. She is out when it acts (afterDeath).
 export const heartbroken: SkillDefinition = {
@@ -604,8 +611,7 @@ export const heartbroken: SkillDefinition = {
   afterDeath: true,
   triggers: [
     on<SeatEliminatedEvent>('after:SeatEliminatedEvent', {
-      condition: (state, event, owner) =>
-        event.seatId === owner.seatId && !!event.killerSeatId && event.killerSeatId !== owner.seatId && isLiving(state, event.killerSeatId),
+      condition: killedByLivingOther,
       effect: (_state, event, owner) => [used(owner, 'silenced', event.killerSeatId), { kind: 'SilenceSeatEffect', seatId: event.killerSeatId! }],
     }),
   ],
@@ -624,7 +630,7 @@ function chooseForm(state: GameState, owner: GeneralOwner, registry: ContentRegi
     secret: true,
     options: formSkillOptions(state, owner.seatId, registry).map(({ generalId, skillId }) => ({
       id: `${generalId}/${skillId}`,
-      shows: { kind: 'label' as const, text: `${abilityName(skillId)} (${generalDisplayData(generalId)?.name ?? generalId})` },
+      shows: { kind: 'label' as const, text: `${abilityName(skillId)} (${generalTextData(generalId)?.name ?? generalId})` },
       effects: [
         { kind: 'ChooseFormSkillEffect' as const, seatId: owner.seatId, generalId, skillId },
         used(owner, 'incarnated'),

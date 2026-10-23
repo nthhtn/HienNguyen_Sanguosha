@@ -228,6 +228,13 @@ describe('seatGender when silenced', () => {
     const s = { ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, silenced: true as const, forms: { slot: 'main' as const, held: ['da-qiao'], chosen: { generalId: 'da-qiao', skillId: 'displace' } } } : x)) };
     expect(seatGender(s, 'seat-a', registry)).toBe('male'); // Zuo Ci's own
   });
+
+  it('a Form held by a General that lost its skills (Alternate Sorrow) lends no gender; one held by the other General still does', () => {
+    const t = table({}, { generals: at('seat-a', 'zuo-ci') });
+    const form = (silenced: 'main' | 'deputy') => ({ ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, silencedSlots: [silenced], forms: { slot: 'main' as const, held: ['da-qiao'], chosen: { generalId: 'da-qiao', skillId: 'displace' } } } : x)) });
+    expect(seatGender(form('main'), 'seat-a', registry)).toBe('male');
+    expect(seatGender(form('deputy'), 'seat-a', registry)).toBe('female');
+  });
 });
 
 describe('Zuo Ci — New Life', () => {

@@ -26,7 +26,8 @@ export interface GeneralInfoDialogData {
         @if (display?.skills?.length) {
           <ul class="skills">
             @for (skill of display!.skills; track skill.name) {
-              <li><strong>{{ skill.name }}</strong> {{ skill.text }}</li>
+              <li [class.not-in-game]="skill.inGame === false"><strong>{{ skill.name }}</strong> {{ skill.text }}
+                @if (skill.inGame === false) { <em class="not-in-game-hint">{{ 'wiki.notInGame' | t }}</em> }</li>
             }
           </ul>
         } @else {
@@ -44,6 +45,7 @@ export interface GeneralInfoDialogData {
     .title { font-style: italic; color: #666; margin-bottom: 8px; }
     .skills { padding-left: 1.1em; margin: 0; }
     .skills li { margin-bottom: 6px; }
+    .skills li.not-in-game { opacity: 0.6; }
     .empty { color: #666; }
     @media (max-width: 480px) { .content { flex-direction: column; align-items: center; } }
   `,

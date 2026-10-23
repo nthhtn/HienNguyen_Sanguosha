@@ -1,10 +1,10 @@
-import type { CardInstance, Effect, GameState, PendingSelection } from 'engine';
+import type { CardInstance, Effect, GameState, PendingChoice, PendingSelection } from 'engine';
 import { getLegalActions } from 'engine';
 import { conversionSpare } from './skills';
 import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
 
 describe('may-skills the bot always uses', () => {
-  it.each(['evil-hero', 'feedback', 'heavens-envy', 'bestowed-rouse', 'gathering-wisdom', 'brave-gesture', 'self-restraint', 'river-goddess', 'iron-cavalry', 'astrology'])('%s', (skillId) => {
+  it.each(['evil-hero', 'feedback', 'heavens-envy', 'bestowed-rouse', 'gathering-wisdom', 'brave-gesture', 'self-restraint', 'river-goddess', 'alternate:goddess-luo', 'iron-cavalry', 'astrology'])('%s', (skillId) => {
     expect(picked(decide(asking(table(), skillId)))).toBe('use');
   });
 
@@ -17,6 +17,33 @@ describe('may-skills the bot always uses', () => {
 describe('a compulsory skill’s ask', () => {
   it('is only about revealing: the bot says Use', () => {
     expect(picked(decide(asking(table(), 'armed-consorts')))).toBe('use');
+  });
+
+  it('Alternate Warrior Lady, a may ask, gets the same legal answer', () => {
+    expect(picked(decide(asking(table(), 'alternate:warrior-lady')))).toBe('use');
+  });
+
+  it('Alternate Envious Moon draws, as Default does', () => {
+    expect(picked(decide(asking(table(), 'alternate:envious-moon')))).toBe('use');
+  });
+});
+
+describe('Alternate Bequeathed Strategy', () => {
+  const id = 'alternate:bequeathed-strategy';
+  const picking = (options: PendingChoice['options']): GameState => ({
+    ...table(),
+    pendingChoice: { id: 'pick', seatId: 'seat-a', verb: 'pick', secret: true, reason: { kind: 'ability', owner: general('seat-a', id), abilityId: id }, options },
+  });
+
+  it('uses the ask, picks a seen card, then gives it to an ally, else keeps it', () => {
+    expect(picked(decide(asking(table(), id)))).toBe('use');
+    expect(picked(decide(picking([{ id: 'c1', shows: { kind: 'card', card: card('c1', 'shan') }, effects: [] }, { id: 'c2', shows: { kind: 'card', card: card('c2', 'sha') }, effects: [] }])))).toBe('c1');
+    const seats = ['seat-a', 'seat-b', 'seat-c', 'seat-d'].map((seatId) => ({ id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [] }));
+    // No ally known: it keeps the card (its own seat).
+    expect(picked(decide(picking(seats)))).toBe('seat-a');
+    // An ally (same kingdom as the bot, seat-c): the card goes to that exact seat.
+    const allied = { ...table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-c': 'Wei' } }), pendingChoice: picking(seats).pendingChoice };
+    expect(picked(decide(allied))).toBe('seat-c');
   });
 });
 
@@ -227,5 +254,26 @@ describe('fallbacks when no suitable seat is offered', () => {
   });
   it('Displace with only allies and no cancel picks an ally rather than failing', () => {
     expect(picked(decide(choice('displace', ['seat-b', 'seat-c'], allies)))).toMatch(/^seat-[bc]$/);
+  });
+});
+
+describe('an Alternate variant is used like its base', () => {
+  const seatWith = (generalId: string, n: number) => table(
+    { 'seat-a:hand': Array.from({ length: n }, (_, i) => card(`k${i}`, 'shan')) },
+    { generals: { 'seat-a': [generalId, 'filler-meng-huo'], 'seat-b': ['filler-jiang-wei', 'filler-liu-shan'] }, kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Shu' } },
+  );
+
+  it.each([5, 1])('Alternate Liu Bei with %i cards decides as Liu Bei does', (n) => {
+    const base = decide(seatWith('liu-bei', n));
+    const alt = decide(seatWith('alternate:liu-bei', n));
+    expect(alt.kind).toBe(base.kind);
+    if (n === 5) expect(alt).toMatchObject({ kind: 'UseSkillAction', owner: { skillId: 'alternate:benevolence' } });
+  });
+
+  it('gives the cards to an ally like Kindness', () => {
+    const selecting = useSkill(seatWith('alternate:liu-bei', 5), 'alternate:benevolence');
+    expect(picked(decide(selecting))).toHaveLength(2);
+    const giving = act(selecting, decide(selecting));
+    expect(picked(decide(giving))).toBe('seat-b');
   });
 });

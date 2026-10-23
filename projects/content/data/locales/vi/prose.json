@@ -13,10 +13,13 @@
     "heavens-envy": "Lấy lá phán xét vào tay",
     "devil": "Thay lá phán xét của {target} bằng một lá bài trên tay bạn",
     "river-goddess": "Phán xét: giữ mỗi lá đen và phán xét lại; gặp lá đỏ thì dừng",
+    "alternate:goddess-luo": "Phán xét: để riêng mỗi lá đen rồi phán xét lại hoặc dừng; gặp lá đỏ thì dừng, rồi nhận các lá đen",
     "bare-the-chest": "Rút ít hơn 1 lá bài; Sát và Quyết Đấu của bạn gây thêm 1 sát thương trong lượt này",
     "raid": "Thay vì rút bài, lấy một lá bài trên tay của 1 hoặc 2 người chơi khác",
     "brave-gesture": "Rút thêm 1 lá bài",
     "gathering-wisdom": "Rút 1 lá bài",
+    "alternate:envious-moon": "Rút 1 lá bài",
+    "alternate:warrior-lady": "Rút 2 lá bài",
     "iron-cavalry": "Phán xét: nếu là lá đỏ, {target} không thể đánh Thiểm chống lại Sát này",
     "astrology": "Xem các lá trên cùng của chồng bài rút và đặt lại theo thứ tự tùy ý",
     "displace": "Bỏ 1 lá bài để chuyển Sát sang một người chơi khác trong tầm đánh của bạn",
@@ -29,6 +32,8 @@
     "lightning-strike": "Một người chơi bạn chọn phán xét: nếu là lá bích, chịu 2 sát thương sét",
     "dark-magic": "Thay lá phán xét của {target} bằng một lá đen, và lấy lá cũ",
     "eternal-loyalty": "Một người chơi bạn chọn rút bài đến Sinh lực tối đa",
+    "alternate:eternal-loyalty": "Một người chơi bạn chọn rút bài đến Sinh lực tối đa, nhưng không quá 5 lá",
+    "alternate:bequeathed-strategy": "Xem 2 lá trên cùng của chồng bài rút, rồi đưa một lá cho một người chơi và lá còn lại cho một người chơi",
     "nirvana": "Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3 và lật lại",
     "eight-arrays": "Phán xét: nếu là lá đỏ, nó tính là một Thiểm",
     "sudden-attack": "Bỏ một lá bài của {target}",
@@ -43,6 +48,7 @@
     "military-farm": "Phán xét: lá không phải cơ trở thành Điền dưới Tướng của bạn",
     "decentralization": "Bỏ qua giai đoạn ra bài; cuối lượt của bạn, một người chơi khác có thêm một lượt",
     "stubborn": "Trả lại một trong các lá bài đã bỏ và lấy phần còn lại",
+    "alternate:stabilization": "Trả lại một trong các lá bài đã bỏ và lấy phần còn lại, nếu có",
     "lament": "Bỏ một lá bài: {target} phán xét, và lá cơ, rô, chuồn hoặc bích có hiệu lực tương ứng",
     "incarnation": "Chọn một kỹ năng của một Hóa thân của bạn",
     "instigate": "Chọn một người chơi đánh Sát vào bạn, hoặc bạn bỏ một lá bài của họ",
@@ -83,7 +89,8 @@
     "alliance": "Chọn một người chơi để đổi bài trên tay với {target}",
     "clever-change": "Chọn một người chơi để chuyển lá bài tới",
     "decentralization": "Chọn một người chơi để có thêm một lượt",
-    "direct-instruction": "Chọn một người chơi để đặt lá bài vào"
+    "direct-instruction": "Chọn một người chơi để đặt lá bài vào",
+    "alternate:bequeathed-strategy": "Chọn một người chơi để đưa {card}"
   },
   "choicePrompt": {
     "upheaval": "Chọn một người chơi để đánh Sát vào, hoặc bỏ qua",
@@ -92,7 +99,10 @@
     "clever-change": "Chọn một lá bài để chuyển",
     "follow-the-master": "Chọn cách Follow the Master giúp bạn",
     "incarnation": "Chọn một kỹ năng Hóa thân",
-    "stubborn": "Chọn một lá bài để trả lại; bạn lấy các lá còn lại"
+    "stubborn": "Chọn một lá bài để trả lại; bạn lấy các lá còn lại",
+    "alternate:stabilization": "Chọn một lá bài để trả lại; bạn lấy các lá còn lại, nếu có",
+    "alternate:bequeathed-strategy": "Chọn một lá bài để đưa trước; lá còn lại được đưa sau",
+    "alternate:sorrow": "Chọn Tướng của {target} sẽ mất kỹ năng"
   },
   "stepSelection": {
     "compete-user": { "prompt": "Chọn một lá bài trên tay để đấu điểm", "confirm": "Đấu điểm" },
@@ -147,6 +157,10 @@
     "river-goddess": {
       "again": "{owner} nhận lá bài và phán xét lại",
       "ends": "Lá bài bị bỏ và việc phán xét kết thúc"
+    },
+    "alternate:goddess-luo": {
+      "again": "{owner} để riêng lá bài và có thể phán xét lại",
+      "ends": "Lá bài bị bỏ và việc phán xét kết thúc; {owner} nhận các lá đã để riêng"
     },
     "iron-cavalry": {
       "unblockable": "Sát không thể bị né",

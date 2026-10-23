@@ -7,6 +7,7 @@ import { untargetableBy } from '../shared/abilities';
 import { seatGender } from '../shared/gender';
 import { CardStep, actedOn, askAtStep, atStep } from '../shared/steps';
 import { shaStep } from '../cards/sha';
+import { cancelsCardsOnOwner, SHA_AIMED_STEP } from '../shared/cancel';
 import {
   ask, atDrawPhase, choiceOf, discardMoves, draw, equipZoneId, handZoneId, heal, isHurt, isLiving, lastMoveBetween, on,
   otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillDamage, skillStep, used,
@@ -35,8 +36,15 @@ export const surprise: SkillDefinition = {
   conversions: [{ id: 'surprise', as: 'break', cards: 1, from: 'hand-and-equipment', accepts: black, when: 'play' }],
 };
 
-// Humility (compulsory): Steal and Capture can't target you.
-export const humility: SkillDefinition = { id: 'humility', compulsory: true, modifiers: { untargetableBy: ['steal', 'capture'] } };
+// Humility (compulsory): Steal and Capture can't target you. `cancels` (Alternate): they can, and are
+// cancelled for you instead (used, but with no effect on you; a Capture is not placed).
+const HUMILITY_CARDS = ['steal', 'capture'];
+export function makeHumility(cancels: boolean): SkillDefinition {
+  return cancels
+    ? { id: 'humility', compulsory: true, triggers: cancelsCardsOnOwner((_state, card) => HUMILITY_CARDS.includes(card.as)) }
+    : { id: 'humility', compulsory: true, modifiers: { untargetableBy: HUMILITY_CARDS } };
+}
+export const humility = makeHumility(false);
 
 // Linked Camps (compulsory): whenever you lose your last hand card, however it
 // happens, you draw 1.
@@ -52,18 +60,45 @@ export const linkedCamps: SkillDefinition = {
   ],
 };
 
-// Armed Consorts (compulsory): each time a card leaves your equipment (replaced,
-// taken, discarded, or used through a conversion), you draw 2.
-export const armedConsorts: SkillDefinition = {
+// Whether `event` is the last of its instance: one effect resolution that moves one or more cards out of
+// `owner`'s equipment. The engine gives events no resolution id, so an instance is a run of moves that
+// resolve back to back: a later leaving move already in the log (one effect moving several cards, such
+// as a seat's whole equipment area) or queued right behind this one (one discard of several picked
+// cards, such as the Axe's two, queues its moves in a row) belongs to the same instance. Only the last
+// move of the run is the instance's trigger, so the skill is asked once per instance.
+function lastOfInstance(state: GameState, event: CardMovedEvent, ownerSeatId: string): boolean {
+  const equip = equipZoneId(state, ownerSeatId);
+  const leaves = (e: CardMovedEvent) => e.fromZoneId === equip && e.toZoneId !== equip;
+  const at = state.log.lastIndexOf(event);
+  const laterInLog = at >= 0 && state.log.slice(at + 1).some((e) => e.kind === 'CardMovedEvent' && leaves(e));
+  if (laterInLog) return false;
+  const inEquip = state.zones.find((z) => z.id === equip)?.cards ?? [];
+  for (const item of state.resolutionQueue ?? []) {
+    if (item.kind !== 'MoveCardEffect') break;
+    if (item.toZoneId !== equip && inEquip.some((c) => c.instanceId === item.cardInstanceId)) return false;
+  }
+  return true;
+}
+
+// Armed Consorts. 'per-card-compulsory' (Default, compulsory): each time a card leaves your equipment
+// (replaced, taken, discarded, or used through a conversion), you draw 2. 'per-instance-may'
+// (Alternate Warrior Lady, may): once per instance of cards leaving your equipment (see lastOfInstance),
+// you may draw 2, asked each time.
+export const makeArmedConsorts = (mode: 'per-card-compulsory' | 'per-instance-may'): SkillDefinition => ({
   id: 'armed-consorts',
-  compulsory: true,
+  ...(mode === 'per-card-compulsory' ? { compulsory: true } : {}),
   triggers: [
     on<CardMovedEvent>('after:CardMovedEvent', {
-      condition: (state, event, owner) => event.fromZoneId === equipZoneId(state, owner.seatId) && event.toZoneId !== event.fromZoneId,
-      effect: (_state, _event, owner) => [used(owner), draw(owner.seatId, 2)],
+      condition: (state, event, owner) =>
+        event.fromZoneId === equipZoneId(state, owner.seatId) &&
+        event.toZoneId !== event.fromZoneId &&
+        (mode === 'per-card-compulsory' || lastOfInstance(state, event, owner.seatId)),
+      effect: (_state, _event, owner) =>
+        mode === 'per-card-compulsory' ? [used(owner), draw(owner.seatId, 2)] : [ask(owner, [used(owner), draw(owner.seatId, 2)])],
     }),
   ],
-};
+});
+export const armedConsorts: SkillDefinition = makeArmedConsorts('per-card-compulsory');
 
 // Self-Restraint (may): if you played or used no Sha this turn, answers
 // included, you may skip your Discard Phase. Asked as it begins, and only when
@@ -129,9 +164,10 @@ export const displace: SkillDefinition = {
     if (s.step === 'discarded') return [...discardMoves(state, (s.data?.['picked'] as string[]) ?? []), skillStep(s.owner, 'move', { step })];
     const targets = displaceTargets(state, step, s.owner.seatId, registry);
     if (targets.length === 0) return [step];
-    // On from the armour check at the new seat. Iron Cavalry's red judgment was about Da Qiao, so it doesn't follow the Sha.
+    // Aimed at the new seat (a skill there may cancel it), then on from the armour check. Iron Cavalry's
+    // red judgment was about Da Qiao, so it doesn't follow the Sha.
     const moved = (seatId: string) => {
-      const next = shaStep(step, 'sha-armor');
+      const next = shaStep(step, SHA_AIMED_STEP, { then: 'sha-armor' });
       const { unblockable: _ironCavalry, ...data } = next.data ?? {};
       return { ...next, target: { kind: 'seat' as const, seatId }, data };
     };
@@ -152,22 +188,25 @@ export const batteredBody: SkillDefinition = {
 };
 
 // Reconsider (active, once per turn): discard any number of cards (at least 1)
-// from your hand or equipment, then draw that many.
-export const reconsider: SkillDefinition = {
+// from your hand or equipment, then draw that many. Default has no limit; the
+// Alternate Balance of Power variant caps the cards discarded at `limit(state, seatId)`.
+export const makeReconsider = (limit?: (state: GameState, seatId: string) => number): SkillDefinition => ({
   id: 'reconsider',
   active: {
     usesPerTurn: 1,
     canUse: (state, { seatId }) => ownCards(state, seatId, true).length > 0,
     start: (state, { seatId, owner }) => {
       const cards = ownCards(state, seatId, true).map((c) => c.instanceId);
-      return [selectionOf(state, owner, { of: 'cards', eligibleIds: cards, min: 1, max: cards.length, then: { kind: 'skill-step', step: skillStep(owner, 'discarded') }, onCancel: [] })];
+      return [selectionOf(state, owner, { of: 'cards', eligibleIds: cards, min: 1, max: limit ? Math.min(cards.length, limit(state, seatId)) : cards.length, then: { kind: 'skill-step', step: skillStep(owner, 'discarded') }, onCancel: [] })];
     },
   },
   onStep: (state, step) => {
     const picked = (step.data?.['picked'] as string[]) ?? [];
     return [...discardMoves(state, picked), draw(step.owner.seatId, picked.length)];
   },
-};
+});
+
+export const reconsider: SkillDefinition = makeReconsider();
 
 // Rescued: a Lord skill, inactive in Kingdom War.
 export const rescued: SkillDefinition = { id: 'rescued', lord: true };

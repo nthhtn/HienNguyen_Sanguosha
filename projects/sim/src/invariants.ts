@@ -1,4 +1,4 @@
-import { decisionPending as isDecisionPending, getActiveSeatId, getLegalActions, phaseWaitsForPlayer } from 'engine';
+import { decisionPending as isDecisionPending, getActiveSeatId, getLegalActions, ownSkillChoice, phaseWaitsForPlayer } from 'engine';
 import type { ContentRegistry, GameState } from 'engine';
 
 // Whether a skill kept `seatId` alive below 1 HP since its HP last dropped
@@ -49,7 +49,8 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
   if (state.pendingChoice) {
     const seat = state.seats.find((s) => s.id === state.pendingChoice!.seatId);
     if (!seat) violations.push(`pendingChoice references unknown seat ${state.pendingChoice.seatId}`);
-    else if (seat.eliminated) violations.push(`pendingChoice references eliminated seat ${seat.id}`);
+    // An eliminated seat may be asked only by its own skill (an afterDeath skill asks its player: Alternate Sorrow).
+    else if (seat.eliminated && !ownSkillChoice(state.pendingChoice)) violations.push(`pendingChoice references eliminated seat ${seat.id}`);
   }
 
   if (state.pendingSelection) {

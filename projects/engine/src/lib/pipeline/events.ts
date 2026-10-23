@@ -117,7 +117,8 @@ export interface SeatEliminatedEvent {
 // A seat gained a skill for the rest of the game.
 export interface SkillGainedEvent { kind: 'SkillGainedEvent'; seatId: string; slot: 'main' | 'deputy'; skillId: string }
 // A seat lost every skill for the rest of the game.
-export interface SeatSilencedEvent { kind: 'SeatSilencedEvent'; seatId: string }
+// `slot`: only that General lost its skills (Alternate Sorrow); none: the whole seat.
+export interface SeatSilencedEvent { kind: 'SeatSilencedEvent'; seatId: string; slot?: 'main' | 'deputy' }
 // A seat chose a skill of one of its spare Generals, which turns face up.
 export interface FormChosenEvent { kind: 'FormChosenEvent'; seatId: string; generalId: string; skillId: string }
 // A seat was granted an extra turn.

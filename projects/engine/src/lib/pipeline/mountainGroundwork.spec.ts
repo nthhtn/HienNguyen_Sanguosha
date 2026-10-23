@@ -1,4 +1,6 @@
 import { advanceToDecision } from './resolve';
+import { getActiveSeatId } from '../rules/activeSeat';
+import { getLegalActions } from '../rules/legality';
 import { skillOf, skillsInPlay } from '../skills/generalSkills';
 import { gatherTriggeredSkills } from '../skills/triggers';
 import { advancePhaseOrTurn } from '../rules/phaseSequence';
@@ -120,6 +122,57 @@ describe('silenced seats', () => {
     expect(ids(s, 'b')).toEqual([]);
     expect(ids(s, 'a')).toHaveLength(2);
     expect(s.log).toContainEqual({ kind: 'SeatSilencedEvent', seatId: 'b' });
+    expect(s.seats[1].silencedSlots).toBeUndefined();
+  });
+
+  // seat b: Main g (plain), Deputy h (quiet, parting, living).
+  const mixed = () => withSeat(table(), 'b', { generals: { main: { generalDefinitionId: 'g', revealed: true }, deputy: { generalDefinitionId: 'h', revealed: true } } });
+
+  it('a slot silenced: that General’s skills are out; the other General keeps all of its', () => {
+    expect(ids(mixed(), 'b')).toEqual(['main:plain', 'deputy:quiet', 'deputy:parting', 'deputy:living']);
+    const s = run(mixed(), { kind: 'SilenceSeatEffect', seatId: 'b', slot: 'deputy' });
+    expect(s.seats[1].silenced).toBeUndefined();
+    expect(s.seats[1].silencedSlots).toEqual(['deputy']);
+    expect(ids(s, 'b')).toEqual(['main:plain']);
+    expect(s.log).toContainEqual({ kind: 'SeatSilencedEvent', seatId: 'b', slot: 'deputy' });
+    expect(skillOf(s, { kind: 'general', seatId: 'b', slot: 'deputy', skillId: 'quiet' }, registry)).toBeUndefined();
+    expect(skillOf(s, { kind: 'general', seatId: 'b', slot: 'main', skillId: 'plain' }, registry)).toBe(plain);
+  });
+
+  it('the Main silenced leaves the Deputy’s skills; silencing a slot twice logs once', () => {
+    let s = run(mixed(), { kind: 'SilenceSeatEffect', seatId: 'b', slot: 'main' });
+    s = run(s, { kind: 'SilenceSeatEffect', seatId: 'b', slot: 'main' });
+    expect(s.seats[1].silencedSlots).toEqual(['main']);
+    expect(ids(s, 'b')).toEqual(['deputy:quiet', 'deputy:parting', 'deputy:living']);
+    expect(s.log.filter((e) => e.kind === 'SeatSilencedEvent')).toHaveLength(1);
+  });
+
+  it('a skill gained under a silenced slot is out; one gained under the other slot stays', () => {
+    const gained = (slot: 'main' | 'deputy') => withSeat(table(), 'b', { gainedSkills: [{ slot, skillId: 'quiet' }], silencedSlots: ['deputy'] });
+    expect(ids(gained('deputy'), 'b')).toEqual(['main:plain']);
+    expect(ids(gained('main'), 'b')).toEqual(['main:plain', 'main:quiet']);
+  });
+
+  it('a Form chosen by a silenced slot is out; one chosen by the other slot stays', () => {
+    const form = (slot: 'main' | 'deputy') => withSeat(table(), 'b', { forms: { slot, held: ['h'], chosen: { generalId: 'h', skillId: 'quiet' } }, silencedSlots: ['deputy'] });
+    expect(ids(form('deputy'), 'b')).toEqual(['main:plain']);
+    expect(ids(form('main'), 'b')).toEqual(['main:plain', 'main:quiet']);
+  });
+
+  it('a hidden General of a silenced slot is not offered for reveal by its skills', () => {
+    const hidden = withSeat(mixed(), 'b', {
+      generals: { main: { generalDefinitionId: 'g', revealed: true }, deputy: { generalDefinitionId: 'h', revealed: false } },
+      silencedSlots: ['deputy'],
+    });
+    expect(skillsInPlay(hidden, 'b', registry, true).filter((x) => x.needsReveal)).toEqual([]);
+  });
+
+  it('a dead seat’s afterDeath skill on a silenced slot does not fire', () => {
+    const dead = (patch: object) => withSeat(table(), 'b', { eliminated: true, generals: { main: { generalDefinitionId: 'g', revealed: true }, deputy: { generalDefinitionId: 'h', revealed: true } }, ...patch });
+    const gathered = (s: GameState) => gatherTriggeredSkills(s, registry, stub, 'after:SeatEliminatedEvent', { kind: 'SeatEliminatedEvent', seatId: 'b' }).map((t) => (t.owner as { skillId: string }).skillId);
+    expect(gathered(dead({}))).toContain('parting');
+    expect(gathered(dead({ silencedSlots: ['deputy'] }))).not.toContain('parting');
+    expect(gathered(dead({ silencedSlots: ['main'] }))).toContain('parting');
   });
 });
 
@@ -227,5 +280,36 @@ describe('redaction', () => {
     expect(mine.seats[0].forms?.held).toEqual(['g', 'h']);
     expect(mine.pendingChoice?.options).toHaveLength(1);
     expect(mine.spareGenerals).toEqual([]);
+  });
+});
+
+describe('a choice left to an eliminated seat (an afterDeath skill asks its player)', () => {
+  const owner = { kind: 'general' as const, seatId: 'b', slot: 'main' as const, skillId: 'parting' };
+  const choice = (seatId: string) => ({
+    id: 'c1', seatId, reason: { kind: 'ability' as const, owner, abilityId: 'parting' }, verb: 'pick' as const,
+    options: [{ id: 'main', shows: { kind: 'label' as const, text: 'Main General' }, effects: [] }],
+  });
+  const dead = withSeat(table(), 'b', { eliminated: true });
+
+  it('the eliminated chooser acts on its own choice, and only on it', () => {
+    const s = { ...dead, pendingChoice: choice('b') };
+    expect(getActiveSeatId(s)).toBe('b');
+    expect(getLegalActions(s, 'b', registry)).toEqual([{ kind: 'ChooseOptionAction', seatId: 'b', choiceId: 'c1', optionId: 'main' }]);
+  });
+
+  it('an eliminated seat still never acts on anything else', () => {
+    expect(getActiveSeatId(withSeat(dead, 'b', {}))).toBe('a');
+    const selecting = { ...dead, pendingSelection: { id: 's1', seatId: 'b', reason: choice('b').reason, of: 'cards' as const, eligibleIds: ['h1'], min: 1, max: 1, then: { kind: 'discard' as const } } };
+    expect(getActiveSeatId(selecting as GameState)).toBeNull();
+    expect(getLegalActions(selecting as GameState, 'b', registry)).toEqual([]);
+    expect(getLegalActions({ ...dead, turn: { ...dead.turn, ownerSeatId: 'b' } }, 'b', registry)).toEqual([]);
+    const responding = { ...dead, pendingResponse: { id: 'r1', respondingSeatId: 'b', allowedActionKinds: ['PassAction'], context: { effect: { kind: 'SkipNextEffect' as const } } } } as GameState;
+    expect([getActiveSeatId(responding), getLegalActions(responding, 'b', registry)]).toEqual([null, []]);
+  });
+
+  it('a choice an eliminated seat is named in, opened by another seat’s skill, waits for no one', () => {
+    const others = { ...dead, pendingChoice: { ...choice('b'), reason: { kind: 'ability' as const, owner: { ...owner, seatId: 'a' }, abilityId: 'parting' } } };
+    expect(getActiveSeatId(others)).toBeNull();
+    expect(getLegalActions(others, 'b', registry)).toEqual([]);
   });
 });

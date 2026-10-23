@@ -1,5 +1,7 @@
-import { abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, generalDisplayData, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
+import { abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
+import { generalDisplayData } from './generalDisplay';
 import { alternateCardIds } from './alternateCards';
+import viAlternateGenerals from '../../data/locales/vi/alternate-generals.json';
 
 describe('generalDisplayData', () => {
   it('returns name, title and skill name/text for a known general', () => {
@@ -18,6 +20,38 @@ describe('generalDisplayData', () => {
 
   it('returns null for an unknown id', () => {
     expect(generalDisplayData('no-such-general')).toBeNull();
+  });
+
+  it("reads an Alternate General's own name and skills", () => {
+    expect(generalDisplayData('alternate:guan-yu')?.skills[0].name).toBe('Warrior Saint');
+    expect(generalDisplayData('guan-yu')?.skills[0].name).toBe('Fighting Saint');
+  });
+
+  it('translates an Alternate General', () => {
+    expect(generalDisplayData('alternate:guan-yu', 'vi')?.name).toBe(viAlternateGenerals['guan-yu'].name);
+  });
+
+  it('marks an Alternate skill as in the game only when the registry plays it', () => {
+    expect(generalDisplayData('alternate:zhang-fei')?.skills.find((s) => s.name === 'Berserk')?.inGame).toBe(true);
+    expect(generalDisplayData('alternate:guan-yu')?.skills.find((s) => s.name === 'Warrior Saint')?.inGame).toBe(false);
+  });
+
+  it('leaves Default skills unmarked as not in the game', () => {
+    expect(generalDisplayData('guan-yu')?.skills.every((s) => s.inGame !== false)).toBe(true);
+  });
+
+  it('returns null for an unknown Alternate id', () => {
+    expect(generalDisplayData('alternate:nobody')).toBeNull();
+  });
+});
+
+describe('abilityName for Alternate skills', () => {
+  it('names an alternate: skill by the Alternate record, in each language', () => {
+    expect(abilityName('alternate:benevolence')).toBe('Benevolence');
+    expect(abilityName('alternate:benevolence', 'vi')).toBe(viAlternateGenerals['liu-bei'].skills!['benevolence'].name);
+  });
+  it('still names Default Kindness', () => {
+    expect(abilityName('kindness')).toBe('Kindness');
   });
 });
 
@@ -148,5 +182,24 @@ describe('Alternate-only cards', () => {
 
   it('is null for an unknown id', () => {
     expect(cardDisplayData('nope')).toBeNull();
+  });
+});
+
+describe('variant skill texts', () => {
+  it.each(['en', 'vi'])('a variant shows its base skill’s texts in %s', (locale) => {
+    expect(selectionText('alternate:benevolence', locale)).toEqual(selectionText('kindness', locale));
+    expect(selectionText('alternate:benevolence', locale)).not.toBeNull();
+    expect(abilityHint('alternate:benevolence', locale)).toEqual(abilityHint('kindness', locale));
+    expect(seatPickText('alternate:benevolence', locale)).toEqual(seatPickText('kindness', locale));
+    expect(choicePromptText('alternate:benevolence', locale)).toEqual(choicePromptText('kindness', locale));
+    expect(stepSelectionText('compete-user', locale, 'alternate:benevolence')).toEqual(stepSelectionText('compete-user', locale));
+  });
+
+  it.each(['en', 'vi'])('a variant shows its base skill’s Compete outcome in %s', (locale) => {
+    const names = { user: 'A', target: 'B' };
+    for (const won of [true, false]) {
+      expect(competeOutcomeText('alternate:fearsome-blade', won, names, locale)).toEqual(competeOutcomeText('intense-edge', won, names, locale));
+    }
+    expect(competeOutcomeText('alternate:fearsome-blade', true, names, locale)).not.toBeNull();
   });
 });

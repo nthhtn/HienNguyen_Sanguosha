@@ -1,3 +1,6 @@
+import { generalDisplayData } from 'content';
+import { makeTranslator } from './i18n/translator';
+import { vi } from './i18n/vi';
 import { buildContentRegistry } from 'content';
 import { actionLabel, cardDefinitionId, judgmentReaderName, cardIdDisplayName, generalDisplayName, kingdomDisplayName, seatName, suitLabel, targetLabel } from './labels';
 import { Action, ContentRegistry, GameState, Target } from 'engine';
@@ -37,6 +40,17 @@ describe('generalDisplayName', () => {
 
   it('renders the hidden sentinel in Title Case', () => {
     expect(generalDisplayName('hidden')).toBe('Hidden General');
+  });
+
+  it('shows an Alternate General by its Alternate name, never its id', () => {
+    expect(generalDisplayName('alternate:liu-bei')).toBe('Liu Bei');
+    expect(generalDisplayName('alternate:liu-bei', makeTranslator(vi, 'vi'))).toBe(generalDisplayData('alternate:liu-bei', 'vi')!.name);
+  });
+
+  it('does not throw on an unknown Alternate id and shows no id text', () => {
+    const shown = generalDisplayName('alternate:nobody');
+    expect(shown).toBe('Nobody');
+    expect(shown).not.toContain('alternate');
   });
 });
 

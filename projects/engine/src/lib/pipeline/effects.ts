@@ -36,7 +36,8 @@ export type Effect =
   // The seat gains a skill for the rest of the game, held by the General in `slot`.
   | { kind: 'GainSkillEffect'; seatId: string; slot: 'main' | 'deputy'; skillId: string }
   // The seat loses every skill for the rest of the game.
-  | { kind: 'SilenceSeatEffect'; seatId: string }
+  // No `slot`: the whole seat (Heartbroken). A `slot`: only that General's skills (Alternate Sorrow).
+  | { kind: 'SilenceSeatEffect'; seatId: string; slot?: 'main' | 'deputy' }
   // Deals up to `count` spare Generals from the pool to the seat; the General in `slot` holds them. Logs nothing.
   | { kind: 'DealSpareGeneralsEffect'; seatId: string; slot: 'main' | 'deputy'; count: number }
   // The seat chooses `skillId` of its spare General `generalId`, which turns face up.
@@ -241,9 +242,11 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
     case 'SilenceSeatEffect': {
       const seat = state.seats.find((s) => s.id === effect.seatId);
       if (!seat) throw new Error(`Unknown seat: ${effect.seatId}`);
-      if (seat.silenced) return { state, events: [] };
-      const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, silenced: true as const } : s));
-      const event: EngineEvent = { kind: 'SeatSilencedEvent', seatId: seat.id };
+      const { slot } = effect;
+      if (seat.silenced || (slot && seat.silencedSlots?.includes(slot))) return { state, events: [] };
+      const silence = (s: Seat): Seat => (slot ? { ...s, silencedSlots: [...(s.silencedSlots ?? []), slot] } : { ...s, silenced: true as const });
+      const seats = state.seats.map((s) => (s.id === seat.id ? silence(s) : s));
+      const event: EngineEvent = { kind: 'SeatSilencedEvent', seatId: seat.id, ...(slot ? { slot } : {}) };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
     }
     case 'DealSpareGeneralsEffect': {

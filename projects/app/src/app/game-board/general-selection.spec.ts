@@ -142,3 +142,22 @@ describe('GeneralSelection header', () => {
     expect(el.querySelector('h2')!.textContent).toBe('Hing, Choose your Generals');
   });
 });
+
+describe('GeneralSelection Alternate skills', () => {
+  const hints = (ids: string[]): string[] => {
+    const reg: ContentRegistry = { cards: new Map(), generals: new Map(ids.map((id) => general(id, 'Shu', 4))) };
+    TestBed.configureTestingModule({ imports: [GeneralSelection] });
+    const fixture = TestBed.createComponent(GeneralSelection);
+    fixture.componentRef.setInput('candidates', ids);
+    fixture.componentRef.setInput('actions', []);
+    fixture.componentRef.setInput('registry', reg);
+    fixture.detectChanges();
+    return [...(fixture.nativeElement as HTMLElement).querySelectorAll('.not-in-game-hint')].map((e) => e.textContent!.trim());
+  };
+
+  it('flags a skill the game does not play yet, and not a ready or Default one', () => {
+    expect(hints(['alternate:guan-yu'])).toEqual(['Not in the game yet']);
+    TestBed.resetTestingModule();
+    expect(hints(['alternate:zhang-fei', 'guan-yu'])).toEqual([]);
+  });
+});

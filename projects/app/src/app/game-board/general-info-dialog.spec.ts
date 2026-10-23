@@ -30,4 +30,15 @@ describe('GeneralInfoDialog', () => {
     expect(el.textContent).toContain('No skills listed');
     expect(el.textContent).not.toContain('no-such-general');
   });
+
+  it('flags an Alternate skill the game does not play yet, and not a ready or Default one', () => {
+    const notReady = render('alternate:guan-yu');
+    expect(notReady.textContent).toContain('Warrior Saint');
+    expect(notReady.querySelectorAll('.not-in-game-hint')).toHaveLength(1);
+    expect(notReady.querySelector('.not-in-game-hint')!.textContent).toContain('Not in the game yet');
+    TestBed.resetTestingModule();
+    expect(render('alternate:zhang-fei').querySelector('.not-in-game-hint')).toBeNull();
+    TestBed.resetTestingModule();
+    expect(render('guan-yu').querySelector('.not-in-game-hint')).toBeNull();
+  });
 });

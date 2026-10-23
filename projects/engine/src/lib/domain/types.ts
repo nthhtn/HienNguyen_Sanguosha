@@ -97,6 +97,9 @@ export interface Seat {
   stash?: CardZoneRef;
   // Lost every skill for the rest of the game (Heartbroken).
   silenced?: true;
+  // The Generals whose skills alone are lost for the rest of the game (Alternate Sorrow): printed,
+  // gained under that slot and a Form it chose. The other General keeps its skills. Public.
+  silencedSlots?: ('main' | 'deputy')[];
   // Skills gained for the rest of the game. `slot` is the General that gained
   // them: its reveal state governs their use.
   gainedSkills?: { slot: 'main' | 'deputy'; skillId: string }[];
@@ -201,6 +204,9 @@ export interface ChoiceOption {
     | { kind: 'suit'; suit: CardInstance['suit'] }
     | { kind: 'label'; text: string }
     | { kind: 'general'; generalId: string };
+  // A card shown beside the option (Bequeathed Strategy: the card a seat option would give). Only in a
+  // `secret` choice: the chooser sees it though its zone is hidden; every other seat's view has no options.
+  card?: CardInstance;
   // Queued at the front when picked.
   effects: Effect[];
 }
@@ -289,6 +295,8 @@ export interface UsedCard {
   // The damage nature it carries: set only on a card used as itself whose
   // definition has one (a Fire Attack is a fire Sha). A converted card has none.
   nature?: 'fire' | 'thunder';
+  // No Wuxie or Wuxie Kingdom check is made for this Tool use (Alternate Seed of Animosity's Duel).
+  noWuxie?: true;
 }
 
 // Who reads a judgment: a card through its definition's onJudged (a delayed
@@ -346,8 +354,10 @@ export interface Damage {
   amount: number;
   nature: 'normal' | 'fire' | 'thunder';
   // What caused it. `card` is the card as used (a Serpent Spear Sha has two
-  // physical cards); `cardInstanceId` is its first physical card, if any.
-  cause?: { cardInstanceId?: string; card?: UsedCard; skillId?: string };
+  // physical cards); `cardInstanceId` is its first physical card, if any;
+  // `aimedAt` is the seat a Sha was aimed at (it stays when the damage reaches
+  // another seat, through a chain or a redirect).
+  cause?: { cardInstanceId?: string; card?: UsedCard; skillId?: string; aimedAt?: string };
   // The amount when the damage was created, before the target's own armour and
   // skills changed it: what a chain passes on. Stamped on fire and thunder
   // damage as it starts to resolve, when absent.

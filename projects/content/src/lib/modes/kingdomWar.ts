@@ -18,7 +18,8 @@ import type {
 import { buildDeck, drawTop, shuffle } from 'engine';
 import { alternateCardData } from '../alternateCards';
 import { deckFor } from '../decks';
-import type { DeckDefinition } from '../decks';
+import type { DeckDefinition, DeckId } from '../decks';
+import { isAlternateGeneralId } from '../generalIds';
 import { judgmentPhaseTrigger } from '../shared/delayed';
 import { peachLockedTo } from '../shared/abilities';
 
@@ -26,8 +27,14 @@ export const GENERALS_PER_SEAT = 5;
 // A real Kingdom War table seats at most 10.
 export const MAX_KINGDOM_WAR_SEATS = 10;
 
-export function kingdomWarMaxSeats(registry: ContentRegistry): number {
-  return Math.min(MAX_KINGDOM_WAR_SEATS, Math.floor(registry.generals.size / GENERALS_PER_SEAT));
+// The sorted ids of the Generals a deck deals from: the `alternate:` ones for Alternate, every other id
+// (fillers included) for Default.
+export function generalPool(registry: ContentRegistry, deck: DeckId): string[] {
+  return [...registry.generals.keys()].filter((id) => isAlternateGeneralId(id) === (deck === 'alternate')).sort();
+}
+
+export function kingdomWarMaxSeats(registry: ContentRegistry, deck: DeckId = 'default'): number {
+  return Math.min(MAX_KINGDOM_WAR_SEATS, Math.floor(generalPool(registry, deck).length / GENERALS_PER_SEAT));
 }
 
 function hasSameKingdomPair(generalIds: string[], registry: ContentRegistry): boolean {
@@ -40,8 +47,8 @@ function hasSameKingdomPair(generalIds: string[], registry: ContentRegistry): bo
 // same-kingdom pair (pigeonhole); the check guards a future fifth kingdom or a
 // smaller deal rather than silently seating an unplayable hand. The Generals
 // nobody was dealt are the spare pool (those that deal spare Generals stay out).
-function dealCandidates(seatIds: string[], registry: ContentRegistry, rng: RngState) {
-  const { items: pool, rng: afterShuffle } = shuffle([...registry.generals.keys()].sort(), rng);
+function dealCandidates(seatIds: string[], registry: ContentRegistry, poolIds: string[], rng: RngState) {
+  const { items: pool, rng: afterShuffle } = shuffle(poolIds, rng);
   const candidates: Record<string, string[]> = {};
   seatIds.forEach((seatId, index) => {
     const dealt = pool.slice(index * GENERALS_PER_SEAT, (index + 1) * GENERALS_PER_SEAT);
@@ -174,13 +181,15 @@ export const kingdomWarMode: GameModeDefinition = {
   maxSeats: kingdomWarMaxSeats,
 
   setup: (seatIds, registry, rng, rules) => {
-    const limit = kingdomWarMaxSeats(registry);
+    const deck = deckFor(rules?.deck);
+    const poolIds = generalPool(registry, deck.id);
+    const limit = kingdomWarMaxSeats(registry, deck.id);
     if (seatIds.length < 2 || seatIds.length > limit) {
       throw new Error(
-        `Kingdom War needs between 2 and ${limit} seats with ${registry.generals.size} generals; got ${seatIds.length}`
+        `Kingdom War needs between 2 and ${limit} seats with ${poolIds.length} generals; got ${seatIds.length}`
       );
     }
-    const { candidates, spare, rng: afterDeal } = dealCandidates(seatIds, registry, rng);
+    const { candidates, spare, rng: afterDeal } = dealCandidates(seatIds, registry, poolIds, rng);
 
     // Generals, kingdom and HP are set when each seat resolves its
     // ChooseGeneralsAction during the GeneralSelection phase.
@@ -196,7 +205,7 @@ export const kingdomWarMode: GameModeDefinition = {
       eliminated: false,
     }));
 
-    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry, deckFor(rules?.deck)), afterDeal);
+    const { cards, rng: afterShuffle } = buildDeck(buildDeckSpec(registry, deck), afterDeal);
     let zones: CardZone[] = [
       { id: 'drawPile', kind: 'drawPile' as const, cards },
       { id: 'discardPile', kind: 'discardPile' as const, cards: [] },

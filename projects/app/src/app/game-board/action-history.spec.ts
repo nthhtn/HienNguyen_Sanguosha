@@ -352,6 +352,16 @@ describe('equipment abilities in the history', () => {
     );
   });
 
+  it('names the card a skill cancelled (Alternate Humility, Behind the Curtain)', () => {
+    const general = (skillId: string) => ({ kind: 'general' as const, seatId: 'seat-1', slot: 'main' as const, skillId });
+    for (const [skillId, cardId, text] of [
+      ['alternate:humility', 'steal', "Seat 1's Humility: Seat 0's Steal has no effect"],
+      ['alternate:behind-the-curtain', 'duel', "Seat 1's Behind the Curtain: Seat 0's Duel has no effect"],
+    ]) {
+      expect(texts([{ kind: 'AbilityUsedEvent', owner: general(skillId), abilityId: skillId, outcome: 'no-effect', targetSeatId: 'seat-0', cardId }])).toContain(text);
+    }
+  });
+
   it('adds "counts as Dodge" to an Eight Trigrams judgment', () => {
     const judged: CardInstance = { instanceId: 'j', definitionId: 'peach', suit: 'heart', rank: 9 };
     const log: EngineEvent[] = [
@@ -588,11 +598,13 @@ describe('actionHistory: the Wind skills', () => {
       expect(line('stubborn', 'gave-back', 'seat-1')).toEqual(['Seat 0 gave a discarded card back to Seat 1 and took the rest (Stubborn)']);
       expect(line('lament', 'lamented', 'seat-1')).toEqual(["Seat 0's Lament: Seat 1 judges"]);
       expect(line('heartbroken', 'silenced', 'seat-1')).toEqual(['Seat 1 loses all skills (Heartbroken)']);
+      expect(line('alternate:sorrow', 'silenced-main', 'seat-1')).toEqual(["Seat 1's Main General loses all skills (Sorrow)"]);
+      expect(line('alternate:sorrow', 'silenced-deputy', 'seat-1')).toEqual(["Seat 1's Deputy General loses all skills (Sorrow)"]);
       expect(line('new-life', 'new-form')).toEqual(['Seat 0 gained a Form (New Life)']);
       expect(texts([{ kind: 'SkillGainedEvent', seatId: 'seat-0', slot: 'main', skillId: 'astrology' }])).toEqual(['Seat 0 gained Astrology']);
       expect(texts([{ kind: 'FormChosenEvent', seatId: 'seat-0', generalId: 'zhou-yu', skillId: 'brave-gesture' }])).toEqual(['Seat 0 chose Brave Gesture from Zhou Yu']);
       // The events these lines already say.
-      expect(texts([{ kind: 'SeatSilencedEvent', seatId: 'seat-1' }, { kind: 'ExtraTurnGrantedEvent', seatId: 'seat-1' }])).toEqual([]);
+      expect(texts([{ kind: 'SeatSilencedEvent', seatId: 'seat-1' }, { kind: 'SeatSilencedEvent', seatId: 'seat-1', slot: 'main' }, { kind: 'ExtraTurnGrantedEvent', seatId: 'seat-1' }])).toEqual([]);
     });
 
 

@@ -84,7 +84,7 @@ import { wikiAlternateGeneralView } from './wiki-labels';
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
     .gender-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
     .skill-status { display: block; width: fit-content; margin-top: 2px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); }
-    .skill-status[data-status='worksAsDefault'] { border-color: var(--mat-sys-primary); color: var(--mat-sys-primary); }
+    .skill-status[data-status='worksAsAlternate'], .skill-status[data-status='worksAsDefault'] { border-color: var(--mat-sys-primary); color: var(--mat-sys-primary); }
     .hearts { display: inline-flex; color: #d84a3f; }
     .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .skills, .partners ul { margin: 0; padding-left: 18px; }
@@ -98,9 +98,10 @@ import { wikiAlternateGeneralView } from './wiki-labels';
 export class WikiAlternateGeneralEntry {
   private readonly i18n = inject(I18n);
   readonly general = input.required<WikiAlternateGeneral>();
-  // The words for a skill's state: only the Default counterpart's code makes it playable.
+  // The words for a skill's state: a variant, or Default's code when the rules are the same, makes it playable.
   protected readonly statusLabels: Record<WikiAlternateGeneral['skills'][number]['status'], MessageKey> = {
     worksAsDefault: 'wiki.skillStatus.worksAsDefault',
+    worksAsAlternate: 'wiki.skillStatus.worksAsAlternate',
     missing: 'wiki.notInGame',
   };
   protected readonly view = computed(() => wikiAlternateGeneralView(this.general(), this.i18n.locale()));

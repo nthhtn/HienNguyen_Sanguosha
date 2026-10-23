@@ -163,3 +163,26 @@ describe('Strategic Pass', () => {
     expect(act(awake, action).pendingSelection).toBeDefined(); // the Farm to use
   });
 });
+
+describe('Alternate Sorrow', () => {
+  // seat-a (Cai Wenji) is out and picks which of seat-c's Generals loses its skills.
+  const sorrow = (main: string, deputy: string, offered: ('main' | 'deputy')[] = ['main', 'deputy']): GameState => {
+    const s = table({}, { generals: { 'seat-a': ['alternate:cai-wenji', 'filler-xu-huang'], 'seat-c': [main, deputy] } });
+    return {
+      ...s,
+      seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, eliminated: true } : x)),
+      pendingChoice: {
+        id: 'sorrow', seatId: 'seat-a', verb: 'pick', secret: true,
+        reason: { kind: 'ability', owner: general('seat-a', 'alternate:sorrow'), abilityId: 'alternate:sorrow', targetSeatId: 'seat-c' },
+        options: offered.map((slot) => ({ id: slot, shows: { kind: 'label' as const, text: slot === 'main' ? 'Main General' : 'Deputy General' }, effects: [] })),
+      },
+    };
+  };
+
+  it('answers legally though out, taking the skills of the General that has more', () => {
+    expect(getLegalActions(sorrow('zhang-he', 'filler-dong-zhuo'), 'seat-a', registry)).toHaveLength(2);
+    expect(picked(decide(sorrow('zhang-he', 'filler-dong-zhuo')))).toBe('main');
+    expect(picked(decide(sorrow('filler-dong-zhuo', 'zhang-he')))).toBe('deputy');
+    expect(picked(decide(sorrow('zhang-he', 'liu-shan', ['deputy'])))).toBe('deputy');
+  });
+});

@@ -1,42 +1,50 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { GeneralData } from '../../data/generals';
+import { buildContentRegistry } from './registry';
+import { alternateSkillFor } from './alternateSkills';
 import { alternateGeneralIds, alternateGeneralRecords } from './alternateGenerals';
 import { alternateSkillStatus, wikiAlternateGeneralTabs, wikiAlternateGenerals } from './wikiAlternateGenerals';
 
-const counterpart = (skills: { name: string; nameZh: string; lord?: boolean }[]): GeneralData => ({
-  name: 'X', maxHp: 4, gender: 'male', kingdom: 'Wei', source: { url: '', site: '', crawledAt: '' },
-  skills: skills.map((s) => ({ ...s, text: '' })),
-});
-const KINDNESS = counterpart([{ name: 'Kindness', nameZh: '仁德' }]);
+const record = (id: string) => alternateGeneralRecords().find((r) => r.id === id)!;
+const skillOf = (id: string, name: string) => record(id).skills.find((s) => s.name === name)!;
 
 describe('alternateSkillStatus', () => {
-  it('is missing when the General has no Default counterpart', () => {
-    expect(alternateSkillStatus({ name: 'Benevolence', nameZh: '仁德' }, undefined, new Set(['kindness']))).toBe('missing');
+  it('works as Default for Zhang Fei’s Berserk, which the game plays', () => {
+    expect(alternateSkillStatus(record('zhang-fei'), record('zhang-fei').skills[0])).toBe('worksAsDefault');
   });
 
-  it('works as Default when the Chinese name matches a skill the game has code for', () => {
-    expect(alternateSkillStatus({ name: 'Benevolence', nameZh: '仁德' }, KINDNESS, new Set(['kindness']))).toBe('worksAsDefault');
+  it('works as Alternate for Liu Bei’s Benevolence, which has a variant', () => {
+    expect(alternateSkillStatus(record('liu-bei'), record('liu-bei').skills[0])).toBe('worksAsAlternate');
   });
 
-  it('matches by English name when the Alternate skill has no Chinese name', () => {
-    expect(alternateSkillStatus({ name: 'Kindness', nameZh: null }, KINDNESS, new Set(['kindness']))).toBe('worksAsDefault');
-    expect(alternateSkillStatus({ name: 'KINDNESS', nameZh: null }, KINDNESS, new Set(['kindness']))).toBe('worksAsDefault');
+  it('works as Alternate for Zhang Zhao’s Stabilization, which has a variant', () => {
+    expect(alternateSkillStatus(record('zhang-zhao-and-zhang-hong'), skillOf('zhang-zhao-and-zhang-hong', 'Stabilization'))).toBe('worksAsAlternate');
   });
 
-  it('is missing when the counterpart skill has no code', () => {
-    expect(alternateSkillStatus({ name: 'Benevolence', nameZh: '仁德' }, KINDNESS, new Set())).toBe('missing');
+  it('works as Alternate for both of Lu Xun’s skills: Humility and Scrutinize', () => {
+    expect(alternateSkillStatus(record('lu-xun'), skillOf('lu-xun', 'Humility'))).toBe('worksAsAlternate');
+    expect(alternateSkillStatus(record('lu-xun'), skillOf('lu-xun', 'Scrutinize'))).toBe('worksAsAlternate');
   });
 
-  it('is not a match with a Lord skill, even one with code', () => {
-    const lord = counterpart([{ name: 'Rouse', nameZh: '激将', lord: true }]);
-    expect(alternateSkillStatus({ name: 'Rouse', nameZh: '激将' }, lord, new Set(['rouse']))).toBe('missing');
+  it('works as Alternate for Cai Wenji’s Sorrow, and as Default for her Dirge', () => {
+    expect(alternateSkillStatus(record('cai-wenji'), skillOf('cai-wenji', 'Sorrow'))).toBe('worksAsAlternate');
+    expect(alternateSkillStatus(record('cai-wenji'), skillOf('cai-wenji', 'Dirge'))).toBe('worksAsDefault');
   });
 
-  it('lets two Alternate skills share one Default counterpart', () => {
-    const coded = new Set(['kindness']);
-    expect(alternateSkillStatus({ name: 'A', nameZh: '仁德' }, KINDNESS, coded)).toBe('worksAsDefault');
-    expect(alternateSkillStatus({ name: 'B', nameZh: '仁德' }, KINDNESS, coded)).toBe('worksAsDefault');
+  it('works as Alternate for Zhen Ji’s Goddess Luo', () => {
+    expect(alternateSkillStatus(record('zhen-ji'), skillOf('zhen-ji', 'Goddess Luo'))).toBe('worksAsAlternate');
+  });
+
+  it('is not missing exactly when the matching alternate: General has that skill in the registry', () => {
+    const registry = buildContentRegistry();
+    for (const rec of alternateGeneralRecords()) {
+      const registered = registry.generals.get(`alternate:${rec.id}`)!.skills.map((s) => s.id);
+      for (const skill of rec.skills) {
+        const def = alternateSkillFor(rec, skill);
+        expect(alternateSkillStatus(rec, skill) !== 'missing').toBe(def !== undefined);
+        if (def) expect(registered).toContain(def.id);
+      }
+    }
   });
 });
 
@@ -71,22 +79,17 @@ describe('wikiAlternateGenerals', () => {
     }
   });
 
-  it('pins exactly which Alternate skills are not in the game yet', () => {
-    const missing = generals.flatMap((g) => g.skills.filter((s) => s.status === 'missing').map((s) => `${g.id}/${s.name}`)).sort();
-    expect(missing).toEqual([
-      // The nine Generals Default lacks: 15 skills.
-      'ding-feng/Close Combat', 'ding-feng/Swift and Deadly',
-      'gan-fu-ren/Divine Wisdom', 'gan-fu-ren/Prudence',
-      'ji-ling/Double Edged',
-      'kong-rong/Celebrity', 'kong-rong/Comity',
-      'ma-teng/Call of Valour', 'ma-teng/Horsemanship',
-      'pan-feng/Insanity Axe',
-      'tian-feng/Deathly Counsel', 'tian-feng/With the Tide',
-      'yue-jin/Dauntless',
-      'zou-shi/Femme Fatale', 'zou-shi/Impetus for Conflicts',
-      // Skills of Default's Generals with no Default skill of the same name: 4 skills. Guo Jia's, Zhang Liao's and
-      // Zhang Zhao's may be the same skill under a different spelling in Default's data; Lu Xun's is a different skill.
-      'guo-jia/Bequeathed Strategy', 'lu-xun/Scrutinize', 'zhang-liao/Sudden Strike', 'zhang-zhao-and-zhang-hong/Stabilization',
+  it('pins exactly which Alternate skills the game plays (those of Generals whose difference note is nil)', () => {
+    const working = generals.flatMap((g) => g.skills.filter((s) => s.status === 'worksAsDefault').map((s) => `${g.id}/${s.name}`)).sort();
+    expect(working).toEqual([
+      'cai-wenji/Dirge', 'da-qiao/Displacement', 'da-qiao/National Beauty', 'dian-wei/Ferocious Assault',
+      'fire-zhuge-liang/Arson', 'fire-zhuge-liang/Eight Trigrams', 'fire-zhuge-liang/Scient',
+      'gan-ning/Surprise Raid', 'hua-tuo/First Aid', 'hua-tuo/Green Salve', 'huang-gai/Trojan Flesh', 'huang-yueying/Genius',
+      'lu-meng/Self-Mastery', 'lu-su/Alliance', 'lu-su/Altruism', 'meng-huo/Arise Again', 'meng-huo/The Smoking Gun',
+      'pang-de/Fearsome Advance', 'pang-de/Horsemanship', 'sun-jian/Heroic Spirit', 'taishi-ci/Justice of Heaven',
+      'wei-yan/Insanity Streak', 'xiahou-dun/An Eye for an Eye', 'xiahou-yuan/Godspeed', 'xu-chu/Bare-Chested',
+      'xu-huang/Blockade', 'yan-liang-and-wen-chou/Dual Heroes', 'zhang-fei/Berserk',
+      'zhang-zhao-and-zhang-hong/Blunt advice', 'zhao-yun/Dragon Heart', 'zhou-tai/Refuting Death',
     ].sort());
   });
 
@@ -114,5 +117,20 @@ describe('wikiAlternateGeneralTabs', () => {
     expect(tabs.map((t) => t.key)).toEqual(['wei', 'shu', 'wu', 'qun']);
     expect(tabs.map((t) => t.label)).toEqual(['Wei', 'Shu', 'Wu', 'Qun']);
     expect(tabs.map((t) => t.entries.length)).toEqual([15, 15, 15, 15]);
+  });
+});
+
+describe('slice 2 variant Generals', () => {
+  const SLICE_2 = ['liu-bei', 'sun-quan', 'xun-yu', 'zhu-rong', 'huang-yueying', 'sun-shangxiang', 'diao-chan', 'zhuge-liang', 'lu-xun', 'jia-xu', 'guo-jia', 'zhang-zhao-and-zhang-hong', 'zhen-ji', 'cai-wenji'];
+
+  it('leaves only the skills deferred to slice 4 reading missing', () => {
+    const missing = wikiAlternateGenerals()
+      .filter((g) => SLICE_2.includes(g.id))
+      .flatMap((g) => g.skills.filter((s) => s.status === 'missing').map((s) => `${g.id}/${s.name}`))
+      .sort();
+    expect(missing).toEqual([
+      'guo-jia/Envy of Heaven', 'jia-xu/Descend into Chaos', 'jia-xu/Unmitigated Murder', 'sun-shangxiang/Marriage',
+      'xun-yu/Rouse the Tiger', 'zhen-ji/Stunning Beauty', 'zhu-rong/Giant Elephant', 'zhuge-liang/Star Gazing',
+    ]);
   });
 });

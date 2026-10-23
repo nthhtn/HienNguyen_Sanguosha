@@ -43,6 +43,8 @@ const READERS: Record<string, Decide> = {
     return { key: unyieldingOutcome(state, view.seatId, view.card, source, registry), source };
   },
   'river-goddess': (state, view, registry) => ({ key: riverGoddessOutcome(state, view.seatId, view.card, registry) }),
+  // Alternate Goddess Luo decides as River Goddess does; only what happens to a black card differs (its text).
+  'alternate:goddess-luo': (state, view, registry) => ({ key: riverGoddessOutcome(state, view.seatId, view.card, registry) }),
   'iron-cavalry': (state, view, registry) => ({ key: ironCavalryOutcome(state, view.seatId, view.card, registry) }),
   'lightning-strike': (state, view, registry) => ({ key: lightningStrikeOutcome(state, view.seatId, view.card, registry) }),
   'dueling-heroes': (state, view, registry) => ({ key: duelingHeroesOutcome(state, view.seatId, view.card, registry) }),

@@ -1,3 +1,4 @@
+import { baseSkillId } from 'content';
 import type { Action, CardInstance, ContentRegistry, Effect, GameState, Judgment, PendingChoice, PendingSelection, Seat } from 'engine';
 import { abilityUseKey, colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
 import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, ownCards, isShaCard } from './helpers';
@@ -29,7 +30,7 @@ export function genderOf(seat: Seat, registry: ContentRegistry): 'male' | 'femal
 // Whether a judgment card is good for the judged seat, by what reads it; null for a reader the bot doesn't know.
 function goodForJudged(judgment: Judgment, card: CardInstance): boolean | null {
   const reader = judgment.reader.kind === 'card' ? judgment.reader.card.as : judgment.reader.owner.skillId;
-  switch (reader) {
+  switch (baseSkillId(reader)) {
     case 'capture': return card.suit === 'heart';
     case 'starvation': return card.suit === 'club';
     case 'lightning': return !(card.suit === 'spade' && card.rank >= 2 && card.rank <= 9);
@@ -66,7 +67,7 @@ const declined = (choice: PendingChoice): Effect | undefined => choice.options.f
 export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): boolean | null {
   if (choice.reason.kind !== 'ability' || choice.reason.owner.kind !== 'general') return null;
   const target = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId);
-  switch (choice.reason.abilityId) {
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'evil-hero':
     case 'feedback':
     case 'heavens-envy':
@@ -77,6 +78,8 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     case 'river-goddess':
     case 'iron-cavalry':
     case 'astrology':
+    case 'armed-consorts':
+    case 'eclipse-the-moon':
       return true;
     case 'unyielding':
       return !!target && !isAlly(me, target);
@@ -102,7 +105,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
   const owner = selection.reason.owner;
   const eligible = selection.eligibleIds;
   const hand = new Set(handCards(view, me).map((c) => c.instanceId));
-  switch (selection.reason.abilityId) {
+  switch (baseSkillId(selection.reason.abilityId)) {
     case 'devil': {
       const id = selection.then.kind === 'replace-judgment' ? devilCard(view, me, selection.then.judgment, registry, eligible) : null;
       return id ? [id] : 'cancel';
@@ -112,13 +115,15 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       return spare.length > 0 ? [spare[0]] : 'cancel';
     }
     case 'kindness': {
+      // The thresholds below are Default's (2); a variant with another number (Benevolence: 3) is played legally, not optimally.
       const given = view.turn.abilityUses?.[`${abilityUseKey(owner)}/given`] ?? 0;
       const count = Math.max(eligible.length - 3, hurt(me) && given < 2 ? 2 - given : 0, 1);
       return leastUseful(view, registry, eligible).slice(0, Math.min(count, eligible.length));
     }
     case 'reconsider': {
       const below = eligible.filter((id) => hand.has(id) && keepRank(view, registry, id) < 3);
-      return below.length > 0 ? below : 'cancel';
+      // Balance of Power caps the pick at `max`: the least useful of the spare cards first.
+      return below.length > 0 ? leastUseful(view, registry, below).slice(0, selection.max) : 'cancel';
     }
     case 'marriage':
     case 'green-vesicle':
@@ -164,7 +169,9 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
   // For a harmful effect with no non-ally to aim at: the seat that is hurt least, an ally.
   const cancelId = choice.options.find((o) => o.id === 'cancel')?.id;
   const harmless = ally ?? seats[0];
-  switch (choice.reason.abilityId) {
+  // Bequeathed Strategy: the cards are seen, not drawn. Of the two, the first is given first; a card goes to an ally, else the bot keeps it.
+  if (choice.reason.abilityId === 'alternate:bequeathed-strategy') return seats.length === 0 ? (choice.options[0]?.id ?? null) : (ally ?? me).id;
+  switch (baseSkillId(choice.reason.abilityId)) {
     case 'kindness':
     case 'bestowed-rouse':
     case 'marriage':
@@ -194,7 +201,7 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
   const hand = handCards(view, me);
   const spare = hand.filter((c) => keepRank(view, registry, c.instanceId) < 4);
   const allies = others(view, me).filter((s) => isAlly(me, s));
-  switch (skillId) {
+  switch (baseSkillId(skillId)) {
     case 'battered-body':
       return me.combinedHp > 3 || (me.combinedHp > 2 && hand.some((c) => c.definitionId === 'peach'));
     case 'reconsider':
@@ -210,6 +217,7 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
       return males.length >= 2 && males.some((s) => !isAlly(me, s));
     }
     case 'kindness': {
+      // Default's threshold (2) also for a variant (Benevolence heals at 3): legal, not smart.
       const owner = { kind: 'general' as const, seatId: me.id, slot: 'main' as const, skillId };
       const given = (['main', 'deputy'] as const).reduce((n, slot) => n + (view.turn.abilityUses?.[`${abilityUseKey({ ...owner, slot })}/given`] ?? 0), 0);
       return allies.length > 0 && (hand.length > 3 || (hurt(me) && given < 2 && hand.length >= 2));
@@ -229,9 +237,10 @@ const ACTIVE_ORDER = {
 export function pickActiveSkill(view: GameState, me: Seat, legal: Action[], registry: ContentRegistry, group: 'early' | 'late'): UseSkill | undefined {
   const offered = legal.filter((a): a is UseSkill => a.kind === 'UseSkillAction' && a.owner.kind === 'general');
   for (const skillId of ACTIVE_ORDER[group]) {
-    const action = offered.find((a) => a.owner.kind === 'general' && a.owner.skillId === skillId);
+    // A variant is offered under its own id and used like its base.
+    const action = offered.find((a) => a.owner.kind === 'general' && baseSkillId(a.owner.skillId) === skillId);
     if (!action || action.owner.kind !== 'general') continue;
-    if (wantsActive(view, me, skillId, registry)) return action;
+    if (wantsActive(view, me, action.owner.skillId, registry)) return action;
   }
   return undefined;
 }
@@ -251,5 +260,6 @@ export function conversionSpare(view: GameState, me: Seat, action: UseConversion
   return cards.length === owned.conversion.cards && !cards.some((id) => definitionIdOf(view, id) === 'peach');
 }
 
-// The conversion abilities whose card selection the bot fills (least useful first).
-export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes', 'blockade', 'wine', 'strategic-pass']);
+// The conversion abilities whose card selection the bot fills (least useful first). A variant with a Default base is
+// covered by it; 'alternate:scrutinize' has none and is listed here (the bot never starts it: it does not play Amass yet).
+export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['alternate:scrutinize', 'fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes', 'blockade', 'wine', 'strategic-pass']);
