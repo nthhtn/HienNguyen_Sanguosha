@@ -194,10 +194,9 @@ describe('slice 2 variant Generals', () => {
   });
 });
 
-// Slice 4 turns these into variants (Tasks 3 and 4).
+// Slice 4 turns this into a variant (Task 4).
 const MISSING_ELSEWHERE = [
   'pang-tong/Resurrection',
-  'zhang-jiao/Lightning Strike',
 ];
 
 describe('slice 3 new Generals', () => {

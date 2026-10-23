@@ -221,7 +221,8 @@ type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
 export const lightningStrikeOutcome = (state: GameState, seatId: string, judged: CardInstance, registry: ContentRegistry): 'damage' | 'none' =>
   suitOf(state, seatId, judged, registry) === 'spade' && isLiving(state, seatId) ? 'damage' : 'none';
 
-export const lightningStrike: SkillDefinition = {
+// Alternate Lightning Strike (`allowSelf` false): the seat he picks is another seat, never himself.
+export const makeLightningStrike = (allowSelf: boolean): SkillDefinition => ({
   id: 'lightning-strike',
   triggers: [
     on<CardPlayedEvent>('after:CardPlayedEvent', {
@@ -236,7 +237,7 @@ export const lightningStrike: SkillDefinition = {
   ],
   onStep: (state, step) => {
     const { owner } = step;
-    const living = state.seats.filter((s) => !s.eliminated).sort((a, b) => a.index - b.index).map((s) => s.id);
+    const living = state.seats.filter((s) => !s.eliminated && (allowSelf || s.id !== owner.seatId)).sort((a, b) => a.index - b.index).map((s) => s.id);
     const judge = (seatId: string): Effect[] => [{ kind: 'JudgeEffect', seatId, reader: { kind: 'skill', owner } }];
     return [choiceOf(state, owner, { verb: 'pick', options: seatOptions(living, judge) })];
   },
@@ -244,7 +245,9 @@ export const lightningStrike: SkillDefinition = {
     lightningStrikeOutcome(state, seatId, judged, registry) === 'damage'
       ? [done, { kind: 'DamageEffect', damage: { source: null, target: { kind: 'seat', seatId }, amount: 2, nature: 'thunder', cause: { skillId: owner.skillId } } }]
       : [done],
-};
+});
+
+export const lightningStrike: SkillDefinition = makeLightningStrike(true);
 
 // Dark Magic (may): when any seat's judgment card is turned up, before it takes
 // effect, you may replace it with a black card from your hand or equipment;

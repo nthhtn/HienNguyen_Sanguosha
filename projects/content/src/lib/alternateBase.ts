@@ -22,6 +22,8 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:bequeathed-strategy': 'bestowed-rouse',
   // Same prompts and bot behaviour as Upheaval; the bots' picks come from the legal choices, so they follow the nearest-seat list.
   'alternate:descend-into-chaos': 'upheaval',
+  // Same texts and bot behaviour as Lightning Strike; the bot picks among the seats it is offered.
+  'alternate:lightning-strike': 'lightning-strike',
   // Ma Teng's Horsemanship is Ma Chao's: same texts and modifier.
   'alternate:horsemanship': 'horsemanship',
 };

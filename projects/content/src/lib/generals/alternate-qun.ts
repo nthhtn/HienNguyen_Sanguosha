@@ -9,6 +9,7 @@ import { isShaDamage, untargetableBy } from '../shared/abilities';
 import { competeStart, competeStep } from '../shared/compete';
 import { makeCurtain, makeUpheaval } from './forest';
 import { makeEclipseTheMoon, makeSowDiscord } from './qun';
+import { makeLightningStrike } from './wind';
 import { horsemanship } from './shu';
 import { killedByLivingOther } from './mountain';
 import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, isLastMoveOfStep, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
@@ -456,6 +457,8 @@ export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<str
     // Envious Moon: asked whether to draw 1 at the start of the End Phase (Default: compulsory).
     闭月: { ...makeEclipseTheMoon(true), id: 'alternate:envious-moon' },
   },
+  // Lightning Strike: the seat he picks is another seat (Default: any living seat, himself included).
+  'zhang-jiao': { 雷击: { ...makeLightningStrike(false), id: 'alternate:lightning-strike' } },
   // Sorrow: the killer loses one General's skills, Main or Deputy as her player chooses (Default: the whole seat).
   'cai-wenji': { 断肠: sorrow },
   // Insanity Axe: Pan Feng is new to Alternate (Default has no such General).

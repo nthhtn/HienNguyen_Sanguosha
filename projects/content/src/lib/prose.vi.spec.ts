@@ -88,6 +88,8 @@ describe('the display functions by locale', () => {
   it('the Alternate variants show the same prompts as their Default skill', () => {
     for (const locale of ['en', 'vi']) {
       expect(choicePromptText('alternate:descend-into-chaos', locale)).toBe(choicePromptText('upheaval', locale));
+      expect(choicePromptText('alternate:lightning-strike', locale)).toBe(choicePromptText('lightning-strike', locale));
+      expect(abilityHint('alternate:lightning-strike', locale)).toBe(abilityHint('lightning-strike', locale));
     }
   });
 

@@ -1259,3 +1259,33 @@ describe('Alternate Jia Xu, Descend into Chaos', () => {
     expect(readyAlternateSkills(alternateGeneralRecords().find((g) => g.id === 'jia-xu')!).map((x) => x.id)).toContain(id);
   });
 });
+
+describe('Alternate Zhang Jiao, Lightning Strike', () => {
+  const id = 'alternate:lightning-strike';
+  const general = (name: string): TableOptions['generals'] => ({ 'seat-a': [name, 'filler-zuo-ci'] });
+  // Seat-b Slashes seat-a, who plays a Dodge; the pick is the next thing asked.
+  const dodged = (name: string, judged = card('j', 'sha', 'spade', 5)) => {
+    const s = h.play(table({ 'seat-b:hand': [card('s1', 'sha')], 'seat-a:hand': [card('n1', 'shan')], drawPile: [judged] }, { owner: 'seat-b', generals: general(name) }), 's1', 'seat-a');
+    return h.use(h.respond(s, 'n1'));
+  };
+
+  it('is asked after he plays a Dodge, and he can pick any living seat except himself', () => {
+    const s = dodged('alternate:zhang-jiao');
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-b', 'seat-c', 'seat-d']);
+  });
+
+  it('a spade on the seat he picks deals it 2 thunder damage with no source; anything else does nothing', () => {
+    const struck = h.choose(dodged('alternate:zhang-jiao'), 'seat-b');
+    expect(hp(struck, 'seat-b')).toBe(2);
+    expect(struck.log.filter((e) => e.kind === 'DamageDealtEvent').at(-1)).toMatchObject({ damage: { source: null, amount: 2, nature: 'thunder' } });
+    expect(hp(h.choose(dodged('alternate:zhang-jiao', card('j', 'sha', 'heart', 5)), 'seat-b'), 'seat-b')).toBe(4);
+  });
+
+  it('Default Zhang Jiao may still pick himself', () => {
+    expect(dodged('zhang-jiao').pendingChoice!.options.map((o) => o.id)).toContain('seat-a');
+  });
+
+  it('is what Alternate Zhang Jiao plays for 雷击, beside Default Dark Magic', () => {
+    expect(readyAlternateSkills(alternateGeneralRecords().find((g) => g.id === 'zhang-jiao')!).map((x) => x.id)).toEqual([id, 'dark-magic']);
+  });
+});
