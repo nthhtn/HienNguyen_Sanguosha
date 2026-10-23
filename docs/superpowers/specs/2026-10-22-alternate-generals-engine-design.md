@@ -121,6 +121,13 @@ as Default's), or a real timing difference (it moves to slice 2's list, which by
 the 22 "Nil" Generals and the "immediately removed" notes. Output: a list of what
 was checked and what it was decided as, in the plan.
 
+Slice 4 also owns these skills of Generals finished in slice 2, which have no difference note of their
+own and must be checked as unchanged before they are cleared: Zhuge Liang's Star Gazing (观星), Xun
+Yu's Rouse the Tiger (驱虎), Zhu Rong's Giant Elephant (巨象), Zhen Ji's Stunning Beauty (倾国), Jia
+Xu's Descend into Chaos (乱武) and Unmitigated Murder (完杀), plus Guo Jia's Envy of Heaven (天妒),
+Sun Shangxiang's Marriage (结姻), Zhou Yu's Heroic Demeanor and Sow Dissension, and Zhang Liao's Sudden
+Strike.
+
 ## Constraints
 
 - Lord is the official term (not Ruler). Lord skills are ignored today, but they
