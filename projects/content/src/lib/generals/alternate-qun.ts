@@ -5,7 +5,7 @@ import { isShaDamage } from '../shared/abilities';
 import { makeCurtain } from './forest';
 import { makeEclipseTheMoon, makeSowDiscord } from './qun';
 import { killedByLivingOther } from './mountain';
-import { ask, choiceOf, equipZoneId, hpOf, isLiving, on, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, equipZoneId, isLiving, on, skillStep, used } from '../shared/skills';
 
 // Sorrow (compulsory): when a seat kills her, her player (she is out: afterDeath) chooses the killer's
 // Main or Deputy General, and that General loses all its skills for the rest of the game; the other
@@ -43,21 +43,23 @@ const sorrow: SkillDefinition = {
 // Duel or a skill), once per damage he may pick a card in that seat's equipment area and either move it into
 // his own equipment area or discard it. If his matching slot is full, a move replaces it: his old card there
 // is discarded first. Asked only while the seat is still living and wears a card.
-const wornOf = (state: GameState, seatId: string): CardInstance[] => {
-  const seat = state.seats.find((s) => s.id === seatId);
-  return state.zones.find((z) => z.id === seat?.equipped.zoneId)?.cards ?? [];
-};
+const wornOf = (state: GameState, seatId: string): CardInstance[] => state.zones.find((z) => z.id === equipZoneId(state, seatId))?.cards ?? [];
 
 const insanityAxe: SkillDefinition = {
   id: 'alternate:insanity-axe',
   triggers: [
     on<DamageDealtEvent>('after:DamageDealtEvent', {
-      condition: (state, event, owner) =>
-        isShaDamage(event.damage) &&
-        event.damage.source?.kind === 'seat' && event.damage.source.seatId === owner.seatId &&
-        event.damage.target.kind === 'seat' && event.damage.target.seatId !== owner.seatId &&
-        isLiving(state, owner.seatId) && isLiving(state, event.damage.target.seatId) && hpOf(state, event.damage.target.seatId) > 0 && wornOf(state, event.damage.target.seatId).length > 0,
-      effect: (_state, event, owner) => [ask(owner, [skillStep(owner, 'pick', { victim: (event.damage.target as { seatId: string }).seatId })], [], (event.damage.target as { seatId: string }).seatId)],
+      condition: (state, event, owner) => {
+        const { damage } = event;
+        return isShaDamage(damage) &&
+        damage.source?.kind === 'seat' && damage.source.seatId === owner.seatId &&
+        damage.target.kind === 'seat' && damage.target.seatId !== owner.seatId &&
+        isLiving(state, owner.seatId) && isLiving(state, damage.target.seatId) && wornOf(state, damage.target.seatId).length > 0;
+      },
+      effect: (_state, event, owner) => {
+        const victim = (event.damage.target as { seatId: string }).seatId;
+        return [skillStep(owner, 'ask', { victim })];
+      },
     }),
   ],
   // 'pick': which of the victim's worn cards; 'handle': move it or discard it.
@@ -65,6 +67,8 @@ const insanityAxe: SkillDefinition = {
     const { owner } = step;
     const victim = step.data?.['victim'] as string;
     if (!isLiving(state, owner.seatId)) return [];
+    // 'ask': runs once the damage and any dying round are over; a victim that died (its cards gone) is not asked.
+    if (step.step === 'ask') return isLiving(state, victim) && wornOf(state, victim).length > 0 ? [ask(owner, [skillStep(owner, 'pick', { victim })], [], victim)] : [];
     if (step.step === 'pick') {
       const worn = wornOf(state, victim);
       if (!isLiving(state, victim) || worn.length === 0) return [];

@@ -217,10 +217,11 @@ describe('Alternate Pan Feng, Insanity Axe', () => {
   const id = 'alternate:insanity-axe';
   const zone = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
   // seat-a (Pan Feng) plays Sha s1 at seat-b, who has no Dodge; seat-b wears `worn`, seat-a `own`.
-  const strike = (worn: ReturnType<typeof card>[], own: ReturnType<typeof card>[] = [], general = 'alternate:pan-feng') =>
-    h.pass(h.play(table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-a:equip': own, 'seat-b:equip': worn }, { generals: at('seat-a', general) }), 's1', 'seat-b'));
+  const strike = (worn: ReturnType<typeof card>[], own: ReturnType<typeof card>[] = [], general = 'alternate:pan-feng', revealed = true) =>
+    h.pass(h.play(table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-a:equip': own, 'seat-b:equip': worn }, { generals: { 'seat-a': [general, 'filler-jia-xu', revealed] } }), 's1', 'seat-b'));
   const crossbow = card('cb', 'crossbow', 'club', 1);
   const armor = card('bs', 'black-shield', 'spade', 2);
+  const seatOf = (s: GameState, seatId: string) => s.seats.find((x) => x.id === seatId)!;
   const labelOf = (s: GameState, optionId: string) => s.pendingChoice!.options.find((o) => o.id === optionId)?.shows;
 
   it('is asked after her Sha damages a seat wearing a card, and declining changes nothing', () => {
@@ -286,17 +287,74 @@ describe('Alternate Pan Feng, Insanity Axe', () => {
     expect(askedAbout(h.pass(h.play(t, 's1', 'seat-b')))).toBeNull();
   });
 
-  // The damage a Sha passes along a chain is its own damage event, marked chained: never Sha damage.
-  it('is not asked for damage a Sha’s hit passes along a chain', () => {
+  // Real chains: a Fire Attack hits its target directly (Sha damage), then passes along the chain (chained, never Sha damage).
+  it('a Fire Attack damaging its target directly asks; the damage it passes along the chain does not', () => {
+    const t = table({ 'seat-a:hand': [card('s1', 'fire-attack', 'heart', 7)], 'seat-b:equip': [crossbow], 'seat-c:equip': [armor] }, { generals: at('seat-a', 'alternate:pan-feng') });
+    const chained = { ...t, seats: t.seats.map((x) => (x.id === 'seat-b' || x.id === 'seat-c' ? { ...x, chained: true as const } : x)) };
+    const first = h.pass(h.play(chained, 's1', 'seat-b'));
+    expect(askedAbout(first)).toBe(id);
+    expect(first.pendingChoice).toMatchObject({ reason: { targetSeatId: 'seat-b' } });
+    const s = h.decline(first);
+    expect(s.log.filter((e) => e.kind === 'DamageDealtEvent')).toHaveLength(2);
+    expect(hp(s, 'seat-c')).toBeLessThan(4);
+    expect(askedAbout(s)).toBeNull();
+  });
+
+  it('a plain Fire Attack on a seat asks', () => {
+    const t = table({ 'seat-a:hand': [card('s1', 'fire-attack', 'heart', 7)], 'seat-b:equip': [crossbow] }, { generals: at('seat-a', 'alternate:pan-feng') });
+    expect(askedAbout(h.pass(h.play(t, 's1', 'seat-b')))).toBe(id);
+  });
+
+  // A hand-built chained hit that still carries the Sha cause.
+  it('is not asked for a chained hit carrying the Sha’s cause', () => {
     const t = table({ 'seat-c:equip': [crossbow] }, { generals: at('seat-a', 'alternate:pan-feng') });
     const used = { as: 'sha', colour: 'black' as const, physical: [{ definitionId: 'sha', instanceId: 's1', suit: 'spade' as const, rank: 7 }] };
     const s = h.run(t, [{ kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-a' }, target: { kind: 'seat', seatId: 'seat-c' }, amount: 1, nature: 'normal', chained: true, cause: { card: used, cardInstanceId: 's1', aimedAt: 'seat-b' } } }]);
     expect(askedAbout(s)).toBeNull();
   });
 
-  it('is not asked when the Sha leaves the victim dying', () => {
-    const t = table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-b:equip': [crossbow] }, { generals: at('seat-a', 'alternate:pan-feng'), hp: { 'seat-b': 1 } });
-    expect(askedAbout(h.pass(h.play(t, 's1', 'seat-b')))).toBeNull();
+  // The ask is a step run after the damage settles, so a dying round (Kingdom War mode) comes first.
+  const hk = harness(kwMode);
+  const dying = (hand: ReturnType<typeof card>[] = []) =>
+    hk.pass(hk.play(table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-b:equip': [crossbow], 'seat-b:hand': hand }, { generals: at('seat-a', 'alternate:pan-feng'), hp: { 'seat-b': 1 } }), 's1', 'seat-b'));
+  const finish = (s: GameState) => {
+    for (let i = 0; i < 8 && s.pendingResponse; i++) s = hk.pass(s);
+    return s;
+  };
+
+  it('a victim left at 0 HP goes through its dying round first; saved by a Peach, it is then asked and can lose its card', () => {
+    const dyingNow = dying([card('pc', 'peach', 'heart', 3)]);
+    expect(dyingNow.pendingResponse?.reason).toMatchObject({ kind: 'dying', seatId: 'seat-b' });
+    expect(askedAbout(dyingNow)).toBeNull();
+    const asked = hk.respond(dyingNow, 'pc');
+    expect(hp(asked, 'seat-b')).toBe(1);
+    expect(askedAbout(asked)).toBe(id);
+    const s = hk.choose(hk.choose(hk.use(asked), 'cb'), 'move-card');
+    expect(zone(s, 'seat-a:equip')).toEqual(['cb']);
+    expect(zone(s, 'seat-b:equip')).toEqual([]);
+  });
+
+  it('a victim who then dies is not asked, and nothing breaks', () => {
+    const s = finish(dying());
+    expect(seatOf(s, 'seat-b').eliminated).toBe(true);
+    expect(askedAbout(s)).toBeNull();
+    expect(s.pendingChoice ?? null).toBeNull();
+    expect(zone(s, 'seat-a:equip')).toEqual([]);
+  });
+
+  it('a Sha with two targets (Sky Scorcher) asks once for each damaged seat', () => {
+    const t = table({ 'seat-a:hand': [card('s1', 'sha', 'heart', 7)], 'seat-a:equip': [card('sk', 'sky-scorcher', 'diamond', 12)], 'seat-b:equip': [crossbow], 'seat-c:equip': [armor] }, { generals: at('seat-a', 'alternate:pan-feng') });
+    let s = h.pass(h.play(t, 's1', 'seat-b', 'seat-c'));
+    expect(s.pendingChoice).toMatchObject({ reason: { targetSeatId: 'seat-b' } });
+    s = h.pass(h.decline(s));
+    expect(s.pendingChoice).toMatchObject({ reason: { targetSeatId: 'seat-c' } });
+    expect(askedAbout(h.decline(s))).toBeNull();
+  });
+
+  it('a hidden Pan Feng is asked, and using it reveals her', () => {
+    const s = strike([crossbow], [], 'alternate:pan-feng', false);
+    expect(askedAbout(s)).toBe(id);
+    expect(seatOf(h.use(s), 'seat-a').generals!.main.revealed).toBe(true);
   });
 
   it('a Default General has no such skill', () => {
