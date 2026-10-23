@@ -1,5 +1,6 @@
-import type { CardInstance, Effect, GameState, PendingChoice, PendingSelection } from 'engine';
+import type { Action, CardInstance, Effect, GameState, PendingChoice, PendingSelection } from 'engine';
 import { getLegalActions } from 'engine';
+import { fillPick, weakestFirst } from './helpers';
 import { conversionSpare, pickActiveSkill } from './skills';
 import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
 
@@ -70,12 +71,15 @@ describe('Alternate Ding Feng', () => {
     expect(pickActiveSkill(s, s.seats[0], getLegalActions(s, 'seat-a', registry), registry, 'early')).toBeUndefined();
   });
 
-  it('the bot’s Sha at Close Combat never breaks the cap, whichever way the targets are chosen', () => {
+  it('the bot’s Sha at Close Combat is a legal play within the cap: one far target at most, so never two far ones', () => {
     const s = sixSeats([card('s1', 'sha'), card('pc', 'peach', 'heart')], [card('gd', 'green-dragon-blade', 'spade', 5)]);
-    const template = getLegalActions(s, 'seat-a', registry).find((a) => a.kind === 'PlayCardAction' && a.pickTargets)!;
-    expect(template).toBeDefined();
-    const action = decide(s);
-    if (action.kind === 'PlayCardAction') expect(action.targets.length).toBeLessThanOrEqual(2);
+    const template = getLegalActions(s, 'seat-a', registry).find((a) => a.kind === 'PlayCardAction' && a.pickTargets);
+    expect(template).toMatchObject({ pickTargets: { max: 2, capped: { max: 1 } } });
+    const action = fillPick(s, s.seats[0], template as Extract<Action, { kind: 'PlayCardAction' }>, weakestFirst)!;
+    expect(action).toMatchObject({ kind: 'PlayCardAction', cardInstanceId: 's1' });
+    const targets = action.targets.map((t) => (t.kind === 'seat' ? t.seatId : ''));
+    expect(targets).toHaveLength(2);
+    expect(targets.filter((id) => !['seat-b', 'seat-f'].includes(id))).toHaveLength(1);
     expect(() => act(s, action)).not.toThrow();
   });
 });

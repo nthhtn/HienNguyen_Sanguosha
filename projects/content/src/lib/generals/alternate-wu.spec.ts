@@ -312,6 +312,15 @@ describe('Alternate Ding Feng, Close Combat', () => {
     expect(pickOf(s)!.pickTargets).toMatchObject({ min: 1, max: 4 });
   });
 
+  it('with Heaven’s Justice lifting the range, a near seat out of range (a mounted neighbour) can’t be the extra target', () => {
+    const base = table({ 'seat-a:hand': [card('s1', 'sha'), card('pc', 'peach', 'heart')], 'seat-b:equip': [card('dl', 'di-lu', 'spade', 5)] }, { seats: 6, generals: at('seat-a', 'alternate:ding-feng'), flags: { 'sha-any-distance': true } });
+    const pick = pickOf(base)!.pickTargets!;
+    expect(pick.eligibleIds).toEqual(['seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f']);
+    expect(pick.capped!.ids).toEqual(['seat-b', 'seat-c', 'seat-d', 'seat-e']);
+    expect(() => h.play(base, 's1', 'seat-b', 'seat-c')).toThrow();
+    expect(h.play(base, 's1', 'seat-b', 'seat-f').pendingResponse!.respondingSeatId).toBe('seat-b');
+  });
+
   it('a seat made near by Swift and Deadly counts as within distance 1', () => {
     const s = { ...six([card('gd', 'green-dragon-blade', 'spade', 5)]), turn: { ...six().turn, flags: { 'distance1:seat-a:seat-d': true } } };
     expect(pickOf(s)!.pickTargets).toMatchObject({ capped: { max: 1 } });
@@ -360,8 +369,15 @@ describe('Alternate Ding Feng, Swift and Deadly', () => {
     expect(h.legal(six([]), 'seat-a').some((a) => a.kind === 'UseSkillAction')).toBe(false);
   });
 
-  it('keeps its effect in a turn flag, which a new turn does not carry', () => {
-    const s = h.select(h.select(h.useSkill(six(), 'seat-a', id), 'k1'), 'seat-d');
+  it('lasts until the end of the turn: in the next turn the distance is back to normal', () => {
+    const reg = buildContentRegistry();
+    let s = h.select(h.select(h.useSkill(six(), 'seat-a', id), 'k1'), 'seat-d');
     expect(Object.keys(s.turn.flags ?? {})).toEqual(['distance1:seat-a:seat-d']);
+    for (let i = 0; i < 20 && s.turn.ownerSeatId === 'seat-a'; i++) {
+      s = h.act(s, h.legal(s, s.turn.ownerSeatId).find((a) => a.kind === 'EndPhaseAction' || a.kind === 'DiscardCardAction')!);
+    }
+    expect(s.turn.ownerSeatId).not.toBe('seat-a');
+    expect(s.turn.flags?.['distance1:seat-a:seat-d']).toBeUndefined();
+    expect(seatDistance(s, 'seat-a', 'seat-d', reg)).toBe(3);
   });
 });

@@ -1,6 +1,6 @@
 import type { CardDefinition, Effect, GameState, Target, UsedCard } from 'engine';
 import { livingSeatOrderFrom, usedCardKey } from 'engine';
-import { handOf, isPhysicallyNear, SHA_FLAGS, shaFlag, shaLimit, shaPlayRevealOwner } from '../shared/queries';
+import { attackRange, handOf, isPhysicallyNear, seatDistance, SHA_FLAGS, shaFlag, shaLimit, shaPlayRevealOwner } from '../shared/queries';
 import { shaTargetIds } from '../shared/shaRules';
 import { activeAbilities } from '../shared/abilities';
 import { CardStep, cardStep } from '../shared/steps';
@@ -110,7 +110,9 @@ function shaDefinition(id: string, name: string, nature?: 'fire' | 'thunder'): C
       const near = Math.max(0, ...activeAbilities(state, ctx.seatId, registry).map((a) => a.modifiers?.extraShaTargets ?? 0));
       const anywhere = 1 + scorcher + extra;
       const max = Math.min(anywhere + near, eligibleIds.length);
-      const far = eligibleIds.filter((id) => !isPhysicallyNear(state, ctx.seatId, id));
+      // A "near" seat is within physical distance 1 AND within attack range, even when range is lifted for this Sha (Heaven's Justice).
+      const range = attackRange(state, ctx.seatId, registry);
+      const far = eligibleIds.filter((id) => !(isPhysicallyNear(state, ctx.seatId, id) && seatDistance(state, ctx.seatId, id, registry) <= range));
       return max > 1 ? { eligibleIds, min: 1, max, ...(near > 0 && far.length > anywhere ? { capped: { ids: far, max: anywhere } } : {}) } : null;
     },
     play: (state, ctx, registry) => {

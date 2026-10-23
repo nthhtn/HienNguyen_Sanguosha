@@ -165,7 +165,7 @@ export interface AbilityModifiers {
   shaLimit?: number;
   // More targets, by card id, for the wearer's play of that card when it is its last hand card (Sky Scorcher: { sha: 2 }).
   extraTargetsWhenLastCard?: Record<string, number>;
-  // More targets for the owner's Sha, each one near the owner (Close Combat: 1). See `shaTargetPick`.
+  // More targets for the owner's Sha, each one near the owner (Close Combat: 1). See `targetPick` in the Sha card.
   extraShaTargets?: number;
   // The wearer's Sha ignores the target's armour (Black Pommel).
   ignoresArmor?: boolean;

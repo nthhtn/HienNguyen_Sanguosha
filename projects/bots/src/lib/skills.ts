@@ -138,7 +138,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       if (step === 'discarded') return [least];
       return me.combinedHp <= 1 || keepRank(view, registry, least) < 3 ? [least] : 'cancel';
     }
-    // Swift and Deadly: her own pick is the least useful card; the seat is the weakest far foe, else the weakest foe.
+    // Swift and Deadly: his own pick is the least useful card; the seat is the weakest far foe, else the weakest foe.
     case 'alternate:swift-and-deadly': {
       if (selection.of === 'cards') return [leastUseful(view, registry, eligible)[0]];
       const seats = eligible.map((id) => view.seats.find((s) => s.id === id)!).filter(Boolean);
