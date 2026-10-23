@@ -42,6 +42,7 @@
     "alternate:with-the-tide": "Rút 1 lá bài khi một người chơi cùng thế lực khiến người chơi khác lâm nguy; mất 1 Sinh lực khi người chơi khác cùng thế lực chết",
     "alternate:celebrity": "Sát thương bạn nhận từ người chơi có Tướng chưa lật bị giảm 1",
     "alternate:comity": "Khi bài bạn bỏ hoặc mất từ tay hoặc khu trang bị sắp vào chồng bài bỏ, đưa chúng cho một người chơi khác",
+    "alternate:double-edged": "Đấu điểm với một người chơi khác; nếu thắng, dùng Sát lên người thua hoặc một người chơi cùng thế lực với họ, bất kể khoảng cách; nếu không, giai đoạn ra bài của bạn kết thúc",
     "alternate:insanity-axe": "Sau khi Sát của bạn gây sát thương cho {target}, chuyển một lá trong khu trang bị của họ sang khu trang bị của bạn, hoặc bỏ nó",
     "alternate:dauntless": "Bỏ một lá bài Cơ bản trên tay; {target} bỏ một lá Trang bị hoặc chịu 1 sát thương từ bạn",
     "alternate:divine-wisdom": "Bỏ toàn bộ bài trên tay; nếu số bài bỏ không nhỏ hơn Sinh lực hiện tại, hồi 1 Sinh lực",
@@ -83,6 +84,7 @@
     "assault": { "prompt": "Chọn một Vũ khí để bỏ, hoặc không chọn để mất 1 Sinh lực", "confirm": "Xác nhận" },
     "rouse-the-tiger": { "prompt": "Chọn một người chơi có nhiều Sinh lực hơn để đấu điểm", "confirm": "Chọn" },
     "heavens-justice": { "prompt": "Chọn một người chơi để đấu điểm", "confirm": "Chọn" },
+    "alternate:double-edged": { "prompt": "Chọn một người chơi để đấu điểm", "confirm": "Chọn" },
     "alliance": { "prompt": "Chọn một người chơi để đổi bài trên tay", "confirm": "Chọn" },
     "brave-spirit": { "prompt": "Chọn các lá bài để bỏ", "confirm": "Bỏ bài" },
     "charity": { "prompt": "Chọn một nửa số bài trên tay để đưa đi", "confirm": "Đưa" },
@@ -104,6 +106,7 @@
     "alternate:bequeathed-strategy": "Chọn một người chơi để đưa {card}",
     "alternate:deathly-counsel": "Chọn một người chơi để bỏ một lá bài của họ",
     "alternate:comity": "Chọn một người chơi để đưa các lá bài",
+    "alternate:double-edged": "Chọn {target} hoặc một người chơi cùng thế lực với họ để dùng Sát",
     "alternate:prudence": "Chọn một người chơi cùng thế lực để rút 1 lá bài",
     "alternate:swift-and-deadly": "Chọn một người chơi để ở khoảng cách 1 với bạn đến hết lượt"
   },
@@ -143,6 +146,10 @@
     "intense-edge": {
       "won": "{user} sẽ lấy một lá bài của {target}",
       "lost": "Không có gì xảy ra"
+    },
+    "alternate:double-edged": {
+      "won": "{user} sẽ dùng Sát lên {target} hoặc một người chơi cùng thế lực với họ",
+      "lost": "Giai đoạn ra bài của {user} kết thúc"
     }
   },
   "judgmentOutcomes": {

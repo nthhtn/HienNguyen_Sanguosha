@@ -109,6 +109,9 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     // Insanity Axe: only against a non-ally (the seat the Sha hit).
     case 'alternate:insanity-axe':
       return !!target && !isAlly(me, target);
+    // Double Edged: losing ends the Play Phase, so only with a high card (10 or more) and a non-ally to compete with.
+    case 'alternate:double-edged':
+      return handCards(view, me).some((c) => c.rank >= 10) && others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) > 0);
     case 'raid':
       return others(view, me).filter((s) => !isAlly(me, s) && handSize(view, s) > 0).length >= 2;
     case 'bare-the-chest':
@@ -221,6 +224,9 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
     // Comity: an ally takes the cards (never offered a choice without one: it declines).
     case 'alternate:comity':
       return ally?.id ?? null;
+    // Double Edged: the Sha goes at the weakest non-ally offered, else the first seat offered.
+    case 'alternate:double-edged':
+      return (firstNonAlly ?? seats[0])?.id ?? null;
     // Insanity Axe: the victim's first worn card; then move it when that replaces nothing of hers, else discard it.
     case 'alternate:insanity-axe': {
       const move = choice.options.find((o) => o.id === 'move-card');

@@ -758,3 +758,126 @@ describe('Alternate Ma Teng', () => {
     expect(handIds(s, 'seat-a')).toHaveLength(3);
   });
 });
+
+describe('Alternate Ji Ling, Double Edged', () => {
+  const id = 'alternate:double-edged';
+  // Six seats; seat-a (Ji Ling) enters his Play Phase (no Draw). Seat-d is 3 away. He competes with 'k' (K).
+  const start = (cards: Record<string, ReturnType<typeof card>[]> = {}, o: TableOptions = {}) =>
+    h.settle(table({ 'seat-a:hand': [card('k', 'shan', 'spade', 13)], 'seat-d:hand': [card('x', 'peach', 'heart', 5)], ...cards }, { seats: 6, phase: 'Draw', flags: { skipDraw: true }, generals: at('seat-a', 'alternate:ji-ling'), ...o }));
+  // Use it, pick `foe`, show `mine` then the foe's `theirs`.
+  const compete = (s: GameState, foe = 'seat-d', mine = 'k', theirs = 'x') => h.select(h.select(h.select(h.use(s), foe), mine), theirs);
+  const pile = (s: GameState) => s.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId);
+
+  it('at the start of his Play Phase he is asked; he picks a seat with a hand card to compete with', () => {
+    const s = start({ 'seat-b:hand': [card('y', 'shan')] });
+    expect(askedAbout(s)).toBe(id);
+    expect(h.use(s).pendingSelection).toMatchObject({ of: 'seats', eligibleIds: ['seat-b', 'seat-d'] });
+  });
+
+  it('a win against a seat 3 away: Sha at it with no range limit, damage when it has no Shan', () => {
+    const s = compete(start());
+    expect(seatDistance(s, 'seat-a', 'seat-d', registry)).toBe(3);
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-d', allowedCardIds: ['shan'] });
+    expect(s.log.find((e) => e.kind === 'CardPlayedEvent')).toMatchObject({ seatId: 'seat-a', card: { as: 'sha', physical: [] }, targets: [{ seatId: 'seat-d' }] });
+    const done = h.pass(s);
+    expect(hp(done, 'seat-d')).toBe(3);
+    expect(done.phase).toBe('Play');
+    expect(done.turn.ownerSeatId).toBe('seat-a');
+  });
+
+  it('both competing cards are discarded', () => {
+    expect(pile(compete(start()))).toEqual(expect.arrayContaining(['k', 'x']));
+  });
+
+  it('a Shan answers it', () => {
+    const s = compete(start({ 'seat-d:hand': [card('x', 'peach', 'heart', 5), card('n', 'shan')] }));
+    const done = h.respond(s, 'n');
+    expect(hp(done, 'seat-d')).toBe(4);
+  });
+
+  it('Armor applies: Eight Trigrams dodges it on red; Wood Armor stops it; Black Shield does not stop a Sha with no colour', () => {
+    const trigrams = compete(start({ 'seat-d:equip': [card('et', 'eight-trigrams', 'spade', 2)], drawPile: [card('j', 'peach', 'heart', 9)] }));
+    expect(askedAbout(trigrams)).toBe('eight-trigrams');
+    expect(hp(h.use(trigrams), 'seat-d')).toBe(4);
+    const wood = compete(start({ 'seat-d:equip': [card('wa', 'wood-armor', 'spade', 2)] }));
+    expect(wood.pendingResponse).toBeNull();
+    expect(hp(wood, 'seat-d')).toBe(4);
+    const shield = compete(start({ 'seat-d:equip': [card('bs', 'black-shield', 'spade', 2)] }));
+    expect(hp(h.pass(shield), 'seat-d')).toBe(3);
+  });
+
+  it('Wine does not apply to it and is not spent', () => {
+    const s = h.pass(compete(start({}, { flags: { skipDraw: true, wine: true } })));
+    expect(hp(s, 'seat-d')).toBe(3);
+    expect(s.turn.flags?.['wine']).toBe(true);
+  });
+
+  it('it does not count toward his one-Sha limit: he then plays his own Sha, and only one', () => {
+    let s = h.pass(compete(start({ 'seat-a:hand': [card('k', 'shan', 'spade', 13), card('s1', 'sha'), card('s2', 'sha')] })));
+    expect(s.turn.cardPlays?.['sha'] ?? 0).toBe(0);
+    expect(h.legal(s, 'seat-a').some((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === 's1')).toBe(true);
+    s = h.pass(h.play(s, 's1', 'seat-b'));
+    expect(hp(s, 'seat-b')).toBe(3);
+    expect(h.legal(s, 'seat-a').some((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === 's2')).toBe(false);
+  });
+
+  it('a win against an exposed seat offers the loser and the living exposed seats of its Kingdom, never himself', () => {
+    const kingdoms = { 'seat-a': 'Qun', 'seat-b': 'Qun', 'seat-c': 'Wu', 'seat-d': 'Qun', 'seat-e': 'Wei', 'seat-f': 'Qun' } as const;
+    const generals = { ...at('seat-a', 'alternate:ji-ling'), 'seat-f': ['filler-xu-huang', 'filler-dong-zhuo', false] } as NonNullable<TableOptions['generals']>;
+    const s = compete(start({}, { seats: 6, phase: 'Draw', flags: { skipDraw: true }, kingdoms, generals }));
+    expect(s.pendingChoice?.options.map((o) => o.id)).toEqual(['seat-d', 'seat-b']);
+    const shot = h.choose(s, 'seat-b');
+    expect(shot.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
+    expect(hp(h.pass(shot), 'seat-b')).toBe(3);
+  });
+
+  it('a hidden loser has no Kingdom: the Sha goes at the loser with no pick', () => {
+    const kingdoms = { 'seat-a': 'Qun', 'seat-b': 'Qun', 'seat-c': 'Wu', 'seat-d': 'Qun', 'seat-e': 'Wei', 'seat-f': 'Qun' } as const;
+    const generals = { ...at('seat-a', 'alternate:ji-ling'), 'seat-d': ['filler-xu-huang', 'filler-dong-zhuo', false] } as NonNullable<TableOptions['generals']>;
+    const s = compete(start({}, { seats: 6, phase: 'Draw', flags: { skipDraw: true }, kingdoms, generals }));
+    expect(s.pendingChoice).toBeFalsy();
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-d' });
+  });
+
+  it('a tie ends his Play Phase', () => {
+    const s = compete(start({ 'seat-d:hand': [card('x', 'peach', 'heart', 13)] }));
+    expect(s.log.some((e) => e.kind === 'PhaseChangedEvent' && e.seatId === 'seat-a' && e.phase === 'Discard')).toBe(true);
+    expect(s.turn.ownerSeatId).toBe('seat-b');
+    expect(s.log.some((e) => e.kind === 'CardPlayedEvent')).toBe(false);
+  });
+
+  it('a loss ends his Play Phase', () => {
+    const s = compete(start({ 'seat-a:hand': [card('k', 'shan', 'spade', 2)] }));
+    expect(s.turn.ownerSeatId).toBe('seat-b');
+    expect(hp(s, 'seat-d')).toBe(4);
+    expect(pile(s)).toEqual(expect.arrayContaining(['k', 'x']));
+  });
+
+  it('declining leaves his Play Phase as it is', () => {
+    const s = h.decline(start());
+    expect(s.phase).toBe('Play');
+    expect(s.turn.ownerSeatId).toBe('seat-a');
+  });
+
+  it('is not asked when no other seat has a hand card, or when he has none', () => {
+    expect(askedAbout(start({ 'seat-d:hand': [] }))).toBeNull();
+    expect(askedAbout(start({ 'seat-a:hand': [] }))).toBeNull();
+  });
+
+  it('a hidden Ji Ling is asked, and using it reveals him', () => {
+    const s = start({}, { seats: 6, phase: 'Draw', flags: { skipDraw: true }, generals: { 'seat-a': ['alternate:ji-ling', 'filler-jia-xu', false] } });
+    expect(askedAbout(s)).toBe(id);
+    expect(h.use(s).seats[0].generals!.main.revealed).toBe(true);
+  });
+
+  it('a loser gone before the Sha is picked: the Sha goes at a living seat of its Kingdom, or nowhere, with no error', () => {
+    const kingdoms = { 'seat-a': 'Wei', 'seat-b': 'Qun', 'seat-c': 'Wu', 'seat-d': 'Qun', 'seat-e': 'Wei', 'seat-f': 'Shu' } as const;
+    const before = h.select(h.select(h.use(start({}, { seats: 6, phase: 'Draw', flags: { skipDraw: true }, kingdoms })), 'seat-d'), 'k');
+    const gone = (s: GameState): GameState => ({ ...s, seats: s.seats.map((x) => (x.id === 'seat-d' ? { ...x, eliminated: true } : x)) });
+    const s = h.select(gone(before), 'x');
+    expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b' });
+    const alone = h.select(gone(h.select(h.select(h.use(start()), 'seat-d'), 'k')), 'x');
+    expect(alone.pendingResponse).toBeNull();
+    expect(alone.phase).toBe('Play');
+  });
+});

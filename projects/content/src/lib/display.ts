@@ -201,6 +201,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'alternate:with-the-tide': 'Draw 1 card when a seat of your Kingdom brings another seat to dying; lose 1 HP when another seat of your Kingdom dies',
   'alternate:celebrity': 'Damage to you from a seat with a hidden General is reduced by 1',
   'alternate:comity': 'When cards you discard or lose from your hand or equipment area would go to the discard pile, give them to another seat instead',
+  'alternate:double-edged': 'Compete with another seat; if you win, use Sha on the loser or a seat of its Kingdom, ignoring distance; if not, your Play Phase ends',
   'alternate:insanity-axe': 'After your Sha damages {target}, move a card of its equipment area into yours, or discard it',
   'alternate:dauntless': 'Discard a Basic card from your hand; {target} then discards an Equipment card or takes 1 damage from you',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
@@ -248,6 +249,7 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   assault: { prompt: 'Choose a Weapon to discard, or none to lose 1 HP', confirm: 'Confirm' },
   'rouse-the-tiger': { prompt: 'Choose a seat with more HP to compete with', confirm: 'Choose' },
   'heavens-justice': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
+  'alternate:double-edged': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
   alliance: { prompt: 'Choose a seat to swap hands', confirm: 'Choose' },
   'brave-spirit': { prompt: 'Choose cards to discard', confirm: 'Discard' },
   charity: { prompt: 'Choose half of your hand to give away', confirm: 'Give' },
@@ -277,6 +279,7 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   'alternate:prudence': 'Choose a seat of your Kingdom to draw 1 card',
   'alternate:deathly-counsel': 'Choose a seat to discard a card from',
   'alternate:comity': 'Choose a seat to give the cards to',
+  'alternate:double-edged': 'Choose {target} or a seat of its Kingdom to use Sha on',
   'alternate:swift-and-deadly': 'Choose a seat to be at distance 1 from you until the end of the turn',
 };
 
@@ -389,6 +392,10 @@ const COMPETE_OUTCOMES: Record<string, { won: string; lost: string }> = {
   'intense-edge': {
     won: "{user} will take one of {target}'s cards",
     lost: 'Nothing happens',
+  },
+  'alternate:double-edged': {
+    won: '{user} will use Sha on {target} or a seat of its Kingdom',
+    lost: "{user}'s Play Phase ends",
   },
 };
 

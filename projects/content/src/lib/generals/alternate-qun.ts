@@ -1,16 +1,17 @@
-import type { CardInstance, CardMovedEvent, DamageDealtEvent, Effect, GameState, SeatDyingEvent, SeatEliminatedEvent, SkillDefinition } from 'engine';
-import { discardOwed, requireZoneOfKind, slotSilenced } from 'engine';
+import type { CardInstance, CardMovedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, PhaseChangedEvent, SeatDyingEvent, SeatEliminatedEvent, SkillDefinition, UsedCard } from 'engine';
+import { discardOwed, endFlagOf, requireZoneOfKind, slotSilenced } from 'engine';
 import { seatCardOptions } from '../shared/choices';
 import { exposedKingdom, exposedKingdomCounts, ownKingdom, sameKingdomSeatIds } from '../shared/kingdom';
 import { abilityKey } from '../shared/steps';
 import { handOf } from '../shared/queries';
 import { equipSlotOf } from '../cards/equipment';
-import { isShaDamage } from '../shared/abilities';
+import { isShaDamage, untargetableBy } from '../shared/abilities';
+import { competeStart, competeStep } from '../shared/compete';
 import { makeCurtain } from './forest';
 import { makeEclipseTheMoon, makeSowDiscord } from './qun';
 import { horsemanship } from './shu';
 import { killedByLivingOther } from './mountain';
-import { ask, choiceOf, draw, equipZoneId, handZoneId, isLiving, on, otherLivingSeatIds, seatOptions, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, draw, equipZoneId, handZoneId, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
 
 // Sorrow (compulsory): when a seat kills her, her player (she is out: afterDeath) chooses the killer's
 // Main or Deputy General, and that General loses all its skills for the rest of the game; the other
@@ -294,6 +295,58 @@ const callOfValour: SkillDefinition = {
   },
 };
 
+// Double Edged's Sha: viewed as used, so no card at all (colourless: Black Shield does not stop it).
+const DOUBLE_EDGED_SHA: UsedCard = { as: 'sha', colour: 'none', physical: [] };
+
+// Other living seats holding a hand card to compete with.
+const competable = (state: GameState, seatId: string) => otherLivingSeatIds(state, seatId).filter((id) => handOf(state, id).length > 0);
+
+// The seats Double Edged's Sha may go at: the loser, or another living seat exposed in the loser's Kingdom
+// (a hidden loser has none), never Ji Ling himself, and only seats a Sha may target. Distance is ignored.
+const doubleEdgedTargets = (state: GameState, ownerId: string, loser: string, registry: ContentRegistry): string[] => {
+  const kingdom = exposedKingdom(state, loser);
+  const others = kingdom === null ? [] : otherLivingSeatIds(state, loser).filter((id) => exposedKingdom(state, id) === kingdom);
+  return [...(isLiving(state, loser) ? [loser] : []), ...others].filter((id) => id !== ownerId && !untargetableBy(state, id, 'sha', registry, 'none'));
+};
+
+// Double Edged (may): at the start of his Play Phase he competes with another seat holding a hand card.
+// A win: it is viewed as him using Sha on the loser or on another seat of the loser's Kingdom, with no
+// range limit; a full Sha (Shan, Armor, chains), but no card, outside his Sha limit and no Wine (`free`,
+// as UseCardEffect gives an uncounted use). Not winning (a tie included): his Play Phase ends.
+const doubleEdged: SkillDefinition = {
+  id: 'alternate:double-edged',
+  triggers: [
+    on<PhaseChangedEvent>('after:PhaseChangedEvent', {
+      condition: (state, event, owner) =>
+        event.phase === 'Play' && event.seatId === owner.seatId && isLiving(state, owner.seatId) && handOf(state, owner.seatId).length > 0 && competable(state, owner.seatId).length > 0,
+      effect: (_state, _event, owner) => [ask(owner, [skillStep(owner, 'pick')])],
+    }),
+  ],
+  // 'pick': whom to compete with; 'chosen': compete; 'result': the Sha, or the Play Phase ends; 'sha': the Sha at the picked seat.
+  onStep: (state, step, registry) => {
+    const competing = competeStep(state, step);
+    if (competing) return competing;
+    const { owner } = step;
+    if (!isLiving(state, owner.seatId)) return [];
+    if (step.step === 'pick') {
+      const seats = handOf(state, owner.seatId).length > 0 ? competable(state, owner.seatId) : [];
+      if (seats.length === 0) return [];
+      return [selectionOf(state, owner, { of: 'seats', eligibleIds: seats, min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'chosen') }, onCancel: [] })];
+    }
+    if (step.step === 'chosen') return competeStart(state, owner, ((step.data?.['picked'] as string[]) ?? [])[0], 'result');
+    const shaAt = (seatId: string): Effect[] => [{ kind: 'UseCardEffect', seatId: owner.seatId, card: DOUBLE_EDGED_SHA, targets: [{ kind: 'seat', seatId }] }];
+    if (step.step === 'result') {
+      if (!step.data?.['won']) return [{ kind: 'SetTurnFlagEffect', flag: endFlagOf('Play') }];
+      const loser = step.data?.['target'] as string;
+      const targets = doubleEdgedTargets(state, owner.seatId, loser, registry);
+      if (targets.length === 0) return [];
+      if (targets.length === 1) return shaAt(targets[0]);
+      return [choiceOf(state, owner, { verb: 'pick', targetSeatId: loser, options: seatOptions(targets, shaAt) })];
+    }
+    return [];
+  },
+};
+
 // Alternate Qun skills whose rules differ from Default's, by General id then the Chinese skill name.
 // Each variant's id is `alternate:` plus the id of the Alternate English skill name.
 export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<string, SkillDefinition>>>> = {
@@ -312,6 +365,8 @@ export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<str
   // Celebrity, Comity: Kong Rong is new to Alternate (Default has no such General).
   'kong-rong': { 名士: celebrity, 礼让: comity },
   // Horsemanship, Call of Valour: Ma Teng is new to Alternate (Default has no such General); his Horsemanship is Ma Chao's.
+  // Double Edged: Ji Ling is new to Alternate (Default has no such General).
+  'ji-ling': { 双刃: doubleEdged },
   'ma-teng': { 马术: { ...horsemanship, id: 'alternate:horsemanship' }, 雄异: callOfValour },
   // Behind the Curtain: he can be chosen by black Tools, which are cancelled for him (Default: can't be chosen).
   'jia-xu': { 帷幕: { ...makeCurtain(true), id: 'alternate:behind-the-curtain' } },

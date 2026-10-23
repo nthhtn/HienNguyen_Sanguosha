@@ -1,5 +1,5 @@
 import type { Action, CardInstance, Effect, GameState, PendingChoice, PendingSelection } from 'engine';
-import { getLegalActions } from 'engine';
+import { advanceToDecision, getLegalActions } from 'engine';
 import { fillPick, weakestFirst } from './helpers';
 import { conversionSpare, pickActiveSkill } from './skills';
 import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
@@ -434,5 +434,33 @@ describe('Alternate Ma Teng, Call of Valour', () => {
 
   it('is kept for later at full HP with no ally of his Kingdom', () => {
     expect(pick(table({}, { generals: { 'seat-a': ['alternate:ma-teng', 'filler-meng-huo', true] } }))).toBeUndefined();
+  });
+});
+
+describe('Alternate Ji Ling, Double Edged', () => {
+  const id = 'alternate:double-edged';
+  const kingdoms = { 'seat-a': 'Wei', 'seat-b': 'Qun', 'seat-c': 'Wu', 'seat-d': 'Qun' } as const;
+  // Seat-a's Play Phase begins (no Draw); he holds a K, seat-d (Qun, like seat-b) a 5.
+  const starting = (mine = 13): GameState => {
+    const t = table({ 'seat-a:hand': [card('k', 'peach', 'heart', mine)], 'seat-d:hand': [card('x', 'shan', 'spade', 5)] }, { kingdoms, hp: { 'seat-b': 2 }, generals: { 'seat-a': ['alternate:ji-ling', 'filler-meng-huo', true] } });
+    return advanceToDecision({ ...t, phase: 'Draw', turn: { ...t.turn, flags: { skipDraw: true } } }, ctx).state;
+  };
+  // Every decision made by the bots until nothing is pending.
+  const played = (s: GameState): GameState => {
+    for (let i = 0; i < 20 && (s.pendingChoice || s.pendingSelection || s.pendingResponse); i++) s = act(s, decide(s));
+    return s;
+  };
+
+  it('with a high card, uses it, competes, and aims the Sha at the weakest non-ally of the loser’s Kingdom', () => {
+    const s = starting();
+    expect(s.pendingChoice?.reason).toMatchObject({ abilityId: id });
+    expect(picked(decide(s))).toBe('use');
+    const done = played(s);
+    expect(done.log.find((e) => e.kind === 'CardPlayedEvent')).toMatchObject({ seatId: 'seat-a', card: { as: 'sha' }, targets: [{ seatId: 'seat-b' }] });
+    expect(done.seats.find((x) => x.id === 'seat-b')!.combinedHp).toBe(1);
+  });
+
+  it('declines without a high card', () => {
+    expect(picked(decide(starting(6)))).toBe('decline');
   });
 });

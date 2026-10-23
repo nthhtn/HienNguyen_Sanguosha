@@ -46,6 +46,8 @@ export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>([
   'alternate:comity',
   // Ma Teng is new in Alternate: Call of Valour has no Default counterpart.
   'alternate:call-of-valour',
+  // Ji Ling is new in Alternate: Double Edged has no Default counterpart.
+  'alternate:double-edged',
 ]);
 
 // The Default skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.
