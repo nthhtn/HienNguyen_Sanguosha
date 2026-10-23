@@ -10,11 +10,10 @@ Default implementation; a doubtful one goes to the user).
 - **Omitted limits stay.** The Alternate text of Resurrection (Pang Tong), Descend into Chaos (Jia Xu)
   and Rouse the Tiger (Xun Yu) does not repeat the limit; Default's stays: Resurrection and Descend
   into Chaos once per game, Rouse the Tiger once per Play Phase.
-- **Descend into Chaos, Default and Alternate (one rule, so Alternate reuses Default's skill).** Each
-  other living seat, in turn order, must play a Sha at the seat nearest to it, or lose 1 HP. "Nearest"
-  is the least distance; seats tied for it are all legal. This replaces Default's "any seat in attack
-  range" (a deliberate Default change). The pick is always a popup, even with a single legal target
-  (it also carries the Pass option, which loses 1 HP).
+- **Descend into Chaos (Jia Xu), Alternate only (corrected 2026-10-23).** Each other living seat, in
+  turn order, must play a Sha at the seat nearest to it, or lose 1 HP. "Nearest" is the least distance;
+  seats tied for it are all legal. The pick is always a popup, even with a single legal target (it also
+  carries the Pass option, which loses 1 HP). Default keeps "any seat in attack range", unchanged.
 - **Lightning Strike (Zhang Jiao), Alternate only.** After you play or use a Shan, you may pick
   another living seat (never yourself) to judge; a spade deals it 2 thunder damage with no source.
   Default keeps "any living seat, yourself included".
@@ -24,7 +23,7 @@ Default implementation; a doubtful one goes to the user).
 
 ## My calls (flag if wrong)
 
-- Nearest seat for Descend into Chaos ignores attack range, but skips seats a Sha cannot target.
+- Nearest seat for Alternate Descend into Chaos ignores attack range, but skips seats a Sha cannot target.
 - Fearsome Archer (Huang Zhong): Alternate says "in your action phase", Default checks "in your turn".
   The only Sha you target outside the Play Phase on your turn is Godspeed's (Xiahou Yuan, as the turn
   starts). I read it as wording, as the note says; no variant.
@@ -42,6 +41,5 @@ Envy of Heaven (天妒), Retaliation (反馈), Demonic Talent (鬼才), Rouse th
 (巧变), Sudden Strike (突击, Default's Raid 突袭 under another Chinese name), Stunning Beauty (倾国),
 Marriage (结姻), Heavenly Scent (天香), Rosy Cheeks (红颜), Heroic Demeanor (英姿), Sow Dissension
 (反间), Barrage (乱击), Dark Sorcery (鬼道), Without Equal (无双), Unmitigated Murder (完杀).
-Cleared once Default is changed: Descend into Chaos (乱武).
-Variants: Lightning Strike (雷击), Resurrection (涅槃).
+Variants: Descend into Chaos (乱武), Lightning Strike (雷击), Resurrection (涅槃).
 The 22 "Nil" Generals were registered in slice 1; slice 4 only adds a guard test for them.

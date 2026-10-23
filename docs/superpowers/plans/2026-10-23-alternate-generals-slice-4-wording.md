@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Every skill of all 60 Alternate Generals resolves for the Alternate deck: 30 wording-only skills are cleared as Default's, and the two real differences found (Zhang Jiao's Lightning Strike, Pang Tong's Resurrection) become variants. Descend into Chaos also changes (for Default and Alternate) as the user ruled.
+**Goal:** Every skill of all 60 Alternate Generals resolves for the Alternate deck: 29 wording-only skills are cleared as Default's, and the three real differences found (Jia Xu's Descend into Chaos, Zhang Jiao's Lightning Strike, Pang Tong's Resurrection) become variants.
 
-**Architecture:** Slice 1's `CLEARED_WORDING` table in `alternateSkills.ts` is the ledger of cleared skills; slice 2's `ALTERNATE_VARIANTS` holds variants. The audit adds entries to the first, two variants to the second (each Default skill refactored into a small factory so both share code), and one Default rule change.
+**Architecture:** Slice 1's `CLEARED_WORDING` table in `alternateSkills.ts` is the ledger of cleared skills; slice 2's `ALTERNATE_VARIANTS` holds variants. The audit adds entries to the first, three variants to the second (each Default skill refactored into a small factory so both share code), and 
 
 **Tech Stack:** TypeScript, Jest (`npm test`), `projects/content/src/lib` (`alternateSkills.ts`, `generals/*.ts`, `alternateVariants.ts`), test harness `generals/skills.testing.ts`.
 
@@ -14,16 +14,16 @@
 
 ## Global Constraints
 
-- Default games change in exactly one place: Descend into Chaos (Task 2, the user's ruling). Every other Default skill keeps its id, behavior and specs.
-- Variant ids are `alternate:<skillIdOf(Alternate English name)>`: `alternate:lightning-strike`, `alternate:resurrection`; no branching on the deck inside a skill; variants are registered in data.
+- Default games must not change: every Default skill keeps its id, behavior and specs. A refactor into a factory must not alter a Default skill's id or behavior.
+- Variant ids are `alternate:<skillIdOf(Alternate English name)>`: `alternate:descend-into-chaos`, `alternate:lightning-strike`, `alternate:resurrection`; no branching on the deck inside a skill; variants are registered in data.
 - "Lord", never "Ruler"; Lord skills stay inactive.
 - Anything optional stays a "may" skill, asked each time.
 - UI text follows the casing rules in `CLAUDE.md`; any new Vietnamese text starts as draft (`npm run i18n:status`).
-- Each task carries its own tests and a check that the Default counterpart is unchanged (except Task 2).
+- Each task carries its own tests and a check that the Default counterpart is unchanged.
 
 ## Review Focus
 
-- Descend into Chaos with ties for nearest, with the only nearest seat unable to be targeted by Sha, and with exactly one legal target (popup still opens) (Task 2).
+- Alternate Descend into Chaos with ties for nearest, with the only nearest seat unable to be targeted by Sha, and with exactly one legal target (popup still opens); Default's still lets a seat pick any seat in range (Task 2).
 - Alternate Zhang Jiao is never offered himself, by a human or a bot; a Default Zhang Jiao at another seat still is (Task 3).
 - Alternate Pang Tong's Resurrection while Chained: face up, not Chained, 3 HP, no dying round; and only once per game (Task 4).
 - A cleared skill resolves to the Default skill of the same General, including Sudden Strike (Chinese name differs from Raid's) (Task 1).
@@ -54,21 +54,21 @@
 - [ ] **Step 4: Run** `npm test`; expect PASS. The Wiki's "In game" specs may need their expected counts updated; update them to the new registry.
 - [ ] **Step 5: Commit** `feat(content): clear the wording-only Alternate skills`.
 
-### Task 2: Descend into Chaos targets the nearest seat (Default and Alternate)
+### Task 2: Alternate Descend into Chaos (nearest seat)
 
 **Files:**
-- Modify: `projects/content/src/lib/generals/forest.ts` (`shaReach` is used by `upheaval` only; replace it), `alternateSkills.ts` (`CLEARED_WORDING` adds `'jia-xu': ['乱武']`)
-- Test: `projects/content/src/lib/generals/forest-qun.spec.ts` (where Upheaval's specs live; check with `grep -n upheaval`), `alternateAudit.spec.ts`
+- Modify: `projects/content/src/lib/generals/forest.ts` (`upheaval` becomes a factory), `projects/content/src/lib/generals/alternate-qun.ts` (Jia Xu is Qun; register the variant)
+- Test: `projects/content/src/lib/generals/alternate-qun.spec.ts`, the existing Upheaval specs (Default guard; find them with `grep -rn upheaval projects/content/src --include=*.spec.ts`)
 
 **Interfaces:**
-- Consumes: `seatDistance`, `untargetableBy` (already imported in `forest.ts`).
-- Produces: `nearestShaTargets(state: GameState, seatId: string, registry: ContentRegistry): string[]`, exported from `forest.ts`: the other living seats a Sha may target (not `untargetableBy` for 'sha') whose `seatDistance` from `seatId` equals the minimum among those; attack range is ignored.
+- Consumes: `shaReach`, `seatDistance`, `untargetableBy` (already in `forest.ts`).
+- Produces: `makeUpheaval(nearestOnly: boolean): SkillDefinition` in `forest.ts`; `upheaval = makeUpheaval(false)` (id `upheaval` unchanged, behavior unchanged); the variant is `{ ...makeUpheaval(true), id: 'alternate:descend-into-chaos' }` registered under `jia-xu`, 乱武. With `nearestOnly`, the seats offered are `nearestShaTargets(state, seatId, registry): string[]`: the other living seats a Sha may target whose `seatDistance` from `seatId` equals the minimum among those; attack range is ignored.
 
-- [ ] **Step 1: Write the failing tests** (rules: nearest seat, ties legal, popup always, Pass loses 1 HP). Table of specs: (a) three other seats at distances 1, 2, 2 from a seat: its pick options are only the distance-1 seat plus Pass; (b) a tie at distance 1: both are offered; (c) exactly one nearest: the choice request still opens (not auto-resolved); (d) the nearest seat cannot be targeted by Sha (Default Zhuge Liang with no hand): the next nearest targetable seat is offered; (e) a seat with a nearest seat outside its attack range may still pick it. Update any existing Upheaval spec that picks a seat that is in range but not nearest. Add to `alternateAudit.spec.ts`: Alternate Jia Xu's 乱武 resolves to `upheaval`.
-- [ ] **Step 2: Run** `npx jest projects/content/src/lib/generals/forest-qun.spec.ts`; confirm FAIL.
-- [ ] **Step 3: Implement** `nearestShaTargets` and use it in the `'next'` step in place of `shaReach`; the no-target case still loses 1 HP as today. Update the comment above `upheaval` to the new rule text.
-- [ ] **Step 4: Run** `npm test` and the simulation specs in `projects/sim`; expect PASS (bots read legal choices, so they follow). Fix any simulation seed that fails only because a Default Jia Xu game now plays differently.
-- [ ] **Step 5: Commit** `feat(content): Descend into Chaos targets the nearest seat`.
+- [ ] **Step 1: Write the failing tests** (Alternate Jia Xu; rules: nearest seat, ties legal, popup always, Pass loses 1 HP): (a) other seats at distances 1, 2, 2 from a seat: its pick offers only the distance-1 seat plus Pass; (b) a tie at distance 1: both offered; (c) exactly one nearest: the choice request still opens (not auto-resolved); (d) the nearest seat cannot be targeted by Sha (Default Zhuge Liang with no hand): the next nearest targetable seat is offered; (e) the nearest seat is outside the picker's attack range and may still be picked. `alternateSkills.spec.ts`: `readyAlternateSkills(jia-xu)` contains `alternate:descend-into-chaos`. Default guard: the existing Default specs, unchanged, stay green; add one asserting a Default Jia Xu still offers every seat in attack range.
+- [ ] **Step 2: Run** `npx jest projects/content/src/lib/generals/alternate-qun.spec.ts`; confirm FAIL.
+- [ ] **Step 3: Implement** the factory: only the seat list in the `'next'` step differs; the no-target case still loses 1 HP.
+- [ ] **Step 4: Run** `npm test`; expect PASS.
+- [ ] **Step 5: Commit** `feat(content): Alternate Descend into Chaos targets the nearest seat`.
 
 ### Task 3: Alternate Lightning Strike (another player only)
 
@@ -114,6 +114,6 @@
 
 ## Self-Review
 
-- Spec coverage: wording-only Generals and the "Nil" 22 (Task 1), "immediately removed" notes (Task 1, 30 skills cleared in the rules file), the 11 slice-2 skills with no note (Task 1 list: Star Gazing, Rouse the Tiger, Giant Elephant, Stunning Beauty, Unmitigated Murder, Envy of Heaven, Marriage, Heroic Demeanor, Sow Dissension, Sudden Strike; Descend into Chaos in Task 2), real differences found become variants (Tasks 3 and 4).
+- Spec coverage: wording-only Generals and the "Nil" 22 (Task 1), "immediately removed" notes (Task 1, 29 skills cleared in the rules file), the 11 slice-2 skills with no note (Task 1 list: Star Gazing, Rouse the Tiger, Giant Elephant, Stunning Beauty, Unmitigated Murder, Envy of Heaven, Marriage, Heroic Demeanor, Sow Dissension, Sudden Strike; , real differences found become variants (Tasks 2 to 4).
 - Output required by the spec ("a list of what was checked and what it was decided as"): the audit result in the rules file.
 - Not in this slice: bot intelligence, art, Lord skills.
