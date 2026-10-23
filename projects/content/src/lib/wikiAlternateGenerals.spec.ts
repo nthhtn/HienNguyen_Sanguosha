@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { buildContentRegistry } from './registry';
 import { alternateSkillFor } from './alternateSkills';
+import { generalDisplayData } from './generalDisplay';
 import { alternateGeneralIds, alternateGeneralRecords } from './alternateGenerals';
 import { alternateSkillStatus, wikiAlternateGeneralTabs, wikiAlternateGenerals } from './wikiAlternateGenerals';
 
@@ -163,5 +164,80 @@ describe('slice 2 variant Generals', () => {
       'guo-jia/Envy of Heaven', 'jia-xu/Descend into Chaos', 'jia-xu/Unmitigated Murder', 'sun-shangxiang/Marriage',
       'xun-yu/Rouse the Tiger', 'zhen-ji/Stunning Beauty', 'zhu-rong/Giant Elephant', 'zhuge-liang/Star Gazing',
     ]);
+  });
+});
+
+const MISSING_ELSEWHERE = [
+  'cao-cao/Villainous Hero',
+  'cao-pi/Banish',
+  'cao-pi/Scavenge',
+  'cao-ren/Entrenched',
+  'guan-yu/Warrior Saint',
+  'guo-jia/Envy of Heaven',
+  'huang-zhong/Fearsome Archer',
+  'jia-xu/Descend into Chaos',
+  'jia-xu/Unmitigated Murder',
+  'liu-shan/Devolution',
+  'liu-shan/Relish',
+  'lu-bu/Without Equal',
+  'ma-chao/Horsemanship',
+  'ma-chao/Iron Calvary',
+  'pang-tong/Resurrection',
+  'pang-tong/Shackle',
+  'sima-yi/Demonic Talent',
+  'sima-yi/Retaliation',
+  'sun-shangxiang/Marriage',
+  'xiao-qiao/Heavenly Scent',
+  'xiao-qiao/Rosy Cheeks',
+  'xun-yu/Rouse the Tiger',
+  'yuan-shao/Barrage',
+  'zhang-he/Flexibility',
+  'zhang-jiao/Dark Sorcery',
+  'zhang-jiao/Lightning Strike',
+  'zhang-liao/Sudden Strike',
+  'zhen-ji/Stunning Beauty',
+  'zhou-yu/Heroic Demeanor',
+  'zhou-yu/Sow Dissension',
+  'zhu-rong/Giant Elephant',
+  'zhuge-liang/Star Gazing',
+];
+
+describe('slice 3 new Generals', () => {
+  const NEW = ['gan-fu-ren', 'yue-jin', 'ding-feng', 'pan-feng', 'tian-feng', 'kong-rong', 'ma-teng', 'ji-ling', 'zou-shi'];
+  const statuses = () =>
+    wikiAlternateGenerals()
+      .filter((g) => NEW.includes(g.id))
+      .flatMap((g) => g.skills.map((s) => `${g.id}/${s.name}=${s.status}`))
+      .sort();
+
+  it('reads worksAsAlternate for every skill of the nine, none missing (Ma Teng’s Horsemanship included)', () => {
+    expect(statuses()).toEqual([
+      'ding-feng/Close Combat=worksAsAlternate', 'ding-feng/Swift and Deadly=worksAsAlternate',
+      'gan-fu-ren/Divine Wisdom=worksAsAlternate', 'gan-fu-ren/Prudence=worksAsAlternate',
+      'ji-ling/Double Edged=worksAsAlternate',
+      'kong-rong/Celebrity=worksAsAlternate', 'kong-rong/Comity=worksAsAlternate',
+      'ma-teng/Call of Valour=worksAsAlternate', 'ma-teng/Horsemanship=worksAsAlternate',
+      'pan-feng/Insanity Axe=worksAsAlternate',
+      'tian-feng/Deathly Counsel=worksAsAlternate', 'tian-feng/With the Tide=worksAsAlternate',
+      'yue-jin/Dauntless=worksAsAlternate',
+      'zou-shi/Femme Fatale=worksAsAlternate', 'zou-shi/Impetus for Conflicts=worksAsAlternate',
+    ].sort());
+  });
+
+  it('leaves no skill of the nine in the missing list, and pins every other General’s missing skills', () => {
+    const missing = wikiAlternateGenerals()
+      .flatMap((g) => g.skills.filter((s) => s.status === 'missing').map((s) => `${g.id}/${s.name}`));
+    expect(missing.filter((m) => NEW.includes(m.split('/')[0]))).toEqual([]);
+    expect(missing.sort()).toEqual(MISSING_ELSEWHERE);
+  });
+
+  it('marks each of the nine In game through the registry', () => {
+    const registry = buildContentRegistry();
+    for (const id of NEW) {
+      const display = generalDisplayData(`alternate:${id}`, 'en')!;
+      const registered = registry.generals.get(`alternate:${id}`)!.skills.map((s) => s.id);
+      expect(registered.length).toBe(display.skills.length);
+      expect(display.skills.every((s) => s.inGame)).toBe(true);
+    }
   });
 });

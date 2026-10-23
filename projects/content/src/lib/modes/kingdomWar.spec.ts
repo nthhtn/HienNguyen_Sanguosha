@@ -486,8 +486,8 @@ describe('Kingdom War reveal bonuses', () => {
   const handSize = (s: GameState, seatId: string) => s.zones.find((z) => z.id === `${seatId}:hand`)!.cards.length;
   const deck = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => card(id, 'sha'));
   // Both Generals hidden on every seat; Xu Huang (4) + Dong Zhuo (4) is even, Xu Huang (4) + Jia Xu (3) is odd.
-  const hidden = { generals: Object.fromEntries(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'].map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]])) };
-  const oddPair = (id: string) => ({ [id]: ['filler-xu-huang', 'filler-jia-xu', false] });
+  const hidden = { generals: Object.fromEntries(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'].map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false] as [string, string, boolean]])) };
+  const oddPair = (id: string): Record<string, [string, string, boolean]> => ({ [id]: ['filler-xu-huang', 'filler-jia-xu', false] });
 
   it('the first seat to reveal a General draws 2 when the option is on at 5 seats', () => {
     const s = { ...makeTable({ drawPile: deck }, { seats: 5, ...hidden }), rules: { firstRevealDraw: true } };
