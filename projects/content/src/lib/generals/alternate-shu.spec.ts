@@ -267,6 +267,22 @@ describe('Alternate Gan Fu Ren', () => {
       expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-c']);
     });
 
+    it('hidden, she is still asked; Use reveals her and the pick draws', () => {
+      // Never revealed, so the seat's own Kingdom is still 'hidden': hers is her General's (Shu).
+      const t = gan({ hidden: ['seat-a'] });
+      let s = healOf({ ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, kingdom: 'hidden' as const } : x)) }, 1);
+      expect(askedAbout(s)).toBe(id);
+      s = h.use(s);
+      expect(s.seats[0].generals!.main.revealed).toBe(true);
+      expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-b', 'seat-c']);
+      s = h.choose(s, 'seat-b');
+      expect(handIds(s, 'seat-b')).toHaveLength(1);
+    });
+
+    it('hidden with no exposed seat of her Kingdom, she is not asked', () => {
+      expect(askedAbout(healOf(gan({ hidden: ['seat-a', 'seat-b', 'seat-c'] }), 1))).toBeNull();
+    });
+
     it('asks nothing with no one to pick', () => {
       expect(askedAbout(healOf(gan({ kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Wei', 'seat-c': 'Wu', 'seat-d': 'Qun' } }), 1))).toBeNull();
       expect(askedAbout(healOf(gan({ hidden: ['seat-b', 'seat-c'] }), 1))).toBeNull();

@@ -1,26 +1,34 @@
-import type { HealEvent, PhaseChangedEvent, SkillDefinition } from 'engine';
+import type { ContentRegistry, GameState, GeneralOwner, HealEvent, PhaseChangedEvent, SkillDefinition } from 'engine';
 import { makeIntenseEdge } from './forest';
 import { makeEmptyCity, makeGatheringWisdom, makeKindness } from './shu';
-import { sameKingdomSeatIds } from '../shared/kingdom';
+import { exposedKingdom } from '../shared/kingdom';
 import { handOf } from '../shared/queries';
 import { ask, choiceOf, discardMoves, draw, heal, hpOf, isLiving, on, seatOptions, skillStep, used } from '../shared/skills';
 
 // Prudence (may): whenever she regains HP, once per point regained, she may pick another seat of her
 // Kingdom to draw 1 card. Only exposed seats count (a hidden seat has no Kingdom, so is never picked);
 // an Ambitionist is a Kingdom of one, so there is nobody to pick. With no one to pick she is not asked.
-const kingdomMates = (state: Parameters<typeof sameKingdomSeatIds>[0], seatId: string) => sameKingdomSeatIds(state, seatId).filter((id) => id !== seatId);
+// A hidden General's skill reveals it on Use, so her Kingdom for the ask is her true one: the seat's own
+// once it has one, else her General's. The picks are other living seats exposed in that Kingdom.
+function kingdomMates(state: GameState, owner: GeneralOwner, registry: ContentRegistry): string[] {
+  const seat = state.seats.find((x) => x.id === owner.seatId);
+  if (!seat?.generals) return [];
+  const own = seat.kingdom !== 'hidden' ? seat.kingdom : registry.generals.get(seat.generals[owner.slot].generalDefinitionId)?.kingdom;
+  if (!own || own === 'hidden') return [];
+  return state.seats.filter((x) => x.id !== owner.seatId && !x.eliminated && exposedKingdom(state, x.id) === own).map((x) => x.id);
+}
 
 const prudence: SkillDefinition = {
   id: 'alternate:prudence',
   triggers: [
     on<HealEvent>('after:HealEvent', {
-      condition: (state, event, owner) => event.target.kind === 'seat' && event.target.seatId === owner.seatId && isLiving(state, owner.seatId) && kingdomMates(state, owner.seatId).length > 0,
+      condition: (state, event, owner, registry) => event.target.kind === 'seat' && event.target.seatId === owner.seatId && isLiving(state, owner.seatId) && kingdomMates(state, owner, registry).length > 0,
       effect: (_state, event, owner) => Array.from({ length: event.amount }, () => ask(owner, [skillStep(owner, 'pick')])),
     }),
   ],
-  onStep: (state, step) => {
+  onStep: (state, step, registry) => {
     const { owner } = step;
-    const mates = isLiving(state, owner.seatId) ? kingdomMates(state, owner.seatId) : [];
+    const mates = isLiving(state, owner.seatId) ? kingdomMates(state, owner, registry) : [];
     if (mates.length === 0) return [];
     return [choiceOf(state, owner, { verb: 'pick', options: seatOptions(mates, (seatId) => [used(owner, 'used', seatId), draw(seatId, 1)]) })];
   },
