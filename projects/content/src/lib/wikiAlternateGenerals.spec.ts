@@ -185,18 +185,17 @@ describe('wikiAlternateGeneralTabs', () => {
 describe('slice 2 variant Generals', () => {
   const SLICE_2 = ['liu-bei', 'sun-quan', 'xun-yu', 'zhu-rong', 'huang-yueying', 'sun-shangxiang', 'diao-chan', 'zhuge-liang', 'lu-xun', 'jia-xu', 'guo-jia', 'zhang-zhao-and-zhang-hong', 'zhen-ji', 'cai-wenji'];
 
-  it('leaves only the skills slice 4 turns into variants reading missing', () => {
+  it('leaves no slice 2 General’s skill reading missing', () => {
     const missing = wikiAlternateGenerals()
       .filter((g) => SLICE_2.includes(g.id))
       .flatMap((g) => g.skills.filter((s) => s.status === 'missing').map((s) => `${g.id}/${s.name}`))
       .sort();
-    expect(missing).toEqual(['jia-xu/Descend into Chaos']);
+    expect(missing).toEqual([]);
   });
 });
 
-// Slice 4 turns these into variants (Tasks 2 to 4); the first is a slice 2 General, so it is pinned there too.
+// Slice 4 turns these into variants (Tasks 3 and 4).
 const MISSING_ELSEWHERE = [
-  'jia-xu/Descend into Chaos',
   'pang-tong/Resurrection',
   'zhang-jiao/Lightning Strike',
 ];

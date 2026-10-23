@@ -110,7 +110,7 @@ describe('simulation: Alternate deck games with bots', () => {
     'ding-feng': ['alternate:close-combat'],
     'ma-teng': ['alternate:horsemanship'],
   };
-  const MAX_SEEDS = 20;
+  const MAX_SEEDS = 30;
 
   it('plays each new General as Main to a result, with no engine error, no leak and no broken invariant, and its skills fire', () => {
     const registry = buildContentRegistry();
