@@ -76,6 +76,8 @@ describe('the display functions by locale', () => {
   });
 
   it('Vietnamese returns the Vietnamese entry', () => {
+    expect(abilityHint('alternate:warrior-lady', 'en')).toBe('Draw 2 cards');
+    expect(abilityHint('alternate:warrior-lady', 'vi')).toBe('Rút 2 lá bài');
     expect(abilityHint('axe', 'vi')).toBe('Bỏ 2 lá bài để Sát của bạn trúng {target}');
     expect(selectionText('bestowed-rouse', 'vi')).toEqual({ prompt: 'Chọn các lá bài vừa rút để đưa đi', confirm: 'Đưa', cancel: 'Giữ phần còn lại' });
     expect(seatPickText('alliance', 'vi')).toBe('Chọn một người chơi để đổi bài trên tay với {target}');

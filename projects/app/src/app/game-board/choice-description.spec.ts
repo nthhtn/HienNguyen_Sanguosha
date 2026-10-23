@@ -105,6 +105,7 @@ describe('describeChoice', () => {
     const card = { instanceId: 'c1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
     const seats: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [], card }];
     expect(describeChoice(state(skill('alternate:bequeathed-strategy', 'pick', undefined, seats)), 'seat-0')!.prompt).toBe('Choose a seat to give Slash (7 ♠) to');
+  });
 });
 
 describe('choiceOptionLabel', () => {

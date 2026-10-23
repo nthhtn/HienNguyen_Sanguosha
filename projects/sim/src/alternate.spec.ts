@@ -71,7 +71,8 @@ describe('simulation: Alternate deck games with bots', () => {
       const generalId = `alternate:${name}`;
       const skillIds = (registry.generals.get(generalId)?.skills ?? []).map((s) => s.id);
       const games: Record<string, number> = Object.fromEntries(skillIds.map((id) => [id, 0]));
-      const SEEDS = 12;
+      // Default run keeps the suite fast; SIM_VERBOSE=1 prints the usage table and raises the seeds so every variant is seen firing.
+      const SEEDS = process.env['SIM_VERBOSE'] ? 12 : 4;
       for (let seed = 1; seed <= SEEDS; seed++) {
         const base = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed * 17 + 3, { deck: 'alternate' });
         const initial = withForcedPairing(base, 'seat-0', [generalId, partnerOf(generalId, registry, pool)]);
@@ -93,7 +94,7 @@ describe('simulation: Alternate deck games with bots', () => {
       }
       rows.push(`${name} (${SEEDS} games): ${skillIds.map((id) => `${id}=${games[id]}`).join(', ')}`);
     }
-    process.stdout.write(`\nvariant skill usage:\n${rows.join('\n')}\n`);
+    if (process.env['SIM_VERBOSE']) process.stdout.write(`\nvariant skill usage:\n${rows.join('\n')}\n`);
     expect(failures).toEqual([]);
   }, 900_000);
 });

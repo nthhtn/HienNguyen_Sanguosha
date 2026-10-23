@@ -177,6 +177,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'brave-gesture': 'Draw 1 more card',
   'gathering-wisdom': 'Draw 1 card',
   'alternate:envious-moon': 'Draw 1 card',
+  'alternate:warrior-lady': 'Draw 2 cards',
   'iron-cavalry': "Judge: on red, {target} can't play a Dodge against this Slash",
   astrology: 'Look at the top cards of the draw pile and put them back in any order',
   displace: 'Discard 1 card to move the Slash to another seat in your attack range',
