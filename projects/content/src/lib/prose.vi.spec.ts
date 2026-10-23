@@ -93,6 +93,11 @@ describe('the display functions by locale', () => {
     }
   });
 
+  it('Alternate Resurrection says it also clears Chained', () => {
+    expect(abilityHint('alternate:resurrection', 'en')).toBe('Discard every card, draw 3, recover to 3 HP and turn face up and unchained');
+    expect(abilityHint('alternate:resurrection', 'vi')).toBe('Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3, lật lại và tháo xích');
+  });
+
   it('a locale with no prose, or an empty one, falls back to English', () => {
     expect(abilityHint('axe', 'fr')).toBe('Discard 2 cards to make your Slash hit {target}');
     expect(abilityHint('axe', '')).toBe('Discard 2 cards to make your Slash hit {target}');

@@ -1,7 +1,10 @@
 import type { GameState } from 'engine';
-import { askedAbout, card, handIds, harness, hp, table, TableOptions } from './skills.testing';
+import { abilityLog, askedAbout, card, handIds, harness, hp, ids, kwMode, table, TableOptions } from './skills.testing';
+import { readyAlternateSkills } from '../alternateSkills';
+import { alternateGeneralRecords } from '../alternateGenerals';
 
 const h = harness();
+const kw = harness(kwMode);
 const at = (seatId: string, general: string): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', true] });
 const hand = ['k1', 'k2', 'k3', 'k4', 'k5', 'k6'].map((id) => card(id, 'shan', 'spade'));
 const liuBei = (general: string, combinedHp = 2) => table({ 'seat-a:hand': hand }, { generals: at('seat-a', general), hp: { 'seat-a': combinedHp } });
@@ -316,5 +319,56 @@ describe('Alternate Gan Fu Ren', () => {
     it('an empty hand is not asked', () => {
       expect(askedAbout(startOfTurn([], 3))).not.toBe(id);
     });
+  });
+});
+
+describe('Alternate Pang Tong, Resurrection', () => {
+  const id = 'alternate:resurrection';
+  const pile = Array.from({ length: 8 }, (_, i) => card(`d${i}`, 'shan', 'heart', i + 1));
+  const hit = (seatId: string, amount: number) => ({
+    kind: 'DamageEffect' as const,
+    damage: { source: null, target: { kind: 'seat' as const, seatId }, amount, nature: 'normal' as const, cause: {} },
+  });
+  // Seat-a, face down and Chained, at 1 HP with a hand card, equipment and a judgment card.
+  const pangTong = (general: string, o: TableOptions = {}) => {
+    const t = table(
+      { 'seat-a:hand': [card('x', 'sha')], 'seat-a:equip': [card('e', 'black-pommel', 'spade', 6)], 'seat-a:judgment': [card('j', 'capture', 'spade', 6)], drawPile: pile },
+      { generals: at('seat-a', general), hp: { 'seat-a': 1 }, ...o }
+    );
+    return { ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, faceDown: true as const, chained: true as const } : x)) };
+  };
+
+  it('on entering dying: discard every card, draw 3, recover to 3 HP, turn face up and unchained; no dying round', () => {
+    let s = kw.run(pangTong('alternate:pang-tong'), [hit('seat-a', 2)]);
+    expect(askedAbout(s)).toBe(id);
+    s = kw.use(s);
+    expect(ids(s, 'discardPile').sort()).toEqual(['e', 'j', 'x']);
+    expect(handIds(s, 'seat-a')).toEqual(['d0', 'd1', 'd2']);
+    expect(hp(s, 'seat-a')).toBe(3);
+    expect(s.seats[0].faceDown).toBeUndefined();
+    expect(s.seats[0].chained).toBeFalsy();
+    expect(s.pendingResponse).toBeNull();
+    expect(abilityLog(s)).toContainEqual(expect.objectContaining({ abilityId: id, outcome: 'reborn' }));
+  });
+
+  it('recovers at most to his max HP', () => {
+    expect(hp(kw.use(kw.run(pangTong('alternate:pang-tong', { maxHp: { 'seat-a': 2 } }), [hit('seat-a', 2)])), 'seat-a')).toBe(2);
+  });
+
+  it('once per game: the second time the dying round goes ahead', () => {
+    let s = kw.use(kw.run(pangTong('alternate:pang-tong'), [hit('seat-a', 2)]));
+    s = kw.run(s, [hit('seat-a', 3)]);
+    expect(askedAbout(s)).toBeNull();
+    expect(s.pendingResponse?.reason).toEqual({ kind: 'dying', seatId: 'seat-a' });
+  });
+
+  it('Default Pang Tong in the same state stays Chained', () => {
+    const s = kw.use(kw.run(pangTong('pang-tong'), [hit('seat-a', 2)]));
+    expect(s.seats[0].faceDown).toBeUndefined();
+    expect(s.seats[0].chained).toBe(true);
+  });
+
+  it('is what Alternate Pang Tong plays for 涅槃, beside Default Shackle', () => {
+    expect(readyAlternateSkills(alternateGeneralRecords().find((g) => g.id === 'pang-tong')!).map((x) => x.id)).toEqual(['shackle', id]);
   });
 });

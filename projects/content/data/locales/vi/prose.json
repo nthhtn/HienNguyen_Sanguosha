@@ -49,6 +49,7 @@
     "alternate:impetus-for-conflicts": "Bỏ một lá Trang bị để úp lại một Tướng của một người chơi đã lật ngửa cả hai Tướng",
     "alternate:divine-wisdom": "Bỏ toàn bộ bài trên tay; nếu số bài bỏ không nhỏ hơn Sinh lực hiện tại, hồi 1 Sinh lực",
     "nirvana": "Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3 và lật lại",
+    "alternate:resurrection": "Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3, lật lại và tháo xích",
     "eight-arrays": "Phán xét: nếu là lá đỏ, nó tính là một Thiểm",
     "sudden-attack": "Bỏ một lá bài của {target}",
     "dueling-heroes": "Thay vì rút bài, phán xét và lấy lá bài đó; các lá bài màu còn lại có thể dùng làm Quyết Đấu trong lượt này",

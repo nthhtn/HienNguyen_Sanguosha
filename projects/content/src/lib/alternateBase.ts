@@ -24,6 +24,8 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:descend-into-chaos': 'upheaval',
   // Same texts and bot behaviour as Lightning Strike; the bot picks among the seats it is offered.
   'alternate:lightning-strike': 'lightning-strike',
+  // Same bot behaviour as Nirvana; its own hint says it also clears Chained.
+  'alternate:resurrection': 'nirvana',
   // Ma Teng's Horsemanship is Ma Chao's: same texts and modifier.
   'alternate:horsemanship': 'horsemanship',
 };

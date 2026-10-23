@@ -194,10 +194,8 @@ describe('slice 2 variant Generals', () => {
   });
 });
 
-// Slice 4 turns this into a variant (Task 4).
-const MISSING_ELSEWHERE = [
-  'pang-tong/Resurrection',
-];
+// Slice 4 leaves none missing: every Alternate skill is Default's or a variant.
+const MISSING_ELSEWHERE: string[] = [];
 
 describe('slice 3 new Generals', () => {
   const NEW = ['gan-fu-ren', 'yue-jin', 'ding-feng', 'pan-feng', 'tian-feng', 'kong-rong', 'ma-teng', 'ji-ling', 'zou-shi'];

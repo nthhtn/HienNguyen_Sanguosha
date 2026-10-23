@@ -1,4 +1,5 @@
 import type { ContentRegistry, GameState, GeneralOwner, HealEvent, PhaseChangedEvent, SkillDefinition } from 'engine';
+import { makeNirvana } from './fire';
 import { makeIntenseEdge } from './forest';
 import { makeEmptyCity, makeGatheringWisdom, makeKindness } from './shu';
 import { exposedKingdom, ownKingdom } from '../shared/kingdom';
@@ -61,6 +62,8 @@ export const ALTERNATE_SHU_VARIANTS: Readonly<Record<string, Readonly<Record<str
   'huang-yueying': { 集智: { ...makeGatheringWisdom(false), id: 'alternate:assembling-wisdom' } },
   // Fearsome Blade: only when the damaged seat is one the Slash was aimed at.
   'zhu-rong': { 烈刃: { ...makeIntenseEdge(true), id: 'alternate:fearsome-blade' } },
+  // Resurrection: also clears the Chained state (Default's Nirvana only turns face up).
+  'pang-tong': { 涅槃: { ...makeNirvana(true), id: 'alternate:resurrection' } },
   // Empty City: with no hand cards he can be chosen by Slash and Duel, which are cancelled for him (Default: can't be chosen).
   'zhuge-liang': { 空城: { ...makeEmptyCity(true), id: 'alternate:empty-city' } },
 };
