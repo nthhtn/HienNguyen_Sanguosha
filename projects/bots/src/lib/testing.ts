@@ -26,11 +26,13 @@ export interface Options {
   hp?: Record<string, number>;
   maxHp?: Record<string, number>;
   owner?: string;
+  // How many seats (seat-a ... seat-f): 4 by default.
+  seats?: number;
 }
 // Four seats (Wei, Shu, Wu, Qun by default) at 4/4 HP, all Generals revealed; seat-a's Play Phase.
 export function table(cards: Record<string, CardInstance[]> = {}, o: Options = {}): GameState {
-  const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d'];
-  const kingdoms: Kingdom[] = ['Wei', 'Shu', 'Wu', 'Qun'];
+  const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'].slice(0, o.seats ?? 4);
+  const kingdoms: Kingdom[] = ['Wei', 'Shu', 'Wu', 'Qun', 'Wei', 'Shu'];
   return {
     seats: ids.map((id, index) => {
       const [main, deputy, revealed = true] = o.generals?.[id] ?? ['filler-xu-huang', 'filler-dong-zhuo'];

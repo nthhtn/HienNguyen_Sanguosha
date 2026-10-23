@@ -31,6 +31,13 @@ describe('Kingdom helpers', () => {
     expect(sameKingdomSeatIds(state, 'c')).toEqual(['c']);
   });
 
+  it('a seat that has not chosen Generals (generals null) has no exposed Kingdom', () => {
+    const early = stateWith([seat('a', 0, 'Wei'), { ...seat('b', 1, 'Wei'), generals: null } as Seat]);
+    expect(exposedKingdom(early, 'b')).toBeNull();
+    expect(sameKingdomSeatIds(early, 'a')).toEqual(['a']);
+    expect(exposedKingdomCounts(early).get('Wei')).toBe(1);
+  });
+
   it('excludes dead seats', () => {
     const dead = stateWith([seat('a', 0, 'Wei'), seat('b', 1, 'Wei', true), seat('c', 2, 'hidden')]);
     expect(sameKingdomSeatIds(dead, 'a')).toEqual(['a']);
@@ -50,7 +57,7 @@ describe('Kingdom helpers', () => {
 
     it('revealing only the deputy exposes the Kingdom', () => {
       const b = seat('b', 1, 'Wei', false, false);
-      b.generals.deputy.revealed = true;
+      b.generals!.deputy.revealed = true;
       const s = stateWith([seat('a', 0, 'Wei'), b]);
       expect(exposedKingdom(s, 'b')).toBe('Wei');
       expect(sameKingdomSeatIds(s, 'a')).toEqual(['a', 'b']);
