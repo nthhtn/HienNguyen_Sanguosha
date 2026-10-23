@@ -48,6 +48,9 @@ export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>([
   'alternate:call-of-valour',
   // Ji Ling is new in Alternate: Double Edged has no Default counterpart.
   'alternate:double-edged',
+  // Zou Shi is new in Alternate: both her skills have no Default counterpart.
+  'alternate:femme-fatale',
+  'alternate:impetus-for-conflicts',
 ]);
 
 // The Default skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.

@@ -204,6 +204,8 @@ const ABILITY_HINTS: Record<string, string> = {
   'alternate:double-edged': 'Compete with another seat; if you win, use Sha on the loser or a seat of its Kingdom, ignoring distance; if not, your Play Phase ends',
   'alternate:insanity-axe': 'After your Sha damages {target}, move a card of its equipment area into yours, or discard it',
   'alternate:dauntless': 'Discard a Basic card from your hand; {target} then discards an Equipment card or takes 1 damage from you',
+  'alternate:femme-fatale': 'Reveal this General; while it is revealed, other seats cannot reveal Generals in your turn',
+  'alternate:impetus-for-conflicts': 'Discard an Equipment card to hide a General of a seat whose Generals are both revealed',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',
   'sudden-attack': "Discard one of {target}'s cards",
@@ -299,6 +301,7 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
   'alternate:stabilization': 'Choose a card to give back; you take the others, if there are any',
   'alternate:bequeathed-strategy': 'Choose a card to give first; the other is given next',
   'alternate:sorrow': "Choose which of {target}'s Generals loses its skills",
+  'alternate:impetus-for-conflicts': "Choose which of {target}'s Generals to hide",
 };
 
 export function choicePromptText(abilityId: string, locale = 'en'): string | null {
@@ -317,6 +320,8 @@ const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; can
   'move-card': { prompt: 'Choose a seat to move a card from', confirm: 'Choose' },
   'alternate:swift-and-deadly/discarded': { prompt: 'Choose a card to discard', confirm: 'Discard' },
   'alternate:dauntless/discarded': { prompt: 'Choose a Basic card from your hand to discard', confirm: 'Discard' },
+  'alternate:impetus-for-conflicts/discarded': { prompt: 'Choose an Equipment card to discard', confirm: 'Discard' },
+  'alternate:impetus-for-conflicts/chosen': { prompt: 'Choose a seat whose Generals are both revealed', confirm: 'Choose' },
   'alternate:dauntless/paid': { prompt: 'Choose an Equipment card to discard, or take 1 damage', confirm: 'Discard', cancel: 'Take the Damage' },
 };
 

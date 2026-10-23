@@ -102,8 +102,8 @@ describe('buildContentRegistry', () => {
       expect(ids).toContain('fierce-general');
     });
 
-    it('looks up a vanilla Alternate General', () => {
-      expect(lookupGeneral(registry, 'alternate:zou-shi').skills).toEqual([]);
+    it('looks up an Alternate General new to Alternate, with its own skills', () => {
+      expect(lookupGeneral(registry, 'alternate:zou-shi').skills.map((s) => s.id)).toEqual(['alternate:femme-fatale', 'alternate:impetus-for-conflicts']);
     });
   });
 });

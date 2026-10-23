@@ -51,6 +51,7 @@ describe('readyAlternateSkills', () => {
     expect(readyIds('kong-rong')).toEqual(['alternate:celebrity', 'alternate:comity']);
     expect(readyIds('ji-ling')).toEqual(['alternate:double-edged']);
     expect(readyIds('ma-teng')).toEqual(['alternate:horsemanship', 'alternate:call-of-valour']);
+    expect(readyIds('zou-shi')).toEqual(['alternate:femme-fatale', 'alternate:impetus-for-conflicts']);
     expect(readyIds('ding-feng')).toEqual(['alternate:close-combat', 'alternate:swift-and-deadly']);
   });
   it('never runs a Lord skill', () => {

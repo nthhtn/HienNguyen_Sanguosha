@@ -11,7 +11,7 @@ import { makeCurtain } from './forest';
 import { makeEclipseTheMoon, makeSowDiscord } from './qun';
 import { horsemanship } from './shu';
 import { killedByLivingOther } from './mountain';
-import { ask, choiceOf, draw, equipZoneId, handZoneId, isLiving, on, otherLivingSeatIds, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
+import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
 
 // Sorrow (compulsory): when a seat kills her, her player (she is out: afterDeath) chooses the killer's
 // Main or Deputy General, and that General loses all its skills for the rest of the game; the other
@@ -347,6 +347,77 @@ const doubleEdged: SkillDefinition = {
   },
 };
 
+// Femme Fatale: in her Play Phase, while this General is hidden, she may expose it at no other cost (an
+// active skill that does nothing: using a hidden General's skill reveals it). While it is exposed (and keeps
+// its skills), no other seat may expose a General in her turn, by any means (blocksOtherReveals, Task 3's
+// engine block); a death's reveal still happens, and her own seat is never blocked.
+const femmeFatale: SkillDefinition = {
+  id: 'alternate:femme-fatale',
+  blocksOtherReveals: true,
+  active: {
+    canUse: (state, { seatId, owner }) => state.seats.find((s) => s.id === seatId)?.generals?.[owner.slot].revealed === false,
+    start: () => [],
+  },
+};
+
+// Impetus for Conflicts: in her Play Phase, any number of times, she discards an Equipment card (hand or
+// worn) and picks another living seat with both Generals exposed, then one of its Generals (named: both
+// are exposed), which is hidden again. The use counts once the card is picked (Cancel there undoes it);
+// the discard and the hiding happen at the last pick, once the card is still hers and the seat still fits.
+// The hidden General can be exposed again by the normal reveal conditions. The pick is a secret choice:
+// its log line would otherwise name a General that is hidden from then on.
+const equipmentOf = (state: GameState, seatId: string, registry: ContentRegistry) =>
+  ownCards(state, seatId, true).filter((c) => registry.cards.get(c.definitionId)?.category === 'equipment');
+const fullyExposedOthers = (state: GameState, seatId: string) =>
+  otherLivingSeatIds(state, seatId).filter((id) => {
+    const generals = state.seats.find((s) => s.id === id)?.generals;
+    return !!generals && generals.main.revealed && generals.deputy.revealed;
+  });
+
+const impetusForConflicts: SkillDefinition = {
+  id: 'alternate:impetus-for-conflicts',
+  active: {
+    canUse: (state, { seatId }, registry) => equipmentOf(state, seatId, registry).length > 0 && fullyExposedOthers(state, seatId).length > 0,
+    start: (state, { seatId, owner }, registry) => [
+      selectionOf(state, owner, {
+        of: 'cards', eligibleIds: equipmentOf(state, seatId, registry).map((c) => c.instanceId), min: 1, max: 1,
+        then: { kind: 'skill-step', step: skillStep(owner, 'discarded') }, onCancel: [],
+      }),
+    ],
+  },
+  // 'discarded': which seat; 'chosen': which of its Generals; 'hide': discard the card and hide it.
+  onStep: (state, step, registry) => {
+    const { owner } = step;
+    const data = step.data ?? {};
+    if (!isLiving(state, owner.seatId)) return [];
+    if (step.step === 'discarded') {
+      const cardId = (data['picked'] as string[])[0];
+      const seats = fullyExposedOthers(state, owner.seatId);
+      return seats.length === 0 ? [] : [selectionOf(state, owner, { of: 'seats', eligibleIds: seats, min: 1, max: 1, then: { kind: 'skill-step', step: skillStep(owner, 'chosen', { cardId }) }, onCancel: [] })];
+    }
+    const cardId = data['cardId'] as string;
+    const target = step.step === 'chosen' ? (data['picked'] as string[])[0] : (data['target'] as string);
+    const generals = state.seats.find((s) => s.id === target)?.generals;
+    if (!fullyExposedOthers(state, owner.seatId).includes(target) || !generals || !equipmentOf(state, owner.seatId, registry).some((c) => c.instanceId === cardId)) return [];
+    if (step.step === 'chosen') {
+      return [
+        choiceOf(state, owner, {
+          verb: 'pick',
+          secret: true,
+          targetSeatId: target,
+          options: (['main', 'deputy'] as const).map((slot) => ({
+            id: slot,
+            shows: { kind: 'general' as const, generalId: generals[slot].generalDefinitionId },
+            effects: [skillStep(owner, 'hide', { cardId, target, slot })],
+          })),
+        }),
+      ];
+    }
+    const slot = data['slot'] as 'main' | 'deputy';
+    return [...discardMoves(state, [cardId]), used(owner, 'used', target), { kind: 'HideGeneralEffect', seatId: target, slot }];
+  },
+};
+
 // Alternate Qun skills whose rules differ from Default's, by General id then the Chinese skill name.
 // Each variant's id is `alternate:` plus the id of the Alternate English skill name.
 export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<string, SkillDefinition>>>> = {
@@ -370,4 +441,6 @@ export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<str
   'ma-teng': { 马术: { ...horsemanship, id: 'alternate:horsemanship' }, 雄异: callOfValour },
   // Behind the Curtain: he can be chosen by black Tools, which are cancelled for him (Default: can't be chosen).
   'jia-xu': { 帷幕: { ...makeCurtain(true), id: 'alternate:behind-the-curtain' } },
+  // Femme Fatale, Impetus for Conflicts: Zou Shi is new to Alternate (Default has no such General).
+  'zou-shi': { 祸水: femmeFatale, 倾城: impetusForConflicts },
 };

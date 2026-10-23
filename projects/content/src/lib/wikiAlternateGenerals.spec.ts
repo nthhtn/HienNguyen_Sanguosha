@@ -72,11 +72,9 @@ describe('wikiAlternateGenerals', () => {
     }
   });
 
-  it('marks every skill of a General with no Default counterpart as not in game, until its task lands', () => {
-    for (const id of ['zou-shi']) {
-      expect(byId(id).skills.map((s) => s.status)).toEqual(byId(id).skills.map(() => 'missing'));
-      expect(byId(id).skillsRunAsDefault).toBe(false);
-    }
+  it('plays both of Zou Shi’s skills, as Alternate variants of their own', () => {
+    expect(byId('zou-shi').skills.map((s) => s.status)).toEqual(['worksAsAlternate', 'worksAsAlternate']);
+    expect(byId('zou-shi').skillsRunAsDefault).toBe(false);
   });
 
   it('plays both of Gan Fu Ren’s skills, as Alternate variants of their own', () => {

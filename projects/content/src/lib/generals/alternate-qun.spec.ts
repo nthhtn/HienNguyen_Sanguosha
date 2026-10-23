@@ -881,3 +881,226 @@ describe('Alternate Ji Ling, Double Edged', () => {
     expect(alone.phase).toBe('Play');
   });
 });
+
+describe('Alternate Zou Shi, Femme Fatale', () => {
+  const id = 'alternate:femme-fatale';
+  const seatOf = (s: GameState, seatId: string) => s.seats.find((x) => x.id === seatId)!;
+  // `seatId`'s General in `slot` turned face down (or up).
+  const setRevealed = (s: GameState, seatId: string, slot: 'main' | 'deputy', revealed: boolean): GameState => ({
+    ...s,
+    seats: s.seats.map((x) => (x.id === seatId ? { ...x, generals: { ...x.generals!, [slot]: { ...x.generals![slot], revealed } } } : x)),
+  });
+  // Seat-a is Zou Shi (exposed unless said); seat-b is a hidden Zhao Yun (Main) and Sima Yi (Deputy), with a Sha in hand.
+  // `owner` takes the turn: seat-a's Sha (or seat-c's) at seat-b.
+  const scene = (o: { zouShi?: boolean; owner?: string } = {}) =>
+    table(
+      { 'seat-a:hand': [card('sa', 'sha'), card('xa', 'shan')], 'seat-c:hand': [card('sc', 'sha'), card('xc', 'shan')], 'seat-b:hand': [card('sb', 'sha')] },
+      { generals: { 'seat-a': ['alternate:zou-shi', 'filler-jia-xu', o.zouShi ?? true], 'seat-b': ['zhao-yun', 'sima-yi', false] }, owner: o.owner ?? 'seat-a' }
+    );
+  const shaAtB = (s: GameState) => h.play(s, s.turn.ownerSeatId === 'seat-a' ? 'sa' : 'sc', 'seat-b');
+  const conversions = (s: GameState) => h.legal(s, 'seat-b').filter((a) => a.kind === 'UseConversionAction');
+
+  it('a hidden Zou Shi may use it in her Play Phase to expose her General, at no other cost', () => {
+    const s0 = scene({ zouShi: false });
+    expect(offered(s0, 'seat-a', id)).toBe(true);
+    const s = h.useSkill(s0, 'seat-a', id);
+    expect(seatOf(s, 'seat-a').generals!.main.revealed).toBe(true);
+    expect(seatOf(s, 'seat-a').generals!.deputy.revealed).toBe(false);
+    expect(handIds(s, 'seat-a')).toEqual(['sa', 'xa']);
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(s.pendingChoice ?? s.pendingSelection ?? s.pendingResponse ?? null).toBeNull();
+    expect(s.log.some((e) => e.kind === 'GeneralRevealedEvent' && e.seatId === 'seat-a' && e.slot === 'main')).toBe(true);
+    expect(offered(s, 'seat-a', id)).toBe(false);
+  });
+
+  it('is not offered once exposed, nor outside her Play Phase', () => {
+    expect(offered(scene(), 'seat-a', id)).toBe(false);
+    expect(offered({ ...scene({ zouShi: false }), phase: 'Discard' }, 'seat-a', id)).toBe(false);
+    expect(offered(scene({ zouShi: false, owner: 'seat-c' }), 'seat-a', id)).toBe(false);
+  });
+
+  it('during her turn another seat may not expose by a conversion (skill use) or a trigger ask', () => {
+    const s = shaAtB(scene());
+    expect(s.pendingResponse?.respondingSeatId).toBe('seat-b');
+    expect(conversions(s)).toEqual([]);
+    const hit = h.pass(s);
+    expect(hp(hit, 'seat-b')).toBe(3);
+    expect(askedAbout(hit)).toBeNull();
+    expect(seatOf(hit, 'seat-b').generals!.deputy.revealed).toBe(false);
+  });
+
+  it('in another seat’s turn the same seat may expose by a conversion or a trigger ask', () => {
+    const s = shaAtB(scene({ owner: 'seat-c' }));
+    expect(conversions(s).length).toBeGreaterThan(0);
+    const hit = h.pass(s);
+    expect(askedAbout(hit)).toBe('feedback');
+    expect(seatOf(h.use(hit), 'seat-b').generals!.deputy.revealed).toBe(true);
+  });
+
+  it('in another seat’s turn, its Start-window reveal and a Roar reveal-on-use go ahead', () => {
+    const start = setRevealed(
+      { ...table({}, { generals: { 'seat-a': ['alternate:zou-shi', 'filler-jia-xu', true], 'seat-b': ['zhang-fei', 'filler-dong-zhuo', false] }, owner: 'seat-b', phase: 'Start' }) },
+      'seat-b', 'main', false
+    );
+    const windowOpen: GameState = { ...start, turn: { ...start.turn, startWindow: true } };
+    const revealed = h.act(windowOpen, { kind: 'ConfirmRevealsAction', seatId: 'seat-b', slots: ['main'] });
+    expect(seatOf(revealed, 'seat-b').generals!.main.revealed).toBe(true);
+    // Seat-b's Play Phase: a second Sha is played through the hidden Roar, which reveals Zhang Fei.
+    const play = table({ 'seat-b:hand': [card('s1', 'sha'), card('s2', 'sha')] }, { generals: { 'seat-a': ['alternate:zou-shi', 'filler-jia-xu', true], 'seat-b': ['zhang-fei', 'filler-dong-zhuo', false] }, owner: 'seat-b' });
+    const once = h.pass(h.play(play, 's1', 'seat-c'));
+    const twice = h.play(once, 's2', 'seat-c');
+    expect(seatOf(twice, 'seat-b').generals!.main.revealed).toBe(true);
+  });
+
+  it('during her turn another seat’s hidden Roar is not in play, even to be revealed on use', () => {
+    const s = table({}, { generals: { 'seat-a': ['alternate:zou-shi', 'filler-jia-xu', true], 'seat-b': ['zhang-fei', 'filler-dong-zhuo', false] } });
+    expect(skillsInPlay(s, 'seat-b', registry, true).map((x) => x.skill.id)).toEqual([]);
+    expect(skillsInPlay(setRevealed(s, 'seat-a', 'main', false), 'seat-b', registry, true).map((x) => x.skill.id)).toEqual(['roar']);
+  });
+
+  it('hidden at her turn start, she blocks nothing until she exposes; then the block holds', () => {
+    const hidden = scene({ zouShi: false });
+    expect(conversions(shaAtB(hidden)).length).toBeGreaterThan(0);
+    const exposed = shaAtB(h.useSkill(hidden, 'seat-a', id));
+    expect(conversions(exposed)).toEqual([]);
+    expect(askedAbout(h.pass(exposed))).toBeNull();
+  });
+
+  it('does not block her own seat: her hidden Deputy’s Roar reveals on use during her turn', () => {
+    const s0 = setRevealed(
+      table({ 'seat-a:hand': [card('s1', 'sha'), card('s2', 'sha')] }, { generals: { 'seat-a': ['alternate:zou-shi', 'zhang-fei', true] } }),
+      'seat-a', 'deputy', false
+    );
+    const twice = h.play(h.pass(h.play(s0, 's1', 'seat-b')), 's2', 'seat-b');
+    expect(seatOf(twice, 'seat-a').generals!.deputy.revealed).toBe(true);
+  });
+});
+
+describe('Alternate Zou Shi, Impetus for Conflicts', () => {
+  const id = 'alternate:impetus-for-conflicts';
+  const seatOf = (s: GameState, seatId: string) => s.seats.find((x) => x.id === seatId)!;
+  // Seat-a is Zou Shi with two Equipment cards in hand; seat-b is Zhang Fei (Main) and Ma Chao (Deputy), both exposed;
+  // seat-c has its Deputy hidden.
+  const scene = (cards: Record<string, ReturnType<typeof card>[]> = {}, o: { zouShi?: boolean } = {}): GameState => {
+    const s = table(
+      { 'seat-a:hand': [card('e1', 'red-hare'), card('e2', 'eight-trigrams'), card('k', 'shan')], ...cards },
+      { generals: { 'seat-a': ['alternate:zou-shi', 'filler-jia-xu', o.zouShi ?? true], 'seat-b': ['zhang-fei', 'ma-chao', true], 'seat-c': ['sima-yi', 'filler-dong-zhuo', true] } }
+    );
+    return { ...s, seats: s.seats.map((x) => (x.id === 'seat-c' ? { ...x, generals: { ...x.generals!, deputy: { ...x.generals!.deputy, revealed: false } } } : x)) };
+  };
+  const hide = (s: GameState, cardId: string, seatId: string, slot: 'main' | 'deputy') => h.choose(h.select(h.select(h.useSkill(s, 'seat-a', id), cardId), seatId), slot);
+  const inPlay = (s: GameState, seatId: string) => skillsInPlay(s, seatId, registry).map((x) => x.skill.id);
+  const pile = (s: GameState) => s.zones.find((z) => z.id === 'discardPile')!.cards.map((c) => c.instanceId);
+
+  it('needs an Equipment card, in hand or worn', () => {
+    expect(offered(scene({ 'seat-a:hand': [card('k', 'shan')] }), 'seat-a', id)).toBe(false);
+    expect(offered(scene(), 'seat-a', id)).toBe(true);
+    expect(offered(scene({ 'seat-a:hand': [], 'seat-a:equip': [card('w', 'red-hare')] }), 'seat-a', id)).toBe(true);
+  });
+
+  it('offers only her Equipment cards, then only other seats with both Generals exposed', () => {
+    const s = h.useSkill(scene({ 'seat-a:equip': [card('w', 'axe')] }), 'seat-a', id);
+    expect(s.pendingSelection).toMatchObject({ of: 'cards', min: 1, max: 1 });
+    expect([...s.pendingSelection!.eligibleIds].sort()).toEqual(['e1', 'e2', 'w']);
+    const seats = h.select(s, 'e1');
+    expect(seats.pendingSelection).toMatchObject({ of: 'seats' });
+    expect(seats.pendingSelection!.eligibleIds).toEqual(['seat-b', 'seat-d']);
+  });
+
+  it('is not offered when no other seat has both Generals exposed', () => {
+    const s = scene();
+    const hidden: GameState = { ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? x : { ...x, generals: { ...x.generals!, main: { ...x.generals!.main, revealed: false } } })) };
+    expect(offered(hidden, 'seat-a', id)).toBe(false);
+  });
+
+  it('discards the card and hides the picked General, which names both Generals to pick from', () => {
+    const picking = h.select(h.select(h.useSkill(scene(), 'seat-a', id), 'e1'), 'seat-b');
+    expect(picking.pendingChoice?.options.map((o) => [o.id, o.shows])).toEqual([
+      ['main', { kind: 'general', generalId: 'zhang-fei' }],
+      ['deputy', { kind: 'general', generalId: 'ma-chao' }],
+    ]);
+    const s = h.choose(picking, 'main');
+    expect(pile(s)).toEqual(['e1']);
+    expect(seatOf(s, 'seat-b').generals!.main.revealed).toBe(false);
+    expect(seatOf(s, 'seat-b').generals!.deputy.revealed).toBe(true);
+    expect(s.log.filter((e) => e.kind === 'GeneralHiddenEvent')).toEqual([{ kind: 'GeneralHiddenEvent', seatId: 'seat-b', slot: 'main' }]);
+    expect(s.log.some((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === id && e.targetSeatId === 'seat-b')).toBe(true);
+  });
+
+  it('cancelling the first pick costs nothing and does not count a use', () => {
+    const s = h.cancel(h.useSkill(scene(), 'seat-a', id));
+    expect(handIds(s, 'seat-a')).toEqual(['e1', 'e2', 'k']);
+    expect(s.log.some((e) => e.kind === 'AbilityUsedEvent')).toBe(false);
+    expect(offered(s, 'seat-a', id)).toBe(true);
+  });
+
+  it('hiding the Main: the Deputy’s skills keep working, the Main’s are gone, and the Kingdom stays the Deputy’s', () => {
+    expect(inPlay(scene(), 'seat-b')).toEqual(['roar', 'horsemanship', 'iron-cavalry']);
+    const s = hide(scene(), 'e1', 'seat-b', 'main');
+    expect(inPlay(s, 'seat-b')).toEqual(['horsemanship', 'iron-cavalry']);
+    expect(seatDistance(s, 'seat-b', 'seat-d', registry)).toBe(1);
+    expect(redactStateForSeat(s, 'seat-c').seats.find((x) => x.id === 'seat-b')!.kingdom).toBe('Shu');
+  });
+
+  it('can be used twice in one phase, on two seats; a seat with a General hidden is not offered again', () => {
+    const once = hide(scene(), 'e1', 'seat-b', 'main');
+    expect(offered(once, 'seat-a', id)).toBe(true);
+    expect(h.select(h.useSkill(once, 'seat-a', id), 'e2').pendingSelection!.eligibleIds).toEqual(['seat-d']);
+    const s = hide(once, 'e2', 'seat-d', 'deputy');
+    expect(pile(s)).toEqual(['e1', 'e2']);
+    expect(seatOf(s, 'seat-d').generals!.deputy.revealed).toBe(false);
+    expect(s.log.flatMap((e) => (e.kind === 'AbilityUsedEvent' && e.abilityId === id && e.targetSeatId ? [e.targetSeatId] : []))).toEqual(['seat-b', 'seat-d']);
+  });
+
+  it('a seat with both Generals hidden again shows no General to others, and has no skill in play', () => {
+    // Impetus always leaves the target one exposed General (it needs both exposed): the second hiding is applied directly.
+    const once = hide(scene(), 'e1', 'seat-b', 'main');
+    const s = h.run(once, [{ kind: 'HideGeneralEffect', seatId: 'seat-b', slot: 'deputy' }]);
+    const view = redactStateForSeat(s, 'seat-c');
+    const seen = view.seats.find((x) => x.id === 'seat-b')!;
+    expect(seen.kingdom).toBe('hidden');
+    expect(seen.generals).toEqual({ main: { generalDefinitionId: 'hidden', revealed: false }, deputy: { generalDefinitionId: 'hidden', revealed: false } });
+    expect(JSON.stringify(view)).not.toMatch(/zhang-fei|ma-chao/);
+    expect(inPlay(s, 'seat-b')).toEqual([]);
+  });
+
+  it('a hidden Zou Shi may use it, which exposes her', () => {
+    const s = hide(scene({}, { zouShi: false }), 'e1', 'seat-b', 'deputy');
+    expect(seatOf(s, 'seat-a').generals!.main.revealed).toBe(true);
+    expect(seatOf(s, 'seat-b').generals!.deputy.revealed).toBe(false);
+  });
+
+  it('the hidden General can be exposed again outside her turn, not during it', () => {
+    // Seat-c is Sima Yi (Main) and exposed; Zou Shi hides Sima Yi, then her Sha damages seat-c.
+    const base = table(
+      { 'seat-a:hand': [card('e1', 'axe'), card('sa', 'sha'), card('k', 'shan')], 'seat-a:equip': [card('m', 'red-hare')], 'seat-d:hand': [card('sd', 'sha'), card('xd', 'shan')] },
+      { generals: { 'seat-a': ['alternate:zou-shi', 'filler-jia-xu', true], 'seat-c': ['sima-yi', 'filler-dong-zhuo', true] } }
+    );
+    const hidden = hide(base, 'e1', 'seat-c', 'main');
+    expect(seatOf(hidden, 'seat-c').generals!.main.revealed).toBe(false);
+    const hit = h.pass(h.play(hidden, 'sa', 'seat-c'));
+    expect(hp(hit, 'seat-c')).toBe(3);
+    expect(askedAbout(hit)).toBeNull();
+    // Seat-d's turn: its Sha damages seat-c, whose hidden Sima Yi is asked for Feedback and exposed again.
+    const dTurn: GameState = { ...hidden, turn: { ...hidden.turn, ownerSeatId: 'seat-d' } };
+    const asked = h.pass(h.play(dTurn, 'sd', 'seat-c'));
+    expect(askedAbout(asked)).toBe('feedback');
+    expect(seatOf(h.use(asked), 'seat-c').generals!.main.revealed).toBe(true);
+    // Or seat-c's own Start window.
+    const start: GameState = { ...hidden, phase: 'Start', turn: { ...hidden.turn, ownerSeatId: 'seat-c', startWindow: true } };
+    const shown = h.act(start, { kind: 'ConfirmRevealsAction', seatId: 'seat-c', slots: ['main'] });
+    expect(seatOf(shown, 'seat-c').generals!.main.revealed).toBe(true);
+  });
+
+  it('a hidden General’s pending ask is skipped without an engine error, and its skill does nothing', () => {
+    const s = hide(scene(), 'e1', 'seat-b', 'main');
+    const owner = { kind: 'general' as const, seatId: 'seat-b', slot: 'main' as const, skillId: 'roar' };
+    const next = h.run(s, [{ kind: 'AskUseEffect', owner, abilityId: 'roar', effects: [{ kind: 'DrawCardsEffect', seatId: 'seat-b', count: 5 }] }]);
+    expect(next.pendingChoice).toBeFalsy();
+    expect(handIds(next, 'seat-b')).toEqual([]);
+  });
+
+  it('Zou Shi holds both skills', () => {
+    expect(registry.generals.get('alternate:zou-shi')!.skills.map((x) => x.id)).toEqual(['alternate:femme-fatale', id]);
+  });
+});

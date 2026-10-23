@@ -464,3 +464,16 @@ describe('Alternate Ji Ling, Double Edged', () => {
     expect(picked(decide(starting(6)))).toBe('decline');
   });
 });
+
+describe('Alternate Zou Shi', () => {
+  // The bot leaves both her active skills alone (legal: they are optional); a hidden Zou Shi plays on hidden.
+  it.each([true, false])('never uses Femme Fatale or Impetus for Conflicts (revealed: %s)', (revealed) => {
+    let s = table({ 'seat-a:hand': [card('e1', 'red-hare'), card('e2', 'axe')] }, { generals: { 'seat-a': ['alternate:zou-shi', 'filler-meng-huo', revealed] } });
+    expect(getLegalActions(s, 'seat-a', registry).some((a) => a.kind === 'UseSkillAction')).toBe(true);
+    for (let i = 0; i < 10 && s.turn.ownerSeatId === 'seat-a' && s.phase === 'Play' && actor(s) === 'seat-a'; i++) {
+      const action = decide(s);
+      expect(action.kind).not.toBe('UseSkillAction');
+      s = act(s, action);
+    }
+  });
+});
