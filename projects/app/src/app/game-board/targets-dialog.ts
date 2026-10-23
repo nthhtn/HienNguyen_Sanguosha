@@ -1,7 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { GameState, TargetPick } from 'engine';
+import { GameState, pickAllows, TargetPick } from 'engine';
 import { seatName } from '../labels';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
@@ -30,7 +30,7 @@ export interface TargetsDialogData {
             type="button"
             [class.picked]="picked().includes(seat.id)"
             [attr.aria-pressed]="picked().includes(seat.id)"
-            [disabled]="!picked().includes(seat.id) && full()"
+            [disabled]="!picked().includes(seat.id) && !allowed(seat.id)"
             (click)="toggle(seat.id)"
           >
             {{ seat.label }}
@@ -53,9 +53,13 @@ export class TargetsDialog {
   protected readonly ref = inject<MatDialogRef<TargetsDialog, string[]>>(MatDialogRef);
   private readonly i18n = inject(I18n);
   protected readonly picked = signal<string[]>([]);
-  protected readonly full = computed(() => this.picked().length >= this.data.pick.max);
   protected readonly prompt = this.i18n.t(this.data.pick.min === this.data.pick.max ? 'targets.prompt' : 'targets.promptUpTo', { count: this.data.pick.max, title: this.data.title });
   protected readonly seats = this.data.pick.eligibleIds.map((id) => ({ id, label: seatName(this.data.state.players, id, this.i18n.translator) }));
+
+  // Whether the seat may join those picked: below the maximum, and within any cap on some seats.
+  protected allowed(id: string): boolean {
+    return pickAllows(this.data.pick, this.picked(), id);
+  }
 
   protected toggle(id: string): void {
     this.picked.update((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));

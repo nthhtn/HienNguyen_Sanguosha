@@ -194,6 +194,8 @@ const ABILITY_HINTS: Record<string, string> = {
   'alternate:bequeathed-strategy': 'Look at the top 2 cards of the draw pile, then give one to any player and the other to any player',
   'alternate:prudence': 'Another seat of your Kingdom draws 1 card',
   'alternate:divine-wisdom': 'Discard all your hand cards; if you discard at least as many as your HP, recover 1 HP',
+  'alternate:close-combat': 'When you use Sha, you can add one more target within distance 1 of you and in your attack range',
+  'alternate:swift-and-deadly': 'Discard a card and choose a seat; your distance to it counts as 1 until the end of the turn',
   'alternate:dauntless': 'Discard a Basic card from your hand; {target} then discards an Equipment card or takes 1 damage from you',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',
@@ -267,6 +269,7 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   'direct-instruction': 'Choose a seat to place the card in',
   'alternate:bequeathed-strategy': 'Choose a seat to give {card} to',
   'alternate:prudence': 'Choose a seat of your Kingdom to draw 1 card',
+  'alternate:swift-and-deadly': 'Choose a seat to be at distance 1 from you until the end of the turn',
 };
 
 export function seatPickText(abilityId: string, locale = 'en'): string | null {
@@ -301,6 +304,7 @@ const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; can
   'alliance/swap': { prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' },
   'draw-take': { prompt: 'Choose up to 2 seats to take a hand card from', confirm: 'Take' },
   'move-card': { prompt: 'Choose a seat to move a card from', confirm: 'Choose' },
+  'alternate:swift-and-deadly/discarded': { prompt: 'Choose a card to discard', confirm: 'Discard' },
   'alternate:dauntless/discarded': { prompt: 'Choose a Basic card from your hand to discard', confirm: 'Discard' },
   'alternate:dauntless/paid': { prompt: 'Choose an Equipment card to discard, or take 1 damage', confirm: 'Discard', cancel: 'Take the Damage' },
 };

@@ -1,6 +1,6 @@
 import type { CardDefinition, Effect, GameState, Target, UsedCard } from 'engine';
 import { livingSeatOrderFrom, usedCardKey } from 'engine';
-import { handOf, SHA_FLAGS, shaFlag, shaLimit, shaPlayRevealOwner } from '../shared/queries';
+import { handOf, isPhysicallyNear, SHA_FLAGS, shaFlag, shaLimit, shaPlayRevealOwner } from '../shared/queries';
 import { shaTargetIds } from '../shared/shaRules';
 import { activeAbilities } from '../shared/abilities';
 import { CardStep, cardStep } from '../shared/steps';
@@ -105,8 +105,13 @@ function shaDefinition(id: string, name: string, nature?: 'fire' | 'thunder'): C
       const scorcher = lastCard ? Math.max(0, ...activeAbilities(state, ctx.seatId, registry).map((a) => a.modifiers?.extraTargetsWhenLastCard?.['sha'] ?? 0)) : 0;
       const extra = shaFlag(state, ctx.seatId, SHA_FLAGS.extraTarget) ? 1 : 0;
       const eligibleIds = shaTargetIds(state, ctx.seatId, registry);
-      const max = Math.min(1 + scorcher + extra, eligibleIds.length);
-      return max > 1 ? { eligibleIds, min: 1, max } : null;
+      // Extra targets that must be near the user (Close Combat) come on top: the first target, and those the
+      // other bonuses add, may be anywhere in range, so at most 1 + those may be far ones.
+      const near = Math.max(0, ...activeAbilities(state, ctx.seatId, registry).map((a) => a.modifiers?.extraShaTargets ?? 0));
+      const anywhere = 1 + scorcher + extra;
+      const max = Math.min(anywhere + near, eligibleIds.length);
+      const far = eligibleIds.filter((id) => !isPhysicallyNear(state, ctx.seatId, id));
+      return max > 1 ? { eligibleIds, min: 1, max, ...(near > 0 && far.length > anywhere ? { capped: { ids: far, max: anywhere } } : {}) } : null;
     },
     play: (state, ctx, registry) => {
       if (ctx.respondingTo) return []; // played as an answer (a Duel, Barbarians, Coerce): the window decides what it does

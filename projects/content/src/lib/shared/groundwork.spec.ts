@@ -27,6 +27,17 @@ describe('distanceToOthers', () => {
   });
 });
 
+describe('a distance-1 turn flag', () => {
+  it('sets only the flagged direction to 1, whatever the mounts are, and is no flag in another turn', () => {
+    const base = table({ 'seat-c:equip': [card('dm', 'di-lu', 'spade', 5)] }, { seats: 6 });
+    expect(seatDistance(base, 'seat-a', 'seat-d', registry)).toBe(3);
+    const flagged = { ...base, turn: { ...base.turn, flags: { 'distance1:seat-a:seat-d': true } } };
+    expect(seatDistance(flagged, 'seat-a', 'seat-d', registry)).toBe(1);
+    expect(seatDistance(flagged, 'seat-d', 'seat-a', registry)).toBe(3);
+    expect(seatDistance(flagged, 'seat-a', 'seat-c', registry)).toBe(3);
+  });
+});
+
 describe('toolsIgnoreDistance', () => {
   it('lets Steal reach a seat 2 away', () => {
     const cards = { 'seat-a:hand': [card('st', 'steal')], 'seat-c:hand': [card('x', 'shan')] };

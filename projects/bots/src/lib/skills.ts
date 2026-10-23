@@ -17,6 +17,14 @@ const others = (view: GameState, me: Seat) => living(view).filter((s) => s.id !=
 const hurt = (seat: Seat) => seat.combinedHp < seat.maxCombinedHp;
 const byLowestHp = (seats: Seat[]) => [...seats].sort((a, b) => a.combinedHp - b.combinedHp || a.index - b.index);
 const byHighestHp = (seats: Seat[]) => [...seats].sort((a, b) => b.combinedHp - a.combinedHp || a.index - b.index);
+// Seats between two seats round the table, over living seats (the physical distance, no mounts).
+function ringDistance(view: GameState, a: Seat, b: Seat): number {
+  const ring = living(view).sort((x, y) => x.index - y.index);
+  const gap = Math.abs(ring.findIndex((s) => s.id === a.id) - ring.findIndex((s) => s.id === b.id));
+  return Math.min(gap, ring.length - gap);
+}
+// Seats a Sha could not reach from `me` without help: not allies, beyond distance 1.
+const farFoes = (view: GameState, me: Seat) => others(view, me).filter((s) => !isAlly(me, s) && ringDistance(view, me, s) > 1);
 const handSize = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
 
 // A seat's gender as the table sees it: Main's while revealed, else Deputy's, else none.
@@ -130,6 +138,13 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       if (step === 'discarded') return [least];
       return me.combinedHp <= 1 || keepRank(view, registry, least) < 3 ? [least] : 'cancel';
     }
+    // Swift and Deadly: her own pick is the least useful card; the seat is the weakest far foe, else the weakest foe.
+    case 'alternate:swift-and-deadly': {
+      if (selection.of === 'cards') return [leastUseful(view, registry, eligible)[0]];
+      const seats = eligible.map((id) => view.seats.find((s) => s.id === id)!).filter(Boolean);
+      const foes = byLowestHp(farFoes(view, me).filter((s) => eligible.includes(s.id)));
+      return [(foes[0] ?? byLowestHp(seats.filter((s) => !isAlly(me, s)))[0] ?? seats[0]).id];
+    }
     case 'kindness': {
       // The thresholds below are Default's (2); a variant with another number (Benevolence: 3) is played legally, not optimally.
       const given = view.turn.abilityUses?.[`${abilityUseKey(owner)}/given`] ?? 0;
@@ -225,6 +240,11 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
       return me.combinedHp > 3 || (me.combinedHp > 2 && hand.some((c) => c.definitionId === 'peach'));
     case 'reconsider':
       return hand.some((c) => keepRank(view, registry, c.instanceId) < 3);
+    // Swift and Deadly: a Sha in hand, a far foe to reach with it, and another card to spare.
+    case 'alternate:swift-and-deadly': {
+      const sha = hand.find((c) => isShaCard(registry, c.definitionId));
+      return !!sha && farFoes(view, me).length > 0 && ownCards(view, me).some((c) => c.instanceId !== sha.instanceId && keepRank(view, registry, c.instanceId) < 3);
+    }
     case 'green-vesicle':
       return spare.length > 0 && (hurt(me) || allies.some(hurt));
     case 'marriage':
@@ -247,7 +267,7 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
 }
 
 const ACTIVE_ORDER = {
-  early: ['battered-body', 'reconsider', 'green-vesicle', 'marriage', 'shackle', 'heavens-justice', 'rouse-the-tiger', 'alliance'],
+  early: ['battered-body', 'alternate:swift-and-deadly', 'reconsider', 'green-vesicle', 'marriage', 'shackle', 'heavens-justice', 'rouse-the-tiger', 'alliance'],
   late: ['sow-revolt', 'sow-discord', 'kindness', 'assault', 'upheaval', 'instigate', 'direct-instruction'],
 } as const;
 

@@ -25,10 +25,22 @@ function equippedSlot(state: GameState, seatId: string, slot: EquipSlot, registr
   return zone?.cards.map((c) => registry.cards.get(c.definitionId)).find((d) => d?.equipSlot === slot);
 }
 
+// The turn flag a skill sets so `from`'s distance to `to` counts as 1 until the end of the turn (Swift and
+// Deadly). It works one way only: `to`'s distance to `from` is unchanged.
+export const distanceOneFlag = (fromSeatId: string, toSeatId: string) => `distance1:${fromSeatId}:${toSeatId}`;
+export const distanceSetToOne = (state: GameState, fromSeatId: string, toSeatId: string) => !!state.turn.flags?.[distanceOneFlag(fromSeatId, toSeatId)];
+
+// Whether `toSeatId` is within physical distance 1 of `fromSeatId`: next to it around the table, or set to 1
+// for the turn. Mounts and distance skills don't count.
+export function isPhysicallyNear(state: GameState, fromSeatId: string, toSeatId: string): boolean {
+  return getSeatDistance(state, fromSeatId, toSeatId) <= 1 || distanceSetToOne(state, fromSeatId, toSeatId);
+}
+
 // Distance for targeting: living-seat ring distance, +1 if the target rides a
 // defensive mount, −1 if the attacker rides an offensive mount, plus the
 // attacker's distance modifiers (Horsemanship), never below 1.
 export function seatDistance(state: GameState, fromSeatId: string, toSeatId: string, registry: ContentRegistry): number {
+  if (distanceSetToOne(state, fromSeatId, toSeatId)) return 1;
   const base = getSeatDistance(state, fromSeatId, toSeatId);
   if (!Number.isFinite(base)) return base;
   const defensive = equippedSlot(state, toSeatId, 'defensiveMount', registry) ? 1 : 0;

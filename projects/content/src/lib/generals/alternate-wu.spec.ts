@@ -1,6 +1,7 @@
 import type { GameState } from 'engine';
 import { buildContentRegistry } from '../registry';
-import { askedAbout, card, handIds, harness, table, TableOptions } from './skills.testing';
+import { askedAbout, card, handIds, harness, hp, table, TableOptions } from './skills.testing';
+import { seatDistance } from '../shared/queries';
 
 const h = harness();
 const at = (seatId: string, general: string): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', true] });
@@ -252,5 +253,115 @@ describe('Alternate Lu Xun, Scrutinize', () => {
     const skills = buildContentRegistry().generals.get('alternate:lu-xun')!.skills.map((x) => x.id);
     expect(skills).toContain('alternate:scrutinize');
     expect(skills).not.toContain('linked-camps');
+  });
+});
+
+describe('Alternate Ding Feng, Close Combat', () => {
+  const id = 'alternate:close-combat';
+  const six = (equip: ReturnType<typeof card>[] = [], hand = [card('s1', 'sha'), card('pc', 'peach', 'heart')], general = 'alternate:ding-feng') =>
+    table({ 'seat-a:hand': hand, 'seat-a:equip': equip }, { seats: 6, generals: at('seat-a', general) });
+  const pickOf = (s: GameState) => {
+    const play = h.legal(s, 'seat-a').find((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === 's1');
+    return play && play.kind === 'PlayCardAction' ? play : null;
+  };
+
+  it('is registered under its Chinese name on the Alternate General', () => {
+    const skills = buildContentRegistry().generals.get('alternate:ding-feng')!.skills.map((x) => x.id);
+    expect(skills).toEqual([id, 'alternate:swift-and-deadly']);
+  });
+
+  it('unarmed, the Sha may take one or two targets, both at distance 1', () => {
+    const play = pickOf(six());
+    expect(play?.pickTargets).toEqual({ eligibleIds: ['seat-b', 'seat-f'], min: 1, max: 2 });
+  });
+
+  it('both targets are aimed at and resolve', () => {
+    let s = h.play(six(), 's1', 'seat-b', 'seat-f');
+    expect(s.pendingResponse!.respondingSeatId).toBe('seat-b');
+    s = h.pass(s);
+    expect(s.pendingResponse!.respondingSeatId).toBe('seat-f');
+    s = h.pass(s);
+    expect([hp(s, 'seat-b'), hp(s, 'seat-f')]).toEqual([3, 3]);
+  });
+
+  it('with a weapon of range 3, a target at distance 2 may be the first but the extra must be at distance 1', () => {
+    const s = six([card('gd', 'green-dragon-blade', 'spade', 5)]);
+    const play = pickOf(s)!;
+    expect(play.pickTargets).toMatchObject({ eligibleIds: ['seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'], min: 1, max: 2 });
+    expect(h.legal(s, 'seat-a').filter((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === 's1' && a.targets.length === 2)).toEqual([]);
+    // Two seats beyond distance 1 are not allowed together; a close one beside a far one is.
+    expect(() => h.play(s, 's1', 'seat-c', 'seat-d')).toThrow();
+    const accepted = h.play(s, 's1', 'seat-c', 'seat-b');
+    expect(accepted.pendingResponse!.respondingSeatId).toBe('seat-b');
+    const farFirst = h.play(s, 's1', 'seat-e', 'seat-f');
+    expect(farFirst.pendingResponse!.respondingSeatId).toBe('seat-e'); // seat order from seat-a: seat-b, c, d, e, f
+  });
+
+  it('a target out of weapon range is not offered', () => {
+    const s = six([card('gs', 'gender-swords', 'spade', 5)]);
+    expect(pickOf(s)!.pickTargets!.eligibleIds).toEqual(['seat-b', 'seat-c', 'seat-e', 'seat-f']);
+  });
+
+  it('without the skill, an unarmed Sha has one target per action', () => {
+    const s = six([], undefined, 'filler-xu-huang');
+    expect(pickOf(s)?.pickTargets).toBeUndefined();
+  });
+
+  it('Sky Scorcher’s last-card bonus adds on top', () => {
+    const s = six([card('sk', 'sky-scorcher', 'diamond', 12)], [card('s1', 'sha')]);
+    expect(pickOf(s)!.pickTargets).toMatchObject({ min: 1, max: 4 });
+  });
+
+  it('a seat made near by Swift and Deadly counts as within distance 1', () => {
+    const s = { ...six([card('gd', 'green-dragon-blade', 'spade', 5)]), turn: { ...six().turn, flags: { 'distance1:seat-a:seat-d': true } } };
+    expect(pickOf(s)!.pickTargets).toMatchObject({ capped: { max: 1 } });
+    expect(pickOf(s)!.pickTargets!.capped!.ids).not.toContain('seat-d');
+  });
+});
+
+describe('Alternate Ding Feng, Swift and Deadly', () => {
+  const id = 'alternate:swift-and-deadly';
+  const six = (hand = [card('k1', 'shan', 'heart'), card('st', 'steal', 'spade', 3)], equip: ReturnType<typeof card>[] = []) =>
+    table({ 'seat-a:hand': hand, 'seat-a:equip': equip, 'seat-d:hand': [card('x', 'shan')] }, { seats: 6, generals: at('seat-a', 'alternate:ding-feng') });
+  const stealTargets = (s: GameState) =>
+    h.legal(s, 'seat-a').flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === 'st' ? [a.targets[0]?.seatId] : []));
+
+  it('discards a card and picks a seat; his distance to it becomes 1, only in that direction', () => {
+    const reg = buildContentRegistry();
+    let s = h.useSkill(six(), 'seat-a', id);
+    expect(s.pendingSelection).toMatchObject({ of: 'cards', min: 1, max: 1 });
+    s = h.select(s, 'k1');
+    expect(s.pendingSelection).toMatchObject({ of: 'seats', eligibleIds: ['seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'] });
+    expect(seatDistance(s, 'seat-a', 'seat-d', reg)).toBe(3);
+    s = h.select(s, 'seat-d');
+    expect(seatDistance(s, 'seat-a', 'seat-d', reg)).toBe(1);
+    expect(seatDistance(s, 'seat-d', 'seat-a', reg)).toBe(3);
+    expect(seatDistance(s, 'seat-a', 'seat-c', reg)).toBe(2);
+    expect(handIds(s, 'seat-a')).toEqual(['st']);
+  });
+
+  it('makes Steal legal on a far seat', () => {
+    expect(stealTargets(six())).not.toContain('seat-d');
+    const s = h.select(h.select(h.useSkill(six(), 'seat-a', id), 'k1'), 'seat-d');
+    expect(stealTargets(s)).toContain('seat-d');
+  });
+
+  it('can discard an equipment card', () => {
+    const s = h.useSkill(six([card('k1', 'shan')], [card('cb', 'crossbow', 'diamond', 1)]), 'seat-a', id);
+    expect(s.pendingSelection!.eligibleIds).toEqual(['k1', 'cb']);
+  });
+
+  it('is offered once per Play Phase', () => {
+    const s = h.select(h.select(h.useSkill(six(), 'seat-a', id), 'k1'), 'seat-d');
+    expect(h.legal(s, 'seat-a').some((a) => a.kind === 'UseSkillAction')).toBe(false);
+  });
+
+  it('is not offered with no card to discard', () => {
+    expect(h.legal(six([]), 'seat-a').some((a) => a.kind === 'UseSkillAction')).toBe(false);
+  });
+
+  it('keeps its effect in a turn flag, which a new turn does not carry', () => {
+    const s = h.select(h.select(h.useSkill(six(), 'seat-a', id), 'k1'), 'seat-d');
+    expect(Object.keys(s.turn.flags ?? {})).toEqual(['distance1:seat-a:seat-d']);
   });
 });

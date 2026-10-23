@@ -1,4 +1,4 @@
-import { nextInt, getActiveSeatId, getLegalActions, shuffle } from 'engine';
+import { nextInt, getActiveSeatId, getLegalActions, pickAllows, shuffle } from 'engine';
 import type { GameState, RngState, Action, ContentRegistry } from 'engine';
 import { fillSelection } from './helpers';
 
@@ -35,7 +35,9 @@ export function pickRandomAction(
     const count = nextInt(step.rng, max - min + 1);
     const shuffled = shuffle(eligibleIds, count.rng);
     const { pickTargets: _pick, ...rest } = picked;
-    const targets = shuffled.items.slice(0, min + count.value).map((seatId) => ({ kind: 'seat' as const, seatId }));
+    const chosen: string[] = [];
+    for (const seatId of shuffled.items) if (chosen.length < min + count.value && pickAllows(picked.pickTargets, chosen, seatId)) chosen.push(seatId);
+    const targets = chosen.map((seatId) => ({ kind: 'seat' as const, seatId }));
     return { action: { ...rest, targets }, rng: shuffled.rng };
   }
   const selection = state.pendingSelection;

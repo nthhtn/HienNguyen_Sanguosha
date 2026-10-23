@@ -176,10 +176,17 @@ function untargetedAllowed(state: GameState, seatId: string, cardInstanceId: str
   return legalTargetListsFor(state, seatId, cardInstanceId, definitionId, registry, via).some((t) => t.length === 0);
 }
 
-// Whether `targets` fit `pick`: distinct seats, all listed, between min and max.
+// Whether `targets` fit `pick`: distinct seats, all listed, between min and max, and within its cap.
 export function fitsPick(pick: TargetPick, targets: Target[]): boolean {
   const ids = targets.map((t) => (t.kind === 'seat' ? t.seatId : ''));
-  return new Set(ids).size === ids.length && ids.length >= pick.min && ids.length <= pick.max && ids.every((id) => pick.eligibleIds.includes(id));
+  return new Set(ids).size === ids.length && ids.length >= pick.min && ids.length <= pick.max && ids.every((id) => pick.eligibleIds.includes(id)) && withinCap(pick, ids);
+}
+
+const withinCap = (pick: TargetPick, ids: string[]) => !pick.capped || ids.filter((id) => pick.capped!.ids.includes(id)).length <= pick.capped.max;
+
+// Whether `id` may join the seats already `chosen` for `pick`: a picker offers only such seats.
+export function pickAllows(pick: TargetPick, chosen: string[], id: string): boolean {
+  return pick.eligibleIds.includes(id) && !chosen.includes(id) && chosen.length < pick.max && withinCap(pick, [...chosen, id]);
 }
 
 // Whether a card may be played at `targets` now: within its pick when it may

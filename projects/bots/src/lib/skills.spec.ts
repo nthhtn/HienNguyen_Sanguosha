@@ -1,6 +1,6 @@
 import type { CardInstance, Effect, GameState, PendingChoice, PendingSelection } from 'engine';
 import { getLegalActions } from 'engine';
-import { conversionSpare } from './skills';
+import { conversionSpare, pickActiveSkill } from './skills';
 import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
 
 describe('may-skills the bot always uses', () => {
@@ -44,6 +44,39 @@ describe('Alternate Bequeathed Strategy', () => {
     // An ally (same kingdom as the bot, seat-c): the card goes to that exact seat.
     const allied = { ...table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-c': 'Wei' } }), pendingChoice: picking(seats).pendingChoice };
     expect(picked(decide(allied))).toBe('seat-c');
+  });
+});
+
+describe('Alternate Ding Feng', () => {
+  const swift = 'alternate:swift-and-deadly';
+  const sixSeats = (hand: CardInstance[], equip: CardInstance[] = []) =>
+    table({ 'seat-a:hand': hand, 'seat-a:equip': equip }, { seats: 6, generals: { 'seat-a': ['alternate:ding-feng', 'filler-meng-huo', true] } });
+  const offered = (s: GameState) => getLegalActions(s, 'seat-a', registry).some((a) => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.skillId === swift);
+
+  it('Swift and Deadly is used with a Sha in hand and a spare card, discarding the spare and aiming at a far foe', () => {
+    let s = sixSeats([card('s1', 'sha'), card('k1', 'break', 'heart')]);
+    expect(offered(s)).toBe(true);
+    expect(pickActiveSkill(s, s.seats[0], getLegalActions(s, 'seat-a', registry), registry, 'early')).toMatchObject({ owner: { skillId: swift } });
+    s = useSkill(s, swift);
+    expect(picked(decide(s))).toEqual(['k1']);
+    s = act(s, decide(s));
+    expect(s.pendingSelection).toMatchObject({ of: 'seats' });
+    const [seatPick] = [picked(decide(s))] as string[][];
+    expect(['seat-c', 'seat-d', 'seat-e']).toContain(seatPick[0]);
+  });
+
+  it('Swift and Deadly is left alone with no Sha to use', () => {
+    const s = sixSeats([card('k1', 'shan', 'heart'), card('k2', 'shan', 'heart')]);
+    expect(pickActiveSkill(s, s.seats[0], getLegalActions(s, 'seat-a', registry), registry, 'early')).toBeUndefined();
+  });
+
+  it('the bot’s Sha at Close Combat never breaks the cap, whichever way the targets are chosen', () => {
+    const s = sixSeats([card('s1', 'sha'), card('pc', 'peach', 'heart')], [card('gd', 'green-dragon-blade', 'spade', 5)]);
+    const template = getLegalActions(s, 'seat-a', registry).find((a) => a.kind === 'PlayCardAction' && a.pickTargets)!;
+    expect(template).toBeDefined();
+    const action = decide(s);
+    if (action.kind === 'PlayCardAction') expect(action.targets.length).toBeLessThanOrEqual(2);
+    expect(() => act(s, action)).not.toThrow();
   });
 });
 

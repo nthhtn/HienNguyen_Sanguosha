@@ -35,6 +35,8 @@
     "alternate:eternal-loyalty": "Một người chơi bạn chọn rút bài đến Sinh lực tối đa, nhưng không quá 5 lá",
     "alternate:bequeathed-strategy": "Xem 2 lá trên cùng của chồng bài rút, rồi đưa một lá cho một người chơi và lá còn lại cho một người chơi",
     "alternate:prudence": "Một người chơi khác cùng thế lực rút 1 lá bài",
+    "alternate:close-combat": "Khi bạn dùng Sát, bạn có thể thêm một mục tiêu trong khoảng cách 1 với bạn và trong tầm đánh của bạn",
+    "alternate:swift-and-deadly": "Bỏ một lá bài và chọn một người chơi; khoảng cách của bạn tới họ tính là 1 đến hết lượt",
     "alternate:dauntless": "Bỏ một lá bài Cơ bản trên tay; {target} bỏ một lá Trang bị hoặc chịu 1 sát thương từ bạn",
     "alternate:divine-wisdom": "Bỏ toàn bộ bài trên tay; nếu số bài bỏ không nhỏ hơn Sinh lực hiện tại, hồi 1 Sinh lực",
     "nirvana": "Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3 và lật lại",
@@ -94,7 +96,8 @@
     "decentralization": "Chọn một người chơi để có thêm một lượt",
     "direct-instruction": "Chọn một người chơi để đặt lá bài vào",
     "alternate:bequeathed-strategy": "Chọn một người chơi để đưa {card}",
-    "alternate:prudence": "Chọn một người chơi cùng thế lực để rút 1 lá bài"
+    "alternate:prudence": "Chọn một người chơi cùng thế lực để rút 1 lá bài",
+    "alternate:swift-and-deadly": "Chọn một người chơi để ở khoảng cách 1 với bạn đến hết lượt"
   },
   "choicePrompt": {
     "upheaval": "Chọn một người chơi để đánh Sát vào, hoặc bỏ qua",
@@ -113,6 +116,7 @@
     "compete-target": { "prompt": "Chọn một lá bài trên tay để đấu điểm", "confirm": "Đấu điểm" },
     "blaze-shown": { "prompt": "Chọn một lá bài trên tay để cho xem", "confirm": "Cho xem" },
     "blaze-hit": { "prompt": "Bỏ một lá cùng chất để gây 1 sát thương", "confirm": "Bỏ bài" },
+    "alternate:swift-and-deadly/discarded": { "prompt": "Chọn một lá bài để bỏ", "confirm": "Bỏ bài" },
     "alternate:dauntless/discarded": { "prompt": "Chọn một lá bài Cơ bản trên tay để bỏ", "confirm": "Bỏ bài" },
     "alternate:dauntless/paid": { "prompt": "Chọn một lá Trang bị để bỏ, hoặc chịu 1 sát thương", "confirm": "Bỏ bài", "cancel": "Chịu sát thương" },
     "alliance/swap": { "prompt": "Chọn các lá bài để bỏ cho Alliance", "confirm": "Bỏ bài" },
