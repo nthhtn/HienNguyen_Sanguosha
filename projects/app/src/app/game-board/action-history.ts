@@ -1,5 +1,5 @@
 import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat, UsedCard } from 'engine';
-import { abilityName, cardDisplayData, generalDisplayData, isRecast } from 'content';
+import { abilityName, baseSkillId, cardDisplayData, generalDisplayData, isRecast } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, forceOf, generalDisplayName, judgmentReaderName, seatName, shownCardId, suitSymbol, targetLabel } from '../labels';
 import { translateLabelText } from './choice-description';
@@ -281,7 +281,7 @@ export function actionHistory(
         const shan = cardName('shan', tr);
         const duel = cardName('duel', tr);
         if (event.outcome === 'used') {
-          action(event.abilityId === 'upheaval' ? tr('history.upheaval', { owner, ability, sha }) : tr('history.abilityUsed', { owner, ability }));
+          action(baseSkillId(event.abilityId) === 'upheaval' ? tr('history.upheaval', { owner, ability, sha }) : tr('history.abilityUsed', { owner, ability }));
         } else if (event.outcome === 'no-effect' && event.targetSeatId) {
           // The card it stopped: named on the event (a cancelled card), else a Slash (armour).
           action(tr('history.noEffect', { owner, ability, target: name(event.targetSeatId), sha: event.cardId ? cardName(event.cardId, tr) : sha }));

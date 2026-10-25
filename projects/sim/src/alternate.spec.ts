@@ -46,8 +46,8 @@ describe('simulation: Alternate deck games with bots', () => {
     // The run only means something if the new cards actually came up.
     const text = [...seen].join('\n');
     expect(NEW_CARDS.filter((id) => !text.includes(id))).toEqual([]);
-    // Generals with no ready skills play vanilla; the games above reached a result with some of them seated.
-    expect(vanillaGames).toBeGreaterThan(0);
+    // Since slice 4 every Alternate General has a ready skill, so none plays vanilla (the engine's fallback for a General with none).
+    expect(vanillaGames).toBe(0);
   }, 300_000);
 
   it('seats no alternate: General in a seeded Default game', () => {
@@ -104,14 +104,13 @@ describe('simulation: Alternate deck games with bots', () => {
   const NEW_GENERALS = ['gan-fu-ren', 'yue-jin', 'ding-feng', 'pan-feng', 'tian-feng', 'kong-rong', 'ma-teng', 'ji-ling', 'zou-shi'];
 
   // Skills the bots never reach (or cannot reach within MAX_SEEDS games). Exact: if the bots start using one, the spec says to drop it here.
-  // Impetus for Conflicts hides a General, which no bot policy chooses (Femme Fatale, which only exposes Zou Shi, is reached): the scripted spec below covers it.
+  // Impetus for Conflicts hides a General, which no bot policy is built to choose; the scripted spec below covers it.
   // Close Combat and Horsemanship are passive modifiers: they leave no log trace, so firedSkills cannot see them; their own specs cover them.
   const EXEMPT: Record<string, string[]> = {
     'ding-feng': ['alternate:close-combat'],
     'ma-teng': ['alternate:horsemanship'],
-    'zou-shi': ['alternate:impetus-for-conflicts'],
   };
-  const MAX_SEEDS = 20;
+  const MAX_SEEDS = 30;
 
   it('plays each new General as Main to a result, with no engine error, no leak and no broken invariant, and its skills fire', () => {
     const registry = buildContentRegistry();

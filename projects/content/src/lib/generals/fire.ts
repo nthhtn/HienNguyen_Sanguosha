@@ -153,7 +153,8 @@ const NIRVANA_MARK = 'nirvana-used';
 // Nirvana (may, once per game): when you would enter the dying round, discard
 // every card you have (hand, equipment, judgment area), draw 3, recover to 3 HP
 // (at most your max HP) and turn face up. You don't enter the dying round.
-export const nirvana: SkillDefinition = {
+// Alternate Resurrection (`clearChained`): the seat also stops being Chained.
+export const makeNirvana = (clearChained: boolean): SkillDefinition => ({
   id: 'nirvana',
   limited: true,
   triggers: [
@@ -180,9 +181,12 @@ export const nirvana: SkillDefinition = {
       draw(owner.seatId, 3),
       ...(to > seat.combinedHp ? [{ kind: 'HealEffect' as const, target: { kind: 'seat' as const, seatId: owner.seatId }, amount: to - seat.combinedHp }] : []),
       { kind: 'TurnFaceUpEffect', seatId: owner.seatId },
+      ...(clearChained ? [{ kind: 'SetChainedEffect' as const, seatId: owner.seatId, chained: false }] : []),
     ];
   },
-};
+});
+
+export const nirvana: SkillDefinition = makeNirvana(false);
 
 // Whether the seat wears armour.
 const wearsArmour = (state: GameState, seatId: string, registry: ContentRegistry) =>

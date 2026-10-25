@@ -27,6 +27,11 @@ describe('readyAlternateSkills', () => {
     expect(readyIds('zhang-fei')).toEqual(['roar']);
     expect(readyAlternateSkills(record('zhang-fei'))[0]).toBe(GENERAL_SKILLS.get('zhang-fei')![0]);
   });
+  it("runs the wording-only Generals as Default's skills (Zhang Liao's Raid under another Chinese name)", () => {
+    expect(readyIds('zhang-liao')).toEqual(['raid']);
+    expect(readyIds('guan-yu')).toEqual(GENERAL_SKILLS.get('guan-yu')!.map((d) => d.id));
+    expect(readyIds('ma-chao')).toEqual(GENERAL_SKILLS.get('ma-chao')!.map((d) => d.id));
+  });
   it('runs Liu Bei as the Alternate Benevolence variant', () => {
     expect(readyIds('liu-bei')).toEqual(['alternate:benevolence']);
   });

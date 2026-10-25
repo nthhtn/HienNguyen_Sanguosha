@@ -1,5 +1,6 @@
 import { abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
 import { generalDisplayData } from './generalDisplay';
+import * as alternateSkills from './alternateSkills';
 import { alternateCardIds } from './alternateCards';
 import viAlternateGenerals from '../../data/locales/vi/alternate-generals.json';
 
@@ -33,7 +34,14 @@ describe('generalDisplayData', () => {
 
   it('marks an Alternate skill as in the game only when the registry plays it', () => {
     expect(generalDisplayData('alternate:zhang-fei')?.skills.find((s) => s.name === 'Berserk')?.inGame).toBe(true);
-    expect(generalDisplayData('alternate:guan-yu')?.skills.find((s) => s.name === 'Warrior Saint')?.inGame).toBe(false);
+    expect(generalDisplayData('alternate:guan-yu')?.skills.find((s) => s.name === 'Warrior Saint')?.inGame).toBe(true);
+    // Every Alternate skill is registered after slice 4, so a skill the registry does not play is simulated.
+    const spy = jest.spyOn(alternateSkills, 'alternateSkillFor').mockReturnValue(undefined);
+    try {
+      expect(generalDisplayData('alternate:guan-yu')?.skills.find((s) => s.name === 'Warrior Saint')?.inGame).toBe(false);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('leaves Default skills unmarked as not in the game', () => {

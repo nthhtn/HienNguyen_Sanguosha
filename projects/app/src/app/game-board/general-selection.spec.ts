@@ -4,6 +4,20 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, GeneralDefinition, Kingdom } from 'engine';
 import { GeneralSelection } from './general-selection';
 
+// Every Alternate skill is registered after slice 4, so the registry has no General left that reads "not in the game yet":
+// this one is pretended, to test how the UI shows the flag.
+jest.mock('content', () => {
+  const actual = jest.requireActual('content');
+  return {
+    ...actual,
+    generalDisplayData: (id: string, locale?: string) => {
+      const data = actual.generalDisplayData(id, locale);
+      return id === 'alternate:guan-yu' && data ? { ...data, skills: data.skills.map((s: object) => ({ ...s, inGame: false })) } : data;
+    },
+  };
+});
+
+
 function general(id: string, kingdom: Kingdom, maxHp: number): [string, GeneralDefinition] {
   return [id, { id, kingdom, maxHp, skills: [] }];
 }

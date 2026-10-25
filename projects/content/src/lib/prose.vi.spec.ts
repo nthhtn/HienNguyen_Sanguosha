@@ -85,6 +85,19 @@ describe('the display functions by locale', () => {
     expect(stepSelectionText('compete-user', 'vi')).toEqual({ prompt: 'Chọn một lá bài trên tay để đấu điểm', confirm: 'Đấu điểm' });
   });
 
+  it('the Alternate variants show the same prompts as their Default skill', () => {
+    for (const locale of ['en', 'vi']) {
+      expect(choicePromptText('alternate:descend-into-chaos', locale)).toBe(choicePromptText('upheaval', locale));
+      expect(choicePromptText('alternate:lightning-strike', locale)).toBe(choicePromptText('lightning-strike', locale));
+      expect(abilityHint('alternate:lightning-strike', locale)).toBe(abilityHint('lightning-strike', locale));
+    }
+  });
+
+  it('Alternate Resurrection says it also clears Chained', () => {
+    expect(abilityHint('alternate:resurrection', 'en')).toBe('Discard every card, draw 3, recover to 3 HP and turn face up and unchained');
+    expect(abilityHint('alternate:resurrection', 'vi')).toBe('Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3, lật lại và tháo xích');
+  });
+
   it('a locale with no prose, or an empty one, falls back to English', () => {
     expect(abilityHint('axe', 'fr')).toBe('Discard 2 cards to make your Slash hit {target}');
     expect(abilityHint('axe', '')).toBe('Discard 2 cards to make your Slash hit {target}');

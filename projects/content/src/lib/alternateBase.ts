@@ -20,6 +20,12 @@ export const ALTERNATE_VARIANT_BASE: Readonly<Record<string, string>> = {
   'alternate:sorrow': 'heartbroken',
   // Bots only: it asks like Bestowed Rouse; its own prompts and hints are in display.ts.
   'alternate:bequeathed-strategy': 'bestowed-rouse',
+  // Same prompts and bot behaviour as Upheaval; the bots' picks come from the legal choices, so they follow the nearest-seat list.
+  'alternate:descend-into-chaos': 'upheaval',
+  // Same texts and bot behaviour as Lightning Strike; the bot picks among the seats it is offered.
+  'alternate:lightning-strike': 'lightning-strike',
+  // Same bot behaviour as Nirvana; its own hint says it also clears Chained.
+  'alternate:resurrection': 'nirvana',
   // Ma Teng's Horsemanship is Ma Chao's: same texts and modifier.
   'alternate:horsemanship': 'horsemanship',
 };

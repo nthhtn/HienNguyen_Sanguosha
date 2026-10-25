@@ -7,8 +7,9 @@ import { handOf } from '../shared/queries';
 import { equipSlotOf } from '../cards/equipment';
 import { isShaDamage, untargetableBy } from '../shared/abilities';
 import { competeStart, competeStep } from '../shared/compete';
-import { makeCurtain } from './forest';
+import { makeCurtain, makeUpheaval } from './forest';
 import { makeEclipseTheMoon, makeSowDiscord } from './qun';
+import { makeLightningStrike } from './wind';
 import { horsemanship } from './shu';
 import { killedByLivingOther } from './mountain';
 import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, isLastMoveOfStep, isLiving, on, otherLivingSeatIds, ownCards, seatOptions, selectionOf, skillStep, used } from '../shared/skills';
@@ -456,6 +457,8 @@ export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<str
     // Envious Moon: asked whether to draw 1 at the start of the End Phase (Default: compulsory).
     闭月: { ...makeEclipseTheMoon(true), id: 'alternate:envious-moon' },
   },
+  // Lightning Strike: the seat he picks is another seat (Default: any living seat, himself included).
+  'zhang-jiao': { 雷击: { ...makeLightningStrike(false), id: 'alternate:lightning-strike' } },
   // Sorrow: the killer loses one General's skills, Main or Deputy as her player chooses (Default: the whole seat).
   'cai-wenji': { 断肠: sorrow },
   // Insanity Axe: Pan Feng is new to Alternate (Default has no such General).
@@ -469,7 +472,8 @@ export const ALTERNATE_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<str
   'ji-ling': { 双刃: doubleEdged },
   'ma-teng': { 马术: { ...horsemanship, id: 'alternate:horsemanship' }, 雄异: callOfValour },
   // Behind the Curtain: he can be chosen by black Tools, which are cancelled for him (Default: can't be chosen).
-  'jia-xu': { 帷幕: { ...makeCurtain(true), id: 'alternate:behind-the-curtain' } },
+  // Descend into Chaos: each seat must pick among the nearest seats (Default: any seat in its attack range).
+  'jia-xu': { 帷幕: { ...makeCurtain(true), id: 'alternate:behind-the-curtain' }, 乱武: { ...makeUpheaval(true), id: 'alternate:descend-into-chaos' } },
   // Femme Fatale, Impetus for Conflicts: Zou Shi is new to Alternate (Default has no such General).
   'zou-shi': { 祸水: femmeFatale, 倾城: impetusForConflicts },
 };

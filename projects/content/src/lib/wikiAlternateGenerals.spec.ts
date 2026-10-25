@@ -111,7 +111,7 @@ describe('wikiAlternateGenerals', () => {
     expect(byId('yue-jin').skills.map((s) => s.status)).toEqual(['worksAsAlternate']);
   });
 
-  it('pins exactly which Alternate skills the game plays (those of Generals whose difference note is nil)', () => {
+  it('pins exactly which Alternate skills the game plays as the Default skill (Nil Generals and the slice 4 wording-only skills)', () => {
     const working = generals.flatMap((g) => g.skills.filter((s) => s.status === 'worksAsDefault').map((s) => `${g.id}/${s.name}`)).sort();
     expect(working).toEqual([
       'cai-wenji/Dirge', 'da-qiao/Displacement', 'da-qiao/National Beauty', 'dian-wei/Ferocious Assault',
@@ -122,6 +122,36 @@ describe('wikiAlternateGenerals', () => {
       'wei-yan/Insanity Streak', 'xiahou-dun/An Eye for an Eye', 'xiahou-yuan/Godspeed', 'xu-chu/Bare-Chested',
       'xu-huang/Blockade', 'yan-liang-and-wen-chou/Dual Heroes', 'zhang-fei/Berserk',
       'zhang-zhao-and-zhang-hong/Blunt advice', 'zhao-yun/Dragon Heart', 'zhou-tai/Refuting Death',
+      // Slice 4: wording-only differences, cleared as Default's.
+      'cao-cao/Villainous Hero',
+      'cao-pi/Banish',
+      'cao-pi/Scavenge',
+      'cao-ren/Entrenched',
+      'guan-yu/Warrior Saint',
+      'guo-jia/Envy of Heaven',
+      'huang-zhong/Fearsome Archer',
+      'jia-xu/Unmitigated Murder',
+      'liu-shan/Devolution',
+      'liu-shan/Relish',
+      'lu-bu/Without Equal',
+      'ma-chao/Horsemanship',
+      'ma-chao/Iron Calvary',
+      'pang-tong/Shackle',
+      'sima-yi/Demonic Talent',
+      'sima-yi/Retaliation',
+      'sun-shangxiang/Marriage',
+      'xiao-qiao/Heavenly Scent',
+      'xiao-qiao/Rosy Cheeks',
+      'xun-yu/Rouse the Tiger',
+      'yuan-shao/Barrage',
+      'zhang-he/Flexibility',
+      'zhang-jiao/Dark Sorcery',
+      'zhang-liao/Sudden Strike',
+      'zhen-ji/Stunning Beauty',
+      'zhou-yu/Heroic Demeanor',
+      'zhou-yu/Sow Dissension',
+      'zhu-rong/Giant Elephant',
+      'zhuge-liang/Star Gazing',
     ].sort());
   });
 
@@ -155,52 +185,17 @@ describe('wikiAlternateGeneralTabs', () => {
 describe('slice 2 variant Generals', () => {
   const SLICE_2 = ['liu-bei', 'sun-quan', 'xun-yu', 'zhu-rong', 'huang-yueying', 'sun-shangxiang', 'diao-chan', 'zhuge-liang', 'lu-xun', 'jia-xu', 'guo-jia', 'zhang-zhao-and-zhang-hong', 'zhen-ji', 'cai-wenji'];
 
-  it('leaves only the skills deferred to slice 4 reading missing', () => {
+  it('leaves no slice 2 General’s skill reading missing', () => {
     const missing = wikiAlternateGenerals()
       .filter((g) => SLICE_2.includes(g.id))
       .flatMap((g) => g.skills.filter((s) => s.status === 'missing').map((s) => `${g.id}/${s.name}`))
       .sort();
-    expect(missing).toEqual([
-      'guo-jia/Envy of Heaven', 'jia-xu/Descend into Chaos', 'jia-xu/Unmitigated Murder', 'sun-shangxiang/Marriage',
-      'xun-yu/Rouse the Tiger', 'zhen-ji/Stunning Beauty', 'zhu-rong/Giant Elephant', 'zhuge-liang/Star Gazing',
-    ]);
+    expect(missing).toEqual([]);
   });
 });
 
-const MISSING_ELSEWHERE = [
-  'cao-cao/Villainous Hero',
-  'cao-pi/Banish',
-  'cao-pi/Scavenge',
-  'cao-ren/Entrenched',
-  'guan-yu/Warrior Saint',
-  'guo-jia/Envy of Heaven',
-  'huang-zhong/Fearsome Archer',
-  'jia-xu/Descend into Chaos',
-  'jia-xu/Unmitigated Murder',
-  'liu-shan/Devolution',
-  'liu-shan/Relish',
-  'lu-bu/Without Equal',
-  'ma-chao/Horsemanship',
-  'ma-chao/Iron Calvary',
-  'pang-tong/Resurrection',
-  'pang-tong/Shackle',
-  'sima-yi/Demonic Talent',
-  'sima-yi/Retaliation',
-  'sun-shangxiang/Marriage',
-  'xiao-qiao/Heavenly Scent',
-  'xiao-qiao/Rosy Cheeks',
-  'xun-yu/Rouse the Tiger',
-  'yuan-shao/Barrage',
-  'zhang-he/Flexibility',
-  'zhang-jiao/Dark Sorcery',
-  'zhang-jiao/Lightning Strike',
-  'zhang-liao/Sudden Strike',
-  'zhen-ji/Stunning Beauty',
-  'zhou-yu/Heroic Demeanor',
-  'zhou-yu/Sow Dissension',
-  'zhu-rong/Giant Elephant',
-  'zhuge-liang/Star Gazing',
-];
+// Slice 4 leaves none missing: every Alternate skill is Default's or a variant.
+const MISSING_ELSEWHERE: string[] = [];
 
 describe('slice 3 new Generals', () => {
   const NEW = ['gan-fu-ren', 'yue-jin', 'ding-feng', 'pan-feng', 'tian-feng', 'kong-rong', 'ma-teng', 'ji-ling', 'zou-shi'];

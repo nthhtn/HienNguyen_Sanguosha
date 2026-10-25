@@ -207,6 +207,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'alternate:femme-fatale': 'Reveal this General; while it is revealed, other seats cannot reveal Generals in your turn',
   'alternate:impetus-for-conflicts': 'Discard an Equipment card to hide a General of a seat whose Generals are both revealed',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
+  'alternate:resurrection': 'Discard every card, draw 3, recover to 3 HP and turn face up and unchained',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',
   'sudden-attack': "Discard one of {target}'s cards",
   'dueling-heroes': 'Instead of drawing, judge and take the card; cards of the other colour can be used as Duel this turn',
@@ -434,6 +435,7 @@ const JUDGMENT_OUTCOMES: Record<string, Record<string, string>> = {
   },
   'iron-cavalry': { unblockable: 'The Slash cannot be dodged', none: 'Nothing happens' },
   'lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
+  'alternate:lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
   'dueling-heroes': {
     red: '{owner} takes the card and may play black hand cards as Duel this turn',
     black: '{owner} takes the card and may play red hand cards as Duel this turn',

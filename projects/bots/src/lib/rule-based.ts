@@ -1,5 +1,6 @@
 import type { Action, ContentRegistry, GameState, Seat } from 'engine';
 import { conversionsOf, findSkill, sameAbilityOwner } from 'engine';
+import { baseSkillId } from 'content';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
 import { definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, TargetRanker, weakestFirst } from './helpers';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
@@ -192,7 +193,7 @@ function decide(
           ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying))
           : reason.kind === 'wuxie'
             ? !!self && wuxieWorthCancelling(view, self, reason, responseRules.wuxie)
-            : reason.kind === 'ability' && (reason.abilityId === 'upheaval' || reason.abilityId === 'instigate')
+            : reason.kind === 'ability' && (baseSkillId(reason.abilityId) === 'upheaval' || reason.abilityId === 'instigate')
               ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId)
               : false; // never counter a Wuxie Kongjie
     const answers = legal.filter((a): a is Extract<Action, { kind: 'RespondAction' }> => a.kind === 'RespondAction');

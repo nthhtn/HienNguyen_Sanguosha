@@ -433,9 +433,17 @@ const UPHEAVAL_MARK = 'upheaval-used';
 const shaReach = (state: GameState, seatId: string, registry: ContentRegistry) =>
   otherLivingSeatIds(state, seatId).filter((id) => seatDistance(state, seatId, id, registry) <= attackRange(state, seatId, registry) && !untargetableBy(state, id, 'sha', registry));
 
+// The other living seats a Sha may target that are at the least distance from `seatId` (among those); attack range is ignored.
+export const nearestShaTargets = (state: GameState, seatId: string, registry: ContentRegistry): string[] => {
+  const targets = otherLivingSeatIds(state, seatId).filter((id) => !untargetableBy(state, id, 'sha', registry));
+  const least = Math.min(...targets.map((id) => seatDistance(state, seatId, id, registry)));
+  return targets.filter((id) => seatDistance(state, seatId, id, registry) === least);
+};
+
 // Upheaval (active, Play Phase, once per game): every other living seat, in turn
 // order, picks a seat in its attack range and plays a Sha at it, or loses 1 HP.
-export const upheaval: SkillDefinition = {
+// Alternate Descend into Chaos (`nearestOnly`): the pick is among the nearest seats instead, ignoring range.
+export const makeUpheaval = (nearestOnly: boolean): SkillDefinition => ({
   id: 'upheaval',
   limited: true,
   active: {
@@ -456,7 +464,7 @@ export const upheaval: SkillDefinition = {
     if (step.step === 'next') {
       const [seatId, ...rest] = left;
       if (!seatId) return [];
-      const reach = shaReach(state, seatId, registry);
+      const reach = nearestOnly ? nearestShaTargets(state, seatId, registry) : shaReach(state, seatId, registry);
       if (reach.length === 0) return loseHp(seatId, rest);
       return [
         choiceOf(state, owner, {
@@ -497,7 +505,9 @@ export const upheaval: SkillDefinition = {
     const sha: Effect[] = isLiving(state, answeredBy) && isLiving(state, victim) ? shaAt(state, card, answeredBy, [{ kind: 'seat', seatId: victim }]) : [];
     return [...sha, skillStep(owner, 'next', { left })];
   },
-};
+});
+
+export const upheaval: SkillDefinition = makeUpheaval(false);
 
 export const FOREST_GENERALS: GeneralSkillSet[] = [
   { id: 'xu-huang', skills: [blockade] },
