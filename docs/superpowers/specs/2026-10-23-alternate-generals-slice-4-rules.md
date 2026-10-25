@@ -24,6 +24,7 @@ Default implementation; a doubtful one goes to the user).
 ## My calls (flag if wrong)
 
 - Nearest seat for Alternate Descend into Chaos ignores attack range, but skips seats a Sha cannot target.
+- Jia Xu himself may be a nearest seat, so he is a legal target of his own Descend into Chaos (confirmed 2026-10-25).
 - Fearsome Archer (Huang Zhong): Alternate says "in your action phase", Default checks "in your turn".
   The only Sha you target outside the Play Phase on your turn is Godspeed's (Xiahou Yuan, as the turn
   starts). I read it as wording, as the note says; no variant.
