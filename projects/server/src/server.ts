@@ -49,6 +49,7 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
     history: new GameHistory(store.repos),
     publicOrigin: config.publicOrigin,
     cookieSecure: config.cookieSecure,
+    staticDir: config.staticDir,
     trustProxy: config.trustProxy,
     rateLimits,
     logger: options.logger ?? true,

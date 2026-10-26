@@ -12,6 +12,7 @@ import { registerAuthRoutes } from './authRoutes';
 import { AUTH_ERROR_STATUS, errorBody, ROOM_ERROR_STATUS } from './errors';
 import { requestGuard } from './guard';
 import { registerRoomRoutes } from './roomRoutes';
+import { createStaticHandler } from './staticFiles';
 import { clearSessionCookie, SESSION_COOKIE, setSessionCookie } from './session';
 
 declare module 'fastify' {
@@ -29,6 +30,8 @@ export interface AppDeps {
   // Heartbeat and hello timeouts; tests shorten them.
   socket?: SocketOptions;
   cookieSecure: boolean;
+  // The built Angular app to serve; null or unset serves none.
+  staticDir?: string | null;
   // Passed to Fastify; see ServerConfig.trustProxy.
   trustProxy?: false | number | string[];
   rateLimits?: AuthRateLimits;
@@ -68,7 +71,15 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     return reply.code(500).send(errorBody('internal'));
   });
 
-  app.setNotFoundHandler((_request, reply) => reply.code(404).send(errorBody('not_found')));
+  // With a static directory, a GET or HEAD outside /api/ that matches no route is the Angular app's.
+  const serveStatic = deps.staticDir ? await createStaticHandler(deps.staticDir) : null;
+  app.setNotFoundHandler((request, reply) => {
+    const isPage = (request.method === 'GET' || request.method === 'HEAD') && !request.url.startsWith('/api/');
+    if (serveStatic && isPage) return serveStatic(request, reply);
+    return reply.code(404).send(errorBody('not_found'));
+  });
+
+  app.get('/healthz', async () => ({ status: 'ok' }));
 
   registerAuthRoutes(app, {
     accounts: deps.accounts,
