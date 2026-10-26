@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, inject } from '@angular/core';
 import { GameState, Target } from 'engine';
-import { forceOf, generalDisplayName, targetLabel } from '../labels';
+import { seatForce, generalDisplayName, targetLabel } from '../labels';
 import { I18n } from '../i18n/i18n.service';
 
 interface TargetPart {
@@ -8,7 +8,7 @@ interface TargetPart {
   sep: string;
   text: string;
   // The seat's force (data-force), or null for a target that isn't a whole seat.
-  force: ReturnType<typeof forceOf> | null;
+  force: ReturnType<typeof seatForce> | null;
 }
 
 // A label that names targets: "<prefix> <Player>" while the seat's kingdom is
@@ -41,7 +41,7 @@ export class TargetLabel {
       const name = targetLabel(target, state.players, this.i18n.translator);
       const seat = target.kind === 'seat' ? state.seats.find((s) => s.id === target.seatId) : undefined;
       if (!seat) return { sep, text: name, force: null };
-      const force = forceOf(seat.kingdom);
+      const force = seatForce(seat);
       if (force === 'none' || !seat.generals) return { sep, text: name, force };
       const { main, deputy } = seat.generals;
       // Only the Generals that are face up; the hyphen only between two.

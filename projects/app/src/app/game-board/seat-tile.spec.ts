@@ -228,6 +228,12 @@ describe('SeatTile', () => {
     expect(render({ ...makeSeat(), kingdom: 'hidden' }).querySelector('.tile')!.getAttribute('data-force')).toBe('none');
   });
 
+  it('shows an Ambitionist as such, with no force colour', () => {
+    const el = render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' });
+    expect(el.querySelector('.tile')!.getAttribute('data-force')).toBe('none');
+    expect(el.querySelector('.kingdom')!.textContent!.trim()).toBe('Ambitionist');
+  });
+
   it('keeps the force colour on the turn owner and on a responding seat', () => {
     const owner = render({ ...makeSeat(), kingdom: 'Shu' }, { isTurnOwner: true }).querySelector('.tile')!;
     expect(owner.getAttribute('data-force')).toBe('Shu');

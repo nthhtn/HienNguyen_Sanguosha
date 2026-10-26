@@ -1,7 +1,7 @@
 import { CardInstance, Effect, EngineEvent, GameState } from 'engine';
 import { abilityName, baseSkillId, cardDisplayData } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
-import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, forceOf, judgmentReaderName, seatName, shownCardId, targetLabel } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, seatForce, judgmentReaderName, seatName, shownCardId, targetLabel } from '../labels';
 
 export interface ResponseDescription {
   // What started it, e.g. "Seat 1 played Duel against Hing".
@@ -142,7 +142,7 @@ export function describeResponse(
       latest: null,
       prompt: ask + (needed > 1 ? tr('response.dying.needs', { n: needed, peaches: tr('response.peaches', { peach }) }) : ''),
       outcome: self ? tr('response.eliminated.you') : tr('response.eliminated.other', { seat: name(dyingId) }),
-      outcomeForce: forceOf(dying?.kingdom),
+      outcomeForce: seatForce(dying),
     };
   }
 
@@ -159,7 +159,7 @@ export function describeResponse(
         latest: null,
         prompt: tr('response.cancelIt', { card: askedCardName(state, tr, viewerSeatId) }),
         outcome: you ? tr('response.judge.outcome.you', { tool: toolName }) : tr('response.judge.outcome.other', { seat: name(judgedOwner), tool: toolName }),
-        outcomeForce: forceOf(state.seats.find((s) => s.id === judgedOwner)?.kingdom),
+        outcomeForce: seatForce(state.seats.find((s) => s.id === judgedOwner)),
       };
     }
     const targetId = target.kind === 'seat' ? target.seatId : undefined;
@@ -170,7 +170,7 @@ export function describeResponse(
       latest: null,
       prompt: tr('response.cancelIt', { card: askedCardName(state, tr, viewerSeatId) }),
       outcome: aimedAt ? tr('response.takesEffectOn', { tool: toolName, target: whom(aimedAt) }) : tr('response.takesEffect', { tool: toolName }),
-      outcomeForce: forceOf(state.seats.find((s) => s.id === targetId)?.kingdom),
+      outcomeForce: seatForce(state.seats.find((s) => s.id === targetId)),
     };
   }
 
@@ -185,7 +185,7 @@ export function describeResponse(
       latest: null,
       prompt: tr('response.cancelIt', { card: asked }),
       outcome: tr('response.stands', { seat: name(wuxieSeatId), card: counter }),
-      outcomeForce: forceOf(state.seats.find((s) => s.id === wuxieSeatId)?.kingdom),
+      outcomeForce: seatForce(state.seats.find((s) => s.id === wuxieSeatId)),
     };
   }
 
@@ -197,7 +197,7 @@ export function describeResponse(
       latest: null,
       prompt: tr('response.playAt', { card: askedCardName(state, tr), target: whom(victimSeatId) }),
       outcome: outcomeOf(preview(shown) ?? shown, viewerSeatId, state, tr),
-      outcomeForce: forceOf(state.seats.find((s) => s.id === holder)?.kingdom),
+      outcomeForce: seatForce(state.seats.find((s) => s.id === holder)),
     };
   }
 
@@ -210,7 +210,7 @@ export function describeResponse(
       latest: null,
       prompt: tr('response.upheaval.prompt', { sha, target: targetSeatId ? whom(targetSeatId) : tr('response.seatYouPicked') }),
       outcome: you ? tr('response.loseOne.you') : tr('response.loseOne.other', { seat: name(pending.respondingSeatId) }),
-      outcomeForce: forceOf(state.seats.find((s) => s.id === pending.respondingSeatId)?.kingdom),
+      outcomeForce: seatForce(state.seats.find((s) => s.id === pending.respondingSeatId)),
     };
   }
 
@@ -226,7 +226,7 @@ export function describeResponse(
       outcome: you
         ? tr('response.instigate.outcome.you', { owner: name(owner.seatId) })
         : tr('response.instigate.outcome.other', { owner: name(owner.seatId), target: name(pending.respondingSeatId) }),
-      outcomeForce: forceOf(state.seats.find((s) => s.id === pending.respondingSeatId)?.kingdom),
+      outcomeForce: seatForce(state.seats.find((s) => s.id === pending.respondingSeatId)),
     };
   }
 
@@ -273,7 +273,7 @@ export function describeResponse(
     latest,
     prompt,
     outcome: outcomeOf(preview(shown) ?? shown, viewerSeatId, state, tr),
-    outcomeForce: forceOf(state.seats.find((s) => s.id === affectedSeatOf(shown))?.kingdom),
+    outcomeForce: seatForce(state.seats.find((s) => s.id === affectedSeatOf(shown))),
   };
 }
 

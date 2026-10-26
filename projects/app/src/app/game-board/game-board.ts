@@ -18,7 +18,7 @@ import { GameOver } from './game-over';
 import { GeneralSelection } from './general-selection';
 import { PhaseIndicator } from './phase-indicator';
 import { DiscardPile } from './discard-pile';
-import { conversionLabel, forceOf, generalDisplayName, seatName } from '../labels';
+import { conversionLabel, seatForce, generalDisplayName, seatName } from '../labels';
 import { discardHistory } from './discard-history';
 import { ActionHistoryPanel } from './action-history-panel';
 import { actionHistory } from './action-history';
@@ -412,7 +412,7 @@ export class GameBoard {
   });
 
   // The viewer's force colour, which their decision dialogs are themed in.
-  private readonly viewerForce = computed(() => forceOf(this.viewerSeat()?.kingdom));
+  private readonly viewerForce = computed(() => seatForce(this.viewerSeat()));
   protected readonly viewerSeat = computed(() => this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId()) ?? null);
 
   protected dyingOf(seat: Seat): boolean {

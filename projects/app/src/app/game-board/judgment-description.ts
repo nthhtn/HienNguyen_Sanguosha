@@ -1,6 +1,6 @@
 import type { CardInstance, ContentRegistry, GameState } from 'engine';
 import { generalDisplayData, judgmentOutcome, judgmentOutcomeText } from 'content';
-import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, forceOf, generalDisplayName, seatName, shownCardId } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, seatForce, generalDisplayName, seatName, shownCardId } from '../labels';
 import { Translator, localeOf } from '../i18n/translator';
 
 export type JudgmentSource =
@@ -49,10 +49,10 @@ export function judgmentDescription(state: GameState, registry: ContentRegistry,
       abilityName,
       skillText: display?.skills.find((s) => s.name === abilityName)?.text ?? null,
     };
-    force = forceOf(sourceSeat?.kingdom);
+    force = seatForce(sourceSeat);
   } else {
     source = { kind: 'card', cardName: cardIdDisplayName(shownCardId(reader.card), tr), seatName: name(view.seatId) };
-    force = forceOf(seatOf(view.seatId)?.kingdom);
+    force = seatForce(seatOf(view.seatId));
   }
 
   const changes = view.changes.map((change) => ({

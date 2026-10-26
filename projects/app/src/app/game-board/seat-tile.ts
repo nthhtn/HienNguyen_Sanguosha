@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
 import { abilityName, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
-import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
+import { cardIdDisplayName, seatForce, seatKingdomLabel } from '../labels';
 import { SeatAvatar } from './seat-avatar';
 import { AvatarSkill } from './avatar-skills';
 import { PlayingCard } from './playing-card';
@@ -83,7 +83,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           }
         }
         <div class="stats">
-          <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomName(seat().kingdom) }}</span>
+          <span class="kingdom kingdom-{{ seat().allegiance === 'ambitionist' ? 'Ambitionist' : seat().kingdom }}">{{ kingdomName(seat()) }}</span>
           @if (hpIcons().length) {
             <span class="hp-icons">
               @for (src of hpIcons(); track src) {
@@ -236,7 +236,7 @@ export class SeatTile {
 
   // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a
   // seat that belongs to no force).
-  protected readonly force = computed(() => forceOf(this.seat().kingdom));
+  protected readonly force = computed(() => seatForce(this.seat()));
   protected readonly hpIcons = computed(() => hpIconUrls(this.seat().combinedHp));
 
 
@@ -263,7 +263,7 @@ export class SeatTile {
     return cardIdDisplayName(definitionId, this.i18n.translator);
   }
 
-  protected kingdomName(kingdom: Parameters<typeof kingdomDisplayName>[0]): string {
-    return kingdomDisplayName(kingdom, this.i18n.translator);
+  protected kingdomName(seat: Parameters<typeof seatKingdomLabel>[0]): string {
+    return seatKingdomLabel(seat, this.i18n.translator);
   }
 }

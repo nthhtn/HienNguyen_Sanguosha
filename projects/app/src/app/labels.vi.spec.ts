@@ -3,7 +3,7 @@ import { buildContentRegistry } from 'content';
 import { makeTranslator } from './i18n/translator';
 import { vi } from './i18n/vi';
 import {
-  actionLabel, cardIdDisplayName, conversionLabel, generalDisplayName, kingdomDisplayName, registryCardName, seatName, suitLabel, targetLabel, targetingParts,
+  actionLabel, cardIdDisplayName, conversionLabel, generalDisplayName, kingdomDisplayName, registryCardName, seatForce, seatKingdomLabel, seatName, suitLabel, targetLabel, targetingParts,
 } from './labels';
 
 const tr = makeTranslator(vi);
@@ -65,6 +65,15 @@ describe('hidden names, kingdoms and suits', () => {
     expect((['Wei', 'Shu', 'Wu', 'Qun', 'hidden'] as const).map((k) => kingdomDisplayName(k, tr))).toEqual(['Ngụy', 'Thục', 'Ngô', 'Quần', 'Tướng ẩn']);
     expect((['Wei', 'Shu', 'Wu', 'Qun', 'hidden'] as const).map((k) => kingdomDisplayName(k))).toEqual(['Wei', 'Shu', 'Wu', 'Qun', 'Hidden']);
     expect(kingdomDisplayName('Jin' as never, tr)).toBe('Jin');
+  });
+
+  it('an Ambitionist seat shows as Ambitionist and has no force', () => {
+    const seat = { kingdom: 'Wei', allegiance: 'ambitionist' } as const;
+    expect(seatKingdomLabel(seat, tr)).toBe('Dã tâm gia');
+    expect(seatKingdomLabel(seat)).toBe('Ambitionist');
+    expect(seatKingdomLabel({ kingdom: 'Wei' }, tr)).toBe('Ngụy');
+    expect(seatForce(seat)).toBe('none');
+    expect(seatForce({ kingdom: 'Wei' })).toBe('Wei');
   });
 
   it('all four suits', () => {

@@ -12,8 +12,10 @@ export function definitionIdOf(view: GameState, cardInstanceId: string): string 
 }
 
 // An ally shares the bot's own (known) kingdom and has revealed it. Qun is
-// allied with no one; a hidden kingdom could be anyone, so it is not an ally.
+// allied with no one; a hidden kingdom could be anyone, so it is not an ally. An Ambitionist
+// is a group of one: nobody's ally.
 export function isAlly(self: Seat, other: Seat): boolean {
+  if (self.allegiance === 'ambitionist' || other.allegiance === 'ambitionist') return false;
   return self.kingdom !== 'Qun' && self.kingdom !== 'hidden' && other.kingdom === self.kingdom;
 }
 
