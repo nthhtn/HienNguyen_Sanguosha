@@ -196,3 +196,18 @@ describe('reveals blocked during another seat’s turn', () => {
     expect(() => resolve(s, { kind: 'ConfirmRevealsAction', seatId: 'a', slots: ['main'] }, bctx)).toThrow();
   });
 });
+
+describe('DeclareAllegianceEffect', () => {
+  const declare = (allegiance: 'kingdom' | 'ambitionist'): Effect => ({ kind: 'DeclareAllegianceEffect', seatId: 'a', allegiance });
+
+  it('sets the seat allegiance and leaves other seats alone', () => {
+    const s = table([declare('ambitionist')], true);
+    expect(s.seats.find((x) => x.id === 'a')!.allegiance).toBe('ambitionist');
+    expect(s.seats.find((x) => x.id === 'b')!.allegiance).toBeUndefined();
+  });
+
+  it('does not change a decided seat', () => {
+    const s = table([declare('ambitionist'), declare('kingdom')], true);
+    expect(s.seats.find((x) => x.id === 'a')!.allegiance).toBe('ambitionist');
+  });
+});

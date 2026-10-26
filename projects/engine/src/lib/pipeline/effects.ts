@@ -25,6 +25,8 @@ export type Effect =
   | { kind: 'IncrementEffect'; scope: 'turn' | 'seat'; key: string; by: number; seatId?: string }
   // `forAbilityId`: revealed to use that skill (the history names it).
   | { kind: 'RevealGeneralEffect'; seatId: string; slot: 'main' | 'deputy'; forAbilityId?: string }
+  // Decides the seat's allegiance (no-op once decided).
+  | { kind: 'DeclareAllegianceEffect'; seatId: string; allegiance: 'kingdom' | 'ambitionist' }
   // Turns a revealed General face down again (no-op when it already is).
   | { kind: 'HideGeneralEffect'; seatId: string; slot: 'main' | 'deputy' }
   | { kind: 'HealEffect'; target: Target; amount: number }
@@ -201,6 +203,10 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
         ...(effect.forAbilityId ? { forAbilityId: effect.forAbilityId } : {}),
       };
       return { state: { ...state, seats, log: [...state.log, event] }, events: [event] };
+    }
+    case 'DeclareAllegianceEffect': {
+      const seats = state.seats.map((s) => (s.id === effect.seatId && !s.allegiance ? { ...s, allegiance: effect.allegiance } : s));
+      return { state: { ...state, seats }, events: [] };
     }
     case 'HideGeneralEffect': {
       const seat = state.seats.find((s) => s.id === effect.seatId);

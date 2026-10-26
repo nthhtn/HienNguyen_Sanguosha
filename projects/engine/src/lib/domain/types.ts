@@ -113,6 +113,10 @@ export interface Seat {
   chained?: true;
   // Game-long marks some skills keep (none of the base Generals do yet).
   marks?: Record<string, number>;
+  // Decided once, at the seat's first reveal, and never changed: 'kingdom' (it
+  // plays for its Kingdom, and holds one of its slots living or dead) or
+  // 'ambitionist' (a group of one). Absent until then. Public once a General is shown.
+  allegiance?: 'kingdom' | 'ambitionist';
   eliminated: boolean;
 }
 
