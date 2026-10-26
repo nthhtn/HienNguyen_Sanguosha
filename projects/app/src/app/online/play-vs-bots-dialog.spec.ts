@@ -29,7 +29,7 @@ describe('PlayVsBotsDialog', () => {
   }
 
 
-  const pickDefault = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+  const clickDynastyWars = (fixture: { detectChanges(): void }, el: HTMLElement) => {
     const radio = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent!.trim() === 'Dynasty Wars')!;
     (radio.querySelector('input') as HTMLInputElement).click();
     fixture.detectChanges();
@@ -102,12 +102,12 @@ describe('PlayVsBotsDialog', () => {
     expect(dialogRef.close).toHaveBeenLastCalledWith('r-new');
   });
 
-  it('offers the deck and sends the chosen one', async () => {
+  it('offers the deck and sends Kingdom Wars; Dynasty Wars is disabled for now (deferred)', async () => {
     rooms.createSolo.mockResolvedValue('r-solo');
     const { fixture, component, el } = await create();
     expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Dynasty Wars']);
-    pickDefault(fixture, el);
+    clickDynastyWars(fixture, el);
     await component.submit();
-    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: {} });
+    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: { deck: 'alternate' } });
   });
 });

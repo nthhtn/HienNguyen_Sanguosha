@@ -18,12 +18,13 @@ describe('DeckPicker', () => {
     expect(radios(el).map((r) => input(r).checked)).toEqual([true, false]);
   });
 
-  it('chooses Dynasty Wars when it is clicked', async () => {
+  it('disables Dynasty Wars for now (deferred): it stays listed but cannot be chosen', async () => {
     const { fixture, el } = await create();
+    expect(radios(el).map((r) => input(r).disabled)).toEqual([false, true]);
     input(radios(el)[1]).click();
     fixture.detectChanges();
-    expect(fixture.componentInstance.value()).toBe('default');
-    expect(radios(el).map((r) => input(r).checked)).toEqual([false, true]);
+    expect(fixture.componentInstance.value()).toBe('alternate');
+    expect(radios(el).map((r) => input(r).checked)).toEqual([true, false]);
   });
 
   it('shows the hint, and can be disabled', async () => {
