@@ -4,7 +4,7 @@ import type { ContentRegistry, GameState, GeneralOwner, Kingdom } from 'engine';
 /** The seat's exposed Kingdom, or null while it has none: hidden, or no General revealed yet. Read live from the Seat. */
 export function exposedKingdom(state: GameState, seatId: string): Exclude<Kingdom, 'hidden'> | null {
   const seat = state.seats.find((s) => s.id === seatId);
-  if (!seat || seat.kingdom === 'hidden' || !seat.generals) return null; // generals is null until the seat has chosen
+  if (!seat || seat.kingdom === 'hidden' || !seat.generals || seat.allegiance === 'ambitionist') return null; // generals is null until the seat has chosen
   if (!seat.generals.main.revealed && !seat.generals.deputy.revealed) return null;
   return seat.kingdom;
 }
@@ -16,7 +16,17 @@ export function sameKingdomSeatIds(state: GameState, seatId: string): string[] {
   return livingSeatOrderFrom(state, seatId).filter((id) => exposedKingdom(state, id) === kingdom);
 }
 
-/** Living exposed seats per Kingdom (no Ambitionist yet, so each Kingdom is one group). */
+/** The most seats one Kingdom may hold: half the table, rounded down. A seat revealing into a full Kingdom is an Ambitionist. */
+export function kingdomCap(state: GameState): number {
+  return Math.floor(state.seats.length / 2);
+}
+
+/** Seats that hold a slot of `kingdom`, living or dead (an Ambitionist holds none). */
+export function seatsInKingdom(state: GameState, kingdom: Exclude<Kingdom, 'hidden'>): number {
+  return state.seats.filter((s) => s.allegiance === 'kingdom' && s.kingdom === kingdom).length;
+}
+
+/** Living exposed seats per Kingdom (an Ambitionist has no exposed Kingdom, so is no group's member). */
 export function exposedKingdomCounts(state: GameState): Map<string, number> {
   const counts = new Map<string, number>();
   for (const seat of state.seats) {

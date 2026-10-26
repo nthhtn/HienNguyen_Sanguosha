@@ -1,4 +1,4 @@
-import { exposedKingdom, exposedKingdomCounts, sameKingdomSeatIds } from './kingdom';
+import { exposedKingdom, exposedKingdomCounts, kingdomCap, sameKingdomSeatIds, seatsInKingdom } from './kingdom';
 import type { GameState, Seat } from 'engine';
 
 function seat(id: string, index: number, kingdom: Seat['kingdom'], eliminated = false, revealed = kingdom !== 'hidden'): Seat {
@@ -70,5 +70,40 @@ describe('Kingdom helpers', () => {
       ]);
       expect(exposedKingdomCounts(s)).toEqual(new Map([['Wei', 1], ['Shu', 1]]));
     });
+  });
+});
+
+describe('Ambitionists and the Kingdom cap', () => {
+  const withAllegiance = (s: Seat, allegiance: 'kingdom' | 'ambitionist'): Seat => ({ ...s, allegiance });
+  const table = (n: number) => stateWith(Array.from({ length: n }, (_, i) => seat(`s${i}`, i, 'Shu')));
+
+  it('kingdomCap is half the table rounded down', () => {
+    expect(kingdomCap(table(7))).toBe(3);
+    expect(kingdomCap(table(6))).toBe(3);
+    expect(kingdomCap(table(2))).toBe(1);
+  });
+
+  it('seatsInKingdom counts decided Kingdom seats of that Kingdom, dead ones too', () => {
+    const s = stateWith([
+      withAllegiance(seat('a', 0, 'Wei'), 'kingdom'),
+      withAllegiance(seat('b', 1, 'Wei', true), 'kingdom'),
+      withAllegiance(seat('c', 2, 'Wei'), 'ambitionist'),
+      seat('d', 3, 'Wei'),
+      withAllegiance(seat('e', 4, 'Shu'), 'kingdom'),
+    ]);
+    expect(seatsInKingdom(s, 'Wei')).toBe(2);
+    expect(seatsInKingdom(s, 'Shu')).toBe(1);
+  });
+
+  it('exposedKingdom is null for an Ambitionist, and it stands alone', () => {
+    const s = stateWith([seat('a', 0, 'Wei'), withAllegiance(seat('b', 1, 'Wei'), 'ambitionist'), seat('c', 2, 'Wei')]);
+    expect(exposedKingdom(s, 'b')).toBeNull();
+    expect(sameKingdomSeatIds(s, 'b')).toEqual(['b']);
+    expect(sameKingdomSeatIds(s, 'a')).toEqual(['a', 'c']);
+  });
+
+  it('exposedKingdomCounts skips Ambitionists', () => {
+    const s = stateWith([seat('a', 0, 'Wei'), withAllegiance(seat('b', 1, 'Wei'), 'ambitionist')]);
+    expect(exposedKingdomCounts(s).get('Wei')).toBe(1);
   });
 });
