@@ -81,7 +81,7 @@ export class CreateRoomDialog {
   readonly displayName = signal(this.data.displayName);
   readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
   readonly firstRevealDraw = signal(true);
-  readonly deck = signal<DeckId>('default');
+  readonly deck = signal<DeckId>('alternate');
   readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);
   protected readonly canSubmit = computed(() => this.displayName().trim() !== '');

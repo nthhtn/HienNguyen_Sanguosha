@@ -24,14 +24,14 @@ describe('The Alternate Generals page', () => {
   it('lists sixty Generals in four Kingdom tabs', async () => {
     const el = await open('/wiki/alternate/generals');
     expect(text(el.querySelector('h2'))).toBe('Generals');
-    expect(text(el.querySelector('.deck-line'))).toBe('Deck: Alternate');
+    expect(text(el.querySelector('.deck-line'))).toBe('Deck: Kingdom Wars');
     expect(tabLabels(el)).toEqual(['Wei (15)', 'Shu (15)', 'Wu (15)', 'Qun (15)']);
     expect(entryIds(el)).toHaveLength(15);
   });
 
-  it('counts the Generals whose skills all run as Default in the summary line', async () => {
+  it('counts the Generals and those with every skill working in the summary line', async () => {
     const el = await open('/wiki/alternate/generals');
-    expect(text(el.querySelector('.summary'))).toMatch(/^60 Generals · \d+ with every skill running Default's version$/);
+    expect(text(el.querySelector('.summary'))).toMatch(/^60 Generals · \d+ with skills in the game$/);
   });
 
   it('opens a tab from the tab query parameter', async () => {
@@ -45,11 +45,12 @@ describe('The Alternate Generals page', () => {
     expect(selectedTab(unknown)).toBe('Wei (15)');
   });
 
-  it('shows the nine new Generals with placeholders', async () => {
+  it('shows the nine new Generals with their own art', async () => {
     const el = await open('/wiki/alternate/generals?tab=qun');
     expect(entryIds(el)).toContain('ji-ling');
     const ji = el.querySelector('article.entry[data-id="ji-ling"]')!;
-    expect(ji.querySelector('.card-art-placeholder')).not.toBeNull();
+    expect(ji.querySelector('.card-art-placeholder')).toBeNull();
+    expect(ji.querySelector('app-card-art img')!.getAttribute('src')).toBe('/card-art/generals/skins/qun/jiling.png');
   });
 
   it('shows the page in Vietnamese', async () => {
@@ -64,7 +65,7 @@ describe('The Alternate Generals page', () => {
     const el = harness.routeNativeElement as HTMLElement;
     expect(text(el.querySelector('h2'))).toBe('Tướng');
     expect(tabLabels(el)).toEqual(['Ngụy (15)', 'Thục (15)', 'Ngô (15)', 'Quần (15)']);
-    expect(text(el.querySelector('.summary'))).toMatch(/^60 Tướng · \d+ có mọi kỹ năng chạy theo bản Mặc định$/);
+    expect(text(el.querySelector('.summary'))).toMatch(/^60 Tướng · \d+ đã có kỹ năng trong trò chơi$/);
     expect(text(el.querySelector('article.entry[data-id="cao-cao"] .name'))).toBe('Tào Tháo');
   });
 });

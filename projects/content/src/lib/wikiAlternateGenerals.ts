@@ -1,4 +1,4 @@
-import { alternateGeneralRecords, type AlternateGeneralRecord, type AlternateGeneralSkillRecord } from './alternateGenerals';
+import { alternateDifferenceNote, alternateGeneralRecords, type AlternateGeneralRecord, type AlternateGeneralSkillRecord } from './alternateGenerals';
 import { alternateSkillFor, hasAlternateVariant } from './alternateSkills';
 import { splitIntoTabs, type WikiTab } from './wiki';
 
@@ -24,8 +24,8 @@ export interface WikiAlternateGeneral {
   skills: WikiAlternateSkill[];
   partners: string[];
   differenceNote: string | null;
-  // Every skill works as Default (and there is at least one).
-  skillsRunAsDefault: boolean;
+  // Every skill is wired into the game (and there is at least one).
+  skillsWorking: boolean;
 }
 
 export function alternateSkillStatus(record: AlternateGeneralRecord, skill: AlternateGeneralSkillRecord): AlternateSkillStatus {
@@ -50,8 +50,8 @@ export function wikiAlternateGenerals(): WikiAlternateGeneral[] {
         gender: rec.gender,
         skills,
         partners: rec.synergisticPartners,
-        differenceNote: rec.differenceFromNormal,
-        skillsRunAsDefault: skills.length > 0 && skills.every((s) => s.status === 'worksAsDefault'),
+        differenceNote: alternateDifferenceNote(rec.id),
+        skillsWorking: skills.length > 0 && skills.every((s) => s.status !== 'missing'),
       };
     })
     .sort((a, b) => KINGDOM_ORDER.indexOf(a.kingdom) - KINGDOM_ORDER.indexOf(b.kingdom) || a.name.localeCompare(b.name));

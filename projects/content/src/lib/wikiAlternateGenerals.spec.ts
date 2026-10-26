@@ -61,7 +61,7 @@ describe('wikiAlternateGenerals', () => {
 
   it('gives every General HP, gender and at least one skill', () => {
     for (const g of generals) {
-      expect([3, 4]).toContain(g.maxHp);
+      expect([3, 4, 5]).toContain(g.maxHp);
       expect(['male', 'female']).toContain(g.gender);
       expect(g.skills.length).toBeGreaterThan(0);
     }
@@ -75,7 +75,7 @@ describe('wikiAlternateGenerals', () => {
 
   it('plays both of Zou Shi’s skills, as Alternate variants of their own', () => {
     expect(byId('zou-shi').skills.map((s) => s.status)).toEqual(['worksAsAlternate', 'worksAsAlternate']);
-    expect(byId('zou-shi').skillsRunAsDefault).toBe(false);
+    expect(byId('zou-shi').skillsWorking).toBe(true);
   });
 
   it('plays both of Gan Fu Ren’s skills, as Alternate variants of their own', () => {
@@ -157,7 +157,7 @@ describe('wikiAlternateGenerals', () => {
 
   it('carries the partners and the Difference note from the data', () => {
     expect(byId('liu-bei').partners).toContain('Guan Yu 关羽 (Sworn Brother)');
-    expect(byId('liu-bei').differenceNote).toMatch(/weakened/);
+    expect(byId('liu-bei').differenceNote).toMatch(/three or more cards/);
   });
 
   it('is in step with the per-General files the crawl writes', () => {

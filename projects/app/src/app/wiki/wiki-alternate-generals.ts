@@ -13,7 +13,7 @@ import { wikiTabLabel } from './wiki-labels';
   template: `
     <h2>{{ 'wiki.page.generals' | t }}</h2>
     <p class="deck-line">{{ 'lobby.deckSummary' | t: { deck: 'setup.deck.alternate' | t } }}</p>
-    <p class="summary">{{ 'wiki.alternateGenerals.summary' | t: { count: generals.length, withDefault } }}</p>
+    <p class="summary">{{ 'wiki.alternateGenerals.summary' | t: { count: generals.length, working } }}</p>
     <mat-tab-group
       [selectedIndex]="tab.selectedIndex()"
       (selectedIndexChange)="tab.select($event)"
@@ -41,7 +41,7 @@ import { wikiTabLabel } from './wiki-labels';
 export class WikiAlternateGenerals {
   private readonly i18n = inject(I18n);
   protected readonly generals = wikiAlternateGenerals();
-  protected readonly withDefault = this.generals.filter((g) => g.skillsRunAsDefault).length;
+  protected readonly working = this.generals.filter((g) => g.skillsWorking).length;
   protected readonly tabs = wikiAlternateGeneralTabs();
   protected readonly tab = tabQueryParam(this.tabs.map((t) => t.key));
 

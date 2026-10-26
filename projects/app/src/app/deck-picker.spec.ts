@@ -11,18 +11,18 @@ describe('DeckPicker', () => {
   const radios = (el: HTMLElement) => [...el.querySelectorAll('mat-radio-button')];
   const input = (radio: Element) => radio.querySelector('input') as HTMLInputElement;
 
-  it('offers Default and Alternate, with Default chosen', async () => {
+  it('offers Kingdom Wars and Dynasty Wars, with Kingdom Wars chosen', async () => {
     const { el } = await create();
     expect(el.querySelector('.label')!.textContent).toContain('Deck');
-    expect(radios(el).map((r) => r.textContent!.trim())).toEqual(['Default', 'Alternate']);
+    expect(radios(el).map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Dynasty Wars']);
     expect(radios(el).map((r) => input(r).checked)).toEqual([true, false]);
   });
 
-  it('chooses Alternate when it is clicked', async () => {
+  it('chooses Dynasty Wars when it is clicked', async () => {
     const { fixture, el } = await create();
     input(radios(el)[1]).click();
     fixture.detectChanges();
-    expect(fixture.componentInstance.value()).toBe('alternate');
+    expect(fixture.componentInstance.value()).toBe('default');
     expect(radios(el).map((r) => input(r).checked)).toEqual([false, true]);
   });
 

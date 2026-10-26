@@ -7,8 +7,8 @@ import { TPipe } from './i18n/t.pipe';
 // The decks the host can pick, in the order shown. A new deck is one line here
 // plus its catalog keys (and the engine's own list of decks).
 const OPTIONS: { id: DeckId; label: MessageKey }[] = [
-  { id: 'default', label: 'setup.deck.default' },
   { id: 'alternate', label: 'setup.deck.alternate' },
+  { id: 'default', label: 'setup.deck.default' },
 ];
 
 let nextId = 0;
@@ -38,7 +38,7 @@ let nextId = 0;
   `,
 })
 export class DeckPicker {
-  readonly value = model<DeckId>('default');
+  readonly value = model<DeckId>('alternate');
   readonly disabled = input(false);
   protected readonly options = OPTIONS;
   protected readonly labelId = `deck-label-${nextId++}`;

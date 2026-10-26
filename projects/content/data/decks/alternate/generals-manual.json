@@ -9,5 +9,7 @@
   "ma-teng": { "force": "qun", "maxHp": 4, "gender": "male" },
   "pan-feng": { "force": "qun", "maxHp": 4, "gender": "male" },
   "tian-feng": { "force": "qun", "maxHp": 3, "gender": "male" },
-  "zou-shi-lady-zou": { "force": "qun", "maxHp": 3, "gender": "female" }
+  "zou-shi-lady-zou": { "force": "qun", "maxHp": 3, "gender": "female" },
+  "lu-bu": { "maxHp": 5, "gender": "male" },
+  "guan-yu": { "maxHp": 5, "gender": "male" }
 }

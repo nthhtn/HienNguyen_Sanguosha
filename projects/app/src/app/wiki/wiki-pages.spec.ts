@@ -48,9 +48,9 @@ describe('Wiki pages', () => {
   });
 
   it.each([
-    ['/wiki/default/generals', 'Deck: Default'],
-    ['/wiki/default/tools', 'Deck: Default'],
-    ['/wiki/alternate/tools', 'Deck: Alternate'],
+    ['/wiki/default/generals', 'Deck: Dynasty Wars'],
+    ['/wiki/default/tools', 'Deck: Dynasty Wars'],
+    ['/wiki/alternate/tools', 'Deck: Kingdom Wars'],
   ])('names the deck on %s', async (path, line) => {
     const { el } = await open(path);
     expect(el().querySelector('.deck-line')!.textContent!.trim()).toBe(line);

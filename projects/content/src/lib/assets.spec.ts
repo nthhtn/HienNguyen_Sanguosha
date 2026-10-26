@@ -69,15 +69,17 @@ describe('Alternate General art', () => {
     expect(generalDeathVoiceUrl('alternate:zhang-fei')).toBe(generalDeathVoiceUrl('zhang-fei'));
   });
 
-  it('falls back to the placeholder for a General with no art', () => {
-    expect(GENERAL_PLACEHOLDER_ART_URL).toBe('/card-art/generals/placeholder.svg');
+  it('gives each new General its own skin but no death voice yet', () => {
     const fresh = alternateGeneralIds().filter((id) => !Object.prototype.hasOwnProperty.call(generalsData, id));
     expect(fresh).toHaveLength(9);
     for (const id of fresh) {
-      expect(generalSkinUrl(alternateGeneralId(id))).toBe(GENERAL_PLACEHOLDER_ART_URL);
+      expect(generalSkinUrl(alternateGeneralId(id))).toMatch(/^\/card-art\/generals\/skins\/\w+\/\w+\.png$/);
       expect(generalDeathVoiceUrl(alternateGeneralId(id))).toBeNull();
     }
-    expect(generalSkinUrl('alternate:zou-shi')).toBe(GENERAL_PLACEHOLDER_ART_URL);
+  });
+
+  it('falls back to the placeholder for a General with no art', () => {
+    expect(GENERAL_PLACEHOLDER_ART_URL).toBe('/card-art/generals/placeholder.svg');
     expect(generalSkinUrl('alternate:nobody')).toBe(GENERAL_PLACEHOLDER_ART_URL);
   });
 });

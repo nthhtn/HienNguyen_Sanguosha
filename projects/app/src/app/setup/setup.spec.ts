@@ -87,9 +87,9 @@ describe('Setup', () => {
     });
 
     describe('deck', () => {
-      const pickAlternate = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+      const pickDefault = (fixture: { detectChanges(): void }, el: HTMLElement) => {
         const radios = [...el.querySelectorAll('.deck mat-radio-button')];
-        (radios.find((r) => r.textContent!.trim() === 'Alternate')!.querySelector('input') as HTMLInputElement).click();
+        (radios.find((r) => r.textContent!.trim() === 'Dynasty Wars')!.querySelector('input') as HTMLInputElement).click();
         fixture.detectChanges();
       };
       const pickSeats = (fixture: { detectChanges(): void }, el: HTMLElement, n: number) => {
@@ -101,34 +101,34 @@ describe('Setup', () => {
         const { fixture, el } = await create();
         for (const n of [2, 4, 5]) {
           pickSeats(fixture, el, n);
-          expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Default', 'Alternate']);
+          expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Dynasty Wars']);
         }
         fixture.componentInstance.mode.set('pass-and-play');
         fixture.detectChanges();
         expect(el.querySelectorAll('.deck mat-radio-button')).toHaveLength(2);
       });
 
-      it('sets no deck rule for Default', async () => {
+      it('sets the Kingdom Wars deck rule by default', async () => {
         const { fixture, el, gameService } = await create();
         pickSeats(fixture, el, 4);
-        (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
-      });
-
-      it('starts the game with the Alternate deck below 5 seats', async () => {
-        const { fixture, el, gameService } = await create();
-        pickSeats(fixture, el, 4);
-        pickAlternate(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
         expect(gameService.state()!.rules).toEqual({ deck: 'alternate', judgmentNotice: true });
+      });
+
+      it('starts the game with the Dynasty Wars deck below 5 seats', async () => {
+        const { fixture, el, gameService } = await create();
+        pickSeats(fixture, el, 4);
+        pickDefault(fixture, el);
+        (el.querySelector('button.start') as HTMLButtonElement).click();
+        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
       });
 
       it('sends the deck beside First Reveal Bonus at 5 seats', async () => {
         const { fixture, el, gameService } = await create();
         pickSeats(fixture, el, 5);
-        pickAlternate(fixture, el);
+        pickDefault(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ deck: 'alternate', firstRevealDraw: true, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true });
       });
     });
 
@@ -151,7 +151,7 @@ describe('Setup', () => {
         const { fixture, el, gameService } = await create();
         pick(fixture, el, 5);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ deck: 'alternate', firstRevealDraw: true, judgmentNotice: true });
       });
 
       it('starts a game with the rule off when unchecked', async () => {
@@ -160,7 +160,7 @@ describe('Setup', () => {
         (el.querySelector('.first-reveal input') as HTMLInputElement).click();
         fixture.detectChanges();
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: false, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ deck: 'alternate', firstRevealDraw: false, judgmentNotice: true });
       });
 
       it('sets no rule below 5 seats', async () => {

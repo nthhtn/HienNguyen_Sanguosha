@@ -1,9 +1,10 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import type { WikiAlternateGeneral } from 'content';
+import { generalDeathVoiceUrl, type WikiAlternateGeneral } from 'content';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
+import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
 import { wikiAlternateGeneralView } from './wiki-labels';
 
@@ -36,6 +37,14 @@ import { wikiAlternateGeneralView } from './wiki-labels';
             }
           </span>
         </p>
+        @if (voiceUrl(); as url) {
+          <p class="voices">
+            <span class="voices-label">{{ 'wiki.voice' | t }}</span>
+            <button type="button" class="voice" [attr.aria-label]="'wiki.playDeathVoice' | t" [attr.title]="'wiki.playDeathVoice' | t" (click)="play(url)">
+              <mat-icon>graphic_eq</mat-icon>
+            </button>
+          </p>
+        }
         <ul class="skills">
           @for (skill of general().skills; track skill.name; let i = $index) {
             <li>
@@ -44,7 +53,9 @@ import { wikiAlternateGeneralView } from './wiki-labels';
                 <span class="zh">{{ zh }}</span>
               }
               <span class="skill-text">{{ view().skills[i].text }}</span>
-              <span class="skill-status" [attr.data-status]="skill.status">{{ statusLabels[skill.status] | t }}</span>
+              @if (skill.status === 'missing') {
+                <span class="skill-status" data-status="missing">{{ 'wiki.notInGame' | t }}</span>
+              }
             </li>
           } @empty {
             <li class="gap">{{ 'wiki.noSkills' | t }}</li>
@@ -84,9 +95,13 @@ import { wikiAlternateGeneralView } from './wiki-labels';
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
     .gender-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
     .skill-status { display: block; width: fit-content; margin-top: 2px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); }
-    .skill-status[data-status='worksAsAlternate'], .skill-status[data-status='worksAsDefault'] { border-color: var(--mat-sys-primary); color: var(--mat-sys-primary); }
     .hearts { display: inline-flex; color: #d84a3f; }
     .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    .voices { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; }
+    .voices-label { font-weight: 600; }
+    .voice { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border-radius: 16px; border: none; background: none; color: var(--mat-sys-on-surface); cursor: pointer; }
+    .voice:hover, .voice:focus-visible { background: var(--mat-sys-surface-container-high); }
+    .voice mat-icon { font-size: 24px; width: 24px; height: 24px; }
     .skills, .partners ul { margin: 0; padding-left: 18px; }
     .skills li { margin: 4px 0; }
     .skill-text { margin-left: 6px; white-space: pre-line; }
@@ -97,13 +112,13 @@ import { wikiAlternateGeneralView } from './wiki-labels';
 })
 export class WikiAlternateGeneralEntry {
   private readonly i18n = inject(I18n);
+  private readonly effects = inject(SoundEffects);
   readonly general = input.required<WikiAlternateGeneral>();
-  // The words for a skill's state: a variant, or Default's code when the rules are the same, makes it playable.
-  protected readonly statusLabels: Record<WikiAlternateGeneral['skills'][number]['status'], MessageKey> = {
-    worksAsDefault: 'wiki.skillStatus.worksAsDefault',
-    worksAsAlternate: 'wiki.skillStatus.worksAsAlternate',
-    missing: 'wiki.notInGame',
-  };
+  // The base General's recorded death cry; the nine new Generals have none yet.
+  protected readonly voiceUrl = computed(() => generalDeathVoiceUrl(`alternate:${this.general().id}`));
+  protected play(url: string): void {
+    this.effects.previewUrl(url);
+  }
   protected readonly view = computed(() => wikiAlternateGeneralView(this.general(), this.i18n.locale()));
   protected readonly kingdomKey = computed((): MessageKey => `label.kingdom.${this.general().kingdom}`);
   protected readonly hearts = computed(() => Array.from({ length: this.general().maxHp }));

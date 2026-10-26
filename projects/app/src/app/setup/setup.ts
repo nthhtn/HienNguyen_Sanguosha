@@ -145,7 +145,7 @@ export class Setup {
   readonly mode = signal<GameMode>('vs-bots');
   readonly seatCount = signal(4);
   readonly firstRevealDraw = signal(true);
-  readonly deck = signal<DeckId>('default');
+  readonly deck = signal<DeckId>('alternate');
   // The rule needs a big table, so the option only appears there.
   protected readonly showFirstReveal = computed(() => this.seatCount() >= FIRST_REVEAL_MIN_SEATS);
   // Typed names by seat index; blanks fall back to "Seat N".

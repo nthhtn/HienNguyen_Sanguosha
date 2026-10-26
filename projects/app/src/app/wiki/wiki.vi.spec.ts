@@ -42,14 +42,14 @@ describe('Wiki Cards in Vietnamese', () => {
 
   it('the deck line and the skill states read in Vietnamese', async () => {
     const generals = await open('/wiki/default/generals');
-    expect(text(generals.querySelector('.deck-line'))).toBe('Bộ bài: Mặc định');
+    expect(text(generals.querySelector('.deck-line'))).toBe('Bộ bài: Vương triều chiến');
     const states = [...entry(generals, 'cao-cao').querySelectorAll('.skill-status')].map((s) => text(s));
     expect(states).toEqual(['Không dùng trong Quốc chiến']);
   });
 
   it('the Alternate labels read in Vietnamese', async () => {
     const tools = await open('/wiki/alternate/tools');
-    expect(text(tools.querySelector('.deck-line'))).toBe('Bộ bài: Thay thế');
+    expect(text(tools.querySelector('.deck-line'))).toBe('Bộ bài: Quốc chiến');
     const ascertain = entry(tools, 'ascertain');
     expect(text(ascertain.querySelector('.badge'))).toBe('Đã có trong trò chơi');
   });

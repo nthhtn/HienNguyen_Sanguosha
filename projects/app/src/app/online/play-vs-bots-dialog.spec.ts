@@ -29,8 +29,8 @@ describe('PlayVsBotsDialog', () => {
   }
 
 
-  const pickAlternate = (fixture: { detectChanges(): void }, el: HTMLElement) => {
-    const radio = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent!.trim() === 'Alternate')!;
+  const pickDefault = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+    const radio = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent!.trim() === 'Dynasty Wars')!;
     (radio.querySelector('input') as HTMLInputElement).click();
     fixture.detectChanges();
   };
@@ -50,7 +50,7 @@ describe('PlayVsBotsDialog', () => {
     expect(component.seatCount()).toBe(4);
     component.seatCount.set(5);
     await component.submit();
-    expect(rooms.createSolo).toHaveBeenCalledWith({ seatCount: 5, rules: { firstRevealDraw: true } });
+    expect(rooms.createSolo).toHaveBeenCalledWith({ seatCount: 5, rules: { deck: 'alternate', firstRevealDraw: true } });
     expect(dialogRef.close).toHaveBeenCalledWith('r-solo');
   });
 
@@ -65,7 +65,7 @@ describe('PlayVsBotsDialog', () => {
     fixture.detectChanges();
     expect(el.querySelector('.seats')).not.toBeNull();
     await component.submit();
-    expect(rooms.createSolo).toHaveBeenCalledWith({ seatCount: 4, rules: {}, replace: true });
+    expect(rooms.createSolo).toHaveBeenCalledWith({ seatCount: 4, rules: { deck: 'alternate' }, replace: true });
   });
 
   it("stays open with the server's message when it refuses", async () => {
@@ -98,16 +98,16 @@ describe('PlayVsBotsDialog', () => {
     fixture.detectChanges();
     rooms.createSolo.mockResolvedValue('r-new');
     await component.submit();
-    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: {}, replace: true });
+    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: { deck: 'alternate' }, replace: true });
     expect(dialogRef.close).toHaveBeenLastCalledWith('r-new');
   });
 
   it('offers the deck and sends the chosen one', async () => {
     rooms.createSolo.mockResolvedValue('r-solo');
     const { fixture, component, el } = await create();
-    expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Default', 'Alternate']);
-    pickAlternate(fixture, el);
+    expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Dynasty Wars']);
+    pickDefault(fixture, el);
     await component.submit();
-    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: { deck: 'alternate' } });
+    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: {} });
   });
 });

@@ -1,7 +1,7 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 import { alternateCardData } from './alternateCards';
-import { alternateGeneralRecords } from './alternateGenerals';
+import { alternateDifferenceNote, alternateGeneralRecords } from './alternateGenerals';
 import { skillIdOf } from './skillId';
 import { baseSkillId, lookupWithBase } from './alternateBase';
 import { alternateGeneralId, baseGeneralId, isAlternateGeneralId } from './generalIds';
@@ -68,7 +68,7 @@ export function alternateGeneralDisplayData(id: string, locale = 'en'): Alternat
       const skill = lookup(translated?.skills, skillIdOf(name));
       return { name: skill?.name ?? name, text: skill?.text ?? text };
     }),
-    differenceNote: translated?.differenceNote ?? record.differenceFromNormal,
+    differenceNote: translated?.differenceNote ?? alternateDifferenceNote(id),
     partners: partners && partners.length === record.synergisticPartners.length ? partners : record.synergisticPartners,
   };
 }
