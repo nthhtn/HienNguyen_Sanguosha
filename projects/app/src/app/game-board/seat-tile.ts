@@ -187,6 +187,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .kingdom-Wei { background: #d6e4ff; }
     .kingdom-Shu { background: #ffd9d6; }
     .kingdom-Wu { background: #d6f5dc; }
+    .kingdom-Ambitionist { background: #e6dcf7; }
     .hand-count { display: inline-flex; align-items: center; gap: 2px; }
     .hand-count mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .status { font-weight: bold; margin-top: 2px; }

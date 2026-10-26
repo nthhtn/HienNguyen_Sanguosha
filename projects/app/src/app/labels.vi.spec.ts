@@ -67,12 +67,12 @@ describe('hidden names, kingdoms and suits', () => {
     expect(kingdomDisplayName('Jin' as never, tr)).toBe('Jin');
   });
 
-  it('an Ambitionist seat shows as Ambitionist and has no force', () => {
+  it('an Ambitionist seat shows as Ambitionist and has its own purple force', () => {
     const seat = { kingdom: 'Wei', allegiance: 'ambitionist' } as const;
     expect(seatKingdomLabel(seat, tr)).toBe('Dã tâm gia');
     expect(seatKingdomLabel(seat)).toBe('Ambitionist');
     expect(seatKingdomLabel({ kingdom: 'Wei' }, tr)).toBe('Ngụy');
-    expect(seatForce(seat)).toBe('none');
+    expect(seatForce(seat)).toBe('Ambitionist');
     expect(seatForce({ kingdom: 'Wei' })).toBe('Wei');
   });
 

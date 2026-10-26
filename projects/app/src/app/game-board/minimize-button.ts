@@ -22,7 +22,7 @@ export class MinimizeButton {
     // The title sits beside this button, in the dialog's title row.
     const title = this.host.nativeElement.parentElement?.querySelector('[mat-dialog-title]')?.textContent?.trim() ?? '';
     // openForceDialog themes the dialog's panel `force-dialog-<force>`; the banner wears the same.
-    const force = /\bforce-dialog-(Wei|Shu|Wu|Qun|none)\b/.exec(this.host.nativeElement.closest('.cdk-overlay-pane')?.className ?? '')?.[1] as Force | undefined;
+    const force = /\bforce-dialog-(Wei|Shu|Wu|Qun|Ambitionist|none)\b/.exec(this.host.nativeElement.closest('.cdk-overlay-pane')?.className ?? '')?.[1] as Force | undefined;
     this.dock.minimize(this.ref, title, this.context(), force ?? null);
   }
 }

@@ -75,14 +75,14 @@ export function generalDisplayName(generalDefinitionId: string, tr: Translator =
 
 // The force colour a seat is shown in: its kingdom once known, else 'none'
 // (hidden, or a seat that belongs to no force).
-export type Force = 'Wei' | 'Shu' | 'Wu' | 'Qun' | 'none';
+export type Force = 'Wei' | 'Shu' | 'Wu' | 'Qun' | 'Ambitionist' | 'none';
 export function forceOf(kingdom: Kingdom | undefined): Force {
   return kingdom === 'Wei' || kingdom === 'Shu' || kingdom === 'Wu' || kingdom === 'Qun' ? kingdom : 'none';
 }
 
-// A seat's force colour: none for an Ambitionist, which plays for no force.
+// A seat's force colour: an Ambitionist plays for no Kingdom and has its own (purple).
 export function seatForce(seat: Pick<Seat, 'kingdom' | 'allegiance'> | null | undefined): Force {
-  return seat?.allegiance === 'ambitionist' ? 'none' : forceOf(seat?.kingdom);
+  return seat?.allegiance === 'ambitionist' ? 'Ambitionist' : forceOf(seat?.kingdom);
 }
 
 const KINGDOM_KEYS = {

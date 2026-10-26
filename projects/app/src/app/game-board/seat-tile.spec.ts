@@ -228,9 +228,9 @@ describe('SeatTile', () => {
     expect(render({ ...makeSeat(), kingdom: 'hidden' }).querySelector('.tile')!.getAttribute('data-force')).toBe('none');
   });
 
-  it('shows an Ambitionist as such, with no force colour', () => {
+  it('shows an Ambitionist as such, in its own (purple) force', () => {
     const el = render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' });
-    expect(el.querySelector('.tile')!.getAttribute('data-force')).toBe('none');
+    expect(el.querySelector('.tile')!.getAttribute('data-force')).toBe('Ambitionist');
     expect(el.querySelector('.kingdom')!.textContent!.trim()).toBe('Ambitionist');
   });
 
