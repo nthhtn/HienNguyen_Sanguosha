@@ -624,3 +624,61 @@ describe('Kingdom War kill reward and penalty', () => {
     expect(handOf(kill('seat-a', { eliminated: ['seat-a'] }), 'seat-a')).toHaveLength(2);
   });
 });
+
+describe('Kingdom War Ambitionists: allegiance is decided at the first reveal', () => {
+  const h = harness(kwMode);
+  const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'];
+  // Six seats (cap 3): a, b, c, d are Wei, e and f Shu, every General hidden.
+  const hiddenTable = (kingdoms: Record<string, 'Wei' | 'Shu' | 'Wu' | 'Qun'> = {}) =>
+    table({}, {
+      seats: 6,
+      kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Wei', 'seat-e': 'Shu', 'seat-f': 'Shu', ...kingdoms },
+      generals: Object.fromEntries(ids.map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false] as [string, string, boolean]])),
+    });
+  const reveal = (s: GameState, seatId: string, slot: 'main' | 'deputy' = 'main') => h.run(s, [{ kind: 'RevealGeneralEffect', seatId, slot }]);
+  const allegiance = (s: GameState, id: string) => s.seats.find((x) => x.id === id)!.allegiance;
+
+  it('the cap-th seat of a Kingdom is a Kingdom seat, the next is an Ambitionist', () => {
+    let s = hiddenTable();
+    for (const id of ['seat-a', 'seat-b', 'seat-c']) s = reveal(s, id);
+    expect(['seat-a', 'seat-b', 'seat-c'].map((id) => allegiance(s, id))).toEqual(['kingdom', 'kingdom', 'kingdom']);
+    s = reveal(s, 'seat-d');
+    expect(allegiance(s, 'seat-d')).toBe('ambitionist');
+  });
+
+  it('a dead seat still holds its slot', () => {
+    let s = hiddenTable();
+    for (const id of ['seat-a', 'seat-b', 'seat-c']) s = reveal(s, id);
+    s = { ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, eliminated: true } : x)) };
+    expect(allegiance(reveal(s, 'seat-d'), 'seat-d')).toBe('ambitionist');
+  });
+
+  it('other Kingdoms are counted separately, and Qun is capped like the rest', () => {
+    let s = hiddenTable({ 'seat-a': 'Qun', 'seat-b': 'Qun', 'seat-c': 'Qun', 'seat-d': 'Qun' });
+    for (const id of ['seat-e', 'seat-f']) s = reveal(s, id);
+    expect(['seat-e', 'seat-f'].map((id) => allegiance(s, id))).toEqual(['kingdom', 'kingdom']);
+    for (const id of ['seat-a', 'seat-b', 'seat-c', 'seat-d']) s = reveal(s, id);
+    expect(['seat-a', 'seat-b', 'seat-c', 'seat-d'].map((id) => allegiance(s, id))).toEqual(['kingdom', 'kingdom', 'kingdom', 'ambitionist']);
+  });
+
+  it('revealing the second General, or revealing again after hiding, never re-decides', () => {
+    let s = hiddenTable();
+    s = reveal(s, 'seat-a');
+    s = reveal(s, 'seat-a', 'deputy');
+    expect(allegiance(s, 'seat-a')).toBe('kingdom');
+    for (const id of ['seat-b', 'seat-c']) s = reveal(s, id);
+    s = h.run(s, [{ kind: 'HideGeneralEffect', seatId: 'seat-d', slot: 'main' }]);
+    s = reveal(s, 'seat-d');
+    expect(allegiance(s, 'seat-d')).toBe('ambitionist');
+    s = h.run(s, [{ kind: 'HideGeneralEffect', seatId: 'seat-d', slot: 'main' }, { kind: 'HideGeneralEffect', seatId: 'seat-a', slot: 'main' }, { kind: 'HideGeneralEffect', seatId: 'seat-a', slot: 'deputy' }]);
+    s = reveal(s, 'seat-a');
+    expect(allegiance(s, 'seat-a')).toBe('kingdom');
+  });
+
+  it('a hidden seat revealed by its death in a full Kingdom becomes an Ambitionist', () => {
+    let s = hiddenTable();
+    for (const id of ['seat-a', 'seat-b', 'seat-c']) s = reveal(s, id);
+    s = h.run(s, [{ kind: 'EliminateSeatEffect', seatId: 'seat-d' }]);
+    expect(allegiance(s, 'seat-d')).toBe('ambitionist');
+  });
+});

@@ -22,6 +22,7 @@ import type { DeckDefinition, DeckId } from '../decks';
 import { isAlternateGeneralId } from '../generalIds';
 import { judgmentPhaseTrigger } from '../shared/delayed';
 import { peachLockedTo } from '../shared/abilities';
+import { kingdomCap, seatsInKingdom } from '../shared/kingdom';
 
 export const GENERALS_PER_SEAT = 5;
 // A real Kingdom War table seats at most 10.
@@ -169,6 +170,22 @@ function firstTimeBothRevealed(state: GameState, seatId: string): boolean {
   return times === 1;
 }
 
+// A seat's first reveal (a death reveal too) decides its allegiance for good: a seat revealing into a
+// Kingdom that already holds its cap (living or dead) is an Ambitionist. First among the triggers, so
+// every other trigger of the same reveal reads the decision.
+const allegianceTrigger: SkillTrigger = {
+  point: 'after:GeneralRevealedEvent',
+  condition: (state, subject) => {
+    const seat = state.seats.find((s) => s.id === (subject as GeneralRevealedEvent).seatId);
+    return !!seat && !seat.allegiance && seat.kingdom !== 'hidden';
+  },
+  effect: (state, subject) => {
+    const seat = state.seats.find((s) => s.id === (subject as GeneralRevealedEvent).seatId)!;
+    const full = seat.kingdom !== 'hidden' && seatsInKingdom(state, seat.kingdom) >= kingdomCap(state);
+    return [{ kind: 'DeclareAllegianceEffect', seatId: seat.id, allegiance: full ? 'ambitionist' : 'kingdom' }];
+  },
+};
+
 // Common table rules on revealing Generals. Both fire after the reveal is logged.
 const revealBonusTriggers: SkillTrigger[] = [
   // Optional rule: the first General revealed at the table draws 2 cards.
@@ -290,6 +307,7 @@ export const kingdomWarMode: GameModeDefinition = {
   },
 
   triggers: [
+    allegianceTrigger,
     judgmentPhaseTrigger,
     ...revealBonusTriggers,
     // A seat that is out discards every card it holds: hand, equipment and
