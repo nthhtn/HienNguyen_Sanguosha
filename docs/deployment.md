@@ -32,10 +32,14 @@ server does.
    port 5432, `postgres.<ref>` as the user). The direct connection is IPv6 only
    on the free tier, which Render cannot reach. Use the default `postgres` user
    and keep its password to yourself: it only goes into Render's environment.
-4. Do not add `sslmode` to the string. The server turns TLS on with
-   `DATABASE_SSL=require`, which encrypts the connection without verifying the
-   certificate chain (see [Deferrals](deferrals.md)).
-5. A free project pauses after about a week without activity. Open the
+4. Do not add `sslmode` or any other `ssl*` parameter to the string; the server
+   refuses to start if it finds one. It turns TLS on with `DATABASE_SSL=require`,
+   which encrypts the connection without verifying the certificate chain (see
+   [Deferrals](deferrals.md)). The server also refuses to start in production
+   when `DATABASE_SSL` is not set.
+5. In Project Settings, Database, turn on **Enforce SSL on incoming
+   connections**, so a plaintext connection is refused on Supabase's side too.
+6. A free project pauses after about a week without activity. Open the
    dashboard and click Restore; nothing is lost.
 
 ## Render
@@ -52,7 +56,7 @@ server does.
    | Variable | Value |
    |---|---|
    | `DATABASE_URL` | the Supabase session pooler string |
-   | `DATABASE_SSL` | `require` |
+   | `DATABASE_SSL` | `require` (required in production; `off` only for a local Postgres) |
    | `PUBLIC_ORIGIN` | the service's `https://<name>.onrender.com` URL |
    | `TRUST_PROXY` | `1` (Render is one proxy; never `true`) |
 
@@ -98,6 +102,7 @@ npm run db:up
 docker build -t sanguosha .
 docker run --rm -p 8080:8080 \
   -e PUBLIC_ORIGIN=http://localhost:8080 \
+  -e DATABASE_SSL=off \
   -e DATABASE_URL=postgres://sanguosha:sanguosha@host.docker.internal:5433/sanguosha \
   sanguosha
 ```

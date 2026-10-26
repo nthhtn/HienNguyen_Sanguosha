@@ -47,6 +47,20 @@ describe('static files and /healthz', () => {
     expect(res.headers['cache-control']).toBe('public, max-age=31536000, immutable');
   });
 
+  it('returns 404 for a missing file, so a stale build file is not answered with HTML', async () => {
+    const res = await (await start()).app.inject({ method: 'GET', url: '/chunk-OLDOLD01.js' });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('does not touch the session for a static file: no Set-Cookie on a public response', async () => {
+    const { app } = await start();
+    const guest = await app.inject({ method: 'POST', url: '/api/auth/guest', payload: { displayName: 'G' }, headers: { origin: 'http://localhost:4200' } });
+    const session = guest.cookies.find((c) => c.name === 'sgs_session')!.value;
+    const res = await app.inject({ method: 'GET', url: '/chunk-B2THbeNN.js', cookies: { sgs_session: session } });
+    expect(res.headers['cache-control']).toContain('public');
+    expect(res.headers['set-cookie']).toBeUndefined();
+  });
+
   it('returns index.html for a deep link', async () => {
     const res = await (await start()).app.inject({ method: 'GET', url: '/rooms/abc' });
     expect(res.statusCode).toBe(200);

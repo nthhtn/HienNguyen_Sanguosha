@@ -2,6 +2,7 @@ import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { errorBody } from './errors';
 
 const CONTENT_TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -25,6 +26,10 @@ const HASHED_BUILD_FILE = /-[A-Za-z0-9_]{8}\.(js|css)$/;
 
 export type StaticHandler = (request: FastifyRequest, reply: FastifyReply) => Promise<FastifyReply>;
 
+function pathnameOf(url: string): string {
+  return new URL(url, 'http://localhost').pathname;
+}
+
 // Serves the built Angular app from `staticDir`. A path that is not a file there
 // (a deep link such as /rooms/abc, or one that steps outside the directory) gets
 // index.html, so the Angular router can take over. Throws when index.html is missing.
@@ -35,6 +40,8 @@ export async function createStaticHandler(staticDir: string): Promise<StaticHand
 
   return async (request, reply) => {
     const file = await resolveFile(root, request.url);
+    // A path that names a file but is not there (a build file from before a deploy) is a 404, not the app.
+    if (!file && extname(pathnameOf(request.url)) !== '') return reply.code(404).send(errorBody('not_found'));
     const path = file ?? indexPath;
     const cacheControl = path !== indexPath && HASHED_BUILD_FILE.test(path) ? 'public, max-age=31536000, immutable' : path === indexPath ? 'no-cache' : 'public, max-age=3600';
     return reply

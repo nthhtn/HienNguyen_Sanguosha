@@ -64,13 +64,21 @@ describe('loadConfig', () => {
     expect(() => loadConfig({ DATABASE_SSL: 'true' })).toThrow(/DATABASE_SSL/);
   });
 
-  it('binds to every interface by default in production', () => {
-    expect(loadConfig({ NODE_ENV: 'production', DATABASE_URL: 'postgres://x', PUBLIC_ORIGIN: 'https://a.example' }).host).toBe('0.0.0.0');
+  it.each(['sslmode=disable', 'ssl=0', 'sslmode=require', 'sslrootcert=x.pem'])('refuses a DATABASE_URL carrying %s when DATABASE_SSL=require', (param) => {
+    expect(() => loadConfig({ DATABASE_URL: `postgres://u:p@db/x?${param}`, DATABASE_SSL: 'require' })).toThrow(/sslmode|ssl/);
   });
 
-  it('refuses to start in production without a database or public origin, naming both', () => {
+  it('accepts a DATABASE_URL with other parameters when DATABASE_SSL=require', () => {
+    expect(loadConfig({ DATABASE_URL: 'postgres://u:p@db/x?application_name=sgs', DATABASE_SSL: 'require' }).databaseSsl).toBe(true);
+  });
+
+  it('binds to every interface by default in production', () => {
+    expect(loadConfig({ NODE_ENV: 'production', DATABASE_URL: 'postgres://x', DATABASE_SSL: 'off', PUBLIC_ORIGIN: 'https://a.example' }).host).toBe('0.0.0.0');
+  });
+
+  it('refuses to start in production without a database, public origin or DATABASE_SSL, naming all', () => {
     expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(ConfigError);
-    expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL.*PUBLIC_ORIGIN/);
+    expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL.*PUBLIC_ORIGIN.*DATABASE_SSL/);
   });
 
   it('rejects a port that is not a number', () => {
@@ -106,7 +114,7 @@ describe('loadConfig', () => {
   });
 
   describe('PUBLIC_ORIGIN in production', () => {
-    const production = (origin: string) => loadConfig({ NODE_ENV: 'production', DATABASE_URL: 'postgres://x', PUBLIC_ORIGIN: origin });
+    const production = (origin: string) => loadConfig({ NODE_ENV: 'production', DATABASE_URL: 'postgres://x', DATABASE_SSL: 'off', PUBLIC_ORIGIN: origin });
 
     it('must be https, so the session cookie is Secure', () => {
       expect(() => production('http://sgs.example')).toThrow(ConfigError);

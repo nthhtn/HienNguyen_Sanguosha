@@ -13,6 +13,16 @@ its entry and say where it went in the commit.
 | **A verified database certificate.** `DATABASE_SSL=require` encrypts the Supabase connection but does not check the certificate chain, because the pooler's chain is not in Node's trust store. | Friends-only game; the traffic is still encrypted. | The game goes public. Pass Supabase's CA certificate to `pg` and turn verification on. |
 | **A dedicated database role.** The server connects as the default `postgres` user. | Decided on 2026-10-26 to keep setup simple. | Before a wider launch. Needs grants for the migrations and the app. |
 
+Smaller items from the review of this deployment, left on purpose:
+
+- Dotfiles and symlinks inside the static directory are served (the build has none).
+- The container runs as root (`USER node` is a one-line fix).
+- The image is about 1 GB with all dev dependencies, and starts through `npx` and `tsx`, which adds to the cold start. Pruning dev dependencies or bundling the server would shrink it.
+- `.dockerignore` only matches at the repository root, so nested `.env` and `node_modules` are not excluded from a local build (Render builds from a clean clone).
+- No security headers (`X-Content-Type-Options`, frame protection, CSP) and no ETag on `index.html`.
+- The long-cache pattern misses build files with a `-` in the hash, which get a one-hour cache instead.
+- `/api` without a trailing slash serves the app, and a few extensions (`.woff`, `.gif`, `.map`) have no content type.
+
 ## Backend
 
 From [Backend and deployment](architecture/backend-and-deployment.md#not-done),

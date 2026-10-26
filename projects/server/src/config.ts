@@ -28,11 +28,14 @@ export class ConfigError extends Error {
 
 export function loadConfig(env: Record<string, string | undefined>): ServerConfig {
   const production = env['NODE_ENV'] === 'production';
-  const missing = ['DATABASE_URL', 'PUBLIC_ORIGIN'].filter((name) => production && !env[name]);
+  const missing = ['DATABASE_URL', 'PUBLIC_ORIGIN', 'DATABASE_SSL'].filter((name) => production && !env[name]);
   if (missing.length > 0) throw new ConfigError(`Missing required environment variables: ${missing.join(', ')}`);
 
   const port = Number(env['PORT'] ?? '4201');
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new ConfigError(`PORT must be a port number, got "${env['PORT']}"`);
+
+  const databaseSsl = parseDatabaseSsl(env['DATABASE_SSL']);
+  if (databaseSsl && env['DATABASE_URL']) rejectSslParameters(env['DATABASE_URL']);
 
   const publicOrigin = parseOrigin(env['PUBLIC_ORIGIN'] ?? 'http://localhost:4200');
   if (production && !isSecureOrLocal(publicOrigin)) throw new ConfigError('PUBLIC_ORIGIN must be https in production, so the session cookie is Secure');
@@ -47,7 +50,7 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     cookieSecure: publicOrigin.startsWith('https:'),
     production,
     staticDir: env['STATIC_DIR'] || null,
-    databaseSsl: parseDatabaseSsl(env['DATABASE_SSL']),
+    databaseSsl,
   };
 }
 
@@ -72,6 +75,18 @@ function parseDatabaseSsl(raw: string | undefined): boolean {
   if (value === '' || value === 'off') return false;
   if (value === 'require') return true;
   throw new ConfigError(`DATABASE_SSL must be "require" or "off", got "${raw}"`);
+}
+
+// `pg` lets the URL override the ssl option, so `?sslmode=disable` would silently turn TLS off.
+function rejectSslParameters(databaseUrl: string): void {
+  let url: URL;
+  try {
+    url = new URL(databaseUrl);
+  } catch {
+    return; // the connection fails later with pg's own message; never echo the URL
+  }
+  const names = [...url.searchParams.keys()].filter((name) => /^ssl|^uselibpqcompat$/i.test(name));
+  if (names.length > 0) throw new ConfigError(`DATABASE_URL must not carry ${names.join(', ')} when DATABASE_SSL=require; the server sets TLS itself`);
 }
 
 function parseTrustProxy(raw: string | undefined): false | number | string[] {

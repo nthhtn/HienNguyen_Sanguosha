@@ -50,6 +50,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   // Resolve the session cookie. A valid one is refreshed so the browser's copy
   // slides along with the stored expiry; an invalid one is cleared.
   app.addHook('onRequest', async (request, reply) => {
+    if (!request.url.startsWith('/api/')) return; // pages and static files never carry a session
     const token = request.cookies[SESSION_COOKIE];
     if (!token) return;
     const auth = await deps.accounts.authenticate(token);
