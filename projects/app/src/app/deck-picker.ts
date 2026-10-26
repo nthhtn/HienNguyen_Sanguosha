@@ -5,10 +5,12 @@ import type { MessageKey } from './i18n/messages';
 import { TPipe } from './i18n/t.pipe';
 
 // The decks the host can pick, in the order shown. A new deck is one line here
-// plus its catalog keys (and the engine's own list of decks).
-const OPTIONS: { id: DeckId; label: MessageKey }[] = [
+// plus its catalog keys (and the engine's own list of decks). `disabled`: listed
+// but not choosable. Dynasty Wars (`default`) waits for its own engine rules
+// (see docs/deferrals.md); drop its `disabled` to bring it back.
+const OPTIONS: { id: DeckId; label: MessageKey; disabled?: true }[] = [
   { id: 'alternate', label: 'setup.deck.alternate' },
-  { id: 'default', label: 'setup.deck.default' },
+  { id: 'default', label: 'setup.deck.default', disabled: true },
 ];
 
 let nextId = 0;
@@ -24,7 +26,7 @@ let nextId = 0;
       <span class="label" [id]="labelId">{{ 'setup.deck' | t }}</span>
       <mat-radio-group class="options" [attr.aria-labelledby]="labelId" [value]="value()" [disabled]="disabled()" (change)="value.set($event.value)">
         @for (option of options; track option.id) {
-          <mat-radio-button [value]="option.id">{{ option.label | t }}</mat-radio-button>
+          <mat-radio-button [value]="option.id" [disabled]="!!option.disabled">{{ option.label | t }}</mat-radio-button>
         }
       </mat-radio-group>
       <p class="hint">{{ 'setup.deck.hint' | t }}</p>

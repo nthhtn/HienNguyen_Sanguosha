@@ -23,7 +23,7 @@ describe('CreateRoomDialog', () => {
   }
 
 
-  const pickDefault = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+  const clickDynastyWars = (fixture: { detectChanges(): void }, el: HTMLElement) => {
     const radio = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent!.trim() === 'Dynasty Wars')!;
     (radio.querySelector('input') as HTMLInputElement).click();
     fixture.detectChanges();
@@ -83,15 +83,15 @@ describe('CreateRoomDialog', () => {
     expect(el.querySelectorAll('.deck mat-radio-button')).toHaveLength(2);
   });
 
-  it('sends the chosen deck, beside First Reveal Bonus from 5 seats', async () => {
+  it('sends the Kingdom Wars deck, beside First Reveal Bonus from 5 seats; Dynasty Wars is disabled for now (deferred)', async () => {
     rooms.create.mockResolvedValue('r-new');
     const { fixture, component, el } = await create();
-    pickDefault(fixture, el);
+    clickDynastyWars(fixture, el);
     await component.submit();
-    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 4, rules: {}, displayName: 'Ann' });
+    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 4, rules: { deck: 'alternate' }, displayName: 'Ann' });
     component.seatCount.set(6);
     component.firstRevealDraw.set(false);
     await component.submit();
-    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 6, rules: { firstRevealDraw: false }, displayName: 'Ann' });
+    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 6, rules: { deck: 'alternate', firstRevealDraw: false }, displayName: 'Ann' });
   });
 });
