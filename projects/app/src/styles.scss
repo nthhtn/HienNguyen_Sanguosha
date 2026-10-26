@@ -38,13 +38,14 @@ body {
 
 .mat-mdc-menu-item.current { font-weight: 600; background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent); }
 
-// The force colours — Wei, Shu, Wu, Qun — and yellow for a seat whose force is
+// The force colours — Wei, Shu, Wu, Qun, purple for an Ambitionist — and yellow for a seat whose force is
 // hidden or that belongs to none. Seat borders and status text both use these.
 :root {
   --force-wei: #3f6fd8;
   --force-shu: #d84a3f;
   --force-wu: #2f9e58;
   --force-qun: #8a7f8c;
+  --force-ambitionist: #7b4fc4;
   --force-none: #e0a800;
   // The same yellow, deep enough to read as text on a light background.
   --force-none-text: #a87b00;
@@ -58,6 +59,7 @@ body {
 [data-force='Shu'] { --force: var(--force-shu); --force-text: var(--force-shu); }
 [data-force='Wu'] { --force: var(--force-wu); --force-text: var(--force-wu); }
 [data-force='Qun'] { --force: var(--force-qun); --force-text: var(--force-qun); }
+[data-force='Ambitionist'] { --force: var(--force-ambitionist); --force-text: var(--force-ambitionist); }
 
 // A decision dialog (Response, Ask, Choice, Selection, Arrange, Discard) takes
 // the deciding seat's force colour: a coloured top edge, title and primary
@@ -66,6 +68,7 @@ body {
 .force-dialog-Shu { --force: var(--force-shu); --force-text: var(--force-shu); }
 .force-dialog-Wu { --force: var(--force-wu); --force-text: var(--force-wu); }
 .force-dialog-Qun { --force: var(--force-qun); --force-text: var(--force-qun); }
+.force-dialog-Ambitionist { --force: var(--force-ambitionist); --force-text: var(--force-ambitionist); }
 .force-dialog-none { --force: var(--force-none); --force-text: var(--force-none-text); }
 .force-dialog {
   // Primary accents used directly by dialog styles (outlines, picked tiles, prompts).

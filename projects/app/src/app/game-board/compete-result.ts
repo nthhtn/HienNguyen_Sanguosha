@@ -1,6 +1,6 @@
 import { CardInstance, EngineEvent, Player, Seat } from 'engine';
 import { abilityName, competeOutcomeText, generalDisplayData } from 'content';
-import { abilityDisplayName, Force, forceOf, generalDisplayName, seatName } from '../labels';
+import { abilityDisplayName, Force, seatForce, generalDisplayName, seatName } from '../labels';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
 export interface CompetePlayer {
@@ -66,7 +66,7 @@ export function competeResults(log: readonly EngineEvent[], from: number, seats:
       skillText: display?.skills.find((s) => s.name === name)?.text ?? null,
       generalId,
       generalName: generalId ? (display?.name ?? generalDisplayName(generalId, tr)) : generalDisplayName('hidden', tr),
-      force: forceOf(sourceSeat?.kingdom),
+      force: seatForce(sourceSeat),
       user: { seatId: event.owner.seatId, name: userName, generalId: faceUpGeneral(sourceSeat), card: mine },
       target: { seatId: event.targetSeatId, name: targetName, generalId: faceUpGeneral(targetSeat), card: theirs },
       won,

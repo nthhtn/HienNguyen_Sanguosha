@@ -16,7 +16,7 @@ export const EFFECT_URLS: Record<SoundEffect, string> = {
   'death-qun': '/audio/death_qun.ogg',
 };
 // A spoken line, voiced by the seat's gender: /audio/<gender>/<file>.
-export type Voice = 'slash' | 'dodge' | 'sos' | 'break' | 'chains' | 'blaze' | 'hail-of-arrows' | 'barbarians' | 'steal' | 'wuxie' | 'starvation' | 'duel' | 'fire-slash' | 'thunder-slash' | 'coerce' | 'wine' | 'harvest' | 'draw-two' | 'peach-garden' | 'capture' | 'lightning';
+export type Voice = 'slash' | 'dodge' | 'sos' | 'break' | 'chains' | 'blaze' | 'hail-of-arrows' | 'barbarians' | 'steal' | 'wuxie' | 'starvation' | 'duel' | 'fire-slash' | 'thunder-slash' | 'coerce' | 'wine' | 'harvest' | 'draw-two' | 'peach-garden' | 'capture' | 'lightning' | 'amass' | 'ascertain' | 'ally-far-attack-near';
 export type VoiceGender = 'male' | 'female';
 export const VOICE_FILES: Record<Voice, string> = {
   slash: 'slash.ogg',
@@ -40,6 +40,9 @@ export const VOICE_FILES: Record<Voice, string> = {
   'peach-garden': 'peach-garden.ogg',
   capture: 'capture.ogg',
   lightning: 'lightning.ogg',
+  amass: 'amass.ogg',
+  ascertain: 'ascertain.ogg',
+  'ally-far-attack-near': 'ally-far-attack-near.ogg',
 };
 // The card each line belongs to, for the Wiki's play buttons; both genders have a file for each.
 export const CARD_VOICES: Partial<Record<string, Voice>> = {
@@ -55,6 +58,7 @@ export const CARD_VOICES: Partial<Record<string, Voice>> = {
   barbarians: 'barbarians',
   steal: 'steal',
   wuxie: 'wuxie',
+  'wuxie-guo': 'wuxie', // Wuxie Kingdom shares Wuxie's voices
   starvation: 'starvation',
   coerce: 'coerce',
   wine: 'wine',
@@ -63,6 +67,9 @@ export const CARD_VOICES: Partial<Record<string, Voice>> = {
   'peach-garden': 'peach-garden',
   capture: 'capture',
   lightning: 'lightning',
+  amass: 'amass',
+  ascertain: 'ascertain',
+  'ally-far-attack-near': 'ally-far-attack-near',
 };
 export const voiceUrl = (gender: VoiceGender, voice: Voice): string => `/audio/${gender}/${VOICE_FILES[voice]}`;
 // Music sits well under the event sounds so an injury or a heal always stands out.

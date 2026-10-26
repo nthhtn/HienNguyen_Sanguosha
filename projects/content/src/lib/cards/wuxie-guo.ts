@@ -1,5 +1,5 @@
 import type { CardDefinition, Effect, GameState, PendingResponse } from 'engine';
-import { exposedKingdom } from '../shared/kingdom';
+import { exposedGroup, exposedKingdom } from '../shared/kingdom';
 
 // The seat a Wuxie check asks about, when it asks about a Tool (not a counter).
 function toolTargetSeatId(pending: PendingResponse): string | null {
@@ -21,11 +21,12 @@ export const wuxieGuoCard: CardDefinition = {
   answerCondition: (state, pending) => {
     const seatId = toolTargetSeatId(pending);
     if (seatId === null) return true; // a counter: as a plain Wuxie
-    return livingSeat(state, seatId) && exposedKingdom(state, seatId) !== null;
+    return livingSeat(state, seatId) && exposedGroup(state, seatId) !== null;
   },
   play: (state, ctx): Effect[] => {
     const reason = ctx.answering?.reason;
     if (reason?.kind !== 'wuxie') return [];
+    // An Ambitionist has no Kingdom to cancel it for: Wuxie Kingdom is a plain Wuxie there.
     const kingdom = exposedKingdom(state, reason.target.seatId);
     if (kingdom === null) return [];
     return [{ kind: 'CancelToolForKingdomEffect', tool: reason.tool, kingdom, targetSeatId: reason.target.seatId }];

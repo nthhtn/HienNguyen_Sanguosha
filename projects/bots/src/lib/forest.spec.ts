@@ -106,7 +106,7 @@ describe('active skills', () => {
 
   it('Upheaval: only with 3 or more non-allies', () => {
     const t = (kingdoms: Record<string, 'Wei' | 'Shu' | 'Wu' | 'Qun'>) => table({}, { generals: generals('jia-xu'), kingdoms });
-    expect(decide(t({ 'seat-a': 'Qun' })).kind).toBe('UseSkillAction');
+    expect(decide(t({ 'seat-a': 'Qun', 'seat-d': 'Wu' })).kind).toBe('UseSkillAction');
     expect(decide(t({ 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Wei' })).kind).not.toBe('UseSkillAction');
   });
 });

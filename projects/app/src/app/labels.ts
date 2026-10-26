@@ -1,4 +1,4 @@
-import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Target, UsedCard, findSkill } from 'engine';
+import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Seat, Target, UsedCard, findSkill } from 'engine';
 import { abilityName, baseGeneralId, cardDisplayData, generalDisplayData, isAlternateGeneralId, isRecastPlay } from 'content';
 import type { MessageKey } from './i18n/messages';
 import { englishTranslator, localeOf, Translator } from './i18n/translator';
@@ -75,9 +75,14 @@ export function generalDisplayName(generalDefinitionId: string, tr: Translator =
 
 // The force colour a seat is shown in: its kingdom once known, else 'none'
 // (hidden, or a seat that belongs to no force).
-export type Force = 'Wei' | 'Shu' | 'Wu' | 'Qun' | 'none';
+export type Force = 'Wei' | 'Shu' | 'Wu' | 'Qun' | 'Ambitionist' | 'none';
 export function forceOf(kingdom: Kingdom | undefined): Force {
   return kingdom === 'Wei' || kingdom === 'Shu' || kingdom === 'Wu' || kingdom === 'Qun' ? kingdom : 'none';
+}
+
+// A seat's force colour: an Ambitionist plays for no Kingdom and has its own (purple).
+export function seatForce(seat: Pick<Seat, 'kingdom' | 'allegiance'> | null | undefined): Force {
+  return seat?.allegiance === 'ambitionist' ? 'Ambitionist' : forceOf(seat?.kingdom);
 }
 
 const KINGDOM_KEYS = {
@@ -92,6 +97,11 @@ const KINGDOM_KEYS = {
 export function kingdomDisplayName(kingdom: Kingdom, tr: Translator = englishTranslator): string {
   const key = KINGDOM_KEYS[kingdom];
   return key ? tr(key) : kingdom;
+}
+
+// What a seat is shown as: "Ambitionist", else its Kingdom.
+export function seatKingdomLabel(seat: Pick<Seat, 'kingdom' | 'allegiance'>, tr: Translator = englishTranslator): string {
+  return seat.allegiance === 'ambitionist' ? tr('label.kingdom.Ambitionist') : kingdomDisplayName(seat.kingdom, tr);
 }
 
 // An ability's name in the viewer's language. A skill of a General the viewer

@@ -1,9 +1,9 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject, signal } from '@angular/core';
-import { CATALOG_LOADERS } from './catalogs';
+import { CATALOG_LOADERS, INITIAL_CATALOGS } from './catalogs';
 import { en } from './en';
 import { format } from './format';
-import { DEFAULT_LOCALE, LocaleCode, isLocaleCode } from './locales';
+import { DEFAULT_LOCALE, LocaleCode, SOURCE_LOCALE, isLocaleCode } from './locales';
 import type { MessageKey, MessageParams, Messages } from './messages';
 import type { Translator } from './translator';
 
@@ -34,7 +34,7 @@ function writeLocale(code: LocaleCode): void {
 export class I18n {
   private readonly loaders = inject(CATALOG_LOADERS);
   private readonly document = inject(DOCUMENT);
-  private readonly catalogs = signal<Partial<Record<LocaleCode, Messages>>>({ en });
+  private readonly catalogs = signal<Partial<Record<LocaleCode, Messages>>>({ ...inject(INITIAL_CATALOGS) });
   // The newest setLocale call; an older, slower one must not overwrite it.
   private latest = 0;
 
@@ -55,7 +55,7 @@ export class I18n {
     // does, go back to English rather than claim a language we cannot show.
     void this.load(saved).then((loaded) => {
       if (!loaded && !this.catalogs()[this.locale()]) {
-        this.locale.set(DEFAULT_LOCALE);
+        this.locale.set(SOURCE_LOCALE);
         this.syncDocument();
       }
     });

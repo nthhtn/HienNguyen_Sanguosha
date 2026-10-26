@@ -268,3 +268,12 @@ as it was (only an error in a move the server made itself, such as a bot's,
 stops the game). Content bugs that can be detected up front, such as hand-coded
 skills with no data file or a card with no printings, throw while the
 registry or deck is built, so they fail at start-up rather than mid-game.
+
+## Allegiance (Ambitionists)
+
+A seat's `allegiance` (`'kingdom'` or `'ambitionist'`) is decided once, when it first shows a General
+(a death reveal too). The resolver asks the mode (`GameModeDefinition.decideAllegiance`) in the same
+step as the reveal, so no other effect or trigger can see a revealed seat that is still undecided.
+Kingdom War decides it from the cap of half the table, rounded down, counting every seat that ever
+held a slot of that Kingdom, dead ones included. See
+`docs/superpowers/specs/2026-10-26-ambitionist-rules.md`.

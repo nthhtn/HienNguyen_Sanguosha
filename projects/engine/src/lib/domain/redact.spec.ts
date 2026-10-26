@@ -468,3 +468,13 @@ describe('redactStateForSeat: a secret look at another seat’s hand and hidden 
     expect(JSON.stringify(redactStateForSeat(queued, 'seat-a'))).toContain('general-w');
   });
 });
+
+describe('redactStateForSeat allegiance', () => {
+  it('a seat with no revealed General shows no allegiance to other viewers; the owner still sees it', () => {
+    const state = makeState();
+    const seats = state.seats.map((s) => (s.id === 'seat-b' ? { ...s, allegiance: 'ambitionist' as const } : s));
+    const withAllegiance = { ...state, seats };
+    expect(redactStateForSeat(withAllegiance, 'seat-a').seats.find((s) => s.id === 'seat-b')!.allegiance).toBeUndefined();
+    expect(redactStateForSeat(withAllegiance, 'seat-b').seats.find((s) => s.id === 'seat-b')!.allegiance).toBe('ambitionist');
+  });
+});

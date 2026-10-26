@@ -29,7 +29,7 @@ function hostileActs(view: GameState, me: Seat, attacker: Seat): number {
     if (!seatId) return false;
     if (seatId === me.id) return true;
     const other = view.seats.find((s) => s.id === seatId);
-    return !!other && isAlly(me, other);
+    return !!other && isAlly(me, other, view);
   };
   let acts = 0;
   for (const event of view.log ?? []) {

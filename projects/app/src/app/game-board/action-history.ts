@@ -1,7 +1,7 @@
 import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat, UsedCard } from 'engine';
 import { abilityName, baseSkillId, cardDisplayData, generalDisplayData, isRecast } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
-import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, forceOf, generalDisplayName, judgmentReaderName, seatName, shownCardId, suitSymbol, targetLabel } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, seatForce, generalDisplayName, judgmentReaderName, seatName, shownCardId, suitSymbol, targetLabel } from '../labels';
 import { translateLabelText } from './choice-description';
 
 export type ActionHistoryEntry =
@@ -102,7 +102,7 @@ export function actionHistory(
     phaseStarted = initiative = false;
     entries.push(entry);
   };
-  const forceOfSeat = (seatId: string) => forceOf(seats.find((s) => s.id === seatId)?.kingdom);
+  const forceOfSeat = (seatId: string) => seatForce(seats.find((s) => s.id === seatId));
   const status = (seatId: string, text: string) => line({ kind: 'action', text, card: null, force: forceOfSeat(seatId) });
   let sawTurn = false;
   const action = (text: string, card: CardInstance | null = null) => line({ kind: 'action', text, card });

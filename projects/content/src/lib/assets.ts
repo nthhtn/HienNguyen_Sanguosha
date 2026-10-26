@@ -35,7 +35,7 @@ export function generalSkinUrl(id: string): string | null {
 }
 
 // Generals whose skin has no death voice file yet.
-const NO_DEATH_VOICE = new Set(['zuo-ci', 'gan-fu-ren', 'yue-jin', 'ding-feng', 'ji-ling', 'kong-rong', 'ma-teng', 'pan-feng', 'tian-feng', 'zou-shi']);
+const NO_DEATH_VOICE = new Set(['zuo-ci']);
 
 // A General's death voice: /audio/death/<skin file name>.ogg, named by the pinyin of the skin
 // (Cao Cao: caocao.ogg). Null for a General with no skin or no recording.
@@ -55,6 +55,9 @@ export const HIDDEN_GENERAL_ART_URL = '/card-art/generals/hidden.jpg';
 
 // The portrait for a General with no skin or card art of its own. Ships with the assets, like the above.
 export const GENERAL_PLACEHOLDER_ART_URL = '/card-art/generals/placeholder.svg';
+
+// The mark overlaid on an Ambitionist's seat. Ships with the assets, like the above.
+export const AMBITIONIST_ICON_URL = '/card-art/generals/ambitionist_icon.png';
 
 // The highest HP with its own icon (misc/hp/1.png … 4.png).
 const MAX_HP_ICONS = 4;

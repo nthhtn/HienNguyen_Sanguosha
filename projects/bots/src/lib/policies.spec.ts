@@ -1,5 +1,6 @@
 import { policyById, policyIds, registerPolicy } from './policies';
 import { ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
+import { isAlly } from './helpers';
 import { act, card, decide, table } from './testing';
 
 describe('policy registry', () => {
@@ -34,5 +35,17 @@ describe('rule-based-v1', () => {
     const action = decide(state);
     expect(action).toMatchObject({ kind: 'PlayCardAction', cardInstanceId: 's1', targets: [{ kind: 'seat', seatId: 'seat-d' }] });
     expect(act(state, action)).toBeDefined();
+  });
+});
+
+describe('isAlly and Ambitionists', () => {
+  const view = table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei' } });
+  const [a, b] = view.seats;
+  it('same-Kingdom seats are allies', () => {
+    expect(isAlly(a, b, view)).toBe(true);
+  });
+  it('an Ambitionist is nobody\'s ally, and nobody is its ally', () => {
+    expect(isAlly({ ...a, allegiance: 'ambitionist' }, b, view)).toBe(false);
+    expect(isAlly(a, { ...b, allegiance: 'ambitionist' }, view)).toBe(false);
   });
 });

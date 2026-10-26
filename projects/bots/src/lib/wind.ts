@@ -18,11 +18,11 @@ export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, regi
   const hand = handCards(view, me);
   switch (baseSkillId(choice.reason.abilityId)) {
     case 'entrench':
-      return hand.length <= 2 && me.combinedHp >= 3 && !others(view, me).some((s) => isAlly(me, s) && hurt(s));
+      return hand.length <= 2 && me.combinedHp >= 3 && !others(view, me).some((s) => isAlly(me, s, view) && hurt(s));
     case 'godspeed': {
       if (view.phase === 'Start') {
         const slot = view.zones.find((z) => z.id === me.judgment.zoneId)?.cards.length ?? 0;
-        return slot === 0 && others(view, me).some((s) => !isAlly(me, s) && s.combinedHp <= 2);
+        return slot === 0 && others(view, me).some((s) => !isAlly(me, s, view) && s.combinedHp <= 2);
       }
       // As the Play Phase begins: a hand Equipment card for a slot already filled, and no Sha to play.
       const worn = new Set((view.zones.find((z) => z.id === me.equipped.zoneId)?.cards ?? []).map((c) => registry.cards.get(c.definitionId)?.equipSlot));
@@ -30,7 +30,7 @@ export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, regi
       return spare && !hand.some((c) => isShaCard(registry, c.definitionId));
     }
     case 'strong-bow':
-      return !!target && !isAlly(me, target);
+      return !!target && !isAlly(me, target, view);
     case 'refusing-death':
     case 'lightning-strike':
       return true;
@@ -77,10 +77,10 @@ export function windChoice(view: GameState, me: Seat, choice: PendingChoice): st
     case 'godspeed':
     case 'fantasy':
     case 'lightning-strike':
-      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s))) ?? seats.find((s) => s.id !== me.id) ?? seats[0])?.id ?? null;
+      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view))) ?? seats.find((s) => s.id !== me.id) ?? seats[0])?.id ?? null;
     case 'bewilder': {
       const claimer = view.seats.find((s) => s.id === reason.owner.seatId);
-      if (claimer && isAlly(me, claimer)) return 'believe';
+      if (claimer && isAlly(me, claimer, view)) return 'believe';
       return me.combinedHp >= 3 && ['sha', 'peach', 'wuxie'].includes(reason.cardId ?? '') ? 'doubt' : 'believe';
     }
     default:

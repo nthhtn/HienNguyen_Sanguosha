@@ -87,7 +87,7 @@ describe('Setup', () => {
     });
 
     describe('deck', () => {
-      const pickDefault = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+      const clickDynastyWars = (fixture: { detectChanges(): void }, el: HTMLElement) => {
         const radios = [...el.querySelectorAll('.deck mat-radio-button')];
         (radios.find((r) => r.textContent!.trim() === 'Dynasty Wars')!.querySelector('input') as HTMLInputElement).click();
         fixture.detectChanges();
@@ -115,20 +115,20 @@ describe('Setup', () => {
         expect(gameService.state()!.rules).toEqual({ deck: 'alternate', judgmentNotice: true });
       });
 
-      it('starts the game with the Dynasty Wars deck below 5 seats', async () => {
+      it('keeps the Kingdom Wars deck when Dynasty Wars is clicked: it is disabled for now (deferred)', async () => {
         const { fixture, el, gameService } = await create();
         pickSeats(fixture, el, 4);
-        pickDefault(fixture, el);
+        clickDynastyWars(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ deck: 'alternate', judgmentNotice: true });
       });
 
       it('sends the deck beside First Reveal Bonus at 5 seats', async () => {
         const { fixture, el, gameService } = await create();
         pickSeats(fixture, el, 5);
-        pickDefault(fixture, el);
+        clickDynastyWars(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ deck: 'alternate', firstRevealDraw: true, judgmentNotice: true });
       });
     });
 

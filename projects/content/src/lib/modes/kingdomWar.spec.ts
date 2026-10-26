@@ -238,9 +238,8 @@ describe('Kingdom War setup and deal', () => {
     }
   });
 
-  it('ends the game right after selection if every seat picked the same non-Qun kingdom (Review Focus 1)', () => {
-    // Pins current behavior: the existing win rule (one living non-Qun
-    // kingdom) is evaluated as soon as the last seat chooses.
+  it('does not end the game after selection when every seat picked the same Kingdom: hidden seats keep it going', () => {
+    // A Kingdom wins only once every survivor has revealed into it.
     const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 1);
     const allWei: GameState = {
       ...state,
@@ -255,7 +254,7 @@ describe('Kingdom War setup and deal', () => {
     const afterA = resolve(allWei, { kind: 'ChooseGeneralsAction', seatId: 'seat-a', mainId: 'filler-xu-huang', deputyId: 'filler-zhang-he' }, ctx).state;
     expect(afterA.result).toBeNull();
     const afterB = resolve(afterA, { kind: 'ChooseGeneralsAction', seatId: 'seat-b', mainId: 'filler-xun-yu', deputyId: 'filler-cao-pi' }, ctx).state;
-    expect(afterB.result).toEqual({ endedAt: 1, winningKingdom: 'Wei', winningSeatIds: ['seat-a', 'seat-b'], losingSeatIds: [] });
+    expect(afterB.result).toBeNull();
   });
 });
 
@@ -622,5 +621,202 @@ describe('Kingdom War kill reward and penalty', () => {
   it('does nothing when the killer is the dead seat or is out too', () => {
     expect(handOf(kill('seat-b'), 'seat-b')).toHaveLength(0);
     expect(handOf(kill('seat-a', { eliminated: ['seat-a'] }), 'seat-a')).toHaveLength(2);
+  });
+});
+
+describe('Kingdom War Ambitionists: allegiance is decided at the first reveal', () => {
+  const h = harness(kwMode);
+  const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'];
+  // Six seats (cap 3): a, b, c, d are Wei, e and f Shu, every General hidden.
+  const hiddenTable = (kingdoms: Record<string, 'Wei' | 'Shu' | 'Wu' | 'Qun'> = {}) =>
+    table({}, {
+      seats: 6,
+      kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Wei', 'seat-e': 'Shu', 'seat-f': 'Shu', ...kingdoms },
+      generals: Object.fromEntries(ids.map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false] as [string, string, boolean]])),
+    });
+  const reveal = (s: GameState, seatId: string, slot: 'main' | 'deputy' = 'main') => h.run(s, [{ kind: 'RevealGeneralEffect', seatId, slot }]);
+  const allegiance = (s: GameState, id: string) => s.seats.find((x) => x.id === id)!.allegiance;
+
+  it('the cap-th seat of a Kingdom is a Kingdom seat, the next is an Ambitionist', () => {
+    let s = hiddenTable();
+    for (const id of ['seat-a', 'seat-b', 'seat-c']) s = reveal(s, id);
+    expect(['seat-a', 'seat-b', 'seat-c'].map((id) => allegiance(s, id))).toEqual(['kingdom', 'kingdom', 'kingdom']);
+    s = reveal(s, 'seat-d');
+    expect(allegiance(s, 'seat-d')).toBe('ambitionist');
+  });
+
+  it('a dead seat still holds its slot', () => {
+    let s = hiddenTable();
+    for (const id of ['seat-a', 'seat-b', 'seat-c']) s = reveal(s, id);
+    s = { ...s, seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, eliminated: true } : x)) };
+    expect(allegiance(reveal(s, 'seat-d'), 'seat-d')).toBe('ambitionist');
+  });
+
+  it('other Kingdoms are counted separately, and Qun is capped like the rest', () => {
+    let s = hiddenTable({ 'seat-a': 'Qun', 'seat-b': 'Qun', 'seat-c': 'Qun', 'seat-d': 'Qun' });
+    for (const id of ['seat-e', 'seat-f']) s = reveal(s, id);
+    expect(['seat-e', 'seat-f'].map((id) => allegiance(s, id))).toEqual(['kingdom', 'kingdom']);
+    for (const id of ['seat-a', 'seat-b', 'seat-c', 'seat-d']) s = reveal(s, id);
+    expect(['seat-a', 'seat-b', 'seat-c', 'seat-d'].map((id) => allegiance(s, id))).toEqual(['kingdom', 'kingdom', 'kingdom', 'ambitionist']);
+  });
+
+  it('revealing the second General, or revealing again after hiding, never re-decides', () => {
+    let s = hiddenTable();
+    s = reveal(s, 'seat-a');
+    s = reveal(s, 'seat-a', 'deputy');
+    expect(allegiance(s, 'seat-a')).toBe('kingdom');
+    for (const id of ['seat-b', 'seat-c']) s = reveal(s, id);
+    s = h.run(s, [{ kind: 'HideGeneralEffect', seatId: 'seat-d', slot: 'main' }]);
+    s = reveal(s, 'seat-d');
+    expect(allegiance(s, 'seat-d')).toBe('ambitionist');
+    s = h.run(s, [{ kind: 'HideGeneralEffect', seatId: 'seat-d', slot: 'main' }, { kind: 'HideGeneralEffect', seatId: 'seat-a', slot: 'main' }, { kind: 'HideGeneralEffect', seatId: 'seat-a', slot: 'deputy' }]);
+    s = reveal(s, 'seat-a');
+    expect(allegiance(s, 'seat-a')).toBe('kingdom');
+  });
+
+  it('a hidden seat revealed by its death in a full Kingdom becomes an Ambitionist', () => {
+    let s = hiddenTable();
+    for (const id of ['seat-a', 'seat-b', 'seat-c']) s = reveal(s, id);
+    s = h.run(s, [{ kind: 'EliminateSeatEffect', seatId: 'seat-d' }]);
+    expect(allegiance(s, 'seat-d')).toBe('ambitionist');
+  });
+});
+
+describe('Kingdom War Ambitionists: kill reward', () => {
+  const h = harness(kwMode);
+  const rescue = { any: ['peach'], self: ['wine'] };
+  const deck = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => card(id, 'sha'));
+  const handOf = (s: GameState, id: string) => s.zones.find((z) => z.id === `${id}:hand`)!.cards;
+  // Six seats: a, b, c, d Wei, e, f Shu. Seat b is at 0 HP and nobody can save it.
+  const kill = (killer: string, o: { allegiance?: Record<string, 'kingdom' | 'ambitionist'>; hidden?: string[] } = {}) => {
+    const kingdoms = { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Wei', 'seat-e': 'Shu', 'seat-f': 'Shu' } as const;
+    const generals = Object.fromEntries((o.hidden ?? []).map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]]));
+    let s = table({ drawPile: deck, 'seat-a:hand': [card('h1', 'sha'), card('h2', 'sha')], 'seat-c:hand': [card('c1', 'sha')] }, { seats: 6, kingdoms, generals, hp: { 'seat-b': 0 } });
+    s = { ...s, seats: s.seats.map((x) => (o.allegiance?.[x.id] ? { ...x, allegiance: o.allegiance[x.id] } : x)) };
+    return h.run(s, [{ kind: 'DyingEffect', seatId: 'seat-b', order: [], rescueCardIds: rescue, killerSeatId: killer }]);
+  };
+
+  it('killing an Ambitionist draws 3, though its Kingdom has other living seats', () => {
+    const out = kill('seat-e', { allegiance: { 'seat-b': 'ambitionist' } });
+    expect(handOf(out, 'seat-e')).toHaveLength(0 + 3);
+  });
+
+  it('an Ambitionist killer is rewarded even for a seat of its printed Kingdom, and never discards', () => {
+    const out = kill('seat-c', { allegiance: { 'seat-c': 'ambitionist' } });
+    expect(handOf(out, 'seat-c')).toHaveLength(1 + 3);
+  });
+
+  it('killing a hidden seat of a full Kingdom (revealed by its death) draws 3, not the Kingdom count', () => {
+    const out = kill('seat-e', { hidden: ['seat-b'], allegiance: { 'seat-a': 'kingdom', 'seat-c': 'kingdom', 'seat-d': 'kingdom' } });
+    expect(out.seats.find((x) => x.id === 'seat-b')!.allegiance).toBe('ambitionist');
+    expect(handOf(out, 'seat-e')).toHaveLength(0 + 3);
+  });
+});
+
+describe('Kingdom War Ambitionists: win check', () => {
+  const h = harness(kingdomWarMode);
+  const win = kingdomWarMode.checkWinCondition;
+  type Alle = 'kingdom' | 'ambitionist' | undefined;
+  type K = 'Wei' | 'Shu' | 'Wu' | 'Qun';
+  // Seats a.. in order, each `[kingdom, allegiance, state]`: 'out' eliminated, 'hidden' face-down, else revealed.
+  const seats = (spec: [K, Alle, ('out' | 'hidden' | 'up')?][]): GameState => {
+    const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'];
+    const s = table({}, {
+      seats: spec.length,
+      kingdoms: Object.fromEntries(spec.map(([k], i) => [ids[i], k])),
+      generals: Object.fromEntries(spec.map(([, , st], i) => [ids[i], ['filler-xu-huang', 'filler-dong-zhuo', st !== 'hidden'] as [string, string, boolean]])),
+    });
+    return { ...s, seats: s.seats.map((x, i) => ({ ...x, ...(spec[i][1] ? { allegiance: spec[i][1] } : {}), eliminated: spec[i][2] === 'out' })) };
+  };
+
+  it('an Ambitionist wins as the sole survivor, with no winning Kingdom', () => {
+    const r = win(seats([['Wei', 'ambitionist'], ['Wei', 'kingdom', 'out'], ['Shu', 'kingdom', 'out']]));
+    expect(r).toEqual({ endedAt: 1, winningSeatIds: ['seat-a'], losingSeatIds: ['seat-b', 'seat-c'] });
+  });
+
+  it('a Kingdom wins when every survivor is a Kingdom seat of it', () => {
+    const r = win(seats([['Wei', 'kingdom'], ['Wei', 'kingdom'], ['Shu', 'kingdom', 'out']]));
+    expect(r).toMatchObject({ winningKingdom: 'Wei', winningSeatIds: ['seat-a', 'seat-b'] });
+  });
+
+  it('Qun wins as a group', () => {
+    expect(win(seats([['Qun', 'kingdom'], ['Qun', 'kingdom'], ['Wei', 'kingdom', 'out']]))).toMatchObject({ winningKingdom: 'Qun' });
+  });
+
+  it('a Kingdom and an Ambitionist alive: no result', () => {
+    expect(win(seats([['Wei', 'kingdom'], ['Wei', 'kingdom'], ['Wei', 'ambitionist']]))).toBeNull();
+  });
+
+  it('a hidden or undecided survivor blocks a Kingdom win', () => {
+    expect(win(seats([['Wei', 'kingdom'], ['Wei', undefined, 'hidden'], ['Shu', 'kingdom', 'out']]))).toBeNull();
+    expect(win(seats([['Wei', 'kingdom'], ['Wei', undefined, 'up'], ['Shu', 'kingdom', 'out']]))).toBeNull();
+  });
+
+  it('the game ends at the reveal of the last hidden seat when it fits under the cap', () => {
+    // Six seats, cap 3: a, b Wei revealed, c Wei hidden; d, e, f out.
+    const s = seats([['Wei', 'kingdom'], ['Wei', 'kingdom'], ['Wei', undefined, 'hidden'], ['Shu', 'kingdom', 'out'], ['Shu', 'kingdom', 'out'], ['Shu', 'kingdom', 'out']]);
+    expect(s.result).toBeNull();
+    const after = h.run(s, [{ kind: 'RevealGeneralEffect', seatId: 'seat-c', slot: 'main' }]);
+    expect(after.result).toMatchObject({ winningKingdom: 'Wei', winningSeatIds: ['seat-a', 'seat-b', 'seat-c'] });
+  });
+
+  it('an over-cap hidden seat revealing as an Ambitionist does not end the game', () => {
+    const s = seats([['Wei', 'kingdom'], ['Wei', 'kingdom'], ['Wei', 'kingdom'], ['Wei', undefined, 'hidden'], ['Shu', 'kingdom', 'out'], ['Shu', 'kingdom', 'out']]);
+    const after = h.run(s, [{ kind: 'RevealGeneralEffect', seatId: 'seat-d', slot: 'main' }]);
+    expect(after.seats[3].allegiance).toBe('ambitionist');
+    expect(after.result).toBeNull();
+  });
+
+  it('killing the blocking hidden seat ends the game for the revealed Kingdom', () => {
+    const s = seats([['Wei', 'kingdom'], ['Wei', 'kingdom'], ['Wei', 'kingdom'], ['Wei', undefined, 'hidden'], ['Shu', 'kingdom', 'out'], ['Shu', 'kingdom', 'out']]);
+    const after = h.run(s, [{ kind: 'EliminateSeatEffect', seatId: 'seat-d' }]);
+    // Revealed by death into a full Kingdom it is an Ambitionist, but it is out: Wei is all that is left.
+    expect(after.result).toMatchObject({ winningKingdom: 'Wei', winningSeatIds: ['seat-a', 'seat-b', 'seat-c'] });
+  });
+});
+
+describe('Kingdom War Ambitionists: small tables', () => {
+  const h = harness(kingdomWarMode);
+  const ids = ['seat-a', 'seat-b', 'seat-c', 'seat-d'];
+  // `n` seats, every General hidden and every printed Kingdom Wei.
+  const allWei = (n: number) =>
+    table({}, {
+      seats: n,
+      kingdoms: Object.fromEntries(ids.slice(0, n).map((id) => [id, 'Wei' as const])),
+      generals: Object.fromEntries(ids.slice(0, n).map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false] as [string, string, boolean]])),
+    });
+  const reveal = (s: GameState, seatId: string) => h.run(s, [{ kind: 'RevealGeneralEffect', seatId, slot: 'main' }]);
+  const allegiances = (s: GameState) => s.seats.map((x) => x.allegiance);
+
+  it('2 seats (cap 1): the second Wei is an Ambitionist', () => {
+    const s = reveal(reveal(allWei(2), 'seat-a'), 'seat-b');
+    expect(allegiances(s)).toEqual(['kingdom', 'ambitionist']);
+    expect(s.result).toBeNull();
+  });
+
+  it('3 seats (cap 1): only the first Wei is a Kingdom seat', () => {
+    const s = ['seat-a', 'seat-b', 'seat-c'].reduce(reveal, allWei(3));
+    expect(allegiances(s)).toEqual(['kingdom', 'ambitionist', 'ambitionist']);
+  });
+
+  it('4 seats (cap 2): the third Wei is an Ambitionist', () => {
+    const s = ['seat-a', 'seat-b', 'seat-c', 'seat-d'].reduce(reveal, allWei(4));
+    expect(allegiances(s)).toEqual(['kingdom', 'kingdom', 'ambitionist', 'ambitionist']);
+  });
+
+  it('4 seats: two Wei and two others, the two Wei win as a Kingdom once the others are out', () => {
+    const base = allWei(4);
+    const s0 = { ...base, seats: base.seats.map((x, i) => (i >= 2 ? { ...x, kingdom: 'Shu' as const } : x)) };
+    let s = ['seat-a', 'seat-b', 'seat-c', 'seat-d'].reduce(reveal, s0);
+    expect(allegiances(s)).toEqual(['kingdom', 'kingdom', 'kingdom', 'kingdom']);
+    s = h.run(s, [{ kind: 'EliminateSeatEffect', seatId: 'seat-c' }, { kind: 'EliminateSeatEffect', seatId: 'seat-d' }]);
+    expect(s.result).toMatchObject({ winningKingdom: 'Wei', winningSeatIds: ['seat-a', 'seat-b'] });
+  });
+
+  it('2 seats: an Ambitionist wins as the last survivor, with no winning Kingdom', () => {
+    let s = reveal(reveal(allWei(2), 'seat-a'), 'seat-b');
+    s = h.run(s, [{ kind: 'EliminateSeatEffect', seatId: 'seat-a' }]);
+    expect(s.result).toMatchObject({ winningSeatIds: ['seat-b'] });
+    expect(s.result!.winningKingdom).toBeUndefined();
   });
 });

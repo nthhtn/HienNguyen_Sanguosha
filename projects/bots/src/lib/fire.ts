@@ -46,7 +46,7 @@ const reach = (view: GameState, seat: Seat, registry: ContentRegistry) =>
 
 // Non-allies within `seat`'s reach.
 const nonAlliesInReach = (view: GameState, me: Seat, seat: Seat, registry: ContentRegistry) =>
-  others(view, seat).filter((s) => s.id !== me.id && !isAlly(me, s) && distance(view, seat, s, registry) <= reach(view, seat, registry));
+  others(view, seat).filter((s) => s.id !== me.id && !isAlly(me, s, view) && distance(view, seat, s, registry) <= reach(view, seat, registry));
 
 // A Weapon in hand for a Weapon slot already filled.
 const spareWeapons = (view: GameState, me: Seat, registry: ContentRegistry) =>
@@ -54,7 +54,7 @@ const spareWeapons = (view: GameState, me: Seat, registry: ContentRegistry) =>
 
 // The stronger non-allies Rouse the Tiger would compete with: a hand card, and another non-ally in reach.
 const rousable = (view: GameState, me: Seat, registry: ContentRegistry) =>
-  others(view, me).filter((s) => !isAlly(me, s) && s.combinedHp > me.combinedHp && handSize(view, s) > 0 && nonAlliesInReach(view, me, s, registry).length > 0);
+  others(view, me).filter((s) => !isAlly(me, s, view) && s.combinedHp > me.combinedHp && handSize(view, s) > 0 && nonAlliesInReach(view, me, s, registry).length > 0);
 
 const highCard = (view: GameState, me: Seat) => handCards(view, me).some((c) => c.rank >= 10);
 
@@ -72,7 +72,7 @@ export function wantsFireActive(view: GameState, me: Seat, skillId: string, regi
     case 'rouse-the-tiger':
       return highCard(view, me) && rousable(view, me, registry).length > 0;
     case 'heavens-justice':
-      return hand.filter((c) => isShaCard(registry, c.definitionId)).length >= 2 && highCard(view, me) && others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) > 0);
+      return hand.filter((c) => isShaCard(registry, c.definitionId)).length >= 2 && highCard(view, me) && others(view, me).some((s) => !isAlly(me, s, view) && handSize(view, s) > 0);
     default:
       return null;
   }
@@ -87,9 +87,9 @@ export function wantsFire(view: GameState, me: Seat, choice: PendingChoice): boo
     case 'eternal-loyalty':
       return true;
     case 'sudden-attack':
-      return !!target && !isAlly(me, target);
+      return !!target && !isAlly(me, target, view);
     case 'dueling-heroes':
-      return handCards(view, me).length >= 3 && others(view, me).some((s) => !isAlly(me, s));
+      return handCards(view, me).length >= 3 && others(view, me).some((s) => !isAlly(me, s, view));
     default:
       return null;
   }
@@ -101,7 +101,7 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
   // Competing: the user its highest card; a target its highest against a non-ally, its lowest against an ally.
   if (then.kind === 'skill-step' && (then.step.step === 'compete-user' || then.step.step === 'compete-target')) {
     const user = view.seats.find((s) => s.id === then.step.owner.seatId);
-    const highest = then.step.step === 'compete-user' || !user || !isAlly(me, user);
+    const highest = then.step.step === 'compete-user' || !user || !isAlly(me, user, view);
     const ranked = byRank(view, eligible);
     return [highest ? ranked[ranked.length - 1] : ranked[0]];
   }
@@ -118,7 +118,7 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
       return pick ? [pick.id] : 'cancel';
     }
     case 'heavens-justice': {
-      const pick = weakest(seats.filter((s) => !isAlly(me, s)));
+      const pick = weakest(seats.filter((s) => !isAlly(me, s, view)));
       return pick ? [pick.id] : 'cancel';
     }
     case 'assault': {
@@ -140,14 +140,14 @@ export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, reg
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
   switch (baseSkillId(choice.reason.abilityId)) {
     case 'assault':
-      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
+      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'rouse-the-tiger':
-      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
+      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'eternal-loyalty': {
       // Alternate Eternal Loyalty stops at 5 cards, so a seat is only short up to that cap.
       const cap = choice.reason.kind === 'ability' && choice.reason.abilityId === 'alternate:eternal-loyalty' ? 5 : Infinity;
       const short = (s: Seat) => Math.min(s.maxCombinedHp, cap) - handSize(view, s);
-      const ally = seats.filter((s) => s.id !== me.id && isAlly(me, s)).sort((a, b) => short(b) - short(a))[0];
+      const ally = seats.filter((s) => s.id !== me.id && isAlly(me, s, view)).sort((a, b) => short(b) - short(a))[0];
       return (ally && short(ally) > short(me) ? ally : me).id;
     }
     case 'sudden-attack': {

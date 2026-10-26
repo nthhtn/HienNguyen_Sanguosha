@@ -96,3 +96,13 @@ describe('Ally Far Attack Near', () => {
     expect(hand(s, 'seat-a')).toHaveLength(3);
   });
 });
+
+describe('Ally Far Attack Near and Ambitionists', () => {
+  it('an Ambitionist is a legal target for anyone, even of its printed Kingdom, and may target everyone', () => {
+    const base = table(['Wei', 'Wei', 'Wei', 'Shu'], { 'seat-a:hand': [af] });
+    const withB = { ...base, seats: base.seats.map((x) => (x.id === 'seat-b' ? { ...x, allegiance: 'ambitionist' as const } : x)) };
+    expect(targetsOf(withB)).toEqual([['seat-b'], ['seat-d']]);
+    const asAmbitionist = { ...base, seats: base.seats.map((x) => (x.id === 'seat-a' ? { ...x, allegiance: 'ambitionist' as const } : x)) };
+    expect(targetsOf(asAmbitionist)).toEqual([['seat-b'], ['seat-c'], ['seat-d']]);
+  });
+});

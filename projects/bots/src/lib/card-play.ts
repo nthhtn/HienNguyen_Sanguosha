@@ -17,7 +17,7 @@ export const ALL_CARD_PLAY_RULES: CardPlayRules = { peach: true, wine: true, equ
 export function peachWorthPlaying(view: GameState, self: Seat): boolean {
   const held = handCards(view, self);
   const peaches = held.filter((c) => c.definitionId === 'peach').length;
-  const allyInDanger = view.seats.some((s) => s.id !== self.id && !s.eliminated && isAlly(self, s) && s.combinedHp <= 2);
+  const allyInDanger = view.seats.some((s) => s.id !== self.id && !s.eliminated && isAlly(self, s, view) && s.combinedHp <= 2);
   if (peaches <= 1 && allyInDanger) return false;
   return self.combinedHp <= 2 || held.length > self.combinedHp;
 }

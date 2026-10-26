@@ -22,8 +22,11 @@ import type { DeckDefinition, DeckId } from '../decks';
 import { isAlternateGeneralId } from '../generalIds';
 import { judgmentPhaseTrigger } from '../shared/delayed';
 import { peachLockedTo } from '../shared/abilities';
+import { isAmbitionist } from '../shared/kingdom';
 
 export const GENERALS_PER_SEAT = 5;
+// Cards drawn for killing an Ambitionist.
+const AMBITIONIST_KILL_DRAW = 3;
 // A real Kingdom War table seats at most 10.
 export const MAX_KINGDOM_WAR_SEATS = 10;
 
@@ -277,17 +280,23 @@ export const kingdomWarMode: GameModeDefinition = {
     if (alive.length === 1) {
       return { endedAt: state.turn.turnNumber, winningSeatIds: [alive[0].id], losingSeatIds };
     }
-    const kingdoms = new Set(alive.map((s) => s.kingdom));
-    if (kingdoms.size === 1 && alive[0].kingdom !== 'Qun') {
+    // A Kingdom wins once every survivor has decided to play for it. A hidden seat, or an
+    // Ambitionist, keeps the game going: nothing forces a hidden seat to reveal.
+    const kingdom = alive[0].kingdom;
+    if (alive.every((s) => s.allegiance === 'kingdom' && s.kingdom === kingdom)) {
       return {
         endedAt: state.turn.turnNumber,
-        winningKingdom: alive[0].kingdom,
+        winningKingdom: kingdom,
         winningSeatIds: alive.map((s) => s.id),
         losingSeatIds,
       };
     }
     return null;
   },
+
+  // A seat's first reveal (a death reveal too) decides its allegiance for good: a seat revealing into a
+  // Kingdom that already holds its cap (living or dead) is an Ambitionist.
+  decideAllegiance: (state, seat) => (isAmbitionist(state, seat) ? 'ambitionist' : 'kingdom'),
 
   triggers: [
     judgmentPhaseTrigger,
@@ -319,9 +328,12 @@ export const kingdomWarMode: GameModeDefinition = {
         const dead = state.seats.find((s) => s.id === seatId)!;
         const killer = state.seats.find((s) => s.id === killerSeatId)!;
         const revealedAny = !!killer.generals && (killer.generals.main.revealed || killer.generals.deputy.revealed);
-        if (revealedAny && killer.kingdom === dead.kingdom) return [{ kind: 'DiscardZoneEffect', zoneId: killer.hand.zoneId }];
+        // An Ambitionist is a group of one: killing one draws 3, and an Ambitionist killer is never "the same Kingdom".
+        // (`isAmbitionist` reads the decided allegiance, or works it out from the cap when the seat is not decided yet.)
+        if (isAmbitionist(state, dead)) return [{ kind: 'DrawCardsEffect', seatId: killer.id, count: AMBITIONIST_KILL_DRAW }];
+        if (revealedAny && !isAmbitionist(state, killer) && killer.kingdom === dead.kingdom) return [{ kind: 'DiscardZoneEffect', zoneId: killer.hand.zoneId }];
         const exposed = (s: Seat) => !!s.generals && (s.generals.main.revealed || s.generals.deputy.revealed);
-        const count = state.seats.filter((s) => s.kingdom === dead.kingdom && (s.id === dead.id || (!s.eliminated && exposed(s)))).length;
+        const count = state.seats.filter((s) => s.kingdom === dead.kingdom && s.allegiance !== 'ambitionist' && (s.id === dead.id || (!s.eliminated && exposed(s)))).length;
         return [{ kind: 'DrawCardsEffect', seatId: killer.id, count }];
       },
     },

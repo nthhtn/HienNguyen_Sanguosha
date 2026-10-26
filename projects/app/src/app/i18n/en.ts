@@ -243,6 +243,7 @@ export const en = {
   'label.kingdom.Shu': 'Shu',
   'label.kingdom.Wu': 'Wu',
   'label.kingdom.Qun': 'Qun',
+  'label.kingdom.Ambitionist': 'Ambitionist',
   'label.action.draw.one': 'Draw {n} Card',
   'label.action.draw.other': 'Draw {n} Cards',
   'label.action.play': 'Play {card}',

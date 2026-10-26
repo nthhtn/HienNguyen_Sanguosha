@@ -246,7 +246,7 @@ describe('See Through', () => {
 
 describe('Dueling Heroes’ Duel and Random Strike', () => {
   it('a Duel from an opposite-colour card at the weakest non-ally', () => {
-    const s = table({ 'seat-a:hand': [card('k', 'shan', 'club', 4)] }, { generals: g('seat-a', 'yan-liang-and-wen-chou', 'filler-dong-zhuo'), kingdoms: { 'seat-a': 'Qun' }, hp: { 'seat-d': 2 } });
+    const s = table({ 'seat-a:hand': [card('k', 'shan', 'club', 4)] }, { generals: g('seat-a', 'yan-liang-and-wen-chou', 'filler-dong-zhuo'), kingdoms: { 'seat-a': 'Qun', 'seat-d': 'Shu' }, hp: { 'seat-d': 2 } });
     const after = { ...s, turn: { ...s.turn, flags: { 'dueling-heroes-red': true } } };
     expect(decide(after)).toMatchObject({ kind: 'UseConversionAction', via: { conversionId: 'dueling-heroes' }, targets: [{ seatId: 'seat-d' }] });
   });

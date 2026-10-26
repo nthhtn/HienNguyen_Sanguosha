@@ -32,19 +32,19 @@ describe('LanguageSwitcher', () => {
     const { open } = await render();
     const items = await open();
     expect(items.map((b) => [b.getAttribute('aria-label'), b.getAttribute('title'), b.querySelector('img')!.getAttribute('src')])).toEqual([
-      ['English', 'English', 'flags/gb.svg'],
       ['Tiếng Việt', 'Tiếng Việt', 'flags/vn.svg'],
+      ['English', 'English', 'flags/gb.svg'],
     ]);
     for (const b of items) {
       expect(b.querySelector('img')!.getAttribute('alt')).toBe('');
       expect(b.textContent!.trim()).toBe('');
     }
-    expect(items.map((b) => b.getAttribute('aria-current'))).toEqual(['true', null]);
+    expect(items.map((b) => b.getAttribute('aria-current'))).toEqual([null, 'true']);
   });
 
   it('switches to Vietnamese, remembers it, and shows its flag and label', async () => {
     const { trigger, open, fixture } = await render();
-    (await open())[1].click();
+    (await open())[0].click();
     await fixture.whenStable();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -56,12 +56,12 @@ describe('LanguageSwitcher', () => {
 
   it('switches back to English', async () => {
     const { trigger, open, fixture } = await render();
-    (await open())[1].click();
+    (await open())[0].click();
     await fixture.whenStable();
     await fixture.whenStable();
     fixture.detectChanges();
     await fixture.whenStable();
-    (await open())[0].click();
+    (await open())[1].click();
     await fixture.whenStable();
     await fixture.whenStable();
     fixture.detectChanges();

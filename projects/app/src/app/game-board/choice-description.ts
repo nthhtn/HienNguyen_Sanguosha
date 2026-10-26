@@ -1,7 +1,7 @@
 import { Action, ChoiceOption, GameState, PendingChoice, Player, Seat } from 'engine';
 import { abilityName, cardDisplayData, choicePromptText, generalDisplayData, seatPickText } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
-import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, forceOf, generalDisplayName, seatName, suitLabel } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, seatForce, generalDisplayName, seatName, suitLabel } from '../labels';
 import type { MessageKey } from '../i18n/messages';
 import type { ChoiceDialogOption } from './choice-dialog';
 
@@ -188,7 +188,7 @@ export function choiceDialogOptions(
     const label = choiceOptionLabel(option.shows, players, declineLabel, tr, option.id);
     if (option.shows.kind === 'seat') {
       const seatId = option.shows.seatId;
-      return [{ id: option.id, action, label, force: forceOf(seats.find((s) => s.id === seatId)?.kingdom) }];
+      return [{ id: option.id, action, label, force: seatForce(seats.find((s) => s.id === seatId)) }];
     }
     if (option.shows.kind === 'suit') return [{ id: option.id, action, label, suit: option.shows.suit }];
     if (option.shows.kind === 'general') return [{ id: option.id, action, label, generalId: option.shows.generalId }];

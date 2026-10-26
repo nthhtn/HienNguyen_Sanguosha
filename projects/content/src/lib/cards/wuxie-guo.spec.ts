@@ -118,3 +118,24 @@ describe('Wuxie Kingdom', () => {
     expect(hp(s)).toEqual({ a: 3, b: 3, c: 3, d: 3 });
   });
 });
+
+describe('Wuxie Kingdom and Ambitionists', () => {
+  const withAmbitionist = (s: GameState, id: SeatId): GameState => ({ ...s, seats: s.seats.map((x) => (x.id === id ? { ...x, allegiance: 'ambitionist' as const } : x)) });
+
+  it('does not cancel the Tool for an Ambitionist of the cancelled Kingdom', () => {
+    // a, b, c Wei and d a Wei Ambitionist: cancelling Wei on a skips c, not d.
+    let s = play(withAmbitionist(table({ a: 'Wei', b: 'Wei', c: 'Wei', d: 'Wei' }, { b: ['wuxie-guo'] }), 'd'));
+    s = answer(s, 'wuxie-guo');
+    expect(s.pendingResponse).toBeNull();
+    expect(hp(s)).toEqual({ a: 2, b: 2, c: 2, d: 3 });
+  });
+
+  it('is offered against a Tool on an Ambitionist, and cancels it for that seat alone', () => {
+    let s = play(withAmbitionist(table({ a: 'Wei', b: 'Wei', c: 'Wei', d: 'Wei' }, { c: ['wuxie-guo'] }), 'd'));
+    while (s.pendingResponse && (s.pendingResponse.reason as { target?: { seatId: string } }).target?.seatId !== 'd') s = pass(s);
+    expect(offered(s)).toEqual(['c-wuxie-guo']);
+    s = answer(s, 'wuxie-guo');
+    expect(s.pendingResponse).toBeNull();
+    expect(hp(s)).toEqual({ a: 3, b: 3, c: 3, d: 2 });
+  });
+});

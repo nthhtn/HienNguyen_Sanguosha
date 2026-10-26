@@ -2,8 +2,8 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
-import { abilityName, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
-import { cardIdDisplayName, forceOf, kingdomDisplayName } from '../labels';
+import { abilityName, AMBITIONIST_ICON_URL, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
+import { cardIdDisplayName, seatForce, seatKingdomLabel } from '../labels';
 import { SeatAvatar } from './seat-avatar';
 import { AvatarSkill } from './avatar-skills';
 import { PlayingCard } from './playing-card';
@@ -32,6 +32,9 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
       [class.viewer]="isViewer()"
       [attr.data-force]="force()"
     >
+      @if (seat().allegiance === 'ambitionist') {
+        <img class="ambitionist-icon" [src]="ambitionistIcon" [alt]="'label.kingdom.Ambitionist' | t" />
+      }
       <div class="sections">
       <section class="panel general" [attr.aria-label]="'seat.generalAria' | t">
         <div class="header">
@@ -83,7 +86,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           }
         }
         <div class="stats">
-          <span class="kingdom kingdom-{{ seat().kingdom }}">{{ kingdomName(seat().kingdom) }}</span>
+          <span class="kingdom kingdom-{{ seat().allegiance === 'ambitionist' ? 'Ambitionist' : seat().kingdom }}">{{ kingdomName(seat()) }}</span>
           @if (hpIcons().length) {
             <span class="hp-icons">
               @for (src of hpIcons(); track src) {
@@ -149,6 +152,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   `,
   styles: `
     .tile {
+      position: relative;
       box-sizing: border-box;
       height: 100%;
       display: flex;
@@ -170,6 +174,8 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .tile.responding { box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgb(230 81 0 / 70%); }
     /* Faded, but the status line keeps its force colour. */
     .tile.eliminated > :not(.status) { opacity: 0.45; filter: grayscale(1); }
+    /* Marks an Ambitionist, over the tile's top left corner (inside it: the seat panels clip their edges). */
+    .ambitionist-icon { position: absolute; top: 3px; left: 3px; height: 44px; width: auto; z-index: 1; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%)); }
     .bot-icon { font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-left: 3px; color: #666; }
     .you { margin-left: 4px; color: var(--mat-sys-primary); }
     .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; align-items: center; }
@@ -181,6 +187,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .kingdom-Wei { background: #d6e4ff; }
     .kingdom-Shu { background: #ffd9d6; }
     .kingdom-Wu { background: #d6f5dc; }
+    .kingdom-Ambitionist { background: #e6dcf7; }
     .hand-count { display: inline-flex; align-items: center; gap: 2px; }
     .hand-count mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .status { font-weight: bold; margin-top: 2px; }
@@ -236,7 +243,8 @@ export class SeatTile {
 
   // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a
   // seat that belongs to no force).
-  protected readonly force = computed(() => forceOf(this.seat().kingdom));
+  protected readonly force = computed(() => seatForce(this.seat()));
+  protected readonly ambitionistIcon = AMBITIONIST_ICON_URL;
   protected readonly hpIcons = computed(() => hpIconUrls(this.seat().combinedHp));
 
 
@@ -263,7 +271,7 @@ export class SeatTile {
     return cardIdDisplayName(definitionId, this.i18n.translator);
   }
 
-  protected kingdomName(kingdom: Parameters<typeof kingdomDisplayName>[0]): string {
-    return kingdomDisplayName(kingdom, this.i18n.translator);
+  protected kingdomName(seat: Parameters<typeof seatKingdomLabel>[0]): string {
+    return seatKingdomLabel(seat, this.i18n.translator);
   }
 }

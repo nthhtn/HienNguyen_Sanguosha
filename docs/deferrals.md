@@ -4,6 +4,18 @@ Work that was decided, on purpose, to leave for later. Each entry says what is
 missing, why it waits and what would bring it back. When an item is done, delete
 its entry and say where it went in the commit.
 
+## Game engine
+
+| Deferred | Why it waits | Revisit when |
+|---|---|---|
+| **Synergistic Partners.** Each Alternate General's data lists the Generals it pairs well with (`synergisticPartners` in `projects/content/data/decks/alternate/generals/`), and the Wiki shows the list. The engine has no rule that uses it: holding a partner General changes nothing in a game. Noted on 2026-10-26. | The rule text is not specified yet, and CLAUDE.md asks for precise rules before a new mechanic is implemented. The data is kept as crawled, so nothing is lost meanwhile. | The Synergistic Partners rule is written down, with what a pairing does, when it applies and what a partner General counts as. Implement it in the engine and the Kingdom War mode, then show it in the Wiki next to the list. |
+
+## Game setup
+
+| Deferred | Why it waits | Revisit when |
+|---|---|---|
+| **The Dynasty Wars deck (`default`) in Game Setup.** Its radio button in the deck picker is disabled on every setup screen (Pass and Play, Play vs Bots, Create Room and the lobby), so new games are always dealt from Kingdom Wars. Disabled on 2026-10-26. | The engine has no explicit rules for Dynasty Wars yet; they get specified first. The deck, its data and its text are kept, and the server still accepts the `default` deck, so stored games replay unchanged. | The Dynasty Wars rules are written and implemented. Remove `disabled: true` from the `default` entry in `projects/app/src/app/deck-picker.ts` and restore the click test in `deck-picker.spec.ts`. |
+
 ## Deployment
 
 | Deferred | Why it waits | Revisit when |

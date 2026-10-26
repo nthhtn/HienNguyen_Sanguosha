@@ -199,11 +199,12 @@ function redactSeat(seat: Seat, viewerSeatId: string): Seat {
   if (seat.id === viewerSeatId || !seat.generals) return seat;
   const { main, deputy } = seat.generals;
   // Spare Generals: none shown while their holder is hidden, and never which.
-  const { forms, ...rest } = seat;
+  const { forms, allegiance, ...rest } = seat;
   const holderShown = !!forms && seat.generals[forms.slot].revealed;
   return {
     ...rest,
     ...(forms && holderShown ? { forms: { ...forms, held: forms.held.map(() => HIDDEN_GENERAL_ID) } } : {}),
+    ...(allegiance && isKingdomRevealed(seat.generals) ? { allegiance } : {}),
     kingdom: isKingdomRevealed(seat.generals) ? seat.kingdom : 'hidden',
     generals: {
       main: main.revealed ? main : { ...main, generalDefinitionId: HIDDEN_GENERAL_ID },

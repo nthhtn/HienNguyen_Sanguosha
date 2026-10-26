@@ -242,6 +242,7 @@ export const vi: Messages = {
   'label.kingdom.Shu': 'Thục',
   'label.kingdom.Wu': 'Ngô',
   'label.kingdom.Qun': 'Quần',
+  'label.kingdom.Ambitionist': 'Dã tâm gia',
   'label.action.draw.one': 'Rút {n} lá bài',
   'label.action.draw.other': 'Rút {n} lá bài',
   'label.action.play': 'Đánh {card}',

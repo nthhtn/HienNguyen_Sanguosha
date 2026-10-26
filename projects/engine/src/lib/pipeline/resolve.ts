@@ -316,10 +316,26 @@ function resolveEffect(state: GameState, effect: Effect, ctx: EngineContext, dec
             : current.kind === 'DyingEffect'
             ? applyDying(state, current, (seatId) => answeringConversions(state, seatId, current.rescueCardIds.any, ctx.registry, { revealedOnly: true }).length > 0)
             : applyEffect(state, current);
+  applied.state = withAllegiance(state, applied.state, ctx);
   const followUps = [...afterTriggerFollowUps(applied.state, applied.events, ctx), ...unequipFollowUps(state, applied.state, applied.events, ctx.registry)];
   // A chain's wave goes last: after everything the damage's follow-ups lead to.
   const wave = current.kind === 'DamageEffect' ? chainWave(applied.state, current, applied.events) : [];
   return { state: queueFront(applied.state, [...followUps, ...rewritten.after, ...wave]), events: applied.events };
+}
+
+// Every seat that showed its first General in this step (`before` to `after`) gets its allegiance from
+// the mode, in seat order.
+function withAllegiance(before: GameState, after: GameState, ctx: EngineContext): GameState {
+  const decide = ctx.mode.decideAllegiance;
+  if (!decide) return after;
+  const shown = (seat: GameState['seats'][number]) => !!seat.generals && (seat.generals.main.revealed || seat.generals.deputy.revealed);
+  let current = after;
+  for (const seat of after.seats) {
+    if (seat.allegiance || !shown(seat) || shown(before.seats.find((s) => s.id === seat.id) ?? seat)) continue;
+    const allegiance = decide(current, seat);
+    current = { ...current, seats: current.seats.map((s) => (s.id === seat.id ? { ...s, allegiance } : s)) };
+  }
+  return current;
 }
 
 function askRevealBlocked(state: GameState, ask: Extract<Effect, { kind: 'AskUseEffect' }>, ctx: EngineContext): boolean {

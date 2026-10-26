@@ -259,6 +259,12 @@ describe('Alternate Gan Fu Ren', () => {
       expect(s.pendingChoice).toBeFalsy();
     });
 
+    it('an Ambitionist has no one to pick, so is not asked', () => {
+      const t = gan();
+      const s = healOf({ ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, allegiance: 'ambitionist' as const } : x)) }, 1);
+      expect(s.pendingChoice).toBeFalsy();
+    });
+
     it('declining draws nothing', () => {
       const s = h.decline(healOf(gan(), 1));
       expect(handIds(s, 'seat-b')).toEqual([]);

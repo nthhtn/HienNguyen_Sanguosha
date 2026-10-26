@@ -19,8 +19,10 @@ const seatOf = (target: { seatId: string }) => target.seatId;
 
 // Whether `seatId`'s live Kingdom has had `tool` cancelled for it (Wuxie Kingdom).
 function cancelledForKingdom(state: GameState, tool: UsedCard, seatId: string): boolean {
-  const kingdom = state.seats.find((s) => s.id === seatId)?.kingdom;
-  if (!kingdom || kingdom === 'hidden') return false;
+  const seat = state.seats.find((s) => s.id === seatId);
+  const kingdom = seat?.kingdom;
+  // An Ambitionist plays for no Kingdom, whatever its printed one.
+  if (!kingdom || kingdom === 'hidden' || seat.allegiance === 'ambitionist') return false;
   const key = toolKeyOf(tool);
   return (state.toolCancellations ?? []).some((c) => c.toolKey === key && c.kingdom === kingdom);
 }

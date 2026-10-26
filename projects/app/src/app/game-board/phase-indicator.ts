@@ -1,6 +1,6 @@
 import { Component, computed, input, inject } from '@angular/core';
 import { GameState, discardOwed } from 'engine';
-import { forceOf, seatName } from '../labels';
+import { seatForce, seatName } from '../labels';
 import { DecisionCountdown } from './decision-countdown';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
@@ -57,7 +57,7 @@ export class PhaseIndicator {
   protected readonly phaseName = computed(() => this.i18n.t(`history.phase.${this.state().phase}` as const));
 
   protected readonly ownerForce = computed(() =>
-    forceOf(this.state().seats.find((s) => s.id === this.state().turn.ownerSeatId)?.kingdom)
+    seatForce(this.state().seats.find((s) => s.id === this.state().turn.ownerSeatId))
   );
 
   protected readonly drawPileCount = computed(() => this.state().zones.find((z) => z.kind === 'drawPile')?.cards.length ?? 0);

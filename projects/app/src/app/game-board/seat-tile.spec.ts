@@ -228,6 +228,20 @@ describe('SeatTile', () => {
     expect(render({ ...makeSeat(), kingdom: 'hidden' }).querySelector('.tile')!.getAttribute('data-force')).toBe('none');
   });
 
+  it('shows an Ambitionist as such, in its own (purple) force', () => {
+    const el = render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' });
+    expect(el.querySelector('.tile')!.getAttribute('data-force')).toBe('Ambitionist');
+    expect(el.querySelector('.kingdom')!.textContent!.trim()).toBe('Ambitionist');
+  });
+
+  it('overlays the Ambitionist icon on an Ambitionist seat only', () => {
+    const icon = render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' }).querySelector('img.ambitionist-icon') as HTMLImageElement;
+    expect(icon.getAttribute('src')).toBe('/card-art/generals/ambitionist_icon.png');
+    expect(icon.getAttribute('alt')).toBe('Ambitionist');
+    expect(render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'kingdom' }).querySelector('.ambitionist-icon')).toBeNull();
+    expect(render({ ...makeSeat(), kingdom: 'Wei' }).querySelector('.ambitionist-icon')).toBeNull();
+  });
+
   it('keeps the force colour on the turn owner and on a responding seat', () => {
     const owner = render({ ...makeSeat(), kingdom: 'Shu' }, { isTurnOwner: true }).querySelector('.tile')!;
     expect(owner.getAttribute('data-force')).toBe('Shu');

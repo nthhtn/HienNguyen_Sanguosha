@@ -11,10 +11,16 @@ export function definitionIdOf(view: GameState, cardInstanceId: string): string 
   return undefined;
 }
 
-// An ally shares the bot's own (known) kingdom and has revealed it. Qun is
-// allied with no one; a hidden kingdom could be anyone, so it is not an ally.
-export function isAlly(self: Seat, other: Seat): boolean {
-  return self.kingdom !== 'Qun' && self.kingdom !== 'hidden' && other.kingdom === self.kingdom;
+// An ally shares the bot's own (known) kingdom and has revealed it. A hidden kingdom could be anyone, so
+// it is not an ally. An Ambitionist is a group of one: nobody's ally. A bot not yet decided whose own
+// Kingdom already holds half the table (the cap, rounded down) will be an Ambitionist on revealing, so it
+// has no allies yet either (the bot's own copy of the rule, as it does not depend on content).
+export function isAlly(self: Seat, other: Seat, view: GameState): boolean {
+  if (self.allegiance === 'ambitionist' || other.allegiance === 'ambitionist') return false;
+  if (self.kingdom === 'hidden' || other.kingdom !== self.kingdom) return false;
+  if (self.allegiance) return true;
+  const held = view.seats.filter((s) => s.allegiance === 'kingdom' && s.kingdom === self.kingdom).length;
+  return held < Math.floor(view.seats.length / 2);
 }
 
 // Whether a physical card is a Sha: Sha itself, Fire Attack or Lightning Attack (read from the
@@ -75,7 +81,7 @@ export function fillPick<A extends { targets: Target[]; pickTargets?: TargetPick
   if (!pick) return action;
   const seats = pick.eligibleIds
     .map((id) => view.seats.find((s) => s.id === id))
-    .filter((s): s is Seat => !!s && !isAlly(me, s))
+    .filter((s): s is Seat => !!s && !isAlly(me, s, view))
     .sort((a, b) => rank(view, me, b) - rank(view, me, a) || a.index - b.index);
   // Best first, each one only while the pick still allows it (a cap on some seats).
   const chosen: Seat[] = [];

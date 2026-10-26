@@ -26,7 +26,7 @@ function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitio
   return plays
     .filter((p) => p.targets.length >= 1 && p.targets[0].kind === 'seat' && matches(definitionIdOf(view, p.cardInstanceId)))
     .map((p) => ({ play: p, target: view.seats.find((s) => p.targets[0].kind === 'seat' && s.id === p.targets[0].seatId) }))
-    .filter((t): t is { play: PlayCard; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
+    .filter((t): t is { play: PlayCard; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target, view))
     .sort((a, b) => rank(view, self, b.target) - rank(view, self, a.target) || a.target.index - b.target.index)
     .map((t) => t.play);
 }
@@ -36,7 +36,7 @@ function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitio
 // Whether to use an optional ability (the Sha-Equipment spec's bot rules).
 function wantsToUse(view: GameState, self: Seat, abilityId: string, targetSeatId: string | undefined): boolean {
   const target = view.seats.find((s) => s.id === targetSeatId);
-  const hostile = !!target && !isAlly(self, target);
+  const hostile = !!target && !isAlly(self, target, view);
   switch (abilityId) {
     case 'eight-trigrams':
     case 'longbow':
@@ -124,7 +124,7 @@ function decide(
       const ids = selection.eligibleIds
         .filter((id) => {
           const other = view.seats.find((s) => s.id === id);
-          return !!other && !isAlly(me, other);
+          return !!other && !isAlly(me, other, view);
         })
         .slice(0, selection.max);
       if (ids.length >= selection.min) return take({ ...selectTemplate, ids });
@@ -190,7 +190,7 @@ function decide(
       !reason || reason.kind === 'card-effect'
         ? true
         : reason.kind === 'dying'
-          ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying))
+          ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying, view))
           : reason.kind === 'wuxie'
             ? !!self && wuxieWorthCancelling(view, self, reason, responseRules.wuxie)
             : reason.kind === 'ability' && (baseSkillId(reason.abilityId) === 'upheaval' || reason.abilityId === 'instigate')
@@ -256,7 +256,7 @@ function decide(
     // Barbarians and Hail of Arrows hit everyone else: only worth it when
     // non-allies are at least as many as allies.
     const others = view.seats.filter((s) => s.id !== seatId && !s.eliminated);
-    const allies = others.filter((s) => isAlly(self, s)).length;
+    const allies = others.filter((s) => isAlly(self, s, view)).length;
     if (others.length - allies >= allies) {
       const massAttack = untargetedOf('barbarians') ?? untargetedOf('hail-of-arrows');
       if (massAttack) return take(massAttack);
@@ -282,7 +282,7 @@ function decide(
     const conversionsAs = (as: string) =>
       legal.filter(
         (a): a is UseConversion =>
-          a.kind === 'UseConversionAction' && !a.pendingResponseId && a.targets.length === 1 && conversionAs(a, view, registry) === as && conversionSpare(view, self, a, registry) && !isAlly(self, targetSeat(a))
+          a.kind === 'UseConversionAction' && !a.pendingResponseId && a.targets.length === 1 && conversionAs(a, view, registry) === as && conversionSpare(view, self, a, registry) && !isAlly(self, targetSeat(a), view)
       );
     const [breakVia] = conversionsAs('break');
     if (breakVia) return take(breakVia);
@@ -333,7 +333,7 @@ function decide(
     const [conversion] = legal
       .filter((a): a is UseConversion => a.kind === 'UseConversionAction' && a.targets.length >= 1 && conversionAs(a, view, registry) === 'sha')
       .map((a) => ({ a, target: view.seats.find((s) => s.id === a.targets[0].seatId) }))
-      .filter((t): t is { a: UseConversion; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target))
+      .filter((t): t is { a: UseConversion; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target, view))
       .sort((x, y) => rank(view, self, y.target) - rank(view, self, x.target) || x.target.index - y.target.index)
       .map((t) => t.a);
     if (conversion && conversionSpare(view, self, conversion, registry)) return take(conversion, 1);
@@ -346,7 +346,7 @@ function decide(
     const coerce = plays.find((p) => {
       if (p.targets.length !== 2 || definitionIdOf(view, p.cardInstanceId) !== 'coerce') return false;
       const [holder, victim] = p.targets.map((t) => view.seats.find((s) => s.id === t.seatId));
-      return !!holder && !!victim && victim.id !== seatId && !isAlly(self, holder) && !isAlly(self, victim);
+      return !!holder && !!victim && victim.id !== seatId && !isAlly(self, holder, view) && !isAlly(self, victim, view);
     });
     if (coerce) return take(coerce);
     const late = pickActiveSkill(view, self, legal, registry, 'late');

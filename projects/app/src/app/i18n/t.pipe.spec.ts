@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CATALOG_LOADERS } from './catalogs';
+import { CATALOG_LOADERS, INITIAL_CATALOGS } from './catalogs';
 import { en } from './en';
 import { I18n } from './i18n.service';
 import type { Messages } from './messages';
@@ -15,7 +15,10 @@ describe('t pipe', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      providers: [{ provide: CATALOG_LOADERS, useValue: { en: () => Promise.resolve(en), vi: () => Promise.resolve(VI) } }],
+      providers: [
+        { provide: CATALOG_LOADERS, useValue: { en: () => Promise.resolve(en), vi: () => Promise.resolve(VI) } },
+        { provide: INITIAL_CATALOGS, useValue: { en } },
+      ],
     });
   });
 
