@@ -1,5 +1,7 @@
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { TestBed } from '@angular/core/testing';
-import { EFFECT_URLS, MUSIC_PLAYER_FACTORY, MusicPlayer, MusicService, SoundEffects, TRACK_URLS } from './music.service';
+import { CARD_VOICES, EFFECT_URLS, MUSIC_PLAYER_FACTORY, MusicPlayer, MusicService, SoundEffects, TRACK_URLS, voiceUrl } from './music.service';
 
 class FakePlayer implements MusicPlayer {
   loop = false;
@@ -174,5 +176,23 @@ describe('SoundEffects', () => {
     const before = player.plays;
     effects.play('heal');
     expect(player.plays).toBe(before);
+  });
+});
+
+describe('card voices', () => {
+  it('Chains, Amass, Ascertain and Ally Far Attack Near have a voice', () => {
+    const files = (id: string) => (['male', 'female'] as const).map((g) => CARD_VOICES[id] && voiceUrl(g, CARD_VOICES[id]!));
+    expect(files('chains')).toEqual(['/audio/male/chains.ogg', '/audio/female/chains.ogg']);
+    expect(files('amass')).toEqual(['/audio/male/amass.ogg', '/audio/female/amass.ogg']);
+    expect(files('ascertain')).toEqual(['/audio/male/ascertain.ogg', '/audio/female/ascertain.ogg']);
+    expect(files('ally-far-attack-near')).toEqual(['/audio/male/ally-far-attack-near.ogg', '/audio/female/ally-far-attack-near.ogg']);
+  });
+
+  it('every card voice has its file for both genders in the content assets', () => {
+    for (const voice of Object.values(CARD_VOICES)) {
+      for (const gender of ['male', 'female'] as const) {
+        expect(existsSync(join(__dirname, '../../../content/assets', voiceUrl(gender, voice!).replace('/audio/', 'audio/')))).toBe(true);
+      }
+    }
   });
 });
