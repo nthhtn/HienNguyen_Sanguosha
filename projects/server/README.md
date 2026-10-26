@@ -19,8 +19,8 @@ accepts requests whose `Origin` equals `PUBLIC_ORIGIN`, so from any other origin
 sign-in and sign-up answer 403.
 
 Password reset emails are printed to the server log (`[mail] Password reset for …`).
-The console Mailer is the only Mailer in this stage, in every environment; a
-provider-backed one arrives with deployment.
+The console Mailer is the only Mailer, in every environment; a provider-backed
+one is deferred (see [docs/deferrals.md](../../docs/deferrals.md)).
 
 ## Behind a reverse proxy
 

@@ -69,6 +69,11 @@ server's repository tests against Postgres.
 How the engine, content, bots, simulator, server and Angular app fit together
 is in [docs/architecture/](docs/architecture/README.md).
 
+## Deferred work
+
+What was left for later on purpose, and why, is listed in
+[docs/deferrals.md](docs/deferrals.md).
+
 ## Running end-to-end tests
 
 For end-to-end (e2e) testing, run:

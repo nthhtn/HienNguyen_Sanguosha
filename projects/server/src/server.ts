@@ -30,7 +30,7 @@ export interface RunningServer {
 // development account (player@sgs.com). Closing stops the game timers
 // first, then the HTTP app and the store.
 export async function createServer(config: ServerConfig, options: { logger?: boolean; seedDevAccount?: boolean } = {}): Promise<RunningServer> {
-  const store = await openStore(config.databaseUrl);
+  const store = await openStore(config.databaseUrl, config.databaseSsl);
   const accounts = new AccountService({ repos: store.repos, mailer: new ConsoleMailer(), publicOrigin: config.publicOrigin });
   if (options.seedDevAccount) await seedDevAccount(accounts);
   const rateLimits = new AuthRateLimits();
@@ -49,6 +49,7 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
     history: new GameHistory(store.repos),
     publicOrigin: config.publicOrigin,
     cookieSecure: config.cookieSecure,
+    staticDir: config.staticDir,
     trustProxy: config.trustProxy,
     rateLimits,
     logger: options.logger ?? true,
@@ -76,9 +77,9 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
   };
 }
 
-async function openStore(databaseUrl: string | null): Promise<{ repos: Repositories; close(): Promise<void> }> {
+async function openStore(databaseUrl: string | null, databaseSsl: boolean): Promise<{ repos: Repositories; close(): Promise<void> }> {
   if (!databaseUrl) return { repos: createMemoryRepositories(), close: async () => undefined };
-  const db = createDb(databaseUrl);
+  const db = createDb(databaseUrl, databaseSsl);
   await migrateToLatest(db);
   return { repos: createPostgresRepositories(db), close: () => db.destroy() };
 }

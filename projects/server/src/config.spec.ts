@@ -11,6 +11,8 @@ describe('loadConfig', () => {
       trustProxy: false,
       cookieSecure: false,
       production: false,
+      staticDir: null,
+      databaseSsl: false,
     });
   });
 
@@ -23,6 +25,8 @@ describe('loadConfig', () => {
       PUBLIC_ORIGIN: 'https://sgs.example/',
       BUILD_ID: 'abc123',
       TRUST_PROXY: '1',
+      STATIC_DIR: '/app/dist/app/browser',
+      DATABASE_SSL: 'require',
     });
     expect(config).toEqual({
       port: 8080,
@@ -33,16 +37,48 @@ describe('loadConfig', () => {
       trustProxy: 1,
       cookieSecure: true,
       production: true,
+      staticDir: '/app/dist/app/browser',
+      databaseSsl: true,
     });
   });
 
-  it('binds to every interface by default in production', () => {
-    expect(loadConfig({ NODE_ENV: 'production', DATABASE_URL: 'postgres://x', PUBLIC_ORIGIN: 'https://a.example' }).host).toBe('0.0.0.0');
+  it('uses RENDER_GIT_COMMIT when BUILD_ID is unset', () => {
+    expect(loadConfig({ RENDER_GIT_COMMIT: 'deadbeef' }).buildId).toBe('deadbeef');
   });
 
-  it('refuses to start in production without a database or public origin, naming both', () => {
+  it('prefers BUILD_ID over RENDER_GIT_COMMIT', () => {
+    expect(loadConfig({ BUILD_ID: 'mine', RENDER_GIT_COMMIT: 'deadbeef' }).buildId).toBe('mine');
+  });
+
+  it('treats an empty STATIC_DIR as unset', () => {
+    expect(loadConfig({ STATIC_DIR: '' }).staticDir).toBeNull();
+  });
+
+  it('reads DATABASE_SSL=require and off', () => {
+    expect(loadConfig({ DATABASE_SSL: 'require' }).databaseSsl).toBe(true);
+    expect(loadConfig({ DATABASE_SSL: 'off' }).databaseSsl).toBe(false);
+    expect(loadConfig({ DATABASE_SSL: '' }).databaseSsl).toBe(false);
+  });
+
+  it('refuses an unknown DATABASE_SSL value', () => {
+    expect(() => loadConfig({ DATABASE_SSL: 'true' })).toThrow(/DATABASE_SSL/);
+  });
+
+  it.each(['sslmode=disable', 'ssl=0', 'sslmode=require', 'sslrootcert=x.pem'])('refuses a DATABASE_URL carrying %s when DATABASE_SSL=require', (param) => {
+    expect(() => loadConfig({ DATABASE_URL: `postgres://u:p@db/x?${param}`, DATABASE_SSL: 'require' })).toThrow(/sslmode|ssl/);
+  });
+
+  it('accepts a DATABASE_URL with other parameters when DATABASE_SSL=require', () => {
+    expect(loadConfig({ DATABASE_URL: 'postgres://u:p@db/x?application_name=sgs', DATABASE_SSL: 'require' }).databaseSsl).toBe(true);
+  });
+
+  it('binds to every interface by default in production', () => {
+    expect(loadConfig({ NODE_ENV: 'production', DATABASE_URL: 'postgres://x', DATABASE_SSL: 'off', PUBLIC_ORIGIN: 'https://a.example' }).host).toBe('0.0.0.0');
+  });
+
+  it('refuses to start in production without a database, public origin or DATABASE_SSL, naming all', () => {
     expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(ConfigError);
-    expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL.*PUBLIC_ORIGIN/);
+    expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL.*PUBLIC_ORIGIN.*DATABASE_SSL/);
   });
 
   it('rejects a port that is not a number', () => {
@@ -78,7 +114,7 @@ describe('loadConfig', () => {
   });
 
   describe('PUBLIC_ORIGIN in production', () => {
-    const production = (origin: string) => loadConfig({ NODE_ENV: 'production', DATABASE_URL: 'postgres://x', PUBLIC_ORIGIN: origin });
+    const production = (origin: string) => loadConfig({ NODE_ENV: 'production', DATABASE_URL: 'postgres://x', DATABASE_SSL: 'off', PUBLIC_ORIGIN: origin });
 
     it('must be https, so the session cookie is Secure', () => {
       expect(() => production('http://sgs.example')).toThrow(ConfigError);
