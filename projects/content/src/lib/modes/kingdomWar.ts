@@ -295,11 +295,13 @@ export const kingdomWarMode: GameModeDefinition = {
     if (alive.length === 1) {
       return { endedAt: state.turn.turnNumber, winningSeatIds: [alive[0].id], losingSeatIds };
     }
-    const kingdoms = new Set(alive.map((s) => s.kingdom));
-    if (kingdoms.size === 1 && alive[0].kingdom !== 'Qun') {
+    // A Kingdom wins once every survivor has decided to play for it. A hidden seat, or an
+    // Ambitionist, keeps the game going: nothing forces a hidden seat to reveal.
+    const kingdom = alive[0].kingdom;
+    if (alive.every((s) => s.allegiance === 'kingdom' && s.kingdom === kingdom)) {
       return {
         endedAt: state.turn.turnNumber,
-        winningKingdom: alive[0].kingdom,
+        winningKingdom: kingdom,
         winningSeatIds: alive.map((s) => s.id),
         losingSeatIds,
       };
