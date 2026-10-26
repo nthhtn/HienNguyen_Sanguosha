@@ -4,9 +4,9 @@
   "nameZh": "关羽",
   "force": "shu",
   "title": "The Bearded Gentleman",
-  "maxHp": 4,
+  "maxHp": 5,
   "gender": "male",
-  "hpFrom": "default",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Warrior Saint",

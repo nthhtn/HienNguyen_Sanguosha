@@ -124,14 +124,14 @@ describe('App', () => {
     expect(el.querySelector('button.nav-alternate')!.classList).toContain('active');
   });
 
-  it('has five items in the bar: Play Offline, Play Online, Default, Alternate and Rules, each with an icon', async () => {
+  it('has five items in the bar: Play Offline, Play Online, Kingdom Wars, Dynasty Wars and Rules, each with an icon', async () => {
     const { el } = await render();
     const items = [...el.querySelectorAll('nav.nav > a, nav.nav > button')];
     expect(items.map((i) => [i.querySelector('.label')!.textContent, i.querySelector('mat-icon')!.textContent])).toEqual([
       ['Play Offline', 'play_arrow'],
       ['Play Online', 'public'],
-      ['Default', 'swords'],
-      ['Alternate', 'shuffle'],
+      ['Kingdom Wars', 'swords'],
+      ['Dynasty Wars', 'castle'],
       ['Rules', 'menu_book'],
     ]);
   });
@@ -251,8 +251,8 @@ describe('App', () => {
   it('icon buttons have accessible names (Review Focus 4)', async () => {
     const { el } = await render();
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play Offline');
-    expect(el.querySelector('button.nav-default')!.getAttribute('aria-label')).toBe('Default');
-    expect(el.querySelector('button.nav-alternate')!.getAttribute('aria-label')).toBe('Alternate');
+    expect(el.querySelector('button.nav-default')!.getAttribute('aria-label')).toBe('Dynasty Wars');
+    expect(el.querySelector('button.nav-alternate')!.getAttribute('aria-label')).toBe('Kingdom Wars');
     expect(el.querySelector('button.nav-rules')!.getAttribute('aria-label')).toBe('Rules');
   });
 

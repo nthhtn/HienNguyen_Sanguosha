@@ -24,7 +24,7 @@ const GENERAL_SKINS: Record<string, string> = skins;
 
 // A General's skin: the portrait used on the Play screen. A General with no
 // skin falls back to its crawled card art (the one the Wiki always shows).
-// An Alternate General uses its base General's art; one with none (the new Generals) gets the placeholder.
+// An Alternate General uses its base General's art; one with none gets the placeholder.
 export function generalSkinUrl(id: string): string | null {
   if (isAlternateGeneralId(id)) {
     const base = baseGeneralId(id);
@@ -35,7 +35,7 @@ export function generalSkinUrl(id: string): string | null {
 }
 
 // Generals whose skin has no death voice file yet.
-const NO_DEATH_VOICE = new Set(['zuo-ci']);
+const NO_DEATH_VOICE = new Set(['zuo-ci', 'gan-fu-ren', 'yue-jin', 'ding-feng', 'ji-ling', 'kong-rong', 'ma-teng', 'pan-feng', 'tian-feng', 'zou-shi']);
 
 // A General's death voice: /audio/death/<skin file name>.ogg, named by the pinyin of the skin
 // (Cao Cao: caocao.ogg). Null for a General with no skin or no recording.

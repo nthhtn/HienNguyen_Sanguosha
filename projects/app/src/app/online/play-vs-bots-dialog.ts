@@ -82,7 +82,7 @@ export class PlayVsBotsDialog {
 
   readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
   readonly firstRevealDraw = signal(true);
-  readonly deck = signal<DeckId>('default');
+  readonly deck = signal<DeckId>('alternate');
   readonly startingNew = signal(false);
   readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);

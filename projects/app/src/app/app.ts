@@ -27,26 +27,26 @@ export class App {
   // One menu per deck. A page that does not exist yet can be listed with `disabled: true`.
   protected readonly deckMenus: { deck: DeckId; label: MessageKey; icon: string; fontSet?: string; pages: { path: string; label: MessageKey; disabled?: boolean }[] }[] = [
     {
-      deck: 'default',
-      label: 'setup.deck.default',
-      icon: 'swords', // "swords" only exists in Material Symbols, not the legacy Material Icons font.
-      fontSet: 'material-symbols-outlined',
-      pages: [
-        { path: '/wiki/default/generals', label: 'nav.cards.generals' },
-        { path: '/wiki/default/basic', label: 'nav.cards.basic' },
-        { path: '/wiki/default/equipment', label: 'nav.cards.equipment' },
-        { path: '/wiki/default/tools', label: 'nav.cards.tools' },
-      ],
-    },
-    {
       deck: 'alternate',
       label: 'setup.deck.alternate',
-      icon: 'shuffle',
+      icon: 'swords', // "swords" only exists in Material Symbols, not the legacy Material Icons font.
+      fontSet: 'material-symbols-outlined',
       pages: [
         { path: '/wiki/alternate/generals', label: 'nav.cards.generals' },
         { path: '/wiki/alternate/basic', label: 'nav.cards.basic' },
         { path: '/wiki/alternate/equipment', label: 'nav.cards.equipment' },
         { path: '/wiki/alternate/tools', label: 'nav.cards.tools' },
+      ],
+    },
+    {
+      deck: 'default',
+      label: 'setup.deck.default',
+      icon: 'castle',
+      pages: [
+        { path: '/wiki/default/generals', label: 'nav.cards.generals' },
+        { path: '/wiki/default/basic', label: 'nav.cards.basic' },
+        { path: '/wiki/default/equipment', label: 'nav.cards.equipment' },
+        { path: '/wiki/default/tools', label: 'nav.cards.tools' },
       ],
     },
   ];

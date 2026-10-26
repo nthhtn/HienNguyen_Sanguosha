@@ -4,9 +4,9 @@
   "nameZh": "吕布",
   "force": "qun",
   "title": "Ultimate Combat Skills - Personified",
-  "maxHp": 4,
+  "maxHp": 5,
   "gender": "male",
-  "hpFrom": "default",
+  "hpFrom": "manual",
   "skills": [
     {
       "name": "Without Equal",

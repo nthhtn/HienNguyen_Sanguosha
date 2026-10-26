@@ -206,7 +206,7 @@ describe('WikiCardEntry in the Alternate deck', () => {
 describe('WikiAlternateGeneralEntry', () => {
   const alternateCaoCao: WikiAlternateGeneral = {
     id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'The Militant Emperor of Wei',
-    kingdom: 'Wei', maxHp: 4, gender: 'male', skillsRunAsDefault: true,
+    kingdom: 'Wei', maxHp: 4, gender: 'male', skillsWorking: true,
     skills: [{ name: 'Villainous Hero', nameZh: '奸雄', text: 'Every instance after you suffer damage, you can acquire the card.', status: 'worksAsDefault' }],
     partners: ['Dian Wei 典韦 (Bodyguard)'],
     differenceNote: 'The Ruler Ability is removed.',
@@ -219,7 +219,7 @@ describe('WikiAlternateGeneralEntry', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  it('shows names, title, kingdom, HP and gender, and nothing from a pack or a voice', () => {
+  it('shows names, title, kingdom, HP and gender, and nothing from a pack', () => {
     const el = render(alternateCaoCao);
     expect(el.querySelector('article.entry')!.getAttribute('data-id')).toBe('cao-cao');
     expect(el.querySelector('h4 .name')!.textContent).toBe('Cao Cao');
@@ -227,11 +227,24 @@ describe('WikiAlternateGeneralEntry', () => {
     expect(el.querySelectorAll('.hearts mat-icon')).toHaveLength(4);
     expect(el.querySelector('.gender-tag')!.textContent!.trim()).toBe('Male');
     expect(el.querySelector('.expansion-tag')).toBeNull();
-    expect(el.querySelector('button.voice')).toBeNull();
     expect(el.querySelector('.badge')).toBeNull();
   });
 
-  it('tags each skill Works as Default or Not in the game yet, never Working', () => {
+  it('has a Voice button that plays the base General’s voice, and none for a new General', () => {
+    localStorage.clear();
+    const urls: string[] = [];
+    TestBed.configureTestingModule({
+      providers: [{ provide: MUSIC_PLAYER_FACTORY, useValue: (url: string) => (urls.push(url), { loop: false, volume: 1, play: async () => undefined, pause: () => undefined }) }],
+    });
+    const el = render(alternateCaoCao);
+    expect(el.querySelector('.voices-label')!.textContent).toBe('Voice:');
+    (el.querySelector('button.voice') as HTMLButtonElement).click();
+    expect(urls).toEqual(['/audio/death/caocao.ogg']);
+    expect(render({ ...alternateCaoCao, id: 'ji-ling' }).querySelector('button.voice')).toBeNull();
+    localStorage.clear();
+  });
+
+  it('tags only a skill that is not in the game yet', () => {
     const general: WikiAlternateGeneral = {
       ...alternateCaoCao,
       skills: [
@@ -241,7 +254,7 @@ describe('WikiAlternateGeneralEntry', () => {
       ],
     };
     const tags = [...render(general).querySelectorAll('.skill-status')].map((s) => [s.getAttribute('data-status'), s.textContent!.trim()]);
-    expect(tags).toEqual([['worksAsDefault', 'Works as Default'], ['missing', 'Not in the game yet'], ['worksAsAlternate', 'Works as in Alternate']]);
+    expect(tags).toEqual([['missing', 'Not in the game yet']]);
     expect(render(general).textContent).not.toContain('Working');
   });
 
@@ -256,9 +269,9 @@ describe('WikiAlternateGeneralEntry', () => {
   });
 
   it('shows the placeholder, not a broken image, for a General with no art', () => {
-    const el = render({ ...alternateCaoCao, id: 'ding-feng', name: 'Ding Feng' });
+    const el = render({ ...alternateCaoCao, id: 'nobody', name: 'Nobody' });
     expect(el.querySelector('app-card-art img')).toBeNull();
-    expect(el.querySelector('.card-art-placeholder')!.textContent).toContain('Ding Feng');
+    expect(el.querySelector('.card-art-placeholder')!.textContent).toContain('Nobody');
   });
 
   it('shows the Vietnamese draft in Vietnamese', async () => {

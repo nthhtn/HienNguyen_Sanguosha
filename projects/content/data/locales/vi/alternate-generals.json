@@ -8,7 +8,7 @@
         "text": "Mỗi khi bạn bị sát thương, bạn có thể lấy lá bài đã gây sát thương cho bạn."
       }
     },
-    "differenceNote": "Bỏ từ “lập tức” để làm rõ thời điểm kích hoạt “Gian hùng”. Kỹ năng Chủ công bị loại bỏ.",
+    "differenceNote": "Kỹ năng Chủ công không có trong Quốc chiến.",
     "partners": [
       "Điển Vi (Hộ vệ)",
       "Hứa Chử (Hộ vệ)"
@@ -27,7 +27,7 @@
         "text": "Mỗi khi bạn bị sát thương, bạn có thể chọn một người chơi khác rút X lá bài (X là số Sinh lực bạn đã mất), rồi người đó lật mặt."
       }
     },
-    "differenceNote": "Bỏ từ “lập tức” để làm rõ thời điểm kích hoạt “Hành thương”. Mô tả “Phóng trục” đổi từ “lật mặt Tướng của họ” sang “úp/lật Tướng của bạn”. Kỹ năng Chủ công bị loại bỏ.",
+    "differenceNote": "Kỹ năng Chủ công không có trong Quốc chiến.",
     "partners": [
       "Chân Cơ (Vợ)"
     ]
@@ -41,7 +41,7 @@
         "text": "Vào giai đoạn kết thúc lượt của bạn, bạn có thể rút ba lá bài, rồi lật mặt."
       }
     },
-    "differenceNote": "Mô tả “Cứ thủ” đổi từ “lật Tướng của bạn” sang “úp Tướng của bạn” để phản ánh cách thực hiện mới của việc bỏ qua lượt. Về cơ bản kỹ năng hoạt động như cũ.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "dian-wei": {
@@ -53,7 +53,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể mất 1 Sinh lực hoặc bỏ một lá vũ khí để gây 1 sát thương cho một người chơi khác trong tầm tấn công của bạn. Mỗi giai đoạn chỉ một lần."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Tào Tháo (Chủ công)"
     ]
@@ -71,7 +71,7 @@
         "text": "Sau mỗi 1 sát thương bạn phải chịu, bạn có thể xem hai lá trên cùng của chồng bài rút, đưa một lá cho một người chơi, rồi đưa lá còn lại cho một người chơi."
       }
     },
-    "differenceNote": "Bỏ từ “lập tức” để làm rõ thời điểm kích hoạt “Thiên đố”. Mô tả “Di kế” đổi từ “rút rồi đưa” sang “xem rồi đưa”.",
+    "differenceNote": "Di kế không còn rút bài. Ông xem hai lá trên đầu chồng bài, đưa một lá cho một người chơi bất kỳ, rồi đưa lá còn lại cho một người chơi bất kỳ. Hai lá có thể về cùng một người, hoặc về chính ông. Chỉ ông được xem hai lá này.",
     "partners": []
   },
   "sima-yi": {
@@ -87,7 +87,7 @@
         "text": "Trước khi lá phán xét của một người chơi có hiệu lực, bạn có thể đánh một lá bài trên tay để thay thế nó."
       }
     },
-    "differenceNote": "Bỏ từ “lập tức” để làm rõ thời điểm kích hoạt “Phản quỹ”.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "xiahou-dun": {
@@ -99,7 +99,7 @@
         "text": "Mỗi khi bạn bị sát thương, bạn có thể phán xét. Nếu kết quả không phải cơ, người đã gây sát thương phải chọn một trong hai:\n1. Họ bỏ hai lá bài trên tay do họ chọn\n2. Họ chịu 1 sát thương do bạn gây ra."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Hạ Hầu Uyên (Anh em họ)"
     ]
@@ -113,7 +113,7 @@
         "text": "Bạn có thể chọn một hoặc cả hai lựa chọn sau:\n1. Bỏ qua giai đoạn phán xét và giai đoạn rút bài.\n2. Bỏ qua giai đoạn ra bài và bỏ một lá trang bị.\nMỗi lần bạn chọn một lựa chọn, coi như bạn dùng một lá Sát với một người chơi khác."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Hạ Hầu Đôn (Anh em họ)"
     ]
@@ -127,7 +127,7 @@
         "text": "Trong giai đoạn rút bài, bạn có thể rút ít hơn một lá bài để sát thương do Sát và Quyết Đấu của bạn gây ra (khi bạn là nguồn gây sát thương) tăng thêm 1. Hiệu lực kéo dài đến hết lượt của bạn."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Tào Tháo (Chủ công)"
     ]
@@ -141,7 +141,7 @@
         "text": "Bạn có thể dùng một lá bài cơ bản hoặc trang bị màu đen làm Binh Lương Thốn Đoạn. Bạn có thể dùng Binh Lương Thốn Đoạn với người chơi khác trong khoảng cách thực tế 2."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "xun-yu": {
@@ -157,7 +157,7 @@
         "text": "Sau mỗi 1 sát thương bạn phải chịu, bạn có thể chọn một người chơi để bổ sung bài trên tay sao cho số bài trên tay bằng Sinh lực tối đa của họ. (Bổ sung tối đa 5 lá bài)"
       }
     },
-    "differenceNote": "Việc bổ sung bài của “Tiết mệnh” được giới hạn tối đa 5 lá.",
+    "differenceNote": "Tiết mệnh cho mục tiêu rút bài đến số nhỏ hơn giữa Sinh lực tối đa của họ và 5 lá. Ở Vương triều chiến không có giới hạn 5 lá.",
     "partners": []
   },
   "yue-jin": {
@@ -169,7 +169,7 @@
         "text": "Vào giai đoạn kết thúc lượt của một người chơi khác, bạn có thể bỏ một lá bài cơ bản. Nếu làm vậy, người đó phải bỏ một lá trang bị, nếu không bạn gây 1 sát thương cho người đó."
       }
     },
-    "differenceNote": "Đây là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",
     "partners": []
   },
   "zhang-he": {
@@ -181,7 +181,7 @@
         "text": "Bạn có thể bỏ một lá bài trên tay để bỏ qua một giai đoạn của bạn (trừ giai đoạn bắt đầu và giai đoạn kết thúc).\nNếu bạn bỏ qua giai đoạn rút bài, bạn lấy một lá bài trên tay của mỗi người trong tối đa hai người chơi.\nNếu bạn bỏ qua giai đoạn ra bài, bạn có thể chuyển một lá bài từ khu trang bị hoặc khu chờ của bất kỳ người chơi nào sang khu tương ứng của người chơi khác."
       }
     },
-    "differenceNote": "Thay đổi nhỏ trong mô tả việc chuyển bài của kỹ năng: trước đây ghi chuyển sang “khu hợp lý”, nay ghi “khu tương ứng”.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "zhang-liao": {
@@ -193,7 +193,7 @@
         "text": "Trong giai đoạn rút bài, bạn có thể từ bỏ việc rút bài từ chồng bài. Thay vào đó, bạn lấy một lá bài trên tay của mỗi người trong một đến hai người chơi khác."
       }
     },
-    "differenceNote": "Làm rõ mô tả đôi chút, không ảnh hưởng đến cách chơi thông thường.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "zhen-ji": {
@@ -209,7 +209,7 @@
         "text": "Vào đầu lượt của bạn, bạn có thể phán xét. Nếu kết quả màu đen, bạn có thể phán xét tiếp, cho đến khi ra lá đỏ. Sau đó, bạn lấy tất cả các lá phán xét màu đen."
       }
     },
-    "differenceNote": "“Lạc thần” đã được thay đổi. Bạn không thể lấy các lá đen cho đến khi quá trình kết thúc. Điều này nhằm tránh lỗi nếu một người chơi chọn Chân Cơ và Tư Mã Ý làm một cặp.",
+    "differenceNote": "Lạc thần giữ các lá đen trên bàn cho đến khi chuỗi phán xét kết thúc, rồi bà lấy tất cả cùng lúc. Ở Vương triều chiến mỗi lá đen vào tay bà ngay lập tức.",
     "partners": [
       "Tào Phi (Chồng)"
     ]
@@ -223,7 +223,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể đưa số bài trên tay tùy ý cho một người chơi khác. Nếu bạn đưa đi từ ba lá bài trên tay trở lên trong một giai đoạn, bạn hồi 1 Sinh lực."
       }
     },
-    "differenceNote": "“Nhân đức” bị làm yếu đi. Bạn chỉ hồi Sinh lực khi đưa đi từ ba lá bài trên tay trở lên trong một giai đoạn, thay vì hai lá như Tam Quốc Sát thông thường.\nKỹ năng Chủ công của ông cũng bị loại bỏ.",
+    "differenceNote": "Nhân đức cần đưa từ ba lá bài trở lên trong một lượt mới hồi 1 Sinh lực, thay vì hai lá như Vương triều chiến. Mỗi lượt hồi tối đa một lần.\nKỹ năng Chủ công không có trong Quốc chiến.",
     "partners": [
       "Quan Vũ (Anh em kết nghĩa)",
       "Trương Phi (Anh em kết nghĩa)",
@@ -231,7 +231,7 @@
     ]
   },
   "zhuge-liang": {
-    "name": "Gia Cát Lượng (mộ niên)",
+    "name": "Gia Cát Lượng",
     "title": "Trì mộ thừa tướng",
     "skills": {
       "star-gazing": {
@@ -243,13 +243,13 @@
         "text": "Nếu bạn là mục tiêu của Sát hoặc Quyết Đấu mà bạn không còn bài trên tay, Sát hoặc Quyết Đấu đó bị hủy."
       }
     },
-    "differenceNote": "Mô tả kỹ năng “Không thành” đổi từ “không thể trở thành mục tiêu của...” sang “... sẽ bị hủy”. Nghĩa là nay bạn có thể nhắm vào Gia Cát Lượng và dùng Sát hoặc Quyết Đấu với ông dù ông không còn bài trên tay; lá Sát hoặc Quyết Đấu đó bị bỏ phí và không có hiệu lực với ông. Một lợi thế là bạn có thêm một cách để giảm bài trên tay, nhất là khi không thể bỏ thêm bài trong giai đoạn bỏ bài. Điều này hữu ích khi cần giảm bài trên tay xuống đủ thấp để tránh kỹ năng của Hoàng Trung, v.v. Có nhiều cách tận dụng, hãy sáng tạo!",
+    "differenceNote": "Không thành giờ có thể bị chọn làm mục tiêu. Sát hoặc Quyết Đấu nhắm vào ông khi ông hết bài trên tay sẽ bị hủy và mất tác dụng. Ở Vương triều chiến ông hoàn toàn không thể bị chọn.",
     "partners": [
       "Hoàng Nguyệt Anh (Vợ)"
     ]
   },
   "fire-zhuge-liang": {
-    "name": "Gia Cát Lượng (Ngọa Long)",
+    "name": "Gia Cát Lượng",
     "title": "Ngọa Long",
     "skills": {
       "eight-trigrams": {
@@ -265,7 +265,7 @@
         "text": "Bạn có thể dùng một lá bài đen trên tay làm Vô Giải Khả Kích."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Hoàng Nguyệt Anh (Vợ)",
       "Bàng Thống (Cặp “Long–Phượng”, bạn thân)"
@@ -280,7 +280,7 @@
         "text": "Bạn có thể dùng hoặc đánh một lá bài đỏ làm Sát."
       }
     },
-    "differenceNote": "Quan Vũ có 2,5 đơn vị Sinh lực tối đa thay vì 2, khác với các Tướng có 4 Sinh lực tối đa trong Tam Quốc Sát thông thường. Một Tướng khác có thêm Sinh lực này là Lã Bố. Có người đùa rằng họ “ăn” ngựa Xích Thố của mình để được thêm 0,5 Sinh lực tối đa.",
+    "differenceNote": "Sinh lực tối đa là 5, không phải 4.",
     "partners": [
       "Lưu Bị (Anh em kết nghĩa)"
     ]
@@ -294,7 +294,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể dùng số lá Sát tùy ý."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Lưu Bị (Anh em kết nghĩa)"
     ]
@@ -312,10 +312,10 @@
         "text": "Các Cẩm nang bạn dùng không bị giới hạn khoảng cách."
       }
     },
-    "differenceNote": "“Tập trí” chỉ kích hoạt khi dùng một Cẩm nang không trì hoãn và không phải bài chuyển hóa. Bà không thể rút bài khi kích hoạt các kỹ năng của Gia Cát Lượng (Ngọa Long) như “Hỏa kế”, “Khán phá” và “Liên hoàn”.\nĐể rõ hơn, Hoàng Nguyệt Anh chỉ rút 1 lá bằng kỹ năng này nếu dùng đúng lá Cẩm nang thật. Ví dụ: nếu bà kết đôi với Bàng Thống và dùng lá “Thiết Tỏa Liên Hoàn”, bà rút 1 lá. Nhưng nếu bà dùng một lá chuồn khác làm Thiết Tỏa Liên Hoàn (kỹ năng của Bàng Thống), bà không được rút bài.\n“Kỳ tài” trở thành kỹ năng bắt buộc trong Quốc chiến.",
+    "differenceNote": "Tập trí chỉ rút bài khi bạn thật sự dùng một Cẩm nang. Cẩm nang chuyển từ bài khác, như Thiết Tỏa Liên Hoàn do Bàng Thống tạo ra hoặc Hỏa Công và Vô Giải Khả Kích do Gia Cát Lượng tạo ra, không được rút bài. Vô Giải Khả Kích bạn đánh ra vẫn được rút bài.",
     "partners": [
-      "Gia Cát Lượng (mộ niên) (Chồng)",
-      "Gia Cát Lượng (Ngọa Long) (Chồng)"
+      "Gia Cát Lượng (Chồng)",
+      "Gia Cát Lượng (Chồng)"
     ]
   },
   "gan-fu-ren": {
@@ -331,7 +331,7 @@
         "text": "Vào đầu lượt của bạn, bạn có thể bỏ toàn bộ bài trên tay. Nếu làm vậy mà số bài bạn đã bỏ không nhỏ hơn X, bạn hồi 1 Sinh lực (X bằng Sinh lực hiện tại của bạn)."
       }
     },
-    "differenceNote": "Bà là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến. Ban đầu chúng tôi chê kỹ năng bỏ hết bài của bà thật ngớ ngẩn. Nhưng không hẳn vậy. Bà chắc chắn là vai trò hỗ trợ và khá khó bị hạ. Thử nghĩ xem, nếu chỉ còn 1 Sinh lực, bà chỉ cần bỏ MỘT lá bài ở đầu lượt. Khi đó bà bắt đầu lượt với 2 Sinh lực VÀ còn có thể nhờ người khác rút một lá bài. Bà vui hơn Chu Thái nhiều!",
+    "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",
     "partners": [
       "Lưu Bị (Chồng)"
     ]
@@ -345,7 +345,7 @@
         "text": "Sau khi chọn một người chơi làm mục tiêu của Sát trong giai đoạn ra bài, bạn có thể không cho lá Sát này bị đáp lại bằng Thiểm trong các trường hợp sau:\n1. Số bài trên tay của mục tiêu lớn hơn hoặc bằng Sinh lực hiện tại của bạn.\n2. Số bài trên tay của mục tiêu nhỏ hơn hoặc bằng tầm tấn công của bạn."
       }
     },
-    "differenceNote": "Mô tả kỹ năng được chỉnh nhẹ để làm rõ thời điểm kích hoạt “Liệt cung”. Nếu không quá câu nệ từng chữ thì kỹ năng về cơ bản giống nhau.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Ngụy Diên (Đồng nghiệp từ thời phục vụ Hàn Huyền)"
     ]
@@ -363,7 +363,7 @@
         "text": "Bạn có thể bỏ qua giai đoạn ra bài, rồi bỏ một lá bài trên tay vào cuối lượt của bạn để cho một người chơi khác một lượt thêm."
       }
     },
-    "differenceNote": "Kỹ năng Chủ công bị loại bỏ.",
+    "differenceNote": "Kỹ năng Chủ công không có trong Quốc chiến.",
     "partners": [
       "Triệu Vân (Người đã cứu ông)"
     ]
@@ -381,7 +381,7 @@
         "text": "Sau khi chọn một người chơi làm mục tiêu của Sát, bạn có thể phán xét. Nếu kết quả màu đỏ, mục tiêu không thể đáp lại lá Sát này bằng Thiểm."
       }
     },
-    "differenceNote": "Mô tả “Thiết kỵ” đổi từ “không thể né” sang “không thể đáp lại bằng Thiểm”.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "meng-huo": {
@@ -397,7 +397,7 @@
         "text": "Trong giai đoạn rút bài, nếu Sinh lực của bạn chưa đầy, bạn có thể từ bỏ việc rút bài từ chồng bài; thay vào đó, bạn lật X lá trên cùng của chồng bài (X là số Sinh lực bạn đã mất). Với mỗi lá cơ được lật, bạn hồi 1 Sinh lực, rồi bỏ các lá đó và lấy các lá còn lại."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Chúc Dung (Vợ)"
     ]
@@ -415,9 +415,9 @@
         "text": "Khi bạn cận kề cái chết, bạn có thể bỏ toàn bộ bài của mình (trên tay và trang bị) cùng mọi lá bài trong khu chờ, rồi lật lại mặt Tướng và gỡ xích, rút ba lá bài và hồi Sinh lực lên 3."
       }
     },
-    "differenceNote": "“Liên hoàn” không thay đổi. Bạn vẫn có thể dùng số lá bài chuồn tùy ý làm Thiết Tỏa Liên Hoàn.\nMô tả “Niết bàn” được thay đổi: bạn có thể gỡ úp Tướng khi hồi sinh.",
+    "differenceNote": "Niết bàn còn xóa trạng thái bị xích của ông khi ông hồi sinh.",
     "partners": [
-      "Gia Cát Lượng (Ngọa Long) (Cặp “Long–Phượng”, bạn thân)"
+      "Gia Cát Lượng (Cặp “Long–Phượng”, bạn thân)"
     ]
   },
   "wei-yan": {
@@ -429,7 +429,7 @@
         "text": "Sau khi bạn gây 1 sát thương cho một người chơi trong khoảng cách thực tế 1, bạn hồi 1 Sinh lực."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Hoàng Trung (Đồng nghiệp từ thời phục vụ Hàn Huyền)"
     ]
@@ -443,7 +443,7 @@
         "text": "Bạn có thể dùng hoặc đánh Sát của mình làm Thiểm, và ngược lại."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Lưu Thiện (Được cứu trong trận Trường Bản)"
     ]
@@ -461,7 +461,7 @@
         "text": "Mỗi khi bạn gây sát thương cho mục tiêu bằng Sát, bạn có thể đấu điểm với người chơi đó. Nếu bạn thắng, bạn lấy một lá bài của người đó."
       }
     },
-    "differenceNote": "Bà không thể kích hoạt “Liệt nhận” nếu gây sát thương cho một người chơi không phải mục tiêu của mình. Nghĩa là bà không thể đấu điểm với người chơi bị sát thương do hiệu ứng xích, chẳng hạn.",
+    "differenceNote": "Liệt nhận chỉ có tác dụng với Tướng mà Sát của bạn nhắm tới. Sát gây sát thương cho người khác, ví dụ qua Thiết Tỏa Liên Hoàn, thì không kích hoạt.",
     "partners": [
       "Mạnh Hoạch (Chồng)"
     ]
@@ -475,7 +475,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể bỏ tối đa X lá bài (X là Sinh lực tối đa của bạn), rồi rút cùng số lá bài. Mỗi giai đoạn chỉ một lần."
       }
     },
-    "differenceNote": "“Chế hành” bị làm yếu đi. Trong một giai đoạn ra bài, ông chỉ có thể bỏ và rút tối đa X lá bài, X là Sinh lực tối đa của ông. Kỹ năng Chủ công của ông bị loại bỏ.",
+    "differenceNote": "Chế hành chỉ được bỏ tối đa số lá bằng Sinh lực tối đa của ông, mỗi giai đoạn ra bài một lần. Ở Vương triều chiến không có giới hạn.\nKỹ năng Chủ công không có trong Quốc chiến.",
     "partners": [
       "Chu Thái (Người đã cứu ông)"
     ]
@@ -493,7 +493,7 @@
         "text": "Khi bạn trở thành mục tiêu của Sát, bạn có thể bỏ một lá bài trên tay để chuyển lá Sát này sang một người chơi khác trong tầm tấn công của bạn. Người nhận không thể là người đã dùng Sát."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Tiểu Kiều (Chị em)"
     ]
@@ -511,7 +511,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể bỏ một lá bài và chọn một người chơi. Khoảng cách thực tế giữa bạn và người đó được coi là 1 cho đến hết lượt của bạn. Mỗi giai đoạn chỉ một lần."
       }
     },
-    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",
     "partners": []
   },
   "gan-ning": {
@@ -523,7 +523,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể dùng một lá bài đen làm Quá Hà Sách Kiều."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "huang-gai": {
@@ -535,7 +535,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể mất 1 Sinh lực, rồi rút hai lá bài."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Chu Du (Đối tác trong kế “Khổ nhục”)"
     ]
@@ -549,7 +549,7 @@
         "text": "Nếu bạn không dùng hay đánh Sát trong giai đoạn ra bài, bạn có thể bỏ qua giai đoạn bỏ bài của lượt này."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "lu-su": {
@@ -565,7 +565,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể chọn 2 người chơi (không phải bạn) và bỏ số lá bài bằng chênh lệch số bài trên tay giữa 2 người đó. Sau đó hoán đổi toàn bộ bài trên tay của họ. Mỗi giai đoạn chỉ một lần."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "lu-xun": {
@@ -581,7 +581,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể dùng một lá bài đỏ trên tay làm Dĩ Dật Đãi Lao."
       }
     },
-    "differenceNote": "Mô tả “Khiêm tốn” đổi từ “không thể trở thành mục tiêu của...” sang “... các lá bài vô hiệu”. Kỹ năng đặc trưng “Liên doanh” được thay bằng “Độ thế”, biến Lục Tốn từ một Tướng độc lập cao thành một Tướng hỗ trợ.",
+    "differenceNote": "Độ thế thay cho Liên doanh. Trong giai đoạn ra bài, ông có thể dùng một lá bài đỏ trên tay làm Dĩ Dật Đãi Lao, bao nhiêu lần tùy ý.\nKhiêm tốn giờ có thể bị chọn làm mục tiêu. Thuận Thủ Khiên Dương hoặc Lạc Bất Tư Thục nhắm vào ông sẽ bị hủy và mất tác dụng. Ở Vương triều chiến ông hoàn toàn không thể bị chọn.",
     "partners": []
   },
   "sun-jian": {
@@ -593,7 +593,7 @@
         "text": "Vào giai đoạn bắt đầu của bạn, nếu Sinh lực của bạn chưa đầy, bạn có thể chọn một trong hai lựa chọn:\n1. Chọn một người chơi khác rút X lá bài, rồi bỏ 1 lá bài.\n2. Chọn một người chơi khác rút 1 lá bài, rồi bỏ X lá bài.\n(X là số Sinh lực bạn đã mất)."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "taishi-ci": {
@@ -605,7 +605,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể đấu điểm với một người chơi khác. Nếu bạn thắng, bạn có tất cả các hiệu lực sau cho đến hết lượt của bạn.\n1. Sát của bạn không bị giới hạn tầm,\n2. Bạn có thể dùng thêm một lá Sát,\n3. Bạn có thể chọn thêm một người chơi làm mục tiêu khi dùng Sát.\nNếu bạn thua, bạn không thể dùng Sát cho đến hết lượt. Mỗi giai đoạn chỉ một lần."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "sun-shangxiang": {
@@ -621,7 +621,7 @@
         "text": "Mỗi lần bạn mất các lá trang bị trong khu trang bị, bạn có thể rút hai lá bài."
       }
     },
-    "differenceNote": "Mô tả “Kết nhân” đã được thay đổi. Bạn không thể kết nhân với chính mình dù Chủ tướng của bạn là nam. “Kiêu cơ” bị làm yếu đi. Mô tả đổi từ “Mỗi khi bạn mất một lá trang bị” sang “Mỗi lần bạn mất các lá trang bị”. Nghĩa là Tôn Thượng Hương chỉ rút hai lá khi nhiều trang bị bị bỏ cùng lúc, ví dụ bỏ hai trang bị đang mang để kích hoạt Quán Thạch Phủ.",
+    "differenceNote": "Kiêu cơ là kỹ năng tùy chọn. Mỗi lần các lá bài rời khỏi khu trang bị của bà, bà có thể rút 2 lá, mỗi lần chỉ một lần, nên hai món rời đi cùng lúc chỉ rút 2 lá. Ở Vương triều chiến kỹ năng này bắt buộc và rút 2 lá cho mỗi món.",
     "partners": []
   },
   "xiao-qiao": {
@@ -637,7 +637,7 @@
         "text": "Các lá bích của bạn được coi là lá cơ."
       }
     },
-    "differenceNote": "Đáng tiếc, vì là vợ của Chu Du nên bà cũng chịu số phận chân dung bị làm xấu thảm hại. Ngoài ra bà không thay đổi.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Chu Du (Chồng)",
       "Đại Kiều (Chị em)"
@@ -656,7 +656,7 @@
         "text": "Vào cuối giai đoạn bỏ bài của người chơi khác, bạn có thể trả lại cho người đó một lá bài đã bị bỏ trong giai đoạn này từ chồng bài bỏ. Nếu làm vậy, bạn có thể lấy tất cả các lá bài khác đã bị bỏ trong giai đoạn bỏ bài của người đó từ chồng bài bỏ."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Cố chính thay cho Cố chấp. Khi người chơi khác kết thúc giai đoạn bỏ bài, họ có thể trả lại cho người đó một lá bài mà người đó vừa bỏ và, nếu làm vậy, lấy mọi lá còn lại đã bỏ trong giai đoạn đó. Kỹ năng vẫn dùng được khi chỉ có một lá bị bỏ.",
     "partners": []
   },
   "zhou-tai": {
@@ -668,7 +668,7 @@
         "text": "Mỗi khi Sinh lực của bạn bị giảm 1 trong khi Sinh lực hiện tại của bạn là 0, bạn có thể lật một lá từ đầu chồng bài rút và đặt lên Tướng của bạn. Chừng nào các lá này chưa có hai lá cùng số (từ A đến K) thì bạn không chết. Nếu lật được một lá cùng số với một lá đã có, bạn rơi vào trạng thái cận kề cái chết."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Tôn Quyền (Chủ công)"
     ]
@@ -686,7 +686,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể chọn một người chơi khác chọn một chất. Người này sau đó lấy một lá bài trên tay của bạn và cho mọi người xem. Nếu chất của lá bài vừa lấy khác chất họ đã chọn, bạn gây 1 sát thương cho người đó. Mỗi giai đoạn chỉ một lần."
       }
     },
-    "differenceNote": "“Phản gián” được thay đổi để nạn nhân lấy lá bài trên tay trước khi nhận sát thương. Chu Du không thể lấy lại lá bài nếu giết một người chơi bằng “Phản gián”.\nNhưng khác biệt rõ ràng nhất là chân dung xấu không thể tin nổi của Chu Du. Họ nghĩ gì vậy trời?!?!",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Hoàng Cái (Đối tác trong kế “Khổ nhục”)",
       "Tiểu Kiều (Vợ)"
@@ -701,7 +701,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể dùng hai lá bài trên tay cùng chất làm Vạn Tiễn Tề Phát."
       }
     },
-    "differenceNote": "Kỹ năng Chủ công bị loại bỏ. Ngoài ra ông giống hệt Tam Quốc Sát thông thường.",
+    "differenceNote": "Kỹ năng Chủ công không có trong Quốc chiến.",
     "partners": [
       "Nhan Lương & Văn Xú (Tướng được tin cậy nhất)"
     ]
@@ -719,7 +719,7 @@
         "text": "Trước khi lá phán xét của một người chơi có hiệu lực, bạn có thể hoán đổi lá phán xét đó với một lá bài đen."
       }
     },
-    "differenceNote": "Kỹ năng Chủ công bị loại bỏ. Ngoài ra Trương Giác không thay đổi!",
+    "differenceNote": "Lôi kích không thể chọn chính ông. Ở Vương triều chiến có thể chọn bất kỳ người chơi còn sống, kể cả ông.\nKỹ năng Chủ công không có trong Quốc chiến.",
     "partners": []
   },
   "lu-bu": {
@@ -731,7 +731,7 @@
         "text": "Sau khi chọn một người chơi làm mục tiêu của Sát, mục tiêu của bạn cần dùng liên tiếp hai lá Thiểm để vô hiệu lá Sát. Trong Quyết Đấu, đối thủ của bạn cần đánh liên tiếp hai lá Sát mỗi lần."
       }
     },
-    "differenceNote": "Lã Bố có 2,5 đơn vị Sinh lực tối đa thay vì 2, khác với các Tướng có 4 Sinh lực tối đa trong Tam Quốc Sát thông thường. Một Tướng khác có thêm Sinh lực này là Quan Vũ. Có người đùa rằng họ “ăn” ngựa Xích Thố của mình để được thêm 0,5 Sinh lực tối đa.\nMô tả “Vô song” được chỉnh nhẹ để làm rõ thời điểm kích hoạt.\nNhìn chung Lã Bố không khác Tam Quốc Sát gốc.",
+    "differenceNote": "Sinh lực tối đa là 5, không phải 4.",
     "partners": [
       "Điêu Thuyền (Người giật dây)"
     ]
@@ -749,7 +749,7 @@
         "text": "Vào giai đoạn kết thúc của bạn, bạn có thể rút một lá bài."
       }
     },
-    "differenceNote": "Mô tả “Ly gián” được sửa để bạn không thể dùng lên chính mình dù Chủ tướng của bạn là nam. Lưu ý giới tính của các nạn nhân dựa trên Chủ tướng nếu cả hai đã lật ngửa, hoặc dựa trên Tướng duy nhất đã lật ngửa. Ngoài ra nhân vật này không đổi so với Tam Quốc Sát.",
+    "differenceNote": "Ly gián không thể bị Vô Giải Khả Kích chặn. Ở Vương triều chiến Quyết Đấu đó có thể bị chặn.\nBế nguyệt là kỹ năng tùy chọn. Bà có thể rút 1 lá ở giai đoạn kết thúc, còn Vương triều chiến thì bắt buộc.",
     "partners": [
       "Lã Bố (Con rối)"
     ]
@@ -767,7 +767,7 @@
         "text": "Khi bạn chết, người giết bạn mất toàn bộ kỹ năng của một trong các Tướng của người đó."
       }
     },
-    "differenceNote": "“Đoạn trường” được thay đổi để kẻ giết chỉ mất kỹ năng của một Tướng của mình.",
+    "differenceNote": "Đoạn trường chỉ làm kẻ giết bà mất kỹ năng của một trong hai Tướng, do người chơi Thái Văn Cơ chọn. Ở Vương triều chiến kẻ giết mất mọi kỹ năng.",
     "partners": []
   },
   "hua-tuo": {
@@ -783,7 +783,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể bỏ một lá bài trên tay để một người chơi hồi 1 Sinh lực. Mỗi giai đoạn chỉ một lần."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "jia-xu": {
@@ -803,7 +803,7 @@
         "text": "Mọi Cẩm nang màu đen nhắm vào bạn đều bị hủy."
       }
     },
-    "differenceNote": "Mô tả “Duy mạc” đổi từ “không có hiệu lực” sang “bị hủy”. Thực chất nhân vật không đổi ngoài cách diễn đạt này.",
+    "differenceNote": "Duy mạc giờ có thể bị chọn làm mục tiêu. Cẩm nang đen nhắm vào ông sẽ bị hủy và mất tác dụng. Ở Vương triều chiến ông hoàn toàn không thể bị chọn.\nLoạn vũ buộc mỗi người chơi khác đánh Sát vào người chơi gần họ nhất, nếu không sẽ mất 1 Sinh lực. Ở Vương triều chiến họ được chọn bất kỳ ai trong tầm tấn công. Kỹ năng vẫn chỉ dùng một lần mỗi ván.",
     "partners": []
   },
   "ji-ling": {
@@ -815,7 +815,7 @@
         "text": "Vào đầu giai đoạn ra bài, bạn có thể đấu điểm với một người chơi khác. Nếu bạn thắng, coi như bạn dùng một lá Sát với người đó hoặc với một người chơi khác cùng thế lực với nạn nhân (lá Sát này không được tính vào số lá Sát đã dùng trong giai đoạn ra bài). Nếu bạn không thắng, giai đoạn ra bài của bạn kết thúc."
       }
     },
-    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",
     "partners": []
   },
   "kong-rong": {
@@ -831,7 +831,7 @@
         "text": "Khi các lá bài của bạn bị bỏ vào chồng bài bỏ, bạn có thể đưa các lá đó cho một người chơi khác."
       }
     },
-    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến. Trông ông cũng khá thú vị đấy chứ?",
+    "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",
     "partners": []
   },
   "ma-teng": {
@@ -847,7 +847,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể cho mọi người chơi cùng thế lực với bạn mỗi người rút ba lá bài. Nếu thế lực của bạn có số người chơi ít nhất (hoặc thuộc nhóm ít nhất) trong các thế lực đang chơi, bạn hồi 1 Sinh lực."
       }
     },
-    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",
     "partners": []
   },
   "pan-feng": {
@@ -859,7 +859,7 @@
         "text": "Mỗi lần Sát của bạn gây sát thương cho nạn nhân, bạn có thể chọn một lá trong khu trang bị của nạn nhân rồi chuyển nó sang khu trang bị của bạn, hoặc bỏ nó."
       }
     },
-    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",
     "partners": []
   },
   "pang-de": {
@@ -875,7 +875,7 @@
         "text": "Mỗi khi Sát của bạn bị Thiểm của mục tiêu vô hiệu, bạn có thể bỏ một lá bài của mục tiêu."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": []
   },
   "tian-feng": {
@@ -891,7 +891,7 @@
         "text": "Khi một người chơi khác rơi vào cận kề cái chết, nếu nguồn gây ra điều đó cùng thế lực với bạn, bạn rút 1 lá từ chồng bài rút. Khi một người chơi cùng thế lực với bạn chết, bạn mất 1 Sinh lực."
       }
     },
-    "differenceNote": "Ông là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",
     "partners": []
   },
   "yan-liang-and-wen-chou": {
@@ -903,7 +903,7 @@
         "text": "Trong giai đoạn rút bài, bạn có thể từ bỏ việc rút bài từ chồng bài và phán xét thay vào đó. Bạn lấy lá phán xét này, và trong lượt này bạn có thể dùng một lá bài trên tay khác màu với lá phán xét làm Quyết Đấu."
       }
     },
-    "differenceNote": "Không có.",
+    "differenceNote": "Không có khác biệt.",
     "partners": [
       "Viên Thiệu (Chủ công)"
     ]
@@ -921,7 +921,7 @@
         "text": "Trong giai đoạn ra bài, bạn có thể bỏ một lá trang bị và chọn một người chơi khác đã lật ngửa cả hai Tướng. Sau đó bạn chọn một trong các Tướng của người đó và “ẩn” nó (úp lại về trạng thái ẩn)."
       }
     },
-    "differenceNote": "Bà là một Tướng hoàn toàn mới, được tạo riêng cho Quốc chiến.",
+    "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",
     "partners": []
   }
 }
