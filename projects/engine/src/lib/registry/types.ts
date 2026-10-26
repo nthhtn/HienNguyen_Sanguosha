@@ -301,6 +301,10 @@ export interface GameModeDefinition {
   id: string;
   setup(seatIds: string[], registry: ContentRegistry, rng: RngState, rules?: GameRules): { state: GameState; rng: RngState };
   checkWinCondition(state: GameState): GameResult | null;
+  // Decides a seat's allegiance the moment one of its Generals is first shown (a death reveal too), in
+  // the same step as the reveal, seat by seat so each decision sees the earlier ones. A mode without it
+  // leaves every seat undecided.
+  decideAllegiance?(state: GameState, seat: Seat): 'kingdom' | 'ambitionist';
   triggers: SkillTrigger[];
   // Largest table this mode can seat with the given content, if it is limited.
   maxSeats?(registry: ContentRegistry): number;

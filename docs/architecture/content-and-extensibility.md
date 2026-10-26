@@ -233,3 +233,10 @@ runs. When the rules differ, write a variant in the matching
   up as a test failure.
 - The simulator plays whole games with each pack's Generals and fails on an
   invariant break, a game that does not end, or a skill that never fires.
+
+## Ambitionists in content
+
+Content reads a seat's Kingdom through `exposedKingdom` / `sameKingdomSeatIds`
+(`projects/content/src/lib/shared/kingdom.ts`), which return no Kingdom for an Ambitionist. A card or
+skill that groups seats by Kingdom should use those helpers, never `seat.kingdom`, so an Ambitionist is
+always a group of one.

@@ -54,20 +54,23 @@ Ambitionist dies first, the Ambitionist wins only by outliving all three Wei.
 
 ## Design
 
-- **Seat**: a new optional public flag `ambitionist: true`, set in the reveal effect
-  (and the death reveal). `Seat.kingdom` keeps the General's printed Kingdom for the
-  seat's own record. The flag is visible only once a General is revealed (redaction
-  follows `isKingdomRevealed`).
-- **Content**: `exposedKingdom` returns null for an Ambitionist (so
-  `sameKingdomSeatIds` returns just the seat). `exposedKingdomCounts` skips them.
-  The kill-reward trigger and `checkWinCondition` in `kingdomWar.ts` change as in
-  rules 6 and 7.
-- **GameResult** keeps `winningKingdom` absent for an Ambitionist win.
-- **Bots, UI, i18n**: bots treat Ambitionists as enemies via the same helpers; the
-  seat shows an "Ambitionist" label in place of the Kingdom badge, with matching en and vi
-  texts and a game-over line (vi text starts as a draft).
-- **Server/protocol**: `Seat` is already serialised plain data. Check that the new
-  field passes the protocol's schema.
+- **Seat**: a new optional field `allegiance: 'kingdom' | 'ambitionist'`, decided once at the
+  seat's first reveal. `Seat.kingdom` keeps the General's printed Kingdom. Redaction shows the
+  field only once a General is revealed. (Replaces the earlier `ambitionist: true` flag: dead
+  and re-hidden seats must still count toward the cap.)
+- **Engine**: `GameModeDefinition.decideAllegiance?(state, seat)`. The resolver calls it for every
+  seat that showed its first General in an effect step, in seat order, before any trigger reads
+  the state. It must be atomic with the reveal: a queued effect would let two reveals both see
+  an empty Kingdom (found by the property test: a 2-seat table ended with two Wei seats).
+- **Content**: Kingdom War's `decideAllegiance` uses `isAmbitionist` (Kingdom at the cap).
+  `exposedKingdom` returns null for an Ambitionist (so `sameKingdomSeatIds` returns just the
+  seat). `exposedKingdomCounts` skips them. The kill-reward trigger and `checkWinCondition`
+  change as in rules 6 and 7.
+- **GameResult** keeps `winningKingdom` absent for an Ambitionist win; the game-over screen uses
+  the existing "{names} wins" line.
+- **Bots, UI, i18n**: `isAlly` is false for an Ambitionist; the seat tile shows "Ambitionist"
+  (vi "Dã tâm gia", draft) and no force colour (`seatForce`, `seatKingdomLabel`).
+- **Server/protocol**: `Seat` is plain serialisable data and the protocol reuses the engine types.
 
 ## Tests
 

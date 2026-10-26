@@ -27,6 +27,16 @@ describe('checkInvariants', () => {
     expect(checkInvariants(baseState())).toEqual([]);
   });
 
+  it('flags a Kingdom holding more Kingdom seats than half the table', () => {
+    const state = baseState();
+    const [a] = state.seats;
+    state.seats = ['a', 'b', 'c', 'd'].map((id, i) => ({
+      ...a, id: `seat-${id}`, index: i, allegiance: 'kingdom' as const,
+      generals: { main: { generalDefinitionId: `m${i}`, revealed: true }, deputy: { generalDefinitionId: `d${i}`, revealed: true } },
+    }));
+    expect(checkInvariants(state)).toEqual([expect.stringContaining('Wei holds 4 seats, over the cap of 2')]);
+  });
+
   it('flags a living seat at 0 HP or below with no rescue round pending', () => {
     const state = baseState();
     state.seats[0].combinedHp = -1;

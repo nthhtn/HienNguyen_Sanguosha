@@ -1,5 +1,7 @@
 # Ambitionist Implementation Plan
 
+> **Executed with one change:** allegiance is decided by a mode hook, `decideAllegiance`, called by the resolver in the same step as the reveal, not by a trigger plus `DeclareAllegianceEffect` (Tasks 1 and 3). A queued effect raced with other reveals. See the spec's Design section.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A seat that reveals into a full Kingdom (cap = floor(total / 2)) becomes an Ambitionist, a one-seat group that wins only as the last survivor.

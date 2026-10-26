@@ -197,17 +197,38 @@ describe('reveals blocked during another seat’s turn', () => {
   });
 });
 
-describe('DeclareAllegianceEffect', () => {
-  const declare = (allegiance: 'kingdom' | 'ambitionist'): Effect => ({ kind: 'DeclareAllegianceEffect', seatId: 'a', allegiance });
+describe('allegiance is decided by the mode at a seat’s first reveal', () => {
+  // The stub mode puts the first seat to show a General in 'kingdom' and any later one in 'ambitionist'.
+  const decidingMode: GameModeDefinition = {
+    ...mode,
+    decideAllegiance: (state) => (state.seats.some((s) => s.allegiance === 'kingdom') ? 'ambitionist' : 'kingdom'),
+  };
+  const run = (queue: Effect[]) => advanceToDecision({ ...table([], false), resolutionQueue: queue }, { registry, mode: decidingMode }).state;
+  const both = (s: GameState) => s.seats.map((x) => x.allegiance);
 
-  it('sets the seat allegiance and leaves other seats alone', () => {
-    const s = table([declare('ambitionist')], true);
-    expect(s.seats.find((x) => x.id === 'a')!.allegiance).toBe('ambitionist');
-    expect(s.seats.find((x) => x.id === 'b')!.allegiance).toBeUndefined();
+  it('a reveal decides the seat in the same step; other seats stay undecided', () => {
+    const s = run([{ kind: 'RevealGeneralEffect', seatId: 'a', slot: 'main' }]);
+    expect(both(s)).toEqual(['kingdom', undefined]);
   });
 
-  it('does not change a decided seat', () => {
-    const s = table([declare('ambitionist'), declare('kingdom')], true);
-    expect(s.seats.find((x) => x.id === 'a')!.allegiance).toBe('ambitionist');
+  it('each decision sees the earlier ones, even with other work queued between the reveals', () => {
+    const start = table([], false);
+    const withB = { ...start, seats: start.seats.map((x) => (x.id === 'b' ? { ...x, generals: start.seats[0].generals } : x)) };
+    const s = advanceToDecision({ ...withB, resolutionQueue: [
+      { kind: 'RevealGeneralEffect', seatId: 'a', slot: 'main' },
+      { kind: 'DrawCardsEffect', seatId: 'a', count: 1 },
+      { kind: 'RevealGeneralEffect', seatId: 'b', slot: 'main' },
+    ] }, { registry, mode: decidingMode }).state;
+    expect(both(s)).toEqual(['kingdom', 'ambitionist']);
+  });
+
+  it('a second reveal of the same seat does not change it', () => {
+    const s = run([{ kind: 'RevealGeneralEffect', seatId: 'a', slot: 'main' }, { kind: 'RevealGeneralEffect', seatId: 'a', slot: 'deputy' }]);
+    expect(both(s)).toEqual(['kingdom', undefined]);
+  });
+
+  it('a mode without the hook leaves every seat undecided', () => {
+    const s = advanceToDecision({ ...table([], false), resolutionQueue: [{ kind: 'RevealGeneralEffect', seatId: 'a', slot: 'main' }] }, ctx).state;
+    expect(both(s)).toEqual([undefined, undefined]);
   });
 });

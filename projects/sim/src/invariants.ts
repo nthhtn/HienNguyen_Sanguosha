@@ -24,6 +24,13 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
     }
   }
 
+  // No Kingdom holds more seats than half the table (Ambitionists hold none).
+  const cap = Math.floor(state.seats.length / 2);
+  for (const kingdom of ['Wei', 'Shu', 'Wu', 'Qun'] as const) {
+    const held = state.seats.filter((s) => s.allegiance === 'kingdom' && s.kingdom === kingdom).length;
+    if (held > cap) violations.push(`${kingdom} holds ${held} seats, over the cap of ${cap}`);
+  }
+
   // A judgment on show (the judgmentNotice rule): gone when the game is over, and while it waits for an
   // acknowledgement some living seat can give it.
   if (state.judgmentView) {

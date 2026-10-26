@@ -172,21 +172,6 @@ function firstTimeBothRevealed(state: GameState, seatId: string): boolean {
   return times === 1;
 }
 
-// A seat's first reveal (a death reveal too) decides its allegiance for good: a seat revealing into a
-// Kingdom that already holds its cap (living or dead) is an Ambitionist. First among the triggers, so
-// every other trigger of the same reveal reads the decision.
-const allegianceTrigger: SkillTrigger = {
-  point: 'after:GeneralRevealedEvent',
-  condition: (state, subject) => {
-    const seat = state.seats.find((s) => s.id === (subject as GeneralRevealedEvent).seatId);
-    return !!seat && !seat.allegiance && seat.kingdom !== 'hidden';
-  },
-  effect: (state, subject) => {
-    const seat = state.seats.find((s) => s.id === (subject as GeneralRevealedEvent).seatId)!;
-    return [{ kind: 'DeclareAllegianceEffect', seatId: seat.id, allegiance: isAmbitionist(state, seat) ? 'ambitionist' : 'kingdom' }];
-  },
-};
-
 // Common table rules on revealing Generals. Both fire after the reveal is logged.
 const revealBonusTriggers: SkillTrigger[] = [
   // Optional rule: the first General revealed at the table draws 2 cards.
@@ -309,8 +294,11 @@ export const kingdomWarMode: GameModeDefinition = {
     return null;
   },
 
+  // A seat's first reveal (a death reveal too) decides its allegiance for good: a seat revealing into a
+  // Kingdom that already holds its cap (living or dead) is an Ambitionist.
+  decideAllegiance: (state, seat) => (isAmbitionist(state, seat) ? 'ambitionist' : 'kingdom'),
+
   triggers: [
-    allegianceTrigger,
     judgmentPhaseTrigger,
     ...revealBonusTriggers,
     // A seat that is out discards every card it holds: hand, equipment and
