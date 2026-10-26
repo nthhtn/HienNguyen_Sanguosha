@@ -58,6 +58,7 @@ export const CARD_VOICES: Partial<Record<string, Voice>> = {
   barbarians: 'barbarians',
   steal: 'steal',
   wuxie: 'wuxie',
+  'wuxie-guo': 'wuxie', // Wuxie Kingdom shares Wuxie's voices
   starvation: 'starvation',
   coerce: 'coerce',
   wine: 'wine',

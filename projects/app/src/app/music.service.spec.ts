@@ -188,6 +188,11 @@ describe('card voices', () => {
     expect(files('ally-far-attack-near')).toEqual(['/audio/male/ally-far-attack-near.ogg', '/audio/female/ally-far-attack-near.ogg']);
   });
 
+  it('Wuxie Kingdom uses the same voices as Wuxie', () => {
+    expect(CARD_VOICES['wuxie-guo']).toBe('wuxie');
+    expect(CARD_VOICES['wuxie-guo']).toBe(CARD_VOICES['wuxie']);
+  });
+
   it('every card voice has its file for both genders in the content assets', () => {
     for (const voice of Object.values(CARD_VOICES)) {
       for (const gender of ['male', 'female'] as const) {
