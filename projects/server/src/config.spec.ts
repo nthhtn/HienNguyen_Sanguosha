@@ -11,6 +11,8 @@ describe('loadConfig', () => {
       trustProxy: false,
       cookieSecure: false,
       production: false,
+      staticDir: null,
+      databaseSsl: false,
     });
   });
 
@@ -23,6 +25,8 @@ describe('loadConfig', () => {
       PUBLIC_ORIGIN: 'https://sgs.example/',
       BUILD_ID: 'abc123',
       TRUST_PROXY: '1',
+      STATIC_DIR: '/app/dist/app/browser',
+      DATABASE_SSL: 'require',
     });
     expect(config).toEqual({
       port: 8080,
@@ -33,7 +37,31 @@ describe('loadConfig', () => {
       trustProxy: 1,
       cookieSecure: true,
       production: true,
+      staticDir: '/app/dist/app/browser',
+      databaseSsl: true,
     });
+  });
+
+  it('uses RENDER_GIT_COMMIT when BUILD_ID is unset', () => {
+    expect(loadConfig({ RENDER_GIT_COMMIT: 'deadbeef' }).buildId).toBe('deadbeef');
+  });
+
+  it('prefers BUILD_ID over RENDER_GIT_COMMIT', () => {
+    expect(loadConfig({ BUILD_ID: 'mine', RENDER_GIT_COMMIT: 'deadbeef' }).buildId).toBe('mine');
+  });
+
+  it('treats an empty STATIC_DIR as unset', () => {
+    expect(loadConfig({ STATIC_DIR: '' }).staticDir).toBeNull();
+  });
+
+  it('reads DATABASE_SSL=require and off', () => {
+    expect(loadConfig({ DATABASE_SSL: 'require' }).databaseSsl).toBe(true);
+    expect(loadConfig({ DATABASE_SSL: 'off' }).databaseSsl).toBe(false);
+    expect(loadConfig({ DATABASE_SSL: '' }).databaseSsl).toBe(false);
+  });
+
+  it('refuses an unknown DATABASE_SSL value', () => {
+    expect(() => loadConfig({ DATABASE_SSL: 'true' })).toThrow(/DATABASE_SSL/);
   });
 
   it('binds to every interface by default in production', () => {

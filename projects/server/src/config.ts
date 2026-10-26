@@ -13,6 +13,10 @@ export interface ServerConfig {
   trustProxy: false | number | string[];
   cookieSecure: boolean;
   production: boolean;
+  // The built Angular app, served by the server when set (the Docker image sets it).
+  staticDir: string | null;
+  // Encrypt the Postgres connection (Supabase requires it). The certificate chain is not verified.
+  databaseSsl: boolean;
 }
 
 export class ConfigError extends Error {
@@ -37,10 +41,13 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     host: env['HOST'] ?? (production ? '0.0.0.0' : '127.0.0.1'),
     databaseUrl: env['DATABASE_URL'] || null,
     publicOrigin,
-    buildId: env['BUILD_ID'] || 'dev',
+    // RENDER_GIT_COMMIT: Render sets it on every deploy, and cannot copy it into BUILD_ID.
+    buildId: env['BUILD_ID'] || env['RENDER_GIT_COMMIT'] || 'dev',
     trustProxy: parseTrustProxy(env['TRUST_PROXY']),
     cookieSecure: publicOrigin.startsWith('https:'),
     production,
+    staticDir: env['STATIC_DIR'] || null,
+    databaseSsl: parseDatabaseSsl(env['DATABASE_SSL']),
   };
 }
 
@@ -58,6 +65,13 @@ function parseOrigin(raw: string): string {
 function isSecureOrLocal(origin: string): boolean {
   const url = new URL(origin);
   return url.protocol === 'https:' || url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+}
+
+function parseDatabaseSsl(raw: string | undefined): boolean {
+  const value = raw?.trim() ?? '';
+  if (value === '' || value === 'off') return false;
+  if (value === 'require') return true;
+  throw new ConfigError(`DATABASE_SSL must be "require" or "off", got "${raw}"`);
 }
 
 function parseTrustProxy(raw: string | undefined): false | number | string[] {
