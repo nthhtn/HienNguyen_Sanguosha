@@ -1,4 +1,4 @@
-import { AbilityOwner, CardInstance, GeneralOwner, GameState, GameRules, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
+import { AbilityOwner, CardInstance, GeneralOwner, GameState, GameRules, Seat, Target, Kingdom, GameResult, PendingResponse, UsedCard } from '../domain/types';
 import { RngState } from '../rng/rng';
 import type { Effect } from '../pipeline/effects';
 
