@@ -1,16 +1,18 @@
-# Content assets (local-only)
+# Content assets
 
-Card-art images crawled by `scripts/crawl-assets.py` from the same source
-site used by `projects/content/data/` (see
-`docs/superpowers/specs/2026-09-24-content-asset-crawl-design.md`).
+Images and audio used by the content project. Most were originally crawled
+from the same source site used by `projects/content/data/` (see
+`docs/superpowers/specs/2026-09-24-content-asset-crawl-design.md`). They are
+committed, and the crawler scripts have been removed from the repo (they remain
+in git history), so a deployment never needs to crawl.
 
-**These are scans of official commercial Sanguosha cards** (© 2008 Yoka
-Games, illustration by KayaK), not original or freely-licensed art. They are
-present here for local development/reference only:
+## Provenance and use
 
-- Do not push this directory's image files to a public remote.
-- Do not redistribute them outside this local checkout.
-- `manifest.json` (source URLs, crawl dates, dimensions) is safe to commit —
-  it contains no image bytes. The images themselves are gitignored.
+- Most images come from open-source references.
+- Some are scans of official Sanguosha cards (© 2008 Yoka Games, illustration
+  by KayaK). They are mostly not visible to users in the app anymore.
+- This project is not used for any commercial purpose.
+- If a rights holder asks for an asset to be removed, remove it or replace it
+  with an open-source alternative.
 
-Run `scripts/crawl-assets.py` to (re-)populate this directory locally.
+`manifest.json` records source URLs, crawl dates and dimensions for each asset.

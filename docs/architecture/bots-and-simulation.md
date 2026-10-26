@@ -2,7 +2,8 @@
 
 How computer opponents decide, how whole games are played headlessly to find
 bugs, and how the test suites are laid out. Both projects are framework-free
-TypeScript that depend only on the engine (and content for the simulator).
+TypeScript. Bots depend on the engine and content; the simulator on engine,
+content and bots.
 
 ## Bots (`projects/bots`)
 
@@ -42,8 +43,10 @@ The rule-based bot's per-pack knowledge sits beside it (`wind.ts`, `fire.ts`,
 `BotTurnMemory` tracks a little per-turn state (Sha played, actions taken) and
 `MAX_BOT_ACTIONS_PER_TURN` caps a turn so a bot always ends its phase.
 
-In the app, `GameService` calls the rule-based policy on a timer for each bot
-seat. In the simulator, `runGame` does the same in a loop.
+Three callers run it: `GameService` on a timer for each bot seat of a local
+game, the server's `GameRunner` for each bot seat (and for a human seat it
+has taken over) of an online game, and the simulator's `runGame` in a loop.
+All three hand the policy the seat's redacted view and its legal actions.
 
 ### Adding bot support for new content
 
@@ -122,12 +125,24 @@ The specs also check that every game **terminates**, and that the final state
 survives a JSON round trip unchanged, which is the serializability property the
 whole design relies on.
 
+### Leaks: proving a seat learns nothing secret
+
+[leaks.ts](../../projects/sim/src/leaks.ts) and `leakProperty.spec.ts` replay
+simulated games and, at every step and for every seat, check that the redacted
+view, each log event and every reshuffle reveal no hidden card, no unrevealed
+General (including candidates, spares and forms a seat holds) and no hidden
+skill id. This is the test that makes the server's per-seat views safe to send;
+`leakForced`, `leakBequeathed` and `leakSorrow` cover the skills that move
+secret information. A change to redaction, to card ids or to a skill that
+shows or hides cards should run these first.
+
 ### Forced pairings: proving every skill fires
 
 Random games rarely exercise one specific General. `withForcedPairing` deals a
 chosen pair of Generals to `seat-0` (every other seat gets five others), and the
 per-pack specs (`skills.spec.ts`, `wind.spec.ts`, `fire.spec.ts`,
-`forest.spec.ts`, `mountain.spec.ts`) play seeded games until each coded skill
+`forest.spec.ts`, `mountain.spec.ts`, and `alternate.spec.ts` for the Alternate
+deck's variants) play seeded games until each coded skill
 of each General has left a trace in the log (`firedSkills`) or a seed budget is
 spent. A skill that never fires is reported as missing. If a rules change makes a
 rare skill stop firing within the budget, the budget is a test parameter: raise
@@ -136,16 +151,18 @@ all.
 
 ## Test layout
 
-Jest runs five projects from the root `jest.config.js`, each with its own
+Jest runs seven projects from the root `jest.config.js`, each with its own
 environment and import aliases:
 
 | Project | Environment | What its tests are |
 |---|---|---|
-| `engine` | node | the pipeline, legality, redaction, phases, triggers, with tiny hand-written content so the engine is tested without the real cards |
-| `content` | node | each card and skill, on small hand-built `GameState`s (`table()` and `harness()` in `generals/skills.testing.ts`); the Kingdom War mode; the data and wiki builders |
+| `engine` | node | the pipeline, legality, redaction, phases, triggers, clocks, with tiny hand-written content so the engine is tested without the real cards |
+| `content` | node | each card and skill, on small hand-built `GameState`s (`table()` and `harness()` in `generals/skills.testing.ts`); the Kingdom War mode; decks; the data, wiki and Vietnamese-data checks |
 | `bots` | node | bot decisions on built states |
-| `sim` | node | whole simulated games, invariants and per-skill firing |
-| `app` | jsdom (`jest-preset-angular`) | the service, view-model functions, dialogs and board behavior |
+| `sim` | node | whole simulated games, invariants, leaks and per-skill firing |
+| `protocol` | node | schemas and shared validators (names, chat) |
+| `server` | node | accounts, rooms, the game runner and the socket end to end, on the in-memory store; `npm run test:db` also runs the repository contract on Postgres |
+| `app` | jsdom (`jest-preset-angular`) | the services, view-model functions, dialogs, board behavior and the Vietnamese catalogs |
 
 Habits that keep the suite useful:
 

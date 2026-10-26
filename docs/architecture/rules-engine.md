@@ -27,8 +27,13 @@ offers:
 | `previewEffect(state, effect, ctx)` | what would this pending effect really do once before-triggers rewrite it? |
 | `redactStateForSeat(state, seatId)` | the state as that seat is allowed to see it |
 | `createGame(mode, registry, seatIds, seed, rules?)` | a new game, in the General Selection phase |
+| `redactEventsForSeat(state, events, seatId)` | a slice of the log as that seat may see it |
+| `isOfferedAction(action, legal)` | is this action one of the offered ones, allowing for the fields a player fills in on a template? (the server's check on every submit) |
+| `describeDecision`, `switchClock`, `expireClock`, `clockRemainingMs` | what a seat must decide, which clock it runs on, and the clock's arithmetic (see "Decision clocks") |
+| `defaultActionsFor(state, legal)` | what to submit when a decision's clock runs out |
 | `skillsInPlay`, `skillOf` | which skills a seat holds right now |
 | `cardsOverHandLimit`, `discardOwed` | Discard Phase accounting |
+| `isChained`, `chainWaveOrder`, `isSeatDying` | queries the modes and cards share |
 
 ## The domain model
 
@@ -48,8 +53,9 @@ These are the concepts CLAUDE.md asks for, with where they live in
 | Action | `Action` | the only input from outside |
 | Effect | `Effect` | an instruction to change the state |
 | Event | `EngineEvent` | a record that something happened, appended to `state.log` |
-| Damage | `Damage` | source, target, amount, nature, and what caused it |
-| Turn, Phase | `Turn`, `Phase` | the turn owner, per-turn counters and flags; `GeneralSelection`, `Start`, `Judgment`, `Draw`, `Play`, `Discard`, `End` |
+| Damage | `Damage` | source, target, amount, nature (`normal`, `fire` or `thunder`), and what caused it. A seat that is *chained* passes fire and thunder damage along the chain. |
+| Turn, Phase | `Turn`, `Phase` | the turn owner, per-turn counters and flags; `GeneralSelection`, `Start`, `Judgment`, `Draw`, `Play`, `Discard`, `End`. A human's turn rests in `Start` while `Turn.startWindow` is open (see below). |
+| Judgment | `Judgment`, `JudgmentView` | a judgment under way, and the public view of it while the game waits on its popup |
 | Response | `PendingResponse` | an open window where one seat may answer with a card |
 | Game Result | `GameResult` | winners and losers, when the mode's win check says so |
 
@@ -81,11 +87,18 @@ Generals are secret. The state stored by the application is the **full** state;
   (`seat-b/main/hidden`) and turn flags. Card and General ids are never
   masked as tokens, so a Wine card stays Wine while Dong Zhuo's hidden Wine
   skill is masked;
+- `judgmentView` is public (the judged card is already face up), so redaction
+  keeps it as it is;
 - the log is otherwise public: events are written that way (a face-down card
   move carries no face, a revealed card is shown on purpose), and the only
   per-viewer change is the hidden-skill masking above.
   `redactEventsForSeat(state, events, viewer)` masks a slice of the log with
   the same set as `redactStateForSeat`.
+
+Card ids are opaque: the deck names each card `card-<position>` after the
+shuffle, and a reshuffle gives every card a fresh id, so an id never gives
+away what a masked card is. `state.rng` holds the seed and is **not** removed
+by `redactStateForSeat`; the server strips it from every view it sends.
 
 Bots receive the redacted state too, so they cannot cheat by construction.
 
@@ -100,6 +113,8 @@ in `state.resolutionQueue`, and a decision is a field on the state:
 | `pendingChoice` | one seat picks an option (Steal's card, an "Use this skill?" ask) |
 | `pendingSelection` | one seat picks cards or seats (Axe's two cards, a skill's targets) |
 | `pendingArrangement` | one seat orders cards from the draw pile |
+| `judgmentView` with `settled: true` | with the `judgmentNotice` rule, the game waits for the judgment popup to be closed (`AcknowledgeJudgmentAction`) |
+| none, in `Start` with `Turn.startWindow` | a human turn owner who still holds a hidden General may reveal it before the turn begins, then confirms (`ConfirmRevealsAction`) |
 | none, in `Play` or `Discard` | the turn owner acts: play a card, use a skill, end the phase, discard |
 
 `advanceToDecision` drains the queue until one of these appears (or the game
@@ -108,7 +123,30 @@ continues from the same state. That is why a saved game can resume at any
 decision, and why a server can hold the state between requests.
 
 `getActiveSeatId` says whose turn it is to decide, so callers never need to
-interpret the pending fields themselves.
+interpret the pending fields themselves. While a settled judgment waits, the
+active seat is the first living human seat in seat order, or the judged seat
+when everyone is a bot. The application layer decides which seats a person is
+playing, so it may submit the close on that seat's behalf (`by`).
+
+### Decision clocks
+
+How long a person has is a rule, so the engine owns it, in
+[decisionClock.ts](../../projects/engine/src/lib/rules/decisionClock.ts):
+
+| Kind | Seconds | Clock |
+|---|---|---|
+| `response`, `choice`, `discard` | 60 | one per decision |
+| `selection` (General Selection) | 300 | one per seat for the whole pick |
+| `play` | 300 | one for the whole Play Phase, paused while a response is under way |
+| `notice` | 10 | a settled judgment popup |
+
+`describeDecision(state, seatId, legal, stepKey)` says what the seat must
+decide and which clock it runs on; `switchClock` pauses the old clock and
+starts or resumes the new one; `defaultActionsFor` gives the engine-legal
+default at zero (No Response, the first option, End Phase, the acknowledgement,
+or confirming a Start window with nothing revealed). The engine never reads
+the clock: the caller (the Angular timer, or the server's `GameRunner`) passes
+the time in and runs the timers.
 
 ## The pipeline in one page
 
@@ -197,8 +235,10 @@ interface GameModeDefinition {
 ```
 
 `kingdomWarMode` ([kingdomWar.ts](../../projects/content/src/lib/modes/kingdomWar.ts))
-is the one implementation. It deals five Generals to each seat, builds and
-shuffles the deck, and deals four cards. Its `triggers` carry the mode's
+is the one implementation. It deals five Generals to each seat from the pool
+of the chosen deck (the Default Generals, or the Alternate ones, never mixed),
+builds and shuffles that deck's cards, and deals four cards. A table seats at
+most ten, and fewer when the deck's pool is small (`kingdomWarMaxSeats`). Its `triggers` carry the mode's
 rules:
 
 - the Draw Phase draw and the Judgment Phase;
@@ -207,14 +247,24 @@ rules:
 - elimination discards everything the seat holds;
 - the kill reward and penalty, and the reveal bonuses.
 
-Optional table rules chosen at game creation are stored in `state.rules`
-(`GameRules`) so they survive saving and replay. Today the one option is the
-first-reveal bonus.
+Optional rules chosen at game creation are stored in `state.rules`
+(`GameRules`) so they survive saving and replay:
+
+| Rule | Meaning |
+|---|---|
+| `firstRevealDraw` | with five or more seats, the first seat to reveal a General draws 2 cards |
+| `judgmentNotice` | every judgment waits for the popup to be closed (or 10 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
+| `deck` | the card distribution the draw pile is dealt from (a deck id). Absent means the Default deck. |
+
+Because the options sit in the state, adding a rule never changes how an old
+game replays.
 
 ## Errors
 
-Invalid input throws. The application layer decides how to surface it
-(`GameService` stores the message in `lastError` and leaves the state
-unchanged). Content bugs that can be detected up front, such as hand-coded
+Invalid input throws. The application layer decides how to surface it:
+`GameService` stores the message in `lastError` and leaves the state
+unchanged, and the server answers the sender with an error and keeps its state
+as it was (only an error in a move the server made itself, such as a bot's,
+stops the game). Content bugs that can be detected up front, such as hand-coded
 skills with no data file or a card with no printings, throw while the
 registry or deck is built, so they fail at start-up rather than mid-game.

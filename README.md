@@ -59,8 +59,15 @@ To execute unit tests with the [Jest](https://jestjs.io/) test runner, use the f
 npm test
 ```
 
-This runs every project's suite (`engine`, `content`, `sim`) via the root
-`jest.config.js`. There is no `ng test` architect target in this workspace.
+This runs every project's suite (`engine`, `content`, `bots`, `sim`,
+`protocol`, `server`, `app`) via the root `jest.config.js`. There is no
+`ng test` architect target in this workspace. `npm run test:db` also runs the
+server's repository tests against Postgres.
+
+## Architecture
+
+How the engine, content, bots, simulator, server and Angular app fit together
+is in [docs/architecture/](docs/architecture/README.md).
 
 ## Running end-to-end tests
 
