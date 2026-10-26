@@ -1,184 +1,216 @@
 # Backend and deployment
 
-**There is no backend today.** The whole game runs in one browser tab: the
-Angular app holds the state, runs the engine and the bots in-process, and
-saves nothing across a reload. This is by design for the current stage (the
-app spec lists networking, multiplayer and persistence as out of scope).
+The game runs two ways today:
 
-This doc has two parts. The first says precisely what is true now. The second
-is a **proposal**, not built code: how the existing design carries a
-server-authoritative game, what is already ready, and what has to be added.
-Anything under "Proposed" is a plan to review, not a description of the code.
+- **Local**: Pass and Play, and Play vs Bots from the Game Setup screen, run
+  in one browser tab. `GameService` holds the state and runs the engine and
+  bots in-process. Nothing is saved across a reload.
+- **Server-authoritative**: online rooms and Play vs Bots from the Rooms
+  screen run on the Node server in `projects/server`. The server holds every
+  game's full state, the browser only ever sees a redacted view, and a game
+  survives a reload, a disconnect and a server restart.
 
-## Today
+This doc describes the second one: what each part is, how a move travels, and
+what is deliberately not done yet. The original design and its reasoning are in
+`docs/superpowers/specs/2026-10-13-backend-multiplayer-design.md`; the server's
+own how-to-run notes are in [projects/server/README.md](../../projects/server/README.md).
+
+## Projects
 
 ```
- Browser tab
- ┌────────────────────────────────────────────────────────────┐
- │ Angular components                                         │
- │        │ Action                       ▲ visibleState       │
- │        ▼                              │ legalActions       │
- │ GameService ── resolve() ── engine ── content              │
- │        │                                                   │
- │        └── bot timer ── bots (rule-based policy)           │
- └────────────────────────────────────────────────────────────┘
-   state lives in a signal; static assets served by the dev server
+ engine  <-  content  <-  bots
+   ^           ^            ^
+   +-----------+------------+--- server (Node) --+
+                                                 +-- protocol (wire types and schemas)
+   app (Angular) ---------------------------------+
 ```
 
-- **Hosting:** `ng build` produces a static site (the `app` project). Card art
-  and audio are copied in from `projects/content/assets` under `/card-art` and
-  `/audio` by `angular.json`. Any static host works.
-- **Persistence:** none for games. The only thing stored in the browser is the
-  music on/off preference, in `localStorage`.
-- **Trust:** the browser has the full, unredacted state, including every hand
-  and the draw pile. That is fine for local play and unacceptable for a
-  networked game; see "Visibility" below.
-- **Pass and Play** hides other players' hands with a gate overlay, not with a
-  security boundary: it is the honor system on one device.
-
-## Why a server is a natural extension
-
-CLAUDE.md asks that running the engine authoritatively on a server be "a
-natural extension rather than a redesign". These properties of the current
-code are what make that true:
-
-| Property | Where | Why it matters for a server |
+| Project | Role | Framework |
 |---|---|---|
-| The engine is plain TypeScript with no Angular or browser imports | `projects/engine` | it runs unchanged under Node; the simulator already does |
-| Transitions are pure functions of `(state, action)` | `resolve` | a server can hold the state between requests and apply one action at a time |
-| All randomness is seeded and stored in the state | `state.rng` | the server is the only source of shuffles; a replay from the seed is exact |
-| State is plain, JSON-round-trippable data, including pending decisions and the resolution queue | `GameState` | a game can be saved, restored after a crash and resumed at any decision |
-| The log is a complete, ordered record | `state.log` | it can be streamed to clients, stored, and used for replay and debugging |
-| Views are produced by a function | `redactStateForSeat` | one authoritative state, one safe view per seat |
-| Bots depend only on a redacted view and legal actions | `projects/bots` | bots can run server-side as ordinary seats |
-| Legality is the engine's | `getLegalActions` | the server rejects illegal actions without any UI logic |
+| `projects/protocol` | every HTTP body and socket message as a TypeBox schema plus a TypeScript type, `PROTOCOL_VERSION`, and the shared limits and error codes. May import engine *types* (`Action`, `GameState`, `EngineEvent`, `GameRules`, `GameResult`); never server or database types. Its `public-api` is browser-safe, with the schemas behind `protocol/schemas`. | none |
+| `projects/server` | the application layer, authoritative side: accounts, rooms, the game runner, persistence, the socket. Imports `engine`, `content`, `bots` and `protocol`; nothing imports it. | Fastify, `ws`, Kysely on Postgres |
 
-## Proposed: a server-authoritative game
+Database rows never cross the wire. `server/persistence` maps rows to domain
+records, and `server/views` maps records and engine state to wire shapes.
 
-### Responsibilities
+## What runs where
 
-| Concern | Client (Angular) | Server |
+| Concern | Browser | Server |
 |---|---|---|
-| Game state | none; only the latest view it was sent | the full `GameState`, per game |
+| Game state | only the latest `SeatView` it was sent | the full `GameState` per running game |
 | Rules | none | `resolve`, `getLegalActions`, the mode and content |
 | Randomness | none | the seeded RNG; the seed never leaves the server |
-| Who is whose seat | shows "you are Seat 2" | authenticates a player and binds them to a seat |
-| Bots | none | runs the bot policy for bot seats on a timer |
-| Decision clocks | displays the remaining time | owns the clock and applies the default at zero |
-| Presentation (dialogs, sounds, popups, history lines) | derives them from the log | sends the log; nothing else |
+| Seats | shows "you are Seat 2" | draws seats from the seed at start and binds each member to one |
+| Bots | none | `ruleBasedPolicy` for bot seats, after a 1.5 s delay |
+| Decision clocks | displays the remaining time | owns the clock; at zero it submits the engine's default |
+| Dialogs, sounds, popups, history lines | derived from the event log | sends the log; nothing else |
 
-The client's derived views already work from public inputs (`state.log`, a
-redacted state, legal actions), so the presentation layer needs no rewrite.
+The browser's `RemoteGameService` exposes the same surface the board reads from
+`GameService` (the `BoardGame` type), so the board is the same component in
+both cases. See [Frontend](frontend.md).
 
-### Contracts
-
-CLAUDE.md requires explicit application contracts, and requires that the
-frontend not depend on database schemas. A minimal set:
-
-| Contract | Direction | Content |
-|---|---|---|
-| `CreateGame` | client → server | seat count, seat kinds (human or bot), names, optional `GameRules`; returns a game id and the creator's seat |
-| `SubmitAction` | client → server | game id, seat, and the engine's `Action`; answered with the new view or a validation error |
-| `GetView` | client → server | game id, seat; the redacted state plus the legal actions for that seat |
-| `Updates` | server → client | for a game: the new events since a log index, and the new view when the seat's decision changes (pushed, or polled) |
-
-The `Action` and the redacted `GameState` can be used directly as wire types:
-they are plain data, and they are already the domain contract. What must **not**
-cross the wire is the unredacted state or anything the database schema adds.
-
-### Visibility: what has to change first
-
-`redactStateForSeat` hides other seats' hands, the draw pile, hidden Generals
-and secret choices. Two things need attention before it is a network boundary:
-
-1. **The RNG seed is in the state, and the redacted copy keeps it.** The
-   redaction spreads the whole state and does not remove `rng`. Locally that is
-   harmless; on a server a client that knows the seed and counter could predict
-   a reshuffle. A server must strip `rng` from every view, either inside a
-   view-mapping layer or by extending the redaction.
-2. **The log is filtered per seat.** Events are written so a face-down move
-   carries no face, and the server sends each seat its share of new events
-   through `redactEventsForSeat`, which masks another seat's hidden General's
-   skill ids. `projects/sim/src/leakProperty.spec.ts` tests that no view or
-   event leaks a hidden card, General or skill id to a seat that should not
-   see it.
-3. **Card ids must not name cards.** Done in backend Stage 1: the deck names
-   each card `card-<position>` after the shuffle, and a reshuffle gives every
-   reshuffled card a fresh `r<counter>-<position>` id, so neither a masked
-   card nor the draw-pile order can be read from ids. `projects/sim/src/leaks.ts`
-   checks views, the log and reshuffles over simulated games.
-
-Items 1 and 2 belong in a server-side mapping layer between the engine's types and the
-wire contracts, which also gives a single place to version the contract.
-
-### Processing a request
+## Server modules
 
 ```
-SubmitAction(gameId, seat, action)
-  1. authenticate the caller; check they own `seat`
-  2. load the game (state + version)            ── per-game lock, or compare-and-swap
-  3. check seat is the active seat (getActiveSeatId) for human seats
-  4. next = resolve(state, action, ctx)         ── throws on an illegal action
-  5. persist (state or action log) with version + 1
-  6. publish: new events, and each seat's new view / legal actions
-  7. if the next decider is a bot: schedule its move
+projects/server/src/
+  http/          Fastify app: request guard (Origin check), session cookie, auth, room and game routes
+  socket/        the WebSocket on /api/ws: upgrade and auth, hello, message routing, heartbeat
+  auth/          AccountService, scrypt password hashing, tokens, rate limits
+  rooms/         Room (lobby rules), RoomService (live rooms, host rules, restore), ChatService, serial queue
+  game/          GameRunner, engine calls and replay hashing (engineGame), history
+  views/         records and engine state to wire shapes
+  persistence/   repository interfaces, in-memory and Postgres stores, migrations
+  mail/          the Mailer interface (console implementation only)
+  config.ts      PORT, HOST, DATABASE_URL, PUBLIC_ORIGIN, BUILD_ID, TRUST_PROXY
 ```
 
-Actions for one game must be applied one at a time and in order. Stale or
-duplicate submissions are already rejected by the engine's own ids
-(`pendingResponseId`, `choiceId`, `selectionId`), but the server should also
-version each game so two requests cannot both act on the same state.
+## Accounts and sessions
 
-### Persistence
+Email and password sign-up, sign-in, sign-out and password reset
+(`/api/auth/*`), plus **guests** (`/api/auth/guest`) who play without
+registering. The session is an HttpOnly cookie holding a random token; only its
+sha256 is stored. Registered sessions slide for 30 days, guest sessions for 7.
+Only registered users can host an open room, see **My Games** and read a replay.
 
-Two designs fit; the choice is open:
+The HTTP API and the socket both require the request's `Origin` to equal
+`PUBLIC_ORIGIN`, so the app must be opened at that origin (`localhost`, not
+`127.0.0.1`, in development). Sign-up, guest, forgot-password and
+reset-password are rate limited per IP, which needs `TRUST_PROXY` set correctly
+behind a reverse proxy (the README explains the accepted values).
 
-| Design | Stores | Pros | Cons |
+## Rooms and the socket
+
+An **open** room is listed, and anyone signed in can join while it has space.
+A **solo** room is unlisted and holds one person against bots; it backs
+Play vs Bots. Names are unique within a room. The lobby holds the members, the
+seat count and the rules (`GameRules`: first-reveal draw, the deck, the
+judgment notice). **Seats are drawn at random from the game seed when the host
+starts** (`drawSeats`), so join order gives no position.
+
+`RoomService` keeps live rooms in memory and writes every change through to
+Postgres. Each room runs its inputs one at a time through a serial queue
+(`rooms/serialQueue.ts`), so a room never handles two messages at once. A room
+that sees no activity for 30 minutes closes.
+
+A browser opens one socket per room screen, and its first message must be
+`hello { protocolVersion, roomId }`; a mismatched `PROTOCOL_VERSION` is refused
+and the client asks the player to reload. A second connection for the same
+member replaces the first.
+
+| Direction | Messages |
+|---|---|
+| client to server | `lobby.addBot`, `lobby.removePlayer`, `lobby.setRules`, `lobby.makeHost`, `lobby.start`, `room.leave`, `game.submit`, `game.resync`, `chat.send` |
+| server to client | `welcome` (the room, the running game with its full log, recent chat), `room.updated`, `game.update`, `chat.message`, `room.left`, `replaced`, `ack`, `error` |
+
+Every client message carries a `reqId` that the server echoes in its `ack` or
+`error`.
+
+## One online move
+
+```
+ click ("Play Sha on Seat 1")
+   |
+   v
+ component -- takes the Action from legalActions --> RemoteGameService.submit
+   |  socket: game.submit { actions }
+   v
+ Room (serial queue) --> GameRunner.submit(seat, actions)
+   1. the seat is the active seat (getActiveSeatId) and the action is one the engine offered (isOfferedAction)
+   2. next = resolve(state, action, ctx)         throws on an illegal action
+   3. persist the action with the sha256 of the new state
+   4. publish a GameUpdate to every member, each through its own seat's view
+   5. reschedule the clock, or the bot's move, for the next decider
+```
+
+A `GameUpdate` carries the seat's `SeatView`, its legal actions (empty unless
+it must act now), the new events, the running clock and a `paused` flag. The
+client keeps its own log: if `logFrom` does not line up with what it holds it
+sends `game.resync`, and the server answers with the whole log.
+
+### Visibility
+
+`SeatView` is `redactStateForSeat` minus two fields: `rng`, which holds the
+seed, and `log`, which travels separately as `events`, each slice masked by
+`redactEventsForSeat`. Card ids are opaque (`card-<position>` after the
+shuffle, `r<counter>-<position>` after a reshuffle), so neither a masked card
+nor the draw-pile order can be read from ids. `projects/sim/src/leaks.ts`
+checks views, the log and reshuffles over simulated games.
+
+## The game runner
+
+`GameRunner` ([gameRunner.ts](../../projects/server/src/game/gameRunner.ts)) is
+the only code that changes a running game's state. It owns:
+
+- **The decision clock.** It asks the engine what each human must decide
+  (`describeDecision`) and keeps the budgets (`switchClock`, `expireClock`).
+  At zero it submits `defaultActionsFor`, the same default the local timer uses.
+- **Bots.** A bot seat moves after `BOT_DELAY_MS` (1.5 s) using the rule-based
+  policy over that seat's redacted view.
+- **Away seats.** A human who disconnects keeps their clock running. After 60 s
+  away, or two timeouts in a row while away, an open room's seat is **taken
+  over** by a bot, and the player takes it back on return. A player who leaves
+  the room is replaced by a bot to the end. A solo game instead **pauses**
+  while its player is away.
+- **The judgment notice.** While a judgment waits to be closed, a bot never
+  closes it as long as a person controls any seat. Only a person's Close or the
+  10 s notice clock moves it on, and that timeout does not count towards the
+  away rule.
+
+Guests reclaim a seat only through their session cookie; if the cookie is lost,
+the seat stays with the bot.
+
+## Persistence and restore
+
+Games are **event-sourced**. A game is stored as its seed, its setup and the
+ordered `game_actions`, each tagged with who made it (`human`, `bot`,
+`timeout`, `takeover`) and the sha256 of the state after it (computed over
+JSON with sorted keys, so Postgres `jsonb` key order cannot change it).
+`games.build_id` records which build the game started on.
+
+On start the server rebuilds each running game by replaying its log:
+
+- the **same build** replays it as stored;
+- **another build** checks every hash, and a game whose hash differs stops with
+  outcome `outdated` ("This game can't continue after an update").
+
+An engine error during play stops the game with outcome `broken`. Registered
+users can read a finished game's actions at `/api/games/:id/replay` for
+debugging; there is no replay viewer in the app.
+
+Postgres tables (migrations in `persistence/migrations`): `users`, `sessions`,
+`password_reset_tokens`, `rooms`, `room_players`, `games`, `game_actions` and
+`chat_messages`. Without `DATABASE_URL` the server uses an in-memory store and
+forgets everything on restart; that is for local runs only, and production
+requires `DATABASE_URL` and an `https` `PUBLIC_ORIGIN`. One repository contract
+suite runs against both stores (`npm run test:db`).
+
+## Chat
+
+Room chat (lobby and game) is stored with the room and tied to the game and
+the action count it followed. A message is 1 to 300 characters, a member may
+send 5 per 10 seconds, and a welcome carries the last 100. Solo rooms have no
+chat.
+
+## Local play compared
+
+| | Pass and Play | Play vs Bots (Setup) | Online room, Play vs Bots (Rooms) |
 |---|---|---|---|
-| **Snapshots** | the `GameState` after each action (or periodically) | simple restore; reconnect is a read | larger rows; the stored shape is the engine's shape, so it needs a mapping layer to stay decoupled |
-| **Event sourcing** | the seed, the creation parameters and the ordered list of actions | tiny; exact replay and debugging; the engine is deterministic | restoring replays the whole game (cheap, but grows); content changes can break old games, so they must be versioned |
+| Engine runs | in the tab | in the tab | on the server |
+| Saved across reload | no | no | yes |
+| Hidden hands | gate overlay (honor system) | viewer fixed on seat 0 | redacted view per seat |
+| Needs an account | no | no | yes (guest is enough) |
 
-Either way, persistence models may differ from the domain models (CLAUDE.md);
-keep a mapper between them. Record the **content version** (which cards, which
-Generals, which rules) with every game so an old game replays against the
-content it was played with.
+## Not done
 
-### Clocks and bots
-
-The decision clock (`describeDecision`, `switchClock`) and the timeout defaults
-(`defaultActionsFor`) are engine functions, so the server runs the same clock:
-it knows each human decision's budget, pauses when no decision is open, and on
-timeout submits the same engine-legal default the client does today (No Response,
-the first option, End Phase). Bots run as server-side seats using the same
-`ruleBasedPolicy.decide` over a redacted view, with the same per-move delay.
-
-### Reconnection
-
-A reconnecting client calls `GetView` and receives the current view and legal
-actions. Because the pending decision, resolution queue and log are all in the
-state, there is nothing else to restore. The client's "how much of the log have
-I shown" markers reset on connect, so it shows no old popups or sounds.
-
-### Hosting sketch
-
-A small Node service imports `engine`, `content` and `bots` directly (they are
-framework-free) and exposes the contracts above over HTTP plus a push channel
-(WebSocket or server-sent events). The Angular app becomes a thin client of that
-service: `GameService` keeps its public signals (`visibleState`,
-`legalActions`, `submit`) and swaps its in-process engine call for a remote
-call, so components do not change.
-
-### Open decisions
-
-- Snapshot or event-sourced storage.
-- Authentication and seat assignment (accounts, invite links, or anonymous
-  game codes).
-- Push channel: WebSocket or server-sent events.
-- Whether the server may also host a spectator view (a view with no seat).
-- How content versions are named and retained.
-- How a human seat that disconnects is treated (the clock continues, then the
-  default, or a bot takes over).
-
-None of these requires changing the engine.
-
-Implementation status: the server foundation and accounts (Stage 2) live in `projects/server`; see its README for running it locally.
+- **Spectators**, room codes and passwords, share links, matchmaking, ratings
+  and friends lists.
+- **A replay viewer.** The data and the debug endpoint exist.
+- **More than one server process.** Live games live in the memory of one
+  process; there is no cross-process coordination.
+- **A real Mailer.** Password reset emails go to the server log.
+- **Merging a guest's games into a new account**, and a recovery code for a
+  guest's seat.
+- **Email verification.**
+- **Deployment packaging.** Nothing in the repo deploys the server or the
+  static app yet; `ng build` makes the static site, and `docker-compose.yml`
+  only provides local Postgres.

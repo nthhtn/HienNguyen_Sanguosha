@@ -11,26 +11,38 @@ widgets and signals for reactive state.
 
 ```
 projects/app/src/app/
-  app.ts, app.routes.ts      shell: toolbar nav, music, lazy routes
-  game.service.ts            the application layer: owns the game (see below)
-  decision-timer.service.ts  per-decision countdowns
+  app.ts, app.routes.ts      shell: toolbar nav, deck menus, language switcher, music, lazy routes
+  game.service.ts            the local application layer: one in-process game (see below)
+  decision-timer.service.ts  per-decision countdowns for local games
   music.service.ts           background music and sound effects
   labels.ts                  names and formatting shared by every screen
-  setup/                     the Game Setup screen
+  auth/                      sign-in, sign-up, guest, forgot and reset password, AuthService, requireSignIn
+  online/                    Rooms, Lobby, My Games, chat, SocketService, RemoteGameService, OnlineGame
+  setup/                     the local Game Setup screen
   game-board/                the board, its dialogs and its view-model helpers
-  wiki/                      Cards and Rules pages, built from content data
+  wiki/                      per-deck Generals and card pages, and the Rules pages, built from content data
+  i18n/                      the message catalogs, the I18n service, the t pipe, Vietnamese review status
 ```
 
 Routes ([app.routes.ts](../../projects/app/src/app/app.routes.ts)) are lazy so
-the first bundle holds only the shell: `/setup`, `/game`, `/wiki/...`, and
-`/play`, a guard that never renders and redirects to `/game` when a game is in
-progress, otherwise to `/setup`. The guard imports `GameService` lazily, so the
-engine and content code stay out of the initial bundle.
+the first bundle holds only the shell:
 
-## GameService: the application layer, in-process
+| Route | Screen |
+|---|---|
+| `/setup`, `/game` | local Play vs Bots and Pass and Play |
+| `/play` | a guard that never renders; it redirects to `/game` when a local game is in progress, otherwise to `/setup` |
+| `/rooms`, `/rooms/:id`, `/my-games` | open rooms, a room's lobby and online game, and finished games; all behind `requireSignIn` |
+| `/sign-in`, `/sign-up`, `/guest`, `/forgot-password`, `/reset-password` | accounts |
+| `/wiki/...` | see "Wiki" below |
 
-[game.service.ts](../../projects/app/src/app/game.service.ts) is the only place
-that calls the engine. It is a root-provided service that holds one game:
+The guard and the online pages import the engine and content code lazily, so
+those stay out of the initial bundle.
+
+## GameService: the local application layer
+
+[game.service.ts](../../projects/app/src/app/game.service.ts) is the only place in
+the app that calls `resolve`. It is a root-provided service that holds one
+local game:
 
 | Signal | Meaning |
 |---|---|
@@ -61,19 +73,37 @@ What happens on a submit:
 Humans can never submit for a bot seat: `submit` ignores the call while a bot is
 the active seat.
 
-### Two modes
+### Two local modes
 
 | Mode | Seats | Views |
 |---|---|---|
 | Play vs Bots | the human is always `seat-0`; every other seat is a bot | the viewer is fixed on seat 0 |
 | Pass and Play | every seat is human, one device | a gate overlay hides the board between turns; tapping reveals the active seat |
 
-### Where the application layer goes later
+A new local game starts with `judgmentNotice` on, so the judgment popup pauses
+the game (see "Events become presentation"). Setup also offers the deck and,
+from five seats, the first-reveal draw; both are stored in `state.rules`.
 
-`GameService` is deliberately the one seam: it takes an action in, gives a
-state out, and owns bots and views. A server would replace what is *behind*
-`submit`, not what components see. See
-[Backend and deployment](backend-and-deployment.md).
+### Online: RemoteGameService
+
+The server is authoritative for online rooms and for Play vs Bots from the
+Rooms screen ([Backend and deployment](backend-and-deployment.md)).
+[remote-game.service.ts](../../projects/app/src/app/online/remote-game.service.ts)
+presents the same surface to the board, typed as `BoardGame`, a `Pick` of
+`GameService`. It keeps the latest `GameUpdate` from the room socket and turns
+it into the same signals (`visibleState`, `legalActions`, `activeSeatId`,
+`botSeatIds`, `judgmentSettled`), and `submit` sends `game.submit` instead of
+calling `resolve`. Previews still run on the received view with the local
+engine, since an effect preview needs no secret.
+
+`OnlineGame` ([online-game.ts](../../projects/app/src/app/online/online-game.ts))
+wraps the unchanged `GameBoard` and provides `RemoteGameService` and
+`RemoteDecisionClock` in place of `GameService` and `DecisionTimer` for
+everything beneath it, so the board and its dialogs are shared, not copied.
+`SocketService` owns the connection: a `hello` with the protocol version,
+reconnection with growing delays, and a resync when the log it holds does not
+line up. The server never sends the RNG seed, so the client's copy of it is a
+placeholder that nothing draws from.
 
 ## Rendering the board
 
@@ -89,6 +119,8 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 | `action-history-panel`, `discard-pile` | what has happened, and what has been discarded |
 | `phase-indicator`, `game-over` | turn and result display |
 | `general-selection`, `reveal-gate-overlay` | the pre-game pick and the pass-and-play hand-off |
+| `decision-dock`, `decision-banner`, `minimize-button` | hide a decision dialog to look at the board, with a banner to bring it back |
+| `board-chat`, `chat-panel` (online) | room chat beside the board |
 
 ### Decisions become dialogs
 
@@ -109,7 +141,12 @@ Each dialog opens **once per pending id**, and is closed if the decision is
 settled some other way (a timeout, a bot). The dialogs are:
 `response-dialog` (answer a Sha with a Shan, pass), `choice-dialog` (take a
 card), `ask-dialog` (use a skill? Use or Don't), `selection-dialog` (pick cards
-or seats), `arrange-dialog`, `discard-dialog`, and `targets-dialog`.
+or seats), `arrange-dialog`, `discard-dialog`, `targets-dialog` and
+`start-reveal-dialog` (the Start window: tick hidden Generals to reveal, then Confirm).
+
+Any decision dialog can be minimized. `DecisionDock` keeps the hidden dialog
+open (so what the player picked survives) and shows a banner that brings it
+back; it is presentation state only.
 
 A dialog never constructs an action from its own logic. It is handed the
 `Action` objects the engine listed (`getLegalActions`) and returns one of them.
@@ -127,6 +164,7 @@ joining mid-game or starting a new game shows nothing old:
 | Discard history | `discardHistory(log, pileId)` | the discard pile |
 | Sounds | `soundsFor(events)` | injure, heal, weapon, armor, mount |
 | Compete popup | `competeResults(log, from, seats, players)` | the Compete result dialog |
+| Judgment popup | `judgmentDescription` over `state.judgmentView` | the judgment dialog |
 
 **Worked example, the Compete popup.** When a Compete resolves, the engine
 logs two `CardShownEvent`s and an `AbilityUsedEvent` with outcome
@@ -138,6 +176,15 @@ for it, one at a time, themed by the source seat's Force. The outcome wording
 ("Seat 0 can play one more Sha this turn…") comes from content's
 `competeOutcomeText`, so the UI holds no skill-specific text. It closes with
 Continue or after 15 seconds.
+
+**The judgment popup** is the one presentation that is also a pause. When the
+`judgmentNotice` rule is on, the engine holds a settled judgment in
+`state.judgmentView` and offers `AcknowledgeJudgmentAction` to the first living
+human seat. `judgment-dialog.ts` shows the source, the card with each
+replacement, the consequence from content's `judgmentOutcome`, and a 10 s
+countdown; Close submits the acknowledgement (`closeJudgment` locally, the
+server's offered action online). The pause lives in the engine, so it holds
+for every client and for replays; the dialog only shows it.
 
 ### Describing decisions without knowing the rules
 
@@ -170,27 +217,50 @@ deciding seat's Force; the Compete popup by the source General's.
 | which log index sounds and popups have reached | HP, hands, phase, turn, who is dying |
 | countdown seconds, music on/off (`localStorage`) | who won |
 
-`DecisionTimer` is UI state too: it times each human decision (a response, a
-choice, a pending selection or a discard 60 s, a whole Play Phase 300 s, the
-General Selection 300 s), pauses
-when the decision is not on screen, and at zero submits an engine-legal
-default (No Response, the first option, End Phase). Bots are never timed.
+`DecisionTimer` is UI state too, for local games. The engine says which clock a
+decision runs on and how long it has (`DECISION_SECONDS`: a response, choice or
+discard 60 s, a selection and the General Selection 300 s, a whole Play Phase
+300 s, a settled judgment notice 10 s). The timer pauses when the decision is
+not on screen, and at zero submits the UI's current pick or an engine-legal
+default (`defaultActionsFor`: No Response, the first option, End Phase).
+Bots are never timed. Online, the server owns the clock and
+`RemoteDecisionClock` only displays it, moved onto this device's time.
 
 ## Wiki
 
-`/wiki/generals`, `/basic`, `/equipment`, `/tools` and `/rules/*` are lazy
-routes. The card and General pages are generated from content
-(`wiki.ts` builds entries from the data files and marks which skills are
-coded); the rules pages are short hand-written components. Rules text changes
-when a rule changes: add the line to the matching page in `wiki/rules/`.
+Each deck has its own pages, chosen by the parent route's `deck` data:
+`/wiki/default/...` and `/wiki/alternate/...`, each with `generals`, `basic`,
+`equipment` and `tools`. The card pages share one component. The Default
+Generals page and the Alternate Generals page are separate components, since
+an Alternate General is shown beside the Default version it differs from. The
+older `/wiki/generals`-style addresses redirect to the Default pages, and
+`/wiki/rules/*` holds short hand-written Rules pages. The pages are generated
+from content (`wiki.ts` and `wikiAlternateGenerals.ts` build entries from the
+data files and mark which skills are coded); rules text changes when a rule
+changes, so add the line to the matching page in `wiki/rules/`.
+
+## Languages
+
+English and Vietnamese. Every visible string is a catalog key:
+`i18n/en.ts` is the source (and ships in the main bundle) and `i18n/vi.ts` is a
+lazy chunk. The `I18n` service holds the current locale (remembered in
+`localStorage`) and exposes a `Translator`; templates use the `t` pipe, and
+services that cannot translate yet hand screens a `Msg` (a key and its
+parameters), resolved by the `tm` pipe so a language switch re-renders it.
+Card and General names, rules text and skill prose come from content's locale
+data (`projects/content/data/locales/vi`), not from the app's catalog. New
+Vietnamese text starts as a draft that displays like any other; a native
+speaker marks entries reviewed in `review.json`, and `npm run i18n:status`
+reports what is left. The casing rules for both languages are in CLAUDE.md.
 
 ## Conventions
 
 - **Standalone components**, `inject()` for services, signals for state.
-- **Visible text** follows CLAUDE.md's casing rules: Title Case for names and
+- **Visible text** goes through the catalogs and follows CLAUDE.md's casing rules: Title Case for names and
   short labels ("Start Game", "Discard Pile"), sentence case for anything that
   reads as a sentence ("Seat 1 used Sha (7 ♠) on Hing"), keywords keep their
-  capitals (Forces, card names, General names, phases, HP). Ids are never shown
+  capitals (Forces, card names, General names, phases, HP). Vietnamese uses
+  sentence case throughout. Ids are never shown
   raw: `labels.ts` turns `seat-0` into "Seat 0".
 - **No rules in components.** If a component needs to know whether something
   is allowed, add a query to the engine or content and ask it.

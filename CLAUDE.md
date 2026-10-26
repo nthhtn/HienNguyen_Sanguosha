@@ -22,12 +22,14 @@ browser APIs, or UI state. The game engine SHOULD be executable
 independently of the Angular UI so it can be tested through automated
 simulations. UI components MUST NOT directly implement game rules.
 
-Current status: the engine sub-project (rules engine for Kingdom War /
-Guozhan mode) is in design — see
-`docs/superpowers/specs/2026-09-03-guozhan-engine-design.md` for the
-current spec (workspace layout, domain model, pipeline, extensibility).
-The application layer and Angular presentation layer are future
-sub-projects; the constraints below apply once work on them begins.
+Current status: the engine (Kingdom War / Guozhan), content, bots and
+simulator, the Angular presentation layer, and a Node server with a shared
+`protocol` project are all built and in use. `docs/architecture/` is the
+guide to how they fit together; read it before changing structure. The
+original design is in
+`docs/superpowers/specs/2026-09-03-guozhan-engine-design.md`, and the backend
+design in `docs/superpowers/specs/2026-10-13-backend-multiplayer-design.md`.
+The per-layer constraints below apply to all of it.
 
 ## Domain modeling
 

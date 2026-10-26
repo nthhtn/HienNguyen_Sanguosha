@@ -287,14 +287,58 @@ the turn owner's Judgment slot, last in, first out:
    `onCleanup` (Lightning moves on). Without one, it discards the card if it is
    still in the judgment area.
 
-`JudgeEffect` turns up the draw pile's top card into `processing` and logs
-`JudgmentEvent`. It then queues the Tool's `onJudged` reading of that card,
-followed by the judged card's move to the discard pile. With no card left
-anywhere, nothing is judged.
+A judgment is a short chain of its own:
+
+1. `JudgeEffect` turns up the draw pile's top card into `processing` and logs
+   `JudgmentEvent`. With no card left anywhere, nothing is judged. It then
+   queues `JudgmentShownEffect`.
+2. `JudgmentShownEffect` runs once every skill that may change a judgment has
+   had its say. A skill that replaces the card queues `ReplaceJudgmentEffect`,
+   which swaps the card (`JudgmentChangedEvent`) and shows the new one again.
+3. Once the card stands, `JudgmentResolveEffect` asks the reader (the delayed
+   Tool's `onJudged`, or the skill's) what the card does, and
+   `JudgmentDoneEffect` moves the card to the discard pile unless the reader
+   already took it.
+
+**The judgment notice.** With `state.rules.judgmentNotice` on, `JudgeEffect`
+also sets `state.judgmentView` (the judged seat, the reader, the current card,
+each replacement so far, `settled: false`). When `JudgmentShownEffect` finds a
+view, it sets `settled: true` and the pipeline **stops** instead of queueing the
+resolve step: the game now rests at a decision, whose actor is the first living
+human seat (see [The rules engine](rules-engine.md)). `AcknowledgeJudgmentAction`,
+from that seat's Close or the 10 s notice clock, clears the view, logs
+`JudgmentAcknowledgedEvent` (with who closed it, or that it timed out) and
+queues `JudgmentResolveEffect`. With the rule off, `JudgmentShownEffect` queues
+the resolve step directly, so a game without it plays and replays as before.
+The consequence sentence the popup shows is computed by content's
+`judgmentOutcome` from the same predicate the reader's `onJudged` uses, so the
+text and the rule cannot disagree.
 
 A reading usually sets a **turn flag** (`SetTurnFlagEffect`). `advancePhaseOrTurn`
 passes over any phase whose skip flag (`skipFlagOf(phase)`, e.g. `skipPlay`) is
 set, and `PhaseSkippedEvent` records it. Flags end with the turn.
+
+## Damage natures and chains
+
+Every `Damage` has a nature: `normal`, `fire` or `thunder`. The nature is data
+on the card or skill that deals it (Fire Attack and Blaze deal fire, Lightning
+Attack and Lightning thunder), and the engine reads only the field. A card used
+as a Sha keeps `as: 'sha'` and carries its nature on its definition, so every
+rule about Sha still applies to it.
+
+A seat can be **chained** (`Seat.chained`), set by the Chains card or Shackle
+through `SetChainedEffect`. When fire or thunder damage is actually dealt to a
+chained seat, `applyEffect` unchains it (`ChainToggledEvent`), and the pipeline
+(`chainWave` in `resolve.ts`, not a content trigger) queues a
+`ChainPropagationEffect` behind it. That effect deals the damage's **original
+amount** (`Damage.base`, recorded before the target's own before-triggers could
+change it) to each other living chained seat in turn order (`chainWaveOrder`),
+one at a time, flagging each hit `chained` so it does not start a wave of its
+own. A seat that died or was unchained meanwhile is skipped. Because the next hit
+is queued at the front, a damaged seat's triggers (a dying round, a skill that
+reacts to damage) resolve before the next seat in the chain is hit. Plain damage
+never propagates, and each seat's own before-triggers (Wood Armor's extra fire
+damage) rewrite the hit it receives like any other `DamageEffect`.
 
 ## Equipment abilities
 
