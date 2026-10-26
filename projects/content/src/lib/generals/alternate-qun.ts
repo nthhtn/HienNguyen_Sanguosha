@@ -1,7 +1,7 @@
 import type { CardInstance, CardMovedEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, PhaseChangedEvent, SeatEliminatedEvent, SkillDefinition, UsedCard } from 'engine';
 import { discardOwed, endFlagOf, requireZoneOfKind, slotSilenced } from 'engine';
 import { seatCardOptions } from '../shared/choices';
-import { exposedKingdom, exposedKingdomCounts, ownKingdom, sameKingdomSeatIds } from '../shared/kingdom';
+import { exposedGroup, exposedKingdom, exposedKingdomCounts, ownGroup, sameKingdomSeatIds } from '../shared/kingdom';
 import { abilityKey } from '../shared/steps';
 import { handOf } from '../shared/queries';
 import { equipSlotOf } from '../cards/equipment';
@@ -184,15 +184,15 @@ const withTheTide: SkillDefinition = {
         if (dying.entering !== true || dying.seatId === owner.seatId || !dying.killerSeatId || (dying.acted ?? []).includes(abilityKey(owner))) return false;
         const seat = state.seats.find((s) => s.id === dying.seatId);
         if (!seat || seat.eliminated || seat.combinedHp > 0) return false;
-        const own = ownKingdom(state, owner, registry);
-        return !!own && isLiving(state, owner.seatId) && (dying.killerSeatId === owner.seatId || exposedKingdom(state, dying.killerSeatId) === own);
+        const own = ownGroup(state, owner, registry);
+        return !!own && isLiving(state, owner.seatId) && (dying.killerSeatId === owner.seatId || exposedGroup(state, dying.killerSeatId) === own);
       },
       effect: (_state, dying, owner) => [used(owner), draw(owner.seatId, 1), { ...dying, acted: [...(dying.acted ?? []), abilityKey(owner)] }],
     }),
     on<SeatEliminatedEvent>('after:SeatEliminatedEvent', {
       condition: (state, event, owner, registry) => {
-        const own = ownKingdom(state, owner, registry);
-        return !!own && isLiving(state, owner.seatId) && event.seatId !== owner.seatId && exposedKingdom(state, event.seatId) === own;
+        const own = ownGroup(state, owner, registry);
+        return !!own && isLiving(state, owner.seatId) && event.seatId !== owner.seatId && exposedGroup(state, event.seatId) === own;
       },
       effect: (_state, _event, owner) => [used(owner), { kind: 'LoseHpEffect', seatId: owner.seatId, amount: 1, abilityId: owner.skillId }],
     }),
@@ -304,7 +304,7 @@ const callOfValour: SkillDefinition = {
   active: {
     canUse: (state, { seatId }, registry) =>
       isLiving(state, seatId) && !state.seats.find((s) => s.id === seatId)?.marks?.[CALL_OF_VALOUR_MARK] &&
-      !!ownKingdom(state, { kind: 'general', seatId, slot: 'main', skillId: 'alternate:call-of-valour' }, registry),
+      !!ownGroup(state, { kind: 'general', seatId, slot: 'main', skillId: 'alternate:call-of-valour' }, registry),
     start: (_state, { seatId, owner }) => [
       { kind: 'IncrementEffect', scope: 'seat', seatId, key: CALL_OF_VALOUR_MARK, by: 1 },
       skillStep(owner, 'resolve'),
@@ -312,7 +312,7 @@ const callOfValour: SkillDefinition = {
   },
   onStep: (state, step, registry) => {
     const { owner } = step;
-    const own = isLiving(state, owner.seatId) ? ownKingdom(state, owner, registry) : null;
+    const own = isLiving(state, owner.seatId) ? ownGroup(state, owner, registry) : null;
     if (!own) return [];
     const counts = exposedKingdomCounts(state);
     const smallest = (counts.get(own) ?? 0) <= Math.min(...counts.values());

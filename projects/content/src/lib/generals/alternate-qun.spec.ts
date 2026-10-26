@@ -509,6 +509,13 @@ describe('Alternate Tian Feng, With the Tide', () => {
     expect(drewD1(s)).toBe(true);
   });
 
+  it('as an Ambitionist he draws for no one but himself', () => {
+    const t = setup();
+    const amb = { ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, allegiance: 'ambitionist' as const } : x)) };
+    expect(handIds(hk.run(amb, [hit('seat-c', 'seat-b')]), 'seat-a')).toEqual([]);
+    expect(handIds(hk.run(amb, [hit('seat-a', 'seat-b')]), 'seat-a')).toEqual(['d1']);
+  });
+
   it('the card he draws can be the Peach he rescues with', () => {
     const s = hk.run(setup({}, { drawPile: [card('pc', 'peach', 'heart', 3)] }), [hit('seat-c', 'seat-b')]);
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a', reason: { kind: 'dying', seatId: 'seat-b' } });
@@ -828,6 +835,14 @@ describe('Alternate Ma Teng', () => {
   const healed = (kingdoms: NonNullable<TableOptions['kingdoms']>, hp = 3) => hp_(h.useSkill(six({ kingdoms, hp: { 'seat-a': hp } }), 'seat-a', id));
   const hp_ = (s: GameState) => hp(s, 'seat-a');
   const qun = (n: number) => Object.fromEntries(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'].map((x, i) => [x, i < n ? 'Qun' : i < n + 2 ? 'Wei' : 'Shu'])) as NonNullable<TableOptions['kingdoms']>;
+
+  it('as an Ambitionist he is a group of one: only he draws 3, and he heals', () => {
+    const kingdoms = { 'seat-a': 'Qun', 'seat-b': 'Qun', 'seat-c': 'Qun', 'seat-d': 'Qun', 'seat-e': 'Wei', 'seat-f': 'Shu' } as const;
+    const t = six({ kingdoms, hp: { 'seat-a': 3 }, generals: at('seat-a', 'alternate:ma-teng') });
+    const s = h.useSkill({ ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, allegiance: 'ambitionist' as const } : x)) }, 'seat-a', id);
+    expect(hands(s)).toEqual({ 'seat-a': 3, 'seat-b': 0, 'seat-c': 0, 'seat-d': 0, 'seat-e': 0, 'seat-f': 0 });
+    expect(hp_(s)).toBe(4);
+  });
 
   it('heals 1 when his Kingdom is the smallest, a tie included; not when larger', () => {
     expect(healed({ ...qun(1), 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Shu', 'seat-e': 'Shu', 'seat-f': 'Shu' })).toBe(4);

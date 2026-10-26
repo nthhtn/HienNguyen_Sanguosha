@@ -16,6 +16,13 @@ export function sameKingdomSeatIds(state: GameState, seatId: string): string[] {
   return livingSeatOrderFrom(state, seatId).filter((id) => exposedKingdom(state, id) === kingdom);
 }
 
+/** The group a seat belongs to for "same Kingdom" comparisons: its exposed Kingdom, a group of one for an Ambitionist, null while it has none. */
+export function exposedGroup(state: GameState, seatId: string): string | null {
+  const seat = state.seats.find((s) => s.id === seatId);
+  if (seat?.allegiance === 'ambitionist' && seat.generals && (seat.generals.main.revealed || seat.generals.deputy.revealed)) return `ambitionist:${seatId}`;
+  return exposedKingdom(state, seatId);
+}
+
 /** The most seats one Kingdom may hold: half the table, rounded down. A seat revealing into a full Kingdom is an Ambitionist. */
 export function kingdomCap(state: GameState): number {
   return Math.floor(state.seats.length / 2);
@@ -47,6 +54,12 @@ export function exposedKingdomCounts(state: GameState): Map<string, number> {
 export function ownKingdom(state: GameState, owner: GeneralOwner, registry: ContentRegistry): Exclude<Kingdom, 'hidden'> | null {
   const seat = state.seats.find((x) => x.id === owner.seatId);
   if (!seat?.generals) return null;
+  if (seat.allegiance === 'ambitionist') return null; // plays for no Kingdom
   const own = seat.kingdom !== 'hidden' ? seat.kingdom : registry.generals.get(seat.generals[owner.slot].generalDefinitionId)?.kingdom;
   return !own || own === 'hidden' ? null : own;
+}
+
+/** Like `ownKingdom`, but an Ambitionist's group of one (the same string `exposedGroup` gives its seat) instead of null. */
+export function ownGroup(state: GameState, owner: GeneralOwner, registry: ContentRegistry): string | null {
+  return state.seats.find((x) => x.id === owner.seatId)?.allegiance === 'ambitionist' ? `ambitionist:${owner.seatId}` : ownKingdom(state, owner, registry);
 }

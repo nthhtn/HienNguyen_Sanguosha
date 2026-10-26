@@ -1,4 +1,4 @@
-import { exposedKingdom, exposedKingdomCounts, kingdomCap, sameKingdomSeatIds, seatsInKingdom } from './kingdom';
+import { exposedKingdom, exposedKingdomCounts, exposedGroup, kingdomCap, ownKingdom, sameKingdomSeatIds, seatsInKingdom } from './kingdom';
 import type { GameState, Seat } from 'engine';
 
 function seat(id: string, index: number, kingdom: Seat['kingdom'], eliminated = false, revealed = kingdom !== 'hidden'): Seat {
@@ -105,5 +105,17 @@ describe('Ambitionists and the Kingdom cap', () => {
   it('exposedKingdomCounts skips Ambitionists', () => {
     const s = stateWith([seat('a', 0, 'Wei'), withAllegiance(seat('b', 1, 'Wei'), 'ambitionist')]);
     expect(exposedKingdomCounts(s).get('Wei')).toBe(1);
+  });
+
+  it('exposedGroup is the Kingdom, or a group of one for an Ambitionist, or null while hidden', () => {
+    const s = stateWith([seat('a', 0, 'Wei'), withAllegiance(seat('b', 1, 'Wei'), 'ambitionist'), seat('c', 2, 'hidden')]);
+    expect(exposedGroup(s, 'a')).toBe('Wei');
+    expect(exposedGroup(s, 'b')).toBe('ambitionist:b');
+    expect(exposedGroup(s, 'c')).toBeNull();
+  });
+
+  it('ownKingdom is null for an Ambitionist', () => {
+    const s = stateWith([withAllegiance(seat('a', 0, 'Wei'), 'ambitionist')]);
+    expect(ownKingdom(s, { kind: 'general', seatId: 'a', slot: 'main', skillId: 'x' }, { cards: new Map(), generals: new Map() })).toBeNull();
   });
 });

@@ -2,7 +2,7 @@ import type { CardDefinition } from 'engine';
 import { otherLivingSeatTargets } from '../shared/queries';
 import { playColour, toolOnTargets } from '../shared/tools';
 import { untargetableBy } from '../shared/abilities';
-import { exposedKingdom } from '../shared/kingdom';
+import { exposedGroup } from '../shared/kingdom';
 
 // Ally Far Attack Near: one other living seat with an exposed General whose
 // Kingdom differs from the user's (any exposed seat while the user has none).
@@ -12,10 +12,10 @@ export const allyFarAttackNearCard: CardDefinition = {
   name: 'Ally Far Attack Near',
   category: 'tool',
   legalPlayTargets: (state, ctx, registry) => {
-    const mine = exposedKingdom(state, ctx.seatId);
+    const mine = exposedGroup(state, ctx.seatId);
     return otherLivingSeatTargets(state, ctx.seatId).filter(([target]) => {
       if (target.kind !== 'seat') return false;
-      const theirs = exposedKingdom(state, target.seatId);
+      const theirs = exposedGroup(state, target.seatId);
       return theirs !== null && theirs !== mine && !untargetableBy(state, target.seatId, 'ally-far-attack-near', registry, playColour(state, ctx, registry));
     });
   },
