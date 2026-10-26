@@ -1,5 +1,5 @@
 import { livingSeatOrderFrom } from 'engine';
-import type { ContentRegistry, GameState, GeneralOwner, Kingdom } from 'engine';
+import type { ContentRegistry, GameState, GeneralOwner, Kingdom, Seat } from 'engine';
 
 /** The seat's exposed Kingdom, or null while it has none: hidden, or no General revealed yet. Read live from the Seat. */
 export function exposedKingdom(state: GameState, seatId: string): Exclude<Kingdom, 'hidden'> | null {
@@ -24,6 +24,12 @@ export function kingdomCap(state: GameState): number {
 /** Seats that hold a slot of `kingdom`, living or dead (an Ambitionist holds none). */
 export function seatsInKingdom(state: GameState, kingdom: Exclude<Kingdom, 'hidden'>): number {
   return state.seats.filter((s) => s.allegiance === 'kingdom' && s.kingdom === kingdom).length;
+}
+
+/** Whether the seat is (or, revealing now, would be) an Ambitionist: decided already, else its Kingdom is at the cap. */
+export function isAmbitionist(state: GameState, seat: Seat): boolean {
+  if (seat.allegiance) return seat.allegiance === 'ambitionist';
+  return seat.kingdom !== 'hidden' && seatsInKingdom(state, seat.kingdom) >= kingdomCap(state);
 }
 
 /** Living exposed seats per Kingdom (an Ambitionist has no exposed Kingdom, so is no group's member). */

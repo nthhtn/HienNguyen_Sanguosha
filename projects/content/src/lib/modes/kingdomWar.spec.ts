@@ -682,3 +682,34 @@ describe('Kingdom War Ambitionists: allegiance is decided at the first reveal', 
     expect(allegiance(s, 'seat-d')).toBe('ambitionist');
   });
 });
+
+describe('Kingdom War Ambitionists: kill reward', () => {
+  const h = harness(kwMode);
+  const rescue = { any: ['peach'], self: ['wine'] };
+  const deck = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => card(id, 'sha'));
+  const handOf = (s: GameState, id: string) => s.zones.find((z) => z.id === `${id}:hand`)!.cards;
+  // Six seats: a, b, c, d Wei, e, f Shu. Seat b is at 0 HP and nobody can save it.
+  const kill = (killer: string, o: { allegiance?: Record<string, 'kingdom' | 'ambitionist'>; hidden?: string[] } = {}) => {
+    const kingdoms = { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Wei', 'seat-e': 'Shu', 'seat-f': 'Shu' } as const;
+    const generals = Object.fromEntries((o.hidden ?? []).map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]]));
+    let s = table({ drawPile: deck, 'seat-a:hand': [card('h1', 'sha'), card('h2', 'sha')], 'seat-c:hand': [card('c1', 'sha')] }, { seats: 6, kingdoms, generals, hp: { 'seat-b': 0 } });
+    s = { ...s, seats: s.seats.map((x) => (o.allegiance?.[x.id] ? { ...x, allegiance: o.allegiance[x.id] } : x)) };
+    return h.run(s, [{ kind: 'DyingEffect', seatId: 'seat-b', order: [], rescueCardIds: rescue, killerSeatId: killer }]);
+  };
+
+  it('killing an Ambitionist draws 3, though its Kingdom has other living seats', () => {
+    const out = kill('seat-e', { allegiance: { 'seat-b': 'ambitionist' } });
+    expect(handOf(out, 'seat-e')).toHaveLength(0 + 3);
+  });
+
+  it('an Ambitionist killer is rewarded even for a seat of its printed Kingdom, and never discards', () => {
+    const out = kill('seat-c', { allegiance: { 'seat-c': 'ambitionist' } });
+    expect(handOf(out, 'seat-c')).toHaveLength(1 + 3);
+  });
+
+  it('killing a hidden seat of a full Kingdom (revealed by its death) draws 3, not the Kingdom count', () => {
+    const out = kill('seat-e', { hidden: ['seat-b'], allegiance: { 'seat-a': 'kingdom', 'seat-c': 'kingdom', 'seat-d': 'kingdom' } });
+    expect(out.seats.find((x) => x.id === 'seat-b')!.allegiance).toBe('ambitionist');
+    expect(handOf(out, 'seat-e')).toHaveLength(0 + 3);
+  });
+});

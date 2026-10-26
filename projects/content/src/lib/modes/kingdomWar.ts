@@ -22,9 +22,11 @@ import type { DeckDefinition, DeckId } from '../decks';
 import { isAlternateGeneralId } from '../generalIds';
 import { judgmentPhaseTrigger } from '../shared/delayed';
 import { peachLockedTo } from '../shared/abilities';
-import { kingdomCap, seatsInKingdom } from '../shared/kingdom';
+import { isAmbitionist } from '../shared/kingdom';
 
 export const GENERALS_PER_SEAT = 5;
+// Cards drawn for killing an Ambitionist.
+const AMBITIONIST_KILL_DRAW = 3;
 // A real Kingdom War table seats at most 10.
 export const MAX_KINGDOM_WAR_SEATS = 10;
 
@@ -181,8 +183,7 @@ const allegianceTrigger: SkillTrigger = {
   },
   effect: (state, subject) => {
     const seat = state.seats.find((s) => s.id === (subject as GeneralRevealedEvent).seatId)!;
-    const full = seat.kingdom !== 'hidden' && seatsInKingdom(state, seat.kingdom) >= kingdomCap(state);
-    return [{ kind: 'DeclareAllegianceEffect', seatId: seat.id, allegiance: full ? 'ambitionist' : 'kingdom' }];
+    return [{ kind: 'DeclareAllegianceEffect', seatId: seat.id, allegiance: isAmbitionist(state, seat) ? 'ambitionist' : 'kingdom' }];
   },
 };
 
@@ -337,9 +338,12 @@ export const kingdomWarMode: GameModeDefinition = {
         const dead = state.seats.find((s) => s.id === seatId)!;
         const killer = state.seats.find((s) => s.id === killerSeatId)!;
         const revealedAny = !!killer.generals && (killer.generals.main.revealed || killer.generals.deputy.revealed);
-        if (revealedAny && killer.kingdom === dead.kingdom) return [{ kind: 'DiscardZoneEffect', zoneId: killer.hand.zoneId }];
+        // An Ambitionist is a group of one: killing one draws 3, and an Ambitionist killer is never "the same Kingdom".
+        // (A hidden seat's death reveal decides its allegiance in the same step, so ask the rule, not the field.)
+        if (isAmbitionist(state, dead)) return [{ kind: 'DrawCardsEffect', seatId: killer.id, count: AMBITIONIST_KILL_DRAW }];
+        if (revealedAny && !isAmbitionist(state, killer) && killer.kingdom === dead.kingdom) return [{ kind: 'DiscardZoneEffect', zoneId: killer.hand.zoneId }];
         const exposed = (s: Seat) => !!s.generals && (s.generals.main.revealed || s.generals.deputy.revealed);
-        const count = state.seats.filter((s) => s.kingdom === dead.kingdom && (s.id === dead.id || (!s.eliminated && exposed(s)))).length;
+        const count = state.seats.filter((s) => s.kingdom === dead.kingdom && s.allegiance !== 'ambitionist' && (s.id === dead.id || (!s.eliminated && exposed(s)))).length;
         return [{ kind: 'DrawCardsEffect', seatId: killer.id, count }];
       },
     },
