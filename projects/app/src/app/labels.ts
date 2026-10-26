@@ -81,7 +81,7 @@ export function forceOf(kingdom: Kingdom | undefined): Force {
 }
 
 // A seat's force colour: none for an Ambitionist, which plays for no force.
-export function seatForce(seat: Pick<Seat, 'kingdom' | 'allegiance'> | undefined): Force {
+export function seatForce(seat: Pick<Seat, 'kingdom' | 'allegiance'> | null | undefined): Force {
   return seat?.allegiance === 'ambitionist' ? 'none' : forceOf(seat?.kingdom);
 }
 
