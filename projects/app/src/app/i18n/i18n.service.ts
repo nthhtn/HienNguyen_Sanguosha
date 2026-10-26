@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject, signal } from '@angular/core';
-import { CATALOG_LOADERS } from './catalogs';
+import { CATALOG_LOADERS, INITIAL_CATALOGS } from './catalogs';
 import { en } from './en';
 import { format } from './format';
 import { DEFAULT_LOCALE, LocaleCode, SOURCE_LOCALE, isLocaleCode } from './locales';
@@ -34,7 +34,7 @@ function writeLocale(code: LocaleCode): void {
 export class I18n {
   private readonly loaders = inject(CATALOG_LOADERS);
   private readonly document = inject(DOCUMENT);
-  private readonly catalogs = signal<Partial<Record<LocaleCode, Messages>>>({ en });
+  private readonly catalogs = signal<Partial<Record<LocaleCode, Messages>>>({ ...inject(INITIAL_CATALOGS) });
   // The newest setLocale call; an older, slower one must not overwrite it.
   private latest = 0;
 

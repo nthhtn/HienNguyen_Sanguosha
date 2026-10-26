@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { CATALOG_LOADERS, CatalogLoaders } from './catalogs';
+import { CATALOG_LOADERS, CatalogLoaders, INITIAL_CATALOGS } from './catalogs';
 import { en } from './en';
 import { I18n, format } from './i18n.service';
 import type { MessageKey, Messages } from './messages';
@@ -7,9 +7,12 @@ import type { MessageKey, Messages } from './messages';
 const VI = { 'nav.language': 'Ngôn ngữ' } as Messages;
 const flush = () => new Promise<void>((resolve) => setTimeout(resolve));
 
-function setup(loaders: Partial<CatalogLoaders> = {}): I18n {
+function setup(loaders: Partial<CatalogLoaders> = {}, initial: Partial<Record<'en' | 'vi', Messages>> = { en }): I18n {
   TestBed.configureTestingModule({
-    providers: [{ provide: CATALOG_LOADERS, useValue: { en: () => Promise.resolve(en), vi: () => Promise.resolve(VI), ...loaders } }],
+    providers: [
+      { provide: CATALOG_LOADERS, useValue: { en: () => Promise.resolve(en), vi: () => Promise.resolve(VI), ...loaders } },
+      { provide: INITIAL_CATALOGS, useValue: initial },
+    ],
   });
   return TestBed.inject(I18n);
 }
@@ -26,6 +29,14 @@ describe('I18n', () => {
     expect(i18n.locale()).toBe('en');
     expect(i18n.t('nav.language')).toBe('Language');
     expect(document.documentElement.lang).toBe('en');
+  });
+
+  it('shows a catalog that ships with the app on the very first render, without loading it', () => {
+    localStorage.setItem('locale', 'vi');
+    const vi = jest.fn(() => Promise.resolve(VI));
+    const i18n = setup({ vi }, { en, vi: VI });
+    expect(i18n.t('nav.language')).toBe('Ngôn ngữ');
+    expect(vi).not.toHaveBeenCalled();
   });
 
   it('switches language, remembers it and sets the page language', async () => {
