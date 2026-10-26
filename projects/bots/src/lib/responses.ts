@@ -37,9 +37,9 @@ export function wuxieWorthCancelling(view: GameState, self: Seat, reason: WuxieR
   if (targetId === self.id) return harmful;
   if (!extended) return false;
   const user = view.seats.find((s) => s.id === reason.toolUserSeatId);
-  if (reason.toolUserSeatId === self.id || (user && isAlly(self, user))) return false;
+  if (reason.toolUserSeatId === self.id || (user && isAlly(self, user, view))) return false;
   const target = view.seats.find((s) => s.id === targetId);
   if (!target) return false;
-  if (harmful) return isAlly(self, target);
-  return HELPFUL_TOOLS.has(reason.tool.as) && target.kingdom !== 'hidden' && !isAlly(self, target);
+  if (harmful) return isAlly(self, target, view);
+  return HELPFUL_TOOLS.has(reason.tool.as) && target.kingdom !== 'hidden' && !isAlly(self, target, view);
 }

@@ -7,7 +7,7 @@ import { handCards, isAlly, keepRank, leastUseful } from './helpers';
 
 const others = (view: GameState, me: Seat) => view.seats.filter((s) => !s.eliminated && s.id !== me.id);
 const handSize = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
-const ours = (me: Seat, seat: Seat) => seat.id === me.id || isAlly(me, seat);
+const ours = (view: GameState, me: Seat, seat: Seat) => seat.id === me.id || isAlly(me, seat, view);
 const zoneOf = (view: GameState, zoneId: string) => view.zones.find((z) => z.id === zoneId);
 const seatsOf = (view: GameState, choice: PendingChoice) =>
   choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
@@ -19,22 +19,22 @@ export interface BotMove { from: string; to: string; cardId: string }
 // where its slot is free.
 export function bestMove(view: GameState, me: Seat, registry: ContentRegistry): BotMove | null {
   const living = view.seats.filter((s) => !s.eliminated);
-  for (const from of living.filter((s) => ours(me, s))) {
+  for (const from of living.filter((s) => ours(view, me, s))) {
     const judged = zoneOf(view, from.judgment.zoneId);
     for (const card of judged?.cards ?? []) {
       const name = cardCountsAs(judged!, card);
       const to = living.find((s) => {
         const there = zoneOf(view, s.judgment.zoneId);
-        return !ours(me, s) && !(there?.cards ?? []).some((d) => cardCountsAs(there!, d) === name);
+        return !ours(view, me, s) && !(there?.cards ?? []).some((d) => cardCountsAs(there!, d) === name);
       });
       if (to) return { from: from.id, to: to.id, cardId: card.instanceId };
     }
   }
   const slotOf = (definitionId: string) => registry.cards.get(definitionId)?.equipSlot;
-  for (const from of living.filter((s) => !ours(me, s))) {
+  for (const from of living.filter((s) => !ours(view, me, s))) {
     for (const card of zoneOf(view, from.equipped.zoneId)?.cards ?? []) {
       const slot = slotOf(card.definitionId);
-      const to = slot && living.find((s) => ours(me, s) && !(zoneOf(view, s.equipped.zoneId)?.cards ?? []).some((w) => slotOf(w.definitionId) === slot));
+      const to = slot && living.find((s) => ours(view, me, s) && !(zoneOf(view, s.equipped.zoneId)?.cards ?? []).some((w) => slotOf(w.definitionId) === slot));
       if (to) return { from: from.id, to: to.id, cardId: card.instanceId };
     }
   }
@@ -65,11 +65,11 @@ export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, 
       const victim = view.seats.find((s) => s.id === reason.targetSeatId);
       const source = view.seats.find((s) => s.id === lamentSource(choice));
       // Good for its own side; a club or spade must not land on an ally.
-      return !!victim && ours(me, victim) && (!source || source.id === victim.id || !ours(me, source));
+      return !!victim && ours(view, me, victim) && (!source || source.id === victim.id || !ours(view, me, source));
     }
     case 'clever-change': {
       // Draw: two non-allies with hands worth taking from. Play: a move that helps. Never Judgment or Discard.
-      if (view.phase === 'Draw') return others(view, me).filter((s) => !isAlly(me, s) && handSize(view, s) >= 2).length >= 2;
+      if (view.phase === 'Draw') return others(view, me).filter((s) => !isAlly(me, s, view) && handSize(view, s) >= 2).length >= 2;
       if (view.phase === 'Play') return bestMove(view, me, registry) !== null;
       return false;
     }
@@ -81,12 +81,12 @@ export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, 
 export function wantsMountainActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry): boolean | null {
   switch (baseSkillId(skillId)) {
     case 'instigate':
-      return others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) <= 1);
+      return others(view, me).some((s) => !isAlly(me, s, view) && handSize(view, s) <= 1);
     case 'direct-instruction': {
       const slotOf = (id: string) => registry.cards.get(id)?.equipSlot;
       const equipment = handCards(view, me).filter((c) => registry.cards.get(c.definitionId)?.category === 'equipment');
       return equipment.some((c) =>
-        others(view, me).some((s) => isAlly(me, s) && !(zoneOf(view, s.equipped.zoneId)?.cards ?? []).some((w) => slotOf(w.definitionId) === slotOf(c.definitionId)))
+        others(view, me).some((s) => isAlly(me, s, view) && !(zoneOf(view, s.equipped.zoneId)?.cards ?? []).some((w) => slotOf(w.definitionId) === slotOf(c.definitionId)))
       );
     }
     default:
@@ -97,7 +97,7 @@ export function wantsMountainActive(view: GameState, me: Seat, skillId: string, 
 export function mountainChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const seats = seatsOf(view, choice);
-  const ally = seats.find((s) => s.id !== me.id && isAlly(me, s));
+  const ally = seats.find((s) => s.id !== me.id && isAlly(me, s, view));
   switch (baseSkillId(choice.reason.abilityId)) {
     // Alternate Sorrow (Heartbroken's variant): the killer's General with more skills it can see, Main on a tie.
     case 'heartbroken': {
@@ -113,8 +113,8 @@ export function mountainChoice(view: GameState, me: Seat, choice: PendingChoice,
       return (choice.options.find((o) => baseSkillId(skillOf(o.id)) === best) ?? choice.options[0])?.id ?? null;
     }
     case 'decentralization': {
-      const allies = seats.filter((s) => s.id !== me.id && isAlly(me, s)).sort((a, b) => handSize(view, b) - handSize(view, a) || a.index - b.index);
-      const foes = seats.filter((s) => !isAlly(me, s)).sort((a, b) => handSize(view, a) - handSize(view, b) || a.index - b.index);
+      const allies = seats.filter((s) => s.id !== me.id && isAlly(me, s, view)).sort((a, b) => handSize(view, b) - handSize(view, a) || a.index - b.index);
+      const foes = seats.filter((s) => !isAlly(me, s, view)).sort((a, b) => handSize(view, a) - handSize(view, b) || a.index - b.index);
       return (allies[0] ?? foes[0] ?? seats[0])?.id ?? null;
     }
     case 'direct-instruction':
@@ -149,7 +149,7 @@ export function mountainSelection(view: GameState, me: Seat, selection: PendingS
     case 'clever-change': {
       if (selection.of === 'cards') return leastUseful(view, registry, eligible).slice(0, 1);
       if (step === 'draw-take') {
-        const foes = seatsByHand((s) => !isAlly(me, s), 'most').slice(0, 2).map((s) => s.id);
+        const foes = seatsByHand((s) => !isAlly(me, s, view), 'most').slice(0, 2).map((s) => s.id);
         return foes.length > 0 ? foes : [eligible[0]];
       }
       const move = bestMove(view, me, registry);
@@ -172,7 +172,7 @@ export function mountainSelection(view: GameState, me: Seat, selection: PendingS
     case 'direct-instruction':
       return eligible.slice(0, 1);
     case 'instigate': {
-      const foes = seatsByHand((s) => !isAlly(me, s), 'fewest');
+      const foes = seatsByHand((s) => !isAlly(me, s, view), 'fewest');
       return foes.length > 0 ? [foes[0].id] : 'cancel';
     }
     default:

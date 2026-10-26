@@ -24,7 +24,7 @@ function ringDistance(view: GameState, a: Seat, b: Seat): number {
   return Math.min(gap, ring.length - gap);
 }
 // Seats a Sha could not reach from `me` without help: not allies, beyond distance 1.
-const farFoes = (view: GameState, me: Seat) => others(view, me).filter((s) => !isAlly(me, s) && ringDistance(view, me, s) > 1);
+const farFoes = (view: GameState, me: Seat) => others(view, me).filter((s) => !isAlly(me, s, view) && ringDistance(view, me, s) > 1);
 const handSize = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
 
 // A seat's gender as the table sees it: Main's while revealed, else Deputy's, else none.
@@ -61,7 +61,7 @@ export function devilCard(view: GameState, me: Seat, judgment: Judgment, registr
   const judged = view.seats.find((s) => s.id === judgment.seatId);
   const now = goodForJudged(judgment, judgment.card);
   if (!judged || now === null) return null;
-  const wantGood = judged.id === me.id || isAlly(me, judged);
+  const wantGood = judged.id === me.id || isAlly(me, judged, view);
   if (wantGood && !(judgment.reader.kind === 'card' && SAVES_FROM.has(judgment.reader.card.as))) return null;
   if (now === wantGood) return null;
   const cards = view.zones.flatMap((z) => z.cards).filter((c) => candidates.includes(c.instanceId));
@@ -97,23 +97,23 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     }
     // Dauntless: only against a non-ally, and only with a Basic card to spare.
     case 'alternate:dauntless':
-      return !!target && !isAlly(me, target) && handCards(view, me).some((c) => registry.cards.get(c.definitionId)?.category === 'basic' && keepRank(view, registry, c.instanceId) < 3);
+      return !!target && !isAlly(me, target, view) && handCards(view, me).some((c) => registry.cards.get(c.definitionId)?.category === 'basic' && keepRank(view, registry, c.instanceId) < 3);
     case 'unyielding':
-      return !!target && !isAlly(me, target);
+      return !!target && !isAlly(me, target, view);
     // Deathly Counsel: only when a non-ally has a hand or equipment card to lose.
     case 'alternate:deathly-counsel':
-      return others(view, me).some((s) => !isAlly(me, s) && [s.hand.zoneId, s.equipped.zoneId].some((id) => (view.zones.find((z) => z.id === id)?.cards.length ?? 0) > 0));
+      return others(view, me).some((s) => !isAlly(me, s, view) && [s.hand.zoneId, s.equipped.zoneId].some((id) => (view.zones.find((z) => z.id === id)?.cards.length ?? 0) > 0));
     // Comity: only when an ally can take the cards.
     case 'alternate:comity':
-      return others(view, me).some((s) => isAlly(me, s));
+      return others(view, me).some((s) => isAlly(me, s, view));
     // Insanity Axe: only against a non-ally (the seat the Sha hit).
     case 'alternate:insanity-axe':
-      return !!target && !isAlly(me, target);
+      return !!target && !isAlly(me, target, view);
     // Double Edged: losing ends the Play Phase, so only with a high card (10 or more) and a non-ally to compete with.
     case 'alternate:double-edged':
-      return handCards(view, me).some((c) => c.rank >= 10) && others(view, me).some((s) => !isAlly(me, s) && handSize(view, s) > 0);
+      return handCards(view, me).some((c) => c.rank >= 10) && others(view, me).some((s) => !isAlly(me, s, view) && handSize(view, s) > 0);
     case 'raid':
-      return others(view, me).filter((s) => !isAlly(me, s) && handSize(view, s) > 0).length >= 2;
+      return others(view, me).filter((s) => !isAlly(me, s, view) && handSize(view, s) > 0).length >= 2;
     case 'bare-the-chest':
       return handCards(view, me).filter((c) => isShaCard(registry, c.definitionId)).length >= 2;
     case 'devil': {
@@ -122,7 +122,7 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     }
     case 'displace':
       // A card to spare (ranked below Shan) and a non-ally other than the Sha's user to move it to.
-      return ownCards(view, me).some((c) => keepRank(view, registry, c.instanceId) < 3) && others(view, me).some((s) => !isAlly(me, s) && s.id !== target?.id);
+      return ownCards(view, me).some((c) => keepRank(view, registry, c.instanceId) < 3) && others(view, me).some((s) => !isAlly(me, s, view) && s.id !== target?.id);
     default:
       return wantsWind(view, me, choice, registry) ?? wantsFire(view, me, choice) ?? wantsForest(view, me, choice) ?? wantsMountain(view, me, choice, registry);
   }
@@ -155,7 +155,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       if (selection.of === 'cards') return [leastUseful(view, registry, eligible)[0]];
       const seats = eligible.map((id) => view.seats.find((s) => s.id === id)!).filter(Boolean);
       const foes = byLowestHp(farFoes(view, me).filter((s) => eligible.includes(s.id)));
-      return [(foes[0] ?? byLowestHp(seats.filter((s) => !isAlly(me, s)))[0] ?? seats[0]).id];
+      return [(foes[0] ?? byLowestHp(seats.filter((s) => !isAlly(me, s, view)))[0] ?? seats[0]).id];
     }
     case 'kindness': {
       // The thresholds below are Default's (2); a variant with another number (Benevolence: 3) is played legally, not optimally.
@@ -174,7 +174,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       return leastUseful(view, registry, eligible).slice(0, selection.min);
     case 'sow-revolt': {
       const seats = eligible.map((id) => view.seats.find((s) => s.id === id)!).filter(Boolean);
-      return [(byLowestHp(seats.filter((s) => !isAlly(me, s)))[0] ?? seats[0]).id];
+      return [(byLowestHp(seats.filter((s) => !isAlly(me, s, view)))[0] ?? seats[0]).id];
     }
     case 'bestowed-rouse':
       return 'cancel'; // keep both cards
@@ -207,8 +207,8 @@ function leastShownSuit(view: GameState, seatId: string): CardInstance['suit'] {
 export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
   if (choice.reason.kind !== 'ability' || choice.reason.owner.kind !== 'general') return null;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
-  const ally = seats.find((s) => s.id !== me.id && isAlly(me, s));
-  const firstNonAlly = byLowestHp(seats.filter((s) => s.id !== me.id && !isAlly(me, s)))[0];
+  const ally = seats.find((s) => s.id !== me.id && isAlly(me, s, view));
+  const firstNonAlly = byLowestHp(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view)))[0];
   // For a harmful effect with no non-ally to aim at: the seat that is hurt least, an ally.
   const cancelId = choice.options.find((o) => o.id === 'cancel')?.id;
   const harmless = ally ?? seats[0];
@@ -261,7 +261,7 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
 function wantsActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry): boolean {
   const hand = handCards(view, me);
   const spare = hand.filter((c) => keepRank(view, registry, c.instanceId) < 4);
-  const allies = others(view, me).filter((s) => isAlly(me, s));
+  const allies = others(view, me).filter((s) => isAlly(me, s, view));
   switch (baseSkillId(skillId)) {
     case 'battered-body':
       return me.combinedHp > 3 || (me.combinedHp > 2 && hand.some((c) => c.definitionId === 'peach'));
@@ -280,10 +280,10 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
     case 'marriage':
       return spare.length >= 2 && (hurt(me) || allies.some((s) => hurt(s) && genderOf(s, registry) === 'male'));
     case 'sow-revolt':
-      return others(view, me).some((s) => !isAlly(me, s));
+      return others(view, me).some((s) => !isAlly(me, s, view));
     case 'sow-discord': {
       const males = others(view, me).filter((s) => genderOf(s, registry) === 'male');
-      return males.length >= 2 && males.some((s) => !isAlly(me, s));
+      return males.length >= 2 && males.some((s) => !isAlly(me, s, view));
     }
     case 'kindness': {
       // Default's threshold (2) also for a variant (Benevolence heals at 3): legal, not smart.

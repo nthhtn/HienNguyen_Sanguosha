@@ -329,7 +329,7 @@ export const kingdomWarMode: GameModeDefinition = {
         const killer = state.seats.find((s) => s.id === killerSeatId)!;
         const revealedAny = !!killer.generals && (killer.generals.main.revealed || killer.generals.deputy.revealed);
         // An Ambitionist is a group of one: killing one draws 3, and an Ambitionist killer is never "the same Kingdom".
-        // (A hidden seat's death reveal decides its allegiance in the same step, so ask the rule, not the field.)
+        // (`isAmbitionist` reads the decided allegiance, or works it out from the cap when the seat is not decided yet.)
         if (isAmbitionist(state, dead)) return [{ kind: 'DrawCardsEffect', seatId: killer.id, count: AMBITIONIST_KILL_DRAW }];
         if (revealedAny && !isAmbitionist(state, killer) && killer.kingdom === dead.kingdom) return [{ kind: 'DiscardZoneEffect', zoneId: killer.hand.zoneId }];
         const exposed = (s: Seat) => !!s.generals && (s.generals.main.revealed || s.generals.deputy.revealed);

@@ -195,13 +195,23 @@ describe('ruleBasedPolicy', () => {
     expect(decide(view({ hand }), legal, first.memory).action).toBe(legal[2]);
   });
 
-  it('never targets a seat with the same revealed kingdom, but Qun has no allies', () => {
+  it('never targets a seat with the same revealed kingdom, Qun included', () => {
     const hand = [{ instanceId: 'c-sha', definitionId: 'sha' }];
     const legal = [play('c-sha', 'seat-1'), end];
     const allies = [seat('seat-0', 0, 'Wei', 8), seat('seat-1', 1, 'Wei', 2)];
     expect(decide(view({ hand, seats: allies }), legal).action).toBe(end);
     const qun = [seat('seat-0', 0, 'Qun', 8), seat('seat-1', 1, 'Qun', 2)];
-    expect(decide(view({ hand, seats: qun }), legal).action).toBe(legal[0]);
+    expect(decide(view({ hand, seats: qun }), legal).action).toBe(end);
+  });
+
+  it('a bot not yet decided in a full Kingdom has no allies; an Ambitionist neither', () => {
+    const hand = [{ instanceId: 'c-sha', definitionId: 'sha' }];
+    const legal = [play('c-sha', 'seat-1'), end];
+    // Four seats, cap 2: two revealed Wei already hold the Kingdom, so seat-0 (a third Wei) would be an Ambitionist.
+    const full = [seat('seat-0', 0, 'Wei', 8), { ...seat('seat-1', 1, 'Wei', 2), allegiance: 'kingdom' as const }, { ...seat('seat-2', 2, 'Wei', 8), allegiance: 'kingdom' as const }, seat('seat-3', 3, 'Shu', 8)];
+    expect(decide(view({ hand, seats: full }), legal).action).toBe(legal[0]);
+    const amb = [seat('seat-0', 0, 'Wei', 8), { ...seat('seat-1', 1, 'Wei', 2), allegiance: 'ambitionist' as const }];
+    expect(decide(view({ hand, seats: amb }), legal).action).toBe(legal[0]);
   });
 
   it('ignores eliminated seats as targets', () => {

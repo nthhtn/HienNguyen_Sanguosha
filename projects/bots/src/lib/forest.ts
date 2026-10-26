@@ -16,7 +16,7 @@ const seatsOf = (view: GameState, choice: PendingChoice) =>
 const alliancePairs = (view: GameState, me: Seat) =>
   others(view, me).flatMap((ally) =>
     others(view, me)
-      .filter((foe) => foe.id !== ally.id && isAlly(me, ally) && !isAlly(me, foe))
+      .filter((foe) => foe.id !== ally.id && isAlly(me, ally, view) && !isAlly(me, foe, view))
       .map((foe) => ({ ally, foe, cost: handSize(view, foe) - handSize(view, ally) }))
       .filter((p) => p.cost > 0 && p.cost <= 2 && p.cost <= cardCount(view, me))
   );
@@ -44,7 +44,7 @@ export function wantsForestActive(view: GameState, me: Seat, skillId: string): b
     case 'alliance':
       return alliancePairs(view, me).length > 0;
     case 'upheaval':
-      return others(view, me).filter((s) => !isAlly(me, s)).length >= 3;
+      return others(view, me).filter((s) => !isAlly(me, s, view)).length >= 3;
     default:
       return null;
   }
@@ -53,34 +53,34 @@ export function wantsForestActive(view: GameState, me: Seat, skillId: string): b
 export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const seats = seatsOf(view, choice);
-  const nonAllies = seats.filter((s) => s.id !== me.id && !isAlly(me, s));
+  const nonAllies = seats.filter((s) => s.id !== me.id && !isAlly(me, s, view));
   switch (baseSkillId(choice.reason.abilityId)) {
     case 'exile': {
       // A non-ally with the fewest hand cards; else a face-down ally; else the first.
       const foe = [...nonAllies].sort((a, b) => handSize(view, a) - handSize(view, b) || a.index - b.index)[0];
-      const down = seats.find((s) => s.id !== me.id && isAlly(me, s) && s.faceDown);
+      const down = seats.find((s) => s.id !== me.id && isAlly(me, s, view) && s.faceDown);
       return (foe ?? down ?? seats[0])?.id ?? null;
     }
     case 'collapse':
       return me.combinedHp >= 3 ? 'lose-hp' : 'reduce-max-hp';
     case 'upheaval': {
-      const foe = byWeakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s)))[0];
+      const foe = byWeakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view)))[0];
       return foe?.id ?? 'pass';
     }
     case 'charity': {
-      const ally = seats.find((s) => s.id !== me.id && isAlly(me, s));
+      const ally = seats.find((s) => s.id !== me.id && isAlly(me, s, view));
       return (ally ?? seats[0])?.id ?? null;
     }
     case 'brave-spirit': {
       // The skill's user picks an ally short of cards, else himself.
       if (seats.length > 0) {
-        const ally = [...seats].filter((s) => s.id !== me.id && isAlly(me, s)).sort((a, b) => handSize(view, a) - handSize(view, b) || a.index - b.index)[0];
+        const ally = [...seats].filter((s) => s.id !== me.id && isAlly(me, s, view)).sort((a, b) => handSize(view, a) - handSize(view, b) || a.index - b.index)[0];
         return (ally ?? seats.find((s) => s.id === me.id) ?? seats[0]).id;
       }
       // The owner's mode. An ally (its hand is masked) always draws X and discards 1. Himself: the same for X of 2 or less or too few spare cards, else draw 1 and discard X.
       const x = me.maxCombinedHp - me.combinedHp;
       const picked = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId) ?? me;
-      if (picked.id !== me.id && isAlly(me, picked)) return 'draw-x';
+      if (picked.id !== me.id && isAlly(me, picked, view)) return 'draw-x';
       const spare = handCards(view, picked).filter((c) => keepRank(view, registry, c.instanceId) < 3).length;
       return x <= 2 || spare < x ? 'draw-x' : 'draw-1';
     }
@@ -91,7 +91,7 @@ export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, r
       const byHand = (list: Seat[]) => [...list].sort((a, b) => handSize(view, b) - handSize(view, a) || a.index - b.index)[0];
       // The ally fallback (and a `cancel` below) is unreachable: the first pick guarantees a non-ally partner with cost <= 2.
       // A `cancel` here would need a loop guard: it refunds the use, so Alliance would be offered again.
-      const partner = byHand(kept.filter((s) => !isAlly(me, s))) ?? byHand(kept);
+      const partner = byHand(kept.filter((s) => !isAlly(me, s, view))) ?? byHand(kept);
       return partner?.id ?? choice.options.find((o) => o.id === 'cancel')?.id ?? null;
     }
     default:
@@ -112,5 +112,5 @@ export function forestSelection(view: GameState, me: Seat, selection: PendingSel
 // Whether the Upheaval window's seat (the bot) is being asked to Sha a non-ally.
 export const upheavalVictimIsFoe = (view: GameState, me: Seat, victimSeatId: string | undefined): boolean => {
   const victim = view.seats.find((s) => s.id === victimSeatId);
-  return !!victim && !isAlly(me, victim) && livingSeatOrderFrom(view, me.id).includes(victim.id);
+  return !!victim && !isAlly(me, victim, view) && livingSeatOrderFrom(view, me.id).includes(victim.id);
 };

@@ -32,7 +32,9 @@ export function scoreGame(finalState: GameState, sideOfSeat: (seatId: string) =>
     const won = winners.has(seat.id);
     score.seats[side] += 1;
     if (won) score.wins[side] += 1;
-    const tally = (score.byKingdom[side][seat.kingdom] ??= { seats: 0, wins: 0 });
+    // An Ambitionist is its own group, not its printed Kingdom.
+    const group = seat.allegiance === 'ambitionist' ? 'Ambitionist' : seat.kingdom;
+    const tally = (score.byKingdom[side][group] ??= { seats: 0, wins: 0 });
     tally.seats += 1;
     if (won) tally.wins += 1;
   }
