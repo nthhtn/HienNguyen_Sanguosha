@@ -98,6 +98,7 @@ export interface ChoiceDialogData {
     .option[data-force='Shu'] { --force: var(--force-shu); --force-text: var(--force-shu); }
     .option[data-force='Wu'] { --force: var(--force-wu); --force-text: var(--force-wu); }
     .option[data-force='Qun'] { --force: var(--force-qun); --force-text: var(--force-qun); }
+    .option[data-force='Ambitionist'] { --force: var(--force-ambitionist); --force-text: var(--force-ambitionist); }
     .swatch { width: 28px; height: 28px; border-radius: 50%; background: var(--force); }
     .option[data-force] .label { color: var(--force-text); font-weight: 500; }
     .red-suit .label { color: #c62828; }

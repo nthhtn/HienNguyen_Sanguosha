@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Action } from 'engine';
@@ -76,5 +78,21 @@ describe('ChoiceDialog', () => {
     expect(el.querySelector('[data-option-id="seat-1"]')!.getAttribute('data-force')).toBe('Wu');
     expect(el.querySelector('[data-option-id="heart"]')!.classList).toContain('red-suit');
     expect(el.querySelector('button.confirm')!.textContent!.trim()).toBe('Choose');
+  });
+
+  it('shows an Ambitionist seat in purple, not the yellow of a seat with no force', () => {
+    const pick: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'seat-1' };
+    const data: ChoiceDialogData = {
+      description: { title: 'Pick', prompt: 'Pick a seat', confirmLabel: 'Choose' },
+      options: [{ id: 'seat-1', action: pick, label: 'Seat 1', force: 'Ambitionist' }],
+    };
+    TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close: jest.fn() } }] });
+    const fixture = TestBed.createComponent(ChoiceDialog);
+    fixture.detectChanges();
+    const option = (fixture.nativeElement as HTMLElement).querySelector('[data-option-id="seat-1"]')!;
+    expect(option.getAttribute('data-force')).toBe('Ambitionist');
+ // jsdom neither cascades custom properties nor keeps component styles, so read the stylesheet from the source: it must give this force its colour.
+    const styles = readFileSync(join(__dirname, 'choice-dialog.ts'), 'utf8');
+    expect(styles).toContain(".option[data-force='Ambitionist'] { --force: var(--force-ambitionist)");
   });
 });
