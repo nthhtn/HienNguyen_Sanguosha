@@ -75,12 +75,14 @@ describe('Alternate General art', () => {
     expect(generalDeathVoiceUrl('alternate:zhang-fei')).toBe(generalDeathVoiceUrl('zhang-fei'));
   });
 
-  it('gives each new General its own skin but no death voice yet', () => {
+  it('gives each new General its own skin and its own death voice, whose file ships', () => {
     const fresh = alternateGeneralIds().filter((id) => !Object.prototype.hasOwnProperty.call(generalsData, id));
     expect(fresh).toHaveLength(9);
     for (const id of fresh) {
       expect(generalSkinUrl(alternateGeneralId(id))).toMatch(/^\/card-art\/generals\/skins\/\w+\/\w+\.png$/);
-      expect(generalDeathVoiceUrl(alternateGeneralId(id))).toBeNull();
+      const voice = generalDeathVoiceUrl(alternateGeneralId(id));
+      expect(voice).toMatch(/^\/audio\/death\/\w+\.ogg$/);
+      expect(existsSync(join(__dirname, '../../assets', voice!.replace('/audio/', 'audio/')))).toBe(true);
     }
   });
 

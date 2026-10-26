@@ -230,7 +230,7 @@ describe('WikiAlternateGeneralEntry', () => {
     expect(el.querySelector('.badge')).toBeNull();
   });
 
-  it('has a Voice button that plays the base General’s voice, and none for a new General', () => {
+  it('has a Voice button that plays the base General’s voice, and a new General’s own', () => {
     localStorage.clear();
     const urls: string[] = [];
     TestBed.configureTestingModule({
@@ -240,7 +240,8 @@ describe('WikiAlternateGeneralEntry', () => {
     expect(el.querySelector('.voices-label')!.textContent).toBe('Voice:');
     (el.querySelector('button.voice') as HTMLButtonElement).click();
     expect(urls).toEqual(['/audio/death/caocao.ogg']);
-    expect(render({ ...alternateCaoCao, id: 'ji-ling' }).querySelector('button.voice')).toBeNull();
+    (render({ ...alternateCaoCao, id: 'ji-ling' }).querySelector('button.voice') as HTMLButtonElement).click();
+    expect(urls).toEqual(['/audio/death/caocao.ogg', '/audio/death/jiling.ogg']);
     localStorage.clear();
   });
 

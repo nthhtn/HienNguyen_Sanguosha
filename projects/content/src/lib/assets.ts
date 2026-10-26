@@ -35,7 +35,7 @@ export function generalSkinUrl(id: string): string | null {
 }
 
 // Generals whose skin has no death voice file yet.
-const NO_DEATH_VOICE = new Set(['zuo-ci', 'gan-fu-ren', 'yue-jin', 'ding-feng', 'ji-ling', 'kong-rong', 'ma-teng', 'pan-feng', 'tian-feng', 'zou-shi']);
+const NO_DEATH_VOICE = new Set(['zuo-ci']);
 
 // A General's death voice: /audio/death/<skin file name>.ogg, named by the pinyin of the skin
 // (Cao Cao: caocao.ogg). Null for a General with no skin or no recording.
