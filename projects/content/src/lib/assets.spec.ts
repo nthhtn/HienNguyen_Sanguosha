@@ -3,7 +3,7 @@ import { join } from 'path';
 import { generalsData } from '../../data/generals';
 import { alternateGeneralIds } from './alternateGenerals';
 import { alternateGeneralId } from './generalIds';
-import { CARD_BACK_ART_URL, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
+import { AMBITIONIST_ICON_URL, CARD_BACK_ART_URL, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /card-art/ URL for a crawled id', () => {
@@ -32,6 +32,12 @@ describe('CARD_BACK_ART_URL', () => {
 describe('HIDDEN_GENERAL_ART_URL', () => {
   it('points at the General card back that ships with the content assets', () => {
     expect(HIDDEN_GENERAL_ART_URL).toBe('/card-art/generals/hidden.jpg');
+  });
+});
+
+describe('AMBITIONIST_ICON_URL', () => {
+  it('points at the Ambitionist icon that ships with the content assets', () => {
+    expect(AMBITIONIST_ICON_URL).toBe('/card-art/generals/ambitionist_icon.png');
   });
 });
 
