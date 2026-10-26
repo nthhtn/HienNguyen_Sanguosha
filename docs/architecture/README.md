@@ -12,6 +12,7 @@ it.
 | [Content and extensibility](content-and-extensibility.md) | how cards, generals, skills and modes are defined, and how to add one |
 | [Frontend](frontend.md) | how the Angular app renders the engine's state, plays locally or online, sends actions back, and speaks English and Vietnamese |
 | [Backend and deployment](backend-and-deployment.md) | the Node server: accounts, rooms, the socket protocol, the game runner, persistence and restore, and what is not built yet |
+| [Deployment](../deployment.md) | how the server and app run live on Render and Supabase, and what to check after a deploy |
 | [Bots and simulation](bots-and-simulation.md) | the computer opponents, the headless simulator, invariants, leak checks and the test layout |
 
 The project-wide rules (layering, domain modeling, extensibility, UI text

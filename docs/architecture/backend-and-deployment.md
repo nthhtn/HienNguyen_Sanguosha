@@ -61,7 +61,7 @@ projects/server/src/
   views/         records and engine state to wire shapes
   persistence/   repository interfaces, in-memory and Postgres stores, migrations
   mail/          the Mailer interface (console implementation only)
-  config.ts      PORT, HOST, DATABASE_URL, PUBLIC_ORIGIN, BUILD_ID, TRUST_PROXY
+  config.ts      PORT, HOST, DATABASE_URL, DATABASE_SSL, PUBLIC_ORIGIN, BUILD_ID, TRUST_PROXY, STATIC_DIR
 ```
 
 ## Accounts and sessions
@@ -191,6 +191,14 @@ the action count it followed. A message is 1 to 300 characters, a member may
 send 5 per 10 seconds, and a welcome carries the last 100. Solo rooms have no
 chat.
 
+## Deployment
+
+The server and the built Angular app ship as one Docker image, which runs on
+Render's free web service against Supabase Postgres. The server serves the app
+(`STATIC_DIR`), answers `GET /healthz`, and turns Postgres TLS on with
+`DATABASE_SSL=require`; `BUILD_ID` falls back to Render's `RENDER_GIT_COMMIT`.
+[Deployment](../deployment.md) has the setup and the first-deploy checklist.
+
 ## Local play compared
 
 | | Pass and Play | Play vs Bots (Setup) | Online room, Play vs Bots (Rooms) |
@@ -211,6 +219,3 @@ chat.
 - **Merging a guest's games into a new account**, and a recovery code for a
   guest's seat.
 - **Email verification.**
-- **Deployment packaging.** Nothing in the repo deploys the server or the
-  static app yet; `ng build` makes the static site, and `docker-compose.yml`
-  only provides local Postgres.
