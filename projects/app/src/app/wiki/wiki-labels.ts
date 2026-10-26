@@ -1,7 +1,7 @@
 import { alternateGeneralDisplayData, cardDisplayData, generalDisplayData } from 'content';
 import type { WikiAlternateGeneral, WikiCard, WikiGeneral, WikiTab } from 'content';
 import type { MessageKey } from '../i18n/messages';
-import { DEFAULT_LOCALE } from '../i18n/locales';
+import { SOURCE_LOCALE } from '../i18n/locales';
 import type { Translator } from '../i18n/translator';
 import { localeOf } from '../i18n/translator';
 
@@ -28,13 +28,13 @@ const TAB_KEYS: Record<string, MessageKey> = {
 // A tab's label. A tab named after a card (Sha, Peach...) takes the card's name.
 export function wikiTabLabel(tab: Pick<WikiTab<unknown>, 'key' | 'label'>, tr: Translator): string {
   const locale = localeOf(tr);
-  if (locale === DEFAULT_LOCALE) return tab.label;
+  if (locale === SOURCE_LOCALE) return tab.label;
   const key = Object.prototype.hasOwnProperty.call(TAB_KEYS, tab.key) ? TAB_KEYS[tab.key] : undefined;
   return (key ? tr(key) : undefined) ?? cardDisplayData(tab.key, locale)?.name ?? tab.label;
 }
 
 export function wikiCardView(card: WikiCard, locale: string): { name: string; text: string | null } {
-  const display = locale === DEFAULT_LOCALE ? null : cardDisplayData(card.id, locale);
+  const display = locale === SOURCE_LOCALE ? null : cardDisplayData(card.id, locale);
   return { name: display?.name ?? card.name, text: display?.text ?? card.text };
 }
 
@@ -46,7 +46,7 @@ export interface WikiGeneralView {
 
 // The skills are in the data file's order in both the Wiki's and the display data.
 export function wikiGeneralView(general: WikiGeneral, locale: string): WikiGeneralView {
-  const display = locale === DEFAULT_LOCALE ? null : generalDisplayData(general.id, locale);
+  const display = locale === SOURCE_LOCALE ? null : generalDisplayData(general.id, locale);
   return {
     name: display?.name ?? general.name,
     title: display?.title ?? general.title,
@@ -61,7 +61,7 @@ export interface WikiAlternateGeneralView extends WikiGeneralView {
 
 // An Alternate General in a language: the Alternate file's own text, never Default's, with English for any piece it lacks.
 export function wikiAlternateGeneralView(general: WikiAlternateGeneral, locale: string): WikiAlternateGeneralView {
-  const display = locale === DEFAULT_LOCALE ? null : alternateGeneralDisplayData(general.id, locale);
+  const display = locale === SOURCE_LOCALE ? null : alternateGeneralDisplayData(general.id, locale);
   return {
     name: display?.name ?? general.name,
     title: display?.title ?? general.title,

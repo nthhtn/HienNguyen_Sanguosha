@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { CATALOG_LOADERS } from './catalogs';
 import { en } from './en';
 import { format } from './format';
-import { DEFAULT_LOCALE, LocaleCode, isLocaleCode } from './locales';
+import { DEFAULT_LOCALE, LocaleCode, SOURCE_LOCALE, isLocaleCode } from './locales';
 import type { MessageKey, MessageParams, Messages } from './messages';
 import type { Translator } from './translator';
 
@@ -55,7 +55,7 @@ export class I18n {
     // does, go back to English rather than claim a language we cannot show.
     void this.load(saved).then((loaded) => {
       if (!loaded && !this.catalogs()[this.locale()]) {
-        this.locale.set(DEFAULT_LOCALE);
+        this.locale.set(SOURCE_LOCALE);
         this.syncDocument();
       }
     });
