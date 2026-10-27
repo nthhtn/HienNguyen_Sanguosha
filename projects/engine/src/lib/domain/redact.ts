@@ -270,7 +270,8 @@ export function redactStateForSeat(state: GameState, viewerSeatId: string): Game
     ...state,
     ...(state.spareGenerals ? { spareGenerals: [] } : {}),
     log: maskEvents(state.log, skills) as EngineEvent[],
-    seats: state.seats.map((seat) => redactSeat(seat, viewerSeatId)),
+    // Once the game is over every seat shows its Generals, Kingdom and allegiance (the Victory window).
+    seats: state.result ? state.seats : state.seats.map((seat) => redactSeat(seat, viewerSeatId)),
     zones: state.zones.map((zone) => redactZone(zone, viewerSeatId, shown)),
     generalSelection: redactSelection(state.generalSelection, viewerSeatId),
     pendingResponse: maskSkills(maskHiddenCards(hideSecrets(state.pendingResponse), hidden), skills),

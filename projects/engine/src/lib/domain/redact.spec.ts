@@ -140,6 +140,38 @@ describe('redactStateForSeat', () => {
   });
 });
 
+describe('redactStateForSeat once the game has a result', () => {
+  const result = { endedAt: 1, winningKingdom: 'Wei' as const, winningSeatIds: ['seat-a'], losingSeatIds: ['seat-b'] };
+
+  it("shows every seat's Generals, Kingdom and allegiance once the game has a result", () => {
+    const state = makeState();
+    state.seats[1].allegiance = 'ambitionist';
+    state.result = result;
+    const view = redactStateForSeat(state, 'seat-a');
+
+    expect(view.seats).toEqual(state.seats);
+    expect(view.seats[1].generals!.main.generalDefinitionId).toBe('general-z');
+    expect(view.seats[1].kingdom).toBe('Shu');
+  });
+
+  it("still masks another seat's hand once the game has a result", () => {
+    const state = makeState();
+    state.result = result;
+    const view = redactStateForSeat(state, 'seat-a');
+
+    expect(view.zones.find((z) => z.id === 'hand-b')!.cards.every((c) => c.definitionId === 'hidden')).toBe(true);
+  });
+
+  it('still hides Generals while there is no result', () => {
+    const state = makeState();
+    state.result = null;
+    const view = redactStateForSeat(state, 'seat-a');
+
+    expect(view.seats[1].generals!.main.generalDefinitionId).toBe('hidden');
+    expect(view.seats[1].kingdom).toBe('hidden');
+  });
+});
+
 describe('redactStateForSeat with seats that have not chosen generals', () => {
   it('passes an unchosen seat through without masking', () => {
     const state = makeState();

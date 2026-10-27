@@ -65,7 +65,8 @@ export function findViewLeaks(state: GameState, view: object, viewerSeatId: stri
   const leaks: string[] = [];
   if ('rng' in view) leaks.push(`${viewerSeatId}: the view carries the RNG state`);
   if ('log' in view) leaks.push(`${viewerSeatId}: the view carries the log, which is sent separately`);
-  const generals = secretGeneralIds(state, viewerSeatId);
+  // Once the game has a result every seat is shown to all (the Victory window), so only the unseated Generals stay secret.
+  const generals = secretGeneralIds(state.result ? { ...state, seats: [] } : state, viewerSeatId);
   const cards = hiddenCards(state, viewerSeatId);
   const look = ownSecretLook(state, viewerSeatId);
   walk(
