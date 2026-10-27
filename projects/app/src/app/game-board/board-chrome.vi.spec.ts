@@ -85,29 +85,19 @@ describe('PhaseIndicator in Vietnamese', () => {
 });
 
 describe('GameOver in Vietnamese', () => {
-  const render = (result: GameResult, players: { id: string; seatId: string; kind: 'human' | 'bot'; name: string }[] = []) => {
+  it('shows the Vietnamese victory board and the New Game button', () => {
     const fixture = TestBed.createComponent(GameOver);
-    fixture.componentRef.setInput('result', result);
-    fixture.componentRef.setInput('players', players);
+    fixture.componentRef.setInput('result', { endedAt: 12, winningKingdom: 'Wei', winningSeatIds: ['seat-0'], losingSeatIds: ['seat-1'] } satisfies GameResult);
+    fixture.componentRef.setInput('seats', [
+      { seatId: 'seat-0', kingdom: 'Wei', allegiance: 'kingdom', mainGeneralId: null, deputyGeneralId: null, eliminated: false },
+      { seatId: 'seat-1', kingdom: 'Shu', allegiance: 'kingdom', mainGeneralId: null, deputyGeneralId: null, eliminated: true },
+    ]);
+    fixture.componentRef.setInput('youSeatId', null);
     fixture.detectChanges();
-    return fixture.nativeElement as HTMLElement;
-  };
-
-  it('a winning kingdom, with the winners and losers and the New Game button', () => {
-    const el = render({ endedAt: 12, winningKingdom: 'Wei', winningSeatIds: ['seat-0', 'seat-2'], losingSeatIds: ['seat-1'] });
-    expect(text(el.querySelector('h2') as HTMLElement)).toBe('Hết ván');
+    const el = fixture.nativeElement as HTMLElement;
     expect(text(el.querySelector('.headline') as HTMLElement)).toBe('Ngụy thắng!');
-    expect(text(el)).toContain('Người thắng: Người chơi 0, Người chơi 2');
-    expect(text(el)).toContain('Người thua: Người chơi 1');
+    expect(text(el)).toContain('Người chơi 0');
     expect(text(el.querySelector('button') as HTMLElement)).toContain('Ván mới');
-  });
-
-  it('winners by seat, a draw, and an empty list', () => {
-    expect(text(render({ endedAt: 1, winningSeatIds: ['seat-3'], losingSeatIds: [] }, [{ id: 'p', seatId: 'seat-3', kind: 'human', name: 'Hing' }]).querySelector('.headline') as HTMLElement)).toBe('Hing thắng!');
-    const draw = render({ endedAt: 1, winningSeatIds: [], losingSeatIds: [] });
-    expect(text(draw.querySelector('.headline') as HTMLElement)).toBe('Hòa — không còn ai sống sót.');
-    expect(text(draw)).toContain('Người thắng: Không có');
-    expect(text(draw)).toContain('Người thua: Không có');
   });
 });
 

@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed, isSeatDying } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
+import { finalSeatViews } from 'protocol';
 import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
@@ -67,7 +68,7 @@ import { TPipe } from '../i18n/t.pipe';
 
     @if (gameService.state(); as state) {
       @if (state.result; as result) {
-        <app-game-over [result]="result" [players]="state.players" (newGame)="goToSetup()" />
+        <app-game-over [result]="result" [players]="state.players" [seats]="finalSeats()" [youSeatId]="gameService.humanSeatId()" (newGame)="goToSetup()" />
       } @else if (activeSeatId(); as activeSeatId) {
         @if (gameService.humanSeatId() === null && gameService.revealedSeatId() !== activeSeatId) {
           <app-reveal-gate-overlay [name]="nameOf(activeSeatId)" (revealed)="gameService.reveal(activeSeatId)" />
@@ -393,6 +394,12 @@ export class GameBoard {
 
   // What the board's action list offers: the acknowledgement of a judgment is the popup's, not a button on the board.
   protected readonly boardActions = computed(() => this.gameService.legalActions().filter((a) => a.kind !== 'AcknowledgeJudgmentAction'));
+
+  // Everything is public at game over, so the full local state is safe to show.
+  protected readonly finalSeats = computed(() => {
+    const state = this.gameService.state();
+    return state ? finalSeatViews(state) : [];
+  });
 
   protected readonly viewerSeatId = computed(() => this.gameService.humanSeatId() ?? this.activeSeatId());
 

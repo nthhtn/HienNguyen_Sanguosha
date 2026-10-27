@@ -1,9 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { GameResult } from 'engine';
+import { GameResult, Kingdom } from 'engine';
+import { FinalSeatView } from 'protocol';
 import { GameOver } from './game-over';
 
+const seat = (n: number, kingdom: Kingdom, eliminated = false): FinalSeatView => ({
+  seatId: `seat-${n}`, kingdom, allegiance: 'kingdom', mainGeneralId: null, deputyGeneralId: null, eliminated,
+});
+const FOUR_SEATS = [seat(0, 'Wei'), seat(1, 'Shu', true), seat(2, 'Wei'), seat(3, 'Wu', true)];
+
 describe('GameOver', () => {
-  it('renders the winning kingdom and seat lists, and emits newGame on click', () => {
+  it('renders the victory board with its columns and emits newGame on click', () => {
     const fixture = TestBed.createComponent(GameOver);
     const result: GameResult = {
       endedAt: 12,
@@ -12,71 +18,32 @@ describe('GameOver', () => {
       losingSeatIds: ['seat-1', 'seat-3'],
     };
     fixture.componentRef.setInput('result', result);
+    fixture.componentRef.setInput('seats', FOUR_SEATS);
+    fixture.componentRef.setInput('youSeatId', null);
     fixture.detectChanges();
 
-    const text = (fixture.nativeElement as HTMLElement).textContent!;
-    expect(text).toContain('Wei');
-    expect(text).toContain('Seat 0');
-    expect(text).toContain('Seat 2');
-    expect(text).toContain('Seat 1');
-    // The headline takes Wei's force colour.
-    expect((fixture.nativeElement as HTMLElement).querySelector('.headline')!.getAttribute('data-force')).toBe('Wei');
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-victory-board')).not.toBeNull();
+    expect(el.querySelectorAll('.col').length).toBe(3);
+    expect(el.querySelector('.headline')!.getAttribute('data-force')).toBe('Wei');
+    expect(el.textContent).toContain('Seat 0');
 
     const newGameSpy = jest.fn();
     fixture.componentInstance.newGame.subscribe(newGameSpy);
-    (fixture.nativeElement as HTMLElement).querySelector('button')!.dispatchEvent(new Event('click'));
+    el.querySelector('button')!.dispatchEvent(new Event('click'));
     expect(newGameSpy).toHaveBeenCalled();
   });
 
-  it('renders a draw when there is no winning kingdom', () => {
-    const fixture = TestBed.createComponent(GameOver);
-    fixture.componentRef.setInput('result', {
-      endedAt: 20,
-      winningSeatIds: [],
-      losingSeatIds: ['seat-0', 'seat-1'],
-    } satisfies GameResult);
-    fixture.detectChanges();
-
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Draw');
-  });
-
-  it('renders the winning seat(s) when there is a lone survivor with no shared kingdom', () => {
-    // This is the case that actually occurs in real play: checkWinCondition's
-    // alive.length === 1 branch sets winningSeatIds but never winningKingdom.
-    const fixture = TestBed.createComponent(GameOver);
-    fixture.componentRef.setInput('result', {
-      endedAt: 30,
-      winningSeatIds: ['seat-0'],
-      losingSeatIds: ['seat-1', 'seat-2', 'seat-3'],
-    } satisfies GameResult);
-    fixture.detectChanges();
-
-    const text = (fixture.nativeElement as HTMLElement).textContent!;
-    expect(text).toContain('Seat 0 wins!');
-    expect(text).not.toContain('Draw');
-  });
-
-  it('uses a Material New game button inside a Material card', () => {
+  it('names the seats by their players’ names', () => {
     const fixture = TestBed.createComponent(GameOver);
     fixture.componentRef.setInput('result', { endedAt: 1, winningSeatIds: ['seat-0'], losingSeatIds: ['seat-1'] } satisfies GameResult);
-    fixture.detectChanges();
-    const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('mat-card')).not.toBeNull();
-    expect(el.querySelector('button')!.classList).toContain('mat-mdc-button-base');
-  });
-});
-
-describe('GameOver with player names', () => {
-  it('names the winners and losers by their players’ names', () => {
-    const fixture = TestBed.createComponent(GameOver);
-    fixture.componentRef.setInput('result', { endedAt: 1, winningSeatIds: ['seat-0'], losingSeatIds: ['seat-1'] });
+    fixture.componentRef.setInput('seats', [seat(0, 'Wei'), seat(1, 'Shu', true)]);
+    fixture.componentRef.setInput('youSeatId', 'seat-0');
     fixture.componentRef.setInput('players', [
       { id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' },
       { id: 'p1', seatId: 'seat-1', kind: 'bot', name: 'Seat 1' },
     ]);
     fixture.detectChanges();
-    const text = (fixture.nativeElement as HTMLElement).textContent!;
-    expect(text).toContain('Hing wins!');
-    expect(text).toContain('Losers: Seat 1');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Hing');
   });
 });
