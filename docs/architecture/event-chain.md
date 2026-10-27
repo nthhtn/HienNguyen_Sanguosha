@@ -302,11 +302,11 @@ A judgment is a short chain of its own:
 
 **The judgment notice.** With `state.rules.judgmentNotice` on, `JudgeEffect`
 also sets `state.judgmentView` (the judged seat, the reader, the current card,
-each replacement so far, `settled: false`). When `JudgmentShownEffect` finds a
+each replacement so far, `settled: false`, and `rounds`: how many times a skill that may change the card has been asked). A changer's ask (`AskUseEffect.judgmentChange`, set by `judgmentChangeAsk` for Devil and Dark Magic) opens one round while the view is unsettled, and the ask and the card pick after it are marked on the pending choice and selection. When `JudgmentShownEffect` finds a
 view, it sets `settled: true` and the pipeline **stops** instead of queueing the
 resolve step: the game now rests at a decision, whose actor is the first living
 human seat (see [The rules engine](rules-engine.md)). `AcknowledgeJudgmentAction`,
-from that seat's Close or the 10 s notice clock, clears the view, logs
+from that seat's Continue or the 3 s notice clock, clears the view, logs
 `JudgmentAcknowledgedEvent` (with who closed it, or that it timed out) and
 queues `JudgmentResolveEffect`. With the rule off, `JudgmentShownEffect` queues
 the resolve step directly, so a game without it plays and replays as before.

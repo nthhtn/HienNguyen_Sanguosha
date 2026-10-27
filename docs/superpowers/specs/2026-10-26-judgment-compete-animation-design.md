@@ -155,16 +155,15 @@ judgmentOutcome(state, view, registry): { readerId, key, seats, verdict, effect 
 | Clock | Lead-in |
 |---|---|
 | Judgment change, first ask of a judgment | HEAD, 2100 ms (source, rule, card flip) |
-| Judgment change, after a replacement | REPLACE, 1300 ms (the swap) |
-| Judgment change, after a decline | GAP, 500 ms |
+| Judgment change, every later ask | REPLACE, 1300 ms (the swap; also used after a decline) |
 | Notice, when no changer was ever asked | HEAD + TAIL, 2100 + 2000 ms |
 | Notice, after at least one ask | TAIL, 2000 ms (verdict, consequence, unlock) |
 
-- **State needed:** `judgmentView` gains a counter `rounds` (how many changer asks have happened so far), set by the same code that updates `changes`. With `changes.length` it tells the lead-in apart: a replacement is `changes.length === rounds`. It is public, additive, and only exists with `judgmentNotice` on.
+- **State needed:** `judgmentView` gains a counter `rounds` (how many changer asks have happened so far), counted when the ask opens. It tells the first ask from later ones, and a notice that follows asks from one that does not. There is no separate "after a decline" lead-in: a later ask after a decline waits REPLACE too, up to 0.8 s longer than a 500 ms gap would. It is public, additive, and only exists with `judgmentNotice` on.
 - **No UI, no lead-in.** When no seat is controlled by a person (all-bot or fully taken-over games) every lead-in is zero, and a bot's changer decision uses no animation delay, so such games do not stall.
 - Compete popup: its 15 s auto-close becomes 3 s, started when Continue unlocks (UI only).
 - Online: the server owns the clocks and `RemoteDecisionClock` only displays them. Every client reaches each beat at the same moment because the sequence is fixed.
-- **Protocol:** `GameClockView.kind` gains the new kind and the clock may carry its lead-in. The builder checks whether the version check treats an unknown kind as breaking. If it does, bump `PROTOCOL_VERSION` (the Victory Window change bumps it too; ship them in one release if they land together).
+- **Protocol:** `GameClockView` gains `startsAt` and the new kind, and `PROTOCOL_VERSION` is bumped (the Victory Window change bumps it too; ship them in one release if they land together).
 - Away takeover: a judgment-change timeout counts as a timeout like any other decision (it is a real decision). The notice timeout still does not (existing rule).
 
 ## Constraints

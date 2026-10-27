@@ -152,9 +152,17 @@ the only code that changes a running game's state. It owns:
   the room is replaced by a bot to the end. A solo game instead **pauses**
   while its player is away.
 - **The judgment notice.** While a judgment waits to be closed, a bot never
-  closes it as long as a person controls any seat. Only a person's Close or the
-  10 s notice clock moves it on, and that timeout does not count towards the
-  away rule.
+  closes it as long as a person controls any seat. Only a person's Continue or the
+  3 s notice clock moves it on, and that timeout does not count towards the
+  away rule. Both this clock and a judgment-change decision's 10 s clock start
+  after a lead-in (below), and a bot that may change a judgment waits for the
+  same lead-in while a person is at the table; with none, every lead-in is 0.
+- **Clock lead-in.** `GameClockView` carries `startsAt` beside `endsAt`: the
+  moment the countdown starts, after the judgment animation the decision follows
+  (the card turning up, a replacement's swap, the verdict). Until then the clock
+  shows its full length. The lead-ins are fixed constants the app and the server
+  share (`JUDGMENT_LEAD_IN_MS` in the engine). Adding `startsAt` moved
+  `PROTOCOL_VERSION` to 3.
 
 Guests reclaim a seat only through their session cookie; if the cookie is lost,
 the seat stays with the bot.
