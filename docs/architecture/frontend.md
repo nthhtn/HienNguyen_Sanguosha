@@ -119,6 +119,7 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 | `action-history-panel`, `discard-pile` | what has happened, and what has been discarded |
 | `phase-indicator`, `game-over`, `victory-board` | turn and result display (see "The Game Over window") |
 | `general-selection`, `reveal-gate-overlay` | the pre-game pick and the pass-and-play hand-off |
+| `selection-roster`, `game-start-countdown` | online only: who has chosen their Generals (Choosing or Ready, from the redacted candidates' keys), and "Game starts in 3" while the server holds the first decision (`gameStartsAt`) |
 | `decision-dock`, `decision-banner`, `minimize-button` | hide a decision dialog to look at the board, with a banner to bring it back |
 | `board-chat`, `chat-panel` (online) | room chat beside the board |
 

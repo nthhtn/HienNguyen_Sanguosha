@@ -146,6 +146,20 @@ the only code that changes a running game's state. It owns:
   At zero it submits `defaultActionsFor`, the same default the local timer uses.
 - **Bots.** A bot seat moves after `BOT_DELAY_MS` (1.5 s) using the rule-based
   policy over that seat's redacted view.
+- **General Selection.** Every seat that still has candidates may choose, in
+  any order, so people choose at the same time. A General choice is judged
+  against the current state, never refused as stale because another seat's
+  choice landed first (one that arrives after the game began is stale). Every
+  human runs on one shared 300 s clock (`selection:all`), sent to each seat as
+  its own, which a bot's instant pick does not pause. A bot-played seat chooses
+  at once, with no move delay. At zero each seat still choosing is defaulted
+  (source `timeout`, not counted towards takeover). After the last choice the
+  first decision is held `GAME_START_LEAD_IN_MS` (3 s): no actions are offered
+  or accepted, no bot moves, the first clock's `startsAt` is the end of the
+  hold, and a wake-up republishes when it ends. `startHoldMs` (runner options,
+  `RoomService` deps) overrides the length; tests pass 0. The hold is not
+  persisted. A move that cannot be stored is retried after at least
+  `max(botDelayMs, 1 s)`.
 - **Away seats.** A human who disconnects keeps their clock running. After 60 s
   away, or two timeouts in a row while away, an open room's seat is **taken
   over** by a bot, and the player takes it back on return. A player who leaves

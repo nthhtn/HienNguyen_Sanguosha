@@ -1,6 +1,6 @@
 # Simultaneous General Selection — Design
 
-Status: draft for review, 2026-10-27.
+Status: implemented, 2026-10-27.
 
 ## Intent
 

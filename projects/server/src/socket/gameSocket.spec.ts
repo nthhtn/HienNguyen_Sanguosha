@@ -43,7 +43,7 @@ async function playUntil(client: TestClient, done: () => boolean | Promise<boole
 
 // One in-memory store across restarts. Bots move at once, and a seat goes to
 // a bot after 300 ms away, so whole games and takeovers run in test time.
-async function setup(options: { botDelayMs?: number } = {}) {
+async function setup(options: { botDelayMs?: number; startHoldMs?: number } = {}) {
   const repos = createMemoryRepositories();
   const accounts = new AccountService({ repos, mailer: new RecordingMailer(), publicOrigin: ORIGIN });
   const rateLimits = new AuthRateLimits({ ...RATE_LIMITS, signUpPerIp: { limit: 1000, windowMs: 60_000 } });
@@ -54,7 +54,7 @@ async function setup(options: { botDelayMs?: number } = {}) {
 
   const startServer = async () => {
     // A fixed seed: with a random one, two seats can get the same kingdom and the game ends at General selection.
-    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, startHoldMs: 0, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
+    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, startHoldMs: options.startHoldMs ?? 0, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
     await rooms.restore();
     app = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
     await app.listen({ port: 0, host: '127.0.0.1' });
@@ -174,6 +174,28 @@ describe('games over the socket', () => {
     await mover.client.next('ack', (m) => m.reqId === 'x7');
     expect((await other.client.next('game.update', () => true, 2000, beforeMove)).game.seq).toBe(3);
     expect(await ctx.repos.games.listActions(game.gameId)).toHaveLength(3);
+  });
+
+  it('lets both players choose at once, then holds the first decision for the start hold', async () => {
+    ctx = await setup({ startHoldMs: 400 });
+    const { ann, bo, roomId } = await ctx.pairRoom();
+    const a = await ctx.connect(ann, roomId);
+    const b = await ctx.connect(bo, roomId);
+    await ctx.startGame(a.client);
+    const [forA, forB] = await Promise.all([a.client.next('game.update'), b.client.next('game.update')]);
+    // Both are offered their choices at once, on the same clock.
+    expect([forA.game.legalActions.length > 0, forB.game.legalActions.length > 0]).toEqual([true, true]);
+    expect(forA.game.clock).toMatchObject({ kind: 'selection', endsAt: forB.game.clock!.endsAt });
+    // Bo confirms first, then Ann, both from the opening seq.
+    b.client.send({ type: 'game.submit', reqId: 'bo', gameId: forB.game.gameId, baseSeq: 0, actions: [forB.game.legalActions[0]] });
+    a.client.send({ type: 'game.submit', reqId: 'ann', gameId: forA.game.gameId, baseSeq: 0, actions: [forA.game.legalActions[0]] });
+    await Promise.all([a.client.next('ack', (m) => m.reqId === 'ann'), b.client.next('ack', (m) => m.reqId === 'bo')]);
+    await until(() => a.client.latestGame?.seq === 2 && b.client.latestGame?.seq === 2, 'both choices stored');
+    // Nobody may act during the hold, and the first clock starts when it ends.
+    const held = a.client.latestGame!;
+    expect([held.legalActions, b.client.latestGame!.legalActions]).toEqual([[], []]);
+    expect(held.clock!.startsAt - held.clock!.serverNow).toBeGreaterThan(0);
+    await until(() => (a.client.latestGame?.legalActions.length ?? 0) + (b.client.latestGame?.legalActions.length ?? 0) > 0, 'the first decision after the hold');
   });
 
   it("hands an away player's seat to a bot, and gives it back when they return", async () => {
