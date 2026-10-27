@@ -338,11 +338,11 @@ function settle(runner: GameRunner): void {
 describe('GameRunner: a settled judgment', () => {
   const ack = (seatId: string, extra: object = {}) => ({ kind: 'AcknowledgeJudgmentAction', seatId, ...extra });
 
-  it('runs the 10 second notice clock while a person plays, and acknowledges by timeout', async () => {
+  it('runs the 3 second notice clock while a person plays, and acknowledges by timeout', async () => {
     const { runner, host, scheduler } = setup();
     settle(runner);
-    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 10 });
-    await scheduler.advance(9_999);
+    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 3 });
+    await scheduler.advance(2_999);
     expect(host.stored).toHaveLength(0);
     await scheduler.advance(1);
     expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) })]);
@@ -368,10 +368,10 @@ describe('GameRunner: a settled judgment', () => {
     expect(runner.botControlled('p0')).toBe(true);
     const before = host.stored.length;
     settle(runner);
-    expect(runner.updateFor('p1', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 10 });
-    await scheduler.advance(BOT_DELAY_MS * 2);
+    expect(runner.updateFor('p1', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 3 });
+    await scheduler.advance(BOT_DELAY_MS);
     expect(host.stored).toHaveLength(before);
-    await scheduler.advance(10_000);
+    await scheduler.advance(3_000);
     expect(host.stored[before]).toMatchObject({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) });
   });
 
