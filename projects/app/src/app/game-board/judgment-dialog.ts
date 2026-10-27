@@ -20,8 +20,8 @@ export interface JudgmentDialogData {
   decision?: Signal<JudgmentDecisionView | null>;
   // Submits the engine's own action the viewer picked.
   choose?: (action: Action) => void;
-  // Told the filled selection whenever enough are picked, so a timeout can use it.
-  pickedChanged?: (action: Action) => void;
+  // The popup is being rebuilt part-way (the language changed while it was minimized): no replay.
+  resumed?: boolean;
   // Pass and Play: shows the view of the seat whose player took the device.
   reveal?: (seatId: string) => void;
 }
@@ -43,7 +43,7 @@ export interface JudgmentDialogData {
         <app-judgment-stage
           [description]="d"
           [decision]="data.decision?.() ?? null"
-          [pickedChanged]="data.pickedChanged"
+          [instant]="data.resumed ?? false"
           (unlocked)="unlocked.set(true)"
           (chosen)="data.choose?.($event)"
           (revealed)="data.reveal?.($event)"

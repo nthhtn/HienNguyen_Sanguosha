@@ -986,6 +986,42 @@ describe('GameBoard: the judgment popup', () => {
       expect(gameService.state()!.pendingChoice).toBeDefined();
     });
 
+    it('keeps its place when the language is switched while it is minimized: the rebuilt popup does not replay the sequence', async () => {
+      jest.useFakeTimers();
+      gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+      askToChange(gameService, 'seat-0');
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      afterHead(fixture);
+      (document.querySelector('.cdk-overlay-container button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await TestBed.inject(I18n).setLocale('vi');
+      await settle(fixture);
+      jest.advanceTimersByTime(500);
+      await settle(fixture);
+      jest.advanceTimersByTime(50);
+      fixture.detectChanges();
+      // No beats advanced since the switch, yet the decision is open: the sequence is not replayed from the start.
+      expect(document.querySelector('.cdk-overlay-container .decide app-ask-panel')).not.toBeNull();
+      expect(gameService.state()!.pendingChoice).toBeDefined();
+    });
+
+    it('does not let a half-made card pick become the answer when the clock runs out', async () => {
+      jest.useFakeTimers();
+      gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+      askToChange(gameService, 'seat-0');
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      const timer = fixture.componentInstance as unknown as { timer: { setTimeoutChoice(actions: unknown[]): void } };
+      const spy = jest.spyOn(timer.timer, 'setTimeoutChoice');
+      afterHead(fixture);
+      expect(document.querySelector('.cdk-overlay-container .decide')).not.toBeNull();
+      expect(spy).not.toHaveBeenCalled();
+      // Nothing the viewer picks inside the popup is remembered for a timeout: it declines, as the spec says.
+      const dialog = TestBed.inject(MatDialog).openDialogs.find((d) => d.componentInstance instanceof JudgmentDialog)!;
+      expect((dialog.componentInstance as unknown as { data: { pickedChanged?: unknown } }).data.pickedChanged).toBeUndefined();
+    });
+
     it('in Pass and Play, the hand-off comes first, inside the popup, then the private choices', async () => {
       jest.useFakeTimers();
       gameService.startGame(3, 1, 'pass-and-play', [], { judgmentNotice: true });

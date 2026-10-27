@@ -456,7 +456,7 @@ export const en = {
   'judgment.verdict.bad': 'Bad for {seat}',
   'judgment.damage': '−{n} HP',
   'judgment.hp': 'HP of {seat}: {n}',
-  'judgment.nextSeat': 'Next seat',
+  'judgment.nextSeat': 'Next Seat',
   'decision.viewBoard': 'View Board',
   'decision.open': 'Open',
   'respDialog.title': 'Response Needed',

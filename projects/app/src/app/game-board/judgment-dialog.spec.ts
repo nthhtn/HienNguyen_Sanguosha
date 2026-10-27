@@ -136,20 +136,5 @@ describe('JudgmentDialog', () => {
       (el.querySelector('.decide button.reveal') as HTMLButtonElement).click();
       expect(reveal).toHaveBeenCalledWith('seat-1');
     });
-
-    it('tells the board what has been picked so far, for a timeout to use', () => {
-      const pickedChanged = jest.fn();
-      const { el } = render(asking, true, {
-        pickedChanged,
-        decision: signal<JudgmentDecisionView | null>({
-          kind: 'mine', deciderName: 'Hing',
-          step: { kind: 'select', description: { title: 'Devil', prompt: 'Pick', confirmLabel: 'Replace', cancelLabel: 'Cancel', min: 1, max: 1, items: [{ id: 'h1', label: 'K ♠', card: king }], template: { kind: 'SelectAction', seatId: 'seat-0', selectionId: 's', ids: [] }, cancel: null } },
-        }),
-      });
-      jest.advanceTimersByTime(2100);
-      TestBed.tick();
-      (el.querySelector('.decide [data-item-id="h1"]') as HTMLButtonElement).click();
-      expect(pickedChanged).toHaveBeenCalledWith({ kind: 'SelectAction', seatId: 'seat-0', selectionId: 's', ids: ['h1'] });
-    });
   });
 });

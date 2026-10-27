@@ -220,6 +220,8 @@ export class GameBoard {
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
   private judgmentDialog: MatDialogRef<JudgmentDialog> | null = null;
+  // A minimized decision is being closed and opened again in the current language.
+  private rebuilding = false;
   private startRevealDialog: MatDialogRef<StartRevealDialog, Array<'main' | 'deputy'>> | null = null;
   private choiceDialog: MatDialogRef<unknown, Action> | null = null;
   private selectionDialog: MatDialogRef<SelectionDialog, Action> | null = null;
@@ -552,7 +554,7 @@ export class GameBoard {
 
   // Opens the judgment popup. It reads the description live, so a replacement or a language switch
   // updates it in place; Close is the viewer's, whoever holds the device.
-  private openJudgmentDialog(): void {
+  private openJudgmentDialog(resumed = this.rebuilding): void {
     const description = this.judgmentView();
     if (this.judgmentDialog || !description) return;
     const data: JudgmentDialogData = {
@@ -561,7 +563,8 @@ export class GameBoard {
       close: () => this.gameService.closeJudgment(this.gameService.humanSeatId() ?? this.gameService.revealedSeatId()),
       decision: this.judgmentDecisionView,
       choose: (action) => this.submit(action),
-      pickedChanged: (action) => this.timer.setTimeoutChoice([action]),
+      // A skill's decision whether to change the card is not remembered for a timeout: running out declines it.
+      resumed,
       reveal: (seatId) => this.gameService.reveal(seatId),
     };
     const ref = openForceDialog<JudgmentDialog, JudgmentDialogData>(this.dialog, JudgmentDialog, description.force, { data, width: 'min(92vw, 560px)', disableClose: true });
@@ -574,6 +577,8 @@ export class GameBoard {
   private rebuildMinimizedDecision(): void {
     const old = this.dock.dismiss();
     if (!old) return;
+    // The Judgment popup the closing triggers a rebuild of (here or by its own effect) picks up where it was.
+    this.rebuilding = true;
     old.afterClosed().subscribe(() => {
       const count = this.discardsDue();
       if (count > 0) this.openDiscardDialog(count);
@@ -586,6 +591,7 @@ export class GameBoard {
       ] as const) {
         if (id) open(id);
       }
+      this.rebuilding = false;
       const fresh = this.dialog.openDialogs.at(-1);
       if (!fresh) return;
       // Hidden from the moment it exists, so it never flashes; registered with the dock (title,

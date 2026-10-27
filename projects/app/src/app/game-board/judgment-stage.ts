@@ -107,7 +107,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
                     @if (dec.step.kind === 'ask') {
                       <app-ask-panel [description]="dec.step.description" (chosen)="chosen.emit($event)" />
                     } @else {
-                      <app-selection-panel [description]="dec.step.description" [pickedChanged]="pickedChanged()" (chosen)="chosen.emit($event)" />
+                      <app-selection-panel [description]="dec.step.description" (chosen)="chosen.emit($event)" />
                     }
                     <app-decision-countdown />
                   }
@@ -233,8 +233,9 @@ export class JudgmentStage implements OnInit {
   readonly description = input.required<JudgmentDescription>();
   // The skill decision the judgment is waiting on, as this viewer sees it, if any.
   readonly decision = input<JudgmentDecisionView | null>(null);
-  // Told the filled SelectAction whenever enough are picked, so a timeout can use it.
-  readonly pickedChanged = input<((action: Action) => void) | undefined>(undefined);
+  // The popup was rebuilt part-way (the language changed while it was minimized): show where it had got to at
+  // once, as reduced motion does, instead of replaying it from the start.
+  readonly instant = input(false);
   // The sequence has played out: Continue may be pressed.
   readonly unlocked = output<void>();
   // The engine's own action the viewer picked in the decision area.
@@ -308,7 +309,7 @@ export class JudgmentStage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.reducedMotion = prefersReducedMotion();
+    this.reducedMotion = prefersReducedMotion() || this.instant();
     this.seenChanges = this.description().changes.length;
     this.play([
       { at: SOURCE_AT, run: () => this.sourceIn.set(true) },

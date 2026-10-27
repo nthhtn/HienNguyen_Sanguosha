@@ -174,6 +174,20 @@ describe('JudgmentStage', () => {
     localStorage.clear();
   });
 
+  it('shows the end of the sequence at once when it is rebuilt part-way (instant)', () => {
+    TestBed.configureTestingModule({});
+    const fixture = TestBed.createComponent(JudgmentStage);
+    fixture.componentRef.setInput('description', bad({ effect: { kind: 'skip-phase', phase: 'Play' } }));
+    fixture.componentRef.setInput('instant', true);
+    const unlocked = jest.fn();
+    fixture.componentInstance.unlocked.subscribe(unlocked);
+    fixture.detectChanges();
+    fixture.detectChanges();
+    expect(count(fixture.nativeElement, '.stamp.bad.show')).toBe(1);
+    expect(unlocked).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
   it('stops its timers when it is destroyed', () => {
     const { fixture } = render(skillDescription());
     fixture.destroy();
