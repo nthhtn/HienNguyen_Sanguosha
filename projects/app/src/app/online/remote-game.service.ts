@@ -194,6 +194,8 @@ export class RemoteGameService implements BoardGame {
   // One move: the server applies all of it or none of it.
   // `quietStale`: losing a race (a Close that came second) is not worth a message; the resync follows anyway.
   submitAll(actions: Action[], quietStale = false): void {
+    // A General choice that loses a race to another seat's choice or to the clock is not worth a message either.
+    quietStale ||= actions.length > 0 && actions.every((a) => a.kind === 'ChooseGeneralsAction');
     const update = this._update();
     if (!update || actions.length === 0 || this._waiting()) return;
     this._waiting.set(true);
@@ -244,8 +246,9 @@ export class RemoteGameService implements BoardGame {
     this._update.set(update);
     this._state.set({ ...update.view, log: this.log, rng: NO_RNG });
     const clock = update.clock;
-    // Turn 1 resting in its Start phase with a clock that starts later than it was sent: the start hold.
-    const holding = !!clock && update.view.phase === 'Start' && update.view.turn.turnNumber === 1 && clock.startsAt - clock.serverNow > HOLD_MIN_MS;
+    // The start hold: the first decision of turn 1, a person's Start window or a bot's move, whose clock starts
+    // later than it was sent. (A judgment's lead-in on turn 1 is also later, but it is another kind of clock.)
+    const holding = !!clock && update.view.turn.turnNumber === 1 && (clock.bot === true || clock.kind === 'start') && clock.startsAt - clock.serverNow > HOLD_MIN_MS;
     this._gameStartsAt.set(holding ? Date.now() + (clock.startsAt - clock.serverNow) : null);
     this._clock.set(clock && { seatId: clock.seatId, kind: clock.kind, bot: clock.bot === true, startsAt: Date.now() + (clock.startsAt - clock.serverNow), endsAt: Date.now() + (clock.endsAt - clock.serverNow), totalSeconds: clock.totalSeconds });
   }

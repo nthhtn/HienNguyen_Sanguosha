@@ -119,11 +119,11 @@ describe('GameRunner: simultaneous General Selection', () => {
     expect(runner.state.phase).toBe('GeneralSelection');
   });
 
-  it('refuses a second choice from a seat that has chosen, as illegal', async () => {
+  it('refuses a second choice from a seat that has chosen as stale, so the client resyncs quietly', async () => {
     const { runner } = twoHumans();
     const first = choice(runner, 'p0');
     await runner.submit('p0', GAME_ID, 0, [first]);
-    await expect(runner.submit('p0', GAME_ID, 0, [first])).rejects.toEqual(code('illegal_action'));
+    await expect(runner.submit('p0', GAME_ID, 0, [first])).rejects.toEqual(code('stale'));
   });
 
   it('offers a seat that has chosen nothing', async () => {
@@ -184,7 +184,16 @@ describe('GameRunner: the selection clock, bots and the start hold', () => {
     const { runner, host, scheduler } = two();
     const late = runner.updateFor('p1', 0)!.legalActions[0];
     await scheduler.advance(300_000);
-    await expect(runner.submit('p1', GAME_ID, 0, [late])).rejects.toEqual(expect.objectContaining({ code: expect.stringMatching(/illegal_action|stale/) }));
+    await expect(runner.submit('p1', GAME_ID, 0, [late])).rejects.toEqual(code('stale'));
+    expect(host.stored).toHaveLength(2);
+  });
+
+  it('answers stale, not not_your_turn, to a choice that loses the race inside the start hold', async () => {
+    const { runner, host, scheduler } = two({ startHoldMs: 3000 });
+    const late = runner.updateFor('p1', 0)!.legalActions[0];
+    await scheduler.advance(300_000);
+    expect(runner.state.phase).not.toBe('GeneralSelection');
+    await expect(runner.submit('p1', GAME_ID, 0, [late])).rejects.toEqual(code('stale'));
     expect(host.stored).toHaveLength(2);
   });
 
