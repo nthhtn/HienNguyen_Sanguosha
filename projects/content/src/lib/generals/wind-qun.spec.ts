@@ -66,6 +66,12 @@ describe('Zhang Jiao — Dark Magic', () => {
     expect(ids(s, 'discardPile')).toEqual(['k']);
   });
 
+  it('marks its ask and its card pick as a judgment change, so they run on the judgment-change clock', () => {
+    const asked = judgedOnC(zhangJiao('seat-a'), { 'seat-a': [card('k', 'sha', 'club', 3)] });
+    expect(asked.pendingChoice).toMatchObject({ judgmentChange: true });
+    expect(h.use(asked).pendingSelection).toMatchObject({ judgmentChange: true });
+  });
+
   it('is ordered with Devil, from the judged seat', () => {
     const s = judgedOnC({ ...zhangJiao('seat-d'), 'seat-b': ['sima-yi', 'filler-xun-yu'] }, { 'seat-d': [card('k', 'sha', 'club', 3)], 'seat-b': [card('x', 'shan')] });
     expect(s.pendingChoice).toMatchObject({ seatId: 'seat-d', reason: { abilityId: 'dark-magic' } });

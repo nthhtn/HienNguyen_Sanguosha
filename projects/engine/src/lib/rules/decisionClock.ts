@@ -36,10 +36,20 @@ export interface DecisionSpec {
 // What `seatId` must decide in `state`, or null. `stepKey` names this exact
 // state for the decisions that get a clock each (the caller picks it: the app
 // a per-state key, a server the action count).
-export function describeDecision(state: GameState, seatId: string, legal: readonly Action[], stepKey: string): DecisionSpec | null {
+export function describeDecision(state: GameState, seatId: string, legal: readonly Action[], stepKey: string, opts: { leadIn?: boolean } = {}): DecisionSpec | null {
   if (state.result || legal.length === 0) return null;
   const step = (kind: DecisionKind): DecisionSpec => ({ kind, seatId, key: `step:${stepKey}` });
-  if (state.judgmentView?.settled) return step('notice');
+  const view = state.judgmentView;
+  const leadIn = (ms: number): number => (opts.leadIn === false ? 0 : ms);
+  const rounds = view?.rounds ?? 0;
+  // A settled judgment closes on its own countdown, once the verdict and consequence have played
+  // (and the card's first showing, if no skill was asked, which would have covered it).
+  if (view?.settled) return { ...step('notice'), leadInMs: leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
+  // A skill that may change the card asks: one clock for the ask and the pick after it, started once
+  // the animation before it (the card turning up, or the last replacement) has played.
+  if (view && (state.pendingChoice?.judgmentChange || state.pendingSelection?.judgmentChange)) {
+    return { kind: 'judgmentChange', seatId, key: `judgmentChange:${rounds}`, leadInMs: leadIn(rounds <= 1 ? JUDGMENT_LEAD_IN_MS.head : JUDGMENT_LEAD_IN_MS.replace) };
+  }
   if (state.pendingChoice || state.pendingSelection || state.pendingArrangement) return step('choice');
   if (state.pendingResponse) return step('response');
   if (state.phase === 'GeneralSelection') return { kind: 'selection', seatId, key: `selection:${seatId}` };

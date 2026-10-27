@@ -1,7 +1,7 @@
 import type { CardInstance, ContentRegistry, Effect, GameState, GeneralOwner } from 'engine';
 import { livingSeatOrderFrom, skillsInPlay } from 'engine';
 import { handOf } from './queries';
-import { ownCards } from './skills';
+import { ownCards, selectionOf } from './skills';
 import { colourFor } from './suits';
 
 type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
@@ -37,4 +37,18 @@ function maySay(state: GameState, shown: Shown, seatId: string, registry: Conten
 // Whether `owner`'s seat is the next to say whether it changes the judgment.
 export function nextToChange(state: GameState, shown: Shown, owner: GeneralOwner, registry: ContentRegistry): boolean {
   return changerOrder(state, shown).find((seatId) => maySay(state, shown, seatId, registry)) === owner.seatId;
+}
+
+// The ask of a skill that may replace `shown`'s card with one of `eligibleIds` (`oldTo`: where the old
+// card goes, else the discard pile). The ask and the pick after it are both marked as a judgment
+// change, so they run on the judgment-change clock and are shown inside the judgment popup. Declining,
+// or cancelling the pick, lets the card stand and records the seat as having had its say.
+export function judgmentChangeAsk(state: GameState, shown: Shown, owner: GeneralOwner, eligibleIds: string[], oldTo?: string): Effect {
+  const passed: Shown = { ...shown, acted: [...(shown.acted ?? []), owner.seatId] };
+  const pick = selectionOf(state, owner, {
+    of: 'cards', eligibleIds, min: 1, max: 1,
+    then: { kind: 'replace-judgment', judgment: shown.judgment, owner, abilityId: owner.skillId, ...(oldTo ? { oldTo } : {}) },
+    onCancel: [passed], targetSeatId: shown.judgment.seatId, judgmentChange: true,
+  });
+  return { kind: 'AskUseEffect', owner, abilityId: owner.skillId, effects: [pick], otherwise: [passed], targetSeatId: shown.judgment.seatId, judgmentChange: true };
 }

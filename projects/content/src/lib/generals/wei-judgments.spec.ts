@@ -62,6 +62,12 @@ describe('Sima Yi — Devil', () => {
     expect(ids(s, 'processing')).toEqual([]);
   });
 
+  it('marks its ask and its card pick as a judgment change, so they run on the judgment-change clock', () => {
+    const asked = judged(['seat-b'], { 'seat-b': [card('h1', 'peach', 'heart', 2)] });
+    expect(asked.pendingChoice).toMatchObject({ judgmentChange: true });
+    expect(stub.use(asked).pendingSelection).toMatchObject({ judgmentChange: true });
+  });
+
   it("Don't, or Cancel at the pick, lets the card stand", () => {
     expect(stub.decline(judged(['seat-b'], { 'seat-b': [card('h1', 'peach', 'heart')] })).turn.flags).toEqual({ skipPlay: true });
     expect(stub.cancel(stub.use(judged(['seat-b'], { 'seat-b': [card('h1', 'peach', 'heart')] }))).turn.flags).toEqual({ skipPlay: true });

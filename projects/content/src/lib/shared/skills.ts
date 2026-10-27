@@ -72,6 +72,8 @@ interface SelectionSpec {
   // Who selects; default the owner's seat.
   seatId?: string;
   targetSeatId?: string;
+  // The pick that follows a judgment-change ask (PendingSelection.judgmentChange).
+  judgmentChange?: true;
 }
 
 // A selection for `owner`'s skill.
@@ -89,6 +91,7 @@ export function selectionOf(state: GameState, owner: GeneralOwner, spec: Selecti
       max: spec.max,
       then: spec.then,
       ...(spec.onCancel ? { onCancel: spec.onCancel } : {}),
+      ...(spec.judgmentChange ? { judgmentChange: true as const } : {}),
     },
   };
 }

@@ -50,7 +50,7 @@ export function applyJudgmentStepEffect(state: GameState, effect: JudgmentStepEf
         { kind: 'JudgmentEvent', seatId: effect.seatId, reader: effect.reader, card: judged },
       ];
       const judgment: Judgment = { seatId: effect.seatId, reader: effect.reader, card: judged, ...(effect.data ? { data: effect.data } : {}) };
-      const view: Partial<GameState> = state.rules?.judgmentNotice ? { judgmentView: { ...judgment, changes: [], settled: false } } : {};
+      const view: Partial<GameState> = state.rules?.judgmentNotice ? { judgmentView: { ...judgment, changes: [], settled: false, rounds: 0 } } : {};
       return { state: queueFront({ ...state, ...view, zones, rng, log: [...state.log, ...events] }, [{ kind: 'JudgmentShownEffect', judgment }]), events };
     }
     case 'JudgmentShownEffect':
