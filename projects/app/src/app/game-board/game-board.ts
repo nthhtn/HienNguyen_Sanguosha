@@ -17,6 +17,8 @@ import { SeatTile } from './seat-tile';
 import { HandView } from './hand-view';
 import { GameOver } from './game-over';
 import { GeneralSelection } from './general-selection';
+import { SelectionRoster, SelectionRosterRow } from './selection-roster';
+import { GameStartCountdown } from './game-start-countdown';
 import { PhaseIndicator } from './phase-indicator';
 import { DiscardPile } from './discard-pile';
 import { conversionLabel, seatForce, generalDisplayName, seatName } from '../labels';
@@ -51,7 +53,7 @@ import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-game-board',
-  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -66,6 +68,9 @@ import { TPipe } from '../i18n/t.pipe';
     }
 
     <app-decision-banner />
+    @if (gameService.gameStartsAt(); as startsAt) {
+      <app-game-start-countdown [startsAt]="startsAt" />
+    }
 
     @if (gameService.state(); as state) {
       @if (state.result; as result) {
@@ -74,20 +79,36 @@ import { TPipe } from '../i18n/t.pipe';
         @if (gameService.humanSeatId() === null && gameService.revealedSeatId() !== activeSeatId) {
           <app-reveal-gate-overlay [name]="nameOf(activeSeatId)" (revealed)="gameService.reveal(activeSeatId)" />
         } @else if (visibleState(); as visible) {
-          @if (visible.phase === 'GeneralSelection' && activeSeatId !== viewerSeatId()) {
-            <mat-card appearance="outlined" class="bots-choosing">
-              <mat-progress-spinner mode="indeterminate" diameter="28" />
-              <span>{{ 'board.botsChoosing' | t }}</span>
-            </mat-card>
-          } @else if (visible.phase === 'GeneralSelection') {
-            <app-general-selection
-              [candidates]="selectionCandidates()"
-              [actions]="generalChoices()"
-              [registry]="gameService.registry"
-              [seatId]="activeSeatId"
-              [seatName]="nameOf(activeSeatId)"
-              (chosen)="submit($event)"
-            />
+          @if (visible.phase === 'GeneralSelection') {
+            <div class="selecting">
+              <div class="selecting-main">
+                @if (activeSeatId !== viewerSeatId()) {
+                  @if (rosterRows()) {
+                    <mat-card appearance="outlined" class="waiting-others">
+                      <mat-progress-spinner mode="indeterminate" diameter="28" />
+                      <span>{{ 'board.selection.waiting' | t }}</span>
+                    </mat-card>
+                  } @else {
+                    <mat-card appearance="outlined" class="bots-choosing">
+                      <mat-progress-spinner mode="indeterminate" diameter="28" />
+                      <span>{{ 'board.botsChoosing' | t }}</span>
+                    </mat-card>
+                  }
+                } @else {
+                  <app-general-selection
+                    [candidates]="selectionCandidates()"
+                    [actions]="generalChoices()"
+                    [registry]="gameService.registry"
+                    [seatId]="activeSeatId"
+                    [seatName]="nameOf(activeSeatId)"
+                    (chosen)="submit($event)"
+                  />
+                }
+              </div>
+              @if (rosterRows(); as rows) {
+                <app-selection-roster class="selecting-roster" [rows]="rows" />
+              }
+            </div>
           } @else {
             <div class="board">
               <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
@@ -154,6 +175,11 @@ import { TPipe } from '../i18n/t.pipe';
     }
     .error-banner .message { flex: 1; }
     .error-banner .detail { display: block; opacity: 0.8; font: var(--mat-sys-body-small); overflow-wrap: anywhere; }
+    .selecting { display: flex; gap: 16px; align-items: flex-start; }
+    .selecting-main { flex: 1; min-width: 0; }
+    .selecting-roster { flex: 0 0 240px; }
+    @media (max-width: 899px) { .selecting { flex-direction: column; } .selecting-roster { flex: none; width: 100%; } }
+    .waiting-others { display: flex; align-items: center; gap: 16px; padding: 24px; margin: 24px auto; max-width: 420px; }
     .bots-choosing { display: flex; align-items: center; gap: 16px; padding: 24px; margin: 24px auto; max-width: 420px; }
     /* The game board fits the window below the app bar: no page scroll. The
        battlefield takes the room the hand row and the side column leave. */
@@ -477,6 +503,9 @@ export class GameBoard {
   protected readonly generalChoices = computed<ChooseGeneralsAction[]>(() =>
     this.gameService.legalActions().filter((a): a is ChooseGeneralsAction => a.kind === 'ChooseGeneralsAction')
   );
+
+  // Online only: the General Selection panel's rows, with names.
+  protected readonly rosterRows = computed<SelectionRosterRow[] | null>(() => this.gameService.selectionRoster()?.map((entry) => ({ ...entry, name: this.nameOf(entry.seatId) })) ?? null);
 
   protected nameOf(seatId: string): string {
     return seatName(this.gameService.state()?.players ?? [], seatId, this.i18n.translator);

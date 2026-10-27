@@ -1,14 +1,14 @@
 import { computed, DestroyRef, effect, inject, Injectable, Signal, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { buildContentRegistry, kingdomWarMode } from 'content';
-import { getActiveSeatId, previewEffect } from 'engine';
+import { getActingSeatIds, getActiveSeatId, previewEffect } from 'engine';
 import type { Action, ContentRegistry, Effect, EngineContext, DecisionKind, EngineEvent, GameState } from 'engine';
 import { finalSeatViews } from 'protocol';
 import type { GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
 import { ApiError, errorMsg } from '../auth/auth.service';
 import type { Msg } from '../i18n/msg';
 import type { DecisionTimer } from '../decision-timer.service';
-import type { GameMode, GameService } from '../game.service';
+import type { GameMode, GameService, SelectionRosterEntry } from '../game.service';
 import { SocketService } from './socket.service';
 
 // What GameBoard reads from GameService. The online board provides
@@ -29,6 +29,8 @@ export type BoardGame = Pick<
   | 'legalActions'
   | 'botSeatIds'
   | 'botThinkingSeatId'
+  | 'selectionRoster'
+  | 'gameStartsAt'
   | 'lastError'
   | 'previewEffect'
   | 'reveal'
@@ -52,6 +54,10 @@ export interface LocalClock {
 // The seed stays on the server. Nothing on the client draws from this.
 const NO_RNG = { seed: 0, counter: 0 };
 
+// A first decision whose clock starts at least this much (ms) after the update was sent is the game's start hold,
+// not the short lead-in of an animation.
+const HOLD_MIN_MS = 1000;
+
 // The server's game as the board sees it, kept from the room socket. The
 // server decides every move: this shows what it sends and submits what the
 // player picks. Previews run on the received view with the local engine.
@@ -69,6 +75,7 @@ export class RemoteGameService implements BoardGame {
   private readonly _waiting = signal(false);
   private readonly _clock = signal<LocalClock | null>(null);
   private readonly _dismissed = signal<string | null>(null);
+  private readonly _gameStartsAt = signal<number | null>(null);
 
   // Never 'vs-bots': in that mode the board offers New Game, which goes to the local Setup.
   readonly mode: Signal<GameMode> = signal<GameMode>('pass-and-play').asReadonly();
@@ -85,10 +92,32 @@ export class RemoteGameService implements BoardGame {
   // Always the player's own seat, so the board never shows the pass-and-play gate.
   readonly revealedSeatId: Signal<string | null> = this.humanSeatId;
 
+  // During General Selection everyone chooses at once: your own seat while you are still choosing, else
+  // the first seat that is.
   readonly activeSeatId: Signal<string | null> = computed(() => {
     const state = this._state();
-    return state ? getActiveSeatId(state) : null;
+    if (!state) return null;
+    if (state.phase === 'GeneralSelection' && !state.result) {
+      const choosing = getActingSeatIds(state);
+      const own = this.humanSeatId();
+      return own && choosing.includes(own) ? own : (choosing[0] ?? null);
+    }
+    return getActiveSeatId(state);
   });
+
+  // Who has confirmed their Generals: a seat with no candidates left is ready, and a bot always is. The
+  // redacted view keeps each seat's key and hides what is behind it, so this shows nothing private.
+  readonly selectionRoster: Signal<SelectionRosterEntry[] | null> = computed(() => {
+    const state = this._state();
+    if (!state || state.phase !== 'GeneralSelection' || !state.generalSelection) return null;
+    const candidates = state.generalSelection.candidates;
+    const bots = this.botSeatIds();
+    const you = this.humanSeatId();
+    return state.seats.map((seat) => ({ seatId: seat.id, ready: bots.includes(seat.id) || !Object.prototype.hasOwnProperty.call(candidates, seat.id), isYou: seat.id === you }));
+  });
+
+  // When the game starts, while its first decision still waits out the 3 seconds after the last choice.
+  readonly gameStartsAt: Signal<number | null> = this._gameStartsAt.asReadonly();
 
   // The server's offer, while the socket is up and no move is waiting for its answer.
   readonly legalActions: Signal<Action[]> = computed(() => (this.socket.status() === 'open' && !this._waiting() ? (this._update()?.legalActions ?? []) : []));
@@ -215,6 +244,9 @@ export class RemoteGameService implements BoardGame {
     this._update.set(update);
     this._state.set({ ...update.view, log: this.log, rng: NO_RNG });
     const clock = update.clock;
+    // Turn 1 resting in its Start phase with a clock that starts later than it was sent: the start hold.
+    const holding = !!clock && update.view.phase === 'Start' && update.view.turn.turnNumber === 1 && clock.startsAt - clock.serverNow > HOLD_MIN_MS;
+    this._gameStartsAt.set(holding ? Date.now() + (clock.startsAt - clock.serverNow) : null);
     this._clock.set(clock && { seatId: clock.seatId, kind: clock.kind, bot: clock.bot === true, startsAt: Date.now() + (clock.startsAt - clock.serverNow), endsAt: Date.now() + (clock.endsAt - clock.serverNow), totalSeconds: clock.totalSeconds });
   }
 
@@ -222,6 +254,7 @@ export class RemoteGameService implements BoardGame {
     this._update.set(null);
     this._state.set(null);
     this._clock.set(null);
+    this._gameStartsAt.set(null);
   }
 
   private resync(): void {

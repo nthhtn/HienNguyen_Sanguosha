@@ -100,7 +100,10 @@ export const LAST_GAME: LastGame = {
 
 // What Ann (seat-0) is sent in a two-seat game: at the start, when she
 // chooses her Generals first, and after she chose (Bo to choose).
-export function gameUpdates(): [GameUpdate, GameUpdate] {
+export function gameUpdates(): [GameUpdate, GameUpdate];
+// With `started`: also the update once both seats have chosen (turn 1, Ann's Start phase, no actions offered yet; it carries the whole log, as a welcome's does), and the server time it was sent at.
+export function gameUpdates(started: true): [GameUpdate, GameUpdate, GameUpdate, number];
+export function gameUpdates(started?: boolean): [GameUpdate, GameUpdate] | [GameUpdate, GameUpdate, GameUpdate, number] {
   const registry = buildContentRegistry();
   const created = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1'], 7);
   const opening: GameState = { ...created, players: created.players.map((p) => ({ ...p, kind: 'human' as const, name: p.seatId === 'seat-0' ? 'Ann' : 'Bo' })) };
@@ -109,5 +112,10 @@ export function gameUpdates(): [GameUpdate, GameUpdate] {
     const { rng: _rng, log, ...view } = redactStateForSeat(state, 'seat-0');
     return { gameId: GAME_ID, seq, view, legalActions, logFrom, events: log.slice(logFrom), clock: null, paused: false };
   };
-  return [update(opening, 0, 0, getLegalActions(opening, 'seat-0', registry)), update(next, 1, opening.log.length, [])];
+  const first = update(opening, 0, 0, getLegalActions(opening, 'seat-0', registry));
+  const second = update(next, 1, opening.log.length, []);
+  if (!started) return [first, second];
+  const ctx = { registry, mode: kingdomWarMode };
+  const both = resolve(next, getLegalActions(next, 'seat-1', registry)[0], ctx).state;
+  return [first, second, update(both, 2, 0, []), 1_000_000];
 }

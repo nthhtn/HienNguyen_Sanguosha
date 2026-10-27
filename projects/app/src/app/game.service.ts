@@ -20,6 +20,13 @@ import { BotTurnMemory, ruleBasedPolicy } from 'bots';
 
 export type GameMode = 'vs-bots' | 'pass-and-play';
 
+// One seat of an online game's General Selection: whether it has confirmed its Generals. The board adds the name.
+export interface SelectionRosterEntry {
+  seatId: string;
+  ready: boolean;
+  isYou: boolean;
+}
+
 // In vs-bots mode the one human always plays this seat.
 export const HUMAN_SEAT_ID = 'seat-0';
 
@@ -63,6 +70,10 @@ export class GameService {
   readonly botSeatIds: Signal<string[]> = computed(
     () => this._state()?.players.filter((p) => p.kind === 'bot').map((p) => p.seatId) ?? []
   );
+
+  // Online only: who has chosen their Generals, and when the game starts. A local game picks one seat at a time.
+  readonly selectionRoster: Signal<SelectionRosterEntry[] | null> = signal<SelectionRosterEntry[] | null>(null).asReadonly();
+  readonly gameStartsAt: Signal<number | null> = signal<number | null>(null).asReadonly();
 
   readonly activeSeatId: Signal<string | null> = computed(() => {
     const state = this._state();

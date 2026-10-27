@@ -82,6 +82,54 @@ describe('RemoteGameService', () => {
     expect(game.lastError()).toBeNull();
   });
 
+  describe('General Selection, all at once', () => {
+    const twoSeats = (): RoomSnapshot => PLAYING;
+
+    it("lists every seat as Choosing or Ready from the candidates' keys", () => {
+      socket.serverSends(welcome(twoSeats(), 'p-ann', opening));
+      expect(game.selectionRoster()).toEqual([
+        { seatId: 'seat-0', ready: false, isYou: true },
+        { seatId: 'seat-1', ready: false, isYou: false },
+      ]);
+      socket.serverSends({ type: 'game.update', game: afterMove });
+      expect(game.selectionRoster()).toEqual([
+        { seatId: 'seat-0', ready: true, isYou: true },
+        { seatId: 'seat-1', ready: false, isYou: false },
+      ]);
+    });
+
+    it('shows a bot seat, and a taken-over seat, as Ready from the start', () => {
+      const takenOver: RoomSnapshot = { ...PLAYING, members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, botControlled: true } : m)) };
+      socket.serverSends(welcome(takenOver, 'p-ann', opening));
+      expect(game.selectionRoster()!.map((row) => row.ready)).toEqual([false, true]);
+    });
+
+    it('has no roster once the Generals are chosen', () => {
+      const [, , started] = gameUpdates(true);
+      socket.serverSends(welcome(PLAYING, 'p-ann', started));
+      expect(game.selectionRoster()).toBeNull();
+    });
+
+    it("makes your own seat the active one while you are choosing, even when an earlier seat is too", () => {
+      socket.serverSends(welcome(PLAYING, 'p-bo', { ...opening, view: { ...opening.view } }));
+      expect(game.humanSeatId()).toBe('seat-1');
+      expect(game.activeSeatId()).toBe('seat-1');
+    });
+
+    it('says when the game starts while turn 1 waits for its first decision, and not otherwise', () => {
+      const [, , started, now] = gameUpdates(true);
+      socket.serverSends(welcome(PLAYING, 'p-ann', { ...started, clock: { seatId: 'seat-0', kind: 'start', startsAt: now + 3000, endsAt: now + 23000, totalSeconds: 20, serverNow: now } }));
+      expect(game.gameStartsAt()).toBeGreaterThan(Date.now() + 2000);
+      socket.serverSends({ type: 'game.update', game: { ...started, seq: started.seq + 1, logFrom: started.events.length, events: [], clock: { seatId: 'seat-0', kind: 'start', startsAt: now, endsAt: now + 20000, totalSeconds: 20, serverNow: now } } });
+      expect(game.gameStartsAt()).toBeNull();
+    });
+
+    it('has no start time during General Selection', () => {
+      socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-0', kind: 'selection', startsAt: 0, endsAt: 300_000, totalSeconds: 300, serverNow: 0 } }));
+      expect(game.gameStartsAt()).toBeNull();
+    });
+  });
+
   it('offers no moves while the socket is down', () => {
     socket.serverSends(welcome(PLAYING, 'p-ann', opening));
     socket.serverCloses();
