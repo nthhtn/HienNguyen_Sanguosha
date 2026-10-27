@@ -43,7 +43,7 @@ async function playUntil(client: TestClient, done: () => boolean | Promise<boole
 
 // One in-memory store across restarts. Bots move at once, and a seat goes to
 // a bot after 300 ms away, so whole games and takeovers run in test time.
-async function setup(options: { botDelayMs?: number } = {}) {
+async function setup(options: { botDelayMs?: number; startHoldMs?: number } = {}) {
   const repos = createMemoryRepositories();
   const accounts = new AccountService({ repos, mailer: new RecordingMailer(), publicOrigin: ORIGIN });
   const rateLimits = new AuthRateLimits({ ...RATE_LIMITS, signUpPerIp: { limit: 1000, windowMs: 60_000 } });
@@ -54,7 +54,7 @@ async function setup(options: { botDelayMs?: number } = {}) {
 
   const startServer = async () => {
     // A fixed seed: with a random one, two seats can get the same kingdom and the game ends at General selection.
-    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
+    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, startHoldMs: options.startHoldMs ?? 0, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
     await rooms.restore();
     app = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
     await app.listen({ port: 0, host: '127.0.0.1' });
@@ -140,15 +140,21 @@ describe('games over the socket', () => {
     const b = await ctx.connect(bo, roomId);
     await ctx.startGame(a.client);
     const [forA, forB] = await Promise.all([a.client.next('game.update'), b.client.next('game.update')]);
-    const [mover, other, game] = forA.game.legalActions.length > 0 ? [a, b, forA.game] : [b, a, forB.game];
+    // Both seats choose their Generals at once; the game then waits on one of them.
+    for (const [seat, update] of [[a, forA.game], [b, forB.game]] as const) {
+      seat.client.send({ type: 'game.submit', reqId: 'pick', gameId: update.gameId, baseSeq: 0, actions: [update.legalActions[0]] });
+    }
+    await until(() => a.client.latestGame?.seq === 2 && b.client.latestGame?.seq === 2, 'both seats chose');
+    const [mover, other] = a.client.latestGame!.legalActions.length > 0 ? [a, b] : [b, a];
+    const game = mover.client.latestGame!;
     const move = game.legalActions[0];
     const submit = (client: TestClient, reqId: string, fields: object = {}) =>
-      client.send({ type: 'game.submit', reqId, gameId: game.gameId, baseSeq: 0, actions: [move], ...fields });
+      client.send({ type: 'game.submit', reqId, gameId: game.gameId, baseSeq: 2, actions: [move], ...fields });
     const refusal = (client: TestClient, reqId: string) => client.next('error', (m) => m.reqId === reqId);
 
     submit(other.client, 'x1');
     expect(await refusal(other.client, 'x1')).toMatchObject({ code: 'not_your_turn', message: "It's not your turn" });
-    submit(mover.client, 'x2', { baseSeq: 5 });
+    submit(mover.client, 'x2', { baseSeq: 9 });
     expect(await refusal(mover.client, 'x2')).toMatchObject({ code: 'stale' });
     submit(mover.client, 'x3', { actions: [{ kind: 'DrawCardsAction', seatId: move.seatId, count: 5 }] });
     expect(await refusal(mover.client, 'x3')).toMatchObject({ code: 'illegal_action' });
@@ -160,14 +166,36 @@ describe('games over the socket', () => {
     const beforeResync = mover.client.received.length;
     mover.client.send({ type: 'game.resync', reqId: 'x6' });
     const resynced = await mover.client.next('game.update', () => true, 2000, beforeResync);
-    expect(resynced.game).toMatchObject({ seq: 0, logFrom: 0 });
+    expect(resynced.game).toMatchObject({ seq: 2, logFrom: 0 });
     expect(mover.client.isOpen).toBe(true);
 
     const beforeMove = other.client.received.length;
     submit(mover.client, 'x7');
     await mover.client.next('ack', (m) => m.reqId === 'x7');
-    expect((await other.client.next('game.update', () => true, 2000, beforeMove)).game.seq).toBe(1);
-    expect(await ctx.repos.games.listActions(game.gameId)).toHaveLength(1);
+    expect((await other.client.next('game.update', () => true, 2000, beforeMove)).game.seq).toBe(3);
+    expect(await ctx.repos.games.listActions(game.gameId)).toHaveLength(3);
+  });
+
+  it('lets both players choose at once, then holds the first decision for the start hold', async () => {
+    ctx = await setup({ startHoldMs: 400 });
+    const { ann, bo, roomId } = await ctx.pairRoom();
+    const a = await ctx.connect(ann, roomId);
+    const b = await ctx.connect(bo, roomId);
+    await ctx.startGame(a.client);
+    const [forA, forB] = await Promise.all([a.client.next('game.update'), b.client.next('game.update')]);
+    // Both are offered their choices at once, on the same clock.
+    expect([forA.game.legalActions.length > 0, forB.game.legalActions.length > 0]).toEqual([true, true]);
+    expect(forA.game.clock).toMatchObject({ kind: 'selection', endsAt: forB.game.clock!.endsAt });
+    // Bo confirms first, then Ann, both from the opening seq.
+    b.client.send({ type: 'game.submit', reqId: 'bo', gameId: forB.game.gameId, baseSeq: 0, actions: [forB.game.legalActions[0]] });
+    a.client.send({ type: 'game.submit', reqId: 'ann', gameId: forA.game.gameId, baseSeq: 0, actions: [forA.game.legalActions[0]] });
+    await Promise.all([a.client.next('ack', (m) => m.reqId === 'ann'), b.client.next('ack', (m) => m.reqId === 'bo')]);
+    await until(() => a.client.latestGame?.seq === 2 && b.client.latestGame?.seq === 2, 'both choices stored');
+    // Nobody may act during the hold, and the first clock starts when it ends.
+    const held = a.client.latestGame!;
+    expect([held.legalActions, b.client.latestGame!.legalActions]).toEqual([[], []]);
+    expect(held.clock!.startsAt - held.clock!.serverNow).toBeGreaterThan(0);
+    await until(() => (a.client.latestGame?.legalActions.length ?? 0) + (b.client.latestGame?.legalActions.length ?? 0) > 0, 'the first decision after the hold');
   });
 
   it("hands an away player's seat to a bot, and gives it back when they return", async () => {
@@ -226,8 +254,10 @@ describe('games over the socket', () => {
       if (i === 50) throw new Error('Ann never handed the move to the bot');
       first.client.send({ type: 'game.submit', reqId: `ann-${i}`, gameId: mine.gameId, baseSeq: mine.seq, actions: [mine.legalActions[0]] });
       await first.client.next('ack', (m) => m.reqId === `ann-${i}`);
-      const seq = mine.seq + 1;
-      mine = (await first.client.next('game.update', (m) => m.game.seq === seq)).game;
+      // A bot may have chosen its Generals already, so wait for an update that no longer offers the move just made.
+      const seq = mine.seq;
+      const made = JSON.stringify(mine.legalActions[0]);
+      mine = (await first.client.next('game.update', (m) => m.game.seq > seq && !m.game.legalActions.some((a) => JSON.stringify(a) === made))).game;
     }
     expect(mine.view.result).toBeNull();
     first.client.close();

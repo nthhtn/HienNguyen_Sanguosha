@@ -33,6 +33,7 @@ async function setup(options: Partial<RoomServiceDeps> = {}) {
     buildId: 'test-build',
     randomSeed: () => 1234,
     scheduler,
+    startHoldMs: 0,
     ...options,
   });
   const registered = (name: string) =>
@@ -79,7 +80,7 @@ describe('RoomService games', () => {
     expect(a.connection.game).toMatchObject({ seq: 0, logFrom: 0, paused: false });
     expect(a.connection.game!.view).not.toHaveProperty('rng');
     expect(a.connection.game!.view.players.find((p) => p.seatId === annSeat)?.name).toBe('Ann');
-    expect([a, b].filter((s) => s.connection.game!.legalActions.length > 0)).toHaveLength(1);
+    expect([a, b].filter((s) => s.connection.game!.legalActions.length > 0)).toHaveLength(2);
     const [game] = await repos.games.listRunning();
     expect(game).toMatchObject({ roomId, seed: 1234, buildId: 'test-build', status: 'running' });
     expect(game.seats.map((s) => s.name).sort()).toEqual(['Ann', 'Bo']);
@@ -144,8 +145,16 @@ describe('RoomService games', () => {
     const seat = mover(a, b);
     const other = seat === a ? b : a;
     const { gameId, legalActions } = seat.connection.game!;
-    await expect(command(other, roomId, { type: 'game.submit', gameId, baseSeq: 0, actions: [legalActions[0]] })).rejects.toEqual(code('not_your_turn'));
-    await expect(command(seat, roomId, { type: 'game.submit', gameId, baseSeq: 3, actions: [legalActions[0]] })).rejects.toEqual(code('stale'));
+    // A choice names its own seat: the other member cannot make it.
+    await expect(command(other, roomId, { type: 'game.submit', gameId, baseSeq: 0, actions: [legalActions[0]] })).rejects.toEqual(code('illegal_action'));
+    for (const each of [a, b]) {
+      const own = each.connection.game!;
+      await command(each, roomId, { type: 'game.submit', gameId, baseSeq: 0, actions: [own.legalActions[0]] });
+    }
+    const next = mover(a, b);
+    const afterwards = next.connection.game!;
+    await expect(command(next === a ? b : a, roomId, { type: 'game.submit', gameId, baseSeq: 2, actions: [afterwards.legalActions[0]] })).rejects.toEqual(code('not_your_turn'));
+    await expect(command(next, roomId, { type: 'game.submit', gameId, baseSeq: 9, actions: [afterwards.legalActions[0]] })).rejects.toEqual(code('stale'));
   });
 
   it('answers game.resync with the full game again', async () => {

@@ -1,4 +1,4 @@
-import { getActiveSeatId } from './activeSeat';
+import { getActingSeatIds, getActiveSeatId } from './activeSeat';
 import { GameState, Seat } from '../domain/types';
 import { createRng } from '../rng/rng';
 
@@ -53,6 +53,30 @@ describe('getActiveSeatId', () => {
     expect(getActiveSeatId(selecting)).toBe('seat-a');
     const afterA = state({ phase: 'GeneralSelection', generalSelection: { candidates: { 'seat-b': ['x'] } } });
     expect(getActiveSeatId(afterA)).toBe('seat-b');
+  });
+});
+
+describe('getActingSeatIds', () => {
+  const selecting = (candidates: Record<string, string[]>) => state({ phase: 'GeneralSelection', generalSelection: { candidates } });
+
+  it('lists every seat that still has candidates during GeneralSelection, in seat order', () => {
+    expect(getActingSeatIds(selecting({ 'seat-b': ['x'], 'seat-a': ['y'] }))).toEqual(['seat-a', 'seat-b']);
+  });
+
+  it('no longer lists a seat once it has chosen', () => {
+    expect(getActingSeatIds(selecting({ 'seat-b': ['x'] }))).toEqual(['seat-b']);
+  });
+
+  it('is the active seat alone outside GeneralSelection', () => {
+    expect(getActingSeatIds(state())).toEqual(['seat-a']);
+  });
+
+  it('is empty when nobody can act', () => {
+    expect(getActingSeatIds(state({ result: { endedAt: 1, winningSeatIds: [], losingSeatIds: [] } }))).toEqual([]);
+  });
+
+  it('leaves getActiveSeatId on the first seat with candidates', () => {
+    expect(getActiveSeatId(selecting({ 'seat-b': ['x'], 'seat-a': ['y'] }))).toBe('seat-a');
   });
 });
 

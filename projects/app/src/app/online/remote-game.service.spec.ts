@@ -73,13 +73,84 @@ describe('RemoteGameService', () => {
 
   it("shows a refused move's message, and resyncs after a stale one", async () => {
     socket.serverSends(welcome(PLAYING, 'p-ann', opening));
-    game.submit(opening.legalActions[0]);
+    game.submit({ kind: 'EndPhaseAction', seatId: 'seat-0' });
     socket.serverSends({ type: 'error', reqId: socket.lastSent!['reqId'] as string, code: 'stale', message: 'The game moved on. Try again' });
     await flush();
     expect(english(game.lastError())).toBe('The game moved on. Try again');
     expect(socket.lastSent).toMatchObject({ type: 'game.resync' });
     game.clearError();
     expect(game.lastError()).toBeNull();
+  });
+
+  describe('General Selection, all at once', () => {
+    const twoSeats = (): RoomSnapshot => PLAYING;
+
+    it("lists every seat as Choosing or Ready from the candidates' keys", () => {
+      socket.serverSends(welcome(twoSeats(), 'p-ann', opening));
+      expect(game.selectionRoster()).toEqual([
+        { seatId: 'seat-0', ready: false, isYou: true },
+        { seatId: 'seat-1', ready: false, isYou: false },
+      ]);
+      socket.serverSends({ type: 'game.update', game: afterMove });
+      expect(game.selectionRoster()).toEqual([
+        { seatId: 'seat-0', ready: true, isYou: true },
+        { seatId: 'seat-1', ready: false, isYou: false },
+      ]);
+    });
+
+    it('shows a bot seat, and a taken-over seat, as Ready from the start', () => {
+      const takenOver: RoomSnapshot = { ...PLAYING, members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, botControlled: true } : m)) };
+      socket.serverSends(welcome(takenOver, 'p-ann', opening));
+      expect(game.selectionRoster()!.map((row) => row.ready)).toEqual([false, true]);
+    });
+
+    it('has no roster once the Generals are chosen', () => {
+      const [, , started] = gameUpdates(true);
+      socket.serverSends(welcome(PLAYING, 'p-ann', started));
+      expect(game.selectionRoster()).toBeNull();
+    });
+
+    it("makes your own seat the active one while you are choosing, even when an earlier seat is too", () => {
+      socket.serverSends(welcome(PLAYING, 'p-bo', { ...opening, view: { ...opening.view } }));
+      expect(game.humanSeatId()).toBe('seat-1');
+      expect(game.activeSeatId()).toBe('seat-1');
+    });
+
+    it('says when the game starts while turn 1 waits for its first decision, and not otherwise', () => {
+      const [, , started, now] = gameUpdates(true);
+      socket.serverSends(welcome(PLAYING, 'p-ann', { ...started, clock: { seatId: 'seat-0', kind: 'start', startsAt: now + 3000, endsAt: now + 23000, totalSeconds: 20, serverNow: now } }));
+      expect(game.gameStartsAt()).toBeGreaterThan(Date.now() + 2000);
+      socket.serverSends({ type: 'game.update', game: { ...started, seq: started.seq + 1, logFrom: started.events.length, events: [], clock: { seatId: 'seat-0', kind: 'start', startsAt: now, endsAt: now + 20000, totalSeconds: 20, serverNow: now } } });
+      expect(game.gameStartsAt()).toBeNull();
+    });
+
+    it('does not mistake a turn-1 judgment lead-in for the start hold', () => {
+      const [, , started, now] = gameUpdates(true);
+      for (const kind of ['judgmentChange', 'notice'] as const) {
+        socket.serverSends(welcome(PLAYING, 'p-ann', { ...started, clock: { seatId: 'seat-0', kind, startsAt: now + 4100, endsAt: now + 7100, totalSeconds: 3, serverNow: now } }));
+        expect(game.gameStartsAt()).toBeNull();
+      }
+    });
+
+    it("says when the game starts when a bot moves first", () => {
+      const [, , started, now] = gameUpdates(true);
+      socket.serverSends(welcome(PLAYING, 'p-ann', { ...started, clock: { seatId: 'seat-1', kind: 'play', startsAt: now + 3000, endsAt: now + 4500, totalSeconds: 1.5, serverNow: now, bot: true } }));
+      expect(game.gameStartsAt()).toBeGreaterThan(Date.now() + 2000);
+    });
+
+    it('asks for no message when a General choice loses a race, and resyncs quietly', async () => {
+      socket.serverSends(welcome(PLAYING, 'p-ann', opening));
+      game.submit(opening.legalActions[0]);
+      socket.serverSends({ type: 'error', reqId: socket.lastSent!['reqId'] as string, code: 'stale', message: 'The game moved on. Try again' });
+      await flush();
+      expect(game.lastError()).toBeNull();
+      expect(socket.lastSent).toMatchObject({ type: 'game.resync' });
+    });
+
+    it('has no start time during General Selection', () => {
+      socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-0', kind: 'selection', startsAt: 0, endsAt: 300_000, totalSeconds: 300, serverNow: 0 } }));
+      expect(game.gameStartsAt()).toBeNull();
+    });
   });
 
   it('offers no moves while the socket is down', () => {

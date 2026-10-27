@@ -1,6 +1,6 @@
 import { pickRandomAction, ruleBasedPolicy } from 'bots';
 import { Router } from '@angular/router';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogState } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
@@ -601,6 +601,55 @@ describe('GameBoard in vs-bots mode', () => {
     expect(el.querySelector('app-phase-indicator')).toBeNull();
   });
 
+  describe('online General Selection', () => {
+    const rows = [
+      { seatId: 'seat-0', ready: false, isYou: true },
+      { seatId: 'seat-1', ready: true, isYou: false },
+    ];
+    const online = (roster: typeof rows | null, startsAt: number | null = null) => {
+      gameService.startGame(2, 1, 'vs-bots');
+      const service = gameService as unknown as { selectionRoster: unknown; gameStartsAt: unknown };
+      service.selectionRoster = signal(roster);
+      service.gameStartsAt = signal(startsAt);
+      const fixture = TestBed.createComponent(GameBoard);
+      fixture.detectChanges();
+      return fixture.nativeElement as HTMLElement;
+    };
+
+    it('shows the selection controls and the roster side by side', () => {
+      const el = online(rows);
+      expect(el.querySelector('app-general-selection')).not.toBeNull();
+      expect(el.querySelector('app-selection-roster')).not.toBeNull();
+    });
+
+    it('shows a ready seat the waiting message and the roster, not the Bots are choosing spinner', () => {
+      gameService.startGame(2, 1, 'vs-bots');
+      gameService.submit(gameService.legalActions()[0]);
+      const service = gameService as unknown as { selectionRoster: unknown };
+      service.selectionRoster = signal(rows.map((r) => ({ ...r, ready: true })));
+      const fixture = TestBed.createComponent(GameBoard);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.waiting-others')!.textContent).toContain('Waiting for the other players to choose');
+      expect(el.querySelector('.bots-choosing')).toBeNull();
+      expect(el.querySelector('app-selection-roster')).not.toBeNull();
+    });
+
+    it('covers the board with the start countdown while a start time is set', () => {
+      const el = online(null, Date.now() + 3000);
+      expect(el.querySelector('app-game-start-countdown')).not.toBeNull();
+    });
+
+    it('shows no roster and no countdown in a local game', () => {
+      gameService.startGame(2, 1, 'vs-bots');
+      const fixture = TestBed.createComponent(GameBoard);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('app-selection-roster')).toBeNull();
+      expect(el.querySelector('app-game-start-countdown')).toBeNull();
+    });
+  });
+
   it('shows a waiting card while the bots choose their generals', () => {
     gameService.startGame(3, 1, 'vs-bots');
     gameService.submit(gameService.legalActions()[0]);
@@ -647,7 +696,7 @@ describe('GameBoard in vs-bots mode', () => {
     const label = indicator.textContent!.replace(timer.textContent!, '').replace(/\s+/g, ' ').trim();
     expect(label).toMatch(/^Turn 1 Seat 0 \(you\) – Play Phase Draw Pile \d+$/);
     // Your own Play phase is timed: 300 seconds for the whole phase.
-    expect(timer.textContent).toContain('300s');
+    expect(timer.textContent).toContain('180s');
   });
 
   it('offers a way out to a new game when a bot move fails', () => {

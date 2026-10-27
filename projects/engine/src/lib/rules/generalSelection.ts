@@ -3,7 +3,7 @@ import { ContentRegistry } from '../registry/types';
 import { lookupGeneral } from '../registry/lookup';
 import { Action } from '../pipeline/actions';
 import { GeneralsChosenEvent } from '../pipeline/events';
-import { getActiveSeatId } from './activeSeat';
+import { getActingSeatIds } from './activeSeat';
 import { combinedMaxHp } from '../domain/factories';
 
 export type ChooseGeneralsAction = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -37,7 +37,7 @@ export function applyGeneralChoice(
   if (state.phase !== 'GeneralSelection' || !selection) {
     throw new Error('Generals can only be chosen during the GeneralSelection phase');
   }
-  if (getActiveSeatId(state) !== action.seatId) {
+  if (!getActingSeatIds(state).includes(action.seatId)) {
     throw new Error(`It is not seat ${action.seatId}'s turn to choose generals`);
   }
   const candidates = selection.candidates[action.seatId];

@@ -64,12 +64,12 @@ describe('DecisionTimer', () => {
       timer.attach(board.ref);
     });
 
-    it('gives the Play phase 300 seconds', () => {
+    it('gives the Play phase 180 seconds', () => {
       toPlayPhase();
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
-      expect(timer.totalSeconds()).toBe(300);
+      expect(timer.totalSeconds()).toBe(180);
       advance(10);
-      expect(timer.secondsLeft()).toBe(290);
+      expect(timer.secondsLeft()).toBe(170);
     });
 
     it('ends the Play phase when time runs out', () => {
@@ -89,10 +89,10 @@ describe('DecisionTimer', () => {
       }
       TestBed.tick();
       expect(game.state()!.phase === 'Start' && game.state()!.turn.startWindow).toBe(true);
-      expect(timer.totalSeconds()).toBe(DECISION_SECONDS.choice);
+      expect(timer.totalSeconds()).toBe(DECISION_SECONDS.start);
       advance(10);
-      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.choice - 10);
-      advance(DECISION_SECONDS.choice - 10);
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.start - 10);
+      advance(DECISION_SECONDS.start - 10);
       expect(game.state()!.turn.startWindow).toBeFalsy();
       expect(game.state()!.seats[0].generals!.main.revealed || game.state()!.seats[0].generals!.deputy.revealed).toBe(false);
       expect(game.lastError()).toBeNull();
@@ -108,21 +108,21 @@ describe('DecisionTimer', () => {
         if (!aimed) continue;
         const owner = game.activeSeatId()!;
         advance(100);
-        expect(timer.secondsLeft()).toBe(200);
+        expect(timer.secondsLeft()).toBe(80);
         game.submit(aimed);
         if (!waitsOnDamageAnswer(game.state()!)) continue;
-        // The response belongs to seat-1: its own 60 seconds once its view shows.
+        // The response belongs to seat-1: its own 20 seconds once its view shows.
         const responder = game.activeSeatId()!;
         game.reveal(responder);
         TestBed.tick();
-        expect(timer.secondsLeft()).toBe(60);
-        advance(20); // the Play clock must not move meanwhile
+        expect(timer.secondsLeft()).toBe(DECISION_SECONDS.response);
+        advance(10); // the Play clock must not move meanwhile
         game.submit(game.legalActions().find((a) => a.kind === 'PassAction')!);
         game.reveal(owner);
         TestBed.tick();
         // Back in the owner's Play phase: resumed, not restarted.
         expect(game.state()!.phase).toBe('Play');
-        expect(timer.secondsLeft()).toBe(200);
+        expect(timer.secondsLeft()).toBe(80);
         return;
       }
       throw new Error('no seed gave seat-0 a targeted play');
@@ -157,7 +157,7 @@ describe('DecisionTimer', () => {
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.notice - 1);
     });
 
-    it("gives a changer's decision 10 seconds after the card has been shown, and declines when they run out", () => {
+    it("gives a changer's decision 15 seconds after the card has been shown, and declines when they run out", () => {
       game.startGame(2, 1, 'pass-and-play', [], { judgmentNotice: true });
       askToChange(game, 'seat-0');
       game.reveal('seat-0');
@@ -207,8 +207,8 @@ describe('DecisionTimer', () => {
         if (!game.state()!.pendingChoice) continue; // a Wuxie window came first
         game.reveal(game.activeSeatId()!);
         TestBed.tick();
-        expect(timer.secondsLeft()).toBe(DECISION_SECONDS.choice);
-        advance(DECISION_SECONDS.choice);
+        expect(timer.secondsLeft()).toBe(DECISION_SECONDS.pick);
+        advance(DECISION_SECONDS.pick);
         expect(game.state()!.pendingChoice).toBeUndefined();
         expect(game.state()!.phase).toBe('Play');
         expect(game.state()!.turn.ownerSeatId).toBe('seat-0');
@@ -231,7 +231,7 @@ describe('DecisionTimer', () => {
         const hp = game.state()!.seats.find((s) => s.id === responder)!.combinedHp;
         game.reveal(responder);
         TestBed.tick();
-        expect(timer.secondsLeft()).toBe(60);
+        expect(timer.secondsLeft()).toBe(DECISION_SECONDS.response);
         advance(DECISION_SECONDS.response);
         expect(game.state()!.seats.find((s) => s.id === responder)!.combinedHp).toBeLessThan(hp);
         return;
@@ -249,7 +249,7 @@ describe('DecisionTimer', () => {
       expect(over).toBeGreaterThan(0);
       const discards = game.legalActions().filter((a) => a.kind === 'DiscardCardAction');
       const chosen = discards.slice(-over); // the last cards, unlike the default
-      expect(timer.secondsLeft()).toBe(60);
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.discard);
       timer.setTimeoutChoice(chosen);
       advance(DECISION_SECONDS.discard);
       const discardPile = game.state()!.zones.find((z) => z.kind === 'discardPile')!.cards.map((c) => c.instanceId);

@@ -24,6 +24,7 @@ offers:
 |---|---|
 | `getLegalActions(state, seatId, registry)` | what may this seat do right now? (the UI and bots only ever submit one of these) |
 | `getActiveSeatId(state)` | whose decision is pending? |
+| `getActingSeatIds(state)` | every seat that may act now: during General Selection all seats that still have candidates (they choose at the same time, in any order), otherwise the active seat alone |
 | `previewEffect(state, effect, ctx)` | what would this pending effect really do once before-triggers rewrite it? |
 | `redactStateForSeat(state, seatId)` | the state as that seat is allowed to see it |
 | `createGame(mode, registry, seatIds, seed, rules?)` | a new game, in the General Selection phase |
@@ -141,11 +142,20 @@ How long a person has is a rule, so the engine owns it, in
 
 | Kind | Seconds | Clock |
 |---|---|---|
-| `response`, `choice`, `discard` | 60 | one per decision |
+| `wuxie` (a Wuxie, or a Wuxie against one) | 15 | one per decision |
+| `dying` (the dying round's Peach) | 20 | one per decision |
+| `response` (any other response window) | 20 | one per decision |
+| `ask` (a skill's use-it-or-not) | 15 | one per decision |
+| `pick` (a card, seat, suit or recipient: Steal, Break, Harvest, Compete) | 30 | one per decision |
+| `arrange` (Astrology) | 60 | one per decision |
+| `start` (the Start window's reveal) | 20 | one per window |
+| `discard` | 30 | one per decision |
 | `selection` (General Selection) | 300 | one per seat for the whole pick |
-| `play` | 300 | one for the whole Play Phase, paused while a response is under way |
-| `judgmentChange` | 10 | a skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
+| `play` | 180 | one for the whole Play Phase, paused while a response is under way |
+| `judgmentChange` | 15 | a skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
 | `notice` | 3 | a settled judgment popup, after its animation |
+
+`GAME_START_LEAD_IN_MS` (3000) is the wait after the last seat has chosen its Generals, before the first decision of the game: the server holds its clocks, bot moves and legal actions for that long and the app shows "Game starts in 3".
 
 A clock can have a **lead-in**: `DecisionSpec.leadInMs` is the animation the
 decision follows, and a *new* clock starts counting at `startsAt = now + leadInMs`

@@ -119,6 +119,7 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 | `action-history-panel`, `discard-pile` | what has happened, and what has been discarded |
 | `phase-indicator`, `game-over`, `victory-board` | turn and result display (see "The Game Over window") |
 | `general-selection`, `reveal-gate-overlay` | the pre-game pick and the pass-and-play hand-off |
+| `selection-roster`, `game-start-countdown` | online only: who has chosen their Generals (Choosing or Ready, from the redacted candidates' keys), and "Game starts in 3" while the server holds the first decision (`gameStartsAt`) |
 | `decision-dock`, `decision-banner`, `minimize-button` | hide a decision dialog to look at the board, with a banner to bring it back |
 | `board-chat`, `chat-panel` (online) | room chat beside the board |
 
@@ -277,9 +278,9 @@ deciding seat's Force; the Compete popup by the source General's.
 | countdown seconds, music on/off (`localStorage`) | who won |
 
 `DecisionTimer` is UI state too, for local games. The engine says which clock a
-decision runs on and how long it has (`DECISION_SECONDS`: a response, choice or
-discard 60 s, a selection and the General Selection 300 s, a whole Play Phase
-300 s, a skill's decision to change a judgment 10 s, a settled judgment notice 3 s). A decision that follows an animation has a lead-in (`leadInMs`): its countdown holds its full length and starts only when the animation has played (`startsInMs`). The timer pauses when the decision is
+decision runs on and how long it has (`DECISION_SECONDS`: a Wuxie 15 s, a dying Peach or other response 20 s, a skill's ask 15 s,
+a pick 30 s, an arrangement 60 s, the Start reveal 20 s, a discard 30 s, the General Selection
+300 s, a whole Play Phase 180 s, a skill's decision to change a judgment 15 s, a settled judgment notice 3 s). A decision that follows an animation has a lead-in (`leadInMs`): its countdown holds its full length and starts only when the animation has played (`startsInMs`). The timer pauses when the decision is
 not on screen, and at zero submits the UI's current pick or an engine-legal
 default (`defaultActionsFor`: No Response, the first option, End Phase).
 Bots are never timed. Online, the server owns the clock and

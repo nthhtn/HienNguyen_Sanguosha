@@ -1,7 +1,7 @@
 import { ruleBasedPolicy } from 'bots';
 import type { BotPolicy } from 'bots';
 import { buildContentRegistry } from 'content';
-import { defaultActionsFor, getActiveSeatId, getLegalActions, usedCardOf } from 'engine';
+import { defaultActionsFor, getActiveSeatId, getLegalActions, resolve, usedCardOf } from 'engine';
 import type { Action, GameState } from 'engine';
 import type { MemberKind } from 'protocol';
 import { GameRecord, GameSeat } from '../persistence/records';
@@ -16,6 +16,9 @@ const GAME_ID = 'aaaaaaaa-0000-4000-8000-000000000001';
 const SEED = 1234;
 const registry = buildContentRegistry();
 const ctx = engineContext(registry);
+// The opening state with every seat's first legal choice made: a game in its first turn.
+const pastSelection = (opening: GameState): GameState =>
+  opening.seats.reduce((state, seat) => resolve(state, getLegalActions(state, seat.id, registry)[0], ctx).state, opening);
 const code = (value: string) => expect.objectContaining({ code: value });
 
 class FakeHost implements RunnerHost {
@@ -55,7 +58,7 @@ class FakeHost implements RunnerHost {
 
 // Seat i is played by member `p${i}`. Every human in `connected` starts connected.
 // `state` replaces the opening state; members in `left` have left the room (a bot plays their seat).
-function setup(options: { kinds?: MemberKind[]; solo?: boolean; connected?: string[]; policy?: BotPolicy; state?: (opening: GameState) => GameState; left?: string[] } = {}) {
+function setup(options: { kinds?: MemberKind[]; startHoldMs?: number; solo?: boolean; connected?: string[]; policy?: BotPolicy; state?: (opening: GameState) => GameState; left?: string[] } = {}) {
   const kinds = options.kinds ?? ['human', 'bot'];
   const seats: GameSeat[] = kinds.map((kind, i) => ({ seatId: `seat-${i}`, roomPlayerId: `p${i}`, name: kind === 'bot' ? `Bot ${i}` : `Player ${i}`, kind }));
   const record: GameRecord = {
@@ -82,11 +85,194 @@ function setup(options: { kinds?: MemberKind[]; solo?: boolean; connected?: stri
     },
     ctx,
     host,
-    { solo: options.solo ?? false, botDelayMs: BOT_DELAY_MS, takeoverAwayMs: TAKEOVER_AWAY_MS, policy: options.policy ?? ruleBasedPolicy }
+    { solo: options.solo ?? false, botDelayMs: BOT_DELAY_MS, takeoverAwayMs: TAKEOVER_AWAY_MS, startHoldMs: options.startHoldMs ?? 0, policy: options.policy ?? ruleBasedPolicy }
   );
   runner.start();
   return { runner, host, scheduler: host.scheduler, legal: () => runner.updateFor('p0', 0)!.legalActions };
 }
+
+describe('GameRunner: simultaneous General Selection', () => {
+  const twoHumans = () => setup({ kinds: ['human', 'human'], connected: ['p0', 'p1'] });
+  const choice = (runner: GameRunner, playerId: string) => runner.updateFor(playerId, 0)!.legalActions[0];
+
+  it('offers each seat its choices from the start, before the earlier seats have chosen', () => {
+    const { runner } = twoHumans();
+    expect(runner.updateFor('p0', 0)!.legalActions[0]).toMatchObject({ kind: 'ChooseGeneralsAction', seatId: 'seat-0' });
+    expect(runner.updateFor('p1', 0)!.legalActions[0]).toMatchObject({ kind: 'ChooseGeneralsAction', seatId: 'seat-1' });
+  });
+
+  it('stores both choices when two seats confirm from the same base seq', async () => {
+    const { runner, host } = twoHumans();
+    const first = choice(runner, 'p0');
+    const second = choice(runner, 'p1');
+    await runner.submit('p0', GAME_ID, 0, [first]);
+    await runner.submit('p1', GAME_ID, 0, [second]);
+    expect(runner.seq).toBe(2);
+    expect(host.stored.map((row) => row.seatId)).toEqual(['seat-0', 'seat-1']);
+    expect(runner.state.phase).not.toBe('GeneralSelection');
+  });
+
+  it('accepts a later seat choosing first', async () => {
+    const { runner, host } = twoHumans();
+    await runner.submit('p1', GAME_ID, 0, [choice(runner, 'p1')]);
+    expect(host.stored.map((row) => row.seatId)).toEqual(['seat-1']);
+    expect(runner.state.phase).toBe('GeneralSelection');
+  });
+
+  it('refuses a second choice from a seat that has chosen as stale, so the client resyncs quietly', async () => {
+    const { runner } = twoHumans();
+    const first = choice(runner, 'p0');
+    await runner.submit('p0', GAME_ID, 0, [first]);
+    await expect(runner.submit('p0', GAME_ID, 0, [first])).rejects.toEqual(code('stale'));
+  });
+
+  it('offers a seat that has chosen nothing', async () => {
+    const { runner } = twoHumans();
+    await runner.submit('p0', GAME_ID, 0, [choice(runner, 'p0')]);
+    expect(runner.updateFor('p0', 0)!.legalActions).toEqual([]);
+    expect(runner.updateFor('p1', 0)!.legalActions.length).toBeGreaterThan(0);
+  });
+});
+
+describe('GameRunner: the selection clock, bots and the start hold', () => {
+  const two = (extra: Parameters<typeof setup>[0] = {}) => setup({ kinds: ['human', 'human'], connected: ['p0', 'p1'], ...extra });
+  const pick = (runner: GameRunner, playerId: string, seq = runner.seq) =>
+    runner.submit(playerId, GAME_ID, seq, [runner.updateFor(playerId, 0)!.legalActions[0]]);
+
+  it('has bots choose at once when the selection opens, with no move delay', async () => {
+    const { runner, scheduler } = setup({ kinds: ['human', 'bot', 'bot'] });
+    await scheduler.advance(0);
+    expect(runner.state.generalSelection?.candidates).not.toHaveProperty('seat-1');
+    expect(runner.state.generalSelection?.candidates).not.toHaveProperty('seat-2');
+    expect(runner.state.generalSelection?.candidates).toHaveProperty('seat-0');
+  });
+
+  it('runs one clock for every human, which one seat confirming does not restart', async () => {
+    const { runner, scheduler } = two();
+    const first = runner.updateFor('p0', 0)!.clock!;
+    await scheduler.advance(100_000);
+    await pick(runner, 'p0');
+    const second = runner.updateFor('p1', 0)!.clock!;
+    expect(second).toMatchObject({ kind: 'selection', endsAt: first.endsAt, totalSeconds: 300 });
+  });
+
+  it("sends every seat the same clock with the viewer's own seat id", () => {
+    const { runner } = two();
+    const a = runner.updateFor('p0', 0)!.clock!;
+    const b = runner.updateFor('p1', 0)!.clock!;
+    expect([a.seatId, b.seatId]).toEqual(['seat-0', 'seat-1']);
+    expect({ ...a, seatId: '' }).toEqual({ ...b, seatId: '' });
+  });
+
+  it('defaults a seat still choosing at 300 s and leaves a ready seat alone', async () => {
+    const { runner, host, scheduler } = two();
+    await pick(runner, 'p0');
+    await scheduler.advance(300_000);
+    expect(host.stored.map((r) => [r.seatId, r.source])).toEqual([['seat-0', 'human'], ['seat-1', 'timeout']]);
+    expect(runner.state.phase).not.toBe('GeneralSelection');
+  });
+
+  it('starts no new selection clock for the seats left after a timeout', async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['human', 'human', 'human'], connected: ['p0', 'p1', 'p2'] });
+    await scheduler.advance(300_000);
+    expect(host.stored.map((r) => r.source)).toEqual(['timeout', 'timeout', 'timeout']);
+    expect(host.stored.map((r) => r.seatId)).toEqual(['seat-0', 'seat-1', 'seat-2']);
+    expect(runner.state.generalSelection).toBeNull();
+  });
+
+  it('refuses a choice that loses a race to the timeout, and stores nothing twice', async () => {
+    const { runner, host, scheduler } = two();
+    const late = runner.updateFor('p1', 0)!.legalActions[0];
+    await scheduler.advance(300_000);
+    await expect(runner.submit('p1', GAME_ID, 0, [late])).rejects.toEqual(code('stale'));
+    expect(host.stored).toHaveLength(2);
+  });
+
+  it('answers stale, not not_your_turn, to a choice that loses the race inside the start hold', async () => {
+    const { runner, host, scheduler } = two({ startHoldMs: 3000 });
+    const late = runner.updateFor('p1', 0)!.legalActions[0];
+    await scheduler.advance(300_000);
+    expect(runner.state.phase).not.toBe('GeneralSelection');
+    await expect(runner.submit('p1', GAME_ID, 0, [late])).rejects.toEqual(code('stale'));
+    expect(host.stored).toHaveLength(2);
+  });
+
+  it('has a taken-over seat choose at once', async () => {
+    const { runner, host, scheduler } = two({ connected: ['p0'] });
+    await scheduler.advance(TAKEOVER_AWAY_MS);
+    runner.tick();
+    await scheduler.advance(0);
+    expect(host.stored.map((r) => [r.seatId, r.source])).toEqual([['seat-1', 'takeover']]);
+  });
+
+  it('does not count a selection timeout towards takeover', async () => {
+    const { runner, host, scheduler } = two({ connected: ['p0'] });
+    runner.disconnected('p1');
+    await scheduler.advance(300_000);
+    expect(host.seatsChangedCount).toBe(0);
+    expect(host.stored.filter((r) => r.source === 'timeout').map((r) => r.seatId).sort()).toEqual(['seat-0', 'seat-1']);
+  });
+
+  describe('the 3 second start hold', () => {
+    const held = async () => {
+      const t = two({ startHoldMs: 3000 });
+      await pick(t.runner, 'p0');
+      await pick(t.runner, 'p1');
+      return t;
+    };
+
+    it('offers nobody actions for 3 seconds, then the first decision', async () => {
+      const { runner, scheduler } = await held();
+      expect([runner.updateFor('p0', 0)!.legalActions, runner.updateFor('p1', 0)!.legalActions]).toEqual([[], []]);
+      await scheduler.advance(2_999);
+      expect(runner.updateFor('p0', 0)!.legalActions).toEqual([]);
+      await scheduler.advance(1);
+      expect(runner.updateFor('p0', 0)!.legalActions.length).toBeGreaterThan(0);
+    });
+
+    it('refuses a move during the hold as not_your_turn', async () => {
+      const { runner } = await held();
+      const move: Action = { kind: 'EndPhaseAction', seatId: 'seat-0' };
+      await expect(runner.submit('p0', GAME_ID, runner.seq, [move])).rejects.toEqual(code('not_your_turn'));
+    });
+
+    it("starts the first decision's clock at the end of the hold", async () => {
+      const { runner } = await held();
+      const clock = runner.updateFor('p0', 0)!.clock!;
+      expect(clock.startsAt - clock.serverNow).toBe(3000);
+    });
+
+    it('still reports the time left to a snapshot taken during the hold', async () => {
+      const { runner, scheduler } = await held();
+      await scheduler.advance(1_000);
+      const clock = runner.updateFor('p1', 0)!.clock!;
+      expect(clock.startsAt - clock.serverNow).toBe(2000);
+    });
+
+    it('starts a bot first mover after the hold, and reports it', async () => {
+      const t = setup({ kinds: ['bot', 'human'], connected: ['p1'], startHoldMs: 3000 });
+      await t.scheduler.advance(0);
+      await pick(t.runner, 'p1');
+      const clock = t.runner.updateFor('p1', 0)!.clock!;
+      expect(clock).toMatchObject({ bot: true });
+      expect(clock.startsAt - clock.serverNow).toBe(3000);
+      const before = t.host.stored.length;
+      await t.scheduler.advance(3000 + BOT_DELAY_MS - 1);
+      expect(t.host.stored).toHaveLength(before);
+    });
+
+    it('applies the hold when only bots and taken-over seats are playing', async () => {
+      const t = setup({ kinds: ['bot', 'bot'], connected: [], startHoldMs: 3000 });
+      await t.scheduler.advance(0);
+      expect(t.runner.state.phase).not.toBe('GeneralSelection');
+      const before = t.host.stored.length;
+      await t.scheduler.advance(2_999);
+      expect(t.host.stored).toHaveLength(before);
+      await t.scheduler.advance(BOT_DELAY_MS + 1);
+      expect(t.host.stored.length).toBeGreaterThan(before);
+    });
+  });
+});
 
 describe('GameRunner', () => {
   it("starts the first decision on its human seat's clock, offering moves to that seat only", () => {
@@ -115,8 +301,10 @@ describe('GameRunner', () => {
     const before = runner.state;
     const [move] = legal();
     await expect(runner.submit('p1', GAME_ID, 0, [{ ...move, seatId: 'seat-1' } as Action])).rejects.toEqual(code('not_your_turn'));
-    await expect(runner.submit('p0', GAME_ID, 1, [move])).rejects.toEqual(code('stale'));
     await expect(runner.submit('p0', 'aaaaaaaa-0000-4000-8000-000000000002', 0, [move])).rejects.toEqual(code('stale'));
+    const later = setup({ state: pastSelection });
+    const [play] = later.legal();
+    await expect(later.runner.submit('p0', GAME_ID, 1, [play])).rejects.toEqual(code('stale'));
     await expect(runner.submit('p0', GAME_ID, 0, [{ kind: 'DrawCardsAction', seatId: 'seat-0', count: 5 }])).rejects.toEqual(code('illegal_action'));
     await expect(runner.submit('p0', GAME_ID, 0, [{ ...move, extra: 1 } as unknown as Action])).rejects.toEqual(code('illegal_action'));
     await expect(runner.submit('p0', GAME_ID, 0, [move, move])).rejects.toEqual(code('illegal_action'));
@@ -134,22 +322,19 @@ describe('GameRunner', () => {
   });
 
   it("moves a bot seat after the bot delay, and shows the bot's timer as its clock", async () => {
-    const { runner, host, scheduler, legal } = setup();
-    await runner.submit('p0', GAME_ID, 0, [legal()[0]]);
-    expect(runner.updateFor('p0', 0)!.clock).toEqual({ seatId: 'seat-1', kind: 'selection', startsAt: T0, endsAt: T0 + BOT_DELAY_MS, totalSeconds: BOT_DELAY_MS / 1000, serverNow: T0, bot: true });
+    const { runner, host, scheduler } = setup({ kinds: ['bot', 'human'], connected: ['p1'], state: pastSelection });
+    expect(runner.updateFor('p1', 0)!.clock).toEqual({ seatId: 'seat-0', kind: 'play', startsAt: T0, endsAt: T0 + BOT_DELAY_MS, totalSeconds: BOT_DELAY_MS / 1000, serverNow: T0, bot: true });
     await scheduler.advance(BOT_DELAY_MS - 1);
-    expect(host.stored).toHaveLength(1);
+    expect(host.stored).toHaveLength(0);
     await scheduler.advance(1);
-    expect(host.stored[1]).toMatchObject({ seq: 2, seatId: 'seat-1', source: 'bot' });
+    expect(host.stored[0]).toMatchObject({ seq: 1, seatId: 'seat-0', source: 'bot' });
   });
 
   it("submits the engine's default when the clock runs out", async () => {
-    const { runner, host, scheduler } = setup();
+    const { runner, host, scheduler } = setup({ state: pastSelection });
     const opening = runner.state;
-    await scheduler.advance(300_000);
-    expect(host.stored).toEqual([
-      { seq: 1, seatId: 'seat-0', source: 'timeout', action: defaultActionsFor(opening, getLegalActions(opening, 'seat-0', registry))[0], stateHash: stateHash(runner.state) },
-    ]);
+    await scheduler.advance(180_000);
+    expect(host.stored[0]).toMatchObject({ seq: 1, seatId: 'seat-0', source: 'timeout', action: defaultActionsFor(opening, getLegalActions(opening, 'seat-0', registry))[0] });
   });
 
   it('hands a seat to a bot after two timeouts in a row while its player is away', async () => {
@@ -210,12 +395,13 @@ describe('GameRunner', () => {
   it('pauses a solo game while its player is away, and resumes the clock where it stopped', async () => {
     const { runner, host, scheduler } = setup({ solo: true });
     await scheduler.advance(100_000);
+    const stored = host.stored.length;
     runner.disconnected('p0');
     expect(runner.paused).toBe(true);
     expect(scheduler.pending).toBe(0);
     expect(runner.updateFor('p0', 0)).toMatchObject({ paused: true, clock: null, legalActions: [] });
     await scheduler.advance(3_600_000);
-    expect(host.stored).toEqual([]);
+    expect(host.stored).toHaveLength(stored);
     runner.connected('p0');
     expect(runner.paused).toBe(false);
     expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', endsAt: scheduler.now + 200_000 });
@@ -259,7 +445,8 @@ describe('GameRunner', () => {
   it('retries a bot move that could not be stored', async () => {
     const { runner, host, scheduler } = setup({ kinds: ['bot', 'human'], connected: ['p1'] });
     host.failPersist = true;
-    await scheduler.advance(BOT_DELAY_MS);
+    // A bot chooses its Generals at once; the retry waits, so a failing store is not hammered.
+    await scheduler.advance(0);
     expect(host.errors).toHaveLength(1);
     expect(runner.seq).toBe(0);
     expect(scheduler.pending).toBe(1);
@@ -298,7 +485,7 @@ describe('GameRunner', () => {
   });
 
   it('counts a timeout that could not be stored only once, when its retry is stored', async () => {
-    const { runner, host, scheduler } = setup({ connected: [] });
+    const { runner, host, scheduler } = setup({ connected: [], state: pastSelection });
     host.failPersist = true;
     await scheduler.runUntil(() => host.errors.length > 0);
     host.failPersist = false;
@@ -561,7 +748,7 @@ describe('a choice owned by an eliminated human seat', () => {
       { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'sorrow-1', optionId: 'deputy' },
     ]);
     expect(runner.updateFor('p1', 0)!.legalActions).toEqual([]);
-    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'choice' });
+    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'pick' });
   });
 
   it('accepts their pick, and the game moves on to the turn owner', async () => {
@@ -611,13 +798,13 @@ function askToChange(runner: GameRunner, seatId: string, rounds: number): void {
 }
 
 describe('GameRunner: a skill that may change the judgment', () => {
-  it("gives a person's decision 10 seconds, after the card has been shown, and declines when they run out", async () => {
+  it("gives a person's decision 15 seconds, after the card has been shown, and declines when they run out", async () => {
     const { runner, host, scheduler } = setup();
     askToChange(runner, 'seat-0', 1);
     const clock = runner.updateFor('p0', 0)!.clock!;
-    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'judgmentChange', totalSeconds: 10 });
+    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'judgmentChange', totalSeconds: 15 });
     expect(clock.startsAt - clock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.head);
-    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + 9_999);
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + 14_999);
     expect(host.stored).toHaveLength(0);
     await scheduler.advance(1);
     expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: expect.objectContaining({ kind: 'ChooseOptionAction', optionId: 'decline' }) })]);

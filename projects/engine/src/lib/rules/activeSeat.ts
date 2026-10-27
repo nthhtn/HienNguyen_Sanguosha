@@ -7,7 +7,8 @@ export function ownSkillChoice(choice: PendingChoice): boolean {
 }
 
 // The single source of truth for "whose move is it". During GeneralSelection
-// seats choose in seat order; afterwards a pending chooser, selector or
+// this is the first seat still choosing (every such seat may choose: see
+// getActingSeatIds); afterwards a pending chooser, selector or
 // arranger, then a pending responder, acts before the turn owner. An unknown or eliminated seat can never act,
 // but for a choice its own skill opened (ownSkillChoice).
 export function getActiveSeatId(state: GameState): string | null {
@@ -26,6 +27,18 @@ export function getActiveSeatId(state: GameState): string | null {
     state.turn.ownerSeatId;
   const seat = state.seats.find((s) => s.id === candidateId);
   return seat && !seat.eliminated ? candidateId : null;
+}
+
+// Every seat that may act now. During GeneralSelection that is every seat that
+// still has candidates, in seat order: they choose at the same time, in any
+// order. Otherwise it is the active seat alone (none when nobody can act).
+export function getActingSeatIds(state: GameState): string[] {
+  if (state.phase === 'GeneralSelection' && !state.result) {
+    const candidates = state.generalSelection?.candidates ?? {};
+    return state.seats.filter((s) => Object.prototype.hasOwnProperty.call(candidates, s.id)).map((s) => s.id);
+  }
+  const active = getActiveSeatId(state);
+  return active ? [active] : [];
 }
 
 // Whether a seat owes a decision that pauses the queue: a response, a choice,
