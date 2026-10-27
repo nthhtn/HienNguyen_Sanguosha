@@ -284,14 +284,17 @@ export class GameRunner {
       this.clock = switchClock(this.clock, null, now);
       return;
     }
-    const decision = describeDecision(this.state, seatId, getLegalActions(this.state, seatId, this.ctx.registry), String(this.seq));
+    // A person at the table sees the judgment animation, so a clock waits for the part of it that comes first.
+    const decision = describeDecision(this.state, seatId, getLegalActions(this.state, seatId, this.ctx.registry), String(this.seq), { leadIn: this.personControlled() });
     const generation = this.generation;
     if (this.isBotPlayed(seatId) && !this.closedByClock()) {
       // A human's Play phase clock waits while a bot responds.
       this.clock = switchClock(this.clock, null, now);
       if (this.paused) return;
-      this.timer = { kind: 'bot', seatId, decision: decision?.kind ?? 'response', endsAt: now + this.options.botDelayMs };
-      this.cancelTimer = this.host.schedule(this.options.botDelayMs, () => this.botMove(generation));
+      // A bot that may change a judgment waits for the animation before it, as a person's clock would.
+      const delay = this.options.botDelayMs + (decision?.leadInMs ?? 0);
+      this.timer = { kind: 'bot', seatId, decision: decision?.kind ?? 'response', endsAt: now + delay };
+      this.cancelTimer = this.host.schedule(delay, () => this.botMove(generation));
       return;
     }
     this.clock = switchClock(this.clock, this.paused ? null : decision, now);
@@ -378,9 +381,9 @@ export class GameRunner {
   private clockView(): GameClockView | null {
     const now = this.host.now();
     const timer = this.timer;
-    if (timer?.kind === 'bot') return { seatId: timer.seatId, kind: timer.decision, endsAt: timer.endsAt, totalSeconds: this.options.botDelayMs / 1000, serverNow: now, bot: true };
+    if (timer?.kind === 'bot') return { seatId: timer.seatId, kind: timer.decision, startsAt: now, endsAt: timer.endsAt, totalSeconds: this.options.botDelayMs / 1000, serverNow: now, bot: true };
     const running = this.clock.running;
     if (timer?.kind !== 'clock' || !running) return null;
-    return { seatId: running.decision.seatId, kind: running.decision.kind, endsAt: running.endsAt, totalSeconds: running.totalMs / 1000, serverNow: now };
+    return { seatId: running.decision.seatId, kind: running.decision.kind, startsAt: running.startsAt, endsAt: running.endsAt, totalSeconds: running.totalMs / 1000, serverNow: now };
   }
 }

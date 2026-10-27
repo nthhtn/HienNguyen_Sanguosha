@@ -452,6 +452,29 @@ const JUDGMENT_OUTCOMES: Record<string, Record<string, string>> = {
   },
 };
 
+// What makes a judgment's card good or bad for the seat that is judged, in one sentence: shown at the
+// start of the judgment popup, by reader id (a card's id, or a skill's id).
+const JUDGMENT_RULES: Record<string, string> = {
+  lightning: 'A spade from 2 to 9 deals 3 thunder damage. Anything else moves Lightning on.',
+  capture: 'Anything but a heart skips the Play Phase.',
+  starvation: 'Anything but a club skips the Draw Phase.',
+  'eight-trigrams': 'A red card counts as a Shan.',
+  'eight-arrays': 'A red card counts as a Shan.',
+  unyielding: 'Anything but a heart makes the damage source discard 2 cards or take 1 damage.',
+  'river-goddess': 'A black card is kept and the judging goes on. A red card ends it.',
+  'alternate:goddess-luo': 'A black card is set aside and the judging goes on. A red card ends it.',
+  'iron-cavalry': 'A red card means the Sha cannot be dodged.',
+  'lightning-strike': 'A spade deals 2 thunder damage.',
+  'alternate:lightning-strike': 'A spade deals 2 thunder damage.',
+  'dueling-heroes': 'The card goes to the hand, and its colour decides which hand cards may be played as Duel.',
+  'military-farm': 'Anything but a heart is stashed as a Farm.',
+  lament: 'A heart heals, a diamond draws 2 cards, a club makes the source discard, a spade turns the source face down or up.',
+};
+
+export function judgmentRuleText(readerId: string, locale = 'en'): string | null {
+  return lookup(proseOf(locale)?.judgmentRules, readerId) ?? lookup(JUDGMENT_RULES, readerId) ?? null;
+}
+
 export interface JudgmentOutcomeNames {
   seat: string;
   owner: string;
@@ -473,6 +496,7 @@ export const ENGLISH_PROSE = {
   stepSelection: STEP_SELECTION_TEXT,
   competeOutcomes: COMPETE_OUTCOMES,
   judgmentOutcomes: JUDGMENT_OUTCOMES,
+  judgmentRules: JUDGMENT_RULES,
 };
 
 // One language's prose, shaped like the English tables above.
@@ -489,6 +513,7 @@ interface Prose {
   stepSelection: Record<string, ProseText>;
   competeOutcomes: Record<string, { won: string; lost: string }>;
   judgmentOutcomes: Record<string, Record<string, string>>;
+  judgmentRules: Record<string, string>;
 }
 
 // Languages other than English that have prose; any other locale reads English.

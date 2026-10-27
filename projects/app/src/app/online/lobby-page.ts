@@ -34,6 +34,7 @@ import { SocketService } from './socket.service';
         [ending]="ending"
         [solo]="lobby.isSolo()"
         [canAct]="lobby.canAct()"
+        [youPlayerId]="lobby.you()"
         (backToLobby)="game.dismiss()"
         (playAgain)="lobby.start()"
         (backToRooms)="lobby.leave()"

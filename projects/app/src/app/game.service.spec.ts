@@ -1,7 +1,8 @@
 import { GameService } from './game.service';
 import { ruleBasedPolicy } from 'bots';
 import { getLegalActions } from 'engine';
-import { settleJudgment } from './settled-judgment.testing';
+import { JUDGMENT_LEAD_IN_MS } from 'engine';
+import { askToChange, settleJudgment } from './settled-judgment.testing';
 
 function finishSelection(service: GameService): void {
   while (service.state()!.phase === 'GeneralSelection') {
@@ -290,6 +291,15 @@ describe('GameService: a settled judgment', () => {
     service.closeJudgment('seat-2');
     expect(acknowledged()).toEqual({ kind: 'JudgmentAcknowledgedEvent', seatId: 'seat-0', by: 'seat-2', source: 'close' });
     expect(service.revealedSeatId()).toBeNull();
+  });
+
+  it("makes a bot's decision to change a judgment wait for the animation as well as its delay", () => {
+    service.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    askToChange(service, 'seat-1');
+    jest.advanceTimersByTime(JUDGMENT_LEAD_IN_MS.head + 700 - 1);
+    expect(service.state()!.pendingChoice).toBeDefined();
+    jest.advanceTimersByTime(1);
+    expect(service.state()!.pendingChoice).toBeUndefined();
   });
 
   it('publicState masks every hand and unrevealed General, even the acting seat’s', () => {

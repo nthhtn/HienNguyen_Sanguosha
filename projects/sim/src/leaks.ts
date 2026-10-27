@@ -6,12 +6,13 @@ const HIDDEN = 'hidden';
 // General ids `viewerSeatId` must not learn: other seats' face-down Generals,
 // the spare Generals they hold (bar the chosen one), other seats' selection
 // candidates, and the Generals nobody was dealt. With no viewer (the shared
-// log), every seat's.
-export function secretGeneralIds(state: GameState, viewerSeatId: string | null): Set<string> {
+// log), every seat's. With `gameOver`, the seats' own Generals are public and
+// not counted; their spare Generals still are.
+export function secretGeneralIds(state: GameState, viewerSeatId: string | null, gameOver = false): Set<string> {
   const ids = new Set<string>();
   for (const seat of state.seats) {
     if (seat.id === viewerSeatId) continue;
-    if (seat.generals) {
+    if (seat.generals && !gameOver) {
       for (const general of [seat.generals.main, seat.generals.deputy]) if (!general.revealed) ids.add(general.generalDefinitionId);
     }
     for (const id of seat.forms?.held ?? []) if (id !== seat.forms?.chosen?.generalId) ids.add(id);
@@ -65,7 +66,8 @@ export function findViewLeaks(state: GameState, view: object, viewerSeatId: stri
   const leaks: string[] = [];
   if ('rng' in view) leaks.push(`${viewerSeatId}: the view carries the RNG state`);
   if ('log' in view) leaks.push(`${viewerSeatId}: the view carries the log, which is sent separately`);
-  const generals = secretGeneralIds(state, viewerSeatId);
+  // Once the game has a result every seat's Generals are public (the Victory window); spare Generals and the rest stay secret.
+  const generals = secretGeneralIds(state, viewerSeatId, !!state.result);
   const cards = hiddenCards(state, viewerSeatId);
   const look = ownSecretLook(state, viewerSeatId);
   walk(

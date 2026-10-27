@@ -100,6 +100,12 @@ shuffle, and a reshuffle gives every card a fresh id, so an id never gives
 away what a masked card is. `state.rng` holds the seed and is **not** removed
 by `redactStateForSeat`; the server strips it from every view it sends.
 
+**Once the game has a result** (`state.result` is set) nothing is left to
+play for, so `redactStateForSeat` shows every seat's Generals, Kingdom and
+allegiance, for the Game Over screen's victory columns. Only those are lifted:
+the held forms (`forms.held`), the spare Generals, hands, the draw pile and
+the skill masking in the log stay as they were.
+
 Bots receive the redacted state too, so they cannot cheat by construction.
 
 ## State is a resting place, not a call stack
@@ -138,12 +144,25 @@ How long a person has is a rule, so the engine owns it, in
 | `response`, `choice`, `discard` | 60 | one per decision |
 | `selection` (General Selection) | 300 | one per seat for the whole pick |
 | `play` | 300 | one for the whole Play Phase, paused while a response is under way |
-| `notice` | 10 | a settled judgment popup |
+| `judgmentChange` | 10 | a skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
+| `notice` | 3 | a settled judgment popup, after its animation |
 
-`describeDecision(state, seatId, legal, stepKey)` says what the seat must
+A clock can have a **lead-in**: `DecisionSpec.leadInMs` is the animation the
+decision follows, and a *new* clock starts counting at `startsAt = now + leadInMs`
+(`RunningClock.startsAt`; a clock resumed from paused has none). While it plays,
+`clockRemainingMs` reports the full budget and `clockStartsInMs` says how long is
+left. The lead-ins are `JUDGMENT_LEAD_IN_MS` (`head` 2100: source, rule, card
+turning up; `replace` 1300: a replacement's swap; `tail` 2000: verdict and
+consequence). A judgment-change decision waits `head` for its first ask
+(`judgmentView.rounds === 1`) and `replace` for later ones; a settled judgment's
+notice waits `tail`, plus `head` when no changer was ever asked. Only a caller
+with a person at the table passes `{ leadIn: true }`; the default is no lead-in, so
+headless games and bots never wait for an animation.
+
+`describeDecision(state, seatId, legal, stepKey, { leadIn })` says what the seat must
 decide and which clock it runs on; `switchClock` pauses the old clock and
 starts or resumes the new one; `defaultActionsFor` gives the engine-legal
-default at zero (No Response, the first option, End Phase, the acknowledgement,
+default at zero (Don't or Cancel for a judgment change, No Response, the first option, End Phase, the acknowledgement,
 or confirming a Start window with nothing revealed). The engine never reads
 the clock: the caller (the Angular timer, or the server's `GameRunner`) passes
 the time in and runs the timers.
@@ -253,7 +272,7 @@ Optional rules chosen at game creation are stored in `state.rules`
 | Rule | Meaning |
 |---|---|
 | `firstRevealDraw` | with five or more seats, the first seat to reveal a General draws 2 cards |
-| `judgmentNotice` | every judgment waits for the popup to be closed (or 10 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
+| `judgmentNotice` | every judgment waits for the popup to be closed (or 3 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
 | `deck` | the card distribution the draw pile is dealt from (a deck id). Absent means the Default deck. |
 
 Because the options sit in the state, adding a rule never changes how an old

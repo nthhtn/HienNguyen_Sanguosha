@@ -1,7 +1,7 @@
 import type { CardInstance, ContentRegistry, DamageDealtEvent, Effect, GameState, PhaseChangedEvent, SkillDefinition } from 'engine';
 import { livingSeatOrderFrom, requireZoneOfKind } from 'engine';
 import { abilityKey } from '../shared/steps';
-import { nextToChange } from '../shared/judgments';
+import { judgmentChangeAsk, nextToChange } from '../shared/judgments';
 import { colourFor, suitOf } from '../shared/suits';
 import type { GeneralSkillSet } from './types';
 import { seatCardOptions } from '../shared/choices';
@@ -190,15 +190,7 @@ export const devil: SkillDefinition = {
   triggers: [
     on<Shown>('before:JudgmentShownEffect', {
       condition: (state, shown, owner, registry) => nextToChange(state, shown, owner, registry),
-      effect: (state, shown, owner) => {
-        const passed: Shown = { ...shown, acted: [...(shown.acted ?? []), owner.seatId] };
-        const pick = selectionOf(state, owner, {
-          of: 'cards', eligibleIds: handOf(state, owner.seatId).map((c) => c.instanceId), min: 1, max: 1,
-          then: { kind: 'replace-judgment', judgment: shown.judgment, owner, abilityId: owner.skillId },
-          onCancel: [passed], targetSeatId: shown.judgment.seatId,
-        });
-        return [ask(owner, [pick], [passed], shown.judgment.seatId)];
-      },
+      effect: (state, shown, owner) => [judgmentChangeAsk(state, shown, owner, handOf(state, owner.seatId).map((c) => c.instanceId))],
     }),
   ],
 };

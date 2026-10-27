@@ -222,5 +222,21 @@
       "face-up": "{source} lật mặt",
       "none": "Không có gì xảy ra"
     }
+  },
+  "judgmentRules": {
+    "lightning": "Thiểm Điện: Bích từ 2 đến 9 gây 3 sát thương sét. Lá khác thì chuyển Thiểm Điện đi.",
+    "capture": "Khác Cơ thì bỏ qua giai đoạn ra bài.",
+    "starvation": "Khác Chuồn thì bỏ qua giai đoạn rút bài.",
+    "eight-trigrams": "Lá đỏ được tính là một lá Thiểm.",
+    "eight-arrays": "Lá đỏ được tính là một lá Thiểm.",
+    "unyielding": "Khác Cơ thì người gây sát thương bỏ 2 lá bài hoặc chịu 1 sát thương.",
+    "river-goddess": "Lá đen được giữ lại và việc phán xét tiếp tục. Lá đỏ kết thúc việc đó.",
+    "alternate:goddess-luo": "Lá đen được để riêng và việc phán xét tiếp tục. Lá đỏ kết thúc việc đó.",
+    "iron-cavalry": "Lá đỏ nghĩa là Sát không thể bị né.",
+    "lightning-strike": "Lá Bích gây 2 sát thương sét.",
+    "alternate:lightning-strike": "Lá Bích gây 2 sát thương sét.",
+    "dueling-heroes": "Lá bài vào tay, và màu của nó quyết định bài trên tay nào được đánh làm Quyết Đấu.",
+    "military-farm": "Khác Cơ thì được cất làm Điền.",
+    "lament": "Cơ hồi Sinh lực, Rô rút 2 lá bài, Chuồn khiến người gây sát thương bỏ bài, Bích khiến họ úp hoặc lật mặt."
   }
 }

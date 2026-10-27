@@ -67,4 +67,46 @@ describe('judgmentDescription', () => {
     const description = describeIt(table(view(cardReader('sha'), 'seat-0', card('j', 'club', 5))));
     expect(description).toMatchObject({ settled: true, outcome: null, waiting: null });
   });
+
+  describe('what the popup plays', () => {
+    const lightning = (suit: 'spade' | 'heart', rank = 5, over: object = {}) => describeIt(table(view(cardReader('lightning'), 'seat-1', card('j', suit, rank), over)));
+
+    it('carries the verdict, the effect and the rule line from content', () => {
+      expect(lightning('spade')).toMatchObject({ verdict: 'bad', effect: { kind: 'damage', amount: 3, subject: 'seat' } });
+      expect(lightning('spade')?.rule).toContain('A spade from 2 to 9 deals 3 thunder damage');
+      expect(lightning('heart')).toMatchObject({ verdict: 'good', effect: { kind: 'pass-on' } });
+    });
+
+    it('is neutral with no stamp to draw when neither reading means anything', () => {
+      const duel = describeIt(table(view(skillReader({ kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'dueling-heroes' }), 'seat-0', card('j', 'heart', 5))));
+      expect(duel).toMatchObject({ verdict: 'neutral', effect: { kind: 'none' } });
+    });
+
+    it('reads the damage subject’s HP from the public state', () => {
+      expect(lightning('spade')?.hp).toEqual({ seatName: 'Bo', current: 4, max: 4 });
+    });
+
+    it('has no HP unless the effect is damage', () => {
+      expect(lightning('heart')?.hp).toBeNull();
+    });
+
+    it('has a null maximum when the table shows none for that seat', () => {
+      const state = table(view(cardReader('lightning'), 'seat-1', card('j', 'spade', 5)));
+      state.seats[1] = { ...state.seats[1], maxCombinedHp: 0 };
+      expect(describeIt(state)?.hp).toEqual({ seatName: 'Bo', current: 4, max: null });
+    });
+
+    it('unsettled: no verdict, effect or HP yet, but the rule line is there', () => {
+      const unsettled = lightning('spade', 5, { settled: false });
+      expect(unsettled).toMatchObject({ verdict: null, effect: null, hp: null });
+      expect(unsettled?.rule).toBeTruthy();
+    });
+
+    it('lists the cards that were replaced, oldest first, and keeps only the last three', () => {
+      const chain = ['a', 'b', 'c', 'd'].map((id, i) => ({ owner: xiahouOwner, abilityId: 'devil', card: card(`r${id}`, 'heart', i + 2), replaced: card(id === 'a' ? 'j' : `r${['a', 'b', 'c'][i - 1]}`, 'club', i + 1) }));
+      const description = describeIt(table(view(cardReader('lightning'), 'seat-1', card('rd', 'heart', 5), { changes: chain })));
+      expect(description!.replaced.map((c) => c.instanceId)).toEqual(['ra', 'rb', 'rc']);
+      expect(description!.changes).toHaveLength(4);
+    });
+  });
 });

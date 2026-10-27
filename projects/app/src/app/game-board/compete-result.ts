@@ -1,6 +1,6 @@
 import { CardInstance, EngineEvent, Player, Seat } from 'engine';
 import { abilityName, competeOutcomeText, generalDisplayData } from 'content';
-import { abilityDisplayName, Force, seatForce, generalDisplayName, seatName } from '../labels';
+import { abilityDisplayName, Force, rankLabel, seatForce, generalDisplayName, seatName } from '../labels';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
 export interface CompetePlayer {
@@ -8,6 +8,8 @@ export interface CompetePlayer {
   name: string;
   // The General shown for the seat, null while it has none face up.
   generalId: string | null;
+  // The seat's own Force, for its side of the popup to wear.
+  force: Force;
   card: CardInstance;
 }
 
@@ -27,6 +29,8 @@ export interface CompeteResult {
   won: boolean;
   // Equal ranks: the challenger loses a tie.
   tie: boolean;
+  // The two ranks that were compared, the winner's first (equal on a tie), for the line under the cards.
+  comparison: { winnerRank: string; loserRank: string; tie: boolean };
   winnerName: string;
   outcome: string | null;
 }
@@ -67,10 +71,11 @@ export function competeResults(log: readonly EngineEvent[], from: number, seats:
       generalId,
       generalName: generalId ? (display?.name ?? generalDisplayName(generalId, tr)) : generalDisplayName('hidden', tr),
       force: seatForce(sourceSeat),
-      user: { seatId: event.owner.seatId, name: userName, generalId: faceUpGeneral(sourceSeat), card: mine },
-      target: { seatId: event.targetSeatId, name: targetName, generalId: faceUpGeneral(targetSeat), card: theirs },
+      user: { seatId: event.owner.seatId, name: userName, generalId: faceUpGeneral(sourceSeat), force: seatForce(sourceSeat), card: mine },
+      target: { seatId: event.targetSeatId, name: targetName, generalId: faceUpGeneral(targetSeat), force: seatForce(targetSeat), card: theirs },
       won,
       tie: mine.rank === theirs.rank,
+      comparison: { winnerRank: rankLabel(won ? mine.rank : theirs.rank), loserRank: rankLabel(won ? theirs.rank : mine.rank), tie: mine.rank === theirs.rank },
       winnerName: won ? userName : targetName,
       outcome: competeOutcomeText(event.abilityId, won, { user: userName, target: targetName }, localeOf(tr)),
     });

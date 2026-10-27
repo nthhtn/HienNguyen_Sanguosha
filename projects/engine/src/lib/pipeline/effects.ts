@@ -107,7 +107,8 @@ export type Effect =
   | { kind: 'CardStepEffect'; step: string; card: UsedCard; userSeatId: string; target: Target; data?: Record<string, unknown> }
   // Asks `owner`'s seat whether to use an optional ability: Use queues
   // `effects`, Don't queues `otherwise`.
-  | { kind: 'AskUseEffect'; owner: AbilityOwner; abilityId: string; effects: Effect[]; otherwise?: Effect[]; targetSeatId?: string }
+  // `judgmentChange`: a skill that may change a judgment's card is asking (counts a round of the judgment).
+  | { kind: 'AskUseEffect'; owner: AbilityOwner; abilityId: string; effects: Effect[]; otherwise?: Effect[]; targetSeatId?: string; judgmentChange?: true }
   // Logs that an ability applied, for the Action History.
   // `cardId`: the card it was about (Bewilder's claim).
   | { kind: 'AbilityUsedEffect'; owner: AbilityOwner; abilityId: string; outcome: string; targetSeatId?: string; cardId?: string }
@@ -378,8 +379,12 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
           { id: 'use', shows: { kind: 'use', ...(hidden ? { reveals: hidden } : {}) }, effects: [...reveal, ...effect.effects] },
           { id: 'decline', shows: { kind: 'decline' }, effects: effect.otherwise ?? [] },
         ],
+        ...(effect.judgmentChange ? { judgmentChange: true as const } : {}),
       };
-      return { state: { ...state, pendingChoice: choice }, events: [] };
+      // A changer's ask while the judgment is still open is one more round of it.
+      const view = state.judgmentView;
+      const counted: Partial<GameState> = effect.judgmentChange && view && !view.settled ? { judgmentView: { ...view, rounds: (view.rounds ?? 0) + 1 } } : {};
+      return { state: { ...state, ...counted, pendingChoice: choice }, events: [] };
     }
     case 'AbilityUsedEffect': {
       const event: EngineEvent = {

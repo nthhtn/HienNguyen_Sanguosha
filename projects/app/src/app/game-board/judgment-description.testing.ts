@@ -35,7 +35,7 @@ export function table(view: JudgmentView | undefined, o: { hidden?: boolean; han
 }
 
 export const view = (reader: JudgmentReader, seatId: string, judged: CardInstance, over: Partial<JudgmentView> = {}): JudgmentView => ({
-  seatId, reader, card: judged, changes: [], settled: true, ...over,
+  seatId, reader, card: judged, changes: [], settled: true, rounds: 0, ...over,
 });
 
 export const publicOf = (state: GameState): GameState => redactStateForSeat(state, '');
@@ -53,5 +53,10 @@ export const skillDescription = (over: Partial<JudgmentDescription> = {}): Judgm
   settled: true,
   outcome: 'Bo discards 2 cards or takes 1 damage',
   waiting: null,
+  rule: 'Anything but a heart makes the damage source discard 2 cards or take 1 damage.',
+  verdict: 'good',
+  effect: { kind: 'none' },
+  hp: null,
+  replaced: [],
   ...over,
 });

@@ -117,7 +117,7 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 | `hand-view`, `playing-card`, `card-art` | the viewer's cards |
 | `action-list` | the buttons for what the engine says is legal (end phase, use skill) |
 | `action-history-panel`, `discard-pile` | what has happened, and what has been discarded |
-| `phase-indicator`, `game-over` | turn and result display |
+| `phase-indicator`, `game-over`, `victory-board` | turn and result display (see "The Game Over window") |
 | `general-selection`, `reveal-gate-overlay` | the pre-game pick and the pass-and-play hand-off |
 | `decision-dock`, `decision-banner`, `minimize-button` | hide a decision dialog to look at the board, with a banner to bring it back |
 | `board-chat`, `chat-panel` (online) | room chat beside the board |
@@ -174,17 +174,76 @@ outcome text). A board effect queues each result and opens
 [compete-dialog.ts](../../projects/app/src/app/game-board/compete-dialog.ts)
 for it, one at a time, themed by the source seat's Force. The outcome wording
 ("Seat 0 can play one more Sha this turn…") comes from content's
-`competeOutcomeText`, so the UI holds no skill-specific text. It closes with
-Continue or after 15 seconds.
+`competeOutcomeText`, so the UI holds no skill-specific text. The popup is a
+fixed sequence of beats ([beat-player.ts](../../projects/app/src/app/game-board/beat-player.ts)
+runs them, and shows each beat's end state at once under reduced motion):
+the two players slide in each in their own Force with a VS badge (0 ms), the
+cards are laid face down (800), both turn together (1500), the winner is lit
+and the loser dimmed with a line such as "K beats 8" (2500), the outcome
+appears (3400), and Continue unlocks (4200). A 3 s countdown then closes it, or
+Continue does. On a tie the challenged player is lit and the line says a tie
+counts as a loss for the challenger. It is a modal on each client, not an
+engine pause.
 
 **The judgment popup** is the one presentation that is also a pause. When the
 `judgmentNotice` rule is on, the engine holds a settled judgment in
 `state.judgmentView` and offers `AcknowledgeJudgmentAction` to the first living
-human seat. `judgment-dialog.ts` shows the source, the card with each
-replacement, the consequence from content's `judgmentOutcome`, and a 10 s
-countdown; Close submits the acknowledgement (`closeJudgment` locally, the
-server's offered action online). The pause lives in the engine, so it holds
-for every client and for replays; the dialog only shows it.
+human seat. `judgment-dialog.ts` hosts [judgment-stage.ts](../../projects/app/src/app/game-board/judgment-stage.ts),
+a fixed sequence: the source (0 ms), the rule line (500), the card turning up
+(1000), the decision area (from 2100, when a skill may change the card), a check
+or cross for the judged seat (a good or bad verdict from content's
+`judgmentOutcome`, none when neutral), the consequence (HP hearts popping, a
+phase struck through, or Lightning moving on, always with its sentence), then
+Continue unlocks and a 3 s countdown closes it; Continue submits the
+acknowledgement (`closeJudgment` locally, the server's offered action online).
+A skill that may change the card is asked **inside the popup**: the Ask and
+Selection dialogs are built from `AskPanel` and `SelectionPanel`, which the
+decision area reuses, and the board does not open those dialogs for a pending
+decision marked `judgmentChange` while the popup is open. Everyone else sees a
+waiting line; in Pass and Play the asked seat first gets a hand-off button in
+the decision area. Each replacement closes the area, fans the old card out
+struck through (the last three stay in view), and opens it again for the next
+asker; the verdict waits for the last round. The pause lives in the engine, so
+it holds for every client and for replays; the dialog only shows it.
+
+### The Game Over window
+
+`game-over` (local) and `OnlineResult` (online) both show
+[victory-board.ts](../../projects/app/src/app/game-board/victory-board.ts)
+(`app-victory-board`), a row of up to six columns: Wei, Shu, Wu, Qun, Winning
+Ambitionist, Losing Ambitionist. A column exists only if a seat belongs to
+it. The pure `victoryColumns(seats, result, youSeatId)` in
+`victory-columns.ts` builds the view. Kingdom columns are filled from each
+seat's allegiance and printed Kingdom; `result.winningSeatIds` is read only to
+decide who won (the sole survivor, or a draw when it is empty) and to split
+the Ambitionists:
+
+- a seat's group is its Kingdom, unless its allegiance is `ambitionist`;
+  a seat with no decided allegiance sits under its printed Kingdom;
+- Ambitionists form two groups, Winning Ambitionist (the seat is a winner and
+  the Ambitionist side won) and Losing Ambitionist (every other Ambitionist);
+- the winning group is the winning Kingdom if one is set; otherwise, for a
+  sole survivor, Winning Ambitionist if it is an Ambitionist, else its
+  Kingdom; a draw has none;
+- the headline is one of four kinds: Kingdom wins, "{name} wins as the
+  Ambitionist!", a lone survivor with no decided allegiance ("{name} wins!"),
+  or a draw.
+
+Each member row shows the avatar, name, a "You" tag (not in Pass and Play or
+without a seat), the Main and Deputy General names and Survived or Fallen.
+The reveal is timed, not blocking: headline first, the columns one after
+another, then the winning column lights in its Force colour while the others
+dim (a draw lights none); reduced motion shows the end state at once.
+Columns are 150 to 190 px and wrap by container query: at 700 px or narrower
+two per row, the winning column first.
+
+Locally the seats come from the full `state` (the game is over, so nothing is
+secret). Online they come from `lastGame.finalSeats`, which
+`RemoteGameService.ending` fills from the live final state; the finished
+online card is 980 px wide, has no title of its own and lets the board supply
+the "Game Over" eyebrow. A stopped game (`broken` or `outdated`) has no
+result, so the card shows its stopped message and no columns. The server only sends the Generals because
+`redactStateForSeat` lifts them once a result exists.
 
 ### Describing decisions without knowing the rules
 
@@ -220,7 +279,7 @@ deciding seat's Force; the Compete popup by the source General's.
 `DecisionTimer` is UI state too, for local games. The engine says which clock a
 decision runs on and how long it has (`DECISION_SECONDS`: a response, choice or
 discard 60 s, a selection and the General Selection 300 s, a whole Play Phase
-300 s, a settled judgment notice 10 s). The timer pauses when the decision is
+300 s, a skill's decision to change a judgment 10 s, a settled judgment notice 3 s). A decision that follows an animation has a lead-in (`leadInMs`): its countdown holds its full length and starts only when the animation has played (`startsInMs`). The timer pauses when the decision is
 not on screen, and at zero submits the UI's current pick or an engine-legal
 default (`defaultActionsFor`: No Response, the first option, End Phase).
 Bots are never timed. Online, the server owns the clock and

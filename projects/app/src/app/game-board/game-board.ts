@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed, isSeatDying } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
+import { finalSeatViews } from 'protocol';
 import { GameService } from '../game.service';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
@@ -38,6 +39,7 @@ import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
 import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
 import { StartRevealDialog, StartRevealDialogData } from './start-reveal-dialog';
+import { judgmentDecision } from './judgment-decision';
 import { judgmentDescription } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
@@ -67,7 +69,7 @@ import { TPipe } from '../i18n/t.pipe';
 
     @if (gameService.state(); as state) {
       @if (state.result; as result) {
-        <app-game-over [result]="result" [players]="state.players" (newGame)="goToSetup()" />
+        <app-game-over [result]="result" [players]="state.players" [seats]="finalSeats()" [youSeatId]="gameService.humanSeatId()" (newGame)="goToSetup()" />
       } @else if (activeSeatId(); as activeSeatId) {
         @if (gameService.humanSeatId() === null && gameService.revealedSeatId() !== activeSeatId) {
           <app-reveal-gate-overlay [name]="nameOf(activeSeatId)" (revealed)="gameService.reveal(activeSeatId)" />
@@ -218,6 +220,8 @@ export class GameBoard {
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
   private judgmentDialog: MatDialogRef<JudgmentDialog> | null = null;
+  // A minimized decision is being closed and opened again in the current language.
+  private rebuilding = false;
   private startRevealDialog: MatDialogRef<StartRevealDialog, Array<'main' | 'deputy'>> | null = null;
   private choiceDialog: MatDialogRef<unknown, Action> | null = null;
   private selectionDialog: MatDialogRef<SelectionDialog, Action> | null = null;
@@ -227,6 +231,7 @@ export class GameBoard {
   protected readonly selectionDue = computed(() => {
     const selection = this.visibleState()?.pendingSelection;
     if (!selection || selection.seatId !== this.viewerSeatId()) return null;
+    if (selection.judgmentChange && this.judgmentView()) return null;
     return this.gameService.legalActions().some((a) => a.kind === 'SelectAction') ? selection.id : null;
   });
   private arrangeDialog: MatDialogRef<ArrangeDialog, Action> | null = null;
@@ -245,6 +250,8 @@ export class GameBoard {
   protected readonly choiceDue = computed(() => {
     const choice = this.visibleState()?.pendingChoice;
     if (!choice || choice.seatId !== this.viewerSeatId()) return null;
+    // A skill that may change the judgment asks inside the Judgment popup, not in a dialog of its own.
+    if (choice.judgmentChange && this.judgmentView()) return null;
     return this.gameService.legalActions().some((a) => a.kind === 'ChooseOptionAction') ? choice.id : null;
   });
   // The response window whose dialog is showing, so each opens only once.
@@ -391,8 +398,25 @@ export class GameBoard {
     return state ? judgmentDescription(state, this.gameService.registry, this.i18n.translator) : null;
   });
 
+  // The skill decision the Judgment popup waits on, as the viewer sees it: the engine's own question for the asked
+  // seat, a waiting line for the others, and in Pass and Play the hand-off before the asked seat's private view.
+  private readonly judgmentDecisionView = computed(() => {
+    // Behind the Pass and Play gate there is no view of the asked seat yet: the public one tells who is asked.
+    const state = this.visibleState() ?? this.gameService.publicState();
+    const viewer = this.viewerSeatId();
+    if (!state || !viewer) return null;
+    const shown = this.gameService.humanSeatId() !== null || this.gameService.revealedSeatId() === viewer;
+    return judgmentDecision(state, viewer, this.gameService.legalActions(), this.i18n.translator, shown);
+  });
+
   // What the board's action list offers: the acknowledgement of a judgment is the popup's, not a button on the board.
   protected readonly boardActions = computed(() => this.gameService.legalActions().filter((a) => a.kind !== 'AcknowledgeJudgmentAction'));
+
+  // Everything is public at game over, so the full local state is safe to show.
+  protected readonly finalSeats = computed(() => {
+    const state = this.gameService.state();
+    return state ? finalSeatViews(state) : [];
+  });
 
   protected readonly viewerSeatId = computed(() => this.gameService.humanSeatId() ?? this.activeSeatId());
 
@@ -530,13 +554,18 @@ export class GameBoard {
 
   // Opens the judgment popup. It reads the description live, so a replacement or a language switch
   // updates it in place; Close is the viewer's, whoever holds the device.
-  private openJudgmentDialog(): void {
+  private openJudgmentDialog(resumed = this.rebuilding): void {
     const description = this.judgmentView();
     if (this.judgmentDialog || !description) return;
     const data: JudgmentDialogData = {
       description: this.judgmentView,
       canClose: this.gameService.canCloseJudgment,
       close: () => this.gameService.closeJudgment(this.gameService.humanSeatId() ?? this.gameService.revealedSeatId()),
+      decision: this.judgmentDecisionView,
+      choose: (action) => this.submit(action),
+      // A skill's decision whether to change the card is not remembered for a timeout: running out declines it.
+      resumed,
+      reveal: (seatId) => this.gameService.reveal(seatId),
     };
     const ref = openForceDialog<JudgmentDialog, JudgmentDialogData>(this.dialog, JudgmentDialog, description.force, { data, width: 'min(92vw, 560px)', disableClose: true });
     this.judgmentDialog = ref;
@@ -548,6 +577,8 @@ export class GameBoard {
   private rebuildMinimizedDecision(): void {
     const old = this.dock.dismiss();
     if (!old) return;
+    // The Judgment popup the closing triggers a rebuild of (here or by its own effect) picks up where it was.
+    this.rebuilding = true;
     old.afterClosed().subscribe(() => {
       const count = this.discardsDue();
       if (count > 0) this.openDiscardDialog(count);
@@ -560,6 +591,7 @@ export class GameBoard {
       ] as const) {
         if (id) open(id);
       }
+      this.rebuilding = false;
       const fresh = this.dialog.openDialogs.at(-1);
       if (!fresh) return;
       // Hidden from the moment it exists, so it never flashes; registered with the dock (title,

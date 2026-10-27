@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { finalSeatViews } from 'protocol';
 import type { GameUpdate, RoomSnapshot } from 'protocol';
 import { RemoteDecisionClock, RemoteGameService } from './remote-game.service';
 import { SocketService, WEB_SOCKET_FACTORY } from './socket.service';
@@ -94,7 +95,7 @@ describe('RemoteGameService', () => {
     socket.serverSends(welcome(takenOver, 'p-ann', { ...afterMove, logFrom: 0, events }));
     expect(game.botSeatIds()).toEqual(['seat-1']);
     expect(game.botThinkingSeatId()).toBeNull();
-    socket.serverSends({ type: 'game.update', game: { ...afterMove, logFrom: events.length, events: [], clock: { seatId: 'seat-1', kind: 'selection', endsAt: 700, totalSeconds: 0.7, serverNow: 0 } } });
+    socket.serverSends({ type: 'game.update', game: { ...afterMove, logFrom: events.length, events: [], clock: { seatId: 'seat-1', kind: 'selection', startsAt: 0, endsAt: 700, totalSeconds: 0.7, serverNow: 0 } } });
     expect(game.botThinkingSeatId()).toBe('seat-1');
   });
 
@@ -102,7 +103,9 @@ describe('RemoteGameService', () => {
     socket.serverSends(welcome(PLAYING, 'p-ann', opening));
     const final: GameUpdate = { ...afterMove, view: { ...afterMove.view, result: LAST_GAME.result } };
     socket.serverSends({ type: 'game.update', game: final });
-    expect(game.ending()).toEqual(LAST_GAME);
+    // Each seat as the final view shows it.
+    expect(game.ending()).toEqual({ ...LAST_GAME, finalSeats: finalSeatViews(final.view) });
+    expect(game.ending()!.finalSeats.map((s) => s.seatId)).toEqual(['seat-0', 'seat-1']);
     expect(game.playing()).toBe(false);
     socket.serverSends({ type: 'room.updated', room: { ...ROOM, lastGame: LAST_GAME } });
     expect(game.ending()).toEqual(LAST_GAME);
@@ -118,7 +121,7 @@ describe('RemoteGameService: a settled judgment', () => {
   const judged = { instanceId: 'j1', definitionId: 'sha', suit: 'heart' as const, rank: 5 };
   const settled: GameUpdate = {
     ...opening,
-    view: { ...opening.view, judgmentView: { seatId: 'seat-1', reader: { kind: 'card', card: { as: 'lightning', physical: [], colour: 'black', suit: 'spade', rank: 1 } as never }, card: judged, changes: [], settled: true } },
+    view: { ...opening.view, judgmentView: { seatId: 'seat-1', reader: { kind: 'card', card: { as: 'lightning', physical: [], colour: 'black', suit: 'spade', rank: 1 } as never }, card: judged, changes: [], settled: true, rounds: 0 } },
     legalActions: [{ kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' }],
   };
 
@@ -152,14 +155,14 @@ describe('RemoteGameService: a settled judgment', () => {
 
   it('a notice clock on a bot seat that a person is closing is not "thinking"', () => {
     const takenOver: RoomSnapshot = { ...PLAYING, members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, botControlled: true } : m)) };
-    socket.serverSends(welcome(takenOver, 'p-ann', { ...settled, clock: { seatId: 'seat-1', kind: 'notice', endsAt: 10_000, totalSeconds: 10, serverNow: 0 } }));
+    socket.serverSends(welcome(takenOver, 'p-ann', { ...settled, clock: { seatId: 'seat-1', kind: 'notice', startsAt: 0, endsAt: 10_000, totalSeconds: 10, serverNow: 0 } }));
     expect(game.botSeatIds()).toContain('seat-1');
     expect(game.botThinkingSeatId()).toBeNull();
   });
 
   it("a bot's own notice clock is \"thinking\"", () => {
     const takenOver: RoomSnapshot = { ...PLAYING, members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, botControlled: true } : m)) };
-    socket.serverSends(welcome(takenOver, 'p-ann', { ...settled, clock: { seatId: 'seat-1', kind: 'notice', endsAt: 1_500, totalSeconds: 1.5, serverNow: 0, bot: true } }));
+    socket.serverSends(welcome(takenOver, 'p-ann', { ...settled, clock: { seatId: 'seat-1', kind: 'notice', startsAt: 0, endsAt: 1_500, totalSeconds: 1.5, serverNow: 0, bot: true } }));
     expect(game.botThinkingSeatId()).toBe('seat-1');
   });
 
@@ -209,13 +212,13 @@ describe('RemoteDecisionClock', () => {
     TestBed.inject(SocketService).connect(ROOM.id);
     socket.serverOpens();
     // The server's clock runs 4 000 s ahead of this device's: only the difference matters.
-    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-0', kind: 'selection', endsAt: 5_030_000, totalSeconds: 300, serverNow: 5_000_000 } }));
+    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-0', kind: 'selection', startsAt: 5_000_000, endsAt: 5_030_000, totalSeconds: 300, serverNow: 5_000_000 } }));
     TestBed.tick();
     expect(clock.secondsLeft()).toBe(30);
     expect(clock.totalSeconds()).toBe(300);
     jest.advanceTimersByTime(10_000);
     expect(clock.secondsLeft()).toBe(20);
-    socket.serverSends({ type: 'game.update', game: { ...afterMove, clock: { seatId: 'seat-1', kind: 'selection', endsAt: 5_100_000, totalSeconds: 300, serverNow: 5_000_000 } } });
+    socket.serverSends({ type: 'game.update', game: { ...afterMove, clock: { seatId: 'seat-1', kind: 'selection', startsAt: 5_000_000, endsAt: 5_100_000, totalSeconds: 300, serverNow: 5_000_000 } } });
     TestBed.tick();
     expect(clock.secondsLeft()).toBeNull();
     expect(clock.totalSeconds()).toBeNull();
@@ -236,10 +239,56 @@ describe('RemoteDecisionClock: a notice clock', () => {
     const clock = TestBed.inject(RemoteDecisionClock);
     TestBed.inject(SocketService).connect(ROOM.id);
     socket.serverOpens();
-    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-1', kind: 'notice', endsAt: 5_010_000, totalSeconds: 10, serverNow: 5_000_000 } }));
+    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-1', kind: 'notice', startsAt: 5_000_000, endsAt: 5_010_000, totalSeconds: 10, serverNow: 5_000_000 } }));
     TestBed.tick();
     expect(clock.secondsLeft()).toBe(10);
     expect(clock.totalSeconds()).toBe(10);
+  });
+});
+
+describe('RemoteDecisionClock: a decision that waits for an animation', () => {
+  let socket: FakeSocket;
+  const [opening] = gameUpdates();
+
+  afterEach(() => jest.useRealTimers());
+
+  it("keeps the deciding seat's countdown at its full length until the lead-in has passed, and says how long that is", () => {
+    jest.useFakeTimers({ now: 1_000_000 });
+    TestBed.configureTestingModule({
+      providers: [SocketService, RemoteGameService, RemoteDecisionClock, { provide: WEB_SOCKET_FACTORY, useValue: (url: string) => (socket = new FakeSocket(url)) }],
+    });
+    const clock = TestBed.inject(RemoteDecisionClock);
+    TestBed.inject(SocketService).connect(ROOM.id);
+    socket.serverOpens();
+    // The server's clock is 4 000 s ahead of this device's: only differences matter.
+    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-0', kind: 'judgmentChange', startsAt: 5_002_100, endsAt: 5_012_100, totalSeconds: 10, serverNow: 5_000_000 } }));
+    TestBed.tick();
+    expect(clock.startsInMs()).toBe(2_100);
+    expect(clock.secondsLeft()).toBe(10);
+    expect(clock.totalSeconds()).toBe(10);
+    jest.advanceTimersByTime(2_000);
+    expect(clock.startsInMs()).toBe(100);
+    expect(clock.secondsLeft()).toBe(10);
+    // The display ticks every 250 ms.
+    jest.advanceTimersByTime(1_250);
+    expect(clock.startsInMs()).toBe(0);
+    expect(clock.secondsLeft()).toBe(9);
+  });
+
+  it("shows a changer's clock to the deciding seat only, and the notice clock to everyone", () => {
+    jest.useFakeTimers({ now: 1_000_000 });
+    TestBed.configureTestingModule({
+      providers: [SocketService, RemoteGameService, RemoteDecisionClock, { provide: WEB_SOCKET_FACTORY, useValue: (url: string) => (socket = new FakeSocket(url)) }],
+    });
+    const clock = TestBed.inject(RemoteDecisionClock);
+    TestBed.inject(SocketService).connect(ROOM.id);
+    socket.serverOpens();
+    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-1', kind: 'judgmentChange', startsAt: 5_000_000, endsAt: 5_010_000, totalSeconds: 10, serverNow: 5_000_000 } }));
+    TestBed.tick();
+    expect(clock.secondsLeft()).toBeNull();
+    socket.serverSends({ type: 'game.update', game: { ...opening, seq: 1, clock: { seatId: 'seat-1', kind: 'notice', startsAt: 5_000_000, endsAt: 5_003_000, totalSeconds: 3, serverNow: 5_000_000 } } });
+    TestBed.tick();
+    expect(clock.secondsLeft()).toBe(3);
   });
 });
 
@@ -257,7 +306,7 @@ describe('RemoteDecisionClock: a notice clock of a bot', () => {
     const clock = TestBed.inject(RemoteDecisionClock);
     TestBed.inject(SocketService).connect(ROOM.id);
     socket.serverOpens();
-    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-1', kind: 'notice', endsAt: 5_001_500, totalSeconds: 1.5, serverNow: 5_000_000, bot: true } }));
+    socket.serverSends(welcome(PLAYING, 'p-ann', { ...opening, clock: { seatId: 'seat-1', kind: 'notice', startsAt: 5_000_000, endsAt: 5_001_500, totalSeconds: 1.5, serverNow: 5_000_000, bot: true } }));
     TestBed.tick();
     expect(clock.secondsLeft()).toBeNull();
   });

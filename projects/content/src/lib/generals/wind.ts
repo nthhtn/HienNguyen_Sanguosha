@@ -1,7 +1,7 @@
 import type { AbilityUsedEvent, CardInstance, CardPlayedEvent, CardsTurnedUpEvent, ContentRegistry, DamageDealtEvent, Effect, GameState, GeneralOwner, HealEvent, PendingResponse, PhaseChangedEvent, SkillDefinition, Target, UsedCard } from 'engine';
 import { drawPileTop, endFlagOf, getLegalActions, pileZoneOf, requireZoneOfKind, skipFlagOf, usedCardFrom } from 'engine';
 import { suitOf } from '../shared/suits';
-import { blackCards, nextToChange } from '../shared/judgments';
+import { blackCards, judgmentChangeAsk, nextToChange } from '../shared/judgments';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, playsAsOf, seatDistance } from '../shared/queries';
 import { untargetableBy } from '../shared/abilities';
@@ -257,15 +257,7 @@ export const darkMagic: SkillDefinition = {
   triggers: [
     on<Shown>('before:JudgmentShownEffect', {
       condition: (state, shown, owner, registry) => nextToChange(state, shown, owner, registry) && blackCards(state, owner.seatId, registry).length > 0,
-      effect: (state, shown, owner, registry) => {
-        const passed: Shown = { ...shown, acted: [...(shown.acted ?? []), owner.seatId] };
-        const pick = selectionOf(state, owner, {
-          of: 'cards', eligibleIds: blackCards(state, owner.seatId, registry).map((c) => c.instanceId), min: 1, max: 1,
-          then: { kind: 'replace-judgment', judgment: shown.judgment, owner, abilityId: owner.skillId, oldTo: handZoneId(state, owner.seatId) },
-          onCancel: [passed], targetSeatId: shown.judgment.seatId,
-        });
-        return [ask(owner, [pick], [passed], shown.judgment.seatId)];
-      },
+      effect: (state, shown, owner, registry) => [judgmentChangeAsk(state, shown, owner, blackCards(state, owner.seatId, registry).map((c) => c.instanceId), handZoneId(state, owner.seatId))],
     }),
   ],
 };

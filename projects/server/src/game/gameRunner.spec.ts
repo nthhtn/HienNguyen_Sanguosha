@@ -8,6 +8,7 @@ import { GameRecord, GameSeat } from '../persistence/records';
 import { NewGameAction } from '../persistence/repositories';
 import { engineContext, openingState, stateHash } from './engineGame';
 import { BOT_DELAY_MS, GameRunner, RunnerHost, TAKEOVER_AWAY_MS } from './gameRunner';
+import { JUDGMENT_LEAD_IN_MS } from 'engine';
 import { ManualScheduler } from './testing';
 
 const T0 = Date.parse('2026-10-13T12:00:00.000Z');
@@ -91,7 +92,7 @@ describe('GameRunner', () => {
   it("starts the first decision on its human seat's clock, offering moves to that seat only", () => {
     const { runner } = setup();
     const update = runner.updateFor('p0', 0)!;
-    expect(update.clock).toEqual({ seatId: 'seat-0', kind: 'selection', endsAt: T0 + 300_000, totalSeconds: 300, serverNow: T0 });
+    expect(update.clock).toEqual({ seatId: 'seat-0', kind: 'selection', startsAt: T0, endsAt: T0 + 300_000, totalSeconds: 300, serverNow: T0 });
     expect(update.legalActions.length).toBeGreaterThan(0);
     expect(update.events).toEqual(runner.state.log);
     expect(update.view).not.toHaveProperty('rng');
@@ -135,7 +136,7 @@ describe('GameRunner', () => {
   it("moves a bot seat after the bot delay, and shows the bot's timer as its clock", async () => {
     const { runner, host, scheduler, legal } = setup();
     await runner.submit('p0', GAME_ID, 0, [legal()[0]]);
-    expect(runner.updateFor('p0', 0)!.clock).toEqual({ seatId: 'seat-1', kind: 'selection', endsAt: T0 + BOT_DELAY_MS, totalSeconds: BOT_DELAY_MS / 1000, serverNow: T0, bot: true });
+    expect(runner.updateFor('p0', 0)!.clock).toEqual({ seatId: 'seat-1', kind: 'selection', startsAt: T0, endsAt: T0 + BOT_DELAY_MS, totalSeconds: BOT_DELAY_MS / 1000, serverNow: T0, bot: true });
     await scheduler.advance(BOT_DELAY_MS - 1);
     expect(host.stored).toHaveLength(1);
     await scheduler.advance(1);
@@ -311,7 +312,8 @@ describe('GameRunner', () => {
 // A settled judgment (the judgmentNotice rule): the runner is moved into a state that waits for the acknowledgement,
 // as if a judgment had just turned its card up. The runner's own fields are set directly: reaching one by play would
 // take a game of luck.
-function settle(runner: GameRunner): void {
+// `rounds`: how many skills that may change the card were asked before it settled.
+function settle(runner: GameRunner, rounds = 0): void {
   const judged = { instanceId: 'judged-1', definitionId: 'sha', suit: 'heart' as const, rank: 5 };
   const lightning = { instanceId: 'lightning-1', definitionId: 'lightning', suit: 'spade' as const, rank: 1 };
   const base = runner.state;
@@ -328,7 +330,7 @@ function settle(runner: GameRunner): void {
     })),
     rules: { judgmentNotice: true },
     zones: base.zones.map((z) => (z.kind === 'processing' ? { ...z, cards: [judged] } : z)),
-    judgmentView: { seatId: 'seat-0', reader: { kind: 'card', card: usedCardOf(lightning) }, card: judged, changes: [], settled: true },
+    judgmentView: { seatId: 'seat-0', reader: { kind: 'card', card: usedCardOf(lightning) }, card: judged, changes: [], settled: true, rounds },
   };
   const inner = runner as unknown as { state: GameState; reschedule(): void };
   inner.state = state;
@@ -338,15 +340,38 @@ function settle(runner: GameRunner): void {
 describe('GameRunner: a settled judgment', () => {
   const ack = (seatId: string, extra: object = {}) => ({ kind: 'AcknowledgeJudgmentAction', seatId, ...extra });
 
-  it('runs the 10 second notice clock while a person plays, and acknowledges by timeout', async () => {
+  it('runs the 3 second notice clock while a person plays, and acknowledges by timeout', async () => {
     const { runner, host, scheduler } = setup();
     settle(runner);
-    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 10 });
-    await scheduler.advance(9_999);
+    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 3 });
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 2_999);
     expect(host.stored).toHaveLength(0);
     await scheduler.advance(1);
     expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) })]);
     expect(runner.state).not.toHaveProperty('judgmentView');
+  });
+
+  it("starts the countdown after the animation: the whole sequence when no skill was asked, only the verdict's tail after one was", () => {
+    const none = setup();
+    settle(none.runner);
+    const noneClock = none.runner.updateFor('p0', 0)!.clock!;
+    expect(noneClock.startsAt - noneClock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail);
+    expect(noneClock.endsAt - noneClock.startsAt).toBe(3_000);
+    const asked = setup();
+    settle(asked.runner, 2);
+    const askedClock = asked.runner.updateFor('p0', 0)!.clock!;
+    expect(askedClock.startsAt - askedClock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.tail);
+  });
+
+  it('has no lead-in in a game with no person playing: the bot closes it after its normal delay', async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['bot', 'bot'], connected: [] });
+    settle(runner);
+    const clock = runner.updateFor('p0', 0)!.clock!;
+    expect(clock.bot).toBe(true);
+    expect(clock.endsAt - clock.serverNow).toBe(BOT_DELAY_MS);
+    await scheduler.advance(BOT_DELAY_MS);
+    expect(runner.state).not.toHaveProperty('judgmentView');
+    expect(host.stored[0]).toMatchObject({ action: ack('seat-0') });
   });
 
   it("flags a bot's move timer as a bot's in the clock, and a person's clock not", () => {
@@ -368,10 +393,11 @@ describe('GameRunner: a settled judgment', () => {
     expect(runner.botControlled('p0')).toBe(true);
     const before = host.stored.length;
     settle(runner);
-    expect(runner.updateFor('p1', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 10 });
-    await scheduler.advance(BOT_DELAY_MS * 2);
+    expect(runner.updateFor('p1', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 3 });
+    await scheduler.advance(BOT_DELAY_MS);
     expect(host.stored).toHaveLength(before);
-    await scheduler.advance(10_000);
+    // The person at the table closes it once the animation and the 3 s countdown have played.
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 3_000 - BOT_DELAY_MS);
     expect(host.stored[before]).toMatchObject({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) });
   });
 
@@ -564,5 +590,60 @@ describe('a choice owned by an eliminated human seat', () => {
     expect(host.stored[0]).toMatchObject({ seatId: 'seat-0', source: 'takeover', action: { kind: 'ChooseOptionAction', choiceId: 'sorrow-1' } });
     expect(silenced(runner)).toHaveLength(1);
     expect(host.broken).toBeNull();
+  });
+});
+
+// A judgment that is still open, with `seatId` asked whether a skill of its may change the card.
+function askToChange(runner: GameRunner, seatId: string, rounds: number): void {
+  settle(runner, rounds);
+  const inner = runner as unknown as { state: GameState; reschedule(): void };
+  const owner = { kind: 'general' as const, seatId, slot: 'main' as const, skillId: 'devil' };
+  inner.state = {
+    ...inner.state,
+    judgmentView: { ...inner.state.judgmentView!, settled: false },
+    pendingChoice: {
+      id: `ask-devil-${seatId}`, seatId, reason: { kind: 'ability', owner, abilityId: 'devil', targetSeatId: 'seat-0' }, verb: 'use',
+      options: [{ id: 'use', shows: { kind: 'use' }, effects: [] }, { id: 'decline', shows: { kind: 'decline' }, effects: [] }],
+      judgmentChange: true,
+    },
+  };
+  inner.reschedule();
+}
+
+describe('GameRunner: a skill that may change the judgment', () => {
+  it("gives a person's decision 10 seconds, after the card has been shown, and declines when they run out", async () => {
+    const { runner, host, scheduler } = setup();
+    askToChange(runner, 'seat-0', 1);
+    const clock = runner.updateFor('p0', 0)!.clock!;
+    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'judgmentChange', totalSeconds: 10 });
+    expect(clock.startsAt - clock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.head);
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + 9_999);
+    expect(host.stored).toHaveLength(0);
+    await scheduler.advance(1);
+    expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: expect.objectContaining({ kind: 'ChooseOptionAction', optionId: 'decline' }) })]);
+  });
+
+  it('waits the replacement animation before a later ask starts its clock', () => {
+    const { runner } = setup();
+    askToChange(runner, 'seat-0', 2);
+    const clock = runner.updateFor('p0', 0)!.clock!;
+    expect(clock.startsAt - clock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.replace);
+  });
+
+  it("has a bot's decision wait for the animation too while a person is at the table", async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['human', 'bot'] });
+    askToChange(runner, 'seat-1', 1);
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + BOT_DELAY_MS - 1);
+    expect(host.stored).toHaveLength(0);
+    await scheduler.advance(1);
+    expect(host.stored).toHaveLength(1);
+    expect(host.stored[0]).toMatchObject({ seatId: 'seat-1', source: 'bot' });
+  });
+
+  it('does not hold up a game with no person playing', async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['bot', 'bot'], connected: [] });
+    askToChange(runner, 'seat-1', 1);
+    await scheduler.advance(BOT_DELAY_MS);
+    expect(host.stored).toHaveLength(1);
   });
 });

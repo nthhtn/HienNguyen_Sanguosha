@@ -298,7 +298,7 @@ describe('judgment notice', () => {
   it('rule on: the card turned up is a settled view and nothing is resolved', () => {
     const heart = card('j1', 'x', 'heart', 3);
     const next = settle(withRule(table({ queue: [judge], cards: { drawPile: [heart] } })));
-    expect(next.judgmentView).toEqual({ seatId: 'seat-a', reader, card: heart, changes: [], settled: true });
+    expect(next.judgmentView).toEqual({ seatId: 'seat-a', reader, card: heart, changes: [], settled: true, rounds: 0 });
     expect(decisionPending(next)).toBe(true);
     expect(next.turn.flags).toBeUndefined();
     expect(idsIn(next, 'processing')).toEqual(['j1']);
@@ -321,6 +321,47 @@ describe('judgment notice', () => {
     expect(view.changes.map((ch) => ch.abilityId)).toEqual(['changer', 'changer']);
     expect(view.changes.map((ch) => [ch.card.instanceId, ch.replaced.instanceId])).toEqual([['r1', 'j1'], ['r2', 'r1']]);
     expect(view.card.instanceId).toBe('r2');
+  });
+
+  describe('rounds of changer asks', () => {
+    // A seat-a skill that asks once whether to change the judgment; `flag` marks it as a changer's ask.
+    const asker = (flag: boolean): SkillDefinition => ({
+      id: 'asker',
+      triggers: [{
+        point: 'before:JudgmentShownEffect',
+        condition: (_state, subject) => !((subject as Shown).acted ?? []).includes('seat-a'),
+        effect: (_state, subject, o) => {
+          const passed = { ...(subject as Shown), acted: ['seat-a'] };
+          return [{ kind: 'AskUseEffect', owner: o!, abilityId: 'asker', effects: [], otherwise: [passed], ...(flag ? { judgmentChange: true as const } : {}) }];
+        },
+      }],
+    });
+    const asked = (flag: boolean) =>
+      settleWith(withRule(table({ queue: [judge], revealed: true, cards: { drawPile: [card('j1', 'x', 'club', 3)] } })), ctxWith([asker(flag)]));
+
+    it('counts a round and flags the choice when a changer is asked', () => {
+      const next = asked(true);
+      expect(next.judgmentView).toMatchObject({ settled: false, rounds: 1 });
+      expect(next.pendingChoice).toMatchObject({ seatId: 'seat-a', judgmentChange: true });
+    });
+
+    it('does not count an ask that is not a changer’s, and does not flag it', () => {
+      const next = asked(false);
+      expect(next.judgmentView).toMatchObject({ settled: false, rounds: 0 });
+      expect(next.pendingChoice).not.toHaveProperty('judgmentChange');
+    });
+
+    it('keeps the count once the ask is declined and the judgment settles', () => {
+      const pending = asked(true);
+      const declined = resolve(pending, { kind: 'ChooseOptionAction', seatId: 'seat-a', choiceId: pending.pendingChoice!.id, optionId: 'decline' }, ctxWith([asker(true)])).state;
+      expect(declined.judgmentView).toMatchObject({ settled: true, rounds: 1 });
+    });
+
+    it('declines a flagged ask by default when the clock runs out', () => {
+      const pending = asked(true);
+      const legal = getLegalActions(pending, 'seat-a');
+      expect(defaultActionsFor(pending, legal)).toEqual([expect.objectContaining({ kind: 'ChooseOptionAction', optionId: 'decline' })]);
+    });
   });
 
   it('rule off: no view is ever created and the judgment resolves as before', () => {
@@ -358,7 +399,7 @@ describe('judgment notice', () => {
     it('throws when nothing is settled, when the view is unsettled, and on a second acknowledgement', () => {
       const ack = { kind: 'AcknowledgeJudgmentAction' as const, seatId: 'seat-a' };
       expect(() => resolve(table(), ack, ctx)).toThrow('No settled judgment to acknowledge');
-      const unsettled: GameState = { ...table(), judgmentView: { seatId: 'seat-a', reader, card: card('j1'), changes: [], settled: false } };
+      const unsettled: GameState = { ...table(), judgmentView: { seatId: 'seat-a', reader, card: card('j1'), changes: [], settled: false, rounds: 0 } };
       expect(() => resolve(unsettled, ack, ctx)).toThrow('No settled judgment to acknowledge');
       const once = resolve(settledClub(), ack, ctx).state;
       expect(() => resolve(once, ack, ctx)).toThrow('No settled judgment to acknowledge');
@@ -367,7 +408,7 @@ describe('judgment notice', () => {
     it('a second judgment after the first is closed gets a fresh view', () => {
       const closed = resolve(withRule(settledClub()), { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a' }, ctx).state;
       const second = settle({ ...closed, resolutionQueue: [judge] });
-      expect(second.judgmentView).toEqual({ seatId: 'seat-a', reader, card: card('j2', 'x', 'spade', 9), changes: [], settled: true });
+      expect(second.judgmentView).toEqual({ seatId: 'seat-a', reader, card: card('j2', 'x', 'spade', 9), changes: [], settled: true, rounds: 0 });
     });
   });
 

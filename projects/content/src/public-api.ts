@@ -11,7 +11,7 @@ export * from './lib/generalIds';
 export * from './lib/wikiAlternateGenerals';
 export {
   abilityHint, abilityName, alternateCardTranslation, alternateGeneralDisplayData, alternateGeneralTranslations, cardDisplayData, cardIds,
-  cardTranslations, choicePromptText, competeOutcomeText, ENGLISH_PROSE, generalIds, generalTranslations, judgmentOutcomeText,
+  cardTranslations, choicePromptText, competeOutcomeText, ENGLISH_PROSE, generalIds, generalTranslations, judgmentOutcomeText, judgmentRuleText,
   reviewGeneralIds, seatPickText, selectionText, skillIdOf, stepSelectionText,
 } from './lib/display';
 export type {

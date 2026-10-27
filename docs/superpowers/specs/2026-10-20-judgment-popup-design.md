@@ -1,5 +1,7 @@
 # Judgment Popup — Design
 
+> Amended by `2026-10-26-judgment-compete-animation-design.md`: the notice timer is 3 s (not 10 s), the popup plays a fixed animation (the "no animation" non-goal is lifted), and a skill's decision to change the card is made inside the popup.
+
 Status: draft for review, 2026-10-20. Builds on the minimizable decision popups (branch `feat/minimizable-decisions`: `DecisionDock`, `MinimizeButton`, `DecisionBanner`), which must be merged first.
 
 ## Intent

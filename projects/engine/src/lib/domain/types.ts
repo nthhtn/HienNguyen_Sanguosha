@@ -188,6 +188,9 @@ export interface PendingChoice {
   // look): every other seat sees none, and the log never says which was picked.
   // The chooser sees the cards they show, though their zone is hidden.
   secret?: true;
+  // A skill that may change a judgment's card asks this, while the judgment is unsettled: it runs on
+  // the judgment-change clock and is shown inside the judgment popup.
+  judgmentChange?: true;
 }
 
 export interface ChoiceOption {
@@ -237,6 +240,8 @@ export interface PendingSelection {
   // continuation: a hidden General's reveal, an active skill's use being
   // counted. They must not open a decision.
   onSelect?: Effect[];
+  // The pick that follows a judgment-change ask (see PendingChoice.judgmentChange).
+  judgmentChange?: true;
 }
 
 // What a selection's picks lead to: plain data, so the state stays serialisable.
@@ -325,6 +330,9 @@ export interface JudgmentView {
   data?: Record<string, unknown>;
   changes: JudgmentChange[];
   settled: boolean;
+  // How many times a skill that may change the card has been asked (the first ask of a decision, not its
+  // follow-up pick), so the clocks know how much animation has played. Read as 0 when absent.
+  rounds: number;
 }
 
 // A judgment under way: whose it is, who reads it, what the reader passed

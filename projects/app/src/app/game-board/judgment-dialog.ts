@@ -1,12 +1,13 @@
-import { Component, Signal, inject } from '@angular/core';
+import { Component, Signal, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import type { Action } from 'engine';
 import { TPipe } from '../i18n/t.pipe';
-import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
+import { JudgmentDecisionView } from './judgment-decision';
 import { JudgmentDescription } from './judgment-description';
+import { JudgmentStage } from './judgment-stage';
 import { MinimizeButton } from './minimize-button';
-import { PlayingCard } from './playing-card';
 
 export interface JudgmentDialogData {
   // Read live: a replacement, or a language switch, updates the open popup.
@@ -15,14 +16,23 @@ export interface JudgmentDialogData {
   canClose: Signal<boolean>;
   // Closes the settled judgment (the game then goes on).
   close: () => void;
+  // The skill decision the judgment waits on, as this viewer sees it, and what the board does with it.
+  decision?: Signal<JudgmentDecisionView | null>;
+  // Submits the engine's own action the viewer picked.
+  choose?: (action: Action) => void;
+  // The popup is being rebuilt part-way (the language changed while it was minimized): no replay.
+  resumed?: boolean;
+  // Pass and Play: shows the view of the seat whose player took the device.
+  reveal?: (seatId: string) => void;
 }
 
-// A judgment, for every seat at the table to see: what required it, the card (and each replacement of it),
-// what it will do, and once no skill can change it, a countdown and Close. Informational: it asks
-// nothing of the player. Themed in a force colour by its panel class (openForceDialog).
+// A judgment, for every seat at the table to see, as a fixed sequence (JudgmentStage): what required it,
+// the rule, the card and each replacement of it, a check or cross, and what it does. Continue unlocks when
+// the sequence ends; once no skill can change the card the 3 s countdown closes it, or Continue does.
+// Informational: it asks nothing of the player. Themed in a force colour by its panel class (openForceDialog).
 @Component({
   selector: 'app-judgment-dialog',
-  imports: [MatDialogModule, MatButtonModule, CardArt, PlayingCard, DecisionCountdown, MinimizeButton, TPipe],
+  imports: [MatDialogModule, MatButtonModule, JudgmentStage, DecisionCountdown, MinimizeButton, TPipe],
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'judgment.title' | t }}</h2>
@@ -30,69 +40,31 @@ export interface JudgmentDialogData {
     </div>
     @if (data.description(); as d) {
       <mat-dialog-content class="body">
-        <section class="source">
-          @if (d.source.kind === 'skill') {
-            @if (d.source.generalId; as generalId) {
-              <app-card-art [skin]="true" [id]="generalId" [label]="d.source.generalName" size="small" />
-            }
-            <div class="words">
-              <div class="who"><strong>{{ d.source.generalName }}</strong> · {{ d.source.abilityName }}</div>
-              @if (d.source.skillText; as text) {
-                <p class="skill-text">{{ text }}</p>
-              }
-            </div>
-          } @else {
-            <div class="words">
-              <div class="who">{{ 'judgment.source.card' | t: { card: d.source.cardName, seat: d.source.seatName } }}</div>
-            </div>
-          }
-        </section>
-
-        <section class="judged" [attr.aria-label]="'judgment.card' | t">
-          <app-playing-card [card]="d.card" size="normal" />
-          @if (d.changes.length > 0) {
-            <ul class="changes">
-              @for (change of d.changes; track $index) {
-                <li class="change">{{ change.text }}</li>
-              }
-            </ul>
-          }
-        </section>
-
-        @if (d.waiting; as waiting) {
-          <p class="waiting">{{ waiting }}</p>
-        }
-        @if (d.outcome; as outcome) {
-          <section class="outcome">
-            <span class="label">{{ 'judgment.outcome' | t }}</span>
-            <p>{{ outcome }}</p>
-          </section>
-        }
+        <app-judgment-stage
+          [description]="d"
+          [decision]="data.decision?.() ?? null"
+          [instant]="data.resumed ?? false"
+          (unlocked)="unlocked.set(true)"
+          (chosen)="data.choose?.($event)"
+          (revealed)="data.reveal?.($event)"
+        />
       </mat-dialog-content>
       @if (d.settled) {
         <app-decision-countdown class="timer" />
         <mat-dialog-actions align="end">
           @if (data.canClose()) {
-            <button mat-flat-button type="button" class="close" (click)="data.close()">{{ 'ui.close' | t }}</button>
+            <button mat-flat-button type="button" class="close" [disabled]="!unlocked()" (click)="data.close()">{{ 'judgment.continue' | t }}</button>
           }
         </mat-dialog-actions>
       }
     }
   `,
   styles: `
-    .body { display: flex; flex-direction: column; gap: 16px; }
-    .source { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 12px; background: color-mix(in srgb, var(--force) 12%, transparent); }
-    .who { font: var(--mat-sys-title-medium); color: var(--force-text); }
-    .skill-text { margin: 4px 0 0; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
-    .judged { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-    .changes { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
-    .waiting { margin: 0; font: var(--mat-sys-body-large); color: var(--force-text); }
-    .outcome { padding: 12px; border-radius: 12px; border-left: 4px solid var(--force); background: color-mix(in srgb, var(--force) 10%, transparent); }
-    .outcome .label { font: var(--mat-sys-label-large); color: var(--force-text); }
-    .outcome p { margin: 4px 0 0; font: var(--mat-sys-body-large); }
     .timer { display: block; padding: 8px 24px 0; }
   `,
 })
 export class JudgmentDialog {
   protected readonly data = inject<JudgmentDialogData>(MAT_DIALOG_DATA);
+  // The sequence has played out.
+  protected readonly unlocked = signal(false);
 }

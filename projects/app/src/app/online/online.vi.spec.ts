@@ -241,13 +241,11 @@ describe('Rooms, My Games and the dialogs in Vietnamese', () => {
         return fixture.nativeElement as HTMLElement;
       };
       let el = render(LAST_GAME);
-      expect(text(el.querySelector('mat-card-title'))).toBe('Hết ván');
-      expect(text(el.querySelector('.headline'))).toBe('Ann thắng!');
-      expect(text(el.querySelector('.winners'))).toBe('Người thắng: Ann');
-      expect(text(el.querySelector('.losers'))).toBe('Người thua: Bo');
+      expect(el.querySelector('mat-card-title')).toBeNull();
+      expect(text(el.querySelector('app-victory-board .eyebrow'))).toBe('Hết ván');
+      expect(text(el.querySelector('app-victory-board .headline'))).toBe('Ngụy thắng!');
+      expect(el.querySelector('.winners')).toBeNull();
       expect(text(el.querySelector('button.back-to-lobby'))).toBe('Quay lại sảnh chờ');
-      el = render({ ...LAST_GAME, result: { ...LAST_GAME.result!, winningKingdom: 'Shu' } });
-      expect(text(el.querySelector('.headline'))).toBe('Thục thắng!');
       el = render({ ...LAST_GAME, outcome: 'broken', result: null });
       expect(text(el.querySelector('mat-card-title'))).toBe('Ván đã dừng');
       expect(text(el.querySelector('.stopped'))).toBe('Ván chơi này gặp lỗi và đã dừng');

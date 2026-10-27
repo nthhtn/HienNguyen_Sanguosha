@@ -7,8 +7,9 @@ import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { I18n } from '../i18n/i18n.service';
 import { DecisionDock } from './decision-dock';
+import { AskDialog } from './ask-dialog';
 import { JudgmentDialog } from './judgment-dialog';
-import { settleJudgment } from '../settled-judgment.testing';
+import { askToChange, settleJudgment } from '../settled-judgment.testing';
 import { cardIdDisplayName } from '../labels';
 import { GameBoard } from './game-board';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
@@ -727,7 +728,11 @@ describe('GameBoard event sounds', () => {
     };
     const popups = () => document.querySelectorAll('app-compete-dialog');
 
-    afterEach(() => TestBed.inject(MatDialog).closeAll());
+    afterEach(() => {
+      TestBed.inject(MatDialog).closeAll();
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    });
 
     it('opens for a Compete that happens while the board is open, once', async () => {
       expect(popups()).toHaveLength(0);
@@ -745,14 +750,18 @@ describe('GameBoard event sounds', () => {
       expect(document.querySelector('.cdk-overlay-pane')!.className).toContain(`force-dialog-${force === 'hidden' ? 'none' : force}`);
     });
 
-    it('shows Competes one after another', async () => {
+    it('shows Competes one after another, each Continue unlocking once its sequence has played', async () => {
+      jest.useFakeTimers();
       await append([...compete(), ...compete()]);
       expect(popups()).toHaveLength(1);
       const first = popups()[0];
+      expect((first.querySelector('button.continue') as HTMLButtonElement).disabled).toBe(true);
+      jest.advanceTimersByTime(4200);
+      fixture.detectChanges();
       (first.querySelector('button.continue') as HTMLButtonElement).click();
       fixture.detectChanges();
       await fixture.whenStable();
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      jest.advanceTimersByTime(400);
       fixture.detectChanges();
       expect(popups()).toHaveLength(1);
       expect(popups()[0]).not.toBe(first);
@@ -787,6 +796,8 @@ describe('GameBoard: the judgment popup', () => {
 
   afterEach(() => {
     TestBed.inject(MatDialog).closeAll();
+    jest.clearAllTimers();
+    jest.useRealTimers();
     localStorage.clear();
   });
 
@@ -808,21 +819,29 @@ describe('GameBoard: the judgment popup', () => {
     expect([...list.querySelectorAll('button')].map((b) => b.textContent!.trim())).not.toContain('Close');
   });
 
-  it('Close in the popup acknowledges the judgment', async () => {
+  it('Continue in the popup acknowledges the judgment, once the sequence has played', async () => {
+    jest.useFakeTimers();
     const fixture = start('vs-bots');
     await settle(fixture);
+    const button = document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+    jest.advanceTimersByTime(4100);
+    fixture.detectChanges();
     (document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement).click();
     await settle(fixture);
     expect(gameService.judgmentSettled()).toBe(false);
     expect(gameService.state()!.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ seatId: 'seat-0', by: 'seat-0', source: 'close' });
   });
 
-  it('in Pass and Play the popup opens over the gate, and Close works from there', async () => {
+  it('in Pass and Play the popup opens over the gate, and Continue works from there', async () => {
+    jest.useFakeTimers();
     const fixture = start('pass-and-play');
     await settle(fixture);
     expect(gameService.revealedSeatId()).toBeNull();
     expect((fixture.nativeElement as HTMLElement).querySelector('app-reveal-gate-overlay')).not.toBeNull();
     expect(popups()).toHaveLength(1);
+    jest.advanceTimersByTime(4100);
+    fixture.detectChanges();
     (document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement).click();
     await settle(fixture);
     expect(gameService.judgmentSettled()).toBe(false);
@@ -891,11 +910,11 @@ describe('GameBoard: the judgment popup', () => {
   it('switching language updates the open popup, and a minimized one including its banner', async () => {
     const fixture = start('vs-bots');
     await settle(fixture);
-    expect(overlayText()).toContain('Consequence');
+    const title = () => document.querySelector('.cdk-overlay-container h2')!.textContent;
+    expect(title()).toContain('Judgment');
     await TestBed.inject(I18n).setLocale('vi');
     await settle(fixture);
-    expect(overlayText()).toContain('Phán xét');
-    expect(overlayText()).not.toContain('Consequence');
+    expect(title()).toContain('Phán xét');
     (document.querySelector('.cdk-overlay-container button.minimize') as HTMLButtonElement).click();
     fixture.detectChanges();
     await TestBed.inject(I18n).setLocale('en');
@@ -904,5 +923,119 @@ describe('GameBoard: the judgment popup', () => {
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelector('app-decision-banner .banner')!.textContent).toContain('Judgment');
     expect(popups()).toHaveLength(1);
+  });
+
+  describe('a skill that may change the card', () => {
+    const asks = () => TestBed.inject(MatDialog).openDialogs.filter((d) => d.componentInstance instanceof AskDialog);
+    const afterHead = (fixture: ReturnType<typeof TestBed.createComponent<GameBoard>>) => {
+      jest.advanceTimersByTime(2100);
+      fixture.detectChanges();
+    };
+
+    it('asks inside the Judgment popup, not in a second dialog, and submits the engine’s own action', async () => {
+      jest.useFakeTimers();
+      gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+      askToChange(gameService, 'seat-0');
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      expect(popups()).toHaveLength(1);
+      expect(asks()).toHaveLength(0);
+      afterHead(fixture);
+      const use = document.querySelector('.cdk-overlay-container .decide button.use') as HTMLButtonElement;
+      expect(use).not.toBeNull();
+      use.click();
+      await settle(fixture);
+      expect(gameService.state()!.pendingChoice).toBeUndefined();
+    });
+
+    it('still opens the Ask dialog for an ask that is not a changer’s', async () => {
+      gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+      askToChange(gameService, 'seat-0', 1, false);
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      expect(asks()).toHaveLength(1);
+    });
+
+    it('shows others only a waiting line for the seat that is asked', async () => {
+      jest.useFakeTimers();
+      gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+      askToChange(gameService, 'seat-1');
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      afterHead(fixture);
+      expect(document.querySelector('.cdk-overlay-container .decide .waiting')!.textContent).toContain('Waiting for');
+      expect(document.querySelector('.cdk-overlay-container .decide button')).toBeNull();
+      expect(asks()).toHaveLength(0);
+    });
+
+    it('keeps the decision when the popup is minimized and restored', async () => {
+      jest.useFakeTimers();
+      gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+      askToChange(gameService, 'seat-0');
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      afterHead(fixture);
+      const panel = document.querySelector('.cdk-overlay-container .decide app-ask-panel');
+      expect(panel).not.toBeNull();
+      (document.querySelector('.cdk-overlay-container button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(document.querySelector('.cdk-overlay-pane')!.classList).toContain('decision-minimized');
+      ((fixture.nativeElement as HTMLElement).querySelector('app-decision-banner .banner') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(document.querySelector('.cdk-overlay-container .decide app-ask-panel')).toBe(panel);
+      expect(gameService.state()!.pendingChoice).toBeDefined();
+    });
+
+    it('keeps its place when the language is switched while it is minimized: the rebuilt popup does not replay the sequence', async () => {
+      jest.useFakeTimers();
+      gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+      askToChange(gameService, 'seat-0');
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      afterHead(fixture);
+      (document.querySelector('.cdk-overlay-container button.minimize') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await TestBed.inject(I18n).setLocale('vi');
+      await settle(fixture);
+      jest.advanceTimersByTime(500);
+      await settle(fixture);
+      jest.advanceTimersByTime(50);
+      fixture.detectChanges();
+      // No beats advanced since the switch, yet the decision is open: the sequence is not replayed from the start.
+      expect(document.querySelector('.cdk-overlay-container .decide app-ask-panel')).not.toBeNull();
+      expect(gameService.state()!.pendingChoice).toBeDefined();
+    });
+
+    it('does not let a half-made card pick become the answer when the clock runs out', async () => {
+      jest.useFakeTimers();
+      gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+      askToChange(gameService, 'seat-0');
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      const timer = fixture.componentInstance as unknown as { timer: { setTimeoutChoice(actions: unknown[]): void } };
+      const spy = jest.spyOn(timer.timer, 'setTimeoutChoice');
+      afterHead(fixture);
+      expect(document.querySelector('.cdk-overlay-container .decide')).not.toBeNull();
+      expect(spy).not.toHaveBeenCalled();
+      // Nothing the viewer picks inside the popup is remembered for a timeout: it declines, as the spec says.
+      const dialog = TestBed.inject(MatDialog).openDialogs.find((d) => d.componentInstance instanceof JudgmentDialog)!;
+      expect((dialog.componentInstance as unknown as { data: { pickedChanged?: unknown } }).data.pickedChanged).toBeUndefined();
+    });
+
+    it('in Pass and Play, the hand-off comes first, inside the popup, then the private choices', async () => {
+      jest.useFakeTimers();
+      gameService.startGame(3, 1, 'pass-and-play', [], { judgmentNotice: true });
+      askToChange(gameService, 'seat-0');
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      afterHead(fixture);
+      expect(gameService.revealedSeatId()).toBeNull();
+      expect(document.querySelector('.cdk-overlay-container .decide app-ask-panel')).toBeNull();
+      (document.querySelector('.cdk-overlay-container .decide button.reveal') as HTMLButtonElement).click();
+      await settle(fixture);
+      expect(gameService.revealedSeatId()).toBe('seat-0');
+      expect(document.querySelector('.cdk-overlay-container .decide app-ask-panel')).not.toBeNull();
+      expect(asks()).toHaveLength(0);
+    });
   });
 });

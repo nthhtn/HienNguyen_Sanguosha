@@ -66,4 +66,19 @@ describe('competeResults', () => {
   it('ignores events that are not competes', () => {
     expect(competeResults([{ kind: 'AbilityUsedEvent', owner, abilityId: 'heavens-justice', outcome: 'used' }], 0, seats, players)).toEqual([]);
   });
+
+  it('carries each player’s own Force, for the two sides to wear', () => {
+    const [result] = competeResults(competition(true), 0, [seats[0], { ...seats[1], generals: { main: { generalDefinitionId: 'guan-yu', revealed: true }, deputy: { generalDefinitionId: 'cao-cao', revealed: false } } }], players);
+    expect(result.user.force).toBe('Wu');
+    expect(result.target.force).toBe('Shu');
+  });
+
+  it('carries the ranks that were compared, the winner’s first, and the tie flag', () => {
+    const won = competeResults(competition(true, { ...nine, rank: 13 }, { ...seven, rank: 8 }), 0, seats, players)[0];
+    expect(won.comparison).toEqual({ winnerRank: 'K', loserRank: '8', tie: false });
+    const lost = competeResults(competition(false, { ...nine, rank: 1 }, { ...seven, rank: 12 }), 0, seats, players)[0];
+    expect(lost.comparison).toEqual({ winnerRank: 'Q', loserRank: 'A', tie: false });
+    const tie = competeResults(competition(false, nine, { ...seven, rank: 9 }), 0, seats, players)[0];
+    expect(tie.comparison).toEqual({ winnerRank: '9', loserRank: '9', tie: true });
+  });
 });
