@@ -14,7 +14,7 @@ const code = (value: string) => expect.objectContaining({ code: value });
 async function setup() {
   const repos = createMemoryRepositories();
   const scheduler = new ManualScheduler(T0);
-  const rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, now: scheduler.clock, logError: jest.fn(), registry, buildId: 'test-build', randomSeed: () => 1234, scheduler });
+  const rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, now: scheduler.clock, logError: jest.fn(), registry, buildId: 'test-build', randomSeed: () => 1234, scheduler, startHoldMs: 0 });
   const registered = (name: string) =>
     repos.users.createRegistered({ email: `${name.toLowerCase()}-${randomUUID()}@example.com`, passwordHash: 'h', displayName: name, now: new Date(scheduler.now) });
   const guest = (name: string) => repos.users.createGuest({ displayName: name, now: new Date(scheduler.now) });

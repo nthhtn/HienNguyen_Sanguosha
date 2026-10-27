@@ -54,7 +54,7 @@ async function setup(options: { botDelayMs?: number } = {}) {
 
   const startServer = async () => {
     // A fixed seed: with a random one, two seats can get the same kingdom and the game ends at General selection.
-    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
+    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, startHoldMs: 0, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
     await rooms.restore();
     app = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
     await app.listen({ port: 0, host: '127.0.0.1' });
@@ -232,8 +232,10 @@ describe('games over the socket', () => {
       if (i === 50) throw new Error('Ann never handed the move to the bot');
       first.client.send({ type: 'game.submit', reqId: `ann-${i}`, gameId: mine.gameId, baseSeq: mine.seq, actions: [mine.legalActions[0]] });
       await first.client.next('ack', (m) => m.reqId === `ann-${i}`);
-      const seq = mine.seq + 1;
-      mine = (await first.client.next('game.update', (m) => m.game.seq === seq)).game;
+      // A bot may have chosen its Generals already, so wait for an update that no longer offers the move just made.
+      const seq = mine.seq;
+      const made = JSON.stringify(mine.legalActions[0]);
+      mine = (await first.client.next('game.update', (m) => m.game.seq > seq && !m.game.legalActions.some((a) => JSON.stringify(a) === made))).game;
     }
     expect(mine.view.result).toBeNull();
     first.client.close();

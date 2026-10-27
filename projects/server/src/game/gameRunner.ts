@@ -1,6 +1,6 @@
 import type { BotPolicy, BotTurnMemory } from 'bots';
-import { defaultActionsFor, describeDecision, EMPTY_CLOCK, expireClock, getActingSeatIds, getActiveSeatId, getLegalActions, redactStateForSeat, switchClock } from 'engine';
-import type { Action, ClockState, DecisionKind, EngineContext, GameState } from 'engine';
+import { defaultActionsFor, describeDecision, EMPTY_CLOCK, expireClock, GAME_START_LEAD_IN_MS, getActingSeatIds, getActiveSeatId, getLegalActions, redactStateForSeat, switchClock } from 'engine';
+import type { Action, ClockState, DecisionKind, DecisionSpec, EngineContext, GameState } from 'engine';
 import type { ActionSource, GameClockView, GameUpdate } from 'protocol';
 import { GameRecord } from '../persistence/records';
 import { NewGameAction } from '../persistence/repositories';
@@ -39,6 +39,8 @@ export interface RunnerOptions {
   botDelayMs: number;
   takeoverAwayMs: number;
   policy: BotPolicy;
+  // How long the first decision of a game waits after the last General choice. Default GAME_START_LEAD_IN_MS; tests pass 0.
+  startHoldMs?: number;
 }
 
 export interface RunnerInput {
@@ -52,7 +54,12 @@ export interface RunnerInput {
   present: ReadonlySet<string>;
 }
 
-type Timer = { kind: 'clock' } | { kind: 'bot'; seatId: string; decision: DecisionKind; endsAt: number };
+type Timer = { kind: 'clock' } | { kind: 'bot'; seatId: string; decision: DecisionKind; startsAt: number; endsAt: number };
+
+// One clock for every human while the Generals are chosen: they all start together.
+const SELECTION_KEY = 'selection:all';
+// The shortest wait before a move that could not be stored is tried again.
+const RETRY_MIN_MS = 1000;
 
 // One running game (spec "Game runner"): the only code that moves its state.
 // Every call and every timer runs on the room's queue, one at a time.
@@ -75,6 +82,13 @@ export class GameRunner {
   private readonly gone = new Set<string>();
   // Per seat: timeouts in a row while its player was away.
   private readonly timeouts = new Map<string, number>();
+  // The first decision of the game waits until this time (ms): the 3 seconds after the last General choice.
+  private holdUntil = 0;
+  private cancelHold: (() => void) | null = null;
+  // The selection clock ran out: the seats still choosing are defaulted one after another, without a new clock.
+  private selectionExpired = false;
+  // A server move that could not be stored is retried no sooner than this (ms), so a failing store is not hammered.
+  private retryNotBefore = 0;
 
   constructor(
     input: RunnerInput,
@@ -135,6 +149,7 @@ export class GameRunner {
     if (gameId !== this.record.id) throw new RoomError('stale');
     const seatId = this.seatOf(playerId);
     if (this.stopped || !seatId) throw new RoomError('not_your_turn');
+    if (this.holding()) throw new RoomError('not_your_turn');
     // A Close that lost a race (to the timeout, or to another player's Close) is stale, not out of turn.
     if (baseSeq !== this.seq && actions.length === 1 && actions[0].kind === 'AcknowledgeJudgmentAction' && !this.isBotPlayed(seatId)) throw new RoomError('stale');
     const close = this.asClose(seatId, actions);
@@ -225,9 +240,9 @@ export class GameRunner {
   updateFor(playerId: string, logFrom: number): GameUpdate | null {
     const seatId = this.seatOf(playerId);
     if (!seatId) return null;
-    const acting = !this.stopped && !this.paused && getActingSeatIds(this.state).includes(seatId) && !this.isBotPlayed(seatId);
+    const acting = !this.stopped && !this.paused && !this.holding() && getActingSeatIds(this.state).includes(seatId) && !this.isBotPlayed(seatId);
     // A settled judgment may be closed by any person-controlled seat, not only the one that acts on it.
-    const closing = !this.stopped && !this.paused && this.canClose(seatId);
+    const closing = !this.stopped && !this.paused && !this.holding() && this.canClose(seatId);
     const legalActions: Action[] = closing ? [{ kind: 'AcknowledgeJudgmentAction', seatId }] : acting ? getLegalActions(this.state, seatId, this.ctx.registry) : [];
     return toGameUpdate({
       gameId: this.record.id,
@@ -236,7 +251,7 @@ export class GameRunner {
       seatId,
       legalActions,
       logFrom,
-      clock: this.clockView(),
+      clock: this.clockView(seatId),
       paused: this.paused,
     });
   }
@@ -260,12 +275,15 @@ export class GameRunner {
     } catch (err) {
       if (source === 'human') throw err;
       this.host.logError(err, `Game ${this.record.id}: a ${source} move could not be stored; retrying`);
+      this.retryNotBefore = this.host.now() + Math.max(this.options.botDelayMs, RETRY_MIN_MS);
       this.reschedule();
       return false;
     }
     const logFrom = this.state.log.length;
+    const wasSelecting = this.state.phase === 'GeneralSelection';
     this.state = steps[steps.length - 1];
     this.seq += rows.length;
+    if (wasSelecting && this.state.phase !== 'GeneralSelection') this.holdUntil = this.host.now() + (this.options.startHoldMs ?? GAME_START_LEAD_IN_MS);
     try {
       stored?.();
       if (this.state.result) this.stop();
@@ -285,21 +303,27 @@ export class GameRunner {
     this.cancel();
     if (this.stopped) return;
     const now = this.host.now();
+    if (this.state.phase === 'GeneralSelection') return this.rescheduleSelection(now);
+    this.selectionExpired = false;
     const seatId = getActiveSeatId(this.state);
     if (!seatId) {
       this.clock = switchClock(this.clock, null, now);
       return;
     }
-    // A person at the table sees the judgment animation, so a clock waits for the part of it that comes first.
-    const decision = describeDecision(this.state, seatId, getLegalActions(this.state, seatId, this.ctx.registry), String(this.seq), { leadIn: this.personControlled() });
+    // The first decision of the game waits out the start hold, and the held-back actions appear when it ends.
+    const hold = Math.max(0, this.holdUntil - now);
     const generation = this.generation;
+    if (hold > 0) this.cancelHold = this.host.schedule(hold, async () => (generation === this.generation ? this.refresh() : undefined));
+    // A person at the table sees the judgment animation, so a clock waits for the part of it that comes first.
+    const spec = describeDecision(this.state, seatId, getLegalActions(this.state, seatId, this.ctx.registry), String(this.seq), { leadIn: this.personControlled() });
+    const decision = spec && hold > 0 ? { ...spec, leadInMs: Math.max(spec.leadInMs ?? 0, hold) } : spec;
     if (this.isBotPlayed(seatId) && !this.closedByClock()) {
       // A human's Play phase clock waits while a bot responds.
       this.clock = switchClock(this.clock, null, now);
       if (this.paused) return;
       // A bot that may change a judgment waits for the animation before it, as a person's clock would.
-      const delay = this.options.botDelayMs + (decision?.leadInMs ?? 0);
-      this.timer = { kind: 'bot', seatId, decision: decision?.kind ?? 'response', endsAt: now + delay };
+      const delay = this.options.botDelayMs + Math.max(decision?.leadInMs ?? 0, hold);
+      this.timer = { kind: 'bot', seatId, decision: decision?.kind ?? 'response', startsAt: now + hold, endsAt: now + delay };
       this.cancelTimer = this.host.schedule(delay, () => this.botMove(generation));
       return;
     }
@@ -308,6 +332,36 @@ export class GameRunner {
     if (!running) return;
     this.timer = { kind: 'clock' };
     this.cancelTimer = this.host.schedule(Math.max(0, running.endsAt - now), () => this.timeout(generation));
+  }
+
+  // General Selection: every human runs on one shared clock, and a bot-played seat chooses at once.
+  private rescheduleSelection(now: number): void {
+    const acting = getActingSeatIds(this.state);
+    const humans = acting.filter((id) => !this.isBotPlayed(id));
+    const generation = this.generation;
+    if (this.paused || acting.length === 0) {
+      this.clock = switchClock(this.clock, null, now);
+      return;
+    }
+    // The humans' clock keeps running while bots choose, so it never shows as a bot's move.
+    const spec: DecisionSpec | null = humans.length > 0 && !this.selectionExpired ? { kind: 'selection', seatId: humans[0], key: SELECTION_KEY } : null;
+    this.clock = switchClock(this.clock, spec, now);
+    const running = this.clock.running;
+    if (running) this.timer = { kind: 'clock' };
+    const wait = Math.max(0, this.retryNotBefore - now);
+    if (acting.some((id) => this.isBotPlayed(id))) {
+      this.cancelTimer = this.host.schedule(wait, () => this.botMove(generation));
+      if (!running) this.timer = { kind: 'bot', seatId: acting.find((id) => this.isBotPlayed(id))!, decision: 'selection', startsAt: now, endsAt: now };
+      return;
+    }
+    // Only people are left: the clock, or once it has run out, the defaults.
+    this.cancelTimer = this.host.schedule(running ? Math.max(0, running.endsAt - now) : wait, () => this.timeout(generation));
+    if (!running) this.timer = { kind: 'clock' };
+  }
+
+  // Whether the first decision of the game is still waiting out the start hold.
+  private holding(): boolean {
+    return this.host.now() < this.holdUntil;
   }
 
   // Whether a person is playing some seat: a living human seat that no bot is playing.
@@ -325,12 +379,14 @@ export class GameRunner {
     this.generation += 1;
     this.cancelTimer?.();
     this.cancelTimer = null;
+    this.cancelHold?.();
+    this.cancelHold = null;
     this.timer = null;
   }
 
   private async botMove(generation: number): Promise<void> {
     if (this.stopped || generation !== this.generation) return;
-    const seatId = getActiveSeatId(this.state);
+    const seatId = this.actingSeat((id) => this.isBotPlayed(id));
     if (!seatId || !this.isBotPlayed(seatId) || this.closedByClock()) return this.reschedule();
     let action: Action;
     let memory: BotTurnMemory;
@@ -351,9 +407,11 @@ export class GameRunner {
   // The clock ran out: the engine's default for the decision, as one move.
   private async timeout(generation: number): Promise<void> {
     if (this.stopped || generation !== this.generation) return;
-    const seatId = getActiveSeatId(this.state);
+    const selecting = this.state.phase === 'GeneralSelection';
+    const seatId = this.actingSeat((id) => !this.isBotPlayed(id));
     if (!seatId || (this.isBotPlayed(seatId) && !this.closedByClock())) return this.reschedule();
     this.clock = expireClock(this.clock);
+    if (selecting) this.selectionExpired = true;
     let actions: Action[];
     let steps: GameState[];
     try {
@@ -375,8 +433,16 @@ export class GameRunner {
       takeOver = !this.options.solo && inARow >= TAKEOVER_TIMEOUTS;
       if (takeOver) this.controlled.add(seatId);
     };
-    await this.commit(seatId, 'timeout', actions, steps, stored);
+    // A seat that was only slow to choose is not away: its timeout is not counted towards takeover.
+    await this.commit(seatId, 'timeout', actions, steps, selecting ? undefined : stored);
     if (takeOver) this.host.seatsChanged();
+  }
+
+  // The seat the next move is for. During General Selection any seat still choosing that `want` accepts,
+  // else the active seat.
+  private actingSeat(want: (seatId: string) => boolean): string | null {
+    if (this.state.phase !== 'GeneralSelection') return getActiveSeatId(this.state);
+    return getActingSeatIds(this.state).find(want) ?? null;
   }
 
   private async breakDown(err: unknown): Promise<void> {
@@ -384,12 +450,14 @@ export class GameRunner {
     await this.host.broke(err);
   }
 
-  private clockView(): GameClockView | null {
+  private clockView(viewerSeatId: string): GameClockView | null {
     const now = this.host.now();
     const timer = this.timer;
-    if (timer?.kind === 'bot') return { seatId: timer.seatId, kind: timer.decision, startsAt: now, endsAt: timer.endsAt, totalSeconds: this.options.botDelayMs / 1000, serverNow: now, bot: true };
+    if (timer?.kind === 'bot') return { seatId: timer.seatId, kind: timer.decision, startsAt: timer.startsAt, endsAt: timer.endsAt, totalSeconds: this.options.botDelayMs / 1000, serverNow: now, bot: true };
     const running = this.clock.running;
     if (timer?.kind !== 'clock' || !running) return null;
-    return { seatId: running.decision.seatId, kind: running.decision.kind, startsAt: running.startsAt, endsAt: running.endsAt, totalSeconds: running.totalMs / 1000, serverNow: now };
+    // The selection clock is everyone's: each seat is shown it as its own.
+    const seatId = running.decision.key === SELECTION_KEY ? viewerSeatId : running.decision.seatId;
+    return { seatId, kind: running.decision.kind, startsAt: running.startsAt, endsAt: running.endsAt, totalSeconds: running.totalMs / 1000, serverNow: now };
   }
 }

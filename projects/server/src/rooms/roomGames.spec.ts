@@ -33,6 +33,7 @@ async function setup(options: Partial<RoomServiceDeps> = {}) {
     buildId: 'test-build',
     randomSeed: () => 1234,
     scheduler,
+    startHoldMs: 0,
     ...options,
   });
   const registered = (name: string) =>

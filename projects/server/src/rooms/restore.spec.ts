@@ -20,7 +20,7 @@ const ctx = engineContext(registry);
 const SEED = 1;
 
 function service(repos: Repositories, scheduler: ManualScheduler, buildId: string, logError = jest.fn()) {
-  return new RoomService({ repos, seatLimits: { min: 2, max: 6 }, now: scheduler.clock, logError, registry, buildId, randomSeed: () => 1234, scheduler });
+  return new RoomService({ repos, seatLimits: { min: 2, max: 6 }, now: scheduler.clock, logError, registry, buildId, randomSeed: () => 1234, scheduler, startHoldMs: 0 });
 }
 
 const registered = (repos: Repositories, name: string) =>
