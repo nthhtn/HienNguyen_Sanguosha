@@ -141,10 +141,17 @@ How long a person has is a rule, so the engine owns it, in
 
 | Kind | Seconds | Clock |
 |---|---|---|
-| `response`, `choice`, `discard` | 60 | one per decision |
+| `wuxie` (a Wuxie, or a Wuxie against one) | 15 | one per decision |
+| `dying` (the dying round's Peach) | 20 | one per decision |
+| `response` (any other response window) | 20 | one per decision |
+| `ask` (a skill's use-it-or-not) | 15 | one per decision |
+| `pick` (a card, seat, suit or recipient: Steal, Break, Harvest, Compete) | 30 | one per decision |
+| `arrange` (Astrology) | 60 | one per decision |
+| `start` (the Start window's reveal) | 20 | one per window |
+| `discard` | 30 | one per decision |
 | `selection` (General Selection) | 300 | one per seat for the whole pick |
-| `play` | 300 | one for the whole Play Phase, paused while a response is under way |
-| `judgmentChange` | 10 | a skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
+| `play` | 180 | one for the whole Play Phase, paused while a response is under way |
+| `judgmentChange` | 15 | a skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
 | `notice` | 3 | a settled judgment popup, after its animation |
 
 A clock can have a **lead-in**: `DecisionSpec.leadInMs` is the animation the

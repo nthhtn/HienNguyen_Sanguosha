@@ -561,7 +561,7 @@ describe('a choice owned by an eliminated human seat', () => {
       { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'sorrow-1', optionId: 'deputy' },
     ]);
     expect(runner.updateFor('p1', 0)!.legalActions).toEqual([]);
-    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'choice' });
+    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'pick' });
   });
 
   it('accepts their pick, and the game moves on to the turn owner', async () => {
@@ -611,13 +611,13 @@ function askToChange(runner: GameRunner, seatId: string, rounds: number): void {
 }
 
 describe('GameRunner: a skill that may change the judgment', () => {
-  it("gives a person's decision 10 seconds, after the card has been shown, and declines when they run out", async () => {
+  it("gives a person's decision 15 seconds, after the card has been shown, and declines when they run out", async () => {
     const { runner, host, scheduler } = setup();
     askToChange(runner, 'seat-0', 1);
     const clock = runner.updateFor('p0', 0)!.clock!;
-    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'judgmentChange', totalSeconds: 10 });
+    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'judgmentChange', totalSeconds: 15 });
     expect(clock.startsAt - clock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.head);
-    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + 9_999);
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + 14_999);
     expect(host.stored).toHaveLength(0);
     await scheduler.advance(1);
     expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: expect.objectContaining({ kind: 'ChooseOptionAction', optionId: 'decline' }) })]);

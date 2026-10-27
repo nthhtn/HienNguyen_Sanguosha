@@ -647,7 +647,7 @@ describe('GameBoard in vs-bots mode', () => {
     const label = indicator.textContent!.replace(timer.textContent!, '').replace(/\s+/g, ' ').trim();
     expect(label).toMatch(/^Turn 1 Seat 0 \(you\) – Play Phase Draw Pile \d+$/);
     // Your own Play phase is timed: 300 seconds for the whole phase.
-    expect(timer.textContent).toContain('300s');
+    expect(timer.textContent).toContain('180s');
   });
 
   it('offers a way out to a new game when a bot move fails', () => {

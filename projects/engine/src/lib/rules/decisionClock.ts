@@ -3,16 +3,28 @@ import { Action } from '../pipeline/actions';
 
 // Seconds per kind of decision.
 export const DECISION_SECONDS = {
-  response: 60,
-  choice: 60,
-  discard: 60,
+  // Answering a Wuxie, or a Wuxie played against one: a yes or no that every seat in the chain waits on.
+  wuxie: 15,
+  // The dying round's Peach.
+  dying: 20,
+  // Any other response window: a Shan, a Sha for a Duel, Barbarians or Coerce, a skill's response.
+  response: 20,
+  // A skill's use-it-or-not ask.
+  ask: 15,
+  // A pick that takes thought: a card (Steal, Break, Harvest, Compete), a seat, a suit, who gets cards.
+  pick: 30,
+  // Putting cards back in order (Astrology).
+  arrange: 60,
+  // The Start window's reveal.
+  start: 20,
+  discard: 30,
   selection: 300,
   // A settled judgment, for anyone to read and close: the countdown after its animation.
   notice: 3,
   // A skill's decision whether to change a judgment's card.
-  judgmentChange: 10,
+  judgmentChange: 15,
   // One budget for a whole Play phase, paused while a response is under way.
-  play: 300,
+  play: 180,
 } as const;
 
 export type DecisionKind = keyof typeof DECISION_SECONDS;
@@ -51,11 +63,16 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
   if (view && (state.pendingChoice?.judgmentChange || state.pendingSelection?.judgmentChange)) {
     return { kind: 'judgmentChange', seatId, key: `judgmentChange:${rounds}`, leadInMs: leadIn(rounds <= 1 ? JUDGMENT_LEAD_IN_MS.head : JUDGMENT_LEAD_IN_MS.replace) };
   }
-  if (state.pendingChoice || state.pendingSelection || state.pendingArrangement) return step('choice');
-  if (state.pendingResponse) return step('response');
+  if (state.pendingArrangement) return step('arrange');
+  if (state.pendingChoice) return step(state.pendingChoice.verb === 'use' ? 'ask' : 'pick');
+  if (state.pendingSelection) return step('pick');
+  if (state.pendingResponse) {
+    const reason = state.pendingResponse.reason?.kind;
+    return step(reason === 'wuxie' || reason === 'counter-wuxie' ? 'wuxie' : reason === 'dying' ? 'dying' : 'response');
+  }
   if (state.phase === 'GeneralSelection') return { kind: 'selection', seatId, key: `selection:${seatId}` };
   // The Start window has one clock; at zero it confirms with nothing revealed.
-  if (state.phase === 'Start' && state.turn.startWindow) return { kind: 'choice', seatId, key: `start:${state.turn.turnNumber}:${state.turn.ownerSeatId}` };
+  if (state.phase === 'Start' && state.turn.startWindow) return { kind: 'start', seatId, key: `start:${state.turn.turnNumber}:${state.turn.ownerSeatId}` };
   if (legal.some((a) => a.kind === 'DiscardCardAction')) return step('discard');
   if (state.phase === 'Play') return { kind: 'play', seatId, key: `play:${state.turn.turnNumber}:${state.turn.ownerSeatId}` };
   return step('response');

@@ -13,10 +13,29 @@ describe('describeDecision', () => {
     expect(describeDecision(state({}), 'seat-0', [], 'k')).toBeNull();
   });
 
-  it('times a pending choice, selection or arrangement as a choice of this state', () => {
-    for (const pending of [{ pendingChoice: {} }, { pendingSelection: {} }, { pendingArrangement: {} }]) {
-      expect(describeDecision(state(pending), 'seat-1', [endPhase], 'k7')).toEqual({ kind: 'choice', seatId: 'seat-1', key: 'step:k7' });
-    }
+  it('times a pending ask as an ask, and any other choice or selection as a pick', () => {
+    const kindOf = (pending: object) => describeDecision(state(pending), 'seat-1', [endPhase], 'k7')?.kind;
+    expect(kindOf({ pendingChoice: { verb: 'use' } })).toBe('ask');
+    expect(kindOf({ pendingChoice: { verb: 'take' } })).toBe('pick');
+    expect(kindOf({ pendingChoice: { verb: 'pick' } })).toBe('pick');
+    expect(kindOf({ pendingSelection: {} })).toBe('pick');
+  });
+
+  it('times a pending arrangement as an arrangement of this state', () => {
+    expect(describeDecision(state({ pendingArrangement: {} }), 'seat-1', [endPhase], 'k7')).toEqual({ kind: 'arrange', seatId: 'seat-1', key: 'step:k7' });
+  });
+
+  it('tells a Wuxie, a dying round and any other response apart', () => {
+    const kindOf = (reason?: object) => describeDecision(state({ pendingResponse: { reason } }), 'seat-1', [endPhase], 'k7')?.kind;
+    expect(kindOf({ kind: 'wuxie' })).toBe('wuxie');
+    expect(kindOf({ kind: 'counter-wuxie' })).toBe('wuxie');
+    expect(kindOf({ kind: 'dying' })).toBe('dying');
+    expect(kindOf({ kind: 'card-effect' })).toBe('response');
+    expect(kindOf()).toBe('response');
+  });
+
+  it('gives each kind of decision its seconds', () => {
+    expect(DECISION_SECONDS).toMatchObject({ wuxie: 15, dying: 20, response: 20, ask: 15, pick: 30, arrange: 60, start: 20, discard: 30, selection: 300, play: 180, judgmentChange: 15, notice: 3 });
   });
 
   it('times a pending response as a response of this state', () => {
@@ -38,7 +57,7 @@ describe('describeDecision', () => {
 
   it('keeps one choice clock across the reveals of a Start window', () => {
     const window = { turn: { turnNumber: 3, ownerSeatId: 'seat-0', startWindow: true } };
-    expect(describeDecision(state({ phase: 'Start', ...window }), 'seat-0', [endPhase], 'k7')).toEqual({ kind: 'choice', seatId: 'seat-0', key: 'start:3:seat-0' });
+    expect(describeDecision(state({ phase: 'Start', ...window }), 'seat-0', [endPhase], 'k7')).toEqual({ kind: 'start', seatId: 'seat-0', key: 'start:3:seat-0' });
     expect(describeDecision(state({ phase: 'Start', ...window }), 'seat-0', [endPhase], 'k8')?.key).toBe('start:3:seat-0');
   });
 
@@ -53,30 +72,30 @@ describe('switchClock', () => {
 
   it('starts a new decision with its full budget', () => {
     const clock = switchClock(EMPTY_CLOCK, play, 1_000);
-    expect(clock.running).toEqual({ decision: play, startsAt: 1_000, endsAt: 301_000, totalMs: 300_000 });
-    expect(clockRemainingMs(clock, 1_000)).toBe(300_000);
+    expect(clock.running).toEqual({ decision: play, startsAt: 1_000, endsAt: 181_000, totalMs: 180_000 });
+    expect(clockRemainingMs(clock, 1_000)).toBe(180_000);
   });
 
   it('keeps the same clock running when the decision keeps its key', () => {
     const started = switchClock(EMPTY_CLOCK, play, 1_000);
     const later = switchClock(started, { ...play, seatId: 'seat-0' }, 50_000);
-    expect(later.running?.endsAt).toBe(301_000);
+    expect(later.running?.endsAt).toBe(181_000);
   });
 
   it('pauses a clock it switches away from and resumes it with the time it had left', () => {
     const started = switchClock(EMPTY_CLOCK, play, 0);
     const answering = switchClock(started, response, 100_000);
-    expect(answering.paused).toEqual({ 'play:3:seat-0': 200_000 });
-    expect(answering.running?.endsAt).toBe(160_000);
-    const back = switchClock(answering, play, 130_000);
-    expect(back.running?.endsAt).toBe(330_000);
-    expect(back.paused).toEqual({ 'step:k9': 30_000 });
+    expect(answering.paused).toEqual({ 'play:3:seat-0': 80_000 });
+    expect(answering.running?.endsAt).toBe(120_000);
+    const back = switchClock(answering, play, 110_000);
+    expect(back.running?.endsAt).toBe(190_000);
+    expect(back.paused).toEqual({ 'step:k9': 10_000 });
   });
 
   it('pauses when no decision is open', () => {
     const paused = switchClock(switchClock(EMPTY_CLOCK, play, 0), null, 10_000);
     expect(paused.running).toBeNull();
-    expect(paused.paused).toEqual({ 'play:3:seat-0': 290_000 });
+    expect(paused.paused).toEqual({ 'play:3:seat-0': 170_000 });
     expect(clockRemainingMs(paused, 10_000)).toBeNull();
   });
 
@@ -107,7 +126,7 @@ describe('a settled judgment', () => {
 
 describe('the judgment-change clock', () => {
   it('is 10 seconds', () => {
-    expect(DECISION_SECONDS.judgmentChange).toBe(10);
+    expect(DECISION_SECONDS.judgmentChange).toBe(15);
   });
 
   it('shares its lead-in constants with the app and the server', () => {
@@ -186,8 +205,8 @@ describe('describeDecision around a judgment', () => {
     expect(describeDecision(state({ judgmentView: { settled: true, rounds: 0 } }), 'seat-0', [ack], 'k', { leadIn: false })?.leadInMs).toBe(0);
   });
 
-  it('keeps the choice kind for an unflagged choice under an unsettled judgment', () => {
-    expect(describeDecision(unsettled(1, { pendingChoice: {} }), 'seat-1', [endPhase], 'k7')).toEqual({ kind: 'choice', seatId: 'seat-1', key: 'step:k7' });
+  it('keeps the pick kind for an unflagged choice under an unsettled judgment', () => {
+    expect(describeDecision(unsettled(1, { pendingChoice: { verb: 'pick' } }), 'seat-1', [endPhase], 'k7')).toEqual({ kind: 'pick', seatId: 'seat-1', key: 'step:k7' });
   });
 
   it('gives a settled judgment the tail lead-in, plus the head when no changer was ever asked', () => {
