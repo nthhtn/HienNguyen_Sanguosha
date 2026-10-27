@@ -215,11 +215,11 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     .chip.seat { color: var(--mat-sys-on-surface); }
     .arrow { color: var(--mat-sys-on-surface-variant); opacity: 0; transform: translateX(-10px); transition: opacity 0.4s 0.2s, transform 0.4s 0.2s; }
     .cons.on .arrow { opacity: 1; transform: none; }
-    .hearts { position: relative; display: flex; gap: 4px; font-size: 26px; line-height: 1; }
+    .hearts { display: flex; align-items: center; gap: 4px; font-size: 26px; line-height: 1; }
     .heart { color: var(--mat-sys-error); transition: color 0.3s, transform 0.3s; }
     .heart.lost { color: var(--mat-sys-outline-variant); animation: pop 0.5s; }
     @keyframes pop { 30% { transform: scale(1.5) rotate(-8deg); } }
-    .dmg { position: absolute; right: -64px; top: 0; font: var(--mat-sys-title-medium); font-weight: 700; color: var(--mat-sys-error); opacity: 0; transition: opacity 0.3s 0.3s; white-space: nowrap; }
+    .dmg { margin-left: 10px; font: var(--mat-sys-title-medium); font-weight: 700; color: var(--mat-sys-error); opacity: 0; transition: opacity 0.3s 0.3s; white-space: nowrap; }
     .cons.on .dmg { opacity: 1; }
     .line { margin: 0; font: var(--mat-sys-title-small); text-align: center; opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s; }
     .line.in { opacity: 1; transform: none; }
