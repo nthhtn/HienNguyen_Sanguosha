@@ -17,6 +17,8 @@ export type ActionSource = 'human' | 'bot' | 'timeout' | 'takeover';
 export interface GameClockView {
   seatId: string;
   kind: DecisionKind;
+  // When the countdown starts: after the animation the decision follows has played (equal to `serverNow` when none).
+  startsAt: number;
   endsAt: number;
   totalSeconds: number;
   serverNow: number;
