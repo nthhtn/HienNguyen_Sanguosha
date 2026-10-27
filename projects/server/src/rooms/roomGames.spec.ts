@@ -292,6 +292,30 @@ describe('RoomService games', () => {
     expect(logError).toHaveBeenCalled();
   });
 
+  it("a finished game's lastGame carries a summary of every seat", async () => {
+    const { rooms, scheduler, withBot, start } = await setup();
+    const { roomId, a } = await withBot();
+    await start(a, roomId);
+    await rooms.disconnect(roomId, a.playerId, a.connection);
+    await scheduler.runUntil(() => rooms.snapshot(a.user, roomId).status === 'lobby', 50_000);
+    const lastGame = rooms.snapshot(a.user, roomId).lastGame!;
+    expect(lastGame.outcome).toBe('finished');
+    expect(lastGame.finalSeats).toHaveLength(2);
+    expect(lastGame.finalSeats.map((s) => s.seatId)).toEqual(lastGame.seats.map((s) => s.seatId));
+    for (const seat of lastGame.finalSeats) {
+      expect(seat.mainGeneralId).not.toBeNull();
+      expect(seat.deputyGeneralId).not.toBeNull();
+    }
+  }, 60_000);
+
+  it("a stopped game's lastGame has no summary", async () => {
+    const { scheduler, withBot, start } = await setup({ botPolicy: failing });
+    const { roomId, a } = await withBot();
+    await start(a, roomId);
+    await scheduler.runUntil(() => a.connection.room!.status === 'lobby');
+    expect(a.connection.room!.lastGame).toMatchObject({ outcome: 'broken', finalSeats: [] });
+  });
+
   it('closes the room when its game ends with no registered member left to host', async () => {
     const { rooms, repos, scheduler, pair, start, command } = await setup();
     const { roomId, a, b } = await pair('guest');

@@ -91,7 +91,11 @@ export const LAST_GAME: LastGame = {
     { seatId: 'seat-0', playerId: 'p-ann', name: 'Ann' },
     { seatId: 'seat-1', playerId: 'p-bo', name: 'Bo' },
   ],
-  finalSeats: [], // placeholder until Task 7
+  // Ann (Wei) survived; Bo (Shu) fell.
+  finalSeats: [
+    { seatId: 'seat-0', kingdom: 'Wei', allegiance: 'kingdom', mainGeneralId: 'cao-cao', deputyGeneralId: 'xiahou-dun', eliminated: false },
+    { seatId: 'seat-1', kingdom: 'Shu', allegiance: 'kingdom', mainGeneralId: 'liu-bei', deputyGeneralId: 'guan-yu', eliminated: true },
+  ],
 };
 
 // What Ann (seat-0) is sent in a two-seat game: at the start, when she

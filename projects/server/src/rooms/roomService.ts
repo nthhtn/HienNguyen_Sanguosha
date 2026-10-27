@@ -3,8 +3,8 @@ import { ruleBasedPolicy } from 'bots';
 import type { BotPolicy } from 'bots';
 import { buildContentRegistry, FIRST_REVEAL_MIN_SEATS } from 'content';
 import type { Action, ContentRegistry, EngineContext, GameResult, GameRules, GameState } from 'engine';
-import { normalizeDisplayName } from 'protocol';
-import type { CreateRoomBody, GameOutcome, RoomCommand, RoomLeftReason, RoomList, RoomSnapshot, SeatLimits, ServerMessage, SoloRoomBody } from 'protocol';
+import { finalSeatViews, normalizeDisplayName } from 'protocol';
+import type { CreateRoomBody, FinalSeatView, GameOutcome, RoomCommand, RoomLeftReason, RoomList, RoomSnapshot, SeatLimits, ServerMessage, SoloRoomBody } from 'protocol';
 import { drawSeats, engineContext, openingState, replay } from '../game/engineGame';
 import { BOT_DELAY_MS, GameRunner, RunnerHost, TAKEOVER_AWAY_MS } from '../game/gameRunner';
 import { realScheduler, Scheduler } from '../game/scheduler';
@@ -66,6 +66,8 @@ interface PendingEnd {
   game: GameRecord;
   outcome: GameOutcome;
   result: GameResult | null;
+  // Each seat as the game ended; empty when it did not finish.
+  finalSeats: FinalSeatView[];
 }
 
 // Stores a game's end that could not be stored when the game ended, if any.
@@ -518,7 +520,13 @@ export class RoomService {
     if (!runner) return;
     runner.stop();
     entry.runner = null;
-    await this.storeEnd(entry, { game: runner.record, outcome, result: outcome === 'finished' ? runner.state.result : null });
+    const finished = outcome === 'finished';
+    await this.storeEnd(entry, {
+      game: runner.record,
+      outcome,
+      result: finished ? runner.state.result : null,
+      finalSeats: finished ? finalSeatViews(runner.state) : [],
+    });
   }
 
   // Tries to store a game's end. On failure the end stays pending and the
@@ -527,7 +535,7 @@ export class RoomService {
   private async storeEnd(entry: LiveRoom, end: PendingEnd): Promise<void> {
     try {
       entry.pendingEnd = null;
-      await this.closeGame(entry, end.game, end.outcome, end.result);
+      await this.closeGame(entry, end.game, end.outcome, end.result, end.finalSeats);
     } catch (err) {
       // Only a failure before the room left `playing` needs a retry.
       if (entry.room.record.status === 'playing') entry.pendingEnd = end;
@@ -537,7 +545,7 @@ export class RoomService {
 
   // Stores how a game ended and returns its room to the lobby with the result
   // shown. An open room left with no host passes the role on, or closes.
-  private async closeGame(entry: LiveRoom, game: GameRecord, outcome: GameOutcome, result: GameResult | null): Promise<void> {
+  private async closeGame(entry: LiveRoom, game: GameRecord, outcome: GameOutcome, result: GameResult | null, finalSeats: FinalSeatView[]): Promise<void> {
     const { room } = entry;
     const now = this.now();
     const at = new Date(now);
@@ -546,7 +554,7 @@ export class RoomService {
       await tx.rooms.update(room.id, { status: 'lobby' }, at);
     });
     room.record = { ...room.record, status: 'lobby', updatedAt: at };
-    room.lastGame = { gameId: game.id, outcome, result, seats: game.seats.map((s) => ({ seatId: s.seatId, playerId: s.roomPlayerId, name: s.name })), finalSeats: [] }; // placeholder until Task 7
+    room.lastGame = { gameId: game.id, outcome, result, seats: game.seats.map((s) => ({ seatId: s.seatId, playerId: s.roomPlayerId, name: s.name })), finalSeats };
     room.lastActivityAt = now;
     // A host away when the game ends gets the lobby's 60 s from now (spec "Host rules").
     for (const member of room.members) if (!member.connected && member.kind === 'human') member.awaySince = now;
@@ -577,9 +585,9 @@ export class RoomService {
       state = replay(this.ctx, game, actions, game.buildId !== this.buildId);
     } catch (err) {
       this.logError(err, `Game ${game.id} can't continue after an update`);
-      return this.closeGame(entry, game, 'outdated', null);
+      return this.closeGame(entry, game, 'outdated', null, []);
     }
-    if (state.result) return this.closeGame(entry, game, 'finished', state.result);
+    if (state.result) return this.closeGame(entry, game, 'finished', state.result, finalSeatViews(state));
     this.run(entry, game, state, actions.length);
   }
 

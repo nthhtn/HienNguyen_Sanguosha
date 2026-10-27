@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { finalSeatViews } from 'protocol';
 import type { GameUpdate, RoomSnapshot } from 'protocol';
 import { RemoteDecisionClock, RemoteGameService } from './remote-game.service';
 import { SocketService, WEB_SOCKET_FACTORY } from './socket.service';
@@ -102,7 +103,9 @@ describe('RemoteGameService', () => {
     socket.serverSends(welcome(PLAYING, 'p-ann', opening));
     const final: GameUpdate = { ...afterMove, view: { ...afterMove.view, result: LAST_GAME.result } };
     socket.serverSends({ type: 'game.update', game: final });
-    expect(game.ending()).toEqual(LAST_GAME);
+    // Each seat as the final view shows it.
+    expect(game.ending()).toEqual({ ...LAST_GAME, finalSeats: finalSeatViews(final.view) });
+    expect(game.ending()!.finalSeats.map((s) => s.seatId)).toEqual(['seat-0', 'seat-1']);
     expect(game.playing()).toBe(false);
     socket.serverSends({ type: 'room.updated', room: { ...ROOM, lastGame: LAST_GAME } });
     expect(game.ending()).toEqual(LAST_GAME);

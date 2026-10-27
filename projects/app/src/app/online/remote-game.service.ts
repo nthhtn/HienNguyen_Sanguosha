@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { buildContentRegistry, kingdomWarMode } from 'content';
 import { getActiveSeatId, previewEffect } from 'engine';
 import type { Action, ContentRegistry, Effect, EngineContext, DecisionKind, EngineEvent, GameState } from 'engine';
+import { finalSeatViews } from 'protocol';
 import type { GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
 import { ApiError, errorMsg } from '../auth/auth.service';
 import type { Msg } from '../i18n/msg';
@@ -128,7 +129,8 @@ export class RemoteGameService implements BoardGame {
       outcome: 'finished',
       result: state.result,
       seats: state.players.map((p) => ({ seatId: p.seatId, playerId: room.members.find((m) => m.seatId === p.seatId)?.playerId ?? '', name: p.name })),
-      finalSeats: [], // placeholder until Task 7
+      // The final view shows every seat's Generals once the game is over.
+      finalSeats: finalSeatViews(state),
     };
   });
 

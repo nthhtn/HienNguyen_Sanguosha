@@ -4,28 +4,35 @@ import { OnlineResult } from './online-result';
 import { LAST_GAME } from './testing';
 
 describe('OnlineResult', () => {
-  function render(ending: LastGame, solo = false) {
+  function render(ending: LastGame, solo = false, youPlayerId: string | null = null) {
     TestBed.configureTestingModule({ imports: [OnlineResult] });
     const fixture = TestBed.createComponent(OnlineResult);
     fixture.componentRef.setInput('ending', ending);
     fixture.componentRef.setInput('solo', solo);
+    fixture.componentRef.setInput('youPlayerId', youPlayerId);
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
   const text = (el: HTMLElement, selector: string) => el.querySelector(selector)?.textContent?.trim();
+  const texts = (el: HTMLElement, selector: string) => [...el.querySelectorAll(selector)].map((e) => e.textContent?.trim());
 
-  it('names the winners and losers of a finished game', () => {
+  it('renders the victory board for a finished game and drops the winners and losers lines', () => {
     const el = render(LAST_GAME);
     expect(text(el, 'mat-card-title')).toBe('Game Over');
-    expect(text(el, '.headline')).toBe('Ann wins!');
-    expect(text(el, '.winners')).toBe('Winners: Ann');
-    expect(text(el, '.losers')).toBe('Losers: Bo');
+    expect(el.querySelector('app-victory-board')).not.toBeNull();
+    expect(text(el, 'app-victory-board .headline')).toBe('Wei wins!');
+    expect(texts(el, 'app-victory-board .col .name')).toEqual(['Ann', 'Bo']);
+    expect(el.querySelector('.winners')).toBeNull();
+    expect(el.querySelector('.losers')).toBeNull();
     expect(text(el, 'button.back-to-lobby')).toBe('Back to Lobby');
   });
 
-  it('names a winning Force', () => {
-    const el = render({ ...LAST_GAME, result: { ...LAST_GAME.result!, winningKingdom: 'Wei' } });
-    expect(text(el, '.headline')).toBe('Wei wins!');
+  it("tags the viewer's seat as You from youPlayerId", () => {
+    const el = render(LAST_GAME, false, 'p-bo');
+    const you = [...el.querySelectorAll('app-victory-board .m')].filter((m) => m.querySelector('.you'));
+    expect(you.map((m) => m.querySelector('.name')?.textContent?.trim())).toEqual(['Bo']);
+    TestBed.resetTestingModule();
+    expect(render(LAST_GAME).querySelector('app-victory-board .you')).toBeNull();
   });
 
   it("says why a game stopped when it didn't finish", () => {

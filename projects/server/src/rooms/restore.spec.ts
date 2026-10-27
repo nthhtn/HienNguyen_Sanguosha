@@ -122,7 +122,7 @@ describe('RoomService.restore', () => {
     await rooms.restore();
     const room = rooms.snapshot(ann, roomId);
     expect(room.status).toBe('lobby');
-    expect(room.lastGame).toMatchObject({ gameId: game.id, outcome: 'outdated', result: null });
+    expect(room.lastGame).toMatchObject({ gameId: game.id, outcome: 'outdated', result: null, finalSeats: [] });
     expect(await repos.games.findById(game.id)).toMatchObject({ status: 'broken' });
     expect(logError).toHaveBeenCalled();
   });
