@@ -1,6 +1,6 @@
 import { Action } from '../pipeline/actions';
 import { GameState } from '../domain/types';
-import { DECISION_SECONDS, DecisionSpec, EMPTY_CLOCK, clockRemainingMs, describeDecision, expireClock, switchClock } from './decisionClock';
+import { DECISION_SECONDS, DecisionSpec, EMPTY_CLOCK, JUDGMENT_LEAD_IN_MS, clockRemainingMs, clockStartsInMs, describeDecision, expireClock, switchClock } from './decisionClock';
 
 const state = (fields: object): GameState =>
   ({ phase: 'Play', turn: { turnNumber: 3, ownerSeatId: 'seat-0' }, result: null, pendingResponse: null, ...fields }) as unknown as GameState;
@@ -53,7 +53,7 @@ describe('switchClock', () => {
 
   it('starts a new decision with its full budget', () => {
     const clock = switchClock(EMPTY_CLOCK, play, 1_000);
-    expect(clock.running).toEqual({ decision: play, endsAt: 301_000, totalMs: 300_000 });
+    expect(clock.running).toEqual({ decision: play, startsAt: 1_000, endsAt: 301_000, totalMs: 300_000 });
     expect(clockRemainingMs(clock, 1_000)).toBe(300_000);
   });
 
@@ -95,12 +95,66 @@ describe('a settled judgment', () => {
   const ack: Action = { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' };
   const settled = state({ judgmentView: { settled: true }, phase: 'Play' });
 
-  it('is a notice decision of 10 seconds', () => {
+  it('is a notice decision of 3 seconds', () => {
     expect(describeDecision(settled, 'seat-0', [ack], 'k')).toEqual({ kind: 'notice', seatId: 'seat-0', key: 'step:k' });
-    expect(DECISION_SECONDS.notice).toBe(10);
+    expect(DECISION_SECONDS.notice).toBe(3);
   });
 
   it('gets its own clock for each judgment', () => {
     expect(describeDecision(settled, 'seat-0', [ack], 'k1')!.key).not.toBe(describeDecision(settled, 'seat-0', [ack], 'k2')!.key);
+  });
+});
+
+describe('the judgment-change clock', () => {
+  it('is 10 seconds', () => {
+    expect(DECISION_SECONDS.judgmentChange).toBe(10);
+  });
+
+  it('shares its lead-in constants with the app and the server', () => {
+    expect(JUDGMENT_LEAD_IN_MS).toEqual({ head: 2100, replace: 1300, tail: 2000 });
+  });
+});
+
+describe('a clock lead-in', () => {
+  const notice: DecisionSpec = { kind: 'notice', seatId: 'seat-0', key: 'step:j1', leadInMs: 2_000 };
+
+  it('starts a new clock at now plus the lead-in and ends a full total later', () => {
+    const clock = switchClock(EMPTY_CLOCK, notice, 1_000);
+    expect(clock.running?.startsAt).toBe(3_000);
+    expect(clock.running?.endsAt).toBe(6_000);
+    expect(clock.running?.totalMs).toBe(3_000);
+  });
+
+  it('reports the full total while the lead-in plays, then counts down', () => {
+    const clock = switchClock(EMPTY_CLOCK, notice, 1_000);
+    expect(clockRemainingMs(clock, 1_000)).toBe(3_000);
+    expect(clockRemainingMs(clock, 2_999)).toBe(3_000);
+    expect(clockRemainingMs(clock, 4_000)).toBe(2_000);
+    expect(clockRemainingMs(clock, 99_000)).toBe(0);
+  });
+
+  it('says how long until the countdown starts, and 0 once it has', () => {
+    const clock = switchClock(EMPTY_CLOCK, notice, 1_000);
+    expect(clockStartsInMs(clock, 1_000)).toBe(2_000);
+    expect(clockStartsInMs(clock, 2_500)).toBe(500);
+    expect(clockStartsInMs(clock, 3_000)).toBe(0);
+    expect(clockStartsInMs(EMPTY_CLOCK, 1_000)).toBeNull();
+  });
+
+  it('gives a clock resumed from paused no lead-in', () => {
+    const other: DecisionSpec = { kind: 'response', seatId: 'seat-1', key: 'step:k9' };
+    const started = switchClock(EMPTY_CLOCK, notice, 0);
+    const away = switchClock(started, other, 3_500);
+    expect(away.paused).toEqual({ 'step:j1': 1_500 });
+    const back = switchClock(away, notice, 10_000);
+    expect(back.running?.startsAt).toBe(10_000);
+    expect(back.running?.endsAt).toBe(11_500);
+  });
+
+  it('keeps the same clock, lead-in included, when the key stays', () => {
+    const started = switchClock(EMPTY_CLOCK, notice, 1_000);
+    const later = switchClock(started, { ...notice }, 2_000);
+    expect(later.running?.startsAt).toBe(3_000);
+    expect(later.running?.endsAt).toBe(6_000);
   });
 });

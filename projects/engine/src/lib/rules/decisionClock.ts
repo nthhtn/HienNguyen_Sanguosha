@@ -7,13 +7,20 @@ export const DECISION_SECONDS = {
   choice: 60,
   discard: 60,
   selection: 300,
-  // A settled judgment, for anyone to read and close.
-  notice: 10,
+  // A settled judgment, for anyone to read and close: the countdown after its animation.
+  notice: 3,
+  // A skill's decision whether to change a judgment's card.
+  judgmentChange: 10,
   // One budget for a whole Play phase, paused while a response is under way.
   play: 300,
 } as const;
 
 export type DecisionKind = keyof typeof DECISION_SECONDS;
+
+// How long the judgment popup's animation takes before a clock may start, so a clock runs only
+// while what it times is on screen. `head`: source, rule and the card turning up. `replace`: a
+// replacement's swap. `tail`: verdict and consequence. Read by the app and by the server.
+export const JUDGMENT_LEAD_IN_MS = { head: 2100, replace: 1300, tail: 2000 } as const;
 
 // A decision a seat must make. Same key = same clock: a Play phase keeps one
 // key across its actions, and General selection one per seat.
@@ -21,6 +28,9 @@ export interface DecisionSpec {
   kind: DecisionKind;
   seatId: string;
   key: string;
+  // Milliseconds an animation must play before this decision's countdown starts. Applies only
+  // when the clock is new: a clock resumed from paused has none.
+  leadInMs?: number;
 }
 
 // What `seatId` must decide in `state`, or null. `stepKey` names this exact
@@ -42,6 +52,8 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
 
 export interface RunningClock {
   decision: DecisionSpec;
+  // When the countdown starts (after any lead-in) and when it ends: `endsAt - startsAt` is the time left at the start.
+  startsAt: number;
   endsAt: number;
   totalMs: number;
 }
@@ -62,16 +74,25 @@ export function switchClock(clock: ClockState, decision: DecisionSpec | null, no
   const running = clock.running;
   if (decision && running && decision.key === running.decision.key) return { ...clock, running: { ...running, decision } };
   const paused: Record<string, number> = { ...clock.paused };
-  if (running) paused[running.decision.key] = Math.max(0, running.endsAt - now);
+  if (running) paused[running.decision.key] = clockRemainingMs(clock, now) ?? 0;
   if (!decision) return { running: null, paused };
   const totalMs = DECISION_SECONDS[decision.kind] * 1000;
-  const remainingMs = paused[decision.key] ?? totalMs;
+  const resumed = paused[decision.key];
   delete paused[decision.key];
-  return { running: { decision, endsAt: now + remainingMs, totalMs }, paused };
+  // A resumed clock has nothing left to wait for; a new one waits out its lead-in.
+  const startsAt = now + (resumed === undefined ? (decision.leadInMs ?? 0) : 0);
+  return { running: { decision, startsAt, endsAt: startsAt + (resumed ?? totalMs), totalMs }, paused };
 }
 
+// The time left on the countdown: the full budget while the lead-in plays, never less than zero.
 export function clockRemainingMs(clock: ClockState, now: number): number | null {
-  return clock.running ? Math.max(0, clock.running.endsAt - now) : null;
+  const running = clock.running;
+  return running ? Math.min(running.totalMs, Math.max(0, running.endsAt - now)) : null;
+}
+
+// Milliseconds until the countdown starts, 0 once it has, null with no clock.
+export function clockStartsInMs(clock: ClockState, now: number): number | null {
+  return clock.running ? Math.max(0, clock.running.startsAt - now) : null;
 }
 
 // The running clock ran out: it is done, not paused.
