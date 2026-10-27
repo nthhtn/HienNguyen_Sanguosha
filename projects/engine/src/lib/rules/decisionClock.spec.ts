@@ -96,7 +96,7 @@ describe('a settled judgment', () => {
   const settled = state({ judgmentView: { settled: true }, phase: 'Play' });
 
   it('is a notice decision of 3 seconds', () => {
-    expect(describeDecision(settled, 'seat-0', [ack], 'k')).toEqual({ kind: 'notice', seatId: 'seat-0', key: 'step:k', leadInMs: 4_100 });
+    expect(describeDecision(settled, 'seat-0', [ack], 'k')).toEqual({ kind: 'notice', seatId: 'seat-0', key: 'step:k', leadInMs: 0 });
     expect(DECISION_SECONDS.notice).toBe(3);
   });
 
@@ -162,25 +162,27 @@ describe('a clock lead-in', () => {
 describe('describeDecision around a judgment', () => {
   const ack: Action = { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' };
   const unsettled = (rounds: number, pending: object) => state({ judgmentView: { settled: false, rounds }, phase: 'Play', ...pending });
+  // The callers that play the animation (a person at the table) ask for the lead-in.
+  const withLeadIn = { leadIn: true };
 
   it('times a flagged ask under an unsettled judgment as a judgment change, for 10 seconds', () => {
-    const decision = describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }), 'seat-1', [endPhase], 'k7');
+    const decision = describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }), 'seat-1', [endPhase], 'k7', withLeadIn);
     expect(decision).toEqual({ kind: 'judgmentChange', seatId: 'seat-1', key: 'judgmentChange:1', leadInMs: JUDGMENT_LEAD_IN_MS.head });
   });
 
   it('keeps one clock for the ask and the card pick that follows it', () => {
-    const ask = describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }), 'seat-1', [endPhase], 'k7');
-    const pick = describeDecision(unsettled(1, { pendingSelection: { judgmentChange: true } }), 'seat-1', [endPhase], 'k8');
+    const ask = describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }), 'seat-1', [endPhase], 'k7', withLeadIn);
+    const pick = describeDecision(unsettled(1, { pendingSelection: { judgmentChange: true } }), 'seat-1', [endPhase], 'k8', withLeadIn);
     expect(pick?.key).toBe(ask?.key);
   });
 
   it('gives each later ask its own clock with the replacement lead-in', () => {
-    const second = describeDecision(unsettled(2, { pendingChoice: { judgmentChange: true } }), 'seat-2', [endPhase], 'k9');
+    const second = describeDecision(unsettled(2, { pendingChoice: { judgmentChange: true } }), 'seat-2', [endPhase], 'k9', withLeadIn);
     expect(second).toEqual({ kind: 'judgmentChange', seatId: 'seat-2', key: 'judgmentChange:2', leadInMs: JUDGMENT_LEAD_IN_MS.replace });
   });
 
-  it('has no lead-in when told no person is playing', () => {
-    expect(describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }), 'seat-1', [endPhase], 'k7', { leadIn: false })?.leadInMs).toBe(0);
+  it('has no lead-in unless asked for it, as in a game with no person playing', () => {
+    expect(describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }), 'seat-1', [endPhase], 'k7')?.leadInMs).toBe(0);
     expect(describeDecision(state({ judgmentView: { settled: true, rounds: 0 } }), 'seat-0', [ack], 'k', { leadIn: false })?.leadInMs).toBe(0);
   });
 
@@ -189,7 +191,7 @@ describe('describeDecision around a judgment', () => {
   });
 
   it('gives a settled judgment the tail lead-in, plus the head when no changer was ever asked', () => {
-    expect(describeDecision(state({ judgmentView: { settled: true, rounds: 0 } }), 'seat-0', [ack], 'k')?.leadInMs).toBe(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail);
-    expect(describeDecision(state({ judgmentView: { settled: true, rounds: 2 } }), 'seat-0', [ack], 'k')?.leadInMs).toBe(JUDGMENT_LEAD_IN_MS.tail);
+    expect(describeDecision(state({ judgmentView: { settled: true, rounds: 0 } }), 'seat-0', [ack], 'k', withLeadIn)?.leadInMs).toBe(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail);
+    expect(describeDecision(state({ judgmentView: { settled: true, rounds: 2 } }), 'seat-0', [ack], 'k', withLeadIn)?.leadInMs).toBe(JUDGMENT_LEAD_IN_MS.tail);
   });
 });

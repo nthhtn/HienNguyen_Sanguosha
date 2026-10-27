@@ -40,7 +40,8 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
   if (state.result || legal.length === 0) return null;
   const step = (kind: DecisionKind): DecisionSpec => ({ kind, seatId, key: `step:${stepKey}` });
   const view = state.judgmentView;
-  const leadIn = (ms: number): number => (opts.leadIn === false ? 0 : ms);
+  // Only a caller with a person at the table asks for the lead-in; a headless game plays no animation.
+  const leadIn = (ms: number): number => (opts.leadIn === true ? ms : 0);
   const rounds = view?.rounds ?? 0;
   // A settled judgment closes on its own countdown, once the verdict and consequence have played
   // (and the card's first showing, if no skill was asked, which would have covered it).
