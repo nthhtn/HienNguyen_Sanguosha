@@ -7,7 +7,7 @@ const valid = (message: unknown) => Value.Check(ClientMessageSchema, message);
 
 describe('client message schema', () => {
   it('accepts every client message, with or without a reqId', () => {
-    expect(valid({ type: 'hello', protocolVersion: 1, roomId: ROOM_ID })).toBe(true);
+    expect(valid({ type: 'hello', protocolVersion: 2, roomId: ROOM_ID })).toBe(true);
     expect(valid({ type: 'lobby.addBot', reqId: 'r1' })).toBe(true);
     expect(valid({ type: 'lobby.removePlayer', reqId: 'r2', playerId: 'p1' })).toBe(true);
     expect(valid({ type: 'lobby.setRules', seatCount: 5, rules: { firstRevealDraw: false } })).toBe(true);

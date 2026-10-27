@@ -3,6 +3,7 @@
 export * from './version';
 export * from './limits';
 export * from './names';
+export * from './finalSeats';
 export * from './errors';
 export * from './auth';
 export * from './rooms';

@@ -1,5 +1,6 @@
 import type { Static } from '@sinclair/typebox';
 import type { Action, DecisionKind, EngineEvent, GameResult, GameState } from 'engine';
+import type { FinalSeatView } from './finalSeats';
 import type { SoloRoomBodySchema } from './schemas/game';
 
 // A game as one seat may see it: the engine's redaction without the RNG (it
@@ -54,6 +55,8 @@ export interface LastGame {
   outcome: GameOutcome;
   result: GameResult | null;
   seats: GameSeatView[];
+  // Each seat as the game ended; empty when it did not finish.
+  finalSeats: FinalSeatView[];
 }
 
 export type SoloRoomBody = Static<typeof SoloRoomBodySchema>;

@@ -91,6 +91,7 @@ export const LAST_GAME: LastGame = {
     { seatId: 'seat-0', playerId: 'p-ann', name: 'Ann' },
     { seatId: 'seat-1', playerId: 'p-bo', name: 'Bo' },
   ],
+  finalSeats: [], // placeholder until Task 7
 };
 
 // What Ann (seat-0) is sent in a two-seat game: at the start, when she

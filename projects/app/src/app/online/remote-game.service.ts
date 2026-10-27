@@ -128,6 +128,7 @@ export class RemoteGameService implements BoardGame {
       outcome: 'finished',
       result: state.result,
       seats: state.players.map((p) => ({ seatId: p.seatId, playerId: room.members.find((m) => m.seatId === p.seatId)?.playerId ?? '', name: p.name })),
+      finalSeats: [], // placeholder until Task 7
     };
   });
 

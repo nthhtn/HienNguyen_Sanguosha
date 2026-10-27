@@ -546,7 +546,7 @@ export class RoomService {
       await tx.rooms.update(room.id, { status: 'lobby' }, at);
     });
     room.record = { ...room.record, status: 'lobby', updatedAt: at };
-    room.lastGame = { gameId: game.id, outcome, result, seats: game.seats.map((s) => ({ seatId: s.seatId, playerId: s.roomPlayerId, name: s.name })) };
+    room.lastGame = { gameId: game.id, outcome, result, seats: game.seats.map((s) => ({ seatId: s.seatId, playerId: s.roomPlayerId, name: s.name })), finalSeats: [] }; // placeholder until Task 7
     room.lastActivityAt = now;
     // A host away when the game ends gets the lobby's 60 s from now (spec "Host rules").
     for (const member of room.members) if (!member.connected && member.kind === 'human') member.awaySince = now;
