@@ -194,6 +194,17 @@ function isKingdomRevealed(generals: SeatGenerals): boolean {
   return generals.main.revealed || generals.deputy.revealed;
 }
 
+// A seat's spare Generals as others see them: how many, never which.
+function maskHeld(forms: NonNullable<Seat['forms']>): NonNullable<Seat['forms']> {
+  return { ...forms, held: forms.held.map(() => HIDDEN_GENERAL_ID) };
+}
+
+// A seat once the game is over: Generals, Kingdom and allegiance are public, its spare Generals still are not.
+function redactEndedSeat(seat: Seat, viewerSeatId: string): Seat {
+  if (seat.id === viewerSeatId || !seat.forms) return seat;
+  return { ...seat, forms: maskHeld(seat.forms) };
+}
+
 function redactSeat(seat: Seat, viewerSeatId: string): Seat {
   // A seat with no generals yet has nothing to mask (its kingdom is 'hidden').
   if (seat.id === viewerSeatId || !seat.generals) return seat;
@@ -203,7 +214,7 @@ function redactSeat(seat: Seat, viewerSeatId: string): Seat {
   const holderShown = !!forms && seat.generals[forms.slot].revealed;
   return {
     ...rest,
-    ...(forms && holderShown ? { forms: { ...forms, held: forms.held.map(() => HIDDEN_GENERAL_ID) } } : {}),
+    ...(forms && holderShown ? { forms: maskHeld(forms) } : {}),
     ...(allegiance && isKingdomRevealed(seat.generals) ? { allegiance } : {}),
     kingdom: isKingdomRevealed(seat.generals) ? seat.kingdom : 'hidden',
     generals: {
@@ -270,8 +281,8 @@ export function redactStateForSeat(state: GameState, viewerSeatId: string): Game
     ...state,
     ...(state.spareGenerals ? { spareGenerals: [] } : {}),
     log: maskEvents(state.log, skills) as EngineEvent[],
-    // Once the game is over every seat shows its Generals, Kingdom and allegiance (the Victory window).
-    seats: state.result ? state.seats : state.seats.map((seat) => redactSeat(seat, viewerSeatId)),
+    // Once the game is over every seat shows its Generals, Kingdom and allegiance (the Victory window); all else stays redacted.
+    seats: state.seats.map((seat) => (state.result ? redactEndedSeat(seat, viewerSeatId) : redactSeat(seat, viewerSeatId))),
     zones: state.zones.map((zone) => redactZone(zone, viewerSeatId, shown)),
     generalSelection: redactSelection(state.generalSelection, viewerSeatId),
     pendingResponse: maskSkills(maskHiddenCards(hideSecrets(state.pendingResponse), hidden), skills),

@@ -149,9 +149,15 @@ describe('redactStateForSeat once the game has a result', () => {
     state.result = result;
     const view = redactStateForSeat(state, 'seat-a');
 
-    expect(view.seats).toEqual(state.seats);
+    for (const seat of state.seats) {
+      const shown = view.seats.find((s) => s.id === seat.id)!;
+      expect(shown.generals).toEqual(seat.generals);
+      expect(shown.kingdom).toBe(seat.kingdom);
+      expect(shown.allegiance).toBe(seat.allegiance);
+    }
     expect(view.seats[1].generals!.main.generalDefinitionId).toBe('general-z');
     expect(view.seats[1].kingdom).toBe('Shu');
+    expect(view.seats[1].allegiance).toBe('ambitionist');
   });
 
   it("still masks another seat's hand once the game has a result", () => {
@@ -160,6 +166,27 @@ describe('redactStateForSeat once the game has a result', () => {
     const view = redactStateForSeat(state, 'seat-a');
 
     expect(view.zones.find((z) => z.id === 'hand-b')!.cards.every((c) => c.definitionId === 'hidden')).toBe(true);
+  });
+
+  it("still masks another seat's spare Generals once the game has a result", () => {
+    const state = makeState();
+    state.seats[1].forms = { slot: 'main', held: ['spare-1', 'spare-2'] } as never;
+    state.result = result;
+    const view = redactStateForSeat(state, 'seat-a');
+
+    expect(view.seats[1].forms!.held).toEqual(['hidden', 'hidden']);
+    expect(JSON.stringify(view)).not.toContain('spare-1');
+  });
+
+  it('still hides the spare Generals and other seats\' candidates once the game has a result', () => {
+    const state = makeState();
+    state.spareGenerals = ['spare-x'];
+    state.generalSelection = { candidates: { 'seat-a': ['mine'], 'seat-b': ['theirs'] } };
+    state.result = result;
+    const view = redactStateForSeat(state, 'seat-a');
+
+    expect(view.spareGenerals).toEqual([]);
+    expect(view.generalSelection!.candidates).toEqual({ 'seat-a': ['mine'], 'seat-b': ['hidden'] });
   });
 
   it('still hides Generals while there is no result', () => {
