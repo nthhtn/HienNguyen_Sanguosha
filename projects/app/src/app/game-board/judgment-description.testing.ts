@@ -53,5 +53,10 @@ export const skillDescription = (over: Partial<JudgmentDescription> = {}): Judgm
   settled: true,
   outcome: 'Bo discards 2 cards or takes 1 damage',
   waiting: null,
+  rule: 'Anything but a heart makes the damage source discard 2 cards or take 1 damage.',
+  verdict: 'good',
+  effect: { kind: 'none' },
+  hp: null,
+  replaced: [],
   ...over,
 });

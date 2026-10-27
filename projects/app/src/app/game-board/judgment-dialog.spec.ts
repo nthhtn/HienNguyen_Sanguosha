@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { JudgmentDescription } from './judgment-description';
 import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
-import { king, skillDescription } from './judgment-description.testing';
+import { king, seven, skillDescription } from './judgment-description.testing';
 function render(description: JudgmentDescription | null, canClose = true) {
   const close = jest.fn();
   const sig: WritableSignal<JudgmentDescription | null> = signal(description);
@@ -16,6 +16,12 @@ function render(description: JudgmentDescription | null, canClose = true) {
 }
 
 describe('JudgmentDialog', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
   it('names the source: the General, the skill and its text', () => {
     const { el } = render(skillDescription());
     expect(el.querySelector('h2')!.textContent).toContain('Judgment');
@@ -31,18 +37,24 @@ describe('JudgmentDialog', () => {
     expect(el.querySelector('.source app-card-art')).toBeNull();
   });
 
-  it('shows the judgment card and each replacement', () => {
-    const { el } = render(skillDescription({ card: king, changes: [{ text: "Hing's Unyielding replaced 7 ♥ with K ♠", card: king }] }));
-    expect(el.querySelector('.judged app-playing-card')).not.toBeNull();
+  it('shows the judgment card, each card it replaced, and says so in words', () => {
+    const { el } = render(skillDescription({ card: king, replaced: [seven], changes: [{ text: "Hing's Unyielding replaced 7 ♥ with K ♠", card: king }] }));
+    expect(el.querySelectorAll('.arena app-playing-card')).toHaveLength(2);
     expect([...el.querySelectorAll('.change')].map((c) => c.textContent!.trim())).toEqual(["Hing's Unyielding replaced 7 ♥ with K ♠"]);
   });
 
-  it('shows the consequence', () => {
-    expect(render(skillDescription()).el.querySelector('.outcome')!.textContent).toContain('Bo discards 2 cards or takes 1 damage');
+  it('shows the consequence sentence once the sequence has reached it', () => {
+    const { fixture, el } = render(skillDescription());
+    jest.advanceTimersByTime(3000);
+    fixture.detectChanges();
+    expect(el.querySelector('.line')!.textContent).toContain('Bo discards 2 cards or takes 1 damage');
   });
 
-  it('shows no consequence section when there is none', () => {
-    expect(render(skillDescription({ outcome: null })).el.querySelector('.outcome')).toBeNull();
+  it('shows no consequence sentence when there is none', () => {
+    const { fixture, el } = render(skillDescription({ outcome: null }));
+    jest.advanceTimersByTime(10_000);
+    fixture.detectChanges();
+    expect(el.querySelector('.line')).toBeNull();
   });
 
   it('unsettled: the waiting line, no countdown, no Close', () => {
@@ -52,12 +64,18 @@ describe('JudgmentDialog', () => {
     expect(el.querySelector('button.close')).toBeNull();
   });
 
-  it('settled: the countdown and a Close button that closes it', () => {
-    const { el, close } = render(skillDescription());
+  it('settled: the countdown, and a Continue button that stays disabled until the sequence has played, then closes it', () => {
+    const { fixture, el, close } = render(skillDescription());
     expect(el.querySelector('.waiting')).toBeNull();
     expect(el.querySelector('app-decision-countdown')).not.toBeNull();
     const button = el.querySelector('button.close') as HTMLButtonElement;
-    expect(button.textContent!.trim()).toBe('Close');
+    expect(button.textContent!.trim()).toBe('Continue');
+    expect(button.disabled).toBe(true);
+    button.click();
+    expect(close).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(4100);
+    fixture.detectChanges();
+    expect(button.disabled).toBe(false);
     button.click();
     expect(close).toHaveBeenCalledTimes(1);
   });
@@ -71,11 +89,13 @@ describe('JudgmentDialog', () => {
   it('updates in place when the description changes', () => {
     const { fixture, el, sig } = render(skillDescription({ settled: false, outcome: null, waiting: 'Waiting for skills that can change the judgment' }));
     expect(el.querySelector('.waiting')).not.toBeNull();
-    sig.set(skillDescription({ card: king, changes: [{ text: 'Hing replaced 7 ♥ with K ♠', card: king }], outcome: 'Bo takes 1 damage' }));
+    sig.set(skillDescription({ card: king, replaced: [seven], changes: [{ text: 'Hing replaced 7 ♥ with K ♠', card: king }], outcome: 'Bo takes 1 damage' }));
     fixture.detectChanges();
     expect(el.querySelector('.waiting')).toBeNull();
     expect(el.querySelectorAll('.change')).toHaveLength(1);
-    expect(el.querySelector('.outcome')!.textContent).toContain('Bo takes 1 damage');
+    jest.advanceTimersByTime(10_000);
+    fixture.detectChanges();
+    expect(el.querySelector('.line')!.textContent).toContain('Bo takes 1 damage');
   });
 
   it('has a View Board button in the title row', () => {

@@ -787,6 +787,8 @@ describe('GameBoard: the judgment popup', () => {
 
   afterEach(() => {
     TestBed.inject(MatDialog).closeAll();
+    jest.clearAllTimers();
+    jest.useRealTimers();
     localStorage.clear();
   });
 
@@ -808,21 +810,29 @@ describe('GameBoard: the judgment popup', () => {
     expect([...list.querySelectorAll('button')].map((b) => b.textContent!.trim())).not.toContain('Close');
   });
 
-  it('Close in the popup acknowledges the judgment', async () => {
+  it('Continue in the popup acknowledges the judgment, once the sequence has played', async () => {
+    jest.useFakeTimers();
     const fixture = start('vs-bots');
     await settle(fixture);
+    const button = document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+    jest.advanceTimersByTime(4100);
+    fixture.detectChanges();
     (document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement).click();
     await settle(fixture);
     expect(gameService.judgmentSettled()).toBe(false);
     expect(gameService.state()!.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ seatId: 'seat-0', by: 'seat-0', source: 'close' });
   });
 
-  it('in Pass and Play the popup opens over the gate, and Close works from there', async () => {
+  it('in Pass and Play the popup opens over the gate, and Continue works from there', async () => {
+    jest.useFakeTimers();
     const fixture = start('pass-and-play');
     await settle(fixture);
     expect(gameService.revealedSeatId()).toBeNull();
     expect((fixture.nativeElement as HTMLElement).querySelector('app-reveal-gate-overlay')).not.toBeNull();
     expect(popups()).toHaveLength(1);
+    jest.advanceTimersByTime(4100);
+    fixture.detectChanges();
     (document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement).click();
     await settle(fixture);
     expect(gameService.judgmentSettled()).toBe(false);
@@ -891,11 +901,11 @@ describe('GameBoard: the judgment popup', () => {
   it('switching language updates the open popup, and a minimized one including its banner', async () => {
     const fixture = start('vs-bots');
     await settle(fixture);
-    expect(overlayText()).toContain('Consequence');
+    const title = () => document.querySelector('.cdk-overlay-container h2')!.textContent;
+    expect(title()).toContain('Judgment');
     await TestBed.inject(I18n).setLocale('vi');
     await settle(fixture);
-    expect(overlayText()).toContain('Phán xét');
-    expect(overlayText()).not.toContain('Consequence');
+    expect(title()).toContain('Phán xét');
     (document.querySelector('.cdk-overlay-container button.minimize') as HTMLButtonElement).click();
     fixture.detectChanges();
     await TestBed.inject(I18n).setLocale('en');
