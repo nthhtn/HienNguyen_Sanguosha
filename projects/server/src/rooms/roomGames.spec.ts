@@ -261,6 +261,9 @@ describe('RoomService games', () => {
     const room = rooms.snapshot(a.user, roomId);
     expect(room.status).toBe('lobby');
     expect(room.lastGame).toMatchObject({ gameId, outcome: 'finished' });
+    // The pending end kept the seat summary.
+    expect(room.lastGame!.finalSeats.map((s) => s.seatId)).toEqual(room.lastGame!.seats.map((s) => s.seatId));
+    expect(room.lastGame!.finalSeats).toHaveLength(2);
     expect(await repos.games.findById(gameId)).toMatchObject({ status: 'finished', result: room.lastGame!.result });
   }, 60_000);
 

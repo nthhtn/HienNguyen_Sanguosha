@@ -14,11 +14,14 @@ describe('OnlineResult', () => {
     return fixture.nativeElement as HTMLElement;
   }
   const text = (el: HTMLElement, selector: string) => el.querySelector(selector)?.textContent?.trim();
+  // Names in DOM order: column by column, so LAST_GAME gives Wei (Ann) before Shu (Bo).
   const texts = (el: HTMLElement, selector: string) => [...el.querySelectorAll(selector)].map((e) => e.textContent?.trim());
 
   it('renders the victory board for a finished game and drops the winners and losers lines', () => {
     const el = render(LAST_GAME);
-    expect(text(el, 'mat-card-title')).toBe('Game Over');
+    // The board's eyebrow and headline title the card: no second "Game Over".
+    expect(el.querySelector('mat-card-title')).toBeNull();
+    expect(text(el, 'app-victory-board .eyebrow')).toBe('Game Over');
     expect(el.querySelector('app-victory-board')).not.toBeNull();
     expect(text(el, 'app-victory-board .headline')).toBe('Wei wins!');
     expect(texts(el, 'app-victory-board .col .name')).toEqual(['Ann', 'Bo']);
@@ -35,8 +38,18 @@ describe('OnlineResult', () => {
     expect(render(LAST_GAME).querySelector('app-victory-board .you')).toBeNull();
   });
 
+  // The finished card is widened (CSS: min(100%, 980px), the board's max width) so
+  // the board is wider than its 700px narrow breakpoint; a stopped card is not.
+  it('widens the card for a finished game only', () => {
+    expect(render(LAST_GAME).querySelector('mat-card')?.classList).toContain('finished');
+    TestBed.resetTestingModule();
+    expect(render({ ...LAST_GAME, outcome: 'broken', result: null }).querySelector('mat-card')?.classList).not.toContain('finished');
+  });
+
   it("says why a game stopped when it didn't finish", () => {
-    expect(text(render({ ...LAST_GAME, outcome: 'broken', result: null }), '.stopped')).toBe('This game hit an error and has stopped');
+    const broken = render({ ...LAST_GAME, outcome: 'broken', result: null });
+    expect(text(broken, 'mat-card-title')).toBe('Game Stopped');
+    expect(text(broken, '.stopped')).toBe('This game hit an error and has stopped');
     TestBed.resetTestingModule();
     const el = render({ ...LAST_GAME, outcome: 'outdated', result: null });
     expect(text(el, 'mat-card-title')).toBe('Game Stopped');

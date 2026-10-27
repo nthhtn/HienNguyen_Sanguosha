@@ -279,6 +279,8 @@ describe('LobbyPage', () => {
   it('shows how the last game ended, and Back to Lobby returns to the lobby', async () => {
     game.ending.set(LAST_GAME);
     const { el } = await render();
+    expect(el.querySelector('app-online-result mat-card-title')).toBeNull();
+    expect(el.querySelector('app-online-result .eyebrow')?.textContent?.trim()).toBe('Game Over');
     expect(el.querySelector('app-online-result .headline')?.textContent?.trim()).toBe('Wei wins!');
     // Ann (p-ann) is the viewer.
     expect(el.querySelector('app-online-result .you')?.closest('.m')?.querySelector('.name')?.textContent?.trim()).toBe('Ann');

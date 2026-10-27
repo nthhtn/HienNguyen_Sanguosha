@@ -19,20 +19,28 @@ import { TPipe } from '../i18n/t.pipe';
     /* The same look as the Game Over card of a game against bots. */
     .result mat-card-header { justify-content: center; }
     .result mat-card-content { text-align: center; }
+    /* A finished game's card is as wide as the victory board (its max-width,
+       980px), so on a desktop the board is wider than its 700px narrow
+       breakpoint and shows its columns side by side. */
+    .online-card.result.finished { width: min(100%, 980px); }
+    .result.finished mat-card-content { padding-top: 16px; }
   `,
   template: `
     <div class="online-page">
-      <mat-card class="online-card result" appearance="raised">
-        <mat-card-header>
-          <mat-card-title>{{ (ending().outcome === 'finished' ? 'over.title' : 'result.stopped') | t }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          @if (ending().result; as result) {
+      <mat-card class="online-card result" [class.finished]="!!ending().result" appearance="raised">
+        @if (ending().result; as result) {
+          <!-- The board's own "Game Over" eyebrow and headline title the card. -->
+          <mat-card-content>
             <app-victory-board [result]="result" [seats]="ending().finalSeats" [youSeatId]="youSeatId()" [nameOf]="nameOf" />
-          } @else {
+          </mat-card-content>
+        } @else {
+          <mat-card-header>
+            <mat-card-title>{{ 'result.stopped' | t }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
             <p class="banner stopped" role="alert">{{ stopped() }}</p>
-          }
-        </mat-card-content>
+          </mat-card-content>
+        }
         <mat-card-actions align="end">
           @if (solo()) {
             <button mat-button type="button" class="back-to-rooms" [disabled]="!canAct()" (click)="backToRooms.emit()">{{ 'rooms.back' | t }}</button>
