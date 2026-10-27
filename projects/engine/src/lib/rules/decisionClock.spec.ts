@@ -1,6 +1,6 @@
 import { Action } from '../pipeline/actions';
 import { GameState } from '../domain/types';
-import { DECISION_SECONDS, DecisionSpec, EMPTY_CLOCK, JUDGMENT_LEAD_IN_MS, clockRemainingMs, clockStartsInMs, describeDecision, expireClock, switchClock } from './decisionClock';
+import { DECISION_SECONDS, DecisionSpec, GAME_START_LEAD_IN_MS, EMPTY_CLOCK, JUDGMENT_LEAD_IN_MS, clockRemainingMs, clockStartsInMs, describeDecision, expireClock, switchClock } from './decisionClock';
 
 const state = (fields: object): GameState =>
   ({ phase: 'Play', turn: { turnNumber: 3, ownerSeatId: 'seat-0' }, result: null, pendingResponse: null, ...fields }) as unknown as GameState;
@@ -212,5 +212,11 @@ describe('describeDecision around a judgment', () => {
   it('gives a settled judgment the tail lead-in, plus the head when no changer was ever asked', () => {
     expect(describeDecision(state({ judgmentView: { settled: true, rounds: 0 } }), 'seat-0', [ack], 'k', withLeadIn)?.leadInMs).toBe(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail);
     expect(describeDecision(state({ judgmentView: { settled: true, rounds: 2 } }), 'seat-0', [ack], 'k', withLeadIn)?.leadInMs).toBe(JUDGMENT_LEAD_IN_MS.tail);
+  });
+});
+
+describe('GAME_START_LEAD_IN_MS', () => {
+  it('is 3 seconds', () => {
+    expect(GAME_START_LEAD_IN_MS).toBe(3000);
   });
 });

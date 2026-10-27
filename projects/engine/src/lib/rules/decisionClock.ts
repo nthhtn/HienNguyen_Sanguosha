@@ -34,6 +34,10 @@ export type DecisionKind = keyof typeof DECISION_SECONDS;
 // replacement's swap. `tail`: verdict and consequence. Read by the app and by the server.
 export const JUDGMENT_LEAD_IN_MS = { head: 2100, replace: 1300, tail: 2000 } as const;
 
+// How long the first decision of a game waits after the last seat has chosen its Generals, so the
+// players see "Game starts in 3" first. Read by the app and by the server.
+export const GAME_START_LEAD_IN_MS = 3000;
+
 // A decision a seat must make. Same key = same clock: a Play phase keeps one
 // key across its actions, and General selection one per seat.
 export interface DecisionSpec {

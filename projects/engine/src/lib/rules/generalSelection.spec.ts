@@ -60,8 +60,17 @@ describe('getLegalActions during GeneralSelection', () => {
     ]);
   });
 
-  it('offers nothing to a seat that is not the active chooser', () => {
-    expect(getLegalActions(selectingState(), 'seat-b', registry)).toEqual([]);
+  it('offers every seat that still has candidates its own pairs, not only the first', () => {
+    expect(getLegalActions(selectingState(), 'seat-b', registry)).toEqual([
+      choose('seat-b', 'u1', 'u2'),
+      choose('seat-b', 'u2', 'u1'),
+    ]);
+  });
+
+  it('offers nothing to a seat that has chosen', () => {
+    const afterB = resolve(selectingState(), choose('seat-b', 'u1', 'u2'), ctx).state;
+    expect(getLegalActions(afterB, 'seat-b', registry)).toEqual([]);
+    expect(getLegalActions(afterB, 'seat-a', registry).length).toBeGreaterThan(0);
   });
 
   it('requires the registry during GeneralSelection', () => {
@@ -105,6 +114,32 @@ describe('resolving ChooseGeneralsAction', () => {
     ]);
   });
 
+  it('lets a later seat choose before an earlier one', () => {
+    const { state } = resolve(selectingState(), choose('seat-b', 'u1', 'u2'), ctx);
+    expect(state.seats[1].generals?.main.generalDefinitionId).toBe('u1');
+    expect(state.generalSelection).toEqual({ candidates: { 'seat-a': ['w1', 's1', 'w2', 's2', 'q1'] } });
+    expect(state.phase).toBe('GeneralSelection');
+  });
+
+  it('starts the game when the last seat has chosen, whatever the order', () => {
+    const afterB = resolve(selectingState(), choose('seat-b', 'u1', 'u2'), ctx).state;
+    const { state } = resolve(afterB, choose('seat-a', 'w1', 'w2'), ctx);
+    expect(state.generalSelection).toBeNull();
+    expect(state.phase).not.toBe('GeneralSelection');
+    expect(state.seats.map((s) => s.kingdom)).toEqual(['Wei', 'Wu']);
+  });
+
+  it('gives the same seats and HP in either order of choosing', () => {
+    const ab = resolve(resolve(selectingState(), choose('seat-a', 'w1', 'w2'), ctx).state, choose('seat-b', 'u1', 'u2'), ctx).state;
+    const ba = resolve(resolve(selectingState(), choose('seat-b', 'u1', 'u2'), ctx).state, choose('seat-a', 'w1', 'w2'), ctx).state;
+    expect(ba.seats).toEqual(ab.seats);
+  });
+
+  it('refuses a seat that has already chosen', () => {
+    const afterA = resolve(selectingState(), choose('seat-a', 'w1', 'w2'), ctx).state;
+    expect(() => resolve(afterA, choose('seat-a', 's1', 's2'), ctx)).toThrow(/not seat seat-a's turn/);
+  });
+
   it('does not evaluate the win condition until selection has finished', () => {
     const alwaysWins = mode(() => ({ endedAt: 1, winningSeatIds: [], losingSeatIds: [] }));
     const winCtx: EngineContext = { registry, mode: alwaysWins };
@@ -115,7 +150,7 @@ describe('resolving ChooseGeneralsAction', () => {
   });
 
   it.each([
-    ['a seat that is not the active chooser', choose('seat-b', 'u1', 'u2'), /not seat seat-b's turn/],
+    ['a seat choosing another seat’s candidates', choose('seat-b', 'w1', 'w2'), /not a candidate/],
     ['a general that is not one of the seat’s candidates', choose('seat-a', 'w1', 'w3'), /not a candidate/],
     ['the same general twice', choose('seat-a', 'w1', 'w1'), /different generals/],
     ['a cross-kingdom pair', choose('seat-a', 'w1', 's1'), /do not share a kingdom/],

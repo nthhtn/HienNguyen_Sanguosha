@@ -24,6 +24,7 @@ offers:
 |---|---|
 | `getLegalActions(state, seatId, registry)` | what may this seat do right now? (the UI and bots only ever submit one of these) |
 | `getActiveSeatId(state)` | whose decision is pending? |
+| `getActingSeatIds(state)` | every seat that may act now: during General Selection all seats that still have candidates (they choose at the same time, in any order), otherwise the active seat alone |
 | `previewEffect(state, effect, ctx)` | what would this pending effect really do once before-triggers rewrite it? |
 | `redactStateForSeat(state, seatId)` | the state as that seat is allowed to see it |
 | `createGame(mode, registry, seatIds, seed, rules?)` | a new game, in the General Selection phase |
@@ -153,6 +154,8 @@ How long a person has is a rule, so the engine owns it, in
 | `play` | 180 | one for the whole Play Phase, paused while a response is under way |
 | `judgmentChange` | 15 | a skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
 | `notice` | 3 | a settled judgment popup, after its animation |
+
+`GAME_START_LEAD_IN_MS` (3000) is the wait after the last seat has chosen its Generals, before the first decision of the game: the server holds its clocks, bot moves and legal actions for that long and the app shows "Game starts in 3".
 
 A clock can have a **lead-in**: `DecisionSpec.leadInMs` is the animation the
 decision follows, and a *new* clock starts counting at `startsAt = now + leadInMs`

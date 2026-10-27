@@ -4,7 +4,7 @@ import { answersAs } from '../domain/usedCard';
 import { ContentRegistry, Conversion, PlayOptionsContext, TargetPick } from '../registry/types';
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { sameValue } from './offered';
-import { decisionPending, getActiveSeatId, ownSkillChoice } from './activeSeat';
+import { decisionPending, getActingSeatIds, getActiveSeatId, ownSkillChoice } from './activeSeat';
 import { getLegalGeneralChoices } from './generalSelection';
 import { discardOwed } from './phaseSequence';
 
@@ -32,7 +32,7 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
   }
 
   if (state.phase === 'GeneralSelection') {
-    if (getActiveSeatId(state) !== seatId) return [];
+    if (!getActingSeatIds(state).includes(seatId)) return [];
     // Pairing candidates needs each general's kingdom, which lives in content.
     if (!registry) throw new Error('getLegalActions needs the content registry during GeneralSelection');
     return getLegalGeneralChoices(state, seatId, registry);
