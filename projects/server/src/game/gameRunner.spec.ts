@@ -1,7 +1,7 @@
 import { ruleBasedPolicy } from 'bots';
 import type { BotPolicy } from 'bots';
 import { buildContentRegistry } from 'content';
-import { defaultActionsFor, getActiveSeatId, getLegalActions, usedCardOf } from 'engine';
+import { defaultActionsFor, getActiveSeatId, getLegalActions, resolve, usedCardOf } from 'engine';
 import type { Action, GameState } from 'engine';
 import type { MemberKind } from 'protocol';
 import { GameRecord, GameSeat } from '../persistence/records';
@@ -16,6 +16,9 @@ const GAME_ID = 'aaaaaaaa-0000-4000-8000-000000000001';
 const SEED = 1234;
 const registry = buildContentRegistry();
 const ctx = engineContext(registry);
+// The opening state with every seat's first legal choice made: a game in its first turn.
+const pastSelection = (opening: GameState): GameState =>
+  opening.seats.reduce((state, seat) => resolve(state, getLegalActions(state, seat.id, registry)[0], ctx).state, opening);
 const code = (value: string) => expect.objectContaining({ code: value });
 
 class FakeHost implements RunnerHost {
@@ -88,6 +91,49 @@ function setup(options: { kinds?: MemberKind[]; solo?: boolean; connected?: stri
   return { runner, host, scheduler: host.scheduler, legal: () => runner.updateFor('p0', 0)!.legalActions };
 }
 
+describe('GameRunner: simultaneous General Selection', () => {
+  const twoHumans = () => setup({ kinds: ['human', 'human'], connected: ['p0', 'p1'] });
+  const choice = (runner: GameRunner, playerId: string) => runner.updateFor(playerId, 0)!.legalActions[0];
+
+  it('offers each seat its choices from the start, before the earlier seats have chosen', () => {
+    const { runner } = twoHumans();
+    expect(runner.updateFor('p0', 0)!.legalActions[0]).toMatchObject({ kind: 'ChooseGeneralsAction', seatId: 'seat-0' });
+    expect(runner.updateFor('p1', 0)!.legalActions[0]).toMatchObject({ kind: 'ChooseGeneralsAction', seatId: 'seat-1' });
+  });
+
+  it('stores both choices when two seats confirm from the same base seq', async () => {
+    const { runner, host } = twoHumans();
+    const first = choice(runner, 'p0');
+    const second = choice(runner, 'p1');
+    await runner.submit('p0', GAME_ID, 0, [first]);
+    await runner.submit('p1', GAME_ID, 0, [second]);
+    expect(runner.seq).toBe(2);
+    expect(host.stored.map((row) => row.seatId)).toEqual(['seat-0', 'seat-1']);
+    expect(runner.state.phase).not.toBe('GeneralSelection');
+  });
+
+  it('accepts a later seat choosing first', async () => {
+    const { runner, host } = twoHumans();
+    await runner.submit('p1', GAME_ID, 0, [choice(runner, 'p1')]);
+    expect(host.stored.map((row) => row.seatId)).toEqual(['seat-1']);
+    expect(runner.state.phase).toBe('GeneralSelection');
+  });
+
+  it('refuses a second choice from a seat that has chosen, as illegal', async () => {
+    const { runner } = twoHumans();
+    const first = choice(runner, 'p0');
+    await runner.submit('p0', GAME_ID, 0, [first]);
+    await expect(runner.submit('p0', GAME_ID, 0, [first])).rejects.toEqual(code('illegal_action'));
+  });
+
+  it('offers a seat that has chosen nothing', async () => {
+    const { runner } = twoHumans();
+    await runner.submit('p0', GAME_ID, 0, [choice(runner, 'p0')]);
+    expect(runner.updateFor('p0', 0)!.legalActions).toEqual([]);
+    expect(runner.updateFor('p1', 0)!.legalActions.length).toBeGreaterThan(0);
+  });
+});
+
 describe('GameRunner', () => {
   it("starts the first decision on its human seat's clock, offering moves to that seat only", () => {
     const { runner } = setup();
@@ -115,8 +161,10 @@ describe('GameRunner', () => {
     const before = runner.state;
     const [move] = legal();
     await expect(runner.submit('p1', GAME_ID, 0, [{ ...move, seatId: 'seat-1' } as Action])).rejects.toEqual(code('not_your_turn'));
-    await expect(runner.submit('p0', GAME_ID, 1, [move])).rejects.toEqual(code('stale'));
     await expect(runner.submit('p0', 'aaaaaaaa-0000-4000-8000-000000000002', 0, [move])).rejects.toEqual(code('stale'));
+    const later = setup({ state: pastSelection });
+    const [play] = later.legal();
+    await expect(later.runner.submit('p0', GAME_ID, 1, [play])).rejects.toEqual(code('stale'));
     await expect(runner.submit('p0', GAME_ID, 0, [{ kind: 'DrawCardsAction', seatId: 'seat-0', count: 5 }])).rejects.toEqual(code('illegal_action'));
     await expect(runner.submit('p0', GAME_ID, 0, [{ ...move, extra: 1 } as unknown as Action])).rejects.toEqual(code('illegal_action'));
     await expect(runner.submit('p0', GAME_ID, 0, [move, move])).rejects.toEqual(code('illegal_action'));

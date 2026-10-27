@@ -1,5 +1,5 @@
 import type { BotPolicy, BotTurnMemory } from 'bots';
-import { defaultActionsFor, describeDecision, EMPTY_CLOCK, expireClock, getActiveSeatId, getLegalActions, redactStateForSeat, switchClock } from 'engine';
+import { defaultActionsFor, describeDecision, EMPTY_CLOCK, expireClock, getActingSeatIds, getActiveSeatId, getLegalActions, redactStateForSeat, switchClock } from 'engine';
 import type { Action, ClockState, DecisionKind, EngineContext, GameState } from 'engine';
 import type { ActionSource, GameClockView, GameUpdate } from 'protocol';
 import { GameRecord } from '../persistence/records';
@@ -138,8 +138,14 @@ export class GameRunner {
     // A Close that lost a race (to the timeout, or to another player's Close) is stale, not out of turn.
     if (baseSeq !== this.seq && actions.length === 1 && actions[0].kind === 'AcknowledgeJudgmentAction' && !this.isBotPlayed(seatId)) throw new RoomError('stale');
     const close = this.asClose(seatId, actions);
-    if (!close && (this.isBotPlayed(seatId) || getActiveSeatId(this.state) !== seatId)) throw new RoomError('not_your_turn');
-    if (baseSeq !== this.seq) throw new RoomError('stale');
+    // A General choice does not depend on the other seats' choices: it is judged against the current state
+    // (the engine refuses a seat that has chosen), never refused as stale because another seat's choice landed first.
+    const choosesGenerals = actions.length > 0 && actions.every((a) => a.kind === 'ChooseGeneralsAction');
+    const choosing = choosesGenerals && this.state.phase === 'GeneralSelection';
+    // A choice that arrives once the game has begun is late, not out of turn.
+    if (choosesGenerals && !choosing && !close) throw new RoomError('stale');
+    if (!close && (this.isBotPlayed(seatId) || (!choosing && !getActingSeatIds(this.state).includes(seatId)))) throw new RoomError('not_your_turn');
+    if (!choosing && baseSeq !== this.seq) throw new RoomError('stale');
     // A close is the acting seat's move (the engine has one actor), done on behalf of `seatId`.
     const move = close ?? { seatId, actions };
     let steps: GameState[];
@@ -219,7 +225,7 @@ export class GameRunner {
   updateFor(playerId: string, logFrom: number): GameUpdate | null {
     const seatId = this.seatOf(playerId);
     if (!seatId) return null;
-    const acting = !this.stopped && !this.paused && getActiveSeatId(this.state) === seatId && !this.isBotPlayed(seatId);
+    const acting = !this.stopped && !this.paused && getActingSeatIds(this.state).includes(seatId) && !this.isBotPlayed(seatId);
     // A settled judgment may be closed by any person-controlled seat, not only the one that acts on it.
     const closing = !this.stopped && !this.paused && this.canClose(seatId);
     const legalActions: Action[] = closing ? [{ kind: 'AcknowledgeJudgmentAction', seatId }] : acting ? getLegalActions(this.state, seatId, this.ctx.registry) : [];

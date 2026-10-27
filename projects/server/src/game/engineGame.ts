@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { kingdomWarMode } from 'content';
-import { createGame, createRng, getActiveSeatId, getLegalActions, isOfferedAction, resolve, shuffle } from 'engine';
+import { createGame, createRng, getActingSeatIds, getLegalActions, isOfferedAction, resolve, shuffle } from 'engine';
 import type { Action, ContentRegistry, EngineContext, GameRules, GameState } from 'engine';
 import type { MemberKind } from 'protocol';
 import { GameActionRecord, GameRecord, GameSeat } from '../persistence/records';
@@ -70,7 +70,7 @@ export function applyMove(ctx: EngineContext, state: GameState, seatId: string, 
   const steps: GameState[] = [];
   let current = state;
   for (const action of actions) {
-    if (getActiveSeatId(current) !== seatId || action.seatId !== seatId) throw new IllegalMoveError(`Seat ${seatId} can't act now`);
+    if (!getActingSeatIds(current).includes(seatId) || action.seatId !== seatId) throw new IllegalMoveError(`Seat ${seatId} can't act now`);
     if (!isOfferedAction(action, getLegalActions(current, seatId, ctx.registry))) throw new IllegalMoveError(`${action.kind} was not offered to ${seatId}`);
     try {
       current = resolve(current, action, ctx).state;

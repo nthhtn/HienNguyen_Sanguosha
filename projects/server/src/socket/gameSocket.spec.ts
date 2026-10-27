@@ -140,15 +140,21 @@ describe('games over the socket', () => {
     const b = await ctx.connect(bo, roomId);
     await ctx.startGame(a.client);
     const [forA, forB] = await Promise.all([a.client.next('game.update'), b.client.next('game.update')]);
-    const [mover, other, game] = forA.game.legalActions.length > 0 ? [a, b, forA.game] : [b, a, forB.game];
+    // Both seats choose their Generals at once; the game then waits on one of them.
+    for (const [seat, update] of [[a, forA.game], [b, forB.game]] as const) {
+      seat.client.send({ type: 'game.submit', reqId: 'pick', gameId: update.gameId, baseSeq: 0, actions: [update.legalActions[0]] });
+    }
+    await until(() => a.client.latestGame?.seq === 2 && b.client.latestGame?.seq === 2, 'both seats chose');
+    const [mover, other] = a.client.latestGame!.legalActions.length > 0 ? [a, b] : [b, a];
+    const game = mover.client.latestGame!;
     const move = game.legalActions[0];
     const submit = (client: TestClient, reqId: string, fields: object = {}) =>
-      client.send({ type: 'game.submit', reqId, gameId: game.gameId, baseSeq: 0, actions: [move], ...fields });
+      client.send({ type: 'game.submit', reqId, gameId: game.gameId, baseSeq: 2, actions: [move], ...fields });
     const refusal = (client: TestClient, reqId: string) => client.next('error', (m) => m.reqId === reqId);
 
     submit(other.client, 'x1');
     expect(await refusal(other.client, 'x1')).toMatchObject({ code: 'not_your_turn', message: "It's not your turn" });
-    submit(mover.client, 'x2', { baseSeq: 5 });
+    submit(mover.client, 'x2', { baseSeq: 9 });
     expect(await refusal(mover.client, 'x2')).toMatchObject({ code: 'stale' });
     submit(mover.client, 'x3', { actions: [{ kind: 'DrawCardsAction', seatId: move.seatId, count: 5 }] });
     expect(await refusal(mover.client, 'x3')).toMatchObject({ code: 'illegal_action' });
@@ -160,14 +166,14 @@ describe('games over the socket', () => {
     const beforeResync = mover.client.received.length;
     mover.client.send({ type: 'game.resync', reqId: 'x6' });
     const resynced = await mover.client.next('game.update', () => true, 2000, beforeResync);
-    expect(resynced.game).toMatchObject({ seq: 0, logFrom: 0 });
+    expect(resynced.game).toMatchObject({ seq: 2, logFrom: 0 });
     expect(mover.client.isOpen).toBe(true);
 
     const beforeMove = other.client.received.length;
     submit(mover.client, 'x7');
     await mover.client.next('ack', (m) => m.reqId === 'x7');
-    expect((await other.client.next('game.update', () => true, 2000, beforeMove)).game.seq).toBe(1);
-    expect(await ctx.repos.games.listActions(game.gameId)).toHaveLength(1);
+    expect((await other.client.next('game.update', () => true, 2000, beforeMove)).game.seq).toBe(3);
+    expect(await ctx.repos.games.listActions(game.gameId)).toHaveLength(3);
   });
 
   it("hands an away player's seat to a bot, and gives it back when they return", async () => {

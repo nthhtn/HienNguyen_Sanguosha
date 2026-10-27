@@ -87,6 +87,15 @@ describe('engineGame', () => {
       expect(stateHash(steps[0])).not.toBe(stateHash(state));
     });
 
+    it('accepts a General choice from a seat other than the first one still choosing', () => {
+      const state = opening();
+      const [move] = getLegalActions(state, 'seat-1', registry);
+      expect(move.kind).toBe('ChooseGeneralsAction');
+      const steps = applyMove(ctx, state, 'seat-1', [move]);
+      expect(steps[0].generalSelection?.candidates).not.toHaveProperty('seat-1');
+      expect(steps[0].generalSelection?.candidates).toHaveProperty('seat-0');
+    });
+
     it('refuses an action the engine did not offer, such as drawing cards (Review Focus 1)', () => {
       expect(() => applyMove(ctx, opening(), 'seat-0', [{ kind: 'DrawCardsAction', seatId: 'seat-0', count: 5 }])).toThrow(IllegalMoveError);
     });
