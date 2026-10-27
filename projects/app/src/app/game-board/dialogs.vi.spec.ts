@@ -114,17 +114,27 @@ describe('CompeteDialog and competeResults in Vietnamese', () => {
   const result = (over: Partial<CompeteResult> = {}): CompeteResult => ({
     id: 'compete-3', abilityId: 'heavens-justice', abilityName: "Heaven's Justice", skillText: null,
     generalId: 'taishi-ci', generalName: 'Thái Sử Từ', force: 'Wu',
-    user: { seatId: 'seat-0', name: 'Hing', generalId: 'taishi-ci', card: nine },
-    target: { seatId: 'seat-1', name: 'Seat 1', generalId: null, card: seven },
+    user: { seatId: 'seat-0', name: 'Hing', generalId: 'taishi-ci', force: 'Wu', card: nine },
+    target: { seatId: 'seat-1', name: 'Seat 1', generalId: null, force: 'Shu', card: seven },
     won: true, tie: false, winnerName: 'Hing', outcome: 'Hing thắng',
+    comparison: { winnerRank: '9', loserRank: '7', tie: false },
     ...over,
   });
 
-  it('the title, the winner badge, the versus mark, the result and the outcome label', async () => {
-    const { el } = await mount(CompeteDialog, result());
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('the title, the winner tag, the versus mark, the comparison, the result and the outcome label', async () => {
+    const { fixture, el } = await mount(CompeteDialog, result());
+    jest.advanceTimersByTime(4200);
+    fixture.detectChanges();
     expect(text(el.querySelector('h2'))).toBe('Đấu điểm');
     expect(el.querySelector('.versus')!.getAttribute('aria-label')).toBe('Các người chơi đấu điểm');
-    expect(text(el.querySelector('.badge'))).toContain('Thắng');
+    expect(text(el.querySelector('.tag'))).toContain('Thắng');
+    expect(text(el.querySelector('.cmp'))).toBe('9 hơn 7');
     expect(text(el.querySelector('.vs'))).toBe('vs');
     expect(text(el.querySelector('.result'))).toBe('9 ♠ so với 7 ♥, Hing thắng');
     expect(text(el.querySelector('.outcome .label'))).toBe('Kết quả');
@@ -133,8 +143,9 @@ describe('CompeteDialog and competeResults in Vietnamese', () => {
   });
 
   it('a tie counts as a loss for the challenger', async () => {
-    const { el } = await mount(CompeteDialog, result({ won: false, tie: true, winnerName: 'Seat 1' }));
+    const { el } = await mount(CompeteDialog, result({ won: false, tie: true, winnerName: 'Seat 1', comparison: { winnerRank: '9', loserRank: '9', tie: true } }));
     expect(text(el.querySelector('.result'))).toBe('Hòa: 9 ♠ so với 7 ♥. Seat 1 thắng, vì hòa tính là thua đối với Hing');
+    expect(text(el.querySelector('.cmp'))).toBe('9 hòa 9. Hòa tính là thua của Hing');
   });
 
   const seat = (id: string, index: number, kingdom: Seat['kingdom'], main: string): Seat => ({

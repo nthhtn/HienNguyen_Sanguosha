@@ -486,6 +486,8 @@ export const vi: Messages = {
   'compete.continue': 'Tiếp tục',
   'compete.faces': '{mine} so với {theirs}',
   'compete.result': '{faces}, {winner} thắng',
+  'compete.beats': '{winner} hơn {loser}',
+  'compete.ties': '{rank} hòa {rank}. Hòa tính là thua của {user}',
   'compete.tied': 'Hòa: {faces}. {winner} thắng, vì hòa tính là thua đối với {user}',
   'select.title': 'Hãy chọn Tướng của bạn',
   'select.titleFor': '{name}, hãy chọn Tướng của bạn',

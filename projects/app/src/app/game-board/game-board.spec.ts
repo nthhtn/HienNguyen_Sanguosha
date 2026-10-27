@@ -728,7 +728,11 @@ describe('GameBoard event sounds', () => {
     };
     const popups = () => document.querySelectorAll('app-compete-dialog');
 
-    afterEach(() => TestBed.inject(MatDialog).closeAll());
+    afterEach(() => {
+      TestBed.inject(MatDialog).closeAll();
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    });
 
     it('opens for a Compete that happens while the board is open, once', async () => {
       expect(popups()).toHaveLength(0);
@@ -746,14 +750,18 @@ describe('GameBoard event sounds', () => {
       expect(document.querySelector('.cdk-overlay-pane')!.className).toContain(`force-dialog-${force === 'hidden' ? 'none' : force}`);
     });
 
-    it('shows Competes one after another', async () => {
+    it('shows Competes one after another, each Continue unlocking once its sequence has played', async () => {
+      jest.useFakeTimers();
       await append([...compete(), ...compete()]);
       expect(popups()).toHaveLength(1);
       const first = popups()[0];
+      expect((first.querySelector('button.continue') as HTMLButtonElement).disabled).toBe(true);
+      jest.advanceTimersByTime(4200);
+      fixture.detectChanges();
       (first.querySelector('button.continue') as HTMLButtonElement).click();
       fixture.detectChanges();
       await fixture.whenStable();
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      jest.advanceTimersByTime(400);
       fixture.detectChanges();
       expect(popups()).toHaveLength(1);
       expect(popups()[0]).not.toBe(first);

@@ -202,6 +202,11 @@ export function suitLabel(suit: CardInstance['suit'], tr: Translator = englishTr
 }
 const FACE_RANKS: Record<number, string> = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
 
+// "A", "7", "Q": a card's printed rank.
+export function rankLabel(rank: number): string {
+  return FACE_RANKS[rank] ?? String(rank);
+}
+
 // "A ♦", "7 ♠", "Q ♥" — a card's printed corner.
 export function cardFaceLabel(card: Pick<CardInstance, 'suit' | 'rank'>): string {
   return `${FACE_RANKS[card.rank] ?? card.rank} ${SUIT_SYMBOLS[card.suit]}`;

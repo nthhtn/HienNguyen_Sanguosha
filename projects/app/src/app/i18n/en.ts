@@ -487,6 +487,8 @@ export const en = {
   'compete.continue': 'Continue',
   'compete.faces': '{mine} against {theirs}',
   'compete.result': '{faces}, {winner} won',
+  'compete.beats': '{winner} beats {loser}',
+  'compete.ties': '{rank} ties {rank}. A tie counts as a loss for {user}',
   'compete.tied': 'Tied: {faces}. {winner} won, as a tie counts as a loss for {user}',
   'select.title': 'Choose your Generals',
   'select.titleFor': '{name}, Choose your Generals',
