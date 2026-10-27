@@ -1,8 +1,10 @@
 import { Component, Signal, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import type { Action } from 'engine';
 import { TPipe } from '../i18n/t.pipe';
 import { DecisionCountdown } from './decision-countdown';
+import { JudgmentDecisionView } from './judgment-decision';
 import { JudgmentDescription } from './judgment-description';
 import { JudgmentStage } from './judgment-stage';
 import { MinimizeButton } from './minimize-button';
@@ -14,6 +16,14 @@ export interface JudgmentDialogData {
   canClose: Signal<boolean>;
   // Closes the settled judgment (the game then goes on).
   close: () => void;
+  // The skill decision the judgment waits on, as this viewer sees it, and what the board does with it.
+  decision?: Signal<JudgmentDecisionView | null>;
+  // Submits the engine's own action the viewer picked.
+  choose?: (action: Action) => void;
+  // Told the filled selection whenever enough are picked, so a timeout can use it.
+  pickedChanged?: (action: Action) => void;
+  // Pass and Play: shows the view of the seat whose player took the device.
+  reveal?: (seatId: string) => void;
 }
 
 // A judgment, for every seat at the table to see, as a fixed sequence (JudgmentStage): what required it,
@@ -30,7 +40,14 @@ export interface JudgmentDialogData {
     </div>
     @if (data.description(); as d) {
       <mat-dialog-content class="body">
-        <app-judgment-stage [description]="d" (unlocked)="unlocked.set(true)" />
+        <app-judgment-stage
+          [description]="d"
+          [decision]="data.decision?.() ?? null"
+          [pickedChanged]="data.pickedChanged"
+          (unlocked)="unlocked.set(true)"
+          (chosen)="data.choose?.($event)"
+          (revealed)="data.reveal?.($event)"
+        />
       </mat-dialog-content>
       @if (d.settled) {
         <app-decision-countdown class="timer" />

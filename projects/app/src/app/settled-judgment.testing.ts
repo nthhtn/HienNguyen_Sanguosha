@@ -33,7 +33,8 @@ export function settleJudgment(service: GameService, eliminated: string[] = [], 
 
 // Puts a running game into a judgment that is still open, with `seatId` asked whether a skill of its may change
 // the card: the pending choice is the one a changer's ask opens, marked as a judgment change, with Use and Don't.
-export function askToChange(service: GameService, seatId: string, rounds = 1): void {
+// `flagged: false` makes it an ask that is not a changer's, which keeps its own dialog.
+export function askToChange(service: GameService, seatId: string, rounds = 1, flagged = true): void {
   settleJudgment(service, [], rounds);
   const inner = service as unknown as { _state: WritableSignal<GameState | null>; scheduleBotIfDue(): void };
   const state = inner._state()!;
@@ -44,7 +45,7 @@ export function askToChange(service: GameService, seatId: string, rounds = 1): v
     pendingChoice: {
       id: `ask-devil-${seatId}`, seatId, reason: { kind: 'ability', owner, abilityId: 'devil', targetSeatId: 'seat-0' }, verb: 'use',
       options: [{ id: 'use', shows: { kind: 'use' }, effects: [] }, { id: 'decline', shows: { kind: 'decline' }, effects: [] }],
-      judgmentChange: true,
+      ...(flagged ? { judgmentChange: true as const } : {}),
     },
   });
   inner.scheduleBotIfDue();

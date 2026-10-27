@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { I18n } from '../i18n/i18n.service';
 import { JudgmentDescription } from './judgment-description';
+import type { Action } from 'engine';
+import { JudgmentDecisionView } from './judgment-decision';
 import { JudgmentStage } from './judgment-stage';
 import { card, king, seven, skillDescription } from './judgment-description.testing';
 
@@ -176,5 +178,97 @@ describe('JudgmentStage', () => {
     const { fixture } = render(skillDescription());
     fixture.destroy();
     expect(jest.getTimerCount()).toBe(0);
+  });
+
+  describe('the decision area', () => {
+    const use: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'ask-1', optionId: 'use' };
+    const decline: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'ask-1', optionId: 'decline' };
+    const ask: JudgmentDecisionView = {
+      kind: 'mine', deciderName: 'Hing',
+      step: { kind: 'ask', description: { title: 'Devil', prompt: 'Change the judgment?', hint: null, card: null, generalId: null, useLabel: 'Use', use, decline } },
+    };
+    const select: JudgmentDecisionView = {
+      kind: 'mine', deciderName: 'Hing',
+      step: {
+        kind: 'select',
+        description: {
+          title: 'Devil', prompt: 'Pick a card', confirmLabel: 'Replace', cancelLabel: 'Cancel', min: 1, max: 1,
+          items: [{ id: 'h1', label: 'K ♠', card: king }, { id: 'h2', label: '7 ♥', card: seven }],
+          template: { kind: 'SelectAction', seatId: 'seat-0', selectionId: 'sel-1', ids: [] }, cancel: { kind: 'CancelSelectionAction', seatId: 'seat-0', selectionId: 'sel-1' },
+        },
+      },
+    };
+    const open = (decision: JudgmentDecisionView | null, over: Partial<JudgmentDescription> = {}) => {
+      const r = render(skillDescription({ settled: false, verdict: null, effect: null, outcome: null, waiting: 'Waiting for skills', ...over }));
+      r.fixture.componentRef.setInput('decision', decision);
+      r.fixture.detectChanges();
+      const chosen = jest.fn();
+      const revealed = jest.fn();
+      r.fixture.componentInstance.chosen.subscribe(chosen);
+      r.fixture.componentInstance.revealed.subscribe(revealed);
+      return { ...r, chosen, revealed };
+    };
+
+    it('opens after the head beats, not before, in the place the consequence will take', () => {
+      const { el, at } = open(ask);
+      at(2099);
+      expect(el.querySelector('.decide')).toBeNull();
+      expect(el.querySelector('.waiting')).not.toBeNull();
+      at(1);
+      expect(el.querySelector('.decide app-ask-panel')).not.toBeNull();
+      expect(el.querySelector('.waiting')).toBeNull();
+    });
+
+    it('asks the viewer’s question and offers only the engine’s own actions', () => {
+      const { el, at, chosen } = open(ask);
+      at(2100);
+      expect(el.querySelector('.decide .prompt')!.textContent).toContain('Change the judgment?');
+      (el.querySelector('.decide button.use') as HTMLButtonElement).click();
+      (el.querySelector('.decide button.decline') as HTMLButtonElement).click();
+      expect(chosen.mock.calls.map((c) => c[0])).toEqual([use, decline]);
+    });
+
+    it('lets the viewer pick a card and confirms it as the engine’s SelectAction', () => {
+      const { fixture, el, at, chosen } = open(select);
+      at(2100);
+      (el.querySelector('.decide [data-item-id="h1"]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      (el.querySelector('.decide button.confirm') as HTMLButtonElement).click();
+      expect(chosen).toHaveBeenCalledWith({ kind: 'SelectAction', seatId: 'seat-0', selectionId: 'sel-1', ids: ['h1'] });
+    });
+
+    it('shows others a waiting line with the seat that is deciding', () => {
+      const { el, at } = open({ kind: 'watching', deciderName: 'Bo' });
+      at(2100);
+      expect(el.querySelector('.decide .waiting')!.textContent).toContain('Waiting for Bo to decide whether to change the judgment');
+      expect(el.querySelector('.decide button')).toBeNull();
+    });
+
+    it('asks to pass the device first in Pass and Play, and says whose seat it is when revealed', () => {
+      const { el, at, revealed } = open({ kind: 'gate', seatId: 'seat-1', deciderName: 'Bo' });
+      at(2100);
+      expect(el.querySelector('.decide')!.textContent).toContain('Bo');
+      expect(el.querySelector('.decide app-ask-panel')).toBeNull();
+      (el.querySelector('.decide button.reveal') as HTMLButtonElement).click();
+      expect(revealed).toHaveBeenCalledWith('seat-1');
+    });
+
+    it('closes for a replacement and opens again for the next asker once the swap has played', () => {
+      const { fixture, el, at } = open(ask);
+      at(2100);
+      expect(el.querySelector('.decide')).not.toBeNull();
+      fixture.componentRef.setInput('description', skillDescription({
+        settled: false, verdict: null, effect: null, outcome: null, waiting: 'Waiting', card: king, replaced: [seven],
+        changes: [{ text: 'Hing replaced 7 ♥ with K ♠', card: king }],
+      }));
+      fixture.componentRef.setInput('decision', { kind: 'watching', deciderName: 'Bo' });
+      fixture.detectChanges();
+      expect(el.querySelector('.decide')).toBeNull();
+      expect(count(el, '.pc.old')).toBe(1);
+      at(1299);
+      expect(el.querySelector('.decide')).toBeNull();
+      at(1);
+      expect(el.querySelector('.decide .waiting')!.textContent).toContain('Bo');
+    });
   });
 });

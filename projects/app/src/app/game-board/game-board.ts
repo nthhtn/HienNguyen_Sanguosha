@@ -39,6 +39,7 @@ import { openForceDialog } from './force-dialog';
 import { CompeteDialog } from './compete-dialog';
 import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
 import { StartRevealDialog, StartRevealDialogData } from './start-reveal-dialog';
+import { judgmentDecision } from './judgment-decision';
 import { judgmentDescription } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
@@ -228,6 +229,7 @@ export class GameBoard {
   protected readonly selectionDue = computed(() => {
     const selection = this.visibleState()?.pendingSelection;
     if (!selection || selection.seatId !== this.viewerSeatId()) return null;
+    if (selection.judgmentChange && this.judgmentView()) return null;
     return this.gameService.legalActions().some((a) => a.kind === 'SelectAction') ? selection.id : null;
   });
   private arrangeDialog: MatDialogRef<ArrangeDialog, Action> | null = null;
@@ -246,6 +248,8 @@ export class GameBoard {
   protected readonly choiceDue = computed(() => {
     const choice = this.visibleState()?.pendingChoice;
     if (!choice || choice.seatId !== this.viewerSeatId()) return null;
+    // A skill that may change the judgment asks inside the Judgment popup, not in a dialog of its own.
+    if (choice.judgmentChange && this.judgmentView()) return null;
     return this.gameService.legalActions().some((a) => a.kind === 'ChooseOptionAction') ? choice.id : null;
   });
   // The response window whose dialog is showing, so each opens only once.
@@ -390,6 +394,17 @@ export class GameBoard {
   private readonly judgmentView = computed(() => {
     const state = this.gameService.publicState();
     return state ? judgmentDescription(state, this.gameService.registry, this.i18n.translator) : null;
+  });
+
+  // The skill decision the Judgment popup waits on, as the viewer sees it: the engine's own question for the asked
+  // seat, a waiting line for the others, and in Pass and Play the hand-off before the asked seat's private view.
+  private readonly judgmentDecisionView = computed(() => {
+    // Behind the Pass and Play gate there is no view of the asked seat yet: the public one tells who is asked.
+    const state = this.visibleState() ?? this.gameService.publicState();
+    const viewer = this.viewerSeatId();
+    if (!state || !viewer) return null;
+    const shown = this.gameService.humanSeatId() !== null || this.gameService.revealedSeatId() === viewer;
+    return judgmentDecision(state, viewer, this.gameService.legalActions(), this.i18n.translator, shown);
   });
 
   // What the board's action list offers: the acknowledgement of a judgment is the popup's, not a button on the board.
@@ -544,6 +559,10 @@ export class GameBoard {
       description: this.judgmentView,
       canClose: this.gameService.canCloseJudgment,
       close: () => this.gameService.closeJudgment(this.gameService.humanSeatId() ?? this.gameService.revealedSeatId()),
+      decision: this.judgmentDecisionView,
+      choose: (action) => this.submit(action),
+      pickedChanged: (action) => this.timer.setTimeoutChoice([action]),
+      reveal: (seatId) => this.gameService.reveal(seatId),
     };
     const ref = openForceDialog<JudgmentDialog, JudgmentDialogData>(this.dialog, JudgmentDialog, description.force, { data, width: 'min(92vw, 560px)', disableClose: true });
     this.judgmentDialog = ref;

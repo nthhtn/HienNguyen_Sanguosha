@@ -1,12 +1,17 @@
 import { Component, DestroyRef, OnInit, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
-import { JUDGMENT_LEAD_IN_MS } from 'engine';
+import { Action, JUDGMENT_LEAD_IN_MS } from 'engine';
+import { MatButtonModule } from '@angular/material/button';
 import { I18n } from '../i18n/i18n.service';
 import type { MessageKey } from '../i18n/messages';
 import { TPipe } from '../i18n/t.pipe';
 import { Beat, BeatPlayback, playBeats, prefersReducedMotion } from './beat-player';
+import { AskPanel } from './ask-panel';
 import { CardArt } from './card-art';
+import { DecisionCountdown } from './decision-countdown';
+import { JudgmentDecisionView } from './judgment-decision';
 import { JudgmentDescription } from './judgment-description';
 import { PlayingCard } from './playing-card';
+import { SelectionPanel } from './selection-panel';
 
 // The fixed beats of a judgment, in ms from the popup opening (spec: Judgment sequence). The head plays
 // whatever the judgment is; once the judgment has settled the tail plays: verdict, consequence, unlock.
@@ -29,7 +34,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
 // it on, and a language switch only changes the words.
 @Component({
   selector: 'app-judgment-stage',
-  imports: [CardArt, PlayingCard, TPipe],
+  imports: [MatButtonModule, AskPanel, CardArt, DecisionCountdown, PlayingCard, SelectionPanel, TPipe],
   template: `
     @let d = description();
     <div class="stage" [style.--verdict]="verdictColour()">
@@ -94,7 +99,31 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
 
       <section class="cons" [class.on]="consequenceOn()">
         @if (!d.settled) {
-          @if (d.waiting; as waiting) {
+          @if (decision(); as dec) {
+            @if (decisionOpen()) {
+              <div class="decide">
+                @switch (dec.kind) {
+                  @case ('mine') {
+                    @if (dec.step.kind === 'ask') {
+                      <app-ask-panel [description]="dec.step.description" (chosen)="chosen.emit($event)" />
+                    } @else {
+                      <app-selection-panel [description]="dec.step.description" [pickedChanged]="pickedChanged()" (chosen)="chosen.emit($event)" />
+                    }
+                    <app-decision-countdown />
+                  }
+                  @case ('watching') {
+                    <p class="waiting"><span class="spin"></span>{{ 'judgment.waiting.seat' | t: { seat: dec.deciderName } }}</p>
+                  }
+                  @case ('gate') {
+                    <p class="pass">{{ 'reveal.pass' | t: { name: dec.deciderName } }}</p>
+                    <button mat-flat-button type="button" class="reveal" (click)="revealed.emit(dec.seatId)">{{ 'reveal.tap' | t }}</button>
+                  }
+                }
+              </div>
+            } @else if (d.waiting; as waiting) {
+              <p class="waiting"><span class="spin"></span>{{ waiting }}</p>
+            }
+          } @else if (d.waiting; as waiting) {
             <p class="waiting"><span class="spin"></span>{{ waiting }}</p>
           }
         } @else {
@@ -174,6 +203,8 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     .verdict-label.show { opacity: 1; }
 
     .cons { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 12px; min-height: 110px; border-radius: 12px; border: 1px solid var(--mat-sys-outline-variant); }
+    .decide { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .pass { margin: 0; font: var(--mat-sys-title-medium); text-align: center; }
     .waiting { display: flex; align-items: center; gap: 10px; margin: 0; font: var(--mat-sys-body-large); color: var(--force-text); text-align: center; }
     .spin { width: 16px; height: 16px; flex: none; border-radius: 50%; border: 3px solid var(--mat-sys-outline-variant); border-top-color: var(--force); animation: spin 0.9s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -200,8 +231,16 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
 })
 export class JudgmentStage implements OnInit {
   readonly description = input.required<JudgmentDescription>();
+  // The skill decision the judgment is waiting on, as this viewer sees it, if any.
+  readonly decision = input<JudgmentDecisionView | null>(null);
+  // Told the filled SelectAction whenever enough are picked, so a timeout can use it.
+  readonly pickedChanged = input<((action: Action) => void) | undefined>(undefined);
   // The sequence has played out: Continue may be pressed.
   readonly unlocked = output<void>();
+  // The engine's own action the viewer picked in the decision area.
+  readonly chosen = output<Action>();
+  // Pass and Play: the asked seat's player took the device and asks to see their view.
+  readonly revealed = output<string>();
 
   private readonly i18n = inject(I18n);
   private readonly playbacks: BeatPlayback[] = [];
@@ -216,6 +255,8 @@ export class JudgmentStage implements OnInit {
   protected readonly stampShown = signal(false);
   protected readonly consequenceOn = signal(false);
   private readonly lostCount = signal(0);
+  // The decision area is open once the head has played, and again after each replacement's swap.
+  protected readonly decisionOpen = signal(false);
 
   private seenChanges = 0;
   private lastChangeAt = 0;
@@ -255,7 +296,8 @@ export class JudgmentStage implements OnInit {
         if (changes <= this.seenChanges) return;
         this.seenChanges = changes;
         this.lastChangeAt = Date.now();
-        this.play([{ at: FLIP_DELAY, run: () => this.turnUp(id) }]);
+        this.decisionOpen.set(false);
+        this.play([{ at: FLIP_DELAY, run: () => this.turnUp(id) }, { at: JUDGMENT_LEAD_IN_MS.replace, run: () => this.decisionOpen.set(true) }]);
       });
     });
     // The judgment settles after the head has played (the head's last beat covers the other order).
@@ -273,7 +315,7 @@ export class JudgmentStage implements OnInit {
       { at: RULE_AT, run: () => this.ruleIn.set(true) },
       { at: CARD_AT, run: () => this.cardIn.set(true) },
       { at: CARD_AT + FLIP_DELAY, run: () => this.turnUp(this.description().card.instanceId) },
-      { at: HEAD_DONE_AT, run: () => { this.headDone.set(true); this.startTailIfReady(this.description()); } },
+      { at: HEAD_DONE_AT, run: () => { this.headDone.set(true); this.decisionOpen.set(true); this.startTailIfReady(this.description()); } },
     ]);
   }
 

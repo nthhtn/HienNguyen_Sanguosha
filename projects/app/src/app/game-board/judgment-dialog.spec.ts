@@ -3,11 +3,13 @@ import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { JudgmentDescription } from './judgment-description';
 import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
+import type { Action } from 'engine';
+import { JudgmentDecisionView } from './judgment-decision';
 import { king, seven, skillDescription } from './judgment-description.testing';
-function render(description: JudgmentDescription | null, canClose = true) {
+function render(description: JudgmentDescription | null, canClose = true, extra: Partial<JudgmentDialogData> = {}) {
   const close = jest.fn();
   const sig: WritableSignal<JudgmentDescription | null> = signal(description);
-  const data: JudgmentDialogData = { description: sig, canClose: signal(canClose), close };
+  const data: JudgmentDialogData = { description: sig, canClose: signal(canClose), close, ...extra };
   TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close: jest.fn() } }] });
   const fixture = TestBed.createComponent(JudgmentDialog);
   fixture.detectChanges();
@@ -106,5 +108,48 @@ describe('JudgmentDialog', () => {
   it('renders nothing while there is no description', () => {
     const { el } = render(null);
     expect(el.querySelector('.source')).toBeNull();
+  });
+
+  describe('the decision area', () => {
+    const use: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'ask-1', optionId: 'use' };
+    const asking = skillDescription({ settled: false, verdict: null, effect: null, outcome: null, waiting: 'Waiting' });
+    const ask: JudgmentDecisionView = {
+      kind: 'mine', deciderName: 'Hing',
+      step: { kind: 'ask', description: { title: 'Devil', prompt: 'Change it?', hint: null, card: null, generalId: null, useLabel: 'Use', use, decline: { ...use, optionId: 'decline' } } },
+    };
+
+    it('hands the viewer’s pick to the board to submit, and the countdown stays in the decision area, not the footer', () => {
+      const choose = jest.fn();
+      const { el } = render(asking, true, { decision: signal(ask), choose });
+      jest.advanceTimersByTime(2100);
+      TestBed.tick();
+      (el.querySelector('.decide button.use') as HTMLButtonElement).click();
+      expect(choose).toHaveBeenCalledWith(use);
+      expect(el.querySelector('mat-dialog-actions')).toBeNull();
+    });
+
+    it('tells the board the device was handed over in Pass and Play', () => {
+      const reveal = jest.fn();
+      const { el } = render(asking, true, { decision: signal<JudgmentDecisionView | null>({ kind: 'gate', seatId: 'seat-1', deciderName: 'Bo' }), reveal });
+      jest.advanceTimersByTime(2100);
+      TestBed.tick();
+      (el.querySelector('.decide button.reveal') as HTMLButtonElement).click();
+      expect(reveal).toHaveBeenCalledWith('seat-1');
+    });
+
+    it('tells the board what has been picked so far, for a timeout to use', () => {
+      const pickedChanged = jest.fn();
+      const { el } = render(asking, true, {
+        pickedChanged,
+        decision: signal<JudgmentDecisionView | null>({
+          kind: 'mine', deciderName: 'Hing',
+          step: { kind: 'select', description: { title: 'Devil', prompt: 'Pick', confirmLabel: 'Replace', cancelLabel: 'Cancel', min: 1, max: 1, items: [{ id: 'h1', label: 'K ♠', card: king }], template: { kind: 'SelectAction', seatId: 'seat-0', selectionId: 's', ids: [] }, cancel: null } },
+        }),
+      });
+      jest.advanceTimersByTime(2100);
+      TestBed.tick();
+      (el.querySelector('.decide [data-item-id="h1"]') as HTMLButtonElement).click();
+      expect(pickedChanged).toHaveBeenCalledWith({ kind: 'SelectAction', seatId: 'seat-0', selectionId: 's', ids: ['h1'] });
+    });
   });
 });
