@@ -121,7 +121,7 @@ describe('RemoteGameService: a settled judgment', () => {
   const judged = { instanceId: 'j1', definitionId: 'sha', suit: 'heart' as const, rank: 5 };
   const settled: GameUpdate = {
     ...opening,
-    view: { ...opening.view, judgmentView: { seatId: 'seat-1', reader: { kind: 'card', card: { as: 'lightning', physical: [], colour: 'black', suit: 'spade', rank: 1 } as never }, card: judged, changes: [], settled: true } },
+    view: { ...opening.view, judgmentView: { seatId: 'seat-1', reader: { kind: 'card', card: { as: 'lightning', physical: [], colour: 'black', suit: 'spade', rank: 1 } as never }, card: judged, changes: [], settled: true, rounds: 0 } },
     legalActions: [{ kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' }],
   };
 
