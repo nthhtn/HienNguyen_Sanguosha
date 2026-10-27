@@ -100,6 +100,12 @@ shuffle, and a reshuffle gives every card a fresh id, so an id never gives
 away what a masked card is. `state.rng` holds the seed and is **not** removed
 by `redactStateForSeat`; the server strips it from every view it sends.
 
+**Once the game has a result** (`state.result` is set) nothing is left to
+play for, so `redactStateForSeat` shows every seat's Generals, Kingdom and
+allegiance, for the Game Over screen's victory columns. Only those are lifted:
+the held forms (`forms.held`), the spare Generals, hands, the draw pile and
+the skill masking in the log stay as they were.
+
 Bots receive the redacted state too, so they cannot cheat by construction.
 
 ## State is a resting place, not a call stack

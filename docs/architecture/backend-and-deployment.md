@@ -184,6 +184,17 @@ forgets everything on restart; that is for local runs only, and production
 requires `DATABASE_URL` and an `https` `PUBLIC_ORIGIN`. One repository contract
 suite runs against both stores (`npm run test:db`).
 
+### The finished game and `LastGame.finalSeats`
+
+When a game ends, the room keeps `lastGame` (game id, outcome, `result`, the
+seats' names) for the lobby that follows. `LastGame.finalSeats` is a required
+list of `FinalSeatView` (seat, both Generals, printed Kingdom, allegiance, eliminated),
+built by the protocol's `finalSeatViews(state)` from the **full** final state
+on the server, so every member can show who was on which side whatever their
+own seat could see. It is held in memory with the room only, never written to
+Postgres, and is `[]` for a `broken` or `outdated` game. Adding it moved
+`PROTOCOL_VERSION` to 2; an older tab is asked to reload.
+
 ## Chat
 
 Room chat (lobby and game) is stored with the room and tied to the game and

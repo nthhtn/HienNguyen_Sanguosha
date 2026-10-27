@@ -117,7 +117,7 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 | `hand-view`, `playing-card`, `card-art` | the viewer's cards |
 | `action-list` | the buttons for what the engine says is legal (end phase, use skill) |
 | `action-history-panel`, `discard-pile` | what has happened, and what has been discarded |
-| `phase-indicator`, `game-over` | turn and result display |
+| `phase-indicator`, `game-over`, `victory-board` | turn and result display (see "The Game Over window") |
 | `general-selection`, `reveal-gate-overlay` | the pre-game pick and the pass-and-play hand-off |
 | `decision-dock`, `decision-banner`, `minimize-button` | hide a decision dialog to look at the board, with a banner to bring it back |
 | `board-chat`, `chat-panel` (online) | room chat beside the board |
@@ -185,6 +185,39 @@ replacement, the consequence from content's `judgmentOutcome`, and a 10 s
 countdown; Close submits the acknowledgement (`closeJudgment` locally, the
 server's offered action online). The pause lives in the engine, so it holds
 for every client and for replays; the dialog only shows it.
+
+### The Game Over window
+
+`game-over` (local) and `OnlineResult` (online) both show
+[victory-board.ts](../../projects/app/src/app/game-board/victory-board.ts)
+(`app-victory-board`), a row of up to six columns: Wei, Shu, Wu, Qun, Winning
+Ambitionist, Losing Ambitionist. A column exists only if a seat belongs to
+it. The pure `victoryColumns(seats, result, youSeatId)` in
+`victory-columns.ts` builds the view, and it never reads `winningSeatIds`:
+
+- a seat's group is `Ambitionist` if its allegiance is `ambitionist`,
+  otherwise its Kingdom (a seat with no decided allegiance sits under its
+  printed Kingdom);
+- the winning group is the winning Kingdom if one is set, the group of the
+  sole survivor otherwise, and none for a draw;
+- the headline is one of four kinds: Kingdom wins, "{name} wins as the
+  Ambitionist!", a lone survivor with no decided allegiance ("{name} wins!"),
+  or a draw.
+
+Each member row shows the avatar, name, a "You" tag (not in Pass and Play or
+without a seat), the Main and Deputy General names and Survived or Fallen.
+The reveal is timed, not blocking: headline first, the columns one after
+another, then the winning column lights in its Force colour while the others
+dim (a draw lights none); reduced motion shows the end state at once.
+Columns are 150 to 190 px and wrap by container query: at 700 px or narrower
+two per row, the winning column first.
+
+Locally the seats come from the full `state` (the game is over, so nothing is
+secret). Online they come from `lastGame.finalSeats`, which
+`RemoteGameService.ending` fills from the live final state; the finished
+online card is 980 px wide, has no title of its own and lets the board supply
+the "Game Over" eyebrow. The server only sends the Generals because
+`redactStateForSeat` lifts them once a result exists.
 
 ### Describing decisions without knowing the rules
 
