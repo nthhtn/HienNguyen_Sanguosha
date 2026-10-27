@@ -153,7 +153,7 @@ How long a person has is a rule, so the engine owns it, in
 | `selection` (General Selection) | 300 | one per seat for the whole pick |
 | `play` | 180 | one for the whole Play Phase, paused while a response is under way |
 | `judgmentChange` | 15 | a skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
-| `notice` | 3 | a settled judgment popup, after its animation |
+| `notice` | 5 | a settled judgment popup, after its animation |
 
 `GAME_START_LEAD_IN_MS` (3000) is the wait after the last seat has chosen its Generals, before the first decision of the game: the server holds its clocks, bot moves and legal actions for that long and the app shows "Game starts in 3".
 

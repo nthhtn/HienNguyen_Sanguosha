@@ -6,15 +6,14 @@ import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
 import type { Action } from 'engine';
 import { JudgmentDecisionView } from './judgment-decision';
 import { king, seven, skillDescription } from './judgment-description.testing';
-function render(description: JudgmentDescription | null, canClose = true, extra: Partial<JudgmentDialogData> = {}) {
-  const close = jest.fn();
+function render(description: JudgmentDescription | null, extra: Partial<JudgmentDialogData> = {}) {
   const sig: WritableSignal<JudgmentDescription | null> = signal(description);
-  const data: JudgmentDialogData = { description: sig, canClose: signal(canClose), close, ...extra };
+  const data: JudgmentDialogData = { description: sig, ...extra };
   TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close: jest.fn() } }] });
   const fixture = TestBed.createComponent(JudgmentDialog);
   fixture.detectChanges();
   const el = fixture.nativeElement as HTMLElement;
-  return { fixture, el, close, sig };
+  return { fixture, el, sig };
 }
 
 describe('JudgmentDialog', () => {
@@ -59,33 +58,18 @@ describe('JudgmentDialog', () => {
     expect(el.querySelector('.line')).toBeNull();
   });
 
-  it('unsettled: the waiting line, no countdown, no Close', () => {
+  it('unsettled: the waiting line, no countdown', () => {
     const { el } = render(skillDescription({ settled: false, outcome: null, waiting: 'Waiting for Bo to decide whether to change the judgment' }));
     expect(el.querySelector('.waiting')!.textContent).toContain('Waiting for Bo');
     expect(el.querySelector('app-decision-countdown')).toBeNull();
-    expect(el.querySelector('button.close')).toBeNull();
   });
 
-  it('settled: the countdown, and a Continue button that stays disabled until the sequence has played, then closes it', () => {
-    const { fixture, el, close } = render(skillDescription());
+  it('settled: the countdown, and no button to skip it', () => {
+    const { el } = render(skillDescription());
     expect(el.querySelector('.waiting')).toBeNull();
     expect(el.querySelector('app-decision-countdown')).not.toBeNull();
-    const button = el.querySelector('button.close') as HTMLButtonElement;
-    expect(button.textContent!.trim()).toBe('Continue');
-    expect(button.disabled).toBe(true);
-    button.click();
-    expect(close).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(4100);
-    fixture.detectChanges();
-    expect(button.disabled).toBe(false);
-    button.click();
-    expect(close).toHaveBeenCalledTimes(1);
-  });
-
-  it('settled but the viewer cannot close: the countdown, no Close', () => {
-    const { el } = render(skillDescription(), false);
-    expect(el.querySelector('app-decision-countdown')).not.toBeNull();
     expect(el.querySelector('button.close')).toBeNull();
+    expect(el.querySelector('mat-dialog-actions button')).toBeNull();
   });
 
   it('updates in place when the description changes', () => {
@@ -120,7 +104,7 @@ describe('JudgmentDialog', () => {
 
     it('hands the viewer’s pick to the board to submit, and the countdown stays in the decision area, not the footer', () => {
       const choose = jest.fn();
-      const { el } = render(asking, true, { decision: signal(ask), choose });
+      const { el } = render(asking, { decision: signal(ask), choose });
       jest.advanceTimersByTime(2100);
       TestBed.tick();
       (el.querySelector('.decide button.use') as HTMLButtonElement).click();
@@ -130,7 +114,7 @@ describe('JudgmentDialog', () => {
 
     it('tells the board the device was handed over in Pass and Play', () => {
       const reveal = jest.fn();
-      const { el } = render(asking, true, { decision: signal<JudgmentDecisionView | null>({ kind: 'gate', seatId: 'seat-1', deciderName: 'Bo' }), reveal });
+      const { el } = render(asking, { decision: signal<JudgmentDecisionView | null>({ kind: 'gate', seatId: 'seat-1', deciderName: 'Bo' }), reveal });
       jest.advanceTimersByTime(2100);
       TestBed.tick();
       (el.querySelector('.decide button.reveal') as HTMLButtonElement).click();

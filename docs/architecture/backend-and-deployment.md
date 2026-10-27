@@ -167,7 +167,7 @@ the only code that changes a running game's state. It owns:
   while its player is away.
 - **The judgment notice.** While a judgment waits to be closed, a bot never
   closes it as long as a person controls any seat. Only a person's Continue or the
-  3 s notice clock moves it on, and that timeout does not count towards the
+  5 s notice clock moves it on, and that timeout does not count towards the
   away rule. Both this clock and a judgment-change decision's 15 s clock start
   after a lead-in (below), and a bot that may change a judgment waits for the
   same lead-in while a person is at the table; with none, every lead-in is 0.

@@ -138,7 +138,6 @@ describe('CompeteDialog and competeResults in Vietnamese', () => {
     expect(text(el.querySelector('.vs'))).toBe('vs');
     expect(text(el.querySelector('.result'))).toBe('9 ♠ so với 7 ♥, Hing thắng');
     expect(text(el.querySelector('.outcome .label'))).toBe('Kết quả');
-    expect(text(el.querySelector('button.continue'))).toBe('Tiếp tục');
     expect(el.querySelector('.timer')!.getAttribute('aria-label')).toBe(`Còn ${AUTO_CLOSE_SECONDS} giây`);
   });
 

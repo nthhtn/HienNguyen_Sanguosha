@@ -306,7 +306,7 @@ each replacement so far, `settled: false`, and `rounds`: how many times a skill 
 view, it sets `settled: true` and the pipeline **stops** instead of queueing the
 resolve step: the game now rests at a decision, whose actor is the first living
 human seat (see [The rules engine](rules-engine.md)). `AcknowledgeJudgmentAction`,
-from that seat's Continue or the 3 s notice clock, clears the view, logs
+from that seat's Continue or the 5 s notice clock, clears the view, logs
 `JudgmentAcknowledgedEvent` (with who closed it, or that it timed out) and
 queues `JudgmentResolveEffect`. With the rule off, `JudgmentShownEffect` queues
 the resolve step directly, so a game without it plays and replays as before.
