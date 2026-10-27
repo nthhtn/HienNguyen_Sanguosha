@@ -26,7 +26,7 @@ const LIGHT_AFTER_LAST = 500;
         <h2 class="headline" [attr.data-force]="winningForce()">{{ headline() }}</h2>
         <p class="sub">{{ subline() }}</p>
       </header>
-      <div class="cols" [attr.aria-label]="'over.standings' | t">
+      <div class="cols" role="group" [attr.aria-label]="'over.standings' | t">
         @for (col of view().columns; track col.group; let i = $index) {
           <section
             class="col"
@@ -64,7 +64,13 @@ const LIGHT_AFTER_LAST = 500;
                     @if (generals(m); as pair) {
                       <span class="generals">{{ pair }}</span>
                     }
-                    <span class="state">{{ m.survived ? '✓ ' + ('over.survived' | t) : '✕ ' + ('over.fallen' | t) }}</span>
+                    <span class="state">
+                      @if (m.survived) {
+                        <span aria-hidden="true">✓</span> {{ 'over.survived' | t }}
+                      } @else {
+                        <span aria-hidden="true">✕</span> {{ 'over.fallen' | t }}
+                      }
+                    </span>
                   </span>
                 </li>
               }
@@ -228,6 +234,8 @@ export class VictoryBoard implements OnInit {
     inject(DestroyRef).onDestroy(() => this.timers.forEach((id) => clearTimeout(id)));
   }
 
+  // The reveal is scheduled once, from the initial inputs: a later input change re-renders the
+  // columns but does not re-animate them.
   ngOnInit(): void {
     const columns = this.view().columns.length;
     if (this.reducedMotion()) {

@@ -69,6 +69,14 @@ describe('VictoryBoard', () => {
     // A missing Deputy General leaves only the Main General.
     expect(text(cols[1].querySelector('li.m .generals'))).toBe('Liu Bei');
     expect(el.querySelector('.cols')!.getAttribute('aria-label')).toBe('Final Standings');
+    expect(el.querySelector('.cols')!.getAttribute('role')).toBe('group');
+    // The glyphs are decoration: hidden from assistive tech, the words stay.
+    const aliveGlyph = rows[0].querySelector('.state [aria-hidden="true"]');
+    const fallenGlyph = rows[1].querySelector('.state [aria-hidden="true"]');
+    expect(text(aliveGlyph)).toBe('✓');
+    expect(text(fallenGlyph)).toBe('✕');
+    expect(text(rows[0].querySelector('.state'))).toBe('✓ Survived');
+    expect(text(rows[1].querySelector('.state'))).toBe('✕ Fallen');
   });
 
   it('lights only the winning column after the reveal and dims the rest', () => {
