@@ -1,5 +1,4 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { cardFaceLabel } from '../labels';
@@ -12,7 +11,7 @@ import { I18n } from '../i18n/i18n.service';
 
 // Seconds the popup stays once its sequence has played, before it closes itself, so a Compete between
 // bots never stalls the table.
-export const AUTO_CLOSE_SECONDS = 3;
+export const AUTO_CLOSE_SECONDS = 5;
 
 // The fixed beats of a Compete, in ms from the popup opening (spec: Compete sequence).
 const CARDS_DOWN_AT = 800;
@@ -27,7 +26,7 @@ const UNLOCK_AT = 4200;
 // (openForceDialog). Informational: it asks nothing of the player.
 @Component({
   selector: 'app-compete-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, PlayingCard, TPipe],
+  imports: [MatDialogModule, MatIconModule, CardArt, PlayingCard, TPipe],
   template: `
     <h2 mat-dialog-title>{{ 'compete.title' | t }}</h2>
     <mat-dialog-content class="body">
@@ -84,9 +83,6 @@ const UNLOCK_AT = 4200;
         <span class="bar"><span class="fill" [style.width.%]="(seconds() / total) * 100"></span></span>
       </div>
     }
-    <mat-dialog-actions align="end">
-      <button mat-flat-button type="button" class="continue" [disabled]="!unlocked()" (click)="close()">{{ 'compete.continue' | t }}</button>
-    </mat-dialog-actions>
   `,
   styles: `
     .body { display: flex; flex-direction: column; gap: 16px; }
@@ -149,7 +145,7 @@ export class CompeteDialog implements OnInit {
   protected readonly cardsUp = signal(false);
   protected readonly resultShown = signal(false);
   protected readonly outcomeShown = signal(false);
-  // The sequence has played out: Continue may be pressed, and the countdown runs.
+  // The sequence has played out: the countdown to the popup closing itself runs.
   protected readonly unlocked = signal(false);
 
   private interval: ReturnType<typeof setInterval> | null = null;
@@ -181,7 +177,7 @@ export class CompeteDialog implements OnInit {
     this.playback = playBeats(beats);
   }
 
-  // Continue may be pressed, and the countdown to the popup closing itself starts.
+  // The countdown to the popup closing itself starts.
   private unlock(): void {
     this.unlocked.set(true);
     this.interval = setInterval(() => {

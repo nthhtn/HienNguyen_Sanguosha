@@ -20,7 +20,7 @@ export const DECISION_SECONDS = {
   discard: 30,
   selection: 300,
   // A settled judgment, for anyone to read and close: the countdown after its animation.
-  notice: 3,
+  notice: 5,
   // A skill's decision whether to change a judgment's card.
   judgmentChange: 15,
   // One budget for a whole Play phase, paused while a response is under way.

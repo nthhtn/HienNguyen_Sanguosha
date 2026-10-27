@@ -582,14 +582,12 @@ export class GameBoard {
   }
 
   // Opens the judgment popup. It reads the description live, so a replacement or a language switch
-  // updates it in place; Close is the viewer's, whoever holds the device.
+  // updates it in place. It closes when the engine's notice clock runs out; nobody can skip it.
   private openJudgmentDialog(resumed = this.rebuilding): void {
     const description = this.judgmentView();
     if (this.judgmentDialog || !description) return;
     const data: JudgmentDialogData = {
       description: this.judgmentView,
-      canClose: this.gameService.canCloseJudgment,
-      close: () => this.gameService.closeJudgment(this.gameService.humanSeatId() ?? this.gameService.revealedSeatId()),
       decision: this.judgmentDecisionView,
       choose: (action) => this.submit(action),
       // A skill's decision whether to change the card is not remembered for a timeout: running out declines it.

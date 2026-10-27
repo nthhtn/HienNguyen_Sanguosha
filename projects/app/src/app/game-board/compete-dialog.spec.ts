@@ -107,24 +107,20 @@ describe('CompeteDialog', () => {
     expect(render(result({ outcome: null })).el.querySelector('.outcome')).toBeNull();
   });
 
-  it('keeps Continue locked until 4200 ms, then closes on it', () => {
-    const { el, close, at } = render(result());
-    const button = el.querySelector('button.continue') as HTMLButtonElement;
-    expect(button.disabled).toBe(true);
-    at(4199);
-    expect(button.disabled).toBe(true);
-    at(1);
-    expect(button.disabled).toBe(false);
-    button.click();
-    expect(close).toHaveBeenCalled();
+  it('has no button to skip it', () => {
+    const { el, at } = render(result());
+    expect(el.querySelector('button.continue')).toBeNull();
+    expect(el.querySelector('mat-dialog-actions button')).toBeNull();
+    at(4200);
+    expect(el.querySelector('mat-dialog-actions button')).toBeNull();
   });
 
-  it('starts a 3 second countdown at unlock and closes itself when it ends', () => {
-    expect(AUTO_CLOSE_SECONDS).toBe(3);
+  it('starts a 5 second countdown at unlock and closes itself when it ends', () => {
+    expect(AUTO_CLOSE_SECONDS).toBe(5);
     const { el, close, at } = render(result());
     at(4200);
-    expect(el.querySelector('.seconds')!.textContent).toContain('3s');
-    at(2000);
+    expect(el.querySelector('.seconds')!.textContent).toContain('5s');
+    at(4000);
     expect(close).not.toHaveBeenCalled();
     at(1000);
     expect(close).toHaveBeenCalledTimes(1);
@@ -136,7 +132,7 @@ describe('CompeteDialog', () => {
     fixture.detectChanges();
     expect(count(el, '.pc.up')).toBe(2);
     expect(count(el, '.side.win')).toBe(1);
-    expect((el.querySelector('button.continue') as HTMLButtonElement).disabled).toBe(false);
+    expect(el.querySelector('.timer')).not.toBeNull();
   });
 
   it('stops its timers when it is destroyed', () => {

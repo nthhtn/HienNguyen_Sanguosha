@@ -181,8 +181,8 @@ runs them, and shows each beat's end state at once under reduced motion):
 the two players slide in each in their own Force with a VS badge (0 ms), the
 cards are laid face down (800), both turn together (1500), the winner is lit
 and the loser dimmed with a line such as "K beats 8" (2500), the outcome
-appears (3400), and Continue unlocks (4200). A 3 s countdown then closes it, or
-Continue does. On a tie the challenged player is lit and the line says a tie
+appears (3400), and the sequence ends (4200). A 5 s countdown then closes it;
+there is no button to skip it. On a tie the challenged player is lit and the line says a tie
 counts as a loss for the challenger. It is a modal on each client, not an
 engine pause.
 
@@ -195,8 +195,8 @@ a fixed sequence: the source (0 ms), the rule line (500), the card turning up
 or cross for the judged seat (a good or bad verdict from content's
 `judgmentOutcome`, none when neutral), the consequence (HP hearts popping, a
 phase struck through, or Lightning moving on, always with its sentence), then
-Continue unlocks and a 3 s countdown closes it; Continue submits the
-acknowledgement (`closeJudgment` locally, the server's offered action online).
+a 5 s countdown closes it, with no button to skip it; its timeout submits the
+acknowledgement.
 A skill that may change the card is asked **inside the popup**: the Ask and
 Selection dialogs are built from `AskPanel` and `SelectionPanel`, which the
 decision area reuses, and the board does not open those dialogs for a pending
@@ -280,7 +280,7 @@ deciding seat's Force; the Compete popup by the source General's.
 `DecisionTimer` is UI state too, for local games. The engine says which clock a
 decision runs on and how long it has (`DECISION_SECONDS`: a Wuxie 15 s, a dying Peach or other response 20 s, a skill's ask 15 s,
 a pick 30 s, an arrangement 60 s, the Start reveal 20 s, a discard 30 s, the General Selection
-300 s, a whole Play Phase 180 s, a skill's decision to change a judgment 15 s, a settled judgment notice 3 s). A decision that follows an animation has a lead-in (`leadInMs`): its countdown holds its full length and starts only when the animation has played (`startsInMs`). The timer pauses when the decision is
+300 s, a whole Play Phase 180 s, a skill's decision to change a judgment 15 s, a settled judgment notice 5 s). A decision that follows an animation has a lead-in (`leadInMs`): its countdown holds its full length and starts only when the animation has played (`startsInMs`). The timer pauses when the decision is
 not on screen, and at zero submits the UI's current pick or an engine-legal
 default (`defaultActionsFor`: No Response, the first option, End Phase).
 Bots are never timed. Online, the server owns the clock and

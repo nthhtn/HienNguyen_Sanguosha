@@ -799,15 +799,13 @@ describe('GameBoard event sounds', () => {
       expect(document.querySelector('.cdk-overlay-pane')!.className).toContain(`force-dialog-${force === 'hidden' ? 'none' : force}`);
     });
 
-    it('shows Competes one after another, each Continue unlocking once its sequence has played', async () => {
+    it('shows Competes one after another, each closing itself when its countdown ends', async () => {
       jest.useFakeTimers();
       await append([...compete(), ...compete()]);
       expect(popups()).toHaveLength(1);
       const first = popups()[0];
-      expect((first.querySelector('button.continue') as HTMLButtonElement).disabled).toBe(true);
-      jest.advanceTimersByTime(4200);
-      fixture.detectChanges();
-      (first.querySelector('button.continue') as HTMLButtonElement).click();
+      expect(first.querySelector('button.continue')).toBeNull();
+      jest.advanceTimersByTime(4200 + 5000);
       fixture.detectChanges();
       await fixture.whenStable();
       jest.advanceTimersByTime(400);
@@ -868,30 +866,26 @@ describe('GameBoard: the judgment popup', () => {
     expect([...list.querySelectorAll('button')].map((b) => b.textContent!.trim())).not.toContain('Close');
   });
 
-  it('Continue in the popup acknowledges the judgment, once the sequence has played', async () => {
+  it('has no button to close the popup; its countdown acknowledges the judgment once the sequence has played', async () => {
     jest.useFakeTimers();
     const fixture = start('vs-bots');
     await settle(fixture);
-    const button = document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement;
-    expect(button.disabled).toBe(true);
-    jest.advanceTimersByTime(4100);
-    fixture.detectChanges();
-    (document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement).click();
+    expect(document.querySelector('.cdk-overlay-container button.close')).toBeNull();
+    expect(document.querySelector('.cdk-overlay-container mat-dialog-actions button')).toBeNull();
+    jest.advanceTimersByTime(2100 + 2000 + 5000 + 500);
     await settle(fixture);
     expect(gameService.judgmentSettled()).toBe(false);
-    expect(gameService.state()!.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ seatId: 'seat-0', by: 'seat-0', source: 'close' });
+    expect(gameService.state()!.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ seatId: 'seat-0', source: 'timeout' });
   });
 
-  it('in Pass and Play the popup opens over the gate, and Continue works from there', async () => {
+  it('in Pass and Play the popup opens over the gate, and closes itself from there', async () => {
     jest.useFakeTimers();
     const fixture = start('pass-and-play');
     await settle(fixture);
     expect(gameService.revealedSeatId()).toBeNull();
     expect((fixture.nativeElement as HTMLElement).querySelector('app-reveal-gate-overlay')).not.toBeNull();
     expect(popups()).toHaveLength(1);
-    jest.advanceTimersByTime(4100);
-    fixture.detectChanges();
-    (document.querySelector('.cdk-overlay-container button.close') as HTMLButtonElement).click();
+    jest.advanceTimersByTime(2100 + 2000 + 5000 + 500);
     await settle(fixture);
     expect(gameService.judgmentSettled()).toBe(false);
   });
@@ -948,7 +942,7 @@ describe('GameBoard: the judgment popup', () => {
     expect(popups()[0]).not.toBe(first);
   });
 
-  it('a viewer who cannot close sees the popup without a Close button', async () => {
+  it('a viewer whose seat is a bot sees the popup and its countdown', async () => {
     const fixture = start('vs-bots', ['seat-0']);
     await settle(fixture);
     expect(popups()).toHaveLength(1);
