@@ -1,10 +1,10 @@
 import { DestroyRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Action, DECISION_SECONDS, GameState, cardsOverHandLimit } from 'engine';
+import { Action, DECISION_SECONDS, GameState, JUDGMENT_LEAD_IN_MS, cardsOverHandLimit } from 'engine';
 import { DecisionTimer } from './decision-timer.service';
 import { GameService } from './game.service';
 import { cardDefinitionId } from './labels';
-import { settleJudgment } from './settled-judgment.testing';
+import { askToChange, settleJudgment } from './settled-judgment.testing';
 
 // A stand-in for the board's DestroyRef, to attach and later detach.
 function boardLifetime() {
@@ -128,17 +128,55 @@ describe('DecisionTimer', () => {
       throw new Error('no seed gave seat-0 a targeted play');
     });
 
-    it('clocks a settled judgment behind the pass-and-play gate, and closes it by timeout', () => {
+    it('clocks a settled judgment behind the pass-and-play gate, and closes it by timeout once its animation and countdown have played', () => {
       game.startGame(2, 1, 'pass-and-play', [], { judgmentNotice: true });
       settleJudgment(game);
       TestBed.tick();
       expect(game.revealedSeatId()).toBeNull();
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.notice);
-      advance(DECISION_SECONDS.notice - 1);
+      const lead = (JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail) / 1000;
+      advance(lead + DECISION_SECONDS.notice - 1);
       expect(game.judgmentSettled()).toBe(true);
-      advance(1);
+      // The timer checks every 250 ms, and the animation is not a whole number of ticks long.
+      advance(1.25);
       expect(game.judgmentSettled()).toBe(false);
       expect(game.state()!.log.find((e) => e.kind === 'JudgmentAcknowledgedEvent')).toMatchObject({ seatId: 'seat-0', source: 'timeout' });
+    });
+
+    it("shows the full countdown while the animation plays, then counts down; startsInMs says how long is left of the animation", () => {
+      game.startGame(2, 1, 'pass-and-play', [], { judgmentNotice: true });
+      settleJudgment(game, [], 2);
+      TestBed.tick();
+      expect(timer.startsInMs()).toBe(JUDGMENT_LEAD_IN_MS.tail);
+      advance(1);
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.notice);
+      expect(timer.startsInMs()).toBe(JUDGMENT_LEAD_IN_MS.tail - 1_000);
+      advance(1);
+      expect(timer.startsInMs()).toBe(0);
+      advance(1);
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.notice - 1);
+    });
+
+    it("gives a changer's decision 10 seconds after the card has been shown, and declines when they run out", () => {
+      game.startGame(2, 1, 'pass-and-play', [], { judgmentNotice: true });
+      askToChange(game, 'seat-0');
+      game.reveal('seat-0');
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.judgmentChange);
+      expect(timer.startsInMs()).toBe(JUDGMENT_LEAD_IN_MS.head);
+      advance(JUDGMENT_LEAD_IN_MS.head / 1000 + DECISION_SECONDS.judgmentChange - 1);
+      expect(game.state()!.pendingChoice).toBeDefined();
+      advance(1.25);
+      expect(game.state()!.pendingChoice).toBeUndefined();
+      expect(game.state()!.log.some((e) => e.kind === 'JudgmentAcknowledgedEvent')).toBe(false);
+    });
+
+    it("waits behind the pass-and-play gate: a changer's decision is not clocked until their view shows", () => {
+      game.startGame(2, 1, 'pass-and-play', [], { judgmentNotice: true });
+      askToChange(game, 'seat-0');
+      TestBed.tick();
+      expect(game.revealedSeatId()).toBeNull();
+      expect(timer.secondsLeft()).toBeNull();
     });
 
     it('pauses behind the pass-and-play gate', () => {

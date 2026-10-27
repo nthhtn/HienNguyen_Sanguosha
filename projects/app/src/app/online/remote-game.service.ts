@@ -41,6 +41,8 @@ export type BoardGame = Pick<
 export interface LocalClock {
   seatId: string;
   kind: DecisionKind;
+  // When the countdown starts, after the animation the decision follows (this device's time).
+  startsAt: number;
   endsAt: number;
   totalSeconds: number;
   // A bot's move delay, not a clock a person acts on.
@@ -213,7 +215,7 @@ export class RemoteGameService implements BoardGame {
     this._update.set(update);
     this._state.set({ ...update.view, log: this.log, rng: NO_RNG });
     const clock = update.clock;
-    this._clock.set(clock && { seatId: clock.seatId, kind: clock.kind, bot: clock.bot === true, endsAt: Date.now() + (clock.endsAt - clock.serverNow), totalSeconds: clock.totalSeconds });
+    this._clock.set(clock && { seatId: clock.seatId, kind: clock.kind, bot: clock.bot === true, startsAt: Date.now() + (clock.startsAt - clock.serverNow), endsAt: Date.now() + (clock.endsAt - clock.serverNow), totalSeconds: clock.totalSeconds });
   }
 
   private clear(): void {
@@ -232,7 +234,7 @@ export class RemoteGameService implements BoardGame {
 // The server times out with the engine's default, so a half-made pick is not
 // sent ahead.
 @Injectable()
-export class RemoteDecisionClock implements Pick<DecisionTimer, 'secondsLeft' | 'totalSeconds' | 'attach' | 'setTimeoutChoice'> {
+export class RemoteDecisionClock implements Pick<DecisionTimer, 'secondsLeft' | 'totalSeconds' | 'startsInMs' | 'attach' | 'setTimeoutChoice'> {
   private readonly game = inject(RemoteGameService);
   private readonly now = signal(Date.now());
   private readonly own = computed(() => {
@@ -241,9 +243,14 @@ export class RemoteDecisionClock implements Pick<DecisionTimer, 'secondsLeft' | 
     return clock && (clock.seatId === this.game.humanSeatId() || (clock.kind === 'notice' && !clock.bot)) && !this.game.paused() ? clock : null;
   });
 
+  // The countdown holds its full length while the animation it follows plays, as the engine's clock does.
   readonly secondsLeft: Signal<number | null> = computed(() => {
     const clock = this.own();
-    return clock ? Math.max(0, Math.ceil((clock.endsAt - this.now()) / 1000)) : null;
+    return clock ? Math.min(clock.totalSeconds, Math.max(0, Math.ceil((clock.endsAt - this.now()) / 1000))) : null;
+  });
+  readonly startsInMs: Signal<number | null> = computed(() => {
+    const clock = this.own();
+    return clock ? Math.max(0, clock.startsAt - this.now()) : null;
   });
   readonly totalSeconds: Signal<number | null> = computed(() => this.own()?.totalSeconds ?? null);
 

@@ -35,7 +35,7 @@ export function table(view: JudgmentView | undefined, o: { hidden?: boolean; han
 }
 
 export const view = (reader: JudgmentReader, seatId: string, judged: CardInstance, over: Partial<JudgmentView> = {}): JudgmentView => ({
-  seatId, reader, card: judged, changes: [], settled: true, ...over,
+  seatId, reader, card: judged, changes: [], settled: true, rounds: 0, ...over,
 });
 
 export const publicOf = (state: GameState): GameState => redactStateForSeat(state, '');

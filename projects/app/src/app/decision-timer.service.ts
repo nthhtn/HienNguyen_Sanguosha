@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, Signal, computed, effect, inject, signal, untracked } from '@angular/core';
-import { Action, ClockState, DecisionSpec, EMPTY_CLOCK, GameState, clockRemainingMs, defaultActionsFor, describeDecision, expireClock, switchClock } from 'engine';
+import { Action, ClockState, DecisionSpec, EMPTY_CLOCK, GameState, clockRemainingMs, clockStartsInMs, defaultActionsFor, describeDecision, expireClock, switchClock } from 'engine';
 import { GameService } from './game.service';
 
 interface Decision {
@@ -37,6 +37,10 @@ export class DecisionTimer {
   readonly secondsLeft: Signal<number | null> = this._secondsLeft.asReadonly();
   // The current clock's full length, for the countdown bar.
   readonly totalSeconds: Signal<number | null> = this._totalSeconds.asReadonly();
+  private readonly _startsInMs = signal<number | null>(null);
+  // Milliseconds until the countdown starts: a decision that follows an animation waits for it to play
+  // (a judgment's card turning up, its verdict). 0 once it has; null when nothing is timed.
+  readonly startsInMs: Signal<number | null> = this._startsInMs.asReadonly();
 
   // What a person must decide now, or null.
   private readonly decision = computed<Decision | null>(() => {
@@ -46,7 +50,8 @@ export class DecisionTimer {
     if (!state || !seatId) return null;
     // Behind the gate, or a bot to move; a settled judgment is public, so it is clocked behind the gate too.
     if (this.game.revealedSeatId() !== seatId && !state.judgmentView?.settled) return null;
-    const spec = describeDecision(state, seatId, this.game.legalActions(), this.keyOf(state));
+    // A local game always has a person at the table, so the judgment animation is played for them.
+    const spec = describeDecision(state, seatId, this.game.legalActions(), this.keyOf(state), { leadIn: true });
     // Keys are per game, so nothing paused in one game resumes in the next.
     return spec && { spec: { ...spec, key: `${this.game.gameNumber()}:${spec.key}` }, state };
   });
@@ -97,10 +102,12 @@ export class DecisionTimer {
     if (!running) {
       this._secondsLeft.set(null);
       this._totalSeconds.set(null);
+      this._startsInMs.set(null);
       return;
     }
     this._totalSeconds.set(running.totalMs / 1000);
-    this._secondsLeft.set(Math.ceil((running.endsAt - Date.now()) / 1000));
+    this._secondsLeft.set(Math.ceil((clockRemainingMs(this.clock, Date.now()) ?? 0) / 1000));
+    this._startsInMs.set(clockStartsInMs(this.clock, Date.now()));
     this.interval = setInterval(() => this.tick(), 250);
   }
 
@@ -109,6 +116,7 @@ export class DecisionTimer {
     if (leftMs === null) return;
     const left = Math.ceil(leftMs / 1000);
     this._secondsLeft.set(left);
+    this._startsInMs.set(clockStartsInMs(this.clock, Date.now()));
     if (left > 0) return;
     this.stopTicking();
     this.clock = expireClock(this.clock);

@@ -7,6 +7,7 @@ import {
   GameRules,
   GameState,
   createGame,
+  describeDecision,
   getActiveSeatId,
   getLegalActions,
   previewEffect,
@@ -188,15 +189,18 @@ export class GameService {
     this.cancelBotTimer();
     const state = this._state();
     const seatId = state && !state.result ? getActiveSeatId(state) : null;
-    if (!seatId || !this.botSeatIds().includes(seatId)) {
+    if (!state || !seatId || !this.botSeatIds().includes(seatId)) {
       this._botThinkingSeatId.set(null);
       return;
     }
     this._botThinkingSeatId.set(seatId);
+    // A bot that may change a judgment waits for the animation before it too, while a person is still at the table.
+    const personAlive = state.seats.some((s) => !s.eliminated && !this.botSeatIds().includes(s.id));
+    const lead = describeDecision(state, seatId, getLegalActions(state, seatId, this.registry), 'bot', { leadIn: personAlive })?.leadInMs ?? 0;
     this.botTimer = setTimeout(() => {
       this.botTimer = null;
       this.runBot(seatId);
-    }, this.botDelayMs);
+    }, this.botDelayMs + lead);
   }
 
   private runBot(seatId: string): void {
