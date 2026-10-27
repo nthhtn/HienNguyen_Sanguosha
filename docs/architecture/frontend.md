@@ -193,13 +193,18 @@ for every client and for replays; the dialog only shows it.
 (`app-victory-board`), a row of up to six columns: Wei, Shu, Wu, Qun, Winning
 Ambitionist, Losing Ambitionist. A column exists only if a seat belongs to
 it. The pure `victoryColumns(seats, result, youSeatId)` in
-`victory-columns.ts` builds the view, and it never reads `winningSeatIds`:
+`victory-columns.ts` builds the view. Kingdom columns are filled from each
+seat's allegiance and printed Kingdom; `result.winningSeatIds` is read only to
+decide who won (the sole survivor, or a draw when it is empty) and to split
+the Ambitionists:
 
-- a seat's group is `Ambitionist` if its allegiance is `ambitionist`,
-  otherwise its Kingdom (a seat with no decided allegiance sits under its
-  printed Kingdom);
-- the winning group is the winning Kingdom if one is set, the group of the
-  sole survivor otherwise, and none for a draw;
+- a seat's group is its Kingdom, unless its allegiance is `ambitionist`;
+  a seat with no decided allegiance sits under its printed Kingdom;
+- Ambitionists form two groups, Winning Ambitionist (the seat is a winner and
+  the Ambitionist side won) and Losing Ambitionist (every other Ambitionist);
+- the winning group is the winning Kingdom if one is set; otherwise, for a
+  sole survivor, Winning Ambitionist if it is an Ambitionist, else its
+  Kingdom; a draw has none;
 - the headline is one of four kinds: Kingdom wins, "{name} wins as the
   Ambitionist!", a lone survivor with no decided allegiance ("{name} wins!"),
   or a draw.
@@ -216,7 +221,8 @@ Locally the seats come from the full `state` (the game is over, so nothing is
 secret). Online they come from `lastGame.finalSeats`, which
 `RemoteGameService.ending` fills from the live final state; the finished
 online card is 980 px wide, has no title of its own and lets the board supply
-the "Game Over" eyebrow. The server only sends the Generals because
+the "Game Over" eyebrow. A stopped game (`broken` or `outdated`) has no
+result, so the card shows its stopped message and no columns. The server only sends the Generals because
 `redactStateForSeat` lifts them once a result exists.
 
 ### Describing decisions without knowing the rules
