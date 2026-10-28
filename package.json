@@ -20,7 +20,7 @@
     "db:down": "docker compose down",
     "test:db": "TEST_DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5433/postgres jest --selectProjects server",
     "typecheck": "tsc -p projects/protocol/tsconfig.json --noEmit && tsc -p projects/server/tsconfig.json --noEmit && tsc -p projects/bots/tsconfig.json --noEmit && tsc -p projects/sim/tsconfig.json --noEmit && tsc -p projects/app/tsconfig.app.json --noEmit && tsc -p projects/app/tsconfig.spec.json --noEmit && tsc -p projects/engine/tsconfig.spec.json --noEmit && tsc -p projects/content/tsconfig.spec.json --noEmit",
-    "verify": "npm run lint && npm run typecheck && npm run build && npm test",
+    "verify": "npm run lint && npm run typecheck && npm run build && npm test && npm run test:guardrails",
     "typecheck:server": "tsc -p projects/protocol/tsconfig.json --noEmit && tsc -p projects/server/tsconfig.json --noEmit"
   },
   "private": true,

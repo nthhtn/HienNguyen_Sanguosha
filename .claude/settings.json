@@ -14,5 +14,19 @@
       "Bash(git push --force*)",
       "Bash(git push * --force*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/pr-gate.mjs",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
   }
 }
