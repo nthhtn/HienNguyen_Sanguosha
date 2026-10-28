@@ -2,6 +2,12 @@
 
 Date: 2026-10-28. Status: draft for review.
 
+> **Revised 2026-10-28.** The owner dropped the local gate: opening a pull request
+> is no longer blocked by a hook, and CI is a single `verify` job (plus `test-db`)
+> instead of one job per check. Where the text below describes the "local gate",
+> the `PreToolUse` hook or per-check jobs, it was built, reviewed and then removed
+> in this revision. The deny rules, `npm run verify` and the `test-db` job stand.
+
 ## Intent
 
 Today nothing checks a change before it merges. There is no CI, no project

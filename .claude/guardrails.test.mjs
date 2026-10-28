@@ -74,8 +74,3 @@ for (const command of shouldDeny) {
 for (const command of shouldAllow) {
   test(`allows: ${command}`, () => assert.equal(denied(command, rules), false));
 }
-
-test('the PR gate hook is found from any working directory', () => {
-  const hook = settings.hooks.PreToolUse[0].hooks[0];
-  assert.match(hook.command, /\$CLAUDE_PROJECT_DIR/);
-});

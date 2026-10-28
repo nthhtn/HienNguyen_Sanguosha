@@ -69,8 +69,8 @@ game-mode rule, write out its precise rule text first — don't jump straight
 to code for non-trivial mechanics. Trivial additions that just reuse an
 already-specified pattern don't need a fresh round of spec-writing.
 
-`npm run verify` MUST pass before a pull request is opened, and merging is
-human-only: the agent never merges or pushes to `main`. See
+`npm run verify` runs the pre-merge checks and CI runs it on every pull request;
+merging is human-only: the agent never merges or pushes to `main`. See
 `docs/ci-and-guardrails.md`.
 
 ## Presentation layer (Angular)
