@@ -115,11 +115,9 @@ pointing at it. The user's global `~/.claude/settings.json` is not touched.
 
 ## Known issues the builder should handle or flag
 
-- `tsc` over `projects/app/tsconfig.spec.json` already fails: a type error in
-  `selection-dialog.spec.ts` (`cancelLabel` is `string | undefined` where
-  `string` is required). Jest does not typecheck it, so nothing catches it.
-  The typecheck check cannot go in until this is fixed. Fix the spec, not the
-  rule.
+- Spec files had 31 type errors across engine, bots, content, sim and app
+  (Jest does not typecheck). They were fixed in PR #20 before this work, so
+  the typecheck check starts green and covers specs.
 - One full `npx jest` run during the lint cleanup had a single failure that
   did not reproduce in the next three runs. It was not captured. Expect CI to
   expose it; treat a repeat as a real flaky test to fix, not a reason to add
@@ -160,9 +158,8 @@ pointing at it. The user's global `~/.claude/settings.json` is not touched.
   only a `postgres:17` service container (user and password `sanguosha`) and
   `TEST_DATABASE_URL` pointing at it. The local `5433` port is a docker-compose
   detail; CI uses whatever port the service container maps.
-- **Scope and order of the work:** the `selection-dialog.spec.ts` type fix
-  comes first, as its own commit, because the typecheck check cannot pass
-  without it. The flaky test is not hunted before CI lands; CI will show
+- **Scope and order of the work:** the spec type errors are already fixed
+  (PR #20). The flaky test is not hunted before CI lands; CI will show
   whether it repeats. The CSS budget is left alone.
 - **Permissions layout:** the committed project `.claude/settings.json` holds
   the deny rules. Deny beats any allow in the owner's global settings, so
@@ -179,5 +176,4 @@ pointing at it. The user's global `~/.claude/settings.json` is not touched.
 - No retries on flaky tests.
 - The hook fails closed and uses the full `verify`, with a ten-minute timeout.
 - The hook matches `gh pr create` anywhere in a compound command.
-- The type fix ships first as its own commit; the flaky test is left for CI
-  to expose.
+- The flaky test is left for CI to expose.
