@@ -68,7 +68,7 @@ export function cardDefinitionId(state: GameState, cardInstanceId: string): stri
 export function generalDisplayName(generalDefinitionId: string, tr: Translator = englishTranslator): string {
   if (generalDefinitionId === 'hidden') return tr('label.hiddenGeneral');
   const locale = localeOf(tr);
-  // A Kingdom Wars id is never shown as it is: its own name, else its Dynasty Wars id's Title Case.
+  // A Kingdom Wars id is never shown as it is: its own name, else its Identity id's Title Case.
   const kingdomWars = isKingdomWarsGeneralId(generalDefinitionId);
   return (locale === 'en' && !kingdomWars ? undefined : generalDisplayData(generalDefinitionId, locale)?.name) ?? titleCaseId(baseGeneralId(generalDefinitionId));
 }

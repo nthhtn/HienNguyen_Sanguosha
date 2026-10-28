@@ -6,7 +6,7 @@
   "title": "The Savage Queen",
   "maxHp": 4,
   "gender": "female",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Giant Elephant",

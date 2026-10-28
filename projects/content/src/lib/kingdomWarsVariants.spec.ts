@@ -31,22 +31,22 @@ describe('KINGDOM_WARS_VARIANTS', () => {
     }
   });
 
-  it('never reuses a Dynasty Wars skill id, and every id is unique', () => {
-    const dynastyWarsIds = new Set(Object.values(generalsData).flatMap((g) => g.skills.map((s) => skillIdOf(s.name))));
+  it('never reuses an Identity skill id, and every id is unique', () => {
+    const identityIds = new Set(Object.values(generalsData).flatMap((g) => g.skills.map((s) => skillIdOf(s.name))));
     const ids = entries.map((e) => e.variant.id);
-    for (const id of ids) expect(dynastyWarsIds.has(id)).toBe(false);
+    for (const id of ids) expect(identityIds.has(id)).toBe(false);
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
 
 describe('KINGDOM_WARS_VARIANT_BASE', () => {
-  it('maps each variant to an existing Dynasty Wars skill id, and only variants', () => {
+  it('maps each variant to an existing Identity skill id, and only variants', () => {
     const variantIds = new Set(entries.map((e) => e.variant.id));
-    const dynastyWarsIds = new Set([...GENERAL_SKILLS.values()].flatMap((defs) => defs.map((d) => d.id)));
+    const identityIds = new Set([...GENERAL_SKILLS.values()].flatMap((defs) => defs.map((d) => d.id)));
     for (const [variantId, base] of Object.entries(KINGDOM_WARS_VARIANT_BASE)) {
       expect(variantId.startsWith('kingdomWars:')).toBe(true);
       expect(variantIds.has(variantId)).toBe(true);
-      expect(dynastyWarsIds.has(base)).toBe(true);
+      expect(identityIds.has(base)).toBe(true);
     }
   });
 });
@@ -60,7 +60,7 @@ describe('variant bases', () => {
 });
 
 describe('baseSkillId', () => {
-  it('is the Dynasty Wars id of a variant, else the id itself', () => {
+  it('is the Identity id of a variant, else the id itself', () => {
     expect(baseSkillId('kindness')).toBe('kindness');
     expect(baseSkillId('kingdomWars:benevolence')).toBe('kindness');
     expect(baseSkillId('constructor')).toBe('constructor');
@@ -100,7 +100,7 @@ describe('the fifteen skills of the nine slice 3 Generals', () => {
     }
   });
 
-  it('names Ma Teng’s Horsemanship apart from Dynasty Wars’ id', () => {
+  it('names Ma Teng’s Horsemanship apart from Identity’s id', () => {
     expect(KINGDOM_WARS_VARIANTS['ma-teng']['马术']?.id).toBe('kingdomWars:horsemanship');
     expect(abilityName('kingdomWars:horsemanship')).toBe('Horsemanship');
   });

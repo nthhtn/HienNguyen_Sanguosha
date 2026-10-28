@@ -6,7 +6,7 @@
   "title": "The Miracle Physician",
   "maxHp": 3,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "First Aid",

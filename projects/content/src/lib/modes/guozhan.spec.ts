@@ -74,10 +74,10 @@ describe('Guozhan setup and deal', () => {
   it('caps the table at 10 seats however large the pool grows', () => {
     const pool = (n: number) => ({ cards: new Map(), generals: new Map(Array.from({ length: n }, (_, i) => [`g${i}`, {} as never])) });
     expect(MAX_GUOZHAN_SEATS).toBe(10);
-    expect(guozhanMaxSeats(pool(14), 'dynastyWars')).toBe(2);
-    expect(guozhanMaxSeats(pool(50), 'dynastyWars')).toBe(10);
-    expect(guozhanMaxSeats(pool(57), 'dynastyWars')).toBe(10);
-    expect(guozhanMaxSeats(pool(200), 'dynastyWars')).toBe(10);
+    expect(guozhanMaxSeats(pool(14), 'identity')).toBe(2);
+    expect(guozhanMaxSeats(pool(50), 'identity')).toBe(10);
+    expect(guozhanMaxSeats(pool(57), 'identity')).toBe(10);
+    expect(guozhanMaxSeats(pool(200), 'identity')).toBe(10);
   });
 
   it('deals every seat a full starting hand at the largest table, keeping cards in the draw pile', () => {
@@ -122,8 +122,8 @@ describe('Guozhan setup and deal', () => {
       expect(dealt()).toHaveLength(108);
     });
 
-    it('deals the whole Dynasty Wars deck', () => {
-      expect(dealt({ deck: 'dynastyWars' })).toHaveLength(142);
+    it('deals the whole Identity deck', () => {
+      expect(dealt({ deck: 'identity' })).toHaveLength(142);
     });
 
     it('deals the whole Kingdom Wars deck', () => {
@@ -159,8 +159,8 @@ describe('Guozhan setup and deal', () => {
         expect(ids.every((id) => id.startsWith('kingdomWars:'))).toBe(true);
       });
 
-      it('deals no Kingdom Wars General from Dynasty Wars', () => {
-        expect(dealtGenerals({ deck: 'dynastyWars' }).some((id) => id.startsWith('kingdomWars:'))).toBe(false);
+      it('deals no Kingdom Wars General from Identity', () => {
+        expect(dealtGenerals({ deck: 'identity' }).some((id) => id.startsWith('kingdomWars:'))).toBe(false);
       });
 
       it('sizes the pool and the seat limit by deck', () => {
@@ -168,8 +168,8 @@ describe('Guozhan setup and deal', () => {
         expect(guozhanMaxSeats(full, 'kingdomWars')).toBe(10);
       });
 
-      it('Dynasty Wars deal for seed 42 is unchanged', () => {
-        const state = createGame(guozhanMode, full, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 42, { deck: 'dynastyWars' });
+      it('Identity deal for seed 42 is unchanged', () => {
+        const state = createGame(guozhanMode, full, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 42, { deck: 'identity' });
         expect(state.generalSelection!.candidates).toEqual({"seat-a":["deng-ai","zhang-zhao-and-zhang-hong","filler-jiang-wei","filler-deng-ai","zhang-he"],"seat-b":["da-qiao","sun-jian","zhou-tai","xun-yu","zhuge-liang"],"seat-c":["hua-tuo","taishi-ci","liu-shan","yan-liang-and-wen-chou","zuo-ci"],"seat-d":["huang-gai","fire-zhuge-liang","xiao-qiao","zhu-rong","lu-su"]});
       });
     });
@@ -181,9 +181,9 @@ describe('Guozhan setup and deal', () => {
     });
   });
 
-  it('builds the Dynasty Wars deck from exactly each card’s printings, at every table size', () => {
+  it('builds the Identity deck from exactly each card’s printings, at every table size', () => {
     const deckOf = (n: number) =>
-      createGame(guozhanMode, registry, Array.from({ length: n }, (_, i) => `seat-${i}`), 1, { deck: 'dynastyWars' })
+      createGame(guozhanMode, registry, Array.from({ length: n }, (_, i) => `seat-${i}`), 1, { deck: 'identity' })
         .zones.flatMap((z) => z.cards)
         .map((c) => `${c.definitionId} ${c.suit} ${c.rank}`)
         .sort();
@@ -211,7 +211,7 @@ describe('Guozhan setup and deal', () => {
       ...registry,
       cards: new Map([...registry.cards, ['unprinted', { id: 'unprinted', name: 'Unprinted', category: 'basic', play: () => [] }]]),
     };
-    expect(() => createGame(guozhanMode, withUnprinted, ['a', 'b'], 1, { deck: 'dynastyWars' })).toThrow(/unprinted.*no printings/);
+    expect(() => createGame(guozhanMode, withUnprinted, ['a', 'b'], 1, { deck: 'identity' })).toThrow(/unprinted.*no printings/);
   });
 
   it('caps the table at its seat cap and rejects fewer than 2', () => {

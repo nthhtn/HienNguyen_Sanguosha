@@ -5,8 +5,8 @@ import { DECK_IDS, deckFor, deckIdOf, undealtCardIds } from './decks';
 describe('decks', () => {
   const registry = buildContentRegistry();
 
-  it('knows the Dynasty Wars and Kingdom Wars decks', () => {
-    expect([...DECK_IDS]).toEqual(['dynastyWars', 'kingdomWars']);
+  it('knows the Identity and Kingdom Wars decks', () => {
+    expect([...DECK_IDS]).toEqual(['identity', 'kingdomWars']);
   });
 
   it('treats no deck as Kingdom Wars', () => {
@@ -15,7 +15,7 @@ describe('decks', () => {
 
   it('reads a deck id from loosely typed rules, falling back to Kingdom Wars', () => {
     expect(deckIdOf('kingdomWars')).toBe('kingdomWars');
-    expect(deckIdOf('dynastyWars')).toBe('dynastyWars');
+    expect(deckIdOf('identity')).toBe('identity');
     expect(deckIdOf(undefined)).toBe('kingdomWars');
     expect(deckIdOf('bogus')).toBe('kingdomWars');
   });
@@ -24,8 +24,8 @@ describe('decks', () => {
     expect(() => deckFor('nope')).toThrow('Unknown deck "nope"');
   });
 
-  it('lists every playable registry card in the Dynasty Wars deck', () => {
-    const listed = new Set(deckFor('dynastyWars').entries.map((e) => e.cardId));
+  it('lists every playable registry card in the Identity deck', () => {
+    const listed = new Set(deckFor('identity').entries.map((e) => e.cardId));
     const missing = [...registry.cards.values()].filter((c) => !c.outOfDeck && !kingdomWarsCardData(c.id) && !listed.has(c.id)).map((c) => c.id);
     expect(missing).toEqual([]);
   });

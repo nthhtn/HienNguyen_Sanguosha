@@ -6,7 +6,7 @@
   "title": "The Lady with Bow and Arrows",
   "maxHp": 3,
   "gender": "female",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Marriage",

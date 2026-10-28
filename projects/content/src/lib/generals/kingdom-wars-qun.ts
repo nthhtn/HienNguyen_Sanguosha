@@ -18,7 +18,7 @@ import { ask, choiceOf, discardMoves, draw, equipZoneId, handZoneId, isLastMoveO
 // Main or Deputy General, and that General loses all its skills for the rest of the game; the other
 // keeps its. The options are just Main and Deputy, whether or not the killer's Generals are revealed:
 // they name no General and reveal none. A General that already lost its skills is not offered.
-// (Dynasty Wars Heartbroken silences the whole seat.)
+// (Identity Heartbroken silences the whole seat.)
 const SLOT_LABELS = { main: 'Main General', deputy: 'Deputy General' } as const;
 const sorrow: SkillDefinition = {
   id: 'kingdomWars:sorrow',
@@ -448,32 +448,32 @@ const impetusForConflicts: SkillDefinition = {
   },
 };
 
-// Kingdom Wars Qun skills whose rules differ from Dynasty Wars', by General id then the Chinese skill name.
+// Kingdom Wars Qun skills whose rules differ from Identity's, by General id then the Chinese skill name.
 // Each variant's id is `kingdomWars:` plus the id of the Kingdom Wars English skill name.
 export const KINGDOM_WARS_QUN_VARIANTS: Readonly<Record<string, Readonly<Record<string, SkillDefinition>>>> = {
   'diao-chan': {
     // Seed of Animosity: the Duel it makes cannot be answered by Wuxie or Wuxie Kingdom.
     离间: { ...makeSowDiscord(false), id: 'kingdomWars:seed-of-animosity' },
-    // Envious Moon: asked whether to draw 1 at the start of the End Phase (Dynasty Wars: compulsory).
+    // Envious Moon: asked whether to draw 1 at the start of the End Phase (Identity: compulsory).
     闭月: { ...makeEclipseTheMoon(true), id: 'kingdomWars:envious-moon' },
   },
-  // Lightning Strike: the seat he picks is another seat (Dynasty Wars: any living seat, himself included).
+  // Lightning Strike: the seat he picks is another seat (Identity: any living seat, himself included).
   'zhang-jiao': { 雷击: { ...makeLightningStrike(false), id: 'kingdomWars:lightning-strike' } },
-  // Sorrow: the killer loses one General's skills, Main or Deputy as her player chooses (Dynasty Wars: the whole seat).
+  // Sorrow: the killer loses one General's skills, Main or Deputy as her player chooses (Identity: the whole seat).
   'cai-wenji': { 断肠: sorrow },
-  // Insanity Axe: Pan Feng is new to Kingdom Wars (Dynasty Wars has no such General).
+  // Insanity Axe: Pan Feng is new to Kingdom Wars (Identity has no such General).
   'pan-feng': { 狂斧: insanityAxe },
-  // Deathly Counsel, With the Tide: Tian Feng is new to Kingdom Wars (Dynasty Wars has no such General).
+  // Deathly Counsel, With the Tide: Tian Feng is new to Kingdom Wars (Identity has no such General).
   'tian-feng': { 死谏: deathlyCounsel, 随势: withTheTide },
-  // Celebrity, Comity: Kong Rong is new to Kingdom Wars (Dynasty Wars has no such General).
+  // Celebrity, Comity: Kong Rong is new to Kingdom Wars (Identity has no such General).
   'kong-rong': { 名士: celebrity, 礼让: comity },
-  // Horsemanship, Call of Valour: Ma Teng is new to Kingdom Wars (Dynasty Wars has no such General); his Horsemanship is Ma Chao's.
-  // Double Edged: Ji Ling is new to Kingdom Wars (Dynasty Wars has no such General).
+  // Horsemanship, Call of Valour: Ma Teng is new to Kingdom Wars (Identity has no such General); his Horsemanship is Ma Chao's.
+  // Double Edged: Ji Ling is new to Kingdom Wars (Identity has no such General).
   'ji-ling': { 双刃: doubleEdged },
   'ma-teng': { 马术: { ...horsemanship, id: 'kingdomWars:horsemanship' }, 雄异: callOfValour },
-  // Behind the Curtain: he can be chosen by black Tools, which are cancelled for him (Dynasty Wars: can't be chosen).
-  // Descend into Chaos: each seat must pick among the nearest seats (Dynasty Wars: any seat in its attack range).
+  // Behind the Curtain: he can be chosen by black Tools, which are cancelled for him (Identity: can't be chosen).
+  // Descend into Chaos: each seat must pick among the nearest seats (Identity: any seat in its attack range).
   'jia-xu': { 帷幕: { ...makeCurtain(true), id: 'kingdomWars:behind-the-curtain' }, 乱武: { ...makeUpheaval(true), id: 'kingdomWars:descend-into-chaos' } },
-  // Femme Fatale, Impetus for Conflicts: Zou Shi is new to Kingdom Wars (Dynasty Wars has no such General).
+  // Femme Fatale, Impetus for Conflicts: Zou Shi is new to Kingdom Wars (Identity has no such General).
   'zou-shi': { 祸水: femmeFatale, 倾城: impetusForConflicts },
 };

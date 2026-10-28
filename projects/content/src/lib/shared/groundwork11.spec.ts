@@ -80,7 +80,7 @@ describe('formSkillOptions', () => {
 
 describe('Guozhan setup', () => {
   const real = buildContentRegistry();
-  const game = createGame(guozhanMode, real, ['seat-0', 'seat-1', 'seat-2'], 7, { deck: 'dynastyWars' });
+  const game = createGame(guozhanMode, real, ['seat-0', 'seat-1', 'seat-2'], 7, { deck: 'identity' });
 
   it('every seat has a stash zone, and the spare pool is exactly the Generals nobody was dealt', () => {
     expect(game.seats.every((s) => s.stash?.zoneId === `${s.id}:stash`)).toBe(true);

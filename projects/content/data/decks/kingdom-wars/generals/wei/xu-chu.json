@@ -6,7 +6,7 @@
   "title": "Insane Tiger",
   "maxHp": 4,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Bare-Chested",

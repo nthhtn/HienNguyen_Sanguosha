@@ -6,7 +6,7 @@
   "title": "The Lone Dame in Foreign Lands",
   "maxHp": 3,
   "gender": "female",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Dirge",

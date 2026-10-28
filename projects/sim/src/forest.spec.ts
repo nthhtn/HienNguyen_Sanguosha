@@ -25,7 +25,7 @@ describe('simulated games with the base, Wind, Fire and Forest Generals (49)', (
     for (const seats of [2, 5, 8]) {
       for (let i = 0; i < 10; i++) {
         seed++;
-        const initial = createGame(guozhanMode, registry, Array.from({ length: seats }, (_, n) => `seat-${n}`), seed, { deck: 'dynastyWars' });
+        const initial = createGame(guozhanMode, registry, Array.from({ length: seats }, (_, n) => `seat-${n}`), seed, { deck: 'identity' });
         for (const [bot, maxActions] of [['random', 5000], ['rule-based', 20000]] as const) {
           const resting = new Set<string>();
           const { finalState } = runGame(initial, ctx, seed * 7 + 1, maxActions, bot, (s) => checkRestingState(s).forEach((v) => resting.add(v)));
@@ -45,7 +45,7 @@ describe('simulated games with the base, Wind, Fire and Forest Generals (49)', (
       const expected = (registry.generals.get(generalId)?.skills ?? []).filter((s) => !s.lord).map((s) => s.id).filter((id) => !MODIFIERS_ONLY.has(id));
       const fired = new Set<string>();
       for (let seed = 1; seed <= 80 && expected.some((id) => !fired.has(id)); seed++) {
-        const initial = withForcedPairing(createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed, { deck: 'dynastyWars' }), 'seat-0', [generalId, partnerOf(generalId, registry, POOL)]);
+        const initial = withForcedPairing(createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed, { deck: 'identity' }), 'seat-0', [generalId, partnerOf(generalId, registry, POOL)]);
         const { finalState } = runGame(initial, ctx, seed * 13 + 5, 20000, 'rule-based');
         checked(finalState, `${generalId} seed ${seed}`, failures);
         firedSkills(finalState, 'seat-0').forEach((id) => fired.add(id));

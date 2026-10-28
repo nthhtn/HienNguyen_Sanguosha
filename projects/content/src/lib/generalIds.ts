@@ -1,4 +1,4 @@
-// The Kingdom Wars deck's Generals share the one registry with Dynasty Wars'; their ids overlap, so they are
+// The Kingdom Wars deck's Generals share the one registry with Identity's; their ids overlap, so they are
 // registered under a prefix (`kingdomWars:liu-bei`).
 export const KINGDOM_WARS_GENERAL_PREFIX = 'kingdomWars:';
 

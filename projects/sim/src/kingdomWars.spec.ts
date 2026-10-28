@@ -50,10 +50,10 @@ describe('simulation: Kingdom Wars deck games with bots', () => {
     expect(vanillaGames).toBe(0);
   }, 300_000);
 
-  it('seats no kingdomWars: General in a seeded Dynasty Wars game', () => {
+  it('seats no kingdomWars: General in a seeded Identity game', () => {
     const registry = buildContentRegistry();
     for (const seed of [1, 2, 3]) {
-      const state = createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], seed, { deck: 'dynastyWars' });
+      const state = createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], seed, { deck: 'identity' });
       const ids = Object.values(state.generalSelection?.candidates ?? {}).flat();
       expect(ids.length).toBeGreaterThan(0);
       expect(ids.filter((id) => id.startsWith('kingdomWars:'))).toEqual([]);
@@ -73,7 +73,7 @@ describe('simulation: Kingdom Wars deck games with bots', () => {
       const generalId = `kingdomWars:${name}`;
       const skillIds = (registry.generals.get(generalId)?.skills ?? []).map((s) => s.id);
       const games: Record<string, number> = Object.fromEntries(skillIds.map((id) => [id, 0]));
-      // Dynasty Wars run keeps the suite fast; SIM_VERBOSE=1 prints the usage table and raises the seeds so every variant is seen firing.
+      // Identity run keeps the suite fast; SIM_VERBOSE=1 prints the usage table and raises the seeds so every variant is seen firing.
       const SEEDS = process.env['SIM_VERBOSE'] ? 12 : 4;
       for (let seed = 1; seed <= SEEDS; seed++) {
         const base = createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed * 17 + 3, { deck: 'kingdomWars' });

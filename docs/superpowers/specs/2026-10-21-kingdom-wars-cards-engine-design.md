@@ -7,7 +7,7 @@ cards (done 2026-10-21).
 
 ## Intent and why
 
-The Kingdom Wars deck lists six cards Dynasty Wars does not have: Wuxie Kingdom,
+The Kingdom Wars deck lists six cards Identity does not have: Wuxie Kingdom,
 Amass, Ascertain, Ally Far Attack Near (Tools) and Six Swords of Wu, Trident
 Glaive (Weapons). Today the deal leaves them out (`undealtCardIds`), so an
 Kingdom Wars game has 98 cards instead of the deck's 108 and the Wiki marks them
@@ -22,7 +22,7 @@ equally important.
 - The Wiki marks them In game (it already derives that from the registry).
 - Names show correctly in the game UI in English and Vietnamese, with the card
   art already in the assets.
-- Dynasty Wars games are unchanged: none of the six is in the Dynasty Wars deck.
+- Identity games are unchanged: none of the six is in the Identity deck.
 
 ## Non-goals and anti-goals
 
@@ -30,7 +30,7 @@ equally important.
 - Bots need only to play legally and not crash on the new cards; smart use is
   not required (my call; the bots layer is not part of this request).
 - Anti-goals: a central switch over card ids; rule logic in Angular
-  components; Dynasty Wars' behaviour changing; Wuxie Kingdom cancelling what it
+  components; Identity's behaviour changing; Wuxie Kingdom cancelling what it
   may not.
 
 ## Names
@@ -154,7 +154,7 @@ time, and only after a Slash that dealt damage (not Duel or other damage).
   game state stays plain serializable data.
 - UI text follows the UI text style; new Vietnamese text is draft and
   `review.json` is untouched.
-- Dynasty Wars' tests and behaviour keep passing. The "seven cards not in the
+- Identity's tests and behaviour keep passing. The "seven cards not in the
   game" Wiki test and the 98-card deal tests change to match (only Fire Fan
   remains undealt).
 

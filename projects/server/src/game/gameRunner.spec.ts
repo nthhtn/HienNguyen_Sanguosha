@@ -14,8 +14,8 @@ import { ManualScheduler } from './testing';
 const T0 = Date.parse('2026-10-13T12:00:00.000Z');
 const GAME_ID = 'aaaaaaaa-0000-4000-8000-000000000001';
 const SEED = 1234;
-// The seeded scenarios below were written against a Dynasty Wars deal.
-const RULES = { deck: 'dynastyWars' };
+// The seeded scenarios below were written against an Identity deal.
+const RULES = { deck: 'identity' };
 const registry = buildContentRegistry();
 const ctx = engineContext(registry);
 // The opening state with every seat's first legal choice made: a game in its first turn.

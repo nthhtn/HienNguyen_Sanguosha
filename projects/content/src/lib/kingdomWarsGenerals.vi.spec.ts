@@ -55,17 +55,17 @@ describe('the Vietnamese Kingdom Wars Generals', () => {
     expect(kingdomWarsGeneralDisplayData('dong-zhuo', 'vi')).toBeNull();
   });
 
-  it('uses its own text, not Dynasty Wars’, for a shared id whose English differs', () => {
+  it('uses its own text, not Identity’s, for a shared id whose English differs', () => {
     const alt = kingdomWarsGeneralDisplayData('cao-cao', 'vi')!;
-    const aDynastyWars = generalTranslations('vi')['cao-cao'];
+    const anIdentity = generalTranslations('vi')['cao-cao'];
     const differing = kingdomWarsGeneralRecords().find((g) => g.id === 'cao-cao')!.skills.filter((s, i) => s.text !== generalsData['cao-cao'].skills[i]?.text);
     expect(differing.length).toBeGreaterThan(0);
     const i = kingdomWarsGeneralRecords().find((g) => g.id === 'cao-cao')!.skills.indexOf(differing[0]);
-    const dynastyWarsText = aDynastyWars.skills?.[skillIdOf(generalsData['cao-cao'].skills[i].name)]?.text;
-    expect(alt.skills[i].text).not.toBe(dynastyWarsText);
+    const identityText = anIdentity.skills?.[skillIdOf(generalsData['cao-cao'].skills[i].name)]?.text;
+    expect(alt.skills[i].text).not.toBe(identityText);
   });
 
-  it('names a General like Dynasty Wars does when Dynasty Wars has the same one', () => {
+  it('names a General like Identity does when Identity has the same one', () => {
     const found: string[] = [];
     for (const g of kingdomWarsGeneralRecords()) {
       const d = generalsData[g.id];

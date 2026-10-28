@@ -31,7 +31,7 @@ const AMBITIONIST_KILL_DRAW = 3;
 export const MAX_GUOZHAN_SEATS = 10;
 
 // The sorted ids of the Generals a deck deals from: the `kingdomWars:` ones for Kingdom Wars, every other id
-// (fillers included) for Dynasty Wars.
+// (fillers included) for Identity.
 export function generalPool(registry: ContentRegistry, deck: DeckId): string[] {
   return [...registry.generals.keys()].filter((id) => isKingdomWarsGeneralId(id) === (deck === 'kingdomWars')).sort();
 }
@@ -75,9 +75,9 @@ function buildDeckSpec(registry: ContentRegistry, deck: DeckDefinition) {
     // A card marked outOfDeck (made only by a skill) is never dealt.
     if (registry.cards.get(cardId)?.outOfDeck) return [];
     const entry = entries.get(cardId);
-    // The Dynasty Wars deck holds every playable card; other decks may hold fewer.
-    if (!entry && deck.id !== 'dynastyWars') return [];
-    // A card only the Kingdom Wars deck has is no part of Dynasty Wars.
+    // The Identity deck holds every playable card; other decks may hold fewer.
+    if (!entry && deck.id !== 'identity') return [];
+    // A card only the Kingdom Wars deck has is no part of Identity.
     if (!entry && kingdomWarsCardData(cardId)) return [];
     // A card with no printings would silently never be dealt.
     if (!entry || entry.printings.length === 0) throw new Error(`Card "${cardId}" has no printings in the data, so it cannot be put in the deck`);
@@ -252,7 +252,7 @@ export const guozhanMode: GameModeDefinition = {
 
     const state: GameState = {
       seats,
-      // Dynasty Wars names by seat position; the application layer may rename players.
+      // Identity names by seat position; the application layer may rename players.
       players: seatIds.map((id, index) => ({ id: `player-${id}`, seatId: id, kind: 'bot' as const, name: `Seat ${index}` })),
       turn: { turnNumber: 1, ownerSeatId: seatIds[0], extraTurnStack: [] },
       phase: 'GeneralSelection',

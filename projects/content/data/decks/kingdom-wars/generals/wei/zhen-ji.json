@@ -6,7 +6,7 @@
   "title": "The ill-Fated Beauty",
   "maxHp": 3,
   "gender": "female",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Stunning Beauty",

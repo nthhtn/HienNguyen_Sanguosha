@@ -85,7 +85,7 @@ describe('the display functions by locale', () => {
     expect(stepSelectionText('compete-user', 'vi')).toEqual({ prompt: 'Chọn một lá bài trên tay để đấu điểm', confirm: 'Đấu điểm' });
   });
 
-  it('the Kingdom Wars variants show the same prompts as their Dynasty Wars skill', () => {
+  it('the Kingdom Wars variants show the same prompts as their Identity skill', () => {
     for (const locale of ['en', 'vi']) {
       expect(choicePromptText('kingdomWars:descend-into-chaos', locale)).toBe(choicePromptText('upheaval', locale));
       expect(choicePromptText('kingdomWars:lightning-strike', locale)).toBe(choicePromptText('lightning-strike', locale));

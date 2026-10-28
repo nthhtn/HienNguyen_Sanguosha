@@ -14,8 +14,8 @@
 
 ## Global Constraints
 
-- Dynasty Wars games must not change: all existing specs stay green, and a Dynasty Wars simulation is unchanged. Engine additions are optional fields or new effects that Dynasty Wars never produces.
-- Variant ids are `kingdomWars:` + `skillIdOf(English skill name in the Kingdom Wars record)`; ids are unique across the registry (`findSkill`) and never equal a Dynasty Wars skill id. Ma Teng's Horsemanship is therefore `kingdomWars:horsemanship` (same modifiers as Dynasty Wars' `horsemanship`, which it lists as its base).
+- Identity games must not change: all existing specs stay green, and an Identity simulation is unchanged. Engine additions are optional fields or new effects that Identity never produces.
+- Variant ids are `kingdomWars:` + `skillIdOf(English skill name in the Kingdom Wars record)`; ids are unique across the registry (`findSkill`) and never equal an Identity skill id. Ma Teng's Horsemanship is therefore `kingdomWars:horsemanship` (same modifiers as Identity's `horsemanship`, which it lists as its base).
 - No branching on the deck or on General ids inside a skill; no central switch; variants register in data.
 - "Lord", never "Ruler". No Lord skills.
 - Anything the rules file calls "may" is asked each time; compulsory skills ask only to reveal a hidden General first (existing engine behaviour).
@@ -44,7 +44,7 @@
 
 - [ ] **Step 1: Failing tests** in `kingdom.spec.ts`: a seat with `kingdom: 'Wei'` and both Generals `revealed: false` has `exposedKingdom` null and is not in `sameKingdomSeatIds` of its Wei neighbour; revealing the deputy only makes it `'Wei'`; a dead seat is excluded from `exposedKingdomCounts`.
 - [ ] **Step 2: Run** `npx jest projects/content/src/lib/shared/kingdom.spec.ts`; confirm the new tests FAIL (the current helpers read `seat.kingdom` alone; the existing spec only models a hidden seat as `kingdom: 'hidden'`).
-- [ ] **Step 3: Implement.** Existing Dynasty Wars consumers of these helpers are Amass, Wuxie Kingdom, Ally Far Attack Near and Six Swords of Wu. If any of their specs fails after the fix, STOP and report which: that is a Dynasty Wars behaviour change the user must rule on, not a fix to slide in.
+- [ ] **Step 3: Implement.** Existing Identity consumers of these helpers are Amass, Wuxie Kingdom, Ally Far Attack Near and Six Swords of Wu. If any of their specs fails after the fix, STOP and report which: that is an Identity behaviour change the user must rule on, not a fix to slide in.
 - [ ] **Step 4: Run** `npm test`; expect PASS.
 - [ ] **Step 5: Commit** `fix(content): a Kingdom counts only while the seat is exposed`.
 
@@ -57,7 +57,7 @@
 - [ ] **Step 1: Failing test** in `dying.spec.ts`: damage from seat B that drops A to 0 emits `SeatDyingEvent` with `seatId: 'a'` and `killerSeatId: 'b'`; HP loss with no source emits it without `killerSeatId`.
 - [ ] **Step 2: Run** the spec; expect FAIL.
 - [ ] **Step 3: Implement** the optional field and its copy.
-- [ ] **Step 4: Run** `npm test`; expect PASS (log snapshots in Dynasty Wars specs must not change: the field is absent when `DyingEffect` has none).
+- [ ] **Step 4: Run** `npm test`; expect PASS (log snapshots in Identity specs must not change: the field is absent when `DyingEffect` has none).
 - [ ] **Step 5: Commit** `feat(engine): SeatDyingEvent names the damage source`.
 
 ### Task 3: Hide a General and block reveals
@@ -65,7 +65,7 @@
 **Files:** Modify `projects/engine/src/lib/pipeline/effects.ts` and `events.ts` (`HideGeneralEffect`, `GeneralHiddenEvent`), `registry/types.ts` (`SkillDefinition.blocksOtherReveals?: true`), `skills/generalSkills.ts` (`revealBlockedFor`), the reveal paths in `rules/legality.ts` and `pipeline/resolve.ts`, `domain/redact.ts` if it needs to learn the event; the app's and bots' event renderers (grep `GeneralRevealedEvent` and mirror each use for `GeneralHiddenEvent`); Test `pipeline/reveal.spec.ts`, `skills/generalSkills.spec.ts`, `domain/redact.spec.ts`.
 
 **Interfaces:**
-- Produces: `{ kind: 'HideGeneralEffect'; seatId: string; slot: 'main' | 'deputy' }` sets that General's `revealed` to `false` (no-op if already hidden), logs `GeneralHiddenEvent { kind; seatId; slot }`, and gives no reveal bonus later when it is exposed again unless Dynasty Wars' bonus rule says a first reveal only (read how the bonus is decided and keep a re-reveal from paying it twice).
+- Produces: `{ kind: 'HideGeneralEffect'; seatId: string; slot: 'main' | 'deputy' }` sets that General's `revealed` to `false` (no-op if already hidden), logs `GeneralHiddenEvent { kind; seatId; slot }`, and gives no reveal bonus later when it is exposed again unless Identity's bonus rule says a first reveal only (read how the bonus is decided and keep a re-reveal from paying it twice).
 - Produces: `revealBlockedFor(state: GameState, seatId: string, registry: ContentRegistry): boolean`: true when `state.turn.ownerSeatId !== seatId` and the turn owner holds an in-play, already revealed skill with `blocksOtherReveals`. Every path that reveals a General by a seat's choice or an ask consults it: the Start-window reveal action, `needsReveal` skill and conversion uses (they are not offered), trigger-ask reveals (the skill is skipped, not asked), and reveal-on-use of a card (Roar). A death's reveal (`onDeath`) is never blocked.
 - Hidden Generals' skills drop out of `skillsInPlay` the same way they already do for a hidden General (no change needed beyond `revealed: false`).
 
@@ -146,7 +146,7 @@
 **Files:** Modify `generals/kingdom-wars-qun.ts`; Test `generals/kingdom-wars-qun.spec.ts`.
 
 **Interfaces:** Registered under `'kong-rong'`: `名士` → `kingdomWars:celebrity`, `礼让` → `kingdomWars:comity`.
-- Celebrity (compulsory): `before:DamageEffect` (see `forest.ts:108`) when the target is Kong Rong and `damage.source` is a seat with at least one General not revealed: amount reduced by 1 to a minimum of 0 (a 0-damage effect resolves as no damage, as Dynasty Wars' other reducers do). No source: no change.
+- Celebrity (compulsory): `before:DamageEffect` (see `forest.ts:108`) when the target is Kong Rong and `damage.source` is a seat with at least one General not revealed: amount reduced by 1 to a minimum of 0 (a 0-damage effect resolves as no damage, as Identity's other reducers do). No source: no change.
 - Comity: asked when cards he discards or loses from hand or equipment area reach the discard pile (the `before:DiscardZoneEffect` pattern at `forest.ts:58`, and the cards of a discard selection); not cards he used that resolve into the discard pile. He may give those cards to another living seat, which receives them in hand; one ask per instance (one effect, however many cards). Texts as in Task 4.
 
 - [ ] **Step 1: Failing tests:** Celebrity: a Sha from a seat with a hidden Deputy deals 0 (or 1 less from 2); from a fully revealed seat unchanged; damage with no source unchanged; a seat's own hidden state is not the test. Comity: his discard of 2 cards in the Discard Phase asks once and giving them puts both in the chosen seat's hand; declining leaves them in the discard pile; a Sha he plays is not asked; losing a worn card to Dismantle asks (the card is lost from his equipment to the discard pile); with every other seat dead nothing is asked.
@@ -171,7 +171,7 @@
 
 **Files:** Modify `generals/kingdom-wars-qun.ts`, `shared/compete.ts` only if a result step needs more data; Test `generals/kingdom-wars-qun.spec.ts`.
 
-**Interfaces:** Consumes `competeStart`/`competeStep` (Points Duel: the engine calls it competing), `PlayContext.free` (a free Sha never counts toward a limit or spends Wine; see Green Dragon Blade's follow-up Sha). Registered under `'ji-ling'`: `双刃` → `kingdomWars:double-edged`: at the start of his Play Phase (`after:PhaseChangedEvent`, as the other Play-Phase-start skills), asked; he picks another living seat with a hand card and competes. On a win, he picks the loser or, when the loser is exposed, another living exposed seat of the loser's Kingdom (`sameKingdomSeatIds`), and a Sha is played at it with `free: true`, no card, no range limit, all Sha rules applying. On a loss or a tie, his Play Phase ends (the engine's skip-to-next-phase path used by other Play Phase enders; find it by grepping `skipPlay`/`SkipNextEffect`). The competing cards are discarded as in Dynasty Wars. Texts as in Task 4.
+**Interfaces:** Consumes `competeStart`/`competeStep` (Points Duel: the engine calls it competing), `PlayContext.free` (a free Sha never counts toward a limit or spends Wine; see Green Dragon Blade's follow-up Sha). Registered under `'ji-ling'`: `双刃` → `kingdomWars:double-edged`: at the start of his Play Phase (`after:PhaseChangedEvent`, as the other Play-Phase-start skills), asked; he picks another living seat with a hand card and competes. On a win, he picks the loser or, when the loser is exposed, another living exposed seat of the loser's Kingdom (`sameKingdomSeatIds`), and a Sha is played at it with `free: true`, no card, no range limit, all Sha rules applying. On a loss or a tie, his Play Phase ends (the engine's skip-to-next-phase path used by other Play Phase enders; find it by grepping `skipPlay`/`SkipNextEffect`). The competing cards are discarded as in Identity. Texts as in Task 4.
 
 - [ ] **Step 1: Failing tests:** a win aimed at a seat 3 away still deals Sha damage when it has no Shan; a Shan answers it; Armor (Black Shield / Eight Trigrams) applies; the winner then plays his normal Sha and the one-Sha limit is intact (he still has his full Sha count); a win against an exposed seat offers its Kingdom-mates as other targets and none for a hidden loser; a tie ends his Play Phase; a loss ends it; with no seat holding a hand card he is not asked; both competing cards are discarded.
 - [ ] **Step 2: Run** the spec; expect FAIL.
@@ -198,10 +198,10 @@
 
 **Files:** Modify `projects/sim/src/kingdomWars.spec.ts`; Test `wikiKingdomWarsGenerals.spec.ts`, `kingdomWarsVariants.spec.ts`, `kingdomWarsGenerals.vi.spec.ts`.
 
-- [ ] **Step 1: Failing tests:** every skill of the 9 Generals reads `worksAsKingdomWars` (Wiki), none `missing`; every variant id satisfies the `kingdomWarsVariants.spec.ts` rules (`kingdomWars:` + skillIdOf of the English name, unique, not a Dynasty Wars id); each new variant has an English and a Vietnamese name (`abilityName`), and the Vietnamese ones count as draft in `npm run i18n:status`. Sim: a seeded Kingdom Wars game forces a table with each of the 9 as Main (the `forcedPairing.ts` helpers from slice 2's sim spec) and plays to a result with bots: no engine error and no leak.
+- [ ] **Step 1: Failing tests:** every skill of the 9 Generals reads `worksAsKingdomWars` (Wiki), none `missing`; every variant id satisfies the `kingdomWarsVariants.spec.ts` rules (`kingdomWars:` + skillIdOf of the English name, unique, not an Identity id); each new variant has an English and a Vietnamese name (`abilityName`), and the Vietnamese ones count as draft in `npm run i18n:status`. Sim: a seeded Kingdom Wars game forces a table with each of the 9 as Main (the `forcedPairing.ts` helpers from slice 2's sim spec) and plays to a result with bots: no engine error and no leak.
 - [ ] **Step 2: Run** `npx jest projects/sim/src/kingdomWars.spec.ts projects/content/src/lib` ; expect FAIL.
 - [ ] **Step 3: Implement** the fixtures only; fix any engine error the sim shows in the owning skill, with a test there. Bots only need to play legally.
-- [ ] **Step 4: Run** `npm test`, `npm run typecheck:server`, `npm run build`, `npm run i18n:status`; expect all green and no missing keys. Then run a Dynasty Wars simulation and confirm its result is unchanged from `main`.
+- [ ] **Step 4: Run** `npm test`, `npm run typecheck:server`, `npm run build`, `npm run i18n:status`; expect all green and no missing keys. Then run an Identity simulation and confirm its result is unchanged from `main`.
 - [ ] **Step 5: Commit** `test: Kingdom Wars new Generals end to end`.
 
 ---
@@ -209,5 +209,5 @@
 ## Self-review notes
 
 - Spec coverage (slice 3): all 9 Generals and 15 skills have a task (Ma Teng's 2, Zou Shi's 2, Ding Feng's 2, Tian Feng's 2, Kong Rong's 2, Gan Fu Ren's 2, Yue Jin's, Ji Ling's, Pan Feng's one each = 15). The engine mechanics the spec names (Zou Shi's blocking and hiding, Ji Ling's Sha from a Points Duel, Tian Feng's Kingdom-and-dying trigger, Ma Teng's single use tied to Kingdom size, Ding Feng's distance of 1) are Tasks 3, 11, 2 and 8, 10 and 6; Task 1 is the Kingdom foundation they share.
-- Open risk, found while planning: `exposedKingdom` reads `seat.kingdom` without checking exposure, and the engine stores the true Kingdom from General selection. If Task 1's test fails on current code, Dynasty Wars' Amass, Wuxie Kingdom, Ally Far Attack Near and Six Swords of Wu already read hidden seats' Kingdoms; that is reported to the user before the fix lands.
+- Open risk, found while planning: `exposedKingdom` reads `seat.kingdom` without checking exposure, and the engine stores the true Kingdom from General selection. If Task 1's test fails on current code, Identity's Amass, Wuxie Kingdom, Ally Far Attack Near and Six Swords of Wu already read hidden seats' Kingdoms; that is reported to the user before the fix lands.
 - Not in this slice: wording-only audit (slice 4), bot intelligence for the new skills.

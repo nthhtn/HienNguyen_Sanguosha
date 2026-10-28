@@ -80,7 +80,7 @@ function lastOfInstance(state: GameState, event: CardMovedEvent, ownerSeatId: st
   return true;
 }
 
-// Armed Consorts. 'per-card-compulsory' (Dynasty Wars, compulsory): each time a card leaves your equipment
+// Armed Consorts. 'per-card-compulsory' (Identity, compulsory): each time a card leaves your equipment
 // (replaced, taken, discarded, or used through a conversion), you draw 2. 'per-instance-may'
 // (Kingdom Wars Warrior Lady, may): once per instance of cards leaving your equipment (see lastOfInstance),
 // you may draw 2, asked each time.
@@ -188,7 +188,7 @@ export const batteredBody: SkillDefinition = {
 };
 
 // Reconsider (active, once per turn): discard any number of cards (at least 1)
-// from your hand or equipment, then draw that many. Dynasty Wars has no limit; the
+// from your hand or equipment, then draw that many. Identity has no limit; the
 // Kingdom Wars Balance of Power variant caps the cards discarded at `limit(state, seatId)`.
 export const makeReconsider = (limit?: (state: GameState, seatId: string) => number): SkillDefinition => ({
   id: 'reconsider',

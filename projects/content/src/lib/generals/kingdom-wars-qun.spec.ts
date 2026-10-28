@@ -28,7 +28,7 @@ describe('Kingdom Wars Diao Chan, Seed of Animosity', () => {
     expect(hp(h.pass(s), 'seat-b')).toBe(3);
   });
 
-  it('Dynasty Wars Diao Chan offers Wuxie on the same Duel', () => {
+  it('Identity Diao Chan offers Wuxie on the same Duel', () => {
     const s = duelled('diao-chan', 'sow-discord');
     expect(s.pendingResponse?.reason).toMatchObject({ kind: 'wuxie' });
     expect(s.log.find((e) => e.kind === 'CardPlayedEvent')).toMatchObject({ card: { as: 'duel' } });
@@ -65,7 +65,7 @@ describe('Kingdom Wars Diao Chan, Envious Moon', () => {
     expect(handIds(h.decline(end('kingdomWars:diao-chan')), 'seat-a')).toEqual([]);
   });
 
-  it('Dynasty Wars Diao Chan draws 1 without asking', () => {
+  it('Identity Diao Chan draws 1 without asking', () => {
     const s = end('diao-chan');
     expect(askedAbout(s)).toBeNull();
     expect(handIds(s, 'seat-a')).toEqual(['d1']);
@@ -89,7 +89,7 @@ describe('Kingdom Wars Jia Xu, Behind the Curtain', () => {
   const noEffect = (s: GameState, cardId: string) =>
     s.log.filter((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === id && e.outcome === 'no-effect' && e.targetSeatId === 'seat-b' && e.cardId === cardId);
 
-  it('can be chosen by black Tools (Dynasty Wars: only by red ones)', () => {
+  it('can be chosen by black Tools (Identity: only by red ones)', () => {
     expect(aimed(tools('jia-xu'))).toEqual(['rd']);
     expect(aimed(tools('kingdomWars:jia-xu'))).toEqual(['bl', 'rd', 'bc']);
   });
@@ -168,7 +168,7 @@ describe('Kingdom Wars Cai Wenji, Sorrow', () => {
     expect(slots(s)).toEqual(before.filter((x) => x.startsWith('main:')));
   });
 
-  it('Dynasty Wars Cai Wenji, in the same scene, asks nothing and silences the whole seat', () => {
+  it('Identity Cai Wenji, in the same scene, asks nothing and silences the whole seat', () => {
     const s = killed('cai-wenji');
     expect(s.pendingChoice).toBeUndefined();
     expect(seat(s, 'seat-c').silenced).toBe(true);
@@ -209,7 +209,7 @@ describe('Kingdom Wars Cai Wenji, Sorrow', () => {
     expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['deputy']);
   });
 
-  it('Dirge is Dynasty Wars’ Lament', () => {
+  it('Dirge is Identity’s Lament', () => {
     expect(readyKingdomWarsSkills(kingdomWarsGeneralRecords().find((g) => g.id === 'cai-wenji')!).map((x) => x.id)).toEqual(['lament', 'kingdomWars:sorrow']);
   });
 });
@@ -391,7 +391,7 @@ describe('Kingdom Wars Pan Feng, Insanity Axe', () => {
     expect(used.pendingChoice!.options.map((o) => o.id)).toEqual(['cb']);
   });
 
-  it('a Dynasty Wars General has no such skill', () => {
+  it('an Identity General has no such skill', () => {
     expect(askedAbout(strike([crossbow], [], 'filler-xu-huang'))).toBeNull();
   });
 });
@@ -1235,7 +1235,7 @@ describe('Kingdom Wars Jia Xu, Descend into Chaos', () => {
     expect(s.seats[0].marks).toEqual({ 'upheaval-used': 1 });
   });
 
-  it('Dynasty Wars Jia Xu offers every seat in range on the same table', () => {
+  it('Identity Jia Xu offers every seat in range on the same table', () => {
     const s = start('jia-xu', 'upheaval', five, { seats: 5 });
     expect(optionsOfB(s)).toEqual(['seat-c', 'seat-d', 'seat-e', 'seat-a', 'pass']);
   });
@@ -1246,7 +1246,7 @@ describe('Kingdom Wars Jia Xu, Descend into Chaos', () => {
     expect(optionsOfB(s)).toEqual(['seat-a', 'pass']);
   });
 
-  it('skips a nearest seat a Sha cannot target (empty-handed Dynasty Wars Zhuge Liang) for the next nearest', () => {
+  it('skips a nearest seat a Sha cannot target (empty-handed Identity Zhuge Liang) for the next nearest', () => {
     // seat-a rides a defensive mount (distance 2 from seat-b); seat-c is the one nearest seat, but untargetable.
     const s = start('kingdomWars:jia-xu', id, { 'seat-a:equip': [card('m', mount)] }, { generals: { ...at('seat-a', 'kingdomWars:jia-xu'), 'seat-c': ['zhuge-liang', 'filler-jia-xu', true] } });
     expect(optionsOfB(s)).toEqual(['seat-d', 'seat-a', 'pass']);
@@ -1296,11 +1296,11 @@ describe('Kingdom Wars Zhang Jiao, Lightning Strike', () => {
     expect(hp(h.choose(dodged('kingdomWars:zhang-jiao', card('j', 'sha', 'heart', 5)), 'seat-b'), 'seat-b')).toBe(4);
   });
 
-  it('Dynasty Wars Zhang Jiao may still pick himself', () => {
+  it('Identity Zhang Jiao may still pick himself', () => {
     expect(dodged('zhang-jiao').pendingChoice!.options.map((o) => o.id)).toContain('seat-a');
   });
 
-  it('is what Kingdom Wars Zhang Jiao plays for 雷击, beside Dynasty Wars Dark Magic', () => {
+  it('is what Kingdom Wars Zhang Jiao plays for 雷击, beside Identity Dark Magic', () => {
     expect(readyKingdomWarsSkills(kingdomWarsGeneralRecords().find((g) => g.id === 'zhang-jiao')!).map((x) => x.id)).toEqual([id, 'dark-magic']);
   });
 });

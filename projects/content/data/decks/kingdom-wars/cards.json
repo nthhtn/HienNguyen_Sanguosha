@@ -14,7 +14,7 @@
       "category": "basic",
       "count": 21,
       "cardId": "sha",
-      "dynastyWarsCardId": "sha",
+      "identityCardId": "sha",
       "printings": [
         {
           "rank": 5,
@@ -107,7 +107,7 @@
       "category": "basic",
       "count": 3,
       "cardId": "fire-attack",
-      "dynastyWarsCardId": "fire-attack",
+      "identityCardId": "fire-attack",
       "printings": [
         {
           "rank": 4,
@@ -128,7 +128,7 @@
       "category": "basic",
       "count": 5,
       "cardId": "lightning-attack",
-      "dynastyWarsCardId": "lightning-attack",
+      "identityCardId": "lightning-attack",
       "printings": [
         {
           "rank": 6,
@@ -157,7 +157,7 @@
       "category": "basic",
       "count": 14,
       "cardId": "shan",
-      "dynastyWarsCardId": "shan",
+      "identityCardId": "shan",
       "printings": [
         {
           "rank": 2,
@@ -222,7 +222,7 @@
       "category": "basic",
       "count": 8,
       "cardId": "peach",
-      "dynastyWarsCardId": "peach",
+      "identityCardId": "peach",
       "printings": [
         {
           "rank": 4,
@@ -263,7 +263,7 @@
       "category": "basic",
       "count": 3,
       "cardId": "wine",
-      "dynastyWarsCardId": "wine",
+      "identityCardId": "wine",
       "printings": [
         {
           "rank": 9,
@@ -284,7 +284,7 @@
       "category": "tool",
       "count": 1,
       "cardId": "lightning",
-      "dynastyWarsCardId": "lightning",
+      "identityCardId": "lightning",
       "printings": [
         {
           "rank": 1,
@@ -297,7 +297,7 @@
       "category": "tool",
       "count": 2,
       "cardId": "capture",
-      "dynastyWarsCardId": "capture",
+      "identityCardId": "capture",
       "printings": [
         {
           "rank": 6,
@@ -314,7 +314,7 @@
       "category": "tool",
       "count": 2,
       "cardId": "starvation",
-      "dynastyWarsCardId": "starvation",
+      "identityCardId": "starvation",
       "printings": [
         {
           "rank": 10,
@@ -331,7 +331,7 @@
       "category": "tool",
       "count": 3,
       "cardId": "break",
-      "dynastyWarsCardId": "break",
+      "identityCardId": "break",
       "printings": [
         {
           "rank": 3,
@@ -352,7 +352,7 @@
       "category": "tool",
       "count": 3,
       "cardId": "steal",
-      "dynastyWarsCardId": "steal",
+      "identityCardId": "steal",
       "printings": [
         {
           "rank": 3,
@@ -373,7 +373,7 @@
       "category": "tool",
       "count": 2,
       "cardId": "duel",
-      "dynastyWarsCardId": "duel",
+      "identityCardId": "duel",
       "printings": [
         {
           "rank": 1,
@@ -390,7 +390,7 @@
       "category": "tool",
       "count": 1,
       "cardId": "coerce",
-      "dynastyWarsCardId": "coerce",
+      "identityCardId": "coerce",
       "printings": [
         {
           "rank": 12,
@@ -403,7 +403,7 @@
       "category": "tool",
       "count": 2,
       "cardId": "draw-two",
-      "dynastyWarsCardId": "draw-two",
+      "identityCardId": "draw-two",
       "printings": [
         {
           "rank": 7,
@@ -420,7 +420,7 @@
       "category": "tool",
       "count": 1,
       "cardId": "wuxie",
-      "dynastyWarsCardId": "wuxie",
+      "identityCardId": "wuxie",
       "printings": [
         {
           "rank": 11,
@@ -433,7 +433,7 @@
       "category": "tool",
       "count": 2,
       "cardId": "wuxie-guo",
-      "dynastyWarsCardId": null,
+      "identityCardId": null,
       "printings": [
         {
           "rank": 13,
@@ -450,7 +450,7 @@
       "category": "tool",
       "count": 1,
       "cardId": "hail-of-arrows",
-      "dynastyWarsCardId": "hail-of-arrows",
+      "identityCardId": "hail-of-arrows",
       "printings": [
         {
           "rank": 1,
@@ -463,7 +463,7 @@
       "category": "tool",
       "count": 2,
       "cardId": "barbarians",
-      "dynastyWarsCardId": "barbarians",
+      "identityCardId": "barbarians",
       "printings": [
         {
           "rank": 13,
@@ -480,7 +480,7 @@
       "category": "tool",
       "count": 1,
       "cardId": "peach-garden",
-      "dynastyWarsCardId": "peach-garden",
+      "identityCardId": "peach-garden",
       "printings": [
         {
           "rank": 1,
@@ -493,7 +493,7 @@
       "category": "tool",
       "count": 1,
       "cardId": "harvest",
-      "dynastyWarsCardId": "harvest",
+      "identityCardId": "harvest",
       "printings": [
         {
           "rank": 3,
@@ -506,7 +506,7 @@
       "category": "tool",
       "count": 3,
       "cardId": "chains",
-      "dynastyWarsCardId": "chains",
+      "identityCardId": "chains",
       "printings": [
         {
           "rank": 12,
@@ -527,7 +527,7 @@
       "category": "tool",
       "count": 2,
       "cardId": "blaze",
-      "dynastyWarsCardId": "blaze",
+      "identityCardId": "blaze",
       "printings": [
         {
           "rank": 2,
@@ -544,7 +544,7 @@
       "category": "tool",
       "count": 2,
       "cardId": "amass",
-      "dynastyWarsCardId": null,
+      "identityCardId": null,
       "printings": [
         {
           "rank": 11,
@@ -561,7 +561,7 @@
       "category": "tool",
       "count": 2,
       "cardId": "ascertain",
-      "dynastyWarsCardId": null,
+      "identityCardId": null,
       "printings": [
         {
           "rank": 3,
@@ -578,7 +578,7 @@
       "category": "tool",
       "count": 1,
       "cardId": "ally-far-attack-near",
-      "dynastyWarsCardId": null,
+      "identityCardId": null,
       "printings": [
         {
           "rank": 9,
@@ -592,7 +592,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "crossbow",
-      "dynastyWarsCardId": "crossbow",
+      "identityCardId": "crossbow",
       "range": 1,
       "printings": [
         {
@@ -607,7 +607,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "black-pommel",
-      "dynastyWarsCardId": "black-pommel",
+      "identityCardId": "black-pommel",
       "range": 2,
       "printings": [
         {
@@ -622,7 +622,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "gender-swords",
-      "dynastyWarsCardId": "gender-swords",
+      "identityCardId": "gender-swords",
       "range": 2,
       "printings": [
         {
@@ -637,7 +637,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "ice-sword",
-      "dynastyWarsCardId": "ice-sword",
+      "identityCardId": "ice-sword",
       "range": 2,
       "printings": [
         {
@@ -652,7 +652,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "wu-six-swords",
-      "dynastyWarsCardId": null,
+      "identityCardId": null,
       "range": 2,
       "printings": [
         {
@@ -667,7 +667,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "trident-glaive",
-      "dynastyWarsCardId": null,
+      "identityCardId": null,
       "range": 3,
       "printings": [
         {
@@ -682,7 +682,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "axe",
-      "dynastyWarsCardId": "axe",
+      "identityCardId": "axe",
       "range": 3,
       "printings": [
         {
@@ -697,7 +697,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "serpent-spear",
-      "dynastyWarsCardId": "serpent-spear",
+      "identityCardId": "serpent-spear",
       "range": 3,
       "printings": [
         {
@@ -712,7 +712,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "fire-fan",
-      "dynastyWarsCardId": "fire-fan",
+      "identityCardId": "fire-fan",
       "range": 4,
       "printings": [
         {
@@ -727,7 +727,7 @@
       "subtype": "weapon",
       "count": 1,
       "cardId": "longbow",
-      "dynastyWarsCardId": "longbow",
+      "identityCardId": "longbow",
       "range": 5,
       "printings": [
         {
@@ -742,7 +742,7 @@
       "subtype": "armor",
       "count": 1,
       "cardId": "eight-trigrams",
-      "dynastyWarsCardId": "eight-trigrams",
+      "identityCardId": "eight-trigrams",
       "printings": [
         {
           "rank": 2,
@@ -756,7 +756,7 @@
       "subtype": "armor",
       "count": 1,
       "cardId": "black-shield",
-      "dynastyWarsCardId": "black-shield",
+      "identityCardId": "black-shield",
       "printings": [
         {
           "rank": 2,
@@ -770,7 +770,7 @@
       "subtype": "armor",
       "count": 1,
       "cardId": "silver-lion",
-      "dynastyWarsCardId": "silver-lion",
+      "identityCardId": "silver-lion",
       "printings": [
         {
           "rank": 1,
@@ -784,7 +784,7 @@
       "subtype": "armor",
       "count": 1,
       "cardId": "wood-armor",
-      "dynastyWarsCardId": "wood-armor",
+      "identityCardId": "wood-armor",
       "printings": [
         {
           "rank": 2,
@@ -798,7 +798,7 @@
       "subtype": "mount",
       "count": 1,
       "cardId": "shadow-runner",
-      "dynastyWarsCardId": "shadow-runner",
+      "identityCardId": "shadow-runner",
       "mount": "defensive",
       "printings": [
         {
@@ -813,7 +813,7 @@
       "subtype": "mount",
       "count": 1,
       "cardId": "storm-runner",
-      "dynastyWarsCardId": "storm-runner",
+      "identityCardId": "storm-runner",
       "mount": "defensive",
       "printings": [
         {
@@ -828,7 +828,7 @@
       "subtype": "mount",
       "count": 1,
       "cardId": "di-lu",
-      "dynastyWarsCardId": "di-lu",
+      "identityCardId": "di-lu",
       "mount": "defensive",
       "printings": [
         {
@@ -843,7 +843,7 @@
       "subtype": "mount",
       "count": 1,
       "cardId": "da-yuan",
-      "dynastyWarsCardId": "da-yuan",
+      "identityCardId": "da-yuan",
       "mount": "offensive",
       "printings": [
         {
@@ -858,7 +858,7 @@
       "subtype": "mount",
       "count": 1,
       "cardId": "red-hare",
-      "dynastyWarsCardId": "red-hare",
+      "identityCardId": "red-hare",
       "mount": "offensive",
       "printings": [
         {
@@ -873,7 +873,7 @@
       "subtype": "mount",
       "count": 1,
       "cardId": "zi-xing",
-      "dynastyWarsCardId": "zi-xing",
+      "identityCardId": "zi-xing",
       "mount": "offensive",
       "printings": [
         {

@@ -6,7 +6,7 @@
   "title": "Sacrificing Flesh for his Kingdom",
   "maxHp": 4,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Trojan Flesh",

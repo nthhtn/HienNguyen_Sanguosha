@@ -169,7 +169,7 @@ describe('GeneralSelection Kingdom Wars skills', () => {
     return [...(fixture.nativeElement as HTMLElement).querySelectorAll('.not-in-game-hint')].map((e) => e.textContent!.trim());
   };
 
-  it('flags a skill the game does not play yet, and not a ready or Dynasty Wars one', () => {
+  it('flags a skill the game does not play yet, and not a ready or Identity one', () => {
     expect(hints(['kingdomWars:guan-yu'])).toEqual(['Not in the game yet']);
     TestBed.resetTestingModule();
     expect(hints(['kingdomWars:zhang-fei', 'guan-yu'])).toEqual([]);

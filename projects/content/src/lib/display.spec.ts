@@ -44,7 +44,7 @@ describe('generalDisplayData', () => {
     }
   });
 
-  it('leaves Dynasty Wars skills unmarked as not in the game', () => {
+  it('leaves Identity skills unmarked as not in the game', () => {
     expect(generalDisplayData('guan-yu')?.skills.every((s) => s.inGame !== false)).toBe(true);
   });
 
@@ -58,7 +58,7 @@ describe('abilityName for Kingdom Wars skills', () => {
     expect(abilityName('kingdomWars:benevolence')).toBe('Benevolence');
     expect(abilityName('kingdomWars:benevolence', 'vi')).toBe(viKingdomWarsGenerals['liu-bei'].skills!['benevolence'].name);
   });
-  it('still names Dynasty Wars Kindness', () => {
+  it('still names Identity Kindness', () => {
     expect(abilityName('kindness')).toBe('Kindness');
   });
 });

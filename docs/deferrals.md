@@ -14,7 +14,7 @@ its entry and say where it went in the commit.
 
 | Deferred | Why it waits | Revisit when |
 |---|---|---|
-| **The Dynasty Wars deck (`dynastyWars`) in Game Setup.** Its radio button in the deck picker is disabled on every setup screen (Pass and Play, Play vs Bots, Create Room and the lobby), so new games are always dealt from Kingdom Wars, the default deck. Disabled on 2026-10-26. | The engine has no explicit rules for Dynasty Wars yet; they get specified first. The deck, its data and its text are kept, and the server still accepts the `dynastyWars` deck. | The Dynasty Wars rules are written and implemented. Remove `disabled: true` from the `dynastyWars` entry in `projects/app/src/app/deck-picker.ts` and restore the click test in `deck-picker.spec.ts`. |
+| **The Identity deck (`identity`) in Game Setup.** Its radio button in the deck picker is disabled on every setup screen (Pass and Play, Play vs Bots, Create Room and the lobby), so new games are always dealt from Kingdom Wars, the default deck. Disabled on 2026-10-26. | The engine has no explicit rules for Identity yet; they get specified first. The deck, its data and its text are kept, and the server still accepts the `identity` deck. | The Identity rules are written and implemented. Remove `disabled: true` from the `identity` entry in `projects/app/src/app/deck-picker.ts` and restore the click test in `deck-picker.spec.ts`. |
 
 ## Deployment
 

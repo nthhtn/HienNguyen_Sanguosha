@@ -14,11 +14,11 @@ const caoCao: WikiGeneral = {
 const duel: WikiCard = {
   id: 'duel', name: 'Duel', nameZh: '决斗', category: 'tool', subtype: null, text: 'A player can target anyone with this card.',
   range: null, count: 3, printings: [{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }],
-  mount: null, delayed: false, expansion: 'Base', inGame: true, deck: 'dynastyWars',
+  mount: null, delayed: false, expansion: 'Base', inGame: true, deck: 'identity',
 };
 const redHare: WikiCard = {
   id: 'red-hare', name: 'Red Hare', nameZh: '赤兔', category: 'equipment', subtype: 'horse', text: null,
-  range: null, count: null, printings: [], mount: 'offensive', delayed: false, expansion: 'Base', inGame: false, deck: 'dynastyWars',
+  range: null, count: null, printings: [], mount: 'offensive', delayed: false, expansion: 'Base', inGame: false, deck: 'identity',
 };
 
 function renderGeneral(general: WikiGeneral): HTMLElement {
@@ -173,14 +173,14 @@ describe('WikiCardEntry', () => {
 
 describe('WikiCardEntry in the Kingdom Wars deck', () => {
   const pommel: WikiCard = {
-    id: 'black-pommel', name: 'Black Pommel', nameZh: '青釭剑', category: 'equipment', subtype: 'weapon', text: 'English rules of Dynasty Wars.',
+    id: 'black-pommel', name: 'Black Pommel', nameZh: '青釭剑', category: 'equipment', subtype: 'weapon', text: 'English rules of Identity.',
     range: 2, count: 1, printings: [{ suit: 'spade', rank: 6 }], mount: null, delayed: false, expansion: null, inGame: true,
     deck: 'kingdomWars',
   };
 
   it('shows the card’s text with no label and no pack tag', () => {
     const el = renderCard(pommel);
-    expect(el.querySelector('.text')!.textContent!.trim()).toBe('English rules of Dynasty Wars.');
+    expect(el.querySelector('.text')!.textContent!.trim()).toBe('English rules of Identity.');
     expect(el.querySelector('.label')).toBeNull();
     expect(el.querySelector('.expansion-tag')).toBeNull();
     expect(el.textContent).toContain('1 copies');
@@ -191,12 +191,12 @@ describe('WikiCardEntry in the Kingdom Wars deck', () => {
     expect(el.querySelector('.gap')!.textContent!.trim()).toBe('Rules text not available');
   });
 
-  it('renders a card Dynasty Wars lacks: not in the game, and no art', () => {
+  it('renders a card Identity lacks: not in the game, and no art', () => {
     const el = renderCard({ ...pommel, id: 'wuxie-guo', name: 'Wuxie Kingdom', inGame: false });
     expect(el.querySelector('.badge')!.textContent!.trim()).toBe('Not in the game yet');
   });
 
-  it('leaves a Dynasty Wars card as it was: pack tag present', () => {
+  it('leaves an Identity card as it was: pack tag present', () => {
     const el = renderCard(duel);
     expect(el.querySelector('.expansion-tag')).not.toBeNull();
   });
@@ -207,7 +207,7 @@ describe('WikiKingdomWarsGeneralEntry', () => {
   const kingdomWarsCaoCao: WikiKingdomWarsGeneral = {
     id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'The Militant Emperor of Wei',
     kingdom: 'Wei', maxHp: 4, gender: 'male', skillsWorking: true,
-    skills: [{ name: 'Villainous Hero', nameZh: '奸雄', text: 'Every instance after you suffer damage, you can acquire the card.', status: 'worksAsDynastyWars' }],
+    skills: [{ name: 'Villainous Hero', nameZh: '奸雄', text: 'Every instance after you suffer damage, you can acquire the card.', status: 'worksAsIdentity' }],
     partners: ['Dian Wei 典韦 (Bodyguard)'],
     differenceNote: 'The Ruler Ability is removed.',
   };
@@ -249,7 +249,7 @@ describe('WikiKingdomWarsGeneralEntry', () => {
     const general: WikiKingdomWarsGeneral = {
       ...kingdomWarsCaoCao,
       skills: [
-        { name: 'A', nameZh: null, text: 'a', status: 'worksAsDynastyWars' },
+        { name: 'A', nameZh: null, text: 'a', status: 'worksAsIdentity' },
         { name: 'B', nameZh: null, text: 'b', status: 'missing' },
         { name: 'C', nameZh: null, text: 'c', status: 'worksAsKingdomWars' },
       ],

@@ -1,5 +1,5 @@
-// A leaf module: display.ts and the bots import it, so it must import no variant file and no Dynasty Wars skill file.
-// Variant skill id -> the Dynasty Wars skill id whose texts and bot behaviour it shares. One entry per variant;
+// A leaf module: display.ts and the bots import it, so it must import no variant file and no Identity skill file.
+// Variant skill id -> the Identity skill id whose texts and bot behaviour it shares. One entry per variant;
 // a variant with nothing in common to inherit has none.
 export const KINGDOM_WARS_VARIANT_BASE: Readonly<Record<string, string>> = {
   'kingdomWars:benevolence': 'kindness',
@@ -30,36 +30,36 @@ export const KINGDOM_WARS_VARIANT_BASE: Readonly<Record<string, string>> = {
   'kingdomWars:horsemanship': 'horsemanship',
 };
 
-// Variants with no Dynasty Wars counterpart, which therefore have no base entry (and need their own texts and bot support).
+// Variants with no Identity counterpart, which therefore have no base entry (and need their own texts and bot support).
 export const VARIANTS_WITHOUT_BASE: ReadonlySet<string> = new Set<string>([
-  // Lu Xun's Scrutinize: a conversion into Amass; Dynasty Wars has no skill like it.
+  // Lu Xun's Scrutinize: a conversion into Amass; Identity has no skill like it.
   'kingdomWars:scrutinize',
-  // Gan Fu Ren is new in Kingdom Wars: both her skills have no Dynasty Wars counterpart.
+  // Gan Fu Ren is new in Kingdom Wars: both her skills have no Identity counterpart.
   'kingdomWars:prudence',
   'kingdomWars:divine-wisdom',
-  // Yue Jin is new in Kingdom Wars: Dauntless has no Dynasty Wars counterpart.
+  // Yue Jin is new in Kingdom Wars: Dauntless has no Identity counterpart.
   'kingdomWars:dauntless',
-  // Ding Feng is new in Kingdom Wars: both his skills have no Dynasty Wars counterpart.
+  // Ding Feng is new in Kingdom Wars: both his skills have no Identity counterpart.
   'kingdomWars:close-combat',
   'kingdomWars:swift-and-deadly',
-  // Pan Feng is new in Kingdom Wars: Insanity Axe has no Dynasty Wars counterpart.
+  // Pan Feng is new in Kingdom Wars: Insanity Axe has no Identity counterpart.
   'kingdomWars:insanity-axe',
-  // Tian Feng is new in Kingdom Wars: both his skills have no Dynasty Wars counterpart.
+  // Tian Feng is new in Kingdom Wars: both his skills have no Identity counterpart.
   'kingdomWars:deathly-counsel',
   'kingdomWars:with-the-tide',
-  // Kong Rong is new in Kingdom Wars: both his skills have no Dynasty Wars counterpart.
+  // Kong Rong is new in Kingdom Wars: both his skills have no Identity counterpart.
   'kingdomWars:celebrity',
   'kingdomWars:comity',
-  // Ma Teng is new in Kingdom Wars: Call of Valour has no Dynasty Wars counterpart.
+  // Ma Teng is new in Kingdom Wars: Call of Valour has no Identity counterpart.
   'kingdomWars:call-of-valour',
-  // Ji Ling is new in Kingdom Wars: Double Edged has no Dynasty Wars counterpart.
+  // Ji Ling is new in Kingdom Wars: Double Edged has no Identity counterpart.
   'kingdomWars:double-edged',
-  // Zou Shi is new in Kingdom Wars: both her skills have no Dynasty Wars counterpart.
+  // Zou Shi is new in Kingdom Wars: both her skills have no Identity counterpart.
   'kingdomWars:femme-fatale',
   'kingdomWars:impetus-for-conflicts',
 ]);
 
-// The Dynasty Wars skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.
+// The Identity skill id a skill id shares texts and bot behaviour with: its base when it is a variant, else itself.
 export const baseSkillId = (skillId: string): string =>
   Object.prototype.hasOwnProperty.call(KINGDOM_WARS_VARIANT_BASE, skillId) ? KINGDOM_WARS_VARIANT_BASE[skillId] : skillId;
 

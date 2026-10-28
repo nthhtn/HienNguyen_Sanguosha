@@ -2,9 +2,9 @@ import { kingdomWarsDifferenceNote, kingdomWarsGeneralRecords, type KingdomWarsG
 import { kingdomWarsSkillFor, hasKingdomWarsVariant } from './kingdomWarsSkills';
 import { splitIntoTabs, type WikiTab } from './wiki';
 
-// Whether the game can play a Kingdom Wars skill: as its own variant ("worksAsKingdomWars"), as Dynasty Wars'
-// version when the rules are the same ("worksAsDynastyWars"), or not yet ("missing").
-export type KingdomWarsSkillStatus = 'worksAsDynastyWars' | 'worksAsKingdomWars' | 'missing';
+// Whether the game can play a Kingdom Wars skill: as its own variant ("worksAsKingdomWars"), as Identity's
+// version when the rules are the same ("worksAsIdentity"), or not yet ("missing").
+export type KingdomWarsSkillStatus = 'worksAsIdentity' | 'worksAsKingdomWars' | 'missing';
 
 export interface WikiKingdomWarsSkill {
   name: string;
@@ -30,7 +30,7 @@ export interface WikiKingdomWarsGeneral {
 
 export function kingdomWarsSkillStatus(record: KingdomWarsGeneralRecord, skill: KingdomWarsGeneralSkillRecord): KingdomWarsSkillStatus {
   if (!kingdomWarsSkillFor(record, skill)) return 'missing';
-  return hasKingdomWarsVariant(record, skill) ? 'worksAsKingdomWars' : 'worksAsDynastyWars';
+  return hasKingdomWarsVariant(record, skill) ? 'worksAsKingdomWars' : 'worksAsIdentity';
 }
 
 const KINGDOMS: Record<KingdomWarsGeneralRecord['force'], WikiKingdomWarsGeneral['kingdom']> = { wei: 'Wei', shu: 'Shu', wu: 'Wu', qun: 'Qun' };

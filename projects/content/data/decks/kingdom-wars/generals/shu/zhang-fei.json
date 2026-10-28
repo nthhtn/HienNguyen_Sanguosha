@@ -6,7 +6,7 @@
   "title": "Unstoppable by 10,000 Men",
   "maxHp": 4,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Berserk",

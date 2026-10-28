@@ -548,7 +548,7 @@ export const vi: Messages = {
   'setup.firstReveal': 'Thưởng lật đầu tiên',
   'setup.firstReveal.hint': 'Người chơi đầu tiên lật Tướng được rút 2 lá bài.',
   'setup.deck': 'Bộ bài',
-  'setup.deck.dynastyWars': 'Vương triều chiến',
+  'setup.deck.identity': 'Vương triều chiến',
   'setup.deck.kingdomWars': 'Quốc chiến',
   'setup.deck.hint': 'Cách chia bài mà ván chơi dùng.',
   'setup.name.you': 'Tên của bạn',

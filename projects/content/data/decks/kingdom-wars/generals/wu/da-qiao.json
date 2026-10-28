@@ -6,7 +6,7 @@
   "title": "The Preserved Blossom",
   "maxHp": 3,
   "gender": "female",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "National Beauty",

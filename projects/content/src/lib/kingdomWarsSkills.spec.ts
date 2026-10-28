@@ -23,11 +23,11 @@ describe('isNilNote', () => {
 });
 
 describe('readyKingdomWarsSkills', () => {
-  it('runs Zhang Fei (Nil) as Dynasty Wars Roar, the very same definition', () => {
+  it('runs Zhang Fei (Nil) as Identity Roar, the very same definition', () => {
     expect(readyIds('zhang-fei')).toEqual(['roar']);
     expect(readyKingdomWarsSkills(record('zhang-fei'))[0]).toBe(GENERAL_SKILLS.get('zhang-fei')![0]);
   });
-  it("runs the wording-only Generals as Dynasty Wars' skills (Zhang Liao's Raid under another Chinese name)", () => {
+  it("runs the wording-only Generals as Identity's skills (Zhang Liao's Raid under another Chinese name)", () => {
     expect(readyIds('zhang-liao')).toEqual(['raid']);
     expect(readyIds('guan-yu')).toEqual(GENERAL_SKILLS.get('guan-yu')!.map((d) => d.id));
     expect(readyIds('ma-chao')).toEqual(GENERAL_SKILLS.get('ma-chao')!.map((d) => d.id));
@@ -44,7 +44,7 @@ describe('readyKingdomWarsSkills', () => {
     expect(ids).toContain('kingdomWars:stabilization');
     expect(ids).not.toContain(stubborn);
   });
-  it('runs only their own Kingdom Wars variants for Generals missing from Dynasty Wars (none yet for most), without throwing', () => {
+  it('runs only their own Kingdom Wars variants for Generals missing from Identity (none yet for most), without throwing', () => {
     const missing = kingdomWarsGeneralRecords().filter((g) => !generalsData[g.id]);
     expect(missing.length).toBeGreaterThanOrEqual(9);
     expect(missing.map((g) => g.id)).toContain('gan-fu-ren');

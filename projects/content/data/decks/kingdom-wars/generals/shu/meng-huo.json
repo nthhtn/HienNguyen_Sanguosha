@@ -6,7 +6,7 @@
   "title": "King of the Southern Barbarians",
   "maxHp": 4,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "The Smoking Gun",

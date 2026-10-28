@@ -54,10 +54,10 @@ describe("Slash's targets in one window", () => {
 });
 
 describe('Blaze', () => {
-  it('is in the registry and dealt: its 3 printings are in the Dynasty Wars deck', () => {
+  it('is in the registry and dealt: its 3 printings are in the Identity deck', () => {
     const reg = buildContentRegistry();
     expect(reg.cards.get('blaze')?.outOfDeck).toBeUndefined();
-    const { state } = guozhanMode.setup(['s0', 's1'], reg, { seed: 1, counter: 0 }, { deck: 'dynastyWars' });
+    const { state } = guozhanMode.setup(['s0', 's1'], reg, { seed: 1, counter: 0 }, { deck: 'identity' });
     expect(state.zones.flatMap((z) => z.cards).filter((c) => c.definitionId === 'blaze')).toHaveLength(3);
   });
 

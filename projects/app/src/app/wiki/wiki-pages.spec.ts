@@ -23,19 +23,20 @@ describe('Wiki pages', () => {
   });
 
   it.each([
-    ['/wiki/generals', '/wiki/dynasty-wars/generals'],
-    ['/wiki/generals?tab=wu', '/wiki/dynasty-wars/generals?tab=wu'],
-    ['/wiki/basic', '/wiki/dynasty-wars/basic'],
-    ['/wiki/equipment', '/wiki/dynasty-wars/equipment'],
-    ['/wiki/tools', '/wiki/dynasty-wars/tools'],
-    ['/wiki/default/generals', '/wiki/dynasty-wars/generals'],
+    ['/wiki/generals', '/wiki/identity/generals'],
+    ['/wiki/generals?tab=wu', '/wiki/identity/generals?tab=wu'],
+    ['/wiki/basic', '/wiki/identity/basic'],
+    ['/wiki/equipment', '/wiki/identity/equipment'],
+    ['/wiki/tools', '/wiki/identity/tools'],
+    ['/wiki/default/generals', '/wiki/identity/generals'],
+    ['/wiki/dynasty-wars/tools', '/wiki/identity/tools'],
     ['/wiki/alternate/tools', '/wiki/kingdom-wars/tools'],
   ])('sends %s to %s', async (from, to) => {
     const { router } = await open(from);
     expect(router.url).toBe(to);
   });
 
-  it.each(['/wiki/kingdom-wars/generals', '/wiki/kingdom-wars/basic', '/wiki/kingdom-wars/equipment', '/wiki/kingdom-wars/tools', '/wiki/dynasty-wars/generals', '/wiki/dynasty-wars/tools'])('keeps %s where it is', async (path) => {
+  it.each(['/wiki/kingdom-wars/generals', '/wiki/kingdom-wars/basic', '/wiki/kingdom-wars/equipment', '/wiki/kingdom-wars/tools', '/wiki/identity/generals', '/wiki/identity/tools'])('keeps %s where it is', async (path) => {
     const { router } = await open(path);
     expect(router.url).toBe(path);
   });
@@ -50,8 +51,8 @@ describe('Wiki pages', () => {
   });
 
   it.each([
-    ['/wiki/dynasty-wars/generals', 'Deck: Dynasty Wars'],
-    ['/wiki/dynasty-wars/tools', 'Deck: Dynasty Wars'],
+    ['/wiki/identity/generals', 'Deck: Identity'],
+    ['/wiki/identity/tools', 'Deck: Identity'],
     ['/wiki/kingdom-wars/tools', 'Deck: Kingdom Wars'],
   ])('names the deck on %s', async (path, line) => {
     const { el } = await open(path);
@@ -113,7 +114,7 @@ describe('Wiki pages', () => {
     (el().querySelectorAll('[role="tab"]')[1] as HTMLElement).click();
     await harness.fixture.whenStable();
     harness.fixture.detectChanges();
-    expect(router.url).toBe('/wiki/dynasty-wars/tools?tab=delayed');
+    expect(router.url).toBe('/wiki/identity/tools?tab=delayed');
     expect(entryIds(el())).toEqual(['capture', 'lightning', 'starvation']);
   });
 

@@ -6,7 +6,7 @@
   "title": "General of the Front",
   "maxHp": 4,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Sudden Strike",

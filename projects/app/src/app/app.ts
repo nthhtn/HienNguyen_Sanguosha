@@ -40,15 +40,15 @@ export class App {
       ],
     },
     {
-      deck: 'dynastyWars',
-      route: 'dynasty-wars',
-      label: 'setup.deck.dynastyWars',
+      deck: 'identity',
+      route: 'identity',
+      label: 'setup.deck.identity',
       icon: 'castle',
       pages: [
-        { path: '/wiki/dynasty-wars/generals', label: 'nav.cards.generals' },
-        { path: '/wiki/dynasty-wars/basic', label: 'nav.cards.basic' },
-        { path: '/wiki/dynasty-wars/equipment', label: 'nav.cards.equipment' },
-        { path: '/wiki/dynasty-wars/tools', label: 'nav.cards.tools' },
+        { path: '/wiki/identity/generals', label: 'nav.cards.generals' },
+        { path: '/wiki/identity/basic', label: 'nav.cards.basic' },
+        { path: '/wiki/identity/equipment', label: 'nav.cards.equipment' },
+        { path: '/wiki/identity/tools', label: 'nav.cards.tools' },
       ],
     },
   ];

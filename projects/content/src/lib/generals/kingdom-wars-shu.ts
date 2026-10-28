@@ -51,19 +51,19 @@ const divineWisdom: SkillDefinition = {
   },
 };
 
-// Kingdom Wars Shu skills whose rules differ from Dynasty Wars', by General id then the Chinese skill name.
+// Kingdom Wars Shu skills whose rules differ from Identity's, by General id then the Chinese skill name.
 // Each variant's id is `kingdomWars:` plus the id of the Kingdom Wars English skill name.
 export const KINGDOM_WARS_SHU_VARIANTS: Readonly<Record<string, Readonly<Record<string, SkillDefinition>>>> = {
-  // Benevolence: heals at 3 cards given in the turn (Dynasty Wars: 2).
+  // Benevolence: heals at 3 cards given in the turn (Identity: 2).
   'liu-bei': { 仁德: { ...makeKindness(3), id: 'kingdomWars:benevolence' } },
-  // Prudence, Divine Wisdom: Gan Fu Ren is new to Kingdom Wars (Dynasty Wars has no such General).
+  // Prudence, Divine Wisdom: Gan Fu Ren is new to Kingdom Wars (Identity has no such General).
   'gan-fu-ren': { 淑慎: prudence, 神智: divineWisdom },
   // Assembling Wisdom: no draw for a Tool converted from other cards. Genius is unchanged (cleared wording).
   'huang-yueying': { 集智: { ...makeGatheringWisdom(false), id: 'kingdomWars:assembling-wisdom' } },
   // Fearsome Blade: only when the damaged seat is one the Slash was aimed at.
   'zhu-rong': { 烈刃: { ...makeIntenseEdge(true), id: 'kingdomWars:fearsome-blade' } },
-  // Resurrection: also clears the Chained state (Dynasty Wars' Nirvana only turns face up).
+  // Resurrection: also clears the Chained state (Identity's Nirvana only turns face up).
   'pang-tong': { 涅槃: { ...makeNirvana(true), id: 'kingdomWars:resurrection' } },
-  // Empty City: with no hand cards he can be chosen by Slash and Duel, which are cancelled for him (Dynasty Wars: can't be chosen).
+  // Empty City: with no hand cards he can be chosen by Slash and Duel, which are cancelled for him (Identity: can't be chosen).
   'zhuge-liang': { 空城: { ...makeEmptyCity(true), id: 'kingdomWars:empty-city' } },
 };

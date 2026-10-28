@@ -485,7 +485,7 @@ function discardedInDiscardPhase(state: GameState, seatId: string): string[] {
 
 // Stubborn (may): at the end of another seat's Discard Phase, if it discarded
 // `minDiscarded` or more cards, give one of them back to it and take the others.
-// Dynasty Wars needs 2; Kingdom Wars' Stabilization works with 1 (nothing is taken then).
+// Identity needs 2; Kingdom Wars' Stabilization works with 1 (nothing is taken then).
 export const makeStubborn = (minDiscarded: number): SkillDefinition => ({
   id: 'stubborn',
   triggers: [
