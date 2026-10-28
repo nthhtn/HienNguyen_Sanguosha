@@ -1,0 +1,26 @@
+{
+  "id": "huang-zhong",
+  "name": "Huang Zhong",
+  "nameZh": "黄忠",
+  "force": "shu",
+  "title": "Old but Vigorous",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Fearsome Archer",
+      "nameZh": "烈弓",
+      "text": "After selecting a player as the target of your ATTACK 杀 in your action phase, you can disallow this ATTACK 杀 to be responded with DODGE 闪 under the following circumstances:\n1. The number of on-hand cards of the target player is greater or equal to your current units of health.\n2. The number of on-hand cards of the target player is smaller or equal to your attack range."
+    }
+  ],
+  "synergisticPartners": [
+    "Wei Yan 魏延 (Colleague since serving Han Xuan 韩玄)"
+  ],
+  "differenceFromNormal": "The ability description is slightly changed to clarify the timing to activate “Fearsome Archer”. If you are not a stickler for fine details in wording, the ability is essentially the same.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/huang-zhong.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

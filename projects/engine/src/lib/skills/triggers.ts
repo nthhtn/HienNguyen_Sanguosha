@@ -45,7 +45,7 @@ export function gatherTriggeredSkills(
   const dying = point === 'after:SeatEliminatedEvent' ? (subject as { seatId?: string }).seatId : undefined;
   const gone = dying ? state.seats.find((s) => s.id === dying && s.eliminated && s.generals && !s.silenced) : undefined;
   for (const { owner, skill } of gone ? heldSkills(state, gone.id, registry) : []) {
-    // A General that lost its skills (Alternate Sorrow) has none to act with after death either.
+    // A General that lost its skills (Kingdom Wars Sorrow) has none to act with after death either.
     if (!skill.afterDeath || skill.lord || slotSilenced(gone!, owner.slot)) continue;
     for (const trigger of skill.triggers ?? []) {
       if (trigger.point === point) candidates.push({ trigger, owner });

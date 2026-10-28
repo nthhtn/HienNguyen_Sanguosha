@@ -29,7 +29,7 @@ describe('App shell in Vietnamese', () => {
       providers: [
         { provide: AuthService, useValue: fakeAuth },
         { provide: MUSIC_PLAYER_FACTORY, useValue: () => ({ loop: false, volume: 1, play: () => Promise.resolve(), pause: () => undefined }) },
-        provideRouter([{ path: 'setup', children: [] }, { path: 'wiki/default/:page', children: [] }, { path: 'wiki/alternate/:page', children: [] }, { path: 'wiki/rules/:page', children: [] }, { path: 'sign-in', children: [] }, { path: 'sign-up', children: [] }]),
+        provideRouter([{ path: 'setup', children: [] }, { path: 'wiki/dynasty-wars/:page', children: [] }, { path: 'wiki/kingdom-wars/:page', children: [] }, { path: 'wiki/rules/:page', children: [] }, { path: 'sign-in', children: [] }, { path: 'sign-up', children: [] }]),
       ],
     }).compileComponents();
     await TestBed.inject(I18n).setLocale('vi');
@@ -49,19 +49,19 @@ describe('App shell in Vietnamese', () => {
 
   it('the title, the five navigation items and their aria labels', async () => {
     const { el } = await render();
-    expect(text(el.querySelector('mat-toolbar h1'))).toBe('Quốc chiến');
+    expect(text(el.querySelector('mat-toolbar h1'))).toBe('Tam quốc sát');
     expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Quốc chiến', 'Vương triều chiến', 'Luật']);
     expect([...el.querySelectorAll('nav.nav > a, nav.nav > button')].map((i) => i.getAttribute('aria-label'))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Quốc chiến', 'Vương triều chiến', 'Luật']);
   });
 
-  it('the Default, Alternate and Rules menus name their pages in Vietnamese', async () => {
+  it('the Dynasty Wars, Kingdom Wars and Rules menus name their pages in Vietnamese', async () => {
     const { fixture, el } = await render();
-    (el.querySelector('nav.nav button.nav-default') as HTMLButtonElement).click();
+    (el.querySelector('nav.nav button.nav-dynasty-wars') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
     expect(menuItems()).toEqual(['Tướng', 'Bài cơ bản', 'Trang bị', 'Cẩm nang']);
     overlay().replaceChildren();
-    (el.querySelector('nav.nav button.nav-alternate') as HTMLButtonElement).click();
+    (el.querySelector('nav.nav button.nav-kingdom-wars') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
     expect(menuItems()).toEqual(['Tướng', 'Bài cơ bản', 'Trang bị', 'Cẩm nang']);
@@ -110,10 +110,10 @@ describe('App shell in Vietnamese', () => {
     const { fixture, el } = await render();
     await TestBed.inject(I18n).setLocale('en');
     await fixture.whenStable();
-    expect(text(el.querySelector('mat-toolbar h1'))).toBe('Kingdom War');
+    expect(text(el.querySelector('mat-toolbar h1'))).toBe('Sanguosha');
     expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Play Offline', 'Play Online', 'Kingdom Wars', 'Dynasty Wars', 'Rules']);
     await TestBed.inject(I18n).setLocale('vi');
     await fixture.whenStable();
-    expect(text(el.querySelector('mat-toolbar h1'))).toBe('Quốc chiến');
+    expect(text(el.querySelector('mat-toolbar h1'))).toBe('Tam quốc sát');
   });
 });

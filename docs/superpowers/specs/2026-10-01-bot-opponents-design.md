@@ -5,7 +5,7 @@ Date: 2026-10-01
 
 ## Purpose
 
-Let one person play a Kingdom War game against computer-controlled opponents,
+Let one person play a Guozhan game against computer-controlled opponents,
 instead of passing one device between human players. Today every seat is
 human-controlled through the reveal-gate pass-and-play flow, and the only bot is
 the sim harness's random-legal-move picker, which is not reachable from the app.

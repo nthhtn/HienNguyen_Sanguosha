@@ -24,29 +24,31 @@ import { TPipe } from './i18n/t.pipe';
 export class App {
   private readonly i18n = inject(I18n);
   protected readonly title = computed(() => this.i18n.t('app.title'));
-  // One menu per deck. A page that does not exist yet can be listed with `disabled: true`.
-  protected readonly deckMenus: { deck: DeckId; label: MessageKey; icon: string; fontSet?: string; pages: { path: string; label: MessageKey; disabled?: boolean }[] }[] = [
+  // One menu per deck, its pages under /wiki/<route>. A page that does not exist yet can be listed with `disabled: true`.
+  protected readonly deckMenus: { deck: DeckId; route: string; label: MessageKey; icon: string; fontSet?: string; pages: { path: string; label: MessageKey; disabled?: boolean }[] }[] = [
     {
-      deck: 'alternate',
-      label: 'setup.deck.alternate',
+      deck: 'kingdomWars',
+      route: 'kingdom-wars',
+      label: 'setup.deck.kingdomWars',
       icon: 'swords', // "swords" only exists in Material Symbols, not the legacy Material Icons font.
       fontSet: 'material-symbols-outlined',
       pages: [
-        { path: '/wiki/alternate/generals', label: 'nav.cards.generals' },
-        { path: '/wiki/alternate/basic', label: 'nav.cards.basic' },
-        { path: '/wiki/alternate/equipment', label: 'nav.cards.equipment' },
-        { path: '/wiki/alternate/tools', label: 'nav.cards.tools' },
+        { path: '/wiki/kingdom-wars/generals', label: 'nav.cards.generals' },
+        { path: '/wiki/kingdom-wars/basic', label: 'nav.cards.basic' },
+        { path: '/wiki/kingdom-wars/equipment', label: 'nav.cards.equipment' },
+        { path: '/wiki/kingdom-wars/tools', label: 'nav.cards.tools' },
       ],
     },
     {
-      deck: 'default',
-      label: 'setup.deck.default',
+      deck: 'dynastyWars',
+      route: 'dynasty-wars',
+      label: 'setup.deck.dynastyWars',
       icon: 'castle',
       pages: [
-        { path: '/wiki/default/generals', label: 'nav.cards.generals' },
-        { path: '/wiki/default/basic', label: 'nav.cards.basic' },
-        { path: '/wiki/default/equipment', label: 'nav.cards.equipment' },
-        { path: '/wiki/default/tools', label: 'nav.cards.tools' },
+        { path: '/wiki/dynasty-wars/generals', label: 'nav.cards.generals' },
+        { path: '/wiki/dynasty-wars/basic', label: 'nav.cards.basic' },
+        { path: '/wiki/dynasty-wars/equipment', label: 'nav.cards.equipment' },
+        { path: '/wiki/dynasty-wars/tools', label: 'nav.cards.tools' },
       ],
     },
   ];
@@ -76,8 +78,8 @@ export class App {
   protected readonly playActive = computed(() => /^\/(setup|game)(\/|$|\?)/.test(this.url()));
   protected readonly onlineActive = computed(() => /^\/(rooms|my-games)(\/|$|\?)/.test(this.url()));
 
-  protected deckActive(deck: DeckId): boolean {
-    return new RegExp(`^/wiki/${deck}(/|$|\\?)`).test(this.url());
+  protected deckActive(route: string): boolean {
+    return new RegExp(`^/wiki/${route}(/|$|\\?)`).test(this.url());
   }
   protected readonly rulesActive = computed(() => /^\/wiki\/rules(\/|$|\?)/.test(this.url()));
 

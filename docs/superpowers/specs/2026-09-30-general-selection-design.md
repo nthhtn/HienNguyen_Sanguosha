@@ -5,8 +5,8 @@ Date: 2026-09-30
 
 ## Purpose
 
-Let each seat in a Kingdom War (Guozhan) game choose its two generals
-before play starts. Today `kingdomWarMode.setup` hands out generals
+Let each seat in a Guozhan game choose its two generals
+before play starts. Today `guozhanMode.setup` hands out generals
 deterministically (sorted ids, two per seat) and assigns each seat's
 kingdom round-robin by seat index, unrelated to its generals. This
 milestone replaces that with the real Guozhan rule: every seat is dealt
@@ -39,7 +39,7 @@ In scope:
 - Engine: the `GeneralSelection` phase, `ChooseGeneralsAction`,
   `GeneralsChosenEvent`, `getActiveSeatId`, nullable `Seat.generals`, and
   candidate redaction.
-- Content: `kingdomWarMode` deal logic, seat cap, and kingdom derived from
+- Content: `guozhanMode` deal logic, seat cap, and kingdom derived from
   generals.
 - Sim: new invariants; the bot needs no change.
 - App: Angular Material setup, the `GeneralSelection` component, `GameBoard`
@@ -118,14 +118,14 @@ export interface GameState {
 `ChooseGeneralsAction`.
 
 Every reader of `seat.generals` (`effects.ts`, `triggers.ts`, `redact.ts`,
-`kingdomWar.ts`, `seat-summary.ts`) handles `null`. `triggers.ts` gathers
+`guozhan.ts`, `seat-summary.ts`) handles `null`. `triggers.ts` gathers
 no general-skill triggers for a seat with `generals === null`.
 
 ## Rule text
 
-### Deal (in `kingdomWarMode.setup`)
+### Deal (in `guozhanMode.setup`)
 
-1. `kingdomWarMode` exposes `generalsPerSeat = 5` and
+1. `guozhanMode` exposes `generalsPerSeat = 5` and
    `maxSeats(registry) = floor(registry.generals.size / generalsPerSeat)`
    (5 with 26 generals). `GameModeDefinition` gains the optional member
    `maxSeats?(registry: ContentRegistry): number`.
@@ -219,7 +219,7 @@ app's global styles, plus typography and the Roboto font. Only the
 
 - `activeSeatId` becomes `computed(() => state ? getActiveSeatId(state) : null)`.
 - `legalActions` passes `this.registry` to `getLegalActions`.
-- New `maxSeats = kingdomWarMode.maxSeats!(this.registry)`.
+- New `maxSeats = guozhanMode.maxSeats!(this.registry)`.
 
 ### `GameBoard`
 

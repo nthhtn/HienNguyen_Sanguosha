@@ -25,14 +25,14 @@ Stage 7's, 8's and 9's common rules hold unchanged:
 - no elemental damage;
 - synthetic `filler-<id>` Generals in the specs.
 
-The skill text is the crawled data's standard edition, applied to Kingdom War.
+The skill text is the crawled data's standard edition, applied to Guozhan.
 In that text, "Escape" is Shan, "Barbarians" is the Barbarians Tool, "flip
 character card" is turning the seat face down, or face up if it is already
 down, and "hand" or "cards" mean hand cards unless a zone is named.
 
 **Lord skills.** Violent Tyrant (Dong Zhuo) and Exaltation (Cao Pi) are Lord
-skills, so they are inactive. The wiki shows them with "Not used in Kingdom
-War".
+skills, so they are inactive. The wiki shows them with "Not used in Guozhan
+".
 
 ## Rule text: the Forest Generals
 
@@ -211,7 +211,7 @@ Generic; the engine names no card or skill.
 - **Collapse:** a choice of "Lose 1 HP" or "Reduce max HP".
 - **History lines** for each skill, in the stage 9 style.
 - **Wiki:** the Forest Generals show as in play, and the two Lord skills with
-  "Not used in Kingdom War".
+  "Not used in Guozhan".
 - **Text** follows CLAUDE.md's UI text style.
 
 ## Testing

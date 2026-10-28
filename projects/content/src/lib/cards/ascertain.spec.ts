@@ -1,7 +1,7 @@
 import type { GameState } from 'engine';
 import { redactStateForSeat } from 'engine';
 import { card, handIds, harness, ids, registry, table, TableOptions } from '../generals/skills.testing';
-import { alternateCardData } from '../alternateCards';
+import { kingdomWarsCardData } from '../kingdomWarsCards';
 import { isRecast } from './chains';
 
 // Ascertain (spec "Ascertain"): a Tool at another living seat; after its Wuxie
@@ -28,7 +28,7 @@ const optionIds = (s: GameState) => s.pendingChoice?.options.map((o) => o.id);
 
 describe('Ascertain', () => {
   it('is a registered Tool', () => {
-    expect(registry.cards.get('ascertain')).toMatchObject({ id: 'ascertain', category: 'tool', name: alternateCardData('ascertain')!.name });
+    expect(registry.cards.get('ascertain')).toMatchObject({ id: 'ascertain', category: 'tool', name: kingdomWarsCardData('ascertain')!.name });
   });
 
   it('offers the Recast and each other living seat, not the user or a dead seat', () => {

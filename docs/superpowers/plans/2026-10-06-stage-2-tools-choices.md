@@ -74,8 +74,8 @@
   - `shared/choices.ts` (`seatCardOptions`, `holdsAnyCard`, `pickACardTool`)
   - `cards/steal.ts`, `cards/break.ts`, `cards/harvest.ts`, `cards/coerce.ts`
 - Modify:
-  - `cards/sha.ts` (export `shaWindow`), `shared/tools.ts` (`toolOnTargets` gains `extra`), `modes/kingdomWar.ts` (the `processing` zone), `registry.ts`
-  - tests: `cards/tools.spec.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/kingdomWar.spec.ts`
+  - `cards/sha.ts` (export `shaWindow`), `shared/tools.ts` (`toolOnTargets` gains `extra`), `modes/guozhan.ts` (the `processing` zone), `registry.ts`
+  - tests: `cards/tools.spec.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`
 
 **Bots:** modify `projects/bots/src/lib/rule-based.ts` and `rule-based.spec.ts`.
 
@@ -798,7 +798,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `projects/content/src/lib/shared/choices.ts`, `projects/content/src/lib/cards/steal.ts`, `projects/content/src/lib/cards/break.ts`
-- Modify: `projects/content/src/lib/registry.ts`, `cards/tools.spec.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/kingdomWar.spec.ts`
+- Modify: `projects/content/src/lib/registry.ts`, `cards/tools.spec.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`
 - Modify: `projects/app/src/app/wiki/wiki-pages.spec.ts`, `projects/app/src/app/game-board/game-board.spec.ts`, `projects/app/src/app/decision-timer.service.spec.ts`
 
 **Interfaces:**
@@ -1031,7 +1031,7 @@ export const breakCard = pickACardTool({ id: 'break', name: 'Break', verb: 'disc
 - **`registry.ts`:** import `stealCard` and `breakCard`, and add them to the `cards` array after `peachGardenCard`.
 - **`registry.spec.ts`:** the test becomes `'registers the thirteen playable cards'`, and its list gains `'break'` and `'steal'`.
 - **`wiki.spec.ts`:** the `inGame` expectation becomes `['barbarians', 'break', 'draw-two', 'duel', 'hail-of-arrows', 'peach-garden', 'steal', 'wuxie']`. The list is sorted by display name; match the order the test actually receives.
-- **`modes/kingdomWar.spec.ts`:** `toHaveLength(70)` becomes `toHaveLength(81)` (70 + Steal 5 + Break 6).
+- **`modes/guozhan.spec.ts`:** `toHaveLength(70)` becomes `toHaveLength(81)` (70 + Steal 5 + Break 6).
 - **`projects/app/src/app/wiki/wiki-pages.spec.ts`:** `'15 cards · 6 in the game'` becomes `'15 cards · 8 in the game'`.
 
 - [ ] **Step 5: Keep the app's seed searches on Sha and Duel**
@@ -1065,8 +1065,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `projects/content/src/lib/cards/harvest.ts`, `projects/content/src/lib/cards/coerce.ts`
-- Modify: `projects/content/src/lib/cards/sha.ts`, `shared/tools.ts`, `modes/kingdomWar.ts`, `registry.ts`
-- Modify tests: `cards/tools.spec.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/kingdomWar.spec.ts`, `projects/app/src/app/wiki/wiki-pages.spec.ts`
+- Modify: `projects/content/src/lib/cards/sha.ts`, `shared/tools.ts`, `modes/guozhan.ts`, `registry.ts`
+- Modify tests: `cards/tools.spec.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`, `projects/app/src/app/wiki/wiki-pages.spec.ts`
 
 **Interfaces:**
 - Consumes:
@@ -1076,7 +1076,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `harvestCard` and `coerceCard`.
   - `shaWindow(shaInstanceId, fromSeatId, target): Effect`.
   - `toolOnTargets(state, userSeatId, cardInstanceId, targets, extra?)`.
-  - Kingdom War sets up `{ id: 'processing', kind: 'processing', cards: [] }`.
+  - Guozhan sets up `{ id: 'processing', kind: 'processing', cards: [] }`.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -1187,13 +1187,13 @@ describe('Harvest and Coerce', () => {
 });
 ```
 
-4. In `projects/content/src/lib/modes/kingdomWar.spec.ts`:
+4. In `projects/content/src/lib/modes/guozhan.spec.ts`:
 - Change `toHaveLength(81)` to `toHaveLength(85)`.
 - Add this test to the file's setup `describe`:
 
 ```ts
   it('sets up an empty processing zone for Harvest', () => {
-    const state = createGame(kingdomWarMode, buildContentRegistry(), ['seat-0', 'seat-1'], 1);
+    const state = createGame(guozhanMode, buildContentRegistry(), ['seat-0', 'seat-1'], 1);
     expect(state.zones.find((z) => z.kind === 'processing')).toEqual({ id: 'processing', kind: 'processing', cards: [] });
   });
 ```
@@ -1383,9 +1383,9 @@ export const coerceCard: CardDefinition = {
 };
 ```
 
-- [ ] **Step 5: Give Kingdom War a processing zone, and register the cards**
+- [ ] **Step 5: Give Guozhan a processing zone, and register the cards**
 
-- In `projects/content/src/lib/modes/kingdomWar.ts`, add `{ id: 'processing', kind: 'processing' as const, cards: [] },` after the discard pile zone in `setup`.
+- In `projects/content/src/lib/modes/guozhan.ts`, add `{ id: 'processing', kind: 'processing' as const, cards: [] },` after the discard pile zone in `setup`.
 - In `registry.ts`, import `harvestCard` and `coerceCard`, and add them after `breakCard`.
 - In `registry.spec.ts`, the test becomes `'registers the fifteen playable cards'`, and its list gains `'coerce'` and `'harvest'`.
 - In `wiki.spec.ts`, `inGame` becomes `['barbarians', 'break', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'peach-garden', 'steal', 'wuxie']`, in the order the test receives.
@@ -1403,7 +1403,7 @@ Expected: PASS. The sim's random bots now play all four new Tools.
 
 ```bash
 git add projects/content projects/app
-git commit -m "feat(content): Harvest and Coerce; the processing zone in Kingdom War
+git commit -m "feat(content): Harvest and Coerce; the processing zone in Guozhan
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```

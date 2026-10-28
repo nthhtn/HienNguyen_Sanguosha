@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** One person plays Kingdom War as `seat-0` against rule-based computer opponents. Pass-and-play stays available.
+**Goal:** One person plays Guozhan as `seat-0` against rule-based computer opponents. Pass-and-play stays available.
 
 **Architecture:**
 - A new framework-free `projects/bots` library holds the rule-based policy, plus the sim's random picker moved there unchanged. Both the sim and the app depend on it.
@@ -502,8 +502,8 @@ Append to `projects/sim/src/runGame.spec.ts`:
 describe('runGame with rule-based bots', () => {
   it('drives a game to a result using the rule-based policy for every seat', () => {
     const registry = buildContentRegistry();
-    const initialState = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 123);
-    const { finalState } = runGame(initialState, { registry, mode: kingdomWarMode }, 456, 20000, 'rule-based');
+    const initialState = createGame(guozhanMode, registry, ['seat-a', 'seat-b', 'seat-c'], 123);
+    const { finalState } = runGame(initialState, { registry, mode: guozhanMode }, 456, 20000, 'rule-based');
     expect(finalState.result).not.toBeNull();
   });
 });
@@ -569,7 +569,7 @@ In `projects/sim/src/property.spec.ts`, wrap the existing game loop body so that
         for (const [botKind, maxActions] of [['random', 2000], ['rule-based', 20000]] as const) {
           const { finalState, actionsSubmitted } = runGame(
             initialState,
-            { registry, mode: kingdomWarMode },
+            { registry, mode: guozhanMode },
             seed * 7 + 1,
             maxActions,
             botKind
@@ -771,7 +771,7 @@ import {
   redactStateForSeat,
   resolve,
 } from 'engine';
-import { buildContentRegistry, kingdomWarMaxSeats, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMaxSeats, guozhanMode } from 'content';
 import { BotTurnMemory, ruleBasedPolicy } from 'bots';
 
 export type GameMode = 'vs-bots' | 'pass-and-play';
@@ -786,9 +786,9 @@ function errorMessage(err: unknown): string {
 @Injectable({ providedIn: 'root' })
 export class GameService {
   readonly registry: ContentRegistry = buildContentRegistry();
-  private readonly ctx: EngineContext = { registry: this.registry, mode: kingdomWarMode };
+  private readonly ctx: EngineContext = { registry: this.registry, mode: guozhanMode };
 
-  readonly maxSeats: number = kingdomWarMaxSeats(this.registry);
+  readonly maxSeats: number = guozhanMaxSeats(this.registry);
 
   // Delay before each bot move, so a human can follow along. Tests set 0.
   botDelayMs = 700;
@@ -841,7 +841,7 @@ export class GameService {
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
-      const created = createGame(kingdomWarMode, this.registry, seatIds, rngSeed);
+      const created = createGame(guozhanMode, this.registry, seatIds, rngSeed);
       const players = created.players.map((p) => ({
         ...p,
         kind: mode === 'vs-bots' && p.seatId !== HUMAN_SEAT_ID ? ('bot' as const) : ('human' as const),

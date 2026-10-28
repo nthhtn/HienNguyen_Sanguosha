@@ -28,7 +28,7 @@ const missingHp = (state: GameState, seatId: string) => {
   return seat ? Math.max(0, seat.maxCombinedHp - seat.combinedHp) : 0;
 };
 
-// Exaltation and Violent Tyrant: Lord skills, inactive in Kingdom War.
+// Exaltation and Violent Tyrant: Lord skills, inactive in Guozhan.
 export const exaltation: SkillDefinition = { id: 'exaltation', lord: true };
 export const violentTyrant: SkillDefinition = { id: 'violent-tyrant', lord: true };
 
@@ -178,7 +178,7 @@ export const giantElephant: SkillDefinition = {
 
 // Intense Edge (may): when your Sha damages another seat, compete with it; on a
 // win take one of its cards (a hidden hand card, or a worn or Judgment card).
-// With `requireTarget` (Alternate), the damaged seat must be one the Slash was aimed at.
+// With `requireTarget` (Kingdom Wars), the damaged seat must be one the Slash was aimed at.
 export const makeIntenseEdge = (requireTarget = false): SkillDefinition => ({
   id: 'intense-edge',
   triggers: [
@@ -393,7 +393,7 @@ export const collapse: SkillDefinition = {
 };
 
 // Complete Kill (compulsory): in your turn only you and the dying seat can use
-// Peach. Kingdom War's dying round reads this when it lists who is asked.
+// Peach. Guozhan's dying round reads this when it lists who is asked.
 export const completeKill: SkillDefinition = { id: 'complete-kill', compulsory: true, modifiers: { peachOnlyOwnerAndDying: true } };
 
 // The colour `card` is used as by `userSeatId` (Beauty included), as the seat lists read it.
@@ -407,7 +407,7 @@ const isBlackTool = (state: GameState, card: UsedCard, userSeatId: string, regis
 // Curtain (compulsory): black Tools can't target you. The modifier keeps them
 // off the seat lists; this trigger cancels any that still name you (an area
 // Tool, a conversion). Your own delayed Tools, judged on you, are not "aimed".
-// `cancels` (Alternate, Behind the Curtain): no modifier; they can target you and are cancelled for you
+// `cancels` (Kingdom Wars, Behind the Curtain): no modifier; they can target you and are cancelled for you
 // instead (used, but with no effect on you; a delayed one is not placed).
 export function makeCurtain(cancels: boolean): SkillDefinition {
   if (cancels) return { id: 'curtain', compulsory: true, triggers: cancelsCardsOnOwner((state, card, userSeatId, _owner, registry) => isBlackTool(state, card, userSeatId, registry)) };
@@ -442,7 +442,7 @@ export const nearestShaTargets = (state: GameState, seatId: string, registry: Co
 
 // Upheaval (active, Play Phase, once per game): every other living seat, in turn
 // order, picks a seat in its attack range and plays a Sha at it, or loses 1 HP.
-// Alternate Descend into Chaos (`nearestOnly`): the pick is among the nearest seats instead, ignoring range.
+// Kingdom Wars Descend into Chaos (`nearestOnly`): the pick is among the nearest seats instead, ignoring range.
 export const makeUpheaval = (nearestOnly: boolean): SkillDefinition => ({
   id: 'upheaval',
   limited: true,

@@ -17,23 +17,25 @@ const selectedTab = (el: HTMLElement) => el.querySelector('[role="tab"][aria-sel
 const entryIds = (el: HTMLElement) => [...el.querySelectorAll('article.entry')].map((a) => a.getAttribute('data-id'));
 
 describe('Wiki pages', () => {
-  it('redirects /wiki to the Default Generals page', async () => {
+  it('redirects /wiki to the Kingdom Wars Generals page', async () => {
     const { router } = await open('/wiki');
-    expect(router.url).toBe('/wiki/default/generals');
+    expect(router.url).toBe('/wiki/kingdom-wars/generals');
   });
 
   it.each([
-    ['/wiki/generals', '/wiki/default/generals'],
-    ['/wiki/generals?tab=wu', '/wiki/default/generals?tab=wu'],
-    ['/wiki/basic', '/wiki/default/basic'],
-    ['/wiki/equipment', '/wiki/default/equipment'],
-    ['/wiki/tools', '/wiki/default/tools'],
+    ['/wiki/generals', '/wiki/dynasty-wars/generals'],
+    ['/wiki/generals?tab=wu', '/wiki/dynasty-wars/generals?tab=wu'],
+    ['/wiki/basic', '/wiki/dynasty-wars/basic'],
+    ['/wiki/equipment', '/wiki/dynasty-wars/equipment'],
+    ['/wiki/tools', '/wiki/dynasty-wars/tools'],
+    ['/wiki/default/generals', '/wiki/dynasty-wars/generals'],
+    ['/wiki/alternate/tools', '/wiki/kingdom-wars/tools'],
   ])('sends %s to %s', async (from, to) => {
     const { router } = await open(from);
     expect(router.url).toBe(to);
   });
 
-  it.each(['/wiki/alternate/generals', '/wiki/alternate/basic', '/wiki/alternate/equipment', '/wiki/alternate/tools', '/wiki/default/generals', '/wiki/default/tools'])('keeps %s where it is', async (path) => {
+  it.each(['/wiki/kingdom-wars/generals', '/wiki/kingdom-wars/basic', '/wiki/kingdom-wars/equipment', '/wiki/kingdom-wars/tools', '/wiki/dynasty-wars/generals', '/wiki/dynasty-wars/tools'])('keeps %s where it is', async (path) => {
     const { router } = await open(path);
     expect(router.url).toBe(path);
   });
@@ -48,16 +50,16 @@ describe('Wiki pages', () => {
   });
 
   it.each([
-    ['/wiki/default/generals', 'Deck: Dynasty Wars'],
-    ['/wiki/default/tools', 'Deck: Dynasty Wars'],
-    ['/wiki/alternate/tools', 'Deck: Kingdom Wars'],
+    ['/wiki/dynasty-wars/generals', 'Deck: Dynasty Wars'],
+    ['/wiki/dynasty-wars/tools', 'Deck: Dynasty Wars'],
+    ['/wiki/kingdom-wars/tools', 'Deck: Kingdom Wars'],
   ])('names the deck on %s', async (path, line) => {
     const { el } = await open(path);
     expect(el().querySelector('.deck-line')!.textContent!.trim()).toBe(line);
   });
 
-  it('lists the six Alternate basic cards with their own copies', async () => {
-    const { el } = await open('/wiki/alternate/basic');
+  it('lists the six Kingdom Wars basic cards with their own copies', async () => {
+    const { el } = await open('/wiki/kingdom-wars/basic');
     expect(el().querySelector('mat-tab-group')).toBeNull();
     expect(entryIds(el())).toEqual(['sha', 'fire-attack', 'lightning-attack', 'shan', 'wine', 'peach']);
     expect(el().querySelector('.summary')!.textContent).toBe('6 cards · 6 in the game');
@@ -65,14 +67,14 @@ describe('Wiki pages', () => {
     expect(el().querySelectorAll('.expansion-tag')).toHaveLength(0);
   });
 
-  it('splits Alternate equipment into four tabs with nothing left over, and counts what the game cannot play', async () => {
-    const { el } = await open('/wiki/alternate/equipment');
+  it('splits Kingdom Wars equipment into four tabs with nothing left over, and counts what the game cannot play', async () => {
+    const { el } = await open('/wiki/kingdom-wars/equipment');
     expect(tabLabels(el())).toEqual(['Weapons (10)', 'Armors (4)', 'Defensive Mount (3)', 'Offensive Mount (3)']);
     expect(el().querySelector('.summary')!.textContent).toBe('20 cards · 20 in the game');
   });
 
-  it('lists the 19 Alternate tools, all in the game', async () => {
-    const { el } = await open('/wiki/alternate/tools');
+  it('lists the 19 Kingdom Wars tools, all in the game', async () => {
+    const { el } = await open('/wiki/kingdom-wars/tools');
     expect(tabLabels(el())).toEqual(['Instant (16)', 'Delayed (3)']);
     expect(el().querySelector('.summary')!.textContent).toBe('19 cards · 19 in the game');
     expect(el().querySelector('article.entry[data-id="wuxie-guo"] .badge')!.textContent!.trim()).toBe('In the game');
@@ -111,7 +113,7 @@ describe('Wiki pages', () => {
     (el().querySelectorAll('[role="tab"]')[1] as HTMLElement).click();
     await harness.fixture.whenStable();
     harness.fixture.detectChanges();
-    expect(router.url).toBe('/wiki/default/tools?tab=delayed');
+    expect(router.url).toBe('/wiki/dynasty-wars/tools?tab=delayed');
     expect(entryIds(el())).toEqual(['capture', 'lightning', 'starvation']);
   });
 

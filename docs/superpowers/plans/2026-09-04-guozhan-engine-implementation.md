@@ -1,10 +1,10 @@
-# Kingdom War (Guozhan) Rules Engine Implementation Plan
+# Guozhan Rules Engine Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a headless, framework-independent TypeScript rules engine for Sanguosha's Kingdom War (Guozhan) mode, plus a minimal content pack and simulation harness, inside a single Angular CLI workspace, with the engine/content libraries carrying zero Angular or browser dependency.
+**Goal:** Build a headless, framework-independent TypeScript rules engine for Sanguosha's Guozhan mode, plus a minimal content pack and simulation harness, inside a single Angular CLI workspace, with the engine/content libraries carrying zero Angular or browser dependency.
 
-**Architecture:** Three pure-TypeScript packages — `engine` (domain types, the Action→Effect→Event `resolve()` pipeline, registry interfaces, generic rule modules), `content` (card/general/skill definitions plus the Kingdom War `GameModeDefinition`, depending only on `engine`), and `sim` (a headless Node CLI driving random-legal-move bots through many games) — built inside one Angular CLI workspace via `ng generate library`, tested with Jest, with the future Angular `app` project deferred to a later sub-project.
+**Architecture:** Three pure-TypeScript packages — `engine` (domain types, the Action→Effect→Event `resolve()` pipeline, registry interfaces, generic rule modules), `content` (card/general/skill definitions plus the Guozhan `GameModeDefinition`, depending only on `engine`), and `sim` (a headless Node CLI driving random-legal-move bots through many games) — built inside one Angular CLI workspace via `ng generate library`, tested with Jest, with the future Angular `app` project deferred to a later sub-project.
 
 **Tech Stack:** TypeScript, Angular CLI 22.x (workspace/library tooling only — no `@angular/core` imports in engine/content source), Jest + ts-jest, ts-node (for running the `sim` CLI in development), Node 24.
 
@@ -50,7 +50,7 @@ projects/content/src/lib/
   generals/setTwo.ts, generals/setTwo.spec.ts
   shared/queries.ts                                             — findSeatIdForGeneral, getSeatDistance (used by generals/*, no standalone spec — exercised through the general specs above)
   registry.ts, registry.spec.ts
-  modes/kingdomWar.ts, modes/kingdomWar.spec.ts
+  modes/guozhan.ts, modes/guozhan.spec.ts
   public-api.ts
 
 projects/sim/src/
@@ -822,13 +822,13 @@ describe('registry lookups', () => {
 
   it('finds a registered game mode by id', () => {
     const mode: GameModeDefinition = {
-      id: 'kingdom-war',
+      id: 'guozhan',
       setup: (() => { throw new Error('not used in this test'); }) as GameModeDefinition['setup'],
       checkWinCondition: () => null,
       triggers: [],
     };
-    const modes: ModeRegistry = new Map([['kingdom-war', mode]]);
-    expect(lookupMode(modes, 'kingdom-war')).toBe(mode);
+    const modes: ModeRegistry = new Map([['guozhan', mode]]);
+    expect(lookupMode(modes, 'guozhan')).toBe(mode);
   });
 });
 ```
@@ -3932,11 +3932,11 @@ git commit -m "feat(content): add Dong Zhuo, Zhao Yun, Huang Yueying generals an
 
 ---
 
-## Task 19: Kingdom War GameModeDefinition (content, plus one small engine addition)
+## Task 19: Guozhan GameModeDefinition (content, plus one small engine addition)
 
 **Rule text (written before implementation):**
 - **Setup:** each seat is assigned a kingdom, cycling round-robin through `['Wei','Shu','Wu','Qun']` by seat index, and two hidden generals (main + deputy), assigned round-robin through the sorted list of the content registry's registered general ids. *(Simplified: generals are not filtered to match the seat's own kingdom — this milestone's 6-general pool can't guarantee 2 same-kingdom generals once seat count grows, and a richer content pool would naturally enforce that instead.)* `maxCombinedHp` = the sum of both generals' `maxHp`; `combinedHp` starts at `maxCombinedHp`; both generals start `revealed: false`. A shared deck is built from 4 copies of every registered card definition, shuffled with the setup RNG, and each seat is dealt 4 cards to its hand. Turn starts at seat index 0's seat, phase starts at `'Judgment'`.
-- **Forced reveal:** after any `DamageDealtEvent` against a seat, if that seat's `combinedHp` is now ≤ `floor(maxCombinedHp / 2)` and its main general is still hidden, force-reveal the main general; if `combinedHp` is now ≤ 0 and the deputy is still hidden, force-reveal the deputy too. *(This milestone's concrete choice for the threshold the spec left unresolved — see the spec's Kingdom War section.)*
+- **Forced reveal:** after any `DamageDealtEvent` against a seat, if that seat's `combinedHp` is now ≤ `floor(maxCombinedHp / 2)` and its main general is still hidden, force-reveal the main general; if `combinedHp` is now ≤ 0 and the deputy is still hidden, force-reveal the deputy too. *(This milestone's concrete choice for the threshold the spec left unresolved — see the spec's Guozhan section.)*
 - **Elimination:** a seat is marked `eliminated: true` the instant its `combinedHp` drops to ≤ 0.
 - **Win condition:** the game ends when either (a) exactly one non-eliminated seat remains — that seat wins alone (including a solo Qun survivor) — or (b) every non-eliminated seat shares the same non-Qun kingdom — all of them win together. *(This resolves the spec's flagged Qun-win ambiguity: Qun only ever wins as a lone survivor, never as a group.)*
 
@@ -3945,12 +3945,12 @@ Elimination needs its own engine primitive (nothing currently sets `Seat.elimina
 **Files:**
 - Modify: `projects/engine/src/lib/pipeline/effects.ts` (add `EliminateSeatEffect`)
 - Modify: `projects/engine/src/lib/pipeline/events.ts` (add `SeatEliminatedEvent`)
-- Create: `projects/content/src/lib/modes/kingdomWar.ts`
-- Test: `projects/content/src/lib/modes/kingdomWar.spec.ts`
+- Create: `projects/content/src/lib/modes/guozhan.ts`
+- Test: `projects/content/src/lib/modes/guozhan.spec.ts`
 
 **Interfaces:**
 - Produces (engine): `Effect` gains `{ kind: 'EliminateSeatEffect'; seatId: string }`.
-- Produces (content): `kingdomWarMode: GameModeDefinition`.
+- Produces (content): `guozhanMode: GameModeDefinition`.
 
 - [ ] **Step 1: Add `EliminateSeatEffect` to the engine**
 
@@ -4006,16 +4006,16 @@ git commit -m "feat(engine): add EliminateSeatEffect primitive"
 - [ ] **Step 2: Write the failing test**
 
 ```ts
-// projects/content/src/lib/modes/kingdomWar.spec.ts
-import { kingdomWarMode } from './kingdomWar';
+// projects/content/src/lib/modes/guozhan.spec.ts
+import { guozhanMode } from './guozhan';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve } from 'engine';
 import type { GameState, GameModeDefinition, CardDefinition, ContentRegistry } from 'engine';
 
-describe('Kingdom War setup', () => {
+describe('Guozhan setup', () => {
   it('assigns kingdoms round-robin, sets combined HP from both generals, and deals 4 cards to each seat', () => {
     const registry = buildContentRegistry();
-    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 42);
+    const state = createGame(guozhanMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 42);
     expect(state.seats.map((s) => s.kingdom)).toEqual(['Wei', 'Shu', 'Wu', 'Qun']);
     for (const seat of state.seats) {
       const main = registry.generals.get(seat.generals.main.generalDefinitionId)!;
@@ -4032,7 +4032,7 @@ describe('Kingdom War setup', () => {
   });
 });
 
-describe('Kingdom War forced reveal and elimination', () => {
+describe('Guozhan forced reveal and elimination', () => {
   const testDamageCard: CardDefinition = {
     id: 'test-damage-card', name: 'Test Damage Card', category: 'basic',
     play: (_state, ctx) => [{
@@ -4049,7 +4049,7 @@ describe('Kingdom War forced reveal and elimination', () => {
 
   function twoSeatState(): GameState {
     const registry = registryWithLethalCard();
-    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
+    const state = createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 7);
     return {
       ...state,
       zones: state.zones.map((z) =>
@@ -4066,7 +4066,7 @@ describe('Kingdom War forced reveal and elimination', () => {
     const { state: next } = resolve(
       state,
       { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'lethal-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
-      { registry, mode: kingdomWarMode }
+      { registry, mode: guozhanMode }
     );
     const seatB = next.seats.find((s) => s.id === 'seat-b')!;
     expect(seatB.generals.main.revealed).toBe(true);
@@ -4079,13 +4079,13 @@ describe('Kingdom War forced reveal and elimination', () => {
 
 - [ ] **Step 3: Run test to verify it fails**
 
-Run: `npx jest kingdomWar.spec.ts`
-Expected: FAIL with "Cannot find module './kingdomWar'".
+Run: `npx jest guozhan.spec.ts`
+Expected: FAIL with "Cannot find module './guozhan'".
 
 - [ ] **Step 4: Write minimal implementation**
 
 ```ts
-// projects/content/src/lib/modes/kingdomWar.ts
+// projects/content/src/lib/modes/guozhan.ts
 import type { GameModeDefinition, GameState, ContentRegistry, Kingdom, DamageDealtEvent, Target } from 'engine';
 import { buildDeck, drawTop } from 'engine';
 
@@ -4109,8 +4109,8 @@ function seatIdOfTarget(target: Target): string {
   return target.seatId;
 }
 
-export const kingdomWarMode: GameModeDefinition = {
-  id: 'kingdom-war',
+export const guozhanMode: GameModeDefinition = {
+  id: 'guozhan',
   setup: (seatIds, registry, rng) => {
     const generalIds = [...registry.generals.keys()].sort();
     const seats = seatIds.map((id, index) => {
@@ -4227,7 +4227,7 @@ export const kingdomWarMode: GameModeDefinition = {
 
 - [ ] **Step 5: Run test to verify it passes**
 
-Run: `npx jest kingdomWar.spec.ts`
+Run: `npx jest guozhan.spec.ts`
 Expected: PASS (2 tests).
 
 - [ ] **Step 6: Run the full test suite**
@@ -4239,7 +4239,7 @@ Expected: every suite across `engine` and `content` PASSes.
 
 ```bash
 git add projects/content/src/lib/modes
-git commit -m "feat(content): add Kingdom War GameModeDefinition (setup, forced reveal, win condition)"
+git commit -m "feat(content): add Guozhan GameModeDefinition (setup, forced reveal, win condition)"
 ```
 
 The engine and content libraries are now complete and fully tested. The remaining tasks build `sim`, the headless simulation harness.
@@ -4405,7 +4405,7 @@ git commit -m "feat(sim): scaffold sim project and add the random-legal-move bot
 - Create: `projects/sim/src/cli.ts`
 
 **Interfaces:**
-- Consumes: `resolve`, `createRng`, `createGame` from `engine`; `buildContentRegistry`, `kingdomWarMode` from `content`; `pickRandomAction` from `./bot`.
+- Consumes: `resolve`, `createRng`, `createGame` from `engine`; `buildContentRegistry`, `guozhanMode` from `content`; `pickRandomAction` from `./bot`.
 - Produces: `runGame(initialState: GameState, ctx: EngineContext, botRngSeed: number, maxActions?: number): { finalState: GameState; actionsSubmitted: number }`; `checkInvariants(state: GameState): string[]` (empty = no violations found).
 
 - [ ] **Step 1: Populate `content`'s public API**
@@ -4413,7 +4413,7 @@ git commit -m "feat(sim): scaffold sim project and add the random-legal-move bot
 ```ts
 // projects/content/src/public-api.ts
 export * from './lib/registry';
-export * from './lib/modes/kingdomWar';
+export * from './lib/modes/guozhan';
 ```
 
 (Individual cards/generals aren't re-exported — `sim` and any future consumer only need the assembled registry and the mode definition, not each card/general symbol individually.)
@@ -4424,13 +4424,13 @@ export * from './lib/modes/kingdomWar';
 // projects/sim/src/runGame.spec.ts
 import { runGame } from './runGame';
 import { createGame } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 
 describe('runGame', () => {
-  it('drives a Kingdom War game to a terminal GameResult using the random-legal-move bot', () => {
+  it('drives a Guozhan game to a terminal GameResult using the random-legal-move bot', () => {
     const registry = buildContentRegistry();
-    const initialState = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 123);
-    const { finalState, actionsSubmitted } = runGame(initialState, { registry, mode: kingdomWarMode }, 456);
+    const initialState = createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 123);
+    const { finalState, actionsSubmitted } = runGame(initialState, { registry, mode: guozhanMode }, 456);
     expect(finalState.result).not.toBeNull();
     expect(actionsSubmitted).toBeGreaterThan(0);
   });
@@ -4478,7 +4478,7 @@ export function runGame(
 - [ ] **Step 5: Run test to verify it passes**
 
 Run: `npx jest --selectProjects sim`
-Expected: PASS. This may take a few seconds of wall-clock time (a full random-bot game plays out) but must complete well under the 2000-action cap — if it times out or hits the cap, re-check Task 19's Kingdom War win condition and Task 15/16's no-target guards are exactly as written, since a stuck game means a `resolve()` call is silently failing to make progress somewhere in that chain.
+Expected: PASS. This may take a few seconds of wall-clock time (a full random-bot game plays out) but must complete well under the 2000-action cap — if it times out or hits the cap, re-check Task 19's Guozhan win condition and Task 15/16's no-target guards are exactly as written, since a stuck game means a `resolve()` call is silently failing to make progress somewhere in that chain.
 
 - [ ] **Step 6: Write the failing test for `checkInvariants`**
 
@@ -4584,15 +4584,15 @@ Expected: PASS (4 tests in `invariants.spec.ts`, plus `runGame.spec.ts` and `bot
 #!/usr/bin/env node
 // projects/sim/src/cli.ts
 import { createGame } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 import { runGame } from './runGame';
 import { checkInvariants } from './invariants';
 
 function playOneGame(seed: number, numSeats: number) {
   const registry = buildContentRegistry();
   const seatIds = Array.from({ length: numSeats }, (_, i) => `seat-${i}`);
-  const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
-  return runGame(initialState, { registry, mode: kingdomWarMode }, seed);
+  const initialState = createGame(guozhanMode, registry, seatIds, seed);
+  return runGame(initialState, { registry, mode: guozhanMode }, seed);
 }
 
 function runSingle(seed: number, numSeats: number): void {
@@ -4666,7 +4666,7 @@ The spec's testing strategy calls for automated (Jest, not just the manual CLI) 
 - Create: `projects/sim/src/property.spec.ts`
 
 **Interfaces:**
-- Consumes: `createGame` from `engine`; `buildContentRegistry`, `kingdomWarMode` from `content`; `runGame` from `./runGame`; `checkInvariants` from `./invariants`.
+- Consumes: `createGame` from `engine`; `buildContentRegistry`, `guozhanMode` from `content`; `runGame` from `./runGame`; `checkInvariants` from `./invariants`.
 
 - [ ] **Step 1: Write the test**
 
@@ -4675,11 +4675,11 @@ There's no separate "fails first" step here — this test exercises only already
 ```ts
 // projects/sim/src/property.spec.ts
 import { createGame } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 import { runGame } from './runGame';
 import { checkInvariants } from './invariants';
 
-describe('property: simulated Kingdom War games across many seeds and seat counts', () => {
+describe('property: simulated Guozhan games across many seeds and seat counts', () => {
   it('every game terminates with a valid, non-dangling GameResult and no invariant violations', () => {
     const registry = buildContentRegistry();
     const seatCounts = [2, 3, 4, 5, 6, 7, 8];
@@ -4690,10 +4690,10 @@ describe('property: simulated Kingdom War games across many seeds and seat count
       for (let i = 0; i < 10; i++) {
         seed++;
         const seatIds = Array.from({ length: numSeats }, (_, idx) => `seat-${idx}`);
-        const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
+        const initialState = createGame(guozhanMode, registry, seatIds, seed);
         const { finalState, actionsSubmitted } = runGame(
           initialState,
-          { registry, mode: kingdomWarMode },
+          { registry, mode: guozhanMode },
           seed * 7 + 1,
           2000
         );
@@ -4735,5 +4735,5 @@ git add projects/sim/src/property.spec.ts
 git commit -m "test(sim): add property-style invariant tests across many seeds and seat counts"
 ```
 
-This completes the Kingdom War rules engine sub-project: `projects/engine` and `projects/content` are fully framework-independent, unit-tested, and demonstrate the extensibility model (registries, pluggable `GameModeDefinition`) from the spec; `projects/sim` proves the engine runs headlessly under plain Node and holds up across many simulated games. The Angular presentation layer and the application/persistence layer remain future sub-projects, per the spec's stated scope.
+This completes the Guozhan rules engine sub-project: `projects/engine` and `projects/content` are fully framework-independent, unit-tested, and demonstrate the extensibility model (registries, pluggable `GameModeDefinition`) from the spec; `projects/sim` proves the engine runs headlessly under plain Node and holds up across many simulated games. The Angular presentation layer and the application/persistence layer remain future sub-projects, per the spec's stated scope.
 

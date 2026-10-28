@@ -33,7 +33,7 @@ const registry: ContentRegistry = {
     ['herald', { id: 'herald', kingdom: 'Wei', maxHp: 4, skills: [omen] }],
   ]),
 };
-// Like Kingdom War: whoever enters Draw draws 2.
+// Like Guozhan: whoever enters Draw draws 2.
 const mode: GameModeDefinition = {
   id: 'stub',
   setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'],

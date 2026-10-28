@@ -88,29 +88,29 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     case 'astrology':
     case 'armed-consorts':
     case 'eclipse-the-moon':
-    case 'alternate:prudence':
+    case 'kingdomWars:prudence':
       return true;
     // Divine Wisdom: only when the discard heals her (as many cards as her HP while hurt), or costs next to nothing (at most 1 card).
-    case 'alternate:divine-wisdom': {
+    case 'kingdomWars:divine-wisdom': {
       const cards = handSize(view, me);
       return (hurt(me) && cards >= me.combinedHp) || cards <= 1;
     }
     // Dauntless: only against a non-ally, and only with a Basic card to spare.
-    case 'alternate:dauntless':
+    case 'kingdomWars:dauntless':
       return !!target && !isAlly(me, target, view) && handCards(view, me).some((c) => registry.cards.get(c.definitionId)?.category === 'basic' && keepRank(view, registry, c.instanceId) < 3);
     case 'unyielding':
       return !!target && !isAlly(me, target, view);
     // Deathly Counsel: only when a non-ally has a hand or equipment card to lose.
-    case 'alternate:deathly-counsel':
+    case 'kingdomWars:deathly-counsel':
       return others(view, me).some((s) => !isAlly(me, s, view) && [s.hand.zoneId, s.equipped.zoneId].some((id) => (view.zones.find((z) => z.id === id)?.cards.length ?? 0) > 0));
     // Comity: only when an ally can take the cards.
-    case 'alternate:comity':
+    case 'kingdomWars:comity':
       return others(view, me).some((s) => isAlly(me, s, view));
     // Insanity Axe: only against a non-ally (the seat the Sha hit).
-    case 'alternate:insanity-axe':
+    case 'kingdomWars:insanity-axe':
       return !!target && !isAlly(me, target, view);
     // Double Edged: losing ends the Play Phase, so only with a high card (10 or more) and a non-ally to compete with.
-    case 'alternate:double-edged':
+    case 'kingdomWars:double-edged':
       return handCards(view, me).some((c) => c.rank >= 10) && others(view, me).some((s) => !isAlly(me, s, view) && handSize(view, s) > 0);
     case 'raid':
       return others(view, me).filter((s) => !isAlly(me, s, view) && handSize(view, s) > 0).length >= 2;
@@ -144,21 +144,21 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       return spare.length > 0 ? [spare[0]] : 'cancel';
     }
     // Dauntless: her own pick is the least useful Basic card; as the victim, discard the least useful Equipment card when it is spare or HP is 1, else take the damage.
-    case 'alternate:dauntless': {
+    case 'kingdomWars:dauntless': {
       const step = selection.then.kind === 'skill-step' ? selection.then.step.step : '';
       const least = leastUseful(view, registry, eligible)[0];
       if (step === 'discarded') return [least];
       return me.combinedHp <= 1 || keepRank(view, registry, least) < 3 ? [least] : 'cancel';
     }
     // Swift and Deadly: his own pick is the least useful card; the seat is the weakest far foe, else the weakest foe.
-    case 'alternate:swift-and-deadly': {
+    case 'kingdomWars:swift-and-deadly': {
       if (selection.of === 'cards') return [leastUseful(view, registry, eligible)[0]];
       const seats = eligible.map((id) => view.seats.find((s) => s.id === id)!).filter(Boolean);
       const foes = byLowestHp(farFoes(view, me).filter((s) => eligible.includes(s.id)));
       return [(foes[0] ?? byLowestHp(seats.filter((s) => !isAlly(me, s, view)))[0] ?? seats[0]).id];
     }
     case 'kindness': {
-      // The thresholds below are Default's (2); a variant with another number (Benevolence: 3) is played legally, not optimally.
+      // The thresholds below are Dynasty Wars' (2); a variant with another number (Benevolence: 3) is played legally, not optimally.
       const given = view.turn.abilityUses?.[`${abilityUseKey(owner)}/given`] ?? 0;
       const count = Math.max(eligible.length - 3, hurt(me) && given < 2 ? 2 - given : 0, 1);
       return leastUseful(view, registry, eligible).slice(0, Math.min(count, eligible.length));
@@ -213,22 +213,22 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
   const cancelId = choice.options.find((o) => o.id === 'cancel')?.id;
   const harmless = ally ?? seats[0];
   // Bequeathed Strategy: the cards are seen, not drawn. Of the two, the first is given first; a card goes to an ally, else the bot keeps it.
-  if (choice.reason.abilityId === 'alternate:bequeathed-strategy') return seats.length === 0 ? (choice.options[0]?.id ?? null) : (ally ?? me).id;
+  if (choice.reason.abilityId === 'kingdomWars:bequeathed-strategy') return seats.length === 0 ? (choice.options[0]?.id ?? null) : (ally ?? me).id;
   switch (baseSkillId(choice.reason.abilityId)) {
     // Prudence: a seat of her Kingdom draws; an ally, else the first seat offered.
-    case 'alternate:prudence':
+    case 'kingdomWars:prudence':
       return harmless?.id ?? null;
     // Deathly Counsel: a non-ally to discard from (the seat pick), then its first offered card.
-    case 'alternate:deathly-counsel':
+    case 'kingdomWars:deathly-counsel':
       return seats.length > 0 ? (firstNonAlly ?? seats[0]).id : (choice.options[0]?.id ?? null);
     // Comity: an ally takes the cards (never offered a choice without one: it declines).
-    case 'alternate:comity':
+    case 'kingdomWars:comity':
       return ally?.id ?? null;
     // Double Edged: the Sha goes at the weakest non-ally offered, else the first seat offered.
-    case 'alternate:double-edged':
+    case 'kingdomWars:double-edged':
       return (firstNonAlly ?? seats[0])?.id ?? null;
     // Insanity Axe: the victim's first worn card; then move it when that replaces nothing of hers, else discard it.
-    case 'alternate:insanity-axe': {
+    case 'kingdomWars:insanity-axe': {
       const move = choice.options.find((o) => o.id === 'move-card');
       if (!move) return choice.options[0]?.id ?? null;
       return move.effects.filter((e) => e.kind === 'MoveCardEffect').length > 1 ? 'discard-card' : 'move-card';
@@ -268,12 +268,12 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
     case 'reconsider':
       return hand.some((c) => keepRank(view, registry, c.instanceId) < 3);
     // Swift and Deadly: a Sha in hand, a far foe to reach with it, and another card to spare.
-    case 'alternate:swift-and-deadly': {
+    case 'kingdomWars:swift-and-deadly': {
       const sha = hand.find((c) => isShaCard(registry, c.definitionId));
       return !!sha && farFoes(view, me).length > 0 && ownCards(view, me).some((c) => c.instanceId !== sha.instanceId && keepRank(view, registry, c.instanceId) < 3);
     }
     // Call of Valour: once per game, so only when it pays: he is hurt, or an ally of his Kingdom draws too. (Its own Kingdom is a bot's seat's.)
-    case 'alternate:call-of-valour':
+    case 'kingdomWars:call-of-valour':
       return hurt(me) || allies.length > 0;
     case 'green-vesicle':
       return spare.length > 0 && (hurt(me) || allies.some(hurt));
@@ -286,7 +286,7 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
       return males.length >= 2 && males.some((s) => !isAlly(me, s, view));
     }
     case 'kindness': {
-      // Default's threshold (2) also for a variant (Benevolence heals at 3): legal, not smart.
+      // Dynasty Wars' threshold (2) also for a variant (Benevolence heals at 3): legal, not smart.
       const owner = { kind: 'general' as const, seatId: me.id, slot: 'main' as const, skillId };
       const given = (['main', 'deputy'] as const).reduce((n, slot) => n + (view.turn.abilityUses?.[`${abilityUseKey({ ...owner, slot })}/given`] ?? 0), 0);
       return allies.length > 0 && (hand.length > 3 || (hurt(me) && given < 2 && hand.length >= 2));
@@ -297,8 +297,8 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
 }
 
 const ACTIVE_ORDER = {
-  early: ['battered-body', 'alternate:swift-and-deadly', 'reconsider', 'green-vesicle', 'marriage', 'shackle', 'heavens-justice', 'rouse-the-tiger', 'alliance'],
-  late: ['sow-revolt', 'sow-discord', 'kindness', 'assault', 'upheaval', 'instigate', 'direct-instruction', 'alternate:call-of-valour'],
+  early: ['battered-body', 'kingdomWars:swift-and-deadly', 'reconsider', 'green-vesicle', 'marriage', 'shackle', 'heavens-justice', 'rouse-the-tiger', 'alliance'],
+  late: ['sow-revolt', 'sow-discord', 'kindness', 'assault', 'upheaval', 'instigate', 'direct-instruction', 'kingdomWars:call-of-valour'],
 } as const;
 
 // The active skill to use now from `group`, if any: offered and wanted (using it
@@ -329,6 +329,6 @@ export function conversionSpare(view: GameState, me: Seat, action: UseConversion
   return cards.length === owned.conversion.cards && !cards.some((id) => definitionIdOf(view, id) === 'peach');
 }
 
-// The conversion abilities whose card selection the bot fills (least useful first). A variant with a Default base is
-// covered by it; 'alternate:scrutinize' has none and is listed here (the bot never starts it: it does not play Amass yet).
-export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['alternate:scrutinize', 'fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes', 'blockade', 'wine', 'strategic-pass']);
+// The conversion abilities whose card selection the bot fills (least useful first). A variant with a Dynasty Wars base is
+// covered by it; 'kingdomWars:scrutinize' has none and is listed here (the bot never starts it: it does not play Amass yet).
+export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['kingdomWars:scrutinize', 'fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes', 'blockade', 'wine', 'strategic-pass']);

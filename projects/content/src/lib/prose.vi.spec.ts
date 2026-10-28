@@ -76,8 +76,8 @@ describe('the display functions by locale', () => {
   });
 
   it('Vietnamese returns the Vietnamese entry', () => {
-    expect(abilityHint('alternate:warrior-lady', 'en')).toBe('Draw 2 cards');
-    expect(abilityHint('alternate:warrior-lady', 'vi')).toBe('Rút 2 lá bài');
+    expect(abilityHint('kingdomWars:warrior-lady', 'en')).toBe('Draw 2 cards');
+    expect(abilityHint('kingdomWars:warrior-lady', 'vi')).toBe('Rút 2 lá bài');
     expect(abilityHint('axe', 'vi')).toBe('Bỏ 2 lá bài để Sát của bạn trúng {target}');
     expect(selectionText('bestowed-rouse', 'vi')).toEqual({ prompt: 'Chọn các lá bài vừa rút để đưa đi', confirm: 'Đưa', cancel: 'Giữ phần còn lại' });
     expect(seatPickText('alliance', 'vi')).toBe('Chọn một người chơi để đổi bài trên tay với {target}');
@@ -85,17 +85,17 @@ describe('the display functions by locale', () => {
     expect(stepSelectionText('compete-user', 'vi')).toEqual({ prompt: 'Chọn một lá bài trên tay để đấu điểm', confirm: 'Đấu điểm' });
   });
 
-  it('the Alternate variants show the same prompts as their Default skill', () => {
+  it('the Kingdom Wars variants show the same prompts as their Dynasty Wars skill', () => {
     for (const locale of ['en', 'vi']) {
-      expect(choicePromptText('alternate:descend-into-chaos', locale)).toBe(choicePromptText('upheaval', locale));
-      expect(choicePromptText('alternate:lightning-strike', locale)).toBe(choicePromptText('lightning-strike', locale));
-      expect(abilityHint('alternate:lightning-strike', locale)).toBe(abilityHint('lightning-strike', locale));
+      expect(choicePromptText('kingdomWars:descend-into-chaos', locale)).toBe(choicePromptText('upheaval', locale));
+      expect(choicePromptText('kingdomWars:lightning-strike', locale)).toBe(choicePromptText('lightning-strike', locale));
+      expect(abilityHint('kingdomWars:lightning-strike', locale)).toBe(abilityHint('lightning-strike', locale));
     }
   });
 
-  it('Alternate Resurrection says it also clears Chained', () => {
-    expect(abilityHint('alternate:resurrection', 'en')).toBe('Discard every card, draw 3, recover to 3 HP and turn face up and unchained');
-    expect(abilityHint('alternate:resurrection', 'vi')).toBe('Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3, lật lại và tháo xích');
+  it('Kingdom Wars Resurrection says it also clears Chained', () => {
+    expect(abilityHint('kingdomWars:resurrection', 'en')).toBe('Discard every card, draw 3, recover to 3 HP and turn face up and unchained');
+    expect(abilityHint('kingdomWars:resurrection', 'vi')).toBe('Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3, lật lại và tháo xích');
   });
 
   it('a locale with no prose, or an empty one, falls back to English', () => {

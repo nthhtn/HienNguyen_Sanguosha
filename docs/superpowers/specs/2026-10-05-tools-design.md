@@ -244,11 +244,11 @@ interface ChoiceOption {
 ### Judgments (stage 3)
 
 - **Judgment zone.** `Seat.judgment: { zoneId }` and zone
-  `seat-x:judgment`. The zone kind `judgment` already exists. Kingdom War
+  `seat-x:judgment`. The zone kind `judgment` already exists. Guozhan
   setup creates one per seat.
 - **Delayed Tools.** `play()` moves the card into the target's judgment zone.
   The card's `legalPlayTargets` enforce "no two of the same".
-- **Judgment phase.** A Kingdom War trigger on entering the phase queues, for
+- **Judgment phase.** A Guozhan trigger on entering the phase queues, for
   each card in the owner's judgment zone, newest first:
   `ToolOnTargetEffect(target: owner)` then `DelayedCleanupEffect(card)`.
   - The Wuxie check guards only the rule. The cleanup always runs.

@@ -99,7 +99,7 @@ export function mountainChoice(view: GameState, me: Seat, choice: PendingChoice,
   const seats = seatsOf(view, choice);
   const ally = seats.find((s) => s.id !== me.id && isAlly(me, s, view));
   switch (baseSkillId(choice.reason.abilityId)) {
-    // Alternate Sorrow (Heartbroken's variant): the killer's General with more skills it can see, Main on a tie.
+    // Kingdom Wars Sorrow (Heartbroken's variant): the killer's General with more skills it can see, Main on a tie.
     case 'heartbroken': {
       const killer = choice.reason.targetSeatId;
       const count = (slot: string) => (killer ? skillsInPlay(view, killer, registry, true).filter((x) => x.owner.slot === slot).length : 0);

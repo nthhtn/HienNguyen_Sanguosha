@@ -1,5 +1,5 @@
 import type { GameState } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from '../../public-api';
+import { buildContentRegistry, guozhanMode } from '../../public-api';
 import { card, harness, hp, ids, table } from '../generals/skills.testing';
 import { SHA_FLAGS } from './shaRules';
 
@@ -54,10 +54,10 @@ describe("Slash's targets in one window", () => {
 });
 
 describe('Blaze', () => {
-  it('is in the registry and dealt: its 3 printings are in the deck', () => {
+  it('is in the registry and dealt: its 3 printings are in the Dynasty Wars deck', () => {
     const reg = buildContentRegistry();
     expect(reg.cards.get('blaze')?.outOfDeck).toBeUndefined();
-    const { state } = kingdomWarMode.setup(['s0', 's1'], reg, { seed: 1, counter: 0 });
+    const { state } = guozhanMode.setup(['s0', 's1'], reg, { seed: 1, counter: 0 }, { deck: 'dynastyWars' });
     expect(state.zones.flatMap((z) => z.cards).filter((c) => c.definitionId === 'blaze')).toHaveLength(3);
   });
 

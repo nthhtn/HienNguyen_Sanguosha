@@ -347,7 +347,7 @@ describe('App shell in Vietnamese', () => {
     const { fixture, el } = await render();
     await TestBed.inject(I18n).setLocale('en');
     await fixture.whenStable();
-    expect(text(el.querySelector('mat-toolbar h1'))).toBe('Kingdom War');
+    expect(text(el.querySelector('mat-toolbar h1'))).toBe('Guozhan');
     expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Play', 'Online', 'Cards', 'Rules']);
     await TestBed.inject(I18n).setLocale('vi');
     await fixture.whenStable();
@@ -366,7 +366,7 @@ Expected: FAIL: the shell still renders English. If a test fails for a fixture r
 In `projects/app/src/app/i18n/en.ts`, append inside the object (after the last existing entry, before `} satisfies`):
 
 ```ts
-  'app.title': 'Kingdom War',
+  'app.title': 'Guozhan',
   'nav.play': 'Play',
   'nav.online': 'Online',
   'nav.cards': 'Cards',
@@ -449,7 +449,7 @@ add_import(p, "import { I18n } from './i18n/i18n.service';")
 add_import(p, "import type { MessageKey } from './i18n/messages';")
 add_import(p, "import { TPipe } from './i18n/t.pipe';")
 swap(p, "MatMenuModule, LanguageSwitcher],", "MatMenuModule, LanguageSwitcher, TPipe],")
-swap(p, "  protected readonly title = signal('Kingdom War');\n", "  private readonly i18n = inject(I18n);\n  protected readonly title = computed(() => this.i18n.t('app.title'));\n")
+swap(p, "  protected readonly title = signal('Guozhan');\n", "  private readonly i18n = inject(I18n);\n  protected readonly title = computed(() => this.i18n.t('app.title'));\n")
 swap(p, "import { Component, computed, inject, signal } from '@angular/core';", "import { Component, computed, inject } from '@angular/core';")
 swap(p, "  protected readonly cardPages = [\n    { path: '/wiki/generals', label: 'Generals' },\n    { path: '/wiki/basic', label: 'Basic Cards' },\n    { path: '/wiki/equipment', label: 'Equipment' },\n    { path: '/wiki/tools', label: 'Tools' },\n  ];",
         "  protected readonly cardPages: { path: string; label: MessageKey }[] = [\n    { path: '/wiki/generals', label: 'nav.cards.generals' },\n    { path: '/wiki/basic', label: 'nav.cards.basic' },\n    { path: '/wiki/equipment', label: 'nav.cards.equipment' },\n    { path: '/wiki/tools', label: 'nav.cards.tools' },\n  ];")

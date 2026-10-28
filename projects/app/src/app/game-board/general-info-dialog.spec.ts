@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { GeneralInfoDialog } from './general-info-dialog';
 
-// Every Alternate skill is registered after slice 4, so the registry has no General left that reads "not in the game yet":
+// Every Kingdom Wars skill is registered after slice 4, so the registry has no General left that reads "not in the game yet":
 // this one is pretended, to test how the UI shows the flag.
 jest.mock('content', () => {
   const actual = jest.requireActual('content');
@@ -10,7 +10,7 @@ jest.mock('content', () => {
     ...actual,
     generalDisplayData: (id: string, locale?: string) => {
       const data = actual.generalDisplayData(id, locale);
-      return id === 'alternate:guan-yu' && data ? { ...data, skills: data.skills.map((s: object) => ({ ...s, inGame: false })) } : data;
+      return id === 'kingdomWars:guan-yu' && data ? { ...data, skills: data.skills.map((s: object) => ({ ...s, inGame: false })) } : data;
     },
   };
 });
@@ -45,13 +45,13 @@ describe('GeneralInfoDialog', () => {
     expect(el.textContent).not.toContain('no-such-general');
   });
 
-  it('flags an Alternate skill the game does not play yet, and not a ready or Default one', () => {
-    const notReady = render('alternate:guan-yu');
+  it('flags a Kingdom Wars skill the game does not play yet, and not a ready or Dynasty Wars one', () => {
+    const notReady = render('kingdomWars:guan-yu');
     expect(notReady.textContent).toContain('Warrior Saint');
     expect(notReady.querySelectorAll('.not-in-game-hint')).toHaveLength(1);
     expect(notReady.querySelector('.not-in-game-hint')!.textContent).toContain('Not in the game yet');
     TestBed.resetTestingModule();
-    expect(render('alternate:zhang-fei').querySelector('.not-in-game-hint')).toBeNull();
+    expect(render('kingdomWars:zhang-fei').querySelector('.not-in-game-hint')).toBeNull();
     TestBed.resetTestingModule();
     expect(render('guan-yu').querySelector('.not-in-game-hint')).toBeNull();
   });

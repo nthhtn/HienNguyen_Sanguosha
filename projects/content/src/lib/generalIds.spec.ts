@@ -1,18 +1,18 @@
-import { alternateGeneralId, isAlternateGeneralId, baseGeneralId, ALTERNATE_GENERAL_PREFIX } from './generalIds';
+import { kingdomWarsGeneralId, isKingdomWarsGeneralId, baseGeneralId, KINGDOM_WARS_GENERAL_PREFIX } from './generalIds';
 
-describe('Alternate General ids', () => {
+describe('Kingdom Wars General ids', () => {
   it('prefixes a base id', () => {
-    expect(ALTERNATE_GENERAL_PREFIX).toBe('alternate:');
-    expect(alternateGeneralId('liu-bei')).toBe('alternate:liu-bei');
+    expect(KINGDOM_WARS_GENERAL_PREFIX).toBe('kingdomWars:');
+    expect(kingdomWarsGeneralId('liu-bei')).toBe('kingdomWars:liu-bei');
   });
   it('recognises prefixed ids only', () => {
-    expect(isAlternateGeneralId('alternate:liu-bei')).toBe(true);
-    expect(isAlternateGeneralId('liu-bei')).toBe(false);
-    expect(isAlternateGeneralId('filler-liu-bei')).toBe(false);
+    expect(isKingdomWarsGeneralId('kingdomWars:liu-bei')).toBe(true);
+    expect(isKingdomWarsGeneralId('liu-bei')).toBe(false);
+    expect(isKingdomWarsGeneralId('filler-liu-bei')).toBe(false);
   });
   it('strips the prefix once', () => {
-    expect(baseGeneralId('alternate:liu-bei')).toBe('liu-bei');
+    expect(baseGeneralId('kingdomWars:liu-bei')).toBe('liu-bei');
     expect(baseGeneralId('liu-bei')).toBe('liu-bei');
-    expect(baseGeneralId('alternate:alternate:x')).toBe('alternate:x');
+    expect(baseGeneralId('kingdomWars:kingdomWars:x')).toBe('kingdomWars:x');
   });
 });

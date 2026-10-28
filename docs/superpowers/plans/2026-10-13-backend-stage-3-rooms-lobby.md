@@ -75,7 +75,7 @@
    - `host_left`: "The host closed the room"
    - `idle`: "The room closed after 30 minutes without activity"
    - `left`: sent after the member's own leave; no notice is shown
-7. **Seat limits come from the server.** `GET /api/rooms` answers `{ rooms, seatLimits }`, and `RoomSnapshot` carries `seatLimits`. The UI never computes the maximum itself. The server uses min 2 and max `kingdomWarMaxSeats(buildContentRegistry())`.
+7. **Seat limits come from the server.** `GET /api/rooms` answers `{ rooms, seatLimits }`, and `RoomSnapshot` carries `seatLimits`. The UI never computes the maximum itself. The server uses min 2 and max `guozhanMaxSeats(buildContentRegistry())`.
 8. **Reaching the Rooms screen.** A new toolbar item, **Online** (icon `public`), links to `/rooms`. The online Play screen, with Play vs Bots, arrives with solo rooms in Stage 4.
 9. **`PROTOCOL_VERSION` stays 1.** Nothing has been deployed yet.
 10. **New error codes**, with their messages and HTTP statuses:
@@ -2566,7 +2566,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes:
   - `RoomService`, `ROOM_TICK_MS`, `RoomError`, `RoomErrorCode` (Tasks 4–5);
   - `CreateRoomBodySchema`, `JoinRoomBodySchema`, `RoomParamsSchema` (Task 1);
-  - `buildContentRegistry`, `kingdomWarMaxSeats` from `content`; `MIN_SEATS` from `protocol`.
+  - `buildContentRegistry`, `guozhanMaxSeats` from `content`; `MIN_SEATS` from `protocol`.
 - Produces:
   - `AppDeps.rooms: RoomService` (required)
   - `ROOM_ERROR_STATUS: Record<RoomErrorCode, number>`
@@ -2729,7 +2729,7 @@ Add to `projects/server/src/server.spec.ts`, inside the `describe`, a second tes
       });
       const session = guest.cookies.find((c) => c.name === 'sgs_session')!.value;
       const list = await server.app.inject({ method: 'GET', url: '/api/rooms', cookies: { sgs_session: session } });
-      expect(list.json()).toEqual({ rooms: [], seatLimits: { min: 2, max: kingdomWarMaxSeats(buildContentRegistry()) } });
+      expect(list.json()).toEqual({ rooms: [], seatLimits: { min: 2, max: guozhanMaxSeats(buildContentRegistry()) } });
     } finally {
       await server.close();
     }
@@ -2739,7 +2739,7 @@ Add to `projects/server/src/server.spec.ts`, inside the `describe`, a second tes
 and add at the top of that file:
 
 ```ts
-import { buildContentRegistry, kingdomWarMaxSeats } from 'content';
+import { buildContentRegistry, guozhanMaxSeats } from 'content';
 ```
 
 - [ ] **Step 2: Run them and see them fail**
@@ -2881,7 +2881,7 @@ In `projects/server/src/server.ts`:
 1. Add these imports:
 
 ```ts
-import { buildContentRegistry, kingdomWarMaxSeats } from 'content';
+import { buildContentRegistry, guozhanMaxSeats } from 'content';
 import { MIN_SEATS } from 'protocol';
 import { ROOM_TICK_MS, RoomService } from './rooms/roomService';
 ```
@@ -2891,7 +2891,7 @@ import { ROOM_TICK_MS, RoomService } from './rooms/roomService';
 ```ts
   const rooms = new RoomService({
     repos: store.repos,
-    seatLimits: { min: MIN_SEATS, max: kingdomWarMaxSeats(buildContentRegistry()) },
+    seatLimits: { min: MIN_SEATS, max: guozhanMaxSeats(buildContentRegistry()) },
     logError: (err, message) => app.log.error(err, message),
   });
   await rooms.restore();

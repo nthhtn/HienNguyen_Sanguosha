@@ -1,6 +1,6 @@
 # Architecture docs
 
-Start here. These docs explain how the Sanguosha (Kingdom War / Guozhan) app
+Start here. These docs explain how the Sanguosha (Guozhan) app
 is put together, for engineers who are new to the codebase or about to change
 it.
 

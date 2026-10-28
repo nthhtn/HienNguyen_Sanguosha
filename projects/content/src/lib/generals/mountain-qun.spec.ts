@@ -1,7 +1,7 @@
 import { createGame, redactStateForSeat, skillsInPlay } from 'engine';
 import { askedAbout, card, handIds, harness, hp, ids, kwMode, registry, table, TableOptions } from './skills.testing';
 import { seatGender } from '../shared/gender';
-import { kingdomWarMode } from '../modes/kingdomWar';
+import { guozhanMode } from '../modes/guozhan';
 import { buildContentRegistry } from '../registry';
 
 const h = harness();
@@ -229,7 +229,7 @@ describe('seatGender when silenced', () => {
     expect(seatGender(s, 'seat-a', registry)).toBe('male'); // Zuo Ci's own
   });
 
-  it('a Form held by a General that lost its skills (Alternate Sorrow) lends no gender; one held by the other General still does', () => {
+  it('a Form held by a General that lost its skills (Kingdom Wars Sorrow) lends no gender; one held by the other General still does', () => {
     const t = table({}, { generals: at('seat-a', 'zuo-ci') });
     const form = (silenced: 'main' | 'deputy') => ({ ...t, seats: t.seats.map((x) => (x.id === 'seat-a' ? { ...x, silencedSlots: [silenced], forms: { slot: 'main' as const, held: ['da-qiao'], chosen: { generalId: 'da-qiao', skillId: 'displace' } } } : x)) });
     expect(seatGender(form('main'), 'seat-a', registry)).toBe('male');
@@ -252,9 +252,9 @@ describe('Zuo Ci — New Life', () => {
   });
 });
 
-describe('Kingdom War deals Zuo Ci his Forms', () => {
+describe('Guozhan deals Zuo Ci his Forms', () => {
   it('a seat that chose a General with spare Generals to deal is dealt them; others are not', () => {
-    const trigger = kingdomWarMode.triggers.find((t) => t.point === 'after:GeneralsChosenEvent')!;
+    const trigger = guozhanMode.triggers.find((t) => t.point === 'after:GeneralsChosenEvent')!;
     const chosen = table({}, { generals: at('seat-a', 'zuo-ci') });
     const event = { kind: 'GeneralsChosenEvent', seatId: 'seat-a' };
     expect(trigger.condition(chosen, event, undefined, registry)).toBe(true);
@@ -264,7 +264,7 @@ describe('Kingdom War deals Zuo Ci his Forms', () => {
 
   it('Zuo Ci is never in the spare pool', () => {
     for (let seed = 1; seed <= 10; seed++) {
-      expect(createGame(kingdomWarMode, buildContentRegistry(), ['seat-0', 'seat-1', 'seat-2'], seed).spareGenerals).not.toContain('zuo-ci');
+      expect(createGame(guozhanMode, buildContentRegistry(), ['seat-0', 'seat-1', 'seat-2'], seed).spareGenerals).not.toContain('zuo-ci');
     }
   });
 });

@@ -36,7 +36,7 @@ export const surprise: SkillDefinition = {
   conversions: [{ id: 'surprise', as: 'break', cards: 1, from: 'hand-and-equipment', accepts: black, when: 'play' }],
 };
 
-// Humility (compulsory): Steal and Capture can't target you. `cancels` (Alternate): they can, and are
+// Humility (compulsory): Steal and Capture can't target you. `cancels` (Kingdom Wars): they can, and are
 // cancelled for you instead (used, but with no effect on you; a Capture is not placed).
 const HUMILITY_CARDS = ['steal', 'capture'];
 export function makeHumility(cancels: boolean): SkillDefinition {
@@ -80,9 +80,9 @@ function lastOfInstance(state: GameState, event: CardMovedEvent, ownerSeatId: st
   return true;
 }
 
-// Armed Consorts. 'per-card-compulsory' (Default, compulsory): each time a card leaves your equipment
+// Armed Consorts. 'per-card-compulsory' (Dynasty Wars, compulsory): each time a card leaves your equipment
 // (replaced, taken, discarded, or used through a conversion), you draw 2. 'per-instance-may'
-// (Alternate Warrior Lady, may): once per instance of cards leaving your equipment (see lastOfInstance),
+// (Kingdom Wars Warrior Lady, may): once per instance of cards leaving your equipment (see lastOfInstance),
 // you may draw 2, asked each time.
 export const makeArmedConsorts = (mode: 'per-card-compulsory' | 'per-instance-may'): SkillDefinition => ({
   id: 'armed-consorts',
@@ -188,8 +188,8 @@ export const batteredBody: SkillDefinition = {
 };
 
 // Reconsider (active, once per turn): discard any number of cards (at least 1)
-// from your hand or equipment, then draw that many. Default has no limit; the
-// Alternate Balance of Power variant caps the cards discarded at `limit(state, seatId)`.
+// from your hand or equipment, then draw that many. Dynasty Wars has no limit; the
+// Kingdom Wars Balance of Power variant caps the cards discarded at `limit(state, seatId)`.
 export const makeReconsider = (limit?: (state: GameState, seatId: string) => number): SkillDefinition => ({
   id: 'reconsider',
   active: {
@@ -208,7 +208,7 @@ export const makeReconsider = (limit?: (state: GameState, seatId: string) => num
 
 export const reconsider: SkillDefinition = makeReconsider();
 
-// Rescued: a Lord skill, inactive in Kingdom War.
+// Rescued: a Lord skill, inactive in Guozhan.
 export const rescued: SkillDefinition = { id: 'rescued', lord: true };
 
 // Other living male seats below their max HP.

@@ -152,7 +152,7 @@
   - Cards: `src/lib/cards/sha.ts`, `coerce.ts`, `mass-attack.ts`.
   - Shared: `src/lib/shared/abilities.ts`.
   - `src/lib/registry.ts`, `src/lib/display.ts`.
-  - Tests: `cards.spec.ts`, `tools.spec.ts`, `wine.spec.ts`, `equipment-abilities.spec.ts`, `registry.spec.ts`, `modes/kingdomWar.spec.ts`.
+  - Tests: `cards.spec.ts`, `tools.spec.ts`, `wine.spec.ts`, `equipment-abilities.spec.ts`, `registry.spec.ts`, `modes/guozhan.spec.ts`.
 - Data:
   - The 57 General files in `data/generals/*/*.json`.
   - `data/generals/index.ts` (the `gender` field).
@@ -2579,7 +2579,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `projects/content/src/lib/shared/armor.ts`
 - Modify:
   - Engine: `projects/engine/src/lib/registry/types.ts` (`untargetableBy`).
-  - Content: `shared/abilities.ts`, `cards/mass-attack.ts`, `registry.ts`, `registry.spec.ts`, `modes/kingdomWar.spec.ts`.
+  - Content: `shared/abilities.ts`, `cards/mass-attack.ts`, `registry.ts`, `registry.spec.ts`, `modes/guozhan.spec.ts`.
 
 **Interfaces:**
 - Consumes: `atStep`, `askAtStep`, `actedOn`, `cardStep` (Task 5). `JudgeEffect.data`, `onlyFrom`, `AbilityUsedEffect` (Task 2).
@@ -2792,7 +2792,7 @@ describe('Eight Trigrams', () => {
 
 In `projects/content/src/lib/registry.spec.ts`, add `'eight-trigrams', 'black-shield', 'wood-armor'` to the expected card ids.
 
-In `projects/content/src/lib/modes/kingdomWar.spec.ts`, the deck grows by 5: change `toHaveLength(106)` to `toHaveLength(111)`.
+In `projects/content/src/lib/modes/guozhan.spec.ts`, the deck grows by 5: change `toHaveLength(106)` to `toHaveLength(111)`.
 
 - [ ] **Step 3: Run them to verify they fail**
 
@@ -2992,7 +2992,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `projects/content/src/lib/cards/equipment/gender-swords.ts`, `ancient-scimitar.ts`, `ice-sword.ts`, `longbow.ts`
 - Modify:
   - Engine: `projects/engine/src/lib/registry/types.ts` (`GeneralDefinition.gender`).
-  - Content: `shared/queries.ts` (`handOf`), `registry.ts`, `registry.spec.ts`, `modes/kingdomWar.spec.ts`, `cards/equipment/sha-equipment.spec.ts`.
+  - Content: `shared/queries.ts` (`handOf`), `registry.ts`, `registry.spec.ts`, `modes/guozhan.spec.ts`, `cards/equipment/sha-equipment.spec.ts`.
 
 **Interfaces:**
 - Consumes: `shaData`, `shaStep` (Task 5). `ownerCard` (Task 6). `holdsAnyCard`, `seatCardOptions` (`shared/choices.ts`). `equipSlotOf` (`cards/equipment/index.ts`).
@@ -3094,7 +3094,7 @@ Add to `projects/content/src/lib/registry.spec.ts`:
   });
 ```
 
-Add `'gender-swords', 'ancient-scimitar', 'ice-sword', 'longbow'` to the registry spec's expected card ids. In `kingdomWar.spec.ts`, change `toHaveLength(111)` to `toHaveLength(115)`.
+Add `'gender-swords', 'ancient-scimitar', 'ice-sword', 'longbow'` to the registry spec's expected card ids. In `guozhan.spec.ts`, change `toHaveLength(111)` to `toHaveLength(115)`.
 
 Append to `projects/content/src/lib/cards/equipment/sha-equipment.spec.ts`:
 
@@ -3476,7 +3476,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Files:**
 - Create: `projects/content/src/lib/cards/equipment/axe.ts`, `green-dragon-blade.ts`, `sky-scorcher.ts`, `serpent-spear.ts`
 - Modify:
-  - Content: `cards/equipment/index.ts` (Green Dragon Blade moves out), `cards/equipment/sha-equipment.spec.ts`, `registry.ts`, `registry.spec.ts`, `modes/kingdomWar.spec.ts`.
+  - Content: `cards/equipment/index.ts` (Green Dragon Blade moves out), `cards/equipment/sha-equipment.spec.ts`, `registry.ts`, `registry.spec.ts`, `modes/guozhan.spec.ts`.
   - Content specs that import `greenDragonBladeCard` from `'./equipment'` (`equipment-abilities.spec.ts`, `tools.spec.ts`): change the import path to `'./equipment/green-dragon-blade'`.
 
 **Interfaces:**
@@ -3657,7 +3657,7 @@ describe('pausing on the new decisions (Review Focus 5)', () => {
 });
 ```
 
-In `projects/content/src/lib/registry.spec.ts`, add `'axe', 'sky-scorcher', 'serpent-spear'` to the expected ids. In `kingdomWar.spec.ts`, change `toHaveLength(115)` to `toHaveLength(118)`.
+In `projects/content/src/lib/registry.spec.ts`, add `'axe', 'sky-scorcher', 'serpent-spear'` to the expected ids. In `guozhan.spec.ts`, change `toHaveLength(115)` to `toHaveLength(118)`.
 
 - [ ] **Step 2: Run them to verify they fail**
 

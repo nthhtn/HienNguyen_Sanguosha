@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS } from 'content';
 import type { DeckId } from 'content';
 import { DeckPicker } from '../deck-picker';
 import type { SeatLimits } from 'protocol';
@@ -82,7 +82,7 @@ export class PlayVsBotsDialog {
 
   readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
   readonly firstRevealDraw = signal(true);
-  readonly deck = signal<DeckId>('alternate');
+  readonly deck = signal<DeckId>(DEFAULT_DECK_ID);
   readonly startingNew = signal(false);
   readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);
@@ -105,7 +105,7 @@ export class PlayVsBotsDialog {
       const id = await this.rooms.createSolo({
         seatCount,
         rules: {
-          ...(this.deck() !== 'default' ? { deck: this.deck() } : {}),
+          ...(this.deck() !== DEFAULT_DECK_ID ? { deck: this.deck() } : {}),
           ...(seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {}),
         },
         ...(this.existingRoomId() ? { replace: true } : {}),

@@ -4,7 +4,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, GeneralDefinition, Kingdom } from 'engine';
 import { GeneralSelection } from './general-selection';
 
-// Every Alternate skill is registered after slice 4, so the registry has no General left that reads "not in the game yet":
+// Every Kingdom Wars skill is registered after slice 4, so the registry has no General left that reads "not in the game yet":
 // this one is pretended, to test how the UI shows the flag.
 jest.mock('content', () => {
   const actual = jest.requireActual('content');
@@ -12,7 +12,7 @@ jest.mock('content', () => {
     ...actual,
     generalDisplayData: (id: string, locale?: string) => {
       const data = actual.generalDisplayData(id, locale);
-      return id === 'alternate:guan-yu' && data ? { ...data, skills: data.skills.map((s: object) => ({ ...s, inGame: false })) } : data;
+      return id === 'kingdomWars:guan-yu' && data ? { ...data, skills: data.skills.map((s: object) => ({ ...s, inGame: false })) } : data;
     },
   };
 });
@@ -157,7 +157,7 @@ describe('GeneralSelection header', () => {
   });
 });
 
-describe('GeneralSelection Alternate skills', () => {
+describe('GeneralSelection Kingdom Wars skills', () => {
   const hints = (ids: string[]): string[] => {
     const reg: ContentRegistry = { cards: new Map(), generals: new Map(ids.map((id) => general(id, 'Shu', 4))) };
     TestBed.configureTestingModule({ imports: [GeneralSelection] });
@@ -169,9 +169,9 @@ describe('GeneralSelection Alternate skills', () => {
     return [...(fixture.nativeElement as HTMLElement).querySelectorAll('.not-in-game-hint')].map((e) => e.textContent!.trim());
   };
 
-  it('flags a skill the game does not play yet, and not a ready or Default one', () => {
-    expect(hints(['alternate:guan-yu'])).toEqual(['Not in the game yet']);
+  it('flags a skill the game does not play yet, and not a ready or Dynasty Wars one', () => {
+    expect(hints(['kingdomWars:guan-yu'])).toEqual(['Not in the game yet']);
     TestBed.resetTestingModule();
-    expect(hints(['alternate:zhang-fei', 'guan-yu'])).toEqual([]);
+    expect(hints(['kingdomWars:zhang-fei', 'guan-yu'])).toEqual([]);
   });
 });

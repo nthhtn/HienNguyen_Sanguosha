@@ -95,13 +95,13 @@ describe('LobbyPage in Vietnamese', () => {
   it('a guest sees the rules summary', async () => {
     const lobby = fakeLobby('p-gus');
     const { harness, el } = await render(lobby);
-    expect(text(el.querySelector('.rules-summary'))).toBe('5 người chơi · Bộ bài: Vương triều chiến · Thưởng lật đầu tiên: Bật');
+    expect(text(el.querySelector('.rules-summary'))).toBe('5 người chơi · Bộ bài: Quốc chiến · Thưởng lật đầu tiên: Bật');
     lobby.room.set({ ...MIXED, rules: { firstRevealDraw: false } });
     harness.detectChanges();
-    expect(text(el.querySelector('.rules-summary'))).toBe('5 người chơi · Bộ bài: Vương triều chiến · Thưởng lật đầu tiên: Tắt');
+    expect(text(el.querySelector('.rules-summary'))).toBe('5 người chơi · Bộ bài: Quốc chiến · Thưởng lật đầu tiên: Tắt');
     lobby.room.set({ ...MIXED, seatCount: 4 });
     harness.detectChanges();
-    expect(text(el.querySelector('.rules-summary'))).toBe('4 người chơi · Bộ bài: Vương triều chiến');
+    expect(text(el.querySelector('.rules-summary'))).toBe('4 người chơi · Bộ bài: Quốc chiến');
   });
 
   it('the banners, the notice and the error read in Vietnamese and follow a language switch', async () => {

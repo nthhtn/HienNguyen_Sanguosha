@@ -42,15 +42,15 @@ describe('generalDisplayName', () => {
     expect(generalDisplayName('hidden')).toBe('Hidden General');
   });
 
-  it('shows an Alternate General by its Alternate name, never its id', () => {
-    expect(generalDisplayName('alternate:liu-bei')).toBe('Liu Bei');
-    expect(generalDisplayName('alternate:liu-bei', makeTranslator(vi, 'vi'))).toBe(generalDisplayData('alternate:liu-bei', 'vi')!.name);
+  it('shows a Kingdom Wars General by its Kingdom Wars name, never its id', () => {
+    expect(generalDisplayName('kingdomWars:liu-bei')).toBe('Liu Bei');
+    expect(generalDisplayName('kingdomWars:liu-bei', makeTranslator(vi, 'vi'))).toBe(generalDisplayData('kingdomWars:liu-bei', 'vi')!.name);
   });
 
-  it('does not throw on an unknown Alternate id and shows no id text', () => {
-    const shown = generalDisplayName('alternate:nobody');
+  it('does not throw on an unknown Kingdom Wars id and shows no id text', () => {
+    const shown = generalDisplayName('kingdomWars:nobody');
     expect(shown).toBe('Nobody');
-    expect(shown).not.toContain('alternate');
+    expect(shown).not.toContain('kingdomWars');
   });
 });
 

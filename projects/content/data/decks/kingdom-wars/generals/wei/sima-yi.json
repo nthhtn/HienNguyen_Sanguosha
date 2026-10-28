@@ -1,0 +1,29 @@
+{
+  "id": "sima-yi",
+  "name": "Sima Yi",
+  "nameZh": "司马懿",
+  "force": "wei",
+  "title": "The Devil with Eyes behind his Head",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Retaliation",
+      "nameZh": "反馈",
+      "text": "Every instance after you suffer damage, you can acquire a card from the source of damage."
+    },
+    {
+      "name": "Demonic Talent",
+      "nameZh": "鬼才",
+      "text": "Before the judgement card of a player takes effect, you can play an on-hand card to replace it."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "The term “immediately” is removed to clarify the timing of activating “Retaliation”.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/sima-yi.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

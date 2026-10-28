@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { AccountService } from './auth/accounts';
 import { seedDevAccount } from './auth/devAccount';
 import { AuthRateLimits } from './auth/rateLimits';
-import { buildContentRegistry, kingdomWarMaxSeats } from 'content';
+import { buildContentRegistry, guozhanMaxSeats } from 'content';
 import { MIN_SEATS } from 'protocol';
 import { ServerConfig } from './config';
 import { buildApp } from './http/app';
@@ -37,7 +37,7 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
   const registry = buildContentRegistry();
   const rooms = new RoomService({
     repos: store.repos,
-    seatLimits: { min: MIN_SEATS, max: kingdomWarMaxSeats(registry) },
+    seatLimits: { min: MIN_SEATS, max: guozhanMaxSeats(registry) },
     registry,
     buildId: config.buildId,
     logError: (err, message) => app.log.error(err, message),

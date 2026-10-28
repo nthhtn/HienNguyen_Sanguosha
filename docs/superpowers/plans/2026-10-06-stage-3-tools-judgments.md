@@ -16,10 +16,10 @@
   - `DelayedCleanupEffect` ends a delayed Tool's turn in the Judgment Phase: the card's `onCleanup`, or by default a discard if it is still in its owner's judgment area.
   - `Turn.flags` and `SetTurnFlagEffect`. `advancePhaseOrTurn` passes over a phase whose skip flag (`skipFlagOf(phase)`, e.g. `skipPlay`) is set, and `enterNextPhase` logs a `PhaseSkippedEvent` for it.
 - **Content.**
-  - `shared/delayed.ts`: `skipPhaseTool` builds Capture and Starvation, plus helpers and Kingdom War's `judgmentPhaseTrigger`.
+  - `shared/delayed.ts`: `skipPhaseTool` builds Capture and Starvation, plus helpers and Guozhan's `judgmentPhaseTrigger`.
   - The trigger queues, for each card in the turn owner's Judgment slot, last in, first out, a `ToolOnTargetEffect` (so the existing Wuxie check guards the judgment) then a `DelayedCleanupEffect` (which always runs).
   - `cards/lightning.ts` has its own `onJudged` and `onCleanup`.
-  - Kingdom War sets up each seat's judgment zone (Task 1).
+  - Guozhan sets up each seat's judgment zone (Task 1).
 - **Around the engine.** Bots place Capture, Starvation and Lightning by the spec's rules, and cancel Starvation aimed at them. The sim checks judgment areas. The app shows judgment cards on each seat tile, explains the Wuxie question about a judgment, and gets new Action History lines.
 
 **Tech Stack:** TypeScript, Jest (ts-jest), Angular 22 (app tasks).
@@ -90,7 +90,7 @@
 
 **Content (`projects/content/src/lib/`)**
 - Create: `shared/delayed.ts`, `cards/capture.ts`, `cards/starvation.ts`, `cards/lightning.ts`, `cards/delayed.spec.ts`.
-- Modify: `modes/kingdomWar.ts`, `registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/kingdomWar.spec.ts`.
+- Modify: `modes/guozhan.ts`, `registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`.
 
 **Bots:** modify `projects/bots/src/lib/rule-based.ts` and `rule-based.spec.ts`.
 
@@ -110,15 +110,15 @@
 
 **Files:**
 - Modify: `projects/engine/src/lib/domain/types.ts`, `domain/factories.ts`, `cards/zones.ts`
-- Modify: `projects/content/src/lib/modes/kingdomWar.ts`
-- Test: `projects/engine/src/lib/domain/factories.spec.ts`, `projects/engine/src/lib/cards/zones.spec.ts`, `projects/content/src/lib/modes/kingdomWar.spec.ts`
+- Modify: `projects/content/src/lib/modes/guozhan.ts`
+- Test: `projects/engine/src/lib/domain/factories.spec.ts`, `projects/engine/src/lib/cards/zones.spec.ts`, `projects/content/src/lib/modes/guozhan.spec.ts`
 - Modify: every spec file with a hand-written `Seat` (the scripted rewrite in Step 4)
 
 **Interfaces:**
 - Produces:
   - `Seat.judgment: CardZoneRef`, whose zone id is `` `${seatId}:judgment` `` by convention.
   - `judgmentZoneOf(state: GameState, seatId: string): CardZone | undefined`, from `cards/zones.ts`.
-  - Kingdom War's setup creates `{ id: '<seat>:judgment', kind: 'judgment', ownerSeatId: '<seat>', cards: [] }` for every seat.
+  - Guozhan's setup creates `{ id: '<seat>:judgment', kind: 'judgment', ownerSeatId: '<seat>', cards: [] }` for every seat.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -152,11 +152,11 @@ describe('judgmentZoneOf', () => {
 });
 ```
 
-In `projects/content/src/lib/modes/kingdomWar.spec.ts`, next to the processing-zone test:
+In `projects/content/src/lib/modes/guozhan.spec.ts`, next to the processing-zone test:
 
 ```ts
   it('gives each seat an empty Judgment slot', () => {
-    const state = createGame(kingdomWarMode, buildContentRegistry(), ['seat-0', 'seat-1'], 1);
+    const state = createGame(guozhanMode, buildContentRegistry(), ['seat-0', 'seat-1'], 1);
     expect(state.seats.map((s) => s.judgment)).toEqual([{ zoneId: 'seat-0:judgment' }, { zoneId: 'seat-1:judgment' }]);
     expect(state.zones.filter((z) => z.kind === 'judgment')).toEqual([
       { id: 'seat-0:judgment', kind: 'judgment', ownerSeatId: 'seat-0', cards: [] },
@@ -167,7 +167,7 @@ In `projects/content/src/lib/modes/kingdomWar.spec.ts`, next to the processing-z
 
 - [ ] **Step 2: Run them to verify they fail**
 
-Run: `npx jest projects/engine/src/lib/domain/factories.spec.ts projects/engine/src/lib/cards/zones.spec.ts projects/content/src/lib/modes/kingdomWar.spec.ts`
+Run: `npx jest projects/engine/src/lib/domain/factories.spec.ts projects/engine/src/lib/cards/zones.spec.ts projects/content/src/lib/modes/guozhan.spec.ts`
 Expected: FAIL. `judgment` and `judgmentZoneOf` don't exist.
 
 - [ ] **Step 3: Add the slot**
@@ -191,7 +191,7 @@ export function judgmentZoneOf(state: GameState, seatId: string): CardZone | und
 }
 ```
 
-In `projects/content/src/lib/modes/kingdomWar.ts` `setup`, give each seat a judgment zone. The seat literal itself gets its ``judgment: { zoneId: `${id}:judgment` }`` from Step 4's script, so don't add it by hand.
+In `projects/content/src/lib/modes/guozhan.ts` `setup`, give each seat a judgment zone. The seat literal itself gets its ``judgment: { zoneId: `${id}:judgment` }`` from Step 4's script, so don't add it by hand.
 
 ```ts
       ...seats.flatMap((s) => [
@@ -211,7 +211,7 @@ grep -rlE "equipped: \{ zoneId: ['\`]" --include='*.ts' projects | xargs perl -p
 
 One fixture doesn't follow the `:equip` pattern: `projects/app/src/app/game-board/seat-tile.spec.ts` (`equipped: { zoneId: 'equip-1' }`). Add `judgment: { zoneId: 'judgment-1' },` there by hand.
 
-The script also fills in the seat literal in `kingdomWar.ts`. It leaves `types.ts` and `factories.ts` alone, because their `equipped` lines don't match its pattern, and Step 3 covers them. Then find anything left:
+The script also fills in the seat literal in `guozhan.ts`. It leaves `types.ts` and `factories.ts` alone, because their `equipped` lines don't match its pattern, and Step 3 covers them. Then find anything left:
 
 ```bash
 npx tsc --noEmit -p projects/engine/tsconfig.spec.json && npx tsc --noEmit -p projects/content/tsconfig.spec.json && npx tsc --noEmit -p projects/app/tsconfig.spec.json
@@ -799,7 +799,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `projects/content/src/lib/shared/delayed.ts`, `cards/capture.ts`, `cards/starvation.ts`, `cards/delayed.spec.ts`
-- Modify: `projects/content/src/lib/modes/kingdomWar.ts`, `registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/kingdomWar.spec.ts`, `projects/app/src/app/wiki/wiki-pages.spec.ts`
+- Modify: `projects/content/src/lib/modes/guozhan.ts`, `registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`, `projects/app/src/app/wiki/wiki-pages.spec.ts`
 
 **Interfaces:**
 - Consumes:
@@ -822,7 +822,7 @@ Create `projects/content/src/lib/cards/delayed.spec.ts`. Task 5 appends Lightnin
 ```ts
 import { advanceToDecision, getLegalActions, resolve } from 'engine';
 import type { CardDefinition, CardInstance, ContentRegistry, EngineEvent, GameState, Phase } from 'engine';
-import { kingdomWarMode } from '../modes/kingdomWar';
+import { guozhanMode } from '../modes/guozhan';
 import { captureCard } from './capture';
 import { starvationCard } from './starvation';
 import { wuxieCard } from './wuxie';
@@ -834,8 +834,8 @@ const diLu: CardDefinition = { id: 'di-lu', name: 'Di Lu', category: 'equipment'
 // Task 5 adds Lightning here.
 const cards: CardDefinition[] = [captureCard, starvationCard, wuxieCard, breakCard, diLu, plain('sha'), plain('shan'), plain('peach')];
 const registry: ContentRegistry = { cards: new Map(cards.map((c) => [c.id, c])), generals: new Map() };
-// Kingdom War's own triggers: the Judgment Phase, the Draw Phase's 2 cards, and dying.
-const ctx = { registry, mode: kingdomWarMode };
+// Guozhan's own triggers: the Judgment Phase, the Draw Phase's 2 cards, and dying.
+const ctx = { registry, mode: guozhanMode };
 
 const card = (instanceId: string, definitionId: string, suit: CardInstance['suit'] = 'spade', rank = 5): CardInstance => ({ instanceId, definitionId, suit, rank });
 const filler = (n: number) => Array.from({ length: n }, (_, i) => card(`f${i}`, 'shan', 'diamond', 13));
@@ -984,7 +984,7 @@ describe('the Judgment Phase', () => {
 Update the counts Capture and Starvation change (Task 5 adds Lightning to each):
 - `projects/content/src/lib/registry.spec.ts` line 7: add `'capture'` and `'starvation'` to the list.
 - `projects/content/src/lib/wiki.spec.ts` line 145: the expected list becomes `['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'peach-garden', 'starvation', 'steal', 'wuxie']`.
-- `projects/content/src/lib/modes/kingdomWar.spec.ts` line 116: `toHaveLength(90)`.
+- `projects/content/src/lib/modes/guozhan.spec.ts` line 116: `toHaveLength(90)`.
 - `projects/app/src/app/wiki/wiki-pages.spec.ts`: `'15 cards · 12 in the game'`.
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -1052,7 +1052,7 @@ export function skipPhaseTool({ id, name, skips, spares, maxDistance }: SkipPhas
   };
 }
 
-// Kingdom War's Judgment Phase: the turn owner's delayed Tools are judged one
+// Guozhan's Judgment Phase: the turn owner's delayed Tools are judged one
 // at a time, last in, first out. Each gets the usual Wuxie check (asked from the
 // judged seat, which stands in as the Tool's user), which guards only the
 // judgment. Its cleanup always runs.
@@ -1096,9 +1096,9 @@ import { skipPhaseTool } from '../shared/delayed';
 export const starvationCard = skipPhaseTool({ id: 'starvation', name: 'Starvation', skips: 'Draw', spares: 'club', maxDistance: 1 });
 ```
 
-- [ ] **Step 5: Kingdom War's Judgment Phase trigger; the registry**
+- [ ] **Step 5: Guozhan's Judgment Phase trigger; the registry**
 
-In `projects/content/src/lib/modes/kingdomWar.ts`, add `import { judgmentPhaseTrigger } from '../shared/delayed';` and make `judgmentPhaseTrigger` the first entry of `triggers`. It fires on entering Judgment and the Draw trigger on entering Draw, so their order doesn't matter, but this keeps phase order.
+In `projects/content/src/lib/modes/guozhan.ts`, add `import { judgmentPhaseTrigger } from '../shared/delayed';` and make `judgmentPhaseTrigger` the first entry of `triggers`. It fires on entering Judgment and the Draw trigger on entering Draw, so their order doesn't matter, but this keeps phase order.
 
 In `projects/content/src/lib/registry.ts`, import `captureCard` and `starvationCard`, and add them to `cards` after `coerceCard`.
 
@@ -1122,7 +1122,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `projects/content/src/lib/cards/lightning.ts`
-- Modify: `projects/content/src/lib/registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/kingdomWar.spec.ts`, `cards/delayed.spec.ts`, `projects/app/src/app/wiki/wiki-pages.spec.ts`
+- Modify: `projects/content/src/lib/registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`, `cards/delayed.spec.ts`, `projects/app/src/app/wiki/wiki-pages.spec.ts`
 
 **Interfaces:**
 - Consumes: `holdsDelayed`, `placeInJudgmentArea` and `judgeTarget` (Task 4), plus `livingSeatOrderFrom`, `judgmentZoneOf` and `requireZoneOfKind` from `engine`.
@@ -1208,7 +1208,7 @@ describe('Lightning', () => {
 Update the counts to include Lightning:
 - `registry.spec.ts`: add `'lightning'`.
 - `wiki.spec.ts`: `['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'lightning', 'peach-garden', 'starvation', 'steal', 'wuxie']`.
-- `kingdomWar.spec.ts`: `toHaveLength(91)`.
+- `guozhan.spec.ts`: `toHaveLength(91)`.
 - `wiki-pages.spec.ts`: `'15 cards · 13 in the game'`.
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -1654,7 +1654,7 @@ is played. Its `play()` puts it face up in a seat's Judgment slot
 (`Seat.judgment`; `CardDefinition.delayed` stops `PlayCardAction` from
 discarding it).
 
-In Kingdom War, entering the Judgment Phase queues two steps for each card in
+In Guozhan, entering the Judgment Phase queues two steps for each card in
 the turn owner's Judgment slot, last in, first out:
 
 1. `ToolOnTargetEffect` on the owner. It runs the usual Wuxie check, asked from

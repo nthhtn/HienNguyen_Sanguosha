@@ -98,13 +98,13 @@ describe('RoomService games', () => {
   it('deals a started game from the deck the room chose', async () => {
     const { repos, rooms, registered, guest, connect, start } = await setup();
     const annUser = await registered('Ann');
-    const roomId = await rooms.create(annUser, { seatCount: 2, rules: { deck: 'alternate' }, displayName: 'Ann' });
+    const roomId = await rooms.create(annUser, { seatCount: 2, rules: { deck: 'dynastyWars' }, displayName: 'Ann' });
     await rooms.join(await guest('Bo'), roomId, 'Bo');
     const a = await connect(annUser, roomId);
     await start(a, roomId);
     const [game] = await repos.games.listRunning();
-    expect(game.rules).toEqual({ deck: 'alternate', judgmentNotice: true });
-    expect(a.connection.room!.rules).toEqual({ deck: 'alternate' });
+    expect(game.rules).toEqual({ deck: 'dynastyWars', judgmentNotice: true });
+    expect(a.connection.room!.rules).toEqual({ deck: 'dynastyWars' });
   });
 
   it('refuses Start Game from a member who is not the host, and while a game runs', async () => {

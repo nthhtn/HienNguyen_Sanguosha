@@ -1,8 +1,8 @@
 import { abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
 import { generalDisplayData } from './generalDisplay';
-import * as alternateSkills from './alternateSkills';
-import { alternateCardIds } from './alternateCards';
-import viAlternateGenerals from '../../data/locales/vi/alternate-generals.json';
+import * as kingdomWarsSkills from './kingdomWarsSkills';
+import { kingdomWarsCardIds } from './kingdomWarsCards';
+import viKingdomWarsGenerals from '../../data/locales/vi/kingdom-wars-generals.json';
 
 describe('generalDisplayData', () => {
   it('returns name, title and skill name/text for a known general', () => {
@@ -23,42 +23,42 @@ describe('generalDisplayData', () => {
     expect(generalDisplayData('no-such-general')).toBeNull();
   });
 
-  it("reads an Alternate General's own name and skills", () => {
-    expect(generalDisplayData('alternate:guan-yu')?.skills[0].name).toBe('Warrior Saint');
+  it("reads a Kingdom Wars General's own name and skills", () => {
+    expect(generalDisplayData('kingdomWars:guan-yu')?.skills[0].name).toBe('Warrior Saint');
     expect(generalDisplayData('guan-yu')?.skills[0].name).toBe('Fighting Saint');
   });
 
-  it('translates an Alternate General', () => {
-    expect(generalDisplayData('alternate:guan-yu', 'vi')?.name).toBe(viAlternateGenerals['guan-yu'].name);
+  it('translates a Kingdom Wars General', () => {
+    expect(generalDisplayData('kingdomWars:guan-yu', 'vi')?.name).toBe(viKingdomWarsGenerals['guan-yu'].name);
   });
 
-  it('marks an Alternate skill as in the game only when the registry plays it', () => {
-    expect(generalDisplayData('alternate:zhang-fei')?.skills.find((s) => s.name === 'Berserk')?.inGame).toBe(true);
-    expect(generalDisplayData('alternate:guan-yu')?.skills.find((s) => s.name === 'Warrior Saint')?.inGame).toBe(true);
-    // Every Alternate skill is registered after slice 4, so a skill the registry does not play is simulated.
-    const spy = jest.spyOn(alternateSkills, 'alternateSkillFor').mockReturnValue(undefined);
+  it('marks a Kingdom Wars skill as in the game only when the registry plays it', () => {
+    expect(generalDisplayData('kingdomWars:zhang-fei')?.skills.find((s) => s.name === 'Berserk')?.inGame).toBe(true);
+    expect(generalDisplayData('kingdomWars:guan-yu')?.skills.find((s) => s.name === 'Warrior Saint')?.inGame).toBe(true);
+    // Every Kingdom Wars skill is registered after slice 4, so a skill the registry does not play is simulated.
+    const spy = jest.spyOn(kingdomWarsSkills, 'kingdomWarsSkillFor').mockReturnValue(undefined);
     try {
-      expect(generalDisplayData('alternate:guan-yu')?.skills.find((s) => s.name === 'Warrior Saint')?.inGame).toBe(false);
+      expect(generalDisplayData('kingdomWars:guan-yu')?.skills.find((s) => s.name === 'Warrior Saint')?.inGame).toBe(false);
     } finally {
       spy.mockRestore();
     }
   });
 
-  it('leaves Default skills unmarked as not in the game', () => {
+  it('leaves Dynasty Wars skills unmarked as not in the game', () => {
     expect(generalDisplayData('guan-yu')?.skills.every((s) => s.inGame !== false)).toBe(true);
   });
 
-  it('returns null for an unknown Alternate id', () => {
-    expect(generalDisplayData('alternate:nobody')).toBeNull();
+  it('returns null for an unknown Kingdom Wars id', () => {
+    expect(generalDisplayData('kingdomWars:nobody')).toBeNull();
   });
 });
 
-describe('abilityName for Alternate skills', () => {
-  it('names an alternate: skill by the Alternate record, in each language', () => {
-    expect(abilityName('alternate:benevolence')).toBe('Benevolence');
-    expect(abilityName('alternate:benevolence', 'vi')).toBe(viAlternateGenerals['liu-bei'].skills!['benevolence'].name);
+describe('abilityName for Kingdom Wars skills', () => {
+  it('names a kingdomWars: skill by the Kingdom Wars record, in each language', () => {
+    expect(abilityName('kingdomWars:benevolence')).toBe('Benevolence');
+    expect(abilityName('kingdomWars:benevolence', 'vi')).toBe(viKingdomWarsGenerals['liu-bei'].skills!['benevolence'].name);
   });
-  it('still names Default Kindness', () => {
+  it('still names Dynasty Wars Kindness', () => {
     expect(abilityName('kindness')).toBe('Kindness');
   });
 });
@@ -165,9 +165,9 @@ describe('competeOutcomeText', () => {
   });
 });
 
-describe('Alternate-only cards', () => {
+describe('Kingdom Wars-only cards', () => {
   it('lists the six ids', () => {
-    expect([...alternateCardIds()].sort()).toEqual(['ally-far-attack-near', 'amass', 'ascertain', 'trident-glaive', 'wu-six-swords', 'wuxie-guo']);
+    expect([...kingdomWarsCardIds()].sort()).toEqual(['ally-far-attack-near', 'amass', 'ascertain', 'trident-glaive', 'wu-six-swords', 'wuxie-guo']);
   });
 
   it('shows English name and text', () => {
@@ -195,19 +195,19 @@ describe('Alternate-only cards', () => {
 
 describe('variant skill texts', () => {
   it.each(['en', 'vi'])('a variant shows its base skill’s texts in %s', (locale) => {
-    expect(selectionText('alternate:benevolence', locale)).toEqual(selectionText('kindness', locale));
-    expect(selectionText('alternate:benevolence', locale)).not.toBeNull();
-    expect(abilityHint('alternate:benevolence', locale)).toEqual(abilityHint('kindness', locale));
-    expect(seatPickText('alternate:benevolence', locale)).toEqual(seatPickText('kindness', locale));
-    expect(choicePromptText('alternate:benevolence', locale)).toEqual(choicePromptText('kindness', locale));
-    expect(stepSelectionText('compete-user', locale, 'alternate:benevolence')).toEqual(stepSelectionText('compete-user', locale));
+    expect(selectionText('kingdomWars:benevolence', locale)).toEqual(selectionText('kindness', locale));
+    expect(selectionText('kingdomWars:benevolence', locale)).not.toBeNull();
+    expect(abilityHint('kingdomWars:benevolence', locale)).toEqual(abilityHint('kindness', locale));
+    expect(seatPickText('kingdomWars:benevolence', locale)).toEqual(seatPickText('kindness', locale));
+    expect(choicePromptText('kingdomWars:benevolence', locale)).toEqual(choicePromptText('kindness', locale));
+    expect(stepSelectionText('compete-user', locale, 'kingdomWars:benevolence')).toEqual(stepSelectionText('compete-user', locale));
   });
 
   it.each(['en', 'vi'])('a variant shows its base skill’s Compete outcome in %s', (locale) => {
     const names = { user: 'A', target: 'B' };
     for (const won of [true, false]) {
-      expect(competeOutcomeText('alternate:fearsome-blade', won, names, locale)).toEqual(competeOutcomeText('intense-edge', won, names, locale));
+      expect(competeOutcomeText('kingdomWars:fearsome-blade', won, names, locale)).toEqual(competeOutcomeText('intense-edge', won, names, locale));
     }
-    expect(competeOutcomeText('alternate:fearsome-blade', true, names, locale)).not.toBeNull();
+    expect(competeOutcomeText('kingdomWars:fearsome-blade', true, names, locale)).not.toBeNull();
   });
 });

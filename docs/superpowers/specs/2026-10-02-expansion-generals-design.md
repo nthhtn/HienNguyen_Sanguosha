@@ -108,9 +108,9 @@ spreadsheet first, then stripped page text, and never guess.
 - **Pool:** the registry builds every general with data, so the pool becomes
   **57**. That's 26 Base generals plus 32 new ones, less one, because the
   Forest Dong Zhuo replaces the placeholder.
-- **Seat cap:** `kingdomWarMaxSeats` becomes
-  `Math.min(MAX_KINGDOM_WAR_SEATS, Math.floor(pool / GENERALS_PER_SEAT))`,
-  with `MAX_KINGDOM_WAR_SEATS = 10`. Today that gives 10, and Setup offers 2
+- **Seat cap:** `guozhanMaxSeats` becomes
+  `Math.min(MAX_GUOZHAN_SEATS, Math.floor(pool / GENERALS_PER_SEAT))`,
+  with `MAX_GUOZHAN_SEATS = 10`. Today that gives 10, and Setup offers 2
   to 10 seats.
 - **Dong Zhuo's Tyranny:**
   - The `dongZhuoGeneral` skill set in `projects/content/src/lib/generals/setTwo.ts`
@@ -127,8 +127,8 @@ spreadsheet first, then stripped page text, and never guess.
   further when there are more than 6 seats, using a seat-count class on the
   table. That fix belongs to this work.
 
-- **The deck grows with the table** (added during implementation). Kingdom
-  War deals 4 cards to every seat from a deck of 4 copies of each playable
+- **The deck grows with the table** (added during implementation). Guozhan
+   deals 4 cards to every seat from a deck of 4 copies of each playable
   card, which is 28 cards today. A 10-seat table needs 40 at setup, so three
   seats were dealt nothing and the draw pile started empty. The deck now has
   `4 × ceil(seats ÷ 5)` copies of each card: 28 cards for 2–5 seats (exactly
@@ -164,7 +164,7 @@ Content (Jest):
 - **`wikiGeneralTabs()`:** `wei` 15, `shu` 15, `wu` 15, `qun` 12.
 - **The registry:** 57 generals, all with a numeric `maxHp`, and none from
   the God faction (no file outside the four kingdom folders).
-- **`kingdomWarMaxSeats`:** 10. There's also a unit test showing it is
+- **`guozhanMaxSeats`:** 10. There's also a unit test showing it is
   `min(10, pool ÷ 5)` on a small synthetic registry.
 - **Updated tests:** anything that hard-codes 26 generals, 6 coded generals,
   a 5-seat cap, the Heroes tab, or a deal that depends on the old pool (for

@@ -37,7 +37,7 @@
 
 **Where this plan departs from the spec, and why:**
 - **No separate naming dialog for Bewilder.** Each card Yu Ji can name is a deferred conversion, so the action list already offers "As Sha · Bewilder" with its targets, like every conversion. Naming and targets come from one button.
-- **Godspeed's first option is asked at the start of the turn, not "as the Judgment Phase begins".** Kingdom War judges delayed Tools on entering the Judgment Phase, before any skill could ask. Asking just before it, when the Start Phase begins, is the latest point that still skips it.
+- **Godspeed's first option is asked at the start of the turn, not "as the Judgment Phase begins".** Guozhan judges delayed Tools on entering the Judgment Phase, before any skill could ask. Asking just before it, when the Start Phase begins, is the latest point that still skips it.
 - **A Bewilder answer suspends the window it answers.** The engine clears `pendingResponse` while the doubt round runs and hands the window to the skill. The skill answers it (`UseCardEffect.answering`) or re-opens it. Otherwise the queue couldn't run the doubt round while a response is pending.
 - **Every suit rule reads `suitOf`, not only Xiao Qiao's own skills.** Beauty must reach Capture, Starvation, Lightning, Eight Trigrams and every skill's judgment, so all readers switch.
 - **Refusing Death asks once per card,** as the spec's "may … again" says. Declining a later card means the dying round goes ahead.
@@ -79,7 +79,7 @@
   - `src/lib/shared/judgments.ts`, `src/lib/shared/delayed.ts`, `src/lib/shared/abilities.ts`;
   - `src/lib/cards/lightning.ts`, `src/lib/cards/equipment/eight-trigrams.ts`;
   - `src/lib/generals/{wei,shu,wu,qun}.ts` (suit readers, `accepts` signature);
-  - `src/lib/modes/kingdomWar.ts` (pile zones, `pointsBelowOne`, pile discard);
+  - `src/lib/modes/guozhan.ts` (pile zones, `pointsBelowOne`, pile discard);
   - `src/lib/display.ts`, `src/public-api.ts`;
   - specs that use Wind Generals as fillers.
 
@@ -97,7 +97,7 @@ Stage 7 swapped base Generals out of the specs for Wind/Fire/Forest/Mountain one
 **Files:**
 - Create: `projects/content/src/lib/generals/wind.ts`
 - Modify: `projects/content/src/lib/generals/index.ts`, `projects/content/src/public-api.ts`, `projects/content/src/lib/generals/index.spec.ts`
-- Modify (fillers): `projects/content/src/lib/generals/skills.testing.ts`, `wei.spec.ts`, `wu-actives.spec.ts`, `draw-phase.spec.ts`, `qun.spec.ts`, `shu-triggers.spec.ts`, `shu.spec.ts`, `projects/content/src/lib/cards/equipment/sha-equipment.spec.ts`, `projects/content/src/lib/cards/playability.spec.ts`, `projects/content/src/lib/modes/kingdomWar.spec.ts`, `projects/content/src/lib/registry.spec.ts`, `projects/bots/src/lib/skills.spec.ts`
+- Modify (fillers): `projects/content/src/lib/generals/skills.testing.ts`, `wei.spec.ts`, `wu-actives.spec.ts`, `draw-phase.spec.ts`, `qun.spec.ts`, `shu-triggers.spec.ts`, `shu.spec.ts`, `projects/content/src/lib/cards/equipment/sha-equipment.spec.ts`, `projects/content/src/lib/cards/playability.spec.ts`, `projects/content/src/lib/modes/guozhan.spec.ts`, `projects/content/src/lib/registry.spec.ts`, `projects/bots/src/lib/skills.spec.ts`
 
 **Interfaces:**
 - Produces: `WIND_GENERALS: GeneralSkillSet[]` (empty now; Tasks 5–8 fill it); `WIND_GENERAL_IDS: readonly string[]` exported from `content`.
@@ -652,14 +652,14 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `projects/content/src/lib/shared/delayed.ts`, `projects/content/src/lib/shared/judgments.ts`;
   - `projects/content/src/lib/cards/lightning.ts`, `projects/content/src/lib/cards/equipment/eight-trigrams.ts`;
   - `projects/content/src/lib/generals/{wei,shu,wu,qun}.ts`;
-  - `projects/content/src/lib/modes/kingdomWar.ts` (+ spec).
+  - `projects/content/src/lib/modes/guozhan.ts` (+ spec).
 
 **Interfaces:**
 - Produces:
   - `AbilityModifiers.suitAs?: Partial<Record<CardInstance['suit'], CardInstance['suit']>>`.
   - `suitOf(state, seatId, card, registry): CardInstance['suit']`; `colourFor(state, seatId, card, registry): 'red' | 'black'` (`shared/suits.ts`).
   - `JUDGMENT_CHANGERS: ReadonlyMap<string, (state, seatId, registry) => CardInstance[]>`: each changer skill and the cards it may change a judgment with. `nextToChange` keeps its signature.
-  - Kingdom War: every seat has `pile: { zoneId: `${id}:pile` }` and a `pile` zone; an eliminated seat discards it; the dying round's entry carries `pointsBelowOne`.
+  - Guozhan: every seat has `pile: { zoneId: `${id}:pile` }` and a `pile` zone; an eliminated seat discards it; the dying round's entry carries `pointsBelowOne`.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -693,7 +693,7 @@ describe('suitOf', () => {
   });
 });
 
-describe('Kingdom War: the pile under each General', () => {
+describe('Guozhan: the pile under each General', () => {
   it('every seat has one, face up', () => {
     const { state } = kwMode.setup(['seat-0', 'seat-1'], registry, { seed: 3, counter: 0 });
     expect(state.seats.map((s) => s.pile)).toEqual([{ zoneId: 'seat-0:pile' }, { zoneId: 'seat-1:pile' }]);
@@ -702,10 +702,10 @@ describe('Kingdom War: the pile under each General', () => {
 });
 ```
 
-In `projects/content/src/lib/modes/kingdomWar.spec.ts` add (import `table` and `kwMode` from `../generals/skills.testing`):
+In `projects/content/src/lib/modes/guozhan.spec.ts` add (import `table` and `kwMode` from `../generals/skills.testing`):
 
 ```ts
-describe('Kingdom War: the dying round knows how far below 1 HP a drop went', () => {
+describe('Guozhan: the dying round knows how far below 1 HP a drop went', () => {
   it('the mode’s dying trigger sets pointsBelowOne from the drop', () => {
     const s = table({}, { hp: { 'seat-b': -1 } });
     const event = { kind: 'DamageDealtEvent' as const, damage: { source: null, target: { kind: 'seat' as const, seatId: 'seat-b' }, amount: 2, nature: 'normal' as const } };
@@ -722,7 +722,7 @@ describe('Kingdom War: the dying round knows how far below 1 HP a drop went', ()
 
 - [ ] **Step 2: Run them to see them fail**
 
-Run: `npx jest projects/content/src/lib/shared/suits.spec.ts projects/content/src/lib/modes/kingdomWar.spec.ts`
+Run: `npx jest projects/content/src/lib/shared/suits.spec.ts projects/content/src/lib/modes/guozhan.spec.ts`
 Expected: FAIL — `./suits` doesn't exist; seats have no pile; `pointsBelowOne` is absent.
 
 - [ ] **Step 3: Suits**
@@ -800,7 +800,7 @@ function maySay(state: GameState, shown: Shown, seatId: string, registry: Conten
 
 - [ ] **Step 6: The mode**
 
-`projects/content/src/lib/modes/kingdomWar.ts`:
+`projects/content/src/lib/modes/guozhan.ts`:
 - `setup`: each seat gets `pile: { zoneId: `${id}:pile` }`; the zones gain `{ id: s.pile!.zoneId, kind: 'pile' as const, ownerSeatId: s.id, cards: [] }` per seat (after the judgment zone).
 - The elimination trigger discards `[seat.hand, seat.equipped, seat.judgment, ...(seat.pile ? [seat.pile] : [])]`.
 - `hpDropTriggers`' dying effect adds `pointsBelowOne`:
@@ -824,7 +824,7 @@ function maySay(state: GameState, shown: Shown, seatId: string, registry: Conten
 
 - [ ] **Step 7: Run the tests, the suite, and commit**
 
-Run: `npx jest projects/content`, then `npx jest` — Expected: PASS. (`kingdomWar.spec.ts` cases that compare whole seats or zone lists gain the pile; update those expectations.)
+Run: `npx jest projects/content`, then `npx jest` — Expected: PASS. (`guozhan.spec.ts` cases that compare whole seats or zone lists gain the pile; update those expectations.)
 
 ```bash
 git add projects/engine projects/content
@@ -1442,7 +1442,7 @@ export const darkMagic: SkillDefinition = {
   ],
 };
 
-// Amber Sky: a Lord skill, inactive in Kingdom War.
+// Amber Sky: a Lord skill, inactive in Guozhan.
 export const amberSky: SkillDefinition = { id: 'amber-sky', lord: true };
 ```
 
@@ -2081,7 +2081,7 @@ Append to the stage 8 spec:
 ```markdown
 ## Stage 8 rulings
 
-- Godspeed's first option is asked as the Start Phase begins: Kingdom War judges delayed Tools on entering the Judgment Phase.
+- Godspeed's first option is asked as the Start Phase begins: Guozhan judges delayed Tools on entering the Judgment Phase.
 - Bewilder has no naming dialog: each nameable card is a conversion button ("As Sha · Bewilder"), with its targets.
 - While Bewilder answers a window, the window is set aside and then answered or re-opened.
 - Every suit rule reads `suitOf`, so Beauty reaches the delayed Tools and Eight Trigrams.

@@ -19,7 +19,7 @@
   - `LoseHpEffect` / `HpLostEvent`; `DrawPhaseEffect`.
   - Judgments run as `JudgeEffect` (turn the card up) → `JudgmentShownEffect` (changers' moment) → `JudgmentResolveEffect` (the reader reads) → `JudgmentDoneEffect` (to the discard pile, unless taken). A reader is a card or a skill. `ReplaceJudgmentEffect` swaps the card.
   - Decisions: choice options for a seat, a suit or a label; a `give` selection continuation; `pendingArrangement` with `ArrangeCardsAction`.
-- **Content:** modifiers from revealed Generals; placeholder skills marked compulsory; skill names and the Lord flag from the General data; Kingdom War's Draw Phase and HP-drop triggers on the new effects; delayed Tools and Eight Trigrams on the new judgment shape.
+- **Content:** modifiers from revealed Generals; placeholder skills marked compulsory; skill names and the Lord flag from the General data; Guozhan's Draw Phase and HP-drop triggers on the new effects; delayed Tools and Eight Trigrams on the new judgment shape.
 - **Around the engine:** bots reveal by the spec's rule and arrange the draw pile; the sim checks the new decision; the app gains avatar skill buttons, reveal wording, seat/suit/label options, the Arrange window and history lines.
 
 **Tech Stack:** TypeScript, Jest (ts-jest), Angular 22 with Angular CDK drag-drop (app tasks).
@@ -34,7 +34,7 @@
 - `skipFlagOf(phase)` works for every phase but End, so `skipDiscard` needs no new code, only a test.
 
 **Where this plan departs from the spec, and why:**
-- **No `hasLord` on the mode.** Lord skills are never gathered, in any mode: Kingdom War is the only mode, and it has no Lord. A mode with a Lord would add the flag. Cost if wrong: one parameter threaded through `skillsInPlay` later.
+- **No `hasLord` on the mode.** Lord skills are never gathered, in any mode: Guozhan is the only mode, and it has no Lord. A mode with a Lord would add the flag. Cost if wrong: one parameter threaded through `skillsInPlay` later.
 - **`Turn.ownerUses` instead of `Turn.shaUsed`.** The engine names no card, so it counts every card the turn owner used this turn, by what it counted as, responses included. Self-Restraint reads `ownerUses.sha`.
 - **The use of a conversion or active skill happens when its first selection is confirmed.** The reveal of a hidden General, the turn count and the "used" log all wait for the confirm (`PendingSelection.onSelect`). Cancel leaves nothing done, the General still hidden. The spec has the reveal "before anything else"; this keeps its intent (reveal to use) without revealing for a use that never happens.
 - **No `RetargetStepEffect`.** A step is plain data: Displace (stage 7) rewrites the Sha step's `target` in its before-trigger, like Ancient Scimitar rewrites `extra`.
@@ -47,7 +47,7 @@
 - **The placeholder skills stay until stage 7**, marked `compulsory` (they never asked). So they are now off while their General is hidden. Their tests reveal the General.
 - **The sim invariant "a hidden General never fires a compulsory skill" waits for stage 7**, where skills log their use. Stage 6 pins the rule with gathering tests.
 - **Skill names come from the data.** A skill's id is its English name in kebab case (`skillIdOf("Heaven's Envy")` is `heavens-envy`). Content's `abilityName(id)` gives a card's or a skill's display name.
-- **Lord skills are flagged in the data** (`"lord": true`, the nine "King Ability" skills), so the wiki can say "Not used in Kingdom War".
+- **Lord skills are flagged in the data** (`"lord": true`, the nine "King Ability" skills), so the wiki can say "Not used in Guozhan".
 - **The Ask window's Use button reads "Reveal and Use"** when a reveal is needed. The prompt carries the full sentence: "Reveal Guan Yu to use Fighting Saint?".
 - **History for an active skill.** Its use logs an `AbilityUsedEvent` with outcome `used`: "Seat 1 used Reconsider". Stage 7 adds what each skill did.
 
@@ -58,7 +58,7 @@
 - **Common rules (General Skills spec):**
   - A hidden General's skills are off. Optional triggers, active skills and conversions are still offered, as "Reveal X to use Y"; using one reveals that General first. Compulsory triggers and modifiers of a hidden General don't apply.
   - Gender: Main's while revealed, else Deputy's while revealed, else none.
-  - Lord skills (Escort, Fierce General, Rescued) are inactive in Kingdom War. The wiki shows them with the note "Not used in Kingdom War".
+  - Lord skills (Escort, Fierce General, Rescued) are inactive in Guozhan. The wiki shows them with the note "Not used in Guozhan".
   - Losing HP is not damage. It has no source, and nothing that reacts to damage applies. A seat at 0 HP or below after losing HP is dying, as after damage.
 - **Active skills:** listed as one `UseSkillAction` while `canUse` holds and the turn count is below `usesPerTurn`. The first decision is cancellable, which undoes the use: the count is spent only once the first decision is answered.
 - **Arranging:** `top` and `bottom` together must be exactly the given cards. `top[0]` becomes the top of the draw pile; `bottom` goes under the pile in the order given. The cards are visible only to the arranging seat.
@@ -95,7 +95,7 @@
   - `src/lib/shared/abilities.ts` (`activeAbilities` adds revealed Generals' skills), `src/lib/shared/steps.ts` (owner key; eliminated target), `src/lib/shared/delayed.ts`.
   - `src/lib/generals/setOne.ts`, `setTwo.ts` (compulsory) and their specs.
   - `src/lib/cards/equipment/eight-trigrams.ts`.
-  - `src/lib/modes/kingdomWar.ts` (`DrawPhaseEffect`; HP-drop triggers on `HpLostEvent` too).
+  - `src/lib/modes/guozhan.ts` (`DrawPhaseEffect`; HP-drop triggers on `HpLostEvent` too).
   - `src/lib/display.ts` (`skillIdOf`, `abilityName`), `src/lib/wiki.ts` (gender, Lord).
   - `data/generals/index.ts` (`lord?`), the nine Lord-skill data files, `scripts/restructure-content-data.py`.
 - Create: `src/lib/shared/abilities.spec.ts`, `src/lib/shared/steps.spec.ts`.
@@ -237,7 +237,7 @@ export interface SkillDefinition extends Abilities {
   id: string;
   // Applies without asking. Off while its General is hidden (see skillsInPlay).
   compulsory?: boolean;
-  // A Lord skill: never in play, since Kingdom War has no Lord.
+  // A Lord skill: never in play, since Guozhan has no Lord.
   lord?: boolean;
 }
 ```
@@ -263,7 +263,7 @@ const SLOTS = ['main', 'deputy'] as const;
 // The skills of `seatId`'s Generals that are in play, Main first, in skill
 // order. All of a revealed General's. A hidden General's compulsory skills are
 // off (its modifiers with them); its other skills are offered, but using one
-// reveals it. Lord skills never are: Kingdom War has no Lord. An eliminated
+// reveals it. Lord skills never are: Guozhan has no Lord. An eliminated
 // seat has none.
 export function skillsInPlay(state: GameState, seatId: string, registry: ContentRegistry): SkillInPlay[] {
   const seat = state.seats.find((s) => s.id === seatId);
@@ -509,7 +509,7 @@ describe('wiki Generals: gender and Lord skills', () => {
     expect(general('lu-bu').gender).toBe('male');
   });
 
-  it('flags the Lord skills, which Kingdom War doesn’t use', () => {
+  it('flags the Lord skills, which Guozhan doesn’t use', () => {
     expect(general('liu-bei').skills.map((s) => [s.name, s.lord])).toEqual([['Kindness', false], ['Fierce General', true]]);
     const lords = wikiGenerals().flatMap((g) => g.skills.filter((s) => s.lord).map((s) => s.name)).sort();
     expect(lords).toEqual(['Amber Sky', 'Bloodline', 'Escort', 'Exaltation', 'Fierce General', 'Rescued', 'Seem Foolish', 'Takeover', 'Violent Tyrant']);
@@ -648,7 +648,7 @@ export interface GeneralSkillData {
   name: string;
   nameZh: string;
   text: string;
-  // A Lord skill ("King Ability"): not used in Kingdom War.
+  // A Lord skill ("King Ability"): not used in Guozhan.
   lord?: boolean;
 }
 ```
@@ -658,7 +658,7 @@ In `scripts/restructure-content-data.py`, find where it writes the `GeneralSkill
 - [ ] **Step 8: The wiki's gender and Lord notes**
 
 In `projects/content/src/lib/wiki.ts`:
-- `WikiSkill` gains `lord: boolean;` (comment: "A Lord skill: not used in Kingdom War.").
+- `WikiSkill` gains `lord: boolean;` (comment: "A Lord skill: not used in Guozhan.").
 - `WikiGeneral` gains `gender: 'male' | 'female';`.
 - In `wikiGenerals()`, map skills as `{ name: s.name, nameZh: s.nameZh || null, text: s.text, lord: !!s.lord }` and add `gender: data.gender,`.
 
@@ -668,18 +668,18 @@ In `projects/app/src/app/wiki/wiki-general-entry.ts`:
 
 ```html
               @if (skill.lord) {
-                <span class="lord-note">Not used in Kingdom War</span>
+                <span class="lord-note">Not used in Guozhan</span>
               }
 ```
 
 - Styles: `.gender-tag` like `.expansion-tag`; `.lord-note { display: block; font: var(--mat-sys-body-small); font-style: italic; color: var(--mat-sys-on-surface-variant); }`.
 
-In `projects/app/src/app/wiki/wiki-entries.spec.ts`, add a test that renders the Liu Bei entry (as the file's other General tests do) and expects `.gender-tag` to read "Male" and one `.lord-note` reading "Not used in Kingdom War".
+In `projects/app/src/app/wiki/wiki-entries.spec.ts`, add a test that renders the Liu Bei entry (as the file's other General tests do) and expects `.gender-tag` to read "Male" and one `.lord-note` reading "Not used in Guozhan".
 
 - [ ] **Step 9: Run them to see them pass**
 
 Run: `npx jest projects/content projects/app/src/app/wiki`
-Expected: one known failure in `kingdomWar.spec.ts`: "draws 3 cards (2 base + 1 Zhuge Liang bonus)" seats Zhuge Liang hidden, so Insight no longer fires. Reveal him in that test (seat-c's deputy: `revealed: true` in the `state` it builds), and rerun: PASS. Any other test that relied on a placeholder firing while hidden gets the same fix, ledgered as a ruling (the placeholders follow the compulsory rule).
+Expected: one known failure in `guozhan.spec.ts`: "draws 3 cards (2 base + 1 Zhuge Liang bonus)" seats Zhuge Liang hidden, so Insight no longer fires. Reveal him in that test (seat-c's deputy: `revealed: true` in the `state` it builds), and rerun: PASS. Any other test that relied on a placeholder firing while hidden gets the same fix, ledgered as a ruling (the placeholders follow the compulsory rule).
 
 - [ ] **Step 10: Commit**
 
@@ -1333,14 +1333,14 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `projects/engine/src/lib/pipeline/hpAndDraw.spec.ts`
-- Modify: `projects/engine/src/lib/pipeline/effects.ts`, `projects/engine/src/lib/pipeline/events.ts`, `projects/content/src/lib/modes/kingdomWar.ts`, `projects/content/src/lib/modes/kingdomWar.spec.ts`
+- Modify: `projects/engine/src/lib/pipeline/effects.ts`, `projects/engine/src/lib/pipeline/events.ts`, `projects/content/src/lib/modes/guozhan.ts`, `projects/content/src/lib/modes/guozhan.spec.ts`
 
 **Interfaces:**
 - Consumes: nothing new.
 - Produces:
   - `Effect` `{ kind: 'LoseHpEffect'; seatId: string; amount: number; abilityId?: string }` → `HpLostEvent { kind: 'HpLostEvent'; seatId: string; amount: number; abilityId?: string }`. No-op on an eliminated seat.
   - `Effect` `{ kind: 'DrawPhaseEffect'; seatId: string; count: number }`: draws `count` (nothing at 0 or less). Before-triggers rewrite `count` or replace it.
-  - Kingdom War queues `DrawPhaseEffect { count: 2 }` when the Draw Phase starts, and runs its reveal and dying triggers after `HpLostEvent` as after `DamageDealtEvent`.
+  - Guozhan queues `DrawPhaseEffect { count: 2 }` when the Draw Phase starts, and runs its reveal and dying triggers after `HpLostEvent` as after `DamageDealtEvent`.
 
 - [ ] **Step 1: Write the failing engine test**
 
@@ -1486,17 +1486,17 @@ and the cases:
 Run: `npx jest projects/engine/src/lib/pipeline/hpAndDraw.spec.ts`
 Expected: PASS (7 tests).
 
-- [ ] **Step 5: Write the failing Kingdom War tests**
+- [ ] **Step 5: Write the failing Guozhan tests**
 
-In `projects/content/src/lib/modes/kingdomWar.spec.ts`, add `Effect` to the type import from `engine` and add:
+In `projects/content/src/lib/modes/guozhan.spec.ts`, add `Effect` to the type import from `engine` and add:
 
 ```ts
-describe('Kingdom War: losing HP', () => {
+describe('Guozhan: losing HP', () => {
   // seat-a (its turn) plays a test card that makes seat-b (Liu Bei and Guan
   // Yu: 4 HP) lose `amount` HP.
   function loseHp(amount: number, bHand: CardInstance[] = []) {
     const registry = buildContentRegistry();
-    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
+    const created = createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 7);
     const card: CardDefinition = { id: `test-lose-${amount}`, name: 'Test Lose', category: 'basic', play: (_s, ctx) => [{ kind: 'LoseHpEffect', seatId: ctx.targets[0].seatId, amount }] };
     registry.cards.set(card.id, card);
     const base = seated(created, registry, { 'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
@@ -1509,7 +1509,7 @@ describe('Kingdom War: losing HP', () => {
         : z
       ),
     };
-    const ctx = { registry, mode: kingdomWarMode };
+    const ctx = { registry, mode: guozhanMode };
     const next = resolve(state, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'lose-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] }, ctx).state;
     return { next, ctx };
   }
@@ -1532,7 +1532,7 @@ describe('Kingdom War: losing HP', () => {
   });
 });
 
-describe('Kingdom War: the Draw Phase step', () => {
+describe('Guozhan: the Draw Phase step', () => {
   it('is one DrawPhaseEffect of 2, which a skill’s before-trigger can change', () => {
     const registry = buildContentRegistry();
     registry.generals.set('test-scholar', {
@@ -1549,9 +1549,9 @@ describe('Kingdom War: the Draw Phase step', () => {
         }],
       }],
     });
-    const base = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, { 'seat-a': ['test-scholar', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
+    const base = seated(createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 42), registry, { 'seat-a': ['test-scholar', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
     const state: GameState = { ...base, seats: base.seats.map((s) => (s.id === 'seat-a' ? { ...s, generals: { ...s.generals!, main: { ...s.generals!.main, revealed: true } } } : s)) };
-    const next = advanceToDecision(state, { registry, mode: kingdomWarMode }).state;
+    const next = advanceToDecision(state, { registry, mode: guozhanMode }).state;
     const draws = next.log.flatMap((e) => (e.kind === 'CardsDrawnEvent' ? [e.cardInstanceIds.length] : []));
     expect(draws).toEqual([3]);
   });
@@ -1562,12 +1562,12 @@ describe('Kingdom War: the Draw Phase step', () => {
 
 - [ ] **Step 6: Run them to see them fail**
 
-Run: `npx jest projects/content/src/lib/modes/kingdomWar.spec.ts`
+Run: `npx jest projects/content/src/lib/modes/guozhan.spec.ts`
 Expected: FAIL — losing HP to 0 starts no dying round and reveals nothing; the Draw Phase draws 2 (the trigger never sees a `DrawPhaseEffect`).
 
-- [ ] **Step 7: Kingdom War on the new effects**
+- [ ] **Step 7: Guozhan on the new effects**
 
-In `projects/content/src/lib/modes/kingdomWar.ts`:
+In `projects/content/src/lib/modes/guozhan.ts`:
 - Add `HpLostEvent`, `SkillTrigger` and `TriggerPoint` to the type import from `engine`.
 - Replace `seatIdOfTarget` with:
 
@@ -1636,7 +1636,7 @@ Expected: PASS.
 
 ```bash
 git add projects/engine projects/content
-git commit -m "feat(engine): losing HP and the Draw Phase as a step; Kingdom War on both
+git commit -m "feat(engine): losing HP and the Draw Phase as a step; Guozhan on both
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -3761,7 +3761,7 @@ triggers, conversions, active skills and content's modifiers alike:
 - a revealed General's skills all count;
 - a hidden General's compulsory skills (and their modifiers) are off; its
   other skills count, marked `needsReveal`;
-- Lord skills never count (Kingdom War has no Lord).
+- Lord skills never count (Guozhan has no Lord).
 
 A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
 
@@ -3781,7 +3781,7 @@ cancellable selection, through that selection's `onSelect`.
 owner used, answers included) end with the turn; `Seat.marks` last the game.
 
 **Losing HP** (`LoseHpEffect` → `HpLostEvent`) is not damage: damage triggers
-don't fire. Kingdom War runs its reveal and dying rules after both.
+don't fire. Guozhan runs its reveal and dying rules after both.
 
 **The Draw Phase** is one `DrawPhaseEffect { count }`. Before-triggers change
 the count or replace the draw.

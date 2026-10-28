@@ -97,7 +97,7 @@ export interface Seat {
   stash?: CardZoneRef;
   // Lost every skill for the rest of the game (Heartbroken).
   silenced?: true;
-  // The Generals whose skills alone are lost for the rest of the game (Alternate Sorrow): printed,
+  // The Generals whose skills alone are lost for the rest of the game (Kingdom Wars Sorrow): printed,
   // gained under that slot and a Form it chose. The other General keeps its skills. Public.
   silencedSlots?: ('main' | 'deputy')[];
   // Skills gained for the rest of the game. `slot` is the General that gained
@@ -304,7 +304,7 @@ export interface UsedCard {
   // The damage nature it carries: set only on a card used as itself whose
   // definition has one (a Fire Attack is a fire Sha). A converted card has none.
   nature?: 'fire' | 'thunder';
-  // No Wuxie or Wuxie Kingdom check is made for this Tool use (Alternate Seed of Animosity's Duel).
+  // No Wuxie or Wuxie Kingdom check is made for this Tool use (Kingdom Wars Seed of Animosity's Duel).
   noWuxie?: true;
 }
 
@@ -386,7 +386,7 @@ export interface GameRules {
   // After a judgment's card is final, the game waits for an acknowledgement (or the
   // notice clock) before the reader acts: the judgment popup's pause. Absent: no wait.
   judgmentNotice?: boolean;
-  // The card distribution the draw pile is dealt from (a deck id). Absent: the Default deck.
+  // The card distribution the draw pile is dealt from (a deck id). Absent: the Dynasty Wars deck.
   deck?: string;
 }
 

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Each seat in a Kingdom War game is dealt 5 candidate generals and picks 2 of the same kingdom, as Main and Deputy, in an Angular Material view before turn 1.
+**Goal:** Each seat in a Guozhan game is dealt 5 candidate generals and picks 2 of the same kingdom, as Main and Deputy, in an Angular Material view before turn 1.
 
-**Architecture:** Selection is a real pre-game phase (`'GeneralSelection'`) inside `GameState`, driven by the existing `getLegalActions` → `resolve` loop through a new `ChooseGeneralsAction`. The content registry is first rebuilt from the 25 crawled general data files plus a migrated Dong Zhuo (26 generals). `kingdomWarMode.setup` deals the candidates. The Angular `GeneralSelection` component only renders the engine's legal actions and emits the one matching the player's selection.
+**Architecture:** Selection is a real pre-game phase (`'GeneralSelection'`) inside `GameState`, driven by the existing `getLegalActions` → `resolve` loop through a new `ChooseGeneralsAction`. The content registry is first rebuilt from the 25 crawled general data files plus a migrated Dong Zhuo (26 generals). `guozhanMode.setup` deals the candidates. The Angular `GeneralSelection` component only renders the engine's legal actions and emits the one matching the player's selection.
 
 **Tech Stack:** TypeScript 6, Angular 22 (standalone components, signals), Angular Material 22 (M3 prebuilt theme), Jest 30 (ts-jest for engine/content/sim, jest-preset-angular for app).
 
@@ -55,7 +55,7 @@
 | `projects/engine/src/lib/rules/legality.ts` | Delegates to selection rules during `GeneralSelection` |
 | `projects/engine/src/lib/pipeline/resolve.ts` | New action case, phase guard, win-check skip |
 | `projects/engine/src/lib/domain/redact.ts` | Null-safe seats; candidate redaction |
-| `projects/content/src/lib/modes/kingdomWar.ts` | Deal, seat cap, initial selection state |
+| `projects/content/src/lib/modes/guozhan.ts` | Deal, seat cap, initial selection state |
 | `projects/sim/src/bot.ts`, `runGame.ts`, `invariants.ts` | Registry-aware bot; selection invariants |
 | `projects/app/src/app/game.service.ts` | Engine `getActiveSeatId`, registry-aware legal actions, `maxSeats`, guarded `startGame` |
 | `projects/app/src/app/labels.ts` | Labels for the new action and event |
@@ -351,7 +351,7 @@ export * from './lib/display';
 Run: `npx jest --selectProjects content && npx tsc -p projects/content/tsconfig.spec.json --noEmit && npm run build:content`
 Expected: all content tests PASS, no type errors, and the library builds.
 
-Some `kingdomWar.spec.ts` cases assert on the old deterministic assignment ("seat-c is assigned zhuge-liang"), and those may now fail. That is expected, because Task 4 rewrites that file. Everything else must pass.
+Some `guozhan.spec.ts` cases assert on the old deterministic assignment ("seat-c is assigned zhuge-liang"), and those may now fail. That is expected, because Task 4 rewrites that file. Everything else must pass.
 
 If `npm run build:content` fails because `data/` lies outside the library's `rootDir`, add `"../data/**/*.ts", "../data/**/*.json"` to the `include` of `projects/content/tsconfig.lib.json` (and `tsconfig.ngbuild.json`), mirroring how `assets/manifest.json` is already handled.
 
@@ -376,7 +376,7 @@ If `projects/content/data/` or `public-api.ts` were still untracked or unstaged 
 - Modify: `projects/engine/src/lib/domain/types.ts`
 - Modify: `projects/engine/src/lib/pipeline/actions.ts`, `projects/engine/src/lib/pipeline/events.ts`
 - Modify: `projects/engine/src/lib/pipeline/effects.ts`, `projects/engine/src/lib/skills/triggers.ts`, `projects/engine/src/lib/domain/redact.ts`
-- Modify: `projects/content/src/lib/modes/kingdomWar.ts` (null-safe trigger conditions plus `generalSelection: null` only; the deal comes in Task 4)
+- Modify: `projects/content/src/lib/modes/guozhan.ts` (null-safe trigger conditions plus `generalSelection: null` only; the deal comes in Task 4)
 - Modify (fixtures): every spec file with a `GameState` literal, listed in Step 5
 - Test: `projects/engine/src/lib/skills/triggers.spec.ts`, `projects/engine/src/lib/pipeline/resolve.spec.ts`, `projects/engine/src/lib/domain/redact.spec.ts`
 
@@ -562,7 +562,7 @@ function redactSeat(seat: Seat, viewerSeatId: string): Seat {
 
 Also change the import to `import { CardInstance, CardZone, GameState, Seat, SeatGenerals } from './types';`.
 
-`projects/content/src/lib/modes/kingdomWar.ts`: in the two forced-reveal trigger conditions, change `!!seat && !seat.generals.main.revealed` to `!!seat && !!seat.generals && !seat.generals.main.revealed`, and change `!!seat && !seat.generals.deputy.revealed` to `!!seat && !!seat.generals && !seat.generals.deputy.revealed`. In the `state` literal, add `generalSelection: null,` after `result: null,`.
+`projects/content/src/lib/modes/guozhan.ts`: in the two forced-reveal trigger conditions, change `!!seat && !seat.generals.main.revealed` to `!!seat && !!seat.generals && !seat.generals.main.revealed`, and change `!!seat && !seat.generals.deputy.revealed` to `!!seat && !!seat.generals && !seat.generals.deputy.revealed`. In the `state` literal, add `generalSelection: null,` after `result: null,`.
 
 - [ ] **Step 5: Update test fixtures for the new required field and the nullable generals**
 
@@ -585,7 +585,7 @@ Add non-null assertions where specs read or spread a seat's generals:
 
 ```bash
 for f in projects/engine/src/lib/domain/redact.spec.ts projects/engine/src/lib/domain/factories.spec.ts \
-  projects/content/src/lib/modes/kingdomWar.spec.ts projects/content/src/lib/generals/setOne.spec.ts \
+  projects/content/src/lib/modes/guozhan.spec.ts projects/content/src/lib/generals/setOne.spec.ts \
   projects/app/src/app/game.service.spec.ts; do
   sed -i '' -E 's/\.generals\.(main|deputy)/.generals!.\1/g; s/\.\.\.s\.generals,/...s.generals!,/g' "$f"
 done
@@ -595,14 +595,14 @@ done
 
 Run: `npx jest --selectProjects engine content sim && npx tsc -p projects/engine/tsconfig.spec.json --noEmit && npx tsc -p projects/content/tsconfig.spec.json --noEmit && npx tsc -p projects/sim/tsconfig.json --noEmit`
 
-Expected: the three new tests PASS, and the engine and sim suites PASS. The only allowed content failures are the `kingdomWar.spec.ts` cases already noted in Task 1, which Task 4 rewrites. There must be no type errors.
+Expected: the three new tests PASS, and the engine and sim suites PASS. The only allowed content failures are the `guozhan.spec.ts` cases already noted in Task 1, which Task 4 rewrites. There must be no type errors.
 
 If `tsc` reports another `seat.generals` access in a spec that the sed missed, add `!` there. The app is type-checked in Task 6.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add projects/engine/src projects/content/src/lib/modes/kingdomWar.ts projects/content/src/lib/modes/kingdomWar.spec.ts \
+git add projects/engine/src projects/content/src/lib/modes/guozhan.ts projects/content/src/lib/modes/guozhan.spec.ts \
   projects/content/src/lib/generals/setOne.spec.ts projects/content/src/lib/generals/setTwo.spec.ts \
   projects/content/src/lib/cards/tools.spec.ts projects/content/src/lib/cards/cards.spec.ts \
   projects/content/src/lib/shared/queries.spec.ts projects/sim/src/bot.spec.ts projects/sim/src/invariants.spec.ts \
@@ -1068,26 +1068,26 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 
 ---
 
-### Task 4: Kingdom War deal and seat cap
+### Task 4: Guozhan deal and seat cap
 
 **Files:**
-- Modify: `projects/content/src/lib/modes/kingdomWar.ts`
-- Rewrite: `projects/content/src/lib/modes/kingdomWar.spec.ts`
+- Modify: `projects/content/src/lib/modes/guozhan.ts`
+- Rewrite: `projects/content/src/lib/modes/guozhan.spec.ts`
 
 **Interfaces:**
 - Consumes: `shuffle` (engine), `getActiveSeatId`, `getLegalActions(state, seatId, registry)` and `resolve` (Task 3), and `buildContentRegistry` (Task 1).
 - Produces:
   - `export const GENERALS_PER_SEAT = 5`
-  - `export function kingdomWarMaxSeats(registry: ContentRegistry): number`
-  - `GameModeDefinition` gains optional `maxSeats?(registry: ContentRegistry): number`, which `kingdomWarMode` sets to `kingdomWarMaxSeats`.
-  - `kingdomWarMode.setup` returns a state in `phase: 'GeneralSelection'`.
+  - `export function guozhanMaxSeats(registry: ContentRegistry): number`
+  - `GameModeDefinition` gains optional `maxSeats?(registry: ContentRegistry): number`, which `guozhanMode` sets to `guozhanMaxSeats`.
+  - `guozhanMode.setup` returns a state in `phase: 'GeneralSelection'`.
 
 - [ ] **Step 1: Write the new mode spec (failing)**
 
-Replace `projects/content/src/lib/modes/kingdomWar.spec.ts` with:
+Replace `projects/content/src/lib/modes/guozhan.spec.ts` with:
 
 ```ts
-import { kingdomWarMode, kingdomWarMaxSeats, GENERALS_PER_SEAT } from './kingdomWar';
+import { guozhanMode, guozhanMaxSeats, GENERALS_PER_SEAT } from './guozhan';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, getActiveSeatId, getLegalActions } from 'engine';
 import type { GameState, CardDefinition, ContentRegistry } from 'engine';
@@ -1118,11 +1118,11 @@ function seated(state: GameState, registry: ContentRegistry, picks: Record<strin
   };
 }
 
-describe('Kingdom War setup and deal', () => {
+describe('Guozhan setup and deal', () => {
   const registry = buildContentRegistry();
 
   it('starts in GeneralSelection with unchosen seats, 4-card hands, and seat-a first', () => {
-    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 42);
+    const state = createGame(guozhanMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d'], 42);
     expect(state.phase).toBe('GeneralSelection');
     expect(state.turn).toEqual({ turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] });
     expect(getActiveSeatId(state)).toBe('seat-a');
@@ -1136,7 +1136,7 @@ describe('Kingdom War setup and deal', () => {
   });
 
   it('deals 5 unique registry generals to every seat, each containing a same-kingdom pair', () => {
-    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'], 42);
+    const state = createGame(guozhanMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'], 42);
     const candidates = state.generalSelection!.candidates;
     const all = Object.values(candidates).flat();
     expect(Object.keys(candidates).sort()).toEqual(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e']);
@@ -1150,24 +1150,24 @@ describe('Kingdom War setup and deal', () => {
   });
 
   it('is deterministic for a seed and varies across seeds', () => {
-    const a = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
-    const b = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
-    const c = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 8);
+    const a = createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 7);
+    const b = createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 7);
+    const c = createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 8);
     expect(JSON.stringify(b)).toEqual(JSON.stringify(a));
     expect(c.generalSelection).not.toEqual(a.generalSelection);
   });
 
   it('caps the table at floor(generals / 5) seats and rejects fewer than 2', () => {
-    expect(kingdomWarMaxSeats(registry)).toBe(5);
-    expect(kingdomWarMode.maxSeats!(registry)).toBe(5);
+    expect(guozhanMaxSeats(registry)).toBe(5);
+    expect(guozhanMode.maxSeats!(registry)).toBe(5);
     const six = ['a', 'b', 'c', 'd', 'e', 'f'];
-    expect(() => createGame(kingdomWarMode, registry, six, 1)).toThrow(/between 2 and 5 seats/);
-    expect(() => createGame(kingdomWarMode, registry, ['a'], 1)).toThrow(/between 2 and 5 seats/);
+    expect(() => createGame(guozhanMode, registry, six, 1)).toThrow(/between 2 and 5 seats/);
+    expect(() => createGame(guozhanMode, registry, ['a'], 1)).toThrow(/between 2 and 5 seats/);
   });
 
   it('a full selection through resolve seats every seat with a same-kingdom pair and starts Judgment', () => {
-    let state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42);
-    const ctx = { registry, mode: kingdomWarMode };
+    let state = createGame(guozhanMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42);
+    const ctx = { registry, mode: guozhanMode };
     while (state.phase === 'GeneralSelection') {
       const seatId = getActiveSeatId(state)!;
       state = resolve(state, getLegalActions(state, seatId, registry)[0], ctx).state;
@@ -1187,7 +1187,7 @@ describe('Kingdom War setup and deal', () => {
   it('ends the game right after selection if every seat picked the same non-Qun kingdom (Review Focus 1)', () => {
     // Pins current behavior: the existing win rule (one living non-Qun
     // kingdom) is evaluated as soon as the last seat chooses.
-    const state = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 1);
+    const state = createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 1);
     const allWei: GameState = {
       ...state,
       generalSelection: {
@@ -1197,7 +1197,7 @@ describe('Kingdom War setup and deal', () => {
         },
       },
     };
-    const ctx = { registry, mode: kingdomWarMode };
+    const ctx = { registry, mode: guozhanMode };
     const afterA = resolve(allWei, { kind: 'ChooseGeneralsAction', seatId: 'seat-a', mainId: 'cao-cao', deputyId: 'xu-chu' }, ctx).state;
     expect(afterA.result).toBeNull();
     const afterB = resolve(afterA, { kind: 'ChooseGeneralsAction', seatId: 'seat-b', mainId: 'sima-yi', deputyId: 'guo-jia' }, ctx).state;
@@ -1205,7 +1205,7 @@ describe('Kingdom War setup and deal', () => {
   });
 });
 
-describe('Kingdom War forced reveal and elimination', () => {
+describe('Guozhan forced reveal and elimination', () => {
   const testDamageCard: CardDefinition = {
     id: 'test-damage-card', name: 'Test Damage Card', category: 'basic',
     play: (_state, ctx) => [{
@@ -1217,7 +1217,7 @@ describe('Kingdom War forced reveal and elimination', () => {
   it('force-reveals both generals and eliminates the seat on lethal damage, ending the game', () => {
     const registry = buildContentRegistry();
     registry.cards.set('test-damage-card', testDamageCard);
-    const created = createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 7);
+    const created = createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 7);
     const base = seated(created, registry, { 'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'] });
     const state: GameState = {
       ...base,
@@ -1230,7 +1230,7 @@ describe('Kingdom War forced reveal and elimination', () => {
     const { state: next } = resolve(
       state,
       { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'lethal-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
-      { registry, mode: kingdomWarMode }
+      { registry, mode: guozhanMode }
     );
     const seatB = next.seats.find((s) => s.id === 'seat-b')!;
     expect(seatB.generals!.main.revealed).toBe(true);
@@ -1240,18 +1240,18 @@ describe('Kingdom War forced reveal and elimination', () => {
   });
 });
 
-describe('Kingdom War win condition', () => {
+describe('Guozhan win condition', () => {
   const registry = buildContentRegistry();
 
   it('returns a real draw result — not null — when every seat is eliminated at once', () => {
-    const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3), registry, {
+    const created = seated(createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 3), registry, {
       'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'],
     });
     const allEliminated: GameState = {
       ...created,
       seats: created.seats.map((s) => ({ ...s, eliminated: true, combinedHp: 0 })),
     };
-    expect(kingdomWarMode.checkWinCondition(allEliminated)).toEqual({
+    expect(guozhanMode.checkWinCondition(allEliminated)).toEqual({
       endedAt: allEliminated.turn.turnNumber,
       winningSeatIds: [],
       losingSeatIds: ['seat-a', 'seat-b'],
@@ -1259,26 +1259,26 @@ describe('Kingdom War win condition', () => {
   });
 
   it('still returns null while more than one kingdom is alive', () => {
-    const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 3), registry, {
+    const created = seated(createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 3), registry, {
       'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'],
     });
-    expect(kingdomWarMode.checkWinCondition(created)).toBeNull();
+    expect(guozhanMode.checkWinCondition(created)).toBeNull();
   });
 });
 
-describe('Kingdom War per-turn draw', () => {
+describe('Guozhan per-turn draw', () => {
   const registry = buildContentRegistry();
 
   it('draws 2 cards for whichever seat enters the Draw phase', () => {
     // cao-cao and xu-chu have no hand-coded skills, isolating the mode-level draw.
-    const state = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b'], 42), registry, {
+    const state = seated(createGame(guozhanMode, registry, ['seat-a', 'seat-b'], 42), registry, {
       'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['liu-bei', 'guan-yu'],
     });
     const handBefore = state.zones.find((z) => z.id === state.seats[0].hand.zoneId)!;
     expect(handBefore.cards).toHaveLength(4);
     const originalCardIds = new Set(handBefore.cards.map((c) => c.instanceId));
 
-    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry, mode: kingdomWarMode });
+    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-a' }, { registry, mode: guozhanMode });
 
     expect(next.phase).toBe('Draw');
     const handAfter = next.zones.find((z) => z.id === state.seats[0].hand.zoneId)!;
@@ -1287,14 +1287,14 @@ describe('Kingdom War per-turn draw', () => {
   });
 
   it('draws 3 cards (2 base + 1 Zhuge Liang bonus) when a Zhuge Liang-holding seat enters Draw', () => {
-    const created = seated(createGame(kingdomWarMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42), registry, {
+    const created = seated(createGame(guozhanMode, registry, ['seat-a', 'seat-b', 'seat-c'], 42), registry, {
       'seat-a': ['cao-cao', 'xu-chu'], 'seat-b': ['sun-quan', 'zhou-yu'], 'seat-c': ['zhao-yun', 'zhuge-liang'],
     });
     const seatC = created.seats.find((s) => s.id === 'seat-c')!;
     const state: GameState = { ...created, turn: { turnNumber: 1, ownerSeatId: 'seat-c', extraTurnStack: [] } };
     const originalCardIds = new Set(state.zones.find((z) => z.id === seatC.hand.zoneId)!.cards.map((c) => c.instanceId));
 
-    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-c' }, { registry, mode: kingdomWarMode });
+    const { state: next } = resolve(state, { kind: 'EndPhaseAction', seatId: 'seat-c' }, { registry, mode: guozhanMode });
 
     expect(next.phase).toBe('Draw');
     const handAfter = next.zones.find((z) => z.id === seatC.hand.zoneId)!;
@@ -1303,8 +1303,8 @@ describe('Kingdom War per-turn draw', () => {
 });
 ```
 
-Run: `npx jest projects/content/src/lib/modes/kingdomWar.spec.ts`
-Expected: FAIL at import (`kingdomWarMaxSeats` is not exported), or at `expect(state.phase).toBe('GeneralSelection')`.
+Run: `npx jest projects/content/src/lib/modes/guozhan.spec.ts`
+Expected: FAIL at import (`guozhanMaxSeats` is not exported), or at `expect(state.phase).toBe('GeneralSelection')`.
 
 - [ ] **Step 2: Add `maxSeats` to `GameModeDefinition`**
 
@@ -1317,7 +1317,7 @@ In `projects/engine/src/lib/registry/types.ts`, add this to `GameModeDefinition`
 
 - [ ] **Step 3: Implement the deal**
 
-In `projects/content/src/lib/modes/kingdomWar.ts`:
+In `projects/content/src/lib/modes/guozhan.ts`:
 - Change the value import to `import { buildDeck, drawTop, shuffle } from 'engine';`, and add `Seat` to the type import.
 - Delete `KINGDOM_ORDER` and the `Kingdom` type import, since nothing else uses them.
 - Add after `SUITS`:
@@ -1325,7 +1325,7 @@ In `projects/content/src/lib/modes/kingdomWar.ts`:
 ```ts
 export const GENERALS_PER_SEAT = 5;
 
-export function kingdomWarMaxSeats(registry: ContentRegistry): number {
+export function guozhanMaxSeats(registry: ContentRegistry): number {
   return Math.floor(registry.generals.size / GENERALS_PER_SEAT);
 }
 
@@ -1357,13 +1357,13 @@ Add `RngState` to the type import from `'engine'`.
 Replace the `setup` implementation's seat construction and state literal. The deck and hand-drawing code in between stays as it is, except that the deck is built from `afterDeal`:
 
 ```ts
-  maxSeats: kingdomWarMaxSeats,
+  maxSeats: guozhanMaxSeats,
 
   setup: (seatIds, registry, rng) => {
-    const limit = kingdomWarMaxSeats(registry);
+    const limit = guozhanMaxSeats(registry);
     if (seatIds.length < 2 || seatIds.length > limit) {
       throw new Error(
-        `Kingdom War needs between 2 and ${limit} seats with ${registry.generals.size} generals; got ${seatIds.length}`
+        `Guozhan needs between 2 and ${limit} seats with ${registry.generals.size} generals; got ${seatIds.length}`
       );
     }
     const { candidates, rng: afterDeal } = dealCandidates(seatIds, registry, rng);
@@ -1411,8 +1411,8 @@ If the "same non-Qun kingdom" test's picks fail because one of the listed ids is
 - [ ] **Step 5: Commit**
 
 ```bash
-git add projects/engine/src/lib/registry/types.ts projects/content/src/lib/modes/kingdomWar.ts projects/content/src/lib/modes/kingdomWar.spec.ts
-git commit -m "feat(content): deal 5 generals per seat in Kingdom War and cap seats by pool size
+git add projects/engine/src/lib/registry/types.ts projects/content/src/lib/modes/guozhan.ts projects/content/src/lib/modes/guozhan.spec.ts
+git commit -m "feat(content): deal 5 generals per seat in Guozhan and cap seats by pool size
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ```
@@ -1426,7 +1426,7 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 - Test: `projects/sim/src/bot.spec.ts`, `projects/sim/src/invariants.spec.ts`, `projects/sim/src/property.spec.ts`
 
 **Interfaces:**
-- Consumes: `getActiveSeatId`, `getLegalActions(state, seatId, registry)` (Task 3), and `kingdomWarMaxSeats` (Task 4).
+- Consumes: `getActiveSeatId`, `getLegalActions(state, seatId, registry)` (Task 3), and `guozhanMaxSeats` (Task 4).
 - Produces:
   - `pickRandomAction(state: GameState, rng: RngState, registry: ContentRegistry): { action: Action; rng: RngState }`
   - `checkInvariants(state: GameState, registry?: ContentRegistry): string[]`
@@ -1567,18 +1567,18 @@ In `projects/sim/src/cli.ts`, change both calls to `checkInvariants(finalState, 
 - [ ] **Step 4: Cap the property test's seat counts and pass the registry**
 
 In `projects/sim/src/property.spec.ts`:
-- Add `kingdomWarMaxSeats` to the `content` import.
+- Add `guozhanMaxSeats` to the `content` import.
 - Replace `const seatCounts = [2, 3, 4, 5, 6, 7, 8];` with:
 
 ```ts
-    // Kingdom War deals 5 unique generals per seat, so the table is capped by the pool.
-    const maxSeats = kingdomWarMaxSeats(registry);
+    // Guozhan deals 5 unique generals per seat, so the table is capped by the pool.
+    const maxSeats = guozhanMaxSeats(registry);
     const seatCounts = Array.from({ length: maxSeats - 1 }, (_, i) => i + 2);
 ```
 
 - Change `for (let i = 0; i < 10; i++)` to `for (let i = 0; i < 15; i++)`. That keeps about 60 games with 4 seat counts.
 - Change `checkInvariants(finalState)` to `checkInvariants(finalState, registry)`.
-- Change the test title to `'every game terminates with a valid, non-dangling GameResult and no invariant violations'` (unchanged), and the describe title to `'property: simulated Kingdom War games across many seeds and every legal seat count'`.
+- Change the test title to `'every game terminates with a valid, non-dangling GameResult and no invariant violations'` (unchanged), and the describe title to `'property: simulated Guozhan games across many seeds and every legal seat count'`.
 
 - [ ] **Step 5: Run the sim suite and the type check**
 
@@ -1603,7 +1603,7 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 - Test: `projects/app/src/app/game.service.spec.ts`, `projects/app/src/app/labels.spec.ts`, `projects/app/src/app/game-board/seat-summary.spec.ts`, `projects/app/src/app/setup/setup.spec.ts`, `projects/app/src/app/game-board/game-board.spec.ts`
 
 **Interfaces:**
-- Consumes: `getActiveSeatId`, `getLegalActions(state, seatId, registry)` and `ChooseGeneralsAction` (engine), and `kingdomWarMaxSeats` (content).
+- Consumes: `getActiveSeatId`, `getLegalActions(state, seatId, registry)` and `ChooseGeneralsAction` (engine), and `guozhanMaxSeats` (content).
 - Produces: `GameService.maxSeats: number`. `GameService.startGame` now surfaces a setup error through `lastError` instead of throwing.
 
 - [ ] **Step 1: Write the failing service tests**
@@ -1692,11 +1692,11 @@ Expected: FAIL. `legalActions` throws `getLegalActions needs the content registr
 - [ ] **Step 2: Update `GameService`**
 
 In `projects/app/src/app/game.service.ts`:
-- Add `getActiveSeatId` to the `engine` import, and `kingdomWarMaxSeats` to the `content` import.
+- Add `getActiveSeatId` to the `engine` import, and `guozhanMaxSeats` to the `content` import.
 - Replace `activeSeatId`, `legalActions` and `startGame` with:
 
 ```ts
-  readonly maxSeats: number = kingdomWarMaxSeats(this.registry);
+  readonly maxSeats: number = guozhanMaxSeats(this.registry);
 
   readonly activeSeatId: Signal<string | null> = computed(() => {
     const state = this._state();
@@ -1717,7 +1717,7 @@ In `projects/app/src/app/game.service.ts`:
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     this._revealedSeatId.set(null);
     try {
-      this._state.set(createGame(kingdomWarMode, this.registry, seatIds, rngSeed));
+      this._state.set(createGame(guozhanMode, this.registry, seatIds, rngSeed));
       this._lastError.set(null);
     } catch (err) {
       this._state.set(null);

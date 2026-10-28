@@ -1,7 +1,7 @@
 import { randomInt } from 'node:crypto';
 import { ruleBasedPolicy } from 'bots';
 import type { BotPolicy } from 'bots';
-import { buildContentRegistry, FIRST_REVEAL_MIN_SEATS } from 'content';
+import { buildContentRegistry, DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS } from 'content';
 import type { Action, ContentRegistry, EngineContext, GameResult, GameRules, GameState } from 'engine';
 import { finalSeatViews, normalizeDisplayName } from 'protocol';
 import type { CreateRoomBody, FinalSeatView, GameOutcome, RoomCommand, RoomLeftReason, RoomList, RoomSnapshot, SeatLimits, ServerMessage, SoloRoomBody } from 'protocol';
@@ -78,12 +78,12 @@ async function storePendingEnd(tx: Repositories, end: PendingEnd | null, at: Dat
 }
 
 // The rules the engine reads. Unknown keys never get stored, First Reveal
-// Bonus is dropped below the seat count where it applies, and the Default deck
+// Bonus is dropped below the seat count where it applies, and the default deck
 // is stored as no deck at all.
 function rulesFrom(rules: GameRules, seatCount: number): GameRules {
   return {
     ...(rules.firstRevealDraw === undefined || seatCount < FIRST_REVEAL_MIN_SEATS ? {} : { firstRevealDraw: rules.firstRevealDraw }),
-    ...(rules.deck === undefined || rules.deck === 'default' ? {} : { deck: rules.deck }),
+    ...(rules.deck === undefined || rules.deck === DEFAULT_DECK_ID ? {} : { deck: rules.deck }),
   };
 }
 

@@ -82,7 +82,7 @@ export function skipPhaseTool({ id, name, skips, spares, maxDistance }: SkipPhas
   };
 }
 
-// Kingdom War's Judgment Phase: the turn owner's delayed Tools are judged one
+// Guozhan's Judgment Phase: the turn owner's delayed Tools are judged one
 // at a time, last in, first out. Each gets the usual Wuxie check (asked from the
 // judged seat, which stands in as the Tool's user), which guards only the
 // judgment. Its cleanup always runs.

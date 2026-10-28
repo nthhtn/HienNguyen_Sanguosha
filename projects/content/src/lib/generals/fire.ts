@@ -99,8 +99,8 @@ export const rouseTheTiger: SkillDefinition = {
 const loyaltyAsk = (owner: GeneralOwner, left: number): Effect => ask(owner, [skillStep(owner, 'pick', { left })], left > 1 ? [loyaltyAsk(owner, left - 1)] : []);
 
 // Eternal Loyalty (may, per point of damage you take): pick any living seat,
-// you included; it draws until it holds as many hand cards as its max HP. Default
-// has no cap; the Alternate variant never raises the hand above `handCap`.
+// you included; it draws until it holds as many hand cards as its max HP. Dynasty Wars
+// has no cap; the Kingdom Wars variant never raises the hand above `handCap`.
 export const makeEternalLoyalty = (handCap = Infinity): SkillDefinition => ({
   id: 'eternal-loyalty',
   triggers: [
@@ -153,7 +153,7 @@ const NIRVANA_MARK = 'nirvana-used';
 // Nirvana (may, once per game): when you would enter the dying round, discard
 // every card you have (hand, equipment, judgment area), draw 3, recover to 3 HP
 // (at most your max HP) and turn face up. You don't enter the dying round.
-// Alternate Resurrection (`clearChained`): the seat also stops being Chained.
+// Kingdom Wars Resurrection (`clearChained`): the seat also stops being Chained.
 export const makeNirvana = (clearChained: boolean): SkillDefinition => ({
   id: 'nirvana',
   limited: true,
@@ -307,7 +307,7 @@ export const duelingHeroes: SkillDefinition = {
 // Random Strike: 2 hand cards of one suit may be played as Hail of Arrows.
 export const randomStrike: SkillDefinition = { id: 'random-strike', conversions: [{ id: 'random-strike', as: 'hail-of-arrows', cards: 2, sameSuit: true, when: 'play' }] };
 
-// Bloodline: a Lord skill, inactive in Kingdom War.
+// Bloodline: a Lord skill, inactive in Guozhan.
 export const bloodline: SkillDefinition = { id: 'bloodline', lord: true };
 
 export const FIRE_GENERALS: GeneralSkillSet[] = [

@@ -1,41 +1,41 @@
 import { buildContentRegistry } from './registry';
-import { alternateCardData } from './alternateCards';
+import { kingdomWarsCardData } from './kingdomWarsCards';
 import { DECK_IDS, deckFor, deckIdOf, undealtCardIds } from './decks';
 
 describe('decks', () => {
   const registry = buildContentRegistry();
 
-  it('knows the Default and Alternate decks', () => {
-    expect([...DECK_IDS]).toEqual(['default', 'alternate']);
+  it('knows the Dynasty Wars and Kingdom Wars decks', () => {
+    expect([...DECK_IDS]).toEqual(['dynastyWars', 'kingdomWars']);
   });
 
-  it('treats no deck as Default', () => {
-    expect(deckFor(undefined)).toEqual(deckFor('default'));
+  it('treats no deck as Kingdom Wars', () => {
+    expect(deckFor(undefined)).toEqual(deckFor('kingdomWars'));
   });
 
-  it('reads a deck id from loosely typed rules, falling back to Default', () => {
-    expect(deckIdOf('alternate')).toBe('alternate');
-    expect(deckIdOf('default')).toBe('default');
-    expect(deckIdOf(undefined)).toBe('default');
-    expect(deckIdOf('bogus')).toBe('default');
+  it('reads a deck id from loosely typed rules, falling back to Kingdom Wars', () => {
+    expect(deckIdOf('kingdomWars')).toBe('kingdomWars');
+    expect(deckIdOf('dynastyWars')).toBe('dynastyWars');
+    expect(deckIdOf(undefined)).toBe('kingdomWars');
+    expect(deckIdOf('bogus')).toBe('kingdomWars');
   });
 
   it('refuses a deck it does not know', () => {
     expect(() => deckFor('nope')).toThrow('Unknown deck "nope"');
   });
 
-  it('lists every playable registry card in the Default deck', () => {
-    const listed = new Set(deckFor('default').entries.map((e) => e.cardId));
-    const missing = [...registry.cards.values()].filter((c) => !c.outOfDeck && !alternateCardData(c.id) && !listed.has(c.id)).map((c) => c.id);
+  it('lists every playable registry card in the Dynasty Wars deck', () => {
+    const listed = new Set(deckFor('dynastyWars').entries.map((e) => e.cardId));
+    const missing = [...registry.cards.values()].filter((c) => !c.outOfDeck && !kingdomWarsCardData(c.id) && !listed.has(c.id)).map((c) => c.id);
     expect(missing).toEqual([]);
   });
 
-  it('leaves no Alternate card the game cannot play', () => {
-    expect(undealtCardIds(deckFor('alternate'), registry)).toEqual([]);
+  it('leaves no Kingdom Wars card the game cannot play', () => {
+    expect(undealtCardIds(deckFor('kingdomWars'), registry)).toEqual([]);
   });
 
-  it('prints only real suits and ranks in the Alternate deck', () => {
-    const printings = deckFor('alternate').entries.flatMap((e) => e.printings);
+  it('prints only real suits and ranks in the Kingdom Wars deck', () => {
+    const printings = deckFor('kingdomWars').entries.flatMap((e) => e.printings);
     expect(printings).toHaveLength(108);
     for (const p of printings) {
       expect(['spade', 'heart', 'club', 'diamond']).toContain(p.suit);

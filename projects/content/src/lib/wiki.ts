@@ -2,24 +2,25 @@ import { cardsData, CardData } from '../../data/cards';
 import { generalsData, GeneralData } from '../../data/generals';
 import { GENERAL_SKILLS } from './generals';
 import { buildContentRegistry } from './registry';
+import { DEFAULT_DECK_ID } from './decks';
 import type { DeckId } from './decks';
-import alternateCards from '../../data/decks/alternate/cards.json';
-import alternateEnglish from '../../data/decks/alternate/texts.en.json';
-import alternateIds from '../../data/decks/alternate/ids.json';
+import kingdomWarsCards from '../../data/decks/kingdom-wars/cards.json';
+import kingdomWarsEnglish from '../../data/decks/kingdom-wars/texts.en.json';
+import kingdomWarsIds from '../../data/decks/kingdom-wars/ids.json';
 
 // Every pack, in the order the Wiki lists them.
 const PACK_ORDER = ['Base', 'EX', 'Army', 'Wind', 'Fire', 'Forest', 'Mountain'] as const;
 export type WikiPack = (typeof PACK_ORDER)[number];
 
 // Whether a skill works in the game: the game has code for it, it is a Lord skill
-// (inactive in Kingdom War), or the data has it but the game does not yet.
+// (inactive in Guozhan), or the data has it but the game does not yet.
 export type SkillStatus = 'working' | 'lord' | 'missing';
 
 export interface WikiSkill {
   name: string;
   nameZh: string | null;
   text: string;
-  // A Lord skill: not used in Kingdom War.
+  // A Lord skill: not used in Guozhan.
   lord: boolean;
   status: SkillStatus;
 }
@@ -73,9 +74,9 @@ export interface WikiCard {
   printings: NonNullable<CardData['printings']>;
   mount: NonNullable<CardData['mount']> | null;
   delayed: boolean;
-  // The pack a Default card belongs to; null on an Alternate card, which has no pack.
+  // The pack a Dynasty Wars card belongs to; null on a Kingdom Wars card, which has no pack.
   expansion: Extract<WikiPack, 'Base' | 'EX' | 'Army'> | null;
-  // Whether the game has behaviour for the card (in the Alternate deck, the same test).
+  // Whether the game has behaviour for the card (in the Kingdom Wars deck, the same test).
   inGame: boolean;
   deck: DeckId;
 }
@@ -111,54 +112,54 @@ export function wikiGenerals(): WikiGeneral[] {
     .sort((a, b) => KINGDOM_ORDER.indexOf(a.kingdom) - KINGDOM_ORDER.indexOf(b.kingdom) || lordsFirst(a, b) || byPack(a, b) || byName(a, b));
 }
 
-export function wikiCards(category: WikiCard['category'], deck: DeckId = 'default'): WikiCard[] {
-  return deck === 'alternate' ? alternateWikiCards(category) : defaultWikiCards(category);
+export function wikiCards(category: WikiCard['category'], deck: DeckId = DEFAULT_DECK_ID): WikiCard[] {
+  return deck === 'kingdomWars' ? kingdomWarsWikiCards(category) : dynastyWarsWikiCards(category);
 }
 
-interface AlternateCardData {
+interface KingdomWarsCardData {
   nameZh: string;
   category: WikiCard['category'];
   subtype?: 'weapon' | 'armor' | 'mount';
   count: number;
   cardId: string;
-  defaultCardId: string | null;
+  dynastyWarsCardId: string | null;
   range?: number;
   mount?: 'offensive' | 'defensive';
   printings: NonNullable<CardData['printings']>;
 }
 
-// The Alternate deck's cards. A card Default also has takes its English name and
-// text from Default's data; a card it lacks takes its name from ids.json and its text from texts.en.json.
-function alternateWikiCards(category: WikiCard['category']): WikiCard[] {
+// The Kingdom Wars deck's cards. A card Dynasty Wars also has takes its English name and
+// text from Dynasty Wars' data; a card it lacks takes its name from ids.json and its text from texts.en.json.
+function kingdomWarsWikiCards(category: WikiCard['category']): WikiCard[] {
   const registry = buildContentRegistry();
-  const english = alternateEnglish as Record<string, string>;
-  const ids = alternateIds as Record<string, { id: string; name: string }>;
+  const english = kingdomWarsEnglish as Record<string, string>;
+  const ids = kingdomWarsIds as Record<string, { id: string; name: string }>;
   const subtypeRank = (c: WikiCard) => (c.subtype === null ? -1 : SUBTYPE_ORDER.indexOf(c.subtype));
-  return (alternateCards.cards as AlternateCardData[])
+  return (kingdomWarsCards.cards as KingdomWarsCardData[])
     .filter((card) => card.category === category)
     .map((card): WikiCard => {
-      const fromDefault: CardData | undefined = card.defaultCardId ? cardsData[card.defaultCardId] : undefined;
+      const fromDynastyWars: CardData | undefined = card.dynastyWarsCardId ? cardsData[card.dynastyWarsCardId] : undefined;
       return {
         id: card.cardId,
-        name: fromDefault?.name ?? ids[card.nameZh].name,
+        name: fromDynastyWars?.name ?? ids[card.nameZh].name,
         nameZh: card.nameZh,
         category: card.category,
         subtype: card.subtype === undefined ? null : card.subtype === 'mount' ? 'horse' : card.subtype,
-        text: fromDefault?.text ?? english[card.nameZh] ?? null,
+        text: fromDynastyWars?.text ?? english[card.nameZh] ?? null,
         range: card.range ?? null,
         count: card.count,
         printings: card.printings,
         mount: card.mount ?? null,
-        delayed: fromDefault?.delayed === true,
+        delayed: fromDynastyWars?.delayed === true,
         expansion: null,
         inGame: registry.cards.has(card.cardId),
-        deck: 'alternate',
+        deck: 'kingdomWars',
       };
     })
     .sort((a, b) => subtypeRank(a) - subtypeRank(b) || byName(a, b));
 }
 
-function defaultWikiCards(category: WikiCard['category']): WikiCard[] {
+function dynastyWarsWikiCards(category: WikiCard['category']): WikiCard[] {
   const registry = buildContentRegistry();
   const subtypeRank = (c: WikiCard) => (c.subtype === null ? -1 : SUBTYPE_ORDER.indexOf(c.subtype));
   return Object.entries(cardsData)
@@ -177,7 +178,7 @@ function defaultWikiCards(category: WikiCard['category']): WikiCard[] {
       delayed: data.delayed === true,
       expansion: (data.source.expansion ?? 'Base') as NonNullable<WikiCard['expansion']>,
       inGame: registry.cards.has(id),
-      deck: 'default' as const,
+      deck: 'dynastyWars' as const,
     }))
     .sort((a, b) => subtypeRank(a) - subtypeRank(b) || byPack(a, b) || byName(a, b));
 }
@@ -255,6 +256,6 @@ const CARD_TABS: Record<WikiCard['category'], (cards: WikiCard[]) => WikiTab<Wik
   tool: toolTabs,
 };
 
-export function wikiCardTabs(category: WikiCard['category'], deck: DeckId = 'default'): WikiTab<WikiCard>[] {
+export function wikiCardTabs(category: WikiCard['category'], deck: DeckId = DEFAULT_DECK_ID): WikiTab<WikiCard>[] {
   return CARD_TABS[category](wikiCards(category, deck));
 }

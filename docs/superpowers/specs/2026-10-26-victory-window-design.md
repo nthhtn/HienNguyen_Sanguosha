@@ -6,7 +6,7 @@ Mock (interactive, private to the author): https://claude.ai/artifact/WrcfJSKaox
 
 ## Intent
 
-The Game Over card today is a headline and two lines of names ("Winners: …", "Losers: …"). A finished Kingdom War is a story about groups: who sat with whom, who won, who fell. The window should show that at a glance: one column per group that took part, each listing its players, with the winning group lit in its own colour.
+The Game Over card today is a headline and two lines of names ("Winners: …", "Losers: …"). A finished Guozhan is a story about groups: who sat with whom, who won, who fell. The window should show that at a glance: one column per group that took part, each listing its players, with the winning group lit in its own colour.
 
 ## Goals
 

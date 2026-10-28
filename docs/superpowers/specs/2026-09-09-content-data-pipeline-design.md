@@ -45,7 +45,7 @@ Explicitly out of scope (deferred):
   — that remains its own rule-texted task per general/card, same as today.
 - Any change to `Effect`/`Action`/`Event` types or the resolution pipeline.
 - Wiring `cards[].printings`/`count` into actual deck construction
-  (`kingdomWar.ts`'s `buildDeckSpec` currently hardcodes 4 copies of every card
+  (`guozhan.ts`'s `buildDeckSpec` currently hardcodes 4 copies of every card
   uniformly) — the real per-card counts are now captured as data, but switching
   deck-building to use them is a separate decision with its own balance
   implications, not bundled into this data-pipeline milestone.

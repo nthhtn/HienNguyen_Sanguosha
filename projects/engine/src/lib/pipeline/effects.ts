@@ -38,7 +38,7 @@ export type Effect =
   // The seat gains a skill for the rest of the game, held by the General in `slot`.
   | { kind: 'GainSkillEffect'; seatId: string; slot: 'main' | 'deputy'; skillId: string }
   // The seat loses every skill for the rest of the game.
-  // No `slot`: the whole seat (Heartbroken). A `slot`: only that General's skills (Alternate Sorrow).
+  // No `slot`: the whole seat (Heartbroken). A `slot`: only that General's skills (Kingdom Wars Sorrow).
   | { kind: 'SilenceSeatEffect'; seatId: string; slot?: 'main' | 'deputy' }
   // Deals up to `count` spare Generals from the pool to the seat; the General in `slot` holds them. Logs nothing.
   | { kind: 'DealSpareGeneralsEffect'; seatId: string; slot: 'main' | 'deputy'; count: number }

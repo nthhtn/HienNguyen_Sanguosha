@@ -30,7 +30,7 @@ roadmap's decisions hold too: "may" always asks; no elemental damage; the
 term is Tool.
 
 - **Source.** The crawled data's standard-edition skill text, applied to
-  Kingdom War, as in stage 7. "You" is the seat holding the General.
+  Guozhan, as in stage 7. "You" is the seat holding the General.
 - **No elemental damage.** A skill that deals lightning or fire damage deals
   plain damage instead (as the Lightning card did).
   Note: Lightning Strike now deals thunder damage, like the Lightning card's
@@ -120,7 +120,7 @@ Generic; the engine names no card or skill.
    it turns face up (`SeatTurnedEvent { seatId, faceDown: false }`) and the
    turn passes to the next seat.
 2. **A pile under each seat.** A face-up zone kind `pile`, one per seat
-   (`${seatId}:pile`), created by the mode. Kingdom War discards it with the
+   (`${seatId}:pile`), created by the mode. Guozhan discards it with the
    rest when a seat is eliminated.
 3. **A Play Phase skipped mid-phase ends at once**, as a Discard Phase does
    (`discardOwed`): `phaseWaitsForPlayer` is false for a phase whose skip flag
@@ -238,7 +238,7 @@ Generic; the engine names no card or skill.
 
 ## Stage 8 rulings
 
-- Godspeed's first option is asked as the Start Phase begins: Kingdom War judges delayed Tools on entering the Judgment Phase. Its second option ends the Play Phase with its own flag (`endFlagOf('Play')`), so a skip flag keeps meaning "skip on entry".
+- Godspeed's first option is asked as the Start Phase begins: Guozhan judges delayed Tools on entering the Judgment Phase. Its second option ends the Play Phase with its own flag (`endFlagOf('Play')`), so a skip flag keeps meaning "skip on entry".
 - Bewilder has no naming dialog: each nameable card is a conversion button ("As Sha · Bewilder"), with its targets.
 - While Bewilder answers a window, the window is set aside and then answered or re-opened.
 - Every suit rule reads `suitOf`, so Beauty reaches the delayed Tools and Eight Trigrams. A used card's colour (as armour sees it) is unchanged by Beauty.

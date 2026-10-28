@@ -55,7 +55,7 @@ describe('CreateRoomDialog', () => {
     component.seatCount.set(6);
     component.firstRevealDraw.set(false);
     await component.submit();
-    expect(rooms.create).toHaveBeenCalledWith({ seatCount: 6, rules: { deck: 'alternate', firstRevealDraw: false }, displayName: 'Ann' });
+    expect(rooms.create).toHaveBeenCalledWith({ seatCount: 6, rules: { firstRevealDraw: false }, displayName: 'Ann' });
     expect(dialogRef.close).toHaveBeenCalledWith('r-new');
   });
 
@@ -63,7 +63,7 @@ describe('CreateRoomDialog', () => {
     rooms.create.mockResolvedValue('r-new');
     const { component } = await create();
     await component.submit();
-    expect(rooms.create).toHaveBeenCalledWith({ seatCount: 4, rules: { deck: 'alternate' }, displayName: 'Ann' });
+    expect(rooms.create).toHaveBeenCalledWith({ seatCount: 4, rules: {}, displayName: 'Ann' });
   });
 
   it("stays open with the server's message on failure", async () => {
@@ -83,15 +83,15 @@ describe('CreateRoomDialog', () => {
     expect(el.querySelectorAll('.deck mat-radio-button')).toHaveLength(2);
   });
 
-  it('sends the Kingdom Wars deck, beside First Reveal Bonus from 5 seats; Dynasty Wars is disabled for now (deferred)', async () => {
+  it('sends no deck rule for Kingdom Wars, the default, beside First Reveal Bonus from 5 seats; Dynasty Wars is disabled for now (deferred)', async () => {
     rooms.create.mockResolvedValue('r-new');
     const { fixture, component, el } = await create();
     clickDynastyWars(fixture, el);
     await component.submit();
-    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 4, rules: { deck: 'alternate' }, displayName: 'Ann' });
+    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 4, rules: {}, displayName: 'Ann' });
     component.seatCount.set(6);
     component.firstRevealDraw.set(false);
     await component.submit();
-    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 6, rules: { deck: 'alternate', firstRevealDraw: false }, displayName: 'Ann' });
+    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 6, rules: { firstRevealDraw: false }, displayName: 'Ann' });
   });
 });

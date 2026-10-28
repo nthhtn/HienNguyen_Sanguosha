@@ -1,4 +1,4 @@
-# Kingdom War (Guozhan) Hotseat App — Design Spec
+# Guozhan Hotseat App — Design Spec
 
 Status: Approved for implementation planning
 Date: 2026-09-07
@@ -6,9 +6,9 @@ Date: 2026-09-07
 ## Purpose
 
 Build the first Angular presentation-layer sub-project on top of the
-Kingdom War rules engine (`projects/engine`, `projects/content`,
+Guozhan rules engine (`projects/engine`, `projects/content`,
 `projects/sim`): a local, single-browser-tab, pass-and-play ("hotseat")
-UI that lets human players actually play a game of Kingdom War, replacing
+UI that lets human players actually play a game of Guozhan, replacing
 the sim harness's random-legal-move bot with real human decisions for
 every seat.
 
@@ -26,7 +26,7 @@ In scope:
   builder, not `ng-packagr` — this is a deployable app, not a redistributable
   library).
 - A setup screen: choose seat count (2-8) and an optional seed, start a game
-  via the engine's existing `kingdomWarMode`/`createGame`/`gameSetup`.
+  via the engine's existing `guozhanMode`/`createGame`/`gameSetup`.
 - All seats are human-controlled, taking turns on the same device
   ("pass-and-play"). No bot-controlled seats in this milestone.
 - A reveal-gate mechanic: before showing any seat's private view, an
@@ -70,8 +70,8 @@ untouched:
   is visible regardless of viewer. This was previously identified and
   deferred (final engine review, finding I4) as out of scope until an
   application layer needed it — it does now.
-- `Seat.kingdom` — Kingdom War assigns each seat's kingdom independently
-  of which general it holds (`kingdomWar.ts`'s setup round-robins
+- `Seat.kingdom` — Guozhan assigns each seat's kingdom independently
+  of which general it holds (`guozhan.ts`'s setup round-robins
   `KINGDOM_ORDER` by seat index, unrelated to the general's own
   `GeneralDefinition.kingdom`), and it is exactly as secret as the
   generals per the spec's own scope ("each secretly assigned a
@@ -101,7 +101,7 @@ is unchanged — this only changes what it returns):
 - `Kingdom` widens from `'Wei' | 'Shu' | 'Wu' | 'Qun'` to also include
   `'hidden'` (same sentinel convention as `generalDefinitionId`). Every
   seat other than the viewer has its `kingdom` replaced with `'hidden'`
-  unless already revealed — Kingdom War has no separate "kingdom reveal"
+  unless already revealed — Guozhan has no separate "kingdom reveal"
   action distinct from general reveal, so treat a seat's kingdom as
   revealed exactly when either of its generals is revealed (consistent
   with the real game: revealing a general reveals which kingdom you're
@@ -132,7 +132,7 @@ class GameService {
   readonly legalActions: Signal<Action[]>;       // computed: getLegalActions(state(), activeSeatId())
   readonly visibleState: Signal<GameState | null>; // computed: redactStateForSeat(state(), revealedSeatId())
 
-  startGame(seatCount: number, seed?: number): void; // wraps createGame/kingdomWarMode.setup
+  startGame(seatCount: number, seed?: number): void; // wraps createGame/guozhanMode.setup
   reveal(seatId: string): void;                       // sets revealedSeatId
   submit(action: Action): void;                       // try/catch around resolve(); on success
                                                        // updates state and resets revealedSeatId to null
@@ -249,4 +249,4 @@ visible.
 - Exact human-readable label text for each action/event kind is an
   implementation-plan-level detail, not a design-level one; the plan
   should enumerate them per card/general/action kind actually in the
-  Kingdom War content set.
+  Guozhan content set.

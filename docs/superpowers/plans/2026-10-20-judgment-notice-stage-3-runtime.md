@@ -107,7 +107,7 @@
 
 - [ ] **Step 1: Write failing tests**:
   - `rule-based.spec.ts`: `'with only an acknowledgement offered, the bot takes it'` (decide with `legal = [{ kind: 'AcknowledgeJudgmentAction', seatId }]` returns that action) — passes now; keep it as a guard.
-  - `runGame.spec.ts`: `'games with judgmentNotice on finish, for random and rule-based bots, over 10 seeds'`: `createGame(kingdomWarMode, registry, seatIds, seed, { judgmentNotice: true })` through `runGame`; each ends with `state.result` set and no `judgmentView`.
+  - `runGame.spec.ts`: `'games with judgmentNotice on finish, for random and rule-based bots, over 10 seeds'`: `createGame(guozhanMode, registry, seatIds, seed, { judgmentNotice: true })` through `runGame`; each ends with `state.result` set and no `judgmentView`.
   - `invariants.spec.ts`: `'a settled judgment with nobody able to act is a violation'` (hand-built state), and `'a finished game with a judgment view is a violation'`; both fail until implemented.
 - [ ] **Step 2: Run** `npx jest projects/sim projects/bots` — Expected: the invariant tests FAIL.
 - [ ] **Step 3: Implement** the invariant in `invariants.ts`.

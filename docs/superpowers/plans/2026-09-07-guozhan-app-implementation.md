@@ -1,8 +1,8 @@
-# Kingdom War (Guozhan) Hotseat App Implementation Plan
+# Guozhan Hotseat App Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build `projects/app`, a local pass-and-play Angular application that lets human players actually play a full game of Kingdom War on top of the existing `engine`/`content` rules engine, with a small extension to the engine's redaction so hidden information (kingdom, generals, hand, draw pile) is genuinely hidden between seats.
+**Goal:** Build `projects/app`, a local pass-and-play Angular application that lets human players actually play a full game of Guozhan on top of the existing `engine`/`content` rules engine, with a small extension to the engine's redaction so hidden information (kingdom, generals, hand, draw pile) is genuinely hidden between seats.
 
 **Architecture:** A single injectable `GameService` (Signals-based facade, no state library) wraps the existing pure `resolve()`/`getLegalActions()`/`createGame()`/`redactStateForSeat()` engine functions. Every component reads from `GameService`'s signals via DI and never implements game rules itself. A reveal-gate overlay, driven by comparing the currently-revealed seat to whichever seat is next to act, enforces pass-and-play hiding. Functional-first UI: legal actions as buttons, seat summaries as text, a plain event log — no board layout or card art.
 
@@ -419,7 +419,7 @@ git commit -m "fix(engine): mask hand contents, draw pile, and kingdom in redact
 - Create: `projects/app/src/app/game.service.spec.ts`
 
 **Interfaces:**
-- Consumes: `createGame`, `resolve`, `getLegalActions`, `redactStateForSeat`, `EngineContext`, `GameState`, `Action` (all from `'engine'`); `buildContentRegistry`, `kingdomWarMode` (from `'content'`).
+- Consumes: `createGame`, `resolve`, `getLegalActions`, `redactStateForSeat`, `EngineContext`, `GameState`, `Action` (all from `'engine'`); `buildContentRegistry`, `guozhanMode` (from `'content'`).
 - Produces (consumed by every later task): `GameService` with `state: Signal<GameState | null>`, `revealedSeatId: Signal<string | null>`, `lastError: Signal<string | null>`, `activeSeatId: Signal<string | null>`, `legalActions: Signal<Action[]>`, `visibleState: Signal<GameState | null>`, `registry: ContentRegistry` (readonly field), and methods `startGame(seatCount: number, seed?: number): void`, `reveal(seatId: string): void`, `submit(action: Action): void`, `clearError(): void`.
 
 - [ ] **Step 1: Write the failing tests**
@@ -550,12 +550,12 @@ import {
   redactStateForSeat,
   resolve,
 } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 
 @Injectable({ providedIn: 'root' })
 export class GameService {
   readonly registry: ContentRegistry = buildContentRegistry();
-  private readonly ctx: EngineContext = { registry: this.registry, mode: kingdomWarMode };
+  private readonly ctx: EngineContext = { registry: this.registry, mode: guozhanMode };
 
   private readonly _state: WritableSignal<GameState | null> = signal(null);
   private readonly _revealedSeatId: WritableSignal<string | null> = signal(null);
@@ -588,7 +588,7 @@ export class GameService {
   startGame(seatCount: number, seed?: number): void {
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
-    const state = createGame(kingdomWarMode, this.registry, seatIds, rngSeed);
+    const state = createGame(guozhanMode, this.registry, seatIds, rngSeed);
     this._state.set(state);
     this._revealedSeatId.set(null);
     this._lastError.set(null);
@@ -939,7 +939,7 @@ import { GameService } from '../game.service';
 @Component({
   selector: 'app-setup',
   template: `
-    <h1>New Kingdom War game</h1>
+    <h1>New Guozhan game</h1>
     <label>
       Seat count (2-8):
       <input
@@ -1787,13 +1787,13 @@ protected readonly title = signal('app');
 to:
 
 ```ts
-protected readonly title = signal('Kingdom War');
+protected readonly title = signal('Guozhan');
 ```
 
 - [ ] **Step 2: Run the full app suite**
 
 Run: `npx jest --selectProjects app`
-Expected: PASS. (The `app.spec.ts` test asserting `textContent).toContain('Hello, app')` from Task 1's scaffold will now fail, since the title changed — update it to `toContain('Kingdom War')` in `projects/app/src/app/app.spec.ts`, matching the new title.)
+Expected: PASS. (The `app.spec.ts` test asserting `textContent).toContain('Hello, app')` from Task 1's scaffold will now fail, since the title changed — update it to `toContain('Guozhan')` in `projects/app/src/app/app.spec.ts`, matching the new title.)
 
 - [ ] **Step 3: Full workspace verification**
 

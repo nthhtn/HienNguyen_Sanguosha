@@ -80,7 +80,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
         @if (seat().silenced) {
           <span class="silenced-badge">{{ 'seat.noSkills' | t }}</span>
         } @else {
-          <!-- One General lost its skills (Alternate Sorrow). -->
+          <!-- One General lost its skills (Kingdom Wars Sorrow). -->
           @for (slot of seat().silencedSlots ?? []; track slot) {
             <span class="silenced-badge">{{ (slot === 'main' ? 'seat.noSkillsMain' : 'seat.noSkillsDeputy') | t }}</span>
           }

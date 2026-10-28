@@ -1,0 +1,24 @@
+{
+  "id": "gan-ning",
+  "name": "Gan Ning",
+  "nameZh": "甘宁",
+  "force": "wu",
+  "title": "The Pirate with Silk Sails",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Surprise Raid",
+      "nameZh": "奇袭",
+      "text": "During your action phase, you can use a black-suited card as DISMANTLE过河拆桥."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/gan-ning.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

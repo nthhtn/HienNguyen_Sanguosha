@@ -10,7 +10,7 @@ CLAUDE.md requires four layers. Here is where each one lives today.
 | Layer | Project | What it holds | Framework |
 |---|---|---|---|
 | Game engine | `projects/engine` | rules, state transitions, actions, effects, triggers, legality, visibility, decision clocks | none (plain TypeScript) |
-| Game content | `projects/content` | cards, generals, skills, decks, the Kingdom War mode, display text, card and General data, Vietnamese data | none for logic; data is JSON |
+| Game content | `projects/content` | cards, generals, skills, decks, the Guozhan mode, display text, card and General data, Vietnamese data | none for logic; data is JSON |
 | Application layer | `projects/server` (authoritative) and `projects/app/src/app/game.service.ts` (local) | the server runs online and solo games, accounts, rooms, persistence; `GameService` runs one in-process game for Pass and Play and Play vs Bots | Node, Fastify, Postgres; Angular (injectable service) |
 | Presentation layer | `projects/app/src/app` | components, dialogs, wiki, view-model helpers, i18n, `RemoteGameService` | Angular, Material |
 

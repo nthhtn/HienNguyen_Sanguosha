@@ -1,16 +1,17 @@
 import { Component, input, model } from '@angular/core';
 import { MatRadioModule } from '@angular/material/radio';
+import { DEFAULT_DECK_ID } from 'content';
 import type { DeckId } from 'content';
 import type { MessageKey } from './i18n/messages';
 import { TPipe } from './i18n/t.pipe';
 
 // The decks the host can pick, in the order shown. A new deck is one line here
 // plus its catalog keys (and the engine's own list of decks). `disabled`: listed
-// but not choosable. Dynasty Wars (`default`) waits for its own engine rules
+// but not choosable. Dynasty Wars (`dynastyWars`) waits for its own engine rules
 // (see docs/deferrals.md); drop its `disabled` to bring it back.
 const OPTIONS: { id: DeckId; label: MessageKey; disabled?: true }[] = [
-  { id: 'alternate', label: 'setup.deck.alternate' },
-  { id: 'default', label: 'setup.deck.default', disabled: true },
+  { id: 'kingdomWars', label: 'setup.deck.kingdomWars' },
+  { id: 'dynastyWars', label: 'setup.deck.dynastyWars', disabled: true },
 ];
 
 let nextId = 0;
@@ -40,7 +41,7 @@ let nextId = 0;
   `,
 })
 export class DeckPicker {
-  readonly value = model<DeckId>('alternate');
+  readonly value = model<DeckId>(DEFAULT_DECK_ID);
   readonly disabled = input(false);
   protected readonly options = OPTIONS;
   protected readonly labelId = `deck-label-${nextId++}`;

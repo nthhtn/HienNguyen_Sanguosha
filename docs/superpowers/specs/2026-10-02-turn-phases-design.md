@@ -295,7 +295,7 @@ Engine (Jest, `projects/engine`):
   existing "every seat is eliminated" error) instead of spinning. The step
   bound stays as a defensive guard. It is tested with an extra-turn stack of
   eliminated seats; no current content can reach it.
-- Existing Insight and Kingdom War Draw-phase specs keep passing unchanged.
+- Existing Insight and Guozhan Draw-phase specs keep passing unchanged.
 
 Bots: the rule-based discard order, and that a bot in Discard returns a
 `DiscardCardAction`.

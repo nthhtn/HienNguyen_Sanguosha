@@ -1,9 +1,9 @@
 import type { ContentRegistry, GeneralDefinition } from 'engine';
 import { generalsData } from '../../data/generals';
 import { GENERAL_SKILLS } from './generals';
-import { alternateGeneralRecords } from './alternateGenerals';
-import { readyAlternateSkills } from './alternateSkills';
-import { alternateGeneralId } from './generalIds';
+import { kingdomWarsGeneralRecords } from './kingdomWarsGenerals';
+import { readyKingdomWarsSkills } from './kingdomWarsSkills';
+import { kingdomWarsGeneralId } from './generalIds';
 import { fireAttackCard, lightningAttackCard, shaCard } from './cards/sha';
 import { shanCard } from './cards/shan';
 import { peachCard } from './cards/peach';
@@ -59,9 +59,9 @@ function buildGenerals(): GeneralDefinition[] {
       throw new Error(`Hand-coded skills exist for general "${id}" but it has no data file`);
     }
   }
-  for (const rec of alternateGeneralRecords()) {
+  for (const rec of kingdomWarsGeneralRecords()) {
     const kingdom = (rec.force[0].toUpperCase() + rec.force.slice(1)) as GeneralDefinition['kingdom'];
-    generals.push({ id: alternateGeneralId(rec.id), kingdom, maxHp: rec.maxHp, gender: rec.gender, skills: readyAlternateSkills(rec) });
+    generals.push({ id: kingdomWarsGeneralId(rec.id), kingdom, maxHp: rec.maxHp, gender: rec.gender, skills: readyKingdomWarsSkills(rec) });
   }
   return generals;
 }

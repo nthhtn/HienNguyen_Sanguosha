@@ -284,7 +284,7 @@ export const decentralization: SkillDefinition = {
   },
 };
 
-// Seem Foolish: a Lord skill, inactive in Kingdom War.
+// Seem Foolish: a Lord skill, inactive in Guozhan.
 export const seemFoolish: SkillDefinition = { id: 'seem-foolish', lord: true };
 
 // ── Jiang Wei ──────────────────────────────────────────────────────────────
@@ -418,7 +418,7 @@ export const soulPosition: SkillDefinition = {
   ],
 };
 
-// Takeover: a Lord skill, inactive in Kingdom War.
+// Takeover: a Lord skill, inactive in Guozhan.
 export const takeover: SkillDefinition = { id: 'takeover', lord: true };
 
 // ── Zhang Zhao and Zhang Hong ──────────────────────────────────────────────
@@ -485,7 +485,7 @@ function discardedInDiscardPhase(state: GameState, seatId: string): string[] {
 
 // Stubborn (may): at the end of another seat's Discard Phase, if it discarded
 // `minDiscarded` or more cards, give one of them back to it and take the others.
-// Default needs 2; Alternate's Stabilization works with 1 (nothing is taken then).
+// Dynasty Wars needs 2; Kingdom Wars' Stabilization works with 1 (nothing is taken then).
 export const makeStubborn = (minDiscarded: number): SkillDefinition => ({
   id: 'stubborn',
   triggers: [
@@ -599,7 +599,7 @@ export const lament: SkillDefinition = {
   },
 };
 
-// Whether `owner`'s seat was just eliminated by another seat that is still in the game (Heartbroken, Alternate Sorrow).
+// Whether `owner`'s seat was just eliminated by another seat that is still in the game (Heartbroken, Kingdom Wars Sorrow).
 export const killedByLivingOther = (state: GameState, event: SeatEliminatedEvent, owner: GeneralOwner): boolean =>
   event.seatId === owner.seatId && !!event.killerSeatId && event.killerSeatId !== owner.seatId && isLiving(state, event.killerSeatId);
 

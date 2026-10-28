@@ -27,12 +27,12 @@ today.
 ## Common rules
 
 - **Source.** The rules follow the crawled data's standard-edition skills,
-  applied to Kingdom War. "You" is the seat holding the General. "Your Play
+  applied to Guozhan. "You" is the seat holding the General. "Your Play
   Phase" means the Play Phase of your own turn.
 - **Hidden Generals.** A hidden General's skills are off:
   - **Optional triggers** and **active skills** are still offered, as
     "Reveal X to use Y". Saying yes reveals that General first, with every
-    usual Kingdom War consequence, then uses the skill.
+    usual Guozhan consequence, then uses the skill.
   - **Conversions** of a hidden General are offered the same way. Using one
     reveals the General.
   - **Compulsory** triggers and **modifiers** of a hidden General don't
@@ -40,8 +40,8 @@ today.
 - **Gender.** A seat's gender is its Main General's while the Main is
   revealed, otherwise its Deputy's while that is revealed. A seat with both
   Generals hidden has **no gender**: it is neither male nor female.
-- **Lord skills** (Escort, Fierce General, Rescued) are inactive in Kingdom
-  War. The wiki shows them with the note "Not used in Kingdom War".
+- **Lord skills** (Escort, Fierce General, Rescued) are inactive in Guozhan
+  . The wiki shows them with the note "Not used in Guozhan".
 - **Losing HP** is not damage. It has no source, and nothing that reacts to
   damage applies. A seat at 0 HP or below after losing HP is dying, as after
   damage.
@@ -207,7 +207,7 @@ export interface ActiveSkill {
     Y" and queues `RevealGeneralEffect` first.
   - Legal `UseSkillAction`s and conversion actions from a hidden General
     queue the reveal before anything else.
-- **Lord skills.** `lord` skills are never gathered in Kingdom War. A mode
+- **Lord skills.** `lord` skills are never gathered in Guozhan. A mode
   declares `hasLord: false`.
 - **Active skills.** An active skill is listed as one `UseSkillAction` while
   `canUse` holds and its turn count is below `usesPerTurn`. `start` returns
@@ -235,7 +235,7 @@ export interface ActiveSkill {
   the hard-coded draw of 2.
   - Before-triggers can rewrite `count` (Bare the Chest −1, Brave Gesture +1)
     or replace the draw (Raid).
-  - Kingdom War queues it when the Draw Phase starts.
+  - Guozhan queues it when the Draw Phase starts.
   - A `skipDraw` flag (Starvation) skips the phase, and with it this step.
 - **Judgment becomes steps.** `JudgeEffect` from the Tools spec splits in
   three:
@@ -359,7 +359,7 @@ keeps the registry shape.
   - "Hing lost 1 HP (Battered Body)"
   - "Seat 1 named ♥ and took 7 ♠: 1 damage"
 - **Wiki:** each General shows its gender. Lord skills show "Not used in
-  Kingdom War".
+  Guozhan".
 
 ## Testing
 

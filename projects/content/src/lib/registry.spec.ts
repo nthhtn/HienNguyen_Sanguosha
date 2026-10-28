@@ -1,12 +1,12 @@
 import { GENERAL_SKILLS } from './generals';
 import { lookupGeneral } from 'engine';
-import { alternateGeneralRecords } from './alternateGenerals';
-import { readyAlternateSkills } from './alternateSkills';
-import { alternateGeneralId, isAlternateGeneralId } from './generalIds';
+import { kingdomWarsGeneralRecords } from './kingdomWarsGenerals';
+import { readyKingdomWarsSkills } from './kingdomWarsSkills';
+import { kingdomWarsGeneralId, isKingdomWarsGeneralId } from './generalIds';
 import { buildContentRegistry } from './registry';
 import { isRecastPlay } from './cards/chains';
 
-const defaultGenerals = () => [...buildContentRegistry().generals.values()].filter((g) => !isAlternateGeneralId(g.id));
+const dynastyWarsGenerals = () => [...buildContentRegistry().generals.values()].filter((g) => !isKingdomWarsGeneralId(g.id));
 
 describe('buildContentRegistry', () => {
   it('flags exactly Chains and Ascertain as recastable', () => {
@@ -23,7 +23,7 @@ describe('buildContentRegistry', () => {
 
   it('builds every data-driven general: 25 Base, 32 from the expansions (Forest Dong Zhuo replaces the placeholder)', () => {
     const registry = buildContentRegistry();
-    expect(defaultGenerals().length).toBe(57);
+    expect(dynastyWarsGenerals().length).toBe(57);
     expect(registry.generals.has('cao-cao')).toBe(true);
     expect(registry.generals.has('dong-zhuo')).toBe(true);
   });
@@ -40,12 +40,12 @@ describe('buildContentRegistry', () => {
     const skillIds = (id: string) => registry.generals.get(id)!.skills.map((s) => s.id);
     for (const [id, skills] of GENERAL_SKILLS) expect(skillIds(id)).toEqual(skills.map((s) => s.id));
     // A General with no hand-coded skills is playable and has none.
-    for (const g of defaultGenerals()) if (!GENERAL_SKILLS.has(g.id)) expect(g.skills).toEqual([]);
+    for (const g of dynastyWarsGenerals()) if (!GENERAL_SKILLS.has(g.id)) expect(g.skills).toEqual([]);
   });
 
   it('has at least two generals in each of the four kingdoms', () => {
     const counts = new Map<string, number>();
-    for (const g of defaultGenerals()) counts.set(g.kingdom, (counts.get(g.kingdom) ?? 0) + 1);
+    for (const g of dynastyWarsGenerals()) counts.set(g.kingdom, (counts.get(g.kingdom) ?? 0) + 1);
     for (const kingdom of ['Wei', 'Shu', 'Wu', 'Qun']) {
       expect(counts.get(kingdom)).toBeGreaterThanOrEqual(2);
     }
@@ -58,51 +58,51 @@ describe('buildContentRegistry', () => {
     }
   });
   it('gives every General a gender; eight are female', () => {
-    const generals = defaultGenerals();
+    const generals = dynastyWarsGenerals();
     expect(generals.every((g) => g.gender === 'male' || g.gender === 'female')).toBe(true);
     expect(generals.filter((g) => g.gender === 'female').map((g) => g.id).sort()).toEqual(
       ['cai-wenji', 'da-qiao', 'diao-chan', 'huang-yueying', 'sun-shangxiang', 'xiao-qiao', 'zhen-ji', 'zhu-rong']
     );
   });
 
-  describe('Alternate Generals', () => {
+  describe('Kingdom Wars Generals', () => {
     const registry = buildContentRegistry();
-    const alternates = () => [...registry.generals.values()].filter((g) => isAlternateGeneralId(g.id));
+    const kingdomWarsGenerals = () => [...registry.generals.values()].filter((g) => isKingdomWarsGeneralId(g.id));
 
-    it('registers all 60 under the alternate: prefix, beside the 57 Default ids', () => {
-      expect(alternates().length).toBe(60);
-      expect(alternates().map((g) => g.id).sort()).toEqual(alternateGeneralRecords().map((r) => alternateGeneralId(r.id)).sort());
+    it('registers all 60 under the kingdomWars: prefix, beside the 57 Dynasty Wars ids', () => {
+      expect(kingdomWarsGenerals().length).toBe(60);
+      expect(kingdomWarsGenerals().map((g) => g.id).sort()).toEqual(kingdomWarsGeneralRecords().map((r) => kingdomWarsGeneralId(r.id)).sort());
       expect(registry.generals.size).toBe(117);
     });
 
     it('takes kingdom, HP and gender from the record', () => {
-      for (const rec of alternateGeneralRecords()) {
-        const g = registry.generals.get(alternateGeneralId(rec.id))!;
+      for (const rec of kingdomWarsGeneralRecords()) {
+        const g = registry.generals.get(kingdomWarsGeneralId(rec.id))!;
         expect(g.kingdom).toBe(rec.force[0].toUpperCase() + rec.force.slice(1));
         expect(g.maxHp).toBe(rec.maxHp);
         expect(g.gender).toBe(rec.gender);
       }
-      expect(registry.generals.get('alternate:zhang-fei')).toMatchObject({ kingdom: 'Shu', maxHp: 4 });
+      expect(registry.generals.get('kingdomWars:zhang-fei')).toMatchObject({ kingdom: 'Shu', maxHp: 4 });
     });
 
     it('gives ready skills only', () => {
-      expect(registry.generals.get('alternate:zhang-fei')!.skills.map((s) => s.id)).toEqual(['roar']);
-      expect(registry.generals.get('alternate:liu-bei')!.skills.map((s) => s.id)).toEqual(['alternate:benevolence']);
-      for (const rec of alternateGeneralRecords()) {
-        const ready = readyAlternateSkills(rec).map((s) => s.id);
-        expect(registry.generals.get(alternateGeneralId(rec.id))!.skills.map((s) => s.id)).toEqual(ready);
+      expect(registry.generals.get('kingdomWars:zhang-fei')!.skills.map((s) => s.id)).toEqual(['roar']);
+      expect(registry.generals.get('kingdomWars:liu-bei')!.skills.map((s) => s.id)).toEqual(['kingdomWars:benevolence']);
+      for (const rec of kingdomWarsGeneralRecords()) {
+        const ready = readyKingdomWarsSkills(rec).map((s) => s.id);
+        expect(registry.generals.get(kingdomWarsGeneralId(rec.id))!.skills.map((s) => s.id)).toEqual(ready);
       }
     });
 
-    it('has no Lord skill on any Alternate General, while Default Liu Bei keeps his', () => {
-      for (const g of alternates()) expect(g.skills.some((s) => s.lord)).toBe(false);
+    it('has no Lord skill on any Kingdom Wars General, while Dynasty Wars Liu Bei keeps his', () => {
+      for (const g of kingdomWarsGenerals()) expect(g.skills.some((s) => s.lord)).toBe(false);
       const ids = registry.generals.get('liu-bei')!.skills.map((s) => s.id);
       expect(ids).toContain('kindness');
       expect(ids).toContain('fierce-general');
     });
 
-    it('looks up an Alternate General new to Alternate, with its own skills', () => {
-      expect(lookupGeneral(registry, 'alternate:zou-shi').skills.map((s) => s.id)).toEqual(['alternate:femme-fatale', 'alternate:impetus-for-conflicts']);
+    it('looks up a Kingdom Wars General new to Kingdom Wars, with its own skills', () => {
+      expect(lookupGeneral(registry, 'kingdomWars:zou-shi').skills.map((s) => s.id)).toEqual(['kingdomWars:femme-fatale', 'kingdomWars:impetus-for-conflicts']);
     });
   });
 });

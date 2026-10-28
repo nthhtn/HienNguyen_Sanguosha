@@ -5,7 +5,7 @@ import type { CreateRoomBodySchema, JoinRoomBodySchema, RoomRulesSchema } from '
 
 // The card distributions a room can be dealt from. The content package holds the
 // same list; the server has a test that the two agree.
-export const DECK_IDS = ['default', 'alternate'] as const;
+export const DECK_IDS = ['dynastyWars', 'kingdomWars'] as const;
 export type DeckId = (typeof DECK_IDS)[number];
 
 export type RoomVisibility = 'open' | 'solo';

@@ -90,7 +90,7 @@ Failure modes the spec implies that no task's tests would otherwise exercise (ea
 ### Task 3: Content — Wood Armor weakness, thunder Lightning, fire Blaze (and dealing it)
 
 **Files:**
-- Modify: `cards/equipment/wood-armor.ts`, `cards/lightning.ts`, `cards/blaze.ts` (remove `outOfDeck`; fire nature; update comments), `kingdomWar.ts` comment on deck, their specs (`equipment.spec.ts`, `delayed.spec.ts`, `tools.spec.ts`).
+- Modify: `cards/equipment/wood-armor.ts`, `cards/lightning.ts`, `cards/blaze.ts` (remove `outOfDeck`; fire nature; update comments), `guozhan.ts` comment on deck, their specs (`equipment.spec.ts`, `delayed.spec.ts`, `tools.spec.ts`).
 - Test: extend those specs plus `sha-elemental.spec.ts`.
 
 **Interfaces:**

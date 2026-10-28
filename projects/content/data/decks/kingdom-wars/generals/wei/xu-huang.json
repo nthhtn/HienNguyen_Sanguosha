@@ -1,0 +1,24 @@
+{
+  "id": "xu-huang",
+  "name": "Xu Huang",
+  "nameZh": "徐晃",
+  "force": "wei",
+  "title": "Reminiscence of Zhou Ya Fu",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Blockade",
+      "nameZh": "断粮",
+      "text": "You can use a black-suited basic card or equipment card as RATIONS DEPLETED 兵粮寸断. You can use RATIONS DEPLETED on other players within the physical distance of 2."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/xu-huang.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

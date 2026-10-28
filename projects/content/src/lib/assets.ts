@@ -1,5 +1,5 @@
 import manifest from '../../assets/manifest.json';
-import { baseGeneralId, isAlternateGeneralId } from './generalIds';
+import { baseGeneralId, isKingdomWarsGeneralId } from './generalIds';
 import skins from '../../assets/generals/skins/skins.json';
 
 interface AssetManifestEntry {
@@ -24,9 +24,9 @@ const GENERAL_SKINS: Record<string, string> = skins;
 
 // A General's skin: the portrait used on the Play screen. A General with no
 // skin falls back to its crawled card art (the one the Wiki always shows).
-// An Alternate General uses its base General's art; one with none gets the placeholder.
+// A Kingdom Wars General uses its base General's art; one with none gets the placeholder.
 export function generalSkinUrl(id: string): string | null {
-  if (isAlternateGeneralId(id)) {
+  if (isKingdomWarsGeneralId(id)) {
     const base = baseGeneralId(id);
     return generalSkinUrl(base) ?? GENERAL_PLACEHOLDER_ART_URL;
   }

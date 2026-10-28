@@ -1,0 +1,29 @@
+{
+  "id": "xun-yu",
+  "name": "Xun Yu",
+  "nameZh": "荀彧",
+  "force": "wei",
+  "title": "Advisor of Kings",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Rouse the Tiger",
+      "nameZh": "驱虎",
+      "text": "During your action phase, you can conduct a Points Duel with a player with more health than you. If you win, that player inflicts 1 unit of damage to another player within his/her attack range of your choice. If you lose, that player inflicts 1 unit of damage to you."
+    },
+    {
+      "name": "Eternal Loyalty",
+      "nameZh": "节命",
+      "text": "After every1 unit of damage you suffer, you can pick a player to replenish on-hand cards such that number of on-hand cards equals his/her maximum health. (Maximum replenishment of 5 cards)"
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "There replenishment for \"Eternal Loyalty\" has been capped at 5 cards max.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/xun-yu.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

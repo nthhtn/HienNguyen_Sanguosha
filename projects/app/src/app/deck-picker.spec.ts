@@ -23,7 +23,7 @@ describe('DeckPicker', () => {
     expect(radios(el).map((r) => input(r).disabled)).toEqual([false, true]);
     input(radios(el)[1]).click();
     fixture.detectChanges();
-    expect(fixture.componentInstance.value()).toBe('alternate');
+    expect(fixture.componentInstance.value()).toBe('kingdomWars');
     expect(radios(el).map((r) => input(r).checked)).toEqual([true, false]);
   });
 

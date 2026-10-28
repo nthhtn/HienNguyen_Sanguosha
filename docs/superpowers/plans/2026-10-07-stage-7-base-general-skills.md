@@ -45,9 +45,9 @@
 - **The engine names no card or skill.** Content supplies everything specific (CLAUDE.md, "Extensibility"). Adding a skill means adding its definition, never a branch in a central switch.
 - **Game state stays plain serialisable data.** Continuations, steps and asks hold data, never functions. Absent optional state is left out, not `null`/`[]` (`countsAs` absent when empty).
 - **Common rules (General Skills spec), verbatim:**
-  - "A hidden General's skills are off: Optional triggers and active skills are still offered, as "Reveal X to use Y". Saying yes reveals that General first, with every usual Kingdom War consequence, then uses the skill. Conversions of a hidden General are offered the same way. Using one reveals the General. Compulsory triggers and modifiers of a hidden General don't apply."
+  - "A hidden General's skills are off: Optional triggers and active skills are still offered, as "Reveal X to use Y". Saying yes reveals that General first, with every usual Guozhan consequence, then uses the skill. Conversions of a hidden General are offered the same way. Using one reveals the General. Compulsory triggers and modifiers of a hidden General don't apply."
   - "A seat's gender is its Main General's while the Main is revealed, otherwise its Deputy's while that is revealed. A seat with both Generals hidden has no gender."
-  - "Lord skills (Escort, Fierce General, Rescued) are inactive in Kingdom War."
+  - "Lord skills (Escort, Fierce General, Rescued) are inactive in Guozhan."
   - "Losing HP is not damage. It has no source, and nothing that reacts to damage applies. A seat at 0 HP or below after losing HP is dying, as after damage."
 - **"May" always asks:** every optional skill asks its owner with Use and Don't each time it could apply (roadmap decision).
 - **No elemental damage:** every skill's damage is `nature: 'normal'`.
@@ -96,7 +96,7 @@ Stage 7 gives skills to Generals that many specs use as plain fillers (Cao Cao, 
 - Delete: `projects/content/src/lib/generals/setOne.ts`, `setOne.spec.ts`, `setTwo.ts`, `setTwo.spec.ts`
 - Create: `projects/content/src/lib/generals/wei.ts`, `shu.ts`, `wu.ts`, `qun.ts`, `projects/content/src/lib/generals/skills.testing.ts`, `projects/content/src/lib/generals/index.spec.ts`
 - Modify: `projects/content/src/lib/generals/index.ts`, `projects/content/src/public-api.ts`, `projects/content/data/generals/shu/ma-chao.json`, `scripts/assemble-content-data.py`
-- Modify (fillers): `projects/content/src/lib/cards/equipment/sha-equipment.spec.ts`, `projects/content/src/lib/cards/playability.spec.ts`, `projects/content/src/lib/modes/kingdomWar.spec.ts`
+- Modify (fillers): `projects/content/src/lib/cards/equipment/sha-equipment.spec.ts`, `projects/content/src/lib/cards/playability.spec.ts`, `projects/content/src/lib/modes/guozhan.spec.ts`
 
 **Interfaces:**
 - Produces:
@@ -200,7 +200,7 @@ Expected: PASS (the list is written to match the data; a FAIL names the mismatch
 
 - [ ] **Step 5: Swap the fillers**
 
-Apply the table above in `sha-equipment.spec.ts` (the default `['cao-cao', 'dong-zhuo']` becomes `['cao-ren', 'dong-zhuo']`; the female `'huang-yueying'` becomes `'xiao-qiao'`; update the comment "Default: Cao Cao and Dong Zhuo" to "Cao Ren and Dong Zhuo"), `playability.spec.ts` (`cao-cao`/`xu-chu` → `cao-ren`/`xiahou-yuan`) and `kingdomWar.spec.ts` (every base General in candidate lists and `seated(...)` pairs; the line-285 comment becomes "cao-ren and xiahou-yuan have no skills, isolating the mode-level draw"). HP expectations stay the same because the fillers match max HP. Leave display-only specs (wiki, assets, labels, gender, avatar, card art) alone: they read names and gender, not skills.
+Apply the table above in `sha-equipment.spec.ts` (the default `['cao-cao', 'dong-zhuo']` becomes `['cao-ren', 'dong-zhuo']`; the female `'huang-yueying'` becomes `'xiao-qiao'`; update the comment "Default: Cao Cao and Dong Zhuo" to "Cao Ren and Dong Zhuo"), `playability.spec.ts` (`cao-cao`/`xu-chu` → `cao-ren`/`xiahou-yuan`) and `guozhan.spec.ts` (every base General in candidate lists and `seated(...)` pairs; the line-285 comment becomes "cao-ren and xiahou-yuan have no skills, isolating the mode-level draw"). HP expectations stay the same because the fillers match max HP. Leave display-only specs (wiki, assets, labels, gender, avatar, card art) alone: they read names and gender, not skills.
 
 - [ ] **Step 6: Add the specs' table**
 
@@ -210,7 +210,7 @@ Create `projects/content/src/lib/generals/skills.testing.ts`:
 import { advanceToDecision, getLegalActions, resolve } from 'engine';
 import type { Action, CardInstance, GameModeDefinition, GameState, Kingdom, Phase, QueueItem, Target } from 'engine';
 import { buildContentRegistry } from '../registry';
-import { kingdomWarMode } from '../modes/kingdomWar';
+import { guozhanMode } from '../modes/guozhan';
 
 // Shared by the skill specs (not exported from the package).
 
@@ -218,8 +218,8 @@ import { kingdomWarMode } from '../modes/kingdomWar';
 export const registry = buildContentRegistry();
 // A mode with no triggers of its own: only the skills under test act.
 export const stubMode: GameModeDefinition = { id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
-// Kingdom War's own triggers (Draw Phase draw, Judgment Phase, dying, elimination), never ending the game.
-export const kwMode: GameModeDefinition = { ...kingdomWarMode, checkWinCondition: () => null };
+// Guozhan's own triggers (Draw Phase draw, Judgment Phase, dying, elimination), never ending the game.
+export const kwMode: GameModeDefinition = { ...guozhanMode, checkWinCondition: () => null };
 
 export const card = (instanceId: string, definitionId: string, suit: CardInstance['suit'] = 'spade', rank = 7): CardInstance => ({ instanceId, definitionId, suit, rank });
 export const seat = (seatId: string): Target => ({ kind: 'seat', seatId });
@@ -1047,7 +1047,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `projects/content/src/lib/shared/skills.ts`, `projects/content/src/lib/shared/groundwork.spec.ts`
-- Modify: `projects/engine/src/lib/registry/types.ts` (`AbilityModifiers`), `projects/content/src/lib/shared/{abilities,queries,steps,choices,delayed,tools}.ts`, `projects/content/src/lib/cards/{sha,duel,lightning,mass-attack,draw-two,harvest,peach-garden,coerce}.ts`, `projects/content/src/lib/cards/equipment/sky-scorcher.ts`, `projects/content/src/lib/modes/kingdomWar.ts` (only if it imports `toolOnTargets`; it doesn't today)
+- Modify: `projects/engine/src/lib/registry/types.ts` (`AbilityModifiers`), `projects/content/src/lib/shared/{abilities,queries,steps,choices,delayed,tools}.ts`, `projects/content/src/lib/cards/{sha,duel,lightning,mass-attack,draw-two,harvest,peach-garden,coerce}.ts`, `projects/content/src/lib/cards/equipment/sky-scorcher.ts`, `projects/content/src/lib/modes/guozhan.ts` (only if it imports `toolOnTargets`; it doesn't today)
 
 **Interfaces:**
 - Consumes: `cardCountsAs`, `usedCardFrom`, `usedCardKey`, `PendingResponse.data`, `SkillStepEffect` (Tasks 2–3).
@@ -1168,7 +1168,7 @@ describe('a Duel with no physical card', () => {
 describe('Lightning', () => {
   it('goes to the discard pile before its 3 damage, which names it as the cause', () => {
     const bolt = card('li', 'lightning', 'spade', 1);
-    // Kingdom War's own triggers judge the Judgment slot.
+    // Guozhan's own triggers judge the Judgment slot.
     const s = harness(kwMode).settle(table({ 'seat-a:judgment': [bolt], drawPile: [card('j', 'shan', 'spade', 5), ...Array.from({ length: 4 }, (_, i) => card(`p${i}`, 'shan', 'heart'))] }, { phase: 'Start' }));
     const moved = s.log.findIndex((e) => e.kind === 'CardMovedEvent' && e.cardInstanceId === 'li' && e.toZoneId === 'discardPile');
     const damaged = s.log.findIndex((e) => e.kind === 'DamageDealtEvent');
@@ -1865,7 +1865,7 @@ export const evilHero: SkillDefinition = {
   ],
 };
 
-// Escort: a Lord skill, inactive in Kingdom War.
+// Escort: a Lord skill, inactive in Guozhan.
 export const escort: SkillDefinition = { id: 'escort', lord: true };
 
 // Feedback (may): after a seat damages you, you may take 1 of its cards: its
@@ -2021,7 +2021,7 @@ import { askedAbout, card, handIds, harness, hp, ids, kwMode, seat, table, Table
 const stub = harness();
 const kw = harness(kwMode);
 const filler = (n: number) => Array.from({ length: n }, (_, i) => card(`f${i}`, 'shan', 'diamond', 1));
-// seat-a's turn from its Start Phase, under Kingdom War's own triggers.
+// seat-a's turn from its Start Phase, under Guozhan's own triggers.
 const judging = (cards: Record<string, ReturnType<typeof card>[]>, o: TableOptions) => kw.settle(table(cards, { phase: 'Start', ...o }));
 
 describe("Guo Jia — Heaven's Envy", () => {
@@ -2481,7 +2481,7 @@ Expected: PASS. If the Raid order assertion fails, check `select(s, 'seat-d', 's
 - [ ] **Step 6: Run the whole suite and commit**
 
 Run: `npx jest`
-Expected: PASS (fillers from Task 1 keep `kingdomWar.spec.ts`'s Draw Phase tests free of asks).
+Expected: PASS (fillers from Task 1 keep `guozhan.spec.ts`'s Draw Phase tests free of asks).
 
 ```bash
 git add projects/content
@@ -2911,7 +2911,7 @@ export const kindness: SkillDefinition = {
   },
 };
 
-// Fierce General: a Lord skill, inactive in Kingdom War.
+// Fierce General: a Lord skill, inactive in Guozhan.
 export const fierceGeneral: SkillDefinition = { id: 'fierce-general', lord: true };
 ```
 
@@ -3449,7 +3449,7 @@ export const reconsider: SkillDefinition = {
   },
 };
 
-// Rescued: a Lord skill, inactive in Kingdom War.
+// Rescued: a Lord skill, inactive in Guozhan.
 export const rescued: SkillDefinition = { id: 'rescued', lord: true };
 
 // Other living male seats below their max HP.
@@ -4552,14 +4552,14 @@ Create `projects/sim/src/skills.spec.ts`:
 ```ts
 import { createGame } from 'engine';
 import type { GameState } from 'engine';
-import { BASE_GENERAL_IDS, buildContentRegistry, kingdomWarMode } from 'content';
+import { BASE_GENERAL_IDS, buildContentRegistry, guozhanMode } from 'content';
 import { generalsData } from '../../content/data/generals';
 import { runGame } from './runGame';
 import { checkInvariants, checkRestingState } from './invariants';
 import { baseRegistry, firedSkills, partnerOf, withForcedPairing } from './forcedPairing';
 
 const registry = baseRegistry(buildContentRegistry());
-const ctx = { registry, mode: kingdomWarMode };
+const ctx = { registry, mode: guozhanMode };
 // Skills that are only modifiers leave no trace in the log; their unit tests cover them.
 const MODIFIERS_ONLY = new Set(['roar', 'horsemanship', 'empty-city', 'wondrous-talent', 'humility', 'matchless']);
 const skillId = (name: string) => name.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -4578,7 +4578,7 @@ describe('simulated games with only the base Generals', () => {
     for (const seats of [2, 5]) {
       for (let i = 0; i < 10; i++) {
         seed++;
-        const initial = createGame(kingdomWarMode, registry, Array.from({ length: seats }, (_, n) => `seat-${n}`), seed);
+        const initial = createGame(guozhanMode, registry, Array.from({ length: seats }, (_, n) => `seat-${n}`), seed);
         for (const [bot, maxActions] of [['random', 5000], ['rule-based', 20000]] as const) {
           const resting = new Set<string>();
           const { finalState } = runGame(initial, ctx, seed * 7 + 1, maxActions, bot, (s) => checkRestingState(s).forEach((v) => resting.add(v)));
@@ -4599,7 +4599,7 @@ describe('simulated games with only the base Generals', () => {
       if (expected.length === 0) continue;
       const fired = new Set<string>();
       for (let seed = 1; seed <= 30 && expected.some((id) => !fired.has(id)); seed++) {
-        const initial = withForcedPairing(createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed), 'seat-0', [generalId, partnerOf(generalId, registry)]);
+        const initial = withForcedPairing(createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed), 'seat-0', [generalId, partnerOf(generalId, registry)]);
         const { finalState } = runGame(initial, ctx, seed * 13 + 5, 20000, 'rule-based');
         checked(finalState, `${generalId} seed ${seed}`, failures);
         firedSkills(finalState, 'seat-0').forEach((id) => fired.add(id));

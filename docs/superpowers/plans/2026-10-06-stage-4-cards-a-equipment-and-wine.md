@@ -19,7 +19,7 @@
   - `shared/abilities.ts` has `activeAbilities` and `armorIgnored`. `shaLimit` reads `modifiers.shaLimit`.
   - Horses, Crossbow and Black Pommel are built with `makeEquipmentCard`. Silver Lion gets a `before:DamageEffect` cap and an `onUnequip` heal.
   - Wine sets a turn flag. The next proactive Sha deals 2 and clears the flag.
-  - Kingdom War rescues with `{ any: ['peach'], self: ['wine'] }`.
+  - Guozhan rescues with `{ any: ['peach'], self: ['wine'] }`.
 - **Around the engine.**
   - **Bots:** Wine before a Sha, Sha whenever the engine offers one (so Crossbow repeats), Peach before Wine when dying.
   - **App:** the dying prompt mentions Wine when you can use it.
@@ -107,7 +107,7 @@
 
 **Content (`projects/content/src/lib/`)**
 - Create: `shared/abilities.ts`, `cards/wine.ts`, `cards/equipment-abilities.spec.ts`, `cards/wine.spec.ts`.
-- Modify: `cards/equipment.ts`, `cards/sha.ts`, `shared/queries.ts`, `modes/kingdomWar.ts`, `registry.ts`, and the tests `registry.spec.ts`, `wiki.spec.ts`, `modes/kingdomWar.spec.ts`.
+- Modify: `cards/equipment.ts`, `cards/sha.ts`, `shared/queries.ts`, `modes/guozhan.ts`, `registry.ts`, and the tests `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`.
 - Data: modify `data/cards/equipment/horse/hua-liu.json`, `weapon/ancient-scimitar.json`, `weapon/ice-sword.json`, `armor/wood-armor.json`, `armor/black-shield.json`.
 
 **Bots:** modify `projects/bots/src/lib/rule-based.ts` and `rule-based.spec.ts`.
@@ -404,7 +404,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Modify: `projects/engine/src/lib/pipeline/effects.ts`
-- Modify: `projects/content/src/lib/modes/kingdomWar.ts` (`RESCUE_CARD_IDS` shape only; Wine joins in Task 5)
+- Modify: `projects/content/src/lib/modes/guozhan.ts` (`RESCUE_CARD_IDS` shape only; Wine joins in Task 5)
 - Test: `projects/engine/src/lib/pipeline/judgment.spec.ts` (turn-flag tests), `projects/engine/src/lib/pipeline/dying.spec.ts`
 - Modify fixtures: `projects/sim/src/invariants.spec.ts`, `projects/app/src/app/game-board/response-description.spec.ts` (`rescueCardIds` literals)
 
@@ -510,7 +510,7 @@ In `projects/engine/src/lib/pipeline/effects.ts`:
     allowedCardIds: askerId === seat.id ? [...effect.rescueCardIds.any, ...effect.rescueCardIds.self] : effect.rescueCardIds.any,
 ```
 
-In `projects/content/src/lib/modes/kingdomWar.ts`, change:
+In `projects/content/src/lib/modes/guozhan.ts`, change:
 
 ```ts
 // Cards that can save a dying seat: any seat's Peach; Wine (Task 5) only on yourself.
@@ -539,7 +539,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `projects/content/src/lib/shared/abilities.ts`, `projects/content/src/lib/cards/equipment-abilities.spec.ts`
-- Modify: `projects/content/src/lib/cards/equipment.ts`, `shared/queries.ts`, `registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/kingdomWar.spec.ts`
+- Modify: `projects/content/src/lib/cards/equipment.ts`, `shared/queries.ts`, `registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`
 - Data: `projects/content/data/cards/equipment/horse/hua-liu.json`, `weapon/ancient-scimitar.json`, `weapon/ice-sword.json`, `armor/wood-armor.json`, `armor/black-shield.json`
 
 **Interfaces:**
@@ -679,7 +679,7 @@ describe('Black Pommel', () => {
 
 Update the counts:
 - `projects/content/src/lib/registry.spec.ts`: add `'black-pommel'`, `'crossbow'`, `'da-yuan'`, `'di-lu'`, `'hua-liu'`, `'red-hare'`, `'shadow-runner'`, `'storm-runner'` and `'zi-xing'` to the expected id list.
-- `projects/content/src/lib/modes/kingdomWar.spec.ts`: `toHaveLength(101)`.
+- `projects/content/src/lib/modes/guozhan.spec.ts`: `toHaveLength(101)`.
 - `projects/content/src/lib/wiki.spec.ts`:
   - The in-game equipment list becomes `['black-pommel', 'crossbow', 'da-yuan', 'di-lu', 'green-dragon-blade', 'hua-liu', 'red-hare', 'shadow-runner', 'silver-lion', 'storm-runner', 'zi-xing']`.
   - In 'includes the crawled EX and Army cards, not yet in the game', remove `'hua-liu'` from `ids`.
@@ -935,7 +935,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `projects/content/src/lib/cards/wine.ts`, `projects/content/src/lib/cards/wine.spec.ts`
-- Modify: `projects/content/src/lib/cards/sha.ts`, `modes/kingdomWar.ts`, `registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/kingdomWar.spec.ts`
+- Modify: `projects/content/src/lib/cards/sha.ts`, `modes/guozhan.ts`, `registry.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`
 
 **Interfaces:**
 - Consumes: `SetTurnFlagEffect` with `value: false`, and `rescueCardIds.self` (Task 2). Also Silver Lion and Black Pommel (Tasks 3 and 4).
@@ -951,7 +951,7 @@ Create `projects/content/src/lib/cards/wine.spec.ts`:
 ```ts
 import { advanceToDecision, getLegalActions, resolve } from 'engine';
 import type { CardDefinition, CardInstance, ContentRegistry, GameState } from 'engine';
-import { kingdomWarMode, RESCUE_CARD_IDS } from '../modes/kingdomWar';
+import { guozhanMode, RESCUE_CARD_IDS } from '../modes/guozhan';
 import { wineCard } from './wine';
 import { shaCard } from './sha';
 import { peachCard } from './peach';
@@ -960,7 +960,7 @@ import { crossbowCard, blackPommelCard, silverLionCard } from './equipment';
 const plain = (id: string): CardDefinition => ({ id, name: id, category: 'basic', play: () => [] });
 const cards = [wineCard, shaCard, peachCard, crossbowCard, blackPommelCard, silverLionCard, plain('shan')];
 const registry: ContentRegistry = { cards: new Map(cards.map((c) => [c.id, c])), generals: new Map() };
-const ctx = { registry, mode: kingdomWarMode };
+const ctx = { registry, mode: guozhanMode };
 
 const card = (instanceId: string, definitionId: string): CardInstance => ({ instanceId, definitionId, suit: 'spade', rank: 9 });
 
@@ -1040,7 +1040,7 @@ describe('Wine', () => {
 });
 
 describe('Wine saves only yourself', () => {
-  // seat-b at 0 HP enters its dying round with Kingdom War's rescue cards, asked from the turn owner, seat-a.
+  // seat-b at 0 HP enters its dying round with Guozhan's rescue cards, asked from the turn owner, seat-a.
   const dying = (cards: Record<string, CardInstance[]>) =>
     advanceToDecision({ ...table(cards, { 'seat-b': 0 }), resolutionQueue: [{ kind: 'DyingEffect', seatId: 'seat-b', order: ['seat-a', 'seat-b', 'seat-c'], rescueCardIds: RESCUE_CARD_IDS, entering: true }] }, ctx).state;
 
@@ -1060,7 +1060,7 @@ describe('Wine saves only yourself', () => {
     expect(next.seats.find((x) => x.id === 'seat-b')!.eliminated).toBe(true);
   });
 
-  it('Kingdom War’s dying round offers Wine to the dying seat only', () => {
+  it('Guozhan’s dying round offers Wine to the dying seat only', () => {
     const asked = dying({ 'seat-a:hand': [card('p1', 'peach'), card('w1', 'wine')] });
     expect(asked.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a', allowedCardIds: ['peach'] });
   });
@@ -1069,7 +1069,7 @@ describe('Wine saves only yourself', () => {
 
 Update the counts:
 - `projects/content/src/lib/registry.spec.ts`: add `'wine'`.
-- `projects/content/src/lib/modes/kingdomWar.spec.ts`: `toHaveLength(106)`.
+- `projects/content/src/lib/modes/guozhan.spec.ts`: `toHaveLength(106)`.
 - `projects/content/src/lib/wiki.spec.ts`: the basic not-in-game list becomes `['fire-attack', 'lightning-attack']`.
 
 - [ ] **Step 2: Run them to verify they fail**
@@ -1115,7 +1115,7 @@ In `projects/content/src/lib/cards/sha.ts`:
   },
 ```
 
-In `projects/content/src/lib/modes/kingdomWar.ts`:
+In `projects/content/src/lib/modes/guozhan.ts`:
 
 ```ts
 // Cards that can save a dying seat: anyone's Peach, and the dying seat's own Wine.

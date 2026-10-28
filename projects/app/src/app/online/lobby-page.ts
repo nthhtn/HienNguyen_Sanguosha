@@ -209,7 +209,7 @@ export class LobbyPage {
   protected readonly rulesSummary = computed(() => {
     const room = this.lobby.room();
     if (!room) return '';
-    const deck = this.i18n.t(room.rules.deck === 'alternate' ? 'setup.deck.alternate' : 'setup.deck.default');
+    const deck = this.i18n.t(deckIdOf(room.rules.deck) === 'kingdomWars' ? 'setup.deck.kingdomWars' : 'setup.deck.dynastyWars');
     const seats = `${this.i18n.t('lobby.seats', { n: room.seatCount })} · ${this.i18n.t('lobby.deckSummary', { deck })}`;
     if (room.seatCount < FIRST_REVEAL_MIN_SEATS) return seats;
     return this.i18n.t('lobby.rulesSummary', { seats, state: this.i18n.t(room.rules.firstRevealDraw ? 'lobby.on' : 'lobby.off') });

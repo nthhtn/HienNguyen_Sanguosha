@@ -47,7 +47,7 @@ export const evilHero: SkillDefinition = {
   ],
 };
 
-// Escort: a Lord skill, inactive in Kingdom War.
+// Escort: a Lord skill, inactive in Guozhan.
 export const escort: SkillDefinition = { id: 'escort', lord: true };
 
 // Feedback (may): after a seat damages you, you may take 1 of its cards: its

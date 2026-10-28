@@ -1,6 +1,6 @@
 import { createGame } from 'engine';
 import type { GameState } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 import { BotKind, runGame } from './runGame';
 
 export type Side = 'challenger' | 'baseline';
@@ -119,10 +119,10 @@ export function runTournament(config: TournamentConfig): TournamentReport {
   for (let game = 0; game < config.games; game++) {
     const seed = firstSeed + (config.mirrored ? Math.floor(game / 2) : game);
     const sideOfSeat = (seatId: string): Side => sideOf(game, seatIds.indexOf(seatId));
-    const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
+    const initialState = createGame(guozhanMode, registry, seatIds, seed);
     const { finalState } = runGame(
       initialState,
-      { registry, mode: kingdomWarMode },
+      { registry, mode: guozhanMode },
       seed,
       config.maxActions ?? DEFAULT_MAX_ACTIONS,
       config.baseline,

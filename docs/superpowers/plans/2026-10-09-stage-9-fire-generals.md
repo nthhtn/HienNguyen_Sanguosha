@@ -72,7 +72,7 @@
 - Modify:
   - `src/lib/cards/sha.ts`, `src/lib/cards/equipment/sky-scorcher.ts`, `src/lib/cards/equipment/eight-trigrams.ts`;
   - `src/lib/shared/queries.ts`;
-  - `src/lib/modes/kingdomWar.ts`, `src/lib/registry.ts`;
+  - `src/lib/modes/guozhan.ts`, `src/lib/registry.ts`;
   - `src/lib/generals/index.ts`, `src/lib/display.ts`, `src/public-api.ts`;
   - specs using real Generals as fillers.
 
@@ -176,7 +176,7 @@ In `base.spec.ts`:
 - [ ] **Step 5: Move the specs to the fillers**
 
 - `skills.testing.ts`: `export const registry = withFillers(buildContentRegistry());`. The default seat becomes `['filler-xu-huang', 'filler-dong-zhuo']`, with its comment updated.
-- Every other spec that builds a registry with `buildContentRegistry()` and seats an expansion General as a filler wraps it in `withFillers(...)`, and renames each filler id `x` to `filler-x`. The specs are `sha-equipment.spec.ts`, `playability.spec.ts`, `kingdomWar.spec.ts` and the generals specs.
+- Every other spec that builds a registry with `buildContentRegistry()` and seats an expansion General as a filler wraps it in `withFillers(...)`, and renames each filler id `x` to `filler-x`. The specs are `sha-equipment.spec.ts`, `playability.spec.ts`, `guozhan.spec.ts` and the generals specs.
 - Leave real ids that a test is *about* (display, wiki, gender, registry data checks) unchanged.
 - Bots: `projects/bots/src/lib/testing.ts` cannot import a content test file, so it adds the same fillers itself. Copy `withFillers`'s loop into it with the same `FILLER_IDS` list, then rename filler ids in `skills.spec.ts` and `wind.spec.ts`.
 
@@ -451,7 +451,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `projects/engine/src/lib/registry/types.ts` (`AbilityModifiers.extraShaTargetsWhenLastCard`);
   - `projects/content/src/lib/cards/sha.ts`, `projects/content/src/lib/cards/equipment/sky-scorcher.ts`, `projects/content/src/lib/cards/equipment/eight-trigrams.ts`;
   - `projects/content/src/lib/shared/queries.ts`;
-  - `projects/content/src/lib/modes/kingdomWar.ts`, `projects/content/src/lib/registry.ts`;
+  - `projects/content/src/lib/modes/guozhan.ts`, `projects/content/src/lib/registry.ts`;
   - `projects/content/src/lib/cards/equipment/sha-equipment.spec.ts` (Sky Scorcher's cases).
 
 **Interfaces:**
@@ -471,7 +471,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - The result step's data gains `won: boolean`, `target: string`, `userCard`, `targetCard`.
     - The helper logs `used(owner, 'compete-won' | 'compete-lost', target)` after showing both cards.
   - `eightTrigramsTrigger(abilityId, reader: (state, owner) => JudgmentReader | null, applies?: (state, owner, registry) => boolean)` and `eightTrigramsJudged(owner: AbilityOwner, abilityId)` (`eight-trigrams.ts`), used by the armour and by Eight Arrays.
-  - `blazeCard` (`outOfDeck: true`), with card steps `blaze-shown` and `blaze-hit`; registered in `buildContentRegistry`; Kingdom War's deck skips `outOfDeck` cards.
+  - `blazeCard` (`outOfDeck: true`), with card steps `blaze-shown` and `blaze-hit`; registered in `buildContentRegistry`; Guozhan's deck skips `outOfDeck` cards.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -479,7 +479,7 @@ Create `projects/content/src/lib/shared/groundwork9.spec.ts`:
 
 ```ts
 import type { GameState } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from '../../public-api';
+import { buildContentRegistry, guozhanMode } from '../../public-api';
 import { card, harness, hp, ids, registry, table } from '../generals/skills.testing';
 import { SHA_FLAGS } from './shaRules';
 
@@ -537,7 +537,7 @@ describe('Blaze', () => {
   it('is in the registry but never in the deck', () => {
     const reg = buildContentRegistry();
     expect(reg.cards.get('blaze')?.outOfDeck).toBe(true);
-    const { state } = kingdomWarMode.setup(['s0', 's1'], reg, { seed: 1, counter: 0 });
+    const { state } = guozhanMode.setup(['s0', 's1'], reg, { seed: 1, counter: 0 });
     expect(state.zones.flatMap((z) => z.cards).some((c) => c.definitionId === 'blaze')).toBe(false);
   });
 
@@ -827,7 +827,7 @@ export const blazeCard: CardDefinition = {
 ```
 
 - Register `blazeCard` in `buildContentRegistry`'s card list.
-- `kingdomWar.ts` `buildDeckSpec`: skip cards whose definition has `outOfDeck`. It takes `registry`, so use `registry.cards.get(cardId)?.outOfDeck`.
+- `guozhan.ts` `buildDeckSpec`: skip cards whose definition has `outOfDeck`. It takes `registry`, so use `registry.cards.get(cardId)?.outOfDeck`.
 
 - [ ] **Step 7: Run the tests, the suite, and commit**
 
@@ -1114,7 +1114,7 @@ Expected: FAIL.
 const clubsIn = (state: GameState, seatId: string, registry: ContentRegistry) => handOf(state, seatId).filter((c) => suitOf(state, seatId, c, registry) === 'club');
 
 // Shackle (active, any number of times): discard a club hand card, then draw 1
-// (Chains isn't in Kingdom War here: the club is recast).
+// (Chains isn't in Guozhan here: the club is recast).
 export const shackle: SkillDefinition = {
   id: 'shackle',
   active: {
@@ -1325,7 +1325,7 @@ export const duelingHeroes: SkillDefinition = {
 // Random Strike: 2 hand cards of one suit may be played as Hail of Arrows.
 export const randomStrike: SkillDefinition = { id: 'random-strike', conversions: [{ id: 'random-strike', as: 'hail-of-arrows', cards: 2, sameSuit: true, when: 'play' }] };
 
-// Bloodline: a Lord skill, inactive in Kingdom War.
+// Bloodline: a Lord skill, inactive in Guozhan.
 export const bloodline: SkillDefinition = { id: 'bloodline', lord: true };
 ```
 

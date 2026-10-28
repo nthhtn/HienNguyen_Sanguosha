@@ -32,7 +32,7 @@ what Engine changes.
 - Card instance ids are already opaque (`card-<position>` after the shuffle,
   commit `e8ae44f`). Nothing to do.
 - Kill reward and penalty are already implemented as the user specified
-  (`content/src/lib/modes/kingdomWar.ts`, the `after:SeatEliminatedEvent`
+  (`content/src/lib/modes/guozhan.ts`, the `after:SeatEliminatedEvent`
   triggers). Nothing to do.
 - `ReduceMaxHpEffect` reaching 0 max HP eliminates the seat at once, with no
   dying round. The user confirmed this is correct (official rule). Keep it, and

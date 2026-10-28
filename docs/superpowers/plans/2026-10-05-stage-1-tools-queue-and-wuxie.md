@@ -77,7 +77,7 @@
   - `registry.ts`, which registers the four Tools;
   - `cards/tools.spec.ts`, with new and updated tests;
   - `wiki.spec.ts`, for which cards are in the game;
-  - `modes/kingdomWar.spec.ts`, where the deck count goes from 61 to 70.
+  - `modes/guozhan.spec.ts`, where the deck count goes from 61 to 70.
 
 **Bots:** modify `projects/bots/src/lib/rule-based.ts` and `rule-based.spec.ts`.
 
@@ -1146,7 +1146,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `projects/content/src/lib/registry.ts`
   - `projects/content/src/lib/cards/tools.spec.ts`
   - `projects/content/src/lib/wiki.spec.ts`
-  - `projects/content/src/lib/modes/kingdomWar.spec.ts`
+  - `projects/content/src/lib/modes/guozhan.spec.ts`
 
 **Interfaces:**
 - Consumes (Task 2):
@@ -1540,7 +1540,7 @@ import { peachGardenCard } from './cards/peach-garden';
 
 - [ ] **Step 7: Update the expectations that list cards in the game**
 
-- `projects/content/src/lib/modes/kingdomWar.spec.ts`: change `expect(deckOf(2)).toHaveLength(61);` to `expect(deckOf(2)).toHaveLength(70);`. That is 61 + Draw Two 4 + Barbarians 3 + Hail of Arrows 1 + Peach Garden 1.
+- `projects/content/src/lib/modes/guozhan.spec.ts`: change `expect(deckOf(2)).toHaveLength(61);` to `expect(deckOf(2)).toHaveLength(70);`. That is 61 + Draw Two 4 + Barbarians 3 + Hail of Arrows 1 + Peach Garden 1.
 - `projects/content/src/lib/wiki.spec.ts`, test `'lists the 15 tools, with Duel and Wuxie in the game and their printings'`:
   - Rename it to `'lists the 15 tools, with the playable ones in the game and their printings'`.
   - Change the `inGame` expectation to `['barbarians', 'draw-two', 'duel', 'hail-of-arrows', 'peach-garden', 'wuxie']`.

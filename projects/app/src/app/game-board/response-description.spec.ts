@@ -328,13 +328,13 @@ describe('the Upheaval window', () => {
     });
   });
 
-  it('says who is waited on for Alternate Descend into Chaos', () => {
-    const variant: PendingResponse = { ...window, reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'alternate:descend-into-chaos' }, abilityId: 'alternate:descend-into-chaos', targetSeatId: 'seat-2' } };
+  it('says who is waited on for Kingdom Wars Descend into Chaos', () => {
+    const variant: PendingResponse = { ...window, reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'kingdomWars:descend-into-chaos' }, abilityId: 'kingdomWars:descend-into-chaos', targetSeatId: 'seat-2' } };
     expect(waitingLine(state([], variant))).toBe('Waiting on Seat 1 to play a Slash for Descend into Chaos');
   });
 
-  it('asks the same of Alternate Descend into Chaos', () => {
-    const variant: PendingResponse = { ...window, reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'alternate:descend-into-chaos' }, abilityId: 'alternate:descend-into-chaos', targetSeatId: 'seat-2' } };
+  it('asks the same of Kingdom Wars Descend into Chaos', () => {
+    const variant: PendingResponse = { ...window, reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'kingdomWars:descend-into-chaos' }, abilityId: 'kingdomWars:descend-into-chaos', targetSeatId: 'seat-2' } };
     expect(describeResponse(state([], variant), 'seat-1')).toMatchObject({
       source: 'Hing used Descend into Chaos',
       prompt: 'Play a Slash at Seat 2, or lose 1 HP?',

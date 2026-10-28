@@ -1,0 +1,24 @@
+{
+  "id": "zhang-liao",
+  "name": "Zhang Liao",
+  "nameZh": "张辽",
+  "force": "wei",
+  "title": "General of the Front",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Sudden Strike",
+      "nameZh": "突击",
+      "text": "During your drawing phase, you can forfeit drawing cards from the deck. Instead, you acquire one on-hand card each from one to two other players."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "Minor description clarifications, but makes no difference to the usual way he is played.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/zhang-liao.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

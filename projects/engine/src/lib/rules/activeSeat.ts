@@ -1,7 +1,7 @@
 import { GameState, PendingChoice } from '../domain/types';
 
 // The one decision an eliminated seat still makes: a choice opened by a General skill of its own
-// (an afterDeath skill asks the dead seat's player: Alternate Sorrow). Any other choice it is named in waits for no one.
+// (an afterDeath skill asks the dead seat's player: Kingdom Wars Sorrow). Any other choice it is named in waits for no one.
 export function ownSkillChoice(choice: PendingChoice): boolean {
   return choice.reason.kind === 'ability' && choice.reason.owner.kind === 'general' && choice.reason.owner.seatId === choice.seatId;
 }

@@ -1,6 +1,6 @@
 import type { GameState } from 'engine';
 import { createGame } from 'engine';
-import { kingdomWarMode } from '../../modes/kingdomWar';
+import { guozhanMode } from '../../modes/guozhan';
 import { askedAbout, card, harness, hp, registry, table } from '../../generals/skills.testing';
 
 // Fire Fan: when its wearer uses a plain Slash in their Play Phase, they may
@@ -79,9 +79,9 @@ describe('Fire Fan', () => {
 
   // A real deal from each deck: the Fire Fan and a Slash the deal made are put in
   // seat-0's equipment and hand, the Generals are fixed, and it is seat-0's Play Phase.
-  describe.each(['default', 'alternate'])('in a game dealt from the %s deck', (deck) => {
+  describe.each(['dynastyWars', 'kingdomWars'])('in a game dealt from the %s deck', (deck) => {
     const dealtGame = (): GameState => {
-      const g = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], 1, { deck });
+      const g = createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], 1, { deck });
       const all = g.zones.flatMap((z) => z.cards);
       const dealtFan = all.find((c) => c.definitionId === 'fire-fan')!;
       const dealtSha = all.find((c) => c.definitionId === 'sha')!;
@@ -108,7 +108,7 @@ describe('Fire Fan', () => {
     const shaIn = (s: GameState) => s.zones.find((z) => z.id === 'seat-0:hand')!.cards.find((c) => c.definitionId === 'sha')!.instanceId;
 
     it('deals Fire Fan as the Ace of Diamonds', () => {
-      const g = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], 1, { deck });
+      const g = createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], 1, { deck });
       const fans = g.zones.flatMap((z) => z.cards).filter((c) => c.definitionId === 'fire-fan');
       expect(fans.map((c) => [c.suit, c.rank])).toEqual([['diamond', 1]]);
     });

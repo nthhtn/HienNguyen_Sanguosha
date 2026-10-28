@@ -1,7 +1,7 @@
 import type { Effect, GameState, UsedCard } from 'engine';
 import { usedCardOf } from 'engine';
 import type { DamageDealtEvent } from 'engine';
-import { alternateCardData } from '../../alternateCards';
+import { kingdomWarsCardData } from '../../kingdomWarsCards';
 import { makeEquipmentCard } from './index';
 import { ownerCard } from '../../shared/abilities';
 import { handOf, seatDistance } from '../../shared/queries';
@@ -15,7 +15,7 @@ function neighboursOf(state: GameState, targetSeatId: string, registry: Paramete
 
 // Trident Glaive: after its wearer's Sha damages a seat that is still living, the wearer may
 // discard a hand card to deal 1 damage to another seat next to that seat (themselves included).
-export const tridentGlaiveCard = makeEquipmentCard('trident-glaive', 'Trident Glaive', 'weapon', alternateCardData('trident-glaive')?.range ?? 3, {
+export const tridentGlaiveCard = makeEquipmentCard('trident-glaive', 'Trident Glaive', 'weapon', kingdomWarsCardData('trident-glaive')?.range ?? 3, {
   abilities: {
     triggers: [
       {

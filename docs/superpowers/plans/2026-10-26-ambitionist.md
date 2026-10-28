@@ -6,7 +6,7 @@
 
 **Goal:** A seat that reveals into a full Kingdom (cap = floor(total / 2)) becomes an Ambitionist, a one-seat group that wins only as the last survivor.
 
-**Architecture:** The engine gains one generic seat field, `allegiance`, and an effect that sets it. The Kingdom War mode decides it in a trigger on a seat's first reveal, using the cap. Content helpers, the kill reward, the win check, bots and the UI read it.
+**Architecture:** The engine gains one generic seat field, `allegiance`, and an effect that sets it. The Guozhan mode decides it in a trigger on a seat's first reveal, using the cap. Content helpers, the kill reward, the win check, bots and the UI read it.
 
 **Tech Stack:** TypeScript, Angular signals, Vitest-style specs next to the code (`*.spec.ts`), `npm test` per project.
 
@@ -14,7 +14,7 @@
 
 ## Global Constraints
 
-- Engine stays framework-free and content-free: no cap or Kingdom War rule inside `projects/engine`.
+- Engine stays framework-free and content-free: no cap or Guozhan rule inside `projects/engine`.
 - UI text follows CLAUDE.md casing: English Title Case for labels ("Ambitionist"), Vietnamese sentence case ("Dã tâm gia" is a draft; `npm run i18n:status` reports it). Ids are never shown.
 - Cap = `floor(state.seats.length / 2)` per Kingdom, Qun included. Seats with `allegiance === 'kingdom'` count toward their Kingdom, living or dead. Ambitionists count toward none.
 - Kill of an Ambitionist: the killer draws 3. An Ambitionist killer never takes the same-Kingdom discard.
@@ -68,8 +68,8 @@
 ### Task 3: Content — decide allegiance at first reveal
 
 **Files:**
-- Modify: `projects/content/src/lib/modes/kingdomWar.ts` (add a trigger, put it FIRST in `triggers` so later triggers of the same reveal see the decision)
-- Test: `projects/content/src/lib/modes/kingdomWar.spec.ts`
+- Modify: `projects/content/src/lib/modes/guozhan.ts` (add a trigger, put it FIRST in `triggers` so later triggers of the same reveal see the decision)
+- Test: `projects/content/src/lib/modes/guozhan.spec.ts`
 
 **Interfaces:**
 - Consumes: Task 1 effect, Task 2 `kingdomCap`/`seatsInKingdom`.
@@ -84,8 +84,8 @@
 ### Task 4: Content — kill reward
 
 **Files:**
-- Modify: `projects/content/src/lib/modes/kingdomWar.ts` (kill reward trigger, ~line 306)
-- Test: `projects/content/src/lib/modes/kingdomWar.spec.ts`
+- Modify: `projects/content/src/lib/modes/guozhan.ts` (kill reward trigger, ~line 306)
+- Test: `projects/content/src/lib/modes/guozhan.spec.ts`
 
 **Interfaces:**
 - Consumes: Tasks 2–3.
@@ -99,8 +99,8 @@
 ### Task 5: Content — win check
 
 **Files:**
-- Modify: `projects/content/src/lib/modes/kingdomWar.ts` (`checkWinCondition`, line 268)
-- Modify tests: `projects/content/src/lib/modes/kingdomWar.spec.ts` (~365), `projects/engine/src/lib/pipeline/winCondition.spec.ts` only if they use Kingdom War
+- Modify: `projects/content/src/lib/modes/guozhan.ts` (`checkWinCondition`, line 268)
+- Modify tests: `projects/content/src/lib/modes/guozhan.spec.ts` (~365), `projects/engine/src/lib/pipeline/winCondition.spec.ts` only if they use Guozhan
 
 **Interfaces:**
 - Consumes: Task 1 field. `checkWinCondition(state): GameResult | null` signature unchanged.

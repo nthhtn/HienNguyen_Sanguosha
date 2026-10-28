@@ -62,7 +62,7 @@ Ambitionist dies first, the Ambitionist wins only by outliving all three Wei.
   seat that showed its first General in an effect step, in seat order, before any trigger reads
   the state. It must be atomic with the reveal: a queued effect would let two reveals both see
   an empty Kingdom (found by the property test: a 2-seat table ended with two Wei seats).
-- **Content**: Kingdom War's `decideAllegiance` uses `isAmbitionist` (Kingdom at the cap).
+- **Content**: Guozhan's `decideAllegiance` uses `isAmbitionist` (Kingdom at the cap).
   `exposedKingdom` returns null for an Ambitionist (so `sameKingdomSeatIds` returns just the
   seat). `exposedKingdomCounts` skips them. The kill-reward trigger and `checkWinCondition`
   change as in rules 6 and 7.

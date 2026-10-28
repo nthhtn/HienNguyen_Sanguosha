@@ -288,7 +288,7 @@ describe('a pending choice', () => {
   it('allows an eliminated seat’s choice for its own skill (an afterDeath skill asks its player)', () => {
     const s = baseState();
     const id = s.seats[0].id;
-    const owner = { kind: 'general' as const, seatId: id, slot: 'main' as const, skillId: 'alternate:sorrow' };
+    const owner = { kind: 'general' as const, seatId: id, slot: 'main' as const, skillId: 'kingdomWars:sorrow' };
     const own = { ...choiceFor(id), verb: 'pick' as const, reason: { kind: 'ability' as const, owner, abilityId: owner.skillId } };
     const out = { ...s, seats: s.seats.map((x) => (x.id === id ? { ...x, eliminated: true } : x)), pendingChoice: own };
     expect(checkInvariants(out).filter((v) => v.startsWith('pendingChoice'))).toEqual([]);

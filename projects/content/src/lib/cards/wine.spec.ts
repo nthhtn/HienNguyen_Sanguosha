@@ -1,6 +1,6 @@
 import { advanceToDecision, getLegalActions, previewEffect, resolve, usedCardOf } from 'engine';
 import type { CardDefinition, CardInstance, ContentRegistry, GameState } from 'engine';
-import { kingdomWarMode, RESCUE_CARD_IDS } from '../modes/kingdomWar';
+import { guozhanMode, RESCUE_CARD_IDS } from '../modes/guozhan';
 import { wineCard } from './wine';
 import { shaCard } from './sha';
 import { peachCard } from './peach';
@@ -9,7 +9,7 @@ import { crossbowCard, blackPommelCard, silverLionCard } from './equipment';
 const plain = (id: string): CardDefinition => ({ id, name: id, category: 'basic', play: () => [] });
 const cards = [wineCard, shaCard, peachCard, crossbowCard, blackPommelCard, silverLionCard, plain('shan')];
 const registry: ContentRegistry = { cards: new Map(cards.map((c) => [c.id, c])), generals: new Map() };
-const ctx = { registry, mode: kingdomWarMode };
+const ctx = { registry, mode: guozhanMode };
 
 const card = (instanceId: string, definitionId: string): CardInstance => ({ instanceId, definitionId, suit: 'spade', rank: 9 });
 
@@ -89,7 +89,7 @@ describe('Wine', () => {
 });
 
 describe('Wine saves only yourself', () => {
-  // seat-b at 0 HP enters its dying round with Kingdom War's rescue cards, asked from the turn owner, seat-a.
+  // seat-b at 0 HP enters its dying round with Guozhan's rescue cards, asked from the turn owner, seat-a.
   const dying = (cards: Record<string, CardInstance[]>) =>
     advanceToDecision({ ...table(cards, { 'seat-b': 0 }), resolutionQueue: [{ kind: 'DyingEffect', seatId: 'seat-b', order: ['seat-a', 'seat-b', 'seat-c'], rescueCardIds: RESCUE_CARD_IDS, entering: true }] }, ctx).state;
 
@@ -109,7 +109,7 @@ describe('Wine saves only yourself', () => {
     expect(next.seats.find((x) => x.id === 'seat-b')!.eliminated).toBe(true);
   });
 
-  it('Kingdom War’s dying round offers Wine to the dying seat only', () => {
+  it('Guozhan’s dying round offers Wine to the dying seat only', () => {
     const asked = dying({ 'seat-a:hand': [card('p1', 'peach'), card('w1', 'wine')] });
     expect(asked.pendingResponse).toMatchObject({ respondingSeatId: 'seat-a', allowedCardIds: ['peach'] });
   });

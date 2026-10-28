@@ -15,7 +15,7 @@
 - **Content:**
   - four new `AbilityModifiers` fields, read by content queries only;
   - `generals/forest.ts`;
-  - the Kingdom War dying order honours Complete Kill.
+  - the Guozhan dying order honours Complete Kill.
 - **Around it:** bots play the Forest skills, the sim adds a Forest batch and forced pairings, the app gains the Upheaval window, the new prompts and history lines.
 
 **Tech Stack:** TypeScript, Jest (ts-jest), Angular 22 (app task).
@@ -26,7 +26,7 @@
 - **Upheaval asks the target first, then opens a Sha window.** Each seat picks a seat in its range (or "Pass (Lose 1 HP)"), then a response window asks for the Sha (real or converted). A seat with a seat in range but no Sha must press Pass; only a seat with no seat in range loses the HP automatically. The effect is the spec's; the window is the engine's existing way to ask for a Sha at a fixed target (Coerce's).
 - **Unnatural Death is a before-trigger on the dead seat's `DiscardZoneEffect`**, not a new "death hook". The mode already queues one `DiscardZoneEffect` per zone; the ask replaces the hand's one. This needs only the `acted` field.
 - **Giant Elephant needs `ToolResolvedEffect`.** A used card leaves the hand for the discard pile at once, so "after it finishes resolving" needs a marker at the end of the Tool's queue items.
-- **Complete Kill filters the dying round's `order`** in Kingdom War's dying trigger (only the turn owner and the dying seat are listed) rather than filtering Peach plays; in the Play Phase only the owner plays Peach anyway.
+- **Complete Kill filters the dying round's `order`** in Guozhan's dying trigger (only the turn owner and the dying seat are listed) rather than filtering Peach plays; in the Play Phase only the owner plays Peach anyway.
 - **Curtain is a modifier plus a backstop trigger.** The modifier keeps black Tools off the seat lists of Steal, Break, Duel, Capture and Starvation; a `before:ToolOnTargetEffect` trigger cancels any other black Tool at the seat (area Tools, conversions).
 - **Blockade's +1 range counts only while Xu Huang is revealed** (a hidden General's modifiers are off); using the conversion reveals him, but the targets are listed before that.
 - **Resurgence's hearts are the printed suit** of the revealed card.
@@ -66,7 +66,7 @@
 - Modify:
   - `src/lib/shared/abilities.ts`, `src/lib/shared/tools.ts`, `src/lib/shared/delayed.ts`, `src/lib/shared/choices.ts`;
   - `src/lib/cards/sha.ts`, `src/lib/cards/duel.ts`, `src/lib/cards/coerce.ts`;
-  - `src/lib/modes/kingdomWar.ts`;
+  - `src/lib/modes/guozhan.ts`;
   - `src/lib/generals/index.ts`, `src/public-api.ts`, `src/lib/display.ts`.
 
 **Bots / sim:** `bots/src/lib/forest.ts` (new), `bots/src/lib/skills.ts`, `bots/src/lib/rule-based.ts`, `bots/src/lib/forest.spec.ts` (new); `sim/src/forest.spec.ts` (new).
@@ -324,7 +324,7 @@ git commit -m "feat(engine): max HP reduction, Tool-resolved marker, skill-sourc
 ### Task 2: Content groundwork — modifiers, Garden of Lust's count, Starvation range, Curtain's colour, Complete Kill's order, the Forest file
 
 **Files:**
-- Modify: `projects/engine/src/lib/registry/types.ts`, `projects/content/src/lib/shared/abilities.ts`, `projects/content/src/lib/shared/tools.ts`, `projects/content/src/lib/shared/delayed.ts`, `projects/content/src/lib/shared/choices.ts`, `projects/content/src/lib/cards/sha.ts`, `projects/content/src/lib/cards/duel.ts`, `projects/content/src/lib/cards/coerce.ts`, `projects/content/src/lib/modes/kingdomWar.ts`, `projects/content/src/lib/generals/index.ts`, `projects/content/src/public-api.ts`
+- Modify: `projects/engine/src/lib/registry/types.ts`, `projects/content/src/lib/shared/abilities.ts`, `projects/content/src/lib/shared/tools.ts`, `projects/content/src/lib/shared/delayed.ts`, `projects/content/src/lib/shared/choices.ts`, `projects/content/src/lib/cards/sha.ts`, `projects/content/src/lib/cards/duel.ts`, `projects/content/src/lib/cards/coerce.ts`, `projects/content/src/lib/modes/guozhan.ts`, `projects/content/src/lib/generals/index.ts`, `projects/content/src/public-api.ts`
 - Create: `projects/content/src/lib/generals/forest.ts`, `projects/content/src/lib/shared/groundwork10.spec.ts`
 
 **Interfaces:**
@@ -554,7 +554,7 @@ In `projects/content/src/lib/cards/coerce.ts`, import `untargetableBy` already p
       .filter((holder) => holder.id !== ctx.seatId && wearsWeapon(holder.id) && !untargetableBy(state, holder.id, 'coerce', registry, playColour(state, ctx, registry)))
 ```
 
-In `projects/content/src/lib/modes/kingdomWar.ts`:
+In `projects/content/src/lib/modes/guozhan.ts`:
 
 1. Add `import { peachLockedTo } from '../shared/abilities';`.
 2. In `hpDropTriggers`, change the third trigger's `effect` signature and `order`:
@@ -611,7 +611,7 @@ const missingHp = (state: GameState, seatId: string) => {
   return seat ? Math.max(0, seat.maxCombinedHp - seat.combinedHp) : 0;
 };
 
-// Exaltation and Violent Tyrant: Lord skills, inactive in Kingdom War.
+// Exaltation and Violent Tyrant: Lord skills, inactive in Guozhan.
 export const exaltation: SkillDefinition = { id: 'exaltation', lord: true };
 export const violentTyrant: SkillDefinition = { id: 'violent-tyrant', lord: true };
 
@@ -1722,7 +1722,7 @@ export const collapse: SkillDefinition = {
 };
 
 // Complete Kill (compulsory): in your turn only you and the dying seat can use
-// Peach. Kingdom War's dying round reads this when it lists who is asked.
+// Peach. Guozhan's dying round reads this when it lists who is asked.
 export const completeKill: SkillDefinition = { id: 'complete-kill', compulsory: true, modifiers: { peachOnlyOwnerAndDying: true } };
 
 // Curtain (compulsory): black Tools can't target you. The modifier keeps them
@@ -2188,14 +2188,14 @@ Create `projects/sim/src/forest.spec.ts`:
 ```ts
 import { createGame } from 'engine';
 import type { GameState } from 'engine';
-import { BASE_GENERAL_IDS, FIRE_GENERAL_IDS, FOREST_GENERAL_IDS, WIND_GENERAL_IDS, buildContentRegistry, kingdomWarMode } from 'content';
+import { BASE_GENERAL_IDS, FIRE_GENERAL_IDS, FOREST_GENERAL_IDS, WIND_GENERAL_IDS, buildContentRegistry, guozhanMode } from 'content';
 import { runGame } from './runGame';
 import { checkInvariants, checkRestingState } from './invariants';
 import { firedSkills, partnerOf, registryWith, withForcedPairing } from './forcedPairing';
 
 const POOL = [...BASE_GENERAL_IDS, ...WIND_GENERAL_IDS, ...FIRE_GENERAL_IDS, ...FOREST_GENERAL_IDS];
 const registry = registryWith(buildContentRegistry(), POOL);
-const ctx = { registry, mode: kingdomWarMode };
+const ctx = { registry, mode: guozhanMode };
 // Skills with no trace of their own in the log: modifiers read by queries.
 const MODIFIERS_ONLY = new Set(['garden-of-lust', 'complete-kill', 'curtain']);
 
@@ -2213,7 +2213,7 @@ describe('simulated games with the base, Wind, Fire and Forest Generals (49)', (
     for (const seats of [2, 5, 8]) {
       for (let i = 0; i < 10; i++) {
         seed++;
-        const initial = createGame(kingdomWarMode, registry, Array.from({ length: seats }, (_, n) => `seat-${n}`), seed);
+        const initial = createGame(guozhanMode, registry, Array.from({ length: seats }, (_, n) => `seat-${n}`), seed);
         for (const [bot, maxActions] of [['random', 5000], ['rule-based', 20000]] as const) {
           const resting = new Set<string>();
           const { finalState } = runGame(initial, ctx, seed * 7 + 1, maxActions, bot, (s) => checkRestingState(s).forEach((v) => resting.add(v)));
@@ -2233,7 +2233,7 @@ describe('simulated games with the base, Wind, Fire and Forest Generals (49)', (
       const expected = (registry.generals.get(generalId)?.skills ?? []).filter((s) => !s.lord).map((s) => s.id).filter((id) => !MODIFIERS_ONLY.has(id));
       const fired = new Set<string>();
       for (let seed = 1; seed <= 80 && expected.some((id) => !fired.has(id)); seed++) {
-        const initial = withForcedPairing(createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed), 'seat-0', [generalId, partnerOf(generalId, registry, POOL)]);
+        const initial = withForcedPairing(createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed), 'seat-0', [generalId, partnerOf(generalId, registry, POOL)]);
         const { finalState } = runGame(initial, ctx, seed * 13 + 5, 20000, 'rule-based');
         checked(finalState, `${generalId} seed ${seed}`, failures);
         firedSkills(finalState, 'seat-0').forEach((id) => fired.add(id));

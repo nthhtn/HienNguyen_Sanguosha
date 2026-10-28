@@ -1,0 +1,26 @@
+{
+  "id": "xiahou-yuan",
+  "name": "Xiahou Yuan",
+  "nameZh": "夏侯渊",
+  "force": "wei",
+  "title": "Lightning-fast Cheetah",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Godspeed",
+      "nameZh": "神速",
+      "text": "You can choose one or both of the following options:\n1. Skip your judgement phase and drawing phase.\n2. Skip your action phase and discard an equipment card.\nEvery time you choose one of these options, it is viewed as you using an ATTACK 杀 on another player."
+    }
+  ],
+  "synergisticPartners": [
+    "Xiahou Dun 夏侯惇 (Cousin)"
+  ],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/xiahou-yuan.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

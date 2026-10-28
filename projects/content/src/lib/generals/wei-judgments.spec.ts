@@ -4,7 +4,7 @@ import { askedAbout, card, handIds, harness, hp, ids, kwMode, table, TableOption
 const stub = harness();
 const kw = harness(kwMode);
 const filler = (n: number) => Array.from({ length: n }, (_, i) => card(`f${i}`, 'shan', 'diamond', 1));
-// seat-a's turn from its Start Phase, under Kingdom War's own triggers.
+// seat-a's turn from its Start Phase, under Guozhan's own triggers.
 const judging = (cards: Record<string, ReturnType<typeof card>[]>, o: TableOptions) => kw.settle(table(cards, { phase: 'Start', ...o }));
 
 describe("Guo Jia — Heaven's Envy", () => {

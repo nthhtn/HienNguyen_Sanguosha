@@ -1,20 +1,20 @@
 import { createGame } from 'engine';
 import type { GameState } from 'engine';
-import { buildContentRegistry, kingdomWarMaxSeats, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMaxSeats, guozhanMode } from 'content';
 import { runGame } from './runGame';
 import { findStepLeaks } from './leaks';
 
-describe('property: no seat learns hidden information over simulated Kingdom War games', () => {
+describe('property: no seat learns hidden information over simulated Guozhan games', () => {
   it('no view, log event, reshuffle or hidden skill leaks, at any step, for any seat', () => {
     const registry = buildContentRegistry();
-    const maxSeats = kingdomWarMaxSeats(registry);
+    const maxSeats = guozhanMaxSeats(registry);
     const seatCounts = [...new Set([2, 4, 7, maxSeats])].filter((n) => n <= maxSeats);
     const failures: string[] = [];
     let reshuffles = 0;
     for (const numSeats of seatCounts) {
       for (let seed = 1; seed <= 2; seed++) {
         const seatIds = Array.from({ length: numSeats }, (_, i) => `seat-${i}`);
-        const initial = createGame(kingdomWarMode, registry, seatIds, seed * 100 + numSeats);
+        const initial = createGame(guozhanMode, registry, seatIds, seed * 100 + numSeats);
         const label = `seed ${seed * 100 + numSeats} (${numSeats} seats)`;
         let prev: GameState = initial;
         const record = (next: GameState) => {
@@ -23,7 +23,7 @@ describe('property: no seat learns hidden information over simulated Kingdom War
           prev = next;
         };
         record(initial);
-        const result = runGame(initial, { registry, mode: kingdomWarMode }, seed * 7 + 1, 20000, 'rule-based', record);
+        const result = runGame(initial, { registry, mode: guozhanMode }, seed * 7 + 1, 20000, 'rule-based', record);
         if (!result.finalState.result) failures.push(`${label}: did not finish within 20000 actions`);
       }
     }

@@ -22,7 +22,7 @@ browser APIs, or UI state. The game engine SHOULD be executable
 independently of the Angular UI so it can be tested through automated
 simulations. UI components MUST NOT directly implement game rules.
 
-Current status: the engine (Kingdom War / Guozhan), content, bots and
+Current status: the engine (Guozhan), content, bots and
 simulator, the Angular presentation layer, and a Node server with a shared
 `protocol` project are all built and in use. `docs/architecture/` is the
 guide to how they fit together; read it before changing structure. The
@@ -108,6 +108,7 @@ Every piece of visible text MUST follow these casing rules:
   - forces (Wei, Shu, Wu, Qun);
   - card types (Basic, Tool, Equipment, Weapon, Armor, Mount);
   - phase names ("Play Phase");
+  - game mode names ("Guozhan");
   - the term General(s), including Main General and Deputy General;
   - HP.
 - Ids are never shown as they are: show "Seat 0", not `seat-0`.
@@ -121,8 +122,9 @@ follows its own (the full terminology is in
 - **Sentence case everywhere**, labels and buttons included ("Kết thúc giai
   đoạn", "Bỏ bài"), with a capital only on the first word.
 - **Keywords keep their capitals inside sentences:** player and seat names,
-  card names (Sát, Đào, Quyết Đấu), General names and the terms Tướng, Chủ
-  tướng, Phó tướng and Sinh lực. Forces are Ngụy, Thục, Ngô, Quần.
+  card names (Sát, Đào, Quyết Đấu), General names, game mode names (Quốc
+  chiến) and the terms Tướng, Chủ tướng, Phó tướng and Sinh lực. Forces are
+  Ngụy, Thục, Ngô, Quần.
 - Skill names and titles are sentence case ("Gian hùng"), keeping the capitals of
   proper nouns inside them ("Thiên Công tướng quân"); General and card names are
   capitalised word by word ("Tào Tháo", "Quyết Đấu").

@@ -12,7 +12,7 @@ const selfDestruct: CardDefinition = {
 };
 const registry: ContentRegistry = { cards: new Map([['self-destruct', selfDestruct]]), generals: new Map() };
 
-// Like Kingdom War: whoever enters Draw draws 2.
+// Like Guozhan: whoever enters Draw draws 2.
 function mode(checkWinCondition: (s: GameState) => GameResult | null = () => null): GameModeDefinition {
   return {
     id: 'stub',

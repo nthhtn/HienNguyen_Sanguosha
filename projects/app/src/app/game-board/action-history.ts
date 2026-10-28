@@ -386,7 +386,7 @@ export function actionHistory(
         } else if (event.outcome === 'silenced' && event.targetSeatId) {
           action(tr('history.silenced', { target: name(event.targetSeatId), ability }));
         } else if ((event.outcome === 'silenced-main' || event.outcome === 'silenced-deputy') && event.targetSeatId) {
-          // Alternate Sorrow: one General of the seat, named by its place only.
+          // Kingdom Wars Sorrow: one General of the seat, named by its place only.
           action(tr(event.outcome === 'silenced-main' ? 'history.silencedMain' : 'history.silencedDeputy', { target: name(event.targetSeatId), ability }));
         } else if (event.outcome === 'new-form') {
           action(tr('history.newForm', { owner, ability }));

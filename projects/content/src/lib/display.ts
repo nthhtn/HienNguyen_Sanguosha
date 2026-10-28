@@ -1,14 +1,14 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
-import { alternateCardData } from './alternateCards';
-import { alternateDifferenceNote, alternateGeneralRecords } from './alternateGenerals';
+import { kingdomWarsCardData } from './kingdomWarsCards';
+import { kingdomWarsDifferenceNote, kingdomWarsGeneralRecords } from './kingdomWarsGenerals';
 import { skillIdOf } from './skillId';
-import { baseSkillId, lookupWithBase } from './alternateBase';
-import { alternateGeneralId, baseGeneralId, isAlternateGeneralId } from './generalIds';
+import { baseSkillId, lookupWithBase } from './kingdomWarsBase';
+import { kingdomWarsGeneralId, baseGeneralId, isKingdomWarsGeneralId } from './generalIds';
 import viCards from '../../data/locales/vi/cards.json';
-import viAlternateCards from '../../data/locales/vi/alternate-cards.json';
+import viKingdomWarsCards from '../../data/locales/vi/kingdom-wars-cards.json';
 import viGenerals from '../../data/locales/vi/generals.json';
-import viAlternateGenerals from '../../data/locales/vi/alternate-generals.json';
+import viKingdomWarsGenerals from '../../data/locales/vi/kingdom-wars-generals.json';
 import viProse from '../../data/locales/vi/prose.json';
 
 // One language's names and rules text, keyed by the same ids as the English data. A missing
@@ -25,30 +25,30 @@ export interface CardTranslation {
 const GENERAL_TEXT: Record<string, Record<string, GeneralTranslation>> = { vi: viGenerals };
 const CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viCards };
 
-// Names and text of cards only the Alternate deck has, by card id; a card Default also has is in CARD_TEXT.
-const ALTERNATE_CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viAlternateCards };
-export function alternateCardTranslation(id: string, locale: string): CardTranslation | null {
-  return lookup(ALTERNATE_CARD_TEXT, locale)?.[id] ?? null;
+// Names and text of cards only the Kingdom Wars deck has, by card id; a card Dynasty Wars also has is in CARD_TEXT.
+const KINGDOM_WARS_CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viKingdomWarsCards };
+export function kingdomWarsCardTranslation(id: string, locale: string): CardTranslation | null {
+  return lookup(KINGDOM_WARS_CARD_TEXT, locale)?.[id] ?? null;
 }
 
-// The Alternate deck's Generals, by their id (which is Default's id when Default has the General, so the
-// two tables never mix: an Alternate entry always reads its own file). Everything a translation can hold
+// The Kingdom Wars deck's Generals, by their id (which is Dynasty Wars' id when Dynasty Wars has the General, so the
+// two tables never mix: a Kingdom Wars entry always reads its own file). Everything a translation can hold
 // is optional, so a language can be filled in piece by piece.
-export interface AlternateGeneralTranslation {
+export interface KingdomWarsGeneralTranslation {
   name: string;
   title?: string;
-  // Keyed by the skill id of the Alternate English skill name (skillIdOf).
+  // Keyed by the skill id of the Kingdom Wars English skill name (skillIdOf).
   skills?: Record<string, { name: string; text?: string }>;
   differenceNote?: string;
   // Each Synergistic Partners entry translated whole, in the English list's order.
   partners?: string[];
 }
-const ALTERNATE_GENERAL_TEXT: Record<string, Record<string, AlternateGeneralTranslation>> = { vi: viAlternateGenerals };
-export function alternateGeneralTranslations(locale: string): Record<string, AlternateGeneralTranslation> {
-  return lookup(ALTERNATE_GENERAL_TEXT, locale) ?? {};
+const KINGDOM_WARS_GENERAL_TEXT: Record<string, Record<string, KingdomWarsGeneralTranslation>> = { vi: viKingdomWarsGenerals };
+export function kingdomWarsGeneralTranslations(locale: string): Record<string, KingdomWarsGeneralTranslation> {
+  return lookup(KINGDOM_WARS_GENERAL_TEXT, locale) ?? {};
 }
 
-export interface AlternateGeneralDisplayData {
+export interface KingdomWarsGeneralDisplayData {
   name: string;
   title: string | null;
   skills: { name: string; text: string }[];
@@ -56,10 +56,10 @@ export interface AlternateGeneralDisplayData {
   partners: string[];
 }
 
-export function alternateGeneralDisplayData(id: string, locale = 'en'): AlternateGeneralDisplayData | null {
-  const record = alternateGeneralRecords().find((g) => g.id === id);
+export function kingdomWarsGeneralDisplayData(id: string, locale = 'en'): KingdomWarsGeneralDisplayData | null {
+  const record = kingdomWarsGeneralRecords().find((g) => g.id === id);
   if (!record) return null;
-  const translated = lookup(alternateGeneralTranslations(locale), id);
+  const translated = lookup(kingdomWarsGeneralTranslations(locale), id);
   const partners = translated?.partners;
   return {
     name: translated?.name ?? record.name,
@@ -68,7 +68,7 @@ export function alternateGeneralDisplayData(id: string, locale = 'en'): Alternat
       const skill = lookup(translated?.skills, skillIdOf(name));
       return { name: skill?.name ?? name, text: skill?.text ?? text };
     }),
-    differenceNote: translated?.differenceNote ?? alternateDifferenceNote(id),
+    differenceNote: translated?.differenceNote ?? kingdomWarsDifferenceNote(id),
     partners: partners && partners.length === record.synergisticPartners.length ? partners : record.synergisticPartners,
   };
 }
@@ -76,9 +76,9 @@ export function alternateGeneralDisplayData(id: string, locale = 'en'): Alternat
 // Every General and card id, from the English data (the ids a translation has to cover).
 export const generalIds = (): string[] => Object.keys(generalsData);
 export const cardIds = (): string[] => Object.keys(cardsData);
-// The ids the Vietnamese review file can list for Generals: Default's, then the Alternate deck's written
-// `alternate:<id>` (their ids overlap Default's, so they need the prefix).
-export const reviewGeneralIds = (): string[] => [...generalIds(), ...alternateGeneralRecords().map((g) => alternateGeneralId(g.id))];
+// The ids the Vietnamese review file can list for Generals: Dynasty Wars', then the Kingdom Wars deck's written
+// `kingdomWars:<id>` (their ids overlap Dynasty Wars', so they need the prefix).
+export const reviewGeneralIds = (): string[] => [...generalIds(), ...kingdomWarsGeneralRecords().map((g) => kingdomWarsGeneralId(g.id))];
 
 // The translations of a language, exported for the parity spec.
 export function generalTranslations(locale: string): Record<string, GeneralTranslation> {
@@ -91,7 +91,7 @@ export function cardTranslations(locale: string): Record<string, CardTranslation
 export interface GeneralDisplayData {
   name: string;
   title: string | null;
-  // inGame is set for Alternate skills only: false when the game does not play this skill yet. Absent means in the game.
+  // inGame is set for Kingdom Wars skills only: false when the game does not play this skill yet. Absent means in the game.
   skills: { name: string; text: string; inGame?: boolean }[];
 }
 
@@ -99,10 +99,10 @@ export interface GeneralDisplayData {
 // raw content JSON. `inGame` is added by generalDisplayData (generalDisplay.ts), which needs the skill
 // registry; this file must not import it, since the General skills import this file.
 export function generalTextData(id: string, locale = 'en'): GeneralDisplayData | null {
-  if (isAlternateGeneralId(id)) {
-    const alternate = alternateGeneralDisplayData(baseGeneralId(id), locale);
-    if (!alternate) return null;
-    return { name: alternate.name, title: alternate.title, skills: alternate.skills };
+  if (isKingdomWarsGeneralId(id)) {
+    const kingdomWars = kingdomWarsGeneralDisplayData(baseGeneralId(id), locale);
+    if (!kingdomWars) return null;
+    return { name: kingdomWars.name, title: kingdomWars.title, skills: kingdomWars.skills };
   }
   if (!Object.prototype.hasOwnProperty.call(generalsData, id)) return null;
   const data = generalsData[id];
@@ -129,7 +129,7 @@ export interface CardDisplayData {
 
 // Presentation-facing view of a card's data file (rules text etc.).
 export function cardDisplayData(id: string, locale = 'en'): CardDisplayData | null {
-  if (!Object.prototype.hasOwnProperty.call(cardsData, id)) return alternateDisplayData(id, locale);
+  if (!Object.prototype.hasOwnProperty.call(cardsData, id)) return kingdomWarsDisplayData(id, locale);
   const data = cardsData[id];
   const translated = lookup(cardTranslations(locale), id);
   return {
@@ -141,10 +141,10 @@ export function cardDisplayData(id: string, locale = 'en'): CardDisplayData | nu
     text: translated?.text ?? data.text ?? null,
   };
 }
-function alternateDisplayData(id: string, locale: string): CardDisplayData | null {
-  const data = alternateCardData(id);
+function kingdomWarsDisplayData(id: string, locale: string): CardDisplayData | null {
+  const data = kingdomWarsCardData(id);
   if (!data) return null;
-  const translated = alternateCardTranslation(id, locale);
+  const translated = kingdomWarsCardTranslation(id, locale);
   return {
     name: translated?.name ?? data.name,
     category: data.category,
@@ -171,13 +171,13 @@ const ABILITY_HINTS: Record<string, string> = {
   'heavens-envy': 'Take the judgment card into your hand',
   devil: "Replace {target}'s judgment card with one of your hand cards",
   'river-goddess': 'Judge: keep each black card and judge again; a red card ends it',
-  'alternate:goddess-luo': 'Judge: set each black card aside and judge again or stop; a red card ends it, then take the black cards',
+  'kingdomWars:goddess-luo': 'Judge: set each black card aside and judge again or stop; a red card ends it, then take the black cards',
   'bare-the-chest': 'Draw 1 fewer card; your Slash and Duel deal 1 more damage this turn',
   raid: 'Instead of drawing, take a hand card from 1 or 2 other seats',
   'brave-gesture': 'Draw 1 more card',
   'gathering-wisdom': 'Draw 1 card',
-  'alternate:envious-moon': 'Draw 1 card',
-  'alternate:warrior-lady': 'Draw 2 cards',
+  'kingdomWars:envious-moon': 'Draw 1 card',
+  'kingdomWars:warrior-lady': 'Draw 2 cards',
   'iron-cavalry': "Judge: on red, {target} can't play a Dodge against this Slash",
   astrology: 'Look at the top cards of the draw pile and put them back in any order',
   displace: 'Discard 1 card to move the Slash to another seat in your attack range',
@@ -190,24 +190,24 @@ const ABILITY_HINTS: Record<string, string> = {
   'lightning-strike': 'A seat of your choice judges: on a spade it takes 2 thunder damage',
   'dark-magic': "Replace {target}'s judgment card with a black card, and take the old one",
   'eternal-loyalty': 'A seat of your choice draws up to its max HP',
-  'alternate:eternal-loyalty': 'A seat of your choice draws up to its max HP, but never above 5 cards',
-  'alternate:bequeathed-strategy': 'Look at the top 2 cards of the draw pile, then give one to any player and the other to any player',
-  'alternate:prudence': 'Another seat of your Kingdom draws 1 card',
-  'alternate:divine-wisdom': 'Discard all your hand cards; if you discard at least as many as your HP, recover 1 HP',
-  'alternate:call-of-valour': 'Every seat of your Kingdom draws 3 cards; if your Kingdom has the fewest seats, recover 1 HP',
-  'alternate:close-combat': 'When you use Sha, you can add one more target within distance 1 of you and in your attack range',
-  'alternate:swift-and-deadly': 'Discard a card and choose a seat; your distance to it counts as 1 until the end of the turn',
-  'alternate:deathly-counsel': 'Discard a card from the hand or equipment area of another seat',
-  'alternate:with-the-tide': 'Draw 1 card when a seat of your Kingdom brings another seat to dying; lose 1 HP when another seat of your Kingdom dies',
-  'alternate:celebrity': 'Damage to you from a seat with a hidden General is reduced by 1',
-  'alternate:comity': 'When cards you discard or lose from your hand or equipment area would go to the discard pile, give them to another seat instead',
-  'alternate:double-edged': 'Compete with another seat; if you win, use Sha on the loser or a seat of its Kingdom, ignoring distance; if not, your Play Phase ends',
-  'alternate:insanity-axe': 'After your Sha damages {target}, move a card of its equipment area into yours, or discard it',
-  'alternate:dauntless': 'Discard a Basic card from your hand; {target} then discards an Equipment card or takes 1 damage from you',
-  'alternate:femme-fatale': 'Reveal this General; while it is revealed, other seats cannot reveal Generals in your turn',
-  'alternate:impetus-for-conflicts': 'Discard an Equipment card to hide a General of a seat whose Generals are both revealed',
+  'kingdomWars:eternal-loyalty': 'A seat of your choice draws up to its max HP, but never above 5 cards',
+  'kingdomWars:bequeathed-strategy': 'Look at the top 2 cards of the draw pile, then give one to any player and the other to any player',
+  'kingdomWars:prudence': 'Another seat of your Kingdom draws 1 card',
+  'kingdomWars:divine-wisdom': 'Discard all your hand cards; if you discard at least as many as your HP, recover 1 HP',
+  'kingdomWars:call-of-valour': 'Every seat of your Kingdom draws 3 cards; if your Kingdom has the fewest seats, recover 1 HP',
+  'kingdomWars:close-combat': 'When you use Sha, you can add one more target within distance 1 of you and in your attack range',
+  'kingdomWars:swift-and-deadly': 'Discard a card and choose a seat; your distance to it counts as 1 until the end of the turn',
+  'kingdomWars:deathly-counsel': 'Discard a card from the hand or equipment area of another seat',
+  'kingdomWars:with-the-tide': 'Draw 1 card when a seat of your Kingdom brings another seat to dying; lose 1 HP when another seat of your Kingdom dies',
+  'kingdomWars:celebrity': 'Damage to you from a seat with a hidden General is reduced by 1',
+  'kingdomWars:comity': 'When cards you discard or lose from your hand or equipment area would go to the discard pile, give them to another seat instead',
+  'kingdomWars:double-edged': 'Compete with another seat; if you win, use Sha on the loser or a seat of its Kingdom, ignoring distance; if not, your Play Phase ends',
+  'kingdomWars:insanity-axe': 'After your Sha damages {target}, move a card of its equipment area into yours, or discard it',
+  'kingdomWars:dauntless': 'Discard a Basic card from your hand; {target} then discards an Equipment card or takes 1 damage from you',
+  'kingdomWars:femme-fatale': 'Reveal this General; while it is revealed, other seats cannot reveal Generals in your turn',
+  'kingdomWars:impetus-for-conflicts': 'Discard an Equipment card to hide a General of a seat whose Generals are both revealed',
   nirvana: 'Discard every card, draw 3, recover to 3 HP and turn face up',
-  'alternate:resurrection': 'Discard every card, draw 3, recover to 3 HP and turn face up and unchained',
+  'kingdomWars:resurrection': 'Discard every card, draw 3, recover to 3 HP and turn face up and unchained',
   'eight-arrays': 'Judge: on red, it counts as a Dodge',
   'sudden-attack': "Discard one of {target}'s cards",
   'dueling-heroes': 'Instead of drawing, judge and take the card; cards of the other colour can be used as Duel this turn',
@@ -221,7 +221,7 @@ const ABILITY_HINTS: Record<string, string> = {
   'military-farm': 'Judge: a card that is not a heart becomes a Farm under your General',
   decentralization: 'Skip your Play Phase; at the end of your turn another seat takes an extra turn',
   stubborn: 'Give one of the discarded cards back and take the rest',
-  'alternate:stabilization': 'Give one of the discarded cards back and take the rest, if there are any',
+  'kingdomWars:stabilization': 'Give one of the discarded cards back and take the rest, if there are any',
   lament: 'Discard a card: {target} judges, and a heart, diamond, club or spade has its effect',
   incarnation: 'Choose a skill of one of your Forms',
   instigate: 'Choose a seat to play a Slash at you, or you discard one of its cards',
@@ -252,7 +252,7 @@ const SELECTION_TEXT: Record<string, { prompt: string; confirm: string; cancel?:
   assault: { prompt: 'Choose a Weapon to discard, or none to lose 1 HP', confirm: 'Confirm' },
   'rouse-the-tiger': { prompt: 'Choose a seat with more HP to compete with', confirm: 'Choose' },
   'heavens-justice': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
-  'alternate:double-edged': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
+  'kingdomWars:double-edged': { prompt: 'Choose a seat to compete with', confirm: 'Choose' },
   alliance: { prompt: 'Choose a seat to swap hands', confirm: 'Choose' },
   'brave-spirit': { prompt: 'Choose cards to discard', confirm: 'Discard' },
   charity: { prompt: 'Choose half of your hand to give away', confirm: 'Give' },
@@ -278,12 +278,12 @@ const SEAT_PICK_TEXT: Record<string, string> = {
   'clever-change': 'Choose a seat to move the card to',
   decentralization: 'Choose a seat to take an extra turn',
   'direct-instruction': 'Choose a seat to place the card in',
-  'alternate:bequeathed-strategy': 'Choose a seat to give {card} to',
-  'alternate:prudence': 'Choose a seat of your Kingdom to draw 1 card',
-  'alternate:deathly-counsel': 'Choose a seat to discard a card from',
-  'alternate:comity': 'Choose a seat to give the cards to',
-  'alternate:double-edged': 'Choose {target} or a seat of its Kingdom to use Sha on',
-  'alternate:swift-and-deadly': 'Choose a seat to be at distance 1 from you until the end of the turn',
+  'kingdomWars:bequeathed-strategy': 'Choose a seat to give {card} to',
+  'kingdomWars:prudence': 'Choose a seat of your Kingdom to draw 1 card',
+  'kingdomWars:deathly-counsel': 'Choose a seat to discard a card from',
+  'kingdomWars:comity': 'Choose a seat to give the cards to',
+  'kingdomWars:double-edged': 'Choose {target} or a seat of its Kingdom to use Sha on',
+  'kingdomWars:swift-and-deadly': 'Choose a seat to be at distance 1 from you until the end of the turn',
 };
 
 export function seatPickText(abilityId: string, locale = 'en'): string | null {
@@ -299,10 +299,10 @@ const CHOICE_PROMPT_TEXT: Record<string, string> = {
   'follow-the-master': 'Choose how Follow the Master helps you',
   incarnation: 'Choose a Form skill',
   stubborn: 'Choose a card to give back; you take the others',
-  'alternate:stabilization': 'Choose a card to give back; you take the others, if there are any',
-  'alternate:bequeathed-strategy': 'Choose a card to give first; the other is given next',
-  'alternate:sorrow': "Choose which of {target}'s Generals loses its skills",
-  'alternate:impetus-for-conflicts': "Choose which of {target}'s Generals to hide",
+  'kingdomWars:stabilization': 'Choose a card to give back; you take the others, if there are any',
+  'kingdomWars:bequeathed-strategy': 'Choose a card to give first; the other is given next',
+  'kingdomWars:sorrow': "Choose which of {target}'s Generals loses its skills",
+  'kingdomWars:impetus-for-conflicts': "Choose which of {target}'s Generals to hide",
 };
 
 export function choicePromptText(abilityId: string, locale = 'en'): string | null {
@@ -319,11 +319,11 @@ const STEP_SELECTION_TEXT: Record<string, { prompt: string; confirm: string; can
   'alliance/swap': { prompt: 'Choose cards to discard for Alliance', confirm: 'Discard' },
   'draw-take': { prompt: 'Choose up to 2 seats to take a hand card from', confirm: 'Take' },
   'move-card': { prompt: 'Choose a seat to move a card from', confirm: 'Choose' },
-  'alternate:swift-and-deadly/discarded': { prompt: 'Choose a card to discard', confirm: 'Discard' },
-  'alternate:dauntless/discarded': { prompt: 'Choose a Basic card from your hand to discard', confirm: 'Discard' },
-  'alternate:impetus-for-conflicts/discarded': { prompt: 'Choose an Equipment card to discard', confirm: 'Discard' },
-  'alternate:impetus-for-conflicts/chosen': { prompt: 'Choose a seat whose Generals are both revealed', confirm: 'Choose' },
-  'alternate:dauntless/paid': { prompt: 'Choose an Equipment card to discard, or take 1 damage', confirm: 'Discard', cancel: 'Take the Damage' },
+  'kingdomWars:swift-and-deadly/discarded': { prompt: 'Choose a card to discard', confirm: 'Discard' },
+  'kingdomWars:dauntless/discarded': { prompt: 'Choose a Basic card from your hand to discard', confirm: 'Discard' },
+  'kingdomWars:impetus-for-conflicts/discarded': { prompt: 'Choose an Equipment card to discard', confirm: 'Discard' },
+  'kingdomWars:impetus-for-conflicts/chosen': { prompt: 'Choose a seat whose Generals are both revealed', confirm: 'Choose' },
+  'kingdomWars:dauntless/paid': { prompt: 'Choose an Equipment card to discard, or take 1 damage', confirm: 'Discard', cancel: 'Take the Damage' },
 };
 
 // A skill's own step ("alliance/swap") is found before a step name shared by any skill.
@@ -342,18 +342,18 @@ const SKILL_NAMES: ReadonlyMap<string, string> = new Map(
   Object.values(generalsData).flatMap((g) => g.skills.map((s): [string, string] => [skillIdOf(s.name), s.name]))
 );
 
-// An Alternate skill's name by its `alternate:` skill id, in a language: the Alternate record's English
+// A Kingdom Wars skill's name by its `kingdomWars:` skill id, in a language: the Kingdom Wars record's English
 // name, or its translation.
-const ALTERNATE_SKILL_NAMES_BY_LOCALE = new Map<string, ReadonlyMap<string, string>>();
-function alternateSkillNames(locale: string): ReadonlyMap<string, string> {
-  let names = ALTERNATE_SKILL_NAMES_BY_LOCALE.get(locale);
+const KINGDOM_WARS_SKILL_NAMES_BY_LOCALE = new Map<string, ReadonlyMap<string, string>>();
+function kingdomWarsSkillNames(locale: string): ReadonlyMap<string, string> {
+  let names = KINGDOM_WARS_SKILL_NAMES_BY_LOCALE.get(locale);
   if (!names) {
-    const translations = alternateGeneralTranslations(locale);
-    names = new Map(alternateGeneralRecords().flatMap((rec) => rec.skills.map((s): [string, string] => {
+    const translations = kingdomWarsGeneralTranslations(locale);
+    names = new Map(kingdomWarsGeneralRecords().flatMap((rec) => rec.skills.map((s): [string, string] => {
       const id = skillIdOf(s.name);
-      return [`alternate:${id}`, translations[rec.id]?.skills?.[id]?.name ?? s.name];
+      return [`kingdomWars:${id}`, translations[rec.id]?.skills?.[id]?.name ?? s.name];
     })));
-    ALTERNATE_SKILL_NAMES_BY_LOCALE.set(locale, names);
+    KINGDOM_WARS_SKILL_NAMES_BY_LOCALE.set(locale, names);
   }
   return names;
 }
@@ -363,8 +363,8 @@ const titleCase = (id: string) => id.split('-').map((w) => w.charAt(0).toUpperCa
 // The name of an ability, for any text: a worn card's name, else a skill's
 // name from the General data, else its id in Title Case.
 export function abilityName(abilityId: string, locale = 'en'): string {
-  const alternate = alternateSkillNames(locale).get(abilityId);
-  if (alternate) return alternate;
+  const kingdomWars = kingdomWarsSkillNames(locale).get(abilityId);
+  if (kingdomWars) return kingdomWars;
   const card = cardDisplayData(abilityId, locale);
   // A General's skill can share an id with a card (Dong Zhuo's Wine skill and the Wine card): a
   // worn card is an ability only through its Equipment, so a skill of that id wins otherwise.
@@ -399,7 +399,7 @@ const COMPETE_OUTCOMES: Record<string, { won: string; lost: string }> = {
     won: "{user} will take one of {target}'s cards",
     lost: 'Nothing happens',
   },
-  'alternate:double-edged': {
+  'kingdomWars:double-edged': {
     won: '{user} will use Sha on {target} or a seat of its Kingdom',
     lost: "{user}'s Play Phase ends",
   },
@@ -429,13 +429,13 @@ const JUDGMENT_OUTCOMES: Record<string, Record<string, string>> = {
     spared: 'Nothing happens',
   },
   'river-goddess': { again: '{owner} takes the card and judges again', ends: 'The card is discarded and the judging ends' },
-  'alternate:goddess-luo': {
+  'kingdomWars:goddess-luo': {
     again: '{owner} sets the card aside and may judge again',
     ends: 'The card is discarded and the judging ends; {owner} takes any cards set aside',
   },
   'iron-cavalry': { unblockable: 'The Slash cannot be dodged', none: 'Nothing happens' },
   'lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
-  'alternate:lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
+  'kingdomWars:lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
   'dueling-heroes': {
     red: '{owner} takes the card and may play black hand cards as Duel this turn',
     black: '{owner} takes the card and may play red hand cards as Duel this turn',
@@ -462,10 +462,10 @@ const JUDGMENT_RULES: Record<string, string> = {
   'eight-arrays': 'A red card counts as a Shan.',
   unyielding: 'Anything but a heart makes the damage source discard 2 cards or take 1 damage.',
   'river-goddess': 'A black card is kept and the judging goes on. A red card ends it.',
-  'alternate:goddess-luo': 'A black card is set aside and the judging goes on. A red card ends it.',
+  'kingdomWars:goddess-luo': 'A black card is set aside and the judging goes on. A red card ends it.',
   'iron-cavalry': 'A red card means the Sha cannot be dodged.',
   'lightning-strike': 'A spade deals 2 thunder damage.',
-  'alternate:lightning-strike': 'A spade deals 2 thunder damage.',
+  'kingdomWars:lightning-strike': 'A spade deals 2 thunder damage.',
   'dueling-heroes': 'The card goes to the hand, and its colour decides which hand cards may be played as Duel.',
   'military-farm': 'Anything but a heart is stashed as a Farm.',
   lament: 'A heart heals, a diamond draws 2 cards, a club makes the source discard, a spade turns the source face down or up.',

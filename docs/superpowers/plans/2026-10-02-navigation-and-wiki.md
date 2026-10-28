@@ -903,7 +903,7 @@ describe('App', () => {
 
   it('should render title', async () => {
     const { el } = await render();
-    expect(el.querySelector('mat-toolbar h1')?.textContent).toContain('Kingdom War');
+    expect(el.querySelector('mat-toolbar h1')?.textContent).toContain('Guozhan');
   });
 
   it('links Play Game to /play, highlighted on the play screens', async () => {
@@ -1017,7 +1017,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   templateUrl: './app.html',
 })
 export class App {
-  protected readonly title = signal('Kingdom War');
+  protected readonly title = signal('Guozhan');
   protected readonly wikiPages = [
     { path: '/wiki/generals', label: 'Generals' },
     { path: '/wiki/basic', label: 'Basic Cards' },

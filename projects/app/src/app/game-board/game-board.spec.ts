@@ -547,7 +547,7 @@ describe('GameBoard', () => {
 
     // Play out actions via the real engine until the game ends, with sim's
     // seeded random-legal-move bot (it fills selection templates), which the
-    // sim's property spec proves terminates Kingdom War games.
+    // sim's property spec proves terminates Guozhan games.
     let rng = createRng(7);
     let guard = 0;
     while (!gameService.state()!.result && guard < 5000) {

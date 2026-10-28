@@ -59,10 +59,10 @@ const PRESENTATION: Record<string, Record<string, JudgmentPresentation>> = {
   'eight-arrays': EIGHT_TRIGRAMS,
   unyielding: { 'discard-or-damage': good(), damage: good({ kind: 'damage', amount: 1, subject: 'source' }), spared: bad() },
   'river-goddess': RIVER_GODDESS,
-  'alternate:goddess-luo': RIVER_GODDESS,
+  'kingdomWars:goddess-luo': RIVER_GODDESS,
   'iron-cavalry': { unblockable: good(), none: bad() },
   'lightning-strike': LIGHTNING_STRIKE,
-  'alternate:lightning-strike': LIGHTNING_STRIKE,
+  'kingdomWars:lightning-strike': LIGHTNING_STRIKE,
   'dueling-heroes': { red: neutral, black: neutral },
   'military-farm': { farm: good(), discard: bad() },
   lament: { heal: good(), draw: good(), discard2: good(), discard1: good(), 'face-down': good(), 'face-up': good(), none: bad() },
@@ -99,12 +99,12 @@ const READERS: Record<string, Decide> = {
     return { key: unyieldingOutcome(state, view.seatId, view.card, source, registry), source };
   },
   'river-goddess': (state, view, registry) => ({ key: riverGoddessOutcome(state, view.seatId, view.card, registry) }),
-  // Alternate Goddess Luo decides as River Goddess does; only what happens to a black card differs (its text).
-  'alternate:goddess-luo': (state, view, registry) => ({ key: riverGoddessOutcome(state, view.seatId, view.card, registry) }),
+  // Kingdom Wars Goddess Luo decides as River Goddess does; only what happens to a black card differs (its text).
+  'kingdomWars:goddess-luo': (state, view, registry) => ({ key: riverGoddessOutcome(state, view.seatId, view.card, registry) }),
   'iron-cavalry': (state, view, registry) => ({ key: ironCavalryOutcome(state, view.seatId, view.card, registry) }),
   'lightning-strike': (state, view, registry) => ({ key: lightningStrikeOutcome(state, view.seatId, view.card, registry) }),
-  // Alternate Lightning Strike judges and strikes as Default's; only who he may pick differs.
-  'alternate:lightning-strike': (state, view, registry) => ({ key: lightningStrikeOutcome(state, view.seatId, view.card, registry) }),
+  // Kingdom Wars Lightning Strike judges and strikes as Dynasty Wars'; only who he may pick differs.
+  'kingdomWars:lightning-strike': (state, view, registry) => ({ key: lightningStrikeOutcome(state, view.seatId, view.card, registry) }),
   'dueling-heroes': (state, view, registry) => ({ key: duelingHeroesOutcome(state, view.seatId, view.card, registry) }),
   'military-farm': (state, view, registry) => ({ key: militaryFarmOutcome(state, view.seatId, view.card, registry) }),
   // The judged seat is the victim; the damage source rides in the judgment's data.

@@ -91,19 +91,19 @@ describe('wikiGenerals', () => {
 
 describe('wikiCards', () => {
   it('lists the basic cards by pack then name; all are in the game', () => {
-    const basic = wikiCards('basic');
+    const basic = wikiCards('basic', 'dynastyWars');
     expect(basic.map((c) => c.name)).toEqual(['Dodge', 'Peach', 'Slash', 'Fire Attack', 'Lightning Attack', 'Wine']);
     expect(basic.filter((c) => !c.inGame).map((c) => c.id)).toEqual([]);
   });
 
   it('records the Army basics with their spreadsheet printings', () => {
-    const basic = wikiCards('basic');
+    const basic = wikiCards('basic', 'dynastyWars');
     expect(basic.find((c) => c.id === 'fire-attack')).toMatchObject({ nameZh: '火杀', count: 5 });
     expect(basic.find((c) => c.id === 'lightning-attack')).toMatchObject({ nameZh: '雷杀', count: 9 });
   });
 
   it('tags the extra copies Army and EX add to existing cards with their expansion', () => {
-    const all = [...wikiCards('basic'), ...wikiCards('tool')];
+    const all = [...wikiCards('basic', 'dynastyWars'), ...wikiCards('tool', 'dynastyWars')];
     const byExpansion = (id: string) => {
       const counts: Record<string, number> = {};
       for (const p of all.find((c) => c.id === id)!.printings) counts[p.expansion ?? 'own'] = (counts[p.expansion ?? 'own'] ?? 0) + 1;
@@ -116,7 +116,7 @@ describe('wikiCards', () => {
   });
 
   it('carries Wine from the Army expansion', () => {
-    const wine = wikiCards('basic').find((c) => c.id === 'wine')!;
+    const wine = wikiCards('basic', 'dynastyWars').find((c) => c.id === 'wine')!;
     expect(wine).toMatchObject({ name: 'Wine', nameZh: '酒', category: 'basic', count: 5, mount: null, delayed: false });
     expect(wine.text).toBe(
       'When a player is on the brink of death, that player can use play wine to restore one health. Also any player can play this card once during their turn. If they do, the damage of the next attack is increased by one.'
@@ -127,7 +127,7 @@ describe('wikiCards', () => {
   });
 
   it('records each horse’s mount direction, and nothing else has one', () => {
-    const equipment = wikiCards('equipment');
+    const equipment = wikiCards('equipment', 'dynastyWars');
     const mountOf = Object.fromEntries(equipment.filter((c) => c.subtype === 'horse').map((c) => [c.id, c.mount]));
     expect(mountOf).toEqual({
       'da-yuan': 'offensive', 'di-lu': 'defensive', 'hua-liu': 'defensive', 'red-hare': 'offensive', 'shadow-runner': 'defensive', 'storm-runner': 'defensive', 'zi-xing': 'offensive',
@@ -136,12 +136,12 @@ describe('wikiCards', () => {
   });
 
   it('marks exactly Capture, Lightning and Starvation as delayed', () => {
-    expect(wikiCards('tool').filter((c) => c.delayed).map((c) => c.id)).toEqual(['capture', 'lightning', 'starvation']);
-    expect([...wikiCards('basic'), ...wikiCards('equipment')].some((c) => c.delayed)).toBe(false);
+    expect(wikiCards('tool', 'dynastyWars').filter((c) => c.delayed).map((c) => c.id)).toEqual(['capture', 'lightning', 'starvation']);
+    expect([...wikiCards('basic', 'dynastyWars'), ...wikiCards('equipment', 'dynastyWars')].some((c) => c.delayed)).toBe(false);
   });
 
   it('lists equipment by subtype, then pack (Base, EX, Army), then name, with the playable ones in the game', () => {
-    const equipment = wikiCards('equipment');
+    const equipment = wikiCards('equipment', 'dynastyWars');
     expect(equipment).toHaveLength(22);
     expect(equipment.map((c) => c.subtype)).toEqual([...Array(11).fill('weapon'), ...Array(4).fill('armor'), ...Array(7).fill('horse')]);
     expect(equipment.slice(7, 11).map((c) => [c.name, c.expansion])).toEqual([['Sky Scorcher', 'Base'], ['Ice Sword', 'EX'], ['Ancient Scimitar', 'Army'], ['Fire Fan', 'Army']]);
@@ -150,13 +150,13 @@ describe('wikiCards', () => {
   });
 
   it('reports data gaps as null or empty, never guessed (Review Focus 2)', () => {
-    const redHare = wikiCards('equipment').find((c) => c.id === 'red-hare')!;
+    const redHare = wikiCards('equipment', 'dynastyWars').find((c) => c.id === 'red-hare')!;
     expect(redHare).toMatchObject({ name: 'Red Hare', nameZh: '赤兔', text: null, range: null, count: 1, printings: [{ suit: 'heart', rank: 5 }] });
-    expect(wikiCards('equipment').find((c) => c.id === 'axe')!.range).toBe(3);
+    expect(wikiCards('equipment', 'dynastyWars').find((c) => c.id === 'axe')!.range).toBe(3);
   });
 
   it('lists the 15 tools, with the playable ones in the game and their printings', () => {
-    const tools = wikiCards('tool');
+    const tools = wikiCards('tool', 'dynastyWars');
     expect(tools).toHaveLength(15);
     expect(tools.filter((c) => c.inGame).map((c) => c.id)).toEqual(['barbarians', 'break', 'capture', 'coerce', 'draw-two', 'duel', 'hail-of-arrows', 'harvest', 'lightning', 'peach-garden', 'steal', 'wuxie', 'blaze', 'chains', 'starvation']);
     const duel = tools.find((c) => c.id === 'duel')!;
@@ -165,7 +165,7 @@ describe('wikiCards', () => {
   });
 
   it('includes the crawled EX and Army cards; Blaze, Chains and Fire Fan are in the game', () => {
-    const all = [...wikiCards('tool'), ...wikiCards('equipment')];
+    const all = [...wikiCards('tool', 'dynastyWars'), ...wikiCards('equipment', 'dynastyWars')];
     const ids = ['blaze', 'chains', 'ancient-scimitar', 'fire-fan', 'ice-sword', 'wood-armor', 'black-shield'];
     for (const id of ids) {
       const card = all.find((c) => c.id === id)!;
@@ -179,7 +179,7 @@ describe('wikiCards', () => {
   });
 
   it('states the rules of Chains, Blaze and Wood Armor, in English and Vietnamese', () => {
-    const text = (id: string) => [...wikiCards('tool'), ...wikiCards('equipment')].find((c) => c.id === id)!.text!;
+    const text = (id: string) => [...wikiCards('tool', 'dynastyWars'), ...wikiCards('equipment', 'dynastyWars')].find((c) => c.id === id)!.text!;
     expect(text('chains')).toMatch(/Recast/);
     expect(text('chains')).toMatch(/fire or thunder damage/);
     expect(text('blaze')).toMatch(/1 fire damage/);
@@ -190,7 +190,7 @@ describe('wikiCards', () => {
   });
 
   it('lists Silver Lion as in-game armour with its single printing', () => {
-    const lion = wikiCards('equipment').find((c) => c.id === 'silver-lion')!;
+    const lion = wikiCards('equipment', 'dynastyWars').find((c) => c.id === 'silver-lion')!;
     expect(lion.inGame).toBe(true);
     expect(lion.printings).toEqual([{ suit: 'club', rank: 1 }]);
   });
@@ -207,7 +207,7 @@ describe('wiki tabs', () => {
   });
 
   it('gives each basic card its own tab, the fire and lightning Slash right after Slash', () => {
-    const tabs = wikiCardTabs('basic');
+    const tabs = wikiCardTabs('basic', 'dynastyWars');
     expect(summary(tabs)).toEqual([
       ['sha', 'Slash', 1], ['fire-attack', 'Fire Attack', 1], ['lightning-attack', 'Lightning Attack', 1],
       ['shan', 'Dodge', 1], ['wine', 'Wine', 1], ['peach', 'Peach', 1],
@@ -216,7 +216,7 @@ describe('wiki tabs', () => {
   });
 
   it('splits equipment into Weapons, Armors and the two kinds of mount', () => {
-    const tabs = wikiCardTabs('equipment');
+    const tabs = wikiCardTabs('equipment', 'dynastyWars');
     expect(summary(tabs)).toEqual([
       ['weapons', 'Weapons', 11], ['armors', 'Armors', 4], ['defensive-mount', 'Defensive Mount', 4], ['offensive-mount', 'Offensive Mount', 3],
     ]);
@@ -225,13 +225,13 @@ describe('wiki tabs', () => {
   });
 
   it('splits Tools into Instant and Delayed', () => {
-    const tabs = wikiCardTabs('tool');
+    const tabs = wikiCardTabs('tool', 'dynastyWars');
     expect(summary(tabs)).toEqual([['instant', 'Instant', 12], ['delayed', 'Delayed', 3]]);
     expect(tabs[1].entries.map((c) => c.id)).toEqual(['capture', 'lightning', 'starvation']);
   });
 
   it('puts unclaimed entries in a trailing tab (Review Focus 4)', () => {
-    const base = wikiCards('equipment').find((c) => c.id === 'red-hare')!;
+    const base = wikiCards('equipment', 'dynastyWars').find((c) => c.id === 'red-hare')!;
     const card = (patch: Partial<WikiCard>): WikiCard => ({ ...base, ...patch });
     const tabs = equipmentTabs([
       card({ id: 'mystery-horse', name: 'Mystery Horse', mount: null }),
@@ -252,7 +252,7 @@ describe('wiki Generals: gender and Lord skills', () => {
     expect(general('lu-bu').gender).toBe('male');
   });
 
-  it('flags the Lord skills, which Kingdom War doesn’t use', () => {
+  it('flags the Lord skills, which Guozhan doesn’t use', () => {
     expect(general('liu-bei').skills.map((s) => [s.name, s.lord])).toEqual([['Kindness', false], ['Fierce General', true]]);
     const lords = wikiGenerals().flatMap((g) => g.skills.filter((s) => s.lord).map((s) => s.name)).sort();
     expect(lords).toEqual(['Amber Sky', 'Bloodline', 'Escort', 'Exaltation', 'Fierce General', 'Rescued', 'Seem Foolish', 'Takeover', 'Violent Tyrant']);
@@ -276,7 +276,7 @@ describe('skill status', () => {
     expect(skillStatus({ name: 'Evil Hero', lord: false }, new Set())).toBe('missing');
   });
 
-  it('is a Lord skill, not used in Kingdom War, whether or not it has code', () => {
+  it('is a Lord skill, not used in Guozhan, whether or not it has code', () => {
     expect(skillStatus({ name: 'Escort', lord: true }, new Set())).toBe('lord');
     expect(skillStatus({ name: 'Escort', lord: true }, new Set(['escort']))).toBe('lord');
   });
@@ -300,61 +300,61 @@ describe('skill status', () => {
   });
 });
 
-describe('Alternate wikiCards', () => {
+describe('Kingdom Wars wikiCards', () => {
   const byId = (cards: WikiCard[], id: string) => cards.find((c) => c.id === id)!;
-  const all = (deck: 'default' | 'alternate') => (['basic', 'tool', 'equipment'] as const).flatMap((c) => wikiCards(c, deck));
+  const all = (deck: 'dynastyWars' | 'kingdomWars') => (['basic', 'tool', 'equipment'] as const).flatMap((c) => wikiCards(c, deck));
 
-  it('lists the Alternate deck’s cards by category', () => {
-    expect(wikiCards('basic', 'alternate')).toHaveLength(6);
-    expect(wikiCards('tool', 'alternate')).toHaveLength(19);
-    expect(wikiCards('equipment', 'alternate')).toHaveLength(20);
+  it('lists the Kingdom Wars deck’s cards by category', () => {
+    expect(wikiCards('basic', 'kingdomWars')).toHaveLength(6);
+    expect(wikiCards('tool', 'kingdomWars')).toHaveLength(19);
+    expect(wikiCards('equipment', 'kingdomWars')).toHaveLength(20);
   });
 
-  it('marks every card with its deck, and only Alternate cards lack a pack', () => {
-    expect(all('alternate').every((c) => c.deck === 'alternate' && c.expansion === null)).toBe(true);
-    expect(all('default').every((c) => c.deck === 'default' && c.expansion !== null)).toBe(true);
+  it('marks every card with its deck, and only Kingdom Wars cards lack a pack', () => {
+    expect(all('kingdomWars').every((c) => c.deck === 'kingdomWars' && c.expansion === null)).toBe(true);
+    expect(all('dynastyWars').every((c) => c.deck === 'dynastyWars' && c.expansion !== null)).toBe(true);
   });
 
-  it('shows the Alternate copies, not Default’s', () => {
-    expect(byId(wikiCards('basic', 'alternate'), 'sha').count).toBe(21);
-    expect(byId(wikiCards('basic'), 'sha').count).toBe(30);
-    expect(byId(wikiCards('basic', 'alternate'), 'sha').printings).toHaveLength(21);
+  it('shows the Kingdom Wars copies, not Dynasty Wars’', () => {
+    expect(byId(wikiCards('basic', 'kingdomWars'), 'sha').count).toBe(21);
+    expect(byId(wikiCards('basic', 'dynastyWars'), 'sha').count).toBe(30);
+    expect(byId(wikiCards('basic', 'kingdomWars'), 'sha').printings).toHaveLength(21);
   });
 
-  it('takes the English name and text from Default when the card exists there', () => {
-    const pommel = byId(wikiCards('equipment', 'alternate'), 'black-pommel');
+  it('takes the English name and text from Dynasty Wars when the card exists there', () => {
+    const pommel = byId(wikiCards('equipment', 'kingdomWars'), 'black-pommel');
     expect(pommel).toMatchObject({ name: 'Black Pommel', nameZh: '青釭剑', range: 2, subtype: 'weapon', category: 'equipment' });
-    expect(pommel.text).toBe(byId(wikiCards('equipment'), 'black-pommel').text);
+    expect(pommel.text).toBe(byId(wikiCards('equipment', 'dynastyWars'), 'black-pommel').text);
   });
 
-  it('keeps Default’s English text for Slash', () => {
-    const sha = byId(wikiCards('basic', 'alternate'), 'sha');
-    expect(sha.text).toBe(byId(wikiCards('basic'), 'sha').text);
+  it('keeps Dynasty Wars’ English text for Slash', () => {
+    const sha = byId(wikiCards('basic', 'kingdomWars'), 'sha');
+    expect(sha.text).toBe(byId(wikiCards('basic', 'dynastyWars'), 'sha').text);
   });
 
-  it('names a card Default lacks from ids.json and gives it its English text from texts.en.json', () => {
-    const wuxieGuo = byId(wikiCards('tool', 'alternate'), 'wuxie-guo');
+  it('names a card Dynasty Wars lacks from ids.json and gives it its English text from texts.en.json', () => {
+    const wuxieGuo = byId(wikiCards('tool', 'kingdomWars'), 'wuxie-guo');
     expect(wuxieGuo).toMatchObject({ name: 'Wuxie Kingdom', inGame: true });
     expect(wuxieGuo.text).toContain('Kingdom');
-    expect(byId(wikiCards('tool', 'alternate'), 'ally-far-attack-near').name).toBe('Ally Far Attack Near');
-    for (const id of ['amass', 'ascertain', 'ally-far-attack-near']) expect(byId(wikiCards('tool', 'alternate'), id).text).toBeTruthy();
-    const weapons = wikiCards('equipment', 'alternate');
+    expect(byId(wikiCards('tool', 'kingdomWars'), 'ally-far-attack-near').name).toBe('Ally Far Attack Near');
+    for (const id of ['amass', 'ascertain', 'ally-far-attack-near']) expect(byId(wikiCards('tool', 'kingdomWars'), id).text).toBeTruthy();
+    const weapons = wikiCards('equipment', 'kingdomWars');
     expect(byId(weapons, 'wu-six-swords')).toMatchObject({ name: 'Six Swords of Wu', range: 2 });
     for (const id of ['wu-six-swords', 'trident-glaive']) expect(byId(weapons, id).text).toBeTruthy();
   });
 
   it('has every card in the game: none is missing behaviour', () => {
-    const notInGame = all('alternate').filter((c) => !c.inGame).map((c) => c.id).sort();
+    const notInGame = all('kingdomWars').filter((c) => !c.inGame).map((c) => c.id).sort();
     expect(notInGame).toEqual([]);
   });
 
-  it('shows mounts as Default does', () => {
-    expect(byId(wikiCards('equipment', 'alternate'), 'red-hare')).toMatchObject({ subtype: 'horse', mount: 'offensive' });
+  it('shows mounts as Dynasty Wars does', () => {
+    expect(byId(wikiCards('equipment', 'kingdomWars'), 'red-hare')).toMatchObject({ subtype: 'horse', mount: 'offensive' });
   });
 
-  it('splits the Alternate equipment and tools into tabs with nothing left over', () => {
-    expect(wikiCardTabs('equipment', 'alternate').map((t) => t.key)).not.toContain('other');
-    const tools = wikiCardTabs('tool', 'alternate');
+  it('splits the Kingdom Wars equipment and tools into tabs with nothing left over', () => {
+    expect(wikiCardTabs('equipment', 'kingdomWars').map((t) => t.key)).not.toContain('other');
+    const tools = wikiCardTabs('tool', 'kingdomWars');
     expect(tools.map((t) => t.key)).toEqual(['instant', 'delayed']);
     expect(tools[1].entries.map((c) => c.id).sort()).toEqual(['capture', 'lightning', 'starvation']);
   });

@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import type { WikiAlternateGeneral, WikiCard, WikiGeneral } from 'content';
+import type { WikiKingdomWarsGeneral, WikiCard, WikiGeneral } from 'content';
 import { MUSIC_PLAYER_FACTORY, SoundEffects } from '../music.service';
 import { WikiCardEntry } from './wiki-card-entry';
 import { WikiGeneralEntry } from './wiki-general-entry';
-import { WikiAlternateGeneralEntry } from './wiki-alternate-general-entry';
+import { WikiKingdomWarsGeneralEntry } from './wiki-kingdom-wars-general-entry';
 import { I18n } from '../i18n/i18n.service';
 
 const caoCao: WikiGeneral = {
@@ -14,11 +14,11 @@ const caoCao: WikiGeneral = {
 const duel: WikiCard = {
   id: 'duel', name: 'Duel', nameZh: '决斗', category: 'tool', subtype: null, text: 'A player can target anyone with this card.',
   range: null, count: 3, printings: [{ suit: 'spade', rank: 1 }, { suit: 'club', rank: 1 }, { suit: 'diamond', rank: 1 }],
-  mount: null, delayed: false, expansion: 'Base', inGame: true, deck: 'default',
+  mount: null, delayed: false, expansion: 'Base', inGame: true, deck: 'dynastyWars',
 };
 const redHare: WikiCard = {
   id: 'red-hare', name: 'Red Hare', nameZh: '赤兔', category: 'equipment', subtype: 'horse', text: null,
-  range: null, count: null, printings: [], mount: 'offensive', delayed: false, expansion: 'Base', inGame: false, deck: 'default',
+  range: null, count: null, printings: [], mount: 'offensive', delayed: false, expansion: 'Base', inGame: false, deck: 'dynastyWars',
 };
 
 function renderGeneral(general: WikiGeneral): HTMLElement {
@@ -83,7 +83,7 @@ describe('WikiGeneralEntry', () => {
     expect(el.querySelector('.title')).toBeNull();
   });
 
-  it('shows the gender and notes a Lord skill as not used in Kingdom War', () => {
+  it('shows the gender and notes a Lord skill as not used in Guozhan', () => {
     const liuBei: WikiGeneral = {
       ...caoCao, id: 'liu-bei', name: 'Liu Bei', kingdom: 'Shu',
       skills: [
@@ -96,10 +96,10 @@ describe('WikiGeneralEntry', () => {
     expect(el.querySelector('.lord-note')).toBeNull();
     const lord = el.querySelectorAll('.skill-status[data-status="lord"]');
     expect(lord).toHaveLength(1);
-    expect(lord[0].textContent!.trim()).toBe('Not used in Kingdom War');
+    expect(lord[0].textContent!.trim()).toBe('Not used in Guozhan');
   });
 
-  it('labels only the skills that do not work: Not used in Kingdom War, or Not in the game yet; a working skill has no label', () => {
+  it('labels only the skills that do not work: Not used in Guozhan, or Not in the game yet; a working skill has no label', () => {
     const general: WikiGeneral = {
       ...caoCao,
       skills: [
@@ -109,7 +109,7 @@ describe('WikiGeneralEntry', () => {
       ],
     };
     const states = [...renderGeneral(general).querySelectorAll('.skill-status')].map((s) => [s.getAttribute('data-status'), s.textContent!.trim()]);
-    expect(states).toEqual([['lord', 'Not used in Kingdom War'], ['missing', 'Not in the game yet']]);
+    expect(states).toEqual([['lord', 'Not used in Guozhan'], ['missing', 'Not in the game yet']]);
   });
 });
 
@@ -171,16 +171,16 @@ describe('WikiCardEntry', () => {
   });
 });
 
-describe('WikiCardEntry in the Alternate deck', () => {
+describe('WikiCardEntry in the Kingdom Wars deck', () => {
   const pommel: WikiCard = {
-    id: 'black-pommel', name: 'Black Pommel', nameZh: '青釭剑', category: 'equipment', subtype: 'weapon', text: 'English rules of Default.',
+    id: 'black-pommel', name: 'Black Pommel', nameZh: '青釭剑', category: 'equipment', subtype: 'weapon', text: 'English rules of Dynasty Wars.',
     range: 2, count: 1, printings: [{ suit: 'spade', rank: 6 }], mount: null, delayed: false, expansion: null, inGame: true,
-    deck: 'alternate',
+    deck: 'kingdomWars',
   };
 
   it('shows the card’s text with no label and no pack tag', () => {
     const el = renderCard(pommel);
-    expect(el.querySelector('.text')!.textContent!.trim()).toBe('English rules of Default.');
+    expect(el.querySelector('.text')!.textContent!.trim()).toBe('English rules of Dynasty Wars.');
     expect(el.querySelector('.label')).toBeNull();
     expect(el.querySelector('.expansion-tag')).toBeNull();
     expect(el.textContent).toContain('1 copies');
@@ -191,36 +191,36 @@ describe('WikiCardEntry in the Alternate deck', () => {
     expect(el.querySelector('.gap')!.textContent!.trim()).toBe('Rules text not available');
   });
 
-  it('renders a card Default lacks: not in the game, and no art', () => {
+  it('renders a card Dynasty Wars lacks: not in the game, and no art', () => {
     const el = renderCard({ ...pommel, id: 'wuxie-guo', name: 'Wuxie Kingdom', inGame: false });
     expect(el.querySelector('.badge')!.textContent!.trim()).toBe('Not in the game yet');
   });
 
-  it('leaves a Default card as it was: pack tag present', () => {
+  it('leaves a Dynasty Wars card as it was: pack tag present', () => {
     const el = renderCard(duel);
     expect(el.querySelector('.expansion-tag')).not.toBeNull();
   });
 });
 
 
-describe('WikiAlternateGeneralEntry', () => {
-  const alternateCaoCao: WikiAlternateGeneral = {
+describe('WikiKingdomWarsGeneralEntry', () => {
+  const kingdomWarsCaoCao: WikiKingdomWarsGeneral = {
     id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'The Militant Emperor of Wei',
     kingdom: 'Wei', maxHp: 4, gender: 'male', skillsWorking: true,
-    skills: [{ name: 'Villainous Hero', nameZh: '奸雄', text: 'Every instance after you suffer damage, you can acquire the card.', status: 'worksAsDefault' }],
+    skills: [{ name: 'Villainous Hero', nameZh: '奸雄', text: 'Every instance after you suffer damage, you can acquire the card.', status: 'worksAsDynastyWars' }],
     partners: ['Dian Wei 典韦 (Bodyguard)'],
     differenceNote: 'The Ruler Ability is removed.',
   };
 
-  function render(general: WikiAlternateGeneral): HTMLElement {
-    const fixture = TestBed.createComponent(WikiAlternateGeneralEntry);
+  function render(general: WikiKingdomWarsGeneral): HTMLElement {
+    const fixture = TestBed.createComponent(WikiKingdomWarsGeneralEntry);
     fixture.componentRef.setInput('general', general);
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
 
   it('shows names, title, kingdom, HP and gender, and nothing from a pack', () => {
-    const el = render(alternateCaoCao);
+    const el = render(kingdomWarsCaoCao);
     expect(el.querySelector('article.entry')!.getAttribute('data-id')).toBe('cao-cao');
     expect(el.querySelector('h4 .name')!.textContent).toBe('Cao Cao');
     for (const part of ['曹操', 'The Militant Emperor of Wei', 'Wei', 'Villainous Hero', '奸雄']) expect(el.textContent).toContain(part);
@@ -236,22 +236,22 @@ describe('WikiAlternateGeneralEntry', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: MUSIC_PLAYER_FACTORY, useValue: (url: string) => (urls.push(url), { loop: false, volume: 1, play: async () => undefined, pause: () => undefined }) }],
     });
-    const el = render(alternateCaoCao);
+    const el = render(kingdomWarsCaoCao);
     expect(el.querySelector('.voices-label')!.textContent).toBe('Voice:');
     (el.querySelector('button.voice') as HTMLButtonElement).click();
     expect(urls).toEqual(['/audio/death/caocao.ogg']);
-    (render({ ...alternateCaoCao, id: 'ji-ling' }).querySelector('button.voice') as HTMLButtonElement).click();
+    (render({ ...kingdomWarsCaoCao, id: 'ji-ling' }).querySelector('button.voice') as HTMLButtonElement).click();
     expect(urls).toEqual(['/audio/death/caocao.ogg', '/audio/death/jiling.ogg']);
     localStorage.clear();
   });
 
   it('tags only a skill that is not in the game yet', () => {
-    const general: WikiAlternateGeneral = {
-      ...alternateCaoCao,
+    const general: WikiKingdomWarsGeneral = {
+      ...kingdomWarsCaoCao,
       skills: [
-        { name: 'A', nameZh: null, text: 'a', status: 'worksAsDefault' },
+        { name: 'A', nameZh: null, text: 'a', status: 'worksAsDynastyWars' },
         { name: 'B', nameZh: null, text: 'b', status: 'missing' },
-        { name: 'C', nameZh: null, text: 'c', status: 'worksAsAlternate' },
+        { name: 'C', nameZh: null, text: 'c', status: 'worksAsKingdomWars' },
       ],
     };
     const tags = [...render(general).querySelectorAll('.skill-status')].map((s) => [s.getAttribute('data-status'), s.textContent!.trim()]);
@@ -260,17 +260,17 @@ describe('WikiAlternateGeneralEntry', () => {
   });
 
   it('shows the Synergistic Partners and the Difference note, and hides them when empty', () => {
-    const el = render(alternateCaoCao);
+    const el = render(kingdomWarsCaoCao);
     expect(text(el.querySelector('.partners'))).toContain('Synergistic Partners');
     expect(text(el.querySelector('.partners'))).toContain('Dian Wei 典韦 (Bodyguard)');
     expect(text(el.querySelector('.difference'))).toContain('The Ruler Ability is removed.');
-    const bare = render({ ...alternateCaoCao, partners: [], differenceNote: null });
+    const bare = render({ ...kingdomWarsCaoCao, partners: [], differenceNote: null });
     expect(bare.querySelector('.partners')).toBeNull();
     expect(bare.querySelector('.difference')).toBeNull();
   });
 
   it('shows the placeholder, not a broken image, for a General with no art', () => {
-    const el = render({ ...alternateCaoCao, id: 'nobody', name: 'Nobody' });
+    const el = render({ ...kingdomWarsCaoCao, id: 'nobody', name: 'Nobody' });
     expect(el.querySelector('app-card-art img')).toBeNull();
     expect(el.querySelector('.card-art-placeholder')!.textContent).toContain('Nobody');
   });
@@ -279,7 +279,7 @@ describe('WikiAlternateGeneralEntry', () => {
     localStorage.clear();
     TestBed.configureTestingModule({});
     await TestBed.inject(I18n).setLocale('vi');
-    const el = render(alternateCaoCao);
+    const el = render(kingdomWarsCaoCao);
     expect(el.querySelector('h4 .name')!.textContent).toBe('Tào Tháo');
     expect(text(el)).toContain('Gian hùng');
     expect(text(el.querySelector('.skills'))).toContain('Mỗi khi bạn bị sát thương');

@@ -753,7 +753,7 @@ describe('App shell', () => {
 
     it('shows the title and an always-open side panel with no menu button', async () => {
       const { el } = await render();
-      expect(el.querySelector('mat-toolbar h1')!.textContent).toContain('Kingdom War');
+      expect(el.querySelector('mat-toolbar h1')!.textContent).toContain('Guozhan');
       expect(nav(el).classList).toContain('open');
       expect(el.querySelector('button.nav-toggle')).toBeNull();
       expect(nav(el).hasAttribute('inert')).toBe(false);
@@ -912,7 +912,7 @@ const WIDE = '(min-width: 1024px)';
   host: { '(document:keydown.escape)': 'navOpen.set(false)' },
 })
 export class App {
-  protected readonly title = signal('Kingdom War');
+  protected readonly title = signal('Guozhan');
   protected readonly wikiPages = [
     { path: '/wiki/generals', label: 'Generals' },
     { path: '/wiki/basic', label: 'Basic Cards' },

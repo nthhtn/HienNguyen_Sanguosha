@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add the 32 Wind, Fire, Forest and Mountain generals of the four kingdoms as playable, sourced data. Replace the placeholder Dong Zhuo with the real Forest one, cap Kingdom War at 10 seats, and show the expansion in the Wiki, whose fourth tab is renamed Qun.
+**Goal:** Add the 32 Wind, Fire, Forest and Mountain generals of the four kingdoms as playable, sourced data. Replace the placeholder Dong Zhuo with the real Forest one, cap Guozhan at 10 seats, and show the expansion in the Wiki, whose fourth tab is renamed Qun.
 
 **Architecture:**
 - **Data:** a supervised crawl script writes one JSON file per general. Kingdom and HP come from the AllGenerals spreadsheet; names, titles and skills come verbatim from each page's stripped text. The generals index is regenerated from the files on disk.
@@ -26,7 +26,7 @@
   - tabs Wei 15 · Shu 15 · Wu 15 · Qun 12;
   - expansions Base 25 · Wind 8 · Fire 8 · Forest 8 · Mountain 8;
   - coded skills 5: xiahou-dun, sun-shangxiang, zhuge-liang, zhao-yun, huang-yueying.
-- **Seat cap:** `Math.min(MAX_KINGDOM_WAR_SEATS, Math.floor(pool / GENERALS_PER_SEAT))`, with `MAX_KINGDOM_WAR_SEATS = 10`. Today that is 10.
+- **Seat cap:** `Math.min(MAX_GUOZHAN_SEATS, Math.floor(pool / GENERALS_PER_SEAT))`, with `MAX_GUOZHAN_SEATS = 10`. Today that is 10.
 - **Wiki:**
   - Generals tab keys and labels: `wei` Wei · `shu` Shu · `wu` Wu · `qun` Qun;
   - `WikiGeneral.expansion` is `'Base' | 'Wind' | 'Fire' | 'Forest' | 'Mountain'`, defaulting to `'Base'`;
@@ -325,31 +325,31 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Modify: `projects/content/src/lib/generals/setTwo.ts`, `projects/content/src/lib/generals/index.ts`
-- Modify: `projects/content/src/lib/modes/kingdomWar.ts`
-- Test: `projects/content/src/lib/generals/setTwo.spec.ts`, `projects/content/src/lib/registry.spec.ts`, `projects/content/src/lib/wiki.spec.ts`, `projects/content/src/lib/modes/kingdomWar.spec.ts`
+- Modify: `projects/content/src/lib/modes/guozhan.ts`
+- Test: `projects/content/src/lib/generals/setTwo.spec.ts`, `projects/content/src/lib/registry.spec.ts`, `projects/content/src/lib/wiki.spec.ts`, `projects/content/src/lib/modes/guozhan.spec.ts`
 
 **Interfaces:**
 - Produces:
-  - `export const MAX_KINGDOM_WAR_SEATS = 10` from `kingdomWar.ts`, with `kingdomWarMaxSeats(registry) === Math.min(10, Math.floor(registry.generals.size / 5))`;
+  - `export const MAX_GUOZHAN_SEATS = 10` from `guozhan.ts`, with `guozhanMaxSeats(registry) === Math.min(10, Math.floor(registry.generals.size / 5))`;
   - `GENERAL_SKILLS` holds 5 ids.
 
 - [ ] **Step 1: Write the failing tests**
 
 - `wiki.spec.ts` "marks exactly the generals whose skills are coded": the expected list becomes `['huang-yueying', 'sun-shangxiang', 'xiahou-dun', 'zhao-yun', 'zhuge-liang']`.
 - `registry.spec.ts` "attaches hand-coded skills…": change `expect(skillIds('dong-zhuo')).toEqual(['tyranny']);` to `expect(skillIds('dong-zhuo')).toEqual([]);`.
-- `kingdomWar.spec.ts`:
+- `guozhan.spec.ts`:
   - Change both `toBe(5)` seat-cap expectations to `toBe(10)`.
-  - Change the import to also bring in `MAX_KINGDOM_WAR_SEATS`.
+  - Change the import to also bring in `MAX_GUOZHAN_SEATS`.
   - Add, next to them:
 
 ```ts
   it('caps the table at 10 seats however large the pool grows', () => {
     const pool = (n: number) => ({ cards: new Map(), generals: new Map(Array.from({ length: n }, (_, i) => [`g${i}`, {} as never])) });
-    expect(MAX_KINGDOM_WAR_SEATS).toBe(10);
-    expect(kingdomWarMaxSeats(pool(14))).toBe(2);
-    expect(kingdomWarMaxSeats(pool(50))).toBe(10);
-    expect(kingdomWarMaxSeats(pool(57))).toBe(10);
-    expect(kingdomWarMaxSeats(pool(200))).toBe(10);
+    expect(MAX_GUOZHAN_SEATS).toBe(10);
+    expect(guozhanMaxSeats(pool(14))).toBe(2);
+    expect(guozhanMaxSeats(pool(50))).toBe(10);
+    expect(guozhanMaxSeats(pool(57))).toBe(10);
+    expect(guozhanMaxSeats(pool(200))).toBe(10);
   });
 ```
 
@@ -361,10 +361,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 - [ ] **Step 2: Run them to verify they fail**
 
-Run: `npx jest --selectProjects content --testPathPatterns "wiki|registry|kingdomWar|setTwo"`
+Run: `npx jest --selectProjects content --testPathPatterns "wiki|registry|guozhan|setTwo"`
 Expected: FAIL.
 - The skills list still has `dong-zhuo`, and `skillIds('dong-zhuo')` is `['tyranny']`.
-- The seat cap is 11 (57 ÷ 5), and `MAX_KINGDOM_WAR_SEATS` is not exported.
+- The seat cap is 11 (57 ÷ 5), and `MAX_GUOZHAN_SEATS` is not exported.
 - `setTwo.spec` may also fail to compile until Step 3.
 
 - [ ] **Step 3: Implement**
@@ -373,15 +373,15 @@ Expected: FAIL.
 
 `projects/content/src/lib/generals/index.ts`: remove `dongZhuoGeneral` from the import and from `HAND_CODED`.
 
-`projects/content/src/lib/modes/kingdomWar.ts`:
+`projects/content/src/lib/modes/guozhan.ts`:
 
 ```ts
 export const GENERALS_PER_SEAT = 5;
-// A real Kingdom War table seats at most 10.
-export const MAX_KINGDOM_WAR_SEATS = 10;
+// A real Guozhan table seats at most 10.
+export const MAX_GUOZHAN_SEATS = 10;
 
-export function kingdomWarMaxSeats(registry: ContentRegistry): number {
-  return Math.min(MAX_KINGDOM_WAR_SEATS, Math.floor(registry.generals.size / GENERALS_PER_SEAT));
+export function guozhanMaxSeats(registry: ContentRegistry): number {
+  return Math.min(MAX_GUOZHAN_SEATS, Math.floor(registry.generals.size / GENERALS_PER_SEAT));
 }
 ```
 
@@ -397,13 +397,13 @@ Expected: content, engine and bots PASS. The app and sim failures should be limi
 
 - [ ] **Step 6: Deal-dependent tests (Review Focus 4)**
 
-If any content test whose subject isn't the pool now fails because its seed deals different generals, don't loosen its assertion. Instead, pin the generals it needs explicitly (as the Kingdom War spec's `seated()` helper does), and name it in the commit message.
+If any content test whose subject isn't the pool now fails because its seed deals different generals, don't loosen its assertion. Instead, pin the generals it needs explicitly (as the Guozhan spec's `seated()` helper does), and name it in the commit message.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add projects/content/src/lib/generals projects/content/src/lib/modes/kingdomWar.ts projects/content/src/lib/modes/kingdomWar.spec.ts projects/content/src/lib/registry.spec.ts projects/content/src/lib/wiki.spec.ts
-git commit -m "feat(content): drop the invented Tyranny skill; cap Kingdom War at 10 seats
+git add projects/content/src/lib/generals projects/content/src/lib/modes/guozhan.ts projects/content/src/lib/modes/guozhan.spec.ts projects/content/src/lib/registry.spec.ts projects/content/src/lib/wiki.spec.ts
+git commit -m "feat(content): drop the invented Tyranny skill; cap Guozhan at 10 seats
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```

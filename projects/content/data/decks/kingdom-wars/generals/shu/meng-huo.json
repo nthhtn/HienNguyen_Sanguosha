@@ -1,0 +1,32 @@
+{
+  "id": "meng-huo",
+  "name": "Meng Huo",
+  "nameZh": "孟获",
+  "force": "shu",
+  "title": "King of the Southern Barbarians",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "The Smoking Gun",
+      "nameZh": "祸首",
+      "text": "BARBARIANS 南蛮入侵 has no effect on you. You are the source of damage caused by BARBARIANS 南蛮入侵.",
+      "tag": "Enforced ability"
+    },
+    {
+      "name": "Arise Again",
+      "nameZh": "再起",
+      "text": "During your drawing phase, if you are not at full health, you can forfeit drawing cards from the deck; instead, you display X cards from the top of the deck (X being the units of health you have lost thus far). For every card with hearts suit displayed, you regain 1 unit of health, then you discard those cards and acquire the remaining cards."
+    }
+  ],
+  "synergisticPartners": [
+    "Zhu Rong 祝融 (Wife)"
+  ],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/meng-huo.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

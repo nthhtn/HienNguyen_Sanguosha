@@ -105,6 +105,7 @@ Decided by the user (2026-10-15):
 |---|---|
 | General, Main General, Deputy General | Tướng, Chủ tướng, Phó tướng |
 | HP | Sinh lực |
+| Guozhan (game mode) | Quốc chiến |
 | Tool (card type) | Cẩm nang |
 | Judgment | Phán xét |
 | Seat | Người chơi (so "Seat 0" is "Người chơi 0") |
@@ -135,7 +136,9 @@ Vietnamese does not use Title Case. Labels, buttons and sentences are sentence
 case ("Kết thúc giai đoạn"). Proper nouns stay capitalised: player names,
 General names, forces and card names (Sát, Đào). The keywords Tướng (General) and
 Sinh lực (HP) keep their capitals inside sentences too (user decision, 2026-10-16),
-so "hồi 1 Sinh lực", "úp Tướng", "Lật Tướng và dùng". The per-locale rule is added
+so "hồi 1 Sinh lực", "úp Tướng", "Lật Tướng và dùng". Game mode names are terms
+as well and keep their capital (user decision, 2026-10-28): "Không dùng trong
+Quốc chiến". The per-locale rule is added
 to the "UI text style" section of `CLAUDE.md`, so the two languages do not
 contradict it. Ids are never shown raw, in either language.
 

@@ -221,7 +221,7 @@ type Shown = Extract<Effect, { kind: 'JudgmentShownEffect' }>;
 export const lightningStrikeOutcome = (state: GameState, seatId: string, judged: CardInstance, registry: ContentRegistry): 'damage' | 'none' =>
   suitOf(state, seatId, judged, registry) === 'spade' && isLiving(state, seatId) ? 'damage' : 'none';
 
-// Alternate Lightning Strike (`allowSelf` false): the seat he picks is another seat, never himself.
+// Kingdom Wars Lightning Strike (`allowSelf` false): the seat he picks is another seat, never himself.
 export const makeLightningStrike = (allowSelf: boolean): SkillDefinition => ({
   id: 'lightning-strike',
   triggers: [
@@ -262,7 +262,7 @@ export const darkMagic: SkillDefinition = {
   ],
 };
 
-// Amber Sky: a Lord skill, inactive in Kingdom War.
+// Amber Sky: a Lord skill, inactive in Guozhan.
 export const amberSky: SkillDefinition = { id: 'amber-sky', lord: true };
 
 // The cards Yu Ji may name: every Basic card and non-delayed Tool.

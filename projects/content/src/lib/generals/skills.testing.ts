@@ -2,7 +2,7 @@ import { advanceToDecision, getLegalActions, resolve, sameValue } from 'engine';
 import type { Action, CardInstance, GameModeDefinition, GameState, Kingdom, Phase, QueueItem, Target } from 'engine';
 import { buildContentRegistry } from '../registry';
 import { withFillers } from './fillers.testing';
-import { kingdomWarMode } from '../modes/kingdomWar';
+import { guozhanMode } from '../modes/guozhan';
 
 // Shared by the skill specs (not exported from the package).
 
@@ -10,8 +10,8 @@ import { kingdomWarMode } from '../modes/kingdomWar';
 export const registry = withFillers(buildContentRegistry());
 // A mode with no triggers of its own: only the skills under test act.
 export const stubMode: GameModeDefinition = { id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
-// Kingdom War's own triggers (Draw Phase draw, Judgment Phase, dying, elimination), never ending the game.
-export const kwMode: GameModeDefinition = { ...kingdomWarMode, checkWinCondition: () => null };
+// Guozhan's own triggers (Draw Phase draw, Judgment Phase, dying, elimination), never ending the game.
+export const kwMode: GameModeDefinition = { ...guozhanMode, checkWinCondition: () => null };
 
 export const card = (instanceId: string, definitionId: string, suit: CardInstance['suit'] = 'spade', rank = 7): CardInstance => ({ instanceId, definitionId, suit, rank });
 export const seat = (seatId: string): Target => ({ kind: 'seat', seatId });

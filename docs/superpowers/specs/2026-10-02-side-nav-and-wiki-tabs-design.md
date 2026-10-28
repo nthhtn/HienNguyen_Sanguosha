@@ -37,7 +37,7 @@ items still style the links.
 
 ```
 ┌──────────────────────────────────────────────┐
-│ [☰]  🏰 Kingdom War                          │   ☰ only below 1024px
+│ [☰]  🏰 Guozhan                          │   ☰ only below 1024px
 ├──────────────┬───────────────────────────────┤
 │ ▶ Play Game  │                               │
 │ 📖 Wiki    ▾ │     (current page)            │
@@ -65,7 +65,7 @@ items still style the links.
   - **Current page:** the current link is highlighted and carries
     `aria-current="page"`. Play Game counts as current on `/setup` and
     `/game`.
-- **Header:** keeps the castle and the "Kingdom War" title. The header menu
+- **Header:** keeps the castle and the "Guozhan" title. The header menu
   buttons and their dropdown are removed.
 - **The game board:** on wide screens it loses 240px of width. The table and
   seat tiles already scale between phone and desktop widths, and the live
