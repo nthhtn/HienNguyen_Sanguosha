@@ -14,6 +14,7 @@ it.
 | [Backend and deployment](backend-and-deployment.md) | the Node server: accounts, rooms, the socket protocol, the game runner, persistence and restore, and what is not built yet |
 | [Deployment](../deployment.md) | how the server and app run live on Render and Supabase, and what to check after a deploy |
 | [Bots and simulation](bots-and-simulation.md) | the computer opponents, the headless simulator, invariants, leak checks and the test layout |
+| [CI and guardrails](../ci-and-guardrails.md) | how a change is checked before it merges (`npm run verify`, GitHub Actions), and what the agent may not do (merge, push to `main`) |
 
 The project-wide rules (layering, domain modeling, extensibility, UI text
 style) live in [CLAUDE.md](../../CLAUDE.md). The design specs and plans that
