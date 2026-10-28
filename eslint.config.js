@@ -4,7 +4,7 @@ const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
 
 module.exports = tseslint.config(
-  { ignores: ['dist/**', '.angular/**', '.worktrees/**', 'tmp/**', 'node_modules/**', '.superpowers/**'] },
+  { ignores: ['dist/**', '.angular/**', '.worktrees/**', 'tmp/**', 'coverage/**', 'node_modules/**', '.superpowers/**'] },
   {
     files: ['**/*.ts'],
     extends: [eslint.configs.recommended, ...tseslint.configs.recommended, ...angular.configs.tsRecommended],

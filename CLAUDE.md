@@ -69,7 +69,7 @@ game-mode rule, write out its precise rule text first — don't jump straight
 to code for non-trivial mechanics. Trivial additions that just reuse an
 already-specified pattern don't need a fresh round of spec-writing.
 
-`npm run verify` runs the pre-merge checks and CI runs it on every pull request;
+`npm run verify` runs the static pre-merge checks (lint, typecheck, build) and CI runs it, with the tests, on every pull request;
 merging is human-only: the agent never merges or pushes to `main`. See
 `docs/ci-and-guardrails.md`.
 

@@ -6,8 +6,7 @@ design and its reasoning are in
 
 ## `npm run verify`
 
-One command runs every pre-merge check, in this order, and stops at the first
-failure:
+One command runs the static checks, in this order, and stops at the first failure:
 
 1. `npm run lint`: ESLint (typescript-eslint and angular-eslint).
 2. `npm run typecheck`: `tsc --noEmit` over protocol, server, bots, sim, the
@@ -15,26 +14,33 @@ failure:
    typecheck, so this is the only thing that catches a type error in a spec.
 3. `npm run build`: engine, content and the Angular app. The CSS budget warning
    on `judgment-stage.ts` is a warning, not a failure.
-4. `npm test`: jest across all projects.
-5. `npm run test:guardrails`: the tests for the deny rules below (`node --test`).
 
-Cheap checks come first, so a typo fails in seconds, not after the test run.
-`npm run test:db` (needs Postgres, `npm run db:up`) is not part of `verify`;
-CI runs it.
+Cheap checks come first, so a typo fails in seconds. Tests are not part of
+`verify`; they are separate commands:
+
+- `npm test`: the whole jest suite (about 75 s).
+- `npm run test:coverage`: the same suite with coverage. It fails below 90%
+  statements, lines or functions. Branches (87% today) are reported, not gated.
+- `npm run test:guardrails`: the tests for the deny rules below (`node --test`).
+- `npm run test:db` (needs Postgres, `npm run db:up`): the server specs against a
+  real database.
 
 ## GitHub Actions
 
 `.github/workflows/ci.yml` runs on every pull request to `main` and on pushes to
-`main`, with two jobs: `verify` (`npm ci`, then `npm run verify`, the same command
-you run locally) and `test-db` (a `postgres:17` service container, then
-`npx jest --selectProjects server`). It needs no secrets and has read-only
-`contents` permission. A new push to a pull request cancels its in-flight run.
+`main`, with three jobs. It needs no secrets and has read-only `contents`
+permission. A new push to a pull request cancels its in-flight run.
 
-The repository is private on a free plan, so GitHub cannot make these checks
-required and cannot disable the merge button. A red `verify` is a warning on the
-pull request, not a block; the owner reads it before merging. Making the repository
-public or upgrading to GitHub Pro would allow branch protection with required
-checks.
+| Job | Runs | Required to merge |
+| --- | --- | --- |
+| `verify` | `npm run verify`: lint, typecheck, build | yes |
+| `test` | `npm run test:guardrails`, then the server jest project against a `postgres:17` service | yes |
+| `jest` | `npm run test:coverage`: the whole jest suite with the coverage gate; writes a summary table and uploads the HTML report as the `coverage` artifact | no |
+
+"Required" is set in the repository's branch ruleset (Settings, Rules), not in
+the workflow: the ruleset's "Require status checks to pass" rule lists `verify`
+and `test`. `jest` is deliberately left out, so a red `jest` is a warning on the
+pull request and the merge button stays enabled.
 
 Opening a pull request is not gated locally: run `npm run verify` yourself first
 if you want to know before CI does.
