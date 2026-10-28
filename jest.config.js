@@ -1,4 +1,7 @@
 module.exports = {
+  // Used only by `npm run test:coverage`. The 90% floor is checked by scripts/check-coverage.mjs, so it can gate separately from the tests.
+  collectCoverageFrom: ['projects/*/src/**/*.ts', '!**/*.spec.ts', '!**/*.d.ts', '!**/public-api.ts'],
+  coverageReporters: ['text-summary', 'json-summary', 'lcov'],
   projects: [
     {
       displayName: 'engine',
