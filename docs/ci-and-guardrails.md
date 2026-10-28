@@ -38,23 +38,38 @@ owner reads them before merging.
 ## The local gate
 
 A `PreToolUse` hook (`.claude/hooks/pr-gate.mjs`, registered in
-`.claude/settings.json`) runs `npm run verify` whenever `gh pr create` appears
-in a Bash command, including inside a compound command such as
-`git push -u origin x && gh pr create`. If `verify` fails, times out (ten
-minutes) or crashes, the call is blocked and the failing output is shown, so the
-agent fixes it before a PR exists. Expect two to three minutes. Other commands
-are not delayed.
+`.claude/settings.json` and found through `$CLAUDE_PROJECT_DIR`, so it works from
+any directory) runs `npm run verify` whenever a Bash command creates a pull
+request: `gh pr create` anywhere in the command (after `&&`, inside `$(...)`,
+behind `FOO=1` or `env`, or via a full path to `gh`), or a `gh api` write to
+`/pulls`. If `verify` fails, times out (after nine minutes, just under the hook's
+own ten) or crashes, the call is blocked and the failing output is shown, so the
+agent fixes it before a PR exists. Expect two to three minutes. The gate errs
+towards matching: a command that merely mentions the PR command, in a commit
+message for example, also runs `verify`. Other commands are not delayed.
 
 ## Merging is human-only
 
-`.claude/settings.json` denies, for Claude Code: `gh pr merge`, `gh api` calls
-that merge (REST and GraphQL), pushes to `main` in any spelling (`origin main`,
-`HEAD:main`, `HEAD:refs/heads/main`, `+main`), and any force push. Feature
-branches whose name merely contains "main" are not affected. You merge in the
-GitHub UI or in your own terminal.
+`.claude/settings.json` denies, for Claude Code:
+
+- `gh pr merge` in any form, and `gh api` calls that merge, touch `refs/heads/main`
+  or `git/refs`, write `contents`, or use `graphql`;
+- `git push` to `main` in any spelling (`origin main`, `HEAD:main`,
+  `HEAD:refs/heads/main`, `+main`, with options before or after), also behind
+  `git -C dir` or `git -c k=v`;
+- any force push (`-f`, `--force`, `--force-with-lease`, `+refspec`);
+- `git push` with no branch named (`git push`, `git push origin`,
+  `git push origin HEAD`) and `--all`, `--mirror` and `--tags`, because they push
+  whatever branch is checked out, which could be `main`. Push a feature branch
+  with `git push -u origin <branch>`.
+
+Feature branches whose name merely contains "main" are not affected. You merge in
+the GitHub UI or in your own terminal.
 
 These rules stop the agent's ordinary routes. They are not a security boundary:
 the `gh` login has the `repo` scope with admin rights, so anything that bypasses
-Claude Code's permission check could still merge.
+Claude Code's permission check could still merge. One route is open on purpose:
+nothing stops the agent editing `.claude/settings.json` or the hook itself.
+Review changes to `.claude/` like any other change.
 
 `.claude/settings.local.json` is gitignored, for per-machine settings.

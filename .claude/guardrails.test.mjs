@@ -28,6 +28,27 @@ const shouldDeny = [
   'git push -f origin feat/x',
   'git push --force origin feat/x',
   'git push --force-with-lease origin feat/x',
+  'git push origin main --no-verify',
+  'git push origin main -u',
+  'git push origin HEAD:main --follow-tags',
+  'git push origin refs/heads/main',
+  'git push origin HEAD:heads/main',
+  'git -C . push origin main',
+  'git -c k=v push origin main',
+  'git --git-dir=.git push origin main',
+  'git push',
+  'git push origin',
+  'git push origin HEAD',
+  'git push --all',
+  'git push --mirror',
+  'git push --tags',
+  'git push origin +feat/x',
+  'git push +main',
+  'gh api -X PATCH repos/o/r/git/refs/heads/main -f sha=abc',
+  'gh api -X PUT repos/o/r/contents/f -f branch=main',
+  'gh api graphql -F query=@m.graphql',
+  `gh api graphql -f query='mutation { enablePullRequestAutoMerge(input: {}) { clientMutationId } }'`,
+  'gh pr -R o/r merge 20',
 ];
 const shouldAllow = [
   'git push -u origin feat/maintenance',
@@ -36,6 +57,11 @@ const shouldAllow = [
   'gh pr view 20',
   'gh pr list',
   'npm test',
+  'git push -u origin feat/x',
+  'git push -u origin feat/x --follow-tags',
+  'git -C . push -u origin feat/x',
+  'gh api repos/o/r/pulls/20',
+  'gh api repos/o/r/branches/main/protection',
 ];
 
 for (const command of shouldDeny) {
@@ -44,3 +70,8 @@ for (const command of shouldDeny) {
 for (const command of shouldAllow) {
   test(`allows: ${command}`, () => assert.equal(denied(command, rules), false));
 }
+
+test('the PR gate hook is found from any working directory', () => {
+  const hook = settings.hooks.PreToolUse[0].hooks[0];
+  assert.match(hook.command, /\$CLAUDE_PROJECT_DIR/);
+});
