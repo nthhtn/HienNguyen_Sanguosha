@@ -1,4 +1,4 @@
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 import { createGame, getLegalActions, redactStateForSeat, resolve } from 'engine';
 import type { Action, GameState } from 'engine';
 import type { ChatMessage, GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
@@ -105,9 +105,9 @@ export function gameUpdates(): [GameUpdate, GameUpdate];
 export function gameUpdates(started: true): [GameUpdate, GameUpdate, GameUpdate, number];
 export function gameUpdates(started?: boolean): [GameUpdate, GameUpdate] | [GameUpdate, GameUpdate, GameUpdate, number] {
   const registry = buildContentRegistry();
-  const created = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1'], 7);
+  const created = createGame(guozhanMode, registry, ['seat-0', 'seat-1'], 7);
   const opening: GameState = { ...created, players: created.players.map((p) => ({ ...p, kind: 'human' as const, name: p.seatId === 'seat-0' ? 'Ann' : 'Bo' })) };
-  const next = resolve(opening, getLegalActions(opening, 'seat-0', registry)[0], { registry, mode: kingdomWarMode }).state;
+  const next = resolve(opening, getLegalActions(opening, 'seat-0', registry)[0], { registry, mode: guozhanMode }).state;
   const update = (state: GameState, seq: number, logFrom: number, legalActions: Action[]): GameUpdate => {
     const { rng: _rng, log, ...view } = redactStateForSeat(state, 'seat-0');
     return { gameId: GAME_ID, seq, view, legalActions, logFrom, events: log.slice(logFrom), clock: null, paused: false };
@@ -115,7 +115,7 @@ export function gameUpdates(started?: boolean): [GameUpdate, GameUpdate] | [Game
   const first = update(opening, 0, 0, getLegalActions(opening, 'seat-0', registry));
   const second = update(next, 1, opening.log.length, []);
   if (!started) return [first, second];
-  const ctx = { registry, mode: kingdomWarMode };
+  const ctx = { registry, mode: guozhanMode };
   const both = resolve(next, getLegalActions(next, 'seat-1', registry)[0], ctx).state;
   return [first, second, update(both, 2, 0, []), 1_000_000];
 }

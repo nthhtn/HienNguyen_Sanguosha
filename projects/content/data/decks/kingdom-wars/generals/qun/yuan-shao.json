@@ -1,0 +1,26 @@
+{
+  "id": "yuan-shao",
+  "name": "Yuan Shao",
+  "nameZh": "袁绍",
+  "force": "qun",
+  "title": "Aristocratic Ancestry",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Barrage",
+      "nameZh": "乱击",
+      "text": "During your action phase, you can use two on-hand cards with the same suit as RAINING ARROWS 万箭齐发."
+    }
+  ],
+  "synergisticPartners": [
+    "Yan Liang & Wen Chou 颜良&文丑 (Most trusted Generals)"
+  ],
+  "differenceFromNormal": "The Ruler Ability is removed. Other than that, he is identical to SGS.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/yuan-shao.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

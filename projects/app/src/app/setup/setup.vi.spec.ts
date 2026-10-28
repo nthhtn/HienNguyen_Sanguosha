@@ -21,7 +21,7 @@ describe('Setup in Vietnamese', () => {
 
   it('the title, the explanation, the toggles and the start button', () => {
     const { el } = render();
-    expect(text(el.querySelector('mat-card-title'))).toBe('Quốc chiến');
+    expect(text(el.querySelector('mat-card-title'))).toBe('Tam quốc sát');
     expect(text(el.querySelector('mat-card-subtitle'))).toBe('Bạn đấu với đối thủ máy');
     expect(text(el.querySelector('.how'))).toContain('Mỗi người chơi chọn hai Tướng úp cùng thế lực.');
     expect(text(el.querySelector('.how'))).toContain('Máy tự chơi lượt của mình.');
@@ -54,6 +54,6 @@ describe('Setup in Vietnamese', () => {
     await TestBed.inject(I18n).setLocale('vi');
     fixture.detectChanges();
     expect(text(el.querySelector('button.start'))).toContain('Bắt đầu ván chơi');
-    expect(text(el.querySelector('mat-card-title'))).toBe('Quốc chiến');
+    expect(text(el.querySelector('mat-card-title'))).toBe('Tam quốc sát');
   });
 });

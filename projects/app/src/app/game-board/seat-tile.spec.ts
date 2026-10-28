@@ -76,7 +76,7 @@ describe('SeatTile', () => {
     expect(render(makeSeat(), {}).querySelector('.silenced-badge')).toBeNull();
   });
 
-  it('shows which General lost its skills (Alternate Sorrow); the whole-seat badge stays as it was', () => {
+  it('shows which General lost its skills (Kingdom Wars Sorrow); the whole-seat badge stays as it was', () => {
     const badges = (el: HTMLElement) => [...el.querySelectorAll('.silenced-badge')].map((b) => b.textContent?.trim());
     expect(badges(render(makeSeat({ silencedSlots: ['deputy'] }), {}))).toEqual(['Deputy General: No Skills']);
     expect(badges(render(makeSeat({ silencedSlots: ['main'] }), {}))).toEqual(['Main General: No Skills']);

@@ -14,6 +14,8 @@ import { ManualScheduler } from './testing';
 const T0 = Date.parse('2026-10-13T12:00:00.000Z');
 const GAME_ID = 'aaaaaaaa-0000-4000-8000-000000000001';
 const SEED = 1234;
+// The seeded scenarios below were written against a Dynasty Wars deal.
+const RULES = { deck: 'dynastyWars' };
 const registry = buildContentRegistry();
 const ctx = engineContext(registry);
 // The opening state with every seat's first legal choice made: a game in its first turn.
@@ -66,7 +68,7 @@ function setup(options: { kinds?: MemberKind[]; startHoldMs?: number; solo?: boo
     roomId: 'room-1',
     seed: SEED,
     seats,
-    rules: {},
+    rules: RULES,
     buildId: 'test',
     status: 'running',
     result: null,
@@ -78,7 +80,7 @@ function setup(options: { kinds?: MemberKind[]; startHoldMs?: number; solo?: boo
   const runner = new GameRunner(
     {
       record,
-      state: (options.state ?? ((x) => x))(openingState(ctx, SEED, seats, {})),
+      state: (options.state ?? ((x) => x))(openingState(ctx, SEED, seats, RULES)),
       seq: 0,
       connected: new Set(options.connected ?? ['p0']),
       present: new Set(seats.map((s) => s.roomPlayerId).filter((id) => !(options.left ?? []).includes(id))),
@@ -709,12 +711,12 @@ describe('GameRunner: closing a settled judgment', () => {
   });
 });
 
-// Alternate Sorrow: the dead Cai Wenji's player (seat-0, eliminated) picks which of the killer seat-1's
+// Kingdom Wars Sorrow: the dead Cai Wenji's player (seat-0, eliminated) picks which of the killer seat-1's
 // Generals loses its skills. The first time online that the acting seat is an eliminated one.
 describe('a choice owned by an eliminated human seat', () => {
   const afterDeath = (opening: GameState): GameState => {
-    const generals: Record<string, [string, string]> = { 'seat-0': ['alternate:cai-wenji', 'alternate:diao-chan'], 'seat-1': ['zhang-he', 'liu-shan'], 'seat-2': ['alternate:jia-xu', 'alternate:zhen-ji'] };
-    const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'alternate:sorrow' };
+    const generals: Record<string, [string, string]> = { 'seat-0': ['kingdomWars:cai-wenji', 'kingdomWars:diao-chan'], 'seat-1': ['zhang-he', 'liu-shan'], 'seat-2': ['kingdomWars:jia-xu', 'kingdomWars:zhen-ji'] };
+    const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'kingdomWars:sorrow' };
     return {
       ...opening,
       phase: 'Play',

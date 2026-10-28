@@ -1,4 +1,4 @@
-import { buildContentRegistry, kingdomWarMaxSeats } from 'content';
+import { buildContentRegistry, guozhanMaxSeats } from 'content';
 import { loadConfig } from './config';
 import { createServer } from './server';
 
@@ -30,7 +30,7 @@ describe('createServer', () => {
       });
       const session = guest.cookies.find((c) => c.name === 'sgs_session')!.value;
       const list = await server.app.inject({ method: 'GET', url: '/api/rooms', cookies: { sgs_session: session } });
-      expect(list.json()).toEqual({ rooms: [], seatLimits: { min: 2, max: kingdomWarMaxSeats(buildContentRegistry()) } });
+      expect(list.json()).toEqual({ rooms: [], seatLimits: { min: 2, max: guozhanMaxSeats(buildContentRegistry()) } });
     } finally {
       await server.close();
     }

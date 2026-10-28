@@ -1,0 +1,29 @@
+{
+  "id": "lu-su",
+  "name": "Lu Su",
+  "nameZh": "鲁肃",
+  "force": "wu",
+  "title": "The Maverick Diplomat",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Altruism",
+      "nameZh": "好施",
+      "text": "When you draw cards during your drawing phase, you can draw two additional cards. If you have more than five on-hand cards as a result, you must give half of your on-hand cards (rounded down to nearest integer) to another player with the smallest number of on-hand cards."
+    },
+    {
+      "name": "Alliance",
+      "nameZh": "缔盟",
+      "text": "During your action phase, you can choose 2 players (other than yourself) and discard as many cards as the difference between the number of on-hand cards between these 2 players. Then exchange their entire set of on-hand cards. Limited to one use per phase."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/lu-su.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

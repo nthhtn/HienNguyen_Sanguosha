@@ -1,23 +1,23 @@
 // projects/sim/src/property.spec.ts
 import { createGame, discardOwed } from 'engine';
 import type { GameModeDefinition, PhaseChangedEvent } from 'engine';
-import { buildContentRegistry, kingdomWarMode, kingdomWarMaxSeats } from 'content';
+import { buildContentRegistry, guozhanMode, guozhanMaxSeats } from 'content';
 import { runGame } from './runGame';
 import { checkInvariants, checkRestingState } from './invariants';
 
-describe('property: simulated Kingdom War games across many seeds and every legal seat count', () => {
+describe('property: simulated Guozhan games across many seeds and every legal seat count', () => {
   it('every game terminates with a valid, non-dangling GameResult and no invariant violations', () => {
     const registry = buildContentRegistry();
-    // Kingdom War deals 5 unique generals per seat, so the table is capped by the pool.
-    const maxSeats = kingdomWarMaxSeats(registry);
+    // Guozhan deals 5 unique generals per seat, so the table is capped by the pool.
+    const maxSeats = guozhanMaxSeats(registry);
     const seatCounts = Array.from({ length: maxSeats - 1 }, (_, i) => i + 2);
     const failures: string[] = [];
     // A probe that never fires: it records any seat entering End while still over its hand limit.
     const handLimitBreaches: string[] = [];
     const probedMode: GameModeDefinition = {
-      ...kingdomWarMode,
+      ...guozhanMode,
       triggers: [
-        ...kingdomWarMode.triggers,
+        ...guozhanMode.triggers,
         {
           point: 'after:PhaseChangedEvent',
           condition: (state, subject) => {
@@ -37,7 +37,7 @@ describe('property: simulated Kingdom War games across many seeds and every lega
       for (let i = 0; i < 15; i++) {
         seed++;
         const seatIds = Array.from({ length: numSeats }, (_, idx) => `seat-${idx}`);
-        const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
+        const initialState = createGame(guozhanMode, registry, seatIds, seed);
         for (const [botKind, maxActions] of [['random', 5000], ['rule-based', 20000]] as const) {
           const restingViolations = new Set<string>();
           const { finalState, actionsSubmitted } = runGame(

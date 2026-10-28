@@ -56,7 +56,7 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
   if (state.pendingChoice) {
     const seat = state.seats.find((s) => s.id === state.pendingChoice!.seatId);
     if (!seat) violations.push(`pendingChoice references unknown seat ${state.pendingChoice.seatId}`);
-    // An eliminated seat may be asked only by its own skill (an afterDeath skill asks its player: Alternate Sorrow).
+    // An eliminated seat may be asked only by its own skill (an afterDeath skill asks its player: Kingdom Wars Sorrow).
     else if (seat.eliminated && !ownSkillChoice(state.pendingChoice)) violations.push(`pendingChoice references eliminated seat ${seat.id}`);
   }
 

@@ -1,6 +1,6 @@
 import { advanceToDecision, getLegalActions, resolve } from 'engine';
 import type { CardDefinition, CardInstance, ContentRegistry, EngineEvent, GameState, Phase } from 'engine';
-import { kingdomWarMode } from '../modes/kingdomWar';
+import { guozhanMode } from '../modes/guozhan';
 import { captureCard } from './capture';
 import { starvationCard } from './starvation';
 import { wuxieCard } from './wuxie';
@@ -14,8 +14,8 @@ const diLu: CardDefinition = { id: 'di-lu', name: 'Di Lu', category: 'equipment'
 
 const cards: CardDefinition[] = [captureCard, starvationCard, lightningCard, wuxieCard, breakCard, diLu, plain('sha'), plain('shan'), plain('peach')];
 const registry: ContentRegistry = { cards: new Map(cards.map((c) => [c.id, c])), generals: new Map() };
-// Kingdom War's own triggers: the Judgment Phase, the Draw Phase's 2 cards, and dying.
-const ctx = { registry, mode: kingdomWarMode };
+// Guozhan's own triggers: the Judgment Phase, the Draw Phase's 2 cards, and dying.
+const ctx = { registry, mode: guozhanMode };
 
 const card = (instanceId: string, definitionId: string, suit: CardInstance['suit'] = 'spade', rank = 5): CardInstance => ({ instanceId, definitionId, suit, rank });
 const filler = (n: number) => Array.from({ length: n }, (_, i) => card(`f${i}`, 'shan', 'diamond', 13));

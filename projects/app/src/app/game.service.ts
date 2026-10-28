@@ -14,7 +14,7 @@ import {
   redactStateForSeat,
   resolve,
 } from 'engine';
-import { buildContentRegistry, kingdomWarMaxSeats, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMaxSeats, guozhanMode } from 'content';
 import type { Msg } from './i18n/msg';
 import { BotTurnMemory, ruleBasedPolicy } from 'bots';
 
@@ -40,9 +40,9 @@ function engineError(err: unknown): Msg {
 @Injectable({ providedIn: 'root' })
 export class GameService {
   readonly registry: ContentRegistry = buildContentRegistry();
-  private readonly ctx: EngineContext = { registry: this.registry, mode: kingdomWarMode };
+  private readonly ctx: EngineContext = { registry: this.registry, mode: guozhanMode };
 
-  readonly maxSeats: number = kingdomWarMaxSeats(this.registry);
+  readonly maxSeats: number = guozhanMaxSeats(this.registry);
 
   // Delay before each bot move, so a human can follow along. Tests set 0.
   botDelayMs = 1500;
@@ -127,7 +127,7 @@ export class GameService {
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
       // Every game waits for a judgment's popup (the judgmentNotice rule) unless a rule says otherwise.
-      const created = createGame(kingdomWarMode, this.registry, seatIds, rngSeed, { ...rules, judgmentNotice: rules?.judgmentNotice ?? true });
+      const created = createGame(guozhanMode, this.registry, seatIds, rngSeed, { ...rules, judgmentNotice: rules?.judgmentNotice ?? true });
       const players = created.players.map((p, i) => ({
         ...p,
         kind: mode === 'vs-bots' && p.seatId !== HUMAN_SEAT_ID ? ('bot' as const) : ('human' as const),

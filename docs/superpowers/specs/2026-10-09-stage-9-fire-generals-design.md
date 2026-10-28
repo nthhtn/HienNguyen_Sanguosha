@@ -23,8 +23,8 @@ Stage 7's and stage 8's common rules hold unchanged:
 - "may" always asks;
 - no elemental damage (a skill that deals elemental damage deals plain damage).
 
-The skill text is the crawled data's standard edition, applied to Kingdom
-War.
+The skill text is the crawled data's standard edition, applied to Guozhan
+.
 
 **Cards out of the deck.** Blaze and Chains stay out of the deck (roadmap).
 Blaze joins the registry only so that Fire Strategy can make one. Chains is
@@ -161,7 +161,7 @@ Generic; the engine names no card or skill.
      enough cards of one suit.
    - Its selection carries `sameSuit`, and `validateSelection` rejects picks
      of mixed suits.
-3. **Cards out of the deck.** `CardDefinition.outOfDeck?: true`. Kingdom War's
+3. **Cards out of the deck.** `CardDefinition.outOfDeck?: true`. Guozhan's
    deck builder skips it.
 4. **`TurnFaceUpEffect { seatId }`**, the mirror of `TurnFaceDownEffect`
    (logs `SeatTurnedEvent` with `faceDown: false`).

@@ -1,0 +1,26 @@
+{
+  "id": "dian-wei",
+  "name": "Dian Wei",
+  "nameZh": "典韦",
+  "force": "wei",
+  "title": "The E-Lai of ancient times",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Ferocious Assault",
+      "nameZh": "强袭",
+      "text": "During your action phase, you can either lose 1 unit of health or discard a weapon card to inflict 1 unit of damage to another player within your attacking range. Limited to once per phase."
+    }
+  ],
+  "synergisticPartners": [
+    "Cao Cao曹操 (Lord)"
+  ],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/dian-wei.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

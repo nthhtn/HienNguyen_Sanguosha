@@ -1,0 +1,37 @@
+{
+  "id": "jia-xu",
+  "name": "Jia Xu",
+  "nameZh": "贾诩",
+  "force": "qun",
+  "title": "The Vile Adviser without Mercy",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Unmitigated Murder",
+      "nameZh": "完杀",
+      "text": "Within your turn, only yourself and players at Brink of Death can use PEACH 桃.",
+      "tag": "Enforced ability"
+    },
+    {
+      "name": "Descend into Chaos",
+      "nameZh": "乱武",
+      "text": "During your action phase, you can force all other players to choose between 1 of 2 options:\n1. Use an ATTACK杀 on a player with the least distance from him/her\n2. Lose 1 unit of health.",
+      "tag": "Single-Use Ability"
+    },
+    {
+      "name": "Behind the Curtain",
+      "nameZh": "帷幕",
+      "text": "All black-suited tool cards targeted on you will be cancelled.",
+      "tag": "Enforced ability"
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "The description for \"Behind the Curtain\" has been modified from \"has no effect\" to \"will be cancelled\". In effect, the character is unchanged except for this definition.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/jia-xu.html",
+    "listedUnder": "heroes",
+    "crawledAt": "2026-10-21"
+  }
+}

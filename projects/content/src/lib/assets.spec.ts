@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { generalsData } from '../../data/generals';
-import { alternateGeneralIds } from './alternateGenerals';
-import { alternateGeneralId } from './generalIds';
+import { kingdomWarsGeneralIds } from './kingdomWarsGenerals';
+import { kingdomWarsGeneralId } from './generalIds';
 import { AMBITIONIST_ICON_URL, CARD_BACK_ART_URL, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
 
 describe('cardArtUrl', () => {
@@ -69,18 +69,18 @@ describe('generalDeathVoiceUrl', () => {
   });
 });
 
-describe('Alternate General art', () => {
+describe('Kingdom Wars General art', () => {
   it('uses the base General skin and death voice', () => {
-    expect(generalSkinUrl('alternate:zhang-fei')).toBe(generalSkinUrl('zhang-fei'));
-    expect(generalDeathVoiceUrl('alternate:zhang-fei')).toBe(generalDeathVoiceUrl('zhang-fei'));
+    expect(generalSkinUrl('kingdomWars:zhang-fei')).toBe(generalSkinUrl('zhang-fei'));
+    expect(generalDeathVoiceUrl('kingdomWars:zhang-fei')).toBe(generalDeathVoiceUrl('zhang-fei'));
   });
 
   it('gives each new General its own skin and its own death voice, whose file ships', () => {
-    const fresh = alternateGeneralIds().filter((id) => !Object.prototype.hasOwnProperty.call(generalsData, id));
+    const fresh = kingdomWarsGeneralIds().filter((id) => !Object.prototype.hasOwnProperty.call(generalsData, id));
     expect(fresh).toHaveLength(9);
     for (const id of fresh) {
-      expect(generalSkinUrl(alternateGeneralId(id))).toMatch(/^\/card-art\/generals\/skins\/\w+\/\w+\.png$/);
-      const voice = generalDeathVoiceUrl(alternateGeneralId(id));
+      expect(generalSkinUrl(kingdomWarsGeneralId(id))).toMatch(/^\/card-art\/generals\/skins\/\w+\/\w+\.png$/);
+      const voice = generalDeathVoiceUrl(kingdomWarsGeneralId(id));
       expect(voice).toMatch(/^\/audio\/death\/\w+\.ogg$/);
       expect(existsSync(join(__dirname, '../../assets', voice!.replace('/audio/', 'audio/')))).toBe(true);
     }
@@ -88,7 +88,7 @@ describe('Alternate General art', () => {
 
   it('falls back to the placeholder for a General with no art', () => {
     expect(GENERAL_PLACEHOLDER_ART_URL).toBe('/card-art/generals/placeholder.svg');
-    expect(generalSkinUrl('alternate:nobody')).toBe(GENERAL_PLACEHOLDER_ART_URL);
+    expect(generalSkinUrl('kingdomWars:nobody')).toBe(GENERAL_PLACEHOLDER_ART_URL);
   });
 });
 

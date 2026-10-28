@@ -13,7 +13,7 @@ export interface SkillInPlay {
 const SLOTS = ['main', 'deputy'] as const;
 
 // Whether the General in `slot` has lost its skills: the whole seat silenced (Heartbroken), or that
-// General alone (Alternate Sorrow). Its printed skills, those gained under it and a Form it chose.
+// General alone (Kingdom Wars Sorrow). Its printed skills, those gained under it and a Form it chose.
 export function slotSilenced(seat: Pick<Seat, 'silenced' | 'silencedSlots'>, slot: 'main' | 'deputy'): boolean {
   return !!seat.silenced || !!seat.silencedSlots?.includes(slot);
 }
@@ -21,7 +21,7 @@ export function slotSilenced(seat: Pick<Seat, 'silenced' | 'silencedSlots'>, slo
 // The skills of `seatId`'s Generals that are in play, Main first, in skill
 // order. All of a revealed General's. A hidden General's compulsory skills are
 // off (its modifiers with them); its other skills are offered, but using one
-// reveals it. Lord skills never are: Kingdom War has no Lord. An eliminated
+// reveals it. Lord skills never are: Guozhan has no Lord. An eliminated
 // seat has none, nor a silenced General (slotSilenced), hidden or not. While
 // another seat's skill blocks its reveals (revealBlockedFor), a hidden General
 // offers nothing at all: no skill of it can be used, asked or fired.

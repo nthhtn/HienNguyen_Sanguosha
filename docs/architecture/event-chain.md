@@ -17,7 +17,7 @@ not an illustration.
 | **Action** | What a player wants to do. The only input from outside the engine. | The UI or a bot | `PlayCardAction`, `PassAction`, `EndPhaseAction` |
 | **Effect** | An instruction to change the state. | Card definitions, triggers, the pipeline itself | `DamageEffect`, `MoveCardEffect`, `OpenResponseEffect` |
 | **Event** | A record that something happened. Appended to `state.log`. | `applyEffect`, and the pipeline for phase/turn changes and card plays | `DamageDealtEvent`, `CardMovedEvent`, `CardPlayedEvent` |
-| **Trigger** | A reaction declared by content, attached to an effect (before it applies) or an event (after it happens). | General skills, the game mode | Kingdom War's "at 0 HP, the seat is dying" |
+| **Trigger** | A reaction declared by content, attached to an effect (before it applies) or an event (after it happens). | General skills, the game mode | Guozhan's "at 0 HP, the seat is dying" |
 
 Actions produce effects, effects produce events, and events wake triggers.
 Triggers return more effects or actions, and the chain keeps going until
@@ -90,7 +90,7 @@ returns follow-ups, which go to the front of the queue.
 
 **`advanceToDecision`** drains the queue, then walks through phases that need
 no input (Start → Judgment → Draw → Play), each a `PhaseChangedEvent` whose
-after-triggers are queued and drained in turn. Kingdom War's Draw phase, for
+after-triggers are queued and drained in turn. Guozhan's Draw phase, for
 instance, is an `after:PhaseChangedEvent` trigger that deals 2 cards. The
 loop stops when a player must decide (their Play phase, or a Discard over the
 hand limit), when a response is pending, or when the game is over.
@@ -140,7 +140,7 @@ The call returns. The UI shows "Waiting on Seat B", and B is offered
 2. Before-triggers on `DamageEffect` run. None apply here.
 3. `applyEffect`: B's HP goes 1 → 0.
    **`DamageDealtEvent`** (A→B, 1 normal, caused by sha-1).
-4. Kingdom War's three after-triggers on `DamageDealtEvent` are gathered,
+4. Guozhan's three after-triggers on `DamageDealtEvent` are gathered,
    all checked against the state right after the damage:
    their follow-ups go to the front of the queue, in this order:
    - HP ≤ half and main general hidden → `RevealGeneralAction(main)`
@@ -278,7 +278,7 @@ is played. Its `play()` puts it face up in a seat's Judgment slot
 (`Seat.judgment`; `CardDefinition.delayed` stops `PlayCardAction` from
 discarding it).
 
-In Kingdom War, entering the Judgment Phase queues two steps for each card in
+In Guozhan, entering the Judgment Phase queues two steps for each card in
 the turn owner's Judgment slot, last in, first out:
 
 1. `ToolOnTargetEffect` on the owner. It runs the usual Wuxie check, asked from
@@ -418,7 +418,7 @@ triggers, conversions, active skills and content's modifiers alike:
   skills count, marked `needsReveal`. Triggers also gather a hidden
   compulsory skill's triggers (`skillsInPlay(…, true)`, `GatheredTrigger.compulsory`),
   so they can ask for the reveal;
-- Lord skills never count (Kingdom War has no Lord).
+- Lord skills never count (Guozhan has no Lord).
 
 A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
 
@@ -458,7 +458,7 @@ cancellable selection, through that selection's `onSelect`.
 owner used, answers included) end with the turn; `Seat.marks` last the game.
 
 **Losing HP** (`LoseHpEffect` → `HpLostEvent`) is not damage: damage triggers
-don't fire. Kingdom War runs its reveal and dying rules after both.
+don't fire. Guozhan runs its reveal and dying rules after both.
 
 **The Draw Phase** is one `DrawPhaseEffect { count }`. Before-triggers change
 the count or replace the draw.
@@ -573,7 +573,7 @@ condition.
   `DyingEffect.killerSeatId` (set by the mode from the fatal damage's source) →
   `SeatEliminatedEvent.killerSeatId`.
 - **Spare Generals (Forms).** `GameState.spareGenerals` is the pool of Generals
-  nobody was dealt. When Generals are chosen, a Kingdom War trigger on
+  nobody was dealt. When Generals are chosen, a Guozhan trigger on
   `after:GeneralsChosenEvent` deals `SkillDefinition.spareGenerals` of them
   (`DealSpareGeneralsEffect`, which logs nothing: the log is public).
   `ChooseFormSkillEffect` sets `Seat.forms.chosen`; `skillsInPlay` then includes
@@ -605,7 +605,7 @@ condition.
 | A Tool's rule on each target | `play()` returning `ToolOnTargetEffect`s (content's `toolOnTargets`), and `CardDefinition.onTarget` | Barbarians opens a Sha window on each target |
 | A pick among cards or options | `OpenChoiceEffect` with options whose `effects` say what each pick does | Steal offers the target's hand (face down) and each worn card |
 | What answering does, beyond cancelling | `CardDefinition.onResponse()` and `sourceCard` on the window | Duel turns back on the other player |
-| A reaction to something that happened | An `after:<EventKind>` trigger on a skill or mode | Kingdom War's dying round at 0 HP |
+| A reaction to something that happened | An `after:<EventKind>` trigger on a skill or mode | Guozhan's dying round at 0 HP |
 | Effects that follow an answer to an engine-opened window | `onAnswer` on the `PendingResponse` | The dying round's Peach heals, then asks again |
 | A change to something about to happen | A `before:<EffectKind>` trigger returning the replacement effect, or nothing | A skill that reduces damage |
 | A card that resolves in stages | `CardStepEffect`s and `CardDefinition.onStep` | Sha's eight steps |
@@ -654,7 +654,7 @@ fits instead.
 
 ## Reveal bonuses
 
-Two Kingdom War triggers react to `after:GeneralRevealedEvent` with a
+Two Guozhan triggers react to `after:GeneralRevealedEvent` with a
 `DrawCardsEffect`:
 
 - **First reveal** (optional, `state.rules.firstRevealDraw`, 5+ seats): the
@@ -664,7 +664,7 @@ Two Kingdom War triggers react to `after:GeneralRevealedEvent` with a
 
 ## Kill reward and penalty
 
-A Kingdom War trigger on `after:SeatEliminatedEvent` (when `killerSeatId` is
+A Guozhan trigger on `after:SeatEliminatedEvent` (when `killerSeatId` is
 set, is not the dead seat, and is still living):
 
 - killer has revealed a General and shares the dead seat's Kingdom (Qun is one

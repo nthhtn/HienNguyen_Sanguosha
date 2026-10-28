@@ -1,0 +1,26 @@
+{
+  "id": "zhao-yun",
+  "name": "Zhao Yun",
+  "nameZh": "赵云",
+  "force": "shu",
+  "title": "The Young General",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Dragon Heart",
+      "nameZh": "龙胆",
+      "text": "You can use or play your ATTACK 杀 as DODGE 闪, and vice versa."
+    }
+  ],
+  "synergisticPartners": [
+    "Liu Shan 刘禅 (Rescued at the Battle of Changban)"
+  ],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/zhao-yun.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

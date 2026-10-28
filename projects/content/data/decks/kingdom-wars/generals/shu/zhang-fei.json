@@ -1,0 +1,26 @@
+{
+  "id": "zhang-fei",
+  "name": "Zhang Fei",
+  "nameZh": "张飞",
+  "force": "shu",
+  "title": "Unstoppable by 10,000 Men",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Berserk",
+      "nameZh": "咆哮",
+      "text": "During your action phase, you can use any number of ATTACK 杀."
+    }
+  ],
+  "synergisticPartners": [
+    "Liu Bei 刘备 (Sworn Brother)"
+  ],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/zhang-fei.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

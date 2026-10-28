@@ -21,7 +21,7 @@ export const roar: SkillDefinition = { id: 'roar', compulsory: true, modifiers: 
 export const horsemanship: SkillDefinition = { id: 'horsemanship', compulsory: true, modifiers: { distanceToOthers: -1 } };
 
 // Empty City (compulsory): while you have no hand cards, Sha and Duel can't target you. `cancels`
-// (Alternate): they can, and are cancelled for you instead (used, but with no effect on you).
+// (Kingdom Wars): they can, and are cancelled for you instead (used, but with no effect on you).
 const EMPTY_CITY_CARDS = ['sha', 'duel'];
 export function makeEmptyCity(cancels: boolean): SkillDefinition {
   return cancels
@@ -55,7 +55,7 @@ export const dragonCourage: SkillDefinition = {
 
 // Gathering Wisdom (may): when you play a non-delayed Tool (an answering Wuxie
 // included), you may draw 1 card, before the Tool takes effect. A Chains
-// Recast is not a use. Alternate (allowConverted false) also skips a Tool that
+// Recast is not a use. Kingdom Wars (allowConverted false) also skips a Tool that
 // was converted from other cards (a conversion `via`, or a physical card that
 // is not the Tool itself).
 const isConverted = (card: UsedCard): boolean => !!card.via || card.physical.some((p) => p.definitionId !== card.as);
@@ -127,8 +127,8 @@ const healedKey = (owner: GeneralOwner) => `${abilityUseKey(owner)}/healed`;
 
 // Kindness (active, any number of times): in your Play Phase you may give any
 // of your hand cards to another seat. Once per turn, when the total given this
-// turn first reaches `threshold` or more, you recover 1 HP. Default's threshold is 2;
-// the Alternate Benevolence variant uses 3.
+// turn first reaches `threshold` or more, you recover 1 HP. Dynasty Wars' threshold is 2;
+// the Kingdom Wars Benevolence variant uses 3.
 export const makeKindness = (threshold: number): SkillDefinition => ({
   id: 'kindness',
   active: {
@@ -153,7 +153,7 @@ export const makeKindness = (threshold: number): SkillDefinition => ({
 
 export const kindness: SkillDefinition = makeKindness(2);
 
-// Fierce General: a Lord skill, inactive in Kingdom War.
+// Fierce General: a Lord skill, inactive in Guozhan.
 export const fierceGeneral: SkillDefinition = { id: 'fierce-general', lord: true };
 
 export const SHU_GENERALS: GeneralSkillSet[] = [

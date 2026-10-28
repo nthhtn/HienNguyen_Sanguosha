@@ -251,7 +251,7 @@ export function legalTargetListsFor(
 
 Run: `npx jest > .superpowers/sdd/2026-10-01-card-playability/t1.log 2>&1; tail -40 .superpowers/sdd/2026-10-01-card-playability/t1.log`
 
-Expected: `playability.spec.ts` PASSES. Existing tests that play cards outside the Play phase now fail with `Cards can only be played during your Play phase`. The known one is `kingdomWar.spec.ts`'s `seated()` helper, which sets `phase: 'Judgment'`: change the lethal-damage test's state to `phase: 'Play'`, and leave the draw tests, which need Judgment, alone.
+Expected: `playability.spec.ts` PASSES. Existing tests that play cards outside the Play phase now fail with `Cards can only be played during your Play phase`. The known one is `guozhan.spec.ts`'s `seated()` helper, which sets `phase: 'Judgment'`: change the lethal-damage test's state to `phase: 'Play'`, and leave the draw tests, which need Judgment, alone.
 
 For each other failure of that kind, set the fixture's phase to `'Play'`. Do NOT change engine code to accommodate a test. A failure for any other reason is a real regression: debug it.
 
@@ -289,7 +289,7 @@ Create `projects/content/src/lib/cards/playability.spec.ts`:
 import { getLegalActions, resolve } from 'engine';
 import type { CardDefinition, ContentRegistry, GameState, Seat, Target } from 'engine';
 import { buildContentRegistry } from '../registry';
-import { kingdomWarMode } from '../modes/kingdomWar';
+import { guozhanMode } from '../modes/guozhan';
 import { attackRange, seatDistance } from '../shared/queries';
 
 const t = (seatId: string): Target => ({ kind: 'seat', seatId });
@@ -383,10 +383,10 @@ describe('each card’s play rule', () => {
     const first = resolve(
       table({ hand: ['sha', 'sha'] }),
       { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'sha-0', targets: [t('seat-1')] },
-      { registry: r, mode: kingdomWarMode }
+      { registry: r, mode: guozhanMode }
     ).state;
     // seat-1 has no Shan, so it passes and takes the damage; afterwards it is seat-0's Play phase again.
-    const afterPass = resolve(first, { kind: 'PassAction', seatId: 'seat-1', pendingResponseId: first.pendingResponse!.id }, { registry: r, mode: kingdomWarMode }).state;
+    const afterPass = resolve(first, { kind: 'PassAction', seatId: 'seat-1', pendingResponseId: first.pendingResponse!.id }, { registry: r, mode: guozhanMode }).state;
     expect(playsOf(afterPass, r, 'sha')).toEqual([]);
   });
 
@@ -411,7 +411,7 @@ describe('each card’s play rule', () => {
     const s = table({ hand: ['green-dragon-blade', 'sha'] });
     expect(playsOf(s, r, 'green-dragon-blade')).toEqual([[]]);
     expect(playsOf(table({ hand: ['silver-lion'] }), r, 'silver-lion')).toEqual([[]]);
-    const equipped = resolve(s, { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'green-dragon-blade-0', targets: [] }, { registry: r, mode: kingdomWarMode }).state;
+    const equipped = resolve(s, { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'green-dragon-blade-0', targets: [] }, { registry: r, mode: guozhanMode }).state;
     expect(playsOf(equipped, r, 'sha')).toHaveLength(4);
   });
 });

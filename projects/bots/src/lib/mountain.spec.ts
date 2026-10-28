@@ -164,16 +164,16 @@ describe('Strategic Pass', () => {
   });
 });
 
-describe('Alternate Sorrow', () => {
+describe('Kingdom Wars Sorrow', () => {
   // seat-a (Cai Wenji) is out and picks which of seat-c's Generals loses its skills.
   const sorrow = (main: string, deputy: string, offered: ('main' | 'deputy')[] = ['main', 'deputy']): GameState => {
-    const s = table({}, { generals: { 'seat-a': ['alternate:cai-wenji', 'filler-xu-huang'], 'seat-c': [main, deputy] } });
+    const s = table({}, { generals: { 'seat-a': ['kingdomWars:cai-wenji', 'filler-xu-huang'], 'seat-c': [main, deputy] } });
     return {
       ...s,
       seats: s.seats.map((x) => (x.id === 'seat-a' ? { ...x, eliminated: true } : x)),
       pendingChoice: {
         id: 'sorrow', seatId: 'seat-a', verb: 'pick', secret: true,
-        reason: { kind: 'ability', owner: general('seat-a', 'alternate:sorrow'), abilityId: 'alternate:sorrow', targetSeatId: 'seat-c' },
+        reason: { kind: 'ability', owner: general('seat-a', 'kingdomWars:sorrow'), abilityId: 'kingdomWars:sorrow', targetSeatId: 'seat-c' },
         options: offered.map((slot) => ({ id: slot, shows: { kind: 'label' as const, text: slot === 'main' ? 'Main General' : 'Deputy General' }, effects: [] })),
       },
     };

@@ -43,7 +43,7 @@ The spec lists a "loop bound" test using a content stub that keeps every phase f
 - Modify: `projects/engine/src/lib/rules/generalSelection.ts:55`
 - Test: `projects/engine/src/lib/domain/factories.spec.ts`
 - Test: `projects/engine/src/lib/rules/generalSelection.spec.ts:81-82`
-- Test: `projects/content/src/lib/modes/kingdomWar.spec.ts` (`seated` helper, and the "full selection" test around line 91)
+- Test: `projects/content/src/lib/modes/guozhan.spec.ts` (`seated` helper, and the "full selection" test around line 91)
 
 **Interfaces:**
 - Produces: `export function combinedMaxHp(mainMaxHp: number, deputyMaxHp: number): number` from `projects/engine/src/lib/domain/factories.ts`. It is exported through `public-api.ts`, which already re-exports `./lib/domain/factories`.
@@ -103,7 +103,7 @@ Expected: PASS.
 
 - [ ] **Step 5: Update the content test helper and assertion**
 
-In `projects/content/src/lib/modes/kingdomWar.spec.ts`, change the import to `import { createGame, resolve, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';`. In `seated`, replace `const maxCombinedHp = main.maxHp + deputy.maxHp;` with `const maxCombinedHp = combinedMaxHp(main.maxHp, deputy.maxHp);`. In the test "a full selection through resolve seats every seat with a same-kingdom pair and starts Judgment", replace `expect(seat.maxCombinedHp).toBe(main.maxHp + deputy.maxHp);` with:
+In `projects/content/src/lib/modes/guozhan.spec.ts`, change the import to `import { createGame, resolve, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';`. In `seated`, replace `const maxCombinedHp = main.maxHp + deputy.maxHp;` with `const maxCombinedHp = combinedMaxHp(main.maxHp, deputy.maxHp);`. In the test "a full selection through resolve seats every seat with a same-kingdom pair and starts Judgment", replace `expect(seat.maxCombinedHp).toBe(main.maxHp + deputy.maxHp);` with:
 
 ```ts
       expect(seat.maxCombinedHp).toBe(Math.floor((main.maxHp + deputy.maxHp) / 2));
@@ -117,7 +117,7 @@ Expected: PASS. If any other test fails on an HP value computed from general sel
 - [ ] **Step 7: Commit**
 
 ```bash
-git add projects/engine/src/lib/domain/factories.ts projects/engine/src/lib/domain/factories.spec.ts projects/engine/src/lib/rules/generalSelection.ts projects/engine/src/lib/rules/generalSelection.spec.ts projects/content/src/lib/modes/kingdomWar.spec.ts
+git add projects/engine/src/lib/domain/factories.ts projects/engine/src/lib/domain/factories.spec.ts projects/engine/src/lib/rules/generalSelection.ts projects/engine/src/lib/rules/generalSelection.spec.ts projects/content/src/lib/modes/guozhan.spec.ts
 git commit -m "feat(engine): max HP is half the two generals' HP, rounded down
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -519,7 +519,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `projects/engine/src/lib/rules/playability.spec.ts` (two tests)
   - `projects/engine/src/lib/rules/generalSelection.spec.ts` ("starts turn 1 at Judgment…")
   - `projects/content/src/lib/generals/setOne.spec.ts` (two Insight tests)
-  - `projects/content/src/lib/modes/kingdomWar.spec.ts` (`seated` phase, the full-selection test, two draw tests)
+  - `projects/content/src/lib/modes/guozhan.spec.ts` (`seated` phase, the full-selection test, two draw tests)
   - `projects/app/src/app/game.service.spec.ts` (around line 82)
   - `projects/app/src/app/game-board/game-board.spec.ts` (around line 128)
 
@@ -548,7 +548,7 @@ const selfDestruct: CardDefinition = {
 };
 const registry: ContentRegistry = { cards: new Map([['self-destruct', selfDestruct]]), generals: new Map() };
 
-// Like Kingdom War: whoever enters Draw draws 2.
+// Like Guozhan: whoever enters Draw draws 2.
 function mode(checkWinCondition: (s: GameState) => GameResult | null = () => null): GameModeDefinition {
   return {
     id: 'stub',
@@ -875,10 +875,10 @@ Expected: PASS.
     const { state: next } = advanceToDecision({ ...state, phase: 'Start' }, { registry: registry(), mode: stubMode() });
 ```
 
-`projects/content/src/lib/modes/kingdomWar.spec.ts`: add `advanceToDecision` to the `engine` import.
+`projects/content/src/lib/modes/guozhan.spec.ts`: add `advanceToDecision` to the `engine` import.
 - In `seated`, change `phase: 'Judgment',` to `phase: 'Start',`.
 - In "a full selection through resolve…", rename it to end "…and settles in turn 1's Play phase" and change `expect(state.phase).toBe('Judgment');` to `expect(state.phase).toBe('Play');`.
-- In both "Kingdom War per-turn draw" tests, replace the `resolve(state, { kind: 'EndPhaseAction', … })` call with `advanceToDecision(state, { registry, mode: kingdomWarMode })`, and `expect(next.phase).toBe('Draw');` with `expect(next.phase).toBe('Play');`. The hand-count assertions stay the same: 2 new cards, 3 for Zhuge Liang.
+- In both "Guozhan per-turn draw" tests, replace the `resolve(state, { kind: 'EndPhaseAction', … })` call with `advanceToDecision(state, { registry, mode: guozhanMode })`, and `expect(next.phase).toBe('Draw');` with `expect(next.phase).toBe('Play');`. The hand-count assertions stay the same: 2 new cards, 3 for Zhuge Liang.
 
 Run: `npx jest --selectProjects content`
 Expected: PASS.
@@ -908,7 +908,7 @@ In `docs/superpowers/specs/2026-10-02-turn-phases-design.md`, under "## Testing"
 - [ ] **Step 10: Commit**
 
 ```bash
-git add projects/engine projects/content/src/lib/generals/setOne.spec.ts projects/content/src/lib/modes/kingdomWar.spec.ts projects/app/src/app/game.service.spec.ts projects/app/src/app/game-board/game-board.spec.ts docs/superpowers/specs/2026-10-02-turn-phases-design.md
+git add projects/engine projects/content/src/lib/generals/setOne.spec.ts projects/content/src/lib/modes/guozhan.spec.ts projects/app/src/app/game.service.spec.ts projects/app/src/app/game-board/game-board.spec.ts docs/superpowers/specs/2026-10-02-turn-phases-design.md
 git commit -m "feat(engine): pass every phase that needs no decision; End phase only in Play
 
 Turns now open at Start and every phase entered raises a PhaseChangedEvent.
@@ -1147,7 +1147,7 @@ Imports become:
 ```ts
 import { createGame, cardsOverHandLimit } from 'engine';
 import type { GameModeDefinition, PhaseChangedEvent } from 'engine';
-import { buildContentRegistry, kingdomWarMode, kingdomWarMaxSeats } from 'content';
+import { buildContentRegistry, guozhanMode, guozhanMaxSeats } from 'content';
 import { runGame } from './runGame';
 import { checkInvariants, checkRestingState } from './invariants';
 ```
@@ -1158,9 +1158,9 @@ Inside the `it(...)`, after `const failures: string[] = [];`, add:
     // A probe that never fires: it records any seat entering End while still over its hand limit.
     const handLimitBreaches: string[] = [];
     const probedMode: GameModeDefinition = {
-      ...kingdomWarMode,
+      ...guozhanMode,
       triggers: [
-        ...kingdomWarMode.triggers,
+        ...guozhanMode.triggers,
         {
           point: 'after:PhaseChangedEvent',
           condition: (state, subject) => {

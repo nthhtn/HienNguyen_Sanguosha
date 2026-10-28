@@ -1,5 +1,5 @@
-import { alternateGeneralDisplayData, cardDisplayData, generalDisplayData } from 'content';
-import type { WikiAlternateGeneral, WikiCard, WikiGeneral, WikiTab } from 'content';
+import { kingdomWarsGeneralDisplayData, cardDisplayData, generalDisplayData } from 'content';
+import type { WikiKingdomWarsGeneral, WikiCard, WikiGeneral, WikiTab } from 'content';
 import type { MessageKey } from '../i18n/messages';
 import { SOURCE_LOCALE } from '../i18n/locales';
 import type { Translator } from '../i18n/translator';
@@ -54,14 +54,14 @@ export function wikiGeneralView(general: WikiGeneral, locale: string): WikiGener
   };
 }
 
-export interface WikiAlternateGeneralView extends WikiGeneralView {
+export interface WikiKingdomWarsGeneralView extends WikiGeneralView {
   differenceNote: string | null;
   partners: string[];
 }
 
-// An Alternate General in a language: the Alternate file's own text, never Default's, with English for any piece it lacks.
-export function wikiAlternateGeneralView(general: WikiAlternateGeneral, locale: string): WikiAlternateGeneralView {
-  const display = locale === SOURCE_LOCALE ? null : alternateGeneralDisplayData(general.id, locale);
+// A Kingdom Wars General in a language: the Kingdom Wars file's own text, never Dynasty Wars', with English for any piece it lacks.
+export function wikiKingdomWarsGeneralView(general: WikiKingdomWarsGeneral, locale: string): WikiKingdomWarsGeneralView {
+  const display = locale === SOURCE_LOCALE ? null : kingdomWarsGeneralDisplayData(general.id, locale);
   return {
     name: display?.name ?? general.name,
     title: display?.title ?? general.title,

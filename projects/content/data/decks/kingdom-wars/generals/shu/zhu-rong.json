@@ -1,0 +1,32 @@
+{
+  "id": "zhu-rong",
+  "name": "Zhu Rong",
+  "nameZh": "祝融",
+  "force": "shu",
+  "title": "The Savage Queen",
+  "maxHp": 4,
+  "gender": "female",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Giant Elephant",
+      "nameZh": "巨象",
+      "text": "BARBARIANS南蛮入侵 have no effect on you. When any BARBARIANS 南蛮入侵 used by other players is placed into the discard pile after all damage has been resolved, you acquire it.",
+      "tag": "Enforced ability"
+    },
+    {
+      "name": "Fearsome Blade",
+      "nameZh": "烈刃",
+      "text": "Every instance after you inflict damage to your target by using ATTACK杀, you can conduct a Points Duel with that target player. If you win, you acquire a card from that player."
+    }
+  ],
+  "synergisticPartners": [
+    "Meng Huo 孟获 (Husband)"
+  ],
+  "differenceFromNormal": "She cannot activate “Fearsome Blade” if she inflicts damage to a player that is not her target. That means she cannot points duel with a player that receives damage by shackling effect, for example.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/zhu-rong.html",
+    "listedUnder": "shu",
+    "crawledAt": "2026-10-21"
+  }
+}

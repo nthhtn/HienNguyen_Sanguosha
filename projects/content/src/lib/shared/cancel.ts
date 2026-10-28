@@ -15,7 +15,7 @@ export const SHA_AIMED_STEP = 'sha-aimed';
 // The log line of a cancelled card: the owner's skill made the user's card have no effect.
 const cancelled = (owner: GeneralOwner, card: UsedCard, userSeatId: string): Effect => used(owner, 'no-effect', userSeatId, card.as);
 
-// A compulsory skill that cancels cards aimed at its owner's seat (Alternate Empty City, Humility and
+// A compulsory skill that cancels cards aimed at its owner's seat (Kingdom Wars Empty City, Humility and
 // Behind the Curtain): the seat may be chosen, the card is used (and counts toward any limit), but it has
 // no effect on that seat and is wasted. A Sha stops where it is aimed, before abilities react to the
 // target; a Tool before its Wuxie check; a delayed Tool before it is placed, and goes to the discard pile.

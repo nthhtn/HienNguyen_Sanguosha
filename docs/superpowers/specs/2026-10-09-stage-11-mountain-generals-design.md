@@ -22,11 +22,11 @@ borrowed skills with gender, New Life).
 Stages 7–10's common rules hold unchanged: reveal to use, gender, Lord skills
 inactive, losing HP is not damage, "may" always asks, no elemental damage,
 synthetic `filler-<id>` Generals in specs. The skill text is the crawled
-standard edition applied to Kingdom War ("attack" is Sha, "flip a judgment" is
+standard edition applied to Guozhan ("attack" is Sha, "flip a judgment" is
 a judgment, "flip character card" is turning the seat over).
 
 **Lord skills.** Seem Foolish (Liu Shan) and Takeover (Sun Ce) are inactive;
-the wiki shows them with "Not used in Kingdom War".
+the wiki shows them with "Not used in Guozhan".
 
 **New kinds of skill.**
 - **Awakening skill:** compulsory. It fires once, at the start of its owner's
@@ -190,10 +190,10 @@ Generic; the engine names no card, skill or General.
 - **Files:** `generals/mountain.ts` (`MOUNTAIN_GENERALS`, `MOUNTAIN_GENERAL_IDS`),
   `shared/farm.ts` (Farm pile helpers), `shared/forms.ts` (Incarnation helpers),
   `shared/awaken.ts` (the awakening helper).
-- **Setup:** Incarnation's deal is a Kingdom War setup step: after dealing
+- **Setup:** Incarnation's deal is a Guozhan setup step: after dealing
   Generals, for each seat holding Zuo Ci, draw 2 spare Forms from a seeded
   shuffle of the leftover Generals. This is a mode rule, kept in
-  `modes/kingdomWar.ts`.
+  `modes/guozhan.ts`.
 - **Hooks:**
 
   | Skill | Hook |
@@ -244,7 +244,7 @@ Generic; the engine names no card, skill or General.
 - **Instigate:** the target's window reads "Use a Sha on Jiang Wei"; Pass is
   "Pass (discard 1 card)" from the target's view.
 - **History lines** for each skill in the stage 9–10 style.
-- **Wiki:** Mountain Generals as in play; Lord skills "Not used in Kingdom War";
+- **Wiki:** Mountain Generals as in play; Lord skills "Not used in Guozhan";
   awakening skills labelled "Awakening".
 - **Text** follows CLAUDE.md's UI text style.
 
@@ -277,7 +277,7 @@ Generic; the engine names no card, skill or General.
 ## Rulings to confirm in review
 
 1. **Zuo Ci's force** does not change with a Form (only gender), because force
-   identity in Kingdom War is set by the revealed General and drives allies.
+   identity in Guozhan is set by the revealed General and drives allies.
 2. **Stubborn** follows the printed rule: it gives one discarded card back and
    takes the rest; the crawled text ("return into their hand") is ambiguous.
    It needs 2 or more discarded cards.

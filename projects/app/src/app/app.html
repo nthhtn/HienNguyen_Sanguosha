@@ -9,7 +9,7 @@
       <mat-icon>public</mat-icon><span class="label">{{ 'nav.online' | t }}</span>
     </a>
     @for (menu of deckMenus; track menu.deck) {
-      <button mat-button type="button" [class]="'nav-' + menu.deck" [matMenuTriggerFor]="deckMenu" [class.active]="deckActive(menu.deck)" [attr.aria-label]="menu.label | t">
+      <button mat-button type="button" [class]="'nav-' + menu.route" [matMenuTriggerFor]="deckMenu" [class.active]="deckActive(menu.route)" [attr.aria-label]="menu.label | t">
         <mat-icon [fontSet]="menu.fontSet ?? ''">{{ menu.icon }}</mat-icon><span class="label">{{ menu.label | t }}</span>
       </button>
       <mat-menu #deckMenu="matMenu">

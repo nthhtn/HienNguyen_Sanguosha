@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // projects/sim/src/cli.ts
 import { createGame } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 import { parseBotKind, runGame } from './runGame';
 import { formatReport, runTournament } from './tournament';
 import { collectSamples, fitValues, formatTable } from './fitGenerals';
@@ -11,8 +11,8 @@ const registry = buildContentRegistry();
 
 function playOneGame(seed: number, numSeats: number) {
   const seatIds = Array.from({ length: numSeats }, (_, i) => `seat-${i}`);
-  const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
-  return runGame(initialState, { registry, mode: kingdomWarMode }, seed);
+  const initialState = createGame(guozhanMode, registry, seatIds, seed);
+  return runGame(initialState, { registry, mode: guozhanMode }, seed);
 }
 
 function runSingle(seed: number, numSeats: number): void {

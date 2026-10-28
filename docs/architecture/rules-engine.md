@@ -64,12 +64,12 @@ These are the concepts CLAUDE.md asks for, with where they live in
 
 A seat has one HP pool: half the printed HP of its two Generals, rounded
 down (`combinedMaxHp`). Damage and healing apply to that pool; the rounding
-bonus and the Main and Deputy reveal thresholds are rules in the Kingdom War
+bonus and the Main and Deputy reveal thresholds are rules in the Guozhan
 mode, not in the engine core.
 
 ### Hidden information
 
-Kingdom War is a hidden-information game: hands, the draw pile and unrevealed
+Guozhan is a hidden-information game: hands, the draw pile and unrevealed
 Generals are secret. The state stored by the application is the **full** state;
 `redactStateForSeat(state, viewer)` produces what one seat may see:
 
@@ -263,11 +263,11 @@ interface GameModeDefinition {
 }
 ```
 
-`kingdomWarMode` ([kingdomWar.ts](../../projects/content/src/lib/modes/kingdomWar.ts))
+`guozhanMode` ([guozhan.ts](../../projects/content/src/lib/modes/guozhan.ts))
 is the one implementation. It deals five Generals to each seat from the pool
-of the chosen deck (the Default Generals, or the Alternate ones, never mixed),
+of the chosen deck (the Dynasty Wars Generals, or the Kingdom Wars ones, never mixed),
 builds and shuffles that deck's cards, and deals four cards. A table seats at
-most ten, and fewer when the deck's pool is small (`kingdomWarMaxSeats`). Its `triggers` carry the mode's
+most ten, and fewer when the deck's pool is small (`guozhanMaxSeats`). Its `triggers` carry the mode's
 rules:
 
 - the Draw Phase draw and the Judgment Phase;
@@ -283,7 +283,7 @@ Optional rules chosen at game creation are stored in `state.rules`
 |---|---|
 | `firstRevealDraw` | with five or more seats, the first seat to reveal a General draws 2 cards |
 | `judgmentNotice` | every judgment waits for the popup to be closed (or 3 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
-| `deck` | the card distribution the draw pile is dealt from (a deck id). Absent means the Default deck. |
+| `deck` | the card distribution the draw pile is dealt from (a deck id). Absent means the default deck, Kingdom Wars (`DEFAULT_DECK_ID`). |
 
 Because the options sit in the state, adding a rule never changes how an old
 game replays.
@@ -303,6 +303,6 @@ registry or deck is built, so they fail at start-up rather than mid-game.
 A seat's `allegiance` (`'kingdom'` or `'ambitionist'`) is decided once, when it first shows a General
 (a death reveal too). The resolver asks the mode (`GameModeDefinition.decideAllegiance`) in the same
 step as the reveal, so no other effect or trigger can see a revealed seat that is still undecided.
-Kingdom War decides it from the cap of half the table, rounded down, counting every seat that ever
+Guozhan decides it from the cap of half the table, rounded down, counting every seat that ever
 held a slot of that Kingdom, dead ones included. See
 `docs/superpowers/specs/2026-10-26-ambitionist-rules.md`.

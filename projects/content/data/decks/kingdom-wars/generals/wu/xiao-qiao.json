@@ -1,0 +1,33 @@
+{
+  "id": "xiao-qiao",
+  "name": "Xiao Qiao",
+  "nameZh": "小乔",
+  "force": "wu",
+  "title": "The Unconventional Blossom",
+  "maxHp": 3,
+  "gender": "female",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Heavenly Scent",
+      "nameZh": "天香",
+      "text": "Every instance you receive damage, you can discard an on-hand card with suit of hearts to transfer the damage to another player, then that player draws X cards (X being the units of health that player has lost thus far)."
+    },
+    {
+      "name": "Rosy Cheeks",
+      "nameZh": "红颜",
+      "text": "Your cards with the suit of spades are viewed as cards with the suit of hearts.",
+      "tag": "Enforced ability"
+    }
+  ],
+  "synergisticPartners": [
+    "Zhou Yu (Husband)",
+    "Da Qiao (Sister)"
+  ],
+  "differenceFromNormal": "Unfortunately, since she is Zhou Yu's wife, she also suffers hideous disfigurement of her portrait. Otherwise, she is unchanged.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/xiao-qiao.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

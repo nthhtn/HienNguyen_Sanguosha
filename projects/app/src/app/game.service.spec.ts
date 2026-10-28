@@ -91,8 +91,8 @@ describe('GameService', () => {
   });
 
   it('completes general selection for every seat, rests in turn 1\'s Start window, then settles in its Play phase', () => {
-    // Seed 4 deals a mixed-kingdom table, so the game is still running after selection.
-    service.startGame(3, 4);
+    // Seed 4 deals a mixed-kingdom Dynasty Wars table, so the game is still running after selection.
+    service.startGame(3, 4, 'pass-and-play', [], { deck: 'dynastyWars' });
     finishSelection(service);
     expect(service.state()!.phase).toBe('Start');
     expect(service.state()!.turn.startWindow).toBe(true);
@@ -200,7 +200,7 @@ describe('GameService in vs-bots mode', () => {
   });
 
   it('plays on to a result even if the human only ends phases and passes, then stops (Review Focus 1)', () => {
-    service.startGame(3, 2, 'vs-bots');
+    service.startGame(3, 2, 'vs-bots', [], { deck: 'dynastyWars' });
     for (let step = 0; step < 200000 && !service.state()!.result; step++) {
       if (service.botThinkingSeatId()) { jest.runOnlyPendingTimers(); continue; }
       const legal = service.legalActions();

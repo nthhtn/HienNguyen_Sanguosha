@@ -74,16 +74,16 @@ describe('RoomService', () => {
       expect(await rulesOf('Bo', 5)).toEqual({ firstRevealDraw: true });
     });
 
-    it('keeps the deck at any seat count, and stores nothing for Default', async () => {
+    it('keeps the deck at any seat count, and stores nothing for Kingdom Wars', async () => {
       const { rooms, registered } = await setup();
-      const rulesOf = async (name: string, seatCount: number, deck: 'default' | 'alternate') => {
+      const rulesOf = async (name: string, seatCount: number, deck: 'dynastyWars' | 'kingdomWars') => {
         const user = await registered(name);
         const id = await rooms.create(user, { seatCount, rules: { deck }, displayName: name });
         return rooms.snapshot(user, id).rules;
       };
-      expect(await rulesOf('Ann', 3, 'alternate')).toEqual({ deck: 'alternate' });
-      expect(await rulesOf('Bo', 5, 'alternate')).toEqual({ deck: 'alternate' });
-      expect(await rulesOf('Cy', 3, 'default')).toEqual({});
+      expect(await rulesOf('Ann', 3, 'dynastyWars')).toEqual({ deck: 'dynastyWars' });
+      expect(await rulesOf('Bo', 5, 'dynastyWars')).toEqual({ deck: 'dynastyWars' });
+      expect(await rulesOf('Cy', 3, 'kingdomWars')).toEqual({});
     });
 
     it('stores the room with its host', async () => {
@@ -306,11 +306,11 @@ describe('RoomService', () => {
 
     it('keeps the deck when the seat count drops below the First Reveal Bonus minimum', async () => {
       const { run, host } = await lobby();
-      await run({ type: 'lobby.setRules', seatCount: 5, rules: { firstRevealDraw: true, deck: 'alternate' } });
-      expect(host.connection.room?.rules).toEqual({ firstRevealDraw: true, deck: 'alternate' });
-      await run({ type: 'lobby.setRules', seatCount: 4, rules: { firstRevealDraw: true, deck: 'alternate' } });
-      expect(host.connection.room?.rules).toEqual({ deck: 'alternate' });
-      await run({ type: 'lobby.setRules', seatCount: 4, rules: { deck: 'default' } });
+      await run({ type: 'lobby.setRules', seatCount: 5, rules: { firstRevealDraw: true, deck: 'dynastyWars' } });
+      expect(host.connection.room?.rules).toEqual({ firstRevealDraw: true, deck: 'dynastyWars' });
+      await run({ type: 'lobby.setRules', seatCount: 4, rules: { firstRevealDraw: true, deck: 'dynastyWars' } });
+      expect(host.connection.room?.rules).toEqual({ deck: 'dynastyWars' });
+      await run({ type: 'lobby.setRules', seatCount: 4, rules: { deck: 'kingdomWars' } });
       expect(host.connection.room?.rules).toEqual({});
     });
 

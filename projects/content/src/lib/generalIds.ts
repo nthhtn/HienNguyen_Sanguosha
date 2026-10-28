@@ -1,10 +1,10 @@
-// The Alternate deck's Generals share the one registry with Default's; their ids overlap, so they are
-// registered under a prefix (`alternate:liu-bei`).
-export const ALTERNATE_GENERAL_PREFIX = 'alternate:';
+// The Kingdom Wars deck's Generals share the one registry with Dynasty Wars'; their ids overlap, so they are
+// registered under a prefix (`kingdomWars:liu-bei`).
+export const KINGDOM_WARS_GENERAL_PREFIX = 'kingdomWars:';
 
-export const alternateGeneralId = (id: string): string => `${ALTERNATE_GENERAL_PREFIX}${id}`;
+export const kingdomWarsGeneralId = (id: string): string => `${KINGDOM_WARS_GENERAL_PREFIX}${id}`;
 
-export const isAlternateGeneralId = (id: string): boolean => id.startsWith(ALTERNATE_GENERAL_PREFIX);
+export const isKingdomWarsGeneralId = (id: string): boolean => id.startsWith(KINGDOM_WARS_GENERAL_PREFIX);
 
 // The id without the prefix (stripped once); any other id is returned unchanged.
-export const baseGeneralId = (id: string): string => (isAlternateGeneralId(id) ? id.slice(ALTERNATE_GENERAL_PREFIX.length) : id);
+export const baseGeneralId = (id: string): string => (isKingdomWarsGeneralId(id) ? id.slice(KINGDOM_WARS_GENERAL_PREFIX.length) : id);

@@ -1,0 +1,30 @@
+{
+  "id": "lu-xun",
+  "name": "Lu Xun",
+  "nameZh": "陆逊",
+  "force": "wu",
+  "title": "The Pillar of Heaven",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Humility",
+      "nameZh": "谦逊",
+      "text": "When you become the target of STEAL 顺手牵羊 or ACEDIA 乐不思蜀, these cards are nullified.",
+      "tag": "Enforced ability"
+    },
+    {
+      "name": "Scrutinize",
+      "nameZh": "度勢",
+      "text": "During your action phase, you can use a red on-hand card as AMASS 以逸待勞."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "The ability description for \"Humility\" has been changed from “cannot become the target of... ” to “... cards are nullified”. “One after another”, his signature ability, has been replaced by “Scrutinize”, which turns Lu Xun from a highly independent character to a support character.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/lu-xun.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

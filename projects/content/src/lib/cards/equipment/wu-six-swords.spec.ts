@@ -1,7 +1,7 @@
 import type { CardInstance, GameState, Kingdom } from 'engine';
 import { buildContentRegistry } from '../../registry';
 import { attackRange } from '../../shared/queries';
-import { alternateCardData } from '../../alternateCards';
+import { kingdomWarsCardData } from '../../kingdomWarsCards';
 import { withFillers } from '../../generals/fillers.testing';
 
 const registry = withFillers(buildContentRegistry());
@@ -38,7 +38,7 @@ describe('Six Swords of Wu', () => {
   it('is a range-2 weapon in the registry', () => {
     const def = registry.cards.get('wu-six-swords');
     expect(def?.equipSlot).toBe('weapon');
-    expect(def?.weaponRange).toBe(alternateCardData('wu-six-swords')?.range);
+    expect(def?.weaponRange).toBe(kingdomWarsCardData('wu-six-swords')?.range);
     expect(def?.weaponRange).toBe(2);
   });
 

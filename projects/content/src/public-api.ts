@@ -2,22 +2,22 @@
  * Public API Surface of content
  */
 export * from './lib/registry';
-export * from './lib/modes/kingdomWar';
+export * from './lib/modes/guozhan';
 export * from './lib/decks';
 export * from './lib/assets';
-export * from './lib/alternateCards';
-export * from './lib/alternateGenerals';
+export * from './lib/kingdomWarsCards';
+export * from './lib/kingdomWarsGenerals';
 export * from './lib/generalIds';
-export * from './lib/wikiAlternateGenerals';
+export * from './lib/wikiKingdomWarsGenerals';
 export {
-  abilityHint, abilityName, alternateCardTranslation, alternateGeneralDisplayData, alternateGeneralTranslations, cardDisplayData, cardIds,
+  abilityHint, abilityName, kingdomWarsCardTranslation, kingdomWarsGeneralDisplayData, kingdomWarsGeneralTranslations, cardDisplayData, cardIds,
   cardTranslations, choicePromptText, competeOutcomeText, ENGLISH_PROSE, generalIds, generalTranslations, judgmentOutcomeText, judgmentRuleText,
   reviewGeneralIds, seatPickText, selectionText, skillIdOf, stepSelectionText,
 } from './lib/display';
 export type {
-  AlternateGeneralDisplayData, AlternateGeneralTranslation, CardDisplayData, CardTranslation, GeneralDisplayData, GeneralTranslation, JudgmentOutcomeNames,
+  KingdomWarsGeneralDisplayData, KingdomWarsGeneralTranslation, CardDisplayData, CardTranslation, GeneralDisplayData, GeneralTranslation, JudgmentOutcomeNames,
 } from './lib/display';
-export { baseSkillId } from './lib/alternateBase';
+export { baseSkillId } from './lib/kingdomWarsBase';
 export * from './lib/generalDisplay';
 export * from './lib/judgmentOutcome';
 export { seatGender } from './lib/shared/gender';

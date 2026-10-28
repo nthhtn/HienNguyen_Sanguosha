@@ -1,7 +1,7 @@
 import { createGame } from 'engine';
 import type { SkillDefinition } from 'engine';
 import { buildContentRegistry } from '../registry';
-import { kingdomWarMode } from '../modes/kingdomWar';
+import { guozhanMode } from '../modes/guozhan';
 import { awakenedKey, isAwakened } from './awaken';
 import { farmCount, stashZoneOf } from './farm';
 import { competeStart } from './compete';
@@ -78,22 +78,22 @@ describe('formSkillOptions', () => {
   });
 });
 
-describe('Kingdom War setup', () => {
+describe('Guozhan setup', () => {
   const real = buildContentRegistry();
-  const game = createGame(kingdomWarMode, real, ['seat-0', 'seat-1', 'seat-2'], 7);
+  const game = createGame(guozhanMode, real, ['seat-0', 'seat-1', 'seat-2'], 7, { deck: 'dynastyWars' });
 
   it('every seat has a stash zone, and the spare pool is exactly the Generals nobody was dealt', () => {
     expect(game.seats.every((s) => s.stash?.zoneId === `${s.id}:stash`)).toBe(true);
     expect(game.zones.filter((z) => z.id.endsWith(':stash'))).toHaveLength(3);
     const dealt = Object.values(game.generalSelection!.candidates).flat();
     // (a General that deals spare Generals is never one of them)
-    const undealt = [...real.generals.keys()].filter((id) => !id.startsWith('alternate:') && !dealt.includes(id) && !real.generals.get(id)!.skills.some((s) => s.spareGenerals)).sort();
+    const undealt = [...real.generals.keys()].filter((id) => !id.startsWith('kingdomWars:') && !dealt.includes(id) && !real.generals.get(id)!.skills.some((s) => s.spareGenerals)).sort();
     expect([...game.spareGenerals!].sort()).toEqual(undealt);
     expect(new Set(game.spareGenerals).size).toBe(game.spareGenerals!.length);
   });
 });
 
-describe('Kingdom War: the killer and the stash', () => {
+describe('Guozhan: the killer and the stash', () => {
   it('a seat killed by damage is eliminated with the damage source as its killer', () => {
     let s = table({ 'seat-b:stash': [card('f1', 'sha')] }, { hp: { 'seat-b': 1 }, kingdoms: { 'seat-b': 'Qun' } });
     s = hk.run(s, [{ kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-a' }, target: { kind: 'seat', seatId: 'seat-b' }, amount: 1, nature: 'normal' } }]);

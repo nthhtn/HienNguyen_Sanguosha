@@ -35,7 +35,7 @@ Decisions settled during brainstorming:
   Whenever an optional or active one could be used, it is offered as "Reveal
   X to use Y", and using it reveals that General. Compulsory skills of a
   hidden General don't apply.
-- **Lord skills are inactive** in Kingdom War, which has no Lord: Escort,
+- **Lord skills are inactive** in Guozhan, which has no Lord: Escort,
   Fierce General and Rescued.
 - **"Trick" is gone.** The term is "Tool" everywhere.
 - **Seat avatar.** Each seat tile shows one split portrait: Main on the left,
@@ -159,7 +159,7 @@ Stage 6 adds skill buttons under each half (see the General Skills spec).
   - While **you** are dying, you may play a Wine on yourself to recover 1 HP.
     You can't use Wine to save another seat.
   - Engine: `DyingEffect.rescueCardIds` becomes
-    `{ any: string[]; self: string[] }`. Kingdom War passes
+    `{ any: string[]; self: string[] }`. Guozhan passes
     `{ any: ['peach'], self: ['wine'] }`. The dying seat's window allows both
     lists; other seats' windows allow `any`. The dying seat is asked even
     with neither, as today.

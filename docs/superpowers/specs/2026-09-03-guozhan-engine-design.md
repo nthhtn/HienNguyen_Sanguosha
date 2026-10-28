@@ -1,4 +1,4 @@
-# Kingdom War (Guozhan) Rules Engine — Design Spec
+# Guozhan Rules Engine — Design Spec
 
 Status: Approved for implementation planning
 Date: 2026-09-03 (revised: explicit domain model; named pipeline stages
@@ -7,7 +7,7 @@ and registry-based extensibility)
 ## Purpose
 
 Build the first sub-project of a web-based Sanguosha board game application:
-a headless, framework-independent rules engine implementing the Kingdom War
+a headless, framework-independent rules engine implementing the Guozhan
 (国战/Guozhan) mode, plus a minimal content set and simulation harness
 sufficient to exercise and automatically test it. No Angular UI, networking,
 persistence, or application/session layer is in scope for this sub-project —
@@ -23,7 +23,7 @@ than loosely structured objects.
 ## Scope of this milestone
 
 In scope:
-- Kingdom War mode: 2-8 players, each secretly assigned a kingdom (Wei, Shu,
+- Guozhan mode: 2-8 players, each secretly assigned a kingdom (Wei, Shu,
   Wu, Qun/Neutral) and two hidden generals (main + deputy).
 - Combined HP pool, voluntary + forced general reveal, kingdom-based win
   condition.
@@ -67,7 +67,7 @@ projects/engine/    — pure TypeScript library, zero Angular/browser deps
 projects/content/   — pure TypeScript library, depends only on `engine`
   src/lib/          — general/card/skill *definitions* (data + effect fns),
                        exported as a populated ContentRegistry instance;
-                       Kingdom War's GameModeDefinition also lives here
+                       Guozhan's GameModeDefinition also lives here
                        since it is mode content, not generic engine code
 
 projects/sim/       — headless Node CLI, depends on `engine` + `content`
@@ -159,7 +159,7 @@ UI-layer concern.
 ### Target
 
 A resolved reference to something an Action or Effect points at, used
-throughout instead of raw string ids — necessary because some Kingdom War
+throughout instead of raw string ids — necessary because some Guozhan
 skills target a specific general slot rather than the seat as a whole.
 
 ```
@@ -283,7 +283,7 @@ trigger was gathered for. The engine gathers a general's triggers once per
 holder (seat × slot), so a skill must take "which seat am I acting for" from
 `owner` and must never re-derive it by searching `GameState` for its own
 general id — the same `GeneralDefinition` can legitimately be held by more than
-one Seat at once (Kingdom War assigns generals round-robin), and such a search
+one Seat at once (Guozhan assigns generals round-robin), and such a search
 would always resolve to whichever holder comes first, double-firing the skill
 for that seat and never firing it for the others.
 
@@ -371,7 +371,7 @@ enforced structurally, not just as a convention:
   in `content`, never touching `engine`.
 - **Game modes are pluggable.** A `GameModeDefinition` interface (setup,
   win-condition check, mode-specific triggers/actions) is the engine's only
-  notion of "a mode." Kingdom War is one `GameModeDefinition` instance,
+  notion of "a mode." Guozhan is one `GameModeDefinition` instance,
   defined in `content` (it's mode content, not generic engine behavior) and
   selected via a `ModeRegistry` at game setup. The generic `resolve()`
   pipeline, phase sequencing, and targeting/legality modules stay entirely
@@ -405,11 +405,11 @@ a pure, framework-free TypeScript package executable under plain Node — the
 headless `sim` CLI in this same milestone is existing proof of that, not a
 new claim to satisfy later.
 
-## Kingdom War mode rules
+## Guozhan mode rules
 
 Implemented as a single `GameModeDefinition` instance in `content`,
 consumed by the engine's generic setup/win-check machinery — the engine
-itself has no Kingdom-War-specific knowledge:
+itself has no Guozhan-specific knowledge:
 
 - **Setup**: each Seat is assigned a kingdom and two hidden `GeneralInstance`s
   (main + deputy), both starting with `revealed: false`.
@@ -465,7 +465,7 @@ itself has no Kingdom-War-specific knowledge:
 ## Simulation harness
 
 `projects/sim` is a headless Node CLI that:
-- Seeds an RNG and sets up a Kingdom War game for N seats (2-8),
+- Seeds an RNG and sets up a Guozhan game for N seats (2-8),
   auto-assigning kingdoms/generals from the content pack.
 - Drives the game to completion using a random-legal-move bot: at each
   decision point (including responding to a `PendingResponse`), queries the
@@ -478,10 +478,10 @@ itself has no Kingdom-War-specific knowledge:
 
 - Jest unit tests in `projects/engine` covering the generic `resolve()`
   pipeline (including response-window pause/resume) and targeting/legality
-  queries, using minimal fixture registries — no Kingdom-War-specific
+  queries, using minimal fixture registries — no Guozhan-specific
   behavior under test here, since the engine has none.
 - Jest unit tests in `projects/content` covering individual general/card
-  skill definitions and the Kingdom War `GameModeDefinition` (setup,
+  skill definitions and the Guozhan `GameModeDefinition` (setup,
   reveal, win condition) in isolation.
 - Property-style tests that run the `sim` harness across many seeds and
   assert invariants such as: combined HP never goes negative, every game

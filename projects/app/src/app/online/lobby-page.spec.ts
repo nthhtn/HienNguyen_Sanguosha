@@ -126,6 +126,7 @@ describe('LobbyPage', () => {
 
   it('puts the seat toggle back when the server refuses the change', async () => {
     lobby.setRules.mockResolvedValue(false);
+    lobby.room.set({ ...MIXED, rules: { deck: 'dynastyWars' } });
     const { el, harness } = await render();
     const checked = () => harness.routeDebugElement!.queryAll(By.directive(MatButtonToggle)).filter((t) => (t.componentInstance as MatButtonToggle).checked).map((t) => (t.componentInstance as MatButtonToggle).value);
     harness.detectChanges();
@@ -148,21 +149,23 @@ describe('LobbyPage', () => {
   });
 
   it('gives the host a deck choice that sends the new deck beside the other rules', async () => {
-    lobby.room.set({ ...MIXED, rules: { firstRevealDraw: true } });
+    lobby.room.set({ ...MIXED, rules: { firstRevealDraw: true, deck: 'dynastyWars' } });
     const { el, harness } = await render();
     expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => (r.querySelector('input') as HTMLInputElement).checked)).toEqual([false, true]);
-    const alternate = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent?.trim() === 'Kingdom Wars')!;
-    (alternate.querySelector('input') as HTMLInputElement).click();
+    const kingdomWars = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent?.trim() === 'Kingdom Wars')!;
+    (kingdomWars.querySelector('input') as HTMLInputElement).click();
     harness.detectChanges();
-    expect(lobby.setRules).toHaveBeenCalledWith(5, { firstRevealDraw: true, deck: 'alternate' });
+    expect(lobby.setRules).toHaveBeenCalledWith(5, { firstRevealDraw: true, deck: 'kingdomWars' });
   });
 
   it('puts the deck choice back when the server refuses the change', async () => {
     lobby.setRules.mockResolvedValue(false);
+    lobby.room.set({ ...MIXED, rules: { deck: 'dynastyWars' } });
+    lobby.room.set({ ...MIXED, rules: { deck: 'dynastyWars' } });
     const { el, harness } = await render();
     const checked = () => [...el.querySelectorAll('.deck mat-radio-button input')].map((i) => (i as HTMLInputElement).checked);
-    const alternate = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent?.trim() === 'Kingdom Wars')!;
-    (alternate.querySelector('input') as HTMLInputElement).click();
+    const kingdomWars = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent?.trim() === 'Kingdom Wars')!;
+    (kingdomWars.querySelector('input') as HTMLInputElement).click();
     harness.detectChanges();
     expect(checked()).toEqual([true, false]);
     await harness.fixture.whenStable();
@@ -172,9 +175,9 @@ describe('LobbyPage', () => {
 
   it('shows a non-host which deck the room uses', async () => {
     lobby.you.set('p-bo');
-    lobby.room.set({ ...MIXED, rules: { deck: 'alternate' } });
+    lobby.room.set({ ...MIXED, rules: { deck: 'dynastyWars' } });
     const { el } = await render();
-    expect(el.querySelector('.rules-summary')?.textContent?.trim()).toBe('5 Seats · Deck: Kingdom Wars · First Reveal Bonus: Off');
+    expect(el.querySelector('.rules-summary')?.textContent?.trim()).toBe('5 Seats · Deck: Dynasty Wars · First Reveal Bonus: Off');
   });
 
   it('disables the deck choice while the socket is down', async () => {
@@ -198,7 +201,7 @@ describe('LobbyPage', () => {
   it('shows a non-host the rules, with no host controls', async () => {
     lobby.you.set('p-bo');
     const { el } = await render();
-    expect(el.querySelector('.rules-summary')?.textContent?.trim()).toBe('5 Seats · Deck: Dynasty Wars · First Reveal Bonus: On');
+    expect(el.querySelector('.rules-summary')?.textContent?.trim()).toBe('5 Seats · Deck: Kingdom Wars · First Reveal Bonus: On');
     expect(el.querySelector('.deck')).toBeNull();
     expect(el.querySelector('button.add-bot')).toBeNull();
     expect(el.querySelector('button.remove')).toBeNull();

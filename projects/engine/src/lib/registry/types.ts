@@ -259,7 +259,7 @@ export interface SkillDefinition extends Abilities {
   id: string;
   // Applies without asking. Off while its General is hidden (see skillsInPlay).
   compulsory?: boolean;
-  // A Lord skill: never in play, since Kingdom War has no Lord.
+  // A Lord skill: never in play, since Guozhan has no Lord.
   lord?: boolean;
   // Fires once, compulsorily, when its condition holds at its owner's turn
   // start (content marks it awakened). Never borrowed (Incarnation).

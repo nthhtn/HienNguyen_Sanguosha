@@ -144,8 +144,8 @@ export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, _re
     case 'rouse-the-tiger':
       return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'eternal-loyalty': {
-      // Alternate Eternal Loyalty stops at 5 cards, so a seat is only short up to that cap.
-      const cap = choice.reason.kind === 'ability' && choice.reason.abilityId === 'alternate:eternal-loyalty' ? 5 : Infinity;
+      // Kingdom Wars Eternal Loyalty stops at 5 cards, so a seat is only short up to that cap.
+      const cap = choice.reason.kind === 'ability' && choice.reason.abilityId === 'kingdomWars:eternal-loyalty' ? 5 : Infinity;
       const short = (s: Seat) => Math.min(s.maxCombinedHp, cap) - handSize(view, s);
       const ally = seats.filter((s) => s.id !== me.id && isAlly(me, s, view)).sort((a, b) => short(b) - short(a))[0];
       return (ally && short(ally) > short(me) ? ally : me).id;

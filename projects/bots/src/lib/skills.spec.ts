@@ -5,7 +5,7 @@ import { conversionSpare, pickActiveSkill } from './skills';
 import { registry, ctx, card, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
 
 describe('may-skills the bot always uses', () => {
-  it.each(['evil-hero', 'feedback', 'heavens-envy', 'bestowed-rouse', 'gathering-wisdom', 'brave-gesture', 'self-restraint', 'river-goddess', 'alternate:goddess-luo', 'iron-cavalry', 'astrology'])('%s', (skillId) => {
+  it.each(['evil-hero', 'feedback', 'heavens-envy', 'bestowed-rouse', 'gathering-wisdom', 'brave-gesture', 'self-restraint', 'river-goddess', 'kingdomWars:goddess-luo', 'iron-cavalry', 'astrology'])('%s', (skillId) => {
     expect(picked(decide(asking(table(), skillId)))).toBe('use');
   });
 
@@ -20,17 +20,17 @@ describe('a compulsory skill’s ask', () => {
     expect(picked(decide(asking(table(), 'armed-consorts')))).toBe('use');
   });
 
-  it('Alternate Warrior Lady, a may ask, gets the same legal answer', () => {
-    expect(picked(decide(asking(table(), 'alternate:warrior-lady')))).toBe('use');
+  it('Kingdom Wars Warrior Lady, a may ask, gets the same legal answer', () => {
+    expect(picked(decide(asking(table(), 'kingdomWars:warrior-lady')))).toBe('use');
   });
 
-  it('Alternate Envious Moon draws, as Default does', () => {
-    expect(picked(decide(asking(table(), 'alternate:envious-moon')))).toBe('use');
+  it('Kingdom Wars Envious Moon draws, as Dynasty Wars does', () => {
+    expect(picked(decide(asking(table(), 'kingdomWars:envious-moon')))).toBe('use');
   });
 });
 
-describe('Alternate Bequeathed Strategy', () => {
-  const id = 'alternate:bequeathed-strategy';
+describe('Kingdom Wars Bequeathed Strategy', () => {
+  const id = 'kingdomWars:bequeathed-strategy';
   const picking = (options: PendingChoice['options']): GameState => ({
     ...table(),
     pendingChoice: { id: 'pick', seatId: 'seat-a', verb: 'pick', secret: true, reason: { kind: 'ability', owner: general('seat-a', id), abilityId: id }, options },
@@ -48,10 +48,10 @@ describe('Alternate Bequeathed Strategy', () => {
   });
 });
 
-describe('Alternate Ding Feng', () => {
-  const swift = 'alternate:swift-and-deadly';
+describe('Kingdom Wars Ding Feng', () => {
+  const swift = 'kingdomWars:swift-and-deadly';
   const sixSeats = (hand: CardInstance[], equip: CardInstance[] = []) =>
-    table({ 'seat-a:hand': hand, 'seat-a:equip': equip }, { seats: 6, generals: { 'seat-a': ['alternate:ding-feng', 'filler-meng-huo', true] } });
+    table({ 'seat-a:hand': hand, 'seat-a:equip': equip }, { seats: 6, generals: { 'seat-a': ['kingdomWars:ding-feng', 'filler-meng-huo', true] } });
   const offered = (s: GameState) => getLegalActions(s, 'seat-a', registry).some((a) => a.kind === 'UseSkillAction' && a.owner.kind === 'general' && a.owner.skillId === swift);
 
   it('Swift and Deadly is used with a Sha in hand and a spare card, discarding the spare and aiming at a far foe', () => {
@@ -84,18 +84,18 @@ describe('Alternate Ding Feng', () => {
   });
 });
 
-describe('Alternate Gan Fu Ren', () => {
+describe('Kingdom Wars Gan Fu Ren', () => {
   it('Prudence is always used, and the card goes to an ally of her Kingdom', () => {
-    expect(picked(decide(asking(table(), 'alternate:prudence')))).toBe('use');
+    expect(picked(decide(asking(table(), 'kingdomWars:prudence')))).toBe('use');
     const options = ['seat-b', 'seat-c'].map((seatId) => ({ id: seatId, shows: { kind: 'seat' as const, seatId }, effects: [] }));
     const s = table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-c': 'Wei' } });
-    const pick = { ...s, pendingChoice: { id: 'pick', seatId: 'seat-a', verb: 'pick' as const, reason: { kind: 'ability' as const, owner: general('seat-a', 'alternate:prudence'), abilityId: 'alternate:prudence' }, options } };
+    const pick = { ...s, pendingChoice: { id: 'pick', seatId: 'seat-a', verb: 'pick' as const, reason: { kind: 'ability' as const, owner: general('seat-a', 'kingdomWars:prudence'), abilityId: 'kingdomWars:prudence' }, options } };
     expect(picked(decide(pick))).toBe('seat-c');
   });
 
   it('Divine Wisdom is used when the discard heals her, or costs at most 1 card, else declined', () => {
     const hand = (n: number) => Array.from({ length: n }, (_, i) => card(`h${i}`, 'shan'));
-    const id = 'alternate:divine-wisdom';
+    const id = 'kingdomWars:divine-wisdom';
     expect(picked(decide(asking(table({ 'seat-a:hand': hand(3) }, { hp: { 'seat-a': 3 } }), id)))).toBe('use');
     expect(picked(decide(asking(table({ 'seat-a:hand': hand(2) }, { hp: { 'seat-a': 3 } }), id)))).toBe('decline');
     expect(picked(decide(asking(table({ 'seat-a:hand': hand(1) }, { hp: { 'seat-a': 3 } }), id)))).toBe('use');
@@ -103,8 +103,8 @@ describe('Alternate Gan Fu Ren', () => {
   });
 });
 
-describe('Alternate Pan Feng, Insanity Axe', () => {
-  const id = 'alternate:insanity-axe';
+describe('Kingdom Wars Pan Feng, Insanity Axe', () => {
+  const id = 'kingdomWars:insanity-axe';
   it('is used against a non-ally only', () => {
     expect(picked(decide(asking(table(), id, 'seat-b')))).toBe('use');
     expect(picked(decide(asking(table({}, { kingdoms: { 'seat-b': 'Wei' } }), id, 'seat-b')))).toBe('decline');
@@ -339,29 +339,29 @@ describe('fallbacks when no suitable seat is offered', () => {
   });
 });
 
-describe('an Alternate variant is used like its base', () => {
+describe('a Kingdom Wars variant is used like its base', () => {
   const seatWith = (generalId: string, n: number) => table(
     { 'seat-a:hand': Array.from({ length: n }, (_, i) => card(`k${i}`, 'shan')) },
     { generals: { 'seat-a': [generalId, 'filler-meng-huo'], 'seat-b': ['filler-jiang-wei', 'filler-liu-shan'] }, kingdoms: { 'seat-a': 'Shu', 'seat-b': 'Shu' } },
   );
 
-  it.each([5, 1])('Alternate Liu Bei with %i cards decides as Liu Bei does', (n) => {
+  it.each([5, 1])('Kingdom Wars Liu Bei with %i cards decides as Liu Bei does', (n) => {
     const base = decide(seatWith('liu-bei', n));
-    const alt = decide(seatWith('alternate:liu-bei', n));
+    const alt = decide(seatWith('kingdomWars:liu-bei', n));
     expect(alt.kind).toBe(base.kind);
-    if (n === 5) expect(alt).toMatchObject({ kind: 'UseSkillAction', owner: { skillId: 'alternate:benevolence' } });
+    if (n === 5) expect(alt).toMatchObject({ kind: 'UseSkillAction', owner: { skillId: 'kingdomWars:benevolence' } });
   });
 
   it('gives the cards to an ally like Kindness', () => {
-    const selecting = useSkill(seatWith('alternate:liu-bei', 5), 'alternate:benevolence');
+    const selecting = useSkill(seatWith('kingdomWars:liu-bei', 5), 'kingdomWars:benevolence');
     expect(picked(decide(selecting))).toHaveLength(2);
     const giving = act(selecting, decide(selecting));
     expect(picked(decide(giving))).toBe('seat-b');
   });
 });
 
-describe('Alternate Yue Jin, Dauntless', () => {
-  const id = 'alternate:dauntless';
+describe('Kingdom Wars Yue Jin, Dauntless', () => {
+  const id = 'kingdomWars:dauntless';
   const sel = (step: string, eligibleIds: string[], seatId = 'seat-a'): PendingSelection => ({
     id: 'sel', seatId, reason: { kind: 'ability', owner: general('seat-b', id), abilityId: id }, of: 'cards', eligibleIds, min: 1, max: 1,
     then: { kind: 'skill-step', step: { kind: 'SkillStepEffect', owner: general('seat-b', id), step, data: { victim: 'seat-a' } } }, onCancel: [],
@@ -384,8 +384,8 @@ describe('Alternate Yue Jin, Dauntless', () => {
   });
 });
 
-describe('Alternate Tian Feng, Deathly Counsel', () => {
-  const id = 'alternate:deathly-counsel';
+describe('Kingdom Wars Tian Feng, Deathly Counsel', () => {
+  const id = 'kingdomWars:deathly-counsel';
   it('is used only when a non-ally has a hand or equipment card', () => {
     const foes = { kingdoms: { 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Wei' } } as const;
     expect(picked(decide(asking(table({ 'seat-b:hand': [card('b1', 'sha')] }, { kingdoms: { 'seat-a': 'Qun' } }), id)))).toBe('use');
@@ -406,8 +406,8 @@ describe('Alternate Tian Feng, Deathly Counsel', () => {
   });
 });
 
-describe('Alternate Kong Rong, Comity', () => {
-  const id = 'alternate:comity';
+describe('Kingdom Wars Kong Rong, Comity', () => {
+  const id = 'kingdomWars:comity';
   it('is used only when an ally is alive to take the cards', () => {
     expect(picked(decide(asking(table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Shu', 'seat-d': 'Wu' } }), id)))).toBe('use');
     expect(picked(decide(asking(table({}, { kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Shu', 'seat-c': 'Shu', 'seat-d': 'Wu' } }), id)))).toBe('decline');
@@ -421,28 +421,28 @@ describe('Alternate Kong Rong, Comity', () => {
   });
 });
 
-describe('Alternate Ma Teng, Call of Valour', () => {
-  const id = 'alternate:call-of-valour';
+describe('Kingdom Wars Ma Teng, Call of Valour', () => {
+  const id = 'kingdomWars:call-of-valour';
   const pick = (s: GameState) => pickActiveSkill(s, s.seats[0], getLegalActions(s, 'seat-a', registry), registry, 'late');
 
   it('is used once, in the Play Phase, and not again', () => {
-    const s = table({}, { hp: { 'seat-a': 3 }, generals: { 'seat-a': ['alternate:ma-teng', 'filler-meng-huo', true] } });
+    const s = table({}, { hp: { 'seat-a': 3 }, generals: { 'seat-a': ['kingdomWars:ma-teng', 'filler-meng-huo', true] } });
     const action = pick(s);
     expect(action).toMatchObject({ owner: { skillId: id } });
     expect(pick(act(s, action!))).toBeUndefined();
   });
 
   it('is kept for later at full HP with no ally of his Kingdom', () => {
-    expect(pick(table({}, { generals: { 'seat-a': ['alternate:ma-teng', 'filler-meng-huo', true] } }))).toBeUndefined();
+    expect(pick(table({}, { generals: { 'seat-a': ['kingdomWars:ma-teng', 'filler-meng-huo', true] } }))).toBeUndefined();
   });
 });
 
-describe('Alternate Ji Ling, Double Edged', () => {
-  const id = 'alternate:double-edged';
+describe('Kingdom Wars Ji Ling, Double Edged', () => {
+  const id = 'kingdomWars:double-edged';
   const kingdoms = { 'seat-a': 'Wei', 'seat-b': 'Qun', 'seat-c': 'Wu', 'seat-d': 'Qun' } as const;
   // Seat-a's Play Phase begins (no Draw); he holds a K, seat-d (Qun, like seat-b) a 5.
   const starting = (mine = 13): GameState => {
-    const t = table({ 'seat-a:hand': [card('k', 'peach', 'heart', mine)], 'seat-d:hand': [card('x', 'shan', 'spade', 5)] }, { kingdoms, hp: { 'seat-b': 2 }, generals: { 'seat-a': ['alternate:ji-ling', 'filler-meng-huo', true] } });
+    const t = table({ 'seat-a:hand': [card('k', 'peach', 'heart', mine)], 'seat-d:hand': [card('x', 'shan', 'spade', 5)] }, { kingdoms, hp: { 'seat-b': 2 }, generals: { 'seat-a': ['kingdomWars:ji-ling', 'filler-meng-huo', true] } });
     return advanceToDecision({ ...t, phase: 'Draw', turn: { ...t.turn, flags: { skipDraw: true } } }, ctx).state;
   };
   // Every decision made by the bots until nothing is pending.
@@ -465,10 +465,10 @@ describe('Alternate Ji Ling, Double Edged', () => {
   });
 });
 
-describe('Alternate Zou Shi', () => {
+describe('Kingdom Wars Zou Shi', () => {
   // The bot leaves both her active skills alone (legal: they are optional); a hidden Zou Shi plays on hidden.
   it.each([true, false])('never uses Femme Fatale or Impetus for Conflicts (revealed: %s)', (revealed) => {
-    let s = table({ 'seat-a:hand': [card('e1', 'red-hare'), card('e2', 'axe')] }, { generals: { 'seat-a': ['alternate:zou-shi', 'filler-meng-huo', revealed] } });
+    let s = table({ 'seat-a:hand': [card('e1', 'red-hare'), card('e2', 'axe')] }, { generals: { 'seat-a': ['kingdomWars:zou-shi', 'filler-meng-huo', revealed] } });
     expect(getLegalActions(s, 'seat-a', registry).some((a) => a.kind === 'UseSkillAction')).toBe(true);
     for (let i = 0; i < 10 && s.turn.ownerSeatId === 'seat-a' && s.phase === 'Play' && actor(s) === 'seat-a'; i++) {
       const action = decide(s);

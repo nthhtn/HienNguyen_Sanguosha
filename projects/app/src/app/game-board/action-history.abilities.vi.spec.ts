@@ -90,9 +90,9 @@ describe('ability outcomes in English and Vietnamese', () => {
     expect(vi_(log)).toEqual([`Người chơi 0 dùng ${upheaval}: mỗi người chơi khác phải đánh một Slash hoặc mất 1 Sinh lực`]);
   });
 
-  it('Alternate Descend into Chaos says the same', () => {
-    const chaos = abilityName('alternate:descend-into-chaos');
-    const log = [used('used', { abilityId: 'alternate:descend-into-chaos' })];
+  it('Kingdom Wars Descend into Chaos says the same', () => {
+    const chaos = abilityName('kingdomWars:descend-into-chaos');
+    const log = [used('used', { abilityId: 'kingdomWars:descend-into-chaos' })];
     expect(en_(log)).toEqual([`Seat 0 used ${chaos}: every other seat plays a Slash or loses 1 HP`]);
   });
 });

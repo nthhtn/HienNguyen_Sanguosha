@@ -14,7 +14,7 @@ const unfinished = { seats: [], result: null } as unknown as GameState;
 const evenSeatsChallenge = (seatId: string): Side => (Number(seatId.slice(-1)) % 2 === 0 ? 'challenger' : 'baseline');
 
 describe('sideOf', () => {
-  it('alternates by seat and flips every game', () => {
+  it('kingdomWarsGenerals by seat and flips every game', () => {
     expect([0, 1, 2, 3].map((k) => sideOf(0, k))).toEqual(['challenger', 'baseline', 'challenger', 'baseline']);
     expect([0, 1, 2, 3].map((k) => sideOf(1, k))).toEqual(['baseline', 'challenger', 'baseline', 'challenger']);
   });

@@ -108,7 +108,7 @@ describe('a Duel with no physical card', () => {
 describe('Lightning', () => {
   it('goes to the discard pile before its 3 damage, which names it as the cause', () => {
     const bolt = card('li', 'lightning', 'spade', 1);
-    // Kingdom War's own triggers judge the Judgment slot.
+    // Guozhan's own triggers judge the Judgment slot.
     const s = harness(kwMode).settle(table({ 'seat-a:judgment': [bolt], drawPile: [card('j', 'shan', 'spade', 5), ...Array.from({ length: 4 }, (_, i) => card(`p${i}`, 'shan', 'heart'))] }, { phase: 'Start' }));
     const moved = s.log.findIndex((e) => e.kind === 'CardMovedEvent' && e.cardInstanceId === 'li' && e.toZoneId === 'discardPile');
     const damaged = s.log.findIndex((e) => e.kind === 'DamageDealtEvent');

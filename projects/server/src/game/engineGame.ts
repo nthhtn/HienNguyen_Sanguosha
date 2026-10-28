@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { kingdomWarMode } from 'content';
+import { guozhanMode } from 'content';
 import { createGame, createRng, getActingSeatIds, getLegalActions, isOfferedAction, resolve, shuffle } from 'engine';
 import type { Action, ContentRegistry, EngineContext, GameRules, GameState } from 'engine';
 import type { MemberKind } from 'protocol';
@@ -10,7 +10,7 @@ import { GameActionRecord, GameRecord, GameSeat } from '../persistence/records';
 export const SEATING_SALT = 0x5eed5ea7;
 
 export function engineContext(registry: ContentRegistry): EngineContext {
-  return { registry, mode: kingdomWarMode };
+  return { registry, mode: guozhanMode };
 }
 
 export interface SeatCandidate {

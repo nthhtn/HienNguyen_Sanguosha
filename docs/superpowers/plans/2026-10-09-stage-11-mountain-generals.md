@@ -12,7 +12,7 @@
   - effects `GainSkillEffect`, `SilenceSeatEffect`, `DealSpareGeneralsEffect` (logs nothing: the log is public), `ChooseFormSkillEffect`, `GrantExtraTurnEffect`, with their events;
   - `SkillDefinition` flags `awakening`, `limited`, `afterDeath`, `spareGenerals`; `AbilityModifiers.distanceToOthersFrom`; `Conversion.from: 'stash'`;
   - `skillsInPlay` reads gained skills, the chosen Form's skill and silencing; the killer travels with the dying round to `SeatEliminatedEvent`.
-- **Content:** `generals/mountain.ts`; `shared/awaken.ts`, `shared/farm.ts`, `shared/forms.ts`; Kingdom War deals the spare pool, deals Forms when Generals are chosen, adds the stash zone, and names the killer.
+- **Content:** `generals/mountain.ts`; `shared/awaken.ts`, `shared/farm.ts`, `shared/forms.ts`; Guozhan deals the spare pool, deals Forms when Generals are chosen, adds the stash zone, and names the killer.
 - **Around it:** bots play the Mountain skills, the sim runs all 57 Generals plus forced pairings, the app gains Farm and Form displays, a silenced marker, the Instigate window and new prompts and history lines.
 
 **Tech Stack:** TypeScript, Jest (ts-jest), Angular 22 (app task).
@@ -25,11 +25,11 @@
 - **Clever Change's phases are wired to the engine's existing skip machinery:** Judgment is asked as the turn starts (the Judgment Phase judges on entry, as Godspeed does), Draw is a `before:DrawPhaseEffect` replacement (`atDrawPhase`), Play is asked as it begins and ended with `endFlagOf`, Discard is asked as it begins and skipped with `skipFlagOf`. No new `before:PhaseStartEffect` is added; the spec item 5 allowed re-using what exists. To avoid pointless asks, each phase is offered only when skipping can matter: Judgment with a card in the Judgment slot, Draw always (with a seat to take from), Play with a legal move, Discard when cards are owed.
 - **Decentralization's "extra turn" needs one engine piece the spec did not list:** `GrantExtraTurnEffect` plus `Turn.resumeAfterSeatId`, so that the normal order resumes after Liu Shan's seat, not after the extra seat (`extraTurnStack` was never pushed to before).
 - **Heartbroken needs `SkillDefinition.afterDeath`:** `skillsInPlay` returns nothing for an eliminated seat, so a skill that acts on its owner's own death is flagged and gathered for that one event.
-- **Incarnation's deal is a Kingdom War trigger on `after:GeneralsChosenEvent`**, reading `SkillDefinition.spareGenerals` (a count), so the mode names no General. The leftover pool is `GameState.spareGenerals`, set at setup and hidden from every viewer.
+- **Incarnation's deal is a Guozhan trigger on `after:GeneralsChosenEvent`**, reading `SkillDefinition.spareGenerals` (a count), so the mode names no General. The leftover pool is `GameState.spareGenerals`, set at setup and hidden from every viewer.
 - **`PendingChoice.secret`:** Incarnation's choice lists spare Generals only its owner may see; the redaction empties `options` for other viewers.
-- **The wiki gets no "Awakening" label.** The crawled skill text already says "Awakened Ability"; the spec's wiki line is limited to Lord skills ("Not used in Kingdom War"), which the wiki already shows.
+- **The wiki gets no "Awakening" label.** The crawled skill text already says "Awakened Ability"; the spec's wiki line is limited to Lord skills ("Not used in Guozhan"), which the wiki already shows.
 - **Awakening conversions:** Strategic Pass's Farm-as-Steal conversion accepts Farms only once Strategic Pass has awakened (an `accepts` check), since conversions are static.
-- **First Incarnation choice:** offered when Zuo Ci is revealed (no seat is revealed at game start in Kingdom War, so that is "game start" for it), and at the start and end of each of his turns, as the spec says.
+- **First Incarnation choice:** offered when Zuo Ci is revealed (no seat is revealed at game start in Guozhan, so that is "game start" for it), and at the start and end of each of his turns, as the spec says.
 - **Stubborn and Lament choose from face-up cards with a choice**, not a selection: the cards lie in the discard pile and a card selection is built for a hand.
 
 ## Global Constraints
@@ -61,7 +61,7 @@
 - Create: `pipeline/mountainGroundwork.spec.ts`.
 
 **Content (`projects/content/src/lib/`):**
-- Modify: `modes/kingdomWar.ts`, `shared/queries.ts` (distance), `shared/gender.ts`, `generals/index.ts` (`MOUNTAIN_GENERAL_IDS`, `HAND_CODED`), `generals/skills.testing.ts` (stash zone), `generals/base.spec.ts` and `registry.spec.ts` (vanilla check), `display.ts`, `public-api.ts`.
+- Modify: `modes/guozhan.ts`, `shared/queries.ts` (distance), `shared/gender.ts`, `generals/index.ts` (`MOUNTAIN_GENERAL_IDS`, `HAND_CODED`), `generals/skills.testing.ts` (stash zone), `generals/base.spec.ts` and `registry.spec.ts` (vanilla check), `display.ts`, `public-api.ts`.
 - Create: `shared/awaken.ts`, `shared/farm.ts`, `shared/forms.ts`, `generals/mountain.ts`, `shared/groundwork11.spec.ts`, `generals/mountain-wei.spec.ts`, `mountain-shu.spec.ts`, `mountain-wu.spec.ts`, `mountain-qun.spec.ts`.
 
 **Bots (`projects/bots/src/lib/`):** Create `mountain.ts`, `mountain.spec.ts`; modify `skills.ts`, `rule-based.ts`, `testing.ts`.
@@ -550,10 +550,10 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 
 ---
 
-## Task 2: Content groundwork and Kingdom War
+## Task 2: Content groundwork and Guozhan
 
 **Files:**
-- Modify: `projects/content/src/lib/shared/queries.ts`, `shared/gender.ts`, `modes/kingdomWar.ts`, `generals/skills.testing.ts`, `projects/bots/src/lib/testing.ts`, `projects/app/src/app/game-board/action-history.spec.ts` (table helper: add the stash zone)
+- Modify: `projects/content/src/lib/shared/queries.ts`, `shared/gender.ts`, `modes/guozhan.ts`, `generals/skills.testing.ts`, `projects/bots/src/lib/testing.ts`, `projects/app/src/app/game-board/action-history.spec.ts` (table helper: add the stash zone)
 - Create: `shared/awaken.ts`, `shared/farm.ts`, `shared/forms.ts`
 - Test: `projects/content/src/lib/shared/groundwork11.spec.ts`
 
@@ -565,7 +565,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
   - `shared/forms.ts`: `formSkillOptions(state, seatId, registry): { generalId: string; skillId: string }[]`;
   - `seatGender` reads the chosen Form's gender (see below);
   - `seatDistance` adds `distanceToOthersFrom`;
-  - Kingdom War: stash zone per seat, `spareGenerals` at setup, a deal trigger, the killer on `DyingEffect`, the stash discarded on death;
+  - Guozhan: stash zone per seat, `spareGenerals` at setup, a deal trigger, the killer on `DyingEffect`, the stash discarded on death;
   - test table `table()` seats have a stash zone `${id}:stash`.
 
 - [ ] **Step 1: Write the failing spec**
@@ -576,7 +576,7 @@ Create `projects/content/src/lib/shared/groundwork11.spec.ts`:
 import { createGame } from 'engine';
 import type { SkillDefinition } from 'engine';
 import { buildContentRegistry } from '../registry';
-import { kingdomWarMode } from '../modes/kingdomWar';
+import { guozhanMode } from '../modes/guozhan';
 import { awakenedKey, isAwakened } from './awaken';
 import { farmCount, stashZoneOf } from './farm';
 import { formSkillOptions } from './forms';
@@ -645,9 +645,9 @@ describe('formSkillOptions', () => {
   });
 });
 
-describe('Kingdom War setup', () => {
+describe('Guozhan setup', () => {
   const real = buildContentRegistry();
-  const game = createGame(kingdomWarMode, real, ['seat-0', 'seat-1', 'seat-2'], 7);
+  const game = createGame(guozhanMode, real, ['seat-0', 'seat-1', 'seat-2'], 7);
 
   it('every seat has a stash zone, and the spare pool is exactly the Generals nobody was dealt', () => {
     expect(game.seats.every((s) => s.stash?.zoneId === `${s.id}:stash`)).toBe(true);
@@ -659,7 +659,7 @@ describe('Kingdom War setup', () => {
   });
 });
 
-describe('Kingdom War: the killer and the stash', () => {
+describe('Guozhan: the killer and the stash', () => {
   it('a seat killed by damage is eliminated with the damage source as its killer', () => {
     let s = table({ 'seat-b:stash': [card('f1', 'sha')] }, { hp: { 'seat-b': 1 }, kingdoms: { 'seat-b': 'Qun' } });
     s = hk.run(s, [{ kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-a' }, target: { kind: 'seat', seatId: 'seat-b' }, amount: 1, nature: 'normal' } }]);
@@ -781,9 +781,9 @@ In `shared/gender.ts` replace the body after the `generals` guard so a Form's ge
 ```
 and update the comment ("… or, while a Form is chosen by that General, the Form's").
 
-- [ ] **Step 5: Kingdom War**
+- [ ] **Step 5: Guozhan**
 
-In `modes/kingdomWar.ts`:
+In `modes/guozhan.ts`:
 1. `dealCandidates` returns the leftover pool too: after the `forEach`, `const spare = pool.slice(seatIds.length * GENERALS_PER_SEAT).filter((id) => !(registry.generals.get(id)?.skills ?? []).some((s) => s.spareGenerals));` and `return { candidates, spare, rng: afterShuffle };`. Update its comment.
 2. In `setup`, destructure `spare`; give each seat `stash: { zoneId: `${id}:stash` }` beside `pile`; add `{ id: `${s.id}:stash`, kind: 'pile' as const, ownerSeatId: s.id, cards: [] }` to the zones; add `spareGenerals: spare` to the state.
 3. The elimination discard: `[seat.hand, seat.equipped, seat.judgment, ...(seat.pile ? [seat.pile] : []), ...(seat.stash ? [seat.stash] : [])]`.
@@ -828,7 +828,7 @@ Expected: PASS. If an existing spec counts zones or compares whole seats and bre
 
 ```bash
 git add projects/content projects/bots projects/app
-git commit -m "feat(content): awakening, Farm and Form helpers; Kingdom War deals spare Generals and names the killer
+git commit -m "feat(content): awakening, Farm and Form helpers; Guozhan deals spare Generals and names the killer
 
 Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
@@ -1527,7 +1527,7 @@ export const decentralization: SkillDefinition = {
   },
 };
 
-// Seem Foolish: a Lord skill, inactive in Kingdom War.
+// Seem Foolish: a Lord skill, inactive in Guozhan.
 export const seemFoolish: SkillDefinition = { id: 'seem-foolish', lord: true };
 
 // ── Jiang Wei ──────────────────────────────────────────────────────────────
@@ -1837,7 +1837,7 @@ export const soulPosition: SkillDefinition = {
   ],
 };
 
-// Takeover: a Lord skill, inactive in Kingdom War.
+// Takeover: a Lord skill, inactive in Guozhan.
 export const takeover: SkillDefinition = { id: 'takeover', lord: true };
 
 // ── Zhang Zhao and Zhang Hong ──────────────────────────────────────────────
@@ -1970,7 +1970,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 import { createGame, redactStateForSeat, skillsInPlay } from 'engine';
 import { askedAbout, card, handIds, harness, hp, ids, kwMode, registry, table, TableOptions } from './skills.testing';
 import { seatGender } from '../shared/gender';
-import { kingdomWarMode } from '../modes/kingdomWar';
+import { guozhanMode } from '../modes/guozhan';
 import { buildContentRegistry } from '../registry';
 
 const h = harness();
@@ -2135,9 +2135,9 @@ describe('Zuo Ci — New Life', () => {
   });
 });
 
-describe('Kingdom War deals Zuo Ci his Forms', () => {
+describe('Guozhan deals Zuo Ci his Forms', () => {
   it('a seat that chose a General with spare Generals to deal is dealt them; others are not', () => {
-    const trigger = kingdomWarMode.triggers.find((t) => t.point === 'after:GeneralsChosenEvent')!;
+    const trigger = guozhanMode.triggers.find((t) => t.point === 'after:GeneralsChosenEvent')!;
     const chosen = table({}, { generals: at('seat-a', 'zuo-ci') });
     const event = { kind: 'GeneralsChosenEvent', seatId: 'seat-a' };
     expect(trigger.condition(chosen, event, undefined, registry)).toBe(true);
@@ -2147,7 +2147,7 @@ describe('Kingdom War deals Zuo Ci his Forms', () => {
 
   it('Zuo Ci is never in the spare pool', () => {
     for (let seed = 1; seed <= 10; seed++) {
-      expect(createGame(kingdomWarMode, buildContentRegistry(), ['seat-0', 'seat-1', 'seat-2'], seed).spareGenerals).not.toContain('zuo-ci');
+      expect(createGame(guozhanMode, buildContentRegistry(), ['seat-0', 'seat-1', 'seat-2'], seed).spareGenerals).not.toContain('zuo-ci');
     }
   });
 });
@@ -2702,14 +2702,14 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```ts
 import { createGame } from 'engine';
 import type { GameState } from 'engine';
-import { BASE_GENERAL_IDS, FIRE_GENERAL_IDS, FOREST_GENERAL_IDS, MOUNTAIN_GENERAL_IDS, WIND_GENERAL_IDS, buildContentRegistry, kingdomWarMode } from 'content';
+import { BASE_GENERAL_IDS, FIRE_GENERAL_IDS, FOREST_GENERAL_IDS, MOUNTAIN_GENERAL_IDS, WIND_GENERAL_IDS, buildContentRegistry, guozhanMode } from 'content';
 import { runGame } from './runGame';
 import { checkInvariants, checkRestingState } from './invariants';
 import { firedSkills, partnerOf, registryWith, withForcedPairing } from './forcedPairing';
 
 const POOL = [...BASE_GENERAL_IDS, ...WIND_GENERAL_IDS, ...FIRE_GENERAL_IDS, ...FOREST_GENERAL_IDS, ...MOUNTAIN_GENERAL_IDS];
 const registry = registryWith(buildContentRegistry(), POOL);
-const ctx = { registry, mode: kingdomWarMode };
+const ctx = { registry, mode: guozhanMode };
 // Skills with no trace of their own in the log: Lord skills are left out below.
 const NO_TRACE = new Set<string>([]);
 
@@ -2727,7 +2727,7 @@ describe('simulated games with the base, Wind, Fire, Forest and Mountain General
     for (const seats of [2, 5, 8]) {
       for (let i = 0; i < 10; i++) {
         seed++;
-        const initial = createGame(kingdomWarMode, registry, Array.from({ length: seats }, (_, n) => `seat-${n}`), seed);
+        const initial = createGame(guozhanMode, registry, Array.from({ length: seats }, (_, n) => `seat-${n}`), seed);
         for (const [bot, maxActions] of [['random', 5000], ['rule-based', 20000]] as const) {
           const resting = new Set<string>();
           const { finalState } = runGame(initial, ctx, seed * 7 + 1, maxActions, bot, (s) => checkRestingState(s).forEach((v) => resting.add(v)));
@@ -2747,7 +2747,7 @@ describe('simulated games with the base, Wind, Fire, Forest and Mountain General
       const expected = (registry.generals.get(generalId)?.skills ?? []).filter((s) => !s.lord).map((s) => s.id).filter((id) => !NO_TRACE.has(id));
       const fired = new Set<string>();
       for (let seed = 1; seed <= 120 && expected.some((id) => !fired.has(id)); seed++) {
-        const initial = withForcedPairing(createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed), 'seat-0', [generalId, partnerOf(generalId, registry, POOL)]);
+        const initial = withForcedPairing(createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3', 'seat-4'], seed), 'seat-0', [generalId, partnerOf(generalId, registry, POOL)]);
         const { finalState } = runGame(initial, ctx, seed * 13 + 5, 20000, 'rule-based');
         checked(finalState, `${generalId} seed ${seed}`, failures);
         firedSkills(finalState, 'seat-0').forEach((id) => fired.add(id));
@@ -2762,7 +2762,7 @@ describe('simulated games with the base, Wind, Fire, Forest and Mountain General
   it('Zuo Ci holds Forms from the first turn, and no Form is also a General in play', () => {
     const failures: string[] = [];
     for (let seed = 1; seed <= 20; seed++) {
-      const initial = withForcedPairing(createGame(kingdomWarMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], seed), 'seat-0', ['zuo-ci', partnerOf('zuo-ci', registry, POOL)]);
+      const initial = withForcedPairing(createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], seed), 'seat-0', ['zuo-ci', partnerOf('zuo-ci', registry, POOL)]);
       const { finalState } = runGame(initial, ctx, seed, 20000, 'rule-based');
       const forms = finalState.seats[0].forms;
       if (!forms || forms.held.length < 2) failures.push(`seed ${seed}: Zuo Ci holds ${forms?.held.length ?? 0} Forms`);

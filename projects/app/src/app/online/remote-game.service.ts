@@ -1,6 +1,6 @@
 import { computed, DestroyRef, effect, inject, Injectable, Signal, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 import { getActingSeatIds, getActiveSeatId, previewEffect } from 'engine';
 import type { Action, ContentRegistry, Effect, EngineContext, DecisionKind, EngineEvent, GameState } from 'engine';
 import { finalSeatViews } from 'protocol';
@@ -65,7 +65,7 @@ const HOLD_MIN_MS = 1000;
 export class RemoteGameService implements BoardGame {
   private readonly socket = inject(SocketService);
   readonly registry: ContentRegistry = buildContentRegistry();
-  private readonly ctx: EngineContext = { registry: this.registry, mode: kingdomWarMode };
+  private readonly ctx: EngineContext = { registry: this.registry, mode: guozhanMode };
   private log: EngineEvent[] = [];
   private readonly _update = signal<GameUpdate | null>(null);
   private readonly _state = signal<GameState | null>(null);

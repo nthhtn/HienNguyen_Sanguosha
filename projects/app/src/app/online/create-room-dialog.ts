@@ -5,7 +5,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS } from 'content';
 import type { DeckId } from 'content';
 import { DeckPicker } from '../deck-picker';
 import { DISPLAY_NAME_MAX } from 'protocol';
@@ -81,7 +81,7 @@ export class CreateRoomDialog {
   readonly displayName = signal(this.data.displayName);
   readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
   readonly firstRevealDraw = signal(true);
-  readonly deck = signal<DeckId>('alternate');
+  readonly deck = signal<DeckId>(DEFAULT_DECK_ID);
   readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);
   protected readonly canSubmit = computed(() => this.displayName().trim() !== '');
@@ -95,7 +95,7 @@ export class CreateRoomDialog {
       const id = await this.rooms.create({
         seatCount,
         rules: {
-          ...(this.deck() !== 'default' ? { deck: this.deck() } : {}),
+          ...(this.deck() !== DEFAULT_DECK_ID ? { deck: this.deck() } : {}),
           ...(seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {}),
         },
         displayName: this.displayName(),

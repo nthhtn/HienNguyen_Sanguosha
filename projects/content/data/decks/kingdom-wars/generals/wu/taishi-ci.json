@@ -1,0 +1,24 @@
+{
+  "id": "taishi-ci",
+  "name": "Taishi Ci",
+  "nameZh": "太史慈",
+  "force": "wu",
+  "title": "Ardent and Loyal Warrior",
+  "maxHp": 4,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Justice of Heaven",
+      "nameZh": "天义",
+      "text": "During your action phase, you can conduct a Points Duel with another player. If you win, you acquire all of the following until the end of your turn.\n1. Your ATTACKS 杀 are not limited by range,\n2. You can use one additional ATTACK,\n3. You can target one additional player when you use ATTACK.\nIf you lose, you cannot use ATTACK till the end of the turn. Limited to once per phase."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "Nil.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/taishi-ci.html",
+    "listedUnder": "wu",
+    "crawledAt": "2026-10-21"
+  }
+}

@@ -2,7 +2,7 @@ import { withFillers } from '../generals/fillers.testing';
 import { getLegalActions, resolve } from 'engine';
 import type { Action, CardInstance, GameModeDefinition, GameState, Kingdom } from 'engine';
 import { buildContentRegistry } from '../registry';
-import { alternateCardData } from '../alternateCards';
+import { kingdomWarsCardData } from '../kingdomWarsCards';
 
 const registry = withFillers(buildContentRegistry());
 const mode: GameModeDefinition = { id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
@@ -48,7 +48,7 @@ const WEI_MATES: Kingdom[] = ['Wei', 'Shu', 'Wei', 'Qun'];
 
 describe('Amass', () => {
   it('is a Tool, playable with no target', () => {
-    expect(registry.cards.get('amass')).toMatchObject({ id: 'amass', category: 'tool', name: alternateCardData('amass')!.name });
+    expect(registry.cards.get('amass')).toMatchObject({ id: 'amass', category: 'tool', name: kingdomWarsCardData('amass')!.name });
   });
 
   it('each Kingdom mate in turn order draws 2 then discards 2, finishing before the next; others untouched', () => {

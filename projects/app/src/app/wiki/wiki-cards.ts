@@ -4,7 +4,7 @@ import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { ActivatedRoute } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
-import { wikiCardTabs, wikiCards, WikiCard } from 'content';
+import { DEFAULT_DECK_ID, wikiCardTabs, wikiCards, WikiCard } from 'content';
 import type { DeckId } from 'content';
 import { WikiCardEntry } from './wiki-card-entry';
 import { tabQueryParam } from './tab-param';
@@ -54,10 +54,10 @@ const PAGE_TITLES: Record<WikiCard['category'], MessageKey> = { basic: 'wiki.pag
 export class WikiCards {
   private readonly i18n = inject(I18n);
   private readonly category = inject(ActivatedRoute).snapshot.data['category'] as WikiCard['category'];
-  // The deck comes from the route's data; Default when a route names none.
-  private readonly deck = (inject(ActivatedRoute).snapshot.data['deck'] ?? 'default') as DeckId;
+  // The deck comes from the route's data; the default deck when a route names none.
+  private readonly deck = (inject(ActivatedRoute).snapshot.data['deck'] ?? DEFAULT_DECK_ID) as DeckId;
   protected readonly title = PAGE_TITLES[this.category];
-  protected readonly deckName: MessageKey = this.deck === 'alternate' ? 'setup.deck.alternate' : 'setup.deck.default';
+  protected readonly deckName: MessageKey = this.deck === 'kingdomWars' ? 'setup.deck.kingdomWars' : 'setup.deck.dynastyWars';
   protected readonly cards = wikiCards(this.category, this.deck);
   // The list in the order the cards are meant to read.
   protected readonly ordered = this.category === 'basic' ? wikiCardTabs('basic', this.deck).flatMap((t) => t.entries) : this.cards;

@@ -1252,7 +1252,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes, from `engine`:
   - `createGame`, `createRng`, `shuffle`, `resolve`, `getActiveSeatId`, `getLegalActions`, `isOfferedAction` (Task 1) and `redactStateForSeat`
   - types `Action`, `ContentRegistry`, `EngineContext`, `GameRules` and `GameState`
-- Consumes: `kingdomWarMode` from `content`; `GameSeat`, `GameRecord` and `GameActionRecord` (Task 3); `GameUpdate`, `GameClockView`, `SeatView` and `MemberKind` from `protocol`.
+- Consumes: `guozhanMode` from `content`; `GameSeat`, `GameRecord` and `GameActionRecord` (Task 3); `GameUpdate`, `GameClockView`, `SeatView` and `MemberKind` from `protocol`.
 - Produces:
   - `SEATING_SALT = 0x5eed5ea7`
   - `engineContext(registry): EngineContext`
@@ -1452,7 +1452,7 @@ Create `projects/server/src/game/engineGame.ts`:
 
 ```ts
 import { createHash } from 'node:crypto';
-import { kingdomWarMode } from 'content';
+import { guozhanMode } from 'content';
 import { createGame, createRng, getActiveSeatId, getLegalActions, isOfferedAction, resolve, shuffle } from 'engine';
 import type { Action, ContentRegistry, EngineContext, GameRules, GameState } from 'engine';
 import type { MemberKind } from 'protocol';
@@ -1463,7 +1463,7 @@ import { GameActionRecord, GameRecord, GameSeat } from '../persistence/records';
 export const SEATING_SALT = 0x5eed5ea7;
 
 export function engineContext(registry: ContentRegistry): EngineContext {
-  return { registry, mode: kingdomWarMode };
+  return { registry, mode: guozhanMode };
 }
 
 export interface SeatCandidate {
@@ -3917,7 +3917,7 @@ In `projects/server/src/http/roomRoutes.ts`, add `SoloRoomBodySchema` to the `pr
 In `projects/server/src/server.ts`:
 
 - build the registry once, before `new RoomService`: `const registry = buildContentRegistry();`;
-- pass `registry`, `buildId: config.buildId`, and `seatLimits: { min: MIN_SEATS, max: kingdomWarMaxSeats(registry) }`;
+- pass `registry`, `buildId: config.buildId`, and `seatLimits: { min: MIN_SEATS, max: guozhanMaxSeats(registry) }`;
 - in `close`, call `await rooms.stop();` after `clearInterval(housekeeping);` and before `await app.close();`;
 - update the comment above `createServer` to mention that running games are restored with the rooms, and that closing stops game timers first.
 
@@ -4320,7 +4320,7 @@ In `projects/app/src/app/online/testing.ts`:
 - add these imports:
 
 ```ts
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 import { createGame, getLegalActions, redactStateForSeat, resolve } from 'engine';
 import type { Action, GameState } from 'engine';
 import type { GameUpdate, LastGame } from 'protocol';
@@ -4362,9 +4362,9 @@ export const LAST_GAME: LastGame = {
 // chooses her Generals first, and after she chose (Bo to choose).
 export function gameUpdates(): [GameUpdate, GameUpdate] {
   const registry = buildContentRegistry();
-  const created = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1'], 7);
+  const created = createGame(guozhanMode, registry, ['seat-0', 'seat-1'], 7);
   const opening: GameState = { ...created, players: created.players.map((p) => ({ ...p, name: p.seatId === 'seat-0' ? 'Ann' : 'Bo' })) };
-  const next = resolve(opening, getLegalActions(opening, 'seat-0', registry)[0], { registry, mode: kingdomWarMode }).state;
+  const next = resolve(opening, getLegalActions(opening, 'seat-0', registry)[0], { registry, mode: guozhanMode }).state;
   const update = (state: GameState, seq: number, logFrom: number, legalActions: Action[]): GameUpdate => {
     const { rng: _rng, log, ...view } = redactStateForSeat(state, 'seat-0');
     return { gameId: GAME_ID, seq, view, legalActions, logFrom, events: log.slice(logFrom), clock: null, paused: false };
@@ -4531,7 +4531,7 @@ Create `projects/app/src/app/online/remote-game.service.ts`:
 ```ts
 import { computed, DestroyRef, effect, inject, Injectable, Signal, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 import { getActiveSeatId, previewEffect } from 'engine';
 import type { Action, ContentRegistry, Effect, EngineContext, EngineEvent, GameState } from 'engine';
 import { ERROR_MESSAGES } from 'protocol';
@@ -4580,7 +4580,7 @@ const NO_RNG = { seed: 0, counter: 0 };
 export class RemoteGameService implements BoardGame {
   private readonly socket = inject(SocketService);
   readonly registry: ContentRegistry = buildContentRegistry();
-  private readonly ctx: EngineContext = { registry: this.registry, mode: kingdomWarMode };
+  private readonly ctx: EngineContext = { registry: this.registry, mode: guozhanMode };
   private log: EngineEvent[] = [];
   private readonly _update = signal<GameUpdate | null>(null);
   private readonly _state = signal<GameState | null>(null);

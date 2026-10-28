@@ -75,7 +75,7 @@ seat at 1 HP that takes 3 damage goes to −2.
 - **`CardPlayedEvent.inResponseTo`** gains `dyingSeatId` for a rescue Peach.
 - **Peach's `play()`** does nothing when it is played as a response; the
   window's `onAnswer` heals the right seat.
-- **Kingdom War:** the "HP ≤ 0 → eliminate" trigger becomes "HP ≤ 0 →
+- **Guozhan:** the "HP ≤ 0 → eliminate" trigger becomes "HP ≤ 0 →
   `DyingEffect(entering)`", with `order` set to the living seats in turn order
   from the turn owner.
 
@@ -107,7 +107,7 @@ seat at 1 HP that takes 3 damage goes to −2.
   - The same seat is asked again after a Peach.
   - Saved and eliminated outcomes, with their events.
   - Several Peaches needed after a big hit.
-- **Content:** the Kingdom War trigger order (reveals, then dying), and
+- **Content:** the Guozhan trigger order (reveals, then dying), and
   Peach's response play.
 - **Bots:** save self and allies, never an enemy.
 - **App:** the popup's dying wording, "Dying…" and negative HP on the tile,

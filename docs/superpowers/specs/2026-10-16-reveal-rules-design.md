@@ -8,7 +8,7 @@ Date: 2026-10-16
 ## Purpose
 
 A play-test question: is a General revealed automatically when its seat loses
-HP? Until now yes (Kingdom War's "forced reveals": the Main General at half max HP
+HP? Until now yes (Guozhan's "forced reveals": the Main General at half max HP
 or below, the Deputy at 0 or below). The user's rule is that a General is
 revealed only in the four ways below, and any other way is removed.
 
@@ -37,7 +37,7 @@ dying keeps its hidden Generals until it is saved or dies.*
   reveal draw and the odd-HP draw ignore a death reveal, and a death reveal does not
   use up "the first reveal at the table". Revealed skills of a dead seat do not
   trigger.
-- **Removed:** the two HP-drop triggers in Kingdom War's mode definition. The dying
+- **Removed:** the two HP-drop triggers in Guozhan's mode definition. The dying
   trigger stays.
 - **Bots (my call).** The rule-based bot used to rely on the forced reveal to turn on
   a hidden General's compulsory skills. It now reveals every hidden General in its

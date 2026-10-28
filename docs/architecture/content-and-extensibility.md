@@ -30,44 +30,46 @@ interface ContentRegistry {
 - A **card** exists because it is listed in the registry's card array. A card
   with no printings in the deck being dealt can never silently go undealt: it
   throws when the deck is built.
-- **Alternate Generals** are registered beside the Default ones under ids
-  prefixed `alternate:`; see "Decks and the Alternate content" below.
+- **Kingdom Wars Generals** are registered beside the Dynasty Wars ones under ids
+  prefixed `kingdomWars:`; see "Decks and the Kingdom Wars content" below.
 
 The data files are why wiki pages, card art and rules text can be shown
 without the UI knowing any card: the app reads them through content's display
 helpers (`generalDisplayData`, `cardDisplayData`, `abilityName`, `abilityHint`,
 `competeOutcomeText`, `judgmentOutcomeText`…), never by importing JSON.
 
-## Decks and the Alternate content
+## Decks and the Kingdom Wars content
 
 A **deck** ([decks.ts](../../projects/content/src/lib/decks.ts)) is only a
 distribution: which cards it holds and the suit and rank of each copy.
 Behaviour, text and range stay on the card, so a card exists once and decks say
 how it is dealt. There are two, chosen per game by `GameRules.deck`
-(`DECK_IDS = ['default', 'alternate']`; the protocol repeats the list and a
-server test checks the two agree):
+(`DECK_IDS = ['dynastyWars', 'kingdomWars']`; the protocol repeats the list and a
+server test checks the two agree). A game with no deck is dealt from
+`DEFAULT_DECK_ID`, Kingdom Wars: it is the deck that is played, and Dynasty Wars
+waits for its own rules (`docs/deferrals.md`).
 
-- **Default** is built from the card data: each card's own printings.
-- **Alternate** is read from `data/decks/alternate/deck.json`, produced by a
-  crawl of the Alternate deck and its Generals. Cards that exist only in this
-  deck (`alternateCards.ts`) are registered with their own definitions;
-  others reuse the Default card.
+- **Dynasty Wars** is built from the card data: each card's own printings.
+- **Kingdom Wars** is read from `data/decks/kingdom-wars/deck.json`, produced by a
+  crawl of the Kingdom Wars deck and its Generals. Cards that exist only in this
+  deck (`kingdomWarsCards.ts`) are registered with their own definitions;
+  others reuse the Dynasty Wars card.
 
-The deck also decides which Generals are dealt: Kingdom War draws from the
-Default pool or the Alternate pool, never both.
+The deck also decides which Generals are dealt: Guozhan draws from the
+Dynasty Wars pool or the Kingdom Wars pool, never both.
 
-An Alternate General's skill is resolved in this order
-([alternateSkills.ts](../../projects/content/src/lib/alternateSkills.ts)):
+A Kingdom Wars General's skill is resolved in this order
+([kingdomWarsSkills.ts](../../projects/content/src/lib/kingdomWarsSkills.ts)):
 
-1. a **variant**: a `SkillDefinition` in `generals/alternate-<force>.ts`,
-   registered in `ALTERNATE_VARIANTS` by General id and the skill's Chinese
-   name. This is for a skill whose rules differ from Default's.
-2. otherwise the **Default skill**, when the Alternate wording was audited and
+1. a **variant**: a `SkillDefinition` in `generals/kingdom-wars-<force>.ts`,
+   registered in `KINGDOM_WARS_VARIANTS` by General id and the skill's Chinese
+   name. This is for a skill whose rules differ from Dynasty Wars'.
+2. otherwise the **Dynasty Wars skill**, when the Kingdom Wars wording was audited and
    cleared as the same rule (`CLEARED_WORDING`, or a "nil" difference note).
 3. otherwise the skill is *not ready*: it shows in the wiki and the General is
    playable without it.
 
-`alternateBase.ts` is a leaf module mapping each variant to the Default skill
+`kingdomWarsBase.ts` is a leaf module mapping each variant to the Dynasty Wars skill
 whose prompts, hints and bot behaviour it shares. It exists so that display
 code and the bots can reach variants without an import cycle, and
 `importGraph.spec.ts` keeps it that way.
@@ -75,7 +77,7 @@ code and the bots can reach variants without an import cycle, and
 ## Languages
 
 Vietnamese data lives in `data/locales/vi/`: `cards.json`, `generals.json`,
-`alternate-cards.json`, `alternate-generals.json`, `prose.json` (outcome and
+`kingdom-wars-cards.json`, `kingdom-wars-generals.json`, `prose.json` (outcome and
 hint text), `glossary.json` and `review.json`. English prose tables are in code
 (`ENGLISH_PROSE`). `prose.vi.spec.ts` requires every English prose entry to have
 a Vietnamese one with the same placeholders, `names.vi.spec.ts` checks that
@@ -134,7 +136,7 @@ conversions) and adds:
 | Field | Meaning |
 |---|---|
 | `compulsory` | applies without asking; off while its General is hidden |
-| `lord` | a Lord skill: kept as data but never in play (Kingdom War has no Lord yet) |
+| `lord` | a Lord skill: kept as data but never in play (Guozhan has no Lord yet) |
 | `awakening`, `limited` | once-per-game rules |
 | `active` | a skill used on purpose in the Play Phase: `canUse`, `start`, `usesPerTurn` |
 | `onStep` | the skill's own multi-move resolution |
@@ -169,10 +171,10 @@ step. The same pattern drives Bewilder's doubt round and Sha's dodge steps.
 ## Writing a game mode
 
 A mode is a `GameModeDefinition`: `setup`, `checkWinCondition`, `triggers`,
-`maxSeats`. Everything specific to Kingdom War (the two Generals per seat, the
+`maxSeats`. Everything specific to Guozhan (the two Generals per seat, the
 shared HP pool, the dying round, the kill reward and
 penalty, the reveal bonuses) is a trigger or a setup step in
-[kingdomWar.ts](../../projects/content/src/lib/modes/kingdomWar.ts), not engine
+[guozhan.ts](../../projects/content/src/lib/modes/guozhan.ts), not engine
 code. A second mode would be a second object of the same shape.
 
 ## Adding content: the checklist
@@ -194,7 +196,7 @@ skip the spec.
 3. Add its art under `assets/` and record it in `manifest.json`.
 4. Test it with the table helper in `generals/skills.testing.ts` (a small hand
    built `GameState`) and drive it through `harness()`.
-5. Add its Vietnamese draft to `data/locales/vi/cards.json` (and `alternate-cards.json` for an Alternate-only card).
+5. Add its Vietnamese draft to `data/locales/vi/cards.json` (and `kingdom-wars-cards.json` for a Kingdom Wars-only card).
 6. If bots should use it, teach `projects/bots` (see
    [Bots and simulation](bots-and-simulation.md)).
 
@@ -215,14 +217,14 @@ skip the spec.
 6. Extend that pack's simulator spec so a seeded game fires the skill (see
    [Bots and simulation](bots-and-simulation.md)).
 
-**An Alternate General** whose skill matches Default's needs no code: audit the
-wording, add the Chinese skill name to `CLEARED_WORDING`, and the Default skill
+**A Kingdom Wars General** whose skill matches Dynasty Wars' needs no code: audit the
+wording, add the Chinese skill name to `CLEARED_WORDING`, and the Dynasty Wars skill
 runs. When the rules differ, write a variant in the matching
-`generals/alternate-<force>.ts`, add it to that file's variants map, and add its
-`alternateBase` entry if it shares prompts or bot behaviour with a Default skill.
+`generals/kingdom-wars-<force>.ts`, add it to that file's variants map, and add its
+`kingdomWarsBase` entry if it shares prompts or bot behaviour with a Dynasty Wars skill.
 
 **A new table rule or mode behavior** is a trigger on the mode, with a test in
-`kingdomWar.spec.ts`; an optional rule also gets a field on `GameRules`.
+`guozhan.spec.ts`; an optional rule also gets a field on `GameRules`.
 
 ## What keeps this honest
 

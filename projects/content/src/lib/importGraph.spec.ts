@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { dirname, join, relative, resolve } from 'path';
 
-// display.ts and the bots read variant ids through alternateBase.ts. If display.ts could reach the variant
+// display.ts and the bots read variant ids through kingdomWarsBase.ts. If display.ts could reach the variant
 // files again, mountain.ts (which imports display.ts) would form an import cycle with them.
 const LIB = __dirname;
 const STATIC_IMPORT = /(?:^|\n)\s*(?:import|export)\b[^;'"]*?from\s*'([^']+)'|(?:^|\n)\s*import\s*'([^']+)'/g;
@@ -31,10 +31,10 @@ export function reachableFrom(entry: string): Set<string> {
 }
 
 describe('content import graph', () => {
-  it('display.ts reaches no General file, alternateVariants.ts or alternateSkills.ts', () => {
+  it('display.ts reaches no General file, kingdomWarsVariants.ts or kingdomWarsSkills.ts', () => {
     const reached = [...reachableFrom(join(LIB, 'display.ts'))].map((f) => relative(LIB, f));
-    expect(reached).toContain('alternateBase.ts');
-    const forbidden = reached.filter((f) => f.startsWith('generals/') || f === 'alternateVariants.ts' || f === 'alternateSkills.ts');
+    expect(reached).toContain('kingdomWarsBase.ts');
+    const forbidden = reached.filter((f) => f.startsWith('generals/') || f === 'kingdomWarsVariants.ts' || f === 'kingdomWarsSkills.ts');
     expect(forbidden).toEqual([]);
   });
 });

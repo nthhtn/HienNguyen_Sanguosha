@@ -9,7 +9,7 @@ Today the whole game runs in one browser tab: the Angular app holds the full
 state, runs the engine and the bots in-process, and saves nothing across a
 reload. This spec adds a backend so that:
 
-- people can play Kingdom War together online, each on their own device, with
+- people can play Guozhan together online, each on their own device, with
   the server as the only authority on game state;
 - a player can leave and come back to their seat, in online games and in
   Play vs Bots;
@@ -338,7 +338,7 @@ result shown. **Play Again** means the host presses Start Game again.
      separate from the game's own), and assign them `seat-0` to `seat-n` in
      that order. `games.seats` stores the result for display and history, and
      restore recomputes it from the seed and checks that it matches.
-  3. Call `createGame(kingdomWarMode, registry, seatIds, seed, rules)`, then
+  3. Call `createGame(guozhanMode, registry, seatIds, seed, rules)`, then
      apply each player's kind and name, as `GameService.startGame` does
      today.
   4. Insert the `games` row with its seats, and set the room to `playing`.

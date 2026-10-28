@@ -1,0 +1,29 @@
+{
+  "id": "guo-jia",
+  "name": "Guo Jia",
+  "nameZh": "郭嘉",
+  "force": "wei",
+  "title": "The Short-lived Oracle",
+  "maxHp": 3,
+  "gender": "male",
+  "hpFrom": "dynastyWars",
+  "skills": [
+    {
+      "name": "Envy of Heaven",
+      "nameZh": "天妒",
+      "text": "After your judgement card takes effect, you can acquire the judgement card."
+    },
+    {
+      "name": "Bequeathed Strategy",
+      "nameZh": "遗计",
+      "text": "After every 1 unit of damage you suffer, you can view the top two cards of the deck, give one card to a player, then give the remaining card to a player."
+    }
+  ],
+  "synergisticPartners": [],
+  "differenceFromNormal": "The term “immediately” is removed to clarify the timing of activating “Envy of Heaven”. The ability description of “Bequeathed Strategy” has been changed from “drawing then giving” to “viewing then giving”.",
+  "source": {
+    "url": "http://sanguoshaenglish.blogspot.sg/2012/09/guo-jia.html",
+    "listedUnder": "wei",
+    "crawledAt": "2026-10-21"
+  }
+}

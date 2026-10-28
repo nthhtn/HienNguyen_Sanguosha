@@ -1,9 +1,9 @@
-import { ENGLISH_PROSE, alternateCardIds, alternateGeneralIds, cardIds, generalIds, reviewGeneralIds } from 'content';
+import { ENGLISH_PROSE, kingdomWarsCardIds, kingdomWarsGeneralIds, cardIds, generalIds, reviewGeneralIds } from 'content';
 import review from '../../../../content/data/locales/vi/review.json';
 import { en } from './en';
 import { reviewStatus, reviewUniverse } from './review';
 
-const universe = reviewUniverse(en, reviewGeneralIds(), [...cardIds(), ...alternateCardIds()], ENGLISH_PROSE);
+const universe = reviewUniverse(en, reviewGeneralIds(), [...cardIds(), ...kingdomWarsCardIds()], ENGLISH_PROSE);
 
 describe('reviewStatus', () => {
   it('counts the reviewed ids of each category and lists the rest', () => {
@@ -26,19 +26,19 @@ describe('the Vietnamese review file', () => {
     expect(result.find((r) => r.category === 'Prose: gone')!.unknown).toEqual(['a']);
   });
 
-  it('counts the Alternate-only cards, so they can be listed as reviewed', () => {
+  it('counts the Kingdom Wars-only cards, so they can be listed as reviewed', () => {
     const cards = reviewStatus({ ...review, cards: [...review.cards, 'wu-six-swords'] }, universe).find((r) => r.category === 'Cards (name and text)')!;
     expect(cards.unknown).toEqual([]);
     expect(cards.unreviewed).toEqual(expect.arrayContaining(['wuxie-guo', 'amass', 'ascertain', 'ally-far-attack-near', 'trident-glaive']));
-    expect(cards.total).toBe(cardIds().length + alternateCardIds().length);
+    expect(cards.total).toBe(cardIds().length + kingdomWarsCardIds().length);
   });
 
-  it('counts the Alternate Generals as alternate:<id>, so they can be listed as reviewed', () => {
-    const generals = reviewStatus({ ...review, generals: [...review.generals, 'alternate:cao-cao'] }, universe).find((r) => r.category === 'Generals (name, title and skills)')!;
+  it('counts the Kingdom Wars Generals as kingdomWars:<id>, so they can be listed as reviewed', () => {
+    const generals = reviewStatus({ ...review, generals: [...review.generals, 'kingdomWars:cao-cao'] }, universe).find((r) => r.category === 'Generals (name, title and skills)')!;
     expect(generals.unknown).toEqual([]);
-    expect(generals.unreviewed).toContain('alternate:ding-feng');
+    expect(generals.unreviewed).toContain('kingdomWars:ding-feng');
     expect(generals.unreviewed).toContain('cao-cao');
-    expect(generals.total).toBe(generalIds().length + alternateGeneralIds().length);
+    expect(generals.total).toBe(generalIds().length + kingdomWarsGeneralIds().length);
   });
 
   it('lists only ids that exist', () => {

@@ -50,7 +50,7 @@ describe('PlayVsBotsDialog', () => {
     expect(component.seatCount()).toBe(4);
     component.seatCount.set(5);
     await component.submit();
-    expect(rooms.createSolo).toHaveBeenCalledWith({ seatCount: 5, rules: { deck: 'alternate', firstRevealDraw: true } });
+    expect(rooms.createSolo).toHaveBeenCalledWith({ seatCount: 5, rules: { firstRevealDraw: true } });
     expect(dialogRef.close).toHaveBeenCalledWith('r-solo');
   });
 
@@ -65,7 +65,7 @@ describe('PlayVsBotsDialog', () => {
     fixture.detectChanges();
     expect(el.querySelector('.seats')).not.toBeNull();
     await component.submit();
-    expect(rooms.createSolo).toHaveBeenCalledWith({ seatCount: 4, rules: { deck: 'alternate' }, replace: true });
+    expect(rooms.createSolo).toHaveBeenCalledWith({ seatCount: 4, rules: {}, replace: true });
   });
 
   it("stays open with the server's message when it refuses", async () => {
@@ -98,16 +98,16 @@ describe('PlayVsBotsDialog', () => {
     fixture.detectChanges();
     rooms.createSolo.mockResolvedValue('r-new');
     await component.submit();
-    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: { deck: 'alternate' }, replace: true });
+    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: {}, replace: true });
     expect(dialogRef.close).toHaveBeenLastCalledWith('r-new');
   });
 
-  it('offers the deck and sends Kingdom Wars; Dynasty Wars is disabled for now (deferred)', async () => {
+  it('offers the deck and sends no deck rule for Kingdom Wars, the default; Dynasty Wars is disabled for now (deferred)', async () => {
     rooms.createSolo.mockResolvedValue('r-solo');
     const { fixture, component, el } = await create();
     expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Dynasty Wars']);
     clickDynastyWars(fixture, el);
     await component.submit();
-    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: { deck: 'alternate' } });
+    expect(rooms.createSolo).toHaveBeenLastCalledWith({ seatCount: 4, rules: {} });
   });
 });

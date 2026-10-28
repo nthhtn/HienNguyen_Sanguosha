@@ -61,7 +61,7 @@ The simulator plays complete games with no UI, under plain Node, and checks
 the result.
 
 ```
-createGame(kingdomWarMode, registry, seatIds, seed)      deterministic start
+createGame(guozhanMode, registry, seatIds, seed)      deterministic start
   └─ runGame(state, ctx, botSeed, maxActions, 'random' | 'rule-based')
         loop until state.result or the action budget runs out:
           seat = getActiveSeatId(state)
@@ -141,7 +141,7 @@ shows or hides cards should run these first.
 Random games rarely exercise one specific General. `withForcedPairing` deals a
 chosen pair of Generals to `seat-0` (every other seat gets five others), and the
 per-pack specs (`skills.spec.ts`, `wind.spec.ts`, `fire.spec.ts`,
-`forest.spec.ts`, `mountain.spec.ts`, and `alternate.spec.ts` for the Alternate
+`forest.spec.ts`, `mountain.spec.ts`, and `kingdomWars.spec.ts` for the Kingdom Wars
 deck's variants) play seeded games until each coded skill
 of each General has left a trace in the log (`firedSkills`) or a seed budget is
 spent. A skill that never fires is reported as missing. If a rules change makes a
@@ -157,7 +157,7 @@ environment and import aliases:
 | Project | Environment | What its tests are |
 |---|---|---|
 | `engine` | node | the pipeline, legality, redaction, phases, triggers, clocks, with tiny hand-written content so the engine is tested without the real cards |
-| `content` | node | each card and skill, on small hand-built `GameState`s (`table()` and `harness()` in `generals/skills.testing.ts`); the Kingdom War mode; decks; the data, wiki and Vietnamese-data checks |
+| `content` | node | each card and skill, on small hand-built `GameState`s (`table()` and `harness()` in `generals/skills.testing.ts`); the Guozhan mode; decks; the data, wiki and Vietnamese-data checks |
 | `bots` | node | bot decisions on built states |
 | `sim` | node | whole simulated games, invariants, leaks and per-skill firing |
 | `protocol` | node | schemas and shared validators (names, chat) |

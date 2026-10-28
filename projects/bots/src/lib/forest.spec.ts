@@ -128,9 +128,9 @@ describe('the Upheaval window', () => {
     expect(decide(open(true, false)).kind).toBe('RespondAction');
     expect(decide(open(false, false)).kind).toBe('PassAction');
     expect(decide(open(true, true)).kind).toBe('PassAction'); // never a Slash at an ally
-    // Alternate Descend into Chaos plays the same.
-    expect(decide(open(true, false, 'alternate:descend-into-chaos')).kind).toBe('RespondAction');
-    expect(decide(open(true, true, 'alternate:descend-into-chaos')).kind).toBe('PassAction');
+    // Kingdom Wars Descend into Chaos plays the same.
+    expect(decide(open(true, false, 'kingdomWars:descend-into-chaos')).kind).toBe('RespondAction');
+    expect(decide(open(true, true, 'kingdomWars:descend-into-chaos')).kind).toBe('PassAction');
   });
 });
 

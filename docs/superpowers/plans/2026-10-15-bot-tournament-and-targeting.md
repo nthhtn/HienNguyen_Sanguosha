@@ -260,23 +260,23 @@ describe('runGame with a policy per seat', () => {
   it('asks policyFor for each acting seat and finishes the game', () => {
     const registry = buildContentRegistry();
     const seatIds = ['seat-0', 'seat-1', 'seat-2', 'seat-3'];
-    const initialState = createGame(kingdomWarMode, registry, seatIds, 123);
+    const initialState = createGame(guozhanMode, registry, seatIds, 123);
     const used = new Set<BotKind>();
     const policyFor = (seatId: string): BotKind => {
       const kind: BotKind = seatIds.indexOf(seatId) % 2 === 0 ? 'rule-based' : 'rule-based-v1';
       used.add(kind);
       return kind;
     };
-    const { finalState } = runGame(initialState, { registry, mode: kingdomWarMode }, 456, 20000, 'random', undefined, policyFor);
+    const { finalState } = runGame(initialState, { registry, mode: guozhanMode }, 456, 20000, 'random', undefined, policyFor);
     expect(finalState.result).not.toBeNull();
     expect([...used].sort()).toEqual(['rule-based', 'rule-based-v1']);
   });
 
   it('can mix the random picker with a rule-based policy', () => {
     const registry = buildContentRegistry();
-    const initialState = createGame(kingdomWarMode, registry, ['seat-0', 'seat-1'], 7);
+    const initialState = createGame(guozhanMode, registry, ['seat-0', 'seat-1'], 7);
     const policyFor = (seatId: string): BotKind => (seatId === 'seat-0' ? 'random' : 'rule-based');
-    const { actionsSubmitted } = runGame(initialState, { registry, mode: kingdomWarMode }, 7, 20000, 'random', undefined, policyFor);
+    const { actionsSubmitted } = runGame(initialState, { registry, mode: guozhanMode }, 7, 20000, 'random', undefined, policyFor);
     expect(actionsSubmitted).toBeGreaterThan(0);
   });
 });
@@ -508,7 +508,7 @@ Expected: FAIL — `Cannot find module './tournament'`.
 ```ts
 import { createGame } from 'engine';
 import type { GameState } from 'engine';
-import { buildContentRegistry, kingdomWarMode } from 'content';
+import { buildContentRegistry, guozhanMode } from 'content';
 import { BotKind, runGame } from './runGame';
 
 export type Side = 'challenger' | 'baseline';
@@ -608,10 +608,10 @@ export function runTournament(config: TournamentConfig): TournamentReport {
   for (let game = 0; game < config.games; game++) {
     const seed = firstSeed + game;
     const sideOfSeat = (seatId: string): Side => sideOf(game, seatIds.indexOf(seatId));
-    const initialState = createGame(kingdomWarMode, registry, seatIds, seed);
+    const initialState = createGame(guozhanMode, registry, seatIds, seed);
     const { finalState } = runGame(
       initialState,
-      { registry, mode: kingdomWarMode },
+      { registry, mode: guozhanMode },
       seed,
       config.maxActions ?? DEFAULT_MAX_ACTIONS,
       config.baseline,

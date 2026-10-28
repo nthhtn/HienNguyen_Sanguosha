@@ -9,7 +9,7 @@ import { lightningStrike } from './generals/wind';
 import { duelingHeroes } from './generals/fire';
 import { militaryFarm, lament } from './generals/mountain';
 import type { GeneralOwner, SkillDefinition } from 'engine';
-import { ALTERNATE_VARIANTS } from './alternateVariants';
+import { KINGDOM_WARS_VARIANTS } from './kingdomWarsVariants';
 
 const SUITS: CardInstance['suit'][] = ['spade', 'heart', 'club', 'diamond'];
 const done: Effect = { kind: 'JudgmentDoneEffect', judgment: undefined as never };
@@ -172,18 +172,18 @@ describe('judgmentOutcome: River Goddess', () => {
   });
 });
 
-describe('judgmentOutcome: Alternate Goddess Luo', () => {
-  const owner = ownerOf('alternate:goddess-luo');
-  const goddessLuo = ALTERNATE_VARIANTS['zhen-ji']['洛神'];
+describe('judgmentOutcome: Kingdom Wars Goddess Luo', () => {
+  const owner = ownerOf('kingdomWars:goddess-luo');
+  const goddessLuo = KINGDOM_WARS_VARIANTS['zhen-ji']['洛神'];
   const run = (state: GameState, suit: CardInstance['suit']) => {
     const judged = card('j', 'x', suit, 5);
-    return { outcome: outcome(state, view(skillReader('alternate:goddess-luo'), 'seat-a', judged)), effects: readSkill(goddessLuo, state, owner, 'seat-a', judged) };
+    return { outcome: outcome(state, view(skillReader('kingdomWars:goddess-luo'), 'seat-a', judged)), effects: readSkill(goddessLuo, state, owner, 'seat-a', judged) };
   };
 
   it.each(SUITS)('a %s: the key matches what the skill does', (suit) => {
     const { outcome: o, effects } = run(table(), suit);
     const red = suit === 'heart' || suit === 'diamond';
-    expect(o).toMatchObject({ readerId: 'alternate:goddess-luo', key: red ? 'ends' : 'again', seats: { seat: 'seat-a', owner: 'seat-a', source: null } });
+    expect(o).toMatchObject({ readerId: 'kingdomWars:goddess-luo', key: red ? 'ends' : 'again', seats: { seat: 'seat-a', owner: 'seat-a', source: null } });
     // Black: set aside in her stash, then asked to go on; red: discarded, then the held cards are acquired.
     expect(kinds(effects)).toEqual(red ? ['JudgmentDoneEffect', 'SkillStepEffect'] : ['MoveCardEffect', 'JudgmentDoneEffect', 'AskUseEffect']);
   });
@@ -331,10 +331,10 @@ describe('every judging reader has outcome text', () => {
     'eight-arrays': ['shan', 'none'],
     unyielding: ['discard-or-damage', 'damage', 'spared'],
     'river-goddess': ['again', 'ends'],
-    'alternate:goddess-luo': ['again', 'ends'],
+    'kingdomWars:goddess-luo': ['again', 'ends'],
     'iron-cavalry': ['unblockable', 'none'],
     'lightning-strike': ['damage', 'none'],
-    'alternate:lightning-strike': ['damage', 'none'],
+    'kingdomWars:lightning-strike': ['damage', 'none'],
     'dueling-heroes': ['red', 'black'],
     'military-farm': ['farm', 'discard'],
     lament: ['heal', 'draw', 'discard2', 'discard1', 'face-down', 'face-up', 'none'],
@@ -389,14 +389,14 @@ describe('how a judgment outcome is presented', () => {
     ['unyielding', 'spared', 'bad', none],
     ['river-goddess', 'again', 'good', none],
     ['river-goddess', 'ends', 'bad', none],
-    ['alternate:goddess-luo', 'again', 'good', none],
-    ['alternate:goddess-luo', 'ends', 'bad', none],
+    ['kingdomWars:goddess-luo', 'again', 'good', none],
+    ['kingdomWars:goddess-luo', 'ends', 'bad', none],
     ['iron-cavalry', 'unblockable', 'good', none],
     ['iron-cavalry', 'none', 'bad', none],
     ['lightning-strike', 'damage', 'bad', { kind: 'damage', amount: 2, subject: 'seat' }],
     ['lightning-strike', 'none', 'good', none],
-    ['alternate:lightning-strike', 'damage', 'bad', { kind: 'damage', amount: 2, subject: 'seat' }],
-    ['alternate:lightning-strike', 'none', 'good', none],
+    ['kingdomWars:lightning-strike', 'damage', 'bad', { kind: 'damage', amount: 2, subject: 'seat' }],
+    ['kingdomWars:lightning-strike', 'none', 'good', none],
     ['dueling-heroes', 'red', 'neutral', none],
     ['dueling-heroes', 'black', 'neutral', none],
     ['military-farm', 'farm', 'good', none],

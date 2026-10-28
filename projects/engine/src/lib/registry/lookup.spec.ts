@@ -21,12 +21,12 @@ describe('registry lookups', () => {
 
   it('finds a registered game mode by id', () => {
     const mode: GameModeDefinition = {
-      id: 'kingdom-war',
+      id: 'guozhan',
       setup: (() => { throw new Error('not used in this test'); }) as GameModeDefinition['setup'],
       checkWinCondition: () => null,
       triggers: [],
     };
-    const modes: ModeRegistry = new Map([['kingdom-war', mode]]);
-    expect(lookupMode(modes, 'kingdom-war')).toBe(mode);
+    const modes: ModeRegistry = new Map([['guozhan', mode]]);
+    expect(lookupMode(modes, 'guozhan')).toBe(mode);
   });
 });

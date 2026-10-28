@@ -41,27 +41,27 @@ describe('Wiki Cards in Vietnamese', () => {
   });
 
   it('the deck line and the skill states read in Vietnamese', async () => {
-    const generals = await open('/wiki/default/generals');
+    const generals = await open('/wiki/dynasty-wars/generals');
     expect(text(generals.querySelector('.deck-line'))).toBe('Bộ bài: Vương triều chiến');
     const states = [...entry(generals, 'cao-cao').querySelectorAll('.skill-status')].map((s) => text(s));
     expect(states).toEqual(['Không dùng trong Quốc chiến']);
   });
 
-  it('the Alternate labels read in Vietnamese', async () => {
-    const tools = await open('/wiki/alternate/tools');
+  it('the Kingdom Wars labels read in Vietnamese', async () => {
+    const tools = await open('/wiki/kingdom-wars/tools');
     expect(text(tools.querySelector('.deck-line'))).toBe('Bộ bài: Quốc chiến');
     const ascertain = entry(tools, 'ascertain');
     expect(text(ascertain.querySelector('.badge'))).toBe('Đã có trong trò chơi');
   });
 
-  it('the Alternate-only weapons read in Vietnamese', async () => {
-    const equipment = await open('/wiki/alternate/equipment');
+  it('the Kingdom Wars-only weapons read in Vietnamese', async () => {
+    const equipment = await open('/wiki/kingdom-wars/equipment');
     expect(['trident-glaive', 'wu-six-swords'].map((id) => text(entry(equipment, id).querySelector('.name')))).toEqual(['Tam Tiêm Lưỡng Nhận Đao', 'Ngô Lục Kiếm']);
     expect(text(entry(equipment, 'fire-fan').querySelector('.badge'))).toBe('Đã có trong trò chơi');
   });
 
-  it('the Alternate Basic page says Slash’s rules text is not available', async () => {
-    const el = await open('/wiki/alternate/basic');
+  it('the Kingdom Wars Basic page says Slash’s rules text is not available', async () => {
+    const el = await open('/wiki/kingdom-wars/basic');
     expect(text(entry(el, 'sha').querySelector('.gap'))).toBe('Chưa có nội dung luật');
   });
 
