@@ -9,20 +9,20 @@ system (`2026-10-05-general-skills-design.md`).
 ## Intent and why
 
 The Kingdom Wars deck has 60 Generals. Today they exist only as crawled records
-(the Wiki shows them); a Kingdom Wars game still deals Dynasty Wars' Generals and
-Dynasty Wars' skills. This stage makes the Kingdom Wars deck's own Generals playable
+(the Wiki shows them); a Kingdom Wars game still deals Identity's Generals and
+Identity's skills. This stage makes the Kingdom Wars deck's own Generals playable
 with the Kingdom Wars deck's own skill rules, so choosing the Kingdom Wars deck gives
-a faithful Kingdom Wars game. Dynasty Wars games must not change.
+a faithful Kingdom Wars game. Identity games must not change.
 
 ## What the crawl shows (counts from the data)
 
-- 51 of the 60 Kingdom Wars Generals share an id with a Dynasty Wars General. Six
-  Dynasty Wars Generals are not in Kingdom Wars (Dong Zhuo, Yu Ji, Zuo Ci, Jiang Wei,
+- 51 of the 60 Kingdom Wars Generals share an id with an Identity General. Six
+  Identity Generals are not in Kingdom Wars (Dong Zhuo, Yu Ji, Zuo Ci, Jiang Wei,
   Deng Ai, Sun Ce); they stay out of the Kingdom Wars pool.
 - 9 Generals are new to the engine: Gan Fu Ren, Yue Jin, Ding Feng, Ji Ling,
   Kong Rong, Ma Teng, Pan Feng, Tian Feng, Zou Shi (about 14 new skills, plus
   Ma Teng's Horsemanship, which exists).
-- 2 Generals have a different skill in place of a Dynasty Wars one: Lu Xun
+- 2 Generals have a different skill in place of an Identity one: Lu Xun
   (Scrutinize, a red hand card used as Amass, replaces Linked Camps) and Zhang
   Zhao and Zhang Hong (Stabilization replaces Stubborn). Guo Jia's Bequeathed
   Strategy changes from "draw two, then distribute" to "view the top two, then
@@ -34,18 +34,18 @@ a faithful Kingdom Wars game. Dynasty Wars games must not change.
   may or may not change timing (Empty City and Humility "cancel" rather than
   "cannot be targeted", Behind the Curtain, Banish, Resurrection, Entrenched,
   "immediately" removed).
-- 22 Generals are marked "Nil" (same as Dynasty Wars).
+- 22 Generals are marked "Nil" (same as Identity).
 - No Kingdom Wars General has a Lord skill. The crawl records "The Lord Ability
-  is removed" for the seven Generals who have one in Dynasty Wars (Liu Bei, Cao Cao,
+  is removed" for the seven Generals who have one in Identity (Liu Bei, Cao Cao,
   Sun Quan, Yuan Shao, Zhang Jiao, Liu Shan, Cao Pi). Dong Zhuo and Sun Ce, the
-  other Dynasty Wars Lord Generals, are not in Kingdom Wars.
+  other Identity Lord Generals, are not in Kingdom Wars.
 
 ## Goals
 
 - Choosing the Kingdom Wars deck gives Kingdom Wars' General pool (60 Generals), each
   with the Kingdom Wars skills and effects, playable by humans and by
   legal-action-driven bots.
-- Dynasty Wars games are unchanged.
+- Identity games are unchanged.
 - New names show in English and Vietnamese (Vietnamese as draft; the locale file
   `kingdom-wars-generals.json` already has all 9 new Generals).
 - The Wiki marks a Kingdom Wars General "In game" once all its skills are
@@ -57,12 +57,12 @@ a faithful Kingdom Wars game. Dynasty Wars games must not change.
 - Bots need only to play legally and not crash; smart use of the new skills is
   not required (my call; the bots layer is not part of this request).
 - Anti-goals: a central switch over General or skill ids; Kingdom Wars rules
-  written inside Angular components; Dynasty Wars' behaviour changing; a skill
+  written inside Angular components; Identity's behaviour changing; a skill
   implemented from vague text without the user confirming its rule text first.
 
 ## Decisions made with the user
 
-1. **Variants per deck.** A Kingdom Wars General reuses a Dynasty Wars skill where the
+1. **Variants per deck.** A Kingdom Wars General reuses an Identity skill where the
    Kingdom Wars skill is the same. Where it differs, a variant skill is registered
    for that General and chosen when the deck is Kingdom Wars. (Confirmed
    2026-10-22.)
@@ -80,8 +80,8 @@ a faithful Kingdom Wars game. Dynasty Wars games must not change.
 
 ### Slice 1: Plumbing and no Lord abilities
 
-- The deck chooses the General pool (60 ids for Kingdom Wars; Dynasty Wars unchanged)
-  and the skill set per General (Dynasty Wars skills, with per-deck overrides).
+- The deck chooses the General pool (60 ids for Kingdom Wars; Identity unchanged)
+  and the skill set per General (Identity skills, with per-deck overrides).
 - Lord skills: the engine already ignores any skill flagged `lord`
   (`skillsInPlay` in `engine/.../generalSkills.ts`, and `triggers.ts`), in every
   deck, so no Lord skill ever works in a Guozhan game. Kingdom Wars'
@@ -89,7 +89,7 @@ a faithful Kingdom Wars game. Dynasty Wars games must not change.
   carry no `lord` skills. Nothing else in the engine reads the lord flag (checked
   2026-10-22). The lord-flag spec (`lordFlags.spec.ts`) must still hold.
 - The Kingdom Wars pool is all 60 Generals from the start. A General offers only
-  the skills that are ready for the Kingdom Wars deck (Dynasty Wars' where the skill
+  the skills that are ready for the Kingdom Wars deck (Identity's where the skill
   matches, a variant once registered); a skill not ready yet is simply absent,
   and a General with none plays vanilla, the fallback the engine already has.
   (Decided by the user, 2026-10-22.)
@@ -116,12 +116,12 @@ builder's call.
 ### Slice 4: Wording-only differences
 
 For each General whose note is only wording, compare the Kingdom Wars text with the
-Dynasty Wars implementation and decide: no change (the General is simply registered
-as Dynasty Wars'), or a real timing difference (it moves to slice 2's list, which by then is merged, so it becomes a small follow-up). Includes
+Identity implementation and decide: no change (the General is simply registered
+as Identity's), or a real timing difference (it moves to slice 2's list, which by then is merged, so it becomes a small follow-up). Includes
 the 22 "Nil" Generals and the "immediately removed" notes. Output: a list of what
 was checked and what it was decided as, in the plan.
 
-**Done (2026-10-23):** 29 skills cleared as Dynasty Wars', 3 variants added (Descend into Chaos, Lightning Strike, Resurrection); all 60 Generals now play their Kingdom Wars skills. The audit list is in `2026-10-23-kingdom-wars-generals-slice-4-rules.md`.
+**Done (2026-10-23):** 29 skills cleared as Identity's, 3 variants added (Descend into Chaos, Lightning Strike, Resurrection); all 60 Generals now play their Kingdom Wars skills. The audit list is in `2026-10-23-kingdom-wars-generals-slice-4-rules.md`.
 
 Slice 4 also owns these skills of Generals finished in slice 2, which have no difference note of their
 own and must be checked as unchanged before they are cleared: Zhuge Liang's Star Gazing (观星), Xun
@@ -134,29 +134,29 @@ Strike.
 
 - Lord is the official term (not Ruler). Lord skills are ignored today, but they
   will be brought into the game in a later version, so Kingdom Wars Generals must
-  not lose the information: the crawl records, the Lord flag and the Dynasty Wars
+  not lose the information: the crawl records, the Lord flag and the Identity
   Lord skills stay as they are, and Kingdom Wars' "no Lord skills" is expressed as
   a per-deck choice, not by deleting data. (Confirmed by the user, 2026-10-22.)
 - Engine stays framework-free and executable under plain Node; state stays
   plain serializable data.
 - Content is data-driven registries: a variant is its own definition, not a
-  branch in the Dynasty Wars skill.
+  branch in the Identity skill.
 - UI text follows the casing rules in `CLAUDE.md`; new Vietnamese text starts as
   draft (`npm run i18n:status`).
-- Each slice carries its own tests, including a Dynasty Wars-unchanged check.
+- Each slice carries its own tests, including an Identity-unchanged check.
 
 ## Calls added after the reviewer's questions (my calls unless marked)
 
 - Who classifies a difference note: I do, in the plan. A note is a real change
-  if the Kingdom Wars text could give a different outcome from the Dynasty Wars
+  if the Kingdom Wars text could give a different outcome from the Identity
   implementation in any case; a doubtful one counts as real and goes to the user
   for confirmation (decision 4). "Vague" means the exact trigger, timing, target
   or limit cannot be read from the text.
 - The Wiki's "In game" marking for a Kingdom Wars General means every skill the
-  Kingdom Wars record lists resolves for the Kingdom Wars deck (Dynasty Wars' or a variant),
-  so a reused-Dynasty Wars General counts as in game.
+  Kingdom Wars record lists resolves for the Kingdom Wars deck (Identity's or a variant),
+  so a reused-Identity General counts as in game.
 - Engine changes for slice 3's new mechanics are allowed; the guard is that all
-  Dynasty Wars tests and a Dynasty Wars simulation stay unchanged. Engine work for a
+  Identity tests and an Identity simulation stay unchanged. Engine work for a
   mechanic is scheduled before the Generals that need it.
 - Art: the assets hold no portraits for the 9 new Generals (only Zou Shi's death
   audio). They use placeholder portraits for now (decided by the user,

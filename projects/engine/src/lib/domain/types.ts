@@ -386,7 +386,7 @@ export interface GameRules {
   // After a judgment's card is final, the game waits for an acknowledgement (or the
   // notice clock) before the reader acts: the judgment popup's pause. Absent: no wait.
   judgmentNotice?: boolean;
-  // The card distribution the draw pile is dealt from (a deck id). Absent: the Dynasty Wars deck.
+  // The card distribution the draw pile is dealt from (a deck id). Absent: the Identity deck.
   deck?: string;
 }
 

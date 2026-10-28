@@ -158,7 +158,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       return [(foes[0] ?? byLowestHp(seats.filter((s) => !isAlly(me, s, view)))[0] ?? seats[0]).id];
     }
     case 'kindness': {
-      // The thresholds below are Dynasty Wars' (2); a variant with another number (Benevolence: 3) is played legally, not optimally.
+      // The thresholds below are Identity's (2); a variant with another number (Benevolence: 3) is played legally, not optimally.
       const given = view.turn.abilityUses?.[`${abilityUseKey(owner)}/given`] ?? 0;
       const count = Math.max(eligible.length - 3, hurt(me) && given < 2 ? 2 - given : 0, 1);
       return leastUseful(view, registry, eligible).slice(0, Math.min(count, eligible.length));
@@ -286,7 +286,7 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
       return males.length >= 2 && males.some((s) => !isAlly(me, s, view));
     }
     case 'kindness': {
-      // Dynasty Wars' threshold (2) also for a variant (Benevolence heals at 3): legal, not smart.
+      // Identity's threshold (2) also for a variant (Benevolence heals at 3): legal, not smart.
       const owner = { kind: 'general' as const, seatId: me.id, slot: 'main' as const, skillId };
       const given = (['main', 'deputy'] as const).reduce((n, slot) => n + (view.turn.abilityUses?.[`${abilityUseKey({ ...owner, slot })}/given`] ?? 0), 0);
       return allies.length > 0 && (hand.length > 3 || (hurt(me) && given < 2 && hand.length >= 2));
@@ -329,6 +329,6 @@ export function conversionSpare(view: GameState, me: Seat, action: UseConversion
   return cards.length === owned.conversion.cards && !cards.some((id) => definitionIdOf(view, id) === 'peach');
 }
 
-// The conversion abilities whose card selection the bot fills (least useful first). A variant with a Dynasty Wars base is
+// The conversion abilities whose card selection the bot fills (least useful first). A variant with an Identity base is
 // covered by it; 'kingdomWars:scrutinize' has none and is listed here (the bot never starts it: it does not play Amass yet).
 export const CONVERSION_SKILLS: ReadonlySet<string> = new Set(['kingdomWars:scrutinize', 'fighting-saint', 'dragon-courage', 'overturned-country', 'first-aid', 'country-scene', 'surprise', 'fire-strategy', 'see-through', 'random-strike', 'dueling-heroes', 'blockade', 'wine', 'strategic-pass']);

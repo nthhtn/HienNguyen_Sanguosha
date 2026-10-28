@@ -11,14 +11,14 @@ describe('DeckPicker', () => {
   const radios = (el: HTMLElement) => [...el.querySelectorAll('mat-radio-button')];
   const input = (radio: Element) => radio.querySelector('input') as HTMLInputElement;
 
-  it('offers Kingdom Wars and Dynasty Wars, with Kingdom Wars chosen', async () => {
+  it('offers Kingdom Wars and Identity, with Kingdom Wars chosen', async () => {
     const { el } = await create();
     expect(el.querySelector('.label')!.textContent).toContain('Deck');
-    expect(radios(el).map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Dynasty Wars']);
+    expect(radios(el).map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Identity']);
     expect(radios(el).map((r) => input(r).checked)).toEqual([true, false]);
   });
 
-  it('disables Dynasty Wars for now (deferred): it stays listed but cannot be chosen', async () => {
+  it('disables Identity for now (deferred): it stays listed but cannot be chosen', async () => {
     const { fixture, el } = await create();
     expect(radios(el).map((r) => input(r).disabled)).toEqual([false, true]);
     input(radios(el)[1]).click();

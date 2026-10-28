@@ -6,7 +6,7 @@
   "title": "Aristocratic Ancestry",
   "maxHp": 4,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Barrage",

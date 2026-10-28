@@ -127,7 +127,7 @@ const healedKey = (owner: GeneralOwner) => `${abilityUseKey(owner)}/healed`;
 
 // Kindness (active, any number of times): in your Play Phase you may give any
 // of your hand cards to another seat. Once per turn, when the total given this
-// turn first reaches `threshold` or more, you recover 1 HP. Dynasty Wars' threshold is 2;
+// turn first reaches `threshold` or more, you recover 1 HP. Identity's threshold is 2;
 // the Kingdom Wars Benevolence variant uses 3.
 export const makeKindness = (threshold: number): SkillDefinition => ({
   id: 'kindness',

@@ -59,7 +59,7 @@ export interface WikiKingdomWarsGeneralView extends WikiGeneralView {
   partners: string[];
 }
 
-// A Kingdom Wars General in a language: the Kingdom Wars file's own text, never Dynasty Wars', with English for any piece it lacks.
+// A Kingdom Wars General in a language: the Kingdom Wars file's own text, never Identity's, with English for any piece it lacks.
 export function wikiKingdomWarsGeneralView(general: WikiKingdomWarsGeneral, locale: string): WikiKingdomWarsGeneralView {
   const display = locale === SOURCE_LOCALE ? null : kingdomWarsGeneralDisplayData(general.id, locale);
   return {

@@ -41,7 +41,7 @@ describe('Kingdom Wars Xun Yu, Eternal Loyalty', () => {
     expect(s.pendingChoice).toBeUndefined();
   });
 
-  it('leaves Dynasty Wars Xun Yu drawing to a max HP of 6', () => {
+  it('leaves Identity Xun Yu drawing to a max HP of 6', () => {
     let s = h.run(xunYu('xun-yu', {}, { 'seat-b': 6 }), hit(1));
     s = h.choose(h.use(s), 'seat-b');
     expect(handIds(s, 'seat-b')).toHaveLength(6);
@@ -166,7 +166,7 @@ describe('Kingdom Wars Guo Jia, Bequeathed Strategy', () => {
     expect(redactStateForSeat(s, 'seat-a').pendingChoice!.options.every((o) => o.card?.instanceId === 'p0' && o.card.definitionId === 'shan')).toBe(true);
   });
 
-  it('Dynasty Wars Guo Jia still draws 2 in the same scenario', () => {
+  it('Identity Guo Jia still draws 2 in the same scenario', () => {
     const s = h.use(h.run(guoJia('guo-jia'), dmg(1)));
     expect(handIds(s, 'seat-a')).toEqual(['p0', 'p1']);
     expect(askedAbout(s)).toBe('bestowed-rouse');
@@ -212,7 +212,7 @@ describe('Kingdom Wars Zhen Ji, Goddess Luo', () => {
     expect(s.pendingChoice).toBeUndefined();
   });
 
-  it('Dynasty Wars Zhen Ji takes each black card at once in the same scenario', () => {
+  it('Identity Zhen Ji takes each black card at once in the same scenario', () => {
     let s = stub.use(startOfTurn('zhen-ji', [b1, b2, r1, ...rest]));
     expect(handIds(s, 'seat-a')).toEqual(['b1']);
     s = stub.use(stub.use(s));
@@ -241,7 +241,7 @@ describe('Kingdom Wars Zhen Ji, Goddess Luo', () => {
     expect(s.pendingChoice).toBeUndefined();
   });
 
-  it('a Sima Yi partner cannot replace her next judgment with a held black card (Dynasty Wars can)', () => {
+  it('a Sima Yi partner cannot replace her next judgment with a held black card (Identity can)', () => {
     const h = card('h', 'peach', 'heart', 9);
     // Use, decline Devil on b1, judge again: Devil asks on b2; Use opens the hand-card pick.
     const devilPick = (general: string) => {
@@ -265,7 +265,7 @@ describe('Kingdom Wars Zhen Ji, Goddess Luo', () => {
     expect(s.seats.find((x) => x.id === 'seat-a')!.eliminated).toBe(true);
     expect(ids(s, 'discardPile')).toContain('b1');
     expect(handIds(s, 'seat-a')).toEqual([]);
-    // Dynasty Wars: the black card was already in her hand.
+    // Identity: the black card was already in her hand.
     expect(handIds(kw.use(startOfTurn('zhen-ji', [b1, b2, r1, ...rest], { hp: 1, with: kw })), 'seat-a')).toEqual(['b1']);
   });
 

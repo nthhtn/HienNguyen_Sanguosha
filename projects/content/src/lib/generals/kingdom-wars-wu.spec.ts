@@ -44,7 +44,7 @@ describe('Kingdom Wars Sun Quan, Balance of Power', () => {
     expect(offered(s, 'seat-a', id)).toBe(false);
   });
 
-  it('leaves Dynasty Wars Sun Quan able to discard every card', () => {
+  it('leaves Identity Sun Quan able to discard every card', () => {
     const s = h.useSkill(sunQuan('sun-quan', 4), 'seat-a', 'reconsider');
     expect(s.pendingSelection).toMatchObject({ min: 1, max: 6 });
   });
@@ -72,7 +72,7 @@ describe('Kingdom Wars Sun Shangxiang, Warrior Lady', () => {
     expect(handIds(h.decline(asked), 'seat-a')).toEqual([]);
   });
 
-  it('Dynasty Wars draws 2 at once with no ask for the same replacement', () => {
+  it('Identity draws 2 at once with no ask for the same replacement', () => {
     const s = replace('sun-shangxiang');
     expect(s.pendingChoice).toBeUndefined();
     expect(handIds(s, 'seat-a')).toEqual(['d1', 'd2']);
@@ -86,7 +86,7 @@ describe('Kingdom Wars Sun Shangxiang, Warrior Lady', () => {
     expect(handIds(used, 'seat-a')).toEqual(['d1', 'd2']);
   });
 
-  it('Dynasty Wars draws 2 for each of the two pieces', () => {
+  it('Identity draws 2 for each of the two pieces', () => {
     expect(handIds(twoLeave('sun-shangxiang'), 'seat-a')).toEqual(['d1', 'd2', 'd3', 'd4']);
   });
 
@@ -137,7 +137,7 @@ describe('Kingdom Wars Lu Xun, Humility', () => {
   const noEffect = (s: GameState, cardId: string) =>
     s.log.filter((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === id && e.outcome === 'no-effect' && e.targetSeatId === 'seat-a' && e.cardId === cardId);
 
-  it('Dynasty Wars Lu Xun cannot be chosen by Steal or Capture', () => {
+  it('Identity Lu Xun cannot be chosen by Steal or Capture', () => {
     expect(targets(tools('lu-xun'), 'st')).not.toContain('seat-b');
     expect(targets(tools('lu-xun'), 'cp')).not.toContain('seat-b');
   });
@@ -199,7 +199,7 @@ describe('Kingdom Wars Zhang Zhao and Zhang Hong, Stabilization', () => {
     expect(askedAbout(s)).toBeNull();
   });
 
-  it('Dynasty Wars Zhang Zhao is not asked at 1 discarded card, but is at 2', () => {
+  it('Identity Zhang Zhao is not asked at 1 discarded card, but is at 2', () => {
     expect(askedAbout(phase('zhang-zhao-and-zhang-hong', 1))).toBeNull();
     expect(askedAbout(phase('zhang-zhao-and-zhang-hong', 2))).toBe('stubborn');
   });
@@ -213,7 +213,7 @@ describe('Kingdom Wars Lu Xun, Scrutinize', () => {
     table({ 'seat-a:hand': hand, drawPile: pile12, ...more }, { generals: at('seat-a', general), kingdoms: { 'seat-a': 'Wu', 'seat-b': 'Shu', 'seat-c': 'Wu', 'seat-d': 'Qun' } });
   const converts = (s: GameState) => h.legal(s, 'seat-a').some((a) => a.kind === 'UseConversionAction' && a.via.conversionId === id);
 
-  it('Dynasty Wars Lu Xun has no such conversion; Kingdom Wars Lu Xun has it', () => {
+  it('Identity Lu Xun has no such conversion; Kingdom Wars Lu Xun has it', () => {
     expect(converts(tableFor('lu-xun'))).toBe(false);
     expect(converts(tableFor('kingdomWars:lu-xun'))).toBe(true);
   });

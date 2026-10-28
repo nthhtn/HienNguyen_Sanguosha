@@ -73,7 +73,7 @@ export function collectSamples(games: number, seats: number, firstSeed: number):
   const samples: PickSample[] = [];
   for (let game = 0; game < games; game++) {
     const seed = firstSeed + game;
-    const { finalState } = runGame(createGame(guozhanMode, registry, seatIds, seed, { deck: 'dynastyWars' }), { registry, mode: guozhanMode }, seed, 20000, RANDOM_PICKS_ID);
+    const { finalState } = runGame(createGame(guozhanMode, registry, seatIds, seed, { deck: 'identity' }), { registry, mode: guozhanMode }, seed, 20000, RANDOM_PICKS_ID);
     if (!finalState.result) continue;
     const winners = new Set(finalState.result.winningSeatIds);
     for (const seat of finalState.seats) {

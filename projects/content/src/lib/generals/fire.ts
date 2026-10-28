@@ -99,7 +99,7 @@ export const rouseTheTiger: SkillDefinition = {
 const loyaltyAsk = (owner: GeneralOwner, left: number): Effect => ask(owner, [skillStep(owner, 'pick', { left })], left > 1 ? [loyaltyAsk(owner, left - 1)] : []);
 
 // Eternal Loyalty (may, per point of damage you take): pick any living seat,
-// you included; it draws until it holds as many hand cards as its max HP. Dynasty Wars
+// you included; it draws until it holds as many hand cards as its max HP. Identity
 // has no cap; the Kingdom Wars variant never raises the hand above `handCap`.
 export const makeEternalLoyalty = (handCap = Infinity): SkillDefinition => ({
   id: 'eternal-loyalty',

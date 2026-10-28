@@ -79,7 +79,7 @@ describe('Fire Fan', () => {
 
   // A real deal from each deck: the Fire Fan and a Slash the deal made are put in
   // seat-0's equipment and hand, the Generals are fixed, and it is seat-0's Play Phase.
-  describe.each(['dynastyWars', 'kingdomWars'])('in a game dealt from the %s deck', (deck) => {
+  describe.each(['identity', 'kingdomWars'])('in a game dealt from the %s deck', (deck) => {
     const dealtGame = (): GameState => {
       const g = createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], 1, { deck });
       const all = g.zones.flatMap((z) => z.cards);

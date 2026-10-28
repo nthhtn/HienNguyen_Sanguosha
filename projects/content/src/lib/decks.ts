@@ -6,7 +6,7 @@ import kingdomWarsDeck from '../../data/decks/kingdom-wars/deck.json';
 // A deck is only a distribution: which cards it holds and the suit and rank of
 // each copy. Behaviour, text and range stay on the card, so a card exists once
 // and decks say how it is dealt.
-export const DECK_IDS = ['dynastyWars', 'kingdomWars'] as const;
+export const DECK_IDS = ['identity', 'kingdomWars'] as const;
 export type DeckId = (typeof DECK_IDS)[number];
 // The deck a game is dealt from when it names none.
 export const DEFAULT_DECK_ID: DeckId = 'kingdomWars';
@@ -21,12 +21,12 @@ export interface DeckDefinition {
   entries: DeckEntry[];
 }
 
-// Dynasty Wars is built from the card data: each card's own printings. The copies
+// Identity is built from the card data: each card's own printings. The copies
 // other expansions add (tagged with their expansion) stay out until expansions
 // can be switched on.
-function dynastyWarsDeck(): DeckDefinition {
+function identityDeck(): DeckDefinition {
   return {
-    id: 'dynastyWars',
+    id: 'identity',
     entries: Object.entries(cardsData).map(([cardId, data]) => ({
       cardId,
       printings: (data.printings ?? []).filter((p) => !p.expansion).map(({ suit, rank }) => ({ suit, rank })),
@@ -35,7 +35,7 @@ function dynastyWarsDeck(): DeckDefinition {
 }
 
 const DECKS: Record<DeckId, () => DeckDefinition> = {
-  dynastyWars: dynastyWarsDeck,
+  identity: identityDeck,
   kingdomWars: () => kingdomWarsDeck as DeckDefinition,
 };
 

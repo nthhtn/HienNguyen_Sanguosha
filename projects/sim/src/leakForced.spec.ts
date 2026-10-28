@@ -16,7 +16,7 @@ describe('property: no leak at any step when Zuo Ci or Lu Su is dealt on purpose
       const failures: string[] = [];
       let used = false;
       for (let seed = 1; seed <= 60 && (seed <= 6 || !used); seed++) {
-        const initial = withForcedPairing(createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], seed, { deck: 'dynastyWars' }), 'seat-0', [generalId, partnerOf(generalId, registry, POOL)]);
+        const initial = withForcedPairing(createGame(guozhanMode, registry, ['seat-0', 'seat-1', 'seat-2', 'seat-3'], seed, { deck: 'identity' }), 'seat-0', [generalId, partnerOf(generalId, registry, POOL)]);
         let prev: GameState = initial;
         const record = (next: GameState) => {
           if (failures.length < 50) for (const leak of findStepLeaks(prev, next, registry)) failures.push(`${generalId} seed ${seed} turn ${next.turn.turnNumber}: ${leak}`);

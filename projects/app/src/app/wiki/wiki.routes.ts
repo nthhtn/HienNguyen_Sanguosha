@@ -9,8 +9,8 @@ const cards = () => import('./wiki-cards').then((m) => m.WikiCards);
 // category. Kingdom Wars' Generals page is its own component.
 export const WIKI_ROUTES: Routes = [
   {
-    path: 'dynasty-wars',
-    data: { deck: 'dynastyWars' },
+    path: 'identity',
+    data: { deck: 'identity' },
     children: [
       { path: 'generals', loadComponent: generals },
       { path: 'basic', loadComponent: cards, data: { category: 'basic' } },
@@ -30,12 +30,13 @@ export const WIKI_ROUTES: Routes = [
   },
   // The addresses from before the decks had their own pages, or their current
   // names, still work.
-  { path: 'default/:page', redirectTo: 'dynasty-wars/:page' },
+  { path: 'default/:page', redirectTo: 'identity/:page' },
+  { path: 'dynasty-wars/:page', redirectTo: 'identity/:page' },
   { path: 'alternate/:page', redirectTo: 'kingdom-wars/:page' },
-  { path: 'generals', redirectTo: 'dynasty-wars/generals', pathMatch: 'full' },
-  { path: 'basic', redirectTo: 'dynasty-wars/basic', pathMatch: 'full' },
-  { path: 'equipment', redirectTo: 'dynasty-wars/equipment', pathMatch: 'full' },
-  { path: 'tools', redirectTo: 'dynasty-wars/tools', pathMatch: 'full' },
+  { path: 'generals', redirectTo: 'identity/generals', pathMatch: 'full' },
+  { path: 'basic', redirectTo: 'identity/basic', pathMatch: 'full' },
+  { path: 'equipment', redirectTo: 'identity/equipment', pathMatch: 'full' },
+  { path: 'tools', redirectTo: 'identity/tools', pathMatch: 'full' },
   { path: 'rules', redirectTo: 'rules/overview', pathMatch: 'full' },
   { path: 'rules/overview', loadComponent: () => import('./rules/overview').then((m) => m.RulesOverview) },
   { path: 'rules/card-types', loadComponent: () => import('./rules/card-types').then((m) => m.RulesCardTypes) },

@@ -19,7 +19,7 @@ describe('room schemas', () => {
 
   it('accepts the known decks and refuses any other', () => {
     expect(Value.Check(RoomRulesSchema, { deck: 'kingdomWars' })).toBe(true);
-    expect(Value.Check(RoomRulesSchema, { deck: 'dynastyWars', firstRevealDraw: true })).toBe(true);
+    expect(Value.Check(RoomRulesSchema, { deck: 'identity', firstRevealDraw: true })).toBe(true);
     expect(Value.Check(RoomRulesSchema, { deck: 'bogus' })).toBe(false);
     expect(Value.Check(RoomRulesSchema, { deck: 1 })).toBe(false);
   });

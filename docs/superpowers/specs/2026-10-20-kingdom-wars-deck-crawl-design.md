@@ -5,9 +5,9 @@ Date: 2026-10-20. Status: draft for review.
 ## Intent and why
 
 The game will offer a second card set, **Kingdom Wars**, next to the current one,
-**Dynasty Wars**. It is a different set of cards to play with, chosen later in game
+**Identity**. It is a different set of cards to play with, chosen later in game
 setup (setup will gain more modes over time, so "deck" is one choice among
-several). Kingdom Wars' cards are dealt differently from Dynasty Wars': a card with
+several). Kingdom Wars' cards are dealt differently from Identity's: a card with
 the same name can have different suits, ranks and copies. A few cards may also
 have different effects, and some Generals will later get Kingdom Wars skill
 effects.
@@ -26,8 +26,8 @@ for equipment, the attack range.
 The **Guozhan base set (国战)**: the page says 108 cards, made of Basic,
 Tool and Equipment cards (Weapon, Armor, Mount). That is the whole scope.
 
-Seen on the page (names are Dynasty Wars' English names where Dynasty Wars has the
-card; `*` = Dynasty Wars does not have it yet, name is a working translation):
+Seen on the page (names are Identity's English names where Identity has the
+card; `*` = Identity does not have it yet, name is a working translation):
 
 - Basic (6): Slash, Fire Attack (火杀), Lightning Attack (雷杀), Dodge, Peach, Wine
 - Tool (19): Lightning, Capture (乐不思蜀), Starvation, Break, Steal, Duel,
@@ -47,7 +47,7 @@ now; the crawler should be written so another edition can be added later by
 naming it, not by rewriting the parser.
 
 Fire Attack, Lightning Attack, Wine, Chains and Blaze are crawled like any
-other card. Dynasty Wars currently keeps elemental cards out of play (the
+other card. Identity currently keeps elemental cards out of play (the
 all-cards-and-skills roadmap decision); whether Kingdom Wars plays them is a
 later decision. The crawl records them without judging.
 
@@ -58,8 +58,8 @@ later decision. The crawl records them without judging.
    parses the card table and writes the Kingdom Wars card data.
 2. The crawled data, committed, in a new per-deck location under
    `projects/content/data/` that sits beside the existing `cards/` data and
-   does not touch it. Dynasty Wars' data and every existing test are unchanged.
-3. A **difference report** comparing Kingdom Wars against Dynasty Wars. It lists, and
+   does not touch it. Identity's data and every existing test are unchanged.
+3. A **difference report** comparing Kingdom Wars against Identity. It lists, and
    does not resolve: cards only in one deck; copies, suits or ranks that
    differ; effect or range text that differs. The user will decide what to do
    about differences later.
@@ -70,22 +70,22 @@ later decision. The crawl records them without judging.
 - the Chinese name (`nameZh`) exactly as printed, and the category (Basic,
   Tool, Equipment) and for equipment the subtype (Weapon, Armor, Mount)
 - the printings: one entry per physical card, `{suit, rank}`, with suits
-  `spade | heart | club | diamond` and ranks 1–13 as Dynasty Wars already stores
+  `spade | heart | club | diamond` and ranks 1–13 as Identity already stores
   them (A = 1, J = 11, Q = 12, K = 13); `count` equals the number of
   printings
 - the effect text as printed (Chinese)
 - for equipment, the range or distance (a number for weapon attack range;
   how mounts are expressed is for the builder)
-- the Dynasty Wars card id it corresponds to, matched through `nameZh`, or null
-  when Dynasty Wars has no such card
-- a source block (url, crawl date), like Dynasty Wars' cards carry
+- the Identity card id it corresponds to, matched through `nameZh`, or null
+  when Identity has no such card
+- a source block (url, crawl date), like Identity's cards carry
 
 Each deck is identified by a name (`default`, `Kingdom Wars`) so the structure
-can hold more decks and later per-deck General skill variants. Dynasty Wars'
+can hold more decks and later per-deck General skill variants. Identity's
 existing data stays where it is; it is not migrated in this step.
 
 English names and English effect text are not part of this step. Cards that
-Dynasty Wars does not have are identified by `nameZh` until someone names them.
+Identity does not have are identified by `nameZh` until someone names them.
 
 ## Parsing facts the builder must handle
 
@@ -124,14 +124,14 @@ These come from reading the page's HTML:
 ## Goals, non-goals, anti-goals
 
 Goals: Kingdom Wars' Guozhan base data is in the repo, reproducible by
-running one script; the differences from Dynasty Wars are visible.
+running one script; the differences from Identity are visible.
 
 Non-goals (all later steps): making Kingdom Wars cards playable, a deck choice in
 game setup, new card behaviours (each needs its rule text written first, per
 CLAUDE.md), Generals and their Kingdom Wars skills, English text and Vietnamese
 text, resolving any difference, the expansions listed above.
 
-Anti-goals: changing Dynasty Wars' data, ids, deck or tests; the game quietly
+Anti-goals: changing Identity's data, ids, deck or tests; the game quietly
 reading Kingdom Wars data; guessing values the page does not state.
 
 ## Constraints
@@ -151,7 +151,7 @@ engine knows nothing of Kingdom Wars yet.
 ## My calls (not yet agreed, please check)
 
 - Chinese text only in this step; English names for new cards come later.
-- Dynasty Wars' observed distribution: its Slash has 30 copies, which matches the
+- Identity's observed distribution: its Slash has 30 copies, which matches the
   page's 标准 list, not 国战 (about 21). So the report will show many
   distribution differences by design. Only Slash was checked.
 - The raw page is not committed (313 KB, can change); the parser is tested on
@@ -160,26 +160,26 @@ engine knows nothing of Kingdom Wars yet.
 
 ## Answers from the project and the page (reviewer questions)
 
-- **Dynasty Wars' data format:** JSON, one file per card under
+- **Identity's data format:** JSON, one file per card under
   `projects/content/data/cards/{basic,tool,equipment/<subtype>}/<id>.json`,
   pulled in by `data/cards/index.ts`. Fields: `name`, `nameZh` (absent on
   Slash, Dodge and Peach), `count`, `printings[{rank, suit}]`, `range` (a
   number, on equipment), `text` (English), `source`. Kingdom Wars data is JSON in
   the same field conventions (`range` as a number, same suit and rank
   encoding), in its own folder, and is **not** added to `index.ts` or loaded
-  by anything. A Python script can read Dynasty Wars' JSON directly, so the
+  by anything. A Python script can read Identity's JSON directly, so the
   difference report is generated by the same script.
-- **Match key:** `nameZh`. Dynasty Wars has Fire Attack (火杀) and Lightning Attack
-  (雷杀) as their own cards, and one Wuxie (无懈可击). Dynasty Wars' Slash, Dodge
+- **Match key:** `nameZh`. Identity has Fire Attack (火杀) and Lightning Attack
+  (雷杀) as their own cards, and one Wuxie (无懈可击). Identity's Slash, Dodge
   and Peach have no `nameZh`, so the script carries a small hand-kept table
-  for just those three (杀, 闪, 桃); Dynasty Wars' data is not edited. Kingdom Wars'
-  second Wuxie (无懈可击•国) has no Dynasty Wars match (null) and is listed as
+  for just those three (杀, 闪, 桃); Identity's data is not edited. Kingdom Wars'
+  second Wuxie (无懈可击•国) has no Identity match (null) and is listed as
   only in Kingdom Wars.
 - **Shared distribution cells:** when one distribution cell spans several
   edition rows (for example Black Pommel: `rowspan=2` covering 标准 and
   国战), each of those editions has exactly those printings. They are not a
   combined list.
-- **Effect text in the report:** Dynasty Wars' text is English and Kingdom Wars' is
+- **Effect text in the report:** Identity's text is English and Kingdom Wars' is
   Chinese, so they cannot be compared. The report lists effect text as
   "not compared yet" for matched cards and only compares copies, suits, ranks
   and range.
@@ -197,7 +197,7 @@ engine knows nothing of Kingdom Wars yet.
   must change nothing but that date.
 - **Adding an edition later:** a command-line option naming the edition. The
   exact flag is the builder's choice. `source` is recorded per card, as
-  Dynasty Wars does.
+  Identity does.
 
 ## As built (2026-10-21)
 
@@ -208,12 +208,12 @@ engine knows nothing of Kingdom Wars yet.
   (`python3 -m unittest discover -s scripts -p 'test_*.py'`).
 - Data, in `projects/content/data/decks/kingdom-wars/`, kept apart from the
   crawler and from each other: `cards.json` (identity, category, printings,
-  range or mount, Dynasty Wars match), `texts.zh.json` (printed effect text by
-  Chinese name) and `diff-vs-dynasty-wars.md`.
+  range or mount, Identity match), `texts.zh.json` (printed effect text by
+  Chinese name) and `diff-vs-identity.md`.
 - The page prints no effect text for Slash, Fire Attack and Lightning
   Attack, so those have no entry in `texts.zh.json`; the script notes it and
   does not guess.
-- Mounts use Dynasty Wars' field: `"mount": "offensive" | "defensive"`.
+- Mounts use Identity's field: `"mount": "offensive" | "defensive"`.
 
 ## Deck structure (engine reuse)
 
@@ -222,12 +222,12 @@ data (name, text, range, mount). A **deck** is only a distribution:
 `{ id, entries: [{ cardId, printings: [{ suit, rank }] }] }`. It holds no text,
 range or behaviour.
 
-- Dynasty Wars' deck is built from the existing card data; nothing is migrated.
+- Identity's deck is built from the existing card data; nothing is migrated.
 - Kingdom Wars' deck is `data/decks/kingdom-wars/deck.json`, written by the crawler.
 - `data/decks/kingdom-wars/ids.json` is the one hand-kept file: the id and English
-  name for each card Dynasty Wars does not have (`{ "<nameZh>": { "id", "name" } }`).
-  The crawler fails on a card that has neither a Dynasty Wars match nor an entry.
-- The game picks a deck with `GameRules.deck` (absent means Dynasty Wars). An entry
+  name for each card Identity does not have (`{ "<nameZh>": { "id", "name" } }`).
+  The crawler fails on a card that has neither an Identity match nor an entry.
+- The game picks a deck with `GameRules.deck` (absent means Identity). An entry
   whose card has no definition yet is left out of the deal.
 - A card whose effect differs between decks gets its own id and behaviour (for
   example `wuxie-guo`); no behaviour ever checks which deck it is in.

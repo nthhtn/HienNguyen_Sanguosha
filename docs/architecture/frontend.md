@@ -289,12 +289,12 @@ Bots are never timed. Online, the server owns the clock and
 ## Wiki
 
 Each deck has its own pages, chosen by the parent route's `deck` data:
-`/wiki/dynasty-wars/...` and `/wiki/kingdom-wars/...`, each with `generals`, `basic`,
-`equipment` and `tools`. The card pages share one component. The Dynasty Wars
+`/wiki/identity/...` and `/wiki/kingdom-wars/...`, each with `generals`, `basic`,
+`equipment` and `tools`. The card pages share one component. The Identity
 Generals page and the Kingdom Wars Generals page are separate components, since
-a Kingdom Wars General is shown beside the Dynasty Wars version it differs from. The
-older `/wiki/generals`-style addresses redirect to the Dynasty Wars pages, the
-former `/wiki/default/*` and `/wiki/alternate/*` addresses to their renamed
+a Kingdom Wars General is shown beside the Identity version it differs from. The
+older `/wiki/generals`-style addresses redirect to the Identity pages, the
+former `/wiki/default/*`, `/wiki/dynasty-wars/*` and `/wiki/alternate/*` addresses to their renamed
 decks, and `/wiki` itself to the Kingdom Wars Generals page;
 `/wiki/rules/*` holds short hand-written Rules pages. The pages are generated
 from content (`wiki.ts` and `wikiKingdomWarsGenerals.ts` build entries from the

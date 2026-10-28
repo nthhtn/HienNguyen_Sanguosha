@@ -6,7 +6,7 @@
   "title": "The Dancer with Unrivaled Beauty",
   "maxHp": 3,
   "gender": "female",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Seed of Animosity",

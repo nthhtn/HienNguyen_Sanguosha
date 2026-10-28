@@ -7,11 +7,11 @@ import { TPipe } from './i18n/t.pipe';
 
 // The decks the host can pick, in the order shown. A new deck is one line here
 // plus its catalog keys (and the engine's own list of decks). `disabled`: listed
-// but not choosable. Dynasty Wars (`dynastyWars`) waits for its own engine rules
+// but not choosable. Identity (`identity`) waits for its own engine rules
 // (see docs/deferrals.md); drop its `disabled` to bring it back.
 const OPTIONS: { id: DeckId; label: MessageKey; disabled?: true }[] = [
   { id: 'kingdomWars', label: 'setup.deck.kingdomWars' },
-  { id: 'dynastyWars', label: 'setup.deck.dynastyWars', disabled: true },
+  { id: 'identity', label: 'setup.deck.identity', disabled: true },
 ];
 
 let nextId = 0;

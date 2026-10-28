@@ -44,7 +44,7 @@ describe('wording-only Kingdom Wars skills', () => {
     expect(cases).toHaveLength(29);
   });
 
-  it.each(cases)('%s %s runs as a Dynasty Wars skill of the same General', (id, zh) => {
+  it.each(cases)('%s %s runs as an Identity skill of the same General', (id, zh) => {
     const r = record(id);
     const skill = r.skills.find((s) => s.nameZh === zh);
     expect(skill).toBeDefined();
@@ -54,7 +54,7 @@ describe('wording-only Kingdom Wars skills', () => {
     expect(GENERAL_SKILLS.get(id)).toContain(def);
   });
 
-  it("runs Zhang Liao's Sudden Strike (突击) as Dynasty Wars' Raid, whose Chinese name is 突袭", () => {
+  it("runs Zhang Liao's Sudden Strike (突击) as Identity's Raid, whose Chinese name is 突袭", () => {
     const r = record('zhang-liao');
     expect(kingdomWarsSkillFor(r, r.skills.find((s) => s.nameZh === '突击')!)?.id).toBe('raid');
   });
@@ -68,14 +68,14 @@ describe('the Nil Generals', () => {
   });
 
   // Marked Nil but Stubborn is replaced by Stabilization: a slice 2 variant, covered there.
-  const sameAsDynastyWars = nil.filter((r) => r.id !== 'zhang-zhao-and-zhang-hong');
+  const sameAsIdentity = nil.filter((r) => r.id !== 'zhang-zhao-and-zhang-hong');
 
-  it.each(sameAsDynastyWars.map((r) => [r.id]))('%s has the same skills and HP as Dynasty Wars', (id) => {
+  it.each(sameAsIdentity.map((r) => [r.id]))('%s has the same skills and HP as Identity', (id) => {
     const r = record(id);
     const d = generalsData[id];
     expect(d).toBeDefined();
     expect(r.skills.map((s) => s.nameZh)).toEqual(d.skills.filter((s) => !s.lord).map((s) => s.nameZh));
-    if (r.hpFrom === 'dynastyWars') expect(r.maxHp).toBe(d.maxHp);
+    if (r.hpFrom === 'identity') expect(r.maxHp).toBe(d.maxHp);
   });
 });
 

@@ -59,7 +59,7 @@ const sowDiscordDuel = (wuxieable: boolean): UsedCard => ({ as: 'duel', colour: 
 
 // Sow Discord (active, once per turn): discard 1 card and choose two other male
 // seats, in order. The second uses a Duel on the first, as if it had played
-// one. `wuxieable`: Dynasty Wars' Duel gets the usual Wuxie check; Kingdom Wars Seed of
+// one. `wuxieable`: Identity's Duel gets the usual Wuxie check; Kingdom Wars Seed of
 // Animosity's cannot be answered by Wuxie or Wuxie Kingdom.
 export const makeSowDiscord = (wuxieable: boolean): SkillDefinition => ({
   id: 'sow-discord',
@@ -92,7 +92,7 @@ export const makeSowDiscord = (wuxieable: boolean): SkillDefinition => ({
 });
 export const sowDiscord: SkillDefinition = makeSowDiscord(true);
 
-// Eclipse the Moon: at the start of your End Phase, you draw 1. Dynasty Wars is
+// Eclipse the Moon: at the start of your End Phase, you draw 1. Identity is
 // compulsory; `optional` (Kingdom Wars Envious Moon) asks first.
 export const makeEclipseTheMoon = (optional: boolean): SkillDefinition => ({
   id: 'eclipse-the-moon',

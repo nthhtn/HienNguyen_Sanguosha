@@ -169,7 +169,7 @@ Harness checks (before judging anything):
 | `rule-based-v1` against itself, 200 games, seed 0 | −1.5 pp (−8.7 to +5.7): no clear difference, as it should be |
 | `rule-based` against `random`, 100 games, seed 0 | +41.0 pp (+34.0 to +48.0): challenger better, as it should be |
 
-Dynasty Wars weights (`kill` 1000, `trigrams` −60, `perHandCard` −8 up to 5 cards,
+Identity weights (`kill` 1000, `trigrams` −60, `perHandCard` −8 up to 5 cards,
 `emptyHand` +30, `threat` +60 up to 3, `perHp` −10, `seatOrder` −0.01):
 
 | Games | First seed | Difference |

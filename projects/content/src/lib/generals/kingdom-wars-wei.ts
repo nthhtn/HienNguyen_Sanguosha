@@ -55,7 +55,7 @@ const bequeathedStrategy: SkillDefinition = {
 
 // Goddess Luo (may): at the start of her turn she may judge. On a black card she may judge again, or stop;
 // a red card ends it and is discarded. The black cards wait out of play until the process ends, then she
-// acquires them all; if she is out by then they are discarded. (Dynasty Wars puts each black card in her hand at once.)
+// acquires them all; if she is out by then they are discarded. (Identity puts each black card in her hand at once.)
 //
 // Where the black cards wait: each judgment's `done` sends its card from `processing` to the discard pile,
 // and Heaven's Envy reads cards still in `processing`, so a card cannot wait there. It waits in her seat's
@@ -137,15 +137,15 @@ const dauntless: SkillDefinition = {
   },
 };
 
-// Kingdom Wars Wei skills whose rules differ from Dynasty Wars', by General id then the Chinese skill name.
+// Kingdom Wars Wei skills whose rules differ from Identity's, by General id then the Chinese skill name.
 // Each variant's id is `kingdomWars:` plus the id of the Kingdom Wars English skill name.
 export const KINGDOM_WARS_WEI_VARIANTS: Readonly<Record<string, Readonly<Record<string, SkillDefinition>>>> = {
-  // Eternal Loyalty: the picked seat's hand is raised to at most 5 cards (Dynasty Wars: its max HP, however high).
+  // Eternal Loyalty: the picked seat's hand is raised to at most 5 cards (Identity: its max HP, however high).
   'xun-yu': { 节命: { ...makeEternalLoyalty(5), id: 'kingdomWars:eternal-loyalty' } },
-  // Bequeathed Strategy: view the top 2 cards then give them (Dynasty Wars: draw 2 then give any of them).
+  // Bequeathed Strategy: view the top 2 cards then give them (Identity: draw 2 then give any of them).
   'guo-jia': { 遗计: bequeathedStrategy },
-  // Goddess Luo: the black cards wait out of play until the judging ends (Dynasty Wars: each to her hand at once).
+  // Goddess Luo: the black cards wait out of play until the judging ends (Identity: each to her hand at once).
   'zhen-ji': { 洛神: goddessLuo },
-  // Dauntless: Yue Jin is new to Kingdom Wars (Dynasty Wars has no such General).
+  // Dauntless: Yue Jin is new to Kingdom Wars (Identity has no such General).
   'yue-jin': { 骁果: dauntless },
 };

@@ -25,13 +25,13 @@ export interface CardTranslation {
 const GENERAL_TEXT: Record<string, Record<string, GeneralTranslation>> = { vi: viGenerals };
 const CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viCards };
 
-// Names and text of cards only the Kingdom Wars deck has, by card id; a card Dynasty Wars also has is in CARD_TEXT.
+// Names and text of cards only the Kingdom Wars deck has, by card id; a card Identity also has is in CARD_TEXT.
 const KINGDOM_WARS_CARD_TEXT: Record<string, Record<string, CardTranslation>> = { vi: viKingdomWarsCards };
 export function kingdomWarsCardTranslation(id: string, locale: string): CardTranslation | null {
   return lookup(KINGDOM_WARS_CARD_TEXT, locale)?.[id] ?? null;
 }
 
-// The Kingdom Wars deck's Generals, by their id (which is Dynasty Wars' id when Dynasty Wars has the General, so the
+// The Kingdom Wars deck's Generals, by their id (which is Identity's id when Identity has the General, so the
 // two tables never mix: a Kingdom Wars entry always reads its own file). Everything a translation can hold
 // is optional, so a language can be filled in piece by piece.
 export interface KingdomWarsGeneralTranslation {
@@ -76,8 +76,8 @@ export function kingdomWarsGeneralDisplayData(id: string, locale = 'en'): Kingdo
 // Every General and card id, from the English data (the ids a translation has to cover).
 export const generalIds = (): string[] => Object.keys(generalsData);
 export const cardIds = (): string[] => Object.keys(cardsData);
-// The ids the Vietnamese review file can list for Generals: Dynasty Wars', then the Kingdom Wars deck's written
-// `kingdomWars:<id>` (their ids overlap Dynasty Wars', so they need the prefix).
+// The ids the Vietnamese review file can list for Generals: Identity's, then the Kingdom Wars deck's written
+// `kingdomWars:<id>` (their ids overlap Identity's, so they need the prefix).
 export const reviewGeneralIds = (): string[] => [...generalIds(), ...kingdomWarsGeneralRecords().map((g) => kingdomWarsGeneralId(g.id))];
 
 // The translations of a language, exported for the parity spec.

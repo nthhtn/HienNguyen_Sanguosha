@@ -6,7 +6,7 @@
   "title": "The Maverick Diplomat",
   "maxHp": 3,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Altruism",

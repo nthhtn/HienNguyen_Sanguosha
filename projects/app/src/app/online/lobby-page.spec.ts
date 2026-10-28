@@ -126,7 +126,7 @@ describe('LobbyPage', () => {
 
   it('puts the seat toggle back when the server refuses the change', async () => {
     lobby.setRules.mockResolvedValue(false);
-    lobby.room.set({ ...MIXED, rules: { deck: 'dynastyWars' } });
+    lobby.room.set({ ...MIXED, rules: { deck: 'identity' } });
     const { el, harness } = await render();
     const checked = () => harness.routeDebugElement!.queryAll(By.directive(MatButtonToggle)).filter((t) => (t.componentInstance as MatButtonToggle).checked).map((t) => (t.componentInstance as MatButtonToggle).value);
     harness.detectChanges();
@@ -149,7 +149,7 @@ describe('LobbyPage', () => {
   });
 
   it('gives the host a deck choice that sends the new deck beside the other rules', async () => {
-    lobby.room.set({ ...MIXED, rules: { firstRevealDraw: true, deck: 'dynastyWars' } });
+    lobby.room.set({ ...MIXED, rules: { firstRevealDraw: true, deck: 'identity' } });
     const { el, harness } = await render();
     expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => (r.querySelector('input') as HTMLInputElement).checked)).toEqual([false, true]);
     const kingdomWars = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent?.trim() === 'Kingdom Wars')!;
@@ -160,8 +160,8 @@ describe('LobbyPage', () => {
 
   it('puts the deck choice back when the server refuses the change', async () => {
     lobby.setRules.mockResolvedValue(false);
-    lobby.room.set({ ...MIXED, rules: { deck: 'dynastyWars' } });
-    lobby.room.set({ ...MIXED, rules: { deck: 'dynastyWars' } });
+    lobby.room.set({ ...MIXED, rules: { deck: 'identity' } });
+    lobby.room.set({ ...MIXED, rules: { deck: 'identity' } });
     const { el, harness } = await render();
     const checked = () => [...el.querySelectorAll('.deck mat-radio-button input')].map((i) => (i as HTMLInputElement).checked);
     const kingdomWars = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent?.trim() === 'Kingdom Wars')!;
@@ -175,9 +175,9 @@ describe('LobbyPage', () => {
 
   it('shows a non-host which deck the room uses', async () => {
     lobby.you.set('p-bo');
-    lobby.room.set({ ...MIXED, rules: { deck: 'dynastyWars' } });
+    lobby.room.set({ ...MIXED, rules: { deck: 'identity' } });
     const { el } = await render();
-    expect(el.querySelector('.rules-summary')?.textContent?.trim()).toBe('5 Seats · Deck: Dynasty Wars · First Reveal Bonus: Off');
+    expect(el.querySelector('.rules-summary')?.textContent?.trim()).toBe('5 Seats · Deck: Identity · First Reveal Bonus: Off');
   });
 
   it('disables the deck choice while the socket is down', async () => {

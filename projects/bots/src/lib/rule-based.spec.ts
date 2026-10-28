@@ -498,7 +498,7 @@ describe('ability selections', () => {
     of: 'cards', eligibleIds: [], min: 2, max: 2, then: { kind: 'discard' }, onCancel: [], ...over,
   });
 
-  it('Kingdom Wars Lu Xun’s Scrutinize (a conversion with no Dynasty Wars base): fills its selection rather than cancelling it', () => {
+  it('Kingdom Wars Lu Xun’s Scrutinize (a conversion with no Identity base): fills its selection rather than cancelling it', () => {
     const hand = [{ instanceId: 'p1', definitionId: 'peach', suit: 'heart' }, { instanceId: 's1', definitionId: 'sha', suit: 'diamond' }];
     const { action } = ruleBasedPolicy.decide(view({ hand, pendingSelection: sel('kingdomWars:scrutinize', { eligibleIds: ['p1', 's1'], min: 1, max: 1 }) }), 'seat-0', [template, cancel], registry, null);
     expect(action).toEqual({ ...template, ids: ['s1'] });

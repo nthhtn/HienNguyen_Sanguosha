@@ -30,7 +30,7 @@ interface ContentRegistry {
 - A **card** exists because it is listed in the registry's card array. A card
   with no printings in the deck being dealt can never silently go undealt: it
   throws when the deck is built.
-- **Kingdom Wars Generals** are registered beside the Dynasty Wars ones under ids
+- **Kingdom Wars Generals** are registered beside the Identity ones under ids
   prefixed `kingdomWars:`; see "Decks and the Kingdom Wars content" below.
 
 The data files are why wiki pages, card art and rules text can be shown
@@ -44,32 +44,32 @@ A **deck** ([decks.ts](../../projects/content/src/lib/decks.ts)) is only a
 distribution: which cards it holds and the suit and rank of each copy.
 Behaviour, text and range stay on the card, so a card exists once and decks say
 how it is dealt. There are two, chosen per game by `GameRules.deck`
-(`DECK_IDS = ['dynastyWars', 'kingdomWars']`; the protocol repeats the list and a
+(`DECK_IDS = ['identity', 'kingdomWars']`; the protocol repeats the list and a
 server test checks the two agree). A game with no deck is dealt from
-`DEFAULT_DECK_ID`, Kingdom Wars: it is the deck that is played, and Dynasty Wars
+`DEFAULT_DECK_ID`, Kingdom Wars: it is the deck that is played, and Identity
 waits for its own rules (`docs/deferrals.md`).
 
-- **Dynasty Wars** is built from the card data: each card's own printings.
+- **Identity** is built from the card data: each card's own printings.
 - **Kingdom Wars** is read from `data/decks/kingdom-wars/deck.json`, produced by a
   crawl of the Kingdom Wars deck and its Generals. Cards that exist only in this
   deck (`kingdomWarsCards.ts`) are registered with their own definitions;
-  others reuse the Dynasty Wars card.
+  others reuse the Identity card.
 
 The deck also decides which Generals are dealt: Guozhan draws from the
-Dynasty Wars pool or the Kingdom Wars pool, never both.
+Identity pool or the Kingdom Wars pool, never both.
 
 A Kingdom Wars General's skill is resolved in this order
 ([kingdomWarsSkills.ts](../../projects/content/src/lib/kingdomWarsSkills.ts)):
 
 1. a **variant**: a `SkillDefinition` in `generals/kingdom-wars-<force>.ts`,
    registered in `KINGDOM_WARS_VARIANTS` by General id and the skill's Chinese
-   name. This is for a skill whose rules differ from Dynasty Wars'.
-2. otherwise the **Dynasty Wars skill**, when the Kingdom Wars wording was audited and
+   name. This is for a skill whose rules differ from Identity's.
+2. otherwise the **Identity skill**, when the Kingdom Wars wording was audited and
    cleared as the same rule (`CLEARED_WORDING`, or a "nil" difference note).
 3. otherwise the skill is *not ready*: it shows in the wiki and the General is
    playable without it.
 
-`kingdomWarsBase.ts` is a leaf module mapping each variant to the Dynasty Wars skill
+`kingdomWarsBase.ts` is a leaf module mapping each variant to the Identity skill
 whose prompts, hints and bot behaviour it shares. It exists so that display
 code and the bots can reach variants without an import cycle, and
 `importGraph.spec.ts` keeps it that way.
@@ -217,11 +217,11 @@ skip the spec.
 6. Extend that pack's simulator spec so a seeded game fires the skill (see
    [Bots and simulation](bots-and-simulation.md)).
 
-**A Kingdom Wars General** whose skill matches Dynasty Wars' needs no code: audit the
-wording, add the Chinese skill name to `CLEARED_WORDING`, and the Dynasty Wars skill
+**A Kingdom Wars General** whose skill matches Identity's needs no code: audit the
+wording, add the Chinese skill name to `CLEARED_WORDING`, and the Identity skill
 runs. When the rules differ, write a variant in the matching
 `generals/kingdom-wars-<force>.ts`, add it to that file's variants map, and add its
-`kingdomWarsBase` entry if it shares prompts or bot behaviour with a Dynasty Wars skill.
+`kingdomWarsBase` entry if it shares prompts or bot behaviour with an Identity skill.
 
 **A new table rule or mode behavior** is a trigger on the mode, with a test in
 `guozhan.spec.ts`; an optional rule also gets a field on `GameRules`.

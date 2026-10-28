@@ -19,7 +19,7 @@ describe('pairScore', () => {
 });
 
 describe('pairScore with Kingdom Wars ids', () => {
-  it('scores a Kingdom Wars pair as its Dynasty Wars pair, apart from the registry HP tiebreak', () => {
+  it('scores a Kingdom Wars pair as its Identity pair, apart from the registry HP tiebreak', () => {
     const values = { 'cao-cao': 0.3, 'zhang-liao': 0.1 };
     const alt = pairScore(values, registry, choose('kingdomWars:cao-cao', 'kingdomWars:zhang-liao'));
     const def = pairScore(values, registry, choose('cao-cao', 'zhang-liao'));

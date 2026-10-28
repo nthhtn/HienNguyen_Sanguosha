@@ -6,7 +6,7 @@
   "title": "Talents to administrate Heaven and Earth",
   "maxHp": 3,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Blunt advice",

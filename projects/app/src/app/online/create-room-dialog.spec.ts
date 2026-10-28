@@ -23,8 +23,8 @@ describe('CreateRoomDialog', () => {
   }
 
 
-  const clickDynastyWars = (fixture: { detectChanges(): void }, el: HTMLElement) => {
-    const radio = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent!.trim() === 'Dynasty Wars')!;
+  const clickIdentity = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+    const radio = [...el.querySelectorAll('.deck mat-radio-button')].find((r) => r.textContent!.trim() === 'Identity')!;
     (radio.querySelector('input') as HTMLInputElement).click();
     fixture.detectChanges();
   };
@@ -77,16 +77,16 @@ describe('CreateRoomDialog', () => {
 
   it('offers the deck at every seat count, with Kingdom Wars chosen', async () => {
     const { fixture, component, el } = await create();
-    expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Dynasty Wars']);
+    expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Identity']);
     component.seatCount.set(6);
     fixture.detectChanges();
     expect(el.querySelectorAll('.deck mat-radio-button')).toHaveLength(2);
   });
 
-  it('sends no deck rule for Kingdom Wars, the default, beside First Reveal Bonus from 5 seats; Dynasty Wars is disabled for now (deferred)', async () => {
+  it('sends no deck rule for Kingdom Wars, the default, beside First Reveal Bonus from 5 seats; Identity is disabled for now (deferred)', async () => {
     rooms.create.mockResolvedValue('r-new');
     const { fixture, component, el } = await create();
-    clickDynastyWars(fixture, el);
+    clickIdentity(fixture, el);
     await component.submit();
     expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 4, rules: {}, displayName: 'Ann' });
     component.seatCount.set(6);

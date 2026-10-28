@@ -41,7 +41,7 @@ describe('Wiki Cards in Vietnamese', () => {
   });
 
   it('the deck line and the skill states read in Vietnamese', async () => {
-    const generals = await open('/wiki/dynasty-wars/generals');
+    const generals = await open('/wiki/identity/generals');
     expect(text(generals.querySelector('.deck-line'))).toBe('Bộ bài: Vương triều chiến');
     const states = [...entry(generals, 'cao-cao').querySelectorAll('.skill-status')].map((s) => text(s));
     expect(states).toEqual(['Không dùng trong Quốc chiến']);

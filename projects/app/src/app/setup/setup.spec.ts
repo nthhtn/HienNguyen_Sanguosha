@@ -87,9 +87,9 @@ describe('Setup', () => {
     });
 
     describe('deck', () => {
-      const clickDynastyWars = (fixture: { detectChanges(): void }, el: HTMLElement) => {
+      const clickIdentity = (fixture: { detectChanges(): void }, el: HTMLElement) => {
         const radios = [...el.querySelectorAll('.deck mat-radio-button')];
-        (radios.find((r) => r.textContent!.trim() === 'Dynasty Wars')!.querySelector('input') as HTMLInputElement).click();
+        (radios.find((r) => r.textContent!.trim() === 'Identity')!.querySelector('input') as HTMLInputElement).click();
         fixture.detectChanges();
       };
       const pickSeats = (fixture: { detectChanges(): void }, el: HTMLElement, n: number) => {
@@ -101,7 +101,7 @@ describe('Setup', () => {
         const { fixture, el } = await create();
         for (const n of [2, 4, 5]) {
           pickSeats(fixture, el, n);
-          expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Dynasty Wars']);
+          expect([...el.querySelectorAll('.deck mat-radio-button')].map((r) => r.textContent!.trim())).toEqual(['Kingdom Wars', 'Identity']);
         }
         fixture.componentInstance.mode.set('pass-and-play');
         fixture.detectChanges();
@@ -115,10 +115,10 @@ describe('Setup', () => {
         expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
       });
 
-      it('keeps the Kingdom Wars deck when Dynasty Wars is clicked: it is disabled for now (deferred)', async () => {
+      it('keeps the Kingdom Wars deck when Identity is clicked: it is disabled for now (deferred)', async () => {
         const { fixture, el, gameService } = await create();
         pickSeats(fixture, el, 4);
-        clickDynastyWars(fixture, el);
+        clickIdentity(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
         expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
       });
@@ -126,7 +126,7 @@ describe('Setup', () => {
       it('sends First Reveal Bonus at 5 seats, and no deck rule for Kingdom Wars', async () => {
         const { fixture, el, gameService } = await create();
         pickSeats(fixture, el, 5);
-        clickDynastyWars(fixture, el);
+        clickIdentity(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
         expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true });
       });

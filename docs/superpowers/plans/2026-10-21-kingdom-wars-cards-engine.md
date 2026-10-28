@@ -15,7 +15,7 @@
 - Card names: "Wuxie Kingdom" (`wuxie-guo`), "Ally Far Attack Near" (`ally-far-attack-near`), "Amass" (`amass`), "Ascertain" (`ascertain`), "Six Swords of Wu" (`wu-six-swords`), "Trident Glaive" (`trident-glaive`). Never "Negate Kingdom" or "Alliance".
 - "Kingdom" = `Seat.kingdom` ('Wei' | 'Shu' | 'Wu' | 'Qun' | 'hidden'); `'hidden'` means no Kingdom. Read it live at every query.
 - No central switch over card ids; engine names no card (content supplies ids). No Angular or browser APIs in `engine` or `content`. State stays plain serialisable data.
-- Dynasty Wars deck and Dynasty Wars tests keep passing; none of the six is in Dynasty Wars.
+- Identity deck and Identity tests keep passing; none of the six is in Identity.
 - UI text follows CLAUDE.md "UI text style" (English Title Case labels, Vietnamese sentence case); new Vietnamese is draft, `review.json` untouched; `en` and `vi` catalogs keep identical keys.
 - Kingdom Wars deal: 107 cards (Fire Fan only is undealt).
 - Work on a branch `feat/kingdom-wars-cards-engine`; commit after each task; commit messages end with `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
@@ -40,7 +40,7 @@ Inputs the spec implies that no single rule line tests; each has a test in the o
 - Test: `projects/content/src/lib/display.spec.ts`
 
 **Interfaces:**
-- Produces `kingdomWarsCardIds(): string[]` and `kingdomWarsCardData(id: string): { name: string; nameZh: string; category: 'tool' | 'equipment'; subtype: 'weapon' | null; range: number | null; text: string } | null`, built from `data/decks/kingdom-wars/{cards,ids,texts.en}.json` for the six cards with `dynastyWarsCardId === null`.
+- Produces `kingdomWarsCardIds(): string[]` and `kingdomWarsCardData(id: string): { name: string; nameZh: string; category: 'tool' | 'equipment'; subtype: 'weapon' | null; range: number | null; text: string } | null`, built from `data/decks/kingdom-wars/{cards,ids,texts.en}.json` for the six cards with `identityCardId === null`.
 - `cardDisplayData(id, locale)` now also returns a result for these six ids (name from `ids.json`, text from `texts.en.json`, Vietnamese from `locales/vi/kingdom-wars-cards.json`).
 
 - [ ] **Step 1: Write failing tests** in `display.spec.ts`: `cardDisplayData('amass')` has name `'Amass'` and a non-empty text; `cardDisplayData('wu-six-swords', 'vi')` has name `'Ngô Lục Kiếm'`; `cardDisplayData('trident-glaive')` has `range` 3 and `subtype` `'weapon'`; `cardDisplayData('nope')` is null; `kingdomWarsCardIds()` equals the six ids (sorted).
@@ -187,6 +187,6 @@ Rule: after the wearer's Slash dealt damage to a target that is still living, an
 
 ## Self-review
 
-- **Spec coverage:** Wuxie Kingdom (Task 5), Amass (6), Ascertain + Recast + private view (8), Ally Far Attack Near (7), Six Swords (3), Trident Glaive (4), names/UI (1), deal count and Wiki (9), Dynasty Wars unchanged (Global Constraints, full run in 9). Bots only need legality (Task 9 step 5).
+- **Spec coverage:** Wuxie Kingdom (Task 5), Amass (6), Ascertain + Recast + private view (8), Ally Far Attack Near (7), Six Swords (3), Trident Glaive (4), names/UI (1), deal count and Wiki (9), Identity unchanged (Global Constraints, full run in 9). Bots only need legality (Task 9 step 5).
 - **Types:** `sameKingdomSeatIds` (Task 2) is used in Tasks 3 and 6; `answerCondition`, `CancelToolForKingdomEffect` and `COUNTER_CARD_IDS` are defined in Task 5 and registered in Task 9; `kingdomWarsCardData` (Task 1) supplies the range in Tasks 3 and 4.
 - **Known risk:** Task 5 depends on `state.pendingResponse` being readable during an answering card's `play` (Step 1 checks it).

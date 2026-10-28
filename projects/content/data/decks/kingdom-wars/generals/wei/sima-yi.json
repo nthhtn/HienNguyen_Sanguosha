@@ -6,7 +6,7 @@
   "title": "The Devil with Eyes behind his Head",
   "maxHp": 3,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Retaliation",

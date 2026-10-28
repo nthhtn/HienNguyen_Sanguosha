@@ -45,7 +45,7 @@ describe('GeneralInfoDialog', () => {
     expect(el.textContent).not.toContain('no-such-general');
   });
 
-  it('flags a Kingdom Wars skill the game does not play yet, and not a ready or Dynasty Wars one', () => {
+  it('flags a Kingdom Wars skill the game does not play yet, and not a ready or Identity one', () => {
     const notReady = render('kingdomWars:guan-yu');
     expect(notReady.textContent).toContain('Warrior Saint');
     expect(notReady.querySelectorAll('.not-in-game-hint')).toHaveLength(1);

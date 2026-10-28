@@ -103,7 +103,7 @@ const READERS: Record<string, Decide> = {
   'kingdomWars:goddess-luo': (state, view, registry) => ({ key: riverGoddessOutcome(state, view.seatId, view.card, registry) }),
   'iron-cavalry': (state, view, registry) => ({ key: ironCavalryOutcome(state, view.seatId, view.card, registry) }),
   'lightning-strike': (state, view, registry) => ({ key: lightningStrikeOutcome(state, view.seatId, view.card, registry) }),
-  // Kingdom Wars Lightning Strike judges and strikes as Dynasty Wars'; only who he may pick differs.
+  // Kingdom Wars Lightning Strike judges and strikes as Identity's; only who he may pick differs.
   'kingdomWars:lightning-strike': (state, view, registry) => ({ key: lightningStrikeOutcome(state, view.seatId, view.card, registry) }),
   'dueling-heroes': (state, view, registry) => ({ key: duelingHeroesOutcome(state, view.seatId, view.card, registry) }),
   'military-farm': (state, view, registry) => ({ key: militaryFarmOutcome(state, view.seatId, view.card, registry) }),

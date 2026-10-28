@@ -6,7 +6,7 @@
   "title": "The King with a Laissez-faire Destiny",
   "maxHp": 3,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Relish",

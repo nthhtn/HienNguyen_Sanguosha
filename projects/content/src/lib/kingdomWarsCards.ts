@@ -2,7 +2,7 @@ import cards from '../../data/decks/kingdom-wars/cards.json';
 import ids from '../../data/decks/kingdom-wars/ids.json';
 import texts from '../../data/decks/kingdom-wars/texts.en.json';
 
-// The cards only the Kingdom Wars deck has (no Dynasty Wars counterpart): their names, ids and rules text,
+// The cards only the Kingdom Wars deck has (no Identity counterpart): their names, ids and rules text,
 // built from the deck's crawled data files.
 export interface KingdomWarsCardData {
   name: string;
@@ -19,7 +19,7 @@ interface RawCard {
   subtype?: string;
   range?: number;
   cardId: string;
-  dynastyWarsCardId: string | null;
+  identityCardId: string | null;
 }
 
 const IDS = ids as Record<string, { id: string; name: string }>;
@@ -27,7 +27,7 @@ const TEXTS = texts as Record<string, string>;
 
 const DATA: Record<string, KingdomWarsCardData> = {};
 for (const card of cards.cards as RawCard[]) {
-  if (card.dynastyWarsCardId !== null) continue;
+  if (card.identityCardId !== null) continue;
   DATA[card.cardId] = {
     name: IDS[card.nameZh].name,
     nameZh: card.nameZh,

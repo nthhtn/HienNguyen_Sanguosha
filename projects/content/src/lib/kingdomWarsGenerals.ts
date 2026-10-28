@@ -2,7 +2,7 @@ import aggregate from '../../data/decks/kingdom-wars/generals.json';
 import differences from '../../data/decks/kingdom-wars/differences.json';
 
 // The Kingdom Wars deck's Generals as the crawl saved them (generals.json, in the blog's order).
-// HP and gender come from Dynasty Wars' General or from generals-manual.json (`hpFrom` says which).
+// HP and gender come from Identity's General or from generals-manual.json (`hpFrom` says which).
 export interface KingdomWarsGeneralSkillRecord {
   name: string;
   nameZh?: string;
@@ -18,7 +18,7 @@ export interface KingdomWarsGeneralRecord {
   title?: string;
   maxHp: number;
   gender: 'male' | 'female';
-  hpFrom: 'dynastyWars' | 'manual';
+  hpFrom: 'identity' | 'manual';
   skills: KingdomWarsGeneralSkillRecord[];
   synergisticPartners: string[];
   differenceFromNormal: string | null;
@@ -26,7 +26,7 @@ export interface KingdomWarsGeneralRecord {
 
 const RECORDS = aggregate.generals as KingdomWarsGeneralRecord[];
 
-// What differs from Dynasty Wars, written by hand against the rules in the engine (differences.json).
+// What differs from Identity, written by hand against the rules in the engine (differences.json).
 // It is what the wiki shows; each record's crawled `differenceFromNormal` is kept but no longer used.
 export const kingdomWarsDifferenceNote = (id: string): string | null => (differences as Record<string, string>)[id] ?? null;
 

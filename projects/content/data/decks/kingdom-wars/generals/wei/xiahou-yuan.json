@@ -6,7 +6,7 @@
   "title": "Lightning-fast Cheetah",
   "maxHp": 4,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Godspeed",

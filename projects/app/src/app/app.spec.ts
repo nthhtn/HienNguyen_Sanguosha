@@ -36,7 +36,7 @@ describe('App', () => {
           { path: 'my-games', children: [] },
           { path: 'sign-in', children: [] },
           { path: 'sign-up', children: [] },
-          { path: 'wiki/dynasty-wars/:page', children: [] },
+          { path: 'wiki/identity/:page', children: [] },
           { path: 'wiki/kingdom-wars/:page', children: [] },
           { path: 'wiki/rules/:page', children: [] },
         ]),
@@ -113,25 +113,25 @@ describe('App', () => {
     const play = el.querySelector('a.nav-play') as HTMLAnchorElement;
     expect(play.getAttribute('href')).toBe('/play');
     expect(play.classList).toContain('active');
-    await TestBed.inject(Router).navigateByUrl('/wiki/dynasty-wars/generals');
+    await TestBed.inject(Router).navigateByUrl('/wiki/identity/generals');
     fixture.detectChanges();
     expect(play.classList).not.toContain('active');
-    expect(el.querySelector('button.nav-dynasty-wars')!.classList).toContain('active');
+    expect(el.querySelector('button.nav-identity')!.classList).toContain('active');
     expect(el.querySelector('button.nav-kingdom-wars')!.classList).not.toContain('active');
     await TestBed.inject(Router).navigateByUrl('/wiki/kingdom-wars/tools');
     fixture.detectChanges();
-    expect(el.querySelector('button.nav-dynasty-wars')!.classList).not.toContain('active');
+    expect(el.querySelector('button.nav-identity')!.classList).not.toContain('active');
     expect(el.querySelector('button.nav-kingdom-wars')!.classList).toContain('active');
   });
 
-  it('has five items in the bar: Play Offline, Play Online, Kingdom Wars, Dynasty Wars and Rules, each with an icon', async () => {
+  it('has five items in the bar: Play Offline, Play Online, Kingdom Wars, Identity and Rules, each with an icon', async () => {
     const { el } = await render();
     const items = [...el.querySelectorAll('nav.nav > a, nav.nav > button')];
     expect(items.map((i) => [i.querySelector('.label')!.textContent, i.querySelector('mat-icon')!.textContent])).toEqual([
       ['Play Offline', 'play_arrow'],
       ['Play Online', 'public'],
       ['Kingdom Wars', 'swords'],
-      ['Dynasty Wars', 'castle'],
+      ['Identity', 'castle'],
       ['Rules', 'menu_book'],
     ]);
   });
@@ -177,17 +177,17 @@ describe('App', () => {
     expect(el.querySelector('button.nav-cards')).toBeNull();
   });
 
-  it('has a Dynasty Wars menu with four options and no icons', async () => {
+  it('has an Identity menu with four options and no icons', async () => {
     const { el, fixture } = await render();
-    (el.querySelector('nav.nav button.nav-dynasty-wars') as HTMLButtonElement).click();
+    (el.querySelector('nav.nav button.nav-identity') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
     const items = [...document.querySelectorAll('.mat-mdc-menu-panel a[mat-menu-item]')] as HTMLAnchorElement[];
     expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
-      ['Generals', '/wiki/dynasty-wars/generals'],
-      ['Basic Cards', '/wiki/dynasty-wars/basic'],
-      ['Equipment', '/wiki/dynasty-wars/equipment'],
-      ['Tools', '/wiki/dynasty-wars/tools'],
+      ['Generals', '/wiki/identity/generals'],
+      ['Basic Cards', '/wiki/identity/basic'],
+      ['Equipment', '/wiki/identity/equipment'],
+      ['Tools', '/wiki/identity/tools'],
     ]);
     expect(items.every((a) => !a.querySelector('mat-icon'))).toBe(true);
   });
@@ -238,10 +238,10 @@ describe('App', () => {
   it('marks the current page for screen readers', async () => {
     const { el, fixture } = await render('/setup');
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBe('page');
-    await TestBed.inject(Router).navigateByUrl('/wiki/dynasty-wars/basic');
+    await TestBed.inject(Router).navigateByUrl('/wiki/identity/basic');
     fixture.detectChanges();
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-current')).toBeNull();
-    (el.querySelector('nav.nav button.nav-dynasty-wars') as HTMLButtonElement).click();
+    (el.querySelector('nav.nav button.nav-identity') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
     const current = [...document.querySelectorAll('.mat-mdc-menu-panel a[aria-current="page"]')];
@@ -251,7 +251,7 @@ describe('App', () => {
   it('icon buttons have accessible names (Review Focus 4)', async () => {
     const { el } = await render();
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play Offline');
-    expect(el.querySelector('button.nav-dynasty-wars')!.getAttribute('aria-label')).toBe('Dynasty Wars');
+    expect(el.querySelector('button.nav-identity')!.getAttribute('aria-label')).toBe('Identity');
     expect(el.querySelector('button.nav-kingdom-wars')!.getAttribute('aria-label')).toBe('Kingdom Wars');
     expect(el.querySelector('button.nav-rules')!.getAttribute('aria-label')).toBe('Rules');
   });
@@ -277,7 +277,7 @@ describe('App', () => {
 
   it("shows the signed-in user's name, and Sign Out signs out and goes to Setup", async () => {
     me.set({ id: 'u1', kind: 'registered', displayName: 'Ann', email: 'ann@example.com' });
-    const { fixture, el } = await render('/wiki/dynasty-wars/generals');
+    const { fixture, el } = await render('/wiki/identity/generals');
     const account = el.querySelector('button.account') as HTMLButtonElement;
     expect(account.textContent).toContain('Ann');
     account.click();

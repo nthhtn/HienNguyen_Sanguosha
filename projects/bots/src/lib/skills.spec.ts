@@ -24,7 +24,7 @@ describe('a compulsory skill’s ask', () => {
     expect(picked(decide(asking(table(), 'kingdomWars:warrior-lady')))).toBe('use');
   });
 
-  it('Kingdom Wars Envious Moon draws, as Dynasty Wars does', () => {
+  it('Kingdom Wars Envious Moon draws, as Identity does', () => {
     expect(picked(decide(asking(table(), 'kingdomWars:envious-moon')))).toBe('use');
   });
 });

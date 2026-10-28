@@ -6,7 +6,7 @@
   "title": "General of Heaven",
   "maxHp": 3,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Lightning Strike",

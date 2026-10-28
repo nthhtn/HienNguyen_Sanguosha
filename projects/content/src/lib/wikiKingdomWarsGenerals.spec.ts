@@ -10,8 +10,8 @@ const record = (id: string) => kingdomWarsGeneralRecords().find((r) => r.id === 
 const skillOf = (id: string, name: string) => record(id).skills.find((s) => s.name === name)!;
 
 describe('kingdomWarsSkillStatus', () => {
-  it('works as Dynasty Wars for Zhang Fei’s Berserk, which the game plays', () => {
-    expect(kingdomWarsSkillStatus(record('zhang-fei'), record('zhang-fei').skills[0])).toBe('worksAsDynastyWars');
+  it('works as Identity for Zhang Fei’s Berserk, which the game plays', () => {
+    expect(kingdomWarsSkillStatus(record('zhang-fei'), record('zhang-fei').skills[0])).toBe('worksAsIdentity');
   });
 
   it('works as Kingdom Wars for Liu Bei’s Benevolence, which has a variant', () => {
@@ -27,9 +27,9 @@ describe('kingdomWarsSkillStatus', () => {
     expect(kingdomWarsSkillStatus(record('lu-xun'), skillOf('lu-xun', 'Scrutinize'))).toBe('worksAsKingdomWars');
   });
 
-  it('works as Kingdom Wars for Cai Wenji’s Sorrow, and as Dynasty Wars for her Dirge', () => {
+  it('works as Kingdom Wars for Cai Wenji’s Sorrow, and as Identity for her Dirge', () => {
     expect(kingdomWarsSkillStatus(record('cai-wenji'), skillOf('cai-wenji', 'Sorrow'))).toBe('worksAsKingdomWars');
-    expect(kingdomWarsSkillStatus(record('cai-wenji'), skillOf('cai-wenji', 'Dirge'))).toBe('worksAsDynastyWars');
+    expect(kingdomWarsSkillStatus(record('cai-wenji'), skillOf('cai-wenji', 'Dirge'))).toBe('worksAsIdentity');
   });
 
   it('works as Kingdom Wars for Zhen Ji’s Goddess Luo', () => {
@@ -67,7 +67,7 @@ describe('wikiKingdomWarsGenerals', () => {
     }
   });
 
-  it('keeps the two Zhuge Liangs on Dynasty Wars’ ids', () => {
+  it('keeps the two Zhuge Liangs on Identity’s ids', () => {
     for (const id of ['zhuge-liang', 'fire-zhuge-liang']) {
       expect(byId(id)).toMatchObject({ kingdom: 'Shu', maxHp: 3, gender: 'male' });
     }
@@ -111,8 +111,8 @@ describe('wikiKingdomWarsGenerals', () => {
     expect(byId('yue-jin').skills.map((s) => s.status)).toEqual(['worksAsKingdomWars']);
   });
 
-  it('pins exactly which Kingdom Wars skills the game plays as the Dynasty Wars skill (Nil Generals and the slice 4 wording-only skills)', () => {
-    const working = generals.flatMap((g) => g.skills.filter((s) => s.status === 'worksAsDynastyWars').map((s) => `${g.id}/${s.name}`)).sort();
+  it('pins exactly which Kingdom Wars skills the game plays as the Identity skill (Nil Generals and the slice 4 wording-only skills)', () => {
+    const working = generals.flatMap((g) => g.skills.filter((s) => s.status === 'worksAsIdentity').map((s) => `${g.id}/${s.name}`)).sort();
     expect(working).toEqual([
       'cai-wenji/Dirge', 'da-qiao/Displacement', 'da-qiao/National Beauty', 'dian-wei/Ferocious Assault',
       'fire-zhuge-liang/Arson', 'fire-zhuge-liang/Eight Trigrams', 'fire-zhuge-liang/Scient',
@@ -122,7 +122,7 @@ describe('wikiKingdomWarsGenerals', () => {
       'wei-yan/Insanity Streak', 'xiahou-dun/An Eye for an Eye', 'xiahou-yuan/Godspeed', 'xu-chu/Bare-Chested',
       'xu-huang/Blockade', 'yan-liang-and-wen-chou/Dual Heroes', 'zhang-fei/Berserk',
       'zhang-zhao-and-zhang-hong/Blunt advice', 'zhao-yun/Dragon Heart', 'zhou-tai/Refuting Death',
-      // Slice 4: wording-only differences, cleared as Dynasty Wars'.
+      // Slice 4: wording-only differences, cleared as Identity's.
       'cao-cao/Villainous Hero',
       'cao-pi/Banish',
       'cao-pi/Scavenge',
@@ -194,7 +194,7 @@ describe('slice 2 variant Generals', () => {
   });
 });
 
-// Slice 4 leaves none missing: every Kingdom Wars skill is Dynasty Wars' or a variant.
+// Slice 4 leaves none missing: every Kingdom Wars skill is Identity's or a variant.
 const MISSING_ELSEWHERE: string[] = [];
 
 describe('slice 3 new Generals', () => {

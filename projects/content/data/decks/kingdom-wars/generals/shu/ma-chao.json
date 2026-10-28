@@ -6,7 +6,7 @@
   "title": "Lone Horseman that Outmatches a Thousand Troops",
   "maxHp": 4,
   "gender": "male",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Horsemanship",

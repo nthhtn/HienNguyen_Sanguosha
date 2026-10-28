@@ -33,7 +33,7 @@ describe('Kingdom Wars Liu Bei, Benevolence', () => {
     expect(hp(s, 'seat-a')).toBe(3);
   });
 
-  it('tracks its own counts under its own id, apart from Dynasty Wars Kindness', () => {
+  it('tracks its own counts under its own id, apart from Identity Kindness', () => {
     const s = alt(liuBei('kingdomWars:liu-bei'), 'seat-b', 'k1', 'k2');
     const keys = Object.keys(s.turn.abilityUses ?? {});
     expect(keys.length).toBeGreaterThan(0);
@@ -43,7 +43,7 @@ describe('Kingdom Wars Liu Bei, Benevolence', () => {
     }
   });
 
-  it('is not a Kingdom Wars rule for a Dynasty Wars Liu Bei, who still heals at 2', () => {
+  it('is not a Kingdom Wars rule for an Identity Liu Bei, who still heals at 2', () => {
     const s = give(liuBei('liu-bei'), 'kindness', 'seat-b', 'k1', 'k2');
     expect(hp(s, 'seat-a')).toBe(3);
   });
@@ -62,7 +62,7 @@ describe('Kingdom Wars Zhu Rong, Fearsome Blade', () => {
     expect(askedAbout(hitB('kingdomWars:zhu-rong'))).toBe('kingdomWars:fearsome-blade');
   });
 
-  // Dynasty Wars behaves the same here: chained damage is never Slash damage. This does not show the variant's difference.
+  // Identity behaves the same here: chained damage is never Slash damage. This does not show the variant's difference.
   it('chained damage reaching another seat is not offered the compete', () => {
     const first = hitB('kingdomWars:zhu-rong', 'fire-attack', ['seat-b', 'seat-c']);
     expect(askedAbout(first)).toBe('kingdomWars:fearsome-blade'); // for seat-b, the seat aimed at
@@ -78,7 +78,7 @@ describe('Kingdom Wars Zhu Rong, Fearsome Blade', () => {
     expect(s.log.find((e) => e.kind === 'DamageDealtEvent')).toMatchObject({ damage: { cause: { aimedAt: 'seat-b' } } });
   });
 
-  // Non-chained Slash damage on seat-c, from a Slash aimed elsewhere (a redirect): where the variant differs from Dynasty Wars.
+  // Non-chained Slash damage on seat-c, from a Slash aimed elsewhere (a redirect): where the variant differs from Identity.
   const strikeC = (general: string, aimedAt?: string) => {
     const sha = card('s1', 'sha');
     const used = { as: 'sha', colour: 'black' as const, physical: [{ definitionId: 'sha', instanceId: 's1', suit: 'spade' as const, rank: 7 }] };
@@ -87,12 +87,12 @@ describe('Kingdom Wars Zhu Rong, Fearsome Blade', () => {
     ]);
   };
 
-  it('is not offered for damage on a seat the Slash was not aimed at; Dynasty Wars is', () => {
+  it('is not offered for damage on a seat the Slash was not aimed at; Identity is', () => {
     expect(askedAbout(strikeC('kingdomWars:zhu-rong', 'seat-b'))).toBeNull();
     expect(askedAbout(strikeC('zhu-rong', 'seat-b'))).toBe('intense-edge');
   });
 
-  it('is not offered when the cause records no aimed seat; Dynasty Wars is', () => {
+  it('is not offered when the cause records no aimed seat; Identity is', () => {
     expect(askedAbout(strikeC('kingdomWars:zhu-rong'))).toBeNull();
     expect(askedAbout(strikeC('zhu-rong'))).toBe('intense-edge');
   });
@@ -101,7 +101,7 @@ describe('Kingdom Wars Zhu Rong, Fearsome Blade', () => {
     expect(askedAbout(strikeC('kingdomWars:zhu-rong', 'seat-c'))).toBe('kingdomWars:fearsome-blade');
   });
 
-  it('Dynasty Wars Zhu Rong keeps her own id and still competes', () => {
+  it('Identity Zhu Rong keeps her own id and still competes', () => {
     expect(askedAbout(hitB('zhu-rong'))).toBe('intense-edge');
   });
 });
@@ -127,7 +127,7 @@ describe('Kingdom Wars Huang Yueying, Assembling Wisdom', () => {
     expect(drawn(h.use(s))).toEqual([1, 2]);
   });
 
-  it('Chains converted from a club by Shackle does not draw; Dynasty Wars Huang Yueying is asked', () => {
+  it('Chains converted from a club by Shackle does not draw; Identity Huang Yueying is asked', () => {
     const alt = chains('kingdomWars:huang-yueying');
     expect(alt.pendingChoice).toBeUndefined();
     expect(drawn(alt)).toEqual([]);
@@ -146,7 +146,7 @@ describe('Kingdom Wars Huang Yueying, Assembling Wisdom', () => {
     expect(drawn(s)).toEqual([1]);
   });
 
-  it('Genius resolves to Dynasty Wars wondrous-talent: a Tool beyond distance', () => {
+  it('Genius resolves to Identity wondrous-talent: a Tool beyond distance', () => {
     const ranged = (general: string) => h.legal(yueying(general, { 'seat-a:hand': [card('st', 'steal', 'spade', 3)], 'seat-c:hand': [card('x', 'shan')] }), 'seat-a').some((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === 'st' && a.targets.some((t) => t.kind === 'seat' && t.seatId === 'seat-c'));
     expect(ranged('huang-yueying')).toBe(true);
     expect(ranged('kingdomWars:huang-yueying')).toBe(true);
@@ -167,7 +167,7 @@ describe('Kingdom Wars Zhuge Liang, Empty City', () => {
     s.log.filter((e) => e.kind === 'AbilityUsedEvent' && e.abilityId === id && e.outcome === 'no-effect' && e.targetSeatId === 'seat-a' && e.cardId === cardId);
 
   it('with no hand cards he can be chosen for a Slash, which is cancelled yet counts toward the Slash limit', () => {
-    expect(targets(attack('zhuge-liang'), 's1')).not.toContain('seat-b'); // Dynasty Wars: not even offered
+    expect(targets(attack('zhuge-liang'), 's1')).not.toContain('seat-b'); // Identity: not even offered
     const t = attack('kingdomWars:zhuge-liang');
     expect(targets(t, 's1')).toContain('seat-b');
     const s = h.play(t, 's1', 'seat-b');
@@ -187,7 +187,7 @@ describe('Kingdom Wars Zhuge Liang, Empty City', () => {
     expect(noEffect(s, 'duel')).toHaveLength(1);
   });
 
-  it('with a hand card he is hit normally, as Dynasty Wars', () => {
+  it('with a hand card he is hit normally, as Identity', () => {
     for (const general of ['kingdomWars:zhuge-liang', 'zhuge-liang']) {
       const sha = h.play(attack(general, [card('x', 'peach', 'heart')]), 's1', 'seat-b');
       expect(sha.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
@@ -213,7 +213,7 @@ describe('Kingdom Wars Zhuge Liang, Empty City', () => {
         { 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('k', 'shan', 'heart')] },
         { generals: { ...at('seat-b', 'da-qiao'), ...at('seat-c', general) } }
       );
-    // Dynasty Wars: no seat to move it to, so Da Qiao isn't asked.
+    // Identity: no seat to move it to, so Da Qiao isn't asked.
     expect(askedAbout(h.play(displaced('zhuge-liang'), 's1', 'seat-b'))).toBeNull();
     let s = h.play(displaced('kingdomWars:zhuge-liang'), 's1', 'seat-b');
     expect(askedAbout(s)).toBe('displace');
@@ -368,13 +368,13 @@ describe('Kingdom Wars Pang Tong, Resurrection', () => {
     expect(s.pendingResponse?.reason).toEqual({ kind: 'dying', seatId: 'seat-a' });
   });
 
-  it('Dynasty Wars Pang Tong in the same state stays Chained', () => {
+  it('Identity Pang Tong in the same state stays Chained', () => {
     const s = kw.use(kw.run(pangTong('pang-tong'), [hit('seat-a', 2)]));
     expect(s.seats[0].faceDown).toBeUndefined();
     expect(s.seats[0].chained).toBe(true);
   });
 
-  it('is what Kingdom Wars Pang Tong plays for 涅槃, beside Dynasty Wars Shackle', () => {
+  it('is what Kingdom Wars Pang Tong plays for 涅槃, beside Identity Shackle', () => {
     expect(readyKingdomWarsSkills(kingdomWarsGeneralRecords().find((g) => g.id === 'pang-tong')!).map((x) => x.id)).toEqual(['shackle', id]);
   });
 });

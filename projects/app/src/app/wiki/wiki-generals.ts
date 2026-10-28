@@ -12,7 +12,7 @@ import { wikiTabLabel } from './wiki-labels';
   imports: [MatTabsModule, WikiGeneralEntry, TPipe],
   template: `
     <h2>{{ 'wiki.page.generals' | t }}</h2>
-    <p class="deck-line">{{ 'lobby.deckSummary' | t: { deck: 'setup.deck.dynastyWars' | t } }}</p>
+    <p class="deck-line">{{ 'lobby.deckSummary' | t: { deck: 'setup.deck.identity' | t } }}</p>
     <p class="summary">{{ 'wiki.generals.summary' | t: { count: generals.length, withSkills } }}</p>
     <mat-tab-group
       [selectedIndex]="tab.selectedIndex()"

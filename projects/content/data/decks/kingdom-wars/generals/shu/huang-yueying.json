@@ -6,7 +6,7 @@
   "title": "The Veiled Heroine",
   "maxHp": 3,
   "gender": "female",
-  "hpFrom": "dynastyWars",
+  "hpFrom": "identity",
   "skills": [
     {
       "name": "Assembling Wisdom",
