@@ -5,7 +5,7 @@ describe('a bot facing Amass', () => {
   it('answers the mandatory discard of 2 with 2 eligible cards, and the game goes on', () => {
     const base = table({ 'seat-a:hand': [card('x1', 'sha'), card('x2', 'peach'), card('x3', 'wine')], drawPile: [card('d1', 'sha'), card('d2', 'shan')] });
     const sel = {
-      id: 'amass-test', seatId: 'seat-a', reason: { kind: 'card-effect' as const, card: { as: 'amass', physical: [] }, userSeatId: 'seat-a' },
+      id: 'amass-test', seatId: 'seat-a', reason: { kind: 'card-effect' as const, card: { as: 'amass', colour: 'none' as const, physical: [] }, userSeatId: 'seat-a' },
       of: 'cards' as const, eligibleIds: ['x1', 'x2', 'x3', 'd1'], min: 2, max: 2, then: { kind: 'discard' as const },
     };
     const s = { ...base, pendingSelection: sel };

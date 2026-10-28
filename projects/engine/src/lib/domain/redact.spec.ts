@@ -46,7 +46,7 @@ function makeState(): GameState {
   const seatB = createSeat('seat-b', 1, 'Shu', 'general-z', 'general-w', maxHp);
   return {
     seats: [seatA, seatB],
-    players: [createPlayer('p1', 'seat-a', 'human'), createPlayer('p2', 'seat-b', 'bot')],
+    players: [createPlayer('p1', 'seat-a', 'human', 'P1'), createPlayer('p2', 'seat-b', 'bot', 'P2')],
     turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] },
     phase: 'Play',
     zones: makeZones(),
@@ -462,7 +462,7 @@ describe('redactStateForSeat: a judgment on show', () => {
   const judged = { instanceId: 'j1', definitionId: 'x', suit: 'club' as const, rank: 3 };
   const withView = (): GameState => ({
     ...makeState(),
-    judgmentView: { seatId: 'seat-a', reader: { kind: 'skill', owner }, card: judged, changes: [{ owner, abilityId: 'refusing-death', card: judged, replaced: { ...judged, instanceId: 'j0' } }], settled: true },
+    judgmentView: { seatId: 'seat-a', reader: { kind: 'skill', owner }, card: judged, changes: [{ owner, abilityId: 'refusing-death', card: judged, replaced: { ...judged, instanceId: 'j0' } }], settled: true, rounds: 0 },
   });
 
   it('does not reveal another seat’s hidden skill through the reader or a change', () => {

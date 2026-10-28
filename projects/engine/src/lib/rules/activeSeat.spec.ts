@@ -82,7 +82,7 @@ describe('getActingSeatIds', () => {
 
 describe('getActiveSeatId with a settled judgment', () => {
   const player = (seatId: string, kind: 'human' | 'bot') => ({ id: `p-${seatId}`, seatId, kind, name: seatId });
-  const view = (seatId = 'seat-a', settled = true): GameState['judgmentView'] => ({ seatId, reader: { kind: 'card', card: {} as never }, card: { instanceId: 'j', definitionId: 'x', suit: 'club', rank: 3 }, changes: [], settled });
+  const view = (seatId = 'seat-a', settled = true): GameState['judgmentView'] => ({ seatId, reader: { kind: 'card', card: {} as never }, card: { instanceId: 'j', definitionId: 'x', suit: 'club', rank: 3 }, changes: [], settled, rounds: 0 });
   const three = (over: Partial<GameState> = {}) => state({ seats: [seat('seat-a', 0), seat('seat-b', 1), seat('seat-c', 2)], ...over });
 
   it('is the first living human', () => {

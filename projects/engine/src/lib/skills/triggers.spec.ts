@@ -182,7 +182,7 @@ describe('gatherTriggeredSkills with a seat that has not chosen generals', () =>
 });
 
 describe('gatherTriggeredSkills after a seat is eliminated', () => {
-  const afterDeathSkill = { id: 'last-words', afterDeath: true, triggers: [{ point: 'after:SeatEliminatedEvent' as const, condition: () => true, effect: () => [] }] };
+  const afterDeathSkill = { id: 'last-words', afterDeath: true as const, triggers: [{ point: 'after:SeatEliminatedEvent' as const, condition: () => true, effect: () => [] }] };
   const registry: ContentRegistry = {
     cards: new Map(),
     generals: new Map<string, GeneralDefinition>([

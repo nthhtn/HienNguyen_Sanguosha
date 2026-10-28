@@ -237,7 +237,7 @@ describe('ruleBasedPolicy', () => {
   });
 
   it('falls back to the first legal action for an action shape it does not know', () => {
-    const reveal: Action = { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' };
+    const reveal: Action = { kind: 'ConfirmRevealsAction', seatId: 'seat-0', slots: ['main'] };
     expect(decide(view(), [reveal]).action).toBe(reveal);
   });
   it('does not equip a second weapon over the one it holds', () => {

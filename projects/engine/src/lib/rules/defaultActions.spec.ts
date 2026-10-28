@@ -42,8 +42,8 @@ describe('defaultActionsFor', () => {
 
   it('a timeout at the Start window submits End Phase', () => {
     const end: Action = { kind: 'EndPhaseAction', seatId: 'seat-0' };
-    const revealMain: Action = { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'main' };
-    const revealDeputy: Action = { kind: 'RevealGeneralAction', seatId: 'seat-0', slot: 'deputy' };
+    const revealMain: Action = { kind: 'ConfirmRevealsAction', seatId: 'seat-0', slots: ['main'] };
+    const revealDeputy: Action = { kind: 'ConfirmRevealsAction', seatId: 'seat-0', slots: ['deputy'] };
     const s = state({ phase: 'Start', turn: { ...turn, startWindow: true } });
     expect(defaultActionsFor(s, [end, revealMain, revealDeputy])).toEqual([end]);
     expect(defaultActionsFor(s, [revealMain, revealDeputy, end])).toEqual([end]);

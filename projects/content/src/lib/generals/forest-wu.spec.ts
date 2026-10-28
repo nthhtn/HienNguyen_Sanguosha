@@ -159,9 +159,9 @@ describe('Lu Su — Alliance', () => {
 
   it('the General stays revealed after a cancel', () => {
     const start = tableOf(3, 4, 1, 4, { generals: { 'seat-a': ['lu-su', 'filler-jiang-wei', false] } });
-    expect(start.seats.find((x) => x.id === 'seat-a')!.generals.main.revealed).toBe(false);
+    expect(start.seats.find((x) => x.id === 'seat-a')!.generals!.main!.revealed).toBe(false);
     const s = h.choose(h.select(h.useSkill(start, 'seat-a', 'alliance'), 'seat-b'), 'cancel');
-    expect(s.seats.find((x) => x.id === 'seat-a')!.generals.main.revealed).toBe(true);
+    expect(s.seats.find((x) => x.id === 'seat-a')!.generals!.main!.revealed).toBe(true);
     expect(uses(s)).toBe(0);
   });
 

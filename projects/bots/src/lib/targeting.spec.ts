@@ -1,13 +1,13 @@
-import type { GameState } from 'engine';
+import type { EngineEvent, GameState } from 'engine';
 import { targetScore } from './targeting';
 import { card, table } from './testing';
 
 const seatOf = (s: GameState, id: string) => s.seats.find((x) => x.id === id)!;
 const score = (s: GameState, targetId: string) => targetScore(s, seatOf(s, 'seat-a'), seatOf(s, targetId));
 
-const damage = (from: string, to: string) =>
+const damage = (from: string, to: string): EngineEvent =>
   ({ kind: 'DamageDealtEvent', damage: { source: { kind: 'seat', seatId: from }, target: { kind: 'seat', seatId: to }, amount: 1, nature: 'normal' } });
-const playedAt = (from: string, as: string, to: string) =>
+const playedAt = (from: string, as: string, to: string): EngineEvent =>
   ({ kind: 'CardPlayedEvent', seatId: from, card: { as, colour: 'black', physical: [] }, targets: [{ kind: 'seat', seatId: to }] });
 
 describe('targetScore', () => {

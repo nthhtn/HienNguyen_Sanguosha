@@ -155,7 +155,7 @@ describe('targetsAllowed', () => {
 describe('getLegalActions with a settled judgment', () => {
   const settled = (over: Partial<GameState> = {}) =>
     state({
-      judgmentView: { seatId: 'seat-a', reader: { kind: 'card', card: {} as never }, card: { instanceId: 'j', definitionId: 'x', suit: 'club', rank: 3 }, changes: [], settled: true },
+      judgmentView: { seatId: 'seat-a', reader: { kind: 'card', card: {} as never }, card: { instanceId: 'j', definitionId: 'x', suit: 'club', rank: 3 }, changes: [], settled: true, rounds: 0 },
       players: [{ id: 'p-b', seatId: 'seat-b', kind: 'human', name: 'B' }],
       ...over,
     });

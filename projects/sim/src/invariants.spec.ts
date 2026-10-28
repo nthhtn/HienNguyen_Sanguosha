@@ -94,7 +94,7 @@ describe('checkInvariants', () => {
 
 describe('judgment notice invariants', () => {
   const view = (settled: boolean): GameState['judgmentView'] => ({
-    seatId: 'seat-a', reader: { kind: 'card', card: {} as never }, card: card('j1'), changes: [], settled,
+    seatId: 'seat-a', reader: { kind: 'card', card: {} as never }, card: card('j1'), changes: [], settled, rounds: 0,
   });
 
   it('allows a settled judgment that a living seat can acknowledge', () => {
