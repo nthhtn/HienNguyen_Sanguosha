@@ -19,8 +19,9 @@ Cheap checks come first, so a typo fails in seconds. Tests are not part of
 `verify`; they are separate commands:
 
 - `npm test`: the whole jest suite (about 75 s).
-- `npm run test:coverage`: the same suite with coverage. It fails below 90%
-  statements, lines or functions. Branches (87% today) are reported, not gated.
+- `npm run test:coverage`: the same suite with coverage. Then
+  `npm run coverage:check` fails if statements, lines or functions are below 90%.
+  Branches (88% today) are reported, not gated.
 - `npm run test:guardrails`: the tests for the deny rules below (`node --test`).
 - `npm run test:db` (needs Postgres, `npm run db:up`): the server specs against a
   real database.
@@ -34,13 +35,15 @@ permission. A new push to a pull request cancels its in-flight run.
 | Job | Runs | Required to merge |
 | --- | --- | --- |
 | `verify` | `npm run verify`: lint, typecheck, build | yes |
-| `test` | `npm run test:guardrails`, then the server jest project against a `postgres:17` service | yes |
-| `jest` | `npm run test:coverage`: the whole jest suite with the coverage gate; writes a summary table and uploads the HTML report as the `coverage` artifact | no |
+| `test` | against a `postgres:17` service: `npm run test:guardrails`, then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | yes |
+| `coverage` | `npm run coverage:check` on the artifact `test` uploaded: fails below 90% statements, lines or functions | no |
 
 "Required" is set in the repository's branch ruleset (Settings, Rules), not in
 the workflow: the ruleset's "Require status checks to pass" rule lists `verify`
-and `test`. `jest` is deliberately left out, so a red `jest` is a warning on the
-pull request and the merge button stays enabled.
+and `test`. `coverage` is deliberately left out, so a red `coverage` is a warning
+on the pull request and the merge button stays enabled. It reads the coverage
+`test` already measured, so the suite runs once. If `test` fails, `coverage` is
+skipped.
 
 Opening a pull request is not gated locally: run `npm run verify` yourself first
 if you want to know before CI does.

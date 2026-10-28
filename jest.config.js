@@ -1,8 +1,7 @@
 module.exports = {
-  // Used only by `npm run test:coverage`. Branches are reported but not gated (87% at the time of writing).
+  // Used only by `npm run test:coverage`. The 90% floor is checked by scripts/check-coverage.mjs, so it can gate separately from the tests.
   collectCoverageFrom: ['projects/*/src/**/*.ts', '!**/*.spec.ts', '!**/*.d.ts', '!**/public-api.ts'],
   coverageReporters: ['text-summary', 'json-summary', 'lcov'],
-  coverageThreshold: { global: { statements: 90, lines: 90, functions: 90 } },
   projects: [
     {
       displayName: 'engine',
