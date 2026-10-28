@@ -51,7 +51,7 @@ describe('HandView', () => {
     fixture.componentRef.setInput('state', state());
     fixture.componentRef.setInput('registry', registry);
     played = [];
-    fixture.componentInstance.play.subscribe((a) => played.push(a));
+    fixture.componentInstance.played.subscribe((a) => played.push(a));
     fixture.detectChanges();
     el = fixture.nativeElement as HTMLElement;
   });

@@ -1,7 +1,6 @@
 import { Action, ContentRegistry, Seat, SeatGenerals, SkillDefinition, findSkill } from 'engine';
 import { abilityDisplayName } from '../labels';
-import { abilityName } from 'content';
-import { englishTranslator, localeOf, Translator } from '../i18n/translator';
+import { englishTranslator, Translator } from '../i18n/translator';
 
 type UseSkill = Extract<Action, { kind: 'UseSkillAction' }>;
 

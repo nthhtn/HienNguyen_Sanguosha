@@ -1,5 +1,5 @@
 import { Action, CardInstance, GameState, PendingSelection } from 'engine';
-import { abilityHint, abilityName, cardDisplayData, generalDisplayData, selectionText, stepSelectionText } from 'content';
+import { abilityHint, cardDisplayData, generalDisplayData, selectionText, stepSelectionText } from 'content';
 import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, generalDisplayName, seatName } from '../labels';
 import type { MessageKey } from '../i18n/messages';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';

@@ -231,7 +231,7 @@ describe('GameBoard', () => {
     const cardPlay = gameService.legalActions().find((a) => a.kind === 'PlayCardAction')!;
     expect(cardPlay).toBeDefined();
     const hand = fixture.debugElement.query(By.directive(HandView)).componentInstance as HandView;
-    hand.play.emit(cardPlay);
+    hand.played.emit(cardPlay);
     fixture.detectChanges();
 
     expect(gameService.lastError()).toBeNull();

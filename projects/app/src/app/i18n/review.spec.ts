@@ -1,7 +1,7 @@
 import { ENGLISH_PROSE, alternateCardIds, alternateGeneralIds, cardIds, generalIds, reviewGeneralIds } from 'content';
 import review from '../../../../content/data/locales/vi/review.json';
 import { en } from './en';
-import { reviewStatus, reviewUniverse, ReviewLists } from './review';
+import { reviewStatus, reviewUniverse } from './review';
 
 const universe = reviewUniverse(en, reviewGeneralIds(), [...cardIds(), ...alternateCardIds()], ENGLISH_PROSE);
 

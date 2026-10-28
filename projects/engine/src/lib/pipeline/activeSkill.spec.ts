@@ -1,4 +1,4 @@
-import { advanceToDecision, resolve } from './resolve';
+import { resolve } from './resolve';
 import { Action } from './actions';
 import { createRng } from '../rng/rng';
 import { CardInstance, GameState, GeneralOwner } from '../domain/types';

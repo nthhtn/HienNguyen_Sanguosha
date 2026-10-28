@@ -1,6 +1,6 @@
 import type { GameState } from 'engine';
 import { buildContentRegistry, kingdomWarMode } from '../../public-api';
-import { card, harness, hp, ids, registry, table } from '../generals/skills.testing';
+import { card, harness, hp, ids, table } from '../generals/skills.testing';
 import { SHA_FLAGS } from './shaRules';
 
 const h = harness();

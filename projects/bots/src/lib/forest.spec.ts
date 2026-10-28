@@ -1,6 +1,6 @@
 import { getLegalActions } from 'engine';
 import type { GameState } from 'engine';
-import { act, asking, card, decide, picked, registry, table, useSkill } from './testing';
+import { asking, card, decide, picked, registry, table } from './testing';
 
 // The Forest Generals' bot rules (stage 10 spec, "Bots").
 

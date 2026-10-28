@@ -1,4 +1,4 @@
-import { advanceToDecision, resolve } from './resolve';
+import { resolve } from './resolve';
 import { ContentRegistry, GameModeDefinition } from '../registry/types';
 import { GameState } from '../domain/types';
 import { CardMovedEvent } from './events';

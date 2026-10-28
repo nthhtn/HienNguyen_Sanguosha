@@ -1,7 +1,6 @@
 import { GameHistory } from '../game/history';
 import { randomUUID } from 'node:crypto';
 import { AddressInfo, connect as tcpConnect } from 'node:net';
-import { FastifyInstance } from 'fastify';
 import { PROTOCOL_VERSION } from 'protocol';
 import type { RoomSnapshot } from 'protocol';
 import { AccountService } from '../auth/accounts';

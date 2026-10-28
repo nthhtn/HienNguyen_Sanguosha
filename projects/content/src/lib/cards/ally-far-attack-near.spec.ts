@@ -2,7 +2,6 @@ import { withFillers } from '../generals/fillers.testing';
 import { getLegalActions, resolve } from 'engine';
 import type { Action, CardInstance, GameModeDefinition, GameState, Kingdom } from 'engine';
 import { buildContentRegistry } from '../registry';
-import { alternateCardData } from '../alternateCards';
 
 const registry = withFillers(buildContentRegistry());
 const mode: GameModeDefinition = { id: 'stub', setup: (() => { throw new Error('unused'); }) as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };

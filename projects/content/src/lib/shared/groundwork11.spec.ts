@@ -10,7 +10,6 @@ import { seatGender } from './gender';
 import { seatDistance } from './queries';
 import { card, harness, kwMode, registry, table, ids } from '../generals/skills.testing';
 
-const h = harness();
 const hk = harness(kwMode);
 
 describe('awakened marks', () => {

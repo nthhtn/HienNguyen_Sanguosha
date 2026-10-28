@@ -1,4 +1,4 @@
-import type { Effect, GameState } from 'engine';
+import type { Effect } from 'engine';
 import { skillsInPlay, usedCardFrom } from 'engine';
 import { askedAbout, card, handIds, harness, hp, ids, registry, seat, table, TableOptions } from './skills.testing';
 

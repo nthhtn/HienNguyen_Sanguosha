@@ -1,5 +1,4 @@
 import type { Effect } from 'engine';
-import { usedCardOf } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, hp, ids, kwMode, seat, table, TableOptions } from './skills.testing';
 
 const h = harness();

@@ -116,7 +116,7 @@ describe('Wine saves only yourself', () => {
 });
 
 describe('previewing damage against Silver Lion', () => {
-  const boostedSha = (s: GameState) => ({
+  const boostedSha = (_s: GameState) => ({
     kind: 'DamageEffect' as const,
     damage: { source: { kind: 'seat' as const, seatId: 'seat-a' }, target: { kind: 'seat' as const, seatId: 'seat-b' }, amount: 2, nature: 'normal' as const, cause: { cardInstanceId: 's1', card: usedCardOf(card('s1', 'sha')) } },
   });

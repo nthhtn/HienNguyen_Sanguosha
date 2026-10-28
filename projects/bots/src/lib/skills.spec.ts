@@ -2,7 +2,7 @@ import type { Action, CardInstance, Effect, GameState, PendingChoice, PendingSel
 import { advanceToDecision, getLegalActions } from 'engine';
 import { fillPick, weakestFirst } from './helpers';
 import { conversionSpare, pickActiveSkill } from './skills';
-import { registry, mode, ctx, card, Options, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
+import { registry, ctx, card, table, actor, decide, act, general, asking, picked, useSkill } from './testing';
 
 describe('may-skills the bot always uses', () => {
   it.each(['evil-hero', 'feedback', 'heavens-envy', 'bestowed-rouse', 'gathering-wisdom', 'brave-gesture', 'self-restraint', 'river-goddess', 'alternate:goddess-luo', 'iron-cavalry', 'astrology'])('%s', (skillId) => {

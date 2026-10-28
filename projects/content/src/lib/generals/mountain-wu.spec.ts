@@ -86,7 +86,7 @@ describe('Zhang Zhao and Zhang Hong — Direct Instruction', () => {
   });
 
   it('may be used any number of times in a turn', () => {
-    let s = h.choose(h.select(h.useSkill(play({ 'seat-a:hand': [card('cb', 'crossbow', 'club'), card('wc', 'black-pommel', 'spade')] }), 'seat-a', 'direct-instruction'), 'cb'), 'seat-b');
+    const s = h.choose(h.select(h.useSkill(play({ 'seat-a:hand': [card('cb', 'crossbow', 'club'), card('wc', 'black-pommel', 'spade')] }), 'seat-a', 'direct-instruction'), 'cb'), 'seat-b');
     expect(h.legal(s, 'seat-a').some((a) => a.kind === 'UseSkillAction')).toBe(true);
   });
 

@@ -107,7 +107,7 @@ describe('the Tool lifecycle', () => {
   });
 
   it('cancels the Tool for that target only', () => {
-    let s = counterWith(playBlessing(table(['c']))); // c cancels the Blessing on b
+    const s = counterWith(playBlessing(table(['c']))); // c cancels the Blessing on b
     expect(hp(s).b).toBe(2);
     expect(s.pendingResponse).toBeNull(); // c has no counter left, so c and d are not asked
     expect(hp(s)).toEqual({ a: 2, b: 2, c: 3, d: 3 });
