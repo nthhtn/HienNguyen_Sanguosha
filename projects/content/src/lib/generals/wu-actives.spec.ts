@@ -39,7 +39,7 @@ describe('Da Qiao — Displace', () => {
 
 describe('Huang Gai — Battered Body', () => {
   it('loses 1 HP, then draws 2, any number of times', () => {
-    let s = h.useSkill(table({ drawPile: pile }, { generals: at('seat-a', 'huang-gai') }), 'seat-a', 'battered-body');
+    const s = h.useSkill(table({ drawPile: pile }, { generals: at('seat-a', 'huang-gai') }), 'seat-a', 'battered-body');
     expect(hp(s, 'seat-a')).toBe(3);
     expect(handIds(s, 'seat-a')).toEqual(['d1', 'd2']);
     expect(s.log.find((e) => e.kind === 'HpLostEvent')).toEqual({ kind: 'HpLostEvent', seatId: 'seat-a', amount: 1, abilityId: 'battered-body' });

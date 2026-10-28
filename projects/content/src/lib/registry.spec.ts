@@ -44,7 +44,6 @@ describe('buildContentRegistry', () => {
   });
 
   it('has at least two generals in each of the four kingdoms', () => {
-    const registry = buildContentRegistry();
     const counts = new Map<string, number>();
     for (const g of defaultGenerals()) counts.set(g.kingdom, (counts.get(g.kingdom) ?? 0) + 1);
     for (const kingdom of ['Wei', 'Shu', 'Wu', 'Qun']) {

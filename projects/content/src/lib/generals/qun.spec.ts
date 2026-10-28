@@ -1,5 +1,5 @@
 import type { Effect, GameState } from 'engine';
-import { abilityLog, askedAbout, card, handIds, harness, hp, kwMode, seat, table, TableOptions } from './skills.testing';
+import { abilityLog, card, handIds, harness, hp, kwMode, seat, table, TableOptions } from './skills.testing';
 
 const h = harness();
 const at = (seatId: string, main: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [main, 'filler-jia-xu', revealed] });

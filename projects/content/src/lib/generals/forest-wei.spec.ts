@@ -1,4 +1,4 @@
-import { abilityLog, askedAbout, card, handIds, harness, hp, ids, kwMode, table, TableOptions } from './skills.testing';
+import { abilityLog, askedAbout, card, handIds, harness, ids, kwMode, table, TableOptions } from './skills.testing';
 
 const h = harness();
 const kw = harness(kwMode);

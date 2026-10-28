@@ -82,7 +82,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
               <mat-menu #withPick="matMenu">
                 <button mat-menu-item type="button" (click)="pickTargets(vm)">{{ vm.templateLabel }}</button>
                 @for (choice of vm.besideTemplate; track choice.action) {
-                  <button mat-menu-item type="button" (click)="play.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
+                  <button mat-menu-item type="button" (click)="played.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
                 }
               </mat-menu>
             } @else if (vm.template) {
@@ -101,7 +101,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
               <mat-menu #seconds="matMenu">
                 <ng-template matMenuContent let-group="group">
                   @for (second of group.seconds; track second.label) {
-                    <button mat-menu-item type="button" (click)="play.emit(second.action)"><app-target-label [label]="second.label" [prefix]="second.targeting?.prefix ?? null" [targets]="second.targeting?.targets ?? []" [state]="state()" /></button>
+                    <button mat-menu-item type="button" (click)="played.emit(second.action)"><app-target-label [label]="second.label" [prefix]="second.targeting?.prefix ?? null" [targets]="second.targeting?.targets ?? []" [state]="state()" /></button>
                   }
                 </ng-template>
               </mat-menu>
@@ -111,7 +111,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
               </button>
               <mat-menu #choices="matMenu">
                 @for (choice of vm.actions; track choice.action) {
-                  <button mat-menu-item type="button" (click)="play.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
+                  <button mat-menu-item type="button" (click)="played.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
                 }
               </mat-menu>
             } @else if (vm.actions.length > 0) {
@@ -119,7 +119,7 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
                 mat-flat-button
                 type="button"
                 class="play"
-                (click)="play.emit(vm.actions[0].action)"
+                (click)="played.emit(vm.actions[0].action)"
               >
                 <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
               </button>
@@ -183,7 +183,7 @@ export class HandView {
   readonly actions = input.required<Action[]>();
   readonly state = input.required<GameState>();
   readonly registry = input.required<ContentRegistry>();
-  readonly play = output<Action>();
+  readonly played = output<Action>();
 
   private readonly dialog = inject(MatDialog);
   private readonly i18n = inject(I18n);
@@ -219,7 +219,7 @@ export class HandView {
       .subscribe((ids) => {
         if (!ids?.length) return;
         const { pickTargets: _pick, ...play } = template;
-        this.play.emit({ ...play, targets: ids.map((seatId) => ({ kind: 'seat' as const, seatId })) });
+        this.played.emit({ ...play, targets: ids.map((seatId) => ({ kind: 'seat' as const, seatId })) });
       });
   }
 

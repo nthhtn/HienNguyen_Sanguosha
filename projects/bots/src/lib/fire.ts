@@ -135,7 +135,7 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
   }
 }
 
-export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
+export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, _registry: ContentRegistry): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
   switch (baseSkillId(choice.reason.abilityId)) {

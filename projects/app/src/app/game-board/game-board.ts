@@ -144,7 +144,7 @@ import { TPipe } from '../i18n/t.pipe';
                       [actions]="gameService.legalActions()"
                       [state]="visible"
                       [registry]="gameService.registry"
-                      (play)="submit($event)"
+                      (played)="submit($event)"
                     />
                   </div>
                   <app-action-list

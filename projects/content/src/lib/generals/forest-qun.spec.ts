@@ -1,5 +1,5 @@
 import type { GameState } from 'engine';
-import { askedAbout, card, handIds, harness, hp, ids, kwMode, table, TableOptions } from './skills.testing';
+import { askedAbout, card, harness, hp, kwMode, table, TableOptions } from './skills.testing';
 
 const h = harness();
 const kw = harness(kwMode);

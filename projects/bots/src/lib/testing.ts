@@ -1,6 +1,6 @@
 // The bot specs' shared table and drivers (not exported from the package).
-import { advanceToDecision, getLegalActions, redactStateForSeat, resolve } from 'engine';
-import type { Action, CardInstance, Effect, GameModeDefinition, GameState, GeneralOwner, Kingdom, PendingChoice, PendingSelection } from 'engine';
+import { getLegalActions, redactStateForSeat, resolve } from 'engine';
+import type { Action, CardInstance, Effect, GameModeDefinition, GameState, GeneralOwner, Kingdom, PendingChoice } from 'engine';
 import { buildContentRegistry } from 'content';
 import { ruleBasedPolicy } from './rule-based';
 

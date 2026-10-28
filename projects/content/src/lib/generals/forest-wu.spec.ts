@@ -1,5 +1,5 @@
 import { redactStateForSeat } from 'engine';
-import { askedAbout, card, handIds, harness, hp, ids, table, TableOptions } from './skills.testing';
+import { askedAbout, card, handIds, harness, ids, table, TableOptions } from './skills.testing';
 
 const h = harness();
 const at = (seatId: string, main: string, deputy = 'filler-jiang-wei', revealed = true): TableOptions['generals'] => ({ [seatId]: [main, deputy, revealed] });

@@ -1,8 +1,7 @@
 import { withFillers } from '../../generals/fillers.testing';
-import { advanceToDecision, getLegalActions, resolve } from 'engine';
-import type { Action, CardInstance, GameModeDefinition, GameState, QueueItem } from 'engine';
+import { resolve } from 'engine';
+import type { Action, CardInstance, GameModeDefinition, GameState } from 'engine';
 import { buildContentRegistry } from '../../registry';
-import { cardStep } from '../../shared/steps';
 
 // The real cards and Generals; a mode with no triggers of its own.
 const registry = withFillers(buildContentRegistry());
@@ -58,13 +57,10 @@ const choose = (s: GameState, optionId: string) => act(s, { kind: 'ChooseOptionA
 const use = (s: GameState) => choose(s, 'use');
 const decline = (s: GameState) => choose(s, 'decline');
 const select = (s: GameState, ...ids: string[]) => act(s, { kind: 'SelectAction', seatId: s.pendingSelection!.seatId, selectionId: s.pendingSelection!.id, ids });
-const cancel = (s: GameState) => act(s, { kind: 'CancelSelectionAction', seatId: s.pendingSelection!.seatId, selectionId: s.pendingSelection!.id });
-const run = (s: GameState, queue: QueueItem[]) => advanceToDecision({ ...s, resolutionQueue: queue }, ctx).state;
 const hp = (s: GameState, seatId: string) => s.seats.find((x) => x.id === seatId)!.combinedHp;
 const ids = (s: GameState, zoneId: string) => s.zones.find((z) => z.id === zoneId)!.cards.map((c) => c.instanceId);
 // The ability a pending ask is about, if any.
 const askedAbout = (s: GameState) => (s.pendingChoice?.reason.kind === 'ability' ? s.pendingChoice.reason.abilityId : null);
-const abilityLog = (s: GameState) => s.log.filter((e) => e.kind === 'AbilityUsedEvent');
 
 
 describe('Trident Glaive', () => {

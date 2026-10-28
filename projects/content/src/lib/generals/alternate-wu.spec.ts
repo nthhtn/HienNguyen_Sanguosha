@@ -245,7 +245,7 @@ describe('Alternate Lu Xun, Scrutinize', () => {
   });
 
   it('a Wuxie from another seat cancels the Amass for one target', () => {
-    let s = h.select(h.convert(tableFor('alternate:lu-xun', undefined, { 'seat-b:hand': [card('wx', 'wuxie', 'spade')] }), 'seat-a', id), 'r1');
+    const s = h.select(h.convert(tableFor('alternate:lu-xun', undefined, { 'seat-b:hand': [card('wx', 'wuxie', 'spade')] }), 'seat-a', id), 'r1');
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', reason: { kind: 'wuxie' } });
   });
 

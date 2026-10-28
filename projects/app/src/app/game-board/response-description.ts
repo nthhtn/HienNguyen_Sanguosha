@@ -1,5 +1,5 @@
 import { CardInstance, Effect, EngineEvent, GameState } from 'engine';
-import { abilityName, baseSkillId, cardDisplayData } from 'content';
+import { baseSkillId, cardDisplayData } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, seatForce, judgmentReaderName, seatName, shownCardId, targetLabel } from '../labels';
 

@@ -2,7 +2,7 @@ import { shaCard } from './sha';
 import { shanCard } from './shan';
 import { peachCard } from './peach';
 import { resolve, usedCardOf } from 'engine';
-import type { GameState, ContentRegistry } from 'engine';
+import type { GameState, ContentRegistry, GameModeDefinition } from 'engine';
 
 function registry(): ContentRegistry {
   return {
@@ -42,7 +42,7 @@ function twoSeatState(): GameState {
 }
 
 function stubMode() {
-  return { id: 'stub', setup: (() => { throw new Error('unused'); }) as any, checkWinCondition: () => null, triggers: [] };
+  return { id: 'stub', setup: (() => { throw new Error('unused'); }) as unknown as GameModeDefinition['setup'], checkWinCondition: () => null, triggers: [] };
 }
 
 describe('Slash/Dodge/Peach', () => {

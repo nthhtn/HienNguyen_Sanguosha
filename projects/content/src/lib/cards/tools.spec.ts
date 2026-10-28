@@ -56,13 +56,6 @@ function twoSeatState(seatAHandCardId: string): GameState {
   };
 }
 
-function withSeatBHand(state: GameState, cardId: string, instanceId: string): GameState {
-  return {
-    ...state,
-    zones: state.zones.map((z) => (z.id === 'seat-b:hand' ? { ...z, cards: [{ instanceId, definitionId: cardId, suit: 'club' as const, rank: 3 }] } : z)),
-  };
-}
-
 describe('Duel and Wuxie Kongjie', () => {
   const ctx = () => ({ registry: registry(), mode: stubMode() });
   const hp = (s: GameState, seatId: string) => s.seats.find((x) => x.id === seatId)!.combinedHp;

@@ -167,7 +167,7 @@ describe('Alternate Guo Jia, Bequeathed Strategy', () => {
   });
 
   it('Default Guo Jia still draws 2 in the same scenario', () => {
-    let s = h.use(h.run(guoJia('guo-jia'), dmg(1)));
+    const s = h.use(h.run(guoJia('guo-jia'), dmg(1)));
     expect(handIds(s, 'seat-a')).toEqual(['p0', 'p1']);
     expect(askedAbout(s)).toBe('bestowed-rouse');
   });

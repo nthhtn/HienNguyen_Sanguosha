@@ -2,7 +2,7 @@ import type { GameState } from 'engine';
 import { card, handIds, harness, hp, registry, table, TableOptions } from './skills.testing';
 import { shaLimit } from '../shared/queries';
 
-const { act, legal, play, pass, respond, convert, select, cancel } = harness();
+const { legal, play, pass, convert, select, cancel } = harness();
 const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', revealed] });
 const playTargets = (s: GameState, seatId: string, cardId: string) =>
   legal(s, seatId).flatMap((a) => (a.kind === 'PlayCardAction' && a.cardInstanceId === cardId ? [a.targets[0]?.seatId] : []));

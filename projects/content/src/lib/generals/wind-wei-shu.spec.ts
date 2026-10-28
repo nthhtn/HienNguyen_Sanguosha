@@ -1,4 +1,3 @@
-import type { GameState } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, hp, table, TableOptions } from './skills.testing';
 
 const h = harness();

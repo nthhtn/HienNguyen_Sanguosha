@@ -12,6 +12,7 @@
     "build:content": "ng build content",
     "watch": "ng build --watch --configuration development",
     "test": "jest",
+    "lint": "eslint .",
     "i18n:status": "tsx --tsconfig tsconfig.json scripts/i18n-status.ts",
     "db:up": "docker compose up -d --wait db",
     "db:down": "docker compose down",
@@ -47,6 +48,8 @@
     "@types/node": "^26.4.1",
     "@types/pg": "^8.23.1",
     "@types/ws": "^8.18.2",
+    "angular-eslint": "^22.6.0",
+    "eslint": "^9.39.5",
     "jest": "^30.5.1",
     "jest-environment-jsdom": "^30.5.1",
     "jest-preset-angular": "^17.0.0",
@@ -57,7 +60,8 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.23.15",
-    "typescript": "~6.0.2"
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.72.1"
   },
   "overrides": {
     "light-my-request": "6.6.0"

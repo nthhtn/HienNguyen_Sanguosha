@@ -1,5 +1,5 @@
 import { CardInstance, CardZone, ChoiceMadeEvent, EngineEvent, Player, Seat, UsedCard } from 'engine';
-import { abilityName, baseSkillId, cardDisplayData, generalDisplayData, isRecast } from 'content';
+import { baseSkillId, cardDisplayData, generalDisplayData, isRecast } from 'content';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, Force, seatForce, generalDisplayName, judgmentReaderName, seatName, shownCardId, suitSymbol, targetLabel } from '../labels';
 import { translateLabelText } from './choice-description';

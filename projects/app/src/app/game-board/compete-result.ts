@@ -1,5 +1,5 @@
 import { CardInstance, EngineEvent, Player, Seat } from 'engine';
-import { abilityName, competeOutcomeText, generalDisplayData } from 'content';
+import { competeOutcomeText, generalDisplayData } from 'content';
 import { abilityDisplayName, Force, rankLabel, seatForce, generalDisplayName, seatName } from '../labels';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
