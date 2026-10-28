@@ -11,7 +11,7 @@ const c = (instanceId: string): CardInstance => ({ instanceId, definitionId: 'sh
 function render(over: Partial<SelectionDescription> = {}) {
   const close = jest.fn();
   const description: SelectionDescription = {
-    title: 'Axe', prompt: 'Choose 2 cards to discard', confirmLabel: 'Discard', min: 2, max: 2,
+    title: 'Axe', prompt: 'Choose 2 cards to discard', confirmLabel: 'Discard', cancelLabel: 'Cancel', min: 2, max: 2,
     items: [{ id: 'a', card: c('a'), label: 'Slash (7 ♠)' }, { id: 'b', card: c('b'), label: 'Slash (7 ♠)' }, { id: 'x', card: c('x'), label: 'Slash (7 ♠)' }],
     template, cancel, ...over,
   };

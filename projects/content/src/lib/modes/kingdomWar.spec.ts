@@ -575,7 +575,7 @@ describe('Kingdom War kill reward and penalty', () => {
   // Five seats: a Wei, b Shu, c Shu, d Shu, e Wei. Seat b is at 0 HP and nobody can save it.
   const kill = (killer: string | undefined, o: { kingdoms?: Record<string, 'Wei' | 'Shu' | 'Wu' | 'Qun'>; hidden?: string[]; eliminated?: string[] } = {}) => {
     const kingdoms = { 'seat-a': 'Wei', 'seat-b': 'Shu', 'seat-c': 'Shu', 'seat-d': 'Shu', 'seat-e': 'Wei', ...o.kingdoms } as const;
-    const generals = Object.fromEntries((o.hidden ?? []).map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]]));
+    const generals = Object.fromEntries((o.hidden ?? []).map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false] as [string, string, boolean]]));
     let s = table({ drawPile: deck, 'seat-a:hand': [card('h1', 'sha'), card('h2', 'sha')], 'seat-c:hand': [card('c1', 'sha')] }, { seats: 5, kingdoms, generals, hp: { 'seat-b': 0 } });
     s = { ...s, seats: s.seats.map((x) => (o.eliminated?.includes(x.id) ? { ...x, eliminated: true } : x)) };
     return h.run(s, [{ kind: 'DyingEffect', seatId: 'seat-b', order: [], rescueCardIds: rescue, ...(killer ? { killerSeatId: killer } : {}) }]);
@@ -690,7 +690,7 @@ describe('Kingdom War Ambitionists: kill reward', () => {
   // Six seats: a, b, c, d Wei, e, f Shu. Seat b is at 0 HP and nobody can save it.
   const kill = (killer: string, o: { allegiance?: Record<string, 'kingdom' | 'ambitionist'>; hidden?: string[] } = {}) => {
     const kingdoms = { 'seat-a': 'Wei', 'seat-b': 'Wei', 'seat-c': 'Wei', 'seat-d': 'Wei', 'seat-e': 'Shu', 'seat-f': 'Shu' } as const;
-    const generals = Object.fromEntries((o.hidden ?? []).map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false]]));
+    const generals = Object.fromEntries((o.hidden ?? []).map((id) => [id, ['filler-xu-huang', 'filler-dong-zhuo', false] as [string, string, boolean]]));
     let s = table({ drawPile: deck, 'seat-a:hand': [card('h1', 'sha'), card('h2', 'sha')], 'seat-c:hand': [card('c1', 'sha')] }, { seats: 6, kingdoms, generals, hp: { 'seat-b': 0 } });
     s = { ...s, seats: s.seats.map((x) => (o.allegiance?.[x.id] ? { ...x, allegiance: o.allegiance[x.id] } : x)) };
     return h.run(s, [{ kind: 'DyingEffect', seatId: 'seat-b', order: [], rescueCardIds: rescue, killerSeatId: killer }]);

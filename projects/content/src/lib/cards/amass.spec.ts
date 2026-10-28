@@ -65,7 +65,7 @@ describe('Amass', () => {
     expect(hand(s, 'seat-c')).toHaveLength(1);
     expect(hand(s, 'seat-b')).toEqual([]);
     expect(hand(s, 'seat-d')).toEqual([]);
-    const draws = s.log.filter((e) => e.kind === 'CardsDrawnEvent' || e.kind === 'CardDrawnEvent');
+    const draws = s.log.filter((e) => e.kind === 'CardsDrawnEvent');
     expect(draws.length).toBeGreaterThan(0);
   });
 

@@ -15,7 +15,7 @@ const SUITS: CardInstance['suit'][] = ['spade', 'heart', 'club', 'diamond'];
 const done: Effect = { kind: 'JudgmentDoneEffect', judgment: undefined as never };
 
 const view = (reader: JudgmentReader, seatId: string, judged: CardInstance, data?: Record<string, unknown>): JudgmentView => ({
-  seatId, reader, card: judged, ...(data ? { data } : {}), changes: [], settled: true,
+  seatId, reader, card: judged, ...(data ? { data } : {}), changes: [], settled: true, rounds: 0,
 });
 const cardReader = (definitionId: string): JudgmentReader => ({ kind: 'card', card: usedCardOf(card(`${definitionId}-tool`, definitionId, 'spade', 6)) });
 const skillReader = (skillId: string, seatId = 'seat-a'): JudgmentReader => ({ kind: 'skill', owner: { kind: 'general', seatId, slot: 'main', skillId } });

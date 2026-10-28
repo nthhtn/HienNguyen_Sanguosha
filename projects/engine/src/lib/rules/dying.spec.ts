@@ -14,7 +14,7 @@ function state(opts: { hp?: number; eliminated?: boolean; pile?: CardInstance[];
       hand: { zoneId: 'seat-a:hand' }, equipped: { zoneId: 'seat-a:equip' }, judgment: { zoneId: 'seat-a:judgment' },
       pile: { zoneId: 'seat-a:pile' }, stash: { zoneId: 'seat-a:stash' }, eliminated,
     }],
-    players: [], turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] }, phase: 'play',
+    players: [], turn: { turnNumber: 1, ownerSeatId: 'seat-a', extraTurnStack: [] }, phase: 'Play',
     zones: [
       { id: 'seat-a:pile', kind: 'pile', ownerSeatId: 'seat-a', cards: pile },
       { id: 'seat-a:stash', kind: 'pile', ownerSeatId: 'seat-a', cards: stash },

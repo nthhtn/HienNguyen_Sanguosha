@@ -108,7 +108,7 @@ describe('the Tool lifecycle', () => {
 
   it('cancels the Tool for that target only', () => {
     const s = counterWith(playBlessing(table(['c']))); // c cancels the Blessing on b
-    expect(hp(s).b).toBe(2);
+    expect(hp(s)['b']).toBe(2);
     expect(s.pendingResponse).toBeNull(); // c has no counter left, so c and d are not asked
     expect(hp(s)).toEqual({ a: 2, b: 2, c: 3, d: 3 });
   });
@@ -119,7 +119,7 @@ describe('the Tool lifecycle', () => {
     s = counterWith(s); // b cancels it
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'd', reason: { kind: 'counter-wuxie', wuxieSeatId: 'b' } });
     s = counterWith(s); // d cancels b's counter: the Blessing on b goes ahead
-    expect(hp(s).b).toBe(3);
+    expect(hp(s)['b']).toBe(3);
     const played = s.log.filter((e) => e.kind === 'CardPlayedEvent');
     expect(played[1]).toMatchObject({ seatId: 'b', inResponseTo: { seatId: 'a', cardInstanceId: 'bless', targetSeatId: 'b' } });
     expect(played[2]).toMatchObject({ seatId: 'd', inResponseTo: { seatId: 'b', counters: true } });
@@ -130,7 +130,7 @@ describe('the Tool lifecycle', () => {
     // Counter-check order is b, c, d: b holds a counter, a (the counter's player) is never asked.
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'b', reason: { kind: 'counter-wuxie', wuxieSeatId: 'a' } });
     s = pass(s); // nobody else holds one: a's counter stands
-    expect(hp(s).b).toBe(2);
+    expect(hp(s)['b']).toBe(2);
     // On to c: b is asked again (a has no counter left).
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'b', reason: { kind: 'wuxie', target: { kind: 'seat', seatId: 'c' } } });
   });
