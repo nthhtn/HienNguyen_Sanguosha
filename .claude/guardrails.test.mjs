@@ -62,6 +62,10 @@ const shouldAllow = [
   'git -C . push -u origin feat/x',
   'gh api repos/o/r/pulls/20',
   'gh api repos/o/r/branches/main/protection',
+  'gh pr create --title x --body "ready to merge once green"',
+  'gh pr comment 5 --body "please merge soon"',
+  'git commit -m "Deny push to main for the agent"',
+  'git commit -m "push main to staging is not a thing"',
 ];
 
 for (const command of shouldDeny) {
