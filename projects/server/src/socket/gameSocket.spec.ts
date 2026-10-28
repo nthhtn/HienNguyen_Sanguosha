@@ -237,8 +237,10 @@ describe('games over the socket', () => {
   });
 
   it('pauses a solo game while its player is away, and resumes when they return', async () => {
-    // The bot waits 200 ms before each move, so it has a move due when Ann leaves.
-    ctx = await setup({ botDelayMs: 200 });
+    // The bot waits a full second before each move, so it still has a move due when Ann leaves,
+    // even after the short settle below (a shorter delay made this test race under load).
+    const botDelayMs = 1000;
+    ctx = await setup({ botDelayMs });
     const ann = await ctx.signUp('Ann');
     const created = await ctx.post('/api/rooms/solo', { seatCount: 2, rules: {} }, ann);
     expect(created.statusCode).toBe(201);
@@ -247,21 +249,29 @@ describe('games over the socket', () => {
     const game = first.welcome.game as GameUpdate;
     expect(game.paused).toBe(false);
 
-    // Ann makes her moves until the bot is to move next, then leaves at once.
+    // Ann makes her moves until the bot is to move next, then leaves. Bots choose their Generals the moment
+    // Ann does, so the last update she saw may not be the final one: after each hand-over, let those land and
+    // look again. Only the bot's delayed move is due when she goes.
     await until(() => (first.client.latestGame?.legalActions.length ?? 0) > 0, 'a move for Ann');
     let mine = first.client.latestGame!;
-    for (let i = 0; mine.legalActions.length > 0; i++) {
-      if (i === 50) throw new Error('Ann never handed the move to the bot');
-      first.client.send({ type: 'game.submit', reqId: `ann-${i}`, gameId: mine.gameId, baseSeq: mine.seq, actions: [mine.legalActions[0]] });
-      await first.client.next('ack', (m) => m.reqId === `ann-${i}`);
-      // A bot may have chosen its Generals already, so wait for an update that no longer offers the move just made.
-      const seq = mine.seq;
-      const made = JSON.stringify(mine.legalActions[0]);
-      mine = (await first.client.next('game.update', (m) => m.game.seq > seq && !m.game.legalActions.some((a) => JSON.stringify(a) === made))).game;
-    }
+    let sent = 0;
+    do {
+      while (mine.legalActions.length > 0) {
+        if (sent === 50) throw new Error('Ann never handed the move to the bot');
+        const reqId = `ann-${sent++}`;
+        first.client.send({ type: 'game.submit', reqId, gameId: mine.gameId, baseSeq: mine.seq, actions: [mine.legalActions[0]] });
+        await first.client.next('ack', (m) => m.reqId === reqId);
+        // A bot may have chosen its Generals already, so wait for an update that no longer offers the move just made.
+        const seq = mine.seq;
+        const made = JSON.stringify(mine.legalActions[0]);
+        mine = (await first.client.next('game.update', (m) => m.game.seq > seq && !m.game.legalActions.some((a) => JSON.stringify(a) === made))).game;
+      }
+      await wait(150);
+      mine = first.client.latestGame!;
+    } while (mine.legalActions.length > 0);
     expect(mine.view.result).toBeNull();
     first.client.close();
-    await wait(100);
+    await wait(botDelayMs + 300); // longer than the bot's delay: a move due while she is away would have landed by now
     const stored = (await ctx.repos.games.listActions(game.gameId)).length;
     expect(stored).toBe(mine.seq);
     await wait(200);
@@ -269,9 +279,9 @@ describe('games over the socket', () => {
     const again = await ctx.connect(ann, id);
     expect(again.welcome.game).toMatchObject({ gameId: game.gameId, paused: false, seq: stored });
     // Play goes on: the bot makes its move after Ann's return.
-    await again.client.next('game.update', (m) => m.game.seq > stored);
+    await again.client.next('game.update', (m) => m.game.seq > stored, botDelayMs + 3000);
     expect((await ctx.repos.games.listActions(game.gameId)).length).toBeGreaterThan(stored);
-  });
+  }, 15_000); // the one-second bot delay is waited out twice
 
   it('restores a game after a restart: the same seq and the same view (Review Focus 4)', async () => {
     ctx = await setup();
