@@ -8,7 +8,7 @@ import { Database } from './schema';
 // A fresh, migrated database per test file, so test files can run in parallel
 // and every run starts from an empty schema. `adminUrl` connects to any
 // database on the server as a user allowed to CREATE DATABASE.
-export async function createTestDatabase(adminUrl: string): Promise<{ db: Kysely<Database>; drop(): Promise<void> }> {
+export async function createTestDatabase(adminUrl: string): Promise<{ db: Kysely<Database>; url: string; drop(): Promise<void> }> {
   const name = `sgs_test_${randomBytes(6).toString('hex')}`;
   const admin = new Pool({ connectionString: adminUrl, max: 1 });
   await admin.query(`CREATE DATABASE ${name}`);
@@ -18,6 +18,7 @@ export async function createTestDatabase(adminUrl: string): Promise<{ db: Kysely
   await migrateToLatest(db);
   return {
     db,
+    url: url.toString(),
     drop: async () => {
       await db.destroy();
       await admin.query(`DROP DATABASE ${name} WITH (FORCE)`);
