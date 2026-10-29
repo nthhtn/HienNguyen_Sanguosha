@@ -42,7 +42,6 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
     buildId: config.buildId,
     logError: (err, message) => app.log.error(err, message),
   });
-  await rooms.restore();
   const app = await buildApp({
     accounts,
     rooms,
@@ -54,6 +53,8 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
     rateLimits,
     logger: options.logger ?? true,
   });
+  // After the app, whose logger `logError` writes to: a room that fails to restore must not stop the start.
+  await rooms.restore();
 
   const housekeeping = setInterval(() => {
     rateLimits.prune(Date.now());
