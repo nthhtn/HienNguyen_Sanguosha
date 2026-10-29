@@ -174,14 +174,14 @@ describe('HandView', () => {
     expect(dialog.querySelectorAll('.face')).toHaveLength(1);
   });
 
-  it('says when a card has no rules text yet', async () => {
+  it('shows the rules text of a card', async () => {
     infoButton('c-peach').click();
     fixture.detectChanges();
     await fixture.whenStable();
     const dialog = overlay().querySelector('app-card-info-dialog')!;
     expect(dialog.textContent).toContain('Peach');
     expect(dialog.textContent).toContain('Q ♥');
-    expect(dialog.textContent).toContain('No rules text available yet');
+    expect(dialog.textContent).toContain('Restores 1 HP, never above maximum HP');
   });
 
   it('leaves discards to the Discard dialog: no Discard button on the cards', () => {
