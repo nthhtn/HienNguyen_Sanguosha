@@ -60,9 +60,10 @@ describe('Wiki Cards in Vietnamese', () => {
     expect(text(entry(equipment, 'fire-fan').querySelector('.badge'))).toBe('Đã có trong trò chơi');
   });
 
-  it('the Kingdom Wars Basic page says Slash’s rules text is not available', async () => {
+  it('the Kingdom Wars Basic page shows Slash’s rules text', async () => {
     const el = await open('/wiki/kingdom-wars/basic');
-    expect(text(entry(el, 'sha').querySelector('.gap'))).toBe('Chưa có nội dung luật');
+    expect(entry(el, 'sha').querySelector('.gap')).toBeNull();
+    expect(text(entry(el, 'sha'))).toContain('Mỗi lượt bạn chỉ được dùng một Sát');
   });
 
   it('a Basic Cards page: heading, summary and a card in Vietnamese', async () => {

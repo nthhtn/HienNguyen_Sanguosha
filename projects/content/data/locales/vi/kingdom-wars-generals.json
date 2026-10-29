@@ -16,7 +16,7 @@
   },
   "cao-pi": {
     "name": "Tào Phi",
-    "title": "Người kế thừa bá nghiệp",
+    "title": "Thế tử bá nghiệp",
     "skills": {
       "scavenge": {
         "name": "Hành thương",
@@ -162,7 +162,7 @@
   },
   "yue-jin": {
     "name": "Nhạc Tiến",
-    "title": "Quyết chí vượt khó",
+    "title": "Quyết chiến bất khuất",
     "skills": {
       "dauntless": {
         "name": "Kiêu quả",
@@ -320,7 +320,7 @@
   },
   "gan-fu-ren": {
     "name": "Cam Phu Nhân",
-    "title": "Hoàng hậu của công đức rạng ngời",
+    "title": "Chiêu Liệt Hoàng hậu",
     "skills": {
       "prudence": {
         "name": "Thục thận",
@@ -500,7 +500,7 @@
   },
   "ding-feng": {
     "name": "Đinh Phụng",
-    "title": "Trọng thần dẹp loạn triều đình",
+    "title": "Trọng thần dẹp loạn",
     "skills": {
       "close-combat": {
         "name": "Đoản binh",
@@ -554,7 +554,7 @@
   },
   "lu-su": {
     "name": "Lỗ Túc",
-    "title": "Nhà ngoại giao phá cách",
+    "title": "Ngoại giao độc đoán",
     "skills": {
       "altruism": {
         "name": "Hiếu thí",
@@ -724,7 +724,7 @@
   },
   "lu-bu": {
     "name": "Lã Bố",
-    "title": "Hóa thân của võ",
+    "title": "Võ thần tái thế",
     "skills": {
       "without-equal": {
         "name": "Vô song",
@@ -808,7 +808,7 @@
   },
   "ji-ling": {
     "name": "Kỷ Linh",
-    "title": "Thủ lĩnh Trọng Gia",
+    "title": "Trọng Gia đại tướng",
     "skills": {
       "double-edged": {
         "name": "Song nhận",
@@ -836,7 +836,7 @@
   },
   "ma-teng": {
     "name": "Mã Đằng",
-    "title": "Phi nước đại nơi biên giới phía Tây",
+    "title": "Phi mã Tây Lương",
     "skills": {
       "horsemanship": {
         "name": "Mã thuật",
@@ -852,7 +852,7 @@
   },
   "pan-feng": {
     "name": "Phan Phụng",
-    "title": "Thượng tướng của liên quân",
+    "title": "Thượng tướng liên quân",
     "skills": {
       "insanity-axe": {
         "name": "Cuồng phủ",
@@ -864,7 +864,7 @@
   },
   "pang-de": {
     "name": "Bàng Đức",
-    "title": "Nhân mã nhất thể",
+    "title": "Nhân mã hợp nhất",
     "skills": {
       "horsemanship": {
         "name": "Mã thuật",
@@ -880,7 +880,7 @@
   },
   "tian-feng": {
     "name": "Điền Phong",
-    "title": "Nhân tài quý của Hà Bắc",
+    "title": "Rường cột Hà Bắc",
     "skills": {
       "deathly-counsel": {
         "name": "Tử gián",
@@ -910,7 +910,7 @@
   },
   "zou-shi": {
     "name": "Trâu Thị",
-    "title": "Sức quyến rũ của yêu cơ",
+    "title": "Yêu cơ quyến rũ",
     "skills": {
       "femme-fatale": {
         "name": "Họa thủy",

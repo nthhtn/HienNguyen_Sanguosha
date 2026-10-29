@@ -82,7 +82,7 @@ describe('SeatTile in Vietnamese', () => {
   });
 
   it('status lines, badges, the under-General piles and a chosen Form', () => {
-    expect(text(render(makeSeat({ eliminated: true })).el.querySelector('.status'))).toBe('Bị loại');
+    expect(text(render(makeSeat({ eliminated: true })).el.querySelector('.status'))).toBe('Trận vong');
     expect(text(render(makeSeat({ combinedHp: 0 })).el.querySelector('.status.dying'))).toBe('Cận kề cái chết…');
     expect(text(render(makeSeat(), { isResponding: true }).el.querySelector('.status'))).toBe('Đang phản hồi…');
     expect(text(render(makeSeat({ generals: null as never })).el.querySelector('.choosing'))).toBe('Đang chọn Tướng…');
@@ -211,7 +211,7 @@ describe('HandView in Vietnamese', () => {
     await fixture.whenStable();
     const basic = overlay().querySelector('app-card-info-dialog') as HTMLElement;
     expect(text(basic.querySelector('.kind'))).toBe('Cơ bản');
-    expect(text(basic.querySelector('.text'))).toBe('Chưa có nội dung luật.');
+    expect(text(basic.querySelector('.text'))).toContain('Mỗi lượt bạn chỉ được dùng một Sát');
   });
 });
 

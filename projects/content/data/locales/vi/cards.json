@@ -1,12 +1,15 @@
 {
   "sha": {
-    "name": "Sát"
+    "name": "Sát",
+    "text": "Giai đoạn ra bài: dùng cho một người chơi khác trong tầm tấn công của bạn. Mỗi lượt bạn chỉ được dùng một Sát, trừ khi có hiệu ứng cho phép khác. Mục tiêu có thể đánh một Thiểm. Nếu không, họ chịu 1 sát thương."
   },
   "shan": {
-    "name": "Thiểm"
+    "name": "Thiểm",
+    "text": "Khi có người dùng Sát lên bạn, đánh lá này để ngăn sát thương. Ngoài lúc phản ứng như vậy, bạn không thể dùng nó."
   },
   "peach": {
-    "name": "Đào"
+    "name": "Đào",
+    "text": "Hồi 1 Sinh lực, không bao giờ vượt quá Sinh lực tối đa. Giai đoạn ra bài: dùng cho bản thân. Khi một người chơi cận kề cái chết: dùng cho người đó, kể cả bạn. Đây là cách duy nhất để hồi Sinh lực cho người chơi khác."
   },
   "wine": {
     "name": "Tửu",

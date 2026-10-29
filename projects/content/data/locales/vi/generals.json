@@ -83,7 +83,7 @@
   },
   "lu-bu": {
     "name": "Lã Bố",
-    "title": "Hóa thân của võ",
+    "title": "Võ thần tái thế",
     "skills": {
       "matchless": {
         "name": "Vô song",
@@ -93,7 +93,7 @@
   },
   "pang-de": {
     "name": "Bàng Đức",
-    "title": "Nhân mã nhất thể",
+    "title": "Nhân mã hợp nhất",
     "skills": {
       "horsemanship": {
         "name": "Mã thuật",
@@ -385,7 +385,7 @@
   },
   "cao-pi": {
     "name": "Tào Phi",
-    "title": "Người kế thừa bá nghiệp",
+    "title": "Thế tử bá nghiệp",
     "skills": {
       "unnatural-death": {
         "name": "Hành thương",
@@ -597,7 +597,7 @@
   },
   "lu-su": {
     "name": "Lỗ Túc",
-    "title": "Nhà ngoại giao độc đoán",
+    "title": "Ngoại giao độc đoán",
     "skills": {
       "charity": {
         "name": "Hiếu thí",

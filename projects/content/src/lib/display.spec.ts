@@ -75,8 +75,15 @@ describe('cardDisplayData', () => {
     });
   });
 
-  it('returns null text and range when the data has none', () => {
-    expect(cardDisplayData('sha')).toEqual({ name: 'Slash', category: 'basic', subtype: null, range: null, mount: null, text: null });
+  it('returns null range and mount when the data has none', () => {
+    expect(cardDisplayData('sha')).toEqual({
+      name: 'Slash',
+      category: 'basic',
+      subtype: null,
+      range: null,
+      mount: null,
+      text: expect.stringContaining('one Slash per turn'),
+    });
   });
 
   it('returns null for an unknown id', () => {
