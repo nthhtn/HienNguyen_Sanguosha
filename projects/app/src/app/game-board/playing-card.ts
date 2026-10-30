@@ -13,9 +13,11 @@ import { TPipe } from '../i18n/t.pipe';
   selector: 'app-playing-card',
   imports: [CardArt, TPipe],
   template: `
-    <div class="card" [class.small]="size() === 'small'" [class.large]="size() === 'large'" [attr.title]="'card.named' | t: { name: name(), face: face() }">
+    <div class="card" [class.small]="size() === 'small'" [class.large]="size() === 'large'" [attr.title]="showFace() ? ('card.named' | t: { name: name(), face: face() }) : name()">
       <app-card-art [cropped]="true" [size]="size()" [id]="card().definitionId" [label]="name()" />
-      <span class="face" [class.red]="red()">{{ face() }}</span>
+      @if (showFace()) {
+        <span class="face" [class.red]="red()">{{ face() }}</span>
+      }
       @if (nature(); as nature) {
         <span class="nature" [class.fire]="nature === 'fire'" [class.thunder]="nature === 'thunder'" aria-hidden="true">{{ nature === 'fire' ? '🔥' : '⚡' }}</span>
       }
@@ -76,6 +78,8 @@ export class PlayingCard {
   readonly showName = input(true);
   // The range or distance badge; off where it is written out as text.
   readonly showStat = input(true);
+  // The suit and number; off for a card a skill makes from nothing, which has none.
+  readonly showFace = input(true);
 
   private readonly i18n = inject(I18n);
 

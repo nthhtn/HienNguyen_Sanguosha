@@ -1,11 +1,10 @@
-import { Component, Directive, ElementRef, Injectable, Injector, afterNextRender, computed, effect, inject, input, output, signal, untracked, viewChild } from '@angular/core';
-import type { CardInstance, GameState, Seat, UsedCard } from 'engine';
+import { Component, DestroyRef, Directive, ElementRef, Injectable, Injector, afterNextRender, computed, effect, inject, input, output, signal, untracked, viewChild } from '@angular/core';
+import type { CardInstance, CardZone, GameState, Seat, UsedCard } from 'engine';
 import { CARD_BACK_ART_URL, generalDisplayData } from 'content';
 import { I18n } from '../../i18n/i18n.service';
 import { localeOf, Translator } from '../../i18n/translator';
 import { generalDisplayName, seatKingdomLabel, seatName, shownCardId } from '../../labels';
 import { PlaybackSpeed } from '../../playback-speed.service';
-import { prefersReducedMotion } from '../beat-player';
 import { PlayingCard } from '../playing-card';
 import type { BeatVisual, PlannedBeat } from './beats';
 import { PlaybackDirector } from './playback-director';
@@ -33,6 +32,8 @@ interface StackEntry {
   id: number;
   used: UsedCard;
   card: CardInstance;
+  // No suit or number to show.
+  faceless: boolean;
   landing: { from: Point; durationMs: number } | null;
 }
 
@@ -47,6 +48,10 @@ interface TargetLine {
   delayMs: number;
 }
 
+// The zones whose cards everyone sees (the event carries a face only for a move into one of them).
+const FACE_UP_ZONES = new Set<CardZone['kind'] | undefined>(['discardPile', 'equip', 'judgment', 'processing']);
+// How far inside the table's edge a line to a seat off the table stops, in px.
+const LINE_EDGE = 12;
 // The prototype's flight easing.
 const FLIGHT_EASING = 'cubic-bezier(.2,.8,.2,1)';
 const CAPTION_IN: Keyframe[] = [
@@ -65,9 +70,21 @@ const BANNER_SWEEP: Keyframe[] = [
 @Injectable()
 export class PlaybackAnimations {
   private readonly running = new Set<Animation>();
+  private destroyed = false;
+
+  constructor() {
+    // Leaving the board: nothing keeps running, and nothing reports back to a layer that is gone.
+    inject(DestroyRef).onDestroy(() => {
+      this.destroyed = true;
+      for (const animation of this.running) animation.cancel();
+      this.running.clear();
+    });
+  }
 
   // `done` runs once the animation ends, finished or cut; at once where the element cannot animate.
+  // Never after the layer is destroyed.
   run(el: Element, keyframes: Keyframe[], options: KeyframeAnimationOptions, done?: () => void): void {
+    if (this.destroyed) return;
     if (typeof el.animate !== 'function') {
       done?.();
       return;
@@ -76,7 +93,7 @@ export class PlaybackAnimations {
     this.running.add(animation);
     const end = () => {
       this.running.delete(animation);
-      done?.();
+      if (!this.destroyed) done?.();
     };
     animation.finished?.then(end, end);
   }
@@ -162,7 +179,8 @@ export class LineDrawMotion {
           { strokeDasharray: `${length}`, strokeDashoffset: `${length}` },
           { strokeDasharray: `${length}`, strokeDashoffset: '0' },
         ],
-        { duration: drawMs, delay: delayMs, easing: 'ease-out', fill: 'both' }
+        // Backwards only: once drawn, the path's own style holds, so an answered line turns dashed.
+        { duration: drawMs, delay: delayMs, easing: 'ease-out', fill: 'backwards' }
       );
     });
   }
@@ -191,7 +209,7 @@ let layerCount = 0;
     <div class="caption" #captionBox aria-live="polite" [style.top.px]="centreY() - centreHeight() / 2">{{ caption() }}</div>
     <div class="stack" [style.top.px]="centreY()">
       @for (entry of stack(); track entry.id) {
-        <app-playing-card [card]="entry.card" [appLandFrom]="entry.landing" [attr.data-stack-id]="entry.id" />
+        <app-playing-card [card]="entry.card" [showFace]="!entry.faceless" [appLandFrom]="entry.landing" [attr.data-stack-id]="entry.id" />
       }
     </div>
     @if (banner(); as b) {
@@ -295,7 +313,8 @@ export class PlaybackLayer {
   }
 
   private animated(): boolean {
-    return Number.isFinite(this.speed.factor()) && !prefersReducedMotion();
+    // Reduced motion only picks the default speed (Instant); a speed the player chose still animates.
+    return Number.isFinite(this.speed.factor());
   }
 
   // A duration at the chosen speed.
@@ -338,7 +357,7 @@ export class PlaybackLayer {
         if (kept) return kept;
         const id = this.nextId++;
         const fromUser = animated && visual?.kind === 'play' && visual.card === used;
-        return { id, used, card: stackCard(used, id), landing: fromUser ? { from: this.seatPoint(visual.seatId, true), durationMs: 0.55 * beatMs } : null };
+        return { id, used, ...stackCard(used, id), landing: fromUser ? { from: this.seatPoint(visual.seatId, true), durationMs: 0.55 * beatMs } : null };
       })
     );
 
@@ -384,18 +403,27 @@ export class PlaybackLayer {
       const p = el ? centreOf(el) : { x: origin.left + origin.width / 2, y: origin.top + this.centreY() };
       return { x: p.x - origin.left, y: p.y - origin.top };
     };
-    return { key: `${this.nextId++}:${from}>${to}`, from, to, d: curve(local(a), local(b), radiusOf(a), radiusOf(b)), answered: false, drawMs, delayMs };
+    // The viewer's own seat is below the table: its end stops at the table's edge, pointing at it.
+    const end = (el: Element | null) => {
+      const p = local(el);
+      const inside = (v: number, size: number) => Math.min(Math.max(v, LINE_EDGE), Math.max(LINE_EDGE, size - LINE_EDGE));
+      const clamped = { x: inside(p.x, origin.width), y: inside(p.y, origin.height) };
+      const out = clamped.x !== p.x || clamped.y !== p.y;
+      return { point: clamped, radius: out ? 0 : radiusOf(el) };
+    };
+    const start = end(a);
+    const finish = end(b);
+    return { key: `${this.nextId++}:${from}>${to}`, from, to, d: curve(start.point, finish.point, start.radius, finish.radius), answered: false, drawMs, delayMs };
   }
 
-  // The face a moving card shows: what the shown state shows of it. A card to or from a hand shows
-  // nothing more; a card between open zones shows the face the event carries.
+  // The face a moving card shows: what the shown state shows of it. Otherwise only a card moving
+  // between face-up zones shows the face the event carries; anything else flies as a card back.
   private moveFace(visual: Extract<BeatVisual, { kind: 'move' }>): CardInstance | null {
     const zones = this.director?.displayedState()?.zones ?? this.state().zones;
     const shown = zones.flatMap((z) => z.cards).find((c) => c.instanceId === visual.cardInstanceId);
-    if (shown && shown.definitionId !== 'hidden') return shown;
-    const kindOf = (zoneId: string) => zones.find((z) => z.id === zoneId)?.kind;
-    if (kindOf(visual.fromZoneId) === 'hand' || kindOf(visual.toZoneId) === 'hand') return null;
-    return visual.card ?? null;
+    const faceUp = (zoneId: string) => FACE_UP_ZONES.has(zones.find((z) => z.id === zoneId)?.kind);
+    const card = shown && shown.definitionId !== 'hidden' ? shown : faceUp(visual.fromZoneId) && faceUp(visual.toZoneId) ? visual.card : undefined;
+    return card && card.definitionId !== 'hidden' ? card : null;
   }
 
   // A seat on screen: its tile, or for the viewer's hand, the hand.
@@ -465,12 +493,17 @@ function curve(a: Point, b: Point, ra: number, rb: number): string {
   return `M${n(start.x)},${n(start.y)} Q${n(c.x)},${n(c.y)} ${n(end.x)},${n(end.y)}`;
 }
 
-// The card a used card shows on the stack: the card itself, or the card it is used as.
-function stackCard(used: UsedCard, id: number): CardInstance {
+// The card a used card shows on the stack: the card itself, or the card it is used as, with the suit
+// and number it has. A card a skill makes from nothing has none, and shows its name only.
+function stackCard(used: UsedCard, id: number): { card: CardInstance; faceless: boolean } {
   const shownId = shownCardId(used);
   const one = used.physical.length === 1 ? used.physical[0] : null;
-  if (one && one.definitionId === shownId) return one;
-  return { instanceId: `used-${id}`, definitionId: shownId, suit: used.suit ?? one?.suit ?? 'spade', rank: used.rank ?? one?.rank ?? 0 };
+  if (one && one.definitionId === shownId) return { card: one, faceless: false };
+  const suit = used.suit ?? one?.suit;
+  const rank = used.rank ?? one?.rank;
+  const faceless = suit === undefined || rank === undefined;
+  // A faceless card's suit and rank are never shown.
+  return { card: { instanceId: `used-${id}`, definitionId: shownId, suit: suit ?? 'spade', rank: rank ?? 0 }, faceless };
 }
 
 // "Seat 1's Turn", over its General and force once they are known.

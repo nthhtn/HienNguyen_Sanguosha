@@ -118,4 +118,112 @@ describe('PlaybackLayer', () => {
     await fixture.whenStable();
     expect(animate).toHaveBeenCalled();
   });
+  it('finishes the running animations when the next beat starts', async () => {
+    const { fixture, director } = setup(playBeat(['seat-1']), [arrows]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const started = animate.mock.results.map((r) => r.value as { finish: jest.Mock });
+    expect(started.length).toBeGreaterThan(0);
+    const event: EngineEvent = { kind: 'PhaseChangedEvent', seatId: 'seat-0', phase: 'Discard' };
+    director.current.set({ logIndex: 1, event, durationMs: 250, visual: { kind: 'phase', seatId: 'seat-0', phase: 'Discard' } });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    for (const animation of started) expect(animation.finish).toHaveBeenCalled();
+  });
+
+  it('draws fly as card backs', async () => {
+    const event: EngineEvent = { kind: 'CardsDrawnEvent', seatId: 'seat-1', cardInstanceIds: ['a', 'b'] };
+    const { fixture, el } = setup({ logIndex: 0, event, durationMs: 780, visual: { kind: 'draw', seatId: 'seat-1', count: 2 } });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(el.querySelectorAll('.flight img.back').length).toBe(2);
+    expect(el.querySelectorAll('.flight app-playing-card').length).toBe(0);
+  });
+
+  function moveSetup(toZoneId: string, shownCard: { definitionId?: string }) {
+    const card = { instanceId: 'm1', definitionId: 'zhuge_crossbow', suit: 'club' as const, rank: 1 };
+    const shown = state();
+    shown.zones.push({ id: 'seat-0:equip', kind: 'equip', ownerSeatId: 'seat-0', cards: [] });
+    shown.zones.find((z) => z.id === toZoneId)!.cards.push({ ...card, ...shownCard });
+    const event: EngineEvent = { kind: 'CardMovedEvent', cardInstanceId: 'm1', fromZoneId: 'seat-0:equip', toZoneId, card };
+    return setup({ logIndex: 0, event, durationMs: 500, visual: { kind: 'move', cardInstanceId: 'm1', fromZoneId: 'seat-0:equip', toZoneId, card } }, [], { shown });
+  }
+
+  it('a move into a hand flies as a back when the shown state hides the card', async () => {
+    const { fixture, el } = moveSetup('seat-1:hand', { definitionId: 'hidden' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(el.querySelectorAll('.flight img.back').length).toBe(1);
+    expect(el.querySelectorAll('.flight app-playing-card').length).toBe(0);
+  });
+
+  it('a move between face-up zones shows its face', async () => {
+    const { fixture, el } = moveSetup('discardPile', {});
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(el.querySelectorAll('.flight app-playing-card').length).toBe(1);
+  });
+
+  it('a card a skill makes with no suit shows no suit and number', async () => {
+    const made: UsedCard = { as: 'sha', colour: 'none', physical: [] };
+    const event = { kind: 'CardPlayedEvent', seatId: 'seat-0', card: made, targets: [] } as unknown as EngineEvent;
+    const { fixture, el } = setup({ logIndex: 0, event, durationMs: 900, visual: { kind: 'play', seatId: 'seat-0', card: made, targetSeatIds: [], response: false } }, [made], { speed: 'instant' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(el.querySelectorAll('.stack app-playing-card').length).toBe(1);
+    expect(el.querySelector('.stack .face')).toBeNull();
+  });
+
+  it('animates under reduced motion when the player picked a speed', async () => {
+    const matchMedia = window.matchMedia;
+    window.matchMedia = jest.fn(() => ({ matches: true }) as MediaQueryList);
+    try {
+      const { fixture } = setup(playBeat(['seat-1']), [arrows]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(animate).toHaveBeenCalled();
+    } finally {
+      window.matchMedia = matchMedia;
+    }
+  });
+
+  it('draws a line without holding its dashes, so an answered line turns dashed', async () => {
+    const proto = SVGElement.prototype as unknown as { getTotalLength?: () => number };
+    proto.getTotalLength = () => 100;
+    try {
+      const { fixture, el } = setup(playBeat(['seat-1']), [arrows]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const call = animate.mock.calls.find((_, i) => animate.mock.contexts[i] === el.querySelector('path.line'));
+      expect(call?.[1]).toMatchObject({ fill: 'backwards' });
+    } finally {
+      delete proto.getTotalLength;
+    }
+  });
+
+  it("stops a line to the viewer's seat, off the table, at the table's edge", async () => {
+    const box = (left: number, top: number, width: number, height: number) => () => ({ left, top, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON: () => ({}) }) as DOMRect;
+    const seatEl = (id: string, rect: () => DOMRect) => {
+      const div = document.createElement('div');
+      div.dataset['seatId'] = id;
+      div.getBoundingClientRect = rect;
+      document.body.appendChild(div);
+      return div;
+    };
+    const tiles = [seatEl('seat-1', box(350, 20, 100, 60)), seatEl('seat-3', box(50, 500, 100, 60))];
+    try {
+      const play = playBeat(['seat-3']);
+      const visual = { ...play.visual!, seatId: 'seat-1' } as typeof play.visual;
+      const { fixture, el } = setup({ ...play, visual }, [arrows]);
+      el.getBoundingClientRect = box(0, 0, 800, 400);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const d = el.querySelector('path.line')!.getAttribute('d')!;
+      const [x, y] = d.split(' ').at(-1)!.split(',').map(Number);
+      expect(y).toBe(388);
+      expect(x).toBeGreaterThanOrEqual(12);
+    } finally {
+      tiles.forEach((t) => t.remove());
+    }
+  });
 });
