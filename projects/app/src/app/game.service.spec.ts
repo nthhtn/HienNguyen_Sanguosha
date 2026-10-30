@@ -1,6 +1,9 @@
+import { TestBed } from '@angular/core/testing';
 import { GameService } from './game.service';
+import { PlaybackGate } from './playback-gate.service';
+import { PlaybackSpeed } from './playback-speed.service';
 import { ruleBasedPolicy } from 'bots';
-import { getLegalActions } from 'engine';
+import { getLegalActions, redactStateForSeat } from 'engine';
 import { JUDGMENT_LEAD_IN_MS } from 'engine';
 import { askToChange, settleJudgment } from './settled-judgment.testing';
 
@@ -14,7 +17,7 @@ describe('GameService', () => {
   let service: GameService;
 
   beforeEach(() => {
-    service = new GameService();
+    service = TestBed.inject(GameService);
   });
 
   it('starts with no game in progress', () => {
@@ -138,7 +141,7 @@ describe('GameService in vs-bots mode', () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    service = new GameService();
+    service = TestBed.inject(GameService);
     service.botDelayMs = 0;
   });
 
@@ -187,6 +190,41 @@ describe('GameService in vs-bots mode', () => {
     expect(service.state()!.seats[1].generals).not.toBeNull();
   });
 
+  it('a bot waits while playback is busy', () => {
+    const gate = TestBed.inject(PlaybackGate);
+    service.botDelayMs = 600;
+    gate.idle.set(false);
+    service.startGame(3, 1, 'vs-bots');
+    service.submit(service.legalActions()[0]);
+    TestBed.tick();
+    expect(service.botThinkingSeatId()).toBe('seat-1');
+    jest.advanceTimersByTime(10000);
+    expect(service.state()!.seats[1].generals).toBeNull();
+    gate.idle.set(true);
+    TestBed.tick();
+    jest.advanceTimersByTime(599);
+    expect(service.state()!.seats[1].generals).toBeNull();
+    jest.advanceTimersByTime(1);
+    expect(service.state()!.seats[1].generals).not.toBeNull();
+  });
+
+  it('the bot delay is 1500 ms at Instant', () => {
+    expect(service.instantBotDelayMs).toBe(1500);
+    TestBed.inject(PlaybackSpeed).speed.set('instant');
+    service.startGame(3, 1, 'vs-bots');
+    service.submit(service.legalActions()[0]);
+    jest.advanceTimersByTime(1499);
+    expect(service.state()!.seats[1].generals).toBeNull();
+    jest.advanceTimersByTime(1);
+    expect(service.state()!.seats[1].generals).not.toBeNull();
+  });
+
+  it('lastMoveStart is null in vs-bots', () => {
+    service.startGame(3, 1, 'vs-bots');
+    service.submit(service.legalActions()[0]);
+    expect(service.lastMoveStart()).toBeNull();
+  });
+
   it('hands a bot’s Slash to the human to answer', () => {
     service.startGame(2, 1, 'vs-bots');
     let answered = false;
@@ -224,15 +262,18 @@ describe('GameService in vs-bots mode', () => {
     service.submit(botMove);
     expect(service.state()).toBe(before);
     expect(service.botThinkingSeatId()).toBe('seat-1');
-    expect(jest.getTimerCount()).toBe(1);
+    // The bot's own timer is still pending (Angular's scheduler adds timers of its own, so no count).
+    jest.advanceTimersByTime(1);
+    expect(service.state()!.seats[1].generals).not.toBeNull();
   });
 
   it('cancels a pending bot move when a new game starts (Review Focus 2)', () => {
     service.startGame(3, 1, 'vs-bots');
     service.submit(service.legalActions()[0]);
-    expect(jest.getTimerCount()).toBe(1);
     service.startGame(2, 5, 'pass-and-play');
-    expect(jest.getTimerCount()).toBe(0);
+    const fresh = service.state();
+    jest.advanceTimersByTime(10000);
+    expect(service.state()).toBe(fresh);
     expect(service.botThinkingSeatId()).toBeNull();
   });
 
@@ -252,15 +293,44 @@ describe('GameService in vs-bots mode', () => {
 describe('GameService in pass-and-play mode', () => {
   it('is the default: every player is human and no bot timer runs', () => {
     jest.useFakeTimers();
-    const service = new GameService();
+    const service = TestBed.inject(GameService);
     service.startGame(2, 1);
     expect(service.mode()).toBe('pass-and-play');
     expect(service.state()!.players.every((p) => p.kind === 'human')).toBe(true);
     expect(service.humanSeatId()).toBeNull();
     expect(service.revealedSeatId()).toBeNull();
     service.submit(service.legalActions()[0]);
-    expect(jest.getTimerCount()).toBe(0);
+    const after = service.state();
+    jest.advanceTimersByTime(10000);
+    expect(service.state()).toBe(after);
+    expect(service.botThinkingSeatId()).toBeNull();
     jest.useRealTimers();
+  });
+});
+
+describe('GameService lastMoveStart in pass-and-play', () => {
+  it('is the pre-move state redacted for the revealed seat', () => {
+    const service = TestBed.inject(GameService);
+    service.startGame(2, 1);
+    expect(service.lastMoveStart()).toBeNull();
+    const before = service.state()!;
+    service.reveal('seat-0');
+    service.submit(service.legalActions()[0]);
+    expect(service.state()).not.toBe(before);
+    expect(service.lastMoveStart()).toBeNull(); // behind the gate
+    service.reveal('seat-1');
+    expect(service.lastMoveStart()).toEqual(redactStateForSeat(before, 'seat-1'));
+    expect(service.lastMoveStart()!.log).toHaveLength(before.log.length);
+  });
+
+  it('for submitAll is the state before the first action', () => {
+    const service = TestBed.inject(GameService);
+    service.startGame(2, 1);
+    const before = service.state()!;
+    service.reveal('seat-0');
+    service.submitAll([service.legalActions()[0]]);
+    service.reveal('seat-0');
+    expect(service.lastMoveStart()).toEqual(redactStateForSeat(before, 'seat-0'));
   });
 });
 
@@ -270,7 +340,7 @@ describe('GameService: a settled judgment', () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    service = new GameService();
+    service = TestBed.inject(GameService);
     service.botDelayMs = 700;
   });
 
@@ -320,7 +390,7 @@ describe('GameService: a settled judgment', () => {
   });
 
   it('publicState is null without a game', () => {
-    expect(new GameService().publicState()).toBeNull();
+    expect(TestBed.inject(GameService).publicState()).toBeNull();
   });
 
   it('canCloseJudgment is true for the human and in Pass and Play, false when a bot acts or nothing is settled', () => {

@@ -1,6 +1,7 @@
 import { DestroyRef, Injectable, Signal, computed, effect, inject, signal, untracked } from '@angular/core';
 import { Action, ClockState, DecisionSpec, EMPTY_CLOCK, GameState, clockRemainingMs, clockStartsInMs, defaultActionsFor, describeDecision, expireClock, switchClock } from 'engine';
 import { GameService } from './game.service';
+import { PlaybackGate } from './playback-gate.service';
 
 interface Decision {
   spec: DecisionSpec;
@@ -22,6 +23,7 @@ interface Decision {
 @Injectable({ providedIn: 'root' })
 export class DecisionTimer {
   private readonly game = inject(GameService);
+  private readonly gate = inject(PlaybackGate);
   private readonly boards = signal(0);
   private interval: ReturnType<typeof setInterval> | null = null;
   private clock: ClockState = EMPTY_CLOCK;
@@ -45,6 +47,8 @@ export class DecisionTimer {
   // What a person must decide now, or null.
   private readonly decision = computed<Decision | null>(() => {
     if (this.boards() === 0) return null;
+    // The board is still playing what happened; the clock starts when it has caught up.
+    if (!this.gate.idle()) return null;
     const state = this.game.state();
     const seatId = this.game.activeSeatId();
     if (!state || !seatId) return null;
