@@ -208,6 +208,24 @@ describe('GameService in vs-bots mode', () => {
     expect(service.state()!.seats[1].generals).not.toBeNull();
   });
 
+  it('a bot armed while idle does not move if playback starts before its timer fires', () => {
+    const gate = TestBed.inject(PlaybackGate);
+    service.botDelayMs = 600;
+    service.startGame(3, 1, 'vs-bots');
+    service.submit(service.legalActions()[0]); // arms the timer while idle
+    gate.idle.set(false);
+    TestBed.tick();
+    jest.advanceTimersByTime(10000);
+    expect(service.state()!.seats[1].generals).toBeNull();
+    expect(service.botThinkingSeatId()).toBe('seat-1');
+    gate.idle.set(true);
+    TestBed.tick();
+    jest.advanceTimersByTime(599);
+    expect(service.state()!.seats[1].generals).toBeNull();
+    jest.advanceTimersByTime(1);
+    expect(service.state()!.seats[1].generals).not.toBeNull();
+  });
+
   it('the bot delay is 1500 ms at Instant', () => {
     expect(service.instantBotDelayMs).toBe(1500);
     TestBed.inject(PlaybackSpeed).speed.set('instant');
@@ -270,6 +288,7 @@ describe('GameService in vs-bots mode', () => {
   it('cancels a pending bot move when a new game starts (Review Focus 2)', () => {
     service.startGame(3, 1, 'vs-bots');
     service.submit(service.legalActions()[0]);
+    expect(service.botThinkingSeatId()).toBe('seat-1');
     service.startGame(2, 5, 'pass-and-play');
     const fresh = service.state();
     jest.advanceTimersByTime(10000);

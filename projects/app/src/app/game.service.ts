@@ -46,15 +46,15 @@ export class GameService {
 
   readonly maxSeats: number = guozhanMaxSeats(this.registry);
 
+  private readonly gate = inject(PlaybackGate);
+  private readonly speed = inject(PlaybackSpeed);
+
   constructor() {
     // A bot that was due while playback ran moves once it has caught up.
     effect(() => {
       if (this.gate.idle()) untracked(() => this.scheduleBotIfDue());
     });
   }
-
-  private readonly gate = inject(PlaybackGate);
-  private readonly speed = inject(PlaybackSpeed);
 
   // Delay before each bot move, once the board's playback has caught up, so a human can follow along. Tests set 0.
   botDelayMs = 600;
@@ -247,6 +247,8 @@ export class GameService {
     const lead = describeDecision(state, seatId, getLegalActions(state, seatId, this.registry), 'bot', { leadIn: personAlive })?.leadInMs ?? 0;
     this.botTimer = setTimeout(() => {
       this.botTimer = null;
+      // Playback began after this was armed: stay thinking, and the gate's effect arms a fresh delay once idle.
+      if (!this.gate.idle()) return;
       this.runBot(seatId);
     }, (this.speed.speed() === 'instant' ? this.instantBotDelayMs : this.botDelayMs) + lead);
   }
