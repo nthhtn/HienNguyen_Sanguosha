@@ -8,6 +8,7 @@ import { seatName } from '../labels';
 import { SeatTile } from './seat-tile';
 import type { SeatCue } from './playback/seat-cues';
 import { PlayingCard } from './playing-card';
+import { PlaybackLayer } from './playback/playback-layer';
 import { CardArt } from './card-art';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { BattlefieldBackgrounds, battlefieldBackgroundCss } from '../battlefield-background.service';
@@ -32,7 +33,7 @@ const STATUS_HEIGHT = 24;
 // Presentational: everything shown is read straight off the (redacted) state.
 @Component({
   selector: 'app-round-table',
-  imports: [SeatTile, PlayingCard, CardArt, MatProgressSpinnerModule, TPipe],
+  imports: [SeatTile, PlayingCard, CardArt, MatProgressSpinnerModule, TPipe, PlaybackLayer],
   template: `
     <div class="table" [class.crowded]="state().seats.length > 6" [style.background]="background()">
       <!-- Only the latest action sequence, one step per line, each with its card. -->
@@ -88,6 +89,7 @@ const STATUS_HEIGHT = 24;
           />
         </div>
       }
+      <app-playback-layer [state]="state()" [viewerSeatId]="viewerSeatId()" [line]="latestLine()" [centreY]="fit().centreY" [centreHeight]="fit().centreHeight" />
     </div>
   `,
   styles: `
@@ -162,9 +164,13 @@ export class RoundTable {
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId(), this.fit()).filter((p) => !p.isViewer));
 
   // The latest action sequence, oldest first, in the action history's wording.
-  protected readonly sequence = computed(() =>
-    latestSequence(actionHistory(this.state().log, this.state().zones, this.state().players, this.state().seats, this.i18n.translator))
-  );
+  private readonly history = computed(() => actionHistory(this.state().log, this.state().zones, this.state().players, this.state().seats, this.i18n.translator));
+  protected readonly sequence = computed(() => latestSequence(this.history()));
+  // The newest line, for the playback caption; none when a turn has just begun.
+  protected readonly latestLine = computed(() => {
+    const newest = this.history()[0];
+    return newest?.kind === 'action' ? newest.text : null;
+  });
   // How many steps the centre has room for: the columns that fit across, times the rows that fit
   // down, after the turned-up row and the status lines.
   private readonly capacity = computed(() => {

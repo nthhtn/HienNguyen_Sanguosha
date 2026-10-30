@@ -426,6 +426,8 @@ export const vi: Messages = {
   'cue.passed': 'Bỏ lượt',
   'cue.help': 'Cứu với!',
   'cue.eliminated': 'Bị loại',
+  'banner.turn': 'Lượt của {seat}',
+  'banner.turnDetail': '{general} · {force}',
   'seat.responding': 'Đang phản hồi…',
   'slot.weapon': 'Vũ khí',
   'slot.armor': 'Giáp',

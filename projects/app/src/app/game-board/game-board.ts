@@ -120,7 +120,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                 <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [resolving]="resolving()" />
                 <!-- Bottom left corner: the viewer's own seat, off the table. -->
                 @if (viewerSeat(); as seat) {
-                  <div class="your-seat">
+                  <div class="your-seat" [attr.data-seat-id]="seat.id">
                     <app-seat-tile
                       [seat]="seat"
                       [name]="nameOf(seat.id)"
@@ -142,7 +142,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                     />
                   </div>
                 }
-                <section class="your-hand">
+                <section class="your-hand" data-playback-anchor="hand">
                   <div class="hand">
                     <h3>{{ 'board.yourHand' | t }}</h3>
                     <app-hand-view
@@ -163,7 +163,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                 </section>
                 <!-- Bottom right: the action history, then the discard pile; same height. -->
                 <app-action-history class="history" [history]="actionHistory()" />
-                <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                <app-discard-pile class="discard" data-playback-anchor="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
               </div>
             </div>
           }
