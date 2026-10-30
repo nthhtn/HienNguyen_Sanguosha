@@ -19,7 +19,8 @@ Turn one skill's wording into a mechanics table the developer confirms before th
 3. **Stop on `unclear` and `gap`.** Ask the developer one question per row, one sentence each, and wait. A `gap` question names the options you can see (new `modifiers` field, new hook, new turn flag) and which one you recommend. Nothing moves on until every row is `read` or answered.
 4. **Show the table and wait for "Correct".** Corrections go back through step 2.
 5. **List the per-skill tables the build will touch** (the checklist at the end of [mechanics.md](mechanics.md)), each marked needed or not.
-6. **Hand back** to add-general: the confirmed table opens the skill's rules block, with the input-sheet edge cases answered beneath it.
+6. **Preview the sequence** when called by add-general. **REQUIRED SUB-SKILL:** use add-general-skill-preview, which skips a skill with no events in sequence. Wait for its storyboard to be confirmed.
+7. **Hand back** to add-general: the confirmed table opens the skill's rules block, with the input-sheet edge cases answered beneath it and the confirmed storyboard under that.
 
 ## Table
 

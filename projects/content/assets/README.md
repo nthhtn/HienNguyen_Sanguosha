@@ -16,3 +16,7 @@ in git history), so a deployment never needs to crawl.
   with an open-source alternative.
 
 `manifest.json` records source URLs, crawl dates and dimensions for each asset.
+
+`preview/` holds the short skill preview videos, `<general-id>_<skill-id>_en.mp4`
+and `<general-id>_<skill-id>_vi.mp4`. They are made for this project, not crawled, so they have
+no manifest entry.
