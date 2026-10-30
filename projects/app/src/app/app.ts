@@ -10,6 +10,7 @@ import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-b
 import { AuthService } from './auth/auth.service';
 import { LanguageSwitcher } from './i18n/language-switcher';
 import { MusicService, SoundEffects } from './music.service';
+import { PLAYBACK_SPEEDS, PlaybackSpeed } from './playback-speed.service';
 import { I18n } from './i18n/i18n.service';
 import type { MessageKey } from './i18n/messages';
 import type { DeckId } from 'content';
@@ -85,6 +86,9 @@ export class App {
 
   protected readonly music = inject(MusicService);
   protected readonly effects = inject(SoundEffects);
+
+  protected readonly playbackSpeed = inject(PlaybackSpeed);
+  protected readonly speedOptions = PLAYBACK_SPEEDS.map((id) => ({ id, label: `speed.${id}` as MessageKey }));
 
   protected readonly auth = inject(AuthService);
 
