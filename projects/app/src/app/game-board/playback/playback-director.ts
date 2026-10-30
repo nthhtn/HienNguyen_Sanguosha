@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, Signal, effect, inject, signal, untracked } from '@angular/core';
-import type { CardZone, GameState, UsedCard } from 'engine';
+import type { CardZone, EngineEvent, GameState, UsedCard } from 'engine';
 import { GameService } from '../../game.service';
 import { PlaybackGate } from '../../playback-gate.service';
 import { PlaybackSpeed } from '../../playback-speed.service';
@@ -38,6 +38,8 @@ export class PlaybackDirector {
 
   // The log length already queued; null before the first look.
   private cursor: number | null = null;
+  // The event at `cursor - 1` when it was queued: a log that no longer has it there is another game's.
+  private lastQueued: EngineEvent | undefined;
   // The Pass and Play gate went up after a look: the next look is a reveal.
   private hiddenAfterLook = false;
   // The latest visible state: where the fold takes faces from, and what the board shows when idle.
@@ -80,6 +82,7 @@ export class PlaybackDirector {
       this.hiddenAfterLook ||= this.cursor !== null;
       this.stop();
       this.target = null;
+      this._centreStack.set([]);
       this.finish(null);
       return;
     }
@@ -89,11 +92,13 @@ export class PlaybackDirector {
     if (moveStart && moveStart.log.length <= visible.log.length) {
       this._displayedState.set(moveStart);
       this.cursor = moveStart.log.length;
-    } else if (this.cursor === null || visible.log.length < this.cursor || this._displayedState() === null) {
+    } else if (this.cursor === null || this.isNewGame(visible) || this._displayedState() === null) {
       // The first look, a new game or a reveal with no move to replay: nothing old plays.
       this.stop();
       this.cursor = visible.log.length;
+      this.lastQueued = visible.log[this.cursor - 1];
       this.target = visible;
+      this._centreStack.set([]);
       this.finish(visible);
       return;
     }
@@ -115,6 +120,15 @@ export class PlaybackDirector {
     if (steps.length > 0) steps[steps.length - 1].lastOfBatch = true;
     this.queue.push(...steps);
     this.cursor = visible.log.length;
+    this.lastQueued = visible.log[this.cursor - 1];
+  }
+
+  // Another game: the log is shorter than what was queued, or the event last queued is not where it was. The view's
+  // log may be a re-masked copy (a skill now reads 'hidden', or no longer does), which is still the same game.
+  private isNewGame(visible: GameState): boolean {
+    const cursor = this.cursor ?? 0;
+    if (visible.log.length < cursor) return true;
+    return cursor > 0 && !sameUpToMasking(visible.log[cursor - 1], this.lastQueued);
   }
 
   // Plays beats until one needs time on screen, a hold stops it, or the queue runs out.
@@ -150,9 +164,10 @@ export class PlaybackDirector {
     this._current.set(beat);
     this._displayedState.set({ ...foldEvent(shown, beat.event, target), log: target.log.slice(0, beat.logIndex + 1) });
     this._playedLogLength.set(beat.logIndex + 1);
+    // The centre outlives idle, since a response comes in a later update: it clears on the next play, turn or phase.
     const visual = beat.visual;
     if (visual?.kind === 'play') this._centreStack.update((stack) => (visual.response ? [...stack, visual.card] : [visual.card]));
-    else if (beat.event.kind === 'TurnAdvancedEvent') this._centreStack.set([]);
+    else if (beat.event.kind === 'TurnAdvancedEvent' || beat.event.kind === 'PhaseChangedEvent') this._centreStack.set([]);
   }
 
   private factor(queuedMs: number): number {
@@ -168,11 +183,10 @@ export class PlaybackDirector {
     return factor;
   }
 
-  // Caught up: the board shows the real state again.
+  // Caught up: the board shows the real state again. The centre stays until play moves on (see play).
   private finish(state: GameState | null): void {
     this._displayedState.set(state);
     this._current.set(null);
-    this._centreStack.set([]);
     this._playedLogLength.set(state?.log.length ?? 0);
     this.rush = 0;
     this.setIdle(true);
@@ -193,3 +207,13 @@ export class PlaybackDirector {
 }
 
 const stepMs = (step: Step) => step.beat.durationMs + (step.lastOfBatch ? BATCH_GAP_MS : 0);
+
+// The same event, or a copy masked for another set of hidden skills: equal but where one side reads 'hidden'.
+function sameUpToMasking(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a === 'string' && typeof b === 'string') return a.includes('hidden') || b.includes('hidden');
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null || Array.isArray(a) !== Array.isArray(b)) return false;
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((k) => k in b && sameUpToMasking((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+}

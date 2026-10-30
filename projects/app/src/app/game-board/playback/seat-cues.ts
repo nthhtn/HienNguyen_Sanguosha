@@ -73,6 +73,8 @@ export function seatCues(beat: PlannedBeat | null, centre: ResolutionCentre, tr:
       break;
     // The tile's own stamp says Eliminated; the beat only keeps the seat in the spotlight.
     case 'eliminated':
+      cue(visual.seatId);
+      break;
     case 'reveal':
       cue(visual.seatId)!.reveal = true;
       break;

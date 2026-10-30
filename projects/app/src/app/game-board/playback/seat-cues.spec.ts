@@ -43,6 +43,7 @@ describe('seatCues', () => {
       const cue = seatCues(beat({ kind, seatId: 'b' }), NO_CENTRE)['b'];
       expect(cue.involved).toBe(true);
       expect(cue.callout).toBeUndefined();
+      expect(cue.reveal).toBeUndefined();
     }
   });
 

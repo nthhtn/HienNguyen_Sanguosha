@@ -111,7 +111,7 @@ Starting durations at Normal speed, taken from the prototype:
 | `CardsDrawnEvent` | card backs fly from the Draw Pile to the seat, staggered | 500 + 140 per card |
 | `CardPlayedEvent` | callout with the card name; the card flies from the seat to the centre; a line to each target. A response lands on the stack and greys the line it answers. | 900, plus 150 for a fan-out to more than two targets |
 | `ResponsePassedEvent` (new, section 6) | grey callout on the seat: "No Dodge" | 700 |
-| `CardMovedEvent` to the Discard Pile | the centre stack sweeps to the Discard Pile; lines clear | 400 |
+| `CardMovedEvent` to the Discard Pile | a card not on the centre stack flies to the Discard Pile. The stack itself (and its lines and spotlight) stays, across idle, until the next non-response play replaces it or a turn or phase change clears it; it then sweeps to the Discard Pile | 400 |
 | `CardMovedEvent` elsewhere (equip, judgment area, hand to hand) | the card flies between the zones, face down unless the move is public (section 4) | 500 |
 | `DamageDealtEvent`, `HpLostEvent` | tile shakes and flashes red, "−N" floats up, the HP pip pops | 900 |
 | `HealEvent` | green glow, "+N" | 800 |
@@ -170,7 +170,7 @@ As in the prototype, adapted to the real board:
   and follow CLAUDE.md's casing rules.
 - **Spotlight:** the turn owner glows. While a card is resolving, seats that are
   neither its source, a target nor the current responder are dimmed. The
-  spotlight clears when the stack goes to the Discard Pile.
+  spotlight clears when the stack goes to the Discard Pile (the next play, turn or phase).
 - **Caption and turn banner:** one large line above the centre for the current
   beat, in the Action History wording (reusing `actionHistory`), and a banner
   sweeping across when a turn begins. The existing step ribbon stays as the record.

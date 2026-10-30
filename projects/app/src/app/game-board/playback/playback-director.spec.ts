@@ -304,7 +304,7 @@ describe('PlaybackDirector', () => {
     expect(director.displayedState()).toBe(visibleState());
   });
 
-  it('centreStack holds a play and its responses, cleared by a new play, a turn or going idle', () => {
+  it('centreStack holds a play and its responses, replaced by a new play and cleared by a turn', () => {
     const { director, show } = setup();
     const start = table();
     show(start);
@@ -322,8 +322,69 @@ describe('PlaybackDirector', () => {
     jest.advanceTimersByTime(1000 + 350);
     show(after(resolved, play('a', slash, 'b')));
     expect(director.centreStack()).toEqual([slash]);
+  });
+
+  it('going idle keeps the centre: the response that comes in a later batch lands on it', () => {
+    const { director, show } = setup();
+    const start = table();
+    show(start);
+    const slash = used(sha, 'sha');
+    const dodge = used(shan, 'shan');
+    const asked = after(start, play('a', slash, 'b'));
+    show(asked);
     jest.advanceTimersByTime(900 + 350);
     expect(director.idle()).toBe(true);
+    expect(director.centreStack()).toEqual([slash]);
+    const answered = after(asked, play('b', dodge, 'a', { seatId: 'a' }));
+    show(answered);
+    expect(director.centreStack()).toEqual([slash, dodge]);
+    jest.advanceTimersByTime(900 + 350);
+    expect(director.idle()).toBe(true);
+    expect(director.centreStack()).toEqual([slash, dodge]);
+    // A new phase clears it.
+    show(after(answered, phase('Discard')));
     expect(director.centreStack()).toEqual([]);
+  });
+
+  it('a new game or the Pass and Play gate clears the centre', () => {
+    const { director, show } = setup();
+    const start = table();
+    show(start);
+    const slash = used(sha, 'sha');
+    show(after(start, play('a', slash, 'b')));
+    jest.advanceTimersByTime(900 + 350);
+    expect(director.centreStack()).toEqual([slash]);
+    show(table());
+    expect(director.centreStack()).toEqual([]);
+    show(after(table(), play('a', slash, 'b')));
+    jest.advanceTimersByTime(900 + 350);
+    expect(director.centreStack()).toEqual([slash]);
+    show(null);
+    expect(director.centreStack()).toEqual([]);
+  });
+
+  it('a new game whose log is as long as the old one plays nothing old', () => {
+    const { director, show } = setup();
+    const start = table();
+    show(after(start, turn('a'), damage('b')));
+    // Another game: different events, a longer log.
+    const other = after(table(), turn('b'), damage('a'), damage('a', 2));
+    show(other);
+    expect(director.idle()).toBe(true);
+    expect(director.displayedState()).toBe(other);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it('a masked copy of the same event is not a new game', () => {
+    const { director, show } = setup();
+    const start = table();
+    const ability = { kind: 'AbilityUsedEvent', owner: { kind: 'general', seatId: 'b', slot: 'main', skillId: 'jianxiong' }, abilityId: 'jianxiong' } as unknown as EngineEvent;
+    const first = after(start, ability);
+    show(first);
+    // The same log, re-masked for the viewer: the skill now reads 'hidden'.
+    const masked = { ...ability, owner: { kind: 'general', seatId: 'b', slot: 'main', skillId: 'hidden' }, abilityId: 'hidden' } as unknown as EngineEvent;
+    show({ ...after({ ...start, log: [masked] }, damage('b')) });
+    expect(director.idle()).toBe(false);
+    expect(director.current()?.event.kind).toBe('DamageDealtEvent');
   });
 });

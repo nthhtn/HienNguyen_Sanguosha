@@ -426,7 +426,6 @@ export const en = {
   'cue.pass': 'No {card}',
   'cue.passed': 'Pass',
   'cue.help': 'Help!',
-  'cue.eliminated': 'Eliminated',
   'banner.turn': "{seat}'s Turn",
   'banner.turnDetail': '{general} · {force}',
   'seat.responding': 'Responding…',

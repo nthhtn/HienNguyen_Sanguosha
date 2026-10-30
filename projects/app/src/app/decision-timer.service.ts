@@ -47,7 +47,8 @@ export class DecisionTimer {
   // What a person must decide now, or null.
   private readonly decision = computed<Decision | null>(() => {
     if (this.boards() === 0) return null;
-    // The board is still playing what happened; the clock starts when it has caught up.
+    // The board is still playing what happened; the clock starts when it has caught up. A clock already running pauses
+    // with its time left while playback runs (switchClock to null) and resumes with it once playback is idle.
     if (!this.gate.idle()) return null;
     const state = this.game.state();
     const seatId = this.game.activeSeatId();

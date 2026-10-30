@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed, isSeatDying } from 'engine';
+import { Action, CardInstance, ChooseGeneralsAction, Seat, describeDecision, discardOwed, isSeatDying } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { finalSeatViews } from 'protocol';
@@ -472,23 +472,14 @@ export class GameBoard {
   // Behind the Pass and Play gate nothing plays, so the table's own view decides.
   private readonly judgmentReached = computed(() => !this.director.displayedState() || this.director.idle());
 
-  // A decision the viewer owes now, as the engine has it: an answer, a choice, a selection, an
-  // arrangement, the Start window, discards or a settled judgment to close. Not their own free Play Phase.
+  // A decision the viewer owes now, as the engine describes it (describeDecision, as DecisionTimer uses it): not
+  // their own free Play Phase.
   private readonly decisionOwed = computed(() => {
     const state = this.gameService.state();
     const seatId = this.gameService.humanSeatId() ?? this.activeSeatId();
-    const legal = this.gameService.legalActions();
-    if (!state || !seatId || legal.length === 0) return false;
-    const owner = state.turn.ownerSeatId === seatId;
-    return (
-      state.pendingResponse?.respondingSeatId === seatId ||
-      state.pendingChoice?.seatId === seatId ||
-      state.pendingSelection?.seatId === seatId ||
-      state.pendingArrangement?.seatId === seatId ||
-      (owner && state.phase === 'Start' && !!state.turn.startWindow) ||
-      (owner && state.phase === 'Discard' && legal.some((a) => a.kind === 'DiscardCardAction')) ||
-      (!!state.judgmentView?.settled && legal.some((a) => a.kind === 'AcknowledgeJudgmentAction'))
-    );
+    if (!state || !seatId) return false;
+    const decision = describeDecision(state, seatId, this.gameService.legalActions(), '');
+    return !!decision && decision.kind !== 'play';
   });
 
   // The skill decision the Judgment popup waits on, as the viewer sees it: the engine's own question for the asked

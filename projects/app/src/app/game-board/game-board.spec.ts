@@ -1196,6 +1196,53 @@ describe('GameBoard battle playback', () => {
     expect(document.querySelector('app-response-dialog')).not.toBeNull();
   });
 
+  it('a Slash and the Dodge that answers it in a later update share the centre, and its line greys', () => {
+    const sha = (state: GameState, id: string) => cardDefinitionId(state, id) === 'sha';
+    const slashAt = (target: string) =>
+      gameService.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && a.targets[0].kind === 'seat' && a.targets[0].seatId === target && sha(gameService.state()!, a.cardInstanceId));
+    const dodges = () => {
+      const state = gameService.state()!;
+      return state.zones.find((z) => z.kind === 'hand' && z.ownerSeatId === 'seat-1')!.cards.some((c) => c.definitionId === 'shan');
+    };
+    // A vs-bots deal where the human's first Play Phase has a Slash at the bot, and the bot holds a Dodge.
+    gameService.botDelayMs = 0;
+    let found = false;
+    for (let seed = 1; seed < 80 && !found; seed++) {
+      gameService.startGame(2, seed, 'vs-bots');
+      const inOwnPlay = () => gameService.state()!.turn.ownerSeatId === 'seat-0' && gameService.state()!.phase === 'Play';
+      for (let guard = 0; guard < 2000 && !inOwnPlay() && !gameService.state()!.result; guard++) {
+        const legal = gameService.legalActions();
+        if (legal.length > 0) gameService.submit(legal.find((a) => a.kind === 'ConfirmRevealsAction' || a.kind === 'EndPhaseAction' || a.kind === 'PassAction') ?? legal[0]);
+        else jest.runOnlyPendingTimers();
+      }
+      found = inOwnPlay() && !!slashAt('seat-1') && dodges();
+    }
+    expect(found).toBe(true);
+    // The bot answers some time after playback catches up, so its Dodge comes in an update of its own.
+    gameService.botDelayMs = 3000;
+    create();
+    const el = fixture.nativeElement as HTMLElement;
+    const stackCards = () => el.querySelectorAll('app-playback-layer .stack app-playing-card').length;
+    const lines = () => [...el.querySelectorAll('app-playback-layer path.line')].map((p) => p.classList.contains('answered'));
+    const untilIdle = () => {
+      for (let i = 0; i < 200 && !director().idle(); i++) tick(100);
+    };
+    gameService.submit(slashAt('seat-1')!);
+    fixture.detectChanges();
+    untilIdle();
+    expect(director().idle()).toBe(true);
+    expect(gameService.state()!.pendingResponse?.respondingSeatId).toBe('seat-1');
+    expect(director().centreStack().map((u) => u.as)).toEqual(['sha']);
+    expect(stackCards()).toBe(1);
+    expect(lines()).toEqual([false]);
+    tick(3000);
+    expect(gameService.state()!.log.some((e) => e.kind === 'CardPlayedEvent' && e.seatId === 'seat-1' && e.card.as === 'shan')).toBe(true);
+    untilIdle();
+    expect(director().centreStack().map((u) => u.as)).toEqual(['sha', 'shan']);
+    expect(stackCards()).toBe(2);
+    expect(lines()).toEqual([true]);
+  });
+
   it('HP on the seat tile drops when the damage beat plays', () => {
     const other = playPhase();
     create();
@@ -1356,6 +1403,7 @@ describe('GameBoard battle playback', () => {
     it('online: a Compete in the viewer’s own Play Phase still shows', async () => {
       const owed = goOnline();
       // Free play is not a decision owed: the popup opens and stays.
+      update((s) => ({ ...s, phase: 'Play', turn: { ...s.turn, ownerSeatId: 'seat-0' } }));
       owed.set([{ kind: 'EndPhaseAction', seatId: 'seat-0' } as Action]);
       append([...compete(), heal]);
       await settle();
