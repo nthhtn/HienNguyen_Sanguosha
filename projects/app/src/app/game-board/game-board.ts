@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, untracked } from '@angular/core';
+import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -51,6 +51,7 @@ import { I18n } from '../i18n/i18n.service';
 import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
 import { PlaybackDirector } from './playback/playback-director';
+import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './playback/seat-cues';
 
 @Component({
   selector: 'app-game-board',
@@ -116,7 +117,7 @@ import { PlaybackDirector } from './playback/playback-director';
             <div class="board">
               <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
               <div class="board-grid">
-                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" />
+                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [resolving]="resolving()" />
                 <!-- Bottom left corner: the viewer's own seat, off the table. -->
                 @if (viewerSeat(); as seat) {
                   <div class="your-seat">
@@ -134,6 +135,8 @@ import { PlaybackDirector } from './playback/playback-director';
                       [pile]="zoneCards(seat.pile?.zoneId ?? '')"
                       [stash]="zoneCards(seat.stash?.zoneId ?? '')"
                       [dying]="dyingOf(seat)"
+                      [cue]="seatCueMap()[seat.id] ?? null"
+                      [dimmed]="resolving() && !seatCueMap()[seat.id]?.involved"
                       [skills]="viewerSkills()"
                       (useSkill)="submit($event)"
                     />
@@ -322,6 +325,7 @@ export class GameBoard {
     // Decisions are timed only while the board is on screen.
     this.timer.attach(inject(DestroyRef));
     // The win track while the game is won; back to the background track on leaving.
+    effect(() => this.centre.set(nextCentre(untracked(this.centre), this.director.current(), this.director.centreStack().length)));
     effect(() => this.music.setTrack(this.gameOver() ? 'win' : 'background'));
     inject(DestroyRef).onDestroy(() => this.music.setTrack('background'));
     // Leaving the board with a decision hidden: nothing else would ever close that dialog.
@@ -444,6 +448,10 @@ export class GameBoard {
   protected readonly activeSeatId = this.gameService.activeSeatId;
   // The state at the moment playback shows. The Pass and Play gate still reads the service's own.
   protected readonly visibleState = this.director.displayedState;
+  // The seats a resolution is about, from the plays the director shows; cleared once the centre empties.
+  private readonly centre = signal<ResolutionCentre>(NO_CENTRE);
+  protected readonly resolving = computed(() => !!this.centre().sourceSeatId);
+  protected readonly seatCueMap = computed((): Partial<Record<string, SeatCue>> => seatCues(this.director.current(), this.centre(), this.i18n.translator));
   // The seat the board is shown for: the active one, or once the game is over, the one whose view
   // plays out the last moves before Game Over.
   protected readonly shownSeatId = computed(() => this.activeSeatId() ?? (this.gameService.state()?.result ? this.gameService.revealedSeatId() : null));

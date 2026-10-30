@@ -266,4 +266,33 @@ describe('SeatTile', () => {
     expect(out.getAttribute('data-force')).toBe('Shu');
     expect(render({ ...makeSeat(), kingdom: 'hidden' }, { isResponding: true }).querySelector('.status')!.getAttribute('data-force')).toBe('none');
   });
+
+  const renderWith = (inputs: Record<string, unknown>) => {
+    const fixture = TestBed.createComponent(SeatTile);
+    fixture.componentRef.setInput('seat', makeSeat());
+    fixture.componentRef.setInput('name', 'Seat 1');
+    fixture.componentRef.setInput('handCount', 4);
+    for (const [key, value] of Object.entries(inputs)) fixture.componentRef.setInput(key, value);
+    fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  };
+
+  it('renders the callout text', () => {
+    const el = renderWith({ cue: { involved: true, callout: { text: { text: 'Help!' }, tone: 'red' } } });
+    expect(el.querySelector('.callout')?.textContent).toContain('Help!');
+    expect(el.querySelector('.callout')?.classList).toContain('red');
+  });
+
+  it('adds the hit class for a hit cue and floats its text', () => {
+    const el = renderWith({ cue: { involved: true, impact: 'hit', floatText: '−1' } });
+    expect(el.querySelector('.tile')!.classList).toContain('hit');
+    expect(el.querySelector('.float')?.textContent).toContain('−1');
+  });
+
+  it('adds the heal and flip classes and dims a seat that is not involved', () => {
+    expect(renderWith({ cue: { involved: true, impact: 'heal', floatText: '+1' } }).querySelector('.tile')!.classList).toContain('heal');
+    expect(renderWith({ cue: { involved: true, reveal: true } }).querySelector('.generals')!.classList).toContain('flip');
+    expect(renderWith({ dimmed: true }).querySelector('.tile')!.classList).toContain('dimmed');
+    expect(renderWith({}).querySelector('.tile')!.classList).not.toContain('dimmed');
+  });
 });
