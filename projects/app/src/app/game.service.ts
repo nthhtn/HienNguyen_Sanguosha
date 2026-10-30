@@ -1,4 +1,4 @@
-import { Injectable, Signal, WritableSignal, computed, signal } from '@angular/core';
+import { Injectable, Signal, WritableSignal, computed, effect, inject, signal, untracked } from '@angular/core';
 import {
   Action,
   ContentRegistry,
@@ -17,6 +17,8 @@ import {
 import { buildContentRegistry, guozhanMaxSeats, guozhanMode } from 'content';
 import type { Msg } from './i18n/msg';
 import { BotTurnMemory, ruleBasedPolicy } from 'bots';
+import { PlaybackGate } from './playback-gate.service';
+import { PlaybackSpeed } from './playback-speed.service';
 
 export type GameMode = 'vs-bots' | 'pass-and-play';
 
@@ -44,8 +46,20 @@ export class GameService {
 
   readonly maxSeats: number = guozhanMaxSeats(this.registry);
 
-  // Delay before each bot move, so a human can follow along. Tests set 0.
-  botDelayMs = 1500;
+  private readonly gate = inject(PlaybackGate);
+  private readonly speed = inject(PlaybackSpeed);
+
+  constructor() {
+    // A bot that was due while playback ran moves once it has caught up.
+    effect(() => {
+      if (this.gate.idle()) untracked(() => this.scheduleBotIfDue());
+    });
+  }
+
+  // Delay before each bot move, once the board's playback has caught up, so a human can follow along. Tests set 0.
+  botDelayMs = 600;
+  // The same at Instant speed, where playback takes no time of its own and the bots set the pace.
+  instantBotDelayMs = 1500;
 
   private readonly _state: WritableSignal<GameState | null> = signal(null);
   private readonly _revealedSeatId: WritableSignal<string | null> = signal(null);
@@ -53,6 +67,8 @@ export class GameService {
   private readonly _mode: WritableSignal<GameMode> = signal('pass-and-play');
   private readonly _botThinkingSeatId: WritableSignal<string | null> = signal(null);
   private readonly _gameNumber: WritableSignal<number> = signal(0);
+  // The full state before the last move (pass-and-play only); lastMoveStart redacts it for the revealed seat.
+  private readonly _moveStart: WritableSignal<GameState | null> = signal(null);
 
   private botTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly botMemories = new Map<string, BotTurnMemory>();
@@ -74,6 +90,15 @@ export class GameService {
   // Online only: who has chosen their Generals, and when the game starts. A local game picks one seat at a time.
   readonly selectionRoster: Signal<SelectionRosterEntry[] | null> = signal<SelectionRosterEntry[] | null>(null).asReadonly();
   readonly gameStartsAt: Signal<number | null> = signal<number | null>(null).asReadonly();
+
+  // Local bots and clocks wait for the board's playback, so it never needs to catch up.
+  readonly clockWaitsForPlayback: boolean = true;
+  // Pass and Play: the state before the last move, where playback starts after a reveal. Null until it is kept.
+  readonly lastMoveStart: Signal<GameState | null> = computed(() => {
+    const state = this._moveStart();
+    const seatId = this._revealedSeatId();
+    return state && seatId && this._mode() === 'pass-and-play' ? redactStateForSeat(state, seatId) : null;
+  });
 
   readonly activeSeatId: Signal<string | null> = computed(() => {
     const state = this._state();
@@ -121,13 +146,14 @@ export class GameService {
   startGame(seatCount: number, seed?: number, mode: GameMode = 'pass-and-play', names: string[] = [], rules?: GameRules): void {
     this.cancelBotTimer();
     this.botMemories.clear();
+    this._moveStart.set(null);
     this._mode.set(mode);
     this._gameNumber.update((n) => n + 1);
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
-      // Every game waits for a judgment's popup (the judgmentNotice rule) unless a rule says otherwise.
-      const created = createGame(guozhanMode, this.registry, seatIds, rngSeed, { ...rules, judgmentNotice: rules?.judgmentNotice ?? true });
+      // Every game waits for a judgment's popup (the judgmentNotice rule) and logs passes (logPasses) unless a rule says otherwise.
+      const created = createGame(guozhanMode, this.registry, seatIds, rngSeed, { ...rules, judgmentNotice: rules?.judgmentNotice ?? true, logPasses: rules?.logPasses ?? true });
       const players = created.players.map((p, i) => ({
         ...p,
         kind: mode === 'vs-bots' && p.seatId !== HUMAN_SEAT_ID ? ('bot' as const) : ('human' as const),
@@ -169,10 +195,12 @@ export class GameService {
   submitAll(actions: Action[]): void {
     const activeSeatId = this.activeSeatId();
     if (activeSeatId && this.botSeatIds().includes(activeSeatId)) return;
+    const before = this._state();
     for (const action of actions) {
       if (!this.apply(action, false)) break;
     }
-    this._revealedSeatId.set(this.humanSeatId());
+    if (before && this._state() !== before) this.keepMoveStart(before);
+    this.regate();
     this.scheduleBotIfDue();
   }
 
@@ -187,13 +215,27 @@ export class GameService {
     if (!state) return false;
     try {
       this._state.set(resolve(state, action, this.ctx).state);
-      if (regate) this._revealedSeatId.set(this.humanSeatId());
+      if (regate) {
+        this.keepMoveStart(state);
+        this.regate();
+      }
       this._lastError.set(null);
       return true;
     } catch (err) {
       this._lastError.set(engineError(err));
       return false;
     }
+  }
+
+  // Gates the next view in pass-and-play. Not once the game is over: the seat that made the last move
+  // keeps its view, so the board plays that move out before Game Over.
+  private regate(): void {
+    if (this._state()?.result) return;
+    this._revealedSeatId.set(this.humanSeatId());
+  }
+
+  private keepMoveStart(before: GameState): void {
+    this._moveStart.set(this._mode() === 'pass-and-play' ? before : null);
   }
 
   private scheduleBotIfDue(): void {
@@ -205,13 +247,17 @@ export class GameService {
       return;
     }
     this._botThinkingSeatId.set(seatId);
+    // The gate's effect schedules again once playback is idle.
+    if (!this.gate.idle()) return;
     // A bot that may change a judgment waits for the animation before it too, while a person is still at the table.
     const personAlive = state.seats.some((s) => !s.eliminated && !this.botSeatIds().includes(s.id));
     const lead = describeDecision(state, seatId, getLegalActions(state, seatId, this.registry), 'bot', { leadIn: personAlive })?.leadInMs ?? 0;
     this.botTimer = setTimeout(() => {
       this.botTimer = null;
+      // Playback began after this was armed: stay thinking, and the gate's effect arms a fresh delay once idle.
+      if (!this.gate.idle()) return;
       this.runBot(seatId);
-    }, this.botDelayMs + lead);
+    }, (this.speed.speed() === 'instant' ? this.instantBotDelayMs : this.botDelayMs) + lead);
   }
 
   private runBot(seatId: string): void {

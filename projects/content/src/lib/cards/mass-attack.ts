@@ -17,6 +17,7 @@ function massAttack(id: string, name: string, answerCardId: string, step?: strin
         id: `${id}-${usedCardKey(tool)}-${target.seatId}`,
         respondingSeatId: target.seatId,
         allowedActionKinds: ['RespondAction', 'PassAction'],
+        announcePass: true,
         allowedCardIds: [answerCardId],
         reason: { kind: 'card-effect', card: tool, userSeatId },
         context: {

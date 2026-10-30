@@ -50,6 +50,7 @@ export const coerceCard: CardDefinition = {
         id: `coerce-${coerceId}-${holder.id}`,
         respondingSeatId: holder.id,
         allowedActionKinds: ['RespondAction', 'PassAction'],
+        announcePass: true,
         allowedCardIds: ['sha'],
         reason: { kind: 'card-effect', card: tool, userSeatId, victimSeatId: victim.seatId },
         sourceCard: { instanceId: coerceId, definitionId: 'coerce' },

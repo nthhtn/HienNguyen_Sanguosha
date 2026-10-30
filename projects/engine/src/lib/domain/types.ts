@@ -133,6 +133,10 @@ export interface PendingResponse {
   respondingSeatId: string;
   allowedActionKinds: string[];
   allowedCardIds?: string[];
+  // Set by content when the seat is asked whatever it holds, so passing leaks nothing
+  // (Sha, Duel, Barbarians, Coerce). Wuxie, dying and skill windows never set it.
+  // With the logPasses rule, a pass here is logged as ResponsePassedEvent.
+  announcePass?: true;
   context: { effect: Effect };
   // The card whose effect opened this window. When set, that card's
   // definition decides what an answer does (CardDefinition.onResponse);
@@ -388,6 +392,9 @@ export interface GameRules {
   judgmentNotice?: boolean;
   // The card distribution the draw pile is dealt from (a deck id). Absent: the Identity deck.
   deck?: string;
+  // A seat passing a window that announces its passes (PendingResponse.announcePass) is logged
+  // as ResponsePassedEvent. Absent: passes are not logged.
+  logPasses?: boolean;
 }
 
 export interface GameState {

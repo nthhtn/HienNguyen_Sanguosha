@@ -81,6 +81,16 @@
   >
     <mat-icon>{{ effects.enabled() ? 'volume_up' : 'volume_off' }}</mat-icon>
   </button>
+  <button mat-icon-button type="button" class="playback-speed" [matMenuTriggerFor]="speedMenu" [attr.aria-label]="'nav.playbackSpeed' | t" [attr.title]="'nav.playbackSpeed' | t">
+    <mat-icon>speed</mat-icon>
+  </button>
+  <mat-menu #speedMenu="matMenu">
+    @for (option of speedOptions; track option.id) {
+      <button mat-menu-item type="button" role="menuitemradio" [class.active]="playbackSpeed.speed() === option.id" [attr.aria-checked]="playbackSpeed.speed() === option.id" (click)="playbackSpeed.set(option.id)">
+        <mat-icon>{{ playbackSpeed.speed() === option.id ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>{{ option.label | t }}
+      </button>
+    }
+  </mat-menu>
 </mat-toolbar>
 <main class="content">
   <router-outlet />

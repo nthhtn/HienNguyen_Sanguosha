@@ -241,6 +241,15 @@ export interface SelectionMadeEvent {
   ids: string[];
 }
 
+// A seat passed a response window that announces its passes (PendingResponse.announcePass).
+// allowedCardIds names the kind of card asked for, never a hand card.
+export interface ResponsePassedEvent {
+  kind: 'ResponsePassedEvent';
+  seatId: string;
+  pendingResponseId: string;
+  allowedCardIds?: string[];
+}
+
 export type EngineEvent =
   | CardsDrawnEvent
   | DamageDealtEvent
@@ -273,4 +282,5 @@ export type EngineEvent =
   | ChainToggledEvent
   | ArrangementMadeEvent
   | AbilityUsedEvent
-  | SelectionMadeEvent;
+  | SelectionMadeEvent
+  | ResponsePassedEvent;

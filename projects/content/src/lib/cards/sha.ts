@@ -63,6 +63,7 @@ function shanWindow(step: CardStep): Effect {
       id: `sha-response-${usedCardKey(step.card)}-${step.target.seatId}-${provided}`,
       respondingSeatId: step.target.seatId,
       allowedActionKinds: ['RespondAction', 'PassAction'],
+      announcePass: true,
       allowedCardIds: ['shan'],
       reason: { kind: 'card-effect', card: step.card, userSeatId: step.userSeatId },
       context: { effect: shaStep(step, 'sha-hit') },

@@ -14,6 +14,11 @@ import { cardIdDisplayName } from '../labels';
 import { GameBoard } from './game-board';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
+import { PlaybackSpeed } from '../playback-speed.service';
+import { PlaybackDirector } from './playback/playback-director';
+import { SeatTile } from './seat-tile';
+import { CompeteDialog } from './compete-dialog';
+import { MusicService } from '../music.service';
 import { Action, GameState, cardsOverHandLimit, createRng } from 'engine';
 import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
@@ -51,6 +56,8 @@ describe('GameBoard', () => {
       providers: [provideRouter([{ path: 'setup', children: [] }])],
     }).compileComponents();
     gameService = TestBed.inject(GameService);
+    // Not about playback: the board shows each new state at once (ruling R1).
+    TestBed.inject(PlaybackSpeed).speed.set('instant');
   });
 
   it('shows a fallback message and a link back to /setup when no game is in progress', () => {
@@ -579,6 +586,8 @@ describe('GameBoard in vs-bots mode', () => {
       providers: [provideRouter([{ path: 'setup', children: [] }])],
     }).compileComponents();
     gameService = TestBed.inject(GameService);
+    // Not about playback: the board shows each new state at once (ruling R1).
+    TestBed.inject(PlaybackSpeed).speed.set('instant');
     gameService.botDelayMs = 0;
   });
 
@@ -740,6 +749,8 @@ describe('GameBoard event sounds', () => {
       ],
     }).compileComponents();
     gameService = TestBed.inject(GameService);
+    // Not about playback: the board shows each new state at once (ruling R1).
+    TestBed.inject(PlaybackSpeed).speed.set('instant');
     gameService.startGame(2, 1, 'vs-bots');
     fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();
@@ -838,6 +849,8 @@ describe('GameBoard: the judgment popup', () => {
       providers: [provideRouter([{ path: 'setup', children: [] }])],
     }).compileComponents();
     gameService = TestBed.inject(GameService);
+    // Not about playback: the board shows each new state at once (ruling R1).
+    TestBed.inject(PlaybackSpeed).speed.set('instant');
     gameService.botDelayMs = 1_000_000;
   });
 
@@ -1079,6 +1092,347 @@ describe('GameBoard: the judgment popup', () => {
       expect(gameService.revealedSeatId()).toBe('seat-0');
       expect(document.querySelector('.cdk-overlay-container .decide app-ask-panel')).not.toBeNull();
       expect(asks()).toHaveLength(0);
+    });
+  });
+});
+
+describe('GameBoard battle playback', () => {
+  let gameService: GameService;
+  let played: string[];
+  let fixture: ReturnType<typeof TestBed.createComponent<GameBoard>>;
+  const internal = () => gameService as unknown as { _state: { update(f: (s: GameState) => GameState): void } };
+  const update = (change: (s: GameState) => GameState) => {
+    internal()._state.update(change);
+    fixture.detectChanges();
+  };
+  const append = (events: GameState['log']) => update((s) => ({ ...s, log: [...s.log, ...events] }));
+  const tick = (ms: number) => {
+    jest.advanceTimersByTime(ms);
+    fixture.detectChanges();
+  };
+  const settle = async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  };
+  const create = () => {
+    fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+  };
+  const effects = () => played.filter((u) => Object.values(EFFECT_URLS).includes(u));
+  const director = () => fixture.debugElement.injector.get(PlaybackDirector);
+  const openDialogs = <T>(type: new (...args: never[]) => T) =>
+    TestBed.inject(MatDialog).openDialogs.filter((d) => d.componentInstance instanceof type && d.getState() === MatDialogState.OPEN);
+  // A Pass and Play game in its first Play Phase, the turn owner revealed; returns the other seat.
+  const playPhase = (): string => {
+    gameService.startGame(2, 1);
+    finishSelection(gameService);
+    gameService.reveal(gameService.activeSeatId()!);
+    return gameService.state()!.seats.find((s) => s.id !== gameService.activeSeatId())!.id;
+  };
+
+  beforeEach(async () => {
+    jest.useFakeTimers();
+    played = [];
+    await TestBed.configureTestingModule({
+      imports: [GameBoard],
+      providers: [
+        provideRouter([{ path: 'setup', children: [] }]),
+        { provide: MUSIC_PLAYER_FACTORY, useValue: (url: string) => ({ loop: false, volume: 1, play: () => (played.push(url), Promise.resolve()), pause: () => undefined }) },
+      ],
+    }).compileComponents();
+    gameService = TestBed.inject(GameService);
+    gameService.botDelayMs = 1_000_000;
+    gameService.instantBotDelayMs = 1_000_000;
+    TestBed.inject(PlaybackSpeed).speed.set('normal');
+  });
+
+  afterEach(() => {
+    TestBed.inject(MatDialog).closeAll();
+    document.querySelector('.cdk-overlay-container')?.replaceChildren();
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('the hand is not playable while playback is busy', () => {
+    const other = playPhase();
+    create();
+    const hand = () => fixture.debugElement.query(By.directive(HandView)).componentInstance as HandView;
+    expect(hand().actions().length).toBeGreaterThan(0);
+    append([{ kind: 'HpLostEvent', seatId: other, amount: 1 }]);
+    expect(director().idle()).toBe(false);
+    expect(hand().actions()).toEqual([]);
+    tick(900 + 350);
+    expect(director().idle()).toBe(true);
+    expect(hand().actions().length).toBeGreaterThan(0);
+  });
+
+  it('the response dialog opens only after playback', async () => {
+    // A deal where the first seat's aimed Slash or Duel waits on the other seat's own answer.
+    let found: number | null = null;
+    for (let seed = 1; seed < 50 && found === null; seed++) {
+      gameService.startGame(2, seed);
+      finishSelection(gameService);
+      const aimed = gameService.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(gameService.state()!, a.cardInstanceId) ?? ''));
+      if (!aimed) continue;
+      gameService.submit(aimed);
+      if (waitsOnDamageAnswer(gameService.state()!)) found = seed;
+    }
+    expect(found).not.toBeNull();
+    gameService.startGame(2, found!);
+    finishSelection(gameService);
+    gameService.reveal(gameService.activeSeatId()!);
+    create();
+    gameService.submit(gameService.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && ['sha', 'duel'].includes(cardDefinitionId(gameService.state()!, a.cardInstanceId) ?? ''))!);
+    fixture.detectChanges();
+    // The gate is up; the answering seat reveals and the play is shown first.
+    gameService.reveal(gameService.activeSeatId()!);
+    await settle();
+    expect(director().idle()).toBe(false);
+    expect(document.querySelector('app-response-dialog')).toBeNull();
+    tick(5000);
+    await settle();
+    expect(director().idle()).toBe(true);
+    expect(document.querySelector('app-response-dialog')).not.toBeNull();
+  });
+
+  it('a Slash and the Dodge that answers it in a later update share the resolution, and nothing stays on the overlay while idle', () => {
+    const sha = (state: GameState, id: string) => cardDefinitionId(state, id) === 'sha';
+    const slashAt = (target: string) =>
+      gameService.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && a.targets[0].kind === 'seat' && a.targets[0].seatId === target && sha(gameService.state()!, a.cardInstanceId));
+    const dodges = () => {
+      const state = gameService.state()!;
+      return state.zones.find((z) => z.kind === 'hand' && z.ownerSeatId === 'seat-1')!.cards.some((c) => c.definitionId === 'shan');
+    };
+    // A vs-bots deal where the human's first Play Phase has a Slash at the bot, and the bot holds a Dodge.
+    gameService.botDelayMs = 0;
+    let found = false;
+    for (let seed = 1; seed < 80 && !found; seed++) {
+      gameService.startGame(2, seed, 'vs-bots');
+      const inOwnPlay = () => gameService.state()!.turn.ownerSeatId === 'seat-0' && gameService.state()!.phase === 'Play';
+      for (let guard = 0; guard < 2000 && !inOwnPlay() && !gameService.state()!.result; guard++) {
+        const legal = gameService.legalActions();
+        if (legal.length > 0) gameService.submit(legal.find((a) => a.kind === 'ConfirmRevealsAction' || a.kind === 'EndPhaseAction' || a.kind === 'PassAction') ?? legal[0]);
+        else jest.runOnlyPendingTimers();
+      }
+      found = inOwnPlay() && !!slashAt('seat-1') && dodges();
+    }
+    expect(found).toBe(true);
+    // The bot answers some time after playback catches up, so its Dodge comes in an update of its own.
+    gameService.botDelayMs = 3000;
+    create();
+    const el = fixture.nativeElement as HTMLElement;
+    const shownCards = () => el.querySelectorAll('app-playback-layer .played app-playing-card').length;
+    const arrows = () => el.querySelectorAll('app-playback-layer g.arrow').length;
+    const untilIdle = () => {
+      for (let i = 0; i < 200 && !director().idle(); i++) tick(100);
+    };
+    gameService.submit(slashAt('seat-1')!);
+    fixture.detectChanges();
+    untilIdle();
+    expect(director().idle()).toBe(true);
+    expect(gameService.state()!.pendingResponse?.respondingSeatId).toBe('seat-1');
+    expect(director().centreStack().map((u) => u.as)).toEqual(['sha']);
+    expect(shownCards()).toBe(0);
+    expect(arrows()).toBe(0);
+    tick(3000);
+    expect(gameService.state()!.log.some((e) => e.kind === 'CardPlayedEvent' && e.seatId === 'seat-1' && e.card.as === 'shan')).toBe(true);
+    untilIdle();
+    expect(director().centreStack().map((u) => u.as)).toEqual(['sha', 'shan']);
+    expect(shownCards()).toBe(0);
+    expect(arrows()).toBe(0);
+  });
+
+  it('dims the seats a play does not involve only while that play is on show', () => {
+    gameService.startGame(3, 1);
+    finishSelection(gameService);
+    gameService.reveal(gameService.activeSeatId()!);
+    create();
+    const [user, target, bystander] = [gameService.activeSeatId()!, ...gameService.state()!.seats.map((s) => s.id).filter((id) => id !== gameService.activeSeatId())];
+    const dimmed = (seatId: string) =>
+      fixture.debugElement
+        .queryAll(By.directive(SeatTile))
+        .map((d) => d.componentInstance as SeatTile)
+        .find((t) => t.seat().id === seatId)!
+        .dimmed();
+    const sha = { as: 'sha', colour: 'black', suit: 'spade', rank: 7, physical: [{ instanceId: 'x-sha', definitionId: 'sha', suit: 'spade', rank: 7 }] };
+    append([{ kind: 'CardPlayedEvent', seatId: user, card: sha, targets: [{ kind: 'seat', seatId: target }] } as never]);
+    expect(dimmed(bystander)).toBe(true);
+    expect(dimmed(target)).toBe(false);
+    expect(dimmed(user)).toBe(false);
+    tick(2000);
+    expect(director().idle()).toBe(true);
+    expect([user, target, bystander].map(dimmed)).toEqual([false, false, false]);
+  });
+
+  it('HP on the seat tile drops when the damage beat plays', () => {
+    const other = playPhase();
+    create();
+    const tile = () =>
+      fixture.debugElement
+        .queryAll(By.directive(SeatTile))
+        .map((d) => d.componentInstance as SeatTile)
+        .find((t) => t.seat().id === other)!;
+    const before = tile().seat().combinedHp;
+    update((s) => ({
+      ...s,
+      seats: s.seats.map((seat) => (seat.id === other ? { ...seat, combinedHp: seat.combinedHp - 2 } : seat)),
+      log: [...s.log, { kind: 'HpLostEvent', seatId: other, amount: 1 }, { kind: 'DamageDealtEvent', damage: { target: { kind: 'seat', seatId: other }, amount: 1 } } as never],
+    }));
+    expect(tile().seat().combinedHp).toBe(before - 1);
+    tick(900);
+    expect(tile().seat().combinedHp).toBe(before - 2);
+  });
+
+  it('waits for playback before Game Over (Review Focus 4)', () => {
+    const other = playPhase();
+    create();
+    const tracks = jest.spyOn(TestBed.inject(MusicService), 'setTrack');
+    const winner = gameService.activeSeatId()!;
+    update((s) => ({
+      ...s,
+      seats: s.seats.map((seat) => (seat.id === other ? { ...seat, eliminated: true } : seat)),
+      log: [...s.log, { kind: 'SeatEliminatedEvent', seatId: other } as never],
+      result: { endedAt: 1, winningSeatIds: [winner], losingSeatIds: [other] },
+    }));
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-game-over')).toBeNull();
+    expect(el.querySelector('app-round-table')).not.toBeNull();
+    expect(tracks).not.toHaveBeenCalledWith('win');
+    tick(1400 + 350);
+    expect(el.querySelector('app-game-over')).not.toBeNull();
+    expect(tracks).toHaveBeenLastCalledWith('win');
+  });
+
+  it('plays a sound with its beat, not with the batch', () => {
+    playPhase();
+    create();
+    const seatId = gameService.activeSeatId()!;
+    append([{ kind: 'DamageDealtEvent', damage: { target: { kind: 'seat', seatId }, amount: 1 } } as never, { kind: 'HealEvent', target: { kind: 'seat', seatId }, amount: 1 }]);
+    expect(effects()).toEqual([EFFECT_URLS.injure]);
+    tick(900);
+    expect(effects()).toEqual([EFFECT_URLS.injure, EFFECT_URLS.heal]);
+  });
+
+  it('a judgment that follows another opens only once playback reaches it', async () => {
+    gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    settleJudgment(gameService);
+    create();
+    await settle();
+    expect(openDialogs(JudgmentDialog)).toHaveLength(1);
+    const view = gameService.state()!.judgmentView;
+    const lost = (seatId: string): GameState['log'][number] => ({ kind: 'HpLostEvent', seatId, amount: 1 });
+    // The first ends with beats still to play; the next arrives while they play.
+    update((s) => ({ ...s, judgmentView: undefined, log: [...s.log, lost('seat-1')] }));
+    await settle();
+    expect(openDialogs(JudgmentDialog)).toHaveLength(0);
+    update((s) => ({ ...s, judgmentView: view, log: [...s.log, lost('seat-2')] }));
+    await settle();
+    expect(director().idle()).toBe(false);
+    expect(openDialogs(JudgmentDialog)).toHaveLength(0);
+    tick(5000);
+    await settle();
+    expect(openDialogs(JudgmentDialog)).toHaveLength(1);
+  });
+
+  it('Pass and Play: the move that ends the game plays out before Game Over', () => {
+    // The same seeded moves twice: first to count them, then to stop before the last one.
+    const play = (moves: number) => {
+      gameService.startGame(2, 1);
+      let rng = createRng(7);
+      let made = 0;
+      while (!gameService.state()!.result && made < moves) {
+        gameService.reveal(gameService.activeSeatId()!);
+        const picked = pickRandomAction(gameService.state()!, rng, gameService.registry);
+        rng = picked.rng;
+        gameService.submit(picked.action);
+        made++;
+      }
+      return { made, rng };
+    };
+    const { made: total } = play(5000);
+    expect(gameService.state()!.result).toBeTruthy();
+    const { rng } = play(total - 1);
+    expect(gameService.state()!.result).toBeFalsy();
+    gameService.reveal(gameService.activeSeatId()!);
+    create();
+    gameService.submit(pickRandomAction(gameService.state()!, rng, gameService.registry).action);
+    fixture.detectChanges();
+    expect(gameService.state()!.result).toBeTruthy();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(director().idle()).toBe(false);
+    expect(el.querySelector('app-game-over')).toBeNull();
+    expect(el.querySelector('app-round-table')).not.toBeNull();
+    tick(60_000);
+    expect(director().idle()).toBe(true);
+    expect(el.querySelector('app-game-over')).not.toBeNull();
+  });
+
+  describe('Compete popup', () => {
+    const nine = { instanceId: 'c9', definitionId: 'sha', suit: 'spade' as const, rank: 9 };
+    const seven = { instanceId: 'c7', definitionId: 'shan', suit: 'heart' as const, rank: 7 };
+    const owner = { kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId: 'heavens-justice' };
+    const compete = (): GameState['log'] => [
+      { kind: 'CardShownEvent', seatId: 'seat-0', card: nine, abilityId: 'heavens-justice' },
+      { kind: 'CardShownEvent', seatId: 'seat-1', card: seven, abilityId: 'heavens-justice' },
+      { kind: 'AbilityUsedEvent', owner, abilityId: 'heavens-justice', outcome: 'compete-won', targetSeatId: 'seat-1' },
+    ];
+    const heal: GameState['log'][number] = { kind: 'HealEvent', target: { kind: 'seat', seatId: 'seat-0' }, amount: 1 };
+
+    it('local: playback waits while a Compete popup is open', async () => {
+      gameService.startGame(2, 1, 'vs-bots');
+      create();
+      append([...compete(), heal]);
+      await settle();
+      expect(openDialogs(CompeteDialog)).toHaveLength(1);
+      tick(5000);
+      expect(director().idle()).toBe(false);
+      expect(effects()).not.toContain(EFFECT_URLS.heal);
+      TestBed.inject(MatDialog).closeAll();
+      await settle();
+      tick(1000);
+      expect(effects()).toContain(EFFECT_URLS.heal);
+      tick(1000);
+      expect(director().idle()).toBe(true);
+    });
+
+    // The online board: nothing waits for playback, and the viewer's legal actions are set by the test.
+    const goOnline = () => {
+      gameService.startGame(2, 1, 'vs-bots');
+      const owed = signal<Action[]>([]);
+      const online = gameService as unknown as { clockWaitsForPlayback: boolean; legalActions: unknown };
+      online.clockWaitsForPlayback = false;
+      online.legalActions = owed;
+      create();
+      return owed;
+    };
+
+    it('online: an open Compete popup closes when the viewer owes a decision', async () => {
+      const owed = goOnline();
+      append([...compete(), heal]);
+      await settle();
+      expect(openDialogs(CompeteDialog)).toHaveLength(1);
+      // Nothing holds online: playback goes on behind the popup.
+      tick(5000);
+      expect(director().idle()).toBe(true);
+      expect(openDialogs(CompeteDialog)).toHaveLength(1);
+      update((s) => ({ ...s, pendingResponse: { id: 'r1', respondingSeatId: 'seat-0', allowedActionKinds: ['PassAction'], context: { effect: { kind: 'noop' } as never } } }));
+      owed.set([{ kind: 'EndPhaseAction', seatId: 'seat-0' } as Action]);
+      await settle();
+      expect(openDialogs(CompeteDialog)).toHaveLength(0);
+    });
+
+    it('online: a Compete in the viewer’s own Play Phase still shows', async () => {
+      const owed = goOnline();
+      // Free play is not a decision owed: the popup opens and stays.
+      update((s) => ({ ...s, phase: 'Play', turn: { ...s.turn, ownerSeatId: 'seat-0' } }));
+      owed.set([{ kind: 'EndPhaseAction', seatId: 'seat-0' } as Action]);
+      append([...compete(), heal]);
+      await settle();
+      expect(openDialogs(CompeteDialog)).toHaveLength(1);
+      tick(2000);
+      await settle();
+      expect(openDialogs(CompeteDialog)).toHaveLength(1);
     });
   });
 });

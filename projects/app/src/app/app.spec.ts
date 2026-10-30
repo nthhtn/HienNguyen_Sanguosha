@@ -93,7 +93,7 @@ describe('App', () => {
     const { el, fixture } = await render();
     TestBed.inject(BattlefieldBackgrounds).available.set(true);
     fixture.detectChanges();
-    const right = ['button.nav-battlefield', 'a.sign-in, button.account', 'app-language-switcher', 'button.music-toggle', 'button.effects-toggle'].map(
+    const right = ['button.nav-battlefield', 'a.sign-in, button.account', 'app-language-switcher', 'button.music-toggle', 'button.effects-toggle', 'button.playback-speed'].map(
       (selector) => el.querySelector(selector)!
     );
     expect(el.querySelector('nav.nav .nav-battlefield')).toBeNull();
