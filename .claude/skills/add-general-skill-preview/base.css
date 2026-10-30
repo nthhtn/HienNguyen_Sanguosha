@@ -1,0 +1,15 @@
+#stage { --ground:#0F2233; --main:#3f6fd8; --second:#E6EEF5; --accent:#E0A93B; --red:#C9483F; color:var(--second); font-family:var(--sans, system-ui, sans-serif) }
+.ground { position:absolute; inset:0; background:radial-gradient(110% 100% at 50% 35%, color-mix(in srgb, var(--main) 22%, var(--ground)), var(--ground)) }
+.cap { position:absolute; left:140px; top:810px; width:1640px; margin:0; font-family:var(--display, var(--sans, system-ui, sans-serif)); font-size:66px; line-height:1.1; font-weight:700 }
+.seat { position:absolute; box-sizing:border-box; border-radius:28px; background:color-mix(in srgb, var(--ground) 84%, var(--second)); border:3px solid color-mix(in srgb, var(--second) 26%, var(--ground)) }
+.seat > * { position:absolute; margin:0 }
+.who { font-family:var(--display, var(--sans, system-ui, sans-serif)); font-weight:700; line-height:1 }
+.lbl { font-size:26px; letter-spacing:.1em; color:color-mix(in srgb, var(--second) 74%, var(--ground)) }
+.pips { display:flex; gap:14px }
+.pip { position:relative; width:44px; height:44px; box-sizing:border-box; border-radius:50%; border:3px solid var(--second) } .pip i { position:absolute; inset:4px; border-radius:50%; background:var(--second) }
+.cback { position:absolute; width:96px; height:130px; box-sizing:border-box; border-radius:12px; background:color-mix(in srgb, var(--main) 62%, var(--ground)); border:3px solid color-mix(in srgb, var(--second) 40%, var(--ground)) }
+.sha { position:absolute; left:0; top:0; width:130px; height:182px; box-sizing:border-box; border-radius:16px; background:var(--second); color:var(--ground); border:4px solid var(--main); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; transform-origin:50% 50% } .sha b { font-family:var(--display, var(--sans, system-ui, sans-serif)); font-size:48px; line-height:1 } .sha span { font-size:34px; font-weight:600 } .sha .red { color:var(--red) } .sha.bk { background:color-mix(in srgb, var(--main) 62%, var(--ground)); border-color:color-mix(in srgb, var(--second) 40%, var(--ground)) }
+.chip { position:absolute; padding:8px 24px; border-radius:999px; box-sizing:border-box; border:3px solid color-mix(in srgb, var(--second) 40%, var(--ground)); font-size:30px; font-weight:600; white-space:nowrap } .chip.lit { background:var(--accent); border-color:var(--accent); color:var(--ground) }
+.zone { position:absolute; box-sizing:border-box; border-radius:24px; border:3px dashed color-mix(in srgb, var(--second) 38%, var(--ground)) } .zone p { position:absolute; left:0; right:0; top:10px; margin:0; text-align:center; font-size:26px; letter-spacing:.1em; color:color-mix(in srgb, var(--second) 74%, var(--ground)) }
+.tray { position:absolute; width:96px; height:130px; box-sizing:border-box; border-radius:12px; border:3px dashed color-mix(in srgb, var(--second) 38%, var(--ground)) }
+.ring { position:absolute; box-sizing:border-box; border-radius:36px; border:6px solid var(--accent) }
