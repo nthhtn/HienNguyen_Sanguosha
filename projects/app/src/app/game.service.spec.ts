@@ -2,8 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { GameService } from './game.service';
 import { PlaybackGate } from './playback-gate.service';
 import { PlaybackSpeed } from './playback-speed.service';
-import { ruleBasedPolicy } from 'bots';
-import { getLegalActions, redactStateForSeat } from 'engine';
+import { pickRandomAction, ruleBasedPolicy } from 'bots';
+import { createRng, getLegalActions, redactStateForSeat } from 'engine';
 import { JUDGMENT_LEAD_IN_MS } from 'engine';
 import { askToChange, settleJudgment } from './settled-judgment.testing';
 
@@ -324,6 +324,23 @@ describe('GameService in pass-and-play mode', () => {
     expect(service.state()).toBe(after);
     expect(service.botThinkingSeatId()).toBeNull();
     jest.useRealTimers();
+  });
+
+  it('the move that ends the game keeps its seat revealed, so the board can play it out', () => {
+    const service = TestBed.inject(GameService);
+    service.startGame(2, 1);
+    let rng = createRng(7);
+    for (let guard = 0; !service.state()!.result && guard < 5000; guard++) {
+      const seatId = service.activeSeatId()!;
+      service.reveal(seatId);
+      const picked = pickRandomAction(service.state()!, rng, service.registry);
+      rng = picked.rng;
+      service.submit(picked.action);
+      if (!service.state()!.result) expect(service.revealedSeatId()).toBeNull();
+      else expect(service.revealedSeatId()).toBe(seatId);
+    }
+    expect(service.state()!.result).toBeTruthy();
+    expect(service.visibleState()).not.toBeNull();
   });
 });
 

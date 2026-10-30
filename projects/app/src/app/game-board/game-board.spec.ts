@@ -1245,6 +1245,60 @@ describe('GameBoard battle playback', () => {
     expect(effects()).toEqual([EFFECT_URLS.injure, EFFECT_URLS.heal]);
   });
 
+  it('a judgment that follows another opens only once playback reaches it', async () => {
+    gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    settleJudgment(gameService);
+    create();
+    await settle();
+    expect(openDialogs(JudgmentDialog)).toHaveLength(1);
+    const view = gameService.state()!.judgmentView;
+    const lost = (seatId: string): GameState['log'][number] => ({ kind: 'HpLostEvent', seatId, amount: 1 });
+    // The first ends with beats still to play; the next arrives while they play.
+    update((s) => ({ ...s, judgmentView: undefined, log: [...s.log, lost('seat-1')] }));
+    await settle();
+    expect(openDialogs(JudgmentDialog)).toHaveLength(0);
+    update((s) => ({ ...s, judgmentView: view, log: [...s.log, lost('seat-2')] }));
+    await settle();
+    expect(director().idle()).toBe(false);
+    expect(openDialogs(JudgmentDialog)).toHaveLength(0);
+    tick(5000);
+    await settle();
+    expect(openDialogs(JudgmentDialog)).toHaveLength(1);
+  });
+
+  it('Pass and Play: the move that ends the game plays out before Game Over', () => {
+    // The same seeded moves twice: first to count them, then to stop before the last one.
+    const play = (moves: number) => {
+      gameService.startGame(2, 1);
+      let rng = createRng(7);
+      let made = 0;
+      while (!gameService.state()!.result && made < moves) {
+        gameService.reveal(gameService.activeSeatId()!);
+        const picked = pickRandomAction(gameService.state()!, rng, gameService.registry);
+        rng = picked.rng;
+        gameService.submit(picked.action);
+        made++;
+      }
+      return { made, rng };
+    };
+    const { made: total } = play(5000);
+    expect(gameService.state()!.result).toBeTruthy();
+    const { rng } = play(total - 1);
+    expect(gameService.state()!.result).toBeFalsy();
+    gameService.reveal(gameService.activeSeatId()!);
+    create();
+    gameService.submit(pickRandomAction(gameService.state()!, rng, gameService.registry).action);
+    fixture.detectChanges();
+    expect(gameService.state()!.result).toBeTruthy();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(director().idle()).toBe(false);
+    expect(el.querySelector('app-game-over')).toBeNull();
+    expect(el.querySelector('app-round-table')).not.toBeNull();
+    tick(60_000);
+    expect(director().idle()).toBe(true);
+    expect(el.querySelector('app-game-over')).not.toBeNull();
+  });
+
   describe('Compete popup', () => {
     const nine = { instanceId: 'c9', definitionId: 'sha', suit: 'spade' as const, rank: 9 };
     const seven = { instanceId: 'c7', definitionId: 'shan', suit: 'heart' as const, rank: 7 };
@@ -1273,13 +1327,19 @@ describe('GameBoard battle playback', () => {
       expect(director().idle()).toBe(true);
     });
 
-    it('online: an open Compete popup closes when the viewer owes a decision', async () => {
+    // The online board: nothing waits for playback, and the viewer's legal actions are set by the test.
+    const goOnline = () => {
       gameService.startGame(2, 1, 'vs-bots');
       const owed = signal<Action[]>([]);
       const online = gameService as unknown as { clockWaitsForPlayback: boolean; legalActions: unknown };
       online.clockWaitsForPlayback = false;
       online.legalActions = owed;
       create();
+      return owed;
+    };
+
+    it('online: an open Compete popup closes when the viewer owes a decision', async () => {
+      const owed = goOnline();
       append([...compete(), heal]);
       await settle();
       expect(openDialogs(CompeteDialog)).toHaveLength(1);
@@ -1287,9 +1347,22 @@ describe('GameBoard battle playback', () => {
       tick(5000);
       expect(director().idle()).toBe(true);
       expect(openDialogs(CompeteDialog)).toHaveLength(1);
+      update((s) => ({ ...s, pendingResponse: { id: 'r1', respondingSeatId: 'seat-0', allowedActionKinds: ['PassAction'], context: { effect: { kind: 'noop' } as never } } }));
       owed.set([{ kind: 'EndPhaseAction', seatId: 'seat-0' } as Action]);
       await settle();
       expect(openDialogs(CompeteDialog)).toHaveLength(0);
+    });
+
+    it('online: a Compete in the viewer’s own Play Phase still shows', async () => {
+      const owed = goOnline();
+      // Free play is not a decision owed: the popup opens and stays.
+      owed.set([{ kind: 'EndPhaseAction', seatId: 'seat-0' } as Action]);
+      append([...compete(), heal]);
+      await settle();
+      expect(openDialogs(CompeteDialog)).toHaveLength(1);
+      tick(2000);
+      await settle();
+      expect(openDialogs(CompeteDialog)).toHaveLength(1);
     });
   });
 });

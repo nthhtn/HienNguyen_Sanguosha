@@ -200,7 +200,7 @@ export class GameService {
       if (!this.apply(action, false)) break;
     }
     if (before && this._state() !== before) this.keepMoveStart(before);
-    this._revealedSeatId.set(this.humanSeatId());
+    this.regate();
     this.scheduleBotIfDue();
   }
 
@@ -217,7 +217,7 @@ export class GameService {
       this._state.set(resolve(state, action, this.ctx).state);
       if (regate) {
         this.keepMoveStart(state);
-        this._revealedSeatId.set(this.humanSeatId());
+        this.regate();
       }
       this._lastError.set(null);
       return true;
@@ -225,6 +225,13 @@ export class GameService {
       this._lastError.set(engineError(err));
       return false;
     }
+  }
+
+  // Gates the next view in pass-and-play. Not once the game is over: the seat that made the last move
+  // keeps its view, so the board plays that move out before Game Over.
+  private regate(): void {
+    if (this._state()?.result) return;
+    this._revealedSeatId.set(this.humanSeatId());
   }
 
   private keepMoveStart(before: GameState): void {

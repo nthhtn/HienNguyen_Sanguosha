@@ -385,15 +385,20 @@ export class GameBoard {
     });
     // Online nothing waits for the popup, so it gives way when the viewer owes a decision.
     effect(() => {
-      const owed = !this.gameService.clockWaitsForPlayback && this.gameService.legalActions().length > 0;
+      const owed = !this.gameService.clockWaitsForPlayback && this.decisionOwed();
       untracked(() => {
         if (!owed) return;
         this.competeQueue.length = 0;
         this.competeDialog?.close();
       });
     });
-    // A hold never released would keep playback shut.
-    inject(DestroyRef).onDestroy(() => this.releaseCompete?.());
+    // A hold never released would keep playback shut; and no popup opens for a board that is gone.
+    inject(DestroyRef).onDestroy(() => {
+      this.destroyed = true;
+      const release = this.releaseCompete;
+      this.releaseCompete = null;
+      release?.();
+    });
     effect(() => {
       const turn = this.startRevealDue();
       untracked(() => (turn === null ? this.closeDialog(this.startRevealDialog) : this.openStartRevealDialog()));
@@ -454,11 +459,28 @@ export class GameBoard {
     return state ? judgmentDescription(state, this.gameService.registry, this.i18n.translator) : null;
   });
 
-  // Whether playback has reached the judgment: the displayed state carries it only from then on.
+  // Whether playback has reached the judgment. The fold never carries a judgment, so the displayed state
+  // shows one only once playback is idle; a judgment after another must not open on the old one's view.
   // Behind the Pass and Play gate nothing plays, so the table's own view decides.
-  private readonly judgmentReached = computed(() => {
-    const shown = this.director.displayedState();
-    return !shown || !!shown.judgmentView;
+  private readonly judgmentReached = computed(() => !this.director.displayedState() || this.director.idle());
+
+  // A decision the viewer owes now, as the engine has it: an answer, a choice, a selection, an
+  // arrangement, the Start window, discards or a settled judgment to close. Not their own free Play Phase.
+  private readonly decisionOwed = computed(() => {
+    const state = this.gameService.state();
+    const seatId = this.gameService.humanSeatId() ?? this.activeSeatId();
+    const legal = this.gameService.legalActions();
+    if (!state || !seatId || legal.length === 0) return false;
+    const owner = state.turn.ownerSeatId === seatId;
+    return (
+      state.pendingResponse?.respondingSeatId === seatId ||
+      state.pendingChoice?.seatId === seatId ||
+      state.pendingSelection?.seatId === seatId ||
+      state.pendingArrangement?.seatId === seatId ||
+      (owner && state.phase === 'Start' && !!state.turn.startWindow) ||
+      (owner && state.phase === 'Discard' && legal.some((a) => a.kind === 'DiscardCardAction')) ||
+      (!!state.judgmentView?.settled && legal.some((a) => a.kind === 'AcknowledgeJudgmentAction'))
+    );
   });
 
   // The skill decision the Judgment popup waits on, as the viewer sees it: the engine's own question for the asked
@@ -538,7 +560,8 @@ export class GameBoard {
   });
 
   protected readonly generalChoices = computed<ChooseGeneralsAction[]>(() =>
-    this.legalActions().filter((a): a is ChooseGeneralsAction => a.kind === 'ChooseGeneralsAction')
+    // Not held for playback: online, another player's pick arriving must not grey out the choice.
+    this.gameService.legalActions().filter((a): a is ChooseGeneralsAction => a.kind === 'ChooseGeneralsAction')
   );
 
   // Online only: the General Selection panel's rows, with names.
@@ -551,13 +574,14 @@ export class GameBoard {
   private readonly competeQueue: CompeteResult[] = [];
   private competeDialog: MatDialogRef<CompeteDialog> | null = null;
   private releaseCompete: (() => void) | null = null;
+  private destroyed = false;
 
   // Opens the next waiting Compete popup, themed in its source General's Force. Locally playback
   // waits while it is open; online it does not, and none opens over a decision the viewer owes.
   private showNextCompete(): void {
-    if (this.competeDialog) return;
+    if (this.competeDialog || this.destroyed) return;
     const online = !this.gameService.clockWaitsForPlayback;
-    if (online && this.gameService.legalActions().length > 0) this.competeQueue.length = 0;
+    if (online && this.decisionOwed()) this.competeQueue.length = 0;
     const next = this.competeQueue.shift();
     if (!next) return;
     const ref = openForceDialog<CompeteDialog, CompeteResult>(this.dialog, CompeteDialog, next.force, { data: next, width: 'min(92vw, 520px)', autoFocus: 'dialog' });
