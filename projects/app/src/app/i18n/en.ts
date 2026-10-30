@@ -574,6 +574,8 @@ export const en = {
   'wiki.voices': 'Voices:',
   'wiki.voice': 'Voice:',
   'wiki.playDeathVoice': 'Play Voice',
+  'wiki.playPreview': 'Play Preview',
+  'wiki.skillPreview': 'Skill Preview',
   'wiki.playVoice.male': 'Play Male Voice',
   'wiki.playVoice.female': 'Play Female Voice',
   'wiki.female': 'Female',

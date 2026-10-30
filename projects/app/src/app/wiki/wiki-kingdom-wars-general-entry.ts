@@ -1,6 +1,6 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { generalDeathVoiceUrl, type WikiKingdomWarsGeneral } from 'content';
+import { generalDeathVoiceUrl, skillPreviewUrl, type WikiKingdomWarsGeneral } from 'content';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
@@ -56,6 +56,16 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
               @if (skill.status === 'missing') {
                 <span class="skill-status" data-status="missing">{{ 'wiki.notInGame' | t }}</span>
               }
+              @if (previews()[skill.name]; as url) {
+                @if (playing().has(skill.name)) {
+                  <video class="preview" controls autoplay playsinline [src]="url" [attr.aria-label]="'wiki.skillPreview' | t"></video>
+                } @else {
+                  <button type="button" class="preview-play" (click)="playPreview(skill.name)">
+                    <mat-icon>play_circle</mat-icon>
+                    {{ 'wiki.playPreview' | t }}
+                  </button>
+                }
+              }
             </li>
           } @empty {
             <li class="gap">{{ 'wiki.noSkills' | t }}</li>
@@ -105,6 +115,10 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
     .skills, .partners ul { margin: 0; padding-left: 18px; }
     .skills li { margin: 4px 0; }
     .skill-text { margin-left: 6px; white-space: pre-line; }
+    .preview-play { display: flex; align-items: center; gap: 4px; margin-top: 6px; padding: 4px 12px 4px 8px; border-radius: 16px; border: 1px solid var(--mat-sys-outline); background: none; color: var(--mat-sys-on-surface); font: var(--mat-sys-label-large); cursor: pointer; }
+    .preview-play:hover, .preview-play:focus-visible { background: var(--mat-sys-surface-container-high); }
+    .preview-play mat-icon { font-size: 20px; width: 20px; height: 20px; }
+    .preview { display: block; width: 100%; max-width: 480px; margin-top: 8px; border-radius: 12px; background: #000; }
     .difference p { margin: 0; white-space: pre-line; }
     .gap { color: var(--mat-sys-on-surface-variant); font-style: italic; }
     @media (max-width: 599px) { .entry { flex-direction: column; } }
@@ -118,6 +132,15 @@ export class WikiKingdomWarsGeneralEntry {
   protected readonly voiceUrl = computed(() => generalDeathVoiceUrl(`kingdomWars:${this.general().id}`));
   protected play(url: string): void {
     this.effects.previewUrl(url);
+  }
+  // Each skill's preview video in the app's language, by skill name; a skill with none is absent.
+  protected readonly previews = computed(() =>
+    Object.fromEntries(this.general().skills.map((s) => [s.name, skillPreviewUrl(this.general().id, s.name, this.i18n.locale())] as const).filter(([, url]) => url !== null)),
+  );
+  // The skills whose player is open. A video loads only once the reader asks for it.
+  protected readonly playing = signal<ReadonlySet<string>>(new Set());
+  protected playPreview(skillName: string): void {
+    this.playing.update((open) => new Set(open).add(skillName));
   }
   protected readonly view = computed(() => wikiKingdomWarsGeneralView(this.general(), this.i18n.locale()));
   protected readonly kingdomKey = computed((): MessageKey => `label.kingdom.${this.general().kingdom}`);

@@ -83,6 +83,11 @@
                 "glob": "**/*.@(mp3|ogg)",
                 "input": "projects/content/assets/audio",
                 "output": "audio"
+              },
+              {
+                "glob": "**/*.mp4",
+                "input": "projects/content/assets/preview",
+                "output": "preview"
               }
             ],
             "styles": ["projects/app/src/styles.scss"]
