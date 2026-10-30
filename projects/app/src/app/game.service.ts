@@ -75,6 +75,11 @@ export class GameService {
   readonly selectionRoster: Signal<SelectionRosterEntry[] | null> = signal<SelectionRosterEntry[] | null>(null).asReadonly();
   readonly gameStartsAt: Signal<number | null> = signal<number | null>(null).asReadonly();
 
+  // Local bots and clocks wait for the board's playback, so it never needs to catch up.
+  readonly clockWaitsForPlayback: boolean = true;
+  // Pass and Play: the state before the last move, where playback starts after a reveal. Null until it is kept.
+  readonly lastMoveStart: Signal<GameState | null> = signal<GameState | null>(null).asReadonly();
+
   readonly activeSeatId: Signal<string | null> = computed(() => {
     const state = this._state();
     return state ? getActiveSeatId(state) : null;
