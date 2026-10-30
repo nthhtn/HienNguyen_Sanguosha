@@ -1,6 +1,6 @@
 import { withFillers } from '../generals/fillers.testing';
 import { table, kwMode, harness, card } from '../generals/skills.testing';
-import { guozhanMode, guozhanMaxSeats, generalPool, GENERALS_PER_SEAT, MAX_GUOZHAN_SEATS } from './guozhan';
+import { guozhanMode, guozhanMaxSeats, generalPool, generalsPerSeat, MAX_GUOZHAN_SEATS } from './guozhan';
 import { buildContentRegistry } from '../registry';
 import { createGame, resolve, advanceToDecision, getActiveSeatId, getLegalActions, combinedMaxHp } from 'engine';
 import type { GameState, CardDefinition, CardInstance, ContentRegistry, Effect } from 'engine';
@@ -49,15 +49,35 @@ describe('Guozhan setup and deal', () => {
     }
   });
 
-  it('deals 5 unique registry generals to every seat, each containing a same-kingdom pair', () => {
+  it('deals 7 generals each at 2-8 seats and 5 each at 9-12', () => {
+    expect([2, 5, 8].map((n) => generalsPerSeat(n))).toEqual([7, 7, 7]);
+    expect([9, 10, 12].map((n) => generalsPerSeat(n))).toEqual([5, 5, 5]);
+    expect([2, 8, 9, 10].map((n) => generalsPerSeat(n, 'identity'))).toEqual([5, 5, 5, 5]);
+    for (const n of [2, 8, 9, 12]) {
+      const ids = Array.from({ length: n }, (_, i) => `s${i}`);
+      const dealt = createGame(guozhanMode, registry, ids, 3).generalSelection!.candidates;
+      expect(Object.values(dealt).every((c) => c.length === generalsPerSeat(n))).toBe(true);
+      expect(new Set(Object.values(dealt).flat()).size).toBe(n * generalsPerSeat(n));
+    }
+  });
+
+  it('deals an Identity table 5 Generals a seat at any size', () => {
+    for (const n of [2, 6, 9]) {
+      const ids = Array.from({ length: n }, (_, i) => `s${i}`);
+      const dealt = createGame(guozhanMode, registry, ids, 3, { deck: 'identity' }).generalSelection!.candidates;
+      expect(Object.values(dealt).every((c) => c.length === 5)).toBe(true);
+    }
+  });
+
+  it('deals unique registry generals to every seat, each containing a same-kingdom pair', () => {
     const state = createGame(guozhanMode, registry, ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e'], 42);
     const candidates = state.generalSelection!.candidates;
     const all = Object.values(candidates).flat();
     expect(Object.keys(candidates).sort()).toEqual(['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e']);
-    expect(all).toHaveLength(5 * GENERALS_PER_SEAT);
+    expect(all).toHaveLength(5 * generalsPerSeat(5));
     expect(new Set(all).size).toBe(all.length);
     for (const ids of Object.values(candidates)) {
-      expect(ids).toHaveLength(GENERALS_PER_SEAT);
+      expect(ids).toHaveLength(generalsPerSeat(5));
       const kingdoms = ids.map((id) => registry.generals.get(id)!.kingdom);
       expect(new Set(kingdoms).size).toBeLessThan(kingdoms.length);
     }
@@ -71,13 +91,18 @@ describe('Guozhan setup and deal', () => {
     expect(c.generalSelection).not.toEqual(a.generalSelection);
   });
 
-  it('caps the table at 10 seats however large the pool grows', () => {
-    const pool = (n: number) => ({ cards: new Map(), generals: new Map(Array.from({ length: n }, (_, i) => [`g${i}`, {} as never])) });
-    expect(MAX_GUOZHAN_SEATS).toBe(10);
-    expect(guozhanMaxSeats(pool(14), 'identity')).toBe(2);
-    expect(guozhanMaxSeats(pool(50), 'identity')).toBe(10);
-    expect(guozhanMaxSeats(pool(57), 'identity')).toBe(10);
-    expect(guozhanMaxSeats(pool(200), 'identity')).toBe(10);
+  it('caps a Kingdom Wars table at 12 seats and an Identity table at 10, however large the pool grows', () => {
+    const pool = (n: number, prefix: string) => ({ cards: new Map(), generals: new Map(Array.from({ length: n }, (_, i) => [`${prefix}g${i}`, {} as never])) });
+    const kw = (n: number) => pool(n, 'kingdomWars:');
+    expect(MAX_GUOZHAN_SEATS).toBe(12);
+    expect(guozhanMaxSeats(kw(14), 'kingdomWars')).toBe(2);
+    expect(guozhanMaxSeats(kw(50), 'kingdomWars')).toBe(10);
+    expect(guozhanMaxSeats(kw(56), 'kingdomWars')).toBe(11);
+    expect(guozhanMaxSeats(kw(60), 'kingdomWars')).toBe(12);
+    expect(guozhanMaxSeats(kw(200), 'kingdomWars')).toBe(12);
+    expect(guozhanMaxSeats(pool(14, ''), 'identity')).toBe(2);
+    expect(guozhanMaxSeats(pool(50, ''), 'identity')).toBe(10);
+    expect(guozhanMaxSeats(pool(200, ''), 'identity')).toBe(10);
   });
 
   it('deals every seat a full starting hand at the largest table, keeping cards in the draw pile', () => {
@@ -165,7 +190,7 @@ describe('Guozhan setup and deal', () => {
 
       it('sizes the pool and the seat limit by deck', () => {
         expect(generalPool(full, 'kingdomWars')).toHaveLength(60);
-        expect(guozhanMaxSeats(full, 'kingdomWars')).toBe(10);
+        expect(guozhanMaxSeats(full, 'kingdomWars')).toBe(12);
       });
 
       it('Identity deal for seed 42 is unchanged', () => {
@@ -215,11 +240,11 @@ describe('Guozhan setup and deal', () => {
   });
 
   it('caps the table at its seat cap and rejects fewer than 2', () => {
-    expect(guozhanMaxSeats(registry)).toBe(10);
-    expect(guozhanMode.maxSeats!(registry)).toBe(10);
-    const eleven = Array.from({ length: 11 }, (_, i) => `s${i}`);
-    expect(() => createGame(guozhanMode, registry, eleven, 1)).toThrow(/between 2 and 10 seats/);
-    expect(() => createGame(guozhanMode, registry, ['a'], 1)).toThrow(/between 2 and 10 seats/);
+    expect(guozhanMaxSeats(registry)).toBe(12);
+    expect(guozhanMode.maxSeats!(registry)).toBe(12);
+    const thirteen = Array.from({ length: 13 }, (_, i) => `s${i}`);
+    expect(() => createGame(guozhanMode, registry, thirteen, 1)).toThrow(/between 2 and 12 seats/);
+    expect(() => createGame(guozhanMode, registry, ['a'], 1)).toThrow(/between 2 and 12 seats/);
   });
 
   it('a full selection through resolve seats every seat with a same-kingdom pair and starts turn 1', () => {

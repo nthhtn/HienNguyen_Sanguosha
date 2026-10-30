@@ -7,7 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS } from 'content';
+import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS, generalsPerSeat } from 'content';
 import type { DeckId } from 'content';
 import { DeckPicker } from '../deck-picker';
 import { GameMode, GameService } from '../game.service';
@@ -69,6 +69,7 @@ import { TPipe } from '../i18n/t.pipe';
           </div>
 
           <app-deck-picker [(value)]="deck" />
+          <p class="generals-dealt">{{ 'setup.generalsDealt.hint' | t: { n: generalsDealt() } }}</p>
 
           @if (showFirstReveal()) {
             <div class="field">
@@ -130,6 +131,7 @@ import { TPipe } from '../i18n/t.pipe';
     .field { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
     .label { font: var(--mat-sys-title-small); min-width: 48px; }
     .names { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: 12px; }
+    .generals-dealt { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .rule-hint { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .mode-hint { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .mode mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; vertical-align: middle; }
@@ -147,6 +149,7 @@ export class Setup {
   readonly firstRevealDraw = signal(true);
   readonly deck = signal<DeckId>(DEFAULT_DECK_ID);
   // The rule needs a big table, so the option only appears there.
+  protected readonly generalsDealt = computed(() => generalsPerSeat(this.seatCount(), this.deck()));
   protected readonly showFirstReveal = computed(() => this.seatCount() >= FIRST_REVEAL_MIN_SEATS);
   // Typed names by seat index; blanks fall back to "Seat N".
   readonly names = signal<(string | undefined)[]>([]);

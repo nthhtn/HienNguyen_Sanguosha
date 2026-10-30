@@ -361,8 +361,11 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const seats = state.seats.map((s) => (s.id === seat.id ? { ...s, marks: { ...marks, [effect.key]: (marks[effect.key] ?? 0) + effect.by } } : s));
       return { state: { ...state, seats }, events: [] };
     }
-    case 'OpenSelectionEffect':
+    case 'OpenSelectionEffect': {
+      // A seat that was eliminated after the selection was queued can't choose (nobody could act on it), so it never opens.
+      if (state.seats.find((s) => s.id === effect.selection.seatId)?.eliminated) return { state, events: [] };
       return { state: { ...state, pendingSelection: effect.selection }, events: [] };
+    }
     case 'AskUseEffect': {
       const owner = state.seats.find((s) => s.id === effect.owner.seatId);
       // An owner who is out can't be asked: what happens otherwise goes ahead.

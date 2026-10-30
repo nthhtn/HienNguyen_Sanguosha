@@ -5,7 +5,7 @@ import { MatButtonToggleGroup, MatButtonToggleModule } from '@angular/material/b
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
-import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { FIRST_REVEAL_MIN_SEATS, generalsPerSeat } from 'content';
 import { deckIdOf } from 'content';
 import type { RoomRules, RoomSnapshot } from 'protocol';
 import type { DeckId } from 'content';
@@ -109,6 +109,7 @@ import { SocketService } from './socket.service';
                   } @else {
                     <p class="rules-summary">{{ rulesSummary() }}</p>
                   }
+                  <p class="generals-dealt">{{ 'setup.generalsDealt.hint' | t: { n: generalsPerSeat(room.seatCount, deckOf(room.rules.deck)) } }}</p>
                 </section>
                 <section class="players">
                   <h3>{{ 'lobby.players' | t }}</h3>
@@ -184,6 +185,7 @@ export class LobbyPage {
   // replay, and the panel only renders once the room is known.
   protected readonly chat = inject(ChatService);
   protected readonly game = inject(RemoteGameService);
+  protected readonly generalsPerSeat = generalsPerSeat;
   protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
   private readonly seats = viewChild(MatButtonToggleGroup);
   private readonly firstReveal = viewChild(MatCheckbox);

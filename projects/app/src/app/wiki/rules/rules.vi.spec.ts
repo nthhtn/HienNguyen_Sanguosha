@@ -154,6 +154,6 @@ describe('the rules pages in Vietnamese', () => {
     await TestBed.inject(I18n).setLocale('en');
     harness.detectChanges();
     expect(text(el.querySelector('h2'))).toBe('Setup');
-    expect(text(el)).toContain('Every seat is dealt 5 Generals.');
+    expect(text(el)).toContain('Every seat is dealt 7 Generals at a table of 2 to 8 seats, or 5 Generals at 9 to 12 seats.');
   });
 });

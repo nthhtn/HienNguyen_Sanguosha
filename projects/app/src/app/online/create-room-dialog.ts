@@ -5,7 +5,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS } from 'content';
+import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS, generalsPerSeat } from 'content';
 import type { DeckId } from 'content';
 import { DeckPicker } from '../deck-picker';
 import { DISPLAY_NAME_MAX } from 'protocol';
@@ -48,6 +48,7 @@ export interface CreateRoomDialogData {
           </mat-button-toggle-group>
         </div>
         <app-deck-picker [(value)]="deck" />
+        <p class="hint generals-dealt">{{ 'setup.generalsDealt.hint' | t: { n: generalsDealt() } }}</p>
         @if (seatCount() >= firstRevealMinSeats) {
           <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
           <p class="hint">{{ 'setup.firstReveal.hint' | t }}</p>
@@ -75,6 +76,7 @@ export class CreateRoomDialog {
   private readonly dialogRef = inject<MatDialogRef<CreateRoomDialog, string>>(MatDialogRef);
   private readonly rooms = inject(RoomsService);
   protected readonly nameMax = DISPLAY_NAME_MAX;
+  protected readonly generalsDealt = computed(() => generalsPerSeat(this.seatCount(), this.deck()));
   protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
   protected readonly seatOptions = Array.from({ length: this.data.seatLimits.max - this.data.seatLimits.min + 1 }, (_, i) => this.data.seatLimits.min + i);
 

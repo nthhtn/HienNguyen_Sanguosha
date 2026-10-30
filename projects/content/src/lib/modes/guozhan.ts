@@ -24,11 +24,18 @@ import { judgmentPhaseTrigger } from '../shared/delayed';
 import { peachLockedTo } from '../shared/abilities';
 import { isAmbitionist } from '../shared/kingdom';
 
-export const GENERALS_PER_SEAT = 5;
+// How many Generals each seat is dealt to choose from. Kingdom Wars: 7 at a table of 2-8, 5 at a table of 9-12.
+// Identity keeps its own deal: always 5.
+export const LARGE_TABLE_MIN_SEATS = 9;
+export function generalsPerSeat(seatCount: number, deck: DeckId = DEFAULT_DECK_ID): number {
+  if (deck === 'identity') return 5;
+  return seatCount >= LARGE_TABLE_MIN_SEATS ? 5 : 7;
+}
 // Cards drawn for killing an Ambitionist.
 const AMBITIONIST_KILL_DRAW = 3;
-// A real Guozhan table seats at most 10.
-export const MAX_GUOZHAN_SEATS = 10;
+// A Kingdom Wars table seats at most 12; an Identity table at most 10.
+export const MAX_GUOZHAN_SEATS = 12;
+const MAX_IDENTITY_SEATS = 10;
 
 // The sorted ids of the Generals a deck deals from: the `kingdomWars:` ones for Kingdom Wars, every other id
 // (fillers included) for Identity.
@@ -37,7 +44,13 @@ export function generalPool(registry: ContentRegistry, deck: DeckId): string[] {
 }
 
 export function guozhanMaxSeats(registry: ContentRegistry, deck: DeckId = DEFAULT_DECK_ID): number {
-  return Math.min(MAX_GUOZHAN_SEATS, Math.floor(generalPool(registry, deck).length / GENERALS_PER_SEAT));
+  const poolSize = generalPool(registry, deck).length;
+  // The deal is not monotonic (a 9th seat gets fewer Generals each than an 8th), so take the largest table that fits.
+  const cap = deck === 'identity' ? MAX_IDENTITY_SEATS : MAX_GUOZHAN_SEATS;
+  for (let seats = cap; seats > 2; seats--) {
+    if (seats * generalsPerSeat(seats, deck) <= poolSize) return seats;
+  }
+  return 2;
 }
 
 function hasSameKingdomPair(generalIds: string[], registry: ContentRegistry): boolean {
@@ -45,22 +58,23 @@ function hasSameKingdomPair(generalIds: string[], registry: ContentRegistry): bo
   return new Set(kingdoms).size < kingdoms.length;
 }
 
-// Deals GENERALS_PER_SEAT unique generals to each seat from a seeded shuffle of
-// the whole registry. With four kingdoms, five candidates always contain a
+// Deals generalsPerSeat(seats, deck) unique generals to each seat from a seeded shuffle of
+// the pool. With four kingdoms, five or more candidates always contain a
 // same-kingdom pair (pigeonhole); the check guards a future fifth kingdom or a
 // smaller deal rather than silently seating an unplayable hand. The Generals
 // nobody was dealt are the spare pool (those that deal spare Generals stay out).
-function dealCandidates(seatIds: string[], registry: ContentRegistry, poolIds: string[], rng: RngState) {
+function dealCandidates(seatIds: string[], registry: ContentRegistry, poolIds: string[], deck: DeckId, rng: RngState) {
   const { items: pool, rng: afterShuffle } = shuffle(poolIds, rng);
   const candidates: Record<string, string[]> = {};
+  const each = generalsPerSeat(seatIds.length, deck);
   seatIds.forEach((seatId, index) => {
-    const dealt = pool.slice(index * GENERALS_PER_SEAT, (index + 1) * GENERALS_PER_SEAT);
+    const dealt = pool.slice(index * each, (index + 1) * each);
     if (!hasSameKingdomPair(dealt, registry)) {
       throw new Error(`Seat ${seatId} was dealt no same-kingdom pair: ${dealt.join(', ')}`);
     }
     candidates[seatId] = dealt;
   });
-  const spare = pool.slice(seatIds.length * GENERALS_PER_SEAT).filter((id) => !(registry.generals.get(id)?.skills ?? []).some((s) => s.spareGenerals));
+  const spare = pool.slice(seatIds.length * each).filter((id) => !(registry.generals.get(id)?.skills ?? []).some((s) => s.spareGenerals));
   return { candidates, spare, rng: afterShuffle };
 }
 
@@ -214,7 +228,7 @@ export const guozhanMode: GameModeDefinition = {
         `Guozhan needs between 2 and ${limit} seats with ${poolIds.length} generals; got ${seatIds.length}`
       );
     }
-    const { candidates, spare, rng: afterDeal } = dealCandidates(seatIds, registry, poolIds, rng);
+    const { candidates, spare, rng: afterDeal } = dealCandidates(seatIds, registry, poolIds, deck.id, rng);
 
     // Generals, kingdom and HP are set when each seat resolves its
     // ChooseGeneralsAction during the GeneralSelection phase.

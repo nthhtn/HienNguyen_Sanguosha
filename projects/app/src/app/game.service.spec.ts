@@ -70,7 +70,7 @@ describe('GameService', () => {
     service.reveal('seat-0');
     const visible = service.visibleState()!;
     expect(visible.generalSelection!.candidates['seat-0']).not.toContain('hidden');
-    expect(visible.generalSelection!.candidates['seat-1']).toEqual(['hidden', 'hidden', 'hidden', 'hidden', 'hidden']);
+    expect(visible.generalSelection!.candidates['seat-1']).toEqual(Array(7).fill('hidden'));
   });
 
   it('submit advances state on a legal action and resets revealedSeatId', () => {
@@ -105,7 +105,7 @@ describe('GameService', () => {
   });
 
   it('exposes the mode’s seat cap', () => {
-    expect(service.maxSeats).toBe(10);
+    expect(service.maxSeats).toBe(12);
   });
 
   it('startGame reports an over-cap table through lastError instead of throwing', () => {

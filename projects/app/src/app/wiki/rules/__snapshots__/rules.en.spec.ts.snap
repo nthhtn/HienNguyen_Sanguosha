@@ -111,7 +111,7 @@ exports[`the rules pages in English setup keeps its text and links 1`] = `
   "text": [
     "Setup",
     "What happens before the first turn.",
-    "Every seat is dealt 5 Generals. Each set includes at least two Generals of the same Force.",
+    "Every seat is dealt 7 Generals at a table of 2 to 8 seats, or 5 Generals at 9 to 12 seats. Each set includes at least two Generals of the same Force.",
     "Each player chooses two of their Generals: a Main General and a Deputy General. Both start face down.",
     "HP is shared: half the sum of the two Generals' HP, rounded down. Damage and healing apply to this one pool.",
     "The draw pile is shuffled and every seat draws 4 cards.",
