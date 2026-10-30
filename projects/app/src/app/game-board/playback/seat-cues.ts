@@ -71,9 +71,8 @@ export function seatCues(beat: PlannedBeat | null, centre: ResolutionCentre, tr:
     case 'dying':
       cue(visual.seatId)!.callout = { text: msg('cue.help'), tone: 'red' };
       break;
+    // The tile's own stamp says Eliminated; the beat only keeps the seat in the spotlight.
     case 'eliminated':
-      cue(visual.seatId)!.callout = { text: msg('cue.eliminated'), tone: 'red' };
-      break;
     case 'reveal':
       cue(visual.seatId)!.reveal = true;
       break;

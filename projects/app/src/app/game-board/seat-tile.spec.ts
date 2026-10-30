@@ -295,4 +295,10 @@ describe('SeatTile', () => {
     expect(renderWith({ dimmed: true }).querySelector('.tile')!.classList).toContain('dimmed');
     expect(renderWith({}).querySelector('.tile')!.classList).not.toContain('dimmed');
   });
+
+  it('shows the viewer seat its callout and float', () => {
+    const el = renderWith({ isViewer: true, cue: { involved: true, impact: 'hit', floatText: '−1', callout: { text: { text: 'No Dodge' }, tone: 'pass' } } });
+    expect(el.querySelector('.tile.viewer .callout')?.textContent).toContain('No Dodge');
+    expect(el.querySelector('.tile.viewer .float')?.textContent).toContain('−1');
+  });
 });

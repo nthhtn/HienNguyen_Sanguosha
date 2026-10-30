@@ -188,7 +188,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .tile.turn-owner { border-width: 4px; padding: 6px 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--force) 40%, transparent), 0 2px 6px rgb(0 0 0 / 25%); }
     .tile.responding { box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgb(230 81 0 / 70%); }
     /* Faded, but the status line keeps its force colour. */
-    .tile.eliminated > :not(.status) { opacity: 0.45; filter: grayscale(1); }
+    .tile.eliminated > :not(.status):not(.callout):not(.float) { opacity: 0.45; filter: grayscale(1); }
     /* The Eliminated line is stamped over the greyed tile. */
     .tile.eliminated .status { position: absolute; left: 50%; top: 50%; margin: 0; padding: 0 12px; border: 3px solid currentColor; border-radius: 8px; background: rgb(255 255 255 / 88%); transform: translate(-50%, -50%) rotate(-12deg); pointer-events: none; z-index: 4; font-size: 1.3em; letter-spacing: 0.06em; text-transform: uppercase; animation: stamp 0.35s ease-out; }
     /* A seat outside the current resolution steps back. */
@@ -205,6 +205,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .generals.flip { animation: flip 0.7s; }
     .float { position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%); z-index: 6; pointer-events: none; font-weight: 700; font-size: 1.8em; color: #ff6b5e; text-shadow: 0 2px 4px rgb(0 0 0 / 60%); animation: float 0.9s ease-out forwards; }
     .float.up { color: #7fdc7f; }
+    /* The viewer's tile sits in a clipped box (the board's .your-seat), so its cues stay inside the tile. */
+    .tile.viewer .callout { bottom: auto; top: 4px; }
+    .tile.viewer .float { top: 45%; animation-name: float-in; }
+    @keyframes float-in { from { transform: translate(-50%, -50%); opacity: 1; } to { transform: translate(-50%, -120%); opacity: 0; } }
     .callout { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); z-index: 7; padding: 2px 10px; border-radius: 10px; white-space: nowrap; font-weight: 700; background: #fff; color: #3b2f2a; box-shadow: 0 2px 6px rgb(0 0 0 / 35%); animation: bubble 0.25s ease-out; }
     .callout.red { background: #c62828; color: #fff; }
     .callout.pass { background: #e6e1e5; color: #555; }
@@ -218,7 +222,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     @keyframes stamp { from { transform: translate(-50%, -50%) rotate(-12deg) scale(2); opacity: 0; } to { transform: translate(-50%, -50%) rotate(-12deg) scale(1); opacity: 1; } }
     /* Reduced motion: the end state, no movement. */
     @media (prefers-reduced-motion: reduce) {
-      .tile, .tile.hit, .tile.dying, .tile.eliminated .status, .generals.flip, .hit .hp-icon, .heal .hp-icon, .float, .callout { animation: none; transition: none; }
+      .tile, .tile.hit, .tile.dying, .tile.eliminated .status, .generals.flip, .tile.hit .hp-icon:last-child, .tile.heal .hp-icon:last-child, .float, .tile.viewer .float, .callout { animation: none; transition: none; }
       .tile.hit::after, .tile.heal::after { display: none; }
       .tile.dying { box-shadow: 0 0 0 3px #e53935; }
       .float { opacity: 1; }

@@ -38,6 +38,14 @@ describe('seatCues', () => {
     expect(seatCues(beat({ kind: 'dying', seatId: 'b' }), NO_CENTRE)['b'].callout).toEqual({ text: { key: 'cue.help' }, tone: 'red' });
   });
 
+  it('an eliminated or saved beat involves its seat without a callout', () => {
+    for (const kind of ['eliminated', 'saved'] as const) {
+      const cue = seatCues(beat({ kind, seatId: 'b' }), NO_CENTRE)['b'];
+      expect(cue.involved).toBe(true);
+      expect(cue.callout).toBeUndefined();
+    }
+  });
+
   it('a reveal flips the portrait', () => {
     expect(seatCues(beat({ kind: 'reveal', seatId: 'b', slot: 'main' }), NO_CENTRE)['b'].reveal).toBe(true);
   });
