@@ -246,7 +246,8 @@ counts as the same).
 
 **The centre outlives idle.** A response always comes in a later update, after
 the director has gone idle, so `centreStack` (and with it the seat cues'
-resolution centre and the dimming) is not cleared on idle. The next
+resolution centre, which says who a response involves) is not cleared on idle.
+Seats outside it are dimmed only during a play's own beat. The next
 non-response play replaces it, and a `TurnAdvancedEvent` or `PhaseChangedEvent`
 clears it. A new game and the Pass and Play gate clear it too. The layer does
 not follow it: the card and arrows it shows last only for their own beat.

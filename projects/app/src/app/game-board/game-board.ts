@@ -450,7 +450,8 @@ export class GameBoard {
   protected readonly visibleState = this.director.displayedState;
   // The seats a resolution is about, from the plays the director shows; cleared once the centre empties.
   private readonly centre = signal<ResolutionCentre>(NO_CENTRE);
-  protected readonly resolving = computed(() => !!this.centre().sourceSeatId);
+  // Seats outside the resolution dim only while a card is on show, as long as the card itself.
+  protected readonly resolving = computed(() => this.director.current()?.visual?.kind === 'play');
   protected readonly seatCueMap = computed((): Partial<Record<string, SeatCue>> => seatCues(this.director.current(), this.centre(), this.i18n.translator));
   // The seat the board is shown for: the active one, or once the game is over, the one whose view
   // plays out the last moves before Game Over.

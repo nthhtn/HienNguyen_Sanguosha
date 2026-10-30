@@ -1243,6 +1243,28 @@ describe('GameBoard battle playback', () => {
     expect(arrows()).toBe(0);
   });
 
+  it('dims the seats a play does not involve only while that play is on show', () => {
+    gameService.startGame(3, 1);
+    finishSelection(gameService);
+    gameService.reveal(gameService.activeSeatId()!);
+    create();
+    const [user, target, bystander] = [gameService.activeSeatId()!, ...gameService.state()!.seats.map((s) => s.id).filter((id) => id !== gameService.activeSeatId())];
+    const dimmed = (seatId: string) =>
+      fixture.debugElement
+        .queryAll(By.directive(SeatTile))
+        .map((d) => d.componentInstance as SeatTile)
+        .find((t) => t.seat().id === seatId)!
+        .dimmed();
+    const sha = { as: 'sha', colour: 'black', suit: 'spade', rank: 7, physical: [{ instanceId: 'x-sha', definitionId: 'sha', suit: 'spade', rank: 7 }] };
+    append([{ kind: 'CardPlayedEvent', seatId: user, card: sha, targets: [{ kind: 'seat', seatId: target }] } as never]);
+    expect(dimmed(bystander)).toBe(true);
+    expect(dimmed(target)).toBe(false);
+    expect(dimmed(user)).toBe(false);
+    tick(2000);
+    expect(director().idle()).toBe(true);
+    expect([user, target, bystander].map(dimmed)).toEqual([false, false, false]);
+  });
+
   it('HP on the seat tile drops when the damage beat plays', () => {
     const other = playPhase();
     create();
