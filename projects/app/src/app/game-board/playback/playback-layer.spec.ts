@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { CardZone, EngineEvent, GameState, Seat, UsedCard } from 'engine';
 import { PlaybackSpeed } from '../../playback-speed.service';
 import { PlannedBeat } from './beats';
+import { foldEvent } from './displayed-state';
 import { PlaybackDirector } from './playback-director';
 import { PlaybackLayer } from './playback-layer';
 
@@ -82,6 +83,25 @@ describe('PlaybackLayer', () => {
     expect(answered).toEqual([false, true]);
   });
 
+  it('keeps the stack and its lines while idle, and sweeps them when the stack clears', async () => {
+    const { fixture, el, director } = setup(playBeat(['seat-1']), [arrows]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    director.current.set(null);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(el.querySelectorAll('svg path.line').length).toBe(1);
+    expect(el.querySelectorAll('.stack app-playing-card').length).toBe(1);
+    const event: EngineEvent = { kind: 'PhaseChangedEvent', seatId: 'seat-0', phase: 'Discard' };
+    director.current.set({ logIndex: 1, event, durationMs: 250, visual: { kind: 'phase', seatId: 'seat-0', phase: 'Discard' } });
+    director.centreStack.set([]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(el.querySelectorAll('svg path.line').length).toBe(0);
+    expect(el.querySelectorAll('.stack app-playing-card').length).toBe(0);
+    expect(el.querySelectorAll('.flight app-playing-card').length).toBe(1);
+  });
+
   it('shows the caption for the current beat', async () => {
     const { fixture, el } = setup(playBeat(['seat-1']), [arrows], { line: 'Seat 0 used Arrow Barrage on Seat 1' });
     fixture.detectChanges();
@@ -151,6 +171,36 @@ describe('PlaybackLayer', () => {
 
   it('a move into a hand flies as a back when the shown state hides the card', async () => {
     const { fixture, el } = moveSetup('seat-1:hand', { definitionId: 'hidden' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(el.querySelectorAll('.flight img.back').length).toBe(1);
+    expect(el.querySelectorAll('.flight app-playing-card').length).toBe(0);
+  });
+
+  it('a hand-to-hand move the viewer cannot see flies as a back, though the card is public by the end of the queue', async () => {
+    // Viewer seat-3: seat-0 hands a card to seat-1, which then discards it; the latest state has it in the Discard Pile.
+    const peach = { instanceId: 'p1', definitionId: 'peach', suit: 'heart' as const, rank: 9 };
+    const before = state();
+    before.zones.find((z) => z.id === 'seat-0:hand')!.cards.push({ instanceId: 'p1', definitionId: 'hidden', suit: 'spade', rank: 0 });
+    const handed: EngineEvent = { kind: 'CardMovedEvent', cardInstanceId: 'p1', fromZoneId: 'seat-0:hand', toZoneId: 'seat-1:hand' };
+    const discarded: EngineEvent = { kind: 'CardMovedEvent', cardInstanceId: 'p1', fromZoneId: 'seat-1:hand', toZoneId: 'discardPile', card: peach };
+    const target = state([handed, discarded]);
+    target.zones.find((z) => z.id === 'discardPile')!.cards.push(peach);
+    const shown = { ...foldEvent(before, handed, target), log: [handed] };
+    expect(shown.zones.find((z) => z.id === 'seat-1:hand')!.cards[0].definitionId).toBe('hidden');
+    const { fixture, el } = setup({ logIndex: 0, event: handed, durationMs: 500, visual: { kind: 'move', cardInstanceId: 'p1', fromZoneId: 'seat-0:hand', toZoneId: 'seat-1:hand' } }, [], { shown });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(el.querySelectorAll('.flight img.back').length).toBe(1);
+    expect(el.querySelectorAll('.flight app-playing-card').length).toBe(0);
+  });
+
+  it('a move into a hidden zone flies as a back even if the shown state has the card face up elsewhere', async () => {
+    const { fixture, el } = moveSetup('seat-1:hand', { definitionId: 'hidden' });
+    // A stale face-up copy elsewhere must not leak into the flight.
+    const shown = fixture.componentInstance as unknown as { director: { displayedState: ReturnType<typeof signal<GameState>> } };
+    const current = shown.director.displayedState();
+    shown.director.displayedState.set({ ...current, zones: current.zones.map((z) => (z.id === 'discardPile' ? { ...z, cards: [{ instanceId: 'm1', definitionId: 'zhuge_crossbow', suit: 'club', rank: 1 }] } : z)) });
     fixture.detectChanges();
     await fixture.whenStable();
     expect(el.querySelectorAll('.flight img.back').length).toBe(1);

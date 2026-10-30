@@ -72,6 +72,53 @@ describe('foldEvent', () => {
     expect(zone(next, 'b:hand').cards).toEqual([hidden('d1')]);
   });
 
+  it("never puts a card's face in another seat's hand, even when the card is public by the target state", () => {
+    // Viewer c: a hands a card to b (hidden from c), then b discards it. The target shows it in the Discard Pile.
+    const start = fourSeats();
+    const x = card('x', 'peach', 9);
+    const before: GameState = { ...start, zones: start.zones.map((z) => (z.id === 'a:hand' ? { ...z, cards: [hidden('x')] } : z)) };
+    const target: GameState = { ...start, zones: start.zones.map((z) => (z.id === 'a:hand' ? { ...z, cards: [] } : z.id === 'discardPile' ? { ...z, cards: [x] } : z)) };
+    const handed = foldEvent(before, { kind: 'CardMovedEvent', cardInstanceId: 'x', fromZoneId: 'a:hand', toZoneId: 'b:hand' }, target);
+    expect(zone(handed, 'b:hand').cards).toEqual([hidden('x')]);
+    const discarded = foldEvent(handed, { kind: 'CardMovedEvent', cardInstanceId: 'x', fromZoneId: 'b:hand', toZoneId: 'discardPile', card: x }, target);
+    expect(zone(discarded, 'b:hand').cards).toEqual([]);
+    expect(zone(discarded, 'discardPile').cards).toEqual([x]);
+  });
+
+  it("a card moving into the viewer's own hand keeps the face the target shows there", () => {
+    // Viewer a: b gives a a card a can see in its own hand.
+    const start = fourSeats();
+    const y = card('y', 'peach', 9);
+    const before: GameState = { ...start, zones: start.zones.map((z) => (z.id === 'b:hand' ? { ...z, cards: [hidden('y')] } : z)) };
+    const target: GameState = { ...start, zones: start.zones.map((z) => (z.id === 'a:hand' ? { ...z, cards: [...z.cards, y] } : z)) };
+    const next = foldEvent(before, { kind: 'CardMovedEvent', cardInstanceId: 'y', fromZoneId: 'b:hand', toZoneId: 'a:hand' }, target);
+    expect(zone(next, 'a:hand').cards.map((c) => c.definitionId)).toEqual(['sha', 'peach']);
+    expect(zone(next, 'b:hand').cards).toEqual([]);
+  });
+
+  it('a move whose card is not in its from-zone still lands the card, and leaves the from-zone as it was', () => {
+    const state = fourSeats();
+    const face = card('z', 'shan', 3);
+    const next = foldEvent(state, { kind: 'CardMovedEvent', cardInstanceId: 'z', fromZoneId: 'c:hand', toZoneId: 'discardPile', card: face }, state);
+    expect(zone(next, 'c:hand').cards).toEqual([]);
+    expect(zone(next, 'discardPile').cards).toEqual([face]);
+  });
+
+  it('HP loss lowers HP on its seat only', () => {
+    const state = fourSeats();
+    const next = foldEvent(state, { kind: 'HpLostEvent', seatId: 'd', amount: 2 } as EngineEvent, state);
+    expect(next.seats.map((s) => s.combinedHp)).toEqual([3, 3, 3, 1]);
+  });
+
+  it("copies a seat's Generals from the target when one is hidden again", () => {
+    const state = fourSeats();
+    const hiddenMain = { generalDefinitionId: 'hidden', revealed: false };
+    const target: GameState = { ...state, seats: state.seats.map((s) => (s.id === 'c' ? { ...s, generals: { main: hiddenMain, deputy: s.generals!.deputy } } : s)) };
+    const next = foldEvent(state, { kind: 'GeneralHiddenEvent', seatId: 'c', slot: 'main' } as EngineEvent, target);
+    expect(next.seats[2].generals!.main).toEqual(hiddenMain);
+    expect(next.seats[1]).toBe(state.seats[1]);
+  });
+
   it('ignores unknown zones and seats', () => {
     const state = fourSeats();
     const move = foldEvent(state, { kind: 'CardMovedEvent', cardInstanceId: 'x', fromZoneId: 'nowhere', toZoneId: 'elsewhere' }, state);

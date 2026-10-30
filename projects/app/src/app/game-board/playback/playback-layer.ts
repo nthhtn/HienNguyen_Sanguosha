@@ -1,5 +1,6 @@
 import { Component, DestroyRef, Directive, ElementRef, Injectable, Injector, afterNextRender, computed, effect, inject, input, output, signal, untracked, viewChild } from '@angular/core';
-import type { CardInstance, CardZone, GameState, Seat, UsedCard } from 'engine';
+import { isFaceUpZoneKind } from 'engine';
+import type { CardInstance, GameState, Seat, UsedCard } from 'engine';
 import { CARD_BACK_ART_URL, generalDisplayData } from 'content';
 import { I18n } from '../../i18n/i18n.service';
 import { localeOf, Translator } from '../../i18n/translator';
@@ -48,8 +49,6 @@ interface TargetLine {
   delayMs: number;
 }
 
-// The zones whose cards everyone sees (the event carries a face only for a move into one of them).
-const FACE_UP_ZONES = new Set<CardZone['kind'] | undefined>(['discardPile', 'equip', 'judgment', 'processing']);
 // How far inside the table's edge a line to a seat off the table stops, in px.
 const LINE_EDGE = 12;
 // The prototype's flight easing.
@@ -416,14 +415,16 @@ export class PlaybackLayer {
     return { key: `${this.nextId++}:${from}>${to}`, from, to, d: curve(start.point, finish.point, start.radius, finish.radius), answered: false, drawMs, delayMs };
   }
 
-  // The face a moving card shows: what the shown state shows of it. Otherwise only a card moving
-  // between face-up zones shows the face the event carries; anything else flies as a card back.
+  // The face a moving card shows: the face the shown state gives it where it lands (the fold gives one only where
+  // the viewer may see it), else, into a face-up zone (isFaceUpZoneKind), the one the event carries. Anything else
+  // flies as a card back.
   private moveFace(visual: Extract<BeatVisual, { kind: 'move' }>): CardInstance | null {
     const zones = this.director?.displayedState()?.zones ?? this.state().zones;
-    const shown = zones.flatMap((z) => z.cards).find((c) => c.instanceId === visual.cardInstanceId);
-    const faceUp = (zoneId: string) => FACE_UP_ZONES.has(zones.find((z) => z.id === zoneId)?.kind);
-    const card = shown && shown.definitionId !== 'hidden' ? shown : faceUp(visual.fromZoneId) && faceUp(visual.toZoneId) ? visual.card : undefined;
-    return card && card.definitionId !== 'hidden' ? card : null;
+    const isShown = (card: CardInstance | undefined): card is CardInstance => !!card && card.definitionId !== 'hidden';
+    const to = zones.find((z) => z.id === visual.toZoneId);
+    const there = to?.cards.find((c) => c.instanceId === visual.cardInstanceId);
+    if (isShown(there)) return there;
+    return to && isFaceUpZoneKind(to.kind) && isShown(visual.card) ? visual.card : null;
   }
 
   // A seat on screen: its tile, or for the viewer's hand, the hand.
