@@ -1,9 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS } from 'content';
+import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS, generalsPerSeat } from 'content';
 import type { DeckId } from 'content';
 import { DeckPicker } from '../deck-picker';
 import type { SeatLimits } from 'protocol';
@@ -46,6 +46,7 @@ export interface PlayVsBotsDialogData {
             </mat-button-toggle-group>
           </div>
           <app-deck-picker [(value)]="deck" />
+          <p class="hint generals-dealt">{{ 'setup.generalsDealt.hint' | t: { n: generalsDealt() } }}</p>
           @if (seatCount() >= firstRevealMinSeats) {
             <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
             <p class="hint">{{ 'setup.firstReveal.hint' | t }}</p>
@@ -77,6 +78,7 @@ export class PlayVsBotsDialog {
   protected readonly data = inject<PlayVsBotsDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<PlayVsBotsDialog, string>>(MatDialogRef);
   private readonly rooms = inject(RoomsService);
+  protected readonly generalsDealt = computed(() => generalsPerSeat(this.seatCount(), this.deck()));
   protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
   protected readonly seatOptions = Array.from({ length: this.data.seatLimits.max - this.data.seatLimits.min + 1 }, (_, i) => this.data.seatLimits.min + i);
 

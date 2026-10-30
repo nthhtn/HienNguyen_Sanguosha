@@ -264,10 +264,10 @@ interface GameModeDefinition {
 ```
 
 `guozhanMode` ([guozhan.ts](../../projects/content/src/lib/modes/guozhan.ts))
-is the one implementation. It deals five Generals to each seat from the pool
-of the chosen deck (the Identity Generals, or the Kingdom Wars ones, never mixed),
-builds and shuffles that deck's cards, and deals four cards. A table seats at
-most ten, and fewer when the deck's pool is small (`guozhanMaxSeats`). Its `triggers` carry the mode's
+is the one implementation. It deals Generals to each seat from the pool
+of the chosen deck (the Identity Generals, or the Kingdom Wars ones, never mixed): seven to each seat at a table of 2 to 8 and five at 9 to 12 for Kingdom Wars,
+always five for Identity (`generalsPerSeat`). It builds and shuffles that deck's cards, and deals four cards. A table seats at
+most twelve (ten for Identity), and fewer when the deck's pool is small (`guozhanMaxSeats`). Its `triggers` carry the mode's
 rules:
 
 - the Draw Phase draw and the Judgment Phase;

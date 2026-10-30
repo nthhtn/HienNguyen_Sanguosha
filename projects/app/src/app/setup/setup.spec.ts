@@ -77,6 +77,17 @@ describe('Setup', () => {
       expect(labels).toEqual(Array.from({ length: gameService.maxSeats - 1 }, (_, i) => String(i + 2)));
     });
 
+    it('shows how many Generals each seat is dealt, which changes at 9 seats', async () => {
+      const { fixture, el } = await create();
+      const hint = () => el.querySelector('.generals-dealt')!.textContent!.trim();
+      fixture.componentInstance.seatCount.set(8);
+      fixture.detectChanges();
+      expect(hint()).toBe('Each seat chooses from 7 Generals.');
+      fixture.componentInstance.seatCount.set(9);
+      fixture.detectChanges();
+      expect(hint()).toBe('Each seat chooses from 5 Generals.');
+    });
+
     it('starts a game with the seat count picked on the toggles', async () => {
       const { fixture, el, gameService } = await create();
       const three = [...el.querySelectorAll('mat-button-toggle button')].find((b) => b.textContent!.trim() === '3') as HTMLButtonElement;

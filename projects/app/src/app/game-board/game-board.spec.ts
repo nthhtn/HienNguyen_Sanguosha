@@ -104,7 +104,7 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
     expect(el.querySelector('app-general-selection')).not.toBeNull();
     expect(el.querySelector('app-action-list')).toBeNull();
-    expect(el.querySelectorAll('app-general-selection [data-general-id]')).toHaveLength(5);
+    expect(el.querySelectorAll('app-general-selection [data-general-id]')).toHaveLength(7);
   });
 
   it('tells the selection view which seat is choosing', () => {
