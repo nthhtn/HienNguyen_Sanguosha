@@ -126,8 +126,8 @@ export class GameService {
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
-      // Every game waits for a judgment's popup (the judgmentNotice rule) unless a rule says otherwise.
-      const created = createGame(guozhanMode, this.registry, seatIds, rngSeed, { ...rules, judgmentNotice: rules?.judgmentNotice ?? true });
+      // Every game waits for a judgment's popup (the judgmentNotice rule) and logs passes (logPasses) unless a rule says otherwise.
+      const created = createGame(guozhanMode, this.registry, seatIds, rngSeed, { ...rules, judgmentNotice: rules?.judgmentNotice ?? true, logPasses: rules?.logPasses ?? true });
       const players = created.players.map((p, i) => ({
         ...p,
         kind: mode === 'vs-bots' && p.seatId !== HUMAN_SEAT_ID ? ('bot' as const) : ('human' as const),
