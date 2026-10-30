@@ -222,6 +222,13 @@ describe('Draw Two, Barbarians, Hail of Arrows, Peach Garden', () => {
     expect(s.resolutionQueue).toBeUndefined();
   });
 
+  it('Barbarians: a pass is logged as ResponsePassedEvent under the logPasses rule', () => {
+    const s = pass(use({ ...fourSeats('barbarians', { b: [['sha', 'b-sha']] }), rules: { logPasses: true } }));
+    expect(s.log.filter((e) => e.kind === 'ResponsePassedEvent')).toEqual([
+      { kind: 'ResponsePassedEvent', seatId: 'b', pendingResponseId: expect.any(String), allowedCardIds: ['sha'] },
+    ]);
+  });
+
   it('Hail of Arrows: the same, answered with a Dodge', () => {
     let s = use(fourSeats('hail-of-arrows', { c: [['shan', 'c-shan']] }));
     expect(s.pendingResponse).toMatchObject({ respondingSeatId: 'b', allowedCardIds: ['shan'] });

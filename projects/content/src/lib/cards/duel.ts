@@ -25,6 +25,7 @@ function duelWindow(tool: UsedCard, responderSeatId: string, otherSeatId: string
       id: answeredWith ? `duel-response-${key}-${answeredWith}` : `duel-response-${key}`,
       respondingSeatId: responderSeatId,
       allowedActionKinds: ['RespondAction', 'PassAction'],
+      announcePass: true,
       allowedCardIds: ['sha'],
       sourceCard: { instanceId: key, definitionId: 'duel' },
       data: { ...data },
