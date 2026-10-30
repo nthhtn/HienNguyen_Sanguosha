@@ -142,7 +142,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                     />
                   </div>
                 }
-                <section class="your-hand" data-playback-anchor="hand">
+                <section class="your-hand">
                   <div class="hand">
                     <h3>{{ 'board.yourHand' | t }}</h3>
                     <app-hand-view
@@ -163,7 +163,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                 </section>
                 <!-- Bottom right: the action history, then the discard pile; same height. -->
                 <app-action-history class="history" [history]="actionHistory()" />
-                <app-discard-pile class="discard" data-playback-anchor="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
               </div>
             </div>
           }

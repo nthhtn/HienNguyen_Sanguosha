@@ -222,8 +222,8 @@ it holds for every client and for replays; the dialog only shows it.
 ### Battle playback
 
 The board does not jump to each new state. [playback/](../../projects/app/src/app/game-board/playback/)
-replays the log's new events as paced beats, so a card visibly flies from a hand,
-a target line is drawn, and HP changes when the damage lands. It replays recorded
+replays the log's new events as paced beats, so a played card shows at the centre
+with arrows to its targets, and HP changes when the damage lands. It replays recorded
 facts only; the engine has already resolved everything, and the board never
 decides a rule.
 
@@ -233,7 +233,7 @@ decides a rule.
 | Beats ([beats.ts](../../projects/app/src/app/game-board/playback/beats.ts)) | `BEATS`, a registry keyed by event kind: a duration at Normal speed and a `BeatVisual` (turn, phase, draw, play, pass, move, damage, heal, dying, saved, reveal, eliminated, ability). A kind with no entry is a 0 ms beat. A new event gets a beat by adding an entry, not by editing the director. A pause of `BATCH_GAP_MS` follows the last beat of each update |
 | Displayed state ([displayed-state.ts](../../projects/app/src/app/game-board/playback/displayed-state.ts)) | `FOLDS`, also keyed by kind: applies one event's recorded facts (HP, a card moving, a seat eliminated, a General revealed, turn, phase) to the state on show. Card faces and identities come from the latest visible state, faces only where the viewer may see them. No rules |
 | Seat cues ([seat-cues.ts](../../projects/app/src/app/game-board/playback/seat-cues.ts)) | pure: the beat on show becomes per-seat cues (impact, callout, spotlight) and the resolution centre (who is targeted) |
-| Layer ([playback-layer.ts](../../projects/app/src/app/game-board/playback/playback-layer.ts)) | the overlay: card flights between anchors (`data-playback-anchor`), target lines, caption and turn banner |
+| Layer ([playback-layer.ts](../../projects/app/src/app/game-board/playback/playback-layer.ts)) | the overlay, for the beat on show only: a played card at the centre and white arrows to its targets, both faded out by the end of the beat; the caption and the turn banner. Nothing flies |
 | `PlaybackGate` ([playback-gate.service.ts](../../projects/app/src/app/playback-gate.service.ts)) | a root signal, `idle`, written by the director. Local bots and `DecisionTimer` wait on it; it is idle when no board is on screen, so tests and the simulator never wait |
 
 While beats play, the board renders `displayedState`, not `visibleState`. When
@@ -246,19 +246,19 @@ counts as the same).
 
 **The centre outlives idle.** A response always comes in a later update, after
 the director has gone idle, so `centreStack` (and with it the seat cues'
-resolution centre, the dimming, the target lines) is not cleared on idle. The
-next non-response play replaces it, and a `TurnAdvancedEvent` or
-`PhaseChangedEvent` clears it; the layer then sweeps it to the Discard Pile.
-A new game and the Pass and Play gate clear it too.
+resolution centre and the dimming) is not cleared on idle. The next
+non-response play replaces it, and a `TurnAdvancedEvent` or `PhaseChangedEvent`
+clears it. A new game and the Pass and Play gate clear it too. The layer does
+not follow it: the card and arrows it shows last only for their own beat.
 
 **Faces.** A fold gives a landing card its face only where the viewer may see
 it: a face-up zone (the engine's `isFaceUpZoneKind`), or a hidden zone the
 latest visible state shows it face up in (the viewer's own hand). A card that is
 public by the end of the queue is never shown in a hand the viewer could not see
-into, and the layer flies such a move as a card back.
+into.
 
 **What waits for playback.** The board's `legalActions` are empty until the
-director is idle, so a card still flying can never be played over. Decision
+director is idle, so nothing can be played while the board is still catching up. Decision
 dialogs, Game Over and the judgment popup open once it is idle; the judgment
 popup then stays open through further playback until the judgment ends. Locally,
 a Compete popup holds the director while it is open. Online it does not hold:

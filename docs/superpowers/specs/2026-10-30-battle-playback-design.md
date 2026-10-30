@@ -1,6 +1,6 @@
 # Battle Playback: Design
 
-Status: draft for review. Prototype: the Battle Playback Lab artifact
+Status: built. Revised after the first look (2026-10-30): see "Revision: fewer animations". Prototype: the Battle Playback Lab artifact
 (https://claude.ai/artifact/ReswScaowdZKcE8U656SJE), which shows every
 technique below on three scripted sequences.
 
@@ -150,6 +150,17 @@ not reached yet.
 
 Hidden information: the fold works on the viewer's redacted state and the
 public log, so it can show no more than the board shows today.
+
+### Revision: fewer animations (2026-10-30, user's decision)
+
+After the first build the user found the playback too busy:
+
+- **No card flights at all.** Nothing flies: not plays, draws, moves or the sweep to the Discard Pile.
+- **A played card shows at the centre only for its moment**, then fades out by the end of its beat. A response shows on its own the same way.
+- **Target arrows fade** once drawn, by the end of the play's beat. They are no longer kept for a response to grey.
+- **Arrow style:** a white arrow with a dark border.
+
+Where the sections below describe flights, a lasting centre stack or greying, this revision wins.
 
 ### 4. What the techniques look like
 

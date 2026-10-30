@@ -1196,7 +1196,7 @@ describe('GameBoard battle playback', () => {
     expect(document.querySelector('app-response-dialog')).not.toBeNull();
   });
 
-  it('a Slash and the Dodge that answers it in a later update share the centre, and its line greys', () => {
+  it('a Slash and the Dodge that answers it in a later update share the resolution, and nothing stays on the overlay while idle', () => {
     const sha = (state: GameState, id: string) => cardDefinitionId(state, id) === 'sha';
     const slashAt = (target: string) =>
       gameService.legalActions().find((a) => a.kind === 'PlayCardAction' && a.targets.length === 1 && a.targets[0].kind === 'seat' && a.targets[0].seatId === target && sha(gameService.state()!, a.cardInstanceId));
@@ -1222,8 +1222,8 @@ describe('GameBoard battle playback', () => {
     gameService.botDelayMs = 3000;
     create();
     const el = fixture.nativeElement as HTMLElement;
-    const stackCards = () => el.querySelectorAll('app-playback-layer .stack app-playing-card').length;
-    const lines = () => [...el.querySelectorAll('app-playback-layer path.line')].map((p) => p.classList.contains('answered'));
+    const shownCards = () => el.querySelectorAll('app-playback-layer .played app-playing-card').length;
+    const arrows = () => el.querySelectorAll('app-playback-layer g.arrow').length;
     const untilIdle = () => {
       for (let i = 0; i < 200 && !director().idle(); i++) tick(100);
     };
@@ -1233,14 +1233,14 @@ describe('GameBoard battle playback', () => {
     expect(director().idle()).toBe(true);
     expect(gameService.state()!.pendingResponse?.respondingSeatId).toBe('seat-1');
     expect(director().centreStack().map((u) => u.as)).toEqual(['sha']);
-    expect(stackCards()).toBe(1);
-    expect(lines()).toEqual([false]);
+    expect(shownCards()).toBe(0);
+    expect(arrows()).toBe(0);
     tick(3000);
     expect(gameService.state()!.log.some((e) => e.kind === 'CardPlayedEvent' && e.seatId === 'seat-1' && e.card.as === 'shan')).toBe(true);
     untilIdle();
     expect(director().centreStack().map((u) => u.as)).toEqual(['sha', 'shan']);
-    expect(stackCards()).toBe(2);
-    expect(lines()).toEqual([true]);
+    expect(shownCards()).toBe(0);
+    expect(arrows()).toBe(0);
   });
 
   it('HP on the seat tile drops when the damage beat plays', () => {
