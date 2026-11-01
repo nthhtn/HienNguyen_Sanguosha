@@ -89,11 +89,16 @@ describe('App', () => {
     localStorage.clear();
   });
 
+  it('shows no playback speed setting for now', async () => {
+    const { el } = await render();
+    expect(el.querySelector('button.playback-speed')).toBeNull();
+  });
+
   it('puts Battlefield, the account, the language menu and the sound buttons on the right, in that order', async () => {
     const { el, fixture } = await render();
     TestBed.inject(BattlefieldBackgrounds).available.set(true);
     fixture.detectChanges();
-    const right = ['button.nav-battlefield', 'a.sign-in, button.account', 'app-language-switcher', 'button.music-toggle', 'button.effects-toggle', 'button.playback-speed'].map(
+    const right = ['button.nav-battlefield', 'a.sign-in, button.account', 'app-language-switcher', 'button.music-toggle', 'button.effects-toggle'].map(
       (selector) => el.querySelector(selector)!
     );
     expect(el.querySelector('nav.nav .nav-battlefield')).toBeNull();

@@ -285,10 +285,11 @@ it is not recomputed on the shrinking queue, which would slow it beat by beat,
 so it really does finish in about a second. The cap then eases back.
 
 **Speed.** `PlaybackSpeed` ([playback-speed.service.ts](../../projects/app/src/app/playback-speed.service.ts))
-holds Slow, Normal, Fast or Instant (a factor of 0.5, 1, 2 or infinity), kept in
-`localStorage`. Animations and local bots both read it. Reduced motion only sets
-the *default* to Instant; a player who picks a speed gets animation. The Compete
-and judgment popups keep their own timing and honour reduced motion separately.
+holds Slow, Normal, Fast or Instant (a factor of 0.5, 1, 2 or infinity).
+Animations and local bots both read it. For now the toolbar's speed menu is
+hidden (`showPlaybackSpeed` in `app.ts`) and every game plays at Slow: no
+choice is stored, and reduced motion does not change it. The Compete and
+judgment popups keep their own timing and honour reduced motion separately.
 
 **Passes.** A pass beat needs the engine's `ResponsePassedEvent`. The engine logs
 it only under the `logPasses` rule and only for windows that set `announcePass`
@@ -363,7 +364,7 @@ deciding seat's Force; the Compete popup by the source General's.
 |---|---|
 | selected card, open dialogs, hover | whether a play is legal |
 | which log index sounds and popups have reached | HP, hands, phase, turn, who is dying |
-| countdown seconds, music on/off, playback speed (`localStorage`) | who won |
+| countdown seconds, music on/off (`localStorage`), playback speed | who won |
 | what playback has reached: the displayed state, current beat, queue | what the real state is |
 
 `DecisionTimer` is UI state too, for local games. The engine says which clock a

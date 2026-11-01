@@ -18,12 +18,6 @@ describe('PlaybackSpeed', () => {
     localStorage.clear();
   });
 
-  it('defaults to normal', () => {
-    const speed = create();
-    expect(speed.speed()).toBe('normal');
-    expect(speed.factor()).toBe(1);
-  });
-
   it('has a factor for each speed', () => {
     const speed = create();
     const factors = (['slow', 'normal', 'fast', 'instant'] as const).map((id) => {
@@ -33,38 +27,11 @@ describe('PlaybackSpeed', () => {
     expect(factors).toEqual([0.5, 1, 2, Infinity]);
   });
 
-  it('remembers a choice', () => {
-    create().set('fast');
-    expect(localStorage.getItem('playbackSpeed')).toBe('fast');
-    expect(create().speed()).toBe('fast');
-  });
-
-  it('falls back when storage throws', () => {
-    jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-      throw new Error('blocked');
-    });
-    jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('blocked');
-    });
+  it('starts at Slow whatever was stored or the viewer prefers (the setting is hidden for now)', () => {
+    localStorage.setItem('playbackSpeed', 'instant');
+    reducedMotion(true);
     const speed = create();
-    expect(speed.speed()).toBe('normal');
-    speed.set('slow');
     expect(speed.speed()).toBe('slow');
-  });
-
-  it('defaults to instant under reduced motion', () => {
-    reducedMotion(true);
-    expect(create().speed()).toBe('instant');
-  });
-
-  it('a stored choice beats reduced motion', () => {
-    reducedMotion(true);
-    localStorage.setItem('playbackSpeed', 'slow');
-    expect(create().speed()).toBe('slow');
-  });
-
-  it('ignores a stored value that is not a speed', () => {
-    localStorage.setItem('playbackSpeed', 'warp');
-    expect(create().speed()).toBe('normal');
+    expect(speed.factor()).toBe(0.5);
   });
 });

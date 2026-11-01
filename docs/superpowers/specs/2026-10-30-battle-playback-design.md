@@ -162,6 +162,10 @@ After the first build the user found the playback too busy:
 
 Where the sections below describe flights, a lasting centre stack or greying, this revision wins.
 
+**Speed setting hidden (2026-11-01, user's decision).** The toolbar's speed menu is hidden for now and every
+game plays at Slow: no stored choice, and reduced motion no longer makes Instant the default. Section 5
+describes the setting as it was built; it comes back by turning `showPlaybackSpeed` on in `app.ts`.
+
 ### 4. What the techniques look like
 
 As in the prototype, adapted to the real board:

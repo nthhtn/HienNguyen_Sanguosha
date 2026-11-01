@@ -87,6 +87,8 @@ export class App {
   protected readonly music = inject(MusicService);
   protected readonly effects = inject(SoundEffects);
 
+  // The playback speed setting is hidden for now; every game plays at Slow.
+  protected readonly showPlaybackSpeed = false;
   protected readonly playbackSpeed = inject(PlaybackSpeed);
   protected readonly speedOptions = PLAYBACK_SPEEDS.map((id) => ({ id, label: `speed.${id}` as MessageKey }));
 
