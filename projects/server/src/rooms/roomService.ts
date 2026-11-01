@@ -432,8 +432,9 @@ export class RoomService {
       room.members.map((m) => ({ id: m.id, name: m.name, kind: m.kind })),
       seed
     );
-    // Every game waits for a judgment's popup (the judgmentNotice rule); a stored game keeps this, so it replays the same.
-    const rules = { ...room.record.rules, judgmentNotice: true };
+    // Every game waits for a judgment's popup (the judgmentNotice rule) and logs passes (logPasses); a stored game keeps these, so it replays the same.
+    // Games stored before logPasses existed lack it and replay without the pass events, with the same hashes.
+    const rules = { ...room.record.rules, judgmentNotice: true, logPasses: true };
     const state = openingState(this.ctx, seed, seats, rules);
     const game = await this.repos.transaction(async (tx) => {
       const created = await tx.games.create({ roomId: room.id, seed, seats, rules, buildId: this.buildId, now: at });

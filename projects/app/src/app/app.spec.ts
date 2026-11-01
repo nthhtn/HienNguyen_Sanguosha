@@ -89,6 +89,11 @@ describe('App', () => {
     localStorage.clear();
   });
 
+  it('shows no playback speed setting for now', async () => {
+    const { el } = await render();
+    expect(el.querySelector('button.playback-speed')).toBeNull();
+  });
+
   it('puts Battlefield, the account, the language menu and the sound buttons on the right, in that order', async () => {
     const { el, fixture } = await render();
     TestBed.inject(BattlefieldBackgrounds).available.set(true);

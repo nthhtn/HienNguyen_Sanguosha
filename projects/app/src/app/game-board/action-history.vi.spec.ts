@@ -40,6 +40,12 @@ const vi_ = (log: EngineEvent[]) => textsOf(log, tr);
 const en_ = (log: EngineEvent[]) => textsOf(log);
 
 describe('card plays in Vietnamese', () => {
+  it('a pass', () => {
+    const passed: EngineEvent = { kind: 'ResponsePassedEvent', seatId: 'seat-1', pendingResponseId: 'r-1', allowedCardIds: ['shan'] };
+    expect(vi_([passed])).toEqual(['Người chơi 1 không có Dodge']);
+    expect(vi_([{ ...passed, allowedCardIds: undefined }])).toEqual(['Người chơi 1 bỏ qua']);
+  });
+
   it('a play, an answer against it, an equip, an untargeted use', () => {
     expect(vi_([
       { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },

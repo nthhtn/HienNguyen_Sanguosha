@@ -25,7 +25,8 @@
   flex: 1;
 }
 .music-toggle,
-.effects-toggle {
+.effects-toggle,
+.playback-speed {
   color: var(--mat-sys-on-primary);
 }
 /* Straight after the title, on the left. */

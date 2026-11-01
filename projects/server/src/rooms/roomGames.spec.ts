@@ -91,7 +91,7 @@ describe('RoomService games', () => {
     const { roomId, a } = await pair();
     await start(a, roomId);
     const [game] = await repos.games.listRunning();
-    expect(game.rules).toEqual({ judgmentNotice: true });
+    expect(game.rules).toEqual({ judgmentNotice: true, logPasses: true });
     expect(a.connection.room!.rules).toEqual({});
   });
 
@@ -103,7 +103,7 @@ describe('RoomService games', () => {
     const a = await connect(annUser, roomId);
     await start(a, roomId);
     const [game] = await repos.games.listRunning();
-    expect(game.rules).toEqual({ deck: 'identity', judgmentNotice: true });
+    expect(game.rules).toEqual({ deck: 'identity', judgmentNotice: true, logPasses: true });
     expect(a.connection.room!.rules).toEqual({ deck: 'identity' });
   });
 

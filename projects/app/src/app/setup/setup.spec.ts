@@ -123,7 +123,7 @@ describe('Setup', () => {
         const { fixture, el, gameService } = await create();
         pickSeats(fixture, el, 4);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true, logPasses: true });
       });
 
       it('keeps the Kingdom Wars deck when Identity is clicked: it is disabled for now (deferred)', async () => {
@@ -131,7 +131,7 @@ describe('Setup', () => {
         pickSeats(fixture, el, 4);
         clickIdentity(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true, logPasses: true });
       });
 
       it('sends First Reveal Bonus at 5 seats, and no deck rule for Kingdom Wars', async () => {
@@ -139,7 +139,7 @@ describe('Setup', () => {
         pickSeats(fixture, el, 5);
         clickIdentity(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true, logPasses: true });
       });
     });
 
@@ -162,7 +162,7 @@ describe('Setup', () => {
         const { fixture, el, gameService } = await create();
         pick(fixture, el, 5);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true, logPasses: true });
       });
 
       it('starts a game with the rule off when unchecked', async () => {
@@ -171,7 +171,7 @@ describe('Setup', () => {
         (el.querySelector('.first-reveal input') as HTMLInputElement).click();
         fixture.detectChanges();
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: false, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: false, judgmentNotice: true, logPasses: true });
       });
 
       it('sets no rule below 5 seats', async () => {

@@ -188,6 +188,11 @@ answer, with which cards, and the effect to apply if they don't
 resumes with the next action, with everything still queued behind the window:
 
 - **`PassAction`** queues the held-back effect (the Sha's damage, above).
+  It also logs a `ResponsePassedEvent` (seat, window id, `allowedCardIds`),
+  but only under the `logPasses` rule and only for a window that sets
+  `announcePass` (Sha, Duel, Barbarians, Hail of Arrows, Coerce: asked whatever
+  the seat holds). Wuxie, dying and skill windows never announce, so a logged
+  pass never leaks that the seat held a counter or rescue card.
 - **`RespondAction`** plays the answering card. By default the held-back
   effect is then dropped: a Shan cancels a Sha.
 - If the window records the card that opened it (`PendingResponse.sourceCard`),

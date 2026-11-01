@@ -422,6 +422,43 @@ describe('resolve: Response Window pause and resume', () => {
     expect(next.seats.find((s) => s.id === 'seat-b')!.combinedHp).toBe(3);
   });
 
+  describe('ResponsePassedEvent', () => {
+    const passFrom = (rules: GameState['rules'], announcePass: true | undefined) => {
+      const ctx = { registry: registryWithShaAndShield(), mode: stubMode() };
+      const opened = resolve(
+        stateWithShaInHandAndShieldForB(),
+        { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sha-1', targets: [{ kind: 'seat', seatId: 'seat-b' }] },
+        ctx
+      );
+      const state: GameState = {
+        ...opened.state,
+        ...(rules ? { rules } : {}),
+        pendingResponse: { ...opened.state.pendingResponse!, allowedCardIds: ['shan'], ...(announcePass ? { announcePass } : {}) },
+      };
+      return resolve(state, { kind: 'PassAction', seatId: 'seat-b', pendingResponseId: 'resp-1' }, ctx);
+    };
+    const passed = (events: { kind: string }[]) => events.filter((e) => e.kind === 'ResponsePassedEvent');
+
+    it('logs ResponsePassedEvent for an announced window when logPasses is on', () => {
+      const { state, events } = passFrom({ logPasses: true }, true);
+      const expected = { kind: 'ResponsePassedEvent', seatId: 'seat-b', pendingResponseId: 'resp-1', allowedCardIds: ['shan'] };
+      expect(passed(events)).toEqual([expected]);
+      expect(passed(state.log)).toEqual([expected]);
+    });
+
+    it('logs nothing for a pass when logPasses is off', () => {
+      const { state, events } = passFrom(undefined, true);
+      expect(passed(events)).toEqual([]);
+      expect(passed(state.log)).toEqual([]);
+    });
+
+    it('logs nothing for a window without announcePass', () => {
+      const { state, events } = passFrom({ logPasses: true }, undefined);
+      expect(passed(events)).toEqual([]);
+      expect(passed(state.log)).toEqual([]);
+    });
+  });
+
   it('RespondAction resumes resolution and the shield card prevents the damage', () => {
     const state = stateWithShaInHandAndShieldForB();
     const opened = resolve(

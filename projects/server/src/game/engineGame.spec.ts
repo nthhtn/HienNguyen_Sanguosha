@@ -156,6 +156,21 @@ describe('engineGame', () => {
       expect(acknowledgements).toBeGreaterThan(0);
     });
 
+    it('replays a game stored without logPasses with the same hashes', () => {
+      const seats4: GameSeat[] = ['Ann', 'Bo', 'Cy', 'Di'].map((name, i) => ({ seatId: `seat-${i}`, roomPlayerId: `p-${name}`, name, kind: 'bot' }));
+      let passes = 0;
+      for (const seed of [1, 2, 3, 4, 5, 6]) {
+        const rules = { judgmentNotice: true };
+        const { state, moves } = botMoves(openingState(ctx, seed, seats4, rules), 600);
+        passes += moves.filter((m) => m.action.kind === 'PassAction').length;
+        const game = { ...record(), seed, seats: seats4, rules };
+        const replayed = replay(ctx, game, stored(moves), true);
+        expect(stateHash(replayed)).toBe(stateHash(state));
+        expect(replayed.log.some((e) => e.kind === 'ResponsePassedEvent')).toBe(false);
+      }
+      expect(passes).toBeGreaterThan(0);
+    });
+
     it('throws on a hash that differs when checking, and trusts it when not', () => {
       const { moves } = botMoves(openingState(ctx, SEED, SEATS, {}), 10);
       const actions = stored(moves);

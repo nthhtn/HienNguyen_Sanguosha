@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { Action, DECISION_SECONDS, GameState, JUDGMENT_LEAD_IN_MS, cardsOverHandLimit } from 'engine';
 import { DecisionTimer } from './decision-timer.service';
 import { GameService } from './game.service';
+import { PlaybackGate } from './playback-gate.service';
 import { cardDefinitionId } from './labels';
 import { askToChange, settleJudgment } from './settled-judgment.testing';
 
@@ -62,6 +63,17 @@ describe('DecisionTimer', () => {
     beforeEach(() => {
       board = boardLifetime();
       timer.attach(board.ref);
+    });
+
+    it('does not start the decision clock while playback is busy', () => {
+      const gate = TestBed.inject(PlaybackGate);
+      gate.idle.set(false);
+      toPlayPhase();
+      advance(5);
+      expect(timer.secondsLeft()).toBeNull();
+      gate.idle.set(true);
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
     });
 
     it('gives the Play phase 180 seconds', () => {
