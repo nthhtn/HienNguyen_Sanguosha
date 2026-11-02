@@ -152,10 +152,10 @@ describe('Fire Zhuge Liang — Eight Arrays', () => {
 describe('Fire Zhuge Liang — Fire Strategy', () => {
   const blazes = (s: GameState) => h.legal(s, 'seat-a').filter((a) => a.kind === 'UseConversionAction' && a.via.conversionId === 'fire-strategy');
 
-  it('a red hand card as Blaze, at any living seat with a hand card, himself included', () => {
+  it('a red hand card as Blaze, at any other living seat with a hand card', () => {
     const s = table({ 'seat-a:hand': [card('r', 'shan', 'heart', 5), card('k', 'shan', 'spade', 6)], 'seat-c:hand': [card('c', 'sha')] }, { generals: at('seat-a', 'fire-zhuge-liang') });
-    expect(blazes(s).map((a) => a.kind === 'UseConversionAction' && a.targets[0].seatId)).toEqual(['seat-a', 'seat-c']);
-    const selecting = h.act(s, blazes(s)[1]);
+    expect(blazes(s).map((a) => a.kind === 'UseConversionAction' && a.targets[0].seatId)).toEqual(['seat-c']);
+    const selecting = h.act(s, blazes(s)[0]);
     expect(selecting.pendingSelection?.eligibleIds).toEqual(['r']);
   });
 
