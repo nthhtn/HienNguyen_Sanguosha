@@ -2,11 +2,13 @@
   <img class="logo" src="card-art/misc/logo.png" alt="" />
   <h1><a class="brand" routerLink="/play">{{ title() }}</a></h1>
   <nav class="nav">
-    <a mat-button class="nav-play" routerLink="/play" [class.active]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" [attr.aria-label]="'nav.play' | t">
-      <mat-icon>play_arrow</mat-icon><span class="label">{{ 'nav.play' | t }}</span>
-    </a>
-    <a mat-button class="nav-online" routerLink="/rooms" [class.active]="onlineActive()" [attr.aria-current]="onlineActive() ? 'page' : null" [attr.aria-label]="'nav.online' | t">
-      <mat-icon>public</mat-icon><span class="label">{{ 'nav.online' | t }}</span>
+    @if (flags.playOffline) {
+      <a mat-button class="nav-play" routerLink="/play" [class.active]="playActive()" [attr.aria-current]="playActive() ? 'page' : null" [attr.aria-label]="'nav.play' | t">
+        <mat-icon>play_arrow</mat-icon><span class="label">{{ 'nav.play' | t }}</span>
+      </a>
+    }
+    <a mat-button class="nav-online" routerLink="/rooms" [class.active]="onlineActive()" [attr.aria-current]="onlineActive() ? 'page' : null" [attr.aria-label]="(flags.playOffline ? 'nav.online' : 'nav.onlineOnly') | t">
+      <mat-icon>public</mat-icon><span class="label">{{ (flags.playOffline ? 'nav.online' : 'nav.onlineOnly') | t }}</span>
     </a>
     @for (menu of deckMenus; track menu.deck) {
       <button mat-button type="button" [class]="'nav-' + menu.route" [matMenuTriggerFor]="deckMenu" [class.active]="deckActive(menu.route)" [attr.aria-label]="menu.label | t">
@@ -81,8 +83,7 @@
   >
     <mat-icon>{{ effects.enabled() ? 'volume_up' : 'volume_off' }}</mat-icon>
   </button>
-  <!-- The playback speed setting is hidden for now; every game plays at Slow. -->
-  @if (showPlaybackSpeed) {
+  @if (flags.playbackSettings) {
     <button mat-icon-button type="button" class="playback-speed" [matMenuTriggerFor]="speedMenu" [attr.aria-label]="'nav.playbackSpeed' | t" [attr.title]="'nav.playbackSpeed' | t">
       <mat-icon>speed</mat-icon>
     </button>

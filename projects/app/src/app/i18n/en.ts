@@ -523,6 +523,7 @@ export const en = {
   'nav.battlefield.background3': 'Background 3',
   'nav.play': 'Play Offline',
   'nav.online': 'Play Online',
+  'nav.onlineOnly': 'Play',
   'nav.rules': 'Rules',
   'nav.cards.generals': 'Generals',
   'nav.cards.basic': 'Basic Cards',
