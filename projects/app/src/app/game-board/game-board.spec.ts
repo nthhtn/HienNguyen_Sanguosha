@@ -762,6 +762,26 @@ describe('GameBoard event sounds', () => {
     expect(effects()).toEqual([EFFECT_URLS.injure]);
   });
 
+  it('plays the hard injure sound instead for 2 or more damage in one hit', () => {
+    logEvent({ kind: 'DamageDealtEvent', damage: { target: { kind: 'seat', seatId: 'seat-0' }, amount: 2, nature: 'normal' } } as never);
+    expect(effects()).toEqual([EFFECT_URLS['injure-hard']]);
+  });
+
+  it('keeps the hit picture of the damaged seat for 3 seconds, then drops it, without waiting', () => {
+    jest.useFakeTimers();
+    try {
+      const shown = () => (fixture.componentInstance as unknown as { damageEffects(): Record<string, { image: string }> }).damageEffects();
+      logEvent({ kind: 'DamageDealtEvent', damage: { target: { kind: 'seat', seatId: 'seat-0' }, amount: 1, nature: 'fire', cause: { card: { as: 'blaze' } } } } as never);
+      expect(shown()['seat-0'].image).toBe('fire');
+      jest.advanceTimersByTime(2999);
+      expect(shown()['seat-0']).toBeDefined();
+      jest.advanceTimersByTime(1);
+      expect(shown()['seat-0']).toBeUndefined();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('plays the injure sound for plain HP loss', () => {
     logEvent({ kind: 'HpLostEvent', seatId: 'seat-0', amount: 1 });
     expect(effects()).toEqual([EFFECT_URLS.injure]);

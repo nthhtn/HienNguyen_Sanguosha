@@ -175,7 +175,8 @@ joining mid-game or starting a new game shows nothing old:
 |---|---|---|
 | Action History lines | `actionHistory(log, zones, players, seats)` | the history panel |
 | Discard history | `discardHistory(log, pileId)` | the discard pile |
-| Sounds | `soundsFor(events)` | injure, heal, weapon, armor, mount |
+| Sounds | `soundsFor(events)` | injure (injure-element for fire and thunder, else injure-hard for 2+ damage), heal, weapon, armor, mount |
+| Hit pictures | `damageEffectsFor(events)` | one image per damage event on the seat, fading over 3 s, never blocking playback |
 | Compete popup | `competeResults(log, from, seats, players)` | the Compete result dialog |
 | Judgment popup | `judgmentDescription` over `state.judgmentView` | the judgment dialog |
 

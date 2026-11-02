@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
-import { abilityName, AMBITIONIST_ICON_URL, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
+import { abilityName, AMBITIONIST_ICON_URL, equipSlotOf, generalDisplayData, hpIconUrls, kingdomBannerUrl } from 'content';
 import { cardIdDisplayName, seatForce, seatKingdomLabel } from '../labels';
 import { SeatAvatar } from './seat-avatar';
 import { AvatarSkill } from './avatar-skills';
@@ -13,6 +13,7 @@ import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { TMsgPipe } from '../i18n/msg';
 import type { SeatCue } from './playback/seat-cues';
+import { DAMAGE_IMAGE_URLS, ShownDamage } from './damage-effects';
 
 const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   weapon: { label: 'slot.weapon', icon: 'gavel' },
@@ -36,8 +37,12 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
       [class.hit]="cue()?.impact === 'hit'"
       [class.heal]="cue()?.impact === 'heal'"
       [class.dimmed]="dimmed()"
+      [class.has-banner]="bannerUrl()"
       [attr.data-force]="force()"
     >
+      @if (bannerUrl(); as banner) {
+        <img class="kingdom-banner" [src]="banner" alt="" />
+      }
       @if (seat().allegiance === 'ambitionist') {
         <img class="ambitionist-icon" [src]="ambitionistIcon" [alt]="'label.kingdom.Ambitionist' | t" />
       }
@@ -61,6 +66,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           @if (seat().faceDown) {
             <span class="face-down-badge">{{ 'seat.faceDown' | t }}</span>
           }
+          <!-- The picture of the last hit, over the Generals, fading out over a few seconds whatever playback does next. -->
+          @for (fx of shownDamage(); track fx.id) {
+            <img class="damage-fx" [src]="damageUrl(fx.image)" alt="" aria-hidden="true" />
+          }
         </div>
         @if (pile().length) {
           <div class="pile" [attr.aria-label]="'seat.underGeneral' | t">
@@ -81,7 +90,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
         }
         @if (seat().chained) {
           <!-- Chained (Chains): fire or thunder damage to it passes along the chain. -->
-          <span class="chain-badge" [attr.title]="'seat.chainedTitle' | t">{{ 'seat.chained' | t }}</span>
+          <img class="chain-badge" src="/card-art/misc/chain.png" [alt]="'seat.chained' | t" [attr.title]="'seat.chainedTitle' | t" />
         }
         @if (seat().silenced) {
           <span class="silenced-badge">{{ 'seat.noSkills' | t }}</span>
@@ -194,6 +203,9 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     /* A seat outside the current resolution steps back. */
     .tile { transition: opacity 0.25s; }
     .tile.dimmed { opacity: 0.4; }
+    /* Centred on the Generals; appears at once, then fades out, and the board removes it when the fade is done. */
+    .damage-fx { position: absolute; left: 50%; top: 50%; max-width: 100%; max-height: 100%; transform: translate(-50%, -50%); pointer-events: none; z-index: 5; animation: damage-fade 3s ease-in forwards; }
+    @keyframes damage-fade { from { opacity: 1; } to { opacity: 0; } }
     .tile.dying { animation: dying 1s infinite; }
     .tile.hit { animation: shake 0.45s; }
     .tile.hit::after, .tile.heal::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; animation: flash 0.6s forwards; }
@@ -222,13 +234,16 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     @keyframes stamp { from { transform: translate(-50%, -50%) rotate(-12deg) scale(2); opacity: 0; } to { transform: translate(-50%, -50%) rotate(-12deg) scale(1); opacity: 1; } }
     /* Reduced motion: the end state, no movement. */
     @media (prefers-reduced-motion: reduce) {
-      .tile, .tile.hit, .tile.dying, .tile.eliminated .status, .generals.flip, .tile.hit .hp-icon:last-child, .tile.heal .hp-icon:last-child, .float, .tile.viewer .float, .callout { animation: none; transition: none; }
+      .tile, .tile.hit, .tile.dying, .tile.eliminated .status, .generals.flip, .tile.hit .hp-icon:last-child, .tile.heal .hp-icon:last-child, .float, .tile.viewer .float, .callout, .damage-fx { animation: none; transition: none; }
       .tile.hit::after, .tile.heal::after { display: none; }
       .tile.dying { box-shadow: 0 0 0 3px #e53935; }
       .float { opacity: 1; }
     }
     /* Marks an Ambitionist, over the tile's top left corner (inside it: the seat panels clip their edges). */
     .ambitionist-icon { position: absolute; top: 3px; left: 3px; height: 44px; width: auto; z-index: 1; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%)); }
+    /* The kingdom's banner, inside the tile along its left edge; the sections make room for it. */
+    .kingdom-banner { position: absolute; top: 6px; left: 6px; width: 18px; height: 90px; z-index: 1; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 35%)); }
+    .tile.has-banner .sections { margin-left: 22px; }
     .bot-icon { font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-left: 3px; color: #666; }
     .you { margin-left: 4px; color: var(--mat-sys-primary); }
     .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; align-items: center; }
@@ -253,8 +268,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .generals { position: relative; }
     .generals.face-down app-seat-avatar { filter: grayscale(0.6) brightness(0.8); }
     .form-badge, .silenced-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
-    .chain-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #5a4a3a; color: #fbf7ec; border: 1px dashed #d5c8ad; }
-    .chain-badge::before { content: '⛓ '; }
+    .chain-badge { position: absolute; top: 3px; right: 3px; height: 36px; width: auto; z-index: 1; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%)); }
     .face-down-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
     .pile { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
     .slot { position: relative; width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
@@ -297,12 +311,24 @@ export class SeatTile {
   // a resolution is in progress that it is not part of.
   readonly cue = input<SeatCue | null>(null);
   readonly dimmed = input(false);
+  // The last hit's picture, shown until the board clears it.
+  readonly damageEffect = input<ShownDamage | null>(null);
+  protected readonly shownDamage = computed(() => {
+    const fx = this.damageEffect();
+    return fx ? [fx] : [];
+  });
+  protected readonly damageUrl = (image: ShownDamage['image']) => DAMAGE_IMAGE_URLS[image];
   protected readonly showDying = computed(() => !this.seat().eliminated && (this.dying() ?? this.seat().combinedHp <= 0));
 
   // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a
   // seat that belongs to no force).
   protected readonly force = computed(() => seatForce(this.seat()));
   protected readonly ambitionistIcon = AMBITIONIST_ICON_URL;
+  // An Ambitionist keeps its icon instead; a hidden kingdom shows nothing.
+  protected readonly bannerUrl = computed(() => {
+    const seat = this.seat();
+    return seat.allegiance === 'ambitionist' ? null : kingdomBannerUrl(seat.kingdom);
+  });
   protected readonly hpIcons = computed(() => hpIconUrls(this.seat().combinedHp));
 
 

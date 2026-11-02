@@ -9,11 +9,11 @@
   },
   "peach": {
     "name": "Đào",
-    "text": "Hồi 1 Sinh lực, không bao giờ vượt quá Sinh lực tối đa. Giai đoạn ra bài: dùng cho bản thân. Khi một người chơi cận kề cái chết: dùng cho người đó, kể cả bạn. Đây là cách duy nhất để hồi Sinh lực cho người chơi khác."
+    "text": "Hồi 1 Sinh lực, không bao giờ vượt quá Sinh lực tối đa. Giai đoạn ra bài: dùng cho bản thân. Khi một người chơi hấp hối: dùng cho người đó, kể cả bạn. Đây là cách duy nhất để hồi Sinh lực cho người chơi khác."
   },
   "wine": {
     "name": "Tửu",
-    "text": "Khi một người chơi cận kề cái chết, người đó có thể dùng Tửu để hồi một Sinh lực. Ngoài ra, mỗi người chơi có thể đánh lá này một lần trong lượt của mình. Nếu làm vậy, sát thương của Sát tiếp theo tăng thêm một."
+    "text": "Khi một người chơi hấp hối, người đó có thể dùng Tửu để hồi một Sinh lực. Ngoài ra, mỗi người chơi có thể đánh lá này một lần trong lượt của mình. Nếu làm vậy, sát thương của Sát tiếp theo tăng thêm một."
   },
   "fire-attack": {
     "name": "Hỏa Sát",

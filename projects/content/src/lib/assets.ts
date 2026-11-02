@@ -59,6 +59,13 @@ export const GENERAL_PLACEHOLDER_ART_URL = '/card-art/generals/placeholder.svg';
 // The mark overlaid on an Ambitionist's seat. Ships with the assets, like the above.
 export const AMBITIONIST_ICON_URL = '/card-art/generals/ambitionist_icon.png';
 
+// The banner for a revealed kingdom, hung on the left of its seats; none while the kingdom is hidden.
+const KINGDOM_BANNERS: Record<string, string> = { Wei: 'wei', Shu: 'shu', Wu: 'wu', Qun: 'qun' };
+export function kingdomBannerUrl(kingdom: string | undefined): string | null {
+  const file = kingdom ? KINGDOM_BANNERS[kingdom] : undefined;
+  return file ? `/card-art/banner/${file}.png` : null;
+}
+
 // The highest HP with its own icon (misc/hp/1.png … 4.png).
 const MAX_HP_ICONS = 4;
 

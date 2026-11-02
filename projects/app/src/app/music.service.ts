@@ -3,9 +3,11 @@ import { DOCUMENT } from '@angular/common';
 
 export type MusicTrack = 'background' | 'win';
 export const TRACK_URLS: Record<MusicTrack, string> = { background: '/audio/background.ogg', win: '/audio/win.ogg' };
-export type SoundEffect = 'injure' | 'heal' | 'weapon' | 'armor' | 'mount' | 'death-wei' | 'death-shu' | 'death-wu' | 'death-qun';
+export type SoundEffect = 'injure' | 'injure-hard' | 'injure-element' | 'heal' | 'weapon' | 'armor' | 'mount' | 'death-wei' | 'death-shu' | 'death-wu' | 'death-qun';
 export const EFFECT_URLS: Record<SoundEffect, string> = {
   injure: '/audio/injure.ogg',
+  'injure-hard': '/audio/injure_hard.ogg',
+  'injure-element': '/audio/injure_element.ogg',
   heal: '/audio/peach.ogg',
   weapon: '/audio/weapon.ogg',
   armor: '/audio/armor.ogg',

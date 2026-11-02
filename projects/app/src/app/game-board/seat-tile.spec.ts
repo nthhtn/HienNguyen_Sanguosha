@@ -65,7 +65,8 @@ describe('SeatTile', () => {
 
   it('shows a chain marker on a chained seat, and none on an unchained one', () => {
     const marker = render(makeSeat({ chained: true })).querySelector('.chain-badge');
-    expect(marker?.textContent?.trim()).toBe('Chained');
+    expect(marker?.getAttribute('src')).toBe('/card-art/misc/chain.png');
+    expect(marker?.getAttribute('alt')).toBe('Chained');
     expect(render(makeSeat()).querySelector('.chain-badge')).toBeNull();
   });
 
@@ -242,6 +243,13 @@ describe('SeatTile', () => {
     expect(render({ ...makeSeat(), kingdom: 'Wei' }).querySelector('.ambitionist-icon')).toBeNull();
   });
 
+  it('hangs the kingdom banner on the left of a revealed seat, and none while hidden or for an Ambitionist', () => {
+    const banner = render({ ...makeSeat(), kingdom: 'Shu' }).querySelector('img.kingdom-banner') as HTMLImageElement;
+    expect(banner.getAttribute('src')).toBe('/card-art/banner/shu.png');
+    expect(render({ ...makeSeat(), kingdom: 'hidden' }).querySelector('.kingdom-banner')).toBeNull();
+    expect(render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' }).querySelector('.kingdom-banner')).toBeNull();
+  });
+
   it('keeps the force colour on the turn owner and on a responding seat', () => {
     const owner = render({ ...makeSeat(), kingdom: 'Shu' }, { isTurnOwner: true }).querySelector('.tile')!;
     expect(owner.getAttribute('data-force')).toBe('Shu');
@@ -281,6 +289,13 @@ describe('SeatTile', () => {
     const el = renderWith({ cue: { involved: true, callout: { text: { text: 'Help!' }, tone: 'red' } } });
     expect(el.querySelector('.callout')?.textContent).toContain('Help!');
     expect(el.querySelector('.callout')?.classList).toContain('red');
+  });
+
+  it('shows the picture of the last hit, and nothing when there is none', () => {
+    expect(renderWith({}).querySelector('.damage-fx')).toBeNull();
+    const img = renderWith({ damageEffect: { id: 1, image: 'slash-fire' } }).querySelector('.damage-fx');
+    expect(img?.getAttribute('src')).toBe('/card-art/animation/slash_fire.png');
+    expect(img?.parentElement?.classList).toContain('generals');
   });
 
   it('adds the hit class for a hit cue and floats its text', () => {
