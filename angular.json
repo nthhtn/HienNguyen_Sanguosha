@@ -85,7 +85,19 @@
                 "output": "audio"
               }
             ],
-            "styles": ["projects/app/src/styles.scss"]
+            "styles": [
+              "@fontsource/roboto/latin-300.css",
+              "@fontsource/roboto/latin-400.css",
+              "@fontsource/roboto/latin-500.css",
+              "@fontsource/roboto/latin-ext-300.css",
+              "@fontsource/roboto/latin-ext-400.css",
+              "@fontsource/roboto/latin-ext-500.css",
+              "@fontsource/roboto/vietnamese-300.css",
+              "@fontsource/roboto/vietnamese-400.css",
+              "@fontsource/roboto/vietnamese-500.css",
+              "@fontsource/material-icons/latin-400.css",
+              "projects/app/src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
