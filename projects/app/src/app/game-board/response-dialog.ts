@@ -51,6 +51,14 @@ const NO_RESPONSE = 'no-response';
         @if (data.description.latest; as latest) {
           <p class="latest">{{ latest }}</p>
         }
+        @if (data.description.chain; as chain) {
+          <h3>{{ 'respDialog.chain' | t }}</h3>
+          <ol class="chain">
+            @for (step of chain; track $index) {
+              <li>{{ step }}</li>
+            }
+          </ol>
+        }
         <p class="prompt">{{ data.description.prompt }}</p>
       </div>
 
@@ -96,6 +104,7 @@ const NO_RESPONSE = 'no-response';
     .description { margin-bottom: 12px; }
     .description p { margin: 0 0 4px; }
     .source { font: var(--mat-sys-title-medium); }
+    .chain { margin: 0 0 8px; padding-left: 24px; }
     .latest { color: var(--mat-sys-on-surface-variant); }
     .prompt { font: var(--mat-sys-body-large); color: var(--mat-sys-primary); }
     .options { display: flex; flex-direction: column; }

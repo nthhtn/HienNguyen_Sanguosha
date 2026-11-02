@@ -134,7 +134,7 @@ describe('describeResponse: Wuxie Kongjie checks', () => {
     const pending = wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat('seat-0') });
     expect(describeResponse(state(log, pending), 'seat-0')).toMatchObject({
       source: 'Seat 1 used Barbarians on you',
-      prompt: 'Play Wuxie to cancel it?',
+      prompt: 'Play Wuxie to cancel Barbarians?',
       outcome: 'Barbarians takes effect on you',
     });
   });
@@ -145,12 +145,32 @@ describe('describeResponse: Wuxie Kongjie checks', () => {
     expect(describeResponse(state(log, pending), 'seat-0')).toMatchObject({ source: 'Seat 1 used Draw Two', outcome: 'Draw Two takes effect' });
   });
 
-  it('asks whether to cancel another seat’s Wuxie Kongjie', () => {
+  it('asks whether to cancel another seat’s Wuxie Kongjie, listing the Tool it was played on', () => {
+    const wuxie: CardInstance = { instanceId: 'wx-9', definitionId: 'wuxie', suit: 'spade', rank: 11 };
+    const log: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(barbarians), targets: [] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-2', card: usedCardOf(wuxie), targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: barbarians.instanceId, targetSeatId: 'seat-0' } },
+    ];
     const pending = wuxieWindow('seat-0', { kind: 'counter-wuxie', wuxieSeatId: 'seat-2' });
-    expect(describeResponse(state([], pending), 'seat-0')).toMatchObject({
+    expect(describeResponse(state(log, pending), 'seat-0')).toMatchObject({
       source: 'Seat 2 played Wuxie',
-      prompt: 'Play Wuxie to cancel it?',
+      chain: ['Seat 1 used Barbarians on you', 'Seat 2 played Wuxie'],
+      prompt: "Play Wuxie to cancel step 2, Seat 2's Wuxie?",
       outcome: "Seat 2's Wuxie stands",
+    });
+  });
+
+  it('lists every Wuxie in a longer chain, oldest first', () => {
+    const wuxie = (n: number): CardInstance => ({ instanceId: `wx-${n}`, definitionId: 'wuxie', suit: 'spade', rank: 11 });
+    const log: EngineEvent[] = [
+      { kind: 'CardPlayedEvent', seatId: 'seat-1', card: usedCardOf(barbarians), targets: [] },
+      { kind: 'CardPlayedEvent', seatId: 'seat-2', card: usedCardOf(wuxie(1)), targets: [], inResponseTo: { seatId: 'seat-1', cardInstanceId: barbarians.instanceId, targetSeatId: 'seat-0' } },
+      { kind: 'CardPlayedEvent', seatId: 'seat-3', card: usedCardOf(wuxie(2)), targets: [], inResponseTo: { seatId: 'seat-2', counters: true } },
+    ];
+    const pending = wuxieWindow('seat-0', { kind: 'counter-wuxie', wuxieSeatId: 'seat-3' });
+    expect(describeResponse(state(log, pending), 'seat-0')).toMatchObject({
+      chain: ['Seat 1 used Barbarians on you', 'Seat 2 played Wuxie', 'Seat 3 played Wuxie'],
+      prompt: "Play Wuxie to cancel step 3, Seat 3's Wuxie?",
     });
   });
 
@@ -159,8 +179,8 @@ describe('describeResponse: Wuxie Kongjie checks', () => {
     const plain: CardInstance = { instanceId: 'wx-1', definitionId: 'wuxie', suit: 'spade', rank: 11 };
     const pending = { ...wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat('seat-0') }), allowedCardIds: ['wuxie', 'wuxie-guo'] };
     const held = (cards: CardInstance[]): GameState => ({ ...state([], pending), zones: [{ id: 'seat-0:hand', kind: 'hand', ownerSeatId: 'seat-0', cards }] });
-    expect(describeResponse(held([guo]), 'seat-0')!.prompt).toBe('Play Wuxie Kingdom to cancel it?');
-    expect(describeResponse(held([plain, guo]), 'seat-0')!.prompt).toBe('Play Wuxie to cancel it?');
+    expect(describeResponse(held([guo]), 'seat-0')!.prompt).toBe('Play Wuxie Kingdom to cancel Barbarians?');
+    expect(describeResponse(held([plain, guo]), 'seat-0')!.prompt).toBe('Play Wuxie to cancel Barbarians?');
   });
 
   it('names the counter card the seat actually played, such as Wuxie Kingdom', () => {
@@ -169,7 +189,7 @@ describe('describeResponse: Wuxie Kongjie checks', () => {
     const pending = { ...wuxieWindow('seat-0', { kind: 'counter-wuxie', wuxieSeatId: 'seat-2' }), allowedCardIds: ['wuxie', 'wuxie-guo'] };
     expect(describeResponse(state(log, pending), 'seat-0')).toMatchObject({
       source: 'Seat 2 played Wuxie Kingdom',
-      prompt: 'Play Wuxie to cancel it?',
+      prompt: "Play Wuxie to cancel step 2, Seat 2's Wuxie Kingdom?",
       outcome: "Seat 2's Wuxie Kingdom stands",
     });
   });
@@ -201,7 +221,7 @@ describe('waitingLine', () => {
     };
     expect(waitingLine(state([], dying))).toBe('Waiting on Hing to save Seat 2');
     const wuxie = wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat('seat-0') });
-    expect(waitingLine(state([], wuxie))).toBe('Waiting on Hing: Wuxie?');
+    expect(waitingLine(state([], wuxie))).toBe('Waiting on Hing');
     const barbariansWindow: PendingResponse = {
       id: 'b1', respondingSeatId: 'seat-1', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
       reason: { kind: 'card-effect', card: used(barbarians), userSeatId: 'seat-0' }, context: { effect: noop },
@@ -263,7 +283,7 @@ describe('describeResponse: a judgment’s Wuxie Kongjie check', () => {
   it('says whose judgment is coming, not who used the card', () => {
     expect(describeResponse(judging('seat-1'), 'seat-0')).toMatchObject({
       source: 'Seat 1 is about to judge Capture',
-      prompt: 'Play Wuxie to cancel it?',
+      prompt: 'Play Wuxie to cancel Capture?',
       outcome: 'Seat 1 judges Capture',
     });
   });

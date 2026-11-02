@@ -5,6 +5,8 @@ import { Action } from '../pipeline/actions';
 export const DECISION_SECONDS = {
   // Answering a Wuxie, or a Wuxie played against one: a yes or no that every seat in the chain waits on.
   wuxie: 15,
+  // A response window the seat has nothing to answer with (no Sha, Dodge, Wuxie or Peach to play, no skill to use): only Pass is left.
+  noAnswer: 5,
   // The dying round's Peach.
   dying: 20,
   // Any other response window: a Shan, a Sha for a Duel, Barbarians or Coerce, a skill's response.
@@ -21,6 +23,8 @@ export const DECISION_SECONDS = {
   selection: 300,
   // A settled judgment, for anyone to read and close: the countdown after its animation.
   notice: 5,
+  // A look at cards or a General that is only shown, then closed (Ascertain's look).
+  look: 10,
   // A skill's decision whether to change a judgment's card.
   judgmentChange: 15,
   // One budget for a whole Play phase, paused while a response is under way.
@@ -68,10 +72,12 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
     return { kind: 'judgmentChange', seatId, key: `judgmentChange:${rounds}`, leadInMs: leadIn(rounds <= 1 ? JUDGMENT_LEAD_IN_MS.head : JUDGMENT_LEAD_IN_MS.replace) };
   }
   if (state.pendingArrangement) return step('arrange');
+  if (state.pendingChoice?.look) return step('look');
   if (state.pendingChoice) return step(state.pendingChoice.verb === 'use' ? 'ask' : 'pick');
   if (state.pendingSelection) return step('pick');
   if (state.pendingResponse) {
     const reason = state.pendingResponse.reason?.kind;
+    if (legal.every((a) => a.kind === 'PassAction')) return step('noAnswer');
     return step(reason === 'wuxie' || reason === 'counter-wuxie' ? 'wuxie' : reason === 'dying' ? 'dying' : 'response');
   }
   if (state.phase === 'GeneralSelection') return { kind: 'selection', seatId, key: `selection:${seatId}` };

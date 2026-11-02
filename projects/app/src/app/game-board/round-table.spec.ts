@@ -183,7 +183,7 @@ describe('RoundTable', () => {
     };
     const players = [{ id: 'p0', seatId: 'seat-0', kind: 'human' as const, name: 'Hing' }];
     const el = render(state({ pendingResponse: pending, players }));
-    expect(el.querySelector('.waiting')!.textContent!.trim()).toBe('Waiting on Hing: Wuxie?');
+    expect(el.querySelector('.waiting')!.textContent!.trim()).toBe('Waiting on Hing');
   });
 
   it('shows the turned-up cards in the centre, and marks the seat choosing one', () => {

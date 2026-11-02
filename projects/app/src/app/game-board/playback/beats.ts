@@ -5,7 +5,7 @@ export type BeatVisual =
   | { kind: 'turn'; seatId: string }
   | { kind: 'phase'; seatId: string; phase: Phase }
   | { kind: 'draw'; seatId: string; count: number }
-  | { kind: 'play'; seatId: string; card: UsedCard; targetSeatIds: string[]; answersSeatId?: string; response: boolean }
+  | { kind: 'play'; seatId: string; card: UsedCard; targetSeatIds: string[]; chained?: true; answersSeatId?: string; response: boolean }
   | { kind: 'pass'; seatId: string; cardId?: string }
   | { kind: 'move'; cardInstanceId: string; fromZoneId: string; toZoneId: string; card?: CardInstance }
   | { kind: 'damage'; seatId: string; amount: number; sourceSeatId?: string }
@@ -34,6 +34,10 @@ type BeatDefinition<E extends EngineEvent> = {
   visual: (event: E, context: BeatContext) => BeatVisual | null;
 };
 
+// Cards whose targets are a route, not a fan-out: the arrows run user to first target, then on to the next (Coerce:
+// the holder, then the seat its Sha is aimed at).
+const CHAINED_TARGET_CARDS: ReadonlySet<string> = new Set(['coerce']);
+
 // The pause between two batches of events.
 export const BATCH_GAP_MS = 350;
 
@@ -48,12 +52,13 @@ export const BEATS: { [K in EngineEvent['kind']]?: BeatDefinition<Extract<Engine
     visual: (e) => ({ kind: 'draw', seatId: e.seatId, count: e.cardInstanceIds.length }),
   },
   CardPlayedEvent: {
-    durationMs: (e) => 900 + (e.targets.length > 2 ? 150 : 0),
+    durationMs: (e) => 900 + (e.targets.length > 2 ? 150 : 0) + (CHAINED_TARGET_CARDS.has(e.card.as) && e.targets.length > 1 ? 300 : 0),
     visual: (e) => ({
       kind: 'play',
       seatId: e.seatId,
       card: e.card,
       targetSeatIds: e.targets.map((t) => t.seatId),
+      ...(CHAINED_TARGET_CARDS.has(e.card.as) && e.targets.length > 1 ? { chained: true as const } : {}),
       answersSeatId: e.card.as === 'peach' && e.inResponseTo?.dyingSeatId ? e.inResponseTo.dyingSeatId : e.inResponseTo?.seatId,
       response: !!e.inResponseTo,
     }),

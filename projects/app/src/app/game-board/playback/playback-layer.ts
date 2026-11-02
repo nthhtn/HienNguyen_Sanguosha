@@ -29,6 +29,8 @@ interface TargetLine {
   key: string;
   d: string;
   drawMs: number;
+  // How long into the beat it starts: a route's later arrows wait for the earlier ones.
+  delayMs: number;
   showMs: number;
 }
 
@@ -91,11 +93,16 @@ export class PlaybackAnimations {
 @Directive({ selector: '[appShowFor]' })
 export class ShowForMotion {
   readonly ms = input.required<number>({ alias: 'appShowFor' });
+  // Kept hidden this long first; `ms` still counts from the start of the beat.
+  readonly appShowDelay = input(0);
 
   constructor() {
     const el = inject<ElementRef<Element>>(ElementRef).nativeElement;
     const animations = inject(PlaybackAnimations);
-    afterNextRender(() => animations.run(el, APPEAR_AND_FADE, { duration: this.ms(), easing: 'ease-out', fill: 'forwards' }));
+    afterNextRender(() => {
+      const delay = Math.min(this.appShowDelay(), this.ms());
+      animations.run(el, APPEAR_AND_FADE, { duration: this.ms() - delay, delay, easing: 'ease-out', fill: delay > 0 ? 'both' : 'forwards' });
+    });
   }
 }
 
@@ -103,6 +110,7 @@ export class ShowForMotion {
 @Directive({ selector: '[appLineDraw]' })
 export class LineDrawMotion {
   readonly drawMs = input.required<number>({ alias: 'appLineDraw' });
+  readonly appLineDelay = input(0);
 
   constructor() {
     const el = inject<ElementRef<SVGPathElement>>(ElementRef).nativeElement;
@@ -116,7 +124,7 @@ export class LineDrawMotion {
           { strokeDasharray: `${length}`, strokeDashoffset: `${length}` },
           { strokeDasharray: `${length}`, strokeDashoffset: '0' },
         ],
-        { duration: this.drawMs(), easing: 'ease-out', fill: 'backwards' }
+        { duration: this.drawMs(), delay: this.appLineDelay(), easing: 'ease-out', fill: 'backwards' }
       );
     });
   }
@@ -140,9 +148,9 @@ let layerCount = 0;
         </marker>
       </defs>
       @for (line of lines(); track line.key) {
-        <svg:g class="arrow" [appShowFor]="line.showMs">
-          <svg:path class="outline" [attr.d]="line.d" [appLineDraw]="line.drawMs" />
-          <svg:path class="line" [attr.d]="line.d" [attr.marker-end]="'url(#' + headId + ')'" [appLineDraw]="line.drawMs" />
+        <svg:g class="arrow" [appShowFor]="line.showMs" [appShowDelay]="line.delayMs">
+          <svg:path class="outline" [attr.d]="line.d" [appLineDraw]="line.drawMs" [appLineDelay]="line.delayMs" />
+          <svg:path class="line" [attr.d]="line.d" [attr.marker-end]="'url(#' + headId + ')'" [appLineDraw]="line.drawMs" [appLineDelay]="line.delayMs" />
         </svg:g>
       }
     </svg>
@@ -269,10 +277,13 @@ export class PlaybackLayer {
     }
     const id = this.nextId++;
     this.played.set({ id, ...playedCard(visual.card, id), showMs: beatMs });
-    this.lines.set(visual.targetSeatIds.map((to) => this.targetLine(visual.seatId, to, 0.35 * beatMs, beatMs)));
+    // A route draws one arrow after another; a fan-out draws them together.
+    const legs = visual.chained ? visual.targetSeatIds.map((to, i) => ({ from: i === 0 ? visual.seatId : visual.targetSeatIds[i - 1], to, i })) : visual.targetSeatIds.map((to) => ({ from: visual.seatId, to, i: 0 }));
+    const drawMs = 0.35 * beatMs * (visual.chained ? 0.8 : 1);
+    this.lines.set(legs.map((leg) => this.targetLine(leg.from, leg.to, drawMs, beatMs, leg.i * drawMs)));
   }
 
-  private targetLine(from: string, to: string, drawMs: number, showMs: number): TargetLine {
+  private targetLine(from: string, to: string, drawMs: number, showMs: number, delayMs: number): TargetLine {
     const origin = this.host.getBoundingClientRect();
     const local = (el: Element | null): Point => {
       const p = el ? centreOf(el) : { x: origin.left + origin.width / 2, y: origin.top + this.centreY() };
@@ -288,7 +299,7 @@ export class PlaybackLayer {
     };
     const start = end(this.seatElement(from));
     const finish = end(this.seatElement(to));
-    return { key: `${this.nextId++}:${from}>${to}`, d: curve(start.point, finish.point, start.radius, finish.radius), drawMs, showMs };
+    return { key: `${this.nextId++}:${from}>${to}`, d: curve(start.point, finish.point, start.radius, finish.radius), drawMs, delayMs, showMs };
   }
 
   private seatElement(seatId: string): Element | null {

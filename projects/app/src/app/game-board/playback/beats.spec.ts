@@ -29,6 +29,13 @@ describe('planBeat', () => {
     ['SeatEliminatedEvent', { kind: 'SeatEliminatedEvent', seatId: 'seat-1' }, 1400, 'eliminated'],
     ['AbilityUsedEvent', { kind: 'AbilityUsedEvent', owner: { kind: 'general', seatId: 'seat-1', slot: 'main', skillId: 'x' }, abilityId: 'x', outcome: 'o' }, 700, 'ability'],
   ];
+  it('plays Coerce as a route: user to the holder, then on to the Sha target, in a longer beat', () => {
+    const beat = planBeat(played('coerce', ['seat-1', 'seat-2']), 3, context());
+    expect(beat.durationMs).toBe(1200);
+    expect(beat.visual).toMatchObject({ kind: 'play', seatId: 'seat-0', targetSeatIds: ['seat-1', 'seat-2'], chained: true });
+    expect(planBeat(played('duel', ['seat-1']), 3, context()).visual).not.toHaveProperty('chained');
+  });
+
   it.each(rows)('%s takes %i ms', (_name, event, durationMs, visualKind) => {
     const beat = planBeat(event, 3, context());
     expect(beat.logIndex).toBe(3);

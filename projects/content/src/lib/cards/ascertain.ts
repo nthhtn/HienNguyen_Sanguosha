@@ -18,6 +18,7 @@ function secretChoice(state: GameState, tool: UsedCard, userSeatId: string, targ
     verb: 'pick',
     options,
     secret: true,
+    ...(stage === 'look' ? { look: true as const } : {}),
   };
   return { kind: 'OpenChoiceEffect', choice };
 }
