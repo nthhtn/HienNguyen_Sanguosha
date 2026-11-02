@@ -18,5 +18,6 @@ in git history), so a deployment never needs to crawl.
 `manifest.json` records source URLs, crawl dates and dimensions for each asset.
 
 `preview/` holds the short skill preview videos, `<general-id>_<skill-id>_en.mp4`
-and `<general-id>_<skill-id>_vi.mp4`. They are made for this project, not crawled, so they have
+and `<general-id>_<skill-id>_vi.mp4`, with `index.json` listing the languages each skill has so the
+Wiki shows a player only for those. They are made for this project, not crawled, so they have
 no manifest entry.

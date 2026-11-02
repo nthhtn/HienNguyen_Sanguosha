@@ -1,6 +1,7 @@
 import manifest from '../../assets/manifest.json';
 import { baseGeneralId, isKingdomWarsGeneralId } from './generalIds';
 import skins from '../../assets/generals/skins/skins.json';
+import previews from '../../assets/preview/index.json';
 
 interface AssetManifestEntry {
   localPath: string;
@@ -44,6 +45,28 @@ export function generalDeathVoiceUrl(id: string): string | null {
   const skin = GENERAL_SKINS[base];
   if (!skin || NO_DEATH_VOICE.has(base)) return null;
   return `/audio/death/${skin.replace(/^.*\//, '').replace(/\.[^.]+$/, '')}.ogg`;
+}
+
+// A skill's id in file names: its English name in lower-case words joined by hyphens ("Refuting Death" is
+// refuting-death), the same key the Vietnamese locale uses.
+export const skillFileId = (skillName: string): string =>
+  skillName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+// The languages each skill preview exists in, by `<General id>_<skill id>`. A preview is a file
+// `preview/<General id>_<skill id>_<language>.mp4`, and is listed here when it is added, so the Wiki
+// offers a video only for a skill that has one.
+const SKILL_PREVIEWS: Record<string, string[]> = previews;
+
+// The preview video for one of a General's skills, in the language asked for, else in English. Null when
+// the skill has none. A Kingdom Wars id and its base id give the same video.
+export function skillPreviewUrl(generalId: string, skillName: string, language: string, index: Record<string, string[]> = SKILL_PREVIEWS): string | null {
+  const key = `${baseGeneralId(generalId)}_${skillFileId(skillName)}`;
+  const languages = index[key] ?? [];
+  const chosen = languages.includes(language) ? language : languages.includes('en') ? 'en' : null;
+  return chosen ? `/preview/${key}_${chosen}.mp4` : null;
 }
 
 // The back of a playing card, shown for a card whose face is hidden.

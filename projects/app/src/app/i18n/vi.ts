@@ -591,6 +591,8 @@ export const vi: Messages = {
   'wiki.voices': 'Giọng nói:',
   'wiki.voice': 'Giọng nói:',
   'wiki.playDeathVoice': 'Phát giọng nói',
+  'wiki.playPreview': 'Xem video minh họa',
+  'wiki.skillPreview': 'Video minh họa kỹ năng',
   'wiki.playVoice.male': 'Phát giọng nam',
   'wiki.playVoice.female': 'Phát giọng nữ',
   'wiki.female': 'Nữ',
