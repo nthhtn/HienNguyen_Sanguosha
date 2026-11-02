@@ -5,6 +5,7 @@ import { provideRouter, Router } from '@angular/router';
 import type { Me } from 'protocol';
 import { App } from './app';
 import { AuthService } from './auth/auth.service';
+import { FEATURE_FLAGS } from './feature-flags';
 import { MUSIC_PLAYER_FACTORY } from './music.service';
 
 const me = signal<Me | null>(null);
@@ -89,9 +90,24 @@ describe('App', () => {
     localStorage.clear();
   });
 
-  it('shows no playback speed setting for now', async () => {
+  it('shows the playback speed setting when playback settings are on', async () => {
     const { el } = await render();
-    expect(el.querySelector('button.playback-speed')).toBeNull();
+    expect(el.querySelector('button.playback-speed')).not.toBeNull();
+  });
+
+  describe('with test-only features off', () => {
+    beforeEach(() => TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: false, playbackSettings: false } }));
+
+    it('hides the playback speed setting', async () => {
+      const { el } = await render('/rooms');
+      expect(el.querySelector('button.playback-speed')).toBeNull();
+    });
+
+    it('hides Play Offline and labels the online link Play', async () => {
+      const { el } = await render('/rooms');
+      expect(el.querySelector('a.nav-play')).toBeNull();
+      expect(el.querySelector('a.nav-online .label')!.textContent).toBe('Play');
+    });
   });
 
   it('puts Battlefield, the account, the language menu and the sound buttons on the right, in that order', async () => {

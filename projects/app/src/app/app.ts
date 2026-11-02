@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-background.service';
 import { AuthService } from './auth/auth.service';
+import { FEATURE_FLAGS } from './feature-flags';
 import { LanguageSwitcher } from './i18n/language-switcher';
 import { MusicService, SoundEffects } from './music.service';
 import { PLAYBACK_SPEEDS, PlaybackSpeed } from './playback-speed.service';
@@ -87,8 +88,7 @@ export class App {
   protected readonly music = inject(MusicService);
   protected readonly effects = inject(SoundEffects);
 
-  // The playback speed setting is hidden for now; every game plays at Slow.
-  protected readonly showPlaybackSpeed = false;
+  protected readonly flags = inject(FEATURE_FLAGS);
   protected readonly playbackSpeed = inject(PlaybackSpeed);
   protected readonly speedOptions = PLAYBACK_SPEEDS.map((id) => ({ id, label: `speed.${id}` as MessageKey }));
 
