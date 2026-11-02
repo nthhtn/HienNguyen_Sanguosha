@@ -66,6 +66,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           @if (seat().faceDown) {
             <span class="face-down-badge">{{ 'seat.faceDown' | t }}</span>
           }
+          <!-- The picture of the last hit, over the Generals, fading out over a few seconds whatever playback does next. -->
+          @for (fx of shownDamage(); track fx.id) {
+            <img class="damage-fx" [src]="damageUrl(fx.image)" alt="" aria-hidden="true" />
+          }
         </div>
         @if (pile().length) {
           <div class="pile" [attr.aria-label]="'seat.underGeneral' | t">
@@ -151,10 +155,6 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           </div>
         </section>
       </div>
-      <!-- The picture of the last hit, fading out over a few seconds whatever playback does next. -->
-      @for (fx of shownDamage(); track fx.id) {
-        <img class="damage-fx" [src]="damageUrl(fx.image)" alt="" aria-hidden="true" />
-      }
       <!-- What the seat just did or took, while playback shows it. -->
       @if (cue(); as c) {
         @if (c.floatText) {
@@ -203,8 +203,8 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     /* A seat outside the current resolution steps back. */
     .tile { transition: opacity 0.25s; }
     .tile.dimmed { opacity: 0.4; }
-    /* Appears at once, then fades out; the board removes it when the fade is done. */
-    .damage-fx { position: absolute; left: 50%; top: 50%; max-width: 90%; max-height: 90%; transform: translate(-50%, -50%); pointer-events: none; z-index: 5; animation: damage-fade 3s ease-in forwards; }
+    /* Centred on the Generals; appears at once, then fades out, and the board removes it when the fade is done. */
+    .damage-fx { position: absolute; left: 50%; top: 50%; max-width: 100%; max-height: 100%; transform: translate(-50%, -50%); pointer-events: none; z-index: 5; animation: damage-fade 3s ease-in forwards; }
     @keyframes damage-fade { from { opacity: 1; } to { opacity: 0; } }
     .tile.dying { animation: dying 1s infinite; }
     .tile.hit { animation: shake 0.45s; }

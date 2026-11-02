@@ -295,6 +295,7 @@ describe('SeatTile', () => {
     expect(renderWith({}).querySelector('.damage-fx')).toBeNull();
     const img = renderWith({ damageEffect: { id: 1, image: 'slash-fire' } }).querySelector('.damage-fx');
     expect(img?.getAttribute('src')).toBe('/card-art/animation/slash_fire.png');
+    expect(img?.parentElement?.classList).toContain('generals');
   });
 
   it('adds the hit class for a hit cue and floats its text', () => {
