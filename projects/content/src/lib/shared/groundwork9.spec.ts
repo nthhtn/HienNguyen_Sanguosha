@@ -72,6 +72,12 @@ describe('Blaze', () => {
     }
   });
 
+  it('never targets its own user, even with other hand cards', () => {
+    const s = table({ 'seat-a:hand': [card('b1', 'blaze', 'heart', 4), card('m', 'shan', 'spade', 2)], 'seat-b:hand': [card('t', 'sha', 'spade', 9)] });
+    const plays = h.legal(s, 'seat-a').filter((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === 'b1');
+    expect(plays.map((a) => a.kind === 'PlayCardAction' && a.targets[0]?.seatId)).toEqual(['seat-b']);
+  });
+
   it('the target shows a hand card; a matching discard deals 1 fire damage; Cancel deals none', () => {
     const blaze = { as: 'blaze', colour: 'red' as const, suit: 'heart' as const, rank: 4, physical: [] };
     let s = h.run(table({ 'seat-a:hand': [card('m', 'shan', 'spade', 2), card('o', 'shan', 'club', 3)], 'seat-b:hand': [card('t', 'sha', 'spade', 9)] }), [

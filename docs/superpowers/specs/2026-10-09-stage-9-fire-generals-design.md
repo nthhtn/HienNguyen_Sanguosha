@@ -113,7 +113,7 @@ weapon, and whom it attacks) keeps its two-step menu.
   armour.
 - **Fire Zhuge Liang: Fire Strategy** (conversion, Play Phase). Any red hand
   card as a **Blaze** (a Tool, made only this way):
-  - It targets any living seat holding a hand card, you included, with the
+  - It targets any other living seat holding a hand card, with the
     usual Wuxie check.
   - The target shows one of its hand cards, of its choice, to everyone.
   - You may then discard a hand card of the same suit to deal 1 plain damage
