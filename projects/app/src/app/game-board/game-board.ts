@@ -44,6 +44,7 @@ import { StartRevealDialog, StartRevealDialogData } from './start-reveal-dialog'
 import { judgmentDecision } from './judgment-decision';
 import { judgmentDescription } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
+import { DAMAGE_FADE_MS, damageEffectsFor, ShownDamage } from './damage-effects';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
 import { DecisionTimer } from '../decision-timer.service';
@@ -117,7 +118,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
             <div class="board">
               <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
               <div class="board-grid">
-                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [resolving]="resolving()" />
+                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [damageEffects]="damageEffects()" [resolving]="resolving()" />
                 <!-- Bottom left corner: the viewer's own seat, off the table. -->
                 @if (viewerSeat(); as seat) {
                   <div class="your-seat" [attr.data-seat-id]="seat.id">
@@ -136,6 +137,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                       [stash]="zoneCards(seat.stash?.zoneId ?? '')"
                       [dying]="dyingOf(seat)"
                       [cue]="seatCueMap()[seat.id] ?? null"
+                      [damageEffect]="damageEffects()[seat.id] ?? null"
                       [dimmed]="resolving() && !seatCueMap()[seat.id]?.involved"
                       [skills]="viewerSkills()"
                       (useSkill)="submit($event)"
@@ -363,6 +365,7 @@ export class GameBoard {
         if (seen !== null && log.length > seen) {
           const fresh = log.slice(seen);
           for (const sound of soundsFor(fresh)) this.sounds.play(sound);
+          this.showDamage(damageEffectsFor(fresh, this.gameService.publicState()?.log.slice(log.length) ?? []));
           for (const cry of deathSoundsFor(fresh, state)) {
             if (cry.url) this.sounds.playDeathVoice(cry.url);
             else if (cry.effect) this.sounds.play(cry.effect);
@@ -396,6 +399,7 @@ export class GameBoard {
         this.competeDialog?.close();
       });
     });
+    inject(DestroyRef).onDestroy(() => this.damageTimers.forEach(clearTimeout));
     // A hold never released would keep playback shut; and no popup opens for a board that is gone.
     inject(DestroyRef).onDestroy(() => {
       this.destroyed = true;
@@ -452,6 +456,27 @@ export class GameBoard {
   private readonly centre = signal<ResolutionCentre>(NO_CENTRE);
   // Seats outside the resolution dim only while a card is on show, as long as the card itself.
   protected readonly resolving = computed(() => this.director.current()?.visual?.kind === 'play');
+  // The hit pictures on show, per seat; they fade on their own and never hold playback.
+  protected readonly damageEffects = signal<Partial<Record<string, ShownDamage>>>({});
+  private damageSeq = 0;
+
+  private showDamage(effects: readonly { seatId: string; image: ShownDamage['image'] }[]): void {
+    for (const { seatId, image } of effects) {
+      const id = ++this.damageSeq;
+      this.damageEffects.update((shown) => ({ ...shown, [seatId]: { id, image } }));
+      const timer = setTimeout(() => {
+        this.damageTimers.delete(timer);
+        this.damageEffects.update((shown) => {
+          if (shown[seatId]?.id !== id) return shown;
+          const { [seatId]: _gone, ...rest } = shown;
+          return rest;
+        });
+      }, DAMAGE_FADE_MS);
+      this.damageTimers.add(timer);
+    }
+  }
+  private readonly damageTimers = new Set<ReturnType<typeof setTimeout>>();
+
   protected readonly seatCueMap = computed((): Partial<Record<string, SeatCue>> => seatCues(this.director.current(), this.centre(), this.i18n.translator));
   // The seat the board is shown for: the active one, or once the game is over, the one whose view
   // plays out the last moves before Game Over.

@@ -184,7 +184,7 @@ describe('status and table lines in Vietnamese', () => {
     expect(vi_([{ kind: 'HealEvent', target: seat('seat-0'), amount: 1 }])).toEqual(['Người chơi 0 hồi 1 Sinh lực']);
     expect(vi_([{ kind: 'CardsDrawnEvent', seatId: 'seat-0', cardInstanceIds: ['a'] }])).toEqual(['Người chơi 0 rút 1 lá bài']);
     expect(vi_([{ kind: 'CardsDrawnEvent', seatId: 'seat-1', cardInstanceIds: ['a', 'b'] }])).toEqual(['Người chơi 1 rút 2 lá bài']);
-    expect(vi_([{ kind: 'SeatDyingEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 cận kề cái chết']);
+    expect(vi_([{ kind: 'SeatDyingEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 hấp hối']);
     expect(vi_([{ kind: 'SeatSavedEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 đã được cứu']);
     expect(vi_([{ kind: 'SeatEliminatedEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 bị loại']);
     expect(vi_([{ kind: 'GeneralsChosenEvent', seatId: 'seat-0' }])).toEqual(['Người chơi 0 đã chọn Tướng của mình']);

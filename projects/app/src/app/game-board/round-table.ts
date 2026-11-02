@@ -7,6 +7,7 @@ import { waitingLine } from './response-description';
 import { seatName } from '../labels';
 import { SeatTile } from './seat-tile';
 import type { SeatCue } from './playback/seat-cues';
+import type { ShownDamage } from './damage-effects';
 import { PlayingCard } from './playing-card';
 import { PlaybackLayer } from './playback/playback-layer';
 import { CardArt } from './card-art';
@@ -85,6 +86,7 @@ const STATUS_HEIGHT = 24;
             [stash]="judgmentOf(p.seat.stash?.zoneId ?? '')"
             [dying]="dyingOf(p.seat)"
             [cue]="cues()[p.seat.id] ?? null"
+            [damageEffect]="damageEffects()[p.seat.id] ?? null"
             [dimmed]="resolving() && !cues()[p.seat.id]?.involved"
           />
         </div>
@@ -149,6 +151,7 @@ export class RoundTable {
   readonly botSeatIds = input<string[]>([]);
   // What playback shows on each seat now, and whether a resolution is in progress (seats outside it dim).
   readonly cues = input<Partial<Record<string, SeatCue>>>({});
+  readonly damageEffects = input<Partial<Record<string, ShownDamage>>>({});
   readonly resolving = input(false);
 
   private readonly i18n = inject(I18n);

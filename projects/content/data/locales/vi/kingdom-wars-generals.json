@@ -412,7 +412,7 @@
       },
       "resurrection": {
         "name": "Niết bàn",
-        "text": "Khi bạn cận kề cái chết, bạn có thể bỏ toàn bộ bài của mình (trên tay và trang bị) cùng mọi lá bài trong khu chờ, rồi lật lại mặt Tướng và gỡ xích, rút ba lá bài và hồi Sinh lực lên 3."
+        "text": "Khi bạn hấp hối, bạn có thể bỏ toàn bộ bài của mình (trên tay và trang bị) cùng mọi lá bài trong khu chờ, rồi lật lại mặt Tướng và gỡ xích, rút ba lá bài và hồi Sinh lực lên 3."
       }
     },
     "differenceNote": "Niết bàn còn xóa trạng thái bị xích của ông khi ông hồi sinh.",
@@ -665,7 +665,7 @@
     "skills": {
       "refuting-death": {
         "name": "Bất khuất",
-        "text": "Mỗi khi Sinh lực của bạn bị giảm 1 trong khi Sinh lực hiện tại của bạn là 0, bạn có thể lật một lá từ đầu chồng bài rút và đặt lên Tướng của bạn. Chừng nào các lá này chưa có hai lá cùng số (từ A đến K) thì bạn không chết. Nếu lật được một lá cùng số với một lá đã có, bạn rơi vào trạng thái cận kề cái chết."
+        "text": "Mỗi khi Sinh lực của bạn bị giảm 1 trong khi Sinh lực hiện tại của bạn là 0, bạn có thể lật một lá từ đầu chồng bài rút và đặt lên Tướng của bạn. Chừng nào các lá này chưa có hai lá cùng số (từ A đến K) thì bạn không chết. Nếu lật được một lá cùng số với một lá đã có, bạn rơi vào trạng thái hấp hối."
       }
     },
     "differenceNote": "Không có khác biệt.",
@@ -792,7 +792,7 @@
     "skills": {
       "unmitigated-murder": {
         "name": "Hoàn sát",
-        "text": "Trong lượt của bạn, chỉ bạn và những người chơi đang cận kề cái chết mới được dùng Đào."
+        "text": "Trong lượt của bạn, chỉ bạn và những người chơi đang hấp hối mới được dùng Đào."
       },
       "descend-into-chaos": {
         "name": "Loạn vũ",
@@ -888,7 +888,7 @@
       },
       "with-the-tide": {
         "name": "Tùy thế",
-        "text": "Khi một người chơi khác rơi vào cận kề cái chết, nếu nguồn gây ra điều đó cùng thế lực với bạn, bạn rút 1 lá từ chồng bài rút. Khi một người chơi cùng thế lực với bạn chết, bạn mất 1 Sinh lực."
+        "text": "Khi một người chơi khác rơi vào hấp hối, nếu nguồn gây ra điều đó cùng thế lực với bạn, bạn rút 1 lá từ chồng bài rút. Khi một người chơi cùng thế lực với bạn chết, bạn mất 1 Sinh lực."
       }
     },
     "differenceNote": "Tướng mới của Quốc chiến. Vương triều chiến không có Tướng này.",

@@ -28,6 +28,26 @@ describe('soundsFor', () => {
     expect(soundsFor([{ kind: 'HealEvent', target: { kind: 'seat', seatId: 's' }, amount: 1 }])).toEqual(['heal']);
   });
 
+  it('sounds a hard hit for 2 or more damage at once, in place of the plain injure', () => {
+    const dmg = (amount: number) => ({ kind: 'DamageDealtEvent', damage: { amount } }) as never;
+    expect(soundsFor([dmg(2)])).toEqual(['injure-hard']);
+    expect(soundsFor([dmg(3), { kind: 'HpLostEvent', seatId: 's', amount: 1 }])).toEqual(['injure-hard', 'injure']);
+    expect(soundsFor([dmg(1)])).toEqual(['injure']);
+  });
+
+  it('sounds fire and thunder damage as element, even for 2 or more', () => {
+    const dmg = (nature: string, amount: number) => ({ kind: 'DamageDealtEvent', damage: { amount, nature } }) as never;
+    expect(soundsFor([dmg('fire', 1)])).toEqual(['injure-element']);
+    expect(soundsFor([dmg('thunder', 2)])).toEqual(['injure-element']);
+    expect(soundsFor([dmg('normal', 2)])).toEqual(['injure-hard']);
+  });
+
+  it('does not sound a hit passed along a chain again, it sounded with the first', () => {
+    const hit = (chained?: true) => ({ kind: 'DamageDealtEvent', damage: { amount: 1, nature: 'fire', ...(chained ? { chained } : {}) } }) as never;
+    expect(soundsFor([hit(true)])).toEqual([]);
+    expect(soundsFor([hit(), hit(true)])).toEqual(['injure-element']);
+  });
+
   it('makes each sound once per stretch of log', () => {
     expect(soundsFor([moved('crossbow', 'seat-0:equip'), moved('axe', 'seat-1:equip')])).toEqual(['weapon']);
   });

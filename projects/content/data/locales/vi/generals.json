@@ -69,7 +69,7 @@
     "skills": {
       "complete-kill": {
         "name": "Hoàn sát",
-        "text": "Trong lượt của Giả Hủ, chỉ Giả Hủ và người chơi đang cận kề cái chết mới có thể dùng Đào."
+        "text": "Trong lượt của Giả Hủ, chỉ Giả Hủ và người chơi đang hấp hối mới có thể dùng Đào."
       },
       "upheaval": {
         "name": "Loạn vũ",
@@ -307,7 +307,7 @@
       },
       "nirvana": {
         "name": "Niết bàn",
-        "text": "Một lần mỗi ván, khi Bàng Thống cận kề cái chết, ông có thể bỏ toàn bộ bài của mình, rút ba lá bài mới và trở lại với ba Sinh lực."
+        "text": "Một lần mỗi ván, khi Bàng Thống hấp hối, ông có thể bỏ toàn bộ bài của mình, rút ba lá bài mới và trở lại với ba Sinh lực."
       }
     }
   },
@@ -661,7 +661,7 @@
       },
       "rescued": {
         "name": "Cứu viện",
-        "text": "Kỹ năng Chủ công: Mỗi khi một người thuộc Ngô khác dùng Đào để cứu Tôn Quyền khỏi cận kề cái chết, nó giúp ông hồi hai Sinh lực."
+        "text": "Kỹ năng Chủ công: Mỗi khi một người thuộc Ngô khác dùng Đào để cứu Tôn Quyền khỏi hấp hối, nó giúp ông hồi hai Sinh lực."
       }
     }
   },
@@ -723,7 +723,7 @@
     "skills": {
       "refusing-death": {
         "name": "Bất khuất",
-        "text": "Khi Chu Thái cận kề cái chết, ông có thể lật lá bài trên cùng của chồng bài và đặt nó dưới lá Tướng của mình. Ông luôn được coi là cận kề cái chết. Với mỗi sát thương thêm, ông có thể lật thêm một lá bài. Chu Thái chết nếu hai trong các lá bài này có cùng số. Mỗi khi Chu Thái được hồi Sinh lực, ông có thể bỏ một trong các lá bài này."
+        "text": "Khi Chu Thái hấp hối, ông có thể lật lá bài trên cùng của chồng bài và đặt nó dưới lá Tướng của mình. Ông luôn được coi là hấp hối. Với mỗi sát thương thêm, ông có thể lật thêm một lá bài. Chu Thái chết nếu hai trong các lá bài này có cùng số. Mỗi khi Chu Thái được hồi Sinh lực, ông có thể bỏ một trong các lá bài này."
       }
     }
   },
