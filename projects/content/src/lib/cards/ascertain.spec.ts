@@ -72,7 +72,7 @@ describe('Ascertain', () => {
       const s = h.play(ascertainIn({ 'seat-b:hand': [] }), 'as', 'seat-b');
       expect(optionIds(s)).toEqual(['hand']);
       const look = h.choose(s, 'hand');
-      expect(look.pendingChoice).toMatchObject({ seatId: 'seat-a', secret: true });
+      expect(look.pendingChoice).toMatchObject({ seatId: 'seat-a', secret: true, look: true });
       expect(optionIds(look)).toEqual(['done']);
     });
 

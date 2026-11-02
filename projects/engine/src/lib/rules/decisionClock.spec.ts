@@ -21,6 +21,11 @@ describe('describeDecision', () => {
     expect(kindOf({ pendingSelection: {} })).toBe('pick');
   });
 
+  it('times a look that only shows something (Ascertain) on its own clock', () => {
+    expect(describeDecision(state({ pendingChoice: { verb: 'pick', look: true } }), 'seat-1', [endPhase], 'k7')).toEqual({ kind: 'look', seatId: 'seat-1', key: 'step:k7' });
+    expect(DECISION_SECONDS.look).toBe(10);
+  });
+
   it('times a pending arrangement as an arrangement of this state', () => {
     expect(describeDecision(state({ pendingArrangement: {} }), 'seat-1', [endPhase], 'k7')).toEqual({ kind: 'arrange', seatId: 'seat-1', key: 'step:k7' });
   });
@@ -34,8 +39,15 @@ describe('describeDecision', () => {
     expect(kindOf()).toBe('response');
   });
 
+  it('gives a response window a seat cannot answer a short clock, whatever it asks', () => {
+    const pass = { kind: 'PassAction' } as Action;
+    const kindOf = (reason?: object) => describeDecision(state({ pendingResponse: { reason } }), 'seat-1', [pass], 'k7')?.kind;
+    for (const reason of [{ kind: 'wuxie' }, { kind: 'counter-wuxie' }, { kind: 'dying' }, { kind: 'card-effect' }, undefined]) expect(kindOf(reason)).toBe('noAnswer');
+    expect(describeDecision(state({ pendingResponse: { reason: { kind: 'dying' } } }), 'seat-1', [pass, { kind: 'RespondAction' } as Action], 'k7')?.kind).toBe('dying');
+  });
+
   it('gives each kind of decision its seconds', () => {
-    expect(DECISION_SECONDS).toMatchObject({ wuxie: 15, dying: 20, response: 20, ask: 15, pick: 30, arrange: 60, start: 20, discard: 30, selection: 300, play: 180, judgmentChange: 15, notice: 5 });
+    expect(DECISION_SECONDS).toMatchObject({ wuxie: 15, noAnswer: 5, look: 10, dying: 20, response: 20, ask: 15, pick: 30, arrange: 60, start: 20, discard: 30, selection: 300, play: 180, judgmentChange: 15, notice: 5 });
   });
 
   it('times a pending response as a response of this state', () => {

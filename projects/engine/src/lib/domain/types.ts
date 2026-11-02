@@ -195,6 +195,8 @@ export interface PendingChoice {
   // A skill that may change a judgment's card asks this, while the judgment is unsettled: it runs on
   // the judgment-change clock and is shown inside the judgment popup.
   judgmentChange?: true;
+  // A choice that only shows something and is closed (Ascertain's look): it runs on a short clock.
+  look?: true;
 }
 
 export interface ChoiceOption {

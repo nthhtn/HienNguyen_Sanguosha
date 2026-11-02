@@ -28,11 +28,11 @@ describe('Kingdom Wars Diao Chan, Seed of Animosity', () => {
     expect(hp(h.pass(s), 'seat-b')).toBe(3);
   });
 
-  it('Identity Diao Chan offers Wuxie on the same Duel', () => {
+  it('Identity Diao Chan’s Duel is never offered a Wuxie either: a virtual Tool', () => {
     const s = duelled('diao-chan', 'sow-discord');
-    expect(s.pendingResponse?.reason).toMatchObject({ kind: 'wuxie' });
-    expect(s.log.find((e) => e.kind === 'CardPlayedEvent')).toMatchObject({ card: { as: 'duel' } });
-    expect(s.log.find((e) => e.kind === 'CardPlayedEvent')).not.toMatchObject({ card: { noWuxie: true } });
+    expect(s.log.find((e) => e.kind === 'CardPlayedEvent')).toMatchObject({ card: { as: 'duel', noWuxie: true } });
+    expect(s.pendingResponse?.reason?.kind).not.toBe('wuxie');
+    expect(s.pendingResponse?.respondingSeatId).toBe('seat-b');
   });
 
   it('a Duel played normally still offers Wuxie', () => {

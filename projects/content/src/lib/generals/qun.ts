@@ -54,14 +54,13 @@ const males = (state: GameState, seatId: string, registry: ContentRegistry, exce
 const challengeable = (state: GameState, seatId: string, registry: ContentRegistry) =>
   males(state, seatId, registry).filter((id) => !untargetableBy(state, id, 'duel', registry) && males(state, seatId, registry, [id]).length > 0);
 
-// The Duel Sow Discord makes: no physical card.
-const sowDiscordDuel = (wuxieable: boolean): UsedCard => ({ as: 'duel', colour: 'none', physical: [], ...(wuxieable ? {} : { noWuxie: true as const }) });
+// The Duel Sow Discord makes: no physical card, so no Wuxie or Wuxie Kingdom can cancel it.
+const sowDiscordDuel: UsedCard = { as: 'duel', colour: 'none', physical: [], noWuxie: true };
 
 // Sow Discord (active, once per turn): discard 1 card and choose two other male
 // seats, in order. The second uses a Duel on the first, as if it had played
-// one. `wuxieable`: Identity's Duel gets the usual Wuxie check; Kingdom Wars Seed of
-// Animosity's cannot be answered by Wuxie or Wuxie Kingdom.
-export const makeSowDiscord = (wuxieable: boolean): SkillDefinition => ({
+// one. A virtual Tool: it cannot be cancelled by Wuxie or Wuxie Kingdom.
+export const sowDiscord: SkillDefinition = {
   id: 'sow-discord',
   active: {
     usesPerTurn: 1,
@@ -84,13 +83,12 @@ export const makeSowDiscord = (wuxieable: boolean): SkillDefinition => ({
         const first = step.data?.['first'] as string;
         const seconds = males(state, owner.seatId, registry, [first]);
         if (!isLiving(state, first) || seconds.length === 0) return [];
-        const duelFrom = (id: string) => [{ kind: 'UseCardEffect' as const, seatId: id, card: sowDiscordDuel(wuxieable), targets: [{ kind: 'seat' as const, seatId: first }] }];
+        const duelFrom = (id: string) => [{ kind: 'UseCardEffect' as const, seatId: id, card: sowDiscordDuel, targets: [{ kind: 'seat' as const, seatId: first }] }];
         return [choiceOf(state, owner, { verb: 'pick', targetSeatId: first, options: seatOptions(seconds, duelFrom) })];
       }
     }
   },
-});
-export const sowDiscord: SkillDefinition = makeSowDiscord(true);
+};
 
 // Eclipse the Moon: at the start of your End Phase, you draw 1. Identity is
 // compulsory; `optional` (Kingdom Wars Envious Moon) asks first.

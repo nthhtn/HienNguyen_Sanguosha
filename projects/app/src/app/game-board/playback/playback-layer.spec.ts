@@ -74,6 +74,17 @@ describe('PlaybackLayer', () => {
     expect(arrow.querySelector('path.line')!.getAttribute('marker-end')).toMatch(/^url\(#playback-head-/);
   });
 
+  it('draws a route one arrow after the other: the second waits for the first', async () => {
+    const beat = playBeat(['seat-1', 'seat-2']);
+    const { fixture, el } = setup({ ...beat, visual: { ...(beat.visual as Extract<NonNullable<PlannedBeat['visual']>, { kind: 'play' }>), chained: true } });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(arrowsShown(el)).toBe(2);
+    const delays = animate.mock.calls.map(([, options]) => (options as KeyframeAnimationOptions).delay ?? 0);
+    expect(delays.some((d) => d > 0)).toBe(true);
+    expect(Math.min(...delays)).toBe(0);
+  });
+
   it('shows the played card at the centre, then fades it and the arrows out within the beat', async () => {
     const { fixture, el } = setup(playBeat(['seat-1']));
     fixture.detectChanges();
