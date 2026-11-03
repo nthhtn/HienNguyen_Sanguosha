@@ -155,6 +155,23 @@ describe('the rules pages in Vietnamese', () => {
     expect(text(first.querySelector('.seat[data-force="Ambitionist"]')!)).not.toContain('Ngụy');
   });
 
+  // Seats whose lines under the portrait differ in length (a note that wraps, no Force line for a seat that is out) must line
+  // their portraits up at the top, not centre the whole seat; the real alignment is checked in a browser.
+  it('allegiance: the two example seats line their portraits up at the top', async () => {
+    const { el } = await open('allegiance');
+    const row = el.querySelector('app-scene .scene-row')!;
+    expect(row.querySelectorAll('app-scene-seat').length).toBe(2);
+    expect(row.classList.contains('top')).toBe(true);
+    expect(row.classList.contains('center')).toBe(false);
+  });
+
+  it('overview: the seats of the who-wins example line their portraits up at the top', async () => {
+    const { el } = await open('overview');
+    const row = [...el.querySelectorAll('.scene-row')].find((r) => r.querySelectorAll('app-scene-seat').length === 4)!;
+    expect(row.classList.contains('top')).toBe(true);
+    expect(row.classList.contains('center')).toBe(false);
+  });
+
   it('allegiance: the cap example turns the fourth Wei seat into an Ambitionist and keeps a dead seat counted', async () => {
     const { el } = await open('allegiance');
     const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 6 người chơi, mức trần 3')!;

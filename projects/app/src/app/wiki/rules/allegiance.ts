@@ -17,7 +17,7 @@ import { SceneSeat } from './scene/scene-seat';
     <p>{{ 'rules.allegiance.decided' | t }}</p>
     <p>{{ 'rules.allegiance.kinds' | t }}</p>
     <app-scene caption="rules.allegiance.kindsCap">
-      <div class="scene-row center">
+      <div class="scene-row top">
         <app-scene-seat general="cao-cao" [n]="1" force="Wei" [note]="'rules.allegiance.noteForce' | t" />
         <app-scene-seat general="zhang-liao" [n]="4" [ambitionist]="true" [note]="'rules.allegiance.noteAlone' | t" />
       </div>

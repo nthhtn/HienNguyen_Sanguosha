@@ -55,7 +55,7 @@ const FORCES = [
       <li><app-rich key="rules.overview.win4" /></li>
     </ul>
     <app-scene caption="rules.overview.winExampleCap">
-      <div class="scene-row center">
+      <div class="scene-row top">
         <app-scene-seat general="cao-cao" [n]="1" force="Wei" />
         <app-scene-seat general="zhang-liao" [n]="3" force="Wei" />
         <app-scene-seat general="liu-bei" [n]="2" [out]="true" />
