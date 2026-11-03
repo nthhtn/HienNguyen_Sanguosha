@@ -73,7 +73,7 @@ The Vietnamese names start as drafts for a native speaker to review (`npm run i1
 
 ## Human names that match a bot (decided with the user)
 
-A person may use a name that matches a bot's, in either language. Do not reject it and do not change `nameTaken`. A bot is told apart by its "(Bot)" tag, which is also how it is shown today in My Games.
+A person may use a name that matches a bot's, in either language. Do not reject it. Today `Room.nameTaken` and the database's unique `room_players_current_name` index compare every member's name, bots included, so both must be narrowed to compare people only (bots draw distinct ids, so they never need the check). A bot is told apart by its "(Bot)" tag, which is also how it is shown today in My Games.
 
 ## Calls made by the author (not yet checked with the user; change freely)
 
