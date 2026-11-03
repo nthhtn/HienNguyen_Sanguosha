@@ -57,11 +57,11 @@ const SEATS = DISTANCE_EXAMPLE.seats.map((seat, i) => {
     <p><app-rich key="rules.distance.see" /></p>
   `,
   styles: `
-    .ring { position: relative; aspect-ratio: 1.5; min-height: 280px; background: radial-gradient(ellipse at center, var(--mat-sys-surface) 0 55%, transparent 56%); border-radius: 8px; }
+    .ring { position: relative; margin-top: 16px; aspect-ratio: 1.5; min-height: 280px; background: radial-gradient(ellipse at center, var(--mat-sys-surface) 0 55%, transparent 56%); border-radius: 8px; }
     .spot { position: absolute; transform: translate(-50%, -50%); }
-    .dbadge { position: absolute; top: -4px; right: 2px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; display: grid; place-items: center; font: var(--mat-sys-label-large); background: var(--mat-sys-inverse-surface); color: var(--mat-sys-inverse-on-surface); }
-    .dbadge.reach { background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); }
-    .mount { position: absolute; bottom: 22px; left: 0; }
+    .dbadge { position: absolute; top: -4px; right: 2px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; display: grid; place-items: center; font: var(--mat-sys-label-large); background: var(--mat-sys-surface-container-highest); color: var(--mat-sys-on-surface-variant); border: 1px solid var(--mat-sys-outline); }
+    .dbadge.reach { background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); border-color: var(--mat-sys-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mat-sys-primary) 30%, transparent); }
+    .mount { position: absolute; top: 14px; left: -16px; }
   `,
 })
 export class RulesDistance {

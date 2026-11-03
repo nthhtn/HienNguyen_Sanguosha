@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CARD_BACK_ART_URL, HIDDEN_GENERAL_ART_URL, cardArtUrl, hpIconUrls } from 'content';
 import { I18n } from '../../../i18n/i18n.service';
@@ -11,7 +11,7 @@ import { SceneSeat } from './scene-seat';
 
 afterEach(() => localStorage.clear());
 
-function render<T extends object>(component: new (...args: never[]) => T, inputs: Record<string, unknown>) {
+function render(component: Type<unknown>, inputs: Record<string, unknown>) {
   const fixture = TestBed.createComponent(component);
   for (const [name, value] of Object.entries(inputs)) fixture.componentRef.setInput(name, value);
   fixture.detectChanges();
