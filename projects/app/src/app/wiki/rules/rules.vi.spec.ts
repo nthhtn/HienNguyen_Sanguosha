@@ -116,6 +116,18 @@ describe('the rules pages in Vietnamese', () => {
     ]);
   });
 
+  it('overview: the Forces scene names Zhang Jiao for Qun', async () => {
+    const { el } = await open('overview');
+    expect([...el.querySelectorAll('figure')].map(text)).toEqual(['Ngụy Tào Tháo', 'Thục Lưu Bị', 'Ngô Tôn Quyền', 'Quần Trương Giác']);
+  });
+
+  it('overview: the four beats and the who-wins example', async () => {
+    const { el } = await open('overview');
+    expect(el.querySelectorAll('ol.steps > li').length).toBe(4);
+    expect(el.querySelectorAll('.seat.out').length).toBe(2);
+    expect([...el.querySelectorAll('.cap')].map(text)).toEqual(['Bốn thế lực', 'Ví dụ: ai thắng']);
+  });
+
   it('card types: the links keep their place in the headings, and the card names are Vietnamese', async () => {
     const { el } = await open('card-types');
     expect([...el.querySelectorAll('th > a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
