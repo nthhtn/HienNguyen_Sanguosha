@@ -1,6 +1,6 @@
 import { Component, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CARD_BACK_ART_URL, CHAIN_ICON_URL, HIDDEN_GENERAL_ART_URL, cardArtUrl, hpIconUrls } from 'content';
+import { AMBITIONIST_ICON_URL, CARD_BACK_ART_URL, CHAIN_ICON_URL, HIDDEN_GENERAL_ART_URL, cardArtUrl, hpIconUrls } from 'content';
 import { DAMAGE_IMAGE_URLS } from '../../../game-board/damage-effects';
 import { I18n } from '../../../i18n/i18n.service';
 import type { MessageKey } from '../../../i18n/messages';
@@ -107,6 +107,23 @@ describe('SceneSeat marks', () => {
     const { el } = render(SceneSeat, { general: 'cao-cao', n: 2, mark: 'fire' });
     expect(el.querySelector('img.scene-mark')!.getAttribute('src')).toBe(DAMAGE_IMAGE_URLS.fire);
     expect(render(SceneSeat, { general: 'cao-cao', n: 2 }).el.querySelector('img.scene-mark')).toBeNull();
+  });
+
+  it('shows an Ambitionist with its mark, its own label and no Force', async () => {
+    const { fixture, el } = render(SceneSeat, { general: 'zhang-liao', n: 4, force: 'Wei', ambitionist: true });
+    const mark = el.querySelector('img.scene-ambitionist')!;
+    expect(mark.getAttribute('src')).toBe(AMBITIONIST_ICON_URL);
+    expect(mark.getAttribute('alt')).toBe('Ambitionist');
+    expect(text(el)).toContain('Ambitionist');
+    expect(text(el)).not.toContain('Wei');
+    expect(el.querySelector('.seat')!.getAttribute('data-force')).toBe('Ambitionist');
+    await TestBed.inject(I18n).setLocale('vi');
+    fixture.detectChanges();
+    expect(mark.getAttribute('alt')).toBe('Dã tâm gia');
+    expect(text(el)).toContain('Dã tâm gia');
+    const kingdom = render(SceneSeat, { general: 'zhang-liao', n: 4, force: 'Wei' });
+    expect(kingdom.el.querySelector('img.scene-ambitionist')).toBeNull();
+    expect(kingdom.el.querySelector('.seat')!.getAttribute('data-force')).toBe('Wei');
   });
 
   it('shows its note', () => {

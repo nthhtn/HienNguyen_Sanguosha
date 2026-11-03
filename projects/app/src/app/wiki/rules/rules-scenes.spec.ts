@@ -38,7 +38,7 @@ describe.each(LOCALES)('the rules scenes in %s', (locale) => {
 
   it.each(PAGES)('%s: every scene image has real art and a name', async (page) => {
     const el = await open(page);
-    const images = [...el.querySelectorAll('img.scene-card, img.scene-avatar, img.scene-chain')];
+    const images = [...el.querySelectorAll('img.scene-card, img.scene-avatar, img.scene-chain, img.scene-ambitionist')];
     expect(images.length).toBeGreaterThan(0);
     for (const img of images) {
       expect([page, img.getAttribute('src')]).toEqual([page, expect.stringMatching(/^\/card-art\/.+\.(jpg|png)$/)]);
