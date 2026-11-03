@@ -422,7 +422,7 @@ export const vi: Messages = {
   'seat.countsAs': 'Tính là {card}',
   'seat.judgmentEmpty': 'Khu phán xét (trống)',
   'seat.eliminated': 'Trận vong',
-  'seat.dying': 'Cận kề cái chết…',
+  'seat.dying': 'Hấp hối…',
   'cue.play': '{card}!',
   'cue.pass': 'Không có {card}',
   'cue.passed': 'Bỏ lượt',
