@@ -135,3 +135,36 @@ describe('spriteSheet', () => {
     }
   });
 });
+
+// The size of a JPEG file, read from its start-of-frame marker.
+function jpegSize(path: string): { width: number; height: number } {
+  const data = readFileSync(path);
+  let i = 2;
+  while (i < data.length) {
+    if (data[i] !== 0xff) { i++; continue; }
+    const marker = data[i + 1];
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) return { height: data.readUInt16BE(i + 5), width: data.readUInt16BE(i + 7) };
+    i += 2 + data.readUInt16BE(i + 2);
+  }
+  throw new Error(`No JPEG frame in ${path}`);
+}
+
+describe('Starvation art', () => {
+  const assets = join(__dirname, '../../assets');
+
+  it('the full card is the landscape scan, laid out like Capture, and the manifest says so', () => {
+    const full = jpegSize(join(assets, 'cards/tool/starvation.jpg'));
+    expect(full).toEqual({ width: 969, height: 651 });
+    const capture = jpegSize(join(assets, 'cards/tool/capture.jpg'));
+    expect(capture.width).toBeGreaterThan(capture.height);
+    const entry = JSON.parse(readFileSync(join(assets, 'manifest.json'), 'utf8')).starvation;
+    expect({ width: entry.width, height: entry.height }).toEqual(full);
+    expect(entry.note).toBeUndefined();
+  });
+
+  it('the cropped art is the whole illustration cut from that landscape card, framed as Capture\'s is', () => {
+    // Capture's crop is 526 x 536 from a 974 x 654 card; Starvation's card is the same layout, a hair smaller.
+    expect(jpegSize(join(assets, 'cards/cropped/tool/capture.jpg'))).toEqual({ width: 526, height: 536 });
+    expect(jpegSize(join(assets, 'cards/cropped/tool/starvation.jpg'))).toEqual({ width: 523, height: 534 });
+  });
+});
