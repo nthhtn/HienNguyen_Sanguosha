@@ -147,9 +147,9 @@ describe('the rules pages in Vietnamese', () => {
     expect([...el.querySelectorAll('.cap')].map(text)).toEqual(expect.arrayContaining(['Khác thế lực', 'Cùng thế lực']));
   });
 
-  it('card types: the links keep their place in the headings, and the card names are Vietnamese', async () => {
+  it('card types: the section headings link to the wiki pages, and the card names are Vietnamese', async () => {
     const { el } = await open('card-types');
-    expect([...el.querySelectorAll('th > a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
+    expect([...el.querySelectorAll('h3 > a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
       '/wiki/generals Bài Tướng',
       '/wiki/basic Bài cơ bản',
       '/wiki/tools Cẩm nang',
@@ -158,6 +158,26 @@ describe('the rules pages in Vietnamese', () => {
     expect(text(el)).toContain('Sát, Thiểm, Đào và Tửu');
     expect(text(el)).toContain('Vô Giải Khả Kích có thể hủy một Cẩm nang');
     expect(text(el)).toContain('một Chủ tướng và một Phó tướng');
+  });
+
+  it('card types: the General cards are named by their General names, never ids', async () => {
+    const { el } = await open('card-types');
+    const names = [...el.querySelectorAll('figure figcaption b')].map(text);
+    expect(names.slice(0, 3)).toEqual(['Tào Tháo', 'Quan Vũ', 'Úp']);
+    expect(text(el)).not.toMatch(/cao-cao|guan-yu/);
+  });
+
+  it('card types: the equipment scene shows the four slots', async () => {
+    const { el } = await open('card-types');
+    expect([...el.querySelectorAll('figure .tag')].map(text)).toEqual(['Vũ khí', 'Giáp', 'Tọa kỵ công -1', 'Tọa kỵ thủ +1']);
+  });
+
+  it('card types: the Tools are split into instant and delayed, with their cards', async () => {
+    const { el } = await open('card-types');
+    const caps = [...el.querySelectorAll('.cap')].map(text);
+    expect(caps).toEqual(expect.arrayContaining(['Cẩm nang tức thời: có hiệu lực ngay', 'Cẩm nang trì hoãn: đặt vào khu phán xét']));
+    const delayed = [...el.querySelectorAll('app-scene')].find((s) => text(s.querySelector('.cap')!).startsWith('Cẩm nang trì hoãn'))!;
+    expect([...delayed.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Lạc Bất Tư Thục', 'Binh Lương Thốn Đoạn', 'Thiểm Điện']);
   });
 
   it('turn: six phases in order, only the Play Phase marked as waiting', async () => {

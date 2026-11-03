@@ -3,6 +3,7 @@
 .scene-row.top { align-items: flex-start; }
 .scene-row.center { align-items: center; }
 .fig { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font: var(--mat-sys-body-small); color: var(--mat-sys-on-surface-variant); }
+.fig figcaption b { display: block; }
 .fig b { color: var(--mat-sys-on-surface); font: var(--mat-sys-label-large); }
 .fig .tag { font: var(--mat-sys-label-small); font-weight: 700; letter-spacing: 0.06em; color: var(--mat-sys-primary); }
 .arrow { align-self: center; font-size: 1.6rem; color: var(--mat-sys-on-surface-variant); padding: 0 2px; }
