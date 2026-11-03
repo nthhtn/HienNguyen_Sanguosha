@@ -62,6 +62,8 @@ exports[`the rules pages in English distance keeps its text and links 1`] = `
     "Who you can reach with a card.",
     "Distance",
     "Distance between two seats is the number of steps the short way around the table, counting only seats still in play. When a seat is knocked out, the seats beside it get closer. It is never below 1.",
+    "Example: Seat 1 Attacks With No Weapon",
+    "Seat 2 is out, so Seat 3 sits right next to Seat 1. Seat 6 wears Shadow Runner, which adds 1 to its distance. A seat within attack range 1 is highlighted.",
     "A Plus Mount on the target adds 1.",
     "A Minus Mount on the attacker subtracts 1.",
     "Some skills change distance too.",

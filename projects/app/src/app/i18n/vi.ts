@@ -843,6 +843,8 @@ export const vi: Messages = {
   'rules.distance.range3': '{card:steal} và {card:starvation} chỉ nhắm được vào người chơi ở khoảng cách 1.',
   'rules.distance.range4': 'Cẩm nang đánh vào mọi người, như {card:barbarians} và {card:hail-of-arrows}, bỏ qua khoảng cách.',
   'rules.distance.see': 'Vũ khí và Tọa kỵ được liệt kê trong mục [[/wiki/equipment|Trang bị]].',
+  'rules.distance.exampleCap': 'Ví dụ: Người chơi 1 tấn công khi không có Vũ khí',
+  'rules.distance.exampleText': 'Người chơi 2 đã bị loại, nên Người chơi 3 ngồi ngay cạnh Người chơi 1. Người chơi 6 mang {card:shadow-runner}, cộng thêm 1 vào khoảng cách. Người chơi trong tầm tấn công 1 được tô sáng.',
   'rules.judgment.lead': 'Lật lá bài trên cùng của chồng bài rút để quyết định một hiệu ứng.',
   'rules.judgment.step1': 'Lá bài trên cùng của chồng bài rút được lật ngửa.',
   'rules.judgment.step2': 'Các kỹ năng đổi phán xét có thể thay lá bài trước khi nó được xét.',

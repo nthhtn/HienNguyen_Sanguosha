@@ -7,6 +7,7 @@ import { en } from '../../i18n/en';
 import { I18n } from '../../i18n/i18n.service';
 import type { MessageKey } from '../../i18n/messages';
 import { vi } from '../../i18n/vi';
+import { DISTANCE_EXAMPLE } from './distance-example';
 import { parseRich } from './rich-text';
 
 const text = (el: Element | null) => el!.textContent!.replace(/\s+/g, ' ').trim();
@@ -178,6 +179,15 @@ describe('the rules pages in Vietnamese', () => {
     expect(caps).toEqual(expect.arrayContaining(['Cẩm nang tức thời: có hiệu lực ngay', 'Cẩm nang trì hoãn: đặt vào khu phán xét']));
     const delayed = [...el.querySelectorAll('app-scene')].find((s) => text(s.querySelector('.cap')!).startsWith('Cẩm nang trì hoãn'))!;
     expect([...delayed.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Lạc Bất Tư Thục', 'Binh Lương Thốn Đoạn', 'Thiểm Điện']);
+  });
+
+  it('distance: the table scene shows the distances of the example', async () => {
+    const { el } = await open('distance');
+    const expected = DISTANCE_EXAMPLE.seats.filter((seat) => seat.distance !== undefined).map((seat) => String(seat.distance));
+    expect([...el.querySelectorAll('.dbadge')].map(text)).toEqual(expected);
+    expect(el.querySelectorAll('.ring .seat.out').length).toBe(1);
+    expect(el.querySelectorAll('.ring .mount img.scene-card').length).toBe(1);
+    expect(text(el.querySelector('.cap')!)).toBe('Ví dụ: Người chơi 1 tấn công khi không có Vũ khí');
   });
 
   it('turn: six phases in order, only the Play Phase marked as waiting', async () => {

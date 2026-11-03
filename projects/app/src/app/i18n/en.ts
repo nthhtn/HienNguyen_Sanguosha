@@ -844,6 +844,8 @@ export const en = {
   'rules.distance.range3': '{card:steal} and {card:starvation} can only target a seat at distance 1.',
   'rules.distance.range4': 'Tools that hit everyone, such as {card:barbarians} and {card:hail-of-arrows}, ignore distance.',
   'rules.distance.see': 'Weapons and Mounts are listed under [[/wiki/equipment|Equipment]].',
+  'rules.distance.exampleCap': 'Example: Seat 1 Attacks With No Weapon',
+  'rules.distance.exampleText': 'Seat 2 is out, so Seat 3 sits right next to Seat 1. Seat 6 wears {card:shadow-runner}, which adds 1 to its distance. A seat within attack range 1 is highlighted.',
   'rules.judgment.lead': 'Turn up the top card of the draw pile to decide an effect.',
   'rules.judgment.step1': 'The top card of the draw pile is turned face up.',
   'rules.judgment.step2': 'Skills that change a judgment can replace the card before it is read.',
