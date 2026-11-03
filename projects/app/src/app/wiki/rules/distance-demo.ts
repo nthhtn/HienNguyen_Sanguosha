@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { wikiDistanceTable } from 'content';
+import { cardDisplayData, wikiDistanceTable, wikiDistanceWeapons } from 'content';
 import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
 import { DISTANCE_EXAMPLE } from './distance-example';
@@ -29,6 +29,9 @@ const OTHERS = SEATS.filter((seat) => seat.n !== 1).map((seat) => seat.n);
             @if (row.n === 1) {
               <div class="spot" [style.left.%]="row.left" [style.top.%]="row.top">
                 <app-scene-seat [general]="row.general" [n]="row.n" [force]="row.force" [label]="'rules.distance.demo.you' | t" />
+                @if (row.mount) {
+                  <app-scene-card class="mount" [id]="row.mount" size="tiny" />
+                }
               </div>
             } @else {
               <button type="button" class="spot" [attr.data-seat]="row.n" [style.left.%]="row.left" [style.top.%]="row.top" [disabled]="row.out" [attr.aria-pressed]="selected() === row.n" (click)="select(row.n)">
@@ -44,6 +47,22 @@ const OTHERS = SEATS.filter((seat) => seat.n !== 1).map((seat) => seat.n);
           }
         </div>
         <div class="ctl">
+          <fieldset>
+            <legend>{{ 'rules.distance.demo.rangeLegend' | t }}</legend>
+            <label class="weapon">{{ 'rules.distance.demo.weaponLabel' | t }}
+              <select data-weapon (change)="pickWeapon($event)">
+                <option value="" [selected]="!weapon()">{{ 'rules.distance.demo.noWeapon' | t: { n: baseRange() } }}</option>
+                @for (w of weapons(); track w.id) {
+                  <option [value]="w.id" [selected]="weapon() === w.id">{{ w.label }}</option>
+                }
+              </select>
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend>{{ 'rules.distance.demo.mountsLegend' | t }}</legend>
+            <label><input type="checkbox" data-mount="minus" [checked]="mounts()[1] === 'red-hare'" (change)="setMount(1, 'red-hare', $event)" /> <app-rich key="rules.distance.demo.minusMount" /></label>
+            <label><input type="checkbox" data-mount="plus" [disabled]="selected() === null" [checked]="selected() !== null && mounts()[selected()!] === 'shadow-runner'" (change)="setSelectedMount('shadow-runner', $event)" /> <app-rich key="rules.distance.demo.plusMount" /></label>
+          </fieldset>
           <fieldset>
             <legend>{{ 'rules.distance.demo.outLegend' | t }}</legend>
             <div class="outs">
@@ -88,11 +107,18 @@ export class DistanceDemo {
 
   protected readonly out = signal<ReadonlySet<number>>(new Set(DISTANCE_EXAMPLE.seats.filter((seat) => 'out' in seat && seat.out).map((seat) => seat.n)));
   protected readonly mounts = signal<Record<number, string>>(Object.fromEntries(DISTANCE_EXAMPLE.seats.filter((seat) => 'mount' in seat && seat.mount).map((seat) => [seat.n, (seat as { mount: string }).mount])));
+  protected readonly weapon = signal<string | undefined>(undefined);
   protected readonly selected = signal<number | null>(DISTANCE_EXAMPLE.seats.find((seat) => 'distance' in seat && seat.distance !== undefined)?.n ?? null);
 
   // What the game says about this table.
   private readonly result = computed(() =>
-    wikiDistanceTable({ seats: SEATS.map((seat) => ({ n: seat.n, out: this.out().has(seat.n), ...(this.mounts()[seat.n] ? { mount: this.mounts()[seat.n] } : {}) })) }),
+    wikiDistanceTable({ seats: SEATS.map((seat) => ({ n: seat.n, out: this.out().has(seat.n), ...(this.mounts()[seat.n] ? { mount: this.mounts()[seat.n] } : {}) })), ...(this.weapon() ? { weapon: this.weapon() } : {}) }),
+  );
+
+  // The range with no Weapon, and the Weapons on offer with their ranges, all from the game.
+  protected readonly baseRange = computed(() => wikiDistanceTable({ seats: SEATS.map((seat) => ({ n: seat.n })) }).range);
+  protected readonly weapons = computed(() =>
+    wikiDistanceWeapons().map((w) => ({ ...w, label: this.i18n.t('rules.distance.demo.weaponOption', { name: cardDisplayData(w.id, this.i18n.locale())?.name ?? '', n: w.range }) })),
   );
 
   protected readonly rows = computed(() =>
@@ -109,12 +135,29 @@ export class DistanceDemo {
     const seat = this.i18n.t('label.seat', { n: row.n });
     const line = this.i18n.t('rules.distance.demo.line', { seat, steps: row.steps, distance: row.distance });
     const reach = this.i18n.t(row.canReach ? 'rules.distance.demo.reach' : 'rules.distance.demo.noReach', { seat, range: this.result().range });
-    return `${line} ${reach}`;
+    const wears = [this.mounts()[1] === 'red-hare' ? this.i18n.t('rules.distance.demo.youWear') : '', this.mounts()[row.n] === 'shadow-runner' ? this.i18n.t('rules.distance.demo.seatWears', { seat }) : ''];
+    return [line, reach, ...wears].filter(Boolean).join(' ');
   });
 
   protected badgeName(n: number, distance: number, canReach: boolean): string {
     const range = this.i18n.t(canReach ? 'rules.distance.demo.inRange' : 'rules.distance.demo.outRange');
     return `${this.i18n.t('label.seat', { n })}, ${this.i18n.t('card.distance', { n: distance })}, ${range}`;
+  }
+
+  protected pickWeapon(event: Event): void {
+    this.weapon.set((event.target as HTMLSelectElement).value || undefined);
+  }
+
+  protected setMount(n: number, mount: string, event: Event): void {
+    const next = { ...this.mounts() };
+    if ((event.target as HTMLInputElement).checked) next[n] = mount;
+    else delete next[n];
+    this.mounts.set(next);
+  }
+
+  protected setSelectedMount(mount: string, event: Event): void {
+    const n = this.selected();
+    if (n !== null) this.setMount(n, mount, event);
   }
 
   protected select(n: number): void {

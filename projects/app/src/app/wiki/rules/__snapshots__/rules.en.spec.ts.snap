@@ -122,7 +122,7 @@ exports[`the rules pages in English distance keeps its text and links 1`] = `
     "Distance",
     "Distance between two seats is the number of steps the short way around the table, counting only seats still in play. When a seat is knocked out, the seats beside it get closer. It is never below 1.",
     "Try It: You Are Seat 1",
-    "Click a seat to see how far it is, and knock seats out to watch the numbers move.",
+    "Click a seat to see how far it is. Knock seats out, pick a Weapon and put Mounts on to watch the numbers move.",
     "A Plus Mount on the target adds 1.",
     "A Minus Mount on the attacker subtracts 1.",
     "Some skills change distance too.",

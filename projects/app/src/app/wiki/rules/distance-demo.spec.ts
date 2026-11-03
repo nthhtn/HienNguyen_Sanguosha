@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { wikiDistanceTable } from 'content';
+import { cardDisplayData, wikiDistanceTable, wikiDistanceWeapons } from 'content';
 import { I18n } from '../../i18n/i18n.service';
 import { DistanceDemo } from './distance-demo';
 import { DISTANCE_EXAMPLE } from './distance-example';
@@ -22,15 +22,26 @@ function mount() {
     box.dispatchEvent(new Event('change'));
     fixture.detectChanges();
   };
+  const weaponSelect = () => el.querySelector<HTMLSelectElement>('select[data-weapon]')!;
+  const pickWeapon = (id: string) => {
+    weaponSelect().value = id;
+    weaponSelect().dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+  };
+  const mountBox = (which: 'minus' | 'plus') => el.querySelector<HTMLInputElement>(`input[data-mount="${which}"]`)!;
   const click = (n: number) => {
     buttonOf(n).click();
     fixture.detectChanges();
   };
-  return { fixture, el, buttonOf, seatButtons, outBox, readout, badges, tick, click };
+  return { fixture, el, buttonOf, seatButtons, outBox, readout, badges, tick, click, weaponSelect, pickWeapon, mountBox };
 }
 
 // The table the demo starts with, as the helper takes it.
 const startSeats = (out: number[] = [2]) => DISTANCE_EXAMPLE.seats.map((seat) => ({ n: seat.n, out: out.includes(seat.n), ...(seat.mount ? { mount: seat.mount } : {}) }));
+type Table = { out?: number[]; mounts?: Record<number, string>; weapon?: string };
+// What the game says for a table the reader has set up; the initial table is Seat 2 out and Shadow Runner on Seat 6.
+const oracle = ({ out = [2], mounts = { 6: 'shadow-runner' }, weapon }: Table = {}) =>
+  wikiDistanceTable({ seats: DISTANCE_EXAMPLE.seats.map((seat) => ({ n: seat.n, out: out.includes(seat.n), ...(mounts[seat.n] ? { mount: mounts[seat.n] } : {}) })), ...(weapon ? { weapon } : {}) });
 const distanceOf = (out: number[], n: number) => wikiDistanceTable({ seats: startSeats(out) }).seats.find((s) => s.n === n)!.distance;
 
 afterEach(() => localStorage.clear());
@@ -112,6 +123,72 @@ describe('DistanceDemo', () => {
     fixture.detectChanges();
     expect(readout()).toMatch(/^Người chơi 3:/);
     expect([...el.querySelectorAll('.dbadge')][0].getAttribute('aria-label')).toBe('Người chơi 3, Khoảng cách 1, trong tầm');
-    expect(text(el.querySelector('fieldset legend')!)).toBe('Người chơi đã bị loại');
+    expect([...el.querySelectorAll('fieldset legend')].map(text)).toEqual(['Tầm tấn công của bạn', 'Tọa kỵ', 'Người chơi đã bị loại']);
+  });
+
+  it('a Weapon changes the range and which seats a Slash reaches, as the game says', () => {
+    const { el, readout, pickWeapon } = mount();
+    pickWeapon('gender-swords');
+    const said = oracle({ weapon: 'gender-swords' });
+    expect(readout()).toContain(`Attack range ${said.range}`);
+    const reach = [...el.querySelectorAll('.ring .spot')].filter((s) => s.querySelector('.dbadge')).map((s) => s.querySelector('.dbadge')!.classList.contains('reach'));
+    expect(reach).toEqual(said.seats.filter((s) => s.distance !== null).map((s) => s.canReach));
+    expect(reach).toContain(true);
+  });
+
+  it('Shadow Runner on the selected seat lengthens it, as the game says', () => {
+    const { fixture, el, readout, mountBox } = mount();
+    const box = mountBox('plus');
+    box.checked = true;
+    box.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(el.querySelector('.ring .spot[data-seat="3"] .mount')).not.toBeNull();
+    expect(readout()).toContain(`distance ${oracle({ mounts: { 3: 'shadow-runner', 6: 'shadow-runner' } }).seats.find((s) => s.n === 3)!.distance}`);
+  });
+
+  it('Red Hare on you shortens the others but never below 1, as the game says', () => {
+    const { fixture, badges, mountBox } = mount();
+    const box = mountBox('minus');
+    box.checked = true;
+    box.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(badges()).toEqual(oracle({ mounts: { 1: 'red-hare', 6: 'shadow-runner' } }).seats.filter((s) => s.distance !== null).map((s) => String(s.distance)));
+    expect(badges().every((b) => Number(b) >= 1)).toBe(true);
+  });
+
+  it('the Shadow Runner box follows the selection', () => {
+    const { mountBox, click, fixture } = mount();
+    expect(mountBox('plus').checked).toBe(false);
+    click(6);
+    expect(mountBox('plus').checked).toBe(true);
+    click(4);
+    fixture.detectChanges();
+    expect(mountBox('plus').checked).toBe(false);
+  });
+
+  it('a Mount survives its seat being knocked out and brought back', () => {
+    const { el, outBox, tick, badges } = mount();
+    const before = badges();
+    tick(outBox(6));
+    expect(el.querySelector('.ring .spot[data-seat="6"] .mount')).toBeNull();
+    tick(outBox(6), false);
+    expect(el.querySelector('.ring .spot[data-seat="6"] .mount')).not.toBeNull();
+    expect(badges()).toEqual(before);
+  });
+
+  it('the Shadow Runner box is disabled when no seat is selected', () => {
+    const { outBox, tick, mountBox } = mount();
+    for (const n of [3, 4, 5, 6]) tick(outBox(n));
+    expect(mountBox('plus').disabled).toBe(true);
+  });
+
+  it('the weapon options are named by the game, with its ranges, and follow the language', async () => {
+    const { fixture, weaponSelect } = mount();
+    const options = () => [...weaponSelect().options].map(text);
+    const weapons = wikiDistanceWeapons();
+    expect(options()).toEqual(['No Weapon (range 1)', ...weapons.map((w) => `${cardDisplayData(w.id, 'en')!.name} (range ${w.range})`)]);
+    await TestBed.inject(I18n).setLocale('vi');
+    fixture.detectChanges();
+    expect(options()).toEqual(['Không có Vũ khí (tầm 1)', ...weapons.map((w) => `${cardDisplayData(w.id, 'vi')!.name} (tầm ${w.range})`)]);
   });
 });
