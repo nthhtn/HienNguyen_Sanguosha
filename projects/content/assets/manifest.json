@@ -484,11 +484,10 @@
   },
   "starvation": {
     "crawledAt": "2026-10-05",
-    "height": 969,
+    "height": 651,
     "localPath": "cards/tool/starvation.jpg",
-    "note": "Source scan is sideways; rotated 90° counter-clockwise to portrait after download.",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/starvation",
-    "width": 651
+    "width": 969
   },
   "steal": {
     "crawledAt": "2026-10-02",
