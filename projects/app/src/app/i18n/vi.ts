@@ -788,7 +788,7 @@ export const vi: Messages = {
   'rules.turn.draw': 'Rút 2 lá bài. Một số kỹ năng thay đổi điều này.',
   'rules.turn.play': 'Đánh bài và dùng kỹ năng theo thứ tự tùy ý. Bạn được dùng một {card:sha} mỗi lượt. Hãy kết thúc giai đoạn khi bạn xong.',
   'rules.turn.discard': 'Bỏ bài cho đến khi đúng giới hạn bài trên tay, bằng Sinh lực hiện tại của bạn.',
-  'rules.turn.end': 'Các kỹ năng kích hoạt ở cuối lượt được giải quyết. Sau đó người chơi còn sống kế tiếp theo chiều kim đồng hồ bắt đầu lượt của mình.',
+  'rules.turn.end': 'Các kỹ năng kích hoạt ở cuối lượt được giải quyết. Sau đó người chơi còn sống kế tiếp ngược chiều kim đồng hồ bắt đầu lượt của mình.',
   'rules.turn.note': 'Giai đoạn rút bài, bỏ bài và các giai đoạn khác tự trôi qua. Chỉ giai đoạn ra bài chờ bạn kết thúc. {card:capture} hoặc {card:starvation} có thể khiến bạn bỏ qua một giai đoạn.',
   'rules.distance.lead': 'Bạn có thể nhắm tới ai bằng một lá bài.',
   'rules.distance.distance': 'Khoảng cách',

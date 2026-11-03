@@ -153,7 +153,7 @@ exports[`the rules pages in English turn keeps its text and links 1`] = `
     "Discard Phase",
     "Discard down to your hand limit, which equals your current HP.",
     "End Phase",
-    "Skills that trigger at the end of a turn resolve. Then the next living seat clockwise begins its turn.",
+    "Skills that trigger at the end of a turn resolve. Then the next living seat counter-clockwise begins its turn.",
     "Draw, Discard and the other phases pass by themselves. Only the Play Phase waits for you to end it. A Capture or Starvation can make you skip a phase.",
   ],
 }

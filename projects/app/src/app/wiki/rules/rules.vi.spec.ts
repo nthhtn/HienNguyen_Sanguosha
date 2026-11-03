@@ -136,6 +136,12 @@ describe('the rules pages in Vietnamese', () => {
     expect(text(el)).toContain('Lạc Bất Tư Thục hoặc Binh Lương Thốn Đoạn');
   });
 
+  it('turn: turns pass counter-clockwise', async () => {
+    const { el } = await open('turn');
+    expect(text(el)).toContain('ngược chiều kim đồng hồ');
+    expect(text(el)).not.toMatch(/theo chiều kim đồng hồ/);
+  });
+
   it('judgment: the card names in the table headings', async () => {
     const { el } = await open('judgment');
     expect([...el.querySelectorAll('th')].map(text)).toEqual(['Lạc Bất Tư Thục', 'Binh Lương Thốn Đoạn', 'Thiểm Điện']);

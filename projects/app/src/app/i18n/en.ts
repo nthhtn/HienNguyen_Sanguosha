@@ -789,7 +789,7 @@ export const en = {
   'rules.turn.draw': 'Draw 2 cards. Some skills change this.',
   'rules.turn.play': 'Play cards and use skills in any order. You may use one {card:sha} per turn. End the phase when you are done.',
   'rules.turn.discard': 'Discard down to your hand limit, which equals your current HP.',
-  'rules.turn.end': 'Skills that trigger at the end of a turn resolve. Then the next living seat clockwise begins its turn.',
+  'rules.turn.end': 'Skills that trigger at the end of a turn resolve. Then the next living seat counter-clockwise begins its turn.',
   'rules.turn.note': 'Draw, Discard and the other phases pass by themselves. Only the Play Phase waits for you to end it. A {card:capture} or {card:starvation} can make you skip a phase.',
   'rules.distance.lead': 'Who you can reach with a card.',
   'rules.distance.distance': 'Distance',
