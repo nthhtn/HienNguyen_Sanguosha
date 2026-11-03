@@ -14,7 +14,8 @@ Bots are named by position today: offline "Seat N" (`projects/content/src/lib/mo
 
 - A name never implies a force. "Zhou Cang" does not make a bot Shu. The pool is flat, has no force field, and nothing in the UI colours, groups or reasons by it. A bot's force comes only from the Generals it is dealt.
 - No bot personalities, avatars or per-name behaviour.
-- Past saved games keep their "Bot N" and "Seat N" names. Do not migrate or rename them.
+- Past saved games keep their "Bot N" and "Seat N" names. Do not migrate or rename them. The only migration is a schema one: a nullable `bot_name_id` column, with no backfill; a seat or room player without it shows its stored name.
+- The `Bot:` name rule applies to new input only. No existing account is known to have such a name, so no check or cleanup is needed.
 - Human players are untouched.
 
 ## Anti-goals
