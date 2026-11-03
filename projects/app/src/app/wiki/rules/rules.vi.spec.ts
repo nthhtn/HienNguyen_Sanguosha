@@ -60,9 +60,14 @@ describe('the rules texts in both languages', () => {
   it('a link is labelled as the page is named in the navigation, in each language', () => {
     const NAV: Record<string, MessageKey> = {
       '/wiki/rules/setup': 'nav.rules.setup',
+      '/wiki/rules/allegiance': 'nav.rules.allegiance',
       '/wiki/rules/turn': 'nav.rules.turn',
       '/wiki/rules/card-types': 'nav.rules.cardTypes',
       '/wiki/rules/distance': 'nav.rules.distance',
+      '/wiki/rules/response': 'nav.rules.response',
+      '/wiki/rules/damage': 'nav.rules.damage',
+      '/wiki/rules/chains': 'nav.rules.chains',
+      '/wiki/rules/glossary': 'nav.rules.glossary',
       '/wiki/rules/judgment': 'nav.rules.judgment',
       '/wiki/generals': 'nav.cards.generals',
       '/wiki/tools': 'nav.cards.tools',
@@ -96,8 +101,13 @@ describe('the rules pages in Vietnamese', () => {
     ['overview', 'Tổng quan'],
     ['card-types', 'Loại bài'],
     ['setup', 'Chuẩn bị'],
+    ['allegiance', 'Phe phái'],
     ['turn', 'Cấu trúc lượt'],
     ['distance', 'Khoảng cách / Tầm'],
+    ['response', 'Cửa sổ phản hồi'],
+    ['damage', 'Sát thương và hấp hối'],
+    ['chains', 'Xích'],
+    ['glossary', 'Thuật ngữ'],
     ['judgment', 'Phán xét'],
   ])('%s: the title', async (page, title) => {
     const { el } = await open(page);
@@ -108,11 +118,17 @@ describe('the rules pages in Vietnamese', () => {
     const { el } = await open('overview');
     expect(text(el)).toContain('Ngụy, Thục, Ngô hoặc Quần');
     expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
+      '/wiki/rules/allegiance Phe phái', // the Winning list's cap sentence
       '/wiki/rules/setup Chuẩn bị',
+      '/wiki/rules/allegiance Phe phái',
       '/wiki/rules/turn Cấu trúc lượt',
       '/wiki/rules/card-types Loại bài',
       '/wiki/rules/distance Khoảng cách / Tầm',
+      '/wiki/rules/response Cửa sổ phản hồi',
+      '/wiki/rules/damage Sát thương và hấp hối',
       '/wiki/rules/judgment Phán xét',
+      '/wiki/rules/chains Xích',
+      '/wiki/rules/glossary Thuật ngữ',
       '/wiki/generals Tướng',
     ]);
   });
@@ -122,9 +138,68 @@ describe('the rules pages in Vietnamese', () => {
     expect([...el.querySelectorAll('figure')].map(text)).toEqual(['Ngụy Tào Tháo', 'Thục Lưu Bị', 'Ngô Tôn Quyền', 'Quần Trương Giác']);
   });
 
+  it('overview: the Winning list ends with the cap, linking to the Allegiance page', async () => {
+    const { el } = await open('overview');
+    const items = [...el.querySelector('ul')!.querySelectorAll('li')];
+    expect(items.length).toBe(4);
+    expect(text(items[3])).toContain('đã đủ chỗ sẽ trở thành Dã tâm gia và chơi một mình');
+    expect(items[3].querySelector('a')!.getAttribute('href')).toBe('/wiki/rules/allegiance');
+  });
+
+  it('allegiance: an Ambitionist seat has its mark, its own label and no Force', async () => {
+    const { el } = await open('allegiance');
+    const first = el.querySelector('app-scene')!;
+    expect(first.querySelectorAll('img.scene-ambitionist').length).toBe(1);
+    expect(text(first.querySelector('.seat[data-force="Ambitionist"]')!)).toContain('Dã tâm gia');
+    expect(text(first.querySelector('.seat[data-force="Wei"]')!)).toContain('Ngụy');
+    expect(text(first.querySelector('.seat[data-force="Ambitionist"]')!)).not.toContain('Ngụy');
+  });
+
+  it('allegiance: the cap example turns the fourth Wei seat into an Ambitionist and keeps a dead seat counted', async () => {
+    const { el } = await open('allegiance');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 6 người chơi, mức trần 3')!;
+    const [one, two, three] = [...scene.querySelectorAll('ol.steps > li')];
+    expect(one.querySelectorAll('.seat[data-force="Wei"]').length).toBe(3);
+    expect(one.querySelectorAll('img.scene-ambitionist').length).toBe(0);
+    expect(two.querySelectorAll('img.scene-ambitionist').length).toBe(1);
+    expect(two.querySelectorAll('.seat[data-force="Wei"]').length).toBe(3);
+    expect(three.querySelectorAll('.seat.out').length).toBe(1);
+  });
+
+  it('allegiance: killing an Ambitionist shows three drawn cards', async () => {
+    const { el } = await open('allegiance');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: hạ gục một Dã tâm gia')!;
+    expect([...scene.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Mặt sau lá bài', 'Mặt sau lá bài', 'Mặt sau lá bài']);
+    expect(scene.querySelectorAll('.seat.out').length).toBe(1);
+  });
+
+  it('allegiance: an Ambitionist counts as a Force of one and can be picked by a different-Force card', async () => {
+    const { el } = await open('allegiance');
+    expect(text(el)).toContain('được tính như một thế lực chỉ có một người');
+    expect(text(el)).toContain('có thể chọn một Dã tâm gia');
+    expect(text(el)).toContain('Một Dã tâm gia không liên minh với Dã tâm gia khác: mỗi người là một nhóm một người riêng');
+    expect(text(el)).not.toContain('bỏ qua Dã tâm gia');
+  });
+
+  it('setup: the kill rewards point to Allegiance for Ambitionists', async () => {
+    const { el } = await open('setup');
+    const last = [...el.querySelectorAll('ul')].at(-1)!;
+    expect(text(last.querySelector('li:last-child')!)).toContain('Dã tâm gia không thuộc thế lực nào');
+    expect(last.querySelector('li:last-child a')!.getAttribute('href')).toBe('/wiki/rules/allegiance');
+  });
+
+  it('allegiance: the three outcomes are shown, the last with no Force named', async () => {
+    const { el } = await open('allegiance');
+    const boxes = [...el.querySelectorAll('.branch > div')];
+    expect(boxes.map((b) => text(b.querySelector('h5')!))).toEqual(['Một thế lực thắng', 'Ván tiếp tục', 'Người sống sót cuối cùng thắng một mình']);
+    expect(boxes[2].querySelectorAll('.seat[data-force="Ambitionist"]').length).toBe(1);
+    expect(boxes[2].querySelectorAll('.seat[data-force="Wei"]').length).toBe(0);
+  });
+
   it('overview: a win needs revealed Generals, and Quần wins together as a thế lực like the others', async () => {
     const { el } = await open('overview');
     expect(text(el)).toContain('đã lật Tướng và cùng chơi cho một thế lực');
+    expect(text(el)).toContain('Nếu chỉ còn một người chơi, người đó thắng một mình');
     expect(text(el)).toContain('Quần là một thế lực như các thế lực khác: các người chơi Quần cùng thắng');
     expect(text(el)).not.toContain('không bao giờ thắng theo nhóm');
   });
@@ -197,10 +272,126 @@ describe('the rules pages in Vietnamese', () => {
     const { el } = await open('distance');
     const expected = DISTANCE_EXAMPLE.seats.filter((seat) => seat.distance !== undefined).map((seat) => String(seat.distance));
     expect([...el.querySelectorAll('.dbadge')].map(text)).toEqual(expected);
-    expect([...el.querySelectorAll('.dbadge')].map((b) => b.getAttribute('aria-label'))).toEqual(['Người chơi 3, Khoảng cách 1', 'Người chơi 4, Khoảng cách 2', 'Người chơi 5, Khoảng cách 2', 'Người chơi 6, Khoảng cách 2']);
+    expect([...el.querySelectorAll('button.spot:not([disabled])')].map((b) => b.getAttribute('aria-label'))).toEqual(['Người chơi 3, Khoảng cách 1, trong tầm', 'Người chơi 4, Khoảng cách 2, ngoài tầm', 'Người chơi 5, Khoảng cách 2, ngoài tầm', 'Người chơi 6, Khoảng cách 2, ngoài tầm']);
     expect(el.querySelectorAll('.ring .seat.out').length).toBe(1);
     expect(el.querySelectorAll('.ring .mount img.scene-card').length).toBe(1);
-    expect(text(el.querySelector('.cap')!)).toBe('Ví dụ: Người chơi 1 tấn công khi không có Vũ khí');
+    expect(text(el.querySelector('.cap')!)).toBe('Thử xem: bạn là Người chơi 1');
+  });
+
+  it('response: Slash and Dodge show a play branch and a pass branch', async () => {
+    const { el } = await open('response');
+    const scene = el.querySelector('app-scene')!;
+    expect([...scene.querySelectorAll('.branch > div h5')].map(text)).toEqual(['Đánh Thiểm', 'Bỏ qua']);
+  });
+
+  it('response: the Wuxie chain has four ordered steps and ends with the Tool taking effect', async () => {
+    const { el } = await open('response');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: Quá Hà Sách Kiều và chuỗi Vô Giải Khả Kích')!;
+    const steps = [...scene.querySelectorAll('ol.steps > li')];
+    expect(steps.length).toBe(4);
+    expect(steps[3].querySelector('img.scene-card')!.getAttribute('alt')).toBe('Quá Hà Sách Kiều');
+    expect(text(steps[3])).toContain('có hiệu lực');
+  });
+
+  it('response: Barbarians shows three targets, one spared, and no missing-rule note', async () => {
+    const { el } = await open('response');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: Nam Man Xâm Nhập')!;
+    expect(scene.querySelectorAll('figure.target').length).toBe(3);
+    expect([...scene.querySelectorAll('.pill.ok')].map(text)).toEqual(['Được cứu']);
+    expect(el.querySelector('.note-pending')).toBeNull();
+  });
+
+  it('damage: the dying example needs two Peaches, one from each of two seats', async () => {
+    const { el } = await open('damage');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: một người chơi ở -1 Sinh lực')!;
+    const rescue = scene.querySelectorAll('ol.steps > li')[2];
+    expect([...rescue.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Đào', 'Đào']);
+    expect([...rescue.querySelectorAll('.note')].map(text)).toEqual(['-1 Sinh lực', '0 Sinh lực', '1 Sinh lực']);
+  });
+
+  it('damage: the 2 damage in the dying example is explained by a Wine-boosted Sát', async () => {
+    const { el } = await open('damage');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: một người chơi ở -1 Sinh lực')!;
+    const first = scene.querySelector('ol.steps > li')!;
+    expect([...first.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Tửu', 'Sát']);
+    expect(text(first)).toContain('được Tửu tăng sức mạnh');
+  });
+
+  it('damage: Wine and Slash show 2 damage', async () => {
+    const { el } = await open('damage');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 2 sát thương')!;
+    expect([...scene.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Tửu', 'Sát']);
+  });
+
+  it('damage: three kinds of damage, each with its cards', async () => {
+    const { el } = await open('damage');
+    expect([...el.querySelectorAll('figure.kind figcaption b')].map(text)).toEqual(['Thường', 'Lửa', 'Sét']);
+    expect([...el.querySelectorAll('figure.kind img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Sát', 'Hỏa Sát', 'Lôi Sát']);
+  });
+
+  it('damage: both ways a dying round can end are shown', async () => {
+    const { el } = await open('damage');
+    expect([...el.querySelectorAll('.branch > div h5')].map(text)).toEqual(['Trở lại trên 0 Sinh lực', 'Không ai cứu']);
+  });
+
+  it('damage: points to the Chains page where fire and thunder matter, and to Setup for the kill reward', async () => {
+    const { el } = await open('damage');
+    expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual(['/wiki/rules/chains Xích', '/wiki/rules/setup Chuẩn bị']);
+  });
+
+  it('chains: chaining toggles a seat, with exactly one chained badge in the first scene', async () => {
+    const { el } = await open('chains');
+    const first = el.querySelector('app-scene')!;
+    expect(first.querySelectorAll('img.scene-chain').length).toBe(1);
+    expect(first.querySelectorAll('app-scene-seat').length).toBe(2);
+  });
+
+  it('chains: the wave example hits the two seats after the damaged one, in turn order, and unchains them', async () => {
+    const { el } = await open('chains');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 1 sát thương lửa lên Người chơi 2')!;
+    const [start, damaged, wave] = [...scene.querySelectorAll('ol.steps > li')];
+    expect([...start.querySelectorAll('.nm')].map(text)).toEqual(['Người chơi 2', 'Người chơi 3', 'Người chơi 5']);
+    expect(start.querySelectorAll('img.scene-chain').length).toBe(3);
+    expect(damaged.querySelectorAll('img.scene-chain').length).toBe(2);
+    expect([...damaged.querySelectorAll('.note')].map(text)).toEqual(['3 Sinh lực', '4 Sinh lực', '4 Sinh lực']);
+    expect([...wave.querySelectorAll('.note')].map(text)).toEqual(['3 Sinh lực', '3 Sinh lực', '3 Sinh lực']);
+    expect([...wave.querySelectorAll('.nm')].map(text)).toEqual(['Người chơi 2', 'Người chơi 3', 'Người chơi 5']);
+    expect(wave.querySelectorAll('img.scene-mark').length).toBe(2);
+    expect(wave.querySelectorAll('img.scene-chain').length).toBe(0);
+  });
+
+  it('chains: says plain damage never travels, and that a wave does not start a wave', async () => {
+    const { el } = await open('chains');
+    expect(text(el)).toContain('Sát thương thường thì không bao giờ');
+    expect(text(el)).toContain('không tự khởi động thêm một làn sóng');
+  });
+
+  it('glossary: twelve terms, each with a picture and a definition', async () => {
+    const { el } = await open('glossary');
+    const entries = [...el.querySelectorAll('.entry')];
+    expect(entries.length).toBe(12);
+    for (const entry of entries) {
+      expect(entry.querySelectorAll('img').length).toBeGreaterThan(0);
+      expect(text(entry.querySelector('dt')!)).not.toBe('');
+      expect(text(entry.querySelector('dd')!)).not.toBe('');
+    }
+  });
+
+  it('glossary: the Vietnamese terms follow the agreed wording', async () => {
+    const { el } = await open('glossary');
+    expect([...el.querySelectorAll('dt')].map(text)).toEqual(['Thế lực', 'Sinh lực', 'Chủ tướng', 'Phó tướng', 'Tướng ẩn', 'Bị xích', 'Khu phán xét', 'Phản hồi', 'Tọa kỵ', 'Tầm tấn công', 'Hấp hối', 'Chồng bài rút']);
+  });
+
+  it('glossary: definitions link to the pages they summarise, labelled as the pages are named', async () => {
+    const { el } = await open('glossary');
+    expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
+      '/wiki/rules/chains Xích',
+      '/wiki/rules/judgment Phán xét',
+      '/wiki/rules/response Cửa sổ phản hồi',
+      '/wiki/rules/distance Khoảng cách / Tầm',
+      '/wiki/rules/distance Khoảng cách / Tầm',
+      '/wiki/rules/damage Sát thương và hấp hối',
+    ]);
   });
 
   it('turn: six phases in order, only the Play Phase marked as waiting', async () => {
@@ -259,7 +450,7 @@ describe('the rules pages in Vietnamese', () => {
   });
 
   it('no English card name is left on any rules page', async () => {
-    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'judgment']) {
+    for (const page of ['overview', 'card-types', 'setup', 'allegiance', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary']) {
       TestBed.resetTestingModule();
       const { el } = await open(page);
       expect(text(el)).not.toMatch(/\b(Slash|Dodge|Peach|Wine|Wuxie|Capture|Starvation|Lightning|Barbarians|Hail of Arrows|Steal|Force|Play Phase|Main General)\b/);

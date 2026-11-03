@@ -151,6 +151,7 @@ const DEAL = [
       <li><app-rich key="rules.setup.kill4" /></li>
       <li><app-rich key="rules.setup.kill5" /></li>
       <li><app-rich key="rules.setup.kill6" /></li>
+      <li><app-rich key="rules.setup.kill7" /></li>
     </ul>
     <p><app-rich key="rules.setup.next" /></p>
   `,

@@ -1,5 +1,40 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`the rules pages in English allegiance keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/setup Setup",
+  ],
+  "text": [
+    "Allegiance",
+    "Allegiance says whom a seat plays for.",
+    "Two Kinds of Allegiance",
+    "A seat's allegiance is decided once, at the moment its first General is shown: by revealing it, or by the death reveal. It never changes afterward. Until then the seat has none.",
+    "A seat either plays for the Force of its revealed General, or it is an Ambitionist: it plays alone, as a group of one, for no Force.",
+    "Example: Two Wei Generals",
+    "Both Generals are printed Wei. Seat 1 plays for Wei. Seat 4 is an Ambitionist, so its printed Force does not count.",
+    "The Cap",
+    "A Force may hold at most half the table, rounded down: 4 of 8 seats, 3 of 6, 1 of 2. Seats that are out still count, and an Ambitionist holds no place. A seat that reveals into a Force already at its cap becomes an Ambitionist. A hidden seat that dies in a full Force becomes one too, through the death reveal. See Setup for how Generals are revealed.",
+    "An Ambitionist counts as a Force of one: it is never "the same Force" as anyone else, and the printed Force of its General does not count. An Ambitionist does not ally with another Ambitionist: each is its own group of one. A card that needs a seat of a different Force, such as Ally Far Attack Near, can pick an Ambitionist.",
+    "Example: 6 Seats, Cap 3",
+    "Seats 1, 2 and 3 reveal Wei Generals. Wei is not full, so each plays for Wei.Seat 1WeiSeat 2WeiSeat 3Wei",
+    "Seats 1, 2 and 3 reveal Wei Generals. Wei is not full, so each plays for Wei.",
+    "Seat 4 reveals a Wei General. Wei already holds 3 of 3 places, so Seat 4 is an Ambitionist.Seat 1WeiSeat 2WeiSeat 3WeiSeat 4Ambitionist",
+    "Seat 4 reveals a Wei General. Wei already holds 3 of 3 places, so Seat 4 is an Ambitionist.",
+    "Later Seat 2 is knocked out. Wei still holds its 3 places, because seats that are out still count.Seat 1WeiSeat 2WeiSeat 3WeiSeat 4Ambitionist",
+    "Later Seat 2 is knocked out. Wei still holds its 3 places, because seats that are out still count.",
+    "Killing an Ambitionist",
+    "Killing an Ambitionist draws the killer 3 cards. An Ambitionist killer is never penalized: it never discards its hand.",
+    "Example: Killing an Ambitionist",
+    "Who Wins",
+    "A Force wins when every surviving seat plays for it. A hidden seat, or an Ambitionist, keeps the game going. The last survivor wins alone: an Ambitionist who is last wins with no Force.",
+    "Both survivors play for Wei, so Wei wins together.",
+    "An Ambitionist is still alive, so not every survivor plays for Wei.",
+    "Only one seat is left. It wins alone, and an Ambitionist who is last wins with no Force.",
+  ],
+}
+`;
+
 exports[`the rules pages in English card-types keeps its text and links 1`] = `
 {
   "links": [
@@ -52,6 +87,65 @@ exports[`the rules pages in English card-types keeps its text and links 1`] = `
 }
 `;
 
+exports[`the rules pages in English chains keeps its text and links 1`] = `
+{
+  "links": [],
+  "text": [
+    "Chains",
+    "A chained seat passes fire and thunder damage along to every other chained seat.",
+    "Chaining and Unchaining",
+    "Play Chains on 1 or 2 seats at any distance, yourself included. Each unchained target becomes chained, and each chained target becomes unchained. You may also recast it: discard it and draw 1 card.",
+    "The Chain Wave",
+    "Only fire and thunder damage travels. Plain damage never does. When a chained seat takes fire or thunder damage, it is unchained, and every other chained seat then takes the same damage, one at a time, in turn order starting after the damaged seat. A seat hit this way does not start a wave of its own.",
+    "Example: 1 Fire Damage on Seat 2",
+    "Seats 2, 3 and 5 are chained. Seat 1 uses Fire Attack and Seat 2 takes 1 fire damage.→Seat 2Wu4 HPSeat 3Shu4 HPSeat 5Qun4 HP",
+    "Seats 2, 3 and 5 are chained. Seat 1 uses Fire Attack and Seat 2 takes 1 fire damage.",
+    "Seat 2 loses 1 HP and is unchained.Seat 2Wu3 HPSeat 3Shu4 HPSeat 5Qun4 HP",
+    "Seat 2 loses 1 HP and is unchained.",
+    "The other chained seats are hit one at a time in turn order after Seat 2: Seat 3, then Seat 5. Each takes the original 1 damage, changed only by its own effects, and is unchained. If a hit starts a dying round, that round finishes before the next seat is hit.Seat 2Wu3 HPSeat 3Shu3 HPSeat 5Qun3 HP",
+    "The other chained seats are hit one at a time in turn order after Seat 2: Seat 3, then Seat 5. Each takes the original 1 damage, changed only by its own effects, and is unchained. If a hit starts a dying round, that round finishes before the next seat is hit.",
+  ],
+}
+`;
+
+exports[`the rules pages in English damage keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/chains Chains",
+    "/wiki/rules/setup Setup",
+  ],
+  "text": [
+    "Damage and Dying",
+    "How HP is lost, what a drop to zero means, and how a seat is rescued or knocked out.",
+    "HP and Damage",
+    "Damage and healing apply to one shared HP pool. Each point of damage removes one HP.",
+    "Example: 1 Damage",
+    "4 HP becomes 3 HP.",
+    "Wine",
+    "Any seat can play Wine once during its turn. The next Slash it plays that turn deals 1 more damage.",
+    "Example: 2 Damage",
+    "Kinds of Damage",
+    "Every point of damage is normal, fire or thunder. Fire and thunder matter for Chains.",
+    "NormalSlash",
+    "FireFire Attack, Blaze",
+    "ThunderLightning Attack, Lightning",
+    "Dying and Rescue",
+    "When a seat's HP drops to 0 or below, it is dying and a rescue round starts.",
+    "Example: A Seat at -1 HP",
+    "Seat 4 is at 1 HP and takes 2 damage from a Slash boosted by Wine. It falls to -1 HP and is dying.Seat 4Wu1 HP+→Seat 4Wu-1 HPDying",
+    "Seat 4 is at 1 HP and takes 2 damage from a Slash boosted by Wine. It falls to -1 HP and is dying.",
+    "The round asks seats in turn order, starting from the seat whose turn it is. A seat with no Peach is skipped, and the dying seat is always asked.Seat 1Wei→Seat 2Shu→Seat 3WuSkipped→Seat 4WuDying",
+    "The round asks seats in turn order, starting from the seat whose turn it is. A seat with no Peach is skipped, and the dying seat is always asked.",
+    "Each Peach heals the dying seat by 1, then the same seat is asked again. Seat 1 and Seat 2 each play one, so Seat 4 is back at 1 HP. Any seat may rescue, whatever its Force. Wine rescues only the seat that holds it.Seat 4Wu-1 HP→Seat 4Wu0 HP→Seat 4Wu1 HP",
+    "Each Peach heals the dying seat by 1, then the same seat is asked again. Seat 1 and Seat 2 each play one, so Seat 4 is back at 1 HP. Any seat may rescue, whatever its Force. Wine rescues only the seat that holds it.",
+    "When the round ends, one of two things has happened.Back Above 0 HPThe seat is saved and the game goes on.Nobody RescuesThe seat is eliminated and discards every card. Both Generals are revealed, and the killer is rewarded or penalized as under Setup.",
+    "When the round ends, one of two things has happened.",
+    "The seat is saved and the game goes on.",
+    "The seat is eliminated and discards every card. Both Generals are revealed, and the killer is rewarded or penalized as under Setup.",
+  ],
+}
+`;
+
 exports[`the rules pages in English distance keeps its text and links 1`] = `
 {
   "links": [
@@ -62,8 +156,8 @@ exports[`the rules pages in English distance keeps its text and links 1`] = `
     "Who you can reach with a card.",
     "Distance",
     "Distance between two seats is the number of steps the short way around the table, counting only seats still in play. When a seat is knocked out, the seats beside it get closer. It is never below 1.",
-    "Example: Seat 1 Attacks With No Weapon",
-    "Seat 2 is out, so Seat 3 sits right next to Seat 1. Seat 6 wears Shadow Runner, which adds 1 to its distance. A seat within attack range 1 is highlighted.",
+    "Try It: You Are Seat 1",
+    "Click a seat to see how far it is. Knock seats out, pick a Weapon and put Mounts on to watch the numbers move.",
     "A Plus Mount on the target adds 1.",
     "A Minus Mount on the attacker subtracts 1.",
     "Some skills change distance too.",
@@ -73,6 +167,23 @@ exports[`the rules pages in English distance keeps its text and links 1`] = `
     "Steal and Starvation can only target a seat at distance 1.",
     "Tools that hit everyone, such as Barbarians and Hail of Arrows, ignore distance.",
     "Weapons and Mounts are listed under Equipment.",
+  ],
+}
+`;
+
+exports[`the rules pages in English glossary keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/chains Chains",
+    "/wiki/rules/judgment Judgment",
+    "/wiki/rules/response Response Windows",
+    "/wiki/rules/distance Distance / Range",
+    "/wiki/rules/distance Distance / Range",
+    "/wiki/rules/damage Damage and Dying",
+  ],
+  "text": [
+    "Glossary",
+    "The terms the wiki uses, each beside the art it refers to.",
   ],
 }
 `;
@@ -110,11 +221,17 @@ exports[`the rules pages in English judgment keeps its text and links 1`] = `
 exports[`the rules pages in English overview keeps its text and links 1`] = `
 {
   "links": [
+    "/wiki/rules/allegiance Allegiance",
     "/wiki/rules/setup Setup",
+    "/wiki/rules/allegiance Allegiance",
     "/wiki/rules/turn Turn Structure",
     "/wiki/rules/card-types Card Types",
     "/wiki/rules/distance Distance / Range",
+    "/wiki/rules/response Response Windows",
+    "/wiki/rules/damage Damage and Dying",
     "/wiki/rules/judgment Judgment",
+    "/wiki/rules/chains Chains",
+    "/wiki/rules/glossary Glossary",
     "/wiki/generals Generals",
   ],
   "text": [
@@ -136,18 +253,57 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "Victory.The game ends when every seat still in play shares a Force.",
     "Victory.The game ends when every seat still in play shares a Force.",
     "Winning",
-    "The game ends when every seat still in play has revealed a General and plays for the same Force. Those seats win together.",
+    "The game ends when every seat still in play has revealed a General and plays for the same Force. Those seats win together. If only one seat is left, it wins alone.",
     "Qun is a Force like the others: Qun seats win together.",
     "A seat that loses its last HP and is not rescued is out. It discards every card it holds.",
+    "A seat that reveals into a Force that is already full becomes an Ambitionist and plays alone. See Allegiance.",
     "Example: Who Wins",
     "Seat 2 and Seat 4 are out. Seats 1 and 3 both show Wei, so Wei wins together.",
     "Where to read next",
     "Setup: how a game starts.",
+    "Allegiance: whom a seat plays for, and Ambitionists.",
     "Turn Structure: what you do on your turn.",
     "Card Types: Basic, Tool and Equipment cards.",
     "Distance / Range: who you can reach.",
+    "Response Windows: how a card lets another seat answer first.",
+    "Damage and Dying: how HP is lost, and how a seat is rescued or knocked out.",
     "Judgment: flipping the top card to decide an effect.",
+    "Chains: how fire and thunder damage passes along a chain.",
+    "Glossary: the terms the wiki uses.",
     "Generals: every General and skill.",
+  ],
+}
+`;
+
+exports[`the rules pages in English response keeps its text and links 1`] = `
+{
+  "links": [],
+  "text": [
+    "Response Windows",
+    "Some cards give another seat a chance to answer before anything happens. This page follows two of them from start to finish.",
+    "Slash and Dodge",
+    "Seat 1 plays Slash on Seat 3, who is in range.Seat 1Wei→Seat 3Shu",
+    "Seat 1 plays Slash on Seat 3, who is in range.",
+    "A response window opens for Seat 3. The seat may play a Dodge or pass.Plays DodgeThe Slash has no effect. Nothing is lost.PassesSeat 3 takes 1 damage and drops to 3 HP.",
+    "A response window opens for Seat 3. The seat may play a Dodge or pass.",
+    "Wuxie on a Tool",
+    "Before a Tool takes effect, the game checks for Wuxie. It asks the living seats in seat order, starting from the seat that used the Tool, and only those that hold a Wuxie at that moment. Passing asks the next holder. Passes are not announced, so nobody learns who held one.",
+    "Example: Break With a Wuxie Chain",
+    "Seat 1 plays Break on Seat 4. The Tool is about to take effect.Waiting for a Wuxie check",
+    "Seat 1 plays Break on Seat 4. The Tool is about to take effect.",
+    "Seat 2 holds a Wuxie and plays it. Break is cancelled, unless someone counters.Break cancelled",
+    "Seat 2 holds a Wuxie and plays it. Break is cancelled, unless someone counters.",
+    "The check restarts from the seat after Seat 2, and a seat is never asked about its own card. Seat 3 plays a Wuxie on that Wuxie.First Wuxie cancelled",
+    "The check restarts from the seat after Seat 2, and a seat is never asked about its own card. Seat 3 plays a Wuxie on that Wuxie.",
+    "Nobody answers again, so Break goes ahead. Any length of chain works the same way: the last Wuxie decides.Break takes effect",
+    "Nobody answers again, so Break goes ahead. Any length of chain works the same way: the last Wuxie decides.",
+    "Wuxie on a Tool That Hits Many Seats",
+    "A Tool such as Barbarians runs its own Wuxie check for each target in turn. A Wuxie spares only the target it was played for.",
+    "Example: Barbarians",
+    "Seat 1 plays Barbarians. Every other seat must play a Slash or take 1 damage, and each gets its own Wuxie check first.",
+    "Plays Slash: no damage",
+    "Plays Wuxie",
+    "Passes",
   ],
 }
 `;
@@ -155,6 +311,7 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
 exports[`the rules pages in English setup keeps its text and links 1`] = `
 {
   "links": [
+    "/wiki/rules/allegiance Allegiance",
     "/wiki/rules/turn Turn Structure",
   ],
   "text": [
@@ -200,6 +357,7 @@ exports[`the rules pages in English setup keeps its text and links 1`] = `
     "A killer who has not revealed either General always counts as a different Force, even if it secretly shares the dead seat's Force.",
     "Qun counts as one Force like the others.",
     "Nothing happens if the death had no source, the seat killed itself, or the killer is out as well.",
+    "An Ambitionist is no seat's Force. See Allegiance for what killing one, or being one, means.",
     "Next: Turn Structure.",
   ],
 }

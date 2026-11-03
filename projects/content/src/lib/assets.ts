@@ -75,3 +75,6 @@ export function hpIconUrls(hp: number): string[] {
   const count = Math.max(0, Math.min(hp, MAX_HP_ICONS));
   return Array.from({ length: count }, (_, i) => `/card-art/misc/hp/${i + 1}.png`);
 }
+
+// The badge on a chained seat (the Game screen's chain image).
+export const CHAIN_ICON_URL = '/card-art/misc/chain.png';
