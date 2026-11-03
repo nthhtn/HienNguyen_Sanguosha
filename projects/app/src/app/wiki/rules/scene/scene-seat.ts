@@ -12,7 +12,7 @@ export type SceneForce = 'Wei' | 'Shu' | 'Wu' | 'Qun';
   selector: 'app-scene-seat',
   imports: [TPipe],
   template: `
-    <div class="seat" [class.out]="out()" [attr.data-force]="force()">
+    <div class="seat" [class.out]="out()" [class.selected]="selected()" [attr.data-force]="force()">
       <img class="scene-avatar" [src]="portrait()" [alt]="portraitName()" />
       @if (chained()) {
         <img class="scene-chain" [src]="chainUrl" [alt]="'seat.chained' | t" />
@@ -39,6 +39,7 @@ export type SceneForce = 'Wei' | 'Shu' | 'Wu' | 'Qun';
     /* The portrait is --seat-av wide, centred in the --seat-w box: the chain sits on its top right corner, the damage mark on its centre. */
     .scene-chain { position: absolute; top: -6px; right: calc((var(--seat-w, 88px) - var(--seat-av, 60px)) / 2 - 8px); width: 28px; filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.6)); }
     .scene-mark { position: absolute; top: calc(var(--seat-av, 60px) / 2); left: 50%; width: 52px; transform: translate(-50%, -50%); pointer-events: none; }
+    .selected .scene-avatar { box-shadow: 0 0 0 3px var(--mat-sys-tertiary); }
     .out .scene-avatar { filter: grayscale(1); opacity: 0.4; }
   `,
 })
@@ -48,6 +49,7 @@ export class SceneSeat {
   readonly n = input.required<number>();
   readonly force = input<SceneForce>();
   readonly out = input(false);
+  readonly selected = input(false);
   readonly label = input<string>();
   readonly chained = input(false);
   readonly mark = input<keyof typeof DAMAGE_IMAGE_URLS>();

@@ -78,6 +78,12 @@ describe('SceneSeat', () => {
     expect(el.querySelector('.seat')!.classList.contains('out')).toBe(true);
   });
 
+  it('marks a selected seat', () => {
+    const { el } = render(SceneSeat, { general: 'cao-cao', n: 2, selected: true });
+    expect(el.querySelector('.seat')!.classList.contains('selected')).toBe(true);
+    expect(render(SceneSeat, { general: 'cao-cao', n: 2 }).el.querySelector('.seat')!.classList.contains('selected')).toBe(false);
+  });
+
   it('takes a label in place of the seat name', () => {
     const { el } = render(SceneSeat, { general: 'cao-cao', n: 1, label: 'Killer' });
     expect(text(el)).toContain('Killer');

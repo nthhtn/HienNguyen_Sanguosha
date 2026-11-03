@@ -202,10 +202,10 @@ describe('the rules pages in Vietnamese', () => {
     const { el } = await open('distance');
     const expected = DISTANCE_EXAMPLE.seats.filter((seat) => seat.distance !== undefined).map((seat) => String(seat.distance));
     expect([...el.querySelectorAll('.dbadge')].map(text)).toEqual(expected);
-    expect([...el.querySelectorAll('.dbadge')].map((b) => b.getAttribute('aria-label'))).toEqual(['Người chơi 3, Khoảng cách 1', 'Người chơi 4, Khoảng cách 2', 'Người chơi 5, Khoảng cách 2', 'Người chơi 6, Khoảng cách 2']);
+    expect([...el.querySelectorAll('.dbadge')].map((b) => b.getAttribute('aria-label'))).toEqual(['Người chơi 3, Khoảng cách 1, trong tầm', 'Người chơi 4, Khoảng cách 2, ngoài tầm', 'Người chơi 5, Khoảng cách 2, ngoài tầm', 'Người chơi 6, Khoảng cách 2, ngoài tầm']);
     expect(el.querySelectorAll('.ring .seat.out').length).toBe(1);
     expect(el.querySelectorAll('.ring .mount img.scene-card').length).toBe(1);
-    expect(text(el.querySelector('.cap')!)).toBe('Ví dụ: Người chơi 1 tấn công khi không có Vũ khí');
+    expect(text(el.querySelector('.cap')!)).toBe('Thử xem: bạn là Người chơi 1');
   });
 
   it('response: Slash and Dodge show a play branch and a pass branch', async () => {
