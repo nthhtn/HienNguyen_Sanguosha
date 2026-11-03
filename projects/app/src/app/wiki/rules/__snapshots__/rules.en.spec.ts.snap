@@ -24,7 +24,7 @@ exports[`the rules pages in English card-types keeps its text and links 1`] = `
     "SlashAttack one seat in range. One per turn.",
     "DodgeOnly played in answer to a Slash.",
     "PeachRestore 1 HP, never above maximum.",
-    "WineOnce per turn, your next attack deals 1 more damage.",
+    "WineOnce per turn, your next Slash deals 1 more damage.",
     "Tools",
     "Played from your hand for a special effect. An Instant Tool takes effect at once; a Delayed Tool is placed in a judgment area and takes effect in a later Judgment Phase. Wuxie can cancel a Tool.",
     "Instant Tools: Take Effect at Once",

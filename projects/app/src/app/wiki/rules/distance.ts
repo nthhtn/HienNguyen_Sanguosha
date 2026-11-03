@@ -32,7 +32,7 @@ const SEATS = DISTANCE_EXAMPLE.seats.map((seat, i) => {
           <div class="spot" [style.left.%]="seat.left" [style.top.%]="seat.top">
             <app-scene-seat [general]="seat.general" [n]="seat.n" [force]="seat.force" [out]="!!seat.out" />
             @if (seat.distance !== undefined) {
-              <span class="dbadge" [class.reach]="seat.reach" [attr.title]="'card.distance' | t: { n: seat.distance }">{{ seat.distance }}</span>
+              <span class="dbadge" [class.reach]="seat.reach" [attr.title]="'card.distance' | t: { n: seat.distance }" [attr.aria-label]="('label.seat' | t: { n: seat.n }) + ', ' + ('card.distance' | t: { n: seat.distance })">{{ seat.distance }}</span>
             }
             @if (seat.mount) {
               <app-scene-card class="mount" [id]="seat.mount" size="tiny" />
@@ -62,6 +62,8 @@ const SEATS = DISTANCE_EXAMPLE.seats.map((seat, i) => {
     .dbadge { position: absolute; top: -4px; right: 2px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; display: grid; place-items: center; font: var(--mat-sys-label-large); background: var(--mat-sys-surface-container-highest); color: var(--mat-sys-on-surface-variant); border: 1px solid var(--mat-sys-outline); }
     .dbadge.reach { background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); border-color: var(--mat-sys-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mat-sys-primary) 30%, transparent); }
     .mount { position: absolute; top: 14px; left: -16px; }
+    /* A narrow screen: smaller seats keep the six round the ring apart, even with the longer Vietnamese names. */
+    @media (max-width: 520px) { .ring { --seat-w: 70px; --seat-av: 44px; min-height: 340px; aspect-ratio: 1.1; } .mount { left: -12px; } }
   `,
 })
 export class RulesDistance {

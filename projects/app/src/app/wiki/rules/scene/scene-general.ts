@@ -23,5 +23,5 @@ export class SceneGeneral {
   readonly size = input<SceneCardSize>('normal');
 
   protected readonly url = computed(() => (this.id() === 'hidden' ? HIDDEN_GENERAL_ART_URL : cardArtUrl(this.id())));
-  protected readonly alt = computed(() => (this.id() === 'hidden' ? this.i18n.t('rules.scene.hiddenGeneral') : (generalDisplayData(this.id(), this.i18n.locale())?.name ?? this.id())));
+  protected readonly alt = computed(() => (this.id() === 'hidden' ? this.i18n.t('rules.scene.hiddenGeneral') : (generalDisplayData(this.id(), this.i18n.locale())?.name ?? '')));
 }

@@ -85,33 +85,37 @@ describe('SceneSeat', () => {
 });
 
 describe('SceneHp', () => {
-  it('dims lost HP', () => {
-    const { el } = render(SceneHp, { hp: 3, max: 4 });
+  it('dims lost HP, and says "3 of 4 HP" once for a reader instead of naming each icon', async () => {
+    const { fixture, el } = render(SceneHp, { hp: 3, max: 4 });
     const icons = [...el.querySelectorAll('img')];
     expect(icons.map((i) => i.classList.contains('lost'))).toEqual([false, false, false, true]);
     expect(icons.map((i) => i.getAttribute('src'))).toEqual(hpIconUrls(4));
-    expect(icons[3].getAttribute('alt')).toBe('Lost HP');
-    expect(icons[0].getAttribute('alt')).toBe('HP');
+    expect(icons.map((i) => i.getAttribute('alt'))).toEqual(['', '', '', '']);
+    expect(el.getAttribute('aria-label')).toBe('3 of 4 HP');
+    await TestBed.inject(I18n).setLocale('vi');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-label')).toBe('3 trên 4 Sinh lực');
   });
 
   it('shows no lost HP at full HP', () => {
     const { el } = render(SceneHp, { hp: 4 });
     expect(el.querySelectorAll('img').length).toBe(4);
     expect(el.querySelectorAll('img.lost').length).toBe(0);
+    expect(el.getAttribute('aria-label')).toBe('4 HP');
   });
 });
 
 describe('SceneFrame', () => {
   @Component({ imports: [SceneFrame], template: `<app-scene [caption]="caption"><p>inside</p></app-scene>` })
   class Host {
-    caption: MessageKey = 'rules.scene.hp';
+    caption: MessageKey = 'nav.rules.setup';
   }
 
   it('shows a translated caption around its content', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
-    expect(text(el.querySelector('.cap')!)).toBe('HP');
+    expect(text(el.querySelector('.cap')!)).toBe('Setup');
     expect(text(el)).toContain('inside');
   });
 });

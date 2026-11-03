@@ -19,8 +19,8 @@ export type SceneForce = 'Wei' | 'Shu' | 'Wu' | 'Qun';
   `,
   styles: `
     :host { display: inline-block; }
-    .seat { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 88px; text-align: center; }
-    .scene-avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; object-position: 50% 14%; border: 3px solid var(--force, var(--mat-sys-outline-variant)); background: var(--mat-sys-surface-container-high); }
+    .seat { display: flex; flex-direction: column; align-items: center; gap: 2px; width: var(--seat-w, 88px); text-align: center; }
+    .scene-avatar { width: var(--seat-av, 60px); height: var(--seat-av, 60px); border-radius: 50%; object-fit: cover; object-position: 50% 14%; border: 3px solid var(--force, var(--mat-sys-outline-variant)); background: var(--mat-sys-surface-container-high); }
     .nm { font: var(--mat-sys-label-large); line-height: 1.15; }
     .force { font: var(--mat-sys-label-small); color: var(--force-text, var(--mat-sys-on-surface-variant)); }
     .out .scene-avatar { filter: grayscale(1); opacity: 0.4; }

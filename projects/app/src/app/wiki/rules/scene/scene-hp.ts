@@ -1,15 +1,13 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { hpIconUrls } from 'content';
 import { I18n } from '../../../i18n/i18n.service';
-import { TPipe } from '../../../i18n/t.pipe';
 
 // A row of HP icons; the ones beyond `hp` up to `max` are dimmed as lost.
 @Component({
   selector: 'app-scene-hp',
-  imports: [TPipe],
   template: `
     @for (icon of icons(); track $index) {
-      <img [class.lost]="icon.lost" [src]="icon.url" [alt]="(icon.lost ? 'rules.scene.lostHp' : 'rules.scene.hp') | t" />
+      <img [class.lost]="icon.lost" [src]="icon.url" alt="" />
     }
   `,
   host: { role: 'img', '[attr.aria-label]': 'label()' },
@@ -24,6 +22,9 @@ export class SceneHp {
   readonly hp = input.required<number>();
   readonly max = input<number>();
 
-  protected readonly label = computed(() => this.i18n.t('rules.scene.hpCount', { n: this.hp() }));
+  protected readonly label = computed(() => {
+    const max = this.max();
+    return max !== undefined && max !== this.hp() ? this.i18n.t('rules.scene.hpOfMax', { n: this.hp(), max }) : this.i18n.t('rules.scene.hpCount', { n: this.hp() });
+  });
   protected readonly icons = computed(() => hpIconUrls(this.max() ?? this.hp()).map((url, i) => ({ url, lost: i >= this.hp() })));
 }

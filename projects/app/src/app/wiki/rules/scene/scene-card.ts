@@ -26,5 +26,5 @@ export class SceneCard {
   readonly dim = input(false);
 
   protected readonly url = computed(() => (this.id() === 'back' ? CARD_BACK_ART_URL : cardArtUrl(this.id())));
-  protected readonly alt = computed(() => (this.id() === 'back' ? this.i18n.t('rules.scene.cardBack') : (cardDisplayData(this.id(), this.i18n.locale())?.name ?? this.id())));
+  protected readonly alt = computed(() => (this.id() === 'back' ? this.i18n.t('rules.scene.cardBack') : (cardDisplayData(this.id(), this.i18n.locale())?.name ?? '')));
 }
