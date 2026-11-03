@@ -80,7 +80,7 @@ describe('Room', () => {
   });
 
   it('builds a member from a record: a bot is connected, a human starts away', () => {
-    const player: RoomPlayerRecord = { id: 'p1', roomId: 'room-1', userId: 'u1', kind: 'human', displayName: 'Ann', joinedAt: at(0), leftAt: null };
+    const player: RoomPlayerRecord = { id: 'p1', roomId: 'room-1', userId: 'u1', kind: 'human', displayName: 'Ann', botNameId: null, joinedAt: at(0), leftAt: null };
     expect(memberFrom(player, true, NOW)).toEqual({ id: 'p1', userId: 'u1', kind: 'human', name: 'Ann', isRegistered: true, joinedAt: at(0), connected: false, awaySince: NOW });
     expect(memberFrom({ ...player, kind: 'bot', userId: null }, false, NOW)).toMatchObject({ kind: 'bot', connected: true, awaySince: null });
   });
