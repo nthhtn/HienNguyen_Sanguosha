@@ -113,13 +113,14 @@ describe('SceneSeat marks', () => {
     const { fixture, el } = render(SceneSeat, { general: 'zhang-liao', n: 4, force: 'Wei', ambitionist: true });
     const mark = el.querySelector('img.scene-ambitionist')!;
     expect(mark.getAttribute('src')).toBe(AMBITIONIST_ICON_URL);
-    expect(mark.getAttribute('alt')).toBe('Ambitionist');
+    // The visible label says "Ambitionist"; the mark is decorative so a screen reader does not say it twice.
+    expect(mark.getAttribute('alt')).toBe('');
+    expect(mark.getAttribute('aria-hidden')).toBe('true');
     expect(text(el)).toContain('Ambitionist');
     expect(text(el)).not.toContain('Wei');
     expect(el.querySelector('.seat')!.getAttribute('data-force')).toBe('Ambitionist');
     await TestBed.inject(I18n).setLocale('vi');
     fixture.detectChanges();
-    expect(mark.getAttribute('alt')).toBe('Dã tâm gia');
     expect(text(el)).toContain('Dã tâm gia');
     const kingdom = render(SceneSeat, { general: 'zhang-liao', n: 4, force: 'Wei' });
     expect(kingdom.el.querySelector('img.scene-ambitionist')).toBeNull();

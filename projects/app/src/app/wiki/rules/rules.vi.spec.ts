@@ -173,6 +173,21 @@ describe('the rules pages in Vietnamese', () => {
     expect(scene.querySelectorAll('.seat.out').length).toBe(1);
   });
 
+  it('allegiance: an Ambitionist counts as a Force of one and can be picked by a different-Force card', async () => {
+    const { el } = await open('allegiance');
+    expect(text(el)).toContain('được tính như một thế lực chỉ có một người');
+    expect(text(el)).toContain('có thể chọn một Dã tâm gia');
+    expect(text(el)).toContain('Một Dã tâm gia không liên minh với Dã tâm gia khác: mỗi người là một nhóm một người riêng');
+    expect(text(el)).not.toContain('bỏ qua Dã tâm gia');
+  });
+
+  it('setup: the kill rewards point to Allegiance for Ambitionists', async () => {
+    const { el } = await open('setup');
+    const last = [...el.querySelectorAll('ul')].at(-1)!;
+    expect(text(last.querySelector('li:last-child')!)).toContain('Dã tâm gia không thuộc thế lực nào');
+    expect(last.querySelector('li:last-child a')!.getAttribute('href')).toBe('/wiki/rules/allegiance');
+  });
+
   it('allegiance: the three outcomes are shown, the last with no Force named', async () => {
     const { el } = await open('allegiance');
     const boxes = [...el.querySelectorAll('.branch > div')];
@@ -184,6 +199,7 @@ describe('the rules pages in Vietnamese', () => {
   it('overview: a win needs revealed Generals, and Quần wins together as a thế lực like the others', async () => {
     const { el } = await open('overview');
     expect(text(el)).toContain('đã lật Tướng và cùng chơi cho một thế lực');
+    expect(text(el)).toContain('Nếu chỉ còn một người chơi, người đó thắng một mình');
     expect(text(el)).toContain('Quần là một thế lực như các thế lực khác: các người chơi Quần cùng thắng');
     expect(text(el)).not.toContain('không bao giờ thắng theo nhóm');
   });

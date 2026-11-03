@@ -15,7 +15,7 @@ export type SceneForce = 'Wei' | 'Shu' | 'Wu' | 'Qun';
     <span class="seat" [class.out]="out()" [class.selected]="selected()" [attr.data-force]="ambitionist() ? 'Ambitionist' : force()">
       <img class="scene-avatar" [src]="portrait()" [alt]="portraitName()" />
       @if (ambitionist()) {
-        <img class="scene-ambitionist" [src]="ambitionistUrl" [alt]="'label.kingdom.Ambitionist' | t" />
+        <img class="scene-ambitionist" [src]="ambitionistUrl" alt="" aria-hidden="true" />
       }
       @if (chained()) {
         <img class="scene-chain" [src]="chainUrl" [alt]="'seat.chained' | t" />

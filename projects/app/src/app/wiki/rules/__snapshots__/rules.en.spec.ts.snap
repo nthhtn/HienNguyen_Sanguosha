@@ -15,7 +15,7 @@ exports[`the rules pages in English allegiance keeps its text and links 1`] = `
     "Both Generals are printed Wei. Seat 1 plays for Wei. Seat 4 is an Ambitionist, so its printed Force does not count.",
     "The Cap",
     "A Force may hold at most half the table, rounded down: 4 of 8 seats, 3 of 6, 1 of 2. Seats that are out still count, and an Ambitionist holds no place. A seat that reveals into a Force already at its cap becomes an Ambitionist. A hidden seat that dies in a full Force becomes one too, through the death reveal. See Setup for how Generals are revealed.",
-    "Effects that look at a Force ignore Ambitionists: an Ambitionist is never "the same Force" as anyone, and the printed Force of its General does not count.",
+    "An Ambitionist counts as a Force of one: it is never "the same Force" as anyone else, and the printed Force of its General does not count. An Ambitionist does not ally with another Ambitionist: each is its own group of one. A card that needs a seat of a different Force, such as Ally Far Attack Near, can pick an Ambitionist.",
     "Example: 6 Seats, Cap 3",
     "Seats 1, 2 and 3 reveal Wei Generals. Wei is not full, so each plays for Wei.Seat 1WeiSeat 2WeiSeat 3Wei",
     "Seats 1, 2 and 3 reveal Wei Generals. Wei is not full, so each plays for Wei.",
@@ -253,7 +253,7 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "Victory.The game ends when every seat still in play shares a Force.",
     "Victory.The game ends when every seat still in play shares a Force.",
     "Winning",
-    "The game ends when every seat still in play has revealed a General and plays for the same Force. Those seats win together.",
+    "The game ends when every seat still in play has revealed a General and plays for the same Force. Those seats win together. If only one seat is left, it wins alone.",
     "Qun is a Force like the others: Qun seats win together.",
     "A seat that loses its last HP and is not rescued is out. It discards every card it holds.",
     "A seat that reveals into a Force that is already full becomes an Ambitionist and plays alone. See Allegiance.",
@@ -311,6 +311,7 @@ exports[`the rules pages in English response keeps its text and links 1`] = `
 exports[`the rules pages in English setup keeps its text and links 1`] = `
 {
   "links": [
+    "/wiki/rules/allegiance Allegiance",
     "/wiki/rules/turn Turn Structure",
   ],
   "text": [
@@ -356,6 +357,7 @@ exports[`the rules pages in English setup keeps its text and links 1`] = `
     "A killer who has not revealed either General always counts as a different Force, even if it secretly shares the dead seat's Force.",
     "Qun counts as one Force like the others.",
     "Nothing happens if the death had no source, the seat killed itself, or the killer is out as well.",
+    "An Ambitionist is no seat's Force. See Allegiance for what killing one, or being one, means.",
     "Next: Turn Structure.",
   ],
 }

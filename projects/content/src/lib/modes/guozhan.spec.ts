@@ -772,6 +772,11 @@ describe('Guozhan Ambitionists: win check', () => {
     expect(win(seats([['Qun', 'kingdom'], ['Qun', 'kingdom'], ['Wei', 'kingdom', 'out']]))).toMatchObject({ winningKingdom: 'Qun' });
   });
 
+  it('two Ambitionists alive: no result, they do not win together', () => {
+    expect(win(seats([['Wei', 'ambitionist'], ['Wei', 'ambitionist']]))).toBeNull();
+    expect(win(seats([['Wei', 'ambitionist'], ['Shu', 'ambitionist'], ['Wu', 'kingdom', 'out']]))).toBeNull();
+  });
+
   it('a Kingdom and an Ambitionist alive: no result', () => {
     expect(win(seats([['Wei', 'kingdom'], ['Wei', 'kingdom'], ['Wei', 'ambitionist']]))).toBeNull();
   });

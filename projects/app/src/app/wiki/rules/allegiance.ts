@@ -26,7 +26,7 @@ import { SceneSeat } from './scene/scene-seat';
 
     <h3>{{ 'rules.allegiance.capTitle' | t }}</h3>
     <p>{{ 'rules.allegiance.capText' | t }} <app-rich key="rules.allegiance.capSee" /></p>
-    <p>{{ 'rules.allegiance.ignoreText' | t }}</p>
+    <p><app-rich key="rules.allegiance.ignoreText" /></p>
     <app-scene caption="rules.allegiance.capCap">
       <ol class="steps">
         <li>
