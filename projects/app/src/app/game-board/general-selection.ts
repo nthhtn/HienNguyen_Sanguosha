@@ -117,7 +117,6 @@ interface CandidateViewModel {
       display: flex; flex-direction: column; padding-bottom: 8px; box-sizing: border-box;
       height: calc(100dvh - var(--mat-toolbar-standard-height, 64px) - 16px);
     }
-    @media (max-width: 599px) { :host { height: calc(100dvh - var(--mat-toolbar-mobile-height, 56px) - 16px); } }
     .intro { flex: none; }
     .intro h2 { margin: 8px 0 0; font: var(--mat-sys-headline-small); }
     .hint { color: var(--mat-sys-on-surface-variant); margin: 4px 0 8px; }
@@ -181,6 +180,12 @@ interface CandidateViewModel {
     .slot-name { font: var(--mat-sys-title-small); }
     .summary { flex: 1; font: var(--mat-sys-body-medium); }
     .timer { width: 160px; }
+    /* Phone layout (layout.service.ts): too short to fit every card, so the cards keep a size you can tap and the
+       page scrolls; the bar with Confirm stays at the bottom of the screen. */
+    :host-context([data-layout='phone']) { height: auto; min-height: calc(100dvh - var(--mat-toolbar-standard-height, 44px) - 16px); }
+    :host-context([data-layout='phone']) .candidates { flex: none; }
+    :host-context([data-layout='phone']) .row { flex: none; height: 210px; }
+    :host-context([data-layout='phone']) .bar { position: sticky; bottom: 0; z-index: 2; background: var(--mat-sys-surface-container); border-radius: 12px; }
     @media (max-width: 600px) {
       .bar { gap: 8px; }
       .summary { flex-basis: 100%; order: 3; }

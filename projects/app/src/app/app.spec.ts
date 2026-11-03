@@ -303,6 +303,11 @@ describe('App', () => {
     expect(el.querySelector('button.account')).toBeNull();
   });
 
+  it('names the Sign In link for screen readers, since its label can be hidden on narrow screens', async () => {
+    const { el } = await render();
+    expect(el.querySelector('a.sign-in')!.getAttribute('aria-label')).toBe('Sign In');
+  });
+
   it('shows nothing for the account until the first answer arrives', async () => {
     loaded.set(false);
     const { el } = await render();

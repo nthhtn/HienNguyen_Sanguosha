@@ -57,7 +57,7 @@
           <button mat-menu-item type="button" class="sign-out" (click)="signOut()">{{ 'nav.signOut' | t }}</button>
         </mat-menu>
       } @else {
-        <a mat-button class="sign-in" routerLink="/sign-in"><mat-icon>login</mat-icon><span class="label">{{ 'nav.signIn' | t }}</span></a>
+        <a mat-button class="sign-in" routerLink="/sign-in" [attr.aria-label]="'nav.signIn' | t"><mat-icon>login</mat-icon><span class="label">{{ 'nav.signIn' | t }}</span></a>
       }
     }
     <app-language-switcher />
