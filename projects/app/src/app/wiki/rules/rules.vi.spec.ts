@@ -160,11 +160,29 @@ describe('the rules pages in Vietnamese', () => {
     expect(text(el)).toContain('một Chủ tướng và một Phó tướng');
   });
 
-  it('turn: the six phases, and the cards named in the text', async () => {
+  it('turn: six phases in order, only the Play Phase marked as waiting', async () => {
     const { el } = await open('turn');
-    expect([...el.querySelectorAll('th')].map(text)).toEqual(['Giai đoạn bắt đầu', 'Giai đoạn phán xét', 'Giai đoạn rút bài', 'Giai đoạn ra bài', 'Giai đoạn bỏ bài', 'Giai đoạn kết thúc']);
+    expect([...el.querySelectorAll('.phase h4')].map(text)).toEqual(['Giai đoạn bắt đầu', 'Giai đoạn phán xét', 'Giai đoạn rút bài', 'Giai đoạn ra bài', 'Giai đoạn bỏ bài', 'Giai đoạn kết thúc']);
+    expect([...el.querySelectorAll('.phase')].map((tile) => tile.classList.contains('waits'))).toEqual([false, false, false, true, false, false]);
+  });
+
+  it('turn: the cards named in the text', async () => {
+    const { el } = await open('turn');
     expect(text(el)).toContain('một Sát mỗi lượt');
     expect(text(el)).toContain('Lạc Bất Tư Thục hoặc Binh Lương Thốn Đoạn');
+  });
+
+  it('turn: the Discard Phase example keeps 4 cards and discards 2', async () => {
+    const { el } = await open('turn');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => text(s.querySelector('.cap')!) === 'Ví dụ: 6 lá bài, 4 Sinh lực')!;
+    expect(scene.querySelectorAll('img.scene-card').length).toBe(6);
+    expect(scene.querySelectorAll('img.scene-card.dim').length).toBe(2);
+  });
+
+  it('turn: the Play Phase example follows one Sát and the heal', async () => {
+    const { el } = await open('turn');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => text(s.querySelector('.cap')!) === 'Ví dụ: một giai đoạn ra bài ở 3 Sinh lực')!;
+    expect(scene.querySelectorAll('ol.steps > li').length).toBe(3);
   });
 
   it('turn: turns pass counter-clockwise', async () => {

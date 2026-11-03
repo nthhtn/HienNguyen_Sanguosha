@@ -16,7 +16,7 @@ describe('the rules pages in English', () => {
     harness.detectChanges();
     const el = harness.routeNativeElement as HTMLElement;
     expect({
-      text: [...el.querySelectorAll('h2, h3, p, li, th, td, .cap, figcaption')].map((node) => node.textContent!.replace(/\s+/g, ' ').trim()),
+      text: [...el.querySelectorAll('h2, h3, h4, p, li, th, td, .cap, figcaption')].map((node) => node.textContent!.replace(/\s+/g, ' ').trim()),
       links: [...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${a.textContent!.trim()}`),
     }).toMatchSnapshot();
   });

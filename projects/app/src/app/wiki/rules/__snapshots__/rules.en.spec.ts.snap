@@ -193,6 +193,17 @@ exports[`the rules pages in English turn keeps its text and links 1`] = `
     "End Phase",
     "Skills that trigger at the end of a turn resolve. Then the next living seat counter-clockwise begins its turn.",
     "Draw, Discard and the other phases pass by themselves. Only the Play Phase waits for you to end it. A Capture or Starvation can make you skip a phase.",
+    "Play Phase",
+    "Example: One Play Phase at 3 HP",
+    "The seat spends Peach on itself to heal 1 HP.→→",
+    "The seat spends Peach on itself to heal 1 HP.",
+    "It plays its one Slash for the turn on a seat in range.Once per turn",
+    "It plays its one Slash for the turn on a seat in range.",
+    "It ends the phase. Without an effect that allows it, a second Slash is not permitted.",
+    "It ends the phase. Without an effect that allows it, a second Slash is not permitted.",
+    "Discard Phase",
+    "Example: 6 Cards, 4 HP",
+    "The player keeps 4 cards and discards 2, because the hand limit equals current HP.",
   ],
 }
 `;
