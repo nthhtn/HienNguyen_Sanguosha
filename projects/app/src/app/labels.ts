@@ -1,5 +1,6 @@
 import { Action, CardInstance, ContentRegistry, GameState, JudgmentReader, Kingdom, Player, Seat, Target, UsedCard, findSkill } from 'engine';
-import { abilityName, baseGeneralId, cardDisplayData, generalDisplayData, isKingdomWarsGeneralId, isRecastPlay } from 'content';
+import { abilityName, baseGeneralId, botNameDisplay, cardDisplayData, generalDisplayData, isKingdomWarsGeneralId, isRecastPlay } from 'content';
+import { botName } from 'protocol';
 import type { MessageKey } from './i18n/messages';
 import { englishTranslator, localeOf, Translator } from './i18n/translator';
 
@@ -32,11 +33,19 @@ function titleCaseId(id: string): string {
   return id.split('-').map(capitalise).join(' ');
 }
 
+// A player's name as the viewer reads it. A bot with a name id is "Bot: " plus its figure's name in the viewer's
+// language; anyone else, and a bot whose id is not in the pool (an old "Bot 1"), keeps the name they were stored with.
+export function playerName(player: { name: string; kind?: 'human' | 'bot'; botNameId?: string }, tr: Translator = englishTranslator): string {
+  const plain = player.botNameId !== undefined && player.kind !== 'human' ? botNameDisplay(player.botNameId, localeOf(tr)) : null;
+  return plain === null ? player.name : botName(plain);
+}
+
 // The name shown for a seat: its player's name, else "Seat N" in the viewer's
 // language for a `seat-<n>` id, else the id in Title Case.
 export function seatName(players: readonly Player[], seatId: string, tr: Translator = englishTranslator): string {
   const numbered = /^seat-(\d+)$/.exec(seatId);
-  const name = players.find((p) => p.seatId === seatId)?.name;
+  const player = players.find((p) => p.seatId === seatId);
+  const name = player && playerName(player, tr);
   // The mode's default name for a seat ("Seat 2") is a placeholder, not a name the player chose.
   if (numbered && (name === undefined || name === `Seat ${numbered[1]}`)) return tr('label.seat', { n: numbered[1] });
   return name ?? titleCaseId(seatId);

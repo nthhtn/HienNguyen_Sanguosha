@@ -7,7 +7,8 @@ import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { FIRST_REVEAL_MIN_SEATS, generalsPerSeat } from 'content';
 import { deckIdOf } from 'content';
-import type { RoomRules, RoomSnapshot } from 'protocol';
+import type { RoomMemberView, RoomRules, RoomSnapshot } from 'protocol';
+import { playerName } from '../labels';
 import type { DeckId } from 'content';
 import { DeckPicker } from '../deck-picker';
 import { I18n } from '../i18n/i18n.service';
@@ -117,7 +118,7 @@ import { SocketService } from './socket.service';
                     @for (member of room.members; track member.playerId) {
                       <li class="member" [class.away]="member.kind === 'human' && !member.connected">
                         <mat-icon aria-hidden="true">{{ member.kind === 'bot' ? 'smart_toy' : 'person' }}</mat-icon>
-                        <span class="name">{{ member.name }}</span>
+                        <span class="name">{{ memberName(member) }}</span>
                         @if (member.playerId === room.hostPlayerId) {
                           <span class="badge host">{{ 'lobby.host' | t }}</span>
                         }
@@ -125,7 +126,9 @@ import { SocketService } from './socket.service';
                           <span class="badge you">{{ 'lobby.you' | t }}</span>
                         }
                         @if (member.kind === 'bot') {
-                          <span class="badge bot">{{ 'lobby.bot' | t }}</span>
+                          @if (!member.botNameId) {
+                            <span class="badge bot">{{ 'lobby.bot' | t }}</span>
+                          }
                         } @else if (!member.isRegistered) {
                           <span class="badge guest">{{ 'lobby.guest' | t }}</span>
                         }
@@ -207,6 +210,11 @@ export class LobbyPage {
     const room = this.lobby.room();
     return !room || room.members.length >= room.seatCount;
   });
+
+  // A bot's name is read in the viewer's language; this follows the language when it changes.
+  protected memberName(member: RoomMemberView): string {
+    return playerName(member, this.i18n.translator);
+  }
 
   protected readonly rulesSummary = computed(() => {
     const room = this.lobby.room();

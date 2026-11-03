@@ -166,7 +166,7 @@ export class RemoteGameService implements BoardGame {
       gameId: update.gameId,
       outcome: 'finished',
       result: state.result,
-      seats: state.players.map((p) => ({ seatId: p.seatId, playerId: room.members.find((m) => m.seatId === p.seatId)?.playerId ?? '', name: p.name })),
+      seats: state.players.map((p) => ({ seatId: p.seatId, playerId: room.members.find((m) => m.seatId === p.seatId)?.playerId ?? '', name: p.name, ...(p.botNameId === undefined ? {} : { botNameId: p.botNameId }) })),
       // The final view shows every seat's Generals once the game is over.
       finalSeats: finalSeatViews(state),
     };
