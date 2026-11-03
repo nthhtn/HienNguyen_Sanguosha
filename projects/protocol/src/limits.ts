@@ -18,3 +18,6 @@ export const CHAT_RATE_LIMIT = 5;
 export const CHAT_RATE_WINDOW_MS = 10_000;
 // How many recent messages a welcome carries.
 export const CHAT_HISTORY = 100;
+
+// The pause before each bot move, locally and online, so people can follow along.
+export const BOT_MOVE_DELAY_MS = 2500;

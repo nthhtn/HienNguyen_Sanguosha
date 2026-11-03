@@ -17,6 +17,7 @@ import {
 import { buildContentRegistry, guozhanMaxSeats, guozhanMode } from 'content';
 import type { Msg } from './i18n/msg';
 import { BotTurnMemory, ruleBasedPolicy } from 'bots';
+import { BOT_MOVE_DELAY_MS } from 'protocol';
 import { PlaybackGate } from './playback-gate.service';
 import { PlaybackSpeed } from './playback-speed.service';
 
@@ -57,7 +58,7 @@ export class GameService {
   }
 
   // Delay before each bot move, once the board's playback has caught up, so a human can follow along. Tests set 0.
-  botDelayMs = 600;
+  botDelayMs = BOT_MOVE_DELAY_MS;
   // The same at Instant speed, where playback takes no time of its own and the bots set the pace.
   instantBotDelayMs = 1500;
 
