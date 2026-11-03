@@ -6,5 +6,7 @@ export function normalizeDisplayName(raw: string): string | null {
   const name = raw.normalize('NFC').replace(/\s+/g, ' ').trim();
   if (name.length < 1 || name.length > DISPLAY_NAME_MAX) return null;
   if (/\p{Cc}/u.test(name)) return null;
+  // "Bot: " is how a bot's name is shown, so nobody else may start a name with it.
+  if (/^bot\s*:/i.test(name)) return null;
   return name;
 }

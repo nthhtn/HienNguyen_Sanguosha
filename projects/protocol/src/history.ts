@@ -7,6 +7,7 @@ export interface GameSummaryPlayer {
   seatId: string;
   name: string;
   kind: MemberKind;
+  botNameId?: string;
 }
 
 // One row of My Games: a finished game you played in.
@@ -30,6 +31,7 @@ export interface ReplaySeat {
   roomPlayerId: string;
   name: string;
   kind: MemberKind;
+  botNameId?: string;
 }
 
 export interface ReplayAction {

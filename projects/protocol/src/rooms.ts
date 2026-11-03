@@ -26,6 +26,8 @@ export interface SeatLimits {
 export interface RoomMemberView {
   playerId: string;
   name: string;
+  // A bot's name id: clients show its name in their own language. Absent for a person and for old bots.
+  botNameId?: string;
   kind: MemberKind;
   // The seat this member plays in the running game; null in the lobby.
   seatId: string | null;
