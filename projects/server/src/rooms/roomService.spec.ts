@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { DECK_IDS as CONTENT_DECK_IDS } from 'content';
+import { botNameDisplay, botNameIds, DECK_IDS as CONTENT_DECK_IDS } from 'content';
 import { DECK_IDS as PROTOCOL_DECK_IDS } from 'protocol';
 import type { RoomSnapshot } from 'protocol';
 import { createMemoryRepositories } from '../persistence/memory/memoryRepositories';
@@ -132,14 +132,24 @@ describe('RoomService', () => {
       expect(host.connection.room?.members[1]).toMatchObject({ isRegistered: false, connected: false, kind: 'human' });
     });
 
-    it('refuses a name taken in any case, including a bot name (Review Focus 2)', async () => {
+    it("refuses a person's name taken in any case (Review Focus 2)", async () => {
+      const { rooms, registered, open } = await setup();
+      const ann = await registered('Ann');
+      const id = await open(ann);
+      await expect(rooms.join(await registered('Bo'), id, ' ann ')).rejects.toEqual(code('name_taken'));
+    });
+
+    it("lets a person take a bot's plain name in either language, and refuses a name starting with Bot:", async () => {
       const { rooms, registered, open, connect } = await setup();
       const ann = await registered('Ann');
       const id = await open(ann);
       const host = await connect(ann, id);
       await rooms.command(ann, id, host.playerId, { type: 'lobby.addBot' });
-      await expect(rooms.join(await registered('Bo'), id, ' ann ')).rejects.toEqual(code('name_taken'));
-      await expect(rooms.join(await registered('Cy'), id, 'bot 1')).rejects.toEqual(code('name_taken'));
+      const bot = host.connection.room!.members[1];
+      expect(bot.name).toBe(`Bot: ${botNameDisplay(bot.botNameId!, 'en')}`);
+      await expect(rooms.join(await registered('Di'), id, bot.name)).rejects.toEqual(code('invalid_name'));
+      await expect(rooms.join(await registered('Bo'), id, botNameDisplay(bot.botNameId!, 'en')!)).resolves.toBeUndefined();
+      await expect(rooms.join(await registered('Cy'), id, botNameDisplay(bot.botNameId!, 'vi')!)).resolves.toBeUndefined();
     });
 
     it('lets a member rejoin, keeping their name', async () => {
@@ -238,15 +248,15 @@ describe('RoomService', () => {
       return { ...ctx, ann, id, host, run };
     }
 
-    it('adds bots with the first free name, and refuses when full', async () => {
-      const { run, host, names } = await lobby();
-      await run({ type: 'lobby.addBot' });
-      await run({ type: 'lobby.addBot' });
-      const bot1 = host.connection.room!.members[1].playerId;
-      await run({ type: 'lobby.removePlayer', playerId: bot1 });
-      await run({ type: 'lobby.addBot' });
-      expect(names(host.connection.room)).toEqual(['Ann', 'Bot 2', 'Bot 1']);
-      await run({ type: 'lobby.addBot' });
+    it('adds bots with distinct pool names, and refuses when full', async () => {
+      const { run, host } = await lobby();
+      for (let i = 0; i < 3; i += 1) await run({ type: 'lobby.addBot' });
+      const bots = host.connection.room!.members.slice(1);
+      expect(new Set(bots.map((b) => b.botNameId)).size).toBe(3);
+      for (const bot of bots) {
+        expect(botNameIds()).toContain(bot.botNameId);
+        expect(bot.name).toBe(`Bot: ${botNameDisplay(bot.botNameId!, 'en')}`);
+      }
       await expect(run({ type: 'lobby.addBot' })).rejects.toEqual(code('room_full'));
     });
 
@@ -561,7 +571,7 @@ describe('RoomService', () => {
       const snapshot = restarted.snapshot(ann, id);
       expect(snapshot.members.map((m) => [m.name, m.connected, m.isRegistered])).toEqual([
         ['Ann', false, true],
-        ['Bot 1', true, false],
+        [expect.stringMatching(/^Bot: /), true, false],
       ]);
       expect(snapshot.hostPlayerId).toBe(host.playerId);
     });

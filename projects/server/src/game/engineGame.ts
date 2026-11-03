@@ -17,12 +17,13 @@ export interface SeatCandidate {
   id: string;
   name: string;
   kind: MemberKind;
+  botNameId?: string;
 }
 
 // Members (in join order) to seats seat-0, seat-1, … in a seeded random order.
 export function drawSeats(members: readonly SeatCandidate[], seed: number): GameSeat[] {
   const { items } = shuffle(members, createRng(seed ^ SEATING_SALT));
-  return items.map((member, i) => ({ seatId: `seat-${i}`, roomPlayerId: member.id, name: member.name, kind: member.kind }));
+  return items.map((member, i) => ({ seatId: `seat-${i}`, roomPlayerId: member.id, name: member.name, kind: member.kind, ...(member.botNameId === undefined ? {} : { botNameId: member.botNameId }) }));
 }
 
 // The engine's opening state with each seat's name and kind, as
@@ -31,7 +32,7 @@ export function openingState(ctx: EngineContext, seed: number, seats: readonly G
   const created = createGame(ctx.mode, ctx.registry, seats.map((s) => s.seatId), seed, rules);
   const players = created.players.map((player) => {
     const seat = seats.find((s) => s.seatId === player.seatId);
-    return seat ? { ...player, kind: seat.kind, name: seat.name } : player;
+    return seat ? { ...player, kind: seat.kind, name: seat.name, ...(seat.botNameId === undefined ? {} : { botNameId: seat.botNameId }) } : player;
   });
   return { ...created, players };
 }

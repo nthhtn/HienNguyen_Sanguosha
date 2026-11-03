@@ -1,9 +1,9 @@
 import { randomInt } from 'node:crypto';
 import { ruleBasedPolicy } from 'bots';
 import type { BotPolicy } from 'bots';
-import { buildContentRegistry, DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS } from 'content';
+import { botNameDisplay, buildContentRegistry, DEFAULT_DECK_ID, drawBotNameIds, FIRST_REVEAL_MIN_SEATS } from 'content';
 import type { Action, ContentRegistry, EngineContext, GameResult, GameRules, GameState } from 'engine';
-import { finalSeatViews, normalizeDisplayName } from 'protocol';
+import { botName, finalSeatViews, normalizeDisplayName } from 'protocol';
 import type { CreateRoomBody, FinalSeatView, GameOutcome, RoomCommand, RoomLeftReason, RoomList, RoomSnapshot, SeatLimits, ServerMessage, SoloRoomBody } from 'protocol';
 import { drawSeats, engineContext, openingState, replay } from '../game/engineGame';
 import { BOT_DELAY_MS, GameRunner, RunnerHost, TAKEOVER_AWAY_MS } from '../game/gameRunner';
@@ -13,7 +13,7 @@ import { NameTakenError, Repositories } from '../persistence/repositories';
 import { toRoomListItem, toRoomSnapshot } from '../views/room';
 import { RoomError } from './errors';
 import { ChatService } from './chatService';
-import { memberFrom, Room, RoomMember, sameName } from './room';
+import { memberFrom, Room, RoomMember } from './room';
 import { SerialQueue } from './serialQueue';
 
 // A host away this long in the lobby hands the role on (spec "Host rules").
@@ -43,6 +43,8 @@ export interface RoomServiceDeps {
   buildId?: string;
   // Seeds for new games.
   randomSeed?: () => number;
+  // Draws the bots' names; tests pass a seeded one.
+  random?: () => number;
   // Game timers. Tests pass a ManualScheduler.
   scheduler?: Scheduler;
   botDelayMs?: number;
@@ -95,11 +97,9 @@ function requireName(raw: string): string {
   return name;
 }
 
-// "Bot 1", "Bot 2", … skipping the player's own name.
-function botNamesBeside(name: string, count: number): string[] {
-  const names: string[] = [];
-  for (let n = 1; names.length < count; n += 1) if (!sameName(`Bot ${n}`, name)) names.push(`Bot ${n}`);
-  return names;
+// A bot's stored name: its English name behind the "Bot: " prefix every language shows.
+function botDisplayName(botNameId: string): string {
+  return botName(botNameDisplay(botNameId, 'en') ?? botNameId);
 }
 
 // Every live room, held in memory. Each room's inputs run one at a time on
@@ -113,6 +113,7 @@ export class RoomService {
   private readonly registry: ContentRegistry | null;
   private readonly buildId: string;
   private readonly randomSeed: () => number;
+  private readonly random: () => number;
   private readonly scheduler: Scheduler;
   private readonly botDelayMs: number;
   private readonly takeoverAwayMs: number;
@@ -133,6 +134,7 @@ export class RoomService {
     this.registry = deps.registry ?? null;
     this.buildId = deps.buildId ?? 'dev';
     this.randomSeed = deps.randomSeed ?? (() => randomInt(0, 2 ** 31));
+    this.random = deps.random ?? Math.random;
     this.scheduler = deps.scheduler ?? realScheduler;
     this.botDelayMs = deps.botDelayMs ?? BOT_DELAY_MS;
     this.takeoverAwayMs = deps.takeoverAwayMs ?? TAKEOVER_AWAY_MS;
@@ -249,8 +251,8 @@ export class RoomService {
       const { room, players } = await this.repos.transaction(async (tx) => {
         const created = await tx.rooms.create({ visibility: 'solo', seatCount: body.seatCount, rules, now: new Date(now) });
         const added = [await tx.rooms.addPlayer({ roomId: created.id, userId: user.id, kind: 'human', displayName: name, now: new Date(now) })];
-        for (const [i, botName] of botNamesBeside(name, body.seatCount - 1).entries()) {
-          added.push(await tx.rooms.addPlayer({ roomId: created.id, userId: null, kind: 'bot', displayName: botName, now: new Date(now + i + 1) }));
+        for (const [i, botNameId] of drawBotNameIds(body.seatCount - 1, [], this.random).entries()) {
+          added.push(await tx.rooms.addPlayer({ roomId: created.id, userId: null, kind: 'bot', displayName: botDisplayName(botNameId), botNameId, now: new Date(now + i + 1) }));
         }
         return { room: created, players: added };
       });
@@ -374,7 +376,8 @@ export class RoomService {
     const { room } = entry;
     if (room.isFull()) throw new RoomError('room_full');
     const now = this.now();
-    const bot = await this.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: room.nextBotName(), now: new Date(now) });
+    const [botNameId] = drawBotNameIds(1, room.botNameIds(), this.random);
+    const bot = await this.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: botDisplayName(botNameId), botNameId, now: new Date(now) });
     room.members.push(memberFrom(bot, false, now));
     this.touched(entry, now);
   }
@@ -433,7 +436,7 @@ export class RoomService {
     const at = new Date(now);
     const seed = this.randomSeed();
     const seats = drawSeats(
-      room.members.map((m) => ({ id: m.id, name: m.name, kind: m.kind })),
+      room.members.map((m) => ({ id: m.id, name: m.name, kind: m.kind, ...(m.botNameId === null ? {} : { botNameId: m.botNameId }) })),
       seed
     );
     // Every game waits for a judgment's popup (the judgmentNotice rule) and logs passes (logPasses); a stored game keeps these, so it replays the same.
@@ -563,7 +566,7 @@ export class RoomService {
       await tx.rooms.update(room.id, { status: 'lobby' }, at);
     });
     room.record = { ...room.record, status: 'lobby', updatedAt: at };
-    room.lastGame = { gameId: game.id, outcome, result, seats: game.seats.map((s) => ({ seatId: s.seatId, playerId: s.roomPlayerId, name: s.name })), finalSeats };
+    room.lastGame = { gameId: game.id, outcome, result, seats: game.seats.map((s) => ({ seatId: s.seatId, playerId: s.roomPlayerId, name: s.name, ...(s.botNameId === undefined ? {} : { botNameId: s.botNameId }) })), finalSeats };
     room.lastActivityAt = now;
     // A host away when the game ends gets the lobby's 60 s from now (spec "Host rules").
     for (const member of room.members) if (!member.connected && member.kind === 'human') member.awaySince = now;
@@ -702,7 +705,7 @@ export class RoomService {
     connection.close();
   }
 
-  private async addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; now: Date }): Promise<RoomPlayerRecord> {
+  private async addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; botNameId?: string; now: Date }): Promise<RoomPlayerRecord> {
     try {
       return await this.repos.rooms.addPlayer(input);
     } catch (err) {

@@ -230,10 +230,10 @@ describe('RoomService games', () => {
     await rooms.disconnect(roomId, a.playerId, a.connection);
     await scheduler.runUntil(() => rooms.snapshot(a.user, roomId).status === 'lobby', 50_000);
     const room = rooms.snapshot(a.user, roomId);
-    expect(room.members.map((m) => m.name)).toEqual(['Ann', 'Bot 1']);
+    expect(room.members.map((m) => m.name)).toEqual(['Ann', expect.stringMatching(/^Bot: /)]);
     expect(room.members.every((m) => m.seatId === null && !m.botControlled)).toBe(true);
     expect(room.lastGame).toMatchObject({ gameId, outcome: 'finished', result: expect.objectContaining({ winningSeatIds: expect.any(Array) }) });
-    expect(room.lastGame!.seats.map((s) => s.name).sort()).toEqual(['Ann', 'Bot 1']);
+    expect(room.lastGame!.seats.map((s) => s.name).sort()).toEqual(['Ann', expect.stringMatching(/^Bot: /)]);
     expect(await repos.games.findById(gameId)).toMatchObject({ status: 'finished', result: room.lastGame!.result, finishedAt: expect.any(Date) });
     const back = await connect(a.user, roomId);
     expect(back.connection.last('welcome')).toMatchObject({ game: null, you: { seatId: null } });

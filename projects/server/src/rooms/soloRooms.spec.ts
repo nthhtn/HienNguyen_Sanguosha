@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { BotPolicy } from 'bots';
-import { buildContentRegistry } from 'content';
+import { botNameDisplay, botNameIds, buildContentRegistry } from 'content';
 import { TAKEOVER_AWAY_MS } from '../game/gameRunner';
 import { ManualScheduler } from '../game/testing';
 import { createMemoryRepositories } from '../persistence/memory/memoryRepositories';
@@ -41,11 +41,15 @@ describe('solo rooms', () => {
     const id = await rooms.createSolo(gus, { seatCount: 3, rules: {} });
     const room = rooms.snapshot(gus, id);
     expect(room).toMatchObject({ visibility: 'solo', status: 'playing', hostPlayerId: null });
-    expect(room.members.map((m) => [m.name, m.kind])).toEqual([
-      ['Gus', 'human'],
-      ['Bot 1', 'bot'],
-      ['Bot 2', 'bot'],
-    ]);
+    expect(room.members.map((m) => m.kind)).toEqual(['human', 'bot', 'bot']);
+    expect(room.members[0]).toMatchObject({ name: 'Gus' });
+    expect(room.members[0].botNameId).toBeUndefined();
+    const bots = room.members.slice(1);
+    expect(new Set(bots.map((b) => b.botNameId)).size).toBe(2);
+    for (const bot of bots) {
+      expect(botNameIds()).toContain(bot.botNameId);
+      expect(bot.name).toBe(`Bot: ${botNameDisplay(bot.botNameId!, 'en')}`);
+    }
     expect(room.members.every((m) => m.seatId !== null)).toBe(true);
     expect(rooms.list(await registered('Ann')).rooms).toEqual([]);
     expect(rooms.list(gus).rooms.map((r) => r.id)).toEqual([id]);
@@ -56,11 +60,14 @@ describe('solo rooms', () => {
     expect(connection.last('welcome')!.game).toMatchObject({ paused: false });
   });
 
-  it('names the bots around a player called Bot 1', async () => {
-    const { rooms, registered } = await setup();
-    const user = await registered('Bot 1');
+  it('carries the bots\' name ids into the game\'s seats and the room\'s last game', async () => {
+    const { rooms, registered, gameOf } = await setup();
+    const user = await registered('Ann');
     const id = await rooms.createSolo(user, { seatCount: 3, rules: {} });
-    expect(rooms.snapshot(user, id).members.map((m) => m.name)).toEqual(['Bot 1', 'Bot 2', 'Bot 3']);
+    const bots = rooms.snapshot(user, id).members.filter((m) => m.kind === 'bot');
+    const game = await gameOf(id);
+    expect(game.seats.filter((s) => s.kind === 'bot').map((s) => s.botNameId).sort()).toEqual(bots.map((b) => b.botNameId).sort());
+    expect(game.seats.find((s) => s.kind === 'human')!.botNameId).toBeUndefined();
   });
 
   it('refuses a second solo game while one runs, and replaces it when asked', async () => {

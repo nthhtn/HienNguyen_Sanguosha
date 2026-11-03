@@ -16,7 +16,7 @@ const RECORD: RoomRecord = {
 };
 
 function member(id: string, name: string, overrides: Partial<RoomMember> = {}): RoomMember {
-  return { id, userId: `u-${id}`, kind: 'human', name, isRegistered: true, joinedAt: at(0), connected: true, awaySince: null, ...overrides };
+  return { id, userId: `u-${id}`, kind: 'human', name, botNameId: null, isRegistered: true, joinedAt: at(0), connected: true, awaySince: null, ...overrides };
 }
 
 const room = (members: RoomMember[], record: Partial<RoomRecord> = {}) => new Room({ ...RECORD, ...record }, members, NOW);
@@ -31,10 +31,9 @@ describe('Room', () => {
     expect(r.nameTaken('Bo')).toBe(false);
   });
 
-  it('names bots with the first free number', () => {
-    expect(room([member('p-ann', 'Ann')]).nextBotName()).toBe('Bot 1');
-    expect(room([member('p-ann', 'Ann'), member('b1', 'Bot 1'), member('b3', 'bot 3')]).nextBotName()).toBe('Bot 2');
-    expect(room([member('p-ann', 'Ann'), member('b1', 'Bot 1'), member('b2', 'Bot 2')]).nextBotName()).toBe('Bot 3');
+  it("lists the name ids of the room's bots", () => {
+    const r = room([member('p-ann', 'Ann'), member('b1', 'Bot: Zhou Cang', { kind: 'bot', userId: null, botNameId: 'zhou-cang' }), member('b2', 'Bot 1', { kind: 'bot', userId: null })]);
+    expect(r.botNameIds()).toEqual(['zhou-cang']);
   });
 
   it('is full when it has as many members as seats', () => {
@@ -81,7 +80,8 @@ describe('Room', () => {
 
   it('builds a member from a record: a bot is connected, a human starts away', () => {
     const player: RoomPlayerRecord = { id: 'p1', roomId: 'room-1', userId: 'u1', kind: 'human', displayName: 'Ann', botNameId: null, joinedAt: at(0), leftAt: null };
-    expect(memberFrom(player, true, NOW)).toEqual({ id: 'p1', userId: 'u1', kind: 'human', name: 'Ann', isRegistered: true, joinedAt: at(0), connected: false, awaySince: NOW });
+    expect(memberFrom(player, true, NOW)).toEqual({ id: 'p1', userId: 'u1', kind: 'human', name: 'Ann', botNameId: null, isRegistered: true, joinedAt: at(0), connected: false, awaySince: NOW });
     expect(memberFrom({ ...player, kind: 'bot', userId: null }, false, NOW)).toMatchObject({ kind: 'bot', connected: true, awaySince: null });
+    expect(memberFrom({ ...player, kind: 'bot', userId: null, botNameId: 'zhou-cang' }, false, NOW)).toMatchObject({ botNameId: 'zhou-cang' });
   });
 });

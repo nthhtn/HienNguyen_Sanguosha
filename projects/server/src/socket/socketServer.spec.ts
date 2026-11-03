@@ -155,7 +155,7 @@ describe('socket server', () => {
     host.client.send({ type: 'lobby.addBot', reqId: 'a1' });
     expect(await host.client.next('ack')).toEqual({ type: 'ack', reqId: 'a1' });
     const update = await guest.client.next('room.updated');
-    expect(update.room.members.map((m) => m.name)).toEqual(['Ann', 'Bo', 'Bot 1']);
+    expect(update.room.members.map((m) => m.name)).toEqual(['Ann', 'Bo', expect.stringMatching(/^Bot: /)]);
     guest.client.send({ type: 'lobby.addBot', reqId: 'b1' });
     expect(await guest.client.next('error')).toEqual({ type: 'error', reqId: 'b1', code: 'not_host', message: 'Only the host can do that' });
   });

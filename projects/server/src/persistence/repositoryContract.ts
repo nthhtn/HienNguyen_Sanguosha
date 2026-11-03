@@ -317,8 +317,8 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
 
     it("stores a bot's name id, and a person has none", async () => {
       const room = await newRoom();
-      const bot = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: 'Bot: Zhou Cang', botNameId: 'zhou-cang', now: NOW });
-      const human = await addHuman(room.id, (await registered()).id, 'Zhou Cang');
+      const bot = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: 'Bot: Zhou Cang', botNameId: 'zhou-cang', now: minutes(1) });
+      const human = await addHuman(room.id, (await registered()).id, 'Zhou Cang', minutes(2));
       expect(bot).toMatchObject({ displayName: 'Bot: Zhou Cang', botNameId: 'zhou-cang' });
       expect(human.botNameId).toBeNull();
       expect((await live(room.id))?.players).toEqual([bot, human]);
