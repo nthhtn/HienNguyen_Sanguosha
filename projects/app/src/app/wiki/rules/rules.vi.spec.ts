@@ -134,6 +134,13 @@ describe('the rules pages in Vietnamese', () => {
     expect([...el.querySelectorAll('figure')].map(text)).toEqual(['Ngụy Tào Tháo', 'Thục Lưu Bị', 'Ngô Tôn Quyền', 'Quần Trương Giác']);
   });
 
+  it('overview: a win needs revealed Generals, and Quần wins together as a thế lực like the others', async () => {
+    const { el } = await open('overview');
+    expect(text(el)).toContain('đã lật Tướng và cùng chơi cho một thế lực');
+    expect(text(el)).toContain('Quần là một thế lực như các thế lực khác: các người chơi Quần cùng thắng');
+    expect(text(el)).not.toContain('không bao giờ thắng theo nhóm');
+  });
+
   it('overview: the four beats and the who-wins example', async () => {
     const { el } = await open('overview');
     expect(el.querySelectorAll('ol.steps > li').length).toBe(4);
