@@ -42,6 +42,16 @@ const registryOnce = (): ContentRegistry => (registry ??= buildContentRegistry()
 const seatId = (n: number) => `seat-${n}`;
 const KINGDOMS = ['Wei', 'Shu', 'Wu', 'Qun'] as const;
 
+function check(input: WikiDistanceInput, cards: ContentRegistry): void {
+  if (input.seats.length === 0 || input.seats.some((seat, i) => seat.n !== i + 1)) throw new Error('The Distance table needs seats numbered 1 to N in order, seat 1 being the attacker');
+  for (const seat of input.seats) {
+    if (!seat.mount) continue;
+    const slot = cards.cards.get(seat.mount)?.equipSlot;
+    if (slot !== 'offensiveMount' && slot !== 'defensiveMount') throw new Error(`Not a mount the game knows: ${seat.mount}`);
+  }
+  if (input.weapon && cards.cards.get(input.weapon)?.equipSlot !== 'weapon') throw new Error(`Not a weapon the game knows: ${input.weapon}`);
+}
+
 function stateOf(input: WikiDistanceInput): GameState {
   const worn = (n: number): CardInstance[] => {
     const seat = input.seats.find((s) => s.n === n);
@@ -74,8 +84,9 @@ function stateOf(input: WikiDistanceInput): GameState {
 
 // Distance, range and reach for each seat, from seat 1, as the game counts them.
 export function wikiDistanceTable(input: WikiDistanceInput): WikiDistanceResult {
-  const state = stateOf(input);
   const cards = registryOnce();
+  check(input, cards);
+  const state = stateOf(input);
   const reachable = new Set(shaTargetIds(state, seatId(1), cards));
   return {
     range: attackRange(state, seatId(1), cards),

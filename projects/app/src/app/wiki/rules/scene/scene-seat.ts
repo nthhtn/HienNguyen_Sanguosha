@@ -12,7 +12,7 @@ export type SceneForce = 'Wei' | 'Shu' | 'Wu' | 'Qun';
   selector: 'app-scene-seat',
   imports: [TPipe],
   template: `
-    <div class="seat" [class.out]="out()" [class.selected]="selected()" [attr.data-force]="force()">
+    <span class="seat" [class.out]="out()" [class.selected]="selected()" [attr.data-force]="force()">
       <img class="scene-avatar" [src]="portrait()" [alt]="portraitName()" />
       @if (chained()) {
         <img class="scene-chain" [src]="chainUrl" [alt]="'seat.chained' | t" />
@@ -27,7 +27,7 @@ export type SceneForce = 'Wei' | 'Shu' | 'Wu' | 'Qun';
       @if (note(); as note) {
         <span class="note">{{ note }}</span>
       }
-    </div>
+    </span>
   `,
   styles: `
     :host { display: inline-block; }

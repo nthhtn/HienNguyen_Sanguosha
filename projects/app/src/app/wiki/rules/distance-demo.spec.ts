@@ -107,10 +107,28 @@ describe('DistanceDemo', () => {
   });
 
   it('names each badge by seat and distance, and says whether a Slash reaches', () => {
+    const { buttonOf } = mount();
+    expect(buttonOf(3).getAttribute('aria-label')).toBe('Seat 3, Distance 1, in range');
+    expect(buttonOf(4).getAttribute('aria-label')).toBe('Seat 4, Distance 2, out of range');
+  });
+
+  it('a seat button is named once, by seat, distance and range, and says when the seat is out', () => {
+    const { buttonOf, el } = mount();
+    const badge = el.querySelector('.ring .spot[data-seat="3"] .dbadge')!;
+    expect(buttonOf(3).getAttribute('aria-label')).toBe('Seat 3, Distance 1, in range');
+    expect(badge.getAttribute('aria-hidden')).toBe('true');
+    expect(buttonOf(2).getAttribute('aria-label')).toBe('Seat 2, out of play');
+  });
+
+  it('a seat button holds only phrasing content, as HTML requires', () => {
     const { el } = mount();
-    const labels = [...el.querySelectorAll('.dbadge')].map((b) => b.getAttribute('aria-label'));
-    expect(labels[0]).toBe('Seat 3, Distance 1, in range');
-    expect(labels[1]).toBe('Seat 4, Distance 2, out of range');
+    expect(el.querySelectorAll('button.spot div').length).toBe(0);
+  });
+
+  it('the readout is read as a whole and gives the steps without a plural', () => {
+    const { el, readout } = mount();
+    expect(el.querySelector('.readout')!.getAttribute('aria-atomic')).toBe('true');
+    expect(readout()).toMatch(/^Seat 3: distance 1\. Steps round the table: 1\./);
   });
 
   it('seats are reachable with the keyboard', () => {
@@ -120,11 +138,12 @@ describe('DistanceDemo', () => {
   });
 
   it('the readout, the labels and the badge names follow a language switch', async () => {
-    const { fixture, el, readout } = mount();
+    const { fixture, el, readout, buttonOf } = mount();
     await TestBed.inject(I18n).setLocale('vi');
     fixture.detectChanges();
     expect(readout()).toMatch(/^Người chơi 3:/);
-    expect([...el.querySelectorAll('.dbadge')][0].getAttribute('aria-label')).toBe('Người chơi 3, Khoảng cách 1, trong tầm');
+    expect(buttonOf(3).getAttribute('aria-label')).toBe('Người chơi 3, Khoảng cách 1, trong tầm');
+    expect(buttonOf(2).getAttribute('aria-label')).toBe('Người chơi 2, đã bị loại');
     expect([...el.querySelectorAll('fieldset legend')].map(text)).toEqual(['Tầm tấn công của bạn', 'Tọa kỵ', 'Người chơi đã bị loại']);
   });
 

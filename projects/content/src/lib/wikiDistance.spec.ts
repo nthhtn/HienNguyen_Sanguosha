@@ -86,6 +86,22 @@ describe('wikiDistanceTable', () => {
   });
 });
 
+describe('wikiDistanceTable refuses a table that is not one', () => {
+  it('needs seats numbered 1 to N in order, with seat 1 the attacker', () => {
+    expect(() => wikiDistanceTable({ seats: [{ n: 2 }, { n: 3 }] })).toThrow(/numbered 1 to/);
+    expect(() => wikiDistanceTable({ seats: [{ n: 1 }, { n: 1 }, { n: 2 }] })).toThrow(/numbered 1 to/);
+    expect(() => wikiDistanceTable({ seats: [{ n: 1 }, { n: 3 }, { n: 2 }] })).toThrow(/numbered 1 to/);
+    expect(() => wikiDistanceTable({ seats: [] })).toThrow(/numbered 1 to/);
+  });
+
+  it('refuses a mount or weapon the game does not know, or one worn in the wrong slot', () => {
+    expect(() => wikiDistanceTable({ seats: seats(3, { 2: { mount: 'not-a-horse' } }) })).toThrow(/mount/i);
+    expect(() => wikiDistanceTable({ seats: seats(3, { 2: { mount: 'crossbow' } }) })).toThrow(/mount/i);
+    expect(() => wikiDistanceTable({ seats: seats(3), weapon: 'red-hare' })).toThrow(/weapon/i);
+    expect(() => wikiDistanceTable({ seats: seats(3), weapon: 'nothing' })).toThrow(/weapon/i);
+  });
+});
+
 describe('wikiDistanceWeapons', () => {
   it('lists the demo weapons with ranges from the registry', () => {
     expect(wikiDistanceWeapons()).toEqual([

@@ -34,10 +34,10 @@ const OTHERS = SEATS.filter((seat) => seat.n !== 1).map((seat) => seat.n);
                 }
               </div>
             } @else {
-              <button type="button" class="spot" [attr.data-seat]="row.n" [style.left.%]="row.left" [style.top.%]="row.top" [disabled]="row.out" [attr.aria-pressed]="selected() === row.n" (click)="select(row.n)">
+              <button type="button" class="spot" [attr.data-seat]="row.n" [style.left.%]="row.left" [style.top.%]="row.top" [disabled]="row.out" [attr.aria-pressed]="selected() === row.n" [attr.aria-label]="seatName(row)" (click)="select(row.n)">
                 <app-scene-seat [general]="row.general" [n]="row.n" [force]="row.force" [out]="row.out" [selected]="selected() === row.n" />
                 @if (row.distance !== null) {
-                  <span class="dbadge" [class.reach]="row.canReach" [attr.title]="'card.distance' | t: { n: row.distance }" [attr.aria-label]="badgeName(row.n, row.distance, row.canReach)">{{ row.distance }}</span>
+                  <span class="dbadge" aria-hidden="true" [class.reach]="row.canReach" [attr.title]="'card.distance' | t: { n: row.distance }">{{ row.distance }}</span>
                 }
                 @if (row.mount && !row.out) {
                   <app-scene-card class="mount" [id]="row.mount" size="tiny" />
@@ -71,7 +71,7 @@ const OTHERS = SEATS.filter((seat) => seat.n !== 1).map((seat) => seat.n);
               }
             </div>
           </fieldset>
-          <div class="readout" aria-live="polite"><app-rich [text]="readout()" /></div>
+          <div class="readout" aria-live="polite" aria-atomic="true"><app-rich [text]="readout()" /></div>
         </div>
       </div>
       <p>{{ 'rules.distance.demo.hint' | t }}</p>
@@ -93,9 +93,11 @@ const OTHERS = SEATS.filter((seat) => seat.n !== 1).map((seat) => seat.n);
     .outs { display: flex; flex-wrap: wrap; gap: 4px 12px; }
     .outs label { display: flex; align-items: center; gap: 6px; }
     .readout { background: var(--mat-sys-surface); border: 1px solid var(--mat-sys-outline-variant); border-radius: 6px; padding: 10px 12px; }
-    /* A narrow screen: smaller seats keep the six round the ring apart, even with the longer Vietnamese names; the controls go under the ring. */
-    @media (max-width: 520px) {
+    /* A narrow screen: the controls go under the ring (beside it the ring is too narrow for six seats), and below 600px smaller seats keep the six apart, even with the longer Vietnamese names. */
+    @media (max-width: 760px) {
       .dist { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 600px) {
       .ring { --seat-w: 70px; --seat-av: 44px; min-height: 340px; aspect-ratio: 1.1; }
       .mount { left: -12px; }
     }
@@ -139,7 +141,13 @@ export class DistanceDemo {
     return [line, reach, ...wears].filter(Boolean).join(' ');
   });
 
-  protected badgeName(n: number, distance: number, canReach: boolean): string {
+  // A seat button's one name: the seat, its distance and whether a Slash reaches it; or that it is out of play.
+  protected seatName(row: { n: number; out: boolean; distance: number | null; canReach: boolean }): string {
+    const seat = this.i18n.t('label.seat', { n: row.n });
+    return row.out || row.distance === null ? `${seat}, ${this.i18n.t('rules.distance.demo.outOfPlay')}` : this.badgeName(row.n, row.distance, row.canReach);
+  }
+
+  private badgeName(n: number, distance: number, canReach: boolean): string {
     const range = this.i18n.t(canReach ? 'rules.distance.demo.inRange' : 'rules.distance.demo.outRange');
     return `${this.i18n.t('label.seat', { n })}, ${this.i18n.t('card.distance', { n: distance })}, ${range}`;
   }
