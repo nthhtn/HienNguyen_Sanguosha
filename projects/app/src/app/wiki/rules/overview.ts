@@ -68,6 +68,7 @@ const FORCES = [
       <li><app-rich key="rules.overview.next.turn" /></li>
       <li><app-rich key="rules.overview.next.cardTypes" /></li>
       <li><app-rich key="rules.overview.next.distance" /></li>
+      <li><app-rich key="rules.overview.next.response" /></li>
       <li><app-rich key="rules.overview.next.judgment" /></li>
       <li><app-rich key="rules.overview.next.generals" /></li>
     </ul>

@@ -63,6 +63,7 @@ describe('the rules texts in both languages', () => {
       '/wiki/rules/turn': 'nav.rules.turn',
       '/wiki/rules/card-types': 'nav.rules.cardTypes',
       '/wiki/rules/distance': 'nav.rules.distance',
+      '/wiki/rules/response': 'nav.rules.response',
       '/wiki/rules/judgment': 'nav.rules.judgment',
       '/wiki/generals': 'nav.cards.generals',
       '/wiki/tools': 'nav.cards.tools',
@@ -98,6 +99,7 @@ describe('the rules pages in Vietnamese', () => {
     ['setup', 'Chuẩn bị'],
     ['turn', 'Cấu trúc lượt'],
     ['distance', 'Khoảng cách / Tầm'],
+    ['response', 'Cửa sổ phản hồi'],
     ['judgment', 'Phán xét'],
   ])('%s: the title', async (page, title) => {
     const { el } = await open(page);
@@ -112,6 +114,7 @@ describe('the rules pages in Vietnamese', () => {
       '/wiki/rules/turn Cấu trúc lượt',
       '/wiki/rules/card-types Loại bài',
       '/wiki/rules/distance Khoảng cách / Tầm',
+      '/wiki/rules/response Cửa sổ phản hồi',
       '/wiki/rules/judgment Phán xét',
       '/wiki/generals Tướng',
     ]);
@@ -196,6 +199,29 @@ describe('the rules pages in Vietnamese', () => {
     expect(text(el.querySelector('.cap')!)).toBe('Ví dụ: Người chơi 1 tấn công khi không có Vũ khí');
   });
 
+  it('response: Slash and Dodge show a play branch and a pass branch', async () => {
+    const { el } = await open('response');
+    const scene = el.querySelector('app-scene')!;
+    expect([...scene.querySelectorAll('.branch > div h5')].map(text)).toEqual(['Đánh Thiểm', 'Bỏ qua']);
+  });
+
+  it('response: the Wuxie chain has four ordered steps and ends with the Tool taking effect', async () => {
+    const { el } = await open('response');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: Quá Hà Sách Kiều và chuỗi Vô Giải Khả Kích')!;
+    const steps = [...scene.querySelectorAll('ol.steps > li')];
+    expect(steps.length).toBe(4);
+    expect(steps[3].querySelector('img.scene-card')!.getAttribute('alt')).toBe('Quá Hà Sách Kiều');
+    expect(text(steps[3])).toContain('có hiệu lực');
+  });
+
+  it('response: Barbarians shows three targets, one spared, and no missing-rule note', async () => {
+    const { el } = await open('response');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: Nam Man Xâm Nhập')!;
+    expect(scene.querySelectorAll('figure.target').length).toBe(3);
+    expect([...scene.querySelectorAll('.pill.ok')].map(text)).toEqual(['Được cứu']);
+    expect(el.querySelector('.note-pending')).toBeNull();
+  });
+
   it('turn: six phases in order, only the Play Phase marked as waiting', async () => {
     const { el } = await open('turn');
     expect([...el.querySelectorAll('.phase h4')].map(text)).toEqual(['Giai đoạn bắt đầu', 'Giai đoạn phán xét', 'Giai đoạn rút bài', 'Giai đoạn ra bài', 'Giai đoạn bỏ bài', 'Giai đoạn kết thúc']);
@@ -244,7 +270,7 @@ describe('the rules pages in Vietnamese', () => {
   });
 
   it('no English card name is left on any rules page', async () => {
-    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'judgment']) {
+    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'judgment']) {
       TestBed.resetTestingModule();
       const { el } = await open(page);
       expect(text(el)).not.toMatch(/\b(Slash|Dodge|Peach|Wine|Wuxie|Capture|Starvation|Lightning|Barbarians|Hail of Arrows|Steal|Force|Play Phase|Main General)\b/);

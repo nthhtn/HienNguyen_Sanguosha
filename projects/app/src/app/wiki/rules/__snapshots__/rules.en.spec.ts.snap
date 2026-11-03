@@ -114,6 +114,7 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "/wiki/rules/turn Turn Structure",
     "/wiki/rules/card-types Card Types",
     "/wiki/rules/distance Distance / Range",
+    "/wiki/rules/response Response Windows",
     "/wiki/rules/judgment Judgment",
     "/wiki/generals Generals",
   ],
@@ -146,8 +147,42 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "Turn Structure: what you do on your turn.",
     "Card Types: Basic, Tool and Equipment cards.",
     "Distance / Range: who you can reach.",
+    "Response Windows: how a card lets another seat answer first.",
     "Judgment: flipping the top card to decide an effect.",
     "Generals: every General and skill.",
+  ],
+}
+`;
+
+exports[`the rules pages in English response keeps its text and links 1`] = `
+{
+  "links": [],
+  "text": [
+    "Response Windows",
+    "Some cards give another seat a chance to answer before anything happens. This page follows two of them from start to finish.",
+    "Slash and Dodge",
+    "Seat 1 plays Slash on Seat 3, who is in range.Seat 1Wei→Seat 3Shu",
+    "Seat 1 plays Slash on Seat 3, who is in range.",
+    "A response window opens for Seat 3. The seat may play a Dodge or pass.Plays DodgeThe Slash has no effect. Nothing is lost.PassesSeat 3 takes 1 damage and drops to 3 HP.",
+    "A response window opens for Seat 3. The seat may play a Dodge or pass.",
+    "Wuxie on a Tool",
+    "Before a Tool takes effect, the game checks for Wuxie. It asks the living seats in seat order, starting from the seat that used the Tool, and only those that hold a Wuxie at that moment. Passing asks the next holder. Passes are not announced, so nobody learns who held one.",
+    "Example: Break With a Wuxie Chain",
+    "Seat 1 plays Break on Seat 4. The Tool is about to take effect.Waiting for a Wuxie check",
+    "Seat 1 plays Break on Seat 4. The Tool is about to take effect.",
+    "Seat 2 holds a Wuxie and plays it. Break is cancelled, unless someone counters.Break cancelled",
+    "Seat 2 holds a Wuxie and plays it. Break is cancelled, unless someone counters.",
+    "The check restarts from the seat after Seat 2, and a seat is never asked about its own card. Seat 3 plays a Wuxie on that Wuxie.First Wuxie cancelled",
+    "The check restarts from the seat after Seat 2, and a seat is never asked about its own card. Seat 3 plays a Wuxie on that Wuxie.",
+    "Nobody answers again, so Break goes ahead. Any length of chain works the same way: the last Wuxie decides.Break takes effect",
+    "Nobody answers again, so Break goes ahead. Any length of chain works the same way: the last Wuxie decides.",
+    "Wuxie on a Tool That Hits Many Seats",
+    "A Tool such as Barbarians runs its own Wuxie check for each target in turn. A Wuxie spares only the target it was played for.",
+    "Example: Barbarians",
+    "Seat 1 plays Barbarians. Every other seat must play a Slash or take 1 damage, and each gets its own Wuxie check first.",
+    "Plays Slash: no damage",
+    "Plays Wuxie",
+    "Passes",
   ],
 }
 `;

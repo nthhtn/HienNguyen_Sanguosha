@@ -241,6 +241,7 @@ describe('App', () => {
       ['Setup', '/wiki/rules/setup'],
       ['Turn Structure', '/wiki/rules/turn'],
       ['Distance / Range', '/wiki/rules/distance'],
+      ['Response Windows', '/wiki/rules/response'],
       ['Judgment', '/wiki/rules/judgment'],
     ]);
     await TestBed.inject(Router).navigateByUrl('/wiki/rules/turn');

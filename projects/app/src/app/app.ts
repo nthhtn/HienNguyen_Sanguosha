@@ -60,6 +60,7 @@ export class App {
     { path: '/wiki/rules/setup', label: 'nav.rules.setup' },
     { path: '/wiki/rules/turn', label: 'nav.rules.turn' },
     { path: '/wiki/rules/distance', label: 'nav.rules.distance' },
+    { path: '/wiki/rules/response', label: 'nav.rules.response' },
     { path: '/wiki/rules/judgment', label: 'nav.rules.judgment' },
   ];
 
