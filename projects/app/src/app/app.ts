@@ -56,9 +56,9 @@ export class App {
   ];
   protected readonly rulesPages: { path: string; label: MessageKey }[] = [
     { path: '/wiki/rules/overview', label: 'nav.rules.overview' },
-    { path: '/wiki/rules/card-types', label: 'nav.rules.cardTypes' },
     { path: '/wiki/rules/setup', label: 'nav.rules.setup' },
     { path: '/wiki/rules/turn', label: 'nav.rules.turn' },
+    { path: '/wiki/rules/card-types', label: 'nav.rules.cardTypes' },
     { path: '/wiki/rules/distance', label: 'nav.rules.distance' },
     { path: '/wiki/rules/response', label: 'nav.rules.response' },
     { path: '/wiki/rules/damage', label: 'nav.rules.damage' },

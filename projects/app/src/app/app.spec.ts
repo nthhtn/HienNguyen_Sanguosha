@@ -237,9 +237,9 @@ describe('App', () => {
     const items = [...document.querySelectorAll('.mat-mdc-menu-panel a[mat-menu-item]')] as HTMLAnchorElement[];
     expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
       ['Overview', '/wiki/rules/overview'],
-      ['Card Types', '/wiki/rules/card-types'],
       ['Setup', '/wiki/rules/setup'],
       ['Turn Structure', '/wiki/rules/turn'],
+      ['Card Types', '/wiki/rules/card-types'],
       ['Distance / Range', '/wiki/rules/distance'],
       ['Response Windows', '/wiki/rules/response'],
       ['Damage and Dying', '/wiki/rules/damage'],
