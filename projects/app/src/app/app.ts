@@ -1,4 +1,6 @@
-import { Component, computed, inject } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { Component, computed, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -19,7 +21,7 @@ import type { DeckId } from 'content';
 import { TPipe } from './i18n/t.pipe';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule, LanguageSwitcher, TPipe],
+  imports: [NgTemplateOutlet, CdkTrapFocus, RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule, LanguageSwitcher, TPipe],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
@@ -102,6 +104,11 @@ export class App {
   protected readonly layout = inject(Layout);
 
   constructor() {
+    // Choosing a page from the drawer, or any other way of navigating, leaves the drawer closed.
+    effect(() => {
+      this.url();
+      untracked(() => this.layout.closeNav());
+    });
     this.music.start();
     void this.auth.load();
   }

@@ -1,6 +1,7 @@
 import type { Messages } from './messages';
 
 export const vi: Messages = {
+  'nav.menu': 'Trình đơn',
   'nav.language': 'Ngôn ngữ',
   'card.named': '{name} ({face})',
   'choice.claim': '{claimer} tuyên bố có {card}. Tin hay nghi ngờ?',

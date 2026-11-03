@@ -2,6 +2,7 @@
 // catalog must have exactly these keys (checked by the compiler and by
 // catalogs.spec.ts). Messages use {name} placeholders.
 export const en = {
+  'nav.menu': 'Menu',
   'nav.language': 'Language',
   'card.named': '{name} ({face})',
   'choice.claim': '{claimer} claims {card}. Believe or doubt?',
