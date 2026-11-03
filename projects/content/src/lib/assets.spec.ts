@@ -3,7 +3,7 @@ import { join } from 'path';
 import { generalsData } from '../../data/generals';
 import { kingdomWarsGeneralIds } from './kingdomWarsGenerals';
 import { kingdomWarsGeneralId } from './generalIds';
-import { AMBITIONIST_ICON_URL, CARD_BACK_ART_URL, kingdomBannerUrl, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
+import { AMBITIONIST_ICON_URL, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /card-art/ URL for a crawled id', () => {
@@ -114,5 +114,24 @@ describe('placeholder portrait shipping', () => {
     const assets: { glob: string; input: string; output?: string }[] = angular.projects.app.architect.build.options.assets;
     const url = GENERAL_PLACEHOLDER_ART_URL.replace('/card-art/', '');
     expect(assets.some((a) => a.input === 'projects/content/assets' && a.output === 'card-art' && a.glob === url)).toBe(true);
+  });
+});
+
+describe('spriteSheet', () => {
+  const ids = ['slash', 'slash-fire', 'slash-lightning', 'damage', 'fire', 'lightning', 'chain'] as const;
+
+  it('points each effect at its sheet in the content assets', () => {
+    expect(spriteSheet('slash-fire').url).toBe('/card-art/animation/sheets/slash-fire.png');
+    expect(spriteSheet('chain').url).toBe('/card-art/animation/sheets/chain.png');
+  });
+
+  it('describes a grid that holds every frame, with a burst and a peak inside it', () => {
+    for (const id of ids) {
+      const sheet = spriteSheet(id);
+      expect(sheet.cols * sheet.rows).toBeGreaterThanOrEqual(sheet.frames);
+      expect(sheet.lead).toBeLessThan(sheet.burstEnd);
+      expect(sheet.burstEnd).toBeLessThanOrEqual(sheet.frames);
+      expect(sheet.peak).toBeLessThan(sheet.frames);
+    }
   });
 });

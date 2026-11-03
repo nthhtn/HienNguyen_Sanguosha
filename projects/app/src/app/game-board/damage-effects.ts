@@ -1,4 +1,5 @@
 import { EngineEvent } from 'engine';
+import type { SpriteId } from 'content';
 
 // The picture a hit leaves on a seat: only a Sha (Fire Sha, Lightning Sha, a Sha turned fire by Fire Fan)
 // shows a slash picture (plain, fire or lightning); every other source of fire or thunder damage (Blaze,
@@ -14,18 +15,20 @@ export const DAMAGE_IMAGE_URLS: Record<DamageImage, string> = {
   lightning: '/card-art/animation/lightning.png',
 };
 
-// An effect on show; a fresh `id` restarts the fade when a seat is hit again.
+// What plays over a seat: a hit's picture, or the chain when it turns chained. Each is a sprite
+// (content's spriteSheet) that plays once for spriteDurationMs. DAMAGE_IMAGE_URLS above are the
+// still pictures, kept for the Rules Wiki.
+export type SeatEffect = SpriteId;
+
+// An effect on show; a fresh `id` restarts it when a seat is hit again.
 export interface ShownDamage {
   id: number;
-  image: DamageImage;
+  image: SeatEffect;
 }
-
-// How long the picture takes to fade out, in ms.
-export const DAMAGE_FADE_MS = 3000;
 
 export interface DamageEffect {
   seatId: string;
-  image: DamageImage;
+  image: SeatEffect;
 }
 
 // A hit of this much or more in one go sounds harder.
@@ -74,4 +77,9 @@ export function damageEffectsFor(events: readonly EngineEvent[], ahead: readonly
     } else effects.push({ seatId: target.seatId, image: damageImageOf(nature, cause?.card?.as) });
   });
   return effects;
+}
+
+// The seats that turned chained in a stretch of the public log (unchaining, by Chains or by damage, plays nothing).
+export function chainEffectsFor(events: readonly EngineEvent[]): DamageEffect[] {
+  return events.flatMap((e) => (e.kind === 'ChainToggledEvent' && e.chained ? [{ seatId: e.seatId, image: 'chain' as const }] : []));
 }

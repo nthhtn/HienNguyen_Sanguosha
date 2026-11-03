@@ -13,7 +13,8 @@ import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { TMsgPipe } from '../i18n/msg';
 import type { SeatCue } from './playback/seat-cues';
-import { DAMAGE_IMAGE_URLS, ShownDamage } from './damage-effects';
+import { ShownDamage } from './damage-effects';
+import { SpriteEffect } from './sprite-effect';
 
 const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   weapon: { label: 'slot.weapon', icon: 'gavel' },
@@ -25,7 +26,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
 // One seat at the round table, compact enough to sit on the table's rim.
 @Component({
   selector: 'app-seat-tile',
-  imports: [SeatAvatar, PlayingCard, MatIconModule, TPipe, TMsgPipe],
+  imports: [SeatAvatar, PlayingCard, SpriteEffect, MatIconModule, TPipe, TMsgPipe],
   template: `
     <div
       class="tile"
@@ -68,7 +69,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           }
           <!-- The picture of the last hit, over the Generals, fading out over a few seconds whatever playback does next. -->
           @for (fx of shownDamage(); track fx.id) {
-            <img class="damage-fx" [src]="damageUrl(fx.image)" alt="" aria-hidden="true" />
+            <app-sprite-effect class="damage-fx" [image]="fx.image" />
           }
         </div>
         @if (pile().length) {
@@ -234,7 +235,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     @keyframes stamp { from { transform: translate(-50%, -50%) rotate(-12deg) scale(2); opacity: 0; } to { transform: translate(-50%, -50%) rotate(-12deg) scale(1); opacity: 1; } }
     /* Reduced motion: the end state, no movement. */
     @media (prefers-reduced-motion: reduce) {
-      .tile, .tile.hit, .tile.dying, .tile.eliminated .status, .generals.flip, .tile.hit .hp-icon:last-child, .tile.heal .hp-icon:last-child, .float, .tile.viewer .float, .callout, .damage-fx { animation: none; transition: none; }
+      .tile, .tile.hit, .tile.dying, .tile.eliminated .status, .generals.flip, .tile.hit .hp-icon:last-child, .tile.heal .hp-icon:last-child, .float, .tile.viewer .float, .callout { animation: none; transition: none; }
       .tile.hit::after, .tile.heal::after { display: none; }
       .tile.dying { box-shadow: 0 0 0 3px #e53935; }
       .float { opacity: 1; }
@@ -317,7 +318,6 @@ export class SeatTile {
     const fx = this.damageEffect();
     return fx ? [fx] : [];
   });
-  protected readonly damageUrl = (image: ShownDamage['image']) => DAMAGE_IMAGE_URLS[image];
   protected readonly showDying = computed(() => !this.seat().eliminated && (this.dying() ?? this.seat().combinedHp <= 0));
 
   // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a

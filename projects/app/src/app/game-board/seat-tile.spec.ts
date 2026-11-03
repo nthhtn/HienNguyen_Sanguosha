@@ -291,11 +291,12 @@ describe('SeatTile', () => {
     expect(el.querySelector('.callout')?.classList).toContain('red');
   });
 
-  it('shows the picture of the last hit, and nothing when there is none', () => {
+  it('plays the animation of the last hit, and nothing when there is none', () => {
     expect(renderWith({}).querySelector('.damage-fx')).toBeNull();
-    const img = renderWith({ damageEffect: { id: 1, image: 'slash-fire' } }).querySelector('.damage-fx');
-    expect(img?.getAttribute('src')).toBe('/card-art/animation/slash_fire.png');
-    expect(img?.parentElement?.classList).toContain('generals');
+    const fx = renderWith({ damageEffect: { id: 1, image: 'slash-fire' } }).querySelector('.damage-fx');
+    expect(fx?.tagName).toBe('APP-SPRITE-EFFECT');
+    expect((fx?.querySelector('.sprite') as HTMLElement).style.backgroundImage).toContain('/card-art/animation/sheets/slash-fire.png');
+    expect(fx?.parentElement?.classList).toContain('generals');
   });
 
   it('adds the hit class for a hit cue and floats its text', () => {

@@ -67,6 +67,7 @@
               {
                 "glob": "**/*.@(jpg|jpeg|png|webp)",
                 "input": "projects/content/assets",
+                "ignore": ["sprites/**"],
                 "output": "card-art"
               },
               {
