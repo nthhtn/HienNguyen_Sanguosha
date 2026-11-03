@@ -19,6 +19,7 @@ export type {
 } from './lib/display';
 export { baseSkillId } from './lib/kingdomWarsBase';
 export * from './lib/generalDisplay';
+export * from './lib/botNames';
 export * from './lib/judgmentOutcome';
 export { seatGender } from './lib/shared/gender';
 export { equipSlotOf } from './lib/cards/equipment';
