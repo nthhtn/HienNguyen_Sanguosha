@@ -43,7 +43,7 @@ export interface ErrorBody {
 
 export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   invalid_body: 'Some fields are missing or invalid',
-  invalid_name: `Names need 1 to ${DISPLAY_NAME_MAX} characters`,
+  invalid_name: `Names need 1 to ${DISPLAY_NAME_MAX} characters and cannot start with [Bot]`,
   weak_password: `Passwords need at least ${PASSWORD_MIN} characters`,
   email_taken: 'That email already has an account',
   invalid_credentials: 'Email or password is incorrect',

@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import type { LastGame } from 'protocol';
 import { VictoryBoard } from '../game-board/victory-board';
+import { playerName } from '../labels';
 import { I18n } from '../i18n/i18n.service';
 import type { MessageKey } from '../i18n/messages';
 import { TPipe } from '../i18n/t.pipe';
@@ -74,5 +75,8 @@ export class OnlineResult {
     return you === null ? null : (this.ending().seats.find((s) => s.playerId === you)?.seatId ?? null);
   });
 
-  protected readonly nameOf = (seatId: string): string => this.ending().seats.find((s) => s.seatId === seatId)?.name ?? seatId;
+  protected readonly nameOf = (seatId: string): string => {
+    const seat = this.ending().seats.find((s) => s.seatId === seatId);
+    return seat ? playerName(seat, this.i18n.translator) : seatId;
+  };
 }

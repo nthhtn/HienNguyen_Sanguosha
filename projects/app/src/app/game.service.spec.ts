@@ -3,6 +3,7 @@ import { GameService } from './game.service';
 import { PlaybackGate } from './playback-gate.service';
 import { PlaybackSpeed } from './playback-speed.service';
 import { pickRandomAction, ruleBasedPolicy } from 'bots';
+import { botNameIds } from 'content';
 import { createRng, getLegalActions, redactStateForSeat } from 'engine';
 import { JUDGMENT_LEAD_IN_MS } from 'engine';
 import { askToChange, settleJudgment } from './settled-judgment.testing';
@@ -47,6 +48,46 @@ describe('GameService', () => {
   it('starts new games with logPasses on', () => {
     service.startGame(2, 1, 'vs-bots');
     expect(service.state()!.rules?.logPasses).toBe(true);
+  });
+
+  describe('bot names', () => {
+    const bots = () => service.state()!.players.filter((p) => p.kind === 'bot');
+
+    it('gives each bot of a vs-bots game a distinct pool name, and leaves the person as typed', () => {
+      service.startGame(5, 42, 'vs-bots', ['Hing']);
+      expect(bots()).toHaveLength(4);
+      expect(new Set(bots().map((p) => p.botNameId)).size).toBe(4);
+      for (const bot of bots()) {
+        expect(botNameIds()).toContain(bot.botNameId);
+        expect(bot.name).toMatch(/^\[Bot\] /);
+      }
+      const human = service.state()!.players.find((p) => p.kind === 'human')!;
+      expect(human).toMatchObject({ seatId: 'seat-0', name: 'Hing' });
+      expect(human.botNameId).toBeUndefined();
+    });
+
+    it('draws the same names for the same seed', () => {
+      service.startGame(5, 42, 'vs-bots');
+      const first = bots().map((p) => p.botNameId);
+      expect(first.every((id) => id !== undefined)).toBe(true);
+      service.startGame(5, 42, 'vs-bots');
+      expect(bots().map((p) => p.botNameId)).toEqual(first);
+    });
+
+    it('does not touch the game itself: the seats, zones and RNG match a game with no bots', () => {
+      service.startGame(5, 42, 'pass-and-play');
+      const plain = service.state()!;
+      service.startGame(5, 42, 'vs-bots');
+      const withBots = service.state()!;
+      expect(withBots.rng).toEqual(plain.rng);
+      expect(withBots.seats).toEqual(plain.seats);
+      expect(withBots.zones).toEqual(plain.zones);
+    });
+
+    it('keeps naming pass-and-play seats Seat N', () => {
+      service.startGame(3, 42, 'pass-and-play');
+      expect(service.state()!.players.map((p) => [p.name, p.botNameId])).toEqual([['Seat 0', undefined], ['Seat 1', undefined], ['Seat 2', undefined]]);
+    });
   });
 
   it('startGame is deterministic for a given seed', () => {

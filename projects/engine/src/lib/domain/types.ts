@@ -126,6 +126,8 @@ export interface Player {
   kind: 'human' | 'bot';
   // Shown wherever the seat appears; the seat id stays the stable key.
   name: string;
+  // A bot's name id (content's bot name pool); clients show its name in the viewer's language. Absent for a person.
+  botNameId?: string;
 }
 
 export interface PendingResponse {

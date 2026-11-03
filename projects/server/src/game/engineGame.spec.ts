@@ -61,6 +61,28 @@ describe('engineGame', () => {
     });
   });
 
+  describe('bot name ids', () => {
+    const named: GameSeat[] = [
+      { seatId: 'seat-0', roomPlayerId: 'p-ann', name: 'Ann', kind: 'human' },
+      { seatId: 'seat-1', roomPlayerId: 'p-bot', name: '[Bot] Zhou Cang', kind: 'bot', botNameId: 'zhou-cang' },
+    ];
+
+    it('carries a bot\'s name id from its member to its seat and its player, and leaves a person without the key', () => {
+      const seats = drawSeats([{ id: 'p-ann', name: 'Ann', kind: 'human' }, { id: 'p-bot', name: '[Bot] Zhou Cang', kind: 'bot', botNameId: 'zhou-cang' }], SEED);
+      expect(seats.find((s) => s.roomPlayerId === 'p-bot')!.botNameId).toBe('zhou-cang');
+      expect('botNameId' in seats.find((s) => s.roomPlayerId === 'p-ann')!).toBe(false);
+      const players = openingState(ctx, SEED, named, {}).players;
+      expect(players.find((p) => p.seatId === 'seat-1')!.botNameId).toBe('zhou-cang');
+      expect('botNameId' in players.find((p) => p.seatId === 'seat-0')!).toBe(false);
+    });
+
+    it('does not change the game itself: only the bot player differs from a game without names', () => {
+      const withNames = openingState(ctx, SEED, named, {});
+      const without = openingState(ctx, SEED, SEATS, {});
+      expect({ ...withNames, players: [] }).toEqual({ ...without, players: [] });
+    });
+  });
+
   describe('stateHash', () => {
     it('does not depend on the order of object keys, but does on array order and values', () => {
       const { state } = botMoves(openingState(ctx, SEED, SEATS, {}), 40);

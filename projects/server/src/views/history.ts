@@ -8,7 +8,7 @@ export function toGameSummary({ game, yourSeatId }: UserGameRecord): GameSummary
   return {
     gameId: game.id,
     finishedAt: (game.finishedAt ?? game.startedAt).getTime(),
-    players: game.seats.map((s) => ({ seatId: s.seatId, name: s.name, kind: s.kind })),
+    players: game.seats.map((s) => ({ seatId: s.seatId, name: s.name, kind: s.kind, ...(s.botNameId === undefined ? {} : { botNameId: s.botNameId }) })),
     result: game.result,
     yourSeat: yourSeatId,
   };
@@ -19,7 +19,7 @@ export function toGameSummary({ game, yourSeatId }: UserGameRecord): GameSummary
 export function toGameReplay(game: GameRecord, actions: GameActionRecord[], chat: ChatMessageRecord[]): GameReplay {
   return {
     seed: game.seed,
-    seats: game.seats.map((s) => ({ seatId: s.seatId, roomPlayerId: s.roomPlayerId, name: s.name, kind: s.kind })),
+    seats: game.seats.map((s) => ({ seatId: s.seatId, roomPlayerId: s.roomPlayerId, name: s.name, kind: s.kind, ...(s.botNameId === undefined ? {} : { botNameId: s.botNameId }) })),
     rules: { ...game.rules },
     buildId: game.buildId,
     actions: actions.map((a) => ({ seq: a.seq, seatId: a.seatId, source: a.source, action: a.action, stateHash: a.stateHash })),

@@ -46,6 +46,7 @@ export interface GameSeatView {
   seatId: string;
   playerId: string;
   name: string;
+  botNameId?: string;
 }
 
 // How the room's last game ended. 'broken': the engine failed during play.

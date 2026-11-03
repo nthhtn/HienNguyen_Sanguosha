@@ -59,6 +59,7 @@ export function toRoomPlayerRecord(row: Selectable<RoomPlayersTable>): RoomPlaye
     userId: row.user_id,
     kind: row.kind,
     displayName: row.display_name,
+    botNameId: row.bot_name_id,
     joinedAt: row.joined_at,
     leftAt: row.left_at,
   };

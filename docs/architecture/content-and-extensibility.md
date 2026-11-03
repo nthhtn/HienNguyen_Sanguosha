@@ -85,6 +85,19 @@ translations name only things that exist, and `glossary.vi.spec.ts` checks that
 the glossary's terms are used consistently. A new entry therefore ships with a
 Vietnamese draft, which a native speaker later reviews.
 
+### Bot names
+
+Bots are named after Three Kingdoms figures who are not Generals in any deck. The
+pool is a flat list in `data/botNames.json` (id to English name, no force: a
+name never decides a bot's force), with Vietnamese names in
+`data/locales/vi/bot-names.json`. `botNames.ts` draws distinct ids from an
+injected random function, so the engine's RNG is never used; `botNames.spec.ts`
+checks the pool against both General rosters. A bot carries the plain id as
+`botNameId` next to a stored `name` of `[Bot] <English name>`. Clients show
+`[Bot] ` plus the name in the viewer's language (`playerName` in `labels.ts`),
+and a person's name may not start with `[Bot]`, so the two never collide. Old
+bots without an id show the name they were stored with.
+
 ### Assets
 
 Card and General art, animation, and audio live in `projects/content/assets/`

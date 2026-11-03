@@ -1,6 +1,6 @@
 import type { GameSummary } from 'protocol';
 import { englishTranslator, localeOf, type Translator } from '../i18n/translator';
-import { kingdomDisplayName } from '../labels';
+import { kingdomDisplayName, playerName } from '../labels';
 
 // How a finished game went for the player: the badge of a My Games row.
 export function gameOutcome(game: GameSummary, tr: Translator = englishTranslator): string {
@@ -17,7 +17,10 @@ export function didWin(game: GameSummary): boolean {
 export function gameHeadline(game: GameSummary, tr: Translator = englishTranslator): string {
   const result = game.result;
   if (result?.winningKingdom) return tr('myGames.kingdomWon', { kingdom: kingdomDisplayName(result.winningKingdom, tr) });
-  const winners = (result?.winningSeatIds ?? []).map((id) => game.players.find((p) => p.seatId === id)?.name ?? id);
+  const winners = (result?.winningSeatIds ?? []).map((id) => {
+    const player = game.players.find((p) => p.seatId === id);
+    return player ? playerName(player, tr) : id;
+  });
   return winners.length > 0 ? tr('myGames.namesWon', { names: winners.join(', ') }) : tr('myGames.noSurvivors');
 }
 
@@ -26,7 +29,9 @@ export function playerLabel(game: GameSummary, seatId: string, tr: Translator = 
   const player = game.players.find((p) => p.seatId === seatId);
   if (!player) return seatId;
   if (seatId === game.yourSeat) return tr('myGames.you', { name: player.name });
-  return player.kind === 'bot' ? tr('myGames.bot', { name: player.name }) : player.name;
+  // A bot with a name id already says it is a bot in its name; an old bot gets the tag.
+  if (player.kind === 'bot' && player.botNameId === undefined) return tr('myGames.bot', { name: player.name });
+  return playerName(player, tr);
 }
 
 // When the game finished, in the viewer's locale and time zone.

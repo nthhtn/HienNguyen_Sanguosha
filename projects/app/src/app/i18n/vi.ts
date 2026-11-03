@@ -627,7 +627,7 @@ export const vi: Messages = {
   'wiki.tab.delayed': 'Trì hoãn',
   'wiki.tab.other': 'Khác',
   'error.invalid_body': 'Một số trường bị thiếu hoặc không hợp lệ',
-  'error.invalid_name': 'Tên cần từ 1 đến {max} ký tự',
+  'error.invalid_name': 'Tên cần từ 1 đến {max} ký tự và không được bắt đầu bằng [Bot]',
   'error.weak_password': 'Mật khẩu cần tối thiểu {min} ký tự',
   'error.email_taken': 'Email này đã có tài khoản',
   'error.invalid_credentials': 'Email hoặc mật khẩu không đúng',

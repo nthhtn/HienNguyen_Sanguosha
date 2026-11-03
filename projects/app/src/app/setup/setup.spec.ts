@@ -202,7 +202,7 @@ describe('Setup', () => {
       expect(gameService.mode()).toBe('pass-and-play');
       expect(gameService.state()!.players.every((p) => p.kind === 'human')).toBe(true);
     });
-    it('asks for your name against bots, and names the bots by seat', async () => {
+    it('asks for your name against bots, and names the bots from the pool', async () => {
       const { fixture, el, gameService } = await create();
       const fields = el.querySelectorAll('input.name');
       expect(fields).toHaveLength(1);
@@ -212,7 +212,7 @@ describe('Setup', () => {
       yours.dispatchEvent(new Event('input'));
       fixture.detectChanges();
       (el.querySelector('button.start') as HTMLButtonElement).click();
-      expect(gameService.state()!.players.map((p) => p.name)).toEqual(['Hing', 'Seat 1', 'Seat 2', 'Seat 3']);
+      expect(gameService.state()!.players.map((p) => p.name)).toEqual(['Hing', expect.stringMatching(/^\[Bot\] /), expect.stringMatching(/^\[Bot\] /), expect.stringMatching(/^\[Bot\] /)]);
     });
 
     it('asks for every seat’s name in pass-and-play, and a blank name stays "Seat N"', async () => {

@@ -14,10 +14,10 @@ import {
   redactStateForSeat,
   resolve,
 } from 'engine';
-import { buildContentRegistry, guozhanMaxSeats, guozhanMode } from 'content';
+import { botNameDisplay, buildContentRegistry, drawBotNameIds, guozhanMaxSeats, guozhanMode } from 'content';
 import type { Msg } from './i18n/msg';
 import { BotTurnMemory, ruleBasedPolicy } from 'bots';
-import { BOT_THINK_MS } from 'protocol';
+import { BOT_THINK_MS, botName } from 'protocol';
 import { PlaybackGate } from './playback-gate.service';
 import { PlaybackSpeed } from './playback-speed.service';
 
@@ -32,6 +32,21 @@ export interface SelectionRosterEntry {
 
 // In vs-bots mode the one human always plays this seat.
 export const HUMAN_SEAT_ID = 'seat-0';
+
+// Mixed into a game's seed so the bots' names come from their own stream: drawing them never consumes the game's RNG.
+const BOT_NAMES_SALT = 0x62_6f_74;
+
+// A small seeded generator (mulberry32) for the name draw.
+function seededRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 // The engine's own error text is developer English and the engine never sees a
 // locale, so the banner says something went wrong in the player's language and
@@ -155,11 +170,13 @@ export class GameService {
     try {
       // Every game waits for a judgment's popup (the judgmentNotice rule) and logs passes (logPasses) unless a rule says otherwise.
       const created = createGame(guozhanMode, this.registry, seatIds, rngSeed, { ...rules, judgmentNotice: rules?.judgmentNotice ?? true, logPasses: rules?.logPasses ?? true });
-      const players = created.players.map((p, i) => ({
-        ...p,
-        kind: mode === 'vs-bots' && p.seatId !== HUMAN_SEAT_ID ? ('bot' as const) : ('human' as const),
-        name: names[i]?.trim() || p.name,
-      }));
+      const isBot = (seatId: string) => mode === 'vs-bots' && seatId !== HUMAN_SEAT_ID;
+      const botNames = drawBotNameIds(created.players.filter((p) => isBot(p.seatId)).length, [], seededRandom(rngSeed ^ BOT_NAMES_SALT));
+      const players = created.players.map((p, i) => {
+        if (!isBot(p.seatId)) return { ...p, kind: 'human' as const, name: names[i]?.trim() || p.name };
+        const botNameId = botNames.shift()!;
+        return { ...p, kind: 'bot' as const, name: botName(botNameDisplay(botNameId, 'en')!), botNameId };
+      });
       this._state.set({ ...created, players });
       this._revealedSeatId.set(this.humanSeatId());
       this._lastError.set(null);

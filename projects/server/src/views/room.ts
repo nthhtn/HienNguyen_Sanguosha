@@ -20,6 +20,7 @@ export function toRoomSnapshot(room: Room, seatLimits: SeatLimits, seating: Seat
     members: room.members.map((m) => ({
       playerId: m.id,
       name: m.name,
+      ...(m.botNameId === null ? {} : { botNameId: m.botNameId }),
       kind: m.kind,
       seatId: seating?.seatOf(m.id) ?? null,
       isRegistered: m.isRegistered,

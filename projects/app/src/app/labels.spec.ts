@@ -215,3 +215,23 @@ describe('actionLabel for a Recast', () => {
     expect(actionLabel({ kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'as-1', targets: [{ kind: 'seat', seatId: 'seat-1' }] }, state, registry)).toBe('Play Ascertain Targeting Seat 1');
   });
 });
+
+describe('seatName for a bot', () => {
+  const botPlayer = { id: 'p1', seatId: 'seat-1', kind: 'bot' as const, name: '[Bot] Zhou Cang', botNameId: 'zhou-cang' };
+
+  it('shows its name with the [Bot] prefix in the viewer’s language', () => {
+    expect(seatName([botPlayer], 'seat-1')).toBe('[Bot] Zhou Cang');
+    expect(seatName([botPlayer], 'seat-1', makeTranslator(vi, 'vi'))).toBe('[Bot] Chu Thương');
+  });
+
+  it('falls back to the stored name for a bot with no name id, or one that is no longer in the pool', () => {
+    expect(seatName([{ ...botPlayer, name: 'Bot 1', botNameId: undefined }], 'seat-1')).toBe('Bot 1');
+    expect(seatName([{ ...botPlayer, botNameId: 'gone' }], 'seat-1', makeTranslator(vi, 'vi'))).toBe('[Bot] Zhou Cang');
+    expect(seatName([{ id: 'p', seatId: 'seat-2', kind: 'bot' as const, name: 'Seat 2' }], 'seat-2')).toBe('Seat 2');
+  });
+
+  it('never reads a person as a bot, whatever they are called', () => {
+    expect(seatName([{ id: 'p', seatId: 'seat-0', kind: 'human' as const, name: 'zhou-cang' }], 'seat-0')).toBe('zhou-cang');
+    expect(seatName([{ id: 'p', seatId: 'seat-0', kind: 'human' as const, name: 'Hing', botNameId: 'zhou-cang' }], 'seat-0')).toBe('Hing');
+  });
+});
