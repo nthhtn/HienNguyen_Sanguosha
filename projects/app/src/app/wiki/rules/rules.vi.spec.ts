@@ -65,6 +65,7 @@ describe('the rules texts in both languages', () => {
       '/wiki/rules/distance': 'nav.rules.distance',
       '/wiki/rules/response': 'nav.rules.response',
       '/wiki/rules/damage': 'nav.rules.damage',
+      '/wiki/rules/chains': 'nav.rules.chains',
       '/wiki/rules/judgment': 'nav.rules.judgment',
       '/wiki/generals': 'nav.cards.generals',
       '/wiki/tools': 'nav.cards.tools',
@@ -102,6 +103,7 @@ describe('the rules pages in Vietnamese', () => {
     ['distance', 'Khoảng cách / Tầm'],
     ['response', 'Cửa sổ phản hồi'],
     ['damage', 'Sát thương và hấp hối'],
+    ['chains', 'Xích'],
     ['judgment', 'Phán xét'],
   ])('%s: the title', async (page, title) => {
     const { el } = await open(page);
@@ -119,6 +121,7 @@ describe('the rules pages in Vietnamese', () => {
       '/wiki/rules/response Cửa sổ phản hồi',
       '/wiki/rules/damage Sát thương và hấp hối',
       '/wiki/rules/judgment Phán xét',
+      '/wiki/rules/chains Xích',
       '/wiki/generals Tướng',
     ]);
   });
@@ -250,6 +253,36 @@ describe('the rules pages in Vietnamese', () => {
     expect([...el.querySelectorAll('.branch > div h5')].map(text)).toEqual(['Trở lại trên 0 Sinh lực', 'Không ai cứu']);
   });
 
+  it('damage: points to the Chains page where fire and thunder matter, and to Setup for the kill reward', async () => {
+    const { el } = await open('damage');
+    expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual(['/wiki/rules/chains Xích', '/wiki/rules/setup Chuẩn bị']);
+  });
+
+  it('chains: chaining toggles a seat, with exactly one chained badge in the first scene', async () => {
+    const { el } = await open('chains');
+    const first = el.querySelector('app-scene')!;
+    expect(first.querySelectorAll('img.scene-chain').length).toBe(1);
+    expect(first.querySelectorAll('app-scene-seat').length).toBe(2);
+  });
+
+  it('chains: the wave example hits the two seats after the damaged one, in turn order, and unchains them', async () => {
+    const { el } = await open('chains');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 2 sát thương lửa lên Người chơi 2')!;
+    const [start, damaged, wave] = [...scene.querySelectorAll('ol.steps > li')];
+    expect([...start.querySelectorAll('.nm')].map(text)).toEqual(['Người chơi 2', 'Người chơi 3', 'Người chơi 5']);
+    expect(start.querySelectorAll('img.scene-chain').length).toBe(3);
+    expect(damaged.querySelectorAll('img.scene-chain').length).toBe(2);
+    expect([...wave.querySelectorAll('.nm')].map(text)).toEqual(['Người chơi 2', 'Người chơi 3', 'Người chơi 5']);
+    expect(wave.querySelectorAll('img.scene-mark').length).toBe(2);
+    expect(wave.querySelectorAll('img.scene-chain').length).toBe(0);
+  });
+
+  it('chains: says plain damage never travels, and that a wave does not start a wave', async () => {
+    const { el } = await open('chains');
+    expect(text(el)).toContain('Sát thương thường thì không bao giờ');
+    expect(text(el)).toContain('không tự khởi động thêm một làn sóng');
+  });
+
   it('turn: six phases in order, only the Play Phase marked as waiting', async () => {
     const { el } = await open('turn');
     expect([...el.querySelectorAll('.phase h4')].map(text)).toEqual(['Giai đoạn bắt đầu', 'Giai đoạn phán xét', 'Giai đoạn rút bài', 'Giai đoạn ra bài', 'Giai đoạn bỏ bài', 'Giai đoạn kết thúc']);
@@ -298,7 +331,7 @@ describe('the rules pages in Vietnamese', () => {
   });
 
   it('no English card name is left on any rules page', async () => {
-    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'damage', 'judgment']) {
+    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains']) {
       TestBed.resetTestingModule();
       const { el } = await open(page);
       expect(text(el)).not.toMatch(/\b(Slash|Dodge|Peach|Wine|Wuxie|Capture|Starvation|Lightning|Barbarians|Hail of Arrows|Steal|Force|Play Phase|Main General)\b/);

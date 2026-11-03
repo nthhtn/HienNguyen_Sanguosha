@@ -52,9 +52,31 @@ exports[`the rules pages in English card-types keeps its text and links 1`] = `
 }
 `;
 
+exports[`the rules pages in English chains keeps its text and links 1`] = `
+{
+  "links": [],
+  "text": [
+    "Chains",
+    "A chained seat passes fire and thunder damage along to every other chained seat.",
+    "Chaining and Unchaining",
+    "Play Chains on 1 or 2 seats at any distance, yourself included. Each unchained target becomes chained, and each chained target becomes unchained. You may also recast it: discard it and draw 1 card.",
+    "The Chain Wave",
+    "Only fire and thunder damage travels. Plain damage never does. When a chained seat takes fire or thunder damage, it is unchained, and every other chained seat then takes the same damage, one at a time, in turn order starting after the damaged seat. A seat hit this way does not start a wave of its own.",
+    "Example: 2 Fire Damage on Seat 2",
+    "Seats 2, 3 and 5 are chained. Seat 1 uses Fire Attack and Seat 2 takes 2 fire damage.→Seat 2Wu4 HPSeat 3Shu4 HPSeat 5Qun4 HP",
+    "Seats 2, 3 and 5 are chained. Seat 1 uses Fire Attack and Seat 2 takes 2 fire damage.",
+    "Seat 2 loses 2 HP and is unchained.Seat 2Wu2 HPSeat 3Shu4 HPSeat 5Qun4 HP",
+    "Seat 2 loses 2 HP and is unchained.",
+    "The other chained seats are hit one at a time in turn order after Seat 2: Seat 3, then Seat 5. Each takes the original 2 damage, changed only by its own effects, and is unchained. If a hit starts a dying round, that round finishes before the next seat is hit.Seat 2Wu2 HPSeat 3Shu2 HPSeat 5Qun2 HP",
+    "The other chained seats are hit one at a time in turn order after Seat 2: Seat 3, then Seat 5. Each takes the original 2 damage, changed only by its own effects, and is unchained. If a hit starts a dying round, that round finishes before the next seat is hit.",
+  ],
+}
+`;
+
 exports[`the rules pages in English damage keeps its text and links 1`] = `
 {
   "links": [
+    "/wiki/rules/chains Chains",
     "/wiki/rules/setup Setup",
   ],
   "text": [
@@ -68,7 +90,7 @@ exports[`the rules pages in English damage keeps its text and links 1`] = `
     "Any seat can play Wine once during its turn. The next Slash it plays that turn deals 1 more damage.",
     "Example: 2 Damage",
     "Kinds of Damage",
-    "Every point of damage is normal, fire or thunder.",
+    "Every point of damage is normal, fire or thunder. Fire and thunder matter for Chains.",
     "NormalSlash",
     "FireFire Attack, Blaze",
     "ThunderLightning Attack, Lightning",
@@ -154,6 +176,7 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "/wiki/rules/response Response Windows",
     "/wiki/rules/damage Damage and Dying",
     "/wiki/rules/judgment Judgment",
+    "/wiki/rules/chains Chains",
     "/wiki/generals Generals",
   ],
   "text": [
@@ -188,6 +211,7 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "Response Windows: how a card lets another seat answer first.",
     "Damage and Dying: how HP is lost, and how a seat is rescued or knocked out.",
     "Judgment: flipping the top card to decide an effect.",
+    "Chains: how fire and thunder damage passes along a chain.",
     "Generals: every General and skill.",
   ],
 }

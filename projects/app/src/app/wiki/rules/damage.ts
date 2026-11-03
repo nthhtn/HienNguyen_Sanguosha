@@ -38,7 +38,7 @@ import { SceneSeat } from './scene/scene-seat';
     </app-scene>
 
     <h3>{{ 'rules.damage.kindsTitle' | t }}</h3>
-    <p>{{ 'rules.damage.kindsText' | t }}</p>
+    <p><app-rich key="rules.damage.kindsText" /></p>
     <div class="scene-row top">
       <figure class="fig kind">
         <app-scene-card id="sha" size="small" />

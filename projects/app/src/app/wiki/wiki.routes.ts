@@ -46,5 +46,6 @@ export const WIKI_ROUTES: Routes = [
   { path: 'rules/response', loadComponent: () => import('./rules/response').then((m) => m.RulesResponse) },
   { path: 'rules/damage', loadComponent: () => import('./rules/damage').then((m) => m.RulesDamage) },
   { path: 'rules/judgment', loadComponent: () => import('./rules/judgment').then((m) => m.RulesJudgment) },
+  { path: 'rules/chains', loadComponent: () => import('./rules/chains').then((m) => m.RulesChains) },
   { path: '', redirectTo: 'kingdom-wars/generals', pathMatch: 'full' },
 ];

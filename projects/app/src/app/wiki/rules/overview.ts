@@ -71,6 +71,7 @@ const FORCES = [
       <li><app-rich key="rules.overview.next.response" /></li>
       <li><app-rich key="rules.overview.next.damage" /></li>
       <li><app-rich key="rules.overview.next.judgment" /></li>
+      <li><app-rich key="rules.overview.next.chains" /></li>
       <li><app-rich key="rules.overview.next.generals" /></li>
     </ul>
   `,
