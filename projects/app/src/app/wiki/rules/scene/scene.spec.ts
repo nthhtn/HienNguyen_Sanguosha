@@ -1,6 +1,7 @@
 import { Component, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CARD_BACK_ART_URL, HIDDEN_GENERAL_ART_URL, cardArtUrl, hpIconUrls } from 'content';
+import { CARD_BACK_ART_URL, CHAIN_ICON_URL, HIDDEN_GENERAL_ART_URL, cardArtUrl, hpIconUrls } from 'content';
+import { DAMAGE_IMAGE_URLS } from '../../../game-board/damage-effects';
 import { I18n } from '../../../i18n/i18n.service';
 import type { MessageKey } from '../../../i18n/messages';
 import { SceneCard } from './scene-card';
@@ -81,6 +82,30 @@ describe('SceneSeat', () => {
     const { el } = render(SceneSeat, { general: 'cao-cao', n: 1, label: 'Killer' });
     expect(text(el)).toContain('Killer');
     expect(text(el)).not.toContain('Seat 1');
+  });
+});
+
+describe('SceneSeat marks', () => {
+  it('shows a chained badge with its art and name', async () => {
+    const { fixture, el } = render(SceneSeat, { general: 'cao-cao', n: 2, chained: true });
+    const badge = el.querySelector('img.scene-chain')!;
+    expect(badge.getAttribute('src')).toBe(CHAIN_ICON_URL);
+    expect(badge.getAttribute('alt')).toBe('Chained');
+    await TestBed.inject(I18n).setLocale('vi');
+    fixture.detectChanges();
+    expect(badge.getAttribute('alt')).toBe('Bị xích');
+    expect(render(SceneSeat, { general: 'cao-cao', n: 2 }).el.querySelector('img.scene-chain')).toBeNull();
+  });
+
+  it('shows a damage mark over the portrait', () => {
+    const { el } = render(SceneSeat, { general: 'cao-cao', n: 2, mark: 'fire' });
+    expect(el.querySelector('img.scene-mark')!.getAttribute('src')).toBe(DAMAGE_IMAGE_URLS.fire);
+    expect(render(SceneSeat, { general: 'cao-cao', n: 2 }).el.querySelector('img.scene-mark')).toBeNull();
+  });
+
+  it('shows its note', () => {
+    const { el } = render(SceneSeat, { general: 'cao-cao', n: 2, note: '4 HP' });
+    expect(text(el)).toContain('4 HP');
   });
 });
 
