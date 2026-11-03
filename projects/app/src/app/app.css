@@ -148,3 +148,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Wide layout on a tablet or a small laptop: the full bar with every label is about 1350 px wide, so below that
+   the links show their icons only (each already has an aria-label). Phones use the drawer instead. */
+@media (max-width: 1359px) {
+  .nav .label,
+  .nav-battlefield .label,
+  .account .label,
+  .sign-in .label {
+    display: none;
+  }
+  .nav a,
+  .nav button {
+    min-width: 0;
+    padding: 0 8px;
+  }
+}
