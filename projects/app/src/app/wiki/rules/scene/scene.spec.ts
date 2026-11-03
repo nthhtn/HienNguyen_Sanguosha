@@ -1,6 +1,6 @@
 import { Component, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CARD_BACK_ART_URL, CHAIN_ICON_URL, HIDDEN_GENERAL_ART_URL, cardArtUrl, hpIconUrls } from 'content';
+import { AMBITIONIST_ICON_URL, CARD_BACK_ART_URL, CHAIN_ICON_URL, HIDDEN_GENERAL_ART_URL, cardArtUrl, hpIconUrls } from 'content';
 import { DAMAGE_IMAGE_URLS } from '../../../game-board/damage-effects';
 import { I18n } from '../../../i18n/i18n.service';
 import type { MessageKey } from '../../../i18n/messages';
@@ -78,6 +78,12 @@ describe('SceneSeat', () => {
     expect(el.querySelector('.seat')!.classList.contains('out')).toBe(true);
   });
 
+  it('marks a selected seat', () => {
+    const { el } = render(SceneSeat, { general: 'cao-cao', n: 2, selected: true });
+    expect(el.querySelector('.seat')!.classList.contains('selected')).toBe(true);
+    expect(render(SceneSeat, { general: 'cao-cao', n: 2 }).el.querySelector('.seat')!.classList.contains('selected')).toBe(false);
+  });
+
   it('takes a label in place of the seat name', () => {
     const { el } = render(SceneSeat, { general: 'cao-cao', n: 1, label: 'Killer' });
     expect(text(el)).toContain('Killer');
@@ -101,6 +107,24 @@ describe('SceneSeat marks', () => {
     const { el } = render(SceneSeat, { general: 'cao-cao', n: 2, mark: 'fire' });
     expect(el.querySelector('img.scene-mark')!.getAttribute('src')).toBe(DAMAGE_IMAGE_URLS.fire);
     expect(render(SceneSeat, { general: 'cao-cao', n: 2 }).el.querySelector('img.scene-mark')).toBeNull();
+  });
+
+  it('shows an Ambitionist with its mark, its own label and no Force', async () => {
+    const { fixture, el } = render(SceneSeat, { general: 'zhang-liao', n: 4, force: 'Wei', ambitionist: true });
+    const mark = el.querySelector('img.scene-ambitionist')!;
+    expect(mark.getAttribute('src')).toBe(AMBITIONIST_ICON_URL);
+    // The visible label says "Ambitionist"; the mark is decorative so a screen reader does not say it twice.
+    expect(mark.getAttribute('alt')).toBe('');
+    expect(mark.getAttribute('aria-hidden')).toBe('true');
+    expect(text(el)).toContain('Ambitionist');
+    expect(text(el)).not.toContain('Wei');
+    expect(el.querySelector('.seat')!.getAttribute('data-force')).toBe('Ambitionist');
+    await TestBed.inject(I18n).setLocale('vi');
+    fixture.detectChanges();
+    expect(text(el)).toContain('Dã tâm gia');
+    const kingdom = render(SceneSeat, { general: 'zhang-liao', n: 4, force: 'Wei' });
+    expect(kingdom.el.querySelector('img.scene-ambitionist')).toBeNull();
+    expect(kingdom.el.querySelector('.seat')!.getAttribute('data-force')).toBe('Wei');
   });
 
   it('shows its note', () => {

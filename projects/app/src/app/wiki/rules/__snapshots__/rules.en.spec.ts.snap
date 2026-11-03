@@ -1,5 +1,40 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`the rules pages in English allegiance keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/setup Setup",
+  ],
+  "text": [
+    "Allegiance",
+    "Allegiance says whom a seat plays for.",
+    "Two Kinds of Allegiance",
+    "A seat's allegiance is decided once, at the moment its first General is shown: by revealing it, or by the death reveal. It never changes afterward. Until then the seat has none.",
+    "A seat either plays for the Force of its revealed General, or it is an Ambitionist: it plays alone, as a group of one, for no Force.",
+    "Example: Two Wei Generals",
+    "Both Generals are printed Wei. Seat 1 plays for Wei. Seat 4 is an Ambitionist, so its printed Force does not count.",
+    "The Cap",
+    "A Force may hold at most half the table, rounded down: 4 of 8 seats, 3 of 6, 1 of 2. Seats that are out still count, and an Ambitionist holds no place. A seat that reveals into a Force already at its cap becomes an Ambitionist. A hidden seat that dies in a full Force becomes one too, through the death reveal. See Setup for how Generals are revealed.",
+    "An Ambitionist counts as a Force of one: it is never "the same Force" as anyone else, and the printed Force of its General does not count. An Ambitionist does not ally with another Ambitionist: each is its own group of one. A card that needs a seat of a different Force, such as Ally Far Attack Near, can pick an Ambitionist.",
+    "Example: 6 Seats, Cap 3",
+    "Seats 1, 2 and 3 reveal Wei Generals. Wei is not full, so each plays for Wei.Seat 1WeiSeat 2WeiSeat 3Wei",
+    "Seats 1, 2 and 3 reveal Wei Generals. Wei is not full, so each plays for Wei.",
+    "Seat 4 reveals a Wei General. Wei already holds 3 of 3 places, so Seat 4 is an Ambitionist.Seat 1WeiSeat 2WeiSeat 3WeiSeat 4Ambitionist",
+    "Seat 4 reveals a Wei General. Wei already holds 3 of 3 places, so Seat 4 is an Ambitionist.",
+    "Later Seat 2 is knocked out. Wei still holds its 3 places, because seats that are out still count.Seat 1WeiSeat 2WeiSeat 3WeiSeat 4Ambitionist",
+    "Later Seat 2 is knocked out. Wei still holds its 3 places, because seats that are out still count.",
+    "Killing an Ambitionist",
+    "Killing an Ambitionist draws the killer 3 cards. An Ambitionist killer is never penalized: it never discards its hand.",
+    "Example: Killing an Ambitionist",
+    "Who Wins",
+    "A Force wins when every surviving seat plays for it. A hidden seat, or an Ambitionist, keeps the game going. The last survivor wins alone: an Ambitionist who is last wins with no Force.",
+    "Both survivors play for Wei, so Wei wins together.",
+    "An Ambitionist is still alive, so not every survivor plays for Wei.",
+    "Only one seat is left. It wins alone, and an Ambitionist who is last wins with no Force.",
+  ],
+}
+`;
+
 exports[`the rules pages in English card-types keeps its text and links 1`] = `
 {
   "links": [
@@ -121,8 +156,8 @@ exports[`the rules pages in English distance keeps its text and links 1`] = `
     "Who you can reach with a card.",
     "Distance",
     "Distance between two seats is the number of steps the short way around the table, counting only seats still in play. When a seat is knocked out, the seats beside it get closer. It is never below 1.",
-    "Example: Seat 1 Attacks With No Weapon",
-    "Seat 2 is out, so Seat 3 sits right next to Seat 1. Seat 6 wears Shadow Runner, which adds 1 to its distance. A seat within attack range 1 is highlighted.",
+    "Try It: You Are Seat 1",
+    "Click a seat to see how far it is. Knock seats out, pick a Weapon and put Mounts on to watch the numbers move.",
     "A Plus Mount on the target adds 1.",
     "A Minus Mount on the attacker subtracts 1.",
     "Some skills change distance too.",
@@ -186,7 +221,9 @@ exports[`the rules pages in English judgment keeps its text and links 1`] = `
 exports[`the rules pages in English overview keeps its text and links 1`] = `
 {
   "links": [
+    "/wiki/rules/allegiance Allegiance",
     "/wiki/rules/setup Setup",
+    "/wiki/rules/allegiance Allegiance",
     "/wiki/rules/turn Turn Structure",
     "/wiki/rules/card-types Card Types",
     "/wiki/rules/distance Distance / Range",
@@ -216,13 +253,15 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "Victory.The game ends when every seat still in play shares a Force.",
     "Victory.The game ends when every seat still in play shares a Force.",
     "Winning",
-    "The game ends when every seat still in play has revealed a General and plays for the same Force. Those seats win together.",
+    "The game ends when every seat still in play has revealed a General and plays for the same Force. Those seats win together. If only one seat is left, it wins alone.",
     "Qun is a Force like the others: Qun seats win together.",
     "A seat that loses its last HP and is not rescued is out. It discards every card it holds.",
+    "A seat that reveals into a Force that is already full becomes an Ambitionist and plays alone. See Allegiance.",
     "Example: Who Wins",
     "Seat 2 and Seat 4 are out. Seats 1 and 3 both show Wei, so Wei wins together.",
     "Where to read next",
     "Setup: how a game starts.",
+    "Allegiance: whom a seat plays for, and Ambitionists.",
     "Turn Structure: what you do on your turn.",
     "Card Types: Basic, Tool and Equipment cards.",
     "Distance / Range: who you can reach.",
@@ -272,6 +311,7 @@ exports[`the rules pages in English response keeps its text and links 1`] = `
 exports[`the rules pages in English setup keeps its text and links 1`] = `
 {
   "links": [
+    "/wiki/rules/allegiance Allegiance",
     "/wiki/rules/turn Turn Structure",
   ],
   "text": [
@@ -317,6 +357,7 @@ exports[`the rules pages in English setup keeps its text and links 1`] = `
     "A killer who has not revealed either General always counts as a different Force, even if it secretly shares the dead seat's Force.",
     "Qun counts as one Force like the others.",
     "Nothing happens if the death had no source, the seat killed itself, or the killer is out as well.",
+    "An Ambitionist is no seat's Force. See Allegiance for what killing one, or being one, means.",
     "Next: Turn Structure.",
   ],
 }

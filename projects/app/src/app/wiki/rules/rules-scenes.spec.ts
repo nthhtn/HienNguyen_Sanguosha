@@ -5,7 +5,7 @@ import { cardIds, generalIds } from 'content';
 import { routes } from '../../app.routes';
 import { I18n } from '../../i18n/i18n.service';
 
-const PAGES = ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary'] as const;
+const PAGES = ['overview', 'card-types', 'setup', 'allegiance', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary'] as const;
 const LOCALES = ['en', 'vi'] as const;
 const text = (el: Element) => el.textContent!.replace(/\s+/g, ' ').trim();
 
@@ -13,7 +13,11 @@ const text = (el: Element) => el.textContent!.replace(/\s+/g, ' ').trim();
 const HYPHEN_IDS = [...generalIds(), ...cardIds()].filter((id) => id.includes('-'));
 const ID_LEAK = new RegExp(`\\bseat-\\d|\\b(${HYPHEN_IDS.join('|')})\\b`);
 // What a screen reader gets from a page's pictures and labelled parts, in page order.
-const named = (el: Element) => [...el.querySelectorAll('img, [aria-label], [title]')].flatMap((e) => ['alt', 'aria-label', 'title'].map((a) => e.getAttribute(a)).filter((v): v is string => !!v));
+const named = (el: Element) => [
+  ...[...el.querySelectorAll('img, [aria-label], [title]')].flatMap((e) => ['alt', 'aria-label', 'title'].map((a) => e.getAttribute(a)).filter((v): v is string => !!v)),
+  // The Distance table's controls and readout: legends, labels, weapon options and the live readout.
+  ...[...el.querySelectorAll('legend, label, option, .readout')].map(text),
+];
 
 // What every scene on the rules pages must hold, in both languages: real art, a name for each picture, and no
 // internal id or placeholder in anything a reader or a screen reader gets.
@@ -41,7 +45,7 @@ describe.each(LOCALES)('the rules scenes in %s', (locale) => {
       expect(img.getAttribute('src')).not.toMatch(/placeholder|unknown/);
       expect(img.getAttribute('alt')!.trim()).not.toBe('');
     }
-    for (const mark of el.querySelectorAll('img.scene-mark')) expect(mark.getAttribute('src')).toMatch(/^\/card-art\//);
+    for (const mark of el.querySelectorAll('img.scene-mark, img.scene-ambitionist')) expect(mark.getAttribute('src')).toMatch(/^\/card-art\//);
     expect(el.querySelector('.card-art-placeholder')).toBeNull();
   });
 
