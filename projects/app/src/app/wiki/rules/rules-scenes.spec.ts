@@ -5,7 +5,7 @@ import { cardIds, generalIds } from 'content';
 import { routes } from '../../app.routes';
 import { I18n } from '../../i18n/i18n.service';
 
-const PAGES = ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary'] as const;
+const PAGES = ['overview', 'card-types', 'setup', 'allegiance', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary'] as const;
 const LOCALES = ['en', 'vi'] as const;
 const text = (el: Element) => el.textContent!.replace(/\s+/g, ' ').trim();
 

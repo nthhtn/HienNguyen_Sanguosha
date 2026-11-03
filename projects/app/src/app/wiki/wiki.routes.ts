@@ -41,6 +41,7 @@ export const WIKI_ROUTES: Routes = [
   { path: 'rules/overview', loadComponent: () => import('./rules/overview').then((m) => m.RulesOverview) },
   { path: 'rules/card-types', loadComponent: () => import('./rules/card-types').then((m) => m.RulesCardTypes) },
   { path: 'rules/setup', loadComponent: () => import('./rules/setup').then((m) => m.RulesSetup) },
+  { path: 'rules/allegiance', loadComponent: () => import('./rules/allegiance').then((m) => m.RulesAllegiance) },
   { path: 'rules/turn', loadComponent: () => import('./rules/turn').then((m) => m.RulesTurn) },
   { path: 'rules/distance', loadComponent: () => import('./rules/distance').then((m) => m.RulesDistance) },
   { path: 'rules/response', loadComponent: () => import('./rules/response').then((m) => m.RulesResponse) },

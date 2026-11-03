@@ -1,5 +1,40 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`the rules pages in English allegiance keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/setup Setup",
+  ],
+  "text": [
+    "Allegiance",
+    "Allegiance says whom a seat plays for.",
+    "Two Kinds of Allegiance",
+    "A seat's allegiance is decided once, at the moment its first General is shown: by revealing it, or by the death reveal. It never changes afterward. Until then the seat has none.",
+    "A seat either plays for the Force of its revealed General, or it is an Ambitionist: it plays alone, as a group of one, for no Force.",
+    "Example: Two Wei Generals",
+    "Both Generals are printed Wei. Seat 1 plays for Wei. Seat 4 is an Ambitionist, so its printed Force does not count.",
+    "The Cap",
+    "A Force may hold at most half the table, rounded down: 4 of 8 seats, 3 of 6, 1 of 2. Seats that are out still count, and an Ambitionist holds no place. A seat that reveals into a Force already at its cap becomes an Ambitionist. A hidden seat that dies in a full Force becomes one too, through the death reveal. See Setup for how Generals are revealed.",
+    "Effects that look at a Force ignore Ambitionists: an Ambitionist is never "the same Force" as anyone, and the printed Force of its General does not count.",
+    "Example: 6 Seats, Cap 3",
+    "Seats 1, 2 and 3 reveal Wei Generals. Wei is not full, so each plays for Wei.Seat 1WeiSeat 2WeiSeat 3Wei",
+    "Seats 1, 2 and 3 reveal Wei Generals. Wei is not full, so each plays for Wei.",
+    "Seat 4 reveals a Wei General. Wei already holds 3 of 3 places, so Seat 4 is an Ambitionist.Seat 1WeiSeat 2WeiSeat 3WeiSeat 4Ambitionist",
+    "Seat 4 reveals a Wei General. Wei already holds 3 of 3 places, so Seat 4 is an Ambitionist.",
+    "Later Seat 2 is knocked out. Wei still holds its 3 places, because seats that are out still count.Seat 1WeiSeat 2WeiSeat 3WeiSeat 4Ambitionist",
+    "Later Seat 2 is knocked out. Wei still holds its 3 places, because seats that are out still count.",
+    "Killing an Ambitionist",
+    "Killing an Ambitionist draws the killer 3 cards. An Ambitionist killer is never penalized: it never discards its hand.",
+    "Example: Killing an Ambitionist",
+    "Who Wins",
+    "A Force wins when every surviving seat plays for it. A hidden seat, or an Ambitionist, keeps the game going. The last survivor wins alone: an Ambitionist who is last wins with no Force.",
+    "Both survivors play for Wei, so Wei wins together.",
+    "An Ambitionist is still alive, so not every survivor plays for Wei.",
+    "Only one seat is left. It wins alone, and an Ambitionist who is last wins with no Force.",
+  ],
+}
+`;
+
 exports[`the rules pages in English card-types keeps its text and links 1`] = `
 {
   "links": [
@@ -186,7 +221,9 @@ exports[`the rules pages in English judgment keeps its text and links 1`] = `
 exports[`the rules pages in English overview keeps its text and links 1`] = `
 {
   "links": [
+    "/wiki/rules/allegiance Allegiance",
     "/wiki/rules/setup Setup",
+    "/wiki/rules/allegiance Allegiance",
     "/wiki/rules/turn Turn Structure",
     "/wiki/rules/card-types Card Types",
     "/wiki/rules/distance Distance / Range",
@@ -219,10 +256,12 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "The game ends when every seat still in play has revealed a General and plays for the same Force. Those seats win together.",
     "Qun is a Force like the others: Qun seats win together.",
     "A seat that loses its last HP and is not rescued is out. It discards every card it holds.",
+    "A seat that reveals into a Force that is already full becomes an Ambitionist and plays alone. See Allegiance.",
     "Example: Who Wins",
     "Seat 2 and Seat 4 are out. Seats 1 and 3 both show Wei, so Wei wins together.",
     "Where to read next",
     "Setup: how a game starts.",
+    "Allegiance: whom a seat plays for, and Ambitionists.",
     "Turn Structure: what you do on your turn.",
     "Card Types: Basic, Tool and Equipment cards.",
     "Distance / Range: who you can reach.",

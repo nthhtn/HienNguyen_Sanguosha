@@ -238,6 +238,7 @@ describe('App', () => {
     expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
       ['Overview', '/wiki/rules/overview'],
       ['Setup', '/wiki/rules/setup'],
+      ['Allegiance', '/wiki/rules/allegiance'],
       ['Turn Structure', '/wiki/rules/turn'],
       ['Card Types', '/wiki/rules/card-types'],
       ['Distance / Range', '/wiki/rules/distance'],

@@ -52,6 +52,7 @@ const FORCES = [
       <li><app-rich key="rules.overview.win1" /></li>
       <li><app-rich key="rules.overview.win2" /></li>
       <li><app-rich key="rules.overview.win3" /></li>
+      <li><app-rich key="rules.overview.win4" /></li>
     </ul>
     <app-scene caption="rules.overview.winExampleCap">
       <div class="scene-row center">
@@ -65,6 +66,7 @@ const FORCES = [
     <h3>{{ 'rules.overview.next' | t }}</h3>
     <ul>
       <li><app-rich key="rules.overview.next.setup" /></li>
+      <li><app-rich key="rules.overview.next.allegiance" /></li>
       <li><app-rich key="rules.overview.next.turn" /></li>
       <li><app-rich key="rules.overview.next.cardTypes" /></li>
       <li><app-rich key="rules.overview.next.distance" /></li>

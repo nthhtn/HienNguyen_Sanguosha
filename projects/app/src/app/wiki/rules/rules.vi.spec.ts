@@ -60,6 +60,7 @@ describe('the rules texts in both languages', () => {
   it('a link is labelled as the page is named in the navigation, in each language', () => {
     const NAV: Record<string, MessageKey> = {
       '/wiki/rules/setup': 'nav.rules.setup',
+      '/wiki/rules/allegiance': 'nav.rules.allegiance',
       '/wiki/rules/turn': 'nav.rules.turn',
       '/wiki/rules/card-types': 'nav.rules.cardTypes',
       '/wiki/rules/distance': 'nav.rules.distance',
@@ -100,6 +101,7 @@ describe('the rules pages in Vietnamese', () => {
     ['overview', 'Tổng quan'],
     ['card-types', 'Loại bài'],
     ['setup', 'Chuẩn bị'],
+    ['allegiance', 'Phe phái'],
     ['turn', 'Cấu trúc lượt'],
     ['distance', 'Khoảng cách / Tầm'],
     ['response', 'Cửa sổ phản hồi'],
@@ -116,7 +118,9 @@ describe('the rules pages in Vietnamese', () => {
     const { el } = await open('overview');
     expect(text(el)).toContain('Ngụy, Thục, Ngô hoặc Quần');
     expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
+      '/wiki/rules/allegiance Phe phái', // the Winning list's cap sentence
       '/wiki/rules/setup Chuẩn bị',
+      '/wiki/rules/allegiance Phe phái',
       '/wiki/rules/turn Cấu trúc lượt',
       '/wiki/rules/card-types Loại bài',
       '/wiki/rules/distance Khoảng cách / Tầm',
@@ -132,6 +136,49 @@ describe('the rules pages in Vietnamese', () => {
   it('overview: the Forces scene names Zhang Jiao for Qun', async () => {
     const { el } = await open('overview');
     expect([...el.querySelectorAll('figure')].map(text)).toEqual(['Ngụy Tào Tháo', 'Thục Lưu Bị', 'Ngô Tôn Quyền', 'Quần Trương Giác']);
+  });
+
+  it('overview: the Winning list ends with the cap, linking to the Allegiance page', async () => {
+    const { el } = await open('overview');
+    const items = [...el.querySelector('ul')!.querySelectorAll('li')];
+    expect(items.length).toBe(4);
+    expect(text(items[3])).toContain('đã đủ chỗ sẽ trở thành Dã tâm gia và chơi một mình');
+    expect(items[3].querySelector('a')!.getAttribute('href')).toBe('/wiki/rules/allegiance');
+  });
+
+  it('allegiance: an Ambitionist seat has its mark, its own label and no Force', async () => {
+    const { el } = await open('allegiance');
+    const first = el.querySelector('app-scene')!;
+    expect(first.querySelectorAll('img.scene-ambitionist').length).toBe(1);
+    expect(text(first.querySelector('.seat[data-force="Ambitionist"]')!)).toContain('Dã tâm gia');
+    expect(text(first.querySelector('.seat[data-force="Wei"]')!)).toContain('Ngụy');
+    expect(text(first.querySelector('.seat[data-force="Ambitionist"]')!)).not.toContain('Ngụy');
+  });
+
+  it('allegiance: the cap example turns the fourth Wei seat into an Ambitionist and keeps a dead seat counted', async () => {
+    const { el } = await open('allegiance');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 6 người chơi, mức trần 3')!;
+    const [one, two, three] = [...scene.querySelectorAll('ol.steps > li')];
+    expect(one.querySelectorAll('.seat[data-force="Wei"]').length).toBe(3);
+    expect(one.querySelectorAll('img.scene-ambitionist').length).toBe(0);
+    expect(two.querySelectorAll('img.scene-ambitionist').length).toBe(1);
+    expect(two.querySelectorAll('.seat[data-force="Wei"]').length).toBe(3);
+    expect(three.querySelectorAll('.seat.out').length).toBe(1);
+  });
+
+  it('allegiance: killing an Ambitionist shows three drawn cards', async () => {
+    const { el } = await open('allegiance');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: hạ gục một Dã tâm gia')!;
+    expect([...scene.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Mặt sau lá bài', 'Mặt sau lá bài', 'Mặt sau lá bài']);
+    expect(scene.querySelectorAll('.seat.out').length).toBe(1);
+  });
+
+  it('allegiance: the three outcomes are shown, the last with no Force named', async () => {
+    const { el } = await open('allegiance');
+    const boxes = [...el.querySelectorAll('.branch > div')];
+    expect(boxes.map((b) => text(b.querySelector('h5')!))).toEqual(['Một thế lực thắng', 'Ván tiếp tục', 'Người sống sót cuối cùng thắng một mình']);
+    expect(boxes[2].querySelectorAll('.seat[data-force="Ambitionist"]').length).toBe(1);
+    expect(boxes[2].querySelectorAll('.seat[data-force="Wei"]').length).toBe(0);
   });
 
   it('overview: a win needs revealed Generals, and Quần wins together as a thế lực like the others', async () => {
@@ -387,7 +434,7 @@ describe('the rules pages in Vietnamese', () => {
   });
 
   it('no English card name is left on any rules page', async () => {
-    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary']) {
+    for (const page of ['overview', 'card-types', 'setup', 'allegiance', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary']) {
       TestBed.resetTestingModule();
       const { el } = await open(page);
       expect(text(el)).not.toMatch(/\b(Slash|Dodge|Peach|Wine|Wuxie|Capture|Starvation|Lightning|Barbarians|Hail of Arrows|Steal|Force|Play Phase|Main General)\b/);
