@@ -64,6 +64,7 @@ describe('the rules texts in both languages', () => {
       '/wiki/rules/card-types': 'nav.rules.cardTypes',
       '/wiki/rules/distance': 'nav.rules.distance',
       '/wiki/rules/response': 'nav.rules.response',
+      '/wiki/rules/damage': 'nav.rules.damage',
       '/wiki/rules/judgment': 'nav.rules.judgment',
       '/wiki/generals': 'nav.cards.generals',
       '/wiki/tools': 'nav.cards.tools',
@@ -100,6 +101,7 @@ describe('the rules pages in Vietnamese', () => {
     ['turn', 'Cấu trúc lượt'],
     ['distance', 'Khoảng cách / Tầm'],
     ['response', 'Cửa sổ phản hồi'],
+    ['damage', 'Sát thương và hấp hối'],
     ['judgment', 'Phán xét'],
   ])('%s: the title', async (page, title) => {
     const { el } = await open(page);
@@ -115,6 +117,7 @@ describe('the rules pages in Vietnamese', () => {
       '/wiki/rules/card-types Loại bài',
       '/wiki/rules/distance Khoảng cách / Tầm',
       '/wiki/rules/response Cửa sổ phản hồi',
+      '/wiki/rules/damage Sát thương và hấp hối',
       '/wiki/rules/judgment Phán xét',
       '/wiki/generals Tướng',
     ]);
@@ -222,6 +225,31 @@ describe('the rules pages in Vietnamese', () => {
     expect(el.querySelector('.note-pending')).toBeNull();
   });
 
+  it('damage: the dying example needs two Peaches, one from each of two seats', async () => {
+    const { el } = await open('damage');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: một người chơi ở -1 Sinh lực')!;
+    const rescue = scene.querySelectorAll('ol.steps > li')[2];
+    expect([...rescue.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Đào', 'Đào']);
+    expect([...rescue.querySelectorAll('.note')].map(text)).toEqual(['-1 Sinh lực', '0 Sinh lực', '1 Sinh lực']);
+  });
+
+  it('damage: Wine and Slash show 2 damage', async () => {
+    const { el } = await open('damage');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 2 sát thương')!;
+    expect([...scene.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Tửu', 'Sát']);
+  });
+
+  it('damage: three kinds of damage, each with its cards', async () => {
+    const { el } = await open('damage');
+    expect([...el.querySelectorAll('figure.kind figcaption b')].map(text)).toEqual(['Thường', 'Lửa', 'Sét']);
+    expect([...el.querySelectorAll('figure.kind img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Sát', 'Hỏa Sát', 'Lôi Sát']);
+  });
+
+  it('damage: both ways a dying round can end are shown', async () => {
+    const { el } = await open('damage');
+    expect([...el.querySelectorAll('.branch > div h5')].map(text)).toEqual(['Trở lại trên 0 Sinh lực', 'Không ai cứu']);
+  });
+
   it('turn: six phases in order, only the Play Phase marked as waiting', async () => {
     const { el } = await open('turn');
     expect([...el.querySelectorAll('.phase h4')].map(text)).toEqual(['Giai đoạn bắt đầu', 'Giai đoạn phán xét', 'Giai đoạn rút bài', 'Giai đoạn ra bài', 'Giai đoạn bỏ bài', 'Giai đoạn kết thúc']);
@@ -270,7 +298,7 @@ describe('the rules pages in Vietnamese', () => {
   });
 
   it('no English card name is left on any rules page', async () => {
-    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'judgment']) {
+    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'damage', 'judgment']) {
       TestBed.resetTestingModule();
       const { el } = await open(page);
       expect(text(el)).not.toMatch(/\b(Slash|Dodge|Peach|Wine|Wuxie|Capture|Starvation|Lightning|Barbarians|Hail of Arrows|Steal|Force|Play Phase|Main General)\b/);

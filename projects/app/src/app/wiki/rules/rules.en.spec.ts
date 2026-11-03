@@ -8,7 +8,7 @@ import { routes } from '../../app.routes';
 describe('the rules pages in English', () => {
   beforeEach(() => localStorage.clear());
 
-  it.each(['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'judgment'])('%s keeps its text and links', async (page) => {
+  it.each(['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'damage', 'judgment'])('%s keeps its text and links', async (page) => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(`/wiki/rules/${page}`);

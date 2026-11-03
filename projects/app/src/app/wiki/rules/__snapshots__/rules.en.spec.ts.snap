@@ -52,6 +52,43 @@ exports[`the rules pages in English card-types keeps its text and links 1`] = `
 }
 `;
 
+exports[`the rules pages in English damage keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/setup Setup",
+  ],
+  "text": [
+    "Damage and Dying",
+    "How HP is lost, what a drop to zero means, and how a seat is rescued or knocked out.",
+    "HP and Damage",
+    "Damage and healing apply to one shared HP pool. Each point of damage removes one HP.",
+    "Example: 1 Damage",
+    "4 HP becomes 3 HP.",
+    "Wine",
+    "Any seat can play Wine once during its turn. The next Slash it plays that turn deals 1 more damage.",
+    "Example: 2 Damage",
+    "Kinds of Damage",
+    "Every point of damage is normal, fire or thunder.",
+    "NormalSlash",
+    "FireFire Attack, Blaze",
+    "ThunderLightning Attack, Lightning",
+    "Dying and Rescue",
+    "When a seat's HP drops to 0 or below, it is dying and a rescue round starts.",
+    "Example: A Seat at -1 HP",
+    "Seat 4 is at 1 HP and takes 2 damage. It falls to -1 HP and is dying.Seat 4Wu1 HP→Seat 4Wu-1 HPDying",
+    "Seat 4 is at 1 HP and takes 2 damage. It falls to -1 HP and is dying.",
+    "The round asks seats in turn order, starting from the seat whose turn it is. A seat with no Peach is skipped, and the dying seat is always asked.Seat 1Wei→Seat 2Shu→Seat 3WuSkipped→Seat 4WuDying",
+    "The round asks seats in turn order, starting from the seat whose turn it is. A seat with no Peach is skipped, and the dying seat is always asked.",
+    "Each Peach heals the dying seat by 1, then the same seat is asked again. Seat 1 and Seat 2 each play one, so Seat 4 is back at 1 HP. Any seat may rescue, whatever its Force. Wine rescues only the seat that holds it.Seat 4Wu-1 HP→Seat 4Wu0 HP→Seat 4Wu1 HP",
+    "Each Peach heals the dying seat by 1, then the same seat is asked again. Seat 1 and Seat 2 each play one, so Seat 4 is back at 1 HP. Any seat may rescue, whatever its Force. Wine rescues only the seat that holds it.",
+    "When the round ends, one of two things has happened.Back Above 0 HPThe seat is saved and the game goes on.Nobody RescuesThe seat is eliminated and discards every card. Both Generals are revealed, and the killer is rewarded or penalized as under Setup.",
+    "When the round ends, one of two things has happened.",
+    "The seat is saved and the game goes on.",
+    "The seat is eliminated and discards every card. Both Generals are revealed, and the killer is rewarded or penalized as under Setup.",
+  ],
+}
+`;
+
 exports[`the rules pages in English distance keeps its text and links 1`] = `
 {
   "links": [
@@ -115,6 +152,7 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "/wiki/rules/card-types Card Types",
     "/wiki/rules/distance Distance / Range",
     "/wiki/rules/response Response Windows",
+    "/wiki/rules/damage Damage and Dying",
     "/wiki/rules/judgment Judgment",
     "/wiki/generals Generals",
   ],
@@ -148,6 +186,7 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "Card Types: Basic, Tool and Equipment cards.",
     "Distance / Range: who you can reach.",
     "Response Windows: how a card lets another seat answer first.",
+    "Damage and Dying: how HP is lost, and how a seat is rescued or knocked out.",
     "Judgment: flipping the top card to decide an effect.",
     "Generals: every General and skill.",
   ],
