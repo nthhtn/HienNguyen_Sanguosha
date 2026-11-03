@@ -63,6 +63,8 @@ import { SceneSeat } from './scene/scene-seat';
             <p><app-rich key="rules.damage.d1" /></p>
             <div class="scene-row center">
               <app-scene-seat general="gan-ning" [n]="4" force="Wu" [note]="hp(1)" />
+              <app-scene-card id="wine" size="small" />
+              <span class="arrow" aria-hidden="true">+</span>
               <app-scene-card id="sha" size="small" />
               <span class="arrow" aria-hidden="true">→</span>
               <app-scene-seat general="gan-ning" [n]="4" force="Wu" mark="damage" [note]="hp(-1)" />

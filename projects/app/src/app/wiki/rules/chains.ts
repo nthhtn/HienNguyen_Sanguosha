@@ -46,7 +46,7 @@ import { SceneSeat } from './scene/scene-seat';
           <div class="body">
             <p>{{ 'rules.chains.w2' | t }}</p>
             <div class="scene-row top">
-              <app-scene-seat general="sun-quan" [n]="2" force="Wu" [note]="hp(2)" />
+              <app-scene-seat general="sun-quan" [n]="2" force="Wu" [note]="hp(3)" />
               <app-scene-seat general="guan-yu" [n]="3" force="Shu" [chained]="true" [note]="hp(4)" />
               <app-scene-seat general="zhang-jiao" [n]="5" force="Qun" [chained]="true" [note]="hp(4)" />
             </div>
@@ -56,9 +56,9 @@ import { SceneSeat } from './scene/scene-seat';
           <div class="body">
             <p>{{ 'rules.chains.w3' | t }}</p>
             <div class="scene-row top">
-              <app-scene-seat general="sun-quan" [n]="2" force="Wu" [note]="hp(2)" />
-              <app-scene-seat general="guan-yu" [n]="3" force="Shu" mark="fire" [note]="hp(2)" />
-              <app-scene-seat general="zhang-jiao" [n]="5" force="Qun" mark="fire" [note]="hp(2)" />
+              <app-scene-seat general="sun-quan" [n]="2" force="Wu" [note]="hp(3)" />
+              <app-scene-seat general="guan-yu" [n]="3" force="Shu" mark="fire" [note]="hp(3)" />
+              <app-scene-seat general="zhang-jiao" [n]="5" force="Qun" mark="fire" [note]="hp(3)" />
             </div>
           </div>
         </li>

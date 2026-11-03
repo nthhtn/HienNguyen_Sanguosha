@@ -239,6 +239,14 @@ describe('the rules pages in Vietnamese', () => {
     expect([...rescue.querySelectorAll('.note')].map(text)).toEqual(['-1 Sinh lực', '0 Sinh lực', '1 Sinh lực']);
   });
 
+  it('damage: the 2 damage in the dying example is explained by a Wine-boosted Sát', async () => {
+    const { el } = await open('damage');
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: một người chơi ở -1 Sinh lực')!;
+    const first = scene.querySelector('ol.steps > li')!;
+    expect([...first.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'))).toEqual(['Tửu', 'Sát']);
+    expect(text(first)).toContain('được Tửu tăng sức mạnh');
+  });
+
   it('damage: Wine and Slash show 2 damage', async () => {
     const { el } = await open('damage');
     const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 2 sát thương')!;
@@ -270,11 +278,13 @@ describe('the rules pages in Vietnamese', () => {
 
   it('chains: the wave example hits the two seats after the damaged one, in turn order, and unchains them', async () => {
     const { el } = await open('chains');
-    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 2 sát thương lửa lên Người chơi 2')!;
+    const scene = [...el.querySelectorAll('app-scene')].find((s) => s.querySelector('.cap') && text(s.querySelector('.cap')!) === 'Ví dụ: 1 sát thương lửa lên Người chơi 2')!;
     const [start, damaged, wave] = [...scene.querySelectorAll('ol.steps > li')];
     expect([...start.querySelectorAll('.nm')].map(text)).toEqual(['Người chơi 2', 'Người chơi 3', 'Người chơi 5']);
     expect(start.querySelectorAll('img.scene-chain').length).toBe(3);
     expect(damaged.querySelectorAll('img.scene-chain').length).toBe(2);
+    expect([...damaged.querySelectorAll('.note')].map(text)).toEqual(['3 Sinh lực', '4 Sinh lực', '4 Sinh lực']);
+    expect([...wave.querySelectorAll('.note')].map(text)).toEqual(['3 Sinh lực', '3 Sinh lực', '3 Sinh lực']);
     expect([...wave.querySelectorAll('.nm')].map(text)).toEqual(['Người chơi 2', 'Người chơi 3', 'Người chơi 5']);
     expect(wave.querySelectorAll('img.scene-mark').length).toBe(2);
     expect(wave.querySelectorAll('img.scene-chain').length).toBe(0);

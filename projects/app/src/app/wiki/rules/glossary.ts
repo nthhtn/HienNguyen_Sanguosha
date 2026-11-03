@@ -51,7 +51,7 @@ const ENTRIES: { id: string; art: Art }[] = [
                 }
               }
               @case ('hp') {
-                <app-scene-hp [hp]="1" />
+                <app-scene-hp [hp]="1" aria-hidden="true" />
               }
               @case ('general') {
                 <app-scene-general [id]="entry.art.id" size="small" />
