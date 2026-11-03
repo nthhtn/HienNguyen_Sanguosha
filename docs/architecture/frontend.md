@@ -69,7 +69,7 @@ What happens on a submit:
    asks the rule-based policy for an action from that seat's **redacted**
    state and the engine's legal actions, then submits it by the same path as a
    human move. The timer starts only once the board's playback has caught up
-   (`PlaybackGate`), and waits `botDelayMs` (600 ms) after that, or
+   (`PlaybackGate`), and waits `botDelayMs` (2500 ms, `BOT_MOVE_DELAY_MS` in `protocol`, shared with the server) after that, or
    `instantBotDelayMs` (1500 ms) at Instant speed, where playback takes no time
    and the bots set the pace.
 

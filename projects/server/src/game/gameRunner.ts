@@ -1,6 +1,7 @@
 import type { BotPolicy, BotTurnMemory } from 'bots';
 import { defaultActionsFor, describeDecision, EMPTY_CLOCK, expireClock, GAME_START_LEAD_IN_MS, getActingSeatIds, getActiveSeatId, getLegalActions, redactStateForSeat, switchClock } from 'engine';
 import type { Action, ClockState, DecisionKind, DecisionSpec, EngineContext, GameState } from 'engine';
+import { BOT_MOVE_DELAY_MS } from 'protocol';
 import type { ActionSource, GameClockView, GameUpdate } from 'protocol';
 import { GameRecord } from '../persistence/records';
 import { NewGameAction } from '../persistence/repositories';
@@ -9,7 +10,7 @@ import { toGameUpdate } from '../views/game';
 import { applyActions, applyMove, IllegalMoveError, stateHash } from './engineGame';
 
 // Delay before each bot move, so people can follow along.
-export const BOT_DELAY_MS = 1500;
+export const BOT_DELAY_MS = BOT_MOVE_DELAY_MS;
 // An open room's seat goes to a bot once its player has been away this long…
 export const TAKEOVER_AWAY_MS = 60_000;
 // …or after this many timeouts in a row while they are away (spec "Takeover").
