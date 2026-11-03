@@ -128,6 +128,25 @@ describe('the rules pages in Vietnamese', () => {
     expect([...el.querySelectorAll('.cap')].map(text)).toEqual(['Bốn thế lực', 'Ví dụ: ai thắng']);
   });
 
+  it('setup: the deal shows seven Generals, including a Qun one', async () => {
+    const { el } = await open('setup');
+    const alts = [...el.querySelector('ol.steps > li')!.querySelectorAll('img.scene-card')].map((img) => img.getAttribute('alt'));
+    expect(alts.length).toBe(7);
+    expect(alts).toContain('Trương Giác');
+  });
+
+  it('setup: the HP example rounds down to 3', async () => {
+    const { el } = await open('setup');
+    const step = el.querySelectorAll('ol.steps > li')[2];
+    expect(step.querySelectorAll('app-scene-hp img:not(.lost)').length).toBe(3);
+    expect(text(step)).toContain('3,5');
+  });
+
+  it('setup: both kill cases are shown', async () => {
+    const { el } = await open('setup');
+    expect([...el.querySelectorAll('.cap')].map(text)).toEqual(expect.arrayContaining(['Khác thế lực', 'Cùng thế lực']));
+  });
+
   it('card types: the links keep their place in the headings, and the card names are Vietnamese', async () => {
     const { el } = await open('card-types');
     expect([...el.querySelectorAll('th > a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
