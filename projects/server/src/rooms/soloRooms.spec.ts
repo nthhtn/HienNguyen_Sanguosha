@@ -48,7 +48,7 @@ describe('solo rooms', () => {
     expect(new Set(bots.map((b) => b.botNameId)).size).toBe(2);
     for (const bot of bots) {
       expect(botNameIds()).toContain(bot.botNameId);
-      expect(bot.name).toBe(`Bot: ${botNameDisplay(bot.botNameId!, 'en')}`);
+      expect(bot.name).toBe(`[Bot] ${botNameDisplay(bot.botNameId!, 'en')}`);
     }
     expect(room.members.every((m) => m.seatId !== null)).toBe(true);
     expect(rooms.list(await registered('Ann')).rooms).toEqual([]);

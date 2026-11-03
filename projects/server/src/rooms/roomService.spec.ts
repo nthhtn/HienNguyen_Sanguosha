@@ -139,14 +139,14 @@ describe('RoomService', () => {
       await expect(rooms.join(await registered('Bo'), id, ' ann ')).rejects.toEqual(code('name_taken'));
     });
 
-    it("lets a person take a bot's plain name in either language, and refuses a name starting with Bot:", async () => {
+    it("lets a person take a bot's plain name in either language, and refuses a name starting with [Bot]", async () => {
       const { rooms, registered, open, connect } = await setup();
       const ann = await registered('Ann');
       const id = await open(ann);
       const host = await connect(ann, id);
       await rooms.command(ann, id, host.playerId, { type: 'lobby.addBot' });
       const bot = host.connection.room!.members[1];
-      expect(bot.name).toBe(`Bot: ${botNameDisplay(bot.botNameId!, 'en')}`);
+      expect(bot.name).toBe(`[Bot] ${botNameDisplay(bot.botNameId!, 'en')}`);
       await expect(rooms.join(await registered('Di'), id, bot.name)).rejects.toEqual(code('invalid_name'));
       await expect(rooms.join(await registered('Bo'), id, botNameDisplay(bot.botNameId!, 'en')!)).resolves.toBeUndefined();
       await expect(rooms.join(await registered('Cy'), id, botNameDisplay(bot.botNameId!, 'vi')!)).resolves.toBeUndefined();
@@ -255,7 +255,7 @@ describe('RoomService', () => {
       expect(new Set(bots.map((b) => b.botNameId)).size).toBe(3);
       for (const bot of bots) {
         expect(botNameIds()).toContain(bot.botNameId);
-        expect(bot.name).toBe(`Bot: ${botNameDisplay(bot.botNameId!, 'en')}`);
+        expect(bot.name).toBe(`[Bot] ${botNameDisplay(bot.botNameId!, 'en')}`);
       }
       await expect(run({ type: 'lobby.addBot' })).rejects.toEqual(code('room_full'));
     });
@@ -571,7 +571,7 @@ describe('RoomService', () => {
       const snapshot = restarted.snapshot(ann, id);
       expect(snapshot.members.map((m) => [m.name, m.connected, m.isRegistered])).toEqual([
         ['Ann', false, true],
-        [expect.stringMatching(/^Bot: /), true, false],
+        [expect.stringMatching(/^\[Bot\] /), true, false],
       ]);
       expect(snapshot.hostPlayerId).toBe(host.playerId);
     });

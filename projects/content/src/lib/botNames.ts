@@ -9,7 +9,7 @@ const BOT_NAME_TEXT: Record<string, Readonly<Record<string, string>>> = { vi: vi
 
 export const botNameIds = (): string[] => Object.keys(ENGLISH);
 
-// The plain name (no "Bot: " prefix) in a language; null when the id is not in the pool.
+// The plain name (no "[Bot] " prefix) in a language; null when the id is not in the pool.
 export function botNameDisplay(id: string, locale: string): string | null {
   if (!Object.prototype.hasOwnProperty.call(ENGLISH, id)) return null;
   const table = Object.prototype.hasOwnProperty.call(BOT_NAME_TEXT, locale) ? BOT_NAME_TEXT[locale] : undefined;

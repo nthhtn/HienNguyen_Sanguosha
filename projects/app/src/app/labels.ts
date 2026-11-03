@@ -33,7 +33,7 @@ function titleCaseId(id: string): string {
   return id.split('-').map(capitalise).join(' ');
 }
 
-// A player's name as the viewer reads it. A bot with a name id is "Bot: " plus its figure's name in the viewer's
+// A player's name as the viewer reads it. A bot with a name id is "[Bot] " plus its figure's name in the viewer's
 // language; anyone else, and a bot whose id is not in the pool (an old "Bot 1"), keeps the name they were stored with.
 export function playerName(player: { name: string; kind?: 'human' | 'bot'; botNameId?: string }, tr: Translator = englishTranslator): string {
   const plain = player.botNameId !== undefined && player.kind !== 'human' ? botNameDisplay(player.botNameId, localeOf(tr)) : null;

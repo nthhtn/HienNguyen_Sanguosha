@@ -212,7 +212,7 @@ describe('Setup', () => {
       yours.dispatchEvent(new Event('input'));
       fixture.detectChanges();
       (el.querySelector('button.start') as HTMLButtonElement).click();
-      expect(gameService.state()!.players.map((p) => p.name)).toEqual(['Hing', expect.stringMatching(/^Bot: /), expect.stringMatching(/^Bot: /), expect.stringMatching(/^Bot: /)]);
+      expect(gameService.state()!.players.map((p) => p.name)).toEqual(['Hing', expect.stringMatching(/^\[Bot\] /), expect.stringMatching(/^\[Bot\] /), expect.stringMatching(/^\[Bot\] /)]);
     });
 
     it('asks for every seat’s name in pass-and-play, and a blank name stays "Seat N"', async () => {

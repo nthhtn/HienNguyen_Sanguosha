@@ -2,7 +2,7 @@
 
 ## Intent
 
-Bots are named by position today: offline "Seat N" (`projects/content/src/lib/modes/guozhan.ts`), online "Bot N" (`projects/server/src/rooms/room.ts`, `roomService.ts`). A table of "Bot 1, Bot 2, Bot 3" feels lifeless. Give each bot a name of a Three Kingdoms-era figure so a game reads like a table of characters. A bot's name is always shown with a "Bot: " prefix ("Bot: Zhou Cang", "Bot: Chu Thương") so it can never be mistaken for a person.
+Bots are named by position today: offline "Seat N" (`projects/content/src/lib/modes/guozhan.ts`), online "Bot N" (`projects/server/src/rooms/room.ts`, `roomService.ts`). A table of "Bot 1, Bot 2, Bot 3" feels lifeless. Give each bot a name of a Three Kingdoms-era figure so a game reads like a table of characters. A bot's name is always shown with a "[Bot] " prefix ("[Bot] Zhou Cang", "[Bot] Chu Thương") so it can never be mistaken for a person.
 
 ## Goals
 
@@ -15,7 +15,7 @@ Bots are named by position today: offline "Seat N" (`projects/content/src/lib/mo
 - A name never implies a force. "Zhou Cang" does not make a bot Shu. The pool is flat, has no force field, and nothing in the UI colours, groups or reasons by it. A bot's force comes only from the Generals it is dealt.
 - No bot personalities, avatars or per-name behaviour.
 - Past saved games keep their "Bot N" and "Seat N" names. Do not migrate or rename them. The only migration is a schema one: a nullable `bot_name_id` column, with no backfill; a seat or room player without it shows its stored name.
-- The `Bot:` name rule applies to new input only. No existing account is known to have such a name, so no check or cleanup is needed.
+- The `[Bot]` name rule applies to new input only. No existing account is known to have such a name, so no check or cleanup is needed.
 - Human players are untouched.
 
 ## Anti-goals
@@ -69,17 +69,17 @@ The Vietnamese names start as drafts for a native speaker to review (`npm run i1
 - **Content file.** The pool is a data file in `projects/content/data/` with English and Vietnamese names, following how General and card names and their Vietnamese locale files are stored. Ids are kebab-case (`zhou-cang`).
 - **Draw.** Each game or room picks distinct ids at random. Offline: when the game is set up. Online: when a bot is added to a room, avoiding ids already used by that room's other bots.
 - **Server hands out an id.** Online, a bot's stored and transmitted name must let the client resolve it per viewer, so two clients can show it in different languages. Persistence, the shared `protocol` project and the game's player list carry the id (or an equivalent reference); each client translates it.
-- **Prefix.** Every bot name is shown as `Bot: ` plus the figure's name, in both languages (the prefix is not translated). The pool files and the id hold the plain name and id; the prefix is added at display time and in the stored fallback `name`.
+- **Prefix.** Every bot name is shown as `[Bot] ` plus the figure's name, in both languages (the prefix is not translated). The pool files and the id hold the plain name and id; the prefix is added at display time and in the stored fallback `name`.
 - **Display.** `seatName` (`projects/app/src/app/labels.ts`) and `playerLabel` (`projects/app/src/app/online/game-labels.ts`) resolve a bot's name id into the viewer's language and add the prefix. The old "(Bot)" / "(máy)" tag is no longer added to bots that have a name id.
 - **Old data.** A bot name that is not a pool id (an old "Bot 1" or "Seat N") displays as stored, as today.
 
 ## Human names and bots (decided with the user)
 
-The `Bot: ` prefix keeps a bot's stored `name` ("Bot: Zhou Cang") from ever equalling a person's name, so `Room.nameTaken` and the database's `room_players_current_name` index stay as they are. A person's display name may not start with `Bot:` (case-insensitive, any spacing after the colon), enforced in `normalizeDisplayName`, so nobody can pose as a bot. A person may use the plain figure's name ("Zhou Cang", "Chu Thương").
+The `[Bot] ` prefix keeps a bot's stored `name` ("[Bot] Zhou Cang") from ever equalling a person's name, so `Room.nameTaken` and the database's `room_players_current_name` index stay as they are. A person's display name may not start with `[Bot]` (case-insensitive, any spacing after the colon), enforced in `normalizeDisplayName`, so nobody can pose as a bot. A person may use the plain figure's name ("Zhou Cang", "Chu Thương").
 
 ## Calls made by the author (not yet checked with the user; change freely)
 
-- **Dedicated field.** A bot's name reference is a dedicated optional field (for example `botNameId`, the plain id with no prefix) next to `name`, not an id packed into `name`. `name` is the English fallback with the prefix, `Bot: Zhou Cang`, derived from the id when the bot is drawn. Resolution happens only when the player's `kind` is `'bot'` and the field is set, so a human named "zhou-cang" is never mistaken for a bot. A protocol, database (with a migration) and engine `Player` type change is acceptable. `name` keeps a readable English fallback for old clients and old data.
+- **Dedicated field.** A bot's name reference is a dedicated optional field (for example `botNameId`, the plain id with no prefix) next to `name`, not an id packed into `name`. `name` is the English fallback with the prefix, `[Bot] Zhou Cang`, derived from the id when the bot is drawn. Resolution happens only when the player's `kind` is `'bot'` and the field is set, so a human named "zhou-cang" is never mistaken for a bot. A protocol, database (with a migration) and engine `Player` type change is acceptable. `name` keeps a readable English fallback for old clients and old data.
 - **Offline draw.** The draw happens in the setup code once the human seats are known, not inside the game's RNG, and uses its own seeded stream. Existing seeds, simulations and replays must stay byte-identical.
 - **Vietnamese drafts.** A pool name with no Vietnamese entry falls back to English. Draft status is reported by `npm run i18n:status` as it is for other drafts; it is a warning, not a failure.
 - **Surfaces.** Every place that reads a player's `name` directly (lobby member list, room members mapping, `lastGame.seats`, results screens, My Games) must resolve it per viewer. If any of them turns out to be server-rendered text instead of data, flag it in the plan with a client-side resolution path.

@@ -61,18 +61,18 @@ describe('gameWhen', () => {
 describe('a bot with a name id', () => {
   const named: GameSummary = {
     ...GAME,
-    players: [{ seatId: 'seat-0', name: 'Bot: Zhou Cang', kind: 'bot', botNameId: 'zhou-cang' }, ...GAME.players.slice(1)],
+    players: [{ seatId: 'seat-0', name: '[Bot] Zhou Cang', kind: 'bot', botNameId: 'zhou-cang' }, ...GAME.players.slice(1)],
     result: { endedAt: 9, winningSeatIds: ['seat-0'], losingSeatIds: ['seat-1', 'seat-2'] },
   };
 
   it('is labelled by its prefixed name in the viewer’s language, with no extra Bot tag', () => {
-    expect(playerLabel(named, 'seat-0')).toBe('Bot: Zhou Cang');
-    expect(playerLabel(named, 'seat-0', makeTranslator(vi, 'vi'))).toBe('Bot: Chu Thương');
+    expect(playerLabel(named, 'seat-0')).toBe('[Bot] Zhou Cang');
+    expect(playerLabel(named, 'seat-0', makeTranslator(vi, 'vi'))).toBe('[Bot] Chu Thương');
     expect(playerLabel(GAME, 'seat-0')).toBe('Bot 1 (Bot)');
   });
 
   it('is named as a winner in the viewer’s language', () => {
-    expect(gameHeadline({ ...named, result: { ...named.result!, winningKingdom: undefined } })).toBe('Bot: Zhou Cang won');
-    expect(gameHeadline({ ...named, result: { ...named.result!, winningKingdom: undefined } }, makeTranslator(vi, 'vi'))).toContain('Bot: Chu Thương');
+    expect(gameHeadline({ ...named, result: { ...named.result!, winningKingdom: undefined } })).toBe('[Bot] Zhou Cang won');
+    expect(gameHeadline({ ...named, result: { ...named.result!, winningKingdom: undefined } }, makeTranslator(vi, 'vi'))).toContain('[Bot] Chu Thương');
   });
 });

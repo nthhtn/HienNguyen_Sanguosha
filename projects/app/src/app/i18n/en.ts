@@ -628,7 +628,7 @@ export const en = {
   'wiki.tab.delayed': 'Delayed',
   'wiki.tab.other': 'Other',
   'error.invalid_body': 'Some fields are missing or invalid',
-  'error.invalid_name': 'Names need 1 to {max} characters and cannot start with Bot:',
+  'error.invalid_name': 'Names need 1 to {max} characters and cannot start with [Bot]',
   'error.weak_password': 'Passwords need at least {min} characters',
   'error.email_taken': 'That email already has an account',
   'error.invalid_credentials': 'Email or password is incorrect',

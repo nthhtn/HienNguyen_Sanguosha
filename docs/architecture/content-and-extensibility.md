@@ -93,9 +93,9 @@ name never decides a bot's force), with Vietnamese names in
 `data/locales/vi/bot-names.json`. `botNames.ts` draws distinct ids from an
 injected random function, so the engine's RNG is never used; `botNames.spec.ts`
 checks the pool against both General rosters. A bot carries the plain id as
-`botNameId` next to a stored `name` of `Bot: <English name>`. Clients show
-`Bot: ` plus the name in the viewer's language (`playerName` in `labels.ts`),
-and a person's name may not start with `Bot:`, so the two never collide. Old
+`botNameId` next to a stored `name` of `[Bot] <English name>`. Clients show
+`[Bot] ` plus the name in the viewer's language (`playerName` in `labels.ts`),
+and a person's name may not start with `[Bot]`, so the two never collide. Old
 bots without an id show the name they were stored with.
 
 ### Assets

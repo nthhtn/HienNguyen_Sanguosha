@@ -97,7 +97,7 @@ function requireName(raw: string): string {
   return name;
 }
 
-// A bot's stored name: its English name behind the "Bot: " prefix every language shows.
+// A bot's stored name: its English name behind the "[Bot] " prefix every language shows.
 function botDisplayName(botNameId: string): string {
   return botName(botNameDisplay(botNameId, 'en') ?? botNameId);
 }

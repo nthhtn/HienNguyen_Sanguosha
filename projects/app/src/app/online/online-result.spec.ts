@@ -66,6 +66,6 @@ describe('OnlineResult', () => {
   it('names a bot by its name id, not its stored name', () => {
     const ending: LastGame = { ...LAST_GAME, seats: [LAST_GAME.seats[0], { seatId: 'seat-1', playerId: '', name: 'Bot 7', botNameId: 'zhou-cang' }] };
     const el = render(ending);
-    expect(texts(el, 'app-victory-board .col .name')).toEqual(['Ann', 'Bot: Zhou Cang']);
+    expect(texts(el, 'app-victory-board .col .name')).toEqual(['Ann', '[Bot] Zhou Cang']);
   });
 });

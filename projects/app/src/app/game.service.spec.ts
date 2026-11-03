@@ -59,7 +59,7 @@ describe('GameService', () => {
       expect(new Set(bots().map((p) => p.botNameId)).size).toBe(4);
       for (const bot of bots()) {
         expect(botNameIds()).toContain(bot.botNameId);
-        expect(bot.name).toMatch(/^Bot: /);
+        expect(bot.name).toMatch(/^\[Bot\] /);
       }
       const human = service.state()!.players.find((p) => p.kind === 'human')!;
       expect(human).toMatchObject({ seatId: 'seat-0', name: 'Hing' });

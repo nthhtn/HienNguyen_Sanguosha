@@ -317,9 +317,9 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
 
     it("stores a bot's name id, and a person has none", async () => {
       const room = await newRoom();
-      const bot = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: 'Bot: Zhou Cang', botNameId: 'zhou-cang', now: minutes(1) });
+      const bot = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: '[Bot] Zhou Cang', botNameId: 'zhou-cang', now: minutes(1) });
       const human = await addHuman(room.id, (await registered()).id, 'Zhou Cang', minutes(2));
-      expect(bot).toMatchObject({ displayName: 'Bot: Zhou Cang', botNameId: 'zhou-cang' });
+      expect(bot).toMatchObject({ displayName: '[Bot] Zhou Cang', botNameId: 'zhou-cang' });
       expect(human.botNameId).toBeNull();
       expect((await live(room.id))?.players).toEqual([bot, human]);
     });
@@ -421,7 +421,7 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
     it("keeps a seat's bot name id, and reads a seat saved without one", async () => {
       const seats: GameSeat[] = [
         { seatId: 'seat-0', roomPlayerId: randomUUID(), name: 'Ann', kind: 'human' },
-        { seatId: 'seat-1', roomPlayerId: randomUUID(), name: 'Bot: Zhou Cang', kind: 'bot', botNameId: 'zhou-cang' },
+        { seatId: 'seat-1', roomPlayerId: randomUUID(), name: '[Bot] Zhou Cang', kind: 'bot', botNameId: 'zhou-cang' },
         { seatId: 'seat-2', roomPlayerId: randomUUID(), name: 'Bot 1', kind: 'bot' },
       ];
       const game = await repos().games.create({ roomId: (await newRoom()).id, seed: 1, seats, rules: {}, buildId: 'build-1', now: NOW });

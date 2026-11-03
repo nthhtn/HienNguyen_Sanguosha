@@ -29,12 +29,12 @@ describe('normalizeDisplayName', () => {
   });
 });
 
-describe('normalizeDisplayName and the Bot: prefix', () => {
-  it('rejects a name that starts with Bot:, whatever the case or spacing', () => {
-    for (const name of ['Bot: Zhou Cang', 'bot:x', 'BOT:x', 'Bot:   x', '  bot: x']) expect(normalizeDisplayName(name)).toBeNull();
+describe('normalizeDisplayName and the [Bot] prefix', () => {
+  it('rejects a name that starts with [Bot], whatever the case or spacing', () => {
+    for (const name of ['[Bot] Zhou Cang', '[bot]x', '[BOT]x', '[Bot]   x', '  [ bot ] x']) expect(normalizeDisplayName(name)).toBeNull();
   });
 
   it('still accepts names that only look similar', () => {
-    for (const name of ['Zhou Cang', 'Botany', 'Bot', 'Bot 1']) expect(normalizeDisplayName(name)).toBe(name);
+    for (const name of ['Zhou Cang', 'Botany', 'Bot', 'Bot 1', 'Bot: x', '[Bo] x', 'x [Bot]']) expect(normalizeDisplayName(name)).toBe(name);
   });
 });

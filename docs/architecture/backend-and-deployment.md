@@ -82,7 +82,7 @@ behind a reverse proxy (the README explains the accepted values).
 
 An **open** room is listed, and anyone signed in can join while it has space.
 A **solo** room is unlisted and holds one person against bots; it backs
-Play vs Bots. Names are unique within a room; a bot's stored name is `Bot: <English name>` with a `botNameId` (see content's bot names), and a person's name may not start with `Bot:`. The lobby holds the members, the
+Play vs Bots. Names are unique within a room; a bot's stored name is `[Bot] <English name>` with a `botNameId` (see content's bot names), and a person's name may not start with `[Bot]`. The lobby holds the members, the
 seat count and the rules (`GameRules`: first-reveal draw, the deck, the
 judgment notice). **Seats are drawn at random from the game seed when the host
 starts** (`drawSeats`), so join order gives no position.

@@ -99,16 +99,16 @@ describe('LobbyPage', () => {
     expect(badges('Bot 1')).toEqual(['Bot']);
   });
 
-  it('shows a bot with a name id as Bot: plus its name in the viewer’s language, with no Bot badge', async () => {
-    lobby.room.set({ ...MIXED, members: [...MIXED.members, { playerId: 'p-zc', name: 'Bot: Zhou Cang', botNameId: 'zhou-cang', kind: 'bot', seatId: null, isRegistered: false, connected: true, botControlled: false }] });
+  it('shows a bot with a name id as [Bot] plus its name in the viewer’s language, with no Bot badge', async () => {
+    lobby.room.set({ ...MIXED, members: [...MIXED.members, { playerId: 'p-zc', name: '[Bot] Zhou Cang', botNameId: 'zhou-cang', kind: 'bot', seatId: null, isRegistered: false, connected: true, botControlled: false }] });
     const { member, badges } = await render();
-    expect(badges('Bot: Zhou Cang')).toEqual([]);
-    expect(member('Bot: Zhou Cang').querySelector('mat-icon')?.textContent?.trim()).toBe('smart_toy');
+    expect(badges('[Bot] Zhou Cang')).toEqual([]);
+    expect(member('[Bot] Zhou Cang').querySelector('mat-icon')?.textContent?.trim()).toBe('smart_toy');
     const i18n = TestBed.inject(I18n);
     await i18n.setLocale('vi');
     try {
       TestBed.tick();
-      expect([...document.querySelectorAll('li.member .name')].map((n) => n.textContent?.trim())).toContain('Bot: Chu Thương');
+      expect([...document.querySelectorAll('li.member .name')].map((n) => n.textContent?.trim())).toContain('[Bot] Chu Thương');
     } finally {
       await i18n.setLocale('en');
     }

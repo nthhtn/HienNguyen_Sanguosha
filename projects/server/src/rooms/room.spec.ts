@@ -32,7 +32,7 @@ describe('Room', () => {
   });
 
   it("lists the name ids of the room's bots", () => {
-    const r = room([member('p-ann', 'Ann'), member('b1', 'Bot: Zhou Cang', { kind: 'bot', userId: null, botNameId: 'zhou-cang' }), member('b2', 'Bot 1', { kind: 'bot', userId: null })]);
+    const r = room([member('p-ann', 'Ann'), member('b1', '[Bot] Zhou Cang', { kind: 'bot', userId: null, botNameId: 'zhou-cang' }), member('b2', 'Bot 1', { kind: 'bot', userId: null })]);
     expect(r.botNameIds()).toEqual(['zhou-cang']);
   });
 
