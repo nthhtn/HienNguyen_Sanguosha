@@ -49,8 +49,6 @@ export class PlaybackDirector {
   private holds = 0;
   // A beat's wait ended while held: the next one plays on release.
   private due = false;
-  // The pace a rush started with, kept so the queue it started with ends in about RUSH_MS.
-  private rush = 0;
 
   constructor() {
     effect(() => {
@@ -171,16 +169,7 @@ export class PlaybackDirector {
   }
 
   private factor(queuedMs: number): number {
-    const catchUp = !this.game.clockWaitsForPlayback;
-    const owesDecision = this.game.legalActions().length > 0;
-    const factor = paceFactor(queuedMs, this.speed.factor(), { catchUp, owesDecision });
-    if (catchUp && owesDecision) {
-      // Recomputing on the shrinking queue alone would slow the rush down beat by beat.
-      this.rush = Math.max(this.rush, factor);
-      return this.rush;
-    }
-    this.rush = 0;
-    return factor;
+    return paceFactor(queuedMs, this.speed.factor(), { catchUp: !this.game.clockWaitsForPlayback });
   }
 
   // Caught up: the board shows the real state again. The centre stays until play moves on (see play).
@@ -188,7 +177,6 @@ export class PlaybackDirector {
     this._displayedState.set(state);
     this._current.set(null);
     this._playedLogLength.set(state?.log.length ?? 0);
-    this.rush = 0;
     this.setIdle(true);
   }
 
@@ -197,7 +185,6 @@ export class PlaybackDirector {
     this.timer = null;
     this.queue = [];
     this.due = false;
-    this.rush = 0;
   }
 
   private setIdle(idle: boolean): void {
