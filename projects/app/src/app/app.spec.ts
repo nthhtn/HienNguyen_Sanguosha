@@ -55,6 +55,15 @@ describe('App', () => {
     return { fixture, el: fixture.nativeElement as HTMLElement };
   }
 
+  it('marks the page with its layout so every screen follows one rule', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 852 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 393 });
+    await render();
+    expect(document.documentElement.dataset['layout']).toBe('phone');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+  });
+
   it('has a music on/off button in the toolbar', async () => {
     localStorage.clear();
     const { fixture, el } = await render();

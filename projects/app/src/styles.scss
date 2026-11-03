@@ -145,3 +145,11 @@ body {
   gap: 8px;
   padding-right: 16px;
 }
+
+// Phones, and any window too short for the wide layout (see layout.service.ts): a slimmer app bar, and the
+// page kept clear of camera cut-outs and rounded corners (index.html asks for viewport-fit=cover).
+// The phase indicator and the board's height read the toolbar variables.
+html[data-layout='phone'] {
+  --mat-toolbar-standard-height: 44px;
+  --mat-toolbar-mobile-height: 44px;
+}

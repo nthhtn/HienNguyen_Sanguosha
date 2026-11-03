@@ -196,7 +196,6 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
       display: flex; flex-direction: column;
       height: calc(100dvh - var(--mat-toolbar-standard-height, 64px) - 16px);
     }
-    @media (max-width: 599px) { :host:has(.board) { height: calc(100dvh - var(--mat-toolbar-mobile-height, 56px) - 16px); } }
     .board { flex: 1; min-height: 0; display: flex; flex-direction: column; }
     /* Bottom row: Player Seat, Hand (the rest of the width), Action History, Discard Pile.
        All four sections share one fixed height, so the battlefield gets the rest. */

@@ -10,6 +10,7 @@ import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-b
 import { AuthService } from './auth/auth.service';
 import { FEATURE_FLAGS } from './feature-flags';
 import { LanguageSwitcher } from './i18n/language-switcher';
+import { Layout } from './layout.service';
 import { MusicService, SoundEffects } from './music.service';
 import { PLAYBACK_SPEEDS, PlaybackSpeed } from './playback-speed.service';
 import { I18n } from './i18n/i18n.service';
@@ -98,6 +99,7 @@ export class App {
   protected readonly speedOptions = PLAYBACK_SPEEDS.map((id) => ({ id, label: `speed.${id}` as MessageKey }));
 
   protected readonly auth = inject(AuthService);
+  protected readonly layout = inject(Layout);
 
   constructor() {
     this.music.start();
