@@ -44,7 +44,8 @@ import { StartRevealDialog, StartRevealDialogData } from './start-reveal-dialog'
 import { judgmentDecision } from './judgment-decision';
 import { judgmentDescription } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
-import { DAMAGE_FADE_MS, damageEffectsFor, ShownDamage } from './damage-effects';
+import { chainEffectsFor, damageEffectsFor, ShownDamage } from './damage-effects';
+import { spriteDurationMs } from './sprite-plan';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
 import { DecisionTimer } from '../decision-timer.service';
@@ -365,7 +366,7 @@ export class GameBoard {
         if (seen !== null && log.length > seen) {
           const fresh = log.slice(seen);
           for (const sound of soundsFor(fresh)) this.sounds.play(sound);
-          this.showDamage(damageEffectsFor(fresh, this.gameService.publicState()?.log.slice(log.length) ?? []));
+          this.showDamage([...damageEffectsFor(fresh, this.gameService.publicState()?.log.slice(log.length) ?? []), ...chainEffectsFor(fresh)]);
           for (const cry of deathSoundsFor(fresh, state)) {
             if (cry.url) this.sounds.playDeathVoice(cry.url);
             else if (cry.effect) this.sounds.play(cry.effect);
@@ -456,7 +457,7 @@ export class GameBoard {
   private readonly centre = signal<ResolutionCentre>(NO_CENTRE);
   // Seats outside the resolution dim only while a card is on show, as long as the card itself.
   protected readonly resolving = computed(() => this.director.current()?.visual?.kind === 'play');
-  // The hit pictures on show, per seat; they fade on their own and never hold playback.
+  // The hit and chain animations on show, per seat; they end on their own and never hold playback.
   protected readonly damageEffects = signal<Partial<Record<string, ShownDamage>>>({});
   private damageSeq = 0;
 
@@ -471,7 +472,7 @@ export class GameBoard {
           const { [seatId]: _gone, ...rest } = shown;
           return rest;
         });
-      }, DAMAGE_FADE_MS);
+      }, spriteDurationMs(image));
       this.damageTimers.add(timer);
     }
   }

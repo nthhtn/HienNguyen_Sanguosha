@@ -1,6 +1,7 @@
 import manifest from '../../assets/manifest.json';
 import { baseGeneralId, isKingdomWarsGeneralId } from './generalIds';
 import skins from '../../assets/generals/skins/skins.json';
+import sheetManifest from '../../assets/animation/sheets/sheets.json';
 
 interface AssetManifestEntry {
   localPath: string;
@@ -64,6 +65,34 @@ const KINGDOM_BANNERS: Record<string, string> = { Wei: 'wei', Shu: 'shu', Wu: 'w
 export function kingdomBannerUrl(kingdom: string | undefined): string | null {
   const file = kingdom ? KINGDOM_BANNERS[kingdom] : undefined;
   return file ? `/card-art/banner/${file}.png` : null;
+}
+
+// The frame animations played over a seat: a hit's picture and the chain. Each is one PNG grid of
+// frames (built by scripts/build-sprite-sheets.py from assets/sprites/<folder>), with the numbers its timing needs.
+export type SpriteId = 'slash' | 'slash-fire' | 'slash-lightning' | 'damage' | 'fire' | 'lightning' | 'chain';
+
+export interface SpriteSheet {
+  url: string;
+  frames: number;
+  cols: number;
+  rows: number;
+  // One frame, in px.
+  width: number;
+  height: number;
+  // The frames before the burst: the first large frame (index `lead`) is where a pop-in goes.
+  lead: number;
+  // The frame the burst ends at, exclusive; frames from here on are the tail.
+  burstEnd: number;
+  pop: boolean;
+  // The frame to show still (reduced motion).
+  peak: number;
+}
+
+type SheetMeta = Omit<SpriteSheet, 'url'>;
+const SHEET_META: Record<SpriteId, SheetMeta> = sheetManifest;
+
+export function spriteSheet(id: SpriteId): SpriteSheet {
+  return { url: `/card-art/animation/sheets/${id}.png`, ...SHEET_META[id] };
 }
 
 // The highest HP with its own icon (misc/hp/1.png … 4.png).

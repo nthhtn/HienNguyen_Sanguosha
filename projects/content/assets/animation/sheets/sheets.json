@@ -1,0 +1,79 @@
+{
+  "slash": {
+    "frames": 24,
+    "cols": 6,
+    "rows": 4,
+    "width": 188,
+    "height": 184,
+    "lead": 3,
+    "burstEnd": 13,
+    "pop": true,
+    "peak": 4
+  },
+  "slash-fire": {
+    "frames": 24,
+    "cols": 6,
+    "rows": 4,
+    "width": 188,
+    "height": 184,
+    "lead": 2,
+    "burstEnd": 13,
+    "pop": true,
+    "peak": 4
+  },
+  "slash-lightning": {
+    "frames": 24,
+    "cols": 6,
+    "rows": 4,
+    "width": 188,
+    "height": 184,
+    "lead": 3,
+    "burstEnd": 13,
+    "pop": true,
+    "peak": 4
+  },
+  "damage": {
+    "frames": 6,
+    "cols": 6,
+    "rows": 1,
+    "width": 172,
+    "height": 170,
+    "lead": 1,
+    "burstEnd": 3,
+    "pop": true,
+    "peak": 4
+  },
+  "fire": {
+    "frames": 24,
+    "cols": 6,
+    "rows": 4,
+    "width": 188,
+    "height": 184,
+    "lead": 1,
+    "burstEnd": 13,
+    "pop": true,
+    "peak": 7
+  },
+  "lightning": {
+    "frames": 24,
+    "cols": 6,
+    "rows": 4,
+    "width": 188,
+    "height": 184,
+    "lead": 2,
+    "burstEnd": 13,
+    "pop": true,
+    "peak": 6
+  },
+  "chain": {
+    "frames": 11,
+    "cols": 6,
+    "rows": 2,
+    "width": 202,
+    "height": 180,
+    "lead": 1,
+    "burstEnd": 6,
+    "pop": true,
+    "peak": 5
+  }
+}

@@ -1,5 +1,5 @@
 import { EngineEvent } from 'engine';
-import { damageEffectsFor } from './damage-effects';
+import { chainEffectsFor, damageEffectsFor } from './damage-effects';
 
 const hit = (seatId: string, nature: 'normal' | 'fire' | 'thunder', as?: string): EngineEvent =>
   ({ kind: 'DamageDealtEvent', damage: { source: null, target: { kind: 'seat', seatId }, amount: 1, nature, ...(as ? { cause: { card: { as } } } : {}) } }) as never;
@@ -67,5 +67,20 @@ describe('damageEffectsFor', () => {
 
   it('gives each damage event its own effect, in order', () => {
     expect(damageEffectsFor([hit('a', 'fire'), hit('b', 'fire')]).map((e) => e.seatId)).toEqual(['a', 'b']);
+  });
+});
+
+describe('chainEffectsFor', () => {
+  const toggled = (seatId: string, chained: boolean): EngineEvent => ({ kind: 'ChainToggledEvent', seatId, chained });
+
+  it('shows the chain on each seat that turned chained, in order', () => {
+    expect(chainEffectsFor([toggled('a', true), toggled('b', true)])).toEqual([
+      { seatId: 'a', image: 'chain' },
+      { seatId: 'b', image: 'chain' },
+    ]);
+  });
+
+  it('shows nothing for a seat that turned unchained, or for other events', () => {
+    expect(chainEffectsFor([toggled('a', false), hit('b', 'fire')])).toEqual([]);
   });
 });

@@ -23,6 +23,13 @@ describe('soundsFor', () => {
     expect(soundsFor([moved('crossbow', 'discard'), moved('crossbow', 'seat-0:hand')])).toEqual([]);
   });
 
+  it('sounds the chain once when seats turn chained, and nothing when one turns unchained', () => {
+    const toggled = (seatId: string, chained: boolean): EngineEvent => ({ kind: 'ChainToggledEvent', seatId, chained });
+    expect(soundsFor([toggled('a', true)])).toEqual(['chained']);
+    expect(soundsFor([toggled('a', true), toggled('b', true)])).toEqual(['chained']);
+    expect(soundsFor([toggled('a', false)])).toEqual([]);
+  });
+
   it('injures on damage and on plain HP loss, and heals on recovery', () => {
     expect(soundsFor([{ kind: 'DamageDealtEvent', damage: {} } as never, { kind: 'HpLostEvent', seatId: 's', amount: 1 }])).toEqual(['injure']);
     expect(soundsFor([{ kind: 'HealEvent', target: { kind: 'seat', seatId: 's' }, amount: 1 }])).toEqual(['heal']);

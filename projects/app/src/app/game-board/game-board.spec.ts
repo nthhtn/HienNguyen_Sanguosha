@@ -11,6 +11,7 @@ import { AskDialog } from './ask-dialog';
 import { JudgmentDialog } from './judgment-dialog';
 import { askToChange, settleJudgment } from '../settled-judgment.testing';
 import { cardIdDisplayName } from '../labels';
+import { spriteDurationMs } from './sprite-plan';
 import { GameBoard } from './game-board';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
@@ -767,15 +768,30 @@ describe('GameBoard event sounds', () => {
     expect(effects()).toEqual([EFFECT_URLS['injure-hard']]);
   });
 
-  it('keeps the hit picture of the damaged seat for 3 seconds, then drops it, without waiting', () => {
+  it('keeps the hit animation of the damaged seat for as long as it plays, then drops it, without waiting', () => {
     jest.useFakeTimers();
     try {
       const shown = () => (fixture.componentInstance as unknown as { damageEffects(): Record<string, { image: string }> }).damageEffects();
       logEvent({ kind: 'DamageDealtEvent', damage: { target: { kind: 'seat', seatId: 'seat-0' }, amount: 1, nature: 'fire', cause: { card: { as: 'blaze' } } } } as never);
       expect(shown()['seat-0'].image).toBe('fire');
-      jest.advanceTimersByTime(2999);
+      jest.advanceTimersByTime(spriteDurationMs('fire') - 1);
       expect(shown()['seat-0']).toBeDefined();
       jest.advanceTimersByTime(1);
+      expect(shown()['seat-0']).toBeUndefined();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('plays the chain animation on a seat that turns chained, and nothing when it is unchained', () => {
+    jest.useFakeTimers();
+    try {
+      const shown = () => (fixture.componentInstance as unknown as { damageEffects(): Record<string, { image: string }> }).damageEffects();
+      logEvent({ kind: 'ChainToggledEvent', seatId: 'seat-0', chained: false } as never);
+      expect(shown()['seat-0']).toBeUndefined();
+      logEvent({ kind: 'ChainToggledEvent', seatId: 'seat-0', chained: true } as never);
+      expect(shown()['seat-0'].image).toBe('chain');
+      jest.advanceTimersByTime(spriteDurationMs('chain'));
       expect(shown()['seat-0']).toBeUndefined();
     } finally {
       jest.useRealTimers();
