@@ -2,21 +2,9 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, GeneralDefinition, Kingdom } from 'engine';
+import { MatDialog } from '@angular/material/dialog';
 import { GeneralSelection } from './general-selection';
-
-// Every Kingdom Wars skill is registered after slice 4, so the registry has no General left that reads "not in the game yet":
-// this one is pretended, to test how the UI shows the flag.
-jest.mock('content', () => {
-  const actual = jest.requireActual('content');
-  return {
-    ...actual,
-    generalDisplayData: (id: string, locale?: string) => {
-      const data = actual.generalDisplayData(id, locale);
-      return id === 'kingdomWars:guan-yu' && data ? { ...data, skills: data.skills.map((s: object) => ({ ...s, inGame: false })) } : data;
-    },
-  };
-});
-
+import { GeneralInfoDialog } from './general-info-dialog';
 
 function general(id: string, kingdom: Kingdom, maxHp: number): [string, GeneralDefinition] {
   return [id, { id, kingdom, maxHp, skills: [] }];
@@ -157,21 +145,41 @@ describe('GeneralSelection header', () => {
   });
 });
 
-describe('GeneralSelection Kingdom Wars skills', () => {
-  const hints = (ids: string[]): string[] => {
-    const reg: ContentRegistry = { cards: new Map(), generals: new Map(ids.map((id) => general(id, 'Shu', 4))) };
+describe('GeneralSelection layout and info', () => {
+  const render = (ids: string[]) => {
+    const reg: ContentRegistry = { cards: new Map(), generals: new Map(ids.map((id) => general(id, 'Wei', 4))) };
     TestBed.configureTestingModule({ imports: [GeneralSelection] });
     const fixture = TestBed.createComponent(GeneralSelection);
     fixture.componentRef.setInput('candidates', ids);
-    fixture.componentRef.setInput('actions', []);
+    fixture.componentRef.setInput('actions', [pair(ids[0], ids[1])]);
     fixture.componentRef.setInput('registry', reg);
     fixture.detectChanges();
-    return [...(fixture.nativeElement as HTMLElement).querySelectorAll('.not-in-game-hint')].map((e) => e.textContent!.trim());
+    return fixture;
   };
+  const rowSizes = (f: ComponentFixture<GeneralSelection>) =>
+    [...(f.nativeElement as HTMLElement).querySelectorAll('.row')].map((r) => r.querySelectorAll('[data-general-id]').length);
 
-  it('flags a skill the game does not play yet, and not a ready or Identity one', () => {
-    expect(hints(['kingdomWars:guan-yu'])).toEqual(['Not in the game yet']);
-    TestBed.resetTestingModule();
-    expect(hints(['kingdomWars:zhang-fei', 'guan-yu'])).toEqual([]);
+  it('puts 5 Generals in one row', () => {
+    expect(rowSizes(render(['a', 'b', 'c', 'd', 'e']))).toEqual([5]);
+  });
+
+  it('puts 7 Generals in two rows, 4 on top and 3 below', () => {
+    expect(rowSizes(render(['a', 'b', 'c', 'd', 'e', 'f', 'g']))).toEqual([4, 3]);
+  });
+
+  it('shows the Force name on the card but not the skills', () => {
+    const el = render(['a', 'b', 'c', 'd', 'e']).nativeElement as HTMLElement;
+    expect(el.querySelector('[data-general-id="a"] .kingdom-tag')!.textContent).toContain('Wei');
+    expect(el.querySelector('.skills')).toBeNull();
+  });
+
+  it('opens the General info dialog from the info button without selecting the card', () => {
+    const fixture = render(['kingdomWars:zhang-fei', 'b', 'c', 'd', 'e']);
+    const el = fixture.nativeElement as HTMLElement;
+    const open = jest.spyOn(TestBed.inject(MatDialog), 'open');
+    (el.querySelector('[data-general-id="kingdomWars:zhang-fei"] button.info') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(open).toHaveBeenCalledWith(GeneralInfoDialog, expect.objectContaining({ data: { generalDefinitionId: 'kingdomWars:zhang-fei' } }));
+    expect(el.querySelector('.role-chip')).toBeNull();
   });
 });

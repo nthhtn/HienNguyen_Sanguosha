@@ -514,6 +514,7 @@ export const vi: Messages = {
   'select.mustShare': 'Phải cùng thế lực với lựa chọn đầu tiên',
   'select.hp': 'Sinh lực {n}',
   'select.pick': 'Chọn một Tướng',
+  'select.info': 'Thông tin Tướng',
   'select.swap': 'Đổi Chủ tướng và Phó tướng',
   'select.kingdom': 'Thế lực:',
   'select.combinedHp': '· Tổng Sinh lực: {hp}',

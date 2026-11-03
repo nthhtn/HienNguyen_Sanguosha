@@ -1,7 +1,7 @@
 import { Component, computed, input, output, signal, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, Kingdom, combinedMaxHp } from 'engine';
@@ -11,6 +11,7 @@ import { DecisionCountdown } from './decision-countdown';
 import { generalDisplayName, kingdomDisplayName } from '../labels';
 import { TPipe } from '../i18n/t.pipe';
 import { I18n } from '../i18n/i18n.service';
+import { GeneralInfoDialog, GeneralInfoDialogData } from './general-info-dialog';
 
 interface CandidateViewModel {
   id: string;
@@ -28,7 +29,7 @@ interface CandidateViewModel {
 // engine's getLegalActions); this component never compares kingdoms itself.
 @Component({
   selector: 'app-general-selection',
-  imports: [MatButtonModule, MatCardModule, MatChipsModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown, TPipe],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown, TPipe],
   template: `
     <header class="intro">
       <h2>{{ seatName() ? ('select.titleFor' | t: { name: seatName() }) : ('select.title' | t) }}</h2>
@@ -36,53 +37,50 @@ interface CandidateViewModel {
     </header>
 
     <div class="candidates">
-      @for (vm of candidateViewModels(); track vm.id) {
-        <mat-card
-          appearance="outlined"
-          class="candidate kingdom-{{ vm.kingdom }}"
-          role="button"
-          [attr.tabindex]="vm.enabled ? 0 : -1"
-          [attr.aria-disabled]="!vm.enabled"
-          [attr.aria-pressed]="vm.role !== null"
-          [attr.data-general-id]="vm.id"
-          [class.selected]="vm.role !== null"
-          [class.disabled]="!vm.enabled"
-          [matTooltip]="vm.disabledReason"
-          [matTooltipDisabled]="vm.enabled"
-          (click)="toggle(vm)"
-          (keydown.enter)="toggle(vm)"
-          (keydown.space)="toggle(vm); $event.preventDefault()"
-        >
-          <div class="art">
-            <app-card-art size="large" [skin]="true" [id]="vm.id" [label]="vm.name" />
-            @if (vm.role; as role) {
-              <span class="role-chip" [class.deputy]="role === 'Deputy'">{{ roleName(role) }}</span>
-            }
-          </div>
-          <mat-card-header>
-            <mat-card-title>{{ vm.name }}</mat-card-title>
-            @if (vm.display?.title; as title) {
-              <mat-card-subtitle>{{ title }}</mat-card-subtitle>
-            }
-          </mat-card-header>
-          <mat-card-content>
-            <div class="meta">
-              <span class="kingdom-tag">{{ kingdomName(vm.kingdom) }}</span>
-              <span class="hearts" [attr.aria-label]="'select.hp' | t: { n: vm.maxHp }">
-                @for (h of vm.hearts; track $index) {
-                  <mat-icon>favorite</mat-icon>
+      @for (row of rows(); track $index) {
+        <div class="row">
+          @for (vm of row; track vm.id) {
+            <mat-card
+              appearance="outlined"
+              class="candidate kingdom-{{ vm.kingdom }}"
+              role="button"
+              [attr.tabindex]="vm.enabled ? 0 : -1"
+              [attr.aria-disabled]="!vm.enabled"
+              [attr.aria-pressed]="vm.role !== null"
+              [attr.data-general-id]="vm.id"
+              [class.selected]="vm.role !== null"
+              [class.disabled]="!vm.enabled"
+              [matTooltip]="vm.disabledReason"
+              [matTooltipDisabled]="vm.enabled"
+              (click)="toggle(vm)"
+              (keydown.enter)="toggle(vm)"
+              (keydown.space)="toggle(vm); $event.preventDefault()"
+            >
+              <div class="art">
+                <app-card-art size="large" [skin]="true" [id]="vm.id" [label]="vm.name" />
+                <button mat-icon-button type="button" class="info" [attr.aria-label]="'select.info' | t"
+                        (click)="openInfo(vm, $event)" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+                  <mat-icon>info</mat-icon>
+                </button>
+                @if (vm.role; as role) {
+                  <span class="role-chip" [class.deputy]="role === 'Deputy'">{{ roleName(role) }}</span>
                 }
-              </span>
-              <span class="hp-label">{{ 'select.hp' | t: { n: vm.maxHp } }}</span>
-            </div>
-            <ul class="skills">
-              @for (skill of vm.display?.skills ?? []; track skill.name) {
-                <li [class.not-in-game]="skill.inGame === false"><strong>{{ skill.name }}</strong> {{ skill.text }}
-                  @if (skill.inGame === false) { <em class="not-in-game-hint">{{ 'wiki.notInGame' | t }}</em> }</li>
-              }
-            </ul>
-          </mat-card-content>
-        </mat-card>
+              </div>
+              <div class="caption">
+                <div class="name">{{ vm.name }}</div>
+                <div class="meta">
+                  <span class="kingdom-tag">{{ kingdomName(vm.kingdom) }}</span>
+                  <span class="hearts" [attr.aria-label]="'select.hp' | t: { n: vm.maxHp }">
+                    @for (h of vm.hearts; track $index) {
+                      <mat-icon>favorite</mat-icon>
+                    }
+                  </span>
+                  <span class="hp-label">{{ 'select.hp' | t: { n: vm.maxHp } }}</span>
+                </div>
+              </div>
+            </mat-card>
+          }
+        </div>
       }
     </div>
 
@@ -123,33 +121,39 @@ interface CandidateViewModel {
     .intro { flex: none; }
     .intro h2 { margin: 8px 0 0; font: var(--mat-sys-headline-small); }
     .hint { color: var(--mat-sys-on-surface-variant); margin: 4px 0 8px; }
-    .step { font: var(--mat-sys-label-large); }
-    mat-chip.current { outline: 2px solid var(--mat-sys-primary); }
-    mat-chip.done { opacity: 0.7; }
+    /* Candidates are always 5 (one row) or 7 (4 + 3), centred; the cards fill
+       the height left between the header and the bottom bar. */
     .candidates {
+      --caption-height: 76px;
       flex: 1; min-height: 0;
-      display: flex; align-items: stretch; gap: 16px;
-      overflow-x: auto; overflow-y: hidden;
-      /* Room for the hover lift and the selected ring. */
+      display: flex; flex-direction: column; justify-content: center; gap: 16px;
       margin: 8px 0; padding: 8px 4px;
     }
+    .row { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 16px; container-type: size; }
     .candidate {
-      flex: 0 0 240px;
-      max-height: 100%;
+      /* The card wraps the artwork: art is never bigger than its 200 x 290, and only shrinks when the row is
+         too short (6px is the Force border). The height follows from the art plus the caption. */
+      width: min(200px, calc((100cqh - var(--caption-height) - 6px) * 200 / 290)); flex: none;
       box-sizing: border-box;
+      display: flex; flex-direction: column;
       cursor: pointer;
-      overflow-x: hidden; overflow-y: auto;
+      overflow: hidden;
       border-top: 6px solid var(--kingdom);
       transition: transform 150ms, box-shadow 150ms, opacity 150ms;
     }
     .candidate:hover:not(.disabled) { transform: translateY(-3px); box-shadow: var(--mat-sys-level3); }
     .candidate.selected { transform: translateY(-4px); box-shadow: 0 0 0 3px var(--kingdom), var(--mat-sys-level4); }
     .candidate.disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.6); }
+    .candidate.disabled .info { pointer-events: auto; }
     .kingdom-Wei { --kingdom: #3f6fd8; }
     .kingdom-Shu { --kingdom: #d84a3f; }
     .kingdom-Wu { --kingdom: #2f9e58; }
     .kingdom-Qun { --kingdom: #8a7f8c; }
-    .art { position: relative; background: #1d1b20; display: flex; justify-content: center; }
+    .art { position: relative; aspect-ratio: 200 / 290; background: #1d1b20; }
+    .art app-card-art { display: block; width: 100%; height: 100%; }
+    /* .large is needed to outrank CardArt's own fixed 160 x 220 size. */
+    .art ::ng-deep .card-art.large { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .info { position: absolute; top: 2px; left: 2px; color: #fff; background: rgba(0, 0, 0, 0.55); --mdc-icon-button-state-layer-size: 32px; width: 32px; height: 32px; padding: 4px; }
     .role-chip {
       position: absolute; top: 8px; right: 8px;
       padding: 2px 10px; border-radius: 12px;
@@ -158,16 +162,14 @@ interface CandidateViewModel {
     }
     /* Main and Deputy differ by style, not colour: no kingdom's hue. */
     .role-chip.deputy { background: var(--mat-sys-surface); color: var(--mat-sys-primary); box-shadow: inset 0 0 0 2px var(--mat-sys-primary); }
-    mat-card-header { padding-top: 12px; }
-    .meta { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+    .caption { flex: none; box-sizing: border-box; height: var(--caption-height); padding: 6px 4px; text-align: center; overflow: hidden; }
+    .name { font: var(--mat-sys-title-medium); }
+    .meta { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px; }
     .force-name { color: var(--force-text); font-weight: 600; }
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
     .hearts { display: inline-flex; color: #d84a3f; }
-    .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    .hearts mat-icon { font-size: 14px; width: 14px; height: 14px; }
     .hp-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-    .skills { padding-left: 1.1em; margin: 4px 0 0; font: var(--mat-sys-body-small); }
-    .skills li { margin-bottom: 4px; }
-    .skills li.not-in-game { opacity: 0.6; }
     .bar {
       flex: none;
       display: flex; flex-direction: row; align-items: center; gap: 16px; flex-wrap: wrap;
@@ -195,6 +197,7 @@ export class GeneralSelection {
   readonly chosen = output<ChooseGeneralsAction>();
 
   private readonly i18n = inject(I18n);
+  private readonly dialog = inject(MatDialog);
 
   // UI-only state: the player's picks in order, [main, deputy].
   protected readonly selected = signal<string[]>([]);
@@ -223,6 +226,22 @@ export class GeneralSelection {
       };
     });
   });
+
+  // Always 5 or 7 candidates: one row, or two with the extra card on top (4 + 3).
+  protected readonly rows = computed<CandidateViewModel[][]>(() => {
+    const all = this.candidateViewModels();
+    if (all.length <= 5) return [all];
+    const top = Math.ceil(all.length / 2);
+    return [all.slice(0, top), all.slice(top)];
+  });
+
+  protected openInfo(vm: CandidateViewModel, event: Event): void {
+    event.stopPropagation();
+    this.dialog.open<GeneralInfoDialog, GeneralInfoDialogData>(GeneralInfoDialog, {
+      data: { generalDefinitionId: vm.id },
+      width: 'min(92vw, 520px)',
+    });
+  }
 
   // What the chip says; the role values themselves ('Main', 'Deputy') stay the logic's.
   protected roleName(role: 'Main' | 'Deputy'): string {
