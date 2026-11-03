@@ -83,7 +83,7 @@ describe('SeatTile in Vietnamese', () => {
 
   it('status lines, badges, the under-General piles and a chosen Form', () => {
     expect(text(render(makeSeat({ eliminated: true })).el.querySelector('.status'))).toBe('Trận vong');
-    expect(text(render(makeSeat({ combinedHp: 0 })).el.querySelector('.status.dying'))).toBe('Cận kề cái chết…');
+    expect(text(render(makeSeat({ combinedHp: 0 })).el.querySelector('.status.dying'))).toBe('Hấp hối…');
     expect(text(render(makeSeat(), { isResponding: true }).el.querySelector('.status'))).toBe('Đang phản hồi…');
     expect(text(render(makeSeat({ generals: null as never })).el.querySelector('.choosing'))).toBe('Đang chọn Tướng…');
     expect(text(render(makeSeat({ faceDown: true })).el.querySelector('.face-down-badge'))).toBe('Úp');
