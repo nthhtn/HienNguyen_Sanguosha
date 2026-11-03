@@ -1,4 +1,5 @@
-import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { Component, DestroyRef, HostListener, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +11,9 @@ import { Action, CardInstance, ChooseGeneralsAction, Seat, describeDecision, dis
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { finalSeatViews } from 'protocol';
 import { GameService } from '../game.service';
+import { Layout } from '../layout.service';
+import { BoardPanel } from './board-panel';
+import { RotatePrompt } from './rotate-prompt';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { RoundTable } from './round-table';
@@ -59,7 +63,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
   selector: 'app-game-board',
   // The board's own playback: it lives as long as the board does, and reads the board's GameService (online, the remote one).
   providers: [PlaybackDirector],
-  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, RotatePrompt, CdkTrapFocus, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -165,9 +169,27 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                   />
                 </section>
                 <!-- Bottom right: the action history, then the discard pile; same height. -->
-                <app-action-history class="history" [history]="actionHistory()" />
-                <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                @if (layout.wide()) {
+                  <app-action-history class="history" [history]="actionHistory()" />
+                  <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                } @else {
+                  <!-- Phone layout: the two tiles' full lists live in a panel that slides over the table. -->
+                  <button type="button" mat-icon-button class="panel-toggle" [attr.aria-label]="'board.panel.open' | t" [attr.aria-expanded]="layout.panelOpen()" (click)="layout.togglePanel()">
+                    <mat-icon>history</mat-icon>
+                  </button>
+                }
               </div>
+              @if (!layout.wide()) {
+                @if (layout.panelOpen()) {
+                  <div class="panel-scrim" role="presentation" (click)="layout.closePanel()"></div>
+                  <aside class="panel" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+                    <app-board-panel [actionHistory]="actionHistory()" [discardHistory]="discardHistory()" />
+                  </aside>
+                }
+                @if (layout.portrait()) {
+                  <app-rotate-prompt />
+                }
+              }
             </div>
           }
         }
@@ -224,20 +246,18 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     .history { grid-area: history; }
     .discard { grid-area: discard; }
     .history, .discard { box-sizing: border-box; width: 140px; min-height: 0; overflow: hidden; justify-content: center; }
-    /* Phone-sized: stack, and let the page scroll. */
-    @media (max-width: 767px) {
-      :host:has(.board) { height: auto; }
-      .board-grid {
-        --bottom-height: auto;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-rows: 70vh auto auto auto;
-        grid-template-areas: 'battlefield battlefield' 'seat seat' 'hand hand' 'history discard';
-      }
-      .your-seat { justify-self: center; height: auto; }
-      .your-seat app-seat-tile { height: auto; }
-      .your-hand { flex-direction: column; }
-      .actions { max-width: none; }
-      .history, .discard { width: auto; }
+    /* Phone layout (layout.service.ts): the history tiles give way to a button for the panel, so the bottom row is
+       your seat, your hand and that button. */
+    :host-context([data-layout='phone']) .board-grid {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: 'battlefield battlefield battlefield' 'seat hand history';
+    }
+    .panel-toggle { grid-area: history; align-self: center; width: 48px; height: 48px; }
+    .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
+    .panel {
+      position: fixed; top: var(--mat-toolbar-standard-height, 44px); right: 0; bottom: 0; z-index: 16;
+      box-sizing: border-box; width: min(42vw, 360px); padding-right: env(safe-area-inset-right, 0px); overflow-y: auto;
+      background: var(--mat-sys-surface-container); color: var(--mat-sys-on-surface); box-shadow: -4px 0 16px rgb(0 0 0 / 0.3);
     }
   `,
 })
@@ -252,6 +272,9 @@ export class GameBoard {
   private readonly dock = inject(DecisionDock);
   private readonly injector = inject(Injector);
   protected readonly director = inject(PlaybackDirector);
+  protected readonly layout = inject(Layout);
+  // Leaving the board never leaves its panel open for the next one.
+  private readonly closePanelOnLeave = inject(DestroyRef).onDestroy(() => this.layout.closePanel());
   // What the viewer may do: nothing while playback is busy, so a card still flying can never be
   // clicked and no decision opens before the board has shown what led to it.
   protected readonly legalActions = computed(() => (this.director.idle() ? this.gameService.legalActions() : []));
@@ -848,6 +871,11 @@ export class GameBoard {
 
   dismissError(): void {
     this.gameService.clearError();
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    this.layout.closePanel();
   }
 
   goToSetup(): void {

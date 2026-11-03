@@ -1,6 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
-import { Component, computed, effect, inject, untracked } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -111,6 +111,11 @@ export class App {
     });
     this.music.start();
     void this.auth.load();
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    this.layout.closeNav();
   }
 
   protected async signOut(): Promise<void> {

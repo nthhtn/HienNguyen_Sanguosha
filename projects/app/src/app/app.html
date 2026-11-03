@@ -112,8 +112,8 @@
   </button>
 </ng-template>
 @if (!layout.wide() && layout.navOpen()) {
-  <div class="nav-scrim" (click)="layout.closeNav()"></div>
-  <nav class="nav-drawer" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" [attr.aria-label]="'nav.menu' | t" (keydown.escape)="layout.closeNav()">
+  <div class="nav-scrim" role="presentation" (click)="layout.closeNav()"></div>
+  <nav class="nav-drawer" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" [attr.aria-label]="'nav.menu' | t">
     @if (flags.playOffline) {
       <a class="drawer-link" routerLink="/play" [class.active]="playActive()" [attr.aria-current]="playActive() ? 'page' : null"><mat-icon>play_arrow</mat-icon>{{ 'nav.play' | t }}</a>
     }
