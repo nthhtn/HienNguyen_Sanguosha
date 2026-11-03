@@ -36,11 +36,11 @@ import { SceneFrame } from './scene/scene-frame';
           <div class="branch">
             <div>
               <h5>{{ 'rules.judgment.safeHeart' | t }}</h5>
-              <span class="pill ok">9 ♥</span> {{ 'rules.judgment.nothing' | t }}
+              <span class="pill face red">9 ♥</span> {{ 'rules.judgment.nothing' | t }}
             </div>
             <div>
               <h5>{{ 'rules.judgment.anythingElse' | t }}</h5>
-              <span class="pill bad">K ♠</span> {{ 'rules.judgment.skipPlay' | t }}
+              <span class="pill face">K ♠</span> {{ 'rules.judgment.skipPlay' | t }}
             </div>
           </div>
         </div>
@@ -55,11 +55,11 @@ import { SceneFrame } from './scene/scene-frame';
           <div class="branch">
             <div>
               <h5>{{ 'rules.judgment.safeClub' | t }}</h5>
-              <span class="pill ok">4 ♣</span> {{ 'rules.judgment.nothing' | t }}
+              <span class="pill face">4 ♣</span> {{ 'rules.judgment.nothing' | t }}
             </div>
             <div>
               <h5>{{ 'rules.judgment.anythingElse' | t }}</h5>
-              <span class="pill bad">Q ♦</span> {{ 'rules.judgment.skipDraw' | t }}
+              <span class="pill face red">Q ♦</span> {{ 'rules.judgment.skipDraw' | t }}
             </div>
           </div>
         </div>
@@ -74,11 +74,11 @@ import { SceneFrame } from './scene/scene-frame';
           <div class="branch">
             <div>
               <h5>{{ 'rules.judgment.hitSpade' | t }}</h5>
-              <span class="pill bad">5 ♠</span> {{ 'rules.judgment.damage3' | t }}
+              <span class="pill face">5 ♠</span> {{ 'rules.judgment.damage3' | t }}
             </div>
             <div>
               <h5>{{ 'rules.judgment.anythingElse' | t }}</h5>
-              <span class="pill ok">J ♠</span> {{ 'rules.judgment.passes' | t }}
+              <span class="pill face">J ♠</span> {{ 'rules.judgment.passes' | t }}
             </div>
           </div>
         </div>
@@ -90,6 +90,9 @@ import { SceneFrame } from './scene/scene-frame';
     .rule { flex: 1 1 260px; min-width: 0; }
     h4 { margin: 0 0 4px; font: var(--mat-sys-title-medium); }
     .rule p { margin: 0 0 8px; }
+    /* A suit and rank are coloured as on a playing card (see playing-card.ts): hearts and diamonds red, spades and clubs black. */
+    .pill.face { color: var(--mat-sys-on-surface); font-size: 0.9rem; }
+    .pill.face.red { color: #c62828; }
   `,
 })
 export class RulesJudgment {}

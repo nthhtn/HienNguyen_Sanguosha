@@ -237,6 +237,14 @@ describe('the rules pages in Vietnamese', () => {
     }
   });
 
+  it('judgment: each suit and rank is coloured as on a playing card, hearts and diamonds red, spades and clubs black', async () => {
+    const { el } = await open('judgment');
+    const faces = [...el.querySelectorAll('.pill.face')];
+    expect(faces.map(text)).toEqual(['9 ♥', 'K ♠', '4 ♣', 'Q ♦', '5 ♠', 'J ♠']);
+    for (const face of faces) expect([text(face), face.classList.contains('red')]).toEqual([text(face), /[♥♦]/.test(text(face))]);
+    expect(el.querySelectorAll('.pill.ok, .pill.bad').length).toBe(0);
+  });
+
   it('judgment: the four steps are ordered, and the missing example is said to be missing', async () => {
     const { el } = await open('judgment');
     expect(el.querySelectorAll('ol.steps > li').length).toBe(4);
