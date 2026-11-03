@@ -1,4 +1,5 @@
-import { CardInstance, CardZone, EngineEvent, UsedCard } from '../domain/types';
+import { CardInstance, CardZone, UsedCard } from '../domain/types';
+import { EngineEvent } from '../pipeline/events';
 import { BATCH_GAP_MS, SLOW_PLAYBACK_FACTOR, batchPlaybackMs, beatDurationMs } from './playbackTiming';
 
 const zoneKindOf = (kinds: Record<string, CardZone['kind']> = {}) => (zoneId: string) => kinds[zoneId];
