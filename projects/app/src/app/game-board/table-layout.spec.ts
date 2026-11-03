@@ -73,6 +73,28 @@ describe('fitTable', () => {
     });
   };
 
+  describe('with a compact centre (phones)', () => {
+    const compact = { centreMinWidth: 200, centreMinHeight: 70 };
+
+    it.each([3, 4, 5])('gives %i seats larger tiles than the full centre does on a short table', (n) => {
+      expect(fitTable(852, 173, n, compact).scale).toBeGreaterThan(fitTable(852, 173, n).scale);
+    });
+
+    it.each([6, 7, 8])('never gives %i seats smaller tiles than the full centre does', (n) => {
+      expect(fitTable(852, 173, n, compact).scale).toBeGreaterThanOrEqual(fitTable(852, 173, n).scale);
+    });
+
+    it('still leaves the centre the room it asked for', () => {
+      const fit = fitTable(852, 173, 4, compact);
+      expect(fit.centreWidth).toBeGreaterThanOrEqual(compact.centreMinWidth);
+      expect(fit.centreHeight).toBeGreaterThanOrEqual(compact.centreMinHeight);
+    });
+
+    it('is the same as the default when given the default room', () => {
+      expect(fitTable(1366, 500, 5, { centreMinWidth: 240, centreMinHeight: 130 })).toEqual(fitTable(1366, 500, 5));
+    });
+  });
+
   it('keeps tiles full size on a table with room to spare', () => {
     expect(fitTable(2400, 1400, 4).scale).toBe(1);
   });

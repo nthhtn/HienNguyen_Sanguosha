@@ -13,7 +13,10 @@ import { PlaybackLayer } from './playback/playback-layer';
 import { CardArt } from './card-art';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { BattlefieldBackgrounds, battlefieldBackgroundCss } from '../battlefield-background.service';
-import { fitTable, seatPlacements } from './table-layout';
+import { Layout } from '../layout.service';
+import { CentreRoom, fitTable, seatPlacements } from './table-layout';
+
+const PHONE_CENTRE: CentreRoom = { centreMinWidth: 200, centreMinHeight: 70 };
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 
@@ -163,7 +166,9 @@ export class RoundTable {
 
   // The battlefield's measured size, in px.
   private readonly size = signal(DEFAULT_SIZE);
-  protected readonly fit = computed(() => fitTable(this.size().width, this.size().height, this.state().seats.length));
+  private readonly layout = inject(Layout);
+  // A phone on its side can spare the centre less room, so the seats stay big enough to read.
+  protected readonly fit = computed(() => fitTable(this.size().width, this.size().height, this.state().seats.length, this.layout.wide() ? undefined : PHONE_CENTRE));
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId(), this.fit()).filter((p) => !p.isViewer));
 
   // The latest action sequence, oldest first, in the action history's wording.

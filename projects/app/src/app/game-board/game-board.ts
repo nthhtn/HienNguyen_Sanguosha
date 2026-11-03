@@ -252,6 +252,22 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
       grid-template-columns: auto minmax(0, 1fr) auto;
       grid-template-areas: 'battlefield battlefield battlefield' 'seat hand history';
     }
+    /* Short screens (a phone on its side): one screen, no scrolling. The table gets what the slim bottom row and the
+       phase bar leave; seats come first, then the hand row, then the rest. */
+    :host-context([data-layout='phone']) .board-grid { --bottom-height: 124px; gap: 4px; }
+    :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.46; }
+    :host-context([data-layout='phone']) .your-hand { gap: 8px; padding: 4px 6px; }
+    :host-context([data-layout='phone']) .your-hand h3 { display: none; }
+    :host-context([data-layout='phone']) .actions {
+      --mat-button-filled-container-height: 44px; --mat-button-outlined-container-height: 44px;
+      --mat-button-text-container-height: 44px; --mat-button-tonal-container-height: 44px;
+      display: block; max-width: 140px;
+    }
+    /* More height (an unfolded Fold, a tablet-sized window under 900 px wide): a roomier bottom row. */
+    @media (min-height: 480px) {
+      :host-context([data-layout='phone']) .board-grid { --bottom-height: 170px; }
+      :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.62; }
+    }
     .panel-toggle { grid-area: history; align-self: center; width: 48px; height: 48px; }
     .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
     .panel {

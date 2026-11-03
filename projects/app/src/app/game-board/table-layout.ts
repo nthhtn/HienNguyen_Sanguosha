@@ -18,6 +18,13 @@ const BORDER_PAD_Y = 14;
 // cards and a couple of lines, in px.
 const CENTRE_MIN_WIDTH = 240;
 const CENTRE_MIN_HEIGHT = 130;
+
+// The centre's least room, when the caller can spare less than the default (a phone on its side).
+export interface CentreRoom {
+  centreMinWidth: number;
+  centreMinHeight: number;
+}
+const DEFAULT_CENTRE: CentreRoom = { centreMinWidth: CENTRE_MIN_WIDTH, centreMinHeight: CENTRE_MIN_HEIGHT };
 // Scales tried, largest first.
 const SCALE_STEP = 0.01;
 const MIN_SCALE = 0.25;
@@ -41,11 +48,11 @@ interface Box { left: number; right: number; top: number; bottom: number }
 // it takes no room here. Sizes the other seat tiles to a table of `width` x `height` px: the largest
 // scale at which every tile stays inside the table, no two tiles overlap, and
 // the centre keeps room for the current action sequence.
-export function fitTable(width: number, height: number, seatCount: number): TableFit {
+export function fitTable(width: number, height: number, seatCount: number, room: CentreRoom = DEFAULT_CENTRE): TableFit {
   const seats = Array.from({ length: seatCount }, (_, index) => ({ id: String(index), index }));
-  let fit = layoutAt(MIN_SCALE, width, height, seats);
+  let fit = layoutAt(MIN_SCALE, width, height, seats, room);
   for (let scale = 1; scale > MIN_SCALE; scale -= SCALE_STEP) {
-    const candidate = layoutAt(scale, width, height, seats);
+    const candidate = layoutAt(scale, width, height, seats, room);
     if (candidate.fits) {
       fit = candidate;
       break;
@@ -54,7 +61,7 @@ export function fitTable(width: number, height: number, seatCount: number): Tabl
   return { scale: fit.scale, radiusX: fit.radiusX, radiusY: fit.radiusY, centreWidth: fit.centreWidth, centreHeight: fit.centreHeight, centreY: fit.centreY };
 }
 
-function layoutAt(scale: number, width: number, height: number, seats: { id: string; index: number }[]): TableFit & { fits: boolean } {
+function layoutAt(scale: number, width: number, height: number, seats: { id: string; index: number }[], room: CentreRoom): TableFit & { fits: boolean } {
   const tileW = TILE_WIDTH * scale;
   const tileH = TILE_HEIGHT * scale;
   const radiusX = 50 - ((tileW / 2 + BORDER_PAD_X) / width) * 100;
@@ -68,7 +75,7 @@ function layoutAt(scale: number, width: number, height: number, seats: { id: str
   const cy = height / 2;
   // The tiles in the middle column. One that starts below the middle limits the
   // centre from below, any other from above.
-  const column = boxes.filter((b) => b.right > cx - CENTRE_MIN_WIDTH / 2 && b.left < cx + CENTRE_MIN_WIDTH / 2);
+  const column = boxes.filter((b) => b.right > cx - room.centreMinWidth / 2 && b.left < cx + room.centreMinWidth / 2);
   // How wide a centre spanning y from `top` to `bottom` can be: up to the nearest tile beside it.
   const widthBetween = (top: number, bottom: number) => {
     const band = boxes.filter((b) => b.bottom > top && b.top < bottom);
@@ -85,7 +92,7 @@ function layoutAt(scale: number, width: number, height: number, seats: { id: str
     { top: cy - halfH, bottom: cy + halfH },
     { top: freeTop, bottom: freeBottom },
   ].map((c) => ({ ...c, w: widthBetween(c.top, c.bottom), h: Math.max(0, c.bottom - c.top) }));
-  const roomy = candidates.filter((c) => c.w >= CENTRE_MIN_WIDTH && c.h >= CENTRE_MIN_HEIGHT);
+  const roomy = candidates.filter((c) => c.w >= room.centreMinWidth && c.h >= room.centreMinHeight);
   const best = (roomy.length > 0 ? roomy : candidates).reduce((a, c) => (c.w * c.h > a.w * a.h ? c : a));
   const meet = (a: Box, b: Box) => a.left < b.right + EDGE_GAP && b.left < a.right + EDGE_GAP && a.top < b.bottom + EDGE_GAP && b.top < a.bottom + EDGE_GAP;
   const overlaps = boxes.some((a, i) => boxes.some((b, j) => j > i && meet(a, b)));
