@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { cardDisplayData, wikiDistanceTable, wikiDistanceWeapons } from 'content';
@@ -190,5 +192,13 @@ describe('DistanceDemo', () => {
     await TestBed.inject(I18n).setLocale('vi');
     fixture.detectChanges();
     expect(options()).toEqual(['Không có Vũ khí (tầm 1)', ...weapons.map((w) => `${cardDisplayData(w.id, 'vi')!.name} (tầm ${w.range})`)]);
+  });
+});
+
+describe('DistanceDemo and the rules', () => {
+  it('holds no rule: it reads every distance, range and reach from the game', () => {
+    const source = readFileSync(join(__dirname, 'distance-demo.ts'), 'utf8');
+    expect(source).not.toMatch(/\b(seatDistance|getSeatDistance|attackRange|shaTargetIds)\b/);
+    expect(source).toMatch(/\bwikiDistanceTable\b/);
   });
 });
