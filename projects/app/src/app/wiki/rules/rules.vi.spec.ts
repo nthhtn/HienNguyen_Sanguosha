@@ -221,9 +221,20 @@ describe('the rules pages in Vietnamese', () => {
     expect(text(el)).not.toMatch(/theo chiều kim đồng hồ/);
   });
 
-  it('judgment: the card names in the table headings', async () => {
+  it('judgment: one scene per Delayed Tool, with its card and two outcomes', async () => {
     const { el } = await open('judgment');
-    expect([...el.querySelectorAll('th')].map(text)).toEqual(['Lạc Bất Tư Thục', 'Binh Lương Thốn Đoạn', 'Thiểm Điện']);
+    const scenes = [...el.querySelectorAll('app-scene')];
+    expect(scenes.map((scene) => text(scene.querySelector('h4')!))).toEqual(['Lạc Bất Tư Thục', 'Binh Lương Thốn Đoạn', 'Thiểm Điện']);
+    for (const scene of scenes) {
+      expect(scene.querySelectorAll('img.scene-card').length).toBe(1);
+      expect(scene.querySelectorAll('.branch > div').length).toBe(2);
+    }
+  });
+
+  it('judgment: the four steps are ordered, and the missing example is said to be missing', async () => {
+    const { el } = await open('judgment');
+    expect(el.querySelectorAll('ol.steps > li').length).toBe(4);
+    expect(text(el.querySelector('.note-pending')!)).toBe('Chưa viết: một ví dụ về kỹ năng của Tướng đổi phán xét.');
   });
 
   it('no English card name is left on any rules page', async () => {
