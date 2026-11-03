@@ -245,6 +245,7 @@ describe('App', () => {
       ['Damage and Dying', '/wiki/rules/damage'],
       ['Judgment', '/wiki/rules/judgment'],
       ['Chains', '/wiki/rules/chains'],
+      ['Glossary', '/wiki/rules/glossary'],
     ]);
     await TestBed.inject(Router).navigateByUrl('/wiki/rules/turn');
     fixture.detectChanges();

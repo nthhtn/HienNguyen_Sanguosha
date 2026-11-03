@@ -64,6 +64,7 @@ export class App {
     { path: '/wiki/rules/damage', label: 'nav.rules.damage' },
     { path: '/wiki/rules/judgment', label: 'nav.rules.judgment' },
     { path: '/wiki/rules/chains', label: 'nav.rules.chains' },
+    { path: '/wiki/rules/glossary', label: 'nav.rules.glossary' },
   ];
 
   protected readonly backgrounds = inject(BattlefieldBackgrounds);

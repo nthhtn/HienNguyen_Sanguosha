@@ -69,7 +69,7 @@ describe('App shell in Vietnamese', () => {
     (el.querySelector('nav.nav button.nav-rules') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(menuItems()).toEqual(['Tổng quan', 'Loại bài', 'Chuẩn bị', 'Cấu trúc lượt', 'Khoảng cách / Tầm', 'Cửa sổ phản hồi', 'Sát thương và hấp hối', 'Phán xét', 'Xích']);
+    expect(menuItems()).toEqual(['Tổng quan', 'Loại bài', 'Chuẩn bị', 'Cấu trúc lượt', 'Khoảng cách / Tầm', 'Cửa sổ phản hồi', 'Sát thương và hấp hối', 'Phán xét', 'Xích', 'Thuật ngữ']);
   });
 
   it('signed out, the sign-in link; as a guest, the account menu', async () => {

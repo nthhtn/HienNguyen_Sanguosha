@@ -136,6 +136,23 @@ exports[`the rules pages in English distance keeps its text and links 1`] = `
 }
 `;
 
+exports[`the rules pages in English glossary keeps its text and links 1`] = `
+{
+  "links": [
+    "/wiki/rules/chains Chains",
+    "/wiki/rules/judgment Judgment",
+    "/wiki/rules/response Response Windows",
+    "/wiki/rules/distance Distance / Range",
+    "/wiki/rules/distance Distance / Range",
+    "/wiki/rules/damage Damage and Dying",
+  ],
+  "text": [
+    "Glossary",
+    "The terms the wiki uses, each beside the art it refers to.",
+  ],
+}
+`;
+
 exports[`the rules pages in English judgment keeps its text and links 1`] = `
 {
   "links": [
@@ -177,6 +194,7 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "/wiki/rules/damage Damage and Dying",
     "/wiki/rules/judgment Judgment",
     "/wiki/rules/chains Chains",
+    "/wiki/rules/glossary Glossary",
     "/wiki/generals Generals",
   ],
   "text": [
@@ -212,6 +230,7 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "Damage and Dying: how HP is lost, and how a seat is rescued or knocked out.",
     "Judgment: flipping the top card to decide an effect.",
     "Chains: how fire and thunder damage passes along a chain.",
+    "Glossary: the terms the wiki uses.",
     "Generals: every General and skill.",
   ],
 }

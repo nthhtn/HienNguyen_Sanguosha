@@ -66,6 +66,7 @@ describe('the rules texts in both languages', () => {
       '/wiki/rules/response': 'nav.rules.response',
       '/wiki/rules/damage': 'nav.rules.damage',
       '/wiki/rules/chains': 'nav.rules.chains',
+      '/wiki/rules/glossary': 'nav.rules.glossary',
       '/wiki/rules/judgment': 'nav.rules.judgment',
       '/wiki/generals': 'nav.cards.generals',
       '/wiki/tools': 'nav.cards.tools',
@@ -104,6 +105,7 @@ describe('the rules pages in Vietnamese', () => {
     ['response', 'Cửa sổ phản hồi'],
     ['damage', 'Sát thương và hấp hối'],
     ['chains', 'Xích'],
+    ['glossary', 'Thuật ngữ'],
     ['judgment', 'Phán xét'],
   ])('%s: the title', async (page, title) => {
     const { el } = await open(page);
@@ -122,6 +124,7 @@ describe('the rules pages in Vietnamese', () => {
       '/wiki/rules/damage Sát thương và hấp hối',
       '/wiki/rules/judgment Phán xét',
       '/wiki/rules/chains Xích',
+      '/wiki/rules/glossary Thuật ngữ',
       '/wiki/generals Tướng',
     ]);
   });
@@ -283,6 +286,34 @@ describe('the rules pages in Vietnamese', () => {
     expect(text(el)).toContain('không tự khởi động thêm một làn sóng');
   });
 
+  it('glossary: twelve terms, each with a picture and a definition', async () => {
+    const { el } = await open('glossary');
+    const entries = [...el.querySelectorAll('.entry')];
+    expect(entries.length).toBe(12);
+    for (const entry of entries) {
+      expect(entry.querySelectorAll('img').length).toBeGreaterThan(0);
+      expect(text(entry.querySelector('dt')!)).not.toBe('');
+      expect(text(entry.querySelector('dd')!)).not.toBe('');
+    }
+  });
+
+  it('glossary: the Vietnamese terms follow the agreed wording', async () => {
+    const { el } = await open('glossary');
+    expect([...el.querySelectorAll('dt')].map(text)).toEqual(['Thế lực', 'Sinh lực', 'Chủ tướng', 'Phó tướng', 'Tướng ẩn', 'Bị xích', 'Khu phán xét', 'Phản hồi', 'Tọa kỵ', 'Tầm tấn công', 'Hấp hối', 'Chồng bài rút']);
+  });
+
+  it('glossary: definitions link to the pages they summarise, labelled as the pages are named', async () => {
+    const { el } = await open('glossary');
+    expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
+      '/wiki/rules/chains Xích',
+      '/wiki/rules/judgment Phán xét',
+      '/wiki/rules/response Cửa sổ phản hồi',
+      '/wiki/rules/distance Khoảng cách / Tầm',
+      '/wiki/rules/distance Khoảng cách / Tầm',
+      '/wiki/rules/damage Sát thương và hấp hối',
+    ]);
+  });
+
   it('turn: six phases in order, only the Play Phase marked as waiting', async () => {
     const { el } = await open('turn');
     expect([...el.querySelectorAll('.phase h4')].map(text)).toEqual(['Giai đoạn bắt đầu', 'Giai đoạn phán xét', 'Giai đoạn rút bài', 'Giai đoạn ra bài', 'Giai đoạn bỏ bài', 'Giai đoạn kết thúc']);
@@ -331,7 +362,7 @@ describe('the rules pages in Vietnamese', () => {
   });
 
   it('no English card name is left on any rules page', async () => {
-    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains']) {
+    for (const page of ['overview', 'card-types', 'setup', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary']) {
       TestBed.resetTestingModule();
       const { el } = await open(page);
       expect(text(el)).not.toMatch(/\b(Slash|Dodge|Peach|Wine|Wuxie|Capture|Starvation|Lightning|Barbarians|Hail of Arrows|Steal|Force|Play Phase|Main General)\b/);
