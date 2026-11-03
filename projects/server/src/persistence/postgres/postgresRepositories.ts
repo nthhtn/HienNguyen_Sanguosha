@@ -211,11 +211,11 @@ class PostgresRooms implements RoomRepository {
       .execute();
   }
 
-  async addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; now: Date }): Promise<RoomPlayerRecord> {
+  async addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; botNameId?: string; now: Date }): Promise<RoomPlayerRecord> {
     try {
       const row = await this.db
         .insertInto('room_players')
-        .values({ room_id: input.roomId, user_id: input.userId, kind: input.kind, display_name: input.displayName, joined_at: input.now })
+        .values({ room_id: input.roomId, user_id: input.userId, kind: input.kind, display_name: input.displayName, bot_name_id: input.botNameId ?? null, joined_at: input.now })
         .returningAll()
         .executeTakeFirstOrThrow();
       return toRoomPlayerRecord(row);

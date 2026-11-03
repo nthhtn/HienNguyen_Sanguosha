@@ -310,9 +310,18 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
       const ann = await registered();
       const host = await addHuman(room.id, ann.id, 'Ann', minutes(1));
       const bot = await addBot(room.id, 'Bot 1', minutes(2));
-      expect(host).toEqual({ id: expect.any(String), roomId: room.id, userId: ann.id, kind: 'human', displayName: 'Ann', joinedAt: minutes(1), leftAt: null });
+      expect(host).toEqual({ id: expect.any(String), roomId: room.id, userId: ann.id, kind: 'human', displayName: 'Ann', botNameId: null, joinedAt: minutes(1), leftAt: null });
       expect(bot).toMatchObject({ userId: null, kind: 'bot', displayName: 'Bot 1' });
       expect((await live(room.id))?.players).toEqual([host, bot]);
+    });
+
+    it("stores a bot's name id, and a person has none", async () => {
+      const room = await newRoom();
+      const bot = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: 'Bot: Zhou Cang', botNameId: 'zhou-cang', now: NOW });
+      const human = await addHuman(room.id, (await registered()).id, 'Zhou Cang');
+      expect(bot).toMatchObject({ displayName: 'Bot: Zhou Cang', botNameId: 'zhou-cang' });
+      expect(human.botNameId).toBeNull();
+      expect((await live(room.id))?.players).toEqual([bot, human]);
     });
 
     it('updates the status, seat count, rules and host, and the update time', async () => {
@@ -408,6 +417,17 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
     });
     const append = (gameId: string, afterSeq: number, rows: NewGameAction[], at = NOW) =>
       repos().transaction((tx) => tx.games.appendActions(gameId, afterSeq, rows, at));
+
+    it("keeps a seat's bot name id, and reads a seat saved without one", async () => {
+      const seats: GameSeat[] = [
+        { seatId: 'seat-0', roomPlayerId: randomUUID(), name: 'Ann', kind: 'human' },
+        { seatId: 'seat-1', roomPlayerId: randomUUID(), name: 'Bot: Zhou Cang', kind: 'bot', botNameId: 'zhou-cang' },
+        { seatId: 'seat-2', roomPlayerId: randomUUID(), name: 'Bot 1', kind: 'bot' },
+      ];
+      const game = await repos().games.create({ roomId: (await newRoom()).id, seed: 1, seats, rules: {}, buildId: 'build-1', now: NOW });
+      expect(game.seats).toEqual(seats);
+      expect(game.seats[2].botNameId).toBeUndefined();
+    });
 
     it('creates a running game with no actions, and finds and lists it', async () => {
       const game = await newGame();

@@ -71,7 +71,7 @@ export interface RoomRepository {
   update(roomId: string, changes: RoomChanges, now: Date): Promise<void>;
   // Throws NameTakenError when a current member has the name (compared
   // case-insensitively), and an Error when the user is already a current member.
-  addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; now: Date }): Promise<RoomPlayerRecord>;
+  addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; botNameId?: string; now: Date }): Promise<RoomPlayerRecord>;
   markLeft(playerId: string, now: Date): Promise<void>;
   // Every room that is not closed, with its current members.
   listLive(): Promise<LiveRoomRecord[]>;

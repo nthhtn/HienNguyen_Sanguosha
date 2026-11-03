@@ -56,6 +56,7 @@ export interface RoomPlayersTable {
   user_id: string | null;
   kind: 'human' | 'bot';
   display_name: string;
+  bot_name_id: string | null;
   joined_at: Timestamp;
   left_at: NullableTimestamp;
 }
