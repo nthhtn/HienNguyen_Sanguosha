@@ -1,0 +1,845 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bản nháp Wiki luật Quốc chiến</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: a fixed contents column beside one reading column; every rule is paired with a table scene built from the real card, General and HP art. */
+:root {
+  --bg: #eceee9;
+  --panel: #f8f9f6;
+  --scene: #dfe5dd;
+  --fg: #19231f;
+  --muted: #566159;
+  --line: #c9d0c7;
+  --accent: #1f6d58;
+  --accent-fg: #ffffff;
+  --gold: #a97c1f;
+  --warn-bg: #f3e8cc;
+  --warn-fg: #4d3a0b;
+  --wei: #3a67b0;
+  --shu: #b8443a;
+  --wu: #2f8a52;
+  --qun: #8b7d3a;
+  --font-display: "Marcellus", "Iowan Old Style", Georgia, serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111916; --panel: #18211d; --scene: #1f2c26; --fg: #e6ebe5; --muted: #9aa79f; --line: #2d3c35;
+    --accent: #5dc3a4; --accent-fg: #0c1713; --gold: #d9ad4a; --warn-bg: #3a3014; --warn-fg: #ecd9a4;
+    --wei: #6f9be0; --shu: #e07b70; --wu: #62c283; --qun: #c8b66a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111916; --panel: #18211d; --scene: #1f2c26; --fg: #e6ebe5; --muted: #9aa79f; --line: #2d3c35;
+  --accent: #5dc3a4; --accent-fg: #0c1713; --gold: #d9ad4a; --warn-bg: #3a3014; --warn-fg: #ecd9a4;
+  --wei: #6f9be0; --shu: #e07b70; --wu: #62c283; --qun: #c8b66a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0; }
+a { color: var(--accent); }
+.shell { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 40px; padding-block: 24px 64px; }
+nav.toc { position: sticky; top: 16px; align-self: start; display: flex; flex-direction: column; gap: 2px; }
+.brand { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.15; margin: 0 0 4px; }
+.draft-tag { display: inline-block; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; background: var(--warn-bg); color: var(--warn-fg); padding: 2px 8px; border-radius: 3px; margin-bottom: 12px; align-self: flex-start; }
+.toc h4 { margin: 16px 0 4px; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.toc a { text-decoration: none; color: var(--fg); padding: 6px 10px; border-radius: 4px; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.toc a:hover { background: var(--scene); }
+.toc a[aria-current="page"] { background: var(--accent); color: var(--accent-fg); }
+.toc a .new { font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--gold); }
+.toc a[aria-current="page"] .new { color: var(--accent-fg); }
+main { min-width: 0; max-width: 780px; }
+main section[data-page] { display: none; }
+main section[data-page].on { display: block; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; }
+h1 { font-size: 2.4rem; line-height: 1.1; margin: 0 0 6px; }
+h2 { font-size: 1.55rem; margin: 40px 0 8px; }
+h3 { font-size: 1.15rem; margin: 24px 0 4px; }
+.lead { font-size: 1.15rem; color: var(--muted); margin: 0 0 20px; max-width: 60ch; }
+p, li { max-width: 68ch; }
+li { margin: 4px 0; }
+.kw { font-weight: 600; }
+.wei { color: var(--wei); } .shu { color: var(--shu); } .wu { color: var(--wu); } .qun { color: var(--qun); }
+.force { font-weight: 700; }
+.note { background: var(--warn-bg); color: var(--warn-fg); padding: 10px 14px; border-radius: 4px; font-size: .95rem; max-width: 68ch; margin: 16px 0; }
+.note strong { letter-spacing: .02em; }
+.pending { border-left: 3px solid var(--gold); padding: 2px 0 2px 12px; color: var(--muted); font-size: .95rem; margin: 10px 0; max-width: 68ch; }
+
+/* Real art */
+.c { width: 96px; aspect-ratio: 662 / 969; border-radius: 6px; object-fit: cover; display: block; box-shadow: 0 1px 3px rgba(0,0,0,.35); background: var(--scene); }
+.c.xs { width: 44px; border-radius: 3px; } .c.s { width: 68px; } .c.l { width: 132px; }
+.c.dim { opacity: .4; filter: grayscale(1); }
+.fig { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: .82rem; color: var(--muted); }
+.fig b { color: var(--fg); font-size: .9rem; font-weight: 600; }
+.fig .tag { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--accent); }
+.bean { width: 20px; height: auto; display: inline-block; }
+.bean.lost { filter: grayscale(1) brightness(.6); opacity: .5; }
+.hpbar { display: inline-flex; gap: 2px; align-items: center; vertical-align: middle; }
+.banner { width: 10px; height: 50px; object-fit: fill; vertical-align: middle; image-rendering: auto; }
+
+/* Scenes: a framed table section the rule is shown on */
+.scene { background: var(--scene); border: 1px solid var(--line); border-radius: 8px; padding: 18px; margin: 16px 0 24px; }
+.scene > .cap { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--muted); margin: 0 0 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+.row.center { justify-content: center; }
+.row.top { align-items: flex-start; }
+.arrow { align-self: center; font-size: 1.6rem; color: var(--muted); padding: 0 2px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: .78rem; font-weight: 700; background: var(--panel); border: 1px solid var(--line); }
+.pill.ok { color: var(--accent); border-color: var(--accent); } .pill.bad { color: var(--shu); border-color: var(--shu); }
+
+/* Sequences: ordered because the order is the rule */
+.steps { list-style: none; padding: 0; margin: 12px 0; counter-reset: s; display: flex; flex-direction: column; gap: 14px; }
+.steps > li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; max-width: none; margin: 0; }
+.steps > li::before { content: counter(s); width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); display: grid; place-items: center; font-weight: 700; font-size: .9rem; margin-top: 2px; }
+.steps .body { min-width: 0; }
+.steps .body > p { margin: 0 0 8px; }
+.steps .body .row { margin-top: 6px; }
+.branch { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 8px; }
+.branch > div { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; min-width: 0; }
+.branch h5 { margin: 0 0 6px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* Seat token */
+.seat { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 96px; text-align: center; position: relative; }
+.seat .av { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: 50% 14%; border: 3px solid var(--line); background: var(--panel); }
+.seat.wei .av { border-color: var(--wei); } .seat.shu .av { border-color: var(--shu); } .seat.wu .av { border-color: var(--wu); } .seat.qun .av { border-color: var(--qun); }
+.seat .nm { font-size: .8rem; font-weight: 600; line-height: 1.15; }
+.seat .sub { font-size: .72rem; color: var(--muted); }
+.seat.out .av { filter: grayscale(1); opacity: .4; }
+/* The avatar is 64px, centered in the 96px seat: chain badge on its top right corner, damage mark on its center. */
+.seat .chainmark { position: absolute; top: -6px; right: 6px; width: 30px; opacity: .95; filter: drop-shadow(0 1px 1px rgba(0,0,0,.6)); }
+.seat .hit { position: absolute; top: 32px; left: 50%; transform: translate(-50%, -50%); width: 52px; pointer-events: none; }
+
+/* Tables */
+.tbl { width: 100%; border-collapse: collapse; margin: 8px 0; }
+.tbl th, .tbl td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
+.tbl th { font-weight: 600; white-space: nowrap; width: 1%; }
+.scroll-x { overflow-x: auto; }
+
+/* Turn strip */
+.phases { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.phase { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 8px; display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; min-width: 0; }
+.phase h4 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1rem; }
+.phase small { color: var(--muted); font-size: .76rem; line-height: 1.3; }
+.phase .miniRow { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; }
+.phase.wait { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+/* Distance widget */
+.dist { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 16px; align-items: start; }
+.ring { position: relative; aspect-ratio: 1.25; min-height: 300px; background: radial-gradient(ellipse at center, var(--panel) 0 52%, transparent 53%), var(--scene); border-radius: 8px; border: 1px solid var(--line); }
+.ring .seat { position: absolute; transform: translate(-50%, -50%); cursor: pointer; background: none; border: 0; padding: 4px; font: inherit; color: inherit; border-radius: 8px; }
+.ring .seat:focus-visible { outline: 2px solid var(--accent); }
+.ring .seat.sel .av { box-shadow: 0 0 0 3px var(--gold); }
+.ring .seat .dbadge { position: absolute; top: -2px; right: 6px; min-width: 24px; height: 24px; border-radius: 12px; background: var(--fg); color: var(--bg); font-weight: 700; font-size: .85rem; display: grid; place-items: center; padding: 0 5px; }
+.ring .seat .dbadge.reach { background: var(--accent); color: var(--accent-fg); }
+.ring .seat .mount { position: absolute; bottom: 18px; left: -2px; width: 26px; border-radius: 3px; box-shadow: 0 1px 2px rgba(0,0,0,.5); }
+.ctl { display: flex; flex-direction: column; gap: 10px; font-size: .92rem; }
+.ctl label { display: flex; gap: 8px; align-items: center; }
+.ctl select { font: inherit; padding: 4px 6px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; }
+.ctl input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+.ctl fieldset { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin: 0; }
+.ctl legend { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: var(--muted); padding: 0 4px; }
+.readout { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: .95rem; margin-top: 4px; }
+.readout b { font-variant-numeric: tabular-nums; }
+
+/* Cards grid on the overview */
+.cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 8px 0; }
+.cardgrid a { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; text-decoration: none; color: var(--fg); display: flex; flex-direction: column; gap: 4px; }
+.cardgrid a:hover { border-color: var(--accent); }
+.cardgrid a b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
+.cardgrid a span { color: var(--muted); font-size: .9rem; }
+.forces { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.forces > div { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: flex; gap: 10px; align-items: center; }
+.forces .banner { height: 54px; }
+.defs { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.defs > div { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; min-width: 0; }
+.defs dt { font-weight: 700; } .defs dd { margin: 2px 0 0; color: var(--muted); font-size: .92rem; }
+.defs .tx { min-width: 0; }
+.defs .thumb { min-width: 56px; display: flex; justify-content: center; }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .88rem; max-width: 68ch; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  nav.toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px; }
+  .toc .brand, .toc .draft-tag { flex-basis: 100%; }
+  .toc h4 { display: none; }
+  .toc a { border: 1px solid var(--line); }
+  .phases { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dist { grid-template-columns: minmax(0, 1fr); }
+  .forces { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  h1 { font-size: 1.9rem; }
+}
+@media (max-width: 480px) {
+  .ring { min-height: 330px; aspect-ratio: 1; }
+  .seat { width: 72px; } .seat .av { width: 48px; height: 48px; }
+  .c { width: 78px; } .c.l { width: 110px; } .c.s { width: 58px; }
+}
+</style>
+
+<div class="shell">
+<nav class="toc" aria-label="Luật">
+  <p class="brand">Wiki luật Quốc chiến</p>
+  <span class="draft-tag">Bản nháp để xem xét</span>
+  <h4>Cơ bản</h4>
+  <a href="#overview" data-nav="overview">Tổng quan</a>
+  <a href="#setup" data-nav="setup">Chuẩn bị</a>
+  <a href="#turn" data-nav="turn">Cấu trúc lượt</a>
+  <a href="#card-types" data-nav="card-types">Loại bài</a>
+  <h4>Trên bàn chơi</h4>
+  <a href="#distance" data-nav="distance">Khoảng cách / Tầm</a>
+  <a href="#response" data-nav="response">Cửa sổ phản hồi <span class="new">Mới</span></a>
+  <a href="#damage" data-nav="damage">Sát thương và hấp hối <span class="new">Mới</span></a>
+  <a href="#judgment" data-nav="judgment">Phán xét</a>
+  <a href="#chains" data-nav="chains">Xích <span class="new">Mới</span></a>
+  <h4>Tra cứu</h4>
+  <a href="#glossary" data-nav="glossary">Thuật ngữ <span class="new">Mới</span></a>
+</nav>
+
+<main>
+
+<!-- ============ TỔNG QUAN ============ -->
+<section data-page="overview">
+  <h1>Tổng quan</h1>
+  <p class="lead">Quốc chiến là trò chơi về lòng trung thành bị che giấu. Mọi lá bài, Tướng và dấu hiệu trên trang này đều là hình thật của trò chơi.</p>
+  <div class="note"><strong>Bản nháp.</strong> Đây là bản nháp về bố cục và nội dung để xem xét, chưa phải wiki cuối cùng. Những luật đánh dấu "chờ bổ sung" vẫn cần được viết rõ trước khi đưa vào.</div>
+
+  <p>Mỗi người chơi giữ hai Tướng bí mật và thuộc về thế lực của Tướng đang lật ngửa. Hãy đánh bài, dùng kỹ năng và đánh bại những người khác cho đến khi những người chơi còn trụ lại đều thuộc cùng một thế lực.</p>
+
+  <div class="scene">
+    <p class="cap">Bốn thế lực</p>
+    <div class="forces">
+      <div><img data-k="wei" class="banner" alt="Cờ Ngụy"><div><b class="wei">Ngụy</b><br><small>Tào Tháo</small></div></div>
+      <div><img data-k="shu" class="banner" alt="Cờ Thục"><div><b class="shu">Thục</b><br><small>Lưu Bị</small></div></div>
+      <div><img data-k="wu" class="banner" alt="Cờ Ngô"><div><b class="wu">Ngô</b><br><small>Tôn Quyền</small></div></div>
+      <div><img data-k="qun" class="banner" alt="Cờ Quần"><div><b class="qun">Quần</b><br><small>Trương Giác</small></div></div>
+    </div>
+    <div class="row top" style="margin-top:16px">
+      <div class="fig"><img data-k="cao-cao" class="c s" alt="Tào Tháo"><b>Tào Tháo</b><span class="wei">Ngụy</span></div>
+      <div class="fig"><img data-k="liu-bei" class="c s" alt="Lưu Bị"><b>Lưu Bị</b><span class="shu">Thục</span></div>
+      <div class="fig"><img data-k="sun-quan" class="c s" alt="Tôn Quyền"><b>Tôn Quyền</b><span class="wu">Ngô</span></div>
+      <div class="fig"><img data-k="zhang-jiao" class="c s" alt="Trương Giác"><b>Trương Giác</b><span class="qun">Quần</span></div>
+    </div>
+  </div>
+
+  <h2>Một ván gồm bốn nhịp</h2>
+  <ol class="steps">
+    <li><div class="body"><p><b>Chuẩn bị.</b> Bạn được chia Tướng, chọn hai và giữ chúng úp. Ai cũng rút 4 lá bài.</p></div></li>
+    <li><div class="body"><p><b>Lượt chơi.</b> Người chơi lần lượt ngược chiều kim đồng hồ. Mỗi lượt có sáu giai đoạn, và giai đoạn ra bài là lúc bạn dùng bài.</p></div></li>
+    <li><div class="body"><p><b>Sát thương.</b> Bài và kỹ năng làm mất Sinh lực. Ở 0 Sinh lực, người chơi hấp hối, và bất kỳ ai cũng có thể cứu bằng Đào.</p></div></li>
+    <li><div class="body"><p><b>Chiến thắng.</b> Ván kết thúc khi mọi người chơi còn trong ván cùng một thế lực.</p></div></li>
+  </ol>
+
+  <h2>Cách thắng</h2>
+  <ul>
+    <li>Ván kết thúc khi mọi người chơi còn trong ván thuộc cùng một thế lực. Những người chơi đó cùng thắng.</li>
+    <li>Người chơi <span class="force qun">Quần</span> không bao giờ thắng theo nhóm: một người chơi Quần chỉ thắng khi là người cuối cùng còn trụ lại.</li>
+    <li>Người chơi mất Sinh lực cuối cùng mà không được cứu thì bị loại. Họ bỏ mọi lá bài đang giữ.</li>
+  </ul>
+  <div class="scene">
+    <p class="cap">Ví dụ: ai thắng</p>
+    <div class="row top">
+      <div class="seat wei"><img data-k="cao-cao" class="av" alt=""><span class="nm">Người chơi 1</span><span class="sub wei">Ngụy</span></div>
+      <div class="seat wei"><img data-k="zhang-liao" class="av" alt=""><span class="nm">Người chơi 3</span><span class="sub wei">Ngụy</span></div>
+      <div class="seat out"><img data-k="liu-bei" class="av" alt=""><span class="nm">Người chơi 2</span><span class="sub">Bị loại</span></div>
+      <div class="seat out"><img data-k="sun-quan" class="av" alt=""><span class="nm">Người chơi 4</span><span class="sub">Bị loại</span></div>
+      <p style="margin:0;align-self:center;max-width:30ch">Người chơi 2 và Người chơi 4 bị loại. Người chơi 1 và 3 đều là <span class="wei force">Ngụy</span>, nên Ngụy cùng thắng.</p>
+    </div>
+  </div>
+
+  <h2>Nên đọc tiếp</h2>
+  <div class="cardgrid">
+    <a href="#setup"><b>Chuẩn bị</b><span>Cách một ván bắt đầu.</span></a>
+    <a href="#turn"><b>Cấu trúc lượt</b><span>Bạn làm gì trong lượt của mình.</span></a>
+    <a href="#card-types"><b>Loại bài</b><span>Bài Cơ bản, Cẩm nang và Trang bị.</span></a>
+    <a href="#distance"><b>Khoảng cách / Tầm</b><span>Bạn nhắm tới được ai. Thử trực tiếp.</span></a>
+    <a href="#response"><b>Cửa sổ phản hồi</b><span>Thiểm, Vô Giải Khả Kích và thứ tự trả lời.</span></a>
+    <a href="#damage"><b>Sát thương và hấp hối</b><span>Sinh lực, Tửu, Đào và bị loại.</span></a>
+  </div>
+
+  <h2>Chưa viết</h2>
+  <p class="pending">Đấu điểm, Viễn Giao Cận Công và các Cẩm nang còn lại cần được xác nhận lời luật với engine trước khi có trang riêng. Mỗi trang sẽ theo cùng một mẫu: luật, rồi một cảnh minh họa bằng bài thật.</p>
+</section>
+
+<!-- ============ CHUẨN BỊ ============ -->
+<section data-page="setup">
+  <h1>Chuẩn bị</h1>
+  <p class="lead">Những gì diễn ra trước lượt đầu tiên.</p>
+
+  <ol class="steps">
+    <li><div class="body">
+      <p>Mỗi người chơi được chia <b>7 Tướng</b> khi bàn có 2 đến 8 chỗ, hoặc 5 Tướng khi bàn có 9 đến 12 chỗ. Mỗi bộ có ít nhất hai Tướng cùng thế lực.</p>
+      <div class="row top">
+        <div class="fig"><img data-k="cao-cao" class="c s" alt="Tào Tháo"><span class="wei">Ngụy</span></div>
+        <div class="fig"><img data-k="zhang-liao" class="c s" alt="Trương Liêu"><span class="wei">Ngụy</span></div>
+        <div class="fig"><img data-k="liu-bei" class="c s" alt="Lưu Bị"><span class="shu">Thục</span></div>
+        <div class="fig"><img data-k="guan-yu" class="c s" alt="Quan Vũ"><span class="shu">Thục</span></div>
+        <div class="fig"><img data-k="sun-quan" class="c s" alt="Tôn Quyền"><span class="wu">Ngô</span></div>
+        <div class="fig"><img data-k="gan-ning" class="c s" alt="Cam Ninh"><span class="wu">Ngô</span></div>
+        <div class="fig"><img data-k="zhang-jiao" class="c s" alt="Trương Giác"><span class="qun">Quần</span></div>
+      </div>
+    </div></li>
+    <li><div class="body">
+      <p>Mỗi người chơi chọn hai Tướng của mình: một <b>Chủ tướng</b> và một <b>Phó tướng</b>. Cả hai đều bắt đầu ở trạng thái úp, nên cả bàn chỉ thấy mặt sau.</p>
+      <div class="row top">
+        <div class="fig"><img data-k="cao-cao" class="c" alt="Tào Tháo"><span class="tag">Chủ tướng</span><b>Tào Tháo</b><span>4 Sinh lực</span></div>
+        <div class="fig"><img data-k="guo-jia" class="c" alt="Quách Gia"><span class="tag">Phó tướng</span><b>Quách Gia</b><span>3 Sinh lực</span></div>
+        <span class="arrow">&rarr;</span>
+        <div class="fig"><img data-k="hidden" class="c" alt="Tướng ẩn"><span class="tag">Chủ tướng</span><span>Úp</span></div>
+        <div class="fig"><img data-k="hidden" class="c" alt="Tướng ẩn"><span class="tag">Phó tướng</span><span>Úp</span></div>
+      </div>
+    </div></li>
+    <li><div class="body">
+      <p>Tổng Sinh lực bằng một nửa tổng Sinh lực của hai Tướng, làm tròn xuống. Sát thương và hồi phục đều tính vào Tổng Sinh lực này.</p>
+      <div class="row">
+        <span>Tào Tháo <b>4</b> + Quách Gia <b>3</b> = 7, một nửa là 3,5, làm tròn xuống:</span>
+        <span class="hpbar"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"></span>
+        <b>3 Sinh lực</b>
+      </div>
+    </div></li>
+    <li><div class="body">
+      <p>Chồng bài rút được xáo trộn và mỗi người chơi rút <b>4 lá bài</b>.</p>
+      <div class="row"><img data-k="back" class="c s" alt="Mặt sau lá bài"><img data-k="back" class="c s" alt="Mặt sau lá bài"><img data-k="back" class="c s" alt="Mặt sau lá bài"><img data-k="back" class="c s" alt="Mặt sau lá bài"></div>
+    </div></li>
+  </ol>
+
+  <h2>Lật Tướng</h2>
+  <ul>
+    <li>Vào đầu lượt của mình, trước mọi việc khác, một cửa sổ liệt kê các Tướng đang úp và bạn có thể lật bất kỳ Tướng nào, hoặc không lật.</li>
+    <li>Trong giai đoạn ra bài của mình, một Tướng chỉ được lật khi bạn dùng một thứ của Tướng đó mà bạn dùng được, chẳng hạn kỹ năng chủ động hoặc chuyển đổi, việc này lật Tướng trước. Bạn không thể lật Tướng vô cớ.</li>
+    <li>Ở mọi giai đoạn của mọi lượt, khi xảy ra việc mà một kỹ năng đang úp có thể đáp lại, chẳng hạn bị sát thương hoặc mất trang bị, bạn được hỏi có lật Tướng đó để dùng kỹ năng không. Mất Sinh lực không tự lật Tướng.</li>
+    <li>Khi một người chơi chết, cả hai Tướng của họ được lật.</li>
+  </ul>
+  <div class="scene">
+    <p class="cap">Ví dụ: phần thưởng khi lật</p>
+    <div class="row top">
+      <div class="fig"><img data-k="cao-cao" class="c s" alt="Tào Tháo"><span class="tag">Chủ tướng, đã lật</span></div>
+      <div class="fig"><img data-k="hidden" class="c s" alt="Tướng ẩn"><span class="tag">Phó tướng, đang úp</span></div>
+      <span class="arrow">&rarr;</span>
+      <div class="fig"><img data-k="cao-cao" class="c s" alt="Tào Tháo"><span class="tag">Chủ tướng</span></div>
+      <div class="fig"><img data-k="guo-jia" class="c s" alt="Quách Gia"><span class="tag">Phó tướng, đã lật</span></div>
+      <div class="fig"><img data-k="back" class="c xs" alt="Mặt sau lá bài"><span>Rút 1</span></div>
+    </div>
+    <p style="margin:12px 0 0;max-width:60ch">Khi bạn lật Tướng thứ hai mà tổng Sinh lực của hai Tướng là số lẻ (nên Sinh lực của bạn bị làm tròn xuống), bạn rút 1 lá bài. Ở đây 4 + 3 = 7 là số lẻ, nên người chơi rút 1.</p>
+  </div>
+  <p>Tùy chọn, khi có từ 5 người chơi trở lên: người chơi đầu tiên lật Tướng rút 2 lá bài. Đây là một ô chọn khi thiết lập ván chơi.</p>
+
+  <h2>Hạ gục một người chơi</h2>
+  <p>Khi một người chơi bị loại, người chơi gây sát thương hạ gục họ sẽ được thưởng hoặc bị phạt.</p>
+  <div class="row top">
+    <div class="scene" style="flex:1 1 260px;margin:8px 0">
+      <p class="cap">Khác thế lực</p>
+      <div class="row">
+        <div class="seat wei"><img data-k="cao-cao" class="av" alt=""><span class="nm">Người hạ gục</span><span class="sub wei">Ngụy</span></div>
+        <span class="arrow">&rarr;</span>
+        <div class="seat out"><img data-k="liu-bei" class="av" alt=""><span class="nm">Người chơi 2</span><span class="sub shu">Thục</span></div>
+      </div>
+      <p style="margin:8px 0 0">Người hạ gục rút một lá bài cho mỗi người chơi còn sống thuộc thế lực của người bị loại, tính cả người bị loại.</p>
+    </div>
+    <div class="scene" style="flex:1 1 260px;margin:8px 0">
+      <p class="cap">Cùng thế lực</p>
+      <div class="row">
+        <div class="seat wei"><img data-k="cao-cao" class="av" alt=""><span class="nm">Người hạ gục</span><span class="sub wei">Ngụy</span></div>
+        <span class="arrow">&rarr;</span>
+        <div class="seat out"><img data-k="zhang-liao" class="av" alt=""><span class="nm">Người chơi 3</span><span class="sub wei">Ngụy</span></div>
+      </div>
+      <p style="margin:8px 0 0">Người hạ gục bỏ toàn bộ bài trên tay.</p>
+    </div>
+  </div>
+  <ul>
+    <li>Người hạ gục chưa lật Tướng nào luôn được tính là khác thế lực, kể cả khi bí mật cùng thế lực với người bị loại.</li>
+    <li><span class="force qun">Quần</span> được tính là một thế lực như các thế lực khác.</li>
+    <li>Không có gì xảy ra nếu cái chết không có nguồn gây ra, người chơi tự hạ gục chính mình, hoặc người hạ gục cũng đã bị loại.</li>
+  </ul>
+</section>
+
+<!-- ============ CẤU TRÚC LƯỢT ============ -->
+<section data-page="turn">
+  <h1>Cấu trúc lượt</h1>
+  <p class="lead">Một lượt có sáu giai đoạn, luôn theo cùng một thứ tự.</p>
+
+  <div class="phases">
+    <div class="phase"><h4>Bắt đầu</h4><div class="miniRow"><img data-k="hidden" class="c xs" alt="Tướng ẩn"></div><small>Các kỹ năng đầu lượt được giải quyết. Bạn có thể lật Tướng.</small></div>
+    <div class="phase"><h4>Phán xét</h4><div class="miniRow"><img data-k="capture" class="c xs" alt="Lạc Bất Tư Thục"><img data-k="lightning" class="c xs" alt="Thiểm Điện"></div><small>Mỗi Cẩm nang trì hoãn trong khu phán xét được phán xét.</small></div>
+    <div class="phase"><h4>Rút bài</h4><div class="miniRow"><img data-k="back" class="c xs" alt="Mặt sau lá bài"><img data-k="back" class="c xs" alt="Mặt sau lá bài"></div><small>Rút 2 lá bài. Một số kỹ năng thay đổi điều này.</small></div>
+    <div class="phase wait"><h4>Ra bài</h4><div class="miniRow"><img data-k="sha" class="c xs" alt="Sát"><img data-k="peach" class="c xs" alt="Đào"><img data-k="steal" class="c xs" alt="Thuận Thủ Khiên Dương"></div><small>Đánh bài và dùng kỹ năng. Giai đoạn này chờ bạn.</small></div>
+    <div class="phase"><h4>Bỏ bài</h4><div class="miniRow"><span class="hpbar"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"></span></div><small>Giữ không quá số bài bằng Sinh lực.</small></div>
+    <div class="phase"><h4>Kết thúc</h4><div class="miniRow"><span class="arrow" style="font-size:1.4rem">&rarr;</span></div><small>Các kỹ năng cuối lượt được giải quyết. Người chơi kế tiếp ngược chiều kim đồng hồ bắt đầu.</small></div>
+  </div>
+  <p>Giai đoạn rút bài, bỏ bài và các giai đoạn khác tự trôi qua. Chỉ giai đoạn ra bài chờ bạn kết thúc. <span class="kw">Lạc Bất Tư Thục</span> hoặc <span class="kw">Binh Lương Thốn Đoạn</span> có thể khiến bạn bỏ qua một giai đoạn.</p>
+
+  <h2>Giai đoạn ra bài</h2>
+  <p>Đánh bài và dùng kỹ năng theo thứ tự tùy ý. Bạn được dùng một <span class="kw">Sát</span> mỗi lượt. Hãy kết thúc giai đoạn khi bạn xong.</p>
+  <div class="scene">
+    <p class="cap">Ví dụ: một giai đoạn ra bài ở 3 Sinh lực</p>
+    <ol class="steps">
+      <li><div class="body"><p>Người chơi 2 có 4 lá bài trên tay và dùng <span class="kw">Đào</span> lên chính mình để hồi 1 Sinh lực.</p>
+        <div class="row"><img data-k="peach" class="c s" alt="Đào"><span class="arrow">&rarr;</span><span class="hpbar"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean lost" alt="Sinh lực đã mất"></span><span class="arrow">&rarr;</span><span class="hpbar"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"></span></div></div></li>
+      <li><div class="body"><p>Họ đánh <span class="kw">Sát</span> duy nhất của lượt vào một người chơi trong tầm.</p>
+        <div class="row"><img data-k="sha" class="c s" alt="Sát"><span class="pill">1 mỗi lượt</span></div></div></li>
+      <li><div class="body"><p>Họ kết thúc giai đoạn. Một Sát thứ hai sẽ không được phép.</p></div></li>
+    </ol>
+  </div>
+
+  <h2>Giai đoạn bỏ bài</h2>
+  <p>Bỏ bài cho đến khi đúng giới hạn bài trên tay, bằng Sinh lực hiện tại của bạn.</p>
+  <div class="scene">
+    <p class="cap">Ví dụ: 6 lá bài, 4 Sinh lực</p>
+    <div class="row top">
+      <div class="fig"><img data-k="sha" class="c s" alt="Sát"></div>
+      <div class="fig"><img data-k="shan" class="c s" alt="Thiểm"></div>
+      <div class="fig"><img data-k="peach" class="c s" alt="Đào"></div>
+      <div class="fig"><img data-k="wuxie" class="c s" alt="Vô Giải Khả Kích"></div>
+      <div class="fig"><img data-k="steal" class="c s dim" alt="Thuận Thủ Khiên Dương, sẽ bỏ"><span class="pill bad">Bỏ</span></div>
+      <div class="fig"><img data-k="break" class="c s dim" alt="Quá Hà Sách Kiều, sẽ bỏ"><span class="pill bad">Bỏ</span></div>
+    </div>
+    <p style="margin:12px 0 0">Người chơi giữ 4 lá và bỏ 2 lá, vì 4 Sinh lực là giới hạn bài trên tay bằng 4. <span class="hpbar"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"></span></p>
+  </div>
+</section>
+
+<!-- ============ LOẠI BÀI ============ -->
+<section data-page="card-types">
+  <h1>Loại bài</h1>
+  <p class="lead">Bài Tướng được để riêng khỏi bộ bài. Mọi lá bài trong bộ bài là bài Cơ bản, Cẩm nang hoặc Trang bị.</p>
+
+  <h2>Bài Tướng</h2>
+  <p>Không thuộc bộ bài. Mỗi lá có một thế lực, một giá trị Sinh lực và một hoặc nhiều kỹ năng. Bạn chọn hai: một Chủ tướng và một Phó tướng. Chúng được úp cho đến khi lật, và Sinh lực của hai Tướng gộp lại thành Tổng Sinh lực của bạn.</p>
+  <div class="row top">
+    <div class="fig"><img data-k="cao-cao" class="c" alt="Tào Tháo"><b>Tào Tháo</b><span class="wei">Ngụy, 4 Sinh lực</span></div>
+    <div class="fig"><img data-k="guan-yu" class="c" alt="Quan Vũ"><b>Quan Vũ</b><span class="shu">Thục, 4 Sinh lực</span></div>
+    <div class="fig"><img data-k="hidden" class="c" alt="Tướng ẩn"><b>Úp</b><span>Điều người khác thấy</span></div>
+  </div>
+
+  <h2>Bài cơ bản</h2>
+  <p>Chúng dùng để tấn công, phòng thủ và hồi Sinh lực. Hầu hết được đánh từ bài trên tay trong giai đoạn ra bài của bạn hoặc để phản hồi.</p>
+  <div class="row top">
+    <div class="fig"><img data-k="sha" class="c" alt="Sát"><b>Sát</b><span>Tấn công một người chơi trong tầm. Một lần mỗi lượt.</span></div>
+    <div class="fig"><img data-k="shan" class="c" alt="Thiểm"><b>Thiểm</b><span>Chỉ đánh để đáp lại một Sát.</span></div>
+    <div class="fig"><img data-k="peach" class="c" alt="Đào"><b>Đào</b><span>Hồi 1 Sinh lực, không vượt mức tối đa.</span></div>
+    <div class="fig"><img data-k="wine" class="c" alt="Tửu"><b>Tửu</b><span>Một lần mỗi lượt, đòn tấn công kế tiếp gây thêm 1.</span></div>
+  </div>
+
+  <h2>Cẩm nang</h2>
+  <p>Đánh từ bài trên tay để tạo hiệu ứng đặc biệt. Một Cẩm nang có thể bị hủy bởi <span class="kw">Vô Giải Khả Kích</span>.</p>
+  <div class="scene">
+    <p class="cap">Cẩm nang tức thời: có hiệu lực ngay</p>
+    <div class="row top">
+      <div class="fig"><img data-k="steal" class="c s" alt="Thuận Thủ Khiên Dương"><b>Thuận Thủ Khiên Dương</b></div>
+      <div class="fig"><img data-k="break" class="c s" alt="Quá Hà Sách Kiều"><b>Quá Hà Sách Kiều</b></div>
+      <div class="fig"><img data-k="duel" class="c s" alt="Quyết Đấu"><b>Quyết Đấu</b></div>
+      <div class="fig"><img data-k="barbarians" class="c s" alt="Nam Man Xâm Nhập"><b>Nam Man Xâm Nhập</b></div>
+      <div class="fig"><img data-k="hail" class="c s" alt="Vạn Tiễn Tề Phát"><b>Vạn Tiễn Tề Phát</b></div>
+      <div class="fig"><img data-k="peach-garden" class="c s" alt="Đào Viên Kết Nghĩa"><b>Đào Viên Kết Nghĩa</b></div>
+      <div class="fig"><img data-k="wuxie" class="c s" alt="Vô Giải Khả Kích"><b>Vô Giải Khả Kích</b></div>
+    </div>
+  </div>
+  <div class="scene">
+    <p class="cap">Cẩm nang trì hoãn: đặt vào khu phán xét</p>
+    <div class="row top">
+      <div class="fig"><img data-k="capture" class="c s" alt="Lạc Bất Tư Thục"><b>Lạc Bất Tư Thục</b></div>
+      <div class="fig"><img data-k="starvation" class="c s" alt="Binh Lương Thốn Đoạn"><b>Binh Lương Thốn Đoạn</b></div>
+      <div class="fig"><img data-k="lightning" class="c s" alt="Thiểm Điện"><b>Thiểm Điện</b></div>
+      <p style="margin:0;align-self:center;max-width:36ch">Có hiệu lực ở một giai đoạn phán xét sau đó. Xem <a href="#judgment">Phán xét</a>.</p>
+    </div>
+  </div>
+
+  <h2>Trang bị</h2>
+  <p>Nằm trước mặt bạn sau khi đánh. Mỗi người chơi có một ô cho mỗi loại.</p>
+  <div class="scene">
+    <p class="cap">Các ô trang bị của một người chơi</p>
+    <div class="row top">
+      <div class="fig"><img data-k="crossbow" class="c s" alt="Gia Cát Liên Nỏ"><span class="tag">Vũ khí</span><b>Gia Cát Liên Nỏ</b><span>Tầm 1, không giới hạn Sát</span></div>
+      <div class="fig"><img data-k="eight-trigrams" class="c s" alt="Bát Quái Trận"><span class="tag">Giáp</span><b>Bát Quái Trận</b><span>Phán xét để có Thiểm</span></div>
+      <div class="fig"><img data-k="red-hare" class="c s" alt="Xích Thố"><span class="tag">Tọa kỵ công -1</span><b>Xích Thố</b><span>Người khác gần hơn</span></div>
+      <div class="fig"><img data-k="shadow-runner" class="c s" alt="Tuyệt Ảnh"><span class="tag">Tọa kỵ thủ +1</span><b>Tuyệt Ảnh</b><span>Bạn xa hơn</span></div>
+    </div>
+  </div>
+  <p>Xem <a href="#distance">Khoảng cách / Tầm</a> để biết cách tính Tọa kỵ và Vũ khí.</p>
+</section>
+
+<!-- ============ KHOẢNG CÁCH ============ -->
+<section data-page="distance">
+  <h1>Khoảng cách / Tầm</h1>
+  <p class="lead">Bạn có thể nhắm tới ai bằng một lá bài. Bấm một người chơi, rồi đổi bàn bên dưới để xem các con số thay đổi.</p>
+
+  <p>Khoảng cách giữa hai người chơi là số bước theo đường ngắn hơn quanh bàn, chỉ đếm những người chơi còn trong ván. Khi một người chơi bị loại, những người chơi bên cạnh trở nên gần nhau hơn. Khoảng cách không bao giờ nhỏ hơn 1.</p>
+
+  <div class="scene">
+    <p class="cap">Thử xem: bạn là Người chơi 1</p>
+    <div class="dist">
+      <div class="ring" id="ring" aria-label="Bàn có sáu người chơi"></div>
+      <div class="ctl">
+        <fieldset><legend>Tầm tấn công của bạn</legend>
+          <label for="range">Tầm Vũ khí <select id="range"><option value="1">1 (không có Vũ khí)</option><option value="2">2</option><option value="3">3</option></select></label>
+        </fieldset>
+        <fieldset><legend>Tọa kỵ</legend>
+          <label for="minus"><input type="checkbox" id="minus"> Bạn cưỡi Xích Thố (trừ 1)</label>
+          <label for="plus"><input type="checkbox" id="plus"> Người chơi đang chọn cưỡi Tuyệt Ảnh (cộng 1)</label>
+        </fieldset>
+        <fieldset><legend>Người chơi đã bị loại</legend>
+          <div id="outs" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+        </fieldset>
+        <div class="readout" id="readout" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Khoảng cách</h2>
+  <ul>
+    <li>Tọa kỵ thủ trên mục tiêu cộng thêm 1.</li>
+    <li>Tọa kỵ công trên người tấn công trừ đi 1.</li>
+    <li>Một số kỹ năng cũng thay đổi khoảng cách.</li>
+  </ul>
+  <h2>Tầm</h2>
+  <ul>
+    <li><span class="kw">Sát</span> có thể nhắm vào người chơi có khoảng cách không lớn hơn tầm tấn công của bạn.</li>
+    <li>Tầm tấn công của bạn là tầm của Vũ khí, hoặc 1 nếu không có Vũ khí.</li>
+    <li><span class="kw">Thuận Thủ Khiên Dương</span> và <span class="kw">Binh Lương Thốn Đoạn</span> chỉ nhắm được vào người chơi ở khoảng cách 1.</li>
+    <li>Cẩm nang đánh vào mọi người, như <span class="kw">Nam Man Xâm Nhập</span> và <span class="kw">Vạn Tiễn Tề Phát</span>, bỏ qua khoảng cách.</li>
+  </ul>
+  <div class="scene">
+    <p class="cap">Các lá bài bỏ qua hoặc giới hạn tầm</p>
+    <div class="row top">
+      <div class="fig"><img data-k="steal" class="c s" alt="Thuận Thủ Khiên Dương"><b>Thuận Thủ Khiên Dương</b><span>Khoảng cách 1</span></div>
+      <div class="fig"><img data-k="starvation" class="c s" alt="Binh Lương Thốn Đoạn"><b>Binh Lương Thốn Đoạn</b><span>Khoảng cách 1</span></div>
+      <div class="fig"><img data-k="barbarians" class="c s" alt="Nam Man Xâm Nhập"><b>Nam Man Xâm Nhập</b><span>Mọi người chơi khác</span></div>
+      <div class="fig"><img data-k="hail" class="c s" alt="Vạn Tiễn Tề Phát"><b>Vạn Tiễn Tề Phát</b><span>Mọi người chơi khác</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PHẢN HỒI ============ -->
+<section data-page="response">
+  <h1>Cửa sổ phản hồi</h1>
+  <p class="lead">Một số lá bài cho người chơi khác cơ hội trả lời trước khi có chuyện xảy ra. Trang này theo dõi hai trường hợp từ đầu đến cuối.</p>
+
+  <h2>Sát và Thiểm</h2>
+  <div class="scene">
+    <ol class="steps">
+      <li><div class="body">
+        <p>Người chơi 1 đánh <span class="kw">Sát</span> vào Người chơi 3, người đang trong tầm.</p>
+        <div class="row">
+          <div class="seat wei"><img data-k="cao-cao" class="av" alt=""><span class="nm">Người chơi 1</span></div>
+          <img data-k="sha" class="c s" alt="Sát"><span class="arrow">&rarr;</span>
+          <div class="seat shu"><img data-k="guan-yu" class="av" alt=""><span class="nm">Người chơi 3</span><span class="sub">4 Sinh lực</span></div>
+        </div></div></li>
+      <li><div class="body">
+        <p>Một cửa sổ phản hồi mở ra cho Người chơi 3. Họ có thể đánh một <span class="kw">Thiểm</span> hoặc bỏ qua.</p>
+        <div class="branch">
+          <div><h5>Đánh Thiểm</h5><div class="row"><img data-k="shan" class="c s" alt="Thiểm"><span>Sát không có hiệu lực. Không mất gì.</span></div></div>
+          <div><h5>Bỏ qua</h5><div class="row"><span class="hpbar"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean lost" alt="Sinh lực đã mất"></span><span>Người chơi 3 chịu 1 sát thương và còn 3 Sinh lực.</span></div></div>
+        </div>
+      </div></li>
+    </ol>
+  </div>
+
+  <h2>Vô Giải Khả Kích lên một Cẩm nang</h2>
+  <p>Trước khi một Cẩm nang có hiệu lực, trò chơi kiểm tra <span class="kw">Vô Giải Khả Kích</span>. Nó hỏi những người chơi còn sống theo thứ tự chỗ ngồi, bắt đầu từ người dùng Cẩm nang, và chỉ hỏi những ai đang giữ Vô Giải Khả Kích vào lúc đó. Bỏ qua thì hỏi người giữ kế tiếp. Việc bỏ qua không được thông báo, nên không ai biết ai từng giữ lá này.</p>
+  <div class="scene">
+    <p class="cap">Ví dụ: Quá Hà Sách Kiều và chuỗi Vô Giải Khả Kích</p>
+    <ol class="steps">
+      <li><div class="body">
+        <p>Người chơi 1 đánh <span class="kw">Quá Hà Sách Kiều</span> vào Người chơi 4. Cẩm nang sắp có hiệu lực.</p>
+        <div class="row"><img data-k="break" class="c s" alt="Quá Hà Sách Kiều"><span class="pill">Đang chờ kiểm tra Vô Giải Khả Kích</span></div></div></li>
+      <li><div class="body">
+        <p>Người chơi 2 giữ một <span class="kw">Vô Giải Khả Kích</span> và đánh nó. Quá Hà Sách Kiều bị hủy, trừ khi có người chặn lại.</p>
+        <div class="row"><img data-k="wuxie" class="c s" alt="Vô Giải Khả Kích"><span class="pill bad">Quá Hà Sách Kiều bị hủy</span></div></div></li>
+      <li><div class="body">
+        <p>Việc kiểm tra bắt đầu lại từ người chơi sau Người chơi 2, và một người chơi không bao giờ bị hỏi về lá bài của chính mình. Người chơi 3 đánh một <span class="kw">Vô Giải Khả Kích</span> lên lá Vô Giải Khả Kích đó.</p>
+        <div class="row"><img data-k="wuxie" class="c s" alt="Vô Giải Khả Kích"><img data-k="wuxie" class="c s" alt="Vô Giải Khả Kích"><span class="pill ok">Vô Giải Khả Kích thứ nhất bị hủy</span></div></div></li>
+      <li><div class="body">
+        <p>Không ai trả lời nữa, nên <span class="kw">Quá Hà Sách Kiều</span> được tiến hành. Chuỗi dài bao nhiêu cũng theo cùng cách: lá Vô Giải Khả Kích cuối cùng quyết định.</p>
+        <div class="row"><img data-k="break" class="c s" alt="Quá Hà Sách Kiều"><span class="pill ok">Quá Hà Sách Kiều có hiệu lực</span></div></div></li>
+    </ol>
+  </div>
+  <p class="pending">Chờ bổ sung: cảnh tương tự cho Cẩm nang đánh vào nhiều người chơi (Nam Man Xâm Nhập), nơi mỗi mục tiêu có một lần kiểm tra Vô Giải Khả Kích riêng.</p>
+</section>
+
+<!-- ============ SÁT THƯƠNG ============ -->
+<section data-page="damage">
+  <h1>Sát thương và hấp hối</h1>
+  <p class="lead">Cách Sinh lực bị mất, việc rơi xuống 0 nghĩa là gì, và một người chơi được cứu hay bị loại ra sao.</p>
+
+  <h2>Sinh lực và sát thương</h2>
+  <p>Sát thương và hồi phục đều tính vào một Tổng Sinh lực chung. Mỗi điểm sát thương làm mất một Sinh lực.</p>
+  <div class="scene">
+    <p class="cap">Ví dụ: 1 sát thương từ một Sát</p>
+    <div class="row">
+      <span class="hpbar"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"></span>
+      <img data-k="dmg" style="width:42px" alt="Sát thương"><span class="arrow">&rarr;</span>
+      <span class="hpbar"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean" alt="Sinh lực"><img data-k="hp" class="bean lost" alt="Sinh lực đã mất"></span>
+      <span>4 Sinh lực còn 3 Sinh lực.</span>
+    </div>
+  </div>
+
+  <h2>Tửu</h2>
+  <p>Bất kỳ người chơi nào cũng có thể đánh <span class="kw">Tửu</span> một lần trong lượt của mình. Sát thương của đòn tấn công kế tiếp được tăng thêm một.</p>
+  <div class="scene">
+    <div class="row">
+      <img data-k="wine" class="c s" alt="Tửu"><span class="arrow">+</span><img data-k="sha" class="c s" alt="Sát"><span class="arrow">&rarr;</span>
+      <span class="hpbar"><img data-k="hp" class="bean lost" alt="Sinh lực đã mất"><img data-k="hp" class="bean lost" alt="Sinh lực đã mất"></span><b>2 sát thương</b>
+    </div>
+  </div>
+
+  <h2>Các loại sát thương</h2>
+  <p>Mỗi điểm sát thương là thường, lửa hoặc sét. Lửa và sét quan trọng với <a href="#chains">Xích</a>.</p>
+  <div class="row top">
+    <div class="fig"><img data-k="sha" class="c s" alt="Sát"><b>Thường</b><span>Sát</span></div>
+    <div class="fig"><img data-k="fire-attack" class="c s" alt="Hỏa Sát"><b>Lửa</b><span>Hỏa Sát, Hỏa Công</span></div>
+    <div class="fig"><img data-k="lightning-attack" class="c s" alt="Lôi Sát"><b>Sét</b><span>Lôi Sát, Thiểm Điện</span></div>
+  </div>
+
+  <h2>Hấp hối và cứu</h2>
+  <p>Khi Sinh lực của một người chơi rơi xuống 0 hoặc thấp hơn, người đó hấp hối và một vòng cứu bắt đầu.</p>
+  <div class="scene">
+    <ol class="steps">
+      <li><div class="body">
+        <p>Người chơi 4 chịu một Sát khi còn 1 Sinh lực và rơi xuống 0 Sinh lực. Họ đang hấp hối.</p>
+        <div class="row"><div class="seat wu"><img data-k="gan-ning" class="av" alt=""><span class="nm">Người chơi 4</span><span class="sub">0 Sinh lực, hấp hối</span></div><span class="hpbar"><img data-k="hp" class="bean lost" alt="Sinh lực đã mất"><img data-k="hp" class="bean lost" alt="Sinh lực đã mất"><img data-k="hp" class="bean lost" alt="Sinh lực đã mất"></span></div></div></li>
+      <li><div class="body">
+        <p>Vòng cứu hỏi các người chơi theo thứ tự lượt, bắt đầu từ người đang có lượt. Người chơi không có <span class="kw">Đào</span> bị bỏ qua, và người đang hấp hối luôn được hỏi.</p></div></li>
+      <li><div class="body">
+        <p>Mỗi Đào hồi 1 Sinh lực cho người đang hấp hối. Họ cũng có thể đánh <span class="kw">Tửu</span> lên chính mình.</p>
+        <div class="branch">
+          <div><h5>Trở lại trên 0 Sinh lực</h5><div class="row"><img data-k="peach" class="c s" alt="Đào"><span>Người chơi được cứu và ván tiếp tục.</span></div></div>
+          <div><h5>Không ai cứu</h5><div class="row"><span>Người chơi bị loại và bỏ mọi lá bài. Cả hai Tướng được lật, và người hạ gục được thưởng hoặc bị phạt như ở mục <a href="#setup">Chuẩn bị</a>.</span></div></div>
+        </div>
+      </div></li>
+    </ol>
+  </div>
+  <p class="pending">Chờ bổ sung: một người chơi có được đánh nhiều Đào để lên trên 0 trong một vòng không, và cách hiển thị thứ tự vòng khi Đào do người chơi thuộc thế lực khác đánh.</p>
+</section>
+
+<!-- ============ PHÁN XÉT ============ -->
+<section data-page="judgment">
+  <h1>Phán xét</h1>
+  <p class="lead">Lật lá bài trên cùng của chồng bài rút để quyết định một hiệu ứng.</p>
+
+  <ol class="steps">
+    <li><div class="body"><p>Lá bài trên cùng của chồng bài rút được lật ngửa.</p><div class="row"><img data-k="back" class="c s" alt="Mặt sau lá bài"></div></div></li>
+    <li><div class="body"><p>Các kỹ năng đổi phán xét có thể thay lá bài trước khi nó được xét.</p></div></li>
+    <li><div class="body"><p>Lá bài cuối cùng được xét theo chất và số, rồi hiệu ứng được áp dụng.</p></div></li>
+    <li><div class="body"><p>Lá bài đi vào chồng bài bỏ.</p></div></li>
+  </ol>
+
+  <h2>Cẩm nang trì hoãn</h2>
+  <p>Cẩm nang trì hoãn nằm trong khu phán xét. Nó được phán xét trong giai đoạn phán xét của người giữ nó. <span class="kw">Vô Giải Khả Kích</span> có thể hủy nó khi nó được phán xét.</p>
+
+  <div class="scene">
+    <p class="cap">Lạc Bất Tư Thục</p>
+    <div class="row top">
+      <div class="fig"><img data-k="capture" class="c s" alt="Lạc Bất Tư Thục"></div>
+      <div style="flex:1 1 280px;min-width:0">
+        <p style="margin:0 0 8px">Đặt lên người chơi khác. Bất kỳ lá nào không phải cơ khiến người chơi đó bỏ qua giai đoạn ra bài.</p>
+        <div class="branch">
+          <div><h5>Phán xét ra lá cơ</h5><span class="pill ok">9 &hearts;</span> Không có gì xảy ra.</div>
+          <div><h5>Bất kỳ lá nào khác</h5><span class="pill bad">K &spades;</span> Người chơi bỏ qua giai đoạn ra bài.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="scene">
+    <p class="cap">Binh Lương Thốn Đoạn</p>
+    <div class="row top">
+      <div class="fig"><img data-k="starvation" class="c s" alt="Binh Lương Thốn Đoạn"></div>
+      <div style="flex:1 1 280px;min-width:0">
+        <p style="margin:0 0 8px">Đặt lên người chơi khác ở khoảng cách 1. Bất kỳ lá nào không phải chuồn khiến người chơi đó bỏ qua giai đoạn rút bài.</p>
+        <div class="branch">
+          <div><h5>Phán xét ra lá chuồn</h5><span class="pill ok">4 &clubs;</span> Không có gì xảy ra.</div>
+          <div><h5>Bất kỳ lá nào khác</h5><span class="pill bad">Q &diams;</span> Người chơi bỏ qua giai đoạn rút bài.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="scene">
+    <p class="cap">Thiểm Điện</p>
+    <div class="row top">
+      <div class="fig"><img data-k="lightning" class="c s" alt="Thiểm Điện"></div>
+      <div style="flex:1 1 280px;min-width:0">
+        <p style="margin:0 0 8px">Đặt lên chính bạn. Một lá bích từ 2 đến 9 gây 3 sát thương cho người giữ nó. Nếu không, nó chuyển sang người chơi kế tiếp.</p>
+        <div class="branch">
+          <div><h5>Lá bích từ 2 đến 9</h5><span class="pill bad">5 &spades;</span> 3 sát thương cho người giữ.</div>
+          <div><h5>Bất kỳ lá nào khác</h5><span class="pill ok">J &spades;</span> Nó chuyển sang người chơi kế tiếp.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="pending">Chờ bổ sung: một ví dụ cụ thể về kỹ năng của Tướng đổi phán xét, để bước 2 có một lá bài thật để minh họa.</p>
+</section>
+
+<!-- ============ XÍCH ============ -->
+<section data-page="chains">
+  <h1>Xích</h1>
+  <p class="lead">Một người chơi bị xích truyền sát thương lửa và sét sang mọi người chơi bị xích khác.</p>
+
+  <h2>Xích và tháo xích</h2>
+  <p>Đánh <span class="kw">Thiết Tỏa Liên Hoàn</span> vào 1 hoặc 2 người chơi ở bất kỳ khoảng cách nào, kể cả chính bạn. Mỗi mục tiêu chưa bị xích sẽ bị xích, và mỗi mục tiêu đang bị xích sẽ được tháo xích. Bạn cũng có thể đổi lại: bỏ nó và rút 1 lá bài.</p>
+  <div class="scene">
+    <div class="row top">
+      <div class="fig"><img data-k="chains" class="c s" alt="Thiết Tỏa Liên Hoàn"></div>
+      <span class="arrow">&rarr;</span>
+      <div class="seat shu"><img data-k="guan-yu" class="av" alt=""><span class="nm">Người chơi 3</span><span class="sub">Chưa bị xích</span></div>
+      <span class="arrow">&rarr;</span>
+      <div class="seat shu" style="margin-left:6px"><img data-k="guan-yu" class="av" alt=""><img data-k="chain" class="chainmark" alt="Bị xích"><span class="nm">Người chơi 3</span><span class="sub">Bị xích</span></div>
+    </div>
+  </div>
+
+  <h2>Làn sóng xích</h2>
+  <p>Chỉ sát thương lửa và sét được truyền đi. Sát thương thường không bao giờ lan.</p>
+  <div class="scene">
+    <p class="cap">Ví dụ: 2 sát thương lửa lên Người chơi 2</p>
+    <ol class="steps">
+      <li><div class="body">
+        <p>Người chơi 2, 3 và 5 đang bị xích. Người chơi 1 dùng <span class="kw">Hỏa Sát</span> và Người chơi 2 chịu 2 sát thương lửa.</p>
+        <div class="row top">
+          <div class="seat qun"><img data-k="zhang-jiao" class="av" alt=""><span class="nm">Người chơi 5</span><img data-k="chain" class="chainmark" alt="Bị xích"><span class="sub">4 Sinh lực</span></div>
+          <div class="seat wu"><img data-k="sun-quan" class="av" alt=""><span class="nm">Người chơi 2</span><img data-k="chain" class="chainmark" alt="Bị xích"><img data-k="fire" class="hit" alt="Lửa"><span class="sub">4 Sinh lực</span></div>
+          <div class="seat shu"><img data-k="guan-yu" class="av" alt=""><span class="nm">Người chơi 3</span><img data-k="chain" class="chainmark" alt="Bị xích"><span class="sub">4 Sinh lực</span></div>
+        </div></div></li>
+      <li><div class="body">
+        <p>Người chơi 2 mất 2 Sinh lực và được tháo xích. Kỹ năng và giáp của chính họ được giải quyết trước.</p>
+        <div class="row top">
+          <div class="seat qun"><img data-k="zhang-jiao" class="av" alt=""><span class="nm">Người chơi 5</span><img data-k="chain" class="chainmark" alt="Bị xích"><span class="sub">4 Sinh lực</span></div>
+          <div class="seat wu"><img data-k="sun-quan" class="av" alt=""><span class="nm">Người chơi 2</span><span class="sub">2 Sinh lực</span></div>
+          <div class="seat shu"><img data-k="guan-yu" class="av" alt=""><span class="nm">Người chơi 3</span><img data-k="chain" class="chainmark" alt="Bị xích"><span class="sub">4 Sinh lực</span></div>
+        </div></div></li>
+      <li><div class="body">
+        <p>Những người chơi bị xích khác lần lượt bị đánh theo thứ tự lượt, từng người một. Mỗi người chịu đúng <b>2 sát thương gốc</b> và được tháo xích. Một đòn hạ gục hoặc mở ra vòng hấp hối được giải quyết trước khi người kế tiếp bị đánh.</p>
+        <div class="row top">
+          <div class="seat qun"><img data-k="zhang-jiao" class="av" alt=""><span class="nm">Người chơi 5</span><img data-k="fire" class="hit" alt="Lửa"><span class="sub">2 Sinh lực</span></div>
+          <div class="seat wu"><img data-k="sun-quan" class="av" alt=""><span class="nm">Người chơi 2</span><span class="sub">2 Sinh lực</span></div>
+          <div class="seat shu"><img data-k="guan-yu" class="av" alt=""><img data-k="fire" class="hit" alt="Lửa"><span class="nm">Người chơi 3</span><span class="sub">2 Sinh lực</span></div>
+        </div></div></li>
+    </ol>
+  </div>
+  <p class="pending">Chờ bổ sung: một ghi chú ngắn về cách ngăn một đòn lan truyền tự khởi động thêm một làn sóng mới, viết bằng lời cho người chơi thay vì lời của engine.</p>
+</section>
+
+<!-- ============ THUẬT NGỮ ============ -->
+<section data-page="glossary">
+  <h1>Thuật ngữ</h1>
+  <p class="lead">Các thuật ngữ dùng trong wiki, mỗi từ đi kèm hình mà nó nói tới.</p>
+  <dl class="defs">
+    <div><div class="thumb"><img data-k="wei" class="banner" alt=""><img data-k="shu" class="banner" alt=""><img data-k="wu" class="banner" alt=""><img data-k="qun" class="banner" alt=""></div><div class="tx"><dt>Thế lực</dt><dd>Ngụy, Thục, Ngô hoặc Quần. Bạn thuộc thế lực của Tướng đang lật ngửa.</dd></div></div>
+    <div><div class="thumb"><img data-k="hp" class="bean" style="width:30px" alt=""></div><div class="tx"><dt>Sinh lực</dt><dd>Sức khỏe chung của bạn, tạo từ cả hai Tướng.</dd></div></div>
+    <div><div class="thumb"><img data-k="cao-cao" class="c xs" alt=""></div><div class="tx"><dt>Chủ tướng</dt><dd>Tướng đầu tiên trong hai Tướng bạn chọn.</dd></div></div>
+    <div><div class="thumb"><img data-k="guo-jia" class="c xs" alt=""></div><div class="tx"><dt>Phó tướng</dt><dd>Tướng thứ hai được chọn.</dd></div></div>
+    <div><div class="thumb"><img data-k="hidden" class="c xs" alt=""></div><div class="tx"><dt>Tướng ẩn</dt><dd>Một Tướng vẫn đang úp.</dd></div></div>
+    <div><div class="thumb"><img data-k="chain" style="width:36px" alt=""></div><div class="tx"><dt>Bị xích</dt><dd>Trạng thái truyền sát thương lửa và sét sang những người chơi bị xích khác.</dd></div></div>
+    <div><div class="thumb"><img data-k="capture" class="c xs" alt=""></div><div class="tx"><dt>Khu phán xét</dt><dd>Nơi Cẩm nang trì hoãn chờ được phán xét.</dd></div></div>
+    <div><div class="thumb"><img data-k="wuxie" class="c xs" alt=""></div><div class="tx"><dt>Phản hồi</dt><dd>Lá bài đánh ra để đáp lại việc người chơi khác vừa làm.</dd></div></div>
+    <div><div class="thumb"><img data-k="red-hare" class="c xs" alt=""></div><div class="tx"><dt>Tọa kỵ</dt><dd>Trang bị thay đổi khoảng cách. Tọa kỵ thủ đẩy bạn ra xa, Tọa kỵ công kéo người khác lại gần.</dd></div></div>
+    <div><div class="thumb"><img data-k="crossbow" class="c xs" alt=""></div><div class="tx"><dt>Tầm tấn công</dt><dd>Sát của bạn với tới đâu. Do Vũ khí quyết định, hoặc 1 nếu không có.</dd></div></div>
+    <div><div class="thumb"><img data-k="dmg" style="width:34px" alt=""></div><div class="tx"><dt>Hấp hối</dt><dd>Người chơi ở 0 Sinh lực hoặc thấp hơn, cho đến khi vòng cứu kết thúc.</dd></div></div>
+    <div><div class="thumb"><img data-k="back" class="c xs" alt=""></div><div class="tx"><dt>Chồng bài rút</dt><dd>Bộ bài đã xáo. Phán xét lật lá trên cùng của nó.</dd></div></div>
+  </dl>
+</section>
+
+<footer>Bản nháp được xây từ phần chữ của Wiki luật đã có trong ứng dụng và ghi chú chuỗi sự kiện của engine. Mọi hình đều là hình bài, Tướng và Sinh lực của chính trò chơi. Bản dịch tiếng Việt này là bản nháp, cần người bản ngữ xem lại. Chưa có gì là cuối cùng cho đến khi các luật được xác nhận.</footer>
+</main>
+</div>
+
+<script>
+const IMG = {};
+document.querySelectorAll('img[data-k]').forEach(function (el) {
+  var s = IMG[el.getAttribute('data-k')];
+  if (s) el.src = s;
+});
+
+/* Định tuyến theo hash, mỗi lần hiện một trang. */
+var PAGES = ['overview', 'setup', 'turn', 'card-types', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary'];
+function show() {
+  var id = (location.hash || '#overview').slice(1);
+  if (PAGES.indexOf(id) < 0) id = 'overview';
+  document.querySelectorAll('section[data-page]').forEach(function (s) { s.classList.toggle('on', s.getAttribute('data-page') === id); });
+  document.querySelectorAll('nav.toc a').forEach(function (a) {
+    if (a.getAttribute('data-nav') === id) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  });
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', show);
+show();
+
+/* Minh họa khoảng cách: sáu người chơi, bạn là Người chơi 1. Khoảng cách là đường ngắn quanh bàn chỉ đếm người còn trong ván, rồi cộng trừ Tọa kỵ, không bao giờ dưới 1. */
+(function () {
+  var seats = [
+    { n: 1, g: 'cao-cao', f: 'wei', name: 'Bạn' },
+    { n: 2, g: 'liu-bei', f: 'shu' },
+    { n: 3, g: 'sun-quan', f: 'wu' },
+    { n: 4, g: 'zhang-jiao', f: 'qun' },
+    { n: 5, g: 'guan-yu', f: 'shu' },
+    { n: 6, g: 'gan-ning', f: 'wu' }
+  ];
+  var out = {}, plusOn = {}, sel = 2;
+  var ring = document.getElementById('ring');
+  var rangeEl = document.getElementById('range'), minus = document.getElementById('minus'), plus = document.getElementById('plus');
+  var outsEl = document.getElementById('outs'), readout = document.getElementById('readout');
+
+  seats.slice(1).forEach(function (s) {
+    var l = document.createElement('label');
+    l.setAttribute('for', 'out' + s.n);
+    l.innerHTML = '<input type="checkbox" id="out' + s.n + '"> Người chơi ' + s.n;
+    l.querySelector('input').addEventListener('change', function (e) { out[s.n] = e.target.checked; render(); });
+    outsEl.appendChild(l);
+  });
+
+  function stepsBetween(a, b) {
+    var alive = seats.filter(function (s) { return s.n === 1 || !out[s.n]; }).map(function (s) { return s.n; });
+    var ia = alive.indexOf(a), ib = alive.indexOf(b), n = alive.length;
+    var d = Math.abs(ia - ib);
+    return Math.min(d, n - d);
+  }
+  function dist(b) {
+    var d = stepsBetween(1, b);
+    if (plusOn[b]) d += 1;
+    if (minus.checked) d -= 1;
+    return Math.max(1, d);
+  }
+  function render() {
+    if (out[sel]) { sel = (seats.filter(function (s) { return s.n !== 1 && !out[s.n]; })[0] || { n: 0 }).n; }
+    plus.checked = !!plusOn[sel];
+    plus.disabled = !sel;
+    var range = +rangeEl.value;
+    ring.innerHTML = '';
+    var w = ring.clientWidth || 400, h = ring.clientHeight || 320;
+    var rx = w * 0.38, ry = h * 0.36;
+    seats.forEach(function (s, i) {
+      var ang = Math.PI / 2 - (i / seats.length) * Math.PI * 2;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'seat ' + s.f + (out[s.n] ? ' out' : '') + (s.n === sel ? ' sel' : '');
+      b.style.left = (w / 2 + Math.cos(ang) * rx) + 'px';
+      b.style.top = (h / 2 + Math.sin(ang) * ry) + 'px';
+      var html = '<img class="av" alt="" src="' + IMG[s.g] + '"><span class="nm">' + (s.name || 'Người chơi ' + s.n) + '</span>';
+      if (s.n === 1) html += '<span class="sub">Người chơi 1</span>';
+      else if (out[s.n]) html += '<span class="sub">Bị loại</span>';
+      else {
+        var d = dist(s.n);
+        html += '<span class="dbadge' + (d <= range ? ' reach' : '') + '" title="Khoảng cách ' + d + '">' + d + '</span>';
+        if (plusOn[s.n]) html += '<img class="mount" alt="Tuyệt Ảnh" src="' + IMG['shadow-runner'] + '">';
+      }
+      if (s.n === 1 && minus.checked) html += '<img class="mount" alt="Xích Thố" src="' + IMG['red-hare'] + '">';
+      b.innerHTML = html;
+      if (s.n !== 1 && !out[s.n]) b.addEventListener('click', function () { sel = s.n; render(); });
+      else if (s.n !== 1) b.disabled = true;
+      ring.appendChild(b);
+    });
+    if (!sel) { readout.textContent = 'Mọi người chơi khác đều đã bị loại.'; return; }
+    var steps = stepsBetween(1, sel), d = dist(sel);
+    var parts = [steps + ' bước quanh bàn'];
+    if (plusOn[sel]) parts.push('+1 Tọa kỵ thủ');
+    if (minus.checked) parts.push('-1 Tọa kỵ công');
+    readout.innerHTML = 'Người chơi ' + sel + ': ' + parts.join(', ') + '. Khoảng cách <b>' + d + '</b>' + (steps + (plusOn[sel] ? 1 : 0) - (minus.checked ? 1 : 0) < 1 ? ' (không bao giờ dưới 1)' : '') +
+      '.<br>Tầm tấn công <b>' + range + '</b>: Sát ' + (d <= range ? '<b>có thể</b>' : '<b>không thể</b>') + ' nhắm tới Người chơi ' + sel + '.';
+  }
+  rangeEl.addEventListener('change', render);
+  minus.addEventListener('change', render);
+  plus.addEventListener('change', function () { plusOn[sel] = plus.checked; render(); });
+  window.addEventListener('resize', render);
+  window.addEventListener('hashchange', function () { setTimeout(render, 0); });
+  render();
+  setTimeout(render, 60);
+})();
+</script>
+
+</body></html>
