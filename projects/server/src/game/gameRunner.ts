@@ -1,7 +1,7 @@
 import type { BotPolicy, BotTurnMemory } from 'bots';
-import { defaultActionsFor, describeDecision, EMPTY_CLOCK, expireClock, GAME_START_LEAD_IN_MS, getActingSeatIds, getActiveSeatId, getLegalActions, redactStateForSeat, switchClock } from 'engine';
+import { batchPlaybackMs, defaultActionsFor, describeDecision, EMPTY_CLOCK, expireClock, GAME_START_LEAD_IN_MS, getActingSeatIds, getActiveSeatId, getLegalActions, redactStateForSeat, switchClock } from 'engine';
 import type { Action, ClockState, DecisionKind, DecisionSpec, EngineContext, GameState } from 'engine';
-import { BOT_MOVE_DELAY_MS } from 'protocol';
+import { BOT_THINK_MS } from 'protocol';
 import type { ActionSource, GameClockView, GameUpdate } from 'protocol';
 import { GameRecord } from '../persistence/records';
 import { NewGameAction } from '../persistence/repositories';
@@ -9,8 +9,8 @@ import { RoomError } from '../rooms/errors';
 import { toGameUpdate } from '../views/game';
 import { applyActions, applyMove, IllegalMoveError, stateHash } from './engineGame';
 
-// Delay before each bot move, so people can follow along.
-export const BOT_DELAY_MS = BOT_MOVE_DELAY_MS;
+// The thinking gap before each bot move, on top of the animation before it.
+export const BOT_DELAY_MS = BOT_THINK_MS;
 // An open room's seat goes to a bot once its player has been away this long…
 export const TAKEOVER_AWAY_MS = 60_000;
 // …or after this many timeouts in a row while they are away (spec "Takeover").
@@ -42,6 +42,8 @@ export interface RunnerOptions {
   policy: BotPolicy;
   // How long the first decision of a game waits after the last General choice. Default GAME_START_LEAD_IN_MS; tests pass 0.
   startHoldMs?: number;
+  // Whether a bot move and a person's new clock wait for the animation of what just happened. Default true; tests pass false.
+  pacePlayback?: boolean;
 }
 
 export interface RunnerInput {
@@ -86,6 +88,9 @@ export class GameRunner {
   // The first decision of the game waits until this time (ms): the 3 seconds after the last General choice.
   private holdUntil = 0;
   private cancelHold: (() => void) | null = null;
+  // When the animation of the moves so far has finished playing (ms). A person may act before it; only a bot's move and a
+  // person's new clock wait for it. A batch that arrives while one is playing queues behind it, as it does on the client.
+  private playbackUntil = 0;
   // The selection clock ran out: the seats still choosing are defaulted one after another, without a new clock.
   private selectionExpired = false;
   // A server move that could not be stored is retried no sooner than this (ms), so a failing store is not hammered.
@@ -285,6 +290,10 @@ export class GameRunner {
     const wasSelecting = this.state.phase === 'GeneralSelection';
     this.state = steps[steps.length - 1];
     this.seq += rows.length;
+    if (this.options.pacePlayback !== false) {
+      const zoneKindOf = (zoneId: string) => this.state.zones.find((z) => z.id === zoneId)?.kind;
+      this.playbackUntil = Math.max(this.playbackUntil, this.host.now()) + batchPlaybackMs(this.state.log.slice(logFrom), zoneKindOf, this.state.log[logFrom - 1]);
+    }
     if (wasSelecting && this.state.phase !== 'GeneralSelection') this.holdUntil = this.host.now() + (this.options.startHoldMs ?? GAME_START_LEAD_IN_MS);
     try {
       stored?.();
@@ -318,13 +327,16 @@ export class GameRunner {
     if (hold > 0) this.cancelHold = this.host.schedule(hold, async () => (generation === this.generation ? this.refresh() : undefined));
     // A person at the table sees the judgment animation, so a clock waits for the part of it that comes first.
     const spec = describeDecision(this.state, seatId, getLegalActions(this.state, seatId, this.ctx.registry), String(this.seq), { leadIn: this.personControlled() });
-    const decision = spec && hold > 0 ? { ...spec, leadInMs: Math.max(spec.leadInMs ?? 0, hold) } : spec;
+    // The animation of what just happened plays before a bot moves or a person's new clock starts; a person may still act at once.
+    const animation = Math.max(0, this.playbackUntil - now);
+    const wait = Math.max(hold, animation);
+    const decision = spec && wait > 0 ? { ...spec, leadInMs: Math.max(spec.leadInMs ?? 0, wait) } : spec;
     if (this.isBotPlayed(seatId) && !this.closedByClock()) {
       // A human's Play phase clock waits while a bot responds.
       this.clock = switchClock(this.clock, null, now);
       if (this.paused) return;
       // A bot that may change a judgment waits for the animation before it, as a person's clock would.
-      const delay = this.options.botDelayMs + Math.max(decision?.leadInMs ?? 0, hold);
+      const delay = this.options.botDelayMs + Math.max(decision?.leadInMs ?? 0, wait);
       this.timer = { kind: 'bot', seatId, decision: decision?.kind ?? 'response', startsAt: now + hold, endsAt: now + delay };
       this.cancelTimer = this.host.schedule(delay, () => this.botMove(generation));
       return;

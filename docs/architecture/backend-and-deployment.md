@@ -41,7 +41,7 @@ records, and `server/views` maps records and engine state to wire shapes.
 | Rules | none | `resolve`, `getLegalActions`, the mode and content |
 | Randomness | none | the seeded RNG; the seed never leaves the server |
 | Seats | shows "you are Seat 2" | draws seats from the seed at start and binds each member to one |
-| Bots | none | `ruleBasedPolicy` for bot seats, after a 1.5 s delay |
+| Bots | none | `ruleBasedPolicy` for bot seats, after the animation before them plus a 1.5 s thinking gap |
 | Decision clocks | displays the remaining time | owns the clock; at zero it submits the engine's default |
 | Dialogs, sounds, popups, history lines | derived from the event log | sends the log; nothing else |
 
@@ -144,8 +144,18 @@ the only code that changes a running game's state. It owns:
 - **The decision clock.** It asks the engine what each human must decide
   (`describeDecision`) and keeps the budgets (`switchClock`, `expireClock`).
   At zero it submits `defaultActionsFor`, the same default the local timer uses.
-- **Bots.** A bot seat moves after `BOT_DELAY_MS` (1.5 s) using the rule-based
+- **Bots.** A bot seat moves after the animation of what just happened plus
+  `BOT_DELAY_MS` (`BOT_THINK_MS`, 1.5 s of thinking), using the rule-based
   policy over that seat's redacted view.
+- **Playback pacing.** The server cannot see a client's screen, so it works out
+  how long each commit's events take to play from the engine's shared beat
+  durations (`batchPlaybackMs`, `playbackTiming.ts`) at Slow speed, and keeps
+  `playbackUntil`. A batch that arrives while one is playing queues behind it.
+  A bot's move, and a person's *new* decision clock (as its `leadInMs`), wait
+  until `playbackUntil`; a person may still act at once. It overlaps the start
+  hold and the judgment lead-in (the larger wins, never the sum). A runner
+  restored mid-game starts with nothing to wait for. `pacePlayback: false`
+  (runner options, `RoomService` deps) turns it off for tests.
 - **General Selection.** Every seat that still has candidates may choose, in
   any order, so people choose at the same time. A General choice is judged
   against the current state, never refused as stale because another seat's

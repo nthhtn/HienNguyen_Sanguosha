@@ -54,7 +54,7 @@ async function setup(options: { botDelayMs?: number; startHoldMs?: number } = {}
 
   const startServer = async () => {
     // A fixed seed: with a random one, two seats can get the same kingdom and the game ends at General selection.
-    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, startHoldMs: options.startHoldMs ?? 0, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
+    rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 }, registry, buildId: 'test-build', randomSeed: () => 1, startHoldMs: options.startHoldMs ?? 0, pacePlayback: false, botDelayMs: options.botDelayMs ?? 0, takeoverAwayMs: 300 });
     await rooms.restore();
     app = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
     await app.listen({ port: 0, host: '127.0.0.1' });

@@ -69,7 +69,7 @@ What happens on a submit:
    asks the rule-based policy for an action from that seat's **redacted**
    state and the engine's legal actions, then submits it by the same path as a
    human move. The timer starts only once the board's playback has caught up
-   (`PlaybackGate`), and waits `botDelayMs` (2500 ms, `BOT_MOVE_DELAY_MS` in `protocol`, shared with the server) after that, or
+   (`PlaybackGate`), and waits `botDelayMs` (1500 ms, `BOT_THINK_MS` in `protocol`, shared with the server) after that, or
    `instantBotDelayMs` (1500 ms) at Instant speed, where playback takes no time
    and the bots set the pace.
 
@@ -231,7 +231,7 @@ decides a rule.
 | Piece | Role |
 |---|---|
 | `PlaybackDirector` ([playback-director.ts](../../projects/app/src/app/game-board/playback/playback-director.ts)) | provided by the board; watches `visibleState`, queues the events past a cursor, plays one beat at a time on timers. Signals: `displayedState`, `current`, `idle`, `playedLogLength`, `centreStack`; `hold()` pauses it until the returned release is called |
-| Beats ([beats.ts](../../projects/app/src/app/game-board/playback/beats.ts)) | `BEATS`, a registry keyed by event kind: a duration at Normal speed and a `BeatVisual` (turn, phase, draw, play, pass, move, damage, heal, dying, saved, reveal, eliminated, ability). A kind with no entry is a 0 ms beat. A new event gets a beat by adding an entry, not by editing the director. A pause of `BATCH_GAP_MS` follows the last beat of each update |
+| Beats ([beats.ts](../../projects/app/src/app/game-board/playback/beats.ts)) | `BEATS`, a registry keyed by event kind: a `BeatVisual` (turn, phase, draw, play, pass, move, damage, heal, dying, saved, reveal, eliminated, ability). A beat's duration at Normal speed is not here: it is `BEAT_DURATION_MS` in the engine (`playbackTiming.ts`), shared with the server, which waits for the same animation (see [backend-and-deployment.md](backend-and-deployment.md)). A kind with no entry is a 0 ms beat. A new event gets a beat by adding an entry to both, not by editing the director. A pause of `BATCH_GAP_MS` follows the last beat of each update |
 | Displayed state ([displayed-state.ts](../../projects/app/src/app/game-board/playback/displayed-state.ts)) | `FOLDS`, also keyed by kind: applies one event's recorded facts (HP, a card moving, a seat eliminated, a General revealed, turn, phase) to the state on show. Card faces and identities come from the latest visible state, faces only where the viewer may see them. No rules |
 | Seat cues ([seat-cues.ts](../../projects/app/src/app/game-board/playback/seat-cues.ts)) | pure: the beat on show becomes per-seat cues (impact, callout, spotlight) and the resolution centre (who is targeted) |
 | Layer ([playback-layer.ts](../../projects/app/src/app/game-board/playback/playback-layer.ts)) | the overlay, for the beat on show only: a played card at the centre and white arrows to its targets, both faded out by the end of the beat; the caption and the turn banner. Nothing flies |
@@ -269,21 +269,19 @@ when the viewer owes a real decision, and none opens over one. `DecisionTimer`
 returns no decision until the gate is idle, so a local countdown starts only
 once the board has caught up.
 
-**Catching up online.** The server clock never waits, so a client can fall
-behind. [pace.ts](../../projects/app/src/app/game-board/playback/pace.ts) turns
+**Catching up online.** Online the server paces bots and clocks by the animation
+length of each batch, so a client normally plays everything at the chosen speed.
+A client can still fall behind (a late joiner, a reconnect). [pace.ts](../../projects/app/src/app/game-board/playback/pace.ts) turns
 the queue's total (at Normal) and the chosen speed into one divisor,
 recomputed at every beat:
 
 | Case | Rule |
 |---|---|
 | Local game | the speed factor alone; no catching up |
-| Online, no decision owed | the queue is sped up until it fits `CAP_MS` (4 s) |
-| Online, the viewer owes a decision (the rush) | the queue is sped up to finish in about `RUSH_MS` (1 s) |
+| Online | a backlog over `CAP_MS` (30 s, real time) is sped up until what is left fits; a batch the server paced is never that long |
 | Instant | `Infinity`: every duration is 0 |
 
-The rush keeps its peak speed until the queue empties or no decision is owed;
-it is not recomputed on the shrinking queue, which would slow it beat by beat,
-so it really does finish in about a second. The cap then eases back.
+Owing a decision no longer speeds the queue up: the clock starts after the animation, and a person may act at once without it.
 
 **Speed.** `PlaybackSpeed` ([playback-speed.service.ts](../../projects/app/src/app/playback-speed.service.ts))
 holds Slow, Normal, Fast or Instant (a factor of 0.5, 1, 2 or infinity).

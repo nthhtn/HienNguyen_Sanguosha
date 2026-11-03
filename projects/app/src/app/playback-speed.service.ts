@@ -1,9 +1,10 @@
 import { Injectable, computed, signal } from '@angular/core';
+import { SLOW_PLAYBACK_FACTOR } from 'engine';
 
 export type PlaybackSpeedId = 'slow' | 'normal' | 'fast' | 'instant';
 export const PLAYBACK_SPEEDS: readonly PlaybackSpeedId[] = ['slow', 'normal', 'fast', 'instant'];
 // A duration is `ms / factor`, so Instant (Infinity) gives 0.
-const FACTORS: Record<PlaybackSpeedId, number> = { slow: 0.5, normal: 1, fast: 2, instant: Infinity };
+const FACTORS: Record<PlaybackSpeedId, number> = { slow: SLOW_PLAYBACK_FACTOR, normal: 1, fast: 2, instant: Infinity };
 
 // How fast a battle plays: animations and bots read `factor`. The setting is hidden for now, so every
 // game plays at Slow: no stored choice, and reduced motion does not change it.

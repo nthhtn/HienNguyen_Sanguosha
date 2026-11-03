@@ -208,28 +208,32 @@ describe('PlaybackDirector', () => {
     expect(director.current()?.logIndex).toBe(1);
   });
 
-  it('online: owing a decision rushes the rest into about RUSH_MS', () => {
+  it('online: owing a decision does not rush a queue', () => {
     const { director, show, legalActions } = setup({ clockWaitsForPlayback: false });
     const start = table();
     show(start);
     legalActions.set([{ kind: 'PassAction', seatId: 'b' } as Action]);
-    // 5 × 900 + 350 = 4850 ms at Normal.
+    // 5 × 900 + 350 = 4850 ms at Normal: the server waited this long, so it plays this long.
     show(after(start, damage('b'), damage('b'), damage('b'), damage('a'), damage('a')));
-    jest.advanceTimersByTime(950);
+    jest.advanceTimersByTime(4500);
     expect(director.idle()).toBe(false);
-    jest.advanceTimersByTime(100);
+    jest.advanceTimersByTime(400);
     expect(director.idle()).toBe(true);
   });
 
-  it('online: more than CAP_MS queued speeds up', () => {
+  it('online: a backlog of more than CAP_MS speeds up', () => {
     const { director, show } = setup({ clockWaitsForPlayback: false });
     const start = table();
     show(start);
-    // 6 × 900 + 350 = 5750 ms at Normal, over the 4000 ms cap.
-    show(after(start, damage('b'), damage('b'), damage('b'), damage('a'), damage('a'), damage('a')));
-    jest.advanceTimersByTime(700);
+    // 40 × 900 + 350 = 36350 ms at Normal, over the 30000 ms cap: a late joiner catching up.
+    show(after(start, ...Array.from({ length: 40 }, () => damage('b'))));
+    // The first beat takes 900 / 1.21 = 743 ms, not 900.
+    jest.advanceTimersByTime(800);
     expect(director.current()?.logIndex).toBe(1);
-    jest.advanceTimersByTime(5000);
+    // Sped up only until what is left fits the cap: not done by 29.8 s, done before the 36350 ms it takes unsped.
+    jest.advanceTimersByTime(29000);
+    expect(director.idle()).toBe(false);
+    jest.advanceTimersByTime(6540);
     expect(director.idle()).toBe(true);
   });
 
