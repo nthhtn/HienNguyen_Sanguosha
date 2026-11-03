@@ -21,7 +21,7 @@ Which sprite plays, by what happened to the seat (the choice of picture is uncha
 
 - **Chain:** plays on a seat at the moment it turns chained (a `ChainToggledEvent` with
   `chained: true`), on every seat the card turns chained, together with the chain badge
-  appearing. Turning a seat unchained, by Chains again or by fire or thunder damage, plays nothing.
+  appearing, and sounds `chained.ogg` once for the update. Turning a seat unchained, by Chains again or by fire or thunder damage, plays nothing.
 - Every effect shows over the seat's Generals area, appears at once, plays once and never
   blocks playback. A seat hit or chained again restarts its effect.
 - The static PNGs in `content/assets/animation/` stay for the Rules Wiki's marks.
