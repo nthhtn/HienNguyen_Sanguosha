@@ -49,6 +49,8 @@ export interface RoomServiceDeps {
   takeoverAwayMs?: number;
   // How long a game's first decision waits after the last General choice. Default GAME_START_LEAD_IN_MS; tests pass 0.
   startHoldMs?: number;
+  // Whether bots and clocks wait for the animation before them. Default true; tests pass false.
+  pacePlayback?: boolean;
   botPolicy?: BotPolicy;
 }
 
@@ -115,6 +117,7 @@ export class RoomService {
   private readonly botDelayMs: number;
   private readonly takeoverAwayMs: number;
   private readonly startHoldMs: number | undefined;
+  private readonly pacePlayback: boolean;
   private readonly botPolicy: BotPolicy;
   private readonly chat: ChatService;
   private engine: EngineContext | null = null;
@@ -134,6 +137,7 @@ export class RoomService {
     this.botDelayMs = deps.botDelayMs ?? BOT_DELAY_MS;
     this.takeoverAwayMs = deps.takeoverAwayMs ?? TAKEOVER_AWAY_MS;
     this.startHoldMs = deps.startHoldMs;
+    this.pacePlayback = deps.pacePlayback ?? true;
     this.botPolicy = deps.botPolicy ?? ruleBasedPolicy;
     this.chat = new ChatService(this.repos, this.now);
   }
@@ -461,7 +465,7 @@ export class RoomService {
       },
       this.ctx,
       this.runnerHost(entry, game.id),
-      { solo: entry.room.record.visibility === 'solo', botDelayMs: this.botDelayMs, takeoverAwayMs: this.takeoverAwayMs, startHoldMs: this.startHoldMs, policy: this.botPolicy }
+      { solo: entry.room.record.visibility === 'solo', botDelayMs: this.botDelayMs, takeoverAwayMs: this.takeoverAwayMs, startHoldMs: this.startHoldMs, pacePlayback: this.pacePlayback, policy: this.botPolicy }
     );
     entry.runner = runner;
     runner.start();
