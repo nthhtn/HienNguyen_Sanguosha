@@ -1,4 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { cardDisplayData, wikiDistanceTable, wikiDistanceWeapons } from 'content';
 import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
@@ -19,7 +22,7 @@ const OTHERS = SEATS.filter((seat) => seat.n !== 1).map((seat) => seat.n);
 // every distance, range and "can a Sha reach" comes from the game through wikiDistanceTable.
 @Component({
   selector: 'app-distance-demo',
-  imports: [RichText, TPipe, SceneCard, SceneFrame, SceneSeat],
+  imports: [MatCheckboxModule, MatFormFieldModule, MatInputModule, RichText, TPipe, SceneCard, SceneFrame, SceneSeat],
   styleUrls: ['./scene/scene.css'],
   template: `
     <app-scene caption="rules.distance.demo.cap">
@@ -49,29 +52,30 @@ const OTHERS = SEATS.filter((seat) => seat.n !== 1).map((seat) => seat.n);
         <div class="ctl">
           <fieldset>
             <legend>{{ 'rules.distance.demo.rangeLegend' | t }}</legend>
-            <label class="weapon">{{ 'rules.distance.demo.weaponLabel' | t }}
-              <select data-weapon (change)="pickWeapon($event)">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>{{ 'rules.distance.demo.weaponLabel' | t }}</mat-label>
+              <select matNativeControl data-weapon (change)="pickWeapon($event)">
                 <option value="" [selected]="!weapon()">{{ 'rules.distance.demo.noWeapon' | t: { n: baseRange() } }}</option>
                 @for (w of weapons(); track w.id) {
                   <option [value]="w.id" [selected]="weapon() === w.id">{{ w.label }}</option>
                 }
               </select>
-            </label>
+            </mat-form-field>
           </fieldset>
           <fieldset>
             <legend>{{ 'rules.distance.demo.mountsLegend' | t }}</legend>
-            <label><input type="checkbox" data-mount="minus" [checked]="mounts()[1] === 'red-hare'" (change)="setMount(1, 'red-hare', $event)" /> <app-rich key="rules.distance.demo.minusMount" /></label>
-            <label><input type="checkbox" data-mount="plus" [disabled]="selected() === null" [checked]="selected() !== null && mounts()[selected()!] === 'shadow-runner'" (change)="setSelectedMount('shadow-runner', $event)" /> <app-rich key="rules.distance.demo.plusMount" /></label>
+            <mat-checkbox data-mount="minus" [checked]="mounts()[1] === 'red-hare'" (change)="setMount(1, 'red-hare', $event.checked)"><app-rich key="rules.distance.demo.minusMount" /></mat-checkbox>
+            <mat-checkbox data-mount="plus" [disabled]="selected() === null" [checked]="selected() !== null && mounts()[selected()!] === 'shadow-runner'" (change)="setSelectedMount('shadow-runner', $event.checked)"><app-rich key="rules.distance.demo.plusMount" /></mat-checkbox>
           </fieldset>
           <fieldset>
             <legend>{{ 'rules.distance.demo.outLegend' | t }}</legend>
             <div class="outs">
               @for (n of others; track n) {
-                <label><input type="checkbox" [attr.data-out]="n" [checked]="out().has(n)" (change)="setOut(n, $event)" /> {{ 'label.seat' | t: { n } }}</label>
+                <mat-checkbox [attr.data-out]="n" [checked]="out().has(n)" (change)="setOut(n, $event.checked)">{{ 'label.seat' | t: { n } }}</mat-checkbox>
               }
             </div>
           </fieldset>
-          <div class="readout" aria-live="polite" aria-atomic="true"><app-rich [text]="readout()" /></div>
+          <div class="readout" [class.reach]="reaches()" aria-live="polite" aria-atomic="true"><app-rich [text]="readout()" /></div>
         </div>
       </div>
       <p>{{ 'rules.distance.demo.hint' | t }}</p>
@@ -87,12 +91,14 @@ const OTHERS = SEATS.filter((seat) => seat.n !== 1).map((seat) => seat.n);
     .dbadge { position: absolute; top: -4px; right: 2px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; display: grid; place-items: center; font: var(--mat-sys-label-large); background: var(--mat-sys-surface-container-highest); color: var(--mat-sys-on-surface-variant); border: 1px solid var(--mat-sys-outline); }
     .dbadge.reach { background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); border-color: var(--mat-sys-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mat-sys-primary) 30%, transparent); }
     .mount { position: absolute; top: 14px; left: -16px; }
-    .ctl { display: flex; flex-direction: column; gap: 10px; font: var(--mat-sys-body-medium); }
-    fieldset { border: 1px solid var(--mat-sys-outline-variant); border-radius: 6px; padding: 8px 10px; margin: 0; }
-    legend { font: var(--mat-sys-label-small); font-weight: 700; letter-spacing: 0.06em; color: var(--mat-sys-on-surface-variant); padding: 0 4px; }
-    .outs { display: flex; flex-wrap: wrap; gap: 4px 12px; }
-    .outs label { display: flex; align-items: center; gap: 6px; }
-    .readout { background: var(--mat-sys-surface); border: 1px solid var(--mat-sys-outline-variant); border-radius: 6px; padding: 10px 12px; }
+    .ctl { display: flex; flex-direction: column; gap: 14px; min-width: 0; font: var(--mat-sys-body-medium); }
+    fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+    legend { padding: 0 0 4px; font: var(--mat-sys-label-small); font-weight: 700; letter-spacing: 0.06em; color: var(--mat-sys-on-surface-variant); }
+    mat-form-field { width: 100%; }
+    .outs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+    /* What the table says about the selected seat; the bar turns to the accent when a Slash can reach it. */
+    .readout { background: var(--mat-sys-surface); border: 1px solid var(--mat-sys-outline-variant); border-left: 5px solid var(--mat-sys-outline); border-radius: 6px; padding: 10px 12px; }
+    .readout.reach { border-left-color: var(--mat-sys-primary); }
     /* A narrow screen: the controls go under the ring (beside it the ring is too narrow for six seats), and below 600px smaller seats keep the six apart, even with the longer Vietnamese names. */
     @media (max-width: 760px) {
       .dist { grid-template-columns: minmax(0, 1fr); }
@@ -130,6 +136,9 @@ export class DistanceDemo {
     }),
   );
 
+  // Whether a Slash can reach the selected seat, as the game says.
+  protected readonly reaches = computed(() => !!this.rows().find((row) => row.n === this.selected())?.canReach);
+
   protected readonly readout = computed(() => {
     const n = this.selected();
     const row = this.rows().find((r) => r.n === n);
@@ -156,24 +165,23 @@ export class DistanceDemo {
     this.weapon.set((event.target as HTMLSelectElement).value || undefined);
   }
 
-  protected setMount(n: number, mount: string, event: Event): void {
+  protected setMount(n: number, mount: string, checked: boolean): void {
     const next = { ...this.mounts() };
-    if ((event.target as HTMLInputElement).checked) next[n] = mount;
+    if (checked) next[n] = mount;
     else delete next[n];
     this.mounts.set(next);
   }
 
-  protected setSelectedMount(mount: string, event: Event): void {
+  protected setSelectedMount(mount: string, checked: boolean): void {
     const n = this.selected();
-    if (n !== null) this.setMount(n, mount, event);
+    if (n !== null) this.setMount(n, mount, checked);
   }
 
   protected select(n: number): void {
     if (!this.out().has(n)) this.selected.set(n);
   }
 
-  protected setOut(n: number, event: Event): void {
-    const isOut = (event.target as HTMLInputElement).checked;
+  protected setOut(n: number, isOut: boolean): void {
     const next = new Set(this.out());
     if (isOut) next.add(n);
     else next.delete(n);

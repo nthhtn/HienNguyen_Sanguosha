@@ -16,12 +16,12 @@ function mount() {
   const el = fixture.nativeElement as HTMLElement;
   const seatButtons = () => [...el.querySelectorAll<HTMLButtonElement>('.ring button.spot')];
   const buttonOf = (n: number) => seatButtons().find((b) => b.getAttribute('data-seat') === String(n))!;
-  const outBox = (n: number) => el.querySelector<HTMLInputElement>(`input[data-out="${n}"]`)!;
+  // Material checkboxes: the native input sits inside the host that carries the data attribute.
+  const outBox = (n: number) => el.querySelector<HTMLInputElement>(`mat-checkbox[data-out="${n}"] input`)!;
   const readout = () => text(el.querySelector('.readout')!);
   const badges = () => [...el.querySelectorAll('.dbadge')].map(text);
   const tick = (box: HTMLInputElement, checked = true) => {
-    box.checked = checked;
-    box.dispatchEvent(new Event('change'));
+    if (box.checked !== checked) box.click();
     fixture.detectChanges();
   };
   const weaponSelect = () => el.querySelector<HTMLSelectElement>('select[data-weapon]')!;
@@ -30,7 +30,7 @@ function mount() {
     weaponSelect().dispatchEvent(new Event('change'));
     fixture.detectChanges();
   };
-  const mountBox = (which: 'minus' | 'plus') => el.querySelector<HTMLInputElement>(`input[data-mount="${which}"]`)!;
+  const mountBox = (which: 'minus' | 'plus') => el.querySelector<HTMLInputElement>(`mat-checkbox[data-mount="${which}"] input`)!;
   const click = (n: number) => {
     buttonOf(n).click();
     fixture.detectChanges();
@@ -131,6 +131,15 @@ describe('DistanceDemo', () => {
     expect(readout()).toMatch(/^Seat 3: distance 1\. Steps round the table: 1\./);
   });
 
+  it('the readout shows at a glance whether a Slash reaches the selected seat', () => {
+    const { el, click, fixture } = mount();
+    const panel = () => el.querySelector('.readout')!;
+    expect(panel().classList.contains('reach')).toBe(true);
+    click(4);
+    fixture.detectChanges();
+    expect(panel().classList.contains('reach')).toBe(false);
+  });
+
   it('seats are reachable with the keyboard', () => {
     const { buttonOf } = mount();
     expect(buttonOf(3).tabIndex).toBeGreaterThanOrEqual(0);
@@ -158,20 +167,16 @@ describe('DistanceDemo', () => {
   });
 
   it('Shadow Runner on the selected seat lengthens it, as the game says', () => {
-    const { fixture, el, readout, mountBox } = mount();
-    const box = mountBox('plus');
-    box.checked = true;
-    box.dispatchEvent(new Event('change'));
+    const { fixture, el, readout, mountBox, tick } = mount();
+    tick(mountBox('plus'));
     fixture.detectChanges();
     expect(el.querySelector('.ring .spot[data-seat="3"] .mount')).not.toBeNull();
     expect(readout()).toContain(`distance ${oracle({ mounts: { 3: 'shadow-runner', 6: 'shadow-runner' } }).seats.find((s) => s.n === 3)!.distance}`);
   });
 
   it('Red Hare on you shortens the others but never below 1, as the game says', () => {
-    const { fixture, badges, mountBox } = mount();
-    const box = mountBox('minus');
-    box.checked = true;
-    box.dispatchEvent(new Event('change'));
+    const { fixture, badges, mountBox, tick } = mount();
+    tick(mountBox('minus'));
     fixture.detectChanges();
     expect(badges()).toEqual(oracle({ mounts: { 1: 'red-hare', 6: 'shadow-runner' } }).seats.filter((s) => s.distance !== null).map((s) => String(s.distance)));
     expect(badges().every((b) => Number(b) >= 1)).toBe(true);
