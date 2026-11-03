@@ -115,7 +115,7 @@ describe('Auth screens in Vietnamese', () => {
 
   it('the name and chat limits are filled into their errors', () => {
     const tr = makeTranslator(vi, 'vi');
-    expect(resolveMsg(errorMsg(new ApiError('invalid_name', 'x', 400)), tr)).toBe('Tên cần từ 1 đến 24 ký tự');
+    expect(resolveMsg(errorMsg(new ApiError('invalid_name', 'x', 400)), tr)).toBe('Tên cần từ 1 đến 24 ký tự và không được bắt đầu bằng Bot:');
     expect(resolveMsg(errorMsg(new ApiError('chat_too_long', 'x', 400)), tr)).toBe('Tin nhắn tối đa 300 ký tự');
   });
 
