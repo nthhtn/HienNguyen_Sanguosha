@@ -813,4 +813,9 @@ export const vi: Messages = {
   'rules.judgment.starvation': 'Đặt lên người chơi khác ở khoảng cách 1. Bất kỳ lá nào không phải chuồn khiến người chơi đó bỏ qua giai đoạn rút bài.',
   'rules.judgment.lightning': 'Đặt lên chính bạn. Một lá bích từ 2 đến 9 gây 3 sát thương cho người giữ nó. Nếu không, nó chuyển sang người chơi kế tiếp.',
   'rules.judgment.see': 'Đọc thêm trong mục [[/wiki/tools|Cẩm nang]].',
+  'rules.scene.hp': 'Sinh lực',
+  'rules.scene.lostHp': 'Sinh lực đã mất',
+  'rules.scene.cardBack': 'Mặt sau lá bài',
+  'rules.scene.hiddenGeneral': 'Tướng ẩn',
+  'rules.scene.hpCount': '{n} Sinh lực',
 };

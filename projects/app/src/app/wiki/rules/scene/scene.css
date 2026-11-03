@@ -1,0 +1,23 @@
+/* Page-level classes for the scenes on the rules pages. The scene components style themselves. */
+.scene-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+.scene-row.top { align-items: flex-start; }
+.scene-row.center { align-items: center; }
+.fig { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font: var(--mat-sys-body-small); color: var(--mat-sys-on-surface-variant); }
+.fig b { color: var(--mat-sys-on-surface); font: var(--mat-sys-label-large); }
+.fig .tag { font: var(--mat-sys-label-small); font-weight: 700; letter-spacing: 0.06em; color: var(--mat-sys-primary); }
+.arrow { align-self: center; font-size: 1.6rem; color: var(--mat-sys-on-surface-variant); padding: 0 2px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 99px; font: var(--mat-sys-label-small); font-weight: 700; background: var(--mat-sys-surface); border: 1px solid var(--mat-sys-outline-variant); }
+.pill.ok { color: var(--mat-sys-primary); border-color: var(--mat-sys-primary); }
+.pill.bad { color: var(--mat-sys-error); border-color: var(--mat-sys-error); }
+/* A numbered list whose order is the rule */
+ol.steps { list-style: none; padding: 0; margin: 12px 0; counter-reset: s; display: flex; flex-direction: column; gap: 14px; }
+ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; margin: 0; }
+ol.steps > li::before { content: counter(s); width: 28px; height: 28px; border-radius: 50%; background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); display: grid; place-items: center; font-weight: 700; margin-top: 2px; }
+ol.steps .body { min-width: 0; }
+ol.steps .body > p { margin: 0 0 8px; }
+/* Two outcomes side by side */
+.branch { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 8px; }
+.branch > div { background: var(--mat-sys-surface); border: 1px solid var(--mat-sys-outline-variant); border-radius: 6px; padding: 10px 12px; min-width: 0; }
+.branch h5 { margin: 0 0 6px; font: var(--mat-sys-label-small); letter-spacing: 0.06em; color: var(--mat-sys-on-surface-variant); }
+/* A rule that is not written down yet */
+.note-pending { border-left: 3px solid var(--mat-sys-tertiary); padding: 2px 0 2px 12px; color: var(--mat-sys-on-surface-variant); }

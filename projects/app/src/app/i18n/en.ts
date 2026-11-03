@@ -814,4 +814,9 @@ export const en = {
   'rules.judgment.starvation': 'Placed on another seat at distance 1. Anything but a club means that seat skips its Draw Phase.',
   'rules.judgment.lightning': 'Placed on yourself. A spade from 2 to 9 deals 3 damage to its holder. Otherwise it passes to the next seat.',
   'rules.judgment.see': 'Read more under [[/wiki/tools|Tools]].',
+  'rules.scene.hp': 'HP',
+  'rules.scene.lostHp': 'Lost HP',
+  'rules.scene.cardBack': 'Card Back',
+  'rules.scene.hiddenGeneral': 'Hidden General',
+  'rules.scene.hpCount': '{n} HP',
 } satisfies Record<string, string>;
