@@ -42,9 +42,9 @@ describe('Six Swords of Wu', () => {
     expect(def?.weaponRange).toBe(2);
   });
 
-  it('gives its owner and each Kingdom mate +1 attack range', () => {
+  it('gives each other Kingdom mate +1 attack range and leaves its owner at exactly 2', () => {
     const s = table(['Wu', 'Wu', 'Wei', 'Qun'], { 'seat-a': [sword] });
-    expect(range(s, 'seat-a')).toBe(3);
+    expect(range(s, 'seat-a')).toBe(2);
     expect(range(s, 'seat-b')).toBe(2);
     expect(range(s, 'seat-c')).toBe(1);
     expect(range(s, 'seat-d')).toBe(1);
@@ -55,9 +55,9 @@ describe('Six Swords of Wu', () => {
     expect(range(s, 'seat-b')).toBe(1);
   });
 
-  it('with no exposed General, helps the owner alone', () => {
+  it('with no exposed General, helps nobody beyond the sword itself', () => {
     const s = table(['hidden', 'hidden', 'Wu', 'Qun'], { 'seat-a': [sword] });
-    expect(range(s, 'seat-a')).toBe(3);
+    expect(range(s, 'seat-a')).toBe(2);
     expect(range(s, 'seat-b')).toBe(1);
     expect(range(s, 'seat-c')).toBe(1);
   });
@@ -65,7 +65,7 @@ describe('Six Swords of Wu', () => {
   it('stops at once when the sword moves to the discard pile', () => {
     const worn = table(['Wu', 'Wu', 'Wei', 'Qun'], { 'seat-a': [sword] });
     expect(range(worn, 'seat-b')).toBe(2);
-    expect(range(worn, 'seat-a')).toBe(3);
+    expect(range(worn, 'seat-a')).toBe(2);
     const discarded: GameState = {
       ...worn,
       zones: worn.zones.map((z) =>
