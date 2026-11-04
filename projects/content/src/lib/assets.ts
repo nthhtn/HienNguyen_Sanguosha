@@ -107,3 +107,6 @@ export function hpIconUrls(hp: number): string[] {
 
 // The badge on a chained seat (the Game screen's chain image).
 export const CHAIN_ICON_URL = '/card-art/misc/chain.png';
+// The two halves of a chained seat's chain: one hangs from the top left corner of the General holder, one from the top right.
+export const CHAIN_LEFT_URL = '/card-art/misc/chain_left.png';
+export const CHAIN_RIGHT_URL = '/card-art/misc/chain_right.png';

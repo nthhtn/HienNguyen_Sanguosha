@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
-import { abilityName, AMBITIONIST_ICON_URL, equipSlotOf, generalDisplayData, hpIconUrls, kingdomBannerUrl } from 'content';
+import { abilityName, AMBITIONIST_ICON_URL, CHAIN_LEFT_URL, CHAIN_RIGHT_URL, equipSlotOf, generalDisplayData, hpIconUrls, kingdomBannerUrl } from 'content';
 import { cardIdDisplayName, seatForce, seatKingdomLabel } from '../labels';
 import { SeatAvatar } from './seat-avatar';
 import { AvatarSkill } from './avatar-skills';
@@ -49,6 +49,11 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
       }
       <div class="sections">
       <section class="panel general" [attr.aria-label]="'seat.generalAria' | t">
+        <!-- Chained (Chains): a chain hangs from each top corner of the holder, with a text badge below. -->
+        @if (seat().chained) {
+          <img class="chain chain-left" [src]="chainLeft" alt="" aria-hidden="true" />
+          <img class="chain chain-right" [src]="chainRight" alt="" aria-hidden="true" />
+        }
         <div class="header">
           <strong>{{ name() }}</strong>
           @if (isBot()) {
@@ -66,10 +71,6 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           }
           @if (seat().faceDown) {
             <span class="face-down-badge">{{ 'seat.faceDown' | t }}</span>
-          }
-          <!-- Chained (Chains): fire or thunder damage to it passes along the chain. In the top right corner of the Generals. -->
-          @if (seat().chained) {
-            <img class="chain-badge" src="/card-art/misc/chain.png" [alt]="'seat.chained' | t" [attr.title]="'seat.chainedTitle' | t" />
           }
           <!-- The picture of the last hit, over the Generals, fading out over a few seconds whatever playback does next. -->
           @for (fx of shownDamage(); track fx.id) {
@@ -89,6 +90,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
               <app-playing-card size="small" [card]="card" />
             }
           </div>
+        }
+        @if (seat().chained) {
+          <!-- Fire or thunder damage to this seat passes along the chain. -->
+          <span class="chain-badge" [attr.title]="'seat.chainedTitle' | t">{{ 'seat.chained' | t }}</span>
         }
         @if (formName(); as form) {
           <span class="form-badge">{{ 'seat.form' | t: { form: form } }}</span>
@@ -269,7 +274,13 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .generals { position: relative; }
     .generals.face-down app-seat-avatar { filter: grayscale(0.6) brightness(0.8); }
     .form-badge, .silenced-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
-    .chain-badge { position: absolute; top: 0; right: 0; height: 36px; width: auto; z-index: 1; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%)); }
+    /* The two chain pieces hang from the holder's top corners, over its border; the holder is the General panel. */
+    .panel.general { position: relative; }
+    .chain { position: absolute; top: -6px; width: 44%; max-width: 120px; height: auto; z-index: 2; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%)); }
+    .chain-left { left: -6px; }
+    .chain-right { right: -6px; }
+    .chain-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #5a4a3a; color: #fbf7ec; border: 1px dashed #d5c8ad; }
+    .chain-badge::before { content: '⛓ '; }
     .face-down-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
     .pile { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
     .slot { position: relative; width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
@@ -324,6 +335,8 @@ export class SeatTile {
   // seat that belongs to no force).
   protected readonly force = computed(() => seatForce(this.seat()));
   protected readonly ambitionistIcon = AMBITIONIST_ICON_URL;
+  protected readonly chainLeft = CHAIN_LEFT_URL;
+  protected readonly chainRight = CHAIN_RIGHT_URL;
   // An Ambitionist keeps its icon instead; a hidden kingdom shows nothing. The viewer's own seat is not masked, so it
   // knows its Kingdom before showing it: the banner waits until one of its Generals is revealed.
   protected readonly bannerUrl = computed(() => {
