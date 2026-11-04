@@ -83,7 +83,7 @@ Wide layout: unchanged.
 
 - Slim bar (44 px): menu button, brand, phase chip (existing phase indicator), music and sound toggles, and a History button that opens the panel.
 - Table fills the rest. All seats stay visible: opponents around the top and sides, as the round table does today, compacted. Seat shows face, name, HP pips, hand count and equipment strip.
-- Your seat: a compact seat tile on the table, centred right above the hand (still at the bottom of the screen), outside the hand's box, not in the bottom row. On medium and tall phones (480 px and up) it has a row of its own; on shorter phones it floats over the foot of the table, since a row would leave the table too little height.
+- Your seat: a compact seat tile on the table, centred right above the hand (still at the bottom of the screen), outside the whole bottom box, which holds the hand, the action buttons and the History button in one box that starts below the seat (developer-confirmed 2026-11-04), not in the bottom row. On medium and tall phones (480 px and up) it has a row of its own; on shorter phones it floats over the foot of the table, since a row would leave the table too little height.
 - Player's hand: one row along the bottom. **Scroll and Shrink (developer-chosen 2026-11-04):** one row of smaller cards (about 80% of the normal size) that scrolls sideways with a fade at the edge. Overlap and Two Rows were considered and not chosen. A selected card lifts and shows in full.
 - Action buttons (Play Card, Pass and whatever the ask or response panel currently offers) sit in a fixed spot at the bottom right.
 - Prompts and the countdown stay centred on the table.

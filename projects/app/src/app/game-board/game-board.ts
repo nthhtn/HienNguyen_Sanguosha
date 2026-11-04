@@ -167,16 +167,17 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                     [registry]="gameService.registry"
                     (actionChosen)="submit($event)"
                   />
+                  @if (layout.panelAsOverlay()) {
+                    <!-- Phone and medium layouts: the two tiles' full lists live in a panel that slides over the table. -->
+                    <button type="button" mat-icon-button class="panel-toggle" [attr.aria-label]="'board.panel.open' | t" [attr.aria-expanded]="layout.panelOpen()" (click)="layout.togglePanel()">
+                      <mat-icon>history</mat-icon>
+                    </button>
+                  }
                 </section>
                 <!-- Bottom right: the action history, then the discard pile; same height. -->
                 @if (!layout.panelAsOverlay()) {
                   <app-action-history class="history" [history]="actionHistory()" />
                   <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
-                } @else {
-                  <!-- Phone and medium layouts: the two tiles' full lists live in a panel that slides over the table. -->
-                  <button type="button" mat-icon-button class="panel-toggle" [attr.aria-label]="'board.panel.open' | t" [attr.aria-expanded]="layout.panelOpen()" (click)="layout.togglePanel()">
-                    <mat-icon>history</mat-icon>
-                  </button>
                 }
               </div>
               @if (layout.panelAsOverlay() && layout.panelOpen()) {
@@ -248,8 +249,8 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
        your hand and that button. Your seat floats over the foot of the table, centred right above the hand, outside
        the hand's box: a short phone has no height for a row of its own. */
     :host-context([data-layout='phone']) .board-grid {
-      grid-template-columns: minmax(0, 1fr) auto;
-      grid-template-areas: 'battlefield battlefield' 'hand history';
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'battlefield' 'hand';
     }
     :host-context([data-layout='phone']) .your-seat {
       grid-area: auto; grid-column: 1; grid-row: 1; align-self: end; justify-self: center; z-index: 3; margin-bottom: 4px;
@@ -270,21 +271,21 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
        the table (above), since a seat row would leave the table too little height. */
     :host-context([data-layout='medium']) .board-grid {
       --bottom-height: 170px;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr);
       grid-template-rows: minmax(0, 1fr) auto var(--bottom-height);
-      grid-template-areas: 'battlefield battlefield' 'seat seat' 'hand history';
+      grid-template-areas: 'battlefield' 'seat' 'hand';
     }
     :host-context([data-layout='medium']) .your-seat { --seat-zoom: 0.46; --seat-height: 124px; justify-self: center; }
     @media (min-height: 480px) {
       :host-context([data-layout='phone']) .board-grid {
         --bottom-height: 150px;
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr);
         grid-template-rows: minmax(0, 1fr) auto var(--bottom-height);
-        grid-template-areas: 'battlefield battlefield' 'seat seat' 'hand history';
+        grid-template-areas: 'battlefield' 'seat' 'hand';
       }
       :host-context([data-layout='phone']) .your-seat { grid-area: seat; align-self: stretch; z-index: auto; margin-bottom: 0; --seat-zoom: 0.34; --seat-height: 92px; justify-self: center; }
     }
-    .panel-toggle { grid-area: history; align-self: center; width: 48px; height: 48px; }
+    .panel-toggle { flex: none; align-self: center; width: 48px; height: 48px; }
     .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
     .panel {
       position: fixed; top: var(--mat-toolbar-standard-height, 44px); right: 0; bottom: 0; z-index: 16;
