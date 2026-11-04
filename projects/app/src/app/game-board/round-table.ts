@@ -40,6 +40,8 @@ const STATUS_HEIGHT = 24;
   imports: [SeatTile, PlayingCard, CardArt, MatProgressSpinnerModule, TPipe, PlaybackLayer],
   template: `
     <div class="table" [class.crowded]="state().seats.length > 6" [style.background]="background()">
+      <!-- The other seats, the centre and playback fill the table above the foot kept for the viewer's own seat. -->
+      <div class="field" [style.bottom.px]="reserveBottom()">
       <!-- Only the latest action sequence, one step per line, each with its card. -->
       <div class="centre" [style.width.px]="fit().centreWidth" [style.top.px]="fit().centreY" [style.max-height.px]="fit().centreHeight">
         @if (turnedUp().length > 0) {
@@ -95,6 +97,8 @@ const STATUS_HEIGHT = 24;
         </div>
       }
       <app-playback-layer [state]="state()" [viewerSeatId]="viewerSeatId()" [line]="latestLine()" [centreY]="fit().centreY" [centreHeight]="fit().centreHeight" />
+      </div>
+      <div class="viewer"><ng-content select="[viewerSeat]" /></div>
     </div>
   `,
   styles: `
@@ -111,6 +115,8 @@ const STATUS_HEIGHT = 24;
       background: radial-gradient(ellipse at center, #8b7559 0%, #6d5a43 55%, #4b3e2f 100%);
       box-shadow: inset 0 0 40px rgb(0 0 0 / 45%);
     }
+    .field { position: absolute; inset: 0 0 0 0; }
+    .viewer { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); z-index: 3; }
     .centre {
       position: absolute;
       left: 50%;
@@ -156,6 +162,8 @@ export class RoundTable {
   readonly cues = input<Partial<Record<string, SeatCue>>>({});
   readonly damageEffects = input<Partial<Record<string, ShownDamage>>>({});
   readonly resolving = input(false);
+  // Room kept at the foot of the table, in px, for the viewer's own seat (projected as [viewerSeat]); 0 for none.
+  readonly reserveBottom = input(0);
 
   private readonly i18n = inject(I18n);
   private readonly backgrounds = inject(BattlefieldBackgrounds);
@@ -168,7 +176,7 @@ export class RoundTable {
   private readonly size = signal(DEFAULT_SIZE);
   private readonly layout = inject(Layout);
   // A phone on its side can spare the centre less room, so the seats stay big enough to read.
-  protected readonly fit = computed(() => fitTable(this.size().width, this.size().height, this.state().seats.length, this.layout.wide() ? undefined : PHONE_CENTRE));
+  protected readonly fit = computed(() => fitTable(this.size().width, Math.max(1, this.size().height - this.reserveBottom()), this.state().seats.length, this.layout.wide() ? undefined : PHONE_CENTRE));
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId(), this.fit()).filter((p) => !p.isViewer));
 
   // The latest action sequence, oldest first, in the action history's wording.

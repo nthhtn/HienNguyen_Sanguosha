@@ -1,4 +1,5 @@
 import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, HostListener, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterLink } from '@angular/router';
@@ -63,7 +64,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
   selector: 'app-game-board',
   // The board's own playback: it lives as long as the board does, and reads the board's GameService (online, the remote one).
   providers: [PlaybackDirector],
-  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, RotatePrompt, CdkTrapFocus, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, RotatePrompt, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -120,11 +121,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
               }
             </div>
           } @else {
-            <div class="board">
-              <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
-              <div class="board-grid">
-                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [damageEffects]="damageEffects()" [resolving]="resolving()" />
-                <!-- Bottom left corner: the viewer's own seat, off the table. -->
+            <ng-template #seatTpl>
                 @if (viewerSeat(); as seat) {
                   <div class="your-seat" [attr.data-seat-id]="seat.id">
                     <app-seat-tile
@@ -148,6 +145,19 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                       (useSkill)="submit($event)"
                     />
                   </div>
+                }
+            </ng-template>
+            <div class="board">
+              <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
+              <div class="board-grid">
+                <app-round-table class="battlefield" [reserveBottom]="seatReserve()" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [damageEffects]="damageEffects()" [resolving]="resolving()">
+                  @if (layout.panelAsOverlay()) {
+                    <div viewerSeat><ng-container [ngTemplateOutlet]="seatTpl" /></div>
+                  }
+                </app-round-table>
+                <!-- Large layout: the viewer's own seat in the bottom-left corner, off the table. -->
+                @if (!layout.panelAsOverlay()) {
+                  <ng-container [ngTemplateOutlet]="seatTpl" />
                 }
                 <section class="your-hand">
                   <div class="hand">
@@ -246,16 +256,12 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     .discard { grid-area: discard; }
     .history, .discard { box-sizing: border-box; width: 140px; min-height: 0; overflow: hidden; justify-content: center; }
     /* Phone layout (layout.service.ts): the history tiles give way to a button for the panel, so the bottom row is
-       your hand and that button. Your seat floats over the foot of the table, centred right above the hand, outside
-       the hand's box: a short phone has no height for a row of its own. */
+       your hand and that button. */
     :host-context([data-layout='phone']) .board-grid {
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: 'battlefield' 'hand';
     }
-    :host-context([data-layout='phone']) .your-seat {
-      grid-area: auto; grid-column: 1; grid-row: 1; align-self: end; justify-self: center; z-index: 3; margin-bottom: 4px;
-      --seat-zoom: 0.26; --seat-height: 70px; overflow: visible;
-    }
+    :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.26; --seat-height: 70px; }
     /* Short screens (a phone on its side): one screen, no scrolling. The table gets what the slim bottom row and the
        phase bar leave; seats come first, then the hand row, then the rest. */
     :host-context([data-layout='phone']) .board-grid { --bottom-height: 124px; gap: 4px; }
@@ -266,24 +272,18 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
       --mat-button-text-container-height: 44px; --mat-button-tonal-container-height: 44px;
       display: block; max-width: 140px;
     }
-    /* Your seat sits above the hand, centred, still at the bottom of the screen, so the hand gets the whole row width.
-       Medium and a phone from 480 px tall (an unfolded Fold) give it a row of its own; a shorter phone floats it over
-       the table (above), since a seat row would leave the table too little height. */
+    /* Phone and medium layouts: your seat is part of the battlefield, at the foot of the table (round-table.ts holds
+       it and keeps the other seats above it), so the board is the table and one bottom box for the hand, the action
+       buttons and the History button. Nothing beige wraps the seat. seatReserve in the class matches these heights. */
     :host-context([data-layout='medium']) .board-grid {
       --bottom-height: 170px;
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: minmax(0, 1fr) auto var(--bottom-height);
-      grid-template-areas: 'battlefield' 'seat' 'hand';
+      grid-template-areas: 'battlefield' 'hand';
     }
-    :host-context([data-layout='medium']) .your-seat { --seat-zoom: 0.46; --seat-height: 124px; justify-self: center; }
+    :host-context([data-layout='medium']) .your-seat { --seat-zoom: 0.46; --seat-height: 124px; }
     @media (min-height: 480px) {
-      :host-context([data-layout='phone']) .board-grid {
-        --bottom-height: 150px;
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: minmax(0, 1fr) auto var(--bottom-height);
-        grid-template-areas: 'battlefield' 'seat' 'hand';
-      }
-      :host-context([data-layout='phone']) .your-seat { grid-area: seat; align-self: stretch; z-index: auto; margin-bottom: 0; --seat-zoom: 0.34; --seat-height: 92px; justify-self: center; }
+      :host-context([data-layout='phone']) .board-grid { --bottom-height: 150px; }
+      :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.34; --seat-height: 92px; }
     }
     .panel-toggle { flex: none; align-self: center; width: 48px; height: 48px; }
     .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
@@ -306,6 +306,12 @@ export class GameBoard {
   private readonly injector = inject(Injector);
   protected readonly director = inject(PlaybackDirector);
   protected readonly layout = inject(Layout);
+  // The foot of the table kept for your own seat, in px: its height (game-board's CSS) plus a 4 px gap.
+  protected readonly seatReserve = computed(() => {
+    if (!this.layout.panelAsOverlay()) return 0;
+    if (this.layout.kind() === 'medium') return 128;
+    return this.layout.viewportHeight() >= 480 ? 96 : 74;
+  });
   // Leaving the board never leaves its panel open for the next one.
   private readonly closePanelOnLeave = inject(DestroyRef).onDestroy(() => this.layout.closePanel());
   // What the viewer may do: nothing while playback is busy, so a card still flying can never be

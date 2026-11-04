@@ -30,6 +30,7 @@ export class Layout {
   readonly wide = computed(() => this.kind() !== 'phone');
   // The History panel slides over the board (phone and medium); on large the board keeps its two tiles.
   readonly panelAsOverlay = computed(() => this.kind() !== 'large');
+  readonly viewportHeight = this.height.asReadonly();
   readonly portrait = computed(() => this.height() > this.width());
   readonly navOpen = this._navOpen.asReadonly();
   readonly panelOpen = this._panelOpen.asReadonly();

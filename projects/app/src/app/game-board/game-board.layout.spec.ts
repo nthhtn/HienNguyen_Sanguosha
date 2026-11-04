@@ -95,6 +95,14 @@ describe('GameBoard layouts', () => {
       expect(el.querySelector('app-board-panel')).not.toBeNull();
     });
 
+    it('puts your seat at the foot of the table, outside the bottom box that holds the hand', () => {
+      const { el } = runningBoard();
+      expect(el.querySelector('app-round-table .viewer .your-seat app-seat-tile')).not.toBeNull();
+      expect(el.querySelectorAll('.your-seat')).toHaveLength(1);
+      expect(el.querySelector('.your-hand .your-seat')).toBeNull();
+      expect(el.querySelector('.your-hand button.panel-toggle')).not.toBeNull();
+    });
+
     it('does not ask for a rotation, even in portrait', () => {
       resizeTo(1000, 1200);
       expect(runningBoard().el.querySelector('app-rotate-prompt')).toBeNull();

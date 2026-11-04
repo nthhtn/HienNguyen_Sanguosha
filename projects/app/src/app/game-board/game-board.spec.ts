@@ -49,6 +49,7 @@ function waitsOnDamageAnswer(state: GameState): boolean {
 }
 
 describe('GameBoard', () => {
+  afterEach(() => Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 }));
   let gameService: GameService;
 
   beforeEach(async () => {
@@ -211,6 +212,8 @@ describe('GameBoard', () => {
   });
 
   it('seats everyone at a round table from the viewer’s chair, with the viewer’s own hand below', () => {
+    // The large layout keeps the viewer's seat off the table; narrower layouts put it at the table's foot (layout spec).
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1366 });
     gameService.startGame(3, 1);
     finishSelection(gameService);
     const viewer = gameService.activeSeatId()!;
