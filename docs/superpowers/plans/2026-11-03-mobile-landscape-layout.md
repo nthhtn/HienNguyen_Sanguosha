@@ -4,7 +4,7 @@
 
 **Goal:** Make the app usable on phones, tablets and desktops: a navigation drawer on small screens, a landscape-only game board that fits phone heights (wide screens keep today's board), and a layout switch that works the same everywhere.
 
-**Architecture:** One `Layout` service reads the window size and decides `'phone'` or `'wide'` (wide means width ≥ 900 px and height ≥ 600 px). It writes the result to `<html data-layout="…">`, so CSS in every component keys off one attribute (`:host-context([data-layout='phone'])`) and code reads the same signal. Presentation only: no engine, bot, protocol or game-service change.
+**Architecture:** One `Layout` service reads the window size and decides `'phone'` or `'wide'` (wide means width ≥ 900 px and height ≥ 600 px; Task 7b adds a third size, `'large'`, at width ≥ 1280 px). It writes the result to `<html data-layout="…">`, so CSS in every component keys off one attribute (`:host-context([data-layout='phone'])`) and code reads the same signal. Presentation only: no engine, bot, protocol or game-service change.
 
 **Tech Stack:** Angular (standalone, signals), Angular Material (`MatSidenav`), Jest with `jest-preset-angular`. Tests run with `npm test`; `npm run verify` is lint, typecheck and build.
 
@@ -15,7 +15,7 @@
 - **No Leave Game flow exists.** The board only has `goToSetup()` (after game over or after an error), and online has no mid-game leave. The spec's "Leave Game button reusing the existing leave flow" has nothing to reuse and adding leave or forfeit is new behaviour. **This plan leaves Leave Game out.** The panel holds only the two tabs.
 - **The board is one shared component.** `online/online-game.ts` wraps the same `GameBoard`, so a board change covers local and online games.
 - **The board is not the mock-up's layout.** Today it is a grid: a round table (`RoundTable`, sized by `fitTable`), then a bottom row of your seat (`.your-seat`, zoomed), your hand and action list, and two small tiles (`app-action-history`, `app-discard-pile`) that each open a full list in a dialog. Below 768 px it stacks and the page scrolls. The plan keeps that structure and compacts it.
-- **A wide-layout rail would change the desktop look.** The spec asks for an always-open History rail on tablets and also forbids any visible desktop change. The real wide board already shows both tiles in its bottom row, so **this plan keeps the tiles on the wide layout and adds no rail.** Tablets therefore look as they do today. If the developer wants the rail on tablets, it is one extra task after this plan.
+- **A wide-layout rail would change the desktop look.** The real wide board shows both tiles in its bottom row, so **at 1280 px and up this plan keeps the tiles and adds no rail.** Updated 2026-11-04: from 900 to 1279 px wide the two tiles squeezed the hand, so Task 7b collapses them into the panel button there.
 - The existing 599 px, 767 px and 899 px media rules (`app.css`, `game-board.ts`, `phase-indicator.ts`, `general-selection.ts`) are replaced by `data-layout` rules where they conflict with this plan. List each replaced rule in the pull request.
 
 ## Global Constraints
@@ -26,7 +26,7 @@
 - Only one of the nav drawer and the board panel is open at a time.
 - Rotate message only when the board is on screen, layout is `'phone'` and the window is portrait.
 - UI text: Title Case for labels, sentence case for sentences; Vietnamese in sentence case, marked draft. New strings: `nav.menu` "Menu", `board.rotate.title` "Rotate Your Device", `board.rotate.hint` "The Guozhan board needs a landscape screen. Turn your phone sideways to keep playing.", `board.panel.open` "History" (button label).
-- Wide layout must look identical to today (anti-goal): same bottom-row tiles, no rail; verify with before and after screenshots.
+- Large layout (1280 px wide and up) must look identical to today (anti-goal): same bottom-row tiles, no rail; verify with before and after screenshots. The medium layout (900 to 1279 px) is a deliberate change.
 - Engine, bots, protocol, `GameService`, `RemoteGameService`: untouched. Local Setup and Game may change layout only.
 - Use `dvh`, not `vh`. Keep seats and buttons clear of `env(safe-area-inset-*)`.
 
@@ -185,6 +185,18 @@ This task is mostly CSS in `game-board.ts`, `round-table.ts`, `seat-tile.ts`, `h
 - [ ] **Step 4: Check by eye** with browser device emulation at every phone size in the spec table, in a running bot game with 2, 5 and the maximum number of seats, with a 0-card and a 20-card hand, and with each dialog open. Save screenshots; list anything that does not fit.
 - [ ] **Step 5:** `npx jest projects/app/src/app/game-board` → PASS.
 - [ ] **Step 6: Commit** `feat: fit the game board to phone heights`
+
+### Task 7b: Medium layout, your seat above the hand, shrunk hand
+
+Added 2026-11-04 after the developer saw History and Discard Pile crowding the hand. Decisions are in the spec (Decision summary 5 to 7, and Open Question 3). Mock-up: the Landscape Layout Preview.
+
+- [ ] **Step 1: Failing tests.** In `layout.service.spec.ts`: `layoutFor` returns `'phone'` below 900 px wide or 600 px tall, `'medium'` from 900 to 1279 px wide, `'large'` from 1280 px wide (both with height ≥ 600). `wide()` stays true for medium and large, and a new `panelAsOverlay()` is true for phone and medium. In `game-board.layout.spec.ts`: at medium the History button and `app-board-panel` are used and the two tiles are absent; at large the tiles stay and there is no button.
+- [ ] **Step 2: Implement `Layout`.** Add the `'medium'` and `'large'` kinds and `LARGE_MIN_WIDTH = 1280`. Update the `data-layout` attribute and the existing `wide()` users. Make the board show the button and panel when `panelAsOverlay()` is true.
+- [ ] **Step 3: Your seat above the hand.** In phone and medium layouts, move `.your-seat` out of the bottom row: a compact tile centred right above the hand, still at the bottom of the screen. The bottom row is the hand and the action buttons. Check the round table's seats do not overlap it (`fitTable` gets the reduced height).
+- [ ] **Step 4: Hand as Scroll and Shrink.** In phone layout, hand cards at about 80% of the normal size, one row, sideways scroll, edge fade. Medium layout keeps its larger cards.
+- [ ] **Step 5: Check by eye** at 1133 × 744, 1194 × 834, 1280 × 800 and the phone sizes, and compare 1366 × 768 with the Task 1 baseline.
+- [ ] **Step 6:** `npx jest projects/app/src/app` → PASS.
+- [ ] **Step 7: Commit** `feat: medium layout collapses History, seat above the hand, shrunk hand`
 
 ### Task 8: Every other routed page at 360 px
 

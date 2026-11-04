@@ -84,7 +84,7 @@ Wide layout: unchanged.
 - Slim bar (44 px): menu button, brand, phase chip (existing phase indicator), music and sound toggles, and a History button that opens the panel.
 - Table fills the rest. All seats stay visible: opponents around the top and sides, as the round table does today, compacted. Seat shows face, name, HP pips, hand count and equipment strip.
 - Your seat: a compact seat tile on the table, centred right above the hand (still at the bottom of the screen), not in the bottom row.
-- Player's hand: one row along the bottom. **How it shows many cards is open (see Open Questions):** overlap the cards so all are visible, wrap to two rows, or keep one scrolling row of smaller cards. A selected card lifts and shows in full.
+- Player's hand: one row along the bottom. **Scroll and Shrink (developer-chosen 2026-11-04):** one row of smaller cards (about 80% of the normal size) that scrolls sideways with a fade at the edge. Overlap and Two Rows were considered and not chosen. A selected card lifts and shows in full.
 - Action buttons (Play Card, Pass and whatever the ask or response panel currently offers) sit in a fixed spot at the bottom right.
 - Prompts and the countdown stay centred on the table.
 - Slide-over panel from the right, about 40 to 42% of the width, with two tabs, Action History and Discard Pile, and shortcuts for sound, speed and leaving the game. A dim layer covers the table while it is open; tapping it closes the panel.
@@ -141,7 +141,7 @@ Written in the UI text style from CLAUDE.md (Title Case for labels, sentence cas
 
 1. **Resolved by the developer (2026-11-03):** the tablet layout needs width of at least 900 px and height of at least 600 px, so a short, wide desktop window gets the phone layout. See the note under Target devices.
 2. **Resolved by the developer (2026-11-03):** the local Setup and Game screens may change their layout for phones and tablets, presentation only. Their behaviour, and how a local game starts and plays, stay exactly as they are.
-3. **Open: hand on small screens.** One scrolling row hides most cards. Three options are mocked side by side in the preview: Overlap (all cards visible, corners only, tap lifts), Two Rows (smaller cards, costs about 36 px of table height) and Scroll and Shrink. The author recommends Overlap. Nothing is built until the developer picks.
+3. **Resolved by the developer (2026-11-04):** the hand on small screens is Scroll and Shrink. The preview compares it with Overlap and Two Rows.
 
 ## How to check it
 
