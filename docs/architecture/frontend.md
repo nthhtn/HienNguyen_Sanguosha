@@ -323,13 +323,17 @@ without a seat), the Main and Deputy General names and Survived or Fallen.
 The reveal is timed, not blocking: headline first, the columns one after
 another, then the winning column lights in its Force colour while the others
 dim (a draw lights none); reduced motion shows the end state at once.
-Columns are 150 to 190 px and wrap by container query: at 700 px or narrower
-two per row, the winning column first.
+The columns sit on two rows of equal-width cards: `cardsPerRow` puts
+`ceil(n / 2)` on the top row (3 is 2 + 1, 4 is 2 + 2, 5 is 3 + 2, 6 is 3 + 3),
+the shorter bottom row is centred, and one or two columns stay on one row. A
+card is capped at 354 px, or 320 px when three share the top row, so the board
+is at most 1080 px wide. By container query, at 700 px or narrower two per row,
+the winning column first, and at 460 px or narrower one per row.
 
 Locally the seats come from the full `state` (the game is over, so nothing is
 secret). Online they come from `lastGame.finalSeats`, which
 `RemoteGameService.ending` fills from the live final state; the finished
-online card is 980 px wide, has no title of its own and lets the board supply
+online card is 1112 px wide (the 1080 px board plus padding), has no title of its own and lets the board supply
 the "Game Over" eyebrow. A stopped game (`broken` or `outdated`) has no
 result, so the card shows its stopped message and no columns. The server only sends the Generals because
 `redactStateForSeat` lifts them once a result exists.

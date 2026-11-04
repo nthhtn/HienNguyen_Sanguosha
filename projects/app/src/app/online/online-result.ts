@@ -21,9 +21,9 @@ import { TPipe } from '../i18n/t.pipe';
     .result mat-card-header { justify-content: center; }
     .result mat-card-content { text-align: center; }
     /* A finished game's card is as wide as the victory board (its max-width,
-       980px), so on a desktop the board is wider than its 700px narrow
-       breakpoint and shows its columns side by side. */
-    .online-card.result.finished { width: min(100%, 980px); }
+       1080px) plus the card's 16px side padding, so on a desktop the board is wider than its 700px
+       narrow breakpoint and fits three cards on its top row. */
+    .online-card.result.finished { width: min(100%, 1112px); }
     .result.finished mat-card-content { padding-top: 16px; }
   `,
   template: `
