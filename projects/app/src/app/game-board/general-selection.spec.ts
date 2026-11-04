@@ -2,7 +2,6 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, GeneralDefinition, Kingdom } from 'engine';
-import { MatDialog } from '@angular/material/dialog';
 import { GeneralSelection } from './general-selection';
 
 function general(id: string, kingdom: Kingdom, maxHp: number): [string, GeneralDefinition] {
