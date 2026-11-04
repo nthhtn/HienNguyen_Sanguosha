@@ -43,8 +43,8 @@ const STATUS_HEIGHT = 24;
       <!-- The other seats, the centre and playback fill the table above the foot kept for the viewer's own seat. -->
       <div class="field" [style.bottom.px]="reserveBottom()">
       <!-- Only the latest action sequence, one step per line, each with its card. -->
-      <div class="centre" [style.width.px]="fit().centreWidth" [style.top.px]="fit().centreY" [style.max-height.px]="fit().centreHeight">
-        <div class="centre-zoom" [style.zoom]="centreZoom()" [style.width.%]="100 / centreZoom()">
+      <div class="centre" [style.width.px]="fit().centreWidth" [style.top.px]="fit().centreY" [style.max-height.px]="centreMaxHeight()">
+        <div class="centre-zoom" [style.zoom]="centreZoom()" [style.width.px]="fit().centreWidth / centreZoom()">
         @if (turnedUp().length > 0) {
           <div class="turned-up" [attr.aria-label]="'table.turnedUp' | t">
             @for (card of turnedUp(); track card.instanceId) {
@@ -182,6 +182,9 @@ export class RoundTable {
   protected readonly fit = computed(() => fitTable(this.size().width, Math.max(1, this.size().height - this.reserveBottom()), this.state().seats.length, this.layout.wide() ? undefined : PHONE_CENTRE, this.layout.seatScale(this.state().seats.length)));
   // How much the action log in the centre is scaled: with the seats on phone and medium, 1 on large.
   protected readonly centreZoom = computed(() => this.layout.centreScale(this.state().seats.length));
+  // On a short screen the table may leave the centre almost no room; it still gets one whole step, which then sits over
+  // the seats a little, rather than a step cut off.
+  protected readonly centreMaxHeight = computed(() => Math.max(this.fit().centreHeight, (STEP_HEIGHT + STEP_GAP) * this.centreZoom()));
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId(), this.fit()).filter((p) => !p.isViewer));
 
   // The latest action sequence, oldest first, in the action history's wording.

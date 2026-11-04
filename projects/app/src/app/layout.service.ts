@@ -37,8 +37,8 @@ export class Layout {
   private readonly seatBase = computed(() => {
     const kind = this.kind();
     if (kind === 'large') return 1;
-    if (kind === 'medium') return 0.58;
-    return this.height() >= 480 ? 0.42 : 0.31;
+    if (kind === 'medium') return 0.66;
+    return this.height() >= 480 ? 0.48 : 0.35;
   });
   seatScale(seatCount: number): number {
     const base = this.seatBase();
