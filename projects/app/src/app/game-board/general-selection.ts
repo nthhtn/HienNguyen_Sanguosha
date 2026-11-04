@@ -145,10 +145,10 @@ interface CandidateViewModel {
     }
     .row { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 16px; container-type: size; }
     .candidate {
-      /* The art on the left is never bigger than its 200 x 290, and only shrinks when the row is too short (6px is
+      /* The art on the left is never bigger than 130 x 189, and only shrinks when the row is too short (6px is
          the Force border). The skills take the rest of the card's width. */
-      --art-width: min(200px, calc((100cqh - var(--caption-height) - 6px) * 200 / 290));
-      flex: 1 1 0; min-width: 0; max-width: 460px; height: min(100cqh, 340px);
+      --art-width: min(130px, calc((100cqh - var(--caption-height) - 6px) * 200 / 290));
+      flex: 1 1 0; min-width: 0; max-width: 380px; height: min(100cqh, 260px);
       box-sizing: border-box;
       display: flex; flex-direction: row;
       cursor: pointer;
@@ -169,7 +169,7 @@ interface CandidateViewModel {
     /* .large is needed to outrank CardArt's own fixed 160 x 220 size. */
     .art ::ng-deep .card-art.large { display: block; width: 100%; height: 100%; object-fit: cover; }
     .right { flex: 1; min-width: 0; display: flex; border-left: 1px solid var(--mat-sys-outline-variant); }
-    .effects { flex: 1; min-width: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 10px; font: var(--mat-sys-body-small); text-align: left; }
+    .effects { flex: 1; min-width: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 10px; font: var(--mat-sys-body-medium); text-align: left; overflow-wrap: anywhere; }
     .title { font-style: italic; color: var(--mat-sys-on-surface-variant); margin-bottom: 6px; }
     .skills { padding-left: 1.1em; margin: 0; }
     .skills li { margin-bottom: 6px; }
@@ -206,11 +206,11 @@ interface CandidateViewModel {
        page scrolls; the bar with Confirm stays at the bottom of the screen. */
     :host-context([data-layout='phone']), :host-context([data-layout='medium']) { height: auto; min-height: calc(100dvh - var(--mat-toolbar-standard-height, 44px) - 16px); }
     :host-context([data-layout='phone']) .candidates, :host-context([data-layout='medium']) .candidates {
-      flex: none; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+      flex: none; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 380px)); justify-content: center;
     }
     :host-context([data-layout='phone']) .row, :host-context([data-layout='medium']) .row { display: contents; }
     :host-context([data-layout='phone']) .candidate, :host-context([data-layout='medium']) .candidate {
-      --art-width: calc((240px - var(--caption-height) - 6px) * 200 / 290); max-width: none; height: 240px;
+      --art-width: 130px; max-width: none; height: 270px;
     }
     :host-context([data-layout='phone']) .bar { position: sticky; bottom: 0; z-index: 2; background: var(--mat-sys-surface-container); border-radius: 12px; }
     @media (max-width: 600px) {
