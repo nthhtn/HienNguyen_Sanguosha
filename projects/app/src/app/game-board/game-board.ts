@@ -245,15 +245,19 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     .discard { grid-area: discard; }
     .history, .discard { box-sizing: border-box; width: 140px; min-height: 0; overflow: hidden; justify-content: center; }
     /* Phone layout (layout.service.ts): the history tiles give way to a button for the panel, so the bottom row is
-       your seat, your hand and that button. */
+       your hand and that button. Your seat floats over the foot of the table, centred right above the hand, outside
+       the hand's box: a short phone has no height for a row of its own. */
     :host-context([data-layout='phone']) .board-grid {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      grid-template-areas: 'battlefield battlefield battlefield' 'seat hand history';
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: 'battlefield battlefield' 'hand history';
+    }
+    :host-context([data-layout='phone']) .your-seat {
+      grid-area: auto; grid-column: 1; grid-row: 1; align-self: end; justify-self: center; z-index: 3; margin-bottom: 4px;
+      --seat-zoom: 0.26; --seat-height: 70px; overflow: visible;
     }
     /* Short screens (a phone on its side): one screen, no scrolling. The table gets what the slim bottom row and the
        phase bar leave; seats come first, then the hand row, then the rest. */
     :host-context([data-layout='phone']) .board-grid { --bottom-height: 124px; gap: 4px; }
-    :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.46; }
     :host-context([data-layout='phone']) .your-hand { gap: 8px; padding: 4px 6px; }
     :host-context([data-layout='phone']) .your-hand h3 { display: none; }
     :host-context([data-layout='phone']) .actions {
@@ -262,8 +266,8 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
       display: block; max-width: 140px;
     }
     /* Your seat sits above the hand, centred, still at the bottom of the screen, so the hand gets the whole row width.
-       Medium always has the height for it; a phone only from 480 px tall (an unfolded Fold). A shorter phone keeps the
-       seat beside the hand: a seat row would leave the table too little height. */
+       Medium and a phone from 480 px tall (an unfolded Fold) give it a row of its own; a shorter phone floats it over
+       the table (above), since a seat row would leave the table too little height. */
     :host-context([data-layout='medium']) .board-grid {
       --bottom-height: 170px;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -278,7 +282,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
         grid-template-rows: minmax(0, 1fr) auto var(--bottom-height);
         grid-template-areas: 'battlefield battlefield' 'seat seat' 'hand history';
       }
-      :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.34; --seat-height: 92px; justify-self: center; }
+      :host-context([data-layout='phone']) .your-seat { grid-area: seat; align-self: stretch; z-index: auto; margin-bottom: 0; --seat-zoom: 0.34; --seat-height: 92px; justify-self: center; }
     }
     .panel-toggle { grid-area: history; align-self: center; width: 48px; height: 48px; }
     .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
