@@ -70,6 +70,12 @@ describe('SeatTile', () => {
     expect(render(makeSeat()).querySelector('.chain-badge')).toBeNull();
   });
 
+  it('puts the chain marker on the Generals (top right of their avatar), not on the seat tile', () => {
+    const el = render(makeSeat({ chained: true }));
+    expect(el.querySelector('.generals .chain-badge')).not.toBeNull();
+    expect(el.querySelector('.tile > .chain-badge')).toBeNull();
+  });
+
   it('shows the chosen Form and a silenced seat', () => {
     const forms = { slot: 'main' as const, held: ['hidden'], chosen: { generalId: 'zhou-yu', skillId: 'brave-gesture' } };
     expect(render(makeSeat({ forms }), {}).querySelector('.form-badge')?.textContent?.trim()).toBe('Form: Zhou Yu (Brave Gesture)');
