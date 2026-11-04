@@ -12,7 +12,9 @@ The web app is hard to use on phones and tablets. The developer's words: "almost
 2. **Every other screen works in portrait and landscape.** Setup, Rooms, Rules, wiki, sign-in and settings must be usable at 360 px wide.
 3. **Width decides the layout: 900 px.** The unfolded Galaxy Z Fold5 (841 px wide) keeps the phone layout (developer-approved). A second condition for tall-enough screens is an open question below, because 915 px wide phones need it.
 4. **Under 900 px** the navigation bar is a menu button, the brand and the music and sound toggles. Every other link moves into a slide-in drawer. In a game, Action History and Discard Pile live in a slide-over panel opened from a button in the bar.
-5. **At 900 px and up** the full navigation bar stays as today. In a game the History and Discard Pile panel is permanently open as a side rail.
+5. **Medium: 900 to 1279 px wide (and 600 px tall or more)** the full navigation bar stays as today, with larger seats and cards. In a game History and Discard Pile are collapsed into the panel button, as on phones, so the hand keeps the width (developer-approved 2026-11-04: the two 140 px tiles squeezed the hand).
+6. **Large: 1280 px wide and up (and 600 px tall or more)** the panel is permanently open as a side rail, as the two tiles are today.
+7. **Your own seat sits on the table**, above the hand, on phone and medium layouts. The bottom row is only the hand and the action buttons (developer-approved 2026-11-04).
 
 ## Goals
 
@@ -48,10 +50,10 @@ Landscape CSS pixel sizes (width × height). These are the test matrix.
 | Galaxy S24 Ultra, Pixel 8 | 915 × 412 | Phone (see note) |
 | Galaxy Z Fold5, folded | 882 × 344 | Phone, smallest height |
 | Galaxy Z Fold5, unfolded | 841 × 673 | Phone, roomier |
-| iPad Mini | 1133 × 744 | Tablet |
-| iPad Pro 11 inch | 1194 × 834 | Tablet |
-| Galaxy Tab S9 | 1280 × 800 | Tablet |
-| PC or small laptop | 1366 × 768 | Tablet layout, the desktop layout as today |
+| iPad Mini | 1133 × 744 | Medium (panel slides over) |
+| iPad Pro 11 inch | 1194 × 834 | Medium (panel slides over) |
+| Galaxy Tab S9 | 1280 × 800 | Large (panel rail) |
+| PC or small laptop | 1366 × 768 | Large, the desktop layout as today |
 | MacBook Air 13 inch | 1440 × 900 | Same |
 | Medium monitor, Full HD | 1920 × 1080 | Same, seats and cards scale up |
 | Large monitor, QHD | 2560 × 1440 | Same, seats and cards scale up |
@@ -81,7 +83,8 @@ Wide layout: unchanged.
 
 - Slim bar (44 px): menu button, brand, phase chip (existing phase indicator), music and sound toggles, and a History button that opens the panel.
 - Table fills the rest. All seats stay visible: opponents around the top and sides, as the round table does today, compacted. Seat shows face, name, HP pips, hand count and equipment strip.
-- Player's hand: one row of cards along the bottom, scrolling sideways when it overflows, with a fade at the edge. A selected card lifts.
+- Your seat: a compact seat tile on the table, above the left end of the hand, not in the bottom row.
+- Player's hand: one row along the bottom. **How it shows many cards is open (see Open Questions):** overlap the cards so all are visible, wrap to two rows, or keep one scrolling row of smaller cards. A selected card lifts and shows in full.
 - Action buttons (Play Card, Pass and whatever the ask or response panel currently offers) sit in a fixed spot at the bottom right.
 - Prompts and the countdown stay centred on the table.
 - Slide-over panel from the right, about 40 to 42% of the width, with two tabs, Action History and Discard Pile, and shortcuts for sound, speed and leaving the game. A dim layer covers the table while it is open; tapping it closes the panel.
@@ -89,7 +92,9 @@ Wide layout: unchanged.
 
 ### Game board, tablet layout (landscape)
 
-Same as phone, with larger seats, cards and buttons, the full navigation bar, and the panel permanently open as a rail of about 280 px at the right. No panel button.
+Medium (900 to 1279 px wide): same as phone, with larger seats, cards and buttons and the full navigation bar. The panel still slides over from a button.
+
+Large (1280 px and up): the same, with the panel permanently open as a rail of about 280 px at the right. No panel button.
 
 ### Portrait during a game
 
@@ -136,6 +141,7 @@ Written in the UI text style from CLAUDE.md (Title Case for labels, sentence cas
 
 1. **Resolved by the developer (2026-11-03):** the tablet layout needs width of at least 900 px and height of at least 600 px, so a short, wide desktop window gets the phone layout. See the note under Target devices.
 2. **Resolved by the developer (2026-11-03):** the local Setup and Game screens may change their layout for phones and tablets, presentation only. Their behaviour, and how a local game starts and plays, stay exactly as they are.
+3. **Open: hand on small screens.** One scrolling row hides most cards. Three options are mocked side by side in the preview: Overlap (all cards visible, corners only, tap lifts), Two Rows (smaller cards, costs about 36 px of table height) and Scroll and Shrink. The author recommends Overlap. Nothing is built until the developer picks.
 
 ## How to check it
 
