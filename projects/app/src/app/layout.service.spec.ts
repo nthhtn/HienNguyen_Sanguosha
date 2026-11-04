@@ -112,9 +112,9 @@ describe('Layout seat scale', () => {
 
   it.each([
     [1366, 768, 1],
-    [1133, 744, 0.46],
-    [841, 673, 0.34],
-    [852, 393, 0.26],
+    [1133, 744, 0.58],
+    [841, 673, 0.42],
+    [852, 393, 0.31],
   ])('is the base size for 4 seats at %i x %i', (width, height, scale) => {
     resizeTo(width, height);
     expect(TestBed.inject(Layout).seatScale(4)).toBeCloseTo(scale);
@@ -126,8 +126,8 @@ describe('Layout seat scale', () => {
     expect(layout.seatScale(8)).toBeLessThan(layout.seatScale(4));
     expect(layout.seatScale(12)).toBeLessThan(layout.seatScale(8));
     expect(layout.seatScale(2)).toBeGreaterThan(layout.seatScale(4));
-    expect(layout.seatScale(12)).toBeGreaterThanOrEqual(0.5 * 0.46);
-    expect(layout.seatScale(2)).toBeLessThanOrEqual(1.3 * 0.46);
+    expect(layout.seatScale(12)).toBeGreaterThanOrEqual(0.5 * 0.58);
+    expect(layout.seatScale(2)).toBeLessThanOrEqual(1.3 * 0.58);
   });
 
   it('leaves the large layout to fit the table by itself', () => {
