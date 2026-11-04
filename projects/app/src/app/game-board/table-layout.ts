@@ -48,10 +48,10 @@ interface Box { left: number; right: number; top: number; bottom: number }
 // it takes no room here. Sizes the other seat tiles to a table of `width` x `height` px: the largest
 // scale at which every tile stays inside the table, no two tiles overlap, and
 // the centre keeps room for the current action sequence.
-export function fitTable(width: number, height: number, seatCount: number, room: CentreRoom = DEFAULT_CENTRE): TableFit {
+export function fitTable(width: number, height: number, seatCount: number, room: CentreRoom = DEFAULT_CENTRE, maxScale = 1): TableFit {
   const seats = Array.from({ length: seatCount }, (_, index) => ({ id: String(index), index }));
   let fit = layoutAt(MIN_SCALE, width, height, seats, room);
-  for (let scale = 1; scale > MIN_SCALE; scale -= SCALE_STEP) {
+  for (let scale = Math.min(1, maxScale); scale > MIN_SCALE; scale -= SCALE_STEP) {
     const candidate = layoutAt(scale, width, height, seats, room);
     if (candidate.fits) {
       fit = candidate;

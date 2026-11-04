@@ -106,3 +106,17 @@ describe('Layout', () => {
     expect(layout.navOpen()).toBe(false);
   });
 });
+
+describe('Layout seat scale', () => {
+  afterAll(() => resizeTo(1024, 768));
+
+  it.each([
+    [1366, 768, 1],
+    [1133, 744, 0.46],
+    [841, 673, 0.34],
+    [852, 393, 0.26],
+  ])('is the same for your seat and the others at %i x %i', (width, height, scale) => {
+    resizeTo(width, height);
+    expect(TestBed.inject(Layout).seatScale()).toBe(scale);
+  });
+});

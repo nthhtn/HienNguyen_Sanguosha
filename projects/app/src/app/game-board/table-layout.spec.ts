@@ -189,3 +189,14 @@ describe('fitTable', () => {
     expect(fit.centreWidth * fit.centreHeight).toBeGreaterThanOrEqual(before - 1);
   });
 });
+
+describe('fitTable with a largest scale', () => {
+  it('keeps the tiles no bigger than the cap, however much room there is', () => {
+    expect(fitTable(1133, 420, 3).scale).toBeGreaterThan(0.46);
+    expect(fitTable(1133, 420, 3, undefined, 0.46).scale).toBeLessThanOrEqual(0.46);
+  });
+
+  it('still shrinks below the cap when the table is small', () => {
+    expect(fitTable(500, 200, 5, undefined, 0.46).scale).toBeLessThan(0.46);
+  });
+});
