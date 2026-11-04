@@ -243,6 +243,13 @@ describe('SeatTile', () => {
     expect(render({ ...makeSeat(), kingdom: 'Wei' }).querySelector('.ambitionist-icon')).toBeNull();
   });
 
+  it('gives the viewer’s own seat no banner until one of its Generals is revealed, though it knows its Kingdom', () => {
+    const hidden = { ...makeSeat(), kingdom: 'Shu' as const };
+    expect(render(hidden, { isViewer: true }).querySelector('.kingdom-banner')).toBeNull();
+    const revealed = { ...hidden, generals: { main: { generalDefinitionId: 'kingdomWars:zhang-fei', revealed: true }, deputy: hidden.generals!.deputy } };
+    expect(render(revealed, { isViewer: true }).querySelector('img.kingdom-banner')).not.toBeNull();
+  });
+
   it('hangs the kingdom banner on the left of a revealed seat, and none while hidden or for an Ambitionist', () => {
     const banner = render({ ...makeSeat(), kingdom: 'Shu' }).querySelector('img.kingdom-banner') as HTMLImageElement;
     expect(banner.getAttribute('src')).toBe('/card-art/banner/shu.png');

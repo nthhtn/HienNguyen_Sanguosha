@@ -324,10 +324,13 @@ export class SeatTile {
   // seat that belongs to no force).
   protected readonly force = computed(() => seatForce(this.seat()));
   protected readonly ambitionistIcon = AMBITIONIST_ICON_URL;
-  // An Ambitionist keeps its icon instead; a hidden kingdom shows nothing.
+  // An Ambitionist keeps its icon instead; a hidden kingdom shows nothing. The viewer's own seat is not masked, so it
+  // knows its Kingdom before showing it: the banner waits until one of its Generals is revealed.
   protected readonly bannerUrl = computed(() => {
     const seat = this.seat();
-    return seat.allegiance === 'ambitionist' ? null : kingdomBannerUrl(seat.kingdom);
+    if (seat.allegiance === 'ambitionist') return null;
+    if (this.isViewer() && !(seat.generals?.main.revealed || seat.generals?.deputy.revealed)) return null;
+    return kingdomBannerUrl(seat.kingdom);
   });
   protected readonly hpIcons = computed(() => hpIconUrls(this.seat().combinedHp));
 
