@@ -1,5 +1,7 @@
 # Mobile and Tablet Landscape Layout — Design
 
+> **Update 2026-11-04:** the phone parts of this spec (the phone game board, its seat and hand tuning, the compact buttons) are superseded by `2026-11-04-block-play-on-phones-design.md`: a game is not playable below 900 x 600 px. The medium and large layouts and the other pages stand.
+
 Status: draft for approval. Nothing is built. A visual mock-up of everything below was reviewed with the developer: https://claude.ai/artifact/5rZyRL17nWayVuPjNBjtkD (private artifact; colours and card art are approximate, the layout is the proposal).
 
 ## Why

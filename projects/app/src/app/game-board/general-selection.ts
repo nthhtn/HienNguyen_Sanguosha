@@ -202,17 +202,17 @@ interface CandidateViewModel {
     .slot-name { font: var(--mat-sys-title-small); }
     .summary { flex: 1; font: var(--mat-sys-body-medium); }
     .timer { width: 160px; }
-    /* Phone layout (layout.service.ts): too short to fit every card, so the cards keep a size you can tap and the
-       page scrolls; the bar with Confirm stays at the bottom of the screen. */
-    :host-context([data-layout='phone']), :host-context([data-layout='medium']) { height: auto; min-height: calc(100dvh - var(--mat-toolbar-standard-height, 44px) - 16px); }
-    :host-context([data-layout='phone']) .candidates, :host-context([data-layout='medium']) .candidates {
+    /* Medium layout (layout.service.ts): too short to fit every card, so the cards keep their size and the page
+       scrolls; the bar with Confirm stays at the bottom of the screen. */
+    :host-context([data-layout='medium']) { height: auto; min-height: calc(100dvh - var(--mat-toolbar-standard-height, 44px) - 16px); }
+    :host-context([data-layout='medium']) .candidates {
       flex: none; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 380px)); justify-content: center;
     }
-    :host-context([data-layout='phone']) .row, :host-context([data-layout='medium']) .row { display: contents; }
-    :host-context([data-layout='phone']) .candidate, :host-context([data-layout='medium']) .candidate {
+    :host-context([data-layout='medium']) .row { display: contents; }
+    :host-context([data-layout='medium']) .candidate {
       --art-width: 130px; max-width: none; height: 270px;
     }
-    :host-context([data-layout='phone']) .bar { position: sticky; bottom: 0; z-index: 2; background: var(--mat-sys-surface-container); border-radius: 12px; }
+    :host-context([data-layout='medium']) .bar { position: sticky; bottom: 0; z-index: 2; background: var(--mat-sys-surface-container); border-radius: 12px; }
     @media (max-width: 600px) {
       .bar { gap: 8px; }
       .summary { flex-basis: 100%; order: 3; }

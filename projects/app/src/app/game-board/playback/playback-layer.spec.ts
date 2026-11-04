@@ -71,7 +71,26 @@ describe('PlaybackLayer', () => {
     expect(arrowsShown(el)).toBe(3);
     const arrow = el.querySelector('svg g.arrow')!;
     expect(arrow.querySelector('path.outline')).not.toBeNull();
-    expect(arrow.querySelector('path.line')!.getAttribute('marker-end')).toMatch(/^url\(#playback-head-/);
+    // The head is its own element, so it can wait until the line has reached it (a marker on the line shows at once).
+    expect(arrow.querySelector('path.line')!.getAttribute('marker-end')).toBeNull();
+    expect(arrow.querySelector('path.tip')!.getAttribute('marker-end')).toMatch(/^url\(#playback-head-/);
+  });
+
+  it('shows the arrow head only once the line has been drawn to it, tail to head', async () => {
+    // jsdom has no path geometry; the line only animates when it has a length.
+    const proto = SVGElement.prototype as unknown as { getTotalLength?: () => number };
+    proto.getTotalLength = () => 100;
+    const { fixture } = setup(playBeat(['seat-1']));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    delete proto.getTotalLength;
+    const calls = animate.mock.calls as [Keyframe[], KeyframeAnimationOptions][];
+    const drawing = calls.find(([keyframes]) => 'strokeDashoffset' in keyframes[0])!;
+    const head = calls.find(([keyframes]) => keyframes[0]['opacity'] === 0 && keyframes.at(-1)?.['opacity'] === 1)!;
+    expect(head).toBeDefined();
+    // It waits out the whole drawing, then appears, and stays hidden while it waits.
+    expect(head[1].delay).toBeGreaterThanOrEqual((drawing[1].delay as number) + (drawing[1].duration as number));
+    expect(head[1].fill).toBe('backwards');
   });
 
   it('draws a route one arrow after the other: the second waits for the first', async () => {

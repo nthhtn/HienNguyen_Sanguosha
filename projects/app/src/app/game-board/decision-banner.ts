@@ -37,9 +37,6 @@ import { DecisionDock } from './decision-dock';
     .context { color: var(--mat-sys-on-surface-variant); }
     .timer { display: block; width: 160px; }
     .open { padding: 4px 12px; border-radius: 16px; background: var(--force-text, var(--mat-sys-primary)); color: var(--mat-sys-on-primary); font: var(--mat-sys-label-large); }
-    /* Phone layout: one slim band, still a whole-width 44 px target. */
-    :host-context([data-layout='phone']) .banner { margin: 2px 0; padding: 0 10px; min-height: 44px; border-radius: 8px; font: var(--mat-sys-body-medium); }
-    :host-context([data-layout='phone']) .timer { width: 130px; }
     @keyframes banner-pulse { 50% { opacity: 0.3; } }
     @media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
   `,

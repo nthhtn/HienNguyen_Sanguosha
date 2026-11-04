@@ -14,7 +14,7 @@ import { finalSeatViews } from 'protocol';
 import { GameService } from '../game.service';
 import { Layout } from '../layout.service';
 import { BoardPanel } from './board-panel';
-import { RotatePrompt } from './rotate-prompt';
+import { SmallScreenPrompt } from './small-screen-prompt';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { RoundTable } from './round-table';
@@ -65,7 +65,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
   selector: 'app-game-board',
   // The board's own playback: it lives as long as the board does, and reads the board's GameService (online, the remote one).
   providers: [PlaybackDirector],
-  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, RotatePrompt, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, SmallScreenPrompt, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -85,6 +85,9 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
 
     @if (gameService.state(); as state) {
+      @if (!layout.canPlay() && !gameOver()) {
+        <app-small-screen-prompt />
+      }
       @if (gameOver(); as result) {
         <app-game-over [result]="result" [players]="state.players" [seats]="finalSeats()" [youSeatId]="gameService.humanSeatId()" (newGame)="goToSetup()" />
       } @else if (shownSeatId(); as activeSeatId) {
@@ -197,9 +200,6 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                   <app-board-panel [actionHistory]="actionHistory()" [discardHistory]="discardHistory()" />
                 </aside>
               }
-              @if (!layout.wide() && layout.portrait()) {
-                <app-rotate-prompt />
-              }
             </div>
           }
         }
@@ -256,43 +256,25 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     .history { grid-area: history; }
     .discard { grid-area: discard; }
     .history, .discard { box-sizing: border-box; width: 140px; min-height: 0; overflow: hidden; justify-content: center; }
-    /* Phone layout (layout.service.ts): the history tiles give way to a button for the panel, so the bottom row is
-       your hand and that button. */
-    :host-context([data-layout='phone']) .board-grid {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-areas: 'battlefield' 'hand';
-    }
-    /* Short screens (a phone on its side): one screen, no scrolling. The table gets what the slim bottom row and the
-       phase bar leave; seats come first, then the hand row, then the rest. */
-    :host-context([data-layout='phone']) .board-grid { --bottom-height: 98px; gap: 4px; }
-    :host-context([data-layout='phone']) .your-hand { gap: 8px; padding: 4px 6px 2px; }
-    :host-context([data-layout='phone']) .your-hand h3 { display: none; }
-    /* The bottom box is compact on phone and medium: smaller action buttons and text, less padding, so the hand gets the
-       room (button heights are below the 44 px touch size on purpose, developer's call 2026-11-04). */
-    :host-context([data-layout='phone']) .actions, :host-context([data-layout='medium']) .actions {
-      --mat-button-filled-container-height: 30px; --mat-button-outlined-container-height: 30px;
-      --mat-button-text-container-height: 30px; --mat-button-tonal-container-height: 30px;
-      --mat-button-outlined-label-text-size: 12px; --mat-button-filled-label-text-size: 12px;
-      display: block; max-width: 150px;
-    }
-    :host-context([data-layout='phone']) .actions ::ng-deep .action-list, :host-context([data-layout='medium']) .actions ::ng-deep .action-list { gap: 4px; margin: 0; }
-    :host-context([data-layout='phone']) .actions ::ng-deep button, :host-context([data-layout='medium']) .actions ::ng-deep button { padding: 0 8px; min-width: 0; font-size: 12px; line-height: 1.1; }
-    :host-context([data-layout='medium']) .your-hand { gap: 8px; padding: 4px 8px 2px; }
-    /* The page keeps 16 px under the board; give 12 of them to the bottom box, which ends near the screen's edge. */
-    :host-context([data-layout='phone']) .board-grid, :host-context([data-layout='medium']) .board-grid { margin-bottom: -12px; }
-    :host-context([data-layout='medium']) .your-hand h3 { font-size: 12px; line-height: 1.2; }
-    /* Phone and medium layouts: your seat is part of the battlefield, at the foot of the table (round-table.ts holds
-       it and keeps the other seats above it), so the board is the table and one bottom box for the hand, the action
-       buttons and the History button. Nothing beige wraps the seat. The seat's zoom and height come from the layout service
-       (seatScale), with the number of seats, and are bound on the element. */
+    /* Medium layout (layout.service.ts): the history tiles give way to a button for the panel, which sits in the bottom box
+       with the hand and the action buttons. Your seat is part of the battlefield, at the foot of the table (round-table.ts
+       holds it and keeps the other seats above it), so the board is the table and one bottom box. Nothing beige wraps the
+       seat. The seat's zoom and height come from the layout service (seatScale), with the number of seats, and are bound
+       on the element. A smaller window cannot play at all (small-screen-prompt.ts). */
     :host-context([data-layout='medium']) .board-grid {
-      --bottom-height: 136px;
+      --bottom-height: 136px; gap: 4px;
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: 'battlefield' 'hand';
+      /* The page keeps 16 px under the board; give 12 of them to the bottom box, which ends near the screen's edge. */
+      margin-bottom: -12px;
     }
-    @media (min-height: 480px) {
-      :host-context([data-layout='phone']) .board-grid { --bottom-height: 98px; }
+    :host-context([data-layout='medium']) .your-hand { gap: 8px; padding: 4px 8px 2px; }
+    :host-context([data-layout='medium']) .your-hand h3 { font-size: 12px; line-height: 1.2; }
+    :host-context([data-layout='medium']) .actions {
+      --mat-button-outlined-label-text-size: 13px; --mat-button-filled-label-text-size: 13px;
+      display: block; max-width: 170px;
     }
+    :host-context([data-layout='medium']) .actions ::ng-deep .action-list { gap: 4px; margin: 0; }
     .panel-toggle { flex: none; align-self: center; width: 36px; height: 36px; padding: 6px; }
     .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
     .panel {

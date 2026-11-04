@@ -1,3 +1,5 @@
+import { Layout } from '../layout.service';
+import { SmallScreenNotice } from '../small-screen-notice';
 import { Component, computed, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,7 +28,7 @@ import { SocketService } from './socket.service';
 // A room over its socket: the lobby (members, host controls, Start Game, Leave Room), the board while a game runs, and how the last game ended.
 @Component({
   selector: 'app-lobby-page',
-  imports: [DeckPicker, RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat, TPipe, TMsgPipe],
+  imports: [DeckPicker, RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat, SmallScreenNotice, TPipe, TMsgPipe],
   providers: [SocketService, LobbyService, ChatService, RemoteGameService, RemoteDecisionClock],
   styleUrl: './online-page.css',
   template: `
@@ -164,7 +166,8 @@ import { SocketService } from './socket.service';
               <a mat-button class="back" routerLink="/rooms">{{ 'rooms.back' | t }}</a>
             } @else {
               @if (lobby.canStart()) {
-                <button mat-flat-button type="button" class="start" [disabled]="!lobby.canAct() || !isFull()" (click)="lobby.start()">
+                <app-small-screen-notice />
+                <button mat-flat-button type="button" class="start" [disabled]="!layout.canPlay() || !lobby.canAct() || !isFull()" (click)="lobby.start()">
                   <mat-icon>play_arrow</mat-icon> {{ 'setup.start' | t }}
                 </button>
               }
@@ -183,6 +186,7 @@ import { SocketService } from './socket.service';
 })
 export class LobbyPage {
   protected readonly lobby = inject(LobbyService);
+  protected readonly layout = inject(Layout);
   private readonly i18n = inject(I18n);
   // Injected here so it exists before the first welcome: the socket does not
   // replay, and the panel only renders once the room is known.

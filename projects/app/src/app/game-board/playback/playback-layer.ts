@@ -130,6 +130,22 @@ export class LineDrawMotion {
   }
 }
 
+// Shows its element (an arrow's head) only once the line has been drawn to it: a marker on a dashed line is drawn at
+// the line's end from the first frame, before the line reaches it. It waits out the drawing, hidden, then appears.
+@Directive({ selector: '[appLineHead]' })
+export class LineHeadMotion {
+  readonly drawMs = input.required<number>({ alias: 'appLineHead' });
+  readonly appLineDelay = input(0);
+
+  constructor() {
+    const el = inject<ElementRef<SVGPathElement>>(ElementRef).nativeElement;
+    const animations = inject(PlaybackAnimations);
+    afterNextRender(() => {
+      animations.run(el, [{ opacity: 0 }, { opacity: 1 }], { duration: 120, delay: this.appLineDelay() + this.drawMs(), easing: 'ease-out', fill: 'backwards' });
+    });
+  }
+}
+
 let layerCount = 0;
 
 // Over the battlefield while a battle plays: the card being played, shown at the centre for its moment;
@@ -138,7 +154,7 @@ let layerCount = 0;
 // At Instant nothing is shown but the caption.
 @Component({
   selector: 'app-playback-layer',
-  imports: [PlayingCard, ShowForMotion, LineDrawMotion],
+  imports: [PlayingCard, ShowForMotion, LineDrawMotion, LineHeadMotion],
   providers: [PlaybackAnimations],
   template: `
     <svg class="lines" aria-hidden="true">
@@ -150,7 +166,9 @@ let layerCount = 0;
       @for (line of lines(); track line.key) {
         <svg:g class="arrow" [appShowFor]="line.showMs" [appShowDelay]="line.delayMs">
           <svg:path class="outline" [attr.d]="line.d" [appLineDraw]="line.drawMs" [appLineDelay]="line.delayMs" />
-          <svg:path class="line" [attr.d]="line.d" [attr.marker-end]="'url(#' + headId + ')'" [appLineDraw]="line.drawMs" [appLineDelay]="line.delayMs" />
+          <svg:path class="line" [attr.d]="line.d" [appLineDraw]="line.drawMs" [appLineDelay]="line.delayMs" />
+          <!-- Draws nothing itself: only its head marker, which appears when the line reaches it (LineHeadMotion). -->
+          <svg:path class="tip" [attr.d]="line.d" [attr.marker-end]="'url(#' + headId + ')'" [appLineHead]="line.drawMs" [appLineDelay]="line.delayMs" />
         </svg:g>
       }
     </svg>
@@ -177,6 +195,7 @@ let layerCount = 0;
     /* A white arrow with a dark border: the border is a wider dark path under the white one. */
     .outline { fill: none; stroke: #1b1b1b; stroke-width: 6; stroke-linecap: round; }
     .line { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; }
+    .tip { fill: none; stroke: none; }
     .head { fill: #fff; stroke: #1b1b1b; stroke-width: 1.5; stroke-linejoin: round; }
     .caption {
       position: absolute; left: 8%; right: 8%; min-height: 1.2em; text-align: center;

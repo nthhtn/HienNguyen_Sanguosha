@@ -63,10 +63,20 @@ describe('SeatTile', () => {
     expect(el.querySelectorAll('[aria-label="Set Aside Cards"] app-playing-card')).toHaveLength(1);
   });
 
-  it('shows a chain marker on a chained seat, and none on an unchained one', () => {
-    const marker = render(makeSeat({ chained: true })).querySelector('.chain-badge');
-    expect(marker?.getAttribute('src')).toBe('/card-art/misc/chain.png');
-    expect(marker?.getAttribute('alt')).toBe('Chained');
+  it('hangs a chain from each top corner of the General holder (Generals and status), and none on an unchained seat', () => {
+    const el = render(makeSeat({ chained: true }));
+    const left = el.querySelector('.panel.general > img.chain-left') as HTMLImageElement;
+    const right = el.querySelector('.panel.general > img.chain-right') as HTMLImageElement;
+    expect(left.getAttribute('src')).toBe('/card-art/misc/chain_left.png');
+    expect(right.getAttribute('src')).toBe('/card-art/misc/chain_right.png');
+    const plain = render(makeSeat());
+    expect(plain.querySelector('.chain-left')).toBeNull();
+    expect(plain.querySelector('.chain-right')).toBeNull();
+  });
+
+  it('says Chained in text too, in the holder’s status line', () => {
+    const el = render(makeSeat({ chained: true }));
+    expect(el.querySelector('.panel.general .chain-badge')!.textContent).toContain('Chained');
     expect(render(makeSeat()).querySelector('.chain-badge')).toBeNull();
   });
 

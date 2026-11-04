@@ -14,9 +14,8 @@ import { CardArt } from './card-art';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { BattlefieldBackgrounds, battlefieldBackgroundCss } from '../battlefield-background.service';
 import { Layout } from '../layout.service';
-import { CentreRoom, fitTable, seatPlacements } from './table-layout';
+import { fitTable, seatPlacements } from './table-layout';
 
-const PHONE_CENTRE: CentreRoom = { centreMinWidth: 200, centreMinHeight: 70 };
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 
@@ -178,8 +177,7 @@ export class RoundTable {
   // The battlefield's measured size, in px.
   private readonly size = signal(DEFAULT_SIZE);
   private readonly layout = inject(Layout);
-  // A phone on its side can spare the centre less room, so the seats stay big enough to read.
-  protected readonly fit = computed(() => fitTable(this.size().width, Math.max(1, this.size().height - this.reserveBottom()), this.state().seats.length, this.layout.wide() ? undefined : PHONE_CENTRE, this.layout.seatScale(this.state().seats.length)));
+    protected readonly fit = computed(() => fitTable(this.size().width, Math.max(1, this.size().height - this.reserveBottom()), this.state().seats.length, undefined, this.layout.seatScale(this.state().seats.length)));
   // How much the action log in the centre is scaled: with the seats on phone and medium, 1 on large.
   protected readonly centreZoom = computed(() => this.layout.centreScale(this.state().seats.length));
   // On a short screen the table may leave the centre almost no room; it still gets one whole step, which then sits over
