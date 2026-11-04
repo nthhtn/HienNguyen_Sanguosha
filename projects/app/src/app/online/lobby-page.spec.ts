@@ -154,14 +154,13 @@ describe('LobbyPage', () => {
     expect(checked()).toEqual([5]);
   });
 
-  it('puts the First Reveal checkbox back when the server refuses the change', async () => {
-    lobby.setRules.mockResolvedValue(false);
+  it('shows First Reveal Bonus as a disabled checkbox that follows the seat count', async () => {
     const { el, harness } = await render();
     const box = harness.routeDebugElement!.query(By.directive(MatCheckbox)).componentInstance as MatCheckbox;
+    expect([box.checked, box.disabled]).toEqual([true, true]);
     (el.querySelector('.first-reveal input') as HTMLInputElement).click();
-    expect(box.checked).toBe(false);
-    await harness.fixture.whenStable();
     expect(box.checked).toBe(true);
+    expect(lobby.setRules).not.toHaveBeenCalled();
   });
 
   it('gives the host a deck choice that sends the new deck beside the other rules', async () => {

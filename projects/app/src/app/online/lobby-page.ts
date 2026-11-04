@@ -5,7 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleGroup, MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
-import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { FIRST_REVEAL_MIN_SEATS, generalsPerSeat } from 'content';
 import { deckIdOf } from 'content';
@@ -104,11 +104,9 @@ import { SocketService } from './socket.service';
                       </mat-button-toggle-group>
                     </div>
                     <app-deck-picker [value]="deckOf(room.rules.deck)" [disabled]="!lobby.canAct()" (valueChange)="setDeck($event)" />
-                    @if (room.seatCount >= firstRevealMinSeats) {
-                      <mat-checkbox class="first-reveal" [disabled]="!lobby.canAct()" [checked]="!!room.rules.firstRevealDraw" (change)="setFirstReveal($event.checked)">
-                        {{ 'setup.firstReveal' | t }}
-                      </mat-checkbox>
-                    }
+                    <mat-checkbox class="first-reveal" [disabled]="true" [checked]="room.seatCount >= firstRevealMinSeats">
+                      {{ 'setup.firstReveal' | t }}
+                    </mat-checkbox>
                   } @else {
                     <p class="rules-summary">{{ rulesSummary() }}</p>
                   }
@@ -195,7 +193,6 @@ export class LobbyPage {
   protected readonly generalsPerSeat = generalsPerSeat;
   protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
   private readonly seats = viewChild(MatButtonToggleGroup);
-  private readonly firstReveal = viewChild(MatCheckbox);
   private readonly deckPicker = viewChild(DeckPicker);
 
   // From the member count (the server refuses fewer seats) up to the limit.
@@ -240,11 +237,6 @@ export class LobbyPage {
     if (room) void this.lobby.setRules(seatCount, this.rulesOf(room)).then((ok) => ok || this.restoreControls());
   }
 
-  protected setFirstReveal(on: boolean): void {
-    const room = this.lobby.room();
-    if (room) void this.lobby.setRules(room.seatCount, { ...this.rulesOf(room), firstRevealDraw: on }).then((ok) => ok || this.restoreControls());
-  }
-
   protected setDeck(deck: DeckId): void {
     const room = this.lobby.room();
     if (room) void this.lobby.setRules(room.seatCount, { ...this.rulesOf(room), deck }).then((ok) => ok || this.restoreControls());
@@ -263,8 +255,6 @@ export class LobbyPage {
     if (!room) return;
     const seats = this.seats();
     if (seats) seats.value = room.seatCount;
-    const firstReveal = this.firstReveal();
-    if (firstReveal) firstReveal.checked = !!room.rules.firstRevealDraw;
     this.deckPicker()?.value.set(deckIdOf(room.rules.deck));
   }
 }

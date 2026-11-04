@@ -82,11 +82,12 @@ async function storePendingEnd(tx: Repositories, end: PendingEnd | null, at: Dat
 }
 
 // The rules the engine reads. Unknown keys never get stored, First Reveal
-// Bonus is dropped below the seat count where it applies, and the default deck
+// Bonus is not a choice: it is on from the seat count where it applies and
+// absent below it, whatever was asked. The default deck
 // is stored as no deck at all.
 function rulesFrom(rules: GameRules, seatCount: number): GameRules {
   return {
-    ...(rules.firstRevealDraw === undefined || seatCount < FIRST_REVEAL_MIN_SEATS ? {} : { firstRevealDraw: rules.firstRevealDraw }),
+    ...(seatCount < FIRST_REVEAL_MIN_SEATS ? {} : { firstRevealDraw: true }),
     ...(rules.deck === undefined || rules.deck === DEFAULT_DECK_ID ? {} : { deck: rules.deck }),
   };
 }

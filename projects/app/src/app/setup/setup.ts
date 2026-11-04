@@ -73,12 +73,10 @@ import { TPipe } from '../i18n/t.pipe';
           <app-deck-picker [(value)]="deck" />
           <p class="generals-dealt">{{ 'setup.generalsDealt.hint' | t: { n: generalsDealt() } }}</p>
 
-          @if (showFirstReveal()) {
-            <div class="field">
-              <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
-            </div>
-            <p class="rule-hint">{{ 'setup.firstReveal.hint' | t }}</p>
-          }
+          <div class="field">
+            <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" [disabled]="true">{{ 'setup.firstReveal' | t }}</mat-checkbox>
+          </div>
+          <p class="rule-hint">{{ 'setup.firstReveal.hint' | t }}</p>
 
           <div class="names">
             @for (i of nameSlots(); track i) {
@@ -150,11 +148,10 @@ export class Setup {
 
   readonly mode = signal<GameMode>('vs-bots');
   readonly seatCount = signal(4);
-  readonly firstRevealDraw = signal(true);
   readonly deck = signal<DeckId>(DEFAULT_DECK_ID);
-  // The rule needs a big table, so the option only appears there.
   protected readonly generalsDealt = computed(() => generalsPerSeat(this.seatCount(), this.deck()));
-  protected readonly showFirstReveal = computed(() => this.seatCount() >= FIRST_REVEAL_MIN_SEATS);
+  // Not a choice: the bonus applies at a big table and nowhere else.
+  protected readonly firstRevealDraw = computed(() => this.seatCount() >= FIRST_REVEAL_MIN_SEATS);
   // Typed names by seat index; blanks fall back to "Seat N".
   readonly names = signal<(string | undefined)[]>([]);
   // Vs bots asks only for the human's name (seat 0); pass-and-play asks for every seat's.
@@ -172,7 +169,7 @@ export class Setup {
     const clamped = Math.min(this.maxSeats, Math.max(2, this.seatCount() || 2));
     const rules = {
       ...(this.deck() !== DEFAULT_DECK_ID ? { deck: this.deck() } : {}),
-      ...(clamped >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {}),
+      ...(clamped >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: true } : {}),
     };
     this.gameService.startGame(clamped, undefined, this.mode(), this.nameSlots().map((i) => this.names()[i] ?? ''), Object.keys(rules).length > 0 ? rules : undefined);
     this.router.navigateByUrl('/game');
