@@ -238,9 +238,11 @@ chat.
 
 The server and the built Angular app ship as one Docker image, which runs on
 Render's free web service against Supabase Postgres. The server serves the app
-(`STATIC_DIR`), answers `GET /healthz`, and turns Postgres TLS on with
+(`STATIC_DIR`), answers `GET /health`, and turns Postgres TLS on with
 `DATABASE_SSL=require`; `BUILD_ID` falls back to Render's `RENDER_GIT_COMMIT`.
-[Deployment](../deployment.md) has the setup and the first-deploy checklist.
+[Deployment](../deployment.md) has the setup, the first-deploy checklist, how to
+keep the free service awake with an external pinger on `/health`, and the measured
+capacity of the free instance (CPU-bound at about 10 to 15 busy rooms).
 
 ## Local play compared
 

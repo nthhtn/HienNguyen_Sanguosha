@@ -80,7 +80,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     return reply.code(404).send(errorBody('not_found'));
   });
 
-  app.get('/healthz', async () => ({ status: 'ok' }));
+  app.get('/health', async () => ({ status: 'ok' }));
 
   registerAuthRoutes(app, {
     accounts: deps.accounts,

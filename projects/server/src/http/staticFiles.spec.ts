@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { loadConfig } from '../config';
 import { createServer, RunningServer } from '../server';
 
-describe('static files and /healthz', () => {
+describe('static files and /health', () => {
   let dir: string;
   let server: RunningServer | null = null;
 
@@ -83,12 +83,12 @@ describe('static files and /healthz', () => {
     }
   });
 
-  it('answers /healthz with 200 for GET and HEAD without a cookie or Origin', async () => {
+  it('answers /health with 200 for GET and HEAD without a cookie or Origin', async () => {
     const { app } = await start(null);
-    const get = await app.inject({ method: 'GET', url: '/healthz' });
+    const get = await app.inject({ method: 'GET', url: '/health' });
     expect(get.statusCode).toBe(200);
     expect(get.json()).toEqual({ status: 'ok' });
-    expect((await app.inject({ method: 'HEAD', url: '/healthz' })).statusCode).toBe(200);
+    expect((await app.inject({ method: 'HEAD', url: '/health' })).statusCode).toBe(200);
   });
 
   it('refuses to start when STATIC_DIR has no index.html', async () => {
