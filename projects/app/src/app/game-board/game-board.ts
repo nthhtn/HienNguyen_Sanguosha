@@ -264,28 +264,35 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.26; --seat-height: 70px; }
     /* Short screens (a phone on its side): one screen, no scrolling. The table gets what the slim bottom row and the
        phase bar leave; seats come first, then the hand row, then the rest. */
-    :host-context([data-layout='phone']) .board-grid { --bottom-height: 124px; gap: 4px; }
+    :host-context([data-layout='phone']) .board-grid { --bottom-height: 104px; gap: 4px; }
     :host-context([data-layout='phone']) .your-hand { gap: 8px; padding: 4px 6px; }
     :host-context([data-layout='phone']) .your-hand h3 { display: none; }
-    :host-context([data-layout='phone']) .actions {
-      --mat-button-filled-container-height: 44px; --mat-button-outlined-container-height: 44px;
-      --mat-button-text-container-height: 44px; --mat-button-tonal-container-height: 44px;
-      display: block; max-width: 140px;
+    /* The bottom box is compact on phone and medium: smaller action buttons and text, less padding, so the hand gets the
+       room (button heights are below the 44 px touch size on purpose, developer's call 2026-11-04). */
+    :host-context([data-layout='phone']) .actions, :host-context([data-layout='medium']) .actions {
+      --mat-button-filled-container-height: 30px; --mat-button-outlined-container-height: 30px;
+      --mat-button-text-container-height: 30px; --mat-button-tonal-container-height: 30px;
+      --mat-button-outlined-label-text-size: 12px; --mat-button-filled-label-text-size: 12px;
+      display: block; max-width: 150px;
     }
+    :host-context([data-layout='phone']) .actions ::ng-deep .action-list, :host-context([data-layout='medium']) .actions ::ng-deep .action-list { gap: 4px; margin: 0; }
+    :host-context([data-layout='phone']) .actions ::ng-deep button, :host-context([data-layout='medium']) .actions ::ng-deep button { padding: 0 8px; min-width: 0; font-size: 12px; line-height: 1.1; }
+    :host-context([data-layout='medium']) .your-hand { gap: 8px; padding: 4px 8px; }
+    :host-context([data-layout='medium']) .your-hand h3 { font-size: 12px; line-height: 1.2; }
     /* Phone and medium layouts: your seat is part of the battlefield, at the foot of the table (round-table.ts holds
        it and keeps the other seats above it), so the board is the table and one bottom box for the hand, the action
        buttons and the History button. Nothing beige wraps the seat. seatReserve in the class matches these heights. */
     :host-context([data-layout='medium']) .board-grid {
-      --bottom-height: 170px;
+      --bottom-height: 150px;
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: 'battlefield' 'hand';
     }
     :host-context([data-layout='medium']) .your-seat { --seat-zoom: 0.46; --seat-height: 124px; }
     @media (min-height: 480px) {
-      :host-context([data-layout='phone']) .board-grid { --bottom-height: 150px; }
+      :host-context([data-layout='phone']) .board-grid { --bottom-height: 130px; }
       :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.34; --seat-height: 92px; }
     }
-    .panel-toggle { flex: none; align-self: center; width: 48px; height: 48px; }
+    .panel-toggle { flex: none; align-self: center; width: 36px; height: 36px; padding: 6px; }
     .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
     .panel {
       position: fixed; top: var(--mat-toolbar-standard-height, 44px); right: 0; bottom: 0; z-index: 16;
