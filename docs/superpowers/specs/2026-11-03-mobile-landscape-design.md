@@ -148,3 +148,13 @@ Written in the UI text style from CLAUDE.md (Title Case for labels, sentence cas
 - Browser device emulation for every device in the table, in landscape, running a full bot game.
 - A real phone and a real tablet, at least one each, before merge (the developer's check; Chrome emulation does not cover browser bars or cut-outs).
 - Desktop screenshots before and after to confirm nothing changed at 1280 px and up.
+
+## Additions after first review (2026-11-04)
+
+Built on the branch, previewed in the artifact, decided with the developer:
+
+- **Seat scale.** On phone and medium, every seat (yours included) shares one scale that shrinks with more players: base 0.66 (medium), 0.48 (phone 480 px tall or more) or 0.35 (shorter phone) at four players, times (4 / players) ^ 0.7 between 0.5 and 1.3. Large keeps fitting the table by itself.
+- **Table centre.** The action log in the middle of the table is scaled by 0.5 + half the seat scale, and always gets room for at least one whole step.
+- **Bottom box.** The hand (phone: cards at 80%, one row scrolling sideways), the action buttons (30 px high, 12 px text, below the 44 px touch size by the developer's call) and the History button sit in one compact box that fits its content.
+- **General selection.** Each candidate card is split: art, name, Force and HP on the left; title and skills on the right, wrapping and scrolling. No info button or popup. Large screens keep one screen (4 + 3, cards at most 380 × 260 px); phone and medium wrap the cards into columns and the page scrolls.
+- **Kingdom banner.** A seat, the viewer's own included, gets its banner only once its Kingdom is revealed.
