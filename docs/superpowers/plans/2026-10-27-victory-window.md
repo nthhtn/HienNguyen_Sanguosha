@@ -23,7 +23,7 @@
 - Headline: "{Kingdom} wins!" (`over.kingdomWins`); "{name} wins as the Ambitionist!" (new key); a lone survivor with no decided allegiance "{name} wins!" (`over.namesWin`); a draw `over.draw`.
 - Member row: avatar, name, "You" tag, "Main · Deputy" General names, "Survived" or "Fallen". No "You" tag in Pass and Play or for a viewer without a seat.
 - Reveal: headline at 50 ms, columns from 500 ms about 130 ms apart, winner lit 500 ms after the last column; reduced motion shows the end state at once. Not blocking.
-- Columns 150 to 190 px wide, centred, wrapping; at 700 px container width or narrower, two per row, winning column first.
+- Layout (revised 2026-11-03, see Task 9): columns on two rows of equal-width cards, top row `ceil(n / 2)`, bottom row `floor(n / 2)` centred, one or two columns on one row; at 700 px container width or narrower, two per row, winning column first, and one per row at 460 px or narrower.
 - UI text follows the casing rules in CLAUDE.md (Title Case labels, sentence case sentences, ids never shown); every string is a catalog key in `en.ts` and `vi.ts` (Vietnamese is draft). No new dependency.
 - Engine, content and protocol stay framework-free. No game rules in components.
 - `PROTOCOL_VERSION` becomes 2.
@@ -214,3 +214,28 @@ Run tests with `npx jest --selectProjects <engine|protocol|server|app> <path>`.
 - [ ] **Step 2: Run** `npx jest` (all projects), `npm run typecheck:server`, and the app build (`npx ng build app`). Expected: all PASS, build succeeds.
 - [ ] **Step 3: Check it in the running app** (use the `run` skill): finish a local game against bots and look at the window at desktop width and at a phone width (6 columns needs an 8-seat game with an Ambitionist; if that is hard to reach, say so and confirm the four-column case plus the unit tests).
 - [ ] **Step 4: Commit** `git commit -m "docs: victory window architecture notes"`
+
+### Task 9: Layout revision (two rows, larger text)
+
+Added 2026-11-03 after the mock was reviewed. The component built in Task 5 uses the first layout (a centred wrapping row of 150 to 190 px columns, 980 px window, small text). Restyle it to the "Layout" section of the spec. No change to `victoryColumns`, the protocol or the engine.
+
+**Files:**
+- Modify: `projects/app/src/app/game-board/victory-board.ts` (template and styles), `projects/app/src/app/game-board/victory-board.spec.ts`
+- Modify: `docs/architecture/frontend.md` if it states the old widths
+
+**Interfaces:**
+- Consumes: the existing `VictoryView.columns`. Produces: a `data-k` attribute on the columns wrapper (or an equivalent CSS variable) holding the cards per row: `1` or `2` for one or two columns, otherwise `ceil(n / 2)`. A small pure helper `cardsPerRow(columnCount)` in `victory-columns.ts` returns it, so the rule is unit-tested without TestBed.
+
+- [ ] **Step 1: Write the failing tests**
+  - `cardsPerRow` returns 1, 2, 2, 2, 3, 3 for 1 to 6 columns (so 3 is 2 + 1, 4 is 2 + 2, 5 is 3 + 2, 6 is 3 + 3).
+  - `victory-board.spec.ts`: the columns wrapper's `data-k` equals `cardsPerRow` of the column count for a 3-, 4-, 5- and 6-column result.
+- [ ] **Step 2: Run** `npx jest --selectProjects app projects/app/src/app/game-board/victory-columns.spec.ts projects/app/src/app/game-board/victory-board.spec.ts`. Expected: FAIL.
+- [ ] **Step 3: Implement**
+  - `.cols` is a centred flex wrap. Each `.col` has `box-sizing: border-box` and `flex: 0 0 min(calc((100% - (k - 1) * gap) / k), cap)`, with `k` from `data-k`, `gap` 20 px, and `cap` 354 px, or 320 px when `k` is 3.
+  - Window `max-width` 1080 px, card padding 32 px 28 px.
+  - Container queries: at 700 px or narrower set `k` to 2, gap 14 px, the winning column first, headline 32 px; at 460 px or narrower set `k` to 1.
+  - Type sizes from the spec (headline 44 px, name 18 px, General 15 px, status 14 px, column title 22 px, avatar 44 px); darken the muted text one step.
+  - Keep the reveal, lit and dimmed states, and the `win` and `lose` classes unchanged.
+- [ ] **Step 4: Run** the same command. Expected: PASS.
+- [ ] **Step 5: Check it in the running app** (use the `run` skill) at desktop width: confirm 3 columns lay out 2 + 1, 4 as 2 + 2, 5 as 3 + 2, 6 as 3 + 3, all cards the same width, and the text reads comfortably. Then at phone width. If a 5- or 6-column game is hard to reach, say so; the unit tests cover the rule.
+- [ ] **Step 6: Commit** `git commit -m "feat(app): victory board two-row layout with larger text"`
