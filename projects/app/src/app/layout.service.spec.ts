@@ -137,3 +137,19 @@ describe('Layout seat scale', () => {
     expect(layout.seatScale(12)).toBe(1);
   });
 });
+
+describe('Layout centre scale', () => {
+  afterAll(() => resizeTo(1024, 768));
+
+  it('scales the table centre (the action log) with the seats, but less, so its text stays readable', () => {
+    resizeTo(1133, 744);
+    const layout = TestBed.inject(Layout);
+    expect(layout.centreScale(4)).toBeLessThan(1);
+    expect(layout.centreScale(4)).toBeGreaterThan(layout.seatScale(4));
+    expect(layout.centreScale(8)).toBeLessThan(layout.centreScale(4));
+    resizeTo(852, 393);
+    expect(layout.centreScale(4)).toBeLessThan(0.7);
+    resizeTo(1366, 768);
+    expect(layout.centreScale(4)).toBe(1);
+  });
+});

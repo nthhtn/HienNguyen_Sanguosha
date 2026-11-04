@@ -45,6 +45,11 @@ export class Layout {
     if (this.kind() === 'large') return base;
     return base * Math.min(1.3, Math.max(0.5, Math.pow(4 / Math.max(1, seatCount), 0.7)));
   }
+  // The table centre's action log is scaled along with the seats, half as much (a seat at 0.3 is a picture, text at 0.3
+  // is unreadable).
+  centreScale(seatCount: number): number {
+    return this.kind() === 'large' ? 1 : 0.5 + 0.5 * this.seatScale(seatCount);
+  }
   readonly viewportHeight = this.height.asReadonly();
   readonly portrait = computed(() => this.height() > this.width());
   readonly navOpen = this._navOpen.asReadonly();
