@@ -83,7 +83,7 @@ Wide layout: unchanged.
 
 - Slim bar (44 px): menu button, brand, phase chip (existing phase indicator), music and sound toggles, and a History button that opens the panel.
 - Table fills the rest. All seats stay visible: opponents around the top and sides, as the round table does today, compacted. Seat shows face, name, HP pips, hand count and equipment strip.
-- Your seat: a compact seat tile on the table, above the left end of the hand, not in the bottom row.
+- Your seat: a compact seat tile on the table, centred right above the hand (still at the bottom of the screen), not in the bottom row.
 - Player's hand: one row along the bottom. **How it shows many cards is open (see Open Questions):** overlap the cards so all are visible, wrap to two rows, or keep one scrolling row of smaller cards. A selected card lifts and shows in full.
 - Action buttons (Play Card, Pass and whatever the ask or response panel currently offers) sit in a fixed spot at the bottom right.
 - Prompts and the countdown stay centred on the table.
