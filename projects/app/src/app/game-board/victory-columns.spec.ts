@@ -1,6 +1,6 @@
 import { GameResult, Kingdom } from 'engine';
 import { FinalSeatView } from 'protocol';
-import { victoryColumns } from './victory-columns';
+import { cardsPerRow, victoryColumns } from './victory-columns';
 
 const view = (n: number, kingdom: Kingdom, allegiance: FinalSeatView['allegiance'], eliminated = false): FinalSeatView => ({
   seatId: `seat-${n}`, kingdom, allegiance, mainGeneralId: `main-${n}`, deputyGeneralId: `deputy-${n}`, eliminated,
@@ -99,5 +99,12 @@ describe('victoryColumns', () => {
     expect(v.columns.some((c) => c.winning)).toBe(false);
     expect(v.winningGroup).toBeNull();
     expect(v.headlineKind).toBe('lone-survivor');
+  });
+});
+
+describe('cardsPerRow', () => {
+  it('keeps one or two columns on one row and puts the extra card of an odd count on the top row', () => {
+    // 1, 2 stay on one row; 3 is 2 + 1, 4 is 2 + 2, 5 is 3 + 2, 6 is 3 + 3.
+    expect([1, 2, 3, 4, 5, 6].map(cardsPerRow)).toEqual([1, 2, 2, 2, 3, 3]);
   });
 });
