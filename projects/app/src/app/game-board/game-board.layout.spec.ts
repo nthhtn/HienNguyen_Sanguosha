@@ -81,7 +81,27 @@ describe('GameBoard layouts', () => {
     });
   });
 
-  describe('on a wide screen', () => {
+  describe('on a medium screen (900 to 1279 px wide)', () => {
+    beforeEach(() => resizeTo(1133, 744));
+
+    it('collapses the two history tiles into the History button, so the hand keeps the width', () => {
+      const { fixture, el } = runningBoard();
+      expect(el.querySelector('app-action-history')).toBeNull();
+      expect(el.querySelector('app-discard-pile')).toBeNull();
+      const toggle = el.querySelector('button.panel-toggle') as HTMLButtonElement;
+      expect(toggle.getAttribute('aria-label')).toBe('History');
+      toggle.click();
+      fixture.detectChanges();
+      expect(el.querySelector('app-board-panel')).not.toBeNull();
+    });
+
+    it('does not ask for a rotation, even in portrait', () => {
+      resizeTo(1000, 1200);
+      expect(runningBoard().el.querySelector('app-rotate-prompt')).toBeNull();
+    });
+  });
+
+  describe('on a large screen (1280 px wide and up)', () => {
     beforeEach(() => resizeTo(1366, 768));
 
     it('keeps the two tiles, with no History button and no panel', () => {

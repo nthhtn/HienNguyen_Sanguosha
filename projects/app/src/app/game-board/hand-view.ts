@@ -176,8 +176,8 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
     }
     .overlay mat-icon { margin-right: 2px; font-size: 18px; width: 18px; height: 18px; }
     .empty { color: var(--mat-sys-on-surface-variant); }
-    /* Phone layout: a shorter row, and Play and Info as big as a card allows (they are part of the card). */
-    :host-context([data-layout='phone']) .hand-row { padding: 10px 4px 2px; }
+    /* Phone layout: cards at 80% in one row that scrolls sideways, a shorter row, and Play and Info as big as a card allows (they are part of the card). */
+    :host-context([data-layout='phone']) .hand-row { padding: 10px 4px 2px; zoom: 0.8; }
     :host-context([data-layout='phone']) .overlay { gap: 2px; padding: 3px; }
     :host-context([data-layout='phone']) .overlay button { height: 42px; }
   `,

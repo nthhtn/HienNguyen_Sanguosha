@@ -1,16 +1,20 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 
-// The wide layout needs room in both directions: a short window (a phone on its side) gets the phone layout however wide it is.
+// The wide layouts need room in both directions: a short window (a phone on its side) gets the phone layout however wide it is.
+// Medium (900 to 1279 px wide) has the full navigation bar but folds the board's two history tiles into a panel, so the hand
+// keeps the width; large (1280 px and up) keeps the tiles, as the board always had.
 export const WIDE_MIN_WIDTH = 900;
 export const WIDE_MIN_HEIGHT = 600;
+export const LARGE_MIN_WIDTH = 1280;
 
-export type LayoutKind = 'phone' | 'wide';
+export type LayoutKind = 'phone' | 'medium' | 'large';
 
 export function layoutFor(width: number, height: number): LayoutKind {
-  return width >= WIDE_MIN_WIDTH && height >= WIDE_MIN_HEIGHT ? 'wide' : 'phone';
+  if (width < WIDE_MIN_WIDTH || height < WIDE_MIN_HEIGHT) return 'phone';
+  return width >= LARGE_MIN_WIDTH ? 'large' : 'medium';
 }
 
-// The one place that decides phone or wide. Styles follow the `data-layout`
+// The one place that decides phone, medium or large. Styles follow the `data-layout`
 // attribute it keeps on <html> (`:host-context([data-layout='phone'])`); code
 // reads `kind`. Also holds which overlay is open, so the navigation drawer and
 // the board's History panel are never open together.
@@ -22,7 +26,10 @@ export class Layout {
   private readonly _panelOpen = signal(false);
 
   readonly kind = computed(() => layoutFor(this.width(), this.height()));
-  readonly wide = computed(() => this.kind() === 'wide');
+  // Medium and large: room for the full navigation bar.
+  readonly wide = computed(() => this.kind() !== 'phone');
+  // The History panel slides over the board (phone and medium); on large the board keeps its two tiles.
+  readonly panelAsOverlay = computed(() => this.kind() !== 'large');
   readonly portrait = computed(() => this.height() > this.width());
   readonly navOpen = this._navOpen.asReadonly();
   readonly panelOpen = this._panelOpen.asReadonly();

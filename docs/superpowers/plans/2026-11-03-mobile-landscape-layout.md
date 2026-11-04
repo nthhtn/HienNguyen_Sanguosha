@@ -190,13 +190,13 @@ This task is mostly CSS in `game-board.ts`, `round-table.ts`, `seat-tile.ts`, `h
 
 Added 2026-11-04 after the developer saw History and Discard Pile crowding the hand. Decisions are in the spec (Decision summary 5 to 7, and Open Question 3). Mock-up: the Landscape Layout Preview.
 
-- [ ] **Step 1: Failing tests.** In `layout.service.spec.ts`: `layoutFor` returns `'phone'` below 900 px wide or 600 px tall, `'medium'` from 900 to 1279 px wide, `'large'` from 1280 px wide (both with height ≥ 600). `wide()` stays true for medium and large, and a new `panelAsOverlay()` is true for phone and medium. In `game-board.layout.spec.ts`: at medium the History button and `app-board-panel` are used and the two tiles are absent; at large the tiles stay and there is no button.
-- [ ] **Step 2: Implement `Layout`.** Add the `'medium'` and `'large'` kinds and `LARGE_MIN_WIDTH = 1280`. Update the `data-layout` attribute and the existing `wide()` users. Make the board show the button and panel when `panelAsOverlay()` is true.
-- [ ] **Step 3: Your seat above the hand.** In phone and medium layouts, move `.your-seat` out of the bottom row: a compact tile centred right above the hand, still at the bottom of the screen. The bottom row is the hand and the action buttons. Check the round table's seats do not overlap it (`fitTable` gets the reduced height).
-- [ ] **Step 4: Hand as Scroll and Shrink.** In phone layout, hand cards at about 80% of the normal size, one row, sideways scroll, edge fade. Medium layout keeps its larger cards.
+- [x] **Step 1: Failing tests.** In `layout.service.spec.ts`: `layoutFor` returns `'phone'` below 900 px wide or 600 px tall, `'medium'` from 900 to 1279 px wide, `'large'` from 1280 px wide (both with height ≥ 600). `wide()` stays true for medium and large, and a new `panelAsOverlay()` is true for phone and medium. In `game-board.layout.spec.ts`: at medium the History button and `app-board-panel` are used and the two tiles are absent; at large the tiles stay and there is no button.
+- [x] **Step 2: Implement `Layout`.** Add the `'medium'` and `'large'` kinds and `LARGE_MIN_WIDTH = 1280`. Update the `data-layout` attribute and the existing `wide()` users. Make the board show the button and panel when `panelAsOverlay()` is true.
+- [x] **Step 3: Your seat above the hand.** In phone and medium layouts, move `.your-seat` out of the bottom row: a compact tile centred right above the hand, still at the bottom of the screen. The bottom row is the hand and the action buttons. Check the round table's seats do not overlap it (`fitTable` gets the reduced height).
+- [x] **Step 4: Hand as Scroll and Shrink.** In phone layout, hand cards at about 80% of the normal size, one row, sideways scroll, edge fade. Medium layout keeps its larger cards.
 - [ ] **Step 5: Check by eye** at 1133 × 744, 1194 × 834, 1280 × 800 and the phone sizes, and compare 1366 × 768 with the Task 1 baseline.
-- [ ] **Step 6:** `npx jest projects/app/src/app` → PASS.
-- [ ] **Step 7: Commit** `feat: medium layout collapses History, seat above the hand, shrunk hand`
+- [x] **Step 6:** `npx jest projects/app/src/app` → PASS.
+- [x] **Step 7: Commit** `feat: medium layout collapses History, seat above the hand, shrunk hand`
 
 ### Task 8: Every other routed page at 360 px
 

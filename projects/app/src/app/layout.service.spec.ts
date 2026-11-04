@@ -26,12 +26,24 @@ describe('layoutFor', () => {
   it.each([
     [1133, 744],
     [1194, 834],
+    [900, 600],
+    [1279, 800],
+  ])('is medium at %i x %i', (width, height) => {
+    expect(layoutFor(width, height)).toBe('medium');
+  });
+
+  it.each([
     [1280, 800],
     [1366, 768],
     [1920, 1080],
-    [900, 600],
-  ])('is wide at %i x %i', (width, height) => {
-    expect(layoutFor(width, height)).toBe('wide');
+    [2560, 1440],
+    [1280, 600],
+  ])('is large at %i x %i', (width, height) => {
+    expect(layoutFor(width, height)).toBe('large');
+  });
+
+  it('is phone when a 1280 px wide window is under 600 px tall', () => {
+    expect(layoutFor(1280, 599)).toBe('phone');
   });
 });
 
@@ -41,19 +53,25 @@ describe('Layout', () => {
 
   it('follows the window size and tells portrait from landscape', () => {
     const layout = TestBed.inject(Layout);
-    expect(layout.kind()).toBe('wide');
+    expect(layout.kind()).toBe('large');
     expect(layout.wide()).toBe(true);
+    expect(layout.panelAsOverlay()).toBe(false);
     expect(layout.portrait()).toBe(false);
+    resizeTo(1133, 744);
+    expect(layout.kind()).toBe('medium');
+    expect(layout.wide()).toBe(true);
+    expect(layout.panelAsOverlay()).toBe(true);
     resizeTo(390, 844);
     expect(layout.kind()).toBe('phone');
     expect(layout.wide()).toBe(false);
+    expect(layout.panelAsOverlay()).toBe(true);
     expect(layout.portrait()).toBe(true);
   });
 
   it('writes the layout to the document so styles can follow it', () => {
     TestBed.inject(Layout);
     TestBed.tick();
-    expect(document.documentElement.dataset['layout']).toBe('wide');
+    expect(document.documentElement.dataset['layout']).toBe('large');
     resizeTo(852, 393);
     expect(document.documentElement.dataset['layout']).toBe('phone');
   });

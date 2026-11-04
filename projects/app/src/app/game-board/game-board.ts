@@ -169,26 +169,24 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                   />
                 </section>
                 <!-- Bottom right: the action history, then the discard pile; same height. -->
-                @if (layout.wide()) {
+                @if (!layout.panelAsOverlay()) {
                   <app-action-history class="history" [history]="actionHistory()" />
                   <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
                 } @else {
-                  <!-- Phone layout: the two tiles' full lists live in a panel that slides over the table. -->
+                  <!-- Phone and medium layouts: the two tiles' full lists live in a panel that slides over the table. -->
                   <button type="button" mat-icon-button class="panel-toggle" [attr.aria-label]="'board.panel.open' | t" [attr.aria-expanded]="layout.panelOpen()" (click)="layout.togglePanel()">
                     <mat-icon>history</mat-icon>
                   </button>
                 }
               </div>
-              @if (!layout.wide()) {
-                @if (layout.panelOpen()) {
-                  <div class="panel-scrim" role="presentation" (click)="layout.closePanel()"></div>
-                  <aside class="panel" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
-                    <app-board-panel [actionHistory]="actionHistory()" [discardHistory]="discardHistory()" />
-                  </aside>
-                }
-                @if (layout.portrait()) {
-                  <app-rotate-prompt />
-                }
+              @if (layout.panelAsOverlay() && layout.panelOpen()) {
+                <div class="panel-scrim" role="presentation" (click)="layout.closePanel()"></div>
+                <aside class="panel" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+                  <app-board-panel [actionHistory]="actionHistory()" [discardHistory]="discardHistory()" />
+                </aside>
+              }
+              @if (!layout.wide() && layout.portrait()) {
+                <app-rotate-prompt />
               }
             </div>
           }
@@ -232,7 +230,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     /* The battlefield runs the full width of the screen: out past the page padding. */
     .battlefield { grid-area: battlefield; margin-inline: -16px; min-height: 0; }
     /* The seat tile is shrunk to fit the row, and stretched to the row's full height. */
-    .your-seat { --seat-zoom: 0.78; grid-area: seat; overflow: hidden; zoom: var(--seat-zoom); height: calc(var(--bottom-height) / var(--seat-zoom)); }
+    .your-seat { --seat-zoom: 0.78; grid-area: seat; overflow: hidden; zoom: var(--seat-zoom); height: calc(var(--seat-height, var(--bottom-height)) / var(--seat-zoom)); }
     .your-seat app-seat-tile { display: block; height: 100%; }
     .your-hand {
       grid-area: hand; min-width: 0; overflow: hidden; box-sizing: border-box;
@@ -263,10 +261,24 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
       --mat-button-text-container-height: 44px; --mat-button-tonal-container-height: 44px;
       display: block; max-width: 140px;
     }
-    /* More height (an unfolded Fold, a tablet-sized window under 900 px wide): a roomier bottom row. */
+    /* Your seat sits above the hand, centred, still at the bottom of the screen, so the hand gets the whole row width.
+       Medium always has the height for it; a phone only from 480 px tall (an unfolded Fold). A shorter phone keeps the
+       seat beside the hand: a seat row would leave the table too little height. */
+    :host-context([data-layout='medium']) .board-grid {
+      --bottom-height: 170px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-rows: minmax(0, 1fr) auto var(--bottom-height);
+      grid-template-areas: 'battlefield battlefield' 'seat seat' 'hand history';
+    }
+    :host-context([data-layout='medium']) .your-seat { --seat-zoom: 0.46; --seat-height: 124px; justify-self: center; }
     @media (min-height: 480px) {
-      :host-context([data-layout='phone']) .board-grid { --bottom-height: 170px; }
-      :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.62; }
+      :host-context([data-layout='phone']) .board-grid {
+        --bottom-height: 150px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: minmax(0, 1fr) auto var(--bottom-height);
+        grid-template-areas: 'battlefield battlefield' 'seat seat' 'hand history';
+      }
+      :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.34; --seat-height: 92px; justify-self: center; }
     }
     .panel-toggle { grid-area: history; align-self: center; width: 48px; height: 48px; }
     .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }

@@ -21,9 +21,14 @@ describe('GameBoard in Vietnamese', () => {
     }).compileComponents();
     await TestBed.inject(I18n).setLocale('vi');
   });
-  afterEach(() => localStorage.clear());
+  afterEach(() => {
+    localStorage.clear();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+  });
 
   it('the action history panel reads the log in Vietnamese, so the translator reaches the history', () => {
+    // The tile is on the large layout; a narrower window folds it into the History panel.
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1366 });
     const gameService = TestBed.inject(GameService);
     gameService.startGame(2, 1);
     finishSelection(gameService);
