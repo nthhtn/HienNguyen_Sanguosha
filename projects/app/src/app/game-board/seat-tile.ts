@@ -67,6 +67,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           @if (seat().faceDown) {
             <span class="face-down-badge">{{ 'seat.faceDown' | t }}</span>
           }
+          <!-- Chained (Chains): fire or thunder damage to it passes along the chain. In the top right corner of the Generals. -->
+          @if (seat().chained) {
+            <img class="chain-badge" src="/card-art/misc/chain.png" [alt]="'seat.chained' | t" [attr.title]="'seat.chainedTitle' | t" />
+          }
           <!-- The picture of the last hit, over the Generals, fading out over a few seconds whatever playback does next. -->
           @for (fx of shownDamage(); track fx.id) {
             <app-sprite-effect class="damage-fx" [image]="fx.image" />
@@ -88,10 +92,6 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
         }
         @if (formName(); as form) {
           <span class="form-badge">{{ 'seat.form' | t: { form: form } }}</span>
-        }
-        @if (seat().chained) {
-          <!-- Chained (Chains): fire or thunder damage to it passes along the chain. -->
-          <img class="chain-badge" src="/card-art/misc/chain.png" [alt]="'seat.chained' | t" [attr.title]="'seat.chainedTitle' | t" />
         }
         @if (seat().silenced) {
           <span class="silenced-badge">{{ 'seat.noSkills' | t }}</span>
@@ -269,7 +269,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .generals { position: relative; }
     .generals.face-down app-seat-avatar { filter: grayscale(0.6) brightness(0.8); }
     .form-badge, .silenced-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
-    .chain-badge { position: absolute; top: 3px; right: 3px; height: 36px; width: auto; z-index: 1; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%)); }
+    .chain-badge { position: absolute; top: 0; right: 0; height: 36px; width: auto; z-index: 1; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%)); }
     .face-down-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
     .pile { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
     .slot { position: relative; width: 44px; height: 60px; border-radius: 3px; overflow: hidden; display: grid; place-items: center; background: #f1ece2; border: 1px solid #d5c8ad; }
