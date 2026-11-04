@@ -519,7 +519,6 @@ export const en = {
   'select.mustShare': 'Must share a kingdom with your first pick',
   'select.hp': 'HP {n}',
   'select.pick': 'Pick a General',
-  'select.info': 'General Info',
   'select.swap': 'Swap Main and Deputy',
   'select.kingdom': 'Kingdom:',
   'select.combinedHp': '· Combined HP: {hp}',
