@@ -122,6 +122,9 @@ describe('RoundTable', () => {
   });
 
   describe('a sequence longer than the centre has room for', () => {
+    // The large layout draws the log at full size; narrower windows scale it down and fit more steps.
+    beforeEach(() => Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1366 }));
+    afterEach(() => Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 }));
     const sha = { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
     const long = (losses: number) => {
       const log: EngineEvent[] = [

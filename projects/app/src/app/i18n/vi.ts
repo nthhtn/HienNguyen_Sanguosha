@@ -1,6 +1,7 @@
 import type { Messages } from './messages';
 
 export const vi: Messages = {
+  'nav.menu': 'Trình đơn',
   'nav.language': 'Ngôn ngữ',
   'card.named': '{name} ({face})',
   'choice.claim': '{claimer} tuyên bố có {card}. Tin hay nghi ngờ?',
@@ -343,6 +344,9 @@ export const vi: Messages = {
   'board.selection.you': 'Bạn',
   'board.selection.waiting': 'Đang chờ những người chơi khác chọn Tướng',
   'board.gameStartsIn': 'Ván đấu bắt đầu sau {n}',
+  'board.panel.open': 'Lịch sử',
+  'board.rotate.title': 'Hãy xoay thiết bị',
+  'board.rotate.hint': 'Bảng Quốc chiến cần màn hình ngang. Hãy xoay điện thoại sang ngang để tiếp tục chơi.',
   'board.yourHand': 'Bài trên tay của bạn',
   'board.noGame': 'Chưa có ván nào đang chơi.',
   'board.startNewGame': 'Bắt đầu ván mới',
@@ -514,7 +518,6 @@ export const vi: Messages = {
   'select.mustShare': 'Phải cùng thế lực với lựa chọn đầu tiên',
   'select.hp': 'Sinh lực {n}',
   'select.pick': 'Chọn một Tướng',
-  'select.info': 'Thông tin Tướng',
   'select.swap': 'Đổi Chủ tướng và Phó tướng',
   'select.kingdom': 'Thế lực:',
   'select.combinedHp': '· Tổng Sinh lực: {hp}',

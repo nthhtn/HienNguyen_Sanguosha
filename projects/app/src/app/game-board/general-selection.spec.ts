@@ -2,9 +2,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, GeneralDefinition, Kingdom } from 'engine';
-import { MatDialog } from '@angular/material/dialog';
 import { GeneralSelection } from './general-selection';
-import { GeneralInfoDialog } from './general-info-dialog';
 
 function general(id: string, kingdom: Kingdom, maxHp: number): [string, GeneralDefinition] {
   return [id, { id, kingdom, maxHp, skills: [] }];
@@ -159,27 +157,36 @@ describe('GeneralSelection layout and info', () => {
   const rowSizes = (f: ComponentFixture<GeneralSelection>) =>
     [...(f.nativeElement as HTMLElement).querySelectorAll('.row')].map((r) => r.querySelectorAll('[data-general-id]').length);
 
-  it('puts 5 Generals in one row', () => {
-    expect(rowSizes(render(['a', 'b', 'c', 'd', 'e']))).toEqual([5]);
+  it('puts 5 Generals in two rows, 3 on top and 2 below (split cards are wide)', () => {
+    expect(rowSizes(render(['a', 'b', 'c', 'd', 'e']))).toEqual([3, 2]);
   });
 
   it('puts 7 Generals in two rows, 4 on top and 3 below', () => {
     expect(rowSizes(render(['a', 'b', 'c', 'd', 'e', 'f', 'g']))).toEqual([4, 3]);
   });
 
-  it('shows the Force name on the card but not the skills', () => {
-    const el = render(['a', 'b', 'c', 'd', 'e']).nativeElement as HTMLElement;
-    expect(el.querySelector('[data-general-id="a"] .kingdom-tag')!.textContent).toContain('Wei');
-    expect(el.querySelector('.skills')).toBeNull();
+  it('shows the Force name under the art on the left, and the title and skills on the right', () => {
+    const el = render(['kingdomWars:zhang-fei', 'b', 'c', 'd', 'e']).nativeElement as HTMLElement;
+    const card = el.querySelector('[data-general-id="kingdomWars:zhang-fei"]')!;
+    expect(card.querySelector('.left .kingdom-tag')!.textContent).toContain('Wei');
+    expect(card.querySelector('.left .effects')).toBeNull();
+    const effects = card.querySelector('.right .effects')!;
+    expect(effects.querySelectorAll('.skills li').length).toBeGreaterThan(0);
+    expect(effects.querySelector('.skills strong')!.textContent!.trim()).not.toBe('');
   });
 
-  it('opens the General info dialog from the info button without selecting the card', () => {
+  it('says so when a General has no skills to show', () => {
+    const el = render(['a', 'b', 'c', 'd', 'e']).nativeElement as HTMLElement;
+    expect(el.querySelector('[data-general-id="a"] .right .empty')).not.toBeNull();
+  });
+
+  it('has no info button, and tapping the right side selects the card', () => {
     const fixture = render(['kingdomWars:zhang-fei', 'b', 'c', 'd', 'e']);
     const el = fixture.nativeElement as HTMLElement;
-    const open = jest.spyOn(TestBed.inject(MatDialog), 'open');
-    (el.querySelector('[data-general-id="kingdomWars:zhang-fei"] button.info') as HTMLButtonElement).click();
+    expect(el.querySelector('button.info')).toBeNull();
+    (el.querySelector('[data-general-id="kingdomWars:zhang-fei"] .right') as HTMLElement).click();
     fixture.detectChanges();
-    expect(open).toHaveBeenCalledWith(GeneralInfoDialog, expect.objectContaining({ data: { generalDefinitionId: 'kingdomWars:zhang-fei' } }));
-    expect(el.querySelector('.role-chip')).toBeNull();
+    expect(el.querySelector('[data-general-id="kingdomWars:zhang-fei"] .role-chip')).not.toBeNull();
   });
+
 });

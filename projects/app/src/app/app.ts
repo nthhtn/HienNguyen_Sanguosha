@@ -1,4 +1,6 @@
-import { Component, computed, inject } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { Component, HostListener, computed, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -10,6 +12,7 @@ import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-b
 import { AuthService } from './auth/auth.service';
 import { FEATURE_FLAGS } from './feature-flags';
 import { LanguageSwitcher } from './i18n/language-switcher';
+import { Layout } from './layout.service';
 import { MusicService, SoundEffects } from './music.service';
 import { PLAYBACK_SPEEDS, PlaybackSpeed } from './playback-speed.service';
 import { I18n } from './i18n/i18n.service';
@@ -18,7 +21,7 @@ import type { DeckId } from 'content';
 import { TPipe } from './i18n/t.pipe';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule, LanguageSwitcher, TPipe],
+  imports: [NgTemplateOutlet, CdkTrapFocus, RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule, LanguageSwitcher, TPipe],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
@@ -98,10 +101,21 @@ export class App {
   protected readonly speedOptions = PLAYBACK_SPEEDS.map((id) => ({ id, label: `speed.${id}` as MessageKey }));
 
   protected readonly auth = inject(AuthService);
+  protected readonly layout = inject(Layout);
 
   constructor() {
+    // Choosing a page from the drawer, or any other way of navigating, leaves the drawer closed.
+    effect(() => {
+      this.url();
+      untracked(() => this.layout.closeNav());
+    });
     this.music.start();
     void this.auth.load();
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    this.layout.closeNav();
   }
 
   protected async signOut(): Promise<void> {

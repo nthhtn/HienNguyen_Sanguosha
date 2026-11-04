@@ -1,4 +1,6 @@
-import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, DestroyRef, HostListener, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +12,9 @@ import { Action, CardInstance, ChooseGeneralsAction, Seat, describeDecision, dis
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { finalSeatViews } from 'protocol';
 import { GameService } from '../game.service';
+import { Layout } from '../layout.service';
+import { BoardPanel } from './board-panel';
+import { RotatePrompt } from './rotate-prompt';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { RoundTable } from './round-table';
@@ -53,13 +58,14 @@ import { I18n } from '../i18n/i18n.service';
 import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
 import { PlaybackDirector } from './playback/playback-director';
+import { TILE_HEIGHT } from './table-layout';
 import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './playback/seat-cues';
 
 @Component({
   selector: 'app-game-board',
   // The board's own playback: it lives as long as the board does, and reads the board's GameService (online, the remote one).
   providers: [PlaybackDirector],
-  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, RotatePrompt, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -116,13 +122,9 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
               }
             </div>
           } @else {
-            <div class="board">
-              <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
-              <div class="board-grid">
-                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [damageEffects]="damageEffects()" [resolving]="resolving()" />
-                <!-- Bottom left corner: the viewer's own seat, off the table. -->
+            <ng-template #seatTpl>
                 @if (viewerSeat(); as seat) {
-                  <div class="your-seat" [attr.data-seat-id]="seat.id">
+                  <div class="your-seat" [attr.data-seat-id]="seat.id" [style.--seat-zoom]="ownSeatScale()" [style.--seat-height]="ownSeatHeight()">
                     <app-seat-tile
                       [seat]="seat"
                       [name]="nameOf(seat.id)"
@@ -145,6 +147,19 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                     />
                   </div>
                 }
+            </ng-template>
+            <div class="board">
+              <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
+              <div class="board-grid">
+                <app-round-table class="battlefield" [reserveBottom]="seatReserve()" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [damageEffects]="damageEffects()" [resolving]="resolving()">
+                  @if (layout.panelAsOverlay()) {
+                    <div viewerSeat><ng-container [ngTemplateOutlet]="seatTpl" /></div>
+                  }
+                </app-round-table>
+                <!-- Large layout: the viewer's own seat in the bottom-left corner, off the table. -->
+                @if (!layout.panelAsOverlay()) {
+                  <ng-container [ngTemplateOutlet]="seatTpl" />
+                }
                 <section class="your-hand">
                   <div class="hand">
                     <h3>{{ 'board.yourHand' | t }}</h3>
@@ -163,11 +178,28 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                     [registry]="gameService.registry"
                     (actionChosen)="submit($event)"
                   />
+                  @if (layout.panelAsOverlay()) {
+                    <!-- Phone and medium layouts: the two tiles' full lists live in a panel that slides over the table. -->
+                    <button type="button" mat-icon-button class="panel-toggle" [attr.aria-label]="'board.panel.open' | t" [attr.aria-expanded]="layout.panelOpen()" (click)="layout.togglePanel()">
+                      <mat-icon>history</mat-icon>
+                    </button>
+                  }
                 </section>
                 <!-- Bottom right: the action history, then the discard pile; same height. -->
-                <app-action-history class="history" [history]="actionHistory()" />
-                <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                @if (!layout.panelAsOverlay()) {
+                  <app-action-history class="history" [history]="actionHistory()" />
+                  <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                }
               </div>
+              @if (layout.panelAsOverlay() && layout.panelOpen()) {
+                <div class="panel-scrim" role="presentation" (click)="layout.closePanel()"></div>
+                <aside class="panel" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+                  <app-board-panel [actionHistory]="actionHistory()" [discardHistory]="discardHistory()" />
+                </aside>
+              }
+              @if (!layout.wide() && layout.portrait()) {
+                <app-rotate-prompt />
+              }
             </div>
           }
         }
@@ -196,7 +228,6 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
       display: flex; flex-direction: column;
       height: calc(100dvh - var(--mat-toolbar-standard-height, 64px) - 16px);
     }
-    @media (max-width: 599px) { :host:has(.board) { height: calc(100dvh - var(--mat-toolbar-mobile-height, 56px) - 16px); } }
     .board { flex: 1; min-height: 0; display: flex; flex-direction: column; }
     /* Bottom row: Player Seat, Hand (the rest of the width), Action History, Discard Pile.
        All four sections share one fixed height, so the battlefield gets the rest. */
@@ -211,7 +242,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     /* The battlefield runs the full width of the screen: out past the page padding. */
     .battlefield { grid-area: battlefield; margin-inline: -16px; min-height: 0; }
     /* The seat tile is shrunk to fit the row, and stretched to the row's full height. */
-    .your-seat { --seat-zoom: 0.78; grid-area: seat; overflow: hidden; zoom: var(--seat-zoom); height: calc(var(--bottom-height) / var(--seat-zoom)); }
+    .your-seat { --seat-zoom: 0.78; grid-area: seat; overflow: hidden; zoom: var(--seat-zoom); height: calc(var(--seat-height, var(--bottom-height)) / var(--seat-zoom)); }
     .your-seat app-seat-tile { display: block; height: 100%; }
     .your-hand {
       grid-area: hand; min-width: 0; overflow: hidden; box-sizing: border-box;
@@ -225,20 +256,49 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     .history { grid-area: history; }
     .discard { grid-area: discard; }
     .history, .discard { box-sizing: border-box; width: 140px; min-height: 0; overflow: hidden; justify-content: center; }
-    /* Phone-sized: stack, and let the page scroll. */
-    @media (max-width: 767px) {
-      :host:has(.board) { height: auto; }
-      .board-grid {
-        --bottom-height: auto;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-rows: 70vh auto auto auto;
-        grid-template-areas: 'battlefield battlefield' 'seat seat' 'hand hand' 'history discard';
-      }
-      .your-seat { justify-self: center; height: auto; }
-      .your-seat app-seat-tile { height: auto; }
-      .your-hand { flex-direction: column; }
-      .actions { max-width: none; }
-      .history, .discard { width: auto; }
+    /* Phone layout (layout.service.ts): the history tiles give way to a button for the panel, so the bottom row is
+       your hand and that button. */
+    :host-context([data-layout='phone']) .board-grid {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'battlefield' 'hand';
+    }
+    /* Short screens (a phone on its side): one screen, no scrolling. The table gets what the slim bottom row and the
+       phase bar leave; seats come first, then the hand row, then the rest. */
+    :host-context([data-layout='phone']) .board-grid { --bottom-height: 98px; gap: 4px; }
+    :host-context([data-layout='phone']) .your-hand { gap: 8px; padding: 4px 6px 2px; }
+    :host-context([data-layout='phone']) .your-hand h3 { display: none; }
+    /* The bottom box is compact on phone and medium: smaller action buttons and text, less padding, so the hand gets the
+       room (button heights are below the 44 px touch size on purpose, developer's call 2026-11-04). */
+    :host-context([data-layout='phone']) .actions, :host-context([data-layout='medium']) .actions {
+      --mat-button-filled-container-height: 30px; --mat-button-outlined-container-height: 30px;
+      --mat-button-text-container-height: 30px; --mat-button-tonal-container-height: 30px;
+      --mat-button-outlined-label-text-size: 12px; --mat-button-filled-label-text-size: 12px;
+      display: block; max-width: 150px;
+    }
+    :host-context([data-layout='phone']) .actions ::ng-deep .action-list, :host-context([data-layout='medium']) .actions ::ng-deep .action-list { gap: 4px; margin: 0; }
+    :host-context([data-layout='phone']) .actions ::ng-deep button, :host-context([data-layout='medium']) .actions ::ng-deep button { padding: 0 8px; min-width: 0; font-size: 12px; line-height: 1.1; }
+    :host-context([data-layout='medium']) .your-hand { gap: 8px; padding: 4px 8px 2px; }
+    /* The page keeps 16 px under the board; give 12 of them to the bottom box, which ends near the screen's edge. */
+    :host-context([data-layout='phone']) .board-grid, :host-context([data-layout='medium']) .board-grid { margin-bottom: -12px; }
+    :host-context([data-layout='medium']) .your-hand h3 { font-size: 12px; line-height: 1.2; }
+    /* Phone and medium layouts: your seat is part of the battlefield, at the foot of the table (round-table.ts holds
+       it and keeps the other seats above it), so the board is the table and one bottom box for the hand, the action
+       buttons and the History button. Nothing beige wraps the seat. The seat's zoom and height come from the layout service
+       (seatScale), with the number of seats, and are bound on the element. */
+    :host-context([data-layout='medium']) .board-grid {
+      --bottom-height: 136px;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'battlefield' 'hand';
+    }
+    @media (min-height: 480px) {
+      :host-context([data-layout='phone']) .board-grid { --bottom-height: 98px; }
+    }
+    .panel-toggle { flex: none; align-self: center; width: 36px; height: 36px; padding: 6px; }
+    .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
+    .panel {
+      position: fixed; top: var(--mat-toolbar-standard-height, 44px); right: 0; bottom: 0; z-index: 16;
+      box-sizing: border-box; width: min(42vw, 360px); padding-right: env(safe-area-inset-right, 0px); overflow-y: auto;
+      background: var(--mat-sys-surface-container); color: var(--mat-sys-on-surface); box-shadow: -4px 0 16px rgb(0 0 0 / 0.3);
     }
   `,
 })
@@ -253,6 +313,22 @@ export class GameBoard {
   private readonly dock = inject(DecisionDock);
   private readonly injector = inject(Injector);
   protected readonly director = inject(PlaybackDirector);
+  protected readonly layout = inject(Layout);
+  // Your own seat's zoom, shared with the other seats (Layout.seatScale, which shrinks with more players) on phone and
+  // medium; null on large, where the board's CSS and the table fit it themselves.
+  protected readonly ownSeatScale = computed(() => (this.layout.panelAsOverlay() ? this.layout.seatScale(this.visibleState()?.seats.length ?? 4) : null));
+  protected readonly ownSeatHeight = computed(() => {
+    const scale = this.ownSeatScale();
+    return scale === null ? null : `${Math.round(TILE_HEIGHT * scale)}px`;
+  });
+  // The foot of the table kept for your own seat, in px: its height plus a 4 px gap.
+  protected readonly seatReserve = computed(() => {
+    const scale = this.ownSeatScale();
+    return scale === null ? 0 : Math.round(TILE_HEIGHT * scale) + 4;
+  });
+
+  // Leaving the board never leaves its panel open for the next one.
+  private readonly closePanelOnLeave = inject(DestroyRef).onDestroy(() => this.layout.closePanel());
   // What the viewer may do: nothing while playback is busy, so a card still flying can never be
   // clicked and no decision opens before the board has shown what led to it.
   protected readonly legalActions = computed(() => (this.director.idle() ? this.gameService.legalActions() : []));
@@ -849,6 +925,11 @@ export class GameBoard {
 
   dismissError(): void {
     this.gameService.clearError();
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    this.layout.closePanel();
   }
 
   goToSetup(): void {

@@ -13,7 +13,10 @@ import { PlaybackLayer } from './playback/playback-layer';
 import { CardArt } from './card-art';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { BattlefieldBackgrounds, battlefieldBackgroundCss } from '../battlefield-background.service';
-import { fitTable, seatPlacements } from './table-layout';
+import { Layout } from '../layout.service';
+import { CentreRoom, fitTable, seatPlacements } from './table-layout';
+
+const PHONE_CENTRE: CentreRoom = { centreMinWidth: 200, centreMinHeight: 70 };
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 
@@ -37,8 +40,11 @@ const STATUS_HEIGHT = 24;
   imports: [SeatTile, PlayingCard, CardArt, MatProgressSpinnerModule, TPipe, PlaybackLayer],
   template: `
     <div class="table" [class.crowded]="state().seats.length > 6" [style.background]="background()">
+      <!-- The other seats, the centre and playback fill the table above the foot kept for the viewer's own seat. -->
+      <div class="field" [style.bottom.px]="reserveBottom()">
       <!-- Only the latest action sequence, one step per line, each with its card. -->
-      <div class="centre" [style.width.px]="fit().centreWidth" [style.top.px]="fit().centreY" [style.max-height.px]="fit().centreHeight">
+      <div class="centre" [style.width.px]="fit().centreWidth" [style.top.px]="fit().centreY" [style.max-height.px]="centreMaxHeight()">
+        <div class="centre-zoom" [style.zoom]="centreZoom()" [style.width.px]="fit().centreWidth / centreZoom()">
         @if (turnedUp().length > 0) {
           <div class="turned-up" [attr.aria-label]="'table.turnedUp' | t">
             @for (card of turnedUp(); track card.instanceId) {
@@ -69,6 +75,7 @@ const STATUS_HEIGHT = 24;
         @if (thinkingSeatId(); as thinking) {
           <div class="thinking"><mat-progress-spinner mode="indeterminate" diameter="14" /> {{ 'table.thinking' | t: { seat: name(thinking) } }}</div>
         }
+        </div>
       </div>
       @for (p of placements(); track p.seat.id) {
         <div class="seat" [attr.data-seat-id]="p.seat.id" [style.left.%]="p.x" [style.top.%]="p.y" [style.--scale]="fit().scale">
@@ -92,6 +99,8 @@ const STATUS_HEIGHT = 24;
         </div>
       }
       <app-playback-layer [state]="state()" [viewerSeatId]="viewerSeatId()" [line]="latestLine()" [centreY]="fit().centreY" [centreHeight]="fit().centreHeight" />
+      </div>
+      <div class="viewer"><ng-content select="[viewerSeat]" /></div>
     </div>
   `,
   styles: `
@@ -108,6 +117,9 @@ const STATUS_HEIGHT = 24;
       background: radial-gradient(ellipse at center, #8b7559 0%, #6d5a43 55%, #4b3e2f 100%);
       box-shadow: inset 0 0 40px rgb(0 0 0 / 45%);
     }
+    .field { position: absolute; inset: 0 0 0 0; }
+    .centre-zoom { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+    .viewer { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); z-index: 3; }
     .centre {
       position: absolute;
       left: 50%;
@@ -153,6 +165,8 @@ export class RoundTable {
   readonly cues = input<Partial<Record<string, SeatCue>>>({});
   readonly damageEffects = input<Partial<Record<string, ShownDamage>>>({});
   readonly resolving = input(false);
+  // Room kept at the foot of the table, in px, for the viewer's own seat (projected as [viewerSeat]); 0 for none.
+  readonly reserveBottom = input(0);
 
   private readonly i18n = inject(I18n);
   private readonly backgrounds = inject(BattlefieldBackgrounds);
@@ -163,7 +177,14 @@ export class RoundTable {
 
   // The battlefield's measured size, in px.
   private readonly size = signal(DEFAULT_SIZE);
-  protected readonly fit = computed(() => fitTable(this.size().width, this.size().height, this.state().seats.length));
+  private readonly layout = inject(Layout);
+  // A phone on its side can spare the centre less room, so the seats stay big enough to read.
+  protected readonly fit = computed(() => fitTable(this.size().width, Math.max(1, this.size().height - this.reserveBottom()), this.state().seats.length, this.layout.wide() ? undefined : PHONE_CENTRE, this.layout.seatScale(this.state().seats.length)));
+  // How much the action log in the centre is scaled: with the seats on phone and medium, 1 on large.
+  protected readonly centreZoom = computed(() => this.layout.centreScale(this.state().seats.length));
+  // On a short screen the table may leave the centre almost no room; it still gets one whole step, which then sits over
+  // the seats a little, rather than a step cut off.
+  protected readonly centreMaxHeight = computed(() => Math.max(this.fit().centreHeight, (STEP_HEIGHT + STEP_GAP) * this.centreZoom()));
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId(), this.fit()).filter((p) => !p.isViewer));
 
   // The latest action sequence, oldest first, in the action history's wording.
@@ -177,7 +198,10 @@ export class RoundTable {
   // How many steps the centre has room for: the columns that fit across, times the rows that fit
   // down, after the turned-up row and the status lines.
   private readonly capacity = computed(() => {
-    const { centreWidth, centreHeight } = this.fit();
+    // The log is drawn at centreZoom, so the room holds more of it than its size in px says.
+    const zoom = this.centreZoom();
+    const centreWidth = this.fit().centreWidth / zoom;
+    const centreHeight = this.fit().centreHeight / zoom;
     const columns = Math.max(1, Math.floor((centreWidth + STEP_GAP) / (STEP_MIN_WIDTH + STEP_GAP)));
     const spent = (this.turnedUp().length > 0 ? TURNED_UP_HEIGHT : 0) + STATUS_HEIGHT * (Number(!!this.waiting()) + Number(!!this.thinkingSeatId()));
     const rows = Math.max(1, Math.floor((centreHeight - spent + STEP_GAP) / (STEP_HEIGHT + STEP_GAP)));

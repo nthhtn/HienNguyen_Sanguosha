@@ -1,7 +1,6 @@
 import { Component, computed, input, output, signal, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, Kingdom, combinedMaxHp } from 'engine';
@@ -11,7 +10,6 @@ import { DecisionCountdown } from './decision-countdown';
 import { generalDisplayName, kingdomDisplayName } from '../labels';
 import { TPipe } from '../i18n/t.pipe';
 import { I18n } from '../i18n/i18n.service';
-import { GeneralInfoDialog, GeneralInfoDialogData } from './general-info-dialog';
 
 interface CandidateViewModel {
   id: string;
@@ -56,26 +54,42 @@ interface CandidateViewModel {
               (keydown.enter)="toggle(vm)"
               (keydown.space)="toggle(vm); $event.preventDefault()"
             >
-              <div class="art">
-                <app-card-art size="large" [skin]="true" [id]="vm.id" [label]="vm.name" />
-                <button mat-icon-button type="button" class="info" [attr.aria-label]="'select.info' | t"
-                        (click)="openInfo(vm, $event)" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                  <mat-icon>info</mat-icon>
-                </button>
-                @if (vm.role; as role) {
-                  <span class="role-chip" [class.deputy]="role === 'Deputy'">{{ roleName(role) }}</span>
-                }
+              <!-- Left: the art and its caption. Right: the General's title and skills, which scroll when they overflow. -->
+              <div class="left">
+                <div class="art">
+                  <app-card-art size="large" [skin]="true" [id]="vm.id" [label]="vm.name" />
+                  @if (vm.role; as role) {
+                    <span class="role-chip" [class.deputy]="role === 'Deputy'">{{ roleName(role) }}</span>
+                  }
+                </div>
+                <div class="caption">
+                  <div class="name">{{ vm.name }}</div>
+                  <div class="meta">
+                    <span class="kingdom-tag">{{ kingdomName(vm.kingdom) }}</span>
+                    <span class="hearts" [attr.aria-label]="'select.hp' | t: { n: vm.maxHp }">
+                      @for (h of vm.hearts; track $index) {
+                        <mat-icon>favorite</mat-icon>
+                      }
+                    </span>
+                    <span class="hp-label">{{ 'select.hp' | t: { n: vm.maxHp } }}</span>
+                  </div>
+                </div>
               </div>
-              <div class="caption">
-                <div class="name">{{ vm.name }}</div>
-                <div class="meta">
-                  <span class="kingdom-tag">{{ kingdomName(vm.kingdom) }}</span>
-                  <span class="hearts" [attr.aria-label]="'select.hp' | t: { n: vm.maxHp }">
-                    @for (h of vm.hearts; track $index) {
-                      <mat-icon>favorite</mat-icon>
-                    }
-                  </span>
-                  <span class="hp-label">{{ 'select.hp' | t: { n: vm.maxHp } }}</span>
+              <div class="right">
+                <div class="effects">
+                  @if (vm.display?.title; as title) {
+                    <div class="title">{{ title }}</div>
+                  }
+                  @if (vm.display?.skills?.length) {
+                    <ul class="skills">
+                      @for (skill of vm.display!.skills; track skill.name) {
+                        <li [class.not-in-game]="skill.inGame === false"><strong>{{ skill.name }}</strong> {{ skill.text }}
+                          @if (skill.inGame === false) { <em class="not-in-game-hint">{{ 'wiki.notInGame' | t }}</em> }</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="empty">{{ 'general.noSkills' | t }}</p>
+                  }
                 </div>
               </div>
             </mat-card>
@@ -111,18 +125,18 @@ interface CandidateViewModel {
     </mat-card>
   `,
   styles: `
-    /* The whole view fits the window below the app bar: only the list of
-       Generals scrolls (sideways), and each card scrolls (down) on its own. */
+    /* A card is split in two: the art and its caption on the left, the General's skills on the right (scrolling down
+       when they overflow). On a large screen the whole view fits the window; on smaller ones the cards wrap into
+       columns and the page scrolls. */
     :host {
       display: flex; flex-direction: column; padding-bottom: 8px; box-sizing: border-box;
       height: calc(100dvh - var(--mat-toolbar-standard-height, 64px) - 16px);
     }
-    @media (max-width: 599px) { :host { height: calc(100dvh - var(--mat-toolbar-mobile-height, 56px) - 16px); } }
     .intro { flex: none; }
     .intro h2 { margin: 8px 0 0; font: var(--mat-sys-headline-small); }
     .hint { color: var(--mat-sys-on-surface-variant); margin: 4px 0 8px; }
-    /* Candidates are always 5 (one row) or 7 (4 + 3), centred; the cards fill
-       the height left between the header and the bottom bar. */
+    /* Candidates are always 5 (3 + 2) or 7 (4 + 3), centred; the cards fill the height left between the header and
+       the bottom bar. */
     .candidates {
       --caption-height: 76px;
       flex: 1; min-height: 0;
@@ -131,11 +145,12 @@ interface CandidateViewModel {
     }
     .row { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 16px; container-type: size; }
     .candidate {
-      /* The card wraps the artwork: art is never bigger than its 200 x 290, and only shrinks when the row is
-         too short (6px is the Force border). The height follows from the art plus the caption. */
-      width: min(200px, calc((100cqh - var(--caption-height) - 6px) * 200 / 290)); flex: none;
+      /* The art on the left is never bigger than 130 x 189, and only shrinks when the row is too short (6px is
+         the Force border). The skills take the rest of the card's width. */
+      --art-width: min(130px, calc((100cqh - var(--caption-height) - 6px) * 200 / 290));
+      flex: 1 1 0; min-width: 0; max-width: 380px; height: min(100cqh, 260px);
       box-sizing: border-box;
-      display: flex; flex-direction: column;
+      display: flex; flex-direction: row;
       cursor: pointer;
       overflow: hidden;
       border-top: 6px solid var(--kingdom);
@@ -144,16 +159,22 @@ interface CandidateViewModel {
     .candidate:hover:not(.disabled) { transform: translateY(-3px); box-shadow: var(--mat-sys-level3); }
     .candidate.selected { transform: translateY(-4px); box-shadow: 0 0 0 3px var(--kingdom), var(--mat-sys-level4); }
     .candidate.disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.6); }
-    .candidate.disabled .info { pointer-events: auto; }
     .kingdom-Wei { --kingdom: #3f6fd8; }
     .kingdom-Shu { --kingdom: #d84a3f; }
     .kingdom-Wu { --kingdom: #2f9e58; }
     .kingdom-Qun { --kingdom: #8a7f8c; }
+    .left { flex: none; width: var(--art-width); max-width: 55%; display: flex; flex-direction: column; }
     .art { position: relative; aspect-ratio: 200 / 290; background: #1d1b20; }
     .art app-card-art { display: block; width: 100%; height: 100%; }
     /* .large is needed to outrank CardArt's own fixed 160 x 220 size. */
     .art ::ng-deep .card-art.large { display: block; width: 100%; height: 100%; object-fit: cover; }
-    .info { position: absolute; top: 2px; left: 2px; color: #fff; background: rgba(0, 0, 0, 0.55); --mdc-icon-button-state-layer-size: 32px; width: 32px; height: 32px; padding: 4px; }
+    .right { flex: 1; min-width: 0; display: flex; border-left: 1px solid var(--mat-sys-outline-variant); }
+    .effects { flex: 1; min-width: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 10px; font: var(--mat-sys-body-medium); text-align: left; overflow-wrap: anywhere; }
+    .title { font-style: italic; color: var(--mat-sys-on-surface-variant); margin-bottom: 6px; }
+    .skills { padding-left: 1.1em; margin: 0; }
+    .skills li { margin-bottom: 6px; }
+    .skills li.not-in-game { opacity: 0.6; }
+    .empty { margin: 0; color: var(--mat-sys-on-surface-variant); }
     .role-chip {
       position: absolute; top: 8px; right: 8px;
       padding: 2px 10px; border-radius: 12px;
@@ -181,6 +202,17 @@ interface CandidateViewModel {
     .slot-name { font: var(--mat-sys-title-small); }
     .summary { flex: 1; font: var(--mat-sys-body-medium); }
     .timer { width: 160px; }
+    /* Phone layout (layout.service.ts): too short to fit every card, so the cards keep a size you can tap and the
+       page scrolls; the bar with Confirm stays at the bottom of the screen. */
+    :host-context([data-layout='phone']), :host-context([data-layout='medium']) { height: auto; min-height: calc(100dvh - var(--mat-toolbar-standard-height, 44px) - 16px); }
+    :host-context([data-layout='phone']) .candidates, :host-context([data-layout='medium']) .candidates {
+      flex: none; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 380px)); justify-content: center;
+    }
+    :host-context([data-layout='phone']) .row, :host-context([data-layout='medium']) .row { display: contents; }
+    :host-context([data-layout='phone']) .candidate, :host-context([data-layout='medium']) .candidate {
+      --art-width: 130px; max-width: none; height: 270px;
+    }
+    :host-context([data-layout='phone']) .bar { position: sticky; bottom: 0; z-index: 2; background: var(--mat-sys-surface-container); border-radius: 12px; }
     @media (max-width: 600px) {
       .bar { gap: 8px; }
       .summary { flex-basis: 100%; order: 3; }
@@ -197,7 +229,6 @@ export class GeneralSelection {
   readonly chosen = output<ChooseGeneralsAction>();
 
   private readonly i18n = inject(I18n);
-  private readonly dialog = inject(MatDialog);
 
   // UI-only state: the player's picks in order, [main, deputy].
   protected readonly selected = signal<string[]>([]);
@@ -227,21 +258,14 @@ export class GeneralSelection {
     });
   });
 
-  // Always 5 or 7 candidates: one row, or two with the extra card on top (4 + 3).
+  // Always 5 or 7 candidates: two rows, with the extra card on top (3 + 2, or 4 + 3). Cards are wide now, so five
+  // do not fit in one row.
   protected readonly rows = computed<CandidateViewModel[][]>(() => {
     const all = this.candidateViewModels();
-    if (all.length <= 5) return [all];
+    if (all.length <= 1) return [all];
     const top = Math.ceil(all.length / 2);
     return [all.slice(0, top), all.slice(top)];
   });
-
-  protected openInfo(vm: CandidateViewModel, event: Event): void {
-    event.stopPropagation();
-    this.dialog.open<GeneralInfoDialog, GeneralInfoDialogData>(GeneralInfoDialog, {
-      data: { generalDefinitionId: vm.id },
-      width: 'min(92vw, 520px)',
-    });
-  }
 
   // What the chip says; the role values themselves ('Main', 'Deputy') stay the logic's.
   protected roleName(role: 'Main' | 'Deputy'): string {

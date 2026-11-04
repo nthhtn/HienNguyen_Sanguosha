@@ -145,3 +145,26 @@ body {
   gap: 8px;
   padding-right: 16px;
 }
+
+// Phones, and any window too short for the wide layout (see layout.service.ts): a slimmer app bar, and the
+// page kept clear of camera cut-outs and rounded corners (index.html asks for viewport-fit=cover).
+// The phase indicator and the board's height read the toolbar variables.
+html[data-layout='phone'] {
+  --mat-toolbar-standard-height: 44px;
+  --mat-toolbar-mobile-height: 44px;
+}
+
+// Dialogs on a short screen (a phone on its side): the whole dialog stays inside the screen, and only its content
+// scrolls, so the title and the buttons stay where they can be reached. Material caps the content at 65vh, which
+// on a 344 px screen leaves no room for the title and buttons as well.
+html[data-layout='phone'] {
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    max-height: calc(100dvh - 16px);
+    overflow: hidden;
+  }
+  .mat-mdc-dialog-content {
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}

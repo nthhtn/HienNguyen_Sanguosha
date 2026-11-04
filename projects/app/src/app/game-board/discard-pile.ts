@@ -1,9 +1,9 @@
 import { Component, Signal, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
 import { CardInstance } from 'engine';
 import { cardIdDisplayName } from '../labels';
+import { DiscardHistoryList } from './discard-history-list';
 import { PlayingCard } from './playing-card';
 import { DiscardHistoryEntry } from './discard-history';
 import { I18n } from '../i18n/i18n.service';
@@ -19,46 +19,19 @@ export interface DiscardHistoryDialogData {
 // the draw pile sit below a reshuffle divider, dimmed.
 @Component({
   selector: 'app-discard-history-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, PlayingCard, TPipe],
+  imports: [MatDialogModule, MatButtonModule, DiscardHistoryList, TPipe],
   template: `
     <h2 mat-dialog-title>{{ 'discard.title' | t }}</h2>
     <mat-dialog-content>
-      <p class="summary">{{ 'discard.summary' | t: { inPile: inPileCount(), total: discardCount() } }}</p>
-      <ol class="history">
-        @for (entry of data.history(); track $index) {
-          @if (entry.kind === 'card') {
-            <li class="entry" [class.gone]="!entry.inPile" [attr.data-card-id]="entry.card.instanceId">
-              <app-playing-card [card]="entry.card" />
-            </li>
-          } @else {
-            <li class="reshuffle">
-              <mat-icon>autorenew</mat-icon>
-              {{ (entry.cardCount === 1 ? 'discard.reshuffled.one' : 'discard.reshuffled.other') | t: { n: entry.cardCount } }}
-            </li>
-          }
-        }
-      </ol>
+      <app-discard-history-list [history]="data.history()" />
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close type="button">{{ 'ui.close' | t }}</button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .summary { margin: 0 0 12px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
-    .history { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 12px; }
-    .entry { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; }
-    .entry.gone { opacity: 0.5; }
-    .reshuffle {
-      grid-column: 1 / -1; display: flex; align-items: center; gap: 8px;
-      padding: 6px 0; border-top: 1px dashed var(--mat-sys-outline); border-bottom: 1px dashed var(--mat-sys-outline);
-      font: var(--mat-sys-label-large); color: var(--mat-sys-on-surface-variant);
-    }
-  `,
 })
 export class DiscardHistoryDialog {
   protected readonly data = inject<DiscardHistoryDialogData>(MAT_DIALOG_DATA);
-  protected readonly discardCount = computed(() => this.data.history().filter((e) => e.kind === 'card').length);
-  protected readonly inPileCount = computed(() => this.data.history().filter((e) => e.kind === 'card' && e.inPile).length);
 }
 
 // The discard pile, kept beside the table: only the top (most recent) card is

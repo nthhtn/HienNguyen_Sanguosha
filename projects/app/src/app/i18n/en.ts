@@ -2,6 +2,7 @@
 // catalog must have exactly these keys (checked by the compiler and by
 // catalogs.spec.ts). Messages use {name} placeholders.
 export const en = {
+  'nav.menu': 'Menu',
   'nav.language': 'Language',
   'card.named': '{name} ({face})',
   'choice.claim': '{claimer} claims {card}. Believe or doubt?',
@@ -344,6 +345,9 @@ export const en = {
   'board.selection.you': 'You',
   'board.selection.waiting': 'Waiting for the other players to choose',
   'board.gameStartsIn': 'Game starts in {n}',
+  'board.panel.open': 'History',
+  'board.rotate.title': 'Rotate Your Device',
+  'board.rotate.hint': 'The Guozhan board needs a landscape screen. Turn your phone sideways to keep playing.',
   'board.yourHand': 'Your Hand',
   'board.noGame': 'No game in progress.',
   'board.startNewGame': 'Start a New Game',
@@ -515,7 +519,6 @@ export const en = {
   'select.mustShare': 'Must share a kingdom with your first pick',
   'select.hp': 'HP {n}',
   'select.pick': 'Pick a General',
-  'select.info': 'General Info',
   'select.swap': 'Swap Main and Deputy',
   'select.kingdom': 'Kingdom:',
   'select.combinedHp': '· Combined HP: {hp}',

@@ -104,7 +104,8 @@ const OTHERS = SEATS.filter((seat) => seat.n !== 1).map((seat) => seat.n);
       .dist { grid-template-columns: minmax(0, 1fr); }
     }
     @media (max-width: 600px) {
-      .ring { --seat-w: 70px; --seat-av: 44px; min-height: 340px; aspect-ratio: 1.1; }
+      /* The side margin keeps the outer seats (half a seat wide each) inside the screen. */
+      .ring { --seat-w: 58px; --seat-av: 40px; height: 340px; min-height: 0; aspect-ratio: auto; margin-inline: 30px; }
       .mount { left: -12px; }
     }
   `,

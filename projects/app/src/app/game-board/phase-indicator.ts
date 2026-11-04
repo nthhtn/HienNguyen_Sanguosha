@@ -33,7 +33,6 @@ import { TPipe } from '../i18n/t.pipe';
   styles: `
     .timer { width: 160px; margin-left: 12px; }
     :host { display: block; position: sticky; top: var(--mat-toolbar-standard-height, 64px); z-index: 2; }
-    @media (max-width: 599px) { :host { top: var(--mat-toolbar-mobile-height, 56px); } }
     .phase-indicator {
       display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px;
       margin: 8px 0; padding: 8px 16px; border-radius: 12px;
@@ -44,6 +43,10 @@ import { TPipe } from '../i18n/t.pipe';
     .discard { color: var(--mat-sys-primary); font-weight: 700; }
     .count { font: var(--mat-sys-label-large); color: var(--mat-sys-on-surface-variant); }
     .turn { margin-right: 12px; }
+    /* Phone layout: a slim one-line bar, so the table keeps the height. */
+    :host-context([data-layout='phone']) .phase-indicator { margin: 2px 0; padding: 2px 12px; gap: 2px 6px; border-radius: 8px; font-size: 14px; line-height: 1.3; }
+    :host-context([data-layout='phone']) .timer { width: 130px; margin-left: 6px; }
+    :host-context([data-layout='phone']) .turn, :host-context([data-layout='phone']) .draw-pile { margin: 0; }
     .draw-pile { margin-left: 12px; }
   `,
 })
