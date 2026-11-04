@@ -264,8 +264,8 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
     /* Short screens (a phone on its side): one screen, no scrolling. The table gets what the slim bottom row and the
        phase bar leave; seats come first, then the hand row, then the rest. */
-    :host-context([data-layout='phone']) .board-grid { --bottom-height: 104px; gap: 4px; }
-    :host-context([data-layout='phone']) .your-hand { gap: 8px; padding: 4px 6px; }
+    :host-context([data-layout='phone']) .board-grid { --bottom-height: 98px; gap: 4px; }
+    :host-context([data-layout='phone']) .your-hand { gap: 8px; padding: 4px 6px 2px; }
     :host-context([data-layout='phone']) .your-hand h3 { display: none; }
     /* The bottom box is compact on phone and medium: smaller action buttons and text, less padding, so the hand gets the
        room (button heights are below the 44 px touch size on purpose, developer's call 2026-11-04). */
@@ -277,19 +277,21 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
     :host-context([data-layout='phone']) .actions ::ng-deep .action-list, :host-context([data-layout='medium']) .actions ::ng-deep .action-list { gap: 4px; margin: 0; }
     :host-context([data-layout='phone']) .actions ::ng-deep button, :host-context([data-layout='medium']) .actions ::ng-deep button { padding: 0 8px; min-width: 0; font-size: 12px; line-height: 1.1; }
-    :host-context([data-layout='medium']) .your-hand { gap: 8px; padding: 4px 8px; }
+    :host-context([data-layout='medium']) .your-hand { gap: 8px; padding: 4px 8px 2px; }
+    /* The page keeps 16 px under the board; give 12 of them to the bottom box, which ends near the screen's edge. */
+    :host-context([data-layout='phone']) .board-grid, :host-context([data-layout='medium']) .board-grid { margin-bottom: -12px; }
     :host-context([data-layout='medium']) .your-hand h3 { font-size: 12px; line-height: 1.2; }
     /* Phone and medium layouts: your seat is part of the battlefield, at the foot of the table (round-table.ts holds
        it and keeps the other seats above it), so the board is the table and one bottom box for the hand, the action
        buttons and the History button. Nothing beige wraps the seat. The seat's zoom and height come from the layout service
        (seatScale), with the number of seats, and are bound on the element. */
     :host-context([data-layout='medium']) .board-grid {
-      --bottom-height: 150px;
+      --bottom-height: 136px;
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: 'battlefield' 'hand';
     }
     @media (min-height: 480px) {
-      :host-context([data-layout='phone']) .board-grid { --bottom-height: 130px; }
+      :host-context([data-layout='phone']) .board-grid { --bottom-height: 98px; }
     }
     .panel-toggle { flex: none; align-self: center; width: 36px; height: 36px; padding: 6px; }
     .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
