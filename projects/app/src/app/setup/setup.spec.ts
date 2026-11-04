@@ -29,6 +29,22 @@ describe('Setup', () => {
     expect(navigateSpy).toHaveBeenCalledWith(expect.stringContaining('/game'));
   });
 
+  it('disables Start Game on a screen too small to play, and says why', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });
+    await TestBed.configureTestingModule({
+      imports: [Setup],
+      providers: [provideRouter([{ path: 'game', children: [] }])],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(Setup);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect((el.querySelector('button.start') as HTMLButtonElement).disabled).toBe(true);
+    expect(el.querySelector('app-small-screen-notice')!.textContent).toContain('Playing needs a tablet or computer screen.');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+  });
+
   it('clamps a zeroed/cleared seat count into [2, maxSeats] instead of sending 0', async () => {
     await TestBed.configureTestingModule({
       imports: [Setup],

@@ -28,18 +28,22 @@ export class Layout {
   readonly kind = computed(() => layoutFor(this.width(), this.height()));
   // Medium and large: room for the full navigation bar.
   readonly wide = computed(() => this.kind() !== 'phone');
+  // A game can be played only in a medium or large window; 'phone' means too small to play (no device check: a window
+  // size decides, so "desktop site" mode on a phone and a small desktop window are blocked as well).
+  readonly canPlay = computed(() => this.kind() !== 'phone');
+  // Too small as it is, but big enough turned sideways: a tablet held upright.
+  readonly fitsIfTurned = computed(() => {
+    const long = Math.max(this.width(), this.height());
+    const short = Math.min(this.width(), this.height());
+    return !this.canPlay() && long >= WIDE_MIN_WIDTH && short >= WIDE_MIN_HEIGHT;
+  });
   // The History panel slides over the board (phone and medium); on large the board keeps its two tiles.
   readonly panelAsOverlay = computed(() => this.kind() !== 'large');
   // How big seat tiles are drawn, relative to full size: the viewer's own seat and the others share it, so a small
   // screen has small seats all round.
   // The base is for four players; more players, smaller seats, and fewer, larger (by (4 / n) ^ 0.7, between half
   // and 1.3 times the base). The large layout fits the table by itself.
-  private readonly seatBase = computed(() => {
-    const kind = this.kind();
-    if (kind === 'large') return 1;
-    if (kind === 'medium') return 0.66;
-    return this.height() >= 480 ? 0.48 : 0.35;
-  });
+  private readonly seatBase = computed(() => (this.kind() === 'large' ? 1 : 0.66));
   seatScale(seatCount: number): number {
     const base = this.seatBase();
     if (this.kind() === 'large') return base;
@@ -50,7 +54,6 @@ export class Layout {
   centreScale(seatCount: number): number {
     return this.kind() === 'large' ? 1 : 0.5 + 0.5 * this.seatScale(seatCount);
   }
-  readonly viewportHeight = this.height.asReadonly();
   readonly portrait = computed(() => this.height() > this.width());
   readonly navOpen = this._navOpen.asReadonly();
   readonly panelOpen = this._panelOpen.asReadonly();

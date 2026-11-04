@@ -1,3 +1,5 @@
+import { Layout } from '../layout.service';
+import { SmallScreenNotice } from '../small-screen-notice';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,7 +17,7 @@ import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-setup',
-  imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, DeckPicker, TPipe],
+  imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, DeckPicker, SmallScreenNotice, TPipe],
   template: `
     <div class="home" style="background-image: url('/card-art/misc/landing.jpg')">
       <mat-card class="hero" appearance="raised">
@@ -96,7 +98,8 @@ import { TPipe } from '../i18n/t.pipe';
 
         </mat-card-content>
         <mat-card-actions align="end">
-          <button mat-flat-button type="button" class="start" (click)="startGame()">
+          <app-small-screen-notice />
+          <button mat-flat-button type="button" class="start" [disabled]="!layout.canPlay()" (click)="startGame()">
             <mat-icon>play_arrow</mat-icon> {{ 'setup.start' | t }}
           </button>
         </mat-card-actions>
@@ -139,6 +142,7 @@ import { TPipe } from '../i18n/t.pipe';
   `,
 })
 export class Setup {
+  protected readonly layout = inject(Layout);
   private readonly gameService = inject(GameService);
   private readonly router = inject(Router);
   protected readonly maxSeats = this.gameService.maxSeats;

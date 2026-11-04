@@ -113,8 +113,6 @@ describe('Layout seat scale', () => {
   it.each([
     [1366, 768, 1],
     [1133, 744, 0.66],
-    [841, 673, 0.48],
-    [852, 393, 0.35],
   ])('is the base size for 4 seats at %i x %i', (width, height, scale) => {
     resizeTo(width, height);
     expect(TestBed.inject(Layout).seatScale(4)).toBeCloseTo(scale);
@@ -147,9 +145,46 @@ describe('Layout centre scale', () => {
     expect(layout.centreScale(4)).toBeLessThan(1);
     expect(layout.centreScale(4)).toBeGreaterThan(layout.seatScale(4));
     expect(layout.centreScale(8)).toBeLessThan(layout.centreScale(4));
-    resizeTo(852, 393);
-    expect(layout.centreScale(4)).toBeLessThan(0.7);
     resizeTo(1366, 768);
     expect(layout.centreScale(4)).toBe(1);
+  });
+});
+
+describe('Layout play check', () => {
+  afterAll(() => resizeTo(1024, 768));
+
+  it.each([
+    [1133, 744],
+    [1366, 768],
+    [900, 600],
+  ])('lets a game be played at %i x %i', (width, height) => {
+    resizeTo(width, height);
+    const layout = TestBed.inject(Layout);
+    expect(layout.canPlay()).toBe(true);
+    expect(layout.fitsIfTurned()).toBe(false);
+  });
+
+  it.each([
+    [915, 412],
+    [852, 393],
+    [667, 375],
+    [980, 450],
+    [841, 673],
+  ])('blocks a game at %i x %i, with nothing to gain by turning it', (width, height) => {
+    resizeTo(width, height);
+    const layout = TestBed.inject(Layout);
+    expect(layout.canPlay()).toBe(false);
+    expect(layout.fitsIfTurned()).toBe(false);
+  });
+
+  it.each([
+    [744, 1133],
+    [834, 1194],
+    [800, 1280],
+  ])('asks a tablet held upright (%i x %i) to turn', (width, height) => {
+    resizeTo(width, height);
+    const layout = TestBed.inject(Layout);
+    expect(layout.canPlay()).toBe(false);
+    expect(layout.fitsIfTurned()).toBe(true);
   });
 });

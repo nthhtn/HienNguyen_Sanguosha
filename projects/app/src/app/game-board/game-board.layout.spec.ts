@@ -41,46 +41,6 @@ describe('GameBoard layouts', () => {
     return { fixture, el: fixture.nativeElement as HTMLElement };
   }
 
-  describe('on a phone, in landscape', () => {
-    beforeEach(() => resizeTo(852, 393));
-
-    it('swaps the two history tiles for a History button', () => {
-      const { el } = runningBoard();
-      expect(el.querySelector('app-action-history')).toBeNull();
-      expect(el.querySelector('app-discard-pile')).toBeNull();
-      expect(el.querySelector('button.panel-toggle')!.getAttribute('aria-label')).toBe('History');
-      expect(el.querySelector('app-board-panel')).toBeNull();
-    });
-
-    it('slides the panel over the board, and closes it on the backdrop, on Escape and on the button', () => {
-      const { fixture, el } = runningBoard();
-      const toggle = el.querySelector('button.panel-toggle') as HTMLButtonElement;
-      toggle.click();
-      fixture.detectChanges();
-      expect(el.querySelector('app-board-panel')).not.toBeNull();
-      expect(toggle.getAttribute('aria-expanded')).toBe('true');
-      (el.querySelector('.panel-scrim') as HTMLElement).click();
-      fixture.detectChanges();
-      expect(el.querySelector('app-board-panel')).toBeNull();
-
-      toggle.click();
-      fixture.detectChanges();
-      el.querySelector('aside.panel')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      fixture.detectChanges();
-      expect(el.querySelector('app-board-panel')).toBeNull();
-
-      toggle.click();
-      fixture.detectChanges();
-      toggle.click();
-      fixture.detectChanges();
-      expect(el.querySelector('app-board-panel')).toBeNull();
-    });
-
-    it('does not show the rotate prompt', () => {
-      expect(runningBoard().el.querySelector('app-rotate-prompt')).toBeNull();
-    });
-  });
-
   describe('on a medium screen (900 to 1279 px wide)', () => {
     beforeEach(() => resizeTo(1133, 744));
 
@@ -105,7 +65,7 @@ describe('GameBoard layouts', () => {
 
     it('does not ask for a rotation, even in portrait', () => {
       resizeTo(1000, 1200);
-      expect(runningBoard().el.querySelector('app-rotate-prompt')).toBeNull();
+      expect(runningBoard().el.querySelector('app-small-screen-prompt')).toBeNull();
     });
   });
 
@@ -122,33 +82,42 @@ describe('GameBoard layouts', () => {
 
     it('does not ask for a rotation, even in portrait', () => {
       resizeTo(1000, 1200);
-      expect(runningBoard().el.querySelector('app-rotate-prompt')).toBeNull();
+      expect(runningBoard().el.querySelector('app-small-screen-prompt')).toBeNull();
     });
   });
 
-  describe('on a phone, in portrait', () => {
-    beforeEach(() => resizeTo(390, 844));
+  describe('on a screen too small to play (a phone)', () => {
+    beforeEach(() => resizeTo(915, 412));
 
-    it('asks to rotate, and leaves the board in place underneath', () => {
+    it('covers a running game with the larger-screen message, and leaves the board in place underneath', () => {
       const { el } = runningBoard();
-      const prompt = el.querySelector('app-rotate-prompt')!;
-      expect(prompt.textContent).toContain('Rotate Your Device');
-      expect(prompt.textContent).toContain('The Guozhan board needs a landscape screen. Turn your phone sideways to keep playing.');
+      const prompt = el.querySelector('app-small-screen-prompt')!;
+      expect(prompt.textContent).toContain('Larger Screen Needed');
+      expect(prompt.textContent).toContain('Guozhan needs a tablet or computer screen. Use a larger device to play.');
       expect(el.querySelector('app-round-table')).not.toBeNull();
-      expect(el.querySelector('.your-hand app-hand-view')).not.toBeNull();
+    });
+
+    it('covers General selection too', () => {
+      gameService.startGame(3, 1);
+      const fixture = TestBed.createComponent(GameBoard);
+      fixture.detectChanges();
+      expect((fixture.nativeElement as HTMLElement).querySelector('app-small-screen-prompt')).not.toBeNull();
     });
 
     it('does not ask while there is no game', () => {
       const fixture = TestBed.createComponent(GameBoard);
       fixture.detectChanges();
-      expect((fixture.nativeElement as HTMLElement).querySelector('app-rotate-prompt')).toBeNull();
+      expect((fixture.nativeElement as HTMLElement).querySelector('app-small-screen-prompt')).toBeNull();
     });
+  });
 
-    it('does not ask during General selection', () => {
-      gameService.startGame(3, 1);
-      const fixture = TestBed.createComponent(GameBoard);
-      fixture.detectChanges();
-      expect((fixture.nativeElement as HTMLElement).querySelector('app-rotate-prompt')).toBeNull();
+  describe('on a tablet held upright', () => {
+    beforeEach(() => resizeTo(744, 1133));
+
+    it('asks to turn the device instead', () => {
+      const prompt = runningBoard().el.querySelector('app-small-screen-prompt')!;
+      expect(prompt.textContent).toContain('Rotate Your Device');
+      expect(prompt.textContent).toContain('The Guozhan board needs a wider screen. Turn your device sideways to keep playing.');
     });
   });
 });
