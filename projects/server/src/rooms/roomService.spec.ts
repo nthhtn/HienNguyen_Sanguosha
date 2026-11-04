@@ -74,6 +74,16 @@ describe('RoomService', () => {
       expect(await rulesOf('Bo', 5)).toEqual({ firstRevealDraw: true });
     });
 
+    it('turns First Reveal Bonus on from the minimum seat count, whatever was asked', async () => {
+      const { rooms, registered } = await setup();
+      const user = await registered('Cy');
+      const id = await rooms.create(user, { seatCount: 6, rules: { firstRevealDraw: false }, displayName: 'Cy' });
+      expect(rooms.snapshot(user, id).rules).toEqual({ firstRevealDraw: true });
+      const di = await registered('Di');
+      const none = await rooms.create(di, { seatCount: 6, rules: {}, displayName: 'Di' });
+      expect(rooms.snapshot(di, none).rules).toEqual({ firstRevealDraw: true });
+    });
+
     it('keeps the deck at any seat count, and stores nothing for Kingdom Wars', async () => {
       const { rooms, registered } = await setup();
       const rulesOf = async (name: string, seatCount: number, deck: 'identity' | 'kingdomWars') => {
@@ -82,7 +92,7 @@ describe('RoomService', () => {
         return rooms.snapshot(user, id).rules;
       };
       expect(await rulesOf('Ann', 3, 'identity')).toEqual({ deck: 'identity' });
-      expect(await rulesOf('Bo', 5, 'identity')).toEqual({ deck: 'identity' });
+      expect(await rulesOf('Bo', 5, 'identity')).toEqual({ firstRevealDraw: true, deck: 'identity' });
       expect(await rulesOf('Cy', 3, 'kingdomWars')).toEqual({});
     });
 
@@ -327,7 +337,7 @@ describe('RoomService', () => {
     it('changes the seat count and rules, within the limits and never below the member count', async () => {
       const { run, host } = await lobby();
       await run({ type: 'lobby.setRules', seatCount: 6, rules: { firstRevealDraw: false } });
-      expect(host.connection.room).toMatchObject({ seatCount: 6, rules: { firstRevealDraw: false } });
+      expect(host.connection.room).toMatchObject({ seatCount: 6, rules: { firstRevealDraw: true } });
       await run({ type: 'lobby.addBot' });
       await run({ type: 'lobby.addBot' });
       await expect(run({ type: 'lobby.setRules', seatCount: 2, rules: {} })).rejects.toEqual(code('invalid_seat_count'));

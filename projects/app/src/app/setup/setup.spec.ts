@@ -149,13 +149,15 @@ describe('Setup', () => {
         fixture.detectChanges();
       };
 
-      it('shows the checkbox, checked, only from 5 seats', async () => {
+      it('always shows the checkbox, disabled: unchecked below 5 seats, checked from 5', async () => {
         const { fixture, el } = await create();
         pick(fixture, el, 4);
-        expect(el.querySelector('.first-reveal')).toBeNull();
-        pick(fixture, el, 5);
         expect(el.querySelector('.first-reveal')!.textContent).toContain('First Reveal Bonus');
+        expect(el.querySelector('.first-reveal input')).toHaveProperty('checked', false);
+        expect(el.querySelector('.first-reveal input')).toHaveProperty('disabled', true);
+        pick(fixture, el, 5);
         expect(el.querySelector('.first-reveal input')).toHaveProperty('checked', true);
+        expect(el.querySelector('.first-reveal input')).toHaveProperty('disabled', true);
       });
 
       it('starts a game with the rule on by default at 5 seats', async () => {
@@ -165,13 +167,14 @@ describe('Setup', () => {
         expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true, logPasses: true });
       });
 
-      it('starts a game with the rule off when unchecked', async () => {
+      it('cannot be switched off by clicking it', async () => {
         const { fixture, el, gameService } = await create();
         pick(fixture, el, 5);
         (el.querySelector('.first-reveal input') as HTMLInputElement).click();
         fixture.detectChanges();
+        expect(el.querySelector('.first-reveal input')).toHaveProperty('checked', true);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: false, judgmentNotice: true, logPasses: true });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true, logPasses: true });
       });
 
       it('sets no rule below 5 seats', async () => {
