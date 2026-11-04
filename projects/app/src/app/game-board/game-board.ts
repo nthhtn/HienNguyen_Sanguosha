@@ -58,6 +58,7 @@ import { I18n } from '../i18n/i18n.service';
 import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
 import { PlaybackDirector } from './playback/playback-director';
+import { TILE_HEIGHT } from './table-layout';
 import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './playback/seat-cues';
 
 @Component({
@@ -123,7 +124,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
           } @else {
             <ng-template #seatTpl>
                 @if (viewerSeat(); as seat) {
-                  <div class="your-seat" [attr.data-seat-id]="seat.id">
+                  <div class="your-seat" [attr.data-seat-id]="seat.id" [style.--seat-zoom]="ownSeatScale()" [style.--seat-height]="ownSeatHeight()">
                     <app-seat-tile
                       [seat]="seat"
                       [name]="nameOf(seat.id)"
@@ -261,7 +262,6 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: 'battlefield' 'hand';
     }
-    :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.26; --seat-height: 70px; }
     /* Short screens (a phone on its side): one screen, no scrolling. The table gets what the slim bottom row and the
        phase bar leave; seats come first, then the hand row, then the rest. */
     :host-context([data-layout='phone']) .board-grid { --bottom-height: 104px; gap: 4px; }
@@ -281,16 +281,15 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     :host-context([data-layout='medium']) .your-hand h3 { font-size: 12px; line-height: 1.2; }
     /* Phone and medium layouts: your seat is part of the battlefield, at the foot of the table (round-table.ts holds
        it and keeps the other seats above it), so the board is the table and one bottom box for the hand, the action
-       buttons and the History button. Nothing beige wraps the seat. seatReserve in the class matches these heights. */
+       buttons and the History button. Nothing beige wraps the seat. The seat's zoom and height come from the layout service
+       (seatScale), with the number of seats, and are bound on the element. */
     :host-context([data-layout='medium']) .board-grid {
       --bottom-height: 150px;
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: 'battlefield' 'hand';
     }
-    :host-context([data-layout='medium']) .your-seat { --seat-zoom: 0.46; --seat-height: 124px; }
     @media (min-height: 480px) {
       :host-context([data-layout='phone']) .board-grid { --bottom-height: 130px; }
-      :host-context([data-layout='phone']) .your-seat { --seat-zoom: 0.34; --seat-height: 92px; }
     }
     .panel-toggle { flex: none; align-self: center; width: 36px; height: 36px; padding: 6px; }
     .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
@@ -313,12 +312,19 @@ export class GameBoard {
   private readonly injector = inject(Injector);
   protected readonly director = inject(PlaybackDirector);
   protected readonly layout = inject(Layout);
-  // The foot of the table kept for your own seat, in px: its height (game-board's CSS) plus a 4 px gap.
-  protected readonly seatReserve = computed(() => {
-    if (!this.layout.panelAsOverlay()) return 0;
-    if (this.layout.kind() === 'medium') return 128;
-    return this.layout.viewportHeight() >= 480 ? 96 : 74;
+  // Your own seat's zoom, shared with the other seats (Layout.seatScale, which shrinks with more players) on phone and
+  // medium; null on large, where the board's CSS and the table fit it themselves.
+  protected readonly ownSeatScale = computed(() => (this.layout.panelAsOverlay() ? this.layout.seatScale(this.visibleState()?.seats.length ?? 4) : null));
+  protected readonly ownSeatHeight = computed(() => {
+    const scale = this.ownSeatScale();
+    return scale === null ? null : `${Math.round(TILE_HEIGHT * scale)}px`;
   });
+  // The foot of the table kept for your own seat, in px: its height plus a 4 px gap.
+  protected readonly seatReserve = computed(() => {
+    const scale = this.ownSeatScale();
+    return scale === null ? 0 : Math.round(TILE_HEIGHT * scale) + 4;
+  });
+
   // Leaving the board never leaves its panel open for the next one.
   private readonly closePanelOnLeave = inject(DestroyRef).onDestroy(() => this.layout.closePanel());
   // What the viewer may do: nothing while playback is busy, so a card still flying can never be

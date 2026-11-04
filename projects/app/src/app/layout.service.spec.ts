@@ -115,8 +115,25 @@ describe('Layout seat scale', () => {
     [1133, 744, 0.46],
     [841, 673, 0.34],
     [852, 393, 0.26],
-  ])('is the same for your seat and the others at %i x %i', (width, height, scale) => {
+  ])('is the base size for 4 seats at %i x %i', (width, height, scale) => {
     resizeTo(width, height);
-    expect(TestBed.inject(Layout).seatScale()).toBe(scale);
+    expect(TestBed.inject(Layout).seatScale(4)).toBeCloseTo(scale);
+  });
+
+  it('shrinks as more players join, and grows for fewer, on a phone and on medium', () => {
+    resizeTo(1133, 744);
+    const layout = TestBed.inject(Layout);
+    expect(layout.seatScale(8)).toBeLessThan(layout.seatScale(4));
+    expect(layout.seatScale(12)).toBeLessThan(layout.seatScale(8));
+    expect(layout.seatScale(2)).toBeGreaterThan(layout.seatScale(4));
+    expect(layout.seatScale(12)).toBeGreaterThanOrEqual(0.5 * 0.46);
+    expect(layout.seatScale(2)).toBeLessThanOrEqual(1.3 * 0.46);
+  });
+
+  it('leaves the large layout to fit the table by itself', () => {
+    resizeTo(1366, 768);
+    const layout = TestBed.inject(Layout);
+    expect(layout.seatScale(2)).toBe(1);
+    expect(layout.seatScale(12)).toBe(1);
   });
 });

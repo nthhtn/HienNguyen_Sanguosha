@@ -30,14 +30,21 @@ export class Layout {
   readonly wide = computed(() => this.kind() !== 'phone');
   // The History panel slides over the board (phone and medium); on large the board keeps its two tiles.
   readonly panelAsOverlay = computed(() => this.kind() !== 'large');
-  // How big seat tiles are drawn, relative to full size: the viewer's own seat and the others share it (game-board.ts
-  // zooms the own seat by the same numbers), so a small screen has small seats all round.
-  readonly seatScale = computed(() => {
+  // How big seat tiles are drawn, relative to full size: the viewer's own seat and the others share it, so a small
+  // screen has small seats all round.
+  // The base is for four players; more players, smaller seats, and fewer, larger (by (4 / n) ^ 0.7, between half
+  // and 1.3 times the base). The large layout fits the table by itself.
+  private readonly seatBase = computed(() => {
     const kind = this.kind();
     if (kind === 'large') return 1;
     if (kind === 'medium') return 0.46;
     return this.height() >= 480 ? 0.34 : 0.26;
   });
+  seatScale(seatCount: number): number {
+    const base = this.seatBase();
+    if (this.kind() === 'large') return base;
+    return base * Math.min(1.3, Math.max(0.5, Math.pow(4 / Math.max(1, seatCount), 0.7)));
+  }
   readonly viewportHeight = this.height.asReadonly();
   readonly portrait = computed(() => this.height() > this.width());
   readonly navOpen = this._navOpen.asReadonly();

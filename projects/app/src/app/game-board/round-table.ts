@@ -176,7 +176,7 @@ export class RoundTable {
   private readonly size = signal(DEFAULT_SIZE);
   private readonly layout = inject(Layout);
   // A phone on its side can spare the centre less room, so the seats stay big enough to read.
-  protected readonly fit = computed(() => fitTable(this.size().width, Math.max(1, this.size().height - this.reserveBottom()), this.state().seats.length, this.layout.wide() ? undefined : PHONE_CENTRE, this.layout.seatScale()));
+  protected readonly fit = computed(() => fitTable(this.size().width, Math.max(1, this.size().height - this.reserveBottom()), this.state().seats.length, this.layout.wide() ? undefined : PHONE_CENTRE, this.layout.seatScale(this.state().seats.length)));
   protected readonly placements = computed(() => seatPlacements(this.state().seats, this.viewerSeatId(), this.fit()).filter((p) => !p.isViewer));
 
   // The latest action sequence, oldest first, in the action history's wording.
