@@ -139,14 +139,14 @@ describe('the dying round, in English and Vietnamese', () => {
   it('another seat is dying', () => {
     expect(both((t) => describeResponse(seated(state([], dyingWindow('seat-1')), 0), 'seat-0', undefined, t))).toEqual({
       en: { source: 'Seat 1 is dying (HP 0)', latest: null, prompt: 'Play a Peach to save Seat 1?', outcome: 'Seat 1 is eliminated', outcomeForce: 'Wei' },
-      vi: { source: 'Người chơi 1 hấp hối (Sinh lực 0)', latest: null, prompt: 'Đánh Peach để cứu Người chơi 1?', outcome: 'Người chơi 1 bị loại', outcomeForce: 'Wei' },
+      vi: { source: 'Người chơi 1 hấp hối (Sinh lực 0)', latest: null, prompt: 'Đánh Peach để cứu Người chơi 1?', outcome: 'Người chơi 1 trận vong', outcomeForce: 'Wei' },
     });
   });
 
   it('the viewer is dying and needs three Peaches', () => {
     expect(both((t) => describeResponse(seated(state([], dyingWindow('seat-0')), -2), 'seat-0', undefined, t))).toEqual({
       en: { source: 'You are dying (HP -2)', latest: null, prompt: 'Play a Peach to save yourself? (needs 3 Peaches)', outcome: 'You are eliminated', outcomeForce: 'Wei' },
-      vi: { source: 'Bạn hấp hối (Sinh lực -2)', latest: null, prompt: 'Đánh Peach để cứu chính bạn? (cần 3 Peach)', outcome: 'Bạn bị loại', outcomeForce: 'Wei' },
+      vi: { source: 'Bạn hấp hối (Sinh lực -2)', latest: null, prompt: 'Đánh Peach để cứu chính bạn? (cần 3 Peach)', outcome: 'Bạn trận vong', outcomeForce: 'Wei' },
     });
   });
 

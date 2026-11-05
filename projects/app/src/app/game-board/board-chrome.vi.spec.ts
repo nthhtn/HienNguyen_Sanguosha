@@ -119,7 +119,7 @@ describe('RoundTable in Vietnamese', () => {
     ];
     const el = render(state('Play', 0, log), 'seat-1');
     const steps = [...el.querySelectorAll('.sequence .text')].map((e) => text(e as HTMLElement));
-    expect(steps).toContain('Người chơi 2 bị loại');
+    expect(steps).toContain('Người chơi 2 trận vong');
     expect(steps).toContain('Người chơi 0 đã chọn Tướng của mình');
     expect(el.querySelector('.sequence')!.getAttribute('aria-label')).toBe('Chuỗi hành động');
     expect(text(el.querySelector('.centre .thinking') as HTMLElement)).toBe('Người chơi 1 đang suy nghĩ…');

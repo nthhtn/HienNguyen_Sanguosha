@@ -152,8 +152,8 @@ describe('DistanceDemo', () => {
     fixture.detectChanges();
     expect(readout()).toMatch(/^Người chơi 3:/);
     expect(buttonOf(3).getAttribute('aria-label')).toBe('Người chơi 3, Khoảng cách 1, trong tầm');
-    expect(buttonOf(2).getAttribute('aria-label')).toBe('Người chơi 2, đã bị loại');
-    expect([...el.querySelectorAll('fieldset legend')].map(text)).toEqual(['Tầm tấn công của bạn', 'Tọa kỵ', 'Người chơi đã bị loại']);
+    expect(buttonOf(2).getAttribute('aria-label')).toBe('Người chơi 2, đã trận vong');
+    expect([...el.querySelectorAll('fieldset legend')].map(text)).toEqual(['Tầm tấn công của bạn', 'Tọa kỵ', 'Người chơi đã trận vong']);
   });
 
   it('a Weapon changes the range and which seats a Slash reaches, as the game says', () => {
