@@ -23,7 +23,7 @@ describe('describeDecision', () => {
 
   it('times a look that only shows something (Ascertain) on its own clock', () => {
     expect(describeDecision(state({ pendingChoice: { verb: 'pick', look: true } }), 'seat-1', [endPhase], 'k7')).toEqual({ kind: 'look', seatId: 'seat-1', key: 'step:k7' });
-    expect(DECISION_SECONDS.look).toBe(10);
+    expect(DECISION_SECONDS.look).toBe(30);
   });
 
   it('times a pending arrangement as an arrangement of this state', () => {
@@ -47,7 +47,7 @@ describe('describeDecision', () => {
   });
 
   it('gives each kind of decision its seconds', () => {
-    expect(DECISION_SECONDS).toMatchObject({ wuxie: 15, noAnswer: 5, look: 10, dying: 20, response: 20, ask: 15, pick: 30, arrange: 60, start: 20, discard: 30, selection: 300, play: 180, judgmentChange: 15, notice: 5 });
+    expect(DECISION_SECONDS).toMatchObject({ wuxie: 20, noAnswer: 5, look: 30, dying: 20, response: 20, ask: 20, pick: 30, arrange: 90, start: 20, discard: 30, selection: 300, play: 180, judgmentChange: 20, notice: 5 });
   });
 
   it('times a pending response as a response of this state', () => {
@@ -137,8 +137,8 @@ describe('a settled judgment', () => {
 });
 
 describe('the judgment-change clock', () => {
-  it('is 10 seconds', () => {
-    expect(DECISION_SECONDS.judgmentChange).toBe(15);
+  it('is 20 seconds', () => {
+    expect(DECISION_SECONDS.judgmentChange).toBe(20);
   });
 
   it('shares its lead-in constants with the app and the server', () => {
@@ -192,24 +192,37 @@ describe('a clock lead-in', () => {
 
 describe('describeDecision around a judgment', () => {
   const ack: Action = { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' };
-  const unsettled = (rounds: number, pending: object) => state({ judgmentView: { settled: false, rounds }, phase: 'Play', ...pending });
+  const unsettled = (rounds: number, pending: object, cardId = 'j1') => state({ judgmentView: { settled: false, rounds, seatId: 'seat-0', card: { instanceId: cardId } }, phase: 'Play', ...pending });
   // The callers that play the animation (a person at the table) ask for the lead-in.
   const withLeadIn = { leadIn: true };
 
-  it('times a flagged ask under an unsettled judgment as a judgment change, for 10 seconds', () => {
+  it('times a flagged ask under an unsettled judgment as a judgment change, for 20 seconds', () => {
     const decision = describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }), 'seat-1', [endPhase], 'k7', withLeadIn);
-    expect(decision).toEqual({ kind: 'judgmentChange', seatId: 'seat-1', key: 'judgmentChange:1', leadInMs: JUDGMENT_LEAD_IN_MS.head });
+    expect(decision).toEqual({ kind: 'judgmentChange', seatId: 'seat-1', key: 'judgmentChange:3:seat-0:j1:seat-1:1', leadInMs: JUDGMENT_LEAD_IN_MS.head });
   });
 
-  it('keeps one clock for the ask and the card pick that follows it', () => {
-    const ask = describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }), 'seat-1', [endPhase], 'k7', withLeadIn);
-    const pick = describeDecision(unsettled(1, { pendingSelection: { judgmentChange: true } }), 'seat-1', [endPhase], 'k8', withLeadIn);
-    expect(pick?.key).toBe(ask?.key);
+  it('gives the card pick that follows the ask a clock of its own, without a lead-in', () => {
+    const ask = describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }), 'seat-1', [endPhase], 'k7', withLeadIn)!;
+    const pick = describeDecision(unsettled(1, { pendingSelection: { judgmentChange: true } }), 'seat-1', [endPhase], 'k8', withLeadIn)!;
+    expect(pick.kind).toBe('judgmentChange');
+    expect(pick.key).not.toBe(ask.key);
+    expect(pick.leadInMs).toBeUndefined();
+    const spent = switchClock(switchClock(EMPTY_CLOCK, ask, 0), pick, 15000); // 5 s left on the ask
+    expect(clockRemainingMs(spent, 15000)).toBe(DECISION_SECONDS.judgmentChange * 1000);
   });
 
   it('gives each later ask its own clock with the replacement lead-in', () => {
     const second = describeDecision(unsettled(2, { pendingChoice: { judgmentChange: true } }), 'seat-2', [endPhase], 'k9', withLeadIn);
-    expect(second).toEqual({ kind: 'judgmentChange', seatId: 'seat-2', key: 'judgmentChange:2', leadInMs: JUDGMENT_LEAD_IN_MS.replace });
+    expect(second).toEqual({ kind: 'judgmentChange', seatId: 'seat-2', key: 'judgmentChange:3:seat-0:j1:seat-2:2', leadInMs: JUDGMENT_LEAD_IN_MS.replace });
+  });
+
+  it('gives each judgment its own clock, so time left in one never carries into the next', () => {
+    const first = describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }, 'j1'), 'seat-1', [endPhase], 'k7', withLeadIn)!;
+    const next = describeDecision(unsettled(1, { pendingChoice: { judgmentChange: true } }, 'j2'), 'seat-1', [endPhase], 'k9', withLeadIn)!;
+    expect(next.key).not.toBe(first.key);
+    const paused = switchClock(switchClock(EMPTY_CLOCK, first, 0), null, 10000); // 10 s of 20 s left
+    const resumed = switchClock(paused, next, 20000);
+    expect(clockRemainingMs(resumed, 20000)).toBe(DECISION_SECONDS.judgmentChange * 1000);
   });
 
   it('has no lead-in unless asked for it, as in a game with no person playing', () => {

@@ -169,7 +169,7 @@ describe('DecisionTimer', () => {
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.notice - 1);
     });
 
-    it("gives a changer's decision 15 seconds after the card has been shown, and declines when they run out", () => {
+    it("gives a changer's decision 20 seconds after the card has been shown, and declines when they run out", () => {
       game.startGame(2, 1, 'pass-and-play', [], { judgmentNotice: true });
       askToChange(game, 'seat-0');
       game.reveal('seat-0');
