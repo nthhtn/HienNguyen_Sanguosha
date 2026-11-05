@@ -506,3 +506,45 @@ describe('GameService: a settled judgment', () => {
   });
 });
 
+
+describe('GameService.startFromState', () => {
+  let service: GameService;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    service = TestBed.inject(GameService);
+    service.botDelayMs = 0;
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('loads the given state and reveals seat-0 in vs-bots mode', () => {
+    service.startGame(3, 1, 'vs-bots');
+    const loaded = { ...service.state()!, rules: { judgmentNotice: false } };
+    const before = service.gameNumber();
+
+    service.startFromState(loaded, 'vs-bots');
+
+    expect(service.state()).toBe(loaded);
+    expect(service.mode()).toBe('vs-bots');
+    expect(service.revealedSeatId()).toBe('seat-0');
+    expect(service.gameNumber()).toBe(before + 1);
+  });
+
+  it('starts the bot timer when a bot is due to act', () => {
+    service.startGame(3, 1, 'vs-bots');
+    service.submit(service.legalActions()[0]);
+    const botDue = service.state()!;
+    expect(service.activeSeatId()).toBe('seat-1');
+
+    service.startGame(3, 2, 'vs-bots');
+    service.startFromState(botDue, 'vs-bots');
+    expect(service.botThinkingSeatId()).toBe('seat-1');
+    jest.runOnlyPendingTimers();
+
+    expect(service.state()!.seats[1].generals).not.toBeNull();
+  });
+});

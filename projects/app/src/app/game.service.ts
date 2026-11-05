@@ -160,11 +160,7 @@ export class GameService {
 
   // `names[i]` names seat i; a blank or missing name keeps the mode's default ("Seat i").
   startGame(seatCount: number, seed?: number, mode: GameMode = 'pass-and-play', names: string[] = [], rules?: GameRules): void {
-    this.cancelBotTimer();
-    this.botMemories.clear();
-    this._moveStart.set(null);
-    this._mode.set(mode);
-    this._gameNumber.update((n) => n + 1);
+    this.reset(mode);
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
@@ -177,15 +173,34 @@ export class GameService {
         const botNameId = botNames.shift()!;
         return { ...p, kind: 'bot' as const, name: botName(botNameDisplay(botNameId, 'en')!), botNameId };
       });
-      this._state.set({ ...created, players });
-      this._revealedSeatId.set(this.humanSeatId());
-      this._lastError.set(null);
+      this.adopt({ ...created, players });
     } catch (err) {
       this._state.set(null);
       this._revealedSeatId.set(null);
       this._lastError.set(engineError(err));
     }
     this.scheduleBotIfDue();
+  }
+
+  // Dev scenarios: plays on from a prepared state instead of a fresh game. A bot due to act moves as usual.
+  startFromState(state: GameState, mode: GameMode = 'vs-bots'): void {
+    this.reset(mode);
+    this.adopt(state);
+    this.scheduleBotIfDue();
+  }
+
+  private reset(mode: GameMode): void {
+    this.cancelBotTimer();
+    this.botMemories.clear();
+    this._moveStart.set(null);
+    this._mode.set(mode);
+    this._gameNumber.update((n) => n + 1);
+  }
+
+  private adopt(state: GameState): void {
+    this._state.set(state);
+    this._revealedSeatId.set(this.humanSeatId());
+    this._lastError.set(null);
   }
 
   reveal(seatId: string): void {
