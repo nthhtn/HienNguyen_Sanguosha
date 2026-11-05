@@ -208,7 +208,11 @@ export class AnimationLabPage {
       case 'seat':
         return LAB_SEATS.map((id) => ({ value: id, label: tr('label.seat', { n: id.slice(5) }) }));
       case 'phase':
-        return PHASES.map((phase) => ({ value: phase, label: tr(`history.phase.${phase}` as const) }));
+        // The app's phase words sit inside sentences ("giai đoạn rút bài"), so a list option capitalises its first letter.
+        return PHASES.map((phase) => {
+          const word = tr(`history.phase.${phase}` as const);
+          return { value: phase, label: word.charAt(0).toUpperCase() + word.slice(1) };
+        });
       case 'card':
         return (p.values ?? []).map((id) => ({ value: id, label: cardIdDisplayName(id, tr) }));
       default:

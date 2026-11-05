@@ -61,7 +61,9 @@ describe('preview pages in Vietnamese', () => {
     expect(cards).toContain('Quyết Đấu');
     expect(cards.some((c) => /^[a-z-]+$/.test(c))).toBe(false);
     expect([...row.querySelectorAll('select')[0].querySelectorAll('option')].map((o) => text(o))[0]).toBe('Người chơi 0');
-    expect(text(el.querySelector('[data-animation="beat-phase"] select:nth-of-type(2)') ?? el)).toContain('Giai đoạn');
+    const phases = [...el.querySelectorAll('[data-animation="beat-phase"] select')[1].querySelectorAll('option')].map((o) => text(o));
+    expect(phases).toContain('Rút bài');
+    expect(phases.some((p) => p === p.toLowerCase())).toBe(false);
   });
 
   it('every scenario and animation has Vietnamese text of its own', () => {

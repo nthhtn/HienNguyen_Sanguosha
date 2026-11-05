@@ -22,12 +22,13 @@ import { botName } from 'protocol';
 export function freshGame(registry: ContentRegistry, seed: number, seatCount: number): GameState {
   const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
   const created = createGame(guozhanMode, registry, seatIds, seed, { judgmentNotice: true, logPasses: true });
-  const names = drawBotNameIds(seatCount - 1, [], () => 0.5);
-  const players = created.players.map((p) =>
-    p.seatId === 'seat-0'
-      ? { ...p, kind: 'human' as const }
-      : { ...p, kind: 'bot' as const, name: botName(botNameDisplay(names.shift()!, 'en')!) }
-  );
+  const botNameIds = drawBotNameIds(seatCount - 1, [], () => 0.5);
+  // A bot keeps its name id as a real game does (GameService.startGame), so the board shows its name in the viewer's language.
+  const players = created.players.map((p) => {
+    if (p.seatId === 'seat-0') return { ...p, kind: 'human' as const };
+    const botNameId = botNameIds.shift()!;
+    return { ...p, kind: 'bot' as const, name: botName(botNameDisplay(botNameId, 'en')!), botNameId };
+  });
   return { ...created, players };
 }
 

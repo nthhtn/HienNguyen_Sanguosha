@@ -1,5 +1,6 @@
 import { buildContentRegistry } from 'content';
 import { GameState, getActiveSeatId } from 'engine';
+import { botNameDisplay } from 'content';
 import { emptyHand, freshGame, give, setGenerals, playCard, playableGame, setHp, setTurn, stepUntil, windowOf } from './recipe';
 
 const registry = buildContentRegistry();
@@ -85,5 +86,18 @@ describe('dev recipe helper freshGame', () => {
     expect(state.phase).toBe('GeneralSelection');
     expect(getActiveSeatId(state)).toBe('seat-0');
     expect(state.players.map((p) => p.kind)).toEqual(['human', 'bot', 'bot', 'bot']);
+  });
+});
+
+describe('dev recipe bot names', () => {
+  it('every bot carries a name id, so its name follows the language like a real game’s', () => {
+    for (const state of [freshGame(registry, 7, 4), game()]) {
+      const bots = state.players.filter((p) => p.kind === 'bot');
+      expect(bots).toHaveLength(3);
+      for (const bot of bots) {
+        expect(bot.botNameId).toBeDefined();
+        expect(botNameDisplay(bot.botNameId!, 'vi')).not.toBe(botNameDisplay(bot.botNameId!, 'en'));
+      }
+    }
   });
 });
