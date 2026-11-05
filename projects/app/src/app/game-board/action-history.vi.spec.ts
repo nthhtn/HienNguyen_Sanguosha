@@ -186,7 +186,7 @@ describe('status and table lines in Vietnamese', () => {
     expect(vi_([{ kind: 'CardsDrawnEvent', seatId: 'seat-1', cardInstanceIds: ['a', 'b'] }])).toEqual(['Người chơi 1 rút 2 lá bài']);
     expect(vi_([{ kind: 'SeatDyingEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 hấp hối']);
     expect(vi_([{ kind: 'SeatSavedEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 đã được cứu']);
-    expect(vi_([{ kind: 'SeatEliminatedEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 bị loại']);
+    expect(vi_([{ kind: 'SeatEliminatedEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 trận vong']);
     expect(vi_([{ kind: 'GeneralsChosenEvent', seatId: 'seat-0' }])).toEqual(['Người chơi 0 đã chọn Tướng của mình']);
     expect(vi_([{ kind: 'DiscardPileReshuffledEvent', cardCount: 9 }])).toEqual(['Chồng bài bỏ (9) đã được xáo vào chồng bài rút']);
   });

@@ -44,10 +44,12 @@
   --mat-button-text-label-text-color: var(--mat-sys-on-primary);
   color: var(--mat-sys-on-primary);
 }
-.nav .active {
+.nav .active,
+.app-bar .nav-preview.active {
   background: color-mix(in srgb, var(--mat-sys-on-primary) 18%, transparent);
 }
 
+.app-bar .nav-preview,
 .app-bar .nav-battlefield,
 .app-bar .account,
 .app-bar .sign-in {
@@ -147,6 +149,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* The dev Preview link is one more item on the right, so its label folds to the icon sooner (its aria-label and
+   title stay). */
+@media (max-width: 1559px) {
+  .nav-preview .label {
+    display: none;
+  }
 }
 
 /* Wide layout on a tablet or a small laptop: the full bar with every label is about 1350 px wide, so below that

@@ -38,6 +38,43 @@ the first bundle holds only the shell:
 The guard and the online pages import the engine and content code lazily, so
 those stay out of the initial bundle.
 
+## Dev scenarios
+
+`/preview` lists named scenarios that open the real board (or a screen) in a prepared
+situation, so a window can be checked without playing bot games. They live in
+`projects/app/src/app/dev/` and exist only in dev builds: the production build
+replaces `dev/dev-routes.ts` with `dev/dev-routes.prod.ts` (an empty list), so
+the pages are not in the bundle.
+
+- A board scenario (`scenario.ts`) has a `build(registry)` recipe that returns a
+  real `GameState`, and `reaches(state)` saying whether that state is in the
+  situation the title promises. The page loads it with
+  `GameService.startFromState` and renders the real `GameBoard`; Reset builds it
+  again from the same seed.
+- A screen scenario renders a standalone component with fixture inputs (the Game
+  Over cases).
+- Recipes (`recipe.ts`) start a seeded game and edit its state directly (hands,
+  HP, Equipment, phase), then let the engine run. They never decide rules.
+- Every title, description and control label is a catalog key (`preview.<id>.title`, `.description`, `preview.param.*`), so the pages follow the language switcher. Option lists (seats, phases, cards) are named by the app's own helpers.
+- To add one, add an entry to a group file in `dev/scenarios/` and list it in the
+  group's test. `scenarios.spec.ts` builds every board scenario and fails, naming
+  its id, if the window is no longer reached.
+
+### Animation lab
+
+`/preview/animations` plays every animation on the real board, one button each
+(`dev/lab/`). A `LabAnimation` returns the clean table with real engine events
+appended (and the facts they record: HP, a revealed General, `chained`);
+`GameService.showState` shows it, so the playback director plays what is new. A
+Play first shows the clean table (so nothing carries over between plays), lets the
+board take it in, then shows the table with the events. It covers every `BEATS`
+kind and every sprite sheet (a test and a `Record<SpriteId, …>` fail when a new
+one has no entry), the Victory reveal (Game Over fixtures, with Replay), and links
+the Judgment popup and Compete result to their `/preview` scenarios, which are
+driven by real pending decisions. `GameService.stop()` stops bots and the decision
+clock, so a parked table does not move on. To add an animation, add an entry in
+`dev/lab/beat-animations.ts` or `sprite-animations.ts`.
+
 ## GameService: the local application layer
 
 [game.service.ts](../../projects/app/src/app/game.service.ts) is the only place in

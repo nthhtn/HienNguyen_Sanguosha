@@ -34,6 +34,11 @@
       </mat-menu>
     </nav>
     <span class="spacer"></span>
+    @if (devPreview) {
+      <a mat-button class="nav-preview" routerLink="/preview" [attr.title]="'nav.preview' | t" [class.active]="previewActive()" [attr.aria-current]="previewActive() ? 'page' : null" [attr.aria-label]="'nav.preview' | t">
+        <mat-icon>science</mat-icon><span class="label">{{ 'nav.preview' | t }}</span>
+      </a>
+    }
     @if (backgrounds.available()) {
       <button mat-button type="button" class="nav-battlefield" [matMenuTriggerFor]="battlefieldMenu" [attr.aria-label]="'nav.battlefield' | t">
         <mat-icon>landscape</mat-icon><span class="label">{{ 'nav.battlefield' | t }}</span>

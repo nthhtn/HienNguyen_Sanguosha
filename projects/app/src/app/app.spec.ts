@@ -35,6 +35,7 @@ describe('App', () => {
           { path: 'play', children: [] },
           { path: 'rooms', children: [] },
           { path: 'my-games', children: [] },
+          { path: 'preview', children: [] },
           { path: 'sign-in', children: [] },
           { path: 'sign-up', children: [] },
           { path: 'wiki/identity/:page', children: [] },
@@ -195,6 +196,18 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/setup');
     fixture.detectChanges();
     expect(online.classList).not.toContain('active');
+  });
+
+  it('has a Preview link as the first item on the right side of the bar, highlighted on the preview pages', async () => {
+    const { el, fixture } = await render('/preview');
+    const preview = el.querySelector('a.nav-preview') as HTMLAnchorElement;
+    expect(preview.getAttribute('href')).toBe('/preview');
+    expect(preview.getAttribute('aria-label')).toBe('Preview');
+    expect(preview.classList).toContain('active');
+    expect(preview.previousElementSibling!.classList).toContain('spacer');
+    await TestBed.inject(Router).navigateByUrl('/setup');
+    fixture.detectChanges();
+    expect(preview.classList).not.toContain('active');
   });
 
   it('keeps Online highlighted on My Games', async () => {

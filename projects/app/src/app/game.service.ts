@@ -87,6 +87,9 @@ export class GameService {
   private readonly _moveStart: WritableSignal<GameState | null> = signal(null);
 
   private botTimer: ReturnType<typeof setTimeout> | null = null;
+  // Set by stop(): no bot moves and no decision clock until a new game is started.
+  private readonly _stopped = signal(false);
+  readonly stopped: Signal<boolean> = this._stopped.asReadonly();
   private readonly botMemories = new Map<string, BotTurnMemory>();
 
   readonly state: Signal<GameState | null> = this._state.asReadonly();
@@ -160,11 +163,7 @@ export class GameService {
 
   // `names[i]` names seat i; a blank or missing name keeps the mode's default ("Seat i").
   startGame(seatCount: number, seed?: number, mode: GameMode = 'pass-and-play', names: string[] = [], rules?: GameRules): void {
-    this.cancelBotTimer();
-    this.botMemories.clear();
-    this._moveStart.set(null);
-    this._mode.set(mode);
-    this._gameNumber.update((n) => n + 1);
+    this.reset(mode);
     const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
     const rngSeed = seed ?? Math.floor(Math.random() * 2 ** 31);
     try {
@@ -177,15 +176,49 @@ export class GameService {
         const botNameId = botNames.shift()!;
         return { ...p, kind: 'bot' as const, name: botName(botNameDisplay(botNameId, 'en')!), botNameId };
       });
-      this._state.set({ ...created, players });
-      this._revealedSeatId.set(this.humanSeatId());
-      this._lastError.set(null);
+      this.adopt({ ...created, players });
     } catch (err) {
       this._state.set(null);
       this._revealedSeatId.set(null);
       this._lastError.set(engineError(err));
     }
     this.scheduleBotIfDue();
+  }
+
+  // Dev scenarios: plays on from a prepared state instead of a fresh game. A bot due to act moves as usual.
+  startFromState(state: GameState, mode: GameMode = 'vs-bots'): void {
+    this.reset(mode);
+    this.adopt(state);
+    this.scheduleBotIfDue();
+  }
+
+  // The dev animation lab: shows another state of the same game (its log grown by events, say) so the board
+  // plays what is new. Nothing else changes: no new game, no bot scheduled.
+  showState(state: GameState): void {
+    this._state.set(state);
+    this._lastError.set(null);
+  }
+
+  // Dev scenarios and the animation lab: stops the bots and the decision clock, so a game left on show does not keep moving.
+  stop(): void {
+    this._stopped.set(true);
+    this.cancelBotTimer();
+    this._botThinkingSeatId.set(null);
+  }
+
+  private reset(mode: GameMode): void {
+    this._stopped.set(false);
+    this.cancelBotTimer();
+    this.botMemories.clear();
+    this._moveStart.set(null);
+    this._mode.set(mode);
+    this._gameNumber.update((n) => n + 1);
+  }
+
+  private adopt(state: GameState): void {
+    this._state.set(state);
+    this._revealedSeatId.set(this.humanSeatId());
+    this._lastError.set(null);
   }
 
   reveal(seatId: string): void {
@@ -258,6 +291,7 @@ export class GameService {
 
   private scheduleBotIfDue(): void {
     this.cancelBotTimer();
+    if (this._stopped()) return;
     const state = this._state();
     const seatId = state && !state.result ? getActiveSeatId(state) : null;
     if (!state || !seatId || !this.botSeatIds().includes(seatId)) {
