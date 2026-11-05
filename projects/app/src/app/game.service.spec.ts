@@ -548,3 +548,26 @@ describe('GameService.startFromState', () => {
     expect(service.state()!.seats[1].generals).not.toBeNull();
   });
 });
+
+describe('GameService.stop', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('cancels a pending bot move and stops the bot thinking', () => {
+    const service = TestBed.inject(GameService);
+    service.botDelayMs = 0;
+    service.startGame(3, 1, 'vs-bots');
+    service.submit(service.legalActions()[0]);
+    expect(service.botThinkingSeatId()).toBe('seat-1');
+    const before = service.state();
+
+    service.stop();
+    jest.runOnlyPendingTimers();
+
+    expect(service.botThinkingSeatId()).toBeNull();
+    expect(service.state()).toBe(before);
+  });
+});
