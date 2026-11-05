@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { DEV_PREVIEW } from './dev/dev-routes';
 import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-background.service';
 import { AuthService } from './auth/auth.service';
 import { FEATURE_FLAGS } from './feature-flags';
@@ -86,6 +87,8 @@ export class App {
     { initialValue: this.router.url }
   );
   protected readonly playActive = computed(() => /^\/(setup|game)(\/|$|\?)/.test(this.url()));
+  protected readonly devPreview = DEV_PREVIEW;
+  protected readonly previewActive = computed(() => /^\/preview(\/|$|\?)/.test(this.url()));
   protected readonly onlineActive = computed(() => /^\/(rooms|my-games)(\/|$|\?)/.test(this.url()));
 
   protected deckActive(route: string): boolean {
