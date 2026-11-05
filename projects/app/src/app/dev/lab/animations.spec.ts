@@ -4,6 +4,8 @@ import { BEATS, planBeat } from '../../game-board/playback/beats';
 import { LabAnimation, defaultParams, labTable } from './lab-animation';
 import { ANIMATIONS } from './animations';
 import { BEAT_ANIMATIONS } from './beat-animations';
+import { SPRITE_ANIMATIONS } from './sprite-animations';
+import { chainEffectsFor, damageEffectsFor } from '../../game-board/damage-effects';
 
 const registry = buildContentRegistry();
 const base = labTable(registry);
@@ -56,5 +58,30 @@ describe('animation lab', () => {
 
   it('playing twice from the same base gives the same table', () => {
     for (const a of ANIMATIONS) expect(JSON.stringify(run(a).after)).toEqual(JSON.stringify(run(a).after));
+  });
+
+  it.each(['slash', 'slash-fire', 'slash-lightning', 'damage', 'fire', 'lightning', 'chain'] as const)('a sprite animation yields the %s effect', (image) => {
+    const yielded = SPRITE_ANIMATIONS.some((a) => {
+      const { before, after } = run(a);
+      const events = after.log.slice(before.log.length);
+      return [...damageEffectsFor(events), ...chainEffectsFor(events)].some((e) => e.image === image);
+    });
+    expect(yielded).toBe(true);
+  });
+
+  it('the chain wave reaches more than one seat', () => {
+    const wave = SPRITE_ANIMATIONS.find((a) => a.id === 'sprite-chain-wave')!;
+    const { before, after } = run(wave);
+    expect(new Set(damageEffectsFor(after.log.slice(before.log.length)).map((e) => e.seatId)).size).toBeGreaterThan(1);
+  });
+
+  it('turning chained also sets the seat’s chained flag', () => {
+    const chain = SPRITE_ANIMATIONS.find((a) => a.id === 'sprite-chain')!;
+    const { after } = run(chain);
+    expect(after.seats[1].chained).toBe(true);
+  });
+
+  it('sprite animations are part of the lab', () => {
+    for (const a of SPRITE_ANIMATIONS) expect(ANIMATIONS).toContain(a);
   });
 });
