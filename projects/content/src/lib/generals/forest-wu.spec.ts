@@ -23,13 +23,6 @@ describe('Sun Jian — Brave Spirit', () => {
     expect(ids(s, 'discardPile')).toEqual(['d1']);
   });
 
-  it('he may pick himself and still chooses the mode', () => {
-    let s = h.choose(h.use(starting()), 'seat-a');
-    expect(s.pendingChoice).toMatchObject({ seatId: 'seat-a', reason: { targetSeatId: 'seat-a' } });
-    s = h.choose(s, 'draw-x');
-    expect(s.pendingSelection).toMatchObject({ seatId: 'seat-a' });
-  });
-
   it('the other option: draw 1, discard X (at most what the seat holds)', () => {
     let s = h.choose(h.choose(h.use(starting()), 'seat-b'), 'draw-1');
     expect(s.pendingSelection).toMatchObject({ min: 1, max: 1 }); // only 1 card held
@@ -37,9 +30,9 @@ describe('Sun Jian — Brave Spirit', () => {
     expect(handIds(s, 'seat-b')).toEqual([]);
   });
 
-  it('he may pick himself', () => {
+  it('he cannot pick himself', () => {
     const s = h.use(starting());
-    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-a', 'seat-b', 'seat-c', 'seat-d']);
+    expect(s.pendingChoice!.options.map((o) => o.id)).toEqual(['seat-b', 'seat-c', 'seat-d']);
   });
 
   it('is not asked at full HP, and Don’t does nothing', () => {
