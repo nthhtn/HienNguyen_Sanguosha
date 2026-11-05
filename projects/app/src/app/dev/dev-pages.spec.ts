@@ -62,7 +62,7 @@ describe('dev pages', () => {
   });
 
   it('opens a screen scenario with the real screen', async () => {
-    const { fixture, el } = openPage('over-four');
+    const { fixture, el } = openPage('game-over');
     await new Promise((resolve) => setTimeout(resolve, 50));
     fixture.detectChanges();
     expect(el.querySelector('app-game-over')).not.toBeNull();

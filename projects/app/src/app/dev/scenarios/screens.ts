@@ -1,5 +1,4 @@
 import { BoardScenario, ScreenScenario } from '../scenario';
-import { GAME_OVER_CASES } from '../game-over-fixtures';
 import { freshGame } from '../recipe';
 import { getActiveSeatId } from 'engine';
 
@@ -15,15 +14,14 @@ const generalSelection: BoardScenario = {
   reaches: (s) => s.phase === 'GeneralSelection' && getActiveSeatId(s) === 'seat-0',
 };
 
-const gameOver = (): ScreenScenario[] =>
-  Object.entries(GAME_OVER_CASES).map(([key, c]) => ({
-    kind: 'screen',
-    id: `over-${key}`,
-    group: 'Other Screens',
-    title: c.title,
-    description: 'preview.over.description',
-    component: () => import('../../game-board/game-over').then((m) => m.GameOver),
-    inputs: { result: c.result, seats: c.seats, youSeatId: 'seat-0' },
-  }));
+// One page for every ending: the page itself carries the switcher.
+const gameOver: ScreenScenario = {
+  kind: 'screen',
+  id: 'game-over',
+  group: 'Other Screens',
+  title: 'preview.game-over.title',
+  description: 'preview.game-over.description',
+  component: () => import('../game-over-preview').then((m) => m.GameOverPreview),
+};
 
-export const SCREEN_SCENARIOS: (BoardScenario | ScreenScenario)[] = [generalSelection, ...gameOver()];
+export const SCREEN_SCENARIOS: (BoardScenario | ScreenScenario)[] = [generalSelection, gameOver];

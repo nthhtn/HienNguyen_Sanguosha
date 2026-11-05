@@ -48,17 +48,13 @@ describe('dev scenarios', () => {
     expect(ids).toEqual(['choice-start-popup', 'choice-pick-card', 'choice-judgment', 'choice-skill-optional', 'choice-pick-seat', 'choice-compete']);
   });
 
-  it('Other Screens has the General selection and the eight Game Over cases', () => {
+  it('Other Screens has the General selection and one Game Over page', () => {
     const ids = SCENARIOS.filter((s) => s.group === 'Other Screens').map((s) => s.id);
-    expect(ids).toEqual([
-      'general-selection',
-      'over-two', 'over-three', 'over-four', 'over-six', 'over-ambitionist', 'over-lone', 'over-draw', 'over-hidden',
-    ]);
+    expect(ids).toEqual(['general-selection', 'game-over']);
   });
 
-  it('every Game Over scenario gives the real screen its result and seats', () => {
+  it('the Game Over page is a screen scenario, not one scenario per ending', () => {
     const screens = SCENARIOS.filter((s): s is ScreenScenario => s.kind === 'screen');
-    expect(screens).toHaveLength(8);
-    for (const s of screens) expect(s.inputs).toEqual(expect.objectContaining({ result: expect.any(Object), seats: expect.any(Array), youSeatId: 'seat-0' }));
+    expect(screens.map((s) => s.id)).toEqual(['game-over']);
   });
 });
