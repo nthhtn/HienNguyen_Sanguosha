@@ -27,7 +27,7 @@ real board, and it can be replayed as often as wanted.
   game, the lab is wrong.
 - Not an event timeline editor (the developer chose a gallery of buttons).
 - No new rules and no engine change. The lab only describes facts that already happened.
-- Not shipped to production (same exclusion as `/preview`), English only.
+- Not shipped to production (same exclusion as `/preview`), Translated like the rest of the app (`preview.*` keys).
 
 ## Constraints
 
@@ -78,7 +78,7 @@ beat (except kinds the registry defines as 0 ms).
 - The lab uses the existing `playableGame` recipe for its table, seat-0 human, 4 seats, seed 7.
 - The lab game rests in seat-0's Play Phase with nothing pending; Pass and Play gating does not apply.
 - Sound plays as in a real game (the toolbar's mute controls apply).
-- The side panel is English only.
+- The side panel is Translated like the rest of the app (`preview.*` keys).
 
 ## Calls made after the builder check (the developer can override any)
 

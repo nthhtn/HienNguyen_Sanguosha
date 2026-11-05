@@ -1,13 +1,22 @@
 import { Type } from '@angular/core';
 import { ContentRegistry, GameState } from 'engine';
+import type { MessageKey } from '../i18n/messages';
 
 export type ScenarioGroup = 'Play Board' | 'Response Windows' | 'Choice Prompts' | 'Other Screens';
+
+// The English group names are stable ids; the headings come from the catalog.
+export const GROUP_TITLES: Record<ScenarioGroup, MessageKey> = {
+  'Play Board': 'preview.group.playBoard',
+  'Response Windows': 'preview.group.responseWindows',
+  'Choice Prompts': 'preview.group.choicePrompts',
+  'Other Screens': 'preview.group.otherScreens',
+};
 
 interface ScenarioBase {
   id: string;
   group: ScenarioGroup;
-  title: string;
-  description: string;
+  title: MessageKey;
+  description: MessageKey;
 }
 
 // Opens the real board in a state the recipe builds. `reaches` says whether the built state is in the situation the title promises.

@@ -14,31 +14,29 @@ const update = (s: GameState, seatId: string, change: (seat: GameState['seats'][
 const used = (as: string, colour: UsedCard['colour'], card: CardInstance): UsedCard => ({ as, colour, physical: [card] });
 const beat = (a: Omit<LabAnimation, 'group'>): LabAnimation => ({ group: 'Beats', ...a });
 
-const PHASES: Phase[] = ['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End'];
-
 export const BEAT_ANIMATIONS: LabAnimation[] = [
   beat({
     id: 'beat-turn',
-    title: 'Turn',
-    description: 'A seat’s turn begins: the turn banner.',
-    params: [seatParam('seat', 'Seat', 'seat-1')],
+    title: 'preview.beat-turn.title',
+    description: 'preview.beat-turn.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-1')],
     play: (t, p) => withEvents(t, [{ kind: 'TurnAdvancedEvent', seatId: seat(p, 'seat'), turnNumber: t.turn.turnNumber + 1 }], (s) => ({ ...s, turn: { ...s.turn, ownerSeatId: seat(p, 'seat') } })),
   }),
   beat({
     id: 'beat-phase',
-    title: 'Phase',
-    description: 'A seat enters a phase.',
+    title: 'preview.beat-phase.title',
+    description: 'preview.beat-phase.description',
     params: [
-      seatParam('seat', 'Seat', 'seat-0'),
-      { key: 'phase', label: 'Phase', kind: 'choice', options: PHASES.map((v) => ({ value: v, label: v })), default: 'Draw' },
+      seatParam('seat', 'preview.param.seat', 'seat-0'),
+      { key: 'phase', label: 'preview.param.phase', kind: 'phase', default: 'Draw' },
     ],
     play: (t, p) => withEvents(t, [{ kind: 'PhaseChangedEvent', seatId: seat(p, 'seat'), phase: p['phase'] as Phase }], (s) => ({ ...s, phase: p['phase'] as Phase })),
   }),
   beat({
     id: 'beat-draw',
-    title: 'Draw',
-    description: 'A seat draws cards from the Draw Pile.',
-    params: [seatParam('seat', 'Seat', 'seat-0'), numberParam('count', 'Cards', 2)],
+    title: 'preview.beat-draw.title',
+    description: 'preview.beat-draw.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-0'), numberParam('count', 'preview.param.cards', 2)],
     play: (t, p) => {
       const cards = drawPileTop(t, num(p, 'count'));
       const hand = t.seats.find((x) => x.id === seat(p, 'seat'))!.hand.zoneId;
@@ -50,34 +48,34 @@ export const BEAT_ANIMATIONS: LabAnimation[] = [
   }),
   beat({
     id: 'beat-play',
-    title: 'Play a Card',
-    description: 'A seat uses a card on a target: the card shows at the centre with arrows to its target.',
+    title: 'preview.beat-play.title',
+    description: 'preview.beat-play.description',
     params: [
-      seatParam('seat', 'Seat', 'seat-0'),
-      seatParam('target', 'Target', 'seat-1'),
-      { key: 'card', label: 'Card', kind: 'choice', options: ['sha', 'duel', 'steal', 'break', 'peach'].map((v) => ({ value: v, label: v })), default: 'sha' },
+      seatParam('seat', 'preview.param.seat', 'seat-0'),
+      seatParam('target', 'preview.param.target', 'seat-1'),
+      { key: 'card', label: 'preview.param.card', kind: 'card', values: ['sha', 'duel', 'steal', 'break', 'peach'], default: 'sha' },
     ],
     play: (t, p) => withEvents(t, [{ kind: 'CardPlayedEvent', seatId: seat(p, 'seat'), card: used(p['card'] as string, 'black', drawPileTop(t, 1)[0]), targets: [seatTarget(seat(p, 'target'))] }]),
   }),
   beat({
     id: 'beat-response',
-    title: 'Respond with a Card',
-    description: 'A seat answers another seat’s card with a card of its own.',
-    params: [seatParam('seat', 'Seat', 'seat-1'), seatParam('answers', 'Answers', 'seat-0')],
+    title: 'preview.beat-response.title',
+    description: 'preview.beat-response.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-1'), seatParam('answers', 'preview.param.answers', 'seat-0')],
     play: (t, p) => withEvents(t, [{ kind: 'CardPlayedEvent', seatId: seat(p, 'seat'), card: used('shan', 'red', drawPileTop(t, 1)[0]), targets: [], inResponseTo: { seatId: seat(p, 'answers') } }]),
   }),
   beat({
     id: 'beat-pass',
-    title: 'Pass',
-    description: 'A seat declines to answer.',
-    params: [seatParam('seat', 'Seat', 'seat-1')],
+    title: 'preview.beat-pass.title',
+    description: 'preview.beat-pass.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-1')],
     play: (t, p) => withEvents(t, [{ kind: 'ResponsePassedEvent', seatId: seat(p, 'seat'), pendingResponseId: 'lab', allowedCardIds: ['shan'] }]),
   }),
   beat({
     id: 'beat-move',
-    title: 'Move a Card',
-    description: 'A card goes from a seat’s hand to the Discard Pile.',
-    params: [seatParam('seat', 'Seat', 'seat-0')],
+    title: 'preview.beat-move.title',
+    description: 'preview.beat-move.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-0')],
     play: (t, p) => {
       const handId = t.seats.find((x) => x.id === seat(p, 'seat'))!.hand.zoneId;
       const card = t.zones.find((z) => z.id === handId)!.cards[0];
@@ -90,9 +88,9 @@ export const BEAT_ANIMATIONS: LabAnimation[] = [
   }),
   beat({
     id: 'beat-damage',
-    title: 'Damage',
-    description: 'A seat takes damage from another seat (the damage picture itself is in Sprite Effects).',
-    params: [seatParam('target', 'Target', 'seat-1'), seatParam('source', 'Source', 'seat-0'), numberParam('amount', 'Amount', 1)],
+    title: 'preview.beat-damage.title',
+    description: 'preview.beat-damage.description',
+    params: [seatParam('target', 'preview.param.target', 'seat-1'), seatParam('source', 'preview.param.source', 'seat-0'), numberParam('amount', 'preview.param.amount', 1)],
     play: (t, p) =>
       withEvents(t, [{ kind: 'DamageDealtEvent', damage: { source: seatTarget(seat(p, 'source')), target: seatTarget(seat(p, 'target')), amount: num(p, 'amount'), nature: 'normal' } }], (s) =>
         setHp(s, seat(p, 'target'), hpOf(s, seat(p, 'target')) - num(p, 'amount'))
@@ -100,42 +98,42 @@ export const BEAT_ANIMATIONS: LabAnimation[] = [
   }),
   beat({
     id: 'beat-hp-lost',
-    title: 'Lose HP',
-    description: 'A seat loses HP with no damage (a cost).',
-    params: [seatParam('seat', 'Seat', 'seat-0'), numberParam('amount', 'Amount', 1)],
+    title: 'preview.beat-hp-lost.title',
+    description: 'preview.beat-hp-lost.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-0'), numberParam('amount', 'preview.param.amount', 1)],
     play: (t, p) => withEvents(t, [{ kind: 'HpLostEvent', seatId: seat(p, 'seat'), amount: num(p, 'amount') }], (s) => setHp(s, seat(p, 'seat'), hpOf(s, seat(p, 'seat')) - num(p, 'amount'))),
   }),
   beat({
     id: 'beat-heal',
-    title: 'Heal',
-    description: 'A damaged seat recovers HP.',
-    params: [seatParam('seat', 'Seat', 'seat-0'), numberParam('amount', 'Amount', 1)],
+    title: 'preview.beat-heal.title',
+    description: 'preview.beat-heal.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-0'), numberParam('amount', 'preview.param.amount', 1)],
     before: (b, p) => setHp(b, seat(p, 'seat'), hpOf(b, seat(p, 'seat')) - num(p, 'amount')),
     play: (t, p) => withEvents(t, [{ kind: 'HealEvent', target: seatTarget(seat(p, 'seat')), amount: num(p, 'amount') }], (s) => setHp(s, seat(p, 'seat'), hpOf(s, seat(p, 'seat')) + num(p, 'amount'))),
   }),
   beat({
     id: 'beat-dying',
-    title: 'Dying',
-    description: 'A seat falls to 0 HP and is asked to be saved.',
-    params: [seatParam('seat', 'Seat', 'seat-1')],
+    title: 'preview.beat-dying.title',
+    description: 'preview.beat-dying.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-1')],
     before: (b, p) => setHp(b, seat(p, 'seat'), 0),
     play: (t, p) => withEvents(t, [{ kind: 'SeatDyingEvent', seatId: seat(p, 'seat') }]),
   }),
   beat({
     id: 'beat-saved',
-    title: 'Saved',
-    description: 'A dying seat is back above 0 HP.',
-    params: [seatParam('seat', 'Seat', 'seat-1')],
+    title: 'preview.beat-saved.title',
+    description: 'preview.beat-saved.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-1')],
     before: (b, p) => setHp(b, seat(p, 'seat'), 0),
     play: (t, p) => withEvents(t, [{ kind: 'SeatSavedEvent', seatId: seat(p, 'seat') }], (s) => setHp(s, seat(p, 'seat'), 1)),
   }),
   beat({
     id: 'beat-reveal',
-    title: 'Reveal a General',
-    description: 'A seat turns a General face up.',
+    title: 'preview.beat-reveal.title',
+    description: 'preview.beat-reveal.description',
     params: [
-      seatParam('seat', 'Seat', 'seat-1'),
-      { key: 'slot', label: 'General', kind: 'choice', options: [{ value: 'main', label: 'Main' }, { value: 'deputy', label: 'Deputy' }], default: 'main' },
+      seatParam('seat', 'preview.param.seat', 'seat-1'),
+      { key: 'slot', label: 'preview.param.general', kind: 'slot', default: 'main' },
     ],
     play: (t, p) => {
       const slot = p['slot'] as 'main' | 'deputy';
@@ -146,17 +144,17 @@ export const BEAT_ANIMATIONS: LabAnimation[] = [
   }),
   beat({
     id: 'beat-eliminated',
-    title: 'Eliminated',
-    description: 'A seat is out of the game.',
-    params: [seatParam('seat', 'Seat', 'seat-1')],
+    title: 'preview.beat-eliminated.title',
+    description: 'preview.beat-eliminated.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-1')],
     before: (b, p) => setHp(b, seat(p, 'seat'), 0),
     play: (t, p) => withEvents(t, [{ kind: 'SeatEliminatedEvent', seatId: seat(p, 'seat') }], (s) => update(s, seat(p, 'seat'), (x) => ({ ...x, eliminated: true }))),
   }),
   beat({
     id: 'beat-ability',
-    title: 'Use a Skill',
-    description: 'A seat uses a skill: the skill callout.',
-    params: [seatParam('seat', 'Seat', 'seat-0')],
+    title: 'preview.beat-ability.title',
+    description: 'preview.beat-ability.description',
+    params: [seatParam('seat', 'preview.param.seat', 'seat-0')],
     play: (t, p) =>
       withEvents(t, [
         {

@@ -6,6 +6,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { GameBoard } from '../game-board/game-board';
 import { GameService } from '../game.service';
+import { TPipe } from '../i18n/t.pipe';
 import { Scenario } from './scenario';
 import { findScenario } from './scenarios';
 
@@ -13,13 +14,13 @@ import { findScenario } from './scenarios';
 // shows the real board; a screen scenario shows its component with fixture inputs. Reset starts it over.
 @Component({
   selector: 'app-dev-scenario-page',
-  imports: [GameBoard, MatButtonModule, NgComponentOutlet, RouterLink],
+  imports: [GameBoard, MatButtonModule, NgComponentOutlet, RouterLink, TPipe],
   template: `
     @if (scenario(); as s) {
       <nav class="bar">
-        <a mat-button routerLink="/preview">All Scenarios</a>
-        <strong>{{ s.title }}</strong>
-        <button mat-flat-button type="button" (click)="reset()">Reset</button>
+        <a mat-button routerLink="/preview">{{ 'preview.allScenarios' | t }}</a>
+        <strong>{{ s.title | t }}</strong>
+        <button mat-flat-button type="button" (click)="reset()">{{ 'preview.reset' | t }}</button>
       </nav>
       @for (run of [run()]; track run) {
         @if (s.kind === 'board') {
@@ -30,8 +31,8 @@ import { findScenario } from './scenarios';
       }
     } @else {
       <main class="missing">
-        <p>Scenario not found</p>
-        <a mat-button routerLink="/preview">Back to Scenarios</a>
+        <p>{{ 'preview.notFound' | t }}</p>
+        <a mat-button routerLink="/preview">{{ 'preview.backToScenarios' | t }}</a>
       </main>
     }
   `,

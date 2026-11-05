@@ -55,6 +55,7 @@ the pages are not in the bundle.
   Over cases).
 - Recipes (`recipe.ts`) start a seeded game and edit its state directly (hands,
   HP, Equipment, phase), then let the engine run. They never decide rules.
+- Every title, description and control label is a catalog key (`preview.<id>.title`, `.description`, `preview.param.*`), so the pages follow the language switcher. Option lists (seats, phases, cards) are named by the app's own helpers.
 - To add one, add an entry to a group file in `dev/scenarios/` and list it in the
   group's test. `scenarios.spec.ts` builds every board scenario and fails, naming
   its id, if the window is no longer reached.

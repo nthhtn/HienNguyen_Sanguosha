@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ScenarioGroup } from './scenario';
+import { TPipe } from '../i18n/t.pipe';
+import { GROUP_TITLES, ScenarioGroup } from './scenario';
 import { SCENARIOS } from './scenarios';
 
 const GROUPS: ScenarioGroup[] = ['Play Board', 'Response Windows', 'Choice Prompts', 'Other Screens'];
@@ -8,19 +9,19 @@ const GROUPS: ScenarioGroup[] = ['Play Board', 'Response Windows', 'Choice Promp
 // The /preview index: every scenario, by group. Dev only.
 @Component({
   selector: 'app-dev-index',
-  imports: [RouterLink],
+  imports: [RouterLink, TPipe],
   template: `
     <main class="dev">
-      <h1>Dev Scenarios</h1>
-      <p>Each scenario opens the real board or screen in a prepared situation.</p>
-      <p><a routerLink="/preview/animations">Animation Lab</a> plays every animation on the real board, one button each.</p>
+      <h1>{{ 'preview.index.title' | t }}</h1>
+      <p>{{ 'preview.index.intro' | t }}</p>
+      <p><a routerLink="/preview/animations">{{ 'preview.lab.title' | t }}</a> {{ 'preview.index.labText' | t }}</p>
       @for (group of groups; track group.name) {
-        <h2>{{ group.name }}</h2>
+        <h2>{{ group.title | t }}</h2>
         <ul>
           @for (s of group.scenarios; track s.id) {
             <li>
-              <a [routerLink]="['/preview', s.id]">{{ s.title }}</a>
-              <span class="what">{{ s.description }}</span>
+              <a [routerLink]="['/preview', s.id]">{{ s.title | t }}</a>
+              <span class="what">{{ s.description | t }}</span>
             </li>
           }
         </ul>
@@ -35,5 +36,5 @@ const GROUPS: ScenarioGroup[] = ['Play Board', 'Response Windows', 'Choice Promp
   `,
 })
 export class DevIndex {
-  protected readonly groups = GROUPS.map((name) => ({ name, scenarios: SCENARIOS.filter((s) => s.group === name) }));
+  protected readonly groups = GROUPS.map((name) => ({ name, title: GROUP_TITLES[name], scenarios: SCENARIOS.filter((s) => s.group === name) }));
 }

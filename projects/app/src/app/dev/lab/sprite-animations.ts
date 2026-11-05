@@ -1,6 +1,7 @@
 import { SpriteId } from 'content';
 import { Damage, GameState } from 'engine';
 import { setHp } from '../recipe';
+import type { MessageKey } from '../../i18n/messages';
 import { LabAnimation, LabParamValue, seatParam, withEvents } from './lab-animation';
 
 type P = Record<string, LabParamValue>;
@@ -31,29 +32,29 @@ function hit(seatId: string, nature: Damage['nature'], cardAs?: string, chained?
   };
 }
 
-const damage = (id: string, title: string, description: string, nature: Damage['nature'], cardAs?: string): LabAnimation => ({
+const damage = (id: string, title: MessageKey, description: MessageKey, nature: Damage['nature'], cardAs?: string): LabAnimation => ({
   id,
   group: 'Sprite Effects',
   title,
   description,
-  params: [seatParam('target', 'Target', 'seat-1')],
+  params: [seatParam('target', 'preview.param.target', 'seat-1')],
   play: (t, p) => withEvents(t, [{ kind: 'DamageDealtEvent', damage: hit(target(p), nature, cardAs) }], (s) => setHp(s, target(p), hpOf(s, target(p)) - 1)),
 });
 
 // Keyed by every sprite sheet: adding a sheet to the game breaks this until the lab has an entry for it.
 const BY_SPRITE: Record<SpriteId, LabAnimation> = {
-  slash: damage('sprite-slash', 'Slash', 'Damage from a Sha.', 'normal', 'sha'),
-  'slash-fire': damage('sprite-slash-fire', 'Slash (Fire)', 'Damage from a Fire Attack.', 'fire', 'fire-attack'),
-  'slash-lightning': damage('sprite-slash-lightning', 'Slash (Lightning)', 'Damage from a Lightning Attack.', 'thunder', 'lightning-attack'),
-  damage: damage('sprite-damage', 'Damage', 'Plain damage that no Sha caused.', 'normal'),
-  fire: damage('sprite-fire', 'Fire', 'Fire damage that no Sha caused.', 'fire'),
-  lightning: damage('sprite-lightning', 'Lightning', 'Lightning damage that no Sha caused.', 'thunder'),
+  slash: damage('sprite-slash', 'preview.sprite-slash.title', 'preview.sprite-slash.description', 'normal', 'sha'),
+  'slash-fire': damage('sprite-slash-fire', 'preview.sprite-slash-fire.title', 'preview.sprite-slash-fire.description', 'fire', 'fire-attack'),
+  'slash-lightning': damage('sprite-slash-lightning', 'preview.sprite-slash-lightning.title', 'preview.sprite-slash-lightning.description', 'thunder', 'lightning-attack'),
+  damage: damage('sprite-damage', 'preview.sprite-damage.title', 'preview.sprite-damage.description', 'normal'),
+  fire: damage('sprite-fire', 'preview.sprite-fire.title', 'preview.sprite-fire.description', 'fire'),
+  lightning: damage('sprite-lightning', 'preview.sprite-lightning.title', 'preview.sprite-lightning.description', 'thunder'),
   chain: {
     id: 'sprite-chain',
     group: 'Sprite Effects',
-    title: 'Chain',
-    description: 'A seat turns chained: the chain picture and its sound.',
-    params: [seatParam('target', 'Target', 'seat-1')],
+    title: 'preview.sprite-chain.title',
+    description: 'preview.sprite-chain.description',
+    params: [seatParam('target', 'preview.param.target', 'seat-1')],
     play: (t, p) => withEvents(t, [{ kind: 'ChainToggledEvent', seatId: target(p), chained: true }], (s) => chain(s, [target(p)])),
   },
 };
@@ -62,8 +63,8 @@ const BY_SPRITE: Record<SpriteId, LabAnimation> = {
 const chainWave: LabAnimation = {
   id: 'sprite-chain-wave',
   group: 'Sprite Effects',
-  title: 'Chain Wave',
-  description: 'Fire damage on a chained seat passes along the chain to the next chained seat.',
+  title: 'preview.sprite-chain-wave.title',
+  description: 'preview.sprite-chain-wave.description',
   before: (b) => chain(b, ['seat-1', 'seat-2']),
   play: (t) =>
     withEvents(

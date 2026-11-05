@@ -21,8 +21,8 @@ playable, so the UI can be tested in seconds.
 
 ## Non-goals and anti-goals
 
-- Not a product feature, not linked from the app's navigation, no Vietnamese or i18n for the dev pages
-  themselves (English only; the board inside is localised as usual).
+- Not a product feature. The preview pages are translated like the rest of the app (catalog keys
+  `preview.*`; Vietnamese is draft until reviewed). Only that catalog text ships in production builds, not the pages.
 - No server, accounts or online flows. Online-only screens (lobby, rooms) are out.
 - Scenario recipes must not duplicate game rules. They set up state and let the engine decide the rest.
 - No separate renderer: if a scenario does not look like the real game, it is a failure.

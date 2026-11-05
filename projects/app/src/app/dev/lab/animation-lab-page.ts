@@ -4,18 +4,22 @@ import { RouterLink } from '@angular/router';
 import { GameBoard } from '../../game-board/game-board';
 import { GameOver } from '../../game-board/game-over';
 import { GameService } from '../../game.service';
+import { I18n } from '../../i18n/i18n.service';
+import { TPipe } from '../../i18n/t.pipe';
+import { cardIdDisplayName } from '../../labels';
 import { GAME_OVER_CASES } from '../game-over-fixtures';
 import { ANIMATIONS } from './animations';
-import { LabAnimation, LabParam, LabParamValue, defaultParams, labTable } from './lab-animation';
+import { LAB_GROUP_TITLES, LAB_SEATS, LabAnimation, LabParam, LabParamValue, defaultParams, labTable } from './lab-animation';
 
 type Values = Record<string, LabParamValue>;
+const PHASES = ['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End'] as const;
 
 // /preview/animations: the real board on a clean table, and a button per animation. A Play shows the clean
 // table, then the same table with the animation's events appended, so the board's playback plays what is new.
 // The Victory reveal is its own view; Judgment and Compete are interactive, so they open as scenarios.
 @Component({
   selector: 'app-animation-lab-page',
-  imports: [GameBoard, GameOver, MatButtonModule, RouterLink],
+  imports: [GameBoard, GameOver, MatButtonModule, RouterLink, TPipe],
   template: `
     <div class="lab">
       <div class="stage">
@@ -28,47 +32,47 @@ type Values = Record<string, LabParamValue>;
         }
       </div>
       <aside class="panel" [class.closed]="!open()">
-        <button mat-button type="button" (click)="open.set(!open())">{{ open() ? 'Hide Panel' : 'Show Panel' }}</button>
+        <button mat-button type="button" (click)="open.set(!open())">{{ (open() ? 'preview.hidePanel' : 'preview.showPanel') | t }}</button>
         @if (open()) {
-          <button mat-flat-button type="button" (click)="newTable()">New Table</button>
-          <a mat-button routerLink="/preview">All Scenarios</a>
+          <button mat-flat-button type="button" (click)="newTable()">{{ 'preview.newTable' | t }}</button>
+          <a mat-button routerLink="/preview">{{ 'preview.allScenarios' | t }}</a>
           @for (group of groups; track group) {
-            <h2>{{ group }}</h2>
+            <h2>{{ titles[group] | t }}</h2>
             @for (a of animationsOf(group); track a.id) {
               <div class="row" [attr.data-animation]="a.id">
-                <strong>{{ a.title }}</strong>
-                <span class="what">{{ a.description }}</span>
+                <strong>{{ a.title | t }}</strong>
+                <span class="what">{{ a.description | t }}</span>
                 @for (p of a.params ?? []; track p.key) {
                   <div class="field">
-                    <span>{{ p.label }}</span>
+                    <span>{{ p.label | t }}</span>
                     @if (p.kind === 'number') {
-                      <input type="number" min="1" max="4" [attr.aria-label]="p.label" [value]="value(a, p)" (input)="set(a, p, $any($event.target).valueAsNumber)" />
+                      <input type="number" min="1" max="4" [attr.aria-label]="p.label | t" [value]="value(a, p)" (input)="set(a, p, $any($event.target).valueAsNumber)" />
                     } @else {
-                      <select [attr.aria-label]="p.label" (change)="set(a, p, $any($event.target).value)">
-                        @for (o of p.options ?? []; track o.value) {
+                      <select [attr.aria-label]="p.label | t" (change)="set(a, p, $any($event.target).value)">
+                        @for (o of options(p); track o.value) {
                           <option [value]="o.value" [selected]="o.value === value(a, p)">{{ o.label }}</option>
                         }
                       </select>
                     }
                   </div>
                 }
-                <button mat-flat-button type="button" class="play" (click)="play(a)">Play</button>
+                <button mat-flat-button type="button" class="play" (click)="play(a)">{{ 'preview.play' | t }}</button>
               </div>
             }
           }
-          <h2>Dialogs</h2>
-          <a mat-button routerLink="/preview/choice-judgment">Judgment Popup</a>
-          <a mat-button routerLink="/preview/choice-compete">Compete Result</a>
-          <h2>Victory</h2>
-          <button mat-button type="button" (click)="showVictory()">Victory Reveal</button>
+          <h2>{{ 'preview.group.dialogs' | t }}</h2>
+          <a mat-button routerLink="/preview/choice-judgment">{{ 'preview.choice-judgment.title' | t }}</a>
+          <a mat-button routerLink="/preview/choice-compete">{{ 'preview.choice-compete.title' | t }}</a>
+          <h2>{{ 'preview.group.victory' | t }}</h2>
+          <button mat-button type="button" (click)="showVictory()">{{ 'preview.victoryReveal' | t }}</button>
           @if (view() === 'victory') {
-            <select (change)="caseKey.set($any($event.target).value)">
+            <select [attr.aria-label]="'preview.victoryCase' | t" (change)="caseKey.set($any($event.target).value)">
               @for (key of caseKeys; track key) {
-                <option [value]="key" [selected]="key === caseKey()">{{ cases[key].label }}</option>
+                <option [value]="key" [selected]="key === caseKey()">{{ cases[key].title | t }}</option>
               }
             </select>
-            <button mat-flat-button type="button" (click)="replay.set(replay() + 1)">Replay</button>
-            <button mat-button type="button" (click)="view.set('board')">Back to Board</button>
+            <button mat-flat-button type="button" (click)="replay.set(replay() + 1)">{{ 'preview.replay' | t }}</button>
+            <button mat-button type="button" (click)="view.set('board')">{{ 'preview.backToBoard' | t }}</button>
           }
         }
       </aside>
@@ -89,7 +93,9 @@ export class AnimationLabPage {
   private readonly game = inject(GameService);
   private readonly app = inject(ApplicationRef);
 
+  private readonly i18n = inject(I18n);
   protected readonly groups: LabAnimation['group'][] = ['Beats', 'Sprite Effects'];
+  protected readonly titles = LAB_GROUP_TITLES;
   protected readonly cases = GAME_OVER_CASES;
   protected readonly caseKeys = Object.keys(GAME_OVER_CASES);
 
@@ -103,6 +109,24 @@ export class AnimationLabPage {
   constructor() {
     this.newTable();
     inject(DestroyRef).onDestroy(() => this.game.stop());
+  }
+
+  // The choices a control offers, named in the viewer's language.
+  protected options(p: LabParam): { value: string; label: string }[] {
+    const tr = this.i18n.translator;
+    switch (p.kind) {
+      case 'seat':
+        return LAB_SEATS.map((id) => ({ value: id, label: tr('label.seat', { n: id.slice(5) }) }));
+      case 'phase':
+        return PHASES.map((phase) => ({ value: phase, label: tr(`history.phase.${phase}` as const) }));
+      case 'card':
+        return (p.values ?? []).map((id) => ({ value: id, label: cardIdDisplayName(id, tr) }));
+      default:
+        return [
+          { value: 'main', label: tr('choice.label.mainGeneral') },
+          { value: 'deputy', label: tr('choice.label.deputyGeneral') },
+        ];
+    }
   }
 
   protected animationsOf(group: LabAnimation['group']): LabAnimation[] {
