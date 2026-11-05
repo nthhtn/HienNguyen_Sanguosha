@@ -281,7 +281,7 @@ Optional rules chosen at game creation are stored in `state.rules`
 
 | Rule | Meaning |
 |---|---|
-| `firstRevealDraw` | with five or more seats, the first seat to reveal a General draws 2 cards |
+| `firstRevealDraw` | with five or more seats, the first seat to reveal a General draws 2 cards. Not a player's choice: the app and the server set it for any game with at least `FIRST_REVEAL_MIN_SEATS` (5) seats. |
 | `judgmentNotice` | every judgment waits for the popup to be closed (or 3 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
 | `deck` | the card distribution the draw pile is dealt from (a deck id). Absent means the default deck, Kingdom Wars (`DEFAULT_DECK_ID`). |
 

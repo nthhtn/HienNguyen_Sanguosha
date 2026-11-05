@@ -18,7 +18,7 @@ Supabase as the Postgres. The design and its reasoning are in
 
 The server serves the built app itself, so the app, the API and the socket
 share one origin and the Origin and cookie checks need no change. See
-[Backend and deployment](architecture/backend-and-deployment.md) for what the
+[Backend](architecture/backend.md) for what the
 server does.
 
 ## Supabase

@@ -662,7 +662,7 @@ fits instead.
 Two Guozhan triggers react to `after:GeneralRevealedEvent` with a
 `DrawCardsEffect`:
 
-- **First reveal** (optional, `state.rules.firstRevealDraw`, 5+ seats): the
+- **First reveal** (`state.rules.firstRevealDraw`, which the app and server turn on from 5 seats; the engine only reads it): the
   first `GeneralRevealedEvent` in the log gives its seat 2 cards.
 - **Rounding** (always): when both of a seat's Generals are revealed and their
   printed HP sum is odd, the seat draws 1 card, once, on the second reveal.

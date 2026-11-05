@@ -1,4 +1,4 @@
-# Backend and deployment
+# Backend
 
 The game runs two ways today:
 
@@ -11,7 +11,7 @@ The game runs two ways today:
   survives a reload, a disconnect and a server restart.
 
 This doc describes the second one: what each part is, how a move travels, and
-what is deliberately not done yet. The original design and its reasoning are in
+what is deliberately not done yet. How it is hosted is in [Deployment](../deployment.md). The original design and its reasoning are in
 `docs/superpowers/specs/2026-10-13-backend-multiplayer-design.md`; the server's
 own how-to-run notes are in [projects/server/README.md](../../projects/server/README.md).
 
@@ -53,7 +53,7 @@ both cases. See [Frontend](frontend.md).
 
 ```
 projects/server/src/
-  http/          Fastify app: request guard (Origin check), session cookie, auth, room and game routes
+  http/          Fastify app: request guard (Origin check), session cookie, auth, room and game routes, GET /health (liveness, no auth)
   socket/        the WebSocket on /api/ws: upgrade and auth, hello, message routing, heartbeat
   auth/          AccountService, scrypt password hashing, tokens, rate limits
   rooms/         Room (lobby rules), RoomService (live rooms, host rules, restore), ChatService, serial queue
@@ -83,8 +83,7 @@ behind a reverse proxy (the README explains the accepted values).
 An **open** room is listed, and anyone signed in can join while it has space.
 A **solo** room is unlisted and holds one person against bots; it backs
 Play vs Bots. Names are unique within a room; a bot's stored name is `[Bot] <English name>` with a `botNameId` (see content's bot names), and a person's name may not start with `[Bot]`. The lobby holds the members, the
-seat count and the rules (`GameRules`: first-reveal draw, the deck, the
-judgment notice). **Seats are drawn at random from the game seed when the host
+seat count and the rules (`GameRules`). The host chooses the deck only. First Reveal Bonus is not a choice: `rulesFrom` turns `firstRevealDraw` on from `FIRST_REVEAL_MIN_SEATS` (5) seats and leaves it off below, whatever the client asked. When the game starts the server adds `judgmentNotice` and `logPasses`, which a stored game keeps so it replays the same. **Seats are drawn at random from the game seed when the host
 starts** (`drawSeats`), so join order gives no position.
 
 `RoomService` keeps live rooms in memory and writes every change through to
@@ -233,16 +232,6 @@ Room chat (lobby and game) is stored with the room and tied to the game and
 the action count it followed. A message is 1 to 300 characters, a member may
 send 5 per 10 seconds, and a welcome carries the last 100. Solo rooms have no
 chat.
-
-## Deployment
-
-The server and the built Angular app ship as one Docker image, which runs on
-Render's free web service against Supabase Postgres. The server serves the app
-(`STATIC_DIR`), answers `GET /health`, and turns Postgres TLS on with
-`DATABASE_SSL=require`; `BUILD_ID` falls back to Render's `RENDER_GIT_COMMIT`.
-[Deployment](../deployment.md) has the setup, the first-deploy checklist, how to
-keep the free service awake with an external pinger on `/health`, and the measured
-capacity of the free instance (CPU-bound at about 10 to 15 busy rooms).
 
 ## Local play compared
 
