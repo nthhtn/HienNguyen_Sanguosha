@@ -59,6 +59,21 @@ the pages are not in the bundle.
   group's test. `scenarios.spec.ts` builds every board scenario and fails, naming
   its id, if the window is no longer reached.
 
+### Animation lab
+
+`/preview/animations` plays every animation on the real board, one button each
+(`dev/lab/`). A `LabAnimation` returns the clean table with real engine events
+appended (and the facts they record: HP, a revealed General, `chained`);
+`GameService.showState` shows it, so the playback director plays what is new. A
+Play first shows the clean table (so nothing carries over between plays), lets the
+board take it in, then shows the table with the events. It covers every `BEATS`
+kind and every sprite sheet (a test and a `Record<SpriteId, …>` fail when a new
+one has no entry), the Victory reveal (Game Over fixtures, with Replay), and links
+the Judgment popup and Compete result to their `/preview` scenarios, which are
+driven by real pending decisions. `GameService.stop()` stops bots and the decision
+clock, so a parked table does not move on. To add an animation, add an entry in
+`dev/lab/beat-animations.ts` or `sprite-animations.ts`.
+
 ## GameService: the local application layer
 
 [game.service.ts](../../projects/app/src/app/game.service.ts) is the only place in

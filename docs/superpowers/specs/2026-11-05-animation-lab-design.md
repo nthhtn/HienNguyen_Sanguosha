@@ -1,6 +1,6 @@
 # Animation lab — design
 
-Date: 2026-11-05. Status: draft for approval. Builds on
+Date: 2026-11-05. Status: implemented. Builds on
 `2026-11-05-dev-scenario-previews-design.md` (the `/preview` pages, dev-only).
 
 ## Intent
