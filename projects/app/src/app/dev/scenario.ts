@@ -16,6 +16,8 @@ export interface BoardScenario extends ScenarioBase {
   seatCount: number;
   build(registry: ContentRegistry): GameState;
   reaches(state: GameState): boolean;
+  // True when a bot is due to act as soon as the board loads (watching another seat's turn). Default: the human acts first.
+  botDue?: true;
 }
 
 // Renders a standalone component (a screen that is not the board) from fixtures.
