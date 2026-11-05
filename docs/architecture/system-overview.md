@@ -25,7 +25,7 @@ Three more projects are not layers but support them:
 There are two application-layer shapes on purpose. `GameService` is the
 in-tab one. The server is the authoritative one, and the app talks to it
 through `RemoteGameService`, which presents the same surface to the board. See
-[Backend and deployment](backend-and-deployment.md) and
+[Backend](backend.md) and
 [Frontend](frontend.md).
 
 ## Dependency rules

@@ -136,7 +136,7 @@ from five seats, the first-reveal draw; both are stored in `state.rules`.
 ### Online: RemoteGameService
 
 The server is authoritative for online rooms and for Play vs Bots from the
-Rooms screen ([Backend and deployment](backend-and-deployment.md)).
+Rooms screen ([Backend](backend.md)).
 [remote-game.service.ts](../../projects/app/src/app/online/remote-game.service.ts)
 presents the same surface to the board, typed as `BoardGame`, a `Pick` of
 `GameService`. It keeps the latest `GameUpdate` from the room socket and turns
@@ -171,6 +171,23 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 | `selection-roster`, `game-start-countdown` | online only: who has chosen their Generals (Choosing or Ready, from the redacted candidates' keys), and "Game starts in 3" while the server holds the first decision (`gameStartsAt`) |
 | `decision-dock`, `decision-banner`, `minimize-button` | hide a decision dialog to look at the board, with a banner to bring it back |
 | `board-chat`, `chat-panel` (online) | room chat beside the board |
+| `rotate-prompt`, `small-screen-prompt`, `small-screen-notice` | cover or annotate the board in a window too small to play (see "Responsive layout") |
+
+### Responsive layout
+
+[layout.service.ts](../../projects/app/src/app/layout.service.ts) (`Layout`) is the one place that decides the layout from the window size, never from the device. It sets `data-layout` on `<html>` for styles and exposes signals for code:
+
+| Kind | Window | What changes |
+|---|---|---|
+| `large` | 1280 px wide and up, 600 px tall and up | the board's history tiles stay, seats at full size |
+| `medium` | 900 to 1279 px wide, 600 px tall and up | the history folds into a slide-over panel (`panelAsOverlay`), seats scale with the seat count (`seatScale`) |
+| `phone` | anything smaller | means "too small to play" (`canPlay` is false) |
+
+- A game (local or online, General selection included) can be played only at 900 x 600 px or more. Below that, `small-screen-prompt` covers the board; a window that would fit if turned (`fitsIfTurned`, a tablet held upright) gets `rotate-prompt` instead. The game keeps running underneath: local games wait for the player, online games are server-paced.
+- `small-screen-notice` sits beside Start Game, Create Room, Play With Bots, Join, Rejoin and the room Start, which are disabled when `canPlay` is false. Other pages (wiki, sign-in, Rooms list, My Games) stay usable on a phone.
+- The viewport size and which overlay is open (navigation drawer or History panel, never both) are UI state only; the engine knows nothing of them.
+
+Designs: [mobile landscape](../superpowers/specs/2026-11-03-mobile-landscape-design.md) (medium and large layouts stand) and [block play on phones](../superpowers/specs/2026-11-04-block-play-on-phones-design.md) (supersedes its phone parts).
 
 ### Decisions become dialogs
 
@@ -268,7 +285,7 @@ decides a rule.
 | Piece | Role |
 |---|---|
 | `PlaybackDirector` ([playback-director.ts](../../projects/app/src/app/game-board/playback/playback-director.ts)) | provided by the board; watches `visibleState`, queues the events past a cursor, plays one beat at a time on timers. Signals: `displayedState`, `current`, `idle`, `playedLogLength`, `centreStack`; `hold()` pauses it until the returned release is called |
-| Beats ([beats.ts](../../projects/app/src/app/game-board/playback/beats.ts)) | `BEATS`, a registry keyed by event kind: a `BeatVisual` (turn, phase, draw, play, pass, move, damage, heal, dying, saved, reveal, eliminated, ability). A beat's duration at Normal speed is not here: it is `BEAT_DURATION_MS` in the engine (`playbackTiming.ts`), shared with the server, which waits for the same animation (see [backend-and-deployment.md](backend-and-deployment.md)). A kind with no entry is a 0 ms beat. A new event gets a beat by adding an entry to both, not by editing the director. A pause of `BATCH_GAP_MS` follows the last beat of each update |
+| Beats ([beats.ts](../../projects/app/src/app/game-board/playback/beats.ts)) | `BEATS`, a registry keyed by event kind: a `BeatVisual` (turn, phase, draw, play, pass, move, damage, heal, dying, saved, reveal, eliminated, ability). A beat's duration at Normal speed is not here: it is `BEAT_DURATION_MS` in the engine (`playbackTiming.ts`), shared with the server, which waits for the same animation (see [backend.md](backend.md)). A kind with no entry is a 0 ms beat. A new event gets a beat by adding an entry to both, not by editing the director. A pause of `BATCH_GAP_MS` follows the last beat of each update |
 | Displayed state ([displayed-state.ts](../../projects/app/src/app/game-board/playback/displayed-state.ts)) | `FOLDS`, also keyed by kind: applies one event's recorded facts (HP, a card moving, a seat eliminated, a General revealed, turn, phase) to the state on show. Card faces and identities come from the latest visible state, faces only where the viewer may see them. No rules |
 | Seat cues ([seat-cues.ts](../../projects/app/src/app/game-board/playback/seat-cues.ts)) | pure: the beat on show becomes per-seat cues (impact, callout, spotlight) and the resolution centre (who is targeted) |
 | Layer ([playback-layer.ts](../../projects/app/src/app/game-board/playback/playback-layer.ts)) | the overlay, for the beat on show only: a played card at the centre and white arrows to its targets, both faded out by the end of the beat; the caption and the turn banner. Nothing flies |

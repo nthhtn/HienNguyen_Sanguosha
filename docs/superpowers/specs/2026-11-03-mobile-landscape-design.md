@@ -2,7 +2,7 @@
 
 > **Update 2026-11-04:** the phone parts of this spec (the phone game board, its seat and hand tuning, the compact buttons) are superseded by `2026-11-04-block-play-on-phones-design.md`: a game is not playable below 900 x 600 px. The medium and large layouts and the other pages stand.
 
-Status: draft for approval. Nothing is built. A visual mock-up of everything below was reviewed with the developer: https://claude.ai/artifact/5rZyRL17nWayVuPjNBjtkD (private artifact; colours and card art are approximate, the layout is the proposal).
+Status: built in #50. The phone parts were then superseded (see the update above); the medium and large layouts, the navigation bar and the safe areas are as built. A visual mock-up of everything below was reviewed with the developer: https://claude.ai/artifact/5rZyRL17nWayVuPjNBjtkD (private artifact; colours and card art are approximate, the layout is the proposal).
 
 ## Why
 
@@ -81,7 +81,7 @@ Phone layout:
 
 Wide layout: unchanged.
 
-### Game board, phone layout (landscape)
+### Game board, phone layout (landscape) — superseded, removed in #51
 
 - Slim bar (44 px): menu button, brand, phase chip (existing phase indicator), music and sound toggles, and a History button that opens the panel.
 - Table fills the rest. All seats stay visible: opponents around the top and sides, as the round table does today, compacted. Seat shows face, name, HP pips, hand count and equipment strip.

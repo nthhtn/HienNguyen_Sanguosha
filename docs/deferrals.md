@@ -37,7 +37,7 @@ Smaller items from the review of this deployment, left on purpose:
 
 ## Backend
 
-From [Backend and deployment](architecture/backend-and-deployment.md#not-done),
+From [Backend](architecture/backend.md#not-done),
 which holds the detail:
 
 - Spectators, room codes and passwords, share links, matchmaking, ratings and
