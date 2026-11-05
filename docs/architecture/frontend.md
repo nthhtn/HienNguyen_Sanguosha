@@ -38,6 +38,27 @@ the first bundle holds only the shell:
 The guard and the online pages import the engine and content code lazily, so
 those stay out of the initial bundle.
 
+## Dev scenarios
+
+`/dev` lists named scenarios that open the real board (or a screen) in a prepared
+situation, so a window can be checked without playing bot games. They live in
+`projects/app/src/app/dev/` and exist only in dev builds: the production build
+replaces `dev/dev-routes.ts` with `dev/dev-routes.prod.ts` (an empty list), so
+the pages are not in the bundle.
+
+- A board scenario (`scenario.ts`) has a `build(registry)` recipe that returns a
+  real `GameState`, and `reaches(state)` saying whether that state is in the
+  situation the title promises. The page loads it with
+  `GameService.startFromState` and renders the real `GameBoard`; Reset builds it
+  again from the same seed.
+- A screen scenario renders a standalone component with fixture inputs (the Game
+  Over cases).
+- Recipes (`recipe.ts`) start a seeded game and edit its state directly (hands,
+  HP, Equipment, phase), then let the engine run. They never decide rules.
+- To add one, add an entry to a group file in `dev/scenarios/` and list it in the
+  group's test. `scenarios.spec.ts` builds every board scenario and fails, naming
+  its id, if the window is no longer reached.
+
 ## GameService: the local application layer
 
 [game.service.ts](../../projects/app/src/app/game.service.ts) is the only place in

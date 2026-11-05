@@ -1,6 +1,6 @@
 # Dev scenario previews — design
 
-Date: 2026-11-05. Status: draft for approval.
+Date: 2026-11-05. Status: implemented.
 
 ## Intent
 
