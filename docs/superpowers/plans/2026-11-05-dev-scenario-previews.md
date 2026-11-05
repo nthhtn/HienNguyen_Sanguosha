@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** A dev-only `/dev` page that opens the real board (or a standalone screen) in a named situation, playable, so the UI can be checked without playing bot games.
+**Goal:** A dev-only `/preview` page that opens the real board (or a standalone screen) in a named situation, playable, so the UI can be checked without playing bot games.
 
 **Architecture:** A scenario registry in the app project. A `board` scenario's recipe builds a real engine `GameState` (seeded game, direct state edits, engine run to the wanted window); `GameService.startFromState` loads it into the real `GameBoard`. A `screen` scenario renders a standalone component from fixtures. A jest test loops over the registry and checks every board scenario reaches its stated window. Production builds swap the dev routes for an empty list.
 
@@ -24,7 +24,7 @@
 
 - A scenario whose window disappears after an engine change fails the registry test with its id in the message.
 - Reset gives the same window again (seeded, no bot move due when the recipe returns).
-- An unknown `/dev/:scenarioId` shows "Scenario not found" with a link back to `/dev`, not a blank page.
+- An unknown `/preview/:scenarioId` shows "Scenario not found" with a link back to `/preview`, not a blank page.
 - Opening a second scenario after the first starts a clean game: no leftover bot timer or state.
 - Leaving a scenario stops its bot timer.
 
@@ -132,9 +132,9 @@
 - Test: `projects/app/src/app/dev/dev-pages.spec.ts`
 
 **Interfaces:**
-- `DEV_ROUTES: Routes` from `dev-routes.ts`: `{ path: 'dev', loadComponent: DevIndex }` and `{ path: 'dev/:scenarioId', loadComponent: DevScenarioPage }`. `dev-routes.prod.ts` exports `DEV_ROUTES: Routes = []`; the production build replaces `dev-routes.ts` with it. `app.routes.ts` spreads `...DEV_ROUTES`.
-- `DevIndex`: lists scenarios grouped by `ScenarioGroup`, each a link to `/dev/<id>` with title and description.
-- `DevScenarioPage`: reads `scenarioId`; unknown id shows "Scenario not found" and a link "Back to Scenarios". A `board` scenario: builds the state with `GameService.registry`, calls `startFromState(state, 'vs-bots')`, renders `<app-game-board>`; a toolbar with "Reset" (rebuilds and reloads) and "All Scenarios" (link to `/dev`). A `screen` scenario: loads its component and sets its inputs. On destroy it must stop the bot timer (add `GameService.stop()` that cancels the timer and clears the state if none exists; test it).
+- `DEV_ROUTES: Routes` from `dev-routes.ts`: `{ path: 'preview', loadComponent: DevIndex }` and `{ path: 'preview/:scenarioId', loadComponent: DevScenarioPage }`. `dev-routes.prod.ts` exports `DEV_ROUTES: Routes = []`; the production build replaces `dev-routes.ts` with it. `app.routes.ts` spreads `...DEV_ROUTES`.
+- `DevIndex`: lists scenarios grouped by `ScenarioGroup`, each a link to `/preview/<id>` with title and description.
+- `DevScenarioPage`: reads `scenarioId`; unknown id shows "Scenario not found" and a link "Back to Scenarios". A `board` scenario: builds the state with `GameService.registry`, calls `startFromState(state, 'vs-bots')`, renders `<app-game-board>`; a toolbar with "Reset" (rebuilds and reloads) and "All Scenarios" (link to `/preview`). A `screen` scenario: loads its component and sets its inputs. On destroy it must stop the bot timer (add `GameService.stop()` that cancels the timer and clears the state if none exists; test it).
 
 - [ ] **Step 1: Failing tests** in `dev-pages.spec.ts`: index lists every group heading and a link per scenario; the page for `respond-sha` renders the board with a pending response for seat-0; Reset gives an equal state; unknown id shows "Scenario not found"; destroying the page stops the bot timer (no move after `botDelayMs`).
 - [ ] **Step 2: Run** `npx jest projects/app/src/app/dev/dev-pages.spec.ts`. Expected: FAIL.
@@ -150,5 +150,5 @@
 
 - [ ] **Step 1:** Write the docs section.
 - [ ] **Step 2:** Run `npm run verify` and `npm test`. Expected: both pass.
-- [ ] **Step 3:** Open `http://localhost:4200/dev` and check by hand: one scenario per group, Reset, an unknown id.
+- [ ] **Step 3:** Open `http://localhost:4200/preview` and check by hand: one scenario per group, Reset, an unknown id.
 - [ ] **Step 4: Commit** `docs: dev scenarios`, push the branch, open a PR against `main` with the attribution line from the session.

@@ -5,7 +5,7 @@ import { SCENARIOS } from './scenarios';
 
 const GROUPS: ScenarioGroup[] = ['Play Board', 'Response Windows', 'Choice Prompts', 'Other Screens'];
 
-// The /dev index: every scenario, by group. Dev only.
+// The /preview index: every scenario, by group. Dev only.
 @Component({
   selector: 'app-dev-index',
   imports: [RouterLink],
@@ -18,7 +18,7 @@ const GROUPS: ScenarioGroup[] = ['Play Board', 'Response Windows', 'Choice Promp
         <ul>
           @for (s of group.scenarios; track s.id) {
             <li>
-              <a [routerLink]="['/dev', s.id]">{{ s.title }}</a>
+              <a [routerLink]="['/preview', s.id]">{{ s.title }}</a>
               <span class="what">{{ s.description }}</span>
             </li>
           }

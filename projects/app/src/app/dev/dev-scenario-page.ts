@@ -9,7 +9,7 @@ import { GameService } from '../game.service';
 import { Scenario } from './scenario';
 import { findScenario } from './scenarios';
 
-// /dev/:scenarioId: opens one scenario. A board scenario loads its prepared state into the real GameService and
+// /preview/:scenarioId: opens one scenario. A board scenario loads its prepared state into the real GameService and
 // shows the real board; a screen scenario shows its component with fixture inputs. Reset starts it over.
 @Component({
   selector: 'app-dev-scenario-page',
@@ -17,7 +17,7 @@ import { findScenario } from './scenarios';
   template: `
     @if (scenario(); as s) {
       <nav class="bar">
-        <a mat-button routerLink="/dev">All Scenarios</a>
+        <a mat-button routerLink="/preview">All Scenarios</a>
         <strong>{{ s.title }}</strong>
         <button mat-flat-button type="button" (click)="reset()">Reset</button>
       </nav>
@@ -31,7 +31,7 @@ import { findScenario } from './scenarios';
     } @else {
       <main class="missing">
         <p>Scenario not found</p>
-        <a mat-button routerLink="/dev">Back to Scenarios</a>
+        <a mat-button routerLink="/preview">Back to Scenarios</a>
       </main>
     }
   `,

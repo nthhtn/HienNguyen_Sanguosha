@@ -32,7 +32,7 @@ describe('dev pages', () => {
     const el = fixture.nativeElement as HTMLElement;
     const headings = Array.from(el.querySelectorAll('h2')).map((h) => h.textContent!.trim());
     expect(headings).toEqual(['Play Board', 'Response Windows', 'Choice Prompts', 'Other Screens']);
-    for (const s of SCENARIOS) expect(el.querySelector(`a[href="/dev/${s.id}"]`)).not.toBeNull();
+    for (const s of SCENARIOS) expect(el.querySelector(`a[href="/preview/${s.id}"]`)).not.toBeNull();
   });
 
   it('opens a board scenario on the real board, waiting on you', () => {
@@ -56,7 +56,7 @@ describe('dev pages', () => {
   it('shows "Scenario not found" with a link back for an unknown id', () => {
     const { el } = openPage('no-such-scenario');
     expect(el.textContent).toContain('Scenario not found');
-    expect(el.querySelector('a[href="/dev"]')).not.toBeNull();
+    expect(el.querySelector('a[href="/preview"]')).not.toBeNull();
   });
 
   it('opens a screen scenario with the real screen', async () => {

@@ -40,7 +40,7 @@ those stay out of the initial bundle.
 
 ## Dev scenarios
 
-`/dev` lists named scenarios that open the real board (or a screen) in a prepared
+`/preview` lists named scenarios that open the real board (or a screen) in a prepared
 situation, so a window can be checked without playing bot games. They live in
 `projects/app/src/app/dev/` and exist only in dev builds: the production build
 replaces `dev/dev-routes.ts` with `dev/dev-routes.prod.ts` (an empty list), so

@@ -6,12 +6,12 @@ Date: 2026-11-05. Status: implemented.
 
 The developer checks UI changes by hand: a Wuxie prompt, a dying Peach prompt, a judgment popup, the
 Game Over screen. Reaching each one means playing bot games until it happens. This adds a dev-only
-`/dev` page that lists named scenarios; opening one puts the real board in that exact situation,
+`/preview` page that lists named scenarios; opening one puts the real board in that exact situation,
 playable, so the UI can be tested in seconds.
 
 ## Goals
 
-- A `/dev` index of scenarios in four groups: Play board, Response windows, Choice prompts, Other screens.
+- A `/preview` index of scenarios in four groups: Play board, Response windows, Choice prompts, Other screens.
 - Each scenario opens the real `GameBoard` (or the real screen) in the described situation, interactive:
   clicks run the real engine. A Reset button restarts the scenario from the same setup.
 - Scenarios are engine-driven: a recipe starts a seeded real game, sets up the state, and runs the
@@ -37,7 +37,7 @@ playable, so the UI can be tested in seconds.
 
 ## Design
 
-**Route.** `/dev` (index) and `/dev/:scenarioId`, added to the routes only when `isDevMode()` is true.
+**Route.** `/preview` (index) and `/preview/:scenarioId`, added to the routes only when `isDevMode()` is true.
 The Game Over preview already built becomes the first "Other screens" entries (its cases move over).
 
 **Registry.** `Scenario { id; group; title; description; seatCount; seed; setup(ctx) }`, a plain array
@@ -50,7 +50,7 @@ way to place a card, the helper edits the plain serializable state directly. The
 `GameState`.
 
 **Loading into the board.** `GameService` gets one small method, `startFromState(state, mode)`, that
-sets the state, mode and revealed seat the way `startGame` does. A `/dev/:scenarioId` page component
+sets the state, mode and revealed seat the way `startGame` does. A `/preview/:scenarioId` page component
 builds the state, calls it, and renders `<app-game-board>`. Reset calls it again with a fresh build.
 This is the only production-code change.
 
@@ -94,7 +94,7 @@ a real game.
 ## Left to the builder
 
 - Exact helper names and the shape of the builder.
-- How to keep `/dev` out of production builds (route guard on `isDevMode()` versus a build-time file
+- How to keep `/preview` out of production builds (route guard on `isDevMode()` versus a build-time file
   replacement), as long as the production bundle does not contain it.
 - Which seeds to use, found by running the recipes.
 - One automated check: every registered scenario's `setup` reaches its stated window (a test that
