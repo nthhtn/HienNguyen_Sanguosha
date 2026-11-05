@@ -191,6 +191,13 @@ export class GameService {
     this.scheduleBotIfDue();
   }
 
+  // The dev animation lab: shows another state of the same game (its log grown by events, say) so the board
+  // plays what is new. Nothing else changes: no new game, no bot scheduled.
+  showState(state: GameState): void {
+    this._state.set(state);
+    this._lastError.set(null);
+  }
+
   // Dev scenarios: stops the bots, so a game left behind does not keep moving.
   stop(): void {
     this.halted = true;

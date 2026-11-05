@@ -571,3 +571,21 @@ describe('GameService.stop', () => {
     expect(service.state()).toBe(before);
   });
 });
+
+describe('GameService.showState', () => {
+  it('swaps the state without starting a new game', () => {
+    const service = TestBed.inject(GameService);
+    service.startGame(3, 1, 'vs-bots');
+    const state = service.state()!;
+    const number = service.gameNumber();
+    const revealed = service.revealedSeatId();
+    const next = { ...state, log: [...state.log] };
+
+    service.showState(next);
+
+    expect(service.state()).toBe(next);
+    expect(service.gameNumber()).toBe(number);
+    expect(service.revealedSeatId()).toBe(revealed);
+    expect(service.botThinkingSeatId()).toBeNull();
+  });
+});
