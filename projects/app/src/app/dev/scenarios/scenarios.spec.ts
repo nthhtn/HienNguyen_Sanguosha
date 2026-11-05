@@ -37,4 +37,14 @@ describe('dev scenarios', () => {
     const ids = SCENARIOS.filter((s) => s.group === 'Play Board').map((s) => s.id);
     expect(ids).toEqual(['play-own-turn', 'play-other-turn', 'play-equipment', 'play-six-seats']);
   });
+
+  it('Response Windows has its seven scenarios', () => {
+    const ids = SCENARIOS.filter((s) => s.group === 'Response Windows').map((s) => s.id);
+    expect(ids).toEqual(['respond-sha', 'respond-wuxie', 'respond-duel', 'respond-barbarians', 'respond-arrows', 'respond-dying-peach', 'respond-discard']);
+  });
+
+  it('Choice Prompts has its scenarios', () => {
+    const ids = SCENARIOS.filter((s) => s.group === 'Choice Prompts').map((s) => s.id);
+    expect(ids).toEqual(['choice-start-popup', 'choice-pick-card', 'choice-judgment', 'choice-skill-optional', 'choice-pick-seat', 'choice-compete']);
+  });
 });

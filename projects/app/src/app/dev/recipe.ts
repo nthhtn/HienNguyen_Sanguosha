@@ -3,6 +3,7 @@ import {
   ContentRegistry,
   GameState,
   Phase,
+  combinedMaxHp,
   createGame,
   getActiveSeatId,
   getLegalActions,
@@ -81,12 +82,55 @@ export function give(state: GameState, seatId: string, definitionIds: string[]):
   return definitionIds.reduce((s, id) => moveByDefinition(s, id, zoneId), state);
 }
 
+// Moves every card in the seat's hand to the discard pile, so the seat holds nothing that could answer a window.
+export function emptyHand(state: GameState, seatId: string): GameState {
+  const hand = state.zones.find((z) => z.id === seatOf(state, seatId).hand.zoneId);
+  const discard = state.zones.find((z) => z.kind === 'discardPile');
+  if (!discard) throw new Error('No discard pile');
+  return { ...state, zones: (hand?.cards ?? []).reduce((zones, c) => moveCard(zones, c.instanceId, discard.id), state.zones) };
+}
+
+// `seatId` plays the `definitionId` card from its hand at the seats `targetSeatIds`, as a real PlayCardAction.
+export function playCard(state: GameState, registry: ContentRegistry, seatId: string, definitionId: string, targetSeatIds: string[] = []): GameState {
+  const hand = state.zones.find((z) => z.id === seatOf(state, seatId).hand.zoneId);
+  const card = hand?.cards.find((c) => c.definitionId === definitionId);
+  if (!card) throw new Error(`${seatId} holds no ${definitionId}`);
+  return act(state, registry, {
+    kind: 'PlayCardAction',
+    seatId,
+    cardInstanceId: card.instanceId,
+    targets: targetSeatIds.map((id) => ({ kind: 'seat' as const, seatId: id })),
+  });
+}
+
 export function equip(state: GameState, seatId: string, definitionId: string): GameState {
   return moveByDefinition(state, definitionId, seatOf(state, seatId).equipped.zoneId);
 }
 
 export function placeJudgment(state: GameState, seatId: string, definitionId: string): GameState {
   return moveByDefinition(state, definitionId, seatOf(state, seatId).judgment.zoneId);
+}
+
+// The seat holds exactly these two Generals, both face down, at full HP, in the main General's Kingdom.
+export function setGenerals(state: GameState, registry: ContentRegistry, seatId: string, mainId: string, deputyId: string): GameState {
+  const main = registry.generals.get(mainId);
+  const deputy = registry.generals.get(deputyId);
+  if (!main || !deputy) throw new Error(`Unknown General ${main ? deputyId : mainId}`);
+  const maxHp = combinedMaxHp(main.maxHp, deputy.maxHp);
+  return {
+    ...state,
+    seats: state.seats.map((s) =>
+      s.id === seatId
+        ? {
+            ...s,
+            kingdom: main.kingdom,
+            generals: { main: { generalDefinitionId: mainId, revealed: false }, deputy: { generalDefinitionId: deputyId, revealed: false } },
+            maxCombinedHp: maxHp,
+            combinedHp: maxHp,
+          }
+        : s
+    ),
+  };
 }
 
 export function setHp(state: GameState, seatId: string, hp: number): GameState {

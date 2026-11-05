@@ -1,6 +1,6 @@
 import { buildContentRegistry } from 'content';
 import { GameState, getActiveSeatId } from 'engine';
-import { give, playableGame, setHp, setTurn, stepUntil, windowOf } from './recipe';
+import { emptyHand, give, setGenerals, playCard, playableGame, setHp, setTurn, stepUntil, windowOf } from './recipe';
 
 const registry = buildContentRegistry();
 const game = () => playableGame(registry, 7, 4);
@@ -43,5 +43,38 @@ describe('dev recipe helpers', () => {
 
   it('windowOf is null for a resting state', () => {
     expect(windowOf(setTurn(game(), 'seat-0', 'Play'))).toBeNull();
+  });
+});
+
+describe('dev recipe helpers for playing moves', () => {
+  it('emptyHand moves a hand to the discard pile without losing cards', () => {
+    const before = game();
+    const total = before.zones.reduce((n, z) => n + z.cards.length, 0);
+    const after = emptyHand(before, 'seat-1');
+    expect(handOf(after, 'seat-1')).toEqual([]);
+    expect(after.zones.reduce((n, z) => n + z.cards.length, 0)).toBe(total);
+  });
+
+  it('playCard plays the named card from a hand at the targets and opens the window it asks', () => {
+    let state = setTurn(game(), 'seat-1', 'Play');
+    state = give(emptyHand(state, 'seat-0'), 'seat-1', ['sha']);
+    state = give(state, 'seat-0', ['shan']);
+    const after = playCard(state, registry, 'seat-1', 'sha', ['seat-0']);
+    expect(after.pendingResponse?.respondingSeatId).toBe('seat-0');
+  });
+
+  it('playCard throws when the seat does not hold the card', () => {
+    const state = emptyHand(setTurn(game(), 'seat-1', 'Play'), 'seat-1');
+    expect(() => playCard(state, registry, 'seat-1', 'sha', ['seat-0'])).toThrow('seat-1 holds no sha');
+  });
+});
+
+describe('dev recipe helper setGenerals', () => {
+  it('gives the seat the named Generals, unrevealed, with full HP for them', () => {
+    const state = setGenerals(game(), registry, 'seat-0', 'kingdomWars:ji-ling', 'kingdomWars:guan-yu');
+    const generals = state.seats[0].generals!;
+    expect(generals.main).toEqual({ generalDefinitionId: 'kingdomWars:ji-ling', revealed: false });
+    expect(generals.deputy.generalDefinitionId).toBe('kingdomWars:guan-yu');
+    expect(state.seats[0].combinedHp).toBe(state.seats[0].maxCombinedHp);
   });
 });
