@@ -76,6 +76,17 @@ describe('DecisionTimer', () => {
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
     });
 
+    it('stays off once the game service is stopped (the dev lab and scenarios)', () => {
+      toPlayPhase();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
+      game.stop();
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBeNull();
+      const owner = game.state()!.turn.ownerSeatId;
+      advance(DECISION_SECONDS.play + 5);
+      expect(game.state()!.turn.ownerSeatId).toBe(owner);
+    });
+
     it('gives the Play phase 180 seconds', () => {
       toPlayPhase();
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);

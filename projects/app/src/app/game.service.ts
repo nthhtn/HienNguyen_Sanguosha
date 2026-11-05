@@ -87,8 +87,9 @@ export class GameService {
   private readonly _moveStart: WritableSignal<GameState | null> = signal(null);
 
   private botTimer: ReturnType<typeof setTimeout> | null = null;
-  // Set by stop(): no bot moves until a new game is started.
-  private halted = false;
+  // Set by stop(): no bot moves and no decision clock until a new game is started.
+  private readonly _stopped = signal(false);
+  readonly stopped: Signal<boolean> = this._stopped.asReadonly();
   private readonly botMemories = new Map<string, BotTurnMemory>();
 
   readonly state: Signal<GameState | null> = this._state.asReadonly();
@@ -198,15 +199,15 @@ export class GameService {
     this._lastError.set(null);
   }
 
-  // Dev scenarios: stops the bots, so a game left behind does not keep moving.
+  // Dev scenarios and the animation lab: stops the bots and the decision clock, so a game left on show does not keep moving.
   stop(): void {
-    this.halted = true;
+    this._stopped.set(true);
     this.cancelBotTimer();
     this._botThinkingSeatId.set(null);
   }
 
   private reset(mode: GameMode): void {
-    this.halted = false;
+    this._stopped.set(false);
     this.cancelBotTimer();
     this.botMemories.clear();
     this._moveStart.set(null);
@@ -290,7 +291,7 @@ export class GameService {
 
   private scheduleBotIfDue(): void {
     this.cancelBotTimer();
-    if (this.halted) return;
+    if (this._stopped()) return;
     const state = this._state();
     const seatId = state && !state.result ? getActiveSeatId(state) : null;
     if (!state || !seatId || !this.botSeatIds().includes(seatId)) {

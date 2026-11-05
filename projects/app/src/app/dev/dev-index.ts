@@ -13,6 +13,7 @@ const GROUPS: ScenarioGroup[] = ['Play Board', 'Response Windows', 'Choice Promp
     <main class="dev">
       <h1>Dev Scenarios</h1>
       <p>Each scenario opens the real board or screen in a prepared situation.</p>
+      <p><a routerLink="/preview/animations">Animation Lab</a> plays every animation on the real board, one button each.</p>
       @for (group of groups; track group.name) {
         <h2>{{ group.name }}</h2>
         <ul>
