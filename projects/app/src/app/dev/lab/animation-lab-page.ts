@@ -9,6 +9,7 @@ import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
 import { cardIdDisplayName } from '../../labels';
 import { GAME_OVER_CASES } from '../game-over-fixtures';
+import { findScenario } from '../scenarios';
 import { ANIMATIONS } from './animations';
 import { LAB_GROUP_TITLES, LAB_SEATS, LabAnimation, LabParam, LabParamValue, defaultParams, labTable } from './lab-animation';
 
@@ -81,8 +82,11 @@ const PHASES = ['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End'] as const;
             }
             <section class="section">
               <h2>{{ 'preview.group.dialogs' | t }}</h2>
-              <a class="link" routerLink="/preview/choice-judgment"><mat-icon>gavel</mat-icon><span class="text">{{ 'preview.choice-judgment.title' | t }}</span><mat-icon class="go">chevron_right</mat-icon></a>
-              <a class="link" routerLink="/preview/choice-compete"><mat-icon>compare_arrows</mat-icon><span class="text">{{ 'preview.choice-compete.title' | t }}</span><mat-icon class="go">chevron_right</mat-icon></a>
+              @for (d of dialogs; track d.id) {
+                <button type="button" class="link" [class.on]="dialog() === d.id" [attr.data-dialog]="d.id" (click)="openDialog(d.id)">
+                  <mat-icon>{{ d.icon }}</mat-icon><span class="text">{{ d.title | t }}</span><mat-icon class="go">play_arrow</mat-icon>
+                </button>
+              }
             </section>
             <section class="section">
               <h2>{{ 'preview.group.victory' | t }}</h2>
@@ -158,8 +162,9 @@ const PHASES = ['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End'] as const;
       font: var(--mat-sys-body-medium);
     }
     select:focus-visible, input:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: 1px; }
-    .link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--mat-sys-outline-variant); background: var(--mat-sys-surface); color: var(--mat-sys-on-surface); text-decoration: none; }
+    .link { width: 100%; font: inherit; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--mat-sys-outline-variant); background: var(--mat-sys-surface); color: var(--mat-sys-on-surface); text-decoration: none; }
     .link:hover { border-color: var(--mat-sys-primary); background: var(--mat-sys-surface-container); }
+    .link.on { border-color: var(--mat-sys-primary); background: var(--mat-sys-primary-container); color: var(--mat-sys-on-primary-container); }
     .link .text { flex: 1; font: var(--mat-sys-title-small); }
     .link .go { color: var(--mat-sys-on-surface-variant); }
     @media (max-width: 1000px) {
@@ -178,6 +183,12 @@ export class AnimationLabPage {
   protected readonly cases = GAME_OVER_CASES;
   protected readonly caseKeys = Object.keys(GAME_OVER_CASES);
 
+  // Judgment and Compete are driven by real pending decisions, so they open as board scenarios inside the lab.
+  protected readonly dialogs = [
+    { id: 'choice-judgment', icon: 'gavel', title: 'preview.choice-judgment.title' },
+    { id: 'choice-compete', icon: 'compare_arrows', title: 'preview.choice-compete.title' },
+  ] as const;
+  protected readonly dialog = signal<string | null>(null);
   protected readonly open = signal(true);
   protected readonly view = signal<'board' | 'victory'>('board');
   protected readonly caseKey = signal(this.caseKeys[0]);
@@ -226,6 +237,7 @@ export class AnimationLabPage {
 
   // A fresh clean table. startFromState also arms the bots, so they are stopped again: no bot is due anyway.
   protected newTable(): void {
+    this.dialog.set(null);
     this.base = labTable(this.game.registry);
     this.game.startFromState(this.base, 'vs-bots');
     this.game.stop();
@@ -238,8 +250,19 @@ export class AnimationLabPage {
 
   // Shows the table the animation starts from, lets the board take it in (a log that is shorter than the one on
   // show is another game to the director, so nothing old replays), then shows the table with the events added.
+  // A dialog scenario is a live game (its bots answer once you act); a Play or New Table puts the lab back on a still table.
+  protected openDialog(id: string): void {
+    const scenario = findScenario(id);
+    if (scenario?.kind !== 'board') return;
+    this.view.set('board');
+    this.dialog.set(id);
+    this.game.startFromState(scenario.build(this.game.registry), 'vs-bots');
+  }
+
   protected play(a: LabAnimation): void {
     this.view.set('board');
+    this.dialog.set(null);
+    this.game.stop();
     const params = { ...defaultParams(a), ...this.values()[a.id] };
     const before = a.before?.(this.base, params) ?? this.base;
     this.game.showState(before);

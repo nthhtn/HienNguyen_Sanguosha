@@ -562,7 +562,7 @@ export const en = {
   'preview.choice-start-popup.description': 'The start of your turn: the popup that asks which Generals to reveal.',
   'preview.choice-pick-card.title': 'Pick a Card from Another Seat',
   'preview.choice-pick-card.description': 'You used Steal on a bot that holds three cards, and now pick the one to take.',
-  'preview.choice-judgment.title': 'Judgment Popup',
+  'preview.choice-judgment.title': 'Judgment',
   'preview.choice-judgment.description': 'Lightning waits in your judgment area and your Judgment Phase turns its card.',
   'preview.choice-skill-optional.title': 'Optional Skill Ask',
   'preview.choice-skill-optional.description': 'Ji Ling’s Double Edged may start your Play Phase: you choose to use it or not.',

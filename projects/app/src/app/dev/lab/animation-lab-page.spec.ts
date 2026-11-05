@@ -95,10 +95,40 @@ describe('animation lab page', () => {
     expect(second).not.toBe(first);
   });
 
-  it('links the Judgment popup and the Compete result to their scenarios', () => {
+  const dialogButton = (el: HTMLElement, id: string) => el.querySelector(`button[data-dialog="${id}"]`) as HTMLButtonElement;
+
+  it('Judgment opens in the lab with the panel still there, and New Table comes back to the clean table', () => {
+    const { fixture, el } = open();
+    const clean = JSON.stringify(game.state());
+    dialogButton(el, 'choice-judgment').click();
+    fixture.detectChanges();
+    expect(game.state()!.judgmentView).toBeDefined();
+    expect(el.querySelector('app-game-board')).not.toBeNull();
+    expect(el.querySelector('aside.panel')).not.toBeNull();
+    expect(dialogButton(el, 'choice-judgment').classList).toContain('on');
+    (el.querySelector('button.new-table') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(JSON.stringify(game.state())).toEqual(clean);
+    expect(dialogButton(el, 'choice-judgment').classList).not.toContain('on');
+  });
+
+  it('Compete opens in the lab, and a Play after it is back on the clean table with no bot moving', () => {
+    const { fixture, el } = open();
+    dialogButton(el, 'choice-compete').click();
+    fixture.detectChanges();
+    expect(game.state()!.pendingSelection?.of).toBe('cards');
+    buttonOf(el, 'beat-damage').click();
+    fixture.detectChanges();
+    expect(game.state()!.pendingSelection).toBeUndefined();
+    const played = game.state()!;
+    jest.runAllTimers();
+    expect(game.state()).toBe(played);
+  });
+
+  it('names the Judgment dialog without the word Popup', () => {
     const { el } = open();
-    expect(el.querySelector('a[href="/preview/choice-judgment"]')).not.toBeNull();
-    expect(el.querySelector('a[href="/preview/choice-compete"]')).not.toBeNull();
+    expect(dialogButton(el, 'choice-judgment').textContent).toContain('Judgment');
+    expect(dialogButton(el, 'choice-judgment').textContent).not.toContain('Popup');
   });
 
   it('leaving the page stops the bots', () => {

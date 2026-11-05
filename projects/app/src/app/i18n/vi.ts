@@ -561,7 +561,7 @@ export const vi: Messages = {
   'preview.choice-start-popup.description': 'Đầu lượt của bạn: hộp thoại hỏi lật Tướng nào.',
   'preview.choice-pick-card.title': 'Chọn một lá bài của người chơi khác',
   'preview.choice-pick-card.description': 'Bạn dùng Thuận Thủ Khiên Dương với một máy đang giữ ba lá bài, và giờ chọn lá để lấy.',
-  'preview.choice-judgment.title': 'Hộp thoại phán xét',
+  'preview.choice-judgment.title': 'Phán xét',
   'preview.choice-judgment.description': 'Thiểm Điện chờ trong khu phán xét của bạn và giai đoạn phán xét của bạn lật lá bài của nó.',
   'preview.choice-skill-optional.title': 'Hỏi dùng kỹ năng tùy chọn',
   'preview.choice-skill-optional.description': 'Song nhận của Kỷ Linh có thể mở đầu giai đoạn ra bài của bạn: bạn chọn dùng hay không.',
