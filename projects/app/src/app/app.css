@@ -44,10 +44,12 @@
   --mat-button-text-label-text-color: var(--mat-sys-on-primary);
   color: var(--mat-sys-on-primary);
 }
-.nav .active {
+.nav .active,
+.app-bar .nav-preview.active {
   background: color-mix(in srgb, var(--mat-sys-on-primary) 18%, transparent);
 }
 
+.app-bar .nav-preview,
 .app-bar .nav-battlefield,
 .app-bar .account,
 .app-bar .sign-in {

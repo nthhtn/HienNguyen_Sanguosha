@@ -535,6 +535,7 @@ export const en = {
   'nav.online': 'Play Online',
   'nav.onlineOnly': 'Play',
   'nav.rules': 'Rules',
+  'nav.preview': 'Preview',
   'nav.cards.generals': 'Generals',
   'nav.cards.basic': 'Basic Cards',
   'nav.cards.equipment': 'Equipment',

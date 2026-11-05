@@ -29,7 +29,7 @@ describe('App shell in Vietnamese', () => {
       providers: [
         { provide: AuthService, useValue: fakeAuth },
         { provide: MUSIC_PLAYER_FACTORY, useValue: () => ({ loop: false, volume: 1, play: () => Promise.resolve(), pause: () => undefined }) },
-        provideRouter([{ path: 'setup', children: [] }, { path: 'wiki/identity/:page', children: [] }, { path: 'wiki/kingdom-wars/:page', children: [] }, { path: 'wiki/rules/:page', children: [] }, { path: 'sign-in', children: [] }, { path: 'sign-up', children: [] }]),
+        provideRouter([{ path: 'setup', children: [] }, { path: 'wiki/identity/:page', children: [] }, { path: 'wiki/kingdom-wars/:page', children: [] }, { path: 'wiki/rules/:page', children: [] }, { path: 'preview', children: [] }, { path: 'sign-in', children: [] }, { path: 'sign-up', children: [] }]),
       ],
     }).compileComponents();
     await TestBed.inject(I18n).setLocale('vi');
@@ -52,6 +52,13 @@ describe('App shell in Vietnamese', () => {
     expect(text(el.querySelector('mat-toolbar h1'))).toBe('Tam quốc sát');
     expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Quốc chiến', 'Vương triều chiến', 'Luật']);
     expect([...el.querySelectorAll('nav.nav > a, nav.nav > button')].map((i) => i.getAttribute('aria-label'))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Quốc chiến', 'Vương triều chiến', 'Luật']);
+  });
+
+  it('the Preview link (dev builds) is named in Vietnamese, in sentence case', async () => {
+    const { el } = await render();
+    const preview = el.querySelector('a.nav-preview')!;
+    expect(text(preview.querySelector('.label'))).toBe('Xem trước');
+    expect(preview.getAttribute('aria-label')).toBe('Xem trước');
   });
 
   it('the Identity, Kingdom Wars and Rules menus name their pages in Vietnamese', async () => {

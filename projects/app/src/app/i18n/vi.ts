@@ -534,6 +534,7 @@ export const vi: Messages = {
   'nav.online': 'Chơi trực tuyến',
   'nav.onlineOnly': 'Chơi',
   'nav.rules': 'Luật',
+  'nav.preview': 'Xem trước',
   'nav.cards.generals': 'Tướng',
   'nav.cards.basic': 'Bài cơ bản',
   'nav.cards.equipment': 'Trang bị',
