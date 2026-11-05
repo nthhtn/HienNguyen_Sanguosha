@@ -628,7 +628,7 @@ export const en = {
   'preview.group.victory': 'Victory',
   'preview.index.title': 'Dev Scenarios',
   'preview.index.intro': 'Each scenario opens the real board or screen in a prepared situation.',
-  'preview.index.labText': 'plays every animation on the real board, one button each.',
+  'preview.index.labText': 'Plays every animation on the real board, one button each.',
   'preview.lab.title': 'Animation Lab',
   'preview.allScenarios': 'All Scenarios',
   'preview.reset': 'Reset',

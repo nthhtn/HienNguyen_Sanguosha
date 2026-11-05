@@ -29,9 +29,9 @@ describe('preview pages in Vietnamese', () => {
     const fixture = TestBed.createComponent(DevIndex);
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
-    expect([...el.querySelectorAll('h2')].map((h) => text(h))).toEqual(['Bàn chơi', 'Cửa sổ phản hồi', 'Lựa chọn', 'Màn hình khác']);
-    expect(text(el.querySelector('a[href="/preview/respond-sha"]'))).toBe('Phản hồi Sát');
-    expect(text(el.querySelector('a[href="/preview/animations"]'))).toBe('Phòng thử hiệu ứng');
+    expect([...el.querySelectorAll('h2')].map((h) => text(h.querySelector('span:not(.count)')))).toEqual(['Bàn chơi', 'Cửa sổ phản hồi', 'Lựa chọn', 'Màn hình khác']);
+    expect(text(el.querySelector('a[href="/preview/respond-sha"] .title'))).toBe('Phản hồi Sát');
+    expect(text(el.querySelector('a[href="/preview/animations"] .title'))).toBe('Phòng thử hiệu ứng');
   });
 
   it('a scenario page and an unknown one use Vietnamese for the bar, Reset and the missing message', () => {
@@ -40,7 +40,7 @@ describe('preview pages in Vietnamese', () => {
     page.detectChanges();
     const el = page.nativeElement as HTMLElement;
     expect(text(el.querySelector('.bar strong'))).toBe('Phản hồi Sát');
-    expect(text(el.querySelector('.bar button'))).toBe('Đặt lại');
+    expect(text(el.querySelector('.bar button .text'))).toBe('Đặt lại');
     page.destroy();
     params.next(convertToParamMap({ scenarioId: 'nope' }));
     const missing = TestBed.createComponent(DevScenarioPage);
@@ -54,7 +54,7 @@ describe('preview pages in Vietnamese', () => {
     const el = fixture.nativeElement as HTMLElement;
     const row = el.querySelector('[data-animation="beat-play"]')!;
     expect(text(row.querySelector('strong'))).toBe('Đánh một lá bài');
-    expect(text(row.querySelector('button.play'))).toBe('Phát');
+    expect(text(row.querySelector('button.play .text'))).toBe('Phát');
     // The card choices are the cards' own Vietnamese names, never their ids.
     const cards = [...row.querySelectorAll('select')[2].querySelectorAll('option')].map((o) => text(o));
     expect(cards).toContain('Sát');

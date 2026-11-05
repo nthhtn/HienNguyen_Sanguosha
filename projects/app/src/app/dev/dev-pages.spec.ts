@@ -32,7 +32,7 @@ describe('dev pages', () => {
     const fixture = TestBed.createComponent(DevIndex);
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
-    const headings = Array.from(el.querySelectorAll('h2')).map((h) => h.textContent!.trim());
+    const headings = Array.from(el.querySelectorAll('h2')).map((h) => h.querySelector('span:not(.count)')!.textContent!.trim());
     expect(headings).toEqual(['Play Board', 'Response Windows', 'Choice Prompts', 'Other Screens']);
     for (const s of SCENARIOS) expect(el.querySelector(`a[href="/preview/${s.id}"]`)).not.toBeNull();
   });

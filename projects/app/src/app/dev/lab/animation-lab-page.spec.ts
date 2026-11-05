@@ -83,7 +83,7 @@ describe('animation lab page', () => {
 
   it('Victory Reveal shows the Game Over screen, and Replay recreates it', () => {
     const { fixture, el } = open();
-    (Array.from(el.querySelectorAll('button')).find((b) => b.textContent!.includes('Victory Reveal')) as HTMLButtonElement).click();
+    (el.querySelector('button.reveal') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(el.querySelector('app-game-board')).toBeNull();
     const first = el.querySelector('app-game-over');

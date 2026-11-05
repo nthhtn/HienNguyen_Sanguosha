@@ -1,5 +1,6 @@
 import { ApplicationRef, Component, DestroyRef, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { GameBoard } from '../../game-board/game-board';
 import { GameOver } from '../../game-board/game-over';
@@ -19,9 +20,9 @@ const PHASES = ['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End'] as const;
 // The Victory reveal is its own view; Judgment and Compete are interactive, so they open as scenarios.
 @Component({
   selector: 'app-animation-lab-page',
-  imports: [GameBoard, GameOver, MatButtonModule, RouterLink, TPipe],
+  imports: [GameBoard, GameOver, MatButtonModule, MatIconModule, RouterLink, TPipe],
   template: `
-    <div class="lab">
+    <div class="lab" [class.closed]="!open()">
       <div class="stage">
         @if (view() === 'victory') {
           @for (run of [replay()]; track run) {
@@ -31,62 +32,140 @@ const PHASES = ['Start', 'Judgment', 'Draw', 'Play', 'Discard', 'End'] as const;
           <app-game-board />
         }
       </div>
-      <aside class="panel" [class.closed]="!open()">
-        <button mat-button type="button" (click)="open.set(!open())">{{ (open() ? 'preview.hidePanel' : 'preview.showPanel') | t }}</button>
+      <aside class="panel">
+        <header class="head">
+          @if (open()) {
+            <h1>{{ 'preview.lab.title' | t }}</h1>
+          }
+          <button mat-icon-button type="button" class="toggle" (click)="open.set(!open())" [attr.aria-label]="(open() ? 'preview.hidePanel' : 'preview.showPanel') | t" [attr.title]="(open() ? 'preview.hidePanel' : 'preview.showPanel') | t">
+            <mat-icon>{{ open() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+          </button>
+        </header>
         @if (open()) {
-          <button mat-flat-button type="button" (click)="newTable()">{{ 'preview.newTable' | t }}</button>
-          <a mat-button routerLink="/preview">{{ 'preview.allScenarios' | t }}</a>
-          @for (group of groups; track group) {
-            <h2>{{ titles[group] | t }}</h2>
-            @for (a of animationsOf(group); track a.id) {
-              <div class="row" [attr.data-animation]="a.id">
-                <strong>{{ a.title | t }}</strong>
-                <span class="what">{{ a.description | t }}</span>
-                @for (p of a.params ?? []; track p.key) {
-                  <div class="field">
-                    <span>{{ p.label | t }}</span>
-                    @if (p.kind === 'number') {
-                      <input type="number" min="1" max="4" [attr.aria-label]="p.label | t" [value]="value(a, p)" (input)="set(a, p, $any($event.target).valueAsNumber)" />
-                    } @else {
-                      <select [attr.aria-label]="p.label | t" (change)="set(a, p, $any($event.target).value)">
-                        @for (o of options(p); track o.value) {
-                          <option [value]="o.value" [selected]="o.value === value(a, p)">{{ o.label }}</option>
+          <div class="body">
+            <div class="actions">
+              <button mat-flat-button type="button" class="new-table" (click)="newTable()"><mat-icon>refresh</mat-icon><span class="text">{{ 'preview.newTable' | t }}</span></button>
+              <a mat-button routerLink="/preview"><mat-icon>arrow_back</mat-icon><span class="text">{{ 'preview.allScenarios' | t }}</span></a>
+            </div>
+            @for (group of groups; track group) {
+              <section class="section">
+                <h2>{{ titles[group] | t }}</h2>
+                @for (a of animationsOf(group); track a.id) {
+                  <div class="row" [attr.data-animation]="a.id">
+                    <div class="top">
+                      <strong class="name">{{ a.title | t }}</strong>
+                      <button mat-flat-button type="button" class="play" (click)="play(a)"><mat-icon>play_arrow</mat-icon><span class="text">{{ 'preview.play' | t }}</span></button>
+                    </div>
+                    <span class="what">{{ a.description | t }}</span>
+                    @if (a.params?.length) {
+                      <div class="fields">
+                        @for (p of a.params ?? []; track p.key) {
+                          <div class="field">
+                            <span>{{ p.label | t }}</span>
+                            @if (p.kind === 'number') {
+                              <input type="number" min="1" max="4" [attr.aria-label]="p.label | t" [value]="value(a, p)" (input)="set(a, p, $any($event.target).valueAsNumber)" />
+                            } @else {
+                              <select [attr.aria-label]="p.label | t" (change)="set(a, p, $any($event.target).value)">
+                                @for (o of options(p); track o.value) {
+                                  <option [value]="o.value" [selected]="o.value === value(a, p)">{{ o.label }}</option>
+                                }
+                              </select>
+                            }
+                          </div>
                         }
-                      </select>
+                      </div>
                     }
                   </div>
                 }
-                <button mat-flat-button type="button" class="play" (click)="play(a)">{{ 'preview.play' | t }}</button>
-              </div>
+              </section>
             }
-          }
-          <h2>{{ 'preview.group.dialogs' | t }}</h2>
-          <a mat-button routerLink="/preview/choice-judgment">{{ 'preview.choice-judgment.title' | t }}</a>
-          <a mat-button routerLink="/preview/choice-compete">{{ 'preview.choice-compete.title' | t }}</a>
-          <h2>{{ 'preview.group.victory' | t }}</h2>
-          <button mat-button type="button" (click)="showVictory()">{{ 'preview.victoryReveal' | t }}</button>
-          @if (view() === 'victory') {
-            <select [attr.aria-label]="'preview.victoryCase' | t" (change)="caseKey.set($any($event.target).value)">
-              @for (key of caseKeys; track key) {
-                <option [value]="key" [selected]="key === caseKey()">{{ cases[key].title | t }}</option>
-              }
-            </select>
-            <button mat-flat-button type="button" (click)="replay.set(replay() + 1)">{{ 'preview.replay' | t }}</button>
-            <button mat-button type="button" (click)="view.set('board')">{{ 'preview.backToBoard' | t }}</button>
-          }
+            <section class="section">
+              <h2>{{ 'preview.group.dialogs' | t }}</h2>
+              <a class="link" routerLink="/preview/choice-judgment"><mat-icon>gavel</mat-icon><span class="text">{{ 'preview.choice-judgment.title' | t }}</span><mat-icon class="go">chevron_right</mat-icon></a>
+              <a class="link" routerLink="/preview/choice-compete"><mat-icon>compare_arrows</mat-icon><span class="text">{{ 'preview.choice-compete.title' | t }}</span><mat-icon class="go">chevron_right</mat-icon></a>
+            </section>
+            <section class="section">
+              <h2>{{ 'preview.group.victory' | t }}</h2>
+              <div class="row">
+                <div class="top">
+                  <strong class="name">{{ 'preview.victoryReveal' | t }}</strong>
+                  <button mat-flat-button type="button" class="reveal" (click)="showVictory()"><mat-icon>emoji_events</mat-icon><span class="text">{{ 'preview.play' | t }}</span></button>
+                </div>
+                @if (view() === 'victory') {
+                  <div class="fields">
+                    <div class="field wide">
+                      <span>{{ 'preview.victoryCase' | t }}</span>
+                      <select [attr.aria-label]="'preview.victoryCase' | t" (change)="caseKey.set($any($event.target).value)">
+                        @for (key of caseKeys; track key) {
+                          <option [value]="key" [selected]="key === caseKey()">{{ cases[key].title | t }}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+                  <div class="top">
+                    <button mat-stroked-button type="button" class="replay" (click)="replay.set(replay() + 1)"><mat-icon>replay</mat-icon><span class="text">{{ 'preview.replay' | t }}</span></button>
+                    <button mat-button type="button" class="back-to-board" (click)="view.set('board')"><span class="text">{{ 'preview.backToBoard' | t }}</span></button>
+                  </div>
+                }
+              </div>
+            </section>
+          </div>
         }
       </aside>
     </div>
   `,
   styles: `
-    .lab { display: grid; grid-template-columns: 1fr auto; align-items: start; }
+    :host { display: block; }
+    /* The board takes what the panel leaves; the panel scrolls on its own under the app bar. */
+    .lab { display: grid; grid-template-columns: minmax(0, 1fr) 336px; gap: 12px; align-items: start; }
+    .lab.closed { grid-template-columns: minmax(0, 1fr) 48px; }
     .stage { min-width: 0; }
-    .panel { box-sizing: border-box; width: 320px; max-height: 100vh; overflow: auto; padding: 8px 12px; display: grid; gap: 8px; align-content: start; background: var(--mat-sys-surface-container); }
-    .panel.closed { width: auto; }
-    h2 { margin: 12px 0 0; font: var(--mat-sys-title-medium); }
-    .row { display: grid; gap: 4px; padding: 8px; border-radius: 8px; background: var(--mat-sys-surface); }
-    .what { color: var(--mat-sys-on-surface-variant); font-size: 13px; }
-    .field { display: flex; justify-content: space-between; gap: 8px; }
+    .panel {
+      position: sticky;
+      top: 76px;
+      box-sizing: border-box;
+      max-height: calc(100vh - 88px);
+      display: flex;
+      flex-direction: column;
+      border-radius: 16px;
+      border: 1px solid var(--mat-sys-outline-variant);
+      background: var(--mat-sys-surface-container-low);
+      overflow: hidden;
+    }
+    .head { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 8px 8px 16px; border-bottom: 1px solid var(--mat-sys-outline-variant); }
+    .closed .head { padding: 4px; justify-content: center; border-bottom: 0; }
+    .head h1 { margin: 0; font: var(--mat-sys-title-medium); }
+    .body { overflow: auto; padding: 12px; display: grid; gap: 16px; align-content: start; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .section { display: grid; gap: 8px; }
+    h2 { margin: 0; padding: 0 4px; font: var(--mat-sys-label-large); letter-spacing: 0.04em; text-transform: uppercase; color: var(--mat-sys-primary); }
+    .row { display: grid; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--mat-sys-outline-variant); background: var(--mat-sys-surface); }
+    .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .name { font: var(--mat-sys-title-small); }
+    .what { font: var(--mat-sys-body-small); color: var(--mat-sys-on-surface-variant); }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .field { display: grid; gap: 2px; font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); }
+    .field.wide { grid-column: 1 / -1; }
+    select, input {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 32px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--mat-sys-outline);
+      background: var(--mat-sys-surface-container-lowest, var(--mat-sys-surface));
+      color: var(--mat-sys-on-surface);
+      font: var(--mat-sys-body-medium);
+    }
+    select:focus-visible, input:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: 1px; }
+    .link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--mat-sys-outline-variant); background: var(--mat-sys-surface); color: var(--mat-sys-on-surface); text-decoration: none; }
+    .link:hover { border-color: var(--mat-sys-primary); background: var(--mat-sys-surface-container); }
+    .link .text { flex: 1; font: var(--mat-sys-title-small); }
+    .link .go { color: var(--mat-sys-on-surface-variant); }
+    @media (max-width: 1000px) {
+      .lab, .lab.closed { grid-template-columns: minmax(0, 1fr); }
+      .panel { position: static; max-height: none; }
+    }
   `,
 })
 export class AnimationLabPage {

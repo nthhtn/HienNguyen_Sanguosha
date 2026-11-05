@@ -627,7 +627,7 @@ export const vi: Messages = {
   'preview.group.victory': 'Chiến thắng',
   'preview.index.title': 'Kịch bản xem trước',
   'preview.index.intro': 'Mỗi kịch bản mở bàn chơi hoặc màn hình thật trong một tình huống đã chuẩn bị.',
-  'preview.index.labText': 'phát mọi hiệu ứng trên bàn chơi thật, mỗi hiệu ứng một nút.',
+  'preview.index.labText': 'Phát mọi hiệu ứng trên bàn chơi thật, mỗi hiệu ứng một nút.',
   'preview.lab.title': 'Phòng thử hiệu ứng',
   'preview.allScenarios': 'Tất cả kịch bản',
   'preview.reset': 'Đặt lại',
