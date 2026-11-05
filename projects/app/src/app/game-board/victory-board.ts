@@ -81,7 +81,8 @@ const LIGHT_AFTER_LAST = 500;
     </div>
   `,
   styles: `
-    :host { display: block; }
+    /* Full width: inline-size containment gives .victory no intrinsic width, so a centring grid parent would collapse it. */
+    :host { display: block; width: 100%; }
     .victory {
       container-type: inline-size;
       max-width: 1080px;
