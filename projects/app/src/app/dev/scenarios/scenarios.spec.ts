@@ -1,6 +1,6 @@
 import { buildContentRegistry } from 'content';
 import { getActiveSeatId } from 'engine';
-import { BoardScenario } from '../scenario';
+import { BoardScenario, ScreenScenario } from '../scenario';
 import { SCENARIOS, findScenario } from './index';
 
 const registry = buildContentRegistry();
@@ -46,5 +46,19 @@ describe('dev scenarios', () => {
   it('Choice Prompts has its scenarios', () => {
     const ids = SCENARIOS.filter((s) => s.group === 'Choice Prompts').map((s) => s.id);
     expect(ids).toEqual(['choice-start-popup', 'choice-pick-card', 'choice-judgment', 'choice-skill-optional', 'choice-pick-seat', 'choice-compete']);
+  });
+
+  it('Other Screens has the General selection and the eight Game Over cases', () => {
+    const ids = SCENARIOS.filter((s) => s.group === 'Other Screens').map((s) => s.id);
+    expect(ids).toEqual([
+      'general-selection',
+      'over-two', 'over-three', 'over-four', 'over-six', 'over-ambitionist', 'over-lone', 'over-draw', 'over-hidden',
+    ]);
+  });
+
+  it('every Game Over scenario gives the real screen its result and seats', () => {
+    const screens = SCENARIOS.filter((s): s is ScreenScenario => s.kind === 'screen');
+    expect(screens).toHaveLength(8);
+    for (const s of screens) expect(s.inputs).toEqual(expect.objectContaining({ result: expect.any(Object), seats: expect.any(Array), youSeatId: 'seat-0' }));
   });
 });

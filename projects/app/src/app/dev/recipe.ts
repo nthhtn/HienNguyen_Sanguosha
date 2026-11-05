@@ -18,7 +18,8 @@ import { botName } from 'protocol';
 // Recipe helpers for dev scenarios: pure functions over a GameState that set up a situation. They edit state
 // directly where the engine has no move for it, then let the engine run (see the dev scenarios design).
 
-export function playableGame(registry: ContentRegistry, seed: number, seatCount: number): GameState {
+// A new game stopped at General selection: seat-0 is the human, the rest are bots.
+export function freshGame(registry: ContentRegistry, seed: number, seatCount: number): GameState {
   const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
   const created = createGame(guozhanMode, registry, seatIds, seed, { judgmentNotice: true, logPasses: true });
   const names = drawBotNameIds(seatCount - 1, [], () => 0.5);
@@ -27,7 +28,12 @@ export function playableGame(registry: ContentRegistry, seed: number, seatCount:
       ? { ...p, kind: 'human' as const }
       : { ...p, kind: 'bot' as const, name: botName(botNameDisplay(names.shift()!, 'en')!) }
   );
-  let state: GameState = { ...created, players };
+  return { ...created, players };
+}
+
+// A game past General selection (the Generals chosen by the rule-based bots' policy), at the first turn's Start.
+export function playableGame(registry: ContentRegistry, seed: number, seatCount: number): GameState {
+  let state = freshGame(registry, seed, seatCount);
   while (state.phase === 'GeneralSelection') state = takeMove(state, registry, new Map());
   return state;
 }

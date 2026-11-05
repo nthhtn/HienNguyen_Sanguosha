@@ -1,6 +1,6 @@
 import { buildContentRegistry } from 'content';
 import { GameState, getActiveSeatId } from 'engine';
-import { emptyHand, give, setGenerals, playCard, playableGame, setHp, setTurn, stepUntil, windowOf } from './recipe';
+import { emptyHand, freshGame, give, setGenerals, playCard, playableGame, setHp, setTurn, stepUntil, windowOf } from './recipe';
 
 const registry = buildContentRegistry();
 const game = () => playableGame(registry, 7, 4);
@@ -76,5 +76,14 @@ describe('dev recipe helper setGenerals', () => {
     expect(generals.main).toEqual({ generalDefinitionId: 'kingdomWars:ji-ling', revealed: false });
     expect(generals.deputy.generalDefinitionId).toBe('kingdomWars:guan-yu');
     expect(state.seats[0].combinedHp).toBe(state.seats[0].maxCombinedHp);
+  });
+});
+
+describe('dev recipe helper freshGame', () => {
+  it('stops at General selection with seat-0 to choose', () => {
+    const state = freshGame(registry, 7, 4);
+    expect(state.phase).toBe('GeneralSelection');
+    expect(getActiveSeatId(state)).toBe('seat-0');
+    expect(state.players.map((p) => p.kind)).toEqual(['human', 'bot', 'bot', 'bot']);
   });
 });
