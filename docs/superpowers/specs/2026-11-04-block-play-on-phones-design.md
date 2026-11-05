@@ -1,6 +1,6 @@
 # Block Play on Phones — Design
 
-Status: approved by the developer on 2026-11-04 ("let's block the play on phones"). Supersedes the phone parts of `2026-11-03-mobile-landscape-design.md`; that spec's medium and large layouts stand.
+Status: approved by the developer on 2026-11-04 ("let's block the play on phones"); built in #51. The check on a real phone and a real tablet is not recorded as done. Supersedes the phone parts of `2026-11-03-mobile-landscape-design.md`; that spec's medium and large layouts stand.
 
 ## Why
 

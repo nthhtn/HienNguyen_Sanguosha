@@ -11,7 +11,7 @@ it.
 | [The event chain](event-chain.md) | exactly how one move resolves, with real traces (the deep dive on the pipeline) |
 | [Content and extensibility](content-and-extensibility.md) | how cards, generals, skills and modes are defined, and how to add one |
 | [Frontend](frontend.md) | how the Angular app renders the engine's state, plays locally or online, sends actions back, and speaks English and Vietnamese |
-| [Backend and deployment](backend-and-deployment.md) | the Node server: accounts, rooms, the socket protocol, the game runner, persistence and restore, and what is not built yet |
+| [Backend](backend.md) | the Node server: accounts, rooms, the socket protocol, the game runner, persistence and restore, and what is not built yet |
 | [Deployment](../deployment.md) | how the server and app run live on Render and Supabase, and what to check after a deploy |
 | [Bots and simulation](bots-and-simulation.md) | the computer opponents, the headless simulator, invariants, leak checks and the test layout |
 | [CI and guardrails](../ci-and-guardrails.md) | how a change is checked before it merges (`npm run verify`, GitHub Actions), and what the agent may not do (merge, push to `main`) |
