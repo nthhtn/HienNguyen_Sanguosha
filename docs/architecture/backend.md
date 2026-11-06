@@ -54,6 +54,9 @@ both cases. See [Frontend](frontend.md).
 ```
 projects/server/src/
   http/          Fastify app: request guard (Origin check), session cookie, auth, room and game routes, GET /health (liveness, no auth)
+                 and the static files (`staticFiles.ts`): Brotli or gzip for text, `ETag`/`Last-Modified` with `304`, `Range`, `Content-Length`,
+                 and the cache policy (index.html `no-cache`, hashed build files immutable, images and audio one day); design in
+                 `docs/superpowers/specs/2026-11-06-static-delivery-design.md`
   socket/        the WebSocket on /api/ws: upgrade and auth, hello, message routing, heartbeat
   auth/          AccountService, scrypt password hashing, tokens, rate limits
   rooms/         Room (lobby rules), RoomService (live rooms, host rules, restore), ChatService, serial queue
