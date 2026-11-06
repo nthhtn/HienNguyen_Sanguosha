@@ -37,19 +37,20 @@ def pixels(path: Path):
 
 
 def mean_difference(a: Path, b: Path) -> float:
-    """Mean absolute difference (0 to 255) of two images shown over mid grey: how far a lossy sheet is from the lossless one."""
-    import numpy as np
+    """Mean absolute difference (0 to 255) of two images shown over mid grey: how far a lossy sheet is from the lossless one.
+    Pillow only: CI installs nothing else."""
+    from PIL import ImageChops, ImageStat
 
     def shown(path):
         with Image.open(path) as image:
             base = Image.new('RGBA', image.size, (128, 128, 128, 255))
             base.alpha_composite(image.convert('RGBA'))
-            return np.asarray(base.convert('RGB'), dtype=float)
+            return base.convert('RGB')
 
     first, second = shown(a), shown(b)
-    if first.shape != second.shape:
-        raise AssertionError('sheet sizes differ: {} and {}'.format(first.shape, second.shape))
-    return float(np.abs(first - second).mean())
+    if first.size != second.size:
+        raise AssertionError('sheet sizes differ: {} and {}'.format(first.size, second.size))
+    return sum(ImageStat.Stat(ImageChops.difference(first, second)).mean) / 3
 
 
 class PixelComparisonTests(unittest.TestCase):
