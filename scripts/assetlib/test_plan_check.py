@@ -72,6 +72,34 @@ class PlanTests(unittest.TestCase):
         with self.assertRaises(PlanError):
             plan_outputs(make_layout(files, recipes, {'tool/duel': [1, 2, 3, 4]}))
 
+    IMAGE_RECIPES = {'generals/skins': {'op': 'image', 'ext': 'webp', 'quality': 85}}
+
+    def test_image_recipe_plans_a_converted_output_per_master(self):
+        layout = make_layout({'generals/skins/wei/a.png': b'a', 'generals/skins/wei/b.jpg': b'b'}, self.IMAGE_RECIPES)
+        outputs = {o.path: o for o in plan_outputs(layout)}
+        self.assertEqual(sorted(outputs), ['generals/skins/wei/a.webp', 'generals/skins/wei/b.webp'])
+        self.assertEqual(outputs['generals/skins/wei/a.webp'].op, 'image')
+        self.assertEqual(outputs['generals/skins/wei/a.webp'].sources, ('generals/skins/wei/a.png',))
+
+    def test_image_recipe_rejects_a_target_format_it_cannot_write(self):
+        layout = make_layout({'generals/skins/a.png': b'a'}, {'generals/skins': {'op': 'image', 'ext': 'avif'}})
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('avif', str(ctx.exception))
+
+    def test_image_recipe_rejects_a_master_it_cannot_read(self):
+        layout = make_layout({'generals/skins/wei/a.png': b'a', 'generals/skins/wei/notes.txt': b'x'}, self.IMAGE_RECIPES)
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('generals/skins/wei/notes.txt', str(ctx.exception))
+
+    def test_image_recipe_rejects_the_same_stem_twice(self):
+        layout = make_layout({'generals/skins/wei/a.png': b'a', 'generals/skins/wei/a.jpg': b'b'}, self.IMAGE_RECIPES)
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('a.png', str(ctx.exception))
+        self.assertIn('a.jpg', str(ctx.exception))
+
     CROP_RECIPES = {
         'playing-cards/full': {'op': 'copy', 'ext': 'jpg'},
         'playing-cards/cropped': {'op': 'crop', 'from': 'playing-cards/full', 'ext': 'jpg'},

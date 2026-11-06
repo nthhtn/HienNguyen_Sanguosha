@@ -9,6 +9,11 @@ from .lockfile import sha256_file
 from .recipes import NoRecipe, canonical_hash, load_recipes, recipe_for
 
 
+# What the image op reads, and the formats it can write.
+IMAGE_SOURCES = {'png', 'jpg', 'jpeg'}
+IMAGE_TARGETS = {'webp'}
+
+
 class PlanError(Exception):
     pass
 
@@ -16,7 +21,7 @@ class PlanError(Exception):
 @dataclass(frozen=True)
 class Output:
     path: str  # relative to assets/
-    op: str  # copy | crop | sheet | sheets-meta
+    op: str  # copy | image | crop | sheet | sheets-meta
     sources: Tuple[str, ...]  # relative to assets-src/
     recipe_key: str
     settings: dict = field(default_factory=dict)  # per-output extras: the crop box, the sheet id and folder
@@ -41,14 +46,21 @@ def _copy_outputs(layout: Layout, recipes: Dict[str, dict]) -> List[Output]:
         op = recipe['op']
         if op == 'master-only':
             continue
-        if op != 'copy':
+        if op not in ('copy', 'image'):
             raise PlanError('master {} falls under the {} recipe {}, which builds its own files'.format(rel, op, key))
-        ext = recipe.get('ext')
-        if ext and Path(rel).suffix.lstrip('.').lower() != ext:
-            raise PlanError('master {} does not have the extension {} that recipe {} ships (this stage only copies)'.format(rel, ext, key))
         path = Path(rel)
+        suffix = path.suffix.lstrip('.').lower()
+        ext = recipe.get('ext')
+        if op == 'copy':
+            if ext and suffix != ext:
+                raise PlanError('master {} does not have the extension {} that recipe {} ships (it copies, so the extension cannot change)'.format(rel, ext, key))
+            target = rel
+        else:
+            if suffix not in IMAGE_SOURCES:
+                raise PlanError('master {} is not a PNG or JPEG image, which is what recipe {} converts'.format(rel, key))
+            target = path.with_suffix('.' + ext).as_posix()
         by_stem.setdefault((path.parent.as_posix(), path.stem), []).append(rel)
-        outputs.append(Output(rel, 'copy', (rel,), key))
+        outputs.append(Output(target, op, (rel,), key))
     for names in by_stem.values():
         if len(names) > 1:
             raise PlanError('ambiguous masters {}: a reference without extension cannot tell them apart'.format(' and '.join(names)))
@@ -99,6 +111,9 @@ def _sheet_outputs(layout: Layout, key: str, recipe: dict) -> List[Output]:
 
 def plan_outputs(layout: Layout) -> List[Output]:
     recipes = load_recipes(layout.recipes_file)
+    for key, recipe in recipes.items():
+        if recipe['op'] == 'image' and recipe.get('ext') not in IMAGE_TARGETS:
+            raise PlanError('recipe {} cannot write {!r}: the image op writes {}'.format(key, recipe.get('ext'), ' or '.join(sorted(IMAGE_TARGETS))))
     outputs = _copy_outputs(layout, recipes)
     for key, recipe in recipes.items():
         if recipe['op'] == 'crop':

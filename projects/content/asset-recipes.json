@@ -18,7 +18,7 @@
   },
   "effects/stills": { "op": "copy" },
   "generals/cards": { "op": "copy", "ext": "jpg" },
-  "generals/skins": { "op": "copy", "ext": "png" },
+  "generals/skins": { "op": "image", "ext": "webp", "quality": 85 },
   "generals/skins/skins.json": { "op": "copy" },
   "generals/special": { "op": "copy" },
   "manifest.json": { "op": "copy" },

@@ -34,7 +34,7 @@ One folder per kind of thing, kebab-case names throughout (the rules are in
 `docs/superpowers/specs/2026-11-06-assets-restructure-design.md`). The same paths appear
 under `../assets/`, except where noted.
 
-- `generals/` holds `skins/<force>/` (Play-screen portraits, mapped by `skins/skins.json`),
+- `generals/` holds `skins/<force>/` (Play-screen portraits, mapped by `skins/skins.json`; the masters are PNG and ship as WebP, per `../asset-recipes.json`),
   `cards/<force>/` (full card art) and `special/` (face-down, placeholder and Ambitionist art).
 - `playing-cards/full/<card-type>/` holds the full card art, plus `back.jpg` beside it. There is
   no `cropped/` here: the Play-screen art in `../assets/playing-cards/cropped/` is cut from the

@@ -93,7 +93,7 @@ describe('Kingdom Wars General art', () => {
     const fresh = kingdomWarsGeneralIds().filter((id) => !Object.prototype.hasOwnProperty.call(generalsData, id));
     expect(fresh).toHaveLength(9);
     for (const id of fresh) {
-      expect(generalSkinUrl(kingdomWarsGeneralId(id))).toMatch(/^\/images\/generals\/skins\/\w+\/\w+\.png$/);
+      expect(generalSkinUrl(kingdomWarsGeneralId(id))).toMatch(/^\/images\/generals\/skins\/\w+\/\w+\.webp$/);
       const voice = generalDeathVoiceUrl(kingdomWarsGeneralId(id));
       expect(voice).toMatch(/^\/audio\/death\/generals\/\w+\/\w+\.ogg$/);
       expect(existsSync(join(__dirname, '../../assets', voice!.replace('/audio/', 'audio/')))).toBe(true);
@@ -171,7 +171,7 @@ describe('Starvation art', () => {
 
 describe('assetFile', () => {
   it('adds the extension its recipe ships to a reference without one', () => {
-    expect(assetFile('generals/skins/wei/caocao')).toBe('generals/skins/wei/caocao.png');
+    expect(assetFile('generals/skins/wei/caocao')).toBe('generals/skins/wei/caocao.webp');
     expect(assetFile('generals/cards/wei/cao-cao')).toBe('generals/cards/wei/cao-cao.jpg');
     expect(assetFile('playing-cards/full/tool/duel')).toBe('playing-cards/full/tool/duel.jpg');
     expect(assetFile('playing-cards/cropped/tool/duel')).toBe('playing-cards/cropped/tool/duel.jpg');

@@ -64,8 +64,8 @@ describe('CardArt', () => {
       fixture.detectChanges();
       return (fixture.nativeElement as HTMLElement).querySelector('img')!.getAttribute('src');
     };
-    expect(src('cao-cao')).toBe('/images/generals/skins/wei/caocao.png');
-    expect(src('zuo-ci')).toBe('/images/generals/skins/qun/zuoci.png');
+    expect(src('cao-cao')).toBe('/images/generals/skins/wei/caocao.webp');
+    expect(src('zuo-ci')).toBe('/images/generals/skins/qun/zuoci.webp');
   });
 
   it('renders the cropped art of a card when asked', () => {

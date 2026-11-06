@@ -62,7 +62,7 @@ describe('WikiGeneralEntry', () => {
       expect(text).toContain(part);
     }
     expect(el.querySelectorAll('.hearts mat-icon')).toHaveLength(4);
-    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/images/generals/skins/wei/caocao.png');
+    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/images/generals/skins/wei/caocao.webp');
     expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');
   });
 

@@ -120,7 +120,7 @@ describe('SeatTile', () => {
     );
     expect(el.textContent).toContain('Shu');
     const portrait = el.querySelector('app-seat-avatar .half[data-slot="main"] img') as HTMLImageElement;
-    expect(portrait.getAttribute('src')).toBe('/images/generals/skins/shu/zhaoyun.png');
+    expect(portrait.getAttribute('src')).toBe('/images/generals/skins/shu/zhaoyun.webp');
   });
 
   it('shows a placeholder for a seat still choosing generals', () => {

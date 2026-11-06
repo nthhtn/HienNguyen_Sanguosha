@@ -8,10 +8,23 @@ from .plan import Output
 from .recipes import load_recipes
 
 DEFAULT_CROP_QUALITY = 92
+DEFAULT_IMAGE_QUALITY = 85
+DEFAULT_ALPHA_QUALITY = 100
 
 
 class BuildError(Exception):
     """One output could not be made (an unreadable image, a box that does not fit); names the output."""
+
+
+def image_file(src: Path, dest: Path, ext: str, quality: int, alpha_quality: int) -> None:
+    """Convert a PNG or JPEG master to `ext` (webp), keeping its size and any transparency."""
+    from PIL import Image  # loaded only when an image is converted
+
+    with Image.open(src) as image:
+        has_alpha = 'A' in image.getbands() or (image.mode == 'P' and 'transparency' in image.info)
+        converted = image.convert('RGBA' if has_alpha else 'RGB')
+    Path(dest).parent.mkdir(parents=True, exist_ok=True)
+    converted.save(dest, ext.upper(), quality=quality, alpha_quality=alpha_quality, method=5)
 
 
 def crop_file(src: Path, dest: Path, box: List[int], quality: int) -> None:
@@ -39,6 +52,9 @@ def _run(layout: Layout, output: Output) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if output.op == 'copy':
         shutil.copyfile(layout.src / output.sources[0], dest)
+    elif output.op == 'image':
+        recipe = load_recipes(layout.recipes_file)[output.recipe_key]
+        image_file(layout.src / output.sources[0], dest, recipe['ext'], recipe.get('quality', DEFAULT_IMAGE_QUALITY), recipe.get('alphaQuality', DEFAULT_ALPHA_QUALITY))
     elif output.op == 'crop':
         quality = load_recipes(layout.recipes_file)[output.recipe_key].get('quality', DEFAULT_CROP_QUALITY)
         crop_file(layout.src / output.sources[0], dest, output.settings['box'], quality)
