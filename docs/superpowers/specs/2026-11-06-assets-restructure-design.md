@@ -2,7 +2,8 @@
 
 A pure move: the same files, laid out by what they are, with consistent names. No file
 content changes and no behavior changes. The masters-versus-derivatives split
-(`assets-src/`) comes later and builds on this layout.
+(`assets-src/`) builds on this layout; it is specified in
+`2026-11-06-assets-src-pipeline-design.md`, which moves the masters out of `assets/`.
 
 ## Why
 

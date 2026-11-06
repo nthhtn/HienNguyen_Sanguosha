@@ -16,12 +16,13 @@ Copy this table into the reply. Origin is `dev`, a source URL with the date fetc
 | Gender | | |
 | Skill 1: English name, Chinese name, wording | | |
 | Skill 2 (and so on) | | |
-| Skin image | | |
-| Death voice | | |
+| Skin image (the full-size original) | | |
+| Death voice (the original recording) | | |
 
 Rules for the sheet:
 - A value from a source is shown as that source's text, not paraphrased. Conflicts between sources are listed, not resolved.
 - An `empty` Max HP, gender or Kingdom blocks the build until the developer answers.
+- A skin or voice is the original file, not a shrunk or re-encoded one: the build makes the small shipped copy, and it needs the original to do that.
 - An `empty` skin or voice does not block. The General ships with the placeholder or its Kingdom's cry and the PR lists the gap.
 
 ## Edge cases to answer in each skill's rule text

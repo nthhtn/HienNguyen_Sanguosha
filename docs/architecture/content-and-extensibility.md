@@ -100,14 +100,21 @@ bots without an id show the name they were stored with.
 
 ### Assets
 
-Card and General art, animation, and audio live in `projects/content/assets/`
-and are described by `manifest.json` (source URL, crawl date, dimensions). Where
-they came from and the terms they are used under are in that folder's
-[README](../../projects/content/assets/README.md). `angular.json` serves the
+Card and General art, animation, and audio are kept as masters in
+`projects/content/assets-src/` and described by its `manifest.json` (source URL,
+crawl date, dimensions). `npm run assets:build` generates the files that ship into
+`projects/content/assets/` (committed, never edited by hand); `npm run assets:check`
+fails when they are out of date, and the recipes that decide what each folder
+becomes are in `asset-recipes.json`. Where the masters came from and the terms
+they are used under are in the
+[README](../../projects/content/assets-src/README.md). `angular.json` serves the
 images at `/images/...` and the audio files at `/audio/...`; both mirror the folders
 under `assets/` (the layout and its naming rules are in the
 [assets restructure spec](../superpowers/specs/2026-11-06-assets-restructure-design.md)).
-The assets module (`assets.ts`) resolves a card's or General's image for the UI.
+The assets module (`assets.ts`) resolves a card's or General's image for the UI; references
+in `manifest.json` and `skins.json` carry no file extension, and `assetFile()` adds the one
+the recipes ship. The design is in the
+[assets-src pipeline spec](../superpowers/specs/2026-11-06-assets-src-pipeline-design.md).
 
 ## Writing a card
 
