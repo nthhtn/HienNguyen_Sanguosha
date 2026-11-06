@@ -87,8 +87,8 @@ already uses). It reads `asset-recipes.json` and writes `assets/`:
   using the box (x, y, width, height, in pixels of the full image) recorded for that id in
   `asset-crops.json`, and saved as JPEG. The 49 boxes are recovered once from the current files by
   matching each crop inside its full card (all 49 match at the same scale, with only JPEG noise as
-  the difference). The JPEG quality is chosen so each regenerated crop scores SSIM of at least
-  0.99 against today's file.
+  the difference). The JPEG quality (92) is the one that matches today's files best: each
+  regenerated crop differs from today's file by at most 5 brightness levels on average.
 - **sprite sheets:** `effects/sheets/<id>.png` and `sheets.json` are built from `effects/frames/`
   by the logic now in `scripts/build-sprite-sheets.py`, which folds into the same command.
 - The build is idempotent: running it twice leaves no diff. It removes files in `assets/` that no
@@ -136,7 +136,9 @@ over the old one and rebuild. The recipes decide what ships.
 ## Done when
 
 1. Every path under `assets/` matches today's, and every file hashes the same as today's except
-   the 49 regenerated crops, which each score SSIM of at least 0.99 against the current files.
+   the 49 regenerated crops, which each differ from the current file by at most 5 brightness levels on
+   average and look identical side by side. (A stricter match is impossible: today's crops are separately
+   encoded JPEGs, so even a lossless cut of the master scores only 0.945 to 0.99 SSIM against them.)
 2. `npm run assets:check` passes on the result, and fails (with a message naming the file) after
    each of: editing a master, editing a shipped file by hand, deleting a shipped file, adding a
    stray file to `assets/`.
@@ -173,10 +175,9 @@ slows every build, and hides the shipped output from review.
    The build is **incremental by input hash**: an output is rewritten only when its master or its
    recipe changed since the lock, so another machine's Pillow or zlib never rewrites unchanged
    files and never produces a noisy diff. Output bytes need not reproduce across machines.
-4. **Crop quality.** One JPEG quality is chosen for all crops so each scores SSIM of at least
-   0.99 against today's file. If a card cannot reach it, `asset-crops.json` may carry a
-   per-card `quality`. The SSIM comparison is a one-off verification while building this stage
-   (it needs numpy), not a committed test.
+4. **Crop quality.** One JPEG quality (92) is used for all crops. The comparison with today's
+   files (mean absolute difference per card, plus a side-by-side look at the worst) is a one-off
+   verification while building this stage, not a committed test.
 5. **Sprite sheets.** Rebuilding them from `effects/frames/` with the current script already
    reproduces today's files byte for byte on the developer's machine (checked on 2026-11-06),
    so the "same hash" criterion holds for them.

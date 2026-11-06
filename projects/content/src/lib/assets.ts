@@ -68,7 +68,7 @@ export function kingdomBannerUrl(kingdom: string | undefined): string | null {
 }
 
 // The frame animations played over a seat: a hit's picture and the chain. Each is one PNG grid of
-// frames (built by scripts/build-sprite-sheets.py from assets/effects/frames/<folder>), with the numbers its timing needs.
+// frames (built by scripts/build-assets.py from assets-src/effects/frames/<folder>), with the numbers its timing needs.
 export type SpriteId = 'slash' | 'slash-fire' | 'slash-lightning' | 'damage' | 'fire' | 'lightning' | 'chain';
 
 export interface SpriteSheet {

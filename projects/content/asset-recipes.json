@@ -1,0 +1,30 @@
+{
+  "README.md": { "op": "copy" },
+  "audio": { "op": "copy" },
+  "audio/death/generals": { "op": "copy", "ext": "ogg" },
+  "effects/frames": { "op": "master-only" },
+  "effects/sheets": {
+    "op": "sheets",
+    "from": "effects/frames",
+    "map": {
+      "slash": "slash-red",
+      "slash-fire": "fire-slash",
+      "slash-lightning": "thunder-slash",
+      "damage": "damage",
+      "fire": "fire",
+      "lightning": "lightning",
+      "chain": "chain"
+    }
+  },
+  "effects/stills": { "op": "copy" },
+  "generals/cards": { "op": "copy", "ext": "jpg" },
+  "generals/skins": { "op": "copy", "ext": "png" },
+  "generals/skins/skins.json": { "op": "copy" },
+  "generals/special": { "op": "copy" },
+  "manifest.json": { "op": "copy" },
+  "playing-cards": { "op": "copy" },
+  "playing-cards/cropped": { "op": "crop", "from": "playing-cards/full", "ext": "jpg", "quality": 92 },
+  "playing-cards/full": { "op": "copy", "ext": "jpg" },
+  "preview": { "op": "master-only" },
+  "ui": { "op": "copy" }
+}

@@ -230,7 +230,7 @@ joining mid-game or starting a new game shows nothing old:
 | Action History lines | `actionHistory(log, zones, players, seats)` | the history panel |
 | Discard history | `discardHistory(log, pileId)` | the discard pile |
 | Sounds | `soundsFor(events)` | injure (injure-element for fire and thunder, else injure-hard for 2+ damage), heal, weapon, armor, mount |
-| Seat animations | `damageEffectsFor(events)`, `chainEffectsFor(events)` | one sprite per damage event on the seat, and the chain when a seat turns chained; each plays once from a sheet (`SpriteEffect`, timing in `sprite-plan.ts`, sheets built by `scripts/build-sprite-sheets.py`), never blocking playback |
+| Seat animations | `damageEffectsFor(events)`, `chainEffectsFor(events)` | one sprite per damage event on the seat, and the chain when a seat turns chained; each plays once from a sheet (`SpriteEffect`, timing in `sprite-plan.ts`, sheets built by `scripts/build-assets.py`), never blocking playback |
 | Compete popup | `competeResults(log, from, seats, players)` | the Compete result dialog |
 | Judgment popup | `judgmentDescription` over `state.judgmentView` | the judgment dialog |
 

@@ -67,7 +67,6 @@
               {
                 "glob": "**/*.@(jpg|jpeg|png|webp)",
                 "input": "projects/content/assets",
-                "ignore": ["effects/frames/**"],
                 "output": "images"
               },
               {

@@ -1,0 +1,3103 @@
+{
+  "README.md": {
+    "output": "fe981d61fb2babeed2e86a667405e7ed20657ab030636d7f71f64f4d2dcd365c",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "README.md": "fe981d61fb2babeed2e86a667405e7ed20657ab030636d7f71f64f4d2dcd365c"
+    }
+  },
+  "audio/death/forces/qun.ogg": {
+    "output": "e7ef492f098cf255148e7d253135250b5d1044b2b00519d8e36b35a11bcf766f",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/death/forces/qun.ogg": "e7ef492f098cf255148e7d253135250b5d1044b2b00519d8e36b35a11bcf766f"
+    }
+  },
+  "audio/death/forces/shu.ogg": {
+    "output": "c850ba6ebb5f3bc914679f3cbad21e9011eb431813aae2b1aadb0d2dbbf0ded6",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/death/forces/shu.ogg": "c850ba6ebb5f3bc914679f3cbad21e9011eb431813aae2b1aadb0d2dbbf0ded6"
+    }
+  },
+  "audio/death/forces/wei.ogg": {
+    "output": "ac298e6f239009217fa8fbd70111e96b327f1b2d564178a704951232a26e0935",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/death/forces/wei.ogg": "ac298e6f239009217fa8fbd70111e96b327f1b2d564178a704951232a26e0935"
+    }
+  },
+  "audio/death/forces/wu.ogg": {
+    "output": "e6620e4f4b893071e1b48b361d6782fc858f1f5d1cc929d7e63972c0a9f94ebc",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/death/forces/wu.ogg": "e6620e4f4b893071e1b48b361d6782fc858f1f5d1cc929d7e63972c0a9f94ebc"
+    }
+  },
+  "audio/death/generals/qun/caiwenji.ogg": {
+    "output": "8d08a913b0e75ca4832eccf536b1e6997da0c7b0658361dd4ac310cf5f2a8778",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/caiwenji.ogg": "8d08a913b0e75ca4832eccf536b1e6997da0c7b0658361dd4ac310cf5f2a8778"
+    }
+  },
+  "audio/death/generals/qun/diaochan.ogg": {
+    "output": "9d6d87b16dd1a684ec0d2790c47cb47e8ab99fa23586925f1651a50c22e2c3bc",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/diaochan.ogg": "9d6d87b16dd1a684ec0d2790c47cb47e8ab99fa23586925f1651a50c22e2c3bc"
+    }
+  },
+  "audio/death/generals/qun/dongzhuo.ogg": {
+    "output": "373511d69364171b85935b41fd0aeefe644899d64836afe977920bc3e8dec8ee",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/dongzhuo.ogg": "373511d69364171b85935b41fd0aeefe644899d64836afe977920bc3e8dec8ee"
+    }
+  },
+  "audio/death/generals/qun/hetaihou.ogg": {
+    "output": "ff1066d50830832ff339e7c278a72b4160fd1fa0cebb54953201c98ef145137f",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/hetaihou.ogg": "ff1066d50830832ff339e7c278a72b4160fd1fa0cebb54953201c98ef145137f"
+    }
+  },
+  "audio/death/generals/qun/huatuo.ogg": {
+    "output": "5511bea7daf109447daccc9159e87ca583f4c6b4b9c05c8030a445080a35c4b4",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/huatuo.ogg": "5511bea7daf109447daccc9159e87ca583f4c6b4b9c05c8030a445080a35c4b4"
+    }
+  },
+  "audio/death/generals/qun/jiaxu.ogg": {
+    "output": "3c8d94742d9b979335e370e2a5ab079c88fd0baf22b9bf6e940006dfe958b593",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/jiaxu.ogg": "3c8d94742d9b979335e370e2a5ab079c88fd0baf22b9bf6e940006dfe958b593"
+    }
+  },
+  "audio/death/generals/qun/jiling.ogg": {
+    "output": "38d0f5231d0f4d2628f5d58266d9a3a84553833ec6d2dd23c54eab28bdb45b5f",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/jiling.ogg": "38d0f5231d0f4d2628f5d58266d9a3a84553833ec6d2dd23c54eab28bdb45b5f"
+    }
+  },
+  "audio/death/generals/qun/kongrong.ogg": {
+    "output": "d9aafdfbbfd86b86855e0b498f8f625bc2ffa45ff3d6dd8b94278c27a4e7307d",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/kongrong.ogg": "d9aafdfbbfd86b86855e0b498f8f625bc2ffa45ff3d6dd8b94278c27a4e7307d"
+    }
+  },
+  "audio/death/generals/qun/lubu.ogg": {
+    "output": "50b6e53322a32c831e767c0b2b5b64decb6020c52b9a32cd2a1b905340fdf6e0",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/lubu.ogg": "50b6e53322a32c831e767c0b2b5b64decb6020c52b9a32cd2a1b905340fdf6e0"
+    }
+  },
+  "audio/death/generals/qun/mateng.ogg": {
+    "output": "f7eb795a780636e8bead0593bc2d924d0ff38dc7cfb0e5aa3771d3e9c70b9f13",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/mateng.ogg": "f7eb795a780636e8bead0593bc2d924d0ff38dc7cfb0e5aa3771d3e9c70b9f13"
+    }
+  },
+  "audio/death/generals/qun/panfeng.ogg": {
+    "output": "d18579a5cee69cca4772acf76011bbc4d173ed10d4e6e413e61bd28e30bdc4ba",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/panfeng.ogg": "d18579a5cee69cca4772acf76011bbc4d173ed10d4e6e413e61bd28e30bdc4ba"
+    }
+  },
+  "audio/death/generals/qun/pangde.ogg": {
+    "output": "0c30393974bdcf17275eccc6daa71cf8082a1d85ef6240459e973b109fca4c6f",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/pangde.ogg": "0c30393974bdcf17275eccc6daa71cf8082a1d85ef6240459e973b109fca4c6f"
+    }
+  },
+  "audio/death/generals/qun/tianfeng.ogg": {
+    "output": "0725f353d087e8a35ba487c74758854070b7971b96c826d941ede57f67235c29",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/tianfeng.ogg": "0725f353d087e8a35ba487c74758854070b7971b96c826d941ede57f67235c29"
+    }
+  },
+  "audio/death/generals/qun/yanliangwenchou.ogg": {
+    "output": "46f83892daaf64f76b6ab4305e8d17e7d0315428f95df63cdfe6055588334429",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/yanliangwenchou.ogg": "46f83892daaf64f76b6ab4305e8d17e7d0315428f95df63cdfe6055588334429"
+    }
+  },
+  "audio/death/generals/qun/yuanshao.ogg": {
+    "output": "e740f226ae5d809460594ab0d8b417c26d98e9b735a34afcbd338356905bfa84",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/yuanshao.ogg": "e740f226ae5d809460594ab0d8b417c26d98e9b735a34afcbd338356905bfa84"
+    }
+  },
+  "audio/death/generals/qun/yuji.ogg": {
+    "output": "33a783de02faf4654795e3efb81134499ccd134b4fc8259e57b4cbc316a37a95",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/yuji.ogg": "33a783de02faf4654795e3efb81134499ccd134b4fc8259e57b4cbc316a37a95"
+    }
+  },
+  "audio/death/generals/qun/zhangjiao.ogg": {
+    "output": "e7ef492f098cf255148e7d253135250b5d1044b2b00519d8e36b35a11bcf766f",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/zhangjiao.ogg": "e7ef492f098cf255148e7d253135250b5d1044b2b00519d8e36b35a11bcf766f"
+    }
+  },
+  "audio/death/generals/qun/zhangren.ogg": {
+    "output": "42d3d9260e1affdcea8e002b0be0a388cee123e4e3a995debf359de585699949",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/zhangren.ogg": "42d3d9260e1affdcea8e002b0be0a388cee123e4e3a995debf359de585699949"
+    }
+  },
+  "audio/death/generals/qun/zoushi.ogg": {
+    "output": "3ba2456fa5b777e887226ea14923fb2b6ea64ee37a24c0d243243850168983ba",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/qun/zoushi.ogg": "3ba2456fa5b777e887226ea14923fb2b6ea64ee37a24c0d243243850168983ba"
+    }
+  },
+  "audio/death/generals/shu/ganfuren.ogg": {
+    "output": "b38d6e8ee24b7ba890f73ad4db9a487019446c24b634bca27df91270203b0519",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/ganfuren.ogg": "b38d6e8ee24b7ba890f73ad4db9a487019446c24b634bca27df91270203b0519"
+    }
+  },
+  "audio/death/generals/shu/guanyu.ogg": {
+    "output": "dc24c9b4fe60f05f0bfd99b9017aec4b0865d74f0f4158955e5b4221f488f6c3",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/guanyu.ogg": "dc24c9b4fe60f05f0bfd99b9017aec4b0865d74f0f4158955e5b4221f488f6c3"
+    }
+  },
+  "audio/death/generals/shu/huangyueying.ogg": {
+    "output": "1d77ac1fe5d8fa22098fb5347b0a9991f2d4f4b3c530b2902353f6cf97d58200",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/huangyueying.ogg": "1d77ac1fe5d8fa22098fb5347b0a9991f2d4f4b3c530b2902353f6cf97d58200"
+    }
+  },
+  "audio/death/generals/shu/huangzhong.ogg": {
+    "output": "06e9020f510a24f1765b3dc1fb254340e346c5b5f355ec877c253488ef04c9e2",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/huangzhong.ogg": "06e9020f510a24f1765b3dc1fb254340e346c5b5f355ec877c253488ef04c9e2"
+    }
+  },
+  "audio/death/generals/shu/jiangwei.ogg": {
+    "output": "881d549af5c1efd255551fe7a3bc70b8923379047dc3da5a1b49e819f90c39eb",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/jiangwei.ogg": "881d549af5c1efd255551fe7a3bc70b8923379047dc3da5a1b49e819f90c39eb"
+    }
+  },
+  "audio/death/generals/shu/liubei.ogg": {
+    "output": "c850ba6ebb5f3bc914679f3cbad21e9011eb431813aae2b1aadb0d2dbbf0ded6",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/liubei.ogg": "c850ba6ebb5f3bc914679f3cbad21e9011eb431813aae2b1aadb0d2dbbf0ded6"
+    }
+  },
+  "audio/death/generals/shu/liushan.ogg": {
+    "output": "750b90c0cd0a8f95d5512c2338648cd05de9a6dadc9dd6c5af405b9fccc7328d",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/liushan.ogg": "750b90c0cd0a8f95d5512c2338648cd05de9a6dadc9dd6c5af405b9fccc7328d"
+    }
+  },
+  "audio/death/generals/shu/machao.ogg": {
+    "output": "858c7d73bf16ae571010debdd6dfb006e5d917f1d45aae8aa4f5e220dc971958",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/machao.ogg": "858c7d73bf16ae571010debdd6dfb006e5d917f1d45aae8aa4f5e220dc971958"
+    }
+  },
+  "audio/death/generals/shu/madai.ogg": {
+    "output": "540439d9cb83e26ae12cd58e92a4d4e5b141d850e24f230dcc00475bcd031306",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/madai.ogg": "540439d9cb83e26ae12cd58e92a4d4e5b141d850e24f230dcc00475bcd031306"
+    }
+  },
+  "audio/death/generals/shu/menghuo.ogg": {
+    "output": "2c659a1bc4d5724345b7bbfd0ae3ef23816397acfce1dc556582e757135f0b2d",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/menghuo.ogg": "2c659a1bc4d5724345b7bbfd0ae3ef23816397acfce1dc556582e757135f0b2d"
+    }
+  },
+  "audio/death/generals/shu/pangtong.ogg": {
+    "output": "275f3be7517b78a926107bdd5afbc83ce0a9d63ef30c4a245d9fc61849f28346",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/pangtong.ogg": "275f3be7517b78a926107bdd5afbc83ce0a9d63ef30c4a245d9fc61849f28346"
+    }
+  },
+  "audio/death/generals/shu/weiyan.ogg": {
+    "output": "3759741ca4b6c29623473649cedf07a59bd4270397a5eea267411b3eef28aba3",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/weiyan.ogg": "3759741ca4b6c29623473649cedf07a59bd4270397a5eea267411b3eef28aba3"
+    }
+  },
+  "audio/death/generals/shu/wolong.ogg": {
+    "output": "217673e7449cc75a8ed0321166aa86304c3508282e4db66f64b8daa040fc5205",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/wolong.ogg": "217673e7449cc75a8ed0321166aa86304c3508282e4db66f64b8daa040fc5205"
+    }
+  },
+  "audio/death/generals/shu/zhangfei.ogg": {
+    "output": "12b0bce6133f6078b6f25f157e600571f093355ca79956d3eab4792833a6f372",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/zhangfei.ogg": "12b0bce6133f6078b6f25f157e600571f093355ca79956d3eab4792833a6f372"
+    }
+  },
+  "audio/death/generals/shu/zhaoyun.ogg": {
+    "output": "67a73f6ccb28c0cbc24ffbd7f3181fd0c726cc263060ab265efeca97c25c3ff2",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/zhaoyun.ogg": "67a73f6ccb28c0cbc24ffbd7f3181fd0c726cc263060ab265efeca97c25c3ff2"
+    }
+  },
+  "audio/death/generals/shu/zhugeliang.ogg": {
+    "output": "cbcbb91d5da0180be033e9a03e6bd4109507f03fb333592924db00028466eb26",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/zhugeliang.ogg": "cbcbb91d5da0180be033e9a03e6bd4109507f03fb333592924db00028466eb26"
+    }
+  },
+  "audio/death/generals/shu/zhurong.ogg": {
+    "output": "c0535bbd4dbe04a24520bef56e2243c697f431687abf5daaaa3c6db9205de5d1",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/shu/zhurong.ogg": "c0535bbd4dbe04a24520bef56e2243c697f431687abf5daaaa3c6db9205de5d1"
+    }
+  },
+  "audio/death/generals/wei/caocao.ogg": {
+    "output": "ac298e6f239009217fa8fbd70111e96b327f1b2d564178a704951232a26e0935",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/caocao.ogg": "ac298e6f239009217fa8fbd70111e96b327f1b2d564178a704951232a26e0935"
+    }
+  },
+  "audio/death/generals/wei/caohong.ogg": {
+    "output": "90ba4add7d71c7897d19c7f6400a2d9bb1f246739c58986d9feeecf2fac46250",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/caohong.ogg": "90ba4add7d71c7897d19c7f6400a2d9bb1f246739c58986d9feeecf2fac46250"
+    }
+  },
+  "audio/death/generals/wei/caopi.ogg": {
+    "output": "b5d6afef9d7d343b567405846d9601783f285390e0a9251ef17f21047a0249b5",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/caopi.ogg": "b5d6afef9d7d343b567405846d9601783f285390e0a9251ef17f21047a0249b5"
+    }
+  },
+  "audio/death/generals/wei/caoren.ogg": {
+    "output": "97d3cd855ffd958557bd4fffefd40a26768d1edfa599d438eaebbc550d8f02ec",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/caoren.ogg": "97d3cd855ffd958557bd4fffefd40a26768d1edfa599d438eaebbc550d8f02ec"
+    }
+  },
+  "audio/death/generals/wei/dengai.ogg": {
+    "output": "340cca26ebed317e4db9c9220e22752600387cd61fd0fc53fb8bdb2245934d97",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/dengai.ogg": "340cca26ebed317e4db9c9220e22752600387cd61fd0fc53fb8bdb2245934d97"
+    }
+  },
+  "audio/death/generals/wei/dianwei.ogg": {
+    "output": "7dc65e000008b0d615613c5ac1a231587c27017cd01b58ca8e8861c81cc5ff14",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/dianwei.ogg": "7dc65e000008b0d615613c5ac1a231587c27017cd01b58ca8e8861c81cc5ff14"
+    }
+  },
+  "audio/death/generals/wei/guojia.ogg": {
+    "output": "f98f91ed71a65398dfe943f117b53001d1dfe57ff2ac13cffb2e5009e180e624",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/guojia.ogg": "f98f91ed71a65398dfe943f117b53001d1dfe57ff2ac13cffb2e5009e180e624"
+    }
+  },
+  "audio/death/generals/wei/lidian.ogg": {
+    "output": "fc013dbdf8b5d695f4c5ad2d0f49e6715ba36d73ccfe93c9eff20fd250878845",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/lidian.ogg": "fc013dbdf8b5d695f4c5ad2d0f49e6715ba36d73ccfe93c9eff20fd250878845"
+    }
+  },
+  "audio/death/generals/wei/simayi.ogg": {
+    "output": "11914a061301a5eb9980d160940c5956058ee8707178c3f5c376b5461029b561",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/simayi.ogg": "11914a061301a5eb9980d160940c5956058ee8707178c3f5c376b5461029b561"
+    }
+  },
+  "audio/death/generals/wei/xiahoudun.ogg": {
+    "output": "322a0dcd6c9d5980148e1aca8052ef9dcab998477073dd7de2a8f9ff8e3a5e11",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/xiahoudun.ogg": "322a0dcd6c9d5980148e1aca8052ef9dcab998477073dd7de2a8f9ff8e3a5e11"
+    }
+  },
+  "audio/death/generals/wei/xiahouyuan.ogg": {
+    "output": "52396619a2a2e8d28e9d4a94511a7a103aa845b4ca3164fb30fac5ba257cc16f",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/xiahouyuan.ogg": "52396619a2a2e8d28e9d4a94511a7a103aa845b4ca3164fb30fac5ba257cc16f"
+    }
+  },
+  "audio/death/generals/wei/xuchu.ogg": {
+    "output": "dc708ce5972fe728e0ed466e9a35b742a2c9da1355c4051d484c2e97f8d18086",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/xuchu.ogg": "dc708ce5972fe728e0ed466e9a35b742a2c9da1355c4051d484c2e97f8d18086"
+    }
+  },
+  "audio/death/generals/wei/xuhuang.ogg": {
+    "output": "ec0dbbf03ef908167b13c0b9757289fc94b3810eb511dba191b0718731a7d087",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/xuhuang.ogg": "ec0dbbf03ef908167b13c0b9757289fc94b3810eb511dba191b0718731a7d087"
+    }
+  },
+  "audio/death/generals/wei/xunyu.ogg": {
+    "output": "d9862d93c795a206f59f94e33faba2b7b0f222eef4289b561b1fe39cc730f0bf",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/xunyu.ogg": "d9862d93c795a206f59f94e33faba2b7b0f222eef4289b561b1fe39cc730f0bf"
+    }
+  },
+  "audio/death/generals/wei/yuejin.ogg": {
+    "output": "5c4f18c9b663d27b8760071851f7aa36f5d6b690fcbf76495ed2469439e7e8b0",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/yuejin.ogg": "5c4f18c9b663d27b8760071851f7aa36f5d6b690fcbf76495ed2469439e7e8b0"
+    }
+  },
+  "audio/death/generals/wei/zangba.ogg": {
+    "output": "2b6071e22d9cabee547c4faa46d75c9e1c8677e5cd58813b4172047892d765ce",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/zangba.ogg": "2b6071e22d9cabee547c4faa46d75c9e1c8677e5cd58813b4172047892d765ce"
+    }
+  },
+  "audio/death/generals/wei/zhanghe.ogg": {
+    "output": "328daecb3f0c54b8a91d50e2e7dfd3487b121ab0e581a2cad43867f477d13139",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/zhanghe.ogg": "328daecb3f0c54b8a91d50e2e7dfd3487b121ab0e581a2cad43867f477d13139"
+    }
+  },
+  "audio/death/generals/wei/zhangliao.ogg": {
+    "output": "1b3c43f4d04a29539c3573287ce9ae1a686712670e24ea8223a9305a951903ef",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/zhangliao.ogg": "1b3c43f4d04a29539c3573287ce9ae1a686712670e24ea8223a9305a951903ef"
+    }
+  },
+  "audio/death/generals/wei/zhenji.ogg": {
+    "output": "7421780263808f6055d7ff9373910198551660771e8c534925b64044b7ad61d2",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wei/zhenji.ogg": "7421780263808f6055d7ff9373910198551660771e8c534925b64044b7ad61d2"
+    }
+  },
+  "audio/death/generals/wu/daqiao.ogg": {
+    "output": "11a8486908df1b8ce2094644a68bf97d224bbd3389d39a5a42f90e78f79b9605",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/daqiao.ogg": "11a8486908df1b8ce2094644a68bf97d224bbd3389d39a5a42f90e78f79b9605"
+    }
+  },
+  "audio/death/generals/wu/dingfeng.ogg": {
+    "output": "1faad3601744971ad3153902ec7785bbae3e5d18d2d0aa6078f38c4c6e63ff1b",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/dingfeng.ogg": "1faad3601744971ad3153902ec7785bbae3e5d18d2d0aa6078f38c4c6e63ff1b"
+    }
+  },
+  "audio/death/generals/wu/erzhang.ogg": {
+    "output": "38202a94297596980fada7b9a5b1f0ca7106eb765ba140dd92ce9ff5c6dbf2b7",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/erzhang.ogg": "38202a94297596980fada7b9a5b1f0ca7106eb765ba140dd92ce9ff5c6dbf2b7"
+    }
+  },
+  "audio/death/generals/wu/ganning.ogg": {
+    "output": "dad70d5a2126ded25e454056b825dccd494737d29e58430cc1a6a4c8306a4f75",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/ganning.ogg": "dad70d5a2126ded25e454056b825dccd494737d29e58430cc1a6a4c8306a4f75"
+    }
+  },
+  "audio/death/generals/wu/huanggai.ogg": {
+    "output": "a47a94296c160b8b99734660a3d13626b794080c5ea95516e17977a6eec18b03",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/huanggai.ogg": "a47a94296c160b8b99734660a3d13626b794080c5ea95516e17977a6eec18b03"
+    }
+  },
+  "audio/death/generals/wu/jiangqin.ogg": {
+    "output": "3e1cff38c78fd4a22ba234272e4d10c76407bb38add37cedcabb2a0294b462cd",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/jiangqin.ogg": "3e1cff38c78fd4a22ba234272e4d10c76407bb38add37cedcabb2a0294b462cd"
+    }
+  },
+  "audio/death/generals/wu/lumeng.ogg": {
+    "output": "8245a7d655443e858e8fb62d5baae2131a0cb9fb1680f572f53b33ebf868ee20",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/lumeng.ogg": "8245a7d655443e858e8fb62d5baae2131a0cb9fb1680f572f53b33ebf868ee20"
+    }
+  },
+  "audio/death/generals/wu/lusu.ogg": {
+    "output": "af591318e90e337ac35818fb2f8eb362c7118f0842a665d0b1db5a4405221eb9",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/lusu.ogg": "af591318e90e337ac35818fb2f8eb362c7118f0842a665d0b1db5a4405221eb9"
+    }
+  },
+  "audio/death/generals/wu/luxun.ogg": {
+    "output": "ea0547feb1fd9e98be8d2ef20cb92c2ab5a692662d03b4b37ad42673702f1b84",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/luxun.ogg": "ea0547feb1fd9e98be8d2ef20cb92c2ab5a692662d03b4b37ad42673702f1b84"
+    }
+  },
+  "audio/death/generals/wu/sunce.ogg": {
+    "output": "20008cdc8823afd44c08e04c370ba00dd4aa5b59389aff900445c7071ac387e2",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/sunce.ogg": "20008cdc8823afd44c08e04c370ba00dd4aa5b59389aff900445c7071ac387e2"
+    }
+  },
+  "audio/death/generals/wu/sunjian.ogg": {
+    "output": "790f5a12815029d897eeac9a9196abb1c1b52b8a6a590b57bdab2ef9797815f5",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/sunjian.ogg": "790f5a12815029d897eeac9a9196abb1c1b52b8a6a590b57bdab2ef9797815f5"
+    }
+  },
+  "audio/death/generals/wu/sunquan.ogg": {
+    "output": "e6620e4f4b893071e1b48b361d6782fc858f1f5d1cc929d7e63972c0a9f94ebc",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/sunquan.ogg": "e6620e4f4b893071e1b48b361d6782fc858f1f5d1cc929d7e63972c0a9f94ebc"
+    }
+  },
+  "audio/death/generals/wu/sunshangxiang.ogg": {
+    "output": "c7c21794ecbb2380e9c0f987a6f75fa66e4ea5fc202281fe680f80c3fd84360c",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/sunshangxiang.ogg": "c7c21794ecbb2380e9c0f987a6f75fa66e4ea5fc202281fe680f80c3fd84360c"
+    }
+  },
+  "audio/death/generals/wu/taishici.ogg": {
+    "output": "e42a15c050da5e29bca73da3b817e31505d5c766eddd7bd982f497a81c54e83a",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/taishici.ogg": "e42a15c050da5e29bca73da3b817e31505d5c766eddd7bd982f497a81c54e83a"
+    }
+  },
+  "audio/death/generals/wu/xiaoqiao.ogg": {
+    "output": "9b5af2867a2c93a729cd323391f8591a26e974e185020160183c06995daa90ed",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/xiaoqiao.ogg": "9b5af2867a2c93a729cd323391f8591a26e974e185020160183c06995daa90ed"
+    }
+  },
+  "audio/death/generals/wu/xusheng.ogg": {
+    "output": "f3be26d88905a23a2e37728ebc173dbebd7424b7129d334bcdbafba3b7c385b0",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/xusheng.ogg": "f3be26d88905a23a2e37728ebc173dbebd7424b7129d334bcdbafba3b7c385b0"
+    }
+  },
+  "audio/death/generals/wu/zhoutai.ogg": {
+    "output": "b8f1039fd50ebf36a908f1dea097aa607fad0453ba59fc7f96465e127a1ceebc",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/zhoutai.ogg": "b8f1039fd50ebf36a908f1dea097aa607fad0453ba59fc7f96465e127a1ceebc"
+    }
+  },
+  "audio/death/generals/wu/zhouyu.ogg": {
+    "output": "418c06167bef4f38ba449b419bc735f6cd9d8b147130a72d8499d5a93ef98e7e",
+    "settings": "72cb4481c53f0a5c5628d17b896c5153c933d52d7682a5b38518037eb6651cc1",
+    "sources": {
+      "audio/death/generals/wu/zhouyu.ogg": "418c06167bef4f38ba449b419bc735f6cd9d8b147130a72d8499d5a93ef98e7e"
+    }
+  },
+  "audio/effects/armor.ogg": {
+    "output": "0a651eca499e0f9af47c898f7b4a312e49804a2f310f7bcee518048319da816c",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/armor.ogg": "0a651eca499e0f9af47c898f7b4a312e49804a2f310f7bcee518048319da816c"
+    }
+  },
+  "audio/effects/chained.ogg": {
+    "output": "04f05a628dbf4cad3ecee376573e945b788cbeb989867e7766fe39cc0af373ba",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/chained.ogg": "04f05a628dbf4cad3ecee376573e945b788cbeb989867e7766fe39cc0af373ba"
+    }
+  },
+  "audio/effects/horse.ogg": {
+    "output": "4e7e3d1a3da8764687f5e1189e71534eea66a8d4296ccb9306dece2d0f8b2e27",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/horse.ogg": "4e7e3d1a3da8764687f5e1189e71534eea66a8d4296ccb9306dece2d0f8b2e27"
+    }
+  },
+  "audio/effects/injure-element.ogg": {
+    "output": "601fceed1459062259c557245521825df9647add1483d2f6e089660744c22453",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/injure-element.ogg": "601fceed1459062259c557245521825df9647add1483d2f6e089660744c22453"
+    }
+  },
+  "audio/effects/injure-hard.ogg": {
+    "output": "28da56926f50873e2596d04d5c3fa95612e89ea324e1389bc3fe9fcf1ab5efc5",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/injure-hard.ogg": "28da56926f50873e2596d04d5c3fa95612e89ea324e1389bc3fe9fcf1ab5efc5"
+    }
+  },
+  "audio/effects/injure.ogg": {
+    "output": "2729ab8243aa2611a55a908ba43420f048181f4375ea7bf9038c8f0551cc159b",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/injure.ogg": "2729ab8243aa2611a55a908ba43420f048181f4375ea7bf9038c8f0551cc159b"
+    }
+  },
+  "audio/effects/peach.ogg": {
+    "output": "f4d72ffb9f4aff18cc604ce3dff2a10c90a996778804cc607b82c4450a148736",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/peach.ogg": "f4d72ffb9f4aff18cc604ce3dff2a10c90a996778804cc607b82c4450a148736"
+    }
+  },
+  "audio/effects/pop-up.ogg": {
+    "output": "684009d5cc95a8726aa74bedbbd10643e80ec21ea2ebfc6444f1aad9a63b08a6",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/pop-up.ogg": "684009d5cc95a8726aa74bedbbd10643e80ec21ea2ebfc6444f1aad9a63b08a6"
+    }
+  },
+  "audio/effects/weapon.ogg": {
+    "output": "f1058a76f660dc74c571e67a6c0cf2abf1c4df8d9b0ff897d621c45f33930c85",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/weapon.ogg": "f1058a76f660dc74c571e67a6c0cf2abf1c4df8d9b0ff897d621c45f33930c85"
+    }
+  },
+  "audio/music/background.ogg": {
+    "output": "f7b9bdb7e1a5ef59a1a85122ff760984ffa0bb2edbb9668a94f2772f49c445f9",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/music/background.ogg": "f7b9bdb7e1a5ef59a1a85122ff760984ffa0bb2edbb9668a94f2772f49c445f9"
+    }
+  },
+  "audio/music/win.ogg": {
+    "output": "4bbdf8d159d75983d40fc220e3c12eb2c7ad5ff6826791aa16c9d29749182181",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/music/win.ogg": "4bbdf8d159d75983d40fc220e3c12eb2c7ad5ff6826791aa16c9d29749182181"
+    }
+  },
+  "audio/voice/female/ally-far-attack-near.ogg": {
+    "output": "cf884abca140dd252d3aa16cd3c77c41e50b245c38e5246695023b455349a5c1",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/ally-far-attack-near.ogg": "cf884abca140dd252d3aa16cd3c77c41e50b245c38e5246695023b455349a5c1"
+    }
+  },
+  "audio/voice/female/amass.ogg": {
+    "output": "9d0f4b9eb6d91226aed0fb06d3c10b86c7e2dabf79f258cc840c87e87f3f3fae",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/amass.ogg": "9d0f4b9eb6d91226aed0fb06d3c10b86c7e2dabf79f258cc840c87e87f3f3fae"
+    }
+  },
+  "audio/voice/female/ascertain.ogg": {
+    "output": "dd61750acd2b320eda5c8a64db07c249411c2ed68d8d783cb3447b1eaae8e8f1",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/ascertain.ogg": "dd61750acd2b320eda5c8a64db07c249411c2ed68d8d783cb3447b1eaae8e8f1"
+    }
+  },
+  "audio/voice/female/barbarians.ogg": {
+    "output": "3cce15e541695b65a35e18f40ac80253992b316f933e2beb2b3986935a448503",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/barbarians.ogg": "3cce15e541695b65a35e18f40ac80253992b316f933e2beb2b3986935a448503"
+    }
+  },
+  "audio/voice/female/blaze.ogg": {
+    "output": "2e016473cf34592487c15a514c7a51f64680f127a726a476803f65c6cf481440",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/blaze.ogg": "2e016473cf34592487c15a514c7a51f64680f127a726a476803f65c6cf481440"
+    }
+  },
+  "audio/voice/female/break.ogg": {
+    "output": "5bb310d5b6c5ae7291ec390837202350d600903f9d59fb117de421a735cf4a82",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/break.ogg": "5bb310d5b6c5ae7291ec390837202350d600903f9d59fb117de421a735cf4a82"
+    }
+  },
+  "audio/voice/female/capture.ogg": {
+    "output": "df017f450f903b7b7ada320fe085815376e2bd19b88618d6f51bca3112a2afd8",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/capture.ogg": "df017f450f903b7b7ada320fe085815376e2bd19b88618d6f51bca3112a2afd8"
+    }
+  },
+  "audio/voice/female/chains.ogg": {
+    "output": "de6e619325c64ec191625518b082ae69f3d016e839e514ec4bd0723a5c6b41ee",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/chains.ogg": "de6e619325c64ec191625518b082ae69f3d016e839e514ec4bd0723a5c6b41ee"
+    }
+  },
+  "audio/voice/female/coerce.ogg": {
+    "output": "a1fb4a8328cf7a4767d7600c68f6a4d8a0120d6681d32c231f7090e14cd159f2",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/coerce.ogg": "a1fb4a8328cf7a4767d7600c68f6a4d8a0120d6681d32c231f7090e14cd159f2"
+    }
+  },
+  "audio/voice/female/dodge.ogg": {
+    "output": "b44545c363653491bfa5c6a910f38ac8b9e93a39c16eed353532fe2e3e46851a",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/dodge.ogg": "b44545c363653491bfa5c6a910f38ac8b9e93a39c16eed353532fe2e3e46851a"
+    }
+  },
+  "audio/voice/female/draw-two.ogg": {
+    "output": "20c50bdd3ccc12659e2b07796fc470a6e45b5e2c8a23de0e5bcd5cede6f3122e",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/draw-two.ogg": "20c50bdd3ccc12659e2b07796fc470a6e45b5e2c8a23de0e5bcd5cede6f3122e"
+    }
+  },
+  "audio/voice/female/duel.ogg": {
+    "output": "e32093a97d92009e1581f39ef11c906e3b29520056feb3e1bad6b700e4ef5839",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/duel.ogg": "e32093a97d92009e1581f39ef11c906e3b29520056feb3e1bad6b700e4ef5839"
+    }
+  },
+  "audio/voice/female/fire-slash.ogg": {
+    "output": "0342810cfab4ba97eb6decc12e0e9a2eb92b9f4eb68c89f945b7ad3f023bf473",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/fire-slash.ogg": "0342810cfab4ba97eb6decc12e0e9a2eb92b9f4eb68c89f945b7ad3f023bf473"
+    }
+  },
+  "audio/voice/female/hail-of-arrows.ogg": {
+    "output": "bf07dc6b03bf7a9a905682cf97c43c50936f3590b1f99554ffd5f11345b996f5",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/hail-of-arrows.ogg": "bf07dc6b03bf7a9a905682cf97c43c50936f3590b1f99554ffd5f11345b996f5"
+    }
+  },
+  "audio/voice/female/harvest.ogg": {
+    "output": "3f8a4f868c03c29977a3c6899a632578d12e49a441a248e6feeafe4b4d6ab65f",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/harvest.ogg": "3f8a4f868c03c29977a3c6899a632578d12e49a441a248e6feeafe4b4d6ab65f"
+    }
+  },
+  "audio/voice/female/lightning.ogg": {
+    "output": "e95298029ebc0d7700948c550d9e16fec709eaf995cc1cf7ee67aed02ab12d5f",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/lightning.ogg": "e95298029ebc0d7700948c550d9e16fec709eaf995cc1cf7ee67aed02ab12d5f"
+    }
+  },
+  "audio/voice/female/peach-garden.ogg": {
+    "output": "7b97f7f2aab13f229bd28fed5aeb5d54492df23f49296001cb0830250d35a5a6",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/peach-garden.ogg": "7b97f7f2aab13f229bd28fed5aeb5d54492df23f49296001cb0830250d35a5a6"
+    }
+  },
+  "audio/voice/female/slash.ogg": {
+    "output": "2265e2dcd5f8256477ef222ebecda09e58e38069dd31369e4bdde434f6970b04",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/slash.ogg": "2265e2dcd5f8256477ef222ebecda09e58e38069dd31369e4bdde434f6970b04"
+    }
+  },
+  "audio/voice/female/sos.ogg": {
+    "output": "ef9adda26aefacf0c701e26be8fa7850c0c5429a5a12114f463d18f64ef369d3",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/sos.ogg": "ef9adda26aefacf0c701e26be8fa7850c0c5429a5a12114f463d18f64ef369d3"
+    }
+  },
+  "audio/voice/female/starvation.ogg": {
+    "output": "ad422aa8a4540c5a50953a6f323e3470474a4b2fced714d558069830861e38e8",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/starvation.ogg": "ad422aa8a4540c5a50953a6f323e3470474a4b2fced714d558069830861e38e8"
+    }
+  },
+  "audio/voice/female/steal.ogg": {
+    "output": "2c5227226f0e3df46f95a5e5c9aed7fe1d8129068ee9d894cf1dbdd4c77a8046",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/steal.ogg": "2c5227226f0e3df46f95a5e5c9aed7fe1d8129068ee9d894cf1dbdd4c77a8046"
+    }
+  },
+  "audio/voice/female/thunder-slash.ogg": {
+    "output": "5ffdad6ee4584f12a48a2526ffd601b5cb08e709e2aa2cc274beb100f965551e",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/thunder-slash.ogg": "5ffdad6ee4584f12a48a2526ffd601b5cb08e709e2aa2cc274beb100f965551e"
+    }
+  },
+  "audio/voice/female/wine.ogg": {
+    "output": "48358dab6e9310b225493deea4c789fbd7347e93b09935d95791fff5f7334348",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/wine.ogg": "48358dab6e9310b225493deea4c789fbd7347e93b09935d95791fff5f7334348"
+    }
+  },
+  "audio/voice/female/wuxie.ogg": {
+    "output": "bb104e5b9f258ec16320851338f6d07bba5f59ca1abed01247e9be5040645ed6",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/female/wuxie.ogg": "bb104e5b9f258ec16320851338f6d07bba5f59ca1abed01247e9be5040645ed6"
+    }
+  },
+  "audio/voice/male/ally-far-attack-near.ogg": {
+    "output": "426a3af0fe4e2703dfd70bf4c374c05f343c7bdb7a507960819e92e098be4da9",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/ally-far-attack-near.ogg": "426a3af0fe4e2703dfd70bf4c374c05f343c7bdb7a507960819e92e098be4da9"
+    }
+  },
+  "audio/voice/male/amass.ogg": {
+    "output": "9fc975bb308bd51b4a20b4196b802f890a983cb13ac75de9bd835d018d21453a",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/amass.ogg": "9fc975bb308bd51b4a20b4196b802f890a983cb13ac75de9bd835d018d21453a"
+    }
+  },
+  "audio/voice/male/ascertain.ogg": {
+    "output": "4cb2f834b817f9ec4898a710dcdd764e61db9ed04d50a4e773c1b03f2fa71f9e",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/ascertain.ogg": "4cb2f834b817f9ec4898a710dcdd764e61db9ed04d50a4e773c1b03f2fa71f9e"
+    }
+  },
+  "audio/voice/male/barbarians.ogg": {
+    "output": "e8a90716dbe5c8913482a6993de7ac6fc716f0b442b047facff1be4574531477",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/barbarians.ogg": "e8a90716dbe5c8913482a6993de7ac6fc716f0b442b047facff1be4574531477"
+    }
+  },
+  "audio/voice/male/blaze.ogg": {
+    "output": "fc4aef48c069fa98ab5e8d941994fbe34bf77cddedea8e31d7365f3867251fa8",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/blaze.ogg": "fc4aef48c069fa98ab5e8d941994fbe34bf77cddedea8e31d7365f3867251fa8"
+    }
+  },
+  "audio/voice/male/break.ogg": {
+    "output": "fc26a32b130ac8e3478bb239d3114f289ba79cadb0a6034247ff9b3e0227621c",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/break.ogg": "fc26a32b130ac8e3478bb239d3114f289ba79cadb0a6034247ff9b3e0227621c"
+    }
+  },
+  "audio/voice/male/capture.ogg": {
+    "output": "df2e8b2d675798bc612329e5a6d87b77ff29010e0e9f21a2274dcdd6fd9c45b1",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/capture.ogg": "df2e8b2d675798bc612329e5a6d87b77ff29010e0e9f21a2274dcdd6fd9c45b1"
+    }
+  },
+  "audio/voice/male/chains.ogg": {
+    "output": "3ab9e5e7168c90b814ebc3314b55befede9f02ca874a28fbd5592ebcc1bdacd8",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/chains.ogg": "3ab9e5e7168c90b814ebc3314b55befede9f02ca874a28fbd5592ebcc1bdacd8"
+    }
+  },
+  "audio/voice/male/coerce.ogg": {
+    "output": "67be407d8ae9700f6da88dc31752a67d4d68f8cea87538be154b92318634192c",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/coerce.ogg": "67be407d8ae9700f6da88dc31752a67d4d68f8cea87538be154b92318634192c"
+    }
+  },
+  "audio/voice/male/dodge.ogg": {
+    "output": "a433c53f86f11270b29d68159ead4c18c84a6d607f009db6ad4ef7c613f618e3",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/dodge.ogg": "a433c53f86f11270b29d68159ead4c18c84a6d607f009db6ad4ef7c613f618e3"
+    }
+  },
+  "audio/voice/male/draw-two.ogg": {
+    "output": "6a6c2d434bb233c585891b62e91255e17b7f296fa3bbb3a7224ab2ea5a5607e4",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/draw-two.ogg": "6a6c2d434bb233c585891b62e91255e17b7f296fa3bbb3a7224ab2ea5a5607e4"
+    }
+  },
+  "audio/voice/male/duel.ogg": {
+    "output": "5d2435a39429b2d014f031468330e37366dafcab58ceb544d7893e90ecf55018",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/duel.ogg": "5d2435a39429b2d014f031468330e37366dafcab58ceb544d7893e90ecf55018"
+    }
+  },
+  "audio/voice/male/fire-slash.ogg": {
+    "output": "99ecec1daab3452717df09dc2b2a7dbd16b2dced1f4a851f891a79cef23d3cd5",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/fire-slash.ogg": "99ecec1daab3452717df09dc2b2a7dbd16b2dced1f4a851f891a79cef23d3cd5"
+    }
+  },
+  "audio/voice/male/hail-of-arrows.ogg": {
+    "output": "239d4bc19d131dcac6b1df23fda99c2ae4717d299bf204e23a610fbf14f699f7",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/hail-of-arrows.ogg": "239d4bc19d131dcac6b1df23fda99c2ae4717d299bf204e23a610fbf14f699f7"
+    }
+  },
+  "audio/voice/male/harvest.ogg": {
+    "output": "7d0c9972fd8efae0e43c37a6f76792b5bb4ac33ff5123f3744e65e7028ec3316",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/harvest.ogg": "7d0c9972fd8efae0e43c37a6f76792b5bb4ac33ff5123f3744e65e7028ec3316"
+    }
+  },
+  "audio/voice/male/lightning.ogg": {
+    "output": "a74cac1bc3c868a7dea12d536dfdde12e52fa20f5674183b9745f59d3649761b",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/lightning.ogg": "a74cac1bc3c868a7dea12d536dfdde12e52fa20f5674183b9745f59d3649761b"
+    }
+  },
+  "audio/voice/male/peach-garden.ogg": {
+    "output": "762ee5c0eee5c191777af71430364bd33e4dfd056093d931d28cb70b9e4de77e",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/peach-garden.ogg": "762ee5c0eee5c191777af71430364bd33e4dfd056093d931d28cb70b9e4de77e"
+    }
+  },
+  "audio/voice/male/slash.ogg": {
+    "output": "6ee1f2a4e5e5bf71cc3d2ca984b8831b582757e57e4b0b20670e3ae526aacf65",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/slash.ogg": "6ee1f2a4e5e5bf71cc3d2ca984b8831b582757e57e4b0b20670e3ae526aacf65"
+    }
+  },
+  "audio/voice/male/sos.ogg": {
+    "output": "78e0d4ea3e24a4ea88ef5008d79893d2b07798fe31fb31cdc07581b3697cc09d",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/sos.ogg": "78e0d4ea3e24a4ea88ef5008d79893d2b07798fe31fb31cdc07581b3697cc09d"
+    }
+  },
+  "audio/voice/male/starvation.ogg": {
+    "output": "bde59b373bb415bff97fa028c9fb7d37ba6461c9b55b795a349d2036a50f7be9",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/starvation.ogg": "bde59b373bb415bff97fa028c9fb7d37ba6461c9b55b795a349d2036a50f7be9"
+    }
+  },
+  "audio/voice/male/steal.ogg": {
+    "output": "86c6bcf0c655556d19d78fa5ae014fedc365487b10570ffa09636ae43888d4cf",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/steal.ogg": "86c6bcf0c655556d19d78fa5ae014fedc365487b10570ffa09636ae43888d4cf"
+    }
+  },
+  "audio/voice/male/thunder-slash.ogg": {
+    "output": "f8913f4c27fa301b1bf825e929125659ecf8e81271f14d011b825d81b3873dbe",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/thunder-slash.ogg": "f8913f4c27fa301b1bf825e929125659ecf8e81271f14d011b825d81b3873dbe"
+    }
+  },
+  "audio/voice/male/wine.ogg": {
+    "output": "3325de4869881ae82bd011512072be07de6cd2cb6d86678d8bd2fe0431333009",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/wine.ogg": "3325de4869881ae82bd011512072be07de6cd2cb6d86678d8bd2fe0431333009"
+    }
+  },
+  "audio/voice/male/wuxie.ogg": {
+    "output": "17f7393e9efea9122458d1d9823a5b8bdf039079e802989457bf5d70ad2a98db",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/voice/male/wuxie.ogg": "17f7393e9efea9122458d1d9823a5b8bdf039079e802989457bf5d70ad2a98db"
+    }
+  },
+  "effects/sheets/chain.png": {
+    "output": "db191801e4ffb6369a5c69c1f341f54d48801472cee2f6ba1a3d5330fbc89e55",
+    "settings": "8b9ee65a9983e1296d5790fb29f23ba8625f4f9e9ac05e3e18364b589db397c8",
+    "sources": {
+      "effects/frames/chain/0.png": "f4b45e5be49c980a041ccbdac5157bc8815b006ac121cacab1264b77c8b24ded",
+      "effects/frames/chain/1.png": "59b226e581fea8c45886e1e50a7c9d14c08d6613341c1d80d6f446707698c7d4",
+      "effects/frames/chain/10.png": "10afe20664ef23e6aa81e8caccbe5bc3763267801dd3cb777cbec488b542a96e",
+      "effects/frames/chain/2.png": "636cddd2d9504928f0642f6a0f9750193017e769a8a6396599c94a23e1590b76",
+      "effects/frames/chain/3.png": "009918fa1208bb862af3b17193ec1abfe48c2f971c4818d8ae84d47898dfb9df",
+      "effects/frames/chain/4.png": "e56e06f5929c04ec857e8eb66f0c1c4b3967c7076349c5ab91d9371349a1eb37",
+      "effects/frames/chain/5.png": "dde838bfcfd5953b43c7f47163fc70d85d6954afb25dde00fa1751a943c05fd4",
+      "effects/frames/chain/6.png": "6e058edd0d8272e6c608f8bd21290d1700b0be5f5cd01f5e0a481508f9be32ee",
+      "effects/frames/chain/7.png": "595369ecb9ce770d42d12bd6263be0c7e3f2d50c9d67d4d6d45c457e035a80ee",
+      "effects/frames/chain/8.png": "a7fc51fda21a3fa0b8bdbe480836847d1c121aaaada17a2193d15f1865cbbf79",
+      "effects/frames/chain/9.png": "627e02638d471246dc51f628c2b39eba2daad180f8fd85cb643b7c75174c5a48"
+    }
+  },
+  "effects/sheets/damage.png": {
+    "output": "f79253792512feb033d8aa6f9e960ca7ee8c5e805d33dc3df4f01456a4c93fed",
+    "settings": "915fc63fabdc94a99594d02d494c502bf96311809037d5da90834aab6f7864a2",
+    "sources": {
+      "effects/frames/damage/0.png": "08de326948fc8d6ff72234d354729de66680ce5dea90099854e0cf1d9123ce93",
+      "effects/frames/damage/1.png": "76b16b3aeb7c44b8b83289ba10e1c02b077ba736649f9c76ccb6da867c69f461",
+      "effects/frames/damage/2.png": "595d5b468c644d4da370a9d4b259ec6d3006cd0773340a11c96366079ec6648c",
+      "effects/frames/damage/3.png": "93d2cba58777264bcf214744b3b145cdf335091e53a1dc099643f930ed0fa5c4",
+      "effects/frames/damage/4.png": "86cb6386f2a50c1ef102dbd5504d2fa0251a4d61c570610772ee9c77ff10f434",
+      "effects/frames/damage/5.png": "c2d2fe1ec4e6ae54358d72e92a51c66ba69353ca3c7a6054de0526fa910fec0a"
+    }
+  },
+  "effects/sheets/fire.png": {
+    "output": "7a48df291c19278b0ed90372124fe3177ca0cb6438127ff8734f4f61884075b3",
+    "settings": "92ed69f69fe2bb44ec937c3c8cea5d1cac842a7fd242db9f81e0e8e97409c369",
+    "sources": {
+      "effects/frames/fire/0.png": "d1b3317de2df70c0f5971b374c72e3485550b41feb0dafa6fe18ce8cbd5826c9",
+      "effects/frames/fire/1.png": "02073058a50110a957ccfe4b94f37fa02fff10af3f0e55530596e1bf16f81409",
+      "effects/frames/fire/10.png": "cb82a503945083c8d40b0c3e23e6a69fe3261fbe9373904be0f7758f07ccf71d",
+      "effects/frames/fire/11.png": "d9df19efb25fe839083e74cf8eede1c31a9728faaa9dfd5c361d0c72bd02c17b",
+      "effects/frames/fire/12.png": "ee892181888c53a26ec5a2fd60be164ad6bd6f2c68b43459f6b4295100532e44",
+      "effects/frames/fire/13.png": "abffb9f6c62942d4798059008aadc7ab81e2bc56ef0ebd72a40e07f3461719ac",
+      "effects/frames/fire/14.png": "3413315cb2ac69550bc9fcab3fb4200a7329e4832dac1a8356c4090c6e950df0",
+      "effects/frames/fire/15.png": "e93651f5af02a79896aec04c5644142056acbcfc714063b2d0004d388511bbd7",
+      "effects/frames/fire/16.png": "79fbf3dbb792560cd8db0073b7a023ad56228861e1b2b2a508a1b2d4cb68e8db",
+      "effects/frames/fire/17.png": "0823b9ad478c07bb19157b30609a7c5bf4a8c375f6449a049f287bd43ad83150",
+      "effects/frames/fire/18.png": "ae9417e3b0de1db455c50fa41059fc55bc84604c5b8a88ddc81b851c2c337530",
+      "effects/frames/fire/19.png": "4590ea9cf76d1f090ce09a1521a19365109abaebdc668d484b92d42930c882ce",
+      "effects/frames/fire/2.png": "5e452bb3c4deebf4be78af555e8d901b8bf9bca8579fae6109965a8e5795b0fa",
+      "effects/frames/fire/20.png": "103775234cb49f98a265b21a828138f375a398ef4c9a23f8fbf2d2769835da1a",
+      "effects/frames/fire/21.png": "efd94a3ee89d71b68afce08880fb572fdc2a605c754f72eb78a590727e890d89",
+      "effects/frames/fire/22.png": "f1cd87f274ad774e346380108a552169507b2ad9e3987864cff2875917427d5b",
+      "effects/frames/fire/23.png": "240545a3e6274f10afb0fb908c76ef8739cc2aeaa4a8bc349770347c999b13d4",
+      "effects/frames/fire/3.png": "1a9f85b3ec1eaa8b4f9c825a73f7f82a34a2687fe2fc2debfc67d8a8c874a71a",
+      "effects/frames/fire/4.png": "a645af90b3ab3aa102958cab60be8f077f7d25ea0bda72c298da2a3e2ab7c35f",
+      "effects/frames/fire/5.png": "b3c537683aa1557854d73e3ad2748f0efbdeb829c8b931de83df58e8b1aad6c6",
+      "effects/frames/fire/6.png": "4b6bc03ba6b51fec0b0f99efa4e4db97755daed4bde97dcfd9ca7250a5ae7f4a",
+      "effects/frames/fire/7.png": "79714f847f1572d45f8d874ef4b3322b196c966a4c27948edadefa3376ebd331",
+      "effects/frames/fire/8.png": "5ca0815f37d512006e455aeda7a163d1a6761d46af60240cdf47a720a0472980",
+      "effects/frames/fire/9.png": "d41b6deb9cfd7f6ccec9c9d5c992f364be1aed055f1dd56416f1122f91666485"
+    }
+  },
+  "effects/sheets/lightning.png": {
+    "output": "b241ebdca9a57ebbeaaf5df0848f0f455d8c55cac38a65b99e4dd611ce51fed0",
+    "settings": "5e93e35ac2f542c00237900cbe26474971d7ebe25e63c5dcab75aaf15c18870b",
+    "sources": {
+      "effects/frames/lightning/0.png": "af2fe3b48e616226b9bc89097b69fed103cc56bb8ed7970277898cac32e60cc3",
+      "effects/frames/lightning/1.png": "17843deededf93a1281da5a5c852e6f30254eb6685fe3b6769a6c7da75a358b7",
+      "effects/frames/lightning/10.png": "ac162ab06e4030986f9924a880ef251c12e2c8326d34a75a7e714a6af36b65d4",
+      "effects/frames/lightning/11.png": "3db5a25b32846c02bca93d37f180c5673b22f9cc787655fe16f5a93ca4d25fcf",
+      "effects/frames/lightning/12.png": "a82e784f908bfe197c34b3fcbbde0fd6b40af6b609e1c403fdaebd46b026ac09",
+      "effects/frames/lightning/13.png": "211dc7f6d2d9befb25e20589f7bf5f4acd84f40375b22fae7e1c79a8f4959443",
+      "effects/frames/lightning/14.png": "3cb7ea30bcd037de8ffd004a75057711efa02d6614e609a64155fbfa42f53e9e",
+      "effects/frames/lightning/15.png": "348ac978a55719a51de1417c9efc14b2956eb17d8afa0d88802df4d380cae43e",
+      "effects/frames/lightning/16.png": "7077e56224fdcddd2cf45fc7f9be0ea0d2cd772b5135e31fe92a85f33db8dc74",
+      "effects/frames/lightning/17.png": "ad54e3f392eea4ce25223fbcca488147312e2217b9fede3054a73fba87c756fc",
+      "effects/frames/lightning/18.png": "bc07107e8a88aa65e63477370b0f99d514990863da1c956a662769092448eaeb",
+      "effects/frames/lightning/19.png": "1be8d1b0937c6c923e59a00a4cab870a4f455f05f13b56b769b4308ac86cd404",
+      "effects/frames/lightning/2.png": "146844c98188c086c8a9fcc76acda8d0403563d7926a40c0eec9d447863c2ca2",
+      "effects/frames/lightning/20.png": "8baf6eb4e770952c0f1997ad8e0987c0a7d02c6f2f52360845ec60125bc48129",
+      "effects/frames/lightning/21.png": "6b39c29e670b0270e5e89767f0905c2a938b81d5e32b63777030ec71b317f059",
+      "effects/frames/lightning/22.png": "abe123a3fb92cce3c2ee920e6df8a772da4c31f7f462a720c36041ed4ddb4d3f",
+      "effects/frames/lightning/23.png": "abe123a3fb92cce3c2ee920e6df8a772da4c31f7f462a720c36041ed4ddb4d3f",
+      "effects/frames/lightning/3.png": "f669e851b29d9f72ad22325957373bf6ed352ba775705abeee930479a5170f17",
+      "effects/frames/lightning/4.png": "ebe110ccba1c4b8bfb62c97179ae38fd340983cee4aeb76d23d989671ff02cd6",
+      "effects/frames/lightning/5.png": "3c37f687c6821fd552e4e0ab66d0db8de13b5ecd59a7e3f751139cc2762bf8ea",
+      "effects/frames/lightning/6.png": "3ae655255dce7b3390fc41c2de3f83defaefbf0ea1bc7e6a953471e69553da10",
+      "effects/frames/lightning/7.png": "19904b5664600c33551d3cb31c8c6d7535b8acd8f69d9d9376531a274f4cad18",
+      "effects/frames/lightning/8.png": "e6be0caeab98ceab2ff583ac676535f2935fc6f9b5b69dac4e362890fd5216d5",
+      "effects/frames/lightning/9.png": "b072310496d4eff340d5d3d3745914494cfebd1ed86dbf25da64683d2ffd2d34"
+    }
+  },
+  "effects/sheets/sheets.json": {
+    "output": "021e896797fc48dfc272be3b1b5a4123c672e117a1c8c4c7ec90ba382d8717b3",
+    "settings": "589ef0107731bb564bd6c0e62b6ca46fe2dc4f20d2a1920ebcefe12966145600",
+    "sources": {
+      "effects/frames/chain/0.png": "f4b45e5be49c980a041ccbdac5157bc8815b006ac121cacab1264b77c8b24ded",
+      "effects/frames/chain/1.png": "59b226e581fea8c45886e1e50a7c9d14c08d6613341c1d80d6f446707698c7d4",
+      "effects/frames/chain/10.png": "10afe20664ef23e6aa81e8caccbe5bc3763267801dd3cb777cbec488b542a96e",
+      "effects/frames/chain/2.png": "636cddd2d9504928f0642f6a0f9750193017e769a8a6396599c94a23e1590b76",
+      "effects/frames/chain/3.png": "009918fa1208bb862af3b17193ec1abfe48c2f971c4818d8ae84d47898dfb9df",
+      "effects/frames/chain/4.png": "e56e06f5929c04ec857e8eb66f0c1c4b3967c7076349c5ab91d9371349a1eb37",
+      "effects/frames/chain/5.png": "dde838bfcfd5953b43c7f47163fc70d85d6954afb25dde00fa1751a943c05fd4",
+      "effects/frames/chain/6.png": "6e058edd0d8272e6c608f8bd21290d1700b0be5f5cd01f5e0a481508f9be32ee",
+      "effects/frames/chain/7.png": "595369ecb9ce770d42d12bd6263be0c7e3f2d50c9d67d4d6d45c457e035a80ee",
+      "effects/frames/chain/8.png": "a7fc51fda21a3fa0b8bdbe480836847d1c121aaaada17a2193d15f1865cbbf79",
+      "effects/frames/chain/9.png": "627e02638d471246dc51f628c2b39eba2daad180f8fd85cb643b7c75174c5a48",
+      "effects/frames/damage/0.png": "08de326948fc8d6ff72234d354729de66680ce5dea90099854e0cf1d9123ce93",
+      "effects/frames/damage/1.png": "76b16b3aeb7c44b8b83289ba10e1c02b077ba736649f9c76ccb6da867c69f461",
+      "effects/frames/damage/2.png": "595d5b468c644d4da370a9d4b259ec6d3006cd0773340a11c96366079ec6648c",
+      "effects/frames/damage/3.png": "93d2cba58777264bcf214744b3b145cdf335091e53a1dc099643f930ed0fa5c4",
+      "effects/frames/damage/4.png": "86cb6386f2a50c1ef102dbd5504d2fa0251a4d61c570610772ee9c77ff10f434",
+      "effects/frames/damage/5.png": "c2d2fe1ec4e6ae54358d72e92a51c66ba69353ca3c7a6054de0526fa910fec0a",
+      "effects/frames/fire-slash/0.png": "2c427cbcb2061f0706d9dc2c2f448ca208390b5a66aca4332fe3d73b7d1014b9",
+      "effects/frames/fire-slash/1.png": "a66338d44a54f992776f81212ecaba076f473785ba776a824058a9d6849db6d1",
+      "effects/frames/fire-slash/10.png": "1aa7aeeb58db385cb53832d62874401cb76bacdc23653695710bc0d0a345d05b",
+      "effects/frames/fire-slash/11.png": "2cbceb7d364cca7cd40aa705eadff6ba274f7bc9c6dba106b33674197d566f25",
+      "effects/frames/fire-slash/12.png": "8c419c7a1039bed5f2f9ed25831f7b9b7bdce55dc1e0567629a8a88f50a493e0",
+      "effects/frames/fire-slash/13.png": "d88b557834c700a2fdf7ba7e888fd607718dbd248d5fd6632267518006b822d1",
+      "effects/frames/fire-slash/14.png": "e86e9b4bab6f1a7b0895f64d97f5348d6afe5c2bdbec91c892f61389fab5529e",
+      "effects/frames/fire-slash/15.png": "0ad7a3a3bb6bc537cc0ff54ec2fd75732dc76f6650e115c7c5dc35ad694662ef",
+      "effects/frames/fire-slash/16.png": "0ad7a3a3bb6bc537cc0ff54ec2fd75732dc76f6650e115c7c5dc35ad694662ef",
+      "effects/frames/fire-slash/17.png": "a7a093b033d823f8a51a9e84c01278f3015b6ea9fb967e266b0489007e38bca2",
+      "effects/frames/fire-slash/18.png": "1f4f43d3cba0d870f0fda5d5c5229ff667fe0b91ff313da48e2313c7eb46a58b",
+      "effects/frames/fire-slash/19.png": "72065f07b39ce1f2ab4923322024a811c326b31a9c63308fb8232e59732c39cf",
+      "effects/frames/fire-slash/2.png": "53b2735bad76774275d93aca0e14d85108e2e42cd64b296669fa720859768b5c",
+      "effects/frames/fire-slash/20.png": "199eae39231aeb6def824a5d7cbb83184aea724ca84887bb7374607a59a5eec7",
+      "effects/frames/fire-slash/21.png": "27d6007cf218af1938468dbb3df48756826c7c6d5cba646bd2065a5eddbffa4f",
+      "effects/frames/fire-slash/22.png": "c3b8f5914440a1cf8556adf0b940efcc880672897f2a7abf327ce247664c5339",
+      "effects/frames/fire-slash/23.png": "73cdc548bded4bfe6a13844654da306928edace08ad635438e92b81b3b418393",
+      "effects/frames/fire-slash/3.png": "fad90c32cf87cc06f76ad3359ec256c55a6e3b284095b6bf8a9df438fceeace2",
+      "effects/frames/fire-slash/4.png": "127e1e9aecd92fec9d2ecd86c8da928462fe42331b9caf79665f0e57146db22f",
+      "effects/frames/fire-slash/5.png": "4fa0f462da2a2c590bc14550ae9efd9a5d256f5698381c6f85c0599befd9eddc",
+      "effects/frames/fire-slash/6.png": "0577879a74244bab9f02bf82a7c350637080d00885abd057327711c6b694cf30",
+      "effects/frames/fire-slash/7.png": "16d07fb966b13ebc82e62d96e4604cd4ef9a36bab037318d292ebec5684a58ad",
+      "effects/frames/fire-slash/8.png": "7b74cad8f144e31ab0f8eb3f90cd8376bed9749b68b2e7cb0248cb40876c5ba6",
+      "effects/frames/fire-slash/9.png": "93ce741678f889bb0dca835280e037aaa411a8731b8f89db9e9b3f945dafef7c",
+      "effects/frames/fire/0.png": "d1b3317de2df70c0f5971b374c72e3485550b41feb0dafa6fe18ce8cbd5826c9",
+      "effects/frames/fire/1.png": "02073058a50110a957ccfe4b94f37fa02fff10af3f0e55530596e1bf16f81409",
+      "effects/frames/fire/10.png": "cb82a503945083c8d40b0c3e23e6a69fe3261fbe9373904be0f7758f07ccf71d",
+      "effects/frames/fire/11.png": "d9df19efb25fe839083e74cf8eede1c31a9728faaa9dfd5c361d0c72bd02c17b",
+      "effects/frames/fire/12.png": "ee892181888c53a26ec5a2fd60be164ad6bd6f2c68b43459f6b4295100532e44",
+      "effects/frames/fire/13.png": "abffb9f6c62942d4798059008aadc7ab81e2bc56ef0ebd72a40e07f3461719ac",
+      "effects/frames/fire/14.png": "3413315cb2ac69550bc9fcab3fb4200a7329e4832dac1a8356c4090c6e950df0",
+      "effects/frames/fire/15.png": "e93651f5af02a79896aec04c5644142056acbcfc714063b2d0004d388511bbd7",
+      "effects/frames/fire/16.png": "79fbf3dbb792560cd8db0073b7a023ad56228861e1b2b2a508a1b2d4cb68e8db",
+      "effects/frames/fire/17.png": "0823b9ad478c07bb19157b30609a7c5bf4a8c375f6449a049f287bd43ad83150",
+      "effects/frames/fire/18.png": "ae9417e3b0de1db455c50fa41059fc55bc84604c5b8a88ddc81b851c2c337530",
+      "effects/frames/fire/19.png": "4590ea9cf76d1f090ce09a1521a19365109abaebdc668d484b92d42930c882ce",
+      "effects/frames/fire/2.png": "5e452bb3c4deebf4be78af555e8d901b8bf9bca8579fae6109965a8e5795b0fa",
+      "effects/frames/fire/20.png": "103775234cb49f98a265b21a828138f375a398ef4c9a23f8fbf2d2769835da1a",
+      "effects/frames/fire/21.png": "efd94a3ee89d71b68afce08880fb572fdc2a605c754f72eb78a590727e890d89",
+      "effects/frames/fire/22.png": "f1cd87f274ad774e346380108a552169507b2ad9e3987864cff2875917427d5b",
+      "effects/frames/fire/23.png": "240545a3e6274f10afb0fb908c76ef8739cc2aeaa4a8bc349770347c999b13d4",
+      "effects/frames/fire/3.png": "1a9f85b3ec1eaa8b4f9c825a73f7f82a34a2687fe2fc2debfc67d8a8c874a71a",
+      "effects/frames/fire/4.png": "a645af90b3ab3aa102958cab60be8f077f7d25ea0bda72c298da2a3e2ab7c35f",
+      "effects/frames/fire/5.png": "b3c537683aa1557854d73e3ad2748f0efbdeb829c8b931de83df58e8b1aad6c6",
+      "effects/frames/fire/6.png": "4b6bc03ba6b51fec0b0f99efa4e4db97755daed4bde97dcfd9ca7250a5ae7f4a",
+      "effects/frames/fire/7.png": "79714f847f1572d45f8d874ef4b3322b196c966a4c27948edadefa3376ebd331",
+      "effects/frames/fire/8.png": "5ca0815f37d512006e455aeda7a163d1a6761d46af60240cdf47a720a0472980",
+      "effects/frames/fire/9.png": "d41b6deb9cfd7f6ccec9c9d5c992f364be1aed055f1dd56416f1122f91666485",
+      "effects/frames/lightning/0.png": "af2fe3b48e616226b9bc89097b69fed103cc56bb8ed7970277898cac32e60cc3",
+      "effects/frames/lightning/1.png": "17843deededf93a1281da5a5c852e6f30254eb6685fe3b6769a6c7da75a358b7",
+      "effects/frames/lightning/10.png": "ac162ab06e4030986f9924a880ef251c12e2c8326d34a75a7e714a6af36b65d4",
+      "effects/frames/lightning/11.png": "3db5a25b32846c02bca93d37f180c5673b22f9cc787655fe16f5a93ca4d25fcf",
+      "effects/frames/lightning/12.png": "a82e784f908bfe197c34b3fcbbde0fd6b40af6b609e1c403fdaebd46b026ac09",
+      "effects/frames/lightning/13.png": "211dc7f6d2d9befb25e20589f7bf5f4acd84f40375b22fae7e1c79a8f4959443",
+      "effects/frames/lightning/14.png": "3cb7ea30bcd037de8ffd004a75057711efa02d6614e609a64155fbfa42f53e9e",
+      "effects/frames/lightning/15.png": "348ac978a55719a51de1417c9efc14b2956eb17d8afa0d88802df4d380cae43e",
+      "effects/frames/lightning/16.png": "7077e56224fdcddd2cf45fc7f9be0ea0d2cd772b5135e31fe92a85f33db8dc74",
+      "effects/frames/lightning/17.png": "ad54e3f392eea4ce25223fbcca488147312e2217b9fede3054a73fba87c756fc",
+      "effects/frames/lightning/18.png": "bc07107e8a88aa65e63477370b0f99d514990863da1c956a662769092448eaeb",
+      "effects/frames/lightning/19.png": "1be8d1b0937c6c923e59a00a4cab870a4f455f05f13b56b769b4308ac86cd404",
+      "effects/frames/lightning/2.png": "146844c98188c086c8a9fcc76acda8d0403563d7926a40c0eec9d447863c2ca2",
+      "effects/frames/lightning/20.png": "8baf6eb4e770952c0f1997ad8e0987c0a7d02c6f2f52360845ec60125bc48129",
+      "effects/frames/lightning/21.png": "6b39c29e670b0270e5e89767f0905c2a938b81d5e32b63777030ec71b317f059",
+      "effects/frames/lightning/22.png": "abe123a3fb92cce3c2ee920e6df8a772da4c31f7f462a720c36041ed4ddb4d3f",
+      "effects/frames/lightning/23.png": "abe123a3fb92cce3c2ee920e6df8a772da4c31f7f462a720c36041ed4ddb4d3f",
+      "effects/frames/lightning/3.png": "f669e851b29d9f72ad22325957373bf6ed352ba775705abeee930479a5170f17",
+      "effects/frames/lightning/4.png": "ebe110ccba1c4b8bfb62c97179ae38fd340983cee4aeb76d23d989671ff02cd6",
+      "effects/frames/lightning/5.png": "3c37f687c6821fd552e4e0ab66d0db8de13b5ecd59a7e3f751139cc2762bf8ea",
+      "effects/frames/lightning/6.png": "3ae655255dce7b3390fc41c2de3f83defaefbf0ea1bc7e6a953471e69553da10",
+      "effects/frames/lightning/7.png": "19904b5664600c33551d3cb31c8c6d7535b8acd8f69d9d9376531a274f4cad18",
+      "effects/frames/lightning/8.png": "e6be0caeab98ceab2ff583ac676535f2935fc6f9b5b69dac4e362890fd5216d5",
+      "effects/frames/lightning/9.png": "b072310496d4eff340d5d3d3745914494cfebd1ed86dbf25da64683d2ffd2d34",
+      "effects/frames/slash-red/0.png": "43c196e34892fb3bc00b8344e91ab82d9aab143810ca2cf50a841cb3b83bbbcd",
+      "effects/frames/slash-red/1.png": "43c196e34892fb3bc00b8344e91ab82d9aab143810ca2cf50a841cb3b83bbbcd",
+      "effects/frames/slash-red/10.png": "855c898fff9edced4727d87771dc666dd782b846254c04402b788546351f5c7b",
+      "effects/frames/slash-red/11.png": "f8d234e3fce846547fba0421d34907db8069e3307de7dfd3d4d7c0fef605b32a",
+      "effects/frames/slash-red/12.png": "6160fe7367bfd0f78c55e9dd3893e0cb613199d952cf4f8ad346805427dc02c4",
+      "effects/frames/slash-red/13.png": "5067c68f3d5041a36ac0447aece18f82ce38a9938af81fdcc4aecca46e2628db",
+      "effects/frames/slash-red/14.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/15.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/16.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/17.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/18.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/19.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/2.png": "43c196e34892fb3bc00b8344e91ab82d9aab143810ca2cf50a841cb3b83bbbcd",
+      "effects/frames/slash-red/20.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/21.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/22.png": "7af7b9f44cd0b81346ce1425b3c5e4c641499276a203063dd7cd616f65675723",
+      "effects/frames/slash-red/23.png": "9e3f7b751f45c1b39c86687dca0278e4e9dd8b395c7aa0702f6c7d5302edce9b",
+      "effects/frames/slash-red/3.png": "5c7cf3f15bc14cbb9e8430206deb74f3aac59fe57a5e454b95e5b82a3f95b1ed",
+      "effects/frames/slash-red/4.png": "c16b6853484fd93829b74030020f9e6604c161a637acd9443b16b6cf39370b2b",
+      "effects/frames/slash-red/5.png": "4ff7a68f0b739d124d0b3aa252ed8bd72bb1abc2fe6b8148377510c9f8b4241f",
+      "effects/frames/slash-red/6.png": "423a5293b75d006d44ea7c65242d1740d876ac0456501229d0da6d4abc631272",
+      "effects/frames/slash-red/7.png": "682fd6c5ef6bc3c9b823eb50a261e5c76d438a44bcfd899a47289280c29456ce",
+      "effects/frames/slash-red/8.png": "c2674962a312811062e08a214273e63e1447ab6770066179b3a1d9a019aaf7f2",
+      "effects/frames/slash-red/9.png": "cf8d057fb5f5bf8b01e78c0ec019bfcab278ca6c7978c853fecaed85919409be",
+      "effects/frames/thunder-slash/0.png": "81f10f8f2fa3c481e71f6c22a05fc011d5bfe3bca1013205799b5b88c6b0a2dd",
+      "effects/frames/thunder-slash/1.png": "81f10f8f2fa3c481e71f6c22a05fc011d5bfe3bca1013205799b5b88c6b0a2dd",
+      "effects/frames/thunder-slash/10.png": "2efdb0dbe03d8883ca0f477e2bc7032e349136c5656ebc9dc9075ae0e5b67ba0",
+      "effects/frames/thunder-slash/11.png": "d51f7659f8fe61d9dc99d4bf241d643d3e964410d20139a4d1db5a910e656568",
+      "effects/frames/thunder-slash/12.png": "784fe094590418c6ef408a26645438fc22f6df59f27330e9ba6780876eb1613d",
+      "effects/frames/thunder-slash/13.png": "f506aa0505aecc4c0dadc298ab74d0820b50d2c6d243903a35cfec6451991cf7",
+      "effects/frames/thunder-slash/14.png": "72467e3a2de308247f8221b4c9b0b3d6cb0b445ab43ff45ef6ee9e02a0941d2c",
+      "effects/frames/thunder-slash/15.png": "a0cf94d6263c5c6d00094de68461aeac67ca613ac58438544eeeb1079c4e32fc",
+      "effects/frames/thunder-slash/16.png": "a0cf94d6263c5c6d00094de68461aeac67ca613ac58438544eeeb1079c4e32fc",
+      "effects/frames/thunder-slash/17.png": "55b5fb386fc143b3646498d049667104a07bb1d12df92b94f314e342cd52af3c",
+      "effects/frames/thunder-slash/18.png": "f5f1a647e0cc2184d0f39f877cd4c13177fc44ab10c7692698c9c3ede5f1360d",
+      "effects/frames/thunder-slash/19.png": "0c9fc0e8bb7a542448545732969edf897856aee5624eb0b769d76c3986dbca6e",
+      "effects/frames/thunder-slash/2.png": "a66338d44a54f992776f81212ecaba076f473785ba776a824058a9d6849db6d1",
+      "effects/frames/thunder-slash/20.png": "1d95f661f527b6a78742df030864197ce5665b2ae9807f4b0f935543f979334d",
+      "effects/frames/thunder-slash/21.png": "7bf945c6279993dcb080e880126c451dac37481fb9bb9b08266ee9d3ba28d83f",
+      "effects/frames/thunder-slash/22.png": "fafdc00572fd515528ec832b07ea0d4dfe37240d24fc446a444a39315f389c9d",
+      "effects/frames/thunder-slash/23.png": "5ccea7f0b7284532cc953e6867bb13059b9c55c368482df324fe8a04398aac67",
+      "effects/frames/thunder-slash/3.png": "dc5d672adb3fc99ffd015d13e982a8a43b92c1bead55db25f6cb3319d9540e21",
+      "effects/frames/thunder-slash/4.png": "0fb3e567fd0bcfc0ad69563a3eba690e1db86f709bdac6c15b40351d692c5104",
+      "effects/frames/thunder-slash/5.png": "0ef3d308fba7d224eccf1407575ebbf4ff792c4558d0172bc3a64eaa66409f1a",
+      "effects/frames/thunder-slash/6.png": "4955a6337b796afbd39aad687bde45353d766dc4f8c0fe20a6f2cef364ee5b0a",
+      "effects/frames/thunder-slash/7.png": "7a11ac7ebb44a23030dbe1b05aa4aed8213e0f9806a9c94821fc5d9e11e94658",
+      "effects/frames/thunder-slash/8.png": "e8b63404f913b0e628b7cb6f4c1c7a7e5d9870af00b7247da8b0c6353775a401",
+      "effects/frames/thunder-slash/9.png": "e184ec0a4993300d7beef4c7478a4b7355bdfd1e52da716a7a24eb28103c136f"
+    }
+  },
+  "effects/sheets/slash-fire.png": {
+    "output": "973aae83547b12ccbfb40d9c9e49b8ca30e425d743a46f4c638c833c1700c8a8",
+    "settings": "c4fd8a712d5a0057bb045d3fc7d10e2bebf47acb8116670fab14e890f7ad9ac1",
+    "sources": {
+      "effects/frames/fire-slash/0.png": "2c427cbcb2061f0706d9dc2c2f448ca208390b5a66aca4332fe3d73b7d1014b9",
+      "effects/frames/fire-slash/1.png": "a66338d44a54f992776f81212ecaba076f473785ba776a824058a9d6849db6d1",
+      "effects/frames/fire-slash/10.png": "1aa7aeeb58db385cb53832d62874401cb76bacdc23653695710bc0d0a345d05b",
+      "effects/frames/fire-slash/11.png": "2cbceb7d364cca7cd40aa705eadff6ba274f7bc9c6dba106b33674197d566f25",
+      "effects/frames/fire-slash/12.png": "8c419c7a1039bed5f2f9ed25831f7b9b7bdce55dc1e0567629a8a88f50a493e0",
+      "effects/frames/fire-slash/13.png": "d88b557834c700a2fdf7ba7e888fd607718dbd248d5fd6632267518006b822d1",
+      "effects/frames/fire-slash/14.png": "e86e9b4bab6f1a7b0895f64d97f5348d6afe5c2bdbec91c892f61389fab5529e",
+      "effects/frames/fire-slash/15.png": "0ad7a3a3bb6bc537cc0ff54ec2fd75732dc76f6650e115c7c5dc35ad694662ef",
+      "effects/frames/fire-slash/16.png": "0ad7a3a3bb6bc537cc0ff54ec2fd75732dc76f6650e115c7c5dc35ad694662ef",
+      "effects/frames/fire-slash/17.png": "a7a093b033d823f8a51a9e84c01278f3015b6ea9fb967e266b0489007e38bca2",
+      "effects/frames/fire-slash/18.png": "1f4f43d3cba0d870f0fda5d5c5229ff667fe0b91ff313da48e2313c7eb46a58b",
+      "effects/frames/fire-slash/19.png": "72065f07b39ce1f2ab4923322024a811c326b31a9c63308fb8232e59732c39cf",
+      "effects/frames/fire-slash/2.png": "53b2735bad76774275d93aca0e14d85108e2e42cd64b296669fa720859768b5c",
+      "effects/frames/fire-slash/20.png": "199eae39231aeb6def824a5d7cbb83184aea724ca84887bb7374607a59a5eec7",
+      "effects/frames/fire-slash/21.png": "27d6007cf218af1938468dbb3df48756826c7c6d5cba646bd2065a5eddbffa4f",
+      "effects/frames/fire-slash/22.png": "c3b8f5914440a1cf8556adf0b940efcc880672897f2a7abf327ce247664c5339",
+      "effects/frames/fire-slash/23.png": "73cdc548bded4bfe6a13844654da306928edace08ad635438e92b81b3b418393",
+      "effects/frames/fire-slash/3.png": "fad90c32cf87cc06f76ad3359ec256c55a6e3b284095b6bf8a9df438fceeace2",
+      "effects/frames/fire-slash/4.png": "127e1e9aecd92fec9d2ecd86c8da928462fe42331b9caf79665f0e57146db22f",
+      "effects/frames/fire-slash/5.png": "4fa0f462da2a2c590bc14550ae9efd9a5d256f5698381c6f85c0599befd9eddc",
+      "effects/frames/fire-slash/6.png": "0577879a74244bab9f02bf82a7c350637080d00885abd057327711c6b694cf30",
+      "effects/frames/fire-slash/7.png": "16d07fb966b13ebc82e62d96e4604cd4ef9a36bab037318d292ebec5684a58ad",
+      "effects/frames/fire-slash/8.png": "7b74cad8f144e31ab0f8eb3f90cd8376bed9749b68b2e7cb0248cb40876c5ba6",
+      "effects/frames/fire-slash/9.png": "93ce741678f889bb0dca835280e037aaa411a8731b8f89db9e9b3f945dafef7c"
+    }
+  },
+  "effects/sheets/slash-lightning.png": {
+    "output": "02eb99267a33b00a3d731d01e7fa6e36624c789c70889668ec459c28d797db1a",
+    "settings": "7dfbddc59ff14daec92e1a3cfa67120b0fcdb94d1769b113d2ad03c9736f97ed",
+    "sources": {
+      "effects/frames/thunder-slash/0.png": "81f10f8f2fa3c481e71f6c22a05fc011d5bfe3bca1013205799b5b88c6b0a2dd",
+      "effects/frames/thunder-slash/1.png": "81f10f8f2fa3c481e71f6c22a05fc011d5bfe3bca1013205799b5b88c6b0a2dd",
+      "effects/frames/thunder-slash/10.png": "2efdb0dbe03d8883ca0f477e2bc7032e349136c5656ebc9dc9075ae0e5b67ba0",
+      "effects/frames/thunder-slash/11.png": "d51f7659f8fe61d9dc99d4bf241d643d3e964410d20139a4d1db5a910e656568",
+      "effects/frames/thunder-slash/12.png": "784fe094590418c6ef408a26645438fc22f6df59f27330e9ba6780876eb1613d",
+      "effects/frames/thunder-slash/13.png": "f506aa0505aecc4c0dadc298ab74d0820b50d2c6d243903a35cfec6451991cf7",
+      "effects/frames/thunder-slash/14.png": "72467e3a2de308247f8221b4c9b0b3d6cb0b445ab43ff45ef6ee9e02a0941d2c",
+      "effects/frames/thunder-slash/15.png": "a0cf94d6263c5c6d00094de68461aeac67ca613ac58438544eeeb1079c4e32fc",
+      "effects/frames/thunder-slash/16.png": "a0cf94d6263c5c6d00094de68461aeac67ca613ac58438544eeeb1079c4e32fc",
+      "effects/frames/thunder-slash/17.png": "55b5fb386fc143b3646498d049667104a07bb1d12df92b94f314e342cd52af3c",
+      "effects/frames/thunder-slash/18.png": "f5f1a647e0cc2184d0f39f877cd4c13177fc44ab10c7692698c9c3ede5f1360d",
+      "effects/frames/thunder-slash/19.png": "0c9fc0e8bb7a542448545732969edf897856aee5624eb0b769d76c3986dbca6e",
+      "effects/frames/thunder-slash/2.png": "a66338d44a54f992776f81212ecaba076f473785ba776a824058a9d6849db6d1",
+      "effects/frames/thunder-slash/20.png": "1d95f661f527b6a78742df030864197ce5665b2ae9807f4b0f935543f979334d",
+      "effects/frames/thunder-slash/21.png": "7bf945c6279993dcb080e880126c451dac37481fb9bb9b08266ee9d3ba28d83f",
+      "effects/frames/thunder-slash/22.png": "fafdc00572fd515528ec832b07ea0d4dfe37240d24fc446a444a39315f389c9d",
+      "effects/frames/thunder-slash/23.png": "5ccea7f0b7284532cc953e6867bb13059b9c55c368482df324fe8a04398aac67",
+      "effects/frames/thunder-slash/3.png": "dc5d672adb3fc99ffd015d13e982a8a43b92c1bead55db25f6cb3319d9540e21",
+      "effects/frames/thunder-slash/4.png": "0fb3e567fd0bcfc0ad69563a3eba690e1db86f709bdac6c15b40351d692c5104",
+      "effects/frames/thunder-slash/5.png": "0ef3d308fba7d224eccf1407575ebbf4ff792c4558d0172bc3a64eaa66409f1a",
+      "effects/frames/thunder-slash/6.png": "4955a6337b796afbd39aad687bde45353d766dc4f8c0fe20a6f2cef364ee5b0a",
+      "effects/frames/thunder-slash/7.png": "7a11ac7ebb44a23030dbe1b05aa4aed8213e0f9806a9c94821fc5d9e11e94658",
+      "effects/frames/thunder-slash/8.png": "e8b63404f913b0e628b7cb6f4c1c7a7e5d9870af00b7247da8b0c6353775a401",
+      "effects/frames/thunder-slash/9.png": "e184ec0a4993300d7beef4c7478a4b7355bdfd1e52da716a7a24eb28103c136f"
+    }
+  },
+  "effects/sheets/slash.png": {
+    "output": "aaf08c62abc33f2c2e3b3870856bd802607de104c62e41f12fe37f372d7e6712",
+    "settings": "9aeb16b6043148167bf8420458477cd2bb7b74f7612a6e6a356f32fdbf37babc",
+    "sources": {
+      "effects/frames/slash-red/0.png": "43c196e34892fb3bc00b8344e91ab82d9aab143810ca2cf50a841cb3b83bbbcd",
+      "effects/frames/slash-red/1.png": "43c196e34892fb3bc00b8344e91ab82d9aab143810ca2cf50a841cb3b83bbbcd",
+      "effects/frames/slash-red/10.png": "855c898fff9edced4727d87771dc666dd782b846254c04402b788546351f5c7b",
+      "effects/frames/slash-red/11.png": "f8d234e3fce846547fba0421d34907db8069e3307de7dfd3d4d7c0fef605b32a",
+      "effects/frames/slash-red/12.png": "6160fe7367bfd0f78c55e9dd3893e0cb613199d952cf4f8ad346805427dc02c4",
+      "effects/frames/slash-red/13.png": "5067c68f3d5041a36ac0447aece18f82ce38a9938af81fdcc4aecca46e2628db",
+      "effects/frames/slash-red/14.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/15.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/16.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/17.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/18.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/19.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/2.png": "43c196e34892fb3bc00b8344e91ab82d9aab143810ca2cf50a841cb3b83bbbcd",
+      "effects/frames/slash-red/20.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/21.png": "5b5e1800b425dee11966cea69ebd6e0ca27d64a7b83a3f32c1beb1390aaef7c6",
+      "effects/frames/slash-red/22.png": "7af7b9f44cd0b81346ce1425b3c5e4c641499276a203063dd7cd616f65675723",
+      "effects/frames/slash-red/23.png": "9e3f7b751f45c1b39c86687dca0278e4e9dd8b395c7aa0702f6c7d5302edce9b",
+      "effects/frames/slash-red/3.png": "5c7cf3f15bc14cbb9e8430206deb74f3aac59fe57a5e454b95e5b82a3f95b1ed",
+      "effects/frames/slash-red/4.png": "c16b6853484fd93829b74030020f9e6604c161a637acd9443b16b6cf39370b2b",
+      "effects/frames/slash-red/5.png": "4ff7a68f0b739d124d0b3aa252ed8bd72bb1abc2fe6b8148377510c9f8b4241f",
+      "effects/frames/slash-red/6.png": "423a5293b75d006d44ea7c65242d1740d876ac0456501229d0da6d4abc631272",
+      "effects/frames/slash-red/7.png": "682fd6c5ef6bc3c9b823eb50a261e5c76d438a44bcfd899a47289280c29456ce",
+      "effects/frames/slash-red/8.png": "c2674962a312811062e08a214273e63e1447ab6770066179b3a1d9a019aaf7f2",
+      "effects/frames/slash-red/9.png": "cf8d057fb5f5bf8b01e78c0ec019bfcab278ca6c7978c853fecaed85919409be"
+    }
+  },
+  "effects/stills/damage.png": {
+    "output": "86cb6386f2a50c1ef102dbd5504d2fa0251a4d61c570610772ee9c77ff10f434",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "effects/stills/damage.png": "86cb6386f2a50c1ef102dbd5504d2fa0251a4d61c570610772ee9c77ff10f434"
+    }
+  },
+  "effects/stills/fire.png": {
+    "output": "8ceef29bc19d619afc8f071b614744c3adfe95017f1ac351459e021f1150fc86",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "effects/stills/fire.png": "8ceef29bc19d619afc8f071b614744c3adfe95017f1ac351459e021f1150fc86"
+    }
+  },
+  "effects/stills/lightning.png": {
+    "output": "b3fd34240d83b44b42f7dcaf599e7d37fe6eed35b0c1f5ace02c1d9f72af8236",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "effects/stills/lightning.png": "b3fd34240d83b44b42f7dcaf599e7d37fe6eed35b0c1f5ace02c1d9f72af8236"
+    }
+  },
+  "effects/stills/slash-fire.png": {
+    "output": "fad90c32cf87cc06f76ad3359ec256c55a6e3b284095b6bf8a9df438fceeace2",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "effects/stills/slash-fire.png": "fad90c32cf87cc06f76ad3359ec256c55a6e3b284095b6bf8a9df438fceeace2"
+    }
+  },
+  "effects/stills/slash-lightning.png": {
+    "output": "55b5fb386fc143b3646498d049667104a07bb1d12df92b94f314e342cd52af3c",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "effects/stills/slash-lightning.png": "55b5fb386fc143b3646498d049667104a07bb1d12df92b94f314e342cd52af3c"
+    }
+  },
+  "effects/stills/slash.png": {
+    "output": "d3dbdb6351df610f85fab4bc7f4e5bf8ccac16c710e61676c06c1b0148f4060f",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "effects/stills/slash.png": "d3dbdb6351df610f85fab4bc7f4e5bf8ccac16c710e61676c06c1b0148f4060f"
+    }
+  },
+  "generals/cards/qun/cai-wenji.jpg": {
+    "output": "85a11ae30cee866f11bcfb7d9972071f855c6f82cc220ab856cb14483ae71b8b",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/cai-wenji.jpg": "85a11ae30cee866f11bcfb7d9972071f855c6f82cc220ab856cb14483ae71b8b"
+    }
+  },
+  "generals/cards/qun/diao-chan.jpg": {
+    "output": "f88b4eca4a5fed7d268b6feba20159efb59dcbe49e1aeeba1e5e358589118008",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/diao-chan.jpg": "f88b4eca4a5fed7d268b6feba20159efb59dcbe49e1aeeba1e5e358589118008"
+    }
+  },
+  "generals/cards/qun/dong-zhuo.jpg": {
+    "output": "989da8d195f0e400f5ba330a3113d0ec18bbc9765caf94c39e622b2b8d7348ce",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/dong-zhuo.jpg": "989da8d195f0e400f5ba330a3113d0ec18bbc9765caf94c39e622b2b8d7348ce"
+    }
+  },
+  "generals/cards/qun/hua-tuo.jpg": {
+    "output": "e55f4c6d90a5d0e3c59fa6a517584ef66e1b859da4861ca2f37285c339a29740",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/hua-tuo.jpg": "e55f4c6d90a5d0e3c59fa6a517584ef66e1b859da4861ca2f37285c339a29740"
+    }
+  },
+  "generals/cards/qun/ji-ling.jpg": {
+    "output": "7575a38d1ff9796b64ef7dbc79e00816945348f11166444679ecfec61a0dfd12",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/ji-ling.jpg": "7575a38d1ff9796b64ef7dbc79e00816945348f11166444679ecfec61a0dfd12"
+    }
+  },
+  "generals/cards/qun/jia-xu.jpg": {
+    "output": "6995ec0c70e549134bfbbb7cd2b95e7c3a00d98bf33c045b44d3e4dc2e432e85",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/jia-xu.jpg": "6995ec0c70e549134bfbbb7cd2b95e7c3a00d98bf33c045b44d3e4dc2e432e85"
+    }
+  },
+  "generals/cards/qun/kong-rong.jpg": {
+    "output": "ec1124d1c0e42016c787bfe291cad3a79cfba11b8972e1c7507045a6cd2c0caa",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/kong-rong.jpg": "ec1124d1c0e42016c787bfe291cad3a79cfba11b8972e1c7507045a6cd2c0caa"
+    }
+  },
+  "generals/cards/qun/lu-bu.jpg": {
+    "output": "1d10db71345a3657b6c11b65067151eceda1fc08ec8fae49c6a18b5961ca6a5e",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/lu-bu.jpg": "1d10db71345a3657b6c11b65067151eceda1fc08ec8fae49c6a18b5961ca6a5e"
+    }
+  },
+  "generals/cards/qun/ma-teng.jpg": {
+    "output": "b865e35dc29d98d62eb1a2fe4fa8213f0296a88b5b051f383671cf0db4426c48",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/ma-teng.jpg": "b865e35dc29d98d62eb1a2fe4fa8213f0296a88b5b051f383671cf0db4426c48"
+    }
+  },
+  "generals/cards/qun/pan-feng.jpg": {
+    "output": "02e0bca5cc738102544fe3142d08ee895efb3681a43c9ff91fe90302f12fe157",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/pan-feng.jpg": "02e0bca5cc738102544fe3142d08ee895efb3681a43c9ff91fe90302f12fe157"
+    }
+  },
+  "generals/cards/qun/pang-de.jpg": {
+    "output": "66ffd9d193588f0b5ad0514f142564aff926f400000088394529409c07a7c4cc",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/pang-de.jpg": "66ffd9d193588f0b5ad0514f142564aff926f400000088394529409c07a7c4cc"
+    }
+  },
+  "generals/cards/qun/tian-feng.jpg": {
+    "output": "4fc40726507a4d293dc141307fca8ea7d2d686eb392e58b07c561ff085ab3528",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/tian-feng.jpg": "4fc40726507a4d293dc141307fca8ea7d2d686eb392e58b07c561ff085ab3528"
+    }
+  },
+  "generals/cards/qun/yan-liang-and-wen-chou.jpg": {
+    "output": "4cb845e36fc23de14eb8d3c64420c8cecccb663480bf19e22fd033e6eeed30a0",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/yan-liang-and-wen-chou.jpg": "4cb845e36fc23de14eb8d3c64420c8cecccb663480bf19e22fd033e6eeed30a0"
+    }
+  },
+  "generals/cards/qun/yu-ji.jpg": {
+    "output": "ce88f5ef3637271e82431b1d9fd11fd8bbf12ed41bb5df95d6cf1ddd6b993b09",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/yu-ji.jpg": "ce88f5ef3637271e82431b1d9fd11fd8bbf12ed41bb5df95d6cf1ddd6b993b09"
+    }
+  },
+  "generals/cards/qun/yuan-shao.jpg": {
+    "output": "7e8a69fd733afa421d54d970802d7469585441364b10cb824703d1f1c90d14a1",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/yuan-shao.jpg": "7e8a69fd733afa421d54d970802d7469585441364b10cb824703d1f1c90d14a1"
+    }
+  },
+  "generals/cards/qun/zhang-jiao.jpg": {
+    "output": "2417518cb6d7b562e679e352f63353ea30bd6703614f4ee6c69cac3a12e04488",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/zhang-jiao.jpg": "2417518cb6d7b562e679e352f63353ea30bd6703614f4ee6c69cac3a12e04488"
+    }
+  },
+  "generals/cards/qun/zou-shi.jpg": {
+    "output": "25f17a168b8c2f262fefadc654b7d83d6df6e62530cf2a070e902efe63f91f4c",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/zou-shi.jpg": "25f17a168b8c2f262fefadc654b7d83d6df6e62530cf2a070e902efe63f91f4c"
+    }
+  },
+  "generals/cards/qun/zuo-ci.jpg": {
+    "output": "190ed9136eea29cd5d81ff662f5e2ef4ad3ffedc51ecea4c62e96e14e5646326",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/qun/zuo-ci.jpg": "190ed9136eea29cd5d81ff662f5e2ef4ad3ffedc51ecea4c62e96e14e5646326"
+    }
+  },
+  "generals/cards/shu/fire-zhuge-liang.jpg": {
+    "output": "0f2c9ac15ac049b7bcc011958792e57e46ccb862bfcad0120c88d3e10828274f",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/fire-zhuge-liang.jpg": "0f2c9ac15ac049b7bcc011958792e57e46ccb862bfcad0120c88d3e10828274f"
+    }
+  },
+  "generals/cards/shu/gan-furen.jpg": {
+    "output": "46ebf052178de08a0509310f9e94a90953ff5d6c763da655126e6a0b8edb3d26",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/gan-furen.jpg": "46ebf052178de08a0509310f9e94a90953ff5d6c763da655126e6a0b8edb3d26"
+    }
+  },
+  "generals/cards/shu/guan-yu.jpg": {
+    "output": "16247072e78d9d753978d7a6067b971e9248e7952e5e95fa8c0b9597a6a8addc",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/guan-yu.jpg": "16247072e78d9d753978d7a6067b971e9248e7952e5e95fa8c0b9597a6a8addc"
+    }
+  },
+  "generals/cards/shu/huang-yueying.jpg": {
+    "output": "6990b3ad2b2044f2c20992fc62e8790a20e38e6a008ef885b7637cf639fb3834",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/huang-yueying.jpg": "6990b3ad2b2044f2c20992fc62e8790a20e38e6a008ef885b7637cf639fb3834"
+    }
+  },
+  "generals/cards/shu/huang-zhong.jpg": {
+    "output": "8a53adc02c60b1bb5308ded61d69f047f72a83659cde61267dcac88763cccc31",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/huang-zhong.jpg": "8a53adc02c60b1bb5308ded61d69f047f72a83659cde61267dcac88763cccc31"
+    }
+  },
+  "generals/cards/shu/jiang-wei.jpg": {
+    "output": "60c996660e50e3851c4a328c165536e605af4e4bb4afc2a033815c7e3659d7aa",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/jiang-wei.jpg": "60c996660e50e3851c4a328c165536e605af4e4bb4afc2a033815c7e3659d7aa"
+    }
+  },
+  "generals/cards/shu/liu-bei.jpg": {
+    "output": "ce5e30c19464930b951084531f7f3e703290f9bda43b8cb54cc3f84547a74aa5",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/liu-bei.jpg": "ce5e30c19464930b951084531f7f3e703290f9bda43b8cb54cc3f84547a74aa5"
+    }
+  },
+  "generals/cards/shu/liu-shan.jpg": {
+    "output": "9c3694d32bd2ed33656b28e4dc4cb3aa2915ff0b6577b549b3beafca48789649",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/liu-shan.jpg": "9c3694d32bd2ed33656b28e4dc4cb3aa2915ff0b6577b549b3beafca48789649"
+    }
+  },
+  "generals/cards/shu/ma-chao.jpg": {
+    "output": "a797dc492fe5ad10bfc5bc272c1335b73d30670a100214a04dda3fbf65f391e9",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/ma-chao.jpg": "a797dc492fe5ad10bfc5bc272c1335b73d30670a100214a04dda3fbf65f391e9"
+    }
+  },
+  "generals/cards/shu/meng-huo.jpg": {
+    "output": "ad4fddec8e435622d734255ff90c078ecb02b3e66ac471679bc8d4916abfa652",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/meng-huo.jpg": "ad4fddec8e435622d734255ff90c078ecb02b3e66ac471679bc8d4916abfa652"
+    }
+  },
+  "generals/cards/shu/pang-tong.jpg": {
+    "output": "4bb95fc70352066d42ff2e550cde23b1ded2589a2e2c78e85b91437ad1e38f7f",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/pang-tong.jpg": "4bb95fc70352066d42ff2e550cde23b1ded2589a2e2c78e85b91437ad1e38f7f"
+    }
+  },
+  "generals/cards/shu/wei-yan.jpg": {
+    "output": "9a1046c7946db2fa8d8a30500cb9828a771e0b6351a5c2652b2d5a296ad732c2",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/wei-yan.jpg": "9a1046c7946db2fa8d8a30500cb9828a771e0b6351a5c2652b2d5a296ad732c2"
+    }
+  },
+  "generals/cards/shu/zhang-fei.jpg": {
+    "output": "e71f8bdd47dc9cccbadcefe978adc2715d516998cd947901ef2cf7fc33141594",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/zhang-fei.jpg": "e71f8bdd47dc9cccbadcefe978adc2715d516998cd947901ef2cf7fc33141594"
+    }
+  },
+  "generals/cards/shu/zhao-yun.jpg": {
+    "output": "72a4d7b53e492157739348c41fa501f8ca8ad8ebd785afffe5aa2ee86066e0c1",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/zhao-yun.jpg": "72a4d7b53e492157739348c41fa501f8ca8ad8ebd785afffe5aa2ee86066e0c1"
+    }
+  },
+  "generals/cards/shu/zhu-rong.jpg": {
+    "output": "628332d1370a93d5661e91ab31577786711f08c2f649fd0b7cd988c327d5994a",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/zhu-rong.jpg": "628332d1370a93d5661e91ab31577786711f08c2f649fd0b7cd988c327d5994a"
+    }
+  },
+  "generals/cards/shu/zhuge-liang.jpg": {
+    "output": "072fbac24fd615230e3394a59dd585af2aef92c2705b9a750043a320078fa92c",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/shu/zhuge-liang.jpg": "072fbac24fd615230e3394a59dd585af2aef92c2705b9a750043a320078fa92c"
+    }
+  },
+  "generals/cards/wei/cao-cao.jpg": {
+    "output": "271bf9be72fb208be47a4b26b49de32fc5166ca1d6f950eb100872580b6c72fc",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/cao-cao.jpg": "271bf9be72fb208be47a4b26b49de32fc5166ca1d6f950eb100872580b6c72fc"
+    }
+  },
+  "generals/cards/wei/cao-pi.jpg": {
+    "output": "238540039ac9f3014ace089525345f0e6ab99d3004538e66cb1c5fed8ac2006c",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/cao-pi.jpg": "238540039ac9f3014ace089525345f0e6ab99d3004538e66cb1c5fed8ac2006c"
+    }
+  },
+  "generals/cards/wei/cao-ren.jpg": {
+    "output": "e1d63aafe92c0444416bf6ed04329a2ecbc2d871a65c2d966dd654cdd69bfeec",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/cao-ren.jpg": "e1d63aafe92c0444416bf6ed04329a2ecbc2d871a65c2d966dd654cdd69bfeec"
+    }
+  },
+  "generals/cards/wei/deng-ai.jpg": {
+    "output": "c9a2f5a59d2f05632137cbfad15c6329006667c576b61e31ca868fde010fefdc",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/deng-ai.jpg": "c9a2f5a59d2f05632137cbfad15c6329006667c576b61e31ca868fde010fefdc"
+    }
+  },
+  "generals/cards/wei/dian-wei.jpg": {
+    "output": "dd6fde5594d6153fa1d0d308afaf483c0e582d5f351ed39e3f2f3a73ed2b89cd",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/dian-wei.jpg": "dd6fde5594d6153fa1d0d308afaf483c0e582d5f351ed39e3f2f3a73ed2b89cd"
+    }
+  },
+  "generals/cards/wei/guo-jia.jpg": {
+    "output": "bfaedb34b11628f5fb548e793259615efb6dc501479faf8dd98f0db49a105327",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/guo-jia.jpg": "bfaedb34b11628f5fb548e793259615efb6dc501479faf8dd98f0db49a105327"
+    }
+  },
+  "generals/cards/wei/sima-yi.jpg": {
+    "output": "bb6157af13bfa1f1ad3754c8dafc037788af6537cf52596145fdb55b3764530e",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/sima-yi.jpg": "bb6157af13bfa1f1ad3754c8dafc037788af6537cf52596145fdb55b3764530e"
+    }
+  },
+  "generals/cards/wei/xiahou-dun.jpg": {
+    "output": "51e3aa73ccc6ec639c5f04d8035d9e3c7b9aed836092cbdc7684b8ba5d62e1bc",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/xiahou-dun.jpg": "51e3aa73ccc6ec639c5f04d8035d9e3c7b9aed836092cbdc7684b8ba5d62e1bc"
+    }
+  },
+  "generals/cards/wei/xiahou-yuan.jpg": {
+    "output": "c2f8f699312912252918e11c1795c1ab15b227f67ec2c3a0657163b169472755",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/xiahou-yuan.jpg": "c2f8f699312912252918e11c1795c1ab15b227f67ec2c3a0657163b169472755"
+    }
+  },
+  "generals/cards/wei/xu-chu.jpg": {
+    "output": "eafc5c7da0898c2b37acc41f183d52042141920ed13be9090bdd84f97faa141b",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/xu-chu.jpg": "eafc5c7da0898c2b37acc41f183d52042141920ed13be9090bdd84f97faa141b"
+    }
+  },
+  "generals/cards/wei/xu-huang.jpg": {
+    "output": "169cc0d781c3aa76a9bd74d379b6f48ea596471f41952b7c0f821d0d059ee961",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/xu-huang.jpg": "169cc0d781c3aa76a9bd74d379b6f48ea596471f41952b7c0f821d0d059ee961"
+    }
+  },
+  "generals/cards/wei/xun-yu.jpg": {
+    "output": "f6b9b3872937e9e441d0883b91ff49cdaf9deec8c97c201ecf9326792b7b4617",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/xun-yu.jpg": "f6b9b3872937e9e441d0883b91ff49cdaf9deec8c97c201ecf9326792b7b4617"
+    }
+  },
+  "generals/cards/wei/yue-jin.jpg": {
+    "output": "37ad763b3f9bdb77477ef9b3a687f3f48d70d0e5d0974b4f07e5a649033e3f46",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/yue-jin.jpg": "37ad763b3f9bdb77477ef9b3a687f3f48d70d0e5d0974b4f07e5a649033e3f46"
+    }
+  },
+  "generals/cards/wei/zhang-he.jpg": {
+    "output": "25652a9e493b668947c41371f15c19bbcf9420973375bb1d7c6ec6b724d21125",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/zhang-he.jpg": "25652a9e493b668947c41371f15c19bbcf9420973375bb1d7c6ec6b724d21125"
+    }
+  },
+  "generals/cards/wei/zhang-liao.jpg": {
+    "output": "67148a639fbcfac6cf3e006af1529e6045d4b93239117f917d0a56d1749bd81b",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/zhang-liao.jpg": "67148a639fbcfac6cf3e006af1529e6045d4b93239117f917d0a56d1749bd81b"
+    }
+  },
+  "generals/cards/wei/zhen-ji.jpg": {
+    "output": "a1f3e7867fe29f54ed5c3fac5d3ff98b63be9fd55dc3ef517a952f2a8b32d129",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wei/zhen-ji.jpg": "a1f3e7867fe29f54ed5c3fac5d3ff98b63be9fd55dc3ef517a952f2a8b32d129"
+    }
+  },
+  "generals/cards/wu/da-qiao.jpg": {
+    "output": "09d792331944b5dd8c0e58e329f2c820fd864db3d2bedbe202b056f4eca41ece",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/da-qiao.jpg": "09d792331944b5dd8c0e58e329f2c820fd864db3d2bedbe202b056f4eca41ece"
+    }
+  },
+  "generals/cards/wu/ding-feng.jpg": {
+    "output": "6679cbf7903fa582fd4fbfb678f9dddcbfd6e3ae93b497d63549ff3e6f7594e4",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/ding-feng.jpg": "6679cbf7903fa582fd4fbfb678f9dddcbfd6e3ae93b497d63549ff3e6f7594e4"
+    }
+  },
+  "generals/cards/wu/gan-ning.jpg": {
+    "output": "332c56c9894b71b9513191fda0c622d561a15ceb7c0ebf23f6dc30a0d4583713",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/gan-ning.jpg": "332c56c9894b71b9513191fda0c622d561a15ceb7c0ebf23f6dc30a0d4583713"
+    }
+  },
+  "generals/cards/wu/huang-gai.jpg": {
+    "output": "0be1bf3754ca9c89a3625d5c4114b2cf41eea7701190c77ed0bc69091261a880",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/huang-gai.jpg": "0be1bf3754ca9c89a3625d5c4114b2cf41eea7701190c77ed0bc69091261a880"
+    }
+  },
+  "generals/cards/wu/lu-meng.jpg": {
+    "output": "216a64f737a8e12f751b6b59efb3ec7c396ae28dda3814786e60d3c6f71b5eac",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/lu-meng.jpg": "216a64f737a8e12f751b6b59efb3ec7c396ae28dda3814786e60d3c6f71b5eac"
+    }
+  },
+  "generals/cards/wu/lu-su.jpg": {
+    "output": "869818dbdba55e234a3290bb2cbb3e5f1bd588816e1b04473ec4b1b7c386db96",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/lu-su.jpg": "869818dbdba55e234a3290bb2cbb3e5f1bd588816e1b04473ec4b1b7c386db96"
+    }
+  },
+  "generals/cards/wu/lu-xun.jpg": {
+    "output": "9804cc211fe812a5c7d2be6d48c9f7d6cd47454bbf137baf2ecd4e0a40e00566",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/lu-xun.jpg": "9804cc211fe812a5c7d2be6d48c9f7d6cd47454bbf137baf2ecd4e0a40e00566"
+    }
+  },
+  "generals/cards/wu/sun-ce.jpg": {
+    "output": "d7b0dc271b3e85f8d374172f82ae0b3905b557e94d2af2d673492bdf0424ddb5",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/sun-ce.jpg": "d7b0dc271b3e85f8d374172f82ae0b3905b557e94d2af2d673492bdf0424ddb5"
+    }
+  },
+  "generals/cards/wu/sun-jian.jpg": {
+    "output": "74bae196729cd37d2cc9837c0ce353539ac6e3a9c3c15719fb967bc10d0a9e9c",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/sun-jian.jpg": "74bae196729cd37d2cc9837c0ce353539ac6e3a9c3c15719fb967bc10d0a9e9c"
+    }
+  },
+  "generals/cards/wu/sun-quan.jpg": {
+    "output": "ea8ca6fa55aefcfdf66baf35a50f1a2784d8576407b69a9f0513419676540f8d",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/sun-quan.jpg": "ea8ca6fa55aefcfdf66baf35a50f1a2784d8576407b69a9f0513419676540f8d"
+    }
+  },
+  "generals/cards/wu/sun-shangxiang.jpg": {
+    "output": "6ab9b9c085d2943db52f778db69ce783d4bd029dfced540774ed645880fab8be",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/sun-shangxiang.jpg": "6ab9b9c085d2943db52f778db69ce783d4bd029dfced540774ed645880fab8be"
+    }
+  },
+  "generals/cards/wu/taishi-ci.jpg": {
+    "output": "cdf740e57e2a0578891ac53ef613c9774271b07947b636e45ab7f870b657344a",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/taishi-ci.jpg": "cdf740e57e2a0578891ac53ef613c9774271b07947b636e45ab7f870b657344a"
+    }
+  },
+  "generals/cards/wu/xiao-qiao.jpg": {
+    "output": "ffe47607369538b308e3881f969c2ab41ffc051ea1516cc8ee2119913ce7a04d",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/xiao-qiao.jpg": "ffe47607369538b308e3881f969c2ab41ffc051ea1516cc8ee2119913ce7a04d"
+    }
+  },
+  "generals/cards/wu/zhang-zhao-and-zhang-hong.jpg": {
+    "output": "d33222174a97d56caeebfe30c2554bd2f592b4e104b635c5510d3c8fd6783f6d",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/zhang-zhao-and-zhang-hong.jpg": "d33222174a97d56caeebfe30c2554bd2f592b4e104b635c5510d3c8fd6783f6d"
+    }
+  },
+  "generals/cards/wu/zhou-tai.jpg": {
+    "output": "3144b7ca4ba9be62cbb36dcd85fa4ea9b5a81139f1e360b176bd47030672a7ad",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/zhou-tai.jpg": "3144b7ca4ba9be62cbb36dcd85fa4ea9b5a81139f1e360b176bd47030672a7ad"
+    }
+  },
+  "generals/cards/wu/zhou-yu.jpg": {
+    "output": "0537ce0a587f73840a9cf902e42ea51e0ce485bd4c74d24e4bb855cae61e80b7",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "generals/cards/wu/zhou-yu.jpg": "0537ce0a587f73840a9cf902e42ea51e0ce485bd4c74d24e4bb855cae61e80b7"
+    }
+  },
+  "generals/skins/qun/caiwenji.png": {
+    "output": "01cd16ace6c354a120336e5d72a50abbb03bf0fb0939a0060053103bc62fc08a",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/caiwenji.png": "01cd16ace6c354a120336e5d72a50abbb03bf0fb0939a0060053103bc62fc08a"
+    }
+  },
+  "generals/skins/qun/diaochan.png": {
+    "output": "33e79257697749c0eabb9ddf08f323ff591fecde0aec54197bc6d631ee8fa0e5",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/diaochan.png": "33e79257697749c0eabb9ddf08f323ff591fecde0aec54197bc6d631ee8fa0e5"
+    }
+  },
+  "generals/skins/qun/dongzhuo.png": {
+    "output": "5129e8fe042a12d7d6772296fa2e877dafdcc1be7337eb136bd553121f8fb701",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/dongzhuo.png": "5129e8fe042a12d7d6772296fa2e877dafdcc1be7337eb136bd553121f8fb701"
+    }
+  },
+  "generals/skins/qun/huatuo.png": {
+    "output": "f2dbbb06e903a121e75528b596d70426ab6b3221ddea6ef343e54f82da4acfd4",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/huatuo.png": "f2dbbb06e903a121e75528b596d70426ab6b3221ddea6ef343e54f82da4acfd4"
+    }
+  },
+  "generals/skins/qun/jiaxu.png": {
+    "output": "ca5a83599ea3a3fe62be70915b8de888c8ba0aaa5d3ae3d7b9d11cdc7632024c",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/jiaxu.png": "ca5a83599ea3a3fe62be70915b8de888c8ba0aaa5d3ae3d7b9d11cdc7632024c"
+    }
+  },
+  "generals/skins/qun/jiling.png": {
+    "output": "5d9fde040d304152c31a457cc3426620331371cf0976ffd49d430131dd416f13",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/jiling.png": "5d9fde040d304152c31a457cc3426620331371cf0976ffd49d430131dd416f13"
+    }
+  },
+  "generals/skins/qun/kongrong.png": {
+    "output": "16fb048c84610a9b8c6d26601f8227bd404b788e5f7a6b907e873711197fbf42",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/kongrong.png": "16fb048c84610a9b8c6d26601f8227bd404b788e5f7a6b907e873711197fbf42"
+    }
+  },
+  "generals/skins/qun/lubu.png": {
+    "output": "4a07d16a87a3dd3f69705a4c47b875113f979fb009642eda1a0ef06cd0ae38ee",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/lubu.png": "4a07d16a87a3dd3f69705a4c47b875113f979fb009642eda1a0ef06cd0ae38ee"
+    }
+  },
+  "generals/skins/qun/mateng.png": {
+    "output": "5df50683706ee64404a99a23b9caa8200f93c4d4cf563aa22806ec6aa72f7570",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/mateng.png": "5df50683706ee64404a99a23b9caa8200f93c4d4cf563aa22806ec6aa72f7570"
+    }
+  },
+  "generals/skins/qun/panfeng.png": {
+    "output": "98f33103712ccd258ca3a9b0322bd1c3e74c128d8366157b5bcd8c8bec0aa384",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/panfeng.png": "98f33103712ccd258ca3a9b0322bd1c3e74c128d8366157b5bcd8c8bec0aa384"
+    }
+  },
+  "generals/skins/qun/pangde.png": {
+    "output": "650f80afe4b6218afc524efe1acdbc6e7cf55ea55d1ec223b1ffc15b2f8431e0",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/pangde.png": "650f80afe4b6218afc524efe1acdbc6e7cf55ea55d1ec223b1ffc15b2f8431e0"
+    }
+  },
+  "generals/skins/qun/tianfeng.png": {
+    "output": "f53417b74d4dafe97ea06c51b5e6bacd21777669148dab77319762a9fa76344f",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/tianfeng.png": "f53417b74d4dafe97ea06c51b5e6bacd21777669148dab77319762a9fa76344f"
+    }
+  },
+  "generals/skins/qun/yanliangwenchou.png": {
+    "output": "3c7e400ee59c5ac788bd00180970cfcdd44dacc35f51eb6d764eb63e2f8d2387",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/yanliangwenchou.png": "3c7e400ee59c5ac788bd00180970cfcdd44dacc35f51eb6d764eb63e2f8d2387"
+    }
+  },
+  "generals/skins/qun/yuanshao.png": {
+    "output": "5d77b5ad4cdbff7f2ceffc6d31f6003434bfabc694dfc501c0467331f78f730a",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/yuanshao.png": "5d77b5ad4cdbff7f2ceffc6d31f6003434bfabc694dfc501c0467331f78f730a"
+    }
+  },
+  "generals/skins/qun/yuji.png": {
+    "output": "6396de53e4e8bd2e16d7b52450742f2c4070d5d356491fc7d70270329408bd82",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/yuji.png": "6396de53e4e8bd2e16d7b52450742f2c4070d5d356491fc7d70270329408bd82"
+    }
+  },
+  "generals/skins/qun/zhangjiao.png": {
+    "output": "a4b616a97268f43dada11f11dc6c711034817f9833c25871bc151408feb33316",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/zhangjiao.png": "a4b616a97268f43dada11f11dc6c711034817f9833c25871bc151408feb33316"
+    }
+  },
+  "generals/skins/qun/zoushi.png": {
+    "output": "f63a4031fdf53aba57a7f902f30159f04ffb45e45baf84b599bb52196e8331af",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/zoushi.png": "f63a4031fdf53aba57a7f902f30159f04ffb45e45baf84b599bb52196e8331af"
+    }
+  },
+  "generals/skins/qun/zuoci.png": {
+    "output": "23ac17ca09a13c9e35343150f517cccbfe6bd86276e167551b37b12e71f39452",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/qun/zuoci.png": "23ac17ca09a13c9e35343150f517cccbfe6bd86276e167551b37b12e71f39452"
+    }
+  },
+  "generals/skins/shu/ganfuren.png": {
+    "output": "2fe7128d8404bcb7e2054d5bea60a0b50ff748e0e401401d56dec8eeecd9c385",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/ganfuren.png": "2fe7128d8404bcb7e2054d5bea60a0b50ff748e0e401401d56dec8eeecd9c385"
+    }
+  },
+  "generals/skins/shu/guanyu.png": {
+    "output": "92e2c76663063f64b494c1fa265ddc99fb32196365c54f0c1965d4af3983d8f8",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/guanyu.png": "92e2c76663063f64b494c1fa265ddc99fb32196365c54f0c1965d4af3983d8f8"
+    }
+  },
+  "generals/skins/shu/huangyueying.png": {
+    "output": "efd962083c4cb1ce48ee2dd232dafd0c7ae7aec6b869b93b395056b3b680f49d",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/huangyueying.png": "efd962083c4cb1ce48ee2dd232dafd0c7ae7aec6b869b93b395056b3b680f49d"
+    }
+  },
+  "generals/skins/shu/huangzhong.png": {
+    "output": "872bf118c360c12401a665b23c5b0f83e0afb2e6973c55b70a1c0b531f712a1e",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/huangzhong.png": "872bf118c360c12401a665b23c5b0f83e0afb2e6973c55b70a1c0b531f712a1e"
+    }
+  },
+  "generals/skins/shu/jiangwei.png": {
+    "output": "89dd2b7da963a37fe900590fb30157ee2d4dc1c99d89219bb49a408985ba3445",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/jiangwei.png": "89dd2b7da963a37fe900590fb30157ee2d4dc1c99d89219bb49a408985ba3445"
+    }
+  },
+  "generals/skins/shu/liubei.png": {
+    "output": "6df1096f7acb6053934bfba8db48aca4b44aecda46360d7c0455bee1fc8b8589",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/liubei.png": "6df1096f7acb6053934bfba8db48aca4b44aecda46360d7c0455bee1fc8b8589"
+    }
+  },
+  "generals/skins/shu/liushan.png": {
+    "output": "e30b55252a5a6418bb1617e246adf9bb5b64e2e6cad90df648d09d4dcb1086cb",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/liushan.png": "e30b55252a5a6418bb1617e246adf9bb5b64e2e6cad90df648d09d4dcb1086cb"
+    }
+  },
+  "generals/skins/shu/machao.png": {
+    "output": "ad013facc2f6ae357c3c635bba7e981f5e32037c39acd4b62d733463f48eb91b",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/machao.png": "ad013facc2f6ae357c3c635bba7e981f5e32037c39acd4b62d733463f48eb91b"
+    }
+  },
+  "generals/skins/shu/menghuo.png": {
+    "output": "0177dbe622d537713009f09c9ce63669acc943cd0e42bee101000eeee0f7acee",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/menghuo.png": "0177dbe622d537713009f09c9ce63669acc943cd0e42bee101000eeee0f7acee"
+    }
+  },
+  "generals/skins/shu/pangtong.png": {
+    "output": "3f8112ae34929760719c86ea32a19ef329484e736cc77d3f12fabd617c86113e",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/pangtong.png": "3f8112ae34929760719c86ea32a19ef329484e736cc77d3f12fabd617c86113e"
+    }
+  },
+  "generals/skins/shu/weiyan.png": {
+    "output": "14d062f525c74dde27f532fc604b8fe4b84588ac96b9734ffa008ed0ca5104b8",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/weiyan.png": "14d062f525c74dde27f532fc604b8fe4b84588ac96b9734ffa008ed0ca5104b8"
+    }
+  },
+  "generals/skins/shu/wolong.png": {
+    "output": "0bc58cac554707555678ed12934b7f8720569a6b7f4ed9f52586b072b25a8dd4",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/wolong.png": "0bc58cac554707555678ed12934b7f8720569a6b7f4ed9f52586b072b25a8dd4"
+    }
+  },
+  "generals/skins/shu/zhangfei.png": {
+    "output": "5d1f6e1add4207b9113755fd3d414e9ed2040ba7346146c1ac8820222d4b4457",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/zhangfei.png": "5d1f6e1add4207b9113755fd3d414e9ed2040ba7346146c1ac8820222d4b4457"
+    }
+  },
+  "generals/skins/shu/zhaoyun.png": {
+    "output": "a6d37ceb9e8fd9dd40f18974a52d5e7e866552b6af1a5790b434fb154e6404e8",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/zhaoyun.png": "a6d37ceb9e8fd9dd40f18974a52d5e7e866552b6af1a5790b434fb154e6404e8"
+    }
+  },
+  "generals/skins/shu/zhugeliang.png": {
+    "output": "16fff423ba90325002af9ca5be5f7b88698ba3e7d273c0d79d5cd62a03da4345",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/zhugeliang.png": "16fff423ba90325002af9ca5be5f7b88698ba3e7d273c0d79d5cd62a03da4345"
+    }
+  },
+  "generals/skins/shu/zhurong.png": {
+    "output": "d86535bc9e7966436ea8f0d887f4a6cb1184db3d31a753fb9eae80afc2640769",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/shu/zhurong.png": "d86535bc9e7966436ea8f0d887f4a6cb1184db3d31a753fb9eae80afc2640769"
+    }
+  },
+  "generals/skins/skins.json": {
+    "output": "c26fb2b9725819960ec7482a84e8a2717fc63b09ceaad07387e9069d211072ab",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "generals/skins/skins.json": "c26fb2b9725819960ec7482a84e8a2717fc63b09ceaad07387e9069d211072ab"
+    }
+  },
+  "generals/skins/wei/caocao.png": {
+    "output": "a2f93313e6aa0f253b4b8b816f160bda79226d6df42fb9ac75f43e220e31103d",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/caocao.png": "a2f93313e6aa0f253b4b8b816f160bda79226d6df42fb9ac75f43e220e31103d"
+    }
+  },
+  "generals/skins/wei/caopi.png": {
+    "output": "19b6ff59008b37d50d4b0cd83a359fd37ce38dc756100f0c72c713f45a4007b7",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/caopi.png": "19b6ff59008b37d50d4b0cd83a359fd37ce38dc756100f0c72c713f45a4007b7"
+    }
+  },
+  "generals/skins/wei/caoren.png": {
+    "output": "959a0c49a5c045febf20984bf7140d42c51b812085bffecc0c87c3e051b6a575",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/caoren.png": "959a0c49a5c045febf20984bf7140d42c51b812085bffecc0c87c3e051b6a575"
+    }
+  },
+  "generals/skins/wei/dengai.png": {
+    "output": "e4ae1c737b37e3ca0a29ce643e5e2281bf7c95793f73e6bfe7a174113433bd70",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/dengai.png": "e4ae1c737b37e3ca0a29ce643e5e2281bf7c95793f73e6bfe7a174113433bd70"
+    }
+  },
+  "generals/skins/wei/dianwei.png": {
+    "output": "dfbf38d5b4fd046c3dee07f28385662f8b4fd02d86be271803b9165ddc1490ce",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/dianwei.png": "dfbf38d5b4fd046c3dee07f28385662f8b4fd02d86be271803b9165ddc1490ce"
+    }
+  },
+  "generals/skins/wei/guojia.png": {
+    "output": "7a1aa73a13051a6bef5ffbbbebd486436b90faacd6d8ca9ad4171ed9d1d0368c",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/guojia.png": "7a1aa73a13051a6bef5ffbbbebd486436b90faacd6d8ca9ad4171ed9d1d0368c"
+    }
+  },
+  "generals/skins/wei/simayi.png": {
+    "output": "e564d14335e1972c886b9398886aa76249347d0787acb7cf01d8bbf95aeb7635",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/simayi.png": "e564d14335e1972c886b9398886aa76249347d0787acb7cf01d8bbf95aeb7635"
+    }
+  },
+  "generals/skins/wei/xiahoudun.png": {
+    "output": "fdad12503dc72f32a0f4725ae2345ef707a89e034419eea1542d85f71d892a77",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/xiahoudun.png": "fdad12503dc72f32a0f4725ae2345ef707a89e034419eea1542d85f71d892a77"
+    }
+  },
+  "generals/skins/wei/xiahouyuan.png": {
+    "output": "3a00b3b97c4ec34296017ec3eb1b6adf40cf9d42341b73be44e2a968b62e80c7",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/xiahouyuan.png": "3a00b3b97c4ec34296017ec3eb1b6adf40cf9d42341b73be44e2a968b62e80c7"
+    }
+  },
+  "generals/skins/wei/xuchu.png": {
+    "output": "16c38af894a29817648b06e9211a57d2ddbcca3e8d3df97f6a022ec4939db496",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/xuchu.png": "16c38af894a29817648b06e9211a57d2ddbcca3e8d3df97f6a022ec4939db496"
+    }
+  },
+  "generals/skins/wei/xuhuang.png": {
+    "output": "98b01c6824d592af965c62debac94cb53bfc36b519b47df08ba84235e0c622c3",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/xuhuang.png": "98b01c6824d592af965c62debac94cb53bfc36b519b47df08ba84235e0c622c3"
+    }
+  },
+  "generals/skins/wei/xunyu.png": {
+    "output": "4866cf1b62dfd9f11e9a1af28d3650db121dd2391ca75cc3600970d06cc2c00e",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/xunyu.png": "4866cf1b62dfd9f11e9a1af28d3650db121dd2391ca75cc3600970d06cc2c00e"
+    }
+  },
+  "generals/skins/wei/yuejin.png": {
+    "output": "05b43544fe63cbee7116ed4ad307e2b8b7bca2faff7ea9812ad5ebf38ebf2774",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/yuejin.png": "05b43544fe63cbee7116ed4ad307e2b8b7bca2faff7ea9812ad5ebf38ebf2774"
+    }
+  },
+  "generals/skins/wei/zhanghe.png": {
+    "output": "ff7637ebbb2989acb0259ae45335a064599dc9aeb036cd6225434627f3925a00",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/zhanghe.png": "ff7637ebbb2989acb0259ae45335a064599dc9aeb036cd6225434627f3925a00"
+    }
+  },
+  "generals/skins/wei/zhangliao.png": {
+    "output": "eb13219e6f14c57ba4cee6494b79baf7f7a45bacddbe4b4ce8b1f1f4aa995051",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/zhangliao.png": "eb13219e6f14c57ba4cee6494b79baf7f7a45bacddbe4b4ce8b1f1f4aa995051"
+    }
+  },
+  "generals/skins/wei/zhenji.png": {
+    "output": "59922171a8e2bddc592140e00cc9ca1a14c1d4d11946c7692b9f8974613c273e",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wei/zhenji.png": "59922171a8e2bddc592140e00cc9ca1a14c1d4d11946c7692b9f8974613c273e"
+    }
+  },
+  "generals/skins/wu/daqiao.png": {
+    "output": "3d5e9655b05b52aca6a08742e01cd58ff2aa55feadb3791d2fa9ba142d665851",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/daqiao.png": "3d5e9655b05b52aca6a08742e01cd58ff2aa55feadb3791d2fa9ba142d665851"
+    }
+  },
+  "generals/skins/wu/dingfeng.png": {
+    "output": "7de5bb45489af8841094b9252c7b3e056c20ce8f77e821a5039f2015918f7c2d",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/dingfeng.png": "7de5bb45489af8841094b9252c7b3e056c20ce8f77e821a5039f2015918f7c2d"
+    }
+  },
+  "generals/skins/wu/erzhang.png": {
+    "output": "3184b3b0b56aec2a6e0ccdfc47a90f636f739f222fc0433fcfc567fb17c00906",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/erzhang.png": "3184b3b0b56aec2a6e0ccdfc47a90f636f739f222fc0433fcfc567fb17c00906"
+    }
+  },
+  "generals/skins/wu/ganning.png": {
+    "output": "62cd494a72f4d86f79c311dbe2cca2638538cb9ea6c748356a45ce7cef70bef8",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/ganning.png": "62cd494a72f4d86f79c311dbe2cca2638538cb9ea6c748356a45ce7cef70bef8"
+    }
+  },
+  "generals/skins/wu/huanggai.png": {
+    "output": "1426389a58e0be0a31eaf79da21cd5d64cc92514fec44abb89849d316b7fc186",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/huanggai.png": "1426389a58e0be0a31eaf79da21cd5d64cc92514fec44abb89849d316b7fc186"
+    }
+  },
+  "generals/skins/wu/lumeng.png": {
+    "output": "d382f9e5cb1b5086f6c7b2d49aab693c2c890c0241ed71f19f75838d7d9a86ce",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/lumeng.png": "d382f9e5cb1b5086f6c7b2d49aab693c2c890c0241ed71f19f75838d7d9a86ce"
+    }
+  },
+  "generals/skins/wu/lusu.png": {
+    "output": "8047245cae14e748ede34df39fe60a40d251521b33b78df34fb82535edc452a0",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/lusu.png": "8047245cae14e748ede34df39fe60a40d251521b33b78df34fb82535edc452a0"
+    }
+  },
+  "generals/skins/wu/luxun.png": {
+    "output": "6bd7fb1a2d958e42216266ccfbd9f56a47ba50fc29cba633f8deb30ee9b9757f",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/luxun.png": "6bd7fb1a2d958e42216266ccfbd9f56a47ba50fc29cba633f8deb30ee9b9757f"
+    }
+  },
+  "generals/skins/wu/sunce.png": {
+    "output": "9eb208d36b0be58a2c08cbba65c7af95eb141445e307201fe6fda8fb1d34121c",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/sunce.png": "9eb208d36b0be58a2c08cbba65c7af95eb141445e307201fe6fda8fb1d34121c"
+    }
+  },
+  "generals/skins/wu/sunjian.png": {
+    "output": "ecdb242d72cde6a9c002ddef0142eb06115cfcfe7a8832072ec31d0960b48056",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/sunjian.png": "ecdb242d72cde6a9c002ddef0142eb06115cfcfe7a8832072ec31d0960b48056"
+    }
+  },
+  "generals/skins/wu/sunquan.png": {
+    "output": "a8519824b1b0598cd3c2f80710d26803b3df72c2c3edba51da685fbe0395fc8f",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/sunquan.png": "a8519824b1b0598cd3c2f80710d26803b3df72c2c3edba51da685fbe0395fc8f"
+    }
+  },
+  "generals/skins/wu/sunshangxiang.png": {
+    "output": "c40ec2b9c3c8e84b822cffefc9c84a64db79de780fde73a6c83453ca94ff99c9",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/sunshangxiang.png": "c40ec2b9c3c8e84b822cffefc9c84a64db79de780fde73a6c83453ca94ff99c9"
+    }
+  },
+  "generals/skins/wu/taishici.png": {
+    "output": "3392acce395d258cfda9cf3cb5f8c0823c2bfa529485ed60075357ea706c2f85",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/taishici.png": "3392acce395d258cfda9cf3cb5f8c0823c2bfa529485ed60075357ea706c2f85"
+    }
+  },
+  "generals/skins/wu/xiaoqiao.png": {
+    "output": "082931fbc552425496b92b04139ec7a08bdef427e1d3b0f606380162fd149f95",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/xiaoqiao.png": "082931fbc552425496b92b04139ec7a08bdef427e1d3b0f606380162fd149f95"
+    }
+  },
+  "generals/skins/wu/zhoutai.png": {
+    "output": "67e1695a5d185eb7f7be83c55072360993349c3b42a3978013482a6e7771a8a6",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/zhoutai.png": "67e1695a5d185eb7f7be83c55072360993349c3b42a3978013482a6e7771a8a6"
+    }
+  },
+  "generals/skins/wu/zhouyu.png": {
+    "output": "ebde845fefc6ef82591e58c74ca6c2ef3ebaca4323fcca032c17d72ba39524aa",
+    "settings": "7c55979f7b27f28c515e5b01d60fd693e606fc080340148d35526a0fd6d315ff",
+    "sources": {
+      "generals/skins/wu/zhouyu.png": "ebde845fefc6ef82591e58c74ca6c2ef3ebaca4323fcca032c17d72ba39524aa"
+    }
+  },
+  "generals/special/ambitionist-icon.png": {
+    "output": "89bf6b6ae7534f6a499f4a199e84511a9cb960148ea94e784622b76580f0aa0f",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "generals/special/ambitionist-icon.png": "89bf6b6ae7534f6a499f4a199e84511a9cb960148ea94e784622b76580f0aa0f"
+    }
+  },
+  "generals/special/ambitionist.jpg": {
+    "output": "f2d0d191a9fc6e808c057261c2e44336045bd295e5adc27fb14113c8c194d68b",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "generals/special/ambitionist.jpg": "f2d0d191a9fc6e808c057261c2e44336045bd295e5adc27fb14113c8c194d68b"
+    }
+  },
+  "generals/special/hidden.jpg": {
+    "output": "e6cbd12ea903e54cf65a3f1107d53a96c6101f21f45c31e866da213e249d4a45",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "generals/special/hidden.jpg": "e6cbd12ea903e54cf65a3f1107d53a96c6101f21f45c31e866da213e249d4a45"
+    }
+  },
+  "generals/special/placeholder.svg": {
+    "output": "8ded760c4db822f28306fc52dc9d3508b3491e701653f429f5a2703a5da3f644",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "generals/special/placeholder.svg": "8ded760c4db822f28306fc52dc9d3508b3491e701653f429f5a2703a5da3f644"
+    }
+  },
+  "manifest.json": {
+    "output": "422465abf5c195683a059af757b3b6443375567abe204530ac3be298e38cbd3f",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "manifest.json": "422465abf5c195683a059af757b3b6443375567abe204530ac3be298e38cbd3f"
+    }
+  },
+  "playing-cards/back.jpg": {
+    "output": "4590a0b0aa47dd29ede6b6c40a4d6919e6647a2909ed74631da14c1ede503503",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "playing-cards/back.jpg": "4590a0b0aa47dd29ede6b6c40a4d6919e6647a2909ed74631da14c1ede503503"
+    }
+  },
+  "playing-cards/cropped/basic/fire-attack.jpg": {
+    "output": "80f39b00e853cef4faa2b25ae6108fdcfc4b8c131b4e9ab3b453424edccf005d",
+    "settings": "1d81c7c695ec2fe2e6d5d86202cc90d92aba18788d4c5de54bc21b39ceae5666",
+    "sources": {
+      "playing-cards/full/basic/fire-attack.jpg": "3e27a7bdc84912d408e0dcf62990cadf83630376f83a0d6b098805173f90dcb2"
+    }
+  },
+  "playing-cards/cropped/basic/lightning-attack.jpg": {
+    "output": "db5e394046d852442ccbccb80da5da23f8ef14066771c639549d58989a8f2c61",
+    "settings": "3eb5ddfb174b37a422be8f786ed068cbd6166e64bdb7622171a37e0564ca6cf8",
+    "sources": {
+      "playing-cards/full/basic/lightning-attack.jpg": "ff6e21e106cec1fcb0d26ef572bf4122adec4857dec744a44a8634134be8b718"
+    }
+  },
+  "playing-cards/cropped/basic/peach.jpg": {
+    "output": "2b86cd9151a8a70d553fd54fd607097b9d83ed6b3785a62e797d2fedc1041b21",
+    "settings": "54e9af859c6cea53fdc70789c1fd3b8e458f2ab280ccbcdd17393d58a52f8f3d",
+    "sources": {
+      "playing-cards/full/basic/peach.jpg": "9272d7120dc6a2acc87321a6101eb8f37bccca165bc86a11c676253de509dfc4"
+    }
+  },
+  "playing-cards/cropped/basic/sha.jpg": {
+    "output": "1adfa32a8c06ed386070c2cb261d2d8fcf6284622c06388e489e146b5a4e2401",
+    "settings": "1d81c7c695ec2fe2e6d5d86202cc90d92aba18788d4c5de54bc21b39ceae5666",
+    "sources": {
+      "playing-cards/full/basic/sha.jpg": "ee78fe751ae8ae562c50c8b40b74197f058ffee821f1a7240b6cd9810899c63e"
+    }
+  },
+  "playing-cards/cropped/basic/shan.jpg": {
+    "output": "a31b554e6a4e45d28ce03eae01f2ae35cc449669ae3b5a4b59ce22547ebbf8a8",
+    "settings": "37628697ab616ebd78f6fc8f01b8c739929dd1a805fcba1044f5dc0b1f2890ba",
+    "sources": {
+      "playing-cards/full/basic/shan.jpg": "d84b686f5972e8e2d9ff934d39795e91c9d871295610956c35a9e961956a4d24"
+    }
+  },
+  "playing-cards/cropped/basic/wine.jpg": {
+    "output": "c573bc39afbcec8d52a8d5ad86e20085ed35f86ed888de6374184769079da92f",
+    "settings": "0f8c1dbd80ebe94368c1a9e99743ec01beabeded0c3d0587602586b28ddaa5c7",
+    "sources": {
+      "playing-cards/full/basic/wine.jpg": "2095d8f91d6c037b37af815d8d41be2dd6ac743bd62c793094935667f209fc44"
+    }
+  },
+  "playing-cards/cropped/equipment/armor/black-shield.jpg": {
+    "output": "951bd875728394ddc26459a3c7b4fe110940586b3f53a632ab3ab48903a63540",
+    "settings": "bdba95520994a6f4a2cfdcf5bdb855d851d5b591e8320036e4d6cf1a72414453",
+    "sources": {
+      "playing-cards/full/equipment/armor/black-shield.jpg": "5372c9dbc53ffab589fdf71144c2cdc3fcc6c3a5cce3716d4493a2f8d3d55006"
+    }
+  },
+  "playing-cards/cropped/equipment/armor/eight-trigrams.jpg": {
+    "output": "15dac18c219d618ffe80c49ccca8d93447b946c6028ba45dfa6cc1c49014003a",
+    "settings": "77728f40039d1b31745350aaa7784f38894261e89fa73f8ebfe8506ace0113d4",
+    "sources": {
+      "playing-cards/full/equipment/armor/eight-trigrams.jpg": "0a5d4bedafcdda9416d09b53ffa14a4141a727cd1aed333dc3e732b8179eb424"
+    }
+  },
+  "playing-cards/cropped/equipment/armor/silver-lion.jpg": {
+    "output": "f53bcf5caef28d3d4550e359ebb637df3deb0a30e9f2b58c57e3446e67eb4752",
+    "settings": "b3206a0ab37005fc592ed897682f64074c5617584ec4c707320d6d84f718e89a",
+    "sources": {
+      "playing-cards/full/equipment/armor/silver-lion.jpg": "5efbf9b290675b125c5488e687a74bd6b9505bbdb53af905185204a1f1259210"
+    }
+  },
+  "playing-cards/cropped/equipment/armor/wood-armor.jpg": {
+    "output": "874f08dd667226a9802791bf2a5c29a29b71c5f7360e46b9067b9880270032cc",
+    "settings": "b3206a0ab37005fc592ed897682f64074c5617584ec4c707320d6d84f718e89a",
+    "sources": {
+      "playing-cards/full/equipment/armor/wood-armor.jpg": "c44e19a402b61caaa6fb56094a0d6ef64c27454303263db94ad1982b491d704c"
+    }
+  },
+  "playing-cards/cropped/equipment/horse/da-yuan.jpg": {
+    "output": "e56da297f2c28f2c1faaf0427528ddbd7c1411b6f57ec43f2941448febf0d50a",
+    "settings": "eb7e2259d3ba57c61cdd143446f5f4e1ea33a161f497aa09ae4dd85da28c4816",
+    "sources": {
+      "playing-cards/full/equipment/horse/da-yuan.jpg": "0f711aa93880cfbe506ec1edbfc62bcb894ebc50b95cc8346261c961acd22347"
+    }
+  },
+  "playing-cards/cropped/equipment/horse/di-lu.jpg": {
+    "output": "be449f532a2436b31c6819f2cca977cc0a4ae8ea6442a5cf9f4252c05e848cc8",
+    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+    "sources": {
+      "playing-cards/full/equipment/horse/di-lu.jpg": "a41be94cdaac2c7af18c5e9cd022b47480c87f2b10cc0a7c8534e6db72cc73b0"
+    }
+  },
+  "playing-cards/cropped/equipment/horse/hua-liu.jpg": {
+    "output": "594082a416c507981e1344752ec46c1c192067553aac733270796002ea7c336e",
+    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+    "sources": {
+      "playing-cards/full/equipment/horse/hua-liu.jpg": "d4e8b08e98c034305979398cac3c6d5504c9aedc1f42c9f0089aa6a3904d1a94"
+    }
+  },
+  "playing-cards/cropped/equipment/horse/red-hare.jpg": {
+    "output": "c1e71e4b60ab625dac2061d52c4b20bfed495fc790978c8dbfe094fba2cce9de",
+    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+    "sources": {
+      "playing-cards/full/equipment/horse/red-hare.jpg": "ee2b9d654611c0b92ca850d63f133acedc7287a5ee1a399043bd06fc650bfbf5"
+    }
+  },
+  "playing-cards/cropped/equipment/horse/shadow-runner.jpg": {
+    "output": "dddc4c2a84cb1c67770a5ebad0c39a3c4fd9e3824c24c80ec8a83b4d97be755e",
+    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+    "sources": {
+      "playing-cards/full/equipment/horse/shadow-runner.jpg": "7877c0c1186ea1793c22f4e1ac18641fe99fc8a3202550e6089955ae84150406"
+    }
+  },
+  "playing-cards/cropped/equipment/horse/storm-runner.jpg": {
+    "output": "e9a4def36a5ffb9a79393d60322371fd9131ebd4f9e1a2465445e223cafa9410",
+    "settings": "67bb1234c237fea0b295ab228989718b2e65b00d62d0803a8fc3660e15dcf049",
+    "sources": {
+      "playing-cards/full/equipment/horse/storm-runner.jpg": "99976c1756fcdc4c3ef26eaf64f93958b4b1143b8673d3e0058a3f7fa5056c2f"
+    }
+  },
+  "playing-cards/cropped/equipment/horse/zi-xing.jpg": {
+    "output": "b066b7667af843dddf60506c6449207e3e71b725a382895e7ce0903f31d9a36b",
+    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+    "sources": {
+      "playing-cards/full/equipment/horse/zi-xing.jpg": "9a60c09f1373cb5f70af1eab4dfea5c12ae83dc926f8483467a720320db0cf68"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/ancient-scimitar.jpg": {
+    "output": "cc685ff1f7e36c8a4255c7e89fe89848ae29f563a6e93280de9bef08b9b53a18",
+    "settings": "bd0e4b589668bba2e8481158748b2003f960b0b709bd233b09d254b45c119d1e",
+    "sources": {
+      "playing-cards/full/equipment/weapon/ancient-scimitar.jpg": "2d2cd0740399eb76354f104ae36827438ca328d3ec56e309568a55af2fe1e96e"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/axe.jpg": {
+    "output": "b5bedf61a944a1f6a75e994476b73c5e976e6abd914106133cd9ef6c2ae3257d",
+    "settings": "6a44ef8481969edf05da5b152a6b40703846a5d8a87dc28afd4940c365ae417f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/axe.jpg": "4aa0869403622b72ce30d05e8dd7256486e8b71c1c8d594ea4066a5f655d3a32"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/black-pommel.jpg": {
+    "output": "678614e183d7ca0341d3676a363ea42d5c5a37ce3a6a21f8f2e306aeeff43afe",
+    "settings": "bdba95520994a6f4a2cfdcf5bdb855d851d5b591e8320036e4d6cf1a72414453",
+    "sources": {
+      "playing-cards/full/equipment/weapon/black-pommel.jpg": "7da95fdd6eb6d4e011f9a76734f3a6f64c4629917837f70e4b013b4a77f27b8f"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/crossbow.jpg": {
+    "output": "738d78046897b05482716177e3a04ba491282d82043ad456cbe25db3f02cefdf",
+    "settings": "5986c3cce5eb6e492ca700c8e8f57fa8ab7955ca42fd14197186d88eb3fa8471",
+    "sources": {
+      "playing-cards/full/equipment/weapon/crossbow.jpg": "cfa356a6b0f8edbe1fd4dbd055a3e5fb520cf48fda257fe04bd4f5c91248909b"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/fire-fan.jpg": {
+    "output": "0ec1ac3677b24dcfdaa0660d8a0646f2562769da79007aa75000e31b82875d65",
+    "settings": "a8899a810ce5951f8509a8c5f1eb2818fc34cff8ef904e63158aeeb5ba4718e0",
+    "sources": {
+      "playing-cards/full/equipment/weapon/fire-fan.jpg": "f754c219cef48c840d21efc0dd552e00d15b559f3c34a88e142c4dbe509f2570"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/gender-swords.jpg": {
+    "output": "9f8f711c4c4a2d6c9d37a01aaab60e410a2bc8afd2b00e436679f0a5ed7bbdf1",
+    "settings": "3e76dbc3060659290d16f9390e6f84bb2c85cfcd5462fffa1fd40b6b2b2e275a",
+    "sources": {
+      "playing-cards/full/equipment/weapon/gender-swords.jpg": "6c52116b0791fff6322b46c83c81c08acb9ae5b4e869ca14a02cbf5d6afefd0a"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/green-dragon-blade.jpg": {
+    "output": "f105c91dd592942c4e3b7229796a52977bbb60f3eaf2fc054a61ffa3f0f67846",
+    "settings": "bd0e4b589668bba2e8481158748b2003f960b0b709bd233b09d254b45c119d1e",
+    "sources": {
+      "playing-cards/full/equipment/weapon/green-dragon-blade.jpg": "e229194400fa91c387804ba24681ec43dd1c81bec2589cb0e43f1314f03f95d2"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/ice-sword.jpg": {
+    "output": "7ffa9dde2ecc38c31490f4bb4cc6ae1e6ed51a03ad3f2f67df06888c2b92fe87",
+    "settings": "bdba95520994a6f4a2cfdcf5bdb855d851d5b591e8320036e4d6cf1a72414453",
+    "sources": {
+      "playing-cards/full/equipment/weapon/ice-sword.jpg": "60a94a45a444b55c588ee3893c8c14d7f43394eba857b7bbded2f241a1fe754d"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/longbow.jpg": {
+    "output": "9b0c3395320e8232726fa7baa9d4beea9dd6cd066dae0d563a8b350c6fc745d0",
+    "settings": "77728f40039d1b31745350aaa7784f38894261e89fa73f8ebfe8506ace0113d4",
+    "sources": {
+      "playing-cards/full/equipment/weapon/longbow.jpg": "11dbcde6a70d8d2078a2e4b9fdfdca9450042cca63e2c2a0e0003886f242d275"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/serpent-spear.jpg": {
+    "output": "e6a2ccf6f917d00fca4d3c75247382bb257e6de24f314194ac798e53a8c0fcb8",
+    "settings": "77728f40039d1b31745350aaa7784f38894261e89fa73f8ebfe8506ace0113d4",
+    "sources": {
+      "playing-cards/full/equipment/weapon/serpent-spear.jpg": "289ad17526e68aa0f2903529dca21789bb6cbbcc92dae5492847c8cf91c88545"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/sky-scorcher.jpg": {
+    "output": "e527ebc53f4b2ccb116181a7aaf4865f8448563817b09e9eb67dd4471de088aa",
+    "settings": "c91576caf3953027d6a0425ee9572f70a1a9a104f9d7f949b3fbf5ba0e63ec08",
+    "sources": {
+      "playing-cards/full/equipment/weapon/sky-scorcher.jpg": "4f29b6640a3c0cd4750b7c774098078280e964e430e0453ad346eaf0b61c5f49"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/trident-glaive.jpg": {
+    "output": "fd9634b1ea42ae1e6efbccfa1c7be1da092f1f8cb8774d5223f4818a0cf698ed",
+    "settings": "063998af31cb675a381587ddb5158d7036cb695c2527401100f226f7e9aa696f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/trident-glaive.jpg": "c3ad2c65a8ef6551c8a8c1ad0329f1c025967c31cfc471e5c02f7cde2aac14bd"
+    }
+  },
+  "playing-cards/cropped/equipment/weapon/wu-six-swords.jpg": {
+    "output": "e7a39a665a21a51e360c2abeb1df84fa09979d84efcaa152fd89f9c0c9e85254",
+    "settings": "063998af31cb675a381587ddb5158d7036cb695c2527401100f226f7e9aa696f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/wu-six-swords.jpg": "7286ddf92135f9f8eb4b4fbffa009561197c2c73284b81c0220c55f776c92ded"
+    }
+  },
+  "playing-cards/cropped/tool/ally-far-attack-near.jpg": {
+    "output": "434507bdfcda439c9fc62acec69c26eb05b0e7bf202df494b53f6ba74101add6",
+    "settings": "6227b02c5a1a145f1619be2904aedbf60eb93a2a795b7b9221ce07f96b3d3d67",
+    "sources": {
+      "playing-cards/full/tool/ally-far-attack-near.jpg": "8000add44abeb819adb5103223210392b91002e2fc8618082bf5bb5ca5b323de"
+    }
+  },
+  "playing-cards/cropped/tool/amass.jpg": {
+    "output": "8f84d761b4ea49bfa655eeaba8bfb00457a73970e37123f6bbd6ff5235b30d57",
+    "settings": "6227b02c5a1a145f1619be2904aedbf60eb93a2a795b7b9221ce07f96b3d3d67",
+    "sources": {
+      "playing-cards/full/tool/amass.jpg": "7dde27a2d9f0662ff6d5344b571e4f05bcf1e6366f37e459718b78be47670108"
+    }
+  },
+  "playing-cards/cropped/tool/ascertain.jpg": {
+    "output": "8c224cc709597124d2b6ff431743341c4d22031d8d40eb6c507e1225c1d856fa",
+    "settings": "6227b02c5a1a145f1619be2904aedbf60eb93a2a795b7b9221ce07f96b3d3d67",
+    "sources": {
+      "playing-cards/full/tool/ascertain.jpg": "300d7d69ca5fda0e17d754991ebc5422124f34932a47b10156e95ed26ff96349"
+    }
+  },
+  "playing-cards/cropped/tool/barbarians.jpg": {
+    "output": "096fcbf157d48b4317f62f6678b33dae3ad62a05021fff05dae4e9d8c3fcf520",
+    "settings": "454d06ad1f91fde4d1290a5f9ccd209d30d87f577e2caefc014d6b1900d416a7",
+    "sources": {
+      "playing-cards/full/tool/barbarians.jpg": "574510a2d05a8e9b94096c1f942106322953a9bb516b1598e6a16f74c5194f72"
+    }
+  },
+  "playing-cards/cropped/tool/blaze.jpg": {
+    "output": "4fa6092fd16cbde3c1d577aa9ef7c2c2f7520838fb3d392535a61bd3ea9231f1",
+    "settings": "d14467cbdc75c7988b8a7f4bec41aa93b27b723c18b2ce6502ace5c2e5dd1f3e",
+    "sources": {
+      "playing-cards/full/tool/blaze.jpg": "5cff1bd614b259a9fbbdbb5bea088b448c921e38646bae99f73047822bd451a2"
+    }
+  },
+  "playing-cards/cropped/tool/break.jpg": {
+    "output": "9fbe905881d9e6d112d49c439e4e317124ddd9ae5ef6d193e740f36dfd1b053d",
+    "settings": "e04212b560988db34ccb01a61c537240ff1be6fe0cddef3b0ced3dcb87b2f84b",
+    "sources": {
+      "playing-cards/full/tool/break.jpg": "b1946d9f06459b86c28e36162b415f019f6d45bd3e12bd3585e11d9c4f9f80a9"
+    }
+  },
+  "playing-cards/cropped/tool/capture.jpg": {
+    "output": "e480fa0dbd433ae78d47959bcfc584d0082d9e5d9458416c1b527077bf1d65e3",
+    "settings": "e8f3194c421b407d867d0a5808ef11d51633cd2e35aad64fbd9faff465f0544e",
+    "sources": {
+      "playing-cards/full/tool/capture.jpg": "068b44dc82ed6d100285930d8762c92de178a1ce729506c2f178c8ea0bf6f668"
+    }
+  },
+  "playing-cards/cropped/tool/chains.jpg": {
+    "output": "7d2fdf05e43918d7a017061bbd2a6605b29d347cd86bd49453af6b16f7d99743",
+    "settings": "54e9e625357dfa0b7f18d222a4de813a0ea2a53ae24d32d99023161c40e86331",
+    "sources": {
+      "playing-cards/full/tool/chains.jpg": "75a09eee888c0e49ce9dc1d92e6ae750ba747111efdc6e0c36a7ea2eaa08afac"
+    }
+  },
+  "playing-cards/cropped/tool/coerce.jpg": {
+    "output": "9e27583c7b2a1d92a6f5cf8050391b70ae0d5df70ac06fad6188592ecfcfc2d5",
+    "settings": "b77f9e305399adad93e6b65db063fa58ffb742c92a6454614f0ac497fc14b0d2",
+    "sources": {
+      "playing-cards/full/tool/coerce.jpg": "be625f0a04cb41b082209db3c639bb9d6690ddd1e79e81d848542ce1246695c7"
+    }
+  },
+  "playing-cards/cropped/tool/draw-two.jpg": {
+    "output": "1f5a501ff4cf8bd919dc73277c3afeeac75a178ed4507b027db6ed16466a26d4",
+    "settings": "302c3a177e071d41f70919a42b4220f0fa561657b4fbe7e414e7811dd9107e71",
+    "sources": {
+      "playing-cards/full/tool/draw-two.jpg": "4a3be0726a62f1977c6ad6699350eef0245e0c56d29c87a6cd222f42c5887af8"
+    }
+  },
+  "playing-cards/cropped/tool/duel.jpg": {
+    "output": "9473b186d8534effefb771c7a4fd18be39e7894a355614fe2a0d48fe0abe9c2c",
+    "settings": "30a297145400cb95f80e978703705971a021b2d0d471d227f3f9e4a4931cc790",
+    "sources": {
+      "playing-cards/full/tool/duel.jpg": "a14dac79d5fdbf040f81b0fa02cb2fcde5f63bf858d8fbc2c8a886d4a7e6a81e"
+    }
+  },
+  "playing-cards/cropped/tool/hail-of-arrows.jpg": {
+    "output": "9fada58115f0201f41d0a486f884fe2a7a99dd46a852a737d271ec14b604600f",
+    "settings": "597889cb930fd7701b25bb136778fefdeaf6632134479516da37504550627151",
+    "sources": {
+      "playing-cards/full/tool/hail-of-arrows.jpg": "031c5939bceaa00893efccba2fdea950388e0e24c13a6bbc6ae5ced142aeeb84"
+    }
+  },
+  "playing-cards/cropped/tool/harvest.jpg": {
+    "output": "7c3cf44152448c768b1e8d2c59a9eff1d97a71ca33c28db73e2a12933ddb6470",
+    "settings": "83fbee64c83acf51204e240bbc8576cc5854ce2c3893b7deba85625c92e94fad",
+    "sources": {
+      "playing-cards/full/tool/harvest.jpg": "efc9377164d775802b62a24c2f7eb92ce6b3b8e687677c8486373b6e3188ff0d"
+    }
+  },
+  "playing-cards/cropped/tool/lightning.jpg": {
+    "output": "632da1b4e50d715a5054febade04caaac14af453a402b504bdc369920a8ff333",
+    "settings": "ef4bc9f4e88e3077850243e34001e3f7da0ac557b19d8bfb42d62bd4f4ae8e61",
+    "sources": {
+      "playing-cards/full/tool/lightning.jpg": "16ee58fe4b7164a9b3f7a1f14495b0e052908b6c69e785a9e42d005fe73f96a2"
+    }
+  },
+  "playing-cards/cropped/tool/peach-garden.jpg": {
+    "output": "573d1398c3bc0ff2862bfff712b1fa2e5b1aa25c175dc7d63e61bc1357a78345",
+    "settings": "cadc381dcc6fef8e64f2f5c173690caec94e886267d71d116a50409c1df9f390",
+    "sources": {
+      "playing-cards/full/tool/peach-garden.jpg": "9e40f15afb2bdcc6875d49901d3bb252475eb79944cfda51165ee5755aaa09ca"
+    }
+  },
+  "playing-cards/cropped/tool/starvation.jpg": {
+    "output": "fb200ad98dc1b99651fdc8335cc9111886928a865053363be507de892c5dc849",
+    "settings": "7200ee555480a0160bcaa9d8bdde2fe2247770585987bd03e5b42c030a168fb4",
+    "sources": {
+      "playing-cards/full/tool/starvation.jpg": "e9bfe4ed31cdfffca54a79a0a79dca31fbdcf0b7ad705f956683e0e2469cf6d8"
+    }
+  },
+  "playing-cards/cropped/tool/steal.jpg": {
+    "output": "9f55050050bf60e870d54dee67147b0aaa2abb7fc9f97b816b5b7611e2aa07ba",
+    "settings": "a8db60e5dae9ab76470d0c4260be03fc19ec1f39d139d2e5c740e8749c7aefd1",
+    "sources": {
+      "playing-cards/full/tool/steal.jpg": "966eeaa33071d106c3ab20e8db4c8f4140fe26c1fe023336000533c64b3ad948"
+    }
+  },
+  "playing-cards/cropped/tool/wuxie-guo.jpg": {
+    "output": "1f60b87d257438f9fe274420dc51aa4220861dfaa9c0b30b11af098097457dd6",
+    "settings": "6227b02c5a1a145f1619be2904aedbf60eb93a2a795b7b9221ce07f96b3d3d67",
+    "sources": {
+      "playing-cards/full/tool/wuxie-guo.jpg": "f2f836c38ee653c8f0e1545bfbbfa81c7e6fe34074836647f5014c690e59ff1e"
+    }
+  },
+  "playing-cards/cropped/tool/wuxie.jpg": {
+    "output": "b36159cd662b7d5a30ace58e00802e6b0efa6612c2fa69ebc60b77d4d6c11e3b",
+    "settings": "c9e82156ab1c52ef42b69e6254a10b9c58d751eeecf49b92c2bdb92536c9a0d8",
+    "sources": {
+      "playing-cards/full/tool/wuxie.jpg": "b4ed913d29b6078d8eda00003585d4448c52a0472ffd1b2513975f2bc1d6e63f"
+    }
+  },
+  "playing-cards/full/basic/fire-attack.jpg": {
+    "output": "3e27a7bdc84912d408e0dcf62990cadf83630376f83a0d6b098805173f90dcb2",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/basic/fire-attack.jpg": "3e27a7bdc84912d408e0dcf62990cadf83630376f83a0d6b098805173f90dcb2"
+    }
+  },
+  "playing-cards/full/basic/lightning-attack.jpg": {
+    "output": "ff6e21e106cec1fcb0d26ef572bf4122adec4857dec744a44a8634134be8b718",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/basic/lightning-attack.jpg": "ff6e21e106cec1fcb0d26ef572bf4122adec4857dec744a44a8634134be8b718"
+    }
+  },
+  "playing-cards/full/basic/peach.jpg": {
+    "output": "9272d7120dc6a2acc87321a6101eb8f37bccca165bc86a11c676253de509dfc4",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/basic/peach.jpg": "9272d7120dc6a2acc87321a6101eb8f37bccca165bc86a11c676253de509dfc4"
+    }
+  },
+  "playing-cards/full/basic/sha.jpg": {
+    "output": "ee78fe751ae8ae562c50c8b40b74197f058ffee821f1a7240b6cd9810899c63e",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/basic/sha.jpg": "ee78fe751ae8ae562c50c8b40b74197f058ffee821f1a7240b6cd9810899c63e"
+    }
+  },
+  "playing-cards/full/basic/shan.jpg": {
+    "output": "d84b686f5972e8e2d9ff934d39795e91c9d871295610956c35a9e961956a4d24",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/basic/shan.jpg": "d84b686f5972e8e2d9ff934d39795e91c9d871295610956c35a9e961956a4d24"
+    }
+  },
+  "playing-cards/full/basic/wine.jpg": {
+    "output": "2095d8f91d6c037b37af815d8d41be2dd6ac743bd62c793094935667f209fc44",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/basic/wine.jpg": "2095d8f91d6c037b37af815d8d41be2dd6ac743bd62c793094935667f209fc44"
+    }
+  },
+  "playing-cards/full/equipment/armor/black-shield.jpg": {
+    "output": "5372c9dbc53ffab589fdf71144c2cdc3fcc6c3a5cce3716d4493a2f8d3d55006",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/armor/black-shield.jpg": "5372c9dbc53ffab589fdf71144c2cdc3fcc6c3a5cce3716d4493a2f8d3d55006"
+    }
+  },
+  "playing-cards/full/equipment/armor/eight-trigrams.jpg": {
+    "output": "0a5d4bedafcdda9416d09b53ffa14a4141a727cd1aed333dc3e732b8179eb424",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/armor/eight-trigrams.jpg": "0a5d4bedafcdda9416d09b53ffa14a4141a727cd1aed333dc3e732b8179eb424"
+    }
+  },
+  "playing-cards/full/equipment/armor/silver-lion.jpg": {
+    "output": "5efbf9b290675b125c5488e687a74bd6b9505bbdb53af905185204a1f1259210",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/armor/silver-lion.jpg": "5efbf9b290675b125c5488e687a74bd6b9505bbdb53af905185204a1f1259210"
+    }
+  },
+  "playing-cards/full/equipment/armor/wood-armor.jpg": {
+    "output": "c44e19a402b61caaa6fb56094a0d6ef64c27454303263db94ad1982b491d704c",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/armor/wood-armor.jpg": "c44e19a402b61caaa6fb56094a0d6ef64c27454303263db94ad1982b491d704c"
+    }
+  },
+  "playing-cards/full/equipment/horse/da-yuan.jpg": {
+    "output": "0f711aa93880cfbe506ec1edbfc62bcb894ebc50b95cc8346261c961acd22347",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/horse/da-yuan.jpg": "0f711aa93880cfbe506ec1edbfc62bcb894ebc50b95cc8346261c961acd22347"
+    }
+  },
+  "playing-cards/full/equipment/horse/di-lu.jpg": {
+    "output": "a41be94cdaac2c7af18c5e9cd022b47480c87f2b10cc0a7c8534e6db72cc73b0",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/horse/di-lu.jpg": "a41be94cdaac2c7af18c5e9cd022b47480c87f2b10cc0a7c8534e6db72cc73b0"
+    }
+  },
+  "playing-cards/full/equipment/horse/hua-liu.jpg": {
+    "output": "d4e8b08e98c034305979398cac3c6d5504c9aedc1f42c9f0089aa6a3904d1a94",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/horse/hua-liu.jpg": "d4e8b08e98c034305979398cac3c6d5504c9aedc1f42c9f0089aa6a3904d1a94"
+    }
+  },
+  "playing-cards/full/equipment/horse/red-hare.jpg": {
+    "output": "ee2b9d654611c0b92ca850d63f133acedc7287a5ee1a399043bd06fc650bfbf5",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/horse/red-hare.jpg": "ee2b9d654611c0b92ca850d63f133acedc7287a5ee1a399043bd06fc650bfbf5"
+    }
+  },
+  "playing-cards/full/equipment/horse/shadow-runner.jpg": {
+    "output": "7877c0c1186ea1793c22f4e1ac18641fe99fc8a3202550e6089955ae84150406",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/horse/shadow-runner.jpg": "7877c0c1186ea1793c22f4e1ac18641fe99fc8a3202550e6089955ae84150406"
+    }
+  },
+  "playing-cards/full/equipment/horse/storm-runner.jpg": {
+    "output": "99976c1756fcdc4c3ef26eaf64f93958b4b1143b8673d3e0058a3f7fa5056c2f",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/horse/storm-runner.jpg": "99976c1756fcdc4c3ef26eaf64f93958b4b1143b8673d3e0058a3f7fa5056c2f"
+    }
+  },
+  "playing-cards/full/equipment/horse/zi-xing.jpg": {
+    "output": "9a60c09f1373cb5f70af1eab4dfea5c12ae83dc926f8483467a720320db0cf68",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/horse/zi-xing.jpg": "9a60c09f1373cb5f70af1eab4dfea5c12ae83dc926f8483467a720320db0cf68"
+    }
+  },
+  "playing-cards/full/equipment/weapon/ancient-scimitar.jpg": {
+    "output": "2d2cd0740399eb76354f104ae36827438ca328d3ec56e309568a55af2fe1e96e",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/ancient-scimitar.jpg": "2d2cd0740399eb76354f104ae36827438ca328d3ec56e309568a55af2fe1e96e"
+    }
+  },
+  "playing-cards/full/equipment/weapon/axe.jpg": {
+    "output": "4aa0869403622b72ce30d05e8dd7256486e8b71c1c8d594ea4066a5f655d3a32",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/axe.jpg": "4aa0869403622b72ce30d05e8dd7256486e8b71c1c8d594ea4066a5f655d3a32"
+    }
+  },
+  "playing-cards/full/equipment/weapon/black-pommel.jpg": {
+    "output": "7da95fdd6eb6d4e011f9a76734f3a6f64c4629917837f70e4b013b4a77f27b8f",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/black-pommel.jpg": "7da95fdd6eb6d4e011f9a76734f3a6f64c4629917837f70e4b013b4a77f27b8f"
+    }
+  },
+  "playing-cards/full/equipment/weapon/crossbow.jpg": {
+    "output": "cfa356a6b0f8edbe1fd4dbd055a3e5fb520cf48fda257fe04bd4f5c91248909b",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/crossbow.jpg": "cfa356a6b0f8edbe1fd4dbd055a3e5fb520cf48fda257fe04bd4f5c91248909b"
+    }
+  },
+  "playing-cards/full/equipment/weapon/fire-fan.jpg": {
+    "output": "f754c219cef48c840d21efc0dd552e00d15b559f3c34a88e142c4dbe509f2570",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/fire-fan.jpg": "f754c219cef48c840d21efc0dd552e00d15b559f3c34a88e142c4dbe509f2570"
+    }
+  },
+  "playing-cards/full/equipment/weapon/gender-swords.jpg": {
+    "output": "6c52116b0791fff6322b46c83c81c08acb9ae5b4e869ca14a02cbf5d6afefd0a",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/gender-swords.jpg": "6c52116b0791fff6322b46c83c81c08acb9ae5b4e869ca14a02cbf5d6afefd0a"
+    }
+  },
+  "playing-cards/full/equipment/weapon/green-dragon-blade.jpg": {
+    "output": "e229194400fa91c387804ba24681ec43dd1c81bec2589cb0e43f1314f03f95d2",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/green-dragon-blade.jpg": "e229194400fa91c387804ba24681ec43dd1c81bec2589cb0e43f1314f03f95d2"
+    }
+  },
+  "playing-cards/full/equipment/weapon/ice-sword.jpg": {
+    "output": "60a94a45a444b55c588ee3893c8c14d7f43394eba857b7bbded2f241a1fe754d",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/ice-sword.jpg": "60a94a45a444b55c588ee3893c8c14d7f43394eba857b7bbded2f241a1fe754d"
+    }
+  },
+  "playing-cards/full/equipment/weapon/longbow.jpg": {
+    "output": "11dbcde6a70d8d2078a2e4b9fdfdca9450042cca63e2c2a0e0003886f242d275",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/longbow.jpg": "11dbcde6a70d8d2078a2e4b9fdfdca9450042cca63e2c2a0e0003886f242d275"
+    }
+  },
+  "playing-cards/full/equipment/weapon/serpent-spear.jpg": {
+    "output": "289ad17526e68aa0f2903529dca21789bb6cbbcc92dae5492847c8cf91c88545",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/serpent-spear.jpg": "289ad17526e68aa0f2903529dca21789bb6cbbcc92dae5492847c8cf91c88545"
+    }
+  },
+  "playing-cards/full/equipment/weapon/sky-scorcher.jpg": {
+    "output": "4f29b6640a3c0cd4750b7c774098078280e964e430e0453ad346eaf0b61c5f49",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/sky-scorcher.jpg": "4f29b6640a3c0cd4750b7c774098078280e964e430e0453ad346eaf0b61c5f49"
+    }
+  },
+  "playing-cards/full/equipment/weapon/trident-glaive.jpg": {
+    "output": "c3ad2c65a8ef6551c8a8c1ad0329f1c025967c31cfc471e5c02f7cde2aac14bd",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/trident-glaive.jpg": "c3ad2c65a8ef6551c8a8c1ad0329f1c025967c31cfc471e5c02f7cde2aac14bd"
+    }
+  },
+  "playing-cards/full/equipment/weapon/wu-six-swords.jpg": {
+    "output": "7286ddf92135f9f8eb4b4fbffa009561197c2c73284b81c0220c55f776c92ded",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/equipment/weapon/wu-six-swords.jpg": "7286ddf92135f9f8eb4b4fbffa009561197c2c73284b81c0220c55f776c92ded"
+    }
+  },
+  "playing-cards/full/tool/ally-far-attack-near.jpg": {
+    "output": "8000add44abeb819adb5103223210392b91002e2fc8618082bf5bb5ca5b323de",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/ally-far-attack-near.jpg": "8000add44abeb819adb5103223210392b91002e2fc8618082bf5bb5ca5b323de"
+    }
+  },
+  "playing-cards/full/tool/amass.jpg": {
+    "output": "7dde27a2d9f0662ff6d5344b571e4f05bcf1e6366f37e459718b78be47670108",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/amass.jpg": "7dde27a2d9f0662ff6d5344b571e4f05bcf1e6366f37e459718b78be47670108"
+    }
+  },
+  "playing-cards/full/tool/ascertain.jpg": {
+    "output": "300d7d69ca5fda0e17d754991ebc5422124f34932a47b10156e95ed26ff96349",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/ascertain.jpg": "300d7d69ca5fda0e17d754991ebc5422124f34932a47b10156e95ed26ff96349"
+    }
+  },
+  "playing-cards/full/tool/barbarians.jpg": {
+    "output": "574510a2d05a8e9b94096c1f942106322953a9bb516b1598e6a16f74c5194f72",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/barbarians.jpg": "574510a2d05a8e9b94096c1f942106322953a9bb516b1598e6a16f74c5194f72"
+    }
+  },
+  "playing-cards/full/tool/blaze.jpg": {
+    "output": "5cff1bd614b259a9fbbdbb5bea088b448c921e38646bae99f73047822bd451a2",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/blaze.jpg": "5cff1bd614b259a9fbbdbb5bea088b448c921e38646bae99f73047822bd451a2"
+    }
+  },
+  "playing-cards/full/tool/break.jpg": {
+    "output": "b1946d9f06459b86c28e36162b415f019f6d45bd3e12bd3585e11d9c4f9f80a9",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/break.jpg": "b1946d9f06459b86c28e36162b415f019f6d45bd3e12bd3585e11d9c4f9f80a9"
+    }
+  },
+  "playing-cards/full/tool/capture.jpg": {
+    "output": "068b44dc82ed6d100285930d8762c92de178a1ce729506c2f178c8ea0bf6f668",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/capture.jpg": "068b44dc82ed6d100285930d8762c92de178a1ce729506c2f178c8ea0bf6f668"
+    }
+  },
+  "playing-cards/full/tool/chains.jpg": {
+    "output": "75a09eee888c0e49ce9dc1d92e6ae750ba747111efdc6e0c36a7ea2eaa08afac",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/chains.jpg": "75a09eee888c0e49ce9dc1d92e6ae750ba747111efdc6e0c36a7ea2eaa08afac"
+    }
+  },
+  "playing-cards/full/tool/coerce.jpg": {
+    "output": "be625f0a04cb41b082209db3c639bb9d6690ddd1e79e81d848542ce1246695c7",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/coerce.jpg": "be625f0a04cb41b082209db3c639bb9d6690ddd1e79e81d848542ce1246695c7"
+    }
+  },
+  "playing-cards/full/tool/draw-two.jpg": {
+    "output": "4a3be0726a62f1977c6ad6699350eef0245e0c56d29c87a6cd222f42c5887af8",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/draw-two.jpg": "4a3be0726a62f1977c6ad6699350eef0245e0c56d29c87a6cd222f42c5887af8"
+    }
+  },
+  "playing-cards/full/tool/duel.jpg": {
+    "output": "a14dac79d5fdbf040f81b0fa02cb2fcde5f63bf858d8fbc2c8a886d4a7e6a81e",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/duel.jpg": "a14dac79d5fdbf040f81b0fa02cb2fcde5f63bf858d8fbc2c8a886d4a7e6a81e"
+    }
+  },
+  "playing-cards/full/tool/hail-of-arrows.jpg": {
+    "output": "031c5939bceaa00893efccba2fdea950388e0e24c13a6bbc6ae5ced142aeeb84",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/hail-of-arrows.jpg": "031c5939bceaa00893efccba2fdea950388e0e24c13a6bbc6ae5ced142aeeb84"
+    }
+  },
+  "playing-cards/full/tool/harvest.jpg": {
+    "output": "efc9377164d775802b62a24c2f7eb92ce6b3b8e687677c8486373b6e3188ff0d",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/harvest.jpg": "efc9377164d775802b62a24c2f7eb92ce6b3b8e687677c8486373b6e3188ff0d"
+    }
+  },
+  "playing-cards/full/tool/lightning.jpg": {
+    "output": "16ee58fe4b7164a9b3f7a1f14495b0e052908b6c69e785a9e42d005fe73f96a2",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/lightning.jpg": "16ee58fe4b7164a9b3f7a1f14495b0e052908b6c69e785a9e42d005fe73f96a2"
+    }
+  },
+  "playing-cards/full/tool/peach-garden.jpg": {
+    "output": "9e40f15afb2bdcc6875d49901d3bb252475eb79944cfda51165ee5755aaa09ca",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/peach-garden.jpg": "9e40f15afb2bdcc6875d49901d3bb252475eb79944cfda51165ee5755aaa09ca"
+    }
+  },
+  "playing-cards/full/tool/starvation.jpg": {
+    "output": "e9bfe4ed31cdfffca54a79a0a79dca31fbdcf0b7ad705f956683e0e2469cf6d8",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/starvation.jpg": "e9bfe4ed31cdfffca54a79a0a79dca31fbdcf0b7ad705f956683e0e2469cf6d8"
+    }
+  },
+  "playing-cards/full/tool/steal.jpg": {
+    "output": "966eeaa33071d106c3ab20e8db4c8f4140fe26c1fe023336000533c64b3ad948",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/steal.jpg": "966eeaa33071d106c3ab20e8db4c8f4140fe26c1fe023336000533c64b3ad948"
+    }
+  },
+  "playing-cards/full/tool/wuxie-guo.jpg": {
+    "output": "f2f836c38ee653c8f0e1545bfbbfa81c7e6fe34074836647f5014c690e59ff1e",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/wuxie-guo.jpg": "f2f836c38ee653c8f0e1545bfbbfa81c7e6fe34074836647f5014c690e59ff1e"
+    }
+  },
+  "playing-cards/full/tool/wuxie.jpg": {
+    "output": "b4ed913d29b6078d8eda00003585d4448c52a0472ffd1b2513975f2bc1d6e63f",
+    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+    "sources": {
+      "playing-cards/full/tool/wuxie.jpg": "b4ed913d29b6078d8eda00003585d4448c52a0472ffd1b2513975f2bc1d6e63f"
+    }
+  },
+  "ui/banners/qun.png": {
+    "output": "9d2c93c79a98d9d810dc6e8f480c6c62ba149adde693690feae51d8bd40e3a8a",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/banners/qun.png": "9d2c93c79a98d9d810dc6e8f480c6c62ba149adde693690feae51d8bd40e3a8a"
+    }
+  },
+  "ui/banners/shu.png": {
+    "output": "f5e3241b48235c73a354a344043cd4d83f20ee2a52d5142d8d9f69dc94a47b3e",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/banners/shu.png": "f5e3241b48235c73a354a344043cd4d83f20ee2a52d5142d8d9f69dc94a47b3e"
+    }
+  },
+  "ui/banners/wei.png": {
+    "output": "fcb7fe5177994a9b4e552384a8cc8bd0af3cf9ed1a1b8447c291821c4bf60584",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/banners/wei.png": "fcb7fe5177994a9b4e552384a8cc8bd0af3cf9ed1a1b8447c291821c4bf60584"
+    }
+  },
+  "ui/banners/wu.png": {
+    "output": "1233a9a27fe780cbcdd196abfec7df37e933fc2a123dd2ffbce6ef5dc1956804",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/banners/wu.png": "1233a9a27fe780cbcdd196abfec7df37e933fc2a123dd2ffbce6ef5dc1956804"
+    }
+  },
+  "ui/battlefield/1.jpg": {
+    "output": "8124313d652e183aa5674658f386687f2e9e56db700f16e271d4a2e997c3e9a3",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/battlefield/1.jpg": "8124313d652e183aa5674658f386687f2e9e56db700f16e271d4a2e997c3e9a3"
+    }
+  },
+  "ui/battlefield/2.jpg": {
+    "output": "2ff8886078d417c08a86fe366c8bb2f7c4dc5847e194a2806f33c1275469e50f",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/battlefield/2.jpg": "2ff8886078d417c08a86fe366c8bb2f7c4dc5847e194a2806f33c1275469e50f"
+    }
+  },
+  "ui/battlefield/3.jpg": {
+    "output": "3e382421acab6d1c3002ec1322b60b3af2db382be6c911bbdeb0e37049a663d5",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/battlefield/3.jpg": "3e382421acab6d1c3002ec1322b60b3af2db382be6c911bbdeb0e37049a663d5"
+    }
+  },
+  "ui/brand/favicon.ico": {
+    "output": "2ff16243a23a4309e36cfba2d2199bc84ffae22b203431e949dcfe89f479f8b3",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/brand/favicon.ico": "2ff16243a23a4309e36cfba2d2199bc84ffae22b203431e949dcfe89f479f8b3"
+    }
+  },
+  "ui/brand/landing.jpg": {
+    "output": "966d7701cee47c93df9e0ef49d7e4f21c94fde1f23ecc4eaa7760c350d9ddff9",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/brand/landing.jpg": "966d7701cee47c93df9e0ef49d7e4f21c94fde1f23ecc4eaa7760c350d9ddff9"
+    }
+  },
+  "ui/brand/logo.png": {
+    "output": "683707a54d3d83e6839a090aa73c98ebe3d4c2e67586f54071b4a38db8482922",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/brand/logo.png": "683707a54d3d83e6839a090aa73c98ebe3d4c2e67586f54071b4a38db8482922"
+    }
+  },
+  "ui/chain/chain-left.png": {
+    "output": "636cddd2d9504928f0642f6a0f9750193017e769a8a6396599c94a23e1590b76",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/chain/chain-left.png": "636cddd2d9504928f0642f6a0f9750193017e769a8a6396599c94a23e1590b76"
+    }
+  },
+  "ui/chain/chain-right.png": {
+    "output": "a7fc51fda21a3fa0b8bdbe480836847d1c121aaaada17a2193d15f1865cbbf79",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/chain/chain-right.png": "a7fc51fda21a3fa0b8bdbe480836847d1c121aaaada17a2193d15f1865cbbf79"
+    }
+  },
+  "ui/chain/chain.png": {
+    "output": "a7fc51fda21a3fa0b8bdbe480836847d1c121aaaada17a2193d15f1865cbbf79",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/chain/chain.png": "a7fc51fda21a3fa0b8bdbe480836847d1c121aaaada17a2193d15f1865cbbf79"
+    }
+  },
+  "ui/hp/1.png": {
+    "output": "2cf55ef3a8ec621c2f497362fbb075aca2dbf72675ef7ed57bb56ae45d96badf",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/hp/1.png": "2cf55ef3a8ec621c2f497362fbb075aca2dbf72675ef7ed57bb56ae45d96badf"
+    }
+  },
+  "ui/hp/2.png": {
+    "output": "f14fa286683e3ab13fd97489821c2375ea20966a7171cf2ae76e617f38635678",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/hp/2.png": "f14fa286683e3ab13fd97489821c2375ea20966a7171cf2ae76e617f38635678"
+    }
+  },
+  "ui/hp/3.png": {
+    "output": "a5b08d8c1b5afe93fd97a206f6ec8cac7627796ec008d90b9606efd9ebf97e48",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/hp/3.png": "a5b08d8c1b5afe93fd97a206f6ec8cac7627796ec008d90b9606efd9ebf97e48"
+    }
+  },
+  "ui/hp/4.png": {
+    "output": "71f1967d61024e0b4edfebe29c16be244d691826c16f73aa3bb3394b9fb1c46e",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/hp/4.png": "71f1967d61024e0b4edfebe29c16be244d691826c16f73aa3bb3394b9fb1c46e"
+    }
+  }
+}
