@@ -41,7 +41,7 @@ describe.each(LOCALES)('the rules scenes in %s', (locale) => {
     const images = [...el.querySelectorAll('img.scene-card, img.scene-avatar, img.scene-chain')];
     expect(images.length).toBeGreaterThan(0);
     for (const img of images) {
-      expect([page, img.getAttribute('src')]).toEqual([page, expect.stringMatching(/^\/images\/.+\.(jpg|png)$/)]);
+      expect([page, img.getAttribute('src')]).toEqual([page, expect.stringMatching(/^\/images\/.+\.(jpg|png|webp)$/)]);
       expect(img.getAttribute('src')).not.toMatch(/placeholder|unknown/);
       expect(img.getAttribute('alt')!.trim()).not.toBe('');
     }

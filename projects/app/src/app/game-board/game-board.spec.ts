@@ -20,6 +20,7 @@ import { PlaybackDirector } from './playback/playback-director';
 import { SeatTile } from './seat-tile';
 import { CompeteDialog } from './compete-dialog';
 import { MusicService } from '../music.service';
+import { SpritePreload } from '../sprite-preload.service';
 import { Action, GameState, cardsOverHandLimit, createRng } from 'engine';
 import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
@@ -60,6 +61,12 @@ describe('GameBoard', () => {
     gameService = TestBed.inject(GameService);
     // Not about playback: the board shows each new state at once (ruling R1).
     TestBed.inject(PlaybackSpeed).speed.set('instant');
+  });
+
+  it('starts fetching the sprite sheets when the board is created, so the first hit has its picture', () => {
+    const start = jest.spyOn(TestBed.inject(SpritePreload), 'start').mockImplementation(() => undefined);
+    TestBed.createComponent(GameBoard);
+    expect(start).toHaveBeenCalledTimes(1);
   });
 
   it('shows a fallback message and a link back to /setup when no game is in progress', () => {

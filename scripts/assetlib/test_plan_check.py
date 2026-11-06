@@ -72,6 +72,51 @@ class PlanTests(unittest.TestCase):
         with self.assertRaises(PlanError):
             plan_outputs(make_layout(files, recipes, {'tool/duel': [1, 2, 3, 4]}))
 
+    IMAGE_RECIPES = {'generals/skins': {'op': 'image', 'ext': 'webp', 'quality': 85}}
+
+    def test_image_recipe_plans_a_converted_output_per_master(self):
+        layout = make_layout({'generals/skins/wei/a.png': b'a', 'generals/skins/wei/b.jpg': b'b'}, self.IMAGE_RECIPES)
+        outputs = {o.path: o for o in plan_outputs(layout)}
+        self.assertEqual(sorted(outputs), ['generals/skins/wei/a.webp', 'generals/skins/wei/b.webp'])
+        self.assertEqual(outputs['generals/skins/wei/a.webp'].op, 'image')
+        self.assertEqual(outputs['generals/skins/wei/a.webp'].sources, ('generals/skins/wei/a.png',))
+
+    def test_image_recipe_rejects_a_target_format_it_cannot_write(self):
+        layout = make_layout({'generals/skins/a.png': b'a'}, {'generals/skins': {'op': 'image', 'ext': 'avif'}})
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('avif', str(ctx.exception))
+
+    def test_max_width_must_be_a_positive_whole_number(self):
+        for bad in (0, -5, '320', 1.5, True, None):
+            for key, recipe in (
+                ('generals/skins', {'op': 'image', 'ext': 'webp', 'maxWidth': bad}),
+                ('playing-cards/cropped', {'op': 'crop', 'from': 'playing-cards/full', 'ext': 'webp', 'maxWidth': bad}),
+            ):
+                layout = make_layout({'generals/skins/a.png': b'a'}, {key: recipe}) if key == 'generals/skins' else make_layout({}, {key: recipe})
+                with self.assertRaises(PlanError, msg='{} {!r}'.format(key, bad)) as ctx:
+                    plan_outputs(layout)
+                self.assertIn(key, str(ctx.exception))
+
+    def test_a_crop_recipe_writes_only_jpg_or_webp(self):
+        layout = make_layout({}, {'playing-cards/cropped': {'op': 'crop', 'from': 'playing-cards/full', 'ext': 'png'}})
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('png', str(ctx.exception))
+
+    def test_image_recipe_rejects_a_master_it_cannot_read(self):
+        layout = make_layout({'generals/skins/wei/a.png': b'a', 'generals/skins/wei/notes.txt': b'x'}, self.IMAGE_RECIPES)
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('generals/skins/wei/notes.txt', str(ctx.exception))
+
+    def test_image_recipe_rejects_the_same_stem_twice(self):
+        layout = make_layout({'generals/skins/wei/a.png': b'a', 'generals/skins/wei/a.jpg': b'b'}, self.IMAGE_RECIPES)
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('a.png', str(ctx.exception))
+        self.assertIn('a.jpg', str(ctx.exception))
+
     CROP_RECIPES = {
         'playing-cards/full': {'op': 'copy', 'ext': 'jpg'},
         'playing-cards/cropped': {'op': 'crop', 'from': 'playing-cards/full', 'ext': 'jpg'},
@@ -103,6 +148,20 @@ class PlanTests(unittest.TestCase):
         with self.assertRaises(PlanError) as ctx:
             plan_outputs(layout)
         self.assertIn('tool/duel', str(ctx.exception))
+
+    def test_sheets_ship_in_the_extension_of_the_recipe_png_by_default(self):
+        frames = {'effects/frames/chain/0.png': b'c'}
+        base = {'effects/frames': {'op': 'master-only'}}
+        png = plan_outputs(make_layout(frames, {**base, 'effects/sheets': {'op': 'sheets', 'from': 'effects/frames', 'map': {'chain': 'chain'}}}))
+        webp = plan_outputs(make_layout(frames, {**base, 'effects/sheets': {'op': 'sheets', 'from': 'effects/frames', 'ext': 'webp', 'map': {'chain': 'chain'}}}))
+        self.assertEqual(sorted(o.path for o in png), ['effects/sheets/chain.png', 'effects/sheets/sheets.json'])
+        self.assertEqual(sorted(o.path for o in webp), ['effects/sheets/chain.webp', 'effects/sheets/sheets.json'])
+
+    def test_sheets_write_only_png_or_webp(self):
+        layout = make_layout({'effects/frames/chain/0.png': b'c'}, {'effects/frames': {'op': 'master-only'}, 'effects/sheets': {'op': 'sheets', 'from': 'effects/frames', 'ext': 'gif', 'map': {'chain': 'chain'}}})
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('gif', str(ctx.exception))
 
     def test_sheets_plan_one_sheet_per_effect_and_one_meta_file(self):
         recipes = {

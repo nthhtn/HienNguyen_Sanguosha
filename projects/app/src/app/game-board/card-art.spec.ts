@@ -10,7 +10,7 @@ describe('CardArt', () => {
 
     const img = (fixture.nativeElement as HTMLElement).querySelector('img');
     expect(img).not.toBeNull();
-    expect(img!.getAttribute('src')).toBe('/images/generals/cards/wei/cao-cao.jpg');
+    expect(img!.getAttribute('src')).toBe('/images/generals/cards/wei/cao-cao.webp');
     expect(img!.getAttribute('alt')).toBe('Cao Cao');
   });
 
@@ -64,8 +64,8 @@ describe('CardArt', () => {
       fixture.detectChanges();
       return (fixture.nativeElement as HTMLElement).querySelector('img')!.getAttribute('src');
     };
-    expect(src('cao-cao')).toBe('/images/generals/skins/wei/caocao.png');
-    expect(src('zuo-ci')).toBe('/images/generals/skins/qun/zuoci.png');
+    expect(src('cao-cao')).toBe('/images/generals/skins/wei/caocao.webp');
+    expect(src('zuo-ci')).toBe('/images/generals/skins/qun/zuoci.webp');
   });
 
   it('renders the cropped art of a card when asked', () => {
@@ -74,6 +74,6 @@ describe('CardArt', () => {
     fixture.componentRef.setInput('label', 'Axe');
     fixture.componentRef.setInput('cropped', true);
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).querySelector('img')!.getAttribute('src')).toBe('/images/playing-cards/cropped/equipment/weapon/axe.jpg');
+    expect((fixture.nativeElement as HTMLElement).querySelector('img')!.getAttribute('src')).toBe('/images/playing-cards/cropped/equipment/weapon/axe.webp');
   });
 });

@@ -120,7 +120,7 @@ describe('SeatTile', () => {
     );
     expect(el.textContent).toContain('Shu');
     const portrait = el.querySelector('app-seat-avatar .half[data-slot="main"] img') as HTMLImageElement;
-    expect(portrait.getAttribute('src')).toBe('/images/generals/skins/shu/zhaoyun.png');
+    expect(portrait.getAttribute('src')).toBe('/images/generals/skins/shu/zhaoyun.webp');
   });
 
   it('shows a placeholder for a seat still choosing generals', () => {
@@ -312,7 +312,7 @@ describe('SeatTile', () => {
     expect(renderWith({}).querySelector('.damage-fx')).toBeNull();
     const fx = renderWith({ damageEffect: { id: 1, image: 'slash-fire' } }).querySelector('.damage-fx');
     expect(fx?.tagName).toBe('APP-SPRITE-EFFECT');
-    expect((fx?.querySelector('.sprite') as HTMLElement).style.backgroundImage).toContain('/images/effects/sheets/slash-fire.png');
+    expect((fx?.querySelector('.sprite') as HTMLElement).style.backgroundImage).toContain('/images/effects/sheets/slash-fire.webp');
     expect(fx?.parentElement?.classList).toContain('generals');
   });
 

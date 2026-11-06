@@ -172,6 +172,6 @@ describe('SceneFrame', () => {
 describe('scene art', () => {
   it.each(['sha', 'shan', 'peach', 'wine', 'wuxie', 'capture', 'cao-cao', 'guo-jia', 'zhang-jiao'])('%s resolves to a real asset path', (id) => {
     const card = render(id.includes('-') ? SceneGeneral : SceneCard, { id });
-    expect(card.el.querySelector('img.scene-card')!.getAttribute('src')).toMatch(/^\/images\/.+\.jpg$/);
+    expect(card.el.querySelector('img.scene-card')!.getAttribute('src')).toMatch(/^\/images\/.+\.webp$/);
   });
 });
