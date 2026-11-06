@@ -2,6 +2,7 @@ import manifest from '../../assets/manifest.json';
 import { baseGeneralId, isKingdomWarsGeneralId } from './generalIds';
 import skins from '../../assets/generals/skins/skins.json';
 import sheetManifest from '../../assets/effects/sheets/sheets.json';
+import recipes from '../../asset-recipes.json';
 
 interface AssetManifestEntry {
   localPath: string;
@@ -9,16 +10,30 @@ interface AssetManifestEntry {
 
 const ASSET_MANIFEST: Record<string, AssetManifestEntry> = manifest;
 
+const RECIPES: Record<string, { op: string; ext?: string }> = recipes;
+
+// A reference to a shipped file is stored without its extension, so a change of format is one edit in
+// asset-recipes.json. This adds the extension the recipe with the longest matching folder ships;
+// a path whose recipe names none (the logo, the music) is returned as it is.
+export function assetFile(path: string): string {
+  let key: string | undefined;
+  for (const candidate of Object.keys(RECIPES)) {
+    if ((path === candidate || path.startsWith(`${candidate}/`)) && (key === undefined || candidate.length > key.length)) key = candidate;
+  }
+  const ext = key === undefined ? undefined : RECIPES[key].ext;
+  return ext ? `${path}.${ext}` : path;
+}
+
 export function cardArtUrl(id: string): string | null {
   const entry = ASSET_MANIFEST[id];
-  return entry ? `/images/${entry.localPath}` : null;
+  return entry ? `/images/${assetFile(entry.localPath)}` : null;
 }
 
 // A card's art alone, without the card frame, name or rules text: what the Play
 // screen shows, since it draws its own suit, number and name over the art.
 export function croppedCardArtUrl(id: string): string | null {
   const entry = ASSET_MANIFEST[id];
-  return entry ? `/images/${entry.localPath.replace(/^playing-cards\/full\//, 'playing-cards/cropped/')}` : null;
+  return entry ? `/images/${assetFile(entry.localPath.replace(/^playing-cards\/full\//, 'playing-cards/cropped/'))}` : null;
 }
 
 const GENERAL_SKINS: Record<string, string> = skins;
@@ -32,19 +47,19 @@ export function generalSkinUrl(id: string): string | null {
     return generalSkinUrl(base) ?? GENERAL_PLACEHOLDER_ART_URL;
   }
   const skin = GENERAL_SKINS[id];
-  return skin ? `/images/generals/skins/${skin}` : cardArtUrl(id);
+  return skin ? `/images/${assetFile(`generals/skins/${skin}`)}` : cardArtUrl(id);
 }
 
 // Generals whose skin has no death voice file yet.
 const NO_DEATH_VOICE = new Set(['zuo-ci']);
 
-// A General's death voice: /audio/death/generals/<force>/<skin file name>.ogg, named like the skin by its
-// pinyin and filed under its force (Cao Cao: wei/caocao.ogg). Null for a General with no skin or no recording.
+// A General's death voice: /audio/death/generals/<skin>.ogg, named like the skin by its pinyin and
+// filed under its force (Cao Cao: wei/caocao.ogg). Null for a General with no skin or no recording.
 export function generalDeathVoiceUrl(id: string): string | null {
   const base = baseGeneralId(id);
   const skin = GENERAL_SKINS[base];
   if (!skin || NO_DEATH_VOICE.has(base)) return null;
-  return `/audio/death/generals/${skin.replace(/\.[^.]+$/, '')}.ogg`;
+  return `/${assetFile(`audio/death/generals/${skin}`)}`;
 }
 
 // The back of a playing card, shown for a card whose face is hidden.

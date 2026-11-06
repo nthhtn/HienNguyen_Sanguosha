@@ -2023,10 +2023,10 @@
     }
   },
   "generals/skins/skins.json": {
-    "output": "c26fb2b9725819960ec7482a84e8a2717fc63b09ceaad07387e9069d211072ab",
+    "output": "77c6cbcabc811ec7dae20d63efeae9607b4d7ad5528cdfdcc01a5019e70c7562",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "generals/skins/skins.json": "c26fb2b9725819960ec7482a84e8a2717fc63b09ceaad07387e9069d211072ab"
+      "generals/skins/skins.json": "77c6cbcabc811ec7dae20d63efeae9607b4d7ad5528cdfdcc01a5019e70c7562"
     }
   },
   "generals/skins/wei/caocao.png": {
@@ -2282,10 +2282,10 @@
     }
   },
   "manifest.json": {
-    "output": "422465abf5c195683a059af757b3b6443375567abe204530ac3be298e38cbd3f",
+    "output": "d523e108cdf33242e704968b2bb3e81ff54c528d2f660455a24aa7d03c4bf809",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "manifest.json": "422465abf5c195683a059af757b3b6443375567abe204530ac3be298e38cbd3f"
+      "manifest.json": "d523e108cdf33242e704968b2bb3e81ff54c528d2f660455a24aa7d03c4bf809"
     }
   },
   "playing-cards/back.jpg": {

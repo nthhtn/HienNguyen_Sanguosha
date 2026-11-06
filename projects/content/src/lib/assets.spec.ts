@@ -3,7 +3,7 @@ import { join } from 'path';
 import { generalsData } from '../../data/generals';
 import { kingdomWarsGeneralIds } from './kingdomWarsGenerals';
 import { kingdomWarsGeneralId } from './generalIds';
-import { AMBITIONIST_ICON_URL, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
+import { AMBITIONIST_ICON_URL, assetFile, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /images/ URL for a crawled id', () => {
@@ -169,27 +169,53 @@ describe('Starvation art', () => {
   });
 });
 
+describe('assetFile', () => {
+  it('adds the extension its recipe ships to a reference without one', () => {
+    expect(assetFile('generals/skins/wei/caocao')).toBe('generals/skins/wei/caocao.png');
+    expect(assetFile('generals/cards/wei/cao-cao')).toBe('generals/cards/wei/cao-cao.jpg');
+    expect(assetFile('playing-cards/full/tool/duel')).toBe('playing-cards/full/tool/duel.jpg');
+    expect(assetFile('playing-cards/cropped/tool/duel')).toBe('playing-cards/cropped/tool/duel.jpg');
+    expect(assetFile('audio/death/generals/wei/caocao')).toBe('audio/death/generals/wei/caocao.ogg');
+  });
+
+  it('leaves a path whose recipe names no extension as it is', () => {
+    expect(assetFile('ui/brand/logo.png')).toBe('ui/brand/logo.png');
+    expect(assetFile('generals/skins/skins.json')).toBe('generals/skins/skins.json');
+    expect(assetFile('audio/music/background.ogg')).toBe('audio/music/background.ogg');
+  });
+
+  it('matches whole folder names, so a look-alike folder gets nothing', () => {
+    expect(assetFile('generals/skins-extra/wei/a')).toBe('generals/skins-extra/wei/a');
+  });
+});
+
 describe('shipped files', () => {
   const assets = join(__dirname, '../../assets');
   const read = (path: string) => JSON.parse(readFileSync(join(assets, path), 'utf8')) as Record<string, unknown>;
+  const localPaths = () => Object.values(read('manifest.json')).map((e) => (e as { localPath: string }).localPath);
 
   it('has a file for every manifest entry', () => {
-    const missing = Object.entries(read('manifest.json')).filter(([, e]) => !existsSync(join(assets, (e as { localPath: string }).localPath)));
-    expect(missing.map(([id]) => id)).toEqual([]);
+    const missing = localPaths().filter((p) => !existsSync(join(assets, assetFile(p))));
+    expect(missing).toEqual([]);
   });
 
   it('has a cropped counterpart for every full playing card', () => {
-    const cards = Object.values(read('manifest.json')).map((e) => (e as { localPath: string }).localPath).filter((p) => p.startsWith('playing-cards/full/'));
+    const cards = localPaths().filter((p) => p.startsWith('playing-cards/full/'));
     expect(cards.length).toBeGreaterThan(40);
-    expect(cards.filter((p) => !existsSync(join(assets, p.replace('playing-cards/full/', 'playing-cards/cropped/'))))).toEqual([]);
+    expect(cards.filter((p) => !existsSync(join(assets, assetFile(p.replace('playing-cards/full/', 'playing-cards/cropped/')))))).toEqual([]);
   });
 
   it('has a file for every skin', () => {
-    const missing = Object.entries(read('generals/skins/skins.json')).filter(([, file]) => !existsSync(join(assets, 'generals/skins', file as string)));
+    const missing = Object.entries(read('generals/skins/skins.json')).filter(([, skin]) => !existsSync(join(assets, assetFile(`generals/skins/${skin as string}`))));
     expect(missing.map(([id]) => id)).toEqual([]);
   });
 
   it('has a sheet for every sprite effect', () => {
     for (const id of Object.keys(read('effects/sheets/sheets.json'))) expect(existsSync(join(assets, 'effects/sheets', `${id}.png`))).toBe(true);
+  });
+
+  it('keeps manifest and skin references free of file extensions', () => {
+    expect(localPaths().filter((p) => /\.[a-z]+$/.test(p))).toEqual([]);
+    expect(Object.values(read('generals/skins/skins.json')).filter((p) => /\.[a-z]+$/.test(p as string))).toEqual([]);
   });
 });
