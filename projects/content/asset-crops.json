@@ -1,0 +1,296 @@
+{
+  "basic/fire-attack": [
+    43,
+    291,
+    583,
+    630
+  ],
+  "basic/lightning-attack": [
+    43,
+    293,
+    587,
+    635
+  ],
+  "basic/peach": [
+    43,
+    290,
+    581,
+    629
+  ],
+  "basic/sha": [
+    43,
+    291,
+    583,
+    630
+  ],
+  "basic/shan": [
+    43,
+    289,
+    579,
+    627
+  ],
+  "basic/wine": [
+    43,
+    292,
+    586,
+    634
+  ],
+  "equipment/armor/black-shield": [
+    73,
+    195,
+    527,
+    410
+  ],
+  "equipment/armor/eight-trigrams": [
+    74,
+    196,
+    529,
+    411
+  ],
+  "equipment/armor/silver-lion": [
+    73,
+    195,
+    526,
+    410
+  ],
+  "equipment/armor/wood-armor": [
+    73,
+    195,
+    526,
+    410
+  ],
+  "equipment/horse/da-yuan": [
+    54,
+    167,
+    564,
+    521
+  ],
+  "equipment/horse/di-lu": [
+    53,
+    166,
+    560,
+    518
+  ],
+  "equipment/horse/hua-liu": [
+    53,
+    166,
+    560,
+    518
+  ],
+  "equipment/horse/red-hare": [
+    53,
+    166,
+    560,
+    518
+  ],
+  "equipment/horse/shadow-runner": [
+    53,
+    166,
+    560,
+    518
+  ],
+  "equipment/horse/storm-runner": [
+    53,
+    165,
+    556,
+    514
+  ],
+  "equipment/horse/zi-xing": [
+    53,
+    166,
+    560,
+    518
+  ],
+  "equipment/weapon/ancient-scimitar": [
+    49,
+    131,
+    354,
+    276
+  ],
+  "equipment/weapon/axe": [
+    73,
+    195,
+    525,
+    409
+  ],
+  "equipment/weapon/black-pommel": [
+    73,
+    195,
+    527,
+    410
+  ],
+  "equipment/weapon/crossbow": [
+    72,
+    193,
+    521,
+    405
+  ],
+  "equipment/weapon/fire-fan": [
+    73,
+    193,
+    521,
+    406
+  ],
+  "equipment/weapon/gender-swords": [
+    74,
+    196,
+    530,
+    412
+  ],
+  "equipment/weapon/green-dragon-blade": [
+    49,
+    131,
+    354,
+    276
+  ],
+  "equipment/weapon/ice-sword": [
+    73,
+    195,
+    527,
+    410
+  ],
+  "equipment/weapon/longbow": [
+    74,
+    196,
+    529,
+    411
+  ],
+  "equipment/weapon/serpent-spear": [
+    74,
+    196,
+    529,
+    411
+  ],
+  "equipment/weapon/sky-scorcher": [
+    49,
+    131,
+    353,
+    275
+  ],
+  "equipment/weapon/trident-glaive": [
+    77,
+    200,
+    556,
+    420
+  ],
+  "equipment/weapon/wu-six-swords": [
+    77,
+    200,
+    556,
+    420
+  ],
+  "tool/ally-far-attack-near": [
+    64,
+    170,
+    584,
+    490
+  ],
+  "tool/amass": [
+    64,
+    170,
+    584,
+    490
+  ],
+  "tool/ascertain": [
+    64,
+    170,
+    584,
+    490
+  ],
+  "tool/barbarians": [
+    60,
+    166,
+    554,
+    478
+  ],
+  "tool/blaze": [
+    59,
+    165,
+    549,
+    474
+  ],
+  "tool/break": [
+    59,
+    164,
+    548,
+    473
+  ],
+  "tool/capture": [
+    263,
+    52,
+    526,
+    536
+  ],
+  "tool/chains": [
+    60,
+    165,
+    549,
+    475
+  ],
+  "tool/coerce": [
+    59,
+    163,
+    544,
+    471
+  ],
+  "tool/draw-two": [
+    60,
+    166,
+    554,
+    479
+  ],
+  "tool/duel": [
+    60,
+    167,
+    558,
+    482
+  ],
+  "tool/hail-of-arrows": [
+    60,
+    165,
+    552,
+    477
+  ],
+  "tool/harvest": [
+    60,
+    167,
+    557,
+    481
+  ],
+  "tool/lightning": [
+    263,
+    52,
+    526,
+    537
+  ],
+  "tool/peach-garden": [
+    60,
+    167,
+    556,
+    481
+  ],
+  "tool/starvation": [
+    262,
+    52,
+    523,
+    534
+  ],
+  "tool/steal": [
+    60,
+    165,
+    550,
+    476
+  ],
+  "tool/wuxie": [
+    59,
+    164,
+    546,
+    472
+  ],
+  "tool/wuxie-guo": [
+    64,
+    170,
+    584,
+    490
+  ]
+}
