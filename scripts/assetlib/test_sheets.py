@@ -29,6 +29,28 @@ def write_frames(areas):
     return folder
 
 
+def pixels(path: Path):
+    """Size and decoded pixels of an image: what a sheet shows, whatever PNG encoder and zlib wrote it."""
+    with Image.open(path) as image:
+        rgba = image.convert('RGBA')
+        return rgba.size, rgba.tobytes()
+
+
+class PixelComparisonTests(unittest.TestCase):
+    def test_pixels_ignore_how_the_png_was_encoded_but_not_what_it_shows(self):
+        folder = write_frames([4, 8, 12])
+        original = folder / 'sheet.png'
+        sheets.build_sheet(folder, original)
+        with Image.open(original) as image:
+            image.save(folder / 'reencoded.png', compress_level=1, optimize=False)
+            changed = image.convert('RGBA')
+            changed.putpixel((0, 0), (1, 2, 3, 255))
+            changed.save(folder / 'changed.png')
+        self.assertNotEqual(original.read_bytes(), (folder / 'reencoded.png').read_bytes())
+        self.assertEqual(pixels(original), pixels(folder / 'reencoded.png'))
+        self.assertNotEqual(pixels(original), pixels(folder / 'changed.png'))
+
+
 class SheetTests(unittest.TestCase):
     def test_sheet_grid_holds_every_frame(self):
         folder = write_frames([4] * 7)
@@ -69,7 +91,7 @@ class SheetTests(unittest.TestCase):
         for effect, folder in REAL_MAP.items():
             out = Path(tempfile.mkdtemp()) / '{}.png'.format(effect)
             manifest[effect] = sheets.build_sheet(frames_root / folder, out)
-            self.assertEqual(out.read_bytes(), (committed / '{}.png'.format(effect)).read_bytes(), effect)
+            self.assertEqual(pixels(out), pixels(committed / '{}.png'.format(effect)), effect)
         self.assertEqual(sheets.sheets_json(manifest), (committed / 'sheets.json').read_text())
 
 
