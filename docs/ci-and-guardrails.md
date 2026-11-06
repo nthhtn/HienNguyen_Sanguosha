@@ -8,11 +8,15 @@ design and its reasoning are in
 
 One command runs the static checks, in this order, and stops at the first failure:
 
-1. `npm run lint`: ESLint (typescript-eslint and angular-eslint).
-2. `npm run typecheck`: `tsc --noEmit` over protocol, server, bots, sim, the
+1. `npm run assets:check`: fails when the generated files in
+   `projects/content/assets/` are out of date with their masters in `assets-src/`
+   (a hash comparison against `asset-lock.json`, standard-library Python only; it fails
+   with the file's name and says to run `npm run assets:build`).
+2. `npm run lint`: ESLint (typescript-eslint and angular-eslint).
+3. `npm run typecheck`: `tsc --noEmit` over protocol, server, bots, sim, the
    app, and the spec files of the app, engine and content. Jest does not
    typecheck, so this is the only thing that catches a type error in a spec.
-3. `npm run build`: engine, content and the Angular app. The CSS budget warning
+4. `npm run build`: engine, content and the Angular app. The CSS budget warning
    on `judgment-stage.ts` is a warning, not a failure.
 
 Cheap checks come first, so a typo fails in seconds. Tests are not part of
@@ -23,6 +27,8 @@ Cheap checks come first, so a typo fails in seconds. Tests are not part of
   `npm run coverage:check` fails if statements, lines or functions are below 90%.
   Branches (88% today) are reported, not gated.
 - `npm run test:guardrails`: the tests for the deny rules below (`node --test`).
+- `npm run test:assets`: the tests for the asset pipeline (`scripts/assetlib`, Python
+  `unittest`; they need Pillow, CI installs it).
 - `npm run test:db` (needs Postgres, `npm run db:up`): the server specs against a
   real database.
 
@@ -35,7 +41,7 @@ permission. A new push to a pull request cancels its in-flight run.
 | Job | Runs | Required to merge |
 | --- | --- | --- |
 | `verify` | `npm run verify`: lint, typecheck, build | yes |
-| `test` | against a `postgres:17` service: `npm run test:guardrails`, then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | yes |
+| `test` | against a `postgres:17` service: `npm run test:guardrails`, `npm run test:assets` (after `pip install pillow`), then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | yes |
 | `coverage` | `npm run coverage:check` on the artifact `test` uploaded: fails below 90% statements, lines or functions | no |
 
 "Required" is set in the repository's branch ruleset (Settings, Rules), not in
