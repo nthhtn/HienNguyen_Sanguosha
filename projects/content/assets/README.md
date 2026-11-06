@@ -41,7 +41,8 @@ under `../assets/`, except where noted.
   full-size cards by the boxes in `../asset-crops.json` (pixels of the master). Both ship as WebP at
   most 320 px wide, which is 2x the widest the app shows them (160 CSS px).
 - `effects/` holds `stills/` and `frames/` (the frames of each sprite effect, never shipped).
-  `../assets/effects/sheets/` is generated from the frames.
+  `../assets/effects/sheets/` is generated from the frames and ships as lossy WebP (the app fetches all
+  seven when a game board opens, so the first hit already has its picture).
 - `ui/` holds `banners/`, `hp/`, `chain/`, `battlefield/` and `brand/` (logo, landing page, favicon).
 - `audio/` holds `music/`, `effects/`, `death/forces/`, `death/generals/<force>/` and `voice/{male,female}/`.
 

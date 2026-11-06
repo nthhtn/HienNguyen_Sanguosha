@@ -149,6 +149,20 @@ class PlanTests(unittest.TestCase):
             plan_outputs(layout)
         self.assertIn('tool/duel', str(ctx.exception))
 
+    def test_sheets_ship_in_the_extension_of_the_recipe_png_by_default(self):
+        frames = {'effects/frames/chain/0.png': b'c'}
+        base = {'effects/frames': {'op': 'master-only'}}
+        png = plan_outputs(make_layout(frames, {**base, 'effects/sheets': {'op': 'sheets', 'from': 'effects/frames', 'map': {'chain': 'chain'}}}))
+        webp = plan_outputs(make_layout(frames, {**base, 'effects/sheets': {'op': 'sheets', 'from': 'effects/frames', 'ext': 'webp', 'map': {'chain': 'chain'}}}))
+        self.assertEqual(sorted(o.path for o in png), ['effects/sheets/chain.png', 'effects/sheets/sheets.json'])
+        self.assertEqual(sorted(o.path for o in webp), ['effects/sheets/chain.webp', 'effects/sheets/sheets.json'])
+
+    def test_sheets_write_only_png_or_webp(self):
+        layout = make_layout({'effects/frames/chain/0.png': b'c'}, {'effects/frames': {'op': 'master-only'}, 'effects/sheets': {'op': 'sheets', 'from': 'effects/frames', 'ext': 'gif', 'map': {'chain': 'chain'}}})
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('gif', str(ctx.exception))
+
     def test_sheets_plan_one_sheet_per_effect_and_one_meta_file(self):
         recipes = {
             'effects/frames': {'op': 'master-only'},

@@ -53,6 +53,7 @@ import { chainEffectsFor, damageEffectsFor, ShownDamage } from './damage-effects
 import { spriteDurationMs } from './sprite-plan';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
+import { SpritePreload } from '../sprite-preload.service';
 import { DecisionTimer } from '../decision-timer.service';
 import { I18n } from '../i18n/i18n.service';
 import { TMsgPipe } from '../i18n/msg';
@@ -383,6 +384,8 @@ export class GameBoard {
   });
 
   constructor() {
+    // Seat effects play from sprite sheets that nothing else fetches: have them cached before the first hit.
+    inject(SpritePreload).start();
     // Decisions are timed only while the board is on screen.
     this.timer.attach(inject(DestroyRef));
     // The win track while the game is won; back to the background track on leaving.

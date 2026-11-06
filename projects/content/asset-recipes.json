@@ -6,6 +6,8 @@
   "effects/sheets": {
     "op": "sheets",
     "from": "effects/frames",
+    "ext": "webp",
+    "quality": 85,
     "map": {
       "slash": "slash-red",
       "slash-fire": "fire-slash",

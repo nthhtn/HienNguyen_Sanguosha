@@ -1,9 +1,9 @@
 {
   "README.md": {
-    "output": "bbf3c13067c516c816d9a90a37ec83b7b710fa36c718380c352eb90e4bb2a47a",
+    "output": "8fbc93c505dedd4e309770f1468bb5ccf5c2ed50bbb846b0f81f4ebc2e27e663",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "README.md": "bbf3c13067c516c816d9a90a37ec83b7b710fa36c718380c352eb90e4bb2a47a"
+      "README.md": "8fbc93c505dedd4e309770f1468bb5ccf5c2ed50bbb846b0f81f4ebc2e27e663"
     }
   },
   "audio/death/forces/qun.ogg": {
@@ -958,9 +958,9 @@
       "audio/voice/male/wuxie.ogg": "17f7393e9efea9122458d1d9823a5b8bdf039079e802989457bf5d70ad2a98db"
     }
   },
-  "effects/sheets/chain.png": {
-    "output": "db191801e4ffb6369a5c69c1f341f54d48801472cee2f6ba1a3d5330fbc89e55",
-    "settings": "8b9ee65a9983e1296d5790fb29f23ba8625f4f9e9ac05e3e18364b589db397c8",
+  "effects/sheets/chain.webp": {
+    "output": "74b90e765a0947a97422421ba169351e3663d283b994ba1e106bfc09cb86610d",
+    "settings": "203a8503fff253267d10d596aeaf382baf400940626cb634162b01b32fac32ab",
     "sources": {
       "effects/frames/chain/0.png": "f4b45e5be49c980a041ccbdac5157bc8815b006ac121cacab1264b77c8b24ded",
       "effects/frames/chain/1.png": "59b226e581fea8c45886e1e50a7c9d14c08d6613341c1d80d6f446707698c7d4",
@@ -975,9 +975,9 @@
       "effects/frames/chain/9.png": "627e02638d471246dc51f628c2b39eba2daad180f8fd85cb643b7c75174c5a48"
     }
   },
-  "effects/sheets/damage.png": {
-    "output": "f79253792512feb033d8aa6f9e960ca7ee8c5e805d33dc3df4f01456a4c93fed",
-    "settings": "915fc63fabdc94a99594d02d494c502bf96311809037d5da90834aab6f7864a2",
+  "effects/sheets/damage.webp": {
+    "output": "1e25a463a71adb6e60228f242e3487f7e011d8e10870549544cdcb4b18c29fcf",
+    "settings": "5ae8015eaae96fab962efc531f21d7f41708ee04142070f873429350a75b5496",
     "sources": {
       "effects/frames/damage/0.png": "08de326948fc8d6ff72234d354729de66680ce5dea90099854e0cf1d9123ce93",
       "effects/frames/damage/1.png": "76b16b3aeb7c44b8b83289ba10e1c02b077ba736649f9c76ccb6da867c69f461",
@@ -987,9 +987,9 @@
       "effects/frames/damage/5.png": "c2d2fe1ec4e6ae54358d72e92a51c66ba69353ca3c7a6054de0526fa910fec0a"
     }
   },
-  "effects/sheets/fire.png": {
-    "output": "7a48df291c19278b0ed90372124fe3177ca0cb6438127ff8734f4f61884075b3",
-    "settings": "92ed69f69fe2bb44ec937c3c8cea5d1cac842a7fd242db9f81e0e8e97409c369",
+  "effects/sheets/fire.webp": {
+    "output": "ba10251bf17593daae9d69112e65359143f6a3a4c0620b82848d742248a52cb3",
+    "settings": "0b324da6c23436ff6079c0e9acc3a33dcade970a20502f1990e7b9d3d205fe24",
     "sources": {
       "effects/frames/fire/0.png": "d1b3317de2df70c0f5971b374c72e3485550b41feb0dafa6fe18ce8cbd5826c9",
       "effects/frames/fire/1.png": "02073058a50110a957ccfe4b94f37fa02fff10af3f0e55530596e1bf16f81409",
@@ -1017,9 +1017,9 @@
       "effects/frames/fire/9.png": "d41b6deb9cfd7f6ccec9c9d5c992f364be1aed055f1dd56416f1122f91666485"
     }
   },
-  "effects/sheets/lightning.png": {
-    "output": "b241ebdca9a57ebbeaaf5df0848f0f455d8c55cac38a65b99e4dd611ce51fed0",
-    "settings": "5e93e35ac2f542c00237900cbe26474971d7ebe25e63c5dcab75aaf15c18870b",
+  "effects/sheets/lightning.webp": {
+    "output": "84de7ee15f68c96fec6eefbafe38924d36be492cedb923ba17020f44f0e0f79f",
+    "settings": "790f064ffcd4122b6442284269263c84bc541d9c067d568d1da0450f69b19d79",
     "sources": {
       "effects/frames/lightning/0.png": "af2fe3b48e616226b9bc89097b69fed103cc56bb8ed7970277898cac32e60cc3",
       "effects/frames/lightning/1.png": "17843deededf93a1281da5a5c852e6f30254eb6685fe3b6769a6c7da75a358b7",
@@ -1049,7 +1049,7 @@
   },
   "effects/sheets/sheets.json": {
     "output": "021e896797fc48dfc272be3b1b5a4123c672e117a1c8c4c7ec90ba382d8717b3",
-    "settings": "589ef0107731bb564bd6c0e62b6ca46fe2dc4f20d2a1920ebcefe12966145600",
+    "settings": "1f57c5b951110dafb0b24176b3eb9dbe922dac1da3ed030d47e26f2016a1e8ca",
     "sources": {
       "effects/frames/chain/0.png": "f4b45e5be49c980a041ccbdac5157bc8815b006ac121cacab1264b77c8b24ded",
       "effects/frames/chain/1.png": "59b226e581fea8c45886e1e50a7c9d14c08d6613341c1d80d6f446707698c7d4",
@@ -1190,9 +1190,9 @@
       "effects/frames/thunder-slash/9.png": "e184ec0a4993300d7beef4c7478a4b7355bdfd1e52da716a7a24eb28103c136f"
     }
   },
-  "effects/sheets/slash-fire.png": {
-    "output": "973aae83547b12ccbfb40d9c9e49b8ca30e425d743a46f4c638c833c1700c8a8",
-    "settings": "c4fd8a712d5a0057bb045d3fc7d10e2bebf47acb8116670fab14e890f7ad9ac1",
+  "effects/sheets/slash-fire.webp": {
+    "output": "107b2f47522fdbe263cc0394f220c836b705f62ad959f24f05168ffd0c4596b7",
+    "settings": "f1933b1018f85b82f0c66350e0d046c689a4f4e97afb647c6082950311fd7941",
     "sources": {
       "effects/frames/fire-slash/0.png": "2c427cbcb2061f0706d9dc2c2f448ca208390b5a66aca4332fe3d73b7d1014b9",
       "effects/frames/fire-slash/1.png": "a66338d44a54f992776f81212ecaba076f473785ba776a824058a9d6849db6d1",
@@ -1220,9 +1220,9 @@
       "effects/frames/fire-slash/9.png": "93ce741678f889bb0dca835280e037aaa411a8731b8f89db9e9b3f945dafef7c"
     }
   },
-  "effects/sheets/slash-lightning.png": {
-    "output": "02eb99267a33b00a3d731d01e7fa6e36624c789c70889668ec459c28d797db1a",
-    "settings": "7dfbddc59ff14daec92e1a3cfa67120b0fcdb94d1769b113d2ad03c9736f97ed",
+  "effects/sheets/slash-lightning.webp": {
+    "output": "1e7045b308164b95954c6fa65e3fc2b93723c8d582b97b6ab29cd6ece8bc7906",
+    "settings": "2079aa65c30719ff913ee467fc1538b5c10fce6f55151d6d01063d9ad39c4ceb",
     "sources": {
       "effects/frames/thunder-slash/0.png": "81f10f8f2fa3c481e71f6c22a05fc011d5bfe3bca1013205799b5b88c6b0a2dd",
       "effects/frames/thunder-slash/1.png": "81f10f8f2fa3c481e71f6c22a05fc011d5bfe3bca1013205799b5b88c6b0a2dd",
@@ -1250,9 +1250,9 @@
       "effects/frames/thunder-slash/9.png": "e184ec0a4993300d7beef4c7478a4b7355bdfd1e52da716a7a24eb28103c136f"
     }
   },
-  "effects/sheets/slash.png": {
-    "output": "aaf08c62abc33f2c2e3b3870856bd802607de104c62e41f12fe37f372d7e6712",
-    "settings": "9aeb16b6043148167bf8420458477cd2bb7b74f7612a6e6a356f32fdbf37babc",
+  "effects/sheets/slash.webp": {
+    "output": "c2642227ccb68a9de9be1b07c9401161590df04e02311ed03749f36aa294f7f6",
+    "settings": "7f0dc3786e55bd34bf7216d2e4a732318d4996503d1e613a8c9b3b070b972eb5",
     "sources": {
       "effects/frames/slash-red/0.png": "43c196e34892fb3bc00b8344e91ab82d9aab143810ca2cf50a841cb3b83bbbcd",
       "effects/frames/slash-red/1.png": "43c196e34892fb3bc00b8344e91ab82d9aab143810ca2cf50a841cb3b83bbbcd",

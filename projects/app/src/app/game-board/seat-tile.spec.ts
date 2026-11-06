@@ -312,7 +312,7 @@ describe('SeatTile', () => {
     expect(renderWith({}).querySelector('.damage-fx')).toBeNull();
     const fx = renderWith({ damageEffect: { id: 1, image: 'slash-fire' } }).querySelector('.damage-fx');
     expect(fx?.tagName).toBe('APP-SPRITE-EFFECT');
-    expect((fx?.querySelector('.sprite') as HTMLElement).style.backgroundImage).toContain('/images/effects/sheets/slash-fire.png');
+    expect((fx?.querySelector('.sprite') as HTMLElement).style.backgroundImage).toContain('/images/effects/sheets/slash-fire.webp');
     expect(fx?.parentElement?.classList).toContain('generals');
   });
 

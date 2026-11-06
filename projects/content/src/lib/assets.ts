@@ -106,8 +106,11 @@ export interface SpriteSheet {
 type SheetMeta = Omit<SpriteSheet, 'url'>;
 const SHEET_META: Record<SpriteId, SheetMeta> = sheetManifest;
 
+// Every sheet, from the sheet data itself, for whatever needs to act on all of them (the preload).
+export const SPRITE_IDS = Object.keys(SHEET_META) as SpriteId[];
+
 export function spriteSheet(id: SpriteId): SpriteSheet {
-  return { url: `/images/effects/sheets/${id}.png`, ...SHEET_META[id] };
+  return { url: `/images/${assetFile(`effects/sheets/${id}`)}`, ...SHEET_META[id] };
 }
 
 // The highest HP with its own icon (ui/hp/1.png … 4.png).

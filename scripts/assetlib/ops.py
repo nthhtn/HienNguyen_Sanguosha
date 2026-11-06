@@ -74,7 +74,8 @@ def _run(layout: Layout, output: Output) -> None:
     elif output.op == 'sheet':
         from . import sheets  # Pillow, loaded only when a sheet is built
 
-        sheets.build_sheet((layout.src / output.sources[0]).parent, dest)
+        recipe = load_recipes(layout.recipes_file)[output.recipe_key]
+        sheets.build_sheet((layout.src / output.sources[0]).parent, dest, recipe.get('ext', 'png'), recipe.get('quality', DEFAULT_IMAGE_QUALITY))
     elif output.op == 'sheets-meta':
         from . import sheets
 

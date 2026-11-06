@@ -3,7 +3,7 @@ import { join } from 'path';
 import { generalsData } from '../../data/generals';
 import { kingdomWarsGeneralIds } from './kingdomWarsGenerals';
 import { kingdomWarsGeneralId } from './generalIds';
-import { AMBITIONIST_ICON_URL, assetFile, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
+import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /images/ URL for a crawled id', () => {
@@ -117,12 +117,20 @@ describe('placeholder portrait shipping', () => {
   });
 });
 
+describe('SPRITE_IDS', () => {
+  it('lists every sheet of the sheet data, so nothing keeps its own copy', () => {
+    const sheetData = JSON.parse(readFileSync(join(__dirname, '../../assets/effects/sheets/sheets.json'), 'utf8')) as Record<string, unknown>;
+    expect([...SPRITE_IDS].sort()).toEqual(Object.keys(sheetData).sort());
+    expect(SPRITE_IDS).toHaveLength(7);
+  });
+});
+
 describe('spriteSheet', () => {
   const ids = ['slash', 'slash-fire', 'slash-lightning', 'damage', 'fire', 'lightning', 'chain'] as const;
 
   it('points each effect at its sheet in the content assets', () => {
-    expect(spriteSheet('slash-fire').url).toBe('/images/effects/sheets/slash-fire.png');
-    expect(spriteSheet('chain').url).toBe('/images/effects/sheets/chain.png');
+    expect(spriteSheet('slash-fire').url).toBe('/images/effects/sheets/slash-fire.webp');
+    expect(spriteSheet('chain').url).toBe('/images/effects/sheets/chain.webp');
   });
 
   it('describes a grid that holds every frame, with a burst and a peak inside it', () => {
@@ -175,6 +183,7 @@ describe('Starvation art', () => {
 
 describe('assetFile', () => {
   it('adds the extension its recipe ships to a reference without one', () => {
+    expect(assetFile('effects/sheets/slash')).toBe('effects/sheets/slash.webp');
     expect(assetFile('generals/skins/wei/caocao')).toBe('generals/skins/wei/caocao.webp');
     expect(assetFile('generals/cards/wei/cao-cao')).toBe('generals/cards/wei/cao-cao.webp');
     expect(assetFile('playing-cards/full/tool/duel')).toBe('playing-cards/full/tool/duel.webp');
@@ -215,7 +224,7 @@ describe('shipped files', () => {
   });
 
   it('has a sheet for every sprite effect', () => {
-    for (const id of Object.keys(read('effects/sheets/sheets.json'))) expect(existsSync(join(assets, 'effects/sheets', `${id}.png`))).toBe(true);
+    for (const id of Object.keys(read('effects/sheets/sheets.json'))) expect(existsSync(join(assets, assetFile(`effects/sheets/${id}`)))).toBe(true);
   });
 
   it('keeps manifest and skin references free of file extensions', () => {

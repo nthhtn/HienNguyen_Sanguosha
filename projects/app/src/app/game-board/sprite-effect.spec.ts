@@ -17,7 +17,7 @@ describe('SpriteEffect', () => {
   it('shows the sprite sheet, sized to one frame', () => {
     const el = render('chain').nativeElement as HTMLElement;
     const sprite = el.querySelector('.sprite') as HTMLElement;
-    expect(sprite.style.backgroundImage).toContain('/images/effects/sheets/chain.png');
+    expect(sprite.style.backgroundImage).toContain('/images/effects/sheets/chain.webp');
     expect(sprite.style.backgroundSize).toBe('600% 200%');
     expect(el.style.width).toContain('202px');
     expect(el.getAttribute('aria-hidden')).toBe('true');

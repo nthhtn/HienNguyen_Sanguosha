@@ -36,6 +36,22 @@ def pixels(path: Path):
         return rgba.size, rgba.tobytes()
 
 
+def mean_difference(a: Path, b: Path) -> float:
+    """Mean absolute difference (0 to 255) of two images shown over mid grey: how far a lossy sheet is from the lossless one."""
+    import numpy as np
+
+    def shown(path):
+        with Image.open(path) as image:
+            base = Image.new('RGBA', image.size, (128, 128, 128, 255))
+            base.alpha_composite(image.convert('RGBA'))
+            return np.asarray(base.convert('RGB'), dtype=float)
+
+    first, second = shown(a), shown(b)
+    if first.shape != second.shape:
+        raise AssertionError('sheet sizes differ: {} and {}'.format(first.shape, second.shape))
+    return float(np.abs(first - second).mean())
+
+
 class PixelComparisonTests(unittest.TestCase):
     def test_pixels_ignore_how_the_png_was_encoded_but_not_what_it_shows(self):
         folder = write_frames([4, 8, 12])
@@ -71,6 +87,17 @@ class SheetTests(unittest.TestCase):
         self.assertFalse(meta['pop'])
         self.assertEqual(meta['lead'], 1)
 
+    def test_sheet_can_be_written_as_webp_keeping_the_grid_and_transparency(self):
+        folder = write_frames([4, 4, 4, 4, 4, 4, 4])
+        out = Path(tempfile.mkdtemp())
+        png, webp = out / 'sheet.png', out / 'sheet.webp'
+        sheets.build_sheet(folder, png)
+        meta = sheets.build_sheet(folder, webp, ext='webp', quality=85)
+        self.assertEqual(meta, sheets.sheet_meta(folder))
+        with Image.open(webp) as out:
+            self.assertEqual((out.format, out.size), ('WEBP', (24, 8)))
+            self.assertEqual(out.convert('RGBA').getpixel((23, 7))[3], 0)  # an empty cell stays transparent
+
     def test_mismatched_frame_sizes_fail_naming_the_folder(self):
         folder = write_frames([4, 4])
         Image.new('RGBA', (5, 4)).save(folder / '1.png')
@@ -91,7 +118,8 @@ class SheetTests(unittest.TestCase):
         for effect, folder in REAL_MAP.items():
             out = Path(tempfile.mkdtemp()) / '{}.png'.format(effect)
             manifest[effect] = sheets.build_sheet(frames_root / folder, out)
-            self.assertEqual(pixels(out), pixels(committed / '{}.png'.format(effect)), effect)
+            shipped = next(p for p in (committed / '{}.webp'.format(effect), committed / '{}.png'.format(effect)) if p.exists())
+            self.assertLess(mean_difference(out, shipped), 3.0, effect)
         self.assertEqual(sheets.sheets_json(manifest), (committed / 'sheets.json').read_text())
 
 
@@ -115,6 +143,24 @@ class SheetsThroughTheBuild(unittest.TestCase):
         self.assertTrue((layout.out / 'effects/sheets/slash.png').is_file())
         self.assertEqual(check(layout), [])
         self.assertEqual(build(layout).built, 0)
+
+    def test_a_webp_sheets_recipe_builds_webp_and_rebuilds_when_the_quality_changes(self):
+        recipes = {
+            'effects/frames': {'op': 'master-only'},
+            'effects/sheets': {'op': 'sheets', 'from': 'effects/frames', 'ext': 'webp', 'quality': 85, 'map': {'chain': 'chain'}},
+        }
+        layout = make_layout({}, recipes)
+        frames = layout.src / 'effects/frames/chain'
+        frames.mkdir(parents=True)
+        for i in range(3):
+            Image.new('RGBA', (4, 4), (255, 0, 0, 255)).save(frames / '{}.png'.format(i))
+        build(layout)
+        with Image.open(layout.out / 'effects/sheets/chain.webp') as sheet:
+            self.assertEqual(sheet.format, 'WEBP')
+        self.assertFalse((layout.out / 'effects/sheets/chain.png').exists())
+        self.assertEqual(check(layout), [])
+        layout.recipes_file.write_text(json.dumps({**recipes, 'effects/sheets': {**recipes['effects/sheets'], 'quality': 60}}))
+        self.assertEqual(build(layout).built, 2)  # the sheet and sheets.json, whose settings share the recipe
 
     def test_removing_a_frame_makes_check_stale_and_build_rebuilds(self):
         recipes = {

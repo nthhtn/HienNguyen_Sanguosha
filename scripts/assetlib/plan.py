@@ -13,6 +13,7 @@ from .recipes import NoRecipe, canonical_hash, load_recipes, recipe_for
 IMAGE_SOURCES = {'png', 'jpg', 'jpeg'}
 IMAGE_TARGETS = {'webp'}
 CROP_TARGETS = {'jpg', 'webp'}
+SHEET_TARGETS = {'png', 'webp'}
 
 
 class PlanError(Exception):
@@ -105,7 +106,7 @@ def _sheet_outputs(layout: Layout, key: str, recipe: dict) -> List[Output]:
         if not frames:
             raise PlanError('no frames for {} in {}/{}'.format(effect, recipe['from'], folder))
         everything.extend(frames)
-        outputs.append(Output('{}/{}.png'.format(key, effect), 'sheet', tuple(frames), key, {'id': effect, 'folder': folder}))
+        outputs.append(Output('{}/{}.{}'.format(key, effect, recipe.get('ext', 'png')), 'sheet', tuple(frames), key, {'id': effect, 'folder': folder}))
     outputs.append(Output('{}/sheets.json'.format(key), 'sheets-meta', tuple(everything), key, {'map': recipe['map']}))
     return outputs
 
@@ -119,6 +120,8 @@ def plan_outputs(layout: Layout) -> List[Output]:
                 raise PlanError('recipe {}: maxWidth must be a positive whole number, not {!r}'.format(key, width))
         if recipe['op'] == 'crop' and recipe.get('ext') not in CROP_TARGETS:
             raise PlanError('recipe {} cannot write {!r}: a crop is saved as {}'.format(key, recipe.get('ext'), ' or '.join(sorted(CROP_TARGETS))))
+        if recipe['op'] == 'sheets' and recipe.get('ext', 'png') not in SHEET_TARGETS:
+            raise PlanError('recipe {} cannot write {!r}: a sheet is saved as {}'.format(key, recipe.get('ext'), ' or '.join(sorted(SHEET_TARGETS))))
         if recipe['op'] == 'image' and recipe.get('ext') not in IMAGE_TARGETS:
             raise PlanError('recipe {} cannot write {!r}: the image op writes {}'.format(key, recipe.get('ext'), ' or '.join(sorted(IMAGE_TARGETS))))
     outputs = _copy_outputs(layout, recipes)

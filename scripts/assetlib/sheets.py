@@ -57,9 +57,13 @@ def sheet_meta(frames_dir: Path) -> dict:
     return _pack(frames_dir)[1]
 
 
-def build_sheet(frames_dir: Path, out_png: Path) -> dict:
+def build_sheet(frames_dir: Path, out: Path, ext: str = 'png', quality: int = 85) -> dict:
+    """Pack the frames and save the sheet: a lossless PNG (the default) or a WebP at `quality` (alpha kept exactly)."""
     sheet, meta = _pack(frames_dir)
-    sheet.save(out_png, optimize=True)
+    if ext == 'webp':
+        sheet.save(out, 'WEBP', quality=quality, alpha_quality=100, method=5)
+    else:
+        sheet.save(out, optimize=True)
     return meta
 
 
