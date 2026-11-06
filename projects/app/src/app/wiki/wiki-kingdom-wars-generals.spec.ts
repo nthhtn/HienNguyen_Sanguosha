@@ -50,7 +50,7 @@ describe('The Kingdom Wars Generals page', () => {
     expect(entryIds(el)).toContain('ji-ling');
     const ji = el.querySelector('article.entry[data-id="ji-ling"]')!;
     expect(ji.querySelector('.card-art-placeholder')).toBeNull();
-    expect(ji.querySelector('app-card-art img')!.getAttribute('src')).toBe('/card-art/generals/skins/qun/jiling.png');
+    expect(ji.querySelector('app-card-art img')!.getAttribute('src')).toBe('/images/generals/skins/qun/jiling.png');
   });
 
   it('shows the page in Vietnamese', async () => {

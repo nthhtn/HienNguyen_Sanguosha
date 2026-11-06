@@ -104,8 +104,10 @@ Card and General art, animation, and audio live in `projects/content/assets/`
 and are described by `manifest.json` (source URL, crawl date, dimensions). Where
 they came from and the terms they are used under are in that folder's
 [README](../../projects/content/assets/README.md). `angular.json` serves the
-images at `/card-art/...` and the audio files at their own paths. The assets
-module (`assets.ts`) resolves a card's or General's image for the UI.
+images at `/images/...` and the audio files at `/audio/...`; both mirror the folders
+under `assets/` (the layout and its naming rules are in the
+[assets restructure spec](../superpowers/specs/2026-11-06-assets-restructure-design.md)).
+The assets module (`assets.ts`) resolves a card's or General's image for the UI.
 
 ## Writing a card
 

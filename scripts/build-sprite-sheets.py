@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Packs the frame folders in projects/content/assets/sprites into the sheets the seat effects play.
+"""Packs the frame folders in projects/content/assets/effects/frames into the sheets the seat effects play.
 
 Run from the repo root after changing a folder: python3 scripts/build-sprite-sheets.py
-Writes projects/content/assets/animation/sheets/<id>.png and sheets.json (see
+Writes projects/content/assets/effects/sheets/<id>.png and sheets.json (see
 docs/superpowers/specs/2026-11-03-sprite-animations-design.md).
 """
 import json
@@ -12,15 +12,15 @@ import os
 from PIL import Image
 
 ASSETS = 'projects/content/assets'
-SPRITES = f'{ASSETS}/sprites'
-OUT = f'{ASSETS}/animation/sheets'
+SPRITES = f'{ASSETS}/effects/frames'
+OUT = f'{ASSETS}/effects/sheets'
 MAX_COLS = 6
 
 # Effect id -> the folder of numbered frames (0.png, 1.png, ...).
 SHEETS = {
-    'slash': 'slash_red',
-    'slash-fire': 'fire_slash',
-    'slash-lightning': 'thunder_slash',
+    'slash': 'slash-red',
+    'slash-fire': 'fire-slash',
+    'slash-lightning': 'thunder-slash',
     'damage': 'damage',
     'fire': 'fire',
     'lightning': 'lightning',

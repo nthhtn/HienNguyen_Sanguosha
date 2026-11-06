@@ -7,12 +7,12 @@ import type { SpriteId } from 'content';
 export type DamageImage = 'damage' | 'slash' | 'slash-fire' | 'slash-lightning' | 'fire' | 'lightning';
 
 export const DAMAGE_IMAGE_URLS: Record<DamageImage, string> = {
-  damage: '/card-art/animation/damage.png',
-  slash: '/card-art/animation/slash.png',
-  'slash-fire': '/card-art/animation/slash_fire.png',
-  'slash-lightning': '/card-art/animation/slash_lightning.png',
-  fire: '/card-art/animation/fire.png',
-  lightning: '/card-art/animation/lightning.png',
+  damage: '/images/effects/stills/damage.png',
+  slash: '/images/effects/stills/slash.png',
+  'slash-fire': '/images/effects/stills/slash-fire.png',
+  'slash-lightning': '/images/effects/stills/slash-lightning.png',
+  fire: '/images/effects/stills/fire.png',
+  lightning: '/images/effects/stills/lightning.png',
 };
 
 // What plays over a seat: a hit's picture, or the chain when it turns chained. Each is a sprite

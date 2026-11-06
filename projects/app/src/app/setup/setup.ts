@@ -19,7 +19,7 @@ import { TPipe } from '../i18n/t.pipe';
   selector: 'app-setup',
   imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, DeckPicker, SmallScreenNotice, TPipe],
   template: `
-    <div class="home" style="background-image: url('/card-art/misc/landing.jpg')">
+    <div class="home" style="background-image: url('/images/ui/brand/landing.jpg')">
       <mat-card class="hero" appearance="raised">
         <div class="kingdoms" aria-hidden="true">
           <span class="wei"></span><span class="shu"></span><span class="wu"></span><span class="qun"></span>

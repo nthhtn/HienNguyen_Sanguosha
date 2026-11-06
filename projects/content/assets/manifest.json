@@ -2,70 +2,70 @@
   "ally-far-attack-near": {
     "crawledAt": "2026-10-21",
     "height": 1000,
-    "localPath": "cards/tool/ally-far-attack-near.jpg",
+    "localPath": "playing-cards/full/tool/ally-far-attack-near.jpg",
     "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/alliance-yuan-jiao-jin-gong.html",
     "width": 704
   },
   "amass": {
     "crawledAt": "2026-10-21",
     "height": 1000,
-    "localPath": "cards/tool/amass.jpg",
+    "localPath": "playing-cards/full/tool/amass.jpg",
     "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/amass-yi-yi-dai-lao.html",
     "width": 704
   },
   "ancient-scimitar": {
     "crawledAt": "2026-10-05",
     "height": 656,
-    "localPath": "cards/equipment/weapon/ancient-scimitar.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/ancient-scimitar.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/ancient-scimitar",
     "width": 448
   },
   "ascertain": {
     "crawledAt": "2026-10-21",
     "height": 1000,
-    "localPath": "cards/tool/ascertain.jpg",
+    "localPath": "playing-cards/full/tool/ascertain.jpg",
     "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/ascertain-zhi-ji-zhi-bi.html",
     "width": 704
   },
   "axe": {
     "crawledAt": "2026-09-24",
     "height": 973,
-    "localPath": "cards/equipment/weapon/axe.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/axe.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/axe",
     "width": 665
   },
   "barbarians": {
     "crawledAt": "2026-10-02",
     "height": 976,
-    "localPath": "cards/tool/barbarians.jpg",
+    "localPath": "playing-cards/full/tool/barbarians.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/barbarians",
     "width": 667
   },
   "black-pommel": {
     "crawledAt": "2026-09-24",
     "height": 977,
-    "localPath": "cards/equipment/weapon/black-pommel.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/black-pommel.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/black-pommel",
     "width": 667
   },
   "black-shield": {
     "crawledAt": "2026-10-05",
     "height": 977,
-    "localPath": "cards/equipment/armor/black-shield.jpg",
+    "localPath": "playing-cards/full/equipment/armor/black-shield.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/ex/black-shield",
     "width": 667
   },
   "blaze": {
     "crawledAt": "2026-10-05",
     "height": 968,
-    "localPath": "cards/tool/blaze.jpg",
+    "localPath": "playing-cards/full/tool/blaze.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/blaze",
     "width": 661
   },
   "break": {
     "crawledAt": "2026-10-02",
     "height": 966,
-    "localPath": "cards/tool/break.jpg",
+    "localPath": "playing-cards/full/tool/break.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/break",
     "width": 660
   },
@@ -100,28 +100,28 @@
   "capture": {
     "crawledAt": "2026-10-02",
     "height": 654,
-    "localPath": "cards/tool/capture.jpg",
+    "localPath": "playing-cards/full/tool/capture.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/capture",
     "width": 974
   },
   "chains": {
     "crawledAt": "2026-10-05",
     "height": 969,
-    "localPath": "cards/tool/chains.jpg",
+    "localPath": "playing-cards/full/tool/chains.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/chains",
     "width": 662
   },
   "coerce": {
     "crawledAt": "2026-10-02",
     "height": 961,
-    "localPath": "cards/tool/coerce.jpg",
+    "localPath": "playing-cards/full/tool/coerce.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/coerce",
     "width": 656
   },
   "crossbow": {
     "crawledAt": "2026-09-24",
     "height": 965,
-    "localPath": "cards/equipment/weapon/crossbow.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/crossbow.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/crossbow",
     "width": 659
   },
@@ -135,7 +135,7 @@
   "da-yuan": {
     "crawledAt": "2026-09-24",
     "height": 983,
-    "localPath": "cards/equipment/horse/da-yuan.jpg",
+    "localPath": "playing-cards/full/equipment/horse/da-yuan.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/da-yuan",
     "width": 671
   },
@@ -149,7 +149,7 @@
   "di-lu": {
     "crawledAt": "2026-09-24",
     "height": 977,
-    "localPath": "cards/equipment/horse/di-lu.jpg",
+    "localPath": "playing-cards/full/equipment/horse/di-lu.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/di-lu",
     "width": 667
   },
@@ -177,35 +177,35 @@
   "draw-two": {
     "crawledAt": "2026-09-24",
     "height": 977,
-    "localPath": "cards/tool/draw-two.jpg",
+    "localPath": "playing-cards/full/tool/draw-two.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/draw-two",
     "width": 667
   },
   "duel": {
     "crawledAt": "2026-09-24",
     "height": 984,
-    "localPath": "cards/tool/duel.jpg",
+    "localPath": "playing-cards/full/tool/duel.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/duel",
     "width": 672
   },
   "eight-trigrams": {
     "crawledAt": "2026-09-24",
     "height": 979,
-    "localPath": "cards/equipment/armor/eight-trigrams.jpg",
+    "localPath": "playing-cards/full/equipment/armor/eight-trigrams.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/eight-trigrams",
     "width": 669
   },
   "fire-attack": {
     "crawledAt": "2026-10-05",
     "height": 970,
-    "localPath": "cards/basic/fire-attack.jpg",
+    "localPath": "playing-cards/full/basic/fire-attack.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/fire-attack",
     "width": 663
   },
   "fire-fan": {
     "crawledAt": "2026-10-05",
     "height": 966,
-    "localPath": "cards/equipment/weapon/fire-fan.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/fire-fan.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/fire-fan",
     "width": 660
   },
@@ -226,14 +226,14 @@
   "gender-swords": {
     "crawledAt": "2026-09-24",
     "height": 982,
-    "localPath": "cards/equipment/weapon/gender-swords.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/gender-swords.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/gender-swords",
     "width": 671
   },
   "green-dragon-blade": {
     "crawledAt": "2026-09-24",
     "height": 656,
-    "localPath": "cards/equipment/weapon/green-dragon-blade.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/green-dragon-blade.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/green-dragon-blade",
     "width": 448
   },
@@ -254,21 +254,21 @@
   "hail-of-arrows": {
     "crawledAt": "2026-10-02",
     "height": 973,
-    "localPath": "cards/tool/hail-of-arrows.jpg",
+    "localPath": "playing-cards/full/tool/hail-of-arrows.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/hail-of-arrows",
     "width": 665
   },
   "harvest": {
     "crawledAt": "2026-10-02",
     "height": 982,
-    "localPath": "cards/tool/harvest.jpg",
+    "localPath": "playing-cards/full/tool/harvest.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/harvest",
     "width": 671
   },
   "hua-liu": {
     "crawledAt": "2026-10-05",
     "height": 977,
-    "localPath": "cards/equipment/horse/hua-liu.jpg",
+    "localPath": "playing-cards/full/equipment/horse/hua-liu.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/hua-liu",
     "width": 667
   },
@@ -303,7 +303,7 @@
   "ice-sword": {
     "crawledAt": "2026-10-05",
     "height": 976,
-    "localPath": "cards/equipment/weapon/ice-sword.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/ice-sword.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/ex/ice-sword",
     "width": 667
   },
@@ -324,14 +324,14 @@
   "lightning": {
     "crawledAt": "2026-10-02",
     "height": 655,
-    "localPath": "cards/tool/lightning.jpg",
+    "localPath": "playing-cards/full/tool/lightning.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/lightning",
     "width": 975
   },
   "lightning-attack": {
     "crawledAt": "2026-10-05",
     "height": 977,
-    "localPath": "cards/basic/lightning-attack.jpg",
+    "localPath": "playing-cards/full/basic/lightning-attack.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/lightning-attack",
     "width": 667
   },
@@ -352,7 +352,7 @@
   "longbow": {
     "crawledAt": "2026-09-24",
     "height": 979,
-    "localPath": "cards/equipment/weapon/longbow.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/longbow.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/longbow",
     "width": 669
   },
@@ -415,56 +415,56 @@
   "peach": {
     "crawledAt": "2026-09-24",
     "height": 967,
-    "localPath": "cards/basic/peach.jpg",
+    "localPath": "playing-cards/full/basic/peach.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach",
     "width": 660
   },
   "peach-garden": {
     "crawledAt": "2026-10-02",
     "height": 981,
-    "localPath": "cards/tool/peach-garden.jpg",
+    "localPath": "playing-cards/full/tool/peach-garden.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/peach-garden",
     "width": 670
   },
   "red-hare": {
     "crawledAt": "2026-09-24",
     "height": 977,
-    "localPath": "cards/equipment/horse/red-hare.jpg",
+    "localPath": "playing-cards/full/equipment/horse/red-hare.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/red-hare",
     "width": 667
   },
   "serpent-spear": {
     "crawledAt": "2026-09-24",
     "height": 979,
-    "localPath": "cards/equipment/weapon/serpent-spear.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/serpent-spear.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/serpent-spear",
     "width": 669
   },
   "sha": {
     "crawledAt": "2026-09-24",
     "height": 969,
-    "localPath": "cards/basic/sha.jpg",
+    "localPath": "playing-cards/full/basic/sha.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/attack",
     "width": 662
   },
   "shadow-runner": {
     "crawledAt": "2026-09-24",
     "height": 977,
-    "localPath": "cards/equipment/horse/shadow-runner.jpg",
+    "localPath": "playing-cards/full/equipment/horse/shadow-runner.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/shadow-runner",
     "width": 667
   },
   "shan": {
     "crawledAt": "2026-09-24",
     "height": 964,
-    "localPath": "cards/basic/shan.jpg",
+    "localPath": "playing-cards/full/basic/shan.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/escape",
     "width": 658
   },
   "silver-lion": {
     "crawledAt": "2026-10-05",
     "height": 975,
-    "localPath": "cards/equipment/armor/silver-lion.jpg",
+    "localPath": "playing-cards/full/equipment/armor/silver-lion.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/silver-helmet",
     "width": 666
   },
@@ -478,28 +478,28 @@
   "sky-scorcher": {
     "crawledAt": "2026-09-24",
     "height": 655,
-    "localPath": "cards/equipment/weapon/sky-scorcher.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/sky-scorcher.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/sky-scorcher",
     "width": 447
   },
   "starvation": {
     "crawledAt": "2026-10-05",
     "height": 651,
-    "localPath": "cards/tool/starvation.jpg",
+    "localPath": "playing-cards/full/tool/starvation.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/starvation",
     "width": 969
   },
   "steal": {
     "crawledAt": "2026-10-02",
     "height": 971,
-    "localPath": "cards/tool/steal.jpg",
+    "localPath": "playing-cards/full/tool/steal.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/steal",
     "width": 663
   },
   "storm-runner": {
     "crawledAt": "2026-09-24",
     "height": 970,
-    "localPath": "cards/equipment/horse/storm-runner.jpg",
+    "localPath": "playing-cards/full/equipment/horse/storm-runner.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/storm-runner",
     "width": 662
   },
@@ -541,7 +541,7 @@
   "trident-glaive": {
     "crawledAt": "2026-10-21",
     "height": 1000,
-    "localPath": "cards/equipment/weapon/trident-glaive.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/trident-glaive.jpg",
     "sourceUrl": "http://sanguoshaenglish.blogspot.sg/2012/09/trident-glaive-san-jian-liang-ren-dao.html",
     "width": 704
   },
@@ -555,35 +555,35 @@
   "wine": {
     "crawledAt": "2026-10-02",
     "height": 975,
-    "localPath": "cards/basic/wine.jpg",
+    "localPath": "playing-cards/full/basic/wine.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wine",
     "width": 666
   },
   "wood-armor": {
     "crawledAt": "2026-10-05",
     "height": 975,
-    "localPath": "cards/equipment/armor/wood-armor.jpg",
+    "localPath": "playing-cards/full/equipment/armor/wood-armor.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/army/wood-armor",
     "width": 666
   },
   "wu-six-swords": {
     "crawledAt": "2026-10-21",
     "height": 1000,
-    "localPath": "cards/equipment/weapon/wu-six-swords.jpg",
+    "localPath": "playing-cards/full/equipment/weapon/wu-six-swords.jpg",
     "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/six-swords-of-wu-wu-liu-jian.html",
     "width": 704
   },
   "wuxie": {
     "crawledAt": "2026-09-24",
     "height": 963,
-    "localPath": "cards/tool/wuxie.jpg",
+    "localPath": "playing-cards/full/tool/wuxie.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/negate",
     "width": 658
   },
   "wuxie-guo": {
     "crawledAt": "2026-10-21",
     "height": 1000,
-    "localPath": "cards/tool/wuxie-guo.jpg",
+    "localPath": "playing-cards/full/tool/wuxie-guo.jpg",
     "sourceUrl": "https://sanguoshaenglish.blogspot.com/2012/09/negate-kingdom-wu-xie-ke-ji.html",
     "width": 704
   },
@@ -730,7 +730,7 @@
   "zi-xing": {
     "crawledAt": "2026-09-24",
     "height": 977,
-    "localPath": "cards/equipment/horse/zi-xing.jpg",
+    "localPath": "playing-cards/full/equipment/horse/zi-xing.jpg",
     "sourceUrl": "https://sites.google.com/site/englishsanguosha/expansions/original/base/zi-xing",
     "width": 667
   },

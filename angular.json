@@ -67,17 +67,17 @@
               {
                 "glob": "**/*.@(jpg|jpeg|png|webp)",
                 "input": "projects/content/assets",
-                "ignore": ["sprites/**"],
-                "output": "card-art"
+                "ignore": ["effects/frames/**"],
+                "output": "images"
               },
               {
-                "glob": "generals/placeholder.svg",
+                "glob": "generals/special/placeholder.svg",
                 "input": "projects/content/assets",
-                "output": "card-art"
+                "output": "images"
               },
               {
                 "glob": "favicon.ico",
-                "input": "projects/content/assets/misc",
+                "input": "projects/content/assets/ui/brand",
                 "output": "/"
               },
               {

@@ -122,7 +122,7 @@ describe('deathSoundsFor', () => {
   const out = (seatId: string): EngineEvent => ({ kind: 'SeatEliminatedEvent', seatId });
 
   it('cries with the Main General’s own voice, once per General', () => {
-    expect(deathSoundsFor([out('s0'), out('s4'), out('s2')], state)).toEqual([{ url: '/audio/death/caocao.ogg' }, { url: '/audio/death/daqiao.ogg' }]);
+    expect(deathSoundsFor([out('s0'), out('s4'), out('s2')], state)).toEqual([{ url: '/audio/death/generals/wei/caocao.ogg' }, { url: '/audio/death/generals/wu/daqiao.ogg' }]);
   });
 
   it('falls back to the kingdom’s cry for a General with no recording', () => {
