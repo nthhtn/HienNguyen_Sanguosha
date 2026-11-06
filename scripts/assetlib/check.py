@@ -8,6 +8,17 @@ from .plan import PlanError, files_under, inputs_of, plan_outputs
 LOCK_NAME = 'asset-lock.json'
 
 
+def _what_changed(locked: dict, current: dict) -> str:
+    """Name one master that differs: edited, newly added, or removed since the lock was written."""
+    for src, sha in current.items():
+        if src not in locked:
+            return 'master {} was added'.format(src)
+        if locked[src] != sha:
+            return 'master {} changed'.format(src)
+    removed = sorted(set(locked) - set(current))
+    return 'master {} was removed'.format(removed[0])
+
+
 def check(layout: Layout) -> List[str]:
     try:
         outputs = plan_outputs(layout)
@@ -23,9 +34,9 @@ def check(layout: Layout) -> List[str]:
             problems.append('stale: {} is not in the lock (never built)'.format(output.path))
             continue
         inputs = inputs_of(layout, output)
-        changed = [src for src, sha in inputs['sources'].items() if entry.get('sources', {}).get(src) != sha]
-        if changed:
-            problems.append('stale: {} (master {} changed)'.format(output.path, changed[0]))
+        locked = entry.get('sources', {})
+        if locked != inputs['sources']:
+            problems.append('stale: {} ({})'.format(output.path, _what_changed(locked, inputs['sources'])))
             continue
         if entry.get('settings') != inputs['settings']:
             problems.append('stale: {} (recipe {} changed)'.format(output.path, output.recipe_key))

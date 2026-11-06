@@ -10,6 +10,10 @@ from .recipes import load_recipes
 DEFAULT_CROP_QUALITY = 92
 
 
+class BuildError(Exception):
+    """One output could not be made (an unreadable image, a box that does not fit); names the output."""
+
+
 def crop_file(src: Path, dest: Path, box: List[int], quality: int) -> None:
     """Cut box = [x, y, width, height] (pixels of the full image) out of src and save it as a JPEG."""
     from PIL import Image  # loaded only when a crop is built
@@ -24,6 +28,13 @@ def crop_file(src: Path, dest: Path, box: List[int], quality: int) -> None:
 
 
 def run(layout: Layout, output: Output) -> None:
+    try:
+        _run(layout, output)
+    except (ValueError, OSError) as error:
+        raise BuildError('{}: {}'.format(output.path, error)) from error
+
+
+def _run(layout: Layout, output: Output) -> None:
     dest = layout.out / output.path
     dest.parent.mkdir(parents=True, exist_ok=True)
     if output.op == 'copy':

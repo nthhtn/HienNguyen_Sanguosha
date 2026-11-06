@@ -55,13 +55,22 @@ def _copy_outputs(layout: Layout, recipes: Dict[str, dict]) -> List[Output]:
     return outputs
 
 
+def _is_box(box) -> bool:
+    if not isinstance(box, list) or len(box) != 4 or not all(isinstance(n, int) and not isinstance(n, bool) for n in box):
+        return False
+    x, y, w, h = box
+    return x >= 0 and y >= 0 and w > 0 and h > 0
+
+
 def _crop_outputs(layout: Layout, key: str, recipe: dict) -> List[Output]:
     from_dir = recipe['from']
     boxes = json.loads(layout.crops_file.read_text()) if layout.crops_file.exists() else {}
     full = {Path(rel).with_suffix('').as_posix(): '{}/{}'.format(from_dir, rel) for rel in files_under(layout.src / from_dir)}
-    for card in boxes:
+    for card, box in boxes.items():
         if card not in full:
             raise PlanError('crop box for {} has no full art in {}'.format(card, from_dir))
+        if not _is_box(box):
+            raise PlanError('crop box for {} must be [x, y, width, height] as whole numbers with x, y >= 0 and width, height > 0, not {!r}'.format(card, box))
     for card in full:
         if card not in boxes:
             raise PlanError('full art {} has no crop box in asset-crops.json'.format(card))

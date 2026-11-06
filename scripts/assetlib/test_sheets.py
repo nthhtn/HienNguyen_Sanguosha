@@ -94,6 +94,25 @@ class SheetsThroughTheBuild(unittest.TestCase):
         self.assertEqual(check(layout), [])
         self.assertEqual(build(layout).built, 0)
 
+    def test_removing_a_frame_makes_check_stale_and_build_rebuilds(self):
+        recipes = {
+            'effects/frames': {'op': 'master-only'},
+            'effects/sheets': {'op': 'sheets', 'from': 'effects/frames', 'map': {'chain': 'chain'}},
+        }
+        layout = make_layout({}, recipes)
+        frames = layout.src / 'effects/frames/chain'
+        frames.mkdir(parents=True)
+        for i in range(3):
+            Image.new('RGBA', (4, 4), (255, 0, 0, 255)).save(frames / '{}.png'.format(i))
+        build(layout)
+        (frames / '2.png').unlink()
+        problems = check(layout)
+        self.assertTrue(problems)
+        self.assertTrue(all('stale' in p for p in problems))
+        self.assertTrue(any('effects/frames/chain/2.png' in p for p in problems))
+        self.assertEqual(build(layout).built, 2)
+        self.assertEqual(check(layout), [])
+
 
 if __name__ == '__main__':
     unittest.main()

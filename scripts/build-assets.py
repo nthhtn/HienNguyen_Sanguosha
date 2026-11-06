@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from assetlib.build import build  # noqa: E402
 from assetlib.check import check  # noqa: E402
 from assetlib.layout import Layout, default_layout  # noqa: E402
+from assetlib.ops import BuildError  # noqa: E402
 from assetlib.plan import PlanError  # noqa: E402
 
 
@@ -27,7 +28,7 @@ def main(argv=None) -> int:
     if args.command == 'build':
         try:
             report = build(layout)
-        except PlanError as error:
+        except (PlanError, BuildError) as error:
             print('assets: {}'.format(error))
             return 1
         print('assets: built {}, unchanged {}, removed {}'.format(report.built, report.skipped, report.removed))

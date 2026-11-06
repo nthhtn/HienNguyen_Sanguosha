@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,6 +13,7 @@ from assetlib.ops import crop_file
 from assetlib.testutil import make_layout
 
 REPO = Path(__file__).resolve().parents[2] / 'projects' / 'content'
+CLI = Path(__file__).resolve().parent.parent / 'build-assets.py'
 
 
 def marked_image(path: Path) -> Path:
@@ -79,6 +82,28 @@ class CropsThroughTheBuild(unittest.TestCase):
             self.assertEqual(cut.size, (4, 5))
         self.assertEqual(check(layout), [])
         self.assertEqual(build(layout).built, 0)
+
+    def run_cli(self, layout):
+        return subprocess.run(
+            [sys.executable, str(CLI), '--content', str(layout.content), 'build'],
+            cwd=tempfile.gettempdir(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True,
+        )
+
+    def test_a_box_that_does_not_fit_fails_cleanly_naming_the_card(self):
+        layout = self.make()
+        layout.crops_file.write_text(json.dumps({'tool/duel': [2, 3, 40, 5]}))
+        result = self.run_cli(layout)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('playing-cards/cropped/tool/duel.jpg', result.stdout)
+        self.assertNotIn('Traceback', result.stdout)
+
+    def test_an_unreadable_full_card_fails_cleanly_naming_the_card(self):
+        layout = self.make()
+        (layout.src / 'playing-cards/full/tool/duel.jpg').write_bytes(b'not an image')
+        result = self.run_cli(layout)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('playing-cards/cropped/tool/duel.jpg', result.stdout)
+        self.assertNotIn('Traceback', result.stdout)
 
     def test_changing_the_box_rebuilds_only_the_crop(self):
         layout = self.make()

@@ -90,6 +90,14 @@ class PlanTests(unittest.TestCase):
             plan_outputs(layout)
         self.assertIn('tool/ghost', str(ctx.exception))
 
+    def test_malformed_crop_box_fails_naming_the_card(self):
+        for box in ([1, 2, 3], [1, 2, 3, '4'], [1, 2, 0, 4], [1, 2, 3, -4], [-1, 2, 3, 4], [1.5, 2, 3, 4], 'oops', None):
+            layout = make_layout({'playing-cards/full/tool/duel.jpg': b'f'}, self.CROP_RECIPES, {'tool/duel': box})
+            with self.assertRaises(PlanError, msg=repr(box)) as ctx:
+                plan_outputs(layout)
+            self.assertIn('tool/duel', str(ctx.exception))
+            self.assertEqual(check(layout), ['plan: {}'.format(ctx.exception)])
+
     def test_full_art_without_box_fails(self):
         layout = make_layout({'playing-cards/full/tool/duel.jpg': b'f'}, self.CROP_RECIPES, {})
         with self.assertRaises(PlanError) as ctx:
