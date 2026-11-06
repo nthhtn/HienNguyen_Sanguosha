@@ -66,7 +66,7 @@ describe('SceneSeat', () => {
     expect(text(el)).toContain('Seat 2');
     expect(text(el)).toContain('Wei');
     expect(text(el)).not.toMatch(/seat-|cao-cao/);
-    expect(el.querySelector('img.scene-avatar')!.getAttribute('src')).toMatch(/^\/card-art\//);
+    expect(el.querySelector('img.scene-avatar')!.getAttribute('src')).toMatch(/^\/images\//);
     await TestBed.inject(I18n).setLocale('vi');
     fixture.detectChanges();
     expect(text(el)).toContain('Người chơi 2');
@@ -172,6 +172,6 @@ describe('SceneFrame', () => {
 describe('scene art', () => {
   it.each(['sha', 'shan', 'peach', 'wine', 'wuxie', 'capture', 'cao-cao', 'guo-jia', 'zhang-jiao'])('%s resolves to a real asset path', (id) => {
     const card = render(id.includes('-') ? SceneGeneral : SceneCard, { id });
-    expect(card.el.querySelector('img.scene-card')!.getAttribute('src')).toMatch(/^\/card-art\/.+\.jpg$/);
+    expect(card.el.querySelector('img.scene-card')!.getAttribute('src')).toMatch(/^\/images\/.+\.jpg$/);
   });
 });

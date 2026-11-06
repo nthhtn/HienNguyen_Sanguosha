@@ -46,6 +46,8 @@ jobs:
         with: { node-version: 24, cache: npm }
       - run: npm ci
       - run: npm run test:guardrails
+      - run: pip install pillow
+      - run: npm run test:assets
       - run: npm run test:coverage
       - name: Coverage summary
         if: always()

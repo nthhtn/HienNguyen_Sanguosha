@@ -41,11 +41,11 @@ describe.each(LOCALES)('the rules scenes in %s', (locale) => {
     const images = [...el.querySelectorAll('img.scene-card, img.scene-avatar, img.scene-chain')];
     expect(images.length).toBeGreaterThan(0);
     for (const img of images) {
-      expect([page, img.getAttribute('src')]).toEqual([page, expect.stringMatching(/^\/card-art\/.+\.(jpg|png)$/)]);
+      expect([page, img.getAttribute('src')]).toEqual([page, expect.stringMatching(/^\/images\/.+\.(jpg|png)$/)]);
       expect(img.getAttribute('src')).not.toMatch(/placeholder|unknown/);
       expect(img.getAttribute('alt')!.trim()).not.toBe('');
     }
-    for (const mark of el.querySelectorAll('img.scene-mark, img.scene-ambitionist')) expect(mark.getAttribute('src')).toMatch(/^\/card-art\//);
+    for (const mark of el.querySelectorAll('img.scene-mark, img.scene-ambitionist')) expect(mark.getAttribute('src')).toMatch(/^\/images\//);
     expect(el.querySelector('.card-art-placeholder')).toBeNull();
   });
 

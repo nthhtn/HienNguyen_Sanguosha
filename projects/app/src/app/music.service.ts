@@ -2,23 +2,23 @@ import { DestroyRef, Injectable, InjectionToken, inject, signal } from '@angular
 import { DOCUMENT } from '@angular/common';
 
 export type MusicTrack = 'background' | 'win';
-export const TRACK_URLS: Record<MusicTrack, string> = { background: '/audio/background.ogg', win: '/audio/win.ogg' };
+export const TRACK_URLS: Record<MusicTrack, string> = { background: '/audio/music/background.ogg', win: '/audio/music/win.ogg' };
 export type SoundEffect = 'injure' | 'injure-hard' | 'injure-element' | 'chained' | 'heal' | 'weapon' | 'armor' | 'mount' | 'death-wei' | 'death-shu' | 'death-wu' | 'death-qun';
 export const EFFECT_URLS: Record<SoundEffect, string> = {
-  injure: '/audio/injure.ogg',
-  'injure-hard': '/audio/injure_hard.ogg',
-  'injure-element': '/audio/injure_element.ogg',
-  chained: '/audio/chained.ogg',
-  heal: '/audio/peach.ogg',
-  weapon: '/audio/weapon.ogg',
-  armor: '/audio/armor.ogg',
-  mount: '/audio/horse.ogg',
-  'death-wei': '/audio/death_wei.ogg',
-  'death-shu': '/audio/death_shu.ogg',
-  'death-wu': '/audio/death_wu.ogg',
-  'death-qun': '/audio/death_qun.ogg',
+  injure: '/audio/effects/injure.ogg',
+  'injure-hard': '/audio/effects/injure-hard.ogg',
+  'injure-element': '/audio/effects/injure-element.ogg',
+  chained: '/audio/effects/chained.ogg',
+  heal: '/audio/effects/peach.ogg',
+  weapon: '/audio/effects/weapon.ogg',
+  armor: '/audio/effects/armor.ogg',
+  mount: '/audio/effects/horse.ogg',
+  'death-wei': '/audio/death/forces/wei.ogg',
+  'death-shu': '/audio/death/forces/shu.ogg',
+  'death-wu': '/audio/death/forces/wu.ogg',
+  'death-qun': '/audio/death/forces/qun.ogg',
 };
-// A spoken line, voiced by the seat's gender: /audio/<gender>/<file>.
+// A spoken line, voiced by the seat's gender: /audio/voice/<gender>/<file>.
 export type Voice = 'slash' | 'dodge' | 'sos' | 'break' | 'chains' | 'blaze' | 'hail-of-arrows' | 'barbarians' | 'steal' | 'wuxie' | 'starvation' | 'duel' | 'fire-slash' | 'thunder-slash' | 'coerce' | 'wine' | 'harvest' | 'draw-two' | 'peach-garden' | 'capture' | 'lightning' | 'amass' | 'ascertain' | 'ally-far-attack-near';
 export type VoiceGender = 'male' | 'female';
 export const VOICE_FILES: Record<Voice, string> = {
@@ -34,8 +34,8 @@ export const VOICE_FILES: Record<Voice, string> = {
   wuxie: 'wuxie.ogg',
   starvation: 'starvation.ogg',
   duel: 'duel.ogg',
-  'fire-slash': 'fire_slash.ogg',
-  'thunder-slash': 'thunder_slash.ogg',
+  'fire-slash': 'fire-slash.ogg',
+  'thunder-slash': 'thunder-slash.ogg',
   coerce: 'coerce.ogg',
   wine: 'wine.ogg',
   harvest: 'harvest.ogg',
@@ -74,7 +74,7 @@ export const CARD_VOICES: Partial<Record<string, Voice>> = {
   ascertain: 'ascertain',
   'ally-far-attack-near': 'ally-far-attack-near',
 };
-export const voiceUrl = (gender: VoiceGender, voice: Voice): string => `/audio/${gender}/${VOICE_FILES[voice]}`;
+export const voiceUrl = (gender: VoiceGender, voice: Voice): string => `/audio/voice/${gender}/${VOICE_FILES[voice]}`;
 // Music sits well under the event sounds so an injury or a heal always stands out.
 const MUSIC_VOLUME = 0.2;
 const EFFECT_VOLUME = 0.8;

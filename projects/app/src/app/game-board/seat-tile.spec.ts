@@ -67,8 +67,8 @@ describe('SeatTile', () => {
     const el = render(makeSeat({ chained: true }));
     const left = el.querySelector('.panel.general > img.chain-left') as HTMLImageElement;
     const right = el.querySelector('.panel.general > img.chain-right') as HTMLImageElement;
-    expect(left.getAttribute('src')).toBe('/card-art/misc/chain_left.png');
-    expect(right.getAttribute('src')).toBe('/card-art/misc/chain_right.png');
+    expect(left.getAttribute('src')).toBe('/images/ui/chain/chain-left.png');
+    expect(right.getAttribute('src')).toBe('/images/ui/chain/chain-right.png');
     const plain = render(makeSeat());
     expect(plain.querySelector('.chain-left')).toBeNull();
     expect(plain.querySelector('.chain-right')).toBeNull();
@@ -120,7 +120,7 @@ describe('SeatTile', () => {
     );
     expect(el.textContent).toContain('Shu');
     const portrait = el.querySelector('app-seat-avatar .half[data-slot="main"] img') as HTMLImageElement;
-    expect(portrait.getAttribute('src')).toBe('/card-art/generals/skins/shu/zhaoyun.png');
+    expect(portrait.getAttribute('src')).toBe('/images/generals/skins/shu/zhaoyun.png');
   });
 
   it('shows a placeholder for a seat still choosing generals', () => {
@@ -190,7 +190,7 @@ describe('SeatTile', () => {
 
   it('shows one HP icon per HP, icon 1 up to the seat’s current HP, next to its HP text', () => {
     const imgs = Array.from(render(makeSeat({ combinedHp: 3 })).querySelectorAll('.stats img.hp-icon')) as HTMLImageElement[];
-    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['/card-art/misc/hp/1.png', '/card-art/misc/hp/2.png', '/card-art/misc/hp/3.png']);
+    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['/images/ui/hp/1.png', '/images/ui/hp/2.png', '/images/ui/hp/3.png']);
     expect(imgs.every((i) => i.getAttribute('alt') === '')).toBe(true);
   });
 
@@ -247,7 +247,7 @@ describe('SeatTile', () => {
 
   it('overlays the Ambitionist icon on an Ambitionist seat only', () => {
     const icon = render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' }).querySelector('img.ambitionist-icon') as HTMLImageElement;
-    expect(icon.getAttribute('src')).toBe('/card-art/generals/ambitionist_icon.png');
+    expect(icon.getAttribute('src')).toBe('/images/generals/special/ambitionist-icon.png');
     expect(icon.getAttribute('alt')).toBe('Ambitionist');
     expect(render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'kingdom' }).querySelector('.ambitionist-icon')).toBeNull();
     expect(render({ ...makeSeat(), kingdom: 'Wei' }).querySelector('.ambitionist-icon')).toBeNull();
@@ -262,7 +262,7 @@ describe('SeatTile', () => {
 
   it('hangs the kingdom banner on the left of a revealed seat, and none while hidden or for an Ambitionist', () => {
     const banner = render({ ...makeSeat(), kingdom: 'Shu' }).querySelector('img.kingdom-banner') as HTMLImageElement;
-    expect(banner.getAttribute('src')).toBe('/card-art/banner/shu.png');
+    expect(banner.getAttribute('src')).toBe('/images/ui/banners/shu.png');
     expect(render({ ...makeSeat(), kingdom: 'hidden' }).querySelector('.kingdom-banner')).toBeNull();
     expect(render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' }).querySelector('.kingdom-banner')).toBeNull();
   });
@@ -312,7 +312,7 @@ describe('SeatTile', () => {
     expect(renderWith({}).querySelector('.damage-fx')).toBeNull();
     const fx = renderWith({ damageEffect: { id: 1, image: 'slash-fire' } }).querySelector('.damage-fx');
     expect(fx?.tagName).toBe('APP-SPRITE-EFFECT');
-    expect((fx?.querySelector('.sprite') as HTMLElement).style.backgroundImage).toContain('/card-art/animation/sheets/slash-fire.png');
+    expect((fx?.querySelector('.sprite') as HTMLElement).style.backgroundImage).toContain('/images/effects/sheets/slash-fire.png');
     expect(fx?.parentElement?.classList).toContain('generals');
   });
 

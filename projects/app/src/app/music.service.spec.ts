@@ -139,12 +139,12 @@ describe('SoundEffects', () => {
     const effects = TestBed.inject(SoundEffects);
     effects.playVoice('female', 'sos');
     effects.playVoice('male', 'slash');
-    expect(urls).toEqual(['/audio/female/sos.ogg', '/audio/male/slash.ogg']);
+    expect(urls).toEqual(['/audio/voice/female/sos.ogg', '/audio/voice/male/slash.ogg']);
     effects.toggle();
     effects.playVoice('male', 'dodge');
     expect(urls).toHaveLength(2);
     effects.previewVoice('female', 'dodge');
-    expect(urls).toEqual(['/audio/female/sos.ogg', '/audio/male/slash.ogg', '/audio/female/dodge.ogg']);
+    expect(urls).toEqual(['/audio/voice/female/sos.ogg', '/audio/voice/male/slash.ogg', '/audio/voice/female/dodge.ogg']);
   });
 
   it('plays effects louder than the music', async () => {
@@ -182,10 +182,10 @@ describe('SoundEffects', () => {
 describe('card voices', () => {
   it('Chains, Amass, Ascertain and Ally Far Attack Near have a voice', () => {
     const files = (id: string) => (['male', 'female'] as const).map((g) => CARD_VOICES[id] && voiceUrl(g, CARD_VOICES[id]!));
-    expect(files('chains')).toEqual(['/audio/male/chains.ogg', '/audio/female/chains.ogg']);
-    expect(files('amass')).toEqual(['/audio/male/amass.ogg', '/audio/female/amass.ogg']);
-    expect(files('ascertain')).toEqual(['/audio/male/ascertain.ogg', '/audio/female/ascertain.ogg']);
-    expect(files('ally-far-attack-near')).toEqual(['/audio/male/ally-far-attack-near.ogg', '/audio/female/ally-far-attack-near.ogg']);
+    expect(files('chains')).toEqual(['/audio/voice/male/chains.ogg', '/audio/voice/female/chains.ogg']);
+    expect(files('amass')).toEqual(['/audio/voice/male/amass.ogg', '/audio/voice/female/amass.ogg']);
+    expect(files('ascertain')).toEqual(['/audio/voice/male/ascertain.ogg', '/audio/voice/female/ascertain.ogg']);
+    expect(files('ally-far-attack-near')).toEqual(['/audio/voice/male/ally-far-attack-near.ogg', '/audio/voice/female/ally-far-attack-near.ogg']);
   });
 
   it('Wuxie Kingdom uses the same voices as Wuxie', () => {
