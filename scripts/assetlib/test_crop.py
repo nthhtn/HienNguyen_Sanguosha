@@ -52,6 +52,24 @@ class CropTests(unittest.TestCase):
                 crop_file(self.src, self.dir / 'out.jpg', box, 92)
             self.assertIn('card.png', str(ctx.exception))
 
+    def test_writes_webp_when_asked(self):
+        dest = self.dir / 'out.webp'
+        crop_file(self.src, dest, [2, 3, 4, 5], 85, ext='webp')
+        with Image.open(dest) as cut:
+            self.assertEqual((cut.format, cut.size), ('WEBP', (4, 5)))
+
+    def test_scales_the_cut_down_to_max_width_keeping_the_aspect_ratio(self):
+        big = self.dir / 'big.png'
+        Image.new('RGB', (100, 80), (9, 9, 9)).save(big)
+        crop_file(big, self.dir / 'out.webp', [0, 0, 100, 80], 85, ext='webp', max_width=50)
+        with Image.open(self.dir / 'out.webp') as cut:
+            self.assertEqual(cut.size, (50, 40))
+
+    def test_never_scales_the_cut_up(self):
+        crop_file(self.src, self.dir / 'out.webp', [2, 3, 4, 5], 85, ext='webp', max_width=50)
+        with Image.open(self.dir / 'out.webp') as cut:
+            self.assertEqual(cut.size, (4, 5))
+
     def test_lower_quality_makes_a_smaller_file(self):
         noisy = self.dir / 'noisy.png'
         im = Image.new('RGB', (64, 64))
@@ -104,6 +122,21 @@ class CropsThroughTheBuild(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn('playing-cards/cropped/tool/duel.jpg', result.stdout)
         self.assertNotIn('Traceback', result.stdout)
+
+    def test_a_webp_crop_with_max_width_builds_and_rebuilds_when_the_width_changes(self):
+        recipes = {**self.RECIPES, 'playing-cards/cropped': {'op': 'crop', 'from': 'playing-cards/full', 'ext': 'webp', 'quality': 85, 'maxWidth': 2}}
+        layout = make_layout({}, recipes, {'tool/duel': [2, 3, 4, 4]})
+        full = layout.src / 'playing-cards/full/tool'
+        full.mkdir(parents=True)
+        marked_image(full / 'duel.png').rename(full / 'duel.jpg')
+        build(layout)
+        with Image.open(layout.out / 'playing-cards/cropped/tool/duel.webp') as cut:
+            self.assertEqual((cut.format, cut.size), ('WEBP', (2, 2)))
+        self.assertEqual(check(layout), [])
+        layout.recipes_file.write_text(json.dumps({**recipes, 'playing-cards/cropped': {**recipes['playing-cards/cropped'], 'maxWidth': 3}}))
+        self.assertEqual(build(layout).built, 1)
+        with Image.open(layout.out / 'playing-cards/cropped/tool/duel.webp') as cut:
+            self.assertEqual(cut.size, (3, 3))
 
     def test_changing_the_box_rebuilds_only_the_crop(self):
         layout = self.make()

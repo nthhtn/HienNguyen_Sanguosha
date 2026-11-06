@@ -31,7 +31,7 @@ describe('DiscardPile', () => {
     const { el } = render([peach, sha], []);
     const arts = el.querySelectorAll('app-card-art img');
     expect(arts).toHaveLength(1);
-    expect(arts[0].getAttribute('src')).toBe('/images/playing-cards/cropped/basic/sha.jpg');
+    expect(arts[0].getAttribute('src')).toBe('/images/playing-cards/cropped/basic/sha.webp');
     expect(el.querySelector('.count')!.textContent).toContain('2');
     expect(el.querySelector('.top-name')!.textContent).toContain('Slash');
   });

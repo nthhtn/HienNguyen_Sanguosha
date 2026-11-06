@@ -12,6 +12,7 @@ from .recipes import NoRecipe, canonical_hash, load_recipes, recipe_for
 # What the image op reads, and the formats it can write.
 IMAGE_SOURCES = {'png', 'jpg', 'jpeg'}
 IMAGE_TARGETS = {'webp'}
+CROP_TARGETS = {'jpg', 'webp'}
 
 
 class PlanError(Exception):
@@ -112,6 +113,12 @@ def _sheet_outputs(layout: Layout, key: str, recipe: dict) -> List[Output]:
 def plan_outputs(layout: Layout) -> List[Output]:
     recipes = load_recipes(layout.recipes_file)
     for key, recipe in recipes.items():
+        if recipe['op'] in ('image', 'crop') and 'maxWidth' in recipe:
+            width = recipe['maxWidth']
+            if not isinstance(width, int) or isinstance(width, bool) or width <= 0:
+                raise PlanError('recipe {}: maxWidth must be a positive whole number, not {!r}'.format(key, width))
+        if recipe['op'] == 'crop' and recipe.get('ext') not in CROP_TARGETS:
+            raise PlanError('recipe {} cannot write {!r}: a crop is saved as {}'.format(key, recipe.get('ext'), ' or '.join(sorted(CROP_TARGETS))))
         if recipe['op'] == 'image' and recipe.get('ext') not in IMAGE_TARGETS:
             raise PlanError('recipe {} cannot write {!r}: the image op writes {}'.format(key, recipe.get('ext'), ' or '.join(sorted(IMAGE_TARGETS))))
     outputs = _copy_outputs(layout, recipes)

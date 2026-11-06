@@ -17,14 +17,14 @@
     }
   },
   "effects/stills": { "op": "copy" },
-  "generals/cards": { "op": "copy", "ext": "jpg" },
+  "generals/cards": { "op": "image", "ext": "webp", "quality": 85, "maxWidth": 320 },
   "generals/skins": { "op": "image", "ext": "webp", "quality": 85 },
   "generals/skins/skins.json": { "op": "copy" },
   "generals/special": { "op": "copy" },
   "manifest.json": { "op": "copy" },
   "playing-cards": { "op": "copy" },
-  "playing-cards/cropped": { "op": "crop", "from": "playing-cards/full", "ext": "jpg", "quality": 92 },
-  "playing-cards/full": { "op": "copy", "ext": "jpg" },
+  "playing-cards/cropped": { "op": "crop", "from": "playing-cards/full", "ext": "webp", "quality": 85, "maxWidth": 320 },
+  "playing-cards/full": { "op": "image", "ext": "webp", "quality": 85, "maxWidth": 320 },
   "preview": { "op": "master-only" },
   "ui": { "op": "copy" }
 }

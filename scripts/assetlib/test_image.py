@@ -57,6 +57,34 @@ class ImageFileTests(unittest.TestCase):
         image_file(src, self.dir / 'lo.webp', 'webp', 40, 100)
         self.assertLess((self.dir / 'lo.webp').stat().st_size, (self.dir / 'hi.webp').stat().st_size)
 
+    def test_scales_a_wider_image_down_keeping_the_aspect_ratio(self):
+        src = self.dir / 'wide.png'
+        Image.new('RGB', (100, 200), (1, 2, 3)).save(src)
+        image_file(src, self.dir / 'wide.webp', 'webp', 85, 100, max_width=50)
+        with Image.open(self.dir / 'wide.webp') as out:
+            self.assertEqual(out.size, (50, 100))
+
+    def test_never_scales_an_image_up(self):
+        src = self.dir / 'small.png'
+        Image.new('RGB', (30, 40), (1, 2, 3)).save(src)
+        image_file(src, self.dir / 'small.webp', 'webp', 85, 100, max_width=50)
+        with Image.open(self.dir / 'small.webp') as out:
+            self.assertEqual(out.size, (30, 40))
+
+    def test_keeps_transparency_when_scaling(self):
+        src = self.dir / 'half.png'
+        im = Image.new('RGBA', (20, 20), (0, 0, 0, 0))
+        for x in range(10, 20):
+            for y in range(10, 20):
+                im.putpixel((x, y), (255, 0, 0, 255))
+        im.save(src)
+        image_file(src, self.dir / 'half.webp', 'webp', 85, 100, max_width=10)
+        with Image.open(self.dir / 'half.webp') as out:
+            rgba = out.convert('RGBA')
+            self.assertEqual(out.size, (10, 10))
+            self.assertEqual(rgba.getpixel((0, 0))[3], 0)
+            self.assertEqual(rgba.getpixel((9, 9))[3], 255)
+
     def test_creates_the_folder_of_the_output(self):
         image_file(rgba_png(self.dir / 'a.png'), self.dir / 'deep/er/a.webp', 'webp', 85, 100)
         self.assertTrue((self.dir / 'deep/er/a.webp').is_file())
@@ -93,6 +121,16 @@ class ImageThroughTheBuild(unittest.TestCase):
         self.assertFalse((layout.out / 'generals/skins/wei/a.png').exists())
         self.assertTrue((layout.out / 'generals/skins/wei/a.webp').exists())
         self.assertEqual(check(layout), [])
+
+    def test_max_width_shrinks_the_output_and_changing_it_rebuilds(self):
+        layout = self.make({'generals/skins': {'op': 'image', 'ext': 'webp', 'quality': 85, 'maxWidth': 4}})
+        build(layout)
+        with Image.open(layout.out / 'generals/skins/wei/a.webp') as out:
+            self.assertEqual(out.size, (4, 4))
+        layout.recipes_file.write_text(json.dumps({'generals/skins': {'op': 'image', 'ext': 'webp', 'quality': 85, 'maxWidth': 6}}))
+        self.assertEqual(build(layout).built, 1)
+        with Image.open(layout.out / 'generals/skins/wei/a.webp') as out:
+            self.assertEqual(out.size, (6, 6))
 
     def test_changing_the_quality_rebuilds(self):
         layout = self.make(self.IMAGE)

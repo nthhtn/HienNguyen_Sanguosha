@@ -1,9 +1,9 @@
 {
   "README.md": {
-    "output": "9cec687c08560766551c1110ca9f50a9cca7ee1deb7d5c4926b893e5a8eb6c75",
+    "output": "bbf3c13067c516c816d9a90a37ec83b7b710fa36c718380c352eb90e4bb2a47a",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "README.md": "9cec687c08560766551c1110ca9f50a9cca7ee1deb7d5c4926b893e5a8eb6c75"
+      "README.md": "bbf3c13067c516c816d9a90a37ec83b7b710fa36c718380c352eb90e4bb2a47a"
     }
   },
   "audio/death/forces/qun.ogg": {
@@ -1322,464 +1322,464 @@
       "effects/stills/slash.png": "d3dbdb6351df610f85fab4bc7f4e5bf8ccac16c710e61676c06c1b0148f4060f"
     }
   },
-  "generals/cards/qun/cai-wenji.jpg": {
-    "output": "85a11ae30cee866f11bcfb7d9972071f855c6f82cc220ab856cb14483ae71b8b",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/cai-wenji.webp": {
+    "output": "166c6993c0ee0933b72e085385e41b2cf1cb402930b4ea024f0baba9959c94fc",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/cai-wenji.jpg": "85a11ae30cee866f11bcfb7d9972071f855c6f82cc220ab856cb14483ae71b8b"
     }
   },
-  "generals/cards/qun/diao-chan.jpg": {
-    "output": "f88b4eca4a5fed7d268b6feba20159efb59dcbe49e1aeeba1e5e358589118008",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/diao-chan.webp": {
+    "output": "04f075d44c6054142d573447205454675c914038fe91652788620c41130b3c26",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/diao-chan.jpg": "f88b4eca4a5fed7d268b6feba20159efb59dcbe49e1aeeba1e5e358589118008"
     }
   },
-  "generals/cards/qun/dong-zhuo.jpg": {
-    "output": "989da8d195f0e400f5ba330a3113d0ec18bbc9765caf94c39e622b2b8d7348ce",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/dong-zhuo.webp": {
+    "output": "d26394403fc3a7b8bc66c206182c4550509a8c25148072f5d8f4cd47e599f1ce",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/dong-zhuo.jpg": "989da8d195f0e400f5ba330a3113d0ec18bbc9765caf94c39e622b2b8d7348ce"
     }
   },
-  "generals/cards/qun/hua-tuo.jpg": {
-    "output": "e55f4c6d90a5d0e3c59fa6a517584ef66e1b859da4861ca2f37285c339a29740",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/hua-tuo.webp": {
+    "output": "442ee59d3edfb6201307d6ab6ac9c080a7ae107afed944810e7a1068447199e1",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/hua-tuo.jpg": "e55f4c6d90a5d0e3c59fa6a517584ef66e1b859da4861ca2f37285c339a29740"
     }
   },
-  "generals/cards/qun/ji-ling.jpg": {
-    "output": "7575a38d1ff9796b64ef7dbc79e00816945348f11166444679ecfec61a0dfd12",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/ji-ling.webp": {
+    "output": "e771c94e035235d06966f16c474b037291511b545aa852e8d8fb4baf22f48e63",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/ji-ling.jpg": "7575a38d1ff9796b64ef7dbc79e00816945348f11166444679ecfec61a0dfd12"
     }
   },
-  "generals/cards/qun/jia-xu.jpg": {
-    "output": "6995ec0c70e549134bfbbb7cd2b95e7c3a00d98bf33c045b44d3e4dc2e432e85",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/jia-xu.webp": {
+    "output": "4d6b62903164262fe989ed05bd1ab563af4ff9b678cf2570faeab621c5fe989e",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/jia-xu.jpg": "6995ec0c70e549134bfbbb7cd2b95e7c3a00d98bf33c045b44d3e4dc2e432e85"
     }
   },
-  "generals/cards/qun/kong-rong.jpg": {
-    "output": "ec1124d1c0e42016c787bfe291cad3a79cfba11b8972e1c7507045a6cd2c0caa",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/kong-rong.webp": {
+    "output": "5722e4e61acddbcf606fba0688ce55438ccf88e497ed41d6e77e58191fbc8b9f",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/kong-rong.jpg": "ec1124d1c0e42016c787bfe291cad3a79cfba11b8972e1c7507045a6cd2c0caa"
     }
   },
-  "generals/cards/qun/lu-bu.jpg": {
-    "output": "1d10db71345a3657b6c11b65067151eceda1fc08ec8fae49c6a18b5961ca6a5e",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/lu-bu.webp": {
+    "output": "ed9f57d42b49a60f58002f46a9c963fc94682942e6f1db75c2cc8fd631e3f766",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/lu-bu.jpg": "1d10db71345a3657b6c11b65067151eceda1fc08ec8fae49c6a18b5961ca6a5e"
     }
   },
-  "generals/cards/qun/ma-teng.jpg": {
-    "output": "b865e35dc29d98d62eb1a2fe4fa8213f0296a88b5b051f383671cf0db4426c48",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/ma-teng.webp": {
+    "output": "153e6ecc349a4642f20f7d2ece59a459583e5a70765a5bd3066e054849477562",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/ma-teng.jpg": "b865e35dc29d98d62eb1a2fe4fa8213f0296a88b5b051f383671cf0db4426c48"
     }
   },
-  "generals/cards/qun/pan-feng.jpg": {
-    "output": "02e0bca5cc738102544fe3142d08ee895efb3681a43c9ff91fe90302f12fe157",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/pan-feng.webp": {
+    "output": "bcbe0899fe70a5efa91ce58096dd0c8212e9087dfa51f5de71bf4384b3129edb",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/pan-feng.jpg": "02e0bca5cc738102544fe3142d08ee895efb3681a43c9ff91fe90302f12fe157"
     }
   },
-  "generals/cards/qun/pang-de.jpg": {
-    "output": "66ffd9d193588f0b5ad0514f142564aff926f400000088394529409c07a7c4cc",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/pang-de.webp": {
+    "output": "0ee76a56d47d8ac197300fba0da351acf87a541163f377412c08a60f4dea7b24",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/pang-de.jpg": "66ffd9d193588f0b5ad0514f142564aff926f400000088394529409c07a7c4cc"
     }
   },
-  "generals/cards/qun/tian-feng.jpg": {
-    "output": "4fc40726507a4d293dc141307fca8ea7d2d686eb392e58b07c561ff085ab3528",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/tian-feng.webp": {
+    "output": "3107c0b7d55463f1d1b48e2eb5ea1378b61bcc69e998a2712409091fb36c566a",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/tian-feng.jpg": "4fc40726507a4d293dc141307fca8ea7d2d686eb392e58b07c561ff085ab3528"
     }
   },
-  "generals/cards/qun/yan-liang-and-wen-chou.jpg": {
-    "output": "4cb845e36fc23de14eb8d3c64420c8cecccb663480bf19e22fd033e6eeed30a0",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/yan-liang-and-wen-chou.webp": {
+    "output": "df0474feb4fdf79033beda69c25afbac4ca9d07b57b2aea043dcfe05b5260051",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/yan-liang-and-wen-chou.jpg": "4cb845e36fc23de14eb8d3c64420c8cecccb663480bf19e22fd033e6eeed30a0"
     }
   },
-  "generals/cards/qun/yu-ji.jpg": {
-    "output": "ce88f5ef3637271e82431b1d9fd11fd8bbf12ed41bb5df95d6cf1ddd6b993b09",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/yu-ji.webp": {
+    "output": "688480c9e450ea37998cced57f45194d1d24e1b0f05baf3e2642eabdda2f917b",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/yu-ji.jpg": "ce88f5ef3637271e82431b1d9fd11fd8bbf12ed41bb5df95d6cf1ddd6b993b09"
     }
   },
-  "generals/cards/qun/yuan-shao.jpg": {
-    "output": "7e8a69fd733afa421d54d970802d7469585441364b10cb824703d1f1c90d14a1",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/yuan-shao.webp": {
+    "output": "f2b6d01d161c9210bb7c33618fdc5a393f456e57a1766e42cc0580f4a7c0b4dc",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/yuan-shao.jpg": "7e8a69fd733afa421d54d970802d7469585441364b10cb824703d1f1c90d14a1"
     }
   },
-  "generals/cards/qun/zhang-jiao.jpg": {
-    "output": "2417518cb6d7b562e679e352f63353ea30bd6703614f4ee6c69cac3a12e04488",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/zhang-jiao.webp": {
+    "output": "384ceb279839fdf52daa7c4bc914ead8b7b4fe6edc9cf8641f126174a88bc481",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/zhang-jiao.jpg": "2417518cb6d7b562e679e352f63353ea30bd6703614f4ee6c69cac3a12e04488"
     }
   },
-  "generals/cards/qun/zou-shi.jpg": {
-    "output": "25f17a168b8c2f262fefadc654b7d83d6df6e62530cf2a070e902efe63f91f4c",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/zou-shi.webp": {
+    "output": "940177898d16b9ef3010803688299602332081450b035945c0edf9c22d25df21",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/zou-shi.jpg": "25f17a168b8c2f262fefadc654b7d83d6df6e62530cf2a070e902efe63f91f4c"
     }
   },
-  "generals/cards/qun/zuo-ci.jpg": {
-    "output": "190ed9136eea29cd5d81ff662f5e2ef4ad3ffedc51ecea4c62e96e14e5646326",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/qun/zuo-ci.webp": {
+    "output": "69d35324ad1e322bbb43725e5534c783508fb6310d4f6b7dc01ff27eeb73355c",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/qun/zuo-ci.jpg": "190ed9136eea29cd5d81ff662f5e2ef4ad3ffedc51ecea4c62e96e14e5646326"
     }
   },
-  "generals/cards/shu/fire-zhuge-liang.jpg": {
-    "output": "0f2c9ac15ac049b7bcc011958792e57e46ccb862bfcad0120c88d3e10828274f",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/fire-zhuge-liang.webp": {
+    "output": "66660eae0603d0ba2cfaef060fb1cd3c019c2f5fd5211dd783707d86ea572a42",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/fire-zhuge-liang.jpg": "0f2c9ac15ac049b7bcc011958792e57e46ccb862bfcad0120c88d3e10828274f"
     }
   },
-  "generals/cards/shu/gan-furen.jpg": {
-    "output": "46ebf052178de08a0509310f9e94a90953ff5d6c763da655126e6a0b8edb3d26",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/gan-furen.webp": {
+    "output": "deb73cdde4355246e9080d41222a917f4aa7289b4149393be7e82d4c49b388f4",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/gan-furen.jpg": "46ebf052178de08a0509310f9e94a90953ff5d6c763da655126e6a0b8edb3d26"
     }
   },
-  "generals/cards/shu/guan-yu.jpg": {
-    "output": "16247072e78d9d753978d7a6067b971e9248e7952e5e95fa8c0b9597a6a8addc",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/guan-yu.webp": {
+    "output": "968e02769d54e5aa65e5ce211cb49c9842174264e7080616c26c4ecb4dc5d402",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/guan-yu.jpg": "16247072e78d9d753978d7a6067b971e9248e7952e5e95fa8c0b9597a6a8addc"
     }
   },
-  "generals/cards/shu/huang-yueying.jpg": {
-    "output": "6990b3ad2b2044f2c20992fc62e8790a20e38e6a008ef885b7637cf639fb3834",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/huang-yueying.webp": {
+    "output": "ad955030b319c6e6aad2f245a7ce667d600ee2bfae9b598e86d4c2d26269ea74",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/huang-yueying.jpg": "6990b3ad2b2044f2c20992fc62e8790a20e38e6a008ef885b7637cf639fb3834"
     }
   },
-  "generals/cards/shu/huang-zhong.jpg": {
-    "output": "8a53adc02c60b1bb5308ded61d69f047f72a83659cde61267dcac88763cccc31",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/huang-zhong.webp": {
+    "output": "df812b636764b5d621c359d9b95584849f6ac67fd780fc1db716d3cdaf0099eb",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/huang-zhong.jpg": "8a53adc02c60b1bb5308ded61d69f047f72a83659cde61267dcac88763cccc31"
     }
   },
-  "generals/cards/shu/jiang-wei.jpg": {
-    "output": "60c996660e50e3851c4a328c165536e605af4e4bb4afc2a033815c7e3659d7aa",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/jiang-wei.webp": {
+    "output": "65fa7a7d6c3d8b5faae1d3aa2dc26d65c45be1524fd7c35e8eaf7d33cc03da88",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/jiang-wei.jpg": "60c996660e50e3851c4a328c165536e605af4e4bb4afc2a033815c7e3659d7aa"
     }
   },
-  "generals/cards/shu/liu-bei.jpg": {
-    "output": "ce5e30c19464930b951084531f7f3e703290f9bda43b8cb54cc3f84547a74aa5",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/liu-bei.webp": {
+    "output": "e26ebc8079015a6a3dd30c234fea61893f191af9f130a5b5c065865bb25a6fe5",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/liu-bei.jpg": "ce5e30c19464930b951084531f7f3e703290f9bda43b8cb54cc3f84547a74aa5"
     }
   },
-  "generals/cards/shu/liu-shan.jpg": {
-    "output": "9c3694d32bd2ed33656b28e4dc4cb3aa2915ff0b6577b549b3beafca48789649",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/liu-shan.webp": {
+    "output": "a592eb8c152daf6d67f905e074145ac8945dd9158c9af088e74853328fde8a6f",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/liu-shan.jpg": "9c3694d32bd2ed33656b28e4dc4cb3aa2915ff0b6577b549b3beafca48789649"
     }
   },
-  "generals/cards/shu/ma-chao.jpg": {
-    "output": "a797dc492fe5ad10bfc5bc272c1335b73d30670a100214a04dda3fbf65f391e9",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/ma-chao.webp": {
+    "output": "354da913684eb7cacd51df8207df78e90427e2aa12399b1799480d46bd1e6cd4",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/ma-chao.jpg": "a797dc492fe5ad10bfc5bc272c1335b73d30670a100214a04dda3fbf65f391e9"
     }
   },
-  "generals/cards/shu/meng-huo.jpg": {
-    "output": "ad4fddec8e435622d734255ff90c078ecb02b3e66ac471679bc8d4916abfa652",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/meng-huo.webp": {
+    "output": "0ef5c1c2facc95062715aa7d375f1c1c0182fcfdc44f0ce926a718c24124d965",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/meng-huo.jpg": "ad4fddec8e435622d734255ff90c078ecb02b3e66ac471679bc8d4916abfa652"
     }
   },
-  "generals/cards/shu/pang-tong.jpg": {
-    "output": "4bb95fc70352066d42ff2e550cde23b1ded2589a2e2c78e85b91437ad1e38f7f",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/pang-tong.webp": {
+    "output": "334f03238e5e5126c79a3b4b84a49e675e1dc41489d67217df6d9e446e35daa1",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/pang-tong.jpg": "4bb95fc70352066d42ff2e550cde23b1ded2589a2e2c78e85b91437ad1e38f7f"
     }
   },
-  "generals/cards/shu/wei-yan.jpg": {
-    "output": "9a1046c7946db2fa8d8a30500cb9828a771e0b6351a5c2652b2d5a296ad732c2",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/wei-yan.webp": {
+    "output": "d3508138b92bba4b7ca1aa5d82d6fe5a393f9082015e42d159fd17cd427cb84f",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/wei-yan.jpg": "9a1046c7946db2fa8d8a30500cb9828a771e0b6351a5c2652b2d5a296ad732c2"
     }
   },
-  "generals/cards/shu/zhang-fei.jpg": {
-    "output": "e71f8bdd47dc9cccbadcefe978adc2715d516998cd947901ef2cf7fc33141594",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/zhang-fei.webp": {
+    "output": "2f9e9b11285567b259ac6637b19d6a7ccbede1697aa7250e68c12db976dd9c5e",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/zhang-fei.jpg": "e71f8bdd47dc9cccbadcefe978adc2715d516998cd947901ef2cf7fc33141594"
     }
   },
-  "generals/cards/shu/zhao-yun.jpg": {
-    "output": "72a4d7b53e492157739348c41fa501f8ca8ad8ebd785afffe5aa2ee86066e0c1",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/zhao-yun.webp": {
+    "output": "77126778659214b5c5c64bf47afdce72c4c7fb66c8941030a4b7387641570933",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/zhao-yun.jpg": "72a4d7b53e492157739348c41fa501f8ca8ad8ebd785afffe5aa2ee86066e0c1"
     }
   },
-  "generals/cards/shu/zhu-rong.jpg": {
-    "output": "628332d1370a93d5661e91ab31577786711f08c2f649fd0b7cd988c327d5994a",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/zhu-rong.webp": {
+    "output": "f05ce9c6a05226604ca988ade73af40da7939af647d896a7e93cae2fe5640caa",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/zhu-rong.jpg": "628332d1370a93d5661e91ab31577786711f08c2f649fd0b7cd988c327d5994a"
     }
   },
-  "generals/cards/shu/zhuge-liang.jpg": {
-    "output": "072fbac24fd615230e3394a59dd585af2aef92c2705b9a750043a320078fa92c",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/shu/zhuge-liang.webp": {
+    "output": "69332101170221ba006b30ab1bc70ce2cb05591b5a79cb0c841e4e747ef60d46",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/shu/zhuge-liang.jpg": "072fbac24fd615230e3394a59dd585af2aef92c2705b9a750043a320078fa92c"
     }
   },
-  "generals/cards/wei/cao-cao.jpg": {
-    "output": "271bf9be72fb208be47a4b26b49de32fc5166ca1d6f950eb100872580b6c72fc",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/cao-cao.webp": {
+    "output": "a0dad6f376e0eb7ed2e434917018692d4e5c686c6c4647b390e89de34df9f071",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/cao-cao.jpg": "271bf9be72fb208be47a4b26b49de32fc5166ca1d6f950eb100872580b6c72fc"
     }
   },
-  "generals/cards/wei/cao-pi.jpg": {
-    "output": "238540039ac9f3014ace089525345f0e6ab99d3004538e66cb1c5fed8ac2006c",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/cao-pi.webp": {
+    "output": "70f015c02c2cc41b364ce1f2b937dad7e326cad0a0677f39f2966c452a5a3f9c",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/cao-pi.jpg": "238540039ac9f3014ace089525345f0e6ab99d3004538e66cb1c5fed8ac2006c"
     }
   },
-  "generals/cards/wei/cao-ren.jpg": {
-    "output": "e1d63aafe92c0444416bf6ed04329a2ecbc2d871a65c2d966dd654cdd69bfeec",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/cao-ren.webp": {
+    "output": "b6592a3e0494cb87b451eb00b954300427199f0992e1194444e42390e740b186",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/cao-ren.jpg": "e1d63aafe92c0444416bf6ed04329a2ecbc2d871a65c2d966dd654cdd69bfeec"
     }
   },
-  "generals/cards/wei/deng-ai.jpg": {
-    "output": "c9a2f5a59d2f05632137cbfad15c6329006667c576b61e31ca868fde010fefdc",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/deng-ai.webp": {
+    "output": "82af44aff244c95b379db70f5047619244cdf8c7f5e460236230c69c4add8f30",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/deng-ai.jpg": "c9a2f5a59d2f05632137cbfad15c6329006667c576b61e31ca868fde010fefdc"
     }
   },
-  "generals/cards/wei/dian-wei.jpg": {
-    "output": "dd6fde5594d6153fa1d0d308afaf483c0e582d5f351ed39e3f2f3a73ed2b89cd",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/dian-wei.webp": {
+    "output": "bb6f616ae779d036cc4987d0d018f4c48c15163e6eeb04dd634a7cb61c8289d4",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/dian-wei.jpg": "dd6fde5594d6153fa1d0d308afaf483c0e582d5f351ed39e3f2f3a73ed2b89cd"
     }
   },
-  "generals/cards/wei/guo-jia.jpg": {
-    "output": "bfaedb34b11628f5fb548e793259615efb6dc501479faf8dd98f0db49a105327",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/guo-jia.webp": {
+    "output": "8e4e7a21adc65524957b4d3960377117f6e4a5a7ebf3d2b74558f00ef1a16b7d",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/guo-jia.jpg": "bfaedb34b11628f5fb548e793259615efb6dc501479faf8dd98f0db49a105327"
     }
   },
-  "generals/cards/wei/sima-yi.jpg": {
-    "output": "bb6157af13bfa1f1ad3754c8dafc037788af6537cf52596145fdb55b3764530e",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/sima-yi.webp": {
+    "output": "d0bbad28d359b64ad1ad69460921a54846bb934d693b06033670942ee6278b1c",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/sima-yi.jpg": "bb6157af13bfa1f1ad3754c8dafc037788af6537cf52596145fdb55b3764530e"
     }
   },
-  "generals/cards/wei/xiahou-dun.jpg": {
-    "output": "51e3aa73ccc6ec639c5f04d8035d9e3c7b9aed836092cbdc7684b8ba5d62e1bc",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/xiahou-dun.webp": {
+    "output": "d958c842b8f1c6a2770e173985294349f7486a7bfe0f5bfdbbe38e00fb71c479",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/xiahou-dun.jpg": "51e3aa73ccc6ec639c5f04d8035d9e3c7b9aed836092cbdc7684b8ba5d62e1bc"
     }
   },
-  "generals/cards/wei/xiahou-yuan.jpg": {
-    "output": "c2f8f699312912252918e11c1795c1ab15b227f67ec2c3a0657163b169472755",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/xiahou-yuan.webp": {
+    "output": "7cea892f4fcf03973bdb128fb51bb7d2e7fe37912e2bcb0b25757bdd65d86080",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/xiahou-yuan.jpg": "c2f8f699312912252918e11c1795c1ab15b227f67ec2c3a0657163b169472755"
     }
   },
-  "generals/cards/wei/xu-chu.jpg": {
-    "output": "eafc5c7da0898c2b37acc41f183d52042141920ed13be9090bdd84f97faa141b",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/xu-chu.webp": {
+    "output": "4dfe98de0f4eaf24aa355cef73356e39c6e08c2f19185b51ec09c4cf4723a6ce",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/xu-chu.jpg": "eafc5c7da0898c2b37acc41f183d52042141920ed13be9090bdd84f97faa141b"
     }
   },
-  "generals/cards/wei/xu-huang.jpg": {
-    "output": "169cc0d781c3aa76a9bd74d379b6f48ea596471f41952b7c0f821d0d059ee961",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/xu-huang.webp": {
+    "output": "5a99bf2d93b7ecfbdcb7460233ee3c325ea82dd92175d1dfd2cadbbbd582836a",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/xu-huang.jpg": "169cc0d781c3aa76a9bd74d379b6f48ea596471f41952b7c0f821d0d059ee961"
     }
   },
-  "generals/cards/wei/xun-yu.jpg": {
-    "output": "f6b9b3872937e9e441d0883b91ff49cdaf9deec8c97c201ecf9326792b7b4617",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/xun-yu.webp": {
+    "output": "785efb3f076203c2d00158222898fe1ee7d153462bb55d80c51a32ccb4172855",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/xun-yu.jpg": "f6b9b3872937e9e441d0883b91ff49cdaf9deec8c97c201ecf9326792b7b4617"
     }
   },
-  "generals/cards/wei/yue-jin.jpg": {
-    "output": "37ad763b3f9bdb77477ef9b3a687f3f48d70d0e5d0974b4f07e5a649033e3f46",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/yue-jin.webp": {
+    "output": "d695db7dba5be03e5259dd2e5565d5ec928208cb4e5bf894e02118619c73a202",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/yue-jin.jpg": "37ad763b3f9bdb77477ef9b3a687f3f48d70d0e5d0974b4f07e5a649033e3f46"
     }
   },
-  "generals/cards/wei/zhang-he.jpg": {
-    "output": "25652a9e493b668947c41371f15c19bbcf9420973375bb1d7c6ec6b724d21125",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/zhang-he.webp": {
+    "output": "351b509ac5ce83fdacb7d18c9417bbdbaf8ddcde4dea8a40eda4e407fd570e30",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/zhang-he.jpg": "25652a9e493b668947c41371f15c19bbcf9420973375bb1d7c6ec6b724d21125"
     }
   },
-  "generals/cards/wei/zhang-liao.jpg": {
-    "output": "67148a639fbcfac6cf3e006af1529e6045d4b93239117f917d0a56d1749bd81b",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/zhang-liao.webp": {
+    "output": "293abea567e50e536dc228c31bdcd930340a3bb4ff9a0508feb6d56069294e30",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/zhang-liao.jpg": "67148a639fbcfac6cf3e006af1529e6045d4b93239117f917d0a56d1749bd81b"
     }
   },
-  "generals/cards/wei/zhen-ji.jpg": {
-    "output": "a1f3e7867fe29f54ed5c3fac5d3ff98b63be9fd55dc3ef517a952f2a8b32d129",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wei/zhen-ji.webp": {
+    "output": "bff066ed1a1bb8b33dbf0781393d9c068661709025d432c8467954ba9a0a12e7",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wei/zhen-ji.jpg": "a1f3e7867fe29f54ed5c3fac5d3ff98b63be9fd55dc3ef517a952f2a8b32d129"
     }
   },
-  "generals/cards/wu/da-qiao.jpg": {
-    "output": "09d792331944b5dd8c0e58e329f2c820fd864db3d2bedbe202b056f4eca41ece",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/da-qiao.webp": {
+    "output": "9e9ac9be05fd9c1662153fa7dd558e84e01581a790e4b3b37ed292a8e9a70cb2",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/da-qiao.jpg": "09d792331944b5dd8c0e58e329f2c820fd864db3d2bedbe202b056f4eca41ece"
     }
   },
-  "generals/cards/wu/ding-feng.jpg": {
-    "output": "6679cbf7903fa582fd4fbfb678f9dddcbfd6e3ae93b497d63549ff3e6f7594e4",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/ding-feng.webp": {
+    "output": "58f5475744ab934f79aba81daabeebe35446d7a4d4c483d5a10b7064e44fce5e",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/ding-feng.jpg": "6679cbf7903fa582fd4fbfb678f9dddcbfd6e3ae93b497d63549ff3e6f7594e4"
     }
   },
-  "generals/cards/wu/gan-ning.jpg": {
-    "output": "332c56c9894b71b9513191fda0c622d561a15ceb7c0ebf23f6dc30a0d4583713",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/gan-ning.webp": {
+    "output": "50bb57894f8ffba4a13bdee4320a637367c6934f11105616f587e7cba618abbd",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/gan-ning.jpg": "332c56c9894b71b9513191fda0c622d561a15ceb7c0ebf23f6dc30a0d4583713"
     }
   },
-  "generals/cards/wu/huang-gai.jpg": {
-    "output": "0be1bf3754ca9c89a3625d5c4114b2cf41eea7701190c77ed0bc69091261a880",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/huang-gai.webp": {
+    "output": "5fa7cfad97ac4f7684bc7f3c9ce60330857afc33867b5b4df8fd202c3b74d2ef",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/huang-gai.jpg": "0be1bf3754ca9c89a3625d5c4114b2cf41eea7701190c77ed0bc69091261a880"
     }
   },
-  "generals/cards/wu/lu-meng.jpg": {
-    "output": "216a64f737a8e12f751b6b59efb3ec7c396ae28dda3814786e60d3c6f71b5eac",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/lu-meng.webp": {
+    "output": "e00c03b4cd599246a94e90a314dedb56b1a1f46f3f0f090bb65fc2322b445369",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/lu-meng.jpg": "216a64f737a8e12f751b6b59efb3ec7c396ae28dda3814786e60d3c6f71b5eac"
     }
   },
-  "generals/cards/wu/lu-su.jpg": {
-    "output": "869818dbdba55e234a3290bb2cbb3e5f1bd588816e1b04473ec4b1b7c386db96",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/lu-su.webp": {
+    "output": "7283d4c07b90bd77b382c3f941aff8029a7b9cbb78f9d6f5693a0f2864c38984",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/lu-su.jpg": "869818dbdba55e234a3290bb2cbb3e5f1bd588816e1b04473ec4b1b7c386db96"
     }
   },
-  "generals/cards/wu/lu-xun.jpg": {
-    "output": "9804cc211fe812a5c7d2be6d48c9f7d6cd47454bbf137baf2ecd4e0a40e00566",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/lu-xun.webp": {
+    "output": "c0c5f63a1cbb7920545453459fbfb11a5d7cd12f060475d035422bc22a826866",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/lu-xun.jpg": "9804cc211fe812a5c7d2be6d48c9f7d6cd47454bbf137baf2ecd4e0a40e00566"
     }
   },
-  "generals/cards/wu/sun-ce.jpg": {
-    "output": "d7b0dc271b3e85f8d374172f82ae0b3905b557e94d2af2d673492bdf0424ddb5",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/sun-ce.webp": {
+    "output": "5a31c1c33bddfe0b76d326e1e66301dfeba80b1ddb6cc5d7d149c62dd1100a49",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/sun-ce.jpg": "d7b0dc271b3e85f8d374172f82ae0b3905b557e94d2af2d673492bdf0424ddb5"
     }
   },
-  "generals/cards/wu/sun-jian.jpg": {
-    "output": "74bae196729cd37d2cc9837c0ce353539ac6e3a9c3c15719fb967bc10d0a9e9c",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/sun-jian.webp": {
+    "output": "a0ec878bf8b935296b9f9430b9a51f92dbd3169b21c1f04558406e45d8d4c8d5",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/sun-jian.jpg": "74bae196729cd37d2cc9837c0ce353539ac6e3a9c3c15719fb967bc10d0a9e9c"
     }
   },
-  "generals/cards/wu/sun-quan.jpg": {
-    "output": "ea8ca6fa55aefcfdf66baf35a50f1a2784d8576407b69a9f0513419676540f8d",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/sun-quan.webp": {
+    "output": "ecfb4b4c2918c5defed11ce5029bcb1e9be44ca3dd6802c91284fdff7ef64604",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/sun-quan.jpg": "ea8ca6fa55aefcfdf66baf35a50f1a2784d8576407b69a9f0513419676540f8d"
     }
   },
-  "generals/cards/wu/sun-shangxiang.jpg": {
-    "output": "6ab9b9c085d2943db52f778db69ce783d4bd029dfced540774ed645880fab8be",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/sun-shangxiang.webp": {
+    "output": "216ca9323a35cc367252c2a49fa47b2c770bd920879e14aa08ce1d7a75144876",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/sun-shangxiang.jpg": "6ab9b9c085d2943db52f778db69ce783d4bd029dfced540774ed645880fab8be"
     }
   },
-  "generals/cards/wu/taishi-ci.jpg": {
-    "output": "cdf740e57e2a0578891ac53ef613c9774271b07947b636e45ab7f870b657344a",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/taishi-ci.webp": {
+    "output": "d325ac331aabea5150d0c0879ddee1c93a9b1a4169877e40b54c6422a949ecad",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/taishi-ci.jpg": "cdf740e57e2a0578891ac53ef613c9774271b07947b636e45ab7f870b657344a"
     }
   },
-  "generals/cards/wu/xiao-qiao.jpg": {
-    "output": "ffe47607369538b308e3881f969c2ab41ffc051ea1516cc8ee2119913ce7a04d",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/xiao-qiao.webp": {
+    "output": "e5422a27cc73639c8c54cc74ee84c4b83d923251bebb78b371f32685303df887",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/xiao-qiao.jpg": "ffe47607369538b308e3881f969c2ab41ffc051ea1516cc8ee2119913ce7a04d"
     }
   },
-  "generals/cards/wu/zhang-zhao-and-zhang-hong.jpg": {
-    "output": "d33222174a97d56caeebfe30c2554bd2f592b4e104b635c5510d3c8fd6783f6d",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/zhang-zhao-and-zhang-hong.webp": {
+    "output": "b1776886dbb89c9a496b1296a55850fb1b4b9155a2b115edd67d7b30663dc60a",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/zhang-zhao-and-zhang-hong.jpg": "d33222174a97d56caeebfe30c2554bd2f592b4e104b635c5510d3c8fd6783f6d"
     }
   },
-  "generals/cards/wu/zhou-tai.jpg": {
-    "output": "3144b7ca4ba9be62cbb36dcd85fa4ea9b5a81139f1e360b176bd47030672a7ad",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/zhou-tai.webp": {
+    "output": "b071c9c2a3369fe2b042bbcc4f2e2ff9afb1623aa630febe2e9582b981d1f98f",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/zhou-tai.jpg": "3144b7ca4ba9be62cbb36dcd85fa4ea9b5a81139f1e360b176bd47030672a7ad"
     }
   },
-  "generals/cards/wu/zhou-yu.jpg": {
-    "output": "0537ce0a587f73840a9cf902e42ea51e0ce485bd4c74d24e4bb855cae61e80b7",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "generals/cards/wu/zhou-yu.webp": {
+    "output": "2bde1b8869319aa861f907f0807084b86397318f4743aff5dd73dd1933dafa3c",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "generals/cards/wu/zhou-yu.jpg": "0537ce0a587f73840a9cf902e42ea51e0ce485bd4c74d24e4bb855cae61e80b7"
     }
@@ -2295,688 +2295,688 @@
       "playing-cards/back.jpg": "4590a0b0aa47dd29ede6b6c40a4d6919e6647a2909ed74631da14c1ede503503"
     }
   },
-  "playing-cards/cropped/basic/fire-attack.jpg": {
-    "output": "80f39b00e853cef4faa2b25ae6108fdcfc4b8c131b4e9ab3b453424edccf005d",
-    "settings": "1d81c7c695ec2fe2e6d5d86202cc90d92aba18788d4c5de54bc21b39ceae5666",
+  "playing-cards/cropped/basic/fire-attack.webp": {
+    "output": "75d097a451e7acb80fb73d1ff04efbaccff3718d180f022fdf3f041545400bb4",
+    "settings": "70cb7db7f8b8952a39b90b23983df9d3962e8e2c8e5fc6d721b3ffa5bbafbfd3",
     "sources": {
       "playing-cards/full/basic/fire-attack.jpg": "3e27a7bdc84912d408e0dcf62990cadf83630376f83a0d6b098805173f90dcb2"
     }
   },
-  "playing-cards/cropped/basic/lightning-attack.jpg": {
-    "output": "db5e394046d852442ccbccb80da5da23f8ef14066771c639549d58989a8f2c61",
-    "settings": "3eb5ddfb174b37a422be8f786ed068cbd6166e64bdb7622171a37e0564ca6cf8",
+  "playing-cards/cropped/basic/lightning-attack.webp": {
+    "output": "423b372d9ec6a8d865471ad0e8c7f50e140259e0dc6f1098068bd98012fc117a",
+    "settings": "f549e55b2800f989a405dd5aa3008f2d4880ad1880028aa45bd36feba76ded47",
     "sources": {
       "playing-cards/full/basic/lightning-attack.jpg": "ff6e21e106cec1fcb0d26ef572bf4122adec4857dec744a44a8634134be8b718"
     }
   },
-  "playing-cards/cropped/basic/peach.jpg": {
-    "output": "2b86cd9151a8a70d553fd54fd607097b9d83ed6b3785a62e797d2fedc1041b21",
-    "settings": "54e9af859c6cea53fdc70789c1fd3b8e458f2ab280ccbcdd17393d58a52f8f3d",
+  "playing-cards/cropped/basic/peach.webp": {
+    "output": "b6c0e704ef6055b165f053f404c14c30d9f3ebd3c9af2fae156f286ec1bfd427",
+    "settings": "44bf52fcf494b355dc2a628c5aa9fedb3cdcbd805f04a942253376c71346a18d",
     "sources": {
       "playing-cards/full/basic/peach.jpg": "9272d7120dc6a2acc87321a6101eb8f37bccca165bc86a11c676253de509dfc4"
     }
   },
-  "playing-cards/cropped/basic/sha.jpg": {
-    "output": "1adfa32a8c06ed386070c2cb261d2d8fcf6284622c06388e489e146b5a4e2401",
-    "settings": "1d81c7c695ec2fe2e6d5d86202cc90d92aba18788d4c5de54bc21b39ceae5666",
+  "playing-cards/cropped/basic/sha.webp": {
+    "output": "0aa1ac8e190fc0bd662b06fbf72d496f9629b5eba091c622f3b6c8102984e25e",
+    "settings": "70cb7db7f8b8952a39b90b23983df9d3962e8e2c8e5fc6d721b3ffa5bbafbfd3",
     "sources": {
       "playing-cards/full/basic/sha.jpg": "ee78fe751ae8ae562c50c8b40b74197f058ffee821f1a7240b6cd9810899c63e"
     }
   },
-  "playing-cards/cropped/basic/shan.jpg": {
-    "output": "a31b554e6a4e45d28ce03eae01f2ae35cc449669ae3b5a4b59ce22547ebbf8a8",
-    "settings": "37628697ab616ebd78f6fc8f01b8c739929dd1a805fcba1044f5dc0b1f2890ba",
+  "playing-cards/cropped/basic/shan.webp": {
+    "output": "18a2e1f111aa2a925f706a985ff41568fbf15edfd9eb3dc1ed9b495456ea0c1f",
+    "settings": "c1c9d732409904a709b0a6bf251d45382afdfaa39a229cddffd1061a3e94a100",
     "sources": {
       "playing-cards/full/basic/shan.jpg": "d84b686f5972e8e2d9ff934d39795e91c9d871295610956c35a9e961956a4d24"
     }
   },
-  "playing-cards/cropped/basic/wine.jpg": {
-    "output": "c573bc39afbcec8d52a8d5ad86e20085ed35f86ed888de6374184769079da92f",
-    "settings": "0f8c1dbd80ebe94368c1a9e99743ec01beabeded0c3d0587602586b28ddaa5c7",
+  "playing-cards/cropped/basic/wine.webp": {
+    "output": "56f1cf10238a3cb8cc6962f92bbdc48e63c5cf4be1006bf9616001ee38ee60d5",
+    "settings": "f416a26fedf06f86370791564163d5481ce33fb9c4355780ed837aa4f6632eaa",
     "sources": {
       "playing-cards/full/basic/wine.jpg": "2095d8f91d6c037b37af815d8d41be2dd6ac743bd62c793094935667f209fc44"
     }
   },
-  "playing-cards/cropped/equipment/armor/black-shield.jpg": {
-    "output": "951bd875728394ddc26459a3c7b4fe110940586b3f53a632ab3ab48903a63540",
-    "settings": "bdba95520994a6f4a2cfdcf5bdb855d851d5b591e8320036e4d6cf1a72414453",
+  "playing-cards/cropped/equipment/armor/black-shield.webp": {
+    "output": "f11cc6ffdf4cc193c2544370a35d50e55e547391771ebcea3fb5226db640098b",
+    "settings": "77718de861140cb3296dfad2eca224b9ab878f3a935412d9a26969bc89db8a82",
     "sources": {
       "playing-cards/full/equipment/armor/black-shield.jpg": "5372c9dbc53ffab589fdf71144c2cdc3fcc6c3a5cce3716d4493a2f8d3d55006"
     }
   },
-  "playing-cards/cropped/equipment/armor/eight-trigrams.jpg": {
-    "output": "15dac18c219d618ffe80c49ccca8d93447b946c6028ba45dfa6cc1c49014003a",
-    "settings": "77728f40039d1b31745350aaa7784f38894261e89fa73f8ebfe8506ace0113d4",
+  "playing-cards/cropped/equipment/armor/eight-trigrams.webp": {
+    "output": "d034ad10876da93615c66b2c641dfcc825a37ff6bda4730d4a1faf9c9d00e02c",
+    "settings": "ea4bb3c85dda0ce142d4ad639235f95c159971bfbac67e98caa34cd041e0d9d7",
     "sources": {
       "playing-cards/full/equipment/armor/eight-trigrams.jpg": "0a5d4bedafcdda9416d09b53ffa14a4141a727cd1aed333dc3e732b8179eb424"
     }
   },
-  "playing-cards/cropped/equipment/armor/silver-lion.jpg": {
-    "output": "f53bcf5caef28d3d4550e359ebb637df3deb0a30e9f2b58c57e3446e67eb4752",
-    "settings": "b3206a0ab37005fc592ed897682f64074c5617584ec4c707320d6d84f718e89a",
+  "playing-cards/cropped/equipment/armor/silver-lion.webp": {
+    "output": "82cde83e7e2700b452d219b963876b65f94545900902d7148c8398a51d3b3532",
+    "settings": "355c519c5fa8ab01a662260e0a82f866eb4bdbba2979ce801ff221885f7465bc",
     "sources": {
       "playing-cards/full/equipment/armor/silver-lion.jpg": "5efbf9b290675b125c5488e687a74bd6b9505bbdb53af905185204a1f1259210"
     }
   },
-  "playing-cards/cropped/equipment/armor/wood-armor.jpg": {
-    "output": "874f08dd667226a9802791bf2a5c29a29b71c5f7360e46b9067b9880270032cc",
-    "settings": "b3206a0ab37005fc592ed897682f64074c5617584ec4c707320d6d84f718e89a",
+  "playing-cards/cropped/equipment/armor/wood-armor.webp": {
+    "output": "167ad889a15b245e6635fdc3ef3820b9d7cc1578bda7366249ea2dd915d13683",
+    "settings": "355c519c5fa8ab01a662260e0a82f866eb4bdbba2979ce801ff221885f7465bc",
     "sources": {
       "playing-cards/full/equipment/armor/wood-armor.jpg": "c44e19a402b61caaa6fb56094a0d6ef64c27454303263db94ad1982b491d704c"
     }
   },
-  "playing-cards/cropped/equipment/horse/da-yuan.jpg": {
-    "output": "e56da297f2c28f2c1faaf0427528ddbd7c1411b6f57ec43f2941448febf0d50a",
-    "settings": "eb7e2259d3ba57c61cdd143446f5f4e1ea33a161f497aa09ae4dd85da28c4816",
+  "playing-cards/cropped/equipment/horse/da-yuan.webp": {
+    "output": "df1f8341860c3c8c62645fd52bef9ecd5d325f897c3adfcdba9b698e43bb2312",
+    "settings": "c1d2ab2b55111c0b356b5e43b694d68902be31a61171eebb469ab812efef6025",
     "sources": {
       "playing-cards/full/equipment/horse/da-yuan.jpg": "0f711aa93880cfbe506ec1edbfc62bcb894ebc50b95cc8346261c961acd22347"
     }
   },
-  "playing-cards/cropped/equipment/horse/di-lu.jpg": {
-    "output": "be449f532a2436b31c6819f2cca977cc0a4ae8ea6442a5cf9f4252c05e848cc8",
-    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+  "playing-cards/cropped/equipment/horse/di-lu.webp": {
+    "output": "81ce5fb1cc5c73eae0a24d327ae36fcb7d97c6cbfa22c6ebb9ef3b0cb697b0a8",
+    "settings": "ebff0a334c68733666e3773264aa2261cec82d69e34d1c2b16fcb3f51a53950d",
     "sources": {
       "playing-cards/full/equipment/horse/di-lu.jpg": "a41be94cdaac2c7af18c5e9cd022b47480c87f2b10cc0a7c8534e6db72cc73b0"
     }
   },
-  "playing-cards/cropped/equipment/horse/hua-liu.jpg": {
-    "output": "594082a416c507981e1344752ec46c1c192067553aac733270796002ea7c336e",
-    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+  "playing-cards/cropped/equipment/horse/hua-liu.webp": {
+    "output": "01e3c10838103fcd2671f830c1fb45f007392974f9e3e24734faa019040bcf3e",
+    "settings": "ebff0a334c68733666e3773264aa2261cec82d69e34d1c2b16fcb3f51a53950d",
     "sources": {
       "playing-cards/full/equipment/horse/hua-liu.jpg": "d4e8b08e98c034305979398cac3c6d5504c9aedc1f42c9f0089aa6a3904d1a94"
     }
   },
-  "playing-cards/cropped/equipment/horse/red-hare.jpg": {
-    "output": "c1e71e4b60ab625dac2061d52c4b20bfed495fc790978c8dbfe094fba2cce9de",
-    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+  "playing-cards/cropped/equipment/horse/red-hare.webp": {
+    "output": "ded0fba3474b889aedbb8f385c6039f5dbf21374cb7fad796a7cbb09b27951d4",
+    "settings": "ebff0a334c68733666e3773264aa2261cec82d69e34d1c2b16fcb3f51a53950d",
     "sources": {
       "playing-cards/full/equipment/horse/red-hare.jpg": "ee2b9d654611c0b92ca850d63f133acedc7287a5ee1a399043bd06fc650bfbf5"
     }
   },
-  "playing-cards/cropped/equipment/horse/shadow-runner.jpg": {
-    "output": "dddc4c2a84cb1c67770a5ebad0c39a3c4fd9e3824c24c80ec8a83b4d97be755e",
-    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+  "playing-cards/cropped/equipment/horse/shadow-runner.webp": {
+    "output": "2f9a49b83abcf882f9e9d1b7f3dbb0e675e3224241f5225bb8181ebff92cf3c8",
+    "settings": "ebff0a334c68733666e3773264aa2261cec82d69e34d1c2b16fcb3f51a53950d",
     "sources": {
       "playing-cards/full/equipment/horse/shadow-runner.jpg": "7877c0c1186ea1793c22f4e1ac18641fe99fc8a3202550e6089955ae84150406"
     }
   },
-  "playing-cards/cropped/equipment/horse/storm-runner.jpg": {
-    "output": "e9a4def36a5ffb9a79393d60322371fd9131ebd4f9e1a2465445e223cafa9410",
-    "settings": "67bb1234c237fea0b295ab228989718b2e65b00d62d0803a8fc3660e15dcf049",
+  "playing-cards/cropped/equipment/horse/storm-runner.webp": {
+    "output": "b45a8958d61454040c257c907996ade74bb9a47f0792bf9c17fa6c37c9b645f4",
+    "settings": "33565f6be0d0b9e45b36364fed788fdddde9398a9bccd7106a2e5f346cf3c9b5",
     "sources": {
       "playing-cards/full/equipment/horse/storm-runner.jpg": "99976c1756fcdc4c3ef26eaf64f93958b4b1143b8673d3e0058a3f7fa5056c2f"
     }
   },
-  "playing-cards/cropped/equipment/horse/zi-xing.jpg": {
-    "output": "b066b7667af843dddf60506c6449207e3e71b725a382895e7ce0903f31d9a36b",
-    "settings": "d59d6f7f3c1022c16b1b2e512931a458f992c2c2adad95a4b68b5b1753ddbb00",
+  "playing-cards/cropped/equipment/horse/zi-xing.webp": {
+    "output": "9de4fac3e5120d0a19775d12df809086ca9c27aa7b00f18bbe949787246c199b",
+    "settings": "ebff0a334c68733666e3773264aa2261cec82d69e34d1c2b16fcb3f51a53950d",
     "sources": {
       "playing-cards/full/equipment/horse/zi-xing.jpg": "9a60c09f1373cb5f70af1eab4dfea5c12ae83dc926f8483467a720320db0cf68"
     }
   },
-  "playing-cards/cropped/equipment/weapon/ancient-scimitar.jpg": {
-    "output": "cc685ff1f7e36c8a4255c7e89fe89848ae29f563a6e93280de9bef08b9b53a18",
-    "settings": "bd0e4b589668bba2e8481158748b2003f960b0b709bd233b09d254b45c119d1e",
+  "playing-cards/cropped/equipment/weapon/ancient-scimitar.webp": {
+    "output": "debecf3d1f680fd08dc54b5a07169de3f16d646c5b5efa4346a7667ef55c3733",
+    "settings": "5dbb9999e8c612b1b19c4e43cedeb9953b1296f7c4f67927831f0671aed26465",
     "sources": {
       "playing-cards/full/equipment/weapon/ancient-scimitar.jpg": "2d2cd0740399eb76354f104ae36827438ca328d3ec56e309568a55af2fe1e96e"
     }
   },
-  "playing-cards/cropped/equipment/weapon/axe.jpg": {
-    "output": "b5bedf61a944a1f6a75e994476b73c5e976e6abd914106133cd9ef6c2ae3257d",
-    "settings": "6a44ef8481969edf05da5b152a6b40703846a5d8a87dc28afd4940c365ae417f",
+  "playing-cards/cropped/equipment/weapon/axe.webp": {
+    "output": "6ffbdd88dc1b88ccdf9fb3c18821e80e7dd41c71e093e33a8d98bbf5ce07e2da",
+    "settings": "3222bd2d15e93963f7d06050ae73cf6a44a5f864301c2d81ef4db3149de085ca",
     "sources": {
       "playing-cards/full/equipment/weapon/axe.jpg": "4aa0869403622b72ce30d05e8dd7256486e8b71c1c8d594ea4066a5f655d3a32"
     }
   },
-  "playing-cards/cropped/equipment/weapon/black-pommel.jpg": {
-    "output": "678614e183d7ca0341d3676a363ea42d5c5a37ce3a6a21f8f2e306aeeff43afe",
-    "settings": "bdba95520994a6f4a2cfdcf5bdb855d851d5b591e8320036e4d6cf1a72414453",
+  "playing-cards/cropped/equipment/weapon/black-pommel.webp": {
+    "output": "ab29ea36469f3961eb7ed1a095ac983272e483bdc5e5ff3000dbed2305be1f21",
+    "settings": "77718de861140cb3296dfad2eca224b9ab878f3a935412d9a26969bc89db8a82",
     "sources": {
       "playing-cards/full/equipment/weapon/black-pommel.jpg": "7da95fdd6eb6d4e011f9a76734f3a6f64c4629917837f70e4b013b4a77f27b8f"
     }
   },
-  "playing-cards/cropped/equipment/weapon/crossbow.jpg": {
-    "output": "738d78046897b05482716177e3a04ba491282d82043ad456cbe25db3f02cefdf",
-    "settings": "5986c3cce5eb6e492ca700c8e8f57fa8ab7955ca42fd14197186d88eb3fa8471",
+  "playing-cards/cropped/equipment/weapon/crossbow.webp": {
+    "output": "c7e05e1f825b5de2a38d25d457aab1a01c6c45d50627725a4326448207cf00a5",
+    "settings": "8b8abae3746a0c9920b266f32c0a342e03da5536d1c5217168a93b0f9de34caa",
     "sources": {
       "playing-cards/full/equipment/weapon/crossbow.jpg": "cfa356a6b0f8edbe1fd4dbd055a3e5fb520cf48fda257fe04bd4f5c91248909b"
     }
   },
-  "playing-cards/cropped/equipment/weapon/fire-fan.jpg": {
-    "output": "0ec1ac3677b24dcfdaa0660d8a0646f2562769da79007aa75000e31b82875d65",
-    "settings": "a8899a810ce5951f8509a8c5f1eb2818fc34cff8ef904e63158aeeb5ba4718e0",
+  "playing-cards/cropped/equipment/weapon/fire-fan.webp": {
+    "output": "671ef91e18790f858642c3ec3891b3c5bb88cf154fde26302dce8bb27ade3093",
+    "settings": "3176bcbd514afb43d6b44be06a9b68ff3f337ca2cc00c6c8a2bf19f6a76ed2be",
     "sources": {
       "playing-cards/full/equipment/weapon/fire-fan.jpg": "f754c219cef48c840d21efc0dd552e00d15b559f3c34a88e142c4dbe509f2570"
     }
   },
-  "playing-cards/cropped/equipment/weapon/gender-swords.jpg": {
-    "output": "9f8f711c4c4a2d6c9d37a01aaab60e410a2bc8afd2b00e436679f0a5ed7bbdf1",
-    "settings": "3e76dbc3060659290d16f9390e6f84bb2c85cfcd5462fffa1fd40b6b2b2e275a",
+  "playing-cards/cropped/equipment/weapon/gender-swords.webp": {
+    "output": "4e27b81ef719a817e97d173da691b09b7c79634dbcc7cc8fc18f10f17c38d1b7",
+    "settings": "f897ec36b144c8efd3e73ada691e2569f0637beb5c30499888c83897addcd19e",
     "sources": {
       "playing-cards/full/equipment/weapon/gender-swords.jpg": "6c52116b0791fff6322b46c83c81c08acb9ae5b4e869ca14a02cbf5d6afefd0a"
     }
   },
-  "playing-cards/cropped/equipment/weapon/green-dragon-blade.jpg": {
-    "output": "f105c91dd592942c4e3b7229796a52977bbb60f3eaf2fc054a61ffa3f0f67846",
-    "settings": "bd0e4b589668bba2e8481158748b2003f960b0b709bd233b09d254b45c119d1e",
+  "playing-cards/cropped/equipment/weapon/green-dragon-blade.webp": {
+    "output": "9c34cbdba698ed05fe759e748dafeca53eba8a99da8929cb60db41ff446b5f51",
+    "settings": "5dbb9999e8c612b1b19c4e43cedeb9953b1296f7c4f67927831f0671aed26465",
     "sources": {
       "playing-cards/full/equipment/weapon/green-dragon-blade.jpg": "e229194400fa91c387804ba24681ec43dd1c81bec2589cb0e43f1314f03f95d2"
     }
   },
-  "playing-cards/cropped/equipment/weapon/ice-sword.jpg": {
-    "output": "7ffa9dde2ecc38c31490f4bb4cc6ae1e6ed51a03ad3f2f67df06888c2b92fe87",
-    "settings": "bdba95520994a6f4a2cfdcf5bdb855d851d5b591e8320036e4d6cf1a72414453",
+  "playing-cards/cropped/equipment/weapon/ice-sword.webp": {
+    "output": "e6821e7f1c304077fa5e1b04661903becedb3c5a8eee9be1915b982a6f92b516",
+    "settings": "77718de861140cb3296dfad2eca224b9ab878f3a935412d9a26969bc89db8a82",
     "sources": {
       "playing-cards/full/equipment/weapon/ice-sword.jpg": "60a94a45a444b55c588ee3893c8c14d7f43394eba857b7bbded2f241a1fe754d"
     }
   },
-  "playing-cards/cropped/equipment/weapon/longbow.jpg": {
-    "output": "9b0c3395320e8232726fa7baa9d4beea9dd6cd066dae0d563a8b350c6fc745d0",
-    "settings": "77728f40039d1b31745350aaa7784f38894261e89fa73f8ebfe8506ace0113d4",
+  "playing-cards/cropped/equipment/weapon/longbow.webp": {
+    "output": "7cac50a764866f5536c5aecafc7a900467e3935af4ed350be1f0a286c34509ee",
+    "settings": "ea4bb3c85dda0ce142d4ad639235f95c159971bfbac67e98caa34cd041e0d9d7",
     "sources": {
       "playing-cards/full/equipment/weapon/longbow.jpg": "11dbcde6a70d8d2078a2e4b9fdfdca9450042cca63e2c2a0e0003886f242d275"
     }
   },
-  "playing-cards/cropped/equipment/weapon/serpent-spear.jpg": {
-    "output": "e6a2ccf6f917d00fca4d3c75247382bb257e6de24f314194ac798e53a8c0fcb8",
-    "settings": "77728f40039d1b31745350aaa7784f38894261e89fa73f8ebfe8506ace0113d4",
+  "playing-cards/cropped/equipment/weapon/serpent-spear.webp": {
+    "output": "9b91d4d01184d77e998ec6b0b0a1de9312dc3fd6f30a42d2128db8614f736831",
+    "settings": "ea4bb3c85dda0ce142d4ad639235f95c159971bfbac67e98caa34cd041e0d9d7",
     "sources": {
       "playing-cards/full/equipment/weapon/serpent-spear.jpg": "289ad17526e68aa0f2903529dca21789bb6cbbcc92dae5492847c8cf91c88545"
     }
   },
-  "playing-cards/cropped/equipment/weapon/sky-scorcher.jpg": {
-    "output": "e527ebc53f4b2ccb116181a7aaf4865f8448563817b09e9eb67dd4471de088aa",
-    "settings": "c91576caf3953027d6a0425ee9572f70a1a9a104f9d7f949b3fbf5ba0e63ec08",
+  "playing-cards/cropped/equipment/weapon/sky-scorcher.webp": {
+    "output": "13eaa99459ced3d5495e243c18c39af394ca86d552299f372d00a9b5cfcc76af",
+    "settings": "33a42ddf07984fb13c9cd745ddae55a9ce1ae3ec7c90be362b8a277e1bdb9816",
     "sources": {
       "playing-cards/full/equipment/weapon/sky-scorcher.jpg": "4f29b6640a3c0cd4750b7c774098078280e964e430e0453ad346eaf0b61c5f49"
     }
   },
-  "playing-cards/cropped/equipment/weapon/trident-glaive.jpg": {
-    "output": "fd9634b1ea42ae1e6efbccfa1c7be1da092f1f8cb8774d5223f4818a0cf698ed",
-    "settings": "063998af31cb675a381587ddb5158d7036cb695c2527401100f226f7e9aa696f",
+  "playing-cards/cropped/equipment/weapon/trident-glaive.webp": {
+    "output": "e42a6e723a00e3a7c93f8baf89623472db6734814c2763ddd0cd7c208f86e992",
+    "settings": "95c7356aa40a57b10bff74329eeb4dda9ca3a397a335e59c757ae54915e5a53c",
     "sources": {
       "playing-cards/full/equipment/weapon/trident-glaive.jpg": "c3ad2c65a8ef6551c8a8c1ad0329f1c025967c31cfc471e5c02f7cde2aac14bd"
     }
   },
-  "playing-cards/cropped/equipment/weapon/wu-six-swords.jpg": {
-    "output": "e7a39a665a21a51e360c2abeb1df84fa09979d84efcaa152fd89f9c0c9e85254",
-    "settings": "063998af31cb675a381587ddb5158d7036cb695c2527401100f226f7e9aa696f",
+  "playing-cards/cropped/equipment/weapon/wu-six-swords.webp": {
+    "output": "63658563479553e6e4a03ab710d73eff64983093419038d4bd7f3050f325f88e",
+    "settings": "95c7356aa40a57b10bff74329eeb4dda9ca3a397a335e59c757ae54915e5a53c",
     "sources": {
       "playing-cards/full/equipment/weapon/wu-six-swords.jpg": "7286ddf92135f9f8eb4b4fbffa009561197c2c73284b81c0220c55f776c92ded"
     }
   },
-  "playing-cards/cropped/tool/ally-far-attack-near.jpg": {
-    "output": "434507bdfcda439c9fc62acec69c26eb05b0e7bf202df494b53f6ba74101add6",
-    "settings": "6227b02c5a1a145f1619be2904aedbf60eb93a2a795b7b9221ce07f96b3d3d67",
+  "playing-cards/cropped/tool/ally-far-attack-near.webp": {
+    "output": "d9a3375be96a41a3352a7dd3a7e616c74ab4dd1dc513ce28018f3d559ecf2dd7",
+    "settings": "89fca1b0012e393528276e8422a1c7d8f35102667782fdedcd8efb5c7b24f483",
     "sources": {
       "playing-cards/full/tool/ally-far-attack-near.jpg": "8000add44abeb819adb5103223210392b91002e2fc8618082bf5bb5ca5b323de"
     }
   },
-  "playing-cards/cropped/tool/amass.jpg": {
-    "output": "8f84d761b4ea49bfa655eeaba8bfb00457a73970e37123f6bbd6ff5235b30d57",
-    "settings": "6227b02c5a1a145f1619be2904aedbf60eb93a2a795b7b9221ce07f96b3d3d67",
+  "playing-cards/cropped/tool/amass.webp": {
+    "output": "2064dfbcb56371a79da3b47785ac04a3addec8332508e42ef58d1fc22a29e3c8",
+    "settings": "89fca1b0012e393528276e8422a1c7d8f35102667782fdedcd8efb5c7b24f483",
     "sources": {
       "playing-cards/full/tool/amass.jpg": "7dde27a2d9f0662ff6d5344b571e4f05bcf1e6366f37e459718b78be47670108"
     }
   },
-  "playing-cards/cropped/tool/ascertain.jpg": {
-    "output": "8c224cc709597124d2b6ff431743341c4d22031d8d40eb6c507e1225c1d856fa",
-    "settings": "6227b02c5a1a145f1619be2904aedbf60eb93a2a795b7b9221ce07f96b3d3d67",
+  "playing-cards/cropped/tool/ascertain.webp": {
+    "output": "0b8e71f892786a45614d5d06108b2c497d2bf10124807e907fbfb66e3da40db4",
+    "settings": "89fca1b0012e393528276e8422a1c7d8f35102667782fdedcd8efb5c7b24f483",
     "sources": {
       "playing-cards/full/tool/ascertain.jpg": "300d7d69ca5fda0e17d754991ebc5422124f34932a47b10156e95ed26ff96349"
     }
   },
-  "playing-cards/cropped/tool/barbarians.jpg": {
-    "output": "096fcbf157d48b4317f62f6678b33dae3ad62a05021fff05dae4e9d8c3fcf520",
-    "settings": "454d06ad1f91fde4d1290a5f9ccd209d30d87f577e2caefc014d6b1900d416a7",
+  "playing-cards/cropped/tool/barbarians.webp": {
+    "output": "8eb9253e2c9f33852933cc4d833f80597814e2227d26bc743a381194cd4ce04a",
+    "settings": "560578b47cbe41c4180ddd2df146186a37e3d2567a7595017918754a3f0a9ac9",
     "sources": {
       "playing-cards/full/tool/barbarians.jpg": "574510a2d05a8e9b94096c1f942106322953a9bb516b1598e6a16f74c5194f72"
     }
   },
-  "playing-cards/cropped/tool/blaze.jpg": {
-    "output": "4fa6092fd16cbde3c1d577aa9ef7c2c2f7520838fb3d392535a61bd3ea9231f1",
-    "settings": "d14467cbdc75c7988b8a7f4bec41aa93b27b723c18b2ce6502ace5c2e5dd1f3e",
+  "playing-cards/cropped/tool/blaze.webp": {
+    "output": "daad61dce97785e866c8c93a70cc718ecebb1d3f59a3f22145df701320dccb0f",
+    "settings": "d769da343a2f73c0fb7f4968ae913d7a7bd210b8065831ce8e900871862316ac",
     "sources": {
       "playing-cards/full/tool/blaze.jpg": "5cff1bd614b259a9fbbdbb5bea088b448c921e38646bae99f73047822bd451a2"
     }
   },
-  "playing-cards/cropped/tool/break.jpg": {
-    "output": "9fbe905881d9e6d112d49c439e4e317124ddd9ae5ef6d193e740f36dfd1b053d",
-    "settings": "e04212b560988db34ccb01a61c537240ff1be6fe0cddef3b0ced3dcb87b2f84b",
+  "playing-cards/cropped/tool/break.webp": {
+    "output": "f581375fc625da7e068178ddc25bbdc1413a4b7ac7d19292186ba7bb88b0c156",
+    "settings": "9f5cf9a1352ac2e6d3105e241e28b84f3d5a040ad3b1ef9737f1e0f8a375443c",
     "sources": {
       "playing-cards/full/tool/break.jpg": "b1946d9f06459b86c28e36162b415f019f6d45bd3e12bd3585e11d9c4f9f80a9"
     }
   },
-  "playing-cards/cropped/tool/capture.jpg": {
-    "output": "e480fa0dbd433ae78d47959bcfc584d0082d9e5d9458416c1b527077bf1d65e3",
-    "settings": "e8f3194c421b407d867d0a5808ef11d51633cd2e35aad64fbd9faff465f0544e",
+  "playing-cards/cropped/tool/capture.webp": {
+    "output": "14138171cdc201182e06d55936e953d429398d36ac7d1da4369b9a13da66c165",
+    "settings": "94c23f6a6c2dfdc39108e44b7df9841a26ca9cbcd0a74c8fb4ea7cbd0becbde9",
     "sources": {
       "playing-cards/full/tool/capture.jpg": "068b44dc82ed6d100285930d8762c92de178a1ce729506c2f178c8ea0bf6f668"
     }
   },
-  "playing-cards/cropped/tool/chains.jpg": {
-    "output": "7d2fdf05e43918d7a017061bbd2a6605b29d347cd86bd49453af6b16f7d99743",
-    "settings": "54e9e625357dfa0b7f18d222a4de813a0ea2a53ae24d32d99023161c40e86331",
+  "playing-cards/cropped/tool/chains.webp": {
+    "output": "dd99c022f3d4203aa9837abe1a8e62baada2e96110802dcb49c6385305015fcd",
+    "settings": "9dfe273e68af9deaef498a153490b9648d80b183efab4cdd227f0a4460bdbdd1",
     "sources": {
       "playing-cards/full/tool/chains.jpg": "75a09eee888c0e49ce9dc1d92e6ae750ba747111efdc6e0c36a7ea2eaa08afac"
     }
   },
-  "playing-cards/cropped/tool/coerce.jpg": {
-    "output": "9e27583c7b2a1d92a6f5cf8050391b70ae0d5df70ac06fad6188592ecfcfc2d5",
-    "settings": "b77f9e305399adad93e6b65db063fa58ffb742c92a6454614f0ac497fc14b0d2",
+  "playing-cards/cropped/tool/coerce.webp": {
+    "output": "81922df72500b3906db014963b3c73cfce738c3727739db2f54a283292fd3e72",
+    "settings": "7ac4b1c230a1bf5699d3b90d407c8fc0d966e7da89336881ace9ea42e1ad129a",
     "sources": {
       "playing-cards/full/tool/coerce.jpg": "be625f0a04cb41b082209db3c639bb9d6690ddd1e79e81d848542ce1246695c7"
     }
   },
-  "playing-cards/cropped/tool/draw-two.jpg": {
-    "output": "1f5a501ff4cf8bd919dc73277c3afeeac75a178ed4507b027db6ed16466a26d4",
-    "settings": "302c3a177e071d41f70919a42b4220f0fa561657b4fbe7e414e7811dd9107e71",
+  "playing-cards/cropped/tool/draw-two.webp": {
+    "output": "42da08be5af1c4d1d1ccf5489a92fe62627bfc7a25c50c314e33802fd26df07a",
+    "settings": "48cca4e4d09d27e7580d37340ac7746a464c7a9937aa3f5f7dc41b0258f171da",
     "sources": {
       "playing-cards/full/tool/draw-two.jpg": "4a3be0726a62f1977c6ad6699350eef0245e0c56d29c87a6cd222f42c5887af8"
     }
   },
-  "playing-cards/cropped/tool/duel.jpg": {
-    "output": "9473b186d8534effefb771c7a4fd18be39e7894a355614fe2a0d48fe0abe9c2c",
-    "settings": "30a297145400cb95f80e978703705971a021b2d0d471d227f3f9e4a4931cc790",
+  "playing-cards/cropped/tool/duel.webp": {
+    "output": "1a7695fbc15fc2bf41fa92346c12b7926cd2e06dab7a111451aa8bd791d39bf2",
+    "settings": "661190188a357c87a94de39fd648b0a2053ab486239c9c95d8ce2d26ceb38ce9",
     "sources": {
       "playing-cards/full/tool/duel.jpg": "a14dac79d5fdbf040f81b0fa02cb2fcde5f63bf858d8fbc2c8a886d4a7e6a81e"
     }
   },
-  "playing-cards/cropped/tool/hail-of-arrows.jpg": {
-    "output": "9fada58115f0201f41d0a486f884fe2a7a99dd46a852a737d271ec14b604600f",
-    "settings": "597889cb930fd7701b25bb136778fefdeaf6632134479516da37504550627151",
+  "playing-cards/cropped/tool/hail-of-arrows.webp": {
+    "output": "fd3669ab7a2e2bbc709973bc9ff143d6cba541d00afbf4abd655f2d8d22667d1",
+    "settings": "35ae9d744bc18d7e0ef51ca593c6681c5bb0b2131e7e14d213e6707b80f0d3dd",
     "sources": {
       "playing-cards/full/tool/hail-of-arrows.jpg": "031c5939bceaa00893efccba2fdea950388e0e24c13a6bbc6ae5ced142aeeb84"
     }
   },
-  "playing-cards/cropped/tool/harvest.jpg": {
-    "output": "7c3cf44152448c768b1e8d2c59a9eff1d97a71ca33c28db73e2a12933ddb6470",
-    "settings": "83fbee64c83acf51204e240bbc8576cc5854ce2c3893b7deba85625c92e94fad",
+  "playing-cards/cropped/tool/harvest.webp": {
+    "output": "d342ace8321ab00ff0d18fc7dc5074dfa49fe35ef8621b6f520fe392dbf304e2",
+    "settings": "4fbba2ca25a8957a57dc6fc64828ef1216bdb9c11428dadc6a2242a385787d85",
     "sources": {
       "playing-cards/full/tool/harvest.jpg": "efc9377164d775802b62a24c2f7eb92ce6b3b8e687677c8486373b6e3188ff0d"
     }
   },
-  "playing-cards/cropped/tool/lightning.jpg": {
-    "output": "632da1b4e50d715a5054febade04caaac14af453a402b504bdc369920a8ff333",
-    "settings": "ef4bc9f4e88e3077850243e34001e3f7da0ac557b19d8bfb42d62bd4f4ae8e61",
+  "playing-cards/cropped/tool/lightning.webp": {
+    "output": "f46f95339e6b22bbcaa833a80c5120fe6d8d527eea3bd1ed4f1fcb9c294e7826",
+    "settings": "67dde259cd8aa666490648340282a600e85b3dd414421ba0c8a46427ba2135a3",
     "sources": {
       "playing-cards/full/tool/lightning.jpg": "16ee58fe4b7164a9b3f7a1f14495b0e052908b6c69e785a9e42d005fe73f96a2"
     }
   },
-  "playing-cards/cropped/tool/peach-garden.jpg": {
-    "output": "573d1398c3bc0ff2862bfff712b1fa2e5b1aa25c175dc7d63e61bc1357a78345",
-    "settings": "cadc381dcc6fef8e64f2f5c173690caec94e886267d71d116a50409c1df9f390",
+  "playing-cards/cropped/tool/peach-garden.webp": {
+    "output": "ce37e02f343ea40b28715701c73625dfe980b11396ff656c163623b47dd0c8d4",
+    "settings": "cd9830a993c695d647c13fadb68f2f3d46136bab8dc43057c2e50b77ff0cf5c3",
     "sources": {
       "playing-cards/full/tool/peach-garden.jpg": "9e40f15afb2bdcc6875d49901d3bb252475eb79944cfda51165ee5755aaa09ca"
     }
   },
-  "playing-cards/cropped/tool/starvation.jpg": {
-    "output": "fb200ad98dc1b99651fdc8335cc9111886928a865053363be507de892c5dc849",
-    "settings": "7200ee555480a0160bcaa9d8bdde2fe2247770585987bd03e5b42c030a168fb4",
+  "playing-cards/cropped/tool/starvation.webp": {
+    "output": "50c48433ecaf9de8442afcacf3ea489812bb046ed002b3dae2e66bee0a6f1bea",
+    "settings": "fa1fb3c685fb43ed22d71dc4801c7dcd5493dea78b64bb705e12b89028fc8f1b",
     "sources": {
       "playing-cards/full/tool/starvation.jpg": "e9bfe4ed31cdfffca54a79a0a79dca31fbdcf0b7ad705f956683e0e2469cf6d8"
     }
   },
-  "playing-cards/cropped/tool/steal.jpg": {
-    "output": "9f55050050bf60e870d54dee67147b0aaa2abb7fc9f97b816b5b7611e2aa07ba",
-    "settings": "a8db60e5dae9ab76470d0c4260be03fc19ec1f39d139d2e5c740e8749c7aefd1",
+  "playing-cards/cropped/tool/steal.webp": {
+    "output": "b20db50bfb9df279c7947c3d6f4bc4a8f512917840a74c15c0eedb2167b6e4bb",
+    "settings": "7520592c26914cee3fed1d6b10646ca39c544de10ce15ec78dd28de016f37ab0",
     "sources": {
       "playing-cards/full/tool/steal.jpg": "966eeaa33071d106c3ab20e8db4c8f4140fe26c1fe023336000533c64b3ad948"
     }
   },
-  "playing-cards/cropped/tool/wuxie-guo.jpg": {
-    "output": "1f60b87d257438f9fe274420dc51aa4220861dfaa9c0b30b11af098097457dd6",
-    "settings": "6227b02c5a1a145f1619be2904aedbf60eb93a2a795b7b9221ce07f96b3d3d67",
+  "playing-cards/cropped/tool/wuxie-guo.webp": {
+    "output": "1c23923dfb1a2a711ae743da8977c680736db890811e4d6fa416b5ad20eb8d9f",
+    "settings": "89fca1b0012e393528276e8422a1c7d8f35102667782fdedcd8efb5c7b24f483",
     "sources": {
       "playing-cards/full/tool/wuxie-guo.jpg": "f2f836c38ee653c8f0e1545bfbbfa81c7e6fe34074836647f5014c690e59ff1e"
     }
   },
-  "playing-cards/cropped/tool/wuxie.jpg": {
-    "output": "b36159cd662b7d5a30ace58e00802e6b0efa6612c2fa69ebc60b77d4d6c11e3b",
-    "settings": "c9e82156ab1c52ef42b69e6254a10b9c58d751eeecf49b92c2bdb92536c9a0d8",
+  "playing-cards/cropped/tool/wuxie.webp": {
+    "output": "099a029d3f9cf7a7729ba5bf87e2c959e1afdd17f129a5cce044e9ba4f97ea9c",
+    "settings": "63e2dd43b1a05c09afe043017968f1873c5981c10236c9a922ec2f94ca6e4dc3",
     "sources": {
       "playing-cards/full/tool/wuxie.jpg": "b4ed913d29b6078d8eda00003585d4448c52a0472ffd1b2513975f2bc1d6e63f"
     }
   },
-  "playing-cards/full/basic/fire-attack.jpg": {
-    "output": "3e27a7bdc84912d408e0dcf62990cadf83630376f83a0d6b098805173f90dcb2",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/basic/fire-attack.webp": {
+    "output": "1c10a714d36c8e47f85dcc87efc32307ef8a8a3431b203aa28a76b32920d872a",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/basic/fire-attack.jpg": "3e27a7bdc84912d408e0dcf62990cadf83630376f83a0d6b098805173f90dcb2"
     }
   },
-  "playing-cards/full/basic/lightning-attack.jpg": {
-    "output": "ff6e21e106cec1fcb0d26ef572bf4122adec4857dec744a44a8634134be8b718",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/basic/lightning-attack.webp": {
+    "output": "94bd646c96f86dfa3278173535a94fa1a4aa99cc30b83d6b4a4478fcaf52fde5",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/basic/lightning-attack.jpg": "ff6e21e106cec1fcb0d26ef572bf4122adec4857dec744a44a8634134be8b718"
     }
   },
-  "playing-cards/full/basic/peach.jpg": {
-    "output": "9272d7120dc6a2acc87321a6101eb8f37bccca165bc86a11c676253de509dfc4",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/basic/peach.webp": {
+    "output": "1c9b965c36fd2aef95aeaf0366b9addb5f0d955c9853f70a7a9edafc9155386d",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/basic/peach.jpg": "9272d7120dc6a2acc87321a6101eb8f37bccca165bc86a11c676253de509dfc4"
     }
   },
-  "playing-cards/full/basic/sha.jpg": {
-    "output": "ee78fe751ae8ae562c50c8b40b74197f058ffee821f1a7240b6cd9810899c63e",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/basic/sha.webp": {
+    "output": "2e536954decbbe99086d5576cfb91bc3587791803e98c4b7d60978753dfec129",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/basic/sha.jpg": "ee78fe751ae8ae562c50c8b40b74197f058ffee821f1a7240b6cd9810899c63e"
     }
   },
-  "playing-cards/full/basic/shan.jpg": {
-    "output": "d84b686f5972e8e2d9ff934d39795e91c9d871295610956c35a9e961956a4d24",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/basic/shan.webp": {
+    "output": "85671e86d0414ef74badcd1c33f9d96cb2ffe99e648fab68fe5afa1f0f21295b",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/basic/shan.jpg": "d84b686f5972e8e2d9ff934d39795e91c9d871295610956c35a9e961956a4d24"
     }
   },
-  "playing-cards/full/basic/wine.jpg": {
-    "output": "2095d8f91d6c037b37af815d8d41be2dd6ac743bd62c793094935667f209fc44",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/basic/wine.webp": {
+    "output": "dc076d7420970cd3989449df717b0a4246cfe49eede6de0e10827b87cbb77856",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/basic/wine.jpg": "2095d8f91d6c037b37af815d8d41be2dd6ac743bd62c793094935667f209fc44"
     }
   },
-  "playing-cards/full/equipment/armor/black-shield.jpg": {
-    "output": "5372c9dbc53ffab589fdf71144c2cdc3fcc6c3a5cce3716d4493a2f8d3d55006",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/armor/black-shield.webp": {
+    "output": "5a1f79006f557eabf1b06c6725209ec34878d4f49c6f67cedfb5fdb90cb0ebcc",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/armor/black-shield.jpg": "5372c9dbc53ffab589fdf71144c2cdc3fcc6c3a5cce3716d4493a2f8d3d55006"
     }
   },
-  "playing-cards/full/equipment/armor/eight-trigrams.jpg": {
-    "output": "0a5d4bedafcdda9416d09b53ffa14a4141a727cd1aed333dc3e732b8179eb424",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/armor/eight-trigrams.webp": {
+    "output": "613bee1de75a8a569f9f7f309546d461f713b5aa0d713d000aa8855000fcbeb9",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/armor/eight-trigrams.jpg": "0a5d4bedafcdda9416d09b53ffa14a4141a727cd1aed333dc3e732b8179eb424"
     }
   },
-  "playing-cards/full/equipment/armor/silver-lion.jpg": {
-    "output": "5efbf9b290675b125c5488e687a74bd6b9505bbdb53af905185204a1f1259210",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/armor/silver-lion.webp": {
+    "output": "57c80c6d8961c39303d65c6b26d0fbde931c7db5e7bd7a5c17a536c9cae08bb2",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/armor/silver-lion.jpg": "5efbf9b290675b125c5488e687a74bd6b9505bbdb53af905185204a1f1259210"
     }
   },
-  "playing-cards/full/equipment/armor/wood-armor.jpg": {
-    "output": "c44e19a402b61caaa6fb56094a0d6ef64c27454303263db94ad1982b491d704c",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/armor/wood-armor.webp": {
+    "output": "8062d2fc4d83eb3a10100100d2cb423baf4c615e69200a56022e4d0d8458d29b",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/armor/wood-armor.jpg": "c44e19a402b61caaa6fb56094a0d6ef64c27454303263db94ad1982b491d704c"
     }
   },
-  "playing-cards/full/equipment/horse/da-yuan.jpg": {
-    "output": "0f711aa93880cfbe506ec1edbfc62bcb894ebc50b95cc8346261c961acd22347",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/horse/da-yuan.webp": {
+    "output": "47cc936e872277835909788cfe2b038b6ac4fb6bb363798be22f4b8328484aba",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/horse/da-yuan.jpg": "0f711aa93880cfbe506ec1edbfc62bcb894ebc50b95cc8346261c961acd22347"
     }
   },
-  "playing-cards/full/equipment/horse/di-lu.jpg": {
-    "output": "a41be94cdaac2c7af18c5e9cd022b47480c87f2b10cc0a7c8534e6db72cc73b0",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/horse/di-lu.webp": {
+    "output": "a0a76fcc34461a71ccd592b275797ab92c86ef03f212fd89e6c9279653785070",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/horse/di-lu.jpg": "a41be94cdaac2c7af18c5e9cd022b47480c87f2b10cc0a7c8534e6db72cc73b0"
     }
   },
-  "playing-cards/full/equipment/horse/hua-liu.jpg": {
-    "output": "d4e8b08e98c034305979398cac3c6d5504c9aedc1f42c9f0089aa6a3904d1a94",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/horse/hua-liu.webp": {
+    "output": "b5258884fd6daa44c70d04da260f461a5ae0d722e2326d1297fd5a42d437327a",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/horse/hua-liu.jpg": "d4e8b08e98c034305979398cac3c6d5504c9aedc1f42c9f0089aa6a3904d1a94"
     }
   },
-  "playing-cards/full/equipment/horse/red-hare.jpg": {
-    "output": "ee2b9d654611c0b92ca850d63f133acedc7287a5ee1a399043bd06fc650bfbf5",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/horse/red-hare.webp": {
+    "output": "8481ce527668aa5643ca493d00bb0430a82201da23d9fa740ace9419226eb8e2",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/horse/red-hare.jpg": "ee2b9d654611c0b92ca850d63f133acedc7287a5ee1a399043bd06fc650bfbf5"
     }
   },
-  "playing-cards/full/equipment/horse/shadow-runner.jpg": {
-    "output": "7877c0c1186ea1793c22f4e1ac18641fe99fc8a3202550e6089955ae84150406",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/horse/shadow-runner.webp": {
+    "output": "e717c485553e01ba7204d4b0dbd691beb869f66aacc8259e9ffa1cdb645c0d07",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/horse/shadow-runner.jpg": "7877c0c1186ea1793c22f4e1ac18641fe99fc8a3202550e6089955ae84150406"
     }
   },
-  "playing-cards/full/equipment/horse/storm-runner.jpg": {
-    "output": "99976c1756fcdc4c3ef26eaf64f93958b4b1143b8673d3e0058a3f7fa5056c2f",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/horse/storm-runner.webp": {
+    "output": "dc06fa70c9703be460ad416f556c74d27a2e5eb1123ed85ab1b69b622eebcd36",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/horse/storm-runner.jpg": "99976c1756fcdc4c3ef26eaf64f93958b4b1143b8673d3e0058a3f7fa5056c2f"
     }
   },
-  "playing-cards/full/equipment/horse/zi-xing.jpg": {
-    "output": "9a60c09f1373cb5f70af1eab4dfea5c12ae83dc926f8483467a720320db0cf68",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/horse/zi-xing.webp": {
+    "output": "70dd1e6d5a70e89813a2f91ef49974a8a49fb40b70b4dfeb775274c004ce5c14",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/horse/zi-xing.jpg": "9a60c09f1373cb5f70af1eab4dfea5c12ae83dc926f8483467a720320db0cf68"
     }
   },
-  "playing-cards/full/equipment/weapon/ancient-scimitar.jpg": {
-    "output": "2d2cd0740399eb76354f104ae36827438ca328d3ec56e309568a55af2fe1e96e",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/ancient-scimitar.webp": {
+    "output": "3ea8486d34b362821aa6cfe69178d04223ae099807c77850962083b93a150f33",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/ancient-scimitar.jpg": "2d2cd0740399eb76354f104ae36827438ca328d3ec56e309568a55af2fe1e96e"
     }
   },
-  "playing-cards/full/equipment/weapon/axe.jpg": {
-    "output": "4aa0869403622b72ce30d05e8dd7256486e8b71c1c8d594ea4066a5f655d3a32",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/axe.webp": {
+    "output": "8734cd049d080577c0f32797d97f32d18114f99f6b270caef5574eba7509c9af",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/axe.jpg": "4aa0869403622b72ce30d05e8dd7256486e8b71c1c8d594ea4066a5f655d3a32"
     }
   },
-  "playing-cards/full/equipment/weapon/black-pommel.jpg": {
-    "output": "7da95fdd6eb6d4e011f9a76734f3a6f64c4629917837f70e4b013b4a77f27b8f",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/black-pommel.webp": {
+    "output": "dbe24942d11a3898427ad710cf6c57cac15d101bf2bfcff2a26ec0e75d783191",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/black-pommel.jpg": "7da95fdd6eb6d4e011f9a76734f3a6f64c4629917837f70e4b013b4a77f27b8f"
     }
   },
-  "playing-cards/full/equipment/weapon/crossbow.jpg": {
-    "output": "cfa356a6b0f8edbe1fd4dbd055a3e5fb520cf48fda257fe04bd4f5c91248909b",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/crossbow.webp": {
+    "output": "95b71e00c90bf995f41b749ee6974036bae2d91c215c02cc8f00bf46f38c39c5",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/crossbow.jpg": "cfa356a6b0f8edbe1fd4dbd055a3e5fb520cf48fda257fe04bd4f5c91248909b"
     }
   },
-  "playing-cards/full/equipment/weapon/fire-fan.jpg": {
-    "output": "f754c219cef48c840d21efc0dd552e00d15b559f3c34a88e142c4dbe509f2570",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/fire-fan.webp": {
+    "output": "18de4c31109fdfe9827d5ebca4b3ffecc31cc91c070fc93cb201a53ee70dc5ba",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/fire-fan.jpg": "f754c219cef48c840d21efc0dd552e00d15b559f3c34a88e142c4dbe509f2570"
     }
   },
-  "playing-cards/full/equipment/weapon/gender-swords.jpg": {
-    "output": "6c52116b0791fff6322b46c83c81c08acb9ae5b4e869ca14a02cbf5d6afefd0a",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/gender-swords.webp": {
+    "output": "f3c400a47b9b1ce8e11cb9a91796b8dd697b854308a981f17ae0998dd9494ca1",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/gender-swords.jpg": "6c52116b0791fff6322b46c83c81c08acb9ae5b4e869ca14a02cbf5d6afefd0a"
     }
   },
-  "playing-cards/full/equipment/weapon/green-dragon-blade.jpg": {
-    "output": "e229194400fa91c387804ba24681ec43dd1c81bec2589cb0e43f1314f03f95d2",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/green-dragon-blade.webp": {
+    "output": "fde1ae6599e46b010abced7534d88f616c8754dc1a7670f6c67ba63b74b060e1",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/green-dragon-blade.jpg": "e229194400fa91c387804ba24681ec43dd1c81bec2589cb0e43f1314f03f95d2"
     }
   },
-  "playing-cards/full/equipment/weapon/ice-sword.jpg": {
-    "output": "60a94a45a444b55c588ee3893c8c14d7f43394eba857b7bbded2f241a1fe754d",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/ice-sword.webp": {
+    "output": "aabce095a522572d80e56d9de0a29ff014f443784f04325ecfefb59bd89dd877",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/ice-sword.jpg": "60a94a45a444b55c588ee3893c8c14d7f43394eba857b7bbded2f241a1fe754d"
     }
   },
-  "playing-cards/full/equipment/weapon/longbow.jpg": {
-    "output": "11dbcde6a70d8d2078a2e4b9fdfdca9450042cca63e2c2a0e0003886f242d275",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/longbow.webp": {
+    "output": "9d5251008dbf565fb1e2f7561d5c761e453fe8753f4749d93e1bf99122a13f6c",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/longbow.jpg": "11dbcde6a70d8d2078a2e4b9fdfdca9450042cca63e2c2a0e0003886f242d275"
     }
   },
-  "playing-cards/full/equipment/weapon/serpent-spear.jpg": {
-    "output": "289ad17526e68aa0f2903529dca21789bb6cbbcc92dae5492847c8cf91c88545",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/serpent-spear.webp": {
+    "output": "4059ddbcc85e7bf33f779743c95bbbd341c5c4ce03da6d0faf61c439a6eae06a",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/serpent-spear.jpg": "289ad17526e68aa0f2903529dca21789bb6cbbcc92dae5492847c8cf91c88545"
     }
   },
-  "playing-cards/full/equipment/weapon/sky-scorcher.jpg": {
-    "output": "4f29b6640a3c0cd4750b7c774098078280e964e430e0453ad346eaf0b61c5f49",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/sky-scorcher.webp": {
+    "output": "2da40ebe2265df7a6e71c1e6a9a5eef36642bb072f74b5d86d116f01330f9ec7",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/sky-scorcher.jpg": "4f29b6640a3c0cd4750b7c774098078280e964e430e0453ad346eaf0b61c5f49"
     }
   },
-  "playing-cards/full/equipment/weapon/trident-glaive.jpg": {
-    "output": "c3ad2c65a8ef6551c8a8c1ad0329f1c025967c31cfc471e5c02f7cde2aac14bd",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/trident-glaive.webp": {
+    "output": "7d4392d981baa42f1a91fdff33a54e6177807a182da31a070f788c092abda668",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/trident-glaive.jpg": "c3ad2c65a8ef6551c8a8c1ad0329f1c025967c31cfc471e5c02f7cde2aac14bd"
     }
   },
-  "playing-cards/full/equipment/weapon/wu-six-swords.jpg": {
-    "output": "7286ddf92135f9f8eb4b4fbffa009561197c2c73284b81c0220c55f776c92ded",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/equipment/weapon/wu-six-swords.webp": {
+    "output": "98827dcfc35bbed9129f0dacdcf40cdad0a515fd74bf74242e70757d3aa89e08",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/equipment/weapon/wu-six-swords.jpg": "7286ddf92135f9f8eb4b4fbffa009561197c2c73284b81c0220c55f776c92ded"
     }
   },
-  "playing-cards/full/tool/ally-far-attack-near.jpg": {
-    "output": "8000add44abeb819adb5103223210392b91002e2fc8618082bf5bb5ca5b323de",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/ally-far-attack-near.webp": {
+    "output": "5bb7f0af316b5fe0373bf5629c9857e9925509ea43c2ee10834bcf13f2d7ca2b",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/ally-far-attack-near.jpg": "8000add44abeb819adb5103223210392b91002e2fc8618082bf5bb5ca5b323de"
     }
   },
-  "playing-cards/full/tool/amass.jpg": {
-    "output": "7dde27a2d9f0662ff6d5344b571e4f05bcf1e6366f37e459718b78be47670108",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/amass.webp": {
+    "output": "9e6cce890067cf867872d6655855cafd0d4cd6638780aa87519a43bdf871a30d",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/amass.jpg": "7dde27a2d9f0662ff6d5344b571e4f05bcf1e6366f37e459718b78be47670108"
     }
   },
-  "playing-cards/full/tool/ascertain.jpg": {
-    "output": "300d7d69ca5fda0e17d754991ebc5422124f34932a47b10156e95ed26ff96349",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/ascertain.webp": {
+    "output": "6eb5f94aaeaff960a310d5e06c3073fd975556fa6f1608bd224dbb5c23955270",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/ascertain.jpg": "300d7d69ca5fda0e17d754991ebc5422124f34932a47b10156e95ed26ff96349"
     }
   },
-  "playing-cards/full/tool/barbarians.jpg": {
-    "output": "574510a2d05a8e9b94096c1f942106322953a9bb516b1598e6a16f74c5194f72",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/barbarians.webp": {
+    "output": "a9323ac81f82425ae47e70aa29822a38e4944fbcf606a9f9b5be09c5d87f96b0",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/barbarians.jpg": "574510a2d05a8e9b94096c1f942106322953a9bb516b1598e6a16f74c5194f72"
     }
   },
-  "playing-cards/full/tool/blaze.jpg": {
-    "output": "5cff1bd614b259a9fbbdbb5bea088b448c921e38646bae99f73047822bd451a2",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/blaze.webp": {
+    "output": "953e18477b244e5aecd3c917d4e510ae81cee775214f171b9e5486a8c2d82fa6",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/blaze.jpg": "5cff1bd614b259a9fbbdbb5bea088b448c921e38646bae99f73047822bd451a2"
     }
   },
-  "playing-cards/full/tool/break.jpg": {
-    "output": "b1946d9f06459b86c28e36162b415f019f6d45bd3e12bd3585e11d9c4f9f80a9",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/break.webp": {
+    "output": "06f25b712a4c9afcc69eb30a546a02c3928a7c0889f648411c79266bb77a3775",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/break.jpg": "b1946d9f06459b86c28e36162b415f019f6d45bd3e12bd3585e11d9c4f9f80a9"
     }
   },
-  "playing-cards/full/tool/capture.jpg": {
-    "output": "068b44dc82ed6d100285930d8762c92de178a1ce729506c2f178c8ea0bf6f668",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/capture.webp": {
+    "output": "5facc95d3bb6bef6a0729f335eba8a01a5080aaf2300baad49b55c1b0b81c553",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/capture.jpg": "068b44dc82ed6d100285930d8762c92de178a1ce729506c2f178c8ea0bf6f668"
     }
   },
-  "playing-cards/full/tool/chains.jpg": {
-    "output": "75a09eee888c0e49ce9dc1d92e6ae750ba747111efdc6e0c36a7ea2eaa08afac",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/chains.webp": {
+    "output": "56469dce7a4d0fc9a6f17bd85815988554a35bbe6435f90d8357fb71e569df2d",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/chains.jpg": "75a09eee888c0e49ce9dc1d92e6ae750ba747111efdc6e0c36a7ea2eaa08afac"
     }
   },
-  "playing-cards/full/tool/coerce.jpg": {
-    "output": "be625f0a04cb41b082209db3c639bb9d6690ddd1e79e81d848542ce1246695c7",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/coerce.webp": {
+    "output": "42a6a9cad802eba2b09a277e9b05c11f946e988353c53699a2c292369c77031e",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/coerce.jpg": "be625f0a04cb41b082209db3c639bb9d6690ddd1e79e81d848542ce1246695c7"
     }
   },
-  "playing-cards/full/tool/draw-two.jpg": {
-    "output": "4a3be0726a62f1977c6ad6699350eef0245e0c56d29c87a6cd222f42c5887af8",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/draw-two.webp": {
+    "output": "8a026e8be8665308d9ab3c1f2987c0b212d6d058fd798d3eb928815df3a0cf5c",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/draw-two.jpg": "4a3be0726a62f1977c6ad6699350eef0245e0c56d29c87a6cd222f42c5887af8"
     }
   },
-  "playing-cards/full/tool/duel.jpg": {
-    "output": "a14dac79d5fdbf040f81b0fa02cb2fcde5f63bf858d8fbc2c8a886d4a7e6a81e",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/duel.webp": {
+    "output": "0f1d067935a2707598ec10c42a3946a67304628a00fd5770b7dd74f7eb8d1929",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/duel.jpg": "a14dac79d5fdbf040f81b0fa02cb2fcde5f63bf858d8fbc2c8a886d4a7e6a81e"
     }
   },
-  "playing-cards/full/tool/hail-of-arrows.jpg": {
-    "output": "031c5939bceaa00893efccba2fdea950388e0e24c13a6bbc6ae5ced142aeeb84",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/hail-of-arrows.webp": {
+    "output": "863ac8bfc9f8423d9a2b1ecc5711bb63063b8123bf3dcdcf8594bce1b8381da3",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/hail-of-arrows.jpg": "031c5939bceaa00893efccba2fdea950388e0e24c13a6bbc6ae5ced142aeeb84"
     }
   },
-  "playing-cards/full/tool/harvest.jpg": {
-    "output": "efc9377164d775802b62a24c2f7eb92ce6b3b8e687677c8486373b6e3188ff0d",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/harvest.webp": {
+    "output": "556347a40940448612487ffdcadfe0d4f9f78424503b380974f0e014e1ff3bfb",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/harvest.jpg": "efc9377164d775802b62a24c2f7eb92ce6b3b8e687677c8486373b6e3188ff0d"
     }
   },
-  "playing-cards/full/tool/lightning.jpg": {
-    "output": "16ee58fe4b7164a9b3f7a1f14495b0e052908b6c69e785a9e42d005fe73f96a2",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/lightning.webp": {
+    "output": "5540ef5066e22c89e14ce529404bf1c524369f15364600b41be2ffeb9a32963d",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/lightning.jpg": "16ee58fe4b7164a9b3f7a1f14495b0e052908b6c69e785a9e42d005fe73f96a2"
     }
   },
-  "playing-cards/full/tool/peach-garden.jpg": {
-    "output": "9e40f15afb2bdcc6875d49901d3bb252475eb79944cfda51165ee5755aaa09ca",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/peach-garden.webp": {
+    "output": "a7ac096ec2f10cd61c419c987519f48bf81181ac7c111577c47a719e7d276be4",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/peach-garden.jpg": "9e40f15afb2bdcc6875d49901d3bb252475eb79944cfda51165ee5755aaa09ca"
     }
   },
-  "playing-cards/full/tool/starvation.jpg": {
-    "output": "e9bfe4ed31cdfffca54a79a0a79dca31fbdcf0b7ad705f956683e0e2469cf6d8",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/starvation.webp": {
+    "output": "e415a21f42f81f3e0584b1cd2d29b3188c1992a261dbf6aaccd860e51609cb9a",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/starvation.jpg": "e9bfe4ed31cdfffca54a79a0a79dca31fbdcf0b7ad705f956683e0e2469cf6d8"
     }
   },
-  "playing-cards/full/tool/steal.jpg": {
-    "output": "966eeaa33071d106c3ab20e8db4c8f4140fe26c1fe023336000533c64b3ad948",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/steal.webp": {
+    "output": "75ddd1d6bc626bc9d1456dbfeda690c02e5aaebe3dc64317a5651ffc5702abbb",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/steal.jpg": "966eeaa33071d106c3ab20e8db4c8f4140fe26c1fe023336000533c64b3ad948"
     }
   },
-  "playing-cards/full/tool/wuxie-guo.jpg": {
-    "output": "f2f836c38ee653c8f0e1545bfbbfa81c7e6fe34074836647f5014c690e59ff1e",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/wuxie-guo.webp": {
+    "output": "391f3702148579989af6c35dcd94bab55907910bdf8531f5ae1fe83b08c8b27c",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/wuxie-guo.jpg": "f2f836c38ee653c8f0e1545bfbbfa81c7e6fe34074836647f5014c690e59ff1e"
     }
   },
-  "playing-cards/full/tool/wuxie.jpg": {
-    "output": "b4ed913d29b6078d8eda00003585d4448c52a0472ffd1b2513975f2bc1d6e63f",
-    "settings": "79d7a6544f11eb28aed4d0a7a4ba9a96548c4be06c3bd3f01654d35b5ed1ea3f",
+  "playing-cards/full/tool/wuxie.webp": {
+    "output": "26360d29b0611b849a803ee132ee7020238bbe1034b82317e9294276ee0707c1",
+    "settings": "431a54934779440ee2ec67cf4efce32fa45cf2ba885bac751419bdbb64994499",
     "sources": {
       "playing-cards/full/tool/wuxie.jpg": "b4ed913d29b6078d8eda00003585d4448c52a0472ffd1b2513975f2bc1d6e63f"
     }

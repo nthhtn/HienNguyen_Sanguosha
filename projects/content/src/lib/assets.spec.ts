@@ -7,11 +7,11 @@ import { AMBITIONIST_ICON_URL, assetFile, CARD_BACK_ART_URL, kingdomBannerUrl, s
 
 describe('cardArtUrl', () => {
   it('returns the /images/ URL for a crawled id', () => {
-    expect(cardArtUrl('cao-cao')).toBe('/images/generals/cards/wei/cao-cao.jpg');
+    expect(cardArtUrl('cao-cao')).toBe('/images/generals/cards/wei/cao-cao.webp');
   });
 
   it('serves Tool art from the tool folder', () => {
-    expect(cardArtUrl('duel')).toBe('/images/playing-cards/full/tool/duel.jpg');
+    expect(cardArtUrl('duel')).toBe('/images/playing-cards/full/tool/duel.webp');
   });
 
   it('returns null for an id with no crawled art', () => {
@@ -150,31 +150,35 @@ function jpegSize(path: string): { width: number; height: number } {
 }
 
 describe('Starvation art', () => {
-  const assets = join(__dirname, '../../assets');
+  // The full-size facts live in the masters and the crop boxes: the shipped cards are shrunk to 320 px.
+  const content = join(__dirname, '../..');
+  const masters = join(content, 'assets-src');
+  const boxes = JSON.parse(readFileSync(join(content, 'asset-crops.json'), 'utf8')) as Record<string, [number, number, number, number]>;
+  const cropSize = (card: string) => ({ width: boxes[card][2], height: boxes[card][3] });
 
   it('the full card is the landscape scan, laid out like Capture, and the manifest says so', () => {
-    const full = jpegSize(join(assets, 'playing-cards/full/tool/starvation.jpg'));
+    const full = jpegSize(join(masters, 'playing-cards/full/tool/starvation.jpg'));
     expect(full).toEqual({ width: 969, height: 651 });
-    const capture = jpegSize(join(assets, 'playing-cards/full/tool/capture.jpg'));
+    const capture = jpegSize(join(masters, 'playing-cards/full/tool/capture.jpg'));
     expect(capture.width).toBeGreaterThan(capture.height);
-    const entry = JSON.parse(readFileSync(join(assets, 'manifest.json'), 'utf8')).starvation;
+    const entry = JSON.parse(readFileSync(join(masters, 'manifest.json'), 'utf8')).starvation;
     expect({ width: entry.width, height: entry.height }).toEqual(full);
     expect(entry.note).toBeUndefined();
   });
 
   it('the cropped art is the whole illustration cut from that landscape card, framed as Capture\'s is', () => {
     // Capture's crop is 526 x 536 from a 974 x 654 card; Starvation's card is the same layout, a hair smaller.
-    expect(jpegSize(join(assets, 'playing-cards/cropped/tool/capture.jpg'))).toEqual({ width: 526, height: 536 });
-    expect(jpegSize(join(assets, 'playing-cards/cropped/tool/starvation.jpg'))).toEqual({ width: 523, height: 534 });
+    expect(cropSize('tool/capture')).toEqual({ width: 526, height: 536 });
+    expect(cropSize('tool/starvation')).toEqual({ width: 523, height: 534 });
   });
 });
 
 describe('assetFile', () => {
   it('adds the extension its recipe ships to a reference without one', () => {
     expect(assetFile('generals/skins/wei/caocao')).toBe('generals/skins/wei/caocao.webp');
-    expect(assetFile('generals/cards/wei/cao-cao')).toBe('generals/cards/wei/cao-cao.jpg');
-    expect(assetFile('playing-cards/full/tool/duel')).toBe('playing-cards/full/tool/duel.jpg');
-    expect(assetFile('playing-cards/cropped/tool/duel')).toBe('playing-cards/cropped/tool/duel.jpg');
+    expect(assetFile('generals/cards/wei/cao-cao')).toBe('generals/cards/wei/cao-cao.webp');
+    expect(assetFile('playing-cards/full/tool/duel')).toBe('playing-cards/full/tool/duel.webp');
+    expect(assetFile('playing-cards/cropped/tool/duel')).toBe('playing-cards/cropped/tool/duel.webp');
     expect(assetFile('audio/death/generals/wei/caocao')).toBe('audio/death/generals/wei/caocao.ogg');
   });
 

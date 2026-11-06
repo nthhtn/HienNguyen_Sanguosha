@@ -35,10 +35,11 @@ One folder per kind of thing, kebab-case names throughout (the rules are in
 under `../assets/`, except where noted.
 
 - `generals/` holds `skins/<force>/` (Play-screen portraits, mapped by `skins/skins.json`; the masters are PNG and ship as WebP, per `../asset-recipes.json`),
-  `cards/<force>/` (full card art) and `special/` (face-down, placeholder and Ambitionist art).
+  `cards/<force>/` (full card art, shipped as WebP at most 320 px wide) and `special/` (face-down, placeholder and Ambitionist art).
 - `playing-cards/full/<card-type>/` holds the full card art, plus `back.jpg` beside it. There is
   no `cropped/` here: the Play-screen art in `../assets/playing-cards/cropped/` is cut from the
-  full cards by the boxes in `../asset-crops.json`.
+  full-size cards by the boxes in `../asset-crops.json` (pixels of the master). Both ship as WebP at
+  most 320 px wide, which is 2x the widest the app shows them (160 CSS px).
 - `effects/` holds `stills/` and `frames/` (the frames of each sprite effect, never shipped).
   `../assets/effects/sheets/` is generated from the frames.
 - `ui/` holds `banners/`, `hp/`, `chain/`, `battlefield/` and `brand/` (logo, landing page, favicon).

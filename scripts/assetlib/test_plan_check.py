@@ -87,6 +87,23 @@ class PlanTests(unittest.TestCase):
             plan_outputs(layout)
         self.assertIn('avif', str(ctx.exception))
 
+    def test_max_width_must_be_a_positive_whole_number(self):
+        for bad in (0, -5, '320', 1.5, True, None):
+            for key, recipe in (
+                ('generals/skins', {'op': 'image', 'ext': 'webp', 'maxWidth': bad}),
+                ('playing-cards/cropped', {'op': 'crop', 'from': 'playing-cards/full', 'ext': 'webp', 'maxWidth': bad}),
+            ):
+                layout = make_layout({'generals/skins/a.png': b'a'}, {key: recipe}) if key == 'generals/skins' else make_layout({}, {key: recipe})
+                with self.assertRaises(PlanError, msg='{} {!r}'.format(key, bad)) as ctx:
+                    plan_outputs(layout)
+                self.assertIn(key, str(ctx.exception))
+
+    def test_a_crop_recipe_writes_only_jpg_or_webp(self):
+        layout = make_layout({}, {'playing-cards/cropped': {'op': 'crop', 'from': 'playing-cards/full', 'ext': 'png'}})
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('png', str(ctx.exception))
+
     def test_image_recipe_rejects_a_master_it_cannot_read(self):
         layout = make_layout({'generals/skins/wei/a.png': b'a', 'generals/skins/wei/notes.txt': b'x'}, self.IMAGE_RECIPES)
         with self.assertRaises(PlanError) as ctx:
