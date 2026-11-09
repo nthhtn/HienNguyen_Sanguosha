@@ -256,7 +256,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
     fixture.componentRef.setInput('prefix', 'Nhắm vào');
     fixture.componentRef.setInput('targets', [{ kind: 'seat', seatId: 'seat-2' }, { kind: 'seat', seatId: 'seat-3' }]);
     fixture.detectChanges();
-    expect(text(fixture.nativeElement as HTMLElement)).toBe('Nhắm vào Bot Tào Tháo - Tư Mã Ý, Người chơi 3 Lưu Bị');
+    expect(text(fixture.nativeElement as HTMLElement)).toBe('Nhắm vào Bot · Tào Tháo / Tư Mã Ý, Người chơi 3 · Lưu Bị');
   });
 
   it('the playing card names a hidden card in Vietnamese', () => {
