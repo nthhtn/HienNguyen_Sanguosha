@@ -9,12 +9,19 @@ its entry and say where it went in the commit.
 | Deferred | Why it waits | Revisit when |
 |---|---|---|
 | **Synergistic Partners.** Each Kingdom Wars General's data lists the Generals it pairs well with (`synergisticPartners` in `projects/content/data/decks/kingdom-wars/generals/`), and the Wiki shows the list. The engine has no rule that uses it: holding a partner General changes nothing in a game. Noted on 2026-10-26. | The rule text is not specified yet, and CLAUDE.md asks for precise rules before a new mechanic is implemented. The data is kept as crawled, so nothing is lost meanwhile. | The Synergistic Partners rule is written down, with what a pairing does, when it applies and what a partner General counts as. Implement it in the engine and the Guozhan mode, then show it in the Wiki next to the list. |
+| **Banish (Cao Pi) draws after it turns over, not before.** The deck says "draw X cards, then stack/unstack" his/her character cards. The engine (`exile` in `projects/content/src/lib/generals/forest.ts`) turns the seat over first and draws second, and the log line `history.exiled` reads "turns over and draws cards". The end state is the same; the order is not. | The preview film follows the deck (decided 2026-11-09), and no game depends on the order. | When Banish is next touched: draw first, then turn over, in the engine, its spec and the two log lines (English and Vietnamese). The Banish films need no change then. |
 
 ## Game setup
 
 | Deferred | Why it waits | Revisit when |
 |---|---|---|
 | **The Identity deck (`identity`) in Game Setup.** Its radio button in the deck picker is disabled on every setup screen (Pass and Play, Play vs Bots, Create Room and the lobby), so new games are always dealt from Kingdom Wars, the default deck. Disabled on 2026-10-26. | The engine has no explicit rules for Identity yet; they get specified first. The deck, its data and its text are kept, and the server still accepts the `identity` deck. | The Identity rules are written and implemented. Remove `disabled: true` from the `identity` entry in `projects/app/src/app/deck-picker.ts` and restore the click test in `deck-picker.spec.ts`. |
+
+## Translations
+
+| Deferred | Why it waits | Revisit when |
+|---|---|---|
+| **"Stack/unstack" in Vietnamese.** The deck's "stacks/unstacks his/her character cards" (Cao Pi's Banish) is translated "lật mặt" in the Vietnamese Banish text, and a face-down seat is labelled "Úp". The developer wants the term "chồng tướng" (decided 2026-11-09). | It touches the Kingdom Wars locale (`projects/content/data/locales/vi/kingdom-wars-generals.json`, Banish) and `projects/app/src/app/i18n/vi.ts` (`history.exiled`, and `seat.faceDown` if that label should follow), so it belongs in a pass over the Vietnamese terms. | When the Vietnamese terms are next reviewed: record it in the glossary (`docs/superpowers/specs/2026-10-15-vietnamese-localization-design.md`) first. The Banish film's Vietnamese captions then change with it, and are re-rendered from `projects/content/preview-films/`. |
 
 ## Deployment
 
@@ -31,9 +38,8 @@ Smaller items from the review of this deployment, left on purpose:
 - The container runs as root (`USER node` is a one-line fix).
 - The image is about 1 GB with all dev dependencies, and starts through `npx` and `tsx`, which adds to the cold start. Pruning dev dependencies or bundling the server would shrink it.
 - `.dockerignore` only matches at the repository root, so nested `.env` and `node_modules` are not excluded from a local build (Render builds from a clean clone).
-- No security headers (`X-Content-Type-Options`, frame protection, CSP) and no ETag on `index.html`.
-- The long-cache pattern misses build files with a `-` in the hash, which get a one-hour cache instead.
-- `/api` without a trailing slash serves the app, and a few extensions (`.woff`, `.gif`, `.map`) have no content type.
+- No security headers (`X-Content-Type-Options`, frame protection, CSP).
+- `/api` without a trailing slash serves the app, and a few extensions (`.gif`, `.map`) have no content type.
 
 ## Backend
 

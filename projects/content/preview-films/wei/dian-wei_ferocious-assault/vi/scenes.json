@@ -1,0 +1,40 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wei",
+  "palettes": {
+    "main": "#3f6fd8",
+    "ground": "#0F2233",
+    "second": "#E6EEF5",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0F2233",
+  "fonts": {
+    "display": {
+      "family": "Merriweather",
+      "weights": [
+        400,
+        700
+      ]
+    },
+    "sans": {
+      "family": "Be Vietnam Pro",
+      "weights": [
+        400,
+        700
+      ]
+    }
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Điển Vi: Cường tập",
+      "dur": 7.4,
+      "desc": "Trong giai đoạn ra bài, Điển Vi bỏ một vũ khí trên tay và gây 1 sát thương cho Người chơi 2."
+    }
+  ]
+}
