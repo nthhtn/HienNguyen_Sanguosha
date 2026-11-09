@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wei",
+  "palettes": {
+    "main": "#3f6fd8",
+    "ground": "#0F2233",
+    "second": "#E6EEF5",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0F2233",
+  "fonts": {
+    "display": {
+      "family": "Zilla Slab",
+      "or": "fraunces-display"
+    },
+    "sans": "instrument-sans"
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Cao Pi: Scavenge",
+      "dur": 5.8,
+      "desc": "Seat 2 is eliminated, and Cao Pi takes all of its cards."
+    }
+  ]
+}

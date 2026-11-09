@@ -1,0 +1,40 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wei",
+  "palettes": {
+    "main": "#3f6fd8",
+    "ground": "#0F2233",
+    "second": "#E6EEF5",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0F2233",
+  "fonts": {
+    "display": {
+      "family": "Merriweather",
+      "weights": [
+        400,
+        700
+      ]
+    },
+    "sans": {
+      "family": "Be Vietnam Pro",
+      "weights": [
+        400,
+        700
+      ]
+    }
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Chân Cơ: Khuynh quốc",
+      "dur": 6.4,
+      "desc": "Một Sát được dùng cho Chân Cơ và nàng đánh một lá bài đen trên tay làm Thiểm."
+    }
+  ]
+}

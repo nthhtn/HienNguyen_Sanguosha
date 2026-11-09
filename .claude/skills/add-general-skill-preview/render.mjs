@@ -1,7 +1,7 @@
 // Renders one preview film to an MP4 on this machine: node render.mjs <film-dir> <out.mp4> [--fps 60] [--stills 0,1.5,3]
 //
-// <film-dir> is a film's `modules` collection saved with ArtifactData `list` and `out_dir`, so it holds
-// modules/scenes.json.json, modules/base.css.json and modules/scene-<id>.js.json. The scene code runs in headless
+// <film-dir> holds either plain files (scenes.json, base.css, scene-<id>.js) or a film's `modules` collection saved with
+// ArtifactData `list` and `out_dir` (modules/scenes.json.json, modules/base.css.json and modules/scene-<id>.js.json). The scene code runs in headless
 // Chromium against a stand-in for the Motion kit (only what the scenes use: scene, h, stage, seg, lerp, eo, ei, eio,
 // breathe), one screenshot per frame, piped to ffmpeg (libx264). Fonts load from Google Fonts. The picture matches the
 // film page closely but not pixel for pixel (the easing curves are the standard cubic ones), so look at --stills first.
@@ -9,7 +9,7 @@
 // Needs: ffmpeg on PATH, and playwright-core 1.63.0 (its Chromium revision is the one in ~/Library/Caches/ms-playwright).
 // Point PLAYWRIGHT_CORE_DIR at a folder whose node_modules holds playwright-core, e.g. one made with
 // `npm install --prefix <scratch dir> playwright-core@1.63.0`.
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { createRequire } from 'node:module';
@@ -27,7 +27,10 @@ const opt = (name, fallback) => {
 const fps = Number(opt('fps', 60));
 const stills = opt('stills', null);
 
-const doc = (name) => JSON.parse(readFileSync(path.join(dir, 'modules', `${name}.json`), 'utf8')).text;
+// Two layouts: plain files (scenes.json, base.css, scene-<id>.js beside each other), or a Motion film's `modules` collection
+// saved with ArtifactData (modules/<name>.json, each holding the file's text).
+const plain = existsSync(path.join(dir, 'scenes.json'));
+const doc = (name) => (plain ? readFileSync(path.join(dir, name), 'utf8') : JSON.parse(readFileSync(path.join(dir, 'modules', `${name}.json`), 'utf8')).text);
 const cut = JSON.parse(doc('scenes.json'));
 if (cut.scenes.length !== 1) throw new Error('render.mjs plays single-scene films only');
 const scene = cut.scenes[0];

@@ -4,6 +4,8 @@ Taken from the films built on 2026-10-29 and 2026-10-30. Everything on screen is
 
 ## The film's documents
 
+On the local route (the default) these are plain files in the film's `en/` and `vi/` folders: `scenes.json` (the JSON text, below), `base.css`, and `scene-demo.js`. `film/meta` and `film/script` are only for a Motion artifact. The rest of this section is the artifact route.
+
 The end state is these five documents, written in one `ArtifactData` batch with `"stage":"final"` and `film/script` last, as the films so far did. Where the Motion type's own instructions ask for something else (a rough stage first, a page to read), follow the type and end in the same state.
 
 | Document | Holds |

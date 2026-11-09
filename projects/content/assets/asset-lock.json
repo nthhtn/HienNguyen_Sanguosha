@@ -2982,10 +2982,10 @@
     }
   },
   "preview/index.json": {
-    "output": "c0c56b2849d1d8cdd9ab5b35da71d61beb7d901569e1d41d4f3ba81019ddf5eb",
+    "output": "63ab7d19676f9b3720d4cbf1ea639aa086ef415f27674f2df75e7d992819d188",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "preview/index.json": "c0c56b2849d1d8cdd9ab5b35da71d61beb7d901569e1d41d4f3ba81019ddf5eb"
+      "preview/index.json": "63ab7d19676f9b3720d4cbf1ea639aa086ef415f27674f2df75e7d992819d188"
     }
   },
   "preview/qun/zhang-jiao_dark-sorcery_en.mp4": {
@@ -3056,6 +3056,272 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/wei/cao-cao_villainous-hero_vi.mp4": "475496a8d072e475abe484baff9ec57a9ae5cd83e1c58649ac818a269ae3d120"
+    }
+  },
+  "preview/wei/cao-pi_banish_en.mp4": {
+    "output": "0dfa5d571fb7b8b393d8907b979d38b837cae7be8d670ee6255008058602edee",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/cao-pi_banish_en.mp4": "9bf4ea0a074d75001ef425483654713e1a4e7560e4e7351266904ea7e56c6b10"
+    }
+  },
+  "preview/wei/cao-pi_banish_vi.mp4": {
+    "output": "db807db26a1d29e2a8f4664d559b666b12c0df1904aa8c0dcf7c54a9f74847bd",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/cao-pi_banish_vi.mp4": "90415c51537b2a936d48d990296406f2ffa4f91f89ddafaca84d180f62e1fcaa"
+    }
+  },
+  "preview/wei/cao-pi_scavenge_en.mp4": {
+    "output": "94f68fdbf72ea6ca4cf8967a572b22e3a7b2e715b098530905a6bcaa3ce15fcc",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/cao-pi_scavenge_en.mp4": "4c5cf7916361e5435e37ac352f3c2cd72fbdaa4a3748d7cdb7e624b74c3f2465"
+    }
+  },
+  "preview/wei/cao-pi_scavenge_vi.mp4": {
+    "output": "d0d331591dbe786eae9656079f60c549c349a4c99edce8c007a383ef8df03713",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/cao-pi_scavenge_vi.mp4": "ca742b3b2341ba69995f67dffc172e95bfd7d97b9bd9c2fb83837e66e69f0ef8"
+    }
+  },
+  "preview/wei/cao-ren_entrenched_en.mp4": {
+    "output": "cf3766b3a7d40ad496814502bbb62bf2cdd3102ff80fed9821e4adc3caad228a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/cao-ren_entrenched_en.mp4": "eac3d826f2210bf7b9cbc270dffa9969d43badf0396b4b8b6505bc1de322ba4f"
+    }
+  },
+  "preview/wei/cao-ren_entrenched_vi.mp4": {
+    "output": "0fe60bcbc408d4a07052d9626757a2beab6bdcbc69778c81f83e553d65ab08a8",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/cao-ren_entrenched_vi.mp4": "553292fab35bebc1344d7e3743d71c21af88d036e25aeafefce0fd582d8eb828"
+    }
+  },
+  "preview/wei/dian-wei_ferocious-assault_en.mp4": {
+    "output": "582f004f4d1640d19eedefe3192778c83cd46f3a365572b857e0460d2e4e5d63",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/dian-wei_ferocious-assault_en.mp4": "10f4f4dfcdc1f57a6fb84192d7f97f960508f877ea220ee3b1558725742c035f"
+    }
+  },
+  "preview/wei/dian-wei_ferocious-assault_vi.mp4": {
+    "output": "c55458d8028040e495e7ef722ab9999a8845a172c91975f2d0dc6a3173ba9f5c",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/dian-wei_ferocious-assault_vi.mp4": "40343b11beff3cba60076208ab0951ffbbc218e211d55cdaea1c05ef6eeb7357"
+    }
+  },
+  "preview/wei/guo-jia_bequeathed-strategy_en.mp4": {
+    "output": "6da9d9c1aa0cb0fff55d7939860f2c19a5569cefb805fc94f7a8bb1b04829b0a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/guo-jia_bequeathed-strategy_en.mp4": "091c0882001cab6a1883f1c7df21143b3df0f1385a696021a22d2e4e7f6dc39b"
+    }
+  },
+  "preview/wei/guo-jia_bequeathed-strategy_vi.mp4": {
+    "output": "e150a71c76abf88bd4047b204fc103de3e74bc53cd3997f291325dca9aea8dc2",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/guo-jia_bequeathed-strategy_vi.mp4": "55681e395bd3dc54b4a066881a84d9951d0d6202692584c4bd60b4ac35a5d2d1"
+    }
+  },
+  "preview/wei/guo-jia_envy-of-heaven_en.mp4": {
+    "output": "aaeeae1cfdc50fdf40d64519f5fffa10a6ada91c1f8abb32d05ef39ccc8e5bb9",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/guo-jia_envy-of-heaven_en.mp4": "12ec31096e7d885a8131fb82d2e8abb64192d685bd7acb92d30a3fb5bbdb7170"
+    }
+  },
+  "preview/wei/guo-jia_envy-of-heaven_vi.mp4": {
+    "output": "733fb67a0ec5baa5446e6d975b000acc3d3ba573ff0b7473d9f691f71ad85131",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/guo-jia_envy-of-heaven_vi.mp4": "e15f53807015731a7369c81e981561b7152aba5820cfea53f4d76fc304e18131"
+    }
+  },
+  "preview/wei/sima-yi_demonic-talent_en.mp4": {
+    "output": "baaf24d20c8ad6fe962508080a10007e8576ef8c7032a8a78fd0e916f59d7859",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/sima-yi_demonic-talent_en.mp4": "180375b4a57d29f0b3bde0bb0cbe44e8f92ecf21c2d01dd1f9e5b45c1f8f3a25"
+    }
+  },
+  "preview/wei/sima-yi_demonic-talent_vi.mp4": {
+    "output": "7131cec8c78b97592b5868ddd06caf9dab9fa9678fe510d18cd7b4de54562a3c",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/sima-yi_demonic-talent_vi.mp4": "862568df00be9d9289121bc90f5478bc118157ce144f701d60a5d6aae7d9edc0"
+    }
+  },
+  "preview/wei/sima-yi_retaliation_en.mp4": {
+    "output": "b245f756d74e80685257c8eb193d6b3e10699fee7fb529f3ac419a09e9adf5de",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/sima-yi_retaliation_en.mp4": "d08ed230a425518f5b826f953fdcbb567387ca36d6ed3a4b46744e944ddbc5d1"
+    }
+  },
+  "preview/wei/sima-yi_retaliation_vi.mp4": {
+    "output": "40107f22f319cc72ba2c4f069cf9038b36febc46848bace6565db52706ac0024",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/sima-yi_retaliation_vi.mp4": "fcd7f29720f633abacd1953771cbc41aa93948cc4ce42fb9b982cdcb176ba215"
+    }
+  },
+  "preview/wei/xiahou-dun_an-eye-for-an-eye_en.mp4": {
+    "output": "3371910b22b15b3040e77b095ea0d4d7ccd4674085f3c7a9dd36ab8307f0ed16",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xiahou-dun_an-eye-for-an-eye_en.mp4": "1c7e08aedce1a07934d5c4ba8b4ce9e144fac9e53892fb0c57e7f91b7394f9a1"
+    }
+  },
+  "preview/wei/xiahou-dun_an-eye-for-an-eye_vi.mp4": {
+    "output": "b7b2d33f8644ac39b3d07a85ae59f01eae0ed209cae2669b841010abba25e5f5",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xiahou-dun_an-eye-for-an-eye_vi.mp4": "6120dc0b8937f4927de8437e5ab9f1cb5e46fdb1883b84aa19b63edf4be92a4b"
+    }
+  },
+  "preview/wei/xiahou-yuan_godspeed_en.mp4": {
+    "output": "5dfe2ca41e2b83c529022cef2664b8747cae072e3736cb89df6865990689b758",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xiahou-yuan_godspeed_en.mp4": "7c1da02ccd0bac2557214e70fe0fc9b6b69c7d9371f30eb8c6bfc4ebe6d6de88"
+    }
+  },
+  "preview/wei/xiahou-yuan_godspeed_vi.mp4": {
+    "output": "5887cf3fc321cb0f96ce82a57f7117eaf254da48a4f1095d8d2066b5da75d493",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xiahou-yuan_godspeed_vi.mp4": "e5cbb823f4ebcf098632f03d51fb61cad4cfbeb7a6997880d3117d4744a10251"
+    }
+  },
+  "preview/wei/xu-chu_bare-chested_en.mp4": {
+    "output": "e1b89bc5975893a98a265c7fad83906ea46b21553b1066dff9bd22249205693a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xu-chu_bare-chested_en.mp4": "17eb85e16b4693eb92a8888eaa6b00c2d08c953c4d80160542ae8308ead8d42a"
+    }
+  },
+  "preview/wei/xu-chu_bare-chested_vi.mp4": {
+    "output": "afb4b31989e98fddc0f65926fde3903783f5459bf779e38921f3cacf75ffe2b4",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xu-chu_bare-chested_vi.mp4": "3bf7d9d7842bc83d9eeca6d3cb96534f8eb6eea9d88dc8ce3eeb9944ebc5d8f2"
+    }
+  },
+  "preview/wei/xu-huang_blockade_en.mp4": {
+    "output": "b1a02a8f98fd24322f8ee08ffd792d3e6e075c49f37c9cca1c5eb05bd6b54b34",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xu-huang_blockade_en.mp4": "c46d01dfe13c59fae5cea3231723c4034b063620580b7450e0b177f47dd7c11d"
+    }
+  },
+  "preview/wei/xu-huang_blockade_vi.mp4": {
+    "output": "450f3aa4370af5afec067067a6978dfa70d7fd718359ad30d7933899909ebb9a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xu-huang_blockade_vi.mp4": "be871148fec503e65c5a5066e40de2a556474747d799c6c4323244670234dc3a"
+    }
+  },
+  "preview/wei/xun-yu_eternal-loyalty_en.mp4": {
+    "output": "2f46e4ecbf6743a445a52fd6418ef4d381e6b281c490a2a47df33ef77dc60670",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xun-yu_eternal-loyalty_en.mp4": "843d2ce67c0750e5cb4294996adaf3414cdd788a03bbb55323e4a6cb6e9d60b4"
+    }
+  },
+  "preview/wei/xun-yu_eternal-loyalty_vi.mp4": {
+    "output": "3de592a0c983b207d2fe50ec83c50768f98ffef413a7ac3ddf9bb40d131b0c19",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xun-yu_eternal-loyalty_vi.mp4": "fb19321fbe1eb30e95d6ee6c26be057df166e8634fa4fa089428e041b6b89b2d"
+    }
+  },
+  "preview/wei/xun-yu_rouse-the-tiger_en.mp4": {
+    "output": "fca94de886fe9e198d1a3ed9d8728261777f3bbd3651125d70f7dbbb1fecd580",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xun-yu_rouse-the-tiger_en.mp4": "2e34ef01570d06b9b1cf962269bd7f0706df4991efd8355c7ce1db7aa9eec41b"
+    }
+  },
+  "preview/wei/xun-yu_rouse-the-tiger_vi.mp4": {
+    "output": "ee6387aa263a0cb2da4a0f4f6d3bd6e9f68d125b6f29fe481e696bc43acc19ea",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/xun-yu_rouse-the-tiger_vi.mp4": "e043b4e478ff98a488f3c7edfadfe0c41ed7164fd305be2c792a3526b48e5995"
+    }
+  },
+  "preview/wei/yue-jin_dauntless_en.mp4": {
+    "output": "5cb5984352bc29a568fdb3434fc52b81e9c91b26600a6f96485897b1c721e353",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/yue-jin_dauntless_en.mp4": "1086c365ed20e31a6c4d26dace9eb4397a38bf308085f0c0a9b52fda7a75aff2"
+    }
+  },
+  "preview/wei/yue-jin_dauntless_vi.mp4": {
+    "output": "955345b23810aa614e6649ba64e3e604dbf7d1ca00c476e303a973503bb69e4f",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/yue-jin_dauntless_vi.mp4": "60f686290676e7457ebeef71a867f9c77826e81d6abae9ceb40b0c93f8eab6be"
+    }
+  },
+  "preview/wei/zhang-he_flexibility_en.mp4": {
+    "output": "aba0c93ceb0d873f137632f01fd4db5f6f580961d958a9cc148cc28b83cce9f9",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/zhang-he_flexibility_en.mp4": "174646609a8f192937123113d3ecede10a9422f35861cc07387bc29957bb0b91"
+    }
+  },
+  "preview/wei/zhang-he_flexibility_vi.mp4": {
+    "output": "7a81ebadcc335a800ffeeb4cd6d79aeaaa94839cbea4c820d7d4c03e1bfeefcb",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/zhang-he_flexibility_vi.mp4": "90b7f775e852c662430416c1c03e655a6a05c2bcf36a47620eb6aec97501bd11"
+    }
+  },
+  "preview/wei/zhang-liao_sudden-strike_en.mp4": {
+    "output": "c2809370635c7c26a05ff7d53e0c595100e1f5b12391356ea2864d8d2f23607a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/zhang-liao_sudden-strike_en.mp4": "7c92d95a109c0c67f872300b395e81968d356ba4fdd14c8a5708b94d255f06e9"
+    }
+  },
+  "preview/wei/zhang-liao_sudden-strike_vi.mp4": {
+    "output": "ac9910edcf7ffc7247c1a2718888e56b6b9dc603440e21da8e8c488c35c13355",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/zhang-liao_sudden-strike_vi.mp4": "9f7e5f894d6b84444582bbcb9181473a05afda7b443c68dba930c1e85d71b8d0"
+    }
+  },
+  "preview/wei/zhen-ji_goddess-luo_en.mp4": {
+    "output": "a9a1b3e9a24b7f3f71c45bc2b58ddf2bbdf10c08640e7303cc922cc807a0c5aa",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/zhen-ji_goddess-luo_en.mp4": "5bb72989c253704ccfb5ad8c2575a256993b5924b6e3150b2c732c81074dac48"
+    }
+  },
+  "preview/wei/zhen-ji_goddess-luo_vi.mp4": {
+    "output": "f0c24a87e6053116ba94bd5698274059975b3b58ced846ab3613c2059b2c247d",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/zhen-ji_goddess-luo_vi.mp4": "5b256bf033d798df9b73690ab53199a7de8cd70012329d48c89e4cd4461d7829"
+    }
+  },
+  "preview/wei/zhen-ji_stunning-beauty_en.mp4": {
+    "output": "edcf642e818e61a8e19de44dde6f72a6cdceda02cbf5ea788696483595c5d22d",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/zhen-ji_stunning-beauty_en.mp4": "3a7d22075a2417a712d8eb1600a3b104d2c1f9fc4cd787820fd22b9a84338f1d"
+    }
+  },
+  "preview/wei/zhen-ji_stunning-beauty_vi.mp4": {
+    "output": "4cdbf4db753f1edc9e986488eea4ad05bdb98f7176abec8355a2bfdc6ca401a5",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/zhen-ji_stunning-beauty_vi.mp4": "2ae673136a2f47405271eebb0b1f6e2ff38b1c6d4c92da0f8b99ace65b339c92"
     }
   },
   "preview/wu/zhou-tai_refuting-death_en.mp4": {

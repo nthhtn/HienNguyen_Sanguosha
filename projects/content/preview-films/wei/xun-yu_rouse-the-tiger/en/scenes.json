@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wei",
+  "palettes": {
+    "main": "#3f6fd8",
+    "ground": "#0F2233",
+    "second": "#E6EEF5",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0F2233",
+  "fonts": {
+    "display": {
+      "family": "Zilla Slab",
+      "or": "fraunces-display"
+    },
+    "sans": "instrument-sans"
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Xun Yu: Rouse the Tiger",
+      "dur": 9.0,
+      "desc": "Xun Yu competes with a player who has more HP and wins, so that player deals 1 damage to Seat 3."
+    }
+  ]
+}
