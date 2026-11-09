@@ -84,19 +84,9 @@ describe('other real cards, described', () => {
     expect(notice.cards).toEqual([{ card: held }]);
   });
 
-  it('Draw Two says the user drew', () => {
-    const { state, from } = played('draw-two', []);
-    expect(noticeOf(state, from)!.outcome.text).toEqual({ key: 'notice.drawTwo.text', params: { userSeat: 'seat-0' } });
-  });
-
   it('Harvest lists a pick for every living seat', () => {
     const { state, from } = played('harvest', []);
     const notice = noticeOf(state, from)!;
     expect(notice.steps).toHaveLength(state.seats.filter((s) => !s.eliminated).length);
-  });
-
-  it('Wine says the next Sha deals extra damage', () => {
-    const { state, from } = played('wine', []);
-    expect(noticeOf(state, from)!.outcome.headline.key).toBe('notice.wine.drunk');
   });
 });
