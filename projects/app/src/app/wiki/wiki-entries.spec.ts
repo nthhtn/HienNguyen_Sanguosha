@@ -48,7 +48,7 @@ describe('WikiGeneralEntry', () => {
     const button = el.querySelector('button.voice') as HTMLButtonElement;
     expect(button.querySelector('mat-icon')!.textContent).toBe('graphic_eq');
     button.click();
-    expect(urls).toEqual(['/audio/death/caocao.ogg']);
+    expect(urls).toEqual(['/audio/death/generals/wei/caocao.ogg']);
     expect(renderGeneral({ ...caoCao, id: 'zuo-ci' }).querySelector('button.voice')).toBeNull();
     localStorage.clear();
   });
@@ -62,7 +62,7 @@ describe('WikiGeneralEntry', () => {
       expect(text).toContain(part);
     }
     expect(el.querySelectorAll('.hearts mat-icon')).toHaveLength(4);
-    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/card-art/generals/skins/wei/caocao.png');
+    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/images/generals/skins/wei/caocao.webp');
     expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');
   });
 
@@ -126,7 +126,7 @@ describe('WikiCardEntry', () => {
     expect(buttons.map((b) => b.querySelector('mat-icon')!.textContent)).toEqual(['man', 'woman']);
     expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['Play Male Voice', 'Play Female Voice']);
     buttons.forEach((b) => b.click());
-    expect(urls).toEqual(['/audio/male/duel.ogg', '/audio/female/duel.ogg']);
+    expect(urls).toEqual(['/audio/voice/male/duel.ogg', '/audio/voice/female/duel.ogg']);
     TestBed.inject(SoundEffects).toggle();
     buttons[0].click();
     expect(urls).toHaveLength(3);
@@ -239,9 +239,9 @@ describe('WikiKingdomWarsGeneralEntry', () => {
     const el = render(kingdomWarsCaoCao);
     expect(el.querySelector('.voices-label')!.textContent).toBe('Voice:');
     (el.querySelector('button.voice') as HTMLButtonElement).click();
-    expect(urls).toEqual(['/audio/death/caocao.ogg']);
+    expect(urls).toEqual(['/audio/death/generals/wei/caocao.ogg']);
     (render({ ...kingdomWarsCaoCao, id: 'ji-ling' }).querySelector('button.voice') as HTMLButtonElement).click();
-    expect(urls).toEqual(['/audio/death/caocao.ogg', '/audio/death/jiling.ogg']);
+    expect(urls).toEqual(['/audio/death/generals/wei/caocao.ogg', '/audio/death/generals/qun/jiling.ogg']);
     localStorage.clear();
   });
 

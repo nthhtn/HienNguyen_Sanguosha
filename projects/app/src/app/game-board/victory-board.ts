@@ -6,7 +6,7 @@ import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import { generalDisplayName, kingdomDisplayName } from '../labels';
 import { CardArt } from './card-art';
-import { VictoryColumn, VictoryMember, victoryColumns } from './victory-columns';
+import { VictoryColumn, VictoryMember, cardsPerRow, victoryColumns } from './victory-columns';
 
 // Reveal beats (spec "Reveal sequence"), in ms from the board appearing.
 const HEADLINE_AT = 50;
@@ -26,7 +26,7 @@ const LIGHT_AFTER_LAST = 500;
         <h2 class="headline" [attr.data-force]="winningForce()">{{ headline() }}</h2>
         <p class="sub">{{ subline() }}</p>
       </header>
-      <div class="cols" role="group" [attr.aria-label]="'over.standings' | t">
+      <div class="cols" role="group" [attr.aria-label]="'over.standings' | t" [attr.data-k]="perRow()">
         @for (col of view().columns; track col.group; let i = $index) {
           <section
             class="col"
@@ -81,10 +81,11 @@ const LIGHT_AFTER_LAST = 500;
     </div>
   `,
   styles: `
-    :host { display: block; }
+    /* Full width: inline-size containment gives .victory no intrinsic width, so a centring grid parent would collapse it. */
+    :host { display: block; width: 100%; }
     .victory {
       container-type: inline-size;
-      max-width: 980px;
+      max-width: 1080px;
       margin: 0 auto;
       text-align: center;
       color: var(--mat-sys-on-surface);
@@ -93,20 +94,22 @@ const LIGHT_AFTER_LAST = 500;
     .head { opacity: 0; transform: translateY(8px); transition: opacity 400ms ease, transform 400ms ease; }
     .head.shown { opacity: 1; transform: none; }
     .eyebrow { margin: 0; font: var(--mat-sys-label-large); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mat-sys-on-surface-variant); }
-    .headline { margin: 4px 0 2px; font-size: 30px; line-height: 1.2; font-weight: 700; color: var(--mat-sys-on-surface); }
+    .headline { margin: 6px 0 4px; font-size: 44px; line-height: 1.15; font-weight: 700; color: var(--mat-sys-on-surface); }
     .headline[data-force] { color: var(--force-text); }
-    .sub { margin: 0 0 20px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
+    .sub { margin: 0 0 24px; font-size: 18px; color: var(--mat-sys-on-surface-variant); }
 
-    .cols { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; padding-top: 12px; }
+    /* Two rows of equal-width cards (spec "Layout"): k cards on the top row, the shorter bottom row centred. */
+    .cols { --k: 1; --gap: 20px; --cap: 354px; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap); padding-top: 12px; }
+    .cols[data-k='2'] { --k: 2; }
+    .cols[data-k='3'] { --k: 3; --cap: 320px; }
     .col {
       position: relative;
-      flex: 1 1 150px;
-      min-width: 150px;
-      max-width: 190px;
+      flex: 0 0 min(calc((100% - (var(--k) - 1) * var(--gap)) / var(--k)), var(--cap));
+      min-width: 0;
       box-sizing: border-box;
-      padding: 12px 10px;
-      border-radius: 10px;
-      border-top: 5px solid var(--force);
+      padding: 18px 16px;
+      border-radius: 16px;
+      border-top: 6px solid var(--force);
       background: var(--mat-sys-surface-container);
       text-align: left;
       opacity: 0;
@@ -119,33 +122,35 @@ const LIGHT_AFTER_LAST = 500;
       box-shadow: 0 0 0 2px var(--force), 0 6px 22px color-mix(in srgb, var(--force) 45%, transparent);
       transform: translateY(-4px);
     }
-    .col.lose { filter: grayscale(1); opacity: 0.72; }
+    .col.lose { filter: grayscale(1); opacity: 0.78; }
     .tag {
       position: absolute;
-      top: -12px;
+      top: -15px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 2px 10px;
+      padding: 3px 14px;
       border-radius: 999px;
       background: var(--force);
       color: white;
-      font: var(--mat-sys-label-small);
+      font-size: 13px;
       font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       white-space: nowrap;
     }
 
-    .col-head { display: flex; flex-direction: column; align-items: center; margin: 0 0 8px; }
-    .title { font: var(--mat-sys-title-medium); font-weight: 700; color: var(--force-text); }
-    .count { font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); }
+    .col-head { display: flex; flex-direction: column; align-items: flex-start; margin: 0 0 14px; }
+    .title { font-size: 22px; line-height: 1.25; font-weight: 700; color: var(--force-text); }
+    .count { font-size: 15px; color: var(--mat-sys-on-surface-variant); }
 
-    ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-    .m { display: flex; align-items: center; gap: 8px; }
+    ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .m { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 12px; background: color-mix(in srgb, var(--force) 8%, transparent); }
     .avatar {
       flex: none;
       display: grid;
       place-items: center;
-      width: 30px;
-      height: 30px;
+      width: 44px;
+      height: 44px;
       box-sizing: border-box;
       border-radius: 50%;
       border: 2px solid var(--force);
@@ -154,28 +159,35 @@ const LIGHT_AFTER_LAST = 500;
     }
     .avatar app-card-art { display: contents; }
     .avatar ::ng-deep .card-art { width: 100%; height: 100%; border: 0; border-radius: 0; object-fit: cover; object-position: top; }
-    .initial { font-weight: 700; font-size: 14px; color: var(--force-text); }
+    .initial { font-weight: 700; font-size: 18px; color: var(--force-text); }
     .m.fallen .avatar { border-style: dashed; opacity: 0.55; filter: grayscale(0.7); }
 
     .info { display: flex; flex-direction: column; min-width: 0; }
-    .who { display: flex; align-items: center; gap: 4px; min-width: 0; }
-    .name { font: var(--mat-sys-body-medium); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .who { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
+    .name { font-size: 18px; line-height: 1.3; font-weight: 700; overflow-wrap: anywhere; }
     .you {
       flex: none;
-      padding: 0 6px;
+      padding: 0 8px;
       border-radius: 999px;
       background: var(--mat-sys-secondary-container);
       color: var(--mat-sys-on-secondary-container);
-      font: var(--mat-sys-label-small);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
-    .generals, .state { font: var(--mat-sys-body-small); color: var(--mat-sys-on-surface-variant); }
+    .generals { font-size: 15px; line-height: 1.35; color: var(--mat-sys-on-surface-variant); overflow-wrap: anywhere; }
+    .state { font-size: 14px; font-weight: 500; color: var(--mat-sys-on-surface-variant); }
     .m.fallen .name { color: var(--mat-sys-on-surface-variant); }
 
     @container (max-width: 700px) {
-      .headline { font-size: 24px; }
-      .cols { gap: 12px; }
-      .col { flex: 0 1 calc(50% - 6px); min-width: 0; max-width: calc(50% - 6px); }
+      .headline { font-size: 32px; }
+      .sub { font-size: 16px; }
+      .cols[data-k] { --gap: 14px; --k: 2; }
       .col[data-winning] { order: -1; }
+    }
+    @container (max-width: 460px) {
+      .cols[data-k] { --k: 1; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -194,6 +206,7 @@ export class VictoryBoard implements OnInit {
   private readonly timers: ReturnType<typeof setTimeout>[] = [];
 
   protected readonly view = computed(() => victoryColumns(this.seats(), this.result(), this.youSeatId()));
+  protected readonly perRow = computed(() => cardsPerRow(this.view().columns.length));
   protected readonly winningForce = computed(() => this.view().columns.find((c) => c.winning)?.force ?? null);
 
   protected readonly headShown = signal(false);

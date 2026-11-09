@@ -7,8 +7,8 @@ import { cardStep } from '../shared/steps';
 import { untargetableBy } from '../shared/abilities';
 import { discardMoves, isLiving } from '../shared/skills';
 
-// Blaze (a Tool, dealt: 3 printings; Fire Strategy also makes it): any living seat
-// holding a hand card, you included. Once its Wuxie check passes, the target
+// Blaze (a Tool, dealt: 3 printings; Fire Strategy also makes it): any other
+// living seat holding a hand card. Once its Wuxie check passes, the target
 // shows a hand card of its choice; you may then discard a hand card of the same
 // suit to deal it 1 fire damage. The nature is Blaze's own, so it holds when
 // Fire Strategy converts a card to Blaze.
@@ -16,10 +16,10 @@ export const blazeCard: CardDefinition = {
   id: 'blaze',
   name: 'Blaze',
   category: 'tool',
-  legalPlayTargets: (state, _ctx, registry) =>
+  legalPlayTargets: (state, ctx, registry) =>
     [...state.seats]
       .sort((a, b) => a.index - b.index)
-      .filter((s) => !s.eliminated && handOf(state, s.id).length > 0 && !untargetableBy(state, s.id, 'blaze', registry))
+      .filter((s) => s.id !== ctx.seatId && !s.eliminated && handOf(state, s.id).length > 0 && !untargetableBy(state, s.id, 'blaze', registry))
       .map((s) => [{ kind: 'seat' as const, seatId: s.id }]),
   play: (_state, ctx) => (ctx.respondingTo || ctx.targets.length === 0 ? [] : toolOnTargets(ctx.card, ctx.seatId, [ctx.targets[0]])),
   onTarget: (state, { tool, userSeatId, target }) => {

@@ -29,6 +29,22 @@ describe('Setup', () => {
     expect(navigateSpy).toHaveBeenCalledWith(expect.stringContaining('/game'));
   });
 
+  it('disables Start Game on a screen too small to play, and says why', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });
+    await TestBed.configureTestingModule({
+      imports: [Setup],
+      providers: [provideRouter([{ path: 'game', children: [] }])],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(Setup);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect((el.querySelector('button.start') as HTMLButtonElement).disabled).toBe(true);
+    expect(el.querySelector('app-small-screen-notice')!.textContent).toContain('Playing needs a tablet or computer screen.');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+  });
+
   it('clamps a zeroed/cleared seat count into [2, maxSeats] instead of sending 0', async () => {
     await TestBed.configureTestingModule({
       imports: [Setup],
@@ -77,6 +93,17 @@ describe('Setup', () => {
       expect(labels).toEqual(Array.from({ length: gameService.maxSeats - 1 }, (_, i) => String(i + 2)));
     });
 
+    it('shows how many Generals each seat is dealt, which changes at 9 seats', async () => {
+      const { fixture, el } = await create();
+      const hint = () => el.querySelector('.generals-dealt')!.textContent!.trim();
+      fixture.componentInstance.seatCount.set(8);
+      fixture.detectChanges();
+      expect(hint()).toBe('Each seat chooses from 7 Generals.');
+      fixture.componentInstance.seatCount.set(9);
+      fixture.detectChanges();
+      expect(hint()).toBe('Each seat chooses from 5 Generals.');
+    });
+
     it('starts a game with the seat count picked on the toggles', async () => {
       const { fixture, el, gameService } = await create();
       const three = [...el.querySelectorAll('mat-button-toggle button')].find((b) => b.textContent!.trim() === '3') as HTMLButtonElement;
@@ -112,7 +139,7 @@ describe('Setup', () => {
         const { fixture, el, gameService } = await create();
         pickSeats(fixture, el, 4);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true, logPasses: true });
       });
 
       it('keeps the Kingdom Wars deck when Identity is clicked: it is disabled for now (deferred)', async () => {
@@ -120,7 +147,7 @@ describe('Setup', () => {
         pickSeats(fixture, el, 4);
         clickIdentity(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ judgmentNotice: true, logPasses: true });
       });
 
       it('sends First Reveal Bonus at 5 seats, and no deck rule for Kingdom Wars', async () => {
@@ -128,7 +155,7 @@ describe('Setup', () => {
         pickSeats(fixture, el, 5);
         clickIdentity(fixture, el);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true, logPasses: true });
       });
     });
 
@@ -138,29 +165,32 @@ describe('Setup', () => {
         fixture.detectChanges();
       };
 
-      it('shows the checkbox, checked, only from 5 seats', async () => {
+      it('always shows the checkbox, disabled: unchecked below 5 seats, checked from 5', async () => {
         const { fixture, el } = await create();
         pick(fixture, el, 4);
-        expect(el.querySelector('.first-reveal')).toBeNull();
-        pick(fixture, el, 5);
         expect(el.querySelector('.first-reveal')!.textContent).toContain('First Reveal Bonus');
+        expect(el.querySelector('.first-reveal input')).toHaveProperty('checked', false);
+        expect(el.querySelector('.first-reveal input')).toHaveProperty('disabled', true);
+        pick(fixture, el, 5);
         expect(el.querySelector('.first-reveal input')).toHaveProperty('checked', true);
+        expect(el.querySelector('.first-reveal input')).toHaveProperty('disabled', true);
       });
 
       it('starts a game with the rule on by default at 5 seats', async () => {
         const { fixture, el, gameService } = await create();
         pick(fixture, el, 5);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true, logPasses: true });
       });
 
-      it('starts a game with the rule off when unchecked', async () => {
+      it('cannot be switched off by clicking it', async () => {
         const { fixture, el, gameService } = await create();
         pick(fixture, el, 5);
         (el.querySelector('.first-reveal input') as HTMLInputElement).click();
         fixture.detectChanges();
+        expect(el.querySelector('.first-reveal input')).toHaveProperty('checked', true);
         (el.querySelector('button.start') as HTMLButtonElement).click();
-        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: false, judgmentNotice: true });
+        expect(gameService.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true, logPasses: true });
       });
 
       it('sets no rule below 5 seats', async () => {
@@ -191,7 +221,7 @@ describe('Setup', () => {
       expect(gameService.mode()).toBe('pass-and-play');
       expect(gameService.state()!.players.every((p) => p.kind === 'human')).toBe(true);
     });
-    it('asks for your name against bots, and names the bots by seat', async () => {
+    it('asks for your name against bots, and names the bots from the pool', async () => {
       const { fixture, el, gameService } = await create();
       const fields = el.querySelectorAll('input.name');
       expect(fields).toHaveLength(1);
@@ -201,7 +231,7 @@ describe('Setup', () => {
       yours.dispatchEvent(new Event('input'));
       fixture.detectChanges();
       (el.querySelector('button.start') as HTMLButtonElement).click();
-      expect(gameService.state()!.players.map((p) => p.name)).toEqual(['Hing', 'Seat 1', 'Seat 2', 'Seat 3']);
+      expect(gameService.state()!.players.map((p) => p.name)).toEqual(['Hing', expect.stringMatching(/^\[Bot\] /), expect.stringMatching(/^\[Bot\] /), expect.stringMatching(/^\[Bot\] /)]);
     });
 
     it('asks for every seat’s name in pass-and-play, and a blank name stays "Seat N"', async () => {

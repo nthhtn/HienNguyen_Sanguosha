@@ -37,6 +37,8 @@ export type BoardGame = Pick<
   | 'submit'
   | 'submitAll'
   | 'clearError'
+  | 'clockWaitsForPlayback'
+  | 'lastMoveStart'
 >;
 
 // The running clock, moved onto this device's time.
@@ -119,6 +121,11 @@ export class RemoteGameService implements BoardGame {
   // When the game starts, while its first decision still waits out the 3 seconds after the last choice.
   readonly gameStartsAt: Signal<number | null> = this._gameStartsAt.asReadonly();
 
+  // The server clock runs whatever this screen shows, so playback catches up instead.
+  readonly clockWaitsForPlayback: boolean = false;
+  // There is no Pass and Play gate online: playback never restarts from an earlier move.
+  readonly lastMoveStart: Signal<GameState | null> = signal<GameState | null>(null).asReadonly();
+
   // The server's offer, while the socket is up and no move is waiting for its answer.
   readonly legalActions: Signal<Action[]> = computed(() => (this.socket.status() === 'open' && !this._waiting() ? (this._update()?.legalActions ?? []) : []));
 
@@ -159,7 +166,7 @@ export class RemoteGameService implements BoardGame {
       gameId: update.gameId,
       outcome: 'finished',
       result: state.result,
-      seats: state.players.map((p) => ({ seatId: p.seatId, playerId: room.members.find((m) => m.seatId === p.seatId)?.playerId ?? '', name: p.name })),
+      seats: state.players.map((p) => ({ seatId: p.seatId, playerId: room.members.find((m) => m.seatId === p.seatId)?.playerId ?? '', name: p.name, ...(p.botNameId === undefined ? {} : { botNameId: p.botNameId }) })),
       // The final view shows every seat's Generals once the game is over.
       finalSeats: finalSeatViews(state),
     };

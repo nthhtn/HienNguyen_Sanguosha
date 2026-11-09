@@ -15,7 +15,7 @@ import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer, startWindowOpens 
 import { activeSkillActions, answerConditionMet, answeringConversions, conversionActions, conversionCards, conversionsOf, fitsPick, hiddenSlots, playConversionCards, sameAbilityOwner, targetsAllowed } from '../rules/legality';
 import { abilityUseKey, revealBlockedFor, skillsInPlay } from '../skills/generalSkills';
 import { applyGeneralChoice } from '../rules/generalSelection';
-import { ArrangementMadeEvent, CardPlayedEvent, SeatTurnedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, TurnAdvancedEvent } from './events';
+import { ArrangementMadeEvent, CardPlayedEvent, SeatTurnedEvent, ChoiceMadeEvent, EngineEvent, SelectionMadeEvent, PhaseChangedEvent, PhaseSkippedEvent, ResponsePassedEvent, TurnAdvancedEvent } from './events';
 import { queueFront, withQueue } from './queue';
 import { applyLifecycleEffect, isLifecycleEffect } from './toolLifecycle';
 import { applyJudgmentStepEffect, isJudgmentStepEffect } from './judgment';
@@ -592,7 +592,11 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (!pending || pending.id !== action.pendingResponseId) {
         throw new Error(`No matching pending response: ${action.pendingResponseId}`);
       }
-      return { state: queueFront({ ...state, pendingResponse: null }, [pending.context.effect]), events: [] };
+      // Only windows asked whatever the seat holds announce a pass, and only under the rule.
+      const passed: ResponsePassedEvent[] = state.rules?.logPasses && pending.announcePass
+        ? [{ kind: 'ResponsePassedEvent', seatId: action.seatId, pendingResponseId: pending.id, ...(pending.allowedCardIds ? { allowedCardIds: pending.allowedCardIds } : {}) }]
+        : [];
+      return { state: queueFront(logged({ ...state, pendingResponse: null }, passed), [pending.context.effect]), events: passed };
     }
 
     case 'RespondAction': {

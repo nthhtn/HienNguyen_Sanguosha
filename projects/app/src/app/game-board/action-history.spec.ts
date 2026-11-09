@@ -27,6 +27,13 @@ const texts = (log: EngineEvent[]) =>
   actionHistory(log, zones).map((e) => (e.kind === 'turn' ? `— Turn ${e.turnNumber} · ${e.seatName}` : e.text));
 
 describe('actionHistory', () => {
+  it('describes a pass', () => {
+    const log: EngineEvent[] = [{ kind: 'ResponsePassedEvent', seatId: 'seat-1', pendingResponseId: 'r-1', allowedCardIds: ['shan'] }];
+    expect(texts(log)).toEqual(['Seat 1 had no Dodge']);
+    expect(texts([{ ...log[0], allowedCardIds: ['shan', 'sha'] } as EngineEvent])).toEqual(['Seat 1 had no Dodge or Slash']);
+    expect(texts([{ kind: 'ResponsePassedEvent', seatId: 'seat-1', pendingResponseId: 'r-1' }])).toEqual(['Seat 1 passed']);
+  });
+
   it('says who used which card on whom, and what a response answered', () => {
     const log: EngineEvent[] = [
       { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },

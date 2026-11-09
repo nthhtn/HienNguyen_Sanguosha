@@ -165,6 +165,12 @@ export function actionHistory(
         }
         break;
       }
+      case 'ResponsePassedEvent': {
+        const seat = name(event.seatId);
+        const cardNames = (event.allowedCardIds ?? []).map((id) => cardName(id, tr));
+        action(cardNames.length > 0 ? tr('history.passed', { seat, card: cardNames.join(tr('history.or')) }) : tr('history.passedPlain', { seat }));
+        break;
+      }
       case 'CardMovedEvent': {
         if (event.card) knownFaces.set(event.cardInstanceId, event.card);
         if (awaitingMove.delete(event.cardInstanceId)) break;

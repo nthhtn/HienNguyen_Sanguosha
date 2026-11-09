@@ -118,6 +118,13 @@ export const culprit: SkillDefinition = {
         used(owner, 'culprit', (step.damage.target as { seatId: string }).seatId),
       ],
     }),
+    // Barbarians skips him, but a hidden Meng Huo was already a target when it
+    // was played: once he reveals, the damage aimed at him is cancelled.
+    on<DamageStep>('before:DamageEffect', {
+      condition: (state, { damage }, owner) =>
+        damage.cause?.card?.as === 'barbarians' && damage.target.kind === 'seat' && damage.target.seatId === owner.seatId && isLiving(state, owner.seatId),
+      effect: (_state, _step, owner) => [used(owner, 'culprit', owner.seatId)],
+    }),
   ],
 };
 
@@ -215,7 +222,7 @@ export const makeIntenseEdge = (requireTarget = false): SkillDefinition => ({
 export const intenseEdge: SkillDefinition = makeIntenseEdge();
 
 // Brave Spirit (may): at the start of your Start Phase, if damaged (X = missing
-// HP), pick any seat (yourself included), then choose: it draws X then discards
+// HP), pick any other seat, then choose: it draws X then discards
 // 1, or draws 1 then discards X (the picked seat chooses which cards to discard).
 export const braveSpirit: SkillDefinition = {
   id: 'brave-spirit',
@@ -230,7 +237,8 @@ export const braveSpirit: SkillDefinition = {
     if (step.step === 'pick') {
       const x = missingHp(state, owner.seatId);
       if (x < 1 || !isLiving(state, owner.seatId)) return [];
-      const seats = [...state.seats].filter((s) => !s.eliminated).sort((a, b) => a.index - b.index).map((s) => s.id);
+      const seats = otherLivingSeatIds(state, owner.seatId);
+      if (seats.length === 0) return [];
       return [choiceOf(state, owner, { verb: 'pick', options: seatOptions(seats, (id) => [skillStep(owner, 'forced', { target: id, x })]) })];
     }
     if (step.step === 'discarded') return discardMoves(state, picked(step));

@@ -1,16 +1,18 @@
 import { Component } from '@angular/core';
 import { TPipe } from '../../i18n/t.pipe';
+import { DistanceDemo } from './distance-demo';
 import { RichText } from './rich-text';
 
 @Component({
   selector: 'app-rules-distance',
-  imports: [RichText, TPipe],
-  styleUrl: './rules-page.css',
+  imports: [RichText, TPipe, DistanceDemo],
+  styleUrls: ['./rules-page.css', './scene/scene.css'],
   template: `
     <h2>{{ 'nav.rules.distance' | t }}</h2>
     <p class="lead">{{ 'rules.distance.lead' | t }}</p>
     <h3>{{ 'rules.distance.distance' | t }}</h3>
     <p>{{ 'rules.distance.text' | t }}</p>
+    <app-distance-demo />
     <ul>
       <li>{{ 'rules.distance.plus' | t }}</li>
       <li>{{ 'rules.distance.minus' | t }}</li>

@@ -40,6 +40,12 @@ const vi_ = (log: EngineEvent[]) => textsOf(log, tr);
 const en_ = (log: EngineEvent[]) => textsOf(log);
 
 describe('card plays in Vietnamese', () => {
+  it('a pass', () => {
+    const passed: EngineEvent = { kind: 'ResponsePassedEvent', seatId: 'seat-1', pendingResponseId: 'r-1', allowedCardIds: ['shan'] };
+    expect(vi_([passed])).toEqual(['Người chơi 1 không có Dodge']);
+    expect(vi_([{ ...passed, allowedCardIds: undefined }])).toEqual(['Người chơi 1 bỏ qua']);
+  });
+
   it('a play, an answer against it, an equip, an untargeted use', () => {
     expect(vi_([
       { kind: 'CardPlayedEvent', seatId: 'seat-0', card: usedCardOf(sha), targets: [seat('seat-1')] },
@@ -178,9 +184,9 @@ describe('status and table lines in Vietnamese', () => {
     expect(vi_([{ kind: 'HealEvent', target: seat('seat-0'), amount: 1 }])).toEqual(['Người chơi 0 hồi 1 Sinh lực']);
     expect(vi_([{ kind: 'CardsDrawnEvent', seatId: 'seat-0', cardInstanceIds: ['a'] }])).toEqual(['Người chơi 0 rút 1 lá bài']);
     expect(vi_([{ kind: 'CardsDrawnEvent', seatId: 'seat-1', cardInstanceIds: ['a', 'b'] }])).toEqual(['Người chơi 1 rút 2 lá bài']);
-    expect(vi_([{ kind: 'SeatDyingEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 cận kề cái chết']);
+    expect(vi_([{ kind: 'SeatDyingEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 hấp hối']);
     expect(vi_([{ kind: 'SeatSavedEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 đã được cứu']);
-    expect(vi_([{ kind: 'SeatEliminatedEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 bị loại']);
+    expect(vi_([{ kind: 'SeatEliminatedEvent', seatId: 'seat-1' }])).toEqual(['Người chơi 1 trận vong']);
     expect(vi_([{ kind: 'GeneralsChosenEvent', seatId: 'seat-0' }])).toEqual(['Người chơi 0 đã chọn Tướng của mình']);
     expect(vi_([{ kind: 'DiscardPileReshuffledEvent', cardCount: 9 }])).toEqual(['Chồng bài bỏ (9) đã được xáo vào chồng bài rút']);
   });

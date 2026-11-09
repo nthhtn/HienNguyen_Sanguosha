@@ -146,7 +146,7 @@ describe('Wiki pages', () => {
 
   it('links each card type to its Wiki page, General Cards first', async () => {
     const { el } = await open('/wiki/rules/card-types');
-    const hrefs = [...el().querySelectorAll('th > a')].map((a) => a.getAttribute('href'));
+    const hrefs = [...el().querySelectorAll('h3 > a')].map((a) => a.getAttribute('href'));
     expect(hrefs).toEqual(['/wiki/generals', '/wiki/basic', '/wiki/tools', '/wiki/equipment']);
   });
 });

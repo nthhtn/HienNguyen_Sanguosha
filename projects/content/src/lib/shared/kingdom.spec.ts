@@ -22,6 +22,14 @@ function stateWith(seats: Seat[]): GameState {
 describe('Kingdom helpers', () => {
   const state = stateWith([seat('a', 0, 'Wei'), seat('b', 1, 'Wei'), seat('c', 2, 'hidden')]);
 
+  it('two Ambitionists are different groups, and neither is the group of a Kingdom seat of the same printed Force', () => {
+    const ambitionist = (id: string, index: number): Seat => ({ ...seat(id, index, 'Wei'), allegiance: 'ambitionist' });
+    const table = stateWith([seat('a', 0, 'Wei'), ambitionist('b', 1), ambitionist('c', 2)]);
+    expect(exposedGroup(table, 'b')).not.toBe(exposedGroup(table, 'c'));
+    expect(exposedGroup(table, 'b')).not.toBe(exposedGroup(table, 'a'));
+    expect(sameKingdomSeatIds(table, 'b')).toEqual(['b']);
+  });
+
   it('lists living seats sharing the Kingdom, starting with the given seat', () => {
     expect(sameKingdomSeatIds(state, 'a')).toEqual(['a', 'b']);
     expect(sameKingdomSeatIds(state, 'b')).toEqual(['b', 'a']);

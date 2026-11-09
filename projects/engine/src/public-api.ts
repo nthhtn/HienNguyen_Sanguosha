@@ -33,3 +33,4 @@ export * from './lib/rules/decisionClock';
 export * from './lib/rules/defaultActions';
 export * from './lib/rules/offered';
 export * from './lib/rules/dying';
+export * from './lib/rules/playbackTiming';

@@ -264,10 +264,10 @@ interface GameModeDefinition {
 ```
 
 `guozhanMode` ([guozhan.ts](../../projects/content/src/lib/modes/guozhan.ts))
-is the one implementation. It deals five Generals to each seat from the pool
-of the chosen deck (the Identity Generals, or the Kingdom Wars ones, never mixed),
-builds and shuffles that deck's cards, and deals four cards. A table seats at
-most ten, and fewer when the deck's pool is small (`guozhanMaxSeats`). Its `triggers` carry the mode's
+is the one implementation. It deals Generals to each seat from the pool
+of the chosen deck (the Identity Generals, or the Kingdom Wars ones, never mixed): seven to each seat at a table of 2 to 8 and five at 9 to 12 for Kingdom Wars,
+always five for Identity (`generalsPerSeat`). It builds and shuffles that deck's cards, and deals four cards. A table seats at
+most twelve (ten for Identity), and fewer when the deck's pool is small (`guozhanMaxSeats`). Its `triggers` carry the mode's
 rules:
 
 - the Draw Phase draw and the Judgment Phase;
@@ -281,7 +281,7 @@ Optional rules chosen at game creation are stored in `state.rules`
 
 | Rule | Meaning |
 |---|---|
-| `firstRevealDraw` | with five or more seats, the first seat to reveal a General draws 2 cards |
+| `firstRevealDraw` | with five or more seats, the first seat to reveal a General draws 2 cards. Not a player's choice: the app and the server set it for any game with at least `FIRST_REVEAL_MIN_SEATS` (5) seats. |
 | `judgmentNotice` | every judgment waits for the popup to be closed (or 3 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
 | `deck` | the card distribution the draw pile is dealt from (a deck id). Absent means the default deck, Kingdom Wars (`DEFAULT_DECK_ID`). |
 

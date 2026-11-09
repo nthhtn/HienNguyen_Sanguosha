@@ -311,7 +311,7 @@ class MemoryRooms implements RoomRepository {
     this.store.rooms.set(roomId, { ...room, ...changes, ...(changes.rules ? { rules: { ...changes.rules } } : {}), updatedAt: now });
   }
 
-  async addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; now: Date }): Promise<RoomPlayerRecord> {
+  async addPlayer(input: { roomId: string; userId: string | null; kind: RoomPlayerRecord['kind']; displayName: string; botNameId?: string; now: Date }): Promise<RoomPlayerRecord> {
     if (!this.store.rooms.has(input.roomId)) throw new Error(`No room ${input.roomId}`);
     const current = [...this.store.roomPlayers.values()].filter((p) => p.roomId === input.roomId && p.leftAt === null);
     const name = input.displayName.toLowerCase();
@@ -323,6 +323,7 @@ class MemoryRooms implements RoomRepository {
       userId: input.userId,
       kind: input.kind,
       displayName: input.displayName,
+      botNameId: input.botNameId ?? null,
       joinedAt: input.now,
       leftAt: null,
     };

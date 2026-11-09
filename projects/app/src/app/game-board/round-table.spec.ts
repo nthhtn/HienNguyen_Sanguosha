@@ -122,6 +122,9 @@ describe('RoundTable', () => {
   });
 
   describe('a sequence longer than the centre has room for', () => {
+    // The large layout draws the log at full size; narrower windows scale it down and fit more steps.
+    beforeEach(() => Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1366 }));
+    afterEach(() => Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 }));
     const sha = { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
     const long = (losses: number) => {
       const log: EngineEvent[] = [
@@ -183,7 +186,7 @@ describe('RoundTable', () => {
     };
     const players = [{ id: 'p0', seatId: 'seat-0', kind: 'human' as const, name: 'Hing' }];
     const el = render(state({ pendingResponse: pending, players }));
-    expect(el.querySelector('.waiting')!.textContent!.trim()).toBe('Waiting on Hing: Wuxie?');
+    expect(el.querySelector('.waiting')!.textContent!.trim()).toBe('Waiting on Hing');
   });
 
   it('shows the turned-up cards in the centre, and marks the seat choosing one', () => {

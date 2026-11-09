@@ -75,7 +75,7 @@ describe('Diao Chan — Sow Discord', () => {
     s = h.choose(s, 'seat-b');
     expect(s.pendingChoice?.options.map((o) => o.id)).toEqual(['seat-c', 'seat-d']);
     s = h.choose(s, 'seat-c');
-    expect(s.log.find((e) => e.kind === 'CardPlayedEvent')).toEqual({ kind: 'CardPlayedEvent', seatId: 'seat-c', card: { as: 'duel', colour: 'none', physical: [] }, targets: [seat('seat-b')] });
+    expect(s.log.find((e) => e.kind === 'CardPlayedEvent')).toEqual({ kind: 'CardPlayedEvent', seatId: 'seat-c', card: { as: 'duel', colour: 'none', physical: [], noWuxie: true }, targets: [seat('seat-b')] });
     expect(s.pendingResponse?.respondingSeatId).toBe('seat-b');
     const hit = h.pass(s);
     expect(hp(hit, 'seat-b')).toBe(3);

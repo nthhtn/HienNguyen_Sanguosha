@@ -108,6 +108,30 @@ describe('the dying round', () => {
     expect(s.pendingResponse).toBeNull();
   });
 
+  it('any seat may rescue with a Peach, whatever its Force', () => {
+    const base = state(0, { 'seat-d': [peach('pd')] });
+    const mixed = { ...base, seats: base.seats.map((x) => ({ ...x, kingdom: x.id === 'seat-c' ? ('Wei' as const) : x.id === 'seat-d' ? ('Qun' as const) : ('Wu' as const) })) };
+    let s = dying(mixed);
+    s = pass(s); // seat-b holds no Peach: skipped, so seat-c (the dying seat) is asked first
+    expect(asked(s)).toBe('seat-d');
+    s = givePeach(s, 'pd');
+    expect(hpOf(s)).toBe(1);
+    expect(s.log.at(-1)).toEqual({ kind: 'SeatSavedEvent', seatId: 'seat-c' });
+  });
+
+  it('two Peaches from two seats, asked in turn order from the turn owner, lift -1 HP to 1', () => {
+    const order = ['seat-a', 'seat-b', 'seat-c', 'seat-d'];
+    let s = applyEffect(state(-1, { 'seat-a': [peach('pa')], 'seat-b': [peach('pb')] }), { kind: 'DyingEffect', seatId: 'seat-c', order, rescueCardIds: { any: ['peach'], self: ['wine'] }, entering: true }).state;
+    expect(asked(s)).toBe('seat-a');
+    s = givePeach(s, 'pa');
+    expect(hpOf(s)).toBe(0);
+    expect(asked(s)).toBe('seat-b'); // seat-a is asked again but holds no more Peaches: on to the next seat that does
+    s = givePeach(s, 'pb');
+    expect(hpOf(s)).toBe(1);
+    expect(s.pendingResponse).toBeNull();
+    expect(s.log.at(-1)).toEqual({ kind: 'SeatSavedEvent', seatId: 'seat-c' });
+  });
+
   it('lets the dying seat save itself', () => {
     const s = givePeach(dying(state(0, { 'seat-c': [peach('pc')] })), 'pc');
     expect(hpOf(s)).toBe(1);

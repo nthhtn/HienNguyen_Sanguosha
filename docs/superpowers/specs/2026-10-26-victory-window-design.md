@@ -74,9 +74,23 @@ With `prefers-reduced-motion`, show the end state at once. The window is not blo
 
 ### Layout
 
-- A centred row that wraps. Each column is between 150 and 190 px wide, so a four-column result is not stretched across the screen.
-- The window's width is a size container. At 700 px or narrower: two columns per row, the winning column first, smaller headline.
-- The window is no longer the 420 px card; it is up to about 980 px wide.
+*(Revised 2026-11-03 after reviewing the mock: the first layout left too much empty space at the sides and its text was too small.)*
+
+- **Two rows of equal-width cards.** With three or more columns, the columns split over two rows in the fixed order. The top row holds `ceil(n / 2)` and the bottom row `floor(n / 2)`; the shorter bottom row is centred under the top one. One or two columns stay on a single row.
+
+  | Columns | Top | Bottom |
+  |---|---|---|
+  | 3 | 2 | 1 |
+  | 4 | 2 | 2 |
+  | 5 | 3 | 2 |
+  | 6 | 3 | 3 |
+
+  There is no 7-column case: six groups is the maximum.
+- **Every card has the same width**, whatever row it is on. A card is the equal share of the row, capped so cards stay compact on a large screen. The cap is the card's outer width, padding and border included: 354 px when the top row has at most two cards (3 and 4 columns, and the one-row cases), and 320 px when it has three (5 and 6 columns), so that three cards fit on the top row of a 1080 px window.
+- Cards in the same row have the same height. Cards use border-box sizing (padding inside the width), otherwise three cards no longer fit and the 5- and 6-column cases wrap to two per row.
+- The window is up to about 1080 px wide (it was 980 px), with 28 px side padding.
+- The window's width is a size container. At 700 px or narrower: two cards per row, the winning column first, smaller headline (32 px). At 460 px or narrower: one card per row. The two-row rule above applies only above 700 px.
+- **Type sizes** (the first layout was too small): headline 44 px, sub-headline 18 px, column title 22 px, player count 15 px, player name 18 px, General pair 15 px, Survived or Fallen 14 px, "You" and "Winners" tags 12 to 13 px, avatar 44 px, New Game button 18 px. Muted text uses a slightly darker tone than before so it stays readable at these sizes.
 
 ### Where it is used
 
@@ -97,6 +111,7 @@ With `prefers-reduced-motion`, show the end state at once. The window is not blo
 - No column for a group that did not take part.
 - Fallen teammates and the engine-list question: the user approved the mock showing fallen teammates in their column.
 - The online result gets the same window in this change.
+- Layout (2026-11-03): two rows of equal-width cards, the top row one card longer for an odd count; a one- or two-column result stays on one row; the card widths and type sizes above. Mock scenarios are grouped by how many allegiances took part (3, 4, 5, 6), not by seat count.
 
 ## Left to the builder
 
@@ -109,4 +124,4 @@ Names and files; whether the avatar uses General art; the exact easing; the Viet
 - All Generals and allegiances are shown once the game is over, locally and online.
 - "Losing Ambitionists" is plural from two seats.
 - A lone Kingdom survivor lights its own Kingdom's column.
-- The sub-headline wording, the column width bounds and the reveal timing.
+- The sub-headline wording, the reveal timing. (The card width caps of 354 px and 320 px, and the type sizes, were tuned with the user against the mock.)

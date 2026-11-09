@@ -42,6 +42,13 @@ describe('Meng Huo — Culprit', () => {
     expect(damages(s).every((d) => d.source?.kind === 'seat' && d.source.seatId === 'seat-b')).toBe(true);
   });
 
+  it('a hidden Meng Huo who reveals is not hurt by the Barbarians that already targeted him', () => {
+    let s = barbarians({ generals: at('seat-a', 'meng-huo', 'filler-jiang-wei', false) });
+    while (s.pendingResponse || s.pendingChoice) s = s.pendingChoice ? h.choose(s, 'use') : h.pass(s);
+    expect(hp(s, 'seat-a')).toBe(4);
+    expect(damages(s).some((d) => d.target.kind === 'seat' && d.target.seatId === 'seat-a')).toBe(false);
+  });
+
   it('his own Barbarians keeps him as the source', () => {
     const own = h.play(table({ 'seat-a:hand': [card('bb', 'barbarians', 'spade', 7)] }, { generals: at('seat-a', 'meng-huo') }), 'bb');
     const { state } = passAll(own);

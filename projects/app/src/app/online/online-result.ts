@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import type { LastGame } from 'protocol';
 import { VictoryBoard } from '../game-board/victory-board';
+import { playerName } from '../labels';
 import { I18n } from '../i18n/i18n.service';
 import type { MessageKey } from '../i18n/messages';
 import { TPipe } from '../i18n/t.pipe';
@@ -20,9 +21,9 @@ import { TPipe } from '../i18n/t.pipe';
     .result mat-card-header { justify-content: center; }
     .result mat-card-content { text-align: center; }
     /* A finished game's card is as wide as the victory board (its max-width,
-       980px), so on a desktop the board is wider than its 700px narrow
-       breakpoint and shows its columns side by side. */
-    .online-card.result.finished { width: min(100%, 980px); }
+       1080px) plus the card's 16px side padding, so on a desktop the board is wider than its 700px
+       narrow breakpoint and fits three cards on its top row. */
+    .online-card.result.finished { width: min(100%, 1112px); }
     .result.finished mat-card-content { padding-top: 16px; }
   `,
   template: `
@@ -74,5 +75,8 @@ export class OnlineResult {
     return you === null ? null : (this.ending().seats.find((s) => s.playerId === you)?.seatId ?? null);
   });
 
-  protected readonly nameOf = (seatId: string): string => this.ending().seats.find((s) => s.seatId === seatId)?.name ?? seatId;
+  protected readonly nameOf = (seatId: string): string => {
+    const seat = this.ending().seats.find((s) => s.seatId === seatId);
+    return seat ? playerName(seat, this.i18n.translator) : seatId;
+  };
 }

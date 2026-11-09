@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { Action, DECISION_SECONDS, GameState, JUDGMENT_LEAD_IN_MS, cardsOverHandLimit } from 'engine';
 import { DecisionTimer } from './decision-timer.service';
 import { GameService } from './game.service';
+import { PlaybackGate } from './playback-gate.service';
 import { cardDefinitionId } from './labels';
 import { askToChange, settleJudgment } from './settled-judgment.testing';
 
@@ -62,6 +63,28 @@ describe('DecisionTimer', () => {
     beforeEach(() => {
       board = boardLifetime();
       timer.attach(board.ref);
+    });
+
+    it('does not start the decision clock while playback is busy', () => {
+      const gate = TestBed.inject(PlaybackGate);
+      gate.idle.set(false);
+      toPlayPhase();
+      advance(5);
+      expect(timer.secondsLeft()).toBeNull();
+      gate.idle.set(true);
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
+    });
+
+    it('stays off once the game service is stopped (the dev lab and scenarios)', () => {
+      toPlayPhase();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
+      game.stop();
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBeNull();
+      const owner = game.state()!.turn.ownerSeatId;
+      advance(DECISION_SECONDS.play + 5);
+      expect(game.state()!.turn.ownerSeatId).toBe(owner);
     });
 
     it('gives the Play phase 180 seconds', () => {
@@ -157,7 +180,7 @@ describe('DecisionTimer', () => {
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.notice - 1);
     });
 
-    it("gives a changer's decision 15 seconds after the card has been shown, and declines when they run out", () => {
+    it("gives a changer's decision 20 seconds after the card has been shown, and declines when they run out", () => {
       game.startGame(2, 1, 'pass-and-play', [], { judgmentNotice: true });
       askToChange(game, 'seat-0');
       game.reveal('seat-0');

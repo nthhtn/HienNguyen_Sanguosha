@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
-import { abilityName, AMBITIONIST_ICON_URL, equipSlotOf, generalDisplayData, hpIconUrls } from 'content';
+import { abilityName, AMBITIONIST_ICON_URL, CHAIN_LEFT_URL, CHAIN_RIGHT_URL, equipSlotOf, generalDisplayData, hpIconUrls, kingdomBannerUrl } from 'content';
 import { cardIdDisplayName, seatForce, seatKingdomLabel } from '../labels';
 import { SeatAvatar } from './seat-avatar';
 import { AvatarSkill } from './avatar-skills';
@@ -11,6 +11,10 @@ import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
+import { TMsgPipe } from '../i18n/msg';
+import type { SeatCue } from './playback/seat-cues';
+import { ShownDamage } from './damage-effects';
+import { SpriteEffect } from './sprite-effect';
 
 const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   weapon: { label: 'slot.weapon', icon: 'gavel' },
@@ -22,7 +26,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
 // One seat at the round table, compact enough to sit on the table's rim.
 @Component({
   selector: 'app-seat-tile',
-  imports: [SeatAvatar, PlayingCard, MatIconModule, TPipe],
+  imports: [SeatAvatar, PlayingCard, SpriteEffect, MatIconModule, TPipe, TMsgPipe],
   template: `
     <div
       class="tile"
@@ -30,13 +34,26 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
       [class.responding]="isResponding()"
       [class.eliminated]="seat().eliminated"
       [class.viewer]="isViewer()"
+      [class.dying]="showDying()"
+      [class.hit]="cue()?.impact === 'hit'"
+      [class.heal]="cue()?.impact === 'heal'"
+      [class.dimmed]="dimmed()"
+      [class.has-banner]="bannerUrl()"
       [attr.data-force]="force()"
     >
+      @if (bannerUrl(); as banner) {
+        <img class="kingdom-banner" [src]="banner" alt="" />
+      }
       @if (seat().allegiance === 'ambitionist') {
         <img class="ambitionist-icon" [src]="ambitionistIcon" [alt]="'label.kingdom.Ambitionist' | t" />
       }
       <div class="sections">
       <section class="panel general" [attr.aria-label]="'seat.generalAria' | t">
+        <!-- Chained (Chains): a chain hangs from each top corner of the holder, with a text badge below. -->
+        @if (seat().chained) {
+          <img class="chain chain-left" [src]="chainLeft" alt="" aria-hidden="true" />
+          <img class="chain chain-right" [src]="chainRight" alt="" aria-hidden="true" />
+        }
         <div class="header">
           <strong>{{ name() }}</strong>
           @if (isBot()) {
@@ -46,7 +63,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
             <span class="you">{{ 'seat.you' | t }}</span>
           }
         </div>
-        <div class="generals" [class.face-down]="seat().faceDown">
+        <div class="generals" [class.face-down]="seat().faceDown" [class.flip]="cue()?.reveal">
           @if (seat().generals; as generals) {
             <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
           } @else {
@@ -54,6 +71,10 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           }
           @if (seat().faceDown) {
             <span class="face-down-badge">{{ 'seat.faceDown' | t }}</span>
+          }
+          <!-- The picture of the last hit, over the Generals, fading out over a few seconds whatever playback does next. -->
+          @for (fx of shownDamage(); track fx.id) {
+            <app-sprite-effect class="damage-fx" [image]="fx.image" />
           }
         </div>
         @if (pile().length) {
@@ -70,12 +91,12 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
             }
           </div>
         }
+        @if (seat().chained) {
+          <!-- Fire or thunder damage to this seat passes along the chain. -->
+          <span class="chain-badge" [attr.title]="'seat.chainedTitle' | t">{{ 'seat.chained' | t }}</span>
+        }
         @if (formName(); as form) {
           <span class="form-badge">{{ 'seat.form' | t: { form: form } }}</span>
-        }
-        @if (seat().chained) {
-          <!-- Chained (Chains): fire or thunder damage to it passes along the chain. -->
-          <span class="chain-badge" [attr.title]="'seat.chainedTitle' | t">{{ 'seat.chained' | t }}</span>
         }
         @if (seat().silenced) {
           <span class="silenced-badge">{{ 'seat.noSkills' | t }}</span>
@@ -140,10 +161,19 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           </div>
         </section>
       </div>
+      <!-- What the seat just did or took, while playback shows it. -->
+      @if (cue(); as c) {
+        @if (c.floatText) {
+          <div class="float" [class.up]="c.impact === 'heal'" aria-hidden="true">{{ c.floatText }}</div>
+        }
+        @if (c.callout; as callout) {
+          <div class="callout {{ callout.tone }}" role="status">{{ callout.text | tm }}</div>
+        }
+      }
       <!-- Status lines in the seat's force colour. -->
       @if (seat().eliminated) {
         <div class="status force-status" [attr.data-force]="force()">{{ 'seat.eliminated' | t }}</div>
-      } @else if (dying() ?? seat().combinedHp <= 0) {
+      } @else if (showDying()) {
         <div class="status force-status dying" [attr.data-force]="force()">{{ 'seat.dying' | t }}</div>
       } @else if (isResponding()) {
         <div class="status force-status" [attr.data-force]="force()">{{ 'seat.responding' | t }}</div>
@@ -173,9 +203,53 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .tile.turn-owner { border-width: 4px; padding: 6px 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--force) 40%, transparent), 0 2px 6px rgb(0 0 0 / 25%); }
     .tile.responding { box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgb(230 81 0 / 70%); }
     /* Faded, but the status line keeps its force colour. */
-    .tile.eliminated > :not(.status) { opacity: 0.45; filter: grayscale(1); }
+    .tile.eliminated > :not(.status):not(.callout):not(.float) { opacity: 0.45; filter: grayscale(1); }
+    /* The Eliminated line is stamped over the greyed tile. */
+    .tile.eliminated .status { position: absolute; left: 50%; top: 50%; margin: 0; padding: 0 12px; border: 3px solid currentColor; border-radius: 8px; background: rgb(255 255 255 / 88%); transform: translate(-50%, -50%) rotate(-12deg); pointer-events: none; z-index: 4; font-size: 1.3em; letter-spacing: 0.06em; text-transform: uppercase; animation: stamp 0.35s ease-out; }
+    /* A seat outside the current resolution steps back. */
+    .tile { transition: opacity 0.25s; }
+    .tile.dimmed { opacity: 0.4; }
+    /* Centred on the Generals; appears at once, then fades out, and the board removes it when the fade is done. */
+    .damage-fx { position: absolute; left: 50%; top: 50%; max-width: 100%; max-height: 100%; transform: translate(-50%, -50%); pointer-events: none; z-index: 5; animation: damage-fade 3s ease-in forwards; }
+    @keyframes damage-fade { from { opacity: 1; } to { opacity: 0; } }
+    .tile.dying { animation: dying 1s infinite; }
+    .tile.hit { animation: shake 0.45s; }
+    .tile.hit::after, .tile.heal::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; animation: flash 0.6s forwards; }
+    .tile.hit::after { background: rgb(229 57 53 / 55%); }
+    .tile.heal { box-shadow: 0 0 14px 4px rgb(76 175 80 / 70%); }
+    .tile.heal::after { background: rgb(76 175 80 / 45%); }
+    .tile.hit .hp-icon:last-child { animation: pop 0.5s; }
+    .tile.heal .hp-icon:last-child { animation: pop 0.5s; }
+    .generals.flip { animation: flip 0.7s; }
+    .float { position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%); z-index: 6; pointer-events: none; font-weight: 700; font-size: 1.8em; color: #ff6b5e; text-shadow: 0 2px 4px rgb(0 0 0 / 60%); animation: float 0.9s ease-out forwards; }
+    .float.up { color: #7fdc7f; }
+    /* The viewer's tile sits in a clipped box (the board's .your-seat), so its cues stay inside the tile. */
+    .tile.viewer .callout { bottom: auto; top: 4px; }
+    .tile.viewer .float { top: 45%; animation-name: float-in; }
+    @keyframes float-in { from { transform: translate(-50%, -50%); opacity: 1; } to { transform: translate(-50%, -120%); opacity: 0; } }
+    .callout { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); z-index: 7; padding: 2px 10px; border-radius: 10px; white-space: nowrap; font-weight: 700; background: #fff; color: #3b2f2a; box-shadow: 0 2px 6px rgb(0 0 0 / 35%); animation: bubble 0.25s ease-out; }
+    .callout.red { background: #c62828; color: #fff; }
+    .callout.pass { background: #e6e1e5; color: #555; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+    @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes dying { 0%, 100% { box-shadow: 0 0 0 2px #e53935; } 50% { box-shadow: 0 0 0 2px #e53935, 0 0 16px 6px #e53935; } }
+    @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(2); } 100% { transform: scale(1); } }
+    @keyframes flip { 0% { transform: rotateY(0); } 50% { transform: rotateY(90deg); } 100% { transform: rotateY(0); } }
+    @keyframes float { from { transform: translate(-50%, -50%); opacity: 1; } to { transform: translate(-50%, -190%); opacity: 0; } }
+    @keyframes bubble { from { transform: translateX(-50%) scale(0.6); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
+    @keyframes stamp { from { transform: translate(-50%, -50%) rotate(-12deg) scale(2); opacity: 0; } to { transform: translate(-50%, -50%) rotate(-12deg) scale(1); opacity: 1; } }
+    /* Reduced motion: the end state, no movement. */
+    @media (prefers-reduced-motion: reduce) {
+      .tile, .tile.hit, .tile.dying, .tile.eliminated .status, .generals.flip, .tile.hit .hp-icon:last-child, .tile.heal .hp-icon:last-child, .float, .tile.viewer .float, .callout { animation: none; transition: none; }
+      .tile.hit::after, .tile.heal::after { display: none; }
+      .tile.dying { box-shadow: 0 0 0 3px #e53935; }
+      .float { opacity: 1; }
+    }
     /* Marks an Ambitionist, over the tile's top left corner (inside it: the seat panels clip their edges). */
     .ambitionist-icon { position: absolute; top: 3px; left: 3px; height: 44px; width: auto; z-index: 1; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%)); }
+    /* The kingdom's banner, inside the tile along its left edge; the sections make room for it. */
+    .kingdom-banner { position: absolute; top: 6px; left: 6px; width: 18px; height: 90px; z-index: 1; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 35%)); }
+    .tile.has-banner .sections { margin-left: 22px; }
     .bot-icon { font-size: 18px; width: 18px; height: 18px; vertical-align: middle; margin-left: 3px; color: #666; }
     .you { margin-left: 4px; color: var(--mat-sys-primary); }
     .generals { display: flex; gap: 6px; justify-content: center; margin: 4px 0; align-items: center; }
@@ -200,6 +274,11 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
     .generals { position: relative; }
     .generals.face-down app-seat-avatar { filter: grayscale(0.6) brightness(0.8); }
     .form-badge, .silenced-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
+    /* The two chain pieces hang from the holder's top corners, over its border; the holder is the General panel. */
+    .panel.general { position: relative; }
+    .chain { position: absolute; top: -6px; width: 44%; max-width: 120px; height: auto; z-index: 2; pointer-events: none; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%)); }
+    .chain-left { left: -6px; }
+    .chain-right { right: -6px; }
     .chain-badge { align-self: center; padding: 0 6px; border-radius: 6px; font-size: 11px; background: #5a4a3a; color: #fbf7ec; border: 1px dashed #d5c8ad; }
     .chain-badge::before { content: '⛓ '; }
     .face-down-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); padding: 0 6px; border-radius: 6px; font-size: 11px; background: #3b2f2a; color: #fbf7ec; }
@@ -240,11 +319,32 @@ export class SeatTile {
   readonly dying = input<boolean | null>(null);
   // What each Judgment slot card counts as, when placed as another card.
   readonly judgmentCountsAs = input<Record<string, string>>({});
+  // What playback shows on the seat now (a hit, a bubble, a flip), and whether it steps back while
+  // a resolution is in progress that it is not part of.
+  readonly cue = input<SeatCue | null>(null);
+  readonly dimmed = input(false);
+  // The last hit's picture, shown until the board clears it.
+  readonly damageEffect = input<ShownDamage | null>(null);
+  protected readonly shownDamage = computed(() => {
+    const fx = this.damageEffect();
+    return fx ? [fx] : [];
+  });
+  protected readonly showDying = computed(() => !this.seat().eliminated && (this.dying() ?? this.seat().combinedHp <= 0));
 
   // Wei, Shu, Wu or Qun once known to the viewer; 'none' while hidden (or for a
   // seat that belongs to no force).
   protected readonly force = computed(() => seatForce(this.seat()));
   protected readonly ambitionistIcon = AMBITIONIST_ICON_URL;
+  protected readonly chainLeft = CHAIN_LEFT_URL;
+  protected readonly chainRight = CHAIN_RIGHT_URL;
+  // An Ambitionist keeps its icon instead; a hidden kingdom shows nothing. The viewer's own seat is not masked, so it
+  // knows its Kingdom before showing it: the banner waits until one of its Generals is revealed.
+  protected readonly bannerUrl = computed(() => {
+    const seat = this.seat();
+    if (seat.allegiance === 'ambitionist') return null;
+    if (this.isViewer() && !(seat.generals?.main.revealed || seat.generals?.deputy.revealed)) return null;
+    return kingdomBannerUrl(seat.kingdom);
+  });
   protected readonly hpIcons = computed(() => hpIconUrls(this.seat().combinedHp));
 
 

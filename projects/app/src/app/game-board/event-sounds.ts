@@ -1,15 +1,20 @@
 import { ContentRegistry, EngineEvent, GameState } from 'engine';
 import { equipSlotOf, generalDeathVoiceUrl, isRecast, seatGender } from 'content';
+import { HARD_HIT } from './damage-effects';
 import { SoundEffect, Voice, VoiceGender } from '../music.service';
 
 // Which sound effects a stretch of the public log calls for, each at most once
 // (several events in one update make one sound, not a pile-up). The log is
-// public, so this works for any viewer. Damage and plain HP loss both injure;
-// a card entering an equip zone makes the sound of its slot.
+// public, so this works for any viewer. Damage and plain HP loss both injure (fire and thunder damage have their own sound, else 2 or more damage in one hit sounds harder);
+// a seat turning chained sounds the chain (turning unchained is silent); a card entering an equip zone makes the sound of its slot.
 export function soundsFor(events: readonly EngineEvent[]): SoundEffect[] {
   const sounds = new Set<SoundEffect>();
   for (const event of events) {
-    if (event.kind === 'DamageDealtEvent' || event.kind === 'HpLostEvent') sounds.add('injure');
+    // A hit passed along a chain sounded with the hit that started the wave.
+    if (event.kind === 'DamageDealtEvent') {
+      if (!event.damage.chained) sounds.add(event.damage.nature && event.damage.nature !== 'normal' ? 'injure-element' : event.damage.amount >= HARD_HIT ? 'injure-hard' : 'injure');
+    } else if (event.kind === 'HpLostEvent') sounds.add('injure');
+    else if (event.kind === 'ChainToggledEvent' && event.chained) sounds.add('chained');
     else if (event.kind === 'HealEvent') sounds.add('heal');
     else if (event.kind === 'CardMovedEvent' && event.toZoneId.endsWith(':equip') && event.card) {
       const slot = equipSlotOf(event.card.definitionId);

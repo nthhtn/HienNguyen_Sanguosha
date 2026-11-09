@@ -6,6 +6,8 @@ export interface RoomMember {
   userId: string | null;
   kind: MemberKind;
   name: string;
+  // A bot's name id; null for a person and for a bot added before bot names.
+  botNameId: string | null;
   isRegistered: boolean;
   joinedAt: Date;
   // Bots are always connected.
@@ -22,6 +24,7 @@ export function memberFrom(player: RoomPlayerRecord, isRegistered: boolean, now:
     userId: player.userId,
     kind: player.kind,
     name: player.displayName,
+    botNameId: player.botNameId,
     isRegistered,
     joinedAt: player.joinedAt,
     connected: bot,
@@ -76,12 +79,9 @@ export class Room {
     return this.members.some((m) => sameName(m.name, name));
   }
 
-  // The first free name in "Bot 1", "Bot 2", …
-  nextBotName(): string {
-    for (let n = 1; ; n += 1) {
-      const name = `Bot ${n}`;
-      if (!this.nameTaken(name)) return name;
-    }
+  // The name ids the room's bots already have, so a new bot draws another.
+  botNameIds(): string[] {
+    return this.members.flatMap((m) => (m.botNameId === null ? [] : [m.botNameId]));
   }
 
   // Who the host role passes to: a registered human other than the host,

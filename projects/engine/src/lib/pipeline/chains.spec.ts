@@ -202,6 +202,12 @@ describe('chain propagation', () => {
     expect(hits(s)).toEqual(['a:3', 'b:1']);
   });
 
+  it('every seat the wave touches ends unchained, and a seat it does not touch keeps its chain', () => {
+    const s = run(table({ a: { chained: true }, b: { chained: true }, c: { chained: true }, d: {} }, [damage('a', 1, 'fire')]));
+    expect(s.seats.filter((x) => ['a', 'b', 'c'].includes(x.id)).map((x) => !!x.chained)).toEqual([false, false, false]);
+    expect(s.seats.find((x) => x.id === 'd')!.chained).toBeFalsy();
+  });
+
   it('propagated damage does not propagate again', () => {
     const s = run(table({ a: { chained: true }, b: { chained: true }, c: { chained: true } }, [damage('a', 1, 'thunder')]));
     expect(hits(s)).toEqual(['a:1', 'b:1', 'c:1']);

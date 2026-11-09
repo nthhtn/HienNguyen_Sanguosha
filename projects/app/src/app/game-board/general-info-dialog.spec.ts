@@ -31,7 +31,7 @@ describe('GeneralInfoDialog', () => {
     const el = render('guan-yu');
     expect(el.querySelector('h2')!.textContent).toContain('Guan Yu');
     expect(el.textContent).toContain('Bearded Gentleman');
-    expect((el.querySelector('app-card-art img') as HTMLImageElement).getAttribute('src')).toBe('/card-art/generals/skins/shu/guanyu.png');
+    expect((el.querySelector('app-card-art img') as HTMLImageElement).getAttribute('src')).toBe('/images/generals/skins/shu/guanyu.webp');
     const skills = [...el.querySelectorAll('.skills li')].map((li) => li.textContent!.trim());
     expect(skills).toHaveLength(1);
     expect(skills[0]).toContain('Fighting Saint');

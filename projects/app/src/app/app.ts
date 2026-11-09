@@ -1,4 +1,6 @@
-import { Component, computed, inject } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { Component, HostListener, computed, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -6,17 +8,21 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { DEV_PREVIEW } from './dev/dev-routes';
 import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-background.service';
 import { AuthService } from './auth/auth.service';
+import { FEATURE_FLAGS } from './feature-flags';
 import { LanguageSwitcher } from './i18n/language-switcher';
+import { Layout } from './layout.service';
 import { MusicService, SoundEffects } from './music.service';
+import { PLAYBACK_SPEEDS, PlaybackSpeed } from './playback-speed.service';
 import { I18n } from './i18n/i18n.service';
 import type { MessageKey } from './i18n/messages';
 import type { DeckId } from 'content';
 import { TPipe } from './i18n/t.pipe';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule, LanguageSwitcher, TPipe],
+  imports: [NgTemplateOutlet, CdkTrapFocus, RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule, LanguageSwitcher, TPipe],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
@@ -54,11 +60,16 @@ export class App {
   ];
   protected readonly rulesPages: { path: string; label: MessageKey }[] = [
     { path: '/wiki/rules/overview', label: 'nav.rules.overview' },
-    { path: '/wiki/rules/card-types', label: 'nav.rules.cardTypes' },
     { path: '/wiki/rules/setup', label: 'nav.rules.setup' },
+    { path: '/wiki/rules/allegiance', label: 'nav.rules.allegiance' },
     { path: '/wiki/rules/turn', label: 'nav.rules.turn' },
+    { path: '/wiki/rules/card-types', label: 'nav.rules.cardTypes' },
     { path: '/wiki/rules/distance', label: 'nav.rules.distance' },
+    { path: '/wiki/rules/response', label: 'nav.rules.response' },
+    { path: '/wiki/rules/damage', label: 'nav.rules.damage' },
     { path: '/wiki/rules/judgment', label: 'nav.rules.judgment' },
+    { path: '/wiki/rules/chains', label: 'nav.rules.chains' },
+    { path: '/wiki/rules/glossary', label: 'nav.rules.glossary' },
   ];
 
   protected readonly backgrounds = inject(BattlefieldBackgrounds);
@@ -76,6 +87,8 @@ export class App {
     { initialValue: this.router.url }
   );
   protected readonly playActive = computed(() => /^\/(setup|game)(\/|$|\?)/.test(this.url()));
+  protected readonly devPreview = DEV_PREVIEW;
+  protected readonly previewActive = computed(() => /^\/preview(\/|$|\?)/.test(this.url()));
   protected readonly onlineActive = computed(() => /^\/(rooms|my-games)(\/|$|\?)/.test(this.url()));
 
   protected deckActive(route: string): boolean {
@@ -86,11 +99,26 @@ export class App {
   protected readonly music = inject(MusicService);
   protected readonly effects = inject(SoundEffects);
 
+  protected readonly flags = inject(FEATURE_FLAGS);
+  protected readonly playbackSpeed = inject(PlaybackSpeed);
+  protected readonly speedOptions = PLAYBACK_SPEEDS.map((id) => ({ id, label: `speed.${id}` as MessageKey }));
+
   protected readonly auth = inject(AuthService);
+  protected readonly layout = inject(Layout);
 
   constructor() {
+    // Choosing a page from the drawer, or any other way of navigating, leaves the drawer closed.
+    effect(() => {
+      this.url();
+      untracked(() => this.layout.closeNav());
+    });
     this.music.start();
     void this.auth.load();
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    this.layout.closeNav();
   }
 
   protected async signOut(): Promise<void> {

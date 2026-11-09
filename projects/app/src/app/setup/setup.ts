@@ -1,3 +1,5 @@
+import { Layout } from '../layout.service';
+import { SmallScreenNotice } from '../small-screen-notice';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,7 +9,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS } from 'content';
+import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS, generalsPerSeat } from 'content';
 import type { DeckId } from 'content';
 import { DeckPicker } from '../deck-picker';
 import { GameMode, GameService } from '../game.service';
@@ -15,9 +17,9 @@ import { TPipe } from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-setup',
-  imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, DeckPicker, TPipe],
+  imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, DeckPicker, SmallScreenNotice, TPipe],
   template: `
-    <div class="home" style="background-image: url('/card-art/misc/landing.jpg')">
+    <div class="home" style="background-image: url('/images/ui/brand/landing.jpg')">
       <mat-card class="hero" appearance="raised">
         <div class="kingdoms" aria-hidden="true">
           <span class="wei"></span><span class="shu"></span><span class="wu"></span><span class="qun"></span>
@@ -69,13 +71,12 @@ import { TPipe } from '../i18n/t.pipe';
           </div>
 
           <app-deck-picker [(value)]="deck" />
+          <p class="generals-dealt">{{ 'setup.generalsDealt.hint' | t: { n: generalsDealt() } }}</p>
 
-          @if (showFirstReveal()) {
-            <div class="field">
-              <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
-            </div>
-            <p class="rule-hint">{{ 'setup.firstReveal.hint' | t }}</p>
-          }
+          <div class="field">
+            <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" [disabled]="true">{{ 'setup.firstReveal' | t }}</mat-checkbox>
+          </div>
+          <p class="rule-hint">{{ 'setup.firstReveal.hint' | t }}</p>
 
           <div class="names">
             @for (i of nameSlots(); track i) {
@@ -95,7 +96,8 @@ import { TPipe } from '../i18n/t.pipe';
 
         </mat-card-content>
         <mat-card-actions align="end">
-          <button mat-flat-button type="button" class="start" (click)="startGame()">
+          <app-small-screen-notice />
+          <button mat-flat-button type="button" class="start" [disabled]="!layout.canPlay()" (click)="startGame()">
             <mat-icon>play_arrow</mat-icon> {{ 'setup.start' | t }}
           </button>
         </mat-card-actions>
@@ -130,6 +132,7 @@ import { TPipe } from '../i18n/t.pipe';
     .field { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
     .label { font: var(--mat-sys-title-small); min-width: 48px; }
     .names { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: 12px; }
+    .generals-dealt { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .rule-hint { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .mode-hint { margin: -12px 0 16px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
     .mode mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; vertical-align: middle; }
@@ -137,6 +140,7 @@ import { TPipe } from '../i18n/t.pipe';
   `,
 })
 export class Setup {
+  protected readonly layout = inject(Layout);
   private readonly gameService = inject(GameService);
   private readonly router = inject(Router);
   protected readonly maxSeats = this.gameService.maxSeats;
@@ -144,10 +148,10 @@ export class Setup {
 
   readonly mode = signal<GameMode>('vs-bots');
   readonly seatCount = signal(4);
-  readonly firstRevealDraw = signal(true);
   readonly deck = signal<DeckId>(DEFAULT_DECK_ID);
-  // The rule needs a big table, so the option only appears there.
-  protected readonly showFirstReveal = computed(() => this.seatCount() >= FIRST_REVEAL_MIN_SEATS);
+  protected readonly generalsDealt = computed(() => generalsPerSeat(this.seatCount(), this.deck()));
+  // Not a choice: the bonus applies at a big table and nowhere else.
+  protected readonly firstRevealDraw = computed(() => this.seatCount() >= FIRST_REVEAL_MIN_SEATS);
   // Typed names by seat index; blanks fall back to "Seat N".
   readonly names = signal<(string | undefined)[]>([]);
   // Vs bots asks only for the human's name (seat 0); pass-and-play asks for every seat's.
@@ -165,7 +169,7 @@ export class Setup {
     const clamped = Math.min(this.maxSeats, Math.max(2, this.seatCount() || 2));
     const rules = {
       ...(this.deck() !== DEFAULT_DECK_ID ? { deck: this.deck() } : {}),
-      ...(clamped >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {}),
+      ...(clamped >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: true } : {}),
     };
     this.gameService.startGame(clamped, undefined, this.mode(), this.nameSlots().map((i) => this.names()[i] ?? ''), Object.keys(rules).length > 0 ? rules : undefined);
     this.router.navigateByUrl('/game');

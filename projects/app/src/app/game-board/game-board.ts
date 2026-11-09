@@ -1,15 +1,20 @@
-import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, untracked } from '@angular/core';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, DestroyRef, HostListener, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Action, CardInstance, ChooseGeneralsAction, Seat, discardOwed, isSeatDying } from 'engine';
+import { Action, CardInstance, ChooseGeneralsAction, Seat, describeDecision, discardOwed, isSeatDying } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { finalSeatViews } from 'protocol';
 import { GameService } from '../game.service';
+import { Layout } from '../layout.service';
+import { BoardPanel } from './board-panel';
+import { SmallScreenPrompt } from './small-screen-prompt';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
 import { RoundTable } from './round-table';
@@ -44,16 +49,24 @@ import { StartRevealDialog, StartRevealDialogData } from './start-reveal-dialog'
 import { judgmentDecision } from './judgment-decision';
 import { judgmentDescription } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
+import { chainEffectsFor, damageEffectsFor, ShownDamage } from './damage-effects';
+import { spriteDurationMs } from './sprite-plan';
 import { deathSoundsFor, soundsFor, voicesFor } from './event-sounds';
 import { MusicService, SoundEffects } from '../music.service';
+import { SpritePreload } from '../sprite-preload.service';
 import { DecisionTimer } from '../decision-timer.service';
 import { I18n } from '../i18n/i18n.service';
 import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
+import { PlaybackDirector } from './playback/playback-director';
+import { TILE_HEIGHT } from './table-layout';
+import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './playback/seat-cues';
 
 @Component({
   selector: 'app-game-board',
-  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  // The board's own playback: it lives as long as the board does, and reads the board's GameService (online, the remote one).
+  providers: [PlaybackDirector],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, SmallScreenPrompt, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -73,9 +86,12 @@ import { TPipe } from '../i18n/t.pipe';
     }
 
     @if (gameService.state(); as state) {
-      @if (state.result; as result) {
+      @if (!layout.canPlay() && !gameOver()) {
+        <app-small-screen-prompt />
+      }
+      @if (gameOver(); as result) {
         <app-game-over [result]="result" [players]="state.players" [seats]="finalSeats()" [youSeatId]="gameService.humanSeatId()" (newGame)="goToSetup()" />
-      } @else if (activeSeatId(); as activeSeatId) {
+      } @else if (shownSeatId(); as activeSeatId) {
         @if (gameService.humanSeatId() === null && gameService.revealedSeatId() !== activeSeatId) {
           <app-reveal-gate-overlay [name]="nameOf(activeSeatId)" (revealed)="gameService.reveal(activeSeatId)" />
         } @else if (visibleState(); as visible) {
@@ -110,13 +126,9 @@ import { TPipe } from '../i18n/t.pipe';
               }
             </div>
           } @else {
-            <div class="board">
-              <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
-              <div class="board-grid">
-                <app-round-table class="battlefield" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="gameService.botThinkingSeatId()" [botSeatIds]="gameService.botSeatIds()" />
-                <!-- Bottom left corner: the viewer's own seat, off the table. -->
+            <ng-template #seatTpl>
                 @if (viewerSeat(); as seat) {
-                  <div class="your-seat">
+                  <div class="your-seat" [attr.data-seat-id]="seat.id" [style.--seat-zoom]="ownSeatScale()" [style.--seat-height]="ownSeatHeight()">
                     <app-seat-tile
                       [seat]="seat"
                       [name]="nameOf(seat.id)"
@@ -131,17 +143,33 @@ import { TPipe } from '../i18n/t.pipe';
                       [pile]="zoneCards(seat.pile?.zoneId ?? '')"
                       [stash]="zoneCards(seat.stash?.zoneId ?? '')"
                       [dying]="dyingOf(seat)"
+                      [cue]="seatCueMap()[seat.id] ?? null"
+                      [damageEffect]="damageEffects()[seat.id] ?? null"
+                      [dimmed]="resolving() && !seatCueMap()[seat.id]?.involved"
                       [skills]="viewerSkills()"
                       (useSkill)="submit($event)"
                     />
                   </div>
+                }
+            </ng-template>
+            <div class="board">
+              <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
+              <div class="board-grid">
+                <app-round-table class="battlefield" [reserveBottom]="seatReserve()" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [damageEffects]="damageEffects()" [resolving]="resolving()">
+                  @if (layout.panelAsOverlay()) {
+                    <div viewerSeat><ng-container [ngTemplateOutlet]="seatTpl" /></div>
+                  }
+                </app-round-table>
+                <!-- Large layout: the viewer's own seat in the bottom-left corner, off the table. -->
+                @if (!layout.panelAsOverlay()) {
+                  <ng-container [ngTemplateOutlet]="seatTpl" />
                 }
                 <section class="your-hand">
                   <div class="hand">
                     <h3>{{ 'board.yourHand' | t }}</h3>
                     <app-hand-view
                       [cards]="ownHand()"
-                      [actions]="gameService.legalActions()"
+                      [actions]="legalActions()"
                       [state]="visible"
                       [registry]="gameService.registry"
                       (played)="submit($event)"
@@ -154,11 +182,25 @@ import { TPipe } from '../i18n/t.pipe';
                     [registry]="gameService.registry"
                     (actionChosen)="submit($event)"
                   />
+                  @if (layout.panelAsOverlay()) {
+                    <!-- Phone and medium layouts: the two tiles' full lists live in a panel that slides over the table. -->
+                    <button type="button" mat-icon-button class="panel-toggle" [attr.aria-label]="'board.panel.open' | t" [attr.aria-expanded]="layout.panelOpen()" (click)="layout.togglePanel()">
+                      <mat-icon>history</mat-icon>
+                    </button>
+                  }
                 </section>
                 <!-- Bottom right: the action history, then the discard pile; same height. -->
-                <app-action-history class="history" [history]="actionHistory()" />
-                <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                @if (!layout.panelAsOverlay()) {
+                  <app-action-history class="history" [history]="actionHistory()" />
+                  <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                }
               </div>
+              @if (layout.panelAsOverlay() && layout.panelOpen()) {
+                <div class="panel-scrim" role="presentation" (click)="layout.closePanel()"></div>
+                <aside class="panel" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+                  <app-board-panel [actionHistory]="actionHistory()" [discardHistory]="discardHistory()" />
+                </aside>
+              }
             </div>
           }
         }
@@ -187,7 +229,6 @@ import { TPipe } from '../i18n/t.pipe';
       display: flex; flex-direction: column;
       height: calc(100dvh - var(--mat-toolbar-standard-height, 64px) - 16px);
     }
-    @media (max-width: 599px) { :host:has(.board) { height: calc(100dvh - var(--mat-toolbar-mobile-height, 56px) - 16px); } }
     .board { flex: 1; min-height: 0; display: flex; flex-direction: column; }
     /* Bottom row: Player Seat, Hand (the rest of the width), Action History, Discard Pile.
        All four sections share one fixed height, so the battlefield gets the rest. */
@@ -202,7 +243,7 @@ import { TPipe } from '../i18n/t.pipe';
     /* The battlefield runs the full width of the screen: out past the page padding. */
     .battlefield { grid-area: battlefield; margin-inline: -16px; min-height: 0; }
     /* The seat tile is shrunk to fit the row, and stretched to the row's full height. */
-    .your-seat { --seat-zoom: 0.78; grid-area: seat; overflow: hidden; zoom: var(--seat-zoom); height: calc(var(--bottom-height) / var(--seat-zoom)); }
+    .your-seat { --seat-zoom: 0.78; grid-area: seat; overflow: hidden; zoom: var(--seat-zoom); height: calc(var(--seat-height, var(--bottom-height)) / var(--seat-zoom)); }
     .your-seat app-seat-tile { display: block; height: 100%; }
     .your-hand {
       grid-area: hand; min-width: 0; overflow: hidden; box-sizing: border-box;
@@ -216,20 +257,31 @@ import { TPipe } from '../i18n/t.pipe';
     .history { grid-area: history; }
     .discard { grid-area: discard; }
     .history, .discard { box-sizing: border-box; width: 140px; min-height: 0; overflow: hidden; justify-content: center; }
-    /* Phone-sized: stack, and let the page scroll. */
-    @media (max-width: 767px) {
-      :host:has(.board) { height: auto; }
-      .board-grid {
-        --bottom-height: auto;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-rows: 70vh auto auto auto;
-        grid-template-areas: 'battlefield battlefield' 'seat seat' 'hand hand' 'history discard';
-      }
-      .your-seat { justify-self: center; height: auto; }
-      .your-seat app-seat-tile { height: auto; }
-      .your-hand { flex-direction: column; }
-      .actions { max-width: none; }
-      .history, .discard { width: auto; }
+    /* Medium layout (layout.service.ts): the history tiles give way to a button for the panel, which sits in the bottom box
+       with the hand and the action buttons. Your seat is part of the battlefield, at the foot of the table (round-table.ts
+       holds it and keeps the other seats above it), so the board is the table and one bottom box. Nothing beige wraps the
+       seat. The seat's zoom and height come from the layout service (seatScale), with the number of seats, and are bound
+       on the element. A smaller window cannot play at all (small-screen-prompt.ts). */
+    :host-context([data-layout='medium']) .board-grid {
+      --bottom-height: 136px; gap: 4px;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'battlefield' 'hand';
+      /* The page keeps 16 px under the board; give 12 of them to the bottom box, which ends near the screen's edge. */
+      margin-bottom: -12px;
+    }
+    :host-context([data-layout='medium']) .your-hand { gap: 8px; padding: 4px 8px 2px; }
+    :host-context([data-layout='medium']) .your-hand h3 { font-size: 12px; line-height: 1.2; }
+    :host-context([data-layout='medium']) .actions {
+      --mat-button-outlined-label-text-size: 13px; --mat-button-filled-label-text-size: 13px;
+      display: block; max-width: 170px;
+    }
+    :host-context([data-layout='medium']) .actions ::ng-deep .action-list { gap: 4px; margin: 0; }
+    .panel-toggle { flex: none; align-self: center; width: 36px; height: 36px; padding: 6px; }
+    .panel-scrim { position: fixed; inset: var(--mat-toolbar-standard-height, 44px) 0 0 0; z-index: 15; background: rgb(0 0 0 / 0.4); }
+    .panel {
+      position: fixed; top: var(--mat-toolbar-standard-height, 44px); right: 0; bottom: 0; z-index: 16;
+      box-sizing: border-box; width: min(42vw, 360px); padding-right: env(safe-area-inset-right, 0px); overflow-y: auto;
+      background: var(--mat-sys-surface-container); color: var(--mat-sys-on-surface); box-shadow: -4px 0 16px rgb(0 0 0 / 0.3);
     }
   `,
 })
@@ -243,6 +295,26 @@ export class GameBoard {
   private readonly i18n = inject(I18n);
   private readonly dock = inject(DecisionDock);
   private readonly injector = inject(Injector);
+  protected readonly director = inject(PlaybackDirector);
+  protected readonly layout = inject(Layout);
+  // Your own seat's zoom, shared with the other seats (Layout.seatScale, which shrinks with more players) on phone and
+  // medium; null on large, where the board's CSS and the table fit it themselves.
+  protected readonly ownSeatScale = computed(() => (this.layout.panelAsOverlay() ? this.layout.seatScale(this.visibleState()?.seats.length ?? 4) : null));
+  protected readonly ownSeatHeight = computed(() => {
+    const scale = this.ownSeatScale();
+    return scale === null ? null : `${Math.round(TILE_HEIGHT * scale)}px`;
+  });
+  // The foot of the table kept for your own seat, in px: its height plus a 4 px gap.
+  protected readonly seatReserve = computed(() => {
+    const scale = this.ownSeatScale();
+    return scale === null ? 0 : Math.round(TILE_HEIGHT * scale) + 4;
+  });
+
+  // Leaving the board never leaves its panel open for the next one.
+  private readonly closePanelOnLeave = inject(DestroyRef).onDestroy(() => this.layout.closePanel());
+  // What the viewer may do: nothing while playback is busy, so a card still flying can never be
+  // clicked and no decision opens before the board has shown what led to it.
+  protected readonly legalActions = computed(() => (this.director.idle() ? this.gameService.legalActions() : []));
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
   private judgmentDialog: MatDialogRef<JudgmentDialog> | null = null;
@@ -258,7 +330,7 @@ export class GameBoard {
     const selection = this.visibleState()?.pendingSelection;
     if (!selection || selection.seatId !== this.viewerSeatId()) return null;
     if (selection.judgmentChange && this.judgmentView()) return null;
-    return this.gameService.legalActions().some((a) => a.kind === 'SelectAction') ? selection.id : null;
+    return this.legalActions().some((a) => a.kind === 'SelectAction') ? selection.id : null;
   });
   private arrangeDialog: MatDialogRef<ArrangeDialog, Action> | null = null;
   // The arrangement whose dialog is showing, so each opens only once.
@@ -267,7 +339,7 @@ export class GameBoard {
   protected readonly arrangementDue = computed(() => {
     const arrangement = this.visibleState()?.pendingArrangement;
     if (!arrangement || arrangement.seatId !== this.viewerSeatId()) return null;
-    return this.gameService.legalActions().some((a) => a.kind === 'ArrangeCardsAction') ? arrangement.id : null;
+    return this.legalActions().some((a) => a.kind === 'ArrangeCardsAction') ? arrangement.id : null;
   });
   // The choice whose dialog is showing, so each opens only once.
   private choiceDialogFor: string | null = null;
@@ -278,7 +350,7 @@ export class GameBoard {
     if (!choice || choice.seatId !== this.viewerSeatId()) return null;
     // A skill that may change the judgment asks inside the Judgment popup, not in a dialog of its own.
     if (choice.judgmentChange && this.judgmentView()) return null;
-    return this.gameService.legalActions().some((a) => a.kind === 'ChooseOptionAction') ? choice.id : null;
+    return this.legalActions().some((a) => a.kind === 'ChooseOptionAction') ? choice.id : null;
   });
   // The response window whose dialog is showing, so each opens only once.
   private responseDialogFor: string | null = null;
@@ -289,7 +361,7 @@ export class GameBoard {
     const visible = this.visibleState();
     const pending = visible?.pendingResponse;
     if (!visible || !pending || pending.respondingSeatId !== this.viewerSeatId()) return null;
-    const legal = this.gameService.legalActions();
+    const legal = this.legalActions();
     return legal.some((a) => a.kind === 'PassAction' || a.kind === 'RespondAction') ? pending.id : null;
   });
 
@@ -298,7 +370,7 @@ export class GameBoard {
   protected readonly startRevealDue = computed(() => {
     const visible = this.visibleState();
     if (!visible || visible.phase !== 'Start' || !visible.turn.startWindow || visible.turn.ownerSeatId !== this.viewerSeatId()) return null;
-    return this.gameService.legalActions().some((a) => a.kind === 'ConfirmRevealsAction') ? visible.turn.turnNumber : null;
+    return this.legalActions().some((a) => a.kind === 'ConfirmRevealsAction') ? visible.turn.turnNumber : null;
   });
 
   // How many cards the viewer must discard now: non-zero only in their own
@@ -307,15 +379,18 @@ export class GameBoard {
     const visible = this.visibleState();
     const seatId = this.viewerSeatId();
     if (!visible || !seatId || visible.phase !== 'Discard' || visible.turn.ownerSeatId !== seatId) return 0;
-    if (!this.gameService.legalActions().some((a) => a.kind === 'DiscardCardAction')) return 0;
+    if (!this.legalActions().some((a) => a.kind === 'DiscardCardAction')) return 0;
     return discardOwed(visible, seatId);
   });
 
   constructor() {
+    // Seat effects play from sprite sheets that nothing else fetches: have them cached before the first hit.
+    inject(SpritePreload).start();
     // Decisions are timed only while the board is on screen.
     this.timer.attach(inject(DestroyRef));
     // The win track while the game is won; back to the background track on leaving.
-    effect(() => this.music.setTrack(this.visibleState()?.result ? 'win' : 'background'));
+    effect(() => this.centre.set(nextCentre(untracked(this.centre), this.director.current(), this.director.centreStack().length)));
+    effect(() => this.music.setTrack(this.gameOver() ? 'win' : 'background'));
     inject(DestroyRef).onDestroy(() => this.music.setTrack('background'));
     // Leaving the board with a decision hidden: nothing else would ever close that dialog.
     inject(DestroyRef).onDestroy(() => this.dock.dismiss());
@@ -330,13 +405,19 @@ export class GameBoard {
       });
     });
     // A judgment on show: its popup is open while the judgment is, whatever the gate or the viewer's seat.
+    // It opens once playback has reached it, and stays open through any playback until the judgment ends.
     effect(() => {
       const on = this.judgmentView() !== null;
-      untracked(() => (on ? this.openJudgmentDialog() : this.closeDialog(this.judgmentDialog)));
+      const reached = this.judgmentReached();
+      untracked(() => {
+        if (!on) this.closeDialog(this.judgmentDialog);
+        else if (reached) this.openJudgmentDialog();
+      });
     });
-    // Event sounds (soundsFor) for whatever the log gained since the last look.
-    // The first look, and a new game's shorter log, only set the baseline, so
-    // joining mid-game is silent.
+    // Event sounds (soundsFor) for whatever the played log gained since the last look, so each sounds
+    // with its beat. Beats that take no time play together and are heard together.
+    // The first look, and a shorter log (a new game, or a replay from before the last move), only set
+    // the baseline, so joining mid-game is silent.
     let seen: number | null = null;
     effect(() => {
       const state = this.visibleState();
@@ -346,6 +427,7 @@ export class GameBoard {
         if (seen !== null && log.length > seen) {
           const fresh = log.slice(seen);
           for (const sound of soundsFor(fresh)) this.sounds.play(sound);
+          this.showDamage([...damageEffectsFor(fresh, this.gameService.publicState()?.log.slice(log.length) ?? []), ...chainEffectsFor(fresh)]);
           for (const cry of deathSoundsFor(fresh, state)) {
             if (cry.url) this.sounds.playDeathVoice(cry.url);
             else if (cry.effect) this.sounds.play(cry.effect);
@@ -355,7 +437,7 @@ export class GameBoard {
         seen = log.length;
       });
     });
-    // A Compete popup for every Compete the log gains while the board is open
+    // A Compete popup for every Compete the played log gains while the board is open
     // (same baseline rule as the sounds); several wait their turn.
     let competesSeen: number | null = null;
     effect(() => {
@@ -369,6 +451,23 @@ export class GameBoard {
         }
         competesSeen = log.length;
       });
+    });
+    // Online nothing waits for the popup, so it gives way when the viewer owes a decision.
+    effect(() => {
+      const owed = !this.gameService.clockWaitsForPlayback && this.decisionOwed();
+      untracked(() => {
+        if (!owed) return;
+        this.competeQueue.length = 0;
+        this.competeDialog?.close();
+      });
+    });
+    inject(DestroyRef).onDestroy(() => this.damageTimers.forEach(clearTimeout));
+    // A hold never released would keep playback shut; and no popup opens for a board that is gone.
+    inject(DestroyRef).onDestroy(() => {
+      this.destroyed = true;
+      const release = this.releaseCompete;
+      this.releaseCompete = null;
+      release?.();
     });
     effect(() => {
       const turn = this.startRevealDue();
@@ -413,7 +512,39 @@ export class GameBoard {
   }
 
   protected readonly activeSeatId = this.gameService.activeSeatId;
-  protected readonly visibleState = this.gameService.visibleState;
+  // The state at the moment playback shows. The Pass and Play gate still reads the service's own.
+  protected readonly visibleState = this.director.displayedState;
+  // The seats a resolution is about, from the plays the director shows; cleared once the centre empties.
+  private readonly centre = signal<ResolutionCentre>(NO_CENTRE);
+  // Seats outside the resolution dim only while a card is on show, as long as the card itself.
+  protected readonly resolving = computed(() => this.director.current()?.visual?.kind === 'play');
+  // The hit and chain animations on show, per seat; they end on their own and never hold playback.
+  protected readonly damageEffects = signal<Partial<Record<string, ShownDamage>>>({});
+  private damageSeq = 0;
+
+  private showDamage(effects: readonly { seatId: string; image: ShownDamage['image'] }[]): void {
+    for (const { seatId, image } of effects) {
+      const id = ++this.damageSeq;
+      this.damageEffects.update((shown) => ({ ...shown, [seatId]: { id, image } }));
+      const timer = setTimeout(() => {
+        this.damageTimers.delete(timer);
+        this.damageEffects.update((shown) => {
+          if (shown[seatId]?.id !== id) return shown;
+          const { [seatId]: _gone, ...rest } = shown;
+          return rest;
+        });
+      }, spriteDurationMs(image));
+      this.damageTimers.add(timer);
+    }
+  }
+  private readonly damageTimers = new Set<ReturnType<typeof setTimeout>>();
+
+  protected readonly seatCueMap = computed((): Partial<Record<string, SeatCue>> => seatCues(this.director.current(), this.centre(), this.i18n.translator));
+  // The seat the board is shown for: the active one, or once the game is over, the one whose view
+  // plays out the last moves before Game Over.
+  protected readonly shownSeatId = computed(() => this.activeSeatId() ?? (this.gameService.state()?.result ? this.gameService.revealedSeatId() : null));
+  // The result, once playback has shown the moves that led to it.
+  protected readonly gameOver = computed(() => (this.director.idle() ? (this.gameService.state()?.result ?? null) : null));
   protected readonly lastError = this.gameService.lastError;
 
   // Whose chair the table is seen from: the human in vs-bots, else the revealed active seat.
@@ -424,6 +555,21 @@ export class GameBoard {
     return state ? judgmentDescription(state, this.gameService.registry, this.i18n.translator) : null;
   });
 
+  // Whether playback has reached the judgment. The fold never carries a judgment, so the displayed state
+  // shows one only once playback is idle; a judgment after another must not open on the old one's view.
+  // Behind the Pass and Play gate nothing plays, so the table's own view decides.
+  private readonly judgmentReached = computed(() => !this.director.displayedState() || this.director.idle());
+
+  // A decision the viewer owes now, as the engine describes it (describeDecision, as DecisionTimer uses it): not
+  // their own free Play Phase.
+  private readonly decisionOwed = computed(() => {
+    const state = this.gameService.state();
+    const seatId = this.gameService.humanSeatId() ?? this.activeSeatId();
+    if (!state || !seatId) return false;
+    const decision = describeDecision(state, seatId, this.gameService.legalActions(), '');
+    return !!decision && decision.kind !== 'play';
+  });
+
   // The skill decision the Judgment popup waits on, as the viewer sees it: the engine's own question for the asked
   // seat, a waiting line for the others, and in Pass and Play the hand-off before the asked seat's private view.
   private readonly judgmentDecisionView = computed(() => {
@@ -432,11 +578,11 @@ export class GameBoard {
     const viewer = this.viewerSeatId();
     if (!state || !viewer) return null;
     const shown = this.gameService.humanSeatId() !== null || this.gameService.revealedSeatId() === viewer;
-    return judgmentDecision(state, viewer, this.gameService.legalActions(), this.i18n.translator, shown);
+    return judgmentDecision(state, viewer, this.legalActions(), this.i18n.translator, shown);
   });
 
   // What the board's action list offers: the acknowledgement of a judgment is the popup's, not a button on the board.
-  protected readonly boardActions = computed(() => this.gameService.legalActions().filter((a) => a.kind !== 'AcknowledgeJudgmentAction'));
+  protected readonly boardActions = computed(() => this.legalActions().filter((a) => a.kind !== 'AcknowledgeJudgmentAction'));
 
   // Everything is public at game over, so the full local state is safe to show.
   protected readonly finalSeats = computed(() => {
@@ -444,7 +590,7 @@ export class GameBoard {
     return state ? finalSeatViews(state) : [];
   });
 
-  protected readonly viewerSeatId = computed(() => this.gameService.humanSeatId() ?? this.activeSeatId());
+  protected readonly viewerSeatId = computed(() => this.gameService.humanSeatId() ?? this.shownSeatId());
 
   // The revealed seat's own hand, shown full-size below the table.
   protected readonly ownHand = computed<CardInstance[]>(() => {
@@ -458,7 +604,7 @@ export class GameBoard {
   // The viewer's active skills, as buttons on their avatar.
   protected readonly viewerSkills = computed(() => {
     const seat = this.visibleState()?.seats.find((s) => s.id === this.viewerSeatId());
-    return seat ? avatarSkills(seat.generals, this.gameService.registry, this.gameService.legalActions(), extraSkillsOf(seat, this.gameService.registry), this.i18n.translator) : [];
+    return seat ? avatarSkills(seat.generals, this.gameService.registry, this.legalActions(), extraSkillsOf(seat, this.gameService.registry), this.i18n.translator) : [];
   });
 
   // The viewer's force colour, which their decision dialogs are themed in.
@@ -501,6 +647,7 @@ export class GameBoard {
   });
 
   protected readonly generalChoices = computed<ChooseGeneralsAction[]>(() =>
+    // Not held for playback: online, another player's pick arriving must not grey out the choice.
     this.gameService.legalActions().filter((a): a is ChooseGeneralsAction => a.kind === 'ChooseGeneralsAction')
   );
 
@@ -513,17 +660,27 @@ export class GameBoard {
 
   private readonly competeQueue: CompeteResult[] = [];
   private competeDialog: MatDialogRef<CompeteDialog> | null = null;
+  private releaseCompete: (() => void) | null = null;
+  private destroyed = false;
 
-  // Opens the next waiting Compete popup, themed in its source General's Force.
+  // Opens the next waiting Compete popup, themed in its source General's Force. Locally playback
+  // waits while it is open; online it does not, and none opens over a decision the viewer owes.
   private showNextCompete(): void {
-    if (this.competeDialog) return;
+    if (this.competeDialog || this.destroyed) return;
+    const online = !this.gameService.clockWaitsForPlayback;
+    if (online && this.decisionOwed()) this.competeQueue.length = 0;
     const next = this.competeQueue.shift();
     if (!next) return;
     const ref = openForceDialog<CompeteDialog, CompeteResult>(this.dialog, CompeteDialog, next.force, { data: next, width: 'min(92vw, 520px)', autoFocus: 'dialog' });
     this.competeDialog = ref;
+    this.releaseCompete = online ? null : this.director.hold();
     ref.afterClosed().subscribe(() => {
       this.competeDialog = null;
+      // The next popup takes its own hold before this one lets go, so playback does not slip between them.
+      const release = this.releaseCompete;
+      this.releaseCompete = null;
       this.showNextCompete();
+      release?.();
     });
   }
 
@@ -562,7 +719,7 @@ export class GameBoard {
   // ConfirmRevealsAction template is submitted with the ticked slots.
   private openStartRevealDialog(): void {
     const seat = this.viewerSeat();
-    const template = this.gameService.legalActions().find((a): a is Extract<Action, { kind: 'ConfirmRevealsAction' }> => a.kind === 'ConfirmRevealsAction');
+    const template = this.legalActions().find((a): a is Extract<Action, { kind: 'ConfirmRevealsAction' }> => a.kind === 'ConfirmRevealsAction');
     if (this.startRevealDialog || !seat?.generals || !template) return;
     const tr = this.i18n.translator;
     const generals = seat.generals;
@@ -635,7 +792,7 @@ export class GameBoard {
     const seatId = this.viewerSeatId();
     if (this.responseDialogFor === pendingId || !visible || !seatId) return;
     const description = describeResponse(visible, seatId, (effect) => this.gameService.previewEffect(visible, effect), this.i18n.translator);
-    const legal = this.gameService.legalActions();
+    const legal = this.legalActions();
     const noResponse = legal.find((a) => a.kind === 'PassAction');
     if (!description || !noResponse) return;
     const hand = this.ownHand();
@@ -669,7 +826,7 @@ export class GameBoard {
     const choice = visible?.pendingChoice;
     if (this.choiceDialogFor === choiceId || !visible || !choice || !seatId) return;
     // A "may": the Ask window instead.
-    const ask = describeAsk(visible, seatId, this.gameService.legalActions(), this.i18n.translator);
+    const ask = describeAsk(visible, seatId, this.legalActions(), this.i18n.translator);
     if (ask) {
       this.choiceDialogFor = choiceId;
       const ref = openForceDialog<AskDialog, AskDialogData, Action>(this.dialog, AskDialog, this.viewerForce(), { data: { description: ask }, width: 'min(92vw, 480px)', disableClose: true });
@@ -683,7 +840,7 @@ export class GameBoard {
     }
     const description = describeChoice(visible, seatId, this.i18n.translator);
     if (!description) return;
-    const options = choiceDialogOptions(choice.options, this.gameService.legalActions(), visible.players, description.declineLabel, visible.seats, this.i18n.translator);
+    const options = choiceDialogOptions(choice.options, this.legalActions(), visible.players, description.declineLabel, visible.seats, this.i18n.translator);
     this.choiceDialogFor = choiceId;
     const ref = openForceDialog<ChoiceDialog, ChoiceDialogData, Action>(this.dialog, ChoiceDialog, this.viewerForce(), {
       data: { description, options, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },
@@ -704,7 +861,7 @@ export class GameBoard {
     const visible = this.visibleState();
     const seatId = this.viewerSeatId();
     if (this.selectionDialogFor === selectionId || !visible || !seatId) return;
-    const description = describeSelection(visible, seatId, this.gameService.legalActions(), this.i18n.translator);
+    const description = describeSelection(visible, seatId, this.legalActions(), this.i18n.translator);
     if (!description) return;
     this.selectionDialogFor = selectionId;
     const ref = openForceDialog<SelectionDialog, SelectionDialogData, Action>(this.dialog, SelectionDialog, this.viewerForce(), {
@@ -726,7 +883,7 @@ export class GameBoard {
     const visible = this.visibleState();
     const seatId = this.viewerSeatId();
     if (this.arrangeDialogFor === arrangementId || !visible || !seatId) return;
-    const description = describeArrangement(visible, seatId, this.gameService.legalActions(), this.i18n.translator);
+    const description = describeArrangement(visible, seatId, this.legalActions(), this.i18n.translator);
     if (!description) return;
     this.arrangeDialogFor = arrangementId;
     const ref = openForceDialog<ArrangeDialog, ArrangeDialogData, Action>(this.dialog, ArrangeDialog, this.viewerForce(), {
@@ -753,6 +910,11 @@ export class GameBoard {
 
   dismissError(): void {
     this.gameService.clearError();
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    this.layout.closePanel();
   }
 
   goToSetup(): void {

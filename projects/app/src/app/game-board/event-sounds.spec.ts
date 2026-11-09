@@ -23,9 +23,36 @@ describe('soundsFor', () => {
     expect(soundsFor([moved('crossbow', 'discard'), moved('crossbow', 'seat-0:hand')])).toEqual([]);
   });
 
+  it('sounds the chain once when seats turn chained, and nothing when one turns unchained', () => {
+    const toggled = (seatId: string, chained: boolean): EngineEvent => ({ kind: 'ChainToggledEvent', seatId, chained });
+    expect(soundsFor([toggled('a', true)])).toEqual(['chained']);
+    expect(soundsFor([toggled('a', true), toggled('b', true)])).toEqual(['chained']);
+    expect(soundsFor([toggled('a', false)])).toEqual([]);
+  });
+
   it('injures on damage and on plain HP loss, and heals on recovery', () => {
     expect(soundsFor([{ kind: 'DamageDealtEvent', damage: {} } as never, { kind: 'HpLostEvent', seatId: 's', amount: 1 }])).toEqual(['injure']);
     expect(soundsFor([{ kind: 'HealEvent', target: { kind: 'seat', seatId: 's' }, amount: 1 }])).toEqual(['heal']);
+  });
+
+  it('sounds a hard hit for 2 or more damage at once, in place of the plain injure', () => {
+    const dmg = (amount: number) => ({ kind: 'DamageDealtEvent', damage: { amount } }) as never;
+    expect(soundsFor([dmg(2)])).toEqual(['injure-hard']);
+    expect(soundsFor([dmg(3), { kind: 'HpLostEvent', seatId: 's', amount: 1 }])).toEqual(['injure-hard', 'injure']);
+    expect(soundsFor([dmg(1)])).toEqual(['injure']);
+  });
+
+  it('sounds fire and thunder damage as element, even for 2 or more', () => {
+    const dmg = (nature: string, amount: number) => ({ kind: 'DamageDealtEvent', damage: { amount, nature } }) as never;
+    expect(soundsFor([dmg('fire', 1)])).toEqual(['injure-element']);
+    expect(soundsFor([dmg('thunder', 2)])).toEqual(['injure-element']);
+    expect(soundsFor([dmg('normal', 2)])).toEqual(['injure-hard']);
+  });
+
+  it('does not sound a hit passed along a chain again, it sounded with the first', () => {
+    const hit = (chained?: true) => ({ kind: 'DamageDealtEvent', damage: { amount: 1, nature: 'fire', ...(chained ? { chained } : {}) } }) as never;
+    expect(soundsFor([hit(true)])).toEqual([]);
+    expect(soundsFor([hit(), hit(true)])).toEqual(['injure-element']);
   });
 
   it('makes each sound once per stretch of log', () => {
@@ -95,7 +122,7 @@ describe('deathSoundsFor', () => {
   const out = (seatId: string): EngineEvent => ({ kind: 'SeatEliminatedEvent', seatId });
 
   it('cries with the Main General’s own voice, once per General', () => {
-    expect(deathSoundsFor([out('s0'), out('s4'), out('s2')], state)).toEqual([{ url: '/audio/death/caocao.ogg' }, { url: '/audio/death/daqiao.ogg' }]);
+    expect(deathSoundsFor([out('s0'), out('s4'), out('s2')], state)).toEqual([{ url: '/audio/death/generals/wei/caocao.ogg' }, { url: '/audio/death/generals/wu/daqiao.ogg' }]);
   });
 
   it('falls back to the kingdom’s cry for a General with no recording', () => {

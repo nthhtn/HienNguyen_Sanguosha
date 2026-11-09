@@ -51,6 +51,24 @@ afterEach(() => {
 });
 
 describe('VictoryBoard', () => {
+  it('sets the cards per row on the columns wrapper from the number of columns (3 is 2 + 1, 4 is 2 + 2, 5 is 3 + 2, 6 is 3 + 3)', () => {
+    const kingdoms: Kingdom[] = ['Wei', 'Shu', 'Wu', 'Qun'];
+    const seatsFor = (n: number) => Array.from({ length: n }, (_, i) => seat(i, kingdoms[i % 4], 'kingdom', 'cao-cao', null, true));
+    // Columns present: n Kingdoms (up to four), then Losing Ambitionist for 5 and the Winning one added for 6.
+    const cases: [FinalSeatView[], number, string][] = [
+      [seatsFor(3), 3, '2'],
+      [seatsFor(4), 4, '2'],
+      [[...seatsFor(4), seat(4, 'Qun', 'ambitionist', 'lu-bu', null, true)], 5, '3'],
+      [[...seatsFor(4), seat(4, 'Qun', 'ambitionist', 'lu-bu', null, true), seat(5, 'Wei', 'ambitionist', 'cao-cao', null)], 6, '3'],
+    ];
+    for (const [seats, columns, perRow] of cases) {
+      const res = columns === 6 ? result({ winningSeatIds: ['seat-5'] }) : result();
+      const { el } = render(seats, res);
+      expect(el.querySelectorAll('section.col').length).toBe(columns);
+      expect(el.querySelector('.cols')?.getAttribute('data-k')).toBe(perRow);
+    }
+  });
+
   it('renders one column per group present, in order, with member names, General pairs and Survived or Fallen', () => {
     const { el } = render(weiSeats, weiResult);
     const cols = Array.from(el.querySelectorAll('section.col'));

@@ -5,6 +5,7 @@ import { provideRouter, Router } from '@angular/router';
 import type { Me } from 'protocol';
 import { App } from './app';
 import { AuthService } from './auth/auth.service';
+import { FEATURE_FLAGS } from './feature-flags';
 import { MUSIC_PLAYER_FACTORY } from './music.service';
 
 const me = signal<Me | null>(null);
@@ -34,6 +35,7 @@ describe('App', () => {
           { path: 'play', children: [] },
           { path: 'rooms', children: [] },
           { path: 'my-games', children: [] },
+          { path: 'preview', children: [] },
           { path: 'sign-in', children: [] },
           { path: 'sign-up', children: [] },
           { path: 'wiki/identity/:page', children: [] },
@@ -53,6 +55,15 @@ describe('App', () => {
     await fixture.whenStable();
     return { fixture, el: fixture.nativeElement as HTMLElement };
   }
+
+  it('marks the page with its layout so every screen follows one rule', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 852 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 393 });
+    await render();
+    expect(document.documentElement.dataset['layout']).toBe('phone');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+  });
 
   it('has a music on/off button in the toolbar', async () => {
     localStorage.clear();
@@ -87,6 +98,26 @@ describe('App', () => {
     const music = el.querySelector('button.music-toggle')!;
     expect(switcher.compareDocumentPosition(music) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     localStorage.clear();
+  });
+
+  it('shows the playback speed setting when playback settings are on', async () => {
+    const { el } = await render();
+    expect(el.querySelector('button.playback-speed')).not.toBeNull();
+  });
+
+  describe('with test-only features off', () => {
+    beforeEach(() => TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: false, playbackSettings: false } }));
+
+    it('hides the playback speed setting', async () => {
+      const { el } = await render('/rooms');
+      expect(el.querySelector('button.playback-speed')).toBeNull();
+    });
+
+    it('hides Play Offline and labels the online link Play', async () => {
+      const { el } = await render('/rooms');
+      expect(el.querySelector('a.nav-play')).toBeNull();
+      expect(el.querySelector('a.nav-online .label')!.textContent).toBe('Play');
+    });
   });
 
   it('puts Battlefield, the account, the language menu and the sound buttons on the right, in that order', async () => {
@@ -167,6 +198,18 @@ describe('App', () => {
     expect(online.classList).not.toContain('active');
   });
 
+  it('has a Preview link as the first item on the right side of the bar, highlighted on the preview pages', async () => {
+    const { el, fixture } = await render('/preview');
+    const preview = el.querySelector('a.nav-preview') as HTMLAnchorElement;
+    expect(preview.getAttribute('href')).toBe('/preview');
+    expect(preview.getAttribute('aria-label')).toBe('Preview');
+    expect(preview.classList).toContain('active');
+    expect(preview.previousElementSibling!.classList).toContain('spacer');
+    await TestBed.inject(Router).navigateByUrl('/setup');
+    fixture.detectChanges();
+    expect(preview.classList).not.toContain('active');
+  });
+
   it('keeps Online highlighted on My Games', async () => {
     const { el } = await render('/my-games');
     expect(el.querySelector('a.nav-online')!.classList).toContain('active');
@@ -216,11 +259,16 @@ describe('App', () => {
     const items = [...document.querySelectorAll('.mat-mdc-menu-panel a[mat-menu-item]')] as HTMLAnchorElement[];
     expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
       ['Overview', '/wiki/rules/overview'],
-      ['Card Types', '/wiki/rules/card-types'],
       ['Setup', '/wiki/rules/setup'],
+      ['Allegiance', '/wiki/rules/allegiance'],
       ['Turn Structure', '/wiki/rules/turn'],
+      ['Card Types', '/wiki/rules/card-types'],
       ['Distance / Range', '/wiki/rules/distance'],
+      ['Response Windows', '/wiki/rules/response'],
+      ['Damage and Dying', '/wiki/rules/damage'],
       ['Judgment', '/wiki/rules/judgment'],
+      ['Chains', '/wiki/rules/chains'],
+      ['Glossary', '/wiki/rules/glossary'],
     ]);
     await TestBed.inject(Router).navigateByUrl('/wiki/rules/turn');
     fixture.detectChanges();
@@ -268,6 +316,11 @@ describe('App', () => {
     expect(el.querySelector('button.account')).toBeNull();
   });
 
+  it('names the Sign In link for screen readers, since its label can be hidden on narrow screens', async () => {
+    const { el } = await render();
+    expect(el.querySelector('a.sign-in')!.getAttribute('aria-label')).toBe('Sign In');
+  });
+
   it('shows nothing for the account until the first answer arrives', async () => {
     loaded.set(false);
     const { el } = await render();
@@ -302,5 +355,101 @@ describe('App', () => {
     const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
     expect(overlay.textContent).toContain('Playing as a guest');
     expect(overlay.querySelector('a.create-account')?.textContent).toContain('Create Account');
+  });
+
+  describe('on a phone', () => {
+    function resizeTo(width: number, height: number): void {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
+    }
+    beforeEach(() => resizeTo(852, 393));
+    afterEach(() => resizeTo(1024, 768));
+
+    async function openDrawer() {
+      const rendered = await render();
+      (rendered.el.querySelector('button.nav-menu') as HTMLButtonElement).click();
+      rendered.fixture.detectChanges();
+      return { ...rendered, drawer: rendered.el.querySelector('.nav-drawer') as HTMLElement };
+    }
+
+    it('shows the menu button, the title and the sound buttons in the bar, and no links', async () => {
+      const { el } = await render();
+      expect(el.querySelector('button.nav-menu')!.getAttribute('aria-label')).toBe('Menu');
+      expect(el.querySelector('mat-toolbar h1')?.textContent).toContain('Sanguosha');
+      expect(el.querySelector('button.music-toggle')).not.toBeNull();
+      expect(el.querySelector('button.effects-toggle')).not.toBeNull();
+      expect(el.querySelector('nav.nav')).toBeNull();
+      expect(el.querySelector('mat-toolbar a.sign-in')).toBeNull();
+      expect(el.querySelector('.nav-drawer')).toBeNull();
+    });
+
+    it('has no menu button on a wide screen', async () => {
+      resizeTo(1366, 768);
+      const { el } = await render();
+      expect(el.querySelector('button.nav-menu')).toBeNull();
+    });
+
+    it('opens a drawer with the same links the bar has on a wide screen', async () => {
+      const { drawer } = await openDrawer();
+      const hrefs = [...drawer.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+      expect(hrefs).toEqual(
+        expect.arrayContaining(['/play', '/rooms', '/wiki/kingdom-wars/generals', '/wiki/identity/tools', '/wiki/rules/overview', '/wiki/rules/glossary', '/sign-in'])
+      );
+      expect(drawer.textContent).toContain('Play Online');
+      expect(drawer.querySelector('app-language-switcher')).not.toBeNull();
+      expect(drawer.querySelectorAll('.drawer-playback-speed button').length).toBeGreaterThan(0);
+    });
+
+    it('marks the current page in the drawer', async () => {
+      const rendered = await render('/wiki/rules/turn');
+      (rendered.el.querySelector('button.nav-menu') as HTMLButtonElement).click();
+      rendered.fixture.detectChanges();
+      await rendered.fixture.whenStable();
+      rendered.fixture.detectChanges();
+      const current = [...rendered.el.querySelectorAll('.nav-drawer a[aria-current="page"]')];
+      expect(current.map((a) => a.getAttribute('href'))).toEqual(['/wiki/rules/turn']);
+    });
+
+    it('lists the Battlefield choices, and the signed-in account, in the drawer', async () => {
+      me.set({ id: 'u1', kind: 'registered', displayName: 'Ann', email: 'ann@example.com' });
+      const rendered = await render();
+      TestBed.inject(BattlefieldBackgrounds).available.set(true);
+      (rendered.el.querySelector('button.nav-menu') as HTMLButtonElement).click();
+      rendered.fixture.detectChanges();
+      const drawer = rendered.el.querySelector('.nav-drawer') as HTMLElement;
+      expect(drawer.textContent).toContain('Ann');
+      expect(drawer.querySelector('button.sign-out')).not.toBeNull();
+      expect([...drawer.querySelectorAll('.drawer-battlefield button')].map((b) => b.textContent!.trim())).toEqual(['Default', 'Background 1', 'Background 2', 'Background 3']);
+    });
+
+    it('closes when a link is chosen', async () => {
+      const { fixture, el, drawer } = await openDrawer();
+      (drawer.querySelector('a[href="/rooms"]') as HTMLAnchorElement).click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(el.querySelector('.nav-drawer')).toBeNull();
+    });
+
+    it('closes on Escape and when the backdrop is clicked', async () => {
+      const { fixture, el, drawer } = await openDrawer();
+      drawer.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      fixture.detectChanges();
+      expect(el.querySelector('.nav-drawer')).toBeNull();
+      (el.querySelector('button.nav-menu') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      (el.querySelector('.nav-scrim') as HTMLElement).click();
+      fixture.detectChanges();
+      expect(el.querySelector('.nav-drawer')).toBeNull();
+    });
+
+    it('closes when the device turns to wide', async () => {
+      const { fixture, el } = await openDrawer();
+      resizeTo(1366, 768);
+      window.dispatchEvent(new Event('resize'));
+      TestBed.tick();
+      fixture.detectChanges();
+      expect(el.querySelector('.nav-drawer')).toBeNull();
+      expect(el.querySelector('nav.nav')).not.toBeNull();
+    });
   });
 });

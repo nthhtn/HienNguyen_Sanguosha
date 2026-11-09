@@ -54,6 +54,8 @@ export interface RoomPlayerRecord {
   userId: string | null; // null for bots, and for a deleted guest
   kind: MemberKind;
   displayName: string;
+  // A bot's name id; null for a person and for a bot added before bot names.
+  botNameId: string | null;
   joinedAt: Date;
   leftAt: Date | null;
 }
@@ -64,6 +66,8 @@ export interface GameSeat {
   roomPlayerId: string;
   name: string;
   kind: MemberKind;
+  // Absent for a person and for a seat saved before bot names.
+  botNameId?: string;
 }
 
 // One Start Game. Its actions (GameActionRecord) are the event-sourced log.

@@ -63,9 +63,20 @@ describe('SeatTile', () => {
     expect(el.querySelectorAll('[aria-label="Set Aside Cards"] app-playing-card')).toHaveLength(1);
   });
 
-  it('shows a chain marker on a chained seat, and none on an unchained one', () => {
-    const marker = render(makeSeat({ chained: true })).querySelector('.chain-badge');
-    expect(marker?.textContent?.trim()).toBe('Chained');
+  it('hangs a chain from each top corner of the General holder (Generals and status), and none on an unchained seat', () => {
+    const el = render(makeSeat({ chained: true }));
+    const left = el.querySelector('.panel.general > img.chain-left') as HTMLImageElement;
+    const right = el.querySelector('.panel.general > img.chain-right') as HTMLImageElement;
+    expect(left.getAttribute('src')).toBe('/images/ui/chain/chain-left.png');
+    expect(right.getAttribute('src')).toBe('/images/ui/chain/chain-right.png');
+    const plain = render(makeSeat());
+    expect(plain.querySelector('.chain-left')).toBeNull();
+    expect(plain.querySelector('.chain-right')).toBeNull();
+  });
+
+  it('says Chained in text too, in the holder’s status line', () => {
+    const el = render(makeSeat({ chained: true }));
+    expect(el.querySelector('.panel.general .chain-badge')!.textContent).toContain('Chained');
     expect(render(makeSeat()).querySelector('.chain-badge')).toBeNull();
   });
 
@@ -109,7 +120,7 @@ describe('SeatTile', () => {
     );
     expect(el.textContent).toContain('Shu');
     const portrait = el.querySelector('app-seat-avatar .half[data-slot="main"] img') as HTMLImageElement;
-    expect(portrait.getAttribute('src')).toBe('/card-art/generals/skins/shu/zhaoyun.png');
+    expect(portrait.getAttribute('src')).toBe('/images/generals/skins/shu/zhaoyun.webp');
   });
 
   it('shows a placeholder for a seat still choosing generals', () => {
@@ -179,7 +190,7 @@ describe('SeatTile', () => {
 
   it('shows one HP icon per HP, icon 1 up to the seat’s current HP, next to its HP text', () => {
     const imgs = Array.from(render(makeSeat({ combinedHp: 3 })).querySelectorAll('.stats img.hp-icon')) as HTMLImageElement[];
-    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['/card-art/misc/hp/1.png', '/card-art/misc/hp/2.png', '/card-art/misc/hp/3.png']);
+    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['/images/ui/hp/1.png', '/images/ui/hp/2.png', '/images/ui/hp/3.png']);
     expect(imgs.every((i) => i.getAttribute('alt') === '')).toBe(true);
   });
 
@@ -236,10 +247,24 @@ describe('SeatTile', () => {
 
   it('overlays the Ambitionist icon on an Ambitionist seat only', () => {
     const icon = render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' }).querySelector('img.ambitionist-icon') as HTMLImageElement;
-    expect(icon.getAttribute('src')).toBe('/card-art/generals/ambitionist_icon.png');
+    expect(icon.getAttribute('src')).toBe('/images/generals/special/ambitionist-icon.png');
     expect(icon.getAttribute('alt')).toBe('Ambitionist');
     expect(render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'kingdom' }).querySelector('.ambitionist-icon')).toBeNull();
     expect(render({ ...makeSeat(), kingdom: 'Wei' }).querySelector('.ambitionist-icon')).toBeNull();
+  });
+
+  it('gives the viewer’s own seat no banner until one of its Generals is revealed, though it knows its Kingdom', () => {
+    const hidden = { ...makeSeat(), kingdom: 'Shu' as const };
+    expect(render(hidden, { isViewer: true }).querySelector('.kingdom-banner')).toBeNull();
+    const revealed = { ...hidden, generals: { main: { generalDefinitionId: 'kingdomWars:zhang-fei', revealed: true }, deputy: hidden.generals!.deputy } };
+    expect(render(revealed, { isViewer: true }).querySelector('img.kingdom-banner')).not.toBeNull();
+  });
+
+  it('hangs the kingdom banner on the left of a revealed seat, and none while hidden or for an Ambitionist', () => {
+    const banner = render({ ...makeSeat(), kingdom: 'Shu' }).querySelector('img.kingdom-banner') as HTMLImageElement;
+    expect(banner.getAttribute('src')).toBe('/images/ui/banners/shu.png');
+    expect(render({ ...makeSeat(), kingdom: 'hidden' }).querySelector('.kingdom-banner')).toBeNull();
+    expect(render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' }).querySelector('.kingdom-banner')).toBeNull();
   });
 
   it('keeps the force colour on the turn owner and on a responding seat', () => {
@@ -265,5 +290,48 @@ describe('SeatTile', () => {
     expect(out.textContent).toContain('Eliminated');
     expect(out.getAttribute('data-force')).toBe('Shu');
     expect(render({ ...makeSeat(), kingdom: 'hidden' }, { isResponding: true }).querySelector('.status')!.getAttribute('data-force')).toBe('none');
+  });
+
+  const renderWith = (inputs: Record<string, unknown>) => {
+    const fixture = TestBed.createComponent(SeatTile);
+    fixture.componentRef.setInput('seat', makeSeat());
+    fixture.componentRef.setInput('name', 'Seat 1');
+    fixture.componentRef.setInput('handCount', 4);
+    for (const [key, value] of Object.entries(inputs)) fixture.componentRef.setInput(key, value);
+    fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  };
+
+  it('renders the callout text', () => {
+    const el = renderWith({ cue: { involved: true, callout: { text: { text: 'Help!' }, tone: 'red' } } });
+    expect(el.querySelector('.callout')?.textContent).toContain('Help!');
+    expect(el.querySelector('.callout')?.classList).toContain('red');
+  });
+
+  it('plays the animation of the last hit, and nothing when there is none', () => {
+    expect(renderWith({}).querySelector('.damage-fx')).toBeNull();
+    const fx = renderWith({ damageEffect: { id: 1, image: 'slash-fire' } }).querySelector('.damage-fx');
+    expect(fx?.tagName).toBe('APP-SPRITE-EFFECT');
+    expect((fx?.querySelector('.sprite') as HTMLElement).style.backgroundImage).toContain('/images/effects/sheets/slash-fire.webp');
+    expect(fx?.parentElement?.classList).toContain('generals');
+  });
+
+  it('adds the hit class for a hit cue and floats its text', () => {
+    const el = renderWith({ cue: { involved: true, impact: 'hit', floatText: '−1' } });
+    expect(el.querySelector('.tile')!.classList).toContain('hit');
+    expect(el.querySelector('.float')?.textContent).toContain('−1');
+  });
+
+  it('adds the heal and flip classes and dims a seat that is not involved', () => {
+    expect(renderWith({ cue: { involved: true, impact: 'heal', floatText: '+1' } }).querySelector('.tile')!.classList).toContain('heal');
+    expect(renderWith({ cue: { involved: true, reveal: true } }).querySelector('.generals')!.classList).toContain('flip');
+    expect(renderWith({ dimmed: true }).querySelector('.tile')!.classList).toContain('dimmed');
+    expect(renderWith({}).querySelector('.tile')!.classList).not.toContain('dimmed');
+  });
+
+  it('shows the viewer seat its callout and float', () => {
+    const el = renderWith({ isViewer: true, cue: { involved: true, impact: 'hit', floatText: '−1', callout: { text: { text: 'No Dodge' }, tone: 'pass' } } });
+    expect(el.querySelector('.tile.viewer .callout')?.textContent).toContain('No Dodge');
+    expect(el.querySelector('.tile.viewer .float')?.textContent).toContain('−1');
   });
 });

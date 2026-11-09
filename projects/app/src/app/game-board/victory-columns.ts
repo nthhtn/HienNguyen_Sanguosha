@@ -101,3 +101,9 @@ export function victoryColumns(seats: readonly FinalSeatView[], result: GameResu
     winningKingdom: headlineKingdom,
   };
 }
+
+// How many cards sit on the top row. One or two columns stay on one row; three or more split over
+// two rows, the top row taking the extra card of an odd count (3 is 2 + 1, 5 is 3 + 2).
+export function cardsPerRow(columnCount: number): number {
+  return columnCount <= 2 ? Math.max(columnCount, 1) : Math.ceil(columnCount / 2);
+}

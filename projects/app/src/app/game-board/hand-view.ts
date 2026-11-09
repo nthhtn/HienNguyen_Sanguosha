@@ -176,6 +176,8 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
     }
     .overlay mat-icon { margin-right: 2px; font-size: 18px; width: 18px; height: 18px; }
     .empty { color: var(--mat-sys-on-surface-variant); }
+    /* Medium layout: a shorter row. */
+    :host-context([data-layout='medium']) .hand-row { padding: 12px 4px 0; }
   `,
 })
 export class HandView {

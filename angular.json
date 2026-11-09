@@ -67,16 +67,16 @@
               {
                 "glob": "**/*.@(jpg|jpeg|png|webp)",
                 "input": "projects/content/assets",
-                "output": "card-art"
+                "output": "images"
               },
               {
-                "glob": "generals/placeholder.svg",
+                "glob": "generals/special/placeholder.svg",
                 "input": "projects/content/assets",
-                "output": "card-art"
+                "output": "images"
               },
               {
                 "glob": "favicon.ico",
-                "input": "projects/content/assets/misc",
+                "input": "projects/content/assets/ui/brand",
                 "output": "/"
               },
               {
@@ -90,7 +90,19 @@
                 "output": "preview"
               }
             ],
-            "styles": ["projects/app/src/styles.scss"]
+            "styles": [
+              "@fontsource/roboto/latin-300.css",
+              "@fontsource/roboto/latin-400.css",
+              "@fontsource/roboto/latin-500.css",
+              "@fontsource/roboto/latin-ext-300.css",
+              "@fontsource/roboto/latin-ext-400.css",
+              "@fontsource/roboto/latin-ext-500.css",
+              "@fontsource/roboto/vietnamese-300.css",
+              "@fontsource/roboto/vietnamese-400.css",
+              "@fontsource/roboto/vietnamese-500.css",
+              "@fontsource/material-icons/latin-400.css",
+              "projects/app/src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -106,7 +118,13 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "projects/app/src/app/dev/dev-routes.ts",
+                  "with": "projects/app/src/app/dev/dev-routes.prod.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,

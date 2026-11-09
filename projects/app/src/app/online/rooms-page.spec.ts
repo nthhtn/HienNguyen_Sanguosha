@@ -62,6 +62,27 @@ describe('RoomsPage', () => {
 
   const row = (el: HTMLElement, host: string) => [...el.querySelectorAll('li.room')].find((li) => li.querySelector('.host-name')?.textContent?.trim() === host) as HTMLElement;
 
+  describe('on a screen too small to play', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });
+    });
+    afterEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+    });
+
+    it('disables Create Room, Play With Bots, Join and Rejoin, and says why', async () => {
+      const { el } = await create();
+      const disabled = (sel: string) => (el.querySelector(sel) as HTMLButtonElement).disabled;
+      expect(disabled('button.create')).toBe(true);
+      expect(disabled('button.play-vs-bots')).toBe(true);
+      expect(disabled('button.rejoin')).toBe(true);
+      expect(disabled('button.join')).toBe(true);
+      expect(el.querySelector('app-small-screen-notice')!.textContent).toContain('Playing needs a tablet or computer screen.');
+    });
+  });
+
   it('polls the list while open, and stops when closed', async () => {
     const { fixture } = await create();
     expect(rooms.startPolling).toHaveBeenCalledTimes(1);

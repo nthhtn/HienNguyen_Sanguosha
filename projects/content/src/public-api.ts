@@ -19,9 +19,12 @@ export type {
 } from './lib/display';
 export { baseSkillId } from './lib/kingdomWarsBase';
 export * from './lib/generalDisplay';
+export * from './lib/botNames';
 export * from './lib/judgmentOutcome';
 export { seatGender } from './lib/shared/gender';
 export { equipSlotOf } from './lib/cards/equipment';
 export { isRecast, isRecastPlay } from './lib/cards/chains';
 export * from './lib/wiki';
 export { BASE_GENERAL_IDS, FIRE_GENERAL_IDS, FOREST_GENERAL_IDS, MOUNTAIN_GENERAL_IDS, WIND_GENERAL_IDS } from './lib/generals';
+export { attackRange, seatDistance } from './lib/shared/queries';
+export * from './lib/wikiDistance';

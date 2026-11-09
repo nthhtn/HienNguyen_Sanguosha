@@ -61,6 +61,28 @@ describe('engineGame', () => {
     });
   });
 
+  describe('bot name ids', () => {
+    const named: GameSeat[] = [
+      { seatId: 'seat-0', roomPlayerId: 'p-ann', name: 'Ann', kind: 'human' },
+      { seatId: 'seat-1', roomPlayerId: 'p-bot', name: '[Bot] Zhou Cang', kind: 'bot', botNameId: 'zhou-cang' },
+    ];
+
+    it('carries a bot\'s name id from its member to its seat and its player, and leaves a person without the key', () => {
+      const seats = drawSeats([{ id: 'p-ann', name: 'Ann', kind: 'human' }, { id: 'p-bot', name: '[Bot] Zhou Cang', kind: 'bot', botNameId: 'zhou-cang' }], SEED);
+      expect(seats.find((s) => s.roomPlayerId === 'p-bot')!.botNameId).toBe('zhou-cang');
+      expect('botNameId' in seats.find((s) => s.roomPlayerId === 'p-ann')!).toBe(false);
+      const players = openingState(ctx, SEED, named, {}).players;
+      expect(players.find((p) => p.seatId === 'seat-1')!.botNameId).toBe('zhou-cang');
+      expect('botNameId' in players.find((p) => p.seatId === 'seat-0')!).toBe(false);
+    });
+
+    it('does not change the game itself: only the bot player differs from a game without names', () => {
+      const withNames = openingState(ctx, SEED, named, {});
+      const without = openingState(ctx, SEED, SEATS, {});
+      expect({ ...withNames, players: [] }).toEqual({ ...without, players: [] });
+    });
+  });
+
   describe('stateHash', () => {
     it('does not depend on the order of object keys, but does on array order and values', () => {
       const { state } = botMoves(openingState(ctx, SEED, SEATS, {}), 40);
@@ -154,6 +176,21 @@ describe('engineGame', () => {
         expect(state.judgmentView?.settled === true && !state.result).toBe(false);
       }
       expect(acknowledgements).toBeGreaterThan(0);
+    });
+
+    it('replays a game stored without logPasses with the same hashes', () => {
+      const seats4: GameSeat[] = ['Ann', 'Bo', 'Cy', 'Di'].map((name, i) => ({ seatId: `seat-${i}`, roomPlayerId: `p-${name}`, name, kind: 'bot' }));
+      let passes = 0;
+      for (const seed of [1, 2, 3, 4, 5, 6]) {
+        const rules = { judgmentNotice: true };
+        const { state, moves } = botMoves(openingState(ctx, seed, seats4, rules), 600);
+        passes += moves.filter((m) => m.action.kind === 'PassAction').length;
+        const game = { ...record(), seed, seats: seats4, rules };
+        const replayed = replay(ctx, game, stored(moves), true);
+        expect(stateHash(replayed)).toBe(stateHash(state));
+        expect(replayed.log.some((e) => e.kind === 'ResponsePassedEvent')).toBe(false);
+      }
+      expect(passes).toBeGreaterThan(0);
     });
 
     it('throws on a hash that differs when checking, and trusts it when not', () => {

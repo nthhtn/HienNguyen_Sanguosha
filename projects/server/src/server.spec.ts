@@ -75,7 +75,7 @@ describeWithDb('createServer on Postgres', () => {
 
     const server = await createServer(loadConfig({ DATABASE_URL: test.url }), { logger: false });
     try {
-      expect((await server.app.inject({ method: 'GET', url: '/healthz' })).statusCode).toBe(200);
+      expect((await server.app.inject({ method: 'GET', url: '/health' })).statusCode).toBe(200);
       expect((await repos.games.findById(game.id))!.status).toBe('broken');
     } finally {
       await server.close();

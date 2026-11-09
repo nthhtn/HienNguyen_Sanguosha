@@ -4,25 +4,29 @@ import { Action } from '../pipeline/actions';
 // Seconds per kind of decision.
 export const DECISION_SECONDS = {
   // Answering a Wuxie, or a Wuxie played against one: a yes or no that every seat in the chain waits on.
-  wuxie: 15,
+  wuxie: 20,
+  // A response window the seat has nothing to answer with (no Sha, Dodge, Wuxie or Peach to play, no skill to use): only Pass is left.
+  noAnswer: 5,
   // The dying round's Peach.
   dying: 20,
   // Any other response window: a Shan, a Sha for a Duel, Barbarians or Coerce, a skill's response.
   response: 20,
   // A skill's use-it-or-not ask.
-  ask: 15,
+  ask: 20,
   // A pick that takes thought: a card (Steal, Break, Harvest, Compete), a seat, a suit, who gets cards.
   pick: 30,
   // Putting cards back in order (Astrology).
-  arrange: 60,
+  arrange: 90,
   // The Start window's reveal.
   start: 20,
   discard: 30,
   selection: 300,
   // A settled judgment, for anyone to read and close: the countdown after its animation.
   notice: 5,
-  // A skill's decision whether to change a judgment's card.
-  judgmentChange: 15,
+  // A look at cards or a General that is only shown, then closed (Ascertain's look).
+  look: 30,
+  // A skill's decision whether to change a judgment's card; the card pick that follows has its own clock of the same length.
+  judgmentChange: 20,
   // One budget for a whole Play phase, paused while a response is under way.
   play: 180,
 } as const;
@@ -62,16 +66,21 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
   // A settled judgment closes on its own countdown, once the verdict and consequence have played
   // (and the card's first showing, if no skill was asked, which would have covered it).
   if (view?.settled) return { ...step('notice'), leadInMs: leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
-  // A skill that may change the card asks: one clock for the ask and the pick after it, started once
-  // the animation before it (the card turning up, or the last replacement) has played.
+  // A skill that may change the card asks: one clock for the ask, started once the animation before it (the card
+  // turning up, or the last replacement) has played. The key names this judgment, seat and ask, so time paused in an
+  // earlier judgment never carries into a later one. The card pick that follows has a clock of its own, no lead-in.
   if (view && (state.pendingChoice?.judgmentChange || state.pendingSelection?.judgmentChange)) {
-    return { kind: 'judgmentChange', seatId, key: `judgmentChange:${rounds}`, leadInMs: leadIn(rounds <= 1 ? JUDGMENT_LEAD_IN_MS.head : JUDGMENT_LEAD_IN_MS.replace) };
+    const key = `judgmentChange:${state.turn.turnNumber}:${view.seatId}:${view.card.instanceId}:${seatId}:${rounds}`;
+    if (state.pendingSelection?.judgmentChange) return { kind: 'judgmentChange', seatId, key: `${key}:pick:${stepKey}` };
+    return { kind: 'judgmentChange', seatId, key, leadInMs: leadIn(rounds <= 1 ? JUDGMENT_LEAD_IN_MS.head : JUDGMENT_LEAD_IN_MS.replace) };
   }
   if (state.pendingArrangement) return step('arrange');
+  if (state.pendingChoice?.look) return step('look');
   if (state.pendingChoice) return step(state.pendingChoice.verb === 'use' ? 'ask' : 'pick');
   if (state.pendingSelection) return step('pick');
   if (state.pendingResponse) {
     const reason = state.pendingResponse.reason?.kind;
+    if (legal.every((a) => a.kind === 'PassAction')) return step('noAnswer');
     return step(reason === 'wuxie' || reason === 'counter-wuxie' ? 'wuxie' : reason === 'dying' ? 'dying' : 'response');
   }
   if (state.phase === 'GeneralSelection') return { kind: 'selection', seatId, key: `selection:${seatId}` };

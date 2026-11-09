@@ -1,5 +1,6 @@
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { I18n } from '../i18n/i18n.service';
 import { provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { MatButtonToggle } from '@angular/material/button-toggle';
@@ -98,6 +99,21 @@ describe('LobbyPage', () => {
     expect(badges('Bot 1')).toEqual(['Bot']);
   });
 
+  it('shows a bot with a name id as [Bot] plus its name in the viewer’s language, with no Bot badge', async () => {
+    lobby.room.set({ ...MIXED, members: [...MIXED.members, { playerId: 'p-zc', name: '[Bot] Zhou Cang', botNameId: 'zhou-cang', kind: 'bot', seatId: null, isRegistered: false, connected: true, botControlled: false }] });
+    const { member, badges } = await render();
+    expect(badges('[Bot] Zhou Cang')).toEqual([]);
+    expect(member('[Bot] Zhou Cang').querySelector('mat-icon')?.textContent?.trim()).toBe('smart_toy');
+    const i18n = TestBed.inject(I18n);
+    await i18n.setLocale('vi');
+    try {
+      TestBed.tick();
+      expect([...document.querySelectorAll('li.member .name')].map((n) => n.textContent?.trim())).toContain('[Bot] Chu Thương');
+    } finally {
+      await i18n.setLocale('en');
+    }
+  });
+
   it('gives the host Add Bot, Remove for others, and Make Host for registered players only', async () => {
     const { el, member } = await render();
     expect(el.querySelector('button.add-bot')?.textContent).toContain('Add Bot');
@@ -138,14 +154,13 @@ describe('LobbyPage', () => {
     expect(checked()).toEqual([5]);
   });
 
-  it('puts the First Reveal checkbox back when the server refuses the change', async () => {
-    lobby.setRules.mockResolvedValue(false);
+  it('shows First Reveal Bonus as a disabled checkbox that follows the seat count', async () => {
     const { el, harness } = await render();
     const box = harness.routeDebugElement!.query(By.directive(MatCheckbox)).componentInstance as MatCheckbox;
+    expect([box.checked, box.disabled]).toEqual([true, true]);
     (el.querySelector('.first-reveal input') as HTMLInputElement).click();
-    expect(box.checked).toBe(false);
-    await harness.fixture.whenStable();
     expect(box.checked).toBe(true);
+    expect(lobby.setRules).not.toHaveBeenCalled();
   });
 
   it('gives the host a deck choice that sends the new deck beside the other rules', async () => {

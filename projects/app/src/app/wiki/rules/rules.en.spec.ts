@@ -8,7 +8,7 @@ import { routes } from '../../app.routes';
 describe('the rules pages in English', () => {
   beforeEach(() => localStorage.clear());
 
-  it.each(['overview', 'card-types', 'setup', 'turn', 'distance', 'judgment'])('%s keeps its text and links', async (page) => {
+  it.each(['overview', 'card-types', 'setup', 'allegiance', 'turn', 'distance', 'response', 'damage', 'judgment', 'chains', 'glossary'])('%s keeps its text and links', async (page) => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(`/wiki/rules/${page}`);
@@ -16,7 +16,7 @@ describe('the rules pages in English', () => {
     harness.detectChanges();
     const el = harness.routeNativeElement as HTMLElement;
     expect({
-      text: [...el.querySelectorAll('h2, h3, p, li, th, td')].map((node) => node.textContent!.replace(/\s+/g, ' ').trim()),
+      text: [...el.querySelectorAll('h2, h3, h4, p, li, th, td, .cap, figcaption')].map((node) => node.textContent!.replace(/\s+/g, ' ').trim()),
       links: [...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${a.textContent!.trim()}`),
     }).toMatchSnapshot();
   });

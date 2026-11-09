@@ -1,9 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS } from 'content';
+import { DEFAULT_DECK_ID, FIRST_REVEAL_MIN_SEATS, generalsPerSeat } from 'content';
 import type { DeckId } from 'content';
 import { DeckPicker } from '../deck-picker';
 import type { SeatLimits } from 'protocol';
@@ -46,10 +46,9 @@ export interface PlayVsBotsDialogData {
             </mat-button-toggle-group>
           </div>
           <app-deck-picker [(value)]="deck" />
-          @if (seatCount() >= firstRevealMinSeats) {
-            <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" (change)="firstRevealDraw.set($event.checked)">{{ 'setup.firstReveal' | t }}</mat-checkbox>
-            <p class="hint">{{ 'setup.firstReveal.hint' | t }}</p>
-          }
+          <p class="hint generals-dealt">{{ 'setup.generalsDealt.hint' | t: { n: generalsDealt() } }}</p>
+          <mat-checkbox class="first-reveal" [checked]="firstRevealDraw()" [disabled]="true">{{ 'setup.firstReveal' | t }}</mat-checkbox>
+          <p class="hint">{{ 'setup.firstReveal.hint' | t }}</p>
           @if (error()) {
             <p class="error" role="alert">{{ error() | tm }}</p>
           }
@@ -77,12 +76,13 @@ export class PlayVsBotsDialog {
   protected readonly data = inject<PlayVsBotsDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<PlayVsBotsDialog, string>>(MatDialogRef);
   private readonly rooms = inject(RoomsService);
-  protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
+  protected readonly generalsDealt = computed(() => generalsPerSeat(this.seatCount(), this.deck()));
   protected readonly seatOptions = Array.from({ length: this.data.seatLimits.max - this.data.seatLimits.min + 1 }, (_, i) => this.data.seatLimits.min + i);
 
   readonly seatCount = signal(Math.min(Math.max(4, this.data.seatLimits.min), this.data.seatLimits.max));
-  readonly firstRevealDraw = signal(true);
   readonly deck = signal<DeckId>(DEFAULT_DECK_ID);
+  // Not a choice: the bonus applies at a big table and nowhere else.
+  protected readonly firstRevealDraw = computed(() => this.seatCount() >= FIRST_REVEAL_MIN_SEATS);
   readonly startingNew = signal(false);
   readonly error = signal<Msg | null>(null);
   readonly busy = signal(false);
@@ -106,7 +106,7 @@ export class PlayVsBotsDialog {
         seatCount,
         rules: {
           ...(this.deck() !== DEFAULT_DECK_ID ? { deck: this.deck() } : {}),
-          ...(seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: this.firstRevealDraw() } : {}),
+          ...(seatCount >= FIRST_REVEAL_MIN_SEATS ? { firstRevealDraw: true } : {}),
         },
         ...(this.existingRoomId() ? { replace: true } : {}),
       });

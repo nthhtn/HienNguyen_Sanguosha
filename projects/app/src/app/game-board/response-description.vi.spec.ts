@@ -139,14 +139,14 @@ describe('the dying round, in English and Vietnamese', () => {
   it('another seat is dying', () => {
     expect(both((t) => describeResponse(seated(state([], dyingWindow('seat-1')), 0), 'seat-0', undefined, t))).toEqual({
       en: { source: 'Seat 1 is dying (HP 0)', latest: null, prompt: 'Play a Peach to save Seat 1?', outcome: 'Seat 1 is eliminated', outcomeForce: 'Wei' },
-      vi: { source: 'Người chơi 1 cận kề cái chết (Sinh lực 0)', latest: null, prompt: 'Đánh Peach để cứu Người chơi 1?', outcome: 'Người chơi 1 bị loại', outcomeForce: 'Wei' },
+      vi: { source: 'Người chơi 1 hấp hối (Sinh lực 0)', latest: null, prompt: 'Đánh Peach để cứu Người chơi 1?', outcome: 'Người chơi 1 trận vong', outcomeForce: 'Wei' },
     });
   });
 
   it('the viewer is dying and needs three Peaches', () => {
     expect(both((t) => describeResponse(seated(state([], dyingWindow('seat-0')), -2), 'seat-0', undefined, t))).toEqual({
       en: { source: 'You are dying (HP -2)', latest: null, prompt: 'Play a Peach to save yourself? (needs 3 Peaches)', outcome: 'You are eliminated', outcomeForce: 'Wei' },
-      vi: { source: 'Bạn cận kề cái chết (Sinh lực -2)', latest: null, prompt: 'Đánh Peach để cứu chính bạn? (cần 3 Peach)', outcome: 'Bạn bị loại', outcomeForce: 'Wei' },
+      vi: { source: 'Bạn hấp hối (Sinh lực -2)', latest: null, prompt: 'Đánh Peach để cứu chính bạn? (cần 3 Peach)', outcome: 'Bạn trận vong', outcomeForce: 'Wei' },
     });
   });
 
@@ -162,13 +162,12 @@ describe('Wuxie and Coerce windows, in English and Vietnamese', () => {
   const barbarians: CardInstance = { instanceId: 'barb-1', definitionId: 'barbarians', suit: 'spade', rank: 7 };
   const drawTwo: CardInstance = { instanceId: 'dt-1', definitionId: 'draw-two', suit: 'heart', rank: 7 };
   const capture: CardInstance = { instanceId: 'cap-1', definitionId: 'capture', suit: 'spade', rank: 6 };
-  const cancel = { en: 'Play Wuxie to cancel it?', vi: 'Đánh Wuxie để hủy?' };
 
   it('a Tool aimed at the viewer, at another seat, and at its own user', () => {
     const aimed = (target: string) => state([], wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat(target) }));
     expect(both((t) => describeResponse(aimed('seat-0'), 'seat-0', undefined, t))).toMatchObject({
-      en: { source: 'Seat 1 used Barbarians on you', prompt: cancel.en, outcome: 'Barbarians takes effect on you' },
-      vi: { source: 'Người chơi 1 dùng Barbarians lên bạn', prompt: cancel.vi, outcome: 'Barbarians có hiệu lực lên bạn' },
+      en: { source: 'Seat 1 used Barbarians on you', prompt: 'Play Wuxie to cancel Barbarians?', outcome: 'Barbarians takes effect on you' },
+      vi: { source: 'Người chơi 1 dùng Barbarians lên bạn', prompt: 'Đánh Wuxie để hủy Barbarians?', outcome: 'Barbarians có hiệu lực lên bạn' },
     });
     expect(both((t) => describeResponse(aimed('seat-2'), 'seat-0', undefined, t))).toMatchObject({
       en: { source: 'Seat 1 used Barbarians on Seat 2', outcome: 'Barbarians takes effect on Seat 2' },
@@ -184,8 +183,8 @@ describe('Wuxie and Coerce windows, in English and Vietnamese', () => {
   it('another seat’s counter Wuxie', () => {
     const counter = state([], wuxieWindow('seat-0', { kind: 'counter-wuxie', wuxieSeatId: 'seat-2' }));
     expect(both((t) => describeResponse(counter, 'seat-0', undefined, t))).toMatchObject({
-      en: { source: 'Seat 2 played Wuxie', prompt: cancel.en, outcome: "Seat 2's Wuxie stands" },
-      vi: { source: 'Người chơi 2 đánh Wuxie', prompt: cancel.vi, outcome: 'Wuxie của Người chơi 2 có hiệu lực' },
+      en: { source: 'Seat 2 played Wuxie', prompt: "Play Wuxie to cancel step 1, Seat 2's Wuxie?", outcome: "Seat 2's Wuxie stands" },
+      vi: { source: 'Người chơi 2 đánh Wuxie', prompt: 'Đánh Wuxie để hủy bước 1, Wuxie của Người chơi 2?', outcome: 'Wuxie của Người chơi 2 có hiệu lực' },
     });
   });
 
@@ -303,7 +302,7 @@ describe('waitingLine, in English and Vietnamese', () => {
     };
     expect(both((t) => waitingLine(state([], dying), t))).toEqual({ en: 'Waiting on Hing to save Seat 2', vi: 'Đang chờ Hing cứu Người chơi 2' });
     const wuxie = wuxieWindow('seat-0', { kind: 'wuxie', tool: used(barbarians), toolUserSeatId: 'seat-1', target: seat('seat-0') });
-    expect(both((t) => waitingLine(state([], wuxie), t))).toEqual({ en: 'Waiting on Hing: Wuxie?', vi: 'Đang chờ Hing: Wuxie?' });
+    expect(both((t) => waitingLine(state([], wuxie), t))).toEqual({ en: 'Waiting on Hing', vi: 'Đang chờ Hing' });
     const answer: PendingResponse = {
       id: 'b1', respondingSeatId: 'seat-1', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
       reason: { kind: 'card-effect', card: used(barbarians), userSeatId: 'seat-0' }, context: { effect: noop },

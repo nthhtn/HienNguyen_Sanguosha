@@ -33,7 +33,6 @@ import { TPipe } from '../i18n/t.pipe';
   styles: `
     .timer { width: 160px; margin-left: 12px; }
     :host { display: block; position: sticky; top: var(--mat-toolbar-standard-height, 64px); z-index: 2; }
-    @media (max-width: 599px) { :host { top: var(--mat-toolbar-mobile-height, 56px); } }
     .phase-indicator {
       display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px;
       margin: 8px 0; padding: 8px 16px; border-radius: 12px;

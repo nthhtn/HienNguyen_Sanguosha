@@ -1,7 +1,7 @@
 import { ruleBasedPolicy } from 'bots';
 import type { BotPolicy } from 'bots';
 import { buildContentRegistry } from 'content';
-import { defaultActionsFor, getActiveSeatId, getLegalActions, resolve, usedCardOf } from 'engine';
+import { batchPlaybackMs, defaultActionsFor, getActiveSeatId, getLegalActions, resolve, usedCardOf } from 'engine';
 import type { Action, GameState } from 'engine';
 import type { MemberKind } from 'protocol';
 import { GameRecord, GameSeat } from '../persistence/records';
@@ -60,7 +60,7 @@ class FakeHost implements RunnerHost {
 
 // Seat i is played by member `p${i}`. Every human in `connected` starts connected.
 // `state` replaces the opening state; members in `left` have left the room (a bot plays their seat).
-function setup(options: { kinds?: MemberKind[]; startHoldMs?: number; solo?: boolean; connected?: string[]; policy?: BotPolicy; state?: (opening: GameState) => GameState; left?: string[] } = {}) {
+function setup(options: { kinds?: MemberKind[]; startHoldMs?: number; pacePlayback?: boolean; solo?: boolean; connected?: string[]; policy?: BotPolicy; state?: (opening: GameState) => GameState; left?: string[] } = {}) {
   const kinds = options.kinds ?? ['human', 'bot'];
   const seats: GameSeat[] = kinds.map((kind, i) => ({ seatId: `seat-${i}`, roomPlayerId: `p${i}`, name: kind === 'bot' ? `Bot ${i}` : `Player ${i}`, kind }));
   const record: GameRecord = {
@@ -87,7 +87,7 @@ function setup(options: { kinds?: MemberKind[]; startHoldMs?: number; solo?: boo
     },
     ctx,
     host,
-    { solo: options.solo ?? false, botDelayMs: BOT_DELAY_MS, takeoverAwayMs: TAKEOVER_AWAY_MS, startHoldMs: options.startHoldMs ?? 0, policy: options.policy ?? ruleBasedPolicy }
+    { solo: options.solo ?? false, botDelayMs: BOT_DELAY_MS, takeoverAwayMs: TAKEOVER_AWAY_MS, startHoldMs: options.startHoldMs ?? 0, pacePlayback: options.pacePlayback ?? false, policy: options.policy ?? ruleBasedPolicy }
   );
   runner.start();
   return { runner, host, scheduler: host.scheduler, legal: () => runner.updateFor('p0', 0)!.legalActions };
@@ -800,13 +800,13 @@ function askToChange(runner: GameRunner, seatId: string, rounds: number): void {
 }
 
 describe('GameRunner: a skill that may change the judgment', () => {
-  it("gives a person's decision 15 seconds, after the card has been shown, and declines when they run out", async () => {
+  it("gives a person's decision 20 seconds, after the card has been shown, and declines when they run out", async () => {
     const { runner, host, scheduler } = setup();
     askToChange(runner, 'seat-0', 1);
     const clock = runner.updateFor('p0', 0)!.clock!;
-    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'judgmentChange', totalSeconds: 15 });
+    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'judgmentChange', totalSeconds: 20 });
     expect(clock.startsAt - clock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.head);
-    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + 14_999);
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + 19_999);
     expect(host.stored).toHaveLength(0);
     await scheduler.advance(1);
     expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: expect.objectContaining({ kind: 'ChooseOptionAction', optionId: 'decline' }) })]);
@@ -834,5 +834,91 @@ describe('GameRunner: a skill that may change the judgment', () => {
     askToChange(runner, 'seat-1', 1);
     await scheduler.advance(BOT_DELAY_MS);
     expect(host.stored).toHaveLength(1);
+  });
+});
+
+describe('GameRunner: pacing by playback', () => {
+  const pick = (runner: GameRunner, playerId: string) => runner.submit(playerId, GAME_ID, runner.seq, [runner.updateFor(playerId, 0)!.legalActions[0]]);
+  // The real milliseconds every commit so far takes to play. The client queues a batch behind the one still playing,
+  // and a test makes its moves at one instant, so the batches add up.
+  const animationOf = (runner: GameRunner, host: FakeHost) =>
+    host.published.reduce(
+      (sum, from, i) =>
+        sum + batchPlaybackMs(runner.state.log.slice(from, host.published[i + 1] ?? runner.state.log.length), (id) => runner.state.zones.find((z) => z.id === id)?.kind, runner.state.log[from - 1]),
+      0
+    );
+  // The first player plays out their turn with the engine's defaults (what a timed-out clock submits), so the turn
+  // passes to the second seat. `animation` is what all of it takes to play.
+  const endFirstTurn = async (kinds: MemberKind[], connected: string[]) => {
+    const t = setup({ kinds, connected, state: pastSelection, pacePlayback: true });
+    for (let i = 0; i < 20 && getActiveSeatId(t.runner.state) === 'seat-0'; i++) {
+      const state = t.runner.state;
+      await t.runner.submit('p0', GAME_ID, t.runner.seq, defaultActionsFor(state, getLegalActions(state, 'seat-0', registry)));
+    }
+    expect(getActiveSeatId(t.runner.state)).toBe('seat-1');
+    return { ...t, animation: animationOf(t.runner, t.host) };
+  };
+
+  it('a bot moves BOT_DELAY_MS after the animation of the batch before it', async () => {
+    const { host, scheduler, animation } = await endFirstTurn(['human', 'bot'], ['p0']);
+    // At least the turn banner at Slow.
+    expect(animation).toBeGreaterThan(2700);
+    const before = host.stored.length;
+    await scheduler.advance(animation + BOT_DELAY_MS - 1);
+    expect(host.stored).toHaveLength(before);
+    await scheduler.advance(1);
+    expect(host.stored[before]).toMatchObject({ seatId: 'seat-1', source: 'bot' });
+  });
+
+  it("starts a bot's clock now, so the animation wait is not the start hold", async () => {
+    const { runner, animation } = await endFirstTurn(['human', 'bot'], ['p0']);
+    const clock = runner.updateFor('p0', 0)!.clock!;
+    expect(clock).toMatchObject({ seatId: 'seat-1', bot: true });
+    expect(clock.startsAt).toBe(clock.serverNow);
+    expect(clock.endsAt - clock.serverNow).toBe(animation + BOT_DELAY_MS);
+  });
+
+  it("starts a person's new clock after the animation, with its full budget", async () => {
+    const { runner, animation } = await endFirstTurn(['human', 'human'], ['p0', 'p1']);
+    const clock = runner.updateFor('p1', 0)!.clock!;
+    expect(clock.seatId).toBe('seat-1');
+    expect(clock.startsAt - clock.serverNow).toBe(animation);
+    expect(clock.endsAt - clock.startsAt).toBe(clock.totalSeconds * 1000);
+  });
+
+  it('lets a person act during the animation', async () => {
+    const { runner } = await endFirstTurn(['human', 'human'], ['p0', 'p1']);
+    const [first] = runner.updateFor('p1', 0)!.legalActions;
+    expect(first).toBeDefined();
+    await expect(runner.submit('p1', GAME_ID, runner.seq, [first])).resolves.toBeUndefined();
+  });
+
+  it('a runner built mid-game has no animation to wait for', () => {
+    const { runner } = setup({ kinds: ['bot', 'human'], connected: ['p1'], state: pastSelection, pacePlayback: true });
+    const clock = runner.updateFor('p1', 0)!.clock!;
+    expect(clock.endsAt - clock.serverNow).toBe(BOT_DELAY_MS);
+  });
+
+  it('waits for the larger of the start hold and the animation, not their sum', async () => {
+    const long = setup({ kinds: ['bot', 'human'], connected: ['p1'], startHoldMs: 20_000, pacePlayback: true });
+    await long.scheduler.advance(0);
+    await pick(long.runner, 'p1');
+    const animation = animationOf(long.runner, long.host);
+    expect(animation).toBeGreaterThan(0);
+    expect(animation).toBeLessThan(20_000);
+    const clock = long.runner.updateFor('p1', 0)!.clock!;
+    expect(clock.endsAt - clock.serverNow).toBe(20_000 + BOT_DELAY_MS);
+    const short = setup({ kinds: ['bot', 'human'], connected: ['p1'], startHoldMs: 100, pacePlayback: true });
+    await short.scheduler.advance(0);
+    await pick(short.runner, 'p1');
+    const shortClock = short.runner.updateFor('p1', 0)!.clock!;
+    expect(shortClock.endsAt - shortClock.serverNow).toBe(animationOf(short.runner, short.host) + BOT_DELAY_MS);
+  });
+
+  it('a judgment lead-in and the animation overlap: the wait is the larger', () => {
+    const { runner } = setup({ kinds: ['human', 'human'], connected: ['p0', 'p1'], pacePlayback: true });
+    settle(runner, 2);
+    const clock = runner.updateFor('p0', 0)!.clock!;
+    expect(clock.startsAt - clock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.tail);
   });
 });

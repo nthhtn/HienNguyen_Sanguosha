@@ -188,6 +188,11 @@ answer, with which cards, and the effect to apply if they don't
 resumes with the next action, with everything still queued behind the window:
 
 - **`PassAction`** queues the held-back effect (the Sha's damage, above).
+  It also logs a `ResponsePassedEvent` (seat, window id, `allowedCardIds`),
+  but only under the `logPasses` rule and only for a window that sets
+  `announcePass` (Sha, Duel, Barbarians, Hail of Arrows, Coerce: asked whatever
+  the seat holds). Wuxie, dying and skill windows never announce, so a logged
+  pass never leaks that the seat held a counter or rescue card.
 - **`RespondAction`** plays the answering card. By default the held-back
   effect is then dropped: a Shan cancels a Sha.
 - If the window records the card that opened it (`PendingResponse.sourceCard`),
@@ -657,7 +662,7 @@ fits instead.
 Two Guozhan triggers react to `after:GeneralRevealedEvent` with a
 `DrawCardsEffect`:
 
-- **First reveal** (optional, `state.rules.firstRevealDraw`, 5+ seats): the
+- **First reveal** (`state.rules.firstRevealDraw`, which the app and server turn on from 5 seats; the engine only reads it): the
   first `GeneralRevealedEvent` in the log gives its seat 2 cards.
 - **Rounding** (always): when both of a seat's Generals are revealed and their
   printed HP sum is odd, the seat draws 1 card, once, on the second reveal.

@@ -1,13 +1,16 @@
+import { Layout } from '../layout.service';
+import { SmallScreenNotice } from '../small-screen-notice';
 import { Component, computed, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleGroup, MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
-import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
-import { FIRST_REVEAL_MIN_SEATS } from 'content';
+import { FIRST_REVEAL_MIN_SEATS, generalsPerSeat } from 'content';
 import { deckIdOf } from 'content';
-import type { RoomRules, RoomSnapshot } from 'protocol';
+import type { RoomMemberView, RoomRules, RoomSnapshot } from 'protocol';
+import { playerName } from '../labels';
 import type { DeckId } from 'content';
 import { DeckPicker } from '../deck-picker';
 import { I18n } from '../i18n/i18n.service';
@@ -25,7 +28,7 @@ import { SocketService } from './socket.service';
 // A room over its socket: the lobby (members, host controls, Start Game, Leave Room), the board while a game runs, and how the last game ended.
 @Component({
   selector: 'app-lobby-page',
-  imports: [DeckPicker, RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat, TPipe, TMsgPipe],
+  imports: [DeckPicker, RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat, SmallScreenNotice, TPipe, TMsgPipe],
   providers: [SocketService, LobbyService, ChatService, RemoteGameService, RemoteDecisionClock],
   styleUrl: './online-page.css',
   template: `
@@ -101,14 +104,13 @@ import { SocketService } from './socket.service';
                       </mat-button-toggle-group>
                     </div>
                     <app-deck-picker [value]="deckOf(room.rules.deck)" [disabled]="!lobby.canAct()" (valueChange)="setDeck($event)" />
-                    @if (room.seatCount >= firstRevealMinSeats) {
-                      <mat-checkbox class="first-reveal" [disabled]="!lobby.canAct()" [checked]="!!room.rules.firstRevealDraw" (change)="setFirstReveal($event.checked)">
-                        {{ 'setup.firstReveal' | t }}
-                      </mat-checkbox>
-                    }
+                    <mat-checkbox class="first-reveal" [disabled]="true" [checked]="room.seatCount >= firstRevealMinSeats">
+                      {{ 'setup.firstReveal' | t }}
+                    </mat-checkbox>
                   } @else {
                     <p class="rules-summary">{{ rulesSummary() }}</p>
                   }
+                  <p class="generals-dealt">{{ 'setup.generalsDealt.hint' | t: { n: generalsPerSeat(room.seatCount, deckOf(room.rules.deck)) } }}</p>
                 </section>
                 <section class="players">
                   <h3>{{ 'lobby.players' | t }}</h3>
@@ -116,7 +118,7 @@ import { SocketService } from './socket.service';
                     @for (member of room.members; track member.playerId) {
                       <li class="member" [class.away]="member.kind === 'human' && !member.connected">
                         <mat-icon aria-hidden="true">{{ member.kind === 'bot' ? 'smart_toy' : 'person' }}</mat-icon>
-                        <span class="name">{{ member.name }}</span>
+                        <span class="name">{{ memberName(member) }}</span>
                         @if (member.playerId === room.hostPlayerId) {
                           <span class="badge host">{{ 'lobby.host' | t }}</span>
                         }
@@ -124,7 +126,9 @@ import { SocketService } from './socket.service';
                           <span class="badge you">{{ 'lobby.you' | t }}</span>
                         }
                         @if (member.kind === 'bot') {
-                          <span class="badge bot">{{ 'lobby.bot' | t }}</span>
+                          @if (!member.botNameId) {
+                            <span class="badge bot">{{ 'lobby.bot' | t }}</span>
+                          }
                         } @else if (!member.isRegistered) {
                           <span class="badge guest">{{ 'lobby.guest' | t }}</span>
                         }
@@ -160,7 +164,8 @@ import { SocketService } from './socket.service';
               <a mat-button class="back" routerLink="/rooms">{{ 'rooms.back' | t }}</a>
             } @else {
               @if (lobby.canStart()) {
-                <button mat-flat-button type="button" class="start" [disabled]="!lobby.canAct() || !isFull()" (click)="lobby.start()">
+                <app-small-screen-notice />
+                <button mat-flat-button type="button" class="start" [disabled]="!layout.canPlay() || !lobby.canAct() || !isFull()" (click)="lobby.start()">
                   <mat-icon>play_arrow</mat-icon> {{ 'setup.start' | t }}
                 </button>
               }
@@ -179,14 +184,15 @@ import { SocketService } from './socket.service';
 })
 export class LobbyPage {
   protected readonly lobby = inject(LobbyService);
+  protected readonly layout = inject(Layout);
   private readonly i18n = inject(I18n);
   // Injected here so it exists before the first welcome: the socket does not
   // replay, and the panel only renders once the room is known.
   protected readonly chat = inject(ChatService);
   protected readonly game = inject(RemoteGameService);
+  protected readonly generalsPerSeat = generalsPerSeat;
   protected readonly firstRevealMinSeats = FIRST_REVEAL_MIN_SEATS;
   private readonly seats = viewChild(MatButtonToggleGroup);
-  private readonly firstReveal = viewChild(MatCheckbox);
   private readonly deckPicker = viewChild(DeckPicker);
 
   // From the member count (the server refuses fewer seats) up to the limit.
@@ -205,6 +211,11 @@ export class LobbyPage {
     const room = this.lobby.room();
     return !room || room.members.length >= room.seatCount;
   });
+
+  // A bot's name is read in the viewer's language; this follows the language when it changes.
+  protected memberName(member: RoomMemberView): string {
+    return playerName(member, this.i18n.translator);
+  }
 
   protected readonly rulesSummary = computed(() => {
     const room = this.lobby.room();
@@ -226,11 +237,6 @@ export class LobbyPage {
     if (room) void this.lobby.setRules(seatCount, this.rulesOf(room)).then((ok) => ok || this.restoreControls());
   }
 
-  protected setFirstReveal(on: boolean): void {
-    const room = this.lobby.room();
-    if (room) void this.lobby.setRules(room.seatCount, { ...this.rulesOf(room), firstRevealDraw: on }).then((ok) => ok || this.restoreControls());
-  }
-
   protected setDeck(deck: DeckId): void {
     const room = this.lobby.room();
     if (room) void this.lobby.setRules(room.seatCount, { ...this.rulesOf(room), deck }).then((ok) => ok || this.restoreControls());
@@ -249,8 +255,6 @@ export class LobbyPage {
     if (!room) return;
     const seats = this.seats();
     if (seats) seats.value = room.seatCount;
-    const firstReveal = this.firstReveal();
-    if (firstReveal) firstReveal.checked = !!room.rules.firstRevealDraw;
     this.deckPicker()?.value.set(deckIdOf(room.rules.deck));
   }
 }

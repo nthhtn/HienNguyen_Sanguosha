@@ -14,6 +14,8 @@ export interface ResponseDescription {
   outcome: string;
   // The force colour of the player that outcome befalls.
   outcomeForce: Force;
+  // A Wuxie answering another Wuxie: the whole chain, oldest first (the Tool, then each Wuxie played on it).
+  chain?: string[];
   // The No Response option's own wording, when the window has one (Instigate's Pass).
   passLabel?: string;
 }
@@ -61,6 +63,21 @@ function lastAnswerBy(log: EngineEvent[], seatId: string): CardPlayed | undefine
     if (event.kind === 'CardPlayedEvent' && event.seatId === seatId && event.inResponseTo) return event;
   }
   return undefined;
+}
+
+// The Wuxie plays stacked on a Tool, oldest first, ending with the one `seatId` played last: each
+// counter names the seat it cancels, so walk back from the newest until a play that cancels the Tool itself.
+function wuxieChain(log: EngineEvent[], seatId: string): CardPlayed[] {
+  const chain: CardPlayed[] = [];
+  let seat = seatId;
+  for (let i = log.length - 1; i >= 0; i--) {
+    const event = log[i];
+    if (event.kind !== 'CardPlayedEvent' || event.seatId !== seat || !event.inResponseTo) continue;
+    chain.unshift(event);
+    if (!event.inResponseTo.counters) break;
+    seat = event.inResponseTo.seatId ?? '';
+  }
+  return chain;
 }
 
 // The seat a held-back effect would befall.
@@ -157,7 +174,7 @@ export function describeResponse(
       return {
         source: you ? tr('response.judge.source.you', { tool: toolName }) : tr('response.judge.source.other', { seat: name(judgedOwner), tool: toolName }),
         latest: null,
-        prompt: tr('response.cancelIt', { card: askedCardName(state, tr, viewerSeatId) }),
+        prompt: tr('response.cancelTool', { card: askedCardName(state, tr, viewerSeatId), tool: toolName }),
         outcome: you ? tr('response.judge.outcome.you', { tool: toolName }) : tr('response.judge.outcome.other', { seat: name(judgedOwner), tool: toolName }),
         outcomeForce: seatForce(state.seats.find((s) => s.id === judgedOwner)),
       };
@@ -168,7 +185,7 @@ export function describeResponse(
     return {
       source: aimedAt ? tr('response.usedOn', { seat: name(toolUserSeatId), tool: toolName, target: whom(aimedAt) }) : tr('response.used', { seat: name(toolUserSeatId), tool: toolName }),
       latest: null,
-      prompt: tr('response.cancelIt', { card: askedCardName(state, tr, viewerSeatId) }),
+      prompt: tr('response.cancelTool', { card: askedCardName(state, tr, viewerSeatId), tool: toolName }),
       outcome: aimedAt ? tr('response.takesEffectOn', { tool: toolName, target: whom(aimedAt) }) : tr('response.takesEffect', { tool: toolName }),
       outcomeForce: seatForce(state.seats.find((s) => s.id === targetId)),
     };
@@ -180,10 +197,25 @@ export function describeResponse(
     // The counter card that seat answered with (Wuxie, or Wuxie Kingdom), else the asked one.
     const answered = lastAnswerBy(state.log, wuxieSeatId);
     const counter = answered ? cardName({ definitionId: shownCardId(answered.card) }, tr) : asked;
+    // The chain: the Tool, then each Wuxie played on it, so the viewer sees what theirs would cancel.
+    const plays = wuxieChain(state.log, wuxieSeatId);
+    const base = plays[0]?.inResponseTo;
+    const toolPlay = base?.cardInstanceId ? lastPlayOf(state.log, base.cardInstanceId) : undefined;
+    const toolCard = base?.cardInstanceId ? state.zones.flatMap((z) => z.cards).find((c) => c.instanceId === base.cardInstanceId) : undefined;
+    const toolName = toolPlay ? cardName({ definitionId: shownCardId(toolPlay.card) }, tr) : toolCard ? cardName(toolCard, tr) : tr('history.aCard');
+    const toolUser = base?.seatId ?? toolPlay?.seatId;
+    const aimedAt = base?.targetSeatId && base.targetSeatId !== toolUser ? base.targetSeatId : undefined;
+    const toolLine = !toolUser
+      ? toolName
+      : aimedAt
+        ? tr('response.usedOn', { seat: name(toolUser), tool: toolName, target: whom(aimedAt) })
+        : tr('response.used', { seat: name(toolUser), tool: toolName });
+    const chain = [toolLine, ...plays.map((e) => tr('response.played', { seat: whom(e.seatId), card: cardName({ definitionId: shownCardId(e.card) }, tr) }))];
     return {
       source: tr('response.played', { seat: name(wuxieSeatId), card: counter }),
       latest: null,
-      prompt: tr('response.cancelIt', { card: asked }),
+      chain,
+      prompt: tr('response.cancelStep', { card: asked, n: chain.length, seat: name(wuxieSeatId), counter }),
       outcome: tr('response.stands', { seat: name(wuxieSeatId), card: counter }),
       outcomeForce: seatForce(state.seats.find((s) => s.id === wuxieSeatId)),
     };
@@ -293,7 +325,8 @@ export function waitingLine(state: GameState, tr: Translator = englishTranslator
   const seat = name(pending.respondingSeatId);
   const reason = pending.reason;
   if (reason?.kind === 'dying') return tr('response.waiting.toSave', { seat, dying: name(reason.seatId) });
-  if (reason?.kind === 'wuxie' || reason?.kind === 'counter-wuxie') return tr('response.waiting.ask', { seat, what: askedCardName(state, tr) });
+  // Not named: only a seat that holds a Wuxie is asked, so naming the card would confirm it is in that hand.
+  if (reason?.kind === 'wuxie' || reason?.kind === 'counter-wuxie') return tr('response.waiting.on', { seat });
   if (reason?.kind === 'card-effect') return tr('response.waiting.answer', { seat, card: cardName({ definitionId: shownCardId(reason.card) }, tr) });
   const sha = cardName({ definitionId: 'sha' }, tr);
   if (reason?.kind === 'ability' && baseSkillId(reason.abilityId) === 'upheaval') return tr('response.waiting.playSha', { seat, sha, ability: abilityDisplayName(reason.abilityId, tr) });

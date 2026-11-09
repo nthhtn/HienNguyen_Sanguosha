@@ -1,3 +1,5 @@
+import { Layout } from '../layout.service';
+import { SmallScreenNotice } from '../small-screen-notice';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,7 +22,7 @@ import { RoomsService } from './rooms.service';
 // registered players, and Play vs Bots, which any signed-in player can start. The list refreshes every 5 s while this screen is open.
 @Component({
   selector: 'app-rooms-page',
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, TPipe, TMsgPipe],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, SmallScreenNotice, TPipe, TMsgPipe],
   styleUrl: './online-page.css',
   template: `
     <div class="online-page">
@@ -28,19 +30,20 @@ import { RoomsService } from './rooms.service';
         <mat-card-header><mat-card-title>{{ 'rooms.title' | t }}</mat-card-title></mat-card-header>
         <mat-card-content>
           <div class="toolbar">
-            <button mat-flat-button type="button" class="create" [disabled]="!auth.isRegistered() || !rooms.list()" (click)="create()">
+            <button mat-flat-button type="button" class="create" [disabled]="!layout.canPlay() || !auth.isRegistered() || !rooms.list()" (click)="create()">
               <mat-icon>add</mat-icon> {{ 'rooms.create' | t }}
             </button>
             @if (!auth.isRegistered()) {
               <span class="hint host-hint">{{ 'rooms.hostHint' | t }}</span>
             }
-            <button mat-stroked-button type="button" class="play-vs-bots" [disabled]="!rooms.list()" (click)="playVsBots()">
+            <button mat-stroked-button type="button" class="play-vs-bots" [disabled]="!layout.canPlay() || !rooms.list()" (click)="playVsBots()">
               <mat-icon>smart_toy</mat-icon> {{ 'setup.mode.bots' | t }}
             </button>
             @if (auth.isRegistered()) {
               <a mat-button class="my-games" routerLink="/my-games"><mat-icon>history</mat-icon> {{ 'rooms.myGames' | t }}</a>
             }
           </div>
+          <app-small-screen-notice />
           @if (notice(); as text) {
             <p class="notice" role="status">{{ text | tm }}</p>
           }
@@ -59,9 +62,9 @@ import { RoomsService } from './rooms.service';
                     <span class="count">{{ room.memberCount }} / {{ room.capacity }}</span>
                     <span class="status">{{ statusLabel(room) }}</span>
                     @if (room.youAreMember) {
-                      <button mat-stroked-button type="button" class="rejoin" (click)="rejoin(room)">{{ 'rooms.rejoin' | t }}</button>
+                      <button mat-stroked-button type="button" class="rejoin" [disabled]="!layout.canPlay()" (click)="rejoin(room)">{{ 'rooms.rejoin' | t }}</button>
                     } @else {
-                      <button mat-stroked-button type="button" class="join" [disabled]="!canJoin(room)" (click)="join(room)">{{ 'rooms.join' | t }}</button>
+                      <button mat-stroked-button type="button" class="join" [disabled]="!layout.canPlay() || !canJoin(room)" (click)="join(room)">{{ 'rooms.join' | t }}</button>
                     }
                   </li>
                 }
@@ -78,6 +81,7 @@ import { RoomsService } from './rooms.service';
 export class RoomsPage {
   protected readonly rooms = inject(RoomsService);
   protected readonly auth = inject(AuthService);
+  protected readonly layout = inject(Layout);
   private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
   // Why the last Lobby closed under you, if it did.

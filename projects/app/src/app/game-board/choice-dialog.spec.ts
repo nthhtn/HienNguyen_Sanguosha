@@ -37,7 +37,7 @@ describe('ChoiceDialog', () => {
     expect(el.querySelector('h2')!.textContent).toContain('Steal');
     expect(el.querySelector('.prompt')!.textContent).toContain('Choose a card to take from Seat 1');
     const backs = Array.from(el.querySelectorAll('img.card-back')) as HTMLImageElement[];
-    expect(backs.map((b) => b.getAttribute('src'))).toEqual(['/card-art/cards/back.jpg', '/card-art/cards/back.jpg']);
+    expect(backs.map((b) => b.getAttribute('src'))).toEqual(['/images/playing-cards/back.jpg', '/images/playing-cards/back.jpg']);
     expect(el.querySelector('[data-option-id="hand#2"] .label')!.textContent!.trim()).toBe('Hand Card 2');
     expect(el.querySelector('[data-option-id="lion-1"] app-playing-card')).not.toBeNull();
   });

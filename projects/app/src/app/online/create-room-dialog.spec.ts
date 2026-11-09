@@ -41,21 +41,22 @@ describe('CreateRoomDialog', () => {
     expect(component.seatCount()).toBe(4);
   });
 
-  it('offers First Reveal Bonus only at 5 seats or more', async () => {
+  it('always shows First Reveal Bonus, disabled: unchecked below 5 seats, checked from 5', async () => {
     const { fixture, component, el } = await create();
-    expect(el.querySelector('.first-reveal')).toBeNull();
+    const box = () => el.querySelector('.first-reveal input') as HTMLInputElement;
+    expect(el.querySelector('.first-reveal')?.textContent).toContain('First Reveal Bonus');
+    expect([box().checked, box().disabled]).toEqual([false, true]);
     component.seatCount.set(5);
     fixture.detectChanges();
-    expect(el.querySelector('.first-reveal')?.textContent).toContain('First Reveal Bonus');
+    expect([box().checked, box().disabled]).toEqual([true, true]);
   });
 
   it('creates the room and closes with its id', async () => {
     rooms.create.mockResolvedValue('r-new');
     const { component } = await create();
     component.seatCount.set(6);
-    component.firstRevealDraw.set(false);
     await component.submit();
-    expect(rooms.create).toHaveBeenCalledWith({ seatCount: 6, rules: { firstRevealDraw: false }, displayName: 'Ann' });
+    expect(rooms.create).toHaveBeenCalledWith({ seatCount: 6, rules: { firstRevealDraw: true }, displayName: 'Ann' });
     expect(dialogRef.close).toHaveBeenCalledWith('r-new');
   });
 
@@ -90,8 +91,7 @@ describe('CreateRoomDialog', () => {
     await component.submit();
     expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 4, rules: {}, displayName: 'Ann' });
     component.seatCount.set(6);
-    component.firstRevealDraw.set(false);
     await component.submit();
-    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 6, rules: { firstRevealDraw: false }, displayName: 'Ann' });
+    expect(rooms.create).toHaveBeenLastCalledWith({ seatCount: 6, rules: { firstRevealDraw: true }, displayName: 'Ann' });
   });
 });

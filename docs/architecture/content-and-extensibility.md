@@ -85,14 +85,36 @@ translations name only things that exist, and `glossary.vi.spec.ts` checks that
 the glossary's terms are used consistently. A new entry therefore ships with a
 Vietnamese draft, which a native speaker later reviews.
 
+### Bot names
+
+Bots are named after Three Kingdoms figures who are not Generals in any deck. The
+pool is a flat list in `data/botNames.json` (id to English name, no force: a
+name never decides a bot's force), with Vietnamese names in
+`data/locales/vi/bot-names.json`. `botNames.ts` draws distinct ids from an
+injected random function, so the engine's RNG is never used; `botNames.spec.ts`
+checks the pool against both General rosters. A bot carries the plain id as
+`botNameId` next to a stored `name` of `[Bot] <English name>`. Clients show
+`[Bot] ` plus the name in the viewer's language (`playerName` in `labels.ts`),
+and a person's name may not start with `[Bot]`, so the two never collide. Old
+bots without an id show the name they were stored with.
+
 ### Assets
 
-Card and General art, animation, and audio live in `projects/content/assets/`
-and are described by `manifest.json` (source URL, crawl date, dimensions). Where
-they came from and the terms they are used under are in that folder's
-[README](../../projects/content/assets/README.md). `angular.json` serves the
-images at `/card-art/...` and the audio files at their own paths. The assets
-module (`assets.ts`) resolves a card's or General's image for the UI.
+Card and General art, animation, and audio are kept as masters in
+`projects/content/assets-src/` and described by its `manifest.json` (source URL,
+crawl date, dimensions). `npm run assets:build` generates the files that ship into
+`projects/content/assets/` (committed, never edited by hand); `npm run assets:check`
+fails when they are out of date, and the recipes that decide what each folder
+becomes are in `asset-recipes.json`. Where the masters came from and the terms
+they are used under are in the
+[README](../../projects/content/assets-src/README.md). `angular.json` serves the
+images at `/images/...` and the audio files at `/audio/...`; both mirror the folders
+under `assets/` (the layout and its naming rules are in the
+[assets restructure spec](../superpowers/specs/2026-11-06-assets-restructure-design.md)).
+The assets module (`assets.ts`) resolves a card's or General's image for the UI; references
+in `manifest.json` and `skins.json` carry no file extension, and `assetFile()` adds the one
+the recipes ship. The design is in the
+[assets-src pipeline spec](../superpowers/specs/2026-11-06-assets-src-pipeline-design.md).
 
 ## Writing a card
 
