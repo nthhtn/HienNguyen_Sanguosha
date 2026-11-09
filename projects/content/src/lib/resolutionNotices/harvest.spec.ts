@@ -12,6 +12,7 @@ describe('Harvest notice', () => {
     const n = harvestNotice.describe(span('harvest', 'a', ['a', 'b'], [played('harvest', 'a', ['a', 'b']), picks('a', peach), picks('b', sha)]), view())!;
     expect(n.seatIds).toEqual(['a', 'b']);
     expect(n.seatCards).toEqual([{ seatId: 'a', card: peach }, { seatId: 'b', card: sha }]);
+    expect(n.seconds).toBe(10);
     expect(n.steps).toEqual([]);
     expect(n.cards).toEqual([]);
     expect(n.outcome).toMatchObject({ tone: 'neutral', headline: { key: 'notice.harvest.done' }, text: { key: 'notice.harvest.text' } });

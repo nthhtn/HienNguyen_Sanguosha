@@ -101,16 +101,28 @@ describe('ResolutionNoticeDialog', () => {
     expect(noticeForce(content({ source: { kind: 'skill', id: 'resurgence', seatId: 'seat-1' } }), state)).toBe('Wei');
   });
 
-  it('counts down 10 seconds with no button, then closes itself once', () => {
-    expect(NOTICE_SECONDS).toBe(10);
+  it('counts down 5 seconds by default, with no button, then closes itself once', () => {
+    expect(NOTICE_SECONDS).toBe(5);
     const { fixture, el, close } = render(content());
-    expect(el.querySelector('.timer .seconds')!.textContent).toBe('10s');
-    jest.advanceTimersByTime(9000);
+    expect(el.querySelector('.timer .seconds')!.textContent).toBe('5s');
+    jest.advanceTimersByTime(4000);
     fixture.detectChanges();
     expect(el.querySelector('.timer .seconds')!.textContent).toBe('1s');
     expect(close).not.toHaveBeenCalled();
     jest.advanceTimersByTime(1000);
     expect(close).toHaveBeenCalledTimes(1);
     expect(el.querySelector('button')).toBeNull();
+  });
+
+  it('lasts as long as the notice asks for, when it asks for longer', () => {
+    const { fixture, el, close } = render(content({ seconds: 10 }));
+    expect(el.querySelector('.timer .seconds')!.textContent).toBe('10s');
+    expect(el.querySelector('.timer .fill')!.getAttribute('style')).toContain('100%');
+    jest.advanceTimersByTime(9000);
+    fixture.detectChanges();
+    expect(el.querySelector('.timer .seconds')!.textContent).toBe('1s');
+    expect(close).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1000);
+    expect(close).toHaveBeenCalledTimes(1);
   });
 });

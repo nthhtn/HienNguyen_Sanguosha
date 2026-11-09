@@ -909,12 +909,12 @@ describe('GameBoard event sounds', () => {
       expect(fixture.debugElement.injector.get(PlaybackDirector).idle()).toBe(false);
     });
 
-    it('closes itself after 10 seconds and lets playback go on', async () => {
+    it('closes itself after 5 seconds and lets playback go on', async () => {
       jest.useFakeTimers();
       await append(blaze());
       await run(1000);
       expect(popups()).toHaveLength(1);
-      await run(9500);
+      await run(4500);
       expect(popups()).toHaveLength(0);
       expect(fixture.debugElement.injector.get(PlaybackDirector).notices()).toEqual([]);
       expect(fixture.debugElement.injector.get(PlaybackDirector).idle()).toBe(true);

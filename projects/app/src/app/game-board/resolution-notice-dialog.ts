@@ -11,8 +11,9 @@ import { CardArt } from './card-art';
 import { PlayingCard } from './playing-card';
 import { SeatPortrait } from './seat-portrait';
 
-// Seconds a notice stays before it closes itself. There is no button and no skip.
-export const NOTICE_SECONDS = 10;
+// Seconds a notice stays before it closes itself, unless its content asks for another length
+// (`ResolutionNoticeContent.seconds`). There is no button and no skip.
+export const NOTICE_SECONDS = 5;
 
 export interface ResolutionNoticeDialogData {
   content: ResolutionNoticeContent;
@@ -164,8 +165,8 @@ export class ResolutionNoticeDialog {
   private readonly dialogRef = inject<MatDialogRef<ResolutionNoticeDialog>>(MatDialogRef);
   private readonly i18n = inject(I18n);
   protected readonly cardBackUrl = CARD_BACK_ART_URL;
-  protected readonly total = NOTICE_SECONDS;
-  protected readonly seconds = signal(NOTICE_SECONDS);
+  protected readonly total = this.data.content.seconds ?? NOTICE_SECONDS;
+  protected readonly seconds = signal(this.total);
 
   constructor() {
     const interval = setInterval(() => {
