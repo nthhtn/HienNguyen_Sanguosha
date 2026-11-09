@@ -1,9 +1,9 @@
 {
   "README.md": {
-    "output": "b77ce96bab8b3a36b7b9821592b38458f96f0fe911c37b12c16aef9752890807",
+    "output": "e5266e2607052eca6d35d049d1482415e7c417ae4a72a5f165bea4e34f0a4034",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "README.md": "b77ce96bab8b3a36b7b9821592b38458f96f0fe911c37b12c16aef9752890807"
+      "README.md": "e5266e2607052eca6d35d049d1482415e7c417ae4a72a5f165bea4e34f0a4034"
     }
   },
   "audio/death/forces/qun.ogg": {
@@ -2989,85 +2989,85 @@
     }
   },
   "preview/qun/zhang-jiao_dark-sorcery_en.mp4": {
-    "output": "020b309c8eaedf9debd3b4b9e1a00005537e3ef8721032ca511e94aa25eb33af",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "957b77133f7660432ac126590f7d300d767e6b46d4f4e2f70057caa4ba81c69d",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/qun/zhang-jiao_dark-sorcery_en.mp4": "020b309c8eaedf9debd3b4b9e1a00005537e3ef8721032ca511e94aa25eb33af"
     }
   },
   "preview/qun/zhang-jiao_dark-sorcery_vi.mp4": {
-    "output": "667b40ddc3c8571131b3f5803a6350be5282537385842a0ccd8564ea259735be",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "6016137eae68456c5f71079413e2b480e0f2077d0e17e0953e26048b9eae4e69",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/qun/zhang-jiao_dark-sorcery_vi.mp4": "667b40ddc3c8571131b3f5803a6350be5282537385842a0ccd8564ea259735be"
     }
   },
   "preview/qun/zhang-jiao_lightning-strike_en.mp4": {
-    "output": "4d4db8e279cd1ef881a40b8751a1c8f612d5dde6555ca4797386b75d500374db",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "0982266e2a973852d3f03c9270c2b5ab56a6282dd0cf4fd05efa13ee5f699813",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/qun/zhang-jiao_lightning-strike_en.mp4": "4d4db8e279cd1ef881a40b8751a1c8f612d5dde6555ca4797386b75d500374db"
     }
   },
   "preview/qun/zhang-jiao_lightning-strike_vi.mp4": {
-    "output": "c21480977479925cee3670c39d3446a64e6c4ed970794826c747207f91f2a410",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "59f09842da2e7b0e33206599d3d49399fe2f3fbecb04be67c6ea234a25ba27f8",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/qun/zhang-jiao_lightning-strike_vi.mp4": "c21480977479925cee3670c39d3446a64e6c4ed970794826c747207f91f2a410"
     }
   },
   "preview/shu/zhuge-liang_empty-city_en.mp4": {
-    "output": "8c62dbd0abefb6b6266d96ecdaad39e98feece2a577fe54940fe9705cdde93d2",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "f604deed8deea4aa2221813668b653500d04a8939297f87b842c46b0e394b440",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/shu/zhuge-liang_empty-city_en.mp4": "8c62dbd0abefb6b6266d96ecdaad39e98feece2a577fe54940fe9705cdde93d2"
     }
   },
   "preview/shu/zhuge-liang_empty-city_vi.mp4": {
-    "output": "98488537bbc1c22268bdcff3a477a47f61f5a19854a05056df1b7b2bdfd89240",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "f09e5c5ec0ee3a63676075125a44da60c850b66314388442a798e66370779fef",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/shu/zhuge-liang_empty-city_vi.mp4": "98488537bbc1c22268bdcff3a477a47f61f5a19854a05056df1b7b2bdfd89240"
     }
   },
   "preview/shu/zhuge-liang_star-gazing_en.mp4": {
-    "output": "012d5d7567a3a6afd52ef672ce9170252f5aedb79233a5fe14bf3ca488457a9b",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "90bbfe6d2eff569362352ff4a956a9d1f09f55d3866e0b0721a18e7a4bdeff4c",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/shu/zhuge-liang_star-gazing_en.mp4": "012d5d7567a3a6afd52ef672ce9170252f5aedb79233a5fe14bf3ca488457a9b"
     }
   },
   "preview/shu/zhuge-liang_star-gazing_vi.mp4": {
-    "output": "7d207dcfd5b3dc0d4bcb56773515d1c5cd881bedcf620cab496e373d127de952",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "275f07f7b0f6d429da7a68f900a4fd351a271583687f93aae67095fdc3169821",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/shu/zhuge-liang_star-gazing_vi.mp4": "7d207dcfd5b3dc0d4bcb56773515d1c5cd881bedcf620cab496e373d127de952"
     }
   },
   "preview/wei/cao-cao_villainous-hero_en.mp4": {
-    "output": "b82137b97a13640c0c009b3292c04b9ca1d6c760668466db746ddc8ba282e778",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "29f81b02c29658389eb4c08f5944821221d00e8fb15c75ebe5968d9b980a00d6",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/wei/cao-cao_villainous-hero_en.mp4": "b82137b97a13640c0c009b3292c04b9ca1d6c760668466db746ddc8ba282e778"
     }
   },
   "preview/wei/cao-cao_villainous-hero_vi.mp4": {
-    "output": "475496a8d072e475abe484baff9ec57a9ae5cd83e1c58649ac818a269ae3d120",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "91442e1c563436cc0ad7b057e63842155ec7d604bec3e8ccc09e5120215a68ea",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/wei/cao-cao_villainous-hero_vi.mp4": "475496a8d072e475abe484baff9ec57a9ae5cd83e1c58649ac818a269ae3d120"
     }
   },
   "preview/wu/zhou-tai_refuting-death_en.mp4": {
-    "output": "c797768a0029769d3713fb7fa24ead7b91527e5bb3dbfd1f1b5e871e39041a56",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "8bdf83c3c21aaf216db02a6078a77f4dccc35d654a689ae998c22d485881bd57",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/wu/zhou-tai_refuting-death_en.mp4": "c797768a0029769d3713fb7fa24ead7b91527e5bb3dbfd1f1b5e871e39041a56"
     }
   },
   "preview/wu/zhou-tai_refuting-death_vi.mp4": {
-    "output": "c926d10d11788e74a62808053f9551754407f43bfd9ce4468d4cbb655a640c5b",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "output": "a106427ea0dfeab7efbc5800106d2bcb80ec68d31000af902ec7d708daf7eb4e",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/wu/zhou-tai_refuting-death_vi.mp4": "c926d10d11788e74a62808053f9551754407f43bfd9ce4468d4cbb655a640c5b"
     }

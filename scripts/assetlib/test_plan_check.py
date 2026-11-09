@@ -104,6 +104,49 @@ class PlanTests(unittest.TestCase):
             plan_outputs(layout)
         self.assertIn('png', str(ctx.exception))
 
+    VIDEO_RECIPES = {
+        'preview': {'op': 'video', 'ext': 'mp4', 'maxWidth': 960, 'fps': 60, 'crf': 24, 'preset': 'slow'},
+        'preview/index.json': {'op': 'copy'},
+    }
+
+    def test_video_recipe_plans_an_mp4_per_master_and_copies_the_index(self):
+        layout = make_layout({'preview/wu/a_en.mp4': b'v', 'preview/index.json': b'{}'}, self.VIDEO_RECIPES)
+        outputs = {o.path: o for o in plan_outputs(layout)}
+        self.assertEqual(sorted(outputs), ['preview/index.json', 'preview/wu/a_en.mp4'])
+        self.assertEqual(outputs['preview/wu/a_en.mp4'].op, 'video')
+        self.assertEqual(outputs['preview/index.json'].op, 'copy')
+
+    def test_video_recipe_turns_other_containers_into_mp4(self):
+        layout = make_layout({'preview/wu/a.mov': b'v', 'preview/wu/b.webm': b'v'}, self.VIDEO_RECIPES)
+        self.assertEqual(sorted(o.path for o in plan_outputs(layout)), ['preview/wu/a.mp4', 'preview/wu/b.mp4'])
+
+    def test_video_recipe_rejects_a_target_it_cannot_write(self):
+        layout = make_layout({'preview/a.mp4': b'v'}, {'preview': {'op': 'video', 'ext': 'webm'}})
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('webm', str(ctx.exception))
+
+    def test_video_recipe_rejects_a_master_that_is_not_a_video(self):
+        layout = make_layout({'preview/notes.txt': b'x'}, self.VIDEO_RECIPES)
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('preview/notes.txt', str(ctx.exception))
+
+    def test_video_recipe_rejects_the_same_stem_twice(self):
+        layout = make_layout({'preview/a.mp4': b'v', 'preview/a.mov': b'v'}, self.VIDEO_RECIPES)
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('a.mp4', str(ctx.exception))
+        self.assertIn('a.mov', str(ctx.exception))
+
+    def test_video_settings_must_be_valid(self):
+        base = {'op': 'video', 'ext': 'mp4'}
+        for field, bad in (('maxWidth', 0), ('maxWidth', '960'), ('fps', 0), ('fps', '60'), ('fps', True), ('crf', -1), ('crf', 52), ('crf', '24'), ('preset', 'warp')):
+            layout = make_layout({'preview/a.mp4': b'v'}, {'preview': {**base, field: bad}})
+            with self.assertRaises(PlanError, msg='{}={!r}'.format(field, bad)) as ctx:
+                plan_outputs(layout)
+            self.assertIn(field, str(ctx.exception))
+
     def test_image_recipe_rejects_a_master_it_cannot_read(self):
         layout = make_layout({'generals/skins/wei/a.png': b'a', 'generals/skins/wei/notes.txt': b'x'}, self.IMAGE_RECIPES)
         with self.assertRaises(PlanError) as ctx:

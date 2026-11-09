@@ -14,6 +14,9 @@ IMAGE_SOURCES = {'png', 'jpg', 'jpeg'}
 IMAGE_TARGETS = {'webp'}
 CROP_TARGETS = {'jpg', 'webp'}
 SHEET_TARGETS = {'png', 'webp'}
+VIDEO_SOURCES = {'mp4', 'mov', 'webm'}
+VIDEO_TARGETS = {'mp4'}
+X264_PRESETS = {'ultrafast', 'superfast', 'veryfast', 'faster', 'fast', 'medium', 'slow', 'slower', 'veryslow'}
 
 
 class PlanError(Exception):
@@ -23,7 +26,7 @@ class PlanError(Exception):
 @dataclass(frozen=True)
 class Output:
     path: str  # relative to assets/
-    op: str  # copy | image | crop | sheet | sheets-meta
+    op: str  # copy | image | video | crop | sheet | sheets-meta
     sources: Tuple[str, ...]  # relative to assets-src/
     recipe_key: str
     settings: dict = field(default_factory=dict)  # per-output extras: the crop box, the sheet id and folder
@@ -48,7 +51,7 @@ def _copy_outputs(layout: Layout, recipes: Dict[str, dict]) -> List[Output]:
         op = recipe['op']
         if op == 'master-only':
             continue
-        if op not in ('copy', 'image'):
+        if op not in ('copy', 'image', 'video'):
             raise PlanError('master {} falls under the {} recipe {}, which builds its own files'.format(rel, op, key))
         path = Path(rel)
         suffix = path.suffix.lstrip('.').lower()
@@ -57,9 +60,13 @@ def _copy_outputs(layout: Layout, recipes: Dict[str, dict]) -> List[Output]:
             if ext and suffix != ext:
                 raise PlanError('master {} does not have the extension {} that recipe {} ships (it copies, so the extension cannot change)'.format(rel, ext, key))
             target = rel
-        else:
+        elif op == 'image':
             if suffix not in IMAGE_SOURCES:
                 raise PlanError('master {} is not a PNG or JPEG image, which is what recipe {} converts'.format(rel, key))
+            target = path.with_suffix('.' + ext).as_posix()
+        else:
+            if suffix not in VIDEO_SOURCES:
+                raise PlanError('master {} is not an mp4, mov or webm video, which is what recipe {} converts'.format(rel, key))
             target = path.with_suffix('.' + ext).as_posix()
         by_stem.setdefault((path.parent.as_posix(), path.stem), []).append(rel)
         outputs.append(Output(target, op, (rel,), key))
@@ -114,12 +121,22 @@ def _sheet_outputs(layout: Layout, key: str, recipe: dict) -> List[Output]:
 def plan_outputs(layout: Layout) -> List[Output]:
     recipes = load_recipes(layout.recipes_file)
     for key, recipe in recipes.items():
-        if recipe['op'] in ('image', 'crop') and 'maxWidth' in recipe:
+        if recipe['op'] in ('image', 'crop', 'video') and 'maxWidth' in recipe:
             width = recipe['maxWidth']
             if not isinstance(width, int) or isinstance(width, bool) or width <= 0:
                 raise PlanError('recipe {}: maxWidth must be a positive whole number, not {!r}'.format(key, width))
         if recipe['op'] == 'crop' and recipe.get('ext') not in CROP_TARGETS:
             raise PlanError('recipe {} cannot write {!r}: a crop is saved as {}'.format(key, recipe.get('ext'), ' or '.join(sorted(CROP_TARGETS))))
+        if recipe['op'] == 'video':
+            if recipe.get('ext') not in VIDEO_TARGETS:
+                raise PlanError('recipe {} cannot write {!r}: the video op writes {}'.format(key, recipe.get('ext'), ' or '.join(sorted(VIDEO_TARGETS))))
+            for field, low, high in (('fps', 1, None), ('crf', 0, 51)):
+                if field in recipe:
+                    value = recipe[field]
+                    if not isinstance(value, int) or isinstance(value, bool) or value < low or (high is not None and value > high):
+                        raise PlanError('recipe {}: {} must be a whole number from {}{}, not {!r}'.format(key, field, low, ' to {}'.format(high) if high is not None else ' up', value))
+            if 'preset' in recipe and recipe['preset'] not in X264_PRESETS:
+                raise PlanError('recipe {}: preset must be one of {}, not {!r}'.format(key, ', '.join(sorted(X264_PRESETS)), recipe['preset']))
         if recipe['op'] == 'sheets' and recipe.get('ext', 'png') not in SHEET_TARGETS:
             raise PlanError('recipe {} cannot write {!r}: a sheet is saved as {}'.format(key, recipe.get('ext'), ' or '.join(sorted(SHEET_TARGETS))))
         if recipe['op'] == 'image' and recipe.get('ext') not in IMAGE_TARGETS:
