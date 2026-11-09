@@ -19,6 +19,10 @@ describe('describeResolution', () => {
     }
   });
 
+  it('has a notice for Blaze, Steal, Break and Coerce', () => {
+    expect(['blaze', 'steal', 'break', 'coerce'].every((id) => RESOLUTION_NOTICES[id] !== undefined)).toBe(true);
+  });
+
   it('asks the registered definition, with the span and the viewer’s view', () => {
     const describe = jest.fn().mockReturnValue(content);
     const registry: Record<string, ResolutionNoticeDefinition> = { blaze: { describe } };

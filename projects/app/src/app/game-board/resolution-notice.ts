@@ -127,8 +127,16 @@ export class ResolutionNotice {
     inject(DestroyRef).onDestroy(() => clearTimeout(timer));
   }
 
+  // A param named `…Seat` holds a seat id and one named `card` or `…Card` a card id: both are shown by name.
   private text_(t: NoticeText): string {
-    return this.i18n.translator(t.key as MessageKey, t.params);
+    const tr = this.i18n.translator;
+    const params = Object.fromEntries(
+      Object.entries(t.params ?? {}).map(([name, value]) => [
+        name,
+        /Seat$/.test(name) ? seatName(this.state().players, String(value), tr) : name === 'card' || /Card$/.test(name) ? cardIdDisplayName(String(value), tr) : value,
+      ])
+    );
+    return tr(t.key as MessageKey, params);
   }
 
   protected readonly title = computed(() => this.i18n.translator('notice.title'));

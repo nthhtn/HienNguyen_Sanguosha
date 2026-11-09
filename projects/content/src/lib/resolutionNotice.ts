@@ -1,4 +1,6 @@
 import type { CardInstance, EngineEvent, GameState } from 'engine';
+import { blazeNotice } from './resolutionNotices/blaze';
+import { breakNotice, coerceNotice, stealNotice } from './resolutionNotices/take-cards';
 
 // A Resolution Notice: the popup that tells every seat what an effect with a visible outcome did. This
 // file is the data model and the registry; the application layer finds each resolution in the log and
@@ -7,7 +9,9 @@ import type { CardInstance, EngineEvent, GameState } from 'engine';
 
 export type NoticeTone = 'good' | 'bad' | 'neutral';
 
-// A line of text as an i18n key and its parameters, translated by the application layer.
+// A line of text as an i18n key and its parameters, translated by the application layer. A parameter
+// named `…Seat` (`userSeat`, `targetSeat`) holds a seat id and is shown as that seat's name; one named
+// `card` or `…Card` holds a card id and is shown as the card's name; any other is shown as it is.
 export interface NoticeText {
   key: string;
   params?: Record<string, string | number>;
@@ -52,7 +56,12 @@ export interface ResolutionNoticeDefinition {
 // Keyed by a card's id or a skill's id. A card whose own response or popup already says what happened
 // (Sha, Wuxie, Peach Garden, Chains, Duel, Barbarians, Hail of Arrows, and anything with a Judgment popup)
 // has no entry.
-export const RESOLUTION_NOTICES: Record<string, ResolutionNoticeDefinition> = {};
+export const RESOLUTION_NOTICES: Record<string, ResolutionNoticeDefinition> = {
+  blaze: blazeNotice,
+  steal: stealNotice,
+  break: breakNotice,
+  coerce: coerceNotice,
+};
 
 export function describeResolution(
   span: ResolutionSpan,

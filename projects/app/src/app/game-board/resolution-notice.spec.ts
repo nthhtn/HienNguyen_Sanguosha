@@ -63,6 +63,12 @@ describe('ResolutionNotice', () => {
     expect(render(content()).el.querySelector('.notice')!.getAttribute('data-force')).toBe('Wu');
   });
 
+  it('turns seat ids and card ids in a line’s params into the seat’s name and the card’s name', () => {
+    const { el } = render(content({ outcome: { tone: 'good', symbol: '🔥', headline: { key: 'notice.blaze.hit', params: { card: 'blaze' } }, text: { key: 'notice.blaze.hitText', params: { targetSeat: 'seat-0', amount: 1 } } } }));
+    expect(el.querySelector('.headline')!.textContent).toBe('Blaze hit');
+    expect(el.querySelector('.text')!.textContent).toBe('Hing took 1 fire damage');
+  });
+
   it('fades on its own after NOTICE_MS and asks for nothing', () => {
     const { fixture, el } = render(content());
     const faded = jest.fn();
