@@ -351,16 +351,22 @@ pass.
 
 ### Resolution notices
 
-A card or skill with a visible outcome gets a **Resolution Notice**: a popup that shows briefly and
-fades on its own, for every seat. It never blocks, takes no input and does not hold playback, so it
-does not change the animation durations the server paces bots and clocks with.
+A card or skill with a visible outcome gets a **Resolution Notice**: a popup that shows for 5 seconds
+and fades on its own, for every seat. It blocks like the Judgment and Compete popups: no button, no
+skip, and the director holds playback from the beat that publishes it until it is dismissed, so no later
+beat, bot move or decision clock runs under it. Locally that is enough (bots and clocks already wait on
+the playback gate). **Online**, the server does not know about the hold: the engine's shared durations
+(`playbackTiming.ts`) cover beats only, so a bot may move while a client still shows a notice, and the
+client catches up afterwards. Adding notice time to the server's pacing would need the content registry
+to say which batches end in one.
 
 The `PlaybackDirector` finds each finished resolution while it plays the log
 ([`resolution-spans.ts`](../../projects/app/src/app/game-board/playback/resolution-spans.ts): a span
 opens at a card's play, or a skill's announcement, whose id is in the content registry, and ends at the
 next play, phase or turn change, or when nothing is waiting on a decision). When the beat of the span's
 last event plays, the director asks `describeResolution` (content) for the notice's content and queues
-it in `notices`. The board shows the first and drops it when it has faded (`ResolutionNotice`). A first
+it in `notices` and holds playback. The board shows the first and drops it when its 5 seconds are up
+(`ResolutionNotice`), which releases the hold when none is left. A first
 look, a reconnect or a late join publishes nothing for what already happened.
 
 The content is built from the viewer's own redacted state, so a card the viewer may not see is a card

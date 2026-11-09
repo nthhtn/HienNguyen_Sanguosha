@@ -17,7 +17,8 @@ popup; the rest should get one that shows the outcome at a glance.
 ### Goals
 
 - One shared, extensible popup, the Resolution Notice, used by every effect with a visible outcome.
-- It shows briefly and fades on its own, like Judgment and Compete. It never blocks and has no button.
+- It shows for 5 seconds and fades on its own, like Judgment and Compete. It blocks (the user's later
+  decision): playback is held until it is dismissed, there is no button and no skip.
 - Shell (the user's decision, see the mockup): header with the word "Resolution" in the force colour of
   whoever caused it and the source (card or skill, with the card art for a card); the seats involved
   with their portraits, names and Generals; short step lines; the cards that matter (a hidden card is a
@@ -50,8 +51,7 @@ that already opens the Judgment popup (Lightning, Capture, Starvation, Eight Tri
 
 - No engine rule change, no new engine event if an existing one can carry the fact. The notice
   describes what already happened.
-- No blocking and no extra input. A notice that makes the table wait would be a failure even if it
-  looked right.
+- No extra input: no button, no skip. (Superseded: the user later asked for a blocking 5 second timer.)
 - Not showing anything a viewer may not see: a hidden card or hidden General stays hidden (use the
   public view, as the Judgment popup does).
 - Not a second Action History. It shows one resolution, not the log.
@@ -76,8 +76,8 @@ that already opens the Judgment popup (Lightning, Capture, Starvation, Eight Tri
 - Mockup content: the headline, sentence, steps and cards in the mockup are the reference text for the
   named cards (Appendix A).
 - Notices that would overlap (two resolutions in one batch) queue and show in order.
-- Because the notice never blocks, it does not change the shared animation durations the server uses
-  for bot and clock pacing.
+- Because the notice blocks only on the client, the shared animation durations the server uses for bot
+  and clock pacing do not include it: online, a bot may move while a notice shows. Left as is (open).
 
 ### Left to the builder
 

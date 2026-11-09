@@ -77,6 +77,10 @@ describe('ResolutionNotice', () => {
     expect(styles).toMatch(/\.notice \{[^}]*max-height: 80(dvh|vh)[^}]*overflow: hidden/s);
   });
 
+  it('lasts 5 seconds', () => {
+    expect(NOTICE_MS).toBe(5000);
+  });
+
   it('fades on its own after NOTICE_MS and asks for nothing', () => {
     const { fixture, el } = render(content());
     const faded = jest.fn();

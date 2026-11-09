@@ -218,7 +218,8 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
   `,
   styles: `
-    .notice-layer { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; }
+    .notice-layer { position: fixed; inset: 0; z-index: 20; display: flex; justify-content: center; align-items: flex-start; padding-top: 10vh; pointer-events: none; }
+    .notice-layer:has(app-resolution-notice) { pointer-events: auto; background: rgb(0 0 0 / 25%); }
     .error-banner {
       display: flex; align-items: center; gap: 12px; margin: 8px 0; padding: 8px 12px; border-radius: 12px;
       background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container);

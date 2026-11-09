@@ -8,11 +8,11 @@ import { CardArt } from './card-art';
 import { PlayingCard } from './playing-card';
 import { SeatPortrait } from './seat-portrait';
 
-// How long a notice stays before it has faded away.
-export const NOTICE_MS = 4000;
+// How long a notice stays, blocking the table, before it has faded away.
+export const NOTICE_MS = 5000;
 
 // A Resolution Notice: what a card or skill did, shown to every seat, then gone on its own. It never
-// blocks, takes no input and has no button. It is read-only: everything on it comes from the content
+// is dismissed only by its own timer: no button, no skip. It is read-only: everything on it comes from the content
 // the registry described and the public state.
 @Component({
   selector: 'app-resolution-notice',
@@ -78,7 +78,7 @@ export const NOTICE_MS = 4000;
     </article>
   `,
   styles: `
-    :host { display: block; pointer-events: none; }
+    :host { display: block; }
     .notice {
       --good: #1c8a4b; --bad: #c23a3a;
       width: min(92vw, 360px); max-height: 80vh; overflow: hidden; border-radius: 14px; border: 1px solid var(--mat-sys-outline-variant);

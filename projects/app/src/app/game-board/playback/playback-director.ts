@@ -10,9 +10,6 @@ import { RESOLUTION_NOTICE_REGISTRY } from './notice-registry';
 import { paceFactor } from './pace';
 import { resolutionSpans } from './resolution-spans';
 
-// How many notices wait at most: a backlog is cut to the newest, so a notice is never minutes behind what it describes.
-export const MAX_NOTICES = 3;
-
 interface Step {
   beat: PlannedBeat;
   // The last beat of the events one update brought: the pause between batches follows it.
@@ -45,18 +42,22 @@ export class PlaybackDirector {
   readonly playedLogLength: Signal<number> = this._playedLogLength.asReadonly();
   // The cards played into the resolution on show.
   readonly centreStack: Signal<UsedCard[]> = this._centreStack.asReadonly();
-  // The Resolution Notices waiting to show, oldest first. They never hold playback: the board shows the
-  // first and calls `dismissNotice` when it has faded.
+  // The Resolution Notices waiting to show, oldest first. A notice blocks: playback is held from the beat
+  // that publishes it until it is dismissed, so no later beat, bot move or decision clock runs under it. The
+  // board shows the first and calls `dismissNotice` when its 5 seconds are up.
   readonly notices: Signal<ResolutionNoticeContent[]> = this._notices.asReadonly();
 
   dismissNotice(): void {
     this._notices.update((all) => all.slice(1));
+    if (this._notices().length === 0) this.releaseNotices();
   }
 
   // The log length already queued; null before the first look.
   private cursor: number | null = null;
   // Where the next look for finished resolutions starts: the start of one still open, else the log's end.
   private noticeFrom = 0;
+  // Held while any notice is waiting or showing.
+  private releaseNoticeHold: (() => void) | null = null;
   // The event at `cursor - 1` when it was queued: a log that no longer has it there is another game's.
   private lastQueued: EngineEvent | undefined;
   // The Pass and Play gate went up after a look: the next look is a reveal.
@@ -100,7 +101,7 @@ export class PlaybackDirector {
       this.stop();
       this.target = null;
       this._centreStack.set([]);
-      this._notices.set([]);
+      this.clearNotices();
       this.finish(null);
       return;
     }
@@ -119,7 +120,7 @@ export class PlaybackDirector {
       this.noticeFrom = this.cursor;
       this.target = visible;
       this._centreStack.set([]);
-      this._notices.set([]);
+      this.clearNotices();
       this.finish(visible);
       return;
     }
@@ -159,11 +160,23 @@ export class PlaybackDirector {
     }
   }
 
+  private clearNotices(): void {
+    this._notices.set([]);
+    this.releaseNotices();
+  }
+
+  private releaseNotices(): void {
+    this.releaseNoticeHold?.();
+    this.releaseNoticeHold = null;
+  }
+
   private publish(span: ResolutionSpan): void {
     // The state as of the beat just played, so a card moved or an HP lost later in the batch is not shown early.
     const state = this._displayedState() ?? this.target;
     const content = state ? describeResolution(span, state, this.noticeRegistry) : null;
-    if (content) this._notices.update((all) => [...all, content].slice(-MAX_NOTICES));
+    if (!content) return;
+    this._notices.update((all) => [...all, content]);
+    this.releaseNoticeHold ??= this.hold();
   }
 
   // Another game: the log is shorter than what was queued, or the event last queued is not where it was. The view's

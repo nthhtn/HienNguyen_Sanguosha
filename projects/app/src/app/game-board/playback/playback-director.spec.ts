@@ -438,25 +438,50 @@ describe('PlaybackDirector', () => {
       expect(headlines(director)).toEqual(['notice.blaze']);
     });
 
-    it('queues two resolutions of one batch in order, and dismissing takes the oldest', () => {
+    it('holds playback while a notice shows: not idle, later beats wait, and play on once it is dismissed', () => {
+      const { director, show } = setup({ registry });
+      const start = table();
+      show(start);
+      show(after(start, blaze, damage('b'), phase('Draw'), damage('b')));
+      while (director.current()?.event.kind !== 'DamageDealtEvent') jest.advanceTimersByTime(50);
+      expect(headlines(director)).toEqual(['notice.blaze']);
+      jest.advanceTimersByTime(60000);
+      expect(director.current()?.event.kind).toBe('DamageDealtEvent');
+      expect(director.playedLogLength()).toBe(2);
+      expect(director.idle()).toBe(false);
+      director.dismissNotice();
+      jest.advanceTimersByTime(60000);
+      expect(director.playedLogLength()).toBe(4);
+      expect(director.idle()).toBe(true);
+    });
+
+    it('shows two resolutions of one batch one after the other, the second only once the first is dismissed', () => {
       const { director, show } = setup({ registry });
       const start = table();
       show(start);
       show(after(start, blaze, damage('b'), breakIt, damage('b')));
-      jest.advanceTimersByTime(20000);
-      expect(headlines(director)).toEqual(['notice.blaze', 'notice.break']);
+      jest.advanceTimersByTime(60000);
+      expect(headlines(director)).toEqual(['notice.blaze']);
       director.dismissNotice();
+      jest.advanceTimersByTime(60000);
       expect(headlines(director)).toEqual(['notice.break']);
     });
 
-    it('never holds playback: the director is idle after the usual time', () => {
+    it('lets go of playback when the notice is dropped because the table was reset', () => {
       const { director, show } = setup({ registry });
       const start = table();
       show(start);
-      show(after(start, blaze, damage('b')));
-      jest.advanceTimersByTime(20000);
+      show(after(start, blaze, damage('b'), phase('Draw'), damage('b')));
+      jest.advanceTimersByTime(60000);
       expect(director.notices()).toHaveLength(1);
+      show(null);
+      expect(director.notices()).toEqual([]);
+      const fresh = table();
+      show(fresh);
+      show(after(fresh, turn('b')));
+      jest.advanceTimersByTime(60000);
       expect(director.idle()).toBe(true);
+      expect(director.playedLogLength()).toBe(1);
     });
 
     it('describes the resolution against the state as of its last beat, not the newest log', () => {
@@ -481,15 +506,6 @@ describe('PlaybackDirector', () => {
       expect(director.notices()).toEqual([]);
       while (director.current()?.event.kind !== 'DamageDealtEvent') jest.advanceTimersByTime(50);
       expect(headlines(director)).toEqual(['notice.blaze']);
-    });
-
-    it('keeps only the newest few notices when they pile up faster than they show', () => {
-      const { director, show } = setup({ registry });
-      const start = table();
-      show(start);
-      show(after(start, blaze, damage('b'), breakIt, damage('b'), blaze, damage('b'), breakIt, damage('b'), blaze, damage('b')));
-      jest.advanceTimersByTime(60000);
-      expect(headlines(director)).toEqual(['notice.blaze', 'notice.break', 'notice.blaze']);
     });
 
     it('shows nothing for a card with no notice', () => {
