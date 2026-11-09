@@ -270,7 +270,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
 describe('the Choose Targets and General info dialogs in Vietnamese', () => {
   it('Choose Targets: title, both prompts, seat names and buttons', () => {
     const open = (min: number, max: number) => {
-      const data: TargetsDialogData = { title: 'Slash', pick: { eligibleIds: ['seat-0', 'seat-2'], min, max }, state: { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }] } as unknown as GameState };
+      const data: TargetsDialogData = { title: 'Slash', pick: { eligibleIds: ['seat-0', 'seat-2'], min, max }, state: { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }], seats: [] } as unknown as GameState };
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close: () => undefined } }] });
       return TestBed.inject(I18n).setLocale('vi').then(() => {

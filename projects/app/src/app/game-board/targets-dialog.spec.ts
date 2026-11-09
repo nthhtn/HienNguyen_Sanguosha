@@ -3,7 +3,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { GameState } from 'engine';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
 
-const state = { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }] } as unknown as GameState;
+const generals = { main: { generalDefinitionId: 'cao-cao', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } };
+const state = { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }], seats: [{ id: 'seat-2', kingdom: 'Wei', generals }] } as unknown as GameState;
 
 describe('TargetsDialog', () => {
   let closed: (string[] | undefined)[];
@@ -31,6 +32,11 @@ describe('TargetsDialog', () => {
     expect(el.querySelector('h2')!.textContent).toBe('Choose Targets');
     expect(el.textContent).toContain('Choose up to 2 targets for Slash');
     expect(buttons().map((b) => b.textContent!.trim())).toEqual(['Hing', 'Seat 2', 'Seat 3', 'Cancel', 'Confirm']);
+  });
+
+  it('shows a portrait on a seat whose Generals are known, and still lists every seat by name', () => {
+    expect(el.querySelectorAll('app-seat-portrait').length).toBe(3);
+    expect(buttons().slice(0, 3).map((b) => b.textContent!.trim())).toEqual(['Hing', 'Seat 2', 'Seat 3']);
   });
 
   it('Confirm waits for the minimum; once the maximum is picked the other seats are disabled', () => {

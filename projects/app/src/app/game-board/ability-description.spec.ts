@@ -140,6 +140,15 @@ describe('describeSelection', () => {
     expect(describe2(hit)).toMatchObject({ title: 'Blaze', prompt: 'Discard a card of the same suit to deal 1 damage', confirmLabel: 'Discard', cancelLabel: 'Cancel' });
   });
 
+  it('a seat item carries the seat’s Generals and force, for the portrait', () => {
+    const generals = { main: { generalDefinitionId: 'cao-cao', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } };
+    const withSeat = { ...state({ pendingSelection: selection('x', { of: 'seats', eligibleIds: ['seat-1'], min: 1, max: 1 }) }), seats: [{ id: 'seat-1', kingdom: 'Wei', generals }] } as unknown as GameState;
+    const item = describeSelection(withSeat, 'seat-0', [template])!.items[0];
+    expect(item.generals).toEqual(generals);
+    expect(item.force).toBe('Wei');
+    expect(describe2(selection('x', { eligibleIds: ['s2'] }), [template])!.items[0].generals).toBeUndefined();
+  });
+
   it('the Fire skills’ own selections', () => {
     const general = (skillId: string) => ({ kind: 'general' as const, seatId: 'seat-0', slot: 'main' as const, skillId });
     const sel = (skillId: string, of: 'cards' | 'seats') => selection(skillId, { reason: { kind: 'ability', owner: general(skillId), abilityId: skillId }, of, eligibleIds: [], min: 1, max: 1, then: { kind: 'skill-step', step: { kind: 'SkillStepEffect', owner: general(skillId), step: 'chosen', data: {} } } });

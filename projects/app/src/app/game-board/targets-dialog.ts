@@ -5,6 +5,7 @@ import { GameState, pickAllows, TargetPick } from 'engine';
 import { seatName } from '../labels';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
+import { SeatPortrait } from './seat-portrait';
 
 export interface TargetsDialogData {
   // What is being played: "Sha".
@@ -18,7 +19,7 @@ export interface TargetsDialogData {
 // nothing on Cancel. The engine checks the picks again when they are played.
 @Component({
   selector: 'app-targets-dialog',
-  imports: [MatButtonModule, MatDialogModule, TPipe],
+  imports: [MatButtonModule, MatDialogModule, SeatPortrait, TPipe],
   template: `
     <h2 mat-dialog-title>{{ 'targets.title' | t }}</h2>
     <mat-dialog-content>
@@ -33,6 +34,7 @@ export interface TargetsDialogData {
             [disabled]="!picked().includes(seat.id) && !allowed(seat.id)"
             (click)="toggle(seat.id)"
           >
+            <app-seat-portrait [generals]="seat.generals" size="small" />
             {{ seat.label }}
           </button>
         }
@@ -45,6 +47,7 @@ export interface TargetsDialogData {
   `,
   styles: `
     .seats { display: flex; flex-wrap: wrap; gap: 8px; }
+    .seats button { height: auto; padding: 6px 12px; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
     .picked { background: var(--mat-sys-primary-container); color: var(--mat-sys-on-primary-container); }
   `,
 })
@@ -54,7 +57,7 @@ export class TargetsDialog {
   private readonly i18n = inject(I18n);
   protected readonly picked = signal<string[]>([]);
   protected readonly prompt = this.i18n.t(this.data.pick.min === this.data.pick.max ? 'targets.prompt' : 'targets.promptUpTo', { count: this.data.pick.max, title: this.data.title });
-  protected readonly seats = this.data.pick.eligibleIds.map((id) => ({ id, label: seatName(this.data.state.players, id, this.i18n.translator) }));
+  protected readonly seats = this.data.pick.eligibleIds.map((id) => ({ id, label: seatName(this.data.state.players, id, this.i18n.translator), generals: this.data.state.seats.find((s) => s.id === id)?.generals ?? null }));
 
   // Whether the seat may join those picked: below the maximum, and within any cap on some seats.
   protected allowed(id: string): boolean {

@@ -67,6 +67,14 @@ describe('SelectionDialog', () => {
     expect(render({ cancel: null }).el.querySelector('button.cancel')).toBeNull();
   });
 
+  it('shows a seat with its portrait, and a card without one', () => {
+    const generals = { main: { generalDefinitionId: 'cao-cao', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } };
+    const { el } = render({ items: [{ id: 'seat-2', label: 'Seat 2', generals, force: 'Wei' }, { id: 'a', card: c('a'), label: 'Slash (7 ♠)' }], min: 1, max: 1 });
+    expect(el.querySelector('[data-item-id="seat-2"] app-seat-portrait')).not.toBeNull();
+    expect(el.querySelector('[data-item-id="seat-2"]')!.getAttribute('aria-label')).toBe('Seat 2');
+    expect(el.querySelector('[data-item-id="a"] app-seat-portrait')).toBeNull();
+  });
+
   it('shows seats by name', () => {
     const { el } = render({ items: [{ id: 'seat-2', label: 'Seat 2' }], min: 1, max: 2 });
     expect(el.querySelector('[data-item-id="seat-2"]')!.textContent).toContain('Seat 2');
