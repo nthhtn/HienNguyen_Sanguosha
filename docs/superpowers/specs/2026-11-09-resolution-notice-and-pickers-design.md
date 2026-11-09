@@ -17,8 +17,9 @@ popup; the rest should get one that shows the outcome at a glance.
 ### Goals
 
 - One shared, extensible popup, the Resolution Notice, used by every effect with a visible outcome.
-- It shows for 5 seconds and fades on its own, like Judgment and Compete. It blocks (the user's later
-  decision): playback is held until it is dismissed, there is no button and no skip.
+- It is a centred, force-themed dialog laid out like the Compete and Judgment popups (the user's later
+  decision), with a 5 second countdown; no button, no skip. Like Compete, it holds playback locally
+  and not online.
 - Shell (the user's decision, see the mockup): header with the word "Resolution" in the force colour of
   whoever caused it and the source (card or skill, with the card art for a card); the seats involved
   with their portraits, names and Generals; short step lines; the cards that matter (a hidden card is a
@@ -76,8 +77,8 @@ that already opens the Judgment popup (Lightning, Capture, Starvation, Eight Tri
 - Mockup content: the headline, sentence, steps and cards in the mockup are the reference text for the
   named cards (Appendix A).
 - Notices that would overlap (two resolutions in one batch) queue and show in order.
-- Because the notice blocks only on the client, the shared animation durations the server uses for bot
-  and clock pacing do not include it: online, a bot may move while a notice shows. Left as is (open).
+- Online it does not hold playback or wait for the server, as for the Compete popup, so the shared
+  animation durations the server uses stay as they are; it is dropped when the viewer owes a decision.
 
 ### Left to the builder
 

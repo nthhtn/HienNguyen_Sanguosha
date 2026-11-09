@@ -42,9 +42,10 @@ export class PlaybackDirector {
   readonly playedLogLength: Signal<number> = this._playedLogLength.asReadonly();
   // The cards played into the resolution on show.
   readonly centreStack: Signal<UsedCard[]> = this._centreStack.asReadonly();
-  // The Resolution Notices waiting to show, oldest first. A notice blocks: playback is held from the beat
-  // that publishes it until it is dismissed, so no later beat, bot move or decision clock runs under it. The
-  // board shows the first and calls `dismissNotice` when its 5 seconds are up.
+  // The Resolution Notices waiting to show, oldest first. In a local game a notice blocks: playback is held
+  // from the beat that publishes it until it is dismissed, so no later beat, bot move or decision clock runs
+  // under it. Online it does not (the server paces the game and knows nothing of the popup), like the Compete
+  // popup. The board shows the first and calls `dismissNotice` when its 5 seconds are up.
   readonly notices: Signal<ResolutionNoticeContent[]> = this._notices.asReadonly();
 
   dismissNotice(): void {
@@ -160,6 +161,11 @@ export class PlaybackDirector {
     }
   }
 
+  // Every waiting notice is dropped (online, a decision the viewer owes must not wait behind a popup).
+  dropNotices(): void {
+    this.clearNotices();
+  }
+
   private clearNotices(): void {
     this._notices.set([]);
     this.releaseNotices();
@@ -176,7 +182,7 @@ export class PlaybackDirector {
     const content = state ? describeResolution(span, state, this.noticeRegistry) : null;
     if (!content) return;
     this._notices.update((all) => [...all, content]);
-    this.releaseNoticeHold ??= this.hold();
+    if (this.game.clockWaitsForPlayback) this.releaseNoticeHold ??= this.hold();
   }
 
   // Another game: the log is shorter than what was queued, or the event last queued is not where it was. The view's

@@ -455,6 +455,30 @@ describe('PlaybackDirector', () => {
       expect(director.idle()).toBe(true);
     });
 
+    it('online it does not hold playback (the server paces the game, as for the Compete popup), but still publishes', () => {
+      const { director, show } = setup({ registry, clockWaitsForPlayback: false });
+      const start = table();
+      show(start);
+      show(after(start, blaze, damage('b'), phase('Draw'), damage('b')));
+      jest.advanceTimersByTime(60000);
+      expect(headlines(director)).toEqual(['notice.blaze']);
+      expect(director.playedLogLength()).toBe(4);
+      expect(director.idle()).toBe(true);
+    });
+
+    it('drops every waiting notice and lets go of playback on request', () => {
+      const { director, show } = setup({ registry });
+      const start = table();
+      show(start);
+      show(after(start, blaze, damage('b'), phase('Draw'), damage('b')));
+      jest.advanceTimersByTime(60000);
+      expect(director.idle()).toBe(false);
+      director.dropNotices();
+      expect(director.notices()).toEqual([]);
+      jest.advanceTimersByTime(60000);
+      expect(director.idle()).toBe(true);
+    });
+
     it('shows two resolutions of one batch one after the other, the second only once the first is dismissed', () => {
       const { director, show } = setup({ registry });
       const start = table();

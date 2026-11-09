@@ -58,8 +58,9 @@ import { DecisionTimer } from '../decision-timer.service';
 import { I18n } from '../i18n/i18n.service';
 import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
+import type { ResolutionNoticeContent } from 'content';
 import { PlaybackDirector } from './playback/playback-director';
-import { ResolutionNotice } from './resolution-notice';
+import { ResolutionNoticeDialog, ResolutionNoticeDialogData, noticeForce } from './resolution-notice-dialog';
 import { TILE_HEIGHT } from './table-layout';
 import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './playback/seat-cues';
 
@@ -67,7 +68,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
   selector: 'app-game-board',
   // The board's own playback: it lives as long as the board does, and reads the board's GameService (online, the remote one).
   providers: [PlaybackDirector],
-  imports: [TPipe, TMsgPipe, ResolutionNotice, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, SmallScreenPrompt, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, SmallScreenPrompt, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
@@ -155,12 +156,6 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
             </ng-template>
             <div class="board">
               <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
-              <!-- The first waiting Resolution Notice; a new one for each, so its fade restarts. -->
-              <div class="notice-layer" aria-live="polite">
-                @for (notice of shownNotice(); track notice) {
-                  <app-resolution-notice [content]="notice" [state]="visible" (faded)="director.dismissNotice()" />
-                }
-              </div>
               <div class="board-grid">
                 <app-round-table class="battlefield" [reserveBottom]="seatReserve()" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [damageEffects]="damageEffects()" [resolving]="resolving()">
                   @if (layout.panelAsOverlay()) {
@@ -218,8 +213,6 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
   `,
   styles: `
-    .notice-layer { position: fixed; inset: 0; z-index: 20; display: flex; justify-content: center; align-items: flex-start; padding-top: 10vh; pointer-events: none; }
-    .notice-layer:has(app-resolution-notice) { pointer-events: auto; background: rgb(0 0 0 / 25%); }
     .error-banner {
       display: flex; align-items: center; gap: 12px; margin: 8px 0; padding: 8px 12px; border-radius: 12px;
       background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container);
@@ -305,7 +298,6 @@ export class GameBoard {
   private readonly dock = inject(DecisionDock);
   private readonly injector = inject(Injector);
   protected readonly director = inject(PlaybackDirector);
-  protected readonly shownNotice = computed(() => this.director.notices().slice(0, 1));
   protected readonly layout = inject(Layout);
   // Your own seat's zoom, shared with the other seats (Layout.seatScale, which shrinks with more players) on phone and
   // medium; null on large, where the board's CSS and the table fit it themselves.
@@ -471,10 +463,25 @@ export class GameBoard {
         this.competeDialog?.close();
       });
     });
+    // A Resolution Notice opens as soon as the director has one, and the next after it closes.
+    effect(() => {
+      const first = this.director.notices()[0];
+      untracked(() => this.showNotice(first));
+    });
+    // Online nothing waits for the notice either, so it gives way when the viewer owes a decision.
+    effect(() => {
+      const owed = !this.gameService.clockWaitsForPlayback && this.decisionOwed();
+      untracked(() => {
+        if (!owed) return;
+        this.director.dropNotices();
+        this.noticeDialog?.close();
+      });
+    });
     inject(DestroyRef).onDestroy(() => this.damageTimers.forEach(clearTimeout));
     // A hold never released would keep playback shut; and no popup opens for a board that is gone.
     inject(DestroyRef).onDestroy(() => {
       this.destroyed = true;
+      this.noticeDialog?.close();
       const release = this.releaseCompete;
       this.releaseCompete = null;
       release?.();
@@ -666,6 +673,31 @@ export class GameBoard {
 
   protected nameOf(seatId: string): string {
     return seatName(this.gameService.state()?.players ?? [], seatId, this.i18n.translator);
+  }
+
+  private noticeDialog: MatDialogRef<ResolutionNoticeDialog> | null = null;
+
+  // Opens the Resolution Notice, themed in the Force of the seat that caused it. It closes itself after 5
+  // seconds, and the director then lets go of playback and offers the next.
+  private showNotice(content: ResolutionNoticeContent | undefined): void {
+    if (!content || this.noticeDialog || this.destroyed) return;
+    if (!this.gameService.clockWaitsForPlayback && this.decisionOwed()) {
+      this.director.dropNotices();
+      return;
+    }
+    const state = this.director.displayedState() ?? this.visibleState();
+    if (!state) return;
+    const ref = openForceDialog<ResolutionNoticeDialog, ResolutionNoticeDialogData>(this.dialog, ResolutionNoticeDialog, noticeForce(content, state), {
+      data: { content, state },
+      width: 'min(92vw, 520px)',
+      autoFocus: 'dialog',
+      disableClose: true,
+    });
+    this.noticeDialog = ref;
+    ref.afterClosed().subscribe(() => {
+      this.noticeDialog = null;
+      this.director.dismissNotice();
+    });
   }
 
   private readonly competeQueue: CompeteResult[] = [];

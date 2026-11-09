@@ -1,9 +1,8 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { TestBed } from '@angular/core/testing';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import type { GameState } from 'engine';
 import type { ResolutionNoticeContent } from 'content';
-import { NOTICE_MS, ResolutionNotice } from './resolution-notice';
+import { NOTICE_SECONDS, noticeForce, ResolutionNoticeDialog } from './resolution-notice-dialog';
 
 const seat = (id: string, kingdom: string, main: string, hp = 3) => ({
   id, kingdom, combinedHp: hp, maxCombinedHp: 4,
@@ -24,28 +23,36 @@ const content = (over: Partial<ResolutionNoticeContent> = {}): ResolutionNoticeC
 });
 
 function render(c: ResolutionNoticeContent) {
-  const fixture = TestBed.createComponent(ResolutionNotice);
-  fixture.componentRef.setInput('content', c);
-  fixture.componentRef.setInput('state', state);
+  const close = jest.fn();
+  TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: { content: c, state } }, { provide: MatDialogRef, useValue: { close } }] });
+  const fixture = TestBed.createComponent(ResolutionNoticeDialog);
   fixture.detectChanges();
-  return { fixture, el: fixture.nativeElement as HTMLElement };
+  return { fixture, el: fixture.nativeElement as HTMLElement, close };
 }
 
-describe('ResolutionNotice', () => {
+describe('ResolutionNoticeDialog', () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => jest.useRealTimers());
 
+  it('names its source like the Compete and Judgment popups do: the card, or the General and its skill', () => {
+    expect(render(content()).el.querySelector('.source .who')!.textContent!.trim()).toBe('Blaze');
+    TestBed.resetTestingModule();
+    const skill = render(content({ source: { kind: 'skill', id: 'resurgence', seatId: 'seat-0' } }));
+    expect(skill.el.querySelector('.source .who')!.textContent).toContain('Zhou Yu');
+    expect(skill.el.querySelector('.source .who')!.textContent).toContain('Resurgence');
+  });
+
   it('shows the title, a portrait and name per seat, a line per step, and the cards', () => {
     const { el } = render(content());
-    expect(el.querySelector('.title')!.textContent).toBe('Resolution');
-    expect(el.querySelectorAll('app-seat-portrait').length).toBe(2);
-    expect([...el.querySelectorAll('.actor .name')].map((n) => n.textContent)).toEqual(['Hing', 'Seat 1']);
+    expect(el.querySelector('h2')!.textContent).toBe('Resolution');
+    expect(el.querySelectorAll('.side app-seat-portrait').length).toBe(2);
+    expect([...el.querySelectorAll('.side .name')].map((n) => n.textContent)).toEqual(['Hing', 'Seat 1']);
     expect([...el.querySelectorAll('.steps li')].map((n) => n.textContent!.trim())).toEqual(['Confirm', 'Cancel']);
     expect(el.querySelectorAll('.cards app-playing-card').length).toBe(1);
     expect(el.querySelectorAll('.cards .card-back').length).toBe(1);
   });
 
-  it('colours the outcome band by tone and shows HP hearts for the seat whose HP changed', () => {
+  it('colours the outcome by tone and shows HP hearts for the seat whose HP changed', () => {
     const { el } = render(content());
     expect(el.querySelector('.outcome')!.getAttribute('data-tone')).toBe('good');
     expect(el.querySelector('.outcome .headline')!.textContent).toBe('Confirm');
@@ -61,34 +68,27 @@ describe('ResolutionNotice', () => {
     expect(el.querySelector('.cards')).toBeNull();
   });
 
-  it('takes the colour of the source seat’s force', () => {
-    expect(render(content()).el.querySelector('.notice')!.getAttribute('data-force')).toBe('Wu');
-  });
-
   it('turns seat ids and card ids in a line’s params into the seat’s name and the card’s name', () => {
     const { el } = render(content({ outcome: { tone: 'good', symbol: '🔥', headline: { key: 'notice.blaze.hit', params: { card: 'blaze' } }, text: { key: 'notice.blaze.hitText', params: { targetSeat: 'seat-0', amount: 1 } } } }));
     expect(el.querySelector('.headline')!.textContent).toBe('Blaze hit');
     expect(el.querySelector('.text')!.textContent).toBe('Hing took 1 fire damage');
   });
 
-  it('never grows taller than the screen: a long Harvest on a short phone must not run off it', () => {
-    // jsdom keeps no component styles, so read them from the source.
-    const styles = readFileSync(join(__dirname, 'resolution-notice.ts'), 'utf8');
-    expect(styles).toMatch(/\.notice \{[^}]*max-height: 80(dvh|vh)[^}]*overflow: hidden/s);
+  it('is themed by the force of the source seat', () => {
+    expect(noticeForce(content(), state)).toBe('Wu');
+    expect(noticeForce(content({ source: { kind: 'skill', id: 'resurgence', seatId: 'seat-1' } }), state)).toBe('Wei');
   });
 
-  it('lasts 5 seconds', () => {
-    expect(NOTICE_MS).toBe(5000);
-  });
-
-  it('fades on its own after NOTICE_MS and asks for nothing', () => {
-    const { fixture, el } = render(content());
-    const faded = jest.fn();
-    fixture.componentInstance.faded.subscribe(faded);
-    jest.advanceTimersByTime(NOTICE_MS - 1);
-    expect(faded).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(1);
-    expect(faded).toHaveBeenCalledTimes(1);
+  it('counts down 5 seconds with no button, then closes itself once', () => {
+    expect(NOTICE_SECONDS).toBe(5);
+    const { fixture, el, close } = render(content());
+    expect(el.querySelector('.timer .seconds')!.textContent).toBe('5s');
+    jest.advanceTimersByTime(4000);
+    fixture.detectChanges();
+    expect(el.querySelector('.timer .seconds')!.textContent).toBe('1s');
+    expect(close).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1000);
+    expect(close).toHaveBeenCalledTimes(1);
     expect(el.querySelector('button')).toBeNull();
   });
 });
