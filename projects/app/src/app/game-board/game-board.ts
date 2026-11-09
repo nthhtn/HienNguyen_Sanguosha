@@ -725,7 +725,7 @@ export class GameBoard {
     const generals = seat.generals;
     const options = (['main', 'deputy'] as const)
       .filter((slot) => !generals[slot].revealed)
-      .map((slot) => ({ slot, slotLabel: tr(slot === 'main' ? 'startReveal.main' : 'startReveal.deputy'), name: generalDisplayName(generals[slot].generalDefinitionId, tr) }));
+      .map((slot) => ({ slot, slotLabel: tr(slot === 'main' ? 'startReveal.main' : 'startReveal.deputy'), name: generalDisplayName(generals[slot].generalDefinitionId, tr), generalId: generals[slot].generalDefinitionId }));
     const ref = openForceDialog<StartRevealDialog, StartRevealDialogData, Array<'main' | 'deputy'>>(this.dialog, StartRevealDialog, this.viewerForce(), {
       data: { options },
       width: 'min(92vw, 480px)',

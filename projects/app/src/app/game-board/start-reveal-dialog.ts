@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
 import { MinimizeButton } from './minimize-button';
 import { TPipe } from '../i18n/t.pipe';
@@ -12,6 +13,8 @@ export interface StartRevealOption {
   slotLabel: string;
   // The hidden General's name: the viewer's own, so already known to them.
   name: string;
+  // The hidden General's id, for its art.
+  generalId: string;
 }
 
 export interface StartRevealDialogData {
@@ -23,7 +26,7 @@ export interface StartRevealDialogData {
 // first. The engine offers it as one ConfirmRevealsAction; at zero the clock confirms with none.
 @Component({
   selector: 'app-start-reveal-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, DecisionCountdown, MinimizeButton, TPipe],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, DecisionCountdown, MinimizeButton, TPipe],
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'startReveal.title' | t }}</h2>
@@ -43,6 +46,7 @@ export interface StartRevealDialogData {
               (click)="toggle(option.slot)"
             >
               <mat-icon class="mark" aria-hidden="true">{{ chosen().has(option.slot) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+              <app-card-art [skin]="true" [id]="option.generalId" [label]="option.name" size="small" />
               <span class="slot">{{ option.slotLabel }}</span>
               <span class="name">{{ option.name }}</span>
             </button>
