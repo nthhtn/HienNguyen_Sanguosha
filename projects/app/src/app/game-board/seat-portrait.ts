@@ -11,7 +11,7 @@ const HIDDEN_ID = 'hidden';
 @Component({
   selector: 'app-seat-portrait',
   template: `
-    <div class="frame" [class.medium]="size() === 'medium'">
+    <div class="frame" [class.medium]="size() === 'medium'" [class.fill]="size() === 'fill'">
       @for (url of urls(); track $index) {
         <img [src]="url" alt="" (error)="markFailed(url)" />
       }
@@ -21,13 +21,15 @@ const HIDDEN_ID = 'hidden';
     :host { display: inline-block; }
     .frame { display: flex; width: 72px; height: 52px; border: 2px solid var(--force, var(--force-none)); border-radius: 8px; overflow: hidden; box-sizing: border-box; background: #f1ece2; }
     .frame.medium { width: 104px; height: 76px; }
+    .frame.fill { width: 100%; height: 92px; }
+    :host(.fill-host) { display: block; }
     img { display: block; flex: 1; min-width: 0; height: 100%; object-fit: cover; object-position: top; }
     img + img { border-left: 1px solid rgb(0 0 0 / 35%); }
   `,
 })
 export class SeatPortrait {
   readonly generals = input<SeatGenerals | null>(null);
-  readonly size = input<'small' | 'medium'>('medium');
+  readonly size = input<'small' | 'medium' | 'fill'>('medium');
 
   private readonly failed = signal<ReadonlySet<string>>(new Set());
 
