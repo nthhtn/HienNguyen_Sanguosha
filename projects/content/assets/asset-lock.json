@@ -2982,10 +2982,10 @@
     }
   },
   "preview/index.json": {
-    "output": "c0c56b2849d1d8cdd9ab5b35da71d61beb7d901569e1d41d4f3ba81019ddf5eb",
+    "output": "1e5516738fd5128a8b89d0739227405d7ce3f86897d89066bf17cf39daa54d8f",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "preview/index.json": "c0c56b2849d1d8cdd9ab5b35da71d61beb7d901569e1d41d4f3ba81019ddf5eb"
+      "preview/index.json": "1e5516738fd5128a8b89d0739227405d7ce3f86897d89066bf17cf39daa54d8f"
     }
   },
   "preview/qun/zhang-jiao_dark-sorcery_en.mp4": {
@@ -3056,6 +3056,34 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/wei/cao-cao_villainous-hero_vi.mp4": "475496a8d072e475abe484baff9ec57a9ae5cd83e1c58649ac818a269ae3d120"
+    }
+  },
+  "preview/wei/guo-jia_bequeathed-strategy_en.mp4": {
+    "output": "6da9d9c1aa0cb0fff55d7939860f2c19a5569cefb805fc94f7a8bb1b04829b0a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/guo-jia_bequeathed-strategy_en.mp4": "091c0882001cab6a1883f1c7df21143b3df0f1385a696021a22d2e4e7f6dc39b"
+    }
+  },
+  "preview/wei/guo-jia_bequeathed-strategy_vi.mp4": {
+    "output": "e150a71c76abf88bd4047b204fc103de3e74bc53cd3997f291325dca9aea8dc2",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/guo-jia_bequeathed-strategy_vi.mp4": "55681e395bd3dc54b4a066881a84d9951d0d6202692584c4bd60b4ac35a5d2d1"
+    }
+  },
+  "preview/wei/guo-jia_envy-of-heaven_en.mp4": {
+    "output": "aaeeae1cfdc50fdf40d64519f5fffa10a6ada91c1f8abb32d05ef39ccc8e5bb9",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/guo-jia_envy-of-heaven_en.mp4": "12ec31096e7d885a8131fb82d2e8abb64192d685bd7acb92d30a3fb5bbdb7170"
+    }
+  },
+  "preview/wei/guo-jia_envy-of-heaven_vi.mp4": {
+    "output": "733fb67a0ec5baa5446e6d975b000acc3d3ba573ff0b7473d9f691f71ad85131",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/wei/guo-jia_envy-of-heaven_vi.mp4": "e15f53807015731a7369c81e981561b7152aba5820cfea53f4d76fc304e18131"
     }
   },
   "preview/wu/zhou-tai_refuting-death_en.mp4": {

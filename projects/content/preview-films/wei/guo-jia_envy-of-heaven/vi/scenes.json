@@ -1,0 +1,40 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wei",
+  "palettes": {
+    "main": "#3f6fd8",
+    "ground": "#0F2233",
+    "second": "#E6EEF5",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0F2233",
+  "fonts": {
+    "display": {
+      "family": "Merriweather",
+      "weights": [
+        400,
+        700
+      ]
+    },
+    "sans": {
+      "family": "Be Vietnam Pro",
+      "weights": [
+        400,
+        700
+      ]
+    }
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Quách Gia: Thiên đố",
+      "dur": 6.4,
+      "desc": "Lá phán xét của Quách Gia được lật và có hiệu lực, rồi ông lấy lá phán xét vào tay."
+    }
+  ]
+}
