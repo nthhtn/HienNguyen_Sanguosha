@@ -28,7 +28,7 @@ popup; the rest should get one that shows the outcome at a glance.
 
 ### Scope (the user's decision)
 
-Gets a notice: Blaze (hit, miss), Steal, Break, Coerce, Harvest, Amass, Ascertain, and one skill: Meng Huo's Resurgence (the user's decision: it has no notice today;
+Gets a notice: Blaze (hit, miss), Coerce, Harvest, and one skill: Meng Huo's Resurgence (the user's decision: it has no notice today;
 the cards it reveals, each heart recovering 1 HP, the rest going to his hand).
 
 Skills and equipment abilities in general get no notice in this release. The user will address them
@@ -42,7 +42,7 @@ change it), so it uses the Resolution Notice, not the Judgment popup (my call; t
 revealed cards shown, hearts marked, and HP hearts.
 
 Does NOT get one, because it already has an informative response or popup (or, for Draw Two, Ally Far
-Attack Near and Wine, because the user decided none is needed): Sha, Wuxie, Peach Garden,
+Attack Near, Wine, Amass, Ascertain, Steal and Break, because the user decided none is needed): Sha, Wuxie, Peach Garden,
 Chains, Duel, Barbarians, Hail of Arrows, saving and recovering from the brink of death, and anything
 that already opens the Judgment popup (Lightning, Capture, Starvation, Eight Trigrams and the like).
 
@@ -144,12 +144,8 @@ Headline, then sentence. Seats are example data.
 
 - Blaze hit: "Blaze hit" / "Seat 1 took 1 fire damage." Steps: Seat 1 showed a card; Hing discarded a card of the same suit. Cards: the shown card, the discarded card. HP hearts for Seat 1.
 - Blaze miss: "Blaze missed" / "No damage was dealt." Steps: Seat 1 showed a card; Hing had no card of the same suit. Grey-red band.
-- Steal: "Card taken" / "Hing took a card from the hand of Seat 2." (equipment: "Equipment taken" / "Hing took Zhuge Crossbow from Seat 2."). Card shown face up to those who took part, else a back.
-- Break: "Card discarded" / "Seat 3 lost a Peach."
 - Coerce: "Weapon taken" / "Hing took the weapon of Seat 1." Steps: Seat 1 must use Sha on Seat 3; Seat 1 did not use Sha.
 - Harvest: "Harvest done" / "Every seat took one card." Cards: one per seat. Neutral.
-- Amass: "Cards drawn" / "Hing drew 2 cards and Seat 1 drew 2 cards."
-- Ascertain: "Hand viewed" / "Only Hing saw the hand of Seat 2." Neutral; the cards seen are shown to Hing only.
 - Counterattack (skill, illustration only): "Counterattack" / "Hing took a card from the hand of Seat 4."
 - Marvelous Pick (skill, illustration only): "Marvelous Pick" / "Hing drew 2 cards." HP hearts.
 - Resurgence (Meng Huo): see the Scope section.

@@ -1,9 +1,7 @@
 import type { CardInstance, EngineEvent, GameState } from 'engine';
 import { blazeNotice } from './resolutionNotices/blaze';
-import { breakNotice, coerceNotice, stealNotice } from './resolutionNotices/take-cards';
-import { amassNotice } from './resolutionNotices/draw';
+import { coerceNotice } from './resolutionNotices/take-cards';
 import { harvestNotice } from './resolutionNotices/harvest';
-import { ascertainNotice } from './resolutionNotices/ascertain';
 import { resurgenceNotice } from './resolutionNotices/resurgence';
 
 // A Resolution Notice: the popup that tells every seat what an effect with a visible outcome did. This
@@ -60,15 +58,12 @@ export interface ResolutionNoticeDefinition {
 
 // Keyed by a card's id or a skill's id. A card whose own response or popup already says what happened
 // (Sha, Wuxie, Peach Garden, Chains, Duel, Barbarians, Hail of Arrows, and anything with a Judgment popup),
-// or that the table needs no popup for (Draw Two, Ally Far Attack Near, Wine), has no entry.
+// or that the table needs no popup for (Draw Two, Ally Far Attack Near, Wine, Amass, Ascertain, Steal, Break),
+// has no entry.
 export const RESOLUTION_NOTICES: Record<string, ResolutionNoticeDefinition> = {
   blaze: blazeNotice,
-  steal: stealNotice,
-  break: breakNotice,
   coerce: coerceNotice,
   harvest: harvestNotice,
-  amass: amassNotice,
-  ascertain: ascertainNotice,
   resurgence: resurgenceNotice,
 };
 

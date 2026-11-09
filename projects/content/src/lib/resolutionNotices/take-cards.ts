@@ -2,7 +2,6 @@ import type { CardInstance, EngineEvent, GameState } from 'engine';
 import type { NoticeText, ResolutionNoticeDefinition, ResolutionSpan } from '../resolutionNotice';
 
 type Moved = Extract<EngineEvent, { kind: 'CardMovedEvent' }>;
-type Chose = Extract<EngineEvent, { kind: 'ChoiceMadeEvent' }>;
 
 // A card the viewer's own view shows face up, wherever it now lies. A card that went into someone's hand
 // has no face in the log; only a seat that can see it has it in its view, and everyone else gets a back.
@@ -15,47 +14,6 @@ export function faceInView(view: GameState, instanceId: string): CardInstance | 
 }
 
 const moves = (span: ResolutionSpan) => span.events.filter((e): e is Moved => e.kind === 'CardMovedEvent');
-const discardPileId = (view: GameState) => view.zones.find((z) => z.kind === 'discardPile')?.id ?? 'discardPile';
-
-// Steal: the user picked a card of the target and took it into their hand.
-export const stealNotice: ResolutionNoticeDefinition = {
-  describe: (span, view) => {
-    const choice = span.events.find((e): e is Chose => e.kind === 'ChoiceMadeEvent' && e.seatId === span.userSeatId);
-    const taken = moves(span).find((m) => m.toZoneId === view.seats.find((s) => s.id === span.userSeatId)?.hand.zoneId);
-    if (!choice || !taken) return null;
-    const target = span.targetSeatIds[0];
-    const worn = choice.shows.kind === 'card' ? choice.shows.card : null;
-    const params = { userSeat: span.userSeatId, targetSeat: target };
-    return {
-      source: { kind: 'card', id: 'steal' },
-      seatIds: [span.userSeatId, target],
-      steps: [],
-      cards: [{ card: worn ?? faceInView(view, taken.cardInstanceId) }],
-      outcome: worn
-        ? { tone: 'good', symbol: '✋', headline: { key: 'notice.steal.equipment' }, text: { key: 'notice.steal.equipmentText', params: { ...params, card: worn.definitionId } } }
-        : { tone: 'good', symbol: '✋', headline: { key: 'notice.steal.hand' }, text: { key: 'notice.steal.handText', params } },
-    };
-  },
-};
-
-// Break: the user picked a card of the target and it was discarded face up.
-export const breakNotice: ResolutionNoticeDefinition = {
-  describe: (span, view) => {
-    const choiceAt = span.events.findIndex((e) => e.kind === 'ChoiceMadeEvent' && e.seatId === span.userSeatId);
-    // Every card played into the resolution (the Break, and any Wuxie) is discarded as it is played; the
-    // picked card is discarded only after the pick.
-    const discarded = choiceAt < 0 ? undefined : moves({ ...span, events: span.events.slice(choiceAt + 1) }).find((m) => m.toZoneId === discardPileId(view) && m.card);
-    if (!discarded?.card) return null;
-    const target = span.targetSeatIds[0];
-    return {
-      source: { kind: 'card', id: 'break' },
-      seatIds: [span.userSeatId, target],
-      steps: [],
-      cards: [{ card: discarded.card }],
-      outcome: { tone: 'good', symbol: '✂', headline: { key: 'notice.break.discarded' }, text: { key: 'notice.break.discardedText', params: { targetSeat: target, card: discarded.card.definitionId } } },
-    };
-  },
-};
 
 // Coerce: the holder must use Sha on the victim; without one, the holder's weapon goes to the user.
 export const coerceNotice: ResolutionNoticeDefinition = {

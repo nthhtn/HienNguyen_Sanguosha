@@ -70,20 +70,6 @@ function played(definitionId: string, targets: string[]): { state: GameState; fr
 }
 
 describe('other real cards, described', () => {
-  it('Steal takes the one card of the target, shown to the taker', () => {
-    const { state, from, held } = played('steal', ['seat-1']);
-    const notice = noticeOf(state, from)!;
-    expect(notice.outcome.headline.key).toBe('notice.steal.hand');
-    expect(notice.cards).toEqual([{ card: held }]);
-  });
-
-  it('Break discards the one card of the target, face up for all', () => {
-    const { state, from, held } = played('break', ['seat-1']);
-    const notice = noticeOf(state, from)!;
-    expect(notice.outcome.headline.key).toBe('notice.break.discarded');
-    expect(notice.cards).toEqual([{ card: held }]);
-  });
-
   it('Harvest lists a pick for every living seat', () => {
     const { state, from } = played('harvest', []);
     const notice = noticeOf(state, from)!;

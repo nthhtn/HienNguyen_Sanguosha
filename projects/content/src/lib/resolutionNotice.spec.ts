@@ -13,14 +13,14 @@ const content: ResolutionNoticeContent = {
 
 describe('describeResolution', () => {
   it('has no notice for a card whose own response already says what happened', () => {
-    for (const id of ['sha', 'wuxie', 'wuxie-guo', 'peach-garden', 'chains', 'duel', 'barbarians', 'hail-of-arrows', 'draw-two', 'ally-far-attack-near', 'wine']) {
+    for (const id of ['sha', 'wuxie', 'wuxie-guo', 'peach-garden', 'chains', 'duel', 'barbarians', 'hail-of-arrows', 'draw-two', 'ally-far-attack-near', 'wine', 'amass', 'ascertain', 'steal', 'break']) {
       expect(RESOLUTION_NOTICES[id]).toBeUndefined();
       expect(describeResolution(span(id), view)).toBeNull();
     }
   });
 
   it('has a notice for each card and skill in scope', () => {
-    expect(['blaze', 'steal', 'break', 'coerce', 'harvest', 'amass', 'ascertain', 'resurgence'].every((id) => RESOLUTION_NOTICES[id] !== undefined)).toBe(true);
+    expect(['blaze', 'coerce', 'harvest', 'resurgence'].every((id) => RESOLUTION_NOTICES[id] !== undefined)).toBe(true);
   });
 
   it('asks the registered definition, with the span and the viewer’s view', () => {
