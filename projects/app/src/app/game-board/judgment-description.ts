@@ -22,7 +22,7 @@ export interface JudgmentDescription {
   settled: boolean;
   // What the final card will do; only once settled, and only for a reader content has text for.
   outcome: string | null;
-  // While not settled: who is deciding, or a general line.
+  // While not settled: a general line that names no one.
   waiting: string | null;
   // One sentence: what makes this judgment good or bad for the judged seat. Shown at the start.
   rule: string | null;
@@ -97,11 +97,8 @@ export function judgmentDescription(state: GameState, registry: ContentRegistry,
     }
   }
 
-  let waiting: string | null = null;
-  if (!view.settled) {
-    const deciding = state.pendingChoice?.seatId ?? state.pendingSelection?.seatId;
-    waiting = deciding ? tr('judgment.waiting.seat', { seat: name(deciding) }) : tr('judgment.waiting');
-  }
+  // Never names who is deciding: the seat asked is the seat holding a skill that can change the judgment.
+  const waiting = view.settled ? null : tr('judgment.waiting');
 
   return {
     force, source, judgedSeatName: name(view.seatId), card: view.card, changes, settled: view.settled, outcome, waiting,
