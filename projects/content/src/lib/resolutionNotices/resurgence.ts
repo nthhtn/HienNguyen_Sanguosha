@@ -1,5 +1,5 @@
 import type { EngineEvent } from 'engine';
-import type { ResolutionNoticeDefinition } from '../resolutionNotice';
+import type { NoticeText, ResolutionNoticeDefinition } from '../resolutionNotice';
 
 // Meng Huo's Resurgence: in his Draw Phase, instead of drawing, he turned up as many cards as he misses HP;
 // each heart recovered 1 HP, and the rest went to his hand. The cards were turned up just before the skill
@@ -12,7 +12,7 @@ export const resurgenceNotice: ResolutionNoticeDefinition = {
     const amount = span.events.reduce((n, e) => (e.kind === 'HealEvent' && e.target.seatId === owner ? n + e.amount : n), 0);
     const rest = turnedUp.cards.filter((c) => c.suit !== 'heart').length;
     const plural = rest === 1 ? 'one' : 'other';
-    const text =
+    const text: NoticeText =
       amount > 0
         ? rest === 0
           ? { key: 'notice.resurgence.recoveredAll', params: { userSeat: owner, amount } }

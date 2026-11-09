@@ -1,5 +1,5 @@
 import type { EngineEvent } from 'engine';
-import type { ResolutionNoticeDefinition, ResolutionSpan } from '../resolutionNotice';
+import type { NoticeText, ResolutionNoticeDefinition, ResolutionSpan } from '../resolutionNotice';
 
 type Drew = Extract<EngineEvent, { kind: 'CardsDrawnEvent' }>;
 
@@ -26,6 +26,7 @@ export const amassNotice: ResolutionNoticeDefinition = {
   describe: (span) => {
     const seats = [...new Set(draws(span).map((d) => d.seatId))];
     if (seats.length === 0) return null;
+    const text: NoticeText = seats.length === 1 ? { key: 'notice.amass.one', params: { userSeat: seats[0] } } : { key: 'notice.amass.many', params: { count: seats.length } };
     return {
       source: { kind: 'card', id: 'amass' },
       seatIds: seats,
@@ -35,7 +36,7 @@ export const amassNotice: ResolutionNoticeDefinition = {
         tone: 'good',
         symbol: '+',
         headline: { key: 'notice.draw.drawn' },
-        text: seats.length === 1 ? { key: 'notice.amass.one', params: { userSeat: seats[0] } } : { key: 'notice.amass.many', params: { count: seats.length } },
+        text,
       },
     };
   },

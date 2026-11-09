@@ -1,5 +1,5 @@
 import type { CardInstance, EngineEvent, GameState } from 'engine';
-import type { ResolutionNoticeDefinition, ResolutionSpan } from '../resolutionNotice';
+import type { NoticeText, ResolutionNoticeDefinition, ResolutionSpan } from '../resolutionNotice';
 
 type Moved = Extract<EngineEvent, { kind: 'CardMovedEvent' }>;
 type Chose = Extract<EngineEvent, { kind: 'ChoiceMadeEvent' }>;
@@ -68,13 +68,14 @@ export const coerceNotice: ResolutionNoticeDefinition = {
     const taken = moves(span).find((m) => m.fromZoneId === holderEquip && m.toZoneId === userHand);
     if (!taken || !victim) return null;
     const weapon = faceInView(view, taken.cardInstanceId);
+    const steps: NoticeText[] = [
+      { key: 'notice.coerce.mustSha', params: { holderSeat: holder, victimSeat: victim, shaCard: 'sha' } },
+      { key: 'notice.coerce.noSha', params: { holderSeat: holder, shaCard: 'sha' } },
+    ];
     return {
       source: { kind: 'card', id: 'coerce' },
       seatIds: [span.userSeatId, holder, victim],
-      steps: [
-        { key: 'notice.coerce.mustSha', params: { holderSeat: holder, victimSeat: victim, shaCard: 'sha' } },
-        { key: 'notice.coerce.noSha', params: { holderSeat: holder, shaCard: 'sha' } },
-      ],
+      steps,
       cards: weapon ? [{ card: weapon }] : [],
       outcome: { tone: 'good', symbol: '✋', headline: { key: 'notice.coerce.taken' }, text: { key: 'notice.coerce.takenText', params: { userSeat: span.userSeatId, holderSeat: holder } } },
     };
