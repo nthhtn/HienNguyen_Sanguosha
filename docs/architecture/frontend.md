@@ -349,6 +349,24 @@ it only under the `logPasses` rule and only for windows that set `announcePass`
 (see [event-chain.md](event-chain.md)); without it the board plays nothing for a
 pass.
 
+### Resolution notices
+
+A card or skill with a visible outcome gets a **Resolution Notice**: a popup that shows briefly and
+fades on its own, for every seat. It never blocks, takes no input and does not hold playback, so it
+does not change the animation durations the server paces bots and clocks with.
+
+The `PlaybackDirector` finds each finished resolution while it plays the log
+([`resolution-spans.ts`](../../projects/app/src/app/game-board/playback/resolution-spans.ts): a span
+opens at a card's play, or a skill's announcement, whose id is in the content registry, and ends at the
+next play, phase or turn change, or when nothing is waiting on a decision). When the beat of the span's
+last event plays, the director asks `describeResolution` (content) for the notice's content and queues
+it in `notices`. The board shows the first and drops it when it has faded (`ResolutionNotice`). A first
+look, a reconnect or a late join publishes nothing for what already happened.
+
+The content is built from the viewer's own redacted state, so a card the viewer may not see is a card
+back. A resolution a Wuxie cancelled, or a card whose own response or popup already says what happened
+(Sha, Wuxie, Duel, Peach Garden, Chains, Barbarians, Hail of Arrows, a judgment), has no notice.
+
 ### The Game Over window
 
 `game-over` (local) and `OnlineResult` (online) both show

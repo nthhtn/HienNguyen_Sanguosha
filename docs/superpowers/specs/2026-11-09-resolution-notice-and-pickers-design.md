@@ -151,7 +151,7 @@ Headline, then sentence. Seats are example data.
 - Amass: "Cards drawn" / "Hing drew 2 cards and Seat 1 drew 2 cards."
 - Draw Two: "Cards drawn" / "Hing drew 2 cards."
 - Ascertain: "Hand viewed" / "Only Hing saw the hand of Seat 2." Neutral; the cards seen are shown to Hing only.
-- Ally Far Attack Near: "Allies drew" / "Hing and Seat 3 drew 1 card each."
+- Ally Far Attack Near: "Cards drawn" / "Seat 3 drew 1 card and Hing drew 3 cards." (the mockup said 1 each; the rule is target 1, user 3)
 - Wine: "Wine drunk" / "The next Sha this turn deals 1 extra damage."
 - Counterattack (skill, illustration only): "Counterattack" / "Hing took a card from the hand of Seat 4."
 - Marvelous Pick (skill, illustration only): "Marvelous Pick" / "Hing drew 2 cards." HP hearts.
