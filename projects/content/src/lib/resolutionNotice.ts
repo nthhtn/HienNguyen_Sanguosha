@@ -34,6 +34,9 @@ export interface ResolutionNoticeContent {
   // What happened, in order.
   steps: NoticeText[];
   cards: NoticeCard[];
+  // A card per seat, shown in a row with the seat's name and revealed Generals under each (Harvest). When set,
+  // the popup shows this in place of the row of seats, the steps and the cards.
+  seatCards?: { seatId: string; card: CardInstance | null }[];
   // From the source seat's side, the same for every viewer. `hp` names the seat whose HP changed.
   outcome: { tone: NoticeTone; symbol: string; headline: NoticeText; text: NoticeText; hp?: { seatId: string } };
 }

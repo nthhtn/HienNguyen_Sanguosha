@@ -52,6 +52,28 @@ describe('ResolutionNoticeDialog', () => {
     expect(el.querySelectorAll('.cards .card-back').length).toBe(1);
   });
 
+  it('lists a card per seat in a row, with the seat’s name and revealed Generals under each, and no separate seat row', () => {
+    const peach = { instanceId: 'p', definitionId: 'peach', suit: 'heart' as const, rank: 3 };
+    const sha = { instanceId: 's', definitionId: 'sha', suit: 'spade' as const, rank: 9 };
+    const { el } = render(content({ steps: [], cards: [], seatCards: [{ seatId: 'seat-0', card: peach }, { seatId: 'seat-1', card: sha }] }));
+    const items = [...el.querySelectorAll('.seat-cards .seat-card')];
+    expect(items.map((i) => i.querySelector(':scope > .name')!.textContent)).toEqual(['Hing', 'Seat 1']);
+    expect(items.map((i) => i.querySelector('app-playing-card') !== null)).toEqual([true, true]);
+    expect(items[0].querySelector('.generals')!.textContent!.trim()).toBe('Zhou Yu');
+    expect(items[0].getAttribute('data-force')).toBe('Wu');
+    expect(items[1].querySelector('.generals')!.textContent!.trim()).toBe('Cao Cao');
+    expect(el.querySelector('.actors')).toBeNull();
+  });
+
+  it('shows no Generals line for a seat that has none face up', () => {
+    const hidden = { ...state, seats: [{ ...seat('seat-0', 'hidden', 'hidden'), generals: { main: { generalDefinitionId: 'hidden', revealed: false }, deputy: { generalDefinitionId: 'hidden', revealed: false } } }] } as unknown as GameState;
+    const close = jest.fn();
+    TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: { content: content({ seatCards: [{ seatId: 'seat-0', card: { instanceId: 'p', definitionId: 'peach', suit: 'heart', rank: 3 } }] }), state: hidden } }, { provide: MatDialogRef, useValue: { close } }] });
+    const fixture = TestBed.createComponent(ResolutionNoticeDialog);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.seat-card .generals')).toBeNull();
+  });
+
   it('colours the outcome by tone and shows HP hearts for the seat whose HP changed', () => {
     const { el } = render(content());
     expect(el.querySelector('.outcome')!.getAttribute('data-tone')).toBe('good');
@@ -79,11 +101,11 @@ describe('ResolutionNoticeDialog', () => {
     expect(noticeForce(content({ source: { kind: 'skill', id: 'resurgence', seatId: 'seat-1' } }), state)).toBe('Wei');
   });
 
-  it('counts down 5 seconds with no button, then closes itself once', () => {
-    expect(NOTICE_SECONDS).toBe(5);
+  it('counts down 10 seconds with no button, then closes itself once', () => {
+    expect(NOTICE_SECONDS).toBe(10);
     const { fixture, el, close } = render(content());
-    expect(el.querySelector('.timer .seconds')!.textContent).toBe('5s');
-    jest.advanceTimersByTime(4000);
+    expect(el.querySelector('.timer .seconds')!.textContent).toBe('10s');
+    jest.advanceTimersByTime(9000);
     fixture.detectChanges();
     expect(el.querySelector('.timer .seconds')!.textContent).toBe('1s');
     expect(close).not.toHaveBeenCalled();

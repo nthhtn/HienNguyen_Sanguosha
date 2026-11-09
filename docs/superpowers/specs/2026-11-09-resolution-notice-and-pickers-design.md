@@ -18,7 +18,7 @@ popup; the rest should get one that shows the outcome at a glance.
 
 - One shared, extensible popup, the Resolution Notice, used by every effect with a visible outcome.
 - It is a centred, force-themed dialog laid out like the Compete and Judgment popups (the user's later
-  decision), with a 5 second countdown; no button, no skip. Like Compete, it holds playback locally
+  decision), with a 10 second countdown; no button, no skip. Like Compete, it holds playback locally
   and not online.
 - Shell (the user's decision, see the mockup): header with the word "Resolution" in the force colour of
   whoever caused it and the source (card or skill, with the card art for a card); the seats involved
@@ -52,7 +52,7 @@ that already opens the Judgment popup (Lightning, Capture, Starvation, Eight Tri
 
 - No engine rule change, no new engine event if an existing one can carry the fact. The notice
   describes what already happened.
-- No extra input: no button, no skip. (Superseded: the user later asked for a blocking 5 second timer.)
+- No extra input: no button, no skip. (Superseded: the user later asked for a blocking timer, later set to 10 seconds.)
 - Not showing anything a viewer may not see: a hidden card or hidden General stays hidden (use the
   public view, as the Judgment popup does).
 - Not a second Action History. It shows one resolution, not the log.

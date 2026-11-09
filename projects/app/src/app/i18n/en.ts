@@ -1182,7 +1182,6 @@ export const en = {
   'notice.coerce.noSha': '{holderSeat} did not use {shaCard}',
   'notice.coerce.taken': 'Weapon taken',
   'notice.coerce.takenText': '{userSeat} took the weapon of {holderSeat}',
-  'notice.harvest.took': '{seat} took {card}',
   'notice.harvest.done': '{card} done',
   'notice.harvest.text': 'Every seat took one card',
   'notice.skill.headline': '{skill}',

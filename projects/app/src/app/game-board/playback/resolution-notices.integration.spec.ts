@@ -73,6 +73,6 @@ describe('other real cards, described', () => {
   it('Harvest lists a pick for every living seat', () => {
     const { state, from } = played('harvest', []);
     const notice = noticeOf(state, from)!;
-    expect(notice.steps).toHaveLength(state.seats.filter((s) => !s.eliminated).length);
+    expect(notice.seatCards).toHaveLength(state.seats.filter((s) => !s.eliminated).length);
   });
 });

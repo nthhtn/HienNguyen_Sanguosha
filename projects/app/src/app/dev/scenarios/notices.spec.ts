@@ -43,7 +43,7 @@ describe('the Resolution Notice scenarios, played through', () => {
   it('Harvest: every seat takes a card', () => {
     const start = scenario('notice-harvest').build(registry);
     const done = settle(playCard(start, registry, 'seat-0', 'harvest', []));
-    expect(noticeAfter(done, start.log.length)!.steps).toHaveLength(4);
+    expect(noticeAfter(done, start.log.length)!.seatCards).toHaveLength(4);
   });
 
   it('Coerce: the weapon comes to you', () => {

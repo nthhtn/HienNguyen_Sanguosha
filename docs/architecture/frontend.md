@@ -353,7 +353,7 @@ pass.
 
 A card or skill with a visible outcome gets a **Resolution Notice**: a centred, force-themed dialog laid
 out like the Compete and Judgment popups (source, the seats involved, steps, cards, outcome), with a
-5 second countdown at its foot. It closes itself: no button, no skip. Like the Compete popup, **locally**
+10 second countdown at its foot. It closes itself: no button, no skip. Like the Compete popup, **locally**
 it blocks (the director holds playback from the beat that publishes it until it is dismissed, so no later
 beat, bot move or decision clock runs under it), and **online** it does not (the server paces the game
 and knows nothing of the popup, so nothing waits for it, and it is dropped when the viewer owes a

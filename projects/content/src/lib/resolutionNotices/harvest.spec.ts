@@ -11,11 +11,9 @@ describe('Harvest notice', () => {
     const sha = card('s', 'sha');
     const n = harvestNotice.describe(span('harvest', 'a', ['a', 'b'], [played('harvest', 'a', ['a', 'b']), picks('a', peach), picks('b', sha)]), view())!;
     expect(n.seatIds).toEqual(['a', 'b']);
-    expect(n.steps).toEqual([
-      { key: 'notice.harvest.took', params: { seat: 'a', card: 'peach' } },
-      { key: 'notice.harvest.took', params: { seat: 'b', card: 'sha' } },
-    ]);
-    expect(n.cards).toEqual([{ card: peach }, { card: sha }]);
+    expect(n.seatCards).toEqual([{ seatId: 'a', card: peach }, { seatId: 'b', card: sha }]);
+    expect(n.steps).toEqual([]);
+    expect(n.cards).toEqual([]);
     expect(n.outcome).toMatchObject({ tone: 'neutral', headline: { key: 'notice.harvest.done' }, text: { key: 'notice.harvest.text' } });
   });
   it('has nothing to show when no seat took a card', () => {

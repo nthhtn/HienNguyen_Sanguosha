@@ -12,8 +12,9 @@ export const harvestNotice: ResolutionNoticeDefinition = {
     return {
       source: { kind: 'card', id: 'harvest' },
       seatIds: picks.map((p) => p.seatId),
-      steps: picks.map((p) => ({ key: 'notice.harvest.took', params: { seat: p.seatId, card: p.shows.card.definitionId } })),
-      cards: picks.map((p) => ({ card: p.shows.card })),
+      steps: [],
+      cards: [],
+      seatCards: picks.map((p) => ({ seatId: p.seatId, card: p.shows.card })),
       outcome: { tone: 'neutral', symbol: '🌾', headline: { key: 'notice.harvest.done', params: { card: 'harvest' } }, text: { key: 'notice.harvest.text' } },
     };
   },

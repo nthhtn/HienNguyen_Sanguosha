@@ -12,7 +12,7 @@ import { PlayingCard } from './playing-card';
 import { SeatPortrait } from './seat-portrait';
 
 // Seconds a notice stays before it closes itself. There is no button and no skip.
-export const NOTICE_SECONDS = 5;
+export const NOTICE_SECONDS = 10;
 
 export interface ResolutionNoticeDialogData {
   content: ResolutionNoticeContent;
@@ -46,14 +46,32 @@ export function noticeForce(content: ResolutionNoticeContent, state: GameState):
         </div>
       </section>
 
-      <section class="actors">
-        @for (actor of actors(); track actor.id) {
-          <div class="side" [attr.data-force]="actor.force">
-            <app-seat-portrait [generals]="actor.generals" />
-            <span class="name">{{ actor.name }}</span>
-          </div>
-        }
-      </section>
+      @if (seatCards().length) {
+        <section class="seat-cards rise">
+          @for (item of seatCards(); track item.id) {
+            <div class="seat-card" [attr.data-force]="item.force">
+              @if (item.card; as card) {
+                <app-playing-card [card]="card" size="small" />
+              } @else {
+                <img class="card-back" [src]="cardBackUrl" alt="" />
+              }
+              <span class="name">{{ item.name }}</span>
+              @if (item.generalNames) {
+                <span class="generals">{{ item.generalNames }}</span>
+              }
+            </div>
+          }
+        </section>
+      } @else {
+        <section class="actors">
+          @for (actor of actors(); track actor.id) {
+            <div class="side" [attr.data-force]="actor.force">
+              <app-seat-portrait [generals]="actor.generals" />
+              <span class="name">{{ actor.name }}</span>
+            </div>
+          }
+        </section>
+      }
 
       @if (steps().length) {
         <ul class="steps rise">
@@ -109,6 +127,15 @@ export function noticeForce(content: ResolutionNoticeContent, state: GameState):
     .side[data-force='Qun'] { --force: var(--force-qun); --force-text: var(--force-qun); }
     .side[data-force='Ambitionist'] { --force: var(--force-ambitionist); --force-text: var(--force-ambitionist); }
     .name { font: var(--mat-sys-title-small); color: var(--force-text, inherit); max-width: 140px; overflow-wrap: anywhere; text-align: center; }
+    .seat-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+    .seat-card { --force-text: var(--mat-sys-on-surface-variant); display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; max-width: 110px; text-align: center; }
+    .seat-card[data-force='Wei'] { --force-text: var(--force-wei); }
+    .seat-card[data-force='Shu'] { --force-text: var(--force-shu); }
+    .seat-card[data-force='Wu'] { --force-text: var(--force-wu); }
+    .seat-card[data-force='Qun'] { --force-text: var(--force-qun); }
+    .seat-card[data-force='Ambitionist'] { --force-text: var(--force-ambitionist); }
+    .seat-card > .name { font: var(--mat-sys-title-small); font-weight: 700; color: inherit; overflow-wrap: anywhere; }
+    .seat-card > .generals { font: var(--mat-sys-label-large); color: var(--force-text); line-height: 1.2; overflow-wrap: anywhere; }
     .steps { margin: 0; padding-left: 20px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
     .cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
     .card-back { width: 44px; height: 60px; object-fit: cover; border-radius: 6px; }
@@ -195,6 +222,16 @@ export class ResolutionNoticeDialog {
     const general = this.sourceGeneral();
     return general ? { id: general, cropped: false } : null;
   });
+
+  // A card per seat, with the seat's name and its Generals that are face up, in the force's colour (as in the target picker).
+  protected readonly seatCards = computed(() =>
+    (this.data.content.seatCards ?? []).map(({ seatId, card }) => {
+      const seat = this.data.state.seats.find((s) => s.id === seatId);
+      const tr = this.i18n.translator;
+      const generalNames = seat?.generals ? [seat.generals.main, seat.generals.deputy].filter((g) => g.revealed).map((g) => generalDisplayName(g.generalDefinitionId, tr)).join(' / ') : '';
+      return { id: seatId, card, name: seatName(this.data.state.players, seatId, tr), generalNames, force: seatForce(seat) };
+    })
+  );
 
   protected readonly actors = computed(() =>
     this.data.content.seatIds.map((id) => {
