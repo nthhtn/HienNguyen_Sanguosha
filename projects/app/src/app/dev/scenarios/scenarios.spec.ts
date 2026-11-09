@@ -48,6 +48,11 @@ describe('dev scenarios', () => {
     expect(ids).toEqual(['choice-start-popup', 'choice-pick-card', 'choice-judgment', 'choice-skill-optional', 'choice-pick-seat', 'choice-compete']);
   });
 
+  it('Resolution Notices has a scenario for each card and skill that gets one', () => {
+    const ids = SCENARIOS.filter((s) => s.group === 'Resolution Notices').map((s) => s.id);
+    expect(ids).toEqual(['notice-blaze-hit', 'notice-blaze-miss', 'notice-harvest', 'notice-coerce', 'notice-resurgence']);
+  });
+
   it('Other Screens has the General selection and one Game Over page', () => {
     const ids = SCENARIOS.filter((s) => s.group === 'Other Screens').map((s) => s.id);
     expect(ids).toEqual(['general-selection', 'game-over']);
