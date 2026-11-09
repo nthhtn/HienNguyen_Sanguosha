@@ -1155,4 +1155,5 @@ export const en = {
   'rules.scene.hiddenGeneral': 'Hidden General',
   'rules.scene.hpOfMax': '{n} of {max} HP',
   'rules.scene.hpCount': '{n} HP',
+  'notice.title': 'Resolution',
 } satisfies Record<string, string>;

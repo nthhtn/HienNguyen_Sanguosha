@@ -1154,4 +1154,5 @@ export const vi: Messages = {
   'rules.scene.hiddenGeneral': 'Tướng ẩn',
   'rules.scene.hpOfMax': '{n} trên {max} Sinh lực',
   'rules.scene.hpCount': '{n} Sinh lực',
+  'notice.title': 'Kết quả',
 };
