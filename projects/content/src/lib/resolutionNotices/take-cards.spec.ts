@@ -56,6 +56,16 @@ describe('Break notice', () => {
     expect(n.cards).toEqual([{ card: picked }]);
   });
 
+  it('after a countered Wuxie, shows the picked card and not a Wuxie that also went to the discard pile', () => {
+    const wuxie: CardInstance = { instanceId: 'wx1', definitionId: 'wuxie', suit: 'spade', rank: 11 };
+    const picked: CardInstance = { instanceId: 'h1', definitionId: 'peach', suit: 'diamond', rank: 5 };
+    const wuxiePlayed = { kind: 'CardPlayedEvent', seatId: 'c', card: { as: 'wuxie', colour: 'black', physical: [{ instanceId: 'wx1' }] }, targets: [], inResponseTo: { targetSeatId: 'b' } } as unknown as EngineEvent;
+    const wuxieMoved = moved({ cardInstanceId: 'wx1', fromZoneId: 'c:hand', toZoneId: 'discardPile', card: wuxie });
+    const n = breakNotice.describe(span('break', ['b'], [play('break', ['b']), wuxiePlayed, wuxieMoved, chose({ kind: 'hidden-hand', seatId: 'b', count: 1 }), moved({ toZoneId: 'discardPile', card: picked })]), viewOf(false))!;
+    expect(n.cards).toEqual([{ card: picked }]);
+    expect(n.outcome.text.params).toMatchObject({ card: 'peach' });
+  });
+
   it('has nothing to show when nothing was discarded', () => {
     expect(breakNotice.describe(span('break', ['b'], [play('break', ['b'])]), viewOf(false))).toBeNull();
   });

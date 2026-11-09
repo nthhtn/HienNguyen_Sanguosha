@@ -81,7 +81,7 @@ export const NOTICE_MS = 4000;
     :host { display: block; pointer-events: none; }
     .notice {
       --good: #1c8a4b; --bad: #c23a3a;
-      width: min(92vw, 360px); overflow: hidden; border-radius: 14px; border: 1px solid var(--mat-sys-outline-variant);
+      width: min(92vw, 360px); max-height: 80vh; overflow: hidden; border-radius: 14px; border: 1px solid var(--mat-sys-outline-variant);
       background: var(--mat-sys-surface-container-high); color: var(--mat-sys-on-surface); box-shadow: 0 8px 28px rgb(0 0 0 / 35%);
       animation: notice-fade ${NOTICE_MS}ms ease-in forwards;
     }

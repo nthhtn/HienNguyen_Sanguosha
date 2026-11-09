@@ -10,6 +10,9 @@ import { RESOLUTION_NOTICE_REGISTRY } from './notice-registry';
 import { paceFactor } from './pace';
 import { resolutionSpans } from './resolution-spans';
 
+// How many notices wait at most: a backlog is cut to the newest, so a notice is never minutes behind what it describes.
+export const MAX_NOTICES = 3;
+
 interface Step {
   beat: PlannedBeat;
   // The last beat of the events one update brought: the pause between batches follows it.
@@ -149,15 +152,18 @@ export class PlaybackDirector {
     const scan = resolutionSpans(visible.log, Math.min(this.noticeFrom, cursor), settled, (id) => id in this.noticeRegistry);
     this.noticeFrom = scan.resumeFrom;
     for (const { span, endIndex } of scan.spans) {
-      const step = steps.find((s) => s.beat.logIndex === Math.max(endIndex, cursor));
+      // With no new beat, it waits behind the beats already queued.
+      const step = steps.find((s) => s.beat.logIndex === Math.max(endIndex, cursor)) ?? this.queue[this.queue.length - 1];
       if (step) step.notices.push(span);
       else this.publish(span);
     }
   }
 
   private publish(span: ResolutionSpan): void {
-    const content = this.target ? describeResolution(span, this.target, this.noticeRegistry) : null;
-    if (content) this._notices.update((all) => [...all, content]);
+    // The state as of the beat just played, so a card moved or an HP lost later in the batch is not shown early.
+    const state = this._displayedState() ?? this.target;
+    const content = state ? describeResolution(span, state, this.noticeRegistry) : null;
+    if (content) this._notices.update((all) => [...all, content].slice(-MAX_NOTICES));
   }
 
   // Another game: the log is shorter than what was queued, or the event last queued is not where it was. The view's

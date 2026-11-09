@@ -3,7 +3,6 @@ import type { NoticeText, ResolutionNoticeDefinition, ResolutionSpan } from '../
 
 type Moved = Extract<EngineEvent, { kind: 'CardMovedEvent' }>;
 type Chose = Extract<EngineEvent, { kind: 'ChoiceMadeEvent' }>;
-type Played = Extract<EngineEvent, { kind: 'CardPlayedEvent' }>;
 
 // A card the viewer's own view shows face up, wherever it now lies. A card that went into someone's hand
 // has no face in the log; only a seat that can see it has it in its view, and everyone else gets a back.
@@ -42,12 +41,11 @@ export const stealNotice: ResolutionNoticeDefinition = {
 // Break: the user picked a card of the target and it was discarded face up.
 export const breakNotice: ResolutionNoticeDefinition = {
   describe: (span, view) => {
-    const choice = span.events.some((e) => e.kind === 'ChoiceMadeEvent' && e.seatId === span.userSeatId);
-    // The Break itself also lands in the discard pile; the card that was picked is the one that is not it.
-    const played = span.events.find((e): e is Played => e.kind === 'CardPlayedEvent');
-    const own = new Set(played?.card.physical.map((c) => c.instanceId));
-    const discarded = moves(span).find((m) => m.toZoneId === discardPileId(view) && m.card && !own.has(m.cardInstanceId));
-    if (!choice || !discarded?.card) return null;
+    const choiceAt = span.events.findIndex((e) => e.kind === 'ChoiceMadeEvent' && e.seatId === span.userSeatId);
+    // Every card played into the resolution (the Break, and any Wuxie) is discarded as it is played; the
+    // picked card is discarded only after the pick.
+    const discarded = choiceAt < 0 ? undefined : moves({ ...span, events: span.events.slice(choiceAt + 1) }).find((m) => m.toZoneId === discardPileId(view) && m.card);
+    if (!discarded?.card) return null;
     const target = span.targetSeatIds[0];
     return {
       source: { kind: 'card', id: 'break' },

@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { TestBed } from '@angular/core/testing';
 import type { GameState } from 'engine';
 import type { ResolutionNoticeContent } from 'content';
@@ -67,6 +69,12 @@ describe('ResolutionNotice', () => {
     const { el } = render(content({ outcome: { tone: 'good', symbol: '🔥', headline: { key: 'notice.blaze.hit', params: { card: 'blaze' } }, text: { key: 'notice.blaze.hitText', params: { targetSeat: 'seat-0', amount: 1 } } } }));
     expect(el.querySelector('.headline')!.textContent).toBe('Blaze hit');
     expect(el.querySelector('.text')!.textContent).toBe('Hing took 1 fire damage');
+  });
+
+  it('never grows taller than the screen: a long Harvest on a short phone must not run off it', () => {
+    // jsdom keeps no component styles, so read them from the source.
+    const styles = readFileSync(join(__dirname, 'resolution-notice.ts'), 'utf8');
+    expect(styles).toMatch(/\.notice \{[^}]*max-height: 80(dvh|vh)[^}]*overflow: hidden/s);
   });
 
   it('fades on its own after NOTICE_MS and asks for nothing', () => {

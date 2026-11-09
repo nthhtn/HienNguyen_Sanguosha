@@ -218,7 +218,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
   `,
   styles: `
-    .notice-layer { position: fixed; top: 18%; left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; }
+    .notice-layer { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; }
     .error-banner {
       display: flex; align-items: center; gap: 12px; margin: 8px 0; padding: 8px 12px; border-radius: 12px;
       background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container);

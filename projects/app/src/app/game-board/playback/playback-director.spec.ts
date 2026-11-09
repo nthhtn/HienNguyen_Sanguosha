@@ -459,6 +459,39 @@ describe('PlaybackDirector', () => {
       expect(director.idle()).toBe(true);
     });
 
+    it('describes the resolution against the state as of its last beat, not the newest log', () => {
+      const seen: number[] = [];
+      const { director, show } = setup({ registry: { blaze: { describe: (span, view) => (seen.push(view.log.length), noticeFor(span.sourceId)) } } });
+      const start = table();
+      show(start);
+      show(after(start, blaze, damage('b'), phase('Draw')));
+      jest.advanceTimersByTime(20000);
+      expect(director.notices()).toHaveLength(1);
+      expect(seen).toEqual([2]);
+    });
+
+    it('a resolution that finishes with no new event still waits for the beats already queued', () => {
+      const { director, show } = setup({ registry });
+      const start = table();
+      show(start);
+      const waiting = { ...after(start, blaze, damage('b')), pendingResponse: { id: 'r' } } as unknown as GameState;
+      show(waiting);
+      expect(director.current()?.event.kind).toBe('CardPlayedEvent');
+      show({ ...waiting, pendingResponse: null });
+      expect(director.notices()).toEqual([]);
+      while (director.current()?.event.kind !== 'DamageDealtEvent') jest.advanceTimersByTime(50);
+      expect(headlines(director)).toEqual(['notice.blaze']);
+    });
+
+    it('keeps only the newest few notices when they pile up faster than they show', () => {
+      const { director, show } = setup({ registry });
+      const start = table();
+      show(start);
+      show(after(start, blaze, damage('b'), breakIt, damage('b'), blaze, damage('b'), breakIt, damage('b'), blaze, damage('b')));
+      jest.advanceTimersByTime(60000);
+      expect(headlines(director)).toEqual(['notice.blaze', 'notice.break', 'notice.blaze']);
+    });
+
     it('shows nothing for a card with no notice', () => {
       const { director, show } = setup({ registry });
       const start = table();
