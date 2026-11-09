@@ -174,9 +174,19 @@ describe('describeChoice for a skill’s pick or give', () => {
     const legal: Action[] = [{ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'seat-1' }, { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'spade' }];
     const options: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }, { id: 'spade', shows: { kind: 'suit', suit: 'spade' }, effects: [] }];
     expect(choiceDialogOptions(options, legal, players, undefined, seats)).toEqual([
-      { id: 'seat-1', action: legal[0], label: 'Seat 1', force: 'Wu' },
+      { id: 'seat-1', action: legal[0], label: 'Seat 1', force: 'Wu', generals: null },
       { id: 'spade', action: legal[1], label: '♠ Spade', suit: 'spade' },
     ]);
+  });
+});
+
+describe('a seat option’s portrait', () => {
+  it('carries the seat’s Generals, so the dialog can show them', () => {
+    const generals = { main: { generalDefinitionId: 'cao-cao', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } };
+    const seats = [{ id: 'seat-1', index: 1, kingdom: 'Wei' as const, combinedHp: 3, maxCombinedHp: 3, eliminated: false, generals, hand: { zoneId: 'h' }, equipped: { zoneId: 'e' }, judgment: { zoneId: 'j' } }];
+    const legal: Action[] = [{ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'seat-1' }];
+    const options: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }];
+    expect(choiceDialogOptions(options, legal, players, undefined, seats)[0].generals).toEqual(generals);
   });
 });
 

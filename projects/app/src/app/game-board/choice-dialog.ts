@@ -1,10 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { Action, CardInstance } from 'engine';
-import { CARD_BACK_ART_URL } from 'content';
+import { Action, CardInstance, SeatGenerals } from 'engine';
+import { CARD_BACK_ART_URL, HIDDEN_GENERAL_ART_URL } from 'content';
 import { PlayingCard } from './playing-card';
 import { CardArt } from './card-art';
+import { SeatPortrait } from './seat-portrait';
 import { DecisionCountdown } from './decision-countdown';
 import { MinimizeButton } from './minimize-button';
 import { ChoiceDescription } from './choice-description';
@@ -19,6 +20,8 @@ export interface ChoiceDialogOption {
   label: string;
   // A seat's force colour.
   force?: Force;
+  // A seat's Generals, shown as its portrait; null when they are not known.
+  generals?: SeatGenerals | null;
   // A suit to name.
   suit?: CardInstance['suit'];
   // A General's card, shown with its art (a secret look at a hidden General).
@@ -37,7 +40,7 @@ export interface ChoiceDialogData {
 // Closes only through that button, with the engine's own ChooseOptionAction.
 @Component({
   selector: 'app-choice-dialog',
-  imports: [MatDialogModule, MatButtonModule, PlayingCard, CardArt, DecisionCountdown, MinimizeButton],
+  imports: [MatDialogModule, MatButtonModule, PlayingCard, CardArt, SeatPortrait, DecisionCountdown, MinimizeButton],
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ data.description.title }}</h2>
@@ -63,10 +66,14 @@ export interface ChoiceDialogData {
                 <app-playing-card [card]="card" />
               } @else if (option.faceDown) {
                 <img class="card-back" [src]="cardBackUrl" alt="" />
+              } @else if (option.generalId === 'hidden') {
+                <img class="card-back" [src]="hiddenGeneralUrl" alt="" />
               } @else if (option.generalId; as generalId) {
                 <app-card-art [skin]="true" [id]="generalId" [label]="option.label" />
               }
-              @if (option.force) {
+              @if (option.generals !== undefined) {
+                <app-seat-portrait [generals]="option.generals" />
+              } @else if (option.force) {
                 <span class="swatch" aria-hidden="true"></span>
               }
               <span class="label">{{ option.label }}</span>
@@ -109,6 +116,7 @@ export class ChoiceDialog {
   private readonly dialogRef = inject<MatDialogRef<ChoiceDialog, Action>>(MatDialogRef);
 
   protected readonly cardBackUrl = CARD_BACK_ART_URL;
+  protected readonly hiddenGeneralUrl = HIDDEN_GENERAL_ART_URL;
   protected readonly picked = signal<string | null>(null);
 
   protected pick(option: ChoiceDialogOption): void {

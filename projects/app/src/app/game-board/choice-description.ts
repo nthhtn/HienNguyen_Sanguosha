@@ -188,7 +188,8 @@ export function choiceDialogOptions(
     const label = choiceOptionLabel(option.shows, players, declineLabel, tr, option.id);
     if (option.shows.kind === 'seat') {
       const seatId = option.shows.seatId;
-      return [{ id: option.id, action, label, force: seatForce(seats.find((s) => s.id === seatId)) }];
+      const seat = seats.find((s) => s.id === seatId);
+      return [{ id: option.id, action, label, force: seatForce(seat), generals: seat?.generals ?? null }];
     }
     if (option.shows.kind === 'suit') return [{ id: option.id, action, label, suit: option.shows.suit }];
     if (option.shows.kind === 'general') return [{ id: option.id, action, label, generalId: option.shows.generalId }];
