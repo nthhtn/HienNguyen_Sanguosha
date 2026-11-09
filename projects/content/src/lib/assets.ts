@@ -72,17 +72,18 @@ export const skillFileId = (skillName: string): string =>
     .replace(/^-+|-+$/g, '');
 
 // The languages each skill preview exists in, by `<General id>_<skill id>`. A preview is a file
-// `preview/<General id>_<skill id>_<language>.mp4`, and is listed here when it is added, so the Wiki
-// offers a video only for a skill that has one.
+// `preview/<force>/<General id>_<skill id>_<language>.mp4` (the force is the General's, in lower case), and is
+// listed here when it is added, so the Wiki offers a video only for a skill that has one.
 const SKILL_PREVIEWS: Record<string, string[]> = previews;
 
-// The preview video for one of a General's skills, in the language asked for, else in English. Null when
-// the skill has none. A Kingdom Wars id and its base id give the same video.
-export function skillPreviewUrl(generalId: string, skillName: string, language: string, index: Record<string, string[]> = SKILL_PREVIEWS): string | null {
+// The preview video for one of a General's skills, in the language asked for, else in English. `kingdom` is the
+// General's force, which names the folder. Null when the skill has none. A Kingdom Wars id and its base id give
+// the same video.
+export function skillPreviewUrl(generalId: string, skillName: string, language: string, kingdom: string, index: Record<string, string[]> = SKILL_PREVIEWS): string | null {
   const key = `${baseGeneralId(generalId)}_${skillFileId(skillName)}`;
   const languages = index[key] ?? [];
   const chosen = languages.includes(language) ? language : languages.includes('en') ? 'en' : null;
-  return chosen ? `/preview/${key}_${chosen}.mp4` : null;
+  return chosen ? `/preview/${kingdom.toLowerCase()}/${key}_${chosen}.mp4` : null;
 }
 
 // The back of a playing card, shown for a card whose face is hidden.

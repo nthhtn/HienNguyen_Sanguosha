@@ -5,7 +5,8 @@ import { WikiKingdomWarsGeneralEntry } from './wiki-kingdom-wars-general-entry';
 // Only Zhou Tai's Refuting Death has a preview here, so the entry's behaviour does not depend on which files ship.
 jest.mock('content', () => ({
   ...jest.requireActual('content'),
-  skillPreviewUrl: (generalId: string, skillName: string, language: string) => (generalId === 'zhou-tai' && skillName === 'Refuting Death' ? `/preview/zhou-tai_refuting-death_${language}.mp4` : null),
+  skillPreviewUrl: (generalId: string, skillName: string, language: string, kingdom: string) =>
+    generalId === 'zhou-tai' && skillName === 'Refuting Death' ? `/preview/${kingdom.toLowerCase()}/zhou-tai_refuting-death_${language}.mp4` : null,
 }));
 
 function render(generalId: string) {
@@ -33,7 +34,7 @@ describe('A skill preview in the Kingdom Wars General entry', () => {
     fixture.detectChanges();
     expect(el.querySelector('button.preview-play')).toBeNull();
     const video = el.querySelector('video')!;
-    expect(video.getAttribute('src')).toBe('/preview/zhou-tai_refuting-death_en.mp4');
+    expect(video.getAttribute('src')).toBe('/preview/wu/zhou-tai_refuting-death_en.mp4'); // the folder is the General's force
     expect(video.hasAttribute('controls')).toBe(true);
   });
 

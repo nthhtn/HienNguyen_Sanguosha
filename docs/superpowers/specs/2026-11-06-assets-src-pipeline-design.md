@@ -191,7 +191,8 @@ slows every build, and hides the shipped output from review.
    `assets/`, including the copied `manifest.json` and `skins.json`, as copies from
    `assets-src/`. (Amended 2026-11-09: the Wiki plays the preview videos, so they do ship. The recipe for
    `preview` is `copy`, the masters live in `assets-src/preview/`, and the build copies them and
-   `index.json` into `assets/preview/`. They are no longer ignored.)
+   `index.json` into `assets/preview/`, with the videos in a folder per force: `preview/<force>/`. They are no
+   longer ignored.)
 8. **Skills and the dry read.** The skills are developer instructions, not UI text, so the UI
    text rules do not apply to them. The dry read is a manual step while building this stage:
    add a temporary master pair following the new `add-general` steps, build, run the check,

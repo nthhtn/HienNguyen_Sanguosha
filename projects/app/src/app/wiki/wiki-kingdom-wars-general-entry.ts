@@ -135,7 +135,7 @@ export class WikiKingdomWarsGeneralEntry {
   }
   // Each skill's preview video in the app's language, by skill name; a skill with none is absent.
   protected readonly previews = computed(() =>
-    Object.fromEntries(this.general().skills.map((s) => [s.name, skillPreviewUrl(this.general().id, s.name, this.i18n.locale())] as const).filter(([, url]) => url !== null)),
+    Object.fromEntries(this.general().skills.map((s) => [s.name, skillPreviewUrl(this.general().id, s.name, this.i18n.locale(), this.general().kingdom)] as const).filter(([, url]) => url !== null)),
   );
   // The skills whose player is open. A video loads only once the reader asks for it.
   protected readonly playing = signal<ReadonlySet<string>>(new Set());
