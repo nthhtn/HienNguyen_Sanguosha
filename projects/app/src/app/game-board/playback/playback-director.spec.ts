@@ -6,6 +6,8 @@ import { PlaybackGate } from '../../playback-gate.service';
 import { PlaybackSpeed } from '../../playback-speed.service';
 import { foldEvent } from './displayed-state';
 import { PlaybackDirector } from './playback-director';
+import { RESOLUTION_NOTICE_REGISTRY } from './notice-registry';
+import type { ResolutionNoticeContent, ResolutionNoticeDefinition } from 'content';
 
 // Two seats, a and b, at 3/4 HP.
 function table(): GameState {
@@ -49,13 +51,13 @@ function after(state: GameState, ...events: EngineEvent[]): GameState {
 
 const hp = (state: GameState | null, seatId: string) => state?.seats.find((s) => s.id === seatId)?.combinedHp;
 
-function setup(options: { clockWaitsForPlayback?: boolean } = {}) {
+function setup(options: { clockWaitsForPlayback?: boolean; registry?: Record<string, ResolutionNoticeDefinition> } = {}) {
   TestBed.resetTestingModule();
   const visibleState = signal<GameState | null>(null);
   const legalActions = signal<Action[]>([]);
   const lastMoveStart = signal<GameState | null>(null);
   const game = { visibleState, legalActions, lastMoveStart, clockWaitsForPlayback: options.clockWaitsForPlayback ?? true };
-  TestBed.configureTestingModule({ providers: [{ provide: GameService, useValue: game }] });
+  TestBed.configureTestingModule({ providers: [{ provide: GameService, useValue: game }, ...(options.registry ? [{ provide: RESOLUTION_NOTICE_REGISTRY, useValue: options.registry }] : [])] });
   const speed = TestBed.inject(PlaybackSpeed);
   speed.speed.set('normal');
   const gate = TestBed.inject(PlaybackGate);
@@ -390,5 +392,80 @@ describe('PlaybackDirector', () => {
     show({ ...after({ ...start, log: [masked] }, damage('b')) });
     expect(director.idle()).toBe(false);
     expect(director.current()?.event.kind).toBe('DamageDealtEvent');
+  });
+
+  describe('resolution notices', () => {
+    const noticeFor = (id: string): ResolutionNoticeContent => ({
+      source: { kind: 'card', id }, seatIds: ['a', 'b'], steps: [], cards: [],
+      outcome: { tone: 'neutral', symbol: '?', headline: { key: `notice.${id}` }, text: { key: `notice.${id}` } },
+    });
+    const registry: Record<string, ResolutionNoticeDefinition> = {
+      blaze: { describe: (span) => noticeFor(span.sourceId) },
+      break: { describe: (span) => noticeFor(span.sourceId) },
+    };
+    const blaze = play('a', used(sha, 'blaze'), 'b');
+    const breakIt = play('a', used(sha, 'break'), 'b');
+    const headlines = (director: PlaybackDirector) => director.notices().map((n) => n.outcome.headline.key);
+
+    it('is published when the beat of the resolution’s last event plays, not before', () => {
+      const { director, show } = setup({ registry });
+      const start = table();
+      show(start);
+      show(after(start, blaze, damage('b')));
+      expect(director.current()?.event.kind).toBe('CardPlayedEvent');
+      expect(director.notices()).toEqual([]);
+      while (director.current()?.event.kind !== 'DamageDealtEvent') jest.advanceTimersByTime(50);
+      expect(headlines(director)).toEqual(['notice.blaze']);
+    });
+
+    it('does not replay old resolutions on the first look', () => {
+      const { director, show } = setup({ registry });
+      show(after(table(), blaze, damage('b')));
+      expect(director.notices()).toEqual([]);
+    });
+
+    it('waits while a decision is pending, and shows the notice once it is settled', () => {
+      const { director, show } = setup({ registry });
+      const start = table();
+      show(start);
+      const waiting = { ...after(start, blaze), pendingResponse: { id: 'r' } } as unknown as GameState;
+      show(waiting);
+      jest.advanceTimersByTime(5000);
+      expect(director.notices()).toEqual([]);
+      const done = after({ ...waiting, pendingResponse: null }, damage('b'));
+      show(done);
+      jest.advanceTimersByTime(5000);
+      expect(headlines(director)).toEqual(['notice.blaze']);
+    });
+
+    it('queues two resolutions of one batch in order, and dismissing takes the oldest', () => {
+      const { director, show } = setup({ registry });
+      const start = table();
+      show(start);
+      show(after(start, blaze, damage('b'), breakIt, damage('b')));
+      jest.advanceTimersByTime(20000);
+      expect(headlines(director)).toEqual(['notice.blaze', 'notice.break']);
+      director.dismissNotice();
+      expect(headlines(director)).toEqual(['notice.break']);
+    });
+
+    it('never holds playback: the director is idle after the usual time', () => {
+      const { director, show } = setup({ registry });
+      const start = table();
+      show(start);
+      show(after(start, blaze, damage('b')));
+      jest.advanceTimersByTime(20000);
+      expect(director.notices()).toHaveLength(1);
+      expect(director.idle()).toBe(true);
+    });
+
+    it('shows nothing for a card with no notice', () => {
+      const { director, show } = setup({ registry });
+      const start = table();
+      show(start);
+      show(after(start, play('a', used(sha, 'sha'), 'b'), damage('b')));
+      jest.advanceTimersByTime(20000);
+      expect(director.notices()).toEqual([]);
+    });
   });
 });

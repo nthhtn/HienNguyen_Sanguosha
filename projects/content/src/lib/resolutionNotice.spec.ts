@@ -2,7 +2,7 @@ import type { GameState } from 'engine';
 import { describeResolution, ResolutionNoticeContent, ResolutionNoticeDefinition, ResolutionSpan, RESOLUTION_NOTICES } from './resolutionNotice';
 
 const view = { seats: [], log: [] } as unknown as GameState;
-const span = (sourceId: string): ResolutionSpan => ({ sourceId, userSeatId: 'seat-0', targetSeatIds: ['seat-1'], events: [] });
+const span = (sourceId: string): ResolutionSpan => ({ sourceId, userSeatId: 'seat-0', targetSeatIds: ['seat-1'], startIndex: 0, endIndex: 0, events: [] });
 const content: ResolutionNoticeContent = {
   source: { kind: 'card', id: 'blaze' },
   seatIds: ['seat-0', 'seat-1'],

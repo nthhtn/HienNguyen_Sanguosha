@@ -1,16 +1,21 @@
 import { DestroyRef, Injectable, Signal, effect, inject, signal, untracked } from '@angular/core';
 import type { CardZone, EngineEvent, GameState, UsedCard } from 'engine';
+import { describeResolution, ResolutionNoticeContent, ResolutionSpan } from 'content';
 import { GameService } from '../../game.service';
 import { PlaybackGate } from '../../playback-gate.service';
 import { PlaybackSpeed } from '../../playback-speed.service';
 import { BATCH_GAP_MS, PlannedBeat, planBeat } from './beats';
 import { foldEvent } from './displayed-state';
+import { RESOLUTION_NOTICE_REGISTRY } from './notice-registry';
 import { paceFactor } from './pace';
+import { resolutionSpans } from './resolution-spans';
 
 interface Step {
   beat: PlannedBeat;
   // The last beat of the events one update brought: the pause between batches follows it.
   lastOfBatch: boolean;
+  // The resolutions that end at this beat: their notices are published when it plays.
+  notices: ResolutionSpan[];
 }
 
 // Plays the log's new events as paced beats, and keeps the state the board shows at the moment being
@@ -22,12 +27,14 @@ export class PlaybackDirector {
   private readonly game = inject(GameService);
   private readonly speed = inject(PlaybackSpeed);
   private readonly gate = inject(PlaybackGate);
+  private readonly noticeRegistry = inject(RESOLUTION_NOTICE_REGISTRY);
 
   private readonly _displayedState = signal<GameState | null>(null);
   private readonly _current = signal<PlannedBeat | null>(null);
   private readonly _idle = signal(true);
   private readonly _playedLogLength = signal(0);
   private readonly _centreStack = signal<UsedCard[]>([]);
+  private readonly _notices = signal<ResolutionNoticeContent[]>([]);
 
   readonly displayedState: Signal<GameState | null> = this._displayedState.asReadonly();
   readonly current: Signal<PlannedBeat | null> = this._current.asReadonly();
@@ -35,9 +42,18 @@ export class PlaybackDirector {
   readonly playedLogLength: Signal<number> = this._playedLogLength.asReadonly();
   // The cards played into the resolution on show.
   readonly centreStack: Signal<UsedCard[]> = this._centreStack.asReadonly();
+  // The Resolution Notices waiting to show, oldest first. They never hold playback: the board shows the
+  // first and calls `dismissNotice` when it has faded.
+  readonly notices: Signal<ResolutionNoticeContent[]> = this._notices.asReadonly();
+
+  dismissNotice(): void {
+    this._notices.update((all) => all.slice(1));
+  }
 
   // The log length already queued; null before the first look.
   private cursor: number | null = null;
+  // Where the next look for finished resolutions starts: the start of one still open, else the log's end.
+  private noticeFrom = 0;
   // The event at `cursor - 1` when it was queued: a log that no longer has it there is another game's.
   private lastQueued: EngineEvent | undefined;
   // The Pass and Play gate went up after a look: the next look is a reveal.
@@ -81,6 +97,7 @@ export class PlaybackDirector {
       this.stop();
       this.target = null;
       this._centreStack.set([]);
+      this._notices.set([]);
       this.finish(null);
       return;
     }
@@ -90,13 +107,16 @@ export class PlaybackDirector {
     if (moveStart && moveStart.log.length <= visible.log.length) {
       this._displayedState.set(moveStart);
       this.cursor = moveStart.log.length;
+      this.noticeFrom = this.cursor;
     } else if (this.cursor === null || this.isNewGame(visible) || this._displayedState() === null) {
       // The first look, a new game or a reveal with no move to replay: nothing old plays.
       this.stop();
       this.cursor = visible.log.length;
       this.lastQueued = visible.log[this.cursor - 1];
+      this.noticeFrom = this.cursor;
       this.target = visible;
       this._centreStack.set([]);
+      this._notices.set([]);
       this.finish(visible);
       return;
     }
@@ -114,11 +134,30 @@ export class PlaybackDirector {
     const steps = visible.log
       .slice(cursor)
       .map((event, i) => planBeat(event, cursor + i, { zoneKindOf, previous: visible.log[cursor + i - 1] }))
-      .map((beat): Step => ({ beat, lastOfBatch: false }));
+      .map((beat): Step => ({ beat, lastOfBatch: false, notices: [] }));
     if (steps.length > 0) steps[steps.length - 1].lastOfBatch = true;
+    this.planNotices(visible, cursor, steps);
     this.queue.push(...steps);
     this.cursor = visible.log.length;
     this.lastQueued = visible.log[this.cursor - 1];
+  }
+
+  // Finds the resolutions that finished with this update and hangs each on the beat of its last event (or,
+  // for one that finished with events already queued, on the first new beat; with no new beat, now).
+  private planNotices(visible: GameState, cursor: number, steps: Step[]): void {
+    const settled = !visible.pendingResponse && !visible.pendingChoice && !visible.pendingSelection && !visible.pendingArrangement && !visible.resolutionQueue && !visible.judgmentView;
+    const scan = resolutionSpans(visible.log, Math.min(this.noticeFrom, cursor), settled, (id) => id in this.noticeRegistry);
+    this.noticeFrom = scan.resumeFrom;
+    for (const { span, endIndex } of scan.spans) {
+      const step = steps.find((s) => s.beat.logIndex === Math.max(endIndex, cursor));
+      if (step) step.notices.push(span);
+      else this.publish(span);
+    }
+  }
+
+  private publish(span: ResolutionSpan): void {
+    const content = this.target ? describeResolution(span, this.target, this.noticeRegistry) : null;
+    if (content) this._notices.update((all) => [...all, content]);
   }
 
   // Another game: the log is shorter than what was queued, or the event last queued is not where it was. The view's
@@ -146,7 +185,7 @@ export class PlaybackDirector {
       // Recomputed at every beat: a decision coming due online, or a speed change, applies at once.
       const factor = this.factor(this.queue.reduce((sum, step) => sum + stepMs(step), 0));
       const step = this.queue.shift()!;
-      this.play(step.beat);
+      this.play(step);
       const wait = Math.round(stepMs(step) / factor);
       if (wait > 0) {
         this.timer = setTimeout(() => this.advance(), wait);
@@ -155,7 +194,8 @@ export class PlaybackDirector {
     }
   }
 
-  private play(beat: PlannedBeat): void {
+  private play(step: Step): void {
+    const beat = step.beat;
     const target = this.target;
     const shown = this._displayedState();
     if (!target || !shown) return;
@@ -166,6 +206,7 @@ export class PlaybackDirector {
     const visual = beat.visual;
     if (visual?.kind === 'play') this._centreStack.update((stack) => (visual.response ? [...stack, visual.card] : [visual.card]));
     else if (beat.event.kind === 'TurnAdvancedEvent' || beat.event.kind === 'PhaseChangedEvent') this._centreStack.set([]);
+    step.notices.forEach((span) => this.publish(span));
   }
 
   private factor(queuedMs: number): number {

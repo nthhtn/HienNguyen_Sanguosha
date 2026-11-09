@@ -36,6 +36,10 @@ export interface ResolutionSpan {
   sourceId: string;
   userSeatId: string;
   targetSeatIds: string[];
+  // Where the span sits in the log, so a `describe` can also read what came just before it (the cards a
+  // skill turned up before it announced itself). `events` is `log.slice(startIndex, endIndex + 1)`.
+  startIndex: number;
+  endIndex: number;
   events: EngineEvent[];
 }
 
