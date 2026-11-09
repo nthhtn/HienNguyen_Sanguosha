@@ -1,6 +1,11 @@
 import type { CardInstance, EngineEvent, GameState } from 'engine';
 import { blazeNotice } from './resolutionNotices/blaze';
 import { breakNotice, coerceNotice, stealNotice } from './resolutionNotices/take-cards';
+import { allyFarAttackNearNotice, amassNotice, drawTwoNotice } from './resolutionNotices/draw';
+import { harvestNotice } from './resolutionNotices/harvest';
+import { ascertainNotice } from './resolutionNotices/ascertain';
+import { wineNotice } from './resolutionNotices/wine';
+import { resurgenceNotice } from './resolutionNotices/resurgence';
 
 // A Resolution Notice: the popup that tells every seat what an effect with a visible outcome did. This
 // file is the data model and the registry; the application layer finds each resolution in the log and
@@ -11,7 +16,8 @@ export type NoticeTone = 'good' | 'bad' | 'neutral';
 
 // A line of text as an i18n key and its parameters, translated by the application layer. A parameter
 // named `…Seat` (`userSeat`, `targetSeat`) holds a seat id and is shown as that seat's name; one named
-// `card` or `…Card` holds a card id and is shown as the card's name; any other is shown as it is.
+// `card` or `…Card` holds a card id and is shown as the card's name, `skill` holds a skill id and is shown
+// as the skill's name; any other is shown as it is.
 export interface NoticeText {
   key: string;
   params?: Record<string, string | number>;
@@ -61,6 +67,13 @@ export const RESOLUTION_NOTICES: Record<string, ResolutionNoticeDefinition> = {
   steal: stealNotice,
   break: breakNotice,
   coerce: coerceNotice,
+  harvest: harvestNotice,
+  amass: amassNotice,
+  'draw-two': drawTwoNotice,
+  ascertain: ascertainNotice,
+  'ally-far-attack-near': allyFarAttackNearNotice,
+  wine: wineNotice,
+  resurgence: resurgenceNotice,
 };
 
 export function describeResolution(

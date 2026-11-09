@@ -19,8 +19,8 @@ describe('describeResolution', () => {
     }
   });
 
-  it('has a notice for Blaze, Steal, Break and Coerce', () => {
-    expect(['blaze', 'steal', 'break', 'coerce'].every((id) => RESOLUTION_NOTICES[id] !== undefined)).toBe(true);
+  it('has a notice for each card and skill in scope', () => {
+    expect(['blaze', 'steal', 'break', 'coerce', 'harvest', 'amass', 'draw-two', 'ascertain', 'ally-far-attack-near', 'wine', 'resurgence'].every((id) => RESOLUTION_NOTICES[id] !== undefined)).toBe(true);
   });
 
   it('asks the registered definition, with the span and the viewer’s view', () => {
