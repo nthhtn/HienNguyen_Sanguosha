@@ -961,6 +961,7 @@ export const en = {
   'rules.setup.reveal3': 'In any phase of any turn, when something happens that a hidden skill answers, such as taking damage or losing equipment, you are asked whether to reveal its General to use the skill. Losing HP never reveals a General by itself.',
   'rules.setup.reveal4': "When you reveal your second General and the two Generals' HP added together was odd (so your HP was rounded down), you draw 1 card.",
   'rules.setup.reveal5': 'Optional, with 5 or more seats: the first seat to reveal a General draws 2 cards. This is a checkbox in Game Setup.',
+  'rules.setup.revealPartners': "When you reveal your second General and the two Generals are Synergistic Partners (each General's page lists its partners), you choose once: draw 2 cards or recover 1 HP. Recovering cannot be chosen at full HP.",
   'rules.setup.reveal6': 'When a seat dies, both its Generals are revealed. No reveal bonus is drawn for it.',
   'rules.setup.killing': 'Killing a seat',
   'rules.setup.kill1': 'When a seat is eliminated, the seat whose damage killed it is rewarded or penalized.',

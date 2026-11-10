@@ -659,13 +659,22 @@ fits instead.
 
 ## Reveal bonuses
 
-Two Guozhan triggers react to `after:GeneralRevealedEvent` with a
+Three Guozhan triggers react to `after:GeneralRevealedEvent`; the first two with a
 `DrawCardsEffect`:
 
 - **First reveal** (`state.rules.firstRevealDraw`, which the app and server turn on from 5 seats; the engine only reads it): the
   first `GeneralRevealedEvent` in the log gives its seat 2 cards.
 - **Rounding** (always): when both of a seat's Generals are revealed and their
   printed HP sum is odd, the seat draws 1 card, once, on the second reveal.
+- **Synergistic Partners** (`state.rules.partnerReward`, which the app and server turn on for every new game): the
+  reveal that leaves both of a seat's Kingdom Wars Generals revealed, for the first time only (`firstTimeBothRevealed`,
+  so a hide and re-reveal pays nothing), and not a death reveal, opens a `PendingChoice` for that seat when the two
+  Generals are a listed pair (`areSynergisticPartners`, from the id table
+  `projects/content/data/decks/kingdom-wars/synergistic-pairs.json`; Kingdom Wars Generals are seated as
+  `kingdomWars:<id>`, Identity's are never matched). The choice has reason `partner-reward` and the options
+  `recover` (heal 1) and `draw` (draw 2). `recover` carries `disabled: true` at full HP: it is shown, left out of
+  `getLegalActions`, and `ChooseOptionAction` throws on it. It runs after the Rounding trigger, so both can happen on
+  one reveal. Bots recover when damaged, else draw.
 
 ## Kill reward and penalty
 

@@ -86,7 +86,7 @@ behind a reverse proxy (the README explains the accepted values).
 An **open** room is listed, and anyone signed in can join while it has space.
 A **solo** room is unlisted and holds one person against bots; it backs
 Play vs Bots. Names are unique within a room; a bot's stored name is `[Bot] <English name>` with a `botNameId` (see content's bot names), and a person's name may not start with `[Bot]`. The lobby holds the members, the
-seat count and the rules (`GameRules`). The host chooses the deck only. First Reveal Bonus is not a choice: `rulesFrom` turns `firstRevealDraw` on from `FIRST_REVEAL_MIN_SEATS` (5) seats and leaves it off below, whatever the client asked. When the game starts the server adds `judgmentNotice` and `logPasses`, which a stored game keeps so it replays the same. **Seats are drawn at random from the game seed when the host
+seat count and the rules (`GameRules`). The host chooses the deck only. First Reveal Bonus is not a choice: `rulesFrom` turns `firstRevealDraw` on from `FIRST_REVEAL_MIN_SEATS` (5) seats and leaves it off below, whatever the client asked. When the game starts the server adds `judgmentNotice`, `logPasses` and `partnerReward`, which a stored game keeps so it replays the same. **Seats are drawn at random from the game seed when the host
 starts** (`drawSeats`), so join order gives no position.
 
 `RoomService` keeps live rooms in memory and writes every change through to

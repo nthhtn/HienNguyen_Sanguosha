@@ -960,6 +960,7 @@ export const vi: Messages = {
   'rules.setup.reveal3': 'Ở mọi giai đoạn của mọi lượt, khi xảy ra việc mà một kỹ năng đang úp có thể đáp lại, chẳng hạn bị sát thương hoặc mất trang bị, bạn được hỏi có lật Tướng đó để dùng kỹ năng không. Mất Sinh lực không tự lật Tướng.',
   'rules.setup.reveal4': 'Khi bạn lật Tướng thứ hai mà tổng Sinh lực của hai Tướng là số lẻ (nên Sinh lực của bạn bị làm tròn xuống), bạn rút 1 lá bài.',
   'rules.setup.reveal5': 'Tùy chọn, khi có từ 5 người chơi trở lên: người chơi đầu tiên lật Tướng rút 2 lá bài. Đây là một ô chọn khi thiết lập ván chơi.',
+  'rules.setup.revealPartners': 'Khi bạn lật Tướng thứ hai và hai Tướng là đối tác phối hợp (trang của mỗi Tướng ghi các đối tác), bạn chọn một lần: rút 2 lá bài hoặc hồi 1 Sinh lực. Không thể chọn hồi Sinh lực khi đang đầy Sinh lực.',
   'rules.setup.reveal6': 'Khi một người chơi chết, cả hai Tướng của họ được lật. Không có phần thưởng khi lật cho người đó.',
   'rules.setup.killing': 'Hạ gục một người chơi',
   'rules.setup.kill1': 'Khi một người chơi trận vong, người chơi gây sát thương hạ gục họ sẽ được thưởng hoặc bị phạt.',
