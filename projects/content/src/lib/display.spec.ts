@@ -12,6 +12,7 @@ describe('generalDisplayData', () => {
     expect(data.skills[0]).toEqual({
       name: 'Evil Hero',
       text: 'When Cao Cao is damaged by a card, he can immediately put it into his hand.',
+      traits: [],
     });
   });
 
@@ -216,5 +217,13 @@ describe('variant skill texts', () => {
       expect(competeOutcomeText('kingdomWars:fearsome-blade', won, names, locale)).toEqual(competeOutcomeText('intense-edge', won, names, locale));
     }
     expect(competeOutcomeText('kingdomWars:fearsome-blade', true, names, locale)).not.toBeNull();
+  });
+});
+
+describe('generalDisplayData skill traits', () => {
+  it('carries the traits of an Identity skill and of a Kingdom Wars skill', async () => {
+    const { generalDisplayData: display } = await import('./generalDisplay');
+    expect(display('kingdomWars:ding-feng')!.skills.find((k) => k.name === 'Swift and Deadly')!.traits).toEqual(['oncePerTurn']);
+    expect(display('cao-cao')!.skills[0].traits).toEqual([]);
   });
 });

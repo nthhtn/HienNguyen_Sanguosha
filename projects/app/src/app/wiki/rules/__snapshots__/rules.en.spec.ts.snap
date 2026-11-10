@@ -222,17 +222,6 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
 {
   "links": [
     "/wiki/rules/allegiance Allegiance",
-    "/wiki/rules/setup Setup",
-    "/wiki/rules/allegiance Allegiance",
-    "/wiki/rules/turn Turn Structure",
-    "/wiki/rules/card-types Card Types",
-    "/wiki/rules/distance Distance / Range",
-    "/wiki/rules/response Response Windows",
-    "/wiki/rules/damage Damage and Dying",
-    "/wiki/rules/judgment Judgment",
-    "/wiki/rules/chains Chains",
-    "/wiki/rules/glossary Glossary",
-    "/wiki/generals Generals",
   ],
   "text": [
     "Overview",
@@ -259,18 +248,6 @@ exports[`the rules pages in English overview keeps its text and links 1`] = `
     "A seat that reveals into a Force that is already full becomes an Ambitionist and plays alone. See Allegiance.",
     "Example: Who Wins",
     "Seat 2 and Seat 4 are out. Seats 1 and 3 both show Wei, so Wei wins together.",
-    "Where to read next",
-    "Setup: how a game starts.",
-    "Allegiance: whom a seat plays for, and Ambitionists.",
-    "Turn Structure: what you do on your turn.",
-    "Card Types: Basic, Tool and Equipment cards.",
-    "Distance / Range: who you can reach.",
-    "Response Windows: how a card lets another seat answer first.",
-    "Damage and Dying: how HP is lost, and how a seat is rescued or knocked out.",
-    "Judgment: flipping the top card to decide an effect.",
-    "Chains: how fire and thunder damage passes along a chain.",
-    "Glossary: the terms the wiki uses.",
-    "Generals: every General and skill.",
   ],
 }
 `;

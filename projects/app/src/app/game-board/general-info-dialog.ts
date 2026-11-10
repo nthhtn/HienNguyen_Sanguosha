@@ -6,6 +6,7 @@ import { generalDisplayName } from '../labels';
 import { CardArt } from './card-art';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
+import { SkillTraits } from '../skill-traits';
 
 export interface GeneralInfoDialogData {
   generalDefinitionId: string;
@@ -14,7 +15,7 @@ export interface GeneralInfoDialogData {
 // Read-only General details (art, title, skills), opened from a seat's avatar.
 @Component({
   selector: 'app-general-info-dialog',
-  imports: [MatDialogModule, MatButtonModule, CardArt, TPipe],
+  imports: [MatDialogModule, MatButtonModule, CardArt, SkillTraits, TPipe],
   template: `
     <h2 mat-dialog-title>{{ name }}</h2>
     <mat-dialog-content class="content">
@@ -26,7 +27,7 @@ export interface GeneralInfoDialogData {
         @if (display?.skills?.length) {
           <ul class="skills">
             @for (skill of display!.skills; track skill.name) {
-              <li [class.not-in-game]="skill.inGame === false"><strong>{{ skill.name }}</strong> {{ skill.text }}
+              <li [class.not-in-game]="skill.inGame === false"><strong>{{ skill.name }}</strong><app-skill-traits [traits]="skill.traits" /> {{ skill.text }}
                 @if (skill.inGame === false) { <em class="not-in-game-hint">{{ 'wiki.notInGame' | t }}</em> }</li>
             }
           </ul>
