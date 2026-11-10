@@ -1,0 +1,40 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "shu",
+  "palettes": {
+    "main": "#d84a3f",
+    "ground": "#2B1613",
+    "second": "#F6EBE8",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#2B1613",
+  "fonts": {
+    "display": {
+      "family": "Merriweather",
+      "weights": [
+        400,
+        700
+      ]
+    },
+    "sans": {
+      "family": "Be Vietnam Pro",
+      "weights": [
+        400,
+        700
+      ]
+    }
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Mạnh Hoạch: Họa thủ",
+      "dur": 7,
+      "desc": "Nam Man Xâm Nhập không có hiệu lực với Mạnh Hoạch, và Mạnh Hoạch là nguồn gây sát thương của nó."
+    }
+  ]
+}
