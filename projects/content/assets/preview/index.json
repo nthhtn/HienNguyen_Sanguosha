@@ -1,27 +1,126 @@
 {
-  "cao-cao_villainous-hero": ["en", "vi"],
-  "cao-pi_banish": ["en", "vi"],
-  "cao-pi_scavenge": ["en", "vi"],
-  "cao-ren_entrenched": ["en", "vi"],
-  "dian-wei_ferocious-assault": ["en", "vi"],
-  "guo-jia_bequeathed-strategy": ["en", "vi"],
-  "guo-jia_envy-of-heaven": ["en", "vi"],
-  "sima-yi_demonic-talent": ["en", "vi"],
-  "sima-yi_retaliation": ["en", "vi"],
-  "xiahou-dun_an-eye-for-an-eye": ["en", "vi"],
-  "xiahou-yuan_godspeed": ["en", "vi"],
-  "xu-chu_bare-chested": ["en", "vi"],
-  "xu-huang_blockade": ["en", "vi"],
-  "xun-yu_eternal-loyalty": ["en", "vi"],
-  "xun-yu_rouse-the-tiger": ["en", "vi"],
-  "yue-jin_dauntless": ["en", "vi"],
-  "zhang-he_flexibility": ["en", "vi"],
-  "zhang-jiao_dark-sorcery": ["en", "vi"],
-  "zhang-jiao_lightning-strike": ["en", "vi"],
-  "zhang-liao_sudden-strike": ["en", "vi"],
-  "zhen-ji_goddess-luo": ["en", "vi"],
-  "zhen-ji_stunning-beauty": ["en", "vi"],
-  "zhou-tai_refuting-death": ["en", "vi"],
-  "zhuge-liang_empty-city": ["en", "vi"],
-  "zhuge-liang_star-gazing": ["en", "vi"]
+  "cao-cao_villainous-hero": [
+    "en",
+    "vi"
+  ],
+  "cao-pi_banish": [
+    "en",
+    "vi"
+  ],
+  "cao-pi_scavenge": [
+    "en",
+    "vi"
+  ],
+  "cao-ren_entrenched": [
+    "en",
+    "vi"
+  ],
+  "dian-wei_ferocious-assault": [
+    "en",
+    "vi"
+  ],
+  "guo-jia_bequeathed-strategy": [
+    "en",
+    "vi"
+  ],
+  "guo-jia_envy-of-heaven": [
+    "en",
+    "vi"
+  ],
+  "huang-zhong_fearsome-archer": [
+    "en",
+    "vi"
+  ],
+  "liu-shan_relish": [
+    "en",
+    "vi"
+  ],
+  "ma-chao_horsemanship": [
+    "en",
+    "vi"
+  ],
+  "ma-chao_iron-calvary": [
+    "en",
+    "vi"
+  ],
+  "sima-yi_demonic-talent": [
+    "en",
+    "vi"
+  ],
+  "sima-yi_retaliation": [
+    "en",
+    "vi"
+  ],
+  "xiahou-dun_an-eye-for-an-eye": [
+    "en",
+    "vi"
+  ],
+  "xiahou-yuan_godspeed": [
+    "en",
+    "vi"
+  ],
+  "xu-chu_bare-chested": [
+    "en",
+    "vi"
+  ],
+  "xu-huang_blockade": [
+    "en",
+    "vi"
+  ],
+  "xun-yu_eternal-loyalty": [
+    "en",
+    "vi"
+  ],
+  "xun-yu_rouse-the-tiger": [
+    "en",
+    "vi"
+  ],
+  "yue-jin_dauntless": [
+    "en",
+    "vi"
+  ],
+  "zhang-fei_berserk": [
+    "en",
+    "vi"
+  ],
+  "zhang-he_flexibility": [
+    "en",
+    "vi"
+  ],
+  "zhang-jiao_dark-sorcery": [
+    "en",
+    "vi"
+  ],
+  "zhang-jiao_lightning-strike": [
+    "en",
+    "vi"
+  ],
+  "zhang-liao_sudden-strike": [
+    "en",
+    "vi"
+  ],
+  "zhen-ji_goddess-luo": [
+    "en",
+    "vi"
+  ],
+  "zhen-ji_stunning-beauty": [
+    "en",
+    "vi"
+  ],
+  "zhou-tai_refuting-death": [
+    "en",
+    "vi"
+  ],
+  "zhu-rong_fearsome-blade": [
+    "en",
+    "vi"
+  ],
+  "zhuge-liang_empty-city": [
+    "en",
+    "vi"
+  ],
+  "zhuge-liang_star-gazing": [
+    "en",
+    "vi"
+  ]
 }
