@@ -157,3 +157,20 @@ describe('a disabled option', () => {
     expect(() => resolve(open(), { kind: 'ChooseOptionAction', seatId: 'a', choiceId: 'c3', optionId: 'recover' }, ctx)).toThrow(/disabled/);
   });
 });
+
+describe('a choice for a seat that was eliminated before it opened', () => {
+  const eliminated = (): GameState => ({ ...state(), seats: state().seats.map((s) => (s.id === 'a' ? { ...s, eliminated: true } : s)) });
+  const reward: PendingChoice = {
+    id: 'c4', seatId: 'a', verb: 'pick', reason: { kind: 'partner-reward' },
+    options: [{ id: 'draw', shows: { kind: 'label', text: 'Draw 2 Cards' }, effects: [] }],
+  };
+
+  it('never opens, so no one is left waiting on a seat that cannot act', () => {
+    expect(applyEffect(eliminated(), { kind: 'OpenChoiceEffect', choice: reward }).state.pendingChoice).toBeUndefined();
+  });
+
+  it('still opens for a choice the eliminated seat’s own skill asks (an afterDeath skill)', () => {
+    const own: PendingChoice = { ...reward, id: 'c5', reason: { kind: 'ability', owner: { kind: 'general', seatId: 'a', slot: 'main', skillId: 'sorrow' }, abilityId: 'sorrow' } };
+    expect(applyEffect(eliminated(), { kind: 'OpenChoiceEffect', choice: own }).state.pendingChoice).toEqual(own);
+  });
+});
