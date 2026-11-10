@@ -312,6 +312,9 @@ export function describeResponse(
 // The table centre's "Waiting on …" line, with what the seat is being asked.
 export function waitingLine(state: GameState, tr: Translator = englishTranslator): string | null {
   const name = (seatId: string) => seatName(state.players, seatId, tr);
+  // A skill that may change an unsettled judgment is being asked: the asked seat and skill are not named, since
+  // being asked at all shows that seat holds the skill. The Judgment popup says the table is waiting.
+  if (state.judgmentView && !state.judgmentView.settled && (state.pendingChoice?.judgmentChange || state.pendingSelection?.judgmentChange)) return null;
   const selection = state.pendingSelection;
   if (selection) return tr('response.waiting.choose', { seat: name(selection.seatId) });
   const asking = state.pendingChoice;

@@ -6,23 +6,23 @@ import { I18n } from '../i18n/i18n.service';
 interface TargetPart {
   // ' ' before the first target, ', ' between the rest.
   sep: string;
-  text: string;
-  // The seat's force (data-force), or null for a target that isn't a whole seat.
+  name: string;
+  // The revealed Generals, "Main / Deputy"; empty when none is face up.
+  generals: string;
+  // The seat's force (data-force) for the Generals, or null for a target that isn't a whole seat.
   force: ReturnType<typeof seatForce> | null;
 }
 
-// A label that names targets: "<prefix> <Player>" while the seat's kingdom is
-// hidden (the name in yellow), or "<prefix> <Player> <Main> - <Deputy>" once it
-// is revealed, all in the kingdom's colour; a General still face down is left
-// out, with its hyphen. Without targets, just `label`.
+// A label that names targets: "<prefix> <Player>" while no General is face up, or
+// "<prefix> <Player> · <Main> / <Deputy>" once one is: the name in the text colour, the
+// Generals in the kingdom's colour; a General still face down is left out. Without targets, just `label`.
 @Component({
   selector: 'app-target-label',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `{{ prefix() ?? label() }}@for (part of parts(); track $index) {
-      <ng-container>{{ part.sep }}</ng-container><span class="target" [attr.data-force]="part.force">{{ part.text }}</span>
-    }`,
+  template: `{{ prefix() ?? label() }}@for (part of parts(); track $index) {<ng-container>{{ part.sep }}</ng-container><span class="target"><span class="name">{{ part.name }}</span>@if (part.generals) { · <span class="generals" [attr.data-force]="part.force">{{ part.generals }}</span>}</span>}`,
   styles: `
-    .target[data-force] { color: var(--force-text); }
+    .name { font-weight: 700; }
+    .generals[data-force] { color: var(--force-text); }
   `,
 })
 export class TargetLabel {
@@ -40,13 +40,13 @@ export class TargetLabel {
       const sep = i === 0 ? ' ' : ', ';
       const name = targetLabel(target, state.players, this.i18n.translator);
       const seat = target.kind === 'seat' ? state.seats.find((s) => s.id === target.seatId) : undefined;
-      if (!seat) return { sep, text: name, force: null };
+      if (!seat) return { sep, name, generals: '', force: null };
       const force = seatForce(seat);
-      if (force === 'none' || !seat.generals) return { sep, text: name, force };
+      if (force === 'none' || !seat.generals) return { sep, name, generals: '', force };
       const { main, deputy } = seat.generals;
-      // Only the Generals that are face up; the hyphen only between two.
+      // Only the Generals that are face up.
       const shown = [main, deputy].filter((g) => g.revealed).map((g) => generalDisplayName(g.generalDefinitionId, this.i18n.translator));
-      return { sep, text: [name, shown.join(' - ')].filter(Boolean).join(' '), force };
+      return { sep, name, generals: shown.join(' / '), force };
     });
   });
 }

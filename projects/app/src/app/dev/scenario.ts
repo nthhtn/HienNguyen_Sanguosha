@@ -2,13 +2,14 @@ import { Type } from '@angular/core';
 import { ContentRegistry, GameState } from 'engine';
 import type { MessageKey } from '../i18n/messages';
 
-export type ScenarioGroup = 'Play Board' | 'Response Windows' | 'Choice Prompts' | 'Other Screens';
+export type ScenarioGroup = 'Play Board' | 'Response Windows' | 'Choice Prompts' | 'Resolution Notices' | 'Other Screens';
 
 // The English group names are stable ids; the headings come from the catalog.
 export const GROUP_TITLES: Record<ScenarioGroup, MessageKey> = {
   'Play Board': 'preview.group.playBoard',
   'Response Windows': 'preview.group.responseWindows',
   'Choice Prompts': 'preview.group.choicePrompts',
+  'Resolution Notices': 'preview.group.notices',
   'Other Screens': 'preview.group.otherScreens',
 };
 

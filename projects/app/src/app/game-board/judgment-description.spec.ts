@@ -56,11 +56,11 @@ describe('judgmentDescription', () => {
     expect(describeIt(table(view(cardReader('lightning'), 'seat-1', card('j', 'spade', 5))))?.outcome).toBe('Bo takes 3 thunder damage');
   });
 
-  it('unsettled: no consequence, and the waiting line names the seat that is deciding', () => {
+  it('unsettled: no consequence, and the waiting line never says who is deciding (that would show who holds a skill)', () => {
     const unsettled = view(skillReader(), 'seat-0', card('j', 'club', 5), { settled: false, data: { sourceSeatId: 'seat-1' } });
     const deciding = describeIt(table(unsettled, { pending: { pendingChoice: { id: 'c', seatId: 'seat-1', options: [] } as never } }));
-    expect(deciding).toMatchObject({ settled: false, outcome: null, waiting: 'Waiting for Bo to decide whether to change the judgment' });
-    expect(describeIt(table(unsettled))?.waiting).toBe('Waiting for skills that can change the judgment');
+    expect(deciding).toMatchObject({ settled: false, outcome: null, waiting: 'Waiting for the judgment to be resolved' });
+    expect(describeIt(table(unsettled))?.waiting).toBe('Waiting for the judgment to be resolved');
   });
 
   it('a reader without an outcome entry has no consequence, and does not throw', () => {

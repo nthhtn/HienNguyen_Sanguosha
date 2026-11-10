@@ -59,8 +59,8 @@ describe('JudgmentDialog', () => {
   });
 
   it('unsettled: the waiting line, no countdown', () => {
-    const { el } = render(skillDescription({ settled: false, outcome: null, waiting: 'Waiting for Bo to decide whether to change the judgment' }));
-    expect(el.querySelector('.waiting')!.textContent).toContain('Waiting for Bo');
+    const { el } = render(skillDescription({ settled: false, outcome: null, waiting: 'Waiting for the judgment to be resolved' }));
+    expect(el.querySelector('.waiting')!.textContent).toContain('Waiting for the judgment to be resolved');
     expect(el.querySelector('app-decision-countdown')).toBeNull();
   });
 

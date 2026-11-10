@@ -40,8 +40,8 @@ describe('judgmentDecision', () => {
   });
 
   it('is only a waiting line, with the deciding seat’s name, for every other seat', () => {
-    expect(decide(open({ pendingChoice: ask('seat-1') }), 'seat-0', [])).toEqual({ kind: 'watching', deciderName: 'Bo' });
-    expect(decide(open({ pendingSelection: pick('seat-1') }), 'seat-0', [])).toEqual({ kind: 'watching', deciderName: 'Bo' });
+    expect(decide(open({ pendingChoice: ask('seat-1') }), 'seat-0', [])).toEqual({ kind: 'watching' });
+    expect(decide(open({ pendingSelection: pick('seat-1') }), 'seat-0', [])).toEqual({ kind: 'watching' });
   });
 
   it('is a gate, not the private choices, while that seat’s own view is not on screen (Pass and Play)', () => {
@@ -59,6 +59,6 @@ describe('judgmentDecision', () => {
   });
 
   it('is only watching when the engine offers the asked seat nothing it could pick', () => {
-    expect(decide(open({ pendingChoice: ask('seat-1') }), 'seat-1', [])).toEqual({ kind: 'watching', deciderName: 'Bo' });
+    expect(decide(open({ pendingChoice: ask('seat-1') }), 'seat-1', [])).toEqual({ kind: 'watching' });
   });
 });

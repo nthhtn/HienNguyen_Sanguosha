@@ -5,11 +5,12 @@ import { TPipe } from '../i18n/t.pipe';
 import { GROUP_TITLES, ScenarioGroup } from './scenario';
 import { SCENARIOS } from './scenarios';
 
-const GROUPS: ScenarioGroup[] = ['Play Board', 'Response Windows', 'Choice Prompts', 'Other Screens'];
+const GROUPS: ScenarioGroup[] = ['Play Board', 'Response Windows', 'Choice Prompts', 'Resolution Notices', 'Other Screens'];
 const GROUP_ICONS: Record<ScenarioGroup, string> = {
   'Play Board': 'grid_view',
   'Response Windows': 'reply',
   'Choice Prompts': 'rule',
+  'Resolution Notices': 'fact_check',
   'Other Screens': 'web',
 };
 

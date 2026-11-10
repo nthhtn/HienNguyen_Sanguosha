@@ -1,6 +1,7 @@
-import { Action, CardInstance, GameState, PendingSelection } from 'engine';
+import { Action, CardInstance, GameState, PendingSelection, SeatGenerals } from 'engine';
 import { abilityHint, cardDisplayData, generalDisplayData, selectionText, stepSelectionText } from 'content';
-import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, generalDisplayName, seatName } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, generalDisplayName, seatForce, seatName } from '../labels';
+import type { Force } from '../labels';
 import type { MessageKey } from '../i18n/messages';
 import { englishTranslator, localeOf, Translator } from '../i18n/translator';
 
@@ -59,6 +60,9 @@ export interface SelectionItem {
   id: string;
   // A card, face up (the selector's own); absent for a seat.
   card?: CardInstance;
+  // A seat's Generals and force, for its portrait; absent for a card.
+  generals?: SeatGenerals | null;
+  force?: Force;
   label: string;
 }
 
@@ -121,7 +125,10 @@ export function describeSelection(state: GameState, viewerSeatId: string, legal:
   const template = legal.find((a): a is SelectAction => a.kind === 'SelectAction');
   if (!template) return null;
   const items = selection.eligibleIds.map((id): SelectionItem => {
-    if (selection.of === 'seats') return { id, label: seatName(state.players, id, tr) };
+    if (selection.of === 'seats') {
+      const seat = state.seats.find((s) => s.id === id);
+      return { id, label: seatName(state.players, id, tr), generals: seat?.generals ?? null, force: seatForce(seat) };
+    }
     const card = findCard(state, id);
     return card ? { id, card, label: tr('card.named', { name: cardName(card.definitionId, tr), face: cardFaceLabel(card) }) } : { id, label: tr('selection.cardFallback') };
   });

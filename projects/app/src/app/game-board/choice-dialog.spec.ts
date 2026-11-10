@@ -63,6 +63,27 @@ describe('ChoiceDialog', () => {
     expect(Array.from(el.querySelectorAll('.option.picked')).map((b) => b.getAttribute('data-option-id'))).toEqual(['hand#2']);
   });
 
+  it('shows a seat with its portrait instead of a colour swatch, and a face-down General as the card back', () => {
+    const pickSeat: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'seat-1' };
+    const pickGeneral: Action = { ...pickSeat, optionId: 'hidden-general' };
+    const data: ChoiceDialogData = {
+      description: { title: 'Pick', prompt: 'Choose a seat', confirmLabel: 'Choose' },
+      options: [
+        { id: 'seat-1', action: pickSeat, label: 'Seat 1', force: 'Wei', generals: { main: { generalDefinitionId: 'cao-cao', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } } },
+        { id: 'hidden-general', action: pickGeneral, label: 'Hidden General', generalId: 'hidden' },
+      ],
+    };
+    TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close: jest.fn() } }] });
+    const fixture = TestBed.createComponent(ChoiceDialog);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    const seat = el.querySelector('[data-option-id="seat-1"]')!;
+    expect(seat.querySelector('app-seat-portrait')).not.toBeNull();
+    expect(seat.querySelector('.swatch')).toBeNull();
+    expect(seat.getAttribute('aria-label')).toBe('Seat 1');
+    expect(el.querySelector('[data-option-id="hidden-general"] img')!.getAttribute('src')).toBe('/images/generals/special/hidden.jpg');
+  });
+
   it('shows a seat in its force colour, and a suit in its colour', () => {
     const close = jest.fn();
     const pickSeat: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'seat-1' };

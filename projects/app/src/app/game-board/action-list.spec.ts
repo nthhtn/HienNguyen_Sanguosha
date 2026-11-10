@@ -112,7 +112,7 @@ describe('ActionList', () => {
       await fixture.whenStable();
       const dialog = document.querySelector('app-targets-dialog') as HTMLElement;
       expect(dialog.textContent).toContain('Choose up to 2 targets for Slash');
-      const button = (text: string) => [...dialog.querySelectorAll('button')].find((b) => b.textContent!.trim() === text) as HTMLButtonElement;
+      const button = (text: string) => [...dialog.querySelectorAll('button')].find((b) => (b.querySelector('.pk-name') ?? b).textContent!.trim() === text) as HTMLButtonElement;
       button('Seat 2').click();
       fixture.detectChanges();
       await fixture.whenStable();

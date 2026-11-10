@@ -3,13 +3,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { Action } from 'engine';
 import { SelectionDescription } from './ability-description';
 import { PlayingCard } from './playing-card';
+import { SeatPortrait } from './seat-portrait';
 
 // Picking cards or seats for an ability. Confirms between min and max picks; Cancel when it may be. The
 // content of the Selection dialog, and of the decision area of the Judgment popup. It offers only the
 // engine's own actions: the SelectAction filled with the picks, or the cancel the engine offered.
 @Component({
   selector: 'app-selection-panel',
-  imports: [MatButtonModule, PlayingCard],
+  imports: [MatButtonModule, PlayingCard, SeatPortrait],
   template: `
     <p class="prompt">{{ description().prompt }}</p>
     <ul class="items">
@@ -22,11 +23,15 @@ import { PlayingCard } from './playing-card';
             [attr.aria-pressed]="isPicked(item.id)"
             [attr.aria-label]="item.label"
             [attr.data-item-id]="item.id"
+            [attr.data-force]="item.force ?? null"
             (click)="toggle(item.id)"
           >
             @if (item.card; as card) {
               <app-playing-card [card]="card" />
             } @else {
+              @if (item.generals !== undefined) {
+                <app-seat-portrait [generals]="item.generals" />
+              }
               <span class="seat">{{ item.label }}</span>
             }
           </button>
@@ -50,7 +55,13 @@ import { PlayingCard } from './playing-card';
     }
     .item:focus-visible { outline: 3px solid var(--mat-sys-primary); outline-offset: 2px; }
     .item.picked { border-color: var(--mat-sys-primary); background: var(--mat-sys-primary-container); }
-    .seat { padding: 16px 8px; font: var(--mat-sys-title-small); }
+    .item[data-force] { --force: var(--force-none); }
+    .item[data-force='Wei'] { --force: var(--force-wei); }
+    .item[data-force='Shu'] { --force: var(--force-shu); }
+    .item[data-force='Wu'] { --force: var(--force-wu); }
+    .item[data-force='Qun'] { --force: var(--force-qun); }
+    .item[data-force='Ambitionist'] { --force: var(--force-ambitionist); }
+    .seat { padding: 8px; font: var(--mat-sys-title-small); }
     .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
   `,
 })

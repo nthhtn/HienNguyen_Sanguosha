@@ -871,6 +871,55 @@ describe('GameBoard event sounds', () => {
       expect(popups()[0]).not.toBe(first);
     });
   });
+
+  describe('Resolution notice popup', () => {
+    const blaze = (): GameState['log'] => [
+      { kind: 'CardPlayedEvent', seatId: 'seat-0', card: { as: 'blaze', colour: 'red', physical: [] }, targets: [{ kind: 'seat', seatId: 'seat-1' }] },
+      { kind: 'CardShownEvent', seatId: 'seat-1', card: { instanceId: 'x', definitionId: 'sha', suit: 'heart', rank: 7 }, abilityId: 'blaze' },
+      { kind: 'DamageDealtEvent', damage: { source: { kind: 'seat', seatId: 'seat-0' }, target: { kind: 'seat', seatId: 'seat-1' }, amount: 1, nature: 'fire' } },
+    ] as unknown as GameState['log'];
+    const append = async (events: GameState['log']) => {
+      (gameService as unknown as { _state: { update(f: (s: GameState) => GameState): void } })._state.update((s) => ({ ...s, log: [...s.log, ...events] }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+    const popups = () => document.querySelectorAll('app-resolution-notice-dialog');
+    const run = async (ms: number) => {
+      for (let t = 0; t < ms; t += 250) {
+        jest.advanceTimersByTime(250);
+        fixture.detectChanges();
+        await fixture.whenStable();
+      }
+    };
+
+    afterEach(() => {
+      TestBed.inject(MatDialog).closeAll();
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    });
+
+    it('opens in the middle of the screen for a resolution that happens while the board is open, themed in the source seat’s Force, and holds playback', async () => {
+      jest.useFakeTimers();
+      await append(blaze());
+      await run(1000);
+      expect(popups()).toHaveLength(1);
+      expect(popups()[0].textContent).toContain('Blaze hit');
+      const force = gameService.state()!.seats[0].kingdom;
+      expect(document.querySelector('.cdk-overlay-pane')!.className).toContain(`force-dialog-${force === 'hidden' ? 'none' : force}`);
+      expect(fixture.debugElement.injector.get(PlaybackDirector).idle()).toBe(false);
+    });
+
+    it('closes itself after 5 seconds and lets playback go on', async () => {
+      jest.useFakeTimers();
+      await append(blaze());
+      await run(1000);
+      expect(popups()).toHaveLength(1);
+      await run(4500);
+      expect(popups()).toHaveLength(0);
+      expect(fixture.debugElement.injector.get(PlaybackDirector).notices()).toEqual([]);
+      expect(fixture.debugElement.injector.get(PlaybackDirector).idle()).toBe(true);
+    });
+  });
 });
 
 describe('GameBoard: the judgment popup', () => {
