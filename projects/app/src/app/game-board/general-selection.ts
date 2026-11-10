@@ -9,6 +9,7 @@ import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
 import { generalDisplayName, kingdomDisplayName } from '../labels';
 import { TPipe } from '../i18n/t.pipe';
+import { SkillTraits } from '../skill-traits';
 import { I18n } from '../i18n/i18n.service';
 
 interface CandidateViewModel {
@@ -27,7 +28,7 @@ interface CandidateViewModel {
 // engine's getLegalActions); this component never compares kingdoms itself.
 @Component({
   selector: 'app-general-selection',
-  imports: [MatButtonModule, MatCardModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown, TPipe],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown, SkillTraits, TPipe],
   template: `
     <header class="intro">
       <h2>{{ seatName() ? ('select.titleFor' | t: { name: seatName() }) : ('select.title' | t) }}</h2>
@@ -83,7 +84,7 @@ interface CandidateViewModel {
                   @if (vm.display?.skills?.length) {
                     <ul class="skills">
                       @for (skill of vm.display!.skills; track skill.name) {
-                        <li [class.not-in-game]="skill.inGame === false"><strong>{{ skill.name }}</strong> {{ skill.text }}
+                        <li [class.not-in-game]="skill.inGame === false"><strong>{{ skill.name }}</strong><app-skill-traits [traits]="skill.traits" /> {{ skill.text }}
                           @if (skill.inGame === false) { <em class="not-in-game-hint">{{ 'wiki.notInGame' | t }}</em> }</li>
                       }
                     </ul>

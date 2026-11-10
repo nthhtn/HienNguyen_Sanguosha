@@ -4,14 +4,15 @@ import { generalDeathVoiceUrl, type WikiGeneral } from 'content';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
+import { SkillTraits } from '../skill-traits';
 import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
-import { SKILL_TRAIT_KEYS, wikiGeneralView, wikiPackLabel } from './wiki-labels';
+import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
 
 // One general in the Wiki: art beside everything the data knows about it.
 @Component({
   selector: 'app-wiki-general-entry',
-  imports: [CardArt, MatIconModule, TPipe],
+  imports: [SkillTraits, CardArt, MatIconModule, TPipe],
   template: `
     <article class="entry kingdom-{{ general().kingdom }}" [attr.data-id]="general().id">
       <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
@@ -61,9 +62,7 @@ import { SKILL_TRAIT_KEYS, wikiGeneralView, wikiPackLabel } from './wiki-labels'
           @for (skill of general().skills; track skill.name; let i = $index) {
             <li>
               <strong>{{ view().skills[i].name }}</strong>
-              @for (trait of skill.traits; track trait) {
-                <span class="trait" [attr.data-trait]="trait">{{ traitKeys[trait] | t }}</span>
-              }
+              <app-skill-traits [traits]="skill.traits" />
               @if (skill.nameZh; as zh) {
                 <span class="zh">{{ zh }}</span>
               }
@@ -104,7 +103,6 @@ import { SKILL_TRAIT_KEYS, wikiGeneralView, wikiPackLabel } from './wiki-labels'
     .hearts { display: inline-flex; color: #d84a3f; }
     .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .skills { margin: 0; padding-left: 18px; }
-    .trait { display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 8px; color: var(--mat-sys-on-tertiary-container); background: var(--mat-sys-tertiary-container); font: var(--mat-sys-label-small); vertical-align: 1px; }
     .skills li { margin: 4px 0; }
     .skill-text { margin-left: 6px; }
     .gap { color: var(--mat-sys-on-surface-variant); font-style: italic; }
@@ -114,7 +112,6 @@ import { SKILL_TRAIT_KEYS, wikiGeneralView, wikiPackLabel } from './wiki-labels'
 export class WikiGeneralEntry {
   private readonly i18n = inject(I18n);
   private readonly effects = inject(SoundEffects);
-  protected readonly traitKeys = SKILL_TRAIT_KEYS;
   readonly general = input.required<WikiGeneral>();
   // The words for a skill's state. A Lord skill and a skill the game lacks reuse the Wiki's existing lines.
   protected readonly statusLabels: Record<WikiGeneral['skills'][number]['status'], MessageKey> = {

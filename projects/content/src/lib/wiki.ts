@@ -1,6 +1,6 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData, GeneralData } from '../../data/generals';
-import type { SkillDefinition } from 'engine';
+import { skillTraits, type SkillTrait } from './skillTraits';
 import { GENERAL_SKILLS } from './generals';
 import { buildContentRegistry } from './registry';
 import { DEFAULT_DECK_ID } from './decks';
@@ -17,14 +17,7 @@ export type WikiPack = (typeof PACK_ORDER)[number];
 // (inactive in Guozhan), or the data has it but the game does not yet.
 export type SkillStatus = 'working' | 'lord' | 'missing';
 
-// What a badge next to a skill name says: Locked (compulsory), Limited (once per game) or Once Per Turn.
-export type SkillTrait = 'locked' | 'limited' | 'oncePerTurn';
-
-// The traits the game's code gives a skill, in the order the Wiki shows the badges. None when the game has no code for it.
-export function skillTraits(skill: SkillDefinition | undefined): SkillTrait[] {
-  if (!skill) return [];
-  return [skill.compulsory ? 'locked' : null, skill.limited ? 'limited' : null, skill.active?.usesPerTurn === 1 ? 'oncePerTurn' : null].filter((t): t is SkillTrait => t !== null);
-}
+export { skillTraits, type SkillTrait };
 
 export interface WikiSkill {
   name: string;

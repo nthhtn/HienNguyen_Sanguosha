@@ -114,22 +114,11 @@ describe('the rules pages in Vietnamese', () => {
     expect(text(el.querySelector('h2'))).toBe(title);
   });
 
-  it('overview: the Forces, the link labels and the paths', async () => {
+  it('overview: the Forces, the link to Allegiance', async () => {
     const { el } = await open('overview');
     expect(text(el)).toContain('Ngụy, Thục, Ngô hoặc Quần');
     expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
       '/wiki/rules/allegiance Phe phái', // the Winning list's cap sentence
-      '/wiki/rules/setup Chuẩn bị',
-      '/wiki/rules/allegiance Phe phái',
-      '/wiki/rules/turn Cấu trúc lượt',
-      '/wiki/rules/card-types Loại bài',
-      '/wiki/rules/distance Khoảng cách / Tầm',
-      '/wiki/rules/response Cửa sổ phản hồi',
-      '/wiki/rules/damage Sát thương và hấp hối',
-      '/wiki/rules/judgment Phán xét',
-      '/wiki/rules/chains Xích',
-      '/wiki/rules/glossary Thuật ngữ',
-      '/wiki/generals Tướng',
     ]);
   });
 

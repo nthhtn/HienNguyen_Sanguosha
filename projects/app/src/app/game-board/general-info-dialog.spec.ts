@@ -38,6 +38,16 @@ describe('GeneralInfoDialog', () => {
     expect(skills[0]).toContain('Guan Yu can use any red card as an attack.');
   });
 
+  it('shows a badge next to a skill that is once per turn', () => {
+    const el = render('kingdomWars:ding-feng');
+    const row = [...el.querySelectorAll('.skills li')].find((li) => li.textContent!.includes('Swift and Deadly'))!;
+    expect([...row.querySelectorAll('.trait')].map((b) => b.textContent!.trim())).toEqual(['Once Per Turn']);
+  });
+
+  it('shows no badge on a skill with no trait', () => {
+    expect(render('guan-yu').querySelector('.trait')).toBeNull();
+  });
+
   it('falls back to a readable name and an empty-state line for an unknown General', () => {
     const el = render('no-such-general');
     expect(el.querySelector('h2')!.textContent).toContain('No Such General');

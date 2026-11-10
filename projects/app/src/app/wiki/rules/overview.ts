@@ -63,20 +63,6 @@ const FORCES = [
       </div>
       <p><app-rich key="rules.overview.winExample" /></p>
     </app-scene>
-    <h3>{{ 'rules.overview.next' | t }}</h3>
-    <ul>
-      <li><app-rich key="rules.overview.next.setup" /></li>
-      <li><app-rich key="rules.overview.next.allegiance" /></li>
-      <li><app-rich key="rules.overview.next.turn" /></li>
-      <li><app-rich key="rules.overview.next.cardTypes" /></li>
-      <li><app-rich key="rules.overview.next.distance" /></li>
-      <li><app-rich key="rules.overview.next.response" /></li>
-      <li><app-rich key="rules.overview.next.damage" /></li>
-      <li><app-rich key="rules.overview.next.judgment" /></li>
-      <li><app-rich key="rules.overview.next.chains" /></li>
-      <li><app-rich key="rules.overview.next.glossary" /></li>
-      <li><app-rich key="rules.overview.next.generals" /></li>
-    </ul>
   `,
   styles: `
     .forces { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
