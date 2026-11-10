@@ -2982,10 +2982,10 @@
     }
   },
   "preview/index.json": {
-    "output": "63ab7d19676f9b3720d4cbf1ea639aa086ef415f27674f2df75e7d992819d188",
+    "output": "4781dd822a80518cd3dc9d990c9fc366b864ef191c45a0132d8e268c4cbbe089",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "preview/index.json": "63ab7d19676f9b3720d4cbf1ea639aa086ef415f27674f2df75e7d992819d188"
+      "preview/index.json": "4781dd822a80518cd3dc9d990c9fc366b864ef191c45a0132d8e268c4cbbe089"
     }
   },
   "preview/qun/zhang-jiao_dark-sorcery_en.mp4": {
@@ -3014,6 +3014,90 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/qun/zhang-jiao_lightning-strike_vi.mp4": "c21480977479925cee3670c39d3446a64e6c4ed970794826c747207f91f2a410"
+    }
+  },
+  "preview/shu/fire-zhuge-liang_arson_en.mp4": {
+    "output": "519a740348b05a9ceb93e0a7a6ee793c3abe750f44ba45579ed69e511bf2222a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/fire-zhuge-liang_arson_en.mp4": "a098389785222c3bfe76ed9749409e2cd32f072d121f6a917a61467e55ba343a"
+    }
+  },
+  "preview/shu/fire-zhuge-liang_arson_vi.mp4": {
+    "output": "57fc370a14a537926c3661070bcbc13f5bc59e5ecb08e8ff286a37c5ab68cbc3",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/fire-zhuge-liang_arson_vi.mp4": "f7394d640749c2b09cc4d0bdcdc0498f91892a8727e5317da151f554f9516ea8"
+    }
+  },
+  "preview/shu/fire-zhuge-liang_eight-trigrams_en.mp4": {
+    "output": "be4b1c25fc3d3685d64b58df4c72513daa6544758336ac5a322da6bffa9ed490",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/fire-zhuge-liang_eight-trigrams_en.mp4": "498d0a1e18a43dd1fff7e1217ff54acba63f1aeb3db02af8525ef5343bb53514"
+    }
+  },
+  "preview/shu/fire-zhuge-liang_eight-trigrams_vi.mp4": {
+    "output": "7339e592ecaf7f66a8300d9283cb330d2ae88e3efba9525ba6b461d19283e6b1",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/fire-zhuge-liang_eight-trigrams_vi.mp4": "a276b68860f92f6c1221c3a90d315da9a24dbb88ce1a19ebf74af12930c931a8"
+    }
+  },
+  "preview/shu/fire-zhuge-liang_scient_en.mp4": {
+    "output": "0c4f5afc3b88b0b9213401818a2401e84d69ba5f4e6ac79265ed36c0b984698f",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/fire-zhuge-liang_scient_en.mp4": "c573a63ca342add31288089b6d2270670cd7d76fd88ad4cbb53578d310347015"
+    }
+  },
+  "preview/shu/fire-zhuge-liang_scient_vi.mp4": {
+    "output": "2f98086ddc0d716f8f2122e043d3ee925331b5876f82c41659435f9a822e737a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/fire-zhuge-liang_scient_vi.mp4": "c9e952a675a1b6f22f7ab7305ad4650ee771e956bc578fb13b6b660cc83c7063"
+    }
+  },
+  "preview/shu/guan-yu_warrior-saint_en.mp4": {
+    "output": "97074fd8381944d4a734249bcf559b7113880c826d1d5871a0bee046791f0fcb",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/guan-yu_warrior-saint_en.mp4": "89a0b24fb2d2e25c66bb636bc2a3405611fc4df16d23cb84a05b88b541ee83fb"
+    }
+  },
+  "preview/shu/guan-yu_warrior-saint_vi.mp4": {
+    "output": "3b22272fcb8705dbf7ccd585ffbd74dbbe8b44edf55c5c95e469446b1257e83f",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/guan-yu_warrior-saint_vi.mp4": "a157492b151f70b46041190605aa1b0e3497b00cfea43f15b67cf0bc26ed2acd"
+    }
+  },
+  "preview/shu/pang-tong_shackle_en.mp4": {
+    "output": "d260843bed9fb8d0068aee46dbb529dfc58eafe2371919f485fdf9c2bcea791b",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/pang-tong_shackle_en.mp4": "3dca259f0a09c666463ac775b60fb10957ab8ff53dea8a45988cdfd4f66ced0d"
+    }
+  },
+  "preview/shu/pang-tong_shackle_vi.mp4": {
+    "output": "c38a96d6f06f41f4cc307021d527022d2e4fb92dc06d08699138c413ac5c3495",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/pang-tong_shackle_vi.mp4": "24503122f652a6b458633877c952428e4df6fe22056658e5f746422e8cb51967"
+    }
+  },
+  "preview/shu/zhao-yun_dragon-heart_en.mp4": {
+    "output": "e724c82f510d5fbf37be93d532111aefded7e86219596e5dbe4f899df1e87721",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/zhao-yun_dragon-heart_en.mp4": "42bccac65ef57068e902663d526ea5831992a6297be7c20486c38b5cd031e136"
+    }
+  },
+  "preview/shu/zhao-yun_dragon-heart_vi.mp4": {
+    "output": "f225a800904006ae21e109421aa115515913a89bb899b017de4d5228eff111da",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/zhao-yun_dragon-heart_vi.mp4": "15c6746dcd07c2f18f17917f4f585569d9771295bf974b5902fa220d0c05ff43"
     }
   },
   "preview/shu/zhuge-liang_empty-city_en.mp4": {
