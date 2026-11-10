@@ -2982,10 +2982,10 @@
     }
   },
   "preview/index.json": {
-    "output": "dfe2d2588f9dea52da34e3580eb4b7fec4d7e806f59f3ebef70ffab6748bd31c",
+    "output": "56a81f6ea19a32f357b61f6b4cd976b0146577c41f78e5989f45d820381bb5f2",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "preview/index.json": "dfe2d2588f9dea52da34e3580eb4b7fec4d7e806f59f3ebef70ffab6748bd31c"
+      "preview/index.json": "56a81f6ea19a32f357b61f6b4cd976b0146577c41f78e5989f45d820381bb5f2"
     }
   },
   "preview/qun/zhang-jiao_dark-sorcery_en.mp4": {
@@ -3156,6 +3156,20 @@
       "preview/shu/liu-bei_benevolence_vi.mp4": "64c96e3c35d861e19a437fc231da0c0c193055672d1ae5b6511d393cefcdd497"
     }
   },
+  "preview/shu/liu-shan_devolution_en.mp4": {
+    "output": "2698081aed675c32d4979462013e1b24b85136c5f86500da6e70ac1e0f53ad92",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/liu-shan_devolution_en.mp4": "8514381e2ff6a8d09b5268c6945dd51fffa48071b26c73e1fbd8fc3f7d78d866"
+    }
+  },
+  "preview/shu/liu-shan_devolution_vi.mp4": {
+    "output": "2854309a59dbfe89a923d5569afb136835b8d21ffb0c8482558b0b6032207b7c",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/liu-shan_devolution_vi.mp4": "26840e2d5efc6b45ee0bf22cd2954db762ba4cf01a0d150da74a0f47a4d59e2f"
+    }
+  },
   "preview/shu/liu-shan_relish_en.mp4": {
     "output": "ce102db1ea9839faceec39050f39b150330ab6208eb69497d8e83a27853f1b1b",
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
@@ -3196,6 +3210,48 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/shu/ma-chao_iron-calvary_vi.mp4": "cdc70811e6b78be7824651e5063eaaa130ef0d01d7a4e8e981aa0b2d9a1ba043"
+    }
+  },
+  "preview/shu/meng-huo_arise-again_en.mp4": {
+    "output": "8af576fd9851863795a03b021e8670a72c39ca5d0b11d988fee0268a2ef37aa0",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/meng-huo_arise-again_en.mp4": "9cca0665a9a9cfe79fffe8c6e542426302fa22a0a52b2e894813fe143328db5b"
+    }
+  },
+  "preview/shu/meng-huo_arise-again_vi.mp4": {
+    "output": "cff286f9f3ff3cb28910748ac1cb860c2ced2c72dd2a522e02ed67198c214232",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/meng-huo_arise-again_vi.mp4": "1925b45b3efcac5eff6dc4a8030c03b61beb2de98529dfd57260e1668f3f1973"
+    }
+  },
+  "preview/shu/meng-huo_the-smoking-gun_en.mp4": {
+    "output": "3bfa01155cc67b311eb3a12ade626729c31f231da2cecff3e4b843f29c2c9eeb",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/meng-huo_the-smoking-gun_en.mp4": "d312510f38c77d0e3e99c35d2ce9540926c55405db05c85a3ab058fe8e1181ea"
+    }
+  },
+  "preview/shu/meng-huo_the-smoking-gun_vi.mp4": {
+    "output": "e636e11f7d48f6e0248023b0e281d73c0a193ef52b8cd75e72a28676a9edd545",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/meng-huo_the-smoking-gun_vi.mp4": "97ab68f7b96a0f1ae6fbaf04575f367359a97328b4c925ad3e3c1fd45d48ebc4"
+    }
+  },
+  "preview/shu/pang-tong_resurrection_en.mp4": {
+    "output": "afa1ee44a43840221319c68dd77f6249bb8fb2b1fdaf2b30c063cbdd8cbce20d",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/pang-tong_resurrection_en.mp4": "491f64d050de57afcb7735fc3706224c04d5c1dda52980350073985d3cd29990"
+    }
+  },
+  "preview/shu/pang-tong_resurrection_vi.mp4": {
+    "output": "af808a74bc829d2ba26639cc7c8b84e7392fc74974ed7efeee0911ee04790481",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/pang-tong_resurrection_vi.mp4": "e9806ce23737505656e08257fbcf47f409102f2e876d4a93675dabb8c137abf7"
     }
   },
   "preview/shu/pang-tong_shackle_en.mp4": {
@@ -3266,6 +3322,20 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/shu/zhu-rong_fearsome-blade_vi.mp4": "9d57348d9d35c87b08733fa4a5adc5b87794b9899e931886c1a1fb72d32d0ae9"
+    }
+  },
+  "preview/shu/zhu-rong_giant-elephant_en.mp4": {
+    "output": "8d5fd43d0089de3ba2f56d5f498d689b46102a9f2c0ac5ae748ce0ed9eec5aae",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/zhu-rong_giant-elephant_en.mp4": "1e0dab72d71d522674bf10f087e903c611039c592f4bc9824310ce9a169dbebb"
+    }
+  },
+  "preview/shu/zhu-rong_giant-elephant_vi.mp4": {
+    "output": "6a0510308d3b24213775654c6e3f89f8da8d52803c0f43bb7db94e3e5542aab4",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/zhu-rong_giant-elephant_vi.mp4": "0289d4c6a510754de6fc8582762bf5ef54688660bf860568d4b4730dad162dca"
     }
   },
   "preview/shu/zhuge-liang_empty-city_en.mp4": {
