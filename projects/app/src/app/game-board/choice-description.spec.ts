@@ -234,3 +234,23 @@ describe('Ascertain’s secret look', () => {
     expect(shown[3].generalId).toBe('cao-cao');
   });
 });
+
+describe('the Synergistic Partners reward', () => {
+  const reward: PendingChoice = {
+    id: 'pr', seatId: 'seat-0', verb: 'pick', reason: { kind: 'partner-reward' },
+    options: [
+      { id: 'recover', shows: { kind: 'label', text: 'Recover 1 HP' }, effects: [], disabled: true },
+      { id: 'draw', shows: { kind: 'label', text: 'Draw 2 Cards' }, effects: [] },
+    ],
+  };
+  const pick = (optionId: string): Action => ({ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'pr', optionId });
+
+  it('is titled Synergistic Partners and asks for a reward', () => {
+    expect(describeChoice(state(reward), 'seat-0')).toEqual({ title: 'Synergistic Partners', prompt: 'Your Generals are Synergistic Partners: choose a reward', confirmLabel: 'Choose' });
+  });
+
+  it('shows a disabled option that has no legal action, next to the enabled one', () => {
+    const shown = choiceDialogOptions(reward.options, [pick('draw')], players);
+    expect(shown.map((o) => [o.id, o.label, o.disabled ?? false])).toEqual([['recover', 'Recover 1 HP', true], ['draw', 'Draw 2 Cards', false]]);
+  });
+});

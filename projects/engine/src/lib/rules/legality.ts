@@ -15,7 +15,7 @@ export function getLegalTargets(state: GameState, seatId: string): Target[] {
 }
 
 function chooseOptions(choice: PendingChoice, seatId: string): Action[] {
-  return choice.options.map((o) => ({ kind: 'ChooseOptionAction' as const, seatId, choiceId: choice.id, optionId: o.id }));
+  return choice.options.filter((o) => !o.disabled).map((o) => ({ kind: 'ChooseOptionAction' as const, seatId, choiceId: choice.id, optionId: o.id }));
 }
 
 export function getLegalActions(state: GameState, seatId: string, registry?: ContentRegistry): Action[] {

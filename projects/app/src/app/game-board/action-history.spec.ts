@@ -521,6 +521,12 @@ describe('actionHistory: the Wind skills', () => {
     expect(texts([chose, moved])).toEqual(["Seat 0's Fantasy moved the damage to Seat 3"]);
   });
 
+  it('the Synergistic Partners reward says what was taken', () => {
+    const chose = (text: string): EngineEvent => ({ kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'pick', reason: { kind: 'partner-reward' }, shows: { kind: 'label', text } });
+    expect(texts([chose('Draw 2 Cards')])).toEqual(['Seat 0 revealed Synergistic Partners and drew 2 cards']);
+    expect(texts([chose('Recover 1 HP')])).toEqual(['Seat 0 revealed Synergistic Partners and recovered 1 HP']);
+  });
+
   it('Bewilder', () => {
     const answer = (text: string): EngineEvent => ({
       kind: 'ChoiceMadeEvent', seatId: 'seat-0', verb: 'pick', shows: { kind: 'label', text },

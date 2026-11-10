@@ -117,3 +117,40 @@ describe('ChoiceDialog', () => {
     expect(styles).toContain(".option[data-force='Ambitionist'] { --force: var(--force-ambitionist)");
   });
 });
+
+describe('ChoiceDialog with a disabled option', () => {
+  const pickDraw: Action = { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'pr', optionId: 'draw' };
+  const pickRecover: Action = { ...pickDraw, optionId: 'recover' };
+
+  function renderReward() {
+    const close = jest.fn();
+    const data: ChoiceDialogData = {
+      description: { title: 'Synergistic Partners', prompt: 'Choose', confirmLabel: 'Choose' },
+      options: [
+        { id: 'recover', action: pickRecover, label: 'Recover 1 HP', disabled: true },
+        { id: 'draw', action: pickDraw, label: 'Draw 2 Cards' },
+      ],
+    };
+    TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close } }] });
+    const fixture = TestBed.createComponent(ChoiceDialog);
+    fixture.detectChanges();
+    return { fixture, el: fixture.nativeElement as HTMLElement, close };
+  }
+
+  it('shows the disabled option as a disabled button that cannot be picked', () => {
+    const { el, fixture } = renderReward();
+    const recover = el.querySelector('[data-option-id="recover"]') as HTMLButtonElement;
+    expect(recover.disabled).toBe(true);
+    recover.click();
+    fixture.detectChanges();
+    expect((el.querySelector('button.confirm') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('still lets the enabled option be picked and confirmed', () => {
+    const { el, fixture, close } = renderReward();
+    (el.querySelector('[data-option-id="draw"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (el.querySelector('button.confirm') as HTMLButtonElement).click();
+    expect(close).toHaveBeenCalledWith(pickDraw);
+  });
+});

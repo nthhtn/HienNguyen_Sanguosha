@@ -21,7 +21,7 @@ import { botName } from 'protocol';
 // A new game stopped at General selection: seat-0 is the human, the rest are bots.
 export function freshGame(registry: ContentRegistry, seed: number, seatCount: number): GameState {
   const seatIds = Array.from({ length: seatCount }, (_, i) => `seat-${i}`);
-  const created = createGame(guozhanMode, registry, seatIds, seed, { judgmentNotice: true, logPasses: true });
+  const created = createGame(guozhanMode, registry, seatIds, seed, { judgmentNotice: true, logPasses: true, partnerReward: true });
   const botNameIds = drawBotNameIds(seatCount - 1, [], () => 0.5);
   // A bot keeps its name id as a real game does (GameService.startGame), so the board shows its name in the viewer's language.
   const players = created.players.map((p) => {

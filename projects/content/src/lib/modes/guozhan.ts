@@ -19,10 +19,12 @@ import { buildDeck, drawTop, shuffle } from 'engine';
 import { kingdomWarsCardData } from '../kingdomWarsCards';
 import { DEFAULT_DECK_ID, deckFor } from '../decks';
 import type { DeckDefinition, DeckId } from '../decks';
-import { isKingdomWarsGeneralId } from '../generalIds';
+import { baseGeneralId, isKingdomWarsGeneralId } from '../generalIds';
 import { judgmentPhaseTrigger } from '../shared/delayed';
 import { peachLockedTo } from '../shared/abilities';
 import { isAmbitionist } from '../shared/kingdom';
+import { draw, heal, isHurt } from '../shared/skills';
+import { areSynergisticPartners } from '../synergisticPartners';
 
 // How many Generals each seat is dealt to choose from. Kingdom Wars: 7 at a table of 2-8, 5 at a table of 9-12.
 // Identity keeps its own deal: always 5.
@@ -212,6 +214,40 @@ const revealBonusTriggers: SkillTrigger[] = [
       return (printed[0] + printed[1]) % 2 === 1;
     },
     effect: (_state, subject) => [{ kind: 'DrawCardsEffect', seatId: (subject as GeneralRevealedEvent).seatId, count: 1 }],
+  },
+  // Synergistic Partners (the partnerReward rule): the reveal that leaves both Generals of a listed pair
+  // revealed, the first time only, lets the seat draw 2 cards or recover 1 HP. Recover shows but cannot be
+  // picked at full HP. It comes after the Rounding draw, so both resolve.
+  {
+    point: 'after:GeneralRevealedEvent',
+    condition: (state, subject) => {
+      const event = subject as GeneralRevealedEvent;
+      if (!state.rules?.partnerReward || event.onDeath) return false;
+      const generals = state.seats.find((s) => s.id === event.seatId)?.generals;
+      if (!generals || !generals.main.revealed || !generals.deputy.revealed) return false;
+      // The pair table is the Kingdom Wars deck's: its Generals are seated as `kingdomWars:<id>`, Identity's have no prefix.
+      const [main, deputy] = [generals.main.generalDefinitionId, generals.deputy.generalDefinitionId];
+      if (!isKingdomWarsGeneralId(main) || !isKingdomWarsGeneralId(deputy)) return false;
+      return areSynergisticPartners(baseGeneralId(main), baseGeneralId(deputy)) && firstTimeBothRevealed(state, event.seatId);
+    },
+    effect: (state, subject) => {
+      const seatId = (subject as GeneralRevealedEvent).seatId;
+      return [
+        {
+          kind: 'OpenChoiceEffect',
+          choice: {
+            id: `partner-reward-${seatId}-${state.log.length}`,
+            seatId,
+            reason: { kind: 'partner-reward' },
+            verb: 'pick',
+            options: [
+              { id: 'recover', shows: { kind: 'label', text: 'Recover 1 HP' }, effects: [heal(seatId, 1)], ...(isHurt(state, seatId) ? {} : { disabled: true as const }) },
+              { id: 'draw', shows: { kind: 'label', text: 'Draw 2 Cards' }, effects: [draw(seatId, 2)] },
+            ],
+          },
+        },
+      ];
+    },
   },
 ];
 

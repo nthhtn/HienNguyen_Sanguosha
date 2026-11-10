@@ -441,8 +441,8 @@ export class RoomService {
       seed
     );
     // Every game waits for a judgment's popup (the judgmentNotice rule) and logs passes (logPasses); a stored game keeps these, so it replays the same.
-    // Games stored before logPasses existed lack it and replay without the pass events, with the same hashes.
-    const rules = { ...room.record.rules, judgmentNotice: true, logPasses: true };
+    // Games stored before logPasses existed lack it and replay without the pass events, with the same hashes; the same holds for partnerReward and its prompt.
+    const rules = { ...room.record.rules, judgmentNotice: true, logPasses: true, partnerReward: true };
     const state = openingState(this.ctx, seed, seats, rules);
     const game = await this.repos.transaction(async (tx) => {
       const created = await tx.games.create({ roomId: room.id, seed, seats, rules, buildId: this.buildId, now: at });

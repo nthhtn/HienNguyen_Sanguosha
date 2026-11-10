@@ -1,10 +1,13 @@
 import { ContentRegistry, GameState, getActiveSeatId } from 'engine';
 import { BoardScenario } from '../scenario';
-import { act, emptyHand, give, placeJudgment, playCard, playableGame, setGenerals, setTurn, windowOf } from '../recipe';
+import { act, emptyHand, give, placeJudgment, playCard, playableGame, setGenerals, setHp, setTurn, windowOf } from '../recipe';
 
 const SEED = 7;
 const JI_LING = 'kingdomWars:ji-ling';
 const DOUBLE_EDGED = 'kingdomWars:double-edged';
+// Synergistic Partners: Liu Bei and Zhang Fei are a listed pair.
+const LIU_BEI = 'kingdomWars:liu-bei';
+const ZHANG_FEI = 'kingdomWars:zhang-fei';
 
 const youAreAsked = (state: GameState): boolean => getActiveSeatId(state) === 'seat-0' && windowOf(state) !== null;
 
@@ -21,6 +24,15 @@ const useDoubleEdged = (registry: ContentRegistry): GameState => {
   const ask = doubleEdgedAsk(registry);
   return act(ask, registry, { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: ask.pendingChoice!.id, optionId: 'use' });
 };
+
+// Seat-0 holds the pair face down in its Start window and reveals both: the second reveal opens the reward prompt.
+function partnersReward(registry: ContentRegistry, hp?: number): GameState {
+  let state = setGenerals(setTurn(playableGame(registry, SEED, 4), 'seat-0', 'Start'), registry, 'seat-0', LIU_BEI, ZHANG_FEI);
+  if (hp !== undefined) state = setHp(state, 'seat-0', hp);
+  return act(state, registry, { kind: 'ConfirmRevealsAction', seatId: 'seat-0', slots: ['main', 'deputy'] });
+}
+
+const partnersPrompt = (s: GameState): boolean => youAreAsked(s) && s.pendingChoice?.reason.kind === 'partner-reward';
 
 export const CHOICE_SCENARIOS: BoardScenario[] = [
   {
@@ -92,5 +104,25 @@ export const CHOICE_SCENARIOS: BoardScenario[] = [
       return act(state, registry, { kind: 'SelectAction', seatId: 'seat-0', selectionId: state.pendingSelection!.id, ids: ['seat-1'] });
     },
     reaches: (s) => youAreAsked(s) && s.pendingSelection?.of === 'cards',
+  },
+  {
+    kind: 'board',
+    id: 'choice-partners-full-hp',
+    group: 'Choice Prompts',
+    title: 'preview.choice-partners-full-hp.title',
+    description: 'preview.choice-partners-full-hp.description',
+    seatCount: 4,
+    build: (registry) => partnersReward(registry),
+    reaches: (s) => partnersPrompt(s) && s.pendingChoice!.options.some((o) => o.id === 'recover' && o.disabled === true),
+  },
+  {
+    kind: 'board',
+    id: 'choice-partners-damaged',
+    group: 'Choice Prompts',
+    title: 'preview.choice-partners-damaged.title',
+    description: 'preview.choice-partners-damaged.description',
+    seatCount: 4,
+    build: (registry) => partnersReward(registry, 3),
+    reaches: (s) => partnersPrompt(s) && s.pendingChoice!.options.every((o) => o.disabled !== true),
   },
 ];

@@ -271,6 +271,8 @@ export function actionHistory(
           if (event.verb !== 'give') lastChoseSeat = { line: entries[entries.length - 1] as ActionLine, seatId: event.seatId };
         } else if (shows.kind === 'suit') {
           action(tr('history.namedSuit', { chooser, suit: suitSymbol(shows.suit) }));
+        } else if (shows.kind === 'label' && reason.kind === 'partner-reward') {
+          action(tr(shows.text === 'Recover 1 HP' ? 'history.partnerReward.recover' : 'history.partnerReward.draw', { seat: chooser }));
         } else if (shows.kind === 'label' && reason.kind === 'ability' && reason.cardId) {
           // Believing or doubting a claim (Bewilder).
           action(tr(shows.text === 'Doubt' ? 'history.doubted' : 'history.believed', { chooser, owner: name(reason.owner.seatId), card: cardName(reason.cardId, tr) }));

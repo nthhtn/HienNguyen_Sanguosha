@@ -138,3 +138,39 @@ describe('seat, suit and label options', () => {
     expect(chosen(JSON.parse(JSON.stringify(s)))).toEqual(chosen(s));
   });
 });
+
+describe('a disabled option', () => {
+  const reward: PendingChoice = {
+    id: 'c3', seatId: 'a', verb: 'pick', reason: { kind: 'partner-reward' },
+    options: [
+      { id: 'recover', shows: { kind: 'label', text: 'Recover 1 HP' }, effects: [healA], disabled: true },
+      { id: 'draw', shows: { kind: 'label', text: 'Draw 2 Cards' }, effects: [] },
+    ],
+  };
+  const open = () => applyEffect(state(), { kind: 'OpenChoiceEffect', choice: reward }).state;
+
+  it('is left out of the legal actions', () => {
+    expect(getLegalActions(open(), 'a').map((a) => (a.kind === 'ChooseOptionAction' ? a.optionId : a.kind))).toEqual(['draw']);
+  });
+
+  it('is rejected when a move picks it anyway', () => {
+    expect(() => resolve(open(), { kind: 'ChooseOptionAction', seatId: 'a', choiceId: 'c3', optionId: 'recover' }, ctx)).toThrow(/disabled/);
+  });
+});
+
+describe('a choice for a seat that was eliminated before it opened', () => {
+  const eliminated = (): GameState => ({ ...state(), seats: state().seats.map((s) => (s.id === 'a' ? { ...s, eliminated: true } : s)) });
+  const reward: PendingChoice = {
+    id: 'c4', seatId: 'a', verb: 'pick', reason: { kind: 'partner-reward' },
+    options: [{ id: 'draw', shows: { kind: 'label', text: 'Draw 2 Cards' }, effects: [] }],
+  };
+
+  it('never opens, so no one is left waiting on a seat that cannot act', () => {
+    expect(applyEffect(eliminated(), { kind: 'OpenChoiceEffect', choice: reward }).state.pendingChoice).toBeUndefined();
+  });
+
+  it('still opens for a choice the eliminated seat’s own skill asks (an afterDeath skill)', () => {
+    const own: PendingChoice = { ...reward, id: 'c5', reason: { kind: 'ability', owner: { kind: 'general', seatId: 'a', slot: 'main', skillId: 'sorrow' }, abilityId: 'sorrow' } };
+    expect(applyEffect(eliminated(), { kind: 'OpenChoiceEffect', choice: own }).state.pendingChoice).toEqual(own);
+  });
+});

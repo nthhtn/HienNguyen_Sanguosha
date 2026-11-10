@@ -687,6 +687,7 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
       if (action.seatId !== choice.seatId) throw new Error(`Seat ${action.seatId} is not the chooser for ${action.choiceId}`);
       const option = choice.options.find((o) => o.id === action.optionId);
       if (!option) throw new Error(`Choice ${action.choiceId} has no option ${action.optionId}`);
+      if (option.disabled) throw new Error(`Choice ${action.choiceId} option ${action.optionId} is disabled`);
       const { pendingChoice: _settled, ...cleared } = state;
       const event: ChoiceMadeEvent = choice.secret
         ? { kind: 'ChoiceMadeEvent', seatId: action.seatId, reason: choice.reason, verb: choice.verb, shows: { kind: 'label', text: '' }, secret: true }

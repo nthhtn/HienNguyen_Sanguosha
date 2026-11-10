@@ -6,6 +6,7 @@ import { drawTop, moveCard, recordCountsAs, requireZoneOfKind } from '../cards/z
 import { EngineEvent } from './events';
 import type { TriggerPoint } from '../registry/types';
 import { isFaceUpZoneKind } from '../domain/redact';
+import { ownSkillChoice } from '../rules/activeSeat';
 
 export type Effect =
   | { kind: 'DrawCardsEffect'; seatId: string; count: number }
@@ -296,8 +297,12 @@ export function applyEffect(state: GameState, effect: Effect): ApplyResult {
       const events: EngineEvent[] = [...revealed, { kind: 'SeatEliminatedEvent', seatId: effect.seatId }];
       return { state: { ...state, seats, log: [...state.log, ...events] }, events };
     }
-    case 'OpenChoiceEffect':
+    case 'OpenChoiceEffect': {
+      // A seat eliminated after the choice was queued can't answer it (nobody could act, and the game would stall),
+      // so it never opens; the one exception is a choice the dead seat's own skill asks (an afterDeath skill).
+      if (state.seats.find((s) => s.id === effect.choice.seatId)?.eliminated && !ownSkillChoice(effect.choice)) return { state, events: [] };
       return { state: { ...state, pendingChoice: effect.choice }, events: [] };
+    }
     case 'MoveRandomCardEffect': {
       const from = state.zones.find((z) => z.id === effect.fromZoneId);
       if (!from) throw new Error(`Zone ${effect.fromZoneId} not found`);
