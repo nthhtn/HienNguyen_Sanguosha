@@ -38,11 +38,16 @@ describe('GameService', () => {
 
   it('new games have the judgment notice on, unless a rule says otherwise', () => {
     service.startGame(3, 1);
-    expect(service.state()!.rules).toEqual({ judgmentNotice: true, logPasses: true });
+    expect(service.state()!.rules).toEqual({ judgmentNotice: true, logPasses: true, partnerReward: true });
     service.startGame(5, 1, 'pass-and-play', [], { firstRevealDraw: true });
-    expect(service.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true, logPasses: true });
+    expect(service.state()!.rules).toEqual({ firstRevealDraw: true, judgmentNotice: true, logPasses: true, partnerReward: true });
     service.startGame(3, 1, 'pass-and-play', [], { judgmentNotice: false });
-    expect(service.state()!.rules).toEqual({ judgmentNotice: false, logPasses: true });
+    expect(service.state()!.rules).toEqual({ judgmentNotice: false, logPasses: true, partnerReward: true });
+  });
+
+  it('starts new games with the partner reward on', () => {
+    service.startGame(2, 1, 'vs-bots');
+    expect(service.state()!.rules?.partnerReward).toBe(true);
   });
 
   it('starts new games with logPasses on', () => {

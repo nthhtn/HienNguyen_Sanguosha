@@ -1,8 +1,10 @@
 import { table, kwMode, harness, card } from '../generals/skills.testing';
 import type { GameState } from 'engine';
 
-// Seat b holds Liu Bei (4) + Guan Yu (4): Synergistic Partners with an even printed HP sum.
+// Seat b holds Kingdom Wars Liu Bei (4) + Zhang Fei (4): Synergistic Partners with an even printed HP sum.
 // Liu Shan (3) + Zhao Yun (4) are partners with an odd sum (the Rounding bonus applies too).
+// A Kingdom Wars General's id carries the `kingdomWars:` prefix in a real game.
+const kw = (id: string) => `kingdomWars:${id}`;
 describe('Guozhan: the Synergistic Partners reward', () => {
   const h = harness(kwMode);
   const reveal = (s: GameState, slot: 'main' | 'deputy', seatId = 'seat-b') => h.run(s, [{ kind: 'RevealGeneralEffect', seatId, slot }]);
@@ -13,7 +15,7 @@ describe('Guozhan: the Synergistic Partners reward', () => {
     ...table({ drawPile: deck }, { generals, ...(hp === undefined ? {} : { hp: { 'seat-b': hp } }) }),
     rules,
   });
-  const pairTable = (rules?: GameState['rules'], hp?: number) => make(hiddenPair('liu-bei', 'guan-yu'), rules, hp);
+  const pairTable = (rules?: GameState['rules'], hp?: number) => make(hiddenPair(kw('liu-bei'), kw('zhang-fei')), rules, hp);
   const both = (s: GameState) => reveal(reveal(s, 'main'), 'deputy');
 
   it('offers recover and draw when the second General completes a pair', () => {
@@ -57,9 +59,13 @@ describe('Guozhan: the Synergistic Partners reward', () => {
   });
 
   it('is not offered for a death reveal or for generals that are not partners', () => {
-    expect(both(make(hiddenPair('liu-bei', 'cao-cao'))).pendingChoice).toBeUndefined();
+    expect(both(make(hiddenPair(kw('liu-bei'), kw('cao-cao')))).pendingChoice).toBeUndefined();
     const dead = h.run(pairTable(), [{ kind: 'EliminateSeatEffect', seatId: 'seat-b' }]);
     expect(dead.pendingChoice).toBeUndefined();
+  });
+
+  it('is not offered for Identity Generals, whose ids have no prefix', () => {
+    expect(both(make(hiddenPair('liu-bei', 'zhang-fei'))).pendingChoice).toBeUndefined();
   });
 
   it('is not offered without the partnerReward rule', () => {
@@ -68,7 +74,7 @@ describe('Guozhan: the Synergistic Partners reward', () => {
   });
 
   it('stacks with the Rounding draw on the same reveal', () => {
-    const s = both(make(hiddenPair('liu-shan', 'zhao-yun')));
+    const s = both(make(hiddenPair(kw('liu-shan'), kw('zhao-yun'))));
     expect(handSize(s)).toBe(1);
     expect(s.pendingChoice?.reason).toEqual({ kind: 'partner-reward' });
   });

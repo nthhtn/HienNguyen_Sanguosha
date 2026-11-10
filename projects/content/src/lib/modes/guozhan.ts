@@ -19,7 +19,7 @@ import { buildDeck, drawTop, shuffle } from 'engine';
 import { kingdomWarsCardData } from '../kingdomWarsCards';
 import { DEFAULT_DECK_ID, deckFor } from '../decks';
 import type { DeckDefinition, DeckId } from '../decks';
-import { isKingdomWarsGeneralId } from '../generalIds';
+import { baseGeneralId, isKingdomWarsGeneralId } from '../generalIds';
 import { judgmentPhaseTrigger } from '../shared/delayed';
 import { peachLockedTo } from '../shared/abilities';
 import { isAmbitionist } from '../shared/kingdom';
@@ -225,7 +225,10 @@ const revealBonusTriggers: SkillTrigger[] = [
       if (!state.rules?.partnerReward || event.onDeath) return false;
       const generals = state.seats.find((s) => s.id === event.seatId)?.generals;
       if (!generals || !generals.main.revealed || !generals.deputy.revealed) return false;
-      return areSynergisticPartners(generals.main.generalDefinitionId, generals.deputy.generalDefinitionId) && firstTimeBothRevealed(state, event.seatId);
+      // The pair table is the Kingdom Wars deck's: its Generals are seated as `kingdomWars:<id>`, Identity's have no prefix.
+      const [main, deputy] = [generals.main.generalDefinitionId, generals.deputy.generalDefinitionId];
+      if (!isKingdomWarsGeneralId(main) || !isKingdomWarsGeneralId(deputy)) return false;
+      return areSynergisticPartners(baseGeneralId(main), baseGeneralId(deputy)) && firstTimeBothRevealed(state, event.seatId);
     },
     effect: (state, subject) => {
       const seatId = (subject as GeneralRevealedEvent).seatId;
