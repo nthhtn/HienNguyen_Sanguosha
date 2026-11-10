@@ -94,7 +94,7 @@ describe('the rules pages in Vietnamese', () => {
     await harness.navigateByUrl(`/wiki/rules/${page}`);
     await harness.fixture.whenStable();
     harness.detectChanges();
-    return { harness, el: harness.routeNativeElement as HTMLElement };
+    return { harness, el: (harness.routeNativeElement as HTMLElement).querySelector('.rules-page') as HTMLElement };
   }
 
   it.each([

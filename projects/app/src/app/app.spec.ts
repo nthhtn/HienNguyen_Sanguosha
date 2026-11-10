@@ -40,6 +40,7 @@ describe('App', () => {
           { path: 'sign-up', children: [] },
           { path: 'wiki/identity/:page', children: [] },
           { path: 'wiki/kingdom-wars/:page', children: [] },
+          { path: 'wiki/rules', children: [] },
           { path: 'wiki/rules/:page', children: [] },
         ]),
       ],
@@ -247,32 +248,16 @@ describe('App', () => {
     expect(items.some((a) => a.hasAttribute('disabled') || a.getAttribute('aria-disabled') === 'true')).toBe(false);
   });
 
-  it('has a Rules menu with the six rules pages, highlighted on any of them', async () => {
+  it('has a Rules link to the Overview, highlighted on any Rules page', async () => {
     const { el, fixture } = await render();
-    const button = el.querySelector('nav.nav button.nav-rules') as HTMLButtonElement;
-    expect(button.querySelector('mat-icon')!.textContent).toBe('menu_book');
-    expect(button.querySelector('.label')!.textContent).toBe('Rules');
-    expect(button.classList).not.toContain('active');
-    button.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const items = [...document.querySelectorAll('.mat-mdc-menu-panel a[mat-menu-item]')] as HTMLAnchorElement[];
-    expect(items.map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
-      ['Overview', '/wiki/rules/overview'],
-      ['Setup', '/wiki/rules/setup'],
-      ['Allegiance', '/wiki/rules/allegiance'],
-      ['Turn Structure', '/wiki/rules/turn'],
-      ['Card Types', '/wiki/rules/card-types'],
-      ['Distance / Range', '/wiki/rules/distance'],
-      ['Response Windows', '/wiki/rules/response'],
-      ['Damage and Dying', '/wiki/rules/damage'],
-      ['Judgment', '/wiki/rules/judgment'],
-      ['Chains', '/wiki/rules/chains'],
-      ['Glossary', '/wiki/rules/glossary'],
-    ]);
+    const link = el.querySelector('nav.nav a.nav-rules') as HTMLAnchorElement;
+    expect(link.querySelector('mat-icon')!.textContent).toBe('menu_book');
+    expect(link.querySelector('.label')!.textContent).toBe('Rules');
+    expect(link.getAttribute('href')).toBe('/wiki/rules');
+    expect(link.classList).not.toContain('active');
     await TestBed.inject(Router).navigateByUrl('/wiki/rules/turn');
     fixture.detectChanges();
-    expect(button.classList).toContain('active');
+    expect(link.classList).toContain('active');
   });
 
   it('sits on the left, straight after the title, with no side panel', async () => {
@@ -301,7 +286,7 @@ describe('App', () => {
     expect(el.querySelector('a.nav-play')!.getAttribute('aria-label')).toBe('Play Offline');
     expect(el.querySelector('button.nav-identity')!.getAttribute('aria-label')).toBe('Identity');
     expect(el.querySelector('button.nav-kingdom-wars')!.getAttribute('aria-label')).toBe('Kingdom Wars');
-    expect(el.querySelector('button.nav-rules')!.getAttribute('aria-label')).toBe('Rules');
+    expect(el.querySelector('a.nav-rules')!.getAttribute('aria-label')).toBe('Rules');
   });
 
   it('loads who is signed in on start', async () => {
@@ -393,7 +378,7 @@ describe('App', () => {
       const { drawer } = await openDrawer();
       const hrefs = [...drawer.querySelectorAll('a')].map((a) => a.getAttribute('href'));
       expect(hrefs).toEqual(
-        expect.arrayContaining(['/play', '/rooms', '/wiki/kingdom-wars/generals', '/wiki/identity/tools', '/wiki/rules/overview', '/wiki/rules/glossary', '/sign-in'])
+        expect.arrayContaining(['/play', '/rooms', '/wiki/kingdom-wars/generals', '/wiki/identity/tools', '/wiki/rules', '/sign-in'])
       );
       expect(drawer.textContent).toContain('Play Online');
       expect(drawer.querySelector('app-language-switcher')).not.toBeNull();
@@ -407,7 +392,7 @@ describe('App', () => {
       await rendered.fixture.whenStable();
       rendered.fixture.detectChanges();
       const current = [...rendered.el.querySelectorAll('.nav-drawer a[aria-current="page"]')];
-      expect(current.map((a) => a.getAttribute('href'))).toEqual(['/wiki/rules/turn']);
+      expect(current.map((a) => a.getAttribute('href'))).toEqual(['/wiki/rules']);
     });
 
     it('lists the Battlefield choices, and the signed-in account, in the drawer', async () => {

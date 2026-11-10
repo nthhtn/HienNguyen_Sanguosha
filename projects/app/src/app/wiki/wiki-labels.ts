@@ -1,5 +1,5 @@
 import { kingdomWarsGeneralDisplayData, cardDisplayData, generalDisplayData } from 'content';
-import type { WikiKingdomWarsGeneral, WikiCard, WikiGeneral, WikiTab } from 'content';
+import type { SkillTrait, WikiKingdomWarsGeneral, WikiCard, WikiGeneral, WikiTab } from 'content';
 import type { MessageKey } from '../i18n/messages';
 import { SOURCE_LOCALE } from '../i18n/locales';
 import type { Translator } from '../i18n/translator';
@@ -8,6 +8,13 @@ import { localeOf } from '../i18n/translator';
 // The Wiki's own names and texts are the content library's English ones. These
 // helpers show a language's version of them and fall back to English for a
 // piece that language lacks, so the library itself never sees a locale.
+
+// The badge next to a skill name for each trait.
+export const SKILL_TRAIT_KEYS: Record<SkillTrait, MessageKey> = {
+  locked: 'wiki.trait.locked',
+  limited: 'wiki.trait.limited',
+  oncePerTurn: 'wiki.trait.oncePerTurn',
+};
 
 const TAB_KEYS: Record<string, MessageKey> = {
   wei: 'label.kingdom.Wei',

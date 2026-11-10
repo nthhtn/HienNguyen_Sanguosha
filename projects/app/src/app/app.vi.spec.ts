@@ -61,7 +61,7 @@ describe('App shell in Vietnamese', () => {
     expect(preview.getAttribute('aria-label')).toBe('Xem trước');
   });
 
-  it('the Identity, Kingdom Wars and Rules menus name their pages in Vietnamese', async () => {
+  it('the Identity and Kingdom Wars menus name their pages in Vietnamese', async () => {
     const { fixture, el } = await render();
     (el.querySelector('nav.nav button.nav-identity') as HTMLButtonElement).click();
     fixture.detectChanges();
@@ -72,11 +72,6 @@ describe('App shell in Vietnamese', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(menuItems()).toEqual(['Tướng', 'Bài cơ bản', 'Trang bị', 'Cẩm nang']);
-    overlay().replaceChildren();
-    (el.querySelector('nav.nav button.nav-rules') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    expect(menuItems()).toEqual(['Tổng quan', 'Chuẩn bị', 'Phe phái', 'Cấu trúc lượt', 'Loại bài', 'Khoảng cách / Tầm', 'Cửa sổ phản hồi', 'Sát thương và hấp hối', 'Phán xét', 'Xích', 'Thuật ngữ']);
   });
 
   it('signed out, the sign-in link; as a guest, the account menu', async () => {

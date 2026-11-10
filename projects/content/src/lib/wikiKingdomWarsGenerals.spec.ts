@@ -236,3 +236,15 @@ describe('slice 3 new Generals', () => {
     }
   });
 });
+
+describe('Kingdom Wars skill traits', () => {
+  it('marks Ding Feng\'s Swift and Deadly once per turn', () => {
+    const skill = wikiKingdomWarsGenerals().find((g) => g.id === 'ding-feng')!.skills.find((s) => s.name === 'Swift and Deadly')!;
+    expect(skill.traits).toEqual(['oncePerTurn']);
+  });
+
+  it('marks Call of Valour Limited', () => {
+    const traits = wikiKingdomWarsGenerals().flatMap((g) => g.skills).filter((s) => s.traits.includes('limited'));
+    expect(traits.length).toBeGreaterThan(0);
+  });
+});

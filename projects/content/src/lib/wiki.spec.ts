@@ -1,6 +1,6 @@
 import { cardDisplayData } from './display';
 import { GENERAL_SKILLS } from './generals';
-import { equipmentTabs, generalSkillsInGame, skillIdFromName, skillStatus, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, WikiCard } from './wiki';
+import { equipmentTabs, generalSkillsInGame, skillTraits, skillIdFromName, skillStatus, wikiCardTabs, wikiCards, wikiGeneralTabs, wikiGenerals, WikiCard } from './wiki';
 
 describe('wikiGenerals', () => {
   const generals = wikiGenerals();
@@ -76,7 +76,7 @@ describe('wikiGenerals', () => {
     const xiahouYuan = generals.find((g) => g.id === 'xiahou-yuan')!;
     expect(xiahouYuan).toMatchObject({ name: 'Xiahou Yuan', nameZh: '夏侯渊', title: 'Running Cheetah', titleZh: '急行的猎豹', maxHp: 4 });
     expect(xiahouYuan.skills).toEqual([{
-      name: 'Godspeed', nameZh: '神速', lord: false, status: 'working',
+      name: 'Godspeed', nameZh: '神速', lord: false, status: 'working', traits: [],
       text: 'During his turn, Xiahou Yuan can exercise either or both of the following options to attack any character regardless of their distance from him: Skip his judgment and drawing phases. Skip his action phase and discard any equipment card.',
     }]);
   });
@@ -357,5 +357,22 @@ describe('Kingdom Wars wikiCards', () => {
     const tools = wikiCardTabs('tool', 'kingdomWars');
     expect(tools.map((t) => t.key)).toEqual(['instant', 'delayed']);
     expect(tools[1].entries.map((c) => c.id).sort()).toEqual(['capture', 'lightning', 'starvation']);
+  });
+});
+
+describe('skill traits', () => {
+  const traitsOf = (generalId: string, skillName: string) => wikiGenerals().find((g) => g.id === generalId)!.skills.find((s) => s.name === skillName)!.traits;
+
+  it('marks a skill the code makes once per turn', () => {
+    const assault = wikiGenerals().flatMap((g) => g.skills).find((s) => s.name === 'Assault')!;
+    expect(assault.traits).toEqual(['oncePerTurn']);
+  });
+
+  it('reads Locked and Limited from the skill flags, and gives a skill with no code none', () => {
+    expect(skillTraits({ id: 'a', compulsory: true })).toEqual(['locked']);
+    expect(skillTraits({ id: 'b', limited: true })).toEqual(['limited']);
+    expect(skillTraits({ id: 'c', compulsory: true, limited: true, active: { usesPerTurn: 1 } as never })).toEqual(['locked', 'limited', 'oncePerTurn']);
+    expect(skillTraits(undefined)).toEqual([]);
+    expect(traitsOf('xiahou-yuan', 'Godspeed')).toEqual([]);
   });
 });

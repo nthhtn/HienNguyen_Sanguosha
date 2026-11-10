@@ -6,7 +6,7 @@ import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
-import { wikiKingdomWarsGeneralView } from './wiki-labels';
+import { SKILL_TRAIT_KEYS, wikiKingdomWarsGeneralView } from './wiki-labels';
 
 // One Kingdom Wars General in the Wiki: art (or a placeholder) beside its text and the state of each skill.
 // The state comes from the content package; this component only shows it.
@@ -49,6 +49,9 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
           @for (skill of general().skills; track skill.name; let i = $index) {
             <li>
               <strong>{{ view().skills[i].name }}</strong>
+              @for (trait of skill.traits; track trait) {
+                <span class="trait" [attr.data-trait]="trait">{{ traitKeys[trait] | t }}</span>
+              }
               @if (skill.nameZh; as zh) {
                 <span class="zh">{{ zh }}</span>
               }
@@ -103,6 +106,7 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
     .voice:hover, .voice:focus-visible { background: var(--mat-sys-surface-container-high); }
     .voice mat-icon { font-size: 24px; width: 24px; height: 24px; }
     .skills, .partners ul { margin: 0; padding-left: 18px; }
+    .trait { display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 8px; color: var(--mat-sys-on-tertiary-container); background: var(--mat-sys-tertiary-container); font: var(--mat-sys-label-small); vertical-align: 1px; }
     .skills li { margin: 4px 0; }
     .skill-text { margin-left: 6px; white-space: pre-line; }
     .difference p { margin: 0; white-space: pre-line; }
@@ -113,6 +117,7 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
 export class WikiKingdomWarsGeneralEntry {
   private readonly i18n = inject(I18n);
   private readonly effects = inject(SoundEffects);
+  protected readonly traitKeys = SKILL_TRAIT_KEYS;
   readonly general = input.required<WikiKingdomWarsGeneral>();
   // The base General's recorded death cry; the nine new Generals have none yet.
   protected readonly voiceUrl = computed(() => generalDeathVoiceUrl(`kingdomWars:${this.general().id}`));

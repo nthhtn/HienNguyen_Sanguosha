@@ -1,6 +1,6 @@
 import { kingdomWarsDifferenceNote, kingdomWarsGeneralRecords, type KingdomWarsGeneralRecord, type KingdomWarsGeneralSkillRecord } from './kingdomWarsGenerals';
 import { kingdomWarsSkillFor, hasKingdomWarsVariant } from './kingdomWarsSkills';
-import { splitIntoTabs, type WikiTab } from './wiki';
+import { skillTraits, splitIntoTabs, type SkillTrait, type WikiTab } from './wiki';
 
 // Whether the game can play a Kingdom Wars skill: as its own variant ("worksAsKingdomWars"), as Identity's
 // version when the rules are the same ("worksAsIdentity"), or not yet ("missing").
@@ -10,6 +10,7 @@ export interface WikiKingdomWarsSkill {
   name: string;
   nameZh: string | null;
   text: string;
+  traits: SkillTrait[];
   status: KingdomWarsSkillStatus;
 }
 
@@ -39,7 +40,7 @@ const KINGDOM_ORDER: readonly WikiKingdomWarsGeneral['kingdom'][] = ['Wei', 'Shu
 export function wikiKingdomWarsGenerals(): WikiKingdomWarsGeneral[] {
   return kingdomWarsGeneralRecords()
     .map((rec): WikiKingdomWarsGeneral => {
-      const skills = rec.skills.map((s) => ({ name: s.name, nameZh: s.nameZh ?? null, text: s.text, status: kingdomWarsSkillStatus(rec, s) }));
+      const skills = rec.skills.map((s) => ({ name: s.name, nameZh: s.nameZh ?? null, text: s.text, traits: skillTraits(kingdomWarsSkillFor(rec, s)), status: kingdomWarsSkillStatus(rec, s) }));
       return {
         id: rec.id,
         name: rec.name,

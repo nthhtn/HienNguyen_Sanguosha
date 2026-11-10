@@ -6,7 +6,7 @@ import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
-import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
+import { SKILL_TRAIT_KEYS, wikiGeneralView, wikiPackLabel } from './wiki-labels';
 
 // One general in the Wiki: art beside everything the data knows about it.
 @Component({
@@ -61,6 +61,9 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
           @for (skill of general().skills; track skill.name; let i = $index) {
             <li>
               <strong>{{ view().skills[i].name }}</strong>
+              @for (trait of skill.traits; track trait) {
+                <span class="trait" [attr.data-trait]="trait">{{ traitKeys[trait] | t }}</span>
+              }
               @if (skill.nameZh; as zh) {
                 <span class="zh">{{ zh }}</span>
               }
@@ -101,6 +104,7 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
     .hearts { display: inline-flex; color: #d84a3f; }
     .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .skills { margin: 0; padding-left: 18px; }
+    .trait { display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 8px; color: var(--mat-sys-on-tertiary-container); background: var(--mat-sys-tertiary-container); font: var(--mat-sys-label-small); vertical-align: 1px; }
     .skills li { margin: 4px 0; }
     .skill-text { margin-left: 6px; }
     .gap { color: var(--mat-sys-on-surface-variant); font-style: italic; }
@@ -110,6 +114,7 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
 export class WikiGeneralEntry {
   private readonly i18n = inject(I18n);
   private readonly effects = inject(SoundEffects);
+  protected readonly traitKeys = SKILL_TRAIT_KEYS;
   readonly general = input.required<WikiGeneral>();
   // The words for a skill's state. A Lord skill and a skill the game lacks reuse the Wiki's existing lines.
   protected readonly statusLabels: Record<WikiGeneral['skills'][number]['status'], MessageKey> = {
