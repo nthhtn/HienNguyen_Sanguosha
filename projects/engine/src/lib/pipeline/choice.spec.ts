@@ -138,3 +138,22 @@ describe('seat, suit and label options', () => {
     expect(chosen(JSON.parse(JSON.stringify(s)))).toEqual(chosen(s));
   });
 });
+
+describe('a disabled option', () => {
+  const reward: PendingChoice = {
+    id: 'c3', seatId: 'a', verb: 'pick', reason: { kind: 'partner-reward' },
+    options: [
+      { id: 'recover', shows: { kind: 'label', text: 'Recover 1 HP' }, effects: [healA], disabled: true },
+      { id: 'draw', shows: { kind: 'label', text: 'Draw 2 Cards' }, effects: [] },
+    ],
+  };
+  const open = () => applyEffect(state(), { kind: 'OpenChoiceEffect', choice: reward }).state;
+
+  it('is left out of the legal actions', () => {
+    expect(getLegalActions(open(), 'a').map((a) => (a.kind === 'ChooseOptionAction' ? a.optionId : a.kind))).toEqual(['draw']);
+  });
+
+  it('is rejected when a move picks it anyway', () => {
+    expect(() => resolve(open(), { kind: 'ChooseOptionAction', seatId: 'a', choiceId: 'c3', optionId: 'recover' }, ctx)).toThrow(/disabled/);
+  });
+});

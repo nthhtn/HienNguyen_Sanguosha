@@ -177,7 +177,9 @@ export type DecisionReason =
   // An ability's say: whether to use it (an ask), or what to pick for it (a
   // selection). `targetSeatId`: the seat it is aimed at, if any.
   // `cardId`: the card the decision is about (Bewilder's claim).
-  | { kind: 'ability'; owner: AbilityOwner; abilityId: string; targetSeatId?: string; cardId?: string };
+  | { kind: 'ability'; owner: AbilityOwner; abilityId: string; targetSeatId?: string; cardId?: string }
+  // The mode's reward for two Synergistic Partners (Guozhan): the choosing seat picks draw or recover.
+  | { kind: 'partner-reward' };
 
 // A pick a seat owes (Steal, Break, Harvest). Pauses the queue like a
 // response window.
@@ -224,6 +226,8 @@ export interface ChoiceOption {
   card?: CardInstance;
   // Queued at the front when picked.
   effects: Effect[];
+  // Shown but not pickable (Recover 1 HP at full HP): left out of the legal actions, and a pick is refused.
+  disabled?: true;
 }
 
 // A seat picking cards or seats (Axe's 2 cards, Sky Scorcher's extra targets,
@@ -399,6 +403,10 @@ export interface GameRules {
   // A seat passing a window that announces its passes (PendingResponse.announcePass) is logged
   // as ResponsePassedEvent. Absent: passes are not logged.
   logPasses?: boolean;
+  // Guozhan's Synergistic Partners reward: revealing the second General of a listed pair lets the seat
+  // draw 2 cards or recover 1 HP. It adds a prompt, so a stored game keeps the value it started with
+  // and absent means no reward.
+  partnerReward?: boolean;
 }
 
 export interface GameState {
