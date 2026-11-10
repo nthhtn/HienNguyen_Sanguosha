@@ -1,0 +1,40 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "shu",
+  "palettes": {
+    "main": "#d84a3f",
+    "ground": "#2B1613",
+    "second": "#F6EBE8",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#2B1613",
+  "fonts": {
+    "display": {
+      "family": "Merriweather",
+      "weights": [
+        400,
+        700
+      ]
+    },
+    "sans": {
+      "family": "Be Vietnam Pro",
+      "weights": [
+        400,
+        700
+      ]
+    }
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Cam Phu Nhân: Thục thận",
+      "dur": 5.8,
+      "desc": "Khi Cam Phu Nhân hồi Sinh lực, một người chơi cùng thế lực rút một lá bài."
+    }
+  ]
+}

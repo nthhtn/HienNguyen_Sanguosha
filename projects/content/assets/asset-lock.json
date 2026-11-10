@@ -2982,10 +2982,10 @@
     }
   },
   "preview/index.json": {
-    "output": "4781dd822a80518cd3dc9d990c9fc366b864ef191c45a0132d8e268c4cbbe089",
+    "output": "dfe2d2588f9dea52da34e3580eb4b7fec4d7e806f59f3ebef70ffab6748bd31c",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "preview/index.json": "4781dd822a80518cd3dc9d990c9fc366b864ef191c45a0132d8e268c4cbbe089"
+      "preview/index.json": "dfe2d2588f9dea52da34e3580eb4b7fec4d7e806f59f3ebef70ffab6748bd31c"
     }
   },
   "preview/qun/zhang-jiao_dark-sorcery_en.mp4": {
@@ -3058,6 +3058,34 @@
       "preview/shu/fire-zhuge-liang_scient_vi.mp4": "c9e952a675a1b6f22f7ab7305ad4650ee771e956bc578fb13b6b660cc83c7063"
     }
   },
+  "preview/shu/gan-fu-ren_divine-wisdom_en.mp4": {
+    "output": "f44197e0ca87b51d6797a0e4670aff8fac131f27074c0b1e05b41a975be644a0",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/gan-fu-ren_divine-wisdom_en.mp4": "84cf7d5d17d852dd9db5e5852b500b70a30cef79e9ce894a19a2061282e6872f"
+    }
+  },
+  "preview/shu/gan-fu-ren_divine-wisdom_vi.mp4": {
+    "output": "1653571ecd2a15f571f4f58463805e45cd19fd89840b12fb9451b30b8a5cd095",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/gan-fu-ren_divine-wisdom_vi.mp4": "74963ae9c19edba14dc822ea8f95bf0503cd40660c1bbabffe7f721c7bd94d04"
+    }
+  },
+  "preview/shu/gan-fu-ren_prudence_en.mp4": {
+    "output": "aac70721ccf4a842f586df3e1bb360fab6c531160afe99e3d256f7c5da137cda",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/gan-fu-ren_prudence_en.mp4": "dfc8f82a44c17c0b1c48dbbc5980a3d31c368dafff7a78c26a58c6d29b6b237e"
+    }
+  },
+  "preview/shu/gan-fu-ren_prudence_vi.mp4": {
+    "output": "9a8aa92178af6b4bdc7a1fd8ebb39da2eea13ccc74357a77abae6ec3f2bd702c",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/gan-fu-ren_prudence_vi.mp4": "60924b005ccabba25b1eeb4c2565b461e72560c5c79f0a88211498763bc57b17"
+    }
+  },
   "preview/shu/guan-yu_warrior-saint_en.mp4": {
     "output": "97074fd8381944d4a734249bcf559b7113880c826d1d5871a0bee046791f0fcb",
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
@@ -3070,6 +3098,104 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/shu/guan-yu_warrior-saint_vi.mp4": "a157492b151f70b46041190605aa1b0e3497b00cfea43f15b67cf0bc26ed2acd"
+    }
+  },
+  "preview/shu/huang-yueying_assembling-wisdom_en.mp4": {
+    "output": "5f49dbdb7868a4b4660367ee3a6c8dd61d751297846d517d849154a5e1a91770",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/huang-yueying_assembling-wisdom_en.mp4": "6082f93fc038dd8c14dd6fb137886fe4f0e74af37a207172172ac2b4da0eaed6"
+    }
+  },
+  "preview/shu/huang-yueying_assembling-wisdom_vi.mp4": {
+    "output": "46fc8106087dec9a1330775f37885030ba77ab9a44e8eb6701c4a377efdf0ee3",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/huang-yueying_assembling-wisdom_vi.mp4": "4a41090f078adc9c7334de5612db95a351f515fd14cb6db83b56d8539ee2fb83"
+    }
+  },
+  "preview/shu/huang-yueying_genius_en.mp4": {
+    "output": "9ba2ff2a4e01f6d4a5d2090a18514c5eb4f52ddb64de75047136d7a9f585be6b",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/huang-yueying_genius_en.mp4": "f6eea9b380d43799bc4fce213fd0c37efbc4881249b1a81dc25c2857b98745b0"
+    }
+  },
+  "preview/shu/huang-yueying_genius_vi.mp4": {
+    "output": "b1e7efc8c95fce0c44f9020630935575499b8a5aa776373a6c7c217634596029",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/huang-yueying_genius_vi.mp4": "d5cfd92b3efbea88831586503b99d3052061c71e87a8b9e3e77f72e3572f10b6"
+    }
+  },
+  "preview/shu/huang-zhong_fearsome-archer_en.mp4": {
+    "output": "58728c65e8861908a7e49f8a2ed5dd08a84af34de13f6a709a71262a5a3d28e0",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/huang-zhong_fearsome-archer_en.mp4": "e57a5ad35e960f7d2a22384c138d7930b0a7f2b4cf5e39a770c333fc44749bf8"
+    }
+  },
+  "preview/shu/huang-zhong_fearsome-archer_vi.mp4": {
+    "output": "5caafe891287e4bf6c52cc4db2b2b0aa687e442a2175f5db5c4077ea56064500",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/huang-zhong_fearsome-archer_vi.mp4": "e25cf769dcb254242e72d632e200035fa76528bcf89e9ed67241757c95ce0023"
+    }
+  },
+  "preview/shu/liu-bei_benevolence_en.mp4": {
+    "output": "db4e8f0745e6fef4784143e62e3461356b33ac55ab2eafca1db0adb05c222a5a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/liu-bei_benevolence_en.mp4": "c7e89726e4af77776c818be260b994a7a155c2fc213211a9e9b93432e2fcfdd9"
+    }
+  },
+  "preview/shu/liu-bei_benevolence_vi.mp4": {
+    "output": "24cd236ecb03019d204005e00a7e33ae25af97b906e285039d452ed85bfd7446",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/liu-bei_benevolence_vi.mp4": "64c96e3c35d861e19a437fc231da0c0c193055672d1ae5b6511d393cefcdd497"
+    }
+  },
+  "preview/shu/liu-shan_relish_en.mp4": {
+    "output": "ce102db1ea9839faceec39050f39b150330ab6208eb69497d8e83a27853f1b1b",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/liu-shan_relish_en.mp4": "bd9177d085cdba8b3e26178d5d377bf7d0b22c6c7748f4fc3c214b27a0ee96b6"
+    }
+  },
+  "preview/shu/liu-shan_relish_vi.mp4": {
+    "output": "b5324c9a0bffadf44fea537d0c19847f446b31e5dc69c8aec2c51aa58e61c06f",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/liu-shan_relish_vi.mp4": "d08a354390f78c0294d20886a8f22635b60ec9273daef4c89ededa1d55ce6ed6"
+    }
+  },
+  "preview/shu/ma-chao_horsemanship_en.mp4": {
+    "output": "fe8839fbace26e6fc2b7064673320824e7afce52213474c4b632305cf638c6c9",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/ma-chao_horsemanship_en.mp4": "563515550c75e4dd00f38bc7e98356d08d36dbb2430633ce5d70377ec2886e76"
+    }
+  },
+  "preview/shu/ma-chao_horsemanship_vi.mp4": {
+    "output": "cf734f37b57bbe2a4a740c070a3191278e68b1cf39f38146ef94dc57aac86a20",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/ma-chao_horsemanship_vi.mp4": "20c9b3cb2f6893ee26670bb9f733eafde4be677ae0b00933775529a221f35845"
+    }
+  },
+  "preview/shu/ma-chao_iron-calvary_en.mp4": {
+    "output": "b053e47b9abdc77011e48d846cab252e9cd5aed2ac02ed5d1c64695981afec96",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/ma-chao_iron-calvary_en.mp4": "fb0a2bb023b02a3acba0057afa85579482717840ca1351fc54447e636aa65c67"
+    }
+  },
+  "preview/shu/ma-chao_iron-calvary_vi.mp4": {
+    "output": "0c2c29d79de333ef617f04b02ad279d14eff9c3acd7c005b798c7e01661dcf5b",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/ma-chao_iron-calvary_vi.mp4": "cdc70811e6b78be7824651e5063eaaa130ef0d01d7a4e8e981aa0b2d9a1ba043"
     }
   },
   "preview/shu/pang-tong_shackle_en.mp4": {
@@ -3086,6 +3212,34 @@
       "preview/shu/pang-tong_shackle_vi.mp4": "24503122f652a6b458633877c952428e4df6fe22056658e5f746422e8cb51967"
     }
   },
+  "preview/shu/wei-yan_insanity-streak_en.mp4": {
+    "output": "0a21f2a861965d3fd4de069731cbc55fc4efbee746e1ccdff0078c60c6a73e30",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/wei-yan_insanity-streak_en.mp4": "fe55ea4e2bdebb1ef9d89f9eb5143a723d485901baedb71c5d662cea460d2862"
+    }
+  },
+  "preview/shu/wei-yan_insanity-streak_vi.mp4": {
+    "output": "78c7bfe72fde18e81d1dddb0077f0db550769dd1e9c741c9380dd5f1a00520dd",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/wei-yan_insanity-streak_vi.mp4": "d2861eb3cb1756c3fafb860a11e64617506b531bcad276f2812b1b0815ce5a5c"
+    }
+  },
+  "preview/shu/zhang-fei_berserk_en.mp4": {
+    "output": "c818becab4d6cd1d988ccb9b5e3f7a04beea38541f7747411b3a6607052cef3a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/zhang-fei_berserk_en.mp4": "6a326f9d0e727b0777310256a188335063925dbd2f709f11705146e9332919fa"
+    }
+  },
+  "preview/shu/zhang-fei_berserk_vi.mp4": {
+    "output": "cb9b506d95bfd7d2589e8221362d6329a70f6106af99866243b6fc46f97a2838",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/zhang-fei_berserk_vi.mp4": "52c811f1eef7d650f54333278a9660bc3203bff6656449e5a73509bad6f8ee02"
+    }
+  },
   "preview/shu/zhao-yun_dragon-heart_en.mp4": {
     "output": "e724c82f510d5fbf37be93d532111aefded7e86219596e5dbe4f899df1e87721",
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
@@ -3098,6 +3252,20 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/shu/zhao-yun_dragon-heart_vi.mp4": "15c6746dcd07c2f18f17917f4f585569d9771295bf974b5902fa220d0c05ff43"
+    }
+  },
+  "preview/shu/zhu-rong_fearsome-blade_en.mp4": {
+    "output": "3ee4b0d459902c471f27615dd122d4c49bdb670c344d7ef85c90e8fe91a64cc4",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/zhu-rong_fearsome-blade_en.mp4": "801cbdf25da209b2781dcec754a8d451d8941373d9f7a3494c32e2f7c5853896"
+    }
+  },
+  "preview/shu/zhu-rong_fearsome-blade_vi.mp4": {
+    "output": "978104b409bbfa071aa56f303ad7f8f790a4a0039bcdba1d7f6f114602f63167",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/shu/zhu-rong_fearsome-blade_vi.mp4": "9d57348d9d35c87b08733fa4a5adc5b87794b9899e931886c1a1fb72d32d0ae9"
     }
   },
   "preview/shu/zhuge-liang_empty-city_en.mp4": {
