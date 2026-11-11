@@ -90,13 +90,15 @@ function decide(
   const rank: TargetRanker = 'forRegistry' in ranker ? ranker.forRegistry(registry) : ranker;
   // Target templates filled in (several targets in one pick), or dropped when no attackable seat fits.
   const mine = view.seats.find((s) => s.id === seatId);
+  const fromPick = new Set<Action>();
   const filledLegal = offered.flatMap((a): Action[] => {
     if ((a.kind !== 'PlayCardAction' && a.kind !== 'UseConversionAction') || !a.pickTargets) return [a];
     const filled = mine ? fillPick(view, mine, a, rank) : null;
+    if (filled) fromPick.add(filled);
     return filled ? [filled] : [];
   });
   // Rules A1, A3, B2: drop plays a visible stop would cancel and costly targets not worth it.
-  const legal = features.noWaste && mine ? withoutWaste(view, mine, filledLegal, registry, rank) : filledLegal;
+  const legal = features.noWaste && mine ? withoutWaste(view, mine, filledLegal, registry, rank, fromPick) : filledLegal;
   const mem: BotTurnMemory =
     memory && memory.turnNumber === view.turn.turnNumber
       ? memory

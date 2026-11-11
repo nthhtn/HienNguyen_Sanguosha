@@ -1,6 +1,9 @@
+import { getLegalActions, redactStateForSeat } from 'engine';
 import type { Action } from 'engine';
+import { tableRank } from './table-rank';
+import { withoutWaste } from './waste';
 import { ruleBasedV5Policy } from './rule-based';
-import { card, decideWaste, decideWith, table } from './testing';
+import { card, decideWaste, decideWith, registry, table } from './testing';
 
 const targetsOf = (a: Action) => ('targets' in a ? a.targets.map((t) => (t.kind === 'seat' ? t.seatId : '')) : []);
 const shield = [card('bs', 'black-shield', 'club', 2)];
@@ -49,5 +52,33 @@ describe('waste: Pleasure (A1, B2)', () => {
   it('is dropped when paying spends the last Shan, unless he is at 1 HP', () => {
     expect(decideWaste(table(hand('sha', 'shan'), { generals: liuShan, kingdoms: alone, hp: { 'seat-b': 2 } })).kind).toBe('EndPhaseAction');
     expect(targetsOf(decideWaste(table(hand('sha', 'shan'), { generals: liuShan, kingdoms: alone, hp: { 'seat-b': 1 } })))).toEqual(['seat-b']);
+  });
+});
+
+describe('waste: rivals and fixed target lists', () => {
+  const hand = { 'seat-a:hand': ['sha', 'sha', 'shan'].map((d, i) => card(`c${i}`, d, 'spade', i + 1)) };
+  it('an adjacent low-HP ally is not a cost-free rival to Liu Shan (B2a)', () => {
+    // seat-d (adjacent to seat-a) is an ally at 1 HP; Liu Shan is the only foe.
+    const s = table(hand, { generals: liuShan, kingdoms: { 'seat-c': 'Wei', 'seat-d': 'Wei' }, hp: { 'seat-d': 1 } });
+    expect(targetsOf(decideWaste(s))).toEqual(['seat-b']);
+  });
+
+  // Coerce is offered as fixed [holder, victim] pairs; only the holder is aimed at.
+  const coerceFrom = (holder: string, victim: string, generals: Record<string, [string, string, boolean]>) => {
+    const s = table({ 'seat-a:hand': [card('co', 'coerce', 'spade')], [`${holder}:equip`]: [card('w', 'axe', 'club')] }, { generals });
+    const view = redactStateForSeat(s, 'seat-a');
+    const legal = getLegalActions(s, 'seat-a', registry).filter((a) => a.kind === 'PlayCardAction' && a.cardInstanceId === 'co' && targetsOf(a)[0] === holder && targetsOf(a)[1] === victim);
+    const rank = tableRank.forRegistry(registry);
+    return { legal, kept: withoutWaste(view, view.seats[0], legal, registry, rank) };
+  };
+  it('keeps a Coerce pair unchanged when only the victim has a stopping skill', () => {
+    const { legal, kept } = coerceFrom('seat-b', 'seat-c', { 'seat-c': ['kingdomWars:jia-xu', 'filler-dong-zhuo', true] });
+    expect(legal.length).toBeGreaterThan(0);
+    expect(kept).toEqual(legal);
+  });
+  it('drops a Coerce whose holder is stopped (Behind the Curtain: black Tool)', () => {
+    const { legal, kept } = coerceFrom('seat-b', 'seat-c', { 'seat-b': ['kingdomWars:jia-xu', 'filler-dong-zhuo', true] });
+    expect(legal.length).toBeGreaterThan(0);
+    expect(kept).toEqual([]);
   });
 });

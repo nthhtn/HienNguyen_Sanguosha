@@ -1,7 +1,7 @@
 import type { Action, CardInstance, ContentRegistry, GameState, Seat, Target, UsedCard } from 'engine';
 import { conversionsOf, sameAbilityOwner, usedCardFrom, usedCardOf } from 'engine';
 import { extraCostOf, wouldStop } from 'content';
-import { handCards, keepRank, TargetRanker } from './helpers';
+import { attackable, handCards, keepRank, TargetRanker } from './helpers';
 
 type Play = Extract<Action, { kind: 'PlayCardAction' | 'UseConversionAction' }>;
 const isPlay = (a: Action): a is Play => a.kind === 'PlayCardAction' || a.kind === 'UseConversionAction';
@@ -51,8 +51,10 @@ function costlyTargetWorthIt(view: GameState, me: Seat, card: UsedCard, target: 
 }
 
 // `legal` without the plays a visible stop would cancel (A1) and the costly targets not worth it (B2). A play
-// that aims at no seat (an untargeted mass card) is kept (A3); a multi-target play keeps its other targets.
-export function withoutWaste(view: GameState, me: Seat, legal: Action[], registry: ContentRegistry, rank: TargetRanker): Action[] {
+// that aims at no seat (an untargeted mass card) is kept (A3). Only a play in `fromPick` (filled from a pick
+// template, so any subset is legal) loses single targets; any other play is kept whole or dropped by its first
+// seat, the one the card aims at (Coerce's victim is extra).
+export function withoutWaste(view: GameState, me: Seat, legal: Action[], registry: ContentRegistry, rank: TargetRanker, fromPick: ReadonlySet<Action> = new Set()): Action[] {
   const cards = new Map<Play, UsedCard | null>();
   const cardOf = (p: Play) => {
     if (!cards.has(p)) cards.set(p, usedCardOfPlay(view, me, p, registry));
@@ -68,20 +70,22 @@ export function withoutWaste(view: GameState, me: Seat, legal: Action[], registr
     legal
       .filter(isPlay)
       .filter((p) => sameCard(play, p))
-      .flatMap((p) => p.targets.map((t) => seatOf(view, t)).filter((s): s is Seat => !!s && !targetWasted(view, me, cardOf(p), s, registry) && !costOf(p, s)));
+      .flatMap((p) => p.targets.map((t) => seatOf(view, t)).filter((s): s is Seat => !!s && attackable(view, me, s, rank) && !targetWasted(view, me, cardOf(p), s, registry) && !costOf(p, s)));
 
   return legal.flatMap((a): Action[] => {
     if (!isPlay(a)) return [a];
     const seats = a.targets.filter((t) => t.kind === 'seat');
     if (seats.length === 0) return [a];
     const card = cardOf(a);
-    const kept = a.targets.filter((t) => {
+    const worth = (t: Target): boolean => {
       const seat = seatOf(view, t);
       if (!seat) return true;
       if (targetWasted(view, me, card, seat, registry)) return false;
       const cost = card ? costOf(a, seat) : null;
       return !cost || (card !== null && costlyTargetWorthIt(view, me, card, seat, cost.basicCards, costFreeFor(a), registry, rank));
-    });
+    };
+    if (!fromPick.has(a)) return worth(seats[0]) ? [a] : [];
+    const kept = a.targets.filter(worth);
     return kept.some((t) => t.kind === 'seat') ? [{ ...a, targets: kept }] : [];
   });
 }
