@@ -122,7 +122,7 @@ function decide(
     return take({ ...arrangeTemplate, top: ids.filter(onTop), bottom: ids.filter((id) => !onTop(id)) });
   }
 
-  // 1a. A selection. Sky Scorcher's seats: non-allies only, else cancel. Cards
+  // 1a. A selection. Sky Scorcher's seats: attackable seats only (no ally, no HOLD_FIRE), else cancel. Cards
   // for Axe, Green Dragon Blade, Serpent Spear: the least useful. Anything
   // else: cancel when allowed.
   const selectTemplate = legal.find((a): a is Select => a.kind === 'SelectAction');
@@ -140,7 +140,7 @@ function decide(
       const ids = selection.eligibleIds
         .filter((id) => {
           const other = view.seats.find((s) => s.id === id);
-          return !!other && !isAlly(me, other, view);
+          return !!other && attackable(view, me, other, rank);
         })
         .slice(0, selection.max);
       if (ids.length >= selection.min) return take({ ...selectTemplate, ids });
