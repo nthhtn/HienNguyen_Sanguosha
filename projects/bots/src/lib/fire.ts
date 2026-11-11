@@ -1,7 +1,8 @@
 import { baseSkillId } from 'content';
 import type { CardInstance, ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { livingSeatOrderFrom, slotSilenced } from 'engine';
-import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, isShaCard } from './helpers';
+import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, lowestHpFirst, mayHarm, isShaCard, rankHarmTargets, TargetRanker } from './helpers';
+import { harmTargetsOf } from './waste';
 
 // The stage 9 spec's bot rules for the Fire skills. Bots don't read content's
 // range rules, so distance is worked out here the same way: seats round the
@@ -11,7 +12,7 @@ import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, isShaCard } f
 const others = (view: GameState, me: Seat) => view.seats.filter((s) => !s.eliminated && s.id !== me.id);
 // With nobody else to pick, the one best able to take a hit.
 const byHighestHp = (seats: Seat[]) => [...seats].sort((a, b) => b.combinedHp - a.combinedHp || a.index - b.index);
-const weakest = (seats: Seat[]) => [...seats].sort((a, b) => a.combinedHp - b.combinedHp || a.index - b.index)[0];
+const weakest = (seats: Seat[]) => [...seats].sort(lowestHpFirst)[0];
 const handSize = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
 const cardOf = (view: GameState, id: string) => view.zones.flatMap((z) => z.cards).find((c) => c.instanceId === id);
 const byRank = (view: GameState, ids: readonly string[]) => [...ids].sort((a, b) => (cardOf(view, a)?.rank ?? 0) - (cardOf(view, b)?.rank ?? 0));
@@ -44,17 +45,18 @@ function distance(view: GameState, from: Seat, to: Seat, registry: ContentRegist
 const reach = (view: GameState, seat: Seat, registry: ContentRegistry) =>
   Math.max(1, ...worn(view, seat).map((c) => registry.cards.get(c.definitionId)?.weaponRange ?? 1));
 
-// Non-allies within `seat`'s reach.
-const nonAlliesInReach = (view: GameState, me: Seat, seat: Seat, registry: ContentRegistry) =>
-  others(view, seat).filter((s) => s.id !== me.id && !isAlly(me, s, view) && distance(view, seat, s, registry) <= reach(view, seat, registry));
+// Non-allies within `seat`'s reach that the bot may harm (rule E1: given a ranker, no HOLD_FIRE seat).
+const nonAlliesInReach = (view: GameState, me: Seat, seat: Seat, registry: ContentRegistry, rank: TargetRanker | undefined) =>
+  others(view, seat).filter((s) => s.id !== me.id && mayHarm(view, me, s, rank) && distance(view, seat, s, registry) <= reach(view, seat, registry));
 
 // A Weapon in hand for a Weapon slot already filled.
 const spareWeapons = (view: GameState, me: Seat, registry: ContentRegistry) =>
   worn(view, me).some((c) => isWeapon(registry, c)) ? handCards(view, me).filter((c) => isWeapon(registry, c)) : [];
 
-// The stronger non-allies Rouse the Tiger would compete with: a hand card, and another non-ally in reach.
-const rousable = (view: GameState, me: Seat, registry: ContentRegistry) =>
-  others(view, me).filter((s) => !isAlly(me, s, view) && s.combinedHp > me.combinedHp && handSize(view, s) > 0 && nonAlliesInReach(view, me, s, registry).length > 0);
+// The stronger non-allies Rouse the Tiger would compete with: a hand card, and another non-ally in reach (one
+// the bot may harm, rule E1).
+const rousable = (view: GameState, me: Seat, registry: ContentRegistry, rank: TargetRanker | undefined) =>
+  others(view, me).filter((s) => !isAlly(me, s, view) && s.combinedHp > me.combinedHp && handSize(view, s) > 0 && nonAlliesInReach(view, me, s, registry, rank).length > 0);
 
 const highCard = (view: GameState, me: Seat) => handCards(view, me).some((c) => c.rank >= 10);
 
@@ -62,23 +64,23 @@ const highCard = (view: GameState, me: Seat) => handCards(view, me).some((c) => 
 const spareClubs = (view: GameState, me: Seat, registry: ContentRegistry, ids = handCards(view, me).map((c) => c.instanceId)) =>
   ids.filter((id) => cardOf(view, id)?.suit === 'club' && keepRank(view, registry, id) < 3);
 
-export function wantsFireActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry): boolean | null {
+export function wantsFireActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry, rank?: TargetRanker): boolean | null {
   const hand = handCards(view, me);
   switch (baseSkillId(skillId)) {
     case 'shackle':
       return spareClubs(view, me, registry).length > 0;
     case 'assault':
-      return nonAlliesInReach(view, me, me, registry).length > 0 && (spareWeapons(view, me, registry).length > 0 || me.combinedHp >= 3);
+      return nonAlliesInReach(view, me, me, registry, rank).length > 0 && (spareWeapons(view, me, registry).length > 0 || me.combinedHp >= 3);
     case 'rouse-the-tiger':
-      return highCard(view, me) && rousable(view, me, registry).length > 0;
+      return highCard(view, me) && rousable(view, me, registry, rank).length > 0;
     case 'heavens-justice':
-      return hand.filter((c) => isShaCard(registry, c.definitionId)).length >= 2 && highCard(view, me) && others(view, me).some((s) => !isAlly(me, s, view) && handSize(view, s) > 0);
+      return hand.filter((c) => isShaCard(registry, c.definitionId)).length >= 2 && highCard(view, me) && others(view, me).some((s) => mayHarm(view, me, s, rank) && handSize(view, s) > 0);
     default:
       return null;
   }
 }
 
-export function wantsFire(view: GameState, me: Seat, choice: PendingChoice): boolean | null {
+export function wantsFire(view: GameState, me: Seat, choice: PendingChoice, rank?: TargetRanker): boolean | null {
   if (choice.reason.kind !== 'ability') return null;
   const target = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId);
   switch (baseSkillId(choice.reason.abilityId)) {
@@ -87,15 +89,15 @@ export function wantsFire(view: GameState, me: Seat, choice: PendingChoice): boo
     case 'eternal-loyalty':
       return true;
     case 'sudden-attack':
-      return !!target && !isAlly(me, target, view);
+      return !!target && mayHarm(view, me, target, rank);
     case 'dueling-heroes':
-      return handCards(view, me).length >= 3 && others(view, me).some((s) => !isAlly(me, s, view));
+      return handCards(view, me).length >= 3 && others(view, me).some((s) => mayHarm(view, me, s, rank));
     default:
       return null;
   }
 }
 
-export function fireSelection(view: GameState, me: Seat, selection: PendingSelection, registry: ContentRegistry): string[] | 'cancel' | null {
+export function fireSelection(view: GameState, me: Seat, selection: PendingSelection, registry: ContentRegistry, rank?: TargetRanker): string[] | 'cancel' | null {
   const eligible = selection.eligibleIds;
   const then = selection.then;
   // Competing: the user its highest card; a target its highest against a non-ally, its lowest against an ally.
@@ -114,11 +116,11 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
   const seats = eligible.map((id) => view.seats.find((s) => s.id === id)).filter((s): s is Seat => !!s);
   switch (baseSkillId(selection.reason.abilityId)) {
     case 'rouse-the-tiger': {
-      const pick = weakest(rousable(view, me, registry).filter((s) => eligible.includes(s.id)));
+      const pick = weakest(rousable(view, me, registry, rank).filter((s) => eligible.includes(s.id)));
       return pick ? [pick.id] : 'cancel';
     }
     case 'heavens-justice': {
-      const pick = weakest(seats.filter((s) => !isAlly(me, s, view)));
+      const [pick] = rankHarmTargets(view, me, seats.filter((s) => !isAlly(me, s, view)).map((s) => s.id), rank, lowestHpFirst);
       return pick ? [pick.id] : 'cancel';
     }
     case 'assault': {
@@ -135,14 +137,14 @@ export function fireSelection(view: GameState, me: Seat, selection: PendingSelec
   }
 }
 
-export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, _registry: ContentRegistry): string | null {
+export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry, rank?: TargetRanker): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
   switch (baseSkillId(choice.reason.abilityId)) {
+    // Rules E1, E3: the best seat to harm (the weakest non-ally without a ranker).
     case 'assault':
-      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'rouse-the-tiger':
-      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view))) ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
+      return (harmTargetsOf(view, me, choice, registry, rank, lowestHpFirst)[0] ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'eternal-loyalty': {
       // Kingdom Wars Eternal Loyalty stops at 5 cards, so a seat is only short up to that cap.
       const cap = choice.reason.kind === 'ability' && choice.reason.abilityId === 'kingdomWars:eternal-loyalty' ? 5 : Infinity;

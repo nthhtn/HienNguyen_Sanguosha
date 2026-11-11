@@ -1,7 +1,7 @@
 import { baseSkillId } from 'content';
 import type { ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { cardCountsAs, skillsInPlay } from 'engine';
-import { handCards, isAlly, keepRank, leastUseful } from './helpers';
+import { handCards, isAlly, keepRank, leastUseful, mayHarm, rankHarmTargets, TargetRanker } from './helpers';
 
 // The stage 11 spec's bot rules for the Mountain skills.
 
@@ -14,24 +14,29 @@ const seatsOf = (view: GameState, choice: PendingChoice) =>
 
 export interface BotMove { from: string; to: string; cardId: string }
 
+// Seat order as it is: the legacy order of Clever Change's seats.
+const asListed = () => 0;
+
 // Clever Change's Play Phase move: a delayed Tool off our side onto a non-ally
 // not holding one of that name, else a worn card off a non-ally onto our side
-// where its slot is free.
-export function bestMove(view: GameState, me: Seat, registry: ContentRegistry): BotMove | null {
+// where its slot is free. Given a ranker, the non-ally is the best attackable
+// one (rule E1); without, the first in seat order.
+export function bestMove(view: GameState, me: Seat, registry: ContentRegistry, rank?: TargetRanker): BotMove | null {
   const living = view.seats.filter((s) => !s.eliminated);
+  const foes = rankHarmTargets(view, me, living.filter((s) => !ours(view, me, s)).map((s) => s.id), rank, asListed);
   for (const from of living.filter((s) => ours(view, me, s))) {
     const judged = zoneOf(view, from.judgment.zoneId);
     for (const card of judged?.cards ?? []) {
       const name = cardCountsAs(judged!, card);
-      const to = living.find((s) => {
+      const to = foes.find((s) => {
         const there = zoneOf(view, s.judgment.zoneId);
-        return !ours(view, me, s) && !(there?.cards ?? []).some((d) => cardCountsAs(there!, d) === name);
+        return !(there?.cards ?? []).some((d) => cardCountsAs(there!, d) === name);
       });
       if (to) return { from: from.id, to: to.id, cardId: card.instanceId };
     }
   }
   const slotOf = (definitionId: string) => registry.cards.get(definitionId)?.equipSlot;
-  for (const from of living.filter((s) => !ours(view, me, s))) {
+  for (const from of foes) {
     for (const card of zoneOf(view, from.equipped.zoneId)?.cards ?? []) {
       const slot = slotOf(card.definitionId);
       const to = slot && living.find((s) => ours(view, me, s) && !(zoneOf(view, s.equipped.zoneId)?.cards ?? []).some((w) => slotOf(w.definitionId) === slot));
@@ -51,7 +56,7 @@ function lamentSource(choice: PendingChoice): string | undefined {
   return step?.data?.['source'] as string | undefined;
 }
 
-export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): boolean | null {
+export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry, rank?: TargetRanker): boolean | null {
   const reason = choice.reason;
   if (reason.kind !== 'ability') return null;
   switch (baseSkillId(reason.abilityId)) {
@@ -69,8 +74,8 @@ export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, 
     }
     case 'clever-change': {
       // Draw: two non-allies with hands worth taking from. Play: a move that helps. Never Judgment or Discard.
-      if (view.phase === 'Draw') return others(view, me).filter((s) => !isAlly(me, s, view) && handSize(view, s) >= 2).length >= 2;
-      if (view.phase === 'Play') return bestMove(view, me, registry) !== null;
+      if (view.phase === 'Draw') return others(view, me).filter((s) => mayHarm(view, me, s, rank) && handSize(view, s) >= 2).length >= 2;
+      if (view.phase === 'Play') return bestMove(view, me, registry, rank) !== null;
       return false;
     }
     default:
@@ -78,10 +83,10 @@ export function wantsMountain(view: GameState, me: Seat, choice: PendingChoice, 
   }
 }
 
-export function wantsMountainActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry): boolean | null {
+export function wantsMountainActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry, rank?: TargetRanker): boolean | null {
   switch (baseSkillId(skillId)) {
     case 'instigate':
-      return others(view, me).some((s) => !isAlly(me, s, view) && handSize(view, s) <= 1);
+      return others(view, me).some((s) => mayHarm(view, me, s, rank) && handSize(view, s) <= 1);
     case 'direct-instruction': {
       const slotOf = (id: string) => registry.cards.get(id)?.equipSlot;
       const equipment = handCards(view, me).filter((c) => registry.cards.get(c.definitionId)?.category === 'equipment');
@@ -94,7 +99,7 @@ export function wantsMountainActive(view: GameState, me: Seat, skillId: string, 
   }
 }
 
-export function mountainChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
+export function mountainChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry, rank?: TargetRanker): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const seats = seatsOf(view, choice);
   const ally = seats.find((s) => s.id !== me.id && isAlly(me, s, view));
@@ -120,7 +125,7 @@ export function mountainChoice(view: GameState, me: Seat, choice: PendingChoice,
     case 'direct-instruction':
       return (ally ?? seats[0])?.id ?? null;
     case 'clever-change': {
-      const move = bestMove(view, me, registry);
+      const move = bestMove(view, me, registry, rank);
       const cardOptions = choice.options.every((o) => o.shows.kind === 'card');
       const want = move ? (cardOptions ? move.cardId : move.to) : null;
       return (choice.options.find((o) => o.id === want) ?? choice.options[0])?.id ?? null;
@@ -135,24 +140,25 @@ export function mountainChoice(view: GameState, me: Seat, choice: PendingChoice,
   }
 }
 
-export function mountainSelection(view: GameState, me: Seat, selection: PendingSelection, registry: ContentRegistry): string[] | 'cancel' | null {
+export function mountainSelection(view: GameState, me: Seat, selection: PendingSelection, registry: ContentRegistry, rank?: TargetRanker): string[] | 'cancel' | null {
   if (selection.reason.kind !== 'ability') return null;
   const eligible = selection.eligibleIds;
   const step = selection.then.kind === 'skill-step' ? selection.then.step.step : null;
-  // Eligible seats passing `pick`, the fullest hands first (`most`) or the emptiest first.
-  const seatsByHand = (pick: (s: Seat) => boolean, order: 'most' | 'fewest') =>
-    eligible
-      .map((id) => view.seats.find((s) => s.id === id)!)
-      .filter((s) => !!s && pick(s))
-      .sort((a, b) => (order === 'most' ? handSize(view, b) - handSize(view, a) : handSize(view, a) - handSize(view, b)) || a.index - b.index);
+  // Eligible non-allies to harm (rule E1): given a ranker, attackable ones best first; else the fullest hands
+  // first (`most`) or the emptiest first.
+  const foesByHand = (order: 'most' | 'fewest') =>
+    rankHarmTargets(
+      view, me, eligible.filter((id) => { const s = view.seats.find((x) => x.id === id); return !!s && !isAlly(me, s, view); }), rank,
+      (a, b) => (order === 'most' ? handSize(view, b) - handSize(view, a) : handSize(view, a) - handSize(view, b)) || a.index - b.index,
+    );
   switch (baseSkillId(selection.reason.abilityId)) {
     case 'clever-change': {
       if (selection.of === 'cards') return leastUseful(view, registry, eligible).slice(0, 1);
       if (step === 'draw-take') {
-        const foes = seatsByHand((s) => !isAlly(me, s, view), 'most').slice(0, 2).map((s) => s.id);
+        const foes = foesByHand('most').slice(0, 2).map((s) => s.id);
         return foes.length > 0 ? foes : [eligible[0]];
       }
-      const move = bestMove(view, me, registry);
+      const move = bestMove(view, me, registry, rank);
       return [move && eligible.includes(move.from) ? move.from : eligible[0]];
     }
     case 'pleasure': {
@@ -172,7 +178,7 @@ export function mountainSelection(view: GameState, me: Seat, selection: PendingS
     case 'direct-instruction':
       return eligible.slice(0, 1);
     case 'instigate': {
-      const foes = seatsByHand((s) => !isAlly(me, s, view), 'fewest');
+      const foes = foesByHand('fewest');
       return foes.length > 0 ? [foes[0].id] : 'cancel';
     }
     default:

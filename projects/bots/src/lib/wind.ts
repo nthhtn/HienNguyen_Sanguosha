@@ -1,18 +1,18 @@
 import { baseSkillId } from 'content';
 import type { CardInstance, ContentRegistry, Effect, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
-import { handCards, isAlly, keepRank, leastUseful, ownCards, isShaCard } from './helpers';
+import { handCards, isAlly, keepRank, leastUseful, lowestHpFirst, mayHarm, ownCards, isShaCard, TargetRanker } from './helpers';
 import { devilCard } from './skills';
+import { harmTargetsOf } from './waste';
 
 // The stage 8 spec's bot rules for the Wind skills.
 
 const others = (view: GameState, me: Seat) => view.seats.filter((s) => !s.eliminated && s.id !== me.id);
 const hurt = (s: Seat) => s.combinedHp < s.maxCombinedHp;
-const weakest = (seats: Seat[]) => [...seats].sort((a, b) => a.combinedHp - b.combinedHp || a.index - b.index)[0];
 const declined = (choice: PendingChoice): Effect | undefined => choice.options.find((o) => o.id === 'decline')?.effects[0];
 const heartLike = (c: CardInstance) => c.suit === 'heart' || c.suit === 'spade'; // spades count for Beauty's holder; Fantasy's selection filters exactly
 const isEquipment = (registry: ContentRegistry, c: CardInstance) => registry.cards.get(c.definitionId)?.category === 'equipment';
 
-export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): boolean | null {
+export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry, rank?: TargetRanker): boolean | null {
   if (choice.reason.kind !== 'ability') return null;
   const target = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId);
   const hand = handCards(view, me);
@@ -22,7 +22,7 @@ export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, regi
     case 'godspeed': {
       if (view.phase === 'Start') {
         const slot = view.zones.find((z) => z.id === me.judgment.zoneId)?.cards.length ?? 0;
-        return slot === 0 && others(view, me).some((s) => !isAlly(me, s, view) && s.combinedHp <= 2);
+        return slot === 0 && others(view, me).some((s) => mayHarm(view, me, s, rank) && s.combinedHp <= 2);
       }
       // As the Play Phase begins: a hand Equipment card for a slot already filled, and no Sha to play.
       const worn = new Set((view.zones.find((z) => z.id === me.equipped.zoneId)?.cards ?? []).map((c) => registry.cards.get(c.definitionId)?.equipSlot));
@@ -30,7 +30,7 @@ export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, regi
       return spare && !hand.some((c) => isShaCard(registry, c.definitionId));
     }
     case 'strong-bow':
-      return !!target && !isAlly(me, target, view);
+      return !!target && mayHarm(view, me, target, rank);
     case 'refusing-death':
     case 'lightning-strike':
       return true;
@@ -42,14 +42,14 @@ export function wantsWind(view: GameState, me: Seat, choice: PendingChoice, regi
     case 'dark-magic': {
       const shown = declined(choice);
       const black = ownCards(view, me).filter((c) => c.suit === 'spade' || c.suit === 'club').map((c) => c.instanceId);
-      return shown?.kind === 'JudgmentShownEffect' && devilCard(view, me, shown.judgment, registry, black) !== null;
+      return shown?.kind === 'JudgmentShownEffect' && devilCard(view, me, shown.judgment, registry, black, rank) !== null;
     }
     default:
       return null;
   }
 }
 
-export function windSelection(view: GameState, me: Seat, selection: PendingSelection, registry: ContentRegistry): string[] | 'cancel' | null {
+export function windSelection(view: GameState, me: Seat, selection: PendingSelection, registry: ContentRegistry, rank?: TargetRanker): string[] | 'cancel' | null {
   if (selection.reason.kind !== 'ability') return null;
   const eligible = selection.eligibleIds;
   switch (baseSkillId(selection.reason.abilityId)) {
@@ -61,7 +61,7 @@ export function windSelection(view: GameState, me: Seat, selection: PendingSelec
       return spare.length > 0 ? [spare[0]] : 'cancel';
     }
     case 'dark-magic': {
-      const id = selection.then.kind === 'replace-judgment' ? devilCard(view, me, selection.then.judgment, registry, eligible) : null;
+      const id = selection.then.kind === 'replace-judgment' ? devilCard(view, me, selection.then.judgment, registry, eligible, rank) : null;
       return id ? [id] : 'cancel';
     }
     default:
@@ -69,7 +69,7 @@ export function windSelection(view: GameState, me: Seat, selection: PendingSelec
   }
 }
 
-export function windChoice(view: GameState, me: Seat, choice: PendingChoice): string | null {
+export function windChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry, rank?: TargetRanker): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const reason = choice.reason;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
@@ -77,7 +77,8 @@ export function windChoice(view: GameState, me: Seat, choice: PendingChoice): st
     case 'godspeed':
     case 'fantasy':
     case 'lightning-strike':
-      return (weakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view))) ?? seats.find((s) => s.id !== me.id) ?? seats[0])?.id ?? null;
+      // Rules E1, E3: the best seat to harm (the weakest non-ally without a ranker).
+      return (harmTargetsOf(view, me, choice, registry, rank, lowestHpFirst)[0] ?? seats.find((s) => s.id !== me.id) ?? seats[0])?.id ?? null;
     case 'bewilder': {
       const claimer = view.seats.find((s) => s.id === reason.owner.seatId);
       if (claimer && isAlly(me, claimer, view)) return 'believe';

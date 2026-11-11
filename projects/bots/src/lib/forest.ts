@@ -1,22 +1,22 @@
 import { baseSkillId } from 'content';
 import type { ContentRegistry, GameState, PendingChoice, PendingSelection, Seat } from 'engine';
 import { livingSeatOrderFrom } from 'engine';
-import { handCards, isAlly, keepRank } from './helpers';
+import { handCards, isAlly, keepRank, lowestHpFirst, mayHarm, rankHarmTargets, TargetRanker } from './helpers';
+import { harmTargetsOf } from './waste';
 
 // The stage 10 spec's bot rules for the Forest skills.
 
 const others = (view: GameState, me: Seat) => view.seats.filter((s) => !s.eliminated && s.id !== me.id);
 const handSize = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
 const cardCount = (view: GameState, seat: Seat) => handSize(view, seat) + (view.zones.find((z) => z.id === seat.equipped.zoneId)?.cards.length ?? 0);
-const byWeakest = (seats: Seat[]) => [...seats].sort((a, b) => a.combinedHp - b.combinedHp || a.index - b.index);
 const seatsOf = (view: GameState, choice: PendingChoice) =>
   choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
 
-// Alliance: a pair worth swapping is a short ally and a larger non-ally hand, at a cost the bot can pay with 2 or fewer cards.
-const alliancePairs = (view: GameState, me: Seat) =>
+// Alliance: a pair worth swapping is a short ally and a larger non-ally hand (one the bot may harm, rule E1), at a cost the bot can pay with 2 or fewer cards.
+const alliancePairs = (view: GameState, me: Seat, rank: TargetRanker | undefined) =>
   others(view, me).flatMap((ally) =>
     others(view, me)
-      .filter((foe) => foe.id !== ally.id && isAlly(me, ally, view) && !isAlly(me, foe, view))
+      .filter((foe) => foe.id !== ally.id && isAlly(me, ally, view) && mayHarm(view, me, foe, rank))
       .map((foe) => ({ ally, foe, cost: handSize(view, foe) - handSize(view, ally) }))
       .filter((p) => p.cost > 0 && p.cost <= 2 && p.cost <= cardCount(view, me))
   );
@@ -39,10 +39,10 @@ export function wantsForest(view: GameState, me: Seat, choice: PendingChoice): b
   }
 }
 
-export function wantsForestActive(view: GameState, me: Seat, skillId: string): boolean | null {
+export function wantsForestActive(view: GameState, me: Seat, skillId: string, rank?: TargetRanker): boolean | null {
   switch (baseSkillId(skillId)) {
     case 'alliance':
-      return alliancePairs(view, me).length > 0;
+      return alliancePairs(view, me, rank).length > 0;
     case 'upheaval':
       return others(view, me).filter((s) => !isAlly(me, s, view)).length >= 3;
     default:
@@ -50,21 +50,22 @@ export function wantsForestActive(view: GameState, me: Seat, skillId: string): b
   }
 }
 
-export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
+export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry, rank?: TargetRanker): string | null {
   if (choice.reason.kind !== 'ability') return null;
   const seats = seatsOf(view, choice);
-  const nonAllies = seats.filter((s) => s.id !== me.id && !isAlly(me, s, view));
+  // Rules E1, E3: the seats to harm, best first (in `fallback`'s order without a ranker).
+  const harmTargets = (fallback: (a: Seat, b: Seat) => number) => harmTargetsOf(view, me, choice, registry, rank, fallback);
   switch (baseSkillId(choice.reason.abilityId)) {
     case 'exile': {
       // A non-ally with the fewest hand cards; else a face-down ally; else the first.
-      const foe = [...nonAllies].sort((a, b) => handSize(view, a) - handSize(view, b) || a.index - b.index)[0];
+      const foe = harmTargets((a, b) => handSize(view, a) - handSize(view, b) || a.index - b.index)[0];
       const down = seats.find((s) => s.id !== me.id && isAlly(me, s, view) && s.faceDown);
       return (foe ?? down ?? seats[0])?.id ?? null;
     }
     case 'collapse':
       return me.combinedHp >= 3 ? 'lose-hp' : 'reduce-max-hp';
     case 'upheaval': {
-      const foe = byWeakest(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view)))[0];
+      const foe = harmTargets(lowestHpFirst)[0];
       return foe?.id ?? 'pass';
     }
     case 'charity': {
@@ -91,7 +92,8 @@ export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, r
       const byHand = (list: Seat[]) => [...list].sort((a, b) => handSize(view, b) - handSize(view, a) || a.index - b.index)[0];
       // The ally fallback (and a `cancel` below) is unreachable: the first pick guarantees a non-ally partner with cost <= 2.
       // A `cancel` here would need a loop guard: it refunds the use, so Alliance would be offered again.
-      const partner = byHand(kept.filter((s) => !isAlly(me, s, view))) ?? byHand(kept);
+      const handOrder = (a: Seat, b: Seat) => handSize(view, b) - handSize(view, a) || a.index - b.index;
+      const partner = rankHarmTargets(view, me, kept.filter((s) => !isAlly(me, s, view)).map((s) => s.id), rank, handOrder)[0] ?? byHand(kept);
       return partner?.id ?? choice.options.find((o) => o.id === 'cancel')?.id ?? null;
     }
     default:
@@ -99,18 +101,18 @@ export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, r
   }
 }
 
-export function forestSelection(view: GameState, me: Seat, selection: PendingSelection, _registry: ContentRegistry): string[] | 'cancel' | null {
+export function forestSelection(view: GameState, me: Seat, selection: PendingSelection, _registry: ContentRegistry, rank?: TargetRanker): string[] | 'cancel' | null {
   if (selection.reason.kind !== 'ability') return null;
   if (selection.reason.abilityId === 'alliance' && selection.of === 'seats') {
     // The first seat: an ally that has a larger-handed non-ally to swap with.
-    const ally = alliancePairs(view, me).map((p) => p.ally.id).find((id) => selection.eligibleIds.includes(id));
+    const ally = alliancePairs(view, me, rank).map((p) => p.ally.id).find((id) => selection.eligibleIds.includes(id));
     return ally ? [ally] : 'cancel';
   }
   return null;
 }
 
-// Whether the Upheaval window's seat (the bot) is being asked to Sha a non-ally.
-export const upheavalVictimIsFoe = (view: GameState, me: Seat, victimSeatId: string | undefined): boolean => {
+// Whether the Upheaval window's seat (the bot) is being asked to Sha a non-ally (one it may harm, rule E1).
+export const upheavalVictimIsFoe = (view: GameState, me: Seat, victimSeatId: string | undefined, rank?: TargetRanker): boolean => {
   const victim = view.seats.find((s) => s.id === victimSeatId);
-  return !!victim && !isAlly(me, victim, view) && livingSeatOrderFrom(view, me.id).includes(victim.id);
+  return !!victim && mayHarm(view, me, victim, rank) && livingSeatOrderFrom(view, me.id).includes(victim.id);
 };

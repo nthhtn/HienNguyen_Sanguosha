@@ -1,7 +1,7 @@
-import type { Action, CardInstance, ContentRegistry, GameState, Seat, Target, UsedCard } from 'engine';
+import type { Action, CardInstance, ContentRegistry, GameState, PendingChoice, Seat, Target, UsedCard } from 'engine';
 import { conversionsOf, sameAbilityOwner, usedCardFrom, usedCardOf } from 'engine';
 import { extraCostOf, wouldStop } from 'content';
-import { attackable, handCards, keepRank, TargetRanker } from './helpers';
+import { attackable, handCards, isAlly, keepRank, rankHarmTargets, TargetRanker } from './helpers';
 
 type Play = Extract<Action, { kind: 'PlayCardAction' | 'UseConversionAction' }>;
 const isPlay = (a: Action): a is Play => a.kind === 'PlayCardAction' || a.kind === 'UseConversionAction';
@@ -88,4 +88,30 @@ export function withoutWaste(view: GameState, me: Seat, legal: Action[], registr
     const kept = a.targets.filter(worth);
     return kept.some((t) => t.kind === 'seat') ? [{ ...a, targets: kept }] : [];
   });
+}
+
+type ChoiceOption = PendingChoice['options'][number];
+
+// The card the bot itself uses on an option's seat (Godspeed's or Double Edged's Sha), read off the option's
+// effects; null when the option uses none of its own.
+function ownCardOf(option: ChoiceOption, me: Seat): UsedCard | null {
+  for (const e of option.effects) {
+    if (e.kind === 'UseCardEffect' && e.seatId === me.id) return e.card;
+    if (e.kind === 'CardStepEffect' && e.userSeatId === me.id) return e.card;
+  }
+  return null;
+}
+
+// Rules E1, E3: the seats a harmful skill choice may pick, best first (rankHarmTargets over its non-ally seat
+// options other than the bot), and, given a ranker, without the seats the bot's own card would be wasted on
+// (A1). Without a ranker, every non-ally seat option in `fallback`'s order, as before.
+export function harmTargetsOf(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry, rank: TargetRanker | undefined, fallback: (a: Seat, b: Seat) => number): Seat[] {
+  const ids = choice.options.flatMap((o) => {
+    if (o.shows.kind !== 'seat') return [];
+    const seatId = (o.shows as { seatId: string }).seatId;
+    const seat = view.seats.find((s) => s.id === seatId);
+    if (!seat || seat.id === me.id || isAlly(me, seat, view)) return [];
+    return rank && targetWasted(view, me, ownCardOf(o, me), seat, registry) ? [] : [seat.id];
+  });
+  return rankHarmTargets(view, me, ids, rank, fallback);
 }

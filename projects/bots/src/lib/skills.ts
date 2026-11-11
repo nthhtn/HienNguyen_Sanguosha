@@ -1,7 +1,8 @@
 import { baseSkillId } from 'content';
 import type { Action, CardInstance, ContentRegistry, Effect, GameState, Judgment, PendingChoice, PendingSelection, Seat } from 'engine';
-import { colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
-import { definitionIdOf, givenByEitherGeneral, givenThisTurn, handCards, isAlly, keepRank, leastUseful, ownCards, isShaCard } from './helpers';
+import { colourOf, conversionCards, conversionsOf, sameAbilityOwner, usedCardOf } from 'engine';
+import { definitionIdOf, givenByEitherGeneral, givenThisTurn, handCards, isAlly, keepRank, leastUseful, lowestHpFirst, mayHarm, ownCards, isShaCard, rankHarmTargets, TargetRanker } from './helpers';
+import { harmTargetsOf, targetWasted } from './waste';
 import { wantsWind, windChoice, windSelection } from './wind';
 import { fireChoice, wantsFire, wantsFireActive } from './fire';
 import { forestChoice, forestSelection, wantsForest, wantsForestActive } from './forest';
@@ -15,7 +16,6 @@ type UseConversion = Extract<Action, { kind: 'UseConversionAction' }>;
 const living = (view: GameState) => view.seats.filter((s) => !s.eliminated);
 const others = (view: GameState, me: Seat) => living(view).filter((s) => s.id !== me.id);
 const hurt = (seat: Seat) => seat.combinedHp < seat.maxCombinedHp;
-const byLowestHp = (seats: Seat[]) => [...seats].sort((a, b) => a.combinedHp - b.combinedHp || a.index - b.index);
 const byHighestHp = (seats: Seat[]) => [...seats].sort((a, b) => b.combinedHp - a.combinedHp || a.index - b.index);
 // Seats between two seats round the table, over living seats (the physical distance, no mounts).
 function ringDistance(view: GameState, a: Seat, b: Seat): number {
@@ -25,6 +25,16 @@ function ringDistance(view: GameState, a: Seat, b: Seat): number {
 }
 // Seats a Sha could not reach from `me` without help: not allies, beyond distance 1.
 const farFoes = (view: GameState, me: Seat) => others(view, me).filter((s) => !isAlly(me, s, view) && ringDistance(view, me, s) > 1);
+// Swift and Deadly's seats (rules E1, E3): the far foes, best first; given a ranker, only attackable ones the
+// bot's first Sha in hand would not be wasted on.
+function swiftTargets(view: GameState, me: Seat, registry: ContentRegistry, rank: TargetRanker | undefined, eligible?: readonly string[]): Seat[] {
+  const sha = handCards(view, me).find((c) => isShaCard(registry, c.definitionId));
+  const ids = farFoes(view, me)
+    .filter((s) => !eligible || eligible.includes(s.id))
+    .filter((s) => !rank || !targetWasted(view, me, sha ? usedCardOf(sha, registry) : null, s, registry))
+    .map((s) => s.id);
+  return rankHarmTargets(view, me, ids, rank, lowestHpFirst);
+}
 const handSize = (view: GameState, seat: Seat) => view.zones.find((z) => z.id === seat.hand.zoneId)?.cards.length ?? 0;
 
 // A seat's gender as the table sees it: Main's while revealed, else Deputy's, else none.
@@ -57,12 +67,14 @@ const SAVES_FROM = new Set(['lightning', 'capture', 'starvation']);
 // The hand card Devil replaces `judgment`'s card with, or null: only when it
 // saves the bot or an ally from Lightning, Capture or Starvation, or hurts a
 // non-ally, with the least useful card that flips the outcome.
-export function devilCard(view: GameState, me: Seat, judgment: Judgment, registry: ContentRegistry, candidates: string[] = handCards(view, me).map((c) => c.instanceId)): string | null {
+export function devilCard(view: GameState, me: Seat, judgment: Judgment, registry: ContentRegistry, candidates: string[] = handCards(view, me).map((c) => c.instanceId), rank?: TargetRanker): string | null {
   const judged = view.seats.find((s) => s.id === judgment.seatId);
   const now = goodForJudged(judgment, judgment.card);
   if (!judged || now === null) return null;
   const wantGood = judged.id === me.id || isAlly(me, judged, view);
   if (wantGood && !(judgment.reader.kind === 'card' && SAVES_FROM.has(judgment.reader.card.as))) return null;
+  // Rule E1: a harmful Judgment only on a seat the bot may harm.
+  if (!wantGood && !mayHarm(view, me, judged, rank)) return null;
   if (now === wantGood) return null;
   const cards = view.zones.flatMap((z) => z.cards).filter((c) => candidates.includes(c.instanceId));
   const flips = cards.filter((c) => goodForJudged(judgment, c) === wantGood).map((c) => c.instanceId);
@@ -72,9 +84,11 @@ export function devilCard(view: GameState, me: Seat, judgment: Judgment, registr
 const declined = (choice: PendingChoice): Effect | undefined => choice.options.find((o) => o.id === 'decline')?.effects[0];
 
 // Whether to use a General's optional skill (an ask); null: not a skill ask.
-export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): boolean | null {
+export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry, rank?: TargetRanker): boolean | null {
   if (choice.reason.kind !== 'ability' || choice.reason.owner.kind !== 'general') return null;
   const target = view.seats.find((s) => s.id === (choice.reason as { targetSeatId?: string }).targetSeatId);
+  // Rule E1: a seat the bot may harm (any non-ally without a ranker).
+  const harmable = (s: Seat | undefined): s is Seat => !!s && mayHarm(view, me, s, rank);
   switch (baseSkillId(choice.reason.abilityId)) {
     case 'evil-hero':
     case 'feedback':
@@ -97,46 +111,46 @@ export function wantsSkill(view: GameState, me: Seat, choice: PendingChoice, reg
     }
     // Dauntless: only against a non-ally, and only with a Basic card to spare.
     case 'kingdomWars:dauntless':
-      return !!target && !isAlly(me, target, view) && handCards(view, me).some((c) => registry.cards.get(c.definitionId)?.category === 'basic' && keepRank(view, registry, c.instanceId) < 3);
+      return harmable(target) && handCards(view, me).some((c) => registry.cards.get(c.definitionId)?.category === 'basic' && keepRank(view, registry, c.instanceId) < 3);
     case 'unyielding':
-      return !!target && !isAlly(me, target, view);
+      return harmable(target);
     // Deathly Counsel: only when a non-ally has a hand or equipment card to lose.
     case 'kingdomWars:deathly-counsel':
-      return others(view, me).some((s) => !isAlly(me, s, view) && [s.hand.zoneId, s.equipped.zoneId].some((id) => (view.zones.find((z) => z.id === id)?.cards.length ?? 0) > 0));
+      return others(view, me).some((s) => harmable(s) && [s.hand.zoneId, s.equipped.zoneId].some((id) => (view.zones.find((z) => z.id === id)?.cards.length ?? 0) > 0));
     // Comity: only when an ally can take the cards.
     case 'kingdomWars:comity':
       return others(view, me).some((s) => isAlly(me, s, view));
     // Insanity Axe: only against a non-ally (the seat the Sha hit).
     case 'kingdomWars:insanity-axe':
-      return !!target && !isAlly(me, target, view);
+      return harmable(target);
     // Double Edged: losing ends the Play Phase, so only with a high card (10 or more) and a non-ally to compete with.
     case 'kingdomWars:double-edged':
-      return handCards(view, me).some((c) => c.rank >= 10) && others(view, me).some((s) => !isAlly(me, s, view) && handSize(view, s) > 0);
+      return handCards(view, me).some((c) => c.rank >= 10) && others(view, me).some((s) => harmable(s) && handSize(view, s) > 0);
     case 'raid':
-      return others(view, me).filter((s) => !isAlly(me, s, view) && handSize(view, s) > 0).length >= 2;
+      return others(view, me).filter((s) => harmable(s) && handSize(view, s) > 0).length >= 2;
     case 'bare-the-chest':
       return handCards(view, me).filter((c) => isShaCard(registry, c.definitionId)).length >= 2;
     case 'devil': {
       const shown = declined(choice);
-      return shown?.kind === 'JudgmentShownEffect' && devilCard(view, me, shown.judgment, registry) !== null;
+      return shown?.kind === 'JudgmentShownEffect' && devilCard(view, me, shown.judgment, registry, undefined, rank) !== null;
     }
     case 'displace':
       // A card to spare (ranked below Shan) and a non-ally other than the Sha's user to move it to.
-      return ownCards(view, me).some((c) => keepRank(view, registry, c.instanceId) < 3) && others(view, me).some((s) => !isAlly(me, s, view) && s.id !== target?.id);
+      return ownCards(view, me).some((c) => keepRank(view, registry, c.instanceId) < 3) && others(view, me).some((s) => harmable(s) && s.id !== target?.id);
     default:
-      return wantsWind(view, me, choice, registry) ?? wantsFire(view, me, choice) ?? wantsForest(view, me, choice) ?? wantsMountain(view, me, choice, registry);
+      return wantsWind(view, me, choice, registry, rank) ?? wantsFire(view, me, choice, rank) ?? wantsForest(view, me, choice) ?? wantsMountain(view, me, choice, registry, rank);
   }
 }
 
 // What to pick in a skill's selection: ids, 'cancel', or null (not a skill selection the bot knows).
-export function skillSelection(view: GameState, me: Seat, selection: PendingSelection, registry: ContentRegistry): string[] | 'cancel' | null {
+export function skillSelection(view: GameState, me: Seat, selection: PendingSelection, registry: ContentRegistry, rank?: TargetRanker): string[] | 'cancel' | null {
   if (selection.reason.kind !== 'ability' || selection.reason.owner.kind !== 'general') return null;
   const owner = selection.reason.owner;
   const eligible = selection.eligibleIds;
   const hand = new Set(handCards(view, me).map((c) => c.instanceId));
   switch (baseSkillId(selection.reason.abilityId)) {
     case 'devil': {
-      const id = selection.then.kind === 'replace-judgment' ? devilCard(view, me, selection.then.judgment, registry, eligible) : null;
+      const id = selection.then.kind === 'replace-judgment' ? devilCard(view, me, selection.then.judgment, registry, eligible, rank) : null;
       return id ? [id] : 'cancel';
     }
     case 'displace': {
@@ -154,8 +168,9 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
     case 'kingdomWars:swift-and-deadly': {
       if (selection.of === 'cards') return [leastUseful(view, registry, eligible)[0]];
       const seats = eligible.map((id) => view.seats.find((s) => s.id === id)!).filter(Boolean);
-      const foes = byLowestHp(farFoes(view, me).filter((s) => eligible.includes(s.id)));
-      return [(foes[0] ?? byLowestHp(seats.filter((s) => !isAlly(me, s, view)))[0] ?? seats[0]).id];
+      const foes = swiftTargets(view, me, registry, rank, eligible);
+      const nonAllies = rankHarmTargets(view, me, seats.filter((s) => !isAlly(me, s, view)).map((s) => s.id), rank, lowestHpFirst);
+      return [(foes[0] ?? nonAllies[0] ?? seats[0]).id];
     }
     case 'kindness': {
       // The thresholds below are Identity's (2); a variant with another number (Benevolence: 3) is played legally, not optimally.
@@ -174,7 +189,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       return leastUseful(view, registry, eligible).slice(0, selection.min);
     case 'sow-revolt': {
       const seats = eligible.map((id) => view.seats.find((s) => s.id === id)!).filter(Boolean);
-      return [(byLowestHp(seats.filter((s) => !isAlly(me, s, view)))[0] ?? seats[0]).id];
+      return [(rankHarmTargets(view, me, seats.filter((s) => !isAlly(me, s, view)).map((s) => s.id), rank, lowestHpFirst)[0] ?? seats[0]).id];
     }
     case 'bestowed-rouse':
       return 'cancel'; // keep both cards
@@ -185,7 +200,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
       return [truthful ?? leastUseful(view, registry, eligible)[0]];
     }
     default:
-      return windSelection(view, me, selection, registry) ?? forestSelection(view, me, selection, registry) ?? mountainSelection(view, me, selection, registry);
+      return windSelection(view, me, selection, registry, rank) ?? forestSelection(view, me, selection, registry, rank) ?? mountainSelection(view, me, selection, registry, rank);
   }
 }
 
@@ -204,11 +219,12 @@ function leastShownSuit(view: GameState, seatId: string): CardInstance['suit'] {
 
 // The option to pick in a skill's choice of a seat, suit or label (or who gets
 // given cards); null when it isn't one the bot knows.
-export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry): string | null {
+export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, registry: ContentRegistry, rank?: TargetRanker): string | null {
   if (choice.reason.kind !== 'ability' || choice.reason.owner.kind !== 'general') return null;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
   const ally = seats.find((s) => s.id !== me.id && isAlly(me, s, view));
-  const firstNonAlly = byLowestHp(seats.filter((s) => s.id !== me.id && !isAlly(me, s, view)))[0];
+  // The seat to harm (rules E1, E3): the best non-ally offered (the weakest without a ranker).
+  const firstNonAlly = harmTargetsOf(view, me, choice, registry, rank, lowestHpFirst)[0];
   // For a harmful effect with no non-ally to aim at: the seat that is hurt least, an ally.
   const cancelId = choice.options.find((o) => o.id === 'cancel')?.id;
   const harmless = ally ?? seats[0];
@@ -253,12 +269,12 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
       return choice.options.some((o) => o.id === pick) ? pick : choice.options[0].id;
     }
     default:
-      return windChoice(view, me, choice) ?? fireChoice(view, me, choice, registry) ?? forestChoice(view, me, choice, registry) ?? mountainChoice(view, me, choice, registry);
+      return windChoice(view, me, choice, registry, rank) ?? fireChoice(view, me, choice, registry, rank) ?? forestChoice(view, me, choice, registry, rank) ?? mountainChoice(view, me, choice, registry, rank);
   }
 }
 
 // Whether the bot uses `skillId` now, in its Play Phase.
-function wantsActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry): boolean {
+function wantsActive(view: GameState, me: Seat, skillId: string, registry: ContentRegistry, rank: TargetRanker | undefined): boolean {
   const hand = handCards(view, me);
   const spare = hand.filter((c) => keepRank(view, registry, c.instanceId) < 4);
   const allies = others(view, me).filter((s) => isAlly(me, s, view));
@@ -270,7 +286,7 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
     // Swift and Deadly: a Sha in hand, a far foe to reach with it, and another card to spare.
     case 'kingdomWars:swift-and-deadly': {
       const sha = hand.find((c) => isShaCard(registry, c.definitionId));
-      return !!sha && farFoes(view, me).length > 0 && ownCards(view, me).some((c) => c.instanceId !== sha.instanceId && keepRank(view, registry, c.instanceId) < 3);
+      return !!sha && swiftTargets(view, me, registry, rank).length > 0 && ownCards(view, me).some((c) => c.instanceId !== sha.instanceId && keepRank(view, registry, c.instanceId) < 3);
     }
     // Call of Valour: once per game, so only when it pays: he is hurt, or an ally of his Kingdom draws too. (Its own Kingdom is a bot's seat's.)
     case 'kingdomWars:call-of-valour':
@@ -280,10 +296,10 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
     case 'marriage':
       return spare.length >= 2 && (hurt(me) || allies.some((s) => hurt(s) && genderOf(s, registry) === 'male'));
     case 'sow-revolt':
-      return others(view, me).some((s) => !isAlly(me, s, view));
+      return others(view, me).some((s) => mayHarm(view, me, s, rank));
     case 'sow-discord': {
       const males = others(view, me).filter((s) => genderOf(s, registry) === 'male');
-      return males.length >= 2 && males.some((s) => !isAlly(me, s, view));
+      return males.length >= 2 && males.some((s) => mayHarm(view, me, s, rank));
     }
     case 'kindness': {
       // Identity's threshold (2) also for a variant (Benevolence heals at 3): legal, not smart.
@@ -291,7 +307,7 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
       return allies.length > 0 && (hand.length > 3 || (hurt(me) && given < 2 && hand.length >= 2));
     }
     default:
-      return wantsFireActive(view, me, skillId, registry) ?? wantsForestActive(view, me, skillId) ?? wantsMountainActive(view, me, skillId, registry) ?? false;
+      return wantsFireActive(view, me, skillId, registry, rank) ?? wantsForestActive(view, me, skillId, rank) ?? wantsMountainActive(view, me, skillId, registry, rank) ?? false;
   }
 }
 
@@ -302,13 +318,13 @@ const ACTIVE_ORDER = {
 
 // The active skill to use now from `group`, if any: offered and wanted (using it
 // reveals its General: a bot has no reason to hide).
-export function pickActiveSkill(view: GameState, me: Seat, legal: Action[], registry: ContentRegistry, group: 'early' | 'late'): UseSkill | undefined {
+export function pickActiveSkill(view: GameState, me: Seat, legal: Action[], registry: ContentRegistry, group: 'early' | 'late', rank?: TargetRanker): UseSkill | undefined {
   const offered = legal.filter((a): a is UseSkill => a.kind === 'UseSkillAction' && a.owner.kind === 'general');
   for (const skillId of ACTIVE_ORDER[group]) {
     // A variant is offered under its own id and used like its base.
     const action = offered.find((a) => a.owner.kind === 'general' && baseSkillId(a.owner.skillId) === skillId);
     if (!action || action.owner.kind !== 'general') continue;
-    if (wantsActive(view, me, action.owner.skillId, registry)) return action;
+    if (wantsActive(view, me, action.owner.skillId, registry, rank)) return action;
   }
   return undefined;
 }

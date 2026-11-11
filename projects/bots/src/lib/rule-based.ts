@@ -115,6 +115,9 @@ function decide(
   // Rule D1: the cards the Discard Phase would throw away, spent first by the Tool rules.
   const surplusOf = (self: Seat) => (features.noWaste ? Math.max(0, handCards(view, self).length - handLimit(view, self.id)) : 0);
   const ruleContext = (self: Seat): BotRuleContext => ({ view, me: self, legal, offered, registry, rank, surplus: surplusOf(self) });
+  // Rule E1: the legacy per-skill picks rank the seats they harm (and drop HOLD_FIRE ones) only with noWaste;
+  // without, they keep their own order, so the frozen policies decide as before.
+  const legacyRank = features.noWaste ? rank : undefined;
 
   // 1. General selection: highest combined max HP, first on ties.
   if (view.phase === 'GeneralSelection') {
@@ -143,7 +146,7 @@ function decide(
     const ruleId = reason.kind === 'ability' ? reason.abilityId : reason.kind === 'card-effect' ? reason.card.as : undefined;
     const rulePick = ruleFor(features, ruleId)?.select?.(ruleContext(me), selection);
     const skillPick =
-      rulePick ?? (reason.kind === 'ability' && ruled(reason.abilityId) ? null : (fireSelection(view, me, selection, registry) ?? skillSelection(view, me, selection, registry)));
+      rulePick ?? (reason.kind === 'ability' && ruled(reason.abilityId) ? null : (fireSelection(view, me, selection, registry, legacyRank) ?? skillSelection(view, me, selection, registry, legacyRank)));
     if (skillPick === 'cancel' && cancel) return take(cancel);
     if (Array.isArray(skillPick) && skillPick.length >= selection.min) return take({ ...selectTemplate, ids: skillPick });
     if (selection.of === 'seats') {
@@ -173,7 +176,7 @@ function decide(
     if (choiceNow.reason.kind === 'ability' && choiceNow.verb === 'use') {
       const abilityId = choiceNow.reason.abilityId;
       const ruleWants = ruleFor(features, abilityId)?.wantsToUse?.(ruleContext(me), choiceNow);
-      const skillWants = ruled(abilityId) ? null : wantsSkill(view, me, choiceNow, registry);
+      const skillWants = ruled(abilityId) ? null : wantsSkill(view, me, choiceNow, registry, legacyRank);
       // A compulsory skill's ask is only about revealing, and a bot has no reason to hide: it says Use.
       const compulsory = findSkill(registry, abilityId)?.compulsory === true;
       // Rule D2: an optional ask whose only effect is revealing the General (and the log line) is declined.
@@ -185,7 +188,7 @@ function decide(
     // A skill's pick of a seat, a suit or a label, or who gets given cards.
     if (choiceNow.reason.kind === 'ability' && (choiceNow.verb === 'pick' || choiceNow.verb === 'give')) {
       const abilityId = choiceNow.reason.abilityId;
-      const optionId = ruleFor(features, abilityId)?.choose?.(ruleContext(me), choiceNow) ?? (ruled(abilityId) ? null : skillChoice(view, me, choiceNow, registry));
+      const optionId = ruleFor(features, abilityId)?.choose?.(ruleContext(me), choiceNow) ?? (ruled(abilityId) ? null : skillChoice(view, me, choiceNow, registry, legacyRank));
       return take(choiceActions.find((a) => a.optionId === optionId) ?? choiceActions[0]);
     }
     const decline = choiceActions.find((a) => a.optionId === 'decline');
@@ -232,7 +235,7 @@ function decide(
           : reason.kind === 'wuxie'
             ? !!self && wuxieWorthCancelling(view, self, reason, responseRules.wuxie)
             : reason.kind === 'ability' && (baseSkillId(reason.abilityId) === 'upheaval' || reason.abilityId === 'instigate')
-              ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId)
+              ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId, legacyRank)
               : false; // never counter a Wuxie Kongjie
     const answers = legal.filter((a): a is Extract<Action, { kind: 'RespondAction' }> => a.kind === 'RespondAction');
     // The first rule whose card is among the answers picks which one to give; then a Peach before anything
@@ -303,7 +306,7 @@ function decide(
 
     const earlyRule = rulePlay('early');
     if (earlyRule) return take(earlyRule);
-    const early = pickActiveSkill(view, self, unruled, registry, 'early');
+    const early = pickActiveSkill(view, self, unruled, registry, 'early', legacyRank);
     if (early) return take(early);
 
     // Barbarians and Hail of Arrows hit everyone else: only worth it when
@@ -407,7 +410,7 @@ function decide(
     if (coerce) return take(coerce);
     const lateRule = rulePlay('late');
     if (lateRule) return take(lateRule);
-    const late = pickActiveSkill(view, self, unruled, registry, 'late');
+    const late = pickActiveSkill(view, self, unruled, registry, 'late', legacyRank);
     if (late) return take(late);
     if (endPhase) return take(endPhase);
   }
