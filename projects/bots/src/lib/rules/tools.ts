@@ -28,12 +28,12 @@ const targetOf = (ctx: BotRuleContext, p: PlayCard) => {
 const byRank = (ctx: BotRuleContext) => (a: Seat, b: Seat) => ctx.rank(ctx.view, ctx.me, b) - ctx.rank(ctx.view, ctx.me, a) || a.index - b.index;
 
 // Amass (early): played when at least one ally exists, as they all draw 2 and discard 2 with the bot.
-// Alone, it is kept: it costs a card for a reshuffle of two.
+// Alone, it is kept: it costs a card for a reshuffle of two, unless the card is surplus (rule D1).
 export const amassRule: BotRule = {
   id: 'amass',
   play: {
     when: 'early',
-    pick: (ctx) => (alliesOf(ctx).length > 0 ? untargetedPlay(playsOf(ctx, ctx.legal, 'amass')) : undefined),
+    pick: (ctx) => (alliesOf(ctx).length > 0 || ctx.surplus > 0 ? untargetedPlay(playsOf(ctx, ctx.legal, 'amass')) : undefined),
   },
 };
 
@@ -52,12 +52,12 @@ export const allyFarAttackNearRule: BotRule = {
 };
 
 // Harvest (early): played when allies + 1 (the bot) outnumber the foes. Each seat takes a card, so it only
-// pays when the bot's side takes more than half.
+// pays when the bot's side takes more than half; a surplus card is played anyway (rule D1).
 export const harvestRule: BotRule = {
   id: 'harvest',
   play: {
     when: 'early',
-    pick: (ctx) => (alliesOf(ctx).length + 1 > foesOf(ctx).length ? untargetedPlay(playsOf(ctx, ctx.legal, 'harvest')) : undefined),
+    pick: (ctx) => (alliesOf(ctx).length + 1 > foesOf(ctx).length || ctx.surplus > 0 ? untargetedPlay(playsOf(ctx, ctx.legal, 'harvest')) : undefined),
   },
 };
 
@@ -119,6 +119,9 @@ export const chainsRule: BotRule = {
         }
         const recast = untargetedPlay(plays);
         if (recast) return recast;
+        // Rule D1: a surplus card goes on one foe when no better play exists.
+        const single = ctx.surplus > 0 && foes.length > 0 ? chainsAt(plays, [foes[0].id]) : undefined;
+        if (single) return single;
       }
       return undefined;
     },
@@ -126,13 +129,14 @@ export const chainsRule: BotRule = {
 };
 
 // Blaze (late): at the foe the ranker likes most that holds at least 1 hand card, only while the bot holds 3
-// or more other hand cards (it needs one of the shown suit). Never at itself. As Fire Strategy today.
+// or more other hand cards (it needs one of the shown suit), or any surplus card (rule D1). Never at itself.
+// As Fire Strategy today.
 export const blazeRule: BotRule = {
   id: 'blaze',
   play: {
     when: 'late',
     pick: (ctx) => {
-      if (handCards(ctx.view, ctx.me).length - 1 < 3) return undefined;
+      if (ctx.surplus === 0 && handCards(ctx.view, ctx.me).length - 1 < 3) return undefined;
       return playsOf(ctx, ctx.offered, 'blaze')
         .filter((p) => !p.pickTargets && p.targets.length === 1)
         .map((p) => ({ p, target: targetOf(ctx, p) }))

@@ -12,6 +12,8 @@ export interface BotRuleContext {
   offered: Action[];
   registry: ContentRegistry;
   rank: TargetRanker;
+  // Hand cards beyond the hand limit, which the Discard Phase would throw away (0 unless `noWaste`). Rule D1.
+  surplus: number;
 }
 
 // One piece of bot knowledge about a card or skill, keyed by its id in a BotRuleRegistry. Every hook is optional;

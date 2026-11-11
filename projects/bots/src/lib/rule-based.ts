@@ -1,8 +1,8 @@
-import type { Action, ContentRegistry, GameState, Seat } from 'engine';
+import type { Action, ContentRegistry, Effect, GameState, Seat } from 'engine';
 import { conversionsOf, findSkill, sameAbilityOwner } from 'engine';
 import { baseSkillId } from 'content';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
-import { attackable, definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, RankerFactory, TargetRanker, weakestFirst } from './helpers';
+import { attackable, definitionIdOf, handCards, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, RankerFactory, TargetRanker, weakestFirst } from './helpers';
 import { tableRank } from './table-rank';
 import { massAttackWorthIt, relationOf } from './table';
 import { dangerOf } from './danger';
@@ -14,6 +14,7 @@ import { upheavalVictimIsFoe } from './forest';
 import { BotFeatures, BotRule, BotRuleContext, NO_FEATURES } from './rules/registry';
 import { KINGDOM_WARS_RULES } from './rules/kingdom-wars';
 import { withoutWaste } from './waste';
+import { handLimit } from 'engine';
 import { duelWorthStarting, shouldAnswer } from './answer';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
@@ -112,7 +113,9 @@ function decide(
   // A skill id with a registry entry belongs to its rule: the per-skill Identity code (skills.ts and the
   // fire, forest, mountain and wind helpers) skips it, and a hook returning undefined leaves the generic fallback.
   const ruled = (id: string) => ruleFor(features, id) !== undefined;
-  const ruleContext = (self: Seat): BotRuleContext => ({ view, me: self, legal, offered, registry, rank });
+  // Rule D1: the cards the Discard Phase would throw away, spent first by the Tool rules.
+  const surplusOf = (self: Seat) => (features.noWaste ? Math.max(0, handCards(view, self).length - handLimit(view, self.id)) : 0);
+  const ruleContext = (self: Seat): BotRuleContext => ({ view, me: self, legal, offered, registry, rank, surplus: surplusOf(self) });
 
   // 1. General selection: highest combined max HP, first on ties.
   if (view.phase === 'GeneralSelection') {
@@ -174,7 +177,9 @@ function decide(
       const skillWants = ruled(abilityId) ? null : wantsSkill(view, me, choiceNow, registry);
       // A compulsory skill's ask is only about revealing, and a bot has no reason to hide: it says Use.
       const compulsory = findSkill(registry, abilityId)?.compulsory === true;
-      const wants = compulsory || (ruleWants ?? skillWants ?? wantsToUse(view, me, abilityId, choiceNow.reason.targetSeatId));
+      // Rule D2: an optional ask whose only effect is revealing the General (and the log line) is declined.
+      const revealOnly = features.noWaste && !compulsory && onlyReveals(choiceNow.options.find((o) => o.id === 'use')?.effects ?? []);
+      const wants = !revealOnly && (compulsory || (ruleWants ?? skillWants ?? wantsToUse(view, me, abilityId, choiceNow.reason.targetSeatId)));
       const pick = choiceActions.find((a) => a.optionId === (wants ? 'use' : 'decline'));
       if (pick) return take(pick);
     }
@@ -414,6 +419,9 @@ function decide(
 
 // Simple, explainable opponent; see the bot-opponents design spec for its rules.
 // The ranker decides which non-ally a targeted play goes to (a RankerFactory is built per decision).
+// Whether `effects` do nothing but reveal a General and log the use (no draw, heal, damage, card move or next step).
+const onlyReveals = (effects: Effect[]) => effects.every((e) => e.kind === 'RevealGeneralEffect' || e.kind === 'AbilityUsedEffect');
+
 export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFactory, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES, generalValues?: Readonly<Record<string, number>>, features: BotFeatures = NO_FEATURES): BotPolicy {
   return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, generalValues, features, view, seatId, legal, registry, memory) };
 }

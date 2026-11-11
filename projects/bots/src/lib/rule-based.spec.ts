@@ -1,5 +1,5 @@
 import type { Action, CardDefinition, CardZone, DecisionReason, EquipSlot, PendingArrangement, PendingChoice, PendingSelection, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
-import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy } from './rule-based';
+import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy, ruleBasedV5Policy, ruleBasedWastePolicy } from './rule-based';
 import { NO_CARD_PLAY_RULES } from './card-play';
 import { weakestFirst } from './helpers';
 import { targetScore } from './targeting';
@@ -757,5 +757,43 @@ describe('ruleBasedPolicy: elemental Slash and Chains', () => {
     expect(pick(h(['f', 'fire-attack'], ['c', 'chains']))).toEqual(discard('c'));
     expect(pick(h(['e', 'shan'], ['f', 'lightning-attack']))).toEqual(discard('f'));
     expect(pick(h(['f', 'fire-attack'], ['b', 'blade']))).toEqual(discard('b'));
+  });
+});
+
+describe('reveal for nothing (D2)', () => {
+  const ask = (skillId: string, effects: PendingChoice['options'][number]['effects']): PendingChoice => ({
+    id: 'ask', seatId: 'seat-0', verb: 'use',
+    reason: { kind: 'ability', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId }, abilityId: skillId },
+    options: [{ id: 'use', shows: { kind: 'use', reveals: 'main' }, effects }, { id: 'decline', shows: { kind: 'decline' }, effects: [] }],
+  });
+  const only: PendingChoice['options'][number]['effects'] = [
+    { kind: 'RevealGeneralEffect', seatId: 'seat-0', slot: 'main' },
+    { kind: 'AbilityUsedEffect', owner: { kind: 'general', seatId: 'seat-0', slot: 'main', skillId: 'eight-trigrams' }, abilityId: 'eight-trigrams', outcome: 'used' },
+  ];
+  const asked: Action[] = ['use', 'decline'].map((optionId) => ({ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'ask', optionId }));
+  // The test registry's Generals have no skills: this one carries a compulsory skill for the compulsory case.
+  const withCompulsory: ContentRegistry = { ...registry, generals: new Map([...registry.generals, ['w1', { ...registry.generals.get('w1')!, skills: [{ id: 'matchless', compulsory: true }] }]]) };
+  const answer = (policy: BotPolicy, choice: PendingChoice) => {
+    const s = view({ seats: [seat('seat-0', 0, 'Wei', 4), seat('seat-1', 1, 'hidden', 6)], pendingChoice: choice });
+    const action = policy.decide(s, 'seat-0', asked, withCompulsory, null).action;
+    return action.kind === 'ChooseOptionAction' ? action.optionId : action.kind;
+  };
+
+  it('declines an optional use that only reveals', () => {
+    expect(answer(ruleBasedWastePolicy, ask('eight-trigrams', only))).toBe('decline');
+  });
+
+  it('rule-based-v5 still uses it', () => {
+    expect(answer(ruleBasedV5Policy, ask('eight-trigrams', only))).toBe('use');
+  });
+
+  it('uses it when the effects do more than reveal', () => {
+    const more = [...only, { kind: 'DrawCardsEffect', seatId: 'seat-0', count: 1 } as const];
+    expect(answer(ruleBasedWastePolicy, ask('eight-trigrams', more))).toBe('use');
+  });
+
+  it('a compulsory skill is still used', () => {
+    expect(answer(ruleBasedWastePolicy, ask('matchless', only))).toBe('use');
+    expect(answer(ruleBasedV5Policy, ask('matchless', only))).toBe('use');
   });
 });
