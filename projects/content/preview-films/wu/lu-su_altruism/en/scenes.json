@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wu",
+  "palettes": {
+    "main": "#2f9e58",
+    "ground": "#0E2A1D",
+    "second": "#E8F3EC",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0E2A1D",
+  "fonts": {
+    "display": {
+      "family": "Zilla Slab",
+      "or": "fraunces-display"
+    },
+    "sans": "instrument-sans"
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Lu Su: Altruism",
+      "dur": 8.4,
+      "desc": "Lu Su draws two extra cards, then gives half of a hand over five to the seat with fewest cards."
+    }
+  ]
+}
