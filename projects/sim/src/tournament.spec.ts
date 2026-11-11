@@ -149,3 +149,14 @@ describe('runTournament, mirrored', () => {
     expect(formatReport(runTournament({ ...mirrored, mirrored: false }))).toMatch(/over 6 games/);
   });
 });
+
+describe('runTournament usage', () => {
+  it('reports usage per side and prints a Usage section', () => {
+    const report = runTournament({ games: 2, seats: 4, challenger: 'rule-based-kw', baseline: 'rule-based-v3', firstSeed: 0, mirrored: true });
+    expect(report.usage.challenger).toBeDefined();
+    expect(report.usage.baseline).toBeDefined();
+    expect(report.part1Uses.games).toBeLessThanOrEqual(1);
+    expect(formatReport(report)).toContain('Usage');
+    expect(formatReport(report)).toContain('Part 1 uses per game:');
+  });
+});

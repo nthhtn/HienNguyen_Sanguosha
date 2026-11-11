@@ -28,7 +28,9 @@ export function runGame(
   maxActions = 2000,
   botKind: BotKind = 'random',
   onStep?: (state: GameState) => void,
-  policyFor?: (seatId: string) => BotKind
+  policyFor?: (seatId: string) => BotKind,
+  // Called for every decision, random seats included, before it resolves.
+  onDecision?: (d: { seatId: string; state: GameState; legal: Action[]; action: Action }) => void
 ): RunGameResult {
   let state = initialState;
   let botRng = createRng(botRngSeed);
@@ -42,12 +44,14 @@ export function runGame(
       const picked = pickRandomAction(state, botRng, ctx.registry);
       botRng = picked.rng;
       action = picked.action;
+      if (onDecision && seatId !== null) onDecision({ seatId, state, legal: getLegalActions(state, seatId, ctx.registry), action });
     } else {
       if (seatId === null) throw new Error('No seat is able to act');
       const legal = getLegalActions(state, seatId, ctx.registry);
       const decision = policyById(kind).decide(redactStateForSeat(state, seatId), seatId, legal, ctx.registry, memories.get(seatId) ?? null);
       memories.set(seatId, decision.memory);
       action = decision.action;
+      onDecision?.({ seatId, state, legal, action });
     }
     state = resolve(state, action, ctx).state;
     onStep?.(state);
