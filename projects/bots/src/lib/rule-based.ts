@@ -218,9 +218,11 @@ function decide(
     const reason = view.pendingResponse.reason;
     const self = view.seats.find((s) => s.id === seatId);
     const dying = reason?.kind === 'dying' ? view.seats.find((s) => s.id === reason.seatId) : undefined;
+    // The answers it can give here: answer cards, and conversions made at response time (Dragon Courage...).
+    const answersAvailable = legal.filter((a) => a.kind === 'RespondAction' || (a.kind === 'UseConversionAction' && !!a.pendingResponseId)).length;
     const worthAnswering =
       !reason || reason.kind === 'card-effect'
-        ? !features.noWaste || !self || shouldAnswer(view, self, registry, dangerOf(registry)) // rules C3, C3a
+        ? !features.noWaste || !self || shouldAnswer(view, self, registry, dangerOf(registry), answersAvailable) // rules C3, C3a
         : reason.kind === 'dying'
           ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying, view) || (features.tableReading && relationOf(view, self, dying) === 'truce'))
           : reason.kind === 'wuxie'

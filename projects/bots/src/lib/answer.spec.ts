@@ -63,6 +63,26 @@ describe('answer: Matchless (C3)', () => {
   });
 });
 
+describe('answer: Matchless, later windows and mass cards (C3, C3a)', () => {
+  const lu = { 'seat-b': ['lu-bu', 'filler-dong-zhuo', true] as [string, string, boolean] };
+  it('keeps answering the second window after the first Shan', () => {
+    const first = sha(table({ ...cards('seat-a', 'shan', 'shan'), ...cards('seat-b', 'sha') }, { owner: 'seat-b', hp: { 'seat-a': 3 }, generals: lu, kingdoms: ALLIED }));
+    const one = decideWaste(first);
+    expect(one.kind).toBe('RespondAction');
+    const second = act(first, one);
+    expect(second.pendingResponse?.respondingSeatId).toBe('seat-a');
+    expect(decideWaste(second).kind).toBe('RespondAction');
+  });
+  it('a Hail of Arrows from Lu Bu needs one answer: one Shan at 1 HP answers', () => {
+    const s = hitOn(table({ ...cards('seat-a', 'shan'), ...cards('seat-b', 'hail-of-arrows') }, { owner: 'seat-b', hp: { 'seat-a': 1 }, generals: lu, kingdoms: ALLIED }), 'seat-b', 'hail-of-arrows');
+    expect(kind(s)).toBe('RespondAction');
+  });
+  it('counts a Shan made by a conversion: Dragon Courage with a Sha and no Shan answers a lethal Sha', () => {
+    const s = sha(table({ ...cards('seat-a', 'sha'), ...cards('seat-b', 'sha') }, { owner: 'seat-b', hp: { 'seat-a': 1 }, generals: { 'seat-a': ['zhao-yun', 'filler-dong-zhuo', true] }, kingdoms: ALLIED }));
+    expect(kind(s)).toBe('UseConversionAction');
+  });
+});
+
 describe('answer: a Duel (C3)', () => {
   const duel = (c: Record<string, CardInstance[]>, o: Parameters<typeof table>[1]) => hitOn(table({ ...cards('seat-b', 'duel'), ...c }, { owner: 'seat-b', ...o }), 'seat-b', 'duel');
   it('passes against a truce partner when not exposed', () => {
