@@ -6,6 +6,7 @@ import { parseBotKind, runGame } from './runGame';
 import { formatReport, runTournament } from './tournament';
 import { collectSamples, fitValues, formatTable } from './fitGenerals';
 import { checkInvariants } from './invariants';
+import { compareBalance, formatBalanceReport, formatComparison, runBalance } from './balance';
 
 const registry = buildContentRegistry();
 
@@ -71,6 +72,16 @@ if (mode === 'single') {
     console.error(err instanceof Error ? err.message : String(err));
     process.exitCode = 1;
   }
+} else if (mode === 'balance') {
+  try {
+    const [games, seats, first] = [Number(arg1 ?? 100), Number(arg2 ?? 6), Number(arg5 ?? 0)];
+    const a = runBalance({ games, seats, policy: parseBotKind(arg3 ?? 'rule-based-table'), firstSeed: first });
+    const b = runBalance({ games, seats, policy: parseBotKind(arg4 ?? 'rule-based-v4'), firstSeed: first });
+    console.log(`${formatBalanceReport(a)}\n${formatBalanceReport(b)}\n${formatComparison(compareBalance(a, b))}`);
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
+    process.exitCode = 1;
+  }
 } else if (mode === 'fit-generals') {
   try {
     const [games, seats, first] = [Number(arg1 ?? 1000), Number(arg2 ?? 4), Number(arg3 ?? 0)];
@@ -81,7 +92,7 @@ if (mode === 'single') {
   }
 } else {
   console.error(
-    'Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats> | sim tournament <games> <numSeats> <challenger> <baseline> [firstSeed] [mirrored|unmirrored] | sim fit-generals <games> <numSeats> <firstSeed>'
+    'Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats> | sim balance <games> <numSeats> <policyA> <policyB> <firstSeed> | sim tournament <games> <numSeats> <challenger> <baseline> [firstSeed] [mirrored|unmirrored] | sim fit-generals <games> <numSeats> <firstSeed>'
   );
   process.exitCode = 1;
 }
