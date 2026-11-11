@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "qun",
+  "palettes": {
+    "main": "#8a7f8c",
+    "ground": "#1E1B24",
+    "second": "#EFEAF1",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#1E1B24",
+  "fonts": {
+    "display": {
+      "family": "Zilla Slab",
+      "or": "fraunces-display"
+    },
+    "sans": "instrument-sans"
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Zou Shi: Impetus for Conflicts",
+      "dur": 7.4,
+      "desc": "Zou Shi discards an Equipment card to hide one of the Generals of a seat that has both exposed."
+    }
+  ]
+}
