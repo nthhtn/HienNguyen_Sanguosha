@@ -2982,10 +2982,10 @@
     }
   },
   "preview/index.json": {
-    "output": "918bae907960048d6a8c22ce24ae35aae1fe58116b483b7ed92167646207ea24",
+    "output": "ae5787e098f01bb0a01dede52cddf4daa74545982afc621d56d61f445faf66ff",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "preview/index.json": "918bae907960048d6a8c22ce24ae35aae1fe58116b483b7ed92167646207ea24"
+      "preview/index.json": "ae5787e098f01bb0a01dede52cddf4daa74545982afc621d56d61f445faf66ff"
     }
   },
   "preview/qun/cai-wenji_dirge_en.mp4": {
@@ -3184,6 +3184,20 @@
       "preview/qun/ma-teng_call-of-valour_vi.mp4": "28ca252508b5668b1ea853c2b606398e53af80b5ddd041019e601d9e3057135b"
     }
   },
+  "preview/qun/ma-teng_horsemanship_en.mp4": {
+    "output": "b57a60edb5d8dfb53d27c0dcb80b83e3a6474fbad01048808e387efa867a49f8",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/ma-teng_horsemanship_en.mp4": "2d0b558370da37868422d07b12d99e675e1d499525301b712efd74c001d32393"
+    }
+  },
+  "preview/qun/ma-teng_horsemanship_vi.mp4": {
+    "output": "c9e4dc23c2a526ddbdeeafa342d16154c007668652e268109d951d06c15e08d7",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/ma-teng_horsemanship_vi.mp4": "79c460268c785d8ae628356a07d20f35779c9a800cc14e65c796910241889410"
+    }
+  },
   "preview/qun/pan-feng_insanity-axe_en.mp4": {
     "output": "97af7eb3666c6833708e324c95fb99af7ce97d4b9298de9e17554e0e30a27dfc",
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
@@ -3210,6 +3224,20 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/qun/pang-de_fearsome-advance_vi.mp4": "fc66829fe6c05dd26df9d5ba5394059cebb624f78225a208505cce3d53fe793a"
+    }
+  },
+  "preview/qun/pang-de_horsemanship_en.mp4": {
+    "output": "0ed45e10626e3f646fc1b46e6356a738c363fd8beae5c1d18367bd7ce34468a6",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/pang-de_horsemanship_en.mp4": "3e61fa460b3f80ed1b34af458ffb84b9e84a79c78b92b60c9f7463b603156366"
+    }
+  },
+  "preview/qun/pang-de_horsemanship_vi.mp4": {
+    "output": "a46dd8636f94334136162f2934820315b4afeca3c3c5bde5c731fba4f69243f4",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/pang-de_horsemanship_vi.mp4": "59e704f5e955b39fa5fb5fd5046786f0b66b97479af2946823a0ef34d47b9174"
     }
   },
   "preview/qun/tian-feng_deathly-counsel_en.mp4": {
@@ -3294,6 +3322,34 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/qun/zhang-jiao_lightning-strike_vi.mp4": "c21480977479925cee3670c39d3446a64e6c4ed970794826c747207f91f2a410"
+    }
+  },
+  "preview/qun/zou-shi_femme-fatale_en.mp4": {
+    "output": "1eb81b9c9d313d03cdcc911f3ba74e1db7b8704d8ccf518b22a8bd4a45dfaf13",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/zou-shi_femme-fatale_en.mp4": "df6d2568ff5ff87e80bfcb24e16bb95a1bb9d4e763030eea460188383e61830c"
+    }
+  },
+  "preview/qun/zou-shi_femme-fatale_vi.mp4": {
+    "output": "3f2d01ed9d5f7f2ab2ad649d831034e88954ea543cfc266ed342717427aca71b",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/zou-shi_femme-fatale_vi.mp4": "63b3171869e2a2267c187bca6f30c9765bfad4a827209dc0947a3a3c4e6598b0"
+    }
+  },
+  "preview/qun/zou-shi_impetus-for-conflicts_en.mp4": {
+    "output": "632cfee9a91820af2ee612064703131eec901a22472a9bf57eeb69dac4545ab3",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/zou-shi_impetus-for-conflicts_en.mp4": "f6adb34307d02cdff91268af5128d9b636c8fe80425ba317216ff1f06a8086a8"
+    }
+  },
+  "preview/qun/zou-shi_impetus-for-conflicts_vi.mp4": {
+    "output": "2aa9dc21216ce7f38eaf34773f74ff72f7d18fbc383b4dc5e20167ee5706e2d3",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/zou-shi_impetus-for-conflicts_vi.mp4": "1f304f9b6c43ac1e064748402d51d80a52193b19408ef352fc04f30a6fc9cc07"
     }
   },
   "preview/shu/fire-zhuge-liang_arson_en.mp4": {
