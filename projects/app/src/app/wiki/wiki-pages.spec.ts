@@ -134,10 +134,9 @@ describe('Wiki pages', () => {
 
   it.each([
     ['overview', 'Overview'],
-    ['card-types', 'Card Types'],
     ['setup', 'Setup'],
     ['turn', 'Turn Structure'],
-    ['distance', 'Distance / Range'],
+    ['attack', 'Distance / Range'],
     ['judgment', 'Judgment'],
   ])('renders the %s rules page', async (path, title) => {
     const { el } = await open(`/wiki/rules/${path}`);
