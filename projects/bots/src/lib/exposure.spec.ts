@@ -37,13 +37,17 @@ describe('exposure: duel outlook', () => {
 });
 
 describe('exposure: until the next turn', () => {
-  it('counts an enemy that acts before the bot and none when the bot acts next', () => {
+  it('counts an enemy that acts before the bot', () => {
     const s = table({ ...hiddenHand('seat-a', 5) }, { seats: 2, owner: 'seat-a' });
     expect(exposure(s, seat(s, 'seat-b'), registry, danger, { shanUsed: 0 }).threat).toBeGreaterThan(0);
-    const next = table({ ...hiddenHand('seat-a', 5) }, { seats: 2, owner: 'seat-b' });
-    const e = exposure(next, seat(next, 'seat-b'), registry, danger, { shanUsed: 0 });
-    expect(e.threat).toBe(0);
-    expect(e.threatSeats).toBe(0);
+  });
+  it('on its own turn counts every other living enemy in reach', () => {
+    const s = table({ ...hiddenHand('seat-b', 5) }, { seats: 2, owner: 'seat-a' });
+    expect(exposure(s, seat(s, 'seat-a'), registry, danger, { shanUsed: 0 }).threatSeats).toBe(1);
+  });
+  it('on its own turn counts nobody when every other seat is a revealed ally', () => {
+    const s = table({ ...hiddenHand('seat-b', 5) }, { seats: 2, owner: 'seat-a', kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Wei' } });
+    expect(exposure(s, seat(s, 'seat-a'), registry, danger, { shanUsed: 0 }).threat).toBe(0);
   });
   const hit = (s: GameState): GameState => ({
     ...s,

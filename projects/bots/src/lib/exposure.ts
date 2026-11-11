@@ -33,10 +33,10 @@ export function playableSha(view: GameState, me: Seat, registry: ContentRegistry
 }
 
 // Rule C1: the Sha a seat is expected to hold: face-shown Sha plus a share of its hidden hand cards.
-export function expectedSha(view: GameState, seat: Seat, registry?: ContentRegistry): number {
+export function expectedSha(view: GameState, seat: Seat, registry: ContentRegistry): number {
   const hand = handCards(view, seat);
   const hidden = hand.filter((c) => c.definitionId === HIDDEN_CARD).length;
-  const visible = hand.filter((c) => c.definitionId !== HIDDEN_CARD && (registry ? isShaCard(registry, c.definitionId) : c.definitionId === 'sha')).length;
+  const visible = hand.filter((c) => c.definitionId !== HIDDEN_CARD && isShaCard(registry, c.definitionId)).length;
   return visible + W.shaPerHandCard * hidden;
 }
 
@@ -69,7 +69,8 @@ export function exposure(
 
   const before = livingSeatOrderFrom(view, view.turn.ownerSeatId);
   const mineAt = before.indexOf(me.id);
-  const acting = mineAt === -1 ? [] : before.slice(0, mineAt);
+  // On the bot's own turn every other living seat still acts before its next one.
+  const acting = mineAt === -1 ? [] : view.turn.ownerSeatId === me.id ? before.slice(1) : before.slice(0, mineAt);
   let threat = 0;
   let threatSeats = 0;
   for (const id of acting) {
