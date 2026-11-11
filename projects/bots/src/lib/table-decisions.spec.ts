@@ -1,6 +1,8 @@
 import type { GameState, Kingdom, Seat } from 'engine';
+import { dangerOf } from './danger';
 import { ruleBasedV4Policy } from './rule-based';
-import { card, decideTable, decideWith, table } from './testing';
+import { massAttackWorthIt } from './table';
+import { card, decideTable, decideWith, registry, table } from './testing';
 
 const IDS = ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'];
 const DANGEROUS: [string, string] = ['kingdomWars:gan-ning', 'kingdomWars:taishi-ci'];
@@ -42,5 +44,64 @@ describe('a dying truce partner (rule 7)', () => {
   it('rule-based-v4 does not save the truce partner', () => {
     const s = dying(game(KINGDOMS, { cards: peach }), 'seat-b');
     expect(decideWith(ruleBasedV4Policy, s)).toMatchObject({ kind: 'PassAction' });
+  });
+});
+
+describe('Barbarians and Hail of Arrows weigh the table (rule 8)', () => {
+  const barbarians = { 'seat-a:hand': [card('b1', 'barbarians')] };
+  const plays = (a: { kind: string; cardInstanceId?: string }) => a.kind === 'PlayCardAction' && a.cardInstanceId === 'b1';
+  // Extra seats (seat-g, seat-h) cloned from seat-f, so a table can grow past 6 seats.
+  const extra = (s: GameState, specs: { kingdom: Kingdom; hp?: number; dangerous?: boolean }[]): GameState => {
+    const f = s.seats.find((x) => x.id === 'seat-f')!;
+    let out = s;
+    specs.forEach((spec, n) => {
+      const id = `seat-${'gh'[n]}`;
+      const seat: Seat = {
+        ...f, id, index: 6 + n, kingdom: spec.kingdom, combinedHp: spec.hp ?? 4,
+        ...(spec.dangerous ? { generals: { main: { generalDefinitionId: DANGEROUS[0], revealed: true }, deputy: { generalDefinitionId: DANGEROUS[1], revealed: true } } } : {}),
+        hand: { zoneId: `${id}:hand` }, equipped: { zoneId: `${id}:equip` }, judgment: { zoneId: `${id}:judgment` }, stash: { zoneId: `${id}:stash` },
+      };
+      const zone = (kind: 'hand' | 'equip' | 'judgment' | 'pile', name: string) => ({ id: `${id}:${name}`, kind, ownerSeatId: id, cards: [] });
+      out = { ...out, seats: [...out.seats, seat], zones: [...out.zones, zone('hand', 'hand'), zone('equip', 'equip'), zone('judgment', 'judgment'), zone('pile', 'stash')] };
+    });
+    return out;
+  };
+  const worth = (s: GameState) => massAttackWorthIt(s, s.seats[0], registry, dangerOf(registry));
+  // Shu bot seat-a; Wei leads with seat-c, seat-d and seat-e; seat-f is a Shu ally; seat-b (Wu) a truce partner.
+  const BASE: Kingdom[] = ['Shu', 'Wu', 'Wei', 'Wei', 'Wei', 'Shu'];
+
+  it('plays it against 3 enemies and 1.5 friends', () => {
+    const s = game(BASE, { cards: barbarians });
+    expect(worth(s)).toBe(true);
+    expect(plays(decideTable(s))).toBe(true);
+  });
+
+  it('holds it against 3 enemies and 3 friends (an ally and two partners at 2 HP)', () => {
+    const s = extra(game(BASE, { cards: barbarians, hp: { 'seat-b': 2 } }), [{ kingdom: 'Qun', hp: 2 }]);
+    expect(worth(s)).toBe(false);
+    expect(plays(decideTable(s))).toBe(false);
+  });
+
+  it('counts a dangerous healthy truce partner as an enemy', () => {
+    // Friends: ally 1 + two 2 HP partners 2 + a healthy partner 0.5 = 3.5 against 3 enemies.
+    const specs = (dangerous: boolean) => [{ kingdom: 'Qun' as Kingdom, hp: 2 }, { kingdom: 'Wu' as Kingdom, dangerous }];
+    const calm = extra(game(BASE, { cards: barbarians, hp: { 'seat-b': 2 } }), specs(false));
+    expect(worth(calm)).toBe(false);
+    expect(plays(decideTable(calm))).toBe(false);
+    const dangerous = extra(game(BASE, { cards: barbarians, hp: { 'seat-b': 2 } }), specs(true));
+    expect(worth(dangerous)).toBe(true);
+    expect(plays(decideTable(dangerous))).toBe(true);
+  });
+
+  it("keeps today's rule when no force leads", () => {
+    const s = game(['Shu', 'Wu', 'Wei', 'Qun', 'Shu', 'Wei'], { cards: barbarians });
+    expect(worth(s)).toBe(true);
+    expect(plays(decideTable(s))).toBe(true);
+    expect(plays(decideWith(ruleBasedV4Policy, s))).toBe(true);
+  });
+
+  it('rule-based-v4 keeps the old count where the table rule holds', () => {
+    const s = extra(game(BASE, { cards: barbarians, hp: { 'seat-b': 2 } }), [{ kingdom: 'Qun', hp: 2 }]);
+    expect(plays(decideWith(ruleBasedV4Policy, s))).toBe(true);
   });
 });

@@ -84,3 +84,31 @@ export function seatDanger(
 export function isDangerous(score: number): boolean {
   return score >= 2;
 }
+
+// Rule 8: whether Barbarians, Hail of Arrows or Random Strike's conversion is worth playing. Every other
+// living seat weighs in: an ally is 1 friend; a truce partner at 2 HP or less is 1 friend, a healthy one that
+// is not dangerous is 0.5 friend, a dangerous one is 1 enemy; a foe is 1 enemy. Play when enemies are strictly
+// more than friends. With no leading force there are no truce partners and today's rule stands (non-allies
+// at least as many as allies).
+export function massAttackWorthIt(
+  view: GameState, me: Seat, registry: ContentRegistry, danger: (generalId: string) => number,
+): boolean {
+  const others = view.seats.filter((s) => s.id !== me.id && !s.eliminated);
+  if (!leadingForceOf(view)) {
+    const allies = others.filter((s) => isAlly(me, s, view)).length;
+    return others.length - allies >= allies;
+  }
+  let friends = 0;
+  let enemies = 0;
+  for (const other of others) {
+    const relation = relationOf(view, me, other);
+    if (relation === 'ally') friends += 1;
+    else if (relation === 'foe') enemies += 1;
+    else if (relation === 'truce') {
+      if (other.combinedHp <= 2) friends += 1;
+      else if (isDangerous(seatDanger(view, other, registry, danger))) enemies += 1;
+      else friends += 0.5;
+    }
+  }
+  return enemies > friends;
+}

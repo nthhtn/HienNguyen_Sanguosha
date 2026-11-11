@@ -4,7 +4,8 @@ import { baseSkillId } from 'content';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
 import { attackable, definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, RankerFactory, TargetRanker, weakestFirst } from './helpers';
 import { tableRank } from './table-rank';
-import { relationOf } from './table';
+import { massAttackWorthIt, relationOf } from './table';
+import { dangerOf } from './danger';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
 import { bestPair, GENERAL_VALUES } from './general-values';
@@ -297,7 +298,8 @@ function decide(
     // non-allies are at least as many as allies.
     const others = view.seats.filter((s) => s.id !== seatId && !s.eliminated);
     const allies = others.filter((s) => isAlly(self, s, view)).length;
-    if (others.length - allies >= allies) {
+    // Rule 8 (reading the table): weigh truce partners by HP and danger; the old count otherwise.
+    if (features.tableReading ? massAttackWorthIt(view, self, registry, dangerOf(registry)) : others.length - allies >= allies) {
       const massAttack = untargetedOf('barbarians') ?? untargetedOf('hail-of-arrows');
       if (massAttack) return take(massAttack);
       // Random Strike: a Hail of Arrows from 2 same-suit cards.
