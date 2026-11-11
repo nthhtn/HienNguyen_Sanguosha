@@ -1,4 +1,15 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Route, Router, Routes } from '@angular/router';
+
+// Rules pages that became sections of a bigger page, and the section each now lives in.
+const MERGED_RULES_PAGES: Record<string, string> = {
+  allegiance: 'setup#allegiance',
+  'card-types': 'turn#card-types',
+  distance: 'attack#distance',
+  response: 'attack#response',
+  damage: 'attack#damage',
+  chains: 'judgment#chains',
+};
 
 const generals = () => import('./wiki-generals').then((m) => m.WikiGenerals);
 const kingdomWarsGenerals = () => import('./wiki-kingdom-wars-generals').then((m) => m.WikiKingdomWarsGenerals);
@@ -43,16 +54,13 @@ export const WIKI_ROUTES: Routes = [
     children: [
       { path: '', redirectTo: 'overview', pathMatch: 'full' },
       { path: 'overview', loadComponent: () => import('./rules/overview').then((m) => m.RulesOverview) },
-      { path: 'card-types', loadComponent: () => import('./rules/card-types').then((m) => m.RulesCardTypes) },
-      { path: 'setup', loadComponent: () => import('./rules/setup').then((m) => m.RulesSetup) },
-      { path: 'allegiance', loadComponent: () => import('./rules/allegiance').then((m) => m.RulesAllegiance) },
-      { path: 'turn', loadComponent: () => import('./rules/turn').then((m) => m.RulesTurn) },
-      { path: 'distance', loadComponent: () => import('./rules/distance').then((m) => m.RulesDistance) },
-      { path: 'response', loadComponent: () => import('./rules/response').then((m) => m.RulesResponse) },
-      { path: 'damage', loadComponent: () => import('./rules/damage').then((m) => m.RulesDamage) },
-      { path: 'judgment', loadComponent: () => import('./rules/judgment').then((m) => m.RulesJudgment) },
-      { path: 'chains', loadComponent: () => import('./rules/chains').then((m) => m.RulesChains) },
+      { path: 'setup', loadComponent: () => import('./rules/rules-groups').then((m) => m.RulesSetupGroup) },
+      { path: 'turn', loadComponent: () => import('./rules/rules-groups').then((m) => m.RulesTurnGroup) },
+      { path: 'attack', loadComponent: () => import('./rules/rules-groups').then((m) => m.RulesAttackGroup) },
+      { path: 'judgment', loadComponent: () => import('./rules/rules-groups').then((m) => m.RulesJudgmentGroup) },
       { path: 'glossary', loadComponent: () => import('./rules/glossary').then((m) => m.RulesGlossary) },
+      // The pages that were folded into another keep their addresses: each goes to its section.
+      ...Object.entries(MERGED_RULES_PAGES).map(([path, target]): Route => ({ path, pathMatch: 'full', redirectTo: () => inject(Router).parseUrl(`/wiki/rules/${target}`) })),
     ],
   },
   { path: '', redirectTo: 'kingdom-wars/generals', pathMatch: 'full' },

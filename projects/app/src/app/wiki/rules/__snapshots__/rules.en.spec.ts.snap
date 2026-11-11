@@ -44,7 +44,7 @@ exports[`the rules pages in English card-types keeps its text and links 1`] = `
     "/wiki/tools Tools",
     "/wiki/rules/judgment Judgment",
     "/wiki/equipment Equipment",
-    "/wiki/rules/distance Distance / Range",
+    "/wiki/rules/attack#distance Distance / Range",
   ],
   "text": [
     "Card Types",
@@ -111,7 +111,7 @@ exports[`the rules pages in English chains keeps its text and links 1`] = `
 exports[`the rules pages in English damage keeps its text and links 1`] = `
 {
   "links": [
-    "/wiki/rules/chains Chains",
+    "/wiki/rules/judgment#chains Chains",
     "/wiki/rules/setup Setup",
   ],
   "text": [
@@ -174,12 +174,12 @@ exports[`the rules pages in English distance keeps its text and links 1`] = `
 exports[`the rules pages in English glossary keeps its text and links 1`] = `
 {
   "links": [
-    "/wiki/rules/chains Chains",
+    "/wiki/rules/judgment#chains Chains",
     "/wiki/rules/judgment Judgment",
-    "/wiki/rules/response Response Windows",
-    "/wiki/rules/distance Distance / Range",
-    "/wiki/rules/distance Distance / Range",
-    "/wiki/rules/damage Damage and Dying",
+    "/wiki/rules/attack#response Response Windows",
+    "/wiki/rules/attack#distance Distance / Range",
+    "/wiki/rules/attack#distance Distance / Range",
+    "/wiki/rules/attack#damage Damage and Dying",
   ],
   "text": [
     "Glossary",
@@ -221,7 +221,7 @@ exports[`the rules pages in English judgment keeps its text and links 1`] = `
 exports[`the rules pages in English overview keeps its text and links 1`] = `
 {
   "links": [
-    "/wiki/rules/allegiance Allegiance",
+    "/wiki/rules/setup#allegiance Allegiance",
   ],
   "text": [
     "Overview",
@@ -288,7 +288,7 @@ exports[`the rules pages in English response keeps its text and links 1`] = `
 exports[`the rules pages in English setup keeps its text and links 1`] = `
 {
   "links": [
-    "/wiki/rules/allegiance Allegiance",
+    "/wiki/rules/setup#allegiance Allegiance",
     "/wiki/rules/turn Turn Structure",
   ],
   "text": [

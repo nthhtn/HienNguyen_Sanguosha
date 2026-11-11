@@ -35,7 +35,7 @@ export function parseRich(source: string): RichPart[] {
 @Component({
   selector: 'app-rich',
   imports: [RouterLink],
-  template: `@for (part of parts(); track $index) {@if (part.path) {<a [routerLink]="part.path">{{ part.text }}</a>} @else {<ng-container>{{ part.text }}</ng-container>}}`,
+  template: `@for (part of parts(); track $index) {@if (part.path) {<a [routerLink]="part.path" [fragment]="part.fragment">{{ part.text }}</a>} @else {<ng-container>{{ part.text }}</ng-container>}}`,
   styles: `:host { display: inline; }`,
 })
 export class RichText {
@@ -47,12 +47,13 @@ export class RichText {
     const key = this.key();
     const source = key ? this.i18n.t(key) : (this.text() ?? '');
     const locale = this.i18n.locale();
-    return parseRich(source).map((part): { text: string; path?: string } => {
+    return parseRich(source).map((part): { text: string; path?: string; fragment?: string } => {
       switch (part.kind) {
         case 'text':
           return { text: part.text };
         case 'link':
-          return { text: part.text, path: part.path };
+          // A link may end in #section, a heading on the page it opens.
+          return { text: part.text, path: part.path.split('#')[0], fragment: part.path.split('#')[1] };
         case 'card':
           return { text: cardDisplayData(part.id, locale)?.name ?? part.id };
         case 'force':

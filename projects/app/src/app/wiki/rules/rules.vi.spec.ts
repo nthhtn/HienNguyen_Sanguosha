@@ -60,13 +60,13 @@ describe('the rules texts in both languages', () => {
   it('a link is labelled as the page is named in the navigation, in each language', () => {
     const NAV: Record<string, MessageKey> = {
       '/wiki/rules/setup': 'nav.rules.setup',
-      '/wiki/rules/allegiance': 'nav.rules.allegiance',
+      '/wiki/rules/setup#allegiance': 'nav.rules.allegiance',
       '/wiki/rules/turn': 'nav.rules.turn',
-      '/wiki/rules/card-types': 'nav.rules.cardTypes',
-      '/wiki/rules/distance': 'nav.rules.distance',
-      '/wiki/rules/response': 'nav.rules.response',
-      '/wiki/rules/damage': 'nav.rules.damage',
-      '/wiki/rules/chains': 'nav.rules.chains',
+      '/wiki/rules/turn#card-types': 'nav.rules.cardTypes',
+      '/wiki/rules/attack#distance': 'nav.rules.distance',
+      '/wiki/rules/attack#response': 'nav.rules.response',
+      '/wiki/rules/attack#damage': 'nav.rules.damage',
+      '/wiki/rules/judgment#chains': 'nav.rules.chains',
       '/wiki/rules/glossary': 'nav.rules.glossary',
       '/wiki/rules/judgment': 'nav.rules.judgment',
       '/wiki/generals': 'nav.cards.generals',
@@ -94,7 +94,9 @@ describe('the rules pages in Vietnamese', () => {
     await harness.navigateByUrl(`/wiki/rules/${page}`);
     await harness.fixture.whenStable();
     harness.detectChanges();
-    return { harness, el: (harness.routeNativeElement as HTMLElement).querySelector('.rules-page') as HTMLElement };
+    // A topic that now lives in a bigger page is read as its own section.
+    const page$ = (harness.routeNativeElement as HTMLElement).querySelector('.rules-page') as HTMLElement;
+    return { harness, el: (page$.querySelector(`section#${page}`) as HTMLElement | null) ?? page$ };
   }
 
   it.each([
@@ -118,7 +120,7 @@ describe('the rules pages in Vietnamese', () => {
     const { el } = await open('overview');
     expect(text(el)).toContain('Ngụy, Thục, Ngô hoặc Quần');
     expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
-      '/wiki/rules/allegiance Phe phái', // the Winning list's cap sentence
+      '/wiki/rules/setup#allegiance Phe phái', // the Winning list's cap sentence
     ]);
   });
 
@@ -132,7 +134,7 @@ describe('the rules pages in Vietnamese', () => {
     const items = [...el.querySelector('ul')!.querySelectorAll('li')];
     expect(items.length).toBe(4);
     expect(text(items[3])).toContain('đã đủ chỗ sẽ trở thành Dã tâm gia và chơi một mình');
-    expect(items[3].querySelector('a')!.getAttribute('href')).toBe('/wiki/rules/allegiance');
+    expect(items[3].querySelector('a')!.getAttribute('href')).toBe('/wiki/rules/setup#allegiance');
   });
 
   it('allegiance: an Ambitionist seat has its mark, its own label and no Force', async () => {
@@ -191,7 +193,7 @@ describe('the rules pages in Vietnamese', () => {
     const { el } = await open('setup');
     const last = [...el.querySelectorAll('ul')].at(-1)!;
     expect(text(last.querySelector('li:last-child')!)).toContain('Dã tâm gia không thuộc thế lực nào');
-    expect(last.querySelector('li:last-child a')!.getAttribute('href')).toBe('/wiki/rules/allegiance');
+    expect(last.querySelector('li:last-child a')!.getAttribute('href')).toBe('/wiki/rules/setup#allegiance');
   });
 
   it('allegiance: the three outcomes are shown, the last with no Force named', async () => {
@@ -342,7 +344,7 @@ describe('the rules pages in Vietnamese', () => {
 
   it('damage: points to the Chains page where fire and thunder matter, and to Setup for the kill reward', async () => {
     const { el } = await open('damage');
-    expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual(['/wiki/rules/chains Xích', '/wiki/rules/setup Chuẩn bị']);
+    expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual(['/wiki/rules/judgment#chains Xích', '/wiki/rules/setup Chuẩn bị']);
   });
 
   it('chains: chaining toggles a seat, with exactly one chained badge in the first scene', async () => {
@@ -391,12 +393,12 @@ describe('the rules pages in Vietnamese', () => {
   it('glossary: definitions link to the pages they summarise, labelled as the pages are named', async () => {
     const { el } = await open('glossary');
     expect([...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${text(a)}`)).toEqual([
-      '/wiki/rules/chains Xích',
+      '/wiki/rules/judgment#chains Xích',
       '/wiki/rules/judgment Phán xét',
-      '/wiki/rules/response Cửa sổ phản hồi',
-      '/wiki/rules/distance Khoảng cách / Tầm',
-      '/wiki/rules/distance Khoảng cách / Tầm',
-      '/wiki/rules/damage Sát thương và hấp hối',
+      '/wiki/rules/attack#response Cửa sổ phản hồi',
+      '/wiki/rules/attack#distance Khoảng cách / Tầm',
+      '/wiki/rules/attack#distance Khoảng cách / Tầm',
+      '/wiki/rules/attack#damage Sát thương và hấp hối',
     ]);
   });
 
