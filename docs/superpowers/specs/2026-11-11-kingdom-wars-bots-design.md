@@ -1,0 +1,240 @@
+# Kingdom Wars Bots — Design Spec
+
+Status: Approved by the developer on 2026-11-11
+Date: 2026-11-11
+
+## Why
+
+Kingdom Wars is the default deck (and the only one enabled in Game Setup), but
+the rule-based bot still plays as if the game used the Identity deck:
+
+- **General picks** come from a value table fitted on Identity games
+  (`projects/sim/src/fitGenerals.ts:76`, `{ deck: 'identity' }`, 4 seats).
+  Kingdom Wars Generals are scored as their Identity base (`baseGeneralId` in
+  `projects/bots/src/lib/general-values.ts`), and Kingdom Wars-only Generals
+  score 0. In a 400-game, 6-seat bot-only run (seed 5000) Shu won about 55%,
+  Wu, Qun and Ambitionists 6–11% each; with random picks the spread was 13–29%.
+- **Skills** that have a Kingdom Wars variant are played by the Identity
+  base's logic: the bot strips the id with `baseSkillId` ("a variant is
+  offered under its own id and used like its base", `skills.ts`). 60
+  Generals have documented differences
+  (`projects/content/data/decks/kingdom-wars/differences.json`). Zou Shi's two
+  active skills are never used.
+- **Cards**: Wuxie Kingdom (`wuxie-guo`) is never played. Amass, Ascertain and
+  Ally Far Attack Near are answered when they reach the bot but never played
+  from its own hand. Wu Six Swords and Trident Glaive have no handling. Chains
+  is never played, and Harvest is only answered, never played. Blaze is partly
+  handled.
+- **Reading the table**: every seat outside the bot's own revealed force is an
+  enemy, ranked by low HP and by hostile acts (`helpers.ts` `isAlly`,
+  `targeting.ts`). Force size plays no part, so two small forces wear each other
+  down while a large one wins.
+- **Waste**: the bot can play a card that will do nothing, for example a black
+  Sha into Black Shield. The engine only removes targets that are illegal
+  (`untargetableBy`, for example Lu Xun's Modesty once revealed); a card whose
+  effect is stopped by a trigger is still legal.
+
+The developer wants bots that play the Kingdom Wars deck well, as opponents for
+people.
+
+## Goals
+
+The developer judges success by these five points:
+
+1. **Less waste.** Bots stop playing cards and skills that will have no effect.
+2. **Use what helps.** Bots use every card and skill that gains them an
+   advantage, rather than holding them.
+3. **Proactive skills.** Bots use skills on their own initiative to gain an
+   advantage and damage opponents (for example both of Zhou Yu's skills).
+4. **Fewer own casualties.** Bots protect themselves and their side (for
+   example Zhuge Liang arranging the top of the deck so his own Judgments come
+   out well).
+5. **Flexible, temporary alliances.** When one force outnumbers the others, the
+   other forces stop fighting each other and focus on it until it is weakened,
+   then go back to treating each other as enemies.
+
+Plus: the General value table is refitted for Kingdom Wars and improved.
+
+## Non-goals
+
+- **The Identity deck.** It is disabled in Setup until its rules exist. The bot
+  must keep working with it (the server still accepts it), but nothing is tuned
+  for it.
+- **Lookahead search.** The bot stays a rule-based player choosing among legal
+  actions.
+- **Hidden-kingdom inference and card counting** (Stage 3 "Knowledge" of the
+  bot roadmap, not built). Not required here; the builder may use simple
+  inference only from public events.
+- **Engine rule changes.** Rule mismatches already listed in
+  `docs/deferrals.md` (Warrior Saint, Horsemanship, Insanity Streak, Banish
+  order) stay as they are; the bot plays the engine's rules.
+- **App or server changes.** Both keep using the policy id `rule-based`.
+
+## Anti-goals
+
+- **A bot never uses what its seat cannot see.** It decides only from its
+  redacted view and the engine's legal actions. This holds always and without
+  exception; the existing leak checks in `projects/sim` must keep passing, and
+  the new knowledge (threat, waste, alliances) must be derived from the
+  redacted view only.
+- **No central registry of all content in the bots.** CLAUDE.md asks for
+  data-driven registries: adding a General or card must not mean editing a
+  growing switch in `bots`. See "Where the knowledge lives".
+- **No slower games.** A bot decision must stay fast enough that the existing
+  bot move delay (animation + 1.5 s) is not stretched. My call on the bar: the
+  simulator's 8-seat game time grows by no more than 3×.
+
+## Scope, in four parts
+
+The new bot replaces the current one: when it ships, `rule-based` becomes the
+new behaviour, and the current bot is frozen as `rule-based-v3` only as the
+tournament baseline (the developer chose replace, not an easier difficulty).
+
+### Part 1 — Kingdom Wars rules
+
+Every card in the Kingdom Wars deck and every Kingdom Wars skill variant is
+played by its own Kingdom Wars rules:
+
+- Play from hand, with a rule for when it is worth it: Wuxie Kingdom, Amass,
+  Ascertain, Ally Far Attack Near, Chains, Harvest, Blaze.
+- Equipment with a choice: Wu Six Swords, Trident Glaive (and any equipment
+  ability that asks a question).
+- Skill variants: each of the 60 Generals listed in `differences.json` is
+  checked. Where the variant's wording changes what a good play is, the bot
+  gets the variant's own rule instead of the base's. Where it does not, the
+  base rule stays and that is recorded.
+- Kingdom Wars-only skills: Zou Shi's two active skills, and any other skill a
+  registry scan finds that no bot rule offers.
+
+A coverage spec fails when a Kingdom Wars card or an active, triggered or
+conversion skill is neither handled by a bot rule nor on an explicit,
+commented "deliberately ignored" list.
+
+### Part 2 — Reading the table (threat and alliances)
+
+The bot builds a picture of the table from its redacted view:
+
+- **Force strength.** For each force (and each Ambitionist as a force of one):
+  revealed seats, their combined HP, cards in hand and equipment. Hidden seats
+  are unknown and count to no force.
+- **Seat threat.** Revealed skills, equipment (weapons that extend range or add
+  damage, armor), hand size, HP, and hostile acts so far. How dangerous a skill
+  is is declared next to the skill (see below), not guessed in the bot.
+- **Temporary alliance.** When one force is clearly stronger than every other
+  (the leader), every bot outside it treats the leader's seats as its preferred
+  targets and avoids hurting seats of other non-leading forces, except where
+  the game would otherwise be lost or where an attack is free. When the leader
+  is no longer clearly stronger ("weakened"), the alliance ends and bots go
+  back to normal targeting. The thresholds for "clearly stronger" and
+  "weakened" are the builder's to set and tune with the tournament, with two
+  fixed points: a force holding more revealed seats than any other plus at
+  least one more seat than the second force counts as leading; the alliance
+  must end before the allied forces could no longer win (a bot never helps
+  another force win at the cost of its own).
+- An alliance is never declared or shown; it only changes what each bot
+  chooses. Bots of the leading force do not change behaviour because of it.
+
+### Part 3 — No wasted plays
+
+Before playing a card or skill on a target, the bot asks whether anything
+visible on that target would make it do nothing, and skips it if so. Examples:
+a black Sha into Black Shield, a Sha into a seat that cannot be damaged, a
+Tool into a seat whose revealed skill cancels it. Whether an effect would be
+stopped is declared by the card, equipment or skill that stops it (see below),
+so a new armor or skill brings its own answer. Hidden Generals are unknown: the
+bot does not assume a hidden seat has any skill.
+
+Also counts as waste, and is avoided: discarding a card that the bot could
+have used to gain an advantage this turn, and using a skill whose only effect
+is to reveal a General for nothing.
+
+### Part 4 — The General value table
+
+After Parts 1–3 ship, refit the table on Kingdom Wars games played by the new
+bot:
+
+- `fit-generals` gets a deck argument; the fit runs on `kingdomWars`.
+- Values are keyed by the full Kingdom Wars General id, so Kingdom Wars-only
+  Generals get a value.
+- My call: fit across 4 to 8 seats, not 4 only, since the app allows them all.
+- "Improved", beyond the refit, is the builder's to propose with numbers. Two
+  candidates to try, each judged by the tournament: a pair term for
+  Synergistic Partners (the deck lists them and the engine now rewards them),
+  and a force term so a bot does not pick into a force already crowded at the
+  table.
+
+Part 4 runs last because a General's value depends on how well bots play it.
+
+## Where the knowledge lives
+
+Per-card and per-skill bot knowledge (when a skill is worth using, what makes a
+card do nothing against a seat, how dangerous a revealed skill is) is declared
+next to that card or skill in `projects/content`, and the bot reads it through
+the registry. The dependency rules stand: `bots` may import `content` and
+`engine`; `content` must not import `bots`; the engine must not learn about
+bots. The builder chooses the shape (a field on the definitions, or a
+content-side registry keyed by id with the types defined in `content`). The
+existing per-skill switches in `projects/bots/src/lib/skills.ts`, `wind.ts`,
+`fire.ts`, `forest.ts` and `mountain.ts` are moved into that shape when a part
+touches them; a full migration of untouched skills is not required.
+
+## How it is judged
+
+The roadmap's method (`docs/superpowers/specs/2026-10-15-bot-improvement-roadmap-design.md`)
+is kept, with a different ship rule (decided by the developer): each part is
+built under its own policy id first, plays the shipped bot in mirrored
+tournaments on two seed ranges (Kingdom Wars deck), and is measured by the
+counts below on the same games. A part **ships when it clearly improves the
+counts for its own goals** on both seed ranges, **even if it does not win more
+seats**. It does not ship if it makes win share clearly worse (the whole 95%
+interval below 0 on both ranges). A win-share gain is welcome but not
+required. What "clearly improves" means for each count (for example, a 95%
+interval on the difference that excludes 0) is the builder's to set before the
+first run and record. The results go in this spec under `Results`.
+
+New simulator counts, reported per policy over the same games, one per goal:
+
+1. Cards and skills used to no effect (Goal 1).
+2. Cards held at the end of the turn that a rule could have used, and skills
+   offered but never used, per skill (Goals 2 and 3).
+3. Own-side deaths and HP lost per game (Goal 4).
+4. Win rate per force across a bot-only run, and how often a leading force wins
+   (Goal 5 and the balance problem above).
+
+The developer also watches games in the app to judge what the numbers can't,
+mainly whether alliances look sensible.
+
+Calls made for the builder (the developer may override them):
+
+- **Seat count.** The gate runs at 6 seats, where a leading force can form,
+  as well as the roadmap's 4. Part 4's refit is also checked at 8.
+- **Baselines.** The roadmap's chain: the current bot is frozen as
+  `rule-based-v3`; each part that ships becomes `rule-based`, and the bot it
+  replaced is frozen under the next id (`-v4`, …). A part that does not ship
+  stays off, and the next part builds on the last shipped bot.
+- **All-new tables.** Alliances need every non-leading seat to take part, and
+  mirrored tournaments mix new and old bots. So Goal 5's counts and Part 2's
+  tuning come from bot-only runs where every seat plays the challenger,
+  compared with the same seeds where every seat plays the baseline.
+- **Identity picks.** The value table becomes per deck. Identity keeps
+  today's table; Kingdom Wars gets the refit.
+
+The tournament and fitting must run on the Kingdom Wars deck; today they use
+the deck default or Identity.
+
+## Constraints
+
+- Bots stay framework-free, deterministic (no `Math.random`, no clock) and
+  decide from the redacted view (`docs/architecture/bots-and-simulation.md`).
+- CLAUDE.md: rule text before code. Each part's plan states its bot rules in
+  plain words before implementation.
+- Branch per part, `npm run verify` and the tests green, merging is the
+  developer's.
+
+## Left to the builder
+
+- The thresholds and weights for threat, leading force and weakened.
+- The shape of the content-side bot knowledge.
+- The order inside Part 1, and which variants need their own rule.
+- Whether Parts 2 and 3 ship together or apart.
+- The exact simulator report format.
