@@ -13,6 +13,7 @@ import { NO_RESPONSE_RULES, ResponseRules, shouldHoldShan, wuxieWorthCancelling 
 import { upheavalVictimIsFoe } from './forest';
 import { BotFeatures, BotRule, BotRuleContext, NO_FEATURES } from './rules/registry';
 import { KINGDOM_WARS_RULES } from './rules/kingdom-wars';
+import { withoutWaste } from './waste';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -89,11 +90,13 @@ function decide(
   const rank: TargetRanker = 'forRegistry' in ranker ? ranker.forRegistry(registry) : ranker;
   // Target templates filled in (several targets in one pick), or dropped when no attackable seat fits.
   const mine = view.seats.find((s) => s.id === seatId);
-  const legal = offered.flatMap((a): Action[] => {
+  const filledLegal = offered.flatMap((a): Action[] => {
     if ((a.kind !== 'PlayCardAction' && a.kind !== 'UseConversionAction') || !a.pickTargets) return [a];
     const filled = mine ? fillPick(view, mine, a, rank) : null;
     return filled ? [filled] : [];
   });
+  // Rules A1, A3, B2: drop plays a visible stop would cancel and costly targets not worth it.
+  const legal = features.noWaste && mine ? withoutWaste(view, mine, filledLegal, registry, rank) : filledLegal;
   const mem: BotTurnMemory =
     memory && memory.turnNumber === view.turn.turnNumber
       ? memory
