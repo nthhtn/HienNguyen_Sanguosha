@@ -1,10 +1,11 @@
 import { isChained, pickAllows } from 'engine';
 import type { Action, GameState, Seat } from 'engine';
-import { definitionIdOf, handCards, isAlly } from '../helpers';
+import { attackable, definitionIdOf, handCards, isAlly } from '../helpers';
 import type { BotRule, BotRuleContext } from './registry';
 
 // The Kingdom Wars Tools the bot plays from its hand. "Allies" are the living seats `isAlly` with the bot,
-// the bot itself not included; "foes" are the other living seats that are not allies.
+// the bot itself not included; "foes" are the other living seats that are not allies. Attacks (Chains, Blaze)
+// go only at "targets": foes the ranker does not hold fire on (HOLD_FIRE).
 
 type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
 
@@ -12,6 +13,7 @@ const living = (view: GameState) => view.seats.filter((s) => !s.eliminated);
 const alliesOf = (ctx: BotRuleContext) => living(ctx.view).filter((s) => s.id !== ctx.me.id && isAlly(ctx.me, s, ctx.view));
 const isFoe = (ctx: BotRuleContext, seat: Seat) => !seat.eliminated && seat.id !== ctx.me.id && !isAlly(ctx.me, seat, ctx.view);
 const foesOf = (ctx: BotRuleContext) => living(ctx.view).filter((s) => isFoe(ctx, s));
+const isTarget = (ctx: BotRuleContext, seat: Seat) => isFoe(ctx, seat) && attackable(ctx.view, ctx.me, seat, ctx.rank);
 
 // The plays of a card, from `actions`, by its definition id.
 const playsOf = (ctx: BotRuleContext, actions: Action[], definitionId: string): PlayCard[] =>
@@ -104,7 +106,7 @@ export const chainsRule: BotRule = {
         const eligible = chainsEligible(plays);
         const foes = eligible
           .map((id) => seatOf(ctx.view, id))
-          .filter((s): s is Seat => !!s && isFoe(ctx, s) && !isChained(ctx.view, s.id))
+          .filter((s): s is Seat => !!s && isTarget(ctx, s) && !isChained(ctx.view, s.id))
           .sort(byRank(ctx));
         if (isChained(ctx.view, ctx.me.id) && eligible.includes(ctx.me.id)) {
           const withFoe = foes.length > 0 ? chainsAt(plays, [ctx.me.id, foes[0].id]) : undefined;
@@ -134,7 +136,7 @@ export const blazeRule: BotRule = {
       return playsOf(ctx, ctx.offered, 'blaze')
         .filter((p) => !p.pickTargets && p.targets.length === 1)
         .map((p) => ({ p, target: targetOf(ctx, p) }))
-        .filter((t): t is { p: PlayCard; target: Seat } => !!t.target && isFoe(ctx, t.target) && handCards(ctx.view, t.target).length > 0)
+        .filter((t): t is { p: PlayCard; target: Seat } => !!t.target && isTarget(ctx, t.target) && handCards(ctx.view, t.target).length > 0)
         .sort((x, y) => byRank(ctx)(x.target, y.target))[0]?.p;
     },
   },

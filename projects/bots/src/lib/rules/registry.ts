@@ -45,6 +45,8 @@ export function botRules(rules: BotRule[]): BotRuleRegistry {
 // The optional rule set on a rule-based policy; null leaves the policy exactly as it was before the registry.
 export interface BotFeatures {
   rules: BotRuleRegistry | null;
+  // Whether the bot reads the table: forces, a leading force and temporary alliances (Part 2).
+  tableReading: boolean;
 }
 
-export const NO_FEATURES: BotFeatures = { rules: null };
+export const NO_FEATURES: BotFeatures = { rules: null, tableReading: false };

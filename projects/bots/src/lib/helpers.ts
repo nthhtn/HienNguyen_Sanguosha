@@ -77,21 +77,36 @@ export function fillSelection(view: GameState, selection: PendingSelection, orde
 }
 
 // How good a target is for a play: higher is better. The rule-based bot picks
-// the highest-ranked non-ally. Both registered policies currently use
-// `weakestFirst`; `targetScore` (targeting.ts) is the unshipped alternative.
+// the highest-ranked attackable non-ally. The shipped policies use `weakestFirst`;
+// 'rule-based' uses `tableRank` (table-rank.ts); `targetScore` (targeting.ts)
+// is the unshipped alternative.
 export type TargetRanker = (view: GameState, me: Seat, target: Seat) => number;
 
-// The original ordering: the weakest first, then seat order.
+// The original ordering: the weakest first, then seat order. Never HOLD_FIRE.
 export const weakestFirst: TargetRanker = (_view, _me, target) => -(target.combinedHp * 100 + target.index);
 
-// A target template filled for the bot: non-allies, best first by `rank`, up to
+// A ranker's "never attack this seat" (a truce partner, rule 6).
+export const HOLD_FIRE = Number.NEGATIVE_INFINITY;
+
+// A ranker that needs the content registry (General danger): built for each decision from the registry the
+// policy is given, as a TargetRanker has no registry parameter.
+export interface RankerFactory {
+  forRegistry(registry: ContentRegistry): TargetRanker;
+}
+
+// Whether the bot may aim an attack at `seat`: a non-ally the ranker does not hold fire on.
+export function attackable(view: GameState, me: Seat, seat: Seat, rank: TargetRanker): boolean {
+  return !isAlly(me, seat, view) && rank(view, me, seat) !== HOLD_FIRE;
+}
+
+// A target template filled for the bot: attackable seats, best first by `rank`, up to
 // the maximum; null when none qualifies. Any other action comes back as it is.
 export function fillPick<A extends { targets: Target[]; pickTargets?: TargetPick }>(view: GameState, me: Seat, action: A, rank: TargetRanker): A | null {
   const pick = action.pickTargets;
   if (!pick) return action;
   const seats = pick.eligibleIds
     .map((id) => view.seats.find((s) => s.id === id))
-    .filter((s): s is Seat => !!s && !isAlly(me, s, view))
+    .filter((s): s is Seat => !!s && attackable(view, me, s, rank))
     .sort((a, b) => rank(view, me, b) - rank(view, me, a) || a.index - b.index);
   // Best first, each one only while the pick still allows it (a cap on some seats).
   const chosen: Seat[] = [];

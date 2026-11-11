@@ -6,7 +6,7 @@ import { createRuleBasedPolicy } from '../rule-based';
 import { asking, card, decideWith, picked, table } from '../testing';
 import { BotRule, botRules } from './registry';
 
-const withRules = (rules: BotRule[]) => createRuleBasedPolicy('t', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, undefined, { rules: botRules(rules) });
+const withRules = (rules: BotRule[]) => createRuleBasedPolicy('t', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, undefined, { rules: botRules(rules), tableReading: false });
 const without = createRuleBasedPolicy('t', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES);
 
 describe('hooks: the ladder consults the bot rule registry', () => {

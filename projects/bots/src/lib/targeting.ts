@@ -24,7 +24,7 @@ const HOSTILE_CARDS = new Set(['sha', 'duel', 'steal', 'break', 'capture', 'star
 const seatTarget = (target: { kind: string; seatId?: string }): string | undefined => (target.kind === 'seat' ? target.seatId : undefined);
 
 // How many hostile acts `attacker` has made against `me` or one of my revealed allies.
-function hostileActs(view: GameState, me: Seat, attacker: Seat): number {
+export function hostileActs(view: GameState, me: Seat, attacker: Seat): number {
   const mine = (seatId: string | undefined): boolean => {
     if (!seatId) return false;
     if (seatId === me.id) return true;

@@ -2,7 +2,7 @@ import { baseGeneralId } from 'content';
 import type { Action, GameState, Seat } from 'engine';
 import { isEquipUpgrade } from '../card-play';
 import { GENERAL_VALUES } from '../general-values';
-import { givenByEitherGeneral, givenThisTurn, handCards, isAlly, leastUseful } from '../helpers';
+import { attackable, givenByEitherGeneral, givenThisTurn, handCards, isAlly, leastUseful } from '../helpers';
 import type { BotRule, BotRuleContext } from './registry';
 
 // Kingdom Wars General skills the bot uses by rule. "Allies" are the living seats `isAlly` with the bot, the
@@ -26,9 +26,9 @@ export const femmeFataleRule: BotRule = {
   play: { when: 'early', pick: (ctx) => offeredSkill(ctx, 'kingdomWars:femme-fatale') },
 };
 
-// Foes showing both Generals, best first by the ranker.
+// Foes showing both Generals that the ranker does not hold fire on (HOLD_FIRE), best first by the ranker.
 const fullyExposedFoes = (ctx: BotRuleContext): Seat[] =>
-  ctx.view.seats.filter((s) => isFoe(ctx, s) && !!s.generals?.main.revealed && !!s.generals.deputy.revealed).sort(byRank(ctx));
+  ctx.view.seats.filter((s) => isFoe(ctx, s) && attackable(ctx.view, ctx.me, s, ctx.rank) && !!s.generals?.main.revealed && !!s.generals.deputy.revealed).sort(byRank(ctx));
 // Hand Equipment cards the bot would not equip now: their slot is filled and they are no upgrade. Worn
 // cards are never spare.
 const spareEquipment = (ctx: BotRuleContext): string[] => {

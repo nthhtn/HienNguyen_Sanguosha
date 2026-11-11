@@ -1,11 +1,13 @@
 import { seatDistance } from 'content';
 import { isChained } from 'engine';
 import type { ContentRegistry, GameState, Seat } from 'engine';
-import { handCards, isAlly, keepRank, leastUseful } from '../helpers';
+import { attackable, handCards, isAlly, keepRank, leastUseful } from '../helpers';
 import type { BotRule, BotRuleContext } from './registry';
 
 const seatOf = (view: GameState, id: string | undefined) => view.seats.find((s) => s.id === id);
 const isFoe = (ctx: BotRuleContext, seat: Seat | undefined): seat is Seat => !!seat && !seat.eliminated && seat.id !== ctx.me.id && !isAlly(ctx.me, seat, ctx.view);
+// A foe the bot may attack: the ranker does not hold fire on it (HOLD_FIRE).
+const isTarget = (ctx: BotRuleContext, seat: Seat | undefined): seat is Seat => isFoe(ctx, seat) && attackable(ctx.view, ctx.me, seat, ctx.rank);
 
 // The seats the bot's Sha in play is aimed at: the targets of the bot's most recent CardPlayedEvent of a Sha
 // (not a response). The Fire Fan ask itself names no target, as it is asked once per Sha.
@@ -48,7 +50,7 @@ export const tridentGlaiveRule: BotRule = {
   wantsToUse: (ctx, choice) => {
     const damagedId = choice.reason.kind === 'ability' ? choice.reason.targetSeatId : undefined;
     if (!damagedId) return false;
-    const foeNextDoor = neighboursOf(ctx.view, damagedId, ctx.registry).some((id) => isFoe(ctx, seatOf(ctx.view, id)));
+    const foeNextDoor = neighboursOf(ctx.view, damagedId, ctx.registry).some((id) => isTarget(ctx, seatOf(ctx.view, id)));
     return foeNextDoor && spare(ctx).length > 0;
   },
   select: (ctx, selection) => {
@@ -57,7 +59,7 @@ export const tridentGlaiveRule: BotRule = {
   },
   choose: (ctx, choice) => {
     const seats = choice.options.map((o) => seatOf(ctx.view, o.id)).filter((s): s is Seat => !!s && !s.eliminated);
-    const foes = seats.filter((s) => isFoe(ctx, s));
+    const foes = seats.filter((s) => isTarget(ctx, s));
     return [...foes].sort((a, b) => ctx.rank(ctx.view, ctx.me, b) - ctx.rank(ctx.view, ctx.me, a) || a.index - b.index)[0]?.id;
   },
 };
