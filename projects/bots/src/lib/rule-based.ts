@@ -14,6 +14,7 @@ import { upheavalVictimIsFoe } from './forest';
 import { BotFeatures, BotRule, BotRuleContext, NO_FEATURES } from './rules/registry';
 import { KINGDOM_WARS_RULES } from './rules/kingdom-wars';
 import { withoutWaste } from './waste';
+import { duelWorthStarting, shouldAnswer } from './answer';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -219,7 +220,7 @@ function decide(
     const dying = reason?.kind === 'dying' ? view.seats.find((s) => s.id === reason.seatId) : undefined;
     const worthAnswering =
       !reason || reason.kind === 'card-effect'
-        ? true
+        ? !features.noWaste || !self || shouldAnswer(view, self, registry, dangerOf(registry)) // rules C3, C3a
         : reason.kind === 'dying'
           ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying, view) || (features.tableReading && relationOf(view, self, dying) === 'truce'))
           : reason.kind === 'wuxie'
@@ -384,10 +385,12 @@ function decide(
       .sort((x, y) => rank(view, self, y.target) - rank(view, self, x.target) || x.target.index - y.target.index)
       .map((t) => t.a);
     if (conversion && conversionSpare(view, self, conversion, registry)) return take(conversion, 1);
-    const [duel] = targetedPlays(view, self, plays, 'duel', rank, registry);
+    // Rule C4: no Duel on a seat expected to outlast the bot (only with noWaste).
+    const duelWorth = (target: Seat | undefined) => !features.noWaste || (!!target && duelWorthStarting(view, self, target, registry));
+    const [duel] = targetedPlays(view, self, plays, 'duel', rank, registry).filter((p) => duelWorth(view.seats.find((s) => s.id === p.targets[0]?.seatId)));
     if (duel) return take(duel);
     // Dueling Heroes: a Duel from an opposite-colour card, at the weakest non-ally.
-    const [duelVia] = conversionsAs('duel').sort(byWeakest);
+    const [duelVia] = conversionsAs('duel').filter((a) => duelWorth(targetSeat(a))).sort(byWeakest);
     if (duelVia) return take(duelVia);
     // Coerce: when one attackable seat's weapon can reach another.
     const coerce = plays.find((p) => {
