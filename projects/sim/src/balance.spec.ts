@@ -1,8 +1,9 @@
-import { compareBalance, formatBalanceReport, runBalance } from './balance';
+import { compareBalance, formatBalanceReport, runBalance, wastedIn } from './balance';
 import type { BalanceGame, BalanceReport } from './balance';
+import type { GameEvent, GameState } from 'engine';
 import { interval } from './tournament';
 
-const game = (seed: number, o: Partial<BalanceGame>): BalanceGame => ({ seed, winners: [], everLed: null, leaderWon: false, deaths: 0, hpLost: 0, ...o });
+const game = (seed: number, o: Partial<BalanceGame>): BalanceGame => ({ seed, winners: [], everLed: null, leaderWon: false, deaths: 0, hpLost: 0, wasted: 0, ...o });
 const report = (games: BalanceGame[]): BalanceReport => ({ config: { games: games.length, seats: 6, policy: 'x' }, games, perForce: {}, leaderWonRate: interval([]) });
 
 describe('balance runs', () => {
@@ -30,6 +31,29 @@ describe('balance runs', () => {
   });
 });
 
+const stateWith = (log: unknown[]): GameState => ({ log } as unknown as GameState);
+const answer = (seatId: string, cardInstanceId: string): GameEvent =>
+  ({ kind: 'CardPlayedEvent', seatId, card: {}, targets: [], inResponseTo: { cardInstanceId } } as unknown as GameEvent);
+const hit = (seatId: string, cardInstanceId: string): GameEvent =>
+  ({ kind: 'DamageDealtEvent', damage: { source: null, target: { kind: 'seat', seatId }, amount: 1, nature: 'normal', cause: { cardInstanceId } } } as unknown as GameEvent);
+
+describe('wastedIn', () => {
+  it('counts a no-effect ability use', () => {
+    expect(wastedIn(stateWith([{ kind: 'AbilityUsedEvent', owner: {}, abilityId: 'x', outcome: 'no-effect' }, { kind: 'AbilityUsedEvent', owner: {}, abilityId: 'x', outcome: 'ok' }]))).toBe(1);
+  });
+  it('counts an answer followed by damage from the answered card on the same seat', () => {
+    expect(wastedIn(stateWith([answer('seat-1', 'c1'), hit('seat-1', 'c1')]))).toBe(1);
+  });
+  it('does not count an answer that held', () => {
+    expect(wastedIn(stateWith([answer('seat-1', 'c1')]))).toBe(0);
+  });
+  it('does not count damage from another card, on another seat, or before the answer', () => {
+    expect(wastedIn(stateWith([answer('seat-1', 'c1'), hit('seat-1', 'c2')]))).toBe(0);
+    expect(wastedIn(stateWith([answer('seat-1', 'c1'), hit('seat-2', 'c1')]))).toBe(0);
+    expect(wastedIn(stateWith([hit('seat-1', 'c1'), answer('seat-1', 'c1')]))).toBe(0);
+  });
+});
+
 describe('compareBalance', () => {
   it('pairs by seed and skips seeds where either run had no leader for the leader rate', () => {
     const a = report([game(0, { everLed: 'Wei', leaderWon: true, deaths: 4, hpLost: 10 }), game(1, { everLed: 'Wu', leaderWon: true, deaths: 3, hpLost: 8 })]);
@@ -38,6 +62,7 @@ describe('compareBalance', () => {
     expect(c.leaderWonDiff).toMatchObject({ mean: 1, games: 1 });
     expect(c.deathsDiff.mean).toBe(1);
     expect(c.hpLostDiff.mean).toBe(0);
+    expect(c.wastedDiff.games).toBe(2);
     expect(c.deathsDiff.games).toBe(2);
   });
 });
