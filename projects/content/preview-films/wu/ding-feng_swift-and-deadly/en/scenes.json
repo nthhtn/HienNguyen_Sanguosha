@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wu",
+  "palettes": {
+    "main": "#2f9e58",
+    "ground": "#0E2A1D",
+    "second": "#E8F3EC",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0E2A1D",
+  "fonts": {
+    "display": {
+      "family": "Zilla Slab",
+      "or": "fraunces-display"
+    },
+    "sans": "instrument-sans"
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Ding Feng: Swift and Deadly",
+      "dur": 7.5,
+      "desc": "Ding Feng discards a card so Seat 2 counts as distance 1 and his Sha reaches."
+    }
+  ]
+}
