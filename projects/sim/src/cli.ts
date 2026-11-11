@@ -75,7 +75,7 @@ if (mode === 'single') {
 } else if (mode === 'balance') {
   try {
     const [games, seats, first] = [Number(arg1 ?? 100), Number(arg2 ?? 6), Number(arg5 ?? 0)];
-    const a = runBalance({ games, seats, policy: parseBotKind(arg3 ?? 'rule-based-table'), firstSeed: first });
+    const a = runBalance({ games, seats, policy: parseBotKind(arg3 ?? 'rule-based'), firstSeed: first });
     const b = runBalance({ games, seats, policy: parseBotKind(arg4 ?? 'rule-based-v4'), firstSeed: first });
     console.log(`${formatBalanceReport(a)}\n${formatBalanceReport(b)}\n${formatComparison(compareBalance(a, b))}`);
   } catch (err) {

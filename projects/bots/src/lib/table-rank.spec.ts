@@ -1,10 +1,10 @@
 import type { Action, CardInstance, GameState, Kingdom, PendingSelection, Seat } from 'engine';
 import { dangerOf } from './danger';
 import { HOLD_FIRE } from './helpers';
-import { ruleBasedTablePolicy, ruleBasedV4Policy } from './rule-based';
+import { ruleBasedPolicy, ruleBasedV4Policy } from './rule-based';
 import { isDangerous, seatDanger } from './table';
 import { tableRankFor } from './table-rank';
-import { card, decideTable, decideWith, registry, table } from './testing';
+import { card, decideWith, registry, table } from './testing';
 
 // Six seats seat-a ... seat-f, every General revealed and every seat playing for its Kingdom. The bot is
 // seat-a (Shu); with no weapon it reaches seat-b and seat-f only.
@@ -86,10 +86,10 @@ describe('tableRank (rule 6)', () => {
   });
 });
 
-describe('rule-based-table: whom to attack (rule 6, HOLD_FIRE)', () => {
+describe('rule-based: whom to attack (rule 6, HOLD_FIRE)', () => {
   it('a Sha goes to a Wei seat even when the Wu seat has less HP', () => {
     const s = game(LEAD_NEAR, { hp: { 'seat-b': 3, 'seat-f': 4 }, dangerous: ['seat-b'], cards: sha });
-    const action = decideTable(s);
+    const action = decideWith(ruleBasedPolicy, s);
     expect(isPlayOf('sha')(action)).toBe(true);
     expect(targetsOf(action)).toEqual(['seat-f']);
   });
@@ -101,27 +101,27 @@ describe('rule-based-table: whom to attack (rule 6, HOLD_FIRE)', () => {
 
   it('a Wu truce partner at 2 HP is never the Sha target, even dangerous', () => {
     const s = game(LEAD_NEAR, { hp: { 'seat-b': 2 }, dangerous: ['seat-b'], cards: sha });
-    expect(targetsOf(decideTable(s))).toEqual(['seat-f']);
+    expect(targetsOf(decideWith(ruleBasedPolicy, s))).toEqual(['seat-f']);
   });
 
   it('with only a Wu truce partner at 2 HP in reach, the bot plays no Sha', () => {
     for (const dangerous of [[], ['seat-b']]) {
       const s = game(LEAD_FAR, { hp: { 'seat-b': 2 }, dangerous, cards: sha });
-      expect(isPlayOf('sha')(decideTable(s))).toBe(false);
+      expect(isPlayOf('sha')(decideWith(ruleBasedPolicy, s))).toBe(false);
       expect(isPlayOf('sha')(decideWith(ruleBasedV4Policy, s))).toBe(true);
     }
   });
 
   it('a dangerous Wu partner at 4 HP is the Sha target only when no Wei seat is in reach', () => {
     const near = game(LEAD_NEAR, { dangerous: ['seat-b'], cards: sha });
-    expect(targetsOf(decideTable(near))).toEqual(['seat-f']);
+    expect(targetsOf(decideWith(ruleBasedPolicy, near))).toEqual(['seat-f']);
     const far = game(LEAD_FAR, { dangerous: ['seat-b'], cards: sha });
-    expect(targetsOf(decideTable(far))).toEqual(['seat-b']);
+    expect(targetsOf(decideWith(ruleBasedPolicy, far))).toEqual(['seat-b']);
   });
 
   it('a Wu partner at 4 HP that is not dangerous is never the Sha target', () => {
     const s = game(LEAD_FAR, { cards: sha });
-    expect(isPlayOf('sha')(decideTable(s))).toBe(false);
+    expect(isPlayOf('sha')(decideWith(ruleBasedPolicy, s))).toBe(false);
   });
 
   it('Steal and Break skip a HOLD_FIRE seat', () => {
@@ -129,7 +129,7 @@ describe('rule-based-table: whom to attack (rule 6, HOLD_FIRE)', () => {
     for (const definitionId of ['steal', 'break']) {
       const s = game(LEAD_FAR, { hp: { 'seat-b': 2 }, cards: { ...held, 'seat-a:hand': [card(definitionId, definitionId)] } });
       expect(isPlayOf(definitionId)(decideWith(ruleBasedV4Policy, s))).toBe(true);
-      expect(isPlayOf(definitionId)(decideTable(s))).toBe(false);
+      expect(isPlayOf(definitionId)(decideWith(ruleBasedPolicy, s))).toBe(false);
     }
   });
 
@@ -137,18 +137,18 @@ describe('rule-based-table: whom to attack (rule 6, HOLD_FIRE)', () => {
     // Only seat-b (truce, 2 HP) and seat-e (Wei) are unchained foes: v4 chains both, the table bot Recasts.
     const s = game(LEAD_FAR, { hp: { 'seat-b': 2 }, chained: ['seat-c', 'seat-d'], cards: { 'seat-a:hand': [card('chains', 'chains', 'club')] } });
     expect(targetsOf(decideWith(ruleBasedV4Policy, s))).toEqual(['seat-b', 'seat-e']);
-    const action = decideTable(s);
+    const action = decideWith(ruleBasedPolicy, s);
     expect(isPlayOf('chains')(action)).toBe(true);
     expect(targetsOf(action)).toEqual([]);
   });
 
   it('with no leading force the Sha goes to the weakest foe, as before', () => {
     const s = game(NO_LEADER, { hp: { 'seat-b': 2, 'seat-f': 3 }, cards: sha });
-    expect(targetsOf(decideTable(s))).toEqual(['seat-b']);
+    expect(targetsOf(decideWith(ruleBasedPolicy, s))).toEqual(['seat-b']);
   });
 });
 
-describe('rule-based-table: a seat selection (HOLD_FIRE)', () => {
+describe('rule-based: a seat selection (HOLD_FIRE)', () => {
   // A Sky Scorcher-style pick of seats, left to the ladder's generic seat fallback.
   const picking = (s: GameState, eligibleIds: string[]): GameState => {
     const selection: PendingSelection = {
@@ -159,16 +159,16 @@ describe('rule-based-table: a seat selection (HOLD_FIRE)', () => {
   };
   const template: Action = { kind: 'SelectAction', seatId: 'seat-a', selectionId: 'pick', ids: [] };
   const cancel: Action = { kind: 'CancelSelectionAction', seatId: 'seat-a', selectionId: 'pick' };
-  const decideOn = (policy: typeof ruleBasedTablePolicy, s: GameState) => policy.decide(s, 'seat-a', [template, cancel], registry, null).action;
+  const decideOn = (policy: typeof ruleBasedPolicy, s: GameState) => policy.decide(s, 'seat-a', [template, cancel], registry, null).action;
 
   it('with only a truce partner at 2 HP eligible besides an ally, the table bot cancels and v4 picks it', () => {
     const s = picking(game(LEAD_FAR, { hp: { 'seat-b': 2 } }), ['seat-b', 'seat-f']);
-    expect(decideOn(ruleBasedTablePolicy, s)).toEqual(cancel);
+    expect(decideOn(ruleBasedPolicy, s)).toEqual(cancel);
     expect(decideOn(ruleBasedV4Policy, s)).toEqual({ ...template, ids: ['seat-b'] });
   });
 
   it('skips the truce partner for a leading-force seat', () => {
     const s = picking(game(LEAD_FAR, { hp: { 'seat-b': 2 } }), ['seat-b', 'seat-c']);
-    expect(decideOn(ruleBasedTablePolicy, s)).toEqual({ ...template, ids: ['seat-c'] });
+    expect(decideOn(ruleBasedPolicy, s)).toEqual({ ...template, ids: ['seat-c'] });
   });
 });

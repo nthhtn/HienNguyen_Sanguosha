@@ -1,8 +1,8 @@
 import type { GameState, Kingdom, Seat } from 'engine';
 import { dangerOf } from './danger';
-import { ruleBasedV4Policy } from './rule-based';
+import { ruleBasedPolicy, ruleBasedV4Policy } from './rule-based';
 import { massAttackWorthIt } from './table';
-import { card, decideTable, decideWith, registry, table } from './testing';
+import { card, decideWith, registry, table } from './testing';
 
 const IDS = ['seat-a', 'seat-b', 'seat-c', 'seat-d', 'seat-e', 'seat-f'];
 const DANGEROUS: [string, string] = ['kingdomWars:gan-ning', 'kingdomWars:taishi-ci'];
@@ -33,12 +33,12 @@ describe('a dying truce partner (rule 7)', () => {
 
   it('saves a dying truce partner with a Peach', () => {
     const s = dying(game(KINGDOMS, { cards: peach }), 'seat-b');
-    expect(decideTable(s)).toMatchObject({ kind: 'RespondAction', cardInstanceId: 'p1' });
+    expect(decideWith(ruleBasedPolicy, s)).toMatchObject({ kind: 'RespondAction', cardInstanceId: 'p1' });
   });
 
   it('does not save a dying seat of the leading force', () => {
     const s = dying(game(KINGDOMS, { cards: peach }), 'seat-c');
-    expect(decideTable(s)).toMatchObject({ kind: 'PassAction' });
+    expect(decideWith(ruleBasedPolicy, s)).toMatchObject({ kind: 'PassAction' });
   });
 
   it('rule-based-v4 does not save the truce partner', () => {
@@ -73,13 +73,13 @@ describe('Barbarians and Hail of Arrows weigh the table (rule 8)', () => {
   it('plays it against 3 enemies and 1.5 friends', () => {
     const s = game(BASE, { cards: barbarians });
     expect(worth(s)).toBe(true);
-    expect(plays(decideTable(s))).toBe(true);
+    expect(plays(decideWith(ruleBasedPolicy, s))).toBe(true);
   });
 
   it('holds it against 3 enemies and 3 friends (an ally and two partners at 2 HP)', () => {
     const s = extra(game(BASE, { cards: barbarians, hp: { 'seat-b': 2 } }), [{ kingdom: 'Qun', hp: 2 }]);
     expect(worth(s)).toBe(false);
-    expect(plays(decideTable(s))).toBe(false);
+    expect(plays(decideWith(ruleBasedPolicy, s))).toBe(false);
   });
 
   it('counts a dangerous healthy truce partner as an enemy', () => {
@@ -87,16 +87,16 @@ describe('Barbarians and Hail of Arrows weigh the table (rule 8)', () => {
     const specs = (dangerous: boolean) => [{ kingdom: 'Qun' as Kingdom, hp: 2 }, { kingdom: 'Wu' as Kingdom, dangerous }];
     const calm = extra(game(BASE, { cards: barbarians, hp: { 'seat-b': 2 } }), specs(false));
     expect(worth(calm)).toBe(false);
-    expect(plays(decideTable(calm))).toBe(false);
+    expect(plays(decideWith(ruleBasedPolicy, calm))).toBe(false);
     const dangerous = extra(game(BASE, { cards: barbarians, hp: { 'seat-b': 2 } }), specs(true));
     expect(worth(dangerous)).toBe(true);
-    expect(plays(decideTable(dangerous))).toBe(true);
+    expect(plays(decideWith(ruleBasedPolicy, dangerous))).toBe(true);
   });
 
   it("keeps today's rule when no force leads", () => {
     const s = game(['Shu', 'Wu', 'Wei', 'Qun', 'Shu', 'Wei'], { cards: barbarians });
     expect(worth(s)).toBe(true);
-    expect(plays(decideTable(s))).toBe(true);
+    expect(plays(decideWith(ruleBasedPolicy, s))).toBe(true);
     expect(plays(decideWith(ruleBasedV4Policy, s))).toBe(true);
   });
 

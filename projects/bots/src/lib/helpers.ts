@@ -78,7 +78,7 @@ export function fillSelection(view: GameState, selection: PendingSelection, orde
 
 // How good a target is for a play: higher is better. The rule-based bot picks
 // the highest-ranked attackable non-ally. The shipped policies use `weakestFirst`;
-// 'rule-based-table' uses `tableRank` (table-rank.ts); `targetScore` (targeting.ts)
+// 'rule-based' uses `tableRank` (table-rank.ts); `targetScore` (targeting.ts)
 // is the unshipped alternative.
 export type TargetRanker = (view: GameState, me: Seat, target: Seat) => number;
 

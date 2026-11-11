@@ -1,4 +1,4 @@
-import { compareBalance, runBalance } from './balance';
+import { compareBalance, formatBalanceReport, runBalance } from './balance';
 import type { BalanceGame, BalanceReport } from './balance';
 import { interval } from './tournament';
 
@@ -20,7 +20,7 @@ describe('balance runs', () => {
   });
 
   it('records everLed from the leading force and counts a leader win', () => {
-    for (const policy of ['rule-based-v4', 'rule-based-table']) {
+    for (const policy of ['rule-based-v4', 'rule-based']) {
       const r = runBalance({ games: 12, seats: 6, policy, firstSeed: 0 });
       const led = r.games.filter((g) => g.everLed !== null);
       expect(led.length).toBeGreaterThan(0);
@@ -39,5 +39,16 @@ describe('compareBalance', () => {
     expect(c.deathsDiff.mean).toBe(1);
     expect(c.hpLostDiff.mean).toBe(0);
     expect(c.deathsDiff.games).toBe(2);
+  });
+});
+
+describe('formatBalanceReport', () => {
+  it('sums every per-seat Ambitionist entry into one Ambitionist row', () => {
+    const r = { ...report([]), perForce: { Wei: { seats: 10, wins: 5 }, 'ambitionist:seat-0': { seats: 4, wins: 1 }, 'ambitionist:seat-3': { seats: 6, wins: 2 } } };
+    const text = formatBalanceReport(r);
+    expect(text).toContain('Ambitionist 30.0%');
+    expect(text).toContain('Wei 50.0%');
+    expect(text).not.toContain('ambitionist:');
+    expect(r.perForce['ambitionist:seat-0']).toEqual({ seats: 4, wins: 1 });
   });
 });

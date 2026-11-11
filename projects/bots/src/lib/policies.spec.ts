@@ -5,7 +5,7 @@ import { act, card, decide, decideWith, table } from './testing';
 
 describe('policy registry', () => {
   it('lists the registered policies', () => {
-    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-table', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3', 'rule-based-v4']);
+    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3', 'rule-based-v4']);
   });
 
   it('looks a policy up by id', () => {

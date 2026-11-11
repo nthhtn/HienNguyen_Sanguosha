@@ -409,8 +409,10 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFac
 }
 
 // Stage 4 shipped: General pairs are chosen with the measured value table (max HP breaks ties). Kingdom Wars
-// Part 1 shipped: the rule registry decides when each Kingdom Wars card and skill is worth using.
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: false });
+// Part 1 shipped: the rule registry decides when each Kingdom Wars card and skill is worth using. Kingdom Wars
+// Part 2 shipped: the bot reads the table (forces, the leading force, truce partners) and ranks targets by it
+// (tableRank, rule 6).
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true });
 
 // Weakest-first targeting and highest-max-HP General pairs, frozen as a fixed opponent for the tournament
 // harness. 'rule-based-v1' was 'rule-based' before the Stage 4 value table; 'rule-based-v2' is the same bot,
@@ -421,8 +423,5 @@ export const ruleBasedV2Policy: BotPolicy = createRuleBasedPolicy('rule-based-v2
 // 'rule-based' as it was before Kingdom Wars Part 1, frozen as the baseline Part 1 was judged against.
 export const ruleBasedV3Policy: BotPolicy = createRuleBasedPolicy('rule-based-v3', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, NO_FEATURES);
 
-// 'rule-based' as it was at the end of Kingdom Wars Part 1, frozen as the baseline Part 2 is judged against.
+// 'rule-based' as it was at the end of Kingdom Wars Part 1, frozen as the baseline Part 2 was judged against.
 export const ruleBasedV4Policy: BotPolicy = createRuleBasedPolicy('rule-based-v4', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: false });
-
-// The Part 2 challenger: reads the table, and ranks targets by it (tableRank, rule 6).
-export const ruleBasedTablePolicy: BotPolicy = createRuleBasedPolicy('rule-based-table', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true });

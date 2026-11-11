@@ -316,3 +316,88 @@ neither a rule nor a stated reason.
 rule never fired. The rule now
 reads the Sha's targets from the log. The fix is `c3834ebf`, and the runs above
 are from after it.
+
+### Part 2 — Reading the table
+
+**The bar** (decided before any run). Part 2 passes when, at 6 seats on both
+seed ranges, the **leader-won rate** paired difference (`rule-based-table`
+minus `rule-based-v4`, every seat one bot, `balance`) has its whole 95%
+interval below 0; and the mirrored tournament's seat share (`rule-based-table`
+against `rule-based-v4`) is not wholly below 0 on both ranges. Deaths per game
+and HP lost per game, and the per-force win rates, are reported alongside
+(Goal 4 and balance) and not gated. The 8-seat game time stays within the 3x
+anti-goal. Up to three tuning sets of the rule 6 and 8 weights were allowed
+between the ranges.
+
+Challenger `rule-based-table` (the Part 2 bot, now shipped as `rule-based`)
+against `rule-based-v4` (`rule-based` at the end of Part 1, frozen), Kingdom
+Wars deck, 6 seats, run at commit `0f5e6607` with the challenger registered as
+`rule-based-table`. **No tuning was done**: the weights of rules 6 and 8 are the
+first set, and both ranges are untouched by any adjustment. Today the same runs
+are `npm run sim -- balance 2000 6 rule-based rule-based-v4 <seed>` and
+`npm run sim -- tournament 4000 6 rule-based rule-based-v4 <seed> mirrored`.
+
+Balance, 2000 games each, every seat the same bot (A is the challenger, B the
+baseline; differences are A minus B, paired by seed):
+
+| Seed | Leader won A / B | Leader won difference (95%) | Deaths per game | HP lost per game | Wins by force, A / B (%) |
+|---|---|---|---|---|---|
+| 1200000 | 56.8 / 62.4 | -5.6 pp (-8.0 to -3.2) | +0.08 (0.04 to 0.12) | +2.64 (2.14 to 3.14) | Wei 35.3 / 36.6, Shu 46.5 / 51.4, Wu 14.4 / 8.4, Qun 12.4 / 6.7 |
+| 1300000 | 55.7 / 66.5 | -11.0 pp (-13.3 to -8.6) | +0.14 (0.10 to 0.18) | +2.79 (2.28 to 3.30) | Wei 34.7 / 39.1, Shu 45.7 / 50.9, Wu 14.4 / 9.2, Qun 12.6 / 3.3 |
+
+(Per-force rate is wins per seat that ended in that force. The Ambitionist
+seats are listed per seat in the report files, as `ambitionist:<seat>`; the
+tournament table below has one Ambitionist figure. `formatBalanceReport` now
+sums them into one Ambitionist row.)
+
+Mirrored tournament, 4000 games each, 6 seats:
+
+| Seed | Seat-share difference (95%) | Wins by force, challenger / baseline (%) |
+|---|---|---|
+| 1200000 | +2.2 pp (1.2 to 3.1) | Wei 37.7 / 35.4, Shu 50.7 / 48.3, Wu 12.1 / 10.7, Qun 7.8 / 8.3, Ambitionist 11.0 / 7.8 |
+| 1300000 | +1.4 pp (0.5 to 2.3) | Wei 38.3 / 36.3, Shu 49.8 / 48.4, Wu 10.9 / 10.4, Qun 9.8 / 9.3, Ambitionist 9.3 / 9.1 |
+
+**No slower games.** 400 balance games at 8 seats, first seed 1400000, each
+side the same bot (`/usr/bin/time -p npm run sim -- balance 400 8 <bot> <bot>
+1400000`, wall time): `rule-based-table` 60.14 s, `rule-based-v4` 47.48 s, a
+ratio of 1.27x against the 3x bar. Passes.
+
+**The danger ratings were reviewed.** The 93 hand-drafted skill danger ratings
+(`high`, `medium`, `low` by the rule 5 criteria) were shown to the developer,
+who accepted them as drafted on 2026-11-11.
+
+**Verdict: passes, shipped.** The leader-won paired difference is wholly below 0
+on both ranges (-5.6 pp, -8.0 to -3.2; -11.0 pp, -13.3 to -8.6), so a leading
+force wins less often when the bots read the table. The seat share is above 0
+on both ranges (+2.2 and +1.4 pp, every interval above 0), so the bot is not
+weaker for it, and it is slower by 1.27x. Deaths and HP lost are not gated, and
+the honest reading is that games got bloodier: +0.08 and +0.14 deaths and +2.64
+and +2.79 HP lost per game, with every interval above 0. That works against
+Goal 4 (shorter, less grinding games) and is left for a later part. Smaller
+forces gain (Wu and Qun win more often in both balance ranges) at the cost of
+Shu and Wei.
+
+**Where the shipped rules differ from the sketch in the Part 2 section above.**
+The leading force is defined by seats alone: it has at least 2 seats and
+strictly more seats than every other force (the sketch said "plus at least one
+more seat than the second force", which is the same thing for integer counts).
+It is weakened when it no longer has strictly more seats than every other
+force, or when its HP is not greater than the HP of the force with the next
+most seats; the sketch left "weakened" and the end of the alliance to the
+builder, and does not use hand size or equipment, which the picture of the
+table leaves out. Danger is the revealed Generals' skill ratings plus 10 times
+their value in the General value table, not hostile acts alone; hostile acts
+count separately in the ranking (rule 6). The rules are written out in the
+plan.
+
+**Decisions made while building.**
+
+- Ambitionists count as truce partners: rule 3 literally, a force of one is a
+  force that is neither the bot's own nor the leading force.
+- A truce partner's score is clamped below every leading-force seat, however
+  dangerous it is, so the leaders are always hit first.
+- Harmful seat selections in the ladder (a selection that names seats to hurt)
+  also hold fire on a truce partner, not only card plays.
+- The legacy per-skill targeting in `skills.ts`, `wind.ts`, `fire.ts`,
+  `forest.ts` and `mountain.ts` is not yet on the ranker: those skills sort by
+  HP and keep today's notion of foe. Moving them is a follow-up.

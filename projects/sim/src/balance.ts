@@ -108,8 +108,20 @@ export function compareBalance(a: BalanceReport, b: BalanceReport): BalanceCompa
 const pct = (v: number): string => `${(100 * v).toFixed(1)}%`;
 const fmt = (i: Interval, digits = 2): string => `${i.mean.toFixed(digits)} (${i.low.toFixed(digits)} to ${i.high.toFixed(digits)}) over ${i.games}`;
 
+// Every `ambitionist:<seat>` entry is shown as one Ambitionist row (the data keeps the per-seat keys).
+function displayForces(perForce: BalanceReport['perForce']): Array<[string, { seats: number; wins: number }]> {
+  const merged: Record<string, { seats: number; wins: number }> = {};
+  for (const [key, t] of Object.entries(perForce)) {
+    const name = key.startsWith('ambitionist:') ? 'Ambitionist' : key;
+    const row = (merged[name] ??= { seats: 0, wins: 0 });
+    row.seats += t.seats;
+    row.wins += t.wins;
+  }
+  return Object.entries(merged);
+}
+
 export function formatBalanceReport(report: BalanceReport): string {
-  const forces = Object.entries(report.perForce)
+  const forces = displayForces(report.perForce)
     .sort(([x], [y]) => x.localeCompare(y))
     .map(([key, t]) => `${key} ${t.seats === 0 ? '-' : pct(t.wins / t.seats)}`)
     .join(', ');

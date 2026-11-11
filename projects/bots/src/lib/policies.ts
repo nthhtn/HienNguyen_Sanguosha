@@ -3,7 +3,7 @@ import { ALL_CARD_PLAY_RULES, NO_CARD_PLAY_RULES } from './card-play';
 import { ALL_RESPONSE_RULES, NO_RESPONSE_RULES } from './responses';
 import { GENERAL_VALUES } from './general-values';
 import { weakestFirst } from './helpers';
-import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV2Policy, ruleBasedV3Policy, ruleBasedV4Policy, ruleBasedTablePolicy } from './rule-based';
+import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV2Policy, ruleBasedV3Policy, ruleBasedV4Policy } from './rule-based';
 
 const POLICIES = new Map<string, BotPolicy>();
 
@@ -34,7 +34,5 @@ registerPolicy(createRuleBasedPolicy('rule-based-cards', weakestFirst, ALL_CARD_
 registerPolicy(createRuleBasedPolicy('rule-based-responses', weakestFirst, NO_CARD_PLAY_RULES, ALL_RESPONSE_RULES));
 // Stage 4 (General selection): the measured value table. Shipped, so it now equals 'rule-based'.
 registerPolicy(createRuleBasedPolicy('rule-based-picks', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES));
-// 'rule-based' after Kingdom Wars Part 1, frozen as the baseline Part 2 is judged against.
+// 'rule-based' after Kingdom Wars Part 1, frozen as the baseline Part 2 was judged against.
 registerPolicy(ruleBasedV4Policy);
-// Part 2 challenger: reads forces, the leading force and temporary alliances.
-registerPolicy(ruleBasedTablePolicy);
