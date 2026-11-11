@@ -65,7 +65,9 @@ export function forestChoice(view: GameState, me: Seat, choice: PendingChoice, r
     case 'collapse':
       return me.combinedHp >= 3 ? 'lose-hp' : 'reduce-max-hp';
     case 'upheaval': {
-      const foe = harmTargets(lowestHpFirst)[0];
+      // Losing 1 HP is not worth sparing a truce partner (controller ruling): with no seat ranked, the frozen
+      // order's weakest non-ally, and pass only when there is none.
+      const foe = harmTargets(lowestHpFirst)[0] ?? harmTargetsOf(view, me, choice, registry, undefined, lowestHpFirst)[0];
       return foe?.id ?? 'pass';
     }
     case 'charity': {
@@ -111,7 +113,8 @@ export function forestSelection(view: GameState, me: Seat, selection: PendingSel
   return null;
 }
 
-// Whether the Upheaval window's seat (the bot) is being asked to Sha a non-ally (one it may harm, rule E1).
+// Whether the Upheaval window's seat (the bot) is being asked to Sha a non-ally (given a ranker, one it may
+// harm, rule E1). Upheaval's own window is called without one: its victim was already picked (forestChoice).
 export const upheavalVictimIsFoe = (view: GameState, me: Seat, victimSeatId: string | undefined, rank?: TargetRanker): boolean => {
   const victim = view.seats.find((s) => s.id === victimSeatId);
   return !!victim && mayHarm(view, me, victim, rank) && livingSeatOrderFrom(view, me.id).includes(victim.id);

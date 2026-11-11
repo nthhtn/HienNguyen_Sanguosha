@@ -152,6 +152,37 @@ describe('legacy skill picks rank targets (rules E1-E3)', () => {
     expect(picked(decideWith(ruleBasedV5Policy, s))).toEqual(['seat-b', 'seat-c']);
   });
 
+  describe('fallbacks when the ranker leaves no seat (fix round 1)', () => {
+    const sha = { as: 'sha', colour: 'none' as const, physical: [] };
+    const shaAt = (seatId: string): Effect[] => [{ kind: 'UseCardEffect', seatId: 'seat-a', card: sha, targets: [{ kind: 'seat', seatId }] }];
+
+    it('Upheaval Shas a HOLD_FIRE truce partner rather than lose 1 HP', () => {
+      const base = game(KINGDOMS, { hp: lowPartner, cards: { 'seat-a:hand': [card('s1', 'sha')] } });
+      const picking = choosing(base, 'upheaval', ['seat-b']);
+      const withPass: GameState = { ...picking, pendingChoice: { ...picking.pendingChoice!, options: [...picking.pendingChoice!.options, { id: 'pass', shows: { kind: 'label', text: 'Pass (Lose 1 HP)' }, effects: [] }] } };
+      expect(picked(decideWaste(withPass))).toBe('seat-b');
+      // Its window then plays the Sha at that seat.
+      const window: GameState = {
+        ...base,
+        pendingResponse: {
+          id: 'w', respondingSeatId: 'seat-a', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
+          reason: { kind: 'ability', owner: general('seat-c', 'upheaval'), abilityId: 'upheaval', targetSeatId: 'seat-b' },
+          context: { effect: { kind: 'LoseHpEffect', seatId: 'seat-a', amount: 1 } },
+        },
+      };
+      expect(decideWaste(window)).toMatchObject({ kind: 'RespondAction', cardInstanceId: 's1' });
+    });
+
+    it('Godspeed with every leader seat stopping the Sha and every other non-ally HOLD_FIRE aims at a non-ally, never the ally', () => {
+      // seat-e is a Shu ally, listed first; seat-c, seat-d and seat-f (Wei) wear Wood Armor; seat-b (Wu, 2 HP) holds fire.
+      const armor = (id: string) => [card(`wa-${id}`, 'wood-armor', 'spade', 2)];
+      const s = game(['Shu', 'Wu', 'Wei', 'Wei', 'Shu', 'Wei'], { hp: lowPartner, cards: { 'seat-c:equip': armor('c'), 'seat-d:equip': armor('d'), 'seat-f:equip': armor('f') } });
+      const pick = choosing(s, 'godspeed', ['seat-e', 'seat-b', 'seat-c', 'seat-d', 'seat-f'], shaAt);
+      expect(picked(decideWaste(pick))).toBe('seat-b');
+      expect(picked(decideWith(ruleBasedV5Policy, pick))).toBe('seat-b');
+    });
+  });
+
   describe('a forced-Sha pick (Double Edged)', () => {
     const id = 'kingdomWars:double-edged';
     const sha = { as: 'sha', colour: 'none' as const, physical: [] };

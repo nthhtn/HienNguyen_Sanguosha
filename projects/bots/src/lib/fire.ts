@@ -141,10 +141,11 @@ export function fireChoice(view: GameState, me: Seat, choice: PendingChoice, reg
   if (choice.reason.kind !== 'ability') return null;
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
   switch (baseSkillId(choice.reason.abilityId)) {
-    // Rules E1, E3: the best seat to harm (the weakest non-ally without a ranker).
+    // Rules E1, E3: the best seat to harm (the weakest non-ally without a ranker); when the ranker leaves none,
+    // the frozen order's non-ally before any ally.
     case 'assault':
     case 'rouse-the-tiger':
-      return (harmTargetsOf(view, me, choice, registry, rank, lowestHpFirst)[0] ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
+      return (harmTargetsOf(view, me, choice, registry, rank, lowestHpFirst)[0] ?? harmTargetsOf(view, me, choice, registry, undefined, lowestHpFirst)[0] ?? byHighestHp(seats.filter((s) => s.id !== me.id))[0] ?? seats[0])?.id ?? null;
     case 'eternal-loyalty': {
       // Kingdom Wars Eternal Loyalty stops at 5 cards, so a seat is only short up to that cap.
       const cap = choice.reason.kind === 'ability' && choice.reason.abilityId === 'kingdomWars:eternal-loyalty' ? 5 : Infinity;

@@ -224,7 +224,11 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
   const seats = choice.options.flatMap((o) => (o.shows.kind === 'seat' ? [view.seats.find((s) => s.id === (o.shows as { seatId: string }).seatId)!] : []));
   const ally = seats.find((s) => s.id !== me.id && isAlly(me, s, view));
   // The seat to harm (rules E1, E3): the best non-ally offered (the weakest without a ranker).
-  const firstNonAlly = harmTargetsOf(view, me, choice, registry, rank, lowestHpFirst)[0];
+  const bestHarmed = harmTargetsOf(view, me, choice, registry, rank, lowestHpFirst)[0];
+  // When the ranker leaves no seat, a forced pick falls back to the frozen order (the weakest non-ally) before any
+  // ally; only a pick that can cancel cancels first.
+  const frozenHarmed = harmTargetsOf(view, me, choice, registry, undefined, lowestHpFirst)[0];
+  const firstNonAlly = bestHarmed ?? frozenHarmed;
   // For a harmful effect with no non-ally to aim at: the seat that is hurt least, an ally.
   const cancelId = choice.options.find((o) => o.id === 'cancel')?.id;
   const harmless = ally ?? seats[0];
@@ -258,10 +262,10 @@ export function skillChoice(view: GameState, me: Seat, choice: PendingChoice, re
     case 'green-vesicle':
       return (seats.find((s) => s.id === me.id) ?? ally ?? seats[0])?.id ?? null;
     case 'displace':
-      return firstNonAlly?.id ?? cancelId ?? harmless?.id ?? null;
+      return bestHarmed?.id ?? cancelId ?? frozenHarmed?.id ?? harmless?.id ?? null;
     case 'sow-discord':
       // The first pick (no target yet): a non-ally; the second: the likelier winner.
-      return (choice.reason.targetSeatId ? byHighestHp(seats)[0] : firstNonAlly)?.id ?? cancelId ?? harmless?.id ?? null;
+      return (choice.reason.targetSeatId ? byHighestHp(seats)[0] : bestHarmed)?.id ?? cancelId ?? frozenHarmed?.id ?? harmless?.id ?? null;
     case 'sow-revolt':
       return leastShownSuit(view, choice.reason.owner.seatId);
     case 'unyielding': {

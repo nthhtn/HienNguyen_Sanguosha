@@ -77,8 +77,9 @@ export function windChoice(view: GameState, me: Seat, choice: PendingChoice, reg
     case 'godspeed':
     case 'fantasy':
     case 'lightning-strike':
-      // Rules E1, E3: the best seat to harm (the weakest non-ally without a ranker).
-      return (harmTargetsOf(view, me, choice, registry, rank, lowestHpFirst)[0] ?? seats.find((s) => s.id !== me.id) ?? seats[0])?.id ?? null;
+      // Rules E1, E3: the best seat to harm (the weakest non-ally without a ranker); when the ranker leaves none,
+      // the frozen order's non-ally before any ally.
+      return (harmTargetsOf(view, me, choice, registry, rank, lowestHpFirst)[0] ?? harmTargetsOf(view, me, choice, registry, undefined, lowestHpFirst)[0] ?? seats.find((s) => s.id !== me.id) ?? seats[0])?.id ?? null;
     case 'bewilder': {
       const claimer = view.seats.find((s) => s.id === reason.owner.seatId);
       if (claimer && isAlly(me, claimer, view)) return 'believe';

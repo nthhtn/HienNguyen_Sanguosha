@@ -235,7 +235,7 @@ function decide(
           : reason.kind === 'wuxie'
             ? !!self && wuxieWorthCancelling(view, self, reason, responseRules.wuxie)
             : reason.kind === 'ability' && (baseSkillId(reason.abilityId) === 'upheaval' || reason.abilityId === 'instigate')
-              ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId, legacyRank)
+              ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId, baseSkillId(reason.abilityId) === 'upheaval' ? undefined : legacyRank)
               : false; // never counter a Wuxie Kongjie
     const answers = legal.filter((a): a is Extract<Action, { kind: 'RespondAction' }> => a.kind === 'RespondAction');
     // The first rule whose card is among the answers picks which one to give; then a Peach before anything
