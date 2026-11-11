@@ -7,14 +7,25 @@ import type { BotRule, BotRuleContext } from './registry';
 const seatOf = (view: GameState, id: string | undefined) => view.seats.find((s) => s.id === id);
 const isFoe = (ctx: BotRuleContext, seat: Seat | undefined): seat is Seat => !!seat && !seat.eliminated && seat.id !== ctx.me.id && !isAlly(ctx.me, seat, ctx.view);
 
-// Fire Fan (wantsToUse): used when the Sha's target is a foe, unless the target is chained and the bot or an
-// ally is chained too (the fire would spread to its own side).
+// The seats the bot's Sha in play is aimed at: the targets of the bot's most recent CardPlayedEvent of a Sha
+// (not a response). The Fire Fan ask itself names no target, as it is asked once per Sha.
+function shaTargets(view: GameState, me: Seat): Seat[] {
+  for (let i = view.log.length - 1; i >= 0; i--) {
+    const e = view.log[i] as { kind: string; seatId?: string; card?: { as: string }; targets?: { kind: string; seatId?: string }[]; inResponseTo?: unknown };
+    if (e.kind !== 'CardPlayedEvent' || e.seatId !== me.id || e.card?.as !== 'sha' || e.inResponseTo) continue;
+    return (e.targets ?? []).flatMap((t) => (t.kind === 'seat' ? [seatOf(view, t.seatId)] : [])).filter((s): s is Seat => !!s);
+  }
+  return [];
+}
+
+// Fire Fan (wantsToUse): used when every target of the Sha is a foe, unless some target is chained and the bot
+// or an ally is chained too (the fire would spread to its own side). With no target found, declined.
 export const fireFanRule: BotRule = {
   id: 'fire-fan',
-  wantsToUse: (ctx, choice) => {
-    const target = seatOf(ctx.view, choice.reason.kind === 'ability' ? choice.reason.targetSeatId : undefined);
-    if (!isFoe(ctx, target)) return false;
-    if (!isChained(ctx.view, target.id)) return true;
+  wantsToUse: (ctx) => {
+    const targets = shaTargets(ctx.view, ctx.me);
+    if (targets.length === 0 || !targets.every((t) => isFoe(ctx, t))) return false;
+    if (!targets.some((t) => isChained(ctx.view, t.id))) return true;
     const own = ctx.view.seats.filter((s) => !s.eliminated && (s.id === ctx.me.id || isAlly(ctx.me, s, ctx.view)));
     return !own.some((s) => isChained(ctx.view, s.id));
   },

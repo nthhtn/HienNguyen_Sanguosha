@@ -1,25 +1,33 @@
 import type { GameState, PendingChoice, PendingSelection } from 'engine';
 import { ruleBasedKwPolicy } from '../rule-based';
-import { asking, card, decideWith, general, picked, registry, table } from '../testing';
+import { act, asking, card, decideWith, general, picked, registry, table } from '../testing';
 
 const decide = (s: GameState) => decideWith(ruleBasedKwPolicy, s);
 const chain = (s: GameState, ...ids: string[]): GameState => ({ ...s, seats: s.seats.map((seat) => (ids.includes(seat.id) ? { ...seat, chained: true as const } : seat)) });
 
 describe('rules/equipment: Fire Fan', () => {
-  it('fire fan: used at a foe', () => {
-    expect(picked(decide(asking(table(), 'fire-fan', 'seat-b')))).toBe('use');
+  // seat-a wears Fire Fan and plays a Sha at `targetId`; the engine opens the ask.
+  const shaAt = (targetId: string, o: Parameters<typeof table>[1] = {}, chained: string[] = []): GameState => {
+    const s0 = chain(table({ 'seat-a:hand': [card('sh', 'sha')], 'seat-a:equip': [card('ff', 'fire-fan')] }, { seats: 6, ...o }), ...chained);
+    return act(s0, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'sh', targets: [{ kind: 'seat', seatId: targetId }] });
+  };
+
+  it('fire fan: the engine asks, and it is used at a foe', () => {
+    const s = shaAt('seat-b');
+    expect(s.pendingChoice?.reason).toMatchObject({ kind: 'ability', abilityId: 'fire-fan' });
+    expect(picked(decide(s))).toBe('use');
   });
 
   it('fire fan: declined at an ally', () => {
-    expect(picked(decide(asking(table({}, { kingdoms: { 'seat-b': 'Wei' } }), 'fire-fan', 'seat-b')))).toBe('decline');
+    expect(picked(decide(shaAt('seat-e')))).toBe('decline');
   });
 
   it('fire fan: declined when the foe and the bot are both chained', () => {
-    expect(picked(decide(asking(chain(table(), 'seat-a', 'seat-b'), 'fire-fan', 'seat-b')))).toBe('decline');
+    expect(picked(decide(shaAt('seat-b', {}, ['seat-a', 'seat-b'])))).toBe('decline');
   });
 
   it('fire fan: used at a chained foe when nobody on the bot\'s side is chained', () => {
-    expect(picked(decide(asking(chain(table(), 'seat-b'), 'fire-fan', 'seat-b')))).toBe('use');
+    expect(picked(decide(shaAt('seat-b', {}, ['seat-b'])))).toBe('use');
   });
 });
 
