@@ -4,6 +4,7 @@ import { baseSkillId } from 'content';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
 import { attackable, definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, RankerFactory, TargetRanker, weakestFirst } from './helpers';
 import { tableRank } from './table-rank';
+import { relationOf } from './table';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
 import { bestPair, GENERAL_VALUES } from './general-values';
@@ -203,8 +204,8 @@ function decide(
     return take(picks.reduce((best, p) => (worth(p) > worth(best) ? p : best)));
   }
 
-  // 2. Responding. A dying round: spend a Peach only on ourselves or a
-  // revealed ally. A Wuxie check: cancel only a harmful Tool aimed at us, and
+  // 2. Responding. A dying round: spend a Peach only on ourselves, a
+  // revealed ally or (rule 7, reading the table) a truce partner. A Wuxie check: cancel only a harmful Tool aimed at us, and
   // never counter a Wuxie. Any other window: every answer cancels damage to us.
   if (view.pendingResponse?.respondingSeatId === seatId) {
     const reason = view.pendingResponse.reason;
@@ -214,7 +215,7 @@ function decide(
       !reason || reason.kind === 'card-effect'
         ? true
         : reason.kind === 'dying'
-          ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying, view))
+          ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying, view) || (features.tableReading && relationOf(view, self, dying) === 'truce'))
           : reason.kind === 'wuxie'
             ? !!self && wuxieWorthCancelling(view, self, reason, responseRules.wuxie)
             : reason.kind === 'ability' && (baseSkillId(reason.abilityId) === 'upheaval' || reason.abilityId === 'instigate')
