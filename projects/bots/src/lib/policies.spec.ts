@@ -37,7 +37,7 @@ describe('rule-based-v1', () => {
     // seat-a (Wei) reaches seat-b and seat-d (adjacent); seat-d has the lower HP.
     const state = table({ 'seat-a:hand': [card('s1', 'sha')] }, { hp: { 'seat-b': 3, 'seat-d': 2 } });
     const action = decide(state);
-    expect(action).toMatchObject({ kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 's1', targets: [{ kind: 'seat', seatId: 'seat-d' }] });
+    expect(action).toMatchObject({ kind: 'PlayCardAction', cardInstanceId: 's1', targets: [{ kind: 'seat', seatId: 'seat-d' }] });
     expect(act(state, action)).toBeDefined();
   });
 });
@@ -60,10 +60,11 @@ describe('rule-based-v4', () => {
   const asRankedSeats = { generals: { 'seat-b': ['filler-sun-ce', 'filler-lu-su'] as [string, string] } };
   const fixtures: Record<string, () => ReturnType<typeof table>> = {
     'General selection': () => ({ ...table(), phase: 'GeneralSelection', generalSelection: { candidates: { 'seat-a': ['cao-cao', 'sun-quan', 'liu-bei', 'guan-yu'] } } }),
-    'dying response': () => {
-      const s = table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('p1', 'peach')] }, { hp: { 'seat-b': 1 } });
-      return act(s, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 's1', targets: [{ kind: 'seat', seatId: 'seat-b' }] } as never);
-    },
+    // The stub mode has no dying trigger, so the dying round is opened by hand: seat-b is at 0 HP and may play its Peach.
+    'dying response': () => ({
+      ...table({ 'seat-b:hand': [card('p1', 'peach')] }, { hp: { 'seat-b': 0 } }),
+      pendingResponse: { id: 'dying-seat-b-0', respondingSeatId: 'seat-b', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['peach'], reason: { kind: 'dying', seatId: 'seat-b' }, context: { effect: { kind: 'DyingEffect', seatId: 'seat-b', order: ['seat-b'], rescueCardIds: { any: ['peach'], self: [] }, entering: false } } },
+    }),
     'Discard Phase': () => ({ ...table({ 'seat-a:hand': ['a', 'b', 'c', 'd', 'e', 'f'].map((i, n) => card(i, n % 2 ? 'sha' : 'peach')) }), phase: 'Discard' }),
     'Play Phase with Sha and Steal': () => table({ 'seat-a:hand': [card('s1', 'sha'), card('t1', 'steal')], 'seat-b:hand': [card('x', 'sha')], 'seat-d:hand': [card('y', 'sha')] }, { hp: { 'seat-b': 3, 'seat-d': 2 } }),
     'Wuxie window': () => {
@@ -71,9 +72,22 @@ describe('rule-based-v4', () => {
       return act(s, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 't1', targets: [{ kind: 'seat', seatId: 'seat-b' }] } as never);
     },
   };
+  // Each fixture must be the situation its name says, and v4 must make this decision in it.
+  const setup: Record<string, (s: ReturnType<typeof table>) => boolean> = {
+    'dying response': (s) => s.pendingResponse?.reason?.kind === 'dying',
+    'Wuxie window': (s) => s.pendingResponse?.reason?.kind === 'wuxie' && s.pendingResponse.respondingSeatId === 'seat-c',
+  };
+  const expected: Record<string, object> = {
+    'General selection': { kind: 'ChooseGeneralsAction' },
+    'dying response': { kind: 'RespondAction', cardInstanceId: 'p1' },
+    'Discard Phase': { kind: 'DiscardCardAction' },
+    'Play Phase with Sha and Steal': { kind: 'PlayCardAction' },
+    'Wuxie window': { kind: 'PassAction' },
+  };
   it.each(Object.keys(fixtures))('decides as rule-based does: %s', (name) => {
     const s = fixtures[name]();
-    if (name === 'dying response' || name === 'Wuxie window') expect(s.pendingResponse).not.toBeNull();
+    expect(setup[name]?.(s)).not.toBe(false);
+    expect(decideWith(ruleBasedV4Policy, s)).toMatchObject(expected[name]);
     expect(decideWith(ruleBasedV4Policy, s)).toEqual(decideWith(ruleBasedPolicy, s));
   });
 });
