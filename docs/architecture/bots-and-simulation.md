@@ -77,8 +77,8 @@ All three hand the policy the seat's redacted view and its legal actions.
 ([table.ts](../../projects/bots/src/lib/table.ts)), enabled by
 `BotFeatures.tableReading`:
 
-- **Forces.** A force is a Kingdom's living seats whose Kingdom is revealed;
-  each living Ambitionist is a force of one. A hidden seat belongs to no force.
+- **Forces.** A force is a Kingdom's living seats whose allegiance is `kingdom`
+  and whose Kingdom is revealed; each living Ambitionist is a force of one. A hidden seat belongs to no force.
   A force has seats (a count) and HP (summed `combinedHp`).
 - **The leading force** (`leadingForceOf`) has at least 2 seats and strictly
   more seats than every other force. It is weakened, and no longer leads, as

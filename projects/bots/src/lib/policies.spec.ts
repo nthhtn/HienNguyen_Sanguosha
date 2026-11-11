@@ -78,16 +78,15 @@ describe('rule-based-v4', () => {
     'Wuxie window': (s) => s.pendingResponse?.reason?.kind === 'wuxie' && s.pendingResponse.respondingSeatId === 'seat-c',
   };
   const expected: Record<string, object> = {
-    'General selection': { kind: 'ChooseGeneralsAction' },
-    'dying response': { kind: 'RespondAction', cardInstanceId: 'p1' },
-    'Discard Phase': { kind: 'DiscardCardAction' },
-    'Play Phase with Sha and Steal': { kind: 'PlayCardAction' },
-    'Wuxie window': { kind: 'PassAction' },
+    'General selection': { kind: 'ChooseGeneralsAction', seatId: 'seat-a', mainId: 'liu-bei', deputyId: 'guan-yu' },
+    'dying response': { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'dying-seat-b-0', cardInstanceId: 'p1' },
+    'Discard Phase': { kind: 'DiscardCardAction', seatId: 'seat-a', cardInstanceId: 'b' },
+    'Play Phase with Sha and Steal': { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 't1', targets: [{ kind: 'seat', seatId: 'seat-d' }] },
+    'Wuxie window': { kind: 'PassAction', seatId: 'seat-c', pendingResponseId: 'wuxie-check-2-seat-c-steal-t1-seat-b' },
   };
-  it.each(Object.keys(fixtures))('decides as rule-based does: %s', (name) => {
+  it.each(Object.keys(fixtures))('pins the frozen v4 decision: %s', (name) => {
     const s = fixtures[name]();
     expect(setup[name]?.(s)).not.toBe(false);
-    expect(decideWith(ruleBasedV4Policy, s)).toMatchObject(expected[name]);
-    expect(decideWith(ruleBasedV4Policy, s)).toEqual(decideWith(ruleBasedPolicy, s));
+    expect(decideWith(ruleBasedV4Policy, s)).toEqual(expected[name]);
   });
 });

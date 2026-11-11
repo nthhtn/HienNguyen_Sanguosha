@@ -12,16 +12,27 @@ function keptAlive(state: GameState, seatId: string): boolean {
   return false;
 }
 
+// Whether the game's end cut `seatId`'s rescue round short: after its last HP
+// loss its dying event was logged, or it revealed a General (Refusing Death's
+// reveal comes before the dying event, and that reveal can end the game).
+function rescueCutShort(state: GameState, seatId: string): boolean {
+  for (let i = state.log.length - 1; i >= 0; i--) {
+    const e = state.log[i];
+    if ((e.kind === 'SeatDyingEvent' || e.kind === 'GeneralRevealedEvent') && e.seatId === seatId) return true;
+    if ((e.kind === 'DamageDealtEvent' && e.damage.target.seatId === seatId) || (e.kind === 'HpLostEvent' && e.seatId === seatId)) return false;
+  }
+  return false;
+}
+
 export function checkInvariants(state: GameState, registry?: ContentRegistry): string[] {
   const violations: string[] = [];
 
   for (const seat of state.seats) {
     // At 0 HP or below a seat is dying until its rescue round ends: it may
-    // only be living while that round is still asking. Only while the game is
-    // unfinished: a finished game ends every unresolved decision, the rescue
-    // round included.
+    // only be living while that round is still asking, or (finished game only)
+    // when the game's end cut the opened round short.
     const rescuePending = state.pendingResponse?.reason?.kind === 'dying' && state.pendingResponse.reason.seatId === seat.id;
-    if (!state.result && !seat.eliminated && seat.combinedHp <= 0 && !rescuePending && !keptAlive(state, seat.id)) {
+    if (!seat.eliminated && seat.combinedHp <= 0 && !rescuePending && !keptAlive(state, seat.id) && !(state.result && rescueCutShort(state, seat.id))) {
       violations.push(`Seat ${seat.id} is living at ${seat.combinedHp} HP with no rescue round pending`);
     }
   }
