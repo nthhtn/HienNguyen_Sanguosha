@@ -223,3 +223,22 @@ Results go in this spec under `Results`, and a summary in the parent spec.
 - How the stop and cost facts are typed on abilities.
 - The order of work, and how the legacy picks are grouped while moving them.
 - The exact report format of the waste count.
+
+## Results
+
+**The bar and seeds** (written before any run). At 6 seats, on the seed ranges
+starting at `1500000` and `1600000` (not used before), `balance` runs of 2000
+games each, every seat one bot (A is `rule-based-waste`, B is
+`rule-based-v5`; differences are A minus B, paired by seed, 95% intervals):
+
+1. Wasted plays per game: the whole interval below 0.
+2. HP lost per game: not wholly above 0. Deaths per game are reported next to it.
+3. Leader-won rate: not wholly above 0.
+
+And `tournament 4000 6 rule-based-waste rule-based-v5 <seed> mirrored`: the
+seat-share difference not wholly below 0 on both ranges. The 8-seat time
+(`/usr/bin/time -p npm run sim -- balance 400 8 <bot> <bot> 1400000`) of
+`rule-based-waste` stays within 3x of `rule-based-v3`. Up to three tuning sets
+of `EXPOSURE_WEIGHTS` (`projects/bots/src/lib/exposure.ts`) may be tried on the
+first range only, each recorded with its numbers; the second range runs once,
+with the final set.
