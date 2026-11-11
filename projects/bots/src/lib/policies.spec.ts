@@ -1,11 +1,11 @@
 import { policyById, policyIds, registerPolicy } from './policies';
-import { ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
+import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy } from './rule-based';
 import { isAlly } from './helpers';
 import { act, card, decide, table } from './testing';
 
 describe('policy registry', () => {
   it('lists the registered policies', () => {
-    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2']);
+    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3']);
   });
 
   it('looks a policy up by id', () => {
@@ -23,8 +23,12 @@ describe('policy registry', () => {
   });
 
   it('names the valid ids when the id is unknown', () => {
-    expect(() => policyById('nope')).toThrow(/Unknown bot policy "nope".*rule-based, rule-based-v1, rule-based-v2, rule-based-cards, rule-based-responses, rule-based-picks/);
+    expect(() => policyById('nope')).toThrow(/Unknown bot policy "nope".*rule-based, rule-based-v1, rule-based-v2, rule-based-v3, rule-based-cards, rule-based-responses, rule-based-picks/);
   });
+});
+
+describe('rule-based-v3', () => {
+  it('has the id "rule-based-v3"', () => expect(ruleBasedV3Policy.id).toBe('rule-based-v3'));
 });
 
 describe('rule-based-v1', () => {

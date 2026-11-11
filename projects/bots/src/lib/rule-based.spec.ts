@@ -1,5 +1,5 @@
 import type { Action, CardDefinition, CardZone, DecisionReason, EquipSlot, PendingArrangement, PendingChoice, PendingSelection, ContentRegistry, GameState, GeneralDefinition, Kingdom, Seat } from 'engine';
-import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy } from './rule-based';
+import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy } from './rule-based';
 import { NO_CARD_PLAY_RULES } from './card-play';
 import { weakestFirst } from './helpers';
 import { targetScore } from './targeting';
@@ -736,7 +736,9 @@ describe('ruleBasedPolicy: elemental Slash and Chains', () => {
     expect(first.memory?.shaPlayed).toBe(1);
   });
 
-  it('never plays or recasts Chains', () => {
+  // The legacy bot, frozen as rule-based-v3: the shipped bot plays Chains by its Kingdom Wars rule (rules/tools.spec.ts).
+  it('never plays or recasts Chains (rule-based-v3)', () => {
+    const decide = (v: GameState, legal: Action[]) => ruleBasedV3Policy.decide(v, 'seat-0', legal, registry, null);
     const hand = h(['c', 'chains']);
     const legal = [play('c'), play('c', 'seat-1'), play('c', 'seat-1'), end];
     expect(decide(view({ hand }), legal).action).toBe(end);
