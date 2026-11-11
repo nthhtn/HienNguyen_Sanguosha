@@ -1,11 +1,11 @@
 import { policyById, policyIds, registerPolicy } from './policies';
-import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy, ruleBasedV4Policy } from './rule-based';
+import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy, ruleBasedV4Policy, ruleBasedV5Policy, ruleBasedWastePolicy } from './rule-based';
 import { isAlly } from './helpers';
 import { act, card, decide, decideWith, table } from './testing';
 
 describe('policy registry', () => {
   it('lists the registered policies', () => {
-    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3', 'rule-based-v4']);
+    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3', 'rule-based-v4', 'rule-based-v5', 'rule-based-waste']);
   });
 
   it('looks a policy up by id', () => {
@@ -88,5 +88,29 @@ describe('rule-based-v4', () => {
     const s = fixtures[name]();
     expect(setup[name]?.(s)).not.toBe(false);
     expect(decideWith(ruleBasedV4Policy, s)).toEqual(expected[name]);
+  });
+});
+
+describe('rule-based-v5', () => {
+  it('has the id "rule-based-v5"', () => expect(ruleBasedV5Policy.id).toBe('rule-based-v5'));
+  it('the no-waste variant has the id "rule-based-waste"', () => expect(ruleBasedWastePolicy.id).toBe('rule-based-waste'));
+
+  // v5 is 'rule-based' as it was at the start of Part 3, so it decides exactly as 'rule-based' does.
+  const fixtures: Record<string, () => ReturnType<typeof table>> = {
+    'General selection': () => ({ ...table(), phase: 'GeneralSelection', generalSelection: { candidates: { 'seat-a': ['cao-cao', 'sun-quan', 'liu-bei', 'guan-yu'] } } }),
+    'dying response': () => ({
+      ...table({ 'seat-b:hand': [card('p1', 'peach')] }, { hp: { 'seat-b': 0 } }),
+      pendingResponse: { id: 'dying-seat-b-0', respondingSeatId: 'seat-b', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['peach'], reason: { kind: 'dying', seatId: 'seat-b' }, context: { effect: { kind: 'DyingEffect', seatId: 'seat-b', order: ['seat-b'], rescueCardIds: { any: ['peach'], self: [] }, entering: false } } },
+    }),
+    'Discard Phase': () => ({ ...table({ 'seat-a:hand': ['a', 'b', 'c', 'd', 'e', 'f'].map((i, n) => card(i, n % 2 ? 'sha' : 'peach')) }), phase: 'Discard' }),
+    'Play Phase with Sha and Steal': () => table({ 'seat-a:hand': [card('s1', 'sha'), card('t1', 'steal')], 'seat-b:hand': [card('x', 'sha')], 'seat-d:hand': [card('y', 'sha')] }, { hp: { 'seat-b': 3, 'seat-d': 2 } }),
+    'Wuxie window': () => {
+      const s = table({ 'seat-a:hand': [card('t1', 'steal')], 'seat-b:hand': [card('x', 'sha')], 'seat-c:hand': [card('w1', 'wuxie')] }, { generals: { 'seat-b': ['filler-sun-ce', 'filler-lu-su'] as [string, string] } });
+      return act(s, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 't1', targets: [{ kind: 'seat', seatId: 'seat-b' }] } as never);
+    },
+  };
+  it.each(Object.keys(fixtures))('decides exactly as rule-based does: %s', (name) => {
+    const s = fixtures[name]();
+    expect(decideWith(ruleBasedV5Policy, s)).toEqual(decideWith(ruleBasedPolicy, s));
   });
 });

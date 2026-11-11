@@ -412,7 +412,7 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFac
 // Part 1 shipped: the rule registry decides when each Kingdom Wars card and skill is worth using. Kingdom Wars
 // Part 2 shipped: the bot reads the table (forces, the leading force, truce partners) and ranks targets by it
 // (tableRank, rule 6).
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true });
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: false });
 
 // Weakest-first targeting and highest-max-HP General pairs, frozen as a fixed opponent for the tournament
 // harness. 'rule-based-v1' was 'rule-based' before the Stage 4 value table; 'rule-based-v2' is the same bot,
@@ -424,4 +424,10 @@ export const ruleBasedV2Policy: BotPolicy = createRuleBasedPolicy('rule-based-v2
 export const ruleBasedV3Policy: BotPolicy = createRuleBasedPolicy('rule-based-v3', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, NO_FEATURES);
 
 // 'rule-based' as it was at the end of Kingdom Wars Part 1, frozen as the baseline Part 2 was judged against.
-export const ruleBasedV4Policy: BotPolicy = createRuleBasedPolicy('rule-based-v4', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: false });
+export const ruleBasedV4Policy: BotPolicy = createRuleBasedPolicy('rule-based-v4', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: false, noWaste: false });
+
+// 'rule-based' as it was at the end of Kingdom Wars Part 2, frozen as the baseline Part 3 is judged against.
+export const ruleBasedV5Policy: BotPolicy = createRuleBasedPolicy('rule-based-v5', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: false });
+
+// Part 3 candidate: 'rule-based' with the no-waste rules on; judged against 'rule-based-v5'.
+export const ruleBasedWastePolicy: BotPolicy = createRuleBasedPolicy('rule-based-waste', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true });

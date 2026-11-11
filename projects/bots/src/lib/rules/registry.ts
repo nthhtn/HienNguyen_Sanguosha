@@ -47,6 +47,8 @@ export interface BotFeatures {
   rules: BotRuleRegistry | null;
   // Whether the bot reads the table: forces, a leading force and temporary alliances (Part 2).
   tableReading: boolean;
+  // Whether the bot avoids wasted plays and wasted stops (Part 3).
+  noWaste: boolean;
 }
 
-export const NO_FEATURES: BotFeatures = { rules: null, tableReading: false };
+export const NO_FEATURES: BotFeatures = { rules: null, tableReading: false, noWaste: false };
