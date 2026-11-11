@@ -1,8 +1,8 @@
 import type { Action, GameState, UsedCard } from 'engine';
-import { ruleBasedKwPolicy } from '../rule-based';
+import { ruleBasedPolicy } from '../rule-based';
 import { card, decideWith, table } from '../testing';
 
-const decide = (s: GameState) => decideWith(ruleBasedKwPolicy, s);
+const decide = (s: GameState) => decideWith(ruleBasedPolicy, s);
 // seat-a is asked to cancel `tool` on `targetSeatId`, holding `hand` (instance id = definition id).
 const wuxieWindow = (hand: string[], tool: string, targetSeatId: string, hidden = false): GameState => {
   const s = table({ 'seat-a:hand': hand.map((id) => card(id, id)) });

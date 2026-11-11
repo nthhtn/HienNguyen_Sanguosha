@@ -1,8 +1,8 @@
 import type { GameState, PendingChoice, PendingSelection } from 'engine';
-import { ruleBasedKwPolicy } from '../rule-based';
+import { ruleBasedPolicy } from '../rule-based';
 import { act, asking, card, decideWith, general, picked, registry, table } from '../testing';
 
-const decide = (s: GameState) => decideWith(ruleBasedKwPolicy, s);
+const decide = (s: GameState) => decideWith(ruleBasedPolicy, s);
 const chain = (s: GameState, ...ids: string[]): GameState => ({ ...s, seats: s.seats.map((seat) => (ids.includes(seat.id) ? { ...seat, chained: true as const } : seat)) });
 
 describe('rules/equipment: Fire Fan', () => {

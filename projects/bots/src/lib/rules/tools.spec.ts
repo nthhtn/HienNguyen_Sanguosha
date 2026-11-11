@@ -1,10 +1,10 @@
 import type { Action, GameState, Seat } from 'engine';
 import { weakestFirst } from '../helpers';
-import { ruleBasedKwPolicy } from '../rule-based';
+import { ruleBasedPolicy } from '../rule-based';
 import { card, decideWith, registry, table } from '../testing';
 import { chainsRule } from './tools';
 
-const decide = (s: GameState) => decideWith(ruleBasedKwPolicy, s);
+const decide = (s: GameState) => decideWith(ruleBasedPolicy, s);
 const seatIdsOf = (a: Action) => ('targets' in a ? a.targets.map((t) => (t.kind === 'seat' ? t.seatId : '')) : []);
 // The table with some seats changed (chained, an Ambitionist).
 const withSeats = (s: GameState, change: Record<string, Partial<Seat>>): GameState => ({ ...s, seats: s.seats.map((seat) => ({ ...seat, ...change[seat.id] })) });

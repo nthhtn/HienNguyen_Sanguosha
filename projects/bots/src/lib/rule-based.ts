@@ -403,8 +403,9 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: Car
   return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, generalValues, features, view, seatId, legal, registry, memory) };
 }
 
-// Stage 4 shipped: General pairs are chosen with the measured value table (max HP breaks ties).
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES);
+// Stage 4 shipped: General pairs are chosen with the measured value table (max HP breaks ties). Kingdom Wars
+// Part 1 shipped: the rule registry decides when each Kingdom Wars card and skill is worth using.
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES });
 
 // Weakest-first targeting and highest-max-HP General pairs, frozen as a fixed opponent for the tournament
 // harness. 'rule-based-v1' was 'rule-based' before the Stage 4 value table; 'rule-based-v2' is the same bot,
@@ -412,8 +413,5 @@ export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', we
 export const ruleBasedV1Policy: BotPolicy = createRuleBasedPolicy('rule-based-v1', weakestFirst);
 export const ruleBasedV2Policy: BotPolicy = createRuleBasedPolicy('rule-based-v2', weakestFirst);
 
-// 'rule-based' as it is today, frozen as the baseline the Kingdom Wars challenger is judged against.
+// 'rule-based' as it was before Kingdom Wars Part 1, frozen as the baseline Part 1 was judged against.
 export const ruleBasedV3Policy: BotPolicy = createRuleBasedPolicy('rule-based-v3', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, NO_FEATURES);
-
-// 'rule-based' plus the Kingdom Wars rule registry; a challenger until the tournament says otherwise.
-export const ruleBasedKwPolicy: BotPolicy = createRuleBasedPolicy('rule-based-kw', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES });

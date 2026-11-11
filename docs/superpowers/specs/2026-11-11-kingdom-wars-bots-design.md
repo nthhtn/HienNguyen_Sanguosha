@@ -167,16 +167,23 @@ Part 4 runs last because a General's value depends on how well bots play it.
 
 ## Where the knowledge lives
 
-Per-card and per-skill bot knowledge (when a skill is worth using, what makes a
-card do nothing against a seat, how dangerous a revealed skill is) is declared
-next to that card or skill in `projects/content`, and the bot reads it through
-the registry. The dependency rules stand: `bots` may import `content` and
-`engine`; `content` must not import `bots`; the engine must not learn about
-bots. The builder chooses the shape (a field on the definitions, or a
-content-side registry keyed by id with the types defined in `content`). The
-existing per-skill switches in `projects/bots/src/lib/skills.ts`, `wind.ts`,
-`fire.ts`, `forest.ts` and `mountain.ts` are moved into that shape when a part
-touches them; a full migration of untouched skills is not required.
+Two kinds of knowledge, kept in two places (agreed during Part 1):
+
+- **Facts** about a card or skill (what stops a card from doing anything
+  against a seat, how dangerous a revealed skill is) are declared next to that
+  card or skill in `projects/content`, and the bot reads them through the
+  registry. Parts 2 and 3 need these.
+- **Play judgment** (when a card or skill is worth using) lives in a
+  data-driven registry inside `projects/bots` (`rules/`, one entry per card or
+  skill id, no switch). It needs the bots' own helpers (allies, targeting,
+  `keepRank`), and `content` may not import `bots`, so it cannot sit in
+  `content`.
+
+The dependency rules stand: `bots` may import `content` and `engine`; `content`
+must not import `bots`; the engine must not learn about bots. The existing
+per-skill switches in `projects/bots/src/lib/skills.ts`, `wind.ts`, `fire.ts`,
+`forest.ts` and `mountain.ts` are moved into the registry when a part touches
+them; a full migration of untouched skills is not required.
 
 ## How it is judged
 
@@ -234,7 +241,67 @@ the deck default or Identity.
 ## Left to the builder
 
 - The thresholds and weights for threat, leading force and weakened.
-- The shape of the content-side bot knowledge.
 - The order inside Part 1, and which variants need their own rule.
 - Whether Parts 2 and 3 ship together or apart.
 - The exact simulator report format.
+
+## Results
+
+### Part 1 — Kingdom Wars rules
+
+**The bar** (decided before any run). Part 1 passes when `Part 1 uses per
+game`' whole 95% interval is above 0 on both seed ranges, each of the 12
+`PART_1_KEYS` is used at least once by the challenger over the run (any key at 0
+is listed and explained), and the seat-share interval is not wholly below 0 on
+both ranges. No tuning was done between ranges.
+
+Challenger `rule-based-kw` (the Part 1 registry, now shipped as `rule-based`)
+against `rule-based-v3`, 4000 mirrored games each, Kingdom Wars deck, run at
+commit `c3834ebf`. Command: `npm run sim -- tournament 4000 <seats> rule-based-kw
+rule-based-v3 <seed> mirrored`.
+
+| Seats | Seed | Seat-share difference (95%) | Part 1 uses per game (95%) | Wins by force, challenger / baseline (%) |
+|---|---|---|---|---|
+| 4 | 900000 | +4.2 pp (3.0 to 5.4) | 3.60 (3.48 to 3.72) | Wei 46.0 / 41.2, Shu 54.1 / 49.7, Wu 21.3 / 18.5, Qun 14.5 / 9.4, Ambitionist 15.5 / 12.8 |
+| 4 | 1000000 | +4.9 pp (3.8 to 6.1) | 3.56 (3.44 to 3.68) | Wei 47.1 / 41.1, Shu 55.8 / 50.9, Wu 18.0 / 16.0, Qun 15.8 / 8.2, Ambitionist 16.2 / 10.5 |
+| 6 | 900000 | +3.7 pp (2.8 to 4.6) | 4.96 (4.83 to 5.09) | Wei 39.8 / 36.4, Shu 53.6 / 48.5, Wu 9.8 / 8.0, Qun 6.9 / 5.8, Ambitionist 8.2 / 5.1 |
+| 6 | 1000000 | +2.7 pp (1.9 to 3.6) | 4.94 (4.81 to 5.07) | Wei 40.0 / 36.4, Shu 51.8 / 49.1, Wu 9.4 / 7.6, Qun 7.5 / 4.2, Ambitionist 8.9 / 7.4 |
+
+Usage of the 12 keys, offered / used, summed over the four runs:
+
+| Key | Challenger | Baseline |
+|---|---|---|
+| Amass | 53461 / 8952 | 67281 / 0 |
+| Ally Far Attack Near | 11734 / 8170 | 32470 / 0 |
+| Harvest | 35807 / 2271 | 35325 / 0 |
+| Ascertain | 42022 / 13152 | 64844 / 0 |
+| Chains | 64656 / 20377 | 95167 / 0 |
+| Blaze | 70326 / 7088 | 68505 / 0 |
+| Wuxie Kingdom | 34494 / 4628 | 31160 / 4499 |
+| Fire Fan | 8104 / 7854 | 7505 / 0 |
+| Trident Glaive | 3149 / 1283 | 3008 / 0 |
+| Femme Fatale | 650 / 295 | 4409 / 0 |
+| Impetus for Conflicts | 2735 / 120 | 2245 / 0 |
+| Benevolence | 54280 / 2213 | 47980 / 3656 |
+
+**Verdict: passes, shipped.** On every run the Part 1 uses interval is above 0,
+all 12 keys are used by the challenger (none at 0), and the seat-share
+difference is above 0 on all four runs with every interval above 0, so the
+"not wholly below 0" condition holds with room. The baseline never uses ten of
+the keys. It does use Wuxie Kingdom (the engine's default answer) and
+Benevolence; the challenger uses Benevolence less because its threshold is
+Kingdom Wars' 3 rather than the base rule's threshold. The full reports are in the
+session notes for this part.
+
+**The audit that narrowed Part 1.** The coverage scan found that most Kingdom
+Wars skill variants already had a bot rule (the base rule fits their wording).
+The real gaps were six Tools (Amass, Ascertain, Ally Far Attack Near, Chains,
+Harvest, Blaze), Wuxie Kingdom, Fire Fan, Trident Glaive, Zou Shi's two skills
+and Benevolence's Kingdom Wars threshold. Part 1 therefore added rules for
+those and a coverage spec that fails if a Kingdom Wars card or skill has
+neither a rule nor a stated reason.
+
+**A bug the first smoke run found.** Fire Fan's ask names no target, so its
+rule never fired. The rule now
+reads the Sha's targets from the log. The fix is `c3834ebf`, and the runs above
+are from after it.

@@ -1,8 +1,8 @@
 import type { GameState } from 'engine';
-import { ruleBasedKwPolicy, ruleBasedV3Policy } from '../rule-based';
+import { ruleBasedPolicy, ruleBasedV3Policy } from '../rule-based';
 import { act, card, decideWith, picked, table, useSkill } from '../testing';
 
-const decide = (s: GameState) => decideWith(ruleBasedKwPolicy, s);
+const decide = (s: GameState) => decideWith(ruleBasedPolicy, s);
 const ZOU_SHI = 'kingdomWars:zou-shi';
 const hidden: [string, string, boolean] = ['filler-xu-huang', 'filler-dong-zhuo', false];
 

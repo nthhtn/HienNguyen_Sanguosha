@@ -1,12 +1,11 @@
 import { policyById, policyIds, registerPolicy } from './policies';
 import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy } from './rule-based';
 import { isAlly } from './helpers';
-import { act, card, decide, decideWith, table } from './testing';
-import type { GameState } from 'engine';
+import { act, card, decide, table } from './testing';
 
 describe('policy registry', () => {
   it('lists the registered policies', () => {
-    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-kw', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3']);
+    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3']);
   });
 
   it('looks a policy up by id', () => {
@@ -24,54 +23,12 @@ describe('policy registry', () => {
   });
 
   it('names the valid ids when the id is unknown', () => {
-    expect(() => policyById('nope')).toThrow(/Unknown bot policy "nope".*rule-based, rule-based-v1, rule-based-v2, rule-based-v3, rule-based-kw, rule-based-cards, rule-based-responses, rule-based-picks/);
+    expect(() => policyById('nope')).toThrow(/Unknown bot policy "nope".*rule-based, rule-based-v1, rule-based-v2, rule-based-v3, rule-based-cards, rule-based-responses, rule-based-picks/);
   });
 });
 
-// Until the Kingdom Wars rules ship, 'rule-based-v3' must decide exactly as 'rule-based' does.
 describe('rule-based-v3', () => {
-  const dyingWindow = (): GameState => {
-    const s = table({ 'seat-a:hand': [card('p1', 'peach', 'heart', 3)] }, { hp: { 'seat-a': 0 } });
-    return {
-      ...s,
-      pendingResponse: {
-        id: 'r1', respondingSeatId: 'seat-a', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['peach'],
-        context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: 0 } },
-        reason: { kind: 'dying', seatId: 'seat-a' },
-      },
-    };
-  };
-  const wuxieWindow = (): GameState => {
-    const s = table({ 'seat-a:hand': [card('wx', 'wuxie')] });
-    return {
-      ...s,
-      pendingResponse: {
-        id: 'r1', respondingSeatId: 'seat-a', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['wuxie'],
-        context: { effect: { kind: 'HealEffect', target: { kind: 'seat', seatId: 'seat-a' }, amount: 0 } },
-        reason: { kind: 'wuxie', tool: { as: 'barbarians', colour: 'black', physical: [] }, toolUserSeatId: 'seat-b', target: { kind: 'seat', seatId: 'seat-a' } },
-      },
-    };
-  };
-  const generalSelection = (): GameState => ({
-    ...table(),
-    phase: 'GeneralSelection',
-    generalSelection: { candidates: { 'seat-a': ['xu-huang', 'dong-zhuo', 'cao-pi', 'zhang-he'] } },
-  });
-  const discardPhase = (): GameState => ({
-    ...table({ 'seat-a:hand': ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'].map((id, i) => card(id, i % 2 ? 'sha' : 'shan')) }),
-    phase: 'Discard',
-  });
-  const shaAndSteal = (): GameState => table({ 'seat-a:hand': [card('s1', 'sha'), card('st1', 'steal', 'club', 3)] }, { hp: { 'seat-b': 3, 'seat-d': 2 } });
-  const fixtures: Record<string, () => GameState> = { generalSelection, dyingWindow, discardPhase, shaAndSteal, wuxieWindow };
-
   it('has the id "rule-based-v3"', () => expect(ruleBasedV3Policy.id).toBe('rule-based-v3'));
-
-  for (const [name, build] of Object.entries(fixtures)) {
-    it(`decides as rule-based does: ${name}`, () => {
-      const s = build();
-      expect(decideWith(ruleBasedV3Policy, s)).toEqual(decideWith(ruleBasedPolicy, s));
-    });
-  }
 });
 
 describe('rule-based-v1', () => {
