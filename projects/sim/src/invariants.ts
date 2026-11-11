@@ -17,9 +17,11 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
 
   for (const seat of state.seats) {
     // At 0 HP or below a seat is dying until its rescue round ends: it may
-    // only be living while that round is still asking.
+    // only be living while that round is still asking. Only while the game is
+    // unfinished: a finished game ends every unresolved decision, the rescue
+    // round included.
     const rescuePending = state.pendingResponse?.reason?.kind === 'dying' && state.pendingResponse.reason.seatId === seat.id;
-    if (!seat.eliminated && seat.combinedHp <= 0 && !rescuePending && !keptAlive(state, seat.id)) {
+    if (!state.result && !seat.eliminated && seat.combinedHp <= 0 && !rescuePending && !keptAlive(state, seat.id)) {
       violations.push(`Seat ${seat.id} is living at ${seat.combinedHp} HP with no rescue round pending`);
     }
   }

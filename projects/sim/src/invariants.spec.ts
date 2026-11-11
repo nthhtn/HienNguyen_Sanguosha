@@ -43,6 +43,14 @@ describe('checkInvariants', () => {
     expect(checkInvariants(state)).toEqual([expect.stringContaining('no rescue round pending')]);
   });
 
+  it('skips the rescue-round check once the game is finished', () => {
+    const state = baseState();
+    state.seats[0].combinedHp = 0;
+    expect(checkInvariants(state)).toEqual([expect.stringContaining('no rescue round pending')]);
+    const finished = { ...state, result: { endedAt: 1, winningSeatIds: [], losingSeatIds: [state.seats[0].id] } };
+    expect(checkInvariants(finished).filter((v) => v.includes('HP'))).toEqual([]);
+  });
+
   it('allows a seat below 0 HP while its rescue round is asking, or once eliminated', () => {
     const dying = baseState();
     dying.seats[0].combinedHp = -1;
