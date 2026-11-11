@@ -9,7 +9,7 @@ import { I18n } from '../i18n/i18n.service';
 const caoCao: WikiGeneral = {
   id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'Martial Emperor of Wei', titleZh: '魏武帝',
   kingdom: 'Wei', maxHp: 4, skillsInGame: false, expansion: 'Base', gender: 'male',
-  skills: [{ name: 'Evil Hero', nameZh: '奸雄', text: 'When Cao Cao is damaged by a card, he can put it into his hand.', lord: false, status: 'working' }],
+  skills: [{ name: 'Evil Hero', nameZh: '奸雄', text: 'When Cao Cao is damaged by a card, he can put it into his hand.', lord: false, status: 'working', traits: [] }],
 };
 const duel: WikiCard = {
   id: 'duel', name: 'Duel', nameZh: '决斗', category: 'tool', subtype: null, text: 'A player can target anyone with this card.',
@@ -66,6 +66,13 @@ describe('WikiGeneralEntry', () => {
     expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');
   });
 
+  it('shows a badge next to a skill name for each of its traits', () => {
+    const skill = caoCao.skills[0];
+    const el = renderGeneral({ ...caoCao, skills: [{ ...skill, traits: ['locked', 'limited', 'oncePerTurn'] }] });
+    expect([...el.querySelectorAll('.skills .trait')].map((b) => b.textContent!.trim())).toEqual(['Locked', 'Limited', 'Once Per Turn']);
+    expect(renderGeneral(caoCao).querySelector('.trait')).toBeNull();
+  });
+
   it('shows an expansion general’s expansion', () => {
     expect(renderGeneral({ ...caoCao, id: 'cao-pi', expansion: 'Forest' }).querySelector('.expansion-tag')!.textContent!.trim()).toBe('Forest');
   });
@@ -87,8 +94,8 @@ describe('WikiGeneralEntry', () => {
     const liuBei: WikiGeneral = {
       ...caoCao, id: 'liu-bei', name: 'Liu Bei', kingdom: 'Shu',
       skills: [
-        { name: 'Kindness', nameZh: null, text: 'Give cards away.', lord: false, status: 'working' },
-        { name: 'Fierce General', nameZh: null, text: 'King Ability.', lord: true, status: 'lord' },
+        { name: 'Kindness', nameZh: null, text: 'Give cards away.', lord: false, status: 'working', traits: [] },
+        { name: 'Fierce General', nameZh: null, text: 'King Ability.', lord: true, status: 'lord', traits: [] },
       ],
     };
     const el = renderGeneral(liuBei);
@@ -103,9 +110,9 @@ describe('WikiGeneralEntry', () => {
     const general: WikiGeneral = {
       ...caoCao,
       skills: [
-        { name: 'Evil Hero', nameZh: null, text: 'a', lord: false, status: 'working' },
-        { name: 'Escort', nameZh: null, text: 'b', lord: true, status: 'lord' },
-        { name: 'Ghost Skill', nameZh: null, text: 'c', lord: false, status: 'missing' },
+        { name: 'Evil Hero', nameZh: null, text: 'a', lord: false, status: 'working', traits: [] },
+        { name: 'Escort', nameZh: null, text: 'b', lord: true, status: 'lord', traits: [] },
+        { name: 'Ghost Skill', nameZh: null, text: 'c', lord: false, status: 'missing', traits: [] },
       ],
     };
     const states = [...renderGeneral(general).querySelectorAll('.skill-status')].map((s) => [s.getAttribute('data-status'), s.textContent!.trim()]);
@@ -207,7 +214,7 @@ describe('WikiKingdomWarsGeneralEntry', () => {
   const kingdomWarsCaoCao: WikiKingdomWarsGeneral = {
     id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'The Militant Emperor of Wei',
     kingdom: 'Wei', maxHp: 4, gender: 'male', skillsWorking: true,
-    skills: [{ name: 'Villainous Hero', nameZh: '奸雄', text: 'Every instance after you suffer damage, you can acquire the card.', status: 'worksAsIdentity' }],
+    skills: [{ name: 'Villainous Hero', nameZh: '奸雄', text: 'Every instance after you suffer damage, you can acquire the card.', status: 'worksAsIdentity', traits: [] }],
     partners: ['Dian Wei 典韦 (Bodyguard)'],
     differenceNote: 'The Ruler Ability is removed.',
   };
@@ -249,9 +256,9 @@ describe('WikiKingdomWarsGeneralEntry', () => {
     const general: WikiKingdomWarsGeneral = {
       ...kingdomWarsCaoCao,
       skills: [
-        { name: 'A', nameZh: null, text: 'a', status: 'worksAsIdentity' },
-        { name: 'B', nameZh: null, text: 'b', status: 'missing' },
-        { name: 'C', nameZh: null, text: 'c', status: 'worksAsKingdomWars' },
+        { name: 'A', nameZh: null, text: 'a', status: 'worksAsIdentity', traits: [] },
+        { name: 'B', nameZh: null, text: 'b', status: 'missing', traits: [] },
+        { name: 'C', nameZh: null, text: 'c', status: 'worksAsKingdomWars', traits: [] },
       ],
     };
     const tags = [...render(general).querySelectorAll('.skill-status')].map((s) => [s.getAttribute('data-status'), s.textContent!.trim()]);

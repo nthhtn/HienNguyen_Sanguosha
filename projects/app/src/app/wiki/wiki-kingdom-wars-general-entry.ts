@@ -4,6 +4,7 @@ import { generalDeathVoiceUrl, skillPreviewUrl, type WikiKingdomWarsGeneral } fr
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
+import { SkillTraits } from '../skill-traits';
 import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
 import { wikiKingdomWarsGeneralView } from './wiki-labels';
@@ -12,7 +13,7 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
 // The state comes from the content package; this component only shows it.
 @Component({
   selector: 'app-wiki-kingdom-wars-general-entry',
-  imports: [CardArt, MatIconModule, TPipe],
+  imports: [SkillTraits, CardArt, MatIconModule, TPipe],
   template: `
     <article class="entry kingdom-{{ general().kingdom }}" [attr.data-id]="general().id">
       <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
@@ -49,6 +50,7 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
           @for (skill of general().skills; track skill.name; let i = $index) {
             <li>
               <strong>{{ view().skills[i].name }}</strong>
+              <app-skill-traits [traits]="skill.traits" />
               @if (skill.nameZh; as zh) {
                 <span class="zh">{{ zh }}</span>
               }

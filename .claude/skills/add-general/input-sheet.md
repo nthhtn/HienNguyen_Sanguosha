@@ -16,6 +16,7 @@ Copy this table into the reply. Origin is `dev`, a source URL with the date fetc
 | Gender | | |
 | Skill 1: English name, Chinese name, wording | | |
 | Skill 2 (and so on) | | |
+| Synergistic Partners (General ids and the relation of each, or none) | | |
 | Skin image (the full-size original) | | |
 | Death voice (the original recording) | | |
 
@@ -23,6 +24,7 @@ Rules for the sheet:
 - A value from a source is shown as that source's text, not paraphrased. Conflicts between sources are listed, not resolved.
 - An `empty` Max HP, gender or Kingdom blocks the build until the developer answers.
 - A skin or voice is the original file, not a shrunk or re-encoded one: the build makes the small shipped copy, and it needs the original to do that.
+- Synergistic Partners are Kingdom Wars only for now: for an Identity-only General the row says `n/a`. A partner who is not in the deck yet is still listed, by the id it will have (kebab-case, as the other ids).
 - An `empty` skin or voice does not block. The General ships with the placeholder or its Kingdom's cry and the PR lists the gap.
 
 ## Edge cases to answer in each skill's rule text
@@ -33,3 +35,4 @@ Rules for the sheet:
 - Reveal timing: when can the skill be asked, and is it compulsory?
 - Once per turn, per Play Phase, per damage, or per game?
 - An empty hand, no legal target, or a full equipment slot.
+- Synergistic Partners: which Generals pair with this one (pairs are mutual), and that the reward is the engine's, not the skill's: revealing the second General of a pair lets the seat draw 2 cards or recover 1 HP, once.

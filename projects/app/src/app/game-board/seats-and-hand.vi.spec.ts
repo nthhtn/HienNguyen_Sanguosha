@@ -256,7 +256,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
     fixture.componentRef.setInput('prefix', 'Nhắm vào');
     fixture.componentRef.setInput('targets', [{ kind: 'seat', seatId: 'seat-2' }, { kind: 'seat', seatId: 'seat-3' }]);
     fixture.detectChanges();
-    expect(text(fixture.nativeElement as HTMLElement)).toBe('Nhắm vào Bot Tào Tháo - Tư Mã Ý, Người chơi 3 Lưu Bị');
+    expect(text(fixture.nativeElement as HTMLElement)).toBe('Nhắm vào Bot · Tào Tháo / Tư Mã Ý, Người chơi 3 · Lưu Bị');
   });
 
   it('the playing card names a hidden card in Vietnamese', () => {
@@ -270,7 +270,7 @@ describe('ActionList, TargetLabel and the playing card in Vietnamese', () => {
 describe('the Choose Targets and General info dialogs in Vietnamese', () => {
   it('Choose Targets: title, both prompts, seat names and buttons', () => {
     const open = (min: number, max: number) => {
-      const data: TargetsDialogData = { title: 'Slash', pick: { eligibleIds: ['seat-0', 'seat-2'], min, max }, state: { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }] } as unknown as GameState };
+      const data: TargetsDialogData = { title: 'Slash', pick: { eligibleIds: ['seat-0', 'seat-2'], min, max }, state: { players: [{ id: 'p0', seatId: 'seat-0', kind: 'human', name: 'Hing' }], seats: [{ id: 'seat-0', kingdom: 'hidden', combinedHp: 4, maxCombinedHp: 4, hand: { zoneId: 'h0' }, generals: null }, { id: 'seat-2', kingdom: 'hidden', combinedHp: 4, maxCombinedHp: 4, hand: { zoneId: 'h2' }, generals: null }], zones: [] } as unknown as GameState };
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close: () => undefined } }] });
       return TestBed.inject(I18n).setLocale('vi').then(() => {
@@ -282,7 +282,7 @@ describe('the Choose Targets and General info dialogs in Vietnamese', () => {
     return open(1, 2).then(async (el) => {
       expect(text(el.querySelector('h2'))).toBe('Chọn mục tiêu');
       expect(text(el.querySelector('p'))).toBe('Chọn tối đa 2 mục tiêu cho Slash');
-      expect([...el.querySelectorAll('.seats button')].map((b) => text(b))).toEqual(['Hing', 'Người chơi 2']);
+      expect([...el.querySelectorAll('.pk .pk-name')].map((b) => text(b))).toEqual(['Hing', 'Người chơi 2']);
       expect([...el.querySelectorAll('mat-dialog-actions button')].map((b) => text(b))).toEqual(['Hủy', 'Xác nhận']);
       const exact = await open(2, 2);
       expect(text(exact.querySelector('p'))).toBe('Chọn 2 mục tiêu cho Slash');

@@ -139,6 +139,11 @@ function decide(
   const choiceNow = view.pendingChoice;
   const choiceActions = legal.filter((a): a is ChooseOption => a.kind === 'ChooseOptionAction');
   if (choiceNow && me && choiceActions.length > 0) {
+    // The Synergistic Partners reward: recover when it is on offer (the engine leaves it out at full HP), else draw.
+    if (choiceNow.reason.kind === 'partner-reward') {
+      const pick = choiceActions.find((a) => a.optionId === 'recover') ?? choiceActions.find((a) => a.optionId === 'draw');
+      if (pick) return take(pick);
+    }
     if (choiceNow.reason.kind === 'ability' && choiceNow.verb === 'use') {
       const skillWants = wantsSkill(view, me, choiceNow, registry);
       // A compulsory skill's ask is only about revealing, and a bot has no reason to hide: it says Use.

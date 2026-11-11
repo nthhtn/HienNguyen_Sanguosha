@@ -174,9 +174,19 @@ describe('describeChoice for a skill’s pick or give', () => {
     const legal: Action[] = [{ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'seat-1' }, { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'spade' }];
     const options: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }, { id: 'spade', shows: { kind: 'suit', suit: 'spade' }, effects: [] }];
     expect(choiceDialogOptions(options, legal, players, undefined, seats)).toEqual([
-      { id: 'seat-1', action: legal[0], label: 'Seat 1', force: 'Wu' },
+      { id: 'seat-1', action: legal[0], label: 'Seat 1', force: 'Wu', generals: null },
       { id: 'spade', action: legal[1], label: '♠ Spade', suit: 'spade' },
     ]);
+  });
+});
+
+describe('a seat option’s portrait', () => {
+  it('carries the seat’s Generals, so the dialog can show them', () => {
+    const generals = { main: { generalDefinitionId: 'cao-cao', revealed: true }, deputy: { generalDefinitionId: 'hidden', revealed: false } };
+    const seats = [{ id: 'seat-1', index: 1, kingdom: 'Wei' as const, combinedHp: 3, maxCombinedHp: 3, eliminated: false, generals, hand: { zoneId: 'h' }, equipped: { zoneId: 'e' }, judgment: { zoneId: 'j' } }];
+    const legal: Action[] = [{ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'p', optionId: 'seat-1' }];
+    const options: ChoiceOption[] = [{ id: 'seat-1', shows: { kind: 'seat', seatId: 'seat-1' }, effects: [] }];
+    expect(choiceDialogOptions(options, legal, players, undefined, seats)[0].generals).toEqual(generals);
   });
 });
 
@@ -222,5 +232,25 @@ describe('Ascertain’s secret look', () => {
     const shown = choiceDialogOptions(options, legal, players);
     expect(shown.map((o) => o.label)).toEqual(['Main General', 'Deputy General', 'Hand Cards', 'Cao Cao', 'Done']);
     expect(shown[3].generalId).toBe('cao-cao');
+  });
+});
+
+describe('the Synergistic Partners reward', () => {
+  const reward: PendingChoice = {
+    id: 'pr', seatId: 'seat-0', verb: 'pick', reason: { kind: 'partner-reward' },
+    options: [
+      { id: 'recover', shows: { kind: 'label', text: 'Recover 1 HP' }, effects: [], disabled: true },
+      { id: 'draw', shows: { kind: 'label', text: 'Draw 2 Cards' }, effects: [] },
+    ],
+  };
+  const pick = (optionId: string): Action => ({ kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'pr', optionId });
+
+  it('is titled Synergistic Partners and asks for a reward', () => {
+    expect(describeChoice(state(reward), 'seat-0')).toEqual({ title: 'Synergistic Partners', prompt: 'Your Generals are Synergistic Partners: choose a reward', confirmLabel: 'Choose' });
+  });
+
+  it('shows a disabled option that has no legal action, next to the enabled one', () => {
+    const shown = choiceDialogOptions(reward.options, [pick('draw')], players);
+    expect(shown.map((o) => [o.id, o.label, o.disabled ?? false])).toEqual([['recover', 'Recover 1 HP', true], ['draw', 'Draw 2 Cards', false]]);
   });
 });

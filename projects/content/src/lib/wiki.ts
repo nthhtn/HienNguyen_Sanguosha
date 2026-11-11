@@ -1,5 +1,6 @@
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData, GeneralData } from '../../data/generals';
+import { skillTraits, type SkillTrait } from './skillTraits';
 import { GENERAL_SKILLS } from './generals';
 import { buildContentRegistry } from './registry';
 import { DEFAULT_DECK_ID } from './decks';
@@ -16,10 +17,13 @@ export type WikiPack = (typeof PACK_ORDER)[number];
 // (inactive in Guozhan), or the data has it but the game does not yet.
 export type SkillStatus = 'working' | 'lord' | 'missing';
 
+export { skillTraits, type SkillTrait };
+
 export interface WikiSkill {
   name: string;
   nameZh: string | null;
   text: string;
+  traits: SkillTrait[];
   // A Lord skill: not used in Guozhan.
   lord: boolean;
   status: SkillStatus;
@@ -94,7 +98,7 @@ const lordsFirst = (a: Parameters<typeof lordRank>[0], b: Parameters<typeof lord
 export function wikiGenerals(): WikiGeneral[] {
   return Object.entries(generalsData)
     .map(([id, data]) => {
-      const skills = data.skills.map((s) => ({ name: s.name, nameZh: s.nameZh || null, text: s.text, lord: !!s.lord, status: skillStatus({ name: s.name, lord: !!s.lord }, CODED_SKILL_IDS) }));
+      const skills = data.skills.map((s) => ({ name: s.name, nameZh: s.nameZh || null, text: s.text, traits: skillTraits(GENERAL_SKILLS.get(id)?.find((d) => d.id === skillIdFromName(s.name))), lord: !!s.lord, status: skillStatus({ name: s.name, lord: !!s.lord }, CODED_SKILL_IDS) }));
       return {
       id,
       name: data.name,

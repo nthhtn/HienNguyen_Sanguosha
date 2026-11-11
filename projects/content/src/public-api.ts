@@ -7,6 +7,7 @@ export * from './lib/decks';
 export * from './lib/assets';
 export * from './lib/kingdomWarsCards';
 export * from './lib/kingdomWarsGenerals';
+export * from './lib/synergisticPartners';
 export * from './lib/generalIds';
 export * from './lib/wikiKingdomWarsGenerals';
 export {
@@ -21,6 +22,7 @@ export { baseSkillId } from './lib/kingdomWarsBase';
 export * from './lib/generalDisplay';
 export * from './lib/botNames';
 export * from './lib/judgmentOutcome';
+export * from './lib/resolutionNotice';
 export { seatGender } from './lib/shared/gender';
 export { equipSlotOf } from './lib/cards/equipment';
 export { isRecast, isRecastPlay } from './lib/cards/chains';

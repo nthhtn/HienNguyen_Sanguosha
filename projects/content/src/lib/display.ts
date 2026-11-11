@@ -1,3 +1,4 @@
+import type { SkillTrait } from './skillTraits';
 import { cardsData, CardData } from '../../data/cards';
 import { generalsData } from '../../data/generals';
 import { kingdomWarsCardData } from './kingdomWarsCards';
@@ -92,7 +93,8 @@ export interface GeneralDisplayData {
   name: string;
   title: string | null;
   // inGame is set for Kingdom Wars skills only: false when the game does not play this skill yet. Absent means in the game.
-  skills: { name: string; text: string; inGame?: boolean }[];
+  // traits comes from generalDisplayData with inGame.
+  skills: { name: string; text: string; inGame?: boolean; traits?: SkillTrait[] }[];
 }
 
 // Presentation-facing view of a general's data file, so UI code never imports

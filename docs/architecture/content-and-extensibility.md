@@ -245,6 +245,15 @@ runs. When the rules differ, write a variant in the matching
 `generals/kingdom-wars-<force>.ts`, add it to that file's variants map, and add its
 `kingdomWarsBase` entry if it shares prompts or bot behaviour with an Identity skill.
 
+**A Resolution Notice for a card or skill** is one entry in `RESOLUTION_NOTICES`
+([`resolutionNotice.ts`](../../projects/content/src/lib/resolutionNotice.ts)) keyed by the card or
+skill id, a `describe(span, view)` that turns the resolution's log events into the notice's content
+(seats, step lines, cards, an outcome with a tone and HP), the `notice.*` message keys in `en.ts` and
+`vi.ts`, and a spec that feeds it real events. A text param named `…Seat` holds a seat id, `card` or
+`…Card` a card id and `skill` a skill id; the popup shows each by name, so content never builds a
+translated string. Return `null` when there is nothing to show (a Wuxie cancelled it). Nothing in the
+engine or the popup changes.
+
 **A new table rule or mode behavior** is a trigger on the mode, with a test in
 `guozhan.spec.ts`; an optional rule also gets a field on `GameRules`.
 

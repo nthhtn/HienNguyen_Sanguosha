@@ -68,10 +68,10 @@ describe('JudgmentStage', () => {
   });
 
   it('does not draw the verdict while the judgment is unsettled, and shows the waiting line', () => {
-    const { el, at } = render(skillDescription({ settled: false, verdict: null, effect: null, outcome: null, waiting: 'Waiting for Bo to decide whether to change the judgment' }));
+    const { el, at } = render(skillDescription({ settled: false, verdict: null, effect: null, outcome: null, waiting: 'Waiting for the judgment to be resolved' }));
     at(10_000);
     expect(count(el, '.stamp.show')).toBe(0);
-    expect(el.querySelector('.waiting')!.textContent).toContain('Waiting for Bo');
+    expect(el.querySelector('.waiting')!.textContent).toContain('Waiting for the judgment to be resolved');
   });
 
   it('draws the verdict once the replacement has had its animation after the judgment settles', () => {
@@ -251,10 +251,11 @@ describe('JudgmentStage', () => {
       expect(chosen).toHaveBeenCalledWith({ kind: 'SelectAction', seatId: 'seat-0', selectionId: 'sel-1', ids: ['h1'] });
     });
 
-    it('shows others a waiting line with the seat that is deciding', () => {
-      const { el, at } = open({ kind: 'watching', deciderName: 'Bo' });
+    it('shows others a waiting line that does not say who is deciding, or what they hold', () => {
+      const { el, at } = open({ kind: 'watching' });
       at(2100);
-      expect(el.querySelector('.decide .waiting')!.textContent).toContain('Waiting for Bo to decide whether to change the judgment');
+      expect(el.querySelector('.decide .waiting')!.textContent).toContain('Waiting for the judgment to be resolved');
+      expect(el.querySelector('.decide .waiting')!.textContent).not.toContain('Bo');
       expect(el.querySelector('.decide button')).toBeNull();
     });
 
@@ -275,14 +276,14 @@ describe('JudgmentStage', () => {
         settled: false, verdict: null, effect: null, outcome: null, waiting: 'Waiting', card: king, replaced: [seven],
         changes: [{ text: 'Hing replaced 7 ♥ with K ♠', card: king }],
       }));
-      fixture.componentRef.setInput('decision', { kind: 'watching', deciderName: 'Bo' });
+      fixture.componentRef.setInput('decision', { kind: 'watching' });
       fixture.detectChanges();
       expect(el.querySelector('.decide')).toBeNull();
       expect(count(el, '.pc.old')).toBe(1);
       at(1299);
       expect(el.querySelector('.decide')).toBeNull();
       at(1);
-      expect(el.querySelector('.decide .waiting')!.textContent).toContain('Bo');
+      expect(el.querySelector('.decide .waiting')!.textContent).toContain('Waiting for the judgment to be resolved');
     });
   });
 });

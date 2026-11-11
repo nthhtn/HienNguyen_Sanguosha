@@ -24,14 +24,9 @@
           }
         </mat-menu>
       }
-      <button mat-button type="button" class="nav-rules" [matMenuTriggerFor]="rulesMenu" [class.active]="rulesActive()" [attr.aria-label]="'nav.rules' | t">
+      <a mat-button class="nav-rules" routerLink="/wiki/rules" [class.active]="rulesActive()" [attr.aria-current]="rulesActive() ? 'page' : null" [attr.aria-label]="'nav.rules' | t">
         <mat-icon>menu_book</mat-icon><span class="label">{{ 'nav.rules' | t }}</span>
-      </button>
-      <mat-menu #rulesMenu="matMenu">
-        @for (page of rulesPages; track page.path) {
-          <a mat-menu-item [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label | t }}</a>
-        }
-      </mat-menu>
+      </a>
     </nav>
     <span class="spacer"></span>
     @if (devPreview) {
@@ -133,10 +128,7 @@
         }
       }
     }
-    <div class="drawer-heading"><mat-icon>menu_book</mat-icon>{{ 'nav.rules' | t }}</div>
-    @for (page of rulesPages; track page.path) {
-      <a class="drawer-link sub" [routerLink]="page.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ page.label | t }}</a>
-    }
+    <a class="drawer-link" routerLink="/wiki/rules" [class.active]="rulesActive()" [attr.aria-current]="rulesActive() ? 'page' : null"><mat-icon>menu_book</mat-icon>{{ 'nav.rules' | t }}</a>
     @if (backgrounds.available()) {
       <div class="drawer-group drawer-battlefield">
         <div class="drawer-heading"><mat-icon>landscape</mat-icon>{{ 'nav.battlefield' | t }}</div>

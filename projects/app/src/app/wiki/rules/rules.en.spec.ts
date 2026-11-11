@@ -14,7 +14,9 @@ describe('the rules pages in English', () => {
     await harness.navigateByUrl(`/wiki/rules/${page}`);
     await harness.fixture.whenStable();
     harness.detectChanges();
-    const el = harness.routeNativeElement as HTMLElement;
+    const whole = (harness.routeNativeElement as HTMLElement).querySelector('.rules-page') as HTMLElement;
+    // A topic that now lives in a bigger page is read as its own section.
+    const el = (whole.querySelector(`section#${page}`) as HTMLElement | null) ?? whole;
     expect({
       text: [...el.querySelectorAll('h2, h3, h4, p, li, th, td, .cap, figcaption')].map((node) => node.textContent!.replace(/\s+/g, ' ').trim()),
       links: [...el.querySelectorAll('a')].map((a) => `${a.getAttribute('href')} ${a.textContent!.trim()}`),

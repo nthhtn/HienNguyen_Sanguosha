@@ -45,7 +45,12 @@ describe('dev scenarios', () => {
 
   it('Choice Prompts has its scenarios', () => {
     const ids = SCENARIOS.filter((s) => s.group === 'Choice Prompts').map((s) => s.id);
-    expect(ids).toEqual(['choice-start-popup', 'choice-pick-card', 'choice-judgment', 'choice-skill-optional', 'choice-pick-seat', 'choice-compete']);
+    expect(ids).toEqual(['choice-start-popup', 'choice-pick-card', 'choice-judgment', 'choice-skill-optional', 'choice-pick-seat', 'choice-compete', 'choice-partners-full-hp', 'choice-partners-damaged']);
+  });
+
+  it('Resolution Notices has a scenario for each card and skill that gets one', () => {
+    const ids = SCENARIOS.filter((s) => s.group === 'Resolution Notices').map((s) => s.id);
+    expect(ids).toEqual(['notice-blaze-hit', 'notice-blaze-miss', 'notice-harvest', 'notice-coerce', 'notice-resurgence']);
   });
 
   it('Other Screens has the General selection and one Game Over page', () => {

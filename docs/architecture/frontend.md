@@ -349,6 +349,29 @@ it only under the `logPasses` rule and only for windows that set `announcePass`
 (see [event-chain.md](event-chain.md)); without it the board plays nothing for a
 pass.
 
+### Resolution notices
+
+A card or skill with a visible outcome gets a **Resolution Notice**: a centred, force-themed dialog laid
+out like the Compete and Judgment popups (source, the seats involved, steps, cards, outcome), with a
+countdown (5 seconds by default; a notice can ask for more, Harvest 10) at its foot. It closes itself: no button, no skip. Like the Compete popup, **locally**
+it blocks (the director holds playback from the beat that publishes it until it is dismissed, so no later
+beat, bot move or decision clock runs under it), and **online** it does not (the server paces the game
+and knows nothing of the popup, so nothing waits for it, and it is dropped when the viewer owes a
+decision).
+
+The `PlaybackDirector` finds each finished resolution while it plays the log
+([`resolution-spans.ts`](../../projects/app/src/app/game-board/playback/resolution-spans.ts): a span
+opens at a card's play, or a skill's announcement, whose id is in the content registry, and ends at the
+next play, phase or turn change, or when nothing is waiting on a decision). When the beat of the span's
+last event plays, the director asks `describeResolution` (content) for the notice's content and queues
+it in `notices` (and, locally, holds playback). The board opens the first as a `ResolutionNoticeDialog`
+and dismisses it when it has closed, which releases the hold when none is left. A first
+look, a reconnect or a late join publishes nothing for what already happened.
+
+The content is built from the viewer's own redacted state, so a card the viewer may not see is a card
+back. A resolution a Wuxie cancelled, or a card whose own response or popup already says what happened
+(Sha, Wuxie, Duel, Peach Garden, Chains, Barbarians, Hail of Arrows, a judgment), has no notice.
+
 ### The Game Over window
 
 `game-over` (local) and `OnlineResult` (online) both show

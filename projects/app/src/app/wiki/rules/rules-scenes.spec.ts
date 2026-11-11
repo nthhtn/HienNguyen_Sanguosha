@@ -33,7 +33,7 @@ describe.each(LOCALES)('the rules scenes in %s', (locale) => {
     await harness.navigateByUrl(`/wiki/rules/${page}`);
     await harness.fixture.whenStable();
     harness.detectChanges();
-    return harness.routeNativeElement as HTMLElement;
+    return (harness.routeNativeElement as HTMLElement).querySelector('.rules-page') as HTMLElement;
   }
 
   it.each(PAGES)('%s: every scene image has real art and a name', async (page) => {
@@ -81,12 +81,12 @@ describe('a scene follows a language switch', () => {
 
   it.each(PAGES)('%s: picture names, labels and titles all change with the language, as on a fresh load', async (page) => {
     const harness = await openIn(page, 'en');
-    const english = named(harness.routeNativeElement as HTMLElement);
+    const english = named((harness.routeNativeElement as HTMLElement).querySelector('.rules-page') as HTMLElement);
     await TestBed.inject(I18n).setLocale('vi');
     harness.detectChanges();
-    const switched = named(harness.routeNativeElement as HTMLElement);
+    const switched = named((harness.routeNativeElement as HTMLElement).querySelector('.rules-page') as HTMLElement);
 
-    const fresh = named((await openIn(page, 'vi')).routeNativeElement as HTMLElement);
+    const fresh = named(((await openIn(page, 'vi')).routeNativeElement as HTMLElement).querySelector('.rules-page') as HTMLElement);
     expect(switched).toEqual(fresh);
     expect(switched.length).toBe(english.length);
     switched.forEach((value, i) => expect([page, i, value]).not.toEqual([page, i, english[i]]));

@@ -4,6 +4,7 @@ import { generalDeathVoiceUrl, type WikiGeneral } from 'content';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
+import { SkillTraits } from '../skill-traits';
 import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
 import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
@@ -11,7 +12,7 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
 // One general in the Wiki: art beside everything the data knows about it.
 @Component({
   selector: 'app-wiki-general-entry',
-  imports: [CardArt, MatIconModule, TPipe],
+  imports: [SkillTraits, CardArt, MatIconModule, TPipe],
   template: `
     <article class="entry kingdom-{{ general().kingdom }}" [attr.data-id]="general().id">
       <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
@@ -61,6 +62,7 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
           @for (skill of general().skills; track skill.name; let i = $index) {
             <li>
               <strong>{{ view().skills[i].name }}</strong>
+              <app-skill-traits [traits]="skill.traits" />
               @if (skill.nameZh; as zh) {
                 <span class="zh">{{ zh }}</span>
               }

@@ -112,7 +112,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
                     <app-decision-countdown />
                   }
                   @case ('watching') {
-                    <p class="waiting"><span class="spin"></span>{{ 'judgment.waiting.seat' | t: { seat: dec.deciderName } }}</p>
+                    <p class="waiting"><span class="spin"></span>{{ 'judgment.waiting' | t }}</p>
                   }
                   @case ('gate') {
                     <p class="pass">{{ 'reveal.pass' | t: { name: dec.deciderName } }}</p>

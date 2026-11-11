@@ -207,7 +207,7 @@ describe('HandView', () => {
     await fixture.whenStable();
     const dialog = overlay().querySelector('app-targets-dialog') as HTMLElement;
     expect(dialog.textContent).toContain('Choose up to 2 targets for Slash');
-    const seatButton = (text: string) => [...dialog.querySelectorAll('button')].find((b) => b.textContent!.trim() === text) as HTMLButtonElement;
+    const seatButton = (text: string) => [...dialog.querySelectorAll('button')].find((b) => (b.querySelector('.pk-name') ?? b).textContent!.trim() === text) as HTMLButtonElement;
     seatButton('Seat 2').click();
     seatButton('Seat 1').click();
     fixture.detectChanges();

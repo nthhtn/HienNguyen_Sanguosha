@@ -58,7 +58,9 @@ import { DecisionTimer } from '../decision-timer.service';
 import { I18n } from '../i18n/i18n.service';
 import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
+import type { ResolutionNoticeContent } from 'content';
 import { PlaybackDirector } from './playback/playback-director';
+import { ResolutionNoticeDialog, ResolutionNoticeDialogData, noticeForce } from './resolution-notice-dialog';
 import { TILE_HEIGHT } from './table-layout';
 import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './playback/seat-cues';
 
@@ -461,10 +463,25 @@ export class GameBoard {
         this.competeDialog?.close();
       });
     });
+    // A Resolution Notice opens as soon as the director has one, and the next after it closes.
+    effect(() => {
+      const first = this.director.notices()[0];
+      untracked(() => this.showNotice(first));
+    });
+    // Online nothing waits for the notice either, so it gives way when the viewer owes a decision.
+    effect(() => {
+      const owed = !this.gameService.clockWaitsForPlayback && this.decisionOwed();
+      untracked(() => {
+        if (!owed) return;
+        this.director.dropNotices();
+        this.noticeDialog?.close();
+      });
+    });
     inject(DestroyRef).onDestroy(() => this.damageTimers.forEach(clearTimeout));
     // A hold never released would keep playback shut; and no popup opens for a board that is gone.
     inject(DestroyRef).onDestroy(() => {
       this.destroyed = true;
+      this.noticeDialog?.close();
       const release = this.releaseCompete;
       this.releaseCompete = null;
       release?.();
@@ -658,6 +675,31 @@ export class GameBoard {
     return seatName(this.gameService.state()?.players ?? [], seatId, this.i18n.translator);
   }
 
+  private noticeDialog: MatDialogRef<ResolutionNoticeDialog> | null = null;
+
+  // Opens the Resolution Notice, themed in the Force of the seat that caused it. It closes itself after 5
+  // seconds, and the director then lets go of playback and offers the next.
+  private showNotice(content: ResolutionNoticeContent | undefined): void {
+    if (!content || this.noticeDialog || this.destroyed) return;
+    if (!this.gameService.clockWaitsForPlayback && this.decisionOwed()) {
+      this.director.dropNotices();
+      return;
+    }
+    const state = this.director.displayedState() ?? this.visibleState();
+    if (!state) return;
+    const ref = openForceDialog<ResolutionNoticeDialog, ResolutionNoticeDialogData>(this.dialog, ResolutionNoticeDialog, noticeForce(content, state), {
+      data: { content, state },
+      width: 'min(92vw, 520px)',
+      autoFocus: 'dialog',
+      disableClose: true,
+    });
+    this.noticeDialog = ref;
+    ref.afterClosed().subscribe(() => {
+      this.noticeDialog = null;
+      this.director.dismissNotice();
+    });
+  }
+
   private readonly competeQueue: CompeteResult[] = [];
   private competeDialog: MatDialogRef<CompeteDialog> | null = null;
   private releaseCompete: (() => void) | null = null;
@@ -725,7 +767,7 @@ export class GameBoard {
     const generals = seat.generals;
     const options = (['main', 'deputy'] as const)
       .filter((slot) => !generals[slot].revealed)
-      .map((slot) => ({ slot, slotLabel: tr(slot === 'main' ? 'startReveal.main' : 'startReveal.deputy'), name: generalDisplayName(generals[slot].generalDefinitionId, tr) }));
+      .map((slot) => ({ slot, slotLabel: tr(slot === 'main' ? 'startReveal.main' : 'startReveal.deputy'), name: generalDisplayName(generals[slot].generalDefinitionId, tr), generalId: generals[slot].generalDefinitionId }));
     const ref = openForceDialog<StartRevealDialog, StartRevealDialogData, Array<'main' | 'deputy'>>(this.dialog, StartRevealDialog, this.viewerForce(), {
       data: { options },
       width: 'min(92vw, 480px)',

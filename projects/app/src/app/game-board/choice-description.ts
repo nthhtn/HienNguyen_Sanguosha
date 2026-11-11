@@ -121,6 +121,8 @@ export function describeChoice(state: GameState, viewerSeatId: string, tr: Trans
     const prompt = only === 'seat' ? seatPrompt : only === 'suit' ? tr('choice.pick.suit') : tr('choice.pick.one');
     return { title, prompt, confirmLabel: tr('choice.confirm.choose') };
   }
+  // The Synergistic Partners reward (Guozhan): draw 2 cards or recover 1 HP.
+  if (choice.reason.kind === 'partner-reward') return { title: tr('wiki.partners'), prompt: tr('choice.partnerReward.prompt'), confirmLabel: tr('choice.confirm.choose') };
   if (choice.reason.kind !== 'choice') return null;
   const { card, targetSeatId } = choice.reason;
   // A Tool's secret look at another seat (Ascertain): what to look at, then the cards or the General shown.
@@ -176,8 +178,11 @@ export function choiceDialogOptions(
   seats: readonly Seat[] = [],
   tr: Translator = englishTranslator
 ): ChoiceDialogOption[] {
-  return options.flatMap((option): ChoiceDialogOption[] => {
-    const action = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === option.id);
+  // A disabled option is shown though the engine does not offer it: it borrows the shape of an offered pick and is never sent.
+  const sample = legal.find((a): a is Extract<Action, { kind: 'ChooseOptionAction' }> => a.kind === 'ChooseOptionAction');
+  const shown = (option: ChoiceOption): ChoiceDialogOption[] => {
+    const offered = legal.find((a) => a.kind === 'ChooseOptionAction' && a.optionId === option.id);
+    const action = offered ?? (option.disabled && sample ? { ...sample, optionId: option.id } : undefined);
     if (!action) return [];
     if (option.shows.kind === 'hidden-hand') {
       return Array.from({ length: option.shows.count }, (_, i) => ({ id: `${option.id}#${i + 1}`, action, faceDown: true as const, label: tr('choice.option.handCard', { n: i + 1 }) }));
@@ -188,10 +193,12 @@ export function choiceDialogOptions(
     const label = choiceOptionLabel(option.shows, players, declineLabel, tr, option.id);
     if (option.shows.kind === 'seat') {
       const seatId = option.shows.seatId;
-      return [{ id: option.id, action, label, force: seatForce(seats.find((s) => s.id === seatId)) }];
+      const seat = seats.find((s) => s.id === seatId);
+      return [{ id: option.id, action, label, force: seatForce(seat), generals: seat?.generals ?? null }];
     }
     if (option.shows.kind === 'suit') return [{ id: option.id, action, label, suit: option.shows.suit }];
     if (option.shows.kind === 'general') return [{ id: option.id, action, label, generalId: option.shows.generalId }];
     return [{ id: option.id, action, label }];
-  });
+  };
+  return options.flatMap((option) => shown(option).map((o) => (option.disabled ? { ...o, disabled: true as const } : o)));
 }

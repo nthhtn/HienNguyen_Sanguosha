@@ -210,6 +210,18 @@ describe('waitingLine', () => {
     expect(waitingLine(asking)).toBe('Waiting on Seat 1: Axe?');
   });
 
+  it('names neither the seat nor the skill while a judgment waits on a skill that may change it', () => {
+    const owner = { kind: 'general' as const, seatId: 'seat-1', slot: 'main' as const, skillId: 'ghost-eye' };
+    const view = { seatId: 'seat-0', reader: { kind: 'card' as const, card: { as: 'lightning', colour: 'black' as const, physical: [] } }, card: { instanceId: 'j', definitionId: 'sha', suit: 'club' as const, rank: 5 }, changes: [], settled: false, rounds: 0 };
+    const asking = {
+      ...state([], null),
+      judgmentView: view,
+      pendingChoice: { id: 'ask', seatId: 'seat-1', verb: 'use' as const, reason: { kind: 'ability' as const, owner, abilityId: 'ghost-eye' }, options: [], judgmentChange: true as const },
+    };
+    expect(waitingLine(asking as never)).toBeNull();
+    expect(waitingLine({ ...asking, pendingChoice: undefined, pendingSelection: { id: 's1', seatId: 'seat-1', reason: { kind: 'ability' as const, owner, abilityId: 'ghost-eye' }, of: 'cards' as const, eligibleIds: [], min: 1, max: 1, then: { kind: 'discard' as const }, judgmentChange: true as const } } as never)).toBeNull();
+  });
+
   it('is null when nothing is pending', () => {
     expect(waitingLine(state([], null))).toBeNull();
   });
