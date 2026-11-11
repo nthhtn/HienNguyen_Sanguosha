@@ -1,7 +1,7 @@
 import { baseSkillId } from 'content';
 import type { Action, CardInstance, ContentRegistry, Effect, GameState, Judgment, PendingChoice, PendingSelection, Seat } from 'engine';
-import { abilityUseKey, colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
-import { definitionIdOf, handCards, isAlly, keepRank, leastUseful, ownCards, isShaCard } from './helpers';
+import { colourOf, conversionCards, conversionsOf, sameAbilityOwner } from 'engine';
+import { definitionIdOf, givenByEitherGeneral, givenThisTurn, handCards, isAlly, keepRank, leastUseful, ownCards, isShaCard } from './helpers';
 import { wantsWind, windChoice, windSelection } from './wind';
 import { fireChoice, wantsFire, wantsFireActive } from './fire';
 import { forestChoice, forestSelection, wantsForest, wantsForestActive } from './forest';
@@ -159,7 +159,7 @@ export function skillSelection(view: GameState, me: Seat, selection: PendingSele
     }
     case 'kindness': {
       // The thresholds below are Identity's (2); a variant with another number (Benevolence: 3) is played legally, not optimally.
-      const given = view.turn.abilityUses?.[`${abilityUseKey(owner)}/given`] ?? 0;
+      const given = givenThisTurn(view, owner);
       const count = Math.max(eligible.length - 3, hurt(me) && given < 2 ? 2 - given : 0, 1);
       return leastUseful(view, registry, eligible).slice(0, Math.min(count, eligible.length));
     }
@@ -287,8 +287,7 @@ function wantsActive(view: GameState, me: Seat, skillId: string, registry: Conte
     }
     case 'kindness': {
       // Identity's threshold (2) also for a variant (Benevolence heals at 3): legal, not smart.
-      const owner = { kind: 'general' as const, seatId: me.id, slot: 'main' as const, skillId };
-      const given = (['main', 'deputy'] as const).reduce((n, slot) => n + (view.turn.abilityUses?.[`${abilityUseKey({ ...owner, slot })}/given`] ?? 0), 0);
+      const given = givenByEitherGeneral(view, me.id, skillId);
       return allies.length > 0 && (hand.length > 3 || (hurt(me) && given < 2 && hand.length >= 2));
     }
     default:

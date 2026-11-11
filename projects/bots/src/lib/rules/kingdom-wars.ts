@@ -1,5 +1,6 @@
 import { fireFanRule, tridentGlaiveRule } from './equipment';
 import { botRules, BotRuleRegistry } from './registry';
+import { benevolenceRule, femmeFataleRule, impetusForConflictsRule } from './skills';
 import { allyFarAttackNearRule, amassRule, ascertainRule, blazeRule, chainsRule, harvestRule } from './tools';
 import { wuxieKingdomRule } from './wuxie-guo';
 
@@ -7,4 +8,5 @@ import { wuxieKingdomRule } from './wuxie-guo';
 export const KINGDOM_WARS_RULES: BotRuleRegistry = botRules([
   amassRule, allyFarAttackNearRule, harvestRule, ascertainRule, chainsRule, blazeRule,
   wuxieKingdomRule, fireFanRule, tridentGlaiveRule,
+  femmeFataleRule, impetusForConflictsRule, benevolenceRule,
 ]);

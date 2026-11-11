@@ -1,5 +1,5 @@
-import { pickAllows } from 'engine';
-import type { CardInstance, ContentRegistry, GameState, PendingSelection, Seat, Target, TargetPick } from 'engine';
+import { abilityUseKey, pickAllows } from 'engine';
+import type { CardInstance, ContentRegistry, GameState, GeneralOwner, PendingSelection, Seat, Target, TargetPick } from 'engine';
 
 // What the rule-based bot knows about cards and seats, shared by its rules.
 
@@ -42,6 +42,16 @@ export function keepRank(view: GameState, registry: ContentRegistry, cardInstanc
 // Instance ids, least useful first (then lowest rank).
 export function leastUseful(view: GameState, registry: ContentRegistry, ids: readonly string[]): string[] {
   return [...ids].sort((a, b) => keepRank(view, registry, a) - keepRank(view, registry, b));
+}
+
+// Cards a giving skill (Kindness and its variants) has given this turn, by the owner's tally.
+export function givenThisTurn(view: GameState, owner: GeneralOwner): number {
+  return view.turn.abilityUses?.[`${abilityUseKey(owner)}/given`] ?? 0;
+}
+
+// Cards given this turn by `skillId` on either of the seat's Generals.
+export function givenByEitherGeneral(view: GameState, seatId: string, skillId: string): number {
+  return (['main', 'deputy'] as const).reduce((n, slot) => n + givenThisTurn(view, { kind: 'general', seatId, slot, skillId }), 0);
 }
 
 // A seat's hand, as the bot's view has it (its own face up).
