@@ -2982,10 +2982,150 @@
     }
   },
   "preview/index.json": {
-    "output": "e21dc6408fe56ff2775ea02678e862b17b74d7577a1e53b7b035612f15d3bba2",
+    "output": "b2211778d25f3621fd8853c19c14d19b45f50ebdd642e326ddb4ba3f953a0b66",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "preview/index.json": "e21dc6408fe56ff2775ea02678e862b17b74d7577a1e53b7b035612f15d3bba2"
+      "preview/index.json": "b2211778d25f3621fd8853c19c14d19b45f50ebdd642e326ddb4ba3f953a0b66"
+    }
+  },
+  "preview/qun/cai-wenji_dirge_en.mp4": {
+    "output": "74a785df54cafa7ff334e92748d481453626ae96ff749e451835c946c9a4fd32",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/cai-wenji_dirge_en.mp4": "20acd371bd661fb1110c9a4f8efadecab1991924e69748861cce5bad930d4922"
+    }
+  },
+  "preview/qun/cai-wenji_dirge_vi.mp4": {
+    "output": "85b61712673872eebb777349a67cd508c0354b639b237679daec40eaf6527096",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/cai-wenji_dirge_vi.mp4": "94a7e7c595e5161df6ae6927d143620b0151f99fa3c96b911fd632a3bf3e2bdb"
+    }
+  },
+  "preview/qun/diao-chan_envious-moon_en.mp4": {
+    "output": "c1da811ce592675b4933b611f4852dedf25f2229303f7fe2c018790d2d09ee4a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/diao-chan_envious-moon_en.mp4": "f2c762883695496eb4408c7c6b30540a284c4698ea112726018eed9f20006ff5"
+    }
+  },
+  "preview/qun/diao-chan_envious-moon_vi.mp4": {
+    "output": "361ad33db66c773b6b1b9543c82a5f3f064571f8c351fe443eb8e340f7656038",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/diao-chan_envious-moon_vi.mp4": "b1763bb39835891eea5d15474d9936933891f271ca5660af8a8dbf1cd3a0349f"
+    }
+  },
+  "preview/qun/diao-chan_seed-of-animosity_en.mp4": {
+    "output": "14de17b11fd40c408f327ae8eb5ffd95d7f3a481a3dfce0a1bf07011af5bfc8f",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/diao-chan_seed-of-animosity_en.mp4": "93ee04ed90cf05459f840fd059d824cfa27421b595b1cff72920cd72ca8a6bb0"
+    }
+  },
+  "preview/qun/diao-chan_seed-of-animosity_vi.mp4": {
+    "output": "518dfce29226a4d22cc71e6235adfe39613cfb4b5531240c3450ce98cce1d766",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/diao-chan_seed-of-animosity_vi.mp4": "84305f98cd3080145427187df2201b6281eb89091939786b578a4450f05272ad"
+    }
+  },
+  "preview/qun/hua-tuo_first-aid_en.mp4": {
+    "output": "8009e25717bec4fc9e4792c8b6dd1b2469ac9e681c2928823e03ca61cef01143",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/hua-tuo_first-aid_en.mp4": "2e163ab3dd5555b30a865756997af2fa0f0a7632f98b7ec3561868a3e7567c0b"
+    }
+  },
+  "preview/qun/hua-tuo_first-aid_vi.mp4": {
+    "output": "782c629dc946ce677fbdf19c9f6c70fab44dbe3651aa12147103260f39d06e03",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/hua-tuo_first-aid_vi.mp4": "81466ce2e1de112cbd2b0a060e5145b69f6329de225d4f7e6107c5079df2755f"
+    }
+  },
+  "preview/qun/hua-tuo_green-salve_en.mp4": {
+    "output": "4c3331733684f3e53b11f0b98ef0f3207041e782c7bf134bf6e149068d1e03df",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/hua-tuo_green-salve_en.mp4": "bd9f86555bbc4721c7d4eb43e716b828e9fb34d40017f234fecc072c74cfdb93"
+    }
+  },
+  "preview/qun/hua-tuo_green-salve_vi.mp4": {
+    "output": "e83e8482ba595b93aeb0e6fd8ac9d1997533a31e0621389c392842aa27f1f508",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/hua-tuo_green-salve_vi.mp4": "08f391baba9410f79ce4fc69ca9699be232b557153ad9a1eaa1bd67e43063165"
+    }
+  },
+  "preview/qun/ji-ling_double-edged_en.mp4": {
+    "output": "156475e953753fde1a06667a959f04adf3253f14a4514eb0397c7c32ff380e79",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/ji-ling_double-edged_en.mp4": "00d63c42346bf1664692443b8d21f086245846cba34c01839f3e3cdf8c6c58b8"
+    }
+  },
+  "preview/qun/ji-ling_double-edged_vi.mp4": {
+    "output": "84b8ed3e40591c1d61f32b83b5bde61d30bc2e0f89e2498d9344b247c121ca63",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/ji-ling_double-edged_vi.mp4": "ee37b305b7259832c5744bb5e9420e545763736363902bacdfa5eb0fba049046"
+    }
+  },
+  "preview/qun/lu-bu_without-equal_en.mp4": {
+    "output": "b2eaf8695b2a1fe8b49068038abe6c99188dc23e4357fb613c163266b01950c3",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/lu-bu_without-equal_en.mp4": "a872b729eca6e7652025c265d98bd632d82ee5fa5151e11af9423112dbd00e6a"
+    }
+  },
+  "preview/qun/lu-bu_without-equal_vi.mp4": {
+    "output": "709f16e6542461c5e893f5c864383827eb7da4b4810cafd0ea6b95a428ed6651",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/lu-bu_without-equal_vi.mp4": "b6652914adce9cfbdb04da77f01956d05e6c3c215c8a7df5504af2c7b6af8cfb"
+    }
+  },
+  "preview/qun/ma-teng_call-of-valour_en.mp4": {
+    "output": "4f3ba839b75b9f4b4bf0ed0cb88955295ef49f4030d4092da856d2e82ff61ede",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/ma-teng_call-of-valour_en.mp4": "96882e13b32ff1392271756f6a14e8449e15399a9b08fff56852c02c78fd0781"
+    }
+  },
+  "preview/qun/ma-teng_call-of-valour_vi.mp4": {
+    "output": "5d91103dd8899e6a292a2cfe1cebce10bd1535a2727bbe7d4dddd2395a4adf7a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/ma-teng_call-of-valour_vi.mp4": "28ca252508b5668b1ea853c2b606398e53af80b5ddd041019e601d9e3057135b"
+    }
+  },
+  "preview/qun/pan-feng_insanity-axe_en.mp4": {
+    "output": "97af7eb3666c6833708e324c95fb99af7ce97d4b9298de9e17554e0e30a27dfc",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/pan-feng_insanity-axe_en.mp4": "75ac9ee40ba510d00ca44912bc24f95b9b34c6186981aaae1dd04482c89fb993"
+    }
+  },
+  "preview/qun/pan-feng_insanity-axe_vi.mp4": {
+    "output": "ef9ce76a68dc1dc230c8647ff02ab3673b9f8b1705c81b32b9f30389fc8d43bc",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/pan-feng_insanity-axe_vi.mp4": "d1ba7c9c77b289269942f659f09e3706011d8426c86806623cef5d80be607524"
+    }
+  },
+  "preview/qun/pang-de_fearsome-advance_en.mp4": {
+    "output": "e8c5522474bfeb077e2a636367fd17e032b4fd67842e38a4f3382e4daf2800e1",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/pang-de_fearsome-advance_en.mp4": "d501d8967c6a9443547ae334bbeadb4c9f702331f6f5610ffb5af437b9b1f65b"
+    }
+  },
+  "preview/qun/pang-de_fearsome-advance_vi.mp4": {
+    "output": "228e93c47928bc469bccf6a0631c34c951ca4f1270b58cf627618d8ddb3926c9",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/pang-de_fearsome-advance_vi.mp4": "fc66829fe6c05dd26df9d5ba5394059cebb624f78225a208505cce3d53fe793a"
     }
   },
   "preview/qun/zhang-jiao_dark-sorcery_en.mp4": {
