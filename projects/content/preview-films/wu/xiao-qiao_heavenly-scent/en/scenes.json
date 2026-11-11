@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wu",
+  "palettes": {
+    "main": "#2f9e58",
+    "ground": "#0E2A1D",
+    "second": "#E8F3EC",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0E2A1D",
+  "fonts": {
+    "display": {
+      "family": "Zilla Slab",
+      "or": "fraunces-display"
+    },
+    "sans": "instrument-sans"
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Xiao Qiao: Heavenly Scent",
+      "dur": 8.4,
+      "desc": "Xiao Qiao discards a heart to move damage to another seat, who then draws cards."
+    }
+  ]
+}
