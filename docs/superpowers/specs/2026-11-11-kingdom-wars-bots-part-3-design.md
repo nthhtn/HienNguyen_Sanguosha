@@ -242,3 +242,91 @@ seat-share difference not wholly below 0 on both ranges. The 8-seat time
 of `EXPOSURE_WEIGHTS` (`projects/bots/src/lib/exposure.ts`) may be tried on the
 first range only, each recorded with its numbers; the second range runs once,
 with the final set.
+
+Challenger `rule-based-waste` (the Part 3 bot, `noWaste: true`) against
+`rule-based-v5`, Kingdom Wars deck, 6 seats, run from commit `839fa785` with
+the `EXPOSURE_WEIGHTS` of each set below in the working tree.
+
+**Tuning on the first range.** The first values failed gate 2 at seed
+`1500000` (HP lost wholly above 0). Three sets were then tried on that range
+only; the HP lost difference rose as the bot became exposed more often (an
+exposed bot answers more and fights more Duels, which deals more damage), so
+the third set went the other way. The third set is final, and the second range
+was run once with it. Only the weights that changed are listed.
+
+| Set | Weights | Wasted plays per game | HP lost per game | Deaths per game | Leader won |
+|---|---|---|---|---|---|
+| First values | `threatBase 0.25, threatPerCard 0.15, threatCap 1, truceFactor 0.3, peach 1, spareShan 0.7` | -3.61 (-3.85 to -3.37) | +0.60 (0.11 to 1.10) | +0.07 (0.03 to 0.11) | -2.9 pp (-5.5 to -0.4) |
+| 1 | `threatBase 0.4, threatPerCard 0.2, threatCap 1.25` | -3.53 (-3.78 to -3.28) | +0.69 (0.20 to 1.18) | +0.08 (0.04 to 0.12) | -3.0 pp (-5.5 to -0.4) |
+| 2 | `threatBase 1, threatPerCard 0.25, threatCap 2, truceFactor 0.5, peach 0.5, spareShan 0.3` | -3.31 (-3.55 to -3.07) | +0.93 (0.45 to 1.40) | +0.05 (0.01 to 0.09) | -0.9 pp (-3.4 to 1.7) |
+| 3 (final) | `threatBase 0.1, threatPerCard 0.1, threatCap 0.75, truceFactor 0.2, peach 1.5, spareShan 1` | -3.66 (-3.90 to -3.42) | +0.31 (-0.19 to 0.81) | +0.07 (0.03 to 0.11) | -3.2 pp (-5.8 to -0.6) |
+
+The other weights stayed at their first values (`shaPerHandCard 0.3,
+reachHandSize 3, weaponBonus 0.25, dangerousBonus 0.5, armor 0.3,
+allyWithCards 0.3, allyCardsNeeded 2`).
+
+**Balance with the final set**, 2000 games each, every seat the same bot
+(differences A minus B, paired by seed; deaths are all seats' deaths per game,
+which `balance` reports, not only the bot's own side):
+
+| Seed | Wasted plays per game | HP lost per game | Deaths per game | Leader won A / B | Leader won difference | Wins by force, A / B (%) |
+|---|---|---|---|---|---|---|
+| 1500000 | -3.66 (-3.90 to -3.42) | +0.31 (-0.19 to 0.81) | +0.07 (0.03 to 0.11) | 55.0 / 58.2 | -3.2 pp (-5.8 to -0.6) | Wei 30.4 / 33.9, Shu 47.3 / 47.7, Wu 13.3 / 12.1, Qun 10.7 / 10.7, Ambitionist 10.4 / 10.5 |
+| 1600000 | -3.91 (-4.20 to -3.61) | +0.04 (-0.53 to 0.61) | +0.05 (0.01 to 0.09) | 55.1 / 54.6 | +0.5 pp (-2.2 to 3.1) | Wei 28.7 / 33.9, Shu 47.4 / 45.8, Wu 16.0 / 15.3, Qun 13.4 / 10.4, Ambitionist 11.2 / 10.4 |
+
+**Mirrored tournament with the final set**, 4000 games each, 6 seats
+(`tournament 4000 6 rule-based-waste rule-based-v5 <seed> mirrored`):
+
+| Seed | Seat-share difference (95%) | Wins by force, challenger / baseline (%) |
+|---|---|---|
+| 1500000 | -4.2 pp (-5.1 to -3.2) | Wei 29.5 / 35.6, Shu 45.2 / 48.8, Wu 12.0 / 14.5, Qun 9.4 / 12.1, Ambitionist 10.1 / 11.8 |
+| 1600000 | -5.2 pp (-6.1 to -4.2) | Wei 28.1 / 33.8, Shu 44.2 / 49.8, Wu 13.9 / 17.7, Qun 9.1 / 15.2, Ambitionist 9.4 / 10.4 |
+
+**No slower games.** 400 balance games at 8 seats, first seed 1400000
+(`/usr/bin/time -p npm run sim -- balance 400 8 <bot> <bot> 1400000`, wall
+time): `rule-based-waste` 54.19 s, `rule-based-v3` 49.12 s, a ratio of 1.10x
+against the 3x bar. Passes.
+
+**Verdict: fails, not shipped.** The balance gates pass on both ranges with
+the final set: wasted plays drop by 3.66 and 3.91 per game (every interval
+below 0), HP lost is not wholly above 0 (+0.31, -0.19 to 0.81; +0.04, -0.53 to
+0.61), and leader-won is not wholly above 0 (-3.2 pp; +0.5 pp, -2.2 to 3.1).
+Time passes. But the mirrored tournament's seat share is wholly below 0 on
+both ranges (-4.2 pp, -5.1 to -3.2; -5.2 pp, -6.1 to -4.2), which the bar
+forbids, so `rule-based` stays as it was (`noWaste: false`, the same as
+`rule-based-v5`). Deaths per game rose a little on both ranges (+0.07 and
++0.05).
+
+The likely reason, read from the usage counts (not measured on its own): at a
+mixed table the challenger plays far fewer Sha (30270 against 37699 at seed
+1500000) and Shan (10329 used of 22849 offered, against 18329 of 18329), and
+fewer Duels, Steals and Fire Attacks. When every seat plays the same bot that
+restraint costs no one more than another, but next to `rule-based-v5`, which
+spends every card and answers every hit, the restrained seats are outpaced:
+they take the hits they let through and deal less damage. Wei and Qun lose the
+most seat share.
+
+**Where the shipped rules differ from the spec.** Nothing shipped, but the
+challenger as built differs from the rule text here:
+
+- The attacker of a Sha counts as a threat, so one Shan is never "spare"
+  against a Sha; a bot that is not exposed takes the hit and keeps a single
+  Shan.
+- On the bot's own turn every other living seat counts as acting before its
+  next turn.
+- D1 is built as "play surplus Tools before discarding" (Amass, Blaze and
+  Chains drop their thresholds when the hand is over the limit), not as a
+  change to the discard ranking. Harvest keeps its threshold, because it helps
+  foes too.
+- D2 applies only to hidden Generals, and only when declining also does
+  nothing.
+- Upheaval's forced Sha falls back to the old non-ally order rather than
+  losing HP. B2 (costly targets) is not applied to legacy skill picks.
+- Conversions are judged as colourless (their cards are picked later).
+- Skill windows that ask for a Shan or Sha against damage on the bot are not
+  wired (no content skill opens one today).
+
+**Left as it is.** `rule-based-waste` stays registered with the final weights,
+so a later part can start from it. `rule-based-v5` is now pinned by expected
+decisions (like `rule-based-v4`), including a Sha the frozen bot answers, so
+it stays frozen whatever `rule-based` becomes.

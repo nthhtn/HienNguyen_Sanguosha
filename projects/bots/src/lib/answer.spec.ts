@@ -12,6 +12,8 @@ const hiddenHand = (seat: string, n: number) => ({ [`${seat}:hand`]: Array.from(
 const cards = (seat: string, ...defs: string[]): Record<string, CardInstance[]> => ({ [`${seat}:hand`]: defs.map((d, i) => card(`${seat}-${i}`, d)) });
 // seat-c and seat-d are revealed allies of the bot (seat-a), so seat-b is the only foe unless a test says so.
 const ALLIED = { 'seat-a': 'Wei', 'seat-b': 'Shu', 'seat-c': 'Wei', 'seat-d': 'Wei' } as const;
+// seat-b, seat-c and seat-d each wield an Axe (a weapon adds to the threat they pose, rule C2).
+const armed = Object.fromEntries(['seat-b', 'seat-c', 'seat-d'].map((id) => [`${id}:equip`, [card(`${id}-axe`, 'axe')]]));
 
 // `owner` plays `definitionId` at seat-a (the bot): any Wuxie check passes, and the state rests on seat-a's answer.
 function hitOn(s: GameState, owner: string, definitionId: string): GameState {
@@ -45,8 +47,8 @@ describe('answer: a Sha (C3)', () => {
     const s = sha(table({ ...cards('seat-a', 'shan'), ...cards('seat-b', 'sha'), ...hiddenHand('seat-d', 2) }, { owner: 'seat-b', hp: { 'seat-a': 3 }, kingdoms: { ...ALLIED, 'seat-d': 'Qun' } }));
     expect(kind(s)).toBe('PassAction');
   });
-  it('answers when two 5-card foes act next and it is at 2 HP', () => {
-    const s = sha(table({ ...cards('seat-a', 'shan'), ...cards('seat-b', 'sha'), ...hiddenHand('seat-c', 5), ...hiddenHand('seat-d', 5) }, { owner: 'seat-b', hp: { 'seat-a': 2 }, kingdoms: { ...ALLIED, 'seat-c': 'Wu', 'seat-d': 'Qun' } }));
+  it('answers when three armed 5-card foes act next and it is at 2 HP', () => {
+    const s = sha(table({ ...cards('seat-a', 'shan'), 'seat-b:hand': [card('s', 'sha'), ...hiddenHand('seat-b', 5)['seat-b:hand']], ...hiddenHand('seat-c', 5), ...hiddenHand('seat-d', 5), ...armed }, { owner: 'seat-b', hp: { 'seat-a': 2 }, kingdoms: { ...ALLIED, 'seat-c': 'Wu', 'seat-d': 'Qun' } }));
     expect(kind(s)).toBe('RespondAction');
   });
 });
@@ -58,7 +60,7 @@ describe('answer: Matchless (C3)', () => {
     expect(decideWaste(s)).toMatchObject({ kind: 'PassAction' });
   });
   it('answers with two Shan when exposed', () => {
-    const s = sha(table({ ...cards('seat-a', 'shan', 'shan'), 'seat-b:hand': [card('s', 'sha'), ...hiddenHand('seat-b', 4)['seat-b:hand']], ...hiddenHand('seat-c', 5), ...hiddenHand('seat-d', 5) }, { owner: 'seat-b', hp: { 'seat-a': 2 }, generals: lu, kingdoms: { ...ALLIED, 'seat-c': 'Wu', 'seat-d': 'Qun' } }));
+    const s = sha(table({ ...cards('seat-a', 'shan', 'shan'), 'seat-b:hand': [card('s', 'sha'), ...hiddenHand('seat-b', 7)['seat-b:hand']], ...hiddenHand('seat-c', 7), ...hiddenHand('seat-d', 7), ...armed }, { owner: 'seat-b', hp: { 'seat-a': 2 }, generals: lu, kingdoms: { ...ALLIED, 'seat-c': 'Wu', 'seat-d': 'Qun' } }));
     expect(kind(s)).toBe('RespondAction');
   });
 });

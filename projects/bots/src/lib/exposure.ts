@@ -8,8 +8,8 @@ import { isDangerous, relationOf, seatDanger } from './table';
 
 // First values, tunable.
 export const EXPOSURE_WEIGHTS = {
-  shaPerHandCard: 0.3, reachHandSize: 3, threatBase: 0.25, threatPerCard: 0.15, threatCap: 1, weaponBonus: 0.25,
-  dangerousBonus: 0.5, truceFactor: 0.3, peach: 1, spareShan: 0.7, armor: 0.3, allyWithCards: 0.3, allyCardsNeeded: 2,
+  shaPerHandCard: 0.3, reachHandSize: 3, threatBase: 0.1, threatPerCard: 0.1, threatCap: 0.75, weaponBonus: 0.25,
+  dangerousBonus: 0.5, truceFactor: 0.2, peach: 1.5, spareShan: 1, armor: 0.3, allyWithCards: 0.3, allyCardsNeeded: 2,
 } as const;
 
 const W = EXPOSURE_WEIGHTS;

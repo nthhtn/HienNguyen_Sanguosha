@@ -56,8 +56,8 @@ describe('exposure: until the next turn', () => {
       context: { effect: { kind: 'DamageEffect', damage: { source: { kind: 'seat', seatId: 'seat-a' }, target: { kind: 'seat', seatId: 'seat-c' }, amount: 1, nature: 'normal' } } },
     } as GameState['pendingResponse'],
   });
-  it('is exposed at 2 HP with one Shan against two enemies with 5 cards acting next, not when they are allies', () => {
-    const cards = { ...hand('seat-c', 'shan'), ...hiddenHand('seat-a', 5), ...hiddenHand('seat-b', 5) };
+  it('is exposed at 2 HP with no Shan against two enemies with 5 cards acting next, not when they are allies', () => {
+    const cards = { ...hiddenHand('seat-a', 5), ...hiddenHand('seat-b', 5) };
     const hp = { 'seat-c': 2 };
     const foes = hit(table(cards, { owner: 'seat-a', seats: 3, hp, kingdoms: { 'seat-a': 'Wei', 'seat-b': 'Shu', 'seat-c': 'Qun' } }));
     const e = exposure(foes, seat(foes, 'seat-c'), registry, danger, { shanUsed: 0 });
