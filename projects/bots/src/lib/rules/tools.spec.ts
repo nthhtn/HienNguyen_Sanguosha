@@ -164,4 +164,9 @@ describe('rules/tools: surplus cards (D1)', () => {
   it('amass: rule-based-v5 keeps it whatever the surplus', () => {
     expect(decideWith(ruleBasedV5Policy, alone(4)).kind).toBe('EndPhaseAction');
   });
+
+  it('harvest: still kept when foes outnumber allies, whatever the surplus', () => {
+    const s = table({ 'seat-a:hand': [card('hv', 'harvest'), ...spare(Array(5).fill('shan'))] });
+    expect(decideWaste(s).kind).toBe('EndPhaseAction');
+  });
 });

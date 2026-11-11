@@ -792,6 +792,19 @@ describe('reveal for nothing (D2)', () => {
     expect(answer(ruleBasedWastePolicy, ask('eight-trigrams', more))).toBe('use');
   });
 
+  it('uses it when Decline lets something through (the ask cancels it)', () => {
+    const choice = ask('eight-trigrams', only);
+    const damage = { kind: 'DamageEffect', targetSeatId: 'seat-0', amount: 1 } as unknown as PendingChoice['options'][number]['effects'][number];
+    const guarded = { ...choice, options: choice.options.map((o) => (o.id === 'decline' ? { ...o, effects: [damage] } : o)) };
+    expect(answer(ruleBasedWastePolicy, guarded)).toBe('use');
+  });
+
+  it('does not decline a revealed owner\'s ask on this rule', () => {
+    const choice = ask('eight-trigrams', [only[1]]);
+    const shown = { ...choice, options: choice.options.map((o) => (o.id === 'use' ? { ...o, shows: { kind: 'use' as const } } : o)) };
+    expect(answer(ruleBasedWastePolicy, shown)).toBe('use');
+  });
+
   it('a compulsory skill is still used', () => {
     expect(answer(ruleBasedWastePolicy, ask('matchless', only))).toBe('use');
     expect(answer(ruleBasedV5Policy, ask('matchless', only))).toBe('use');

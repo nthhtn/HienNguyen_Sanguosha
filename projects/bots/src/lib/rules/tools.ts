@@ -52,12 +52,12 @@ export const allyFarAttackNearRule: BotRule = {
 };
 
 // Harvest (early): played when allies + 1 (the bot) outnumber the foes. Each seat takes a card, so it only
-// pays when the bot's side takes more than half; a surplus card is played anyway (rule D1).
+// pays when the bot's side takes more than half.
 export const harvestRule: BotRule = {
   id: 'harvest',
   play: {
     when: 'early',
-    pick: (ctx) => (alliesOf(ctx).length + 1 > foesOf(ctx).length || ctx.surplus > 0 ? untargetedPlay(playsOf(ctx, ctx.legal, 'harvest')) : undefined),
+    pick: (ctx) => (alliesOf(ctx).length + 1 > foesOf(ctx).length ? untargetedPlay(playsOf(ctx, ctx.legal, 'harvest')) : undefined),
   },
 };
 
