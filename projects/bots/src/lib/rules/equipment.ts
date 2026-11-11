@@ -1,5 +1,6 @@
-import { isChained, livingSeatOrderFrom } from 'engine';
-import type { GameState, Seat } from 'engine';
+import { seatDistance } from 'content';
+import { isChained } from 'engine';
+import type { ContentRegistry, GameState, Seat } from 'engine';
 import { handCards, isAlly, keepRank, leastUseful } from '../helpers';
 import type { BotRule, BotRuleContext } from './registry';
 
@@ -19,25 +20,24 @@ export const fireFanRule: BotRule = {
   },
 };
 
-// The seats next to `seatId` round the table (ring distance 1, as Trident Glaive's neighbours), the seat itself excluded.
-const neighboursOf = (view: GameState, seatId: string): string[] => {
-  const order = livingSeatOrderFrom(view, seatId);
-  return order.length < 2 ? [] : [...new Set([order[1], order[order.length - 1]])];
-};
+// The living seats the glaive may hit after `seatId` is damaged: distance 1 from it as content measures it
+// (mounts and distance skills count), the seat itself excluded.
+const neighboursOf = (view: GameState, seatId: string, registry: ContentRegistry): string[] =>
+  view.seats.filter((s) => !s.eliminated && s.id !== seatId && seatDistance(view, seatId, s.id, registry) === 1).map((s) => s.id);
 // Hand cards the bot can spare: keepRank 2 or less.
 const spare = (ctx: BotRuleContext) => handCards(ctx.view, ctx.me).filter((c) => keepRank(ctx.view, ctx.registry, c.instanceId) <= 2);
 
 // Trident Glaive:
 // - wantsToUse: at least one foe sits next to the damaged seat and the bot holds a spare hand card (keepRank 2 or less).
 // - select: the least useful card.
-// - choose: among the offered neighbours, the foe the ranker likes most; with no foe offered, the first
-//   non-ally (never the bot itself), else undefined and the first-option fallback runs.
+// - choose: among the offered neighbours, the foe the ranker likes most; with no foe offered,
+//   undefined (the first-option fallback runs; an offered ally or the bot itself is never chosen by this rule).
 export const tridentGlaiveRule: BotRule = {
   id: 'trident-glaive',
   wantsToUse: (ctx, choice) => {
     const damagedId = choice.reason.kind === 'ability' ? choice.reason.targetSeatId : undefined;
     if (!damagedId) return false;
-    const foeNextDoor = neighboursOf(ctx.view, damagedId).some((id) => isFoe(ctx, seatOf(ctx.view, id)));
+    const foeNextDoor = neighboursOf(ctx.view, damagedId, ctx.registry).some((id) => isFoe(ctx, seatOf(ctx.view, id)));
     return foeNextDoor && spare(ctx).length > 0;
   },
   select: (ctx, selection) => {
@@ -47,9 +47,6 @@ export const tridentGlaiveRule: BotRule = {
   choose: (ctx, choice) => {
     const seats = choice.options.map((o) => seatOf(ctx.view, o.id)).filter((s): s is Seat => !!s && !s.eliminated);
     const foes = seats.filter((s) => isFoe(ctx, s));
-    if (foes.length > 0) {
-      return [...foes].sort((a, b) => ctx.rank(ctx.view, ctx.me, b) - ctx.rank(ctx.view, ctx.me, a) || a.index - b.index)[0].id;
-    }
-    return seats.find((s) => s.id !== ctx.me.id && !isAlly(ctx.me, s, ctx.view))?.id;
+    return [...foes].sort((a, b) => ctx.rank(ctx.view, ctx.me, b) - ctx.rank(ctx.view, ctx.me, a) || a.index - b.index)[0]?.id;
   },
 };

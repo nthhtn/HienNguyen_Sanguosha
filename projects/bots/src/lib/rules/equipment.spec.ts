@@ -1,6 +1,6 @@
 import type { GameState, PendingChoice, PendingSelection } from 'engine';
 import { ruleBasedKwPolicy } from '../rule-based';
-import { asking, card, decideWith, general, picked, table } from '../testing';
+import { asking, card, decideWith, general, picked, registry, table } from '../testing';
 
 const decide = (s: GameState) => decideWith(ruleBasedKwPolicy, s);
 const chain = (s: GameState, ...ids: string[]): GameState => ({ ...s, seats: s.seats.map((seat) => (ids.includes(seat.id) ? { ...seat, chained: true as const } : seat)) });
@@ -39,6 +39,13 @@ describe('rules/equipment: Trident Glaive', () => {
     // seat-c was hit: its neighbours seat-b and seat-d are both Wei allies.
     const s = table({ 'seat-a:hand': [card('h', 'steal')] }, { kingdoms: { 'seat-b': 'Wei', 'seat-d': 'Wei' } });
     expect(picked(decide(asking(s, 'trident-glaive', 'seat-c')))).toBe('decline');
+  });
+
+  it('trident glaive: declined when the only foe next door wears a defensive mount', () => {
+    registry.cards.set('test-defensive-horse', { id: 'test-defensive-horse', name: 'Test Horse', category: 'equipment', equipSlot: 'defensiveMount', play: () => [] });
+    // seat-b was hit: seat-a is the bot, seat-c a foe riding a defensive horse (distance 2, no longer next door).
+    const s = table({ 'seat-a:hand': [card('h', 'steal')], 'seat-c:equip': [card('hs', 'test-defensive-horse')] });
+    expect(picked(decide(asking(s, 'trident-glaive', 'seat-b')))).toBe('decline');
   });
 
   it('trident glaive: discards the least useful card', () => {
