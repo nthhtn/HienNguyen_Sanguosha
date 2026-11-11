@@ -2,7 +2,8 @@ import type { Action, ContentRegistry, GameState, Seat } from 'engine';
 import { conversionsOf, findSkill, sameAbilityOwner } from 'engine';
 import { baseSkillId } from 'content';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
-import { definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, TargetRanker, weakestFirst } from './helpers';
+import { attackable, definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, RankerFactory, TargetRanker, weakestFirst } from './helpers';
+import { tableRank } from './table-rank';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
 import { bestPair, GENERAL_VALUES } from './general-values';
@@ -22,13 +23,13 @@ type Arrange = Extract<Action, { kind: 'ArrangeCardsAction' }>;
 
 
 
-// Plays of `definitionId` aimed at a living non-ally, best target first.
+// Plays of `definitionId` aimed at a living, attackable seat, best target first.
 function targetedPlays(view: GameState, self: Seat, plays: PlayCard[], definitionId: string, rank: TargetRanker, registry: ContentRegistry): PlayCard[] {
   const matches = (id: string | undefined) => (definitionId === 'sha' ? isShaCard(registry, id) : id === definitionId);
   return plays
     .filter((p) => p.targets.length >= 1 && p.targets[0].kind === 'seat' && matches(definitionIdOf(view, p.cardInstanceId)))
     .map((p) => ({ play: p, target: view.seats.find((s) => p.targets[0].kind === 'seat' && s.id === p.targets[0].seatId) }))
-    .filter((t): t is { play: PlayCard; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target, view))
+    .filter((t): t is { play: PlayCard; target: Seat } => !!t.target && !t.target.eliminated && attackable(view, self, t.target, rank))
     .sort((a, b) => rank(view, self, b.target) - rank(view, self, a.target) || a.target.index - b.target.index)
     .map((t) => t.play);
 }
@@ -71,7 +72,7 @@ const conversionAs = (a: UseConversion, view: GameState, registry: ContentRegist
 const ruleFor = (features: BotFeatures, id: string | undefined): BotRule | undefined => (id === undefined ? undefined : features.rules?.get(id));
 
 function decide(
-  rank: TargetRanker,
+  ranker: TargetRanker | RankerFactory,
   rules: CardPlayRules,
   responseRules: ResponseRules,
   generalValues: Readonly<Record<string, number>> | undefined,
@@ -83,7 +84,8 @@ function decide(
   memory: BotTurnMemory | null
 ): BotDecision {
   if (offered.length === 0) throw new Error(`Bot ${seatId} has no legal action`);
-  // Target templates filled in (several targets in one pick), or dropped when no non-ally fits.
+  const rank: TargetRanker = 'forRegistry' in ranker ? ranker.forRegistry(registry) : ranker;
+  // Target templates filled in (several targets in one pick), or dropped when no attackable seat fits.
   const mine = view.seats.find((s) => s.id === seatId);
   const legal = offered.flatMap((a): Action[] => {
     if ((a.kind !== 'PlayCardAction' && a.kind !== 'UseConversionAction') || !a.pickTargets) return [a];
@@ -319,7 +321,7 @@ function decide(
     const conversionsAs = (as: string) =>
       legal.filter(
         (a): a is UseConversion =>
-          a.kind === 'UseConversionAction' && !a.pendingResponseId && a.targets.length === 1 && conversionAs(a, view, registry) === as && conversionSpare(view, self, a, registry) && !isAlly(self, targetSeat(a), view)
+          a.kind === 'UseConversionAction' && !a.pendingResponseId && a.targets.length === 1 && conversionAs(a, view, registry) === as && conversionSpare(view, self, a, registry) && attackable(view, self, targetSeat(a), rank)
       );
     const [breakVia] = conversionsAs('break');
     if (breakVia) return take(breakVia);
@@ -370,7 +372,7 @@ function decide(
     const [conversion] = legal
       .filter((a): a is UseConversion => a.kind === 'UseConversionAction' && a.targets.length >= 1 && conversionAs(a, view, registry) === 'sha')
       .map((a) => ({ a, target: view.seats.find((s) => s.id === a.targets[0].seatId) }))
-      .filter((t): t is { a: UseConversion; target: Seat } => !!t.target && !t.target.eliminated && !isAlly(self, t.target, view))
+      .filter((t): t is { a: UseConversion; target: Seat } => !!t.target && !t.target.eliminated && attackable(view, self, t.target, rank))
       .sort((x, y) => rank(view, self, y.target) - rank(view, self, x.target) || x.target.index - y.target.index)
       .map((t) => t.a);
     if (conversion && conversionSpare(view, self, conversion, registry)) return take(conversion, 1);
@@ -379,11 +381,11 @@ function decide(
     // Dueling Heroes: a Duel from an opposite-colour card, at the weakest non-ally.
     const [duelVia] = conversionsAs('duel').sort(byWeakest);
     if (duelVia) return take(duelVia);
-    // Coerce: when one non-ally's weapon can reach another non-ally.
+    // Coerce: when one attackable seat's weapon can reach another.
     const coerce = plays.find((p) => {
       if (p.targets.length !== 2 || definitionIdOf(view, p.cardInstanceId) !== 'coerce') return false;
       const [holder, victim] = p.targets.map((t) => view.seats.find((s) => s.id === t.seatId));
-      return !!holder && !!victim && victim.id !== seatId && !isAlly(self, holder, view) && !isAlly(self, victim, view);
+      return !!holder && !!victim && victim.id !== seatId && attackable(view, self, holder, rank) && attackable(view, self, victim, rank);
     });
     if (coerce) return take(coerce);
     const lateRule = rulePlay('late');
@@ -398,8 +400,8 @@ function decide(
 }
 
 // Simple, explainable opponent; see the bot-opponents design spec for its rules.
-// The ranker decides which non-ally a targeted play goes to.
-export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES, generalValues?: Readonly<Record<string, number>>, features: BotFeatures = NO_FEATURES): BotPolicy {
+// The ranker decides which non-ally a targeted play goes to (a RankerFactory is built per decision).
+export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFactory, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES, generalValues?: Readonly<Record<string, number>>, features: BotFeatures = NO_FEATURES): BotPolicy {
   return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, generalValues, features, view, seatId, legal, registry, memory) };
 }
 
@@ -419,5 +421,5 @@ export const ruleBasedV3Policy: BotPolicy = createRuleBasedPolicy('rule-based-v3
 // 'rule-based' as it was at the end of Kingdom Wars Part 1, frozen as the baseline Part 2 is judged against.
 export const ruleBasedV4Policy: BotPolicy = createRuleBasedPolicy('rule-based-v4', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: false });
 
-// The Part 2 challenger: reads the table. Its ranker is swapped for tableRank when that exists.
-export const ruleBasedTablePolicy: BotPolicy = createRuleBasedPolicy('rule-based-table', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true });
+// The Part 2 challenger: reads the table, and ranks targets by it (tableRank, rule 6).
+export const ruleBasedTablePolicy: BotPolicy = createRuleBasedPolicy('rule-based-table', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true });
