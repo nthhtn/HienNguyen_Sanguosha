@@ -1,4 +1,4 @@
-import type { CardInstance, CardMovedEvent, CardZone, ContentRegistry, Effect, GameEvent, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard, DamageDealtEvent, GeneralRevealedEvent, SeatEliminatedEvent } from 'engine';
+import type { CardInstance, CardUse, CardMovedEvent, CardZone, ContentRegistry, Effect, GameEvent, GameState, GeneralOwner, PhaseChangedEvent, SkillDefinition, UsedCard, DamageDealtEvent, GeneralRevealedEvent, SeatEliminatedEvent } from 'engine';
 import { cardCountsAs, discardOwed, endFlagOf, requireZoneOfKind, skipFlagOf } from 'engine';
 import type { GeneralSkillSet } from './types';
 import { attackRange, handOf, seatDistance } from '../shared/queries';
@@ -219,31 +219,44 @@ export const strategicPass: SkillDefinition = {
 
 const isBasic = (card: CardInstance, registry: ContentRegistry) => registry.cards.get(card.definitionId)?.category === 'basic';
 
+// The Basic hand cards `use`'s user could pay with, not counting the Sha's own cards; undefined unless
+// `use` is a Sha by another seat on `ownerSeatId`.
+function shaOnOwnerBasics(state: GameState, use: CardUse, ownerSeatId: string, registry: ContentRegistry): number | undefined {
+  if (use.card.as !== 'sha' || use.targetSeatId !== ownerSeatId || use.userSeatId === ownerSeatId) return undefined;
+  const own = new Set(use.card.physical.map((c) => c.instanceId));
+  return handOf(state, use.userSeatId).filter((c) => !own.has(c.instanceId) && isBasic(c, registry)).length;
+}
+
 // Pleasure (compulsory): a Sha used on you costs its user another Basic hand
 // card, or it has no effect on you. The user may refuse (Cancel): the same.
 export const pleasure: SkillDefinition = {
   id: 'pleasure',
   compulsory: true,
   triggers: [
-    atStep(['sha-targeted'], {
-      condition: (_state, step, owner) => step.card.as === 'sha' && step.target.seatId === owner.seatId && step.userSeatId !== owner.seatId,
-      effect: (state, step, owner, registry) => {
-        const basics = handOf(state, step.userSeatId).filter((c) => isBasic(c, registry));
-        const noEffect = used(owner as GeneralOwner, 'no-effect', step.userSeatId);
-        if (basics.length === 0) return [noEffect];
-        return [
-          selectionOf(state, owner as GeneralOwner, {
-            of: 'cards',
-            eligibleIds: basics.map((c) => c.instanceId),
-            min: 1,
-            max: 1,
-            seatId: step.userSeatId,
-            then: { kind: 'skill-step', step: skillStep(owner as GeneralOwner, 'paid', { sha: actedOn(step, owner) }) },
-            onCancel: [noEffect],
-          }),
-        ];
-      },
-    }),
+    {
+      ...atStep(['sha-targeted'], {
+        condition: (_state, step, owner) => step.card.as === 'sha' && step.target.seatId === owner.seatId && step.userSeatId !== owner.seatId,
+        effect: (state, step, owner, registry) => {
+          const basics = handOf(state, step.userSeatId).filter((c) => isBasic(c, registry));
+          const noEffect = used(owner as GeneralOwner, 'no-effect', step.userSeatId);
+          if (basics.length === 0) return [noEffect];
+          return [
+            selectionOf(state, owner as GeneralOwner, {
+              of: 'cards',
+              eligibleIds: basics.map((c) => c.instanceId),
+              min: 1,
+              max: 1,
+              seatId: step.userSeatId,
+              then: { kind: 'skill-step', step: skillStep(owner as GeneralOwner, 'paid', { sha: actedOn(step, owner) }) },
+              onCancel: [noEffect],
+            }),
+          ];
+        },
+      }),
+      // Declared for bots (rule B1): a Sha by another seat on the owner with no other Basic card is wasted; with one it is taxed.
+      stops: (state, use, ownerSeatId, registry) => shaOnOwnerBasics(state, use, ownerSeatId, registry) === 0,
+      extraCost: (state, use, ownerSeatId, registry) => (shaOnOwnerBasics(state, use, ownerSeatId, registry) ?? 0) > 0 ? { basicCards: 1 } : null,
+    },
   ],
   // Paid: the card is discarded and the Sha goes on, marked so it is not charged again.
   onStep: (state, step) => {
