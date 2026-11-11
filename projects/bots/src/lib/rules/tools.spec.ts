@@ -55,6 +55,11 @@ describe('rules/tools: Harvest', () => {
     const s = table({ 'seat-a:hand': [card('hv', 'harvest')] });
     expect(decide(s).kind).toBe('EndPhaseAction');
   });
+
+  it('harvest: an Ambitionist is alone', () => {
+    const s = withSeats(table({ 'seat-a:hand': [card('hv', 'harvest')] }, { seats: 5, kingdoms: { 'seat-d': 'Wei' } }), { 'seat-a': { allegiance: 'ambitionist' } });
+    expect(decide(s).kind).toBe('EndPhaseAction');
+  });
 });
 
 describe('rules/tools: Ascertain', () => {

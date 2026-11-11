@@ -1,6 +1,6 @@
 import type { GameState, PendingChoice, PendingSelection } from 'engine';
 import { ruleBasedPolicy } from '../rule-based';
-import { act, asking, card, decideWith, general, picked, registry, table } from '../testing';
+import { act, asking, card, decideWith, general, picked, table } from '../testing';
 
 const decide = (s: GameState) => decideWith(ruleBasedPolicy, s);
 const chain = (s: GameState, ...ids: string[]): GameState => ({ ...s, seats: s.seats.map((seat) => (ids.includes(seat.id) ? { ...seat, chained: true as const } : seat)) });
@@ -50,9 +50,8 @@ describe('rules/equipment: Trident Glaive', () => {
   });
 
   it('trident glaive: declined when the only foe next door wears a defensive mount', () => {
-    registry.cards.set('test-defensive-horse', { id: 'test-defensive-horse', name: 'Test Horse', category: 'equipment', equipSlot: 'defensiveMount', play: () => [] });
     // seat-b was hit: seat-a is the bot, seat-c a foe riding a defensive horse (distance 2, no longer next door).
-    const s = table({ 'seat-a:hand': [card('h', 'steal')], 'seat-c:equip': [card('hs', 'test-defensive-horse')] });
+    const s = table({ 'seat-a:hand': [card('h', 'steal')], 'seat-c:equip': [card('dl', 'di-lu', 'club', 5)] });
     expect(picked(decide(asking(s, 'trident-glaive', 'seat-b')))).toBe('decline');
   });
 
@@ -74,5 +73,16 @@ describe('rules/equipment: Trident Glaive', () => {
       options: ['seat-d', 'seat-b'].map((id) => ({ id, shows: { kind: 'seat' as const, seatId: id }, effects: [] })),
     };
     expect(picked(decide({ ...s, pendingChoice: choice }))).toBe('seat-b');
+  });
+
+  it('trident glaive: a hidden bot never picks itself', () => {
+    // seat-a's Generals are hidden, so it reads as nobody's foe or ally; it is offered first, yet seat-b (a Shu foe) is picked.
+    const s = table({}, { generals: { 'seat-a': ['filler-xu-huang', 'filler-dong-zhuo', false] } });
+    const choice: PendingChoice = {
+      id: 'pick', seatId: 'seat-a', verb: 'pick',
+      reason: { kind: 'ability', owner: general('seat-a', 'trident-glaive'), abilityId: 'trident-glaive', targetSeatId: 'seat-c' },
+      options: ['seat-a', 'seat-b'].map((id) => ({ id, shows: { kind: 'seat' as const, seatId: id }, effects: [] })),
+    };
+    expect(picked(decide({ ...s, pendingChoice: choice }))).not.toBe('seat-a');
   });
 });

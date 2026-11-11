@@ -257,7 +257,8 @@ both ranges. No tuning was done between ranges.
 
 Challenger `rule-based-kw` (the Part 1 registry, now shipped as `rule-based`)
 against `rule-based-v3`, 4000 mirrored games each, Kingdom Wars deck, run at
-commit `c3834ebf`. Command: `npm run sim -- tournament 4000 <seats> rule-based-kw
+commit `c3834ebf`, with the challenger registered as `rule-based-kw`. Today the
+same comparison is `npm run sim -- tournament 4000 <seats> rule-based
 rule-based-v3 <seed> mirrored`.
 
 | Seats | Seed | Seat-share difference (95%) | Part 1 uses per game (95%) | Wins by force, challenger / baseline (%) |
@@ -289,9 +290,19 @@ all 12 keys are used by the challenger (none at 0), and the seat-share
 difference is above 0 on all four runs with every interval above 0, so the
 "not wholly below 0" condition holds with room. The baseline never uses ten of
 the keys. It does use Wuxie Kingdom (the engine's default answer) and
-Benevolence; the challenger uses Benevolence less because its threshold is
-Kingdom Wars' 3 rather than the base rule's threshold. The full reports are in the
-session notes for this part.
+Benevolence; the challenger uses Benevolence less, likely because its threshold is
+Kingdom Wars' 3.
+
+**No slower games** (anti-goal: 8-seat game time grows by no more than 3x).
+200 mirrored 8-seat games, first seed 1100000, each side the same bot
+(`tournament 200 8 <bot> <bot> 1100000 mirrored`, wall time):
+
+| Bot | Time | Ratio |
+|---|---|---|
+| `rule-based-v3` | 11.89 s | 1.00 |
+| `rule-based` | 13.20 s | 1.11 |
+
+Passes: 1.11x against the 3x bar.
 
 **The audit that narrowed Part 1.** The coverage scan found that most Kingdom
 Wars skill variants already had a bot rule (the base rule fits their wording).

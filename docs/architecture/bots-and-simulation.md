@@ -75,8 +75,11 @@ All three hand the policy the seat's redacted view and its legal actions.
 
 A new card or skill is playable by the **random** bot with no work (it is just
 another legal action). The rule-based bot needs a rule only when its default is
-poor: add a case to the matching pack file or to `skills.ts`, with a test in
-that file's spec. A skill with no bot rule is simply not used by the bot.
+poor: write the rule text in plain words, add a `BotRule` keyed by its id to
+`rules/` (registered in `KINGDOM_WARS_RULES`), and test it in the neighbouring
+spec. `coverage.spec.ts` fails until every Kingdom Wars card and non-compulsory
+skill is in `KINGDOM_WARS_RULES`, `LEGACY_HANDLED` or `IGNORED` (with a reason)
+in `rules/coverage.ts`, so nothing is left without a bot decision by accident.
 
 ## Simulation (`projects/sim`)
 
@@ -125,8 +128,10 @@ alternative, `targetScore` in
 did not beat weakest-first on fresh seeds. To test a change, register it in
 `policies.ts` under its own id and run it against the current `rule-based`, for
 example `npm run sim -- tournament 4000 4 <new-id> rule-based`; fit and judge on
-different seed ranges. The Kingdom Wars rules were judged this way
-(`rule-based-kw` against `rule-based-v3`); the results are in
+different seed ranges. The Kingdom Wars rules were judged this way, at
+commit `c3834ebf` with the challenger registered as `rule-based-kw`; today the same
+comparison is `npm run sim -- tournament 4000 <seats> rule-based rule-based-v3
+<seed> mirrored`. The results are in
 [the Kingdom Wars bots spec](../superpowers/specs/2026-11-11-kingdom-wars-bots-design.md).
 
 The report ends with a **usage table**: for each card and skill that offered a
