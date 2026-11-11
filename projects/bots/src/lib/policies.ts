@@ -3,7 +3,7 @@ import { ALL_CARD_PLAY_RULES, NO_CARD_PLAY_RULES } from './card-play';
 import { ALL_RESPONSE_RULES, NO_RESPONSE_RULES } from './responses';
 import { GENERAL_VALUES } from './general-values';
 import { weakestFirst } from './helpers';
-import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV2Policy } from './rule-based';
+import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedKwPolicy, ruleBasedV1Policy, ruleBasedV2Policy, ruleBasedV3Policy } from './rule-based';
 
 const POLICIES = new Map<string, BotPolicy>();
 
@@ -26,6 +26,9 @@ export function policyById(id: string): BotPolicy {
 registerPolicy(ruleBasedPolicy);
 registerPolicy(ruleBasedV1Policy);
 registerPolicy(ruleBasedV2Policy);
+// 'rule-based' frozen as the baseline for the Kingdom Wars bot, and that bot as a challenger.
+registerPolicy(ruleBasedV3Policy);
+registerPolicy(ruleBasedKwPolicy);
 // Stage 1 (card play): every card-play rule on; judged against 'rule-based' by the tournament.
 registerPolicy(createRuleBasedPolicy('rule-based-cards', weakestFirst, ALL_CARD_PLAY_RULES));
 // Stage 2 (responses): both response rules on; judged against 'rule-based' by the tournament.

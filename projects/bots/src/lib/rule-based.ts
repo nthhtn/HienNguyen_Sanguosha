@@ -8,6 +8,8 @@ import { fireSelection } from './fire';
 import { bestPair, GENERAL_VALUES } from './general-values';
 import { NO_RESPONSE_RULES, ResponseRules, shouldHoldShan, wuxieWorthCancelling } from './responses';
 import { upheavalVictimIsFoe } from './forest';
+import { BotFeatures, NO_FEATURES } from './rules/registry';
+import { KINGDOM_WARS_RULES } from './rules/kingdom-wars';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -70,6 +72,8 @@ function decide(
   rules: CardPlayRules,
   responseRules: ResponseRules,
   generalValues: Readonly<Record<string, number>> | undefined,
+  // Not read yet: the rule registry joins the ladder in a later step.
+  _features: BotFeatures,
   view: GameState,
   seatId: string,
   offered: Action[],
@@ -365,8 +369,8 @@ function decide(
 
 // Simple, explainable opponent; see the bot-opponents design spec for its rules.
 // The ranker decides which non-ally a targeted play goes to.
-export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES, generalValues?: Readonly<Record<string, number>>): BotPolicy {
-  return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, generalValues, view, seatId, legal, registry, memory) };
+export function createRuleBasedPolicy(id: string, rank: TargetRanker, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES, generalValues?: Readonly<Record<string, number>>, features: BotFeatures = NO_FEATURES): BotPolicy {
+  return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, generalValues, features, view, seatId, legal, registry, memory) };
 }
 
 // Stage 4 shipped: General pairs are chosen with the measured value table (max HP breaks ties).
@@ -377,3 +381,9 @@ export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', we
 // kept as the baseline Stage 4 was judged against.
 export const ruleBasedV1Policy: BotPolicy = createRuleBasedPolicy('rule-based-v1', weakestFirst);
 export const ruleBasedV2Policy: BotPolicy = createRuleBasedPolicy('rule-based-v2', weakestFirst);
+
+// 'rule-based' as it is today, frozen as the baseline the Kingdom Wars challenger is judged against.
+export const ruleBasedV3Policy: BotPolicy = createRuleBasedPolicy('rule-based-v3', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, NO_FEATURES);
+
+// 'rule-based' plus the Kingdom Wars rule registry; a challenger until the tournament says otherwise.
+export const ruleBasedKwPolicy: BotPolicy = createRuleBasedPolicy('rule-based-kw', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES });
