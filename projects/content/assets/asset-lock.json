@@ -2982,24 +2982,38 @@
     }
   },
   "preview/index.json": {
-    "output": "35fd2648412064617a6e935781b4888e632d1dd69e33098876e916c0f602f93b",
+    "output": "918bae907960048d6a8c22ce24ae35aae1fe58116b483b7ed92167646207ea24",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "preview/index.json": "35fd2648412064617a6e935781b4888e632d1dd69e33098876e916c0f602f93b"
+      "preview/index.json": "918bae907960048d6a8c22ce24ae35aae1fe58116b483b7ed92167646207ea24"
     }
   },
   "preview/qun/cai-wenji_dirge_en.mp4": {
-    "output": "74a785df54cafa7ff334e92748d481453626ae96ff749e451835c946c9a4fd32",
+    "output": "7f199a8f93fed95423502ed83598000cced428fa5d157b212889d8848b181ed1",
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
-      "preview/qun/cai-wenji_dirge_en.mp4": "20acd371bd661fb1110c9a4f8efadecab1991924e69748861cce5bad930d4922"
+      "preview/qun/cai-wenji_dirge_en.mp4": "2b2bcd244cbc79a9e28f73ca5f3fa81629b1ff13f90f46c805641c577f8a8de1"
     }
   },
   "preview/qun/cai-wenji_dirge_vi.mp4": {
-    "output": "85b61712673872eebb777349a67cd508c0354b639b237679daec40eaf6527096",
+    "output": "a198f29709ff6ce68269c428ad17b58c3ff0e6b2eb3dd6b783a5848e7c3845e5",
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
-      "preview/qun/cai-wenji_dirge_vi.mp4": "94a7e7c595e5161df6ae6927d143620b0151f99fa3c96b911fd632a3bf3e2bdb"
+      "preview/qun/cai-wenji_dirge_vi.mp4": "e54d5ce0b6797955290872767460bd4ea214bf9f076c6522a941da34a0ed6326"
+    }
+  },
+  "preview/qun/cai-wenji_sorrow_en.mp4": {
+    "output": "a040ca4e60f417b49387b9ccdbcd39fcae99d03f66be406d2776c9bd68760560",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/cai-wenji_sorrow_en.mp4": "64d524cfdca7c9c59401b437effeb82772917062a4840b40e7b9f042e969497e"
+    }
+  },
+  "preview/qun/cai-wenji_sorrow_vi.mp4": {
+    "output": "230641a7080379e670ead87e824e1b67016b64277be1240a2073341973e8c149",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/cai-wenji_sorrow_vi.mp4": "79dc76e7e121091313fd89a18cc5d997677a1d50330bfb4a384ee749d9c612fc"
     }
   },
   "preview/qun/diao-chan_envious-moon_en.mp4": {
@@ -3114,18 +3128,46 @@
       "preview/qun/jia-xu_unmitigated-murder_vi.mp4": "ede61fbbd145a7025a8a988862f19ad1231cb27aadd13f6f9ebe6ab89ee12e32"
     }
   },
-  "preview/qun/lu-bu_without-equal_en.mp4": {
-    "output": "b2eaf8695b2a1fe8b49068038abe6c99188dc23e4357fb613c163266b01950c3",
+  "preview/qun/kong-rong_celebrity_en.mp4": {
+    "output": "3d504cd1b28b74a275a5cfdfaff6154792165c60776a3b0450070c4571d89980",
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
-      "preview/qun/lu-bu_without-equal_en.mp4": "a872b729eca6e7652025c265d98bd632d82ee5fa5151e11af9423112dbd00e6a"
+      "preview/qun/kong-rong_celebrity_en.mp4": "f2da9f9c7bd375dd61697ade0cdc1d220fd7575965adac62a157f2604093b425"
+    }
+  },
+  "preview/qun/kong-rong_celebrity_vi.mp4": {
+    "output": "83d54d49b6268a68e3b05477587d2992b623f4208412abe33562d037b5358cb4",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/kong-rong_celebrity_vi.mp4": "6e9cdc13a27512b1766e18e415984598577934294cb30a4bd27b3055e1c6049a"
+    }
+  },
+  "preview/qun/kong-rong_comity_en.mp4": {
+    "output": "15312a84b6e07defa7b2a889e10f15c71541a141d1ffe2e36435584e648948e8",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/kong-rong_comity_en.mp4": "13988b8704d69adf21ab2966406b5e5e87d10000e4c9a8ad575d0b4cc1457e00"
+    }
+  },
+  "preview/qun/kong-rong_comity_vi.mp4": {
+    "output": "84585719bc6381ec799e7ec7704149a3416eccd2d5975a714bd42f98b45b4517",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/kong-rong_comity_vi.mp4": "ee92c20b46f675e769a8083aeb5d346e73e0647d3db5340030b5143f5ec18e6f"
+    }
+  },
+  "preview/qun/lu-bu_without-equal_en.mp4": {
+    "output": "b95ababf97d7b88338e004a60fda16e46ac2fd755e164d6cce90ce530609cfd9",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/lu-bu_without-equal_en.mp4": "b23396f1f6376cb4883cd0bbd3ec71aaf7358cf24e28f907f1ed04418cedd9b7"
     }
   },
   "preview/qun/lu-bu_without-equal_vi.mp4": {
-    "output": "709f16e6542461c5e893f5c864383827eb7da4b4810cafd0ea6b95a428ed6651",
+    "output": "7b8e7c96c6f7e30dcf5ced3b054012584783a223d21d3fdaf9a286148415c1ad",
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
-      "preview/qun/lu-bu_without-equal_vi.mp4": "b6652914adce9cfbdb04da77f01956d05e6c3c215c8a7df5504af2c7b6af8cfb"
+      "preview/qun/lu-bu_without-equal_vi.mp4": "3d2a0de9c531d979b506207bb49d4a03d504d700cfba19bb63c23512b48c6992"
     }
   },
   "preview/qun/ma-teng_call-of-valour_en.mp4": {
@@ -3168,6 +3210,34 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/qun/pang-de_fearsome-advance_vi.mp4": "fc66829fe6c05dd26df9d5ba5394059cebb624f78225a208505cce3d53fe793a"
+    }
+  },
+  "preview/qun/tian-feng_deathly-counsel_en.mp4": {
+    "output": "315277ea8e4c016ab5e7dc4c9f27312e015d180d2b72422e98f1a9e1b86d19f2",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/tian-feng_deathly-counsel_en.mp4": "9dfa59c254d1b0bd4f7f33a00ccf17a1afcf07c1710d0f45b17a4fe8b8f368d8"
+    }
+  },
+  "preview/qun/tian-feng_deathly-counsel_vi.mp4": {
+    "output": "6f1c83a08e97155b8bccffd968acbc4dd061109de38ec275cd50c99a809b002a",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/tian-feng_deathly-counsel_vi.mp4": "f4728ed87c2b47bb10fd4d8622b8a69064092fce44aae828a81b002931bc99b2"
+    }
+  },
+  "preview/qun/tian-feng_with-the-tide_en.mp4": {
+    "output": "5936210965484ecae29f528a816fc49dafb4bb758dba479bd56913bea7bb38df",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/tian-feng_with-the-tide_en.mp4": "3dc892246ce68fb7396feb54f0d1d4ae78dd0f84440ab9f91cd1427fe0a01785"
+    }
+  },
+  "preview/qun/tian-feng_with-the-tide_vi.mp4": {
+    "output": "a3771a3df2d7fd64d7a1d04fa02ddcdf562e704faad70b9e1afd38d077701f39",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/tian-feng_with-the-tide_vi.mp4": "0eb712729fbe5ccdd51458485562552329d637d82483c8a20ba4d0a9c39fa70e"
     }
   },
   "preview/qun/yan-liang-and-wen-chou_dual-heroes_en.mp4": {
