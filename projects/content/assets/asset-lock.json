@@ -2982,10 +2982,10 @@
     }
   },
   "preview/index.json": {
-    "output": "b2211778d25f3621fd8853c19c14d19b45f50ebdd642e326ddb4ba3f953a0b66",
+    "output": "35fd2648412064617a6e935781b4888e632d1dd69e33098876e916c0f602f93b",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "preview/index.json": "b2211778d25f3621fd8853c19c14d19b45f50ebdd642e326ddb4ba3f953a0b66"
+      "preview/index.json": "35fd2648412064617a6e935781b4888e632d1dd69e33098876e916c0f602f93b"
     }
   },
   "preview/qun/cai-wenji_dirge_en.mp4": {
@@ -3072,6 +3072,48 @@
       "preview/qun/ji-ling_double-edged_vi.mp4": "ee37b305b7259832c5744bb5e9420e545763736363902bacdfa5eb0fba049046"
     }
   },
+  "preview/qun/jia-xu_behind-the-curtain_en.mp4": {
+    "output": "55c34c044a1666fd383fe124c5d40b3d601e36fec29249e80e858cb2acf3ed5b",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/jia-xu_behind-the-curtain_en.mp4": "5f7df9041c35de58692bfea8030cd68b0ce6034557b668a540afa05c32b21aa3"
+    }
+  },
+  "preview/qun/jia-xu_behind-the-curtain_vi.mp4": {
+    "output": "f9d8417ae70657459273397aa06379eb7d9e5c0627b690fc24b82eba730eeba3",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/jia-xu_behind-the-curtain_vi.mp4": "fa47d4474d3f42cf96969960077bb6ba1a0be5ec4df1ec2fbf7f4eb7248db164"
+    }
+  },
+  "preview/qun/jia-xu_descend-into-chaos_en.mp4": {
+    "output": "311b8e3cd0fbda1ef1f9e26a3de62e1975043811fb5178ef71115946538f87e6",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/jia-xu_descend-into-chaos_en.mp4": "7fb16f1f7c1b12d8276044e4f9e9b67ad0b99a7c5467208985c4b9ae18aabf7d"
+    }
+  },
+  "preview/qun/jia-xu_descend-into-chaos_vi.mp4": {
+    "output": "2f8b5a0dbdc029de8260ad9dde653f2544e2388f178d6e6a398f79100fed5867",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/jia-xu_descend-into-chaos_vi.mp4": "1127b152dfa001447f895b283b5ba16b86e62dd52c00bd4e736623d145969016"
+    }
+  },
+  "preview/qun/jia-xu_unmitigated-murder_en.mp4": {
+    "output": "2487b584bf57db875bdc2b9c8ecce06e98d8637c2e3dbbde972d170d33109c45",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/jia-xu_unmitigated-murder_en.mp4": "76911e87a816c852c92f31b683035c0a4139a9af0ffda043623d335685be1404"
+    }
+  },
+  "preview/qun/jia-xu_unmitigated-murder_vi.mp4": {
+    "output": "c725bbe121c7202726a5c61a8ea557412b5b1ff3582c94ef1797f0e4a8f976e4",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/jia-xu_unmitigated-murder_vi.mp4": "ede61fbbd145a7025a8a988862f19ad1231cb27aadd13f6f9ebe6ab89ee12e32"
+    }
+  },
   "preview/qun/lu-bu_without-equal_en.mp4": {
     "output": "b2eaf8695b2a1fe8b49068038abe6c99188dc23e4357fb613c163266b01950c3",
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
@@ -3126,6 +3168,34 @@
     "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
     "sources": {
       "preview/qun/pang-de_fearsome-advance_vi.mp4": "fc66829fe6c05dd26df9d5ba5394059cebb624f78225a208505cce3d53fe793a"
+    }
+  },
+  "preview/qun/yan-liang-and-wen-chou_dual-heroes_en.mp4": {
+    "output": "41eb797256ab0b424c7fa5b606dc41a8398f606f476dce1c7fc8be96c1174174",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/yan-liang-and-wen-chou_dual-heroes_en.mp4": "a3bf65c6c2da9a14f182b057f30a54217264943c3e5e56eef6c861912ff1067c"
+    }
+  },
+  "preview/qun/yan-liang-and-wen-chou_dual-heroes_vi.mp4": {
+    "output": "ee7d48b98b300ae3bc449003e24b571092886c6967a1a31e74a1438e50399355",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/yan-liang-and-wen-chou_dual-heroes_vi.mp4": "d1dee8f5d249fcfea232c2597d25235edfc2d6f1c8ec15f5247f18f59e4ff702"
+    }
+  },
+  "preview/qun/yuan-shao_barrage_en.mp4": {
+    "output": "b2f4fe310354db76114eb95966744cc4e47d64b33556aad990693a235d4565c6",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/yuan-shao_barrage_en.mp4": "0e832f69742e11d293f97dde7baf13d9e14c4f1c6a00558e549e9a2bcf1ce358"
+    }
+  },
+  "preview/qun/yuan-shao_barrage_vi.mp4": {
+    "output": "3c604671bb99fa984a6b7c6f6aa0deb03dc00ef700e2cf19ee3746604f598bc8",
+    "settings": "540439f3f61a38f57cbb15b9990783704b6ea1349b95a1574b6af4fb93f160c8",
+    "sources": {
+      "preview/qun/yuan-shao_barrage_vi.mp4": "18ac3b1f948a0ebfc2f4e0487c945076927ab57dfdee52e21ccd46d14435527b"
     }
   },
   "preview/qun/zhang-jiao_dark-sorcery_en.mp4": {
