@@ -35,7 +35,7 @@ There are two policies:
 | Policy | File | Behavior |
 |---|---|---|
 | Random | `random.ts` (`pickRandomAction`) | uniformly picks a legal action, with sane fills for templates. Used by the simulator to explore many unusual lines of play. |
-| Rule-based | `rule-based.ts` (`ruleBasedPolicy`) | the opponent a person plays against. Its heuristics include: treat same-Kingdom seats as allies, target the weakest non-ally, keep Peach, Shan and Sha on top when arranging, cancel harmful Tools aimed at itself, and discard its least useful cards. |
+| Rule-based | `rule-based.ts` (`ruleBasedPolicy`) | the opponent a person plays against. Its heuristics include: treat same-Kingdom seats as allies, rank non-allies by the table (below), keep Peach, Shan and Sha on top when arranging, cancel harmful Tools aimed at itself, and discard its least useful cards. |
 
 The rule-based bot's per-pack knowledge sits beside it (`wind.ts`, `fire.ts`,
 `forest.ts`, `mountain.ts`, `skills.ts`), each answering questions such as
@@ -43,17 +43,94 @@ The rule-based bot's per-pack knowledge sits beside it (`wind.ts`, `fire.ts`,
 `BotTurnMemory` tracks a little per-turn state (Sha played, actions taken) and
 `MAX_BOT_ACTIONS_PER_TURN` caps a turn so a bot always ends its phase.
 
+### The rule registry (`projects/bots/src/lib/rules`)
+
+Newer play judgment lives in a data-driven registry, `KINGDOM_WARS_RULES`
+([kingdom-wars.ts](../../projects/bots/src/lib/rules/kingdom-wars.ts)): one
+`BotRule` per card or skill id, with no switch over ids. A rule fills in only
+the hooks it has an opinion on (`play` early or late in the ladder,
+`wantsToUse`, `select`, `choose`, `answer`) and returns `undefined` to leave a
+decision to the ladder. The ladder consults the registry through the policy's
+`BotFeatures`; a policy with no registry (`NO_FEATURES`) behaves as it did
+before it existed. The rules sit in `projects/bots` rather than `content`
+because they need the bots' own helpers, and `content` may not import `bots`;
+facts about content (what stops a card, how dangerous a skill is) belong in
+`content`.
+
+To give a card or skill a rule, write its rule text in plain words first, add a
+`BotRule` keyed by its id to the matching file in `rules/` (`tools.ts`,
+`equipment.ts`, `skills.ts`, `wuxie-guo.ts`), list it in `KINGDOM_WARS_RULES`,
+and test it in the neighbouring spec. `coverage.spec.ts` fails when a Kingdom
+Wars card, or a skill with an active, a conversion or a trigger, is in none of
+`KINGDOM_WARS_RULES`, `LEGACY_HANDLED` (the old ladder and pack files already
+play it) or `IGNORED` (with a stated reason), in
+[coverage.ts](../../projects/bots/src/lib/rules/coverage.ts).
+
 Three callers run it: `GameService` on a timer for each bot seat of a local
 game, the server's `GameRunner` for each bot seat (and for a human seat it
 has taken over) of an online game, and the simulator's `runGame` in a loop.
 All three hand the policy the seat's redacted view and its legal actions.
 
+### Reading the table (`table.ts`, `danger.ts`, `table-rank.ts`)
+
+`rule-based` builds a picture of the table from its redacted view
+([table.ts](../../projects/bots/src/lib/table.ts)), enabled by
+`BotFeatures.tableReading`:
+
+- **Forces.** A force is a Kingdom's living seats whose allegiance is `kingdom`
+  and whose Kingdom is revealed; each living Ambitionist is a force of one. A hidden seat belongs to no force.
+  A force has seats (a count) and HP (summed `combinedHp`).
+- **The leading force** (`leadingForceOf`) has at least 2 seats and strictly
+  more seats than every other force. It is weakened, and no longer leads, as
+  soon as it loses that, or its HP is not above the HP of the force with the
+  next most seats.
+- **Relations** (`relationOf`, from the bot's side): `self`, `ally` (as
+  `isAlly`), `truce` (a seat of a force that is neither the bot's own nor the
+  leading force, while another force leads) and `foe` (everything else). When
+  the bot's own force leads there is no truce: it plays as before towards
+  everyone. Nothing is announced; the alliance only changes what each bot
+  chooses.
+- **Danger.** Skills carry a hand rating, `high`, `medium` or `low`, as content
+  data keyed by skill id (`skillDanger` in `content`, from `data/decks/kingdom-wars/skill-danger.json`, with its own coverage
+  spec; the criteria are in the Kingdom Wars bots spec). A General's danger is
+  its highest rating (2, 1, 0) plus 10 times its value in `GENERAL_VALUES`
+  (`generalDanger`); a seat's danger is the sum over its revealed Generals. A
+  seat with danger 2 or more is dangerous.
+- **Whom to attack** (`tableRank`, a `RankerFactory` built per decision from the
+  registry): a leading-force seat +1000, a hit that would bring the target to 0
+  HP +500, 20 per danger, 30 per hostile act (up to 3), less 10 per HP and a
+  tiebreak by seat index. A truce partner is `HOLD_FIRE`, which the ladder reads
+  as "never attack", unless it has 3 HP or more and is dangerous; then it still
+  ranks below every leading-force seat. `HOLD_FIRE` is a convention of the
+  ranker's return value in `helpers.ts`: card plays, conversions, target
+  templates and harmful seat selections skip a `HOLD_FIRE` target, and a play
+  with no other target is not made.
+- **Dying and mass attacks.** A bot saves a dying truce partner with a Peach as
+  an ally. Barbarians and Hail of Arrows are played when enemies outnumber
+  friends, with a truce partner counted by its HP and danger.
+
+The per-skill targeting in `skills.ts`, `wind.ts`, `fire.ts`, `forest.ts` and
+`mountain.ts` is not on the ranker yet; those skills keep sorting by HP.
+
+`balance <games> <seats> <policyA> <policyB> <firstSeed>`
+([balance.ts](../../projects/sim/src/balance.ts)) judges it: every seat plays
+the same bot, and for each seed it records the first force that led, whether
+that force won (`leader won`), the deaths and the HP lost. The report gives the
+leader-won rate with an interval per bot, win rates per force (the
+`ambitionist:<seat>` entries shown as one Ambitionist row), and A minus B for
+each measure, paired by seed. Part 2 passed when the leader-won difference was
+wholly below 0 on two seed ranges; the results are in the Kingdom Wars bots
+spec.
+
 ### Adding bot support for new content
 
 A new card or skill is playable by the **random** bot with no work (it is just
 another legal action). The rule-based bot needs a rule only when its default is
-poor: add a case to the matching pack file or to `skills.ts`, with a test in
-that file's spec. A skill with no bot rule is simply not used by the bot.
+poor: write the rule text in plain words, add a `BotRule` keyed by its id to
+`rules/` (registered in `KINGDOM_WARS_RULES`), and test it in the neighbouring
+spec. `coverage.spec.ts` fails until every Kingdom Wars card and non-compulsory
+skill is in `KINGDOM_WARS_RULES`, `LEGACY_HANDLED` or `IGNORED` (with a reason)
+in `rules/coverage.ts`, so nothing is left without a bot decision by accident.
 
 ## Simulation (`projects/sim`)
 
@@ -86,9 +163,13 @@ which cancels the luck of the deal and of the Generals. The report shows the
 mean over pairs with a 95% interval and says which bot is better only when the
 interval excludes 0. Add `unmirrored` as a last argument for one fresh seed per
 game.
-Bots are `random`, `rule-based`, and frozen opponents `rule-based-v1` and
+Bots are `random`, `rule-based`, and frozen opponents `rule-based-v1`,
 `rule-based-v2` (weakest-first targeting, General pairs by highest max HP; `v2`
-is what Stage 4 was judged against). `rule-based` chooses its General pair with
+is what Stage 4 was judged against) and `rule-based-v3` (`rule-based` before
+the Kingdom Wars rule registry; the baseline Part 1 was judged against, and the
+bot the older specs pin through `decide` in `testing.ts`) and `rule-based-v4`
+(`rule-based` at the end of Part 1, before it read the table; the baseline Part 2
+was judged against, and the control the table specs compare with). `rule-based` chooses its General pair with
 a measured value table, `GENERAL_VALUES` in
 [general-values.data.ts](../../projects/bots/src/lib/general-values.data.ts),
 generated by `npm run sim -- fit-generals <games> <seats> <firstSeed>` (random
@@ -100,7 +181,20 @@ alternative, `targetScore` in
 did not beat weakest-first on fresh seeds. To test a change, register it in
 `policies.ts` under its own id and run it against the current `rule-based`, for
 example `npm run sim -- tournament 4000 4 <new-id> rule-based`; fit and judge on
-different seed ranges.
+different seed ranges. The Kingdom Wars rules were judged this way, at
+commit `c3834ebf` with the challenger registered as `rule-based-kw`; today the same
+comparison is `npm run sim -- tournament 4000 <seats> rule-based rule-based-v3
+<seed> mirrored`. Part 2 was judged at commit `0f5e6607` with the challenger
+registered as `rule-based-table`; today that comparison is `rule-based` against
+`rule-based-v4`. The results are in
+[the Kingdom Wars bots spec](../superpowers/specs/2026-11-11-kingdom-wars-bots-design.md).
+
+The report ends with a **usage table**: for each card and skill that offered a
+decision, how often it was offered and how often the bot used it, per side
+([usage.ts](../../projects/sim/src/usage.ts)). `Part 1 uses per game` is the
+challenger's uses of the Kingdom Wars keys (`PART_1_KEYS`) minus the
+baseline's, with a 95% interval over pairs; a key at 0 for the challenger means
+its rule never fires.
 
 ### Invariants
 

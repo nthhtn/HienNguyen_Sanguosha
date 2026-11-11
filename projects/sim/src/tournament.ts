@@ -2,6 +2,8 @@ import { createGame } from 'engine';
 import type { GameState } from 'engine';
 import { buildContentRegistry, guozhanMode } from 'content';
 import { BotKind, runGame } from './runGame';
+import { PART_1_KEYS, recordDecision } from './usage';
+import type { UsageTally } from './usage';
 
 export type Side = 'challenger' | 'baseline';
 
@@ -85,6 +87,10 @@ export interface TournamentReport {
   baseline: SideTally;
   // Challenger share of seats won minus baseline share: per finished game, or per pair when mirrored.
   difference: Interval;
+  // How often each card, skill and ability ask was offered and used, per side (finished games only).
+  usage: Record<Side, UsageTally>;
+  // Challenger uses minus baseline uses of PART_1_KEYS, per game: over mirrored pairs, or games when unmirrored.
+  part1Uses: Interval;
 }
 
 const DEFAULT_MAX_ACTIONS = 20000;
@@ -116,10 +122,13 @@ export function runTournament(config: TournamentConfig): TournamentReport {
     baseline: { bot: config.baseline, seats: 0, wins: 0, byKingdom: {} },
   };
   const gameDifferences: (number | null)[] = []; // null for a game with no result
+  const usage: Record<Side, UsageTally> = { challenger: {}, baseline: {} };
+  const gameUses: (number | null)[] = []; // challenger minus baseline Part 1 uses; null for a game with no result
   for (let game = 0; game < config.games; game++) {
     const seed = firstSeed + (config.mirrored ? Math.floor(game / 2) : game);
     const sideOfSeat = (seatId: string): Side => sideOf(game, seatIds.indexOf(seatId));
     const initialState = createGame(guozhanMode, registry, seatIds, seed);
+    const gameUsage: Record<Side, UsageTally> = { challenger: {}, baseline: {} };
     const { finalState } = runGame(
       initialState,
       { registry, mode: guozhanMode },
@@ -127,12 +136,23 @@ export function runTournament(config: TournamentConfig): TournamentReport {
       config.maxActions ?? DEFAULT_MAX_ACTIONS,
       config.baseline,
       undefined,
-      (seatId) => (sideOfSeat(seatId) === 'challenger' ? config.challenger : config.baseline)
+      (seatId) => (sideOfSeat(seatId) === 'challenger' ? config.challenger : config.baseline),
+      ({ seatId, state, legal, action }) => recordDecision(gameUsage[sideOfSeat(seatId)], state, legal, action)
     );
     const score = scoreGame(finalState, sideOfSeat);
     if (!score.finished) {
       gameDifferences.push(null);
+      gameUses.push(null);
       continue;
+    }
+    const part1Uses = (side: Side): number => PART_1_KEYS.reduce((sum, key) => sum + (gameUsage[side][key]?.used ?? 0), 0);
+    gameUses.push(part1Uses('challenger') - part1Uses('baseline'));
+    for (const side of ['challenger', 'baseline'] as const) {
+      for (const [key, c] of Object.entries(gameUsage[side])) {
+        const into = (usage[side][key] ??= { offered: 0, used: 0 });
+        into.offered += c.offered;
+        into.used += c.used;
+      }
     }
     gameDifferences.push(score.wins.challenger / half - score.wins.baseline / half);
     for (const side of ['challenger', 'baseline'] as const) {
@@ -147,7 +167,17 @@ export function runTournament(config: TournamentConfig): TournamentReport {
   }
   const finished = gameDifferences.filter((d) => d !== null).length;
   const values = config.mirrored ? pairMeans(gameDifferences) : gameDifferences.filter((d): d is number => d !== null);
-  return { config, finished, unfinished: gameDifferences.length - finished, challenger: tallies.challenger, baseline: tallies.baseline, difference: interval(values) };
+  const usesValues = config.mirrored ? pairMeans(gameUses) : gameUses.filter((u): u is number => u !== null);
+  return {
+    config,
+    finished,
+    unfinished: gameDifferences.length - finished,
+    challenger: tallies.challenger,
+    baseline: tallies.baseline,
+    difference: interval(values),
+    usage,
+    part1Uses: interval(usesValues),
+  };
 }
 
 const percent = (wins: number, seats: number): string => (seats === 0 ? '-' : `${((100 * wins) / seats).toFixed(1)}%`);
@@ -160,6 +190,24 @@ function formatSide(label: string, tally: SideTally): string {
   return `${label.padEnd(10)} ${tally.bot.padEnd(14)} seats ${String(tally.seats).padStart(5)}  wins ${String(tally.wins).padStart(5)}  rate ${percent(tally.wins, tally.seats).padStart(6)}  [${kingdoms}]`;
 }
 
+function formatUsage(report: TournamentReport): string[] {
+  const keys = [...new Set([...Object.keys(report.usage.challenger), ...Object.keys(report.usage.baseline)])]
+    .filter((key) => (report.usage.challenger[key]?.offered ?? 0) > 0 || (report.usage.baseline[key]?.offered ?? 0) > 0)
+    .sort();
+  const cell = (side: Side, key: string): string => {
+    const c = report.usage[side][key] ?? { offered: 0, used: 0 };
+    return `${c.offered} / ${c.used}`;
+  };
+  const width = Math.max(3, ...keys.map((k) => k.length));
+  const u = report.part1Uses;
+  return [
+    'Usage (offered / used)',
+    `${'key'.padEnd(width)}  ${'challenger'.padStart(14)}  ${'baseline'.padStart(14)}`,
+    ...keys.map((key) => `${key.padEnd(width)}  ${cell('challenger', key).padStart(14)}  ${cell('baseline', key).padStart(14)}`),
+    `Part 1 uses per game: ${u.mean.toFixed(2)} (${u.low.toFixed(2)} to ${u.high.toFixed(2)})`,
+  ];
+}
+
 export function formatReport(report: TournamentReport): string {
   const { config, difference: d } = report;
   const pp = (v: number) => `${(100 * v).toFixed(1)} pp`;
@@ -169,5 +217,6 @@ export function formatReport(report: TournamentReport): string {
     formatSide('challenger', report.challenger),
     formatSide('baseline', report.baseline),
     `Difference per game (challenger minus baseline): ${pp(d.mean)}, 95% interval ${pp(d.low)} to ${pp(d.high)} over ${d.games} ${config.mirrored ? 'pairs' : 'games'}: ${verdict}`,
+    ...formatUsage(report),
   ].join('\n');
 }

@@ -9,3 +9,6 @@ export * from './lib/card-play';
 export * from './lib/targeting';
 export * from './lib/responses';
 export * from './lib/general-values';
+export * from './lib/rules/registry';
+export * from './lib/rules/kingdom-wars';
+export * from './lib/table';

@@ -43,6 +43,17 @@ describe('checkInvariants', () => {
     expect(checkInvariants(state)).toEqual([expect.stringContaining('no rescue round pending')]);
   });
 
+  it('accepts a finished game only when its end cut the seat\'s rescue round short', () => {
+    const hit = { kind: 'DamageDealtEvent' as const, damage: { source: null, target: { kind: 'seat' as const, seatId: 'seat-a' }, amount: 2, nature: 'normal' as const } };
+    const dying = { kind: 'SeatDyingEvent' as const, seatId: 'seat-a' };
+    const result = { endedAt: 1, winningSeatIds: [], losingSeatIds: ['seat-a'] };
+    const at0 = (log: GameState['log']) => baseState({ seats: [{ ...baseState().seats[0], combinedHp: 0 }], log, result });
+    expect(checkInvariants(at0([hit, dying]))).toEqual([]);
+    expect(checkInvariants(at0([hit, { kind: 'GeneralRevealedEvent', seatId: 'seat-a', slot: 'deputy' }]))).toEqual([]);
+    expect(checkInvariants(at0([hit]))).toEqual(['Seat seat-a is living at 0 HP with no rescue round pending']);
+    expect(checkInvariants(at0([dying, hit]))).toEqual(['Seat seat-a is living at 0 HP with no rescue round pending']);
+  });
+
   it('allows a seat below 0 HP while its rescue round is asking, or once eliminated', () => {
     const dying = baseState();
     dying.seats[0].combinedHp = -1;

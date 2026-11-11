@@ -2,7 +2,8 @@
 import { getLegalActions, redactStateForSeat, resolve } from 'engine';
 import type { Action, CardInstance, Effect, GameModeDefinition, GameState, GeneralOwner, Kingdom, PendingChoice } from 'engine';
 import { buildContentRegistry } from 'content';
-import { ruleBasedPolicy } from './rule-based';
+import type { BotPolicy } from './policy';
+import { ruleBasedV3Policy } from './rule-based';
 
 // Test-only stand-ins (as content's fillers.testing.ts): `filler-<id>` has the
 // real General's kingdom, gender and max HP, and no skills.
@@ -60,10 +61,12 @@ export function table(cards: Record<string, CardInstance[]> = {}, o: Options = {
 }
 
 export const actor = (s: GameState) => s.pendingChoice?.seatId ?? s.pendingSelection?.seatId ?? s.pendingResponse?.respondingSeatId ?? s.turn.ownerSeatId;
-export const decide = (s: GameState): Action => {
+// What `policy` does for the seat that has to act in `s`, from that seat's redacted view.
+export const decideWith = (policy: BotPolicy, s: GameState): Action => {
   const seatId = actor(s);
-  return ruleBasedPolicy.decide(redactStateForSeat(s, seatId), seatId, getLegalActions(s, seatId, registry), registry, null).action;
+  return policy.decide(redactStateForSeat(s, seatId), seatId, getLegalActions(s, seatId, registry), registry, null).action;
 };
+export const decide = (s: GameState): Action => decideWith(ruleBasedV3Policy, s);
 export const act = (s: GameState, action: Action) => resolve(s, action, ctx).state;
 export const general = (seatId: string, skillId: string): GeneralOwner => ({ kind: 'general', seatId, slot: 'main', skillId });
 // An ask of `skillId` for seat-a, about `targetSeatId`; Don't queues `otherwise`.

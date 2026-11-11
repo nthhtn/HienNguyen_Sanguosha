@@ -30,3 +30,4 @@ export * from './lib/wiki';
 export { BASE_GENERAL_IDS, FIRE_GENERAL_IDS, FOREST_GENERAL_IDS, MOUNTAIN_GENERAL_IDS, WIND_GENERAL_IDS } from './lib/generals';
 export { attackRange, seatDistance } from './lib/shared/queries';
 export * from './lib/wikiDistance';
+export * from './lib/skill-danger';

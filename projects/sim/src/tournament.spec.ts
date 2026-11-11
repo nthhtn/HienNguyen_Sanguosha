@@ -116,7 +116,7 @@ describe('pairMeans', () => {
 });
 
 describe('runTournament, mirrored', () => {
-  const mirrored = { games: 6, seats: 4, challenger: 'rule-based', baseline: 'rule-based-picks', firstSeed: 1, mirrored: true } as const;
+  const mirrored = { games: 6, seats: 4, challenger: 'rule-based-v3', baseline: 'rule-based-picks', firstSeed: 1, mirrored: true } as const;
 
   it('gives exactly zero for two bots that behave identically: each pair replays one deal with the sides swapped', () => {
     const report = runTournament(mirrored);
@@ -147,5 +147,16 @@ describe('runTournament, mirrored', () => {
   it('counts the report in pairs', () => {
     expect(formatReport(runTournament(mirrored))).toMatch(/over 3 pairs/);
     expect(formatReport(runTournament({ ...mirrored, mirrored: false }))).toMatch(/over 6 games/);
+  });
+});
+
+describe('runTournament usage', () => {
+  it('reports usage per side and prints a Usage section', () => {
+    const report = runTournament({ games: 2, seats: 4, challenger: 'rule-based', baseline: 'rule-based-v3', firstSeed: 0, mirrored: true });
+    expect(report.usage.challenger).toBeDefined();
+    expect(report.usage.baseline).toBeDefined();
+    expect(report.part1Uses.games).toBeLessThanOrEqual(1);
+    expect(formatReport(report)).toContain('Usage');
+    expect(formatReport(report)).toContain('Part 1 uses per game:');
   });
 });
