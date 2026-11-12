@@ -28,7 +28,7 @@ Cheap checks come first, so a typo fails in seconds. Tests are not part of
   Branches (88% today) are reported, not gated.
 - `npm run test:guardrails`: the tests for the deny rules below (`node --test`).
 - `npm run test:assets`: the tests for the asset pipeline (`scripts/assetlib`, Python
-  `unittest`; they need Pillow, CI installs it).
+  `unittest`; they need Pillow, and `ffmpeg` for the video tests, which skip without it; CI installs both).
 - `npm run test:db` (needs Postgres, `npm run db:up`): the server specs against a
   real database.
 
@@ -41,7 +41,7 @@ permission. A new push to a pull request cancels its in-flight run.
 | Job | Runs | Required to merge |
 | --- | --- | --- |
 | `verify` | `npm run verify`: lint, typecheck, build | yes |
-| `test` | against a `postgres:17` service: `npm run test:guardrails`, `npm run test:assets` (after `pip install pillow`), then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | yes |
+| `test` | against a `postgres:17` service: `npm run test:guardrails`, `npm run test:assets` (after `pip install pillow` and installing `ffmpeg`), then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | yes |
 | `coverage` | `npm run coverage:check` on the artifact `test` uploaded: fails below 90% statements, lines or functions | no |
 
 "Required" is set in the repository's branch ruleset (Settings, Rules), not in

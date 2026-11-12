@@ -24,9 +24,11 @@ in git history), so a deployment never needs to crawl.
 `localPath` values, and the values in `generals/skins/skins.json`, carry no file
 extension: `assets.ts` adds the one `../asset-recipes.json` ships for that folder.
 
-`preview/` holds the short skill preview videos, `<general-id>_<skill-id>_en.mp4`
-and `<general-id>_<skill-id>_vi.mp4`. They are made for this project, not crawled, so they
-have no manifest entry, and the build never ships them.
+`preview/<force>/` (`wei`, `shu`, `wu`, `qun`) holds the short skill preview videos, `<general-id>_<skill-id>_en.mp4`
+and `<general-id>_<skill-id>_vi.mp4`, filed under the General's Kingdom Wars force. `preview/index.json` lists the
+languages each skill has so the Wiki shows a player only for those. They are made for this project, not crawled, so they have
+no manifest entry. The build ships a right-sized copy in `../assets/preview/` (at most 960 px wide, 60 fps, silent H.264;
+the Wiki shows them at most 480 CSS px), and copies `index.json` as it is. Building videos needs `ffmpeg`.
 
 ## Layout
 

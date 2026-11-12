@@ -47,6 +47,7 @@ jobs:
       - run: npm ci
       - run: npm run test:guardrails
       - run: pip install pillow
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: npm run test:assets
       - run: npm run test:coverage
       - name: Coverage summary

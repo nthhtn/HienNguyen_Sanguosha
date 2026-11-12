@@ -1,0 +1,378 @@
+{
+  "cai-wenji_dirge": [
+    "en",
+    "vi"
+  ],
+  "cai-wenji_sorrow": [
+    "en",
+    "vi"
+  ],
+  "cao-cao_villainous-hero": [
+    "en",
+    "vi"
+  ],
+  "cao-pi_banish": [
+    "en",
+    "vi"
+  ],
+  "cao-pi_scavenge": [
+    "en",
+    "vi"
+  ],
+  "cao-ren_entrenched": [
+    "en",
+    "vi"
+  ],
+  "da-qiao_displacement": [
+    "en",
+    "vi"
+  ],
+  "da-qiao_national-beauty": [
+    "en",
+    "vi"
+  ],
+  "dian-wei_ferocious-assault": [
+    "en",
+    "vi"
+  ],
+  "diao-chan_envious-moon": [
+    "en",
+    "vi"
+  ],
+  "diao-chan_seed-of-animosity": [
+    "en",
+    "vi"
+  ],
+  "ding-feng_close-combat": [
+    "en",
+    "vi"
+  ],
+  "ding-feng_swift-and-deadly": [
+    "en",
+    "vi"
+  ],
+  "fire-zhuge-liang_arson": [
+    "en",
+    "vi"
+  ],
+  "fire-zhuge-liang_eight-trigrams": [
+    "en",
+    "vi"
+  ],
+  "fire-zhuge-liang_scient": [
+    "en",
+    "vi"
+  ],
+  "gan-fu-ren_divine-wisdom": [
+    "en",
+    "vi"
+  ],
+  "gan-fu-ren_prudence": [
+    "en",
+    "vi"
+  ],
+  "gan-ning_surprise-raid": [
+    "en",
+    "vi"
+  ],
+  "guan-yu_warrior-saint": [
+    "en",
+    "vi"
+  ],
+  "guo-jia_bequeathed-strategy": [
+    "en",
+    "vi"
+  ],
+  "guo-jia_envy-of-heaven": [
+    "en",
+    "vi"
+  ],
+  "hua-tuo_first-aid": [
+    "en",
+    "vi"
+  ],
+  "hua-tuo_green-salve": [
+    "en",
+    "vi"
+  ],
+  "huang-gai_trojan-flesh": [
+    "en",
+    "vi"
+  ],
+  "huang-yueying_assembling-wisdom": [
+    "en",
+    "vi"
+  ],
+  "huang-yueying_genius": [
+    "en",
+    "vi"
+  ],
+  "huang-zhong_fearsome-archer": [
+    "en",
+    "vi"
+  ],
+  "ji-ling_double-edged": [
+    "en",
+    "vi"
+  ],
+  "jia-xu_behind-the-curtain": [
+    "en",
+    "vi"
+  ],
+  "jia-xu_descend-into-chaos": [
+    "en",
+    "vi"
+  ],
+  "jia-xu_unmitigated-murder": [
+    "en",
+    "vi"
+  ],
+  "kong-rong_celebrity": [
+    "en",
+    "vi"
+  ],
+  "kong-rong_comity": [
+    "en",
+    "vi"
+  ],
+  "liu-bei_benevolence": [
+    "en",
+    "vi"
+  ],
+  "liu-shan_devolution": [
+    "en",
+    "vi"
+  ],
+  "liu-shan_relish": [
+    "en",
+    "vi"
+  ],
+  "lu-bu_without-equal": [
+    "en",
+    "vi"
+  ],
+  "lu-meng_self-mastery": [
+    "en",
+    "vi"
+  ],
+  "lu-su_alliance": [
+    "en",
+    "vi"
+  ],
+  "lu-su_altruism": [
+    "en",
+    "vi"
+  ],
+  "lu-xun_humility": [
+    "en",
+    "vi"
+  ],
+  "lu-xun_scrutinize": [
+    "en",
+    "vi"
+  ],
+  "ma-chao_horsemanship": [
+    "en",
+    "vi"
+  ],
+  "ma-chao_iron-calvary": [
+    "en",
+    "vi"
+  ],
+  "ma-teng_call-of-valour": [
+    "en",
+    "vi"
+  ],
+  "ma-teng_horsemanship": [
+    "en",
+    "vi"
+  ],
+  "meng-huo_arise-again": [
+    "en",
+    "vi"
+  ],
+  "meng-huo_the-smoking-gun": [
+    "en",
+    "vi"
+  ],
+  "pan-feng_insanity-axe": [
+    "en",
+    "vi"
+  ],
+  "pang-de_fearsome-advance": [
+    "en",
+    "vi"
+  ],
+  "pang-de_horsemanship": [
+    "en",
+    "vi"
+  ],
+  "pang-tong_resurrection": [
+    "en",
+    "vi"
+  ],
+  "pang-tong_shackle": [
+    "en",
+    "vi"
+  ],
+  "sima-yi_demonic-talent": [
+    "en",
+    "vi"
+  ],
+  "sima-yi_retaliation": [
+    "en",
+    "vi"
+  ],
+  "sun-jian_heroic-spirit": [
+    "en",
+    "vi"
+  ],
+  "sun-quan_balance-of-power": [
+    "en",
+    "vi"
+  ],
+  "sun-shangxiang_marriage": [
+    "en",
+    "vi"
+  ],
+  "sun-shangxiang_warrior-lady": [
+    "en",
+    "vi"
+  ],
+  "taishi-ci_justice-of-heaven": [
+    "en",
+    "vi"
+  ],
+  "tian-feng_deathly-counsel": [
+    "en",
+    "vi"
+  ],
+  "tian-feng_with-the-tide": [
+    "en",
+    "vi"
+  ],
+  "wei-yan_insanity-streak": [
+    "en",
+    "vi"
+  ],
+  "xiahou-dun_an-eye-for-an-eye": [
+    "en",
+    "vi"
+  ],
+  "xiahou-yuan_godspeed": [
+    "en",
+    "vi"
+  ],
+  "xiao-qiao_heavenly-scent": [
+    "en",
+    "vi"
+  ],
+  "xiao-qiao_rosy-cheeks": [
+    "en",
+    "vi"
+  ],
+  "xu-chu_bare-chested": [
+    "en",
+    "vi"
+  ],
+  "xu-huang_blockade": [
+    "en",
+    "vi"
+  ],
+  "xun-yu_eternal-loyalty": [
+    "en",
+    "vi"
+  ],
+  "xun-yu_rouse-the-tiger": [
+    "en",
+    "vi"
+  ],
+  "yan-liang-and-wen-chou_dual-heroes": [
+    "en",
+    "vi"
+  ],
+  "yuan-shao_barrage": [
+    "en",
+    "vi"
+  ],
+  "yue-jin_dauntless": [
+    "en",
+    "vi"
+  ],
+  "zhang-fei_berserk": [
+    "en",
+    "vi"
+  ],
+  "zhang-he_flexibility": [
+    "en",
+    "vi"
+  ],
+  "zhang-jiao_dark-sorcery": [
+    "en",
+    "vi"
+  ],
+  "zhang-jiao_lightning-strike": [
+    "en",
+    "vi"
+  ],
+  "zhang-liao_sudden-strike": [
+    "en",
+    "vi"
+  ],
+  "zhang-zhao-and-zhang-hong_blunt-advice": [
+    "en",
+    "vi"
+  ],
+  "zhang-zhao-and-zhang-hong_stabilization": [
+    "en",
+    "vi"
+  ],
+  "zhao-yun_dragon-heart": [
+    "en",
+    "vi"
+  ],
+  "zhen-ji_goddess-luo": [
+    "en",
+    "vi"
+  ],
+  "zhen-ji_stunning-beauty": [
+    "en",
+    "vi"
+  ],
+  "zhou-tai_refuting-death": [
+    "en",
+    "vi"
+  ],
+  "zhou-yu_heroic-demeanor": [
+    "en",
+    "vi"
+  ],
+  "zhou-yu_sow-dissension": [
+    "en",
+    "vi"
+  ],
+  "zhu-rong_fearsome-blade": [
+    "en",
+    "vi"
+  ],
+  "zhu-rong_giant-elephant": [
+    "en",
+    "vi"
+  ],
+  "zhuge-liang_empty-city": [
+    "en",
+    "vi"
+  ],
+  "zhuge-liang_star-gazing": [
+    "en",
+    "vi"
+  ],
+  "zou-shi_femme-fatale": [
+    "en",
+    "vi"
+  ],
+  "zou-shi_impetus-for-conflicts": [
+    "en",
+    "vi"
+  ]
+}

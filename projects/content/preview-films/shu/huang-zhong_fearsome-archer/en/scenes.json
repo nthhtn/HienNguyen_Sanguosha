@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "shu",
+  "palettes": {
+    "main": "#d84a3f",
+    "ground": "#2B1613",
+    "second": "#F6EBE8",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#2B1613",
+  "fonts": {
+    "display": {
+      "family": "Zilla Slab",
+      "or": "fraunces-display"
+    },
+    "sans": "instrument-sans"
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Huang Zhong: Fearsome Archer",
+      "dur": 5.8,
+      "desc": "Huang Zhong makes a Sha that cannot be answered with a Shan."
+    }
+  ]
+}

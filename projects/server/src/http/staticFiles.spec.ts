@@ -218,6 +218,27 @@ describe('static delivery: compression, validators, ranges and caching', () => {
     });
   });
 
+  describe('content types', () => {
+    it.each([
+      ['preview.mp4', 'video/mp4'],
+      ['music.ogg', 'audio/ogg'],
+      ['skin.webp', 'image/webp'],
+      ['font.woff2', 'font/woff2'],
+      ['font.woff', 'font/woff'],
+    ])('sends %s as %s', async (name, type) => {
+      writeFileSync(join(dir, name), Buffer.alloc(64, 3));
+      expect((await get(`/${name}`)).headers['content-type']).toBe(type);
+    });
+
+    it('sends a video that can be seeked: a range of an mp4 is a 206 with the video type', async () => {
+      writeFileSync(join(dir, 'preview.mp4'), Buffer.alloc(1000, 5));
+      const res = await get('/preview.mp4', { range: 'bytes=0-99' });
+      expect(res.statusCode).toBe(206);
+      expect(res.headers['content-type']).toBe('video/mp4');
+      expect(res.headers['content-range']).toBe('bytes 0-99/1000');
+    });
+  });
+
   describe('Content-Length and HEAD', () => {
     it('sends the length of the file', async () => {
       expect((await get('/music.ogg')).headers['content-length']).toBe('100');

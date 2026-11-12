@@ -1,9 +1,11 @@
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
+import previewIndex from '../../assets/preview/index.json';
+import { wikiKingdomWarsGenerals } from './wikiKingdomWarsGenerals';
 import { generalsData } from '../../data/generals';
 import { kingdomWarsGeneralIds } from './kingdomWarsGenerals';
 import { kingdomWarsGeneralId } from './generalIds';
-import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from './assets';
+import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls, skillFileId, skillPreviewUrl } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /images/ URL for a crawled id', () => {
@@ -80,6 +82,81 @@ describe('generalDeathVoiceUrl', () => {
   it('is null for a General with no skin or no recording', () => {
     expect(generalDeathVoiceUrl('does-not-exist')).toBeNull();
     expect(generalDeathVoiceUrl('zuo-ci')).toBeNull();
+  });
+});
+
+describe('skillFileId', () => {
+  it('joins the lower-case words of a skill name with hyphens', () => {
+    expect(skillFileId('Refuting Death')).toBe('refuting-death');
+    expect(skillFileId('  Eight Trigrams! ')).toBe('eight-trigrams');
+  });
+});
+
+describe('skillPreviewUrl', () => {
+  const index = { 'zhou-tai_refuting-death': ['en', 'vi'], 'cao-cao_villainous-hero': ['en'] };
+
+  it('files each video under its General\'s force, named by General, skill and language', () => {
+    expect(skillPreviewUrl('zhou-tai', 'Refuting Death', 'vi', 'Wu', index)).toBe('/preview/wu/zhou-tai_refuting-death_vi.mp4');
+    expect(skillPreviewUrl('zhou-tai', 'Refuting Death', 'en', 'Wu', index)).toBe('/preview/wu/zhou-tai_refuting-death_en.mp4');
+  });
+
+  it('writes the force in lower case, whichever way it is given', () => {
+    expect(skillPreviewUrl('cao-cao', 'Villainous Hero', 'en', 'Wei', index)).toBe('/preview/wei/cao-cao_villainous-hero_en.mp4');
+    expect(skillPreviewUrl('cao-cao', 'Villainous Hero', 'en', 'wei', index)).toBe('/preview/wei/cao-cao_villainous-hero_en.mp4');
+  });
+
+  it('falls back to English when the language has no video', () => {
+    expect(skillPreviewUrl('cao-cao', 'Villainous Hero', 'vi', 'Wei', index)).toBe('/preview/wei/cao-cao_villainous-hero_en.mp4');
+  });
+
+  it('gives a Kingdom Wars id and its base id the same video', () => {
+    expect(skillPreviewUrl('kingdomWars:zhou-tai', 'Refuting Death', 'en', 'Wu', index)).toBe(skillPreviewUrl('zhou-tai', 'Refuting Death', 'en', 'Wu', index));
+  });
+
+  it('is null for a skill with no video', () => {
+    expect(skillPreviewUrl('zhou-tai', 'Roar', 'en', 'Wu', index)).toBeNull();
+    expect(skillPreviewUrl('zhou-tai', 'Refuting Death', 'en', 'Wu', {})).toBeNull();
+  });
+});
+
+describe('the preview videos', () => {
+  const previewRoot = join(__dirname, '../../assets/preview');
+  const index = previewIndex as Record<string, string[]>;
+  const entries = Object.entries(index);
+  const generals = wikiKingdomWarsGenerals();
+  const skills = new Set(generals.flatMap((g) => g.skills.map((s) => `${g.id}_${skillFileId(s.name)}`)));
+  // A video lives in the folder of its General's force (the General's id is the start of the key).
+  const folderOf = (key: string): string => {
+    const general = generals.find((g) => key.startsWith(`${g.id}_`));
+    if (!general) throw new Error(`No Kingdom Wars General for the preview ${key}`);
+    return general.kingdom.toLowerCase();
+  };
+
+  it.each(entries)('%s lists only videos that are on disk, in its General\'s force folder', (key, languages) => {
+    expect(languages.length).toBeGreaterThan(0);
+    for (const language of languages) expect(existsSync(join(previewRoot, folderOf(key), `${key}_${language}.mp4`))).toBe(true);
+  });
+
+  it.each(entries)('%s is a skill of a Kingdom Wars General', (key) => {
+    expect(skills.has(key)).toBe(true);
+  });
+
+  it('has no video file the index leaves out, and none outside a force folder', () => {
+    const listed = entries.flatMap(([key, languages]) => languages.map((language) => `${folderOf(key)}/${key}_${language}.mp4`));
+    const onDisk = ['wei', 'shu', 'wu', 'qun'].flatMap((force) =>
+      existsSync(join(previewRoot, force)) ? readdirSync(join(previewRoot, force)).filter((f) => f.endsWith('.mp4')).map((f) => `${force}/${f}`) : [],
+    );
+    expect(onDisk.sort()).toEqual([...listed].sort());
+    expect(readdirSync(previewRoot).filter((name) => name.endsWith('.mp4'))).toEqual([]);
+  });
+
+  it('gives each listed skill a URL that points at a file', () => {
+    for (const key of Object.keys(index)) {
+      const general = generals.find((g) => key.startsWith(`${g.id}_`))!;
+      const skill = general.skills.find((s) => skillFileId(s.name) === key.slice(general.id.length + 1));
+      expect(skill).toBeDefined();
+      expect(existsSync(join(previewRoot, '..', skillPreviewUrl(general.id, skill!.name, 'en', general.kingdom)!))).toBe(true);
+    }
   });
 });
 

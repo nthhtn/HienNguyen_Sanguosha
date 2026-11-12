@@ -10,6 +10,8 @@ from .recipes import load_recipes
 DEFAULT_CROP_QUALITY = 92
 DEFAULT_IMAGE_QUALITY = 85
 DEFAULT_ALPHA_QUALITY = 100
+DEFAULT_VIDEO_CRF = 24
+DEFAULT_VIDEO_PRESET = 'slow'
 
 
 class BuildError(Exception):
@@ -34,6 +36,43 @@ def image_file(src: Path, dest: Path, ext: str, quality: int, alpha_quality: int
         converted = _shrink(image.convert('RGBA' if has_alpha else 'RGB'), max_width)
     Path(dest).parent.mkdir(parents=True, exist_ok=True)
     converted.save(dest, ext.upper(), quality=quality, alpha_quality=alpha_quality, method=5)
+
+
+def _probe_fps(src: Path) -> float:
+    import subprocess
+
+    result = subprocess.run(
+        ['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=avg_frame_rate', '-of', 'csv=p=0', str(src)],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True,
+    )
+    text = result.stdout.strip()
+    if result.returncode != 0 or '/' not in text:
+        raise ValueError('could not read the video {}: {}'.format(Path(src).name, (result.stderr.strip() or 'no video stream')[-300:]))
+    num, den = text.split('/')[:2]
+    return float(num) / float(den) if float(den) else 0.0
+
+
+def video_file(src: Path, dest: Path, max_width: Optional[int] = None, fps: Optional[int] = None, crf: int = DEFAULT_VIDEO_CRF, preset: str = DEFAULT_VIDEO_PRESET) -> None:
+    """Re-encode a master video as H.264 yuv420p MP4 with the index first, silent: scaled down to max_width (even size,
+    never up) and with the frame rate capped at fps (a slower source is left alone). Needs ffmpeg and ffprobe."""
+    import shutil
+    import subprocess
+
+    if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):
+        raise ValueError('ffmpeg is needed to build videos and was not found on PATH (macOS: brew install ffmpeg; Ubuntu: sudo apt-get install ffmpeg)')
+    filters = []
+    if max_width:
+        filters.append("scale=w='trunc(min(iw,{})/2)*2':h=-2:flags=lanczos".format(max_width))
+    if fps and _probe_fps(src) > fps + 0.01:
+        filters.append('fps={}'.format(fps))
+    Path(dest).parent.mkdir(parents=True, exist_ok=True)
+    command = ['ffmpeg', '-v', 'error', '-y', '-i', str(src)]
+    if filters:
+        command += ['-vf', ','.join(filters)]
+    command += ['-c:v', 'libx264', '-preset', preset, '-crf', str(crf), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', str(dest)]
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    if result.returncode != 0:
+        raise ValueError('ffmpeg could not convert {}: {}'.format(Path(src).name, result.stderr.strip()[-300:]))
 
 
 def crop_file(src: Path, dest: Path, box: List[int], quality: int, ext: str = 'jpg', max_width: Optional[int] = None) -> None:
@@ -68,6 +107,9 @@ def _run(layout: Layout, output: Output) -> None:
     elif output.op == 'image':
         recipe = load_recipes(layout.recipes_file)[output.recipe_key]
         image_file(layout.src / output.sources[0], dest, recipe['ext'], recipe.get('quality', DEFAULT_IMAGE_QUALITY), recipe.get('alphaQuality', DEFAULT_ALPHA_QUALITY), recipe.get('maxWidth'))
+    elif output.op == 'video':
+        recipe = load_recipes(layout.recipes_file)[output.recipe_key]
+        video_file(layout.src / output.sources[0], dest, recipe.get('maxWidth'), recipe.get('fps'), recipe.get('crf', DEFAULT_VIDEO_CRF), recipe.get('preset', DEFAULT_VIDEO_PRESET))
     elif output.op == 'crop':
         recipe = load_recipes(layout.recipes_file)[output.recipe_key]
         crop_file(layout.src / output.sources[0], dest, output.settings['box'], recipe.get('quality', DEFAULT_CROP_QUALITY), recipe['ext'], recipe.get('maxWidth'))

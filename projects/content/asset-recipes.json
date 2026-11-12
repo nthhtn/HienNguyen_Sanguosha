@@ -27,6 +27,7 @@
   "playing-cards": { "op": "copy" },
   "playing-cards/cropped": { "op": "crop", "from": "playing-cards/full", "ext": "webp", "quality": 85, "maxWidth": 320 },
   "playing-cards/full": { "op": "image", "ext": "webp", "quality": 85, "maxWidth": 320 },
-  "preview": { "op": "master-only" },
+  "preview": { "op": "video", "ext": "mp4", "maxWidth": 960, "fps": 60, "crf": 24, "preset": "slow" },
+  "preview/index.json": { "op": "copy" },
   "ui": { "op": "copy" }
 }

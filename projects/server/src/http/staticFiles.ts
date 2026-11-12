@@ -20,7 +20,9 @@ const CONTENT_TYPES: Record<string, string> = {
   '.ico': 'image/x-icon',
   '.mp3': 'audio/mpeg',
   '.ogg': 'audio/ogg',
+  '.mp4': 'video/mp4',
   '.woff2': 'font/woff2',
+  '.woff': 'font/woff',
 };
 
 // Angular names build files like `chunk-B2THbeNN.js` or `media/roboto-latin-300-normal-ZNJYGCVX.woff2`: the hash

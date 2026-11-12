@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wu",
+  "palettes": {
+    "main": "#2f9e58",
+    "ground": "#0E2A1D",
+    "second": "#E8F3EC",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0E2A1D",
+  "fonts": {
+    "display": {
+      "family": "Zilla Slab",
+      "or": "fraunces-display"
+    },
+    "sans": "instrument-sans"
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Lu Xun: Scrutinize",
+      "dur": 7.8,
+      "desc": "Lu Xun uses a red hand card as an Amass; each seat of his Kingdom draws 2 and discards 2."
+    }
+  ]
+}

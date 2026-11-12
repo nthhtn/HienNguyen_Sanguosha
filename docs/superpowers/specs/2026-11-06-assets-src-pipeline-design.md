@@ -63,7 +63,7 @@ projects/content/
     audio/...
     manifest.json                  hand-maintained provenance (moved from assets/)
     generals/skins/skins.json      hand-maintained id-to-skin map (moved from assets/)
-    preview/                       skill preview videos, when they exist (never shipped)
+    preview/                       skill preview videos and index.json (copied by the build; see the note below)
   asset-recipes.json               one entry per folder
   asset-crops.json                 crop box per playing card
   assets/                          GENERATED. what ships. includes asset-lock.json
@@ -189,7 +189,10 @@ slows every build, and hides the shipped output from review.
    `.dockerignore` line keeps the masters out of both. `angular.json` globs name
    `projects/content/assets`, so they cannot reach `assets-src/`. The lock lists every file in
    `assets/`, including the copied `manifest.json` and `skins.json`, as copies from
-   `assets-src/`. Both the build and the check ignore `assets-src/preview/`.
+   `assets-src/`. (Amended 2026-11-09: the Wiki plays the preview videos, so they do ship. The masters live in
+   `assets-src/preview/<force>/` with `index.json`, the build copies `index.json`, and the videos are
+   re-encoded to the size the Wiki shows, by the `video` recipe in `2026-11-09-preview-video-design.md`. They
+   are no longer ignored.)
 8. **Skills and the dry read.** The skills are developer instructions, not UI text, so the UI
    text rules do not apply to them. The dry read is a manual step while building this stage:
    add a temporary master pair following the new `add-general` steps, build, run the check,

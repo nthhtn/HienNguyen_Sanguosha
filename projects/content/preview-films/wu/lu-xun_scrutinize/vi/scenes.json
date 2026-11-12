@@ -1,0 +1,40 @@
+{
+  "v": 1,
+  "stage": "final",
+  "look": "wu",
+  "palettes": {
+    "main": "#2f9e58",
+    "ground": "#0E2A1D",
+    "second": "#E8F3EC",
+    "accent": "#E0A93B"
+  },
+  "theirs": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#0E2A1D",
+  "fonts": {
+    "display": {
+      "family": "Merriweather",
+      "weights": [
+        400,
+        700
+      ]
+    },
+    "sans": {
+      "family": "Be Vietnam Pro",
+      "weights": [
+        400,
+        700
+      ]
+    }
+  },
+  "scenes": [
+    {
+      "id": "demo",
+      "name": "Lục Tốn: Độ thế",
+      "dur": 7.8,
+      "desc": "Lục Tốn dùng một lá đỏ trên tay làm Dĩ Dật Đãi Lao; mỗi người chơi cùng thế lực rút 2 rồi bỏ 2."
+    }
+  ]
+}
