@@ -151,11 +151,22 @@ export type TriggerPoint = `before:${string}` | `after:${string}`;
 // triggers. (The domain name is AbilityOwner.)
 export type TriggerOwner = AbilityOwner;
 
+// A use of a card on a seat, as a bot sees it before playing (read by bots only; the engine never does).
+export interface CardUse {
+  card: UsedCard;
+  userSeatId: string;
+  targetSeatId: string;
+}
+
 export interface SkillTrigger {
   point: TriggerPoint;
   // `registry` lets content read worn cards' abilities (e.g. Black Pommel).
   condition(state: GameState, subject: unknown, owner?: TriggerOwner, registry?: ContentRegistry): boolean;
   effect(state: GameState, subject: unknown, owner?: TriggerOwner, registry?: ContentRegistry): unknown[];
+  // Whether this trigger, owned by `ownerSeatId`, makes `use` have no effect (read by bots only).
+  stops?(state: GameState, use: CardUse, ownerSeatId: string, registry: ContentRegistry): boolean;
+  // What this trigger makes `use` cost its user besides the card (read by bots only).
+  extraCost?(state: GameState, use: CardUse, ownerSeatId: string, registry: ContentRegistry): { basicCards: number } | null;
 }
 
 // Rule changes a worn card gives its wearer. Content's queries read them; the

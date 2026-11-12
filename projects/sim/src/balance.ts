@@ -22,6 +22,7 @@ export interface BalanceGame {
   leaderWon: boolean;
   deaths: number; // seats eliminated in the game
   hpLost: number; // damage taken, summed over all seats
+  wasted: number; // plays that did nothing: no-effect abilities, and answers to a card whose damage landed anyway
 }
 
 export interface BalanceReport {
@@ -42,6 +43,23 @@ function hpLostIn(state: GameState): number {
   for (const event of state.log) {
     if (event.kind === 'DamageDealtEvent' && event.damage.target.kind === 'seat') total += event.damage.amount;
   }
+  return total;
+}
+
+// Wasted plays: each no-effect ability use, plus each answer (a card played in response to card C) that was followed
+// by damage from C on the answering seat.
+export function wastedIn(state: GameState): number {
+  let total = 0;
+  state.log.forEach((event, i) => {
+    if (event.kind === 'AbilityUsedEvent' && event.outcome === 'no-effect') total += 1;
+    if (event.kind !== 'CardPlayedEvent') return;
+    const answered = event.inResponseTo?.cardInstanceId;
+    if (answered === undefined) return;
+    const hit = state.log.slice(i + 1).some(
+      (later) => later.kind === 'DamageDealtEvent' && later.damage.target.seatId === event.seatId && later.damage.cause?.cardInstanceId === answered
+    );
+    if (hit) total += 1;
+  });
   return total;
 }
 
@@ -78,6 +96,7 @@ export function runBalance(config: BalanceConfig): BalanceReport {
       leaderWon: everLed !== null && winners.includes(everLed),
       deaths: finalState.seats.filter((s) => s.eliminated).length,
       hpLost: hpLostIn(finalState),
+      wasted: wastedIn(finalState),
     });
   }
   const led = games.filter((game) => game.everLed !== null);
@@ -88,6 +107,7 @@ export interface BalanceComparison {
   leaderWonDiff: Interval;
   deathsDiff: Interval;
   hpLostDiff: Interval;
+  wastedDiff: Interval;
 }
 
 // A minus B, paired by seed; the leader-won difference only over seeds where both had a leader.
@@ -102,6 +122,7 @@ export function compareBalance(a: BalanceReport, b: BalanceReport): BalanceCompa
     leaderWonDiff: interval(led.map((p) => Number(p.a.leaderWon) - Number(p.b.leaderWon))),
     deathsDiff: interval(pairs.map((p) => p.a.deaths - p.b.deaths)),
     hpLostDiff: interval(pairs.map((p) => p.a.hpLost - p.b.hpLost)),
+    wastedDiff: interval(pairs.map((p) => p.a.wasted - p.b.wasted)),
   };
 }
 
@@ -138,5 +159,6 @@ export function formatComparison(c: BalanceComparison): string {
     `Leader won, A minus B: ${fmt(c.leaderWonDiff, 3)} games`,
     `Deaths per game, A minus B: ${fmt(c.deathsDiff)} games`,
     `HP lost per game, A minus B: ${fmt(c.hpLostDiff)} games`,
+    `Wasted plays per game, A minus B: ${fmt(c.wastedDiff)} games`,
   ].join('\n');
 }

@@ -401,3 +401,25 @@ plan.
 - The legacy per-skill targeting in `skills.ts`, `wind.ts`, `fire.ts`,
   `forest.ts` and `mountain.ts` is not yet on the ranker: those skills sort by
   HP and keep today's notion of foe. Moving them is a follow-up.
+
+### Part 3 — No wasted plays
+
+Full results in `docs/superpowers/specs/2026-11-11-kingdom-wars-bots-part-3-design.md`
+(Results). Challenger `rule-based-waste` against `rule-based-v5`, 6 seats,
+seed ranges 1500000 and 1600000, after three tuning sets of the exposure
+weights on the first range.
+
+**Verdict: fails, not shipped.** Wasted plays per game drop clearly (-3.66 and
+-3.91, every interval below 0), HP lost and leader-won are not wholly above 0,
+and the 8-seat time is 1.10x of `rule-based-v3`. But the mirrored tournament's
+seat share is wholly below 0 on both ranges (-4.2 pp, -5.1 to -3.2; -5.2 pp,
+-6.1 to -4.2): next to the old bot, the bot that holds its cards and takes
+hits wins fewer seats. `rule-based` is unchanged (equal to `rule-based-v5`).
+
+**Without rule C** (`rule-based-waste-no-c`: A, B, D and E on, rule C off, no
+tuning, same bar and seeds): passes every gate. Wasted plays -3.23 and -3.48 per
+game (intervals below 0), HP lost and leader-won not wholly above 0, tournament
+seat share +1.6 pp (0.7 to 2.5) and +1.4 pp (0.5 to 2.2), 1.30x time.
+**Shipped on 2026-11-12:** `rule-based` is now Part 3 without rule C; rule C
+stays off behind `answerRule` for a later rework.
+

@@ -99,6 +99,73 @@ export function attackable(view: GameState, me: Seat, seat: Seat, rank: TargetRa
   return !isAlly(me, seat, view) && rank(view, me, seat) !== HOLD_FIRE;
 }
 
+// Whether the bot may harm `seat` with a legacy skill pick: a non-ally, and, given a ranker, one it does not
+// hold fire on (rule E1). Without a ranker (the frozen policies) any non-ally, as before.
+export function mayHarm(view: GameState, me: Seat, seat: Seat, rank: TargetRanker | undefined): boolean {
+  return rank ? attackable(view, me, seat, rank) : !isAlly(me, seat, view);
+}
+
+// The legacy order of a harmful pick: the lowest HP first, then seat order.
+export const lowestHpFirst = (a: Seat, b: Seat): number => a.combinedHp - b.combinedHp || a.index - b.index;
+
+// Rule E1: the legacy per-skill picks that choose a seat to harm (E2: picks that help a seat keep their own
+// logic). Each routes its candidates through rankHarmTargets (or mayHarm, for a yes/no ask about a seat or
+// about whether such a seat exists), and the picks that aim the bot's own card at the seat also drop seats
+// targetWasted names (E3, via harmTargetsOf in waste.ts):
+//   skills.ts   wantsSkill kingdomWars:dauntless (a fixed seat)
+//   skills.ts   wantsSkill unyielding (a fixed seat)
+//   skills.ts   wantsSkill kingdomWars:insanity-axe (a fixed seat)
+//   skills.ts   wantsSkill kingdomWars:deathly-counsel (a seat exists)
+//   skills.ts   wantsSkill kingdomWars:double-edged (a seat exists)
+//   skills.ts   wantsSkill raid (seats exist)
+//   skills.ts   wantsSkill displace (a seat exists)
+//   skills.ts   devilCard devil (a harmful Judgment)
+//   skills.ts   devilCard dark-magic (a harmful Judgment)
+//   skills.ts   skillSelection kingdomWars:swift-and-deadly (the seat its Sha will reach)
+//   skills.ts   skillSelection sow-revolt
+//   skills.ts   skillChoice kingdomWars:deathly-counsel
+//   skills.ts   skillChoice kingdomWars:double-edged (its Sha)
+//   skills.ts   skillChoice displace
+//   skills.ts   skillChoice sow-discord (the first pick)
+//   skills.ts   wantsActive kingdomWars:swift-and-deadly (a seat exists)
+//   skills.ts   wantsActive sow-revolt (a seat exists)
+//   skills.ts   wantsActive sow-discord (a seat exists)
+//   wind.ts     wantsWind godspeed (a seat exists)
+//   wind.ts     wantsWind strong-bow (a fixed seat)
+//   wind.ts     windChoice godspeed (its Sha)
+//   wind.ts     windChoice fantasy
+//   wind.ts     windChoice lightning-strike
+//   fire.ts     wantsFire sudden-attack (a fixed seat)
+//   fire.ts     wantsFire dueling-heroes (a seat exists)
+//   fire.ts     wantsFireActive assault (a seat exists)
+//   fire.ts     wantsFireActive rouse-the-tiger (a victim exists)
+//   fire.ts     wantsFireActive heavens-justice (a seat exists)
+//   fire.ts     fireSelection heavens-justice
+//   fire.ts     fireSelection rouse-the-tiger (only seats with a victim in reach)
+//   fire.ts     fireChoice assault
+//   fire.ts     fireChoice rouse-the-tiger (the victim)
+//   forest.ts   forestChoice exile
+//   forest.ts   forestChoice upheaval
+//   forest.ts   forestChoice alliance (the partner)
+//   forest.ts   wantsForestActive alliance (a pair exists)
+//   forest.ts   forestSelection alliance (the ally of a pair)
+//   forest.ts   upheavalVictimIsFoe upheaval (its forced Sha)
+//   forest.ts   upheavalVictimIsFoe instigate (its forced Sha)
+//   mountain.ts bestMove clever-change (the seat a delayed Tool moves onto, the seat a worn card moves off)
+//   mountain.ts wantsMountain clever-change (seats exist)
+//   mountain.ts wantsMountainActive instigate (a seat exists)
+//   mountain.ts mountainSelection clever-change (draw-take)
+//   mountain.ts mountainSelection instigate
+// Left out: help picks (E2); Upheaval's own use (it hits every other seat, as a mass card, A3); the order of
+// Rouse the Tiger's compete seat (it is not the seat harmed).
+// With `rank`: the attackable seats among `ids`, best first. Without: every seat among `ids` in `fallback`'s
+// order (today's order, so the frozen policies are unchanged).
+export function rankHarmTargets(view: GameState, me: Seat, ids: readonly string[], rank: TargetRanker | undefined, fallback: (a: Seat, b: Seat) => number): Seat[] {
+  const seats = ids.map((id) => view.seats.find((s) => s.id === id)).filter((s): s is Seat => !!s);
+  if (!rank) return seats.sort(fallback);
+  return seats.filter((s) => attackable(view, me, s, rank)).sort((a, b) => rank(view, me, b) - rank(view, me, a) || a.index - b.index);
+}
+
 // A target template filled for the bot: attackable seats, best first by `rank`, up to
 // the maximum; null when none qualifies. Any other action comes back as it is.
 export function fillPick<A extends { targets: Target[]; pickTargets?: TargetPick }>(view: GameState, me: Seat, action: A, rank: TargetRanker): A | null {

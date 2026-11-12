@@ -1,8 +1,8 @@
-import type { Action, ContentRegistry, GameState, Seat } from 'engine';
-import { conversionsOf, findSkill, sameAbilityOwner } from 'engine';
+import type { Action, ContentRegistry, Effect, GameState, PendingChoice, Seat } from 'engine';
+import { conversionsOf, findSkill, handLimit, sameAbilityOwner } from 'engine';
 import { baseSkillId } from 'content';
 import { BotDecision, BotPolicy, BotTurnMemory, MAX_BOT_ACTIONS_PER_TURN } from './policy';
-import { attackable, definitionIdOf, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, RankerFactory, TargetRanker, weakestFirst } from './helpers';
+import { attackable, definitionIdOf, handCards, isShaCard, fillPick, fillSelection, isAlly, keepRank, leastUseful, RankerFactory, TargetRanker, weakestFirst } from './helpers';
 import { tableRank } from './table-rank';
 import { massAttackWorthIt, relationOf } from './table';
 import { dangerOf } from './danger';
@@ -13,6 +13,8 @@ import { NO_RESPONSE_RULES, ResponseRules, shouldHoldShan, wuxieWorthCancelling 
 import { upheavalVictimIsFoe } from './forest';
 import { BotFeatures, BotRule, BotRuleContext, NO_FEATURES } from './rules/registry';
 import { KINGDOM_WARS_RULES } from './rules/kingdom-wars';
+import { withoutWaste } from './waste';
+import { duelWorthStarting, shouldAnswer } from './answer';
 import { CONVERSION_SKILLS, conversionSpare, pickActiveSkill, skillChoice, skillSelection, wantsSkill } from './skills';
 
 type ChooseGenerals = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -89,11 +91,15 @@ function decide(
   const rank: TargetRanker = 'forRegistry' in ranker ? ranker.forRegistry(registry) : ranker;
   // Target templates filled in (several targets in one pick), or dropped when no attackable seat fits.
   const mine = view.seats.find((s) => s.id === seatId);
-  const legal = offered.flatMap((a): Action[] => {
+  const fromPick = new Set<Action>();
+  const filledLegal = offered.flatMap((a): Action[] => {
     if ((a.kind !== 'PlayCardAction' && a.kind !== 'UseConversionAction') || !a.pickTargets) return [a];
     const filled = mine ? fillPick(view, mine, a, rank) : null;
+    if (filled) fromPick.add(filled);
     return filled ? [filled] : [];
   });
+  // Rules A1, A3, B2: drop plays a visible stop would cancel and costly targets not worth it.
+  const legal = features.noWaste && mine ? withoutWaste(view, mine, filledLegal, registry, rank, fromPick) : filledLegal;
   const mem: BotTurnMemory =
     memory && memory.turnNumber === view.turn.turnNumber
       ? memory
@@ -106,7 +112,12 @@ function decide(
   // A skill id with a registry entry belongs to its rule: the per-skill Identity code (skills.ts and the
   // fire, forest, mountain and wind helpers) skips it, and a hook returning undefined leaves the generic fallback.
   const ruled = (id: string) => ruleFor(features, id) !== undefined;
-  const ruleContext = (self: Seat): BotRuleContext => ({ view, me: self, legal, offered, registry, rank });
+  // Rule D1: the cards the Discard Phase would throw away, spent first by the Tool rules.
+  const surplusOf = (self: Seat) => (features.noWaste ? Math.max(0, handCards(view, self).length - handLimit(view, self.id)) : 0);
+  const ruleContext = (self: Seat): BotRuleContext => ({ view, me: self, legal, offered, registry, rank, surplus: surplusOf(self) });
+  // Rule E1: the legacy per-skill picks rank the seats they harm (and drop HOLD_FIRE ones) only with noWaste;
+  // without, they keep their own order, so the frozen policies decide as before.
+  const legacyRank = features.noWaste ? rank : undefined;
 
   // 1. General selection: highest combined max HP, first on ties.
   if (view.phase === 'GeneralSelection') {
@@ -135,7 +146,7 @@ function decide(
     const ruleId = reason.kind === 'ability' ? reason.abilityId : reason.kind === 'card-effect' ? reason.card.as : undefined;
     const rulePick = ruleFor(features, ruleId)?.select?.(ruleContext(me), selection);
     const skillPick =
-      rulePick ?? (reason.kind === 'ability' && ruled(reason.abilityId) ? null : (fireSelection(view, me, selection, registry) ?? skillSelection(view, me, selection, registry)));
+      rulePick ?? (reason.kind === 'ability' && ruled(reason.abilityId) ? null : (fireSelection(view, me, selection, registry, legacyRank) ?? skillSelection(view, me, selection, registry, legacyRank)));
     if (skillPick === 'cancel' && cancel) return take(cancel);
     if (Array.isArray(skillPick) && skillPick.length >= selection.min) return take({ ...selectTemplate, ids: skillPick });
     if (selection.of === 'seats') {
@@ -165,17 +176,19 @@ function decide(
     if (choiceNow.reason.kind === 'ability' && choiceNow.verb === 'use') {
       const abilityId = choiceNow.reason.abilityId;
       const ruleWants = ruleFor(features, abilityId)?.wantsToUse?.(ruleContext(me), choiceNow);
-      const skillWants = ruled(abilityId) ? null : wantsSkill(view, me, choiceNow, registry);
+      const skillWants = ruled(abilityId) ? null : wantsSkill(view, me, choiceNow, registry, legacyRank);
       // A compulsory skill's ask is only about revealing, and a bot has no reason to hide: it says Use.
       const compulsory = findSkill(registry, abilityId)?.compulsory === true;
-      const wants = compulsory || (ruleWants ?? skillWants ?? wantsToUse(view, me, abilityId, choiceNow.reason.targetSeatId));
+      // Rule D2: an optional ask whose only effect is revealing the General (and the log line) is declined.
+      const revealOnly = features.noWaste && !compulsory && revealsForNothing(choiceNow);
+      const wants = !revealOnly && (compulsory || (ruleWants ?? skillWants ?? wantsToUse(view, me, abilityId, choiceNow.reason.targetSeatId)));
       const pick = choiceActions.find((a) => a.optionId === (wants ? 'use' : 'decline'));
       if (pick) return take(pick);
     }
     // A skill's pick of a seat, a suit or a label, or who gets given cards.
     if (choiceNow.reason.kind === 'ability' && (choiceNow.verb === 'pick' || choiceNow.verb === 'give')) {
       const abilityId = choiceNow.reason.abilityId;
-      const optionId = ruleFor(features, abilityId)?.choose?.(ruleContext(me), choiceNow) ?? (ruled(abilityId) ? null : skillChoice(view, me, choiceNow, registry));
+      const optionId = ruleFor(features, abilityId)?.choose?.(ruleContext(me), choiceNow) ?? (ruled(abilityId) ? null : skillChoice(view, me, choiceNow, registry, legacyRank));
       return take(choiceActions.find((a) => a.optionId === optionId) ?? choiceActions[0]);
     }
     const decline = choiceActions.find((a) => a.optionId === 'decline');
@@ -212,15 +225,17 @@ function decide(
     const reason = view.pendingResponse.reason;
     const self = view.seats.find((s) => s.id === seatId);
     const dying = reason?.kind === 'dying' ? view.seats.find((s) => s.id === reason.seatId) : undefined;
+    // The answers it can give here: answer cards, and conversions made at response time (Dragon Courage...).
+    const answersAvailable = legal.filter((a) => a.kind === 'RespondAction' || (a.kind === 'UseConversionAction' && !!a.pendingResponseId)).length;
     const worthAnswering =
       !reason || reason.kind === 'card-effect'
-        ? true
+        ? !(features.noWaste && features.answerRule) || !self || shouldAnswer(view, self, registry, dangerOf(registry), answersAvailable) // rules C3, C3a
         : reason.kind === 'dying'
           ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying, view) || (features.tableReading && relationOf(view, self, dying) === 'truce'))
           : reason.kind === 'wuxie'
             ? !!self && wuxieWorthCancelling(view, self, reason, responseRules.wuxie)
             : reason.kind === 'ability' && (baseSkillId(reason.abilityId) === 'upheaval' || reason.abilityId === 'instigate')
-              ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId)
+              ? !!self && upheavalVictimIsFoe(view, self, reason.targetSeatId, baseSkillId(reason.abilityId) === 'upheaval' ? undefined : legacyRank)
               : false; // never counter a Wuxie Kongjie
     const answers = legal.filter((a): a is Extract<Action, { kind: 'RespondAction' }> => a.kind === 'RespondAction');
     // The first rule whose card is among the answers picks which one to give; then a Peach before anything
@@ -291,7 +306,7 @@ function decide(
 
     const earlyRule = rulePlay('early');
     if (earlyRule) return take(earlyRule);
-    const early = pickActiveSkill(view, self, unruled, registry, 'early');
+    const early = pickActiveSkill(view, self, unruled, registry, 'early', legacyRank);
     if (early) return take(early);
 
     // Barbarians and Hail of Arrows hit everyone else: only worth it when
@@ -379,10 +394,12 @@ function decide(
       .sort((x, y) => rank(view, self, y.target) - rank(view, self, x.target) || x.target.index - y.target.index)
       .map((t) => t.a);
     if (conversion && conversionSpare(view, self, conversion, registry)) return take(conversion, 1);
-    const [duel] = targetedPlays(view, self, plays, 'duel', rank, registry);
+    // Rule C4: no Duel on a seat expected to outlast the bot (only with noWaste).
+    const duelWorth = (target: Seat | undefined) => !(features.noWaste && features.answerRule) || (!!target && duelWorthStarting(view, self, target, registry));
+    const [duel] = targetedPlays(view, self, plays, 'duel', rank, registry).filter((p) => duelWorth(view.seats.find((s) => s.id === p.targets[0]?.seatId)));
     if (duel) return take(duel);
     // Dueling Heroes: a Duel from an opposite-colour card, at the weakest non-ally.
-    const [duelVia] = conversionsAs('duel').sort(byWeakest);
+    const [duelVia] = conversionsAs('duel').filter((a) => duelWorth(targetSeat(a))).sort(byWeakest);
     if (duelVia) return take(duelVia);
     // Coerce: when one attackable seat's weapon can reach another.
     const coerce = plays.find((p) => {
@@ -393,7 +410,7 @@ function decide(
     if (coerce) return take(coerce);
     const lateRule = rulePlay('late');
     if (lateRule) return take(lateRule);
-    const late = pickActiveSkill(view, self, unruled, registry, 'late');
+    const late = pickActiveSkill(view, self, unruled, registry, 'late', legacyRank);
     if (late) return take(late);
     if (endPhase) return take(endPhase);
   }
@@ -401,6 +418,15 @@ function decide(
   // 6. Fallback: never stall.
   return take(endPhase ?? legal.find((a) => a.kind === 'PassAction') ?? legal[0]);
 }
+
+// Whether `effects` do nothing but reveal a General and log the use (no draw, heal, damage, card move or next step).
+const onlyReveals = (effects: Effect[]) => effects.every((e) => e.kind === 'RevealGeneralEffect' || e.kind === 'AbilityUsedEffect');
+// Rule D2: a hidden General's optional ask where Use only reveals it (and logs) and Decline changes nothing else.
+const revealsForNothing = (choice: PendingChoice) => {
+  const use = choice.options.find((o) => o.id === 'use');
+  const decline = choice.options.find((o) => o.id === 'decline');
+  return !!use && use.effects.some((e) => e.kind === 'RevealGeneralEffect') && onlyReveals(use.effects) && onlyReveals(decline?.effects ?? []);
+};
 
 // Simple, explainable opponent; see the bot-opponents design spec for its rules.
 // The ranker decides which non-ally a targeted play goes to (a RankerFactory is built per decision).
@@ -411,8 +437,9 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFac
 // Stage 4 shipped: General pairs are chosen with the measured value table (max HP breaks ties). Kingdom Wars
 // Part 1 shipped: the rule registry decides when each Kingdom Wars card and skill is worth using. Kingdom Wars
 // Part 2 shipped: the bot reads the table (forces, the leading force, truce partners) and ranks targets by it
-// (tableRank, rule 6).
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true });
+// (tableRank, rule 6). Kingdom Wars Part 3 shipped without rule C: no wasted plays, costly targets, surplus
+// Tools, no reveal for nothing, legacy picks on the ranker; it still answers every hit (answerRule off).
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
 
 // Weakest-first targeting and highest-max-HP General pairs, frozen as a fixed opponent for the tournament
 // harness. 'rule-based-v1' was 'rule-based' before the Stage 4 value table; 'rule-based-v2' is the same bot,
@@ -424,4 +451,13 @@ export const ruleBasedV2Policy: BotPolicy = createRuleBasedPolicy('rule-based-v2
 export const ruleBasedV3Policy: BotPolicy = createRuleBasedPolicy('rule-based-v3', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, NO_FEATURES);
 
 // 'rule-based' as it was at the end of Kingdom Wars Part 1, frozen as the baseline Part 2 was judged against.
-export const ruleBasedV4Policy: BotPolicy = createRuleBasedPolicy('rule-based-v4', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: false });
+export const ruleBasedV4Policy: BotPolicy = createRuleBasedPolicy('rule-based-v4', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: false, noWaste: false, answerRule: false });
+
+// 'rule-based' as it was at the end of Kingdom Wars Part 2, frozen as the baseline Part 3 is judged against.
+export const ruleBasedV5Policy: BotPolicy = createRuleBasedPolicy('rule-based-v5', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: false, answerRule: false });
+
+// Part 3 candidate: 'rule-based' with the no-waste rules on; judged against 'rule-based-v5'.
+export const ruleBasedWastePolicy: BotPolicy = createRuleBasedPolicy('rule-based-waste', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: true });
+
+// Part 3 without rule C: the same bot, but it answers every hit and starts Duels as v5 does.
+export const ruleBasedWasteNoCPolicy: BotPolicy = createRuleBasedPolicy('rule-based-waste-no-c', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });

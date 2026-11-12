@@ -12,7 +12,7 @@ type DamageStep = Extract<Effect, { kind: 'DamageEffect' }>;
 export const woodArmorCard = makeEquipmentCard('wood-armor', 'Wood Armor', 'armor', undefined, {
   abilities: {
     triggers: [
-      stopsSha('wood-armor', (step) => !step.card.nature),
+      stopsSha('wood-armor', (card) => !card.nature),
       {
         point: 'before:DamageEffect',
         condition: (state, subject, owner, registry) => {

@@ -12,6 +12,8 @@ export interface BotRuleContext {
   offered: Action[];
   registry: ContentRegistry;
   rank: TargetRanker;
+  // Hand cards beyond the hand limit, which the Discard Phase would throw away (0 unless `noWaste`). Rule D1.
+  surplus: number;
 }
 
 // One piece of bot knowledge about a card or skill, keyed by its id in a BotRuleRegistry. Every hook is optional;
@@ -47,6 +49,10 @@ export interface BotFeatures {
   rules: BotRuleRegistry | null;
   // Whether the bot reads the table: forces, a leading force and temporary alliances (Part 2).
   tableReading: boolean;
+  // Whether the bot avoids wasted plays and wasted stops (Part 3).
+  noWaste: boolean;
+  // Whether the bot decides to answer a hit or take it, and refuses losing Duels (rule C); only with `noWaste`.
+  answerRule: boolean;
 }
 
-export const NO_FEATURES: BotFeatures = { rules: null, tableReading: false };
+export const NO_FEATURES: BotFeatures = { rules: null, tableReading: false, noWaste: false, answerRule: false };

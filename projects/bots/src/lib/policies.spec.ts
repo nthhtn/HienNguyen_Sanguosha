@@ -1,11 +1,11 @@
 import { policyById, policyIds, registerPolicy } from './policies';
-import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy, ruleBasedV4Policy } from './rule-based';
+import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy, ruleBasedV4Policy, ruleBasedV5Policy, ruleBasedWastePolicy, ruleBasedWasteNoCPolicy } from './rule-based';
 import { isAlly } from './helpers';
 import { act, card, decide, decideWith, table } from './testing';
 
 describe('policy registry', () => {
   it('lists the registered policies', () => {
-    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3', 'rule-based-v4']);
+    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3', 'rule-based-v4', 'rule-based-v5', 'rule-based-waste', 'rule-based-waste-no-c']);
   });
 
   it('looks a policy up by id', () => {
@@ -88,5 +88,55 @@ describe('rule-based-v4', () => {
     const s = fixtures[name]();
     expect(setup[name]?.(s)).not.toBe(false);
     expect(decideWith(ruleBasedV4Policy, s)).toEqual(expected[name]);
+  });
+});
+
+describe('rule-based-v5', () => {
+  it('has the id "rule-based-v5"', () => expect(ruleBasedV5Policy.id).toBe('rule-based-v5'));
+  it('the no-waste variant has the id "rule-based-waste"', () => expect(ruleBasedWastePolicy.id).toBe('rule-based-waste'));
+
+  it('rule-based-waste-no-c answers the Sha like v5 (no rule C)', () => {
+    const s = act(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('d1', 'shan')] }, { hp: { 'seat-b': 4 } }), { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 's1', targets: [{ kind: 'seat', seatId: 'seat-b' }] } as never);
+    expect(decideWith(ruleBasedWasteNoCPolicy, s)).toEqual(decideWith(ruleBasedV5Policy, s));
+    expect(decideWith(ruleBasedWastePolicy, s)).not.toEqual(decideWith(ruleBasedV5Policy, s));
+  });
+
+  // v5 is 'rule-based' as it was at the start of Part 3, frozen: these were its decisions when Part 3 shipped.
+  const fixtures: Record<string, () => ReturnType<typeof table>> = {
+    'General selection': () => ({ ...table(), phase: 'GeneralSelection', generalSelection: { candidates: { 'seat-a': ['cao-cao', 'sun-quan', 'liu-bei', 'guan-yu'] } } }),
+    'dying response': () => ({
+      ...table({ 'seat-b:hand': [card('p1', 'peach')] }, { hp: { 'seat-b': 0 } }),
+      pendingResponse: { id: 'dying-seat-b-0', respondingSeatId: 'seat-b', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['peach'], reason: { kind: 'dying', seatId: 'seat-b' }, context: { effect: { kind: 'DyingEffect', seatId: 'seat-b', order: ['seat-b'], rescueCardIds: { any: ['peach'], self: [] }, entering: false } } },
+    }),
+    'Discard Phase': () => ({ ...table({ 'seat-a:hand': ['a', 'b', 'c', 'd', 'e', 'f'].map((i, n) => card(i, n % 2 ? 'sha' : 'peach')) }), phase: 'Discard' }),
+    'Play Phase with Sha and Steal': () => table({ 'seat-a:hand': [card('s1', 'sha'), card('t1', 'steal')], 'seat-b:hand': [card('x', 'sha')], 'seat-d:hand': [card('y', 'sha')] }, { hp: { 'seat-b': 3, 'seat-d': 2 } }),
+    'Wuxie window': () => {
+      const s = table({ 'seat-a:hand': [card('t1', 'steal')], 'seat-b:hand': [card('x', 'sha')], 'seat-c:hand': [card('w1', 'wuxie')] }, { generals: { 'seat-b': ['filler-sun-ce', 'filler-lu-su'] as [string, string] } });
+      return act(s, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 't1', targets: [{ kind: 'seat', seatId: 'seat-b' }] } as never);
+    },
+    // v5 answers every hit it can; the shipped bot at full HP and not exposed takes it and keeps its Shan (rule C3).
+    'Shan to a Sha': () => {
+      const s = table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('d1', 'shan')] }, { hp: { 'seat-b': 4 } });
+      return act(s, { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 's1', targets: [{ kind: 'seat', seatId: 'seat-b' }] } as never);
+    },
+  };
+  // Each fixture must be the situation its name says, and v5 must make this decision in it.
+  const setup: Record<string, (s: ReturnType<typeof table>) => boolean> = {
+    'dying response': (s) => s.pendingResponse?.reason?.kind === 'dying',
+    'Wuxie window': (s) => s.pendingResponse?.reason?.kind === 'wuxie' && s.pendingResponse.respondingSeatId === 'seat-c',
+    'Shan to a Sha': (s) => s.pendingResponse?.respondingSeatId === 'seat-b' && !!s.pendingResponse.allowedCardIds?.includes('shan'),
+  };
+  const expected: Record<string, object> = {
+    'General selection': { kind: 'ChooseGeneralsAction', seatId: 'seat-a', mainId: 'liu-bei', deputyId: 'guan-yu' },
+    'dying response': { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'dying-seat-b-0', cardInstanceId: 'p1' },
+    'Discard Phase': { kind: 'DiscardCardAction', seatId: 'seat-a', cardInstanceId: 'b' },
+    'Play Phase with Sha and Steal': { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 't1', targets: [{ kind: 'seat', seatId: 'seat-d' }] },
+    'Wuxie window': { kind: 'PassAction', seatId: 'seat-c', pendingResponseId: 'wuxie-check-2-seat-c-steal-t1-seat-b' },
+    'Shan to a Sha': { kind: 'RespondAction', seatId: 'seat-b', pendingResponseId: 'sha-response-s1-seat-b-0', cardInstanceId: 'd1' },
+  };
+  it.each(Object.keys(fixtures))('pins the frozen v5 decision: %s', (name) => {
+    const s = fixtures[name]();
+    expect(setup[name]?.(s)).not.toBe(false);
+    expect(decideWith(ruleBasedV5Policy, s)).toEqual(expected[name]);
   });
 });

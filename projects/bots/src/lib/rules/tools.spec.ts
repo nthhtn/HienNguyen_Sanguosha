@@ -1,7 +1,7 @@
 import type { Action, GameState, Seat } from 'engine';
 import { weakestFirst } from '../helpers';
-import { ruleBasedPolicy } from '../rule-based';
-import { card, decideWith, registry, table } from '../testing';
+import { ruleBasedPolicy, ruleBasedV5Policy } from '../rule-based';
+import { card, decideWaste, decideWith, registry, table } from '../testing';
 import { chainsRule } from './tools';
 
 const decide = (s: GameState) => decideWith(ruleBasedPolicy, s);
@@ -107,7 +107,7 @@ describe('rules/tools: Chains', () => {
     const template: Action = { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'ch', targets: [], pickTargets: { eligibleIds: ['seat-a', 'seat-b'], min: 1, max: 2 } };
     const offered: Action[] = [{ kind: 'EndPhaseAction', seatId: 'seat-a' }, template];
     const me = s.seats.find((seat) => seat.id === 'seat-a')!;
-    expect(chainsRule.play!.pick({ view: s, me, legal: [offered[0]], offered, registry, rank: weakestFirst })).toBeUndefined();
+    expect(chainsRule.play!.pick({ view: s, me, legal: [offered[0]], offered, registry, rank: weakestFirst, surplus: 0 })).toBeUndefined();
   });
 });
 
@@ -145,5 +145,28 @@ describe('rules/tools: a hidden bot never targets itself', () => {
       { generals: { 'seat-a': hidden } },
     );
     expect(seatIdsOf(decide(s))).toEqual(['seat-b']);
+  });
+});
+
+describe('rules/tools: surplus cards (D1)', () => {
+  const spare = (defs: string[]) => defs.map((d, i) => card(`x${i}`, d, 'spade', i + 1));
+  // Alone at 4 HP: Amass is usually kept; five cards in hand leave one over the limit.
+  const alone = (extra: number) => table({ 'seat-a:hand': [card('am', 'amass'), ...spare(Array(extra).fill('shan'))] });
+
+  it('amass: played when alone with a surplus card', () => {
+    expect(decideWaste(alone(4))).toMatchObject({ kind: 'PlayCardAction', cardInstanceId: 'am' });
+  });
+
+  it('amass: kept when alone with no surplus', () => {
+    expect(decideWaste(alone(3)).kind).toBe('EndPhaseAction');
+  });
+
+  it('amass: rule-based-v5 keeps it whatever the surplus', () => {
+    expect(decideWith(ruleBasedV5Policy, alone(4)).kind).toBe('EndPhaseAction');
+  });
+
+  it('harvest: still kept when foes outnumber allies, whatever the surplus', () => {
+    const s = table({ 'seat-a:hand': [card('hv', 'harvest'), ...spare(Array(5).fill('shan'))] });
+    expect(decideWaste(s).kind).toBe('EndPhaseAction');
   });
 });

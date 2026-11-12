@@ -31,3 +31,5 @@ export { BASE_GENERAL_IDS, FIRE_GENERAL_IDS, FOREST_GENERAL_IDS, MOUNTAIN_GENERA
 export { attackRange, seatDistance } from './lib/shared/queries';
 export * from './lib/wikiDistance';
 export * from './lib/skill-danger';
+export { activeAbilities, answersNeededAgainst } from './lib/shared/abilities';
+export { extraCostOf, wouldStop } from './lib/shared/stops';

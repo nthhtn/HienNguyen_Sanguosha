@@ -1,4 +1,4 @@
-import type { ContentRegistry, Effect, GameState, GeneralOwner, SkillTrigger, UsedCard } from 'engine';
+import type { CardUse, ContentRegistry, Effect, GameState, GeneralOwner, SkillTrigger, UsedCard } from 'engine';
 import { atStep, CardStep } from './steps';
 import { discardMoves, on, used } from './skills';
 
@@ -27,7 +27,10 @@ export function cancelsCardsOnOwner(cancels: CancelsCard): SkillTrigger[] {
       condition: (state, s, owner, registry) => owner.kind === 'general' && aimedAtOwner(state, s.card, s.userSeatId, s.target.seatId, owner, registry),
       effect: (state, s, owner) => effect(state, s, owner as GeneralOwner),
     });
-  return [
+  // Declared for bots (rule A2): the same test as `aimedAtOwner`, from a use of the card.
+  const stops = (state: GameState, use: CardUse, ownerSeatId: string, registry: ContentRegistry) =>
+    use.targetSeatId === ownerSeatId && use.userSeatId !== ownerSeatId && cancels(state, use.card, use.userSeatId, ownerSeatId, registry);
+  const triggers = [
     atOwnerStep(SHA_AIMED_STEP, (_state, step, owner) => [cancelled(owner, step.card, step.userSeatId)]),
     atOwnerStep(DELAYED_PLACE_STEP, (state, step, owner) => [
       cancelled(owner, step.card, step.userSeatId),
@@ -38,4 +41,5 @@ export function cancelsCardsOnOwner(cancels: CancelsCard): SkillTrigger[] {
       effect: (_state, effect, owner) => [cancelled(owner, effect.tool, effect.userSeatId)],
     }),
   ];
+  return triggers.map((trigger) => ({ ...trigger, stops }));
 }
