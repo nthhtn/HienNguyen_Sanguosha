@@ -423,3 +423,18 @@ seat share +1.6 pp (0.7 to 2.5) and +1.4 pp (0.5 to 2.2), 1.30x time.
 **Shipped on 2026-11-12:** `rule-based` is now Part 3 without rule C; rule C
 stays off behind `answerRule` for a later rework.
 
+
+### Part 4 — The General value table
+
+Full results in `docs/superpowers/specs/2026-11-12-kingdom-wars-bots-part-4-design.md`
+(Results). Challenger `rule-based-picks-kw` (a Kingdom Wars table refit on
+40,000 games at 4 to 8 seats, plus pair bonuses) against `rule-based-v6`,
+mirrored tournaments, seed ranges 2300000 and 2400000, no tuning.
+
+**Verdict: passes every gate, shipped on 2026-11-12.** Seat share +14.9 pp
+(13.5 to 16.3) and +12.6 pp (11.2 to 14.0) at 6 seats, +13.8 pp (12.7 to 15.0)
+and +12.8 pp (11.7 to 14.0) at 8 seats; own deaths per game down 0.38 to 0.55
+(every interval below 0); synergy share about 19% against 18%; the force
+spread narrows on every run; 8-seat time 1.03x of `rule-based-v3`.
+`rule-based` now picks Kingdom Wars Generals by the refit table; Identity games
+and the danger rating keep `GENERAL_VALUES`.
