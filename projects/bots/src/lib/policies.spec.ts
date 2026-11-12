@@ -1,7 +1,8 @@
 import { policyById, policyIds, registerPolicy } from './policies';
 import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy, ruleBasedV4Policy, ruleBasedV5Policy, ruleBasedV6Policy, ruleBasedPicksKwPolicy, ruleBasedWastePolicy, ruleBasedWasteNoCPolicy } from './rule-based';
 import { isAlly } from './helpers';
-import { act, card, decide, decidePicksKw, decideWith, table } from './testing';
+import { bestPair, KINGDOM_WARS_TABLE, GENERAL_VALUES } from './general-values';
+import { act, card, decide, decidePicksKw, decideWith, registry, table } from './testing';
 
 describe('policy registry', () => {
   it('lists the registered policies', () => {
@@ -184,10 +185,20 @@ describe('rule-based-picks-kw: General selection', () => {
   const selection = () => ({ ...table(), phase: 'GeneralSelection' as const, generalSelection: { candidates: { 'seat-a': ['cao-cao', 'xu-chu', 'guo-jia', 'zhen-ji'].map(kw) } } });
   const pair = (a: ReturnType<typeof decide>) => (a.kind === 'ChooseGeneralsAction' ? [a.mainId, a.deputyId].sort() : []);
 
-  it('picks the pair the Kingdom Wars table plus bonus rates highest (Guo Jia and Zhen Ji)', () => {
-    expect(pair(decidePicksKw(selection()))).toEqual([kw('guo-jia'), kw('zhen-ji')]);
+  const candidates = ['cao-cao', 'xu-chu', 'guo-jia', 'zhen-ji'].map(kw);
+  const choices = candidates.flatMap((main, i) => candidates.slice(i + 1).map((deputy) => ({ kind: 'ChooseGeneralsAction' as const, seatId: 'seat-a', mainId: main, deputyId: deputy })));
+  const expectedPair = (tables: Parameters<typeof bestPair>[0]) => {
+    const best = bestPair(tables, registry, choices);
+    return [best.mainId, best.deputyId].sort();
+  };
+
+  it('picks the pair the Kingdom Wars table plus bonus rates highest', () => {
+    const expected = expectedPair({ identity: GENERAL_VALUES, kingdomWars: KINGDOM_WARS_TABLE });
+    // The fixture only proves something while the two tables disagree on this hand.
+    expect(expected).not.toEqual(expectedPair(GENERAL_VALUES));
+    expect(pair(decidePicksKw(selection()))).toEqual(expected);
   });
-  it('rule-based-v6 picks by the Identity table, by base id (Cao Cao and Xu Chu)', () => {
-    expect(pair(decideWith(ruleBasedV6Policy, selection()))).toEqual([kw('cao-cao'), kw('xu-chu')]);
+  it('rule-based-v6 picks by the Identity table, by base id', () => {
+    expect(pair(decideWith(ruleBasedV6Policy, selection()))).toEqual(expectedPair(GENERAL_VALUES));
   });
 });

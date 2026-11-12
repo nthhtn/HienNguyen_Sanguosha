@@ -21,9 +21,10 @@ const handOf = (state: GameState, seatId: string): string[] =>
 // You are about to play `card`: it is your Play Phase, nothing is pending, and you hold it.
 const aboutToPlay = (card: string) => (s: GameState): boolean => s.phase === 'Play' && getActiveSeatId(s) === 'seat-0' && windowOf(s) === null && handOf(s, 'seat-0').includes(card);
 
-// Seat-1 holds a heart. Blaze: seat-1 shows it, then you may discard a card of the same suit.
+// Seat-1 holds a heart. Blaze: seat-1 shows it, then you may discard a card of the same suit. Seat-1's Generals
+// are fixed (Ji Ling and Yuan Shao, whose skills do not touch Blaze), so the bots' General picks cannot change it.
 const blazeTable = (registry: ContentRegistry, yourSuit: CardInstance['suit']): GameState =>
-  giveSuit(giveSuit(give(bareTable(registry), 'seat-0', ['blaze']), 'seat-0', yourSuit), 'seat-1', 'heart');
+  giveSuit(giveSuit(give(setGenerals(bareTable(registry), registry, 'seat-1', 'kingdomWars:ji-ling', 'kingdomWars:yuan-shao'), 'seat-0', ['blaze']), 'seat-0', yourSuit), 'seat-1', 'heart');
 
 export const NOTICE_SCENARIOS: BoardScenario[] = [
   {

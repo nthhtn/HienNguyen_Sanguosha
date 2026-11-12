@@ -1,5 +1,6 @@
 import type { GameState } from 'engine';
 import { ruleBasedPolicy, ruleBasedV3Policy, ruleBasedV6Policy } from '../rule-based';
+import { GENERAL_VALUES, KINGDOM_WARS_TABLE } from '../general-values';
 import { act, card, decidePicksKw, decideWith, picked, table, useSkill } from '../testing';
 
 const decide = (s: GameState) => decideWith(ruleBasedPolicy, s);
@@ -50,6 +51,11 @@ describe('rules/skills: Zou Shi', () => {
     return picked(d(s));
   };
 
+  it('impetus fixture: the two tables disagree about Cao Cao and Zhen Ji', () => {
+    const kwValue = (id: string) => KINGDOM_WARS_TABLE.values[`kingdomWars:${id}`] ?? 0;
+    expect(kwValue('zhen-ji')).toBeGreaterThan(kwValue('cao-cao'));
+    expect(GENERAL_VALUES['cao-cao'] ?? 0).toBeGreaterThan(GENERAL_VALUES['zhen-ji'] ?? 0);
+  });
   it('impetus: rule-based-picks-kw hides by the Kingdom Wars value', () => {
     expect(impetusChoice(decidePicksKw)).toBe('deputy');
   });
