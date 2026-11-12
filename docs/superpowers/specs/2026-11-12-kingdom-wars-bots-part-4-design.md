@@ -1,6 +1,6 @@
 # Kingdom Wars Bots, Part 4: The General Value Table — Design Spec
 
-Status: Draft, awaiting the developer's approval
+Status: Approved by the developer on 2026-11-12
 Date: 2026-11-12
 Parent: `docs/superpowers/specs/2026-11-11-kingdom-wars-bots-design.md`
 (Part 4 section, "How it is judged", "Where the knowledge lives" and the
