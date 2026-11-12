@@ -1,7 +1,7 @@
 import { policyById, policyIds, registerPolicy } from './policies';
 import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy, ruleBasedV4Policy, ruleBasedV5Policy, ruleBasedV6Policy, ruleBasedPicksKwPolicy, ruleBasedWastePolicy, ruleBasedWasteNoCPolicy } from './rule-based';
 import { isAlly } from './helpers';
-import { act, card, decide, decideWith, table } from './testing';
+import { act, card, decide, decidePicksKw, decideWith, table } from './testing';
 
 describe('policy registry', () => {
   it('lists the registered policies', () => {
@@ -175,5 +175,19 @@ describe('rule-based-v6', () => {
     const s = fixtures[name]();
     expect(setup[name]?.(s)).not.toBe(false);
     expect(decideWith(ruleBasedV6Policy, s)).toEqual(expected[name]);
+  });
+});
+
+// Rule R5: the challenger picks by the Kingdom Wars table and pair bonuses; v6 keeps today's table.
+describe('rule-based-picks-kw: General selection', () => {
+  const kw = (id: string) => `kingdomWars:${id}`;
+  const selection = () => ({ ...table(), phase: 'GeneralSelection' as const, generalSelection: { candidates: { 'seat-a': ['cao-cao', 'xu-chu', 'guo-jia', 'zhen-ji'].map(kw) } } });
+  const pair = (a: ReturnType<typeof decide>) => (a.kind === 'ChooseGeneralsAction' ? [a.mainId, a.deputyId].sort() : []);
+
+  it('picks the pair the Kingdom Wars table plus bonus rates highest (Guo Jia and Zhen Ji)', () => {
+    expect(pair(decidePicksKw(selection()))).toEqual([kw('guo-jia'), kw('zhen-ji')]);
+  });
+  it('rule-based-v6 picks by the Identity table, by base id (Cao Cao and Xu Chu)', () => {
+    expect(pair(decideWith(ruleBasedV6Policy, selection()))).toEqual([kw('cao-cao'), kw('xu-chu')]);
   });
 });

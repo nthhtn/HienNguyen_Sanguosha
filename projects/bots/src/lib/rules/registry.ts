@@ -14,6 +14,8 @@ export interface BotRuleContext {
   rank: TargetRanker;
   // Hand cards beyond the hand limit, which the Discard Phase would throw away (0 unless `noWaste`). Rule D1.
   surplus: number;
+  // A General's table value, from the policy's per-deck tables (rule R5).
+  generalValue: (generalId: string) => number;
 }
 
 // One piece of bot knowledge about a card or skill, keyed by its id in a BotRuleRegistry. Every hook is optional;

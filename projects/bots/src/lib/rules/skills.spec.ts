@@ -1,6 +1,6 @@
 import type { GameState } from 'engine';
-import { ruleBasedPolicy, ruleBasedV3Policy } from '../rule-based';
-import { act, card, decideWith, picked, table, useSkill } from '../testing';
+import { ruleBasedPolicy, ruleBasedV3Policy, ruleBasedV6Policy } from '../rule-based';
+import { act, card, decidePicksKw, decideWith, picked, table, useSkill } from '../testing';
 
 const decide = (s: GameState) => decideWith(ruleBasedPolicy, s);
 const ZOU_SHI = 'kingdomWars:zou-shi';
@@ -32,6 +32,29 @@ describe('rules/skills: Zou Shi', () => {
     expect(picked(decide(s))).toEqual(['seat-b']);
     s = act(s, decide(s));
     expect(picked(decide(s))).toBe('deputy');
+  });
+
+  // Rule R5: seat-b shows Kingdom Wars Cao Cao (Main) and Zhen Ji (Deputy). The Identity table rates Cao Cao
+  // higher; the Kingdom Wars table rates Zhen Ji higher.
+  const kwImpetus = () =>
+    table(
+      { 'seat-a:hand': [card('iw', 'ice-sword')], 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)] },
+      {
+        generals: { 'seat-a': [ZOU_SHI, 'filler-jia-xu'], 'seat-b': ['kingdomWars:cao-cao', 'kingdomWars:zhen-ji', true], 'seat-c': hidden, 'seat-d': hidden },
+        kingdoms: { 'seat-a': 'Qun', 'seat-b': 'Wei' },
+      },
+    );
+  const impetusChoice = (d: (s: GameState) => ReturnType<typeof decide>) => {
+    let s = kwImpetus();
+    for (let i = 0; i < 3; i++) s = act(s, d(s));
+    return picked(d(s));
+  };
+
+  it('impetus: rule-based-picks-kw hides by the Kingdom Wars value', () => {
+    expect(impetusChoice(decidePicksKw)).toBe('deputy');
+  });
+  it('impetus: rule-based-v6 hides by the Identity value', () => {
+    expect(impetusChoice((s) => decideWith(ruleBasedV6Policy, s))).toBe('main');
   });
 
   it('impetus: never discards a worn card', () => {
