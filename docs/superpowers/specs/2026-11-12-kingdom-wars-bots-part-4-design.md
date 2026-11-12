@@ -238,6 +238,12 @@ data stay, unused by the shipped bot) and the Results say why.
 
 ## Results
 
+### First fit (superseded)
+
+The first fit (R2 and R4, before the amendment). Its results are kept as
+recorded, with the corrections from the final review; the force-adjusted refit
+below replaces it.
+
 **Fixed before running (2026-11-12).** The bar is the one in "How it is
 judged", unchanged. Judging ranges start at seeds `2300000` and `2400000`
 (not used by the fit, which starts at `2000000`, or by Parts 1–3). Runs,
@@ -284,7 +290,7 @@ and worst force (Ambitionist included):
 | 6, 2300000 | 36.3 / 23.6 | 35.0 / 25.3 | 17.4 / 10.2 | 41.4 / 38.7 | 8.9 / 4.0 | 32.5 / 34.7 |
 | 6, 2400000 | 35.5 / 25.5 | 33.7 / 25.7 | 16.7 / 10.4 | 39.5 / 39.3 | 14.4 / 6.5 | 25.1 / 32.8 |
 | 8, 2300000 | 28.8 / 19.2 | 25.9 / 19.6 | 13.7 / 8.1 | 37.3 / 35.3 | 6.0 / 1.0 | 31.3 / 34.3 |
-| 8, 2400000 | 28.3 / 19.7 | 27.9 / 20.9 | 12.3 / 7.9 | 36.3 / 33.7 | 12.9 / 4.8 | 24.0 / 28.9 |
+| 8, 2400000 | 28.3 / 19.7 | 27.9 / 20.9 | 12.3 / 7.9 | 36.3 / 33.7 | 12.9 / 4.8 | 23.4 / 28.9 |
 
 **No slower games.** 400 balance games at 8 seats, first seed 1400000
 (`/usr/bin/time -p npm run sim -- balance 400 8 rule-based-picks-kw rule-based-picks-kw 1400000`,
@@ -300,8 +306,9 @@ against the 3x bar. Passes.
 3. Own deaths per game not wholly above 0; they are wholly below 0 on every
    run (-0.38 to -0.55), and seats survive about 3 to 4 more turns.
 4. Synergy share rises a little (about 19% against 18%). The force spread
-   narrows on every run (best-to-worst gap 2 to 8 points smaller); Wu stays the
-   weakest Kingdom.
+   narrows in these mixed tournaments only (best-to-worst gap 2 to 8 points
+   smaller); Wu stays the weakest Kingdom. In all-bot games it widens sharply
+   (see the correction below).
 5. Time 1.03x of `rule-based-v3`.
 
 These are the largest seat-share gains of any Kingdom Wars part (Part 3 without
@@ -313,9 +320,24 @@ better. The usage counts show the new picks: the challenger offers Goddess Luo
 and Benevolence far less, so it leans away from the Shu Generals the Identity
 table rated highly.
 
-**Shipped (2026-11-12).** `rule-based` now picks with
+**Correction (final review, 2026-11-12).** The first fit's values mostly
+measured the force, not the General: average value Qun +0.10, Wu −0.07; no Qun
+candidate pair got a bonus (0 of 9) and every Wu pair did (12 of 12). In
+all-bot games, the games players face, this shows. `balance` at 8 seats, first
+seed 1400000, each policy in self-play:
+
+| Policy | Wei | Shu | Wu | Qun | Ambitionist | Leader won (95%) |
+|---|---|---|---|---|---|---|
+| `rule-based-picks-kw` (first fit) | 13.9% | 9.8% | 3.2% | 58.2% | 5.9% | 57.0% (52.1 to 61.9) |
+| `rule-based-v6` | 29.6% | 43.0% | 11.7% | 10.8% | 9.9% | 46.5% (41.6 to 51.4) |
+
+Every bot picks Qun, Qun wins 58% of games, and the leading force wins about
+10 points more often, undoing Part 2's goal. The mixed tournaments hid this:
+only half the seats crowd Qun there. This led to the amendment above.
+
+**Shipped (2026-11-12), superseded.** `rule-based` picked with
 `{ identity: GENERAL_VALUES, kingdomWars: KINGDOM_WARS_TABLE }`, the same as
-`rule-based-picks-kw`; no spec's expected decision changed (the existing
+`rule-based-picks-kw`, from this fit until the refit; no spec's expected decision changed (the existing
 `rule-based` General-selection specs use Identity ids). `rule-based-v6` stays
 pinned by its expected decisions as the bot before Part 4. The danger rating
 still reads `GENERAL_VALUES` (R5); moving it onto the refit table is follow-up
@@ -343,3 +365,90 @@ minus `rule-based-v6`) is not wholly above 0, and the challenger's best-minus-
 worst force win-rate gap (Wei, Shu, Wu, Qun, and Ambitionist seats as one
 group) is at most `rule-based-v6`'s gap + 5 points, at 6 and 8 seats on both
 ranges. If any gate fails, `rule-based` goes back to plain `GENERAL_VALUES`.
+
+Run at commit `ae98fd4a` (the refit table from `0a6d2a72`, plus label fixes in
+the simulator's report), no tuning. Differences are challenger minus baseline,
+95% intervals; tournaments over 2000 mirrored pairs. Turns survived count every
+player's turn a seat lives through, not rounds.
+
+**Seat share, 6 seats** (`tournament 4000 6 rule-based-picks-kw rule-based-v6 <seed> mirrored`):
+
+| Seed | Win rate, challenger / baseline | Seat-share difference (95%) | Own deaths per game | Turns survived per seat | Synergy share, challenger / baseline |
+|---|---|---|---|---|---|
+| 2500000 | 32.4% / 25.8% | +6.6 pp (5.4 to 7.9) | -0.20 (-0.24 to -0.16) | +5.64 (4.91 to 6.38) | 21.0% / 17.9% |
+| 2600000 | 32.6% / 25.5% | +7.2 pp (5.9 to 8.4) | -0.21 (-0.25 to -0.18) | +5.67 (4.98 to 6.35) | 20.9% / 17.7% |
+
+**Seat share, 8 seats** (`tournament 4000 8 rule-based-picks-kw rule-based-v6 <seed> mirrored`):
+
+| Seed | Win rate, challenger / baseline | Seat-share difference (95%) | Own deaths per game | Turns survived per seat | Synergy share, challenger / baseline |
+|---|---|---|---|---|---|
+| 2500000 | 27.0% / 20.2% | +6.8 pp (5.8 to 7.8) | -0.27 (-0.31 to -0.23) | +5.80 (5.18 to 6.43) | 21.0% / 17.9% |
+| 2600000 | 27.3% / 20.4% | +6.9 pp (6.0 to 7.9) | -0.28 (-0.32 to -0.24) | +5.13 (4.60 to 5.66) | 20.9% / 17.6% |
+
+**Wins by force in the tournaments**, challenger / baseline (%), with the gap
+between the best and worst force (Ambitionist as one group):
+
+| Seats, seed | Wei | Shu | Wu | Qun | Ambitionist | Gap, challenger / baseline |
+|---|---|---|---|---|---|---|
+| 6, 2500000 | 39.5 / 28.5 | 36.0 / 27.0 | 18.7 / 17.4 | 36.5 / 26.6 | 16.9 / 10.0 | 22.6 / 18.5 |
+| 6, 2600000 | 39.2 / 27.6 | 35.4 / 27.4 | 19.9 / 16.6 | 37.1 / 26.1 | 8.6 / 5.8 | 30.6 / 21.8 |
+| 8, 2500000 | 30.6 / 21.1 | 26.9 / 21.5 | 14.3 / 13.1 | 35.2 / 25.5 | 13.8 / 6.8 | 21.4 / 18.7 |
+| 8, 2600000 | 30.2 / 21.1 | 28.6 / 22.3 | 13.8 / 12.8 | 35.7 / 23.9 | 8.2 / 2.7 | 27.5 / 21.2 |
+
+**All-bot games** (`balance 2000 <seats> rule-based-picks-kw rule-based-v6 <seed>`,
+each policy in self-play), win rate per force (%), the best-minus-worst gap,
+and how often the first leading force won:
+
+| Seats, seed | Policy | Wei | Shu | Wu | Qun | Ambitionist | Gap | Leader won (95%) |
+|---|---|---|---|---|---|---|---|---|
+| 6, 2500000 | challenger | 29.1 | 20.2 | 16.7 | 47.4 | 14.7 | 32.7 | 46.7% (44.5 to 48.9) |
+| | baseline | 35.6 | 44.2 | 12.7 | 11.2 | 11.6 | 33.0 | 54.4% (52.2 to 56.6) |
+| 6, 2600000 | challenger | 26.6 | 19.2 | 16.5 | 48.8 | 10.1 | 38.7 | 44.7% (42.5 to 46.9) |
+| | baseline | 33.3 | 46.2 | 15.4 | 10.8 | 9.8 | 36.4 | 55.3% (53.1 to 57.4) |
+| 8, 2500000 | challenger | 20.2 | 11.2 | 11.0 | 46.5 | 23.1 | 35.5 | 35.1% (33.0 to 37.2) |
+| | baseline | 28.6 | 41.7 | 10.3 | 9.1 | 11.5 | 32.6 | 49.2% (47.0 to 51.4) |
+| 8, 2600000 * | challenger | 20.8 | 12.7 | 11.5 | 44.2 | 0.0 | 44.2 | 37.9% (35.8 to 40.0) |
+| | baseline | 29.7 | 41.5 | 11.2 | 10.4 | 9.2 | 32.3 | 48.6% (46.4 to 50.8) |
+
+Leader won, challenger minus baseline (paired by seed): 6 seats -7.6 pp
+(-10.7 to -4.4) and -10.4 pp (-13.5 to -7.3); 8 seats -14.1 pp (-17.1 to -11.1)
+and -10.7 pp (-13.7 to -7.6).
+
+\* The 8-seat run at `2600000` stopped: `rule-based-v6` self-play at seed
+`2600625` throws in the engine (`Card card-103 not found in any zone`, from a
+`MoveCardEffect`). The engine is unchanged on this branch, so the fault is in
+today's engine and today's `rule-based` (which decides as `rule-based-v6`) can
+reach it. That row is measured with seed `2600625` left out on both sides
+(1999 games each). The challenger's Ambitionist group there is 14 seats with no
+win; without Ambitionist seats the gaps would be 32.7 against 31.1.
+
+**Time.** 400 balance games at 8 seats, first seed 1400000
+(`/usr/bin/time -p npm run sim -- balance 400 8 rule-based-picks-kw rule-based-picks-kw 1400000`,
+run alone, wall time): 71.10 s against `rule-based-v3`'s 49.12 s, 1.45x
+against the 3x bar.
+
+**Verdict: fails gate 6 at 8 seats on `2600000`, not shipped.**
+
+1. 6-seat seat share wholly above 0 on both ranges (+6.6 pp, 5.4 to 7.9;
+   +7.2 pp, 5.9 to 8.4). Passes.
+2. 8-seat seat share not wholly below 0 on both ranges; wholly above 0
+   (+6.8 pp; +6.9 pp). Passes.
+3. Own deaths per game wholly below 0 on every run (-0.20 to -0.28). Passes.
+4. Synergy share about 21% against 18%. In mixed tournaments the challenger's
+   force gap is wider than the baseline's on every run (by 3 to 9 points). In
+   all-bot games the dominant force moves from Shu (42 to 46%) to Qun (44 to
+   49%): picking ignores force, yet Qun still wins most.
+5. Time 1.45x of `rule-based-v3`. Passes.
+6. Leader won is wholly below 0 on all four all-bot runs (the leading force
+   wins 8 to 14 points less often). The force gap is within the baseline's
+   + 5 points at 6 seats on both ranges (32.7 against 33.0; 38.7 against 36.4)
+   and at 8 seats on `2500000` (35.5 against 32.6), but not at 8 seats on
+   `2600000`: 44.2 against 32.3, 11.9 points wider. **Fails.**
+
+No tuning was planned, so none was tried. `rule-based` goes back to picking by
+`GENERAL_VALUES` for every deck; it now decides as `rule-based-v6` again. The
+refit table, the pair bonuses, `rule-based-picks-kw` and the fitting tools
+stay, unused by the shipped bot. The failing gap rests on a small group (14
+Ambitionist seats, none winning) and on a run that needed one seed left out;
+whether that should count is the developer's call, as is the engine fault at
+seed `2600625`.

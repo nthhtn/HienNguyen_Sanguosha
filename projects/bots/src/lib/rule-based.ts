@@ -442,9 +442,9 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFac
 // Part 2 shipped: the bot reads the table (forces, the leading force, truce partners) and ranks targets by it
 // (tableRank, rule 6). Kingdom Wars Part 3 shipped without rule C: no wasted plays, costly targets, surplus
 // Tools, no reveal for nothing, legacy picks on the ranker; it still answers every hit (answerRule off). Kingdom
-// Wars Part 4 shipped: Kingdom Wars Generals are picked (and Impetus for Conflicts chooses) by the fitted Kingdom
-// Wars table and pair bonuses; Identity games keep today's table (rule R5).
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, { identity: GENERAL_VALUES, kingdomWars: KINGDOM_WARS_TABLE }, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
+// Wars Part 4 not shipped: the force-adjusted Kingdom Wars table failed the all-bot force-spread gate, so every
+// deck keeps picking by GENERAL_VALUES; 'rule-based-picks-kw' keeps the table as a recorded experiment.
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
 
 // Weakest-first targeting and highest-max-HP General pairs, frozen as a fixed opponent for the tournament
 // harness. 'rule-based-v1' was 'rule-based' before the Stage 4 value table; 'rule-based-v2' is the same bot,
