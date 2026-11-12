@@ -461,3 +461,9 @@ export const ruleBasedWastePolicy: BotPolicy = createRuleBasedPolicy('rule-based
 
 // Part 3 without rule C: the same bot, but it answers every hit and starts Duels as v5 does.
 export const ruleBasedWasteNoCPolicy: BotPolicy = createRuleBasedPolicy('rule-based-waste-no-c', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
+
+// 'rule-based' as it was at the end of Kingdom Wars Part 3, frozen as the baseline Part 4 is judged against.
+export const ruleBasedV6Policy: BotPolicy = createRuleBasedPolicy('rule-based-v6', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
+
+// Part 4 challenger: 'rule-based' with the Kingdom Wars General value table (given the table in a later task).
+export const ruleBasedPicksKwPolicy: BotPolicy = createRuleBasedPolicy('rule-based-picks-kw', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
