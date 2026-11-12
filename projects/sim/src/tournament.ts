@@ -1,6 +1,6 @@
 import { createGame } from 'engine';
 import type { GameState } from 'engine';
-import { buildContentRegistry, guozhanMode } from 'content';
+import { buildContentRegistry, guozhanMode, isCandidatePair } from 'content';
 import { BotKind, runGame } from './runGame';
 import { PART_1_KEYS, recordDecision } from './usage';
 import type { UsageTally } from './usage';
@@ -17,6 +17,12 @@ export interface GameScore {
   seats: Record<Side, number>;
   wins: Record<Side, number>;
   byKingdom: Record<Side, KingdomTally>;
+  // Seats of the side eliminated.
+  deaths: Record<Side, number>;
+  // Turns survived, summed over the side's seats: the TurnAdvancedEvents before its SeatEliminatedEvent, or all of them if it lived.
+  turnsSurvived: Record<Side, number>;
+  // Seats whose Main and Deputy General form a candidate synergy pair.
+  synergySeats: Record<Side, number>;
 }
 
 // A seat counts as a win for the side that played it; an unfinished game scores nothing.
@@ -26,13 +32,26 @@ export function scoreGame(finalState: GameState, sideOfSeat: (seatId: string) =>
     seats: { challenger: 0, baseline: 0 },
     wins: { challenger: 0, baseline: 0 },
     byKingdom: { challenger: {}, baseline: {} },
+    deaths: { challenger: 0, baseline: 0 },
+    turnsSurvived: { challenger: 0, baseline: 0 },
+    synergySeats: { challenger: 0, baseline: 0 },
   };
   if (!finalState.result) return score;
+  const turnsBefore = new Map<string, number>(); // seat id -> turns advanced before its elimination
+  let turns = 0;
+  for (const event of finalState.log) {
+    if (event.kind === 'TurnAdvancedEvent') turns += 1;
+    else if (event.kind === 'SeatEliminatedEvent') turnsBefore.set(event.seatId, turns);
+  }
   const winners = new Set(finalState.result.winningSeatIds);
   for (const seat of finalState.seats) {
     const side = sideOfSeat(seat.id);
     const won = winners.has(seat.id);
     score.seats[side] += 1;
+    const eliminatedAt = turnsBefore.get(seat.id);
+    if (eliminatedAt !== undefined) score.deaths[side] += 1;
+    score.turnsSurvived[side] += eliminatedAt ?? turns;
+    if (seat.generals && isCandidatePair(seat.generals.main.generalDefinitionId, seat.generals.deputy.generalDefinitionId)) score.synergySeats[side] += 1;
     if (won) score.wins[side] += 1;
     // An Ambitionist is its own group, not its printed Kingdom.
     const group = seat.allegiance === 'ambitionist' ? 'Ambitionist' : seat.kingdom;
@@ -91,6 +110,12 @@ export interface TournamentReport {
   usage: Record<Side, UsageTally>;
   // Challenger uses minus baseline uses of PART_1_KEYS, per game: over mirrored pairs, or games when unmirrored.
   part1Uses: Interval;
+  // Challenger minus baseline seats lost per game: over mirrored pairs, or games when unmirrored.
+  deathsDiff: Interval;
+  // Challenger minus baseline turns survived per seat, per game: over mirrored pairs, or games when unmirrored.
+  turnsSurvivedDiff: Interval;
+  // Share of each side's seats whose two Generals form a candidate pair (finished games only).
+  synergyShare: Record<Side, number>;
 }
 
 const DEFAULT_MAX_ACTIONS = 20000;
@@ -124,6 +149,9 @@ export function runTournament(config: TournamentConfig): TournamentReport {
   const gameDifferences: (number | null)[] = []; // null for a game with no result
   const usage: Record<Side, UsageTally> = { challenger: {}, baseline: {} };
   const gameUses: (number | null)[] = []; // challenger minus baseline Part 1 uses; null for a game with no result
+  const gameDeaths: (number | null)[] = []; // challenger minus baseline deaths; null for a game with no result
+  const gameTurns: (number | null)[] = []; // challenger minus baseline turns survived per seat; null for a game with no result
+  const synergySeats: Record<Side, number> = { challenger: 0, baseline: 0 };
   for (let game = 0; game < config.games; game++) {
     const seed = firstSeed + (config.mirrored ? Math.floor(game / 2) : game);
     const sideOfSeat = (seatId: string): Side => sideOf(game, seatIds.indexOf(seatId));
@@ -143,8 +171,12 @@ export function runTournament(config: TournamentConfig): TournamentReport {
     if (!score.finished) {
       gameDifferences.push(null);
       gameUses.push(null);
+      gameDeaths.push(null);
+      gameTurns.push(null);
       continue;
     }
+    gameDeaths.push(score.deaths.challenger - score.deaths.baseline);
+    gameTurns.push(score.turnsSurvived.challenger / half - score.turnsSurvived.baseline / half);
     const part1Uses = (side: Side): number => PART_1_KEYS.reduce((sum, key) => sum + (gameUsage[side][key]?.used ?? 0), 0);
     gameUses.push(part1Uses('challenger') - part1Uses('baseline'));
     for (const side of ['challenger', 'baseline'] as const) {
@@ -158,6 +190,7 @@ export function runTournament(config: TournamentConfig): TournamentReport {
     for (const side of ['challenger', 'baseline'] as const) {
       tallies[side].seats += score.seats[side];
       tallies[side].wins += score.wins[side];
+      synergySeats[side] += score.synergySeats[side];
       for (const [kingdom, k] of Object.entries(score.byKingdom[side])) {
         const into = (tallies[side].byKingdom[kingdom] ??= { seats: 0, wins: 0 });
         into.seats += k.seats;
@@ -168,6 +201,9 @@ export function runTournament(config: TournamentConfig): TournamentReport {
   const finished = gameDifferences.filter((d) => d !== null).length;
   const values = config.mirrored ? pairMeans(gameDifferences) : gameDifferences.filter((d): d is number => d !== null);
   const usesValues = config.mirrored ? pairMeans(gameUses) : gameUses.filter((u): u is number => u !== null);
+  const spread = (games: (number | null)[]): Interval =>
+    interval(config.mirrored ? pairMeans(games) : games.filter((v): v is number => v !== null));
+  const share = (side: Side): number => (tallies[side].seats === 0 ? 0 : synergySeats[side] / tallies[side].seats);
   return {
     config,
     finished,
@@ -177,6 +213,9 @@ export function runTournament(config: TournamentConfig): TournamentReport {
     difference: interval(values),
     usage,
     part1Uses: interval(usesValues),
+    deathsDiff: spread(gameDeaths),
+    turnsSurvivedDiff: spread(gameTurns),
+    synergyShare: { challenger: share('challenger'), baseline: share('baseline') },
   };
 }
 
@@ -208,6 +247,8 @@ function formatUsage(report: TournamentReport): string[] {
   ];
 }
 
+const formatInterval = (i: Interval): string => `${i.mean.toFixed(2)} (${i.low.toFixed(2)} to ${i.high.toFixed(2)})`;
+
 export function formatReport(report: TournamentReport): string {
   const { config, difference: d } = report;
   const pp = (v: number) => `${(100 * v).toFixed(1)} pp`;
@@ -217,6 +258,9 @@ export function formatReport(report: TournamentReport): string {
     formatSide('challenger', report.challenger),
     formatSide('baseline', report.baseline),
     `Difference per game (challenger minus baseline): ${pp(d.mean)}, 95% interval ${pp(d.low)} to ${pp(d.high)} over ${d.games} ${config.mirrored ? 'pairs' : 'games'}: ${verdict}`,
+    `Own deaths per game, challenger minus baseline: ${formatInterval(report.deathsDiff)}`,
+    `Turns survived per seat, challenger minus baseline: ${formatInterval(report.turnsSurvivedDiff)}`,
+    `Synergy share, challenger / baseline: ${pp(report.synergyShare.challenger)} / ${pp(report.synergyShare.baseline)}`,
     ...formatUsage(report),
   ].join('\n');
 }
