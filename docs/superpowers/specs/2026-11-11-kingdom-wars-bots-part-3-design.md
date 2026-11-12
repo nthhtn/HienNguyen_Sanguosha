@@ -1,6 +1,6 @@
 # Kingdom Wars Bots, Part 3: No Wasted Plays — Design Spec
 
-Status: Approved by the developer on 2026-11-11
+Status: Approved by the developer on 2026-11-11. Shipped without rule C on 2026-11-12
 Date: 2026-11-11
 Parent: `docs/superpowers/specs/2026-11-11-kingdom-wars-bots-design.md`
 (Part 3 section, and its "How it is judged", "Where the knowledge lives" and
@@ -364,6 +364,9 @@ ratio of 1.30x. Passes.
 ranges; HP lost and leader-won not wholly above 0; the tournament seat share is
 above 0 on both ranges (+1.6 and +1.4 pp, every interval above 0); 1.30x time.
 So the seat-share loss came from rule C: without it, the no-waste rules make
-the bot both less wasteful and stronger. Shipping it (making `rule-based`
-equal to `rule-based-waste-no-c`) is the developer's call; until then
-`rule-based` is unchanged.
+the bot both less wasteful and stronger.
+
+**Shipped (2026-11-12, the developer's decision).** `rule-based` now equals
+`rule-based-waste-no-c` (`noWaste: true`, `answerRule: false`). Rule C stays
+built behind `answerRule` (in `rule-based-waste`) for a later rework; the bot
+it replaced is frozen as `rule-based-v5`.

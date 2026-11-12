@@ -437,8 +437,9 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFac
 // Stage 4 shipped: General pairs are chosen with the measured value table (max HP breaks ties). Kingdom Wars
 // Part 1 shipped: the rule registry decides when each Kingdom Wars card and skill is worth using. Kingdom Wars
 // Part 2 shipped: the bot reads the table (forces, the leading force, truce partners) and ranks targets by it
-// (tableRank, rule 6).
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: false, answerRule: false });
+// (tableRank, rule 6). Kingdom Wars Part 3 shipped without rule C: no wasted plays, costly targets, surplus
+// Tools, no reveal for nothing, legacy picks on the ranker; it still answers every hit (answerRule off).
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
 
 // Weakest-first targeting and highest-max-HP General pairs, frozen as a fixed opponent for the tournament
 // harness. 'rule-based-v1' was 'rule-based' before the Stage 4 value table; 'rule-based-v2' is the same bot,
