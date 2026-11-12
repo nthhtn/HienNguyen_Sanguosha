@@ -182,3 +182,19 @@ partial result is the developer's decision, as it was for Part 3.
 - The generated table's exact format and file names.
 - How the survival and synergy counts are reported.
 - The tuning of `SHRINK_K` and `K_PAIR` within the three sets.
+
+## Results
+
+**Fixed before running (2026-11-12).** The bar is the one in "How it is
+judged", unchanged. Judging ranges start at seeds `2300000` and `2400000`
+(not used by the fit, which starts at `2000000`, or by Parts 1–3). Runs,
+Kingdom Wars deck, 4000 games each, one at a time:
+
+- `npm run sim -- tournament 4000 6 rule-based-picks-kw rule-based-v6 <seed> mirrored`
+- `npm run sim -- tournament 4000 8 rule-based-picks-kw rule-based-v6 <seed> mirrored`
+- Time: `/usr/bin/time -p npm run sim -- balance 400 8 rule-based-picks-kw rule-based-picks-kw 1400000`,
+  against `rule-based-v3`'s recorded 49.12 s.
+
+Tuning, only if gate 1 fails at `2300000`: first the challenger with pair
+bonuses off, then up to three sets of `SHRINK_K` and `K_PAIR`, on `2300000`
+only; `2400000` runs once with the final variant.
