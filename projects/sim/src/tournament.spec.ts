@@ -209,7 +209,7 @@ describe('runTournament usage', () => {
     expect(formatReport(report)).toContain('Usage');
     expect(formatReport(report)).toContain('Part 1 uses per game:');
     expect(formatReport(report)).toContain('Own deaths per game, challenger minus baseline');
-    expect(formatReport(report)).toContain('Turns survived per seat, challenger minus baseline');
-    expect(formatReport(report)).toContain('Synergy share, challenger / baseline');
+    expect(formatReport(report)).toContain("Turns survived per seat, challenger minus baseline (every player's turn counts)");
+    expect(formatReport(report)).toMatch(/Synergy share, challenger \/ baseline: \d+\.\d% \/ \d+\.\d%/);
   });
 });

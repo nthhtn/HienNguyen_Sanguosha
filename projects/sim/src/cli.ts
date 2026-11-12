@@ -63,9 +63,10 @@ function runTournamentCommand(games: number, numSeats: number, challenger: strin
 
 // R1: each seat count in the range plays `games` games on its own consecutive block of seeds.
 function runFitGenerals(games: number, range: string, first: number, deck: string): void {
-  const match = /^(\d+)-(\d+)$/.exec(range);
-  if (!match) throw new Error(`Seat range must look like 4-8, got "${range}"`);
-  const [minSeats, maxSeats] = [Number(match[1]), Number(match[2])];
+  // A bare seat count N means the range N-N.
+  const match = /^(\d+)(?:-(\d+))?$/.exec(range);
+  if (!match) throw new Error(`Seat range must look like 4-8 or 4, got "${range}"`);
+  const [minSeats, maxSeats] = [Number(match[1]), Number(match[2] ?? match[1])];
   if (minSeats > maxSeats) throw new Error(`Seat range ${range} is empty`);
   if (deck !== 'identity' && deck !== 'kingdomWars') throw new Error(`Deck must be identity or kingdomWars, got "${deck}"`);
   const fitDeck: FitDeck = deck;
@@ -107,7 +108,7 @@ if (mode === 'single') {
   }
 } else {
   console.error(
-    'Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats> | sim balance <games> <numSeats> <policyA> <policyB> <firstSeed> | sim tournament <games> <numSeats> <challenger> <baseline> [firstSeed] [mirrored|unmirrored] | sim fit-generals <games-per-seat-count> <minSeats>-<maxSeats> <firstSeed> [identity|kingdomWars]'
+    'Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats> | sim balance <games> <numSeats> <policyA> <policyB> <firstSeed> | sim tournament <games> <numSeats> <challenger> <baseline> [firstSeed] [mirrored|unmirrored] | sim fit-generals <games-per-seat-count> <seats>|<minSeats>-<maxSeats> <firstSeed> [identity|kingdomWars]'
   );
   process.exitCode = 1;
 }

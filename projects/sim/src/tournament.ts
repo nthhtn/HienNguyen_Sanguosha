@@ -256,6 +256,7 @@ const formatInterval = (i: Interval): string => `${i.mean.toFixed(2)} (${i.low.t
 export function formatReport(report: TournamentReport): string {
   const { config, difference: d } = report;
   const pp = (v: number) => `${(100 * v).toFixed(1)} pp`;
+  const pct = (v: number) => `${(100 * v).toFixed(1)}%`;
   const verdict = d.games < 2 ? 'too few games to judge' : d.low > 0 ? 'challenger is better' : d.high < 0 ? 'baseline is better' : 'no clear difference';
   return [
     `Games ${config.games} (${report.finished} finished, ${report.unfinished} unfinished), seats ${config.seats}, first seed ${config.firstSeed ?? 0}${config.mirrored ? ', mirrored pairs' : ''}`,
@@ -263,8 +264,8 @@ export function formatReport(report: TournamentReport): string {
     formatSide('baseline', report.baseline),
     `Difference per game (challenger minus baseline): ${pp(d.mean)}, 95% interval ${pp(d.low)} to ${pp(d.high)} over ${d.games} ${config.mirrored ? 'pairs' : 'games'}: ${verdict}`,
     `Own deaths per game, challenger minus baseline: ${formatInterval(report.deathsDiff)}`,
-    `Turns survived per seat, challenger minus baseline: ${formatInterval(report.turnsSurvivedDiff)}`,
-    `Synergy share, challenger / baseline: ${pp(report.synergyShare.challenger)} / ${pp(report.synergyShare.baseline)}`,
+    `Turns survived per seat, challenger minus baseline (every player's turn counts): ${formatInterval(report.turnsSurvivedDiff)}`,
+    `Synergy share, challenger / baseline: ${pct(report.synergyShare.challenger)} / ${pct(report.synergyShare.baseline)}`,
     ...formatUsage(report),
   ].join('\n');
 }
