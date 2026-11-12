@@ -4,7 +4,7 @@ import { createGame } from 'engine';
 import { buildContentRegistry, candidatePairs, guozhanMode } from 'content';
 import { parseBotKind, runGame } from './runGame';
 import { formatReport, runTournament } from './tournament';
-import { collectSamples, fitPairs, fitValues, formatDeckTable, formatTable } from './fitGenerals';
+import { collectSamples, fitPairs, fitValues, forceLifts, formatDeckTable, formatTable } from './fitGenerals';
 import type { FitDeck, PickSample } from './fitGenerals';
 import { checkInvariants } from './invariants';
 import { compareBalance, formatBalanceReport, formatComparison, runBalance } from './balance';
@@ -73,7 +73,7 @@ function runFitGenerals(games: number, range: string, first: number, deck: strin
   for (let seats = minSeats; seats <= maxSeats; seats++) samples.push(...collectSamples(games, seats, first + (seats - minSeats) * games, fitDeck));
   const command = `npm run sim -- fit-generals ${games} ${range} ${first} ${deck}`;
   const fit = fitValues(samples);
-  process.stdout.write(fitDeck === 'kingdomWars' ? formatDeckTable(fit, fitPairs(samples, fit.values, candidatePairs()), command) : formatTable(fit, command));
+  process.stdout.write(fitDeck === 'kingdomWars' ? formatDeckTable(fit, fitPairs(samples, fit.values, candidatePairs()), forceLifts(samples), command) : formatTable(fit, command));
 }
 
 const [, , mode, arg1, arg2, arg3, arg4, arg5, arg6] = process.argv;
