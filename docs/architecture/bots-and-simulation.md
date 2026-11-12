@@ -5,6 +5,10 @@ bugs, and how the test suites are laid out. Both projects are framework-free
 TypeScript. Bots depend on the engine and content; the simulator on engine,
 content and bots.
 
+This page is about code structure. For how the shipped bot actually thinks
+(its decision ladder, reading the table, truces, targeting, waste checks and
+responses) in plain words, read [How the bots decide](how-bots-decide.md).
+
 ## Bots (`projects/bots`)
 
 A bot is a **policy**:
@@ -109,8 +113,10 @@ All three hand the policy the seat's redacted view and its legal actions.
   an ally. Barbarians and Hail of Arrows are played when enemies outnumber
   friends, with a truce partner counted by its HP and danger.
 
-The per-skill targeting in `skills.ts`, `wind.ts`, `fire.ts`, `forest.ts` and
-`mountain.ts` is not on the ranker yet; those skills keep sorting by HP.
+The per-skill picks in `skills.ts`, `wind.ts`, `fire.ts`, `forest.ts` and
+`mountain.ts` that choose a seat to harm go through the ranker since Part 3
+(rule E, `rankHarmTargets` in `helpers.ts`); the rest of that code keeps its own
+logic.
 
 `balance <games> <seats> <policyA> <policyB> <firstSeed>`
 ([balance.ts](../../projects/sim/src/balance.ts)) judges it: every seat plays
