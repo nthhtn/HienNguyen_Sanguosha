@@ -14,6 +14,7 @@ it.
 | [Backend](backend.md) | the Node server: accounts, rooms, the socket protocol, the game runner, persistence and restore, and what is not built yet |
 | [Deployment](../deployment.md) | how the server and app run live on Render and Supabase, and what to check after a deploy |
 | [Bots and simulation](bots-and-simulation.md) | the computer opponents, the headless simulator, invariants, leak checks and the test layout |
+| [How the bots decide](how-bots-decide.md) | in plain words, how the shipped bot reads the table, picks targets, forms truces, avoids waste and responds |
 | [CI and guardrails](../ci-and-guardrails.md) | how a change is checked before it merges (`npm run verify`, GitHub Actions), and what the agent may not do (merge, push to `main`) |
 
 The project-wide rules (layering, domain modeling, extensibility, UI text

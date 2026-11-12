@@ -1,7 +1,5 @@
-import { baseGeneralId } from 'content';
 import type { Action, GameState, Seat } from 'engine';
 import { isEquipUpgrade } from '../card-play';
-import { GENERAL_VALUES } from '../general-values';
 import { attackable, givenByEitherGeneral, givenThisTurn, handCards, isAlly, leastUseful } from '../helpers';
 import type { BotRule, BotRuleContext } from './registry';
 
@@ -41,14 +39,13 @@ const spareEquipment = (ctx: BotRuleContext): string[] => {
     })
     .map((c) => c.instanceId);
 };
-const generalValue = (generalId: string | undefined) => (generalId ? (GENERAL_VALUES[baseGeneralId(generalId)] ?? 0) : 0);
 
 // Impetus for Conflicts:
 // - play (late): used when some foe has both Generals exposed and the bot holds an Equipment card in hand
 //   that it would not equip now (its slot is filled and it is no upgrade). A worn card is never discarded.
 // - select: the cards, that spare hand card; the seats, the fully exposed foe the ranker likes most. With
 //   neither on offer, 'cancel'.
-// - choose: the General with the higher table value (GENERAL_VALUES), Main on a tie.
+// - choose: the General with the higher table value (the policy's per-deck table, rule R5), Main on a tie.
 export const impetusForConflictsRule: BotRule = {
   id: 'kingdomWars:impetus-for-conflicts',
   play: {
@@ -62,10 +59,10 @@ export const impetusForConflictsRule: BotRule = {
         : fullyExposedFoes(ctx).find((s) => selection.eligibleIds.includes(s.id))?.id;
     return pick ? [pick] : 'cancel';
   },
-  choose: (_ctx, choice) => {
+  choose: (ctx, choice) => {
     const valueOf = (optionId: string) => {
       const shows = choice.options.find((o) => o.id === optionId)?.shows;
-      return generalValue(shows?.kind === 'general' ? shows.generalId : undefined);
+      return shows?.kind === 'general' ? ctx.generalValue(shows.generalId) : 0;
     };
     if (!choice.options.some((o) => o.id === 'main') || !choice.options.some((o) => o.id === 'deputy')) return undefined;
     return valueOf('deputy') > valueOf('main') ? 'deputy' : 'main';

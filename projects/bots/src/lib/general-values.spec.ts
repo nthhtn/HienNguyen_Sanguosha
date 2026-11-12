@@ -1,5 +1,6 @@
 import type { Action } from 'engine';
-import { bestPair, HP_TIEBREAK, pairScore } from './general-values';
+import { pairKey } from 'content';
+import { bestPair, generalValueIn, HP_TIEBREAK, pairScore, pickTablesOf, PickTables } from './general-values';
 import { registry } from './testing';
 
 type Choice = Extract<Action, { kind: 'ChooseGeneralsAction' }>;
@@ -38,5 +39,40 @@ describe('bestPair', () => {
   it('falls back to max HP, then to the first legal choice, with no table', () => {
     expect(bestPair({}, registry, [choose(small.id, smaller.id), choose(bigA.id, bigB.id)])).toEqual(choose(bigA.id, bigB.id));
     expect(bestPair({}, registry, [choose(bigA.id, bigB.id), choose(bigB.id, bigA.id)])).toEqual(choose(bigA.id, bigB.id));
+  });
+});
+
+// Rule R5: per-deck tables, with pair bonuses for Kingdom Wars.
+describe('pairScore with per-deck tables', () => {
+  const hp = (id: string) => registry.generals.get(id)?.maxHp ?? 0;
+  const CAO = 'kingdomWars:cao-cao';
+  const LIAO = 'kingdomWars:zhang-liao';
+  const tables: PickTables = {
+    identity: { 'cao-cao': 0.3, 'zhang-liao': 0.1 },
+    kingdomWars: { values: { [CAO]: 0.02, [LIAO]: 0.05 }, pairBonuses: { [pairKey(CAO, LIAO)]: 0.04 } },
+  };
+
+  it('a plain record scores a Kingdom Wars choice by base id, as before', () => {
+    const plain = { 'cao-cao': 0.3, 'zhang-liao': 0.1 };
+    expect(pairScore(plain, registry, choose(CAO, LIAO))).toBeCloseTo(0.4 + HP_TIEBREAK * (hp(CAO) + hp(LIAO)), 10);
+    expect(pickTablesOf(plain)).toEqual({ identity: plain, kingdomWars: null });
+  });
+  it('a Kingdom Wars choice uses full-id values and adds the pair bonus', () => {
+    expect(pairScore(tables, registry, choose(CAO, LIAO))).toBeCloseTo(0.02 + 0.05 + 0.04 + HP_TIEBREAK * (hp(CAO) + hp(LIAO)), 10);
+    expect(pairScore(tables, registry, choose(LIAO, CAO))).toBeCloseTo(pairScore(tables, registry, choose(CAO, LIAO)), 10);
+  });
+  it('an Identity choice ignores the Kingdom Wars table', () => {
+    expect(pairScore(tables, registry, choose('cao-cao', 'zhang-liao'))).toBeCloseTo(0.4 + HP_TIEBREAK * (hp('cao-cao') + hp('zhang-liao')), 10);
+  });
+  it('a Kingdom Wars id absent from the table counts 0', () => {
+    expect(generalValueIn(tables, 'kingdomWars:xu-chu')).toBe(0);
+    expect(generalValueIn(tables, CAO)).toBe(0.02);
+    expect(generalValueIn(tables, 'cao-cao')).toBe(0.3);
+  });
+  it('the pair bonus can change the best pair', () => {
+    const XU = 'kingdomWars:xu-chu';
+    const t: PickTables = { identity: {}, kingdomWars: { values: { [CAO]: 0.05, [LIAO]: 0.01, [XU]: 0.03 }, pairBonuses: { [pairKey(CAO, LIAO)]: 0.05 } } };
+    expect(bestPair(t, registry, [choose(CAO, XU), choose(CAO, LIAO)])).toEqual(choose(CAO, LIAO));
+    expect(bestPair({ ...t, kingdomWars: { ...t.kingdomWars!, pairBonuses: {} } }, registry, [choose(CAO, XU), choose(CAO, LIAO)])).toEqual(choose(CAO, XU));
   });
 });

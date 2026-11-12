@@ -1,13 +1,15 @@
 import type { GameState } from 'engine';
-import { formatReport, interval, pairMeans, runTournament, scoreGame, sideOf, Side } from './tournament';
+import { formatReport, interval, pairMeans, runTournament, scoreGame, sideOf, turnsSurvivedDifference, Side } from './tournament';
 
 // Just enough of a finished game for scoring: seats with kingdoms, and a result.
+const generals = { main: { generalDefinitionId: 'kingdomWars:cao-cao' }, deputy: { generalDefinitionId: 'kingdomWars:liu-bei' } };
 const finished = (winners: string[]): GameState =>
   ({
     seats: [
-      { id: 'seat-0', kingdom: 'Wei' }, { id: 'seat-1', kingdom: 'Shu' },
-      { id: 'seat-2', kingdom: 'Wei' }, { id: 'seat-3', kingdom: 'Wu' },
+      { id: 'seat-0', kingdom: 'Wei', generals }, { id: 'seat-1', kingdom: 'Shu', generals },
+      { id: 'seat-2', kingdom: 'Wei', generals }, { id: 'seat-3', kingdom: 'Wu', generals },
     ],
+    log: [],
     result: { endedAt: 0, winningSeatIds: winners, losingSeatIds: [] },
   }) as unknown as GameState;
 const unfinished = { seats: [], result: null } as unknown as GameState;
@@ -42,6 +44,54 @@ describe('scoreGame', () => {
     const score = scoreGame(unfinished, evenSeatsChallenge);
     expect(score.finished).toBe(false);
     expect(score.wins).toEqual({ challenger: 0, baseline: 0 });
+  });
+});
+
+// Seats with Generals, and a log; seat-0 and seat-1 die after 3 and 1 turns of 5.
+const withLog = (): GameState => {
+  const general = (id: string) => ({ generals: { main: { generalDefinitionId: id }, deputy: { generalDefinitionId: 'kingdomWars:liu-bei' } } });
+  const turn = { kind: 'TurnAdvancedEvent' };
+  return {
+    seats: [
+      { id: 'seat-0', kingdom: 'Wei', ...general('kingdomWars:guan-yu') }, { id: 'seat-1', kingdom: 'Shu', ...general('kingdomWars:cao-cao') },
+      { id: 'seat-2', kingdom: 'Wei', ...general('kingdomWars:cao-cao') }, { id: 'seat-3', kingdom: 'Wu', ...general('kingdomWars:cao-cao') },
+    ],
+    log: [turn, turn, turn, { kind: 'SeatEliminatedEvent', seatId: 'seat-0' }, turn, { kind: 'SeatEliminatedEvent', seatId: 'seat-1' }, turn],
+    result: { endedAt: 0, winningSeatIds: ['seat-2'], losingSeatIds: [] },
+  } as unknown as GameState;
+};
+
+describe('scoreGame survival and synergy', () => {
+  it('counts turns survived before elimination, or all turns for a living seat, and deaths per side', () => {
+    const score = scoreGame(withLog(), evenSeatsChallenge);
+    // Challenger seats 0 and 2: seat-0 survived 3, seat-2 lived through all 5. Baseline 1 and 3: seat-1 survived 4, seat-3 all 5.
+    expect(score.deaths).toEqual({ challenger: 1, baseline: 1 });
+    expect(score.turnsSurvived).toEqual({ challenger: 8, baseline: 9 });
+  });
+
+  it('counts a seat with Guan Yu and Liu Bei as a synergy seat', () => {
+    expect(scoreGame(withLog(), evenSeatsChallenge).synergySeats).toEqual({ challenger: 1, baseline: 0 });
+  });
+
+  it('scores none of these for an unfinished game', () => {
+    const score = scoreGame({ ...withLog(), result: null } as unknown as GameState, evenSeatsChallenge);
+    expect(score.deaths).toEqual({ challenger: 0, baseline: 0 });
+    expect(score.turnsSurvived).toEqual({ challenger: 0, baseline: 0 });
+    expect(score.synergySeats).toEqual({ challenger: 0, baseline: 0 });
+  });
+});
+
+describe('turnsSurvivedDifference', () => {
+  it('is per seat on each side, also when the sides have unequal seat counts (5 seats: 3 vs 2)', () => {
+    const turn = { kind: 'TurnAdvancedEvent' };
+    const state = {
+      seats: [0, 1, 2, 3, 4].map((i) => ({ id: `seat-${i}`, kingdom: 'Wei', generals })),
+      log: [turn, turn, turn, turn, { kind: 'SeatEliminatedEvent', seatId: 'seat-1' }, turn, turn],
+      result: { endedAt: 0, winningSeatIds: ['seat-0'], losingSeatIds: [] },
+    } as unknown as GameState;
+    const score = scoreGame(state, evenSeatsChallenge); // challenger seats 0, 2, 4: 6 each = 18; baseline 1, 3: 4 + 6 = 10
+    expect(score.seats).toEqual({ challenger: 3, baseline: 2 });
+    expect(turnsSurvivedDifference(score)).toBeCloseTo(18 / 3 - 10 / 2);
   });
 });
 
@@ -158,5 +208,8 @@ describe('runTournament usage', () => {
     expect(report.part1Uses.games).toBeLessThanOrEqual(1);
     expect(formatReport(report)).toContain('Usage');
     expect(formatReport(report)).toContain('Part 1 uses per game:');
+    expect(formatReport(report)).toContain('Own deaths per game, challenger minus baseline');
+    expect(formatReport(report)).toContain("Turns survived per seat, challenger minus baseline (every player's turn counts)");
+    expect(formatReport(report)).toMatch(/Synergy share, challenger \/ baseline: \d+\.\d% \/ \d+\.\d%/);
   });
 });

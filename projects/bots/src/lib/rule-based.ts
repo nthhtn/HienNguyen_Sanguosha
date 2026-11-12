@@ -8,7 +8,7 @@ import { massAttackWorthIt, relationOf } from './table';
 import { dangerOf } from './danger';
 import { CardPlayRules, NO_CARD_PLAY_RULES, discardRank, isEquipUpgrade, peachWorthPlaying, wineWorthPlaying } from './card-play';
 import { fireSelection } from './fire';
-import { bestPair, GENERAL_VALUES } from './general-values';
+import { bestPair, GENERAL_VALUES, generalValueIn, KINGDOM_WARS_TABLE, PickTables, pickTablesOf } from './general-values';
 import { NO_RESPONSE_RULES, ResponseRules, shouldHoldShan, wuxieWorthCancelling } from './responses';
 import { upheavalVictimIsFoe } from './forest';
 import { BotFeatures, BotRule, BotRuleContext, NO_FEATURES } from './rules/registry';
@@ -79,7 +79,7 @@ function decide(
   ranker: TargetRanker | RankerFactory,
   rules: CardPlayRules,
   responseRules: ResponseRules,
-  generalValues: Readonly<Record<string, number>> | undefined,
+  generalValues: Readonly<Record<string, number>> | PickTables | undefined,
   features: BotFeatures,
   view: GameState,
   seatId: string,
@@ -114,7 +114,10 @@ function decide(
   const ruled = (id: string) => ruleFor(features, id) !== undefined;
   // Rule D1: the cards the Discard Phase would throw away, spent first by the Tool rules.
   const surplusOf = (self: Seat) => (features.noWaste ? Math.max(0, handCards(view, self).length - handLimit(view, self.id)) : 0);
-  const ruleContext = (self: Seat): BotRuleContext => ({ view, me: self, legal, offered, registry, rank, surplus: surplusOf(self) });
+  // Rule R5: rules read General values from the policy's tables; with none, today's Identity table.
+  const tables = pickTablesOf(generalValues ?? GENERAL_VALUES);
+  const generalValue = (generalId: string) => generalValueIn(tables, generalId);
+  const ruleContext = (self: Seat): BotRuleContext => ({ view, me: self, legal, offered, registry, rank, surplus: surplusOf(self), generalValue });
   // Rule E1: the legacy per-skill picks rank the seats they harm (and drop HOLD_FIRE ones) only with noWaste;
   // without, they keep their own order, so the frozen policies decide as before.
   const legacyRank = features.noWaste ? rank : undefined;
@@ -430,7 +433,7 @@ const revealsForNothing = (choice: PendingChoice) => {
 
 // Simple, explainable opponent; see the bot-opponents design spec for its rules.
 // The ranker decides which non-ally a targeted play goes to (a RankerFactory is built per decision).
-export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFactory, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES, generalValues?: Readonly<Record<string, number>>, features: BotFeatures = NO_FEATURES): BotPolicy {
+export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFactory, rules: CardPlayRules = NO_CARD_PLAY_RULES, responseRules: ResponseRules = NO_RESPONSE_RULES, generalValues?: Readonly<Record<string, number>> | PickTables, features: BotFeatures = NO_FEATURES): BotPolicy {
   return { id, decide: (view, seatId, legal, registry, memory) => decide(rank, rules, responseRules, generalValues, features, view, seatId, legal, registry, memory) };
 }
 
@@ -438,8 +441,11 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFac
 // Part 1 shipped: the rule registry decides when each Kingdom Wars card and skill is worth using. Kingdom Wars
 // Part 2 shipped: the bot reads the table (forces, the leading force, truce partners) and ranks targets by it
 // (tableRank, rule 6). Kingdom Wars Part 3 shipped without rule C: no wasted plays, costly targets, surplus
-// Tools, no reveal for nothing, legacy picks on the ranker; it still answers every hit (answerRule off).
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
+// Tools, no reveal for nothing, legacy picks on the ranker; it still answers every hit (answerRule off). Kingdom
+// Wars Part 4 shipped by the developer's decision (2026-11-12): the force-adjusted Kingdom Wars table picks Kingdom
+// Wars Generals, although gate 6 (all-bot force spread) failed on one run (see docs/deferrals.md); Identity keeps
+// GENERAL_VALUES. 'rule-based-picks-kw' keeps the same picks as a reference; 'rule-based-v6' stays frozen.
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, { identity: GENERAL_VALUES, kingdomWars: KINGDOM_WARS_TABLE }, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
 
 // Weakest-first targeting and highest-max-HP General pairs, frozen as a fixed opponent for the tournament
 // harness. 'rule-based-v1' was 'rule-based' before the Stage 4 value table; 'rule-based-v2' is the same bot,
@@ -461,3 +467,10 @@ export const ruleBasedWastePolicy: BotPolicy = createRuleBasedPolicy('rule-based
 
 // Part 3 without rule C: the same bot, but it answers every hit and starts Duels as v5 does.
 export const ruleBasedWasteNoCPolicy: BotPolicy = createRuleBasedPolicy('rule-based-waste-no-c', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
+
+// 'rule-based' as it was at the end of Kingdom Wars Part 3, frozen as the baseline Part 4 is judged against.
+export const ruleBasedV6Policy: BotPolicy = createRuleBasedPolicy('rule-based-v6', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });
+
+// Part 4 challenger: 'rule-based' picking Kingdom Wars Generals (and choosing for Impetus for Conflicts) by the
+// fitted Kingdom Wars table and pair bonuses; Identity games keep today's table (rule R5).
+export const ruleBasedPicksKwPolicy: BotPolicy = createRuleBasedPolicy('rule-based-picks-kw', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, { identity: GENERAL_VALUES, kingdomWars: KINGDOM_WARS_TABLE }, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });

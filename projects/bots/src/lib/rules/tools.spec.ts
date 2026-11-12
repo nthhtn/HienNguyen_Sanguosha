@@ -107,7 +107,7 @@ describe('rules/tools: Chains', () => {
     const template: Action = { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 'ch', targets: [], pickTargets: { eligibleIds: ['seat-a', 'seat-b'], min: 1, max: 2 } };
     const offered: Action[] = [{ kind: 'EndPhaseAction', seatId: 'seat-a' }, template];
     const me = s.seats.find((seat) => seat.id === 'seat-a')!;
-    expect(chainsRule.play!.pick({ view: s, me, legal: [offered[0]], offered, registry, rank: weakestFirst, surplus: 0 })).toBeUndefined();
+    expect(chainsRule.play!.pick({ view: s, me, legal: [offered[0]], offered, registry, rank: weakestFirst, surplus: 0, generalValue: () => 0 })).toBeUndefined();
   });
 });
 

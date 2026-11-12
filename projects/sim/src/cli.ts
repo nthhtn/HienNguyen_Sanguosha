@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // projects/sim/src/cli.ts
 import { createGame } from 'engine';
-import { buildContentRegistry, guozhanMode } from 'content';
+import { buildContentRegistry, candidatePairs, guozhanMode } from 'content';
 import { parseBotKind, runGame } from './runGame';
 import { formatReport, runTournament } from './tournament';
-import { collectSamples, fitValues, formatTable } from './fitGenerals';
+import { collectSamples, fitPairs, fitValues, forceLifts, formatDeckTable, formatTable } from './fitGenerals';
+import type { FitDeck, PickSample } from './fitGenerals';
 import { checkInvariants } from './invariants';
 import { compareBalance, formatBalanceReport, formatComparison, runBalance } from './balance';
 
@@ -60,6 +61,22 @@ function runTournamentCommand(games: number, numSeats: number, challenger: strin
   console.log(formatReport(report));
 }
 
+// R1: each seat count in the range plays `games` games on its own consecutive block of seeds.
+function runFitGenerals(games: number, range: string, first: number, deck: string): void {
+  // A bare seat count N means the range N-N.
+  const match = /^(\d+)(?:-(\d+))?$/.exec(range);
+  if (!match) throw new Error(`Seat range must look like 4-8 or 4, got "${range}"`);
+  const [minSeats, maxSeats] = [Number(match[1]), Number(match[2] ?? match[1])];
+  if (minSeats > maxSeats) throw new Error(`Seat range ${range} is empty`);
+  if (deck !== 'identity' && deck !== 'kingdomWars') throw new Error(`Deck must be identity or kingdomWars, got "${deck}"`);
+  const fitDeck: FitDeck = deck;
+  const samples: PickSample[] = [];
+  for (let seats = minSeats; seats <= maxSeats; seats++) samples.push(...collectSamples(games, seats, first + (seats - minSeats) * games, fitDeck));
+  const command = `npm run sim -- fit-generals ${games} ${range} ${first} ${deck}`;
+  const fit = fitValues(samples);
+  process.stdout.write(fitDeck === 'kingdomWars' ? formatDeckTable(fit, fitPairs(samples, fit.values, candidatePairs()), forceLifts(samples), command) : formatTable(fit, command));
+}
+
 const [, , mode, arg1, arg2, arg3, arg4, arg5, arg6] = process.argv;
 if (mode === 'single') {
   runSingle(Number(arg1 ?? 1), Number(arg2 ?? 4));
@@ -84,15 +101,14 @@ if (mode === 'single') {
   }
 } else if (mode === 'fit-generals') {
   try {
-    const [games, seats, first] = [Number(arg1 ?? 1000), Number(arg2 ?? 4), Number(arg3 ?? 0)];
-    process.stdout.write(formatTable(fitValues(collectSamples(games, seats, first)), `npm run sim -- fit-generals ${games} ${seats} ${first}`));
+    runFitGenerals(Number(arg1 ?? 1000), arg2 ?? '4-4', Number(arg3 ?? 0), arg4 ?? 'identity');
   } catch (err) {
     console.error(err instanceof Error ? err.message : String(err));
     process.exitCode = 1;
   }
 } else {
   console.error(
-    'Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats> | sim balance <games> <numSeats> <policyA> <policyB> <firstSeed> | sim tournament <games> <numSeats> <challenger> <baseline> [firstSeed] [mirrored|unmirrored] | sim fit-generals <games> <numSeats> <firstSeed>'
+    'Usage: sim single <seed> <numSeats> | sim batch <numGames> <numSeats> | sim balance <games> <numSeats> <policyA> <policyB> <firstSeed> | sim tournament <games> <numSeats> <challenger> <baseline> [firstSeed] [mirrored|unmirrored] | sim fit-generals <games-per-seat-count> <seats>|<minSeats>-<maxSeats> <firstSeed> [identity|kingdomWars]'
   );
   process.exitCode = 1;
 }

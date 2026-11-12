@@ -301,6 +301,13 @@ describe('GameService in vs-bots mode', () => {
         break;
       }
       const legal = service.legalActions();
+      // A bot's skill can ask the human to pick cards (a SelectAction offers no ids of its own): take the first eligible ones.
+      const selection = service.state()!.pendingSelection;
+      const select = legal.find((a) => a.kind === 'SelectAction');
+      if (selection && select) {
+        service.submit({ ...select, ids: selection.eligibleIds.slice(0, selection.min) });
+        continue;
+      }
       service.submit(legal.find((a) => a.kind === 'EndPhaseAction') ?? legal[0]);
     }
     expect(answered).toBe(true);

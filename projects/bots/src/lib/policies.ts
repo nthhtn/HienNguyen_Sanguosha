@@ -3,7 +3,7 @@ import { ALL_CARD_PLAY_RULES, NO_CARD_PLAY_RULES } from './card-play';
 import { ALL_RESPONSE_RULES, NO_RESPONSE_RULES } from './responses';
 import { GENERAL_VALUES } from './general-values';
 import { weakestFirst } from './helpers';
-import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV2Policy, ruleBasedV3Policy, ruleBasedV4Policy, ruleBasedV5Policy, ruleBasedWastePolicy, ruleBasedWasteNoCPolicy } from './rule-based';
+import { createRuleBasedPolicy, ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV2Policy, ruleBasedV3Policy, ruleBasedV4Policy, ruleBasedV5Policy, ruleBasedV6Policy, ruleBasedPicksKwPolicy, ruleBasedWastePolicy, ruleBasedWasteNoCPolicy } from './rule-based';
 
 const POLICIES = new Map<string, BotPolicy>();
 
@@ -42,3 +42,7 @@ registerPolicy(ruleBasedV5Policy);
 registerPolicy(ruleBasedWastePolicy);
 // Part 3 without rule C (answer or take).
 registerPolicy(ruleBasedWasteNoCPolicy);
+// 'rule-based' after Kingdom Wars Part 3, frozen as the baseline Part 4 is judged against.
+registerPolicy(ruleBasedV6Policy);
+// Part 4 challenger: the Kingdom Wars General value table.
+registerPolicy(ruleBasedPicksKwPolicy);
