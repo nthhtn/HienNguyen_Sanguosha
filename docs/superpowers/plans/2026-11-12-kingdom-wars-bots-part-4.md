@@ -156,3 +156,39 @@
 - [ ] Step 6: if it passes, `rule-based` gets `{ identity: GENERAL_VALUES, kingdomWars: KINGDOM_WARS_TABLE }`; update specs whose expectations change, one-line reason each in the commit. If it fails, `rule-based` stays and the Results say why and which variant came closest.
 - [ ] Step 7: `npm run verify` and `npx jest` → green.
 - [ ] Step 8: commit `feat(bots): ship Part 4 (Kingdom Wars General table)` (or `…: judge Part 4; not shipped`) and stop for the developer.
+
+---
+
+## Amendment: force-adjusted refit (spec "Amendment (2026-11-12)")
+
+### Task 8: Force-adjusted fit (rules R2′, R4′)
+
+**Files:** Modify `projects/sim/src/fitGenerals.ts`, `fitGenerals.spec.ts`.
+
+**Interfaces:**
+- `PickSample` gains `kingdom: string` (the printed Kingdom of the seat's Generals, from the registry), filled by `collectSamples`.
+- `forceLifts(samples: PickSample[]): Record<string, Record<number, number>>` — F(K, s) per Kingdom and seat count.
+- `fitValues(samples, k?)` and `fitPairs(samples, values, candidates, k?)` subtract F(K, s) from each residual (R2′, R4′). Identity fits (one seat count) use the same rule.
+- `fitPairs` keeps a bonus only if `Number(bonus.toFixed(4)) > 0`.
+- `formatDeckTable` adds a comment block listing each Kingdom's force lift averaged over seat counts.
+
+- [ ] Step 1: tests on synthetic samples — two Generals each 0.05 above their own Kingdom's rate, one in a Kingdom 0.2 above overall and one in a Kingdom 0.1 below, get equal values (±1e-9); a pair whose seats win exactly overall + F + vA + vB gets no bonus, and one 0.2 above that over 200 samples gets 0.1; a 0.00004 lift gives no bonus; `forceLifts` on a hand-made set returns the expected rates.
+- [ ] Step 2: run → FAIL. Step 3: implement. Step 4: `npx jest --selectProjects sim` and `npm run verify` → PASS.
+- [ ] Step 5: commit `feat(sim): measure Generals and pairs against their force`.
+
+### Task 9: Re-run the fit
+
+- [ ] Step 1: in the background, `npm run sim -- fit-generals 8000 4-8 2000000 kingdomWars` into a scratch file, then copy only the generated content into `projects/bots/src/lib/general-values.kingdom-wars.data.ts`.
+- [ ] Step 2: report the force lifts, the average value per Kingdom (should be near 0 for every Kingdom), the number of candidates with a bonus per Kingdom, and the top 10 / bottom 5 values.
+- [ ] Step 3: fix the two table-dependent tests (`policies.spec.ts` picks-kw General-selection fixture, `rules/skills.spec.ts` Impetus fixture) so they assert their data preconditions or compute the expected pick with `bestPair(...)` and assert it differs from v6 — no magic numbers.
+- [ ] Step 4: `npx tsc --noEmit -p projects/bots/tsconfig.json`, `npx jest --selectProjects bots`, `npm run verify` → PASS.
+- [ ] Step 5: commit `feat(bots): Kingdom Wars General table, refitted against force (generated)`.
+
+### Task 10: Re-judge, decide, correct the docs
+
+- [ ] Step 1: write the amended bar and seeds (2500000, 2600000) into the Results before running; commit.
+- [ ] Step 2: run in the background, one at a time: tournaments `4000 6` and `4000 8` (`rule-based-picks-kw` vs `rule-based-v6`, mirrored) and balance `2000 6` and `2000 8` (`rule-based-picks-kw` vs `rule-based-v6`), both seeds; timing `balance 400 8 rule-based-picks-kw rule-based-picks-kw 1400000`.
+- [ ] Step 3: Results: keep the first fit's results under "First fit (superseded)", corrected — say the force spread narrows only in mixed tournaments, add the all-bot numbers (Qun 58%, leader-won 57%), fix the 8-seat / 2400000 challenger gap to 23.4. Add "Force-adjusted refit" tables (seat share, deaths, turns survived, synergy share, wins by force, all-bot force rates and leader-won, time) and the verdict. Same summary in the parent spec.
+- [ ] Step 4: small fixes from the final review: synergy share printed as % not pp (`tournament.ts`); the "turns survived" label says it counts every player's turn; `docs/architecture/bots-and-simulation.md` shows the new `fit-generals` command; `cli.ts` accepts a bare seat count `N` as `N-N`.
+- [ ] Step 5: if every gate passes, `rule-based` keeps the new table; otherwise set `rule-based` back to plain `GENERAL_VALUES` and say so.
+- [ ] Step 6: `npm run verify` and `npx jest` → green; commit `feat(bots): Part 4 refit against force; <shipped|not shipped>`. Do not push.

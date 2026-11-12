@@ -183,6 +183,59 @@ partial result is the developer's decision, as it was for Part 3.
 - How the survival and synergy counts are reported.
 - The tuning of `SHRINK_K` and `K_PAIR` within the three sets.
 
+## Amendment (2026-11-12): force-adjusted refit
+
+**Why.** The first fit (Results below) passed the bar, but the final review
+found that its values mostly measured the force, not the General: both of a
+seat's Generals share a Kingdom, so each General's lift included its force's
+lift (average value Qun +0.10, Wu −0.07), and the pair lift subtracted that
+force lift twice (no Qun pair got a bonus, all 12 Wu pairs did). Bots learned
+"pick Qun"; in all-bot games Qun won 58% and the leading force 57% (today's
+bot: 11% and 47%). The developer chose to refit against force, and to **ignore
+force entirely when picking** (2026-11-12).
+
+These rules replace R2 and R4; R1, R3 and R5 stand.
+
+### R2′. Force strength, then single values
+
+- A seat's **force** is the printed Kingdom of its Generals (both share one),
+  whatever allegiance the seat ends with.
+- For each seat count *s* and Kingdom *K*: **force lift** F(K, s) = the win
+  rate of seats of Kingdom K at *s* − the overall win rate at *s*.
+- A General's value = its weighted mean of (won − overall(s) − F(K, s)) over
+  its samples (same seat-count weights as R2), shrunk by `n / (n + K)` as in
+  R2. Two equally good Generals in a strong and a weak force get the same
+  value.
+- The force lifts are reported in the generated table as comments; they are
+  not used for picking (the developer's decision).
+
+### R4′. Pair bonuses against force
+
+- A candidate pair's lift = its weighted mean of
+  (won − overall(s) − F(K, s) − value A − value B), shrunk by
+  `n / (n + K_PAIR)`; only lifts above 0 (after rounding to 4 decimals) give a
+  bonus. Force is subtracted once.
+
+### R5 unchanged
+
+The pair score stays value(main) + value(deputy) + bonus + the max-HP
+tiebreak. With force removed from the values, picking ignores force.
+
+### Judging the refit
+
+Fresh seed ranges `2500000` and `2600000`. The bar is the same as above, plus
+one new gate (developer's priority 4 and Part 2's goal must not regress in the
+games players face):
+
+6. **All-bot games** (`balance 2000 <seats> rule-based-picks-kw rule-based-v6
+   <seed>`, every seat one bot, at 6 and 8 seats, both ranges): the leader-won
+   paired difference is not wholly above 0, and the challenger's best-minus-
+   worst force win-rate gap is no more than 5 points larger than
+   `rule-based-v6`'s (*my call*). Ambitionist seats count as one group.
+
+If the refit fails, `rule-based` goes back to today's table (the tools and
+data stay, unused by the shipped bot) and the Results say why.
+
 ## Results
 
 **Fixed before running (2026-11-12).** The bar is the one in "How it is
