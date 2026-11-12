@@ -201,4 +201,8 @@ describe('rule-based-picks-kw: General selection', () => {
   it('rule-based-v6 picks by the Identity table, by base id', () => {
     expect(pair(decideWith(ruleBasedV6Policy, selection()))).toEqual(expectedPair(GENERAL_VALUES));
   });
+  // Pins "not shipped": rule-based must not silently switch to the refitted table.
+  it('rule-based picks the same pair as rule-based-v6', () => {
+    expect(pair(decideWith(ruleBasedPolicy, selection()))).toEqual(pair(decideWith(ruleBasedV6Policy, selection())));
+  });
 });

@@ -419,7 +419,13 @@ and -10.7 pp (-13.7 to -7.6).
 `MoveCardEffect`). The engine is unchanged on this branch, so the fault is in
 today's engine and today's `rule-based` (which decides as `rule-based-v6`) can
 reach it. That row is measured with seed `2600625` left out on both sides
-(1999 games each). The challenger's Ambitionist group there is 14 seats with no
+(1999 games each). It was run as two halves per policy with the same
+`runBalance` the CLI uses (`games: 625, firstSeed: 2600000`, then
+`games: 1374, firstSeed: 2600626`, 8 seats), and the halves were merged by
+summing seats and wins per force and pooling the games for the leader-won
+interval; a throwaway script outside the repo did this (not committed). The
+`npm run sim` CLI has no skip option, so rerunning means those two ranges per
+policy. The challenger's Ambitionist group there is 14 seats with no
 win; without Ambitionist seats the gaps would be 32.7 against 31.1.
 
 **Time.** 400 balance games at 8 seats, first seed 1400000
@@ -450,5 +456,7 @@ No tuning was planned, so none was tried. `rule-based` goes back to picking by
 refit table, the pair bonuses, `rule-based-picks-kw` and the fitting tools
 stay, unused by the shipped bot. The failing gap rests on a small group (14
 Ambitionist seats, none winning) and on a run that needed one seed left out;
-whether that should count is the developer's call, as is the engine fault at
+gate 6 is weak here: best-minus-worst over a tiny group (14 Ambitionist
+seats) decided the verdict, and a future attempt should set a minimum group
+size or compare the four Kingdoms only. Whether it should count is the developer's call, as is the engine fault at
 seed `2600625`.
