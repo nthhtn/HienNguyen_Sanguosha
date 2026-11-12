@@ -416,3 +416,9 @@ seat share is wholly below 0 on both ranges (-4.2 pp, -5.1 to -3.2; -5.2 pp,
 -6.1 to -4.2): next to the old bot, the bot that holds its cards and takes
 hits wins fewer seats. `rule-based` is unchanged (equal to `rule-based-v5`).
 
+**Without rule C** (`rule-based-waste-no-c`: A, B, D and E on, rule C off, no
+tuning, same bar and seeds): passes every gate. Wasted plays -3.23 and -3.48 per
+game (intervals below 0), HP lost and leader-won not wholly above 0, tournament
+seat share +1.6 pp (0.7 to 2.5) and +1.4 pp (0.5 to 2.2), 1.30x time. Shipping
+it is the developer's call.
+

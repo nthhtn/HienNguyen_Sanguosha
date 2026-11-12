@@ -330,3 +330,40 @@ challenger as built differs from the rule text here:
 so a later part can start from it. `rule-based-v5` is now pinned by expected
 decisions (like `rule-based-v4`), including a Sha the frozen bot answers, so
 it stays frozen whatever `rule-based` becomes.
+
+### Without rule C
+
+Asked for by the developer after the result above: the same challenger with
+rule C (answer or take the hit, and C4's "no losing Duels") turned off, so it
+answers every hit and starts Duels as `rule-based-v5` does. Everything else
+(A, B, D, E) stays on. Policy `rule-based-waste-no-c` (`answerRule: false`),
+run at commit `3ea300b6` against `rule-based-v5`, the same bar, the same seed
+ranges, the final `EXPOSURE_WEIGHTS` (unused without rule C), **no tuning**.
+
+Balance, 2000 games each, every seat the same bot (A minus B, paired by seed;
+deaths are all seats):
+
+| Seed | Wasted plays per game | HP lost per game | Deaths per game | Leader won A / B | Leader won difference | Wins by force, A / B (%) |
+|---|---|---|---|---|---|---|
+| 1500000 | -3.23 (-3.48 to -2.99) | +0.16 (-0.30 to 0.62) | +0.01 (-0.02 to 0.05) | 56.3 / 58.2 | -1.9 pp (-4.2 to 0.5) | Wei 36.0 / 33.9, Shu 44.4 / 47.7, Wu 14.5 / 12.1, Qun 11.8 / 10.7, Ambitionist 11.2 / 10.5 |
+| 1600000 | -3.48 (-3.77 to -3.18) | -0.03 (-0.56 to 0.49) | +0.02 (-0.02 to 0.05) | 54.6 / 54.6 | +0.1 pp (-2.2 to 2.4) | Wei 33.2 / 33.9, Shu 46.3 / 45.8, Wu 13.6 / 15.3, Qun 10.2 / 10.4, Ambitionist 11.1 / 10.4 |
+
+Mirrored tournament, 4000 games each, 6 seats
+(`tournament 4000 6 rule-based-waste-no-c rule-based-v5 <seed> mirrored`):
+
+| Seed | Seat-share difference (95%) | Wins by force, challenger / baseline (%) |
+|---|---|---|
+| 1500000 | +1.6 pp (0.7 to 2.5) | Wei 36.5 / 35.0, Shu 47.1 / 44.7, Wu 12.8 / 13.0, Qun 14.5 / 11.4, Ambitionist 10.7 / 9.7 |
+| 1600000 | +1.4 pp (0.5 to 2.2) | Wei 34.3 / 32.9, Shu 46.9 / 45.6, Wu 15.2 / 13.9, Qun 13.4 / 11.6, Ambitionist 10.6 / 7.6 |
+
+**No slower games.** 400 balance games at 8 seats, first seed 1400000, each
+side `rule-based-waste-no-c`: 63.78 s against `rule-based-v3`'s 49.12 s, a
+ratio of 1.30x. Passes.
+
+**Verdict: passes every gate.** Wasted plays per game wholly below 0 on both
+ranges; HP lost and leader-won not wholly above 0; the tournament seat share is
+above 0 on both ranges (+1.6 and +1.4 pp, every interval above 0); 1.30x time.
+So the seat-share loss came from rule C: without it, the no-waste rules make
+the bot both less wasteful and stronger. Shipping it (making `rule-based`
+equal to `rule-based-waste-no-c`) is the developer's call; until then
+`rule-based` is unchanged.
