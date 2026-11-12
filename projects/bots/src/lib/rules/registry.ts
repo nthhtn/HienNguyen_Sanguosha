@@ -51,6 +51,8 @@ export interface BotFeatures {
   tableReading: boolean;
   // Whether the bot avoids wasted plays and wasted stops (Part 3).
   noWaste: boolean;
+  // Whether the bot decides to answer a hit or take it, and refuses losing Duels (rule C); only with `noWaste`.
+  answerRule: boolean;
 }
 
-export const NO_FEATURES: BotFeatures = { rules: null, tableReading: false, noWaste: false };
+export const NO_FEATURES: BotFeatures = { rules: null, tableReading: false, noWaste: false, answerRule: false };

@@ -229,7 +229,7 @@ function decide(
     const answersAvailable = legal.filter((a) => a.kind === 'RespondAction' || (a.kind === 'UseConversionAction' && !!a.pendingResponseId)).length;
     const worthAnswering =
       !reason || reason.kind === 'card-effect'
-        ? !features.noWaste || !self || shouldAnswer(view, self, registry, dangerOf(registry), answersAvailable) // rules C3, C3a
+        ? !(features.noWaste && features.answerRule) || !self || shouldAnswer(view, self, registry, dangerOf(registry), answersAvailable) // rules C3, C3a
         : reason.kind === 'dying'
           ? !!self && !!dying && (dying.id === seatId || isAlly(self, dying, view) || (features.tableReading && relationOf(view, self, dying) === 'truce'))
           : reason.kind === 'wuxie'
@@ -395,7 +395,7 @@ function decide(
       .map((t) => t.a);
     if (conversion && conversionSpare(view, self, conversion, registry)) return take(conversion, 1);
     // Rule C4: no Duel on a seat expected to outlast the bot (only with noWaste).
-    const duelWorth = (target: Seat | undefined) => !features.noWaste || (!!target && duelWorthStarting(view, self, target, registry));
+    const duelWorth = (target: Seat | undefined) => !(features.noWaste && features.answerRule) || (!!target && duelWorthStarting(view, self, target, registry));
     const [duel] = targetedPlays(view, self, plays, 'duel', rank, registry).filter((p) => duelWorth(view.seats.find((s) => s.id === p.targets[0]?.seatId)));
     if (duel) return take(duel);
     // Dueling Heroes: a Duel from an opposite-colour card, at the weakest non-ally.
@@ -438,7 +438,7 @@ export function createRuleBasedPolicy(id: string, rank: TargetRanker | RankerFac
 // Part 1 shipped: the rule registry decides when each Kingdom Wars card and skill is worth using. Kingdom Wars
 // Part 2 shipped: the bot reads the table (forces, the leading force, truce partners) and ranks targets by it
 // (tableRank, rule 6).
-export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: false });
+export const ruleBasedPolicy: BotPolicy = createRuleBasedPolicy('rule-based', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: false, answerRule: false });
 
 // Weakest-first targeting and highest-max-HP General pairs, frozen as a fixed opponent for the tournament
 // harness. 'rule-based-v1' was 'rule-based' before the Stage 4 value table; 'rule-based-v2' is the same bot,
@@ -450,10 +450,13 @@ export const ruleBasedV2Policy: BotPolicy = createRuleBasedPolicy('rule-based-v2
 export const ruleBasedV3Policy: BotPolicy = createRuleBasedPolicy('rule-based-v3', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, NO_FEATURES);
 
 // 'rule-based' as it was at the end of Kingdom Wars Part 1, frozen as the baseline Part 2 was judged against.
-export const ruleBasedV4Policy: BotPolicy = createRuleBasedPolicy('rule-based-v4', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: false, noWaste: false });
+export const ruleBasedV4Policy: BotPolicy = createRuleBasedPolicy('rule-based-v4', weakestFirst, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: false, noWaste: false, answerRule: false });
 
 // 'rule-based' as it was at the end of Kingdom Wars Part 2, frozen as the baseline Part 3 is judged against.
-export const ruleBasedV5Policy: BotPolicy = createRuleBasedPolicy('rule-based-v5', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: false });
+export const ruleBasedV5Policy: BotPolicy = createRuleBasedPolicy('rule-based-v5', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: false, answerRule: false });
 
 // Part 3 candidate: 'rule-based' with the no-waste rules on; judged against 'rule-based-v5'.
-export const ruleBasedWastePolicy: BotPolicy = createRuleBasedPolicy('rule-based-waste', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true });
+export const ruleBasedWastePolicy: BotPolicy = createRuleBasedPolicy('rule-based-waste', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: true });
+
+// Part 3 without rule C: the same bot, but it answers every hit and starts Duels as v5 does.
+export const ruleBasedWasteNoCPolicy: BotPolicy = createRuleBasedPolicy('rule-based-waste-no-c', tableRank, NO_CARD_PLAY_RULES, NO_RESPONSE_RULES, GENERAL_VALUES, { rules: KINGDOM_WARS_RULES, tableReading: true, noWaste: true, answerRule: false });

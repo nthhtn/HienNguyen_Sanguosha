@@ -1,11 +1,11 @@
 import { policyById, policyIds, registerPolicy } from './policies';
-import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy, ruleBasedV4Policy, ruleBasedV5Policy, ruleBasedWastePolicy } from './rule-based';
+import { ruleBasedPolicy, ruleBasedV1Policy, ruleBasedV3Policy, ruleBasedV4Policy, ruleBasedV5Policy, ruleBasedWastePolicy, ruleBasedWasteNoCPolicy } from './rule-based';
 import { isAlly } from './helpers';
 import { act, card, decide, decideWith, table } from './testing';
 
 describe('policy registry', () => {
   it('lists the registered policies', () => {
-    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3', 'rule-based-v4', 'rule-based-v5', 'rule-based-waste']);
+    expect(policyIds().sort()).toEqual(['rule-based', 'rule-based-cards', 'rule-based-picks', 'rule-based-responses', 'rule-based-v1', 'rule-based-v2', 'rule-based-v3', 'rule-based-v4', 'rule-based-v5', 'rule-based-waste', 'rule-based-waste-no-c']);
   });
 
   it('looks a policy up by id', () => {
@@ -94,6 +94,12 @@ describe('rule-based-v4', () => {
 describe('rule-based-v5', () => {
   it('has the id "rule-based-v5"', () => expect(ruleBasedV5Policy.id).toBe('rule-based-v5'));
   it('the no-waste variant has the id "rule-based-waste"', () => expect(ruleBasedWastePolicy.id).toBe('rule-based-waste'));
+
+  it('rule-based-waste-no-c answers the Sha like v5 (no rule C)', () => {
+    const s = act(table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-b:hand': [card('d1', 'shan')] }, { hp: { 'seat-b': 4 } }), { kind: 'PlayCardAction', seatId: 'seat-a', cardInstanceId: 's1', targets: [{ kind: 'seat', seatId: 'seat-b' }] } as never);
+    expect(decideWith(ruleBasedWasteNoCPolicy, s)).toEqual(decideWith(ruleBasedV5Policy, s));
+    expect(decideWith(ruleBasedWastePolicy, s)).not.toEqual(decideWith(ruleBasedV5Policy, s));
+  });
 
   // v5 is 'rule-based' as it was at the start of Part 3, frozen: these were its decisions when Part 3 shipped.
   const fixtures: Record<string, () => ReturnType<typeof table>> = {
