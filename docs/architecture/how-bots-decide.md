@@ -388,5 +388,3 @@ to explore odd lines of play.
   Tools.
 - **Never reveals at the start of a turn,** so a bot's Generals stay hidden
   until it uses a skill or conversion.
-- **Engine crash seed.** 8-seat self-play on seed 2600625 throws `Card
-  card-103 not found in any zone` in the engine (`docs/deferrals.md`).

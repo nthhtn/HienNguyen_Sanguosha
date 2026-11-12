@@ -142,6 +142,20 @@ time, and only after a Slash that dealt damage (not Duel or other damage).
   killed its target.
 - Trident Glaive: the chosen player is never the target (the user may be
   chosen, as the rule says). With an empty hand it is not offered.
+- Trident Glaive when other abilities act on the same damage first (added
+  2026-11-12, after seed 2600625 crashed: Fearsome Blade discarded a card in
+  a compete, then Trident Glaive offered that card to discard). The Slash's
+  damage decides whether Trident Glaive is in line (as above). When its turn
+  to resolve comes, everything is read again at that moment:
+  - It is asked only if the user is still in the game, still wears that
+    Trident Glaive, holds at least one hand card, the damaged seat is still
+    living above 0 HP, and at least one other living seat is at distance 1
+    from it. Otherwise it is skipped without asking.
+  - The cards offered to discard are the user's hand cards at that moment.
+  - The seats offered to damage are worked out after the discard: the living
+    seats at distance 1 from the damaged seat. If the user or the damaged seat
+    has left the game by then, or no such seat remains, nothing more happens;
+    the discarded card stays discarded.
 - Six Swords of Wu also raises an unarmed Kingdom mate's range from 1 to 2.
   The Kingdom is read live at every attack range query.
 - The Kingdom Wars deal becomes 107 cards: Fire Fan is the only card left

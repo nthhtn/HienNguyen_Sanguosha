@@ -145,4 +145,36 @@ describe('Trident Glaive', () => {
     const other = pass(play(table({ 'seat-a:hand': [card('s2', 'sha'), card('y', 'peach')], 'seat-c:equip': [glaive] }), 's2', 'seat-b'));
     expect(other.pendingChoice).toBeUndefined();
   });
+
+  // Seed 2600625: Zhu Rong's Intense Edge acts on the same damage first, and its compete discards a hand card.
+  describe('after another ability acts on the same damage', () => {
+    const zhuRong = { generals: { 'seat-a': ['zhu-rong', 'filler-dong-zhuo'] as [string, string] } };
+    // seat-a (Zhu Rong, wearing the glaive) hits seat-b, then wins Intense Edge's compete with c9.
+    const afterCompete = (aHand: CardInstance[]) => {
+      let s = pass(play(table({ 'seat-a:hand': [card('s1', 'sha'), card('c9', 'sha', 'heart', 9), ...aHand], 'seat-b:hand': [card('b5', 'sha', 'heart', 5), card('b6', 'peach')], ...wearer }, zhuRong), 's1', 'seat-b'));
+      expect(askedAbout(s)).toBe('intense-edge');
+      s = select(select(use(s), 'c9'), 'b5');
+      return choose(s, 'hand'); // takes seat-b's last hand card, b6
+    };
+
+    it('offers the hand as it is when Trident Glaive is used, not as it was when the damage was dealt', () => {
+      let s = afterCompete([card('x1', 'peach')]);
+      expect(ids(s, 'discardPile')).toContain('c9');
+      expect(askedAbout(s)).toBe('trident-glaive');
+      s = use(s);
+      expect(s.pendingSelection?.eligibleIds).toEqual(expect.arrayContaining(['x1', 'b6']));
+      expect(s.pendingSelection?.eligibleIds).not.toContain('c9');
+      s = choose(select(s, 'b6'), 'seat-c');
+      expect(hp(s, 'seat-c')).toBe(3);
+    });
+
+    it('is skipped when the hand is empty by its turn', () => {
+      // c9 was the only card besides the Slash; the taken card goes to seat-a's hand, so seat-b gives none here.
+      let s = pass(play(table({ 'seat-a:hand': [card('s1', 'sha'), card('c9', 'sha', 'heart', 9)], 'seat-b:hand': [card('b5', 'sha', 'heart', 5)], ...wearer }, zhuRong), 's1', 'seat-b'));
+      s = select(select(use(s), 'c9'), 'b5'); // seat-b's hand is empty after the compete: nothing to take
+      expect(ids(s, 'seat-a:hand')).toEqual([]);
+      expect(askedAbout(s)).not.toBe('trident-glaive');
+      expect(s.pendingChoice).toBeUndefined();
+    });
+  });
 });
