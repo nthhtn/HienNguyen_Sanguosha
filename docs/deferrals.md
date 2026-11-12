@@ -16,6 +16,12 @@ its entry and say where it went in the commit.
 | **The game can end while a seat is still dying.** On seed 138 (11 seats, `rule-based`), Zhou Tai reveals his Deputy to use Refusing Death during his own rescue round, the reveal ends the game, and he is left living at 0 HP before `stays-alive` is logged. Noted on 2026-11-11. | Whether the win check should wait until a rescue round finishes is a rules question for the developer. The property invariant (`checkInvariants`) skips a seat whose rescue round the game's end cut short. | The rule is decided. Then either hold the win check until no rescue round is open (engine) or keep the invariant as it is. |
 | **8-seat self-play of today's bot can crash the engine.** On seed 2600625 (8 seats, `rule-based` self-play) `MoveCardEffect` throws `Card card-103 not found in any zone`: `moveCard` in `projects/engine/src/lib/pipeline/effects.ts` (the `MoveCardEffect` case, about line 235) finds the card in no zone. Reproduce with `npm run sim -- balance 2000 8 rule-based-v6 rule-based-v6 2600000` or `npm run sim -- single 2600625 8`. Found during Kingdom Wars bots Part 4 on 2026-11-12. | Not investigated yet; it is not caused by Part 4 and the engine was out of that branch's scope. | Someone investigates which effect moves a card that already left its zone, and fixes it in the engine with a regression spec. |
 
+## Bots
+
+| Deferred | Why it waits | Revisit when |
+|---|---|---|
+| **Part 4's all-bot balance gate failed on one run and shipped anyway.** At 8 seats on seed 2600000 the all-bot force gap was 44.2 against today-before-Part-4's 32.3 (limit +5), because 14 Ambitionist seats won nothing; without Ambitionists 32.7 vs 31.1. In all-bot games Qun wins 44 to 49% (before: about 10%) while the leading force wins 7 to 14 pp less. Recorded on 2026-11-12. | The developer chose to ship for the head-to-head gain (+6.6 to +7.2 pp); the gate metric is fragile to tiny groups. | When force balance or General picks are tuned again: use a minimum group size or the four Kingdoms only, and look at why Qun dominates all-bot games. |
+
 ## Game setup
 
 | Deferred | Why it waits | Revisit when |

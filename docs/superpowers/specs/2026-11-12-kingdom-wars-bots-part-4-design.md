@@ -1,6 +1,6 @@
 # Kingdom Wars Bots, Part 4: The General Value Table — Design Spec
 
-Status: Approved by the developer on 2026-11-12
+Status: Approved by the developer on 2026-11-12; the refit shipped by the developer's decision on 2026-11-12, although gate 6 failed on one run
 Date: 2026-11-12
 Parent: `docs/superpowers/specs/2026-11-11-kingdom-wars-bots-design.md`
 (Part 4 section, "How it is judged", "Where the knowledge lives" and the
@@ -433,7 +433,7 @@ win; without Ambitionist seats the gaps would be 32.7 against 31.1.
 run alone, wall time): 71.10 s against `rule-based-v3`'s 49.12 s, 1.45x
 against the 3x bar.
 
-**Verdict: fails gate 6 at 8 seats on `2600000`, not shipped.**
+**Verdict: shipped by the developer's decision on 2026-11-12, although gate 6 failed on one run (8 seats, `2600000`).** The other gates passed. Qun still wins 44 to 49% of all-bot games (gate 4). The failed gate is recorded in `docs/deferrals.md`.
 
 1. 6-seat seat share wholly above 0 on both ranges (+6.6 pp, 5.4 to 7.9;
    +7.2 pp, 5.9 to 8.4). Passes.
@@ -451,12 +451,12 @@ against the 3x bar.
    and at 8 seats on `2500000` (35.5 against 32.6), but not at 8 seats on
    `2600000`: 44.2 against 32.3, 11.9 points wider. **Fails.**
 
-No tuning was planned, so none was tried. `rule-based` goes back to picking by
-`GENERAL_VALUES` for every deck; it now decides as `rule-based-v6` again. The
-refit table, the pair bonuses, `rule-based-picks-kw` and the fitting tools
-stay, unused by the shipped bot. The failing gap rests on a small group (14
-Ambitionist seats, none winning) and on a run that needed one seed left out;
-gate 6 is weak here: best-minus-worst over a tiny group (14 Ambitionist
-seats) decided the verdict, and a future attempt should set a minimum group
-size or compare the four Kingdoms only. Whether it should count is the developer's call, as is the engine fault at
-seed `2600625`.
+No tuning was planned, so none was tried. `rule-based` now picks Kingdom Wars
+Generals by the refit table and pair bonuses (Identity keeps `GENERAL_VALUES`),
+as `rule-based-picks-kw` does; `rule-based-v6` stays frozen as the baseline. The
+failing gap rests on a small group (14 Ambitionist seats, none winning) and on a
+run that needed one seed left out; gate 6 is weak here: best-minus-worst over a
+tiny group decided the verdict, and a future attempt should set a minimum group
+size or compare the four Kingdoms only. The developer chose to ship for the
+head-to-head gain (+6.6 to +7.2 pp). The engine fault at seed `2600625` is a
+separate deferral.

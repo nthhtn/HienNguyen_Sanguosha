@@ -62,9 +62,10 @@ describe('rules/skills: Zou Shi', () => {
   it('impetus: rule-based-v6 hides by the Identity value', () => {
     expect(impetusChoice((s) => decideWith(ruleBasedV6Policy, s))).toBe('main');
   });
-  // Pins "not shipped": rule-based must not silently switch to the refitted table.
-  it('impetus: rule-based chooses as rule-based-v6', () => {
-    expect(impetusChoice((s) => decideWith(ruleBasedPolicy, s))).toBe(impetusChoice((s) => decideWith(ruleBasedV6Policy, s)));
+  // Part 4 shipped by the developer's decision: rule-based hides as the challenger and no longer as v6.
+  it('impetus: rule-based chooses as rule-based-picks-kw, not as rule-based-v6', () => {
+    expect(impetusChoice((s) => decideWith(ruleBasedPolicy, s))).toBe(impetusChoice(decidePicksKw));
+    expect(impetusChoice((s) => decideWith(ruleBasedPolicy, s))).not.toBe(impetusChoice((s) => decideWith(ruleBasedV6Policy, s)));
   });
 
   it('impetus: never discards a worn card', () => {

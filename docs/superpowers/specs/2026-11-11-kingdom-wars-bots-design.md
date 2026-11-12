@@ -447,9 +447,11 @@ Seat share +6.6 pp (5.4 to 7.9) and +7.2 pp (5.9 to 8.4) at 6 seats, +6.8 pp
 often, but Qun still wins 44 to 49%, and at 8 seats on 2600000 the force gap is
 44.2 points against `rule-based-v6`'s 32.3 (bar: at most +5).
 
-**Verdict: fails gate 6 (force gap, 8 seats, 2600000), not shipped.**
-`rule-based` picks by `GENERAL_VALUES` for every deck again, as
-`rule-based-v6`; the refit table and `rule-based-picks-kw` stay as a recorded
-experiment. The failing gap rests on 14 Ambitionist seats with no win, and the
-run left out seed 2600625, where `rule-based-v6` hits an engine fault
-(`Card card-103 not found in any zone`); both are for the developer to weigh.
+**Verdict: shipped by the developer's decision on 2026-11-12, although gate 6
+failed on one run (force gap, 8 seats, 2600000).** `rule-based` now picks Kingdom
+Wars Generals by the refit table and pair bonuses (Identity keeps
+`GENERAL_VALUES`); `rule-based-v6` stays frozen and `rule-based-picks-kw` keeps
+the same picks. The failing gap rests on 14 Ambitionist seats with no win, and
+the run left out seed 2600625, where `rule-based-v6` hits an engine fault
+(`Card card-103 not found in any zone`). Qun still wins 44 to 49% of all-bot
+games. The failed gate is recorded in `docs/deferrals.md`.

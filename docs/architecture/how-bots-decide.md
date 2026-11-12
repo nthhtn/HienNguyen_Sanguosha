@@ -5,7 +5,7 @@ A plain-words guide to how the shipped computer opponent, `rule-based`
 how it reads the table, whom it attacks, when it holds back, and how it
 answers. It is written for a developer or game designer who knows Sanguosha
 and Guozhan but not the code, and it describes the code as it is today
-(after Kingdom Wars bots Part 3; Part 4 was not shipped).
+(after Kingdom Wars bots Part 4, shipped by the developer's decision).
 
 For the code structure (the `BotPolicy` interface, callers, the registry's
 hooks, the simulator) read [Bots and simulation](bots-and-simulation.md). The
@@ -323,19 +323,24 @@ At General selection the bot scores each offered pair as value(Main) +
 value(Deputy) + 0.0001 × summed max HP, and takes the highest; the first on a
 tie (`bestPair`, `general-values.ts`).
 
-The values are `GENERAL_VALUES` (`general-values.data.ts`): how many win-rate
-points a seat gained holding each General, measured once on 20,000
-**Identity-deck** games at 4 seats with older bots (Stage 4). Kingdom Wars
-variants are looked up by their base id (`kingdomWars:cao-cao` reads
-`cao-cao`), and Kingdom Wars-only Generals (Ding Feng, Kong Rong, Ma Teng…)
-score 0, so they are picked only on max HP when nothing else is rated. The
-same table feeds danger (section 3), so it shapes whom bots attack as well.
+In a Kingdom Wars game the values are the Kingdom Wars table
+(`general-values.kingdom-wars.data.ts`): fitted by full id against each force's
+own strength, so a General is not rated for belonging to a strong force, plus
+bonuses for candidate pairs that win more together. Impetus for Conflicts
+(hiding a General) uses the same table. In an Identity game the values are
+`GENERAL_VALUES` (`general-values.data.ts`): win-rate points a seat gained
+holding each General, measured once on 20,000 Identity-deck games at 4 seats
+with older bots (Stage 4), looked up by base id.
 
-A Kingdom Wars table exists (`general-values.kingdom-wars.data.ts`, fitted
-against each force's own strength, with pair bonuses) but only the experiment
-`rule-based-picks-kw` uses it. It made each bot stronger in mixed games, but
-in all-bot games Qun still won 44 to 49% and the 8-seat force gap grew past
-the bar (44.2 points against 32.3), so Part 4 was not shipped.
+The danger rating (section 3) still reads `GENERAL_VALUES` by base id, so it
+shapes whom bots attack with the old table, and Kingdom Wars-only Generals
+count 0 there.
+
+Part 4 shipped by the developer's decision although the all-bot force-gap gate
+failed on one run (44.2 points against 32.3 at 8 seats, seed 2600000; see
+`docs/deferrals.md`). In all-bot games Qun wins 44 to 49% (about 10% before),
+and the leading force wins less often. Against the earlier bot the new picks
+gain 6.6 to 7.2 points of seat share.
 
 ## 9. The other registered policies
 
@@ -344,18 +349,18 @@ in `projects/sim`. Only `rule-based` plays people.
 
 | Id | What it is |
 |---|---|
-| `rule-based` | the shipped bot described here |
+| `rule-based` | the shipped bot described here (same picks as `rule-based-picks-kw`) |
 | `rule-based-v1`, `rule-based-v2` | the original bot: weakest-first targeting, highest max HP pairs (v2 kept as Stage 4's baseline) |
 | `rule-based-v3` | before Kingdom Wars Part 1 (value table, no registry) |
 | `rule-based-v4` | end of Part 1 (registry, no table reading) |
 | `rule-based-v5` | end of Part 2 (table reading, no waste rules) |
-| `rule-based-v6` | end of Part 3; equal to `rule-based` today, frozen as Part 4's baseline |
+| `rule-based-v6` | end of Part 3, with Identity-table picks for every deck; frozen as Part 4's baseline |
 | `rule-based-cards` | Stage 1 experiment: every card-play rule on |
 | `rule-based-responses` | Stage 2 experiment: Shan hold and extended Wuxie on |
 | `rule-based-picks` | Stage 4 value table on the original bot |
 | `rule-based-waste` | Part 3 with rule C on (failed: fewer seats won) |
 | `rule-based-waste-no-c` | Part 3 without rule C; what shipped |
-| `rule-based-picks-kw` | Part 4 Kingdom Wars value table (not shipped) |
+| `rule-based-picks-kw` | Part 4 Kingdom Wars value table; `rule-based` now decides the same |
 
 The random bot (`random.ts`) is not a registered policy; the simulator uses it
 to explore odd lines of play.
@@ -366,9 +371,10 @@ to explore odd lines of play.
   even hopeless ones; it never takes a cheap hit to keep a Shan. Rule C lost
   seats in the Part 3 tournament and waits for a rework (Part 3 spec,
   Results).
-- **Picks use the Identity table.** Kingdom Wars-only Generals are undervalued
-  and danger leans on Identity values. The Kingdom Wars table is parked in
-  `rule-based-picks-kw` because of Qun dominance (Part 4 spec, Results).
+- **Qun dominates all-bot games.** With the Kingdom Wars picks Qun wins 44 to
+  49% of all-bot games, and the 8-seat force gap failed its gate on one run
+  (Part 4 spec, Results; `docs/deferrals.md`). Danger still leans on the
+  Identity table.
 - **Stage 1 and 2 switches stay off.** Peach, Wine, equipment upgrades,
   discard order, Shan holding and extended Wuxie are built and switchable but
   not in `rule-based`.
