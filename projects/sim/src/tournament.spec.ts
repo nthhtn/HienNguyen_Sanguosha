@@ -1,5 +1,5 @@
 import type { GameState } from 'engine';
-import { formatReport, interval, pairMeans, runTournament, scoreGame, sideOf, Side } from './tournament';
+import { formatReport, interval, pairMeans, runTournament, scoreGame, sideOf, turnsSurvivedDifference, Side } from './tournament';
 
 // Just enough of a finished game for scoring: seats with kingdoms, and a result.
 const generals = { main: { generalDefinitionId: 'kingdomWars:cao-cao' }, deputy: { generalDefinitionId: 'kingdomWars:liu-bei' } };
@@ -78,6 +78,20 @@ describe('scoreGame survival and synergy', () => {
     expect(score.deaths).toEqual({ challenger: 0, baseline: 0 });
     expect(score.turnsSurvived).toEqual({ challenger: 0, baseline: 0 });
     expect(score.synergySeats).toEqual({ challenger: 0, baseline: 0 });
+  });
+});
+
+describe('turnsSurvivedDifference', () => {
+  it('is per seat on each side, also when the sides have unequal seat counts (5 seats: 3 vs 2)', () => {
+    const turn = { kind: 'TurnAdvancedEvent' };
+    const state = {
+      seats: [0, 1, 2, 3, 4].map((i) => ({ id: `seat-${i}`, kingdom: 'Wei', generals })),
+      log: [turn, turn, turn, turn, { kind: 'SeatEliminatedEvent', seatId: 'seat-1' }, turn, turn],
+      result: { endedAt: 0, winningSeatIds: ['seat-0'], losingSeatIds: [] },
+    } as unknown as GameState;
+    const score = scoreGame(state, evenSeatsChallenge); // challenger seats 0, 2, 4: 6 each = 18; baseline 1, 3: 4 + 6 = 10
+    expect(score.seats).toEqual({ challenger: 3, baseline: 2 });
+    expect(turnsSurvivedDifference(score)).toBeCloseTo(18 / 3 - 10 / 2);
   });
 });
 

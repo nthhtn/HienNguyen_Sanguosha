@@ -62,6 +62,10 @@ export function scoreGame(finalState: GameState, sideOfSeat: (seatId: string) =>
   return score;
 }
 
+// Challenger minus baseline turns survived per seat, each side over its own seat count (a finished game has seats on both sides).
+export const turnsSurvivedDifference = (score: GameScore): number =>
+  score.turnsSurvived.challenger / score.seats.challenger - score.turnsSurvived.baseline / score.seats.baseline;
+
 export interface Interval {
   mean: number;
   low: number;
@@ -176,7 +180,7 @@ export function runTournament(config: TournamentConfig): TournamentReport {
       continue;
     }
     gameDeaths.push(score.deaths.challenger - score.deaths.baseline);
-    gameTurns.push(score.turnsSurvived.challenger / half - score.turnsSurvived.baseline / half);
+    gameTurns.push(turnsSurvivedDifference(score));
     const part1Uses = (side: Side): number => PART_1_KEYS.reduce((sum, key) => sum + (gameUsage[side][key]?.used ?? 0), 0);
     gameUses.push(part1Uses('challenger') - part1Uses('baseline'));
     for (const side of ['challenger', 'baseline'] as const) {
