@@ -8,6 +8,7 @@ export * from './lib/assets';
 export * from './lib/kingdomWarsCards';
 export * from './lib/kingdomWarsGenerals';
 export * from './lib/synergisticPartners';
+export * from './lib/comboPairs';
 export * from './lib/generalIds';
 export * from './lib/wikiKingdomWarsGenerals';
 export {
