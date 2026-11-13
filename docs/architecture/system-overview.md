@@ -49,13 +49,17 @@ Read as: dependencies point towards `engine`, and `engine` points at nothing. `s
 | `server` | `engine`, `content`, `bots`, `protocol`, Node libraries | Angular, app |
 | `app` | `engine`, `content`, `bots`, `protocol`, Angular | server, nothing else forbidden, but see below |
 
-This is checked by the build, not only by convention: each project is mapped
-by a path alias in the root [tsconfig.json](../../tsconfig.json) (`engine`,
-`content`, `bots`, `protocol`, `protocol/schemas`) and a per-project Jest
-config in [jest.config.js](../../jest.config.js). The engine's suite runs in a
-plain `node` environment with no alias to anything else, so an import of
-content or Angular from the engine fails its tests. `content` has its own
-`importGraph.spec.ts` guarding its internal layering.
+This is checked by the build, not only by convention:
+
+- **Path aliases:** Each project is mapped by a path alias in the root
+  [tsconfig.json](../../tsconfig.json) (`engine`, `content`, `bots`, `protocol`,
+  `protocol/schemas`).
+- **Jest configs:** Each project has its own config in
+  [jest.config.js](../../jest.config.js). The engine's suite runs in a plain
+  `node` environment with no alias to anything else, so an import of content or
+  Angular from the engine fails its tests.
+- **Content layering:** `content` has its own `importGraph.spec.ts` guarding its
+  internal layering.
 
 What the app must not do, even though it can import everything it needs:
 

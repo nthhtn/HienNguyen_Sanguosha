@@ -42,12 +42,14 @@ helpers (`generalDisplayData`, `cardDisplayData`, `abilityName`, `abilityHint`,
 
 A **deck** ([decks.ts](../../projects/content/src/lib/decks.ts)) is only a
 distribution: which cards it holds and the suit and rank of each copy.
-Behaviour, text and range stay on the card, so a card exists once and decks say
-how it is dealt. There are two, chosen per game by `GameRules.deck`
-(`DECK_IDS = ['identity', 'kingdomWars']`; the protocol repeats the list and a
-server test checks the two agree). A game with no deck is dealt from
-`DEFAULT_DECK_ID`, Kingdom Wars: it is the deck that is played, and Identity
-waits for its own rules (`docs/deferrals.md`).
+
+- Behaviour, text and range stay on the card, so a card exists once and decks say
+  how it is dealt.
+- There are two, chosen per game by `GameRules.deck`
+  (`DECK_IDS = ['identity', 'kingdomWars']`; the protocol repeats the list and a
+  server test checks the two agree).
+- A game with no deck is dealt from `DEFAULT_DECK_ID`, Kingdom Wars: it is the deck
+  that is played, and Identity waits for its own rules (`docs/deferrals.md`).
 
 - **Identity** is built from the card data: each card's own printings.
 - **Kingdom Wars** is read from `data/decks/kingdom-wars/deck.json`, produced by a
@@ -78,43 +80,55 @@ code and the bots can reach variants without an import cycle, and
 
 Vietnamese data lives in `data/locales/vi/`: `cards.json`, `generals.json`,
 `kingdom-wars-cards.json`, `kingdom-wars-generals.json`, `prose.json` (outcome and
-hint text), `glossary.json` and `review.json`. English prose tables are in code
-(`ENGLISH_PROSE`). `prose.vi.spec.ts` requires every English prose entry to have
-a Vietnamese one with the same placeholders, `names.vi.spec.ts` checks that
-translations name only things that exist, and `glossary.vi.spec.ts` checks that
-the glossary's terms are used consistently. A new entry therefore ships with a
-Vietnamese draft, which a native speaker later reviews.
+hint text), `glossary.json` and `review.json`.
+
+- **English prose tables** are in code (`ENGLISH_PROSE`).
+- **Specs** keep the data honest:
+  - `prose.vi.spec.ts` requires every English prose entry to have a Vietnamese one
+    with the same placeholders.
+  - `names.vi.spec.ts` checks that translations name only things that exist.
+  - `glossary.vi.spec.ts` checks that the glossary's terms are used consistently.
+- A new entry therefore ships with a Vietnamese draft, which a native speaker later
+  reviews.
 
 ### Bot names
 
-Bots are named after Three Kingdoms figures who are not Generals in any deck. The
-pool is a flat list in `data/botNames.json` (id to English name, no force: a
-name never decides a bot's force), with Vietnamese names in
-`data/locales/vi/bot-names.json`. `botNames.ts` draws distinct ids from an
-injected random function, so the engine's RNG is never used; `botNames.spec.ts`
-checks the pool against both General rosters. A bot carries the plain id as
-`botNameId` next to a stored `name` of `[Bot] <English name>`. Clients show
-`[Bot] ` plus the name in the viewer's language (`playerName` in `labels.ts`),
-and a person's name may not start with `[Bot]`, so the two never collide. Old
-bots without an id show the name they were stored with.
+Bots are named after Three Kingdoms figures who are not Generals in any deck.
+
+- **Pool:** a flat list in `data/botNames.json` (id to English name, no force: a
+  name never decides a bot's force), with Vietnamese names in
+  `data/locales/vi/bot-names.json`.
+- **Drawing:** `botNames.ts` draws distinct ids from an injected random function,
+  so the engine's RNG is never used; `botNames.spec.ts` checks the pool against both
+  General rosters.
+- **Storage:** a bot carries the plain id as `botNameId` next to a stored `name` of
+  `[Bot] <English name>`.
+- **Display:** clients show `[Bot] ` plus the name in the viewer's language
+  (`playerName` in `labels.ts`), and a person's name may not start with `[Bot]`, so
+  the two never collide.
+- **Old bots** without an id show the name they were stored with.
 
 ### Assets
 
 Card and General art, animation, and audio are kept as masters in
 `projects/content/assets-src/` and described by its `manifest.json` (source URL,
-crawl date, dimensions). `npm run assets:build` generates the files that ship into
-`projects/content/assets/` (committed, never edited by hand); `npm run assets:check`
-fails when they are out of date, and the recipes that decide what each folder
-becomes are in `asset-recipes.json`. Where the masters came from and the terms
-they are used under are in the
-[README](../../projects/content/assets-src/README.md). `angular.json` serves the
-images at `/images/...` and the audio files at `/audio/...`; both mirror the folders
-under `assets/` (the layout and its naming rules are in the
-[assets restructure spec](../superpowers/specs/2026-11-06-assets-restructure-design.md)).
-The assets module (`assets.ts`) resolves a card's or General's image for the UI; references
-in `manifest.json` and `skins.json` carry no file extension, and `assetFile()` adds the one
-the recipes ship. The design is in the
-[assets-src pipeline spec](../superpowers/specs/2026-11-06-assets-src-pipeline-design.md).
+crawl date, dimensions).
+
+- **Build:** `npm run assets:build` generates the files that ship into
+  `projects/content/assets/` (committed, never edited by hand); `npm run assets:check`
+  fails when they are out of date, and the recipes that decide what each folder
+  becomes are in `asset-recipes.json`.
+- **Provenance:** where the masters came from and the terms they are used under are
+  in the [README](../../projects/content/assets-src/README.md).
+- **Serving:** `angular.json` serves the images at `/images/...` and the audio files
+  at `/audio/...`; both mirror the folders under `assets/` (the layout and its naming
+  rules are in the
+  [assets restructure spec](../superpowers/specs/2026-11-06-assets-restructure-design.md)).
+- **Resolving:** the assets module (`assets.ts`) resolves a card's or General's image
+  for the UI; references in `manifest.json` and `skins.json` carry no file extension,
+  and `assetFile()` adds the one the recipes ship.
+- **Design:** it is in the
+  [assets-src pipeline spec](../superpowers/specs/2026-11-06-assets-src-pipeline-design.md).
 
 ## Writing a card
 
@@ -144,11 +158,13 @@ export const drawTwoCard: CardDefinition = {
 | `onStep` | One named step of its resolution (a Sha's `sha-shan`) |
 
 Cards never touch the state directly. They return **effects**, and the engine
-applies them. A card that changes how other cards behave does it with
-`abilities.modifiers` (Crossbow's `shaLimit`, a horse's `distanceToOthers`) or
-with triggers (Silver Lion's damage cap is a `before:DamageEffect` trigger).
-Content reads those modifiers through its own queries (`shared/queries.ts`,
-`shared/shaRules.ts`); the engine never does.
+applies them.
+
+- A card that changes how other cards behave does it with `abilities.modifiers`
+  (Crossbow's `shaLimit`, a horse's `distanceToOthers`) or with triggers (Silver
+  Lion's damage cap is a `before:DamageEffect` trigger).
+- Content reads those modifiers through its own queries (`shared/queries.ts`,
+  `shared/shaRules.ts`); the engine never does.
 
 ## Writing a skill
 
@@ -184,20 +200,27 @@ A skill must always act for the `owner` the engine passes in and never look up
 A mechanic that needs more than one decision is a chain of steps whose data
 lives in the queue. Compete
 ([shared/compete.ts](../../projects/content/src/lib/shared/compete.ts)) is the
-reference example: `competeStart` opens the user's face-down pick,
-`compete-user` opens the target's pick, `compete-target` shows and discards
-both cards and queues the owning skill's result step with `won` set. Heaven's
-Justice, Rouse the Tiger and Intense Edge each supply only their own result
-step. The same pattern drives Bewilder's doubt round and Sha's dodge steps.
+reference example:
+
+- `competeStart` opens the user's face-down pick.
+- `compete-user` opens the target's pick.
+- `compete-target` shows and discards both cards and queues the owning skill's
+  result step with `won` set.
+- Heaven's Justice, Rouse the Tiger and Intense Edge each supply only their own
+  result step.
+- The same pattern drives Bewilder's doubt round and Sha's dodge steps.
 
 ## Writing a game mode
 
 A mode is a `GameModeDefinition`: `setup`, `checkWinCondition`, `triggers`,
-`maxSeats`. Everything specific to Guozhan (the two Generals per seat, the
-shared HP pool, the dying round, the kill reward and
-penalty, the reveal bonuses) is a trigger or a setup step in
-[guozhan.ts](../../projects/content/src/lib/modes/guozhan.ts), not engine
-code. A second mode would be a second object of the same shape.
+`maxSeats`.
+
+- Everything specific to Guozhan (the two Generals per seat, the
+  shared HP pool, the dying round, the kill reward and
+  penalty, the reveal bonuses) is a trigger or a setup step in
+  [guozhan.ts](../../projects/content/src/lib/modes/guozhan.ts), not engine
+  code.
+- A second mode would be a second object of the same shape.
 
 ## Adding content: the checklist
 
@@ -245,11 +268,16 @@ runs. When the rules differ, write a variant in the matching
 `generals/kingdom-wars-<force>.ts`, add it to that file's variants map, and add its
 `kingdomWarsBase` entry if it shares prompts or bot behaviour with an Identity skill.
 
-**A Resolution Notice for a card or skill** is one entry in `RESOLUTION_NOTICES`
-([`resolutionNotice.ts`](../../projects/content/src/lib/resolutionNotice.ts)) keyed by the card or
-skill id, a `describe(span, view)` that turns the resolution's log events into the notice's content
-(seats, step lines, cards, an outcome with a tone and HP), the `notice.*` message keys in `en.ts` and
-`vi.ts`, and a spec that feeds it real events. A text param named `…Seat` holds a seat id, `card` or
+**A Resolution Notice for a card or skill** is made of these parts:
+
+- One entry in `RESOLUTION_NOTICES`
+  ([`resolutionNotice.ts`](../../projects/content/src/lib/resolutionNotice.ts)) keyed by the card or
+  skill id, with a `describe(span, view)` that turns the resolution's log events into the notice's content
+  (seats, step lines, cards, an outcome with a tone and HP).
+- The `notice.*` message keys in `en.ts` and `vi.ts`.
+- A spec that feeds it real events.
+
+Text params are named by what they hold: a param named `…Seat` holds a seat id, `card` or
 `…Card` a card id and `skill` a skill id; the popup shows each by name, so content never builds a
 translated string. Return `null` when there is nothing to show (a Wuxie cancelled it). Nothing in the
 engine or the popup changes.

@@ -20,12 +20,15 @@ not an illustration.
 | **Trigger** | A reaction declared by content, attached to an effect (before it applies) or an event (after it happens). | General skills, the game mode | Guozhan's "at 0 HP, the seat is dying" |
 
 Actions produce effects, effects produce events, and events wake triggers.
-Triggers return more effects or actions, and the chain keeps going until
-nothing new happens. Everything still to resolve waits in one queue, stored
-in the state, so the game can stop for a player's answer at any point and
-pick up exactly where it left off. The engine itself knows no card or skill
-by name: it asks content what a card does (`CardDefinition.play`) and who
-reacts (triggers).
+
+- Triggers return more effects or actions, and the chain keeps going until
+  nothing new happens.
+- Everything still to resolve waits in one queue, stored
+  in the state, so the game can stop for a player's answer at any point and
+  pick up exactly where it left off.
+- The engine itself knows no card or skill
+  by name: it asks content what a card does (`CardDefinition.play`) and who
+  reacts (triggers).
 
 ## The pipeline
 
@@ -53,14 +56,21 @@ action leads to, then settles the game with `advanceToDecision`.
 
 **`resolveAction`** validates first: the right seat, the card in hand, the
 targets among the engine's own legal target lists
-([`legality.ts`](../../projects/engine/src/lib/rules/legality.ts)). While a
-response is pending, only that window's allowed actions are accepted. Then it
-asks content what the action means, and queues it; it resolves nothing
-itself. For a card play it logs a `CardPlayedEvent`, counts the play, and puts
-at the front of the queue: the move of the used card to the discard pile
-(so it can't be reused mid-resolution; Equipment places itself instead), the
-play's after-trigger follow-ups, then the effects `CardDefinition.play()`
-returned.
+([`legality.ts`](../../projects/engine/src/lib/rules/legality.ts)).
+
+- While a
+  response is pending, only that window's allowed actions are accepted.
+- Then it
+  asks content what the action means, and queues it; it resolves nothing
+  itself.
+- For a card play it logs a `CardPlayedEvent`, counts the play, and puts
+  at the front of the queue:
+  - The move of the used card to the discard pile
+    (so it can't be reused mid-resolution; Equipment places itself instead).
+  - The
+    play's after-trigger follow-ups.
+  - Then the effects `CardDefinition.play()`
+    returned.
 
 **The resolution queue** is plain data in `GameState.resolutionQueue`: effects
 and actions, front first. It is absent, never `[]`, when empty. Its rules:
@@ -90,10 +100,13 @@ returns follow-ups, which go to the front of the queue.
 
 **`advanceToDecision`** drains the queue, then walks through phases that need
 no input (Start → Judgment → Draw → Play), each a `PhaseChangedEvent` whose
-after-triggers are queued and drained in turn. Guozhan's Draw phase, for
-instance, is an `after:PhaseChangedEvent` trigger that deals 2 cards. The
-loop stops when a player must decide (their Play phase, or a Discard over the
-hand limit), when a response is pending, or when the game is over.
+after-triggers are queued and drained in turn.
+
+- Guozhan's Draw phase,
+  for instance, is an `after:PhaseChangedEvent` trigger that deals 2 cards.
+- The
+  loop stops when a player must decide (their Play phase, or a Discard over the
+  hand limit), when a response is pending, or when the game is over.
 
 ### Safety rails
 
@@ -332,18 +345,24 @@ as a Sha keeps `as: 'sha'` and carries its nature on its definition, so every
 rule about Sha still applies to it.
 
 A seat can be **chained** (`Seat.chained`), set by the Chains card or Shackle
-through `SetChainedEffect`. When fire or thunder damage is actually dealt to a
-chained seat, `applyEffect` unchains it (`ChainToggledEvent`), and the pipeline
-(`chainWave` in `resolve.ts`, not a content trigger) queues a
-`ChainPropagationEffect` behind it. That effect deals the damage's **original
-amount** (`Damage.base`, recorded before the target's own before-triggers could
-change it) to each other living chained seat in turn order (`chainWaveOrder`),
-one at a time, flagging each hit `chained` so it does not start a wave of its
-own. A seat that died or was unchained meanwhile is skipped. Because the next hit
-is queued at the front, a damaged seat's triggers (a dying round, a skill that
-reacts to damage) resolve before the next seat in the chain is hit. Plain damage
-never propagates, and each seat's own before-triggers (Wood Armor's extra fire
-damage) rewrite the hit it receives like any other `DamageEffect`.
+through `SetChainedEffect`.
+
+- When fire or thunder damage is actually dealt to a
+  chained seat, `applyEffect` unchains it (`ChainToggledEvent`), and the pipeline
+  (`chainWave` in `resolve.ts`, not a content trigger) queues a
+  `ChainPropagationEffect` behind it.
+- That effect deals the damage's **original
+  amount** (`Damage.base`, recorded before the target's own before-triggers could
+  change it) to each other living chained seat in turn order (`chainWaveOrder`),
+  one at a time, flagging each hit `chained` so it does not start a wave of its
+  own.
+- A seat that died or was unchained meanwhile is skipped.
+- Because the next hit
+  is queued at the front, a damaged seat's triggers (a dying round, a skill that
+  reacts to damage) resolve before the next seat in the chain is hit.
+- Plain damage
+  never propagates, and each seat's own before-triggers (Wood Armor's extra fire
+  damage) rewrite the hit it receives like any other `DamageEffect`.
 
 ## Equipment abilities
 
@@ -428,30 +447,40 @@ triggers, conversions, active skills and content's modifiers alike:
 A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
 
 **Reveal to use.** An `AskUseEffect` from a hidden General's skill puts a
-`RevealGeneralEffect` (with `forAbilityId`) at the front of its Use option. A
-hidden General's conversion or active skill reveals when its first selection
-is confirmed: `PendingSelection.onSelect` resolves at the confirm, before the
-continuation. Cancel leaves the General hidden. A hidden General's after-trigger
-that returns neither an ask nor a `RevealGeneralEffect` is wrapped in an
-`AskUseEffect` of its own (`withReveal`): Use reveals, then the outputs run; Don't
-runs nothing (no outputs, no ask). So every reveal by a condition event, in any
-phase of any turn, is the owner's decision. A hidden General's before-trigger that
-returns direct effects throws: it cannot wait for the answer ahead of the effect it
-rewrites, so content must ask instead. A hidden compulsory skill's *before*-trigger
-does not run its content: `rewriteEffect` turns the effect into an `AskUseEffect`
-(Use: reveal, then the effect runs again and the now-revealed skill rewrites it as
-usual; Don't: `UnaskedEffect { effect, declined }` runs it with the first `declined`
-before-triggers not asking, a count so a pending choice names no hidden skill).
-`previewEffect` leaves such skills out.
+`RevealGeneralEffect` (with `forAbilityId`) at the front of its Use option.
 
-**Reveal windows.** The only free reveal is the Start window: for a human's turn
-with a hidden General the turn waits in Start (`Turn.startWindow`) and the owner
-confirms one `ConfirmRevealsAction { seatId, slots }` (a template with `slots`
-free; none is allowed). It queues a `RevealGeneralEffect` per slot, then
-`EnterStartPhaseEffect`, which logs the Start `PhaseChangedEvent` so its triggers
-gather as usual. There is no Play Phase reveal: Roar-style content reveals on use
-(`shaPlayRevealOwner`: a Sha only a hidden compulsory `shaLimit` allows reveals that
-General when played).
+- A
+  hidden General's conversion or active skill reveals when its first selection
+  is confirmed: `PendingSelection.onSelect` resolves at the confirm, before the
+  continuation. Cancel leaves the General hidden.
+- A hidden General's after-trigger
+  that returns neither an ask nor a `RevealGeneralEffect` is wrapped in an
+  `AskUseEffect` of its own (`withReveal`): Use reveals, then the outputs run; Don't
+  runs nothing (no outputs, no ask). So every reveal by a condition event, in any
+  phase of any turn, is the owner's decision.
+- A hidden General's before-trigger that
+  returns direct effects throws: it cannot wait for the answer ahead of the effect it
+  rewrites, so content must ask instead.
+- A hidden compulsory skill's *before*-trigger
+  does not run its content: `rewriteEffect` turns the effect into an `AskUseEffect`:
+  - Use: reveal, then the effect runs again and the now-revealed skill rewrites it as
+    usual.
+  - Don't: `UnaskedEffect { effect, declined }` runs it with the first `declined`
+    before-triggers not asking, a count so a pending choice names no hidden skill.
+- `previewEffect` leaves such skills out.
+
+**Reveal windows.** The only free reveal is the Start window:
+
+- For a human's turn
+  with a hidden General the turn waits in Start (`Turn.startWindow`) and the owner
+  confirms one `ConfirmRevealsAction { seatId, slots }` (a template with `slots`
+  free; none is allowed).
+- It queues a `RevealGeneralEffect` per slot, then
+  `EnterStartPhaseEffect`, which logs the Start `PhaseChangedEvent` so its triggers
+  gather as usual.
+- There is no Play Phase reveal: Roar-style content reveals on use
+  (`shaPlayRevealOwner`: a Sha only a hidden compulsory `shaLimit` allows reveals that
+  General when played).
 
 **Active skills.** `SkillDefinition.active` gives a `UseSkillAction` in its
 owner's Play Phase while `canUse` holds and `Turn.abilityUses` is under
@@ -491,11 +520,14 @@ the count or replace the draw.
 **Judgment changers' order.** Content lists the skills that may replace a
 judgment's card (`JUDGMENT_CHANGERS` in `shared/judgments.ts`), each with the
 cards its seat may change one with (Devil: a hand card; Dark Magic: a black
-hand or worn card). Each one's
-`before:JudgmentShownEffect` trigger acts only when `nextToChange` says its
-seat is next: in seat order from the judged seat; after a replacement, from
-the seat after the one that replaced it (that seat last). `acted` on the shown
-step records who has had their say.
+hand or worn card).
+
+- Each one's
+  `before:JudgmentShownEffect` trigger acts only when `nextToChange` says its
+  seat is next: in seat order from the judged seat; after a replacement, from
+  the seat after the one that replaced it (that seat last).
+- `acted` on the shown
+  step records who has had their say.
 
 **The Discard Phase's count.** It owes what the owner was over its hand limit
 as the phase began (`Turn.discardsLeft`), so a card drawn mid-phase (Linked
@@ -507,37 +539,49 @@ pipeline supplies that check to `applyDying`.
 
 **Several equal targets in one pick** (stage 9). A card's `targetPick` says
 when it may take more than one target now (Sha: Sky Scorcher's +2 with the
-last hand card, Heaven's Justice's +1). `getLegalActions` then offers that
-card, or that conversion, once: a template with `targets: []` and
-`pickTargets { eligibleIds, min, max }`. The player (or bot) fills the targets
-and submits without `pickTargets`; `resolve` accepts them when `fitsPick` holds
-(distinct, listed, within min..max). A conversion asks `targetPick` with `via`
-(how many cards, hand only), so "the last hand cards" can be read before the
-cards are picked. Each target then goes through the card's steps on its own,
-in seat order; the card is counted once.
+last hand card, Heaven's Justice's +1).
+
+- `getLegalActions` then offers that
+  card, or that conversion, once: a template with `targets: []` and
+  `pickTargets { eligibleIds, min, max }`.
+- The player (or bot) fills the targets
+  and submits without `pickTargets`; `resolve` accepts them when `fitsPick` holds
+  (distinct, listed, within min..max).
+- A conversion asks `targetPick` with `via`
+  (how many cards, hand only), so "the last hand cards" can be read before the
+  cards are picked.
+- Each target then goes through the card's steps on its own,
+  in seat order; the card is counted once.
 
 **Competing** (content, `shared/compete.ts`) runs as the owning skill's steps:
-`competeStart` opens the user's face-down pick (`compete-user`), then the
-target's (`compete-target`); both cards are shown and discarded, an
-`AbilityUsedEvent` says `compete-won` or `compete-lost`, and the skill's result
-step gets `won`. A tie loses.
-The app's `competeResults` reads the public log (the two `CardShownEvent`s and
-the `AbilityUsedEvent`) into the Compete popup's data; the outcome wording per
-skill is `competeOutcomeText` in `display.ts`, and the popup is themed in the
-source seat's Force.
+
+- `competeStart` opens the user's face-down pick (`compete-user`), then the
+  target's (`compete-target`).
+- Both cards are shown and discarded, an
+  `AbilityUsedEvent` says `compete-won` or `compete-lost`, and the skill's result
+  step gets `won`.
+- A tie loses.
+- The app's `competeResults` reads the public log (the two `CardShownEvent`s and
+  the `AbilityUsedEvent`) into the Compete popup's data; the outcome wording per
+  skill is `competeOutcomeText` in `display.ts`, and the popup is themed in the
+  source seat's Force.
 
 **Same-suit pairs.** `Conversion.sameSuit` leaves out cards whose suit can't
 make a pair and marks the selection `sameSuit`; `validateSelection` rejects a
 mixed pick.
 
-**Fire hooks.** Blaze is a Tool made only by Fire Strategy (`outOfDeck`): its
-rule opens the target's pick of a card to show (card step `blaze-shown`), then
-the user's optional matching discard (`blaze-hit`) for 1 plain damage.
-Nirvana is a `before:DyingEffect` trigger like Refusing Death; it ends with
-`TurnFaceUpEffect`. Sudden Attack hooks Sha's `sha-dodged` step, as Green
-Dragon Blade does. Eight Arrays shares Eight Trigrams' trigger
-(`eightTrigramsTrigger`), with a skill judgment reader and a "no armour worn"
-condition.
+**Fire hooks.**
+
+- Blaze is a Tool made only by Fire Strategy (`outOfDeck`): its
+  rule opens the target's pick of a card to show (card step `blaze-shown`), then
+  the user's optional matching discard (`blaze-hit`) for 1 plain damage.
+- Nirvana is a `before:DyingEffect` trigger like Refusing Death; it ends with
+  `TurnFaceUpEffect`.
+- Sudden Attack hooks Sha's `sha-dodged` step, as Green
+  Dragon Blade does.
+- Eight Arrays shares Eight Trigrams' trigger
+  (`eightTrigramsTrigger`), with a skill judgment reader and a "no armour worn"
+  condition.
 
 **Forest hooks** (stage 10).
 - **A Tool's end.** `useCard` queues `ToolResolvedEffect` behind a played,

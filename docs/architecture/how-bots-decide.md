@@ -1,9 +1,16 @@
 # How the bots decide
 
 A plain-words guide to how the shipped computer opponent, `rule-based`
-(`projects/bots`), thinks: what it sees, in what order it handles a decision,
-how it reads the table, whom it attacks, when it holds back, and how it
-answers. It is written for a developer or game designer who knows Sanguosha
+(`projects/bots`), thinks:
+
+- **What it sees.**
+- **In what order it handles a decision.**
+- **How it reads the table.**
+- **Whom it attacks.**
+- **When it holds back.**
+- **How it answers.**
+
+It is written for a developer or game designer who knows Sanguosha
 and Guozhan but not the code, and it describes the code as it is today
 (after Kingdom Wars bots Part 4, shipped by the developer's decision).
 
@@ -154,14 +161,17 @@ leader, and no truce.
 | Truce | a seat of a force that is neither the bot's own nor the leading one, while another force leads (Ambitionists included) |
 | Foe | Everyone else: the leading force, hidden seats, and everybody when there is no leader or the bot's own force leads |
 
-**Danger** (`danger.ts`): each skill has a hand rating in content data
-(`projects/content/src/data/decks/kingdom-wars/skill-danger.json`): high 2,
-medium 1, low 0; Lord skills are not rated. A General's danger is its highest
-skill rating plus 10 times its value in `GENERAL_VALUES` (the Identity-fitted
-table, by base id). A seat's danger is the sum over its **revealed** Generals
-(hidden counts 0). A seat at 2 or more is **dangerous**. Example: a General
-with one high-rated skill is dangerous on its own; a medium skill plus a value
-of +0.10 also reaches 2.
+**Danger** (`danger.ts`):
+
+- **Ratings:** Each skill has a hand rating in content data
+  (`projects/content/src/data/decks/kingdom-wars/skill-danger.json`): high 2,
+  medium 1, low 0; Lord skills are not rated.
+- **A General's danger** is its highest skill rating plus 10 times its value in
+  `GENERAL_VALUES` (the Identity-fitted table, by base id).
+- **A seat's danger** is the sum over its **revealed** Generals (hidden counts 0).
+- **Dangerous:** A seat at 2 or more is **dangerous**.
+- **Example:** A General with one high-rated skill is dangerous on its own; a
+  medium skill plus a value of +0.10 also reaches 2.
 
 **Hostile acts** (`hostileActs`, `targeting.ts`): from the log, how many times
 a seat has damaged the bot or a revealed ally, or played Sha, Duel, Steal,
@@ -191,11 +201,13 @@ What changes with a truce partner:
 - **Peach for a dying partner.** In a dying round the bot spends a Peach on a
   truce partner as it would on an ally.
 - **Mass attacks.** With a leader on the table, Barbarians / Hail of Arrows
-  are played only when enemies strictly outnumber friends: an ally is 1
-  friend; a truce partner at 2 HP or less is 1 friend, a healthy one that is
-  not dangerous 0.5 friend, a dangerous one 1 enemy; a foe is 1 enemy. With no
-  leader, the old count stands: play when non-allies are at least as many as
-  allies.
+  are played only when enemies strictly outnumber friends:
+  - An ally is 1 friend.
+  - A truce partner at 2 HP or less is 1 friend, a healthy one that is not
+    dangerous 0.5 friend, a dangerous one 1 enemy.
+  - A foe is 1 enemy.
+  - With no leader, the old count stands: play when non-allies are at least as
+    many as allies.
 - **Ally Far Attack Near** gives its card to the offered seat the ranker likes
   least, which is a held-fire truce partner when one is offered.
 
@@ -233,13 +245,16 @@ Each card then adds its own taste on top of the order: Steal and Break prefer a
 seat that wears equipment, Capture the most HP, Starvation and Blockade the
 most hand cards, Blaze a seat holding at least one card.
 
-**Legacy skill picks** (rule E1, on with `noWaste`): the older per-skill code
-in `skills.ts`, `wind.ts`, `fire.ts`, `forest.ts` and `mountain.ts` that
-chooses a seat to harm (Sow Discord, Godspeed, Exile, Instigate and others,
-listed in `helpers.ts` above `rankHarmTargets`) now takes its candidates
-through the ranker and skips `HOLD_FIRE` seats; picks that aim the bot's own
-card at the seat also drop seats where it would be wasted. Picks that help a
-seat keep their own logic.
+**Legacy skill picks** (rule E1, on with `noWaste`):
+
+- **Which code:** The older per-skill code in `skills.ts`, `wind.ts`, `fire.ts`,
+  `forest.ts` and `mountain.ts` that chooses a seat to harm (Sow Discord,
+  Godspeed, Exile, Instigate and others, listed in `helpers.ts` above
+  `rankHarmTargets`) now takes its candidates through the ranker and skips
+  `HOLD_FIRE` seats.
+- **Wasted picks:** Picks that aim the bot's own card at the seat also drop seats
+  where it would be wasted.
+- **Helping picks:** Picks that help a seat keep their own logic.
 
 Two older rankers remain for the frozen bots: `weakestFirst` (lowest HP, then
 seat order) and `targetScore` (`targeting.ts`), which never shipped.
@@ -298,13 +313,15 @@ When a response window is aimed at it, the bot first decides whether the
 window is worth answering, then which card to give.
 
 - **A hit (Sha, Duel, Barbarians, Hail of Arrows).** Today it **answers every
-  hit it can**, with the first offered answer (a Shan, or a Sha in a Duel or
-  Barbarians); with no real card, a response-time conversion such as Dragon
-  Courage or Serpent Spear (the latter only if its 2 cards hold no Peach). Rule
-  C, which would take some hits to keep the card (`shouldAnswer` in
-  `answer.ts`, `exposure` in `exposure.ts`), and C4's "no Duel the target
-  would win", are built but off (`answerRule: false`). The Stage 2 "hold the
-  Shan" rule is off too.
+  hit it can**:
+  - **Answer:** The first offered answer (a Shan, or a Sha in a Duel or
+    Barbarians).
+  - **No real card:** A response-time conversion such as Dragon Courage or
+    Serpent Spear (the latter only if its 2 cards hold no Peach).
+  - **Rule C,** which would take some hits to keep the card (`shouldAnswer` in
+    `answer.ts`, `exposure` in `exposure.ts`), and C4's "no Duel the target
+    would win", are built but off (`answerRule: false`).
+  - **The Stage 2 "hold the Shan" rule** is off too.
 - **Dying rounds.** A Peach (a dying bot drinks Wine only without one) only for itself,
   a revealed ally, or a truce partner. Never for a foe or a hidden seat.
 - **Wuxie.** Only to cancel a harmful Tool (Barbarians, Hail of Arrows, Duel,
@@ -323,14 +340,17 @@ At General selection the bot scores each offered pair as value(Main) +
 value(Deputy) + 0.0001 × summed max HP, and takes the highest; the first on a
 tie (`bestPair`, `general-values.ts`).
 
-In a Kingdom Wars game the values are the Kingdom Wars table
-(`general-values.kingdom-wars.data.ts`): fitted by full id against each force's
-own strength, so a General is not rated for belonging to a strong force, plus
-bonuses for candidate pairs that win more together. Impetus for Conflicts
-(hiding a General) uses the same table. In an Identity game the values are
-`GENERAL_VALUES` (`general-values.data.ts`): win-rate points a seat gained
-holding each General, measured once on 20,000 Identity-deck games at 4 seats
-with older bots (Stage 4), looked up by base id.
+Which values it uses depends on the game:
+
+- **In a Kingdom Wars game** the values are the Kingdom Wars table
+  (`general-values.kingdom-wars.data.ts`): fitted by full id against each force's
+  own strength, so a General is not rated for belonging to a strong force, plus
+  bonuses for candidate pairs that win more together.
+- **Impetus for Conflicts** (hiding a General) uses the same table.
+- **In an Identity game** the values are `GENERAL_VALUES`
+  (`general-values.data.ts`): win-rate points a seat gained holding each General,
+  measured once on 20,000 Identity-deck games at 4 seats with older bots
+  (Stage 4), looked up by base id.
 
 The danger rating (section 3) still reads `GENERAL_VALUES` by base id, so it
 shapes whom bots attack with the old table, and Kingdom Wars-only Generals

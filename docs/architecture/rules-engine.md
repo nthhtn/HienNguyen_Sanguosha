@@ -159,23 +159,31 @@ How long a person has is a rule, so the engine owns it, in
 
 A clock can have a **lead-in**: `DecisionSpec.leadInMs` is the animation the
 decision follows, and a *new* clock starts counting at `startsAt = now + leadInMs`
-(`RunningClock.startsAt`; a clock resumed from paused has none). While it plays,
-`clockRemainingMs` reports the full budget and `clockStartsInMs` says how long is
-left. The lead-ins are `JUDGMENT_LEAD_IN_MS` (`head` 2100: source, rule, card
-turning up; `replace` 1300: a replacement's swap; `tail` 2000: verdict and
-consequence). A judgment-change decision waits `head` for its first ask
-(`judgmentView.rounds === 1`) and `replace` for later ones; a settled judgment's
-notice waits `tail`, plus `head` when no changer was ever asked. Only a caller
-with a person at the table passes `{ leadIn: true }`; the default is no lead-in, so
-headless games and bots never wait for an animation.
+(`RunningClock.startsAt`; a clock resumed from paused has none).
 
-`describeDecision(state, seatId, legal, stepKey, { leadIn })` says what the seat must
-decide and which clock it runs on; `switchClock` pauses the old clock and
-starts or resumes the new one; `defaultActionsFor` gives the engine-legal
-default at zero (Don't or Cancel for a judgment change, No Response, the first option, End Phase, the acknowledgement,
-or confirming a Start window with nothing revealed). The engine never reads
-the clock: the caller (the Angular timer, or the server's `GameRunner`) passes
-the time in and runs the timers.
+- While it plays, `clockRemainingMs` reports the full budget and `clockStartsInMs`
+  says how long is left.
+- The lead-ins are `JUDGMENT_LEAD_IN_MS`:
+  - `head` 2100: source, rule, card turning up.
+  - `replace` 1300: a replacement's swap.
+  - `tail` 2000: verdict and consequence.
+- A judgment-change decision waits `head` for its first ask
+  (`judgmentView.rounds === 1`) and `replace` for later ones; a settled judgment's
+  notice waits `tail`, plus `head` when no changer was ever asked.
+- Only a caller with a person at the table passes `{ leadIn: true }`; the default is
+  no lead-in, so headless games and bots never wait for an animation.
+
+Three functions drive a seat's decision and its clock:
+
+- **`describeDecision(state, seatId, legal, stepKey, { leadIn })`** says what the seat
+  must decide and which clock it runs on.
+- **`switchClock`** pauses the old clock and starts or resumes the new one.
+- **`defaultActionsFor`** gives the engine-legal default at zero (Don't or Cancel for
+  a judgment change, No Response, the first option, End Phase, the acknowledgement,
+  or confirming a Start window with nothing revealed).
+
+The engine never reads the clock: the caller (the Angular timer, or the server's
+`GameRunner`) passes the time in and runs the timers.
 
 ## The pipeline in one page
 
@@ -224,12 +232,17 @@ A `SkillTrigger` is `{ point, condition, effect }`, where `point` is
   seat into the dying state).
 
 `gatherTriggeredSkills` collects candidates in a fixed order so resolution is
-deterministic: the mode's triggers first, then each seat's Generals' skills in
-play (seat by seat, Main before Deputy), then worn equipment. A hidden
-General's *compulsory* skills are off; its optional skills still trigger but
-using one reveals the General first (`needsReveal`; the reveal rule is under
-"Reveal to use" in [the event chain](event-chain.md)). The `owner` passed to a
-trigger says whose skill it is, so the same General can sit at two seats.
+deterministic:
+
+1. The mode's triggers first.
+2. Then each seat's Generals' skills in play (seat by seat, Main before Deputy).
+3. Then worn equipment.
+
+- A hidden General's *compulsory* skills are off; its optional skills still trigger
+  but using one reveals the General first (`needsReveal`; the reveal rule is under
+  "Reveal to use" in [the event chain](event-chain.md)).
+- The `owner` passed to a trigger says whose skill it is, so the same General can sit
+  at two seats.
 
 ## Decisions are data, not callbacks
 
@@ -264,11 +277,17 @@ interface GameModeDefinition {
 ```
 
 `guozhanMode` ([guozhan.ts](../../projects/content/src/lib/modes/guozhan.ts))
-is the one implementation. It deals Generals to each seat from the pool
-of the chosen deck (the Identity Generals, or the Kingdom Wars ones, never mixed): seven to each seat at a table of 2 to 8 and five at 9 to 12 for Kingdom Wars,
-always five for Identity (`generalsPerSeat`). It builds and shuffles that deck's cards, and deals four cards. A table seats at
-most twelve (ten for Identity), and fewer when the deck's pool is small (`guozhanMaxSeats`). Its `triggers` carry the mode's
-rules:
+is the one implementation.
+
+- It deals Generals to each seat from the pool of the chosen deck (the Identity
+  Generals, or the Kingdom Wars ones, never mixed): seven to each seat at a table of
+  2 to 8 and five at 9 to 12 for Kingdom Wars, always five for Identity
+  (`generalsPerSeat`).
+- It builds and shuffles that deck's cards, and deals four cards.
+- A table seats at most twelve (ten for Identity), and fewer when the deck's pool is
+  small (`guozhanMaxSeats`).
+
+Its `triggers` carry the mode's rules:
 
 - The Draw Phase draw and the Judgment Phase;
 - HP at 0 or below starts the dying round (an HP drop reveals nothing; a death
@@ -292,18 +311,21 @@ game replays.
 ## Errors
 
 Invalid input throws. The application layer decides how to surface it:
-`GameService` stores the message in `lastError` and leaves the state
-unchanged, and the server answers the sender with an error and keeps its state
-as it was (only an error in a move the server made itself, such as a bot's,
-stops the game). Content bugs that can be detected up front, such as hand-coded
-skills with no data file or a card with no printings, throw while the
-registry or deck is built, so they fail at start-up rather than mid-game.
+
+- `GameService` stores the message in `lastError` and leaves the state unchanged.
+- The server answers the sender with an error and keeps its state as it was (only an
+  error in a move the server made itself, such as a bot's, stops the game).
+- Content bugs that can be detected up front, such as hand-coded skills with no data
+  file or a card with no printings, throw while the registry or deck is built, so they
+  fail at start-up rather than mid-game.
 
 ## Allegiance (Ambitionists)
 
 A seat's `allegiance` (`'kingdom'` or `'ambitionist'`) is decided once, when it first shows a General
-(a death reveal too). The resolver asks the mode (`GameModeDefinition.decideAllegiance`) in the same
-step as the reveal, so no other effect or trigger can see a revealed seat that is still undecided.
-Guozhan decides it from the cap of half the table, rounded down, counting every seat that ever
-held a slot of that Kingdom, dead ones included. See
-`docs/superpowers/specs/2026-10-26-ambitionist-rules.md`.
+(a death reveal too).
+
+- The resolver asks the mode (`GameModeDefinition.decideAllegiance`) in the same
+  step as the reveal, so no other effect or trigger can see a revealed seat that is still undecided.
+- Guozhan decides it from the cap of half the table, rounded down, counting every seat that ever
+  held a slot of that Kingdom, dead ones included.
+- See `docs/superpowers/specs/2026-10-26-ambitionist-rules.md`.

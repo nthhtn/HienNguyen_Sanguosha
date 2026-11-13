@@ -136,12 +136,20 @@ sends `game.resync`, and the server answers with the whole log.
 
 ### Visibility
 
-`SeatView` is `redactStateForSeat` minus two fields: `rng`, which holds the
-seed, and `log`, which travels separately as `events`, each slice masked by
-`redactEventsForSeat`. Card ids are opaque (`card-<position>` after the
-shuffle, `r<counter>-<position>` after a reshuffle), so neither a masked card
-nor the draw-pile order can be read from ids. `projects/sim/src/leaks.ts`
-checks views, the log and reshuffles over simulated games.
+`SeatView` is `redactStateForSeat` minus two fields:
+
+- **`rng`:** It holds the seed.
+- **`log`:** It travels separately as `events`, each slice masked by
+  `redactEventsForSeat`.
+
+Card ids are opaque, so neither a masked card nor the draw-pile order can be
+read from ids:
+
+- **After the shuffle:** `card-<position>`.
+- **After a reshuffle:** `r<counter>-<position>`.
+
+`projects/sim/src/leaks.ts` checks views, the log and reshuffles over simulated
+games.
 
 ## The game runner
 
@@ -218,21 +226,28 @@ debugging; there is no replay viewer in the app.
 
 Postgres tables (migrations in `persistence/migrations`): `users`, `sessions`,
 `password_reset_tokens`, `rooms`, `room_players`, `games`, `game_actions` and
-`chat_messages`. Without `DATABASE_URL` the server uses an in-memory store and
-forgets everything on restart; that is for local runs only, and production
-requires `DATABASE_URL` and an `https` `PUBLIC_ORIGIN`. One repository contract
-suite runs against both stores (`npm run test:db`).
+`chat_messages`.
+
+- **Without `DATABASE_URL`:** The server uses an in-memory store and forgets
+  everything on restart. That is for local runs only.
+- **In production:** It requires `DATABASE_URL` and an `https` `PUBLIC_ORIGIN`.
+- **Tests:** One repository contract suite runs against both stores
+  (`npm run test:db`).
 
 ### The finished game and `LastGame.finalSeats`
 
 When a game ends, the room keeps `lastGame` (game id, outcome, `result`, the
-seats' names) for the lobby that follows. `LastGame.finalSeats` is a required
-list of `FinalSeatView` (seat, both Generals, printed Kingdom, allegiance,
-eliminated), built by the protocol's `finalSeatViews(state)` from the **full** final state
-on the server, so every member can show who was on which side whatever their
-own seat could see. It is held in memory with the room only, never written to
-Postgres, and is `[]` for a `broken` or `outdated` game. Adding it moved
-`PROTOCOL_VERSION` to 2; an older tab is asked to reload.
+seats' names) for the lobby that follows. `LastGame.finalSeats` is:
+
+- **Shape:** A required list of `FinalSeatView` (seat, both Generals, printed
+  Kingdom, allegiance, eliminated).
+- **Source:** Built by the protocol's `finalSeatViews(state)` from the **full**
+  final state on the server, so every member can show who was on which side
+  whatever their own seat could see.
+- **Storage:** Held in memory with the room only, never written to Postgres.
+  It is `[]` for a `broken` or `outdated` game.
+- **Versioning:** Adding it moved `PROTOCOL_VERSION` to 2; an older tab is asked
+  to reload.
 
 ## Chat
 
