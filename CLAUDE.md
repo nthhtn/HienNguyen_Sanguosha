@@ -137,6 +137,17 @@ and replaceable infrastructure. The application SHOULD favor standalone
 Angular components and modern Angular patterns rather than legacy
 NgModule-heavy architecture.
 
+## Documentation style
+
+These rules apply to every Markdown document: README, this file, and everything under `docs/`. They OVERRIDE default behavior — follow them exactly when writing or editing a doc.
+
+- **Bullets over paragraphs.** A paragraph longer than about 400 characters becomes a short lead sentence plus a bullet list, with sub-bullets for parts or sequences. Use numbered lists for ordered steps.
+- **Bold the key term.** Start a bullet with a **bold label** when it names a thing, a rule or a step.
+- **Table cells stay short.** A cell longer than about 220 characters is a sign the content wants its own section or a bullet list, not a table.
+- **Capitalize.** Every sentence, heading, list item and table cell starts with a capital letter. So does the first word after a colon, even in the middle of a sentence: "Merging is human-only: The agent never merges". Code spans and identifiers keep their own case.
+- **Spacing.** One space after a list marker, a heading `#` and a table pipe.
+- **Content stays intact.** When reformatting, keep every fact, identifier, number and link. Do not change meaning, and keep headings and anchors so cross-references still work.
+
 ## Application / backend layer
 
 Communication with a backend MUST use explicit application/domain
