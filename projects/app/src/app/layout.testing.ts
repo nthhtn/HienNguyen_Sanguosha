@@ -2,9 +2,14 @@ import { TestBed } from '@angular/core/testing';
 
 // Test helpers for `Layout`: a window size, and a display mode (jsdom has no `matchMedia`).
 
-export function resizeTo(width: number, height: number): void {
+// Sets the window size only: for a spec that configures TestBed afterwards.
+export function setWindowSize(width: number, height: number): void {
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
   Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
+}
+
+export function resizeTo(width: number, height: number): void {
+  setWindowSize(width, height);
   window.dispatchEvent(new Event('resize'));
   TestBed.tick();
 }

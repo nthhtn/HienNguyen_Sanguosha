@@ -108,7 +108,7 @@ describe('App', () => {
   });
 
   describe('with test-only features off', () => {
-    beforeEach(() => TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: false, playbackSettings: false } }));
+    beforeEach(() => TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: false, playbackSettings: false, phoneBoard: false } }));
 
     it('hides the playback speed setting', async () => {
       const { el } = await render('/rooms');

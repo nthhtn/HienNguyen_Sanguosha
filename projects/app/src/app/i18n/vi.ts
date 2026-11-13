@@ -721,6 +721,7 @@ export const vi: Messages = {
   'device.orientation.portrait': 'Dọc',
   'device.layout': 'Bố cục',
   'device.layout.phone': 'Quá nhỏ để chơi',
+  'device.layout.compact': 'Bàn chơi điện thoại',
   'device.layout.medium': 'Vừa',
   'device.layout.large': 'Lớn',
   'device.pixelRatio': 'Tỷ lệ điểm ảnh',

@@ -1,3 +1,4 @@
+import { clearDisplayMode, setWindowSize, stubDisplayMode } from '../layout.testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Router } from '@angular/router';
@@ -43,6 +44,25 @@ describe('Setup', () => {
     expect(el.querySelector('app-small-screen-notice')!.textContent).toContain('Playing needs a tablet or computer screen.');
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
     Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+  });
+
+  it('enables Start Game in the installed app on a phone', async () => {
+    stubDisplayMode('fullscreen');
+    setWindowSize(915, 412);
+    try {
+      await TestBed.configureTestingModule({
+        imports: [Setup],
+        providers: [provideRouter([{ path: 'game', children: [] }])],
+      }).compileComponents();
+      const fixture = TestBed.createComponent(Setup);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect((el.querySelector('button.start') as HTMLButtonElement).disabled).toBe(false);
+      expect(el.querySelector('app-small-screen-notice')!.textContent!.trim()).toBe('');
+    } finally {
+      clearDisplayMode();
+      setWindowSize(1024, 768);
+    }
   });
 
   it('clamps a zeroed/cleared seat count into [2, maxSeats] instead of sending 0', async () => {

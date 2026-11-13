@@ -1,3 +1,4 @@
+import { clearDisplayMode, stubDisplayMode } from '../layout.testing';
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
@@ -80,6 +81,29 @@ describe('RoomsPage', () => {
       expect(disabled('button.rejoin')).toBe(true);
       expect(disabled('button.join')).toBe(true);
       expect(el.querySelector('app-small-screen-notice')!.textContent).toContain('Playing needs a tablet or computer screen.');
+    });
+  });
+
+  describe('in the installed app on a phone', () => {
+    beforeEach(() => {
+      stubDisplayMode('fullscreen');
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });
+    });
+    afterEach(() => {
+      clearDisplayMode();
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+    });
+
+    it('enables Create Room, Play With Bots, Join and Rejoin, with no notice', async () => {
+      const { el } = await create();
+      const disabled = (sel: string) => (el.querySelector(sel) as HTMLButtonElement).disabled;
+      expect(disabled('button.create')).toBe(false);
+      expect(disabled('button.play-vs-bots')).toBe(false);
+      expect(disabled('button.rejoin')).toBe(false);
+      expect(disabled('button.join')).toBe(false);
+      expect(el.querySelector('app-small-screen-notice')!.textContent!.trim()).toBe('');
     });
   });
 

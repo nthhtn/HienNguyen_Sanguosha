@@ -138,13 +138,16 @@
 
 /* Phone layout: the bar is a menu button, the title and two toggles; the title gives way (an ellipsis) rather
    than push the page sideways on a narrow screen. */
-:host-context([data-layout='phone']) .app-bar {
+:host-context([data-layout='phone']) .app-bar,
+:host-context([data-layout='compact']) .app-bar {
   gap: 4px;
 }
-:host-context([data-layout='phone']) .app-bar .logo {
+:host-context([data-layout='phone']) .app-bar .logo,
+:host-context([data-layout='compact']) .app-bar .logo {
   flex: none;
 }
-:host-context([data-layout='phone']) .app-bar h1 {
+:host-context([data-layout='phone']) .app-bar h1,
+:host-context([data-layout='compact']) .app-bar h1 {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

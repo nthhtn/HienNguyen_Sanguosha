@@ -722,6 +722,7 @@ export const en = {
   'device.orientation.portrait': 'Portrait',
   'device.layout': 'Layout',
   'device.layout.phone': 'Too small to play',
+  'device.layout.compact': 'Phone Board',
   'device.layout.medium': 'Medium',
   'device.layout.large': 'Large',
   'device.pixelRatio': 'Pixel Ratio',
