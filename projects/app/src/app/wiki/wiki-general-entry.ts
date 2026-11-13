@@ -7,12 +7,13 @@ import type { MessageKey } from '../i18n/messages';
 import { SkillTraits } from '../skill-traits';
 import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
+import { HpIcons } from '../hp-icons';
 import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
 
 // One general in the Wiki: art beside everything the data knows about it.
 @Component({
   selector: 'app-wiki-general-entry',
-  imports: [SkillTraits, CardArt, MatIconModule, TPipe],
+  imports: [SkillTraits, CardArt, HpIcons, MatIconModule, TPipe],
   template: `
     <article class="entry kingdom-{{ general().kingdom }}" [attr.data-id]="general().id">
       <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
@@ -42,10 +43,8 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
           <span class="gender-tag">{{ (general().gender === 'female' ? 'wiki.female' : 'wiki.male') | t }}</span>
           @if (general().maxHp !== null) {
             <span class="hearts" [attr.aria-label]="'wiki.hp' | t: { n: general().maxHp ?? 0 }">
-              @for (h of hearts(); track $index) {
-                <mat-icon>favorite</mat-icon>
-              }
-            </span>
+            <app-hp-icons [hp]="general().maxHp ?? 0" [size]="18" />
+          </span>
           } @else {
             <span class="gap">{{ 'wiki.noHp' | t }}</span>
           }
@@ -100,8 +99,7 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
     .expansion-tag, .gender-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
     .skill-status { display: block; width: fit-content; margin-top: 2px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); }
-    .hearts { display: inline-flex; color: #d84a3f; }
-    .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    .hearts { display: inline-flex; }
     .skills { margin: 0; padding-left: 18px; }
     .skills li { margin: 4px 0; }
     .skill-text { margin-left: 6px; }
@@ -127,5 +125,4 @@ export class WikiGeneralEntry {
   protected readonly view = computed(() => wikiGeneralView(this.general(), this.i18n.locale()));
   protected readonly kingdomKey = computed((): MessageKey => `label.kingdom.${this.general().kingdom}`);
   protected readonly packLabel = computed(() => wikiPackLabel(this.general().expansion, this.i18n.translator));
-  protected readonly hearts = computed(() => Array.from({ length: this.general().maxHp ?? 0 }));
 }

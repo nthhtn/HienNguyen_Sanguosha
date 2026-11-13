@@ -123,8 +123,8 @@ describe('GeneralSelection', () => {
     expect(slot('deputy')).toContain('W2');
   });
 
-  it('draws one heart per point of max HP', () => {
-    expect(card('q1').querySelectorAll('.hearts mat-icon')).toHaveLength(5);
+  it('draws one HP icon per point of max HP', () => {
+    expect(card('q1').querySelectorAll('app-hp-icons img')).toHaveLength(5);
   });
 });
 

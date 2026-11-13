@@ -7,13 +7,14 @@ import type { MessageKey } from '../i18n/messages';
 import { SkillTraits } from '../skill-traits';
 import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
+import { HpIcons } from '../hp-icons';
 import { wikiKingdomWarsGeneralView } from './wiki-labels';
 
 // One Kingdom Wars General in the Wiki: art (or a placeholder) beside its text and the state of each skill.
 // The state comes from the content package; this component only shows it.
 @Component({
   selector: 'app-wiki-kingdom-wars-general-entry',
-  imports: [SkillTraits, CardArt, MatIconModule, TPipe],
+  imports: [SkillTraits, CardArt, HpIcons, MatIconModule, TPipe],
   template: `
     <article class="entry kingdom-{{ general().kingdom }}" [attr.data-id]="general().id">
       <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
@@ -33,9 +34,7 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
           <span class="kingdom-tag">{{ kingdomKey() | t }}</span>
           <span class="gender-tag">{{ (general().gender === 'female' ? 'wiki.female' : 'wiki.male') | t }}</span>
           <span class="hearts" [attr.aria-label]="'wiki.hp' | t: { n: general().maxHp }">
-            @for (h of hearts(); track $index) {
-              <mat-icon>favorite</mat-icon>
-            }
+            <app-hp-icons [hp]="general().maxHp" [size]="18" />
           </span>
         </p>
         @if (voiceUrl(); as url) {
@@ -107,8 +106,7 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
     .gender-tag { padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-medium); }
     .skill-status { display: block; width: fit-content; margin-top: 2px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mat-sys-outline); font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); }
-    .hearts { display: inline-flex; color: #d84a3f; }
-    .hearts mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    .hearts { display: inline-flex; }
     .voices { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; }
     .voices-label { font-weight: 600; }
     .voice { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border-radius: 16px; border: none; background: none; color: var(--mat-sys-on-surface); cursor: pointer; }
@@ -146,5 +144,4 @@ export class WikiKingdomWarsGeneralEntry {
   }
   protected readonly view = computed(() => wikiKingdomWarsGeneralView(this.general(), this.i18n.locale()));
   protected readonly kingdomKey = computed((): MessageKey => `label.kingdom.${this.general().kingdom}`);
-  protected readonly hearts = computed(() => Array.from({ length: this.general().maxHp }));
 }

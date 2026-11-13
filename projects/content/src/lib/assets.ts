@@ -137,14 +137,15 @@ export function spriteSheet(id: SpriteId): SpriteSheet {
   return { url: `/images/${assetFile(`effects/sheets/${id}`)}`, ...SHEET_META[id] };
 }
 
-// The highest HP with its own icon (ui/hp/1.png … 4.png).
-const MAX_HP_ICONS = 4;
+// The highest HP with its own icon (ui/hp-ramp/1.png … 8.png): a ramp from red
+// through yellow and blue to green, one colour per HP.
+const MAX_HP_ICONS = 8;
 
 // The icons for a seat's current HP, shown alongside its number: 1 up to
-// N for N HP, stopping at the 4 icons above 4; none at 0 or below (dying).
+// N for N HP, stopping at the 8 icons above 8; none at 0 or below (dying).
 export function hpIconUrls(hp: number): string[] {
   const count = Math.max(0, Math.min(hp, MAX_HP_ICONS));
-  return Array.from({ length: count }, (_, i) => `/images/ui/hp/${i + 1}.png`);
+  return Array.from({ length: count }, (_, i) => `/images/ui/hp-ramp/${i + 1}.png`);
 }
 
 // The badge on a chained seat (the Game screen's chain image).

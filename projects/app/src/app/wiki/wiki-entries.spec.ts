@@ -61,7 +61,7 @@ describe('WikiGeneralEntry', () => {
     for (const part of ['曹操', 'Martial Emperor of Wei', '魏武帝', 'Wei', 'Evil Hero', '奸雄', 'he can put it into his hand']) {
       expect(text).toContain(part);
     }
-    expect(el.querySelectorAll('.hearts mat-icon')).toHaveLength(4);
+    expect(el.querySelectorAll('.hearts app-hp-icons img')).toHaveLength(4);
     expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/images/generals/skins/wei/caocao.webp');
     expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');
   });
@@ -231,7 +231,7 @@ describe('WikiKingdomWarsGeneralEntry', () => {
     expect(el.querySelector('article.entry')!.getAttribute('data-id')).toBe('cao-cao');
     expect(el.querySelector('h4 .name')!.textContent).toBe('Cao Cao');
     for (const part of ['曹操', 'The Militant Emperor of Wei', 'Wei', 'Villainous Hero', '奸雄']) expect(el.textContent).toContain(part);
-    expect(el.querySelectorAll('.hearts mat-icon')).toHaveLength(4);
+    expect(el.querySelectorAll('.hearts app-hp-icons img')).toHaveLength(4);
     expect(el.querySelector('.gender-tag')!.textContent!.trim()).toBe('Male');
     expect(el.querySelector('.expansion-tag')).toBeNull();
     expect(el.querySelector('.badge')).toBeNull();

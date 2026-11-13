@@ -7,6 +7,7 @@ import { TPipe } from '../i18n/t.pipe';
 import { Beat, BeatPlayback, playBeats, prefersReducedMotion } from './beat-player';
 import { AskPanel } from './ask-panel';
 import { CardArt } from './card-art';
+import { HpIcons } from '../hp-icons';
 import { DecisionCountdown } from './decision-countdown';
 import { JudgmentDecisionView } from './judgment-decision';
 import { JudgmentDescription } from './judgment-description';
@@ -34,7 +35,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
 // it on, and a language switch only changes the words.
 @Component({
   selector: 'app-judgment-stage',
-  imports: [MatButtonModule, AskPanel, CardArt, DecisionCountdown, PlayingCard, SelectionPanel, TPipe],
+  imports: [MatButtonModule, AskPanel, CardArt, DecisionCountdown, HpIcons, PlayingCard, SelectionPanel, TPipe],
   template: `
     @let d = description();
     <div class="stage" [style.--verdict]="verdictColour()">
@@ -129,11 +130,9 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
         } @else {
           @switch (d.effect?.kind) {
             @case ('damage') {
-              @if (hearts().length > 0) {
+              @if (hpView(); as hp) {
                 <div class="hearts" role="img" [attr.aria-label]="'judgment.hp' | t: { seat: d.hp?.seatName ?? '', n: d.hp?.current ?? 0 }">
-                  @for (h of hearts(); track $index) {
-                    <span class="heart" [class.lost]="h.lost" aria-hidden="true">♥</span>
-                  }
+                  <app-hp-icons [hp]="hp.current" [max]="hp.total" [fading]="hp.fading" [size]="28" />
                   <span class="dmg">{{ 'judgment.damage' | t: { n: damageAmount() } }}</span>
                 </div>
               }
@@ -215,17 +214,15 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     .chip.seat { color: var(--mat-sys-on-surface); }
     .arrow { color: var(--mat-sys-on-surface-variant); opacity: 0; transform: translateX(-10px); transition: opacity 0.4s 0.2s, transform 0.4s 0.2s; }
     .cons.on .arrow { opacity: 1; transform: none; }
-    .hearts { display: flex; align-items: center; gap: 4px; font-size: 26px; line-height: 1; }
-    .heart { color: var(--mat-sys-error); transition: color 0.3s, transform 0.3s; }
-    .heart.lost { color: var(--mat-sys-outline-variant); animation: pop 0.5s; }
+    .hearts { display: flex; align-items: center; gap: 4px; line-height: 1; }
     @keyframes pop { 30% { transform: scale(1.5) rotate(-8deg); } }
     .dmg { margin-left: 10px; font: var(--mat-sys-title-medium); font-weight: 700; color: var(--mat-sys-error); opacity: 0; transition: opacity 0.3s 0.3s; white-space: nowrap; }
     .cons.on .dmg { opacity: 1; }
     .line { margin: 0; font: var(--mat-sys-title-small); text-align: center; opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s; }
     .line.in { opacity: 1; transform: none; }
     @media (prefers-reduced-motion: reduce) {
-      .rise, .pc, .inner, .stamp, .verdict-label, .arrow, .line, .chip, .heart, .dmg { transition-duration: 0s !important; transition-delay: 0s !important; }
-      .stamp.show circle, .stamp.show path, .heart.lost, .spin { animation-duration: 0s !important; animation-delay: 0s !important; }
+      .rise, .pc, .inner, .stamp, .verdict-label, .arrow, .line, .chip, .dmg { transition-duration: 0s !important; transition-delay: 0s !important; }
+      .stamp.show circle, .stamp.show path, .spin { animation-duration: 0s !important; animation-delay: 0s !important; }
     }
   `,
 })
@@ -278,13 +275,13 @@ export class JudgmentStage implements OnInit {
     return effect?.kind === 'damage' ? effect.amount : 0;
   });
 
-  // The HP shown: every heart the seat has, the last ones in line to be lost greyed as the consequence plays.
-  protected readonly hearts = computed(() => {
+  // The HP shown: every icon the seat has, the last ones in line to be lost greyed as the consequence plays.
+  protected readonly hpView = computed(() => {
     const d = this.description();
-    if (d.effect?.kind !== 'damage' || !d.hp) return [];
-    const total = d.hp.max ?? d.hp.current;
-    const lost = Math.min(this.lostCount(), d.effect.amount, d.hp.current);
-    return Array.from({ length: Math.max(total, d.hp.current) }, (_, i) => ({ lost: i >= d.hp!.current - lost && i < d.hp!.current }));
+    if (d.effect?.kind !== 'damage' || !d.hp) return null;
+    const total = Math.max(d.hp.max ?? d.hp.current, d.hp.current);
+    if (total <= 0) return null;
+    return { current: d.hp.current, total, fading: Math.min(this.lostCount(), d.effect.amount, d.hp.current) };
   });
 
   constructor() {
