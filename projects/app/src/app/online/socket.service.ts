@@ -43,7 +43,20 @@ export class SocketService {
   readonly messages: Observable<ServerMessage> = this.incoming.asObservable();
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.end());
+    // A phone pauses a page it hides, and the socket drops. When the page is back, waiting out the backoff (up to
+    // 15 s) only delays the player: retry now, and start the waits again from the first.
+    const back = () => {
+      if (document.visibilityState !== 'visible' || this._status() !== 'reconnecting' || this.retryTimer === null) return;
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+      this.attempt = 0;
+      this.open();
+    };
+    document.addEventListener('visibilitychange', back);
+    inject(DestroyRef).onDestroy(() => {
+      document.removeEventListener('visibilitychange', back);
+      this.end();
+    });
   }
 
   connect(roomId: string): void {
