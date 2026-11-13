@@ -4360,6 +4360,27 @@
       "ui/brand/favicon.ico": "2ff16243a23a4309e36cfba2d2199bc84ffae22b203431e949dcfe89f479f8b3"
     }
   },
+  "ui/brand/icon-192.png": {
+    "output": "0a1b2251630d01b9676e8a01d4876fea133570ccc600c7d6f28c1a334468db99",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/brand/icon-192.png": "0a1b2251630d01b9676e8a01d4876fea133570ccc600c7d6f28c1a334468db99"
+    }
+  },
+  "ui/brand/icon-512.png": {
+    "output": "f0e64844800f260791ec7582e05148fee899693ef4f4df5d53da946fef3be9a2",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/brand/icon-512.png": "f0e64844800f260791ec7582e05148fee899693ef4f4df5d53da946fef3be9a2"
+    }
+  },
+  "ui/brand/icon-maskable-512.png": {
+    "output": "d0d431d5dd21707d7e0186dbdc02c04d996da8e2ed397c582755e1354d092fa9",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "ui/brand/icon-maskable-512.png": "d0d431d5dd21707d7e0186dbdc02c04d996da8e2ed397c582755e1354d092fa9"
+    }
+  },
   "ui/brand/landing.jpg": {
     "output": "966d7701cee47c93df9e0ef49d7e4f21c94fde1f23ecc4eaa7760c350d9ddff9",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
