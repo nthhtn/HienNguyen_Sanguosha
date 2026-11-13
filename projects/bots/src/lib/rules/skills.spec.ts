@@ -1,6 +1,7 @@
 import type { GameState } from 'engine';
-import { ruleBasedPolicy, ruleBasedV3Policy } from '../rule-based';
-import { act, card, decideWith, picked, table, useSkill } from '../testing';
+import { ruleBasedPolicy, ruleBasedV3Policy, ruleBasedV6Policy } from '../rule-based';
+import { GENERAL_VALUES, KINGDOM_WARS_TABLE } from '../general-values';
+import { act, card, decidePicksKw, decideWith, picked, table, useSkill } from '../testing';
 
 const decide = (s: GameState) => decideWith(ruleBasedPolicy, s);
 const ZOU_SHI = 'kingdomWars:zou-shi';
@@ -32,6 +33,39 @@ describe('rules/skills: Zou Shi', () => {
     expect(picked(decide(s))).toEqual(['seat-b']);
     s = act(s, decide(s));
     expect(picked(decide(s))).toBe('deputy');
+  });
+
+  // Rule R5: seat-b shows Kingdom Wars Cao Cao (Main) and Zhen Ji (Deputy). The Identity table rates Cao Cao
+  // higher; the Kingdom Wars table rates Zhen Ji higher.
+  const kwImpetus = () =>
+    table(
+      { 'seat-a:hand': [card('iw', 'ice-sword')], 'seat-a:equip': [card('cb', 'crossbow', 'diamond', 1)] },
+      {
+        generals: { 'seat-a': [ZOU_SHI, 'filler-jia-xu'], 'seat-b': ['kingdomWars:cao-cao', 'kingdomWars:zhen-ji', true], 'seat-c': hidden, 'seat-d': hidden },
+        kingdoms: { 'seat-a': 'Qun', 'seat-b': 'Wei' },
+      },
+    );
+  const impetusChoice = (d: (s: GameState) => ReturnType<typeof decide>) => {
+    let s = kwImpetus();
+    for (let i = 0; i < 3; i++) s = act(s, d(s));
+    return picked(d(s));
+  };
+
+  it('impetus fixture: the two tables disagree about Cao Cao and Zhen Ji', () => {
+    const kwValue = (id: string) => KINGDOM_WARS_TABLE.values[`kingdomWars:${id}`] ?? 0;
+    expect(kwValue('zhen-ji')).toBeGreaterThan(kwValue('cao-cao'));
+    expect(GENERAL_VALUES['cao-cao'] ?? 0).toBeGreaterThan(GENERAL_VALUES['zhen-ji'] ?? 0);
+  });
+  it('impetus: rule-based-picks-kw hides by the Kingdom Wars value', () => {
+    expect(impetusChoice(decidePicksKw)).toBe('deputy');
+  });
+  it('impetus: rule-based-v6 hides by the Identity value', () => {
+    expect(impetusChoice((s) => decideWith(ruleBasedV6Policy, s))).toBe('main');
+  });
+  // Part 4 shipped by the developer's decision: rule-based hides as the challenger and no longer as v6.
+  it('impetus: rule-based chooses as rule-based-picks-kw, not as rule-based-v6', () => {
+    expect(impetusChoice((s) => decideWith(ruleBasedPolicy, s))).toBe(impetusChoice(decidePicksKw));
+    expect(impetusChoice((s) => decideWith(ruleBasedPolicy, s))).not.toBe(impetusChoice((s) => decideWith(ruleBasedV6Policy, s)));
   });
 
   it('impetus: never discards a worn card', () => {

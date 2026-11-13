@@ -15,6 +15,8 @@ interface EquipmentExtras {
   abilities?: Abilities;
   onUnequip?: CardDefinition['onUnequip'];
   onJudged?: CardDefinition['onJudged'];
+  // Steps of a worn card's own ability (CardStepEffect with the card as `card`).
+  onStep?: CardDefinition['onStep'];
 }
 
 export function makeEquipmentCard(id: string, name: string, equipSlot: EquipSlot, weaponRange?: number, extras: EquipmentExtras = {}): CardDefinition {
@@ -28,6 +30,7 @@ export function makeEquipmentCard(id: string, name: string, equipSlot: EquipSlot
     ...(extras.abilities ? { abilities: extras.abilities } : {}),
     ...(extras.onUnequip ? { onUnequip: extras.onUnequip } : {}),
     ...(extras.onJudged ? { onJudged: extras.onJudged } : {}),
+    ...(extras.onStep ? { onStep: extras.onStep } : {}),
     legalPlayTargets: () => [[]],
     // One card per slot: whatever already fills this slot goes to the discard
     // pile first, then the played card is equipped.

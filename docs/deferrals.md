@@ -14,6 +14,12 @@ its entry and say where it went in the commit.
 | **Insanity Streak (Wei Yan) heals by attack range and per point, not only at distance 1.** The deck says "after you inflict 1 unit of damage to a player within physical distance of 1, you regain 1 unit of health". The engine (`violentSpirit` in `projects/content/src/lib/generals/wind.ts`) heals after damage to any seat within Wei Yan's attack range, measured after the damage, and heals once per point dealt. Noted on 2026-11-10. | The correct rule is: heal only when the damaged seat is at distance 1. The Insanity Streak preview films follow it. No game depends on it yet. | When Insanity Streak is next touched: restrict the engine to distance 1 (and settle whether it heals once per damage or per point), and update `wind.ts`, its specs and the skill text. The films need no change then. |
 | **The game can end while a seat is still dying.** On seed 138 (11 seats, `rule-based`), Zhou Tai reveals his Deputy to use Refusing Death during his own rescue round, the reveal ends the game, and he is left living at 0 HP before `stays-alive` is logged. Noted on 2026-11-11. | Whether the win check should wait until a rescue round finishes is a rules question for the developer. The property invariant (`checkInvariants`) skips a seat whose rescue round the game's end cut short. | The rule is decided. Then either hold the win check until no rescue round is open (engine) or keep the invariant as it is. |
 
+## Bots
+
+| Deferred | Why it waits | Revisit when |
+|---|---|---|
+| **Part 4's all-bot balance gate failed on one run and shipped anyway.** At 8 seats on seed 2600000 the all-bot force gap was 44.2 against today-before-Part-4's 32.3 (limit +5), because 14 Ambitionist seats won nothing; without Ambitionists 32.7 vs 31.1. In all-bot games Qun wins 44 to 49% (before: about 10%) while the leading force wins 7 to 14 pp less. Recorded on 2026-11-12. | The developer chose to ship for the head-to-head gain (+6.6 to +7.2 pp); the gate metric is fragile to tiny groups. | When force balance or General picks are tuned again: use a minimum group size or the four Kingdoms only, and look at why Qun dominates all-bot games. |
+
 ## Game setup
 
 | Deferred | Why it waits | Revisit when |

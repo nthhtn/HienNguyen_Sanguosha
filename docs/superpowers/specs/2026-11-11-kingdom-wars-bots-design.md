@@ -423,3 +423,35 @@ seat share +1.6 pp (0.7 to 2.5) and +1.4 pp (0.5 to 2.2), 1.30x time.
 **Shipped on 2026-11-12:** `rule-based` is now Part 3 without rule C; rule C
 stays off behind `answerRule` for a later rework.
 
+
+### Part 4 — The General value table
+
+Full results in `docs/superpowers/specs/2026-11-12-kingdom-wars-bots-part-4-design.md`
+(Results).
+
+**First fit (superseded).** A Kingdom Wars table fit on 40,000 games at 4 to 8
+seats, plus pair bonuses, passed the first bar against `rule-based-v6` (seat
+share +12.6 to +14.9 pp at 6 and 8 seats on ranges 2300000 and 2400000) and
+shipped on 2026-11-12. The final review found its values mostly measured the
+force (Qun average +0.10, Wu −0.07; Qun 0 of 9 pair bonuses, Wu 12 of 12). Its
+force spread narrowed only in mixed tournaments: in all-bot games at 8 seats
+(seed 1400000) Qun won 58.2% and the leading force 57.0%, against 10.8% and
+46.5% for `rule-based-v6`.
+
+**Force-adjusted refit (amendment of 2026-11-12).** Values and bonuses refit
+against force, judged on ranges 2500000 and 2600000 with a new all-bot gate.
+Seat share +6.6 pp (5.4 to 7.9) and +7.2 pp (5.9 to 8.4) at 6 seats, +6.8 pp
+(5.8 to 7.8) and +6.9 pp (6.0 to 7.9) at 8 seats; own deaths per game down
+0.20 to 0.28; synergy share about 21% against 18%; 8-seat time 1.45x of
+`rule-based-v3`. In all-bot games the leading force wins 8 to 14 points less
+often, but Qun still wins 44 to 49%, and at 8 seats on 2600000 the force gap is
+44.2 points against `rule-based-v6`'s 32.3 (bar: at most +5).
+
+**Verdict: shipped by the developer's decision on 2026-11-12, although gate 6
+failed on one run (force gap, 8 seats, 2600000).** `rule-based` now picks Kingdom
+Wars Generals by the refit table and pair bonuses (Identity keeps
+`GENERAL_VALUES`); `rule-based-v6` stays frozen and `rule-based-picks-kw` keeps
+the same picks. The failing gap rests on 14 Ambitionist seats with no win, and
+the run left out seed 2600625, where `rule-based-v6` hits an engine fault
+(`Card card-103 not found in any zone`). Qun still wins 44 to 49% of all-bot
+games. The failed gate is recorded in `docs/deferrals.md`.

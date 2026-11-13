@@ -1,6 +1,6 @@
 import { buildContentRegistry, describeResolution, RESOLUTION_NOTICES } from 'content';
 import { Action, CardInstance, GameState, getActiveSeatId, getLegalActions, moveCard, redactStateForSeat } from 'engine';
-import { act, emptyHand, playCard } from '../../dev/recipe';
+import { act, emptyHand, playCard, setGenerals } from '../../dev/recipe';
 import { labTable } from '../../dev/lab/lab-animation';
 import { resolutionSpans } from './resolution-spans';
 
@@ -27,7 +27,8 @@ function settle(start: GameState): GameState {
 }
 
 function blazeOn(userSuit: CardInstance['suit']): { state: GameState; from: number } {
-  let state = emptyHand(emptyHand(labTable(registry), 'seat-0'), 'seat-1');
+  // Seat-1's Generals are fixed (Ji Ling and Yuan Shao, whose skills do not touch Blaze), so the bots' General picks cannot change it.
+  let state = emptyHand(emptyHand(setGenerals(labTable(registry), registry, 'seat-1', 'kingdomWars:ji-ling', 'kingdomWars:yuan-shao'), 'seat-0'), 'seat-1');
   const shown = fromPile(state, (c) => c.suit === 'heart' && c.definitionId !== 'blaze');
   state = toHand(state, 'seat-1', shown);
   state = toHand(state, 'seat-0', fromPile(state, (c) => c.definitionId === 'blaze'));
