@@ -30,7 +30,7 @@ describe('InstallHint', () => {
 
   it('offers Install App once Chrome does, and opens Chrome dialog', () => {
     const el = render('browser', 915, 412);
-    const event = fireInstallPrompt();
+    const event = fireInstallPrompt(jest.fn(async () => undefined));
     fixture.detectChanges();
     const button = el.querySelector('button.install-app') as HTMLButtonElement;
     expect(button.textContent).toContain('Install App');

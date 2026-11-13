@@ -6,14 +6,14 @@ describe('InstallPrompt', () => {
   it('is available once Chrome offers to install, and keeps Chrome from showing its own banner', () => {
     const prompt = TestBed.inject(InstallPrompt);
     expect(prompt.available()).toBe(false);
-    const event = fireInstallPrompt();
+    const event = fireInstallPrompt(jest.fn(async () => undefined));
     expect(prompt.available()).toBe(true);
     expect(event.defaultPrevented).toBe(true);
   });
 
   it.each(['accepted', 'dismissed'] as const)('shows Chrome dialog once, then is gone, when %s', async (outcome) => {
     const prompt = TestBed.inject(InstallPrompt);
-    const event = fireInstallPrompt(outcome);
+    const event = fireInstallPrompt(jest.fn(async () => undefined), outcome);
     await prompt.install();
     expect(event.prompt).toHaveBeenCalledTimes(1);
     expect(prompt.available()).toBe(false);
@@ -23,7 +23,7 @@ describe('InstallPrompt', () => {
 
   it('is gone once the app is installed', () => {
     const prompt = TestBed.inject(InstallPrompt);
-    fireInstallPrompt();
+    fireInstallPrompt(jest.fn(async () => undefined));
     window.dispatchEvent(new Event('appinstalled'));
     expect(prompt.available()).toBe(false);
   });
@@ -31,7 +31,7 @@ describe('InstallPrompt', () => {
   it('stops listening when it is destroyed', () => {
     const prompt = TestBed.inject(InstallPrompt);
     TestBed.resetTestingModule();
-    fireInstallPrompt();
+    fireInstallPrompt(jest.fn(async () => undefined));
     expect(prompt.available()).toBe(false);
   });
 });
