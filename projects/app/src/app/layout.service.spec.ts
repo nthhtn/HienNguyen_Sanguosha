@@ -343,3 +343,39 @@ describe('Layout with a forced display mode', () => {
     expect(layout.installed()).toBe(true);
   });
 });
+
+describe('Layout toolbar on the phone board', () => {
+  afterEach(() => resizeTo(1024, 768));
+
+  function compact(): Layout {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } },
+        { provide: DISPLAY_MODE_OVERRIDE, useValue: 'fullscreen' },
+      ],
+    });
+    resizeTo(915, 412);
+    return TestBed.inject(Layout);
+  }
+
+  it('hides the toolbar only while a phone board is open on the compact layout', () => {
+    const layout = compact();
+    expect(layout.toolbarHidden()).toBe(false);
+    layout.setBoardOpen(true);
+    TestBed.tick();
+    expect(layout.toolbarHidden()).toBe(true);
+    expect(document.documentElement.dataset['board']).toBe('open');
+    layout.setBoardOpen(false);
+    TestBed.tick();
+    expect(layout.toolbarHidden()).toBe(false);
+    expect(document.documentElement.dataset['board']).toBeUndefined();
+  });
+
+  it('shows the toolbar again when the layout is no longer compact', () => {
+    const layout = compact();
+    layout.setBoardOpen(true);
+    resizeTo(1366, 768);
+    expect(layout.toolbarHidden()).toBe(false);
+    expect(document.documentElement.dataset['board']).toBeUndefined();
+  });
+});

@@ -88,6 +88,11 @@ export class Layout {
   }
   readonly portrait = computed(() => this.height() > this.width());
   readonly size = computed(() => ({ width: this.width(), height: this.height() }));
+  private readonly _boardOpen = signal(false);
+  // A phone board is on screen (PhoneBoard says so while it exists).
+  readonly boardOpen = this._boardOpen.asReadonly();
+  // The app toolbar gives the phone board its height back during a game; the drawer opens from the centre band.
+  readonly toolbarHidden = computed(() => this.kind() === 'compact' && this._boardOpen());
   readonly navOpen = this._navOpen.asReadonly();
   readonly panelOpen = this._panelOpen.asReadonly();
 
@@ -107,6 +112,11 @@ export class Layout {
       window.removeEventListener('orientationchange', update);
       modeQueries.forEach((query) => query.removeEventListener('change', updateMode));
     });
+    // Styles read it: the toolbar's height is 0 while it is hidden, so what sits below it moves up.
+    effect(() => {
+      if (this.toolbarHidden()) document.documentElement.dataset['board'] = 'open';
+      else delete document.documentElement.dataset['board'];
+    });
     effect(() => {
       document.documentElement.dataset['layout'] = this.kind();
     });
@@ -118,6 +128,10 @@ export class Layout {
         this._panelOpen.set(false);
       });
     });
+  }
+
+  setBoardOpen(open: boolean): void {
+    this._boardOpen.set(open);
   }
 
   openNav(): void {

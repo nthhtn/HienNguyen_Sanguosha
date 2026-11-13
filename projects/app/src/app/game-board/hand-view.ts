@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, DestroyRef, ElementRef, computed, inject, input, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -66,13 +66,28 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
 // The viewer's own hand as one row of cards. Hovering (or focusing, for touch)
 // a card reveals its Play button (only when the card can be played), from the engine's legal actions for that card
 // only, and Info. Discards and responses have their own dialogs.
+// A hand card's width at its normal size, and the gap between cards in a row (styles below).
+const CARD_WIDTH = 70;
+const CARD_GAP = 8;
+
+// How far apart the left edges of neighbouring hand cards are: a card's width and the gap when they all fit, closer
+// (overlapping) when they do not, but never closer than minStrip, and then the row scrolls.
+export function handStep(width: number, count: number, cardWidth: number, gap: number, minStrip = 44): { step: number; scrolls: boolean } {
+  const natural = cardWidth + gap;
+  if (count <= 1) return { step: natural, scrolls: false };
+  const fitting = (width - cardWidth) / (count - 1);
+  if (fitting >= natural) return { step: natural, scrolls: false };
+  if (fitting < minStrip) return { step: minStrip, scrolls: true };
+  return { step: fitting, scrolls: false };
+}
+
 @Component({
   selector: 'app-hand-view',
   imports: [MatButtonModule, MatIconModule, MatMenuModule, PlayingCard, TargetLabel, TPipe],
   template: `
-    <div class="hand-row" role="list">
-      @for (vm of cardViewModels(); track vm.card.instanceId) {
-        <div class="hand-card" role="listitem" tabindex="0" [attr.data-card-id]="vm.card.instanceId">
+    <div class="hand-row" role="list" [class.overlap]="fit() === 'overlap'">
+      @for (vm of cardViewModels(); track vm.card.instanceId; let first = $first) {
+        <div class="hand-card" role="listitem" tabindex="0" [attr.data-card-id]="vm.card.instanceId" [style.margin-left.px]="first ? null : overlapMargin()">
           <app-playing-card [card]="vm.card" />
           <div class="overlay">
             @if (vm.template && vm.besideTemplate.length > 0) {
@@ -178,10 +193,35 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
     .empty { color: var(--mat-sys-on-surface-variant); }
     /* Medium layout: a shorter row. */
     :host-context([data-layout='medium']) .hand-row { padding: 12px 4px 0; }
+    /* Phone board: cards overlap when they do not fit (each card keeps at least 44 px showing, then the row scrolls),
+       the card in use comes to the front, and its buttons are full-size tap targets. */
+    .hand-row.overlap { gap: 0; padding: 12px 4px 0; }
+    .hand-row.overlap .hand-card:hover,
+    .hand-row.overlap .hand-card:focus-within { z-index: 1; }
+    .hand-row.overlap .overlay { top: auto; bottom: 0; min-height: 100%; }
+    .hand-row.overlap .overlay button { height: auto; min-height: 44px; font-size: 14px; }
+    .hand-row.overlap ::ng-deep app-playing-card .name {
+      font-size: 14px; line-height: 1.1; white-space: normal; overflow-wrap: anywhere;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
   `,
 })
 export class HandView {
   readonly cards = input.required<CardInstance[]>();
+  // 'row': side by side, the row scrolls (the web board). 'overlap': the phone board's hand, see handStep.
+  readonly fit = input<'row' | 'overlap'>('row');
+  private readonly width = signal(0);
+  protected readonly overlapMargin = computed(() =>
+    this.fit() === 'overlap' ? handStep(this.width(), this.cards().length, CARD_WIDTH, CARD_GAP).step - CARD_WIDTH : null
+  );
+
+  constructor() {
+    // The overlap needs the row's width; jsdom has no ResizeObserver.
+    if (typeof ResizeObserver !== 'function') return;
+    const observer = new ResizeObserver(([entry]) => this.width.set(entry.contentRect.width));
+    observer.observe(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement);
+    inject(DestroyRef).onDestroy(() => observer.disconnect());
+  }
   readonly actions = input.required<Action[]>();
   readonly state = input.required<GameState>();
   readonly registry = input.required<ContentRegistry>();

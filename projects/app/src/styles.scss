@@ -155,6 +155,12 @@ html[data-layout='compact'] {
   --mat-toolbar-mobile-height: 44px;
 }
 
+// The phone board hides the app toolbar during a game (layout.service.ts): no height to leave room for.
+html[data-board='open'] {
+  --mat-toolbar-standard-height: 0px;
+  --mat-toolbar-mobile-height: 0px;
+}
+
 // Dialogs on a short screen (a phone on its side): the whole dialog stays inside the screen, and only its content
 // scrolls, so the title and the buttons stay where they can be reached. Material caps the content at 65vh, which
 // on a 344 px screen leaves no room for the title and buttons as well.

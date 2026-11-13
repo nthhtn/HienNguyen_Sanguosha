@@ -1,7 +1,11 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { GameService } from '../game.service';
 import { PlaybackSpeed } from '../playback-speed.service';
+import { DISPLAY_MODE_OVERRIDE } from '../display-mode-override';
+import { FEATURE_FLAGS } from '../feature-flags';
 import { GameBoard } from './game-board';
 
 function resizeTo(width: number, height: number): void {
@@ -119,5 +123,58 @@ describe('GameBoard layouts', () => {
       expect(prompt.textContent).toContain('Rotate Your Device');
       expect(prompt.textContent).toContain('The Guozhan board needs a wider screen. Turn your device sideways to keep playing.');
     });
+  });
+});
+
+describe('GameBoard on the phone board (installed, 915 x 412)', () => {
+  let gameService: GameService;
+
+  beforeEach(async () => {
+    resizeTo(915, 412);
+    await TestBed.configureTestingModule({
+      imports: [GameBoard],
+      providers: [
+        provideRouter([{ path: 'setup', children: [] }]),
+        { provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } },
+        { provide: DISPLAY_MODE_OVERRIDE, useValue: 'fullscreen' },
+      ],
+    }).compileComponents();
+    gameService = TestBed.inject(GameService);
+    TestBed.inject(PlaybackSpeed).speed.set('instant');
+  });
+  afterEach(() => resizeTo(1024, 768));
+
+  function runningBoard() {
+    gameService.startGame(3, 1);
+    finishSelection(gameService);
+    gameService.reveal(gameService.activeSeatId()!);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    return { fixture, el: fixture.nativeElement as HTMLElement };
+  }
+
+  it('plays on the phone board instead of the round table', () => {
+    const { el } = runningBoard();
+    expect(el.querySelector('app-phone-board')).not.toBeNull();
+    expect(el.querySelector('app-round-table')).toBeNull();
+    expect(el.querySelector('app-small-screen-prompt')).toBeNull();
+  });
+
+  it('keeps the decision and error banners above the phone board', () => {
+    const { el } = runningBoard();
+    const banners = el.querySelector('.banners') as HTMLElement;
+    expect(banners.querySelector('app-decision-banner')).not.toBeNull();
+    // jsdom does not apply this component's styles, so read the rule that lifts the banners on the compact layout.
+    const source = readFileSync(join(__dirname, 'game-board.ts'), 'utf8');
+    const rule = /:host-context\(\[data-layout='compact'\]\) \.banners \{([^}]*)\}/.exec(source)?.[1] ?? '';
+    expect(rule).toMatch(/position: fixed/);
+    expect(Number(/z-index: (\d+)/.exec(rule)?.[1])).toBeGreaterThan(1);
+  });
+
+  it('opens the History panel from the centre band', () => {
+    const { fixture, el } = runningBoard();
+    (el.querySelector('app-phone-centre-band button.history') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(el.querySelector('app-board-panel')).not.toBeNull();
   });
 });
