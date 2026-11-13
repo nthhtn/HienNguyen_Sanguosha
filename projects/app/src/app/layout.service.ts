@@ -9,6 +9,16 @@ export const LARGE_MIN_WIDTH = 1280;
 
 export type LayoutKind = 'phone' | 'medium' | 'large';
 
+// How the page is shown: in the installed app, full screen or standalone (it keeps the status bar), or in a browser tab.
+export type DisplayMode = 'fullscreen' | 'standalone' | 'browser';
+const INSTALLED_MODES = ['fullscreen', 'standalone'] as const;
+
+// Full screen first: a window can match both. A window with no `matchMedia` (a test's jsdom) is a browser tab.
+function readDisplayMode(): DisplayMode {
+  if (typeof window.matchMedia !== 'function') return 'browser';
+  return INSTALLED_MODES.find((mode) => window.matchMedia(`(display-mode: ${mode})`).matches) ?? 'browser';
+}
+
 export function layoutFor(width: number, height: number): LayoutKind {
   if (width < WIDE_MIN_WIDTH || height < WIDE_MIN_HEIGHT) return 'phone';
   return width >= LARGE_MIN_WIDTH ? 'large' : 'medium';
@@ -24,6 +34,7 @@ export class Layout {
   private readonly height = signal(window.innerHeight);
   private readonly _navOpen = signal(false);
   private readonly _panelOpen = signal(false);
+  private readonly _displayMode = signal<DisplayMode>(readDisplayMode());
 
   readonly kind = computed(() => layoutFor(this.width(), this.height()));
   // Medium and large: room for the full navigation bar.
@@ -55,6 +66,10 @@ export class Layout {
     return this.kind() === 'large' ? 1 : 0.5 + 0.5 * this.seatScale(seatCount);
   }
   readonly portrait = computed(() => this.height() > this.width());
+  readonly size = computed(() => ({ width: this.width(), height: this.height() }));
+  readonly displayMode = this._displayMode.asReadonly();
+  // Running as the installed app. Nothing uses it to decide who can play yet.
+  readonly installed = computed(() => this.displayMode() !== 'browser');
   readonly navOpen = this._navOpen.asReadonly();
   readonly panelOpen = this._panelOpen.asReadonly();
 
@@ -65,9 +80,14 @@ export class Layout {
     };
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
+    // Chrome can move an open page into the installed app's window, so the mode is followed, not read once.
+    const modeQueries = typeof window.matchMedia === 'function' ? INSTALLED_MODES.map((mode) => window.matchMedia(`(display-mode: ${mode})`)) : [];
+    const updateMode = () => this._displayMode.set(readDisplayMode());
+    modeQueries.forEach((query) => query.addEventListener('change', updateMode));
     inject(DestroyRef).onDestroy(() => {
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
+      modeQueries.forEach((query) => query.removeEventListener('change', updateMode));
     });
     effect(() => {
       document.documentElement.dataset['layout'] = this.kind();

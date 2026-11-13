@@ -38,6 +38,7 @@ describe('App', () => {
           { path: 'preview', children: [] },
           { path: 'sign-in', children: [] },
           { path: 'sign-up', children: [] },
+          { path: 'device-info', children: [] },
           { path: 'wiki/identity/:page', children: [] },
           { path: 'wiki/kingdom-wars/:page', children: [] },
           { path: 'wiki/rules', children: [] },
@@ -372,6 +373,7 @@ describe('App', () => {
       resizeTo(1366, 768);
       const { el } = await render();
       expect(el.querySelector('button.nav-menu')).toBeNull();
+      expect(el.querySelector('a[href="/device-info"]')).toBeNull();
     });
 
     it('opens a drawer with the same links the bar has on a wide screen', async () => {
@@ -405,6 +407,23 @@ describe('App', () => {
       expect(drawer.textContent).toContain('Ann');
       expect(drawer.querySelector('button.sign-out')).not.toBeNull();
       expect([...drawer.querySelectorAll('.drawer-battlefield button')].map((b) => b.textContent!.trim())).toEqual(['Default', 'Background 1', 'Background 2', 'Background 3']);
+    });
+
+    it('ends with a Device Info link, after every other link', async () => {
+      const { drawer } = await openDrawer();
+      const links = [...drawer.querySelectorAll('a, button')];
+      const last = links[links.length - 1];
+      expect(last.getAttribute('href')).toBe('/device-info');
+      expect(last.textContent).toContain('Device Info');
+    });
+
+    it('closes when Device Info is chosen', async () => {
+      const { fixture, el, drawer } = await openDrawer();
+      (drawer.querySelector('a[href="/device-info"]') as HTMLAnchorElement).click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(TestBed.inject(Router).url).toBe('/device-info');
+      expect(el.querySelector('.nav-drawer')).toBeNull();
     });
 
     it('closes when a link is chosen', async () => {

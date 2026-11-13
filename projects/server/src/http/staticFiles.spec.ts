@@ -53,6 +53,19 @@ describe('static files and /health', () => {
     expect(res.statusCode).toBe(404);
   });
 
+  it('serves the web app manifest with its own content type', async () => {
+    writeFileSync(join(dir, 'manifest.webmanifest'), '{"name":"app"}');
+    const res = await (await start()).app.inject({ method: 'GET', url: '/manifest.webmanifest' });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-type']).toBe('application/manifest+json');
+    expect(res.headers['cache-control']).toBe('public, max-age=86400');
+  });
+
+  it('returns 404 for a missing manifest, not the app', async () => {
+    const res = await (await start()).app.inject({ method: 'GET', url: '/manifest.webmanifest' });
+    expect(res.statusCode).toBe(404);
+  });
+
   it('does not touch the session for a static file: no Set-Cookie on a public response', async () => {
     const { app } = await start();
     const guest = await app.inject({ method: 'POST', url: '/api/auth/guest', payload: { displayName: 'G' }, headers: { origin: 'http://localhost:4200' } });
@@ -151,6 +164,12 @@ describe('static delivery: compression, validators, ranges and caching', () => {
       expect(res.rawPayload.length).toBeLessThan(BIG_JS.length / 4);
       expect(res.headers['content-length']).toBe(String(res.rawPayload.length));
       expect(brotliDecompressSync(res.rawPayload).toString()).toBe(BIG_JS);
+    });
+
+    it('compresses a large web app manifest', async () => {
+      writeFileSync(join(dir, 'manifest.webmanifest'), JSON.stringify({ name: 'x'.repeat(2000) }));
+      const res = await get('/manifest.webmanifest', { 'accept-encoding': 'br' });
+      expect(res.headers['content-encoding']).toBe('br');
     });
 
     it('falls back to gzip', async () => {
