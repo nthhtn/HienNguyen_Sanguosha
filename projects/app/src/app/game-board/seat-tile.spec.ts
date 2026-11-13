@@ -190,7 +190,7 @@ describe('SeatTile', () => {
 
   it('shows one HP icon per HP, icon 1 up to the seat’s current HP, next to its HP text', () => {
     const imgs = Array.from(render(makeSeat({ combinedHp: 3 })).querySelectorAll('.stats img.hp-icon')) as HTMLImageElement[];
-    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['/images/ui/hp/1.png', '/images/ui/hp/2.png', '/images/ui/hp/3.png']);
+    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['/images/ui/hp-ramp/1.png', '/images/ui/hp-ramp/2.png', '/images/ui/hp-ramp/3.png']);
     expect(imgs.every((i) => i.getAttribute('alt') === '')).toBe(true);
   });
 

@@ -6,6 +6,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, Kingdom, combinedMaxHp } from 'engine';
 import { GeneralDisplayData, generalDisplayData } from 'content';
 import { CardArt } from './card-art';
+import { HpIcons } from '../hp-icons';
 import { DecisionCountdown } from './decision-countdown';
 import { generalDisplayName, kingdomDisplayName } from '../labels';
 import { TPipe } from '../i18n/t.pipe';
@@ -18,7 +19,6 @@ interface CandidateViewModel {
   display: GeneralDisplayData | null;
   kingdom: Kingdom;
   maxHp: number;
-  hearts: number[];
   role: 'Main' | 'Deputy' | null;
   enabled: boolean;
   disabledReason: string;
@@ -28,7 +28,7 @@ interface CandidateViewModel {
 // engine's getLegalActions); this component never compares kingdoms itself.
 @Component({
   selector: 'app-general-selection',
-  imports: [MatButtonModule, MatCardModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown, SkillTraits, TPipe],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatTooltipModule, CardArt, DecisionCountdown, HpIcons, SkillTraits, TPipe],
   template: `
     <header class="intro">
       <h2>{{ seatName() ? ('select.titleFor' | t: { name: seatName() }) : ('select.title' | t) }}</h2>
@@ -67,11 +67,7 @@ interface CandidateViewModel {
                   <div class="name">{{ vm.name }}</div>
                   <div class="meta">
                     <span class="kingdom-tag">{{ kingdomName(vm.kingdom) }}</span>
-                    <span class="hearts" [attr.aria-label]="'select.hp' | t: { n: vm.maxHp }">
-                      @for (h of vm.hearts; track $index) {
-                        <mat-icon>favorite</mat-icon>
-                      }
-                    </span>
+                    <app-hp-icons [hp]="vm.maxHp" [size]="16" />
                     <span class="hp-label">{{ 'select.hp' | t: { n: vm.maxHp } }}</span>
                   </div>
                 </div>
@@ -189,8 +185,6 @@ interface CandidateViewModel {
     .meta { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px; }
     .force-name { color: var(--force-text); font-weight: 600; }
     .kingdom-tag { padding: 0 8px; border-radius: 8px; color: #fff; background: var(--kingdom); font: var(--mat-sys-label-medium); }
-    .hearts { display: inline-flex; color: #d84a3f; }
-    .hearts mat-icon { font-size: 14px; width: 14px; height: 14px; }
     .hp-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     .bar {
       flex: none;
@@ -251,7 +245,6 @@ export class GeneralSelection {
         display,
         kingdom: definition?.kingdom ?? 'hidden',
         maxHp: definition?.maxHp ?? 0,
-        hearts: Array.from({ length: definition?.maxHp ?? 0 }, (_, i) => i),
         role: index === 0 ? 'Main' : index === 1 ? 'Deputy' : null,
         enabled: this.isSelectable(id, selected, actions),
         disabledReason,

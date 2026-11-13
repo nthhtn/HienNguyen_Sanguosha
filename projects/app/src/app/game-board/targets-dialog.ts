@@ -7,6 +7,7 @@ import type { Force } from '../labels';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 import { SeatPortrait } from './seat-portrait';
+import { HpIcons } from '../hp-icons';
 
 export interface TargetsDialogData {
   // What is being played: "Sha".
@@ -22,7 +23,7 @@ export interface TargetsDialogData {
 // Cancel. The engine checks the picks again when they are played.
 @Component({
   selector: 'app-targets-dialog',
-  imports: [MatButtonModule, MatDialogModule, SeatPortrait, TPipe],
+  imports: [MatButtonModule, MatDialogModule, SeatPortrait, HpIcons, TPipe],
   template: `
     <h2 mat-dialog-title>{{ 'targets.title' | t }}</h2>
     <mat-dialog-content>
@@ -47,9 +48,7 @@ export interface TargetsDialogData {
             <span class="pk-gens" [class.hidden-gens]="!seat.generalNames">{{ seat.generalNames || ('targets.generalsHidden' | t) }}</span>
             <span class="meta">
               <span class="hp" [attr.aria-label]="seat.hpLabel">
-                @for (n of seat.hearts; track n) {
-                  <span class="heart" [class.lost]="n >= seat.hp">♥</span>
-                }
+                <app-hp-icons [hp]="seat.hp" [max]="seat.maxHp" [size]="14" />
               </span>
               <span class="hand">{{ seat.handLabel }}</span>
             </span>
@@ -89,8 +88,6 @@ export interface TargetsDialogData {
     .pk-gens { font: var(--mat-sys-label-large); color: var(--force-text); line-height: 1.2; }
     .pk-gens.hidden-gens { color: var(--mat-sys-on-surface-variant); font-weight: 400; }
     .meta { display: flex; justify-content: space-between; align-items: center; gap: 6px; font: var(--mat-sys-label-small); color: var(--mat-sys-on-surface-variant); }
-    .heart { color: var(--mat-sys-error); letter-spacing: 1px; }
-    .heart.lost { color: var(--mat-sys-outline-variant); }
     mat-dialog-actions { display: flex; align-items: center; gap: 8px; }
     .count { margin-right: auto; padding-left: 8px; font: var(--mat-sys-label-large); color: var(--mat-sys-on-surface-variant); }
   `,
@@ -118,8 +115,7 @@ export class TargetsDialog {
       const hp = Math.max(0, seat?.combinedHp ?? 0);
       const force: Force = seatForce(seat);
       return {
-        id, label, generals, generalNames, force, hp,
-        hearts: Array.from({ length: maxHp }, (_, n) => n),
+        id, label, generals, generalNames, force, hp, maxHp,
         hpLabel: tr('targets.hp', { n: hp, max: maxHp }),
         handLabel: tr(hand === 1 ? 'targets.cards.one' : 'targets.cards.other', { n: hand }),
         ariaLabel: generalNames ? `${label}, ${generalNames}` : label,

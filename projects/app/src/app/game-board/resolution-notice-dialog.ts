@@ -8,6 +8,7 @@ import { I18n } from '../i18n/i18n.service';
 import type { MessageKey } from '../i18n/messages';
 import { TPipe } from '../i18n/t.pipe';
 import { CardArt } from './card-art';
+import { HpIcons } from '../hp-icons';
 import { PlayingCard } from './playing-card';
 import { SeatPortrait } from './seat-portrait';
 
@@ -34,7 +35,7 @@ export function noticeForce(content: ResolutionNoticeContent, state: GameState):
 // source seat's force (openForceDialog).
 @Component({
   selector: 'app-resolution-notice-dialog',
-  imports: [MatDialogModule, CardArt, PlayingCard, SeatPortrait, TPipe],
+  imports: [MatDialogModule, CardArt, PlayingCard, SeatPortrait, HpIcons, TPipe],
   template: `
     <h2 mat-dialog-title>{{ 'notice.title' | t }}</h2>
     <mat-dialog-content class="body">
@@ -102,11 +103,7 @@ export function noticeForce(content: ResolutionNoticeContent, state: GameState):
         @if (hp(); as hp) {
           <div class="hp">
             <span>{{ hp.name }}</span>
-            <span class="hearts" aria-hidden="true">
-              @for (n of hp.hearts; track n) {
-                <span class="heart" [class.lost]="n >= hp.current">♥</span>
-              }
-            </span>
+            <app-hp-icons [hp]="hp.current" [max]="hp.max" [size]="16" />
           </div>
         }
       </section>
@@ -148,8 +145,6 @@ export function noticeForce(content: ResolutionNoticeContent, state: GameState):
     .outcome .label { font: var(--mat-sys-label-large); color: var(--tone); }
     .outcome .text { margin: 2px 0 0; font: var(--mat-sys-body-large); }
     .hp { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font: var(--mat-sys-label-medium); color: var(--mat-sys-on-surface-variant); white-space: nowrap; }
-    .heart { color: var(--mat-sys-error); }
-    .heart.lost { color: var(--mat-sys-outline-variant); }
     .rise { animation: rise 0.35s 0.3s both; }
     .later { animation: rise 0.35s 0.8s both; }
     @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
@@ -245,6 +240,6 @@ export class ResolutionNoticeDialog {
     const change = this.data.content.outcome.hp;
     const seat = change ? this.data.state.seats.find((s) => s.id === change.seatId) : undefined;
     if (!change || !seat) return null;
-    return { name: seatName(this.data.state.players, change.seatId, this.i18n.translator), current: seat.combinedHp, hearts: Array.from({ length: seat.maxCombinedHp }, (_, n) => n) };
+    return { name: seatName(this.data.state.players, change.seatId, this.i18n.translator), current: seat.combinedHp, max: seat.maxCombinedHp };
   });
 }

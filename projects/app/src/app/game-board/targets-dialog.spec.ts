@@ -57,8 +57,8 @@ describe('TargetsDialog', () => {
     expect(card('Seat 2').querySelector('.pk-gens')!.textContent!.trim()).toBe('Cao Cao');
     expect(card('Seat 3').querySelector('.pk-gens')!.textContent!.trim()).toBe('Generals hidden');
     expect(card('Seat 2').querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3 of 4');
-    expect(card('Seat 2').querySelectorAll('.hp .heart').length).toBe(4);
-    expect(card('Seat 2').querySelectorAll('.hp .heart.lost').length).toBe(1);
+    expect(card('Seat 2').querySelectorAll('.hp app-hp-icons img').length).toBe(4);
+    expect(card('Seat 2').querySelectorAll('.hp app-hp-icons img.lost').length).toBe(1);
     expect(card('Seat 2').querySelector('.hand')!.textContent!.trim()).toBe('2 cards');
     expect(card('Hing').querySelector('.hand')!.textContent!.trim()).toBe('1 card');
   });

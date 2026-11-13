@@ -58,14 +58,15 @@ describe('kingdomBannerUrl', () => {
 });
 
 describe('hpIconUrls', () => {
-  const icon = (n: number) => `/images/ui/hp/${n}.png`;
+  const icon = (n: number) => `/images/ui/hp-ramp/${n}.png`;
   it('shows one icon per HP, from 1 up to the current HP', () => {
     expect(hpIconUrls(1)).toEqual([icon(1)]);
     expect(hpIconUrls(2)).toEqual([icon(1), icon(2)]);
     expect(hpIconUrls(4)).toEqual([1, 2, 3, 4].map(icon));
+    expect(hpIconUrls(8)).toEqual([1, 2, 3, 4, 5, 6, 7, 8].map(icon));
   });
-  it('stops at the 4 icons above 4 HP', () => {
-    expect(hpIconUrls(6)).toEqual([1, 2, 3, 4].map(icon));
+  it('stops at the 8 icons above 8 HP', () => {
+    expect(hpIconUrls(9)).toEqual([1, 2, 3, 4, 5, 6, 7, 8].map(icon));
   });
   it('shows none at 0 HP or below', () => {
     expect(hpIconUrls(0)).toEqual([]);

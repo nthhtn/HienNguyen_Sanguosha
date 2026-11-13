@@ -100,17 +100,17 @@ describe('JudgmentStage', () => {
   it('shows the damage hearts and greys the lost ones in turn, once the consequence plays', () => {
     const description = bad({ effect: { kind: 'damage', amount: 3, subject: 'seat' }, hp: { seatName: 'Bo', current: 4, max: 4 } });
     const { el, at } = render(description);
-    expect(count(el, '.heart')).toBe(4);
+    expect(count(el, 'app-hp-icons img')).toBe(4);
     at(2100 + 900);
-    expect(count(el, '.heart.lost')).toBe(1);
+    expect(count(el, 'app-hp-icons img.lost')).toBe(1);
     at(520);
-    expect(count(el, '.heart.lost')).toBe(3);
+    expect(count(el, 'app-hp-icons img.lost')).toBe(3);
     expect(el.querySelector('.dmg')!.textContent).toContain('3');
   });
 
   it('draws only the current HP when the maximum is not known', () => {
     const { el } = render(bad({ effect: { kind: 'damage', amount: 1, subject: 'seat' }, hp: { seatName: 'Bo', current: 2, max: null } }));
-    expect(count(el, '.heart')).toBe(2);
+    expect(count(el, 'app-hp-icons img')).toBe(2);
   });
 
   it('shows the phases and strikes out the one that is skipped', () => {

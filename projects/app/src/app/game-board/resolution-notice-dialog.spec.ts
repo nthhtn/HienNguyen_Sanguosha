@@ -79,8 +79,8 @@ describe('ResolutionNoticeDialog', () => {
     expect(el.querySelector('.outcome')!.getAttribute('data-tone')).toBe('good');
     expect(el.querySelector('.outcome .headline')!.textContent).toBe('Confirm');
     expect(el.querySelector('.hp')!.textContent).toContain('Seat 1');
-    expect(el.querySelectorAll('.hp .heart').length).toBe(4);
-    expect(el.querySelectorAll('.hp .heart.lost').length).toBe(2);
+    expect(el.querySelectorAll('.hp app-hp-icons img').length).toBe(4);
+    expect(el.querySelectorAll('.hp app-hp-icons img.lost').length).toBe(2);
   });
 
   it('has no HP when none changed, and no steps or cards when there are none', () => {

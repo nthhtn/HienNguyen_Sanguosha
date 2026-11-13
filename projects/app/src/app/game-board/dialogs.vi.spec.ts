@@ -189,7 +189,6 @@ describe('GeneralSelection in Vietnamese', () => {
     expect(text(named.el.querySelector('.hint'))).toBe('Chọn hai Tướng cùng thế lực. Lựa chọn đầu tiên là Chủ tướng của bạn.');
     expect(text(card(named.el, 'w1').querySelector('.kingdom-tag'))).toBe('Ngụy');
     expect(text(card(named.el, 'w1').querySelector('.hp-label'))).toBe('Sinh lực 4');
-    expect(card(named.el, 'w1').querySelector('.hearts')!.getAttribute('aria-label')).toBe('Sinh lực 4');
     const anonymous = await mount(GeneralSelection, undefined, inputs());
     expect(text(anonymous.el.querySelector('h2'))).toBe('Hãy chọn Tướng của bạn');
   });
