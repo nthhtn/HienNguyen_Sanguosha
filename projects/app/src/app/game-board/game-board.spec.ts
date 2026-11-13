@@ -12,6 +12,7 @@ import { JudgmentDialog } from './judgment-dialog';
 import { askToChange, settleJudgment } from '../settled-judgment.testing';
 import { cardIdDisplayName } from '../labels';
 import { spriteDurationMs } from './sprite-plan';
+import { ScreenWakeLock } from '../screen-wake-lock.service';
 import { GameBoard } from './game-board';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
@@ -1377,6 +1378,28 @@ describe('GameBoard battle playback', () => {
     expect(tile().seat().combinedHp).toBe(before - 1);
     tick(900);
     expect(tile().seat().combinedHp).toBe(before - 2);
+  });
+
+  it('keeps the screen on while the game runs, and lets it go at Game Over and when the board closes', () => {
+    const other = playPhase();
+    const lock = TestBed.inject(ScreenWakeLock);
+    const hold = jest.spyOn(lock, 'hold');
+    const release = jest.spyOn(lock, 'release');
+    create();
+    expect(hold).toHaveBeenCalled();
+    expect(release).not.toHaveBeenCalled();
+    const winner = gameService.activeSeatId()!;
+    update((s) => ({
+      ...s,
+      seats: s.seats.map((seat) => (seat.id === other ? { ...seat, eliminated: true } : seat)),
+      log: [...s.log, { kind: 'SeatEliminatedEvent', seatId: other } as never],
+      result: { endedAt: 1, winningSeatIds: [winner], losingSeatIds: [other] },
+    }));
+    tick(1400 + 350);
+    expect(release).toHaveBeenCalled();
+    release.mockClear();
+    fixture.destroy();
+    expect(release).toHaveBeenCalled();
   });
 
   it('waits for playback before Game Over (Review Focus 4)', () => {

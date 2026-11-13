@@ -1,3 +1,4 @@
+import { ScreenWakeLock } from '../screen-wake-lock.service';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, HostListener, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
@@ -562,6 +563,11 @@ export class GameBoard {
   protected readonly shownSeatId = computed(() => this.activeSeatId() ?? (this.gameService.state()?.result ? this.gameService.revealedSeatId() : null));
   // The result, once playback has shown the moves that led to it.
   protected readonly gameOver = computed(() => (this.director.idle() ? (this.gameService.state()?.result ?? null) : null));
+  // The screen stays on while the game runs (a phone would otherwise lock while the player waits), and is let go at
+  // Game Over and when the board closes.
+  private readonly wakeLock = inject(ScreenWakeLock);
+  private readonly holdScreen = effect(() => (this.gameOver() ? this.wakeLock.release() : this.wakeLock.hold()));
+  private readonly releaseScreenOnLeave = inject(DestroyRef).onDestroy(() => this.wakeLock.release());
   protected readonly lastError = this.gameService.lastError;
 
   // Whose chair the table is seen from: the human in vs-bots, else the revealed active seat.
