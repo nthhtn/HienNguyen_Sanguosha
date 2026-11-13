@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, DestroyRef, computed, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { Action, CardInstance, ContentRegistry, GameState, Seat, isSeatDying } from 'engine';
 import { I18n } from '../../i18n/i18n.service';
@@ -150,6 +150,11 @@ export class PhoneBoard {
     const height = Math.max(0, this.layout.size().height - top - 5 - bottomHeight - 8);
     return { y: top + height / 2, height };
   });
+
+  constructor() {
+    this.layout.setBoardOpen(true);
+    inject(DestroyRef).onDestroy(() => this.layout.setBoardOpen(false));
+  }
 
   protected nameOf(seatId: string): string {
     return seatName(this.state().players, seatId, this.i18n.translator);

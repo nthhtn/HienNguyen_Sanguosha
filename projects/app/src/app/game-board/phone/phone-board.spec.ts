@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import type { CardZone, GameState, Seat, UseSkill } from 'engine';
+import type { Action, CardZone, GameState, Seat } from 'engine';
 import { buildContentRegistry } from 'content';
 import type { AvatarSkill } from '../avatar-skills';
 import { PhoneBoard } from './phone-board';
@@ -17,7 +17,7 @@ function state(seats: Seat[]): GameState {
   };
 }
 
-const useSkill = { kind: 'UseSkillAction', seatId: 'seat-0', skillId: 'test' } as unknown as UseSkill;
+const useSkill = { kind: 'UseSkillAction', seatId: 'seat-0', skillId: 'test' } as unknown as Extract<Action, { kind: 'UseSkillAction' }>;
 
 describe('PhoneBoard', () => {
   function render(count: number, viewer: string | null = 'seat-0', skills: AvatarSkill[] = []) {
