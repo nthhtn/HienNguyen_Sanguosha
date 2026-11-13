@@ -4375,10 +4375,10 @@
     }
   },
   "ui/chain/chain-left.png": {
-    "output": "636cddd2d9504928f0642f6a0f9750193017e769a8a6396599c94a23e1590b76",
+    "output": "4f6624ec3fc4ff40eb1c5e9b5af98d0f34f4de50ef7ed3b30796eca0e43666bd",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "ui/chain/chain-left.png": "636cddd2d9504928f0642f6a0f9750193017e769a8a6396599c94a23e1590b76"
+      "ui/chain/chain-left.png": "4f6624ec3fc4ff40eb1c5e9b5af98d0f34f4de50ef7ed3b30796eca0e43666bd"
     }
   },
   "ui/chain/chain-right.png": {
